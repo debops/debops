@@ -1,0 +1,26 @@
+---
+
+- name: TCPWRAPPERS | Make sure /etc/hosts.allow.d directory exists
+  file: path=/etc/hosts.allow.d state=directory owner=root group=root mode=0755
+  tags:
+    - tcpwrappers
+    - network
+    - sshd
+
+- name: TCPWRAPPERS | Create /etc/hosts.allow.d/00_ansible
+  template: src=etc/hosts.allow.d/00_ansible.j2 dest=/etc/hosts.allow.d/00_ansible owner=root group=root mode=0644
+  notify:
+    - Assemble hosts.allow.d
+  tags:
+    - tcpwrappers
+    - network
+    - sshd
+
+- name: TCPWRAPPERS | Flush handlers if needed for /etc/hosts.allow
+  meta: flush_handlers
+  tags:
+    - tcpwrappers
+    - network
+    - sshd
+
+

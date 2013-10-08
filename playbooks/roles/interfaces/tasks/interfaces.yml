@@ -1,0 +1,97 @@
+---
+
+# Set up /etc/network/interfaces.d
+
+- name: INTERFACES | Check if Network Manager is installed
+  stat: path=/usr/sbin/NetworkManager
+  register: installed_networkmanager
+  tags:
+    - interfaces
+    - network
+
+- name: INTERFACES | Create /etc/network/interfaces.d directory
+  file: path=/etc/network/interfaces.d owner=root group=root mode=0755 state=directory
+  tags:
+    - interfaces
+    - network
+
+- name: INTERFACES | Move original /etc/network/interfaces to interfaces.original
+  command: /bin/cp -p /etc/network/interfaces /etc/network/interfaces.original creates=/etc/network/interfaces.original
+  notify:
+    - Assemble interfaces.d
+  tags:
+    - interfaces
+    - network
+
+- name: INTERFACES | Create Ansible header for /etc/network/interfaces
+  template: src={{ item }} dest=/etc/network/interfaces.d/00_ansible owner=root group=root mode=0644
+  with_first_found:
+    - ../templates/${ansible_virtualization_type}/etc/interfaces.d/00_ansible.j2
+    - ../templates/etc/interfaces.d/00_ansible.j2
+  notify:
+    - Assemble interfaces.d
+  tags:
+    - interfaces
+    - network
+
+- name: INTERFACES | Set up loopback configuration
+  template: src={{ item }} dest=/etc/network/interfaces.d/10_lo owner=root group=root mode=0644
+  with_first_found:
+    - ../templates/${ansible_virtualization_type}/etc/interfaces.d/10_lo.j2
+    - ../templates/etc/interfaces.d/10_lo.j2
+  notify:
+    - Assemble interfaces.d
+  tags:
+    - interfaces
+    - network
+
+- name: INTERFACES | Add Ethernet configuration if NetworkManager not present
+  template: src={{ item }} dest=/etc/network/interfaces.d/20_eth owner=root group=root mode=0644
+  with_first_found:
+    - ../templates/${ansible_virtualization_type}/etc/interfaces.d/20_eth.j2
+    - ../templates/etc/interfaces.d/20_eth.j2
+  when: installed_networkmanager.stat.exists is defined and installed_networkmanager.stat.exists == False
+  notify:
+    - Assemble interfaces.d
+    - Reload interface eth0
+    - Reload interface eth1
+  tags:
+    - interfaces
+    - network
+
+- name: INTERFACES | Remove Ethernet configuration if NetworkManager present
+  file: path=/etc/network/interfaces.d/20_eth state=absent
+  when: installed_networkmanager.stat.exists is defined and installed_networkmanager.stat.exists == True
+  notify:
+    - Assemble interfaces.d
+    - Reload interface eth0
+    - Reload interface eth1
+  tags:
+    - interfaces
+    - network
+
+- name: INTERFACES | Add bridge configuration if NetworkManager not present
+  template: src={{ item }} dest=/etc/network/interfaces.d/30_br owner=root group=root mode=0644
+  with_first_found:
+    - ../templates/${ansible_virtualization_type}/etc/interfaces.d/30_br.j2
+    - ../templates/etc/interfaces.d/30_br.j2
+  when: installed_networkmanager.stat.exists is defined and installed_networkmanager.stat.exists == False
+  notify:
+    - Assemble interfaces.d
+    - Reload interface br0
+    - Reload interface br1
+  tags:
+    - interfaces
+    - network
+
+- name: INTERFACES | Remove bridge configuration if NetworkManager present
+  file: path=/etc/network/interfaces.d/30_br state=absent
+  when: installed_networkmanager.stat.exists is defined and installed_networkmanager.stat.exists == True
+  notify:
+    - Assemble interfaces.d
+    - Reload interface br0
+    - Reload interface br1
+  tags:
+    - interfaces
+    - network
+

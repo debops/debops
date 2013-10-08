@@ -1,0 +1,11 @@
+---
+
+- name: KVM support
+  hosts: aiua_kvm
+  sudo: yes
+
+  roles:
+  - { role: kvm }
+  - { role: nat, nat_net: 144, nat_interface: br2 }
+  - { role: dnsmasq, dnsmasq_nat: 144, dnsmasq_interface: br2, dnsmasq_domain: 'nat.{{ ansible_fqdn }}' }
+

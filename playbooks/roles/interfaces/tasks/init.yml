@@ -1,0 +1,31 @@
+---
+
+# Initialize interfaces.fact
+
+- name: INTERFACES | Make sure /etc/ansible/facts.d/ directory exists
+  file: path=/etc/ansible/facts.d state=directory owner=root group=root mode=0755
+  tags:
+    - interfaces
+    - network
+
+- name: INTERFACES | Check status of fact file
+  stat: path=/etc/ansible/facts.d/interfaces.fact
+  register: interfaces_fact_file
+  tags:
+    - interfaces
+    - network
+
+- name: INTERFACES | Save facts about network layout
+  template: src=etc/ansible/facts.d/interfaces.fact.j2 dest=/etc/ansible/facts.d/interfaces.fact owner=root group=root mode=0644 force=no
+  when: interfaces_fact_file.stat.exists is defined and interfaces_fact_file.stat.exists == False
+  tags:
+    - interfaces
+    - network
+
+- name: INTERFACES | Reload facts
+  action: setup
+  when: interfaces_fact_file.stat.exists is defined and interfaces_fact_file.stat.exists == False
+  tags:
+    - interfaces
+    - network
+

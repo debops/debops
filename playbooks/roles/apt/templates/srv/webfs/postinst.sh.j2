@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# {{ ansible_managed }}
+
+export HOME=/root
+
+# Setup grub, cgroup, LXC
+
+if [ -r "/etc/default/grub" ]; then
+	perl -pi -e 's,^GRUB_TIMEOUT=5$,GRUB_TIMEOUT=1,' /etc/default/grub
+	perl -pi -e 's,GRUB_CMDLINE_LINUX="(.*)"$,GRUB_CMDLINE_LINUX="$1 elevator=noop cgroup_enable=memory swapaccount=1",' /etc/default/grub
+	perl -pi -e 's,^#GRUB_DISABLE_RECOVERY="true"$,GRUB_DISABLE_RECOVERY="true",' /etc/default/grub
+	update-grub
+fi
+
+# Expire root password to force change
+passwd --expire root
+
+

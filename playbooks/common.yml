@@ -1,0 +1,22 @@
+---
+
+- name: Common configuration for all hosts
+  hosts: all
+  sudo: yes
+
+  roles:
+  - { role: apt }
+  - { role: ferm }
+  - { role: auth }
+  - { role: sshd }
+  - { role: sslcerts }
+  - { role: interfaces }
+  - { role: gitakeys }
+  - { role: console }
+  - { role: ntpd }
+  - { role: rsyslog }
+  - { role: tcpwrappers }
+  - { role: user/dotfiles }
+  - { role: user/dotfiles, owner: $ENV(USER) }
+  - { role: user/gitakeys, owner: $ENV(USER) }
+

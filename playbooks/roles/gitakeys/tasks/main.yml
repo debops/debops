@@ -1,0 +1,12 @@
+---
+
+- name: GIT_AKEYS | Clone git-authorized-keys
+  git: repo=git://github.com/drybjed/git-authorized-keys.git dest=/usr/local/src/github.com/drybjed/git-authorized-keys update=yes
+  tags:
+    - gitakeys
+
+- name: GIT_AKEYS | Link git-authorized-keys in /usr/local/bin
+  file: state=link src=/usr/local/src/github.com/drybjed/git-authorized-keys/update-authorized-keys dest=/usr/local/bin/update-authorized-keys
+  tags:
+    - gitakeys
+

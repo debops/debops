@@ -1,0 +1,32 @@
+---
+
+- name: KVM | Install KVM packages
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items:
+    - libvirt-bin
+    - netcat-openbsd
+    - gawk
+    - qemu-system
+    - pm-utils
+    - ebtables
+  tags:
+    - kvm
+    - packages
+
+- name: KVM | Add administrators to libvirt group
+  user: name=${item} groups=libvirt append=yes
+  with_items:
+    - ${auth_admin_accounts}
+  when: auth_admin_accounts is defined
+  tags:
+    - kvm
+    - auth
+
+- name: KVM | Download system images if allowed
+  get_url: url={{ item }} dest=/var/lib/libvirt/images/ owner=root group=root mode=0644 force=yes
+  with_items:
+    - ${kvm_images_list}
+  when: kvm_images_list is defined and kvm_download_images is defined and kvm_download_images == True
+  tags:
+    - kvm
+

@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+# Original layout of network interfaces
+[ports]
+external={{ ansible_default_ipv4.interface }}
+{% for interface in ansible_interfaces if 'eth' in interface and interface != ansible_default_ipv4.interface %}
+internal={{ interface }}
+{% endfor %}
+
+

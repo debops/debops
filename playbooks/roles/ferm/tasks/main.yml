@@ -1,0 +1,22 @@
+---
+
+- name: FERM | Ensure ferm is installed
+  apt: pkg=ferm state=latest install_recommends=no
+  tags:
+    - ferm
+    - network
+    - packages
+
+- name: FERM | Create configuration directory
+  file: path=/etc/ferm/ferm.d state=directory owner=root group=root mode=0750
+  tags:
+    - ferm
+    - network
+
+- name: FERM | Apply ferm configuration
+  template: src=etc/ferm/ferm.conf.j2 dest=/etc/ferm/ferm.conf owner=root group=root backup=no
+  notify: Restart ferm
+  tags:
+    - ferm
+    - network
+

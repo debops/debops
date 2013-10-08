@@ -1,0 +1,24 @@
+---
+
+- name: TCPWRAPPERS | Install denyhosts
+  apt: pkg=denyhosts state=latest install_recommends=no
+  when: tcpwrappers_denyhosts.enable
+  tags:
+    - tcpwrappers
+    - network
+
+- name: TCPWRAPPERS | Remove denyhosts
+  apt: pkg=denyhosts state=absent purge=yes
+  when: not tcpwrappers_denyhosts.enable
+  tags:
+    - tcpwrappers
+    - network
+
+- name: TCPWRAPPERS | denyhosts installed - install /etc/denyhosts.conf
+  template: src=etc/denyhosts.conf.j2 dest=/etc/denyhosts.conf owner=root group=root mode=0640
+  notify: Restart denyhosts
+  when: tcpwrappers_denyhosts.enable
+  tags:
+    - tcpwrappers
+    - network
+

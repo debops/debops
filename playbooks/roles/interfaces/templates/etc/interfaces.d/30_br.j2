@@ -1,0 +1,21 @@
+# Bridge interfaces
+
+# External interface
+auto br0
+iface br0 inet dhcp
+	bridge_stp on
+	bridge_fd 0
+	bridge_maxwait 0
+	bridge_ports {{ ansible_local.interfaces.ports.external }}
+
+{% if ansible_local.interfaces.ports.internal is defined %}
+# Internal interface
+auto br1
+iface br1 inet dhcp
+	bridge_stp on
+	bridge_fd 0
+	bridge_maxwait 0
+	bridge_ports {{ ansible_local.interfaces.ports.internal }}
+{% endif %}
+
+

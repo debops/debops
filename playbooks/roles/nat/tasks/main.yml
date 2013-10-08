@@ -1,0 +1,26 @@
+---
+
+- name: NAT | Configure {{ nat_interface }} interface
+  template: src=etc/network/interfaces.d/50_br_nat.j2 dest=/etc/network/interfaces.d/50_{{ nat_interface }}_nat owner=root group=root mode=0644
+  notify:
+    - Assemble interfaces.d
+    - Reload interface {{ nat_interface }}
+  tags:
+    - nat
+    - network
+
+- name: NAT | Configure NAT firewall
+  template: src=etc/ferm/ferm.d/nat.conf.j2 dest=/etc/ferm/ferm.d/{{ nat_interface }}_nat.conf owner=root group=root mode=0644
+  notify:
+    - Restart ferm
+  tags:
+    - nat
+    - network
+    - firewall
+
+- name: NAT | Reload network configuration if needed for NAT
+  meta: flush_handlers
+  tags:
+    - nat
+    - network
+

@@ -1,0 +1,31 @@
+---
+
+# --- /etc/hosts.allow
+tcpwrappers_allow_local:
+  - 'ALL: 127.0.0.0/8'
+  - 'ALL: ::1'
+
+tcpwrappers_allow_lan:
+  - 'sshd: 10.0.0.0/8'
+  - 'sshd: 172.16.0.0/12'
+  - 'sshd: 192.168.0.0/16'
+
+# List of custom addresses for /etc/hosts.allow
+#tcpwrappers_allow_custom:
+#  - 'ALL: 0.0.0.0/0'
+
+
+# --- /etc/hosts.deny
+tcpwrappers_denyhosts:
+  enable: False
+
+# List of custom addresses for /etc/hosts.deny
+# Before making changes, set state to 'absent' and re-run this role
+# to preserve the state of /etc/hosts.deny
+#tcpwrappers_deny_custom_state: present
+#tcpwrappers_deny_custom_state: absent
+#tcpwrappers_deny_custom:
+#  - 'ALL: 10.10.10.10'
+#  - 'ALL: 10.10.10.11'
+
+

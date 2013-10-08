@@ -1,0 +1,11 @@
+---
+
+# A small hack to make local NAT network for develop network on a laptop
+
+- hosts: 127.0.0.1
+  sudo: yes
+
+  roles:
+    - { role: nat, nat_net: 32, nat_interface: br0 }
+    - { role: dnsmasq, dnsmasq_nat: 32, dnsmasq_domain: aiua, dnsmasq_interface: br0 }
+

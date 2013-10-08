@@ -1,0 +1,34 @@
+# iptables ferm firewall - NAT
+# {{ ansible_managed }}
+
+# Default gateway interface to outside world
+@def $DEV_WORLD = `ip route show | grep "default" | awk '{print $5}'`;
+
+# http://www.redhat.com/archives/libvir-list/2010-August/msg00035.html
+@hook post "iptables -A POSTROUTING -t mangle -p udp --dport 68 -j CHECKSUM --checksum-fill";
+
+table filter {
+	chain INPUT {
+		interface {{ nat_interface }} protocol (tcp udp) dport (bootps domain) ACCEPT;
+	}
+
+	chain FORWARD {
+		# Forwarding for outside world
+		outerface $DEV_WORLD ACCEPT;
+
+		# Forwarding between virtual machines / containers
+		interface {{ nat_interface }} outerface {{ nat_interface }} ACCEPT;
+	}
+}
+
+table nat {
+	chain POSTROUTING {
+		 saddr {{ nat_network }}/{{ nat_netmask }} daddr !{{ nat_network}}/{{ nat_netmask }} MASQUERADE;
+	}
+}
+
+@hook pre "echo 0 > /proc/sys/net/ipv4/ip_forward";
+@hook post "echo 1 > /proc/sys/net/ipv4/ip_forward";
+@hook flush "echo 0 > /proc/sys/net/ipv4/ip_forward";
+
+

@@ -1,0 +1,29 @@
+---
+
+# This set of tasks should be run under sudo = yes
+
+- name: DOTFILES ({{ owner }}) | Insert ssh public key repository
+  sudo_user: ${owner}
+  lineinfile: dest=~/.ssh/git_authorized_keys regexp='^${user_gitakeys_github}${owner}/${repository}' line='${user_gitakeys_github}${owner}/${repository} ${keyfile} ${branch}' state=present create=yes backup=no
+  tags:
+    - ssh
+    - user
+
+- name: DOTFILES ({{ owner }}) | Check if ~/.ssh/authorized_keys needs to be updated
+  sudo_user: ${owner}
+  shell: update-authorized-keys --checksum
+  register: update_authorized_keys
+  ignore_errors: yes
+  changed_when: "update_authorized_keys.stdout != 'Checksum OK'"
+  tags:
+    - ssh
+    - user
+
+- name: DOTFILES ({{ owner }}) | Update ~/.ssh/authorized_keys
+  sudo_user: ${owner}
+  shell: update-authorized-keys --quiet
+  when: "update_authorized_keys.stdout != 'Checksum OK'"
+  tags:
+    - ssh
+    - user
+

@@ -1,0 +1,21 @@
+---
+
+- name: CONSOLE | Make shell more useful
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - ${console_packages}
+  when: console_packages is defined
+  tags:
+    - console
+    - packages
+
+- name: CONSOLE | Configure /etc/issue
+  template: src=etc/issue.j2 dest=/etc/issue owner=root group=root mode=0644
+  tags:
+    - console
+
+- name: CONSOLE | Configure /etc/motd
+  template: src=etc/motd.j2 dest=/etc/motd owner=root group=root mode=0644 force=no
+  tags:
+    - console
+

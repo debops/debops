@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+
+dhcp-range=interface:{{ dnsmasq_interface }},{{ dnsmasq_dhcp_range }},{{ dnsmasq_lease_time }}
+dhcp-option=tag:{{ dnsmasq_tag }},option:router,{{ dnsmasq_router }}
+dhcp-option=tag:{{ dnsmasq_tag }},option:domain-search,{{ dnsmasq_domain }}
+expand-hosts
+domain-needed
+strict-order
+interface=lo
+interface={{ dnsmasq_interface }}
+bind-interfaces
+dhcp-no-override
+no-hosts
+expand-hosts
+domain={{ dnsmasq_domain }},{{ dnsmasq_subnet }},local
+server=/{{ dnsmasq_revdns }}/{{ dnsmasq_router }}
+interface-name={{ dnsmasq_hostname }},{{ dnsmasq_interface }}
+mx-host={{ dnsmasq_hostname }}
+localmx
+
+

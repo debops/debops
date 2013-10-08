@@ -1,0 +1,15 @@
+# NAT network bridge
+auto {{ nat_interface }}
+iface {{ nat_interface }} inet static
+        address {{ nat_address }}
+        netmask {{ nat_netmask }}
+        network {{ nat_network }}
+        broadcast {{ nat_broadcast }}
+        bridge_fd 0
+        bridge_maxwait 0
+        bridge_stp on
+        pre-up brctl addbr {{ nat_interface }}
+        post-up brctl stp {{ nat_interface }} on
+        post-down brctl delbr {{ nat_interface }}
+
+

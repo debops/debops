@@ -1,0 +1,17 @@
+---
+
+- name: APT | Configure APT sources.list
+  template: src=etc/apt/sources.list.j2 dest=/etc/apt/sources.list owner=root group=root mode=0644
+  tags:
+    - apt
+
+- name: APT | Configure aptitude
+  template: src=etc/apt/apt.conf.d/70aptitude.j2 dest=/etc/apt/apt.conf.d/70aptitude owner=root group=root mode=0644
+  tags:
+    - apt
+
+- name: APT | Update packages
+  apt: update_cache=yes
+  tags:
+    - apt
+
