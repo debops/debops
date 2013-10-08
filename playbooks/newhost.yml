@@ -22,6 +22,10 @@
   - ssh_user: $ENV(USER)
 
   tasks:
+  - name: INIT | Install needed packages for ansible
+    raw: apt-get -yq install python python-apt
+    tags: init
+
   - name: INIT | Create admin system group
     group: name=admins system=yes state=present
     tags: init
