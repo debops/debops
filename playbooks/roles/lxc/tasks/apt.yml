@@ -1,0 +1,28 @@
+---
+
+# Because of a bug involving LXC, 'recent' iptables module and old Linux 3.2 kernel
+# we need to use newer kernel version from Debian Wheezy Backports
+# More information:
+# - http://thr3ads.net/netfilter-buglog/2011/10/1961471-Bug-759-New-iptables-m-recent-crashes-a-LXC-host-on-lxc-stop
+# - https://patchwork.kernel.org/patch/2080541/
+- name: LXC | Make sure backported Linux kernel is installed
+  apt: pkg=linux-image-amd64 default_release=wheezy-backports install_recommends=no state=latest update_cache=yes
+  notify:
+    - Reboot alert
+    - Reboot if allowed
+    - Reboot pause
+    - Reboot check if running
+  tags:
+    - lxc
+    - packages
+
+- name: LXC | Install packages required for LXC
+  apt: pkg=$item state=latest install_recommends=no
+  with_items:
+    - lxc
+    - multistrap
+    - resolvconf
+  tags:
+    - lxc
+    - packages
+

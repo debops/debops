@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+
+[General]
+arch=
+directory=
+#cleanup=true
+noauth=false
+explicitsuite=false
+unpack=true
+debootstrap=Debian
+aptsources=Debian
+setupscript=/usr/share/multistrap/chroot.sh
+
+[Debian]
+packages=apt python python-apt openssh-server openssh-blacklist openssh-blacklist-extra locales tzdata isc-dhcp-client iputils-ping ifupdown net-tools rsyslog dialog ncurses-term netbase vim-tiny
+source={{ lxc_apt_debian_http_mirror }}/debian
+keyring=debian-archive-keyring
+suite=stable
+omitdebsrc=true
+
+

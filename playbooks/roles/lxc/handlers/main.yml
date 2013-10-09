@@ -1,0 +1,18 @@
+---
+
+- name: Reboot alert
+  pause: prompt="Host {{ ansible_fqdn }} needs to be rebooted for kernel upgrade"
+  when: lxc_auto_reboot_hosts is defined and lxc_auto_reboot_hosts == False
+
+- name: Reboot if allowed
+  command: /sbin/shutdown -r now
+  when: lxc_auto_reboot_hosts is defined and lxc_auto_reboot_hosts == True
+
+- name: Reboot pause
+  pause: seconds={{ lxc_auto_reboot_pause }}
+  when: lxc_auto_reboot_hosts is defined and lxc_auto_reboot_hosts == True
+
+- name: Reboot check if running
+  wait_for: port=22 state=started
+  when: lxc_auto_reboot_hosts is defined and lxc_auto_reboot_hosts == True
+
