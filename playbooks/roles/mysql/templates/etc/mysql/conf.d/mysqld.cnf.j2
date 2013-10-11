@@ -1,0 +1,20 @@
+# {{ ansible_managed }}
+
+[mysqld]
+bind-address		= {{ mysql_mysqld_bind_address }}
+port			= {{ mysql_mysqld_port }}
+max-connections		= {{ mysql_mysqld_max_connections }}
+
+{% if mysql_utf8 is defined and mysql_utf8 == True %}
+character-set-server	= utf8
+collation-server	= utf8_general_ci
+init-connect		= 'SET NAMES utf8'
+
+{% endif %}
+{% if mysql_mysqld_options is defined and mysql_mysqld_options is not none %}
+{% for key, value in mysql_mysqld_options.iteritems() %}
+{{ key }}{% if value is not none %} = {{ value }}{% endif %}
+
+{% endfor %}
+
+{% endif %}

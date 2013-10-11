@@ -1,0 +1,111 @@
+---
+
+- name: MYSQL | Install MySQL-related packages
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items:
+    - python-mysqldb
+    - mysql-server
+    - automysqlbackup
+  tags:
+    - mysql
+    - packages
+
+- name: MYSQL | Apply mysqld configuration
+  template: src=etc/mysql/conf.d/mysqld.cnf.j2 dest=/etc/mysql/conf.d/mysqld.cnf owner=root group=root mode=0644
+  notify:
+    - Reload mysql
+  tags:
+    - mysql
+
+- name: MYSQL | Apply client configuration
+  template: src=etc/mysql/conf.d/client.cnf.j2 dest=/etc/mysql/conf.d/client.cnf owner=root group=root mode=0644
+  notify:
+    - Reload mysql
+  tags:
+    - mysql
+
+- name: MYSQL | Start the MySQL service
+  service: name=mysql state=started
+  tags:
+    - mysql
+
+- name: MYSQL | Lookup mysql root password if $secret is defined
+  set_fact:
+    mysql_root_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/root/password length=15') }}"
+  when: secret is defined
+  tags:
+    - mysql
+    - secret
+
+- name: MYSQL | Update mysql root password for all root accounts
+  mysql_user: name=root host={{ item }} password={{ mysql_root_password }}
+  with_items:
+    - '{{ ansible_hostname }}'
+    - 127.0.0.1
+    - ::1
+    - localhost
+  tags:
+    - mysql
+    - secret
+
+- name: MYSQL | Copy .my.cnf file with root password credentials
+  template: src=root/my.cnf.j2 dest=/root/.my.cnf owner=root group=root mode=0600
+  tags:
+    - mysql
+    - secret
+
+- name: MYSQL | Delete anonymous users
+  mysql_user: user="" host={{ item }} state=absent
+  with_items:
+    - '{{ ansible_hostname }}'
+    - 'localhost'
+  tags:
+    - mysql
+
+- name: MYSQL | Remove the test database
+  mysql_db: db=test state=absent
+  tags:
+    - mysql
+
+- name: MYSQL | Setup automysqlbackup configuration
+  template: src=etc/default/automysqlbackup.j2 dest=/etc/default/automysqlbackup owner=root group=root mode=0644
+  tags:
+    - mysql
+
+- name: MYSQL | Enable network access in firewall
+  template: src=etc/ferm/ferm.d/mysql.conf.j2 dest=/etc/ferm/ferm.d/mysql.conf owner=root group=root mode=0644
+  when: mysql_network_allow_list is defined and mysql_network_allow_list is not none
+  notify:
+    - Restart ferm
+  tags:
+    - mysql
+    - firewall
+
+- name: MYSQL | Disable network access in firewall
+  file: path=/etc/ferm/ferm.d/mysql.conf state=absent
+  when: mysql_network_allow_list is not defined
+  notify:
+    - Restart ferm
+  tags:
+    - mysql
+    - firewall
+
+- name: MYSQL | Enable network access in tcpwrappers
+  template: src=etc/hosts.allow.d/50_mysql.j2 dest=/etc/hosts.allow.d/50_mysql owner=root group=root mode=0644
+  when: mysql_network_allow_list is defined and mysql_network_allow_list is not none
+  notify:
+    - Assemble hosts.allow.d
+  tags:
+    - mysql
+    - tcpwrappers
+
+- name: MYSQL | Disable network access in tcpwrappers
+  file: path=/etc/hosts.allow.d/50_mysql state=absent
+  when: mysql_network_allow_list is not defined
+  notify:
+    - Assemble hosts.allow.d
+  tags:
+    - mysql
+    - tcpwrappers
+
+
