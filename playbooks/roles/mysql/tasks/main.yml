@@ -31,7 +31,7 @@
 
 - name: MYSQL | Lookup mysql root password if $secret is defined
   set_fact:
-    mysql_root_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/root/password length=15') }}"
+    mysql_root_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/root/password length=' + mysql_password_length) }}"
   when: secret is defined
   tags:
     - mysql
