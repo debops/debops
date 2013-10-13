@@ -5,10 +5,6 @@
 @hook post "iptables -A POSTROUTING -t mangle -p udp --dport 68 -j CHECKSUM --checksum-fill";
 
 table filter {
-	chain INPUT {
-		interface {{ nat_interface }} protocol (tcp udp) dport (bootps domain) ACCEPT;
-	}
-
 	chain FORWARD {
 		# Forwarding between virtual machines / containers
 		interface {{ nat_interface }} outerface {{ nat_interface }} ACCEPT;

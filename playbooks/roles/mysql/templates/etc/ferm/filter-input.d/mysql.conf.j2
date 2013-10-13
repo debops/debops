@@ -1,14 +1,10 @@
 # iptables ferm firewall - mysql access
 # {{ ansible_managed }}
 
-table filter {
-	chain INPUT {
-		protocol tcp dport {{ mysql_mysqld_port }} {
+protocol tcp dport {{ mysql_mysqld_port }} {
 {% for network in mysql_network_allow_list %}
-			saddr {{ network }} ACCEPT;
+	saddr {{ network }} ACCEPT;
 {% endfor %}
-		}
-	}
 }
 
 

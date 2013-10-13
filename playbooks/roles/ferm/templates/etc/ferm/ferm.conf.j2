@@ -50,6 +50,13 @@ table filter {
 
 			ACCEPT;
 		}
+
+		@include 'filter-input.d/';
+
+		# Reject everything else
+		protocol udp REJECT reject-with icmp-port-unreachable;
+		protocol tcp REJECT reject-with tcp-reset;
+		REJECT reject-with icmp-proto-unreachable;
 	}
 
 	chain OUTPUT {

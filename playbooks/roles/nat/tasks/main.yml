@@ -9,6 +9,15 @@
     - nat
     - network
 
+- name: NAT | Configure NAT firewall (INPUT filter)
+  template: src=etc/ferm/filter-input.d/nat.conf.j2 dest=/etc/ferm/filter-input.d/{{ nat_interface }}_nat.conf owner=root group=root mode=0644
+  notify:
+    - Restart ferm
+  tags:
+    - nat
+    - network
+    - firewall
+
 - name: NAT | Configure NAT firewall
   template: src=etc/ferm/ferm.d/nat.conf.j2 dest=/etc/ferm/ferm.d/{{ nat_interface }}_nat.conf owner=root group=root mode=0644
   notify:

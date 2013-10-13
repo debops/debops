@@ -41,7 +41,7 @@
     - apt
 
 - name: FERM | Allow access to apt-cacher-ng if enabled
-  template: src=etc/ferm/ferm.d/apt-cacher-ng.conf.j2 dest=/etc/ferm/ferm.d/apt-cacher-ng.conf owner=root group=root mode=0644
+  template: src=etc/ferm/filter-input.d/apt-cacher-ng.conf.j2 dest=/etc/ferm/filter-input.d/apt-cacher-ng.conf owner=root group=root mode=0644
   when: apt_acng_enable is defined and apt_acng_enable == True and apt_acng_proxy_host == ansible_fqdn
   notify:
     - Restart ferm
@@ -49,7 +49,7 @@
     - apt
 
 - name: FERM | Block access to apt-cacher-ng if disabled
-  file: path=/etc/ferm/ferm.d/apt-cacher-ng.conf state=absent
+  file: path=/etc/ferm/filter-input.d/apt-cacher-ng.conf state=absent
   when: apt_acng_proxy_host is defined and apt_acng_proxy_host != ansible_fqdn
   notify:
     - Restart ferm

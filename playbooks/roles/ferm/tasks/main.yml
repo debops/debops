@@ -7,8 +7,11 @@
     - network
     - packages
 
-- name: FERM | Create configuration directory
-  file: path=/etc/ferm/ferm.d state=directory owner=root group=root mode=0750
+- name: FERM | Create configuration directories
+  file: path={{ item }} state=directory owner=root group=root mode=0750
+  with_items:
+    - '/etc/ferm/ferm.d'
+    - '/etc/ferm/filter-input.d'
   tags:
     - ferm
     - network

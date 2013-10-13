@@ -73,7 +73,7 @@
     - mysql
 
 - name: MYSQL | Enable network access in firewall
-  template: src=etc/ferm/ferm.d/mysql.conf.j2 dest=/etc/ferm/ferm.d/mysql.conf owner=root group=root mode=0644
+  template: src=etc/ferm/filter-input.d/mysql.conf.j2 dest=/etc/ferm/filter-input.d/mysql.conf owner=root group=root mode=0644
   when: mysql_network_allow_list is defined and mysql_network_allow_list is not none
   notify:
     - Restart ferm
@@ -82,7 +82,7 @@
     - firewall
 
 - name: MYSQL | Disable network access in firewall
-  file: path=/etc/ferm/ferm.d/mysql.conf state=absent
+  file: path=/etc/ferm/filter-input.d/mysql.conf state=absent
   when: mysql_network_allow_list is not defined
   notify:
     - Restart ferm
