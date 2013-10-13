@@ -7,5 +7,5 @@ It's best to have that directory in a separate git repository and use it as an a
     ---
     secret: '/absolute/path/to/secrets'
 
-After that, roles that use secret files will be able to use that directory (an example of that usage can be found in `playbooks/roles/mysql/tasks/main.yml`).
+After that, roles that use secret files will be able to use that directory ([an example of that usage](https://github.com/drybjed/ansible-aiua/blob/master/playbooks/roles/mysql/tasks/main.yml#L32-L55) can be found in `playbooks/roles/mysql/tasks/main.yml`).
 
