@@ -13,7 +13,12 @@ table filter {
 
 table nat {
 	chain POSTROUTING {
-		 saddr {{ nat_network }}/{{ nat_netmask }} daddr !{{ nat_network}}/{{ nat_netmask }} MASQUERADE;
+		 destination {{ nat_network }}/{{ nat_netmask }} RETURN;
+{% if nat_masquerade is defined and nat_masquerade == True %}
+		 source {{ nat_network }}/{{ nat_netmask }} MASQUERADE;
+{% else %}
+		 source {{ nat_network }}/{{ nat_netmask }} SNAT to {{ ansible_default_ipv4.address }};
+{% endif %}
 	}
 }
 
