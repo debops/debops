@@ -1,0 +1,30 @@
+# Example inventory/hosts file in INI format
+# This is the "default" hosts file ansible will look for, when you give
+# a directory for an --inventory option
+
+# Hosts not assigned to a particular group
+127.0.0.1
+hostname
+different.host.com
+jumphost
+
+# Group of groups, call it using "hosting_group"
+[hosting_group:children]
+dbservers
+webservers
+
+# Variables for dbservers group
+[dbservers:vars]
+# Use a jumphost for connection to hosts in this group
+ansible_connection=ssh
+
+# First group, hosts are accessed using ssh method
+[dbservers]
+dbmaster.internal.example.com
+dbslave[3:5].internal.example.com
+
+# Second group of hosts
+[webservers]
+web[01:30].example.com
+
+# vim:ft=conf
