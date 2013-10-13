@@ -1,21 +1,21 @@
 ---
 
-- name: LXC | Mount cgroup filesystem
+- name: Mount cgroup filesystem
   mount: name=/sys/fs/cgroup src=cgroup fstype=cgroup opts=defaults state=mounted
   tags:
     - lxc
 
-- name: LXC | Setup multistrap configuration
+- name: Setup multistrap configuration
   template: src=etc/multistrap.d/stable.conf.j2 dest=/etc/multistrap.d/stable.conf owner=root group=root mode=0644
   tags:
     - lxc
 
-- name: LXC | Setup lxc-aiua template
+- name: Setup lxc-aiua template
   template: src=usr/share/lxc/templates/lxc-aiua.j2 dest=/usr/share/lxc/templates/lxc-aiua owner=root group=root mode=0755
   tags:
     - lxc
 
-- name: LXC | Setup lxc-aiua-nat template
+- name: Setup lxc-aiua-nat template
   template: src=usr/share/lxc/templates/lxc-aiua-nat.j2 dest=/usr/share/lxc/templates/lxc-aiua-nat owner=root group=root mode=0755
   tags:
     - lxc

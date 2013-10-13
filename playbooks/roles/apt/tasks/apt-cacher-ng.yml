@@ -1,18 +1,18 @@
 ---
 
-- name: ACNG | Install apt-cacher-ng if we are the proxy
+- name: Install apt-cacher-ng if we are the proxy
   apt: pkg=apt-cacher-ng state=latest install_recommends=no
   when: apt_acng_proxy_host is defined and apt_acng_proxy_host == ansible_fqdn
   tags:
     - apt
 
-- name: ACNG | Purge apt-cacher-ng if we are not the proxy
+- name: Purge apt-cacher-ng if we are not the proxy
   apt: pkg=apt-cacher-ng state=absent purge=yes
   when: apt_acng_proxy_host is defined and apt_acng_proxy_host != ansible_fqdn
   tags:
     - apt
 
-- name: ACNG | Configure apt-cacher-ng on proxy server - acng.conf
+- name: Configure apt-cacher-ng - acng.conf
   template: src=etc/apt-cacher-ng/acng.conf.j2 dest=/etc/apt-cacher-ng/acng.conf owner=root group=root mode=0644
   when: apt_acng_proxy_host is defined and apt_acng_proxy_host == ansible_fqdn
   notify:
@@ -20,7 +20,7 @@
   tags:
     - apt
 
-- name: ACNG | Configure apt-cacher-ng on proxy server - security.conf
+- name: Configure apt-cacher-ng - security.conf
   template: src=etc/apt-cacher-ng/security.conf.j2 dest=/etc/apt-cacher-ng/security.conf owner='apt-cacher-ng' group='apt-cacher-ng' mode=0600
   when: apt_acng_proxy_host is defined and apt_acng_proxy_host == ansible_fqdn
   notify:
@@ -28,19 +28,19 @@
   tags:
     - apt
 
-- name: APT | Configure APT to use acng proxy if enabled
+- name: Configure APT to use acng proxy if enabled
   template: src=etc/apt/apt.conf.d/000apt-cacher-ng-proxy.j2 dest=/etc/apt/apt.conf.d/000apt-cacher-ng-proxy owner=root group=root mode=0644
   when: apt_acng_enable is defined and apt_acng_enable == True
   tags:
     - apt
 
-- name: APT | Configure APT to not use proxy if acng proxy is disabled
+- name: Configure APT to not use proxy if acng proxy is disabled
   file: path=/etc/apt/apt.conf.d/000apt-cacher-ng-proxy state=absent
   when: apt_acng_enable is defined and apt_acng_enable == False
   tags:
     - apt
 
-- name: FERM | Allow access to apt-cacher-ng if enabled
+- name: Allow access to apt-cacher-ng through firewall
   template: src=etc/ferm/filter-input.d/apt-cacher-ng.conf.j2 dest=/etc/ferm/filter-input.d/apt-cacher-ng.conf owner=root group=root mode=0644
   when: apt_acng_enable is defined and apt_acng_enable == True and apt_acng_proxy_host == ansible_fqdn
   notify:
@@ -48,7 +48,7 @@
   tags:
     - apt
 
-- name: FERM | Block access to apt-cacher-ng if disabled
+- name: Block access to apt-cacher-ng if disabled
   file: path=/etc/ferm/filter-input.d/apt-cacher-ng.conf state=absent
   when: apt_acng_proxy_host is defined and apt_acng_proxy_host != ansible_fqdn
   notify:
@@ -56,7 +56,7 @@
   tags:
     - apt
 
-- name: ACNG | Flush handlers if needed for apt-cacher-ng
+- name: Flush handlers if needed for apt-cacher-ng
   meta: flush_handlers
   when: apt_acng_enable is defined and apt_acng_enable == True and apt_acng_proxy_host = ansible_fqdn
   tags:

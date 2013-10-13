@@ -1,6 +1,6 @@
 ---
 
-- name: DNSMASQ | Make sure dnsmasq is installed
+- name: Make sure dnsmasq is installed
   apt: pkg={{ item }} state=latest install_recommends=no
   when: dnsmasq_purge is defined and dnsmasq_purge == False
   with_items:
@@ -11,7 +11,7 @@
     - network
     - packages
 
-- name: DNSMASQ | Purge dnsmasq if requested
+- name: Purge dnsmasq if requested
   apt: pkg=dnsmasq state=absent purge=yes
   when: dnsmasq_purge is defined and dnsmasq_purge == True
   tags:
@@ -20,7 +20,7 @@
     - packages
     - purge
 
-- name: DNSMASQ | Setup dnsmasq configuration
+- name: Setup dnsmasq configuration
   template: src=etc/dnsmasq.d/aiua.conf.j2 dest=/etc/dnsmasq.d/{{ dnsmasq_interface }}_{{ dnsmasq_domain }}.conf owner=root group=root mode=0644
   when: dnsmasq_purge is defined and dnsmasq_purge == False
   notify:

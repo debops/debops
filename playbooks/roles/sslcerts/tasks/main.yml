@@ -1,6 +1,6 @@
 ---
 
-- name: SSL | Ensure OpenSSL support is installed
+- name: Ensure OpenSSL support is installed
   apt: pkg={{ item }} state=latest
   with_items:
     - openssl
@@ -10,33 +10,33 @@
     - sslcerts
     - packages
 
-- name: SSL | Create local certificate store
+- name: Create local certificate store
   file: state=directory path=/usr/local/etc/ssl/certs owner=root group=root mode=0755
   tags:
     - sslcerts
 
-- name: SSL | Create local certificate key store
+- name: Create local certificate key store
   file: state=directory path=/usr/local/etc/ssl/private owner=root group=root mode=0700
   tags:
     - sslcerts
 
-- name: SSL | Create self-signed SSL certificate
+- name: Create self-signed SSL certificate
   command: openssl req -newkey rsa:2048 -nodes -x509 -subj "/C={{ ssl_selfsigned_c }}/ST={{ ssl_selfsigned_st }}/L={{ ssl_selfsigned_l }}/O={{ ssl_selfsigned_o }}/CN={{ ssl_selfsigned_cn }}" -days {{ ssl_selfsigned_days }} -keyout /usr/local/etc/ssl/private/${ansible_fqdn}.key -out /usr/local/etc/ssl/certs/${ansible_fqdn}.crt -extensions v3_ca creates=/usr/local/etc/ssl/certs/${ansible_fqdn}.crt
   tags:
     - sslcerts
 
-- name: SSL | Add self-signed SSL certificate to ca-certificates
+- name: Link self-signed SSL certificate to ca-certificates
   file: state=link src=/usr/local/etc/ssl/certs/${ansible_fqdn}.crt dest=/usr/local/share/ca-certificates/${ansible_fqdn}.crt
   notify: Update ca-certificates
   tags:
     - sslcerts
 
-- name: SSL | Link self-signed SSL certificate key to /etc/ssl/private/
+- name: Link self-signed SSL certificate key to /etc/ssl/private/
   file: state=link src=/usr/local/etc/ssl/private/${ansible_fqdn}.key dest=/etc/ssl/private/${ansible_fqdn}.key
   tags:
     - sslcerts
 
-- name: SSL | Download custom SSL certificates
+- name: Download custom SSL certificates
   get_url: url={{ item }} dest=/usr/local/share/ca-certificates/ owner=root group=root mode=0644 force=yes
   with_items:
     - ${sslcerts_list}
@@ -46,7 +46,7 @@
   tags:
     - sslcerts
 
-- name: SSL | Force update ca-certificates
+- name: Update ca-certificates if requied
   meta: flush_handlers
   tags:
     - sslcerts

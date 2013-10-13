@@ -1,6 +1,6 @@
 ---
 
-- name: APT | Install base packages
+- name: Install base packages
   apt: pkg=$item state=latest install_recommends=False
   with_items:
     - ${apt_base_packages}
@@ -9,7 +9,7 @@
     - apt
     - packages
 
-- name: APT | Install packages from group_vars
+- name: Install packages from group_vars
   apt: pkg=$item state=latest install_recommends=False
   with_items:
     - ${apt_group_packages}
@@ -18,7 +18,7 @@
     - apt
     - packages
 
-- name: APT | Install packages from host_vars
+- name: Install packages from host_vars
   apt: pkg=$item state=latest install_recommends=False
   with_items:
     - ${apt_host_packages}

@@ -1,6 +1,6 @@
 ---
 
-- name: APT | Install unattended-upgrades if enabled
+- name: Install unattended-upgrades if enabled
   apt: pkg={{ item }} state=latest install_recommends=False
   with_items:
     - unattended-upgrades
@@ -8,7 +8,7 @@
   tags:
     - apt
 
-- name: APT | Remove unattended-upgrades if disabled
+- name: Remove unattended-upgrades if disabled
   apt: pkg={{ item }} state=absent purge=yes
   with_items:
     - unattended-upgrades
@@ -16,13 +16,13 @@
   tags:
     - apt
 
-- name: APT | Configure /etc/apt/apt.conf.d/50unattended-upgrades
+- name: Configure /etc/apt/apt.conf.d/50unattended-upgrades
   template: src=etc/apt/apt.conf.d/50unattended-upgrades.j2 dest=/etc/apt/apt.conf.d/50unattended-upgrades owner=root group=root mode=0644
   when: apt_unattended_upgrades is defined and apt_unattended_upgrades == True
   tags:
     - apt
 
-- name: APT | Configure /etc/apt/apt.conf.d/20auto-upgrades
+- name: Configure /etc/apt/apt.conf.d/20auto-upgrades
   template: src=etc/apt/apt.conf.d/20auto-upgrades.j2 dest=/etc/apt/apt.conf.d/20auto-upgrades owner=root group=root mode=0644
   when: apt_unattended_upgrades is defined and apt_unattended_upgrades == True
   tags:

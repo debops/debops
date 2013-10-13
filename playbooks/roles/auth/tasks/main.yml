@@ -1,6 +1,6 @@
 ---
 
-- name: AUTH | Install auth-related packages
+- name: Install auth-related packages
   apt: pkg={{ item }} state=latest install_recommends=no
   with_items:
     - sudo
@@ -8,7 +8,7 @@
     - auth
     - packages
 
-- name: AUTH | Ensure common system groups exist
+- name: Ensure common system groups exist
   group: name={{ item }} system=yes state=present
   with_items:
     - admins
@@ -17,7 +17,7 @@
   tags:
     - auth
 
-- name: AUTH | Create administrator accounts
+- name: Create administrator accounts
   user: name=${item} groups=admins state=present append=yes
   with_items:
     - ${auth_admin_accounts}
@@ -25,12 +25,12 @@
   tags:
     - auth
 
-- name: AUTH | Ensure members of group 'admins' can su without password
+- name: Ensure members of group 'admins' can su without password
   lineinfile: dest=/etc/pam.d/su state=present regexp='^(.*)auth\s+sufficient\s+pam_wheel.so\s+trust' line='auth sufficient pam_wheel.so trust group=admins'
   tags:
     - auth
 
-- name: AUTH | Ensure members of group 'admins' can sudo without password
+- name: Ensure members of group 'admins' can sudo without password
   lineinfile: "dest=/etc/sudoers.d/admins state=present create=yes owner=root group=root mode=0440 regexp='^%admins' line='%admins ALL = (ALL:ALL) NOPASSWD: SETENV: ALL'"
   tags:
     - auth

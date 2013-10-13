@@ -1,20 +1,20 @@
 ---
 
-- name: TCPWRAPPERS | Install denyhosts
+- name: Install denyhosts if enabled
   apt: pkg=denyhosts state=latest install_recommends=no
   when: tcpwrappers_denyhosts.enable
   tags:
     - tcpwrappers
     - network
 
-- name: TCPWRAPPERS | Remove denyhosts
+- name: Remove denyhosts if disabled
   apt: pkg=denyhosts state=absent purge=yes
   when: not tcpwrappers_denyhosts.enable
   tags:
     - tcpwrappers
     - network
 
-- name: TCPWRAPPERS | denyhosts installed - install /etc/denyhosts.conf
+- name: Setup /etc/denyhosts.conf if denyhosts is enabled
   template: src=etc/denyhosts.conf.j2 dest=/etc/denyhosts.conf owner=root group=root mode=0640
   notify: Restart denyhosts
   when: tcpwrappers_denyhosts.enable

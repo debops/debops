@@ -1,6 +1,6 @@
 ---
 
-- name: CONSOLE | Make shell more useful
+- name: Install console-related packages
   apt: pkg={{ item }} state=latest
   with_items:
     - ${console_packages}
@@ -9,12 +9,12 @@
     - console
     - packages
 
-- name: CONSOLE | Configure /etc/issue
+- name: Configure /etc/issue
   template: src=etc/issue.j2 dest=/etc/issue owner=root group=root mode=0644
   tags:
     - console
 
-- name: CONSOLE | Configure /etc/motd
+- name: Configure /etc/motd
   template: src=etc/motd.j2 dest=/etc/motd owner=root group=root mode=0644 force=no
   tags:
     - console

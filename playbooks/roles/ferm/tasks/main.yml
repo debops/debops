@@ -1,13 +1,13 @@
 ---
 
-- name: FERM | Ensure ferm is installed
+- name: Ensure ferm is installed
   apt: pkg=ferm state=latest install_recommends=no
   tags:
     - ferm
     - network
     - packages
 
-- name: FERM | Create configuration directories
+- name: Create configuration directories
   file: path={{ item }} state=directory owner=root group=root mode=0750
   with_items:
     - '/etc/ferm/ferm.d'
@@ -16,7 +16,7 @@
     - ferm
     - network
 
-- name: FERM | Apply ferm configuration
+- name: Apply firewall configuration
   template: src=etc/ferm/ferm.conf.j2 dest=/etc/ferm/ferm.conf owner=root group=root backup=no
   notify: Restart ferm
   tags:

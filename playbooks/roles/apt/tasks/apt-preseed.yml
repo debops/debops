@@ -1,13 +1,13 @@
 ---
 
-- name: APT | Install webfs for serving Debian preseed on acng proxy
+- name: Install webfs for serving Debian preseed on acng proxy
   apt: pkg=webfs state=latest install_recommends=no
   when: apt_acng_proxy_host is defined and apt_acng_proxy_host == ansible_fqdn
   tags:
     - apt
     - preseed
 
-- name: APT | Install webfs configuration for preseeds
+- name: Install webfs configuration for Debian preseeds
   template: src=etc/webfsd.conf.j2 dest=/etc/webfsd.conf owner=root group=root mode=0644
   when: apt_acng_proxy_host is defined and apt_acng_proxy_host == ansible_fqdn
   notify:
@@ -16,35 +16,35 @@
     - apt
     - preseed
 
-- name: APT | Create default preseed directory
+- name: Create default Debian preseed directory
   file: path=/srv/webfs/{{ ansible_fqdn }}/d-i/{{ ansible_lsb.codename }} state=directory owner='www-data' group='www-data' mode=0755
   when: apt_acng_proxy_host is defined and apt_acng_proxy_host == ansible_fqdn
   tags:
     - apt
     - preseed
 
-- name: APT | Create destructive preseed directory
+- name: Create destructive Debian preseed directory
   file: path=/srv/webfs/destroy.{{ ansible_fqdn }}/d-i/{{ ansible_lsb.codename }} state=directory owner='www-data' group='www-data' mode=0755
   when: apt_acng_proxy_host is defined and apt_acng_proxy_host == ansible_fqdn
   tags:
     - apt
     - preseed
 
-- name: APT | Setup default preseed template
+- name: Setup default Debian preseed template
   template: src=srv/webfs/d-i/wheezy/preseed.cfg.j2 dest=/srv/webfs/{{ ansible_fqdn }}/d-i/{{ ansible_lsb.codename }}/preseed.cfg owner=root group=root mode=0644
   when: apt_acng_proxy_host is defined and apt_acng_proxy_host == ansible_fqdn
   tags:
     - apt
     - preseed
 
-- name: APT | Setup destructive preseed template
+- name: Setup destructive Debian preseed template
   template: src=srv/webfs/destroy/d-i/wheezy/preseed.cfg.j2 dest=/srv/webfs/destroy.{{ ansible_fqdn }}/d-i/{{ ansible_lsb.codename }}/preseed.cfg owner=root group=root mode=0644
   when: apt_acng_proxy_host is defined and apt_acng_proxy_host == ansible_fqdn
   tags:
     - apt
     - preseed
 
-- name: APT | Setup postinst.sh template
+- name: Setup postinst.sh template
   template: src=srv/webfs/postinst.sh.j2 dest=/srv/webfs/{{ ansible_fqdn }}/postinst.sh owner=root group=root mode=0644
   when: apt_acng_proxy_host is defined and apt_acng_proxy_host == ansible_fqdn
   tags:

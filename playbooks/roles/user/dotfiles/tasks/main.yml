@@ -9,21 +9,21 @@
 #
 # Look in ../vars/main.yml for available hashes
 
-- name: DOTFILES ({{ owner }}) | Clone '{{ user_dotfiles[dotfile].git_repo }}' repository
+- name: Clone '{{ user_dotfiles[dotfile].git_repo }}' repository for {{ owner }}
   sudo_user: ${owner}
   git: repo={{ user_dotfiles[dotfile].git_repo }} dest=~/.dotfiles update=yes
   tags:
     - user
     - dotfiles
 
-- name: DOTFILES ({{ owner }}) | Install dotfiles
+- name: Install dotfiles for {{ owner }}
   command: chdir=~/.dotfiles creates="{{user_dotfiles[dotfile].creates}}" {{ user_dotfiles[dotfile].command }}
   sudo_user: ${owner}
   tags:
     - user
     - dotfiles
 
-- name: DOTFILES ({{ owner }}) | Change shell to {{ user_dotfiles[dotfile].shell }}
+- name: Change shell on {{ owner }} account to {{ user_dotfiles[dotfile].shell }}
   user: name=${owner} shell={{ user_dotfiles[dotfile].shell }}
   tags:
     - user

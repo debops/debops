@@ -1,6 +1,6 @@
 ---
 
-- name: KVM | Install KVM packages
+- name: Install KVM-related packages
   apt: pkg={{ item }} state=latest install_recommends=no
   with_items:
     - libvirt-bin
@@ -13,7 +13,7 @@
     - kvm
     - packages
 
-- name: KVM | Add administrators to libvirt group
+- name: Add administrators to libvirt group
   user: name=${item} groups=libvirt append=yes
   with_items:
     - ${auth_admin_accounts}
@@ -22,7 +22,7 @@
     - kvm
     - auth
 
-- name: KVM | Download system images if allowed
+- name: Download ISO images for libvirt if allowed
   get_url: url={{ item }} dest=/var/lib/libvirt/images/ owner=root group=root mode=0644 force=yes
   with_items:
     - ${kvm_images_list}
