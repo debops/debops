@@ -1,0 +1,31 @@
+---
+
+- name: Setup nginx server configuration
+  template: src=etc/nginx/sites-available/{{ item.type }}.conf.j2 dest=/etc/nginx/sites-available/{{ item.name[0] }}.conf owner=root group=root mode=0644
+  with_items:
+    - ${nginx_servers}
+  notify:
+    - Reload nginx
+  tags:
+    - nginx
+
+- name: Enable nginx server configuration
+  file: path=/etc/nginx/sites-enabled/{{ item.name[0] }}.conf src=/etc/nginx/sites-available/{{ item.name[0] }}.conf state=link owner=root group=root mode=0644
+  with_items:
+    - ${nginx_servers}
+  when: item.enabled is defined and item.enabled == True
+  notify:
+    - Reload nginx
+  tags:
+    - nginx
+
+- name: Disable nginx server configuration
+  file: path=/etc/nginx/sites-enabled/{{ item.name[0] }}.conf state=absent
+  with_items:
+    - ${nginx_servers}
+  when: item.enabled is defined and item.enabled == False
+  notify:
+    - Reload nginx
+  tags:
+    - nginx
+

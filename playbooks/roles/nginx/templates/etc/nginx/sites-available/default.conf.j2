@@ -1,0 +1,49 @@
+# {{ ansible_managed }}
+{#
+
+Default nginx server template
+Optional variables:
+  - listen:	list of ports for nginx to listen on
+  - owner:	user account which owns the website files
+  - location:	hash table of lists of lines for location { ... } sections
+
+#}
+
+server {
+{% if item.listen is defined %}
+	listen{% for port in item.listen %} {{ port }}{% endfor %};
+{% else %}
+	listen 80;
+{% endif %}
+
+	server_name{% for domain in item.name %} {{ domain }}{% endfor %};
+
+{% if item.owner is defined %}
+	root /srv/app/{{ item.owner }}/data/{{ item.name[0] }}/public;
+{% else %}
+	root /usr/share/nginx/www;
+{% endif %}
+
+	access_log /var/log/nginx/access_{{ item.name[0] }}.log;
+	error_log /var/log/nginx/error_{{ item.name[0] }}.log;
+
+	index index.html;
+
+{% if item.location is defined %}
+{% for path in item.location.keys() %}
+	location {{ path }} {
+{% for line in item.location[path] %}
+		{{ line }};
+{% endfor %}
+	}
+
+{% endfor %}
+{% else %}
+	location / {
+		try_files $uri $uri/ $uri.html /index.html =404;
+	}
+
+{% endif %}
+}
+
+

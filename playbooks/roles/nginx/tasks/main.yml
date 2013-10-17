@@ -1,0 +1,29 @@
+---
+
+- name: Install nginx packages
+  apt: pkg=nginx-full state=latest install_recommends=no
+  tags:
+    - nginx
+    - packages
+
+- name: Make sure nginx is running
+  service: name=nginx state=started
+  tags:
+    - nginx
+
+- name: Setup /etc/nginx/nginx.conf
+  template: src=etc/nginx/nginx.conf.j2 dest=/etc/nginx/nginx.conf owner=root group=root mode=0644
+  notify:
+    - Reload nginx
+  tags:
+    - nginx
+
+- name: Remove default nginx site
+  file: path=/etc/nginx/sites-enabled/default state=absent
+  notify:
+    - Reload nginx
+  tags:
+    - nginx
+
+- include: nginx_servers.yml
+
