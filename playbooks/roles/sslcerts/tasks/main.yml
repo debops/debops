@@ -21,18 +21,18 @@
     - sslcerts
 
 - name: Create self-signed SSL certificate
-  command: openssl req -newkey rsa:2048 -nodes -x509 -subj "/C={{ ssl_selfsigned_c }}/ST={{ ssl_selfsigned_st }}/L={{ ssl_selfsigned_l }}/O={{ ssl_selfsigned_o }}/CN={{ ssl_selfsigned_cn }}" -days {{ ssl_selfsigned_days }} -keyout /usr/local/etc/ssl/private/${ansible_fqdn}.key -out /usr/local/etc/ssl/certs/${ansible_fqdn}.crt -extensions v3_ca creates=/usr/local/etc/ssl/certs/${ansible_fqdn}.crt
+  command: openssl req -newkey rsa:2048 -nodes -x509 -subj "/C={{ ssl_selfsigned_c }}/ST={{ ssl_selfsigned_st }}/L={{ ssl_selfsigned_l }}/O={{ ssl_selfsigned_o }}/CN={{ ssl_selfsigned_cn }}" -days {{ ssl_selfsigned_days }} -keyout /usr/local/etc/ssl/private/{{ ansible_fqdn }}.key -out /usr/local/etc/ssl/certs/{{ ansible_fqdn }}.crt -extensions v3_ca creates=/usr/local/etc/ssl/certs/{{ ansible_fqdn }}.crt
   tags:
     - sslcerts
 
 - name: Link self-signed SSL certificate to ca-certificates
-  file: state=link src=/usr/local/etc/ssl/certs/${ansible_fqdn}.crt dest=/usr/local/share/ca-certificates/${ansible_fqdn}.crt
+  file: state=link src=/usr/local/etc/ssl/certs/{{ ansible_fqdn }}.crt dest=/usr/local/share/ca-certificates/{{ ansible_fqdn }}.crt
   notify: Update ca-certificates
   tags:
     - sslcerts
 
 - name: Link self-signed SSL certificate key to /etc/ssl/private/
-  file: state=link src=/usr/local/etc/ssl/private/${ansible_fqdn}.key dest=/etc/ssl/private/${ansible_fqdn}.key
+  file: state=link src=/usr/local/etc/ssl/private/{{ ansible_fqdn }}.key dest=/etc/ssl/private/{{ ansible_fqdn }}.key
   tags:
     - sslcerts
 

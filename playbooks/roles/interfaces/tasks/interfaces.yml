@@ -26,7 +26,7 @@
 - name: Create Ansible header for /etc/network/interfaces
   template: src={{ item }} dest=/etc/network/interfaces.d/00_ansible owner=root group=root mode=0644
   with_first_found:
-    - ../templates/${ansible_virtualization_type}/etc/interfaces.d/00_ansible.j2
+    - ../templates/{{ ansible_virtualization_type }}/etc/interfaces.d/00_ansible.j2
     - ../templates/etc/interfaces.d/00_ansible.j2
   notify:
     - Assemble interfaces.d
@@ -37,7 +37,7 @@
 - name: Set up loopback interface configuration
   template: src={{ item }} dest=/etc/network/interfaces.d/10_lo owner=root group=root mode=0644
   with_first_found:
-    - ../templates/${ansible_virtualization_type}/etc/interfaces.d/10_lo.j2
+    - ../templates/{{ ansible_virtualization_type }}/etc/interfaces.d/10_lo.j2
     - ../templates/etc/interfaces.d/10_lo.j2
   notify:
     - Assemble interfaces.d
@@ -48,7 +48,7 @@
 - name: Add Ethernet interfaces configuration if NetworkManager not present
   template: src={{ item }} dest=/etc/network/interfaces.d/20_eth owner=root group=root mode=0644
   with_first_found:
-    - ../templates/${ansible_virtualization_type}/etc/interfaces.d/20_eth.j2
+    - ../templates/{{ ansible_virtualization_type }}/etc/interfaces.d/20_eth.j2
     - ../templates/etc/interfaces.d/20_eth.j2
   when: installed_networkmanager.stat.exists is defined and installed_networkmanager.stat.exists == False
   notify:
@@ -73,7 +73,7 @@
 - name: Add bridge configuration if NetworkManager not present
   template: src={{ item }} dest=/etc/network/interfaces.d/30_br owner=root group=root mode=0644
   with_first_found:
-    - ../templates/${ansible_virtualization_type}/etc/interfaces.d/30_br.j2
+    - ../templates/{{ ansible_virtualization_type }}/etc/interfaces.d/30_br.j2
     - ../templates/etc/interfaces.d/30_br.j2
   when: installed_networkmanager.stat.exists is defined and installed_networkmanager.stat.exists == False
   notify:

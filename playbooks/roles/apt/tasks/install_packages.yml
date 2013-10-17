@@ -1,7 +1,7 @@
 ---
 
 - name: Install base packages
-  apt: pkg=$item state=latest install_recommends=False
+  apt: pkg={{ item }} state=latest install_recommends=False
   with_items:
     - ${apt_base_packages}
   when: apt_base_packages is defined
@@ -10,7 +10,7 @@
     - packages
 
 - name: Install packages from group_vars
-  apt: pkg=$item state=latest install_recommends=False
+  apt: pkg={{ item }} state=latest install_recommends=False
   with_items:
     - ${apt_group_packages}
   when: apt_group_packages is defined
@@ -19,7 +19,7 @@
     - packages
 
 - name: Install packages from host_vars
-  apt: pkg=$item state=latest install_recommends=False
+  apt: pkg={{ item }} state=latest install_recommends=False
   with_items:
     - ${apt_host_packages}
   when: apt_host_packages is defined
