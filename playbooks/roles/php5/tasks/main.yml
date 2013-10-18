@@ -1,0 +1,46 @@
+---
+
+- name: Make sure PHP5-FPM support is installed
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items:
+    - php5-fpm
+  tags:
+    - php5
+    - packages
+
+- name: Install PHP5 packages
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items:
+    - ${php5_packages}
+  when: php5_packages is defined and php5_packages
+  notify:
+    - Restart php5-fpm
+  tags:
+    - php5
+    - packages
+
+- name: Make sure php5-fpm is running
+  service: name=php5-fpm state=started
+  tags:
+    - php5
+
+- name: Check if pool-available.d/ directory exists
+  stat: path=/etc/php5/fpm/pool-available.d
+  register: pool_available_d
+  tags:
+    - php5
+
+- name: Remove default php5-fpm pool if exists
+  file: path=/etc/php5/fpm/pool.d/www.conf state=absent
+  when: pool_available_d.stat.exists is defined and pool_available_d.stat.exists == False
+  tags:
+    - php5
+
+- name: Create pool-available.d/ directory for php5-fpm
+  file: path=/etc/php5/fpm/pool-available.d state=directory owner=root group=root mode=0644
+  tags:
+    - php5
+
+- include: php5_pools.yml
+  when: php5_manage_pools is defined and php5_manage_pools == True
+

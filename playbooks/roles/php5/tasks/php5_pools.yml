@@ -1,0 +1,51 @@
+---
+
+- name: Setup php5-fpm pool configuration
+  template: src=etc/php5/fpm/pool-available.d/pool.conf.j2 dest=/etc/php5/fpm/pool-available.d/{{ item.name }}.conf owner=root group=root mode=0644
+  with_items:
+    - ${php5_pools}
+  notify:
+    - Reload php5-fpm
+  tags:
+    - php5
+
+- name: Enable php5-fpm pools
+  file: path=/etc/php5/fpm/pool.d/{{ item.name }}.conf src=/etc/php5/fpm/pool-available.d/{{ item.name }}.conf state=link owner=root group=root mode=0644
+  with_items:
+    - ${php5_pools}
+  when: item.enabled is defined and item.enabled == True
+  notify:
+    - Reload php5-fpm
+  tags:
+    - php5
+
+- name: Disable php5-fpm pools
+  file: path=/etc/php5/fpm/pool.d/{{ item.name }}.conf state=absent
+  with_items:
+    - ${php5_pools}
+  when: item.enabled is defined and item.enabled == False
+  notify:
+    - Reload php5-fpm
+  tags:
+    - php5
+
+- name: Configure upstream php5 pools in nginx if allowed
+  template: src=etc/nginx/conf.d/php5_upstream.conf.j2 dest=/etc/nginx/conf.d/php5_{{ item.name }}_upstream.conf owner=root group=root mode=0644
+  with_items:
+    - ${php5_pools}
+  when: php5_nginx_upstreams is defined and php5_nginx_upstreams == True and item.enabled is defined and item.enabled == True
+  notify:
+    - Reload nginx
+  tags:
+    - php5
+
+- name: Disable upstream php5 pools in nginx if allowed
+  file: path=/etc/nginx/conf.d/php5_{{ item.name }}_upstream.conf state=absent
+  with_items:
+    - ${php5_pools}
+  when: php5_nginx_upstreams is defined and php5_nginx_upstreams == True and item.enabled is defined and item.enabled == False
+  notify:
+    - Reload nginx
+  tags:
+    - php5
+

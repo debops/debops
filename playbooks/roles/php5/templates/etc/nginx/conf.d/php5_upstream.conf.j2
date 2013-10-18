@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+
+upstream php5_{{ item.name }} {
+{% if item.listen is defined and 'sock' not in item.listen %}
+	server {{ item.listen }};
+{% else %}
+	server unix:{{ item.listen | default('/var/run/php5-fpm-' + item.name + '.sock') }};
+{% endif %}
+}
+
+
