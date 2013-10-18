@@ -6,6 +6,11 @@
     - nginx
     - packages
 
+- name: Create directory for default site parts
+  file: path=/etc/nginx/http-default.d state=directory owner=root group=root mode=0644
+  tags:
+    - nginx
+
 - name: Make sure nginx is running
   service: name=nginx state=started
   tags:
