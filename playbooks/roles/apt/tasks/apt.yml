@@ -1,7 +1,13 @@
 ---
 
+- name: Copy original /etc/apt/sources.list to sources.list.original
+  command: /bin/cp -p /etc/apt/sources.list /etc/apt/sources.list.original creates=/etc/apt/sources.list.original
+  tags:
+    - apt
+
 - name: Configure APT sources.list
   template: src=etc/apt/sources.list.j2 dest=/etc/apt/sources.list owner=root group=root mode=0644
+  when: ansible_distribution == 'Debian'
   tags:
     - apt
 
