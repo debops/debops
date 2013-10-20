@@ -19,6 +19,16 @@
     - php5
     - packages
 
+- name: Create directory for php5-fpm logs
+  file: path=/var/log/php5-fpm state=directory owner=root group=root mode=0700
+  tags:
+    - php5
+
+- name: Configure logrotate for php5-fpm
+  template: src=etc/logrotate.d/php5-fpm.j2 dest=/etc/logrotate.d/php5-fpm owner=root group=root mode=0644
+  tags:
+    - php5
+
 - name: Make sure php5-fpm is running
   service: name=php5-fpm state=started
   tags:
