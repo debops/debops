@@ -6,8 +6,11 @@
     - nginx
     - packages
 
-- name: Create directory for default site parts
-  file: path=/etc/nginx/http-default.d state=directory owner=root group=root mode=0755
+- name: Create default nginx directories
+  file: path={{ item }} state=directory owner=root group=root mode=0755
+  with_items:
+    - '/etc/nginx/http-default.d'
+    - '{{ nginx_default_root }}'
   tags:
     - nginx
 
