@@ -18,6 +18,20 @@ nginx_server_names_hash_max_size: 512
 
 nginx_keepalive_timeout: 30
 
+# server_name which will be marked as default
+nginx_default_name: '{{ ansible_fqdn }}'
+
+# Default server template used if no type is selected
+nginx_default_type: 'default'
+
+# Default server root
+nginx_default_root: '/usr/share/nginx/www'
+
+# Should nginx servers have status pages enabled by default
+# If yes, provide a list of allowed networks/hosts
+#nginx_default_status:
+#  - '127.0.0.0/8'
+
 # Should nginx role generate server definitions?
 nginx_manage_servers: True
 
@@ -25,30 +39,31 @@ nginx_manage_servers: True
 nginx_servers:
   - ${nginx_server_default}
 
-# Minimal defaults needed for a server definition to work
-#nginx_server_stub:
-#  enabled: True
-#  type: 'default'
-#  name:
-#    - 'localhost'
-
-# Default nginx site
+# Default nginx site - options commented out are optional
 nginx_server_default:
   enabled: True
-  type: 'default'
-  name:
-    - '{{ ansible_fqdn }}'
-    - 'www.{{ ansible_fqdn }}'
-  listen:
-    - '80'
-  location:
-    '/':
-      - 'try_files $uri $uri/ $uri.html /index.html =404'
-    '/doc/':
-      - 'alias /usr/share/doc/'
-      - 'autoindex on'
-      - 'allow 127.0.0.1'
-      - 'allow ::1'
-      - 'deny all'
+  #default: True
+  #name: '{{ ansible_fqdn }}'
+  #alias:
+  #  - 'www.{{ ansible_fqdn }}'
+  #type: 'default'
+  #owner: 'www-data'
+  #listen:
+  #  - '80'
+  #root: '{{ nginx_default_root }}'
+  #status:
+  #  - '127.0.0.0/8'
+  #location:
+  #  '/':
+  #    - 'try_files $uri $uri/ $uri.html $uri.htm /index.html /index.htm =404'
+  #  '/doc/':
+  #    - 'alias /usr/share/doc/'
+  #    - 'autoindex on'
+  #    - 'allow 127.0.0.1'
+  #    - 'allow ::1'
+  #    - 'deny all'
+  #location_php5: 'php5_www-data'
+  #location_php5_status: '/php5_status'
+  #location_php5_ping: '/php5_ping'
 
 
