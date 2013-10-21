@@ -3,7 +3,8 @@
 // This configuration snipped is intended to be stored in /etc/apt/apt.conf.d/
 // on the client system in order to change a regular setup to use apt-cacher-ng.
 
-{% if apt_acng_enable %}
-Acquire::http::Proxy "http://{{ apt_acng_proxy_host }}:{{ apt_acng_proxy_port }}/";
+{% if apt_cache_host is defined and apt_cache_host %}
+Acquire::http::Proxy "http://{{ apt_cache_host }}:{{ apt_cache_port | default('3142') }}/";
 {% endif %}
+
 

@@ -1,6 +1,8 @@
 # Enable apt-cacher-ng proxy (-t filter -A INPUT)
 # {{ ansible_managed }}
 
-protocol tcp dport {{ apt_acng_proxy_port }} ACCEPT;
+{% if apt_cache_host is defined and apt_cache_host %}
+protocol tcp dport {{ apt_cache_port | default('3142') }} ACCEPT;
+{% endif %}
 
 
