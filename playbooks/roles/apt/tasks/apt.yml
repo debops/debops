@@ -5,14 +5,13 @@
   tags:
     - apt
 
-- name: Configure APT sources.list
-  template: src=etc/apt/sources.list.j2 dest=/etc/apt/sources.list owner=root group=root mode=0644
+- name: Configure APT and package sources
+  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
+  with_items:
+    - 'etc/apt/sources.list'
+    - 'etc/apt/sources.list.d/00_ansible_{{ ansible_distribution | lower }}_sources.list'
+    - 'etc/apt/apt.conf.d/70aptitude'
   when: ansible_distribution == 'Debian'
-  tags:
-    - apt
-
-- name: Configure aptitude
-  template: src=etc/apt/apt.conf.d/70aptitude.j2 dest=/etc/apt/apt.conf.d/70aptitude owner=root group=root mode=0644
   tags:
     - apt
 
