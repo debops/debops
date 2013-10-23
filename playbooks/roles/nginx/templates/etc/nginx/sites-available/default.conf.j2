@@ -124,9 +124,27 @@ server {
 {% if item.location is defined %}
 {% for path in item.location.keys() %}
 	location {{ path }} {
+{% if item.location[path] is iterable %}
 {% for line in item.location[path] %}
 		{{ line }};
 {% endfor %}
+{% endif %}
+{% if item.location_allow is defined %}
+{% if item.location_allow[path] is defined and item.location_allow[path] %}
+{% for address in item.location_allow[path] %}
+		allow {{ address }};
+{% endfor %}
+{% if item.location_deny is defined %}
+{% if item.location_deny[path] is defined %}
+{% for address in item.location_deny[path] %}
+		deny {{ address }};
+{% endfor %}
+{% endif %}
+{% else %}
+		deny all;
+{% endif %}
+{% endif %}
+{% endif %}
 	}
 
 {% endfor %}
