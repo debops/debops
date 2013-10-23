@@ -1,9 +1,9 @@
-# Enable apt-cacher-ng proxy (-t filter -A INPUT)
+# Enable TFTP server (-t filter -A INPUT)
 # {{ ansible_managed }}
 
 {% if apt_cache_host is defined and apt_cache_host %}
 {% if apt_cache_allow is defined and apt_cache_allow %}
-protocol tcp dport {{ apt_cache_port | default('3142') }} {
+protocol udp dport 69 {
 {% for address in apt_cache_allow %}
 	saddr {{ address }} ACCEPT;
 {% endfor %}
@@ -15,6 +15,7 @@ protocol tcp dport {{ apt_cache_port | default('3142') }} {
 }
 {% endif %}
 {% else %}
-protocol tcp dport {{ apt_cache_port | default('3142') }} ACCEPT;
+protocol udp dport 69 ACCEPT;
 {% endif %}
+
 

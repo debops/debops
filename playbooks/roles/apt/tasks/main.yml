@@ -1,9 +1,15 @@
 ---
 
 - include: apt-cacher-ng.yml
+
+- include: debian_preseed.yml
+  when: apt_cache_host is defined and apt_cache_host == ansible_fqdn
+
+- include: debian_netboot.yml
+  when: apt_cache_host is defined and apt_cache_host == ansible_fqdn
+
 - include: apt.yml
 - include: unattended-upgrades.yml
 - include: install_conditional.yml
 - include: install_packages.yml
-- include: apt-preseed.yml
 

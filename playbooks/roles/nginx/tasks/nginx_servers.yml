@@ -6,6 +6,7 @@
     - ${nginx_servers}
   notify:
     - Reload nginx
+  when: item.locked is defined and item.locked == False or item.locked is not defined
   tags:
     - nginx
 
@@ -13,7 +14,7 @@
   file: path=/etc/nginx/sites-enabled/{{ item.name | default('default') }}.conf src=/etc/nginx/sites-available/{{ item.name | default('default') }}.conf state=link owner=root group=root mode=0644
   with_items:
     - ${nginx_servers}
-  when: item.enabled is defined and item.enabled == True
+  when: item.locked is defined and item.locked == False or item.locked is not defined and item.enabled is defined and item.enabled == True
   notify:
     - Reload nginx
   tags:
@@ -23,7 +24,7 @@
   file: path=/etc/nginx/sites-enabled/{{ item.name | default('default') }}.conf state=absent
   with_items:
     - ${nginx_servers}
-  when: item.enabled is defined and item.enabled == False
+  when: item.locked is defined and item.locked == False or item.locked is not defined and item.enabled is defined and item.enabled == False
   notify:
     - Reload nginx
   tags:

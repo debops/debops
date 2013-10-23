@@ -1,11 +1,5 @@
 # {{ ansible_managed }}
 
-###########################################################
-## WARNING - THIS FILE DESTROYS HARD DISK AND OTHER DATA ##
-## DEVICES. USE AT YOUR OWN RISK. BE SMART. ANY LOSS OF  ##
-## DATA DUE TO USE OF THIS FILE IS NOT FAULT OF AUTHORS  ##
-###########################################################
-
 d-i debian-installer/locale string {{ apt_debian_preseed_locale }}
 d-i keyboard-configuration/variant select {{ apt_debian_preseed_keyboardvariant }}
 d-i languagechooser/language-name-fb select {{ apt_debian_preseed_language }}
@@ -15,11 +9,11 @@ d-i netcfg/get_hostname string unassigned-hostname
 d-i netcfg/get_domain string unassigned-domain
 d-i netcfg/wireless_wep string
 
-{% if apt_acng_enable is defined and apt_acng_enable == True %}
+{% if apt_cache_host is defined and apt_cache_host %}
 # Workaround for preseed + apt-cacher-ng bug
 # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=642159
 d-i mirror/country string {{ apt_debian_preseed_mirror_country }}
-d-i mirror/http/hostname string {{ apt_acng_proxy_host }}:{{ apt_acng_proxy_port }}
+d-i mirror/http/hostname string {{ apt_cache_host }}:{{ apt_cache_port }}
 d-i mirror/http/directory string /{{ apt_debian_http_mirror }}/debian
 d-i mirror/http/proxy string
 {% else %}
@@ -38,21 +32,6 @@ d-i clock-setup/utc boolean true
 d-i time/zone string {{ apt_debian_preseed_timezone }}
 d-i clock-setup/ntp boolean true
 
-# This destroys the disk!
-d-i partman-auto/method string regular
-d-i partman-auto/expert_recipe string				\
-	boot-root ::						\
-		1000 10000 1000000000 ext3			\
-			$primary{ } $bootable{ }		\
-			method{ format } format{ }		\
-			use_filesystem{ } filesystem{ ext3 }	\
-			mountpoint{ / } label{ System }		\
-		.
-d-i partman-basicfilesystems/no_swap boolean false
-d-i partman-partitioning/confirm_write_new_label boolean true
-d-i partman/choose_partition select finish
-d-i partman/confirm boolean true
-d-i partman/confirm_nooverwrite boolean true
 d-i partman/mount_style select uuid
 
 d-i base-installer/install-recommends boolean false
@@ -73,7 +52,7 @@ d-i pkgsel/include string	wget openssh-server openssh-blacklist openssh-blacklis
 
 d-i pkgsel/upgrade select safe-upgrade
 
-d-i preseed/late_command string in-target wget -O /tmp/postinst.sh http://{{ ansible_fqdn }}/postinst.sh ; in-target chmod +x /tmp/postinst.sh ; in-target /tmp/postinst.sh
+d-i preseed/late_command string in-target wget -O /tmp/postinst.sh http://{{ ansible_fqdn }}/d-i/{{ ansible_lsb.codename }}/postinst.sh ; in-target chmod +x /tmp/postinst.sh ; in-target /tmp/postinst.sh
 
 popularity-contest popularity-contest/participate boolean false
 

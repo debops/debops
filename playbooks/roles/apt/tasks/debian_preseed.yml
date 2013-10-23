@@ -1,0 +1,24 @@
+---
+
+- name: Create Debian Preseed directories
+  file: path={{ item }} state=directory owner=root group=root mode=0755
+  with_items:
+    - '/{{ apt_debian_preseed_default_server_path }}/d-i/{{ ansible_lsb.codename }}'
+    - '/{{ apt_debian_preseed_destroy_server_path }}/d-i/{{ ansible_lsb.codename }}'
+  tags:
+    - debian_preseed
+
+- name: Setup Debian Preseed templates
+  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
+  with_items:
+    - '{{ apt_debian_preseed_default_server_path }}/d-i/{{ ansible_lsb.codename }}/preseed.cfg'
+    - '{{ apt_debian_preseed_default_server_path }}/d-i/{{ ansible_lsb.codename }}/postinst.sh'
+    - '{{ apt_debian_preseed_destroy_server_path }}/d-i/{{ ansible_lsb.codename }}/preseed.cfg'
+  tags:
+    - debian_preseed
+
+- name: Lock default nginx server template on Debian Preseed host
+  set_fact:
+    nginx_server_default:
+      locked: True
+
