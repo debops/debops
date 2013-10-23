@@ -19,6 +19,9 @@ apt_debian_preseed_nginx:
       '/d-i':
         - 'try_files $uri $uri/ =404'
         - 'autoindex on'
+    location_allow:
+      '/': ${apt_cache_allow}
+      '/d-i': ${apt_cache_allow}
   destroy:
     enabled: True
     name: 'destroy.{{ ansible_fqdn }}'
@@ -30,4 +33,7 @@ apt_debian_preseed_nginx:
       '/d-i':
         - 'try_files $uri $uri/ =404'
         - 'autoindex on'
+    location_allow:
+      '/': ${apt_cache_allow}
+      '/d-i': ${apt_cache_allow}
 
