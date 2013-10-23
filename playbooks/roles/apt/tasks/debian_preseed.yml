@@ -7,6 +7,7 @@
     - '/{{ apt_debian_preseed_destroy_server_path }}/d-i/{{ ansible_lsb.codename }}'
   tags:
     - debian_preseed
+    - nginx
 
 - name: Setup Debian Preseed templates
   template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
@@ -16,9 +17,13 @@
     - '{{ apt_debian_preseed_destroy_server_path }}/d-i/{{ ansible_lsb.codename }}/preseed.cfg'
   tags:
     - debian_preseed
+    - nginx
 
 - name: Lock default nginx server template on Debian Preseed host
   set_fact:
     nginx_server_default:
       locked: True
+  tags:
+    - debian_preseed
+    - nginx
 
