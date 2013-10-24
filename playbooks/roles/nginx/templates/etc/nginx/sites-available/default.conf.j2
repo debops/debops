@@ -6,15 +6,28 @@
 #}
 
 server {
-{% if item.listen is defined %}
-	listen{% for port in item.listen %} {{ port }}{% endfor %};
+{% if item.listen is defined and item.listen %}
+{% if item.listen is iterable %}
+{% for line in item.listen %}
+	listen {{ line }};
+{% endfor %}
 {% else %}
-	listen 80;
+	listen {{ item.listen | default('80') }}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %};
+{% endif %}
+{% else %}
+	listen 80{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %};
 {% endif %}
 {% if item.name is defined and item.name %}
-	server_name {{ item.name }}{% if item.alias is defined and item.alias %}{% for domain in item.alias %} {{ domain }}{% endfor %}{% endif %}{% if nginx_default_name is defined and nginx_default_name == item.name or item.default is defined and not item.default %} default{% endif %};
-{% elif item.name is not defined and item.default is defined and item.default %}
-	server_name default;
+	server_name {{ item.name }};
+{% endif %}
+{% if item.alias is defined and item.alias %}
+{% if item.alias is iterable %}
+{% for line in item.alias %}
+	server_name {{ line }};
+{% endfor %}
+{% else %}
+	server_name {{ item.alias }};
+{% endif %}
 {% endif %}
 
 {% if item.root is defined and item.root %}
