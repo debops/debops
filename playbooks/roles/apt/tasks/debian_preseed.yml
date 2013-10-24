@@ -1,5 +1,21 @@
 ---
 
+- name: Lookup system root password if secrets/ directory is defined
+  set_fact:
+    apt_debian_preseed_rootpw: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/debian_preseed/system/root/password length=' + apt_debian_preseed_rootpw_length) }}"
+  when: secret is defined
+  tags:
+    - debian_preseed
+    - nginx
+
+- name: Lookup current user and SSH public key for injection
+  set_fact:
+    apt_debian_preseed_username: "{{ lookup('env','USER') }}"
+    apt_debian_preseed_sshkey: "{{ lookup('file','~/.ssh/id_rsa.pub') }}"
+  tags:
+    - debian_preseed
+    - nginx
+
 - name: Create Debian Preseed directories
   file: path={{ item }} state=directory owner=root group=root mode=0755
   with_items:

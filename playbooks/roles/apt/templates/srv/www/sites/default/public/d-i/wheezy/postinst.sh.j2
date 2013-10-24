@@ -13,7 +13,34 @@ if [ -r "/etc/default/grub" ]; then
 	update-grub
 fi
 
+{% if apt_debian_preseed_sshkey is defined and apt_debian_preseed_sshkey %}
+# Inject ssh key into root account
+mkdir -p -m 700 /root/.ssh
+echo "{{ apt_debian_preseed_sshkey }}" > /root/.ssh/authorized_keys
+{% if apt_debian_preseed_username is defined and apt_debian_preseed_username %}
+
+# Create admin system group
+addgroup --system admins
+
+# Configure admin group in sudo
+echo "%admins ALL = (ALL) NOPASSWD: ALL" > /etc/sudoers.d/admins
+chmod 440 /etc/sudoers.d/admins
+
+# Create administrator account
+adduser --disabled-password --home /home/{{ apt_debian_preseed_username }} --gecos "System Administrator" {{ apt_debian_preseed_username }}
+adduser {{ apt_debian_preseed_username }} admins
+
+mkdir -p -m 700 /home/{{ apt_debian_preseed_username }}/.ssh
+echo "{{ apt_debian_preseed_sshkey }}" > /home/{{ apt_debian_preseed_username }}/.ssh/authorized_keys
+chown -R {{ apt_debian_preseed_username }}:{{ apt_debian_preseed_username }} /home/{{ apt_debian_preseed_username }}/.ssh
+{% endif %}
+{% endif %}
+{% if secret is not defined %}
+
 # Expire root password to force change
 passwd --expire root
+{% endif %}
+
+rm /etc/motd
 
 
