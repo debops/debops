@@ -9,15 +9,13 @@
 
 - name: Create /etc/hosts.allow.d/00_ansible
   template: src=etc/hosts.allow.d/00_ansible.j2 dest=/etc/hosts.allow.d/00_ansible owner=root group=root mode=0644
-  notify:
-    - Assemble hosts.allow.d
   tags:
     - tcpwrappers
     - network
     - sshd
 
-- name: Flush handlers if needed for /etc/hosts.allow generation
-  meta: flush_handlers
+- name: Assemble hosts.allow.d
+  assemble: src=/etc/hosts.allow.d dest=/etc/hosts.allow backup=no owner=root group=root mode=0644
   tags:
     - tcpwrappers
     - network
