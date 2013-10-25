@@ -32,6 +32,19 @@ nginx_default_root: '/srv/www/sites/default/public'
 #nginx_default_status:
 #  - '127.0.0.0/8'
 
+# Should nginx role generate upstream definitions?
+nginx_manage_upstreams: True
+
+# List of nginx upstream definitions
+nginx_upstreams:
+  - ${nginx_upstream_php5}
+
+# Upstream for default php5-fpm configuration
+nginx_upstream_php5:
+  enabled: True
+  name: 'php5_www-data'
+  php5: 'www-data'
+
 # Should nginx role generate server definitions?
 nginx_manage_servers: True
 
@@ -68,8 +81,8 @@ nginx_server_default:
   #location_deny:
   #  '/doc/':
   #    - 'all'
-  #location_php5: 'php5_www-data'
-  #location_php5_status: '/php5_status'
-  #location_php5_ping: '/php5_ping'
+  #upstream_php5: 'php5_www-data'
+  #upstream_php5_status: '/php5_status'
+  #upstream_php5_ping: '/php5_ping'
 
 

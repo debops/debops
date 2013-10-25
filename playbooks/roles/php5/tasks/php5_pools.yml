@@ -29,23 +29,4 @@
   tags:
     - php5
 
-- name: Configure upstream php5 pools in nginx if allowed
-  template: src=etc/nginx/conf.d/php5_upstream.conf.j2 dest=/etc/nginx/conf.d/php5_{{ item.name }}_upstream.conf owner=root group=root mode=0644
-  with_items:
-    - ${php5_pools}
-  when: php5_nginx_upstreams is defined and php5_nginx_upstreams == True and item.enabled is defined and item.enabled == True
-  notify:
-    - Reload nginx
-  tags:
-    - php5
-
-- name: Disable upstream php5 pools in nginx if allowed
-  file: path=/etc/nginx/conf.d/php5_{{ item.name }}_upstream.conf state=absent
-  with_items:
-    - ${php5_pools}
-  when: php5_nginx_upstreams is defined and php5_nginx_upstreams == True and item.enabled is defined and item.enabled == False
-  notify:
-    - Reload nginx
-  tags:
-    - php5
 

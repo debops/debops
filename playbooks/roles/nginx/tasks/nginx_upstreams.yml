@@ -1,0 +1,27 @@
+---
+
+- name: Make sure configuration directory exists
+  file: path=/etc/nginx/conf.d state=directory owner=root group=root mode=0644
+  tags:
+    - nginx
+
+- name: Configure nginx upstreams
+  template: src=etc/nginx/conf.d/upstream.conf.j2 dest=/etc/nginx/conf.d/upstream_{{ item.name }}.conf owner=root group=root mode=0644
+  with_items:
+    - ${nginx_upstreams}
+  when: nginx_upstreams is defined and nginx_upstreams
+  notify:
+    - Reload nginx
+  tags:
+    - nginx
+
+#- name: Disable upstream php5 pools in nginx if allowed
+#  file: path=/etc/nginx/conf.d/php5_{{ item.name }}_upstream.conf state=absent
+#  with_items:
+#    - ${php5_pools}
+#  when: php5_nginx_upstreams is defined and php5_nginx_upstreams == True and item.enabled is defined and item.enabled == False
+#  notify:
+#    - Reload nginx
+#  tags:
+#    - php5
+
