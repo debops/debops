@@ -1,5 +1,13 @@
 ---
 
+- name: Create global webroot directories if allowed
+  file: path=/srv/www/sites/{{ item.name }}/public state=directory owner={{ nginx_webroot_owner }} group={{ nginx_webroot_group }} mode={{ nginx_webroot_mode }}
+  with_items:
+    - ${nginx_servers}
+  when: item.locked is defined and item.locked == False or item.locked is not defined and nginx_webroot_create is defined and nginx_webroot_create == True and item.name is defined and item.root is undefined and item.owner is undefined and item.group is undefined
+  tags:
+    - nginx
+
 - name: Setup nginx server configuration
   template: src=etc/nginx/sites-available/{{ item.type | default(nginx_default_type) }}.conf.j2 dest=/etc/nginx/sites-available/{{ item.name | default('default') }}.conf owner=root group=root mode=0644
   with_items:

@@ -27,6 +27,13 @@ nginx_default_type: 'default'
 # Default server root
 nginx_default_root: '/srv/www/sites/default/public'
 
+# Create global webroot directories?
+# Path: /srv/www/sites/*/public
+nginx_webroot_create: True
+nginx_webroot_owner: 'root'
+nginx_webroot_group: 'root'
+nginx_webroot_mode: '0755'
+
 # Should nginx servers have status pages enabled by default
 # If yes, provide a list of allowed networks/hosts
 #nginx_default_status:
@@ -61,7 +68,8 @@ nginx_server_default:
   #alias:
   #  - 'www.{{ ansible_fqdn }}'
   #type: 'default'
-  #owner: 'www-data'
+  #owner: 'root'
+  #group: 'root'
   #listen:
   #  - '80'
   #root: '{{ nginx_default_root }}'
