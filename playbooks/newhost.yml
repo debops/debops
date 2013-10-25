@@ -43,9 +43,9 @@
       - lsb-release
     tags: init
 
-  - name: INIT | Install ssh public key from current account
-    authorized_key: user=$ssh_user key="$FILE(~/.ssh/id_rsa.pub)"
-    tags: init
+  #- name: Install ssh public key from current account
+  #  authorized_key: user={{ ssh_user }} key="{{ lookup('file','~/.ssh/id_rsa.pub') }}"
+  #  tags: init
 
   - name: Configure admins group access in sudo
     lineinfile: "dest=/etc/sudoers.d/admins state=present create=yes regexp='^%admins' line='%admins ALL=(ALL:ALL) NOPASSWD: SETENV: ALL' owner=root group=root mode=0440"
