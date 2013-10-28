@@ -1,0 +1,59 @@
+---
+
+- name: Manage users with uids
+  user: name={{ item.name }} state={{ item.state | default('present') }} group={{ item.group | default(item.name) }} createhome=no uid={{ item.uid }} shell={{ item.shell | default(users_default_shell) }} groups={{ item.groups | default('') }} append={{ item.append | default(True) }}
+  with_items:
+    - ${users_admins}
+    - ${users_sshusers}
+    - ${users_list}
+  when: item.name is defined and item.uid is defined
+  tags:
+    - users
+    - groups
+
+- name: Manage users without uids
+  user: name={{ item.name }} state={{ item.state | default('present') }} group={{ item.group | default(item.name) }} createhome=no shell={{ item.shell | default(users_default_shell) }} groups={{ item.groups | default('') }} append={{ item.append | default(True) }}
+  with_items:
+    - ${users_admins}
+    - ${users_sshusers}
+    - ${users_list}
+  when: item.name is defined and item.uid is undefined
+  tags:
+    - users
+    - groups
+
+- name: Manage user homes
+  user: name={{ item.name }} state={{ item.state | default('present') }} home={{ item.home | default('/home/' + item.name) }} createhome=yes
+  with_items:
+    - ${users_admins}
+    - ${users_sshusers}
+    - ${users_list}
+  when: item.name is defined
+  tags:
+    - users
+    - groups
+
+- name: Manage home directories permissions
+  file: path={{ item.home | default('/home/' + item.name) }} state=directory owner={{ item.home_owner | default('root') }} group={{ item.home_group | default('root') }} mode={{ item.home_mode | default('0755') }}
+  with_items:
+    - ${users_admins}
+    - ${users_sshusers}
+    - ${users_list}
+  when: item.name is defined and item.homelock is defined and item.state is undefined or item.state is defined and item.state != 'absent'
+  tags:
+    - users
+    - groups
+
+- name: Manage user shells
+  user: name={{ item.name }} state={{ item.state | default('present') }} shell={{ item.shell | default(users_default_shell) }}
+  with_items:
+    - ${users_root}
+    - ${users_default}
+    - ${users_admins}
+    - ${users_sshusers}
+    - ${users_list}
+  when: item.name is defined and item.shell is defined and item.shell
+  tags:
+    - users
+    - groups
+

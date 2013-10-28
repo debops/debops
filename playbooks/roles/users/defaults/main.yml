@@ -1,0 +1,70 @@
+---
+
+# --- Lists of different accounts to create/manage
+
+# root user, if you want to change something on the root account
+users_root:
+  - name: 'root'
+
+# Default user created by Ansible
+users_default:
+  - name: "{{ lookup('env','USER') }}"
+
+# Administrators
+users_admins: False
+
+# Users with access to ssh, who can login remotely
+users_sshusers: False
+
+# Users with access to ssh, who can only use SFTP/SCP
+users_sftponly: False
+
+# Other users
+users_list: False
+
+# --- An example account entry, everything execpt 'name' is optional
+# List of all recognized values, default value listed first
+#
+#  - name: 'username'               # mandatory, default group if not defined
+#    state: 'present,absent'
+#    group: 'name'                  # default group
+#    groups: ''                     # list of groups to set
+#    append: yes/no                 # add to, or set groups
+#    gid: 1000
+#    uid: 1000
+#    shell: '/bin/sh'
+#
+#    home: '/home/name'
+#    homelock: False/True           # change home dir permissions (for sftponly)
+#    home_owner: 'root'
+#    home_group: 'root'
+#    home_mode: '0755'
+#
+#    dotfiles: False/True           # download and configure dotfiles?
+#    dotfiles_repo: 'repository'
+#    dotfiles_command: 'make all'
+#    dotfiles_creates '~/.zshrc'
+
+
+# --- Global defaults
+
+users_default_shell: '/bin/sh'
+
+# Default dotfile hash to use
+users_default_dotfile: 'drybjed'
+
+# List of dotfile hashes
+users_dotfiles:
+  drybjed:
+    repo: 'https://github.com/drybjed/dotfiles.git'
+    command: 'make all dark'
+    creates: '~/.zshenv.local'
+
+# Settings for sftponly accounts
+users_sftponly_home: '/srv/users'
+users_sftponly_owner: 'root'
+users_sftponly_group: 'sftponly'
+users_sftponly_mode: '0751'
+users_sftponly_shell: '/usr/sbin/nologin'
+
+

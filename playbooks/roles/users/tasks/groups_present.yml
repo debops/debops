@@ -1,0 +1,26 @@
+---
+
+- name: Manage groups with gids
+  group: name={{ item.group | default(item.name) }} state={{ item.state | default('present') }} gid={{ item.gid }}
+  with_items:
+    - ${users_admins}
+    - ${users_sshusers}
+    - ${users_sftponly}
+    - ${users_list}
+  when: item.name is defined and item.gid is defined
+  tags:
+    - users
+    - groups
+
+- name: Manage groups without gids
+  group: name={{ item.group | default(item.name) }} state={{ item.state | default('present') }}
+  with_items:
+    - ${users_admins}
+    - ${users_sshusers}
+    - ${users_sftponly}
+    - ${users_list}
+  when: item.name is defined and item.gid is undefined and item.state is not defined or item.state is defined and item.state != 'absent'
+  tags:
+    - users
+    - groups
+

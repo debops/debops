@@ -1,0 +1,30 @@
+---
+
+- name: Get users dotfiles from git repository
+  sudo_user: '{{ item.name }}'
+  git: repo={{ item.dotfiles_repo | default(users_dotfiles[users_default_dotfile].repo) }} dest=~/.dotfiles update=yes
+  with_items:
+    - ${users_root}
+    - ${users_default}
+    - ${users_admins}
+    - ${users_sshusers}
+    - ${users_list}
+  when: item.dotfiles is defined and item.state is undefined or item.state is defined and item.state != 'absent'
+  tags:
+    - users
+    - groups
+
+- name: Configure users dotfiles
+  sudo_user: '{{ item.name }}'
+  command: chdir=~/.dotfiles creates="{{item.dotfiles_creates | default(users_dotfiles[users_default_dotfile].creates)}}" {{ item.dotfiles_command | default(users_dotfiles[users_default_dotfile].command) }}
+  with_items:
+    - ${users_root}
+    - ${users_default}
+    - ${users_admins}
+    - ${users_sshusers}
+    - ${users_list}
+  when: item.dotfiles is defined and item.state is undefined or item.state is defined and item.state != 'absent'
+  tags:
+    - users
+    - groups
+
