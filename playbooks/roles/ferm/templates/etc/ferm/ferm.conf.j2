@@ -77,6 +77,11 @@ table filter {
 
 		# Forward traffic to outside world
 		outerface $DEV_WORLD ACCEPT;
+{% if ansible_local.interfaces.ports.internal is defined %}
+
+		# Forward traffic to internal network
+		outerface br1 ACCEPT;
+{% endif %}
 {% endif %}
 	}
 }
