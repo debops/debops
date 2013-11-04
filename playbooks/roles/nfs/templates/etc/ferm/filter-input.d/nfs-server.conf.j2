@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+
+{% if nfs_server is defined and nfs_server == True %}
+protocol (tcp udp) dport (sunrpc nfs {{ nfs_server_callback_port }} {{ nfs_server_statd_port }} {{ nfs_server_statd_outgoing_port }} {{nfs_server_rpcmountd_port }} {{ nfs_server_lockd_port }}) {
+{% for address in nfs_server_allow %}
+	saddr {{ address }} ACCEPT;
+{% endfor %}
+}
+{% endif %}
+
+
