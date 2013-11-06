@@ -10,8 +10,8 @@ table filter {
 		policy DROP;
 
 		# Connection tracking
-		mod state state INVALID DROP;
-		mod state state (ESTABLISHED RELATED) ACCEPT;
+		mod conntrack ctstate INVALID DROP;
+		mod conntrack ctstate (ESTABLISHED RELATED) ACCEPT;
 
 		# Allow local connections
 		interface lo ACCEPT;
@@ -63,16 +63,16 @@ table filter {
 		policy ACCEPT;
 
 		# Connection tracking
-		mod state state INVALID DROP;
-		mod state state (ESTABLISHED RELATED) ACCEPT;
+		mod conntrack ctstate INVALID DROP;
+		mod conntrack ctstate (ESTABLISHED RELATED) ACCEPT;
 	}
 
 	chain FORWARD {
 		policy DROP;
 
 		# Connection tracking
-		mod state state INVALID DROP;
-		mod state state (ESTABLISHED RELATED) ACCEPT;
+		mod conntrack ctstate INVALID DROP;
+		mod conntrack ctstate (ESTABLISHED RELATED) ACCEPT;
 {% if ansible_virtualization_type is defined and ansible_virtualization_type != 'lxc' or ferm_disable_forwarding is defined and ferm_disable_forwarding == True %}
 
 		# Forward traffic to outside world
