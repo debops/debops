@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# {{ ansible_managed }}
+
+# Source: http://planzero.org/blog/2012/10/24/hosting_an_admin-friendly_git_server_with_git-shell
+
+# If the user is not root
+if [ "$USERNAME" != "root" ]
+then
+
+	# Dislpay a notice and stop
+	echo "Sorry, only root can use this command."
+	exit 1
+
+fi
+
+# If no project name is given
+if [ $# -eq 0 ]
+then
+
+	# Display usage and stop
+	echo "Usage: create <project.git>"
+	exit 1
+
+fi
+
+# Set the project name, adding .git if necessary
+project=$(echo "$*" | sed 's/\.git$\|$/.git/i')
+
+# Create and initialise the project
+mkdir -p "$project" && \
+cd "$project" && \
+git --bare init
+

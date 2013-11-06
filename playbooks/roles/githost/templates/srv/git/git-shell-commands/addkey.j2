@@ -1,0 +1,49 @@
+#!/bin/sh
+
+# {{ ansible_managed }}
+
+# Source: http://planzero.org/blog/2012/10/24/hosting_an_admin-friendly_git_server_with_git-shell
+
+# If the user is not root
+if [ "$USERNAME" != "root" ]
+then
+
+	# Dislpay a notice and stop
+	echo "Sorry, only root can use this command."
+	exit 1
+
+fi
+
+# Read in the SSH key
+echo "Input the key to be added: "
+read key
+
+# Place the key in a temporary file (it's hard to get ssh-keygen
+# to read from stdin; <<< works for bash, but is non-posix)
+keyfile=$(tempfile) && \
+echo "$key" > $keyfile
+
+# Generate a fingerprint
+fingerprint=$(ssh-keygen -lf $keyfile)
+
+# Check for errors
+if [ $(echo "$fingerprint" | egrep -c '(R|D)SA') -eq 0 ]
+then
+
+	# Display the fingerprint error and clean up
+	echo "Error: $fingerprint"
+	rm $keyfile
+	exit 1
+
+fi
+
+# Add the key to the authorised keys file and clean up
+mkdir -m 700 -p .ssh && \
+echo -n "no-agent-forwarding,no-port-forwarding,no-X11-forwarding " >> .ssh/authorized_keys && \
+cat $keyfile >> .ssh/authorized_keys
+rm $keyfile
+
+# Display the fingerprint for reference
+echo "Success! Added a key with the following fingerprint:"
+echo $fingerprint
+
