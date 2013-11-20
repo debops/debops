@@ -49,6 +49,12 @@ server {
 {% endif %}
 	index {% if item.upstream_php5 is defined and item.upstream_php5 %}index.php {% endif %}index.html index.htm;
 
+	# Temporary fix for CVE-2013-4547
+	# http://mailman.nginx.org/pipermail/nginx-announce/2013/000125.html
+	if ($request_uri ~ " ") {
+		return 444;
+	}
+
 	# Disallow access to hidden files and directories
 	location ~ /\. {
 		return 404;
