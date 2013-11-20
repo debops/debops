@@ -50,9 +50,9 @@ listen = {{ item.listen | default('/var/run/php5-fpm-' + item.name + '.sock') }}
 ; BSD-derived systems allow connections regardless of permissions. 
 ; Default Values: user and group are set as the running user
 ;                 mode is set to 0666 #}
-listen.owner = {{ item.user | default(item.name) }}
-listen.group = {{ item.group | default(item.name) }}
-listen.mode = 0660
+listen.owner = {{ php5_socket_listen_owner | default('www-data') }}
+listen.group = {{ php5_socket_listen_group | default('www-data') }}
+listen.mode = {{ php5_socket_listen_mode | default('0660') }}
 
 {#
 ; List of ipv4 addresses of FastCGI clients which are allowed to connect.
