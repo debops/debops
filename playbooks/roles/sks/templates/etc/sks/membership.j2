@@ -1,0 +1,29 @@
+# {{ ansible_managed }}
+
+# /etc/sks/membership
+#
+# With SKS, two hosts can efficiently compare their databases then
+# repair whatever differences are found.  In order to set up
+# reconciliation, you first need to find other SKS servers that will
+# agree to gossip with you. The hostname and port of the server that
+# has agreed to do so should be added to this file.
+#
+# Empty lines and whitespace-only lines are ignored, as are lines
+# whose first non-whitespace character is a `#'.
+#
+# Example:
+# keyserver.linux.it 11370
+{% if sks_private_list is defined and sks_private_list %}
+{% for host in sks_private_list %}
+{% if host != ansible_fqdn %}
+{{ host }} {{ sks_recon_port | default('11370') }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if sks_public_list is defined and sks_public_list %}
+{% for line in sks_public_list %}
+{{ line }}
+{% endfor %}
+{% endif %}
+
+

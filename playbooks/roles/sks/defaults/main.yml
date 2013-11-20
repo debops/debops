@@ -1,0 +1,41 @@
+---
+
+# Automatically create keyserver database? Database will be empty
+# If you want to seed the database with public GPG keys or connect to public
+# SKS Keyserver network, you should set this variable to "False" and seed the
+# database manually. See: http://keysigning.org/sks/
+sks_autoinit: False
+
+# GPG fingerprint of server administrator
+#sks_contact: '0xDEADBEEF'
+
+# From header for outgoing mail
+sks_from: 'PGP Key Server <pgp-public-keys@{{ ansible_fqdn }}>'
+
+# List of SKS Keyservers to peer with running in the Ansible cluster.
+#sks_private_list:
+#  - 'keyserver.{{ ansible_domain }}'
+#  - 'sks.{{ ansible_domain }}'
+
+# List of public SKS keyservers you want to peer with. It's a list of simple
+# lines, which allows you to include custom ports and comments (see sks(8)
+# documentation). It's good etiquette to ask someone for permission before you
+# add their server to this list (and their server needs to have yours for the
+# communication to work).
+# You should probably connect only one of your private keyservers to the public
+# keyserver network, your other servers will propagate the changes between
+# themselves.
+#sks_public_list:
+#  - 'keyserver.example.org {{ sks_recon_port }} # Server Administrator <admin@example.org> 0xDEADBEEF'
+
+# Firewall (ferm) configuration:
+# - set to 'False' to disable access in ferm
+# - set to 'True' to allow access from all hosts and networks
+# - set to a list of hosts/networks to allow access only from these hosts/networks
+# By default, allow from all
+sks_server_allow: True
+#sks_server_allow:
+#  - '10.0.0.0/8'
+#  - '172.16.0.0/12'
+#  - '192.168.0.0/16'
+
