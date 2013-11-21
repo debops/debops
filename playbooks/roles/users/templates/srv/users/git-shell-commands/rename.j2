@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+set -e
+
+# If no project name is given, display help
+if [ $# -eq 0 ] ; then
+	cat <<-EOF
+	Usage: rename <repository> <newrepository>
+
+	Change name of <repository> to <newrepository>
+	EOF
+	exit 1
+fi
+
+if [ -n "${1}" ] ; then
+	# Sanitize repository name
+	repository=${1//[^a-zA-Z0-9\.\/\_-]/}
+	project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
+else
+	echo "Error: No repository name given" && exit 1
+fi
+
+if [ -n "${2}" ] ; then
+	# Sanitize new repository name
+	newrepository=${2//[^a-zA-Z0-9\.\/\_-]/}
+	newproject=$(echo "${newrepository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
+else
+	echo "Error: No new repository name given" && exit 1
+fi
+
+
+if [ -d ${project} ] ; then
+
+	if [[ ${newrepository} == */* ]] ; then
+		mkdir -p $(dirname ${HOME}/${newrepository})
+	fi
+	mv "${HOME}/${project}" "${HOME}/${newproject}"
+else
+	echo "Error: Repository ${repository} not found" && exit 1
+fi
+
+
