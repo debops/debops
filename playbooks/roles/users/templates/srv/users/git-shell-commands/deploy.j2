@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+set -e
+
+# If no project name is given, display help
+if [ $# -eq 0 ] ; then
+	echo "Usage: deploy <repository> [branch]"
+	exit 1
+fi
+
+# Sanitize repository name
+repository=${1//[^a-zA-Z0-9\.\/\_-]/}
+project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
+
+# Sanitize branch name
+branch=${2//[^a-zA-Z0-9\.\_-]/}
+
+if [ -d ${project} ] ; then
+	cd "${HOME}/${project}"
+	if [ -n "${branch}" ] ; then
+		if $(git show-ref --verify --quiet "refs/heads/${branch}") ; then
+			git config deploy.branch ${branch}
+		else
+			echo "Error: Branch ${branch} not found" && exit 1
+		fi
+	fi
+	[ -x ./hooks/post-receive ] && ./hooks/post-receive
+else
+	echo "Error: No repository named ${repository}" && exit 1
+fi
+
+

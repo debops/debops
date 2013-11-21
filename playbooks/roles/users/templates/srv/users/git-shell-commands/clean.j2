@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+set -e
+
+# If no project name is given, display help
+if [ $# -eq 0 ] ; then
+	cat <<-EOF
+	Usage: clean <repository>
+
+	Delete everything in the work tree of <repository>
+	EOF
+	exit 1
+fi
+
+# Sanitize repository name
+repository=${1//[^a-zA-Z0-9\.\/\_-]/}
+project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
+
+if [ -d ${project} ] ; then
+	cd "${HOME}/${project}"
+else
+	echo "Error: Repository ${repository} not found" && exit 1
+fi
+
+set +e
+domain=$(git config deploy.domain)
+subdirectory=$(git config deploy.subdirectory)
+set -e
+
+worktree="/srv/www/${USER}/sites/${domain}/public"
+
+if [ -n "${subdirectory}" ] ; then
+	worktree="${worktree}/${subdirectory}"
+fi
+
+if [ -d ${worktree} ] ; then
+	rm -rf ${worktree}
+	mkdir -p ${worktree}
+	echo "Work tree of ${repository} cleaned"
+fi
+
+

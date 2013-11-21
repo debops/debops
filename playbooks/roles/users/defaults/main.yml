@@ -16,6 +16,9 @@ users_admins: False
 # Users with access to ssh, who can login remotely
 users_sshusers: False
 
+# Users with access to git-shell only
+users_git: False
+
 # Users with access to ssh, who can only use SFTP/SCP
 users_sftponly: False
 
@@ -44,6 +47,8 @@ users_list: False
 #    dotfiles_repo: 'repository'
 #    dotfiles_command: 'make all'
 #    dotfiles_creates '~/.zshrc'
+#
+#    domain: '{{ ansible_domain }}' # for git users
 
 
 # --- Global defaults
@@ -67,4 +72,9 @@ users_sftponly_group: 'sftponly'
 users_sftponly_mode: '0751'
 users_sftponly_shell: '/usr/sbin/nologin'
 
+# Settings for git accounts
+users_git_home: '/srv/users'
+users_git_mode: '0751'
+users_git_shell: '/usr/bin/git-shell'
+users_git_default_domain: '{{ ansible_domain }}'
 
