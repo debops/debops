@@ -41,7 +41,17 @@ if [ -d ${project} ] ; then
 			echo "Error: Branch ${branch} not found" && exit 1
 		fi
 	fi
-	[ -x ./hooks/post-receive ] && ./hooks/post-receive
+
+	if [ -z "${currentworktree}" ] ; then
+		echo "Error: No work tree specified" && exit 1
+	fi
+
+	if [ -x ./hooks/post-receive ] ; then
+		./hooks/post-receive
+		echo "Deployed ${repository}:${branch:-${currentbranch}} to ${currentworktree}"
+	else
+		echo "Error: Deploy script in ${repository} missing, cannot deploy" && exit 1
+	fi
 else
 	echo "Error: No repository named ${repository}" && exit 1
 fi

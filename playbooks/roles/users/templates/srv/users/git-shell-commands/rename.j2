@@ -36,7 +36,13 @@ if [ -d ${project} ] ; then
 	if [[ ${newrepository} == */* ]] ; then
 		mkdir -p $(dirname ${HOME}/${newrepository})
 	fi
-	mv "${HOME}/${project}" "${HOME}/${newproject}"
+	if [ -d ${newproject} ] ; then
+		echo "Error: Repository ${newrepository} already exists" && exit 1
+	else
+		mv "${HOME}/${project}" "${HOME}/${newproject}"
+		echo "Repository ${repository} renamed to ${newrepository}"
+		exit 0
+	fi
 else
 	echo "Error: Repository ${repository} not found" && exit 1
 fi
