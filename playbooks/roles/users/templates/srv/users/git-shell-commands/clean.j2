@@ -15,7 +15,7 @@ if [ $# -eq 0 ] ; then
 fi
 
 # Sanitize repository name
-repository=${1//[^a-zA-Z0-9\.\/\_-]/}
+repository="${1//[^a-zA-Z0-9\.\/\_-]/}"
 project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
 
 if [ -d ${project} ] ; then
