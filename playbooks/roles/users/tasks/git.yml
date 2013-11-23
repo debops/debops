@@ -54,8 +54,8 @@
 - name: Configure git-shell-commands for git users
   template: src=srv/users/git-shell-commands/{{ item[1] }}.j2 dest={{ item[0].home | default(users_git_home + '/' + item[0].name) }}/git-shell-commands/{{ item[1] }} owner=root group=root mode=0755
   with_nested:
-    - ${users_git}
-    - ${users_git_shell_commands}
+    - users_git
+    - users_git_shell_commands
   when: item[0].name is defined and item[0].state is undefined or item[0].state is defined and item[0].state != 'absent'
   tags:
     - users
