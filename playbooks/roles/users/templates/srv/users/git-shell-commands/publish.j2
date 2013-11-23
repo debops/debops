@@ -35,6 +35,7 @@ currentworktree=$(git config deploy.worktree)
 currentbranch=$(git config deploy.branch)
 currentdomain=$(git config deploy.domain)
 currentsubdirectory=$(git config deploy.subdirectory)
+currentuserdir=$(git config --bool deploy.userdir)
 set -e
 
 if [ -n "${2}" ] ; then
@@ -48,8 +49,16 @@ else
 		cat <<-EOF
 		Current work tree:	${currentworktree}
 		Current branch:		${currentbranch}
-		Current address:	${currentdomain}/${currentsubdirectory}
 		EOF
+		if [ -n "${currentuserdir}" ] ; then
+			cat <<-EOF
+			Current address:	{{ ansible_fqdn }}/~${USER}/${currentsubdirectory}
+			EOF
+		else
+			cat <<-EOF
+			Current address:	${currentdomain}/${currentsubdirectory}
+			EOF
+		fi
 		exit 1
 	else
 		if [[ ${repository} == */* ]] ; then
@@ -94,6 +103,9 @@ if [ -n "${domain}" ] ; then
 		git config --unset-all deploy.subdirectory
 		set -e
 	fi
+	set +e
+	git config --unset-all deploy.userdir
+	set -e
 
 	cat <<-EOF
 		Previous work tree:	${currentworktree}

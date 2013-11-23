@@ -32,15 +32,20 @@ if [ -z "${2}" ] ; then
 fi
 
 set +e
+worktree=$(git config deploy.worktree)
+branch=$(git config deploy.branch)
 domain=$(git config deploy.domain)
 subdirectory=$(git config deploy.subdirectory)
+userdir=$(git config --bool deploy.userdir)
 set -e
 
-worktree="/srv/www/${USER}/sites/${domain}/public"
-snapshottree="/srv/www/${USER}/snapshots/${domain}/public"
+if [ -z "${userdir}" ] ; then
+	snapshottree="/srv/www/${USER}/snapshots/${domain}/${branch}/public"
+else
+	snapshottree="/srv/www/${USER}/snapshots/userdir/${branch}/public"
+fi
 
 if [ -n "${subdirectory}" ] ; then
-	worktree="${worktree}/${subdirectory}"
 	snapshottree="${snapshottree}/${subdirectory}"
 fi
 

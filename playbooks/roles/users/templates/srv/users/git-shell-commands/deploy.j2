@@ -24,9 +24,19 @@ branch="${2//[^a-zA-Z0-9\.\_-]/}"
 
 if [ -d ${project} ] ; then
 	cd "${HOME}/${project}"
+
+	set +e
+	currentworktree=$(git config deploy.worktree)
+	currentbranch=$(git config deploy.branch)
+	currentdomain=$(git config deploy.domain)
+	currentsubdirectory=$(git config deploy.subdirectory)
+	currentuserdir=$(git config --bool deploy.userdir)
+	set -e
+
 	if [ -n "${branch}" ] ; then
 		if $(git show-ref --verify --quiet "refs/heads/${branch}") ; then
 			git config deploy.branch ${branch}
+			echo "Branch ${branch} set as default"
 		else
 			echo "Error: Branch ${branch} not found" && exit 1
 		fi
