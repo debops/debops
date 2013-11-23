@@ -9,7 +9,7 @@ if [ $# -eq 0 ] ; then
 	cat <<-EOF
 	Usage: $(basename ${0}) <repository> [branch]
 
-	Create new repository
+	Create new repository with optional [branch] as default
 	EOF
 	exit 1
 fi
@@ -18,10 +18,18 @@ fi
 repository=${1//[^a-zA-Z0-9\.\/\_-]/}
 project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
 
+# Sanitize branch name
+branch="${2//[^a-zA-Z0-9\.\_-]/}"
+
 # Create and initialize the project
 mkdir -p "${HOME}/${project}"
 cd "${HOME}/${project}"
 
 git init --bare
+
+if [ -n "${branch}" ] ; then
+	git config deploy.branch ${branch}
+	echo "Branch ${branch} set as default"
+fi
 
 
