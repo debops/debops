@@ -31,7 +31,8 @@ StrictModes yes
 
 RSAAuthentication yes
 PubkeyAuthentication yes
-#AuthorizedKeysFile	%h/.ssh/authorized_keys
+AuthorizedKeysFile {% if sshd_authorized_keys_global is defined and sshd_authorized_keys_global %}{{ sshd_authorized_keys_global | default('/etc/ssh/authorized_keys/%u') }} {% endif %}{% if sshd_authorized_keys_user is defined and sshd_authorized_keys_user %}{{ sshd_authorized_keys_user | default('%h/.ssh/authorized_keys') }}{% endif %}
+
 
 # Don't read the user's ~/.rhosts and ~/.shosts files
 IgnoreRhosts yes
@@ -97,6 +98,8 @@ Match group sftponly
         AllowAgentForwarding no
         AllowTcpForwarding no
         PasswordAuthentication no
+        AuthorizedKeysFile {% if sshd_authorized_keys_global is defined and sshd_authorized_keys_global %}{{ sshd_authorized_keys_global | default('/etc/ssh/authorized_keys/%u') }}{% endif %}
+
         ForceCommand internal-sftp
 
 

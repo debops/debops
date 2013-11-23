@@ -12,8 +12,13 @@
     - sshd
     - packages
 
+- name: Ensure that system-wide authorized_keys directory exists
+  file: path={{ sshd_authorized_keys }} state=directory owner=root group=root mode=0755
+  tags:
+    - sshd
+
 - name: Setup /etc/ssh/sshd_config
-  template: src=etc/ssh/sshd_config.j2 dest=/etc/ssh/sshd_config owner=root group=root backup=yes
+  template: src=etc/ssh/sshd_config.j2 dest=/etc/ssh/sshd_config owner=root group=root mode=0644
   notify: Restart sshd
   tags:
     - sshd
