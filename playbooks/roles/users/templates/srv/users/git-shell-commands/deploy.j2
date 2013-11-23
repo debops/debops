@@ -6,7 +6,12 @@ set -e
 
 # If no project name is given, display help
 if [ $# -eq 0 ] ; then
-	echo "Usage: deploy <repository> [branch]"
+	cat <<-EOF
+	Usage: $(basename ${0}) <repository> [branch]
+
+	Deploy <repository> to current work tree from master branch or [branch]
+	If [branch] is specified, set it as default branch
+	EOF
 	exit 1
 fi
 
