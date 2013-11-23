@@ -25,15 +25,8 @@ else
 fi
 
 set +e
-domain=$(git config deploy.domain)
-subdirectory=$(git config deploy.subdirectory)
+worktree=$(git config deploy.worktree)
 set -e
-
-worktree="/srv/www/${USER}/sites/${domain}/public"
-
-if [ -n "${subdirectory}" ] ; then
-	worktree="${worktree}/${subdirectory}"
-fi
 
 if [ -d ${worktree} ] ; then
 	rm -rf ${worktree}
