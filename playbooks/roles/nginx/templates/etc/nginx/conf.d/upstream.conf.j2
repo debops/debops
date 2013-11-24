@@ -8,7 +8,7 @@ upstream {{ item.name }} {
 	ip_hash;
 {% endif %}
 {% for line in item.server %}
-	server {{ line }}{% if item.enabled is defined and item.enabled == False %} down{% endif %};
+	server {{ line }}{% if item.port is defined and item.port %}:{{ item.port }}{% endif %}{% if item.enabled is defined and item.enabled == False %} down{% endif %};
 {% endfor %}
 {% else %}
 	server {{ item.server }}{% if item.enabled is defined and item.enabled == False %} down{% endif %};
