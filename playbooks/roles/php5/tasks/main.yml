@@ -30,8 +30,9 @@
   tags:
     - php5
 
-- name: Make sure php5-fpm is running
-  service: name=php5-fpm state=started
+- name: Configure php.ini for php5-fpm
+  template: src=etc/php5/fpm/php.ini.j2 dest=/etc/php5/fpm/php.ini owner=root group=root mode=0644
+  notify: Restart php5-fpm
   tags:
     - php5
 
