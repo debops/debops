@@ -1,0 +1,33 @@
+---
+
+- name: Unnstall SKS Keyserver on frontend server
+  apt: pkg=sks state=absent
+  tags:
+    - sks
+    - packages
+
+- name: Check if index.html page exists
+  stat: path=/srv/www/sites/default/public/index.html
+  register: sks_index_html
+  tags:
+    - sks
+    - nginx
+
+- name: Configure SKS Keyserver webpage if not present
+  copy: src={{ item }} dest=/{{ item }} owner=root group=root mode=0644
+  with_items:
+    - 'srv/www/sites/default/public/index.html'
+    - 'srv/www/sites/default/public/robots.txt'
+  when: sks_index_html is defined and sks_index_html.stat.exists == False
+  tags:
+    - sks
+    - nginx
+
+- name: Lock default nginx server template on SKS Keyserver frontend
+  set_fact:
+    nginx_server_default:
+      locked: True
+  tags:
+    - sks
+    - nginx
+

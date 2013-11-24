@@ -3,3 +3,9 @@
 dependencies:
   - { role: ferm }
 
+  - role: nginx
+    nginx_servers:
+      - ${sks_nginx_frontend}
+    nginx_upstreams:
+      - ${sks_nginx_upstreams}
+    when: sks_frontend is defined and sks_frontend == ansible_fqdn

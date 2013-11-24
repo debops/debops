@@ -12,10 +12,16 @@ sks_autoinit: False
 # From header for outgoing mail
 sks_from: 'PGP Key Server <pgp-public-keys@{{ ansible_fqdn }}>'
 
-# List of SKS Keyservers to peer with running in the Ansible cluster.
-#sks_private_list:
-#  - 'keyserver.{{ ansible_domain }}'
-#  - 'sks.{{ ansible_domain }}'
+# Frontend server for SKS backends - on this host sks will be uninstalled and
+# nginx will be configured as reverse proxy for sks_backends.
+sks_frontend: 'keyserver.{{ ansible_domain }}'
+
+# List of SKS Keyserver backends in the cluster which will peer with each
+# other. At least one of them should connect to the rest of the SKS Keyserver
+# public network.
+#sks_backends:
+#  - 'sks01.{{ ansible_domain }}'
+#  - 'sks02.{{ ansible_domain }}'
 
 # List of public SKS keyservers you want to peer with. It's a list of simple
 # lines, which allows you to include custom ports and comments (see sks(8)

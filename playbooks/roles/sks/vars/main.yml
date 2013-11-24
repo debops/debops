@@ -9,3 +9,24 @@ sks_server_services:
     proto: 'tcp'
     comment: 'SKS Keyserver Reconcilliation Service'
 
+sks_nginx_frontend:
+  enabled: True
+  listen:
+    - '80'
+    - '11371'
+  location:
+    '/':
+      - 'try_files $uri $uri/ =404'
+      - 'index index.html'
+    '/pks':
+      - 'proxy_pass http://sks_servers/pks'
+      - 'proxy_pass_header Server'
+      - 'add_header Via "1.1 {{ ansible_fqdn }} (nginx)"'
+      - 'proxy_ignore_client_abort on'
+
+sks_nginx_upstreams:
+  enabled: True
+  name: 'sks_servers'
+  server: ${sks_backends}
+  port: '11371'
+
