@@ -6,8 +6,8 @@
     - sks
     - packages
 
-- name: Configure firewall for SKS Keyserver access
-  template: src=etc/ferm/filter-input.d/sks.conf.j2 dest=/etc/ferm/filter-input.d/sks.conf owner=root group=root mode=0644
+- name: Configure firewall for SKS Keyserver backends
+  template: src=etc/ferm/filter-input.d/sks-backend.conf.j2 dest=/etc/ferm/filter-input.d/sks-backend.conf owner=root group=root mode=0644
   notify:
     - Restart ferm
   tags:

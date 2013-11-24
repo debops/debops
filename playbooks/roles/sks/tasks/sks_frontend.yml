@@ -6,6 +6,14 @@
     - sks
     - packages
 
+- name: Configure firewall for SKS Keyserver frontend
+  template: src=etc/ferm/filter-input.d/sks-frontend.conf.j2 dest=/etc/ferm/filter-input.d/sks-frontend.conf owner=root group=root mode=0644
+  notify:
+    - Restart ferm
+  tags:
+    - sks
+    - ferm
+
 - name: Check if index.html page exists
   stat: path=/srv/www/sites/default/public/index.html
   register: sks_index_html
