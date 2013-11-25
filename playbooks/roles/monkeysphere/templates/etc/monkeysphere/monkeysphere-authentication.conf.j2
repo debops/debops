@@ -1,0 +1,38 @@
+# {{ ansible_managed }}
+
+# Monkeysphere authentication configuration file.
+
+# This is an sh-style shell configuration file.  Variable names should
+# be separated from their assignments by a single '=' and no spaces.
+# Environment variables with the same names as these variables but
+# prefaced by "MONKEYSPHERE_" will take precedence over the values
+# specified here.
+
+# Log level.  Can be SILENT, ERROR, INFO, VERBOSE, DEBUG, in
+# increasing order of verbosity.
+LOG_LEVEL={{ monkeysphere_log_level }}
+
+# OpenPGP keyserver
+KEYSERVER={{ monkeysphere_keyserver }}
+
+# User who controls the monkeysphere 'sphere' keyring.
+MONKEYSPHERE_USER={{ monkeysphere_user }}
+
+# Whether or not to query keyservers by default
+CHECK_KEYSERVER={{ monkeysphere_check_keyserver }}
+
+# Path to authorized_user_ids file to process to create
+# authorized_keys file.  '%h' will be replaced by the home directory
+# of the user, and '%u' will be replaced by the username of the user.
+# For purely admin-controlled authorized_user_ids, you might put them
+# in /etc/monkeysphere/authorized_user_ids/%u, for instance.
+AUTHORIZED_USER_IDS="{{ monkeysphere_authorized_user_ids }}"
+
+# Path to a user controlled authorized_keys file to be added to the
+# monkeysphere-generated authorized_keys file.  '%h' will be replaced
+# by the home directory of the user, and '%u' will by replaced by the
+# username of the user.  Setting this variable to 'none' prevents the
+# inclusion of user controlled authorized_keys file.
+RAW_AUTHORIZED_KEYS="{{ monkeysphere_raw_authorized_keys }}"
+
+

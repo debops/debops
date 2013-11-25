@@ -1,0 +1,23 @@
+---
+
+- name: Check status of monkeysphere-host
+  command: monkeysphere-host diagnostics
+  register: monkeysphere_host_status
+  changed_when: monkeysphere_host_status.rc != 0
+  tags: monkeysphere
+
+- name: Import SSH host key
+  command: monkeysphere-host import-key /etc/ssh/ssh_host_rsa_key ssh://{{ ansible_fqdn }}
+  when: monkeysphere_host_status is defined and
+        monkeysphere_host_status.stdout.startswith('No host OpenPGP certificates file found!')
+  tags: monkeysphere
+
+  # Publish host key at the time of first generation
+- name: Publish GPG host certificate to Web of Trust
+  shell: yes | monkeysphere-host publish-keys
+  when: monkeysphere_autopublish is defined and
+        monkeysphere_autopublish and
+        monkeysphere_host_status is defined and
+        monkeysphere_host_status.stdout.startswith('No host OpenPGP certificates file found!')
+  tags: monkeysphere
+

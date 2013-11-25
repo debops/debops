@@ -1,0 +1,12 @@
+---
+
+- name: Create backup copy of host GPG keys
+  fetch: dest={{ secret }}/storage/sensitive/monkeysphere src={{ item }} validate_md5=yes
+  when: secret is defined and secret and monkeysphere is defined and monkeysphere
+  with_items:
+    - '/var/lib/monkeysphere/host_keys.pub.pgp'
+    - '/var/lib/monkeysphere/host/pubring.gpg'
+    - '/var/lib/monkeysphere/host/secring.gpg'
+    - '/var/lib/monkeysphere/host/trustdb.gpg'
+  tags: system_backup
+

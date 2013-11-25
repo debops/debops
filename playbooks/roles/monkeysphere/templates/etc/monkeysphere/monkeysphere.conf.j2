@@ -1,0 +1,43 @@
+# {{ ansible_managed }}
+
+# Monkeysphere system-wide client configuration file.
+
+# This is an sh-style shell configuration file.  Variable names should
+# be separated from their assignments by a single '=' and no spaces.
+# Environment variables with the same names as these variables but
+# prefaced by "MONKEYSPHERE_" will take precedence over the values
+# specified here.
+
+# Log level.  Can be SILENT, ERROR, INFO, VERBOSE, DEBUG, in
+# increasing order of verbosity.
+#LOG_LEVEL=INFO
+
+# GPG home directory.  If not specified either here or in the
+# MONKEYSPHERE_GNUPGHOME environment variable, then the value of the
+# GNUPGHOME environment variable will be used.  If GNUPGHOME is not
+# set either, then the default value is listed below.
+#GNUPGHOME=~/.gnupg
+
+# GPG keyserver to search for keys.
+KEYSERVER={{ monkeysphere_keyserver }}
+
+# Set whether or not to check keyservers at every monkeysphere
+# interaction, including all ssh connections if you use the
+# monkeysphere ssh-proxycommand.  Leave unset for default behavior
+# (see KEYSERVER CHECKING in monkeysphere(1)), or set to true or false.
+# NOTE: setting CHECK_KEYSERVER explicitly to true will leak
+# information about the timing and frequency of your ssh connections
+# to the maintainer of the keyserver.
+CHECK_KEYSERVER={{ monkeysphere_check_keyserver }}
+
+# The path to the SSH known_hosts file.
+#KNOWN_HOSTS=~/.ssh/known_hosts
+
+# Whether or not to hash the generated known_hosts lines.
+# Should be "true" or "false".
+HASH_KNOWN_HOSTS=true
+
+# The path to the SSH authorized_keys file.
+#AUTHORIZED_KEYS=~/.ssh/authorized_keys
+
+

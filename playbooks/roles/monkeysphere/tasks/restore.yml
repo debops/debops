@@ -1,0 +1,17 @@
+---
+
+- name: Create monkeysphere host directory
+  file: path=/var/lib/monkeysphere/host state=directory owner=root group=root mode=0700
+  when: secret is defined and secret and monkeysphere is defined and monkeysphere
+  tags: system_restore
+
+- name: Restore backed up GPG keys
+  copy: src={{ secret }}/storage/sensitive/monkeysphere/{{ ansible_fqdn }}/{{ item }} dest=/{{ item }} owner=root group=root mode=0600
+  when: secret is defined and secret and monkeysphere is defined and monkeysphere
+  with_items:
+    - 'var/lib/monkeysphere/host_keys.pub.pgp'
+    - 'var/lib/monkeysphere/host/pubring.gpg'
+    - 'var/lib/monkeysphere/host/secring.gpg'
+    - 'var/lib/monkeysphere/host/trustdb.gpg'
+  tags: system_restore
+

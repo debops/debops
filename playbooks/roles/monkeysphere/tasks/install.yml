@@ -1,0 +1,18 @@
+---
+
+- name: Install monkeysphere packages
+  apt: pkg=monkeysphere state=latest install_recommends=no
+  tags: [ monkeysphere, packages ]
+
+- name: Update monkeysphere configuration
+  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
+  with_items:
+    - 'etc/monkeysphere/monkeysphere.conf'
+    - 'etc/monkeysphere/monkeysphere-host.conf'
+    - 'etc/monkeysphere/monkeysphere-authentication.conf'
+  tags: monkeysphere
+
+- name: Create system-wide GPG userids directory
+  file: path=/etc/monkeysphere/authorized_user_ids state=directory owner=root group=root mode=0751
+  tags: monkeysphere
+
