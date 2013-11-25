@@ -1,0 +1,10 @@
+---
+
+- name: Create backup copy of host self-signed certificates
+  fetch: dest={{ secret }}/storage/sensitive/sslcerts src={{ item }} validate_md5=yes
+  when: secret is defined and secret
+  with_items:
+    - '/usr/local/etc/ssl/certs/{{ ansible_fqdn }}.crt'
+    - '/usr/local/etc/ssl/private/{{ ansible_fqdn }}.key'
+  tags: system_backup
+

@@ -1,0 +1,14 @@
+---
+
+- name: Create backup copy of host SSH keys
+  fetch: dest={{ secret }}/storage/sensitive/sshd src={{ item }} validate_md5=yes
+  when: secret is defined and secret
+  with_items:
+    - '/etc/ssh/ssh_host_rsa_key'
+    - '/etc/ssh/ssh_host_rsa_key.pub'
+    - '/etc/ssh/ssh_host_dsa_key'
+    - '/etc/ssh/ssh_host_dsa_key.pub'
+    - '/etc/ssh/ssh_host_ecdsa_key'
+    - '/etc/ssh/ssh_host_ecdsa_key.pub'
+  tags: system_backup
+

@@ -1,0 +1,26 @@
+---
+
+- name: Restore backed up SSH keys in case of reinstall (600)
+  copy: src={{ secret }}/storage/sensitive/sshd/{{ ansible_fqdn }}/{{ item }} dest=/{{ item }} owner=root group=root mode=0600
+  when: secret is defined and secret
+  notify: Restart sshd
+  with_items:
+    - 'etc/ssh/ssh_host_rsa_key'
+    - 'etc/ssh/ssh_host_dsa_key'
+    - 'etc/ssh/ssh_host_ecdsa_key'
+  tags: system_restore
+
+- name: Restore backed up SSH keys in case of reinstall (644)
+  copy: src={{ secret }}/storage/sensitive/sshd/{{ ansible_fqdn }}/{{ item }} dest=/{{ item }} owner=root group=root mode=0644
+  when: secret is defined and secret
+  notify: Restart sshd
+  with_items:
+    - 'etc/ssh/ssh_host_rsa_key.pub'
+    - 'etc/ssh/ssh_host_dsa_key.pub'
+    - 'etc/ssh/ssh_host_ecdsa_key.pub'
+  tags: system_restore
+
+- name: Flush handlers for sshd if needed
+  meta: flush_handlers
+  tags: system_restore
+
