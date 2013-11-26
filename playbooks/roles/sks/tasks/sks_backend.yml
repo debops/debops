@@ -1,5 +1,11 @@
 ---
 
+- name: Add missing SKS service in /etc/services
+  template: src=etc/services.d/50_sks.j2 dest=/etc/services.d/50_sks owner=root group=root mode=0644
+  notify: Assemble services.d
+  tags:
+    - sks
+
 - name: Install SKS Keyserver on backend server
   apt: pkg=sks default_release=wheezy-backports state=latest install_recommends=no
   tags:

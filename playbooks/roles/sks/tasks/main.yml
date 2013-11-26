@@ -1,11 +1,5 @@
 ---
 
-- name: Add missing SKS service in /etc/services
-  lineinfile: 'dest=/etc/services state=present insertafter=EOF regexp="^{{ item.name }}\s+{{ item.port }}/{{ item.proto }}" line="{{ item.name }}		{{ item.port }}/{{ item.proto }}			# {{ item.comment }}"'
-  with_items: sks_server_services
-  tags:
-    - sks
-
 - include: sks_frontend.yml
   when: sks_frontend is defined and sks_frontend == ansible_fqdn
   tags:
