@@ -49,6 +49,10 @@ users_list: False
 #    dotfiles_creates '~/.zshrc'
 #
 #    domain: '{{ ansible_domain }}' # for git users
+#
+#    gpg:
+#      - uid: 'Name Surname <user@example.org>'
+#        options: users_ssh_options.git_shell
 
 
 # --- Global defaults
@@ -77,4 +81,8 @@ users_git_home: '/srv/users'
 users_git_mode: '0751'
 users_git_shell: '/usr/bin/git-shell'
 users_git_default_domain: '{{ ansible_domain }}'
+
+# Options to insert into ~/.ssh/authorized_keys for each GPG key using monkeysphere
+users_ssh_options:
+  git_shell: 'no-port-forwarding,no-agent-forwarding,command="git-shell -c \"$SSH_ORIGINAL_COMMAND\""'
 
