@@ -35,7 +35,7 @@ echo "{{ apt_debian_preseed_sshkey }}" > /home/{{ apt_debian_preseed_username }}
 chown -R {{ apt_debian_preseed_username }}:{{ apt_debian_preseed_username }} /home/{{ apt_debian_preseed_username }}/.ssh
 {% endif %}
 {% endif %}
-{% if secret is not defined %}
+{% if secret is undefined or secret is defined and secret == False %}
 
 # Expire root password to force change
 passwd --expire root
