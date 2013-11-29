@@ -11,5 +11,10 @@
 
 [ $# -le 0 ] && echo "$0: error: missing list of hosts to restore." && exit 1
 
+if [ -z "${TOO_MANY_SECRETS}" ] ; then
+	ansible-playbook -i inventory playbooks/secret.yml --extra-vars="secret_mode=open"
+	trap "ansible-playbook -i inventory playbooks/secret.yml" EXIT
+fi
+
 ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory playbooks/system_restore.yml --extra-vars="hosts=$@"
 

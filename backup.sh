@@ -8,5 +8,12 @@
 # such. It will be backed up into "secret" Ansible directory, if configured in
 # the inventory.
 
+set -e
+
+if [ -z "${TOO_MANY_SECRETS}" ] ; then
+	ansible-playbook -i inventory playbooks/secret.yml --extra-vars="secret_mode=open"
+	trap "ansible-playbook -i inventory playbooks/secret.yml" EXIT
+fi
+
 ansible-playbook -i inventory playbooks/system_backup.yml $@
 
