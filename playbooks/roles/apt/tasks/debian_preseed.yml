@@ -2,7 +2,7 @@
 
 - name: Lookup system root password if secrets/ directory is defined
   set_fact:
-    apt_debian_preseed_rootpw: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/debian_preseed/system/root/password length=' + apt_debian_preseed_rootpw_length) }}"
+    apt_debian_preseed_rootpw: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/debian_preseed/system/root/password encrypt=md5_crypt length=' + apt_debian_preseed_rootpw_length) }}"
   when: secret is defined
   tags:
     - debian_preseed
