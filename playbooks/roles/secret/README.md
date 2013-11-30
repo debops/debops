@@ -20,6 +20,8 @@ Put variables listed below in inventory. The best place would be in `group_vars/
 
 - `secret_size`: size of encrypted storage in MB. By default, 64 MB. Optional.
 
+- `secret_random`: device that will be used to get randomness from, `/dev/urandom` by default. You might want to switch it to `/dev/random` on production/secure hosts. Optional.
+
 Now you can add two plays at the beginning and end of your playbook, like this:
 ```
 ---
