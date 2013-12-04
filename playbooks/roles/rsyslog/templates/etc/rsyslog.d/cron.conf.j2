@@ -1,5 +1,11 @@
 # {{ ansible_managed }}
+
 cron.*		/var/log/cron.log
 & ~
 
+:msg, contains, "pam_unix(cron:session): session opened for user root" /var/log/cron.log
+& ~
+
+:msg, contains, "pam_unix(cron:session): session closed for user root" /var/log/cron.log
+& ~
 
