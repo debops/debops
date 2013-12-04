@@ -30,6 +30,8 @@ server {
 {% endif %}
 {% endif %}
 
+	keepalive_timeout {{ item.keepalive | default(nginx_default_keepalive_timeout) }};
+
 {% if item.root is defined and item.root %}
 	root {{ item.root }};
 {% elif item.name is defined and item.name %}
