@@ -18,6 +18,18 @@ nginx_server_names_hash_max_size: 512
 
 nginx_default_keepalive_timeout: 60
 
+# Path to PKI infrastructure, set to False to disable nginx SSL support
+nginx_pki: '/srv/pki'
+
+# Where to look for certificate by default, choices: 'certs', 'combined', 'selfsigned'
+# Server-wide.
+nginx_default_ssl_type: 'selfsigned'
+
+# HTTP Strict-Transport-Security
+# https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security
+nginx_hsts_age: '15768000'
+nginx_hsts_subdomains: True
+
 # server_name which will be marked as default
 nginx_default_name: '{{ ansible_fqdn }}'
 
@@ -69,11 +81,18 @@ nginx_server_default:
   #alias:
   #  - 'www.{{ ansible_fqdn }}'
   #type: 'default'
+  #ssl: True
+  #ssl_type: 'selfsigned'
+  #ssl_name: '{{ ansible_fqdn }}'
+  #ssl_cert: '/path/to/server/certificate.crt'
+  #ssl_key: '/path/to/server/keyfile.key'
   #owner: 'root'
   #group: 'root'
   #keepalive: 60
   #listen:
   #  - '80'
+  #listen_ssl:
+  #  - '443'
   #root: '{{ nginx_default_root }}'
   #status:
   #  - '127.0.0.0/8'

@@ -33,6 +33,24 @@
   tags:
     - nginx
 
+  # This is a crude method to check if we should enable SSL support by default
+  # in all servers. Clunky, but will suffice for now. Nginx templates will
+  # blindly use paths supported by 'pki' role, so you should use it if you want
+  # SSL.
+- name: Check if nginx should enable SSL support
+  stat: path={{ nginx_pki }}/host/private/{{ ansible_fqdn }}.key
+  register: nginx_ssl_check
+  when: nginx_pki is defined and nginx_pki
+  tags:
+    - nginx
+
+- name: Enable SSL if host SSL key is present
+  set_fact:
+    nginx_ssl: True
+  when: nginx_ssl_check is defined and nginx_ssl_check.stat.exists == True
+  tags:
+    - nginx
+
 - include: nginx_upstreams.yml
   when: nginx_manage_upstreams == True
 
