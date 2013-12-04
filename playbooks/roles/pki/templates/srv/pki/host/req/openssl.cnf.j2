@@ -1,0 +1,65 @@
+# {{ ansible_managed }}
+
+HOME			= {{ pki_path }}/host/req
+RANDFILE		= $ENV::HOME/.rnd
+
+[req]
+default_md		= {{ pki_digest }}
+default_bits		= {{ pki_bits }}
+default_keyfile		= {{ pki_path }}/host/private/{{ item.cn }}.key
+prompt			= no
+encrypt_key		= no
+
+distinguished_name	= req_distinguished_name
+req_extensions		= v3_req
+x509_extensions		= v3_ca
+
+string_mask		= utf8only
+
+[req_distinguished_name]
+countryName		= "{{ item.c  | default(pki_country) }}"
+stateOrProvinceName	= "{{ item.st | default(pki_state) }}"
+localityName		= "{{ item.l  | default(pki_locality) }}"
+organizationName	= "{{ item.o  | default(pki_organization) }}"
+organizationalUnitName	= "{{ item.ou | default(pki_organizationalUnit) }}"
+commonName		= "{{ item.cn | default(pki_commonName) }}"
+
+[v3_req]
+basicConstraints	= critical, CA:FALSE
+keyUsage		= critical, digitalSignature, keyEncipherment
+extendedKeyUsage	= serverAuth, clientAuth
+subjectAltName		= @subject_alt_names
+
+[v3_ca]
+basicConstraints	= critical, CA:FALSE
+keyUsage		= critical, digitalSignature, keyEncipherment
+extendedKeyUsage	= serverAuth, clientAuth
+subjectKeyIdentifier	= hash
+authorityKeyIdentifier	= keyid:always,issuer:always
+subjectAltName		= @subject_alt_names
+
+[subject_alt_names]
+email.0			= {{ item.e     | default(pki_email) }}
+{% if item.mail is defined and item.mail %}
+{% for mail_name in item.mail %}
+email.{{ loop.index }}			= {{ mail_name }}
+{% endfor %}
+{% endif %}
+DNS.0			= {{ item.cn    | default(pki_commonName) }}
+{% if item.dns is defined and item.dns %}
+{% for dns_name in item.dns %}
+DNS.{{ loop.index }}			= {{ dns_name }}
+{% endfor %}
+{% endif %}
+{% if item.uri is defined and item.uri %}
+{% for uri_name in item.uri %}
+URI.{{ loop.index0 }}			= {{ uri_name }}
+{% endfor %}
+{% endif %}
+{% if item.ip is defined and item.ip %}
+{% for ip_name in item.ip %}
+IP.{{ loop.index0 }}			= {{ ip_name }}
+{% endfor %}
+{% endif %}
+
+

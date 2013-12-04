@@ -1,0 +1,50 @@
+---
+
+# Should PKI be managed by Ansible
+pki: True
+
+pki_path: '/srv/pki'
+
+pki_digest: 'sha256'
+pki_bits: 2048
+pki_selfsign_days: 365
+
+# Default settings for new Certificate Requests
+pki_country:            'AA'
+pki_state:              '{{ ansible_domain | capitalize }} State'
+pki_locality:           '{{ ansible_domain | capitalize }} City'
+pki_organization:       '{{ ansible_domain | capitalize }} Organization'
+pki_organizationalUnit: '{{ ansible_domain | capitalize }} Department'
+pki_commonName:         '{{ ansible_fqdn }}'
+pki_email:              'root@{{ ansible_domain }}'
+
+# Default certificate for FQDN of a host
+pki_default_certificate:
+  - cn: '{{ ansible_fqdn }}'
+
+# Example list of host certificates to create
+#pki_host_certificates:
+#  - cn: 'example.com'
+#    mail:
+#      - 'root@example.com'
+#    dns:
+#      - 'www.example.com'
+#      - 'mail.example.com'
+#      - '*.mail.example.com'
+#    uri:
+#      - 'http://example.com/'
+#    ip:
+#      - '192.0.2.1'
+#
+#  - cn: 'subdomain.{{ ansible_domain }}'
+#
+#  - cn: 'other.{{ ansible_domain }}'
+#    ou: 'Other Department'
+#    e: 'root@other.{{ ansible_domain }}'
+#    mail:
+#      - 'others@other.{{ ansible_domain }}'
+#      - 'root@{{ ansible_domain }}'
+#    dns:
+#      - '*.other.{{ ansible_domain }}'
+
+
