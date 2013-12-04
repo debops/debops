@@ -17,7 +17,8 @@
     - network
 
 - name: Apply firewall configuration
-  template: src=etc/ferm/ferm.conf.j2 dest=/etc/ferm/ferm.conf owner=root group=root backup=no
+  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
+  with_items: [ 'etc/default/ferm', 'etc/ferm/ferm.conf' ]
   notify: Restart ferm
   tags:
     - ferm
