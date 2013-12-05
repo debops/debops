@@ -12,6 +12,7 @@ apt_debian_preseed_destroy_server_path: 'srv/www/sites/destroy.{{ apt_debian_pre
 apt_debian_preseed_nginx:
   default:
     enabled: True
+    ssl: False
     location:
       '/':
         - 'try_files $uri $uri/ =404'
@@ -24,6 +25,7 @@ apt_debian_preseed_nginx:
       '/d-i': ${apt_cache_allow}
   destroy:
     enabled: True
+    ssl: False
     name: 'destroy.{{ ansible_fqdn }}'
     root: '/{{ apt_debian_preseed_destroy_server_path }}'
     location:
