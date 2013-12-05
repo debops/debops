@@ -17,6 +17,7 @@
 - hosts: '{{ hosts }}'
   remote_user: root
   sudo: no
+  gather_facts: False
   tags: init
   vars:
   - ssh_user: "{{ lookup('env','USER') }}"
@@ -24,6 +25,9 @@
   tasks:
   - name: Install python support for Ansible
     raw: apt-get -yq install python python-apt
+    tags: init
+
+  - action: setup
     tags: init
 
   - name: Create admin system group
