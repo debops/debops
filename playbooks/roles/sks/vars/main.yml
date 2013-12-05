@@ -5,9 +5,28 @@ sks_recon_port: 11370
 
 sks_nginx_frontend:
   enabled: True
+  default: True
+  ssl: False
   listen:
     - '80'
     - '11371'
+  location:
+    '/':
+      - 'try_files $uri $uri/ =404'
+      - 'index index.html'
+    '/pks':
+      - 'proxy_pass http://sks_servers/pks'
+      - 'proxy_pass_header Server'
+      - 'add_header Via "1.1 {{ ansible_fqdn }} (nginx)"'
+      - 'proxy_ignore_client_abort on'
+
+sks_nginx_ssl_frontend:
+  enabled: True
+  name: '{{ sks_frontend }}'
+  root: '/srv/www/sites/default/public'
+  listen: False
+  listen_ssl:
+    - '443'
   location:
     '/':
       - 'try_files $uri $uri/ =404'
