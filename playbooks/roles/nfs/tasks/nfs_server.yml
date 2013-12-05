@@ -29,8 +29,8 @@
     - nfs_server
 
 - name: Add missing NFS services in /etc/services
-  lineinfile: 'dest=/etc/services state=present insertafter=EOF regexp="^{{ item.name }}\s+{{ item.port }}/{{ item.proto }}" line="{{ item.name }}	{{ item.port }}/{{ item.proto }}			# {{ item.comment }}"'
-  with_items: nfs_server_services
+  template: src=etc/services.d/50_nfs.j2 dest=/etc/services.d/50_nfs owner=root group=root mode=0644
+  notify: Assemble services.d
   when: nfs_server is defined and nfs_server == True
   tags:
     - nfs
