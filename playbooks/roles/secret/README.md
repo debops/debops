@@ -10,7 +10,7 @@ Ansible role `secret` allows you to store and update passwords, certificates and
 
 ## How to use it
 
-First, dd `localhost` to list of hosts in inventory, preferably at the beginning and not inside any of the host groups. [ansible-aiua](https://github.com/drybjed/ansible-aiua) has been prepared to deal with this correctly, if you want to try it in your own playbook, make sure that you use `- hosts: all:!localhost` in your playbook definition to ignore `localhost` while running other plays.
+First, dd `localhost` to list of hosts in inventory, preferably at the beginning and not inside any of the host groups. [ginas](https://github.com/drybjed/ginas/) has been prepared to deal with this correctly, if you want to try it in your own playbook, make sure that you use `- hosts: all:!localhost` in your playbook definition to ignore `localhost` while running other plays.
 
 Put variables listed below in inventory. The best place would be in `group_vars/all.yml` to have one global secret storage. Using separate variables for different host groups haven't been tested and is currently not supported.
 
@@ -40,7 +40,7 @@ Now you can add two plays at the beginning and end of your playbook, like this:
 ```
 This way, Ansible will use `secret` role to create and/or open secret storage, run your playbooks and close secret storage at the end (during execution, files inside secret storage will be mounted in place of `secret` directory with owner and group of your user and `0700` permissions). This method has a disadvantage - when you use `ansible-playbook` command, you need to specify `--limit group,localhost` each time, or `secret` role will not be executed by Ansible.
 
-Another way to use `secret` role is to create a shell script, and run that role using separate `ansible-playbook` command. Here's an example script used in [ansible-aiua](https://github.com/drybjed/ansible-aiua/):
+Another way to use `secret` role is to create a shell script, and run that role using separate `ansible-playbook` command. Here's an example script used in [ginas](https://github.com/drybjed/ginas/):
 ```
 #!/bin/sh
 
