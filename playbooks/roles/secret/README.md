@@ -10,7 +10,7 @@ Ansible role `secret` allows you to store and update passwords, certificates and
 
 ## How to use it
 
-First, dd `localhost` to list of hosts in inventory, preferably at the beginning and not inside any of the host groups. [ginas](https://github.com/drybjed/ginas/) has been prepared to deal with this correctly, if you want to try it in your own playbook, make sure that you use `- hosts: all:!localhost` in your playbook definition to ignore `localhost` while running other plays.
+First, add `localhost` to list of hosts in inventory, preferably at the beginning and not inside any of the host groups. [ginas](https://github.com/drybjed/ginas/) has been prepared to deal with this correctly, if you want to try it in your own playbook, make sure that you use `- hosts: all:!localhost` in your playbook definition to ignore `localhost` while running other plays.
 
 Put variables listed below in inventory. The best place would be in `group_vars/all.yml` to have one global secret storage. Using separate variables for different host groups haven't been tested and is currently not supported.
 
