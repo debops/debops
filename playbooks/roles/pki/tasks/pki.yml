@@ -7,7 +7,7 @@
 
 - name: Manage certificate directory structure
   file: path={{ pki_path }}/{{ item }} state=directory owner=root group=root mode=0755
-  with_items: [ 'host/certs', 'host/selfsigned', 'host/combined', 'host/req', 'host/csr', 'ca/certs', 'ca/combined' ]
+  with_items: [ 'host/certs', 'host/selfsigned', 'host/combined', 'host/req', 'host/csr', 'host/crl', 'ca/certs', 'ca/combined', 'ca/crl' ]
   tags: [ 'pki' ]
 
 - name: Manage private directory structure
@@ -17,7 +17,7 @@
 
 - name: Create local directory structure on Ansible controller
   local_action: file path={{ secret }}/pki/{{ item }} state=directory
-  with_items: [ 'ca/certs', 'ca/combined', 'ca/private' ]
+  with_items: [ 'ca/certs', 'ca/combined', 'ca/crl', 'ca/private' ]
   sudo: no
   when: secret is defined and secret
   tags: [ 'pki' ]
@@ -81,7 +81,7 @@
   copy: src={{ secret }}/pki/ca/{{ item }}/
         dest={{ pki_path }}/ca/{{ item }}/
         owner=root group=root mode=0644
-  with_items: [ 'certs', 'combined' ]
+  with_items: [ 'certs', 'combined', 'crl' ]
   when: secret is defined and secret
   notify: Update ca-certificates
   tags: [ 'pki' ]
@@ -96,7 +96,7 @@
   # Without this Ansible gives fatal error on next task
 - name: Create local certificate directory on Ansible controller
   local_action: file path={{ secret }}/pki/hosts/{{ ansible_fqdn }}/{{ item }} state=directory
-  with_items: [ 'certs', 'combined' ]
+  with_items: [ 'certs', 'combined', 'crl' ]
   sudo: no
   when: secret is defined and secret
   tags: [ 'pki' ]
@@ -105,7 +105,7 @@
   copy: src={{ secret }}/pki/hosts/{{ ansible_fqdn }}/{{ item }}/
         dest={{ pki_path }}/host/{{ item }}/
         owner=root group=root mode=0644
-  with_items: [ 'certs', 'combined' ]
+  with_items: [ 'certs', 'combined', 'crl' ]
   when: secret is defined and secret
   tags: [ 'pki' ]
 
