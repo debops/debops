@@ -2,7 +2,7 @@
 
 - name: Ensure OpenSSL support is installed
   apt: pkg={{ item }} state=latest install_recommends=no
-  with_items: [ 'openssl', 'openssl-blacklist', 'ca-certificates' ]
+  with_items: [ 'openssl', 'openssl-blacklist', 'ca-certificates', 'ssl-cert' ]
   tags: [ 'pki' ]
 
 - name: Manage certificate directory structure
@@ -11,7 +11,7 @@
   tags: [ 'pki' ]
 
 - name: Manage private directory structure
-  file: path={{ pki_path }}/{{ item }} state=directory owner=root group=root mode=0700
+  file: path={{ pki_path }}/{{ item }} state=directory owner=root group={{ pki_private_group }} mode=0710
   with_items: [ 'host/private', 'ca/private' ]
   tags: [ 'pki' ]
 
@@ -42,7 +42,7 @@
   tags: [ 'pki' ]
 
 - name: Set correct permissions for certificate keys
-  file: path={{ pki_path }}/host/private/{{ item.cn }}.key state=file owner=root group=root mode=0400
+  file: path={{ pki_path }}/host/private/{{ item.cn }}.key state=file owner=root group={{ pki_private_group }} mode=0440
   with_items:
     - ${pki_default_certificate}
     - ${pki_host_certificates}
@@ -89,7 +89,7 @@
 - name: Download CA private keys
   copy: src={{ secret }}/pki/ca/private/
         dest={{ pki_path }}/ca/private/
-        owner=root group=root mode=0400
+        owner=root group={{ pki_private_group }} mode=0440
   when: secret is defined and secret
   tags: [ 'pki' ]
 
