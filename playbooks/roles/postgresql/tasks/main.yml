@@ -1,0 +1,13 @@
+---
+
+- include: install_postgresql.yml
+
+- name: Count number of currently configured clusters
+  set_fact:
+    postgresql_cluster_count: '{{ (postgresql_default_cluster|length|int + postgresql_clusters|length|int) * 1 }}'
+  tags: postgresql
+
+- include: manage_shared_memory.yml
+- include: manage_clusters.yml
+- include: manage_ferm_services.yml
+
