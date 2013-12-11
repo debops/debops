@@ -1,5 +1,7 @@
 # {{ ansible_managed }}
 
+{% block warning %}
+{% endblock %}
 d-i debian-installer/locale string {{ apt_debian_preseed_locale }}
 d-i keyboard-configuration/variant select {{ apt_debian_preseed_keyboardvariant }}
 d-i languagechooser/language-name-fb select {{ apt_debian_preseed_language }}
@@ -36,7 +38,9 @@ d-i clock-setup/utc boolean true
 d-i time/zone string {{ apt_debian_preseed_timezone }}
 d-i clock-setup/ntp boolean true
 
+{% block partman %}
 d-i partman/mount_style select uuid
+{% endblock %}
 
 d-i base-installer/install-recommends boolean false
 d-i base-installer/kernel/image string linux-image-amd64
