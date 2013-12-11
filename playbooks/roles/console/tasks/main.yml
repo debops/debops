@@ -9,6 +9,20 @@
     - console
     - packages
 
+- name: Enable serial console on /dev/{{ console_serial_port }}
+  lineinfile: dest=/etc/inittab regexp='^S0:{{ console_serial_runlevels }}:respawn:' state=present line='S0:{{ console_serial_runlevels }}:respawn:/sbin/getty -L {{ console_serial_port }} {{ console_serial_baud_rate }} {{ console_serial_term }}'
+  when: console_serial is defined and console_serial == True
+  notify: Reload init
+  tags:
+    - console
+
+- name: Disable serial console on /dev/{{ console_serial_port }}
+  lineinfile: dest=/etc/inittab regexp='^S0:{{ console_serial_runlevels }}:respawn:' state=absent
+  when: console_serial is defined and console_serial == False
+  notify: Reload init
+  tags:
+    - console
+
 - name: Configure /etc/issue
   template: src=etc/issue.j2 dest=/etc/issue owner=root group=root mode=0644
   tags:
