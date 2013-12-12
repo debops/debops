@@ -24,3 +24,19 @@
     - ferm
     - network
 
+- name: Apply iptables rules if ferm is enabled
+  command: ferm --slow /etc/ferm/ferm.conf
+  changed_when: False
+  when: ferm is defined and ferm
+  tags:
+    - ferm
+    - network
+
+- name: Clear iptables rules if ferm is disabled
+  command: ferm --flush /etc/ferm/ferm.conf
+  changed_when: False
+  when: ferm is undefined or ferm is defined and ferm == False
+  tags:
+    - ferm
+    - network
+
