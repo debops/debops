@@ -29,6 +29,11 @@ table filter {
 
 		# Allow SSH connections
 		protocol tcp dport ssh {
+{% if ansible_controller is defined and ansible_controller %}
+
+			# Allow access for Ansible Controller (caution, might allow entire networks if it's a router)
+			saddr {{ ansible_controller }} ACCEPT;
+{% endif %}
 {% if ferm_ssh_accept is defined %}
 
 			# Bypass SSH filtering

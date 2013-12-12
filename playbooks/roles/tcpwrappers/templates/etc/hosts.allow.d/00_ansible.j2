@@ -13,6 +13,11 @@
 # for further information.
 #
 
+{% if ansible_controller is defined and ansible_controller %}
+# Allow access for Ansible Controller (caution, might allow entire networks if it's a router)
+sshd: {{ ansible_controller }}
+
+{% endif %}
 {% if tcpwrappers_allow_local is defined %}
 # Allowed local connections
 {% for line in tcpwrappers_allow_local %}

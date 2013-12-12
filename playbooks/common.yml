@@ -1,8 +1,21 @@
 ---
 
+- name: Gather default and custom facts
+  hosts: all:!localhost
+  sudo: no
+  gather_facts: True
+
+  tasks:
+    - name: Check IP address of Ansible Controller
+      set_fact:
+        ansible_controller: '{{ ansible_env.SSH_CLIENT.split(" ") | first }}/32'
+      when: ansible_controller is undefined
+      tags: [ 'ferm', 'tcpwrappers' ]
+
 - name: Common configuration for all hosts
   hosts: all:!localhost
   sudo: yes
+  gather_facts: True
 
   roles:
   - { role: etc_services }
