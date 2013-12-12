@@ -29,7 +29,11 @@ server {
 {% endif %}
 {% endif %}
 
+{% if item.redirect is defined and item.redirect %}
+	return 301 {{ item.redirect }};
+{% else %}
 	return 301 https://$host$request_uri;
+{% endif %}
 }
 
 {% elif item.listen is defined and item.listen == False %}
@@ -51,7 +55,11 @@ server {
 {% endif %}
 {% endif %}
 
+{% if item.redirect is defined and item.redirect %}
+	return 301 {{ item.redirect }};
+{% else %}
 	return 301 https://$host$request_uri;
+{% endif %}
 }
 
 {% endif %}
@@ -103,6 +111,10 @@ server {
 {% endif %}
 {% endif %}
 
+{% if item.redirect is defined and item.redirect %}
+	return 301 {{ item.redirect }};
+}
+{% else %}
 	keepalive_timeout {{ item.keepalive | default(nginx_default_keepalive_timeout) }};
 
 {% if item.root is defined and item.root %}
@@ -297,5 +309,6 @@ server {
 
 {% endif %}
 }
+{% endif %}
 
 
