@@ -14,6 +14,11 @@
   tags:
     - nginx
 
+- name: Create directory for webadmins configuration
+  file: path=/etc/nginx/sites-local state=directory owner=root group=webadmins mode=0775
+  tags:
+    - nginx
+
 - name: Make sure nginx is running
   service: name=nginx state=started
   tags:
