@@ -31,6 +31,13 @@
   tags:
     - nginx
 
+- name: Setup /etc/nginx/fastcgi_params
+  template: src=etc/nginx/fastcgi_params.j2 dest=/etc/nginx/fastcgi_params owner=root group=root mode=0644
+  notify:
+    - Reload nginx
+  tags:
+    - nginx
+
 - name: Remove default nginx site
   file: path=/etc/nginx/sites-enabled/default state=absent
   notify:
