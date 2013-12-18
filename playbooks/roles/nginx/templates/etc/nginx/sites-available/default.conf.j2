@@ -180,53 +180,6 @@ server {
 		deny all;
 	}
 
-{% if item.upstream_php5 is defined and item.upstream_php5 %}
-{#
-      !!! You need to enable pm_status variable in php5 pool for this to work !!!
-#}
-	location = {{ item.upstream_php5_status | default('/php5_status') }} {
-		access_log off;
-{% if nginx_default_status is defined and nginx_default_status %}
-{% for address in nginx_default_status %}
-		allow {{ address }};
-{% endfor %}
-{% endif %}
-{% if item.status is defined and item.status %}
-{% for address in item.status %}
-		allow {{ address }};
-{% endfor %}
-{% endif %}
-		deny all;
-
-		fastcgi_split_path_info ^(.+\.php)(/.+)$;
-		include fastcgi_params;
-		fastcgi_index index.php;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		fastcgi_pass {{ item.upstream_php5 }};
-	}
-
-	location = {{ item.upstream_php5_ping | default('/php5_ping') }} {
-		access_log off;
-{% if nginx_default_status is defined and nginx_default_status %}
-{% for address in nginx_default_status %}
-		allow {{ address }};
-{% endfor %}
-{% endif %}
-{% if item.status is defined and item.status %}
-{% for address in item.status %}
-		allow {{ address }};
-{% endfor %}
-{% endif %}
-		deny all;
-
-		fastcgi_split_path_info ^(.+\.php)(/.+)$;
-		include fastcgi_params;
-		fastcgi_index index.php;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		fastcgi_pass {{ item.upstream_php5 }};
-	}
-
-{% endif %}
 {% endif %}
 {% if item.name is defined and item.name == nginx_default_name or item.name is not defined and item.default is defined and item.default %}
 	include /etc/nginx/http-default.d/*.conf;
