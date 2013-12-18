@@ -134,7 +134,7 @@ server {
 	error_log /var/log/nginx/{{ item.name }}_error.log;
 
 {% endif %}
-	index {% if item.upstream_php5 is defined and item.upstream_php5 %}index.php {% endif %}index.html index.htm;
+	index index.html index.htm{% if item.upstream_php5 is defined and item.upstream_php5 %} index.php{% endif %};
 
 	# Temporary fix for CVE-2013-4547
 	# http://mailman.nginx.org/pipermail/nginx-announce/2013/000125.html
