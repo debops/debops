@@ -143,26 +143,9 @@ server {
 	}
 
 {% if item.userdir is defined and item.userdir %}
-{% if item.upstream_php5 is defined and item.upstream_php5 %}
-	location ~* ^/~(.+?)(/.*\.php)$ {
-		alias /srv/www/$1/userdir/public$2;
-
-		fastcgi_split_path_info ^(.+\.php)(/.+)$;
-		include fastcgi_params;
-		fastcgi_index index.php;
-		fastcgi_param SCRIPT_FILENAME $request_filename;
-		fastcgi_pass  {{ item.upstream_php5 }};
-	}
-
-{% else %}
-	location ~* ^/~(.+?)(/.*\.php)$
-		return 403;
-	}
-
-{% endif %}
 	location ~ ^/~(.+?)(/.*)?$ {
 		alias /srv/www/$1/userdir/public$2;
-		index {% if item.upstream_php5 is defined and item.upstream_php5 %}index.php {% endif %}index.html index.htm;
+		index index.html index.htm;
 		autoindex on;
 	}
 
