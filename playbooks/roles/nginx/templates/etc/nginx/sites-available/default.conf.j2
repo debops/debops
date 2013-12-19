@@ -13,7 +13,7 @@ server {
 	listen {{ line }};
 {% endfor %}
 {% else %}
-	listen {{ item.listen | default('80') }}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %};
+	listen {{ item.listen | default('80') }}{% if item.default is defined and item.default == False %}{% else %}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %}{% endif %};
 {% endif %}
 {% if item.name is defined and item.name %}
 
@@ -40,7 +40,7 @@ server {
 {# Do nothing #}
 {% else %}
 server {
-	listen 80{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %};
+	listen 80{% if item.default is defined and item.default == False %}{% else %}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or  item.name is not defined %} default_server{% endif %}{% endif %};
 {% if item.name is defined and item.name %}
 
 	server_name {{ item.name }};
@@ -70,10 +70,10 @@ server {
 	listen {{ line }} ssl;
 {% endfor %}
 {% else %}
-	listen {{ item.listen_ssl | default('443') }}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %} ssl;
+	listen {{ item.listen_ssl | default('443') }}{% if item.default is defined and item.default == False %}{% else %}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %}{% endif %} ssl;
 {% endif %}
 {% else %}
-	listen 443{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %} ssl;
+	listen 443{% if item.default is defined and item.default == False %}{% else %}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %}{% endif %} ssl;
 {% endif %}
 
 	ssl_certificate {% if item.ssl_cert is defined and item.ssl_cert %}{{ item.ssl_cert }}{% else %}{{ nginx_pki }}/host/{% if item.ssl_type is defined and item.ssl_type %}{{ item.ssl_type }}{% else %}{{ nginx_default_ssl_type | default('selfsigned') }}{% endif %}/{{ item.ssl_name | default(ansible_fqdn) }}.crt{% endif %};
@@ -91,10 +91,10 @@ server {
 	listen {{ line }};
 {% endfor %}
 {% else %}
-	listen {{ item.listen | default('80') }}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %};
+	listen {{ item.listen | default('80') }}{% if item.default is defined and item.default == False %}{% else %}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %}{% endif %};
 {% endif %}
 {% else %}
-	listen 80{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %};
+	listen 80{% if item.default is defined and item.default == False %}{% else %}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %}{% endif %};
 {% endif %}
 {% endif %}
 {% if item.name is defined and item.name %}
