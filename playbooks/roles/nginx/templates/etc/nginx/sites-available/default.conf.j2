@@ -191,10 +191,8 @@ server {
 {% if item.location is defined %}
 {% for path in item.location.keys() %}
 	location {{ path }} {
-{% if item.location[path] is iterable %}
-{% for line in item.location[path] %}
-		{{ line }};
-{% endfor %}
+{% if item.location[path] %}
+		{{ item.location[path] | indent(16) }}
 {% endif %}
 {% if item.location_allow is defined %}
 {% if item.location_allow[path] is defined and item.location_allow[path] %}
