@@ -23,3 +23,18 @@
   tags:
     - sshd
 
+- name: Create /etc/ssh/ssh_known_hosts.d directory
+  file: path=/etc/ssh/ssh_known_hosts.d state=directory owner=root group=root mode=0755
+  when: sshd_known_hosts is defined and sshd_known_hosts
+  tags: sshd
+
+- name: Gather ssh_known_hosts
+  shell: ssh-keyscan {{ item }} > /etc/ssh/ssh_known_hosts.d/{{ item }} creates=/etc/ssh/ssh_known_hosts.d/{{ item }}
+  with_items: sshd_known_hosts
+  when: sshd_known_hosts is defined and sshd_known_hosts
+  tags: sshd
+
+- name: Assemble ssh_known_hosts
+  assemble: src=/etc/ssh/ssh_known_hosts.d dest=/etc/ssh/ssh_known_hosts backup=no owner=root group=root mode=0644
+  when: sshd_known_hosts is defined and sshd_known_hosts
+  tags: sshd
