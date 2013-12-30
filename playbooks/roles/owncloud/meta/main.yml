@@ -1,0 +1,29 @@
+---
+
+dependencies:
+
+  - role: mysql
+    when: owncloud_dependencies is defined and owncloud_dependencies and
+          owncloud_database is defined and owncloud_database == 'mysql'
+    tags: owncloud
+
+  - role: postgresql
+    when: owncloud_dependencies is defined and owncloud_dependencies and
+          owncloud_database is defined and owncloud_database == 'postgresql'
+    tags: owncloud
+
+  - role: php5
+    php5_pools:
+      - '{{ owncloud_php5_pool }}'
+    when: owncloud_dependencies is defined and owncloud_dependencies
+    tags: owncloud
+
+  - role: nginx
+    nginx_servers:
+      - '{{ owncloud_nginx_server }}'
+    nginx_upstreams:
+      - '{{ owncloud_nginx_upstream_php5 }}'
+    when: owncloud_dependencies is defined and owncloud_dependencies
+    tags: owncloud
+
+

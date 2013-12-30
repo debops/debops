@@ -1,0 +1,54 @@
+---
+
+- name: Slurp deploy key
+  slurp: src={{ owncloud_home }}/.ssh/id_rsa.pub
+  register: owncloud_deploy_key
+  when: owncloud_deploy_key is undefined
+  tags: owncloud
+
+- name: Create hash variable with deploy key
+  set_fact:
+    owncloud_deploy_data:
+      title: '{{ owncloud_user }}@{{ ansible_hostname }} deployed by Ansible'
+      key: '{{ owncloud_deploy_key.content | b64decode | trim }}'
+  when: owncloud_deploy_key is defined
+  tags: owncloud
+
+- name: Setup deploy key on ownCloud source server (githost)
+  authorized_key: user={{ owncloud_deploy_user }} key='{{ owncloud_deploy_data.key }}'
+                  key_options='no-X11-forwarding,no-agent-forwarding,no-port-forwarding' state=present
+  delegate_to: '{{ owncloud_deploy_server }}'
+  when: owncloud_deploy_key is defined and
+        owncloud_source is defined and
+        owncloud_source == 'githost'
+  tags: owncloud
+
+- name: Setup deploy key on ownCloud source server (github)
+  command: "curl --silent --header 'Authorization: token {{ owncloud_deploy_token }}' --data '{{ owncloud_deploy_data | to_nice_json }}' https://api.github.com/repos/{{ owncloud_deploy_repo | replace('.git','') }}/keys"
+  changed_when: False
+  when: owncloud_deploy_key is defined and
+        owncloud_source is defined and
+        owncloud_source == 'github'
+  tags: owncloud
+
+- name: Find id of ownCloud source project (gitlab)
+  uri: >
+        url=https://{{ owncloud_deploy_server }}/api/v3/projects/{{ owncloud_deploy_repo | replace('.git','') | replace('/','%2F') }}
+        HEADER_PRIVATE-TOKEN={{ owncloud_deploy_token }}
+  register: owncloud_gitlab
+  when: owncloud_deploy_key is defined and
+        owncloud_source is defined and
+        owncloud_source == 'gitlab'
+  tags: owncloud
+
+- name: Setup deploy key on ownCloud source server (gitlab)
+  uri: >
+        url=https://{{ owncloud_deploy_server }}/api/v3/projects/{{ owncloud_gitlab.json.id }}/keys
+        HEADER_PRIVATE-TOKEN={{ owncloud_deploy_token }} HEADER_Content-Type="application/json"
+        status_code=201 method=POST body='{{ owncloud_deploy_data | to_nice_json }}'
+  when: owncloud_deploy_key is defined and
+        owncloud_source is defined and
+        owncloud_source == 'gitlab'
+  tags: owncloud
+
+
