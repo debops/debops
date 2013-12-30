@@ -13,7 +13,7 @@
   with_items:
     - ${nginx_servers}
   notify:
-    - Reload nginx
+    - Test nginx and reload
   when: item.locked is defined and item.locked == False or item.locked is not defined
   tags:
     - nginx
@@ -24,7 +24,7 @@
     - ${nginx_servers}
   when: item.locked is defined and item.locked == False or item.locked is not defined and item.enabled is defined and item.enabled == True
   notify:
-    - Reload nginx
+    - Test nginx and reload
   tags:
     - nginx
 
@@ -34,7 +34,7 @@
     - ${nginx_servers}
   when: item.locked is defined and item.locked == False or item.locked is not defined and item.enabled is defined and item.enabled == False
   notify:
-    - Reload nginx
+    - Test nginx and reload
   tags:
     - nginx
 
