@@ -24,10 +24,20 @@
   tags:
     - nginx
 
+- name: Divert original /etc/nginx/nginx.conf
+  command: dpkg-divert --quiet --local --divert /etc/nginx/nginx.conf.dpkg-divert --rename /etc/nginx/nginx.conf creates=/etc/nginx/nginx.conf.dpkg-divert
+  tags:
+    - nginx
+
 - name: Setup /etc/nginx/nginx.conf
   template: src=etc/nginx/nginx.conf.j2 dest=/etc/nginx/nginx.conf owner=root group=root mode=0644
   notify:
     - Test nginx and reload
+  tags:
+    - nginx
+
+- name: Divert original /etc/nginx/fastcgi_params
+  command: dpkg-divert --quiet --local --divert /etc/nginx/fastcgi_params.dpkg-divert --rename /etc/nginx/fastcgi_params creates=/etc/nginx/fastcgi_params.dpkg-divert
   tags:
     - nginx
 
