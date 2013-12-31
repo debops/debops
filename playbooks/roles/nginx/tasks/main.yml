@@ -73,6 +73,29 @@
   tags:
     - nginx
 
+- name: Manage local server definitions - create symlinks
+  file: src=/etc/nginx/sites-local/{{ item.0 }} path=/etc/nginx/sites-enabled/{{ item.1 }}
+        state=link owner=root group=root mode=0644
+  with_together:
+    - '{{ nginx_local_servers.values() }}'
+    - '{{ nginx_local_servers.keys() }}'
+  when: nginx_local_servers is defined and nginx_local_servers and
+        item.0 is defined and item.0
+  notify:
+    - Test nginx and reload
+  tags: nginx
+
+- name: Manage local server definitions - remove symlinks
+  file: path=/etc/nginx/sites-enabled/{{ item.1 }} state=absent
+  with_together:
+    - '{{ nginx_local_servers.values() }}'
+    - '{{ nginx_local_servers.keys() }}'
+  when: nginx_local_servers is defined and nginx_local_servers and
+        item.0 is undefined or item.0 is defined and item.0 == False
+  notify:
+    - Test nginx and reload
+  tags: nginx
+
 - include: nginx_upstreams.yml
   when: nginx_manage_upstreams == True
 
