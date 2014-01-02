@@ -19,6 +19,10 @@
   tags:
     - nginx
 
+- name: Allow webadmins to reload nginx using sudo
+  template: src=etc/sudoers.d/nginx_webadmins.j2 dest=/etc/sudoers.d/nginx_webadmins owner=root group=root mode=0440
+  tags: nginx
+
 - name: Make sure nginx is running
   service: name=nginx state=started
   tags:
