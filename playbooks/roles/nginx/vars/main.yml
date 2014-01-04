@@ -1,0 +1,20 @@
+---
+
+# Hash of SSL ciphers available to use in nginx server definitions
+# You can select a set of ciphers using 'ssl_ciphers' variable
+# Default set of ciphers is set in nginx_default_ssl_ciphers variable
+nginx_ssl_ciphers:
+
+  # Perfect Forward Secrecy (https://en.wikipedia.org/wiki/Forward_secrecy)
+  # No BEAST mitigation server-side
+  pfs: 'EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH EDH+aRSA !aNULL !eNULL !LOW !3DES !RC4 !MD5 !EXP !PSK !SRP !DSS'
+
+  # Hardened SSL cipher list (https://hynek.me/articles/hardening-your-web-servers-ssl-ciphers/)
+  # FIPS 140-2 compliant, partial Forward Secrecy, no BEAST mitigation, IE6 not supported
+  hardened: 'ECDH+AESGCM DH+AESGCM ECDH+AES256 DH+AES256 ECDH+AES128 DH+AES ECDH+3DES DH+3DES RSA+AES RSA+3DES !aNULL !MD5 !DSS'
+
+  # FIPS 140-2 compliant (https://en.wikipedia.org/wiki/FIPS_140-2)
+  # Partial Forward Secrecy, no BEAST mitigation server-side, IE6 not supported
+  fips: '!aNULL !eNULL FIPS@STRENGTH'
+
+
