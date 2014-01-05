@@ -38,3 +38,16 @@
   assemble: src=/etc/ssh/ssh_known_hosts.d dest=/etc/ssh/ssh_known_hosts backup=no owner=root group=root mode=0644
   when: sshd_known_hosts is defined and sshd_known_hosts
   tags: sshd
+
+- name: Configure authorized keys for users
+  authorized_key: key='{{ item.key }}' manage_dir=no key_options='{{ item.options | default("") }}'
+                  path={{ sshd_authorized_keys }}/{{ item.user }} user={{ item.user }}
+                  state={{ item.state | default('present') }}
+  with_flattened:
+    - sshd_authorized_keys_list
+    - sshd_authorized_keys_group_list
+    - sshd_authorized_keys_host_list
+  when: item is defined and item and item.key is defined and item.user is defined
+  tags: sshd
+
+
