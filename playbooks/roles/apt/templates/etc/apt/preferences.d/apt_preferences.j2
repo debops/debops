@@ -2,7 +2,7 @@ Explanation: {{ ansible_managed }}
 Explanation: APT preferences for {{ item.name }}
 Explanation: {{ item.why | default('Reason not specified') }}
 Package: {{ item.pkg }}
-Pin: {{ item.pin | default("release a={{ ansible_lsb['codename'] }}-backports") }}
+Pin: {{ item.pin | default("release a=" + ansible_lsb.codename + "-backports") }}
 Pin-Priority: {{ item.priority | default(apt_default_pin_priority) }}
 
 
