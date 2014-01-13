@@ -1,0 +1,40 @@
+---
+
+- name: Remove unwanted files if postfix is disabled
+  file: path={{ item }} state=absent
+  with_items:
+    - '/etc/postfix/postfix-capabilities'
+  when: postfix is undefined or postfix is defined and postfix == False
+
+- name: Remove firewall configuration for postfix
+  file: path=/etc/ferm/filter-input.d/postfix.conf state=absent
+  when: postfix is undefined or postfix is defined and postfix == False
+  notify: Restart ferm
+
+- name: Disable DH params regeneration if postfix is disabled
+  cron: name='Regenerate DH params for postfix' minute=0 hour={{ postfix_cron_dhparams_hour | default('0') }} user=root
+        job='/etc/postfix/postfix-regenerate-dhparams' cron_file='postfix-regenerate-dhparams' state=absent
+  when: postfix is undefined or postfix is defined and postfix == False
+
+- name: Move postfix configuration out of the way before reversion
+  command: rm -f /etc/postfix/{{ item }} removes=/etc/postfix/{{ item }}.dpkg-divert
+  with_items: [ 'main.cf', 'master.cf' ]
+  when: postfix is undefined or postfix is defined and postfix == False
+
+- name: Remove diversion of original postfix configuration
+  command: dpkg-divert --quiet --local --rename --remove /etc/postfix/{{ item }}
+           removes=/etc/postfix/{{ item }}.dpkg-divert
+  with_items: [ 'main.cf', 'master.cf' ]
+  when: postfix is undefined or postfix is defined and postfix == False
+  notify: Restart postfix
+
+- name: Move alias database out of the way before reversion
+  command: rm -f /etc/aliases removes=/etc/aliases.dpkg-divert
+  when: postfix is undefined or postfix is defined and postfix == False
+
+- name: Remove diversion of original alias database
+  command: dpkg-divert --quiet --local --rename --remove /etc/aliases
+           removes=/etc/aliases.dpkg-divert
+  when: postfix is undefined or postfix is defined and postfix == False
+
+
