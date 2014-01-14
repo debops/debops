@@ -18,12 +18,6 @@
     - users
     - groups
 
-- name: Make sure directory for git user homes exist
-  file: path={{ users_git_home | default('/srv/users') }} state=directory owner=root group=root mode=0751
-  tags:
-    - users
-    - groups
-
 - name: Manage git user homes
   user: name={{ item.name }} state={{ item.state | default('present') }} home={{ item.home | default(users_git_home + '/' + item.name) }} createhome=yes
   with_items:

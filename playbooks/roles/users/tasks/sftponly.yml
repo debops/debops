@@ -18,12 +18,6 @@
     - users
     - groups
 
-- name: Make sure directory for sftponly user homes exist
-  file: path={{ users_sftponly_home | default('/srv/users') }} state=directory owner={{ users_sftponly_owner | default('root') }} group={{ users_sftponly_group | default('sftponly') }} mode={{ users_sftponly_mode | default('0751') }}
-  tags:
-    - users
-    - groups
-
 - name: Manage sftponly user homes
   user: name={{ item.name }} state={{ item.state | default('present') }} home={{ item.home | default(users_sftponly_home + '/' + item.name) }} createhome=yes
   with_items:

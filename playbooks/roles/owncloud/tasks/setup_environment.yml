@@ -9,10 +9,6 @@
   group: name={{ owncloud_group }} system=yes state=present
   tags: owncloud
 
-- name: Make sure path for ownCloud home directory exists
-  file: path=/srv/users state=directory owner=root group=root mode=0755
-  tags: owncloud
-
 - name: Create ownCloud user
   user: name={{ owncloud_user }} group={{ owncloud_group }} home={{ owncloud_home }}
         shell=/bin/sh comment="OwnCloud" system=yes state=present
