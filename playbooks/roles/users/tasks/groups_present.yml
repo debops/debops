@@ -1,28 +1,17 @@
 ---
 
-- name: Manage groups with gids
-  group: name={{ item.group | default(item.name) }} state={{ item.state | default('present') }} gid={{ item.gid }}
+- name: Create user groups
+  group: name={{ item.group | default(item.name) }} state=present
+         {% if item.gid is defined and item.gid %} gid={{ item.gid }} {% endif %}
+         {% if item.systemgroup is defined and item.systemgroup %} system=yes {% endif %}
   with_items:
     - ${users_admins}
     - ${users_sshusers}
     - ${users_git}
     - ${users_sftponly}
     - ${users_list}
-  when: item.name is defined and item.gid is defined
-  tags:
-    - users
-    - groups
+  when: item.name is defined and item.name and
+        item.state is undefined or item.state is defined and item.state != 'absent'
 
-- name: Manage groups without gids
-  group: name={{ item.group | default(item.name) }} state={{ item.state | default('present') }}
-  with_items:
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_git}
-    - ${users_sftponly}
-    - ${users_list}
-  when: item.name is defined and item.gid is undefined and item.state is not defined or item.state is defined and item.state != 'absent'
-  tags:
-    - users
-    - groups
+
 

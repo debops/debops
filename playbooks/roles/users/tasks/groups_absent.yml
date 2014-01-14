@@ -1,6 +1,6 @@
 ---
 
-- name: Remove groups if requested
+- name: Remove user groups if requested
   group: name={{ item.group | default(item.name) }} state=absent
   with_items:
     - ${users_admins}
@@ -9,7 +9,4 @@
     - ${users_sftponly}
     - ${users_list}
   when: item.name is defined and item.state is defined and item.state == 'absent'
-  tags:
-    - users
-    - groups
 
