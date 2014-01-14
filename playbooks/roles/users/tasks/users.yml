@@ -1,26 +1,17 @@
 ---
 
-- name: Manage users with uids
-  user: name={{ item.name }} state={{ item.state | default('present') }} group={{ item.group | default(item.name) }} createhome=no uid={{ item.uid }} shell={{ item.shell | default(users_default_shell) }} groups={{ item.groups | default('') }} append={{ item.append | default(True) }}
+- name: Manage user accounts
+  user: name={{ item.name }} state={{ item.state | default('present') }}
+        group={{ item.group | default(item.name) }} createhome=no
+        shell={{ item.shell | default(users_default_shell) }}
+        groups={{ item.groups | default('') }} append={{ item.append | default(True) }}
+        {% if item.uid is defined and item.uid %} uid={{ item.uid }} {% endif %}
+        {% if item.systemuser is defined and item.systemuser %} system=yes {% endif %}
   with_items:
     - ${users_admins}
     - ${users_sshusers}
     - ${users_list}
-  when: item.name is defined and item.uid is defined
-  tags:
-    - users
-    - groups
-
-- name: Manage users without uids
-  user: name={{ item.name }} state={{ item.state | default('present') }} group={{ item.group | default(item.name) }} createhome=no shell={{ item.shell | default(users_default_shell) }} groups={{ item.groups | default('') }} append={{ item.append | default(True) }}
-  with_items:
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
-  when: item.name is defined and item.uid is undefined
-  tags:
-    - users
-    - groups
+  when: item.name is defined and item.name
 
 - name: Manage user homes
   user: name={{ item.name }} state={{ item.state | default('present') }} home={{ item.home | default('/home/' + item.name) }} createhome=yes
