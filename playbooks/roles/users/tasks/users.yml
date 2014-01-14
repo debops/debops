@@ -2,49 +2,46 @@
 
 - name: Manage user accounts
   user: name={{ item.name }} state={{ item.state | default('present') }}
-        group={{ item.group | default(item.name) }} createhome=no
-        shell={{ item.shell | default(users_default_shell) }}
-        groups={{ item.groups | default('') }} append={{ item.append | default(True) }}
+        group={{ item.group | default(item.name) }}
         {% if item.uid is defined and item.uid %} uid={{ item.uid }} {% endif %}
         {% if item.systemuser is defined and item.systemuser %} system=yes {% endif %}
+        {% if item.type is defined and item.type == 'sftponly' %}
+        groups='sftponly' append=False
+        home={{ item.home | default('/srv/users/' + item.name) }} createhome=no
+        shell='/usr/sbin/nologin'
+        {% else %}
+        groups={{ item.groups | default('') }} append={{ item.append | default(True) }}
+        home={{ item.home | default('/home/' + item.name) }} createhome=no
+        shell={{ item.shell | default(users_default_shell) }}
+        {% endif %}
   with_items:
+    - ${users_default}
     - ${users_admins}
     - ${users_sshusers}
     - ${users_list}
   when: item.name is defined and item.name
 
-- name: Manage user homes
-  user: name={{ item.name }} state={{ item.state | default('present') }} home={{ item.home | default('/home/' + item.name) }} createhome=yes
-  with_items:
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
-  when: item.name is defined
-  tags:
-    - users
-    - groups
-
 - name: Manage home directories permissions
-  file: path={{ item.home | default('/home/' + item.name) }} state=directory owner={{ item.home_owner | default('root') }} group={{ item.home_group | default('root') }} mode={{ item.home_mode | default('0755') }}
+  file: state=directory
+        {% if item.type is defined and item.type == 'sftponly' %}
+        path={{ item.home | default('/srv/users/' + item.name) }} owner=root group=root mode=0751
+        {% else %}
+        path={{ item.home | default('/home/' + item.name) }}
+        owner={{ item.home_owner | default(item.name) }}
+        {% if item.group is defined and item.group %}
+        group={{ item.home_group | default(item.group) }}
+        {% else %}
+        group={{ item.home_group | default(item.name) }}
+        {% endif %}
+        mode={{ item.home_mode | default(users_default_home_mode) }}
+        {% endif %}
   with_items:
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
-  when: item.name is defined and item.homelock is defined and item.state is undefined or item.state is defined and item.state != 'absent'
-  tags:
-    - users
-    - groups
-
-- name: Manage user shells
-  user: name={{ item.name }} state={{ item.state | default('present') }} shell={{ item.shell | default(users_default_shell) }}
-  with_items:
-    - ${users_root}
     - ${users_default}
     - ${users_admins}
     - ${users_sshusers}
     - ${users_list}
-  when: item.name is defined and item.shell is defined and item.shell
-  tags:
-    - users
-    - groups
+  when: item.name is defined and item.name and
+        item.state is undefined or item.state is defined and item.state != 'absent'
+
+
 
