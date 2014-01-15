@@ -1,0 +1,35 @@
+---
+
+- name: Configure ~/.forward for users
+  template: src=srv/users/forward.j2 owner={{ item.name }} group={{ item.group | default(item.name) }} mode=0644
+            {% if item.type is defined and item.type in ['sftponly','git'] %}
+            dest={{ item.home | default('/srv/users/' + item.name) }}/.forward
+            {% else %}
+            dest={{ item.home | default('/home/' + item.name) }}/.forward
+            {% endif %}
+  with_items:
+    - ${users_default}
+    - ${users_admins}
+    - ${users_sshusers}
+    - ${users_list}
+  when: (item.name is defined and item.name) and
+        (item.state is undefined or item.state is defined and item.state != 'absent') and
+        (item.forward is defined and item.forward)
+
+- name: Remove ~/.forward from user account when disabled
+  file: state=absent
+        {% if item.type is defined and item.type in ['sftponly','git'] %}
+        dest={{ item.home | default('/srv/users/' + item.name) }}/.forward
+        {% else %}
+        dest={{ item.home | default('/home/' + item.name) }}/.forward
+        {% endif %}
+  with_items:
+    - ${users_default}
+    - ${users_admins}
+    - ${users_sshusers}
+    - ${users_list}
+  when: (item.name is defined and item.name) and
+        (item.state is undefined or item.state is defined and item.state != 'absent') and
+        (item.forward is defined and item.forward == False)
+
+
