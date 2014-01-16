@@ -2,11 +2,12 @@
 
 - name: Remove user groups if requested
   group: name={{ item.group | default(item.name) }} state=absent
-  with_items:
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_git}
-    - ${users_sftponly}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_groups
+    - users_list
+    - users_group_list
+    - users_host_list
   when: item.name is defined and item.state is defined and item.state == 'absent'
 

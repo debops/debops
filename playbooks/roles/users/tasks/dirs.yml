@@ -1,34 +1,43 @@
 ---
 
 - name: Create directories in user homes
-  shell: mkdir -p {{ ' '.join(item.dirs) }} chdir={{ item.home | default('/home/' + item.name) }} creates={{ item.dirs[0] }}
+  shell: mkdir -p {{ ' '.join(item.dirs) }}
+         chdir={{ item.home | default('/home/' + item.name) }}
+         creates={{ item.dirs[0] }}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   sudo_user: '{{ item.name }}'
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
   when: (item.name is defined and item.name) and (item.dirs is defined and item.dirs) and
         (item.type is undefined or item.type is defined and item.type not in ['sftponly','git'])
 
 - name: Create directories in user homes (git)
-  shell: mkdir -p {{ ' '.join(item.dirs) }} chdir={{ item.home | default('/srv/users/' + item.name) }} creates={{ item.dirs[0] }}
+  shell: mkdir -p {{ ' '.join(item.dirs) }}
+         chdir={{ item.home | default('/srv/users/' + item.name) }}
+         creates={{ item.dirs[0] }}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   sudo_user: '{{ item.name }}'
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
   when: (item.name is defined and item.name) and (item.dirs is defined and item.dirs) and
         (item.type is defined and item.type == 'git')
 
 - name: Create directories in user homes (sftponly)
-  shell: mkdir -p {{ ' '.join(item.dirs) }} chdir={{ item.home | default('/srv/users/' + item.name) }} creates={{ item.dirs[0] }}
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  shell: mkdir -p {{ ' '.join(item.dirs) }}
+         chdir={{ item.home | default('/srv/users/' + item.name) }}
+         creates={{ item.dirs[0] }}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   register: users_sftponly_dirs
   when: (item.name is defined and item.name) and (item.dirs is defined and item.dirs) and
         (item.type is defined and item.type == 'sftponly')
@@ -36,11 +45,12 @@
 - name: Change ownership of directories in user homes (sftponly)
   shell: chown {{ item.name }}.{{ item.group | default(item.name) }} {{ ' '.join(item.dirs) }}
          chdir={{ item.home | default('/srv/users/' + item.name) }}
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and (item.dirs is defined and item.dirs) and
         (item.type is defined and item.type == 'sftponly') and
         (users_sftponly_dirs is defined and users_sftponly_dirs.changed == True)
@@ -49,11 +59,12 @@
   shell: mkdir -p {{ ' '.join(users_default_sftponly_dirs) }}
          chdir={{ item.home | default('/srv/users/' + item.name) }}
          creates={{ users_default_sftponly_dirs[0] }}
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   register: users_sftponly_dirs
   when: (item.name is defined and item.name) and item.dirs is undefined and
         (users_default_sftponly_dirs is defined and users_default_sftponly_dirs) and
@@ -62,11 +73,12 @@
 - name: Change ownership of directories in user homes (sftponly)
   shell: chown {{ item.name }}.{{ item.group | default(item.name) }} {{ ' '.join(users_default_sftponly_dirs) }}
          chdir={{ item.home | default('/srv/users/' + item.name) }}
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and item.dirs is undefined and
         (users_default_sftponly_dirs is defined and users_default_sftponly_dirs) and
         (item.type is defined and item.type == 'sftponly') and

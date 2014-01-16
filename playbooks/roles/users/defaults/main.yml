@@ -1,6 +1,10 @@
 ---
 
-# --- Lists of different accounts to create/manage
+# Should Ansible manage user accounts? Set to False to disable
+users: True
+
+
+# --- Lists of different accounts to create/manage ---
 
 # root user, if you want to change something on the root account
 users_root:
@@ -11,19 +15,20 @@ users_default:
   - name: "{{ lookup('env','USER') }}"
 
 # Administrators
-users_admins: False
+users_admins: []
 
-# Users with access to ssh, who can login remotely
-users_sshusers: False
+# Groups (normal or system)
+users_groups: []
 
-# Users with access to git-shell only
-users_git: False
+# "Global" users
+users_list: []
 
-# Users with access to ssh, who can only use SFTP/SCP
-users_sftponly: False
+# "Host group" users
+users_group_list: []
 
-# Other users
-users_list: False
+# "Host" users
+users_host_list: []
+
 
 # --- An example account entry, everything except 'name' is optional
 # List of all recognized values, default value listed first
@@ -41,10 +46,9 @@ users_list: False
 #    systemgroup: False/True        # create system group
 #
 #    home: '/home/name'
-#    homelock: False/True           # change home dir permissions (for sftponly)
 #    home_owner: 'root'
 #    home_group: 'root'
-#    home_mode: '0755'
+#    home_mode: '0751'
 #
 #    dotfiles: False/True           # download and configure dotfiles?
 #    dotfiles_repo: 'repository'
@@ -54,24 +58,20 @@ users_list: False
 #    domain: '{{ ansible_domain }}' # for git users
 #
 #    # Create directories in user home directory (no subdirectories)
-#    dirs:
-#      - 'files'
-#      - 'directory\ with\ spaces'
+#    dirs: [ 'files', 'directory\ with\ spaces' ]
 #
 #    # Create ~/.forward file (set to False to remove ~/.forward)
-#    forward:
-#      - 'user@domain'
-#      - 'account'
+#    forward: [ 'user@domain', 'account' ]
 #
 #    # Add or disable ssh authorized keys (set to False to remove ~/.ssh/authorized_keys
-#    sshkeys: ['list','of','keys']
+#    sshkeys: [ 'list', 'of', 'keys' ]
 #
 #    gpg:
 #      - uid: 'Name Surname <user@example.org>'
 #        options: users_ssh_options.git_shell
 
 
-# --- Global defaults
+# --- Global defaults ---
 
 users_default_shell: '/bin/sh'
 users_default_home_mode: '0751'
@@ -88,17 +88,7 @@ users_dotfiles:
     command: 'make all dark'
     creates: '~/.zshenv.local'
 
-# Settings for sftponly accounts
-users_sftponly_home: '/srv/users/sftponly'
-users_sftponly_owner: 'root'
-users_sftponly_group: 'sftponly'
-users_sftponly_mode: '0751'
-users_sftponly_shell: '/usr/sbin/nologin'
-
-# Settings for git accounts
-users_git_home: '/srv/users'
-users_git_mode: '0751'
-users_git_shell: '/usr/bin/git-shell'
+# What domain should git users use for publishing websites
 users_git_default_domain: '{{ ansible_domain }}'
 
 # Options to insert into ~/.ssh/authorized_keys for each GPG key using monkeysphere

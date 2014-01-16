@@ -1,34 +1,30 @@
 ---
 
 - name: Setup users SSH keys using monkeysphere
-  template: src=etc/monkeysphere/authorized_user_ids/user.j2 dest=/etc/monkeysphere/authorized_user_ids/{{ item.name }} owner=root group=root mode=0644
-  with_items:
-    - ${users_root}
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_sftponly}
-    - ${users_git}
-    - ${users_list}
-  when: item.name is defined and item.name and monkeysphere is defined and monkeysphere and item.gpg is defined and item.gpg
+  template: src=etc/monkeysphere/authorized_user_ids/user.j2
+            dest=/etc/monkeysphere/authorized_user_ids/{{ item.name }}
+            owner=root group=root mode=0644
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
+  when: (item.name is defined and item.name) and
+        (monkeysphere is defined and monkeysphere) and
+        (item.gpg is defined and item.gpg)
   notify: Update monkeysphere
-  tags:
-    - users
-    - monkeysphere
 
 - name: Make sure users without GPG keys are removed from monkeysphere
   file: path=/etc/monkeysphere/authorized_user_ids/{{ item.name }} state=absent
-  with_items:
-    - ${users_root}
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_sftponly}
-    - ${users_git}
-    - ${users_list}
-  when: item.name is defined and item.name and monkeysphere is defined and monkeysphere and item.gpg is undefined
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
+  when: (item.name is defined and item.name) and
+        (monkeysphere is defined and monkeysphere) and
+        (item.gpg is undefined or item.gpg is defined and item.gpg == False)
   notify: Update monkeysphere
-  tags:
-    - users
-    - monkeysphere
 

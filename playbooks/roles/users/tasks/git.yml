@@ -3,22 +3,24 @@
 - name: Configure git-shell-commands directories for git users
   file: path={{ item.home | default('/srv/users/' + item.name) }}/git-shell-commands
         state=directory owner=root group=root mode=0755
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.type is defined and item.type == 'git') and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))
 
 - name: Configure www directories for git users
   file: path=/srv/www/{{ item.name }} state=directory owner={{ item.name }} group={{ item.name }} mode=0751
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.type is defined and item.type == 'git') and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))
@@ -27,11 +29,12 @@
   template: src=srv/users/git-shell-commands/help.j2
             dest={{ item.home | default('/srv/users/' + item.name) }}/git-shell-commands/help
             owner=root group=root mode=0755
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.type is defined and item.type == 'git') and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))
@@ -40,11 +43,12 @@
   template: src=srv/users/git-shell-commands/list.j2
             dest={{ item.home | default('/srv/users/' + item.name) }}/git-shell-commands/list
             owner=root group=root mode=0755
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.type is defined and item.type == 'git') and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))
@@ -53,11 +57,12 @@
   template: src=srv/users/git-shell-commands/init.j2
             dest={{ item.home | default('/srv/users/' + item.name) }}/git-shell-commands/init
             owner=root group=root mode=0755
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.type is defined and item.type == 'git') and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))
@@ -66,11 +71,12 @@
   template: src=srv/users/git-shell-commands/publish.j2
             dest={{ item.home | default('/srv/users/' + item.name) }}/git-shell-commands/publish
             owner=root group=root mode=0755
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.type is defined and item.type == 'git') and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))
@@ -79,11 +85,12 @@
   template: src=srv/users/git-shell-commands/userdir.j2
             dest={{ item.home | default('/srv/users/' + item.name) }}/git-shell-commands/userdir
             owner=root group=root mode=0755
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.type is defined and item.type == 'git') and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))
@@ -92,11 +99,12 @@
   template: src=srv/users/git-shell-commands/deploy.j2
             dest={{ item.home | default('/srv/users/' + item.name) }}/git-shell-commands/deploy
             owner=root group=root mode=0755
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.type is defined and item.type == 'git') and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))
@@ -105,11 +113,12 @@
   template: src=srv/users/git-shell-commands/snapshot.j2
             dest={{ item.home | default('/srv/users/' + item.name) }}/git-shell-commands/snapshot
             owner=root group=root mode=0755
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.type is defined and item.type == 'git') and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))
@@ -118,11 +127,12 @@
   template: src=srv/users/git-shell-commands/clean.j2
             dest={{ item.home | default('/srv/users/' + item.name) }}/git-shell-commands/clean
             owner=root group=root mode=0755
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.type is defined and item.type == 'git') and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))
@@ -131,11 +141,12 @@
   template: src=srv/users/git-shell-commands/rename.j2
             dest={{ item.home | default('/srv/users/' + item.name) }}/git-shell-commands/rename
             owner=root group=root mode=0755
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.type is defined and item.type == 'git') and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))
@@ -144,11 +155,12 @@
   template: src=srv/users/git-shell-commands/drop.j2
             dest={{ item.home | default('/srv/users/' + item.name) }}/git-shell-commands/drop
             owner=root group=root mode=0755
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.type is defined and item.type == 'git') and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))

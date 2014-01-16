@@ -19,11 +19,12 @@
         home={{ item.home | default('/home/' + item.name) }} createhome=no
         shell={{ item.shell | default(users_default_shell) }}
         {% endif %}
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: item.name is defined and item.name
 
 - name: Manage home directories permissions
@@ -49,13 +50,13 @@
         {% endif %}
         mode={{ item.home_mode | default(users_default_home_mode) }}
         {% endif %}
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
-  when: item.name is defined and item.name and
-        item.state is undefined or item.state is defined and item.state != 'absent'
-
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
+  when: (item.name is defined and item.name) and
+        (item.state is undefined or item.state is defined and item.state != 'absent')
 
 

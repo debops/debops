@@ -2,11 +2,12 @@
 
 - name: Configure authorized SSH keys for users
   authorized_key: key='{{ "\n".join(item.sshkeys) | string }}' state=present user={{ item.name }}
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.state is undefined or item.state is defined and item.state != 'absent') and
         (item.sshkeys is defined and item.sshkeys)
@@ -18,11 +19,12 @@
         {% else %}
         dest={{ item.home | default('/home/' + item.name) }}/.ssh/authorized_keys
         {% endif %}
-  with_items:
-    - ${users_default}
-    - ${users_admins}
-    - ${users_sshusers}
-    - ${users_list}
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
   when: (item.name is defined and item.name) and
         (item.state is undefined or item.state is defined and item.state != 'absent') and
         (item.sshkeys is defined and item.sshkeys == False)
