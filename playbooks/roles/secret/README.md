@@ -1,18 +1,19 @@
-# secret
+secret
+======
 
-Ansible role `secret` allows you to store and update passwords, certificates and other sensitive data in a secure way. To achieve this, `secret` uses `cryptsetup` command and LUKS to create encrypted storage file with configurable size, protected by a keyfile encrypted with GnuPG, either using symmetric encryption with a passphrase, or OpenPGP public key encryption with one or multiple GPG keys.
+Ansible role `secret` allows you to store and update passwords, certificates and other sensitive data in a secure way. To achieve this, `secret` uses `cryptsetup` command and [LUKS](https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup) to create encrypted storage file with configurable size, protected by a keyfile encrypted with GnuPG, either using symmetric encryption with a passphrase, or OpenPGP public key encryption with one or multiple GnuPG keys.
 
-## Big Scary Warning
+Requirements
+------------
 
-- this role uses `root` account on your local machine using `sudo` and running commands like `dd`, `mkfs.ext2` and `cryptsetup luksFormat`. If you want to use it, read this file carefully.
+- `sudo` access on localhost will be required to mount LUKS device and format it using ext2 filesystem.
 
-- this role was developed and is used on Ubuntu Linux, and works with Ubuntu or Debian. It might not work on your machine. It might not work on your distribution. It might delete all your data. You have been warned.
+- `gpg` will be used to encrypt keyfile for encrypted storage file, either with a passphrase or provided GPG key.
 
-## How to use it
+- `cryptsetup` will be installed on Debian/Ubuntu systems if it's not present.
 
-First, add `localhost` to list of hosts in inventory, preferably at the beginning and not inside any of the host groups. [ginas](https://github.com/drybjed/ginas/) has been prepared to deal with this correctly, if you want to try it in your own playbook, make sure that you use `- hosts: all:!localhost` in your playbook definition to ignore `localhost` while running other plays.
-
-Put variables listed below in inventory. The best place would be in `group_vars/all.yml` to have one global secret storage. Using separate variables for different host groups haven't been tested and is currently not supported.
+Role Variables
+--------------
 
 - `secret`: **absolute path to a directory in your local filesystem**. It has to exist, and your user should have access rights. It will be used as a mount point for encrypted storage while it is opened, so use empty directory and avoid putting it in place that might change during playbook execution. Mandatory.
 
@@ -22,7 +23,10 @@ Put variables listed below in inventory. The best place would be in `group_vars/
 
 - `secret_random`: device that will be used to get randomness from, `/dev/random` by default. You might want to switch it to `/dev/urandom` on development/testing hosts to speed up certain operations. Optional.
 
-Now you can add two plays at the beginning and end of your playbook, like this:
+Usage
+-----
+
+Add two plays at the beginning and end of your playbook, like this:
 ```
 ---
 - hosts: localhost
@@ -40,7 +44,7 @@ Now you can add two plays at the beginning and end of your playbook, like this:
 ```
 This way, Ansible will use `secret` role to create and/or open secret storage, run your playbooks and close secret storage at the end (during execution, files inside secret storage will be mounted in place of `secret` directory with owner and group of your user and `0700` permissions). This method has a disadvantage - when you use `ansible-playbook` command, you need to specify `--limit group,localhost` each time, or `secret` role will not be executed by Ansible.
 
-Another way to use `secret` role is to create a shell script, and run that role using separate `ansible-playbook` command. Here's an example script used in [ginas](https://github.com/drybjed/ginas/):
+Another way to use `secret` role is to create a shell script, and run that role using separate `ansible-playbook` command. Here's an example script:
 ```
 #!/bin/sh
 
@@ -58,13 +62,52 @@ And in `playbooks/secret.yml` you should create a playbook:
   roles:
     - { role: secret }
 ```
-When you run that script, you can specify `ansible-playbook` options as normal, and they will be used in correct command. When last of your plays finishes, shell script will run Ansible with `secret` role again, to close secret storage.
+When you run that script, you can specify `ansible-playbook` options as normal, and they will be used with correct command. When last of your plays finishes, shell script will run Ansible with `secret` role again, to close secret storage.
 
-## Problems and tips
+### Example usage - password lookup
 
-- `secret` role uses `sudo` directly for some commands, without using `sudo: yes` in Ansible playbook. I tried to use "proper" way, but couldn't make Ansible work properly with combination of `gpg-agent` and `sudo`. With default configuration on Ubuntu, after `sudo` asks for a password the first time, it remembers access rights for subsequent invocations for short period of time, so that helps a bit.
+Create a variable in your inventory or role defaults, `example_password` with default password you want to be assigned. In your playbook/role, before you use that password, add a task:
+```
+- name: Lookup password in secret/ directory
+  set_fact:
+    example_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/role/password_file' }}"
+  when: secret is defined and secret
+```
+Now you can use `'{{ example_password }}'` variable in your subsequent tasks or templates; if `secret` directory is defined, your password will be saved in encrypted storage, if it's not, your task/role will use default password defined in inventory or defaults. Password will be saved in `'{{ secret }}/credentials/{{ ansible_fqdn }}/role/password_file'`. Make sure to use `{{ ansible_fqdn }}` variable or other variable that specifies individual hosts in your playbook, to have separate passwords for each host. Or, use path without it to have the same password on different hosts.
 
-- sometimes Ansible stops while trying to decrypt storage with combination of GnuPG asking for key passphrase and `sudo` asking for user password. Interrupting Ansible using `Ctrl+C` and starting playbook again seems to help.
+### Example usage - file management
 
-- if you want to run Ansible with `secret` role without Xorg (in a console for example), Ansible will fail while GnuPG is asking for a key passphrase. Solution is to use `gpg-agent` and provide it with a password before running a playbook.
+Here are example tasks which can be used to fetch files from remote hosts and copy them to remote hosts:
+```
+- name: Fetch /etc/fstab and store it securely
+  fetch: flat=yes src=/etc/fstab
+         dest={{ secret }}/storage/{{ ansible_fqdn }}/etc/fstab
+  when: secret is defined and secret
+
+- name: Copy /etc/fstab from secure storage
+  copy: src={{ secret }}/storage/{{ ansible_fqdn }}/etc/fstab
+        dest=/etc/fstab owner=root group=root mode=0644
+  when: secret is defined and secret
+```
+
+Detailed Description
+--------------------
+
+Role `secret` is meant to be run on `localhost` (Ansible controller), on local user account. Ansible will issue `sudo` commands directly when needed, to not interfere with requirements of main playbook.
+
+On the first run, a random string (LUKS passphrase) is piped through `gpg`, encrypted and saved in a separate "keyfile" to be used later. Next, a storage space with random contents is created in directory specified in `secret` variable, using `dd`. `cryptsetup` command creates new LUKS device and encrypts it using LUKS passphrase decrypted with `gpg`. Then, encrypted device is formatted using EXT2 filesystem (journal is not required). After that, encrypted device (`/dev/mapper/*` is mounted with `-o bind` option in `secret` directory, essentially "replacing" encrypted file with it's contents, from the point of view of Ansible. When main playbook is finished, `secret` role is run again, but this time it will only unmount and close the encrypted device, leaving the keyfile and image file in the `secret` directory.
+
+On subsequent runs the process is repeated, but without generating and encrypting new files - Ansible decrypts the image file using LUKS passphrase from keyfile decrypted using `gpg`, opens LUKS encrypted device and mounts it's contents in `secret` directory, leaving it accessible to the main playbook. At the end, directory is unmounted and LUKS device is closed.
+
+License
+-------
+
+GPLv3
+
+Author Information
+------------------
+
+Written by: [Maciej Delmanowski](http://twitter.com/drybjed)
+
+Part of the [ginas](https://github.com/ginas/) project
 
