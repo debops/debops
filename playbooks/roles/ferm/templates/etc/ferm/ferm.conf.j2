@@ -16,6 +16,14 @@ table filter {
 		# Allow local connections
 		interface lo ACCEPT;
 
+		# Drop connections from bad guys
+		mod recent name "badguys" update seconds 3600 {
+			mod limit limit 3/hour limit-burst 5 {
+				LOG log-prefix "Banned: " log-level warning;
+			}
+			DROP;
+		}
+
 		# Allow ICMP protocol
 		protocol icmp ACCEPT;
 
@@ -27,8 +35,8 @@ table filter {
 		# Allow monitoring connections
 		#protocol tcp dport (munin nrpe) saddr (192.168.0.0/24 192.168.1.0/24) ACCEPT;
 
-		# Allow SSH connections
-		protocol tcp dport ssh {
+		# Allow new SSH connections
+		protocol tcp syn dport ssh {
 {% if ansible_controller is defined and ansible_controller %}
 
 			# Allow access for Ansible Controller (caution, might allow entire networks if it's a router)
@@ -47,8 +55,12 @@ table filter {
 				mod recent name SSH {
 					set NOP;
 					update seconds 300 hitcount 8 @subchain "ssh-log" {
-						LOG log-prefix "Blocked-ssh: " log-level warning;
-						DROP;
+						mod recent set name "badguys" {
+							mod limit limit 3/hour limit-burst 5 {
+								LOG log-prefix "Blocked-ssh: " log-level warning;
+							}
+							DROP;
+						}
 					}
 				}
 			}
@@ -58,6 +70,15 @@ table filter {
 
 		@include 'filter-input.d/';
 
+{% if ferm_mark_portscan is defined and ferm_mark_portscan %}
+		# Catch bad guys (port scanners)
+		mod recent set name "badguys" {
+			mod limit limit 3/hour limit-burst 5 {
+				LOG log-prefix "Port-Scan: " log-level warning;
+			}
+		}
+
+{% endif %}
 		# Reject everything else
 		protocol udp REJECT reject-with icmp-port-unreachable;
 		protocol tcp REJECT reject-with tcp-reset;
