@@ -6,7 +6,6 @@
   tags:
     - tcpwrappers
     - network
-    - sshd
 
 - name: denyhosts not installed - block everything
   lineinfile: "dest=/etc/hosts.deny regexp='^ALL: ALL' line='ALL: ALL' state=present"
@@ -14,7 +13,6 @@
   tags:
     - tcpwrappers
     - network
-    - sshd
 
 - name: denyhosts installed - unblock everything
   lineinfile: "dest=/etc/hosts.deny regexp='^ALL: ALL' state=absent"
@@ -22,7 +20,6 @@
   tags:
     - tcpwrappers
     - network
-    - sshd
 
 - name: Deny access from custom list if denyhosts is installed
   lineinfile: "dest=/etc/hosts.deny regexp='{{ item }}' insertafter='# ALL: PARANOID' line='{{ item }}' state={{ tcpwrappers_deny_custom_state }}"
@@ -32,5 +29,4 @@
   tags:
     - tcpwrappers
     - network
-    - sshd
 

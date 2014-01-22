@@ -2,52 +2,23 @@
 
 - name: Ensure SSH support is installed
   apt: pkg={{ item }} state=latest install_recommends=no
-  with_items:
-    - openssh-server
-    - openssh-client
-    - openssh-blacklist
-    - openssh-blacklist-extra
-    - molly-guard
-  tags:
-    - sshd
-    - packages
-
-- name: Ensure that system-wide authorized_keys directory exists
-  file: path={{ sshd_authorized_keys }} state=directory owner=root group=root mode=0755
-  tags:
-    - sshd
+  with_items: [ 'openssh-server', 'openssh-client', 'openssh-blacklist', 'openssh-blacklist-extra', 'molly-guard' ]
 
 - name: Setup /etc/ssh/sshd_config
   template: src=etc/ssh/sshd_config.j2 dest=/etc/ssh/sshd_config owner=root group=root mode=0644
   notify: Restart sshd
-  tags:
-    - sshd
 
 - name: Create /etc/ssh/ssh_known_hosts.d directory
   file: path=/etc/ssh/ssh_known_hosts.d state=directory owner=root group=root mode=0755
   when: sshd_known_hosts is defined and sshd_known_hosts
-  tags: sshd
 
 - name: Gather ssh_known_hosts
   shell: ssh-keyscan {{ item }} > /etc/ssh/ssh_known_hosts.d/{{ item }} creates=/etc/ssh/ssh_known_hosts.d/{{ item }}
   with_items: sshd_known_hosts
   when: sshd_known_hosts is defined and sshd_known_hosts
-  tags: sshd
 
 - name: Assemble ssh_known_hosts
   assemble: src=/etc/ssh/ssh_known_hosts.d dest=/etc/ssh/ssh_known_hosts backup=no owner=root group=root mode=0644
   when: sshd_known_hosts is defined and sshd_known_hosts
-  tags: sshd
-
-- name: Configure authorized keys for users
-  authorized_key: key='{{ item.key }}' manage_dir=no key_options='{{ item.options | default("") }}'
-                  path={{ sshd_authorized_keys }}/{{ item.user }} user={{ item.user }}
-                  state={{ item.state | default('present') }}
-  with_flattened:
-    - sshd_authorized_keys_list
-    - sshd_authorized_keys_group_list
-    - sshd_authorized_keys_host_list
-  when: item is defined and item and item.key is defined and item.user is defined
-  tags: sshd
 
 
