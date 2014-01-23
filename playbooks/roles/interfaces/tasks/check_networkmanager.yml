@@ -1,0 +1,13 @@
+---
+
+- name: Check if Network Manager is installed
+  stat: path=/usr/sbin/NetworkManager
+  register: interfaces_nmstatus
+
+- name: Enable Network Manager support if installed
+  set_fact:
+    interfaces_networkmanager: 'installed'
+  when: (interfaces_nmstatus is defined and interfaces_nmstatus.stat.exists == True) and
+        (interfaces_ignore_networkmanager is undefined or interfaces_ignore_networkmanager is defined and interfaces_ignore_networkmanager == False)
+
+

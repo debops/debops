@@ -1,0 +1,51 @@
+---
+
+- name: Load default interfaces configuration
+  include_vars: "{{ item }}"
+  with_first_found:
+    - '../vars/{{ interfaces_default_config }}.yml'
+    - '../vars/networkmanager_{{ interfaces_networkmanager }}.yml'
+    - '../vars/virtualization_{{ ansible_virtualization_type }}.yml'
+    - '../vars/default.yml'
+
+- name: Prepare interfaces configuration if not defined
+  set_fact:
+    interfaces_list: '{{ interfaces_default_list }}'
+  when: interfaces_list is undefined or not interfaces_list
+
+- name: Create /etc/network/interfaces.d directory
+  file: path=/etc/network/interfaces.d owner=root group=root mode=0755 state=directory
+
+- name: Delete interfaces configuration if requested
+  file: state=absent
+        {% if item.filename is defined and item.filename %}
+        path=/etc/network/interfaces.d/{{ item.weight | default('00') }}_{{ item.filename }}
+        {% else %}
+        path=/etc/network/interfaces.d/{{ item.weight | default('00') }}_{{ item.type | default('interface') }}_{{ item.iface }}
+        {% endif %}
+  with_flattened:
+    - interfaces_list
+  when: (item.iface is defined and item.iface) and
+        (item.delete is defined and item.delete)
+
+- name: Generate interfaces configuration
+  template: src=etc/network/interfaces.d/{{ item.type | default('interface') }}.j2 owner=root group=root mode=0644
+            {% if item.filename is defined and item.filename %}
+            dest=/etc/network/interfaces.d/{{ item.weight | default('00') }}_{{ item.filename }}
+            {% else %}
+            dest=/etc/network/interfaces.d/{{ item.weight | default('00') }}_{{ item.type | default('interface') }}_{{ item.iface }}
+            {% endif %}
+  with_flattened:
+    - interfaces_list
+  register: interfaces_status
+  when: (item.iface is defined and item.iface) and
+        (item.delete is undefined or item.delete is defined and item.delete == False)
+
+- name: Reconfigure interfaces
+  shell: ifdown {{ item.item.iface }} ; ifup {{ item.item.iface }}
+  with_items: interfaces_status.results
+  when: (interfaces_auto_ifupdown is defined and interfaces_auto_ifupdown == True) and
+        (item.changed == True) and
+        (item.item.inet is undefined or item.item.inet is defined and item.item.inet != 'manual')
+
+

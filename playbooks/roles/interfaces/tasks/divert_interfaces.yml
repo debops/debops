@@ -1,0 +1,10 @@
+---
+
+- name: Divert original /etc/network/interfaces
+  command: dpkg-divert --quiet --local --divert /etc/network/interfaces.dpkg-divert --rename /etc/network/interfaces
+           creates=/etc/network/interfaces.dpkg-divert
+
+- name: Create /etc/network/interfaces
+  template: src=etc/network/interfaces.j2 dest=/etc/network/interfaces owner=root group=root mode=0644
+
+

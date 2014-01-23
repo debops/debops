@@ -1,0 +1,26 @@
+---
+
+# Example bridging configuration from https://wiki.debian.org/NetworkConfiguration
+
+interfaces_default_list:
+
+  - iface: 'br0'
+    type: 'bridge'
+    inet: 'static'
+    options: |
+      address 10.10.0.15
+      netmask 255.255.255.0
+      gateway 10.10.0.1
+      bridge_ports eth0 eth1
+      up /usr/sbin/brctl stp br0 on
+
+  - iface: 'br1'
+    type: 'bridge'
+    auto: True
+    inet: 'manual'
+    options: |
+      bridge_ports eth4
+      up /usr/sbin/brctl setageing brl 0
+      up /usr/sbin/brctl stp br0 off
+
+
