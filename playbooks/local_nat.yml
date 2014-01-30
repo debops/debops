@@ -1,11 +1,33 @@
 ---
 
-# A small hack to make local NAT network for develop network on a laptop
+# A playbook used to configure local NAT network for development environment on
+# a laptop
+# Usage:
+#
+#    ansible-playbook -i inventory playbooks/local_nat.yml
+#    (use -K if you need to specify sudo password)
+#
+# You can configure your NAT domain using inventory variables, in
+# inventory/host_vars/localhost.yml: nat_domain, dnsmasq_domain
 
-- hosts: 127.0.0.1
+- hosts: localhost
   sudo: yes
 
+  vars:
+    local_nat_subnet: 32
+    local_nat_interface: 'br0'
+
   roles:
-    - { role: nat, nat_net: 32, nat_interface: br0, nat_masquerade: True }
-    - { role: dnsmasq, dnsmasq_nat: 32, dnsmasq_domain: ginas, dnsmasq_interface: br0 }
+
+    - role: nat
+      nat_subnet: '{{ local_nat_subnet }}'
+      nat_interface: '{{ local_nat_interface }}'
+      nat_masquerade: True
+      tags: nat
+
+    - role: dnsmasq
+      dnsmasq_subnet: '{{ local_nat_subnet }}'
+      dnsmasq_interface: '{{ local_nat_interface }}'
+      tags: dnsmasq
+
 
