@@ -12,10 +12,15 @@ bind-interfaces
 dhcp-no-override
 no-hosts
 expand-hosts
-domain={{ dnsmasq_domain }},{{ dnsmasq_subnet }},local
+domain={{ dnsmasq_domain }},{{ dnsmasq_network }},local
 server=/{{ dnsmasq_revdns }}/{{ dnsmasq_router }}
-interface-name={{ dnsmasq_hostname }},{{ dnsmasq_interface }}
-mx-host={{ dnsmasq_hostname }}
-localmx
+interface-name={{ dnsmasq_domain_gw }}.{{ dnsmasq_domain }},{{ dnsmasq_interface }}
+mx-host={{ dnsmasq_domain }},{{ dnsmasq_domain_mx }}.{{ dnsmasq_domain }},10
+selfmx
+{% if dnsmasq_netboot is defined and dnsmasq_netboot %}
+enable-tftp
+dhcp-boot=pxelinux.0
+tftp-root=/srv/tftp
+{% endif %}
 
 

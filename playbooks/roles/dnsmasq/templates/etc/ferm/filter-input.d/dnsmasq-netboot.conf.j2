@@ -1,0 +1,14 @@
+# Enable TFTP server (-t filter -A INPUT)
+# {{ ansible_managed }}
+
+{% if dnsmasq_netboot_allow is defined and dnsmasq_netboot_allow %}
+protocol udp dport tftp {
+{% for address in dnsmasq_netboot_allow %}
+	saddr {{ address }} ACCEPT;
+{% endfor %}
+}
+{% else %}
+protocol udp dport tftp ACCEPT;
+{% endif %}
+
+

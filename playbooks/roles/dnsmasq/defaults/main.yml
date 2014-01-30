@@ -1,16 +1,54 @@
 ---
 
-dnsmasq_purge: False
+# 192.168.x.0/24 subnet to use in dnsmasq configuration
+dnsmasq_subnet: 32
 
+# Should dnsmasq support PXE Boot / TFTP server?
+dnsmasq_netboot: True
+
+# List of hosts/networks allowed to connect to TFTP server
+dnsmasq_netboot_allow: []
+  #'192.168.32.0/24'
+
+# Network interface dnsmasq should listen on (configured for NAT by default)
 dnsmasq_interface: 'br2'
-dnsmasq_tag: 'ginas{{ dnsmasq_interface }}'
-dnsmasq_domain: 'ginas'
 
-dnsmasq_nat: 32
-dnsmasq_dhcp_range: '192.168.{{ dnsmasq_nat }}.2,192.168.{{ dnsmasq_nat }}.254'
+# Local domain configuration for NAT
+dnsmasq_subdomain: 'nat'
+dnsmasq_domain: '{{ dnsmasq_subdomain }}.{{ ansible_domain }}'
+
+# Hostname of router/gateway interface
+dnsmasq_domain_gw: 'gw'
+
+# Hostname of local domain mail server
+dnsmasq_domain_mx: 'gw'
+
+# List of CNAME entries
+dnsmasq_cname: []
+  #'host.example.net': 'other.example.net'
+  #'sub.domain.example.org': 'other.example.net'
+
+# List of CNAME entries on local domain
+dnsmasq_cname_subdomain: []
+  #'host': 'other'
+  #'sub.domain': 'other'
+
+# DHCP range (2-254)
+dnsmasq_dhcp_range: '192.168.{{ dnsmasq_subnet }}.2,192.168.{{ dnsmasq_subnet }}.254'
+
+# Default DHCP lease time
 dnsmasq_lease_time: '24h'
-dnsmasq_router: '192.168.{{ dnsmasq_nat }}.1'
-dnsmasq_hostname: 'root.{{ dnsmasq_domain }}'
-dnsmasq_revdns: '{{ dnsmasq_nat }}.168.192.in-addr.arpa'
-dnsmasq_subnet: '192.168.{{ dnsmasq_nat }}.0/24'
+
+# Default router/gateway address
+dnsmasq_router: '192.168.{{ dnsmasq_subnet }}.1'
+
+# Reverse DNS domain mapping
+dnsmasq_revdns: '{{ dnsmasq_subnet }}.168.192.in-addr.arpa'
+
+# NAT network to configure
+dnsmasq_network: '192.168.{{ dnsmasq_subnet }}.0/24'
+
+# Tag used in dnsmasq configuration options
+dnsmasq_tag: 'ginas{{ dnsmasq_interface }}'
+
 

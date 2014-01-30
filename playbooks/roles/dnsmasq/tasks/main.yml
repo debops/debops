@@ -2,30 +2,22 @@
 
 - name: Make sure dnsmasq is installed
   apt: pkg={{ item }} state=latest install_recommends=no
-  when: dnsmasq_purge is defined and dnsmasq_purge == False
   with_items:
     - dnsmasq
     - resolvconf
-  tags:
-    - dnsmasq
-    - network
-    - packages
-
-- name: Purge dnsmasq if requested
-  apt: pkg=dnsmasq state=absent purge=yes
-  when: dnsmasq_purge is defined and dnsmasq_purge == True
-  tags:
-    - dnsmasq
-    - network
-    - packages
-    - purge
 
 - name: Setup dnsmasq configuration
-  template: src=etc/dnsmasq.d/ginas.conf.j2 dest=/etc/dnsmasq.d/{{ dnsmasq_interface }}_{{ dnsmasq_domain }}.conf owner=root group=root mode=0644
-  when: dnsmasq_purge is defined and dnsmasq_purge == False
+  template: src=etc/dnsmasq.d/ginas.conf.j2 dest=/etc/dnsmasq.d/{{ dnsmasq_interface }}_{{ dnsmasq_domain }}.conf
+            owner=root group=root mode=0644
   notify:
     - Restart dnsmasq
-  tags:
-    - dnsmasq
-    - network
+
+- name: Setup dnsmasq CNAME configuration
+  template: src=etc/dnsmasq.d/cname.conf.j2 dest=/etc/dnsmasq.d/{{ dnsmasq_interface }}_{{ dnsmasq_domain }}_cname.conf
+            owner=root group=root mode=0644
+  notify:
+    - Restart dnsmasq
+
+- include: netboot_debian.yml
+  when: dnsmasq_netboot is defined and dnsmasq_netboot
 
