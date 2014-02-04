@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+
+{% if boxbackup_allow is defined %}
+protocol tcp dport (boxbackup) {
+{% if boxbackup_allow is defined and boxbackup_allow == True %}
+	ACCEPT;
+{% elif boxbackup_allow is defined and boxbackup_allow %}
+{% for address in boxbackup_allow %}
+	saddr {{ address }} ACCEPT;
+{% endfor %}
+{% endif %}
+}
+{% endif %}
+
+

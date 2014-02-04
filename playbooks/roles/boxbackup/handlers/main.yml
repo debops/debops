@@ -1,0 +1,10 @@
+---
+
+- name: Restart boxbackup-server
+  service: name=boxbackup-server state=restarted
+  when: boxbackup is defined and boxbackup == ansible_fqdn
+
+- name: Restart boxbackup-client
+  service: name=boxbackup-client state=restarted
+  when: boxbackup is defined and boxbackup != ansible_fqdn
+
