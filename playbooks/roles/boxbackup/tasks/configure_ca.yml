@@ -7,7 +7,7 @@
   when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Create Root CA keys
-  local_action: command openssl genrsa -out {{ secret }}/storage/boxbackup/{{ boxbackup }}/ca/keys/{{ item }}RootKey.pem {{ boxbackup_transfer_bits }}
+  local_action: command openssl genrsa -out {{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/keys/{{ item }}RootKey.pem {{ boxbackup_transfer_bits }}
                 creates={{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/keys/{{ item }}RootKey.pem
   with_items: [ 'client', 'server' ]
   sudo: no
