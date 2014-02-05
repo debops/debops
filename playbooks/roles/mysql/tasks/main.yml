@@ -2,111 +2,66 @@
 
 - name: Install MySQL-related packages
   apt: pkg={{ item }} state=latest install_recommends=no
-  with_items:
-    - python-mysqldb
-    - mysql-server
-    - automysqlbackup
-  tags:
-    - mysql
-    - packages
+  with_items: [ 'python-mysqldb', 'mysql-server', 'automysqlbackup' ]
 
 - name: Apply /etc/mysql/conf.d/mysqld.cnf configuration
   template: src=etc/mysql/conf.d/mysqld.cnf.j2 dest=/etc/mysql/conf.d/mysqld.cnf owner=root group=root mode=0644
   notify:
     - Reload mysql
-  tags:
-    - mysql
 
 - name: Apply /etc/mysql/conf.d/client.cnf configuration
   template: src=etc/mysql/conf.d/client.cnf.j2 dest=/etc/mysql/conf.d/client.cnf owner=root group=root mode=0644
   notify:
     - Reload mysql
-  tags:
-    - mysql
 
 - name: Start MySQL service
   service: name=mysql state=started
-  tags:
-    - mysql
 
 # Get mysql_root_password from secrets/ directory, otherwise use the one provided in a variable
 - name: Lookup mysql root password if secrets/ directory is defined
   set_fact:
     mysql_root_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/root/password length=' + mysql_password_length) }}"
   when: secret is defined
-  tags:
-    - mysql
-    - secret
 
 - name: Update mysql root password for all root accounts
   mysql_user: name=root host={{ item }} password={{ mysql_root_password }}
-  with_items:
-    - '{{ ansible_hostname }}'
-    - 127.0.0.1
-    - ::1
-    - localhost
-  tags:
-    - mysql
-    - secret
+  with_items: [ '{{ ansible_hostname }}', '127.0.0.1', '::1', 'localhost' ]
 
 - name: Create /root/.my.cnf file with root password credentials
   template: src=root/my.cnf.j2 dest=/root/.my.cnf owner=root group=root mode=0600
-  tags:
-    - mysql
-    - secret
 
 - name: Delete anonymous mysql user
   mysql_user: user="" host={{ item }} state=absent
-  with_items:
-    - '{{ ansible_hostname }}'
-    - 'localhost'
-  tags:
-    - mysql
+  with_items: [ '{{ ansible_hostname }}', 'localhost' ]
 
 - name: Remove test database
   mysql_db: db=test state=absent
-  tags:
-    - mysql
 
 - name: Setup automysqlbackup configuration
   template: src=etc/default/automysqlbackup.j2 dest=/etc/default/automysqlbackup owner=root group=root mode=0644
-  tags:
-    - mysql
 
 - name: Enable network access to mysql server in firewall
   template: src=etc/ferm/filter-input.d/mysql.conf.j2 dest=/etc/ferm/filter-input.d/mysql.conf owner=root group=root mode=0644
   when: mysql_network_allow_list is defined and mysql_network_allow_list is not none
   notify:
     - Restart ferm
-  tags:
-    - mysql
-    - firewall
 
 - name: Disable network access to mysql server in firewall
   file: path=/etc/ferm/filter-input.d/mysql.conf state=absent
   when: mysql_network_allow_list is not defined
   notify:
     - Restart ferm
-  tags:
-    - mysql
-    - firewall
 
 - name: Enable network access to mysql server in tcpwrappers
   template: src=etc/hosts.allow.d/50_mysql.j2 dest=/etc/hosts.allow.d/50_mysql owner=root group=root mode=0644
   when: mysql_network_allow_list is defined and mysql_network_allow_list is not none
   notify:
     - Assemble hosts.allow.d
-  tags:
-    - mysql
-    - tcpwrappers
 
 - name: Disable network access to mysql server in tcpwrappers
   file: path=/etc/hosts.allow.d/50_mysql state=absent
   when: mysql_network_allow_list is not defined
   notify:
     - Assemble hosts.allow.d
-  tags:
-    - mysql
-    - tcpwrappers
 
 
