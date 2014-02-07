@@ -32,34 +32,20 @@ apt_packages_from_backports:
 apt_preferences: []
 
 # Default base packages to install
-apt_base_packages:
-  - ed
-  - python
-  - python-apt
-  - lsb-release
-  - make
-  - sudo
-  - gnupg-curl
-  - git
-  - wget
-  - curl
-  - rsync
-  - netcat-openbsd
-  - bridge-utils
-  - vlan
-  - openssh-server
-  - openssh-blacklist
-  - openssh-blacklist-extra
+# This list will be included in Debian Preseed configuration
+apt_base_packages: [ 'ed', 'python', 'python-apt', 'lsb-release', 'make', 'sudo', 'gnupg-curl',
+                     'git', 'wget', 'curl', 'rsync', 'netcat-openbsd', 'bridge-utils', 'vlan',
+                     'openssh-server', 'openssh-blacklist', 'openssh-blacklist-extra' ]
 
-# Groups packages to install (define in group_vars/)
-#apt_group_packages:
-#  - package1
-#  - package2
+# List of additional "global" packages to install
+apt_packages: []
 
-# Host packages to install (define in host_vars/)
-#apt_host_packages:
-#  - package1
-#  - package2
+# List of packages for a group of hosts (only one group supported)
+apt_group_packages: []
+
+# List of packages to install on a given host
+apt_host_packages: []
+
 
 apt_debian_preseed_locale: 'en_US.UTF-8'
 apt_debian_preseed_language: 'English'
