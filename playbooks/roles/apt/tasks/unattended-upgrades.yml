@@ -5,9 +5,6 @@
   with_items:
     - unattended-upgrades
   when: apt_unattended_upgrades is defined and apt_unattended_upgrades == True
-  tags:
-    - apt
-    - upgrades
 
 - name: Configure unattended-upgrades
   template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
@@ -15,17 +12,11 @@
     - 'etc/apt/apt.conf.d/20auto-upgrades'
     - 'etc/apt/apt.conf.d/50unattended-upgrades'
   when: apt_unattended_upgrades is defined and apt_unattended_upgrades == True
-  tags:
-    - apt
-    - upgrades
 
 - name: Remove unattended-upgrades if disabled
   apt: pkg={{ item }} state=absent purge=yes
   with_items:
     - unattended-upgrades
   when: apt_unattended_upgrades is defined and apt_unattended_upgrades == False
-  tags:
-    - apt
-    - upgrades
 
 

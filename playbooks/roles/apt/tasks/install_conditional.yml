@@ -11,10 +11,6 @@
     - firmware-linux-nonfree
     - uptimed
   when: ansible_system == 'Linux' and ansible_form_factor in ['Rack Mount Chassis']
-  tags:
-    - apt
-    - packages
-    - hardware
 
 # Because of patch to irqbalance not available in Debian Wheezy,
 # we should install irqbalance from wheezy-backports
@@ -26,16 +22,9 @@
     - irqbalance
     #- linux-image-amd64
   when: ansible_processor_cores > 2 and ansible_virtualization_role is undefined or ansible_virtualization_role is defined and ansible_virtualization_role == 'host'
-  tags:
-    - apt
-    - packages
-    - hardware
 
 # Install openntpd only on bare metal and KVM hosts, exclude containers
 - name: Install openntpd where it's needed
   apt: pkg=openntpd state=latest install_recommends=no
   when: ansible_virtualization_type is undefined or ansible_virtualization_type is defined and ansible_virtualization_type != 'lxc'
-  tags:
-    - apt
-    - packages
 

@@ -4,47 +4,32 @@
   set_fact:
     apt_debian_preseed_rootpw: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/debian_preseed/system/root/password encrypt=md5_crypt length=' + apt_debian_preseed_rootpw_length) }}"
   when: secret is defined
-  tags:
-    - debian_preseed
-    - nginx
 
 - name: Lookup current user and SSH public key for injection
   set_fact:
     apt_debian_preseed_username: "{{ lookup('env','USER') }}"
     apt_debian_preseed_sshkey: "{{ lookup('file','~/.ssh/id_rsa.pub') }}"
-  tags:
-    - debian_preseed
-    - nginx
 
 - name: Create Debian Preseed directories
   file: path={{ item }} state=directory owner=root group=root mode=0755
   with_items:
     - '/{{ apt_debian_preseed_default_server_path }}/d-i/{{ ansible_lsb.codename }}'
     - '/{{ apt_debian_preseed_destroy_server_path }}/d-i/{{ ansible_lsb.codename }}'
-  tags:
-    - debian_preseed
-    - nginx
 
 - name: Setup Debian Preseed default template
   template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
   with_items:
     - '{{ apt_debian_preseed_default_server_path }}/d-i/{{ ansible_lsb.codename }}/preseed.cfg'
     - '{{ apt_debian_preseed_default_server_path }}/d-i/{{ ansible_lsb.codename }}/postinst.sh'
-  tags:
-    - debian_preseed
-    - nginx
 
 - name: Setup Debian Preseed destroy template
-  template: src={{ apt_debian_preseed_default_server_path }}/d-i/{{ ansible_lsb.codename }}/destroy-preseed.cfg.j2 dest=/{{ apt_debian_preseed_destroy_server_path }}/d-i/{{ ansible_lsb.codename }}/preseed.cfg owner=root group=root mode=0644
-  tags:
-    - debian_preseed
-    - nginx
+  template: src={{ apt_debian_preseed_default_server_path }}/d-i/{{ ansible_lsb.codename }}/destroy-preseed.cfg.j2
+            dest=/{{ apt_debian_preseed_destroy_server_path }}/d-i/{{ ansible_lsb.codename }}/preseed.cfg
+            owner=root group=root mode=0644
 
 - name: Lock default nginx server template on Debian Preseed host
   set_fact:
     nginx_server_default:
       locked: True
-  tags:
-    - debian_preseed
-    - nginx
+  tags: [ 'nginx' ]
 

@@ -2,8 +2,6 @@
 
 - name: Copy original /etc/apt/sources.list to sources.list.original
   command: /bin/cp -p /etc/apt/sources.list /etc/apt/sources.list.original creates=/etc/apt/sources.list.original
-  tags:
-    - apt
 
 - name: Configure APT and package sources
   template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
@@ -12,8 +10,6 @@
     - 'etc/apt/sources.list.d/00_ansible_{{ ansible_distribution | lower }}_sources.list'
     - 'etc/apt/apt.conf.d/70aptitude'
   when: ansible_distribution == 'Debian'
-  tags:
-    - apt
 
 - name: Configure APT preferences
   template: src=etc/apt/preferences.d/apt_preferences.j2
@@ -23,10 +19,8 @@
     - '{{ apt_packages_from_backports }}'
     - '{{ apt_preferences }}'
   when: ansible_distribution == 'Debian'
-  tags: apt
 
 - name: Update package lists
   apt: update_cache=yes
-  tags:
-    - apt
+
 
