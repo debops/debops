@@ -1,7 +1,9 @@
 ---
 
-- name: Copy original /etc/apt/sources.list to sources.list.original
-  command: /bin/cp -p /etc/apt/sources.list /etc/apt/sources.list.original creates=/etc/apt/sources.list.original
+- name: Divert original /etc/apt/sources.list
+  command: dpkg-divert --quiet --local --divert /etc/apt/sources.list.dpkg-divert --rename /etc/apt/sources.list
+           creates=/etc/apt/sources.list.dpkg-divert
+  when: ansible_distribution == 'Debian'
 
 - name: Configure APT and package sources
   template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
