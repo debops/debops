@@ -1,12 +1,20 @@
 ---
 
 - include: apt-cacher-ng.yml
+  when: apt is defined and apt
 
 - include: debian_preseed.yml
-  when: apt_cache_host is defined and apt_cache_host == ansible_fqdn
+  when: (apt is defined and apt) and (apt_cache_host is defined and apt_cache_host == ansible_fqdn)
 
 - include: apt.yml
+  when: apt is defined and apt
+
 - include: unattended-upgrades.yml
+  when: apt is defined and apt
+
 - include: install_conditional.yml
+  when: apt is defined and apt
+
 - include: install_packages.yml
+  when: apt is defined and apt
 
