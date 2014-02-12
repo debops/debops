@@ -10,3 +10,7 @@ dependencies:
       - ${apt_debian_preseed_nginx.destroy}
     when: (apt is defined and apt) and (apt_cache_host is defined and apt_cache_host == ansible_fqdn)
 
+  - role: reprepro
+    reprepro: '{{ apt }}'
+    reprepro_served: True
+    when: (apt is defined and apt) and apt != True
