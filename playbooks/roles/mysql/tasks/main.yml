@@ -69,4 +69,17 @@
   with_items: mysql_databases
   when: item.name is defined and item.name
 
+- name: Manage MySQL users
+  mysql_user: name={{ item.name }} state={{ item.state | default('present') }}
+              host={{ item.host | default('localhost') }}
+              {% if item.priv is defined and item.priv %}
+              priv={{ item.priv }} append_privs={{ item.append_privs | default('no') }}
+              {% endif %}
+              {% if (item.password is defined and item.password) %}
+              password={{ item.password }}
+              {% elif (item.password is undefined or not item.password) and (secret is defined and secret) %}
+              password={{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/' + item.name + '/password length=' + mysql_password_length) }}
+              {% endif %}
+  with_items: mysql_users
+  when: item.name is defined and item.name
 
