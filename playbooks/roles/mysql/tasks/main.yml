@@ -64,4 +64,9 @@
   notify:
     - Assemble hosts.allow.d
 
+- name: Manage MySQL databases
+  mysql_db: name={{ item.name }} state={{ item.state | default('present') }}
+  with_items: mysql_databases
+  when: item.name is defined and item.name
+
 
