@@ -1,0 +1,17 @@
+---
+
+dependencies:
+
+  - role: php5
+    php5_packages: [ 'php5-mysql', 'php5-mcrypt', 'php5-gd' ]
+    php5_pools: [ '{{ phpmyadmin_php5_pool }}' ]
+    when: phpmyadmin_dependencies is defined and phpmyadmin_dependencies
+    tags: [ 'mysql', 'phpmyadmin' ]
+
+  - role: nginx
+    nginx_servers: [ '{{ phpmyadmin_nginx_server }}' ]
+    nginx_upstreams: [ '{{ phpmyadmin_nginx_upstream_php5 }}' ]
+    when: phpmyadmin_dependencies is defined and phpmyadmin_dependencies
+    tags: [ 'mysql', 'phpmyadmin' ]
+
+
