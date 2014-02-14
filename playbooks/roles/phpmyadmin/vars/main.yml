@@ -25,6 +25,14 @@ phpmyadmin_nginx_server:
 
   upstream_php5: 'php5_phpmyadmin'
 
+  upstream_php5_options: |
+    {% if phpmyadmin_allow is defined and phpmyadmin_allow %}
+    {% for address in phpmyadmin_allow %}
+    allow {{ address }};
+    {% endfor %}
+    deny all;
+    {% endif %}
+
 phpmyadmin_nginx_upstream_php5:
   enabled: True
   name: 'php5_phpmyadmin'
