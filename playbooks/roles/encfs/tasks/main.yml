@@ -1,0 +1,33 @@
+---
+
+- include: configure_fuse.yml
+  when: encfs is defined and encfs
+
+- include: configure_encfs.yml
+  when: encfs is defined and encfs
+
+- include: encfs_with_gpg_key.yml
+  when: (encfs is defined and encfs) and
+        (encfs_gpg is defined and encfs_gpg) and
+        (encfs_password is undefined or encfs_password is defined and not encfs_password) and
+        (ansible_connection is defined and ansible_connection == 'local')
+
+- include: encfs_with_gpg_passphrase.yml
+  when: (encfs is defined and encfs) and
+        (encfs_gpg is undefined or encfs_gpg is defined and not encfs_gpg) and
+        (encfs_password is undefined or encfs_password is defined and not encfs_password) and
+        (ansible_connection is defined and ansible_connection == 'local')
+
+- include: encfs_with_passfile.yml
+  when: (encfs is defined and encfs) and
+        (encfs_gpg is undefined or encfs_gpg is defined and not encfs_gpg) and
+        (encfs_passfile is defined and encfs_passfile) and
+        (encfs_password is defined and encfs_password)
+
+- include: encfs_with_password.yml
+  when: (encfs is defined and encfs) and
+        (encfs_gpg is undefined or encfs_gpg is defined and not encfs_gpg) and
+        (encfs_passfile is undefined or encfs_passfile is defined and not encfs_passfile) and
+        (encfs_password is defined and encfs_password)
+
+

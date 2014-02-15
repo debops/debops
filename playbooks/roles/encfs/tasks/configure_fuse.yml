@@ -1,0 +1,43 @@
+---
+
+- name: Check if fuse package is installed
+  stat: path=/sbin/mount.fuse
+  register: encfs_fuse_package
+
+- name: Install fuse package
+  apt: pkg=fuse state=latest install_recommends=no
+  sudo: True
+  when: encfs_fuse_package is defined and encfs_fuse_package.stat.exists == False
+
+- name: Check state of /dev/fuse
+  stat: path=/dev/fuse
+  register: encfs_dev_fuse
+
+- name: Fix /dev/fuse permissions
+  file: path=/dev/fuse owner=root group=fuse mode=1660
+  sudo: True
+  when: encfs_dev_fuse is defined and encfs_dev_fuse.stat.gid == 0
+
+- name: Get current user account
+  set_fact:
+    encfs_user: '{{ ansible_env.USER }}'
+  when: (encfs_user is undefined) or (encfs_user is defined and not encfs_user)
+
+- name: Check if encfs user is in fuse group
+  shell: groups {{ encfs_user }} | grep -o fuse
+  register: encfs_fuse_status
+  changed_when: False
+  when: encfs_user is defined and encfs_user != 'root'
+
+- name: Add encfs user to fuse group when needed
+  user: name={{ encfs_user }} groups=fuse append=yes
+  register: encfs_fuse_group_added
+  sudo: True
+  when: encfs_fuse_status is defined and encfs_fuse_status.stdout != 'fuse'
+
+- name: Inform user that he needs to relog to be in fuse group
+  fail: msg="You need to log out and back in to enable 'fuse' system group"
+  when: (encfs_fuse_group_added is defined and encfs_fuse_group_added.changed == True) and
+        (ansible_connection == 'local')
+
+

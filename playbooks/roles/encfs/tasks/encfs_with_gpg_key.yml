@@ -1,0 +1,20 @@
+---
+
+- name: Generate encfs gpg keyfile
+  shell: tr -dc A-Za-z0-9 < {{ encfs_random }} | head -c {{ encfs_gpg_length }} |
+         gpg --encrypt --armor -r {{ encfs_gpg | join( ' -r ') }} > {{ encfs_gpg_keyfile }}
+         creates={{ encfs_gpg_keyfile }}
+  changed_when: False
+
+- name: Create encfs encrypted directory with gpg key
+  shell: printf "p\n" | encfs {{ encfs }}{{ encfs_suffix }} {{ encfs }} --extpass="gpg --no-mdc-warning -o - {{ encfs_gpg_keyfile }}"
+         creates={{ encfs_config_file }}
+  register: encfs_created
+
+- name: Mount encfs encrypted directory with gpg key
+  shell: encfs {{ encfs }}{{ encfs_suffix }} {{ encfs }} --extpass="gpg --no-mdc-warning -o - {{ encfs_gpg_keyfile }}"
+  when: (encfs_created is defined and encfs_created.changed == False) and
+        (encfs_is_mounted is undefined or encfs_is_mounted is defined and encfs_is_mounted.stdout == "") and
+        (encfs_mode is undefined or (encfs_mode is defined and encfs_mode != 'close'))
+
+

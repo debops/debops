@@ -1,0 +1,24 @@
+---
+
+- name: Install encfs packages
+  apt: pkg=encfs state=latest install_recommends=no
+
+- name: Create encfs directories
+  file: path={{ item }} state=directory mode=0751
+  with_items: [ '{{ encfs }}', '{{ encfs }}{{ encfs_suffix }}' ]
+
+- name: Check if encfs configuration file exists
+  stat: path={{ encfs_config_file }}
+  register: encfs_config
+
+- name: Check if encfs is mounted
+  shell: mount | grep 'encfs on {{ encfs }} type fuse.encfs' || true
+  register: encfs_is_mounted
+  changed_when: False
+
+- name: Umount encfs encrypted directory
+  shell: fusermount -u {{ encfs }}
+  when: (encfs_is_mounted is defined and encfs_is_mounted.stdout.startswith('encfs on {{ encfs }} type fuse.encfs')) and
+        (encfs_mode is undefined or (encfs_mode is defined and encfs_mode != 'open'))
+
+
