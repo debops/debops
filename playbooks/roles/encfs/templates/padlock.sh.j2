@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# padlock.sh: open/close encfs-encrypted directory with GPG key/passphrase
+
+# Suffix of the encrypted directory
+encfs_suffix="{{ encfs_suffix }}"
+
+# Name of the GPG keyfile
+encfs_gpg_keyfile_name="{{ encfs_gpg_keyfile_name }}"
+
+# Find out where is encrypted directory relative to the script
+encfs_root=$(readlink -f ${0})
+encfs_encrypted=$(dirname ${encfs_root})
+encfs=${encfs_encrypted%%${encfs_suffix}}
+
+# Location of GPG-encrypted keyfile to use
+encfs_gpg_keyfile="${encfs_encrypted}/${encfs_gpg_keyfile_name}"
+
+# Make sure that mount directory exists
+mkdir -p ${encfs}
+
+# Check if encrypted directory is already mounted
+is_mounted=$(mount | grep "encfs on ${encfs} type fuse.encfs")
+
+# Unmount the directory if mounted ...
+if [ -n "${is_mounted}" ]; then
+
+	fusermount -u ${encfs}
+
+# ... or mount it if unmounted
+elif [ -z "${is_mounted}" ]; then
+
+	encfs ${encfs_encrypted} ${encfs} --extpass="gpg --no-mdc-warning -o - ${encfs_gpg_keyfile}"
+
+fi
+
+

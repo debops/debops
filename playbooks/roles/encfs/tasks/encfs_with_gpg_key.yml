@@ -11,6 +11,9 @@
          creates={{ encfs_config_file }}
   register: encfs_created
 
+- name: Create padlock.sh script for manual encfs management
+  template: src=padlock.sh.j2 dest={{ encfs }}{{ encfs_suffix }}/padlock.sh mode=0755
+
 - name: Mount encfs encrypted directory with gpg key
   shell: encfs {{ encfs }}{{ encfs_suffix }} {{ encfs }} --extpass="gpg --no-mdc-warning -o - {{ encfs_gpg_keyfile }}"
   when: (encfs_created is defined and encfs_created.changed == False) and
