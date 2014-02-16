@@ -11,11 +11,11 @@ d-i netcfg/get_hostname string unassigned-hostname
 d-i netcfg/get_domain string unassigned-domain
 d-i netcfg/wireless_wep string
 
-{% if apt_cache_host is defined and apt_cache_host %}
+{% if (apt is defined and apt) and apt != True %}
 # Workaround for preseed + apt-cacher-ng bug
 # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=642159
 d-i mirror/country string {{ apt_debian_preseed_mirror_country }}
-d-i mirror/http/hostname string {{ apt_cache_host }}:{{ apt_cache_port }}
+d-i mirror/http/hostname string {{ apt }}:{{ apt_acng_port }}
 d-i mirror/http/directory string /{{ apt_debian_http_mirror }}/debian
 d-i mirror/http/proxy string
 {% else %}

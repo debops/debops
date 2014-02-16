@@ -13,19 +13,13 @@ apt_unattended_upgrades: True
 
 apt_debian_http_mirror: 'cdn.debian.net'
 
-# Example: apt_cache_host: 'cache.{{ ansible_domain }}'
-apt_cache_host: False
-apt_cache_port: 3142
-apt_cache_login: 'admin'
-apt_cache_password: 'password'
+apt_acng_port: 3142
+apt_acng_login: 'admin'
+apt_acng_password: 'password'
 
-# Variable has to be set, otherwise nginx template breaks apart
-# To allow access from all hosts, set to False
-apt_cache_allow:
-  - '127.0.0.1/32'
-  - '10.0.0.0/8'
-  - '172.16.0.0/12'
-  - '192.168.0.0/16'
+# Allow access to apt-cacher-ng service from specified IP addresses or CIDR networks.
+# If not specified, allows access from all networks
+apt_acng_allow: []
 
 apt_default_pin_priority: 700
 

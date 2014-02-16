@@ -1,14 +1,17 @@
 ---
 
 dependencies:
+  - role: etc_services
+    when: (apt is defined and apt) and (apt != True and apt == ansible_fqdn)
+
   - role: ferm
-    when: (apt is defined and apt) and (apt_cache_host is defined and apt_cache_host == ansible_fqdn)
+    when: (apt is defined and apt) and (apt != True and apt == ansible_fqdn)
 
   - role: nginx
     nginx_servers:
       - ${apt_debian_preseed_nginx.default}
       - ${apt_debian_preseed_nginx.destroy}
-    when: (apt is defined and apt) and (apt_cache_host is defined and apt_cache_host == ansible_fqdn)
+    when: (apt is defined and apt) and (apt != True and apt == ansible_fqdn)
 
   - role: reprepro
     reprepro: '{{ apt }}'
