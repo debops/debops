@@ -96,8 +96,10 @@ SECRET=$SECRET
 [ \$# -le 0 ] && echo "\$0: error: missing list of hosts to work with" && exit 1
 
 if [ \$SECRET -gt 0 ] ; then
-	ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml --extra-vars="secret_mode=open"
+	set -e
+	ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml --extra-vars="encfs_mode=open"
 	trap "ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml" EXIT
+	set +e
 fi
 
 ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${inventory} ${playbook} -k --extra-vars="hosts=\$@"
@@ -108,8 +110,10 @@ else
 	[ $# -le 0 ] && echo "$0: error: missing list of hosts to work with" && exit 1
 
 	if [ $SECRET -gt 0 ] ; then
-		ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml --extra-vars="secret_mode=open"
+		set -e
+		ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml --extra-vars="encfs_mode=open"
 		trap "ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml" EXIT
+		set +e
 	fi
 
 	ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${inventory} ${playbook} -k --extra-vars="hosts=$@"

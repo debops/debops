@@ -133,8 +133,10 @@ DEBUG=$DEBUG
 SECRET=$SECRET
 
 if [ \$SECRET -gt 0 ] ; then
-	ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml --extra-vars="secret_mode=open"
+	set -e
+	ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml --extra-vars="encfs_mode=open"
 	trap "ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml" EXIT
+	set +e
 fi
 
 ansible-playbook -i ${inventory} ${playbook} $@
@@ -143,8 +145,10 @@ EOF
 # Main script
 else
 	if [ $SECRET -gt 0 ] ; then
-		ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml --extra-vars="secret_mode=open"
+		set -e
+		ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml --extra-vars="encfs_mode=open"
 		trap "ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml" EXIT
+		set +e
 	fi
 
 	ansible-playbook -i ${inventory} ${playbook} $@
