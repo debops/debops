@@ -1,0 +1,38 @@
+---
+
+- name: Install required packages
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items: [ 'python-paramiko', 'python-yaml', 'python-jinja2', 'python-httplib2',
+                'cdbs', 'debhelper', 'dpkg-dev', 'python-support', 'fakeroot', 'sshpass' ]
+
+- name: Get user home directory
+  shell: echo $HOME
+  register: ansible_user_home
+  changed_when: False
+  sudo_user: '{{ ansible_build_user }}'
+
+- name: Clone Ansible repository
+  git: repo={{ ansible_git_repository }} dest={{ ansible_user_home.stdout }}/{{ ansible_build_path }}
+       version={{ ansible_git_branch }} update=yes
+  register: ansible_git
+  sudo_user: '{{ ansible_build_user }}'
+
+- name: Get current Ansible version
+  slurp: src={{ ansible_user_home.stdout }}/{{ ansible_build_path }}/VERSION
+  register: ansible_build_version
+
+- name: Set Ansible package name
+  set_fact:
+    ansible_package: 'ansible_{{ ansible_build_version.content | b64decode | trim }}_all.deb'
+
+- name: Build Ansible .deb package
+  command: make deb chdir={{ ansible_user_home.stdout }}/{{ ansible_build_path }}
+  register: ansible_build
+  when: ansible_git is defined and ansible_git.changed == True
+  sudo_user: '{{ ansible_build_user }}'
+
+- name: Install Ansible .deb package
+  shell: dpkg -i {{ ansible_user_home.stdout }}/{{ ansible_build_path }}/../{{ ansible_package }}
+  when: ansible_build is defined and ansible_build.changed == True
+
+
