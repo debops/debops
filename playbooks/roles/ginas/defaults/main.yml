@@ -1,0 +1,35 @@
+---
+# role: ginas (ginas is not a server)
+
+
+# User which will be used to clone and manage ginas
+# By default, current system user
+ginas_user: '{{ ansible_ssh_user | default(lookup("env","USER")) }}'
+
+# Where ginas will be cloned, relative to user's $HOME
+ginas_path: 'src/github.com/drybjed/ginas'
+
+# URI to ginas repository which will be cloned
+ginas_git_repository: 'https://github.com/drybjed/ginas.git'
+
+# git branch to clone
+ginas_git_branch: 'master'
+
+# URI of optional inventory repository to clone
+ginas_inventory_repository: ""
+
+# git branch of inventory repository to clone
+ginas_inventory_branch: 'master'
+
+# Where ginas inventory repository will be cloned, relative to user's $HOME
+ginas_inventory_path: 'src/github.com/drybjed/ginas-inventory'
+
+# Name of a directory inside inventory repository which will be linked as
+# 'inventory' directory inside ginas repository. See 'site.sh' script for more
+# information
+ginas_inventory_name: 'inventory'
+
+# An user account which will be checked for when role creates recursive symlinks
+ginas_recursive_user: ""
+
+
