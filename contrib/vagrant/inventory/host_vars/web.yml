@@ -1,0 +1,37 @@
+---
+# host: web
+
+# LEMP webserver (Linux, nginx, MySQL, PHP5)
+
+# Install additional PHP5 packages (it's good to add them in this variable
+# instead of 'apt_*_packages', so that packages depending on php5 are installed
+# after their dependencies)
+php5_packages: [ 'php5-mysql' ]
+
+# List of additional users configured on this host
+users_host_list:
+
+  # Deploy user, with git access similar to Heroku cloud
+  - name: '{{ global_vagrant_deploy }}'
+    comment: 'Web Deployment'
+    type: 'git'
+    sshkeys:
+      - '{{ lookup("file","~/.ssh/id_rsa.pub") }}'
+
+# List of nginx servers configured on this host
+nginx_servers:
+  - '{{ nginx_default_server }}'
+
+# Default nginx server with custom configuration
+nginx_default_server:
+  enabled: True
+  default: True
+
+  # Enable userdir support, you can define one git repository as "userdir" and
+  # it will be available as http://hostname/~deploy/
+  # No PHP5 support though, just plain HTML/CSS
+  userdir: True
+  root: '/srv/users/{{ global_vagrant_deploy }}/sites/{{ ansible_hostname }}.{{ ansible_domain }}/public'
+  upstream_php5: 'php5_www-data'
+
+

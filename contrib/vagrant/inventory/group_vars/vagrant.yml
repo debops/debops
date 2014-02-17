@@ -1,0 +1,60 @@
+---
+# host group: vagrant
+
+# Default deployment user, database
+global_vagrant_deploy: 'deploy'
+
+# Default password
+global_vagrant_password: 'vagrant'
+
+# vagrant local network
+global_vagrant_network: '192.168.50.0/24'
+
+# vagrant manages the network interfaces by itself, so let's get out of the way
+interfaces: False
+
+# Enable local mail on each host
+postfix: [ 'local' ]
+
+# Default admin accounts (vagrant and your username)
+auth_admin_accounts:
+  - 'vagrant'
+  - '{{ lookup("env","USER") }}'
+
+# Install additional packages in the vagrant group
+apt_group_packages: [ 'mysql-client' ]
+
+# root account configuration - set shell to /bin/zsh and install custom dotfiles
+# root should be in it's own hash variable
+users_root:
+  - name: 'root'
+    shell: '/bin/zsh'
+    dotfiles: True
+
+# Configuration of default accounts on all hosts in vagrant group
+users_default:
+
+  # vagrant account
+  - name: 'vagrant'
+    shell: '/bin/zsh'
+    groups: 'admins'
+    dotfiles: True
+    sshkeys:
+
+      # Insecure vagrant SSH keys from https://github.com/mitchellh/vagrant/tree/master/keys
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key'
+
+      # Install key from your account just in case
+      - '{{ lookup("file","~/.ssh/id_rsa.pub") }}'
+
+  # Your own account
+  - name: '{{ lookup("env","USER") }}'
+    shell: '/bin/zsh'
+    dotfiles: True
+    groups: 'admins'
+    sshkeys:
+
+      # SSH key from your account
+      - '{{ lookup("file","~/.ssh/id_rsa.pub") }}'
+
+

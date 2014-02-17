@@ -1,0 +1,53 @@
+---
+# host: db
+
+# MySQL server with PHPMyAdmin
+
+# Enable PHPMyAdmin
+mysql_phpmyadmin: True
+
+# Default password for MySQL 'root' user
+mysql_root_password: '{{ global_vagrant_password }}'
+
+# MySQL should listen on all interfaces
+# At the moment you might need to restart mysql-server on db for it to happen
+# Command: ansible -s -i inventory-vagrant -m service -a 'name=mysql state=restarted' db
+mysql_mysqld_bind_address: '0.0.0.0'
+
+# Allow plaintext connections from local vagrant network
+mysql_network_allow_list: [ '{{ global_vagrant_network }}' ]
+
+# List of MySQL databases
+mysql_databases:
+
+  # deploy
+  - name: '{{ global_vagrant_deploy }}'
+
+# List of MySQL users
+mysql_users:
+
+  # Your username, from localhost (db)
+  - name: '{{ lookup("env","USER") }}'
+    host: 'localhost'
+    priv: '*.*:ALL,GRANT'
+    password: '{{ global_vagrant_password }}'
+
+  # Your username, from local network
+  - name: '{{ lookup("env","USER") }}'
+    host: '192.168.50.%'
+    priv: '*.*:ALL,GRANT'
+    password: '{{ global_vagrant_password }}'
+
+  # deploy user, from localhost (db)
+  - name: '{{ global_vagrant_deploy }}'
+    host: 'localhost'
+    priv: '{{ global_vagrant_deploy }}.*:ALL'
+    password: '{{ global_vagrant_password }}'
+
+  # deploy user, from local network
+  - name: '{{ global_vagrant_deploy }}'
+    host: '192.168.50.%'
+    priv: '{{ global_vagrant_deploy }}.*:ALL'
+    password: '{{ global_vagrant_password }}'
+
+
