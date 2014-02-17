@@ -14,6 +14,10 @@ NETMASK = '255.255.255.0'
 DEFAULT_BOX = 'debian-wheezy-amd64-netinst'
 DEFAULT_BOX_URL = 'https://dl.dropboxusercontent.com/u/55426468/debian-wheezy-amd64-netinst.box'
 
+# Fix permissions of vagrant's insecure SSH key
+system('chmod 0600 contrib/vagrant/ssh/id_rsa_insecure')
+
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.box = DEFAULT_BOX
