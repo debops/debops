@@ -81,6 +81,9 @@
 # Disable 'secret' role (set to 0)
 [ -z "${SECRET}" ] && SECRET=1
 
+# Allow connections without SSH fingerprint checking (set to 1)
+[ -z "${INSECURE_SSH}" ] && INSECURE_SSH=0
+
 playbook_dir="playbooks"
 
 # What Ansible-specific subdirectory of inventory to look for
@@ -130,6 +133,11 @@ if [ -d "${inventory}/${inventory_subdirectory}" ]; then
 		inventory="${inventory}/${inventory_subdirectory}"
 fi
 
+# Allow insecure SSH connections if requested
+if [ $INSECURE_SSH -gt 0 ]; then
+	export ANSIBLE_HOST_KEY_CHECKING=False
+fi
+
 # Debugging enabled, print commands and exit
 if [ $DEBUG -gt 0 ]; then
 
@@ -138,6 +146,7 @@ if [ $DEBUG -gt 0 ]; then
 
 DEBUG=$DEBUG
 SECRET=$SECRET
+INSECURE_SSH=$INSECURE_SSH
 
 if [ \$SECRET -gt 0 ] ; then
 	set -e
