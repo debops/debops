@@ -93,6 +93,9 @@
 
 playbook_dir="playbooks"
 
+# What Ansible-specific subdirectory of inventory to look for
+inventory_subdirectory="ansible"
+
 # Clean up script name
 scriptname=$(basename ${0})
 scriptname=${scriptname%%.*}
@@ -132,6 +135,10 @@ if [ -z "${inventory}" ]; then
 	fi
 fi
 
+# Check if inventory is in subdirectory instead of main dir
+if [ -d "${inventory}/${inventory_subdirectory}" ]; then
+		inventory="${inventory}/${inventory_subdirectory}"
+fi
 
 # Debugging enabled, print commands and exit
 if [ $DEBUG -gt 0 ]; then
