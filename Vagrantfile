@@ -14,8 +14,11 @@ NETMASK = '255.255.255.0'
 DEFAULT_BOX = 'debian-wheezy-amd64-netinst'
 DEFAULT_BOX_URL = 'https://dl.dropboxusercontent.com/u/55426468/debian-wheezy-amd64-netinst.box'
 
+DEFAULT_SSH_USERNAME = 'vagrant'
+DEFAULT_SSH_ID_RSA = 'contrib/vagrant/ssh/id_rsa_insecure'
+
 # Fix permissions of vagrant's insecure SSH key
-system('chmod 0600 contrib/vagrant/ssh/id_rsa_insecure')
+system('chmod 0600 ' + DEFAULT_SSH_ID_RSA)
 
 # Load Vagrantfile from currently active Ansible inventory
 begin
