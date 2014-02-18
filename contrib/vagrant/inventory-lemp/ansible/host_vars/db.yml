@@ -26,6 +26,18 @@ mysql_databases:
 # List of MySQL users
 mysql_users:
 
+  # vagrant account from localhost (db)
+  - name: 'vagrant'
+    host: 'localhost'
+    priv: '*.*:ALL,GRANT'
+    password: '{{ global_vagrant_password }}'
+
+  # vagrant account, from local network
+  - name: 'vagrant'
+    host: '192.168.50.%'
+    priv: '*.*:ALL,GRANT'
+    password: '{{ global_vagrant_password }}'
+
   # Your username, from localhost (db)
   - name: '{{ lookup("env","USER") }}'
     host: 'localhost'
