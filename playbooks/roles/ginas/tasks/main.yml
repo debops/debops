@@ -23,16 +23,25 @@
   when: ginas_inventory_repository is defined and ginas_inventory_repository
   sudo_user: '{{ ginas_user }}'
 
-- name: Link inventory to ginas playbook
+- name: Link custom inventory to ginas playbook
   file: path={{ ginas_user_home.stdout }}/{{ ginas_path }}/inventory state=link
         src={{ ginas_user_home.stdout }}/{{ ginas_inventory_path }}/{{ ginas_inventory_name }}
-  when: ginas_inventory_repository is defined and ginas_inventory_repository
+  when: (ginas_inventory_repository is defined and ginas_inventory_repository) and
+        (ginas_vagrant_inventory is undefined or not ginas_vagrant_inventory)
+  sudo_user: '{{ ginas_user }}'
+
+- name: Link Vagrant inventory to ginas playbook
+  file: path={{ ginas_user_home.stdout }}/{{ ginas_path }}/inventory state=link
+        src={{ ginas_user_home.stdout }}/{{ ginas_path }}/contrib/vagrant/inventory-{{ ginas_vagrant_inventory }}
+  when: (ginas_vagrant_inventory is defined and ginas_vagrant_inventory) and
+        (ginas_inventory_repository is undefined or not ginas_inventory_repository)
   sudo_user: '{{ ginas_user }}'
 
 - name: Create convinient update symlink with custom inventory if enabled
   file: path={{ ginas_user_home.stdout }}/{{ ginas_path }}/ginas.sh state=link
         src={{ ginas_user_home.stdout }}/{{ ginas_path }}/site.sh
-  when: ginas_inventory_repository is defined and ginas_inventory_repository
+  when: (ginas_inventory_repository is defined and ginas_inventory_repository) or
+        (ginas_vagrant_inventory is defined and ginas_vagrant_inventory)
   sudo_user: '{{ ginas_user }}'
 
 - name: Create convinient symlinks if specified user is detected
