@@ -1,5 +1,5 @@
 # -*- mode: ruby -*-
-# vi: set ft=ruby
+# vim: ft=ruby
 
 # Vagrantfile for ginas project
 # https://github.com/drybjed/ginas/
