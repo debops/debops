@@ -10,22 +10,33 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.username = DEFAULT_SSH_USERNAME
   config.ssh.private_key_path = DEFAULT_SSH_ID_RSA
 
+  config.vm.guest = :debian
+
   # LEMP webserver (Linux, nginx, MySQL, PHP5)
   config.vm.define :web do |web|
     web.vm.hostname = 'web' + DOMAIN
     web.vm.network :private_network, ip: NETWORK + "10", :netmask => NETMASK
+
+    web.vm.synced_folder "", "/vagrant", disabled: true
+    web.vm.synced_folder "contrib/vagrant/src/", "/srv/www/sites/default",
+      owner: "root", group: "root"
   end
 
   # MySQL server with PHPMyAdmin
   config.vm.define :db do |db|
     db.vm.hostname = 'db' + DOMAIN
     db.vm.network :private_network, ip: NETWORK + "20", :netmask => NETMASK
+
+    db.vm.synced_folder "", "/vagrant", disabled: true
   end
 
   # Ansible Controller
   config.vm.define :master do |master|
     master.vm.hostname = 'master' + DOMAIN
     master.vm.network :private_network, ip: NETWORK + "2", :netmask => NETMASK
+
+    master.vm.synced_folder "", "/vagrant", disabled: true
+    master.vm.synced_folder "", "/home/vagrant/ginas"
 
     config.vm.provision "ansible" do |ansible|
       ansible.host_key_checking = "false"
