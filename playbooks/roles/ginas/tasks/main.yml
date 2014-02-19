@@ -57,4 +57,9 @@
   when: ginas_user is defined and ginas_user == '{{ ginas_recursive_user }}'
   sudo_user: '{{ ginas_user }}'
 
+- name: Create symlinks to task.sh if specified user is detected
+  file: path={{ ginas_user_home.stdout }}/{{ ginas_path }}/task-vagrant.sh state=link
+        src={{ ginas_user_home.stdout }}/{{ ginas_path }}/task.sh
+  when: ginas_user is defined and ginas_user == '{{ ginas_recursive_user }}'
+  sudo_user: '{{ ginas_user }}'
 

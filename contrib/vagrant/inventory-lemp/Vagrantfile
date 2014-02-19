@@ -44,6 +44,11 @@ if File.executable?("site.sh") then
   not File.symlink?("vagrant.sh") and File.symlink("site.sh", "vagrant.sh")
 end
 
+# Create symlink to 'task.sh' script for Vagrant inventory
+if File.executable?("task.sh") then
+  not File.symlink?("task-vagrant.sh") and File.symlink("task.sh", "task-vagrant.sh")
+end
+
 
 # Vagrant configuration
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
