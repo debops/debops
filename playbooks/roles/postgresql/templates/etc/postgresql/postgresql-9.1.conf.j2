@@ -44,10 +44,10 @@
 #------------------------------------------------------------------------------
 {#	# The default values of these variables are driven from the -D command-line
 	# option or PGDATA environment variable, represented here as ConfigDir. #}
-data_directory = '{{ item.data_directory | default("/var/lib/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}") }}'
-hba_file = '{{ item.hba_file | default("/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/pg_hba.conf") }}'
-ident_file = '{{ item.ident_file | default("/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/pg_ident.conf") }}'
-external_pid_file = '{{ item.external_pid_file | default("/var/run/postgresql/{{ item.version | default(postgresql_version) }}-{{ item.name }}.pid") }}'
+data_directory = '{{ item.data_directory | default("/var/lib/postgresql/" + item.version | default(postgresql_version) + "/" + item.name) }}'
+hba_file = '{{ item.hba_file | default("/etc/postgresql/" + item.version | default(postgresql_version) + "/" + item.name + "/pg_hba.conf") }}'
+ident_file = '{{ item.ident_file | default("/etc/postgresql/" + item.version | default(postgresql_version) + "/" + item.name + "/pg_ident.conf") }}'
+external_pid_file = '{{ item.external_pid_file | default("/var/run/postgresql/" + item.version | default(postgresql_version) + "-" + item.name + ".pid") }}'
 
 
 #------------------------------------------------------------------------------
