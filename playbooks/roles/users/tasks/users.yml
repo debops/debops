@@ -30,7 +30,7 @@
 - name: Manage home directories permissions
   file: state=directory
         {% if item.type is defined and item.type == 'sftponly' %}
-        path={{ item.home | default('/srv/users/' + item.name) }} owner=root group=root mode=0751
+        path={{ item.home | default('/srv/users/' + item.name) }} owner=root group={{ item.group | default(item.name) }} mode=0750
         {% elif item.type is defined and item.type == 'git' %}
         path={{ item.home | default('/srv/users/' + item.name) }}
         owner={{ item.home_owner | default(item.name) }}
