@@ -8,50 +8,50 @@
 
 - name: Get user home directory
   shell: echo $HOME
-  register: ansible_user_home
+  register: role_ansible_user_home
   changed_when: False
-  sudo_user: '{{ ansible_build_user }}'
+  sudo_user: '{{ role_ansible_build_user }}'
 
 - name: Clone Ansible repository
-  git: repo={{ ansible_git_repository }} dest={{ ansible_user_home.stdout }}/{{ ansible_build_path }}
-       version={{ ansible_git_branch }} update=yes
-  register: ansible_git
-  sudo_user: '{{ ansible_build_user }}'
+  git: repo={{ role_ansible_git_repository }} dest={{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}
+       version={{ role_ansible_git_branch }} update=yes
+  register: role_ansible_git
+  sudo_user: '{{ role_ansible_build_user }}'
 
 - name: Get current Ansible version
-  slurp: src={{ ansible_user_home.stdout }}/{{ ansible_build_path }}/VERSION
-  register: ansible_build_version
+  slurp: src={{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}/VERSION
+  register: role_ansible_build_version
 
 - name: Set Ansible package name
   set_fact:
-    ansible_package: 'ansible_{{ ansible_build_version.content | b64decode | trim }}_all.deb'
+    role_ansible_package: 'ansible_{{ role_ansible_build_version.content | b64decode | trim }}_all.deb'
 
 - name: Run Ansible tests if enabled
-  command: make tests chdir={{ ansible_user_home.stdout }}/{{ ansible_build_path }}
-  register: ansible_tests_results
-  when: (ansible_git is defined and ansible_git.changed == True) and
-        (ansible_tests is defined and ansible_tests)
+  command: make tests chdir={{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}
+  register: role_ansible_tests_results
+  when: (role_ansible_git is defined and role_ansible_git.changed == True) and
+        (role_ansible_tests is defined and role_ansible_tests)
   ignore_errors: True
-  sudo_user: '{{ ansible_build_user }}'
+  sudo_user: '{{ role_ansible_build_user }}'
 
 - name: Send mail message in case of test errors
-  mail: from='{{ ansible_build_user }}@{{ ansible_fqdn }}' subject='{{ ansible_tests_mail_subject }}'
-        to='{{ ansible_tests_mail_to | join(",") }}' charset=utf8 body='{{ ansible_tests_mail_body }}'
-        {% if ansible_tests_mail_replyto is defined and ansible_tests_mail_replyto %}
-        headers=Reply-To='{{ ansible_tests_mail_replyto | join(",") }}'
+  mail: from='{{ role_ansible_build_user }}@{{ ansible_fqdn }}' subject='{{ role_ansible_tests_mail_subject }}'
+        to='{{ role_ansible_tests_mail_to | join(",") }}' charset=utf8 body='{{ role_ansible_tests_mail_body }}'
+        {% if role_ansible_tests_mail_replyto is defined and role_ansible_tests_mail_replyto %}
+        headers=Reply-To='{{ role_ansible_tests_mail_replyto | join(",") }}'
         {% endif %}
-  when: (ansible_tests_mail_to is defined and ansible_tests_mail_to) and
-        (ansible_tests_results is defined and ansible_tests_results.rc != 0)
-  sudo_user: '{{ ansible_build_user }}'
+  when: (role_ansible_tests_mail_to is defined and role_ansible_tests_mail_to) and
+        (role_ansible_tests_results is defined and role_ansible_tests_results.rc != 0)
+  sudo_user: '{{ role_ansible_build_user }}'
 
 - name: Build Ansible .deb package
-  command: make deb chdir={{ ansible_user_home.stdout }}/{{ ansible_build_path }}
-  register: ansible_build
-  when: ansible_git is defined and ansible_git.changed == True
-  sudo_user: '{{ ansible_build_user }}'
+  command: make deb chdir={{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}
+  register: role_ansible_build
+  when: role_ansible_git is defined and role_ansible_git.changed == True
+  sudo_user: '{{ role_ansible_build_user }}'
 
 - name: Install Ansible .deb package
-  shell: dpkg -i {{ ansible_user_home.stdout }}/{{ ansible_build_path }}/../{{ ansible_package }}
-  when: ansible_build is defined and ansible_build.changed == True
+  shell: dpkg -i {{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}/../{{ role_ansible_package }}
+  when: role_ansible_build is defined and role_ansible_build.changed == True
 
 
