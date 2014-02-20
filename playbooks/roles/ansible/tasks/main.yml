@@ -3,7 +3,8 @@
 - name: Install required packages
   apt: pkg={{ item }} state=latest install_recommends=no
   with_items: [ 'git', 'python-paramiko', 'python-yaml', 'python-jinja2', 'python-httplib2',
-                'cdbs', 'debhelper', 'dpkg-dev', 'python-support', 'fakeroot', 'sshpass' ]
+                'cdbs', 'debhelper', 'dpkg-dev', 'python-support', 'fakeroot', 'sshpass',
+                'python-nose' ]
 
 - name: Get user home directory
   shell: echo $HOME
@@ -24,6 +25,24 @@
 - name: Set Ansible package name
   set_fact:
     ansible_package: 'ansible_{{ ansible_build_version.content | b64decode | trim }}_all.deb'
+
+- name: Run Ansible tests if enabled
+  command: make tests chdir={{ ansible_user_home.stdout }}/{{ ansible_build_path }}
+  register: ansible_tests_results
+  when: (ansible_git is defined and ansible_git.changed == True) and
+        (ansible_tests is defined and ansible_tests)
+  ignore_errors: True
+  sudo_user: '{{ ansible_build_user }}'
+
+- name: Send mail message in case of test errors
+  mail: from='{{ ansible_build_user }}@{{ ansible_fqdn }}' subject='{{ ansible_tests_mail_subject }}'
+        to='{{ ansible_tests_mail_to | join(",") }}' charset=utf8 body='{{ ansible_tests_mail_body }}'
+        {% if ansible_tests_mail_replyto is defined and ansible_tests_mail_replyto %}
+        headers=Reply-To='{{ ansible_tests_mail_replyto | join(",") }}'
+        {% endif %}
+  when: (ansible_tests_mail_to is defined and ansible_tests_mail_to) and
+        (ansible_tests_results is defined and ansible_tests_results.rc != 0)
+  sudo_user: '{{ ansible_build_user }}'
 
 - name: Build Ansible .deb package
   command: make deb chdir={{ ansible_user_home.stdout }}/{{ ansible_build_path }}
