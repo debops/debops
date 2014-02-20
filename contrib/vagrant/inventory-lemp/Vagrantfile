@@ -4,6 +4,12 @@
 # Vagrant API version
 VAGRANTFILE_API_VERSION = '2'
 
+# Enable/Disable GUI
+defined?(GUI) or GUI = false
+
+# Default memory size in MB
+defined?(RAM) or RAM = 384
+
 # ginas inventory
 defined?(GINAS_INVENTORY) or GINAS_INVENTORY = "lemp"
 
@@ -60,6 +66,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.private_key_path = DEFAULT_SSH_ID_RSA
 
   config.vm.guest = :debian
+
+  config.vm.provider "virtualbox" do |vbox|
+    vbox.gui = GUI
+    vbox.memory = RAM
+  end
 
   # LEMP webserver (Linux, nginx, MySQL, PHP5)
   config.vm.define :web do |web|
