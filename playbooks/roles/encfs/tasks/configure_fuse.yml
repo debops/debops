@@ -16,7 +16,8 @@
 - name: Fix /dev/fuse permissions
   file: path=/dev/fuse owner=root group=fuse mode=1660
   sudo: True
-  when: encfs_dev_fuse is defined and encfs_dev_fuse.stat.gid == 0
+  when: encfs_dev_fuse is defined and
+        (encfs_dev_fuse.stat.gid == 0 and encfs_dev_fuse.stat.woth != True)
 
 - name: Get current user account
   set_fact:
