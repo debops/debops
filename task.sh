@@ -42,7 +42,7 @@
 # They can have an optional '.sh' extension, in which case they will be
 # automatically ignored by git. Format of the symlink names:
 #
-#     <inventory>.sh or task-<inventory>.sh
+#     <module>.sh or <module>-<inventory>.sh
 #
 # If a symlink name has only one part, script will first check, if
 # corresponding 'inventory-<name>/' directory exists. If it does, script will use
@@ -55,13 +55,13 @@
 #
 # Inventory directories:
 #    inventory/
-#    inventory-development/
 #    inventory-production/
 #
 # Symlinks:
-#    task.sh                = -i inventory
-#    production.sh          = -i inventory-production
-#    task-production.sh     = -i inventory-production
+#    task.sh                = -i inventory -m command
+#    shell.sh               = -i inventory -m shell
+#    task-production.sh     = -i inventory-production -m command
+#    apt-production.sh      = -i inventory-production -m apt
 #
 # You can add ansible options as the script options, and they will be passed
 # correctly.
@@ -97,11 +97,20 @@ if [[ "${prefix}" == "${scriptname}" ]]; then
 
 	# Look for corresponding inventory and use it
 	if [ -d "inventory-${prefix}" ]; then
+		module="command"
 		inventory="inventory-${prefix}"
 
 	# or, use default inventory
 	else
-		inventory="inventory"
+		module="${prefix}"
+	fi
+
+# Or, name has two parts, use the specified module
+else
+	if [ "${prefix}" == "task" ]; then
+		module="command"
+	else
+		module="${prefix}"
 	fi
 fi
 
@@ -128,6 +137,12 @@ if [ $INSECURE_SSH -gt 0 ]; then
 	export ANSIBLE_HOST_KEY_CHECKING=False
 fi
 
+# Host pattern to pass to Ansible
+hostpattern=${1} ; shift
+
+# Rest of the arguments to pass to Ansible
+arguments="$@"
+
 # Debugging enabled, print commands and exit
 if [ $DEBUG -gt 0 ]; then
 
@@ -145,11 +160,12 @@ if [ \$SECRET -gt 0 ] ; then
 	set +e
 fi
 
-ansible -i ${inventory} $@
+ansible ${hostpattern} -i ${inventory} -m ${module} -a "${arguments}"
 EOF
 
 # Main script
 else
+
 	if [ $SECRET -gt 0 ] ; then
 		set -e
 		ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml --extra-vars="encfs_mode=open"
@@ -157,7 +173,7 @@ else
 		set +e
 	fi
 
-	ansible -i ${inventory} $@
+	ansible ${hostpattern} -i ${inventory} -m ${module} -a "${arguments}"
 fi
 
 
