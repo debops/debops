@@ -133,6 +133,9 @@ if [ -d "${inventory}/${inventory_subdirectory}" ]; then
 		inventory="${inventory}/${inventory_subdirectory}"
 fi
 
+# Define Ansible inventory variable
+export ANSIBLE_HOSTS=${inventory}
+
 # Allow insecure SSH connections if requested
 if [ $INSECURE_SSH -gt 0 ]; then
 	export ANSIBLE_HOST_KEY_CHECKING=False
@@ -148,26 +151,29 @@ DEBUG=$DEBUG
 SECRET=$SECRET
 INSECURE_SSH=$INSECURE_SSH
 
+ANSIBLE_HOSTS=${ANSIBLE_HOSTS}
+ANSIBLE_HOST_KEY_CHECKING=${ANSIBLE_HOSTS_KEY_CHECKING}
+
 if [ \$SECRET -gt 0 ] ; then
 	set -e
-	ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml --extra-vars="encfs_mode=open"
-	trap "ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml" EXIT
+	ansible-playbook ${playbook_dir}/secret.yml --extra-vars="encfs_mode=open"
+	trap "ansible-playbook ${playbook_dir}/secret.yml" EXIT
 	set +e
 fi
 
-ansible-playbook -i ${inventory} ${playbook} $@
+ansible-playbook ${playbook} "\${@}"
 EOF
 
 # Main script
 else
 	if [ $SECRET -gt 0 ] ; then
 		set -e
-		ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml --extra-vars="encfs_mode=open"
-		trap "ansible-playbook -i ${inventory} ${playbook_dir}/secret.yml" EXIT
+		ansible-playbook ${playbook_dir}/secret.yml --extra-vars="encfs_mode=open"
+		trap "ansible-playbook ${playbook_dir}/secret.yml" EXIT
 		set +e
 	fi
 
-	ansible-playbook -i ${inventory} ${playbook} $@
+	ansible-playbook ${playbook} "${@}"
 fi
 
 
