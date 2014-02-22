@@ -42,7 +42,7 @@
 # They can have an optional '.sh' extension, in which case they will be
 # automatically ignored by git. Format of the symlink names:
 #
-#     <module>.sh or <module>-<inventory>.sh
+#     <module>.sh or <inventory>-<module>.sh
 #
 # If a symlink name has only one part, script will first check, if
 # corresponding 'inventory-<name>/' directory exists. If it does, script will use
@@ -60,8 +60,8 @@
 # Symlinks:
 #    task.sh                = -i inventory -m command
 #    shell.sh               = -i inventory -m shell
-#    task-production.sh     = -i inventory-production -m command
-#    apt-production.sh      = -i inventory-production -m apt
+#    production-task.sh     = -i inventory-production -m command
+#    production-apt.sh      = -i inventory-production -m apt
 #
 # You can add ansible options as the script options, and they will be passed
 # correctly.
@@ -97,20 +97,13 @@ if [[ "${prefix}" == "${scriptname}" ]]; then
 
 	# Look for corresponding inventory and use it
 	if [ -d "inventory-${prefix}" ]; then
-		module="command"
 		inventory="inventory-${prefix}"
-
-	# or, use default inventory
-	else
-		module="${prefix}"
 	fi
 
 # Or, name has two parts, use the specified module
 else
-	if [ "${prefix}" == "task" ]; then
-		module="command"
-	else
-		module="${prefix}"
+	if [ "${suffix}" != "task" ]; then
+		module="-m ${suffix}"
 	fi
 fi
 
@@ -123,7 +116,7 @@ if [ -z "${inventory}" ]; then
 
 	# Or, use specified inventory
 	else
-		inventory="inventory-${suffix}"
+		inventory="inventory-${prefix}"
 	fi
 fi
 
@@ -160,7 +153,7 @@ if [ \$SECRET -gt 0 ] ; then
 	set +e
 fi
 
-ansible "\${@}"
+ansible ${module} "\${@}"
 EOF
 
 # Main script
@@ -173,7 +166,7 @@ else
 		set +e
 	fi
 
-	ansible "${@}"
+	ansible ${module} "${@}"
 fi
 
 

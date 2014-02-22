@@ -45,7 +45,7 @@
 # They can have an optional '.sh' extension, in which case they will be
 # automatically ignored by git. Format of the symlink names:
 #
-#     <name>.sh  or  <playbook>-<inventory>.sh
+#     <name>.sh  or  <inventory>-<playbook>.sh
 #
 # If a symlink name has only one part, script will first check, if
 # corresponding 'inventory-<name>/' directory exists. If it does, script will use
@@ -65,7 +65,7 @@
 #    site.sh                = -i inventory playbooks/site.yml
 #    devel.sh               = -i inventory playbooks/devel.yml
 #    production.sh          = -i inventory-production playbooks/site.yml
-#    common-production.sh   = -i inventory-production playbooks/common.yml
+#    production-common.sh   = -i inventory-production playbooks/common.yml
 #
 # You can add ansible-playbook options as the script options, and they will
 # be passed correctly. Script does not check if selected playbook exists (only
@@ -112,7 +112,7 @@ if [[ "${prefix}" == "${scriptname}" ]]; then
 
 # Or, name has two parts, use the specified playbook
 else
-	playbook="${playbook_dir}/${prefix}.yml"
+	playbook="${playbook_dir}/${suffix}.yml"
 fi
 
 # If inventory hasn't been selected...
@@ -124,7 +124,7 @@ if [ -z "${inventory}" ]; then
 
 	# Or, use specified inventory
 	else
-		inventory="inventory-${suffix}"
+		inventory="inventory-${prefix}"
 	fi
 fi
 
