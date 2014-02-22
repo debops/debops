@@ -25,7 +25,7 @@ postgresql_default_locale_messages: 'C'
 
 # Timezone configured in PostgreSQL clusters, by default use timezone settings
 # from Ansible Controller
-postgresql_default_timezone: "{{ lookup('file','/etc/timezone') }}"
+postgresql_default_timezone: "{{ lookup('file','/etc/timezone') | default('UTC') }}"
 
 # Where SSL certificates are stored. See 'pki' role
 postgresql_pki_path: '/srv/pki'
