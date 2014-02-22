@@ -9,49 +9,36 @@
 # that case use '-k' switch on the command line).
 #
 # Usage:
-# ansible-playbook -k playbooks/newhost.yml --extra-vars="hosts=<hostname>"
+# ansible-playbook playbooks/newhost.yml -k --limit host
 #
 # After securing access to the server by disabling the password authentication
-# in sshd, this playbook is expected to not work properly.
+# in sshd, this playbook is expected to not work correctly.
 
-- hosts: '{{ hosts }}'
+- hosts: all:!localhost
   remote_user: root
   sudo: no
   gather_facts: False
-  tags: init
-  vars:
-  - ssh_user: "{{ lookup('env','USER') }}"
 
   tasks:
   - name: Install python support for Ansible
     raw: apt-get -yq install python python-apt
-    tags: init
 
-  - action: setup
-    tags: init
+  - name: Gather host facts
+    action: setup
 
   - name: Create admin system group
     group: name=admins system=yes state=present
-    tags: init
 
   - name: Create administrator account
-    user: name={{ ssh_user }} state=present shell=/bin/sh groups=admins
-    tags: init
+    user: name={{ lookup('env', 'USER') }} state=present shell=/bin/sh groups=admins
 
   - name: Make sure essential software is installed
     apt: pkg={{ item }} state=latest install_recommends=no
-    with_items:
-      - python
-      - python-apt
-      - sudo
-      - lsb-release
-    tags: init
+    with_items: [ 'python', 'python-apt', 'sudo', 'lsb-release' ]
 
   - name: Install ssh public key from current account
-    authorized_key: user={{ ssh_user }} key="{{ lookup('file','~/.ssh/id_rsa.pub') }}"
-    tags: init
+    authorized_key: user={{ lookup('env','USER') }} key="{{ lookup('file','~/.ssh/id_rsa.pub') }}"
 
   - name: Configure admins group access in sudo
     lineinfile: "dest=/etc/sudoers.d/admins state=present create=yes regexp='^%admins' line='%admins ALL=(ALL:ALL) NOPASSWD: SETENV: ALL' owner=root group=root mode=0440"
-    tags: init
 
