@@ -6,14 +6,20 @@
     - ${console_packages}
   when: console_packages is defined
 
+- name: Check if /etc/inittab exists
+  stat: path=/etc/inittab
+  register: console_inittab
+
 - name: Enable serial console
   lineinfile: dest=/etc/inittab regexp='^{{ console_serial }}' state=present line='{{ console_serial }}'
-  when: console_serial is defined and console_serial
+  when: (console_serial is defined and console_serial) and
+        (console_inittab is defined and console_inittab.stat.exists == True)
   notify: Reload init
 
 - name: Disable serial console
   lineinfile: dest=/etc/inittab regexp='^{{ console_serial }}' state=absent
-  when: console_serial is defined and console_serial == False
+  when: (console_serial is defined and console_serial == False) and
+        (console_inittab is defined and console_inittab.stat.exists == True)
   notify: Reload init
 
 - name: Configure /etc/issue
