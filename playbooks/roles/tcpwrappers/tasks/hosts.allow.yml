@@ -2,20 +2,10 @@
 
 - name: Make sure /etc/hosts.allow.d directory exists
   file: path=/etc/hosts.allow.d state=directory owner=root group=root mode=0755
-  tags:
-    - tcpwrappers
-    - network
 
 - name: Create /etc/hosts.allow.d/00_ansible
   template: src=etc/hosts.allow.d/00_ansible.j2 dest=/etc/hosts.allow.d/00_ansible owner=root group=root mode=0644
-  tags:
-    - tcpwrappers
-    - network
 
 - name: Assemble hosts.allow.d
   assemble: src=/etc/hosts.allow.d dest=/etc/hosts.allow backup=no owner=root group=root mode=0644
-  tags:
-    - tcpwrappers
-    - network
-
 

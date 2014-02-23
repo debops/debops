@@ -4,9 +4,6 @@
   apt: pkg={{ item }} state=latest install_recommends=no
   with_items:
     - sudo
-  tags:
-    - auth
-    - packages
 
 - name: Ensure common system groups exist
   group: name={{ item }} system=yes state=present
@@ -15,24 +12,16 @@
     - webadmins
     - sshusers
     - sftponly
-  tags:
-    - auth
 
 - name: Create administrator accounts
   user: name={{ item }} groups=admins,webadmins state=present append=yes
   with_items:
     - ${auth_admin_accounts}
   when: auth_admin_accounts is defined
-  tags:
-    - auth
 
 - name: Ensure members of group 'admins' can su without password
   lineinfile: dest=/etc/pam.d/su state=present regexp='^(.*)auth\s+sufficient\s+pam_wheel.so\s+trust' line='auth sufficient pam_wheel.so trust group=admins'
-  tags:
-    - auth
 
 - name: Ensure members of group 'admins' can sudo without password
   lineinfile: "dest=/etc/sudoers.d/admins state=present create=yes owner=root group=root mode=0440 regexp='^%admins' line='%admins ALL = (ALL:ALL) NOPASSWD: SETENV: ALL'"
-  tags:
-    - auth
 
