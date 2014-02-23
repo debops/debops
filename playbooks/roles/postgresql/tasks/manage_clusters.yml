@@ -4,100 +4,111 @@
   environment:
     LANG: '{{ item.locale | default(postgresql_default_locale) }}'
     LC_ALL: '{{ item.locale | default(postgresql_default_locale) }}'
-  command: pg_createcluster --user={{ item.user | default(postgresql_owner) }} --group={{ item.group | default(postgresql_group) }} --locale={{ item.locale | default(postgresql_default_locale) }} --start-conf={{ item.start_conf | default(postgresql_default_start_conf) }} --port={{ item.port }} {{ item.version | default(postgresql_version) }} {{ item.name }} creates=/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/postgresql.conf
-  with_items:
-    - ${postgresql_default_cluster}
-    - ${postgresql_clusters}
+  command: pg_createcluster --user={{ item.user | default(postgresql_owner) }}
+           --group={{ item.group | default(postgresql_group) }}
+           --locale={{ item.locale | default(postgresql_default_locale) }}
+           --start-conf={{ item.start_conf | default(postgresql_default_start_conf) }}
+           --port={{ item.port }} {{ item.version | default(postgresql_version) }} {{ item.name }}
+           creates=/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/postgresql.conf
+  with_flattened:
+    - postgresql_default_cluster
+    - postgresql_clusters
   when: item.name is defined and item.name and item.port is defined and item.port
-  tags: postgresql
 
 - name: Configure PostgreSQL clusters
-  template: src=etc/postgresql/postgresql-{{ item.version | default(postgresql_version) }}.conf.j2 dest=/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/postgresql.conf owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0644
-  with_items:
-    - ${postgresql_default_cluster}
-    - ${postgresql_clusters}
+  template: src=etc/postgresql/postgresql-{{ item.version | default(postgresql_version) }}.conf.j2
+            dest=/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/postgresql.conf
+            owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0644
+  with_flattened:
+    - postgresql_default_cluster
+    - postgresql_clusters
   when: item.name is defined and item.name
   register: postgresql_config
-  tags: postgresql
 
 - name: Configure PostgreSQL cluster environment
-  template: src=etc/postgresql/environment.j2 dest=/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/environment owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0644
-  with_items:
-    - ${postgresql_default_cluster}
-    - ${postgresql_clusters}
+  template: src=etc/postgresql/environment.j2
+            dest=/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/environment
+            owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0644
+  with_flattened:
+    - postgresql_default_cluster
+    - postgresql_clusters
   when: item.name is defined and item.name
   register: postgresql_config_environment
-  tags: postgresql
 
 - name: Configure PostgreSQL system-wide user to cluster mapping
-  template: src=etc/postgresql-common/user_clusters.j2 dest=/etc/postgresql-common/user_clusters owner=root group=root mode=0644
-  tags: postgresql
+  template: src=etc/postgresql-common/user_clusters.j2
+            dest=/etc/postgresql-common/user_clusters
+            owner=root group=root mode=0644
 
 - name: Configure PostgreSQL user identification
-  template: src=etc/postgresql/pg_ident.conf.j2 dest=/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/pg_ident.conf owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0640
-  with_items:
-    - ${postgresql_default_cluster}
-    - ${postgresql_clusters}
+  template: src=etc/postgresql/pg_ident.conf.j2
+            dest=/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/pg_ident.conf
+            owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0640
+  with_flattened:
+    - postgresql_default_cluster
+    - postgresql_clusters
   when: item.name is defined and item.name
   register: postgresql_config_ident
-  tags: postgresql
 
 - name: Configure PostgreSQL cluster host authentication
-  template: src=etc/postgresql/pg_hba.conf.j2 dest=/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/pg_hba.conf owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0640
-  with_items:
-    - ${postgresql_default_cluster}
-    - ${postgresql_clusters}
+  template: src=etc/postgresql/pg_hba.conf.j2
+            dest=/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/pg_hba.conf
+            owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0640
+  with_flattened:
+    - postgresql_default_cluster
+    - postgresql_clusters
   when: item.name is defined and item.name
   register: postgresql_config_hba
-  tags: postgresql
 
 - name: Configure PostgreSQL cluster start options
-  template: src=etc/postgresql/start.conf.j2 dest=/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/start.conf owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0644
-  with_items:
-    - ${postgresql_default_cluster}
-    - ${postgresql_clusters}
+  template: src=etc/postgresql/start.conf.j2
+            dest=/etc/postgresql/{{ item.version | default(postgresql_version) }}/{{ item.name }}/start.conf
+            owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0644
+  with_flattened:
+    - postgresql_default_cluster
+    - postgresql_clusters
   when: item.name is defined and item.name
   register: postgresql_config_start
-  tags: postgresql
 
 - name: Symlink SSL root certificate
-  file: state=link src={{ item.ssl_root | default(postgresql_default_ssl_root) }} dest={{ item.data_directory | default("/var/lib/postgresql/" + (item.version | default(postgresql_version)) + "/" + item.name + "/root.crt") }}
-  with_items:
-    - ${postgresql_default_cluster}
-    - ${postgresql_clusters}
+  file: state=link src={{ item.ssl_root | default(postgresql_default_ssl_root) }}
+        dest={{ item.data_directory | default("/var/lib/postgresql/" + (item.version | default(postgresql_version)) + "/" + item.name + "/root.crt") }}
+  with_flattened:
+    - postgresql_default_cluster
+    - postgresql_clusters
   when: item.name is defined and item.name
-  tags: postgresql
 
 - name: Symlink SSL certificate
-  file: state=link src={{ item.ssl_crt | default(postgresql_default_ssl_crt) }} dest={{ item.data_directory | default("/var/lib/postgresql/" + (item.version | default(postgresql_version)) + "/" + item.name + "/server.crt") }}
-  with_items:
-    - ${postgresql_default_cluster}
-    - ${postgresql_clusters}
+  file: state=link src={{ item.ssl_crt | default(postgresql_default_ssl_crt) }}
+        dest={{ item.data_directory | default("/var/lib/postgresql/" + (item.version | default(postgresql_version)) + "/" + item.name + "/server.crt") }}
+  with_flattened:
+    - postgresql_default_cluster
+    - postgresql_clusters
   when: item.name is defined and item.name
-  tags: postgresql
 
 - name: Symlink SSL key
-  file: state=link src={{ item.ssl_key | default(postgresql_default_ssl_key) }} dest={{ item.data_directory | default("/var/lib/postgresql/" + (item.version | default(postgresql_version)) + "/" + item.name + "/server.key") }}
-  with_items:
-    - ${postgresql_default_cluster}
-    - ${postgresql_clusters}
+  file: state=link src={{ item.ssl_key | default(postgresql_default_ssl_key) }}
+        dest={{ item.data_directory | default("/var/lib/postgresql/" + (item.version | default(postgresql_version)) + "/" + item.name + "/server.key") }}
+  with_flattened:
+    - postgresql_default_cluster
+    - postgresql_clusters
   when: item.name is defined and item.name
-  tags: postgresql
 
 - name: Start PostgreSQL clusters when not started
-  command: pg_ctlcluster {{ item.version | default(postgresql_version) }} {{ item.name }} start creates={{ item.external_pid_file | default("/var/run/postgresql/" + (item.version | default(postgresql_version)) + "-" + item.name + ".pid") }}
-  with_items:
-    - ${postgresql_default_cluster}
-    - ${postgresql_clusters}
-  when: item.name is defined and item.name and item.start_conf is undefined or item.start_conf is defined and item.start_conf == 'auto'
-  tags: postgresql
+  command: pg_ctlcluster {{ item.version | default(postgresql_version) }} {{ item.name }} start
+           creates={{ item.external_pid_file | default("/var/run/postgresql/" + (item.version | default(postgresql_version)) + "-" + item.name + ".pid") }}
+  with_flattened:
+    - postgresql_default_cluster
+    - postgresql_clusters
+  when: (item.name is defined and item.name) and
+        (item.start_conf is undefined or item.start_conf is defined and item.start_conf == 'auto')
 
 - name: Reload PostgreSQL clusters when needed
   command: pg_ctlcluster {{ item.item.version | default(postgresql_version) }} {{ item.item.name }} reload
-  with_items:
-    - ${postgresql_config.results}
-    - ${postgresql_config_hba.results}
-    - ${postgresql_config_ident.results}
-  when: item.changed is defined and item.changed and item.item.start_conf is undefined or item.item.start_conf is defined and item.item.start_conf == 'auto'
-  tags: postgresql
+  with_flattened:
+    - postgresql_config.results
+    - postgresql_config_hba.results
+    - postgresql_config_ident.results
+  when: (item.changed is defined and item.changed) and
+        (item.item.start_conf is undefined or item.item.start_conf is defined and item.item.start_conf == 'auto')
 
