@@ -1,0 +1,74 @@
+---
+# host: travis.localdomain
+
+
+# This is an example all-in-one host for Travis CI testing. Travis CI uses
+# Ubuntu 12.04 LTS distribution and OpenVZ host as testing environment. This is
+# not a main target for ginas, but no matter - let's enable as much as possible
+# and see what happens.
+
+# Different services (Samba, NFS, etc.) are enabled as Ansible groups, see in
+# 'inventory/hosts' what will be enabled by default.
+
+
+# ---- Things that are usually enabled in production ----
+# Secret storage on Ansible Controller, allows for random passwords and
+# transfer of confidental data between Ansible Controler and servers
+secret: '/tmp'
+
+# Define some admin accounts (su and sudo access)
+auth_admin_accounts: [ 'travis' ]
+
+# APT services (Debian preseeding, apt-cacher-ng, reprepro) on a separate host,
+# here points to itself
+apt: '{{ ansible_fqdn }}'
+
+# BoxBackup server, also points to itself
+boxbackup: '{{ ansible_fqdn }}'
+
+# Enable NFS server on this host
+nfs_server: True
+
+# Configure everything that we have in the mail server
+# See playbooks/roles/postfix/defaults/main.yml for more information
+postfix: [ 'local', 'network', 'mx', 'submission', 'deprecated',
+           'postscreen', 'dnsbl', 'dnswl', 'test' ]
+
+# Enable PHPMyAdmin for MySQL database access
+mysql_phpmyadmin: True
+
+# Create some example databases
+mysql_databases:
+  - name: 'travis'
+
+# Create sample users to access these databases
+mysql_users:
+  - name: 'travis'
+    host: 'localhost'
+    priv: '*.*:ALL,GRANT'
+
+  - name: 'travis'
+    host: '127.0.0.%'
+    priv: '*.*:ALL,GRANT'
+
+# Install database support in PHP5
+php5_packages: [ 'php5-mysql', 'php5-pgsql' ]
+
+
+# ---- Things specific to Ubuntu ----
+# By default on Travis CI distribution codename is 'precise', but ginas does
+# not support that yet. So let's force Debian by default
+apt_codename: 'wheezy'
+
+# ownCloud from default upstream would not install correctly from official
+# upstream (on a testing host), let's point it to a custom repository for now
+owncloud_upstream_url: 'https://github.com/drybjed/owncloud.git'
+owncloud_upstream_branch: 'master'
+
+# Install haveged for faster GPG key generation by reprepro
+reprepro_haveged: True
+
+# /etc/init.d/samba init script in Ubuntu 12.04 LTS is named 'smbd'
+samba_service_name: 'smbd'
+
+

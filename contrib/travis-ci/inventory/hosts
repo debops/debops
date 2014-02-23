@@ -1,0 +1,47 @@
+# Default 'inventory/hosts' file for travis-ci environment
+
+# We will use 'travis.localdomain' as main DNS domain
+# For ownCloud autoconfiguration, 'owncloud.localdomain' must also be
+# configured in /etc/hosts
+
+# Host machine needs to be in the inventory for 'encfs' and 'secret' roles to
+# work, otherwise it should be harmless
+localhost ansible_connection=local
+
+# Travis-CI group
+[travis-ci]
+travis.localdomain ansible_connection=local
+
+# Local ginas development
+[ginas_recursively]
+travis.localdomain
+
+# nginx webserver
+[ginas_nginx]
+travis.localdomain
+
+# PHP5
+[ginas_php5]
+travis.localdomain
+
+# MySQL database
+[ginas_mysql]
+travis.localdomain
+
+# PostgreSQL database
+[ginas_postgresql]
+travis.localdomain
+
+# NFS server
+[ginas_nfs]
+travis.localdomain
+
+# ownCloud instance
+[ginas_owncloud]
+travis.localdomain
+
+# Samba server
+[ginas_samba]
+travis.localdomain
+
+
