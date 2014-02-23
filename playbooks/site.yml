@@ -1,14 +1,21 @@
 ---
+# playbook: site.yml
+# Main entry point in ginas playbook
 
+
+# ---- Common set of roles on all servers in the cluster ----
 - include: common.yml
+
+
+# ---- Viirtualization and emulation ----
 - include: kvm_lxc.yml
-- include: sks.yml
-- include: nfs.yml
-- include: samba.yml
-- include: mysql.yml
-- include: postgresql.yml
-- include: nginx.yml
-- include: php5.yml
+
+
+# ---- Services activated on selected hosts using groups ----
+- include: services.yml
+
+
+# ---- Custom services and applications ----
 - include: owncloud.yml
 - include: ginas.yml
 
