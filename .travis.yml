@@ -7,7 +7,13 @@ addons:
 virtualenv:
   system_site_packages: true
 before_install:
+  - psql --version
+  - sudo /etc/init.d/postgresql stop
+  - sudo apt-get -y --purge remove postgresql libpq-dev libpq5 postgresql-client-common postgresql-common
+  - sudo rm -rf /var/lib/postgresql
   - ./contrib/bootstrap-ansible.sh
+  - ansible --version
+install: false
 script:
   - ansible-playbook -i contrib/vagrant/inventory-lemp/ansible playbooks/site.yml --syntax-check
   - ansible-playbook -i contrib/travis-ci/inventory playbooks/site.yml
