@@ -4,9 +4,9 @@ addons:
   hosts:
     - travis.localdomain
     - owncloud.localdomain
-install:
-  - pip install passlib
-  - pip install ansible
+virtualenv:
+  system_site_packages: true
+before_install:
   - ./contrib/bootstrap-ansible.sh
 script:
   - ansible-playbook -i contrib/vagrant/inventory-lemp/ansible playbooks/site.yml --syntax-check
