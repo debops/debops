@@ -23,10 +23,16 @@
 - name: Ensure that authorized_keys directory exist
   file: path=/etc/ssh/authorized_keys state=directory owner=root group=root mode=0755
 
+- name: Check if SSH key of current user exists
+  local_action: stat path=~/.ssh/id_rsa.pub
+  sudo: no
+  register: reprepro_sshkey
+
 - name: Add authorized_key from Ansible Controller to reprepro uploads
   authorized_key: user={{ reprepro_incoming_user }} key="{{ lookup('file','~/.ssh/id_rsa.pub') }}"
                   manage_dir=no path=/etc/ssh/authorized_keys/{{ reprepro_incoming_user }}
                   user={{ reprepro_incoming_user }}
+  when: reprepro_sshkey is defined and reprepro_sshkey.stat.exists == True
 
 - name: Create incoming user directories
   file: path=/srv/users/{{ reprepro_incoming_user }}/{{ item }} state=directory
