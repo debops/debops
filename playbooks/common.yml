@@ -9,7 +9,7 @@
     - name: Check IP address of Ansible Controller
       set_fact:
         ansible_controller: '{{ ansible_env.SSH_CLIENT.split(" ") | first }}/32'
-      when: ansible_controller is undefined
+      when: (ansible_controller is undefined and ansible_connection != "local")
       tags: [ 'ferm', 'tcpwrappers' ]
 
 - name: Common configuration for all hosts
