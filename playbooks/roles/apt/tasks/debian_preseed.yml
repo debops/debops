@@ -5,10 +5,19 @@
     apt_debian_preseed_rootpw: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/debian_preseed/system/root/password encrypt=md5_crypt length=' + apt_debian_preseed_rootpw_length) }}"
   when: secret is defined
 
-- name: Lookup current user and SSH public key for injection
+- name: Lookup current user for injection
   set_fact:
     apt_debian_preseed_username: "{{ lookup('env','USER') }}"
+
+- name: Check if SSH key of current user exists
+  local_action: stat path=~/.ssh/id_rsa.pub
+  sudo: False
+  register: apt_sshkey_idrsa
+
+- name: Lookup SSH public key of current user for injection
+  set_fact:
     apt_debian_preseed_sshkey: "{{ lookup('file','~/.ssh/id_rsa.pub') }}"
+  when: apt_sshkey_idrsa is defined and apt_sshkey_idrsa.stat.exists == True
 
 - name: Create Debian Preseed directories
   file: path={{ item }} state=directory owner=root group=root mode=0755
