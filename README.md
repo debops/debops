@@ -1,5 +1,7 @@
 # ginas
 
+[![Travis CI](https://travis-ci.org/drybjed/ginas.png?branch=devel)](https://travis-ci.org/drybjed/ginas)
+
 ginas is not a server, it's an entire datacenter defined in [Ansible](http://ansibleworks.com/) playbooks and built using [Debian](http://debian.org/) operating system. With ginas, you can configure your servers in minutes and easily rebuild them if you want to.
 
 ## Main features
