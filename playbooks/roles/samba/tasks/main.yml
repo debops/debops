@@ -21,10 +21,12 @@
 
 - name: Load iptables NetBIOS helper kernel module
   modprobe: name=nf_conntrack_netbios_ns state=present
+  when: samba_iptables is defined and samba_iptables
   tags: samba
 
 - name: Add iptables NetBIOS helper module to /etc/modules
   lineinfile: dest=/etc/modules regexp='^nf_conntrack_netbios_ns' state=present line='nf_conntrack_netbios_ns'
+  when: samba_iptables is defined and samba_iptables
   tags: samba
 
 - name: Configure firewall for Samba server
