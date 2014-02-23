@@ -1,5 +1,21 @@
 ---
 
+- name: Check if /etc/timezone exists on Ansible Controller
+  local_action: stat path=/etc/timezone
+  sudo: no
+  register: php5_etc_timezone
+
+- name: Configure default timezone based on Ansible Controller
+  set_fact:
+    php5_date_timezone: '{{ lookup("file","/etc/timezone") }}'
+  when: (php5_date_timezone is undefined or not php5_date_timezone) and
+        (php5_etc_timezone is defined and php5_etc_timezone.stat.exists == True)
+
+- name: Configure default timezone if not defined
+  set_fact:
+    php5_date_timezone: 'UTC'
+  when: php5_date_timezone is undefined or not php5_date_timezone
+
 - name: Make sure PHP5-FPM support is installed
   apt: pkg={{ item }} state=latest install_recommends=no
   with_items: [ 'php5-fpm', 'php5-cli' ]
