@@ -1,7 +1,12 @@
 language: python
 python: "2.7"
+addons:
+  hosts:
+    - travis.localdomain
+    - owncloud.localdomain
 install:
   - pip install ansible
   - ./contrib/bootstrap-ansible.sh
 script:
-  - ansible-playbook --syntax-check -i contrib/vagrant/inventory-lemp/ansible playbooks/site.yml
+  - ansible-playbook -i contrib/vagrant/inventory-lemp/ansible playbooks/site.yml --syntax-check
+  - ansible-playbook -i contrib/travis-ci/inventory playbooks/site.yml
