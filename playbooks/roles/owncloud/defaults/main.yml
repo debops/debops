@@ -28,6 +28,10 @@ owncloud_deploy_path: '/srv/www/{{ owncloud_user }}/sites/{{ owncloud_domain }}/
 # What source should be used to get ownCloud files (upstream, githost, github, gitlab)
 owncloud_source: 'upstream'
 
+# Default URL and git branch for ownCloud upstream repository
+owncloud_upstream_url: 'https://github.com/owncloud/core.git'
+owncloud_upstream_branch: 'stable6'
+
 # Default settings for ownCloud sources other than "upstream"
 # If you want to use that with github, you can create your ownCloud repository
 # as '<your username>/owncloud' with branch 'master'
@@ -44,8 +48,8 @@ owncloud_source_map:
 
   # Official ownCloud upstream repository on GitHub (basic installation)
   upstream:
-    url:    'https://github.com/owncloud/core.git'
-    branch: 'stable6'
+    url:    '{{ owncloud_upstream_url }}'
+    branch: '{{ owncloud_upstream_branch }}'
 
   # A git repository configured on a host in the Ansible cluster, for example
   # with 'githost' role
