@@ -12,7 +12,7 @@
            keyring=/etc/apt/trusted.gpg.d/reprepro-{{ reprepro }}.gpg
 
 - name: Add reprepro APT repository
-  apt_repository: repo='deb http://{{ reprepro }}/debian {{ item.codename }} {{ item.components }}'
+  apt_repository: repo='deb [arch=amd64] http://{{ reprepro }}/debian {{ item.codename }} {{ item.components }}'
                   state=present update_cache=no
   with_items: reprepro_distributions
 
