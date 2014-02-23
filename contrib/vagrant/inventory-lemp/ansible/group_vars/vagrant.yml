@@ -31,17 +31,17 @@ apt_group_packages: [ 'mysql-client' ]
 # root should be in it's own hash variable
 users_root:
   - name: 'root'
-    shell: '/bin/zsh'
-    dotfiles: True
+    shell: '/bin/bash'
+    dotfiles: False
 
 # Configuration of default account on all hosts in vagrant group
 users_default:
 
   # vagrant account
   - name: 'vagrant'
-    shell: '/bin/zsh'
+    shell: '/bin/bash'
     groups: 'admins'
-    dotfiles: True
+    dotfiles: False
     sshkeys:
 
       # Insecure vagrant SSH keys from https://github.com/mitchellh/vagrant/tree/master/keys
@@ -52,8 +52,8 @@ users_list:
 
   # Your own account
   - name: '{{ lookup("env","USER") }}'
-    shell: '/bin/zsh'
-    dotfiles: True
+    shell: '/bin/bash'
+    dotfiles: False
     groups: 'admins'
     sshkeys:
 
