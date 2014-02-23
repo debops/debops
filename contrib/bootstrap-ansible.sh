@@ -14,7 +14,8 @@ cd ${build_dir}
 # Install required packages
 sudo apt-get --no-install-recommends -q -y install git \
 	python-paramiko python-yaml python-jinja2 python-httplib2 \
-	cdbs debhelper dpkg-dev python-support fakeroot sshpass
+	cdbs debhelper dpkg-dev python-support fakeroot sshpass \
+	python-nose python-passlib
 
 # Clone Ansible from main project repository (devel branch, default)
 git clone https://github.com/ansible/ansible.git ansible
