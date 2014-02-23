@@ -18,7 +18,7 @@ sudo apt-get --no-install-recommends -q -y install git \
 	python-nose python-passlib
 
 # Clone Ansible from main project repository (devel branch, default)
-git clone https://github.com/ansible/ansible.git ansible
+git clone git://github.com/ansible/ansible.git ansible
 cd ansible
 
 # Build Debian package
