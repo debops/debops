@@ -3,30 +3,18 @@
 - name: Check if denyhosts is installed
   stat: path=/usr/sbin/denyhosts
   register: installed_denyhosts
-  tags:
-    - tcpwrappers
-    - network
 
 - name: denyhosts not installed - block everything
   lineinfile: "dest=/etc/hosts.deny regexp='^ALL: ALL' line='ALL: ALL' state=present"
   when: installed_denyhosts.stat.exists is defined and installed_denyhosts.stat.exists == False
-  tags:
-    - tcpwrappers
-    - network
 
 - name: denyhosts installed - unblock everything
   lineinfile: "dest=/etc/hosts.deny regexp='^ALL: ALL' state=absent"
   when: installed_denyhosts.stat.exists is defined and installed_denyhosts.stat.exists == True
-  tags:
-    - tcpwrappers
-    - network
 
 - name: Deny access from custom list if denyhosts is installed
   lineinfile: "dest=/etc/hosts.deny regexp='{{ item }}' insertafter='# ALL: PARANOID' line='{{ item }}' state={{ tcpwrappers_deny_custom_state }}"
   with_items:
     - ${tcpwrappers_deny_custom}
   when: tcpwrappers_deny_custom is defined and installed_denyhosts.stat.exists is defined and installed_denyhosts.stat.exists == True
-  tags:
-    - tcpwrappers
-    - network
 

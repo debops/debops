@@ -5,31 +5,20 @@
   with_items:
     - ${console_packages}
   when: console_packages is defined
-  tags:
-    - console
-    - packages
 
 - name: Enable serial console
   lineinfile: dest=/etc/inittab regexp='^{{ console_serial }}' state=present line='{{ console_serial }}'
   when: console_serial is defined and console_serial
   notify: Reload init
-  tags:
-    - console
 
 - name: Disable serial console
   lineinfile: dest=/etc/inittab regexp='^{{ console_serial }}' state=absent
   when: console_serial is defined and console_serial == False
   notify: Reload init
-  tags:
-    - console
 
 - name: Configure /etc/issue
   template: src=etc/issue.j2 dest=/etc/issue owner=root group=root mode=0644
-  tags:
-    - console
 
 - name: Configure /etc/motd
   template: src=etc/motd.j2 dest=/etc/motd owner=root group=root mode=0644
-  tags:
-    - console
 

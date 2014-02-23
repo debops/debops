@@ -4,7 +4,6 @@
   shell: monkeysphere-authentication diagnostics | grep "No Identity Certifiers found" || true
   register: monkeysphere_authentication_status
   changed_when: monkeysphere_authentication_status.rc != 0
-  tags: monkeysphere
 
 - name: Add default identity certifiers
   shell: yes | monkeysphere-authentication add-identity-certifier {{ item }}
@@ -13,11 +12,9 @@
         monkeysphere_default_identity_certifiers and
         monkeysphere_authentication_status is defined and
         monkeysphere_authentication_status.stdout.startswith('! No Identity Certifiers found!')
-  tags: monkeysphere
 
 - name: Configure automatic key update in cron
   cron: name="monkeysphere update user keys" minute={{ monkeysphere_update_minute }}
         user="root" job="/usr/sbin/monkeysphere-authentication update-users"
         cron_file=monkeysphere-authentication
-  tags: monkeysphere
 
