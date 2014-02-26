@@ -1,0 +1,38 @@
+---
+
+- name: Install safekeep client packages
+  apt: pkg={{ item }} state=latest install_recommends=False
+  with_items: [ 'safekeep-common', 'safekeep-client', 'rdiff-backup' ]
+
+- name: Configure control connection on safekeep client
+  authorized_key: key="{{ lookup('file',secret + '/storage/safekeep/' + safekeep + '/sshkeys/safekeep-server-ctrl-key.pub') }}"
+                  key_options='command="nice -n{{ safekeep_nice }} safekeep --client",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty'
+                  user={{ safekeep_client_user }} state=present
+  when: secret is defined and secret
+
+- name: Configure data connection on safekeep client
+  authorized_key: key="{{ lookup('file',secret + '/storage/safekeep/' + safekeep + '/sshkeys/safekeep-server-data-key.pub') }}"
+                  key_options='command="nice -n{{ safekeep_nice }} rdiff-backup --server --restrict-read-only /",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty'
+                  user={{ safekeep_client_user }} state=present
+  when: secret is defined and secret
+
+- name: Configure safekeep-client.sh script
+  template: src=usr/local/sbin/safekeep-client.sh.j2 dest=/usr/local/sbin/safekeep-client.sh
+            owner=root group=root mode=0755
+
+- name: Scan ssh host fingerprints
+  shell: ssh-keyscan -H {{ ansible_fqdn }} > {{ safekeep_server_basedir }}/.ssh/known_hosts.d/{{ ansible_fqdn }}
+         creates={{ safekeep_server_basedir }}/.ssh/known_hosts.d/{{ ansible_fqdn }}
+  delegate_to: '{{ safekeep }}'
+
+- name: Assemble ~/.ssh/known_hosts
+  assemble: src={{ safekeep_server_basedir }}/.ssh/known_hosts.d
+            dest={{ safekeep_server_basedir }}/.ssh/known_hosts
+            backup=no owner={{ safekeep_server_user }} group={{ safekeep_server_group }} mode=0644
+  delegate_to: '{{ safekeep }}'
+
+- name: Configure safekeep client on server
+  template: src=etc/safekeep/backup.d/client.backup.j2 dest=/etc/safekeep/backup.d/{{ ansible_hostname }}.backup
+            owner=root group=root mode=0644
+  delegate_to: '{{ safekeep }}'
+

@@ -1,0 +1,40 @@
+---
+# role: safekeep (centralized rdiff-backup script)
+# SafeKeep website: http://safekeep.sourceforge.net/
+
+
+# Currently safekeep role does not support all SafeKeep features and is geared
+# toward backing up virtual machines (no LVM support, no bandwidth throttling)
+
+# Role expects SafeKeep packages (safekeep-*) to be available via apt-get (in
+# other words, accessible via apt repository), which isn't true for at least
+# Debian Wheezy. You can configure your own apt repository using 'reprepro' role
+# via 'apt' role and put downloaded SafeKeep .deb packages there. You can
+# download SafeKeep here: http://safekeep.sourceforge.net/download.shtml
+
+
+# FQDN hostname of SafeKeep server to which other clients will be backed up
+safekeep: ""
+
+# Should SafeKeep be enabled for current (client) host?
+safekeep_enabled: 'true'
+
+# Retention time for incremental backup
+safekeep_retention: '7D'
+
+# Shell script to execute on client host during various stages of backup
+safekeep_script: '/usr/local/sbin/safekeep-client.sh'
+
+# Send mail about backups to these email addresses
+safekeep_mail_to: [ 'backup' ]
+
+# Lists of paths, globs or regexps of files to exclude or include in backups
+safekeep_exclude_path: [ '/var/lock', '/var/run', '/var/tmp' ]
+safekeep_exclude_glob: [ '/home/*/tmp' ]
+safekeep_exclude_regexp: []
+
+safekeep_include_path: [ '/etc', '/home', '/opt', '/root', '/srv', '/usr/local', '/var' ]
+safekeep_include_glob: []
+safekeep_include_regexp: []
+
+

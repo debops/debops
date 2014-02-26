@@ -1,0 +1,54 @@
+# {{ ansible_managed }}
+
+# the user under which the server will run
+backup.user = {{ safekeep_server_user | default('safekeep') }}
+
+# the base directory for data repository relative paths
+base.dir = {{ safekeep_server_basedir | default('/var/lib/safekeep') }}
+
+# the default user under which the client will run
+client.user = {{ safekeep_client_user | default('root') }}
+
+# by default, be nice during backup
+# you can control the server/client nice level via
+# nice.adjustment.server and nice.adjustment.client
+# or even on a per-client box in the .backup file.
+# to disable nice, set it to 0
+nice.adjustment = {{ safekeep_nice | default('10') }}
+
+# Default io niceness level used on the server side.
+# Set this to 'none' to disable ionice(1)-ness
+ionice.adjustment = {{ safekeep_ionice | default('idle') }}
+
+# A default bandwidth limit for both download/upload
+# bandwidth.limit=100
+
+# A default bandwidth limit for download
+# bandwidth.limit.download=100
+
+# A default bandwidth limit for upload
+# bandwidth.limit.upload=100
+
+{% if safekeep_mail_to is defined and safekeep_mail_to %}
+# a comma separated list of emails to receive the logs
+email.to = {{ safekeep_mail_to | join(",") }}
+
+# An email address to be used as sender
+email.from = {{ safekeep_mail_from }}
+
+# a SMTP server to use to deliver email if email.to is non-empty
+# email.smtp.server=mail.company.com
+
+# Generate a multipart MIME email, with additional part of type
+# text or html
+email.format = {{ safekeep_mail_format }}
+
+# Generate a summary with the email message
+email.summary = {{ safekeep_mail_summary }}
+
+{% endif %}
+# Default size for LVM snapshots
+# This follows the rules for lvcreate(8), so can be a fixed size or
+# a % of either logical volume or free space.
+# snapshot.size = 2G
+

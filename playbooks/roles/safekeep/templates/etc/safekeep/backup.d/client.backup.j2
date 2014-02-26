@@ -1,0 +1,52 @@
+<!-- {{ ansible_managed }} -->
+
+<backup id="{{ ansible_hostname }}" enabled="{{ safekeep_enabled | default('true') }}">
+
+  <host name="{{ ansible_fqdn }}" user="{{ safekeep_client_user }}" nice="{{ safekeep_nice }}" />
+
+  <repo path="{{ safekeep_server_repository }}/{{ ansible_fqdn }}" retention="{{ safekeep_retention }}" />
+
+  <setup>
+{% if safekeep_script is defined and safekeep_script %}
+    <script path="{{ safekeep_script }}" />
+{% endif %}
+  </setup>
+
+  <data exclude-devices="true" exclude-fifos="true" exclude-sockets="true">
+{% if safekeep_exclude_path is defined and safekeep_exclude_path %}
+{% for path in safekeep_exclude_path %}
+    <exclude path="{{ path }}" />
+{% endfor %}
+{% endif %}
+{% if safekeep_exclude_glob is defined and safekeep_exclude_glob %}
+{% for glob in safekeep_exclude_glob %}
+    <exclude glob="{{ glob }}" />
+{% endfor %}
+{% endif %}
+{% if safekeep_exclude_regexp is defined and safekeep_exclude_regexp %}
+{% for regexp in safekeep_exclude_regexp %}
+    <exclude regexp="{{ regexp }}" />
+{% endfor %}
+{% endif %}
+{% if safekeep_include_path is defined and safekeep_include_path %}
+{% for path in safekeep_include_path %}
+    <include path="{{ path }}" />
+{% endfor %}
+{% endif %}
+{% if safekeep_include_glob is defined and safekeep_include_glob %}
+{% for glob in safekeep_include_glob %}
+    <include glob="{{ glob }}" />
+{% endfor %}
+{% endif %}
+{% if safekeep_include_regexp is defined and safekeep_include_regexp %}
+{% for regexp in safekeep_include_regexp %}
+    <include regexp="{{ regexp }}" />
+{% endfor %}
+{% endif %}
+  </data>
+
+</backup>
+
+<!--
+     vim: ft=xml
+-->

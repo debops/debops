@@ -1,0 +1,32 @@
+---
+
+- name: Install safekeep server packages
+  apt: pkg={{ item }} state=latest install_recommends=False
+  with_items: [ 'safekeep-common', 'safekeep-server', 'rdiff-backup' ]
+
+- name: Configure safekeep server
+  template: src=etc/safekeep/safekeep.conf.j2 dest=/etc/safekeep/safekeep.conf
+            owner=root group=root mode=0644
+
+- name: Make sure important directories exist
+  file: path={{ item }} state=directory
+        owner={{ safekeep_server_user }} group={{ safekeep_server_group }} mode=0700
+  with_items: [ '{{ safekeep_server_basedir }}/.ssh', '{{ safekeep_server_repository }}' ]
+
+- name: Generate SSH keys on server
+  shell: ssh-keygen -q -b {{ safekeep_sshkey_length }} -t {{ safekeep_sshkey_algorithm }}
+         -N "" -C "SafeKeep auto generated key at {{ safekeep_server_user }}@{{ ansible_hostname }}"
+         -f {{ safekeep_server_basedir }}/.ssh/{{ item }} creates={{ safekeep_server_basedir }}/.ssh/{{ item }}
+  with_items: [ 'safekeep-server-ctrl-key', 'safekeep-server-data-key' ]
+  sudo_user: '{{ safekeep_server_user }}'
+
+- name: Upload safekeep server keys to Ansible Controller
+  fetch: src={{ safekeep_server_basedir }}/.ssh/{{ item }}.pub flat=yes
+         dest={{ secret }}/storage/safekeep/{{ safekeep }}/sshkeys/{{ item }}.pub
+  with_items: [ 'safekeep-server-ctrl-key', 'safekeep-server-data-key' ]
+  when: secret is defined and secret
+
+- name: Create directory for ssh known hosts fingerprints
+  file: path={{ safekeep_server_basedir }}/.ssh/known_hosts.d state=directory
+        owner={{ safekeep_server_user }} group={{ safekeep_server_group }} mode=0755
+

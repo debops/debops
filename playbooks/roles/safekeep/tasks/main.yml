@@ -1,0 +1,17 @@
+---
+
+- name: Check if safekeep is available
+  shell: apt-cache search safekeep-common
+  register: safekeep_check
+  changed_when: False
+
+- include: configure_server.yml
+  when: (safekeep is defined and safekeep) and
+        (safekeep_check is defined and safekeep_check.stdout != "") and
+        safekeep == ansible_fqdn
+
+- include: configure_client.yml
+  when: (safekeep is defined and safekeep) and
+        (safekeep_check is defined and safekeep_check.stdout != "") and
+        safekeep != ansible_fqdn
+

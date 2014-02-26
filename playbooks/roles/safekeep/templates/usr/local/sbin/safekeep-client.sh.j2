@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# {{ ansible_managed }}
+
+# SafeKeep client script
+# Script parameters:
+#   $1: backup step
+#   $2: SafeKeep id
+#   $3: backup root directory
+
+
+case $1 in
+	'STARTUP') ;;
+	'PRE-SETUP')
+		test -x /usr/sbin/automysqlbackup && /usr/sbin/automysqlbackup
+		test -x /usr/bin/dpkg && /usr/bin/dpkg --get-selections > /var/backups/dpkg-selections
+		;;
+	'POST-SETUP') ;;
+	'POST-BACKUP') ;;
+	'POST-SCRUB') ;;
+esac
+
+exit 0
+
