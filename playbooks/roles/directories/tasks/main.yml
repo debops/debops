@@ -2,7 +2,6 @@
 
 - name: Make sure requested directories exist
   file: path={{ item.path }} state={{ item.state | default('directory') }} owner={{ item.owner | default('root') }} group={{ item.group | default('root') }} mode={{ item.mode | default('0755') }}
-  with_items:
-    - ${directories_list}
+  with_items: [ '{{ directories_list }}' ]
   when: directories_list is defined and directories_list and item.path is defined and item.path
 
