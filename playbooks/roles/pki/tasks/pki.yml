@@ -107,6 +107,10 @@
   shell: find {{ pki_path }}/ca/certs -name '*.crt' -type f -exec ln -s {} /usr/local/share/ca-certificates/ \;
   changed_when: False
 
+- name: Update CA certificates database
+  shell: update-ca-certificates
+  changed_when: False
+
 - name: Flush handlers if required
   meta: flush_handlers
 
