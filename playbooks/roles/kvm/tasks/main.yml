@@ -15,8 +15,7 @@
 
 - name: Add administrators to libvirt group
   user: name={{ item }} groups=libvirt append=yes
-  with_items:
-    - ${auth_admin_accounts}
+  with_items: [ '{{ auth_admin_accounts }}' ]
   when: auth_admin_accounts is defined
   tags:
     - kvm
@@ -24,8 +23,7 @@
 
 - name: Download ISO images for libvirt if allowed
   get_url: url={{ item }} dest=/var/lib/libvirt/images/ owner=root group=root mode=0644 force=yes
-  with_items:
-    - ${kvm_images_list}
+  with_items: [ '{{ kvm_images_list }}' ]
   when: kvm_images_list is defined and kvm_download_images is defined and kvm_download_images == True
   tags:
     - kvm

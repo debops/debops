@@ -21,7 +21,7 @@
 - name: Lookup mysql root password if secrets/ directory is defined
   set_fact:
     mysql_root_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/root/password length=' + mysql_password_length) }}"
-  when: secret is defined
+  when: secret is defined and secret
 
 - name: Update mysql root password for all root accounts
   mysql_user: name=root host={{ item }} password={{ mysql_root_password }}
@@ -79,6 +79,8 @@
               password={{ item.password }}
               {% elif (item.password is undefined or not item.password) and (secret is defined and secret) %}
               password={{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/' + item.name + '/password length=' + mysql_password_length) }}
+              {% elif (item.password is undefined or not item.password) and (secret is undefined or not secret) %}
+              password=""
               {% endif %}
   with_items: mysql_users
   when: item.name is defined and item.name

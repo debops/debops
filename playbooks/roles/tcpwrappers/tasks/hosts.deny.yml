@@ -14,7 +14,6 @@
 
 - name: Deny access from custom list if denyhosts is installed
   lineinfile: "dest=/etc/hosts.deny regexp='{{ item }}' insertafter='# ALL: PARANOID' line='{{ item }}' state={{ tcpwrappers_deny_custom_state }}"
-  with_items:
-    - ${tcpwrappers_deny_custom}
+  with_items: [ '{{ tcpwrappers_deny_custom }}' ]
   when: tcpwrappers_deny_custom is defined and installed_denyhosts.stat.exists is defined and installed_denyhosts.stat.exists == True
 

@@ -1,0 +1,68 @@
+---
+
+# ---- git clone & git checkout ----
+
+- name: Clone gitlab-shell source code
+  git: repo={{ gitlab_source_address + gitlab_source_repository.shell }}
+       dest={{ gitlab_sources + '/' + gitlab_source_repository.shell }}
+       version={{ gitlab_version_map[gitlab_version].shell }}
+       bare=yes update=yes
+  sudo_user: '{{ gitlab_user }}'
+  register: gitlab_register_shell_source
+
+- name: Check if gitlab-shell is checked out
+  stat: path={{ gitlab_home }}/gitlab-shell
+  register: gitlab_register_shell_directory
+
+- name: Create gitlab-shell directory
+  file: path={{ gitlab_home }}/gitlab-shell state=directory
+        owner={{ gitlab_user }} group={{ gitlab_group }} mode=0755
+  when: (gitlab_register_shell_source is defined and gitlab_register_shell_source.changed == True) or
+        (gitlab_register_shell_directory is defined and gitlab_register_shell_directory.stat.exists == False)
+
+- name: Prepare gitlab-shell worktree
+  template: src=srv/users/git/gitlab-shell/git.j2 dest={{ gitlab_home }}/gitlab-shell/.git
+            owner={{ gitlab_user }} group={{ gitlab_group }} mode=0644
+  when: (gitlab_register_shell_source is defined and gitlab_register_shell_source.changed == True) or
+        (gitlab_register_shell_directory is defined and gitlab_register_shell_directory.stat.exists == False)
+
+- name: Checkout gitlab-shell
+  shell: GIT_WORK_TREE={{ gitlab_home }}/gitlab-shell git checkout -f {{ gitlab_version_map[gitlab_version].shell }}
+         chdir={{ gitlab_sources + '/' + gitlab_source_repository.shell }}
+  sudo_user: '{{ gitlab_user }}'
+  register: gitlab_register_shell_checkout
+  when: (gitlab_register_shell_source is defined and gitlab_register_shell_source.changed == True) or
+        (gitlab_register_shell_directory is defined and gitlab_register_shell_directory.stat.exists == False)
+
+
+# ---- gitlab-shell/config.yml ----
+
+- name: Check gitlab-shell configuration for changes
+  shell: sha1sum {{ gitlab_home }}/gitlab-shell/config.yml.example | cut -d" " -f1
+  register: gitlab_register_shell_config_checksum
+  when: gitlab_register_shell_checkout is defined and gitlab_register_shell_checkout.changed == True
+
+- name: Fail if gitlab-shell configuration changed
+  fail: msg="gitlab-shell configuration changed, check it and update checksum"
+  when: (gitlab_register_shell_checkout is defined and gitlab_register_shell_checkout.changed == True) and
+        (gitlab_register_shell_config_checksum.stdout != gitlab_checksums.shell[gitlab_version_map[gitlab_version].shell].config)
+
+- name: Configure gitlab-shell
+  template: src=srv/users/git/gitlab-shell/{{ gitlab_config_map[gitlab_version].shell }}/config.yml.j2
+            dest={{ gitlab_home }}/gitlab-shell/config.yml
+            owner={{ gitlab_user }} group={{ gitlab_group }} mode=0644
+  when: gitlab_register_shell_checkout is defined and gitlab_register_shell_checkout.changed == True
+
+
+# ---- Setup ----
+
+- name: Setup gitlab-shell
+  shell: ./bin/install chdir={{ gitlab_home }}/gitlab-shell
+  sudo_user: '{{ gitlab_user }}'
+  when: gitlab_register_shell_checkout is defined and gitlab_register_shell_checkout.changed == True
+
+- name: Add GitLab host to SSH known hosts
+  shell: ssh-keyscan -t rsa,ecdsa -H {{ gitlab_domain }} > {{ gitlab_home }}/.ssh/known_hosts
+  sudo_user: '{{ gitlab_user }}'
+  when: gitlab_register_shell_checkout is defined and gitlab_register_shell_checkout.changed == True
+

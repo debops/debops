@@ -23,39 +23,39 @@
             dest={{ pki_path }}/host/req/{{ item.cn }}.cnf
             owner=root group=root mode=0644
   with_items:
-    - ${pki_default_certificate}
-    - ${pki_host_certificates}
+    - '{{ pki_default_certificate }}'
+    - '{{ pki_host_certificates }}'
   when: item.cn is defined and item.cn
 
 - name: Generate certificate keys
   command: openssl genrsa -out {{ pki_path }}/host/private/{{ item.cn }}.key {{ pki_bits }}
            creates={{ pki_path }}/host/private/{{ item.cn }}.key
   with_items:
-    - ${pki_default_certificate}
-    - ${pki_host_certificates}
+    - '{{ pki_default_certificate }}'
+    - '{{ pki_host_certificates }}'
   when: item.cn is defined and item.cn
 
 - name: Set correct permissions for certificate keys
   file: path={{ pki_path }}/host/private/{{ item.cn }}.key state=file owner=root group={{ pki_private_group }} mode=0440
   with_items:
-    - ${pki_default_certificate}
-    - ${pki_host_certificates}
+    - '{{ pki_default_certificate }}'
+    - '{{ pki_host_certificates }}'
   when: item.cn is defined and item.cn
 
 - name: Create certificate requests
   command: openssl req -new -utf8 -config {{ pki_path }}/host/req/{{ item.cn }}.cnf -out {{ pki_path }}/host/csr/{{ item.cn }}.csr
            creates={{ pki_path }}/host/csr/{{ item.cn }}.csr
   with_items:
-    - ${pki_default_certificate}
-    - ${pki_host_certificates}
+    - '{{ pki_default_certificate }}'
+    - '{{ pki_host_certificates }}'
   when: item.cn is defined and item.cn
 
 - name: Create self-signed certificates
   command: openssl x509 -req -extfile {{ pki_path }}/host/req/{{ item.cn }}.cnf -extensions v3_ca -in {{ pki_path }}/host/csr/{{ item.cn }}.csr -out {{ pki_path }}/host/selfsigned/{{ item.cn }}.crt -signkey {{ pki_path }}/host/private/{{ item.cn }}.key -days {{ pki_selfsign_days }}
          creates={{ pki_path }}/host/selfsigned/{{ item.cn }}.crt
   with_items:
-    - ${pki_default_certificate}
-    - ${pki_host_certificates}
+    - '{{ pki_default_certificate }}'
+    - '{{ pki_host_certificates }}'
   when: item.cn is defined and item.cn
 
 - name: Upload certificate requests
@@ -63,8 +63,8 @@
          dest={{ secret }}/pki/hosts/{{ ansible_fqdn }}/csr/{{ item.cn }}.csr
          flat=yes
   with_items:
-    - ${pki_default_certificate}
-    - ${pki_host_certificates}
+    - '{{ pki_default_certificate }}'
+    - '{{ pki_host_certificates }}'
   when: item.cn is defined and item.cn and secret is defined and secret
 
 - name: Download CA certificates
@@ -105,6 +105,10 @@
 
 - name: Symlink CA certificates
   shell: find {{ pki_path }}/ca/certs -name '*.crt' -type f -exec ln -s {} /usr/local/share/ca-certificates/ \;
+  changed_when: False
+
+- name: Update CA certificates database
+  shell: update-ca-certificates
   changed_when: False
 
 - name: Flush handlers if required

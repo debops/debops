@@ -2,8 +2,7 @@
 
 - name: Install console-related packages
   apt: pkg={{ item }} state=latest
-  with_items:
-    - ${console_packages}
+  with_items: [ '{{ console_packages }}' ]
   when: console_packages is defined
 
 - name: Check if /etc/inittab exists

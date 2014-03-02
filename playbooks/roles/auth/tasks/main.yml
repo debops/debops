@@ -15,8 +15,7 @@
 
 - name: Create administrator accounts
   user: name={{ item }} groups=admins,webadmins state=present append=yes
-  with_items:
-    - ${auth_admin_accounts}
+  with_items: [ '{{ auth_admin_accounts }}' ]
   when: auth_admin_accounts is defined
 
 - name: Ensure members of group 'admins' can su without password
