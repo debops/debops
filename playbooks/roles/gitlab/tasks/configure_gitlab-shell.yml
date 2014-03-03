@@ -51,7 +51,8 @@
   template: src=srv/users/git/gitlab-shell/{{ gitlab_config_map[gitlab_version].shell }}/config.yml.j2
             dest={{ gitlab_home }}/gitlab-shell/config.yml
             owner={{ gitlab_user }} group={{ gitlab_group }} mode=0644
-  when: gitlab_register_shell_checkout is defined and gitlab_register_shell_checkout.changed == True
+  when: (gitlab_register_shell_checkout is defined and gitlab_register_shell_checkout.changed == True) or
+        (gitlab_status_shell_installed is defined and gitlab_status_shell_installed)
 
 
 # ---- Setup ----
