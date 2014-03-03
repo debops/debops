@@ -141,4 +141,35 @@ gitlab_nginx_server:
       proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
       proxy_pass         http://gitlab;
 
+# Hostname of internal GitLab API server used by gitlab-shell
+gitlab_shell_api: 'api.gitlab.localhost'
+
+# Internal nginx GitLab API server for gitlab-shell access
+# Access is provided only from localhost, over HTTP. You should synchronize
+# configuration with "normal" GitLab nginx server
+gitlab_nginx_server_api:
+  enabled: True
+  default: False
+  ssl: False
+  name: '{{ gitlab_shell_api }}'
+  root: '{{ gitlab_home }}/gitlab/public'
+
+  options: |
+    client_max_body_size {{ gitlab_nginx_client_max_body_size }};
+    error_page 502 /502.html;
+
+  location:
+    '/': |
+      try_files $uri $uri/index.html $uri.html @gitlab;
+
+    '@gitlab': |
+      proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
+      proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
+      proxy_redirect     off;
+      proxy_set_header   X-Forwarded-Proto $scheme;
+      proxy_set_header   Host              $http_host;
+      proxy_set_header   X-Real-IP         $remote_addr;
+      proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+      proxy_pass         http://gitlab;
+
 
