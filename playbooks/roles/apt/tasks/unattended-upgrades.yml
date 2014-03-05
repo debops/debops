@@ -4,14 +4,14 @@
   apt: pkg={{ item }} state=latest install_recommends=False
   with_items:
     - unattended-upgrades
-  when: apt_unattended_upgrades is defined and apt_unattended_upgrades == True
+  when: apt_unattended_upgrades is defined and apt_unattended_upgrades
 
 - name: Configure unattended-upgrades
   template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
   with_items:
     - 'etc/apt/apt.conf.d/20auto-upgrades'
     - 'etc/apt/apt.conf.d/50unattended-upgrades'
-  when: apt_unattended_upgrades is defined and apt_unattended_upgrades == True
+  when: apt_unattended_upgrades is defined and apt_unattended_upgrades
 
 - name: Remove unattended-upgrades if disabled
   apt: pkg={{ item }} state=absent purge=yes

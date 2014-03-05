@@ -13,14 +13,27 @@ apt: True
 apt_codename: '{{ ansible_lsb.codename }}'
 apt_codename_backports: '{{ apt_codename }}-backports'
 
+# Send mail notifications from APT to these email addresses
+apt_mail_notifications: [ 'root' ]
+
+
+# ---- unattended-upgrades ----
+
 # Enable unattended-upgrades
 apt_unattended_upgrades: True
 
-# Install upgradeable packages automatically (choices: 1,0)
-apt_unattended_upgrades_auto: "1"
+# Do not automatically upgrade these packages
+apt_unattended_upgrades_blacklist: [ 'vim', 'libc6' ]
 
-# Send mail from unattended-upgrades to these email addresses
-apt_unattended_upgrades_mail: [ 'root' ]
+# If True, send mail notifications about all performed automatic upgrades
+# If False, send mail notifications only on errors
+apt_unattended_upgrades_notify_always: True
+
+# Automatically remove unused dependencies
+apt_unattended_upgrades_autoremove: True
+
+
+# ---- Other ----
 
 apt_debian_http_mirror: 'cdn.debian.net'
 

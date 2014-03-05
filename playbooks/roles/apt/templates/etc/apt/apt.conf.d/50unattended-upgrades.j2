@@ -14,10 +14,11 @@ Unattended-Upgrade::Origins-Pattern {
 
 // List of packages to not update
 Unattended-Upgrade::Package-Blacklist {
-	"vim";
-	"libc6";
-//	"libc6-dev";
-//	"libc6-i686";
+{% if apt_unattended_upgrades_blacklist is defined and apt_unattended_upgrades_blacklist %}
+{% for package in apt_unattended_upgrades_blacklist %}
+        "{{ package }}";
+{% endfor %}
+{% endif %}
 };
 
 // This option allows you to control if on a unclean dpkg exit
@@ -41,15 +42,23 @@ Unattended-Upgrade::MinimalSteps "true";
 // If empty or unset then no email is sent, make sure that you
 // have a working mail setup on your system. A package that provides
 // 'mailx' must be installed. E.g. "user@example.com"
-Unattended-Upgrade::Mail "{{ apt_unattended_upgrades_mail | join(",") }}";
+Unattended-Upgrade::Mail "{{ apt_mail_notifications | join(",") }}";
 
 // Set this value to "true" to get emails only on errors. Default
 // is to always send a mail if Unattended-Upgrade::Mail is set
-//Unattended-Upgrade::MailOnlyOnError "true";
+{% if apt_unattended_upgrades_notify_always is defined and apt_unattended_upgrades_notify_always %}
+Unattended-Upgrade::MailOnlyOnError "false";
+{% else %}
+Unattended-Upgrade::MailOnlyOnError "true";
+{% endif %}
 
 // Do automatic removal of new unused dependencies after the upgrade
 // (equivalent to apt-get autoremove)
-//Unattended-Upgrade::Remove-Unused-Dependencies "false";
+{% if apt_unattended_upgrades_autoremove is defined and apt_unattended_upgrades_autoremove %}
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+{% else %}
+Unattended-Upgrade::Remove-Unused-Dependencies "false";
+{% endif %}
 
 // Automatically reboot *WITHOUT CONFIRMATION* if a
 // the file /var/run/reboot-required is found after the upgrade
