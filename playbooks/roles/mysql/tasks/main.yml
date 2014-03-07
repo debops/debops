@@ -1,7 +1,12 @@
 ---
 
+- name: Check if MySQL server is installed
+  stat: path=/usr/bin/mysqld_safe
+  register: mysql_installed
+
 - name: Install MySQL-related packages
   apt: pkg={{ item }} state=latest install_recommends=no
+  register: mysql_install_status
   with_items: [ 'python-mysqldb', 'mysql-server', 'automysqlbackup' ]
 
 - name: Apply /etc/mysql/conf.d/mysqld.cnf configuration
@@ -14,8 +19,10 @@
   notify:
     - Reload mysql
 
-- name: Start MySQL service
-  service: name=mysql state=started
+- name: Restart MySQL service on first install
+  service: name=mysql state=restarted
+  when: (mysql_installed is defined and mysql_installed.stat.exists == False) and
+        (mysql_install_status is defined and mysql_install_status.changed == True)
 
 # Get mysql_root_password from secrets/ directory, otherwise use the one provided in a variable
 - name: Lookup mysql root password if secrets/ directory is defined
