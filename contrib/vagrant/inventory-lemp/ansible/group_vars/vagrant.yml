@@ -27,21 +27,27 @@ auth_admin_accounts:
 # Install additional packages in the vagrant group
 apt_group_packages: [ 'mysql-client' ]
 
+# Default configuration of user accounts (dotfiles enabled by default)
+# If configuration takes too long, you might want to comment these lines
+# and uncomment the alternatives below.
+users_default_shell: '/bin/zsh'
+users_default_dotfile: 'drybjed'
+users_dotfiles_enabled_default: True
+#users_default_shell: '/bin/bash'
+#users_dotfiles_enabled_default: False
+
+
 # root account configuration - set shell to /bin/zsh and install custom dotfiles
 # root should be in it's own hash variable
 users_root:
   - name: 'root'
-    shell: '/bin/bash'
-    dotfiles: False
 
 # Configuration of default account on all hosts in vagrant group
 users_default:
 
   # vagrant account
   - name: 'vagrant'
-    shell: '/bin/bash'
     groups: 'admins'
-    dotfiles: False
     sshkeys:
 
       # Insecure vagrant SSH keys from https://github.com/mitchellh/vagrant/tree/master/keys
@@ -52,8 +58,6 @@ users_list:
 
   # Your own account
   - name: '{{ lookup("env","USER") }}'
-    shell: '/bin/bash'
-    dotfiles: False
     groups: 'admins'
     sshkeys:
 
