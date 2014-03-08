@@ -12,7 +12,8 @@
     - users_group_list
     - users_host_list
   when: (item.name is defined and item.name) and
-        (item.dotfiles is defined and item.dotfiles) and
+        ((item.dotfiles is defined and item.dotfiles) or
+        (users_dotfiles_enabled_default is defined and users_dotfiles_enabled_default)) and
         (item.state is undefined or item.state is defined and item.state != 'absent')
 
 - name: Configure users dotfiles
@@ -28,6 +29,7 @@
     - users_group_list
     - users_host_list
   when: (item.name is defined and item.name) and
-        (item.dotfiles is defined and item.dotfiles) and
+        ((item.dotfiles is defined and item.dotfiles) or
+        (users_dotfiles_enabled_default is defined and users_dotfiles_enabled_default)) and
         (item.state is undefined or item.state is defined and item.state != 'absent')
 
