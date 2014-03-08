@@ -16,41 +16,4 @@ ginas_vagrant_inventory: 'lemp'
 role_ansible_tests: True
 role_ansible_tests_mail_to: 'root'
 
-# root account configuration - set shell to /bin/zsh and install custom dotfiles
-# root should be in it's own hash variable
-users_root:
-  - name: 'root'
-    shell: '/bin/zsh'
-    dotfiles: True
-
-# Configuration of default account on all hosts in vagrant group
-users_default:
-
-  # vagrant account
-  - name: 'vagrant'
-    shell: '/bin/zsh'
-    groups: 'admins'
-    dotfiles: True
-    sshkeys:
-
-      # Insecure vagrant SSH keys from https://github.com/mitchellh/vagrant/tree/master/keys
-      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key'
-
-# Configuration of additional accounts on hosts in vagrant group
-users_list:
-
-  # Your own account
-  - name: '{{ lookup("env","USER") }}'
-    shell: '/bin/zsh'
-    dotfiles: True
-    groups: 'admins'
-    sshkeys:
-
-      # SSH key from your account
-      - '{{ lookup("file","~/.ssh/id_rsa.pub") | default("") }}'
-
-# Allow your user to login to 'vagrant' account via SSH
-sshkeys_group_list:
-  - user: 'vagrant'
-    key: '{{ lookup("file","~/.ssh/id_rsa.pub") | default("") }}'
 
