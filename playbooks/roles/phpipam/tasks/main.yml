@@ -1,0 +1,79 @@
+---
+
+# ---- Environment ----
+
+- name: Install packages required for phpIPAM
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items: [ 'php5-mysql', 'php5-gmp', 'php5-curl', 'php5-mcrypt', 'php-net-ipv4' ]
+
+- name: Create phpIPAM group
+  group: name={{ phpipam_group }} system=yes state=present
+
+- name: Create phpIPAM user
+  user: name={{ phpipam_user }} group={{ phpipam_group }} home={{ phpipam_home }}
+        shell=/sbin/nologin comment="phpIPAM" system=yes state=present
+
+- name: Secure phpIPAM home directory
+  file: path={{ phpipam_home }} state=directory owner={{ phpipam_user }} group={{ phpipam_group }} mode=0750
+
+- name: Create phpIPAM deployment directory
+  file: path={{ item }} state=directory owner={{ phpipam_user }} group=www-data mode=0750
+  with_items: [ '{{ phpipam_www }}', '{{ phpipam_deploy_path }}' ]
+
+
+# ---- Deployment ----
+
+- name: Clone phpIPAM source from deploy server
+  git: repo={{ phpipam_source_address + phpipam_source_repository }}
+       dest={{ phpipam_sources + '/' + phpipam_source_repository }}
+       bare=yes version={{ phpipam_source_version }} update=yes
+  sudo_user: '{{ phpipam_user }}'
+  register: phpipam_sources_state
+
+- name: Point git work tree to separate .git directory
+  lineinfile: "dest={{ phpipam_deploy_path }}/.git create=yes state=present regexp='^gitdir:' line='gitdir: {{ phpipam_sources + '/' + phpipam_source_repository }}'"
+  sudo_user: '{{ phpipam_user }}'
+
+- name: Checkout phpIPAM to deployment path
+  shell: GIT_WORK_TREE={{ phpipam_deploy_path }} git checkout --force {{ phpipam_source_version }}
+         chdir={{ phpipam_sources + '/' + phpipam_source_repository }}
+  sudo_user: '{{ phpipam_user }}'
+  when: phpipam_sources_state is defined and phpipam_sources_state.changed
+
+
+# ---- Configuration ----
+
+- name: Check if phpIPAM configuration exists
+  stat: path={{ phpipam_deploy_path }}/config.php
+  register: phpipam_configuration
+
+- name: Set default MySQL password
+  set_fact:
+    phpipam_database_password: ""
+
+- name: Lookup MySQL password if secrets/ directory is defined
+  set_fact:
+    phpipam_database_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/phpipam/mysql/' + phpipam_database_user + '/password length=30') }}"
+  when: secret is defined and secret
+
+- name: Create phpIPAM MySQL user
+  mysql_user: name={{ phpipam_database_user }} state=present
+              password={{ phpipam_database_password }}
+              priv='{{ phpipam_database_name }}.*:ALL'
+              host='{{ phpipam_database_host }}'
+
+- name: Create phpIPAM database
+  mysql_db: name={{ phpipam_database_name }} state=present
+  register: phpipam_database_status
+
+- name: Import initial database schema
+  mysql_db: name={{ phpipam_database_name }} state=import
+            target={{ phpipam_database_schema }}
+  when: (phpipam_database_status is defined and phpipam_database_status.changed == True) and
+        (phpipam_configuration is defined and phpipam_configuration.stat.exists == False)
+
+- name: Configure phpIPAM
+  template: src=srv/www/sites/config.php.j2 dest={{ phpipam_deploy_path }}/config.php
+            owner=root group=root mode=0644
+
+
