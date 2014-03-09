@@ -1,0 +1,90 @@
+---
+
+# System user, group and home directory for phpIPAM
+phpipam_user: 'phpipam'
+phpipam_group: 'phpipam'
+phpipam_home: '/srv/users/{{ phpipam_user }}'
+
+# Root directory where phpIPAM sites are located
+phpipam_www: '/srv/www/{{ phpipam_user }}'
+
+# Directory with phpIPAM source repositories
+phpipam_sources: '{{ phpipam_home }}/src'
+
+# Default path where phpIPAM source files will be deployed
+phpipam_deploy_path: '{{ phpipam_www }}/sites/{{ phpipam_domain }}/public'
+
+# phpIPAM database schema loaded by Ansible
+phpipam_database_schema: '{{ phpipam_deploy_path }}/db/SCHEMA.sql'
+
+# Configuration for php5-fpm pool
+phpipam_php5_pool:
+  enabled: True
+  name: 'phpipam'
+  user: '{{ phpipam_user }}'
+  group: '{{ phpipam_group }}'
+
+# nginx configuration - PHP5 upstream
+phpipam_nginx_upstream_php5:
+  enabled: True
+  name: 'php5_phpipam'
+  php5: 'phpipam'
+
+# nginx configuration - phpIPAM server
+phpipam_nginx_server:
+  enabled: True
+  default: False
+  name: '{{ phpipam_domain }}'
+  root: '{{ phpipam_deploy_path }}'
+  upstream_php5: 'php5_phpipam'
+
+  upstream_php5_options: |
+    {% if phpipam_allow is defined and phpipam_allow %}
+    {% for address in phpipam_allow %}
+    allow {{ address }};
+    {% endfor %}
+    deny all;
+    {% endif %}
+
+  options: |
+    error_page 400 /error/400/;
+    error_page 401 /error/401/;
+    error_page 403 /error/403/;
+    error_page 404 /error/404/;
+    error_page 500 /error/500/;
+
+  location_allow:
+    '/': '{{ phpipam_allow }}'
+
+  location:
+    '/': |
+      rewrite ^/error/(.+)/$            /index.php?page=error&eid=$1;
+      rewrite ^/login$                  $scheme://$host/login/;
+      rewrite ^/login/$                 /index.php?page=login;
+      rewrite ^/logout$                 $scheme://$host/logout/;
+      rewrite ^/logout/$                /index.php?page=logout;
+      rewrite ^/request_ip$             $scheme://$host/request_ip/;
+      rewrite ^/request_ip/$            /index.php?page=request_ip;
+      rewrite ^/login/dashboard/$       $scheme://$host/dashboard/;
+      rewrite ^/logout/dashboard/$      $scheme://$host/dashboard/;
+      rewrite ^/upgrade$                $scheme://$host/upgrade/;
+      rewrite ^/upgrade/$               /index.php?page=upgrade;
+      rewrite ^/install$                $scheme://$host/install/;
+      rewrite ^/install/$               /index.php?page=install;
+      rewrite ^/dashboard/$             /index.php?page=dashboard;
+      rewrite ^/subnets/(.+)/(.+)/(.+)$ /index.php?page=subnets&section=$1&subnetId=$2&sPage=$3;
+      rewrite ^/subnets/(.+)/(.+)/$     /index.php?page=subnets&section=$1&subnetId=$2;
+      rewrite ^/subnets/(.+)/$          /index.php?page=subnets&section=$1;
+      rewrite ^/folder/(.+)/(.+)/$      /index.php?page=folder&section=$1&subnetId=$2;
+      rewrite ^/folder/(.+)/$           /index.php?page=folder&section=$1;
+      rewrite ^/vlan/(.+)/(.+)/$        /index.php?page=vlan&section=$1&vlanId=$2;
+      rewrite ^/vrf/(.+)/(.+)/$         /index.php?page=vrf&section=$1&vrfId=$2;
+      rewrite ^/tools/search/(.+)$      /index.php?page=tools&toolsId=search&ip=$1;
+      rewrite ^/tools/hosts/(.+)$       /index.php?page=tools&toolsId=hosts&hostname=$1;
+      rewrite ^/tools/(.+)/$            /index.php?page=tools&toolsId=$1;
+      rewrite ^/tools/$                 /index.php?page=tools&toolsId=showAll;
+      rewrite ^/administration/(.+)/$   /index.php?page=administration&adminId=$1;
+      rewrite ^/administration/$        /index.php?page=administration&adminId=showAll;
+      try_files $uri $uri/ $uri.html $uri.htm /index.html /index.htm =404;
+
+
