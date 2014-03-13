@@ -1,0 +1,271 @@
+/*
+	ginas role dependencies
+	Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
+	Homepage: https://github.com/ginas/ginas/
+	License: GPLv3
+*/
+
+digraph ginas_role_dependencies {
+
+	rankdir = LR;
+
+	/* ---- Ansible roles ---- */
+	node [shape = box, style = "rounded,filled", fillcolor = lightgrey];
+
+	role_ansible		[label = "ansible"];
+	role_apt		[label = "apt"];
+	role_auth		[label = "auth"];
+	role_boxbackup		[label = "boxbackup"];
+	role_console		[label = "console"];
+	role_directories	[label = "directories"];
+	role_dnsmasq		[label = "dnsmasq"];
+	role_etc_services	[label = "etc_services"];
+	role_ferm		[label = "ferm"];
+	role_ginas		[label = "ginas"];
+	role_githost		[label = "githost"];
+	role_gitlab		[label = "gitlab"];
+	role_interfaces		[label = "interfaces"];
+	role_kvm		[label = "kvm"];
+	role_lxc		[label = "lxc"];
+	role_monkeysphere	[label = "monkeysphere"];
+	role_mysql		[label = "mysql"];
+	role_nat		[label = "nat"];
+	role_nfs		[label = "nfs"];
+	role_nginx		[label = "nginx"];
+	role_owncloud		[label = "owncloud"];
+	role_php5		[label = "php5"];
+	role_phpipam		[label = "phpipam"];
+	role_phpmyadmin		[label = "phpmyadmin"];
+	role_pki		[label = "pki"];
+	role_postfix		[label = "postfix"];
+	role_postgresql		[label = "postgresql"];
+	role_reprepro		[label = "reprepro"];
+	role_rsyslog		[label = "rsyslog"];
+	role_safekeep		[label = "safekeep"];
+	role_samba		[label = "samba"];
+	role_sks		[label = "sks"];
+	role_sshd		[label = "sshd"];
+	role_sshkeys		[label = "sshkeys"];
+	role_tcpwrappers	[label = "tcpwrappers"];
+	role_users		[label = "users"];
+
+
+	/* ---- List of ginas playbooks in order of execution ---- */
+	playbook [
+		shape = none
+		style = solid
+		label = <<table border="0" cellspacing="4" cellpadding="2">
+			<tr><td port="site_yml" border="1" bgcolor="gray70">Main playbook: site.yml</td></tr>
+
+			<tr><td port="common_yml" border="1" bgcolor="gray70">Playbook: common.yml</td></tr>
+			<tr><td port="common_facts" border="1" bgcolor="lightgoldenrod2">Gather facts</td></tr>
+			<tr><td port="common" border="1" bgcolor="dodgerblue3"><font color="white">Run common roles</font></td></tr>
+
+			<tr><td port="kvm_lxc_yml" border="1" bgcolor="gray70">Playbook: kvm_lxc.yml</td></tr>
+			<tr><td port="ginas_kvm" border="1" bgcolor="magenta"><font color="white">KVM support</font></td></tr>
+			<tr><td port="ginas_lxc" border="1" bgcolor="seagreen3"><font color="white">LXC support</font></td></tr>
+
+			<tr><td port="services_yml" border="1" bgcolor="gray70">Playbook: services.yml</td></tr>
+			<tr><td port="ginas_sks" border="1" bgcolor="darkolivegreen3"><font color="white">SKS support</font></td></tr>
+			<tr><td port="ginas_nfs" border="1" bgcolor="firebrick3"><font color="white">NFS support</font></td></tr>
+			<tr><td port="ginas_samba" border="1" bgcolor="lightpink3"><font color="white">Samba support</font></td></tr>
+			<tr><td port="ginas_mysql" border="1" bgcolor="deeppink3"><font color="white">MySQL support</font></td></tr>
+			<tr><td port="ginas_postgresql" border="1" bgcolor="olivedrab"><font color="white">PostgreSQL support</font></td></tr>
+			<tr><td port="ginas_php5" border="1" bgcolor="turquoise4"><font color="white">PHP5 support</font></td></tr>
+			<tr><td port="ginas_nginx" border="1" bgcolor="tomato3"><font color="white">nginx support</font></td></tr>
+
+			<tr><td port="owncloud_yml" border="1" bgcolor="gray70">Playbook: owncloud.yml</td></tr>
+			<tr><td port="ginas_owncloud" border="1" bgcolor="aquamarine3"><font color="white">ownCloud</font></td></tr>
+
+			<tr><td port="phpipam_yml" border="1" bgcolor="gray70">Playbook: phpipam.yml</td></tr>
+			<tr><td port="ginas_phpipam" border="1" bgcolor="lightsalmon2"><font color="white">phpIPAM</font></td></tr>
+
+			<tr><td port="gitlab_yml" border="1" bgcolor="gray70">Playbook: gitlab.yml</td></tr>
+			<tr><td port="ginas_gitlab" border="1" bgcolor="yellowgreen"><font color="white">GitLab</font></td></tr>
+
+			<tr><td port="ginas_yml" border="1" bgcolor="gray70">Playbook: ginas.yml</td></tr>
+			<tr><td port="ginas_recursively" border="1" bgcolor="mediumseagreen"><font color="white">ginas</font></td></tr>
+			</table>>
+	]
+
+
+	/* ---- Graph starts here ---- */
+	start [label = "Start", shape = none, rank = source, style = solid];
+	script_site [label = "Script: ./site.sh", shape = diamond, style = filled, fillcolor = palegreen2];
+	{ rank = same; start -> script_site; }
+	script_site -> playbook:site_yml:w;
+
+
+	/* ---- Playbook execution in order ---- */
+	edge [penwidth = 3];
+
+	/* ---- Playbook: common.yml ---- */
+	edge [color = dodgerblue3];
+	playbook:common:e		-> role_etc_services;
+	role_etc_services		-> role_auth;
+	role_auth			-> role_apt;
+	role_apt			-> role_ferm;
+	role_ferm			-> role_pki;
+	role_pki			-> role_monkeysphere;
+	role_monkeysphere		-> role_sshd;
+	role_sshd			-> role_interfaces;
+	role_interfaces			-> role_console;
+	role_console			-> role_postfix;
+	role_postfix			-> role_rsyslog;
+	role_rsyslog			-> role_tcpwrappers;
+	role_tcpwrappers		-> role_users;
+	role_users			-> role_sshkeys;
+	role_sshkeys			-> role_directories;
+	role_directories		-> role_githost;
+	role_githost			-> role_boxbackup;
+	role_boxbackup			-> role_safekeep;
+
+	/* ---- Playbook: kvm_lxc.yml ---- */
+	edge [color = magenta];
+	playbook:ginas_kvm		-> role_kvm;
+	role_kvm			-> role_nat;
+	role_nat			-> role_dnsmasq;
+
+	edge [color = seagreen3];
+	playbook:ginas_lxc		-> role_lxc;
+	role_lxc			-> role_nat;
+	role_nat			-> role_dnsmasq;
+
+	/* ---- Playbook: services.yml ---- */
+	edge [color = darkolivegreen3];
+	playbook:ginas_sks		-> role_sks;
+
+	edge [color = firebrick3];
+	playbook:ginas_nfs		-> role_nfs;
+
+	edge [color = lightpink3];
+	playbook:ginas_samba		-> role_samba;
+
+	edge [color = deeppink3];
+	playbook:ginas_mysql		-> role_mysql;
+	role_mysql			-> role_phpmyadmin;
+
+	edge [color = olivedrab];
+	playbook:ginas_postgresql	-> role_postgresql;
+
+	edge [color = turquoise4];
+	playbook:ginas_php5		-> role_php5;
+
+	edge [color = tomato3];
+	playbook:ginas_nginx		-> role_nginx;
+
+	/* ---- Playbook: owncloud.yml ---- */
+	edge [color = aquamarine3];
+	playbook:ginas_owncloud		-> role_owncloud;
+
+	/* ---- Playbook: phpipam.yml ---- */
+	edge [color = lightsalmon2];
+	playbook:ginas_phpipam		-> role_phpipam;
+
+	/* ---- Playbook: gitlab.yml ---- */
+	edge [color = yellowgreen];
+	playbook:ginas_gitlab		-> role_gitlab;
+
+	/* ---- Playbook: ginas.yml ---- */
+	edge [color = mediumseagreen];
+	playbook:ginas_recursively	-> role_ginas;
+
+
+	/* ---- Role dependencies ---- */
+	edge [style = dashed, dir = back, penwidth = 1];
+
+	/* ---- Playbook: common.yml ---- */
+	edge [color = dodgerblue3];
+	role_apt -> role_etc_services;
+	role_apt -> role_ferm;
+	role_apt -> role_nginx;
+	role_apt -> role_reprepro;
+
+	role_postfix -> role_pki;
+	role_postfix -> role_ferm;
+
+	role_sshd -> role_tcpwrappers;
+	role_sshd -> role_sshkeys;
+
+	role_boxbackup -> role_etc_services;
+	role_boxbackup -> role_ferm;
+
+	/* ---- Playbook: kvm_lxc.yml ---- */
+	edge [color = seagreen3];
+	role_lxc -> role_ferm;
+
+	role_nat -> role_interfaces;
+	role_nat -> role_ferm;
+
+	role_dnsmasq -> role_tcpwrappers;
+	role_dnsmasq -> role_ferm;
+
+	/* ---- Playbook: services.yml ---- */
+	edge [color = darkolivegreen3];
+	role_sks -> role_etc_services;
+	role_sks -> role_ferm;
+	role_sks -> role_nginx;
+
+	edge [color = firebrick3];
+	role_nfs -> role_etc_services;
+	role_nfs -> role_ferm;
+
+	edge [color = lightpink3];
+	role_samba -> role_ferm;
+
+	edge [color = deeppink3];
+	role_mysql -> role_tcpwrappers;
+	role_mysql -> role_ferm;
+
+	role_phpmyadmin -> role_php5;
+	role_phpmyadmin -> role_nginx;
+
+	edge [color = olivedrab];
+	role_postgresql -> role_etc_services;
+	role_postgresql -> role_ferm;
+
+	/* ---- Playbook: owncloud.yml ---- */
+	edge [color = aquamarine3];
+	role_owncloud -> role_mysql;
+	role_owncloud -> role_postgresql;
+	role_owncloud -> role_php5;
+	role_owncloud -> role_nginx;
+
+	/* ---- Playbook: phpipam.yml ---- */
+	edge [color = lightsalmon2];
+	role_phpipam -> role_mysql;
+	role_phpipam -> role_php5;
+	role_phpipam -> role_nginx;
+
+	/* ---- Playbook: gitlab.yml ---- */
+	edge [color = yellowgreen];
+	role_gitlab -> role_mysql;
+	role_gitlab -> role_nginx;
+
+	/* ---- Playbook: ginas.yml ---- */
+	edge [color = mediumseagreen];
+	role_ginas -> role_ansible;
+
+
+	/* ---- Graph legend ---- */
+	legend [
+		shape = none
+		rank = sink
+		style = solid
+		label = <<table border="0" cellspacing="4" cellpadding="2">
+			<tr><td border="1">ginas role dependency diagram</td></tr>
+			<tr><td border="1" textalign="left">Playbooks are executed in order from top<br />
+			to bottom. Continuous lines represent "normal"<br />
+			Ansible run. Dashed lines are role dependencies,<br />
+			that are run before the actual role that calls them.<br />
+			Playbooks other than 'common.yml' are run<br />
+			on specific host groups only. Some roles<br />
+			are executed multiple times during one Ansible run.</td></tr>
+			<tr><td border="1">https://github.com/ginas/ginas/</td></tr>
+
+			</table>>
+	]
+
+}
+
+
