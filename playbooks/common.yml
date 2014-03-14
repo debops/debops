@@ -12,6 +12,10 @@
       when: (ansible_controller is undefined and ansible_connection != "local")
       tags: [ 'ferm', 'tcpwrappers' ]
 
+    - name: Update APT cache early if older than 24h
+      apt: update_cache=yes cache_valid_time=86400
+      sudo: True
+
 - name: Common configuration for all hosts
   hosts: all:!localhost
   sudo: yes
