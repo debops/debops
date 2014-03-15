@@ -92,7 +92,7 @@
   with_flattened:
     - postgresql_default_cluster
     - postgresql_clusters
-  when: item.name is defined and item.name
+  when: (item.name is defined and item.name) and (postgresql_version is defined and postgresql_version == '9.1')
 
 - name: Symlink SSL certificate
   file: state=link src={{ item.ssl_crt | default(postgresql_default_ssl_crt) }}
@@ -100,7 +100,7 @@
   with_flattened:
     - postgresql_default_cluster
     - postgresql_clusters
-  when: item.name is defined and item.name
+  when: (item.name is defined and item.name) and (postgresql_version is defined and postgresql_version == '9.1')
 
 - name: Symlink SSL key
   file: state=link src={{ item.ssl_key | default(postgresql_default_ssl_key) }}
@@ -108,7 +108,7 @@
   with_flattened:
     - postgresql_default_cluster
     - postgresql_clusters
-  when: item.name is defined and item.name
+  when: (item.name is defined and item.name) and (postgresql_version is defined and postgresql_version == '9.1')
 
 - name: Start PostgreSQL clusters when not started
   command: pg_ctlcluster {{ item.version | default(postgresql_version) }} {{ item.name }} start
