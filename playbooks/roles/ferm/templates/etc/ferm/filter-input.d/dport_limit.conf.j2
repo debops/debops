@@ -17,7 +17,7 @@ Optional:
 
 #}
 
-{% if item.disabled is undefined or (item.disabled is defined and not item.disabled) %}
+{% if item.disabled is undefined or (item.disabled is defined and not item.disabled) or (item.disabled is defined and item.disabled == 'false') %}
 protocol {{ item.protocol | default('tcp syn') }} dport ({{ item.dport | join(' ') }}) {
 
 	@subchain "dport-limit-{{ item.dport[0] }}" {

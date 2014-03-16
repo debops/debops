@@ -24,7 +24,7 @@
 - name: Remove iptables INPUT rules if requested
   file: state=absent
         {% if item.filename is defined and item.filename %}
-        path=/etc/ferm/filter-input.d/{{ item.weight | default('10') }}_{{ item.filename }}
+        path=/etc/ferm/filter-input.d/{{ item.weight | default('10') }}_{{ item.filename }}.conf
         {% else %}
         path=/etc/ferm/filter-input.d/{{ item.weight | default('10') }}_{{ item.type }}_{{ item.dport[0] }}.conf
         {% endif %}
@@ -38,7 +38,7 @@
 - name: Configure iptables INPUT rules
   template: src=etc/ferm/filter-input.d/{{ item.type }}.conf.j2 owner=root group=root mode=0644
             {% if item.filename is defined and item.filename %}
-            dest=/etc/ferm/filter-input.d/{{ item.weight | default('10') }}_{{ item.filename }}
+            dest=/etc/ferm/filter-input.d/{{ item.weight | default('10') }}_{{ item.filename }}.conf
             {% else %}
             dest=/etc/ferm/filter-input.d/{{ item.weight | default('10') }}_{{ item.type }}_{{ item.dport[0] }}.conf
             {% endif %}
