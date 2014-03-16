@@ -15,16 +15,16 @@
   when: tcpwrappers is defined and tcpwrappers
 
 - name: Allow access from Ansible Controller to sshd
-  template: src=etc/hosts.allow.d/ansible_controller.j2 dest=/etc/hosts.allow.d/08_ansible_controller
+  template: src=etc/hosts.allow.d/ansible_controller.j2 dest=/etc/hosts.allow.d/10_ansible_controller
             owner=root group=root mode=0644
   when: ansible_controller is defined and ansible_controller
 
 - name: Remove hosts.allow entries if requested
   file: state=absent
         {% if item.filename is defined and item.filename %}
-        path=/etc/hosts.allow.d/{{ item.weight | default('10') }}_{{ item.filename }}
+        path=/etc/hosts.allow.d/{{ item.weight | default('50') }}_{{ item.filename }}
         {% else %}
-        path=/etc/hosts.allow.d/{{ item.weight | default('10') }}_{{ item.daemon }}_allow
+        path=/etc/hosts.allow.d/{{ item.weight | default('50') }}_{{ item.daemon }}_allow
         {% endif %}
   with_flattened:
     - tcpwrappers_allow
@@ -37,9 +37,9 @@
 - name: Generate hosts.allow entries
   template: src=etc/hosts.allow.d/allow.j2 owner=root group=root mode=0644
             {% if item.filename is defined and item.filename %}
-            dest=/etc/hosts.allow.d/{{ item.weight | default('10') }}_{{ item.filename }}
+            dest=/etc/hosts.allow.d/{{ item.weight | default('50') }}_{{ item.filename }}
             {% else %}
-            dest=/etc/hosts.allow.d/{{ item.weight | default('10') }}_{{ item.daemon }}_allow
+            dest=/etc/hosts.allow.d/{{ item.weight | default('50') }}_{{ item.daemon }}_allow
             {% endif %}
   with_flattened:
     - tcpwrappers_allow
