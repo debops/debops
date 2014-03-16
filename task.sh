@@ -2,7 +2,7 @@
 
 # task.sh: ansible wrapper for ginas project
 # Copyright 2014 Maciej Delmanowski <drybjed@gmail.com>
-# Homepage: https://github.com/drybjed/ginas/
+# Homepage: https://github.com/ginas/ginas/
 
 
 # This program is free software; you can redistribute

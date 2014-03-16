@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Simple defaults browser for ginas project
-# https://github.com/drybjed/ginas/
+# https://github.com/ginas/ginas/
 
 # Script uses 'view' command from vim package as convinient pager
 
