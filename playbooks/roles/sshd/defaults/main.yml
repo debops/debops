@@ -1,6 +1,19 @@
 ---
 # role: sshd (secure shell server, for secure access from remote machines)
 
+# List of IP addresses or CIDR networks to allow access to SSH without
+# restrictions.
+# They will be configured in iptables (via ferm) and /etc/hosts.allow (via
+# tcpwrappers).
+sshd_allow: []
+sshd_group_allow: []
+sshd_host_allow: []
+
+# By default SSH access from unknown IP addresses is limited and filtered by
+# iptables, you can disable this by changing variable below to 'true'. You will
+# have to enable access in iptables and tcpwrappers from any IP address
+# separately.
+sshd_unlimited_access: 'false'
 
 sshd_Port: 22
 sshd_PermitRootLogin: 'without-password'
