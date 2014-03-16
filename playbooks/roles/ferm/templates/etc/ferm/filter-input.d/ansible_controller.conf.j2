@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+
+# Allow SSH connections from Ansible Controller
+{#
+
+List of parameters:
+
+Required:
+  ansible_controller      IP address in CIDR format of Ansible Controller
+                          detected automatically by 'common.yml' playbook
+
+#}
+
+{% if ansible_controller is defined and ansible_controller %}
+protocol tcp dport ssh saddr {{ ansible_controller }} ACCEPT;
+{% else %}
+# ansible_controller is not set, but this shouldn't be here.
+# Something went wrong, re-run the 'ferm' role.
+{% endif %}
+
+

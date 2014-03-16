@@ -1,0 +1,29 @@
+# {{ ansible_managed }}
+
+# Accept new connections from specified IP addresses on {{ item.dport | join(',') }} port
+{#
+
+List of parameters:
+
+Required:
+  item.dport		list of destination ports to configure
+
+Optional:
+  item.protocol		protocol to configure (tcp, udp)
+  item.saddr		list of source addresses to accept
+  item.accept_any	accept connections from any IP address if True
+
+#}
+
+protocol {{ item.protocol | default('tcp') }} dport ({{ item.dport | join(' ') }}) {
+{% if item.saddr is defined and item.saddr %}
+	saddr ({{ item.saddr | join(' ') }}) ACCEPT;
+{% else %}
+{% if item.accept_any is defined and item.accept_any %}
+	ACCEPT;
+{% else %}
+	# Connections from any IP address not allowed
+{% endif %}
+{% endif %}
+}
+
