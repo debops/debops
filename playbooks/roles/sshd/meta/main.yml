@@ -8,12 +8,12 @@ dependencies:
       - type: 'dport_accept'
         dport: [ 'ssh' ]
         saddr: '{{ sshd_allow + sshd_group_allow + sshd_host_allow }}'
-        weight: '09'
+        weight: '30'
         filename: 'sshd_dependency_accept'
 
       - type: 'dport_limit'
         dport: [ 'ssh' ]
-        weight: '09'
+        weight: '30'
         filename: 'sshd_dependency_limit'
         disabled: '{{ sshd_unlimited_access }}'
 
@@ -23,7 +23,7 @@ dependencies:
 
       - daemon: 'sshd'
         client: '{{ sshd_allow + sshd_group_allow + sshd_host_allow }}'
-        weight: '09'
+        weight: '30'
         filename: 'sshd_dependency_allow'
         comment: 'Allow SSH connections from these hosts (via sshd role dependency)'
 

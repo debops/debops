@@ -16,7 +16,7 @@
 
 - name: Allow SSH access from Ansible Controller
   template: src=etc/ferm/filter-input.d/ansible_controller.conf.j2
-            dest=/etc/ferm/filter-input.d/08_ansible_controller.conf
+            dest=/etc/ferm/filter-input.d/10_ansible_controller.conf
             owner=root group=root mode=0644
   when: ansible_controller is defined and ansible_controller
   notify: Restart ferm
@@ -24,9 +24,9 @@
 - name: Remove iptables INPUT rules if requested
   file: state=absent
         {% if item.filename is defined and item.filename %}
-        path=/etc/ferm/filter-input.d/{{ item.weight | default('10') }}_{{ item.filename }}.conf
+        path=/etc/ferm/filter-input.d/{{ item.weight | default('50') }}_{{ item.filename }}.conf
         {% else %}
-        path=/etc/ferm/filter-input.d/{{ item.weight | default('10') }}_{{ item.type }}_{{ item.dport[0] }}.conf
+        path=/etc/ferm/filter-input.d/{{ item.weight | default('50') }}_{{ item.type }}_{{ item.dport[0] }}.conf
         {% endif %}
   with_flattened:
     - ferm_input_list
@@ -38,9 +38,9 @@
 - name: Configure iptables INPUT rules
   template: src=etc/ferm/filter-input.d/{{ item.type }}.conf.j2 owner=root group=root mode=0644
             {% if item.filename is defined and item.filename %}
-            dest=/etc/ferm/filter-input.d/{{ item.weight | default('10') }}_{{ item.filename }}.conf
+            dest=/etc/ferm/filter-input.d/{{ item.weight | default('50') }}_{{ item.filename }}.conf
             {% else %}
-            dest=/etc/ferm/filter-input.d/{{ item.weight | default('10') }}_{{ item.type }}_{{ item.dport[0] }}.conf
+            dest=/etc/ferm/filter-input.d/{{ item.weight | default('50') }}_{{ item.type }}_{{ item.dport[0] }}.conf
             {% endif %}
   with_flattened:
     - ferm_input_list
