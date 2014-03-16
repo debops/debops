@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # bootstrap-ansible.sh: download and build Ansible on Debian host
-# https://github.com/drybjed/ginas/
+# https://github.com/ginas/ginas/
 
 set -e
 

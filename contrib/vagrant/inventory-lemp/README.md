@@ -4,7 +4,7 @@ This is a combined [Ansible](http://ansible.com/) inventory directory and [Vagra
 
 ## Overview
 
-**master**.nat.example.com (IP address `192.168.50.2`) is a "control server". It has installed [Ansible](https://github.com/ansible/ansible/) from current `devel` branch and, recursively, [ginas](https://github.com/drybjed/ginas/) from the master branch with "lemp" inventory enabled as the default.
+**master**.nat.example.com (IP address `192.168.50.2`) is a "control server". It has installed [Ansible](https://github.com/ansible/ansible/) from current `devel` branch and, recursively, [ginas](https://github.com/ginas/ginas/) from the master branch with "lemp" inventory enabled as the default.
 
 Root directory of `ginas` project from hosting server will be mounted by Vagrant as `/home/vagrant/ginas/`.
 
@@ -22,7 +22,7 @@ You should have installed and configured Vagrant, git, VirtualBox. Ansible is no
 
 Clone `ginas` repository to a directory and cd into it:
 
-    git clone https://github.com/drybjed/ginas/ && cd ginas
+    git clone https://github.com/ginas/ginas/ && cd ginas
 
 LEMP repository is configured as the default in `ginas`, so now all you need to do to start it, is:
 
