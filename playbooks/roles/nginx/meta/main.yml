@@ -1,0 +1,15 @@
+---
+
+dependencies:
+
+  - role: ferm
+    ferm_input_list:
+
+      - type: 'dport_accept'
+        dport: [ 'http', 'https' ]
+        saddr: '{{ nginx_allow + nginx_group_allow + nginx_host_allow }}'
+        accept_any: True
+        filename: 'nginx_dependency_accept'
+        weight: '05'
+
+
