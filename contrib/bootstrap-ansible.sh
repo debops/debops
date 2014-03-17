@@ -11,11 +11,14 @@ trap "rm -rf ${build_dir}" EXIT
 
 cd ${build_dir}
 
+# Update APT package database
+sudo apt-get update
+
 # Install required packages
 sudo apt-get --no-install-recommends -q -y install git \
 	python-paramiko python-yaml python-jinja2 python-httplib2 \
 	cdbs debhelper dpkg-dev python-support fakeroot sshpass \
-	python-nose python-passlib asciidoc
+	python-nose python-passlib asciidoc docbook-xsl
 
 # Clone Ansible from main project repository (devel branch, default)
 git clone git://github.com/ansible/ansible.git ansible
