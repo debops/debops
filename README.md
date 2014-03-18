@@ -1,6 +1,6 @@
 ## ginas is not a server
 
-[![Travis CI](https://travis-ci.org/ginas/ginas.png?branch=master)](https://travis-ci.org/ginas/ginas)
+[![Travis CI](https://travis-ci.org/ginas/ginas.png?branch=master)](https://travis-ci.org/ginas/ginas) [![Flattr this project](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=drybjed&url=https://github.com/ginas/ginas/&title=ginas&language=&tags=github&category=software)
 
 ginas is a set of [Ansible](http://ansible.com/) playbooks designed to create
 and maintain a datacenter based on [Debian GNU/Linux](http://debian.org/)
