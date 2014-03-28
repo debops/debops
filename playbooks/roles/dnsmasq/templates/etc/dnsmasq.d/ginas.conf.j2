@@ -1,8 +1,5 @@
 # {{ ansible_managed }}
 
-dhcp-range=interface:{{ dnsmasq_interface }},{{ dnsmasq_dhcp_range }},{{ dnsmasq_lease_time }}
-dhcp-option=tag:{{ dnsmasq_tag }},option:router,{{ dnsmasq_router }}
-dhcp-option=tag:{{ dnsmasq_tag }},option:domain-search,{{ dnsmasq_domain }}
 expand-hosts
 domain-needed
 strict-order
@@ -17,6 +14,11 @@ server=/{{ dnsmasq_revdns }}/{{ dnsmasq_router }}
 interface-name={{ dnsmasq_domain_gw }}.{{ dnsmasq_domain }},{{ dnsmasq_interface }}
 mx-host={{ dnsmasq_domain }},{{ dnsmasq_domain_mx }}.{{ dnsmasq_domain }},10
 selfmx
+{% if dnsmasq_dhcp is defined and dnsmasq_dhcp %}
+dhcp-range=interface:{{ dnsmasq_interface }},{{ dnsmasq_dhcp_range }},{{ dnsmasq_lease_time }}
+dhcp-option=tag:{{ dnsmasq_tag }},option:router,{{ dnsmasq_router }}
+dhcp-option=tag:{{ dnsmasq_tag }},option:domain-search,{{ dnsmasq_domain }}
+{% endif %}
 {% if dnsmasq_netboot is defined and dnsmasq_netboot %}
 enable-tftp
 dhcp-boot=pxelinux.0
