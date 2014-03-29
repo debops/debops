@@ -12,6 +12,11 @@
 - include: manage_shared_memory.yml
   when: postgresql_sysctl_shm_multiplier is defined and postgresql_sysctl_shm_multiplier
 
+- name: Get current maximum shared memory value
+  shell: cat /proc/sys/kernel/shmmax
+  register: postgresql_sysctl_shmmax
+  changed_when: False
+
 - include: manage_clusters.yml
 - include: manage_ferm_services.yml
 
