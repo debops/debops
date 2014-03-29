@@ -104,7 +104,16 @@ tcp_keepalives_count = {{ item.tcp_keepalives_count | default('0') }}{#			# TCP_
 #------------------------------------------------------------------------------
 
 # - Memory -
+{% if postgresql_sysctl_shm_multiplier is defined and postgresql_sysctl_shm_multiplier %}
 shared_buffers = {{ item.shared_buffers | default (((ansible_memtotal_mb * 0.4)/postgresql_cluster_count|int)|round|int|string + 'MB') }}{# # min 128kB #}
+{% else %}
+{% if item.max_connections is defined and item.max_connections %}
+{% set postgresql_tpl_max_connections = item.max_connections|int %}
+{% else %}
+{% set postgresql_tpl_max_connections = postgresql_default_max_connections|int %}
+{% endif %}
+shared_buffers = {{ item.shared_buffers | default ((((postgresql_sysctl_shmmax.stdout|int - (8 * 1024 * 1024) - (16384 * postgresql_tpl_max_connections)) / 1024))|round|int|string + 'kB') }}{# # min 128kB #}
+{% endif %}
 
 temp_buffers = {{ item.temp_buffers | default('8MB') }}{#				# min 800kB #}
 
