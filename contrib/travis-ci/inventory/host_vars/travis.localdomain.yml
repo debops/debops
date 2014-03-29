@@ -60,6 +60,11 @@ php5_packages: [ 'php5-mysql', 'php5-pgsql' ]
 # Disable samba iptables management on OpenVZ (we lack access to the kernel)
 samba_iptables: False
 
+# Seems that default PostgreSQL configuration on Travis has too big memory
+# requirements, let's try to remedy that
+postgresql_default_max_connections: '10'
+
+
 # ---- Things specific to Ubuntu ----
 # By default on Travis CI distribution codename is 'precise', but ginas does
 # not support that yet. So let's force Debian by default
