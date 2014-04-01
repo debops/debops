@@ -32,7 +32,8 @@
   sudo_user: '{{ gitlab_user }}'
   register: gitlab_register_shell_checkout
   when: (gitlab_register_shell_source is defined and gitlab_register_shell_source.changed == True) or
-        (gitlab_register_shell_directory is defined and gitlab_register_shell_directory.stat.exists == False)
+        (gitlab_register_shell_directory is defined and gitlab_register_shell_directory.stat.exists == False) or
+        (gitlab_status_shell_upgrade is defined and gitlab_status_shell_upgrade)
 
 
 # ---- gitlab-shell/config.yml ----
