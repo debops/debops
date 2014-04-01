@@ -209,7 +209,7 @@
   when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True
 
 - name: Initialize GitLab database
-  shell: echo yes | bundle exec rake gitlab:setup RAILS_ENV=production
+  shell: yes 'yes' | bundle exec rake gitlab:setup RAILS_ENV=production
          chdir={{ gitlab_home }}/gitlab
   sudo_user: '{{ gitlab_user }}'
   register: gitlab_register_bundle_setup

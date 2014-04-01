@@ -9,13 +9,13 @@
   set_fact:
     gitlab_status_shell_upgrade: True
   when: (gitlab_status_shell_installed is defined and gitlab_status_shell_installed) and
-        (ansible_local.gitlab_shell.instance.gitlab_version != gitlab_version) and
-        (ansible_local.gitlab_shell.instance.shell_version != gitlab_version_map[gitlab_version].shell)
+        ((ansible_local.gitlab_shell.instance.gitlab_version != gitlab_version) or
+        (ansible_local.gitlab_shell.instance.shell_version != gitlab_version_map[gitlab_version].shell))
 
 - name: Fail if auto upgrade is disabled
   fail: msg="gitlab-shell requires an upgrade but automatic upgrades are disabled"
   when: (gitlab_status_shell_upgrade is defined and gitlab_status_shell_upgrade) and
-        (gitlab_auto_upgrade is undefined or (gitlab_auto_upgrade is defined and not gitlab_auto_ugrade))
+        ((gitlab_auto_upgrade is defined and not gitlab_auto_upgrade) or gitlab_auto_upgrade is undefined)
 
 - name: Check if GitLab CE is installed
   set_fact:
@@ -26,12 +26,12 @@
   set_fact:
     gitlab_status_ce_upgrade: True
   when: (gitlab_status_ce_installed is defined and gitlab_status_ce_installed) and
-        (ansible_local.gitlab_ce.instance.gitlab_version != gitlab_version) and
-        (ansible_local.gitlab_ce.instance.ce_version != gitlab_version_map[gitlab_version].ce)
+        ((ansible_local.gitlab_ce.instance.gitlab_version != gitlab_version) or
+        (ansible_local.gitlab_ce.instance.ce_version != gitlab_version_map[gitlab_version].ce))
 
 - name: Fail if auto upgrade is disabled
   fail: msg="GitLab CE requires an upgrade but automatic upgrades are disabled"
   when: (gitlab_status_ce_upgrade is defined and gitlab_status_ce_upgrade) and
-        (gitlab_auto_upgrade is undefined or (gitlab_auto_upgrade is defined and not gitlab_auto_upgrade))
+        ((gitlab_auto_upgrade is defined and not gitlab_auto_upgrade) or gitlab_auto_upgrade is undefined)
 
 
