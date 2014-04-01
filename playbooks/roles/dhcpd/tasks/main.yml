@@ -1,0 +1,13 @@
+---
+
+- name: Install DHCP server packages
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items: [ 'isc-dhcp-server' ]
+
+- name: Configure DHCP server
+  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
+  with_items: [ 'etc/default/isc-dhcp-server', 'etc/dhcp/dhcpd.conf' ]
+  notify: Restart isc-dhcp-server
+
+
+
