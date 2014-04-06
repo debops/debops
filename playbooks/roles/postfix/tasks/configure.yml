@@ -1,5 +1,12 @@
 ---
 
+  # Fixes 'warning: hostname localhost does not resolve to address ::1: No address associated with hostname'
+  # http://forums.debian.net/viewtopic.php?f=20&t=111671
+- name: Fix missing localhost6 in /etc/hosts
+  lineinfile: >
+              dest=/etc/hosts regexp='^::1\s+localhost'
+              line='::1     localhost6 ip6-localhost ip6-loopback' backup=no state=present
+
 - name: Configure aliases database
   template: src=etc/aliases.j2 dest=/etc/aliases owner=root group=root mode=0644
   notify: Generate mail alias database
