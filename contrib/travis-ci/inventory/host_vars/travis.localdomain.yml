@@ -35,7 +35,10 @@ nfs_server: True
 # Configure everything that we have in the mail server
 # See playbooks/roles/postfix/defaults/main.yml for more information
 postfix: [ 'local', 'network', 'mx', 'submission', 'deprecated',
-           'postscreen', 'dnsbl', 'dnswl', 'test' ]
+           'postscreen', 'dnsbl', 'dnswl', 'test', 'mailman' ]
+
+# Mailman requires FQDN address for site administrator, hostname is not enough
+mailman_site_admin: 'listmaster@{{ ansible_fqdn }}'
 
 # Enable PHPMyAdmin for MySQL database access
 mysql_phpmyadmin: True
