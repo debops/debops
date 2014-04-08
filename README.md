@@ -27,8 +27,8 @@ containers - ginas should manage them just as easily.
   server;
 
 - set of fully-fledged applications: [ownCloud](http://owncloud.org/),
-  [phpIPAM](http://phpipam.net/), [GitLab](http://gitlab.org/), with more to
-  come;
+  [phpIPAM](http://phpipam.net/), [GitLab](http://gitlab.org/),
+  [Mailman](http://list.org/), with more to come;
 
 ### Screenshots
 
@@ -38,12 +38,12 @@ included in ginas and what's their relationship with each other. Below you can
 see a basic structure of the main ginas playbook (click on the image to see
 it in full size):
 
-[![ginas at a glance](http://i.imgur.com/QLaWYga.png)](http://i.imgur.com/QLaWYga.png)
+[![ginas at a glance](http://i.imgur.com/ITkOnT7.png)](http://i.imgur.com/ITkOnT7.png)
 
 Next graph shows Ansible role dependencies, represented by dashed lines. Here
 you can see what roles depend on each other. Dependencies of a role are
 executed before that role, and certain roles can be run multiple times by
 Ansible:
 
-[![ginas role dependencies](http://i.imgur.com/STyDh5B.png)](http://i.imgur.com/STyDh5B.png)
+[![ginas role dependencies](http://i.imgur.com/RarT8MB.png)](http://i.imgur.com/RarT8MB.png)
 

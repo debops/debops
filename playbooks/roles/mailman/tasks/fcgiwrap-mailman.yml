@@ -1,0 +1,27 @@
+---
+
+- name: Configure fcgiwrap-mailman init script
+  template: src=etc/default/fcgiwrap-mailman.j2 dest=/etc/default/fcgiwrap-mailman
+            owner=root group=root mode=0644
+
+- name: Copy fcgiwrap init script to fcgiwrap-mailman
+  command: cp /etc/init.d/fcgiwrap /etc/init.d/fcgiwrap-mailman
+           creates=/etc/init.d/fcgiwrap-mailman
+
+- name: Modify fcgiwrap-mailman init script (insserv)
+  lineinfile: >
+              dest=/etc/init.d/fcgiwrap-mailman regexp='^# Provides:\s+fcgiwrap.*$'
+              line='# Provides:          fcgiwrap-mailman' backup=no state=present
+
+- name: Modify fcgiwrap-mailman init script (name)
+  lineinfile: dest=/etc/init.d/fcgiwrap-mailman regexp='^NAME="fcgiwrap.*"$'
+              line='NAME="fcgiwrap-mailman"' backup=no state=present
+
+- name: Install fcgiwrap-mailman init script in sysvinit
+  command: update-rc.d fcgiwrap-mailman defaults 01
+           creates=/etc/rc2.d/S01fcgiwrap-mailman
+
+- name: Start fcgiwrap-mailman if not started
+  service: name=fcgiwrap-mailman state=started
+
+

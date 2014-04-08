@@ -195,6 +195,14 @@ server {
 {% if item.location is defined %}
 {% for path in item.location.keys() %}
 	location {{ path }} {
+{% if item.location_referers is defined %}
+{% if item.location_referers[path] is defined and item.location_referers[path] %}
+                valid_referers none blocked {{ item.location_referers[path] | join(' ') }};
+                if ($invalid_referer) {
+                        return 403;
+                }
+{% endif %}
+{% endif %}
 {% if item.location[path] %}
 		{{ item.location[path] | indent(16) }}
 {% endif %}
