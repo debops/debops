@@ -1,0 +1,13 @@
+---
+
+dependencies:
+
+  - role: postfix
+    postfix_mailman_domains: '{{ mailman_domains }}'
+    when: mailman_dependencies is defined and mailman_dependencies
+
+  - role: nginx
+    nginx_servers: [ '{{ mailman_nginx_server }}' ]
+    when: mailman_dependencies is defined and mailman_dependencies
+
+
