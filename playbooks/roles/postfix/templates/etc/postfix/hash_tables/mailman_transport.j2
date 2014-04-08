@@ -1,0 +1,35 @@
+# {{ ansible_managed }}
+
+# Transport maps for Virtual Mailman
+
+{% if 'mailman' in postfix and 'local' not in postfix %}
+{% if postfix_mailman_domains is defined and postfix_mailman_domains %}
+{% for domain in postfix_mailman_domains %}
+{{ domain }}		mailman:
+{% endfor %}
+{% elif ansible_local is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains %}
+{% for domain in ansible_local.mailman.mailman.domains.split(',') %}
+{{ domain }}		mailman:
+{% endfor %}
+{% else %}
+# postfix_mailman_domains not defined
+{% endif %}
+{% else %}
+# required postfix capability: +mailman -local
+{% endif %}
+{% if 'test' in postfix %}
+
+# ---- Debug information ----
+# postfix capabilities: {{ ",".join(postfix) }}
+# postfix_relay_domains = {{ ", ".join(postfix_relay_domains) }}
+# postfix_relayhost = {{ postfix_relayhost }}
+{% if postfix_mailman_domains is defined and postfix_mailman_domains %}
+# postfix_mailman_domains = {{ postfix_mailman_domains|join(',') }}
+{% elif ansible_local is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains %}
+# postfix_mailman_domains = {{ ansible_local.mailman.mailman.domains }}
+{% else %}
+# postfix_mailman_domains not defined
+{% endif %}
+{% endif %}
+
+

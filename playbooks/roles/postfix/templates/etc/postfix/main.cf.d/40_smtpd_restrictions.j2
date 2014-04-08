@@ -62,7 +62,7 @@ smtpd_recipient_restrictions =
 {{ ",\n".join(postfix_smtpd_recipient_restrictions) | indent(6,true) }}
 {% else %}
 {% set postfix_tpl_smtpd_recipient_restrictions = [] %}
-{% if 'mx' in postfix %}
+{% if 'mx' in postfix or 'mailman' in postfix %}
 {% set postfix_tpl_smtpd_recipient_restrictions = postfix_tpl_smtpd_recipient_restrictions + ['reject_non_fqdn_recipient', 'reject_unknown_recipient_domain', 'permit_mynetworks'] %}
 {% endif %}
 {% if 'submission' in postfix %}

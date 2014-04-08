@@ -1,0 +1,7 @@
+{% if 'mailman' in postfix and 'local' not in postfix and (postfix_mailman_domains is defined and postfix_mailman_domains) %}
+mailman   unix  -       n       n       -       -       pipe
+  flags=FR user=list
+  argv=/var/lib/mailman/bin/postfix-to-mailman.py ${nexthop} ${user}
+{% else %}
+#mailman requires: +mailman -local
+{% endif %}
