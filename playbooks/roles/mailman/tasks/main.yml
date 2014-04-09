@@ -57,9 +57,9 @@
 - name: Create Mailman site list
   shell: yes | newlist --language={{ mailman_default_language }} {{ mailman_site_list }} {{ mailman_site_admin }}
          {% if mailman_domains is defined and mailman_domains %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman_domains[0] + '/' + mailman_site_list + '/admin/password length=' + mailman_site_password_length) }}
+         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman_domains[0] + '/' + mailman_site_list + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
          {% else %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + ansible_fqdn + '/' + mailman_site_list + '/admin/password length=' + mailman_site_password_length) }}
+         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + ansible_fqdn + '/' + mailman_site_list + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
          {% endif %}
          creates=/var/lib/mailman/lists/{{ mailman_site_list }}/config.pck
   sudo_user: 'list'
@@ -68,12 +68,12 @@
   no_log: True
 
 - name: Set site administrator password
-  command: mmsitepass {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/site_administrator_password length=' + mailman_site_password_length) }}
+  command: mmsitepass {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/site_administrator_password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
   when: mailman_stat_site_list is defined and mailman_stat_site_list.stat.exists == False
   no_log: True
 
 - name: Set list creator password
-  command: mmsitepass -c {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/list_creator_password length=' + mailman_site_password_length) }}
+  command: mmsitepass -c {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/list_creator_password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
   when: mailman_stat_site_list is defined and mailman_stat_site_list.stat.exists == False
   no_log: True
 
@@ -95,12 +95,12 @@
          {{ item.password }}
          {% else %}
          {% if item.domain is defined and item.domain %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + item.domain + '/' + item.name + '/owner/password length=' + mailman_admin_password_length) }}
+         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + item.domain + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman_admin_password_length) }}
          {% else %}
          {% if mailman_domains is defined and mailman_domains %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman_domains[0] + '/' + item.name + '/owner/password length=' + mailman_admin_password_length) }}
+         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman_domains[0] + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman_admin_password_length) }}
          {% else %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + ansible_fqdn + '/' + item.name + '/owner/password length=' + mailman_admin_password_length) }}
+         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + ansible_fqdn + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman_admin_password_length) }}
          {% endif %}
          {% endif %}
          {% endif %}
