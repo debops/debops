@@ -7,7 +7,7 @@
 {% for domain in postfix_mailman_domains %}
 {{ domain }}		mailman:
 {% endfor %}
-{% elif ansible_local is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains %}
+{% elif ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains %}
 {% for domain in ansible_local.mailman.mailman.domains.split(',') %}
 {{ domain }}		mailman:
 {% endfor %}
@@ -25,7 +25,7 @@
 # postfix_relayhost = {{ postfix_relayhost }}
 {% if postfix_mailman_domains is defined and postfix_mailman_domains %}
 # postfix_mailman_domains = {{ postfix_mailman_domains|join(',') }}
-{% elif ansible_local is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains %}
+{% elif ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains %}
 # postfix_mailman_domains = {{ ansible_local.mailman.mailman.domains }}
 {% else %}
 # postfix_mailman_domains not defined
