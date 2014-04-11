@@ -2,62 +2,42 @@
 
 - name: Install nginx packages
   apt: pkg=nginx-full state=latest install_recommends=no
-  tags:
-    - nginx
-    - packages
 
 - name: Create default nginx directories
   file: path={{ item }} state=directory owner=root group=root mode=0755
   with_items:
     - '/etc/nginx/http-default.d'
     - '{{ nginx_default_root }}'
-  tags:
-    - nginx
 
 - name: Create directory for webadmins configuration
   file: path=/etc/nginx/sites-local state=directory owner=root group=webadmins mode=0775
-  tags:
-    - nginx
 
 - name: Allow webadmins to reload nginx using sudo
   template: src=etc/sudoers.d/nginx_webadmins.j2 dest=/etc/sudoers.d/nginx_webadmins owner=root group=root mode=0440
-  tags: nginx
 
 - name: Make sure nginx is running
   service: name=nginx state=started
-  tags:
-    - nginx
 
 - name: Divert original /etc/nginx/nginx.conf
   command: dpkg-divert --quiet --local --divert /etc/nginx/nginx.conf.dpkg-divert --rename /etc/nginx/nginx.conf creates=/etc/nginx/nginx.conf.dpkg-divert
-  tags:
-    - nginx
 
 - name: Setup /etc/nginx/nginx.conf
   template: src=etc/nginx/nginx.conf.j2 dest=/etc/nginx/nginx.conf owner=root group=root mode=0644
   notify:
     - Test nginx and reload
-  tags:
-    - nginx
 
 - name: Divert original /etc/nginx/fastcgi_params
   command: dpkg-divert --quiet --local --divert /etc/nginx/fastcgi_params.dpkg-divert --rename /etc/nginx/fastcgi_params creates=/etc/nginx/fastcgi_params.dpkg-divert
-  tags:
-    - nginx
 
 - name: Setup /etc/nginx/fastcgi_params
   template: src=etc/nginx/fastcgi_params.j2 dest=/etc/nginx/fastcgi_params owner=root group=root mode=0644
   notify:
     - Test nginx and reload
-  tags:
-    - nginx
 
 - name: Remove default nginx site
   file: path=/etc/nginx/sites-enabled/default state=absent
   notify:
     - Test nginx and reload
-  tags:
-    - nginx
 
   # This is a crude method to check if we should enable SSL support by default
   # in all servers. Clunky, but will suffice for now. Nginx templates will
@@ -67,15 +47,11 @@
   stat: path={{ nginx_pki }}/host/private/{{ ansible_fqdn }}.key
   register: nginx_ssl_check
   when: nginx_pki is defined and nginx_pki
-  tags:
-    - nginx
 
 - name: Enable SSL if host SSL key is present
   set_fact:
     nginx_ssl: True
   when: nginx_ssl_check is defined and nginx_ssl_check.stat.exists == True
-  tags:
-    - nginx
 
 - name: Manage local server definitions - create symlinks
   file: src=/etc/nginx/sites-local/{{ item.0 }} path=/etc/nginx/sites-enabled/{{ item.1 }}
@@ -87,7 +63,6 @@
         item.0 is defined and item.0
   notify:
     - Test nginx and reload
-  tags: nginx
 
 - name: Manage local server definitions - remove symlinks
   file: path=/etc/nginx/sites-enabled/{{ item.1 }} state=absent
@@ -98,7 +73,6 @@
         item.0 is undefined or item.0 is defined and item.0 == False
   notify:
     - Test nginx and reload
-  tags: nginx
 
 - include: nginx_upstreams.yml
   when: nginx_manage_upstreams == True
