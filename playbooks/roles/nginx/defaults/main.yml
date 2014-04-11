@@ -36,11 +36,19 @@ nginx_pki: '/srv/pki'
 # Server-wide.
 nginx_default_ssl_type: 'selfsigned'
 
-# Default SSL cipher list, choices: 'pfs', 'hardened', 'fips'. More info in vars/main.yml
+# Default SSL cipher list. More information in vars/main.yml
 nginx_default_ssl_ciphers: 'pfs'
+
+# Default SSL ECDH curve used on servers, to see a list of supported curves, run:
+#     openssl ecparam -list_curves
+# See also: https://security.stackexchange.com/questions/31772/
+nginx_default_ssl_curve: 'secp384r1'
 
 # If wildcard SSL certificate is used, which one should be used by default?
 nginx_default_ssl_wildcard: '{{ ansible_domain }}'
+
+# At what hour run DH params regeneration script?
+nginx_cron_dhparams_hour: '1'
 
 # HTTP Strict-Transport-Security
 # https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security
@@ -110,6 +118,7 @@ nginx_server_default:
   #ssl: True
   #ssl_type: 'selfsigned'
   #ssl_ciphers: 'pfs'
+  #ssl_curve: 'secp384r1'
   #ssl_name: '{{ ansible_fqdn }}'
   #ssl_cert: '/path/to/server/certificate.crt'
   #ssl_key: '/path/to/server/keyfile.key'
