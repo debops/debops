@@ -1,28 +1,35 @@
 ---
 
 - name: Create global webroot directories if allowed
-  file: path=/srv/www/sites/{{ item.name }}/public state=directory owner={{ nginx_webroot_owner }} group={{ nginx_webroot_group }} mode={{ nginx_webroot_mode }}
+  file: path=/srv/www/sites/{{ item.name }}/public state=directory
+        owner={{ nginx_webroot_owner }} group={{ nginx_webroot_group }}
+        mode={{ nginx_webroot_mode }}
   with_items: [ '{{ nginx_servers }}' ]
-  when: item.locked is defined and item.locked == False or item.locked is not defined and nginx_webroot_create is defined and nginx_webroot_create == True and item.name is defined and item.root is undefined and item.owner is undefined and item.group is undefined
+  when: ((item.locked is defined and item.locked == False) or item.locked is undefined) and
+        (nginx_webroot_create is defined and nginx_webroot_create == True) and
+        (item.name is defined and item.root is undefined and item.owner is undefined and item.group is undefined)
 
 - name: Setup nginx server configuration
-  template: src=etc/nginx/sites-available/{{ item.type | default(nginx_default_type) }}.conf.j2 dest=/etc/nginx/sites-available/{{ item.name | default('default') }}.conf owner=root group=root mode=0644
+  template: src=etc/nginx/sites-available/{{ item.type | default(nginx_default_type) }}.conf.j2
+            dest=/etc/nginx/sites-available/{{ item.name | default('default') }}.conf
+            owner=root group=root mode=0644
   with_items: [ '{{ nginx_servers }}' ]
-  notify:
-    - Test nginx and reload
-  when: item.locked is defined and item.locked == False or item.locked is not defined
+  notify: [ 'Test nginx and reload' ]
+  when: (item.locked is defined and item.locked == False) or (item.locked is undefined)
 
 - name: Enable nginx server configuration
-  file: path=/etc/nginx/sites-enabled/{{ item.name | default('default') }}.conf src=/etc/nginx/sites-available/{{ item.name | default('default') }}.conf state=link owner=root group=root mode=0644
+  file: path=/etc/nginx/sites-enabled/{{ item.name | default('default') }}.conf
+        src=/etc/nginx/sites-available/{{ item.name | default('default') }}.conf
+        state=link owner=root group=root mode=0644
   with_items: [ '{{ nginx_servers }}' ]
-  when: item.locked is defined and item.locked == False or item.locked is not defined and item.enabled is defined and item.enabled == True
-  notify:
-    - Test nginx and reload
+  notify: [ 'Test nginx and reload' ]
+  when: (item.locked is defined and item.locked == False) or (item.locked is undefined) and
+        (item.enabled is defined and item.enabled == True)
 
 - name: Disable nginx server configuration
   file: path=/etc/nginx/sites-enabled/{{ item.name | default('default') }}.conf state=absent
   with_items: [ '{{ nginx_servers }}' ]
-  when: item.locked is defined and item.locked == False or item.locked is not defined and item.enabled is defined and item.enabled == False
-  notify:
-    - Test nginx and reload
+  notify: [ 'Test nginx and reload' ]
+  when: (item.locked is defined and item.locked == False) or (item.locked is undefined) and
+        (item.enabled is defined and item.enabled == False)
 

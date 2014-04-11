@@ -5,39 +5,41 @@
 
 - name: Create default nginx directories
   file: path={{ item }} state=directory owner=root group=root mode=0755
-  with_items:
-    - '/etc/nginx/http-default.d'
-    - '{{ nginx_default_root }}'
+  with_items: [ '/etc/nginx/http-default.d', '{{ nginx_default_root }}' ]
 
 - name: Create directory for webadmins configuration
-  file: path=/etc/nginx/sites-local state=directory owner=root group=webadmins mode=0775
+  file: path=/etc/nginx/sites-local state=directory
+        owner=root group=webadmins mode=0775
 
 - name: Allow webadmins to reload nginx using sudo
-  template: src=etc/sudoers.d/nginx_webadmins.j2 dest=/etc/sudoers.d/nginx_webadmins owner=root group=root mode=0440
+  template: src=etc/sudoers.d/nginx_webadmins.j2
+            dest=/etc/sudoers.d/nginx_webadmins
+            owner=root group=root mode=0440
 
 - name: Make sure nginx is running
   service: name=nginx state=started
 
 - name: Divert original /etc/nginx/nginx.conf
-  command: dpkg-divert --quiet --local --divert /etc/nginx/nginx.conf.dpkg-divert --rename /etc/nginx/nginx.conf creates=/etc/nginx/nginx.conf.dpkg-divert
+  command: dpkg-divert --quiet --local --divert /etc/nginx/nginx.conf.dpkg-divert
+           --rename /etc/nginx/nginx.conf creates=/etc/nginx/nginx.conf.dpkg-divert
 
 - name: Setup /etc/nginx/nginx.conf
-  template: src=etc/nginx/nginx.conf.j2 dest=/etc/nginx/nginx.conf owner=root group=root mode=0644
-  notify:
-    - Test nginx and reload
+  template: src=etc/nginx/nginx.conf.j2 dest=/etc/nginx/nginx.conf
+            owner=root group=root mode=0644
+  notify: [ 'Test nginx and reload' ]
 
 - name: Divert original /etc/nginx/fastcgi_params
-  command: dpkg-divert --quiet --local --divert /etc/nginx/fastcgi_params.dpkg-divert --rename /etc/nginx/fastcgi_params creates=/etc/nginx/fastcgi_params.dpkg-divert
+  command: dpkg-divert --quiet --local --divert /etc/nginx/fastcgi_params.dpkg-divert
+           --rename /etc/nginx/fastcgi_params creates=/etc/nginx/fastcgi_params.dpkg-divert
 
 - name: Setup /etc/nginx/fastcgi_params
-  template: src=etc/nginx/fastcgi_params.j2 dest=/etc/nginx/fastcgi_params owner=root group=root mode=0644
-  notify:
-    - Test nginx and reload
+  template: src=etc/nginx/fastcgi_params.j2 dest=/etc/nginx/fastcgi_params
+            owner=root group=root mode=0644
+  notify: [ 'Test nginx and reload' ]
 
 - name: Remove default nginx site
   file: path=/etc/nginx/sites-enabled/default state=absent
-  notify:
-    - Test nginx and reload
+  notify: [ 'Test nginx and reload' ]
 
   # This is a crude method to check if we should enable SSL support by default
   # in all servers. Clunky, but will suffice for now. Nginx templates will
@@ -59,10 +61,9 @@
   with_together:
     - '{{ nginx_local_servers.values() }}'
     - '{{ nginx_local_servers.keys() }}'
+  notify: [ 'Test nginx and reload' ]
   when: nginx_local_servers is defined and nginx_local_servers and
         item.0 is defined and item.0
-  notify:
-    - Test nginx and reload
 
 - name: Manage local server definitions - remove symlinks
   file: path=/etc/nginx/sites-enabled/{{ item.1 }} state=absent
@@ -71,8 +72,7 @@
     - '{{ nginx_local_servers.keys() }}'
   when: nginx_local_servers is defined and nginx_local_servers and
         item.0 is undefined or item.0 is defined and item.0 == False
-  notify:
-    - Test nginx and reload
+  notify: [ 'Test nginx and reload' ]
 
 - include: nginx_upstreams.yml
   when: nginx_manage_upstreams == True
