@@ -37,6 +37,18 @@
             owner=root group=root mode=0644
   notify: [ 'Test nginx and reload' ]
 
+- name: Install DH params regeneration script
+  template: src=etc/nginx/nginx-regenerate-dhparams.j2 dest=/etc/nginx/nginx-regenerate-dhparams
+            owner=root group=root mode=0755
+
+- name: Generate nginx DH params
+  command: /etc/nginx/nginx-regenerate-dhparams 1 chdir=/etc/nginx creates=/etc/nginx/dhparam_2048.pem
+
+- name: Setup DH params regeneration
+  cron: name='Regenerate DH params for nginx' minute=0
+        hour={{ nginx_cron_dhparams_hour | default('1') }} user=root state=present
+        job='/etc/nginx/nginx-regenerate-dhparams' cron_file='nginx-regenerate-dhparams'
+
 - name: Remove default nginx site
   file: path=/etc/nginx/sites-enabled/default state=absent
   notify: [ 'Test nginx and reload' ]
