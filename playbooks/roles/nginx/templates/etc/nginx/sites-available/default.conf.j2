@@ -83,6 +83,12 @@ server {
 	ssl_ciphers "{{ nginx_ssl_ciphers[item.ssl_ciphers] | default(nginx_ssl_ciphers[nginx_default_ssl_ciphers]) }}"; # SSL cipher list: {{ item.ssl_ciphers | default(nginx_default_ssl_ciphers) }}
 	ssl_dhparam /etc/nginx/dhparam_2048.pem;
 	ssl_ecdh_curve {{ item.ssl_curve | default(nginx_default_ssl_curve) }};
+{% if (nginx_version is defined and nginx_version.stdout | version_compare('1.4','>=')) and nginx_ocsp_resolvers is defined and nginx_ocsp_resolvers %}
+	ssl_stapling on;
+	ssl_stapling_verify on;
+	resolver {{ nginx_ocsp_resolvers[0] }} valid=300s;
+	resolver_timeout 5s;
+{% endif %}
 	add_header Strict-Transport-Security "max-age={{ nginx_hsts_age | default('15768000') }}{% if nginx_hsts_subdomains is defined and nginx_hsts_subdomains %}; includeSubDomains{% endif %}";
 {% else %}
 server {

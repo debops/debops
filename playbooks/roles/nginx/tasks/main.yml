@@ -8,6 +8,17 @@
   register: nginx_version
   changed_when: False
 
+- name: Get list of nameservers configured in /etc/resolv.conf
+  shell: grep nameserver /etc/resolv.conf | awk '{print $2}' | sed -e 'N;s/\n/ /'
+  register: nginx_register_nameservers
+  changed_when: False
+
+- name: Convert list of nameservers to Ansible list
+  set_fact:
+    nginx_ocsp_resolvers: "{{ nginx_register_nameservers.stdout.split(' ') }}"
+  when: (nginx_ocsp_resolvers is defined and not nginx_ocsp_resolvers) or
+        (nginx_ocsp_resolvers is undefined)
+
 - name: Create default nginx directories
   file: path={{ item }} state=directory owner=root group=root mode=0755
   with_items: [ '/etc/nginx/http-default.d', '{{ nginx_default_root }}' ]
