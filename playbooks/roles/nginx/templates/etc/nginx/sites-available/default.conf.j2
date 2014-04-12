@@ -67,13 +67,13 @@ server {
 {% if item.listen_ssl is defined and item.listen_ssl %}
 {% if item.listen_ssl is iterable %}
 {% for line in item.listen_ssl %}
-	listen {{ line }} ssl;
+	listen {{ line }} ssl{% if nginx_version is defined and nginx_version.stdout | version_compare('1.4','>=') %} spdy{% endif %};
 {% endfor %}
 {% else %}
-	listen {{ item.listen_ssl | default('443') }}{% if item.default is defined and item.default == False %}{% else %}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %}{% endif %} ssl;
+	listen {{ item.listen_ssl | default('443') }}{% if item.default is defined and item.default == False %}{% else %}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %}{% endif %} ssl{% if nginx_version is defined and nginx_version.stdout | version_compare('1.4','>=') %} spdy{% endif %};
 {% endif %}
 {% else %}
-	listen 443{% if item.default is defined and item.default == False %}{% else %}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %}{% endif %} ssl;
+	listen 443{% if item.default is defined and item.default == False %}{% else %}{% if item.default is defined and item.default == True or nginx_default_name is defined and item.name is defined and nginx_default_name == item.name or item.name is not defined %} default_server{% endif %}{% endif %} ssl{% if nginx_version is defined and nginx_version.stdout | version_compare('1.4','>=') %} spdy{% endif %};
 {% endif %}
 
 	ssl_certificate {% if item.ssl_cert is defined and item.ssl_cert %}{{ item.ssl_cert }}{% elif item.ssl_type is defined and item.ssl_type in ['selfsigned', 'signed'] %}{{ nginx_pki }}/host/{{ item.ssl_type }}/{{ item.ssl_name | default(ansible_fqdn) }}.crt{% elif item.ssl_type is defined and item.ssl_type in ['wildcard'] %}{{ nginx_pki }}/wildcard/certs/{{ item.ssl_name | default(nginx_default_ssl_wildcard) }}.crt{% elif nginx_default_ssl_type is defined and nginx_default_ssl_type in ['selfsigned', 'signed'] %}{{ nginx_pki }}/host/{{ nginx_default_ssl_type }}/{{ item.ssl_name | default(ansible_fqdn) }}.crt{% elif nginx_default_ssl_type is defined and nginx_default_ssl_type in ['wildcard'] %}{{ nginx_pki }}/wildcard/certs/{{ nginx_default_ssl_wildcard | default(ansible_domain) }}.crt{% endif %};

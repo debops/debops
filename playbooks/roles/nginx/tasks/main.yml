@@ -3,6 +3,11 @@
 - name: Install nginx packages
   apt: pkg=nginx-full state=latest install_recommends=no
 
+- name: Check nginx version
+  shell: /usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##'
+  register: nginx_version
+  changed_when: False
+
 - name: Create default nginx directories
   file: path={{ item }} state=directory owner=root group=root mode=0755
   with_items: [ '/etc/nginx/http-default.d', '{{ nginx_default_root }}' ]
