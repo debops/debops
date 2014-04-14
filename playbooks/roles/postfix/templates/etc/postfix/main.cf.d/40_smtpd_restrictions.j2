@@ -46,6 +46,9 @@ smtpd_sender_restrictions =
 {% if 'mx' in postfix %}
 {% set postfix_tpl_smtpd_relay_restrictions = postfix_tpl_smtpd_relay_restrictions + ['reject_non_fqdn_recipient', 'reject_unknown_recipient_domain', 'permit_mynetworks'] %}
 {% endif %}
+{% if not postfix_tpl_smtpd_relay_restrictions %}
+{% set postfix_tpl_smtpd_relay_restrictions = postfix_tpl_smtpd_relay_restrictions + ['permit_mynetworks'] %}
+{% endif %}
 {% if 'submission' in postfix %}
 {% set postfix_tpl_smtpd_relay_restrictions = postfix_tpl_smtpd_relay_restrictions + ['permit_sasl_authenticated', 'reject_unauth_destination'] %}
 {% endif %}
@@ -64,6 +67,9 @@ smtpd_recipient_restrictions =
 {% set postfix_tpl_smtpd_recipient_restrictions = [] %}
 {% if 'mx' in postfix or 'mailman' in postfix %}
 {% set postfix_tpl_smtpd_recipient_restrictions = postfix_tpl_smtpd_recipient_restrictions + ['reject_non_fqdn_recipient', 'reject_unknown_recipient_domain', 'permit_mynetworks'] %}
+{% endif %}
+{% if not postfix_tpl_smtpd_recipient_restrictions %}
+{% set postfix_tpl_smtpd_recipient_restrictions = postfix_tpl_smtpd_recipient_restrictions + ['permit_mynetworks'] %}
 {% endif %}
 {% if 'submission' in postfix %}
 {% set postfix_tpl_smtpd_recipient_restrictions = postfix_tpl_smtpd_recipient_restrictions + ['permit_sasl_authenticated', 'reject_unauth_destination'] %}
