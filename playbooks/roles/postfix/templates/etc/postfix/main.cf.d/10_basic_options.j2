@@ -18,7 +18,7 @@ mydomain			= {{ postfix_mydomain | default(ansible_domain) }}
 smtp_helo_name			= {{ postfix_smtp_helo_name | default(ansible_fqdn) }}
 
 {% set postfix_tpl_alias_maps = [ 'hash:/etc/aliases' ] %}
-{% if 'mailman' in postfix and 'local' in postfix %}
+{% if 'mailman' in postfix and 'local' in postfix and ((postfix_mailman_configured is defined and postfix_mailman_configured) or (ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.configured is defined and ansible_local.mailman.mailman.configured)) %}
 {% set postfix_tpl_alias_maps = postfix_tpl_alias_maps + [ 'hash:/var/lib/mailman/data/aliases' ] %}
 {% endif %}
 {% if postfix_tpl_alias_maps %}
@@ -29,7 +29,7 @@ alias_database			= hash:/etc/aliases
 {% if ('mx' in postfix or 'submission' in postfix) and 'local' not in postfix %}
 {% set postfix_tpl_virtual_alias_maps = postfix_tpl_virtual_alias_maps + ['hash:${config_directory}/hash_tables/mx_relay_virtual_alias_maps'] %}
 {% endif %}
-{% if 'mailman' in postfix and 'local' in postfix and ((postfix_mailman_domains is defined and postfix_mailman_domains) or (ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains)) %}
+{% if 'mailman' in postfix and 'local' in postfix and ((postfix_mailman_domains is defined and postfix_mailman_domains) or (ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains)) and ((postfix_mailman_configured is defined and postfix_mailman_configured) or (ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.configured is defined and ansible_local.mailman.mailman.configured)) %}
 {% set postfix_tpl_virtual_alias_maps = postfix_tpl_virtual_alias_maps + [ 'hash:/var/lib/mailman/data/virtual-mailman' ] %}
 {% endif %}
 {% if postfix_virtual_alias_maps is defined and postfix_virtual_alias_maps %}
@@ -66,7 +66,7 @@ mydestination			=
 mynetworks			= {{ ', '.join(postfix_mynetworks + ['127.0.0.0/8','[::ffff:127.0.0.0]/104', '[::1]/128']) }}
 
 {% set postfix_tpl_virtual_alias_domains = [] %}
-{% if 'mailman' in postfix and 'local' in postfix %}
+{% if 'mailman' in postfix and 'local' in postfix and ((postfix_mailman_configured is defined and postfix_mailman_configured) or (ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.configured is defined and ansible_local.mailman.mailman.configured)) %}
 {% if postfix_mailman_domains is defined and postfix_mailman_domains %}
 {% set postfix_tpl_virtual_alias_domains = postfix_tpl_virtual_alias_domains + postfix_mailman_domains %}
 {% elif ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains %}
@@ -83,7 +83,7 @@ virtual_alias_domains		= {{ ', '.join(postfix_tpl_virtual_alias_domains) }}
 {% if 'mx' in postfix and postfix_relay_domains is defined and postfix_relay_domains %}
 {% set postfix_tpl_relay_domains = postfix_tpl_relay_domains + postfix_relay_domains %}
 {% endif %}
-{% if 'mailman' in postfix and 'local' not in postfix %}
+{% if 'mailman' in postfix and 'local' not in postfix and ((postfix_mailman_configured is defined and postfix_mailman_configured) or (ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.configured is defined and ansible_local.mailman.mailman.configured)) %}
 {% if postfix_mailman_domains is defined and postfix_mailman_domains %}
 {% set postfix_tpl_relay_domains = postfix_tpl_relay_domains + [ postfix_mailman_domains[0] ] %}
 {% elif ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains %}
@@ -100,7 +100,7 @@ relay_domains			= {{ ', '.join(postfix_tpl_relay_domains) }}
 {% if 'mx' in postfix and postfix_relay_recipient_maps is defined and postfix_relay_recipient_maps %}
 {% set postfix_tpl_relay_recipient_maps = postfix_tpl_relay_recipient_maps + postfix_relay_recipient_maps %}
 {% endif %}
-{% if 'mailman' in postfix and 'local' not in postfix and ((postfix_mailman_domains is defined and postfix_mailman_domains) or (ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains)) %}
+{% if 'mailman' in postfix and 'local' not in postfix and ((postfix_mailman_configured is defined and postfix_mailman_configured) or (ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.configured is defined and ansible_local.mailman.mailman.configured)) and ((postfix_mailman_domains is defined and postfix_mailman_domains) or (ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains)) %}
 {% set postfix_tpl_relay_recipient_maps = postfix_tpl_relay_recipient_maps + ['hash:/var/lib/mailman/data/virtual-mailman'] %}
 {% endif %}
 {% if postfix_tpl_relay_recipient_maps is defined and postfix_tpl_relay_recipient_maps %}
@@ -128,7 +128,7 @@ relayhost			= {{ ansible_domain }}
 {% if 'mx' in postfix %}
 {% set postfix_tpl_transport_maps = postfix_tpl_transport_maps + ['hash:${config_directory}/hash_tables/mx_relay_transport'] %}
 {% endif %}
-{% if 'mailman' in postfix and 'local' not in postfix and ((postfix_mailman_domains is defined and postfix_mailman_domains) or (ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains)) %}
+{% if 'mailman' in postfix and 'local' not in postfix and ((postfix_mailman_configured is defined and postfix_mailman_configured) or (ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.configured is defined and ansible_local.mailman.mailman.configured)) and ((postfix_mailman_domains is defined and postfix_mailman_domains) or (ansible_local is defined and ansible_local.mailman is defined and ansible_local.mailman.mailman.domains is defined and ansible_local.mailman.mailman.domains)) %}
 {% set postfix_tpl_transport_maps = postfix_tpl_transport_maps + ['hash:${config_directory}/hash_tables/mailman_transport'] %}
 {% endif %}
 {% if postfix_tpl_transport_maps %}
