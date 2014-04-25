@@ -35,6 +35,10 @@ gitlab_version_map:
     shell: 'v1.9.1'
     ce:    '6-7-stable'
 
+  '6.8':
+    shell: 'v1.9.3'
+    ce:    '6-8-stable'
+
 
 # ---- gitlab-shell & GitLab CE configuration ----
 
@@ -53,6 +57,10 @@ gitlab_config_map:
     ce:    '6-6-stable'
 
   '6.7':
+    shell: 'stable'
+    ce:    '6-7-stable'
+
+  '6.8':
     shell: 'stable'
     ce:    'stable'
 
@@ -76,6 +84,9 @@ gitlab_checksums:
       config: '82958869656cbf5c9fa866bb575c6456b5a39b60'
 
     'v1.9.1':
+      config: '82958869656cbf5c9fa866bb575c6456b5a39b60'
+
+    'v1.9.3':
       config: '82958869656cbf5c9fa866bb575c6456b5a39b60'
 
   ce:
@@ -104,6 +115,16 @@ gitlab_checksums:
         mysql:      'c65c7f983db549155fe67b6d3345ae8b0b96c399'
         postgresql: '090093b1bf6bacb9f1d32266ad2b1aac56b31236'
       gitlab:       'c902c7750956e32ee2dd0328325bb0ef03961a4d'
+      unicorn:      '6ad72f0127a8b99af123f5a137f4e1af49c4585a'
+      rack_attack:  '6479dc1a57a7c1905535d59446a370315014e3a3'
+      default:      '365a2ecee8b9266f70db5cc0c9dfa47556eb33f3'
+      logrotate:    'abd8ba666ad8a1834888eedf52371ca4915a714d'
+
+    '6-8-stable':
+      database:
+        mysql:      'acdded987e68662aa9549034e760ae74fb79e7cf'
+        postgresql: '090093b1bf6bacb9f1d32266ad2b1aac56b31236'
+      gitlab:       '3bf66c3c3d48d0cad651d9eee113a2a130f4e92b'
       unicorn:      '6ad72f0127a8b99af123f5a137f4e1af49c4585a'
       rack_attack:  '6479dc1a57a7c1905535d59446a370315014e3a3'
       default:      '365a2ecee8b9266f70db5cc0c9dfa47556eb33f3'
@@ -152,7 +173,14 @@ gitlab_nginx_server:
     '/': |
       try_files $uri $uri/index.html $uri.html @gitlab;
 
+    '~ ^/(assets)/': |
+      root {{ gitlab_home }}/gitlab/public;
+      gzip_static on;
+      expires max;
+      add_header Cache-Control public;
+
     '@gitlab': |
+      gzip off;
       proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
       proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
       proxy_redirect     off;
@@ -183,7 +211,14 @@ gitlab_nginx_server_api:
     '/': |
       try_files $uri $uri/index.html $uri.html @gitlab;
 
+    '~ ^/(assets)/': |
+      root {{ gitlab_home }}/gitlab/public;
+      gzip_static on;
+      expires max;
+      add_header Cache-Control public;
+
     '@gitlab': |
+      gzip off;
       proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
       proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
       proxy_redirect     off;

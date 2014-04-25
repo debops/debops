@@ -201,6 +201,7 @@ server {
 {% endif %}
 {% if item.location is defined %}
 {% for path in item.location.keys() %}
+{% if item.location[path] != False %}
 	location {{ path }} {
 {% if item.location_referers is defined %}
 {% if item.location_referers[path] is defined and item.location_referers[path] %}
@@ -231,6 +232,7 @@ server {
 {% endif %}
 	}
 
+{% endif %}
 {% endfor %}
 {% else %}
 	location / {

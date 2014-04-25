@@ -50,8 +50,11 @@
   file: path={{ item }} state=directory owner={{ gitlab_user }} group={{ gitlab_group }} mode=0755
   with_items: [ '{{ gitlab_home }}/gitlab/tmp', '{{ gitlab_home }}/gitlab/log',
                 '{{ gitlab_home }}/gitlab/tmp/pids', '{{ gitlab_home }}/gitlab/tmp/sockets',
-                '{{ gitlab_home }}/gitlab-satellites', '{{ gitlab_home }}/gitlab/public/uploads',
-                '{{ gitlab_home }}/backups' ]
+                '{{ gitlab_home }}/gitlab/public/uploads', '{{ gitlab_home }}/backups' ]
+
+- name: Manage secure GitLab directories
+  file: path={{ item }} state=directory owner={{ gitlab_user }} group={{ gitlab_group }} mode=0750
+  with_items: [ '{{ gitlab_home }}/gitlab-satellites' ]
 
 
 # ---- gitlab/config/database.yml ----
