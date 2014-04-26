@@ -38,12 +38,12 @@ included in ginas and what's their relationship with each other. Below you can
 see a basic structure of the main ginas playbook (click on the image to see
 it in full size):
 
-[![ginas at a glance](http://i.imgur.com/9OSa7Ip.png)](http://i.imgur.com/9OSa7Ip.png)
+[![ginas at a glance](http://i.imgur.com/hKhet35.png)](http://i.imgur.com/hKhet35.png)
 
 Next graph shows Ansible role dependencies, represented by dashed lines. Here
 you can see what roles depend on each other. Dependencies of a role are
 executed before that role, and certain roles can be run multiple times by
 Ansible:
 
-[![ginas role dependencies](http://i.imgur.com/pAQ23j3.png)](http://i.imgur.com/pAQ23j3.png)
+[![ginas role dependencies](http://i.imgur.com/hqEvS4k.png)](http://i.imgur.com/hqEvS4k.png)
 
