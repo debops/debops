@@ -34,6 +34,7 @@ digraph ginas_role_dependencies {
 	role_nat		[label = "nat"];
 	role_nfs		[label = "nfs"];
 	role_nginx		[label = "nginx"];
+	role_ntp		[label = "ntp"];
 	role_openvz		[label = "openvz"];
 	role_owncloud		[label = "owncloud"];
 	role_php5		[label = "php5"];
@@ -113,7 +114,8 @@ digraph ginas_role_dependencies {
 	role_auth			-> role_pki;
 	role_pki			-> role_apt;
 	role_apt			-> role_ferm;
-	role_ferm			-> role_monkeysphere;
+	role_ferm			-> role_ntp;
+	role_ntp			-> role_monkeysphere;
 	role_monkeysphere		-> role_sshd;
 	role_sshd			-> role_interfaces;
 	role_interfaces			-> role_console;
@@ -196,6 +198,8 @@ digraph ginas_role_dependencies {
 	role_apt -> role_ferm;
 	role_apt -> role_nginx;
 	role_apt -> role_reprepro;
+
+        role_ntp -> role_ferm;
 
 	role_postfix -> role_pki;
 	role_postfix -> role_ferm;

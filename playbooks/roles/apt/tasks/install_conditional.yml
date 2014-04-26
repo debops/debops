@@ -23,8 +23,3 @@
     #- linux-image-amd64
   when: ansible_processor_cores > 2 and ansible_virtualization_role is undefined or ansible_virtualization_role is defined and ansible_virtualization_role == 'host'
 
-# Install openntpd only on bare metal and KVM hosts, exclude containers
-- name: Install openntpd where it's needed
-  apt: pkg=openntpd state=latest install_recommends=no
-  when: ansible_virtualization_type is undefined or ansible_virtualization_type is defined and ansible_virtualization_type != 'lxc'
-

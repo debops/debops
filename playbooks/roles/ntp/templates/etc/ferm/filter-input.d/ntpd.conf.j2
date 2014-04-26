@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+
+{% if ntp_listen is defined and ntp_listen %}
+protocol (tcp udp) dport ntp {
+{% if ntp_allow is defined and ntp_allow %}
+{% for address in ntp_allow %}
+	saddr {{ address }} ACCEPT;
+{% endfor %}
+{% else %}
+	ACCEPT;
+{% endif %}
+}
+{% else %}
+# ntpd not listening on any interface
+{% endif %}
