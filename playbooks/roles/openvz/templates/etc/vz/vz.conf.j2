@@ -52,7 +52,8 @@ LOCAL_GID=100000
 VZWDOG="no"
 
 ## IPv4 iptables kernel modules to be enabled in CTs by default
-IPTABLES="ipt_REJECT ipt_tos ipt_limit ipt_multiport iptable_filter iptable_mangle ipt_TCPMSS ipt_tcpmss ipt_ttl ipt_length"
+IPTABLES="{% for module in openvz_iptables %}{{ module }}{% if not loop.last %} {% endif %}{% endfor %}"
+
 ## IPv4 iptables kernel modules to be loaded by init.d/vz script
 IPTABLES_MODULES="$IPTABLES"
 
