@@ -1,5 +1,8 @@
 ---
 
+- name: Configure ferm status in debconf
+  debconf: name=ferm question='ferm/enable' vtype='boolean' value='{{ ferm | lower }}'
+
 - name: Ensure ferm is installed
   apt: pkg=ferm state=latest install_recommends=no
 
