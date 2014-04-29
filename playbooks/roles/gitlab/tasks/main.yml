@@ -14,6 +14,12 @@
   when: gitlab_database is defined and gitlab_database and
         gitlab_database == 'mysql'
 
+- name: Install required PostgreSQL database packages
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items: [ 'libpq-dev', 'ruby-pg' ]
+  when: gitlab_database is defined and gitlab_database and
+        gitlab_database == 'postgresql'
+
 - name: Make sure Ansible Facts directory exists
   file: path=/etc/ansible/facts.d state=directory owner=root group=root mode=0755
 

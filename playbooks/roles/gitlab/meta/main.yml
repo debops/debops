@@ -16,6 +16,10 @@ dependencies:
         priv: '{{ gitlab_database_config[gitlab_database].database }}.*:ALL'
         state: 'present'
 
+  - role: postgresql
+    when: (gitlab_dependencies is defined and gitlab_dependencies) and
+          (gitlab_database is defined and gitlab_database and gitlab_database == 'postgresql')
+
   - role: nginx
     nginx_servers: [ '{{ gitlab_nginx_server }}', '{{ gitlab_nginx_server_api }}' ]
     nginx_upstreams: [ '{{ gitlab_nginx_upstream }}' ]
