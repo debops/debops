@@ -78,6 +78,11 @@
   when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) and
         (gitlab_register_ce_database_checksum.stdout != gitlab_checksums.ce[gitlab_version_map[gitlab_version].ce].database[gitlab_database])
 
+- name: Get PostgreSQL database password
+  set_fact:
+    gitlab_postgresql_database_password: '{{ lookup("password",secret + "/credentials/" + ansible_fqdn + "/gitlab/postgresql/" + gitlab_database_config[gitlab_database].username + "/password") }}'
+  when: (secret is defined and secret) and (gitlab_database is defined and gitlab_database and gitlab_database == 'postgresql')
+
 - name: Configure GitLab CE database configuration
   template: src=srv/users/git/gitlab/{{ gitlab_config_map[gitlab_version].ce }}/config/database.{{ gitlab_database }}.yml.j2
             dest={{ gitlab_home }}/gitlab/config/database.yml
@@ -85,6 +90,22 @@
   notify: [ 'Restart gitlab' ]
   when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) or
         (gitlab_status_ce_installed is defined and gitlab_status_ce_installed)
+
+- name: Create PostgreSQL role if PostgreSQL enabled
+  postgresql_user: name='{{ gitlab_database_config[gitlab_database].username }}'
+                   password='{{ gitlab_postgresql_database_password }}' encrypted=False
+                   port='{{ gitlab_database_config[gitlab_database].port }}'
+                   state=present
+  sudo_user: 'postgres'
+  when: gitlab_database is defined and gitlab_database == 'postgresql'
+
+- name: Create PostgreSQL database if PostgreSQL enabled
+  postgresql_db: name='{{ gitlab_database_config[gitlab_database].database }}'
+                 owner='{{ gitlab_database_config[gitlab_database].username }}'
+                 port='{{ gitlab_database_config[gitlab_database].port }}'
+                 state=present template='template1'
+  sudo_user: 'postgres'
+  when: gitlab_database is defined and gitlab_database == 'postgresql'
 
 
 # ---- gitlab/config/gitlab.yml ----
