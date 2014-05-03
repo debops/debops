@@ -32,9 +32,15 @@ nginx_default_keepalive_timeout: 60
 # Path to PKI infrastructure, set to False to disable nginx SSL support
 nginx_pki: '/srv/pki'
 
+# SSL key hostname to look for to check if SSL should be enabled
+nginx_pki_check_key: '{{ ansible_fqdn }}'
+
 # Where to look for certificate by default, choices: 'selfsigned', 'signed', 'wildcard'
 # Server-wide.
 nginx_default_ssl_type: 'selfsigned'
+
+# Default hostname used to select SSL certificate if none is defined
+nginx_default_ssl_cert: '{{ ansible_fqdn }}'
 
 # Default SSL cipher list. More information in vars/main.yml
 nginx_default_ssl_ciphers: 'pfs'
