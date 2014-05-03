@@ -1,0 +1,93 @@
+# -*- mode: ruby -*-
+# vim: ft=ruby
+
+# Vagrant API version
+VAGRANTFILE_API_VERSION = '2'
+
+# Enable/Disable GUI
+defined?(GUI) or GUI = false
+
+# Default memory size in MB
+defined?(RAM) or RAM = 1024
+
+# ginas inventory
+defined?(GINAS_INVENTORY) or GINAS_INVENTORY = "single"
+
+# Name of a symlink to ginas inventory in main project directory
+defined?(CURRENT_INVENTORY) or CURRENT_INVENTORY = "inventory-vagrant"
+
+# Network configuration
+defined?(DOMAIN)          or DOMAIN  = ".nat.example.com"
+defined?(NETWORK)         or NETWORK = "192.168.50."
+defined?(NETMASK)         or NETMASK = "255.255.255.0"
+
+# Default Virtualbox .box
+# Source: https://github.com/ginas/vagrant-debian-wheezy-64
+defined?(DEFAULT_BOX)     or DEFAULT_BOX     = 'debian-wheezy-amd64-netinst'
+defined?(DEFAULT_BOX_URL) or DEFAULT_BOX_URL = 'https://dl.dropboxusercontent.com/u/55426468/20140317/debian-wheezy-amd64-netinst.box'
+
+# Default username and SSH id_rsa
+defined?(DEFAULT_SSH_USERNAME) or DEFAULT_SSH_USERNAME = 'vagrant'
+defined?(DEFAULT_SSH_ID_RSA)   or DEFAULT_SSH_ID_RSA   = 'contrib/vagrant/ssh/id_rsa_insecure'
+
+# Ansible configuration
+defined?(DEFAULT_ANSIBLE_INVENTORY) or DEFAULT_ANSIBLE_INVENTORY = "contrib/vagrant/inventory-" + GINAS_INVENTORY + "/ansible"
+defined?(DEFAULT_ANSIBLE_PLAYBOOK)  or DEFAULT_ANSIBLE_PLAYBOOK  = "playbooks/site.yml"
+
+
+# Fix permissions of vagrant's insecure SSH key
+File.chmod(0600, DEFAULT_SSH_ID_RSA)
+
+# Remove symlink to incorrect inventory
+if File.symlink?(CURRENT_INVENTORY) and File.readlink(CURRENT_INVENTORY) != "contrib/vagrant/inventory-" + GINAS_INVENTORY then
+  File.unlink(CURRENT_INVENTORY)
+end
+
+# Create symlink to current inventory for ginas *.sh scripts
+not File.symlink?(CURRENT_INVENTORY) and File.symlink("contrib/vagrant/inventory-" + GINAS_INVENTORY, CURRENT_INVENTORY)
+
+# Create symlink to 'site.sh' script for Vagrant inventory
+if File.executable?("site.sh") then
+  not File.symlink?("vagrant.sh") and File.symlink("site.sh", "vagrant.sh")
+end
+
+# Create symlink to 'task.sh' script for Vagrant inventory
+if File.executable?("task.sh") then
+  not File.symlink?("task-vagrant.sh") and File.symlink("task.sh", "task-vagrant.sh")
+end
+
+
+# Vagrant configuration
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.box = DEFAULT_BOX
+  config.vm.box_url = DEFAULT_BOX_URL
+
+  config.ssh.username = DEFAULT_SSH_USERNAME
+  config.ssh.private_key_path = DEFAULT_SSH_ID_RSA
+
+  config.vm.guest = :debian
+
+  config.vm.provider "virtualbox" do |vbox|
+    vbox.gui = GUI
+    vbox.memory = RAM
+  end
+
+  # Ansible Controller + GitLab
+  config.vm.define :master do |master|
+    master.vm.hostname = 'master' + DOMAIN
+    master.vm.network :private_network, ip: NETWORK + "2", :netmask => NETMASK
+
+    master.vm.synced_folder "", "/vagrant", disabled: true
+    master.vm.synced_folder "", "/home/vagrant/ginas"
+
+    config.vm.provision "ansible" do |ansible|
+      ansible.host_key_checking = "false"
+      ansible.inventory_path = DEFAULT_ANSIBLE_INVENTORY
+      ansible.playbook = DEFAULT_ANSIBLE_PLAYBOOK
+    end
+  end
+
+end
+
+

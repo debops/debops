@@ -1,0 +1,33 @@
+# Default 'inventory/hosts' file for vagrant environment
+
+# Host machine needs to be in the inventory for 'encfs' and 'secret' roles to
+# work, otherwise it should be harmless
+localhost ansible_connection=local
+
+# Hosts defined in the Vagrantfile
+[vagrant]
+master	ansible_ssh_host=192.168.50.2	ansible_ssh_user=vagrant ansible_ssh_private_key_file=contrib/vagrant/ssh/id_rsa_insecure
+
+[ginas_recursively]
+master
+
+
+# ---- Select application to install (one at a time) ----
+
+# Install and configure GitLab CE (https://www.gitlab.com/)
+# Default credentials: root:5iveL!fe
+[ginas_gitlab]
+master
+
+
+# Install and configure ownCloud (http://owncloud.org/)
+# Default credentials: vagrant:vagrant
+#[ginas_owncloud]
+#master
+
+
+# Install and configure phpIPAM (http://phpipam.net/)
+# Default credentials: Admin:ipamadmin
+#[ginas_phpipam]
+#master
+

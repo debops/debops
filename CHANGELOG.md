@@ -1,6 +1,12 @@
 ginas changelog
 ===============
 
+## May 2014
+
+- added new, simplier Vagrant setup with only one server and easy way to select
+  which application should be installed (GitLab, ownCloud or phpIPAM).
+
+
 ## April 2014
 
 ### New roles
