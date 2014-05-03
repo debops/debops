@@ -1,0 +1,42 @@
+---
+# host: master
+# Ansible Controller
+
+
+# Install additional packages on this host
+apt_host_packages: [ 'elinks', 'mutt' ]
+
+# Create recursive symlinks in ginas repository (see 'ginas' role for more
+# information)
+ginas_recursive_user: 'vagrant'
+
+# Symlink this inventory as the main inventory automatically
+ginas_vagrant_inventory: 'single'
+
+# Define default hostname for websites the same as the IP address defined in
+# inventory/hosts file (no DNS on Vagrant)
+inventory_host_fqdn: '{{ ansible_ssh_host }}'
+
+# Generate default SSL self-signed certificate with IP address as CommonName
+# (required for HTTP->HTTPS redirection to work correctly without a domain)
+pki_commonName: '{{ inventory_host_fqdn }}'
+pki_default_certificate:
+  - cn: '{{ inventory_host_fqdn }}'
+
+# Configure nginx to look for and use IP-based SSL certificate by default
+nginx_pki_check_key: '{{ inventory_host_fqdn }}'
+nginx_default_ssl_cert: '{{ inventory_host_fqdn }}'
+
+# Configure GitLab on default IP address of this host
+gitlab_domain: '{{ inventory_host_fqdn }}'
+
+# Configure ownCloud on default IP address of this host
+owncloud_domain: '{{ inventory_host_fqdn }}'
+
+# Set default admin and password in ownCloud
+owncloud_admin_username: 'vagrant'
+owncloud_admin_password: 'vagrant'
+
+# Configure phpIPAM on default IP address of this host
+phpipam_domain: '{{ inventory_host_fqdn }}'
+

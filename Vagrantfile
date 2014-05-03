@@ -5,7 +5,8 @@
 # https://github.com/ginas/ginas/
 
 # Default ginas inventory
-defined?(GINAS_INVENTORY) or GINAS_INVENTORY = "lemp"
+defined?(GINAS_INVENTORY) or GINAS_INVENTORY = "single"
+#defined?(GINAS_INVENTORY) or GINAS_INVENTORY = "lemp"
 
 # Load Vagrantfile from selected Vagrant inventory
 begin
