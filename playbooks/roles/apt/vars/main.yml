@@ -8,7 +8,7 @@ apt_debian_preseed_nginx:
   default:
     enabled: True
     ssl: False
-    alias: [ '{{ ansible_hostname }}' ]
+    alias: [ '{{ apt_debian_preseed_hostname + "." + apt_debian_preseed_domain }}', '{{ apt_debian_preseed_hostname }}' ]
     location:
       '/': |
         try_files $uri $uri/ =404;
@@ -22,8 +22,8 @@ apt_debian_preseed_nginx:
   destroy:
     enabled: True
     ssl: False
-    name: 'destroy.{{ ansible_fqdn }}'
-    alias: [ 'destroy.{{ ansible_hostname }}' ]
+    name: 'destroy.{{ apt_debian_preseed_hostname + "." + apt_debian_preseed_domain }}'
+    alias: [ 'destroy.{{ apt_debian_preseed_hostname }}' ]
     root: '/{{ apt_debian_preseed_destroy_server_path }}'
     location:
       '/': |
