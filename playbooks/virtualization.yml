@@ -5,18 +5,18 @@
   sudo: yes
 
   roles:
-  - { role: kvm }
-  - { role: nat, nat_net: 128, nat_interface: br2 }
-  - { role: dnsmasq, dnsmasq_nat: 128, dnsmasq_interface: br2, dnsmasq_domain: 'nat.{{ ansible_fqdn }}' }
+  - { role: kvm, tags: kvm }
+  - { role: nat, tags: nat, nat_subnet: 128, nat_interface: br2 }
+  - { role: dnsmasq, tags: dnsmasq, dnsmasq_subnet: 128, dnsmasq_interface: br2, dnsmasq_domain: 'nat.{{ ansible_fqdn }}' }
 
 - name: LXC support
   hosts: ginas_lxc
   sudo: yes
 
   roles:
-  - { role: lxc }
-  - { role: nat, nat_net: 144, nat_interface: br2 }
-  - { role: dnsmasq, dnsmasq_nat: 144, dnsmasq_interface: br2, dnsmasq_domain: 'nat.{{ ansible_fqdn }}' }
+  - { role: lxc, tags: lxc }
+  - { role: nat, tags: nat, nat_subnet: 144, nat_interface: br2 }
+  - { role: dnsmasq, tags: dnsmasq, dnsmasq_subnet: 144, dnsmasq_interface: br2, dnsmasq_domain: 'nat.{{ ansible_fqdn }}' }
 
 - name: OpenVZ support
   hosts: ginas_openvz
