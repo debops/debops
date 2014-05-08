@@ -7,11 +7,18 @@
     - '../vars/networkmanager_{{ interfaces_networkmanager }}.yml'
     - '../vars/virtualization_{{ ansible_virtualization_type }}.yml'
     - '../vars/default.yml'
+  when: ((interfaces_list is defined and not interfaces_list) or interfaces_list is undefined)
 
 - name: Prepare interfaces configuration if not defined
   set_fact:
     interfaces_list: '{{ interfaces_default_list }}'
-  when: interfaces_list is undefined or not interfaces_list
+  when: (interfaces_dependent_list is undefined) and
+        (interfaces_default_list is defined and interfaces_default_list)
+
+- name: Prepare interfaces configuration via dependency if defined
+  set_fact:
+    interfaces_list: '{{ interfaces_dependent_list }}'
+  when: interfaces_dependent_list is defined and interfaces_dependent_list
 
 - name: Create /etc/network/interfaces.d directory
   file: path=/etc/network/interfaces.d owner=root group=root mode=0755 state=directory
