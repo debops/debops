@@ -21,6 +21,7 @@ digraph ginas_role_dependencies {
 	role_directories	[label = "directories"];
 	role_dnsmasq		[label = "dnsmasq"];
 	role_etc_services	[label = "etc_services"];
+	role_etherpad		[label = "etherpad"];
 	role_ferm		[label = "ferm"];
 	role_ginas		[label = "ginas"];
 	role_githost		[label = "githost"];
@@ -77,6 +78,7 @@ digraph ginas_role_dependencies {
 			<tr><td port="ginas_php5" border="1" bgcolor="turquoise4"><font color="white">PHP5 support</font></td></tr>
 			<tr><td port="ginas_nginx" border="1" bgcolor="tomato3"><font color="white">nginx support</font></td></tr>
 			<tr><td port="ginas_mailman" border="1" bgcolor="deepskyblue1"><font color="white">Mailman support</font></td></tr>
+			<tr><td port="ginas_etherpad" border="1" bgcolor="darkseagreen4"><font color="white">Etherpad support</font></td></tr>
 
 			<tr><td port="owncloud_yml" border="1" bgcolor="gray70">Playbook: owncloud.yml</td></tr>
 			<tr><td port="ginas_owncloud" border="1" bgcolor="aquamarine3"><font color="white">ownCloud</font></td></tr>
@@ -163,6 +165,9 @@ digraph ginas_role_dependencies {
 	edge [color = deepskyblue1];
 	playbook:ginas_mailman		-> role_mailman;
 
+	edge [color = darkseagreen4];
+	playbook:ginas_etherpad		-> role_etherpad;
+
 	/* ---- Playbook: owncloud.yml ---- */
 	edge [color = aquamarine3];
 	playbook:ginas_owncloud		-> role_owncloud;
@@ -246,6 +251,12 @@ digraph ginas_role_dependencies {
 	edge [color = deepskyblue1]
 	role_mailman -> role_postfix;
 	role_mailman -> role_nginx;
+
+	edge [color = darkseagreen4];
+	role_etherpad -> role_etc_services;
+	role_etherpad -> role_nodejs;
+	role_etherpad -> role_mysql;
+	role_etherpad -> role_nginx;
 
 	/* ---- Playbook: owncloud.yml ---- */
 	edge [color = aquamarine3];
