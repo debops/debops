@@ -172,12 +172,14 @@ server {
 		log_not_found off;
 	}
 
+{% if (item.favicon is defined and item.favicon) or item.favicon is undefined %}
 	location = /favicon.ico {
 		try_files /favicon.ico =204;
 		access_log off;
 		log_not_found off;
 	}
 
+{% endif %}
 {% if item.status is defined and item.status or nginx_default_status is defined and nginx_default_status %}
 	location = /nginx_status {
 		stub_status on;
