@@ -1,0 +1,29 @@
+---
+
+dependencies:
+
+  - role: etc_services
+
+  - role: nodejs
+
+  - role: mysql
+    when: (etherpad_dependencies is defined and etherpad_dependencies) and
+          (etherpad_database is defined and etherpad_database and etherpad_database == 'mysql')
+
+    mysql_databases:
+      - name: '{{ etherpad_database_config[etherpad_database].database }}'
+        state: 'present'
+
+    mysql_users:
+      - name: '{{ etherpad_database_config[etherpad_database].username }}'
+        host: '{{ etherpad_database_config[etherpad_database].hostname }}'
+        priv: '{{ etherpad_database_config[etherpad_database].database }}.*:ALL'
+        state: 'present'
+
+  - role: nginx
+    nginx_servers: [ '{{ etherpad_nginx_server }}' ]
+    nginx_upstreams: [ '{{ etherpad_nginx_upstream }}' ]
+    when: (etherpad_dependencies is defined and etherpad_dependencies)
+    tags: nginx
+
+
