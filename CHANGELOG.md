@@ -11,7 +11,7 @@ ginas changelog
 - **etherpad**: [Etherpad Lite](http://etherpad.org/) is a collaborative web
   text editor written using NodeJS.
 
-- **gitlab_ci** and **gitlab_ci_wrapper**: [GitLab CI](https://www.gitlab.com/gitlab-ci/)
+- **gitlab_ci** and **gitlab_ci_runner**: [GitLab CI](https://www.gitlab.com/gitlab-ci/)
   is a Continuous Integration server which integrates with
   [GitLab](https://www.gitlab.com/). It is divided into two components - GitLab
   CI itself which coordinates work between GitLab and its runners, and GitLab
