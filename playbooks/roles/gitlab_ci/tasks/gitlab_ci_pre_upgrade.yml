@@ -1,0 +1,15 @@
+---
+
+- name: Display deploy.html page
+  shell: cp {{ gitlab_ci_home }}/gitlab-ci/public/deploy.html {{ gitlab_ci_home }}/gitlab-ci/public/index.html
+         creates={{ gitlab_ci_home }}/gitlab-ci/public/index.html
+
+- name: Stop Sidekiq before upgrade
+  shell: bundle exec rake sidekiq:stop RAILS_ENV=production chdir={{ gitlab_ci_home }}/gitlab-ci
+  sudo_user: '{{ gitlab_ci_user }}'
+
+- name: Stop GitLab CI before upgrade
+  shell: /etc/init.d/gitlab-ci stop
+  #service: name=gitlab state=stopped
+
+

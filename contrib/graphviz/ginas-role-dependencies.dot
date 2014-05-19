@@ -26,6 +26,8 @@ digraph ginas_role_dependencies {
 	role_ginas		[label = "ginas"];
 	role_githost		[label = "githost"];
 	role_gitlab		[label = "gitlab"];
+	role_gitlab_ci		[label = "gitlab_ci"];
+	role_gitlab_ci_runner	[label = "gitlab_ci_runner"];
 	role_interfaces		[label = "interfaces"];
 	role_kvm		[label = "kvm"];
 	role_lxc		[label = "lxc"];
@@ -88,6 +90,8 @@ digraph ginas_role_dependencies {
 
 			<tr><td port="gitlab_yml" border="1" bgcolor="gray70">Playbook: gitlab.yml</td></tr>
 			<tr><td port="ginas_gitlab" border="1" bgcolor="yellowgreen"><font color="white">GitLab</font></td></tr>
+			<tr><td port="ginas_gitlab_ci" border="1" bgcolor="cadetblue4"><font color="white">GitLab CI</font></td></tr>
+			<tr><td port="ginas_gitlab_ci_runner" border="1" bgcolor="chartreuse4"><font color="white">GitLab CI Runner</font></td></tr>
 
 			<tr><td port="ginas_yml" border="1" bgcolor="gray70">Playbook: ginas.yml</td></tr>
 			<tr><td port="ginas_recursively" border="1" bgcolor="mediumseagreen"><font color="white">ginas</font></td></tr>
@@ -179,6 +183,12 @@ digraph ginas_role_dependencies {
 	/* ---- Playbook: gitlab.yml ---- */
 	edge [color = yellowgreen];
 	playbook:ginas_gitlab		-> role_gitlab;
+
+	edge [color = cadetblue4];
+	playbook:ginas_gitlab_ci	-> role_gitlab_ci;
+
+	edge [color = chartreuse4];
+	playbook:ginas_gitlab_ci_runner	-> role_gitlab_ci_runner;
 
 	/* ---- Playbook: ginas.yml ---- */
 	edge [color = mediumseagreen];
@@ -276,6 +286,18 @@ digraph ginas_role_dependencies {
 	role_gitlab -> role_mysql;
 	role_gitlab -> role_postgresql;
 	role_gitlab -> role_nginx;
+
+	edge [color = cadetblue4];
+	role_gitlab_ci -> role_etc_services;
+	role_gitlab_ci -> role_mysql;
+	role_gitlab_ci -> role_postgresql;
+	role_gitlab_ci -> role_nginx;
+
+	edge [color = chartreuse4];
+	role_gitlab_ci_runner -> role_ansible;
+	role_gitlab_ci_runner -> role_nodejs;
+	role_gitlab_ci_runner -> role_mysql;
+	role_gitlab_ci_runner -> role_postgresql;
 
 	/* ---- Playbook: ginas.yml ---- */
 	edge [color = mediumseagreen];

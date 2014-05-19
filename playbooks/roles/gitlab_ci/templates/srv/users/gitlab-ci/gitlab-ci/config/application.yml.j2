@@ -1,0 +1,47 @@
+# {{ ansible_managed }}
+
+defaults: &defaults
+  gitlab_server_urls:
+    # Replace with your gitlab server url
+{% for address in gitlab_ci_urls %}
+    - '{{ address }}'
+{% endfor %}
+
+  ## Gitlab CI settings
+  gitlab_ci:
+    ## Web server settings
+    host: {{ gitlab_ci_domain }}
+    port: 443
+    https: true
+
+    ## Email settings
+    # Email address used in the "From" field in mails sent by GitLab-CI
+    email_from: {{ gitlab_ci_email_from }}
+
+    # Email address of your support contact (default: same as email_from)
+    support_email: {{ gitlab_ci_email_support }}
+
+    # Default project notifications settings:
+    #
+    # Send emails only on broken builds (default: true)
+    # all_broken_builds: true
+    #
+    # Add committer to recipients list (default: false)
+    # add_committer: true
+
+  gravatar:
+    enabled: true
+    plain_url: "http://www.gravatar.com/avatar/%{hash}?s=%{size}&d=mm"
+    ssl_url:   "https://secure.gravatar.com/avatar/%{hash}?s=%{size}&d=mm"
+
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+  gitlab_server_urls:
+    - 'http://demo.gitlab.com/'
+
+production:
+  <<: *defaults

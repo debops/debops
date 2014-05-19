@@ -1,0 +1,25 @@
+---
+
+- name: Check if GitLab CI Runner is installed
+  set_fact:
+    gitlab_ci_runner_status_installed: True
+  when: (ansible_local.gitlab_ci_runner is defined and ansible_local.gitlab_ci_runner.instance)
+
+- name: Check if GitLab CI Runner is registered
+  set_fact:
+    gitlab_ci_runner_status_registered: True
+  when: (ansible_local.gitlab_ci_runner is defined and ansible_local.gitlab_ci_runner.instance.registered)
+
+- name: Check if GitLab CI Runner has to be upgraded
+  set_fact:
+    gitlab_ci_runner_status_upgrade: True
+  when: (gitlab_ci_runner_status_installed is defined and gitlab_ci_runner_status_installed) and
+        ((ansible_local.gitlab_ci_runner.instance.gitlab_ci_runner_version != gitlab_ci_runner_version) or
+        (ansible_local.gitlab_ci_runner.instance.ci_runner_version != gitlab_ci_runner_version_map[gitlab_ci_runner_version]))
+
+- name: Fail if auto upgrade is disabled
+  fail: msg="GitLab CI Runner requires an upgrade but automatic upgrades are disabled"
+  when: (gitlab_ci_runner_status_upgrade is defined and gitlab_ci_runner_status_upgrade) and
+        ((gitlab_ci_runner_auto_upgrade is defined and not gitlab_ci_runner_auto_upgrade) or gitlab_ci_runner_auto_upgrade is undefined)
+
+

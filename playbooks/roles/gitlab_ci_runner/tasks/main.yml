@@ -1,0 +1,39 @@
+---
+
+- name: Install required packages
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items: [ 'build-essential', 'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev',
+                'libreadline6-dev', 'libc6-dev', 'libssl-dev', 'make', 'zlib1g-dev',
+                'libyaml-dev', 'libicu-dev', 'ruby1.9.1', 'ruby1.9.1-dev', 'bundler' ]
+
+- name: Make sure Ansible Facts directory exists
+  file: path=/etc/ansible/facts.d state=directory owner=root group=root mode=0755
+
+- name: Create directory for specific user homes
+  file: path=/srv/users state=directory owner=root group=root mode=0751
+
+- name: Create GitLab CI Runner system group
+  group: name={{ gitlab_ci_runner_group }} system=yes state=present
+
+- name: Create GitLab CI Runner user
+  user: name={{ gitlab_ci_runner_user }} group={{ gitlab_ci_runner_group }} home={{ gitlab_ci_runner_home }}
+        comment="GitLab CI Runner" append=yes system=yes state=present
+
+- name: Secure GitLab CI Runner home directory
+  file: path={{ gitlab_ci_runner_home }} state=directory
+        owner={{ gitlab_ci_runner_user }} group={{ gitlab_ci_runner_group }} mode=0750
+
+- name: Create sources directory
+  file: path={{ gitlab_ci_runner_sources }} state=directory
+        owner={{ gitlab_ci_runner_user }} group={{ gitlab_ci_runner_group }} mode=0755
+
+- include: check_status.yml
+
+- include: configure_gitlab-ci-runner.yml
+
+- name: Save information about GitLab CI Runner in Ansible Facts
+  template: src=etc/ansible/facts.d/gitlab_ci_runner.fact.j2
+            dest=/etc/ansible/facts.d/gitlab_ci_runner.fact
+            owner=root group=root mode=0644
+
+

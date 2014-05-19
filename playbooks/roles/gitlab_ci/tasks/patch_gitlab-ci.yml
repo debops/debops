@@ -1,0 +1,9 @@
+---
+
+  # This patch will stop cron from spamming mails all the time
+  # More information:
+  # https://github.com/gitlabhq/gitlab-ci/pull/323
+  # https://github.com/davidolrik/gitlab-ci/commit/9b12642c3982b5d52eb38b245b27f19e966a554a
+- name: Make GitLab CI silent cron tasks really silent
+  lineinfile: dest={{ gitlab_ci_home }}/gitlab-ci/lib/tasks/schedule_builds.rake
+              regexp='puts "Done"' state=absent

@@ -3,8 +3,55 @@ ginas changelog
 
 ## May 2014
 
-- added new, simplier Vagrant setup with only one server and easy way to select
-  which application should be installed (GitLab, ownCloud or phpIPAM).
+### New roles
+
+- **nodejs**: [NodeJS](http://nodejs.org/) is a platform built on Chrome's
+  JavaScript runtime for easily building fast, scalable network applications.
+
+- **etherpad**: [Etherpad Lite](http://etherpad.org/) is a collaborative web
+  text editor written using NodeJS.
+
+- **gitlab_ci** and **gitlab_ci_wrapper**: [GitLab CI](https://www.gitlab.com/gitlab-ci/)
+  is a Continuous Integration server which integrates with
+  [GitLab](https://www.gitlab.com/). It is divided into two components - GitLab
+  CI itself which coordinates work between GitLab and its runners, and GitLab
+  CI Runner which executes provided scripts.
+
+### nginx
+
+nginx installation from Debian Backports has been temporarily disabled due to
+problems with first daemon startup on install - when nginx from backports is
+installed, an empty pidfile is created on first startup and system init script
+does not have control over nginx daemon, which results in an error when nginx
+needs to be restarted. When this error is resolved, change will be reverted.
+
+You can now tell nginx role to use IP-based SSL certificates (instead of
+FQDN-based), useful for hosts without DNS domain name, like Vagrant virtual
+machines.
+
+You can disable 'favicon.ico' filtering in nginx server configuration and let
+your application handle the icon (used by Etherpad role).
+
+### Other news
+
+Default Vagrant setup has been simplified to use only one server with
+a selection of web applications to install (either GitLab, ownCloud or phpIPAM,
+selectable via Vagrant inventory).
+
+If you use Debian Preseed server, you can define short hostnames in DNS and use
+them instead of long hostname to point installer to a correct preseed file
+- for example instead of using `url=destroy.debian.nat.example.org`, you can
+use `url=destroy.debian`. You can also change the domain that is configured for
+Debian Preseed server, when for example your datacenter uses long hostnames for
+its servers.
+
+`interfaces` role has been modified to use separate variable for interface list
+defined via dependency. This will allow interfaces to be configured in
+subsequent plays instead of just the common one (needed for example by `nat`
+role to configure separate bridge interface).
+
+Abusive Hosts Blocking List has been removed from Postfix DNSBL list because of
+[impending end of the service](http://ahbl.org/content/changes-ahbl).
 
 
 ## April 2014
