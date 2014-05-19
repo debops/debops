@@ -1,0 +1,42 @@
+#
+# PRODUCTION
+#
+production:
+  adapter: postgresql
+  encoding: unicode
+  database: {{ gitlab_ci_database_config[gitlab_ci_database].database }}
+  pool: 5
+  username: {{ gitlab_ci_database_config[gitlab_ci_database].username }}
+{% if gitlab_ci_postgresql_database_connection is defined %}
+{% if gitlab_ci_postgresql_database_connection == 'port' %}
+  password: {{ gitlab_ci_postgresql_database_password }}
+  host: {{ gitlab_ci_database_config[gitlab_ci_database].hostname }}
+  port: {{ gitlab_ci_database_config[gitlab_ci_database].port }}
+{% elif gitlab_ci_postgresql_database_connection == 'socket' %}
+  socket: {{ gitlab_ci_database_config[gitlab_ci_database].socket }}
+{% endif %}
+{% endif %}
+
+#
+# Development specific
+#
+development:
+  adapter: postgresql
+  encoding: unicode
+  database: gitlab_ci_development
+  pool: 5
+  username: postgres
+  password: "secure password"
+  # socket: /tmp/postgresql.sock
+
+# Warning: The database defined as "test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test: &test
+  adapter: postgresql
+  encoding: unicode
+  database: gitlab_ci_test
+  pool: 5
+  username: postgres
+  password: "secure password"
+  # socket: /tmp/postgresql.sock

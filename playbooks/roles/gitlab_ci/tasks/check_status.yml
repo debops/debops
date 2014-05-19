@@ -1,0 +1,20 @@
+---
+
+- name: Check if GitLab CI is installed
+  set_fact:
+    gitlab_ci_status_installed: True
+  when: (ansible_local.gitlab_ci is defined and ansible_local.gitlab_ci.instance)
+
+- name: Check if GitLab CI has to be upgraded
+  set_fact:
+    gitlab_ci_status_upgrade: True
+  when: (gitlab_ci_status_installed is defined and gitlab_ci_status_installed) and
+        ((ansible_local.gitlab_ci.instance.gitlab_ci_version != gitlab_ci_version) or
+        (ansible_local.gitlab_ci.instance.ci_version != gitlab_ci_version_map[gitlab_ci_version]))
+
+- name: Fail if auto upgrade is disabled
+  fail: msg="GitLab CI requires an upgrade but automatic upgrades are disabled"
+  when: (gitlab_ci_status_upgrade is defined and gitlab_ci_status_upgrade) and
+        ((gitlab_ci_auto_upgrade is defined and not gitlab_ci_auto_upgrade) or gitlab_ci_auto_upgrade is undefined)
+
+

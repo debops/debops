@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+
+[instance]
+gitlab_ci_runner_version = {{ gitlab_ci_runner_version }}
+ci_runner_version = {{ gitlab_ci_runner_version_map[gitlab_ci_runner_version] }}
+{% if (gitlab_ci_runner_register_instance is defined and gitlab_ci_runner_register_instance.stdout is defined) or (gitlab_ci_runner_status_registered is defined and gitlab_ci_runner_status_registered) %}
+registered = True
+{% endif %}
+
