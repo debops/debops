@@ -32,3 +32,7 @@
               line='FSCKFIX={{ console_fsckfix }}'
   when: console_fsckfix is defined and console_fsckfix
 
+- name: Ensure that specified locales exist
+  locale_gen: name={{ item }} state=present
+  with_items: console_locales
+  when: console_locales is defined and console_locales
