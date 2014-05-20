@@ -27,3 +27,8 @@
 - name: Configure /etc/motd
   template: src=etc/motd.j2 dest=/etc/motd owner=root group=root mode=0644
 
+- name: Configure fsck behaviour on boot
+  lineinfile: dest=/etc/default/rcS regexp='FSCKFIX=' state=present
+              line='FSCKFIX={{ console_fsckfix }}'
+  when: console_fsckfix is defined and console_fsckfix
+
