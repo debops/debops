@@ -1,20 +1,24 @@
 ---
-# role: console (CLI customization)
+# role: console (root console and basic environment settings)
 
 
-console_organization_name: 'Organization Name'
-console_organization_url: 'http://example.com/'
+# Custom string added to /etc/issue
+console_issue: 'Organization Name'
 
+# Serial port configuration (used by 'virsh console', 'lxc-console' and similar
+# commands)
 console_serial: 'S0:2345:respawn:/sbin/getty -L {{ console_serial_port }} {{ console_serial_baud }} {{ console_serial_term }}'
 console_serial_port: 'ttyS0'
 console_serial_baud: '115200'
 console_serial_term: 'xterm'
 
+# Contents of /etc/motd
 console_motd: |
     -------------------------------------------------
             This system is managed by Ansible
     -------------------------------------------------
 
+# List of additional packages to install
 console_packages: [ 'ncurses-term', 'vim', 'mc', 'ranger', 'tmux', 'zsh', 'htop',
                     'less', 'file', 'psmisc', 'iftop', 'nload', 'lsof' ]
 
