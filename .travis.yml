@@ -39,7 +39,9 @@ script:
   - ansible-playbook -i contrib/travis-ci/inventory playbooks/site.yml
 
   # Run main playbook again to test idempotency (courtesy of geerlingguy, thanks!)
-  - ansible-playbook -i contrib/travis-ci/inventory playbooks/site.yml | grep -q 'changed=0.*failed=0'
-    && (echo 'Idempotence test: pass' && exit 0)
-    || (echo 'Idempotence test: fail' && exit 1)
+  - >
+     ansible-playbook -i contrib/travis-ci/inventory playbooks/site.yml
+     | grep -q 'changed=0.*failed=0'
+     && (echo 'Idempotence test: pass' && exit 0)
+     || (echo 'Idempotence test: fail' && exit 1)
 
