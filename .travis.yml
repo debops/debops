@@ -1,19 +1,53 @@
+---
+# Travis CI configuration file for ginas (https://github.com/ginas/ginas/)
+
 language: python
 python: "2.7"
+
+# Enable additional domains for specific roles
 addons:
   hosts:
     - travis.localdomain
     - owncloud.localdomain
+
+# Enable packages installed via apt-get in virtualenv
 virtualenv:
   system_site_packages: true
+
 before_install:
+
+  # Purge preinstalled PostgreSQL which causes problems during installation via playbook
   - psql --version
   - sudo /etc/init.d/postgresql stop
   - sudo apt-get -y --purge remove postgresql libpq-dev libpq5 postgresql-client-common postgresql-common
   - sudo rm -rf /var/lib/postgresql
+
+  # Build and install Ansible .deb package from devel branch
   - ./contrib/bootstrap-ansible.sh
   - ansible --version
+
+# Skip installation phase
 install: true
+
+# Main playbook execution phase
 script:
-  - ansible-playbook -i contrib/vagrant/inventory-lemp/ansible playbooks/site.yml --syntax-check
+
+  # First, check the playbook for any syntax errors
+  - ansible-playbook -i contrib/travis-ci/inventory playbooks/site.yml --syntax-check
+
+  # Run main playbook
   - ansible-playbook -i contrib/travis-ci/inventory playbooks/site.yml
+
+  # Run main playbook again to test idempotency (courtesy of geerlingguy, thanks!)
+  # This test is not essential and will not generate Travis errors, but might
+  # indicate problems with idempotency.
+  # Reason for that is that some git repositories that are cloned during
+  # playbook run might change in the meantime, which will count as
+  # non-idempotency, but it shouldn't affect testing.
+  - >
+     ansible-playbook -i contrib/travis-ci/inventory playbooks/site.yml
+     | tee /tmp/ansible_idempotency_test || true
+     ; grep -q 'changed=0.*failed=0' /tmp/ansible_idempotency_test
+     && (echo 'Idempotence test: pass' && exit 0)
+     || (echo 'Idempotence test: fail, changed=3 seems to be normal due to ansible git repository' && exit 0)
+
