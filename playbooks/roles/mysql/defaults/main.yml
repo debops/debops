@@ -5,8 +5,8 @@
 # Length of randomly generated passwords (it's a string)
 mysql_password_length: '20'
 
-# If 'secret' variable is undefined, this variable will be used to set password
-mysql_root_password: 'password'
+# Password for MySQL root user
+mysql_root_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/root/password length=' + mysql_password_length) }}"
 
 # Enable PHPMyAdmin? It will be installed on localhost with php5-fpm and nginx
 # See 'phpmyadmin' role for more configuration options

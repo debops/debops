@@ -24,12 +24,6 @@
   when: (mysql_installed is defined and mysql_installed.stat.exists == False) and
         (mysql_install_status is defined and mysql_install_status.changed == True)
 
-# Get mysql_root_password from secrets/ directory, otherwise use the one provided in a variable
-- name: Lookup mysql root password if secrets/ directory is defined
-  set_fact:
-    mysql_root_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/root/password length=' + mysql_password_length) }}"
-  when: secret is defined and secret
-
 - name: Update mysql root password for all root accounts
   mysql_user: name=root host={{ item }} password={{ mysql_root_password }}
   with_items: [ '{{ ansible_hostname }}', '127.0.0.1', '::1', 'localhost' ]
