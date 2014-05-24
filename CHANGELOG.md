@@ -17,6 +17,29 @@ ginas changelog
   CI itself which coordinates work between GitLab and its runners, and GitLab
   CI Runner which executes provided scripts.
 
+### secrets
+
+Support for "secret" directory on Ansible Controller has been rewritten (third
+time, hopefully the last). Previously 'secret' variable usage was optional and
+it needed to be defined manually by the user; now it will be required (with
+time, tasks that depend on it will not check if 'secret' variable is defined,
+to simplify the code) and will be automatically defined relative to currently
+selected inventory. There are several variables that can be used to influence
+this behaviour. More information and explanation of the concept can be found in
+[README.md](https://github.com/ginas/ginas/blob/master/playbooks/roles/secret/README.md)
+file of the 'secret' role.
+
+To further redesign the 'secret' concept, automatic encryption of the directory
+using `encfs` has been disabled. If you currently have encrypted secret
+directory and want to keep the contents, you should decrypt it and move the
+contents to the new, unencrypted, secret directory. To protect the data
+I suggest using an encrypted filesystem, like eCryptfs or LUKS.
+
+There are currently no plans to enable encryption for secret directory, but it
+might happen in the future. At the moment users should secure the data by
+themselves. Any suggestions how to bring back encryption in a reliable and easy
+way are welcome.
+
 ### nginx
 
 nginx installation from Debian Backports has been temporarily disabled due to
@@ -52,6 +75,9 @@ role to configure separate bridge interface).
 
 Abusive Hosts Blocking List has been removed from Postfix DNSBL list because of
 [impending end of the service](http://ahbl.org/content/changes-ahbl).
+
+Travis CI build has been modified to test idempotence of the playbook - it is
+run a second time to check if there are any changes.
 
 
 ## April 2014

@@ -1,57 +1,160 @@
 secret
 ======
 
-This is a small wrapper role around 'encfs' role, which allows you to manage secret storage space on Ansible Controller.
+This role enables you to have a separate directory on Ansible Controller
+(different than the playbook directory and inventory directory) which can be
+used as a handy "workspace" for other roles.
 
-Requirements
-------------
+Some usage examples of this role in [ginas](https://github.com/ginas/ginas/)
+include:
 
-The same as 'encfs' role.
+- password lookups, either from current role, or using known location of
+  passwords from other roles, usually dependencies (for example 'mysql' role
+  can manage an user account in the database with random password and other
+  role can lookup that password to include in a generated configuration file);
 
-Role Variables
---------------
+- secure file storage, for example for application keys generated on remote
+  hosts ('boxbackup' role retrieves client keys for backup purposes), for
+  that reason secret directory should be protected by an external means, for
+  example encrypted filesystem (currently there is no encryption provided by
+  default);
 
-- `secret`: **absolute path to a directory in your local filesystem**. It has to exist, and your user should have access rights. It will be used as a mount point for encrypted storage while it is opened, so use empty directory and avoid putting it in place that might change during playbook execution. Mandatory.
+- secure workspace ('boxbackup' role, again, uses secret directory to create
+  and manage Root CA for backup servers - client and server certificates are
+  automatically downloaded to Ansible Controller, signed and uploaded to
+  destination hosts);
 
-Other useful variables can be found in 'encfs' role.
+- simple centralized backup (specific roles like 'sshd', 'pki' and
+  'monkeysphere' have a separate task lists that are invoked by custom
+  playbooks to allow backup and restoration of ssh host keys and SSL
+  certificates. Generated .tar.gz files are kept on Ansible Controller in
+  secret directory);
 
-Usage
------
 
-Set `secret` variable in `inventory/group_vars/all.yml` to have consistent path to secret storage in all parts of your playbook. After that, when you use '{{ secret }}' as a part of the path to files you copy, template or lookup using Ansible, Ansible will look for them in the directory you specified earlier, which will be decrypted during playbook run.
+### Configuration variables
 
-### Example usage - password lookup
+There are three variables that can be used to customize behaviour of 'secret'
+variable. If you want, you can redefine them in your inventory, preferably in
+`group_vars/all.yml` file to have consistent secret directory across
+a particular infrastructure.
 
-Create a variable in your inventory or role defaults, `example_password` with default password you want to be assigned. In your playbook/role, before you use that password, add a task:
+- `secret_root` - this is a "root" directory from where a relative 'secret'
+  directory will be created. By default, it's an absolute path to current
+  inventory directory;
 
-    - name: Lookup password in secret/ directory
-      set_fact:
-        example_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/role/password_file' }}"
-      when: secret is defined and secret
+- `secret_dir` - name of secret directory to use, by default it will be named
+  after your inventory directory, in the form "inventory.secret";
 
-Now you can use `'{{ example_password }}'` variable in your subsequent tasks or templates; if `secret` directory is defined, your password will be saved in encrypted storage, if it's not, your task/role will use default password defined in inventory or defaults. Password will be saved in `'{{ secret }}/credentials/{{ ansible_fqdn }}/role/password_file'`. Make sure to use `{{ ansible_fqdn }}` variable or other variable that specifies individual hosts in your playbook, to have separate passwords for each host. Or, use path without it to have the same password on different hosts.
+- `secret_levels` - how many parent directories to use, by default secret
+  directory will be created one level up from the `secret_root` directory;
 
-### Example usage - file management
+You can also define `secret` variable directly and set an absolute path to
+a directory in your filesystem.
 
-Here are example tasks which can be used to fetch files from remote hosts and copy them to remote hosts:
 
-    - name: Fetch /etc/fstab and store it securely
-      fetch: flat=yes src=/etc/fstab
-             dest={{ secret }}/storage/{{ ansible_fqdn }}/etc/fstab
-      when: secret is defined and secret
-    
-    - name: Copy /etc/fstab from secure storage
-      copy: src={{ secret }}/storage/{{ ansible_fqdn }}/etc/fstab
-            dest=/etc/fstab owner=root group=root mode=0644
-      when: secret is defined and secret
+### Directory layouts
 
-License
--------
+Here's a simple one level inventory layout with default 'secret' role settings,
+kept in a git repository:
 
-GPLv3
+    ~/src/ansible/
+    |-- inventory/
+    |   |-- .git/
+    |   |-- group_vars/
+    |   |-- host_vars/
+    |   `-- hosts
+    |
+    `-- inventory.secret/
+        |-- credentials/
+        `-- storage/
 
-Author Information
-------------------
+Here's another example - this time Ansible inventory is in a subdirectory of
+git repository, because you want to keep other files in the repository (like
+Vagrant files, README, etc.) without risking interference with Ansible. For that
+you should define `secret_levels: '../..'` in `group_vars/all.yml` to keep
+secrets ouside of main project repository:
 
-Written by: [Maciej Delmanowski](http://twitter.com/drybjed). Part of the [ginas](https://github.com/ginas/) project.
+    ~/src/project/
+    |-- inventory/
+    |   |-- .git/
+    |   |-- ansible/
+    |   |   |-- group_vars/
+    |   |   |-- host_vars/
+    |   |   `-- hosts
+    |   |
+    |   |-- README
+    |   `-- Vagrantfile
+    |
+    `-- ansible.secret/
+        |-- credentials/
+        `-- storage/
+
+Please note, that secret directory name is derived from the inventory directory
+name. To change it, you can define `secret_dir` variable.
+
+
+### Support for --tags
+
+By default all you need to do to use 'secret' role is include it in your common
+playbook at the beginning:
+
+    ---
+    - hosts: all
+      roles:
+        - role: secret
+
+That will allow all your roles in this and subsequent plays to access `secret`
+variable and use it consistently.
+
+Unfortunately, it doesn't work well when you use Ansible with `--tags`
+parameter, which might omit your common play, thus not setting `secret`
+variables at all and changing your passwords to empty values, modifying config
+files incorrectly, basically not honoring the idempotency principle.
+
+Solution to that problem is to either include 'secret' role in all your plays
+(similar to the one above), or include it as a dependency in roles that require
+it:
+
+    ---
+    dependencies:
+      - role: secret
+
+This will ensure that roles utilizing `secret` variable will be able to access
+it correctly and you don't need to remember to include 'secret' role in all
+your playbooks.
+
+
+### Usage examples
+
+Example password lookup with password written to a variable. You can define
+this variable anywhere Ansible variables can be defined, but if you want to
+give playbook users ability to overwrite it in inventory, you should define it
+in `role/defaults/main.yml`:
+
+    ---
+    mysql_root_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/root/password') }}"
+
+When this variable is set in `role/defaults/main.yml`, you can easily overwrite
+it in your inventory, like this:
+
+    ---
+    mysql_root_password: "correct horse battery staple"
+
+You can also change the password directly in secret directory, in this case in
+`secret/credentials/hostname/mysql/root/password` and Ansible should update the
+password on the remote server (if role is written to support this).
+
+Example file download task from remote host to Ansible controller, sored in
+secret directory:
+
+    ---
+    fetch: src=/etc/fstab flat=yes
+           dest="{{ secret + '/storage/' + ansible_fqdn + '/etc/fstab' }}"
+
+Example file upload task from Ansible Controller to remote host with file from
+secret directory:
+
+    ---
+    copy: dest=/etc/fstab owner=root group=root mode=0644
+          src="{{ secret + '/storage/ + ansible_fqdn + '/etc/fstab' }}"
 

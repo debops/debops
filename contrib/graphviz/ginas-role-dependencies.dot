@@ -51,6 +51,7 @@ digraph ginas_role_dependencies {
 	role_rsyslog		[label = "rsyslog"];
 	role_safekeep		[label = "safekeep"];
 	role_samba		[label = "samba"];
+	role_secret		[label = "secret"];
 	role_sks		[label = "sks"];
 	role_sshd		[label = "sshd"];
 	role_sshkeys		[label = "sshkeys"];
@@ -214,6 +215,7 @@ digraph ginas_role_dependencies {
 
 	/* ---- Playbook: common.yml ---- */
 	edge [color = dodgerblue3];
+	role_apt -> role_secret;
 	role_apt -> role_etc_services;
 	role_apt -> role_ferm;
 	role_apt -> role_nginx;
@@ -221,15 +223,22 @@ digraph ginas_role_dependencies {
 
         role_ntp -> role_ferm;
 
+	role_pki -> role_secret;
+
 	role_postfix -> role_pki;
 	role_postfix -> role_ferm;
+
+	role_reprepro -> role_secret;
 
 	role_sshd -> role_ferm;
 	role_sshd -> role_tcpwrappers;
 	role_sshd -> role_sshkeys;
 
+	role_boxbackup -> role_secret;
 	role_boxbackup -> role_etc_services;
 	role_boxbackup -> role_ferm;
+
+	role_safekeep -> role_secret;
 
 	/* ---- Playbook: services.yml ---- */
 	edge [color = darkolivegreen3];
@@ -245,9 +254,11 @@ digraph ginas_role_dependencies {
 	role_samba -> role_ferm;
 
 	edge [color = deeppink3];
+	role_mysql -> role_secret;
 	role_mysql -> role_tcpwrappers;
 	role_mysql -> role_ferm;
 
+	role_phpmyadmin -> role_secret;
 	role_phpmyadmin -> role_php5;
 	role_phpmyadmin -> role_nginx;
 
@@ -259,10 +270,12 @@ digraph ginas_role_dependencies {
 	role_nginx -> role_ferm;
 
 	edge [color = deepskyblue1]
+	role_mailman -> role_secret;
 	role_mailman -> role_postfix;
 	role_mailman -> role_nginx;
 
 	edge [color = darkseagreen4];
+	role_etherpad -> role_secret;
 	role_etherpad -> role_etc_services;
 	role_etherpad -> role_nodejs;
 	role_etherpad -> role_mysql;
@@ -270,6 +283,7 @@ digraph ginas_role_dependencies {
 
 	/* ---- Playbook: owncloud.yml ---- */
 	edge [color = aquamarine3];
+	role_owncloud -> role_secret;
 	role_owncloud -> role_mysql;
 	role_owncloud -> role_postgresql;
 	role_owncloud -> role_php5;
@@ -277,17 +291,20 @@ digraph ginas_role_dependencies {
 
 	/* ---- Playbook: phpipam.yml ---- */
 	edge [color = lightsalmon2];
+	role_phpipam -> role_secret;
 	role_phpipam -> role_mysql;
 	role_phpipam -> role_php5;
 	role_phpipam -> role_nginx;
 
 	/* ---- Playbook: gitlab.yml ---- */
 	edge [color = yellowgreen];
+	role_gitlab -> role_secret;
 	role_gitlab -> role_mysql;
 	role_gitlab -> role_postgresql;
 	role_gitlab -> role_nginx;
 
 	edge [color = cadetblue4];
+	role_gitlab_ci -> role_secret;
 	role_gitlab_ci -> role_etc_services;
 	role_gitlab_ci -> role_mysql;
 	role_gitlab_ci -> role_postgresql;

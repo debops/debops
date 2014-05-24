@@ -30,7 +30,6 @@
 # task.sh allows you to easily maintain multiple ansible inventories and run
 # ansible modules ("tasks") with them. This function is achieved by using
 # symlinks with specific names and a specific inventory directory structure.
-# Script also supports 'secret' role (see playbooks/roles/secret/README.md)
 #
 # Inventory directories are located in the project's root directory (usually
 # current directory) and their naming scheme is: 'inventory-<name>/'. You can
@@ -72,9 +71,6 @@
 
 # Enable debugging (set to 1)
 [ -z "${DEBUG}" ] && DEBUG=0
-
-# Disable 'secret' role (set to 0)
-[ -z "${SECRET}" ] && SECRET=1
 
 # Allow connections without SSH fingerprint checking (set to 1)
 [ -z "${INSECURE_SSH}" ] && INSECURE_SSH=0
@@ -140,32 +136,16 @@ if [ $DEBUG -gt 0 ]; then
 #!/bin/bash
 
 DEBUG=$DEBUG
-SECRET=$SECRET
 INSECURE_SSH=$INSECURE_SSH
 
 ANSIBLE_HOSTS=${ANSIBLE_HOSTS}
 ANSIBLE_HOST_KEY_CHECKING=${ANSIBLE_HOSTS_KEY_CHECKING}
-
-if [ \$SECRET -gt 0 ] ; then
-	set -e
-	ansible-playbook ${playbook_dir}/secret.yml --extra-vars="encfs_mode=open"
-	trap "ansible-playbook ${playbook_dir}/secret.yml" EXIT
-	set +e
-fi
 
 ansible ${module} "\${@}"
 EOF
 
 # Main script
 else
-
-	if [ $SECRET -gt 0 ] ; then
-		set -e
-		ansible-playbook ${playbook_dir}/secret.yml --extra-vars="encfs_mode=open"
-		trap "ansible-playbook ${playbook_dir}/secret.yml" EXIT
-		set +e
-	fi
-
 	ansible ${module} "${@}"
 fi
 
