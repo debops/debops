@@ -30,7 +30,6 @@
 # site.sh allows you to easily maintain multiple ansible inventories and run
 # ansible playbooks with them. This function is achieved by using symlinks with
 # specific names and a specific inventory / playbook directory structure.
-# Script also supports 'secret' role (see playbooks/roles/secret/README.md)
 #
 # Playbooks are located in 'playbooks/' directory by default and have an .yml
 # extension.
@@ -77,9 +76,6 @@
 
 # Enable debugging (set to 1)
 [ -z "${DEBUG}" ] && DEBUG=0
-
-# Disable 'secret' role (set to 0)
-[ -z "${SECRET}" ] && SECRET=1
 
 # Allow connections without SSH fingerprint checking (set to 1)
 [ -z "${INSECURE_SSH}" ] && INSECURE_SSH=0
@@ -148,31 +144,16 @@ if [ $DEBUG -gt 0 ]; then
 #!/bin/bash
 
 DEBUG=$DEBUG
-SECRET=$SECRET
 INSECURE_SSH=$INSECURE_SSH
 
 ANSIBLE_HOSTS=${ANSIBLE_HOSTS}
 ANSIBLE_HOST_KEY_CHECKING=${ANSIBLE_HOSTS_KEY_CHECKING}
-
-if [ \$SECRET -gt 0 ] ; then
-	set -e
-	ansible-playbook ${playbook_dir}/secret.yml --extra-vars="encfs_mode=open"
-	trap "ansible-playbook ${playbook_dir}/secret.yml" EXIT
-	set +e
-fi
 
 ansible-playbook ${playbook} "\${@}"
 EOF
 
 # Main script
 else
-	if [ $SECRET -gt 0 ] ; then
-		set -e
-		ansible-playbook ${playbook_dir}/secret.yml --extra-vars="encfs_mode=open"
-		trap "ansible-playbook ${playbook_dir}/secret.yml" EXIT
-		set +e
-	fi
-
 	ansible-playbook ${playbook} "${@}"
 fi
 
