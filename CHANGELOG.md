@@ -55,6 +55,18 @@ machines.
 You can disable 'favicon.ico' filtering in nginx server configuration and let
 your application handle the icon (used by Etherpad role).
 
+### GitLab
+
+`gitlab` role has been updated with support for GitLab CE 6.9. This update is
+very light, without additional set of config files, because changes made in
+'6-9-stable' branch added only commented out code which means that older config
+files should work fine.
+
+`gitlab-shell` will no longer use a separate nginx server instance to
+communicate with GitLab, instead it will talk to unicorn server directly.
+Unicorn gained a port variable and is now registered as a separate service in
+`/etc/services`.
+
 ### Other news
 
 Default Vagrant setup has been simplified to use only one server with

@@ -224,6 +224,14 @@
         (gitlab_status_ce_installed is defined and gitlab_status_ce_installed)
 
 
+# ---- /etc/services.d/50_gitlab ----
+
+- name: Reserve Unicorn port for GitLab
+  template: src=etc/services.d/50_gitlab.j2 dest=/etc/services.d/50_gitlab
+            owner=root group=root mode=0644
+  notify: [ 'Assemble services.d' ]
+
+
 # ---- Setup ----
 
 - name: Update Ruby gems

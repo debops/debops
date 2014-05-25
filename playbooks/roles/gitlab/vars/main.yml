@@ -31,6 +31,10 @@ gitlab_version_map:
     shell: 'v1.9.3'
     ce:    '6-8-stable'
 
+  '6.9':
+    shell: 'v1.9.4'
+    ce:    '6-9-stable'
+
 
 # ---- gitlab-shell & GitLab CE configuration ----
 
@@ -45,6 +49,10 @@ gitlab_config_map:
     ce:    '6-7-stable'
 
   '6.8':
+    shell: 'stable'
+    ce:    'stable'
+
+  '6.9':
     shell: 'stable'
     ce:    'stable'
 
@@ -70,6 +78,9 @@ gitlab_checksums:
     'v1.9.3':
       config: '82958869656cbf5c9fa866bb575c6456b5a39b60'
 
+    'v1.9.4':
+      config: '82958869656cbf5c9fa866bb575c6456b5a39b60'
+
   ce:
     '6-7-stable':
       database:
@@ -87,6 +98,16 @@ gitlab_checksums:
         postgresql: '090093b1bf6bacb9f1d32266ad2b1aac56b31236'
       gitlab:       '3bf66c3c3d48d0cad651d9eee113a2a130f4e92b'
       unicorn:      '6ad72f0127a8b99af123f5a137f4e1af49c4585a'
+      rack_attack:  '6479dc1a57a7c1905535d59446a370315014e3a3'
+      default:      '365a2ecee8b9266f70db5cc0c9dfa47556eb33f3'
+      logrotate:    'abd8ba666ad8a1834888eedf52371ca4915a714d'
+
+    '6-9-stable':
+      database:
+        mysql:      'acdded987e68662aa9549034e760ae74fb79e7cf'
+        postgresql: '090093b1bf6bacb9f1d32266ad2b1aac56b31236'
+      gitlab:       'bdb49dc9654705dc045bc683393c750368f9aad3'
+      unicorn:      '9abc4417dc38f341b3f3725cbdb12ff21d12ca78'
       rack_attack:  '6479dc1a57a7c1905535d59446a370315014e3a3'
       default:      '365a2ecee8b9266f70db5cc0c9dfa47556eb33f3'
       logrotate:    'abd8ba666ad8a1834888eedf52371ca4915a714d'
@@ -118,6 +139,9 @@ gitlab_database_config:
 
 
 # ---- Web server ----
+
+# Unicorn port on localhost interface for GitLab
+gitlab_unicorn_port: '8082'
 
 # nginx upstream configuration for gitlab service
 gitlab_nginx_upstream:
@@ -156,43 +180,4 @@ gitlab_nginx_server:
       proxy_set_header   X-Real-IP         $remote_addr;
       proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
       proxy_pass         http://gitlab;
-
-# Hostname of internal GitLab API server used by gitlab-shell
-gitlab_shell_api: 'api.gitlab.localhost'
-
-# Internal nginx GitLab API server for gitlab-shell access
-# Access is provided only from localhost, over HTTP. You should synchronize
-# configuration with "normal" GitLab nginx server
-gitlab_nginx_server_api:
-  enabled: True
-  default: False
-  ssl: False
-  name: '{{ gitlab_shell_api }}'
-  root: '{{ gitlab_home }}/gitlab/public'
-
-  options: |
-    client_max_body_size {{ gitlab_nginx_client_max_body_size }};
-    error_page 502 /502.html;
-
-  location:
-    '/': |
-      try_files $uri $uri/index.html $uri.html @gitlab;
-
-    '~ ^/(assets)/': |
-      root {{ gitlab_home }}/gitlab/public;
-      gzip_static on;
-      expires max;
-      add_header Cache-Control public;
-
-    '@gitlab': |
-      gzip off;
-      proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
-      proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
-      proxy_redirect     off;
-      proxy_set_header   X-Forwarded-Proto $scheme;
-      proxy_set_header   Host              $http_host;
-      proxy_set_header   X-Real-IP         $remote_addr;
-      proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-      proxy_pass         http://gitlab;
-
 
