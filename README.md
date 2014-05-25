@@ -47,7 +47,7 @@ you can see what roles depend on each other. Dependencies of a role are
 executed before that role, and certain roles can be run multiple times by
 Ansible:
 
-[![ginas role dependencies](http://i.imgur.com/SnptafZ.png)](http://i.imgur.com/SnptafZ.png)
+[![ginas role dependencies](http://i.imgur.com/DeMRCSp.png)](http://i.imgur.com/DeMRCSp.png)
 
 ### Other projects of unusual size
 
