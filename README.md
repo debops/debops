@@ -49,3 +49,33 @@ Ansible:
 
 [![ginas role dependencies](http://i.imgur.com/SnptafZ.png)](http://i.imgur.com/SnptafZ.png)
 
+### Other projects of unusual size
+
+If you like the concept of a giant, general-purpose playbooks, but you don't
+necessarily like this particular implementation, I suggest that you check out
+other similar projects:
+
+- [al3x/sovereign](https://github.com/al3x/sovereign): an orginal inspiration
+  for ginas, playbook with multiple services focused on privacy and personal
+  freedom. Based on [Debian 7](https://www.debian.org/releases/wheezy/)
+
+- [edx/configuration](https://github.com/edx/configuration): allows you to
+  create and manage an instance of [Open edX platform](http://code.edx.org/).
+  Focused on AWS and cloud services. Based on [Ubuntu
+  12.04](http://releases.ubuntu.com/12.04/)
+
+- [iceburg-net/ansible-pcd](https://github.com/iceburg-net/ansible-pcd):
+  Ansible provisioning and deployment framework, inspired by Open edX
+  project. Based on [Debian 7](https://www.debian.org/releases/wheezy/)
+
+- [jnv/ansible-fedora-infra](https://github.com/jnv/ansible-fedora-infra):
+  cloud infrastructure for Fedora Project, focused on Amazon/AWS services.
+  Based on [Fedora](https://fedoraproject.org/)
+
+- [pjan/the-ansibles](https://github.com/pjan/the-ansibles): collection of
+  Ansible roles which can be used to build a Cloudbox, similar to Sovereign.
+  Based on [Ubuntu 12.04](http://releases.ubuntu.com/12.04/)
+
+If you have or know a project that is not on the list and has similar scope,
+please let me know!
+
