@@ -1,5 +1,12 @@
 # {{ ansible_managed }}
 
+{% if dnsmasq_address is defined and dnsmasq_address %}
+# Domain -> IP address mapping
+{% for domain, ipaddress in dnsmasq_address.iteritems() %}
+address=/{{ domain }}/{{ ipaddress }}
+{% endfor %}
+
+{% endif %}
 {% if dnsmasq_cname_subdomain is defined and dnsmasq_cname_subdomain %}
 # CNAME for local domain
 {% for cname, hostname in dnsmasq_cname_subdomain.iteritems() %}
