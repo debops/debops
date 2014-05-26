@@ -30,3 +30,16 @@
   file: path={{ safekeep_server_basedir }}/.ssh/known_hosts.d state=directory
         owner={{ safekeep_server_user }} group={{ safekeep_server_group }} mode=0755
 
+- name: Scan specified host fingerprints
+  shell: ssh-keyscan -H {{ item }} > {{ safekeep_server_basedir }}/.ssh/known_hosts.d/{{ item }}
+         creates={{ safekeep_server_basedir }}/.ssh/known_hosts.d/{{ item }}
+  with_items: safekeep_keyscan
+  register: safekeep_register_server_keyscan
+  when: safekeep_keyscan is defined and safekeep_keyscan
+
+- name: Assemble ~/.ssh/known_hosts
+  assemble: src={{ safekeep_server_basedir }}/.ssh/known_hosts.d
+            dest={{ safekeep_server_basedir }}/.ssh/known_hosts
+            backup=no owner={{ safekeep_server_user }} group={{ safekeep_server_group }} mode=0644
+  when: safekeep_register_server_keyscan is defined and safekeep_register_server_keyscan.changed
+
