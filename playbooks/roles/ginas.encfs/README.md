@@ -46,7 +46,7 @@ Add two plays at the beginning and end of your playbook, like this:
     - hosts: localhost
       sudo: no
       roles:
-        - role: encfs
+        - role: ginas.encfs
           encfs: '{{ secret }}'
           encfs_mode: 'open'
     
@@ -56,7 +56,7 @@ Add two plays at the beginning and end of your playbook, like this:
     - hosts: localhost
       sudo: no
       roles:
-        - role: encfs
+        - role: ginas.encfs
           encfs: '{{ secret }}'
           encfs_mode: 'close'
 
@@ -78,7 +78,7 @@ And in `playbooks/secret.yml` you should create a playbook:
     - hosts: localhost
       sudo: no
       roles:
-        - role: encfs
+        - role: ginas.encfs
           encfs: '{{ secret }}'
 
 When you run that script, you can specify `ansible-playbook` options as normal, and they will be used with correct command. When last of your plays finishes, shell script will run Ansible with `encfs` role again, to close encrypted filesystem.
