@@ -3,6 +3,10 @@ ginas changelog
 
 ## May 2014
 
+A definition of "public API" has been added in CONTRIBUTING.md. Following that,
+ginas will start using git tags for stable releases. This changelog will change
+format from monthly to version-based on release of v0.0.0.
+
 ### New roles
 
 - **nodejs**: [NodeJS](http://nodejs.org/) is a platform built on Chrome's

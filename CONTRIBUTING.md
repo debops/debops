@@ -38,6 +38,40 @@ ginas playbook, or Ansible.
 If you want to contribute code, you should fork ginas to your own repository
 and work there. You should use `git rebase` to keep your repository updated.
 
+### Public API, Versioning and stable releases
+
+ginas uses [Semanting Versioning](http://semver.org/) specification for stable
+releases. Public API in ginas consists of:
+- all information that can be configured using Ansible inventory:
+  * any variables defined in `role/defaults/main.yml` files,
+  * any variables used to communicate between different roles via dependencies,
+  * any data accessed via `lookup()` functions,
+- any custom modules, callbacks, plugins and other similar files provided with
+  playbook and not included in Ansible itself,
+- any scripts and other executable data outside of the main playbook.
+
+Before version 1.0.0 is released, ginas public API should be considered
+unstable. During this development cycle, minor version releases (0.x.0) will be
+incremented when major public API changes are introduced:
+- default variables in roles are removed or renamed,
+- mechanisms used to communicate between roles via dependencies are changed,
+- command options of outside scripts are changed or scripts are removed,
+- definition of public API is changed,
+- etc.
+
+Patch version releases (0.0.x) will be incremented when new roles are
+introduced, or roles are modified without affecting backwards compatibility of
+the public API (for example new default variables are introduced). On the new
+minor release, patch version number will be reset to 0.
+
+After 1.0.0 version is released, ginas public API should be considered stable
+and above conventions should be updated to comform with Semantic Versioning:
+major public API changes should increment major version number (x.0.0), new
+public API default role variables, new roles or modifications to roles
+should increment minor version number (0.x.0). Bugfixes to stable releases
+should increment patch version number (0.0.x) and should be applied on
+a separate git branch.
+
 ### Communication channels and support
 
 At the moment ginas has no official homepage. Official git repository can be
