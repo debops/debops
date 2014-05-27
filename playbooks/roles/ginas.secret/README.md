@@ -101,7 +101,7 @@ playbook at the beginning:
     ---
     - hosts: all
       roles:
-        - role: secret
+        - role: ginas.secret
 
 That will allow all your roles in this and subsequent plays to access `secret`
 variable and use it consistently.
@@ -117,7 +117,7 @@ it:
 
     ---
     dependencies:
-      - role: secret
+      - role: ginas.secret
 
 This will ensure that roles utilizing `secret` variable will be able to access
 it correctly and you don't need to remember to include 'secret' role in all
