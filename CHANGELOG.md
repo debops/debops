@@ -7,6 +7,11 @@ A definition of "public API" has been added in CONTRIBUTING.md. Following that,
 ginas will start using git tags for stable releases. This changelog will change
 format from monthly to version-based on release of v0.0.0.
 
+All ginas roles have been renamed from "rolename" to "ginas.rolename", with
+updated dependencies, to make them similar to roles downloaded from Ansible
+Galaxy. This should help you use ginas roles in your own environment and
+playbooks, using `roles_path` variable in Ansible.
+
 ### New roles
 
 - **nodejs**: [NodeJS](http://nodejs.org/) is a platform built on Chrome's

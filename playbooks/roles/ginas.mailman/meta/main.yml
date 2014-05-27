@@ -1,0 +1,17 @@
+---
+
+dependencies:
+
+  - role: ginas.secret
+
+  - role: ginas.postfix
+    postfix_mailman_domains: '{{ mailman_domains }}'
+    postfix_mailman_configured: True
+    when: mailman_dependencies is defined and mailman_dependencies
+
+  - role: ginas.nginx
+    nginx_servers: [ '{{ mailman_nginx_server }}' ]
+    when: mailman_dependencies is defined and mailman_dependencies
+    tags: nginx
+
+
