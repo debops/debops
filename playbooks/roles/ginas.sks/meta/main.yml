@@ -1,14 +1,14 @@
 ---
 
 dependencies:
-  - { role: ginas.etc_services }
-  - { role: ginas.ferm }
+  - role: ginas.etc_services
+  - role: ginas.ferm
 
   - role: ginas.nginx
     nginx_servers:
-      - ${sks_nginx_frontend}
-      - ${sks_nginx_ssl_frontend}
+      - '{{ sks_nginx_frontend }}'
+      - '{{ sks_nginx_ssl_frontend }}'
     nginx_upstreams:
-      - ${sks_nginx_upstreams}
+      - '{{ sks_nginx_upstreams }}'
     when: sks_frontend is defined and sks_frontend == ansible_fqdn
     tags: nginx

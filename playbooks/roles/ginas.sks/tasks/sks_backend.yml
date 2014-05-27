@@ -1,63 +1,40 @@
 ---
 
 - name: Add missing SKS service in /etc/services
-  template: src=etc/services.d/50_sks.j2 dest=/etc/services.d/50_sks owner=root group=root mode=0644
-  notify: Assemble services.d
-  tags:
-    - sks
+  template: src=etc/services.d/50_sks.j2 dest=/etc/services.d/50_sks
+            owner=root group=root mode=0644
+  notify: [ 'Assemble services.d' ]
 
 - name: Install SKS Keyserver on backend server
   apt: pkg=sks default_release=wheezy-backports state=latest install_recommends=no
-  tags:
-    - sks
-    - packages
 
 - name: Configure firewall for SKS Keyserver backends
-  template: src=etc/ferm/filter-input.d/sks-backend.conf.j2 dest=/etc/ferm/filter-input.d/sks-backend.conf owner=root group=root mode=0644
-  notify:
-    - Restart ferm
-  tags:
-    - sks
-    - ferm
+  template: src=etc/ferm/filter-input.d/sks-backend.conf.j2
+            dest=/etc/ferm/filter-input.d/sks-backend.conf
+            owner=root group=root mode=0644
+  notify: [ 'Restart ferm' ]
 
 - name: Check if SKS Keyserver database exists
   stat: path=/var/lib/sks/DB/key
   register: sks_db
-  tags:
-    - sks
 
 - name: Configure SKS Keyserver without database
   template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
   when: sks_db is defined and sks_db.stat.exists == False
-  with_items:
-    - 'etc/sks/sksconf'
-    - 'etc/sks/mailsync'
-    - 'etc/sks/membership'
-  tags:
-    - sks
+  with_items: [ 'etc/sks/sksconf', 'etc/sks/mailsync', 'etc/sks/membership' ]
 
 - name: Build SKS Keyserver database
   sudo_user: 'debian-sks'
   command: /usr/sbin/sks build chdir=/var/lib/sks creates=/var/lib/sks/DB/key
   when: sks_autoinit is defined and sks_autoinit == True
-  tags:
-    - sks
 
 - name: Check if SKS Keyserver database exists
   stat: path=/var/lib/sks/DB/key
   register: sks_db
-  tags:
-    - sks
 
 - name: Configure SKS Keyserver with database
   template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
   notify: Restart sks
+  with_items: [ 'etc/default/sks', 'etc/sks/sksconf', 'etc/sks/mailsync', 'etc/sks/membership' ]
   when: sks_db is defined and sks_db.stat.exists == True
-  with_items:
-    - 'etc/default/sks'
-    - 'etc/sks/sksconf'
-    - 'etc/sks/mailsync'
-    - 'etc/sks/membership'
-  tags:
-    - sks
 
