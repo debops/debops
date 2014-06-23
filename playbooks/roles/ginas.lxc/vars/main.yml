@@ -1,0 +1,29 @@
+---
+
+# List of packages to install on different distributions
+lxc_distribution_packages:
+  Debian: [ 'debootstrap', 'python3', 'lxc', 'lxc-stuff' ]
+  Ubuntu: [ 'debootstrap', 'python3', 'lxc', 'lxc-templates' ]
+
+# Notification message about new of updated LXC kernel
+lxc_kernel_mail_subject: 'LXC kernel update on {{ ansible_fqdn }}'
+
+lxc_kernel_mail_body: |
+  Ansible has updated Linux kernel with LXC support on host {{ ansible_fqdn }}
+  You should check status of the host and reboot it when convenient.
+  
+  Current kernel: {{ ansible_kernel }}
+  
+  Output of install command:
+  ---------------------------------------------------------------
+  {% for line in lxc_register_kernel_upgrade.stdout_lines %}
+  {{ line }}
+  {% endfor %}
+  ---------------------------------------------------------------
+  
+  Output of lxc-ls -f:
+  ---------------------------------------------------------------
+  {% for line in lxc_list_status.stdout_lines %}
+  {{ line }}
+  {% endfor %}
+  ---------------------------------------------------------------

@@ -1,6 +1,41 @@
 ginas changelog
 ===============
 
+## June 2014
+
+After some hiatus, time to go back to work!
+
+### LXC
+
+Huge Linux Containers rewrite, which brings LXC 1.0 support to Debian Wheezy.
+
+Since verion 1.0 will probably not land in Wheezy itself, 'lxc' role will
+automatically build and install LXC 1.0 Debian packages on Debian Wheezy (this
+will not happen on other distributions or suites). Additionally, 'lxc' .deb
+packages will be made available to the ginas cluster via "reprepro" repository
+(built packages will be copied to special directory on Ansible Controller where
+'reprepro' role expects .deb packages which then will be automatically
+downloaded to local apt repository on next Ansible run). This way, you can
+build LXC 1.0 packages on one spare host, and then have them available all the
+time for all other hosts without any -dev packages required.
+
+Because proper LXC support requires newer Linux kernel than the one available
+in Debian Wheezy by default, 'lxc' role will install current Linux kernel from
+`wheezy-backports` repository and will send an e-mail to administrator about
+required server reboot. 'lxc' role will not configure and manage containers
+without that reboot (idempotence is still maintained within the role).
+
+Default container generation has been changed from `multistrap` to
+`debootstrap`, which is used by modified `lxc-debian` script called `lxc-ginas`
+- script will automatically install packages required by Ansible and configure
+default administrator account with SSH key from Ansible Controller and
+`sudo` access.
+
+You can now manage Linux containers using a simple YAML list, with options to
+start, stop or destroy containers, select different container templates, etc.
+See `playbooks/roles/ginas.lxc/defaults/main.yml` file for more information.
+
+
 ## May 2014
 
 A definition of "public API" has been added in CONTRIBUTING.md. Following that,
