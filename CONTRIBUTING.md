@@ -40,7 +40,7 @@ and work there. You should use `git rebase` to keep your repository updated.
 
 ### Public API, Versioning and stable releases
 
-ginas uses [Semanting Versioning](http://semver.org/) specification for stable
+ginas uses [Semantic Versioning](http://semver.org/) specification for stable
 releases. Public API in ginas consists of:
 - all information that can be configured using Ansible inventory:
   * any variables defined in `role/defaults/main.yml` files,
