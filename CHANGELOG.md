@@ -41,6 +41,9 @@ See `playbooks/roles/ginas.lxc/defaults/main.yml` file for more information.
 deb` output. Ansible now requires `build-essential` and `devscripts` packages
 to create .deb packages correctly.
 
+After some changes to variables in 'apt' role, APT configuration was not able
+to use `apt-cacher-ng` automatically. Now cache will be used correctly.
+
 
 ## May 2014
 
