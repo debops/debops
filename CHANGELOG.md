@@ -35,6 +35,12 @@ You can now manage Linux containers using a simple YAML list, with options to
 start, stop or destroy containers, select different container templates, etc.
 See `playbooks/roles/ginas.lxc/defaults/main.yml` file for more information.
 
+### Other news
+
+`contrib/bootstrap-ansible.sh` script has been updated to work with new `make
+deb` output. Ansible now requires `build-essential` and `devscripts` packages
+to create .deb packages correctly.
+
 
 ## May 2014
 
