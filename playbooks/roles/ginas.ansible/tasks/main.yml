@@ -4,7 +4,8 @@
   apt: pkg={{ item }} state=latest install_recommends=no
   with_items: [ 'git', 'python-paramiko', 'python-yaml', 'python-jinja2', 'python-httplib2',
                 'cdbs', 'debhelper', 'dpkg-dev', 'python-support', 'fakeroot', 'sshpass',
-                'python-nose', 'python-passlib', 'python-setuptools', 'asciidoc', 'xmlto' ]
+                'python-nose', 'python-passlib', 'python-setuptools', 'asciidoc', 'xmlto',
+                'devscripts', 'build-essential' ]
 
 - name: Get user home directory
   shell: echo $HOME
@@ -22,9 +23,9 @@
   slurp: src={{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}/VERSION
   register: role_ansible_build_version
 
-- name: Set Ansible package name
+- name: Set Ansible package version
   set_fact:
-    role_ansible_package: 'ansible_{{ role_ansible_build_version.content | b64decode | trim }}_all.deb'
+    role_ansible_package_version: '{{ role_ansible_build_version.content | b64decode | trim }}'
 
 - name: Run Ansible tests if enabled
   command: make tests chdir={{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}
@@ -50,8 +51,14 @@
   when: role_ansible_git is defined and role_ansible_git.changed == True
   sudo_user: '{{ role_ansible_build_user }}'
 
-- name: Install Ansible .deb package
-  shell: dpkg -i {{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}/../{{ role_ansible_package }}
-  when: role_ansible_build is defined and role_ansible_build.changed == True
+- name: Install Ansible .deb package (stable version)
+  shell: dpkg -i {{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}/../ansible_{{ role_ansible_package_version }}_all.deb
+  when: (role_ansible_build is defined and role_ansible_build.changed == True) and
+        role_ansible_git_branch != 'devel'
+
+- name: Install Ansible .deb package (devel version)
+  shell: dpkg -i {{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}/deb-build/unstable/ansible_{{ role_ansible_package_version }}-*_all.deb
+  when: (role_ansible_build is defined and role_ansible_build.changed == True) and
+        role_ansible_git_branch == 'devel'
 
 
