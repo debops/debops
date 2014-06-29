@@ -35,6 +35,19 @@ You can now manage Linux containers using a simple YAML list, with options to
 start, stop or destroy containers, select different container templates, etc.
 See `playbooks/roles/ginas.lxc/defaults/main.yml` file for more information.
 
+### Postfix and Mailman
+
+Mailman support in 'postfix' role has been removed. Instead, 'postfix' role
+gained a set of new `postfix_dependent_*` variables which can be used to
+configure parts of Postfix configuration (`/etc/postfix/main.cf` and
+`/etc/postfix/master.cf` files) from other roles using dependency variables.
+Those changes are idempotent and are saved in Ansible facts by 'postfix' role.
+
+Examples of new functionality can be found in
+`playbooks/roles/ginas.postfix/defaults/main.yml` file. Mailman role also is
+now configured to use these variables, you can check new configuration in
+`playbooks/roles/ginas.mailman/meta/main.yml` to see the details.
+
 ### Other news
 
 `contrib/bootstrap-ansible.sh` script has been updated to work with new `make

@@ -54,6 +54,16 @@
             owner=root group=root mode=0644
   notify: [ 'Reload mailman' ]
 
+- name: Configure Postfix transport map
+  template: src=etc/mailman/postfix_transport.j2 dest=/etc/mailman/postfix_transport
+            owner=root group=root mode=0644
+  register: mailman_register_postfix_transport
+
+- name: Generate postfix_transport map
+  command: /usr/sbin/postmap /etc/mailman/postfix_transport
+  when: mailman_register_postfix_transport is defined and
+        mailman_register_postfix_transport.changed
+
 - name: Create Mailman site list
   shell: yes | newlist --language={{ mailman_default_language }} {{ mailman_site_list }} {{ mailman_site_admin }}
          {% if mailman_domains is defined and mailman_domains %}

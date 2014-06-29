@@ -7,6 +7,18 @@
               dest=/etc/hosts regexp='^::1\s+localhost'
               line='::1     localhost6 ip6-localhost ip6-loopback' backup=no state=present
 
+- name: Make sure Ansible local facts directory exists
+  file: dest=/etc/ansible/facts.d state=directory owner=root group=root mode=0755
+
+- name: Configure Postfix local facts
+  template: src=etc/ansible/facts.d/postfix.fact.j2 dest=/etc/ansible/facts.d/postfix.fact
+            owner=root group=root mode=0644
+  register: postfix_register_local_facts
+
+- name: Re-read local facts if they changed
+  action: setup
+  when: postfix_register_local_facts is defined and postfix_register_local_facts.changed
+
 - name: Configure aliases database
   template: src=etc/aliases.j2 dest=/etc/aliases owner=root group=root mode=0644
   notify: Generate mail alias database
