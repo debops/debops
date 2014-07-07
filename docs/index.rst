@@ -18,7 +18,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-
+Guides
+======
+* :ref:`getting-started-with-ginas`
 
 Indices and tables
 ==================
