@@ -54,7 +54,7 @@ You will always want to perform these 3 steps before making any changes:
 2. `git rebase upstream/master`
 3. `git push origin master`
 
-### Make your contribution
+#### Make your contribution
 
 1. `git checkout -b yourfeaturebranch`
 2. `git add <insert your files to add>`
