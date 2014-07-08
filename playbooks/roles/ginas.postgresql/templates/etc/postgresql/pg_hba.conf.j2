@@ -73,7 +73,7 @@
 	# listen on a non-local interface via the listen_addresses
 	# configuration parameter, or via the -i or -h command line switches. #}
 
-# TYPE	DATABASE	USER		ADDRESS		METHOD
+# TYPE	DATABASE	USER		ADDRESS				 METHOD
 
 # Database administrative login by Unix domain socket
 {#	# DO NOT DISABLE!
@@ -81,15 +81,32 @@
 	# database superuser can access the database using some other method.
 	# Noninteractive access to all databases is required during automatic
 	# maintenance (custom daily cronjobs, replication, and similar tasks). #}
-local	all		{{ item.user | default(postgresql_owner) }}			peer
+local	all		{{ item.user | default(postgresql_owner) }}					 peer
+host    all             all 		127.0.0.1/32			 md5
+host    all             all 		::1/128				 md5
 
-{% if item.hba is defined and item.hba %}
+{% if item.hba is defined and item.hba is iterable %}
 # Custom entries for PostgreSQL cluster {{ item.version | default(postgresql_version) }} {{ item.name }}
-{{ item.hba }}
+{% for item in item.hba %}
+{% if item.hosts is defined and item.hosts %}
+{% for host in item.hosts %}
+{% set postgresql_tpl_ipv4 = hostvars[host]['ansible_' + item.interface | default('br2')]['ipv4'] %}
+{% set postgresql_tpl_host_type = item.type | default('host') %}
+{% set postgresql_tpl_host_user = item.user | default('all') %}
+{% set postgresql_tpl_host_database = item.database | default(postgresql_tpl_host_user) %}
+{% set postgresql_tpl_host_ip = postgresql_tpl_ipv4['address'] + '/32' | default('127.0.0.0/8') %}
+{% set postgresql_tpl_host_auth = item.auth | default('md5') %}
+{{ "%-7s %-15s %-15s %-13s %19s" | format(postgresql_tpl_host_type, postgresql_tpl_host_database, postgresql_tpl_host_user, postgresql_tpl_host_ip, postgresql_tpl_host_auth) }}
+{% endfor %}
+{% elif item.address is defined and item.address %}
+{% set postgresql_tpl_host_type = item.type | default('host') %}
+{% set postgresql_tpl_host_user = item.user | default('all') %}
+{% set postgresql_tpl_host_database = item.database | default(postgresql_tpl_host_user) %}
+{% set postgresql_tpl_host_ip = item.address | default('127.0.0.0/8') %}
+{% set postgresql_tpl_host_auth = item.auth | default('md5') %}
+{{ "%-7s %-15s %-15s %-13s %21s" | format(postgresql_tpl_host_type, postgresql_tpl_host_database, postgresql_tpl_host_user, postgresql_tpl_host_ip, postgresql_tpl_host_auth) }}
 {% endif %}
-{% if postgresql_default_hba is defined and postgresql_default_hba %}
-# Default entries for local PostgreSQL clusters
-{{ postgresql_default_hba }}
+{% endfor %}
 {% endif %}
 
 {#	# Allow replication connections from localhost, by a user with the
