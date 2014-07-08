@@ -48,11 +48,12 @@ and work there. You should use `git rebase` to keep your repository updated.
 
 #### Make sure your repo is always updated
 
-You will always want to perform these 3 steps before making any changes:
+You will always want to perform these steps before making any changes:
 
-1. `git fetch upstream`
-2. `git rebase upstream/master`
-3. `git push origin master`
+1. `git checkout master`
+2. `git fetch upstream`
+3. `git rebase upstream/master`
+4. `git push origin master`
 
 #### Make your contribution
 
