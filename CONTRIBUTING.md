@@ -64,7 +64,7 @@ You will always want to perform these 3 steps before making any changes:
   - Click the pull request icon next to the branch
   - Follow github's instructions and create the pull request
 5. `git checkout master`
-  - At this point you are free to make any other feature branches for future pull requests.
+  - At this point you are free to make any other feature branches for future pull requests
 
 ### Public API, Versioning and stable releases
 
