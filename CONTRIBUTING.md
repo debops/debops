@@ -38,6 +38,34 @@ ginas playbook, or Ansible.
 If you want to contribute code, you should fork ginas to your own repository
 and work there. You should use `git rebase` to keep your repository updated.
 
+### Contribution work flow
+
+1. [Fork ginas](https://github.com/ginas/ginas/fork) to your github account
+2. Clone your fork onto your workstation
+  - `git clone git@github.com:yourname/ginas.git`
+3. Add ginas/ginas to the upstream
+  - `git remote add upstream https://github.com/ginas/ginas/`
+
+#### Make sure your repo is always updated
+
+You will always want to perform these 3 steps before making any changes:
+
+1. `git fetch upstream`
+2. `git rebase upstream/master`
+3. `git push origin master`
+
+### Make your contribution
+
+1. `git checkout -b yourfeaturebranch`
+2. `git add <insert your files to add>`
+3. `git push origin yourfeaturebranch`
+4. Goto your forked repo on github
+  - Select your feature branch
+  - Click the pull request icon next to the branch
+  - Follow github's instructions and create the pull request
+5. `git checkout master`
+  - At this point you are free to make any other feature branches for future pull requests.
+
 ### Public API, Versioning and stable releases
 
 ginas uses [Semantic Versioning](http://semver.org/) specification for stable
