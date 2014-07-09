@@ -1,6 +1,16 @@
 ginas changelog
 ===============
 
+## July 2014
+
+`postgresql` role has been modified to support more granular auth parameters in
+`pg_hba.conf` configuration files, thanks to [Nick Janetakis](https://github.com/nickjj)
+and welcome to the team!
+
+`etc_services` role can now add custom service entries using lists in inventory
+and dependency variables.
+
+
 ## June 2014
 
 After some hiatus, time to go back to work!
