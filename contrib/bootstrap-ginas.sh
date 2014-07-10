@@ -66,7 +66,7 @@ class CLI:
     self.shell("touch {0}/hosts".format(self.ginas_inventory_path))
 
   def install_ansible(self):
-    proc = subprocess.Popen(["ansible --version"], stdout=subprocess.PIPE, shell=True)
+    proc = subprocess.Popen(["ansible --version"], stdout=subprocess.PIPE, stderr=STDOUT, shell=True)
     (out, err) = proc.communicate()
 
     if (len(out) == 0 or self.options.forceinstallansible):
@@ -82,7 +82,7 @@ class CLI:
     self.shell("cp {0} /tmp{0}.tmp".format(etchosts_path))
 
     fo = open("/tmp{0}.tmp".format(etchosts_path), "a")
-    fo.write("\n127.0.0.1 {0} {1}\n".format(self.options.domainname, self.hostname))
+    fo.write("\n127.0.1.1 {0} {1}\n".format(self.options.domainname, self.hostname))
     fo.close()
 
     self.shell("sudo mv /tmp{0}.tmp {0}".format(etchosts_path))
