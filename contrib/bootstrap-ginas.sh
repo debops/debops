@@ -117,7 +117,6 @@ class CLI:
     hosts_path = "{0}/hosts".format(self.ginas_inventory_path)
 
     fo = open(hosts_path, "a+")
-    fo.write("---\n")
     fo.write("localhost ansible_connection=local\n\n")
     fo.write("[workstation]\n")
     fo.write("{0} ansible_connection=local".format(self.hostname))
