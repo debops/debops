@@ -33,7 +33,6 @@ parser.add_option("-d", "--domain-name",
 
 class CLI:
   def __init__(self, options, args):
-
     self.options = options
     self.args = args
 
@@ -53,7 +52,6 @@ class CLI:
     if os.path.exists(self.ginas_install_path):
       self.log_error("Ginas has already been installed to: {0}".format(self.ginas_install_path))
       quit()
-
 
   def install_default_apt_packages(self):
     self.log_task("Install default apt packages:")
@@ -98,7 +96,7 @@ class CLI:
     fo.write("users_default_shell: '/bin/bash'\n\n")
     fo.write("apt_debian_http_mirror: 'ftp.us.debian.org'\n")
     fo.write("lxc_template_debootstrap_mirror: 'http://{{ apt_debian_http_mirror }}/debian'\n\n")
-    fo.write(" console_locales: ['en_US.UTF-8']")
+    fo.write("console_locales: ['en_US.UTF-8']")
     fo.close()
 
   def update_inventory_host_vars_machine(self):
