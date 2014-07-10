@@ -3,12 +3,25 @@ ginas changelog
 
 ## July 2014
 
+### New roles
+
+- **ruby**: [Ruby](https://www.ruby-lang.org/) programming language can be
+  installed either from Debian packages (old 1.9.x versions) or from official
+  sources (2.1.x versions). This role can be easily used as a dependency in
+  other roles that require Ruby support.
+
+### Other news
+
 `postgresql` role has been modified to support more granular auth parameters in
 `pg_hba.conf` configuration files, thanks to [Nick Janetakis](https://github.com/nickjj)
 and welcome to the team!
 
 `etc_services` role can now add custom service entries using lists in inventory
 and dependency variables.
+
+`contrib/bootstrap-ginas.py` script has been added which can help you install
+ginas on your Debian/Ubuntu host and even generate an example inventory
+directory.
 
 
 ## June 2014
