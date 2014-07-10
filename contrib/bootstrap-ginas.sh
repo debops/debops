@@ -66,10 +66,10 @@ class CLI:
     self.shell("touch {0}/hosts".format(self.ginas_inventory_path))
 
   def install_ansible(self):
-    proc = subprocess.Popen(["ansible --version"], stdout=subprocess.PIPE, stderr=STDOUT, shell=True)
+    proc = subprocess.Popen(["ansible --version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
     (out, err) = proc.communicate()
 
-    if (len(out) == 0 or self.options.forceinstallansible):
+    if ('ansible: not found' in out or self.options.forceinstallansible):
       self.log_task("Install ansible:")
       self.shell("{0}/contrib/bootstrap-ansible.sh".format(self.ginas_install_path))
 
