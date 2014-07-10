@@ -1,11 +1,14 @@
 #! /usr/bin/env python
 
+import platform
 import os
 import subprocess
 import socket
 from optparse import OptionParser
 
 VERSION = "0.1.0"
+SUPPORTED_PLATFORMS = ["debian", "Ubuntu"]
+
 DEFAULT_APT_PACKAGES = "git lsb-release make"
 GINAS_CLONE_URL = "https://github.com/ginas/ginas.git"
 
@@ -44,6 +47,16 @@ class CLI:
     if os.path.exists(self.ginas_install_path):
       self.log_error("Ginas has already been installed to: {0}".format(self.ginas_install_path))
       quit()
+
+  def exit_if_unsupported_os(self):
+    os_platform = platform.linux_distribution()[0]
+
+    for p in SUPPORTED_PLATFORMS:
+      if os_platform == p:
+        return
+
+    self.log_error("Sorry your OS ({0}) is not supported at this time".format(os_platform))
+    quit()
 
   def install_default_apt_packages(self):
     self.log_task("Install default apt packages:")
@@ -194,6 +207,7 @@ class CLI:
 
 cli = CLI(options, args)
 
+cli.exit_if_unsupported_os()
 cli.install_default_apt_packages()
 cli.install_ginas()
 cli.install_ansible()
