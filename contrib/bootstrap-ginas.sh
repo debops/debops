@@ -103,8 +103,8 @@ class CLI:
     self.log_task("Update inventory/host_vars/{0}.yml".format(self.hostname))
 
     fo = open("{0}/host_vars/{1}.yml".format(self.ginas_inventory_path, self.hostname), "a+")
-    fo.write("---\n")
     if options.apthostpackages:
+      fo.write("---\n")
       packages = self.options.apthostpackages.split()
       fo.write("apt_host_packages: {0}".format(packages))
     fo.close()
