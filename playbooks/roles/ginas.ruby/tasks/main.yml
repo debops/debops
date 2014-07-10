@@ -1,0 +1,14 @@
+---
+
+- include: install_ruby_from_distribution.yml
+  when: (ansible_distribution is defined and
+         ansible_distribution in ['Debian', 'Ubuntu' ]) and
+        (ruby_version is defined and ruby_version) and
+        (ruby_version | version_compare('2.0','<'))
+
+- include: install_ruby_from_source.yml
+  when: (ansible_distribution is defined and
+         ansible_distribution in ['Debian', 'Ubuntu']) and
+        (ruby_version is defined and ruby_version) and
+        (ruby_version | version_compare('2.1','>='))
+

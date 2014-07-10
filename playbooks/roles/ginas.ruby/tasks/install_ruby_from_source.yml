@@ -1,0 +1,36 @@
+---
+# Install Ruby from source (based on https://github.com/jgrowl/ansible-playbook-ruby-from-src)
+
+- name: Install Ruby build dependencies
+  apt: name={{ item }} state=installed
+  with_items: [ 'build-essential', 'automake', 'bison', 'autoconf', 'pkg-config',
+                'libreadline6', 'libreadline6-dev', 'openssl', 'libssl-dev',
+                'curl', 'git', 'zlib1g', 'zlib1g-dev', 'libyaml-dev', 'checkinstall',
+                'libsqlite3-dev', 'libxml2-dev', 'libxslt1-dev', 'curl' ]
+
+- name: Create Ruby build directory
+  file: path=/usr/local/src/ruby state=directory owner=root group=root mode=0755
+
+- name: Download Ruby sources
+  get_url: url={{ ruby_build_source + '/ruby-' + ruby_version + '.tar.gz' }}
+           dest=/usr/local/src/ruby/ruby-{{ ruby_version }}.tar.gz
+
+- name: Extract sources
+  command: tar -xf ruby-{{ ruby_version }}.tar.gz chdir=/usr/local/src/ruby
+           creates=/usr/local/src/ruby/ruby-{{ ruby_version }}
+
+- name: Configure Ruby source
+  command: ./configure --prefix=/usr/local chdir=/usr/local/src/ruby/ruby-{{ ruby_version }}
+           creates=/usr/local/src/ruby/ruby-{{ ruby_version }}/Makefile
+
+- name: Compile Ruby
+  command: make chdir=/usr/local/src/ruby/ruby-{{ ruby_version }}
+           creates=/usr/local/src/ruby/ruby-{{ ruby_version }}/ruby
+
+- name: Install Ruby
+  command: make install chdir=/usr/local/src/ruby/ruby-{{ ruby_version }}
+           creates=/usr/local/bin/ruby
+
+- name: Install bundler from RubyGems
+  command: gem install bundler creates=/usr/local/bin/bundler
+
