@@ -138,6 +138,11 @@ lxc_template_admin_authorized_key: '{{ lookup("file", "~/.ssh/id_rsa.pub") }}'
 # Example usage with local apt-cacher-ng proxy: 'http://cache.{{ ansible_domain }}:3142/debian'
 lxc_template_debootstrap_mirror: 'http://cdn.debian.net/debian'
 
+# Automatically add 'security.debian.org' repository and perform 'apt-get
+# upgrade' on container creation to get latest security updates. Container
+# creation takes longer, but resulting system is more secure.
+lxc_template_security_upgrade: True
+
 # List of packages downloaded and installed by debootstrap
 lxc_template_debootstrap_packages: [ 'ifupdown', 'locales', 'libui-dialog-perl', 'dialog',
                                      'isc-dhcp-client', 'netbase', 'net-tools', 'iproute',
