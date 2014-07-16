@@ -10,6 +10,10 @@ ginas changelog
   sources (2.1.x versions). This role can be easily used as a dependency in
   other roles that require Ruby support.
 
+- **smstools**: [smstools](http://smstools3.kekekasvi.com/) is a set of scripts
+  which support communication with GSM modems under Linux. This role creates
+  TCP to SMS and mail to SMS gateway using these scripts.
+
 ### Other news
 
 `postgresql` role has been modified to support more granular auth parameters in
