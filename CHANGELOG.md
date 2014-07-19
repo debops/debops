@@ -14,6 +14,18 @@ ginas changelog
   which support communication with GSM modems under Linux. This role creates
   TCP to SMS and mail to SMS gateway using these scripts.
 
+### LXC
+
+LXC support on Ubuntu related to cgroups has been fixed, now cgroups are not
+mounted on Ubuntu and systems other than Debian Wheezy, due to systemd being
+the manager of cgroups.
+
+New Debian containers (based on 'ginas' template script) will now be upgraded
+using packages from `security.debian.org` repository during creation process.
+This change affects the time needed to create new containers (from about 10
+seconds to about a minute) but helps secure newly booted systems better. It's
+an optional task that can be disabled using a variable.
+
 ### Other news
 
 `postgresql` role has been modified to support more granular auth parameters in
@@ -26,6 +38,15 @@ and dependency variables.
 `contrib/bootstrap-ginas.py` script has been added which can help you install
 ginas on your Debian/Ubuntu host and even generate an example inventory
 directory.
+
+`contrib/bootstrap-ansible.sh` script now can correctly install new and old
+Ansible versions using different .deb package creation methods. Script checks
+for existence of the packages in two ways and installs the correct one.
+
+APT package management system will now support `https://` URLs of repositories
+by default (these repositories will not be cached by `apt-cacher-ng` proxy).
+
+Added ducks.
 
 
 ## June 2014

@@ -45,9 +45,10 @@ script:
   # playbook run might change in the meantime, which will count as
   # non-idempotency, but it shouldn't affect testing.
   - >
-     ansible-playbook -i contrib/travis-ci/inventory playbooks/site.yml
-     | tee /tmp/ansible_idempotency_test || true
+     echo "Running Ansible again for idempotency test (not essential)"
+     ; ansible-playbook -i contrib/travis-ci/inventory playbooks/site.yml > /tmp/ansible_idempotency_test || true
      ; grep -q 'changed=0.*failed=0' /tmp/ansible_idempotency_test
      && (echo 'Idempotence test: pass' && exit 0)
-     || (echo 'Idempotence test: fail, changed=3 seems to be normal due to ansible git repository' && exit 0)
+     || (echo 'Idempotence test: fail, changed=3 seems to be normal due to ansible git repository'
+     && grep -B 5 -e '^changed' /tmp/ansible_idempotency_test && exit 0)
 

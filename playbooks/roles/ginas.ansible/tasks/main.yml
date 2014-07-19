@@ -51,14 +51,22 @@
   when: role_ansible_git is defined and role_ansible_git.changed == True
   sudo_user: '{{ role_ansible_build_user }}'
 
-- name: Install Ansible .deb package (stable version)
-  shell: dpkg -i {{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}/../ansible_{{ role_ansible_package_version }}_all.deb
-  when: (role_ansible_build is defined and role_ansible_build.changed == True) and
-        role_ansible_git_branch != 'devel'
+- name: Check if new style .deb package is present
+  shell: find {{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}/deb-build/unstable/ -name 'ansible_{{ role_ansible_package_version }}-*_all.deb' 2>/dev/null || true
+  register: role_ansible_register_new_deb
+  when: (role_ansible_build is defined and role_ansible_build.changed)
 
-- name: Install Ansible .deb package (devel version)
+- name: Check if old style .deb package is present
+  shell: find {{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}/../ -name 'ansible_{{ role_ansible_package_version }}_all.deb' 2>/dev/null || true
+  register: role_ansible_register_old_deb
+  when: (role_ansible_build is defined and role_ansible_build.changed)
+
+- name: Install Ansible .deb package (new version)
   shell: dpkg -i {{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}/deb-build/unstable/ansible_{{ role_ansible_package_version }}-*_all.deb
-  when: (role_ansible_build is defined and role_ansible_build.changed == True) and
-        role_ansible_git_branch == 'devel'
+  when: role_ansible_register_new_deb is defined and role_ansible_register_new_deb.stdout != ""
+
+- name: Install Ansible .deb package (old version)
+  shell: dpkg -i {{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}/../ansible_{{ role_ansible_package_version }}_all.deb
+  when: role_ansible_register_old_deb is defined and role_ansible_register_old_deb.stdout != ""
 
 
