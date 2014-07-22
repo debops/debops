@@ -1,0 +1,30 @@
+---
+
+# This hash defines the mapping from current Debian/Ubuntu release to next
+# release (this information is not available in Ansible Facts)
+backporter_next:
+  'wheezy': 'jessie'
+
+backporter_mail_subject: 'Backport of {{ backporter_package }} package uploaded to Ansible Controller'
+
+backporter_mail_body: |
+  Ansible has built new "{{ backporter_package }}" package on {{ ansible_fqdn }},
+  which is a backported version from {{ backporter_distribution }} {{ backporter_next[backporter_release] | capitalize }}.
+  This package was built because requested version {{ backporter_version }} was not found
+  in configured APT repositories.
+  
+  Generated packages have been uploaded to Ansible Controller and can be
+  redistributed to local APT repositories managed by 'reprepro'. To do that,
+  re-run Ansible playbook on hosts configured to manage local APT repositories,
+  which should download new .deb packages and update their repositories
+  automatically.
+  
+  Packages can be found on Ansible Controller in:
+      {{ backporter_upload_storage | realpath }}
+  
+  List of generated .deb packages:
+  
+  {% for package in backporter_register_packages_to_upload.stdout_lines %}
+  {{ package | replace('./','') | indent(4,true) }}
+  {% endfor %}
+

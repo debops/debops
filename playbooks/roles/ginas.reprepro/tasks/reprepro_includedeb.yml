@@ -20,11 +20,12 @@
   register: reprepro_includedebs
   when: secret is defined and secret
 
-- name: Update reprepro repository
-  shell: reprepro includedeb {{ item.codename }} includedeb/{{ item.codename }}/* chdir=~
-  with_items: reprepro_distributions
+- name: Update reprepro repositories
+  shell: reprepro includedeb {{ item.item.codename }} {{ item.dest + '*' }} chdir=~
+  with_items: reprepro_includedebs.results
   sudo_user: '{{ reprepro_user }}'
   changed_when: False
-  when: reprepro_includedebs is defined and reprepro_includedebs.changed == True
+  when: (reprepro_includedebs is defined and reprepro_includedebs) and
+        (item.changed is defined and item.changed)
 
 

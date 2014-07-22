@@ -1,0 +1,135 @@
+---
+# role: backporter - create backported .deb packages from .dsc files
+# Homepage: https://wiki.debian.org/SimpleBackportCreation
+
+
+# This role is designed to be used as a dependency of another role. You should
+# pass information about package you want to build using dependency variables.
+
+# At the moment role does not have automatic prerequisite detection. To find
+# out what prerequisites are needed to build a package, run 'dpkg-checkbuilddeps'
+# in source directory.
+
+
+# ---- Required configuration variables ----
+
+# Name of a package to build
+backporter_package: ""
+
+# What package version should be available in APT repositories?
+backporter_version: ""
+
+
+# ---- Common configuration variables ----
+
+# Name of a source package to build from (usually the same as the package)
+backporter_source_package: '{{ backporter_package }}'
+
+# List of required packages to install before build
+backporter_prerequisites: []
+
+# Fallback version number of source package to use in case rmadison service is
+# inaccessible
+backporter_source_version: ""
+
+# Regexp to use to find orig tarball in build directory (by default Debian uses
+# .tar.xz format but it might be different)
+backporter_source_orig: '.orig.tar.xz'
+
+# Which Debian architecture to use to look for available packages (by default,
+# ginas is used om amd64 architecure, some packages not dependent on an
+# architecture might be in 'all')
+backporter_architecture: ""
+
+# Which Debian component to look in for a package source
+backporter_component: 'main'
+
+# What comparsion to use to check for available package version? By default
+# check if package available is older than the package you are requesting
+backporter_comparsion: '<'
+
+# List of regexps used to find created .deb packages which will be installed on
+# build host
+backporter_install_packages: [ '{{ backporter_package }}_*.deb' ]
+
+# List of regexps used to find created .deb packages which will be uploaded to
+# Ansible Controller host (in 'secret' directory) to include in local reprepro
+# repositories
+backporter_upload_packages: '{{ backporter_install_packages }}'
+
+# Send mail reminder to administrator about uploaded packages? If yes, specify
+# list of mail recipients
+backporter_mail_to: [ '{{ backporter_email }}' ]
+
+
+# ---- Backport configuration variables ----
+
+# Maintainer name
+backporter_maintainer: 'Automated Package Maintainer'
+
+# Maintainer mail address (will receive information about new uploaded packages)
+backporter_email: 'root@{{ ansible_domain }}'
+
+# Base string to append to backported package version (will be used in
+# changelog and name of .orig.tar.xz file)
+backporter_new_version: '~bpo{{ ansible_distribution_version | replace(".","") }}'
+
+# Full string to append to backported package version (will be used in
+# changelog and finished .deb package names)
+backporter_changelog_version: '{{ backporter_new_version }}+'
+
+# Message included in changelog
+backporter_changelog_message: 'Package rebuilt automatically by Ansible for local {{ backporter_release }}-backports repository.'
+
+
+# ---- Backporter role internal variables ----
+
+# Linux distribution and release which will trigger backport requirement tests
+backporter_distribution: 'Debian'
+backporter_release: 'wheezy'
+
+# Should package be backported regardless of wether it's currently available in
+# APT repository?
+backporter_force: False
+
+# Address to a Debian mirror which will be used to download source packages
+backporter_build_mirror: 'http://cdn.debian.net/debian'
+
+# Name of next distribution release which will be used to check available
+# package version (don't use suite names here, because backports make sense
+# only for specific releases)
+backporter_build_codename: '{{ backporter_next[backporter_release] }}'
+
+# Length of the slice of source package name used to create path to source
+# package (from the start of the string). If you are backporting a library, set
+# this to 4 to use path like '.../main/liba/libansible/libansible_...'
+backporter_source_package_slice: 1
+
+# Part of URI to a source package (last part will be added during runtime after
+# check for available versions)
+backporter_source_path: '{{ backporter_build_mirror }}/pool/{{ backporter_component }}/{{ backporter_source_package[0:backporter_source_package_slice] }}/{{ backporter_source_package }}/{{ backporter_source_package }}'
+
+# Path to directory on remote host where backported packages will be built
+backporter_build_path: '/usr/local/src'
+
+# Should .deb packages that are created be automatically installed on build
+# host?
+backporter_install: True
+
+# Should .deb packages that are created be automatically uploaded to Ansible
+# Controller in a directory accessible by 'reprepro' role?
+backporter_upload: True
+
+# Path to a directory on Ansible Controller used by 'reprepro' role to download
+# packages to local APT repository
+backporter_upload_storage: '{{ secret + "/reprepro/includedeb/" + backporter_release + "-backports" }}'
+
+# List of required Debian SDK packages to install on a host before backporting
+backporter_sdk_packages: [ 'devscripts', 'build-essential', 'debian-keyring',
+                           'liburi-perl', 'libdistro-info-perl', 'python-httplib2',
+                           'curl' ]
+
+# List of source repositories to enable on a host
+backporter_repositories:
+  - 'deb-src {{ backporter_build_mirror }} {{ ansible_distribution_release }} main contrib'
+

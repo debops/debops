@@ -1,27 +1,18 @@
 ---
 
-- name: Update APT cache to get current package information
-  apt: update_cache=yes cache_valid_time=3600
+- name: Install packages required for LXC
+  apt: name={{ item }} state=latest install_recommends=no
+  with_items: lxc_distribution_packages[ansible_distribution + '_' + ansible_distribution_release]
 
 - name: Check available LXC package version
-  shell: apt-cache madison lxc | head -n 1 | awk '{print $3}'
+  shell: lxc-create --version
   register: lxc_register_package_version
   changed_when: False
 
-# Build LXC 1.0 on Debian Wheezy if it's not available via APT repositories
-- include: build_lxc_from_testing.yml
-  when: (ansible_distribution == 'Debian' and ansible_distribution_release == 'wheezy') and
-        ((lxc_register_package_version is defined and
-         lxc_register_package_version.stdout | version_compare('1.0','<')) or
-        (lxc_build_force is defined and lxc_build_force))
-
-# Configure LXC support when correct version is installed (either from
-# repositories or built)
+# Configure LXC support when correct version is installed
 - include: configure_lxc.yml
   when: (lxc_register_package_version is defined and
-         lxc_register_package_version.stdout | version_compare('1.0','>=')) or
-        (lxc_register_built_packages_installed is defined and
-         lxc_register_built_packages_installed.changed)
+         lxc_register_package_version.stdout | version_compare('1.0','>='))
 
 # Install backported Linux kernel on Debian Wheezy
 - include: install_kernel_from_backports.yml

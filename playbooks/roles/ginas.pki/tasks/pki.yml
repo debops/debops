@@ -103,13 +103,21 @@
   with_items: [ 'signed', 'crl' ]
   when: secret is defined and secret
 
-- name: Symlink CA certificates
-  shell: find {{ pki_path }}/ca/certs -name '*.crt' -type f -exec ln -s {} /usr/local/share/ca-certificates/ \;
+- name: Get list of available CA certificates
+  command: find {{ pki_path }}/ca/certs -name '*.crt' -type f
+  register: pki_register_ca_list
   changed_when: False
 
+- name: Symlink available CA certificates to /usr/local
+  file: src={{ item }} state=link owner=root group=root mode=0644
+        dest=/usr/local/share/ca-certificates/{{ item | basename }}
+  with_items: pki_register_ca_list.stdout_lines
+  register: pki_register_ca_symlinks
+  when: pki_register_ca_list is defined and pki_register_ca_list
+
 - name: Update CA certificates database
-  shell: update-ca-certificates
-  changed_when: False
+  command: update-ca-certificates
+  when: pki_register_ca_symlinks is defined and pki_register_ca_symlinks.changed
 
 - name: Flush handlers if required
   meta: flush_handlers
