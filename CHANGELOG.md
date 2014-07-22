@@ -14,6 +14,11 @@ ginas changelog
   which support communication with GSM modems under Linux. This role creates
   TCP to SMS and mail to SMS gateway using these scripts.
 
+- **backporter**: this role is based on [Simple Backport Creation
+  HOWTO](https://wiki.debian.org/SimpleBackportCreation) and can be used to
+  make sure that packages with specific version are available using APT. If
+  not, they can be built and installed automatically.
+
 ### LXC
 
 LXC support on Ubuntu related to cgroups has been fixed, now cgroups are not
@@ -25,6 +30,10 @@ using packages from `security.debian.org` repository during creation process.
 This change affects the time needed to create new containers (from about 10
 seconds to about a minute) but helps secure newly booted systems better. It's
 an optional task that can be disabled using a variable.
+
+Support for automatic build and installation of LXC 1.0 packages on Debian
+Wheezy has been removed from 'lxc' role. It will be handled by
+'ginas.backporter' role instead.
 
 ### Other news
 
@@ -45,6 +54,11 @@ for existence of the packages in two ways and installs the correct one.
 
 APT package management system will now support `https://` URLs of repositories
 by default (these repositories will not be cached by `apt-cacher-ng` proxy).
+
+`reprepro` role has been fixed and now supports multiple APT repositories. By
+default, two repositories are created - `wheezy` for local packages managed
+manually by administrator, and `wheezy-backports` for packages built
+automatically by `ginas.backporter` role.
 
 Added ducks.
 
