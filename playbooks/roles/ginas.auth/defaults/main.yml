@@ -1,5 +1,28 @@
 ---
+# role: auth - authorization, authentication and general system access
 
-auth_admin_accounts:
-  - $ENV(USER)
+
+# List of default accounts that are given admin status by being added to
+# 'admins' system group
+auth_admin_accounts: [ '{{ ansible_ssh_user }}' ]
+
+# List of default system accounts that are used in the playbook
+auth_system_groups:
+
+  # Global system administrators, unrestricted root access, unrestricted SSH
+  - 'admins'
+
+  # Users in this group can connect to the host using SSH service
+  - 'sshusers'
+
+  # Users in this group have access only to chrooted SFTP service (without full
+  # shell access) and cannot use SSH public keys in ~/.ssh/authorized_keys file
+  # (only keys in '/etc/ssh/authorized_keys.d/user' are allowed)
+  - 'sftponly'
+
+  # Users in this group can reload nginx service using sudo and have access to
+  # /etc/nginx/sites-local/ directory where they can put nginx vhost
+  # configuration files to be enabled by Ansible in nginx
+  # (this might be moved to 'nginx' role in the future)
+  - 'webadmins'
 
