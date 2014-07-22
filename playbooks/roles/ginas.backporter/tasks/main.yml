@@ -1,0 +1,17 @@
+---
+
+- name: Update APT cache to get current package information
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: Check available package version
+  shell: apt-cache madison {{ backporter_package }} | head -n 1 | awk '{print $3}'
+  register: backporter_register_package_version
+  when: backporter_package is defined and backporter_package
+  changed_when: False
+
+- include: backport_package.yml
+  when: (ansible_distribution == backporter_distribution and ansible_distribution_release == backporter_release) and
+        ((backporter_register_package_version is defined and
+          backporter_register_package_version.stdout | version_compare(backporter_version,backporter_comparsion)) or
+         (backporter_force is defined and backporter_force))
+
