@@ -3,45 +3,6 @@
 # Homepage: https://linuxcontainers.org/
 
 
-# ---- Build LXC 1.0 on Debian Wheezy ----
-
-# Wheezy at the moment has only LXC 0.8 in its repositories, and version 1.0
-# will probably not be backported soon, if at all. Because of that, ginas
-# playbook can automatically:
-#  - build LXC 1.0.x packages from Debian source packages in Jessie (enabled
-#    automatically in Wheezy if sufficient packages are not available);
-#  - redistribute built packages within the ginas cluster using local .deb
-#    repository via reprepro;
-# More information about the process can be found in
-# 'tasks/build_lxc_from_testing.yml'
-
-# Package building is enabled automatically if certain conditions apply, here
-# you can enforce building the packages
-lxc_build_force: False
-
-# Debian Suite and architecture which is used to find current source package
-# version (by default ginas will build and install current LXC package from
-# Debian Jessie for amd64 architecture)
-lxc_build_arch: 'amd64'
-lxc_build_suite: 'jessie'
-
-# Address of a mirror from where package sources (.dsc) will be downloaded
-lxc_build_mirror: 'http://cdn.debian.net/debian'
-
-# Path to directory where packages will be built (version number will be added
-# to last element of this path)
-lxc_build_path: '/usr/local/src/lxc'
-
-# Upload the built LXC 1.0 packages to local Debian repository? Enable this
-# only once and disable afterwards (unless you are upgrading the packages). This
-# will upload .deb packages to Ansible Controller and put them in directory where
-# 'reprepro' role expects local Debian packages. After re-running Ansible with
-# 'apt' role on local repository host, new packages will be available on hosts
-# that use local repository.
-lxc_reprepro_upload: True
-lxc_reprepro_storage: '{{ secret + "/reprepro/includedeb/" + ansible_lsb.codename }}'
-
-
 # ---- Install Linux kernel from Debian Backports on Wheezy ----
 
 # Name of Linux kernel package to install from Debian Backports on Debian
