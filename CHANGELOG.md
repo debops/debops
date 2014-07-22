@@ -60,6 +60,9 @@ default, two repositories are created - `wheezy` for local packages managed
 manually by administrator, and `wheezy-backports` for packages built
 automatically by `ginas.backporter` role.
 
+`auth` role got a long overdue update, now it should use the correct user
+account by default and not create messy "$ENV(USER)" user accounts.
+
 Added ducks.
 
 
