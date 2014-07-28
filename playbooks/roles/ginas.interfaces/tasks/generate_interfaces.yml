@@ -41,7 +41,7 @@
   with_items: interfaces_list
   register: interfaces_status
   when: (item.iface is defined and item.iface) and
-        (item.delete is undefined or item.delete is defined and item.delete == False)
+        (item.delete is undefined or (item.delete is defined and not item.delete))
 
 - name: Reconfigure interfaces
   shell: ifdown {{ item.item.iface }} ; ifup {{ item.item.iface }}
