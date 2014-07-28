@@ -36,8 +36,6 @@ users_host_list: []
 # List of all recognized values, default value listed first
 #
 #  - name: 'username'               # mandatory, default group if not defined
-#    type: 'git,sftponly'           # define special type of account with
-#                                   # limited functionality
 #    state: 'present,absent'
 #    group: 'name'                  # default group
 #    groups: ''                     # list of groups to set
@@ -49,20 +47,10 @@ users_host_list: []
 #    systemuser: False/True         # create system user
 #    systemgroup: False/True        # create system group
 #
-#    home: '/home/name'
-#    home_owner: 'root'
-#    home_group: 'root'
-#    home_mode: '0751'
-#
 #    dotfiles: False/True           # download and configure dotfiles?
 #    dotfiles_repo: 'repository'
 #    dotfiles_command: 'make all'
 #    dotfiles_creates '~/.zshrc'
-#
-#    domain: '{{ ansible_domain }}' # for git users
-#
-#    # Create directories in user home directory (no subdirectories)
-#    dirs: [ 'files', 'directory\ with\ spaces' ]
 #
 #    # Create ~/.forward file (set to False to remove ~/.forward)
 #    forward: [ 'user@domain', 'account' ]
@@ -75,8 +63,6 @@ users_host_list: []
 
 users_default_shell: '/bin/sh'
 users_default_home_mode: '0751'
-
-users_default_sftponly_dirs: [ 'files' ]
 
 # Default dotfile hash to use
 users_default_dotfile: 'drybjed'
@@ -92,7 +78,4 @@ users_dotfiles:
     repo: 'https://github.com/drybjed/dotfiles.git'
     command: 'make all dark'
     creates: '~/.zshenv.local'
-
-# What domain should git users use for publishing websites
-users_git_default_domain: '{{ ansible_domain }}'
 
