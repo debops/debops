@@ -19,6 +19,14 @@ ginas changelog
   make sure that packages with specific version are available using APT. If
   not, they can be built and installed automatically.
 
+### Removal of Jinja2 logic syntax from Ansible task lists
+
+Recent security update to Ansible (1.6.7+) has disabled the option to use
+Jinja2 if/else syntax in Ansible tasks (this does not affect templates).
+Because of that some roles had to be modified to work correctly again (for
+example `users` role will be split into three roles to support functionality
+provided by only one role previously).
+
 ### LXC
 
 LXC support on Ubuntu related to cgroups has been fixed, now cgroups are not
@@ -34,6 +42,22 @@ an optional task that can be disabled using a variable.
 Support for automatic build and installation of LXC 1.0 packages on Debian
 Wheezy has been removed from 'lxc' role. It will be handled by
 'ginas.backporter' role instead.
+
+### users
+
+Because of the security fix mentioned above, `users` role had to be modified to
+work correctly again. Specifically, ability to create restricted accounts with
+support for `sftponly` access or `git` repositories has been removed from
+`users` role and will be introduced, after proper testing, using new roles and
+new set of variables.
+
+Support for [Monkeysphere](http://web.monkeysphere.info/) key management on
+user accounts has been removed from `users` role and will be reintroduced at
+a later date in a separate, non-common role (most likely merged into
+`monkeysphere` role).
+
+`users` role will now use `ansible_ssh_user` variable for configuration of
+default user account with admin privileges.
 
 ### Other news
 

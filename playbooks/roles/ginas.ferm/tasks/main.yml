@@ -1,36 +1,53 @@
 ---
 
 - name: Configure ferm status in debconf
-  debconf: name=ferm question='ferm/enable' vtype='boolean' value='{{ ferm | lower }}'
+  debconf:
+    name: 'ferm'
+    question: 'ferm/enable'
+    vtype: 'boolean'
+    value: '{{ ferm | lower }}'
 
 - name: Ensure ferm is installed
-  apt: pkg=ferm state=latest install_recommends=no
+  apt:
+    name: 'ferm'
+    state: 'latest'
+    install_recommends: 'no'
 
 - name: Create configuration directories
-  file: path={{ item }} state=directory owner=root group=root mode=0750
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0750'
   with_items:
     - '/etc/ferm/ferm.d'
     - '/etc/ferm/filter-input.d'
 
 - name: Apply firewall configuration
-  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   with_items: [ 'etc/default/ferm', 'etc/ferm/ferm.conf' ]
-  notify: Restart ferm
+  notify: [ 'Restart ferm' ]
 
 - name: Allow SSH access from Ansible Controller
-  template: src=etc/ferm/filter-input.d/ansible_controller.conf.j2
-            dest=/etc/ferm/filter-input.d/10_ansible_controller.conf
-            owner=root group=root mode=0644
-  when: ansible_controller is defined and ansible_controller
-  notify: Restart ferm
+  template:
+    src: 'etc/ferm/filter-input.d/ansible_controller.conf.j2'
+    dest: '/etc/ferm/filter-input.d/10_ansible_controller.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: (ansible_controller is defined and ansible_controller)
+  notify: [ 'Restart ferm' ]
 
 - name: Remove iptables INPUT rules if requested
-  file: state=absent
-        {% if item.filename is defined and item.filename %}
-        path=/etc/ferm/filter-input.d/{{ item.weight | default('50') }}_{{ item.filename }}.conf
-        {% else %}
-        path=/etc/ferm/filter-input.d/{{ item.weight | default('50') }}_{{ item.type }}_{{ item.dport[0] }}.conf
-        {% endif %}
+  file:
+    path: '/etc/ferm/filter-input.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.dport[0]) }}.conf'
+    state: 'absent'
   with_flattened:
     - ferm_input_list
     - ferm_input_group_list
@@ -39,12 +56,12 @@
         (item.delete is defined and item.delete)
 
 - name: Configure iptables INPUT rules
-  template: src=etc/ferm/filter-input.d/{{ item.type }}.conf.j2 owner=root group=root mode=0644
-            {% if item.filename is defined and item.filename %}
-            dest=/etc/ferm/filter-input.d/{{ item.weight | default('50') }}_{{ item.filename }}.conf
-            {% else %}
-            dest=/etc/ferm/filter-input.d/{{ item.weight | default('50') }}_{{ item.type }}_{{ item.dport[0] }}.conf
-            {% endif %}
+  template:
+    src: 'etc/ferm/filter-input.d/{{ item.type }}.conf.j2'
+    dest: '/etc/ferm/filter-input.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.dport[0]) }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   with_flattened:
     - ferm_input_list
     - ferm_input_group_list
@@ -55,10 +72,10 @@
 - name: Apply iptables rules if ferm is enabled
   command: ferm --slow /etc/ferm/ferm.conf
   changed_when: False
-  when: ferm is defined and ferm
+  when: (ferm is defined and ferm)
 
 - name: Clear iptables rules if ferm is disabled
   command: ferm --flush /etc/ferm/ferm.conf
   changed_when: False
-  when: ferm is undefined or ferm is defined and ferm == False
+  when: (ferm is undefined or (ferm is defined and not ferm))
 

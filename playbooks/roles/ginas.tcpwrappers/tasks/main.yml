@@ -20,12 +20,9 @@
   when: ansible_controller is defined and ansible_controller
 
 - name: Remove hosts.allow entries if requested
-  file: state=absent
-        {% if item.filename is defined and item.filename %}
-        path=/etc/hosts.allow.d/{{ item.weight | default('50') }}_{{ item.filename }}
-        {% else %}
-        path=/etc/hosts.allow.d/{{ item.weight | default('50') }}_{{ item.daemon }}_allow
-        {% endif %}
+  file:
+    path: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.daemon + "_allow") }}'
+    state: 'absent'
   with_flattened:
     - tcpwrappers_allow
     - tcpwrappers_group_allow
@@ -35,12 +32,12 @@
         (item.custom is defined and not item.custom)
 
 - name: Generate hosts.allow entries
-  template: src=etc/hosts.allow.d/allow.j2 owner=root group=root mode=0644
-            {% if item.filename is defined and item.filename %}
-            dest=/etc/hosts.allow.d/{{ item.weight | default('50') }}_{{ item.filename }}
-            {% else %}
-            dest=/etc/hosts.allow.d/{{ item.weight | default('50') }}_{{ item.daemon }}_allow
-            {% endif %}
+  template:
+    src: 'etc/hosts.allow.d/allow.j2'
+    dest: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.daemon + "_allow") }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   with_flattened:
     - tcpwrappers_allow
     - tcpwrappers_group_allow

@@ -1,62 +1,68 @@
 ---
 
-- name: Manage user accounts
-  user: name={{ item.name }} state={{ item.state | default('present') }}
-        group={{ item.group | default(item.name) }}
-        {% if item.uid is defined and item.uid %} uid={{ item.uid }} {% endif %}
-        {% if item.systemuser is defined and item.systemuser %} system=yes {% endif %}
-        {% if item.comment is defined and item.comment %} comment='{{ item.comment }}' {% endif %}
-        {% if item.type is defined and item.type == 'sftponly' %}
-        groups='sftponly' append=False
-        home={{ item.home | default('/srv/users/' + item.name) }} createhome=no
-        shell='/usr/sbin/nologin'
-        {% elif item.type is defined and item.type == 'git' %}
-        groups={{ item.groups | default('sshusers') }} append={{ item.append | default(True) }}
-        home={{ item.home | default('/srv/users/' + item.name) }} createhome=no
-        shell={{ item.shell | default('/usr/bin/git-shell') }}
-        {% else %}
-        groups={{ item.groups | default('') }} append={{ item.append | default(True) }}
-        home={{ item.home | default('/home/' + item.name) }} createhome=no
-        shell={{ item.shell | default(users_default_shell) }}
-        {% endif %}
+- name: Manage user accounts without UIDs
+  user:
+    name: '{{ item.name }}'
+    group: '{{ item.group | default(item.name) }}'
+    state: '{{ item.state | default("present") }}'
+    comment: '{{ item.comment | default("") }}'
+    system: '{{ item.systemuser | default("no") }}'
+    shell: '{{ item.shell | default(users_default_shell) }}'
+    home: '{{ item.home | default(users_default_home_prefix + "/" + item.name) }}'
+    createhome: 'no'
   with_flattened:
     - users_default
     - users_admins
     - users_list
     - users_group_list
     - users_host_list
-  when: item.name is defined and item.name
+  when: ((item.name is defined and item.name) and (item.uid is undefined or (item.uid is defined and not item.uid)))
 
-- name: Manage home directories permissions
-  file: state=directory
-        {% if item.type is defined and item.type == 'sftponly' %}
-        path={{ item.home | default('/srv/users/' + item.name) }} owner=root group={{ item.group | default(item.name) }} mode=0750
-        {% elif item.type is defined and item.type == 'git' %}
-        path={{ item.home | default('/srv/users/' + item.name) }}
-        owner={{ item.home_owner | default(item.name) }}
-        {% if item.group is defined and item.group %}
-        group={{ item.home_group | default(item.group) }}
-        {% else %}
-        group={{ item.home_group | default(item.name) }}
-        {% endif %}
-        mode={{ item.home_mode | default(users_default_home_mode) }}
-        {% else %}
-        path={{ item.home | default('/home/' + item.name) }}
-        owner={{ item.home_owner | default(item.name) }}
-        {% if item.group is defined and item.group %}
-        group={{ item.home_group | default(item.group) }}
-        {% else %}
-        group={{ item.home_group | default(item.name) }}
-        {% endif %}
-        mode={{ item.home_mode | default(users_default_home_mode) }}
-        {% endif %}
+- name: Manage user accounts with UIDs
+  user:
+    name: '{{ item.name }}'
+    uid: '{{ item.uid }}'
+    group: '{{ item.group | default(item.name) }}'
+    state: '{{ item.state | default("present") }}'
+    comment: '{{ item.comment | default("") }}'
+    system: '{{ item.systemuser | default("no") }}'
+    shell: '{{ item.shell | default(users_default_shell) }}'
+    home: '{{ item.home | default(users_default_home_prefix + "/" + item.name) }}'
+    createhome: 'no'
   with_flattened:
     - users_default
     - users_admins
     - users_list
     - users_group_list
     - users_host_list
-  when: (item.name is defined and item.name) and
-        (item.state is undefined or item.state is defined and item.state != 'absent')
+  when: ((item.name is defined and item.name) and (item.uid is defined and item.uid))
 
+- name: Manage user default groups
+  user:
+    name: '{{ item.name }}'
+    state: '{{ item.state | default("present") }}'
+    groups: '{{ users_default_groups_list | join(",") }}'
+    append: '{{ users_default_groups_append) }}'
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
+  when: ((item.name is defined and item.name) and
+         (users_default_groups_list is defined and users_default_groups_list))
+
+- name: Manage user groups
+  user:
+    name: '{{ item.name }}'
+    state: '{{ item.state | default("present") }}'
+    groups: '{{ item.groups | join(",") }}'
+    append: '{{ item.append | default("yes") }}'
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
+  when: ((item.name is defined and item.name) and (item.groups is defined and item.groups))
 

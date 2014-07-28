@@ -14,7 +14,7 @@ users_root:
 
 # Default user created by Ansible
 users_default:
-  - name: "{{ lookup('env','USER') }}"
+  - name: '{{ ansible_ssh_user }}'
 
 # Administrators
 users_admins: []
@@ -36,11 +36,9 @@ users_host_list: []
 # List of all recognized values, default value listed first
 #
 #  - name: 'username'               # mandatory, default group if not defined
-#    type: 'git,sftponly'           # define special type of account with
-#                                   # limited functionality
 #    state: 'present,absent'
 #    group: 'name'                  # default group
-#    groups: ''                     # list of groups to set
+#    groups: []                     # list of groups to set
 #    append: yes/no                 # add to, or set groups
 #    gid: 1000
 #    uid: 1000
@@ -49,38 +47,32 @@ users_host_list: []
 #    systemuser: False/True         # create system user
 #    systemgroup: False/True        # create system group
 #
-#    home: '/home/name'
-#    home_owner: 'root'
-#    home_group: 'root'
-#    home_mode: '0751'
-#
 #    dotfiles: False/True           # download and configure dotfiles?
 #    dotfiles_repo: 'repository'
 #    dotfiles_command: 'make all'
 #    dotfiles_creates '~/.zshrc'
-#
-#    domain: '{{ ansible_domain }}' # for git users
-#
-#    # Create directories in user home directory (no subdirectories)
-#    dirs: [ 'files', 'directory\ with\ spaces' ]
 #
 #    # Create ~/.forward file (set to False to remove ~/.forward)
 #    forward: [ 'user@domain', 'account' ]
 #
 #    # Add or disable ssh authorized keys (set to False to remove ~/.ssh/authorized_keys
 #    sshkeys: [ 'list', 'of', 'keys' ]
-#
-#    gpg:
-#      - uid: 'Name Surname <user@example.org>'
-#        options: users_ssh_options.git_shell
 
 
 # --- Global defaults ---
 
-users_default_shell: '/bin/sh'
-users_default_home_mode: '0751'
+# Default shell used for new accounts
+users_default_shell: '/bin/bash'
 
-users_default_sftponly_dirs: [ 'files' ]
+# List of default groups added to new accounts
+users_default_groups_list: []
+
+# Should default groups be added to existing groups, or replace existing
+# groups?
+users_default_groups_append: 'yes'
+
+# Path to directory where home directories for new users are created
+users_default_home_prefix: '/home'
 
 # Default dotfile hash to use
 users_default_dotfile: 'drybjed'
@@ -96,11 +88,4 @@ users_dotfiles:
     repo: 'https://github.com/drybjed/dotfiles.git'
     command: 'make all dark'
     creates: '~/.zshenv.local'
-
-# What domain should git users use for publishing websites
-users_git_default_domain: '{{ ansible_domain }}'
-
-# Options to insert into ~/.ssh/authorized_keys for each GPG key using monkeysphere
-users_ssh_options:
-  git_shell: 'no-port-forwarding,no-agent-forwarding,command="git-shell -c \"$SSH_ORIGINAL_COMMAND\""'
 
