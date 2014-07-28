@@ -1,9 +1,10 @@
 ---
 
-- name: Create user groups
-  group: name={{ item.group | default(item.name) }} state=present
-         {% if item.gid is defined and item.gid %} gid={{ item.gid }} {% endif %}
-         {% if item.systemgroup is defined and item.systemgroup %} system=yes {% endif %}
+- name: Create user groups without GIDs
+  group:
+    name: '{{ item.group | default(item.name) }}'
+    system: '{{ item.systemgroup | default("no") }}'
+    state: 'present'
   with_flattened:
     - users_default
     - users_admins
@@ -11,8 +12,22 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: (item.name is defined and item.name) and
-        (item.state is undefined or item.state is defined and item.state != 'absent')
+  when: (((item.name is defined and item.name) and (item.gid is undefined or (item.gid is defined and not item.gid))) and
+        (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
-
+- name: Create user groups with GIDs
+  group:
+    name: '{{ item.group | default(item.name) }}'
+    system: '{{ item.systemgroup | default("no") }}'
+    gid: '{{ item.gid }}'
+    state: 'present'
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_groups
+    - users_list
+    - users_group_list
+    - users_host_list
+  when: ((item.name is defined and item.name) and (item.gid is defined and item.gid) and
+        (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
