@@ -1,7 +1,15 @@
 ---
 
-- name: Make sure requested directories exist
-  file: path={{ item.path }} state={{ item.state | default('directory') }} owner={{ item.owner | default('root') }} group={{ item.group | default('root') }} mode={{ item.mode | default('0755') }}
-  with_items: [ '{{ directories_list }}' ]
-  when: directories_list is defined and directories_list and item.path is defined and item.path
+- name: Create custom directories
+  file:
+    path: '{{ item.path }}'
+    state: '{{ item.state | default("directory") }}'
+    owner: '{{ item.owner | default("root") }}'
+    group: '{{ item.group | default("root") }}'
+    mode: '{{ item.mode | default("0755") }}'
+  with_flattened:
+    - directories_list
+    - directories_group_list
+    - directories_host_list
+  when: (item.path is defined and item.path)
 
