@@ -1,0 +1,28 @@
+---
+
+- name: Create default directories in user homes
+  file:
+    path: '{{ item.0.home | default(sftpusers_default_home_prefix + "/" + item.0.name + sftpusers_name_suffix) }}/{{ item.1 }}'
+    state: 'directory'
+    owner: '{{ item.0.name + sftpusers_name_suffix }}'
+    group: '{{ item.0.group | default(item.0.name + sftpusers_name_suffix) }}'
+    mode: '0755'
+  with_nested:
+    - '{{ sftpusers_list + sftpusers_group_list + sftpusers_host_list  }}'
+    - '{{ sftpusers_default_dirs }}'
+  when: ((item.0.name is defined and item.0.name) and
+        (item.0.state is undefined or (item.0.state is defined and item.0.state != 'absent')))
+
+- name: Create custom directories in user homes
+  file:
+    path: '{{ item.0.home | default(sftpusers_default_home_prefix + "/" + item.0.name + sftpusers_name_suffix) }}/{{ item.1 }}'
+    state: 'directory'
+    owner: '{{ item.0.name + sftpusers_name_suffix }}'
+    group: '{{ item.0.group | default(item.0.name + sftpusers_name_suffix) }}'
+    mode: '0755'
+  with_subelements:
+    - '{{ sftpusers_list + sftpusers_group_list + sftpusers_host_list  }}'
+    - 'dirs'
+  when: ((item.0.name is defined and item.0.name) and
+        (item.0.state is undefined or (item.0.state is defined and item.0.state != 'absent')))
+

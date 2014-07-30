@@ -19,6 +19,16 @@ ginas changelog
   make sure that packages with specific version are available using APT. If
   not, they can be built and installed automatically.
 
+- **gitusers**: this role allows you to create user accounts with restricted
+  privileges - these accounts will use
+  [git-shell](http://git-scm.com/docs/git-shell.html) as default shell, and
+  users will be able to manage their own git repositories (create, delete,
+  etc.), and easily publish their own website content using `git`.
+
+- **sftpusers**: using this role you can create restricted user accounts with
+  access to chrooted home directory using
+  [SFTPonly](https://en.wikibooks.org/wiki/OpenSSH/Cookbook/SFTP#Chrooted_SFTP_Accounts_Accessible_Only_from_Particular_Addresses).
+
 ### Removal of Jinja2 logic syntax from Ansible task lists
 
 Recent security update to Ansible (1.6.7+) has disabled the option to use
