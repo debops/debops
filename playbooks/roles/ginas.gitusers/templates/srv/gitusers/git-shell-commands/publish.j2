@@ -1,0 +1,123 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+set -e
+
+defaultsubdomain="{{ item.domain | default(gitusers_default_domain) }}"
+
+# If no project name is given, display help
+if [ $# -eq 0 ] ; then
+	cat <<-EOF
+	Usage: $(basename ${0}) <repository> <domain> [subdirectory]
+
+	Publish repository on a given <domain> with optional [subdirectory]
+	EOF
+	exit 1
+fi
+
+if [ -n "${1}" ] ; then
+	# Sanitize repository name
+	repository=${1//[^a-zA-Z0-9\.\/\_-]/}
+	project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
+else
+	echo "Error: No repository specified" && exit 1
+fi
+
+if [ -d ${HOME}/${project} ] ; then
+	cd "${HOME}/${project}"
+else
+	echo "Error: Repository ${repository} not found" && exit 1
+fi
+
+set +e
+currentworktree=$(git config deploy.worktree)
+currentbranch=$(git config deploy.branch)
+currentdomain=$(git config deploy.domain)
+currentsubdirectory=$(git config deploy.subdirectory)
+currentuserdir=$(git config --bool deploy.userdir)
+set -e
+
+if [ -n "${2}" ] ; then
+	# Sanitize domain name
+	domain=${2//[^a-zA-Z0-9\.-]/}
+	if [[ ${domain} != *.* ]] ; then
+		domain="${domain}.${defaultsubdomain}"
+	fi
+else
+	if [ -n "${currentworktree}" ] ; then
+		cat <<-EOF
+		Current work tree:	${currentworktree}
+		Current branch:		${currentbranch}
+		EOF
+		if [ -n "${currentuserdir}" ] ; then
+			cat <<-EOF
+			Current address:	{{ ansible_fqdn }}/~${USER}/${currentsubdirectory}
+			EOF
+		else
+			cat <<-EOF
+			Current address:	${currentdomain}/${currentsubdirectory}
+			EOF
+		fi
+		exit 1
+	else
+		if [[ ${repository} == */* ]] ; then
+			repository=$(echo "${repository}" | sed -e 's!^\([^/]*\)/\(.*\)$!\2/\1!' -e 's/\//./g')
+		fi
+		domain="${repository}.${defaultsubdomain}"
+	fi
+fi
+
+if [ -n "${3}" ] ; then
+	# Sanitize subdirectory name
+	directory=${3//[^a-zA-Z0-9\.\/\_-]/}
+	subdirectory=$(echo "${directory}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/^\///i')
+fi
+
+worktree="{{ gitusers_default_www_prefix }}/{{ item.0.group | default(item.0.name + gitusers_name_suffix) }}/sites/${domain}/public"
+
+if [ -n "${subdirectory}" ] ; then
+	worktree="${worktree}/${subdirectory}"
+fi
+
+if [ -n "${domain}" ] ; then
+	mkdir -p ${worktree}
+
+	[ ! -f hooks/post-receive ] && cat > hooks/post-receive <<-EOF
+		#!/bin/sh
+{% if item.0.group is defined and item.0.group %}
+		umask 0002
+{% else %}
+		umask 0022
+{% endif %}
+		worktree=\$(git config deploy.worktree)
+		branch=\$(git config deploy.branch)
+		GIT_WORK_TREE=\${worktree} git checkout -f \${branch}
+	EOF
+
+	chmod +x hooks/post-receive
+
+	git symbolic-ref HEAD refs/heads/master
+	git config deploy.worktree ${worktree}
+	git config deploy.branch ${currentbranch:-master}
+	git config deploy.domain ${domain}
+	if [ -n "${subdirectory}" ] ; then
+		git config deploy.subdirectory ${subdirectory}
+	else
+		set +e
+		git config --unset-all deploy.subdirectory
+		set -e
+	fi
+	set +e
+	git config --unset-all deploy.userdir
+	set -e
+
+	cat <<-EOF
+		Previous work tree:	${currentworktree}
+		New work tree:		${worktree}
+		Active branch:		${currentbranch:-master}
+		Current address:	${domain}/${subdirectory}
+	EOF
+fi
+
+

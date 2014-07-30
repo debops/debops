@@ -1,0 +1,57 @@
+---
+
+- name: Create base directory for user websites
+  file:
+    path: '{{ gitusers_default_www_prefix }}/{{ item.group | default(item.name + gitusers_name_suffix) }}'
+    state: 'directory'
+    owner: 'root'
+    group: '{{ gitusers_default_www_group }}'
+    mode: '0711'
+  with_flattened:
+    - gitusers_list
+    - gitusers_group_list
+    - gitusers_host_list
+  when: ((item.name is defined and item.name) and
+         (item.state is undefined or (item.state is defined and item.state != 'absent')))
+
+- name: Create root directory for user websites
+  file:
+    path: '{{ gitusers_default_www_prefix }}/{{ item.group | default(item.name + gitusers_name_suffix) }}/sites'
+    state: 'directory'
+    owner: 'root'
+    group: '{{ item.group | default(item.name + gitusers_name_suffix) }}'
+    mode: '2775'
+  with_flattened:
+    - gitusers_list
+    - gitusers_group_list
+    - gitusers_host_list
+  when: ((item.name is defined and item.name) and
+         (item.state is undefined or (item.state is defined and item.state != 'absent')))
+
+- name: Configure git-shell-commands directories
+  file:
+    path: '{{ item.home | default(gitusers_default_home_prefix + "/" + item.name + gitusers_name_suffix) }}/git-shell-commands'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_flattened:
+    - gitusers_list
+    - gitusers_group_list
+    - gitusers_host_list
+  when: ((item.name is defined and item.name) and
+         (item.state is undefined or (item.state is defined and item.state != 'absent')))
+
+- name: Configure git-shell-commands scripts
+  template:
+    src: 'srv/gitusers/git-shell-commands/{{ item.1 }}.j2'
+    dest: '{{ item.0.home | default(gitusers_default_home_prefix + "/" + item.0.name + gitusers_name_suffix) }}/git-shell-commands/{{ item.1 }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_nested:
+    - '{{ gitusers_list + gitusers_group_list + gitusers_host_list }}'
+    - '{{ gitusers_default_commands }}'
+  when: ((item.0.name is defined and item.0.name) and
+         (item.0.state is undefined or (item.0.state is defined and item.0.state != 'absent')))
+

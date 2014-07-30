@@ -1,5 +1,23 @@
 ---
 
+# Users with git-shell accounts
+- name: git-shell accounts
+  hosts: ginas_gitusers
+  sudo: yes
+
+  roles:
+    - { role: ginas.gitusers, tags: gitusers }
+    - { role: ginas.sshkeys, tags: sshkeys }
+
+# Users with SFTPonly accounts
+- name: SFTPonly accounts
+  hosts: ginas_sftpusers
+  sudo: yes
+
+  roles:
+    - { role: ginas.sftpusers, tags: sftpusers }
+    - { role: ginas.sshkeys, tags: sshkeys }
+
 # DHCP server
 - name: DHCP server support
   hosts: ginas_dhcpd

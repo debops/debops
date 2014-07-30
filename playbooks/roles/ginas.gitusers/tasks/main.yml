@@ -1,0 +1,17 @@
+---
+
+- name: Create directory for gituser homes
+  file:
+    path: '{{ gitusers_default_home_prefix }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0751'
+
+- include: groups_present.yml
+- include: gitusers.yml
+- include: git-shell.yml
+- include: forward.yml
+- include: sshkeys.yml
+- include: groups_absent.yml
+
