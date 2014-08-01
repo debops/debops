@@ -1,6 +1,35 @@
 ginas changelog
 ===============
 
+## August 2014
+
+### Ruby
+
+`ruby` role has been rewritten to use `backporter` role on Debian Wheezy.
+Instead of compilation of Ruby 2.1 from upstream sources, Ruby 2.1 packages
+from Debian Jessie will be backported to Wheezy and automatically installed
+(only base packages, use `gem` command to install Ruby gems). You can also use
+local APT repository to distribute generated Ruby 2.1 .deb packages to other
+hosts, drastically shortening the installation in the process.
+
+Backported Ruby 2.1 packages should be compatible with Debian Jessie versions,
+and upgrade process should proceed as normal (not tested).
+
+If you don't want to use Ruby 2.1 on Debian Wheezy, or you use Ubuntu, you can
+switch `ruby` role to use Ruby 1.9.1 (actually 1.9.3) and install packages from
+official Wheezy or Ubuntu repositories.
+
+### Other news
+
+`postgresql` role will now set default password for `postgres` user and save it
+in `secret` directory.
+
+Many small changes in `backporter` role, which should be now more reliable and
+can be correctly used to backport and install multiple packages at once.
+
+`reprepro` role now supports `i386` architecture in addition to `amd64`.
+
+
 ## July 2014
 
 ### New roles
