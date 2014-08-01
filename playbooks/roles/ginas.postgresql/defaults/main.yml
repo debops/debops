@@ -17,6 +17,10 @@ postgresql_group: 'postgres'
 #postgresql_default_allow:
 #  - '192.168.0.0/16'
 
+# The default password for the postgres user.
+# This is set for each cluster by default but you can override it for each cluster.
+postgresql_default_postgres_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/postgresql/default/postgres/password length=20')}}"
+
 # Where to log system/error messages
 # Options: stderr, csvlog, syslog, and eventlog
 postgresql_default_log_destination: 'syslog'
