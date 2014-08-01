@@ -71,11 +71,12 @@ You will always want to perform these steps before making any changes:
 
 If your pull request gets merged then you will want to update your forked copy:
 
-1. `git checkout yourfeaturebranch`
-2. `git rebase master`
-3. `git branch --delete yourfeaturebranch`
-4. `git push origin --delete yourfeaturebranch`
-5. Follow the steps for "[Make sure your repo is always updated](https://github.com/ginas/ginas/blob/master/CONTRIBUTING.md#make-sure-your-repo-is-always-updated)"
+1. Follow the steps for "[Make sure your repo is always updated](https://github.com/ginas/ginas/blob/master/CONTRIBUTING.md#make-sure-your-repo-is-always-updated)"
+2. `git checkout yourfeaturebranch`
+3. `git rebase master`
+4. `git checkout master`
+5. `git branch --delete yourfeaturebranch`
+6. `git push origin --delete yourfeaturebranch`
 
 ### Public API, Versioning and stable releases
 
