@@ -1,0 +1,31 @@
+---
+
+- name: Check if cache directory exists
+  stat: path={{ backporter_cache }}
+  register: backporter_register_cache
+
+- name: Install prerequisites
+  apt: name={{ item }} state=latest install_recommends=no
+  with_items: backporter_prerequisites
+  when: ((backporter_register_cache is defined and backporter_register_cache.stat.exists) and
+         (backporter_prerequisites is defined and backporter_prerequisites))
+
+- name: Get list of packages to install from cache
+  shell: find . -name '{{ backporter_install_packages | join("' -or -name '") }}' chdir={{ backporter_cache }}
+  register: backporter_register_cache_packages_to_install
+  changed_when: False
+  when: ((backporter_register_cache is defined and backporter_register_cache.stat.exists) and
+         (backporter_install_packages is defined and backporter_install_packages))
+
+- name: Install packages from cache
+  shell: dpkg -i {{ backporter_register_cache_packages_to_install.stdout_lines | join(' ') }} chdir={{ backporter_cache }}
+  register: backporter_register_cache_packages_installed
+  changed_when: False
+  when: ((backporter_register_cache_packages_to_install is defined and backporter_register_cache_packages_to_install.stdout_lines) and
+         (backporter_register_cache is defined and backporter_register_cache.stat.exists))
+
+- name: Remove cache directory if permitted
+  file: dest={{ backporter_cache }} state=absent
+  when: ((backporter_register_cache is defined and backporter_register_cache.stat.exists) and
+         (backporter_cache_clean is defined and backporter_cache_clean))
+

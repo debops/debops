@@ -22,6 +22,12 @@ backporter_version: ""
 
 # ---- Common configuration variables ----
 
+# If a package to backport is not present in current APT repositoriesA, version
+# comparsion with required package will fail. In that case you can fake
+# non-existent version number to force backport of the package (keep it much
+# lower than existing packages to be compatible with future releases).
+backporter_fake_version: ""
+
 # Name of a source package to build from (usually the same as the package)
 backporter_source_package: '{{ backporter_package }}'
 
@@ -35,11 +41,6 @@ backporter_source_version: ""
 # Regexp to use to find orig tarball in build directory (by default Debian uses
 # .tar.xz format but it might be different)
 backporter_source_orig: '.orig.tar.xz'
-
-# Which Debian architecture to use to look for available packages (by default,
-# ginas is used om amd64 architecure, some packages not dependent on an
-# architecture might be in 'all')
-backporter_architecture: ""
 
 # Which Debian component to look in for a package source
 backporter_component: 'main'
@@ -60,6 +61,14 @@ backporter_upload_packages: '{{ backporter_install_packages }}'
 # Send mail reminder to administrator about uploaded packages? If yes, specify
 # list of mail recipients
 backporter_mail_to: [ '{{ backporter_email }}' ]
+
+# Specify a temporary directory where backported packages will be stored for
+# later installation. Without 'backporter_package' set, specify directory where
+# packages to install are stored.
+backporter_cache: ""
+
+# Delete cache directory after installation?
+backporter_cache_clean: True
 
 
 # ---- Backport configuration variables ----
@@ -112,6 +121,16 @@ backporter_source_path: '{{ backporter_build_mirror }}/pool/{{ backporter_compon
 # Path to directory on remote host where backported packages will be built
 backporter_build_path: '/usr/local/src'
 
+# Command used to download .dsc package sources. If you have problems with GPG
+# key verification, set this to 'dget -u'
+backporter_command_dget: 'dget'
+
+# If a package that is backported does not exist in current Debian release, its
+# build dependencies might not exist too and 'apt-get build-dep' step will fail.
+# Instead enable this variable and provide all required dependencies in
+# 'backporter_prerequisites' variable.
+backporter_skip_builddep: False
+
 # Should .deb packages that are created be automatically installed on build
 # host?
 backporter_install: True
@@ -127,7 +146,7 @@ backporter_upload_storage: '{{ secret + "/reprepro/includedeb/" + backporter_rel
 # List of required Debian SDK packages to install on a host before backporting
 backporter_sdk_packages: [ 'devscripts', 'build-essential', 'debian-keyring',
                            'liburi-perl', 'libdistro-info-perl', 'python-httplib2',
-                           'curl' ]
+                           'curl', 'debhelper' ]
 
 # List of source repositories to enable on a host
 backporter_repositories:

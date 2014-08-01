@@ -29,9 +29,11 @@
   register: reprepro_sshkey
 
 - name: Add authorized_key from Ansible Controller to reprepro uploads
-  authorized_key: user={{ reprepro_incoming_user }} key="{{ lookup('file','~/.ssh/id_rsa.pub') }}"
-                  manage_dir=no path=/etc/ssh/authorized_keys/{{ reprepro_incoming_user }}
-                  user={{ reprepro_incoming_user }}
+  authorized_key:
+    user: '{{ reprepro_incoming_user }}'
+    key: '{{ lookup("file","~/.ssh/id_rsa.pub") }}'
+    manage_dir: 'no'
+    path: '/etc/ssh/authorized_keys/{{ reprepro_incoming_user }}'
   when: reprepro_sshkey is defined and reprepro_sshkey.stat.exists == True
 
 - name: Create incoming user directories
