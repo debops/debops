@@ -107,6 +107,11 @@
   when: (backporter_register_packages_to_install is defined and backporter_register_packages_to_install.changed) and
         (backporter_install is defined and backporter_install)
 
+- name: Make sure upload storage exists on Ansible Controller
+  local_action: file path='{{ backporter_upload_storage }}' state='directory'
+  sudo: False
+  when: backporter_upload is defined and backporter_upload
+
 - name: Check if packages are present in reprepro storage
   local_action: shell find . -name '{{ backporter_upload_packages | join("' -or -name '") }}' | head -n 1 chdir={{ backporter_upload_storage }}
   register: backporter_register_reprepro_packages
