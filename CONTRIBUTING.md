@@ -75,7 +75,7 @@ If your pull request gets merged then you will want to update your forked copy:
 2. `git rebase master`
 3. `git branch --delete yourfeaturebranch`
 4. `git push origin --delete yourfeaturebranch`
-5. Follow the steps for "[Make your contribution](https://github.com/ginas/ginas/blob/master/CONTRIBUTING.md#make-sure-your-repo-is-always-updated)"
+5. Follow the steps for "[Make sure your repo is always updated](https://github.com/ginas/ginas/blob/master/CONTRIBUTING.md#make-sure-your-repo-is-always-updated)"
 
 ### Public API, Versioning and stable releases
 
