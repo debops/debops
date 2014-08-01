@@ -114,12 +114,17 @@
   changed_when: False
 
 - name: Upload built .deb packages to reprepro storage
-  fetch: src={{ backporter_build_root }}/{{ item }} dest={{ backporter_upload_storage + '/' }} flat=yes
+  fetch:
+    src: '{{ backporter_build_root + "/" + item }}'
+    dest: '{{ backporter_upload_storage + "/" }}'
+    flat: True
+  sudo: False
   with_items: backporter_register_packages_to_upload.stdout_lines
   register: backporter_register_built_packages_uploaded
-  when: (backporter_register_packages_to_upload is defined and backporter_register_packages_to_upload.changed) and
-        (backporter_register_reprepro_packages is defined and
-         backporter_register_reprepro_packages.stdout not in backporter_register_packages_to_upload.stdout_lines)
+  when: ((backporter_upload is defined and backporter_upload) and
+         (backporter_register_packages_to_upload is defined and backporter_register_packages_to_upload.stdout_lines) and
+         (backporter_register_reprepro_packages is defined and
+          item not in backporter_register_reprepro_packages.stdout_lines))
 
 - name: Make sure cache directory exists
   file:
