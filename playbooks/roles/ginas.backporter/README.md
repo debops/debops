@@ -57,15 +57,31 @@ Backport Creation HOWTO](https://wiki.debian.org/SimpleBackportCreation) to
 easily find out issues with build process, list of required packages, and so
 on.
 
-Some packages might require dependent packages of versions different than the
-ones available in your APT repositories. In this case, you can use `backporter`
-role as a dependency multiple times, to backport different packages in order.
-
 If Debian QA Madison service is not available, `backporter` will try to use
 a static version number (if it is set in dependency variable) to look for
 source packages. If static version number is not set, playbook execution will
 stop and user will be asked to provide one, which can be found on
 [https://packages.debian.org/](https://packages.debian.org/) webpage.
+
+### Local package cache and multiple package installation
+
+Some packages might require dependent packages of versions different than the
+ones available in your APT repositories. In this case, you can use `backporter`
+role as a dependency multiple times, to backport different packages in order.
+
+To avoid problems with multiple package interdependencies during installation
+which cannot be solved using APT because packages are not yet present in local
+APT repository, you can use local cache directory, specified using
+`backporter_cache` variable, for example `backporter_cache:
+'/tmp/package-cache'`. Backported packages will be put there and stored for
+later use (you might also need to disable automatic installation of generated
+packages with `backporter_install: False` variable).
+
+After all needed packages have been backported, use `backporter` role again
+without specified package to backport, but specifying cache directory and list
+of packages to install. After installation is finished, cache directory will be
+automatically removed to prevent subseqent reinstalls (you can block that with
+`backporter_cache_clean: False` variable).
 
 ### Sharing backported packages using reprepro
 

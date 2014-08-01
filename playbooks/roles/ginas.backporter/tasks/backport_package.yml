@@ -97,8 +97,7 @@
 - name: Get list of built packages to upload
   shell: find . -name '{{ backporter_upload_packages | join("' -or -name '") }}' chdir={{ backporter_build_root }}
   register: backporter_register_packages_to_upload
-  when: (backporter_register_source_download is defined and backporter_register_source_download.changed) and
-        (backporter_upload is defined and backporter_upload)
+  when: (backporter_register_source_download is defined and backporter_register_source_download.changed)
 
 - name: Install built packages
   shell: dpkg -i {{ backporter_register_packages_to_install.stdout_lines | join(' ') }} chdir={{ backporter_build_root }}
@@ -119,6 +118,23 @@
   when: (backporter_register_packages_to_upload is defined and backporter_register_packages_to_upload.changed) and
         (backporter_register_reprepro_packages is defined and
          backporter_register_reprepro_packages.stdout not in backporter_register_packages_to_upload.stdout_lines)
+
+- name: Make sure cache directory exists
+  file:
+    path: '{{ backporter_cache }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: ((backporter_register_packages_to_upload is defined and backporter_register_packages_to_upload.changed) and
+         (backporter_cache is defined and backporter_cache))
+
+- name: Copy built packages to temporary cache
+  command: cp -f {{ backporter_register_packages_to_upload.stdout_lines | join(" ") }} {{ backporter_cache + "/" }}
+  args:
+    chdir: '{{ backporter_build_root }}'
+  when: ((backporter_register_packages_to_upload is defined and backporter_register_packages_to_upload.changed) and
+         (backporter_cache is defined and backporter_cache))
 
 - name: Send mail to administrator about uploaded packages
   mail: from="root@{{ ansible_fqdn }}" subject="{{ backporter_mail_subject }}"

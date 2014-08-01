@@ -15,3 +15,8 @@
           backporter_register_package_version.stdout | version_compare(backporter_version,backporter_comparsion)) or
          (backporter_force is defined and backporter_force))
 
+- include: install_from_cache.yml
+  when: ((backporter_package is undefined or (backporter_package is defined and not backporter_package)) and
+         (ansible_distribution == backporter_distribution and ansible_distribution_release == backporter_release) and
+         (backporter_cache is defined and backporter_cache))
+
