@@ -55,10 +55,13 @@
   register: backporter_register_orig_package
   when: backporter_register_source_download is defined and backporter_register_source_download.changed
 
-- name: Derive name of source directory from .orig.tar.xz package
-  shell: tar -tf {{ backporter_register_orig_package.stdout }} | cut -f1 -d/ | head -n 1
-         chdir={{ backporter_build_root }}
-  register: backporter_register_build_source_dir
+- name: Set source version based on .dsc version
+  shell: echo {{ backporter_register_dsc_version.stdout }} | sed -e 's/-.*$//'
+  register: backporter_register_orig_source_version
+  when: backporter_register_source_download is defined and backporter_register_source_download.changed
+
+- name: Create source directory name from gathered information
+  set_fact: backporter_register_build_source_dir='{{ backporter_source_package + "-" + backporter_register_orig_source_version.stdout }}'
   when: backporter_register_source_download is defined and backporter_register_source_download.changed
 
 - name: Download package build dependencies
@@ -71,7 +74,7 @@
     DEBEMAIL: '{{ backporter_email }}'
   shell: debchange --local {{ backporter_changelog_version }} --distribution {{ backporter_release }}-backports
          --preserve "{{ backporter_changelog_message }}"
-         chdir={{ backporter_build_root }}/{{ backporter_register_build_source_dir.stdout | lower }}
+         chdir={{ backporter_build_root }}/{{ backporter_register_build_source_dir }}
   when: backporter_register_source_download is defined and backporter_register_source_download.changed
 
 - name: Copy original tarball to add new version to the filename
@@ -82,7 +85,7 @@
 
 - name: Build package
   shell: dpkg-buildpackage -us -uc
-         chdir={{ backporter_build_root }}/{{ backporter_register_build_source_dir.stdout | lower }}
+         chdir={{ backporter_build_root }}/{{ backporter_register_build_source_dir }}
   when: backporter_register_source_download is defined and backporter_register_source_download.changed
 
 - name: Get list of built packages to install
