@@ -17,10 +17,7 @@
   ignore_errors: True
 
 - name: Find available package version
-  shell: rmadison {{ backporter_package }} --suite {{ backporter_build_codename }}
-         {% if backporter_architecture is defined and backporter_architecture %}
-         --arch {{ backporter_architecture }}
-         {% endif %} | head -n 1 | awk '{print $3}'
+  shell: rmadison {{ backporter_package }} --suite {{ backporter_build_codename }} | head -n 1 | awk '{print $3}' | sed -e 's/^.*://'
   register: backporter_register_dsc_version
   when: (backporter_register_rmadison_service is defined and
          (backporter_register_rmadison_service.status is defined and

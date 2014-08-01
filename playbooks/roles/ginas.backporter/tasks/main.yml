@@ -3,17 +3,45 @@
 - name: Update APT cache to get current package information
   apt: update_cache=yes cache_valid_time=3600
 
-- name: Check available package version
-  shell: apt-cache madison {{ backporter_package }} | head -n 1 | awk '{print $3}'
-  register: backporter_register_package_version
+- name: Check installed package version
+  shell: dpkg-query -W -f='${Version}\n' {{ backporter_package }} 2>/dev/null | sed -e 's/^.*://' || true
+  register: backporter_register_package_dpkg_version
   when: backporter_package is defined and backporter_package
   changed_when: False
 
-- include: backport_package.yml
-  when: (ansible_distribution == backporter_distribution and ansible_distribution_release == backporter_release) and
-        ((backporter_register_package_version is defined and
-          backporter_register_package_version.stdout | version_compare(backporter_version,backporter_comparsion)) or
+- name: Force fake installed version if set and not found
+  set_fact:
+    backporter_register_package_dpkg_version:
+      stdout: '0.0'
+  when: ((backporter_package is defined and backporter_package) and
+         (backporter_register_package_dpkg_version is defined and
+         not backporter_register_package_dpkg_version.stdout))
+
+- name: Check available package version
+  shell: apt-cache --quiet madison {{ backporter_package }} | head -n 1 | awk '{print $3}' | sed -e 's/^.*://'
+  register: backporter_register_package_version
+  when: ((backporter_package is defined and backporter_package) and
+         (backporter_register_package_dpkg_version is undefined or
+         (backporter_register_package_dpkg_version is defined and backporter_register_package_dpkg_version.stdout)) and
+         (backporter_register_package_dpkg_version.stdout | version_compare(backporter_version,backporter_comparsion)) or
          (backporter_force is defined and backporter_force))
+  changed_when: False
+
+- name: Force fake version if set and not found
+  set_fact:
+    backporter_register_package_version:
+      stdout: '{{ backporter_fake_version }}'
+  when: ((backporter_package is defined and backporter_package) and
+         (backporter_register_package_version is defined and
+         not backporter_register_package_version.stdout) and
+         (backporter_fake_version is defined and backporter_fake_version))
+
+- include: backport_package.yml
+  when: ((backporter_package is defined and backporter_package) and
+         (ansible_distribution == backporter_distribution and ansible_distribution_release == backporter_release) and
+        ((backporter_register_package_version is defined and backporter_register_package_version.stdout) and
+          (backporter_register_package_version.stdout | version_compare(backporter_version,backporter_comparsion)) or
+         (backporter_force is defined and backporter_force)))
 
 - include: install_from_cache.yml
   when: ((backporter_package is undefined or (backporter_package is defined and not backporter_package)) and
