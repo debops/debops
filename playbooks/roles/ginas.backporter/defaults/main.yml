@@ -121,6 +121,16 @@ backporter_source_path: '{{ backporter_build_mirror }}/pool/{{ backporter_compon
 # Path to directory on remote host where backported packages will be built
 backporter_build_path: '/usr/local/src'
 
+# Command used to download .dsc package sources. If you have problems with GPG
+# key verification, set this to 'dget -u'
+backporter_command_dget: 'dget'
+
+# If a package that is backported does not exist in current Debian release, its
+# build dependencies might not exist too and 'apt-get build-dep' step will fail.
+# Instead enable this variable and provide all required dependencies in
+# 'backporter_prerequisites' variable.
+backporter_skip_builddep: False
+
 # Should .deb packages that are created be automatically installed on build
 # host?
 backporter_install: True

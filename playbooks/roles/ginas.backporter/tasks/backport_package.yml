@@ -45,9 +45,10 @@
   file: path={{ backporter_build_root }} state=directory owner=root group=root mode=0755
 
 - name: Download package sources
-  command: dget {{ backporter_source_path }}_{{ backporter_register_dsc_version.stdout }}.dsc
-           creates={{ backporter_build_root }}/{{ backporter_source_package }}_{{ backporter_register_dsc_version.stdout }}.dsc
-           chdir={{ backporter_build_root }}
+  command: >
+            {{ backporter_command_dget }} {{ backporter_source_path }}_{{ backporter_register_dsc_version.stdout }}.dsc
+            creates={{ backporter_build_root }}/{{ backporter_source_package }}_{{ backporter_register_dsc_version.stdout }}.dsc
+            chdir={{ backporter_build_root }}
   register: backporter_register_source_download
 
 - name: Find name of downloaded .orig.tar.xz package
@@ -66,7 +67,8 @@
 
 - name: Download package build dependencies
   command: apt-get -yq build-dep {{ backporter_source_package }}
-  when: backporter_register_source_download is defined and backporter_register_source_download.changed
+  when: ((backporter_register_source_download is defined and backporter_register_source_download.changed) and
+         (backporter_skip_builddep is defined and not backporter_skip_builddep))
 
 - name: Update package changelog
   environment:
