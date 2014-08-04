@@ -1,11 +1,14 @@
 ---
 
+- name: Check if nginx is installed
+  stat: path=/usr/sbin/nginx
+  register: nginx_register_installed
+
 - name: Install nginx packages
   apt:
     name: '{{ nginx_base_packages }}'
     state: 'latest'
     install_recommends: False
-  notify: [ 'Restart nginx' ]
 
 - name: Check nginx version
   shell: /usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##'
@@ -148,4 +151,11 @@
 
 - include: nginx_servers.yml
   when: (nginx_manage_servers is defined and nginx_manage_servers)
+
+- name: Restart nginx on first install to bypass missing pid bug
+  service:
+    name: 'nginx'
+    state: 'restarted'
+  when: ((nginx_register_installed is defined and nginx_register_installed) and
+         not nginx_register_installed.stat.exists)
 
