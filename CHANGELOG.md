@@ -19,6 +19,28 @@ If you don't want to use Ruby 2.1 on Debian Wheezy, or you use Ubuntu, you can
 switch `ruby` role to use Ruby 1.9.1 (actually 1.9.3) and install packages from
 official Wheezy or Ubuntu repositories.
 
+### nginx
+
+`nginx` role has been almost completely rewritten - syntax of most tasks has
+been updated to use YAML parameters instead of inline parameters, default
+server configuration template has been rewritten to be cleaner and easier to
+use.
+
+ginas will by default install `nginx` package from `wheezy-backports`
+repository, which provides newer version of nginx (1.6.x), supporting [OCSP
+Stapling](https://en.wikipedia.org/wiki/OCSP\_stapling) and [SPDY
+protocol](https://en.wikipedia.org/wiki/SPDY). Problems with nginx not
+correctly saving its PID on first start are prevented by restarting it on first
+install by a task.
+
+Variable `item.name` in nginx server template has changed type, from 'string'
+to 'list'. You will need to update your roles/inventory configuration or
+otherwise your nginx configuration might not work correctly.
+
+You can now use `location_list` list variable to have more fine-grained control
+over nginx server location sections, including nested locations and location
+pattern defined by a separate variable.
+
 ### Other news
 
 `postgresql` role will now set default password for `postgres` user and save it
