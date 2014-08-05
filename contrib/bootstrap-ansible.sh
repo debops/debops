@@ -46,10 +46,10 @@ trap "rm -rf ${build_dir}" EXIT
 cd ${build_dir}
 
 # Update APT package database
-sudo apt-get update
+sudo apt-get update -qq
 
 # Install required packages
-sudo apt-get --no-install-recommends -q -y install git devscripts \
+sudo apt-get --no-install-recommends -qq -y install git devscripts \
 	python-paramiko python-yaml python-jinja2 python-httplib2 \
 	cdbs debhelper dpkg-dev python-support fakeroot sshpass \
 	python-nose python-passlib python-setuptools asciidoc xmlto \
