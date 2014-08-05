@@ -2,7 +2,7 @@
 
 - name: Create global webroot directories if allowed
   file:
-    path: '/srv/www/sites/{{ item.name | default("default") }}/public'
+    path: '/srv/www/sites/{{ item.name[0] | default("default") }}/public'
     state: 'directory'
     owner: '{{ nginx_webroot_owner }}'
     group: '{{ nginx_webroot_group }}'
@@ -14,7 +14,7 @@
 - name: Generate nginx server configuration
   template:
     src: 'etc/nginx/sites-available/{{ item.type | default(nginx_default_type) }}.conf.j2'
-    dest: '/etc/nginx/sites-available/{{ item.name | default("default") }}.conf'
+    dest: '/etc/nginx/sites-available/{{ item.name[0] | default("default") }}.conf'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -24,8 +24,8 @@
 
 - name: Enable nginx server configuration
   file:
-    path: '/etc/nginx/sites-enabled/{{ item.name | default("default") }}.conf'
-    src: '/etc/nginx/sites-available/{{ item.name | default("default") }}.conf'
+    path: '/etc/nginx/sites-enabled/{{ item.name[0] | default("default") }}.conf'
+    src: '/etc/nginx/sites-available/{{ item.name[0] | default("default") }}.conf'
     state: 'link'
     owner: 'root'
     group: 'root'
@@ -36,7 +36,7 @@
 
 - name: Disable nginx server configuration
   file:
-    path: '/etc/nginx/sites-enabled/{{ item.name | default("default") }}.conf'
+    path: '/etc/nginx/sites-enabled/{{ item.name[0] | default("default") }}.conf'
     state: 'absent'
   with_items: [ '{{ nginx_servers }}' ]
   notify: [ 'Test nginx and reload' ]

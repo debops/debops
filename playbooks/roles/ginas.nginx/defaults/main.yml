@@ -119,12 +119,11 @@ nginx_servers: [ '{{ nginx_server_default }}' ]
 # Default nginx site - options commented out are optional
 nginx_server_default:
   enabled: True
-  #default: True
+  name: []
+  default: True
+  #by_role: ''
   #locked: False
   #userdir: False
-  #name: '{{ ansible_fqdn }}'
-  #alias:
-  #  - 'www.{{ ansible_fqdn }}'
   #type: 'default'
   #redirect: 'http://other.example.com/'
   #ssl: True
@@ -164,6 +163,15 @@ nginx_server_default:
   #    - 'all'
   #location_referers:
   #  '/': [ '{{ ansible_fqdn }}', 'www.{{ ansible_fqdn }}', '*.{{ ansible_domain }}' ]
+  #location_list:
+  #  - pattern: '/'
+  #    referers: [ '{{ ansible_fqdn }}', 'www.{{ ansible_fqdn }}', '*.{{ ansible_domain }}' ]
+  #    allow: [ '127.0.0.1', '::1' ]
+  #    deny: []
+  #    options: |
+  #      try_files $uri $uri/ $uri.html $uri.htm /index.html /index.htm =404;
+  #    locations:
+  #      - pattern: '/subdir'
   #upstream_php5: 'php5_www-data'
   #upstream_php5_options: |
   #  # Literal text block with options for PHP5;

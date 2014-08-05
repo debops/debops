@@ -12,7 +12,7 @@ phpipam_www: '/srv/www/{{ phpipam_user }}'
 phpipam_sources: '{{ phpipam_home }}/src'
 
 # Default path where phpIPAM source files will be deployed
-phpipam_deploy_path: '{{ phpipam_www }}/sites/{{ phpipam_domain }}/public'
+phpipam_deploy_path: '{{ phpipam_www }}/sites/{{ phpipam_domain[0] }}/public'
 
 # phpIPAM database schema loaded by Ansible
 phpipam_database_schema: '{{ phpipam_deploy_path }}/db/SCHEMA.sql'
@@ -32,6 +32,7 @@ phpipam_nginx_upstream_php5:
 
 # nginx configuration - phpIPAM server
 phpipam_nginx_server:
+  by_role: 'ginas.phpipam'
   enabled: True
   default: False
   name: '{{ phpipam_domain }}'
