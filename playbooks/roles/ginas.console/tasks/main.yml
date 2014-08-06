@@ -34,6 +34,10 @@
           console_register_inittab.stat.exists))
   notify: [ 'Reload sysvinit' ]
 
+- name: Divert original /etc/issue
+  command: dpkg-divert --quiet --local --divert /etc/issue.dpkg-divert --rename /etc/issue
+           creates=/etc/issue.dpkg-divert
+
 - name: Configure /etc/issue
   template:
     src: 'etc/issue.j2'
