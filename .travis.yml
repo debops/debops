@@ -22,8 +22,23 @@ before_install:
   - sudo apt-get -y --purge remove postgresql libpq-dev libpq5 postgresql-client-common postgresql-common
   - sudo rm -rf /var/lib/postgresql
 
+  # Add repositories from Ubuntu 14.04 LTS
+  #- sudo add-apt-repository --yes "deb http://archive.ubuntu.com/ubuntu/ trusty main universe"
+  #- sudo apt-get update -qq
+
+  # Update old packages to newer versions
+  #- sudo apt-get install -yq python-crypto/trusty python-setuptools/trusty
+
   # Build and install Ansible .deb package from devel branch
-  - ./contrib/bootstrap-ansible.sh devel
+  #- ./contrib/bootstrap-ansible.sh devel
+
+  # Install Ansible from official PPA
+  - sudo apt-get install -q -y python-software-properties
+  - sudo apt-add-repository -y ppa:ansible/ansible
+  - sudo apt-get update -q
+  - sudo apt-get install -q -y ansible
+
+  # Check Ansible version
   - ansible --version
 
 # Skip installation phase

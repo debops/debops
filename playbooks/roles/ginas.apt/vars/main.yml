@@ -6,9 +6,10 @@ apt_debian_preseed_destroy_server_path: 'srv/www/sites/destroy.{{ apt_debian_pre
 
 apt_debian_preseed_nginx:
   default:
+    by_role: 'ginas.apt'
     enabled: True
     ssl: False
-    alias: [ '{{ apt_debian_preseed_hostname + "." + apt_debian_preseed_domain }}', '{{ apt_debian_preseed_hostname }}' ]
+    name: [ 'default', '{{ apt_debian_preseed_hostname + "." + apt_debian_preseed_domain }}', '{{ apt_debian_preseed_hostname }}' ]
     location:
       '/': |
         try_files $uri $uri/ =404;
@@ -20,10 +21,10 @@ apt_debian_preseed_nginx:
       '/': '{{ apt_acng_allow }}'
       '/d-i': '{{ apt_acng_allow }}'
   destroy:
+    byrole: 'ginas.apt'
     enabled: True
     ssl: False
-    name: 'destroy.{{ apt_debian_preseed_hostname + "." + apt_debian_preseed_domain }}'
-    alias: [ 'destroy.{{ apt_debian_preseed_hostname }}' ]
+    name: [ 'destroy.{{ apt_debian_preseed_hostname + "." + apt_debian_preseed_domain }}', 'destroy.{{ apt_debian_preseed_hostname }}' ]
     root: '/{{ apt_debian_preseed_destroy_server_path }}'
     location:
       '/': |

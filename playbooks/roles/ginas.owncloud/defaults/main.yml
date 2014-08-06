@@ -9,7 +9,7 @@
 owncloud_dependencies: True
 
 # Domain that will be configured for ownCloud instance
-owncloud_domain: 'owncloud.{{ ansible_domain }}'
+owncloud_domain: [ 'owncloud.{{ ansible_domain }}' ]
 
 
 # --- ownCloud source and deployment ---
@@ -20,10 +20,10 @@ owncloud_group: 'owncloud'
 owncloud_home: '/srv/users/{{ owncloud_user }}'
 
 # Path where ownCloud data/ directory and files are stored
-owncloud_data_path: '/srv/lib/{{ owncloud_user }}/{{ owncloud_domain }}/data'
+owncloud_data_path: '/srv/lib/{{ owncloud_user }}/{{ owncloud_domain[0] }}/data'
 
 # Where ownCloud instance will be deployed (web root)
-owncloud_deploy_path: '/srv/www/{{ owncloud_user }}/sites/{{ owncloud_domain }}/public'
+owncloud_deploy_path: '/srv/www/{{ owncloud_user }}/sites/{{ owncloud_domain[0] }}/public'
 
 # What source should be used to get ownCloud files (upstream, githost, github, gitlab)
 owncloud_source: 'upstream'
