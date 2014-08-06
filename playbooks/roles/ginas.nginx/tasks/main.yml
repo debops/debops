@@ -6,9 +6,10 @@
 
 - name: Install nginx packages
   apt:
-    name: '{{ nginx_base_packages }}'
+    name: '{{ item }}'
     state: 'latest'
     install_recommends: False
+  with_items: nginx_base_packages
 
 - name: Check nginx version
   shell: /usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##'
