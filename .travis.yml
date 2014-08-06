@@ -30,7 +30,15 @@ before_install:
   #- sudo apt-get install -yq python-crypto/trusty python-setuptools/trusty
 
   # Build and install Ansible .deb package from devel branch
-  - ./contrib/bootstrap-ansible.sh v1.6.4
+  #- ./contrib/bootstrap-ansible.sh devel
+
+  # Install Ansible from official PPA
+  - sudo apt-get install -q -y python-software-properties
+  - sudo apt-add-repository -y ppa:ansible/ansible
+  - sudo apt-get update -q
+  - sudo apt-get install -q -y ansible
+
+  # Check Ansible version
   - ansible --version
 
 # Skip installation phase
