@@ -51,6 +51,11 @@ can be correctly used to backport and install multiple packages at once.
 
 `reprepro` role now supports `i386` architecture in addition to `amd64`.
 
+Serial console is now disabled by default. This should prevent endless spamming
+in syslog on hosts which don't have `/dev/ttyS0` configured (virtual machines
+and containers, mostly). You can re-enable it by setting `console_serial: True`
+in inventory.
+
 
 ## July 2014
 
