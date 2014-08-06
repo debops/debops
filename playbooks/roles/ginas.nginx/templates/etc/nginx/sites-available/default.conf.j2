@@ -106,7 +106,7 @@
 {%     if location_list is defined                                             %}
 {%         for entry in location_list                                          %}
 {%             if entry.pattern is defined and entry.pattern                   %}
-        location {{ entry.pattern }} {
+        location {{ entry.pattern_prefix | default('') + entry.pattern }} {
 {%                 if entry.referers is defined and entry.referers             %}
                 valid_referers none blocked {{ entry.referers | join(' ') }};
                 if ($invalid_referer) {

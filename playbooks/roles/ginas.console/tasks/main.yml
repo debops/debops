@@ -1,38 +1,70 @@
 ---
 
 - name: Install console-related packages
-  apt: pkg={{ item }} state=latest
-  with_items: [ '{{ console_packages }}' ]
-  when: console_packages is defined
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_items: console_base_packages + console_packages
+  when: (console_packages is defined and console_packages)
 
 - name: Check if /etc/inittab exists
-  stat: path=/etc/inittab
-  register: console_inittab
+  stat:
+    path: '/etc/inittab'
+  register: console_register_inittab
 
-- name: Enable serial console
-  lineinfile: dest=/etc/inittab regexp='^{{ console_serial }}' state=present line='{{ console_serial }}'
-  when: (console_serial is defined and console_serial) and
-        (console_inittab is defined and console_inittab.stat.exists == True)
-  notify: Reload init
+- name: Disable serial console in /etc/inittab
+  lineinfile:
+    dest: '/etc/inittab'
+    regexp: '^{{ console_serial_inittab }}'
+    state: 'absent'
+  when: ((console_serial is undefined or (console_serial is defined and not console_serial)) and
+         ((console_register_inittab is defined and console_register_inittab) and
+          console_register_inittab.stat.exists))
+  notify: [ 'Reload sysvinit' ]
 
-- name: Disable serial console
-  lineinfile: dest=/etc/inittab regexp='^{{ console_serial }}' state=absent
-  when: (console_serial is defined and console_serial == False) and
-        (console_inittab is defined and console_inittab.stat.exists == True)
-  notify: Reload init
+- name: Enable serial console in /etc/inittab
+  lineinfile:
+    dest: '/etc/inittab'
+    regexp: '^{{ console_serial_inittab }}'
+    state: 'present'
+    line: '{{ console_serial_inittab }}'
+  when: ((console_serial is defined and console_serial) and
+         ((console_register_inittab is defined and console_register_inittab) and
+          console_register_inittab.stat.exists))
+  notify: [ 'Reload sysvinit' ]
+
+- name: Divert original /etc/issue
+  command: dpkg-divert --quiet --local --divert /etc/issue.dpkg-divert --rename /etc/issue
+           creates=/etc/issue.dpkg-divert
 
 - name: Configure /etc/issue
-  template: src=etc/issue.j2 dest=/etc/issue owner=root group=root mode=0644
+  template:
+    src: 'etc/issue.j2'
+    dest: '/etc/issue'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 - name: Configure /etc/motd
-  template: src=etc/motd.j2 dest=/etc/motd owner=root group=root mode=0644
+  template:
+    src: 'etc/motd.j2'
+    dest: '/etc/motd'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 - name: Configure fsck behaviour on boot
-  lineinfile: dest=/etc/default/rcS regexp='FSCKFIX=' state=present
-              line='FSCKFIX={{ console_fsckfix }}'
-  when: console_fsckfix is defined and console_fsckfix
+  lineinfile:
+    dest: '/etc/default/rcS'
+    regexp: 'FSCKFIX='
+    state: 'present'
+    line: 'FSCKFIX={{ console_fsckfix }}'
+  when: (console_fsckfix is defined and console_fsckfix)
 
 - name: Ensure that specified locales exist
-  locale_gen: name={{ item }} state=present
+  locale_gen:
+    name: '{{ item }}'
+    state: 'present'
   with_items: console_locales
-  when: console_locales is defined and console_locales
+  when: (console_locales is defined and console_locales)
