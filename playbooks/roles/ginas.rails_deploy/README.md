@@ -59,6 +59,7 @@ Check out the available tags in the [playbook example](#).
 - Manage external services at various points in the deploy cycle
 - Manage custom tasks at various points in the deploy cycle
 - Configure nginx as much as you need if the defaults aren't enough for you
+- Show a temporary static deploy page during deploys with an automated cleanup of it afterwards
 - Enable ssl by default and set it all for you automatically
 - Protect everything behind a firewall that can be easily customized
   - If you have multiple hosts and separate database servers then it's up to you to configure it
@@ -81,7 +82,7 @@ Make sure you have the unicorn/puma and postgres/mysql gems in your Gemfile. You
 
 You'll also want to use the `DATABASE_URL` format in your database.yml file. You can omit the production or whatever environment you're deploying to from the database.yml file and rails will pickup that env var by default.
 
-Lastly you should have 404, 422, 500 and 502 html files in your public directory. Nginx will serve them directly when those pesky errors decide to show up.
+Lastly you should have 404, 422, 500 and 502 html files in your public directory. Nginx will serve them directly when those pesky errors decide to show up. You can also add a deploy.hml file in your public directory if you want to show a temporary maintenance/deploy page while your server is mid-deploy. If no deploy.html is found then this functionality will get skipped automatically.
 
 ### This role's requirements
 
