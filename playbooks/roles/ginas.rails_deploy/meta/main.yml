@@ -1,0 +1,33 @@
+---
+
+dependencies:
+  - role: ginas.secret
+
+  - role: ginas.etc_services
+
+  - role: ginas.nodejs
+    tags: nodejs
+
+  - role: ginas.ruby
+    tags: ruby
+
+  - role: ginas.postgresql
+    when: inventory_hostname == rails_deploy_hosts_master and
+          (rails_deploy_dependencies is defined and
+          'database' in rails_deploy_dependencies) and
+          rails_deploy_database_adapter == 'postgresql'
+    tags: postgresql
+
+  - role: ginas.mysql
+    when: inventory_hostname == rails_deploy_hosts_master and
+          (rails_deploy_dependencies is defined and
+          'database' in rails_deploy_dependencies) and
+          rails_deploy_database_adapter == 'mysql'
+    tags: mysql
+
+  - role: ginas.nginx
+    nginx_servers: [ '{{ rails_deploy_nginx_server }}' ]
+    nginx_upstreams: [ '{{ rails_deploy_nginx_upstream }}' ]
+    when: rails_deploy_dependencies is defined and
+          'nginx' in  rails_deploy_dependencies
+    tags: nginx

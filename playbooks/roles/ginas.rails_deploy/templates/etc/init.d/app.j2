@@ -1,0 +1,295 @@
+#! /bin/bash
+
+# {{ ansible_managed }}
+
+# Heavily inspired by: https://github.com/gitlabhq/gitlabhq
+
+### BEGIN INIT INFO
+# Provides:          {{ rails_deploy_service }}
+# Required-Start:    $local_fs $remote_fs $network
+# Required-Stop:     $local_fs $remote_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Manage a rails web server process
+# Description:       Manage a rails web server process
+### END INIT INFO
+
+# ---------------------------------------------------------------------------
+# configuration options
+# ---------------------------------------------------------------------------
+bundle="bundle"
+
+app_service="{{ rails_deploy_service }}"
+app_user="{{ rails_deploy_service }}"
+app_home="{{ rails_deploy_home }}"
+app_src="{{ rails_deploy_src }}"
+app_env_source="{{ rails_deploy_env_source }}"
+app_run="{{ rails_deploy_run }}"
+app_socket="{{ rails_deploy_service_socket }}"
+app_pid="{{ rails_deploy_service_pid }}"
+app_backend="{{ rails_deploy_backend }}"
+app_bin="{{ rails_deploy_src }}/bin/{{ rails_deploy_backend }}"
+
+{% if rails_deploy_backend == 'puma' -%}
+backend_config="C"
+backend_daemon="d"
+{% elif rails_deploy_backend == 'unicorn' -%}
+backend_config="c"
+backend_daemon="D"
+{% endif -%}
+backend_reload="USR2"
+backend_stop="KILL"
+
+backend_config_flag="-$backend_config $app_src/config/{{ rails_deploy_backend }}.rb"
+
+# ---------------------------------------------------------------------------
+# source the environment, ensure correct user, switch into the app's path
+# ---------------------------------------------------------------------------
+if ! $app_env_source ; then
+ echo "failed to source environment for $app_service, exiting"; exit 1;
+fi
+
+if [ "$USER" != "$app_user" ]; then
+  eval su - "$app_user" -c $(echo \")$0 "$@"$(echo \"); exit;
+fi
+
+if ! cd "$app_src" ; then
+ echo "failed to cd into $app_src, exiting"; exit 1;
+fi
+
+# ---------------------------------------------------------------------------
+# private commands related to {{ rails_deploy_service }}
+# ---------------------------------------------------------------------------
+server_start(){
+  $bundle exec $app_bin $backend_config_flag -$backend_daemon
+}
+
+server_stop(){
+  kill -$backend_stop $wpid
+}
+
+server_reload(){
+  kill -$backend_reload $wpid
+}
+
+# ---------------------------------------------------------------------------
+# get the pid from the file
+# ---------------------------------------------------------------------------
+check_pids(){
+  if ! mkdir -p "$app_run"; then
+    echo "could not create the path $app_run needed to store the pids"; exit 1
+  fi
+  if [ -f "$app_pid" ]; then
+    # read an existing pid file
+    wpid=$(cat "$app_pid")
+  else
+    wpid=0
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# used after starting the app service and are waiting for its pid
+# ---------------------------------------------------------------------------
+wait_for_pids(){
+  # sleep for a bit to give it time
+  i=0;
+  while [ ! -f $app_pid ]; do
+    sleep 0.1;
+    i=$((i+1))
+    if [ $((i%10)) = 0 ]; then
+      echo -n "."
+    elif [ $((i)) = 301 ]; then
+      echo "waited 30s for the process to write its pid, something went wrong, exiting"
+      exit 1;
+    fi
+  done
+  echo
+}
+
+# ---------------------------------------------------------------------------
+# always check the pid
+# ---------------------------------------------------------------------------
+check_pids
+
+# ---------------------------------------------------------------------------
+# determine if the app process is running or not
+# ---------------------------------------------------------------------------
+check_status(){
+  check_pids
+
+  # if the web server is running kill -0 $server_pid returns true, or rather 0
+  # checks of *_status should only check for == 0 or != 0, never anything else
+  if [ $wpid -ne "0" ]; then
+    kill -0 "$wpid" 2>/dev/null
+    server_status="$?"
+  else
+    server_status="-1"
+  fi
+  if [ $server_status = 0 ]; then
+    exit_status=0
+  else
+    # http://refspecs.linuxbase.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/iniscrptact.html
+    # code 3 means 'program is not running'
+    exit_status=3
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# check for stale pids and remove them if necessary
+# ---------------------------------------------------------------------------
+check_stale_pids(){
+  check_status
+  # if there is a pid it is something else than 0, the service is running if
+  # *_status is == 0
+  if [ "$wpid" != "0" -a "$server_status" != "0" ]; then
+    echo "removing stale $app_service pid, this is most likely caused by $app_name crashing the last time it ran"
+    if ! rm "$app_pid"; then
+      echo "unable to remove stale pid, exiting"
+      exit 1
+    fi
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# nothing is running so it is safe to exit
+# ---------------------------------------------------------------------------
+exit_if_not_running(){
+  check_stale_pids
+  if [ "$server_status" != "0" ]; then
+    echo "$app_service is not running"
+    exit
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# start the app process if it is not running
+# ---------------------------------------------------------------------------
+start_app() {
+  check_stale_pids
+
+  if [ "$server_status" != "0" ]; then
+    echo -n "starting $app_service"
+  fi
+
+  # then check if the service is running
+  # if it is, don't start again
+  if [ "$server_status" = "0" ]; then
+    echo "$app_service is already running with pid $wpid, not restarting"
+  else
+    # remove old socket if it exists before starting
+    rm -f "$app_socket" 2>/dev/null
+    server_start
+  fi
+
+  # wait for the pids to be planted
+  wait_for_pids
+
+  # finally check the status to tell wether or not the app process is running
+  print_status
+}
+
+# ---------------------------------------------------------------------------
+# stop the app process if it is running
+# ---------------------------------------------------------------------------
+stop_app() {
+  exit_if_not_running
+
+  # if the app process is running, stop it
+  if [ "$server_status" = "0" ]; then
+    echo -n "shutting down $app_service"
+    server_stop
+  fi
+
+  # if something needs to be stopped, wait for it because using SIGKILL is bad in a script
+  while [ "$server_status" = "0" ]; do
+    sleep 1
+    check_status
+    printf "."
+    if [ "$server_status" != "0" ]; then
+      printf "\n"
+      break
+    fi
+  done
+
+  sleep 1
+
+  # clean up the pid file
+  rm "$app_pid" 2>/dev/null
+
+  print_status
+}
+
+# ---------------------------------------------------------------------------
+# output the status of this app process
+# ---------------------------------------------------------------------------
+print_status() {
+  check_status
+  if [ "$server_status" != "0" ]; then
+    echo "$app_service is not running"
+    return
+  fi
+  if [ "$server_status" = "0" ]; then
+      echo "$app_service with pid $wpid is running"
+  else
+      printf "$app_service is \033[31mnot running\033[0m\n"
+  fi
+  if [ "$server_status" = "0" ]; then
+    printf "$app_service is \033[32mup and running\033[0m\n"
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# reload the app process
+# ---------------------------------------------------------------------------
+reload_app(){
+  exit_if_not_running
+  if [ "$wpid" = "0" ];then
+    echo "$app_service is not running, its configuration can't be reloaded, exiting"
+    exit 1
+  fi
+  printf "reloading $app_service configuration..."
+  server_reload
+  echo "done!"
+
+  wait_for_pids
+  print_status
+}
+
+# ---------------------------------------------------------------------------
+# restart the app process by stopping it and then starting it
+# ---------------------------------------------------------------------------
+restart_app(){
+  check_status
+  if [ "$server_status" = "0" ]; then
+    stop_app
+  fi
+  start_app
+}
+
+# ---------------------------------------------------------------------------
+# handle the input
+# ---------------------------------------------------------------------------
+case "$1" in
+  start)
+        start_app
+        ;;
+  stop)
+        stop_app
+        ;;
+  restart)
+        restart_app
+        ;;
+  reload|force-reload)
+        reload_app
+        ;;
+  status)
+        print_status
+        exit $exit_status
+        ;;
+  *)
+        echo "Usage: service $app_service {start|stop|restart|reload|status}"
+        exit 1
+        ;;
+esac
+
+exit

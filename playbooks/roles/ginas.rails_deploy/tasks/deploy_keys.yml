@@ -1,0 +1,40 @@
+---
+- name: Slurp the deploy key
+  slurp: src={{ rails_deploy_home }}/.ssh/id_rsa.pub
+  register: rails_deploy_register_deploy_key
+  when: rails_deploy_service is defined and rails_deploy_service and
+        rails_deploy_register_deploy_key is undefined
+
+- name: Create a json formatted deploy key
+  set_fact:
+    rails_deploy_key_data:
+      title: '{{ rails_deploy_service }}@{{ ansible_hostname }} deployed by Ansible'
+      key: '{{ rails_deploy_register_deploy_key.content | b64decode | trim }}'
+  when: rails_deploy_service is defined and rails_deploy_service and
+        rails_deploy_register_deploy_key is defined
+
+- name: Transfer the deploy key to Github
+  command: "curl --silent --header 'Authorization: token {{ rails_deploy_git_access_token }}' --data '{{ rails_deploy_key_data | to_nice_json }}' https://api.github.com/repos/{{ rails_deploy_git_account }}/{{ rails_deploy_git_repo }}/keys"
+  changed_when: False
+  when: rails_deploy_git_access_token and
+        'file://' not in rails_deploy_git_location and
+        rails_deploy_register_deploy_key is defined and
+        'github' in rails_deploy_git_host
+
+- name: Get the Gitlab repo id
+  uri: url=https://{{ rails_deploy_git_host }}/api/v3/projects/{{ rails_deploy_git_account }}%2F{{ rails_deploy_git_repo }}
+       HEADER_PRIVATE-TOKEN='{{ rails_deploy_git_access_token }}'
+  register: rails_deploy_register_gitlab_response
+  when: rails_deploy_git_access_token and
+        'file://' not in rails_deploy_git_location and
+        rails_deploy_register_deploy_key is defined and
+        not 'github' in rails_deploy_git_host
+
+- name: Transfer the deploy key to Gitlab
+  command: "curl --insecure --header 'PRIVATE-TOKEN: {{ rails_deploy_git_access_token }}' --data '{{ rails_deploy_key_data | to_nice_json }}' https://{{ rails_deploy_git_host }}/api/v3/projects/{{ rails_deploy_register_gitlab_response.json.id }}/keys"
+  changed_when: False
+  register: foo
+  when: rails_deploy_git_access_token and
+        'file://' not in rails_deploy_git_location and
+        rails_deploy_register_deploy_key is defined and
+        not 'github' in rails_deploy_git_host
