@@ -1,6 +1,12 @@
+- name: Show the deploy page
+  command: cp public/deploy.html public/index.html
+           chdir={{ rails_deploy_src }}
+  sudo_user: '{{ rails_deploy_service }}'
+
 - name: Clone the app's source code
   git: repo={{ rails_deploy_git_location }} dest={{ rails_deploy_src }}
-       version={{ rails_deploy_git_version }} accept_hostkey=yes
+       version={{ rails_deploy_git_version }}
+       origin={{ rails_deploy_git_origin }} accept_hostkey=yes
   register: rails_deploy_register_repo_status
   when: rails_deploy_git_location is defined and rails_deploy_git_location
   sudo_user: '{{ rails_deploy_service }}'
