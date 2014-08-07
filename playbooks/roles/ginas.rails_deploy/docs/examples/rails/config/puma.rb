@@ -1,6 +1,3 @@
-# What environment should the server be started under?
-environment ENV['RAILS_ENV']
-
 # Feel free to experiment with this, 0/16 is a good starting point.
 threads ENV['THREADS_MIN'].to_i, ENV['THREADS_MAX'].to_i
 
