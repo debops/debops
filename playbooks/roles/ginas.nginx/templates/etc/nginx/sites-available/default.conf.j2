@@ -209,6 +209,8 @@ server {
 #}
 {% if (not nginx_tpl_ssl and (item.redirect is defined and item.redirect)) %}
         return 301 {{ nginx_tpl_http_redirect }};
+{% elif (nginx_tpl_ssl and (item.redirect_ssl is defined and item.redirect_ssl)) %}
+        return 301 {{ item.redirect_ssl }};
 {% else %}
         keepalive_timeout {{ item.keepalive | default(nginx_default_keepalive_timeout) }};
 
