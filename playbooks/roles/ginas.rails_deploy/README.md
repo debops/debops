@@ -1,3 +1,7 @@
+### What does rails_deploy do?
+
+It allows you to easily setup infrastructure capable of running rails applications. It removes all of the headaches associated to setting up a secure rails application that is ready for production so you can concentrate on developing your app.
+
 ### Getting started
 
 Below is the bare minimum to get started. In this case everything would be on 1 host. There is a more robust example in [docs/examples/ansible](#) where we setup the database on a different host and use postgres 9.3 instead of 9.1.
