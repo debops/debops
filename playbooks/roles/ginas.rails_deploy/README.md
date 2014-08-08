@@ -1,10 +1,10 @@
 ### What does rails_deploy do?
 
-It allows you to easily setup infrastructure capable of running rails applications. It removes all of the headaches associated to setting up a secure rails application that is ready for production so you can concentrate on developing your app.
+It allows you to easily setup infrastructure capable of running rails applications. It removes all of the headaches associated to setting up a secure rails app that is ready for production so you can concentrate on developing your app.
 
 ### Getting started
 
-Below is the bare minimum to get started. In this case everything would be on 1 host. There is a more robust example in [docs/examples/ansible](#) where we setup the database on a different host and use postgres 9.3 instead of 9.1.
+Below is the bare minimum to get started. In this case everything would be on 1 host. There is a more robust example in [docs/examples/ansible](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/ansible) where we setup the database on a different host and use postgres 9.3 instead of 9.1.
 
 The full example includes setting up 3 containers with ginas:
 
@@ -44,14 +44,14 @@ The idea is you'll push your code somewhere and then the role will pull in from 
 
 `ansible-playbook yourappname.yml -i /path/to/your/inv`
 
-Check out the available tags in the [playbook example](#).
+Check out the available tags in the [playbook example](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/docs/examples/ansible/playbook/yourappname.yml).
 
 ### What are a few features available in this role?
 
 - Setup an entire rails app server with 1 line of configuration with sane defaults
 - Switch between postgresql and mysql with 1 line of configuration
 - Switch between unicorn and puma with 1 line of configuration
-  - Unicorn and puma configs are provided in [docs/examples/rails/config](#)
+  - Unicorn and puma configs are provided in [docs/examples/rails/config](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/rails/config)
 - Easily separate your app and database servers when required
 - Set users, permissions, services, run state and log paths automatically
 - Set secure database passwords, generate ssh key pairs and ssl certs automatically
@@ -67,9 +67,9 @@ Check out the available tags in the [playbook example](#).
 - Enable ssl by default and set it all for you automatically
 - Protect everything behind a firewall that can be easily customized
   - If you have multiple hosts and separate database servers then it's up to you to configure it
-  - An example of doing this is provided in [docs/examples/ansible](#)
+  - An example of doing this is provided in [docs/examples/ansible/inventory](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/ansible/inventory)
 - Set as many environment vars as your app needs while also supplying many defaults
-- Allow you to tweak about 50 heavily commented variables in [defaults/main.yml](#)
+- Allow you to tweak about 50 heavily commented variables in [defaults/main.yml](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/defaults/main.yml)
 - ...and more
 
 ### The defaults at a glance
@@ -78,7 +78,7 @@ Check out the available tags in the [playbook example](#).
 - Nginx
 - Unicorn
 
-You can find a few common usage examples at the bottom of the [defaults/main.yml](#) file. You will see how to make changes to the defaults with very little configuration.
+You can find a few common usage examples at the bottom of the [defaults/main.yml](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/defaults/main.yml) file. You will see how to make changes to the defaults with very little configuration.
 
 ### Rails requirements
 
@@ -98,7 +98,7 @@ All of the hard work is done in the Ruby role but it does require you to configu
 
 You can simply use a container on your workstation to host it or throw it up on a $5/month digital ocean instance. It doesn't matter other than it must exist somewhere and is available when you install Ruby on your app server.
 
-The [docs/examples/ansible/inventory](#) folder contains information on how to set this up using a container. It's very little configuration, it just takes about 10-15 minutes to setup once while ansible provisions the server. After that your app servers will be able to install Ruby in about 10 seconds.
+The [inventory example](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/ansible/inventory) contains information on how to set this up using a container. It's very little configuration, it just takes about 10-15 minutes to setup once while ansible provisions the server. After that your app servers will be able to install Ruby in about 10 seconds.
 
 Once Debian Jessie is feature frozen (~November 2014) then this step will be removed because Jessie will use Ruby 2.1.x by default.
 
@@ -124,7 +124,7 @@ Chances are you're deploying with tags so the entire role did not run. When you 
 ##### You can't clone your repo
 Since the role needs to pull in from your git repo then it needs permission to your repo. The most common way to do that is to setup an API access token for github.
 
-Gitlab is also supported, all of this is documented in the [defaults/main.yml](#) file.
+Gitlab is also supported, all of this is documented in the [defaults/main.yml](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/defaults/main.yml) file.
 
 ##### How would you go about setting up a CI platform with this role?
 Rather than impose a CI solution on you, you're free to do whatever you want.
