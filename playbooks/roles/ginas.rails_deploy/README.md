@@ -131,4 +131,8 @@ That would allow you to have a sweet CI setup where your developers only have to
 
 ### License
 
-GPLv3
+[GPLv3](https://www.gnu.org/licenses/quick-guide-gplv3.html)
+
+### Author
+
+`ginas.rails_deploy` was created by Nick Janetakis nick.janetakis@gmail.com.
