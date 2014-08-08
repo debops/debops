@@ -224,6 +224,15 @@ server {
 
         index index.html index.htm{% if item.upstream_php5 is defined and item.upstream_php5 %} index.php{% endif %};
 
+{% if item.error_pages is defined and item.error_pages %}
+{% for code, location in item.error_pages.iteritems() %}
+        error_page {{ code }} {{ location }};
+        location {{ location }} {
+                internal;
+        }
+
+{% endfor %}
+{% endif %}
 {% if item.options is defined and item.options %}
         {{ item.options | indent(8) }}
 
