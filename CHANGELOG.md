@@ -3,6 +3,15 @@ ginas changelog
 
 ## August 2014
 
+### New roles
+
+- **rails_deploy**: [Nick Janetakis](https://github.com/nickjj) created a role
+  which you can use to easily deploy custom Ruby on Rails applications. Other
+  ginas roles like `nginx`, `postgresql`, and others will be used for the
+  infrastructure. Look at the
+  [README.md](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/README.md)
+  of that role for more information.
+
 ### Ruby
 
 `ruby` role has been rewritten to use `backporter` role on Debian Wheezy.
@@ -40,6 +49,19 @@ otherwise your nginx configuration might not work correctly.
 You can now use `location_list` list variable to have more fine-grained control
 over nginx server location sections, including nested locations and location
 pattern defined by a separate variable.
+
+Custom error pages for a server can be defined in `error_pages` hash variable.
+They will be automatically protected from direct access using specific location
+sections.
+
+You can easily create a separate server configuration section with redirection
+from specific domain names using `redirect_from` variable. If you enable it
+using `True`, list of domains will be taken from `item.name` list (all but the
+first one will be redirected to the first one), if you specify a list of
+domains, this list will be used instead. This way you can easily create
+redirection from `http://www.example.com/` to `http://example.com/` (or
+`http://example.com/` to `http://www.example.com/` if the latter is defined as
+the first element of `item.name` list).
 
 ### Other news
 
