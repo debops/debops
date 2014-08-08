@@ -20,7 +20,8 @@
 {% if ((item.default is defined and item.default) or
        ((nginx_default_name is defined and nginx_default_name) and
         (item.name is defined and item.name) and
-        (nginx_default_name in item.name)) or
+        (nginx_default_name in item.name) and
+        (item.default is undefined or (item.default is defined and item.default))) or
        (item.name is undefined))                                               %}
 {%     set nginx_tpl_default_server = 'default_server'                         %}
 {% endif                                                                       %}

@@ -9,6 +9,7 @@
     mode: '{{ nginx_webroot_mode }}'
   with_items: [ '{{ nginx_servers }}' ]
   when: ((nginx_webroot_create is defined and nginx_webroot_create) and
+         (item.name is defined) and
          (item.root is undefined and item.owner is undefined and item.group is undefined))
 
 - name: Generate nginx server configuration
@@ -20,7 +21,8 @@
     mode: '0644'
   with_items: [ '{{ nginx_servers }}' ]
   notify: [ 'Test nginx and reload' ]
-  when: (item.locked is undefined or (item.locked is defined and not item.locked))
+  when: ((item.locked is undefined or (item.locked is defined and not item.locked)) and
+         (item.name is defined))
 
 - name: Enable nginx server configuration
   file:
@@ -32,7 +34,8 @@
     mode: '0644'
   with_items: [ '{{ nginx_servers }}' ]
   notify: [ 'Test nginx and reload' ]
-  when: (item.enabled is undefined or (item.enabled is defined and item.enabled))
+  when: ((item.enabled is undefined or (item.enabled is defined and item.enabled)) and
+         (item.name is defined))
 
 - name: Disable nginx server configuration
   file:
@@ -40,5 +43,5 @@
     state: 'absent'
   with_items: [ '{{ nginx_servers }}' ]
   notify: [ 'Test nginx and reload' ]
-  when: (item.enabled is defined and not item.enabled)
+  when: ((item.enabled is defined and not item.enabled) and (item.name is defined))
 
