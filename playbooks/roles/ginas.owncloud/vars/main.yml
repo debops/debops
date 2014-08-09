@@ -4,6 +4,7 @@ owncloud_nginx_server:
   by_role: 'ginas.owncloud'
   enabled: True
   default: False
+  type: 'php5'
   name: '{{ owncloud_domain }}'
   root: '{{ owncloud_deploy_path }}'
 
@@ -34,6 +35,7 @@ owncloud_nginx_server:
       try_files $uri $uri/ index.php =404;
 
   upstream_php5: 'php5_owncloud'
+  upstream_php5_limit_except: False
 
 
 owncloud_nginx_upstream_php5:
