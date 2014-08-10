@@ -1,0 +1,86 @@
+{% extends "default.conf.j2" %}
+{#
+#
+#    ---- nginx server template for PHP5 websites ----
+#
+# List of local parameters:
+#   - item.upstream_php5:
+#       name of nginx upstream to use, if not present, .php files will be
+#       protected;
+#
+#   - item.index:
+#       list of index files to enable, if not present, add 'index.php' to
+#       default list of index files;
+#
+#   - item.upstream_php5_limit_except:
+#       list of methods to allow for all hosts, if set to False, limits
+#       are disabled. More information:
+#       http://nginx.org/en/docs/http/ngx_http_core_module.html#limit_except
+#
+#   - item.upstream_php5_include:
+#       file to include instead of 'fastcgi_params';
+#
+#   - item.upstream_php5_options:
+#       additional options to append to php location;
+#
+#}
+{% block nginx_tpl_block_index %}
+        index {{ item.index | default('index.html index.htm index.php') }};
+{% endblock %}
+{% block nginx_tpl_block_location_root %}
+                try_files $uri $uri/ /index.php =404;
+{% endblock %}
+{% block nginx_tpl_block_custom_locations %}
+{% if item.upstream_php5 is defined and item.upstream_php5 %}
+        location ~ ^(?<script_name>.+\.php)$ {
+{% if (item.upstream_php5_limit_except is undefined or (item.upstream_php5_limit_except is defined and item.upstream_php5_limit_except)) %}
+                limit_except {{ item.upstream_php5_limit_except | default('GET HEAD POST') }} { deny all; }
+
+{% endif %}
+                try_files $script_name =404;
+{% if (item.upstream_php5_include is undefined or (item.upstream_php5_include is defined and item.upstream_php5_include)) %}
+
+                include {{ item.upstream_php5_include | default('fastcgi_params') }};
+
+{% endif %}
+{% if item.upstream_php5_options is defined and item.upstream_php5_options %}
+
+                {{ item.upstream_php5_options | indent(16) }}
+
+{% endif %}
+                fastcgi_index index.php;
+                fastcgi_pass {{ item.upstream_php5 }};
+        }
+
+        location ~ ^(?<script_name>.+\.php)(?<path_info>/.*)$ {
+{% if (item.upstream_php5_limit_except is undefined or (item.upstream_php5_limit_except is defined and item.upstream_php5_limit_except)) %}
+                limit_except {{ item.upstream_php5_limit_except | default('GET HEAD POST') }} { deny all; }
+
+{% endif %}
+                try_files $script_name =404;
+{% if (item.upstream_php5_include is undefined or (item.upstream_php5_include is defined and item.upstream_php5_include)) %}
+
+                include {{ item.upstream_php5_include | default('fastcgi_params') }};
+{% if (item.upstream_php5_include is undefined) %}
+                fastcgi_param SCRIPT_FILENAME $document_root$script_name;
+                fastcgi_param PATH_INFO $path_info;
+{# This option doesn't work yet... #}
+                #fastcgi_param PATH_TRANSLATED $document_root$path_info;
+
+{% endif %}
+{% endif %}
+{% if item.upstream_php5_options is defined and item.upstream_php5_options %}
+
+                {{ item.upstream_php5_options | indent(16) }}
+
+{% endif %}
+                fastcgi_index index.php;
+                fastcgi_pass {{ item.upstream_php5 }};
+        }
+
+{% else %}
+	location ~ \.php$ {
+		return 403;
+	}
+{% endif %}
+{% endblock %}

@@ -255,7 +255,9 @@ server {
         error_log /var/log/nginx/{{ item.name[0] }}_error.log;
 {% endif %}
 
-        index index.html index.htm{% if item.upstream_php5 is defined and item.upstream_php5 %} index.php{% endif %};
+{% block nginx_tpl_block_index %}
+        index index.html index.htm;
+{% endblock %}
 
 {% if item.error_pages is defined and item.error_pages %}
 {% for code, location in item.error_pages.iteritems() %}
@@ -328,28 +330,14 @@ server {
 {% if item.location is defined and item.location %}
 {{ print_location(item.location, item.location_allow, item.location_referers, item.location_deny) }}{% endif %}{% else %}
         location / {
+{% block nginx_tpl_block_location_root %}
                 try_files $uri $uri/ $uri.html $uri.htm /index.html /index.htm =404;
+{% endblock %}
         }
 
 {% endif %}
-{% if item.upstream_php5 is defined and item.upstream_php5 %}
-        location ~ [^/]\.php(/|$) {
-                fastcgi_split_path_info ^(.+?\.php)(/.*)$;
-                if (!-f $document_root$fastcgi_script_name) {
-                        return 404;
-                }
-                fastcgi_index index.php;
-                include fastcgi_params;
-{% if item.upstream_php5_options is defined and item.upstream_php5_options %}
-                {{ item.upstream_php5_options | indent(16) }}
-{% endif %}
-                fastcgi_pass {{ item.upstream_php5 }};
-        }
-{% else %}
-	location ~ \.php$ {
-		return 403;
-	}
-{% endif %}
+{% block nginx_tpl_block_custom_locations %}
+{% endblock %}
 {% endif %}
 }
 
