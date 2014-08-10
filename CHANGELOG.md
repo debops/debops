@@ -35,6 +35,18 @@ been updated to use YAML parameters instead of inline parameters, default
 server configuration template has been rewritten to be cleaner and easier to
 use.
 
+PHP5 support in nginx has been moved from the default server template to
+a separate 'php5' template which extends the default. It has also been updated
+to work better with some variables like PHP\_SELF or PATH\_INFO, but support
+still is not 100% correct. Some websites might not work correctly (for example
+Joomla CMS with SEO-friendly URLs). You will need to set `item.type: 'php5'` in
+your site configuration to enable PHP5 support in nginx.
+
+`/etc/nginx/fastcgi_params` templated file is being dropped and original file
+will be used instead. For now, `nginx` role will disable the diversion and
+create temporary files to not do it again and have working nginx setup. They
+will be removed in the future.
+
 ginas will by default install `nginx` package from `wheezy-backports`
 repository, which provides newer version of nginx (1.6.x), supporting [OCSP
 Stapling](https://en.wikipedia.org/wiki/OCSP\_stapling) and [SPDY
