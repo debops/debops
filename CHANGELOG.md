@@ -90,6 +90,12 @@ in syslog on hosts which don't have `/dev/ttyS0` configured (virtual machines
 and containers, mostly). You can re-enable it by setting `console_serial: True`
 in inventory.
 
+`playbooks/` directory has been cleaned up, small separate playbooks have been
+merged into a larger one, and a few no longer needed playbooks have been
+removed.
+
+`githost` role has been removed because we have `gitlab` role now.
+
 
 ## July 2014
 
