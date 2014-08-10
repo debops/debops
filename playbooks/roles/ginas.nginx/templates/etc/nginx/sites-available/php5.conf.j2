@@ -40,7 +40,7 @@
                 try_files $script_name =404;
 {% if (item.upstream_php5_include is undefined or (item.upstream_php5_include is defined and item.upstream_php5_include)) %}
 
-                include {{ item.upstream_php5_include | default('fastcgi_params.dpkg-divert') }};
+                include {{ item.upstream_php5_include | default('fastcgi_params') }};
 
 {% endif %}
 {% if item.upstream_php5_options is defined and item.upstream_php5_options %}
@@ -60,7 +60,7 @@
                 try_files $script_name =404;
 {% if (item.upstream_php5_include is undefined or (item.upstream_php5_include is defined and item.upstream_php5_include)) %}
 
-                include {{ item.upstream_php5_include | default('fastcgi_params.dpkg-divert') }};
+                include {{ item.upstream_php5_include | default('fastcgi_params') }};
 {% if (item.upstream_php5_include is undefined) %}
                 fastcgi_param SCRIPT_FILENAME $document_root$script_name;
                 fastcgi_param PATH_INFO $path_info;
