@@ -1,0 +1,44 @@
+---
+
+- name: ownCloud support
+  hosts: ginas_owncloud
+  sudo: True
+
+  roles:
+    - { role: ginas.owncloud, tags: owncloud }
+
+- name: phpIPAM support
+  hosts: ginas_phpipam
+  sudo: yes
+
+  roles:
+    - { role: ginas.phpipam, tags: phpipam }
+
+- name: GitLab support
+  hosts: ginas_gitlab
+  sudo: True
+
+  roles:
+    - { role: ginas.gitlab, tags: gitlab }
+
+- name: GitLab CI support
+  hosts: ginas_gitlab_ci
+  sudo: True
+
+  roles:
+    - { role: ginas.gitlab_ci, tags: gitlab_ci }
+
+- name: GitLab CI Runner support
+  hosts: ginas_gitlab_ci_runner
+  sudo: True
+
+  roles:
+    - { role: ginas.gitlab_ci_runner, tags: gitlab_ci_runner }
+
+- name: Install ginas recursively
+  hosts: ginas_recursively
+  sudo: yes
+
+  roles:
+    - { role: ginas.ginas, tags: ginas }
+
