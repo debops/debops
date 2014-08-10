@@ -26,6 +26,12 @@
             owner=root group=root mode=0644
   notify: [ 'Reload sysctl' ]
 
+- name: Symlink /var/lib/vz to /vz
+  file:
+    src: '/var/lib/vz'
+    dest: '/vz'
+    state: 'link'
+
 - name: Configure OpenVZ
   template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
   with_items: [ 'etc/vz/download.conf', 'etc/vz/vz.conf' ]
