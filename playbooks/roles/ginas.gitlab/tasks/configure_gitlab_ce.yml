@@ -129,6 +129,18 @@
         (gitlab_status_ce_installed is defined and gitlab_status_ce_installed)
 
 
+# ---- gitlab/config/resque.yml ----
+
+- name: Configure custom redis server
+  lineinfile:
+    dest: '{{ gitlab_home }}/gitlab/config/resque.yml'
+    regexp: '^production:'
+    line: 'production: {{ gitlab_redis }}'
+    state: 'present'
+    create: True
+    backup: False
+  notify: [ 'Restart gitlab' ]
+
 
 # ---- gitlab/config/unicorn.rb ----
 

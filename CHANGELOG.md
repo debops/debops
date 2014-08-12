@@ -75,6 +75,22 @@ redirection from `http://www.example.com/` to `http://example.com/` (or
 `http://example.com/` to `http://www.example.com/` if the latter is defined as
 the first element of `item.name` list).
 
+### GitLab, GitLab CI, GitLab CI Runner
+
+All GitLab roles have been modified to use `ruby` role as a dependency instead
+of installing Ruby packages directly. This way, by default GitLab can use Ruby
+2.1, which will be installed by default by `ruby` role.
+
+`gitlab` role has been updated to support GitLab 7.0 and 7.1, including
+seamless upgrade. GitLab 7.1 will be now installed by default, and your current
+installation should be automatically upgraded during next playbook run. No new
+configuration files have been added at this time, since changes are either in
+the sections commented out by default, or at the moment irrelevant to ginas
+environment (for example LDAP support, which currently is not present).
+
+You can now change default Redis server used by GitLab using new
+`gitlab_redis*` variables.
+
 ### Other news
 
 `postgresql` role will now set default password for `postgres` user and save it
