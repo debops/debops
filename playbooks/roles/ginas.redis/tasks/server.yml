@@ -82,7 +82,7 @@
   shell: "redis-cli {{ '-a ' + redis_requirepass if redis_requirepass else '' }} -h {{ redis_sentinel_hosts_group[0] }} -p {{ redis_sentinel_port }} info | grep 'address=' | awk -F 'address=' '{print $2}' | tr ',' '\n' | grep ':' | awk -F ':' '{print $1}'"
   changed_when: False
   when: not redis_register_main_config_slaveof.stdout and
-        redis_sentinel_hosts_group in groups and redis_sentinel_hosts_group and
+        redis_sentinel_hosts_group in groups and redis_sentinel_hosts_group
   register: redis_register_real_master
 
 - name: Insert the real slaveof to all slaves
