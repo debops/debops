@@ -14,15 +14,6 @@
     - 'etc/apt/apt.conf.d/70aptitude'
   when: ansible_distribution == 'Debian'
 
-- name: Configure APT preferences
-  template: src=etc/apt/preferences.d/apt_preferences.j2
-            dest=/etc/apt/preferences.d/apt_{{ item.name }}.pref
-            owner=root group=root mode=0644
-  with_items:
-    - '{{ apt_packages_from_backports }}'
-    - '{{ apt_preferences }}'
-  when: ansible_distribution == 'Debian'
-
 - name: Update package lists
   apt: update_cache=yes
 
