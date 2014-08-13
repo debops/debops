@@ -3,6 +3,14 @@
 dependencies:
   - role: ginas.secret
 
+  - role: ginas.apt_preferences
+    tags: apt_preferences
+    apt_preferences_dependent_list:
+      - package: 'redis-server'
+        backports: [ 'wheezy' ]
+        reason: 'Critical bugs in older versions - http://download.redis.io/redis-stable/00-RELEASENOTES'
+        by_role: 'ginas.redis'
+
   - role: ginas.etc_services
     etc_services_dependency_list:
       - name: 'redis-server'

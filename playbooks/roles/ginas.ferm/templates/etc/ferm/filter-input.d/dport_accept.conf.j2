@@ -17,7 +17,7 @@ Optional:
 
 protocol {{ item.protocol | default('tcp') }} dport ({{ item.dport | join(' ') }}) {
 {% if item.saddr is defined and item.saddr %}
-	saddr ({{ item.saddr | join(' ') }}) ACCEPT;
+	saddr ({{ item.saddr | unique | join(' ') }}) ACCEPT;
 {% else %}
 {% if item.accept_any is defined and item.accept_any %}
 	ACCEPT;

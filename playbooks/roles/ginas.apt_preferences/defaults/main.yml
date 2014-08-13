@@ -1,0 +1,42 @@
+---
+# role: apt_preferences (manage APT package pins)
+# Homepage: https://wiki.debian.org/AptPreferences
+
+
+# Most common options:
+#
+#   - package: ''          # String of packages affected by this pin,
+#                          # separated by spaces;
+#   - backports: []        # List of OS releases on which this package
+#                          # should be automatically installed from
+#                          # backports;
+#   - version: ''          # Package version which should be held
+#                          # on a host;
+#   - priority: ''         # Custom pin priority;
+#
+# More information and options can be found in a pin template file,
+# templates/etc/apt/preferences.d/pin.pref.j2
+
+
+# List of pins from every host in the cluster
+apt_preferences_list: []
+
+  #- package: 'nginx nginx-*'
+  #  backports: [ 'wheezy' ]
+
+# List of pins for a specific group of hosts
+apt_preferences_group_list: []
+
+# List of pins for a specific host
+apt_preferences_host_list: []
+
+# List of pins defined by a role via dependency variables
+apt_preferences_dependent_list: []
+
+
+# Default pin priority used if custom is not specified
+apt_preferences_priority_default: '500'
+
+# Default pin priority used with item.version option
+apt_preferences_priority_version: '1001'
+

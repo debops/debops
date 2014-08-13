@@ -2,6 +2,14 @@
 
 dependencies:
 
+  - role: ginas.apt_preferences
+    tags: apt_preferences
+    apt_preferences_dependent_list:
+      - package: 'nginx nginx-*'
+        backports: [ 'wheezy' ]
+        reason: 'Support for SPDY, OCSP stapling'
+        by_role: 'ginas.nginx'
+
   - role: ginas.ferm
     ferm_input_list:
 
