@@ -4,7 +4,7 @@ It allows you to easily setup infrastructure capable of running and managing 1 o
 
 ### Getting started
 
-Below is the bare minimum to get started to setup a few redis servers acting together. If all you want to do is use redis as a single server stand alone  dependency in another role then include the role in your role's meta main file. You don't have to add the groups in your inventory in that case.
+Below is the bare minimum to get started to setup a few redis servers acting together. If all you want to do is use redis as a single server dependency in another role then include the role in your role's meta main file. You don't have to add the groups in your inventory in that case.
 
 #### hosts
 
