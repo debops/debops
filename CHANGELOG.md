@@ -12,6 +12,16 @@ ginas changelog
   [README.md](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/README.md)
   of that role for more information.
 
+- **redis**: [redis](http://redis.io/) is RAM-based key-value store. This role
+  will let you install and configure redis as a separate service, or as
+  a cluster composed of a master and slaves, monitored by `redis-sentinel`
+  and automatically self-healing if necessary.
+
+- **apt_preferences**: [APT
+  preferences](https://wiki.debian.org/AptPreferences) can be used to
+  influence the package selection process performed by APT during
+  installation or upgrades.
+
 ### Ruby
 
 `ruby` role has been rewritten to use `backporter` role on Debian Wheezy.
@@ -111,6 +121,9 @@ merged into a larger one, and a few no longer needed playbooks have been
 removed.
 
 `githost` role has been removed because we have `gitlab` role now.
+
+Support for APT preferences has been removed from `apt` role and is now
+a separate role, which can be used as a dependency by other roles.
 
 
 ## July 2014
