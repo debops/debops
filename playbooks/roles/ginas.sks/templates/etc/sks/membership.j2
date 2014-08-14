@@ -13,17 +13,24 @@
 #
 # Example:
 # keyserver.linux.it 11370
-{% if sks_backends is defined and sks_backends %}
-{% for host in sks_backends %}
-{% if host != ansible_fqdn %}
-{{ host }} {{ sks_recon_port | default('11370') }}
+{% if sks_cluster is defined and (sks_cluster | count > 1) %}
+
+# Local cluster
+{% for host in sks_cluster %}
+{% if host != inventory_hostname %}
+{% if host in play_hosts and hostvars[host].ansible_fqdn is defined %}
+{{ hostvars[host].ansible_fqdn }} {{ sks_recon_port | default('11370') }}
+{% else %}
+# Unknown DNS domain of {{ host }}
+{% endif %}
 {% endif %}
 {% endfor %}
 {% endif %}
 {% if sks_public_list is defined and sks_public_list %}
-{% for line in sks_public_list %}
-{{ line }}
+
+# Public peers
+{% for entry in sks_public_list %}
+{{ entry.name }} {{ entry.port | default(sks_recon_port) }} # {{ entry.email | default('No email specified') }}, {{ entry.gpg | default('No GPG key specified') }}
 {% endfor %}
 {% endif %}
-
 
