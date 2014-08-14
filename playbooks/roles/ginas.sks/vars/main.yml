@@ -1,15 +1,22 @@
 ---
 
+# Configuration of SKS reconcilliation service port
 sks_recon_name: 'sks'
 sks_recon_port: 11370
 
+# Configuration of SKS keyserver service on a frontend host
+sks_hkp_frontend_name: 'hkp-backend'
+sks_hkp_frontend_port: '11372'
+
+# Configuration for HTTP web frontend
 sks_nginx_frontend:
+  by_role: 'ginas.sks'
   enabled: True
-  default: True
+  default: False
+  name: '{{ ["default_sks"] + sks_domain }}'
+  root: '{{ "/srv/www/sites/" + sks_domain[0] + "/public" }}'
   ssl: False
-  listen:
-    - '80 default_server'
-    - '11371'
+  listen: [ '80', '11371' ]
   location:
     '/': |
       try_files $uri $uri/ =404;
@@ -20,13 +27,14 @@ sks_nginx_frontend:
       add_header Via "1.1 {{ ansible_fqdn }} (nginx)";
       proxy_ignore_client_abort on;
 
+# Configuration for HTTPS web frontend
 sks_nginx_ssl_frontend:
+  by_role: 'ginas.sks'
   enabled: True
-  name: '{{ sks_frontend }}'
-  root: '/srv/www/sites/default/public'
+  default: False
+  name: '{{ sks_domain }}'
   listen: False
-  listen_ssl:
-    - '443 default_server'
+  listen_ssl: [ '443' ]
   location:
     '/': |
       try_files $uri $uri/ =404;
@@ -37,9 +45,11 @@ sks_nginx_ssl_frontend:
       add_header Via "1.1 {{ ansible_fqdn }} (nginx)";
       proxy_ignore_client_abort on;
 
+# SKS server upstreams
 sks_nginx_upstreams:
   enabled: True
   name: 'sks_servers'
-  server: '{{ sks_backends }}'
+  server: 'localhost:{{ sks_hkp_frontend_port }}'
+  cluster: '{{ sks_cluster | difference(sks_frontends) }}'
   port: '11371'
 

@@ -1,27 +1,17 @@
 ---
 
-- name: Unnstall SKS Keyserver on frontend server
-  apt: pkg=sks state=absent
-
-- name: Configure firewall for SKS Keyserver frontend
-  template: src=etc/ferm/filter-input.d/sks-frontend.conf.j2
-            dest=/etc/ferm/filter-input.d/sks-frontend.conf
-            owner=root group=root mode=0644
-  notify: [ 'Restart ferm' ]
-
 - name: Check if index.html page exists
-  stat: path=/srv/www/sites/default/public/index.html
-  register: sks_index_html
+  stat:
+    path: '/srv/www/sites/{{ sks_domain[0] }}/public/index.html'
+  register: sks_register_index_html
 
 - name: Configure SKS Keyserver webpage if not present
-  copy: src={{ item }} dest=/{{ item }} owner=root group=root mode=0644
-  with_items:
-    - 'srv/www/sites/default/public/index.html'
-    - 'srv/www/sites/default/public/robots.txt'
-  when: sks_index_html is defined and sks_index_html.stat.exists == False
-
-- name: Lock default nginx server template on SKS Keyserver frontend
-  set_fact:
-    nginx_server_default:
-      locked: True
+  copy:
+    src: 'srv/www/sites/default/public/{{ item }}'
+    dest: '/srv/www/sites/{{ sks_domain[0] }}/public/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: [ 'index.html', 'robots.txt' ]
+  when: sks_register_index_html is defined and not sks_register_index_html.stat.exists
 

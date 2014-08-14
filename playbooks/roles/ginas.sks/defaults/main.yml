@@ -1,5 +1,6 @@
 ---
 # role: sks (Synchronizing OpenPGP Key Server)
+# Homepage: https://bitbucket.org/skskeyserver/sks-keyserver/wiki/Home
 
 
 # Automatically create keyserver database? Database will be empty
@@ -9,21 +10,23 @@
 sks_autoinit: False
 
 # GPG fingerprint of server administrator
-#sks_contact: '0xDEADBEEF'
+sks_contact: ''
 
 # From header for outgoing mail
 sks_from: 'PGP Key Server <pgp-public-keys@{{ ansible_fqdn }}>'
 
-# Frontend server for SKS backends - on this host sks will be uninstalled and
-# nginx will be configured as reverse proxy for sks_backends.
-sks_frontend: 'keyserver.{{ ansible_domain }}'
+# DNS domain on which SKS frontend webserver should be configured
+sks_domain: [ 'keyserver.{{ ansible_domain }}' ]
 
-# List of SKS Keyserver backends in the cluster which will peer with each
-# other. At least one of them should connect to the rest of the SKS Keyserver
-# public network.
-#sks_backends:
-#  - 'sks01.{{ ansible_domain }}'
-#  - 'sks02.{{ ansible_domain }}'
+# Ansible group of hosts which are included in SKS cluster
+sks_cluster: '{{ groups.ginas_sks }}'
+
+# List of inventory hosts which provide frontend web service
+sks_frontends: [ '{{ sks_cluster[0] }}' ]
+
+# List of hosts which can connect to hkp service. If this list is empty,
+# anybody can connect.
+sks_hkp_allow: []
 
 # List of public SKS keyservers you want to peer with. It's a list of simple
 # lines, which allows you to include custom ports and comments (see sks(8)
@@ -33,17 +36,9 @@ sks_frontend: 'keyserver.{{ ansible_domain }}'
 # You should probably connect only one of your private keyservers to the public
 # keyserver network, your other servers will propagate the changes between
 # themselves.
-#sks_public_list:
-#  - 'keyserver.example.org {{ sks_recon_port }} # Server Administrator <admin@example.org> 0xDEADBEEF'
-
-# Firewall (ferm) configuration:
-# - set to 'False' to disable access in ferm
-# - set to 'True' to allow access from all hosts and networks
-# - set to a list of hosts/networks to allow access only from these hosts/networks
-# By default, allow from all
-sks_server_allow: True
-#sks_server_allow:
-#  - '10.0.0.0/8'
-#  - '172.16.0.0/12'
-#  - '192.168.0.0/16'
+sks_public_list: []
+#  - name: 'keyserver.example.org'
+#    port: '{{ sks_recon_port }}'
+#    email: 'Server Administrator <root@example.org'
+#    gpg: '0xDEADBEEF'
 

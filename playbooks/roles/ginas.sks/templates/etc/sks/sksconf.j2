@@ -15,10 +15,18 @@ hostname: {{ ansible_fqdn }}
 #recon_port: {{ sks_recon_port | default('11370') }}
 
 # Set hkp binding address
-#hkp_address: 0.0.0.0
+{% if inventory_hostname in sks_frontends %}
+hkp_address: 127.0.0.1
+{% else %}
+hkp_address: 0.0.0.0
+{% endif %}
 
 # Set hkp port number
-#hkp_port: 11371
+{% if inventory_hostname in sks_frontends %}
+hkp_port: {{ sks_hkp_frontend_port }}
+{% else %}
+hkp_port: 11371
+{% endif %}
 
 # Have the HKP interface listen on port 80, as well as the hkp_port
 #use_port_80:

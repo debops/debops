@@ -52,6 +52,9 @@ still is not 100% correct. Some websites might not work correctly (for example
 Joomla CMS with SEO-friendly URLs). You will need to set `item.type: 'php5'` in
 your site configuration to enable PHP5 support in nginx.
 
+Nginx upstream configuration template has been extended to support Ansible
+inventory groups (either using a host FQDN or all of its IP addresses).
+
 `/etc/nginx/fastcgi_params` templated file is being dropped and original file
 will be used instead. For now, `nginx` role will disable the diversion and
 create temporary files to not do it again and have working nginx setup. They
@@ -124,6 +127,9 @@ removed.
 
 Support for APT preferences has been removed from `apt` role and is now
 a separate role, which can be used as a dependency by other roles.
+
+`sks` role has been cleaned up and now automatically configures SKS cluster
+based on a list of hosts in a specified group (`ginas_sks` by default).
 
 
 ## July 2014
