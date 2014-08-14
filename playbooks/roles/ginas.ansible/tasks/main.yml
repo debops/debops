@@ -15,7 +15,7 @@
 
 - name: Clone Ansible repository
   git: repo={{ role_ansible_git_repository }} dest={{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}
-       version={{ role_ansible_git_branch }} update=yes
+       version={{ role_ansible_version }} update=yes
   register: role_ansible_git
   sudo_user: '{{ role_ansible_build_user }}'
 
@@ -26,24 +26,6 @@
 - name: Set Ansible package version
   set_fact:
     role_ansible_package_version: '{{ role_ansible_build_version.content | b64decode | trim }}'
-
-- name: Run Ansible tests if enabled
-  command: make tests chdir={{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}
-  register: role_ansible_tests_results
-  when: (role_ansible_git is defined and role_ansible_git.changed == True) and
-        (role_ansible_tests is defined and role_ansible_tests)
-  ignore_errors: True
-  sudo_user: '{{ role_ansible_build_user }}'
-
-- name: Send mail message in case of test errors
-  mail: from='{{ role_ansible_build_user }}@{{ ansible_fqdn }}' subject='{{ role_ansible_tests_mail_subject }}'
-        to='{{ role_ansible_tests_mail_to | join(",") }}' charset=utf8 body='{{ role_ansible_tests_mail_body }}'
-        {% if role_ansible_tests_mail_replyto is defined and role_ansible_tests_mail_replyto %}
-        headers=Reply-To='{{ role_ansible_tests_mail_replyto | join(",") }}'
-        {% endif %}
-  when: (role_ansible_tests_mail_to is defined and role_ansible_tests_mail_to) and
-        (role_ansible_tests_results is defined and role_ansible_tests_results.rc != 0)
-  sudo_user: '{{ role_ansible_build_user }}'
 
 - name: Build Ansible .deb package
   command: make deb chdir={{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}
@@ -69,4 +51,27 @@
   shell: dpkg -i {{ role_ansible_user_home.stdout }}/{{ role_ansible_build_path }}/../ansible_{{ role_ansible_package_version }}_all.deb
   when: role_ansible_register_old_deb is defined and role_ansible_register_old_deb.stdout != ""
 
+- name: Check if Redis is installed
+  stat: path=/usr/bin/redis-server
+  register: role_ansible_register_redis
+
+- name: Enable Redis fact caching in Ansible
+  set_fact:
+    role_ansible_fact_caching: 'redis'
+  when: (role_ansible_register_redis is defined and role_ansible_register_redis.stat.exists)
+
+- name: Install packages required for Redis support
+  apt:
+    name: 'python-redis'
+    state: 'latest'
+    install_recommends: False
+  when: (role_ansible_register_redis is defined and role_ansible_register_redis.stat.exists)
+
+- name: Configure /etc/ansible/ansible.cfg
+  template:
+    src: 'etc/ansible/ansible.cfg.j2'
+    dest: '/etc/ansible/ansible.cfg'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
