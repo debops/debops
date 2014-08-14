@@ -10,7 +10,7 @@
 
 - name: Configure nginx upstreams
   template:
-    src: 'etc/nginx/conf.d/upstream.conf.j2'
+    src: 'etc/nginx/conf.d/{{ item.type | default("upstream") }}.conf.j2'
     dest: '/etc/nginx/conf.d/upstream_{{ item.name }}.conf'
     owner: 'root'
     group: 'root'
