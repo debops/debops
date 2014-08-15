@@ -21,9 +21,17 @@
 - name: Update gems
   command: bundle install --deployment --without={{ rails_deploy_bundle_without | difference([rails_deploy_system_env]) | join(',') }}
            chdir={{ rails_deploy_src }}
+  changed_when: False
   when: rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status | changed
   sudo_user: '{{ rails_deploy_service }}'
+
+- name: Restart the background worker asynchronously
+  service: name={{ rails_deploy_worker }} state=restarted
+  async: 90
+  when: rails_deploy_worker_enabled and
+        rails_deploy_register_repo_status is defined and
+        rails_deploy_register_repo_status | changed
 
 - name: Prepare the database
   shell: '{{ rails_deploy_env_source }} && bundle exec rake db:schema:load db:seed
@@ -114,6 +122,13 @@
            state={{ rails_deploy_backend_state }}
            enabled={{ rails_deploy_backend_enabled }}
   when: rails_deploy_git_location is defined and rails_deploy_git_location
+
+- name: Set the initial background worker state
+  service: name={{ rails_deploy_worker }}
+           state={{ rails_deploy_worker_state }}
+           enabled={{ rails_deploy_worker_enabled }}
+  when: rails_deploy_worker_enabled and 
+        rails_deploy_git_location is defined and rails_deploy_git_location
 
 - name: Set the initial extra services state
   service: name={{ item.name }}

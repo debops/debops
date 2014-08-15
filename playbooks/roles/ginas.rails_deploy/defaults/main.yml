@@ -8,10 +8,10 @@
 # --- System ---
 
 # Should postgresql or mysql and nginx be setup for you automatically?
-# Criticial dependencies like nodejs and ruby will always be setup for you.
-# If you want your database to be on a non-app host then you would remove it
-# from this list.
-rails_deploy_dependencies: ['database', 'nginx']
+# Redis will also be setup if you enable background worker support.
+# Critical dependencies like nodejs and ruby will always be setup for you.
+# If you want anything to be on a non-app host then you would remove it here.
+rails_deploy_dependencies: ['database', 'redis', 'nginx']
 
 # Which packages do you want installed?
 # Add as many packages as you want, the database_package will automatically
@@ -136,6 +136,26 @@ rails_deploy_database_pool: 25
 rails_deploy_database_timeout: 5000
 
 
+# --- Background Worker ---
+
+# Enable background worker support. This will create an init.d service, register
+# it with monit and add it into the deploy life cycle.
+rails_deploy_worker_enabled: False
+rails_deploy_worker_state: 'started'
+
+# At the moment it only supports sidekiq but resque could happen in the future.
+rails_deploy_worker: 'sidekiq'
+
+# Where is your worker hosted?
+rails_deploy_worker_host: '{{ ansible_fqdn }}'
+rails_deploy_worker_port: '6379'
+
+# How should the connection be made to the redis server?
+# If your server has a password you must add it here.
+# Example: redis://:mypassword@{{ rails_deploy_worker_host }}:{{ rails_deploy_worker_port }}/0'
+rails_deploy_worker_url: 'redis://{{ rails_deploy_worker_host }}:{{ rails_deploy_worker_port }}/0'
+
+
 # --- Tasks ---
 
 # Precompile assets and remove any temporary cache files on each deploy.
@@ -182,17 +202,23 @@ rails_deploy_default_env:
 
   DATABASE_URL: "{{ rails_deploy_database_adapter }}://{{ rails_deploy_service }}:{{ rails_deploy_database_user_password }}@{{ rails_deploy_database_host }}:{{ rails_deploy_database_port }}/{{ rails_deploy_service }}_{{ rails_deploy_system_env }}?pool={{ rails_deploy_database_pool }}&timeout={{ rails_deploy_database_timeout }}"
 
-  # Puma and/or Unicorn variables, they work in conjunction with the example
-  # server configs. Check docs/examples/puma.rb|unicorn.rb.
+  # Application variables, they are used in the backend/worker variables below.
+  SERVICE: '{{ rails_deploy_service }}'
+  LOG_PATH: '{{ rails_deploy_log }}'
+  RUN_STATE_PATH: '{{ rails_deploy_run }}'
+
+  # Backend variables, they work in conjunction with the example
+  # server configs. Check docs/examples/rails/config/puma.rb|unicorn.rb.
   LISTEN_ON: '{{ rails_deploy_backend_bind }}'
 
   THREADS_MIN: 0
   THREADS_MAX: 16
   WORKERS: 2
 
-  SERVICE: '{{ rails_deploy_service }}'
-  LOG_PATH: '{{ rails_deploy_log }}'
-  RUN_STATE_PATH: '{{ rails_deploy_run }}'
+  # Background worker variables. Check docs/examples/rails/config/sidekiq.yml
+  # and initializers/sidekiq.rb on how use this in your application.
+  BACKGROUND_URL: '{{ rails_deploy_worker_url }}'
+  BACKGROUND_THREADS: '{{ rails_deploy_database_pool }}'
 
 # Custom environment variables added to a specific app.
 rails_deploy_env: {}
@@ -224,11 +250,11 @@ rails_deploy_nginx_server:
   name: '{{ rails_deploy_nginx_domains }}'
   root: '{{ rails_deploy_src }}/public'
 
-  options: |
-    error_page 404 /404.html;
-    error_page 422 /422.html;
-    error_page 500 /500.html;
-    error_page 502 503 504 /502.html;
+  error_pages:
+    '404': '/404.html'
+    '422': '/422.html'
+    '500': '/500.html'
+    '502 503 504': '/502.html'
 
   location_list:
     - pattern: '/'
@@ -268,6 +294,9 @@ rails_deploy_nginx_server:
 
 # --- Use puma instead of unicorn ---
 #rails_deploy_backend: 'puma'
+
+# --- Enable the background worker ---
+#rails_deploy_worker_enable: True
 
 # --- Listen on a tcp port instead of a socket ---
 #rails_deploy_backend_bind: '{{ ansible_fqdn }}:8080'
