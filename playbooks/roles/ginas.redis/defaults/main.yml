@@ -100,7 +100,11 @@ redis_requirepass: False
 # --- Limits ---
 
 redis_maxclients: 10000
-redis_maxmemory: '{{ ansible_memtotal_mb }}mb'
+
+# Set a percent multiplier to cap the amount of RAM redis will use. For example
+# if you wanted to limit it to 80% of the total RAM you would input 0.8.
+redis_maxmemory_multiplier: 1.0
+
 redis_maxmemory_policy: 'volatile-lru'
 
 
