@@ -24,6 +24,13 @@ dependencies:
     tags: monit
 ```
 
+#### inventory/hosts
+
+```
+[ginas_monit]
+somehost
+```
+
 #### inventory/host_vars/somehost.yml
 
 ```
