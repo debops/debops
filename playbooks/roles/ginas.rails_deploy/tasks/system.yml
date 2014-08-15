@@ -64,3 +64,10 @@
             owner={{ rails_deploy_service }} group={{ rails_deploy_service }}
             mode=0755
   when: rails_deploy_service is defined and rails_deploy_service
+
+- name: Create /etc/init.d/worker service
+  template: src=etc/init.d/worker.j2 dest=/etc/init.d/{{ rails_deploy_worker }}
+            owner={{ rails_deploy_service }} group={{ rails_deploy_service }}
+            mode=0755
+  when: rails_deploy_worker_enabled and
+        rails_deploy_worker is defined and rails_deploy_worker

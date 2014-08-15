@@ -11,6 +11,11 @@ dependencies:
   - role: ginas.ruby
     tags: ruby
 
+  - role: ginas.redis
+    when: rails_deploy_worker_enabled and (rails_dependencies is defined and
+          'redis' in rails_deploy_dependencies)
+    tags: redis
+
   - role: ginas.postgresql
     when: inventory_hostname == rails_deploy_hosts_master and
           (rails_deploy_dependencies is defined and
@@ -31,3 +36,16 @@ dependencies:
     when: rails_deploy_dependencies is defined and
           'nginx' in  rails_deploy_dependencies
     tags: nginx
+
+  - role: ginas.monit
+    monit_process_host_list:
+      - pid: '{{ rails_deploy_service }}/{{ rails_deploy_service }}.pid'
+    when: not rails_deploy_worker_enabled
+    tags: monit
+
+  - role: ginas.monit
+    monit_process_host_list:
+      - pid: '{{ rails_deploy_service }}/{{ rails_deploy_service }}.pid'
+      - pid: '{{ rails_deploy_service }}/{{ rails_deploy_worker }}.pid'
+    when: rails_deploy_worker_enabled
+    tags: monit

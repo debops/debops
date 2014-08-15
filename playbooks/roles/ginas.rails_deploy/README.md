@@ -52,6 +52,7 @@ Check out the available tags in the [playbook example](https://github.com/ginas/
 - Switch between postgresql and mysql with 1 line of configuration
 - Switch between unicorn and puma with 1 line of configuration
   - Unicorn and puma configs are provided in [docs/examples/rails/config](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/rails/config)
+- Optionally enable background worker support (sidekiq at the moment)
 - Easily separate your app and database servers when required
 - Set users, permissions, services, run state and log paths automatically
 - Set secure database passwords, generate ssh key pairs and ssl certs automatically
@@ -77,12 +78,16 @@ Check out the available tags in the [playbook example](https://github.com/ginas/
 - Postgresql
 - Nginx
 - Unicorn
+- Sidekiq (if you enable the background worker, it's off by default)
 
 You can find a few common usage examples at the bottom of the [defaults/main.yml](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/defaults/main.yml) file. You will see how to make changes to the defaults with very little configuration.
 
 ### Rails requirements
 
 Make sure you have the unicorn/puma and postgres/mysql gems in your Gemfile. You will also want to use the example unicorn and puma configs in your app.
+
+If you are using a background worker you'll want sidekiq in your Gemfile and you
+should take a look at the example sidekiq configs.
 
 You'll also want to use the `DATABASE_URL` format in your database.yml file. You can omit the production or whatever environment you're deploying to from the database.yml file and rails will pickup that env var by default.
 

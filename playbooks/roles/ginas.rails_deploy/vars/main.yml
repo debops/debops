@@ -10,12 +10,13 @@ rails_deploy_git_host: "{{ (rails_deploy_git_location_pieces[0] if 'ssh://' in r
 rails_deploy_git_account: "{{ (rails_deploy_git_location_pieces[-2] if 'ssh://' in rails_deploy_git_location else rails_deploy_git_location_pieces[0].split(':')[1]) if rails_deploy_git_location_pieces else '' }}"
 rails_deploy_git_repo: "{{ rails_deploy_git_location | basename | replace('.git', '') if not 'file://' in rails_deploy_git_location else '' }}"
 
-# Service related paths.
+# Service/Worker related paths.
 rails_deploy_env_source: '. /etc/default/{{ rails_deploy_service }}'
 rails_deploy_log: '/var/log/{{ rails_deploy_service }}'
 rails_deploy_run: '/var/run/{{ rails_deploy_service }}'
 rails_deploy_service_socket: '{{ rails_deploy_run }}/{{ rails_deploy_service }}'
 rails_deploy_service_pid: '{{ rails_deploy_run }}/{{ rails_deploy_service }}.pid'
+rails_deploy_worker_pid: '{{ rails_deploy_run }}/{{ rails_deploy_worker }}.pid'
 
 # Database related values.
 rails_deploy_database_package: "{{ 'libpq-dev' if rails_deploy_database_adapter == 'postgresql' else 'libmysqlclient-dev' }}"
