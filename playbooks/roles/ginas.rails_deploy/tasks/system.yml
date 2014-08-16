@@ -53,6 +53,12 @@
     - '{{ rails_deploy_log }}'
     - '{{ rails_deploy_run }}'
 
+- name: Create logrotate file
+  template: src=etc/logrotate.d/service.j2
+            dest=/etc/logrotate.d/{{ rails_deploy_service }}
+            owner=root group=root mode=0644
+  when: rails_deploy_service is defined and rails_deploy_service
+
 - name: Create /etc/default/app file
   template: src=etc/default/app.j2 dest=/etc/default/{{ rails_deploy_service }}
             owner={{ rails_deploy_service }} group={{ rails_deploy_service }}
