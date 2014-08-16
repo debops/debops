@@ -54,7 +54,7 @@ Check out the available tags in the [playbook example](https://github.com/ginas/
 - Switch between unicorn and puma with 1 line of configuration
   - Unicorn and puma configs are provided in [docs/examples/rails/config](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/rails/config)
 - Optionally enable background worker support (sidekiq at the moment)
-- Support syslog for rails itself, check the [production config example].
+- Support syslog for rails itself, check the [rails requirements](#rails-requirements) for an example.
 - Log your backend and worker to a logrotated file
 - Easily separate your app and database servers when required
 - Set users, permissions, services, run state and log paths automatically
