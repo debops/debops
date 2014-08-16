@@ -7,14 +7,14 @@
 # Simple OpenVZ container backup script with snapshots
 # Source: http://openvz.org/Ploop/Backup#Image-based_backup
 
-if [ -z $1 -o -z $2 ]
+if [ -z "$1" ]
 then
 	echo "Usage: vzbackup CTID BACKUP-PATH"
 	exit 1
 fi
 
-CTID=$1
-FOLDER=$2
+CTID=${1}
+FOLDER=${2:-/var/lib/vz/dump}
 BACKUPPATH=$FOLDER/ct-$CTID-backup-$( date +%F_%H_%M )
 
 # Create BACKUP-PATH
