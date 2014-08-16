@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# ==========================================================
+# This file is managed by Ansible, all changes will be lost.
+# ==========================================================
+
+# Bootstrap new OpenVZ Debian-based container for Ansible management.
+# Run this script after starting your new container for best
+# results.
+
+container=${1}
+
+if [ -z "${container}" ]; then
+	echo "Usage: vzbootstrap-ansible CTID"
+	exit 1
+fi
+
+check_container=$(vzlist -1 | grep ${container})
+if [ -z "${check_container}" ]; then
+        echo "Error: Container ${container} is stopped or doesn't exist"
+        exit 1
+fi
+
+check_group=$(vzctl exec ${container} getent group | grep '^admins:x')
+if [ -n "${check_group}" ]; then
+	echo "Container ${container} already bootstrapped"
+	exit 1
+fi
+
+username="{{ ansible_ssh_user | default(lookup('env','USER')) }}"
+
+sshkey="{{ lookup('file','~/.ssh/id_rsa.pub') }}"
+
+
+# ---- Script executed inside OpenVZ container ----
+
+cat <<EOF | vzctl exec ${container} -
+
+apt-get -yq update
+apt-get -yq install python python-apt sudo lsb-release
+
+mkdir -p -m 700 /root/.ssh
+echo "${sshkey}" > /root/.ssh/authorized_keys
+
+addgroup --system admins
+
+echo "%admins ALL = (ALL) NOPASSWD: ALL" > /etc/sudoers.d/admins
+chmod 440 /etc/sudoers.d/admins
+
+adduser --disabled-password --home /home/${username} --gecos "System Administrator" ${username}
+adduser ${username} admins
+
+mkdir -p -m 700 /home/${username}/.ssh
+echo "${sshkey}" > /home/${username}/.ssh/authorized_keys
+chown -R ${username}:${username} /home/${username}/.ssh
+
+EOF
+

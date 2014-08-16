@@ -22,6 +22,10 @@ ginas changelog
   influence the package selection process performed by APT during
   installation or upgrades.
 
+- **monit**: [monit](http://mmonit.com/monit/) is a proactive service and
+  system monitoring application, which can react to events, restart failed
+  services and notify an administrator about errors.
+
 ### Ruby
 
 `ruby` role has been rewritten to use `backporter` role on Debian Wheezy.
@@ -104,6 +108,21 @@ environment (for example LDAP support, which currently is not present).
 You can now change default Redis server used by GitLab using new
 `gitlab_redis*` variables.
 
+### OpenVZ
+
+`openvz` role has new default container configuration script which uses disk
+space and memory usage parameters calculated by Ansible (parameters used to
+calculate proposed values can be tweaked using inventory variables). New
+configuration file tries to split available resources according to number of
+containers you plan to use on a Hardware Node (by default, 5).
+
+Default container template has been changed to use official Debian 7.0 minimal
+template.
+
+There's new `vzbootstrap-ansible` script which helps with initial preparation
+of OpenVZ clusters to be managed by Ansible. It will install Python support and
+put users' OpenSSH public key inside the container for easy SSH access.
+
 ### Other news
 
 `postgresql` role will now set default password for `postgres` user and save it
@@ -131,6 +150,8 @@ a separate role, which can be used as a dependency by other roles.
 `sks` role has been cleaned up and now automatically configures SKS cluster
 based on a list of hosts in a specified group (`ginas_sks` by default).
 
+`ansible` role can now detect Redis installed on Ansible Controller and
+configure ansible to use host fact caching automatically.
 
 ## July 2014
 

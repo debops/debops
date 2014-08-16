@@ -16,12 +16,75 @@
 # send an email to root account on Hardware Node with a reminder.
 
 
+# ---- OpenVZ Cluster - global options ----
+
 # List of hosts in OpenVZ "cluster". These hosts will exchange SSH public keys
 # from their root accounts between them and record their SSH fingerprints for
 # easier container migration using vzmigrate.
 # By default it's all hosts in 'ginas_openvz' group. You can change that by
 # defining a list of hosts using their inventory_hostname variable
 openvz_cluster: '{{ groups.ginas_openvz }}'
+
+# Where OpenVZ containers are being stored? This preferably should be
+# a separate partition
+openvz_container_storage: '/var/lib/vz'
+
+# Default filesystem layout for new OpenVZ containers (simfs, ploop)
+openvz_storage_layout: 'ploop'
+
+
+# ---- Configuration file for new OpenVZ containers ----
+
+# Default configuration file for new OpenVZ containers
+openvz_configfile: 'vswap-ginas'
+
+# How many containers do you plan to setup on an OpenVZ HN?
+openvz_configfile_container_count: '5'
+
+# Disk space soft limit multiplier
+openvz_configfile_diskspace_limit_multiplier: '0.7'
+
+# Disk inodes soft limit multiplier
+openvz_configfile_diskinodes_limit_multiplier: '0.9'
+
+# VSwap multiplier
+openvz_configfile_vswap_multiplier: '0.2'
+
+# How much RAM to reserve for the operating system?
+openvz_configfile_memory_padding: '256'
+
+# Quota time limit in seconds
+openvz_configfile_quotatime: '0'
+
+# Default cpuunits for new container
+openvz_configfile_cpuunits: '1000'
+
+# Default netfilter state for new containers
+# Choices: disabled, stateless, stateful, full
+openvz_configfile_netfilter: 'stateful'
+
+
+# ---- OpenVZ container template ----
+
+# Default container template
+openvz_template: 'debian-7.0-x86_64-minimal'
+
+# Should OpenVZ automatically update template images?
+openvz_template_update: 'yes'
+
+# Should OpenVZ check gnupg signature of a template image?
+openvz_template_signature: 'yes'
+
+# Where to look for online for OpenVZ templates
+openvz_template_prefix: 'http://download.openvz.org/template/precreated'
+
+# List of directories with "repositories" of templates on template server
+openvz_template_repos:
+  - '{{ openvz_template_prefix }}'
+  - '{{ openvz_template_prefix }}/contrib'
+
+
+# ---- OpenVZ kernel ----
 
 # Name of a kernel package (or metapackage) installed by openvz role
 openvz_kernel: 'linux-image-openvz-amd64'
@@ -35,35 +98,9 @@ openvz_grub_default: '1'
 # Where to send mail reminders and alerts from openvz role
 openvz_mail_to: [ 'root@{{ ansible_domain }}' ]
 
-# Default filesystem layout for new OpenVZ containers (simfs, ploop)
-openvz_storage_layout: 'ploop'
-
-# Default configuration file for new OpenVZ containers
-openvz_configfile: 'vswap-512m'
-
-# Default container template - this template is from "contrib" repository, with
-# a minimal set of Debian packages and sshd installed
-# More information: https://projects.rackster.ch/OpenVZ/Templates/Debian%207/Overview.md
-openvz_template: 'debian-7.0-amd64-minimal'
-
-# Should OpenVZ automatically update template images?
-openvz_template_update: 'yes'
-
-# Should OpenVZ check gnupg signature of a template image? This is set to 'no'
-# by default because selected default template above is not signed by openvz.org
-# GPG key
-openvz_template_signature: 'no'
-
-# Where to look for online for OpenVZ templates
-openvz_template_prefix: 'http://download.openvz.org/template/precreated'
-
-# List of directories with "repositories" of templates on template server
-openvz_template_repos:
-  - '{{ openvz_template_prefix }}'
-  - '{{ openvz_template_prefix }}/contrib'
-
 # List of IPv4 iptables kernel modules to be enabled in containers by default
 openvz_iptables: [ 'ipt_REJECT', 'ipt_tos', 'ipt_TOS', 'ipt_LOG', 'ip_conntrack',
                    'ipt_limit', 'ipt_multiport', 'iptable_filter', 'iptable_mangle',
                    'ipt_TCPMSS', 'ipt_tcpmss', 'ipt_ttl', 'ipt_length', 'ipt_state',
                    'iptable_nat', 'ip_nat_ftp' ]
+
