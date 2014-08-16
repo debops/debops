@@ -1,12 +1,18 @@
 ---
 
 - name: Install OpenVZ kernel
-  apt: pkg={{ openvz_kernel }} state=latest install_recommends=no
+  apt:
+    name: '{{ openvz_kernel }}'
+    state: 'latest'
+    install_recommends: False
   register: openvz_kernel_status
 
 - name: Set default kernel in GRUB
-  lineinfile: dest=/etc/default/grub regexp='^GRUB_DEFAULT=' state=present
-              line='GRUB_DEFAULT={{ openvz_grub_default }}'
+  lineinfile:
+    dest: '/etc/default/grub'
+    regexp: '^GRUB_DEFAULT='
+    state: 'present'
+    line: 'GRUB_DEFAULT={{ openvz_grub_default }}'
   register: openvz_grub_configuration
 
 - name: Update grub
@@ -21,6 +27,10 @@
   when: openvz_kernel_status is defined and openvz_kernel_status.changed
 
 - name: Send mail to administrator about new or updated kernel
-  mail: from='root' subject='{{ openvz_mail_kernel_subject }}'
-        to='{{ openvz_mail_to | join(",") }}' charset=utf8 body='{{ openvz_mail_kernel_body }}'
+  mail:
+    from: 'root'
+    subject: '{{ openvz_mail_kernel_subject }}'
+    to: '{{ openvz_mail_to | join(",") }}'
+    charset: 'utf8'
+    body: '{{ openvz_mail_kernel_body }}'
   when: openvz_kernel_status is defined and openvz_kernel_status.changed
