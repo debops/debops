@@ -129,3 +129,51 @@ postgresql_default_cluster:
 postgresql_clusters: []
 
 
+# --- Auto backups ---
+
+# Backups will be ran daily and are rotated weekly.
+# Weekly backups are rotated on a 5 week cycle.
+# Monthly backups are ran on the first of the month.
+# Monthly backups are not rotated.
+#   It would be a good idea to move monthly backups to a remote server yourself.
+
+# Should auto backups be enabled?
+# If set to False, the script will be removed from /etc/cron.daily.
+postgresql_auto_backup: True
+
+# Space separated list of databases, or all for everything.
+postgresql_auto_backup_dbnames: 'all'
+
+# Available options:
+#   - log    : send only the log file
+#   - files  : send the log file and sql files as attachments
+#   - stdout : output the log to the screen if run manually
+#   - queiet : only send logs if an error occurs
+postgresql_auto_backup_mailcontent: 'quiet'
+
+# The maximum allowed size of the e-mail, 4000 = about 5mb.
+postgresql_auto_backup_maxsize: 4000
+
+# Who should recieve the backup files?
+postgresql_auto_backup_mailaddr: 'monitoringt@{{ ansible_domain }}'
+
+# Which databases should get backed up monthly?
+postgresql_auto_backup_monthly_dbnames: 'template1 {{ postgresql_auto_backup_dbnames }}'
+
+# Space separated list of databases to exclude in the backup.
+postgresql_auto_backup_exclude_dbnames: ''
+
+# Include create database in the backup? Use 'yes' or 'no', not true/false.
+postgresql_auto_backup_create_database: 'yes'
+
+# Use a separate backup directory and file for each database? 'yes' or 'no'.
+postgresql_auto_backup_isolate_databases: 'yes'
+
+# Which day of the week do you want to perform weekly backups?
+# 1 = Monday , ... , 7 = Sunday.
+postgresql_auto_backup_weekly_day: 6
+
+# Scripts to execute before and/or after the backup takes place.
+# An empty value disables this feature, provide a path to the script to enable.
+postgresql_auto_backup_pre_script: ''
+postgresql_auto_backup_post_script: ''

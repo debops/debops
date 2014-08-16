@@ -1,0 +1,20 @@
+---
+
+- name: Install autopostgresqlbackup
+  apt: pkg=autopostgresqlbackup state=present install_recommends=no
+
+- name: Configure autopostgresqlbackup
+  template: src=usr/sbin/autopostgresqlbackup.j2
+            dest=/usr/sbin/autopostgresqlbackup
+            owner=root group=root mode=0755
+
+- name: Enable autopostgresqlbackup to run daily
+  copy: src=etc/cron.daily/autopostgresqlbackup
+        dest=/etc/cron.daily/autopostgresqlbackup
+        owner=root group=root mode=0755
+  when: postgresql_auto_backup
+
+- name: Disable autopostgresqlbackup from running daily
+  file: path=/etc/cron.daily/autopostgresqlbackup state=absent
+        owner=root group=root mode=0755
+  when: not postgresql_auto_backup
