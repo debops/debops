@@ -6,10 +6,10 @@ threads ENV['THREADS_MIN'].to_i, ENV['THREADS_MAX'].to_i
 workers ENV['WORKERS'].to_i
 
 # Listen on a tcp port or unix socket.
-if ENV['LISTEN_ON'].start_with?('unix:')
-  bind "unix:/#{ENV['LISTEN_ON']}"
-else
+if ENV['LISTEN_ON'].include?(':')
   bind "tcp://#{ENV['LISTEN_ON']}"
+else
+  bind "unix:#{ENV['LISTEN_ON']}"
 end
 
 # The path where the pid file will be written to.
@@ -19,9 +19,8 @@ pidfile "#{ENV['RUN_STATE_PATH']}/#{ENV['SERVICE']}.pid"
 # uploads you may want to increase this.
 worker_timeout 30
 
-# The paths to where logs will be written to.
-stdout_redirect "#{ENV['LOG_PATH']}/#{ENV['SERVICE']}.access.log",
-                "#{ENV['LOG_PATH']}/#{ENV['SERVICE']}.error.log"
+# The file that gets logged to.
+stdout_redirect ENV['LOG_FILE'], ENV['LOG_FILE']
 
 # Preload the application before starting the workers.
 preload_app!

@@ -191,6 +191,16 @@ rails_deploy_extra_services: []
 #    enabled: True
 
 
+# --- Log rotation ---
+
+# How often should they be rotated?
+# Accepted values: hourly, daily, weekly, monthly and yearly
+rails_deploy_logrotate_interval: 'weekly'
+
+# Log files are rotated N times before being removed.
+rails_deploy_logrotate_rotation: 24
+
+
 # --- Environment settings ---
 
 # Both the default and custom environment variables will get added together
@@ -204,7 +214,7 @@ rails_deploy_default_env:
 
   # Application variables, they are used in the backend/worker variables below.
   SERVICE: '{{ rails_deploy_service }}'
-  LOG_PATH: '{{ rails_deploy_log }}'
+  LOG_FILE: '{{ rails_deploy_log }}/{{ rails_deploy_service }}.log'
   RUN_STATE_PATH: '{{ rails_deploy_run }}'
 
   # Backend variables, they work in conjunction with the example

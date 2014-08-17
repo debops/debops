@@ -6,11 +6,11 @@
 worker_processes ENV['WORKERS'].to_i
 
 # Listen on a tcp port or unix socket.
-if ENV['LISTEN_ON'].start_with?('unix:')
-  # Use a shorter backlog for quicker failover when busy.
-  listen ENV['LISTEN_ON'], backlog: 64
-else
+if ENV['LISTEN_ON'].include?(':')
   listen ENV['LISTEN_ON']
+else
+  # Use a shorter socket backlog for quicker failover when busy.
+  listen ENV['LISTEN_ON'], backlog: 64
 end
 
 # The path where the pid file will be written to.
@@ -20,9 +20,9 @@ pid "#{ENV['RUN_STATE_PATH']}/#{ENV['SERVICE']}.pid"
 # uploads you may want to increase this.
 timeout 30
 
-# The paths to where logs will be written to.
-stdout_path "#{ENV['LOG_PATH']}/#{ENV['SERVICE']}.access.log"
-stderr_path "#{ENV['LOG_PATH']}/#{ENV['SERVICE']}.error.log"
+# The file that gets logged to.
+stdout_path ENV['LOG_FILE']
+stderr_path ENV['LOG_FILE']
 
 # Combine Ruby 2.0.0dev or REE with "preload_app true" for memory savings:
 # http://rubyenterpriseedition.com/faq.html#adapt_apps_for_cow

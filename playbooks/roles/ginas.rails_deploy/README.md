@@ -50,9 +50,12 @@ Check out the available tags in the [playbook example](https://github.com/ginas/
 
 - Setup an entire rails app server with 1 line of configuration with sane defaults
 - Switch between postgresql and mysql with 1 line of configuration
+- Postgresql runs a daily backup with daily/weekly rotation
 - Switch between unicorn and puma with 1 line of configuration
   - Unicorn and puma configs are provided in [docs/examples/rails/config](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/rails/config)
 - Optionally enable background worker support (sidekiq at the moment)
+- Support syslog for rails itself, check the [rails requirements](#rails-requirements) for an example.
+- Log your backend and worker to a logrotated file
 - Easily separate your app and database servers when required
 - Set users, permissions, services, run state and log paths automatically
 - Set secure database passwords, generate ssh key pairs and ssl certs automatically
@@ -90,6 +93,21 @@ If you are using a background worker you'll want sidekiq in your Gemfile and you
 should take a look at the example sidekiq configs.
 
 You'll also want to use the `DATABASE_URL` format in your database.yml file. You can omit the production or whatever environment you're deploying to from the database.yml file and rails will pickup that env var by default.
+
+If you want to use syslog for rails then you'll want to make sure you have this
+in one of your environment configuration files:
+
+```
+require 'syslog/logger'
+
+# ...
+
+# The tags are optional but it's useful to have.
+config.log_tags = [ :subdomain, :uuid ]
+
+# This allows you to write to syslog::user without any additional gems/config.
+config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new('yourappname'))
+```
 
 Lastly you should have 404, 422, 500 and 502 html files in your public directory. Nginx will serve them directly when those pesky errors decide to show up. You can also add a deploy.hml file in your public directory if you want to show a temporary maintenance/deploy page while your server is mid-deploy. If no deploy.html is found then this functionality will get skipped automatically.
 
