@@ -46,56 +46,110 @@ The idea is you'll push your code somewhere and then the role will pull in from 
 
 Check out the available tags in the [playbook example](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/docs/examples/ansible/playbook/yourappname.yml).
 
-### What are a few features available in this role?
-
-- Setup an entire rails app server with 1 line of configuration with sane defaults
-- Switch between postgresql and mysql with 1 line of configuration
-- Postgresql runs a daily backup with daily/weekly rotation
-- Switch between unicorn and puma with 1 line of configuration
-  - Unicorn and puma configs are provided in [docs/examples/rails/config](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/rails/config)
-- Optionally enable background worker support (sidekiq at the moment)
-- Support syslog for rails itself, check the [rails requirements](#rails-requirements) for an example.
-- Log your backend and worker to a logrotated file
-- Easily separate your app and database servers when required
-- Set users, permissions, services, run state and log paths automatically
-- Set secure database passwords, generate ssh key pairs and ssl certs automatically
-- Automatically set deploy keys to github/gitlab with 1 line of configuration
-- Determine whether or not migrations need to happen by tracking paths in local facts
-- Only run database oriented commands from a single master app server
-- Intelligently attempt to reload or restart your server based on what changed
-- Opt out of automatically migrating or opt in to always restart your server
-- Manage external services at various points in the deploy cycle
-- Manage custom tasks at various points in the deploy cycle
-- Configure nginx as much as you need if the defaults aren't enough for you
-- Show a temporary static deploy page during deploys with an automated cleanup of it afterwards
-- Enable ssl by default and set it all for you automatically
-- Protect everything behind a firewall that can be easily customized
-  - If you have multiple hosts and separate database servers then it's up to you to configure it
-  - An example of doing this is provided in [docs/examples/ansible/inventory](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/ansible/inventory)
-- Set as many environment vars as your app needs while also supplying many defaults
-- Allow you to tweak about 50 heavily commented variables in [defaults/main.yml](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/defaults/main.yml)
-- ...and more
-
 ### The defaults at a glance
 
-- Postgresql
-- Nginx
-- Unicorn
+- Postgresql (switching to MySQL is 1 line of yaml)
 - Sidekiq (if you enable the background worker, it's off by default)
+- Unicorn (switching to puma is 1 line of yaml)
+- Nginx
 
-You can find a few common usage examples at the bottom of the [defaults/main.yml](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/defaults/main.yml) file. You will see how to make changes to the defaults with very little configuration.
+You can find a few common usage examples at the bottom of the [defaults/main.yml](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/defaults/main.yml) file.
 
-### Rails requirements
+### A few features supplied by this role
 
-Make sure you have the unicorn/puma and postgres/mysql gems in your Gemfile. You will also want to use the example unicorn and puma configs in your app.
+#### High level goals
 
-If you are using a background worker you'll want sidekiq in your Gemfile and you
-should take a look at the example sidekiq configs.
+- Setup an entire rails app server with 1 line of configuration with sane defaults
+- Optionally and easily separate your app servers, database and worker into multiple servers
+- Quickly and easily switch between popular default databases and backend servers
+- Be as secure as possible and adhere to as many best practices as possible
 
-You'll also want to use the `DATABASE_URL` format in your database.yml file. You can omit the production or whatever environment you're deploying to from the database.yml file and rails will pickup that env var by default.
+#### Backups and logging
 
-If you want to use syslog for rails then you'll want to make sure you have this
-in one of your environment configuration files:
+- Postgresql runs a daily backup with daily/weekly rotation
+- Both your backend server and background worker get logged to 1 logrotated file
+- The rails process gets sent to syslog.user
+
+#### System level minutia
+
+- User accounts, permissions and ssh keys are automatically managed
+- Paths such as logs, pids and sockets are automatically managed
+
+#### Deploy features
+- Automatically set deploy keys to github/gitlab with 1 line of configuration
+  - This leverages their API, all you have to do is supply their token
+- Keep track of your schema file and config folder's mtime in local facts
+  - This allows the deploy task to attempt to guess if your server needs a full restart or a quick reload
+- Only run database commands from a single master app server
+  - This master is defined by simply being first in the group list
+- Various options to turn certain features on/off
+  - A few examples would be database creation, migration and force restarting your server
+- Add custom services which get restarted/reloaded at the end of the deploy cycle
+  - If you have a SOA setup this could be handy
+- Add and remove custom tasks
+  - By default it is set to precompile assets and clear the /tmp cache
+- Optionally swap a static deploy page in/out during the deploy cycle
+
+#### Security
+- Secure passwords are managed automatically for your database
+- Ports are blocked and only whitelisted for IP addresses/masks that you specify
+  - An example of this is supplied in the [inventory example](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/ansible/inventory).
+- SSL is enabled by default but can be turned off if you really don't want it
+- Self signed SSL certs are automatically managed for you
+  - Changing to properly signed certificates is a breeze
+
+### Changes you need to make in your rails application
+
+#### Gemfile
+
+You must have unicorn **or** puma added.
+```
+# Pick one, you may also want to bump the version to the most recent version.
+# These are the most recent as of ~August 2014.
+gem 'unicorn', '~> 4.8.3'
+gem 'puma', '~> 2.9.0'
+```
+
+You must have pg **or** mysql2 added.
+```
+# Pick one, you may also want to bump the version to the most recent version.
+# These are the most recent as of ~August 2014.
+gem 'pg', '~> 0.17.1'
+gem 'mysql2', '~> 0.3.16'
+
+```
+
+#### Backend server config
+
+You should base your unicorn or puma config off our [example configs](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/rails/config) because certain environment variables are required to exist. Also certain signals are sent to reload or restart the backend which require certain configuration options to be set. Luckily you don't have to think about any of that, just use the pre-written configs in your app.
+
+#### Background worker config
+
+You should also base your sidekiq configs off our [example configs](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/rails/config). Similar to the backend server it expects certain environment variables to exist.
+
+#### Database config
+
+The database configuration below would be reasonable to use. The only requirement is that yours must use the `DATABASE_URL` format in whatever environments you plan to deploy to. That simply means that those environments should be removed from your database config file. This role sets up the `DATABASE_URL` for you.
+
+```
+---
+    development:
+    url: <%= ENV['DATABASE_URL'].gsub('?', '_development?') %>
+    test:
+    url: <%= ENV['DATABASE_URL'].gsub('?', '_test?') %>
+```
+
+#### Application config
+
+In order to log everything to 1 file you must drop this line into your application config. This would apply to all environments. Feel free to move this to only staging and/or production if you don't want this to happen in development.
+
+```
+config.paths['log'] = ENV['LOG_FILE']
+```
+
+#### Production environment config
+
+Chances are you'll want your rails app to write to syslog in production or on your staging/build/etc. server. Copy this into your production environment config.
 
 ```
 require 'syslog/logger'
@@ -109,7 +163,18 @@ config.log_tags = [ :subdomain, :uuid ]
 config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new('yourappname'))
 ```
 
-Lastly you should have 404, 422, 500 and 502 html files in your public directory. Nginx will serve them directly when those pesky errors decide to show up. You can also add a deploy.hml file in your public directory if you want to show a temporary maintenance/deploy page while your server is mid-deploy. If no deploy.html is found then this functionality will get skipped automatically.
+#### Public files
+
+You will likely want the following files to exist in your `/public` directory:
+
+  - 404, 42, 500 and 502 html files to process error pages
+  - deploy html file to swap in/out during the deploy process
+
+The above will allow nginx to serve those files directly before rails even gets a chance.
+
+#### Don't feel like making these small changes every time you make a new app?
+
+Me neither. That's why I created [orats](https://github.com/nickjj/orats). It is a command line tool that generates a shiny new rails application with an accumulation of best practices that I have picked up over time. It is also a little opinionated. Check out [orats' git repo](https://github.com/nickjj/orats) if you're interested.
 
 ### This role's requirements
 
@@ -138,6 +203,8 @@ Once Debian Jessie is feature frozen (~November 2014) then this step will be rem
 ./site.sh -l ginas_postgresql # Only if you're using multiple hosts.
 # You are done. At this point you can run the playbook to setup your app server.
 ```
+
+Trust me, I know it's annoying. But you only have to do it once and in a few months all of this will go away.
 
 ### FAQ / troubleshooting guide
 
