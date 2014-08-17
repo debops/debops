@@ -167,7 +167,7 @@ config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new('yourappname
 
 You will likely want the following files to exist in your `/public` directory:
 
-  - 404, 42, 500 and 502 html files to process error pages
+  - 404, 422, 500 and 502 html files to process error pages
   - deploy html file to swap in/out during the deploy process
 
 The above will allow nginx to serve those files directly before rails even gets a chance.
