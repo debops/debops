@@ -17,7 +17,7 @@
     - '{{ redis_script }}'
 
 - include: sentinel.yml
-  when: inventory_hostname in redis_sentinel_hosts_group
+  when: redis_sentinel_hosts_group in group_names
 
 - name: Flush the handlers so Sentinel is up and running before the servers
   meta: flush_handlers
@@ -26,10 +26,10 @@
 # and it's not standalone.
 - include: server.yml
   when: (not redis_sentinel_standalone and
-        inventory_hostname in redis_sentinel_hosts_group) or True
+        redis_sentinel_hosts_group in group_names) or True
 
 - name: Stop Redis Server
   service: name=redis-server state=stopped enabled=no
   when: redis_sentinel_standalone and
-        inventory_hostname in redis_hosts_group and
-        inventory_hostname in redis_sentinel_hosts_group
+        redis_hosts_group in group_names and
+        redis_sentinel_hosts_group in group_names
