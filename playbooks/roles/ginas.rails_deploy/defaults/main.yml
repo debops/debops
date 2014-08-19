@@ -30,10 +30,10 @@ rails_deploy_user_sshkey: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
 # ---- Hosts ----
 
 # What inventory group does your app belong to?
-rails_deploy_hosts_group: '{{ groups["ginas_rails_" + rails_deploy_service] }}'
+rails_deploy_hosts_group: 'ginas_rails_{{ rails_deploy_service }}'
 
 # Which application server should run database related tasks?
-rails_deploy_hosts_master: '{{ rails_deploy_hosts_group[0] }}'
+rails_deploy_hosts_master: '{{ groups[rails_deploy_hosts_group][0] }}'
 
 
 # ---- Git ----
