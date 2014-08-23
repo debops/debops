@@ -153,6 +153,10 @@ based on a list of hosts in a specified group (`ginas_sks` by default).
 `ansible` role can now detect Redis installed on Ansible Controller and
 configure ansible to use host fact caching automatically.
 
+`php5` role will now use timezone of the remote host instead of Ansible
+Controller.
+
+
 ## July 2014
 
 ### New roles
