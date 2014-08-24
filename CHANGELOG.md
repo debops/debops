@@ -168,6 +168,11 @@ configure ansible to use host fact caching automatically.
 `php5` role will now use timezone of the remote host instead of Ansible
 Controller.
 
+`interfaces` role will now use 2 second delay between bringing an interface
+down and bringing it back up again, this should let different subsystems like
+bridges, etc. "settle" and be ready for bringing the interface back up. This
+should fix an error where NAT bridge interface could not be restarted properly.
+
 
 ## July 2014
 

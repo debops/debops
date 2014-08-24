@@ -44,7 +44,7 @@
         (item.delete is undefined or (item.delete is defined and not item.delete))
 
 - name: Reconfigure interfaces
-  shell: ifdown {{ item.item.iface }} ; ifup {{ item.item.iface }}
+  shell: ifdown {{ item.item.iface }} ; sleep {{ interfaces_ifupdown_delay }} ; ifup {{ item.item.iface }}
   with_items: interfaces_status.results
   when: (interfaces_status.results is defined and interfaces_status.results) and
         (interfaces_auto_ifupdown is defined and interfaces_auto_ifupdown == True) and
