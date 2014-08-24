@@ -51,9 +51,6 @@ Role Variables
     # Default hash behaviour, 'replace' or 'merge'
     role_ansible_config_hash_behaviour: 'replace'
     
-    # 'ansible_managed' contents
-    role_ansible_config_ansible_managed: 'Ansible managed: {file} modified on %Y-%m-%d %H:%M:%S by {uid} on {host}'
-    
     # Should Ansible display skipped hosts?
     role_ansible_config_display_skipped_hosts: True
     
