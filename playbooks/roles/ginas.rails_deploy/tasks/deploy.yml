@@ -94,7 +94,7 @@
         rails_deploy_register_mtime_config.stat.mtime == ansible_local.rails_deploy[rails_deploy_service].mtime.config and
         not rails_deploy_backend_always_restart
   delegate_to: '{{ item }}'
-  with_items: rails_deploy_hosts_group
+  with_items: groups[rails_deploy_hosts_group]
 
 - name: Restart the backend server
   service: name={{ rails_deploy_service }} state=restarted
@@ -109,7 +109,7 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status | changed)
   delegate_to: '{{ item }}'
-  with_items: rails_deploy_hosts_group
+  with_items: groups[rails_deploy_hosts_group]
 
 - name: Set the extra services state
   service: name={{ item.name }}
