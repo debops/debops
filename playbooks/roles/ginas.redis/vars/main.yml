@@ -1,6 +1,6 @@
 ---
 
-# ---  Paths ---
+# ----  Paths ----
 
 redis_dir: '/var/lib/redis'
 redis_run_state: '/var/run/redis'
@@ -13,7 +13,7 @@ redis_custom_config: '/etc/redis/redis-ansible.conf'
 redis_custom_sentinel_config: '/etc/redis/sentinel-ansible.conf'
 
 
-# --- General ---
+# ---- General ----
 
 redis_daemonize: 'yes'
 redis_pidfile: '{{ redis_run_state }}/redis-server.pid'
@@ -24,32 +24,32 @@ redis_syslog_facility: 'USER'
 redis_databases: 16
 
 
-# --- Sentinel ---
+# ---- Sentinel ----
 
 redis_sentinel_pidfile: '{{ redis_run_state }}/redis-sentinel.pid'
 redis_sentinel_syslog_ident: 'sentinel'
 
 
-# --- Snapshotting ---
+# ---- Snapshotting ----
 
 redis_rdbcompression: 'yes'
 redis_rdbchecksum: 'yes'
 redis_dbfilename: 'dump.rdb'
 
 
-# --- Replication ---
+# ---- Replication ----
 
 redis_slave_serve_stale_data: 'yes'
 redis_repl_disable_tcp_nodelay: 'no'
 
 
-# --- Limits ---
+# ---- Limits ----
 
 redis_maxmemory: '{{ (ansible_memtotal_mb | int * redis_maxmemory_multiplier) | round | int }}mb'
 redis_maxmemory_samples: 3
 
 
-# --- Append only mode ---
+# ---- Append only mode ----
 
 redis_appendfilename: 'appendonly.aof'
 redis_appendfsync: 'everysec'
@@ -58,6 +58,6 @@ redis_auto_aof_rewrite_percentage: 100
 redis_auto_aof_rewrite_min_size: '64mb'
 
 
-# --- LUA scripting ---
+# ---- LUA scripting ----
 
 redis_lua_time_limit: 5000

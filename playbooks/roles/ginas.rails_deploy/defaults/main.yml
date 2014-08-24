@@ -5,7 +5,7 @@
 # to change 1 or 2 variables to have everything work with reasonable defaults.
 
 
-# --- System ---
+# ---- System ----
 
 # Should postgresql or mysql and nginx be setup for you automatically?
 # Redis will also be setup if you enable background worker support.
@@ -27,7 +27,7 @@ rails_deploy_user_groups: []
 rails_deploy_user_sshkey: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
 
 
-# --- Hosts ---
+# ---- Hosts ----
 
 # What inventory group does your app belong to?
 rails_deploy_hosts_group: '{{ groups["ginas_rails_" + rails_deploy_service] }}'
@@ -36,7 +36,7 @@ rails_deploy_hosts_group: '{{ groups["ginas_rails_" + rails_deploy_service] }}'
 rails_deploy_hosts_master: '{{ rails_deploy_hosts_group[0] }}'
 
 
-# --- Git ---
+# ---- Git ----
 
 # The location repo which will get cloned during each deploy. You can use a
 # remote or local repo.
@@ -61,7 +61,7 @@ rails_deploy_git_remote: 'origin'
 rails_deploy_git_access_token: False
 
 
-# --- Deploy ---
+# ---- Deploy ----
 
 # What should the service be named?
 # The default value plucks out your repo name (without .git) from your location.
@@ -75,7 +75,7 @@ rails_deploy_system_env: 'production'
 rails_deploy_bundle_without: ['development', 'staging', 'production', 'test']
 
 
-# --- Backend ---
+# ---- Backend ----
 
 # Which backend type are you using? 'unicorn' and 'puma' are supported so far.
 rails_deploy_backend: 'unicorn'
@@ -98,7 +98,7 @@ rails_deploy_backend_enabled: True
 rails_deploy_backend_always_restart: False
 
 
-# --- Database ---
+# ---- Database ----
 
 # Should the database be created by default?
 rails_deploy_database_create: True
@@ -136,7 +136,7 @@ rails_deploy_database_pool: 25
 rails_deploy_database_timeout: 5000
 
 
-# --- Background Worker ---
+# ---- Background Worker ----
 
 # Enable background worker support. This will create an init.d service, register
 # it with monit and add it into the deploy life cycle.
@@ -156,7 +156,7 @@ rails_deploy_worker_port: '6379'
 rails_deploy_worker_url: 'redis://{{ rails_deploy_worker_host }}:{{ rails_deploy_worker_port }}/0'
 
 
-# --- Tasks ---
+# ---- Tasks ----
 
 # Precompile assets and remove any temporary cache files on each deploy.
 # Add or remove as many tasks as you want. They are executed in the context
@@ -174,7 +174,7 @@ rails_deploy_early_tasks:
 rails_deploy_late_tasks: []
 
 
-# --- Services ---
+# ---- Services ----
 
 # Add 1 or more custom services related to the app, they will have
 # their state changed on each deploy. The changed_state is the action to
@@ -191,7 +191,7 @@ rails_deploy_extra_services: []
 #    enabled: True
 
 
-# --- Log rotation ---
+# ---- Log rotation ----
 
 # How often should they be rotated?
 # Accepted values: hourly, daily, weekly, monthly and yearly
@@ -201,7 +201,7 @@ rails_deploy_logrotate_interval: 'weekly'
 rails_deploy_logrotate_rotation: 24
 
 
-# --- Environment settings ---
+# ---- Environment settings ----
 
 # Both the default and custom environment variables will get added together
 # and be written to /etc/default/{{ rails_deploy_service }}.
@@ -234,7 +234,7 @@ rails_deploy_default_env:
 rails_deploy_env: {}
 
 
-# --- Nginx settings ---
+# ---- Nginx settings ----
 
 # Should nginx be enabled?
 rails_deploy_nginx_server_enabled: True
@@ -290,26 +290,26 @@ rails_deploy_nginx_server:
 
 # Usage examples:
 
-# --- Bare minimum ---
+# ---- Bare minimum ----
 #rails_deploy_git_location: 'git@github.com:yourname/mycoolapp.git'
 
-# --- Use a custom service name ---
+# ---- Use a custom service name ----
 #rails_deploy_service: 'myawesomeapp'
 
-# --- Use a tag or branch instead of master ---
+# ---- Use a tag or branch instead of master ----
 #rails_deploy_git_version: 'v0.1.0'
 
-# --- Use mysql instead of postgres ---
+# ---- Use mysql instead of postgres ----
 #rails_deploy_database_adapter: 'mysql'
 
-# --- Use puma instead of unicorn ---
+# ---- Use puma instead of unicorn ----
 #rails_deploy_backend: 'puma'
 
-# --- Enable the background worker ---
+# ---- Enable the background worker ----
 #rails_deploy_worker_enable: True
 
-# --- Listen on a tcp port instead of a socket ---
+# ---- Listen on a tcp port instead of a socket ----
 #rails_deploy_backend_bind: '{{ ansible_fqdn }}:8080'
 
-# --- Deploy to staging instead of production ---
+# ---- Deploy to staging instead of production ----
 #rails_deploy_system_env: 'staging'
