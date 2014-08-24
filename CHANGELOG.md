@@ -1,7 +1,31 @@
 ginas changelog
 ===============
 
-## August 2014
+## Changelog for 25-31 August 2014
+
+### Changelog changes format
+
+Previously changelog was written on a monthly basis, which resulted in very
+long entries because of the pace that ginas is developed at. Because if that
+I decided to instead write changelog entries on a weekly basis, which should
+result in shorter and more manageable entries. In changelog you will also find
+more general description of changes, to see every detail, I suggest running
+`git log` from time to time. :-)
+
+### ansible_managed variable is abolished
+
+`ansible_managed` variable caused lots of problems with the playbook. Many
+times Ansible rewrote the configuration files even though there were no
+apparent changes, which caused restarts of various services and could prevent
+access to them, which also caused subsequent playbook runs to be idempotent.
+
+This variable has now been removed from all templates and replaced with
+a static comment explaining that the file is managed using Ansible and all
+changes made in the file will be lost.
+
+***
+
+## Changelog for August 2014
 
 ### New roles
 
@@ -123,6 +147,18 @@ There's new `vzbootstrap-ansible` script which helps with initial preparation
 of OpenVZ clusters to be managed by Ansible. It will install Python support and
 put users' OpenSSH public key inside the container for easy SSH access.
 
+## users
+
+Two varaibles have been renamed:
+
+- ~~`users_dotfiles_enabled_default`~~ is now `users_default_dotfiles`, and is
+  doing the same function (enable/disable dotfiles for all accounts
+  globally);
+
+- ~~`users_default_dotfile`~~ is renamed to `users_default_dotfiles_key` and
+  specifies a default key from `users_dotfiles` hash to use to configure
+  dotfiles;
+
 ### Other news
 
 `postgresql` role will now set default password for `postgres` user and save it
@@ -156,8 +192,16 @@ configure ansible to use host fact caching automatically.
 `php5` role will now use timezone of the remote host instead of Ansible
 Controller.
 
+`interfaces` role will now use 2 second delay between bringing an interface
+down and bringing it back up again, this should let different subsystems like
+bridges, etc. "settle" and be ready for bringing the interface back up. This
+should fix an error where NAT bridge interface could not be restarted properly.
 
-## July 2014
+`lxc` role should now correctly stop and start containers as needed on Ubuntu.
+
+***
+
+## Changelog for July 2014
 
 ### New roles
 
@@ -255,8 +299,9 @@ account by default and not create messy "$ENV(USER)" user accounts.
 
 Added ducks.
 
+***
 
-## June 2014
+## Changelog for June 2014
 
 After some hiatus, time to go back to work!
 
@@ -312,8 +357,9 @@ to create .deb packages correctly.
 After some changes to variables in 'apt' role, APT configuration was not able
 to use `apt-cacher-ng` automatically. Now cache will be used correctly.
 
+***
 
-## May 2014
+## Changelog for May 2014
 
 A definition of "public API" has been added in CONTRIBUTING.md. Following that,
 ginas will start using git tags for stable releases. This changelog will change
@@ -412,8 +458,9 @@ Abusive Hosts Blocking List has been removed from Postfix DNSBL list because of
 Travis CI build has been modified to test idempotence of the playbook - it is
 run a second time to check if there are any changes.
 
+***
 
-## April 2014
+## Changelog for April 2014
 
 ### New roles
 

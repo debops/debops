@@ -54,7 +54,7 @@
   when: (item.0.name is defined and item.0.name) and
         (item.1.item.name is defined and item.0.name == item.1.item.name) and
         (item.0.state is defined and item.0.state in ['stopped','absent']) and
-        (item.1.stdout == 'RUNNING')
+        (item.1.stdout_lines[0] == 'RUNNING')
 
 - name: Destroy LXC containers when requested
   command: lxc-destroy -n {{ item.name }} removes={{ lxc_root_path + '/' + item.name }}/config
@@ -70,5 +70,5 @@
   when: (item.0.name is defined and item.0.name) and
         (item.1.item.name is defined and item.0.name == item.1.item.name) and
         (item.0.state is defined and item.0.state in ['started']) and
-        (item.1.stdout == 'STOPPED')
+        (item.1.stdout_lines[0] == 'STOPPED')
 
