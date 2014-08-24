@@ -123,6 +123,18 @@ There's new `vzbootstrap-ansible` script which helps with initial preparation
 of OpenVZ clusters to be managed by Ansible. It will install Python support and
 put users' OpenSSH public key inside the container for easy SSH access.
 
+## users
+
+Two varaibles have been renamed:
+
+- ~~`users_dotfiles_enabled_default`~~ is now `users_default_dotfiles`, and is
+  doing the same function (enable/disable dotfiles for all accounts
+  globally);
+
+- ~~`users_default_dotfile`~~ is renamed to `users_default_dotfiles_key` and
+  specifies a default key from `users_dotfiles` hash to use to configure
+  dotfiles;
+
 ### Other news
 
 `postgresql` role will now set default password for `postgres` user and save it
