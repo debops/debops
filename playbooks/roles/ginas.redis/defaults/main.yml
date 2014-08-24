@@ -12,11 +12,11 @@
 # --- General ---
 
 # Which inventory group does redis-server belong to?
-redis_hosts_group: '{{ groups["ginas_redis"] }}'
+redis_hosts_group: 'ginas_redis'
 
 # What is the master redis server's host and port?
 # You can use a host name or IPv4 address.
-redis_hosts_master: '{{ redis_hosts_group[0] }} {{ redis_port }}'
+redis_hosts_master: '{{ groups[redis_hosts_group][0] }} {{ redis_port }}'
 
 # You might want to use 0.0.0.0 and then allow access from your app servers or
 # anything that needs to talk to redis by configuring redis_server_allow below.
@@ -40,7 +40,7 @@ redis_loglevel: 'notice'
 redis_sentinel_standalone: True
 
 # Which inventory group does redis-sentinel belong to?
-redis_sentinel_hosts_group: '{{ groups["ginas_redis_sentinel"] }}'
+redis_sentinel_hosts_group: 'ginas_redis_sentinel'
 
 # These values accept the same type of values as the general redis server.
 redis_sentinel_bind: ['localhost']
@@ -52,7 +52,7 @@ redis_sentinel_group_list:
 # The name of the monitor group, you can use whatever you want.
   - name: 'main'
 # The master server's host address.
-    #host: '{{ redis_hosts_group[0] }}'
+    #host: '{{ groups[redis_hosts_group][0] }}'
 # The master server's port.
     #port: '{{ redis_port }}'
 # How many sentinels need to agree that the master is down before failing over?
@@ -94,7 +94,7 @@ redis_requirepass: False
 #
 # Example using the secret role to automatically set a password.
 # This password will be applied to the master, slaves and sentinels.
-#redis_requirepass: "{{ lookup('password', secret + '/credentials/' + redis_hosts_group[0] + '/redis/redis/password length=20') }}"
+#redis_requirepass: "{{ lookup('password', secret + '/credentials/' + groups[redis_hosts_group][0] + '/redis/redis/password length=20') }}"
 
 
 # ---- Limits ----
