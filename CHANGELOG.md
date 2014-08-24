@@ -173,6 +173,8 @@ down and bringing it back up again, this should let different subsystems like
 bridges, etc. "settle" and be ready for bringing the interface back up. This
 should fix an error where NAT bridge interface could not be restarted properly.
 
+`lxc` role should now correctly stop and start containers as needed on Ubuntu.
+
 
 ## July 2014
 
