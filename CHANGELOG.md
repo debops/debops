@@ -23,6 +23,13 @@ This variable has now been removed from all templates and replaced with
 a static comment explaining that the file is managed using Ansible and all
 changes made in the file will be lost.
 
+### Other news
+
+- in `mysql` role, firewall and tcpwrappers configuration has been moved from
+  the main role to its dependencies (via dependency variables). Default
+  variable which defines what hosts can connect to `mysqld` over the network
+  has been renamed from `mysql_network_allow_list` to `mysql_mysqld_allow`.
+
 ***
 
 ## Changelog for August 2014
