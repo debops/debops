@@ -2,7 +2,7 @@
 
 - name: Restore archived ssh directory
   unarchive: src={{ secret }}/storage/tar/{{ ansible_fqdn }}/ssh/ssh.tar.gz dest=/
-  notify: Restart sshd
+  notify: [ 'Test sshd configuration and restart' ]
   when: secret is defined and secret
 
 - name: Flush handlers for sshd if needed
