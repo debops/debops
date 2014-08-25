@@ -1,7 +1,24 @@
 ---
 
 dependencies:
-  - { role: ginas.secret }
-  - { role: ginas.ferm, tags: mysql }
-  - { role: ginas.tcpwrappers, tags: mysql }
+
+  - role: ginas.secret
+
+  - role: ginas.ferm
+    ferm_input_list:
+
+      - type: 'dport_accept'
+        dport: [ 'mysql' ]
+        saddr: '{{ mysql_mysqld_allow }}'
+        weight: '50'
+        filename: 'mysql_dependency_accept'
+
+  - role: ginas.tcpwrappers
+    tcpwrappers_allow:
+
+      - daemon: 'mysqld'
+        client: '{{ mysql_mysqld_allow }}'
+        weight: '50'
+        filename: 'mysql_dependency_allow'
+        comment: 'Allow remote connections to MySQL server'
 

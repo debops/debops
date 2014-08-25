@@ -41,30 +41,6 @@
 - name: Setup automysqlbackup configuration
   template: src=etc/default/automysqlbackup.j2 dest=/etc/default/automysqlbackup owner=root group=root mode=0644
 
-- name: Enable network access to mysql server in firewall
-  template: src=etc/ferm/filter-input.d/mysql.conf.j2 dest=/etc/ferm/filter-input.d/mysql.conf owner=root group=root mode=0644
-  when: mysql_network_allow_list is defined and mysql_network_allow_list is not none
-  notify:
-    - Restart ferm
-
-- name: Disable network access to mysql server in firewall
-  file: path=/etc/ferm/filter-input.d/mysql.conf state=absent
-  when: mysql_network_allow_list is not defined
-  notify:
-    - Restart ferm
-
-- name: Enable network access to mysql server in tcpwrappers
-  template: src=etc/hosts.allow.d/50_mysql.j2 dest=/etc/hosts.allow.d/50_mysql owner=root group=root mode=0644
-  when: mysql_network_allow_list is defined and mysql_network_allow_list is not none
-  notify:
-    - Assemble hosts.allow.d
-
-- name: Disable network access to mysql server in tcpwrappers
-  file: path=/etc/hosts.allow.d/50_mysql state=absent
-  when: mysql_network_allow_list is not defined
-  notify:
-    - Assemble hosts.allow.d
-
 - name: Manage MySQL databases
   mysql_db: name={{ item.name }} state={{ item.state | default('present') }}
   with_items: mysql_databases

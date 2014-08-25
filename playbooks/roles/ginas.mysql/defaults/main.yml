@@ -40,12 +40,10 @@ mysql_users: []
 #  key_buffer: '16M'
 #  skip-name-resolve:
 
-# This is a list of networks allowed to connect to mysqld from remote hosts
-# It will be applied in firewall (ferm) and /etc/hosts.allow (tcpwrappers)
-# Also you need to set mysql_mysqld_bind_address to 0.0.0.0
-#mysql_network_allow_list:
-#  - '10.0.0.0/8'
-#  - '172.16.0.0/12'
-#  - '192.168.0.0/16'
-
+# This is a list of IP addresses or CIDR networks allowed to connect to MySQL
+# server from remote hosts. It will be applied in firewall (ferm) and
+# /etc/hosts.allow (tcpwrappers).
+# You will need to set mysql_mysqld_bind_address to 0.0.0.0 and restart MySQL
+# server for it to listen on all network interfaces.
+mysql_mysqld_allow: []
 
