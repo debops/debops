@@ -1,0 +1,15 @@
+# This file is managed by Ansible, all changes will be lost
+
+/var/log/php5-fpm.log /var/log/php5-fpm/*.log {
+	rotate 12
+	weekly
+	missingok
+	notifempty
+	compress
+	delaycompress
+	postrotate
+		invoke-rc.d php5-fpm reopen-logs > /dev/null
+	endscript
+}
+
+
