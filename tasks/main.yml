@@ -1,0 +1,65 @@
+---
+
+- name: Install required packages
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items: [ 'build-essential', 'zlib1g-dev', 'libyaml-dev', 'libssl-dev',
+                'libgdbm-dev', 'libreadline-dev', 'libncurses5-dev', 'libffi-dev',
+                'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev',
+                'libicu-dev', 'python-docutils' ]
+
+- name: Install required MySQL database packages
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items: [ 'libmysqlclient-dev', 'ruby-mysql' ]
+  when: gitlab_database is defined and gitlab_database and
+        gitlab_database == 'mysql'
+
+- name: Install required PostgreSQL database packages
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items: [ 'libpq-dev', 'ruby-pg' ]
+  when: gitlab_database is defined and gitlab_database and
+        gitlab_database == 'postgresql'
+
+- name: Make sure Ansible Facts directory exists
+  file: path=/etc/ansible/facts.d state=directory owner=root group=root mode=0755
+
+- name: Create GitLab system group
+  group: name={{ gitlab_group }} system=yes state=present
+
+- name: Create GitLab user
+  user: name={{ gitlab_user }} group={{ gitlab_group }} home={{ gitlab_home }}
+        comment="GitLab" groups=sshusers append=yes system=yes state=present
+
+- name: Secure GitLab home directory
+  file: path={{ gitlab_home }} state=directory
+        owner={{ gitlab_user }} group={{ gitlab_group }} mode=0750
+
+- name: Allow access to GitLab home by the webserver
+  acl: name={{ gitlab_home }} entity='www-data' etype=group permissions="x"
+       state=present
+  changed_when: False
+
+- name: Create sources directory
+  file: path={{ gitlab_sources }} state=directory
+        owner={{ gitlab_user }} group={{ gitlab_group }} mode=0755
+
+- name: Configure ~/.gitconfig
+  template: src=srv/users/git/gitconfig.j2 dest={{ gitlab_home }}/.gitconfig
+            owner={{ gitlab_user }} group={{ gitlab_group }} mode=0644
+
+- include: check_status.yml
+
+- include: configure_gitlab-shell.yml
+
+- include: configure_gitlab_ce.yml
+
+- name: Save information about gitlab-shell in Ansible Facts
+  template: src=etc/ansible/facts.d/gitlab_shell.fact.j2
+            dest=/etc/ansible/facts.d/gitlab_shell.fact
+            owner=root group=root mode=0644
+
+- name: Save information about GitLab CE in Ansible Facts
+  template: src=etc/ansible/facts.d/gitlab_ce.fact.j2
+            dest=/etc/ansible/facts.d/gitlab_ce.fact
+            owner=root group=root mode=0644
+
+
