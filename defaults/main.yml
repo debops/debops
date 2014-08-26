@@ -1,0 +1,39 @@
+---
+# role: tcpwrappers (/etc/hosts.{allow,deny} management)
+
+
+# By default, tcpwrappers will be configured to block access from everywhere
+# except localhost (relative to remote host) and Ansible Controller
+
+# Should Ansible manage tcpwrappers configuration?
+tcpwrappers: True
+
+# Deny access from all hosts/networks by default?
+tcpwrappers_deny_all: True
+
+# Lists of /etc/hosts.allow entries. Example entry below
+tcpwrappers_allow: []
+tcpwrappers_group_allow: []
+tcpwrappers_host_allow: []
+
+  #- daemon: 'ALL'            # daemon to configure (sshd, mysqld, etc.)
+  #  client: []               # list of host or network addresses.
+                              # If empty, entry will be removed
+  #  weight: '10'             # filename prefix, helps with sorting, optional
+  #  filename: ''             # custom filename, optional
+  #  comment: ''              # comment, optional
+
+  #- custom: |                  # custom, free-form text block (filename required)
+  #    # Custom entry
+  #    # Text block
+  #  filename: 'custom_entry'
+
+# Access from localhost
+tcpwrappers_local_allow:
+  - daemon: 'ALL'
+    client: [ '127.0.0.0/8', '[::1]/128' ]
+    comment: 'Access from localhost'
+    filename: 'allow_localhost'
+    weight: '06'
+
+
