@@ -1,0 +1,10 @@
+# Access to TFTP
+{% if dnsmasq_netboot_allow is defined and dnsmasq_netboot_allow %}
+{% for address in dnsmasq_netboot_allow %}
+in.tftpd: {{ address }}
+{% endfor %}
+{% else %}
+in.tftpd: ALL
+{% endif %}
+
+
