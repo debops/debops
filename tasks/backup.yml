@@ -1,0 +1,19 @@
+---
+
+- name: Create random temporary directory to store archive
+  command: mktemp -d
+  register: tempdir
+
+  # pki_path is set in playbooks/system_backup.yml
+- name: Archive PKI directory
+  command: tar -c -z -f {{ tempdir.stdout }}/pki.tar.gz {{ pki_path }}
+  when: tempdir is defined and tempdir
+
+- name: Upload archived PKI directory
+  fetch: src={{ tempdir.stdout }}/pki.tar.gz dest={{ secret }}/storage/tar/{{ ansible_fqdn }}/pki/ flat=yes
+  when: secret is defined and secret and tempdir is defined and tempdir
+
+- name: Remove temporary directory
+  file: path={{ tempdir.stdout }} state=absent
+  when: tempdir is defined and tempdir
+
