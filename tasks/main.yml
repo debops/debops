@@ -1,0 +1,26 @@
+---
+
+- name: Install packages required for LXC
+  apt: name={{ item }} state=latest install_recommends=no
+  with_items: lxc_distribution_packages[ansible_distribution + '_' + ansible_distribution_release]
+
+- name: Check available LXC package version
+  shell: lxc-create --version
+  register: lxc_register_package_version
+  changed_when: False
+
+# Configure LXC support when correct version is installed
+- include: configure_lxc.yml
+  when: (lxc_register_package_version is defined and
+         lxc_register_package_version.stdout | version_compare('1.0','>='))
+
+# Install backported Linux kernel on Debian Wheezy
+- include: install_kernel_from_backports.yml
+  when: (ansible_distribution == 'Debian' and
+        ansible_distribution_release == 'wheezy')
+
+# Manage LXC containers via Ansible when correct kernel is installed
+- include: manage_containers.yml
+  when: (lxc_containers is defined and lxc_containers) and
+        ansible_kernel | version_compare('3.10','>')
+
