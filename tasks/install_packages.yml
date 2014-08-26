@@ -1,0 +1,10 @@
+---
+
+- name: Install requested packages
+  apt: pkg={{ item }} state=latest install_recommends=False
+  with_flattened:
+    - apt_base_packages
+    - apt_packages
+    - apt_group_packages
+    - apt_host_packages
+

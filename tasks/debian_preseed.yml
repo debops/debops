@@ -1,0 +1,44 @@
+---
+
+- name: Lookup system root password if secrets/ directory is defined
+  set_fact:
+    apt_debian_preseed_rootpw: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/debian_preseed/system/root/password encrypt=md5_crypt length=' + apt_debian_preseed_rootpw_length) }}"
+  when: secret is defined
+
+- name: Lookup current user for injection
+  set_fact:
+    apt_debian_preseed_username: "{{ lookup('env','USER') }}"
+
+- name: Check if SSH key of current user exists
+  local_action: stat path=~/.ssh/id_rsa.pub
+  sudo: False
+  register: apt_sshkey_idrsa
+
+- name: Lookup SSH public key of current user for injection
+  set_fact:
+    apt_debian_preseed_sshkey: "{{ lookup('file','~/.ssh/id_rsa.pub') }}"
+  when: apt_sshkey_idrsa is defined and apt_sshkey_idrsa.stat.exists == True
+
+- name: Create Debian Preseed directories
+  file: path={{ item }} state=directory owner=root group=root mode=0755
+  with_items:
+    - '/{{ apt_debian_preseed_default_server_path }}/d-i/{{ apt_codename }}'
+    - '/{{ apt_debian_preseed_destroy_server_path }}/d-i/{{ apt_codename }}'
+
+- name: Setup Debian Preseed default template
+  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
+  with_items:
+    - '{{ apt_debian_preseed_default_server_path }}/d-i/{{ apt_codename }}/preseed.cfg'
+    - '{{ apt_debian_preseed_default_server_path }}/d-i/{{ apt_codename }}/postinst.sh'
+
+- name: Setup Debian Preseed destroy template
+  template: src={{ apt_debian_preseed_default_server_path }}/d-i/{{ apt_codename }}/destroy-preseed.cfg.j2
+            dest=/{{ apt_debian_preseed_destroy_server_path }}/d-i/{{ apt_codename }}/preseed.cfg
+            owner=root group=root mode=0644
+
+- name: Lock default nginx server template on Debian Preseed host
+  set_fact:
+    nginx_server_default:
+      locked: True
+  tags: [ 'nginx' ]
+

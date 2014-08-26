@@ -1,0 +1,11 @@
+// This file is managed by Ansible, all changes will be lost
+
+// This configuration snipped is intended to be stored in /etc/apt/apt.conf.d/
+// on the client system in order to change a regular setup to use apt-cacher-ng.
+
+{% if (apt is defined and apt) and apt != True %}
+Acquire::http::Proxy "http://{{ apt }}:{{ apt_acng_port | default('3142') }}/";
+Acquire::https::Proxy "false";
+{% endif %}
+
+

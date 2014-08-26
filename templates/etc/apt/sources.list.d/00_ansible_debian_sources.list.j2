@@ -1,0 +1,15 @@
+# This file is managed by Ansible, all changes will be lost
+
+{% if ansible_distribution == 'Debian' %}
+# APT sources for {{ ansible_lsb['description'] }}
+deb http://{{ apt_debian_http_mirror }}/debian {{ apt_codename }} main contrib non-free
+deb http://security.debian.org/ {{ apt_codename }}/updates main contrib non-free
+{% if ansible_lsb['codename'] != 'jessie' %}{# not yet available #}
+deb http://{{ apt_debian_http_mirror }}/debian {{ apt_codename }}-updates main contrib non-free
+{% endif %}
+{% if ansible_lsb['codename'] == 'wheezy' %}
+deb http://{{ apt_debian_http_mirror }}/debian {{ apt_codename_backports }} main contrib non-free
+{% endif %}
+{% endif %}
+
+

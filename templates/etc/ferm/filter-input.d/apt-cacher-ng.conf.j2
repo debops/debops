@@ -1,0 +1,15 @@
+# This file is managed by Ansible, all changes will be lost
+# Enable apt-cacher-ng proxy (-t filter -A INPUT)
+
+{% if (apt is defined and apt) and apt != True %}
+{% if apt_acng_allow is defined and apt_acng_allow %}
+protocol tcp dport acng {
+{% for address in apt_acng_allow %}
+	saddr {{ address }} ACCEPT;
+{% endfor %}
+}
+{% else %}
+protocol tcp dport acng ACCEPT;
+{% endif %}
+{% endif %}
+

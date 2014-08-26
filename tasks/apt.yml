@@ -1,0 +1,20 @@
+---
+
+- name: Divert original /etc/apt/sources.list
+  command: dpkg-divert --quiet --local --divert /etc/apt/sources.list.dpkg-divert --rename /etc/apt/sources.list
+           creates=/etc/apt/sources.list.dpkg-divert
+  when: ansible_distribution == 'Debian'
+
+- name: Configure APT and package sources
+  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
+  with_items:
+    - 'etc/apt/sources.list'
+    - 'etc/apt/sources.list.d/00_ansible_{{ ansible_distribution | lower }}_sources.list'
+    - 'etc/apt/apt.conf.d/20no-recommends'
+    - 'etc/apt/apt.conf.d/70aptitude'
+  when: ansible_distribution == 'Debian'
+
+- name: Update package lists
+  apt: update_cache=yes
+
+
