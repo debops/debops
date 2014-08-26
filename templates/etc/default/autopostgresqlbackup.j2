@@ -1,0 +1,109 @@
+# This file is managed by Ansible, all changes will be lost
+
+#=====================================================================
+# Set the following variables to your system needs
+# (Detailed instructions below variables)
+#=====================================================================
+
+# By default, on Debian systems, only 'postgres' user
+# is allowed to access PostgreSQL databases without password.
+# In order to dump databases we need to run pg_dump/psql
+# commands as 'postgres' with su.
+#
+# The following setting has been added to workraound this issue.
+# (if it is set to empty, 'su' usage will be disabled)
+SU_USERNAME="{{ postgresql_owner }}"
+
+# Username to access the PostgreSQL server e.g. dbuser
+USERNAME="{{ postgresql_owner }}"
+
+# Host name (or IP address) of PostgreSQL server e.g localhost
+DBHOST="{{ postgresql_auto_backup_host }}"
+
+# List of DBNAMES for Daily/Weekly Backup e.g. "DB1 DB2 DB3".
+DBNAMES="all"
+
+# Backup directory location e.g /backups
+BACKUPDIR="{{ postgresql_auto_backup_dir }}/$DBCLUSTER"
+
+# Mail setup
+# What would you like to be mailed to you?
+# - log   : send only log file
+# - files : send log file and sql files as attachments (see docs)
+# - stdout : will simply output the log to the screen if run manually.
+# - quiet : Only send logs if an error occurs to the MAILADDR.
+MAILCONTENT="{{ postgresql_auto_backup_mailcontent }}"
+
+# Set the maximum allowed email size in k. (4000 = approx 5MB email [see docs])
+MAXATTSIZE="{{ postgresql_auto_backup_maxsize }}"
+
+# Email Address to send mail to? (user@domain.com)
+MAILADDR="{{ postgresql_auto_backup_mailaddr }}"
+
+# ============================================================
+# === ADVANCED OPTIONS ( Read the doc's below for details )===
+#=============================================================
+
+# List of DBBNAMES for Monthly Backups.
+MDBNAMES="template1 all"
+
+# List of DBNAMES to EXCLUDE if DBNAMES are set to all (must be in " quotes).
+DBEXCLUDE=""
+
+# Include CREATE DATABASE in backup?
+CREATE_DATABASE={{ postgresql_auto_backup_create_database }}
+
+# Separate backup directory and file for each DB? (yes or no)
+SEPDIR={{ postgresql_auto_backup_isolate_databases }}
+
+# Which day do you want weekly backups? (1 to 7 where 1 is Monday)
+DOWEEKLY={{ postgresql_auto_backup_weekly_day }}
+
+# Choose Compression type. (gzip or bzip2)
+COMP="{{ postgresql_auto_backup_compression }}"
+
+# Compress communications between backup server and PostgreSQL server?
+# set compression level from 0 to 9 (0 means no compression)
+COMMCOMP={{ postgresql_auto_backup_compress_transfer_level }}
+
+# Additionally keep a copy of the most recent backup in a seperate directory.
+LATEST={{ postgresql_auto_backup_keep_latest_separate }}
+
+# Backup files extension
+EXT="{{ postgresql_auto_backup_extension }}"
+
+# Encyrption settings
+# (inspired by http://blog.altudov.com/2010/09/27/using-openssl-for-asymmetric-encryption-of-backups/)
+#
+# Once the backup done, each SQL dump will be encrypted and the original file
+# will be deleted (if encryption was successful).
+# It is recommended to backup into a staging directory, and then use the
+# POSTBACKUP script to sync the encrypted files to the desired location.
+#
+# Encryption uses private/public keys. You can generate the key pairs like the following:
+# openssl req -x509 -nodes -days 100000 -newkey rsa:2048 -keyout backup.key -out backup.crt -subj '/'
+#
+# Decryption:
+# openssl smime -decrypt -in backup.sql.gz.enc -binary -inform DEM -inkey backup.key -out backup.sql.gz
+
+# Enable encryption
+ENCRYPTION={{ postgresql_auto_backup_encryption }}
+
+# Encryption public key
+ENCRYPTION_PUBLIC_KEY="{{ postgresql_auto_backup_encryption_public_key }}"
+
+# Encryption Cipher (see enc manpage)
+ENCRYPTION_CIPHER="{{ postgresql_auto_backup_encryption_cipher }}"
+
+# Suffix for encyrpted files
+ENCRYPTION_SUFFIX="{{ postgresql_auto_backup_encryption_suffix }}"
+
+{% if postgresql_auto_backup_pre_script -%}
+# Command to run before backups
+PREBACKUP="{{ postgresql_auto_backup_pre_script }}"
+{% endif %}
+
+{% if postgresql_auto_backup_post_script -%}
+# Command to run after backups
+POSTBACKUP="{{ postgresql_auto_backup_post_script }}"
+{% endif %}

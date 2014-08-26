@@ -1,0 +1,10 @@
+---
+
+- name: Configure total amount of shared memory
+  sysctl: sysctl_file={{ postgresql_sysctl }} name=kernel.shmall state=present reload=yes
+          value={{ (((ansible_memtotal_mb * 1024 * 1024) * postgresql_sysctl_shm_multiplier) / 4096)|round|int }}
+
+- name: Configure max size of shared memory segments
+  sysctl: sysctl_file={{ postgresql_sysctl }} name=kernel.shmmax state=present reload=yes
+          value={{ ((ansible_memtotal_mb * 1024 * 1024) * postgresql_sysctl_shm_multiplier)|round|int }}
+

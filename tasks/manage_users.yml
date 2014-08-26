@@ -1,0 +1,10 @@
+---
+- name: Update default postgres password
+  postgresql_user:
+    name='{{ postgresql_owner }}'
+    password='{{ item.postgres_password | default(postgresql_default_postgres_password) }}'
+    encrypted=False
+    port='{{ item.port }}'
+    state='present'
+  with_items: postgresql_default_cluster + postgresql_clusters
+  sudo_user: '{{ postgresql_owner }}'

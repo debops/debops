@@ -1,0 +1,23 @@
+---
+
+- include: configure_pgdg.yml
+  when: postgresql_pgdg is defined and postgresql_pgdg
+
+- include: install_postgresql.yml
+
+- name: Count number of currently configured clusters
+  set_fact:
+    postgresql_cluster_count: '{{ (postgresql_default_cluster|length|int + postgresql_clusters|length|int) * 1 }}'
+
+- include: manage_shared_memory.yml
+  when: postgresql_sysctl_shm_multiplier is defined and postgresql_sysctl_shm_multiplier
+
+- name: Get current maximum shared memory value
+  shell: cat /proc/sys/kernel/shmmax
+  register: postgresql_sysctl_shmmax
+  changed_when: False
+
+- include: manage_clusters.yml
+- include: manage_users.yml
+- include: manage_ferm_services.yml
+- include: manage_autopostgresqlbackup.yml

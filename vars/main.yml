@@ -1,0 +1,23 @@
+---
+
+# Where to set shm values (file created by default by postgresql package)
+postgresql_sysctl: '/etc/sysctl.d/30-postgresql-shm.conf'
+
+# Configuration parameters for PGDG APT repository
+# More information: https://wiki.postgresql.org/wiki/Apt
+postgresql_pgdg_repository: 'http://apt.postgresql.org/pub/repos/apt/'
+postgresql_pgdg_distribution: '{{ ansible_lsb.codename }}-pgdg'
+postgresql_pgdg_key_id: 'ACCC4CF8'
+postgresql_pgdg_key_url: 'https://www.postgresql.org/media/keys/{{ postgresql_pgdg_key_id }}.asc'
+
+
+# ---- Auto backups ----
+
+postgresql_auto_backup_host: 'localhost'
+postgresql_auto_backup_dir: '/var/lib/autopostgresqlbackup'
+postgresql_auto_backup_compression: 'gzip'
+postgresql_auto_backup_compress_transfer_level: 0
+postgresql_auto_backup_keep_latest_separate: 'no'
+postgresql_auto_backup_extension: 'sql'
+postgresql_auto_backup_encryption_cipher: 'aes256'
+postgresql_auto_backup_encryption_suffix: '.enc'

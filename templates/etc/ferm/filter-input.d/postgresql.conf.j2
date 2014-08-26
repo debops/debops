@@ -1,0 +1,20 @@
+# This file is managed by Ansible, all changes will be lost
+
+{% if postgresql_default_allow is defined and postgresql_default_allow %}
+# Default allow list for local PostgreSQL clusters
+protocol tcp dport {{ item.port }} {
+{% for address in postgresql_default_allow %}
+	saddr {{ address }} ACCEPT;
+{% endfor %}
+}
+{% endif %}
+
+{% if item.allow is defined and item.allow %}
+protocol tcp dport {{ item.port }} {
+{% for address in item.allow %}
+	saddr {{ address }} ACCEPT;
+{% endfor %}
+}
+{% endif %}
+
+
