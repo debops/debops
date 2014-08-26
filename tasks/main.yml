@@ -1,0 +1,24 @@
+---
+# role: nodejs - server-side JavaScript application stack
+# Homepage: http://nodejs.org/
+
+# nodejs and npm install based on code from https://github.com/f500/ansible-nodejs
+
+
+- name: Install NodeJS packages
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items: [ 'nodejs', 'nodejs-legacy' ]
+
+  # This will be replaced by a .deb package in the future
+- name: Install npm
+  shell: curl https://www.npmjs.org/install.sh | bash creates=/usr/bin/npm
+
+- name: Get npm global temporary directory
+  command: npm -g config get tmp
+  register: nodejs_npm_tempdir
+  changed_when: False
+
+- name: Set npm global temporary directory to /tmp
+  command: npm -g config set tmp /tmp
+  when: nodejs_npm_tempdir.stdout != '/tmp'
+
