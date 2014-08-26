@@ -1,0 +1,21 @@
+---
+# role: secret (sensitive data management and storage)
+
+
+# Path to a directory in which a relative secret directory will be created.
+# By default, it will be relative to Ansible inventory
+secret_root: '{{ inventory_dir | realpath }}'
+
+# Name of the directory which contains secrets. It will be in the form
+# "inventory.secret" by default
+secret_dir: '{{ secret_root | basename }}.secret'
+
+# How many directory levels to add relative to secret_root, by default 1 level.
+# For example, to go 2 levels up, set this variable to '../..'
+secret_levels: '..'
+
+# Absolute path to directory with secrets. It will be configured as relative to
+# current inventory directory. Use this variable in file and password lookups
+secret: '{{ secret_root + "/" + secret_levels + "/" + secret_dir }}'
+
+
