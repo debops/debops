@@ -1,0 +1,20 @@
+---
+
+dependencies:
+
+  - role: debops.secret
+
+  - role: debops.mysql
+    when: phpipam_dependencies is defined and phpipam_dependencies
+
+  - role: debops.php5
+    php5_pools: [ '{{ phpipam_php5_pool }}' ]
+    when: phpipam_dependencies is defined and phpipam_dependencies
+
+  - role: debops.nginx
+    nginx_servers: [ '{{ phpipam_nginx_server }}' ]
+    nginx_upstreams: [ '{{ phpipam_nginx_upstream_php5 }}' ]
+    when: phpipam_dependencies is defined and phpipam_dependencies
+    tags: nginx
+
+
