@@ -1,0 +1,91 @@
+---
+# role: users (create/manage user accounts)
+
+
+# Should Ansible manage user accounts? Set to False to disable
+users: True
+
+
+# --- Lists of different accounts to create/manage ---
+
+# root user, if you want to change something on the root account
+users_root:
+  - name: 'root'
+
+# Default user created by Ansible
+users_default:
+  - name: '{{ ansible_ssh_user }}'
+
+# Administrators
+users_admins: []
+
+# Groups (normal or system)
+users_groups: []
+
+# "Global" users
+users_list: []
+
+# "Host group" users
+users_group_list: []
+
+# "Host" users
+users_host_list: []
+
+
+# --- An example account entry, everything except 'name' is optional
+# List of all recognized values, default value listed first
+#
+#  - name: 'username'               # mandatory, default group if not defined
+#    state: 'present,absent'
+#    group: 'name'                  # default group
+#    groups: []                     # list of groups to set
+#    append: yes/no                 # add to, or set groups
+#    gid: 1000
+#    uid: 1000
+#    shell: '/bin/sh'
+#    comment: 'GECOS entry'
+#    systemuser: False/True         # create system user
+#    systemgroup: False/True        # create system group
+#
+#    dotfiles: False/True           # download and configure dotfiles?
+#    dotfiles_repo: 'repository'
+#    dotfiles_command: 'make all'
+#    dotfiles_creates '~/.zshrc'
+#
+#    # Create ~/.forward file (set to False to remove ~/.forward)
+#    forward: [ 'user@domain', 'account' ]
+#
+#    # Add or disable ssh authorized keys (set to False to remove ~/.ssh/authorized_keys
+#    sshkeys: [ 'list', 'of', 'keys' ]
+
+
+# --- Global defaults ---
+
+# Default shell used for new accounts
+users_default_shell: '/bin/bash'
+
+# List of default groups added to new accounts
+users_default_groups_list: []
+
+# Should default groups be added to existing groups, or replace existing
+# groups?
+users_default_groups_append: 'yes'
+
+# Path to directory where home directories for new users are created
+users_default_home_prefix: '/home'
+
+# Default state of dotfiles on all accounts managed by Ansible
+# False - dotfiles are not configured by default
+# True - dotfiles will be configured by default
+users_default_dotfiles: False
+
+# Default dotfile hash to use
+users_default_dotfiles_key: 'drybjed'
+
+# List of dotfile hashes
+users_dotfiles:
+  drybjed:
+    repo: 'https://github.com/drybjed/dotfiles.git'
+    command: 'make all dark'
+    creates: '~/.zshenv.local'
+

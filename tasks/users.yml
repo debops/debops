@@ -1,0 +1,68 @@
+---
+
+- name: Manage user accounts without UIDs
+  user:
+    name: '{{ item.name }}'
+    group: '{{ item.group | default(item.name) }}'
+    state: '{{ item.state | default("present") }}'
+    comment: '{{ item.comment | default("") }}'
+    system: '{{ item.systemuser | default("no") }}'
+    shell: '{{ item.shell | default(users_default_shell) }}'
+    home: '{{ item.home | default(users_default_home_prefix + "/" + item.name) }}'
+    createhome: 'no'
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
+  when: ((item.name is defined and item.name) and (item.uid is undefined or (item.uid is defined and not item.uid)))
+
+- name: Manage user accounts with UIDs
+  user:
+    name: '{{ item.name }}'
+    uid: '{{ item.uid }}'
+    group: '{{ item.group | default(item.name) }}'
+    state: '{{ item.state | default("present") }}'
+    comment: '{{ item.comment | default("") }}'
+    system: '{{ item.systemuser | default("no") }}'
+    shell: '{{ item.shell | default(users_default_shell) }}'
+    home: '{{ item.home | default(users_default_home_prefix + "/" + item.name) }}'
+    createhome: 'no'
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
+  when: ((item.name is defined and item.name) and (item.uid is defined and item.uid))
+
+- name: Manage user default groups
+  user:
+    name: '{{ item.name }}'
+    state: '{{ item.state | default("present") }}'
+    groups: '{{ users_default_groups_list | join(",") }}'
+    append: '{{ users_default_groups_append) }}'
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
+  when: ((item.name is defined and item.name) and
+         (users_default_groups_list is defined and users_default_groups_list))
+
+- name: Manage user groups
+  user:
+    name: '{{ item.name }}'
+    state: '{{ item.state | default("present") }}'
+    groups: '{{ item.groups | join(",") }}'
+    append: '{{ item.append | default("yes") }}'
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_list
+    - users_group_list
+    - users_host_list
+  when: ((item.name is defined and item.name) and (item.groups is defined and item.groups))
+
