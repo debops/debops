@@ -1,0 +1,133 @@
+#!/bin/bash
+
+# This file is managed by Ansible, all changes will be lost
+
+# convert-mailman-to-utf8: convert mailman language pack to UTF-8 charset
+# Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
+# Homepage: https://github.com/ginas/ginas/
+
+
+# This program is free software; you can redistribute
+# it and/or modify it under the terms of the
+# GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General
+# Public License along with this program; if not,
+# write to the Free Software Foundation, Inc., 59
+# Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# An on-line copy of the GNU General Public License can
+# be downloaded from the FSF web page at:
+# http://www.gnu.org/copyleft/gpl.html
+
+
+# mailman package in Debian Wheezy (version 2.1.15-1) comes with many language
+# packs written in charsets other than UTF-8. This has been already fixed in
+# Debian Jessie (https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=668304), but
+# not entirely, and at the moment backport to Wheezy is unlikely.
+#
+# This script (based on
+# http://www.divideandconquer.se/2009/08/17/convert-mailman-translation-to-utf-8/)
+# will help you convert mailman language packs to UTF-8, and fix small issues
+# along the way. Conversion of the language packs should be propagated to mailman
+# upstream (I'm not sure if Mailman developers will accept changes in mailman
+# 2.x) or at least to Debian.
+#
+# This script is meant to be run just after mailman package installation on
+# Debian Wheezy. It was designed to be run via Ansible playbook, only once after
+# initial installation. If at any point you upgrade mailman, these changes will
+# most likely be overwritten by the package and this script will have to be run
+# again. Not all language packs are supported at the moment, pull requests are
+# welcome at the main project GitHub page - https://github.com/ginas/ginas/
+#
+# Script requires patch and gettext packages.
+#
+# Usage:
+#
+#    convert-mailman-to-utf8 <lang> [lang] ... [lang]
+#
+# lang - two letter language name to convert
+#
+# Warning: at the moment script is not idempotent and should be run only once
+# after install/upgrade of mailman package.
+
+
+# Convert Polish language pack
+function convert_polish () {
+	cd /usr/share/mailman/pl
+	for file in *; do
+		mv $file $file.old; iconv -f iso8859-2 -t utf-8 $file.old > $file
+	done
+	rm -f *.old
+
+	cd /etc/mailman/pl
+	for file in *; do
+		mv $file $file.old; iconv -f iso8859-2 -t utf-8 $file.old > $file
+	done
+	rm -f *.old
+
+	sed -i "s/charset=iso-8859-2/charset=utf-8/" /usr/share/mailman/pl/* /etc/mailman/pl/*
+	sed -i "s/charset=ISO-8859-2/charset=utf-8/" /usr/share/mailman/pl/* /etc/mailman/pl/*
+
+	cd /var/lib/mailman/messages/pl/LC_MESSAGES
+	mv mailman.po mailman.po.orig
+	iconv -f iso8859-2 -t utf-8 mailman.po.orig > mailman.po
+	rm mailman.po.orig
+	cat << EOF | patch -N -r-
+--- mailman.po
++++ mailman.po
+@@ -1370,7 +1370,7 @@
+ "    confirmation step."
+ msgstr ""
+ "Wprowadź kod potwierdzający,\n"
+-"    który otrzymałeś w emailu. Następnie naciśnij <em>OK</em>,\n"
++"    który otrzymałeś w emailu. Następnie naciśnij <em>OK</em>,"
+ 
+ #: Mailman/Cgi/confirm.py:214
+ msgid "Confirmation string:"
+@@ -1610,7 +1610,7 @@
+ "    Naciśnij <em>Wypisz</em>, aby potwierdzić\n"
+ "    wypisanie się.\n"
+ "\n"
+-"    <p>Kliknij <em>Anuluj</em>, aby zrezygnować.\n"
++"    <p>Kliknij <em>Anuluj</em>, aby zrezygnować."
+ 
+ #: Mailman/Cgi/confirm.py:491 Mailman/Cgi/options.py:767
+ #: Mailman/Cgi/options.py:911 Mailman/Cgi/options.py:921
+EOF
+	msgfmt mailman.po -o mailman.mo
+
+	cd /usr/lib/mailman/Mailman
+	cat << EOF | patch -N -r-
+--- Defaults.py
++++ Defaults.py
+@@ -1509,7 +1509,7 @@
+ add_language('lt',    _('Lithuanian'),          'iso-8859-13', 'ltr')
+ add_language('nl',    _('Dutch'),               'iso-8859-1',  'ltr')
+ add_language('no',    _('Norwegian'),           'iso-8859-1',  'ltr')
+-add_language('pl',    _('Polish'),              'iso-8859-2',  'ltr')
++add_language('pl',    _('Polish'),              'utf-8',       'ltr')
+ add_language('pt',    _('Portuguese'),          'iso-8859-1',  'ltr')
+ add_language('pt_BR', _('Portuguese (Brazil)'), 'iso-8859-1',  'ltr')
+ add_language('ro',    _('Romanian'),            'iso-8859-2',  'ltr')
+EOF
+
+}
+
+
+for lang in ${@}; do
+	case ${lang} in
+		pl)	shift ; convert_polish ;;
+		*)	shift ;;
+	esac
+done
+
+

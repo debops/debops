@@ -1,0 +1,15 @@
+# This file is managed by Ansible, all changes will be lost
+
+# Postfix Transport maps for Virtual Mailman
+# To update the transport map, run:
+#     postmap /etc/mailman/postfix_transport
+
+{% if mailman_domains is defined and mailman_domains %}
+{% for domain in mailman_domains %}
+{{ domain }}		mailman:
+{% endfor %}
+{% else %}
+# mailman_domains not defined
+{% endif %}
+
+
