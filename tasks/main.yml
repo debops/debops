@@ -1,0 +1,179 @@
+---
+
+- name: Check if nginx is installed
+  stat: path=/usr/sbin/nginx
+  register: nginx_register_installed
+
+- name: Install nginx packages
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_items: nginx_base_packages
+
+- name: Check nginx version
+  shell: /usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##'
+  register: nginx_version
+  changed_when: False
+
+- name: Get list of nameservers configured in /etc/resolv.conf
+  shell: grep nameserver /etc/resolv.conf | awk '{print $2}' | sed -e 'N;s/\n/ /'
+  register: nginx_register_nameservers
+  changed_when: False
+
+- name: Convert list of nameservers to Ansible list
+  set_fact:
+    nginx_ocsp_resolvers: "{{ nginx_register_nameservers.stdout.split(' ') }}"
+  when: (nginx_ocsp_resolvers is undefined or
+         (nginx_ocsp_resolvers is defined and not nginx_ocsp_resolvers))
+
+- name: Create default nginx directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: [ '/etc/nginx/http-default.d', '{{ nginx_default_root }}' ]
+
+- name: Ensure that webadmins privileged group exists
+  group:
+    name: '{{ nginx_privileged_group }}'
+    state: 'present'
+    system: True
+
+- name: Create directory for webadmins configuration
+  file:
+    path: '/etc/nginx/sites-local'
+    state: 'directory'
+    owner: 'root'
+    group: '{{ nginx_privileged_group }}'
+    mode: '0775'
+
+- name: Allow webadmins to reload nginx using sudo
+  template:
+    src: 'etc/sudoers.d/nginx_webadmins.j2'
+    dest: '/etc/sudoers.d/nginx_webadmins'
+    owner: 'root'
+    group: 'root'
+    mode: '0440'
+
+- name: Divert original /etc/nginx/nginx.conf
+  command: dpkg-divert --quiet --local --divert /etc/nginx/nginx.conf.dpkg-divert
+           --rename /etc/nginx/nginx.conf creates=/etc/nginx/nginx.conf.dpkg-divert
+
+- name: Setup /etc/nginx/nginx.conf
+  template:
+    src: 'etc/nginx/nginx.conf.j2'
+    dest: '/etc/nginx/nginx.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Test nginx and reload' ]
+
+- name: Check if fastcgi_params lock exists
+  stat: path=/etc/nginx/fastcgi_params.dpkg-divert.lock
+  register: nginx_register_fastcgi_params_lock
+
+- name: Remove old unused fastcgi_params file if diversion exists
+  command: rm -f /etc/nginx/fastcgi_params removes=/etc/nginx/fastcgi_params.dpkg-divert
+  when: nginx_register_fastcgi_params_lock is defined and not nginx_register_fastcgi_params_lock.stat.exists
+
+- name: Restore diversion of fastcgi_params if it exists
+  command: dpkg-divert --quiet --local --rename --remove /etc/nginx/fastcgi_params
+           removes=/etc/nginx/fastcgi_params.dpkg-divert
+  notify: [ 'Test nginx and reload' ]
+  when: nginx_register_fastcgi_params_lock is defined and not nginx_register_fastcgi_params_lock.stat.exists
+
+  # This is to prevent nginx errors about missing files
+- name: Create fake temporary /etc/nginx/fastcgi_params.dpkg-divert
+  template:
+    src: 'etc/nginx/fastcgi_params.j2'
+    dest: '/etc/nginx/fastcgi_params.dpkg-divert'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Test nginx and reload' ]
+  when: nginx_register_fastcgi_params_lock is defined and not nginx_register_fastcgi_params_lock.stat.exists
+
+  # Temporary step to prevent removal of real fastcgi_params on the subsequent runs
+- name: Create a lock file for fastcgi_params.dpkg-divert
+  command: touch /etc/nginx/fastcgi_params.dpkg-divert.lock
+           creates=/etc/nginx/fastcgi_params.dpkg-divert.lock
+
+- name: Install DH params regeneration script
+  template:
+    src: 'etc/nginx/nginx-regenerate-dhparams.j2'
+    dest: '/etc/nginx/nginx-regenerate-dhparams'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Generate nginx DH params
+  command: /etc/nginx/nginx-regenerate-dhparams 1
+           chdir=/etc/nginx creates=/etc/nginx/dhparam_2048.pem
+
+- name: Setup DH params regeneration
+  cron: name='Regenerate DH params for nginx' minute=0
+        hour={{ nginx_cron_dhparams_hour | default('1') }} user=root state=present
+        job='/etc/nginx/nginx-regenerate-dhparams' cron_file='nginx-regenerate-dhparams'
+
+- name: Disable default nginx site
+  file:
+    path: '/etc/nginx/sites-enabled/default'
+    state: 'absent'
+  notify: [ 'Test nginx and reload' ]
+
+  # This is a crude method to check if we should enable SSL support by default
+  # in all servers. Clunky, but will suffice for now. Nginx templates will
+  # blindly use paths supported by 'pki' role, so you should use it if you want
+  # SSL.
+- name: Check if nginx should enable SSL support
+  stat: path={{ nginx_pki }}/host/private/{{ nginx_pki_check_key }}.key
+  register: nginx_ssl_check
+  when: nginx_pki is defined and nginx_pki
+
+- name: Enable SSL if host SSL key is present
+  set_fact:
+    nginx_ssl: True
+  when: nginx_ssl_check is defined and nginx_ssl_check.stat.exists
+
+- name: Manage local server definitions - create symlinks
+  file:
+    src: '/etc/nginx/sites-local/{{ item.0 }}'
+    path: '/etc/nginx/sites-enabled/{{ item.1 }}'
+    state: 'link'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_together:
+    - '{{ nginx_local_servers.values() }}'
+    - '{{ nginx_local_servers.keys() }}'
+  notify: [ 'Test nginx and reload' ]
+  when: ((nginx_local_servers is defined and nginx_local_servers) and
+         (item.0 is defined and item.0))
+
+- name: Manage local server definitions - remove symlinks
+  file:
+    path: '/etc/nginx/sites-enabled/{{ item.1 }}'
+    state: 'absent'
+  with_together:
+    - '{{ nginx_local_servers.values() }}'
+    - '{{ nginx_local_servers.keys() }}'
+  notify: [ 'Test nginx and reload' ]
+  when: ((nginx_local_servers is defined and nginx_local_servers) and
+         (item.0 is undefined or (item.0 is defined and not item.0)))
+
+- include: nginx_upstreams.yml
+  when: (nginx_manage_upstreams is defined and nginx_manage_upstreams)
+
+- include: nginx_servers.yml
+  when: (nginx_manage_servers is defined and nginx_manage_servers)
+
+- name: Restart nginx on first install to bypass missing pid bug
+  service:
+    name: 'nginx'
+    state: 'restarted'
+  when: ((nginx_register_installed is defined and nginx_register_installed) and
+         not nginx_register_installed.stat.exists)
+

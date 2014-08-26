@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# This file is managed by Ansible, all changes will be lost
+
+# Generate new Diffie-Hellman parameters for nginx
+# Preferably should be run from cron in regular intervals
+
+# If you specify an integer as first parameter, script will sleep for random
+# 1-<integer> seconds before generating DH parameters. Without integer script
+# will sleep for random 1-10 minutes. This should allow for lower load on hosts
+# when script is run in parallel
+
+set -e
+
+lockfile="/var/lock/.$(basename ${0}).lock"
+
+if [ -n "${1}" ]; then
+	delay=$(($RANDOM%${1}))
+	multiplier=1
+else
+	delay=$(($RANDOM%10))
+	multiplier=60
+fi
+
+(
+	flock -x -w 0 200 || exit 1
+
+	trap "rm -f ${lockfile}" EXIT
+
+	sleep $((delay*multiplier))
+
+	cd /etc/nginx
+	umask 022
+
+	openssl dhparam -out dhparam_2048.tmp 2048 > /dev/null 2>&1 && mv dhparam_2048.tmp dhparam_2048.pem
+
+	chmod 644 dhparam_2048.pem
+
+) 200>${lockfile}
+
+
