@@ -1,0 +1,18 @@
+---
+
+- name: Install required Python packages
+  apt: pkg=python-pycurl state=latest install_recommends=no
+
+- name: Flush handlers to make sure nginx is running
+  meta: flush_handlers
+  when: (reprepro is defined and reprepro) and (reprepro != True and reprepro == ansible_fqdn)
+
+- name: Import reprepro GPG public key
+  apt_key: url=http://{{ reprepro }}/debian/{{ reprepro }}.gpg.key state=present
+           keyring=/etc/apt/trusted.gpg.d/reprepro-{{ reprepro }}.gpg
+
+- name: Add reprepro APT repository
+  apt_repository: repo='deb [arch={{ reprepro_architecture[ansible_architecture] }}] http://{{ reprepro }}/debian {{ item.codename }} {{ item.components }}'
+                  state=present update_cache=no
+  with_items: reprepro_distributions
+

@@ -1,0 +1,59 @@
+---
+
+- name: Install packages for Debian repository management
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items: [ 'reprepro' ]
+
+- name: Make sure that directory for user homes exists
+  file: path=/srv/users state=directory owner=root group=root mode=0751
+
+- name: Create system group for reprepro
+  group: name={{ reprepro_group }} system=yes state=present
+
+- name: Create system user for reprepro
+  user: name={{ reprepro_user }} group={{ reprepro_group }} system=yes home=/srv/users/{{ reprepro_user }} state=present
+
+- name: Create system users for reprepro uploads
+  user: name={{ reprepro_incoming_user }} group={{ reprepro_group }} groups=sftponly system=yes
+        home=/srv/users/{{ reprepro_incoming_user }} createhome=no
+
+- name: Fix home directory permissions of reprepro uploads
+  file: path=/srv/users/{{ reprepro_incoming_user }} state=directory owner=root group=root mode=0755
+
+- name: Ensure that authorized_keys directory exist
+  file: path=/etc/ssh/authorized_keys state=directory owner=root group=root mode=0755
+
+- name: Check if SSH key of current user exists
+  local_action: stat path=~/.ssh/id_rsa.pub
+  sudo: no
+  register: reprepro_sshkey
+
+- name: Add authorized_key from Ansible Controller to reprepro uploads
+  authorized_key:
+    user: '{{ reprepro_incoming_user }}'
+    key: '{{ lookup("file","~/.ssh/id_rsa.pub") }}'
+    manage_dir: 'no'
+    path: '/etc/ssh/authorized_keys/{{ reprepro_incoming_user }}'
+  when: reprepro_sshkey is defined and reprepro_sshkey.stat.exists == True
+
+- name: Create incoming user directories
+  file: path=/srv/users/{{ reprepro_incoming_user }}/{{ item }} state=directory
+        owner={{ reprepro_incoming_user }} group={{ reprepro_group }} mode=0771
+  with_items: [ 'incoming', 'temp' ]
+
+- name: Create reprepro configuration directories
+  file: path=/srv/users/{{ reprepro_user }}/{{ item }} state=directory
+        owner={{ reprepro_user }} group={{ reprepro_group }} mode=0755
+  with_items: [ 'conf' ]
+
+- name: Create reprepro repository
+  file: path={{ reprepro_repository }} state=directory
+        owner={{ reprepro_user }} group={{ reprepro_group }} mode=0755
+
+- name: Configure reprepro
+  template: src=srv/users/{{ reprepro_user }}/conf/{{ item }}.j2
+            dest=/srv/users/{{ reprepro_user }}/conf/{{ item }}
+            owner={{ reprepro_user }} group={{ reprepro_group }} mode=0644
+  with_items: [ 'distributions', 'incoming', 'options' ]
+
+

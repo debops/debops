@@ -1,0 +1,31 @@
+---
+
+- name: Create directories custom packages on Ansible Controller
+  local_action: file path={{ secret }}/reprepro/includedeb/{{ item.codename }} state=directory
+  with_items: reprepro_distributions
+  sudo: no
+  when: secret is defined and secret
+
+- name: Create directories for custom packages
+  file: path=/srv/users/{{ reprepro_user }}/includedeb/{{ item.codename }} state=directory
+        owner={{ reprepro_user }} group={{ reprepro_group }} mode=0755
+  with_items: reprepro_distributions
+  when: secret is defined and secret
+
+- name: Download custom packages from Ansible Controller
+  copy: src={{ secret }}/reprepro/includedeb/{{ item.codename }}/
+        dest=/srv/users/{{ reprepro_user }}/includedeb/{{ item.codename }}/
+        owner={{ reprepro_user }} group={{ reprepro_group }} mode=0644
+  with_items: reprepro_distributions
+  register: reprepro_includedebs
+  when: secret is defined and secret
+
+- name: Update reprepro repositories
+  shell: reprepro includedeb {{ item.item.codename }} {{ item.dest + '*' }} chdir=~
+  with_items: reprepro_includedebs.results
+  sudo_user: '{{ reprepro_user }}'
+  changed_when: False
+  when: (reprepro_includedebs is defined and reprepro_includedebs) and
+        (item.changed is defined and item.changed)
+
+

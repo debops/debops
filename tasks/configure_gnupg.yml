@@ -1,0 +1,64 @@
+---
+
+- name: Configure GPG key template
+  template: src=srv/users/{{ reprepro_user }}/gpg-key-template.j2
+            dest=/srv/users/{{ reprepro_user }}/gpg-key-template
+            owner={{ reprepro_user }} group={{ reprepro_group }} mode=0644
+
+- name: Create ~/.gnupg archive directory on Ansible Controller
+  local_action: file path={{ secret }}/storage/tar/{{ ansible_fqdn }}/reprepro state=directory
+  sudo: no
+  when: secret is defined and secret
+
+- name: Download archived ~/.gnupg directory if exists
+  copy: src={{ secret }}/storage/tar/{{ ansible_fqdn }}/reprepro/
+        dest=/srv/users/{{ reprepro_user }}/
+        owner={{ reprepro_user }} group={{ reprepro_group }} mode=0644
+  when: secret is defined and secret
+
+- name: Check if archive of ~/.gnupg directory exists
+  stat: path=/srv/users/{{ reprepro_user }}/gnupg.tar.gz
+  register: reprepro_gnupg_archive
+
+- name: Extract ~/.gnupg directory if present
+  command: tar -x -z -f gnupg.tar.gz chdir=~
+           creates=~/.gnupg/secring.gpg
+  when: reprepro_gnupg_archive is defined and reprepro_gnupg_archive.stat.exists == True
+  sudo_user: '{{ reprepro_user }}'
+
+- name: Install haveged to create bigger entropy pool
+  apt: pkg=haveged state=latest install_recommends=no
+  when: (reprepro_haveged is defined and reprepro_haveged) and
+        (reprepro_gnupg_archive is defined and reprepro_gnupg_archive.stat.exists == False)
+
+- name: Make sure haveged is running
+  service: name=haveged state=started
+  when: (reprepro_haveged is defined and reprepro_haveged) and
+        (reprepro_gnupg_archive is defined and reprepro_gnupg_archive.stat.exists == False)
+
+- name: Generate automatic signing key
+  command: gpg --batch --gen-key gpg-key-template chdir=~
+           creates=~/.gnupg/secring.gpg
+  sudo_user: '{{ reprepro_user }}'
+
+- name: Uninstall haveged when not needed
+  apt: pkg=haveged state=absent
+  when: (reprepro_haveged is defined and reprepro_haveged) and
+        (reprepro_gnupg_archive is defined and reprepro_gnupg_archive.stat.exists == False)
+
+- name: Create archive of ~/.gnupg directory
+  command: tar -c -z -f gnupg.tar.gz .gnupg chdir=~
+         creates=/srv/users/{{ reprepro_user }}/gnupg.tar.gz
+  sudo_user: '{{ reprepro_user }}'
+
+- name: Upload ~/.gnupg archive to Ansible Controller
+  fetch: src=/srv/users/{{ reprepro_user }}/gnupg.tar.gz flat=yes
+         dest={{ secret }}/storage/tar/{{ ansible_fqdn }}/reprepro/gnupg.tar.gz
+  when: secret is defined and secret
+
+- name: Export automatic signing key
+  shell: gpg --armor --export {{ reprepro_gpg_email }} > {{ reprepro_repository }}/{{ ansible_fqdn }}.gpg.key
+         creates={{ reprepro_repository }}/{{ ansible_fqdn }}.gpg.key
+  sudo_user: '{{ reprepro_user }}'
+
+
