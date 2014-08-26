@@ -1,0 +1,51 @@
+---
+
+dependencies:
+  - role: debops.secret
+
+  - role: debops.etc_services
+
+  - role: debops.nodejs
+    tags: nodejs
+
+  - role: debops.ruby
+    tags: ruby
+
+  - role: debops.redis
+    when: rails_deploy_worker_enabled and (rails_dependencies is defined and
+          'redis' in rails_deploy_dependencies)
+    tags: redis
+
+  - role: debops.postgresql
+    when: inventory_hostname == rails_deploy_hosts_master and
+          (rails_deploy_dependencies is defined and
+          'database' in rails_deploy_dependencies) and
+          rails_deploy_database_adapter == 'postgresql'
+    tags: postgresql
+
+  - role: debops.mysql
+    when: inventory_hostname == rails_deploy_hosts_master and
+          (rails_deploy_dependencies is defined and
+          'database' in rails_deploy_dependencies) and
+          rails_deploy_database_adapter == 'mysql'
+    tags: mysql
+
+  - role: debops.nginx
+    nginx_servers: [ '{{ rails_deploy_nginx_server }}' ]
+    nginx_upstreams: [ '{{ rails_deploy_nginx_upstream }}' ]
+    when: rails_deploy_dependencies is defined and
+          'nginx' in  rails_deploy_dependencies
+    tags: nginx
+
+  - role: debops.monit
+    monit_process_host_list:
+      - pid: '{{ rails_deploy_service }}/{{ rails_deploy_service }}.pid'
+    when: not rails_deploy_worker_enabled
+    tags: monit
+
+  - role: debops.monit
+    monit_process_host_list:
+      - pid: '{{ rails_deploy_service }}/{{ rails_deploy_service }}.pid'
+      - pid: '{{ rails_deploy_service }}/{{ rails_deploy_worker }}.pid'
+    when: rails_deploy_worker_enabled
+    tags: monit

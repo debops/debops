@@ -1,0 +1,12 @@
+---
+- name: Create Ansible facts directory
+  file: path=/etc/ansible/facts.d state=directory
+        owner=root group=root mode=0755
+  when: rails_deploy_database_force_migrate or
+        rails_deploy_git_location is defined and rails_deploy_git_location
+
+- name: Create local facts
+  template: src='etc/ansible/facts.d/rails_deploy.fact.j2'
+            dest='/etc/ansible/facts.d/rails_deploy.fact'
+  when: rails_deploy_database_force_migrate or
+        rails_deploy_git_location is defined and rails_deploy_git_location

@@ -1,0 +1,232 @@
+### What does rails_deploy do?
+
+It allows you to easily setup infrastructure capable of running rails applications. It removes all of the headaches associated to setting up a secure rails app that is ready for production so you can concentrate on developing your app.
+
+### Getting started
+
+Below is the bare minimum to get started. In this case everything would be on 1 host. There is a more robust example in [docs/examples/ansible](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/ansible) where we setup the database on a different host and use postgres 9.3 instead of 9.1.
+
+The full example includes setting up 3 containers with ginas:
+
+- An app host
+- A database host
+- A local apt cache server to provide the app host a Ruby 2.1.x backport
+
+This allows you to replicate a production environment locally so you can get
+an idea of how your infrastructure will react in a real production environment.
+
+#### hosts
+
+```
+[ginas_rails_yourappname]
+somehost
+```
+
+#### inventory/host_vars/somehost.yml
+
+`rails_deploy_git_location: 'git@github.com:youraccount/yourappname.git'`
+
+The idea is you'll push your code somewhere and then the role will pull in from that repo.
+
+#### playbook
+
+```
+---
+- name: Deploy yourappname
+  hosts: ginas_rails_yourappname
+  sudo: true
+
+  roles:
+    - { role: ginas.rails_deploy, tags: yourappname }
+```
+
+#### Running the playbook
+
+`ansible-playbook yourappname.yml -i /path/to/your/inv`
+
+Check out the available tags in the [playbook example](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/docs/examples/ansible/playbook/yourappname.yml).
+
+### The defaults at a glance
+
+- Postgresql (switching to MySQL is 1 line of yaml)
+- Sidekiq (if you enable the background worker, it's off by default)
+- Unicorn (switching to puma is 1 line of yaml)
+- Nginx
+
+You can find a few common usage examples at the bottom of the [defaults/main.yml](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/defaults/main.yml) file.
+
+### A few features supplied by this role
+
+#### High level goals
+
+- Setup an entire rails app server with 1 line of configuration with sane defaults
+- Optionally and easily separate your app servers, database and worker into multiple servers
+- Quickly and easily switch between popular default databases and backend servers
+- Be as secure as possible and adhere to as many best practices as possible
+
+#### Backups and logging
+
+- Postgresql runs a daily backup with daily/weekly rotation
+- Both your backend server and background worker get logged to 1 logrotated file
+- The rails process gets sent to syslog.user
+
+#### System level minutia
+
+- User accounts, permissions and ssh keys are automatically managed
+- Paths such as logs, pids and sockets are automatically managed
+
+#### Deploy features
+- Automatically set deploy keys to github/gitlab with 1 line of configuration
+  - This leverages their API, all you have to do is supply their token
+- Keep track of your schema file and config folder's mtime in local facts
+  - This allows the deploy task to attempt to guess if your server needs a full restart or a quick reload
+- Only run database commands from a single master app server
+  - This master is defined by simply being first in the group list
+- Various options to turn certain features on/off
+  - A few examples would be database creation, migration and force restarting your server
+- Add custom services which get restarted/reloaded at the end of the deploy cycle
+  - If you have a SOA setup this could be handy
+- Add and remove custom tasks
+  - By default it is set to precompile assets and clear the /tmp cache
+- Optionally swap a static deploy page in/out during the deploy cycle
+
+#### Security
+- Secure passwords are managed automatically for your database
+- Ports are blocked and only whitelisted for IP addresses/masks that you specify
+  - An example of this is supplied in the [inventory example](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/ansible/inventory).
+- SSL is enabled by default but can be turned off if you really don't want it
+- Self signed SSL certs are automatically managed for you
+  - Changing to properly signed certificates is a breeze
+
+### Changes you need to make in your rails application
+
+#### Gemfile
+
+You must have unicorn **or** puma added.
+```
+# Pick one, you may also want to bump the version to the most recent version.
+# These are the most recent as of ~August 2014.
+gem 'unicorn', '~> 4.8.3'
+gem 'puma', '~> 2.9.0'
+```
+
+You must have pg **or** mysql2 added.
+```
+# Pick one, you may also want to bump the version to the most recent version.
+# These are the most recent as of ~August 2014.
+gem 'pg', '~> 0.17.1'
+gem 'mysql2', '~> 0.3.16'
+
+```
+
+#### Backend server config
+
+You should base your unicorn or puma config off our [example configs](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/rails/config) because certain environment variables are required to exist. Also certain signals are sent to reload or restart the backend which require certain configuration options to be set. Luckily you don't have to think about any of that, just use the pre-written configs in your app.
+
+#### Background worker config
+
+You should also base your sidekiq configs off our [example configs](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/rails/config). Similar to the backend server it expects certain environment variables to exist.
+
+#### Database config
+
+The database configuration below would be reasonable to use. The only requirement is that yours must use the `DATABASE_URL` format in whatever environments you plan to deploy to. That simply means that those environments should be removed from your database config file. This role sets up the `DATABASE_URL` for you.
+
+```
+---
+    development:
+    url: <%= ENV['DATABASE_URL'].gsub('?', '_development?') %>
+    test:
+    url: <%= ENV['DATABASE_URL'].gsub('?', '_test?') %>
+```
+
+#### Application config
+
+In order to log everything to 1 file you must drop this line into your application config. This would apply to all environments. Feel free to move this to only staging and/or production if you don't want this to happen in development.
+
+```
+config.paths['log'] = ENV['LOG_FILE']
+```
+
+#### Production environment config
+
+Chances are you'll want your rails app to write to syslog in production or on your staging/build/etc. server. Copy this into your production environment config.
+
+```
+require 'syslog/logger'
+
+# ...
+
+# The tags are optional but it's useful to have.
+config.log_tags = [ :subdomain, :uuid ]
+
+# This allows you to write to syslog::user without any additional gems/config.
+config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new('yourappname'))
+```
+
+#### Public files
+
+You will likely want the following files to exist in your `/public` directory:
+
+  - 404, 422, 500 and 502 html files to process error pages
+  - deploy html file to swap in/out during the deploy process
+
+The above will allow nginx to serve those files directly before rails even gets a chance.
+
+#### Don't feel like making these small changes every time you make a new app?
+
+Me neither. That's why I created [orats](https://github.com/nickjj/orats). It is a command line tool that generates a shiny new rails application with an accumulation of best practices that I have picked up over time. It is also a little opinionated. Check out [orats' git repo](https://github.com/nickjj/orats) if you're interested.
+
+### This role's requirements
+
+It is expected you are deploying to Debian Wheezy with ginas. Wheezy's version of Ruby is quite old. To fix that ginas has a Ruby role which installs a non-managed version of Ruby to replace the old version.
+
+This will give you the latest 2.1.x version of Ruby but rather than compile it from scratch every time you deploy a new app server it is expected that you setup a local apt cache host.
+
+All of the hard work is done in the Ruby role but it does require you to configure ginas to provision the apt cache server and build ruby once.
+
+You can simply use a container on your workstation to host it or throw it up on a $5/month digital ocean instance. It doesn't matter other than it must exist somewhere and is available when you install Ruby on your app server.
+
+The [inventory example](https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.rails_deploy/docs/examples/ansible/inventory) contains information on how to set this up using a container. It's very little configuration, it just takes about 10-15 minutes to setup once while ansible provisions the server. After that your app servers will be able to install Ruby in about 10 seconds.
+
+Once Debian Jessie is feature frozen (~November 2014) then this step will be removed because Jessie will use Ruby 2.1.x by default.
+
+#### Commands to run once your inventory is ready
+
+```
+# cd to your ginas directory
+
+./site.sh -l ansible_controller -t lxc
+# ssh into each container to accept the initial ssh connection warning.
+./site.sh -l containers
+# Uncomment line 6 in inventory/group_vars/containers.yml.
+./site.sh -l containers -t apt
+./site.sh -l ginas_postgresql # Only if you're using multiple hosts.
+# You are done. At this point you can run the playbook to setup your app server.
+```
+
+Trust me, I know it's annoying. But you only have to do it once and in a few months all of this will go away.
+
+### FAQ / troubleshooting guide
+
+##### You switched from unicorn to puma or puma to unicorn and the site is dead
+Chances are you're deploying with tags so the entire role did not run. When you switch servers nginx needs to be restarted. Make sure you `-t nginx` or just run the whole role when you change servers.
+
+##### You can't clone your repo
+Since the role needs to pull in from your git repo then it needs permission to your repo. The most common way to do that is to setup an API access token for github.
+
+Gitlab is also supported, all of this is documented in the [defaults/main.yml](https://github.com/ginas/ginas/blob/master/playbooks/roles/ginas.rails_deploy/defaults/main.yml) file.
+
+##### How would you go about setting up a CI platform with this role?
+Rather than impose a CI solution on you, you're free to do whatever you want.
+
+A possible situation might be to use this role to deploy to a staging/CI/build server instead of directly to production. Now your build server can run tests and push to production using this role on different hosts if everything goes well.
+
+That would allow you to have a sweet CI setup where your developers only have to git push somewhere and minutes later you have tested code in production if you don't have to worry about a ton of red tape.
+
+### License
+
+[GPLv3](https://www.gnu.org/licenses/quick-guide-gplv3.html)
+
+### Author
+
+`ginas.rails_deploy` was created by Nick Janetakis nick.janetakis@gmail.com.
