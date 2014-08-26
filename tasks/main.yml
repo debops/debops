@@ -1,0 +1,30 @@
+---
+
+- name: Install Ruby packages
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_flattened:
+    - ruby_base_packages[ruby_version]
+    - ruby_dev_packages[ruby_version]
+    - ruby_packages
+    - ruby_group_packages
+    - ruby_host_packages
+    - ruby_dependent_packages
+
+- name: Check what gems are installed
+  command: gem list --local --no-verbose --no-versions
+  register: ruby_register_installed_gems
+  changed_when: False
+
+- name: Install specified gems from RubyGems
+  command: gem install --no-verbose --conservative {{ item }}
+  with_flattened:
+    - ruby_default_gems
+    - ruby_gems
+    - ruby_group_gems
+    - ruby_host_gems
+    - ruby_dependent_gems
+  when: (item not in ruby_register_installed_gems.stdout_lines)
+

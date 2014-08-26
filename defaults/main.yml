@@ -1,0 +1,38 @@
+---
+# role: ruby (Ruby language support)
+# Homepage: https://www.ruby-lang.org/
+
+
+# Ruby role supports different versions of Ruby (1.9.1, with is in Debian
+# Wheezy and Ubuntu; and 2.1, which is in Debian Jessie). By default, Ruby 2.1 is
+# installed (or backported on Wheezy). If you want to use Ruby 1.9.1, you should
+# set that for all hosts in inventory before installing.
+
+# Switching between versions isn't currently supported, and once Ruby 2.1
+# packages are backported and put in local APT repository, it will be impossible
+# to install Ruby 1.9.1 due to backported 'ruby' package having higher
+# perecedence than version from distribution repositories.
+
+# Specify version of Ruby to install:
+# - '1.9.1' will install Ruby from Debian/Ubuntu stable repositories
+# - '2.1' on Debian Wheezy will backport packages from Debian Jessie, on Jessie
+#   they will be installed as normal (Ubuntu at the moment is not supported)
+ruby_version: '2.1'
+
+
+# Lists of additional APT packages to install with Ruby packages (for all
+# hosts, group of hosts, specific host or role dependency). You can use these
+# lists to for example install packaged gems.
+ruby_packages: []
+ruby_group_packages: []
+ruby_host_packages: []
+ruby_dependent_packages: []
+
+# Lists of Ruby gems to install from RubyGems.org. Role will use conservative
+# approach and not install or update any gems, that are already installed, either
+# via gem or via APT.
+ruby_gems: []
+ruby_group_gems: []
+ruby_host_gems: []
+ruby_dependent_gems: []
+
