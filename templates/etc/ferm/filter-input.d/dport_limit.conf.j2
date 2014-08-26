@@ -1,0 +1,43 @@
+# This file is managed by Ansible, all changes will be lost
+
+# Limit new connections on {{ item.dport | join(',') }} port.
+# Allow no more than {{ item.hits | default('5') }} connection attempts from a source IP in {{ item.seconds | default('300') }} seconds.
+{#
+
+List of parameters:
+
+Required:
+  item.dport		list of destination ports to configure
+
+Optional:
+  item.protocol		protocol to configure (tcp, udp)
+  item.seconds		time in seconds to count between hits
+  item.hits		how many connections in item.seconds to allow
+  item.disabled		if True, disable the rule (can be used to toggle rule via variable)
+
+#}
+
+{% if item.disabled is undefined or (item.disabled is defined and not item.disabled) or (item.disabled is defined and item.disabled == 'false') %}
+protocol {{ item.protocol | default('tcp syn') }} dport ({{ item.dport | join(' ') }}) {
+
+	@subchain "dport-limit-{{ item.dport[0] }}" {
+		mod recent name {{ item.dport[0] | upper }} {
+			set NOP;
+			update seconds {{ item.seconds | default('300') }} hitcount {{ item.hits | default('5') }} @subchain "dport-log-{{ item.dport[0] }}" {
+				mod recent set name "badguys" {
+					mod limit limit 3/hour limit-burst 5 {
+						LOG log-prefix "iptables-blocked-{{ item.dport[0] }}: " log-level warning;
+					}
+					DROP;
+				}
+			}
+		}
+	}
+
+	ACCEPT;
+}
+{% else %}
+# dport_limit rule has been disabled by item.disabled variable
+{% endif %}
+
+

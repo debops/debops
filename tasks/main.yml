@@ -1,0 +1,81 @@
+---
+
+- name: Configure ferm status in debconf
+  debconf:
+    name: 'ferm'
+    question: 'ferm/enable'
+    vtype: 'boolean'
+    value: '{{ ferm | lower }}'
+
+- name: Ensure ferm is installed
+  apt:
+    name: 'ferm'
+    state: 'latest'
+    install_recommends: 'no'
+
+- name: Create configuration directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0750'
+  with_items:
+    - '/etc/ferm/ferm.d'
+    - '/etc/ferm/filter-input.d'
+
+- name: Apply firewall configuration
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: [ 'etc/default/ferm', 'etc/ferm/ferm.conf' ]
+  notify: [ 'Restart ferm' ]
+
+- name: Allow SSH access from Ansible Controller
+  template:
+    src: 'etc/ferm/filter-input.d/ansible_controller.conf.j2'
+    dest: '/etc/ferm/filter-input.d/10_ansible_controller.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: (ansible_controller is defined and ansible_controller)
+  notify: [ 'Restart ferm' ]
+
+- name: Remove iptables INPUT rules if requested
+  file:
+    path: '/etc/ferm/filter-input.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.dport[0]) }}.conf'
+    state: 'absent'
+  with_flattened:
+    - ferm_input_list
+    - ferm_input_group_list
+    - ferm_input_host_list
+  when: ((item.type is defined and item.type) and (item.dport is defined and item.dport)) and
+        (item.delete is defined and item.delete)
+
+- name: Configure iptables INPUT rules
+  template:
+    src: 'etc/ferm/filter-input.d/{{ item.type }}.conf.j2'
+    dest: '/etc/ferm/filter-input.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.dport[0]) }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - ferm_input_list
+    - ferm_input_group_list
+    - ferm_input_host_list
+  when: (item.type is defined and item.type and item.dport is defined and item.dport) and
+        (item.delete is undefined or (item.delete is defined and not item.delete))
+
+- name: Apply iptables rules if ferm is enabled
+  command: ferm --slow /etc/ferm/ferm.conf
+  changed_when: False
+  when: (ferm is defined and ferm)
+
+- name: Clear iptables rules if ferm is disabled
+  command: ferm --flush /etc/ferm/ferm.conf
+  changed_when: False
+  when: (ferm is undefined or (ferm is defined and not ferm))
+

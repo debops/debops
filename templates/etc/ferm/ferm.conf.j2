@@ -1,0 +1,66 @@
+# This file is managed by Ansible, all changes will be lost
+
+# iptables firewall managed by ferm
+
+table filter {
+	chain INPUT {
+{% if ferm_comment is defined and ferm_comment %}
+		mod comment comment "{{ ferm_comment }}" NOP;
+{% endif %}
+		policy {{ ferm_default_policy_input | default('DROP') }};
+
+		# Connection tracking
+		mod conntrack ctstate INVALID DROP;
+		mod conntrack ctstate (ESTABLISHED RELATED) ACCEPT;
+
+		# Allow local connections
+		interface lo ACCEPT;
+
+		# Drop connections from bad guys
+		mod recent name "badguys" update seconds 3600 {
+			mod limit limit 3/hour limit-burst 5 {
+				LOG log-prefix "iptables-recent-badguys: " log-level warning;
+			}
+			DROP;
+		}
+
+		# Allow ICMP protocol
+		protocol icmp ACCEPT;
+
+		@include 'filter-input.d/';
+
+{% if ferm_mark_portscan is defined and ferm_mark_portscan %}
+		# Catch bad guys (port scanners)
+		mod recent set name "badguys" {
+			mod limit limit 3/hour limit-burst 5 {
+				LOG log-prefix "iptables-portscan: " log-level warning;
+			}
+		}
+
+{% endif %}
+		# Reject everything else
+		protocol udp REJECT reject-with icmp-port-unreachable;
+		protocol tcp REJECT reject-with tcp-reset;
+		REJECT reject-with icmp-proto-unreachable;
+	}
+
+	chain OUTPUT {
+		policy {{ ferm_default_policy_output | default('ACCEPT') }};
+
+		# Connection tracking
+		mod conntrack ctstate INVALID DROP;
+		mod conntrack ctstate (ESTABLISHED RELATED) ACCEPT;
+	}
+
+	chain FORWARD {
+		policy {{ ferm_default_policy_forward | default('DROP') }};
+
+		# Connection tracking
+		mod conntrack ctstate INVALID DROP;
+		mod conntrack ctstate (ESTABLISHED RELATED) ACCEPT;
+	}
+}
+
+@include 'ferm.d/';
+
+
