@@ -1,0 +1,18 @@
+# This file is managed by Ansible, all changes will be lost
+
+{% if postfix_table_mx_access is defined and postfix_table_mx_access %}
+{{ postfix_table_mx_access }}
+{% else %}
+0.0.0.0/8	REJECT mail server in broadcast network
+10.0.0.0/8	REJECT mail server in RFC 1918 private network
+127.0.0.0/8	REJECT mail server in loopback network
+169.254.0.0/16	REJECT mail server in link local network
+172.16.0.0/12	REJECT mail server in RFC 1918 private network
+192.0.2.0/24	REJECT mail server in TEST-NET network
+192.168.0.0/16	REJECT mail server in RFC 1918 private network
+224.0.0.0/4	REJECT mail server in class D multicast network
+240.0.0.0/5	REJECT mail server in class E reserved network
+248.0.0.0/5	REJECT mail server in reserved network
+{% endif %}
+
+

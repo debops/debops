@@ -1,0 +1,38 @@
+# This file is managed by Ansible, all changes will be lost
+
+# Local alias database
+
+{% if 'local' in postfix %}
+{% if postfix_local_aliases is defined and postfix_local_aliases %}
+{% for alias, list in postfix_local_aliases.iteritems() %}
+{% if list %}
+{{ "%-24s" | format(alias + ":") }} {{ ", ".join(list) }}
+{% else %}
+{{ "%-24s" | format(alias + ":") }} {{ ", ".join(postfix_default_local_alias_recipients) }}
+{% endif %}
+{% endfor %}
+{% if postfix_default_local_aliases is defined and postfix_default_local_aliases %}
+{% for alias, list in postfix_default_local_aliases.iteritems() %}
+{% if list and alias not in postfix_local_aliases.keys() %}
+{{ "%-24s" | format(alias + ":") }} {{ ", ".join(list) }}
+{% elif not list and alias not in postfix_local_aliases.keys() %}
+{{ "%-24s" | format(alias + ":") }} {{ ", ".join(postfix_default_local_alias_recipients) }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% else %}
+{% if postfix_default_local_aliases is defined and postfix_default_local_aliases %}
+{% for alias, list in postfix_default_local_aliases.iteritems() %}
+{% if list %}
+{{ "%-24s" | format(alias + ":") }} {{ ", ".join(list) }}
+{% else %}
+{{ "%-24s" | format(alias + ":") }} {{ ", ".join(postfix_default_local_alias_recipients) }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% else %}
+# required postfix capability: +local
+{% endif %}
+
+

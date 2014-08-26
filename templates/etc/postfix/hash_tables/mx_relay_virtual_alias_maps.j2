@@ -1,0 +1,58 @@
+# This file is managed by Ansible, all changes will be lost
+
+# virtual aliases for MX relay, to be passed to local domain mail server
+# Needed for <alias>@[ipaddress] mail to work correctly
+
+# More information: http://www.ietf.org/rfc/rfc2142.txt
+
+{% set postfix_tpl_mx_relay_virtual_aliases = [] %}
+{#
+  Common SMTP return path #}
+{% set postfix_tpl_mx_relay_virtual_aliases = postfix_tpl_mx_relay_virtual_aliases + ['MAILER-DAEMON'] %}
+{#
+  Business-related aliases #}
+{% set postfix_tpl_mx_relay_virtual_aliases = postfix_tpl_mx_relay_virtual_aliases + ['info', 'marketing', 'sales', 'support'] %}
+{#
+  Network operations aliases #}
+{% set postfix_tpl_mx_relay_virtual_aliases = postfix_tpl_mx_relay_virtual_aliases + ['abuse', 'noc', 'security'] %}
+{#
+  Monitoring aliases #}
+{% set postfix_tpl_mx_relay_virtual_aliases = postfix_tpl_mx_relay_virtual_aliases + ['monitoring'] %}
+{#
+  SMTP service aliases #}
+{% set postfix_tpl_mx_relay_virtual_aliases = postfix_tpl_mx_relay_virtual_aliases + ['postmaster'] %}
+{#
+  DNS service aliases #}
+{% set postfix_tpl_mx_relay_virtual_aliases = postfix_tpl_mx_relay_virtual_aliases + ['hostmaster'] %}
+{#
+  Mailing list service aliases #}
+{% set postfix_tpl_mx_relay_virtual_aliases = postfix_tpl_mx_relay_virtual_aliases + ['listmaster'] %}
+{#
+  NNTP service aliases #}
+{% set postfix_tpl_mx_relay_virtual_aliases = postfix_tpl_mx_relay_virtual_aliases + ['usenet', 'news'] %}
+{#
+  HTTP service aliases #}
+{% set postfix_tpl_mx_relay_virtual_aliases = postfix_tpl_mx_relay_virtual_aliases + ['webmaster', 'www'] %}
+{#
+  UUCP service aliases #}
+{% set postfix_tpl_mx_relay_virtual_aliases = postfix_tpl_mx_relay_virtual_aliases + ['uucp'] %}
+{#
+  FTP service aliases #}
+{% set postfix_tpl_mx_relay_virtual_aliases = postfix_tpl_mx_relay_virtual_aliases + ['ftp'] %}
+{# #}
+{% if 'mx' in postfix and postfix_relay_domains is defined and postfix_relay_domains %}
+{% for alias in postfix_tpl_mx_relay_virtual_aliases %}
+{{ "%-24s" | format(alias) }} {{ alias }}@{{ ansible_domain }}
+{% endfor %}
+{% else %}
+# required postfix capability: +mx
+{% endif %}
+{% if 'test' in postfix %}
+
+# ---- Debug information ----
+# postfix capabilities: {{ ",".join(postfix) }}
+# postfix_relay_domains = {{ ", ".join(postfix_relay_domains) }}
+# postfix_tpl_mx_relay_virtual_aliases = {{ ", ".join(postfix_tpl_mx_relay_virtual_aliases) }}
+{% endif %}
+
+

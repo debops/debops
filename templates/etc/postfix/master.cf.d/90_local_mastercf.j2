@@ -1,0 +1,16 @@
+{% if (ansible_local is defined and ansible_local) and
+      (ansible_local.postfix is defined and ansible_local.postfix) and
+      (ansible_local.postfix.mastercf is defined and ansible_local.postfix.mastercf) %}
+
+# Configuration set via Ansible role dependencies
+{% for entry in ansible_local.postfix.mastercf %}
+{{ "%-9s %-5s %-7s %-7s %-7s %-7s %-7s %s" | format(entry.service, entry.type, entry.private, entry.unpriv, entry.chroot, entry.wakeup, entry.maxproc, entry.command) }}
+{{ entry.options | indent(2, true) }}
+{% endfor %}
+{% endif %}
+{% if postfix_local_mastercf is defined and postfix_local_mastercf %}
+
+# Local configuration
+{{ postfix_local_mastercf }}
+{% endif %}
+

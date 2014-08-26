@@ -1,0 +1,42 @@
+# This file is managed by Ansible, all changes will be lost
+
+# Block unauthorized mail on local domains from remote servers
+
+{% if 'submission' not in postfix %}
+{% set postfix_tpl_sender_mydomains_reject_message = "Access denied" %}
+{% elif 'submission' in postfix %}
+{% set postfix_tpl_sender_mydomains_reject_message = "This server requires SMTP Authentication" %}
+{% endif %}
+{% if 'local' in postfix %}
+{{ "%-24s" | format(ansible_fqdn) }} REJECT {{ postfix_tpl_sender_mydomains_reject_message }}
+{% else %}
+# required postfix capability: +local
+{% endif %}
+{% set postfix_tpl_sender_mydomains_access = [] %}
+{% if postfix_mydestination is defined and postfix_mydestination %}
+{% set postfix_tpl_sender_mydomains_access = postfix_tpl_sender_mydomains_access + postfix_mydestination %}
+{% endif %}
+{% if postfix_relay_domains is defined and postfix_relay_domains %}
+{% set postfix_tpl_sender_mydomains_access = postfix_tpl_sender_mydomains_access + postfix_relay_domains %}
+{% endif %}
+{% if postfix_tpl_sender_mydomains_access %}
+{% for domain in postfix_tpl_sender_mydomains_access %}
+{% if domain == "$mydomain" %}
+{{ "%-24s" | format(ansible_domain) }} REJECT {{ postfix_tpl_sender_mydomains_reject_message }}
+{% else %}
+{{ "%-24s" | format(domain) }} REJECT {{ postfix_tpl_sender_mydomains_reject_message }}
+{% endif %}
+{% endfor %}
+{% else %}
+# local destination or relay domains not defined
+{% endif %}
+{% if 'test' in postfix %}
+
+# ---- Debug information ----
+# postfix capabilities: {{ ",".join(postfix) }}
+# postfix_mydestination = {{ ", ".join(postfix_mydestination) }}
+# postfix_relay_domains = {{ ", ".join(postfix_relay_domains) }}
+# postfix_tpl_sender_mydomains_access = {{ ", ".join(postfix_tpl_sender_mydomains_access) }}
+{% endif %}
+
+

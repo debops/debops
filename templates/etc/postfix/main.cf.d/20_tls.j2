@@ -1,0 +1,30 @@
+# TLS parameters
+tls_high_cipherlist		= !aNULL:ALL:!EXPORT:!LOW:!MEDIUM:!DES:!3DES:!MD5:!RC4:@STRENGTH
+tls_medium_cipherlist		= !aNULL:ALL:!EXPORT:!LOW:!DES:!3DES:!MD5:!RC4:@STRENGTH
+tls_low_cipherlist		= !aNULL:ALL:!EXPORT:!DES:!3DES:!MD5:!RC4:@STRENGTH
+
+smtpd_tls_cert_file		= {% if postfix_pki_cert is defined and postfix_pki_cert %}{{ postfix_pki_cert }}{% elif postfix_pki_type is defined and postfix_pki_type in ['selfsigned','signed'] %}{{ postfix_pki }}/host/{{ postfix_pki_type }}/{{ postfix_pki_name | default(ansible_fqdn) }}.crt{% elif postfix_pki_type is defined and postfix_pki_type in ['wildcard'] %}{{ postfix_pki }}/wildcard/certs/{{ postfix_pki_wildcard | default(ansible_domain) }}.crt{% else %}none{% endif %}
+
+smtpd_tls_key_file		= {% if postfix_pki_key is defined and postfix_pki_key %}{{ postfix_pki_key }}{% elif postfix_pki_type is defined and postfix_pki_type in ['selfsigned','signed'] %}{{ postfix_pki }}/host/private/{{ postfix_pki_name | default(ansible_fqdn) }}.key{% elif postfix_pki_type is defined and postfix_pki_type in ['wildcard'] %}{{ postfix_pki }}/wildcard/private/{{ postfix_pki_wildcard | default(ansible_domain) }}.key{% else %}none{% endif %}
+
+smtpd_tls_auth_only		= yes
+smtpd_tls_received_header	= yes
+smtpd_tls_security_level	= {{ postfix_smtpd_tls_securit_level | default('may') }}
+smtpd_tls_ciphers		= {{ postfix_smtpd_tls_ciphers | default('medium') }}
+smtpd_tls_exclude_ciphers	= aNULL, DES, 3DES, MD5, DES+MD5, RC4
+smtpd_tls_protocols		= TLSv1, !SSLv2, !SSLv3
+
+smtpd_tls_dh1024_param_file	= ${config_directory}/dh2048.pem
+smtpd_tls_dh512_param_file	= ${config_directory}/dh512.pem
+
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+smtp_tls_note_starttls_offer	= yes
+smtp_tls_security_level		= {{ postfix_smtp_tls_security_level | default('may') }}
+smtp_tls_ciphers		= {{ postfix_smtp_tls_ciphers | default('high') }}
+smtp_tls_exclude_ciphers	= aNULL, DES, 3DES, MD5, DES+MD5, RC4
+smtp_tls_protocols		= TLSv1, !SSLv2, !SSLv3
+smtp_tls_CAfile			= /etc/ssl/certs/ca-certificates.crt
+
+

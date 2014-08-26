@@ -1,0 +1,20 @@
+---
+
+- name: Install postfix base packages
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items: [ 'postfix', 'postfix-pcre', 'bsd-mailx' ]
+  when: postfix is defined and postfix
+
+- name: Divert original postfix configuration
+  command: dpkg-divert --quiet --local --divert /etc/postfix/{{ item }}.dpkg-divert --rename /etc/postfix/{{ item }}
+           creates=/etc/postfix/{{ item }}.dpkg-divert
+  with_items: [ 'main.cf', 'master.cf' ]
+  when: postfix is defined and postfix
+  notify: Restart postfix
+
+- name: Divert original aliases database
+  command: dpkg-divert --quiet --local --divert /etc/aliases.dpkg-divert --rename /etc/aliases
+           creates=/etc/aliases.dpkg-divert
+  when: postfix is defined and postfix
+
+

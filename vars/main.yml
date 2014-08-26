@@ -1,0 +1,105 @@
+---
+
+postfix_configuration_templates:
+  - 'main.cf.d/00_ansible'
+  - 'main.cf.d/10_basic_options'
+  - 'main.cf.d/20_sasl_auth'
+  - 'main.cf.d/20_tls'
+  - 'main.cf.d/30_postscreen'
+  - 'main.cf.d/40_smtpd_restrictions'
+  - 'main.cf.d/90_local_maincf'
+  - 'master.cf.d/00_ansible'
+  - 'master.cf.d/10_postscreen'
+  - 'master.cf.d/10_smtp'
+  - 'master.cf.d/20_smtps'
+  - 'master.cf.d/20_submission'
+  - 'master.cf.d/30_postfix_services'
+  - 'master.cf.d/50_uucp'
+  - 'master.cf.d/90_local_mastercf'
+  - 'hash_tables/Makefile'
+  - 'tables/mx_access.cidr'
+  - 'tables/postscreen_access.cidr'
+  - 'tables/postscreen_dnsbl_reply_map.pcre'
+
+# List of hash tables managed by a Makefile on the remote host
+postfix_postmap_hash_tables:
+  - 'sender_mydomains_access'
+  - 'mx_relay_transport'
+  - 'mx_relay_virtual_alias_maps'
+
+# Hash of default local aliases
+# You can define custom aliases in: postfix_local_aliases hash
+# Empty aliases will be aliased to value of postfix_default_local_alias_recipients
+postfix_default_local_aliases:
+
+  # Common SMTP return path
+  'MAILER-DAEMON': ['postmaster']
+
+  # Business-related aliases
+  'info': ['staff']
+  'marketing': ['staff']
+  'sales': ['staff']
+  'support': ['staff']
+
+  # Network operations aliases
+  'abuse': ['postmaster']
+  'noc': ['root']
+  'security': ['root']
+
+  # Monitoring
+  'monitoring': ['root']
+
+  # SMTP service
+  'postmaster': ['root']
+
+  # DNS service
+  'hostmaster': ['root']
+
+  # Mailing list service
+  'listmaster': ['root']
+
+  # NNTP service
+  'usenet': ['root']
+  'news': ['usenet']
+
+  # HTTP service
+  'webmaster': ['root']
+  'www': ['webmaster']
+
+  # UUCP service
+  'uucp': ['root']
+
+  # FTP service
+  'ftp': ['root']
+
+  # System users
+  'daemon': ['root']
+  'bin': ['root']
+  'sys': ['root']
+  'sync': ['root']
+  'games': ['root']
+  'man': ['root']
+  'lp': ['root']
+  'mail': ['root']
+  'proxy': ['root']
+  'www-data': ['root']
+  'backup': ['root']
+  'list': ['root']
+  'irc': ['root']
+  'gnats': ['root']
+  'nobody': ['root']
+  'libuuid': ['root']
+  'sshd': ['root']
+  'named': ['root']
+  'postfix': ['root']
+
+  # Popular aliases
+  'manager': ['root']
+  'operator': ['root']
+  'admin': ['root']
+
+  # System accounts
+  'root': []
+  'staff': []
+
+

@@ -1,0 +1,28 @@
+# This file is managed by Ansible, all changes will be lost
+
+# Transport maps for MX relay
+
+{% if 'mx' in postfix and postfix_relay_domains is defined and postfix_relay_domains %}
+{% if postfix_relayhost is defined and postfix_relayhost %}
+{% for domain in postfix_relay_domains %}
+{% if domain == "$mydomain" %}
+{{ "%-24s" | format(ansible_domain) }} smtp:[{{ postfix_relayhost }}]
+{% else %}
+{{ "%-24s" | format(domain) }} smtp:[{{ postfix_relayhost }}]
+{% endif %}
+{% endfor %}
+{% else %}
+# postfix_relayhost not defined (Ansible)
+{% endif %}
+{% else %}
+# required postfix capability: +mx
+{% endif %}
+{% if 'test' in postfix %}
+
+# ---- Debug information ----
+# postfix capabilities: {{ ",".join(postfix) }}
+# postfix_relay_domains = {{ ", ".join(postfix_relay_domains) }}
+# postfix_relayhost = {{ postfix_relayhost }}
+{% endif %}
+
+
