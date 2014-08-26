@@ -1,0 +1,40 @@
+---
+
+- name: Create Certificate Authority directories
+  local_action: file path={{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/{{ item }} state=directory mode=0700
+  with_items: [ 'roots', 'keys', 'servers', 'clients' ]
+  sudo: no
+  when: boxbackup is defined and boxbackup == ansible_fqdn
+
+- name: Create Root CA keys
+  local_action: command openssl genrsa -out {{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/keys/{{ item }}RootKey.pem {{ boxbackup_transfer_bits }}
+                creates={{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/keys/{{ item }}RootKey.pem
+  with_items: [ 'client', 'server' ]
+  sudo: no
+  when: boxbackup is defined and boxbackup == ansible_fqdn
+
+- name: Create Root CA certificate requests
+  local_action: command openssl req -batch -new -sha1 -subj "/CN=Backup system {{ item }} root"
+                -key {{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/keys/{{ item }}RootKey.pem
+                -out {{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/keys/{{ item }}RootCSR.pem
+                creates={{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/keys/{{ item }}RootCSR.pem
+  with_items: [ 'client', 'server' ]
+  sudo: no
+  when: boxbackup is defined and boxbackup == ansible_fqdn
+
+- name: Sign Root CA certificates
+  local_action: command openssl x509 -req -sha1 -extensions v3_ca -days {{ boxbackup_ssl_root_sign }}
+                -in {{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/keys/{{ item }}RootCSR.pem
+                -signkey {{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/keys/{{ item }}RootKey.pem
+                -out {{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/roots/{{ item }}CA.pem
+                creates={{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/roots/{{ item }}CA.pem
+  with_items: [ 'client', 'server' ]
+  sudo: no
+  when: boxbackup is defined and boxbackup == ansible_fqdn
+
+- name: Create script for manual certificate signing
+  local_action: template src=sign-cert.j2 dest={{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/sign-cert mode=0755
+  sudo: no
+  when: boxbackup is defined and boxbackup == ansible_fqdn
+
+

@@ -1,0 +1,19 @@
+---
+
+- name: Create random temporary directory to store archive
+  command: mktemp -d
+  register: tempdir
+  when: boxbackup is defined and boxbackup
+
+- name: Archive boxbackup directory
+  command: tar -c -z -f {{ tempdir.stdout }}/boxbackup.tar.gz /etc/boxbackup
+  when: boxbackup is defined and boxbackup and tempdir is defined and tempdir
+
+- name: Upload archived boxbackup directory
+  fetch: src={{ tempdir.stdout }}/boxbackup.tar.gz dest={{ secret }}/storage/tar/{{ ansible_fqdn }}/boxbackup/ flat=yes
+  when: secret is defined and secret and boxbackup is defined and boxbackup and tempdir is defined and tempdir
+
+- name: Remove temporary directory
+  file: path={{ tempdir.stdout }} state=absent
+  when: boxbackup is defined and boxbackup and tempdir is defined and tempdir
+
