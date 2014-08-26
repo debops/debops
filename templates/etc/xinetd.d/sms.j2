@@ -1,0 +1,21 @@
+# This file is managed by Ansible, all changes will be lost
+
+# SMS service configuration for xinetd
+# only_from is not required, xinetd in Debian is secured using tcpwrappers
+# (/etc/hosts.allow, /etc/hosts.deny)
+
+service {{ smstools_service_name }}
+{
+	disable		= no
+	server		= /usr/local/lib/smstools/sms-service
+	port		= {{ smstools_service_port }}
+	socket_type	= stream
+	protocol	= tcp
+	libwrap		= {{ smstools_service_name }}
+	user		= {{ smstools_service_user }}
+	group		= {{ smstools_service_group }}
+	wait		= no
+	instances	= 10
+	nice		= -18
+}
+

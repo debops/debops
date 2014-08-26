@@ -1,0 +1,8 @@
+# This file is managed by Ansible, all changes will be lost
+
+# Postfix relay_recipient_maps table, should accept only correctly formatted
+# mobile numbers
+{% for regexp in [ '^[0-9]{9}', '^[0-9]{11}', '^\+[0-9]{11}' ] %}
+{{ "%-40s OK" | format('/' + regexp + '@' + smstools_mail_transport_domain + '/') }}
+{% endfor %}
+

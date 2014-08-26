@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# This file is managed by Ansible, all changes will be lost
+
+# Fix device permissions (needed in OpenVZ containers)
+
+owner='root'
+group='dialout'
+mode='ug=rw'
+
+{% if smstools_devices is defined and smstools_devices %}
+{% for modem in smstools_devices %}
+if [ -e {{ modem.device }} ]; then
+	chown ${owner}:${group} {{ modem.device }}
+	chmod ${mode} {{ modem.device }}
+fi
+{% endfor %}
+{% endif %}
+
+# vim:ft=sh
