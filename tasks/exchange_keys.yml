@@ -1,0 +1,51 @@
+---
+
+- name: Create SSH key on root account for OpenVZ live migration
+  user:
+    name: 'root'
+    generate_ssh_key: True
+    ssh_key_bits: '2048'
+    ssh_key_comment: 'root@{{ ansible_hostname }} by Ansible'
+
+- name: Get root SSH key from OpenVZ hosts
+  slurp:
+    src: '/root/.ssh/id_rsa.pub'
+  register: openvz_slurp_ssh_key
+
+- name: Decode SSH key
+  set_fact:
+    openvz_root_ssh_key: '{{ openvz_slurp_ssh_key.content | b64decode | trim }}'
+
+- name: Configure root SSH key on other OpenVZ cluster nodes
+  authorized_key:
+    user: 'root'
+    key: '{{ hostvars[inventory_hostname].openvz_root_ssh_key }}'
+    key_options: 'no-X11-forwarding,no-agent-forwarding,no-port-forwarding'
+    state: 'present'
+  delegate_to: '{{ item }}'
+  with_items: openvz_cluster
+  when: item is defined and item != inventory_hostname
+
+- name: Create known_hosts.d directory for root account
+  file:
+    path: '/root/.ssh/known_hosts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+  # If you use '--limit', hosts not included in the limit will not have their
+  # fingerprint scanned. Use '--tags openvz' without '--limit' to fix that
+- name: Scan SSH fingerprints of other OpenVZ cluster nodes
+  shell: ssh-keyscan -H {{ hostvars[item].ansible_hostname }} {{ hostvars[item].ansible_fqdn }} > /root/.ssh/known_hosts.d/{{ hostvars[item].ansible_fqdn }}
+         creates=/root/.ssh/known_hosts.d/{{ hostvars[item].ansible_fqdn }}
+  with_items: openvz_cluster
+  when: (item is defined and item != inventory_hostname) and hostvars[item].ansible_hostname is defined
+
+- name: Assemble /root/.ssh/known_hosts2 from known_hosts.d
+  assemble:
+    src: '/root/.ssh/known_hosts.d'
+    dest: '/root/.ssh/known_hosts2'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'

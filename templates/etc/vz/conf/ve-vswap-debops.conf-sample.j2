@@ -1,0 +1,45 @@
+# This file is managed by Ansible, all changes will be lost
+
+#  Copyright (C) 2000-2011, Parallels, Inc. All rights reserved.
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+
+# This config is only valid for decent VSwap-enabled kernel
+# (version 042stab042 or later).
+
+# Parameters below have been calculated by Ansible based on:
+# {{ "%13s" | format(openvz_configfile_container_count) }} planned OpenVZ containers
+# {{ "%10s MB" | format(ansible_memtotal_mb) }} of total RAM
+# {{ "%10s MB" | format(openvz_configfile_memory_padding) }} of total RAM reserved for operating system
+# {{ "%10s GB" | format((openvz_register_storage_size.stdout|int / 1024 / 1024)|round|int) }} of total disk space on {{ openvz_container_storage }}
+# {{ "%13s" | format(openvz_register_storage_inodes.stdout) }} of total available inodes on {{ openvz_container_storage }}
+
+# RAM
+PHYSPAGES="{{ '0:' + openvz_configfile_calculated_ram + 'M' }}"
+
+# Swap
+SWAPPAGES="{{ '0:' + openvz_configfile_calculated_vswap + 'M' }}"
+
+# Disk quota parameters (in form of softlimit:hardlimit)
+DISKSPACE="{{ openvz_configfile_calculated_diskspace_limit + 'G:' + openvz_configfile_calculated_diskspace + 'G' }}"
+DISKINODES="{{ openvz_configfile_calculated_diskinodes_limit + ':' + openvz_configfile_calculated_diskinodes }}"
+QUOTATIME="{{ openvz_configfile_quotatime }}"
+
+# CPU fair scheduler parameter
+CPUUNITS="{{ openvz_configfile_cpuunits }}"
+
+NETFILTER="{{ openvz_configfile_netfilter }}"
+
