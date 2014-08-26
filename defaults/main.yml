@@ -1,0 +1,28 @@
+---
+# role: phpmyadmin (MySQL web administration tool)
+
+
+# For PHPMyAdmin to be installed automatically, host must be in the
+# "ginas_mysql" Ansible group. Otherwise, look in playbooks/mysql.yml
+# to see how you can use 'phpmyadmin' role
+
+# By default PHPMyAdmin is installed by 'mysql' role (see that role
+# defaults/main.yml for information how to enable PHPMyAdmin)
+
+# Should PHPMyAdmin role manage its own dependencies?
+phpmyadmin_dependencies: True
+
+# What subdomain should be used for PHPMyAdmin in nginx configuration
+phpmyadmin_domain: [ 'mysql.{{ ansible_domain }}' ]
+
+# List of IP addresses or network ranges in CIDR format, allowed to access
+# PHPMyAdmin. Leave empty to allow access from all IP addresses/networks
+phpmyadmin_allow: []
+
+# Max upload size for nginx and php5
+phpmyadmin_upload_size: '64M'
+
+# Maximum number of PHP5 processes for PHPMyAdmin
+phpmyadmin_php5_max_children: '20'
+
+
