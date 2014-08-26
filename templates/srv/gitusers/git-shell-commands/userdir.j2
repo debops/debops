@@ -1,0 +1,119 @@
+#!/bin/bash
+
+# This file is managed by Ansible, all changes will be lost
+
+set -e
+
+# If no project name is given, display help
+if [ $# -eq 0 ] ; then
+	cat <<-EOF
+	Usage: $(basename ${0}) <repository> [subdirectory]
+
+	Publish <repository> as {{ ansible_fqdn }}/~${USER}/ with optional [subdirectory]
+	EOF
+	exit 1
+fi
+
+if [ -n "${1}" ] ; then
+	# Sanitize repository name
+	repository="${1//[^a-zA-Z0-9\.\/\_-]/}"
+	project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
+else
+	echo "Error: No repository specified" && exit 1
+fi
+
+if [ -d ${HOME}/${project} ] ; then
+	cd "${HOME}/${project}"
+else
+	echo "Error: Repository ${repository} not found" && exit 1
+fi
+
+if [ -n "${2}" ] ; then
+	# Sanitize subdirectory name
+	directory="${2//[^a-zA-Z0-9\.\/\_-]/}"
+	subdirectory=$(echo "${directory}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/^\///i')
+fi
+
+set +e
+currentworktree=$(git config deploy.worktree)
+currentbranch=$(git config deploy.branch)
+currentdomain=$(git config deploy.domain)
+currentsubdirectory=$(git config deploy.subdirectory)
+currentuserdir=$(git config --bool deploy.userdir)
+set -e
+
+worktree="{{ gitusers_default_www_prefix }}/{{ item.0.group | default(item.0.name + gitusers_name_suffix) }}/userdir/public"
+
+if [ -n "${subdirectory}" ] ; then
+	worktree="${worktree}/${subdirectory}"
+fi
+
+if [ ! -d ${worktree} ] ; then
+	mkdir -p ${worktree}
+
+	[ ! -f hooks/post-receive ] && cat > hooks/post-receive <<-EOF
+		#!/bin/sh
+{% if item.0.group is defined and item.0.group %}
+		umask 0002
+{% else %}
+		umask 0022
+{% endif %}
+		worktree=\$(git config deploy.worktree)
+		branch=\$(git config deploy.branch)
+		GIT_WORK_TREE=\${worktree} git checkout -f \${branch}
+	EOF
+
+	chmod +x hooks/post-receive
+fi
+
+git symbolic-ref HEAD refs/heads/${currentbranch:-master}
+git config deploy.worktree ${worktree}
+git config deploy.branch ${currentbranch:-master}
+if [ -n "${subdirectory}" ] ; then
+	git config deploy.subdirectory ${subdirectory}
+else
+	set +e
+	git config --unset-all deploy.subdirectory
+	set -e
+fi
+git config --bool deploy.userdir true
+set +e
+git config --unset-all deploy.domain
+set -e
+
+if [ -z "${currentuserdir}" ] ; then
+	if [ -n "${currentworktree}" ] ; then
+		cat <<-EOF
+		Previous work tree:	${currentworktree}
+		EOF
+	fi
+	cat <<-EOF
+	New work tree:		${worktree}
+	Active branch:		${currentbranch:-master}
+	Current address:	{{ ansible_fqdn }}/~${USER}/${subdirectory}
+	EOF
+	exit 0
+else
+	if [[ "${currentworktree}" != "${worktree}" ]] ; then
+		if [ -n "${currentworktree}" ] ; then
+			cat <<-EOF
+			Previous work tree:	${currentworktree}
+			EOF
+		fi
+		cat <<-EOF
+		New work tree:		${worktree}
+		Active branch:		${currentbranch:-master}
+		Current address:	{{ ansible_fqdn }}/~${USER}/${subdirectory}
+		EOF
+		exit 0
+	else
+		cat <<-EOF
+		Current work tree:	${currentworktree}
+		Current branch:		${currentbranch}
+		Current address:	{{ ansible_fqdn }}/~${USER}/${currentsubdirectory}
+		EOF
+		exit 0
+	fi
+fi
+
+

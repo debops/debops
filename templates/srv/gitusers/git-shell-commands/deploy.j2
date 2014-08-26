@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# This file is managed by Ansible, all changes will be lost
+
+set -e
+
+# If no project name is given, display help
+if [ $# -eq 0 ] ; then
+	cat <<-EOF
+	Usage: $(basename ${0}) <repository> [branch]
+
+	Deploy <repository> to current work tree from master branch or [branch]
+	If [branch] is specified, set it as default branch
+	EOF
+	exit 1
+fi
+
+# Sanitize repository name
+repository="${1//[^a-zA-Z0-9\.\/\_-]/}"
+project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
+
+# Sanitize branch name
+branch="${2//[^a-zA-Z0-9\.\_-]/}"
+
+if [ -d ${project} ] ; then
+	cd "${HOME}/${project}"
+
+	set +e
+	currentworktree=$(git config deploy.worktree)
+	currentbranch=$(git config deploy.branch)
+	currentdomain=$(git config deploy.domain)
+	currentsubdirectory=$(git config deploy.subdirectory)
+	currentuserdir=$(git config --bool deploy.userdir)
+	set -e
+
+	if [ -n "${branch}" ] ; then
+		if $(git show-ref --verify --quiet "refs/heads/${branch}") ; then
+			git config deploy.branch ${branch}
+			echo "Branch ${branch} set as default"
+		else
+			echo "Error: Branch ${branch} not found" && exit 1
+		fi
+	fi
+
+	if [ -z "${currentworktree}" ] ; then
+		echo "Error: No work tree specified" && exit 1
+	fi
+
+	if [ -x ./hooks/post-receive ] ; then
+		./hooks/post-receive
+		echo "Deployed ${repository}:${branch:-${currentbranch}} to ${currentworktree}"
+	else
+		echo "Error: Deploy script in ${repository} missing, cannot deploy" && exit 1
+	fi
+else
+	echo "Error: No repository named ${repository}" && exit 1
+fi
+
+
