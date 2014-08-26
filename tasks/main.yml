@@ -1,0 +1,15 @@
+---
+
+- include: setup_environment.yml
+- include: setup_deploy_key.yml
+- include: deploy_owncloud.yml
+
+- include: configure_mysql.yml
+  when: owncloud_database is defined and owncloud_database == 'mysql'
+
+- include: configure_postgresql.yml
+  when: owncloud_database is defined and owncloud_database == 'postgresql'
+
+- include: configure_owncloud.yml
+
+

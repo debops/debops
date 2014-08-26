@@ -1,0 +1,27 @@
+---
+
+- name: Install packages required for ownCloud
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items: [ 'php5-sqlite', 'php5-curl', 'php5-gd', 'php-xml-parser', 'php5-intl', 'php5-mcrypt', 'smbclient', 'python-httplib2' ]
+  tags: [ 'owncloud', 'packages' ]
+
+- name: Create ownCloud group
+  group: name={{ owncloud_group }} system=yes state=present
+  tags: owncloud
+
+- name: Create ownCloud user
+  user: name={{ owncloud_user }} group={{ owncloud_group }} home={{ owncloud_home }}
+        shell=/bin/sh comment="OwnCloud" system=yes state=present
+        generate_ssh_key=yes ssh_key_bits=2048 ssh_key_type=rsa
+        ssh_key_comment='{{ owncloud_user }}@{{ ansible_hostname }}'
+  tags: owncloud
+
+- name: Create ownCloud data directory
+  file: path={{ owncloud_data_path }} state=directory owner={{ owncloud_user }} group={{ owncloud_group }} mode=0770
+  tags: owncloud
+
+- name: Create ownCloud deployment directory
+  file: path={{ owncloud_deploy_path }} state=directory owner={{ owncloud_user }} group={{ owncloud_group }} mode=0751
+  tags: owncloud
+
+
