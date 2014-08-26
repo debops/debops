@@ -1,0 +1,14 @@
+# This file is managed by Ansible, all changes will be lost
+
+{% if nfs_simple is defined and nfs_simple %}
+{% for directory in nfs_simple %}
+{{ nfs_simple_exports }}/{{ directory }}		{{ nfs_simple_hostname }}({{ nfs_simple_options }})
+{% endfor %}
+{% endif %}
+{% if nfs_server_exports is defined and nfs_server_exports %}
+{% for line in nfs_server_exports %}
+{{ line }}
+{% endfor %}
+{% endif %}
+
+

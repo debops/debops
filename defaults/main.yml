@@ -1,0 +1,34 @@
+---
+# role: nfs (Network Filesystem)
+
+
+# Enable to configure host as NFS server
+nfs_server: False
+
+# Define on NFS clients which server to use
+#nfs_host: 'nfs.{{ ansible_domain }}'
+
+# List of simple NFS shares, they will be created automatically
+# on NFS server: /srv/nfs/{{ item }}/
+# on NFS client: /media/nfs/{{ item }}/
+#nfs_simple:
+#  - 'home'
+#  - 'usr'
+
+# Options for simple NFS shares
+nfs_simple_exports: '/srv/nfs'
+nfs_simple_mounts: '/media/nfs'
+nfs_simple_hostname: '192.168.0.0/16'
+nfs_simple_options: 'rw,sync,subtree_check,root_squash'
+
+# Allow these networks and hosts to connect to NFS server
+nfs_server_allow:
+  - '10.0.0.0/8'
+  - '172.16.0.0/12'
+  - '192.168.0.0/16'
+
+# List of custom NFS exports
+#nfs_server_exports:
+#  - '/home  192.168.0.0/16(rw,sync,subtree_check,root_squash)'
+#  - '/usr   192.168.0.0/16(rw,sync,subtree_check,root_squash)'
+
