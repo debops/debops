@@ -1,0 +1,18 @@
+---
+
+- name: Create random temporary directory to store archive
+  command: mktemp -d
+  register: tempdir
+
+- name: Archive sshd directory
+  shell: tar -c -z -f {{ tempdir.stdout }}/ssh.tar.gz /etc/ssh/ssh_host_*
+  when: tempdir is defined and tempdir
+
+- name: Upload archived ssh directory
+  fetch: src={{ tempdir.stdout }}/ssh.tar.gz dest={{ secret }}/storage/tar/{{ ansible_fqdn }}/ssh/ flat=yes
+  when: secret is defined and secret and tempdir is defined and tempdir
+
+- name: Remove temporary directory
+  file: path={{ tempdir.stdout }} state=absent
+  when: tempdir is defined and tempdir
+
