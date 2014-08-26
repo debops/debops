@@ -1,0 +1,37 @@
+---
+
+dependencies:
+
+  - role: debops.secret
+
+  - role: debops.etc_services
+
+  - role: debops.ruby
+
+  - role: debops.redis
+
+  - role: debops.mysql
+    when: (gitlab_ci_dependencies is defined and gitlab_ci_dependencies) and
+          (gitlab_ci_database is defined and gitlab_ci_database and gitlab_ci_database == 'mysql')
+
+    mysql_databases:
+      - name: '{{ gitlab_ci_database_config[gitlab_ci_database].database }}'
+        state: 'present'
+
+    mysql_users:
+      - name: '{{ gitlab_ci_database_config[gitlab_ci_database].username }}'
+        host: '{{ gitlab_ci_database_config[gitlab_ci_database].hostname }}'
+        priv: '{{ gitlab_ci_database_config[gitlab_ci_database].database }}.*:ALL'
+        state: 'present'
+
+  - role: debops.postgresql
+    when: (gitlab_ci_dependencies is defined and gitlab_ci_dependencies) and
+          (gitlab_ci_database is defined and gitlab_ci_database and gitlab_ci_database == 'postgresql')
+
+  - role: debops.nginx
+    nginx_servers: [ '{{ gitlab_ci_nginx_server }}' ]
+    nginx_upstreams: [ '{{ gitlab_ci_nginx_upstream }}' ]
+    when: (gitlab_ci_dependencies is defined and gitlab_ci_dependencies)
+    tags: nginx
+
+

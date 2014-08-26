@@ -1,13 +1,13 @@
-## ginas is not a server
+## DebOps - Open Source infrastructure
 
-[![Travis CI](https://travis-ci.org/ginas/ginas.png?branch=master)](https://travis-ci.org/ginas/ginas) [![Flattr this project](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=drybjed&url=https://github.com/ginas/ginas/&title=ginas&language=&tags=github&category=software)
+[![Travis CI](https://travis-ci.org/ginas/ginas.png?branch=master)](https://travis-ci.org/ginas/ginas)
 
-ginas is a set of [Ansible](http://ansible.com/) playbooks designed to create
+[DebOps](http://debops.org/) is a set of [Ansible](http://ansible.com/) playbooks designed to create
 and maintain a datacenter based on [Debian GNU/Linux](http://debian.org/)
 operating system. It is designed to be very flexible and automatically adapt
 to whatever environment you throw at it - whether these are real, hardware
 servers, KVM / VirtualBox / VMWare virtual machines, or OpenVZ / LXC
-containers - ginas should manage them just as easily.
+containers - DebOps should manage them just as easily.
 
 ### Features
 
@@ -36,8 +36,8 @@ containers - ginas should manage them just as easily.
 
 It's hard to create a screenshot of what Linux server really looks like, so
 instead here you can see a gallery of what Ansible roles are currently
-included in ginas and what's their relationship with each other. Below you can
-see a basic structure of the main ginas playbook (click on the image to see
+included in DebOps and what's their relationship with each other. Below you can
+see a basic structure of the main DebOps playbook (click on the image to see
 it in full size):
 
 [![ginas at a glance](http://i.imgur.com/4fsJiRI.png)](http://i.imgur.com/4fsJiRI.png)
@@ -56,7 +56,7 @@ necessarily like this particular implementation, I suggest that you check out
 other similar projects:
 
 - [al3x/sovereign](https://github.com/al3x/sovereign): an orginal inspiration
-  for ginas, playbook with multiple services focused on privacy and personal
+  for DebOps, playbook with multiple services focused on privacy and personal
   freedom. Based on [Debian 7](https://www.debian.org/releases/wheezy/)
 
 - [edx/configuration](https://github.com/edx/configuration): allows you to

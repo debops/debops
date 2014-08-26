@@ -10,10 +10,10 @@ defined?(GUI) or GUI = false
 # Default memory size in MB
 defined?(RAM) or RAM = 1024
 
-# ginas inventory
-defined?(GINAS_INVENTORY) or GINAS_INVENTORY = "single"
+# DebOps inventory
+defined?(DEBOPS_INVENTORY) or DEBOPS_INVENTORY = "single"
 
-# Name of a symlink to ginas inventory in main project directory
+# Name of a symlink to DebOps inventory in main project directory
 defined?(CURRENT_INVENTORY) or CURRENT_INVENTORY = "inventory-vagrant"
 
 # Network configuration
@@ -31,7 +31,7 @@ defined?(DEFAULT_SSH_USERNAME) or DEFAULT_SSH_USERNAME = 'vagrant'
 defined?(DEFAULT_SSH_ID_RSA)   or DEFAULT_SSH_ID_RSA   = 'contrib/vagrant/ssh/id_rsa_insecure'
 
 # Ansible configuration
-defined?(DEFAULT_ANSIBLE_INVENTORY) or DEFAULT_ANSIBLE_INVENTORY = "contrib/vagrant/inventory-" + GINAS_INVENTORY + "/ansible"
+defined?(DEFAULT_ANSIBLE_INVENTORY) or DEFAULT_ANSIBLE_INVENTORY = "contrib/vagrant/inventory-" + DEBOPS_INVENTORY + "/ansible"
 defined?(DEFAULT_ANSIBLE_PLAYBOOK)  or DEFAULT_ANSIBLE_PLAYBOOK  = "playbooks/site.yml"
 
 
@@ -39,12 +39,12 @@ defined?(DEFAULT_ANSIBLE_PLAYBOOK)  or DEFAULT_ANSIBLE_PLAYBOOK  = "playbooks/si
 File.chmod(0600, DEFAULT_SSH_ID_RSA)
 
 # Remove symlink to incorrect inventory
-if File.symlink?(CURRENT_INVENTORY) and File.readlink(CURRENT_INVENTORY) != "contrib/vagrant/inventory-" + GINAS_INVENTORY then
+if File.symlink?(CURRENT_INVENTORY) and File.readlink(CURRENT_INVENTORY) != "contrib/vagrant/inventory-" + DEBOPS_INVENTORY then
   File.unlink(CURRENT_INVENTORY)
 end
 
-# Create symlink to current inventory for ginas *.sh scripts
-not File.symlink?(CURRENT_INVENTORY) and File.symlink("contrib/vagrant/inventory-" + GINAS_INVENTORY, CURRENT_INVENTORY)
+# Create symlink to current inventory for DebOps *.sh scripts
+not File.symlink?(CURRENT_INVENTORY) and File.symlink("contrib/vagrant/inventory-" + DEBOPS_INVENTORY, CURRENT_INVENTORY)
 
 # Create symlink to 'site.sh' script for Vagrant inventory
 if File.executable?("site.sh") then
@@ -79,7 +79,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     master.vm.network :private_network, ip: NETWORK + "2", :netmask => NETMASK
 
     master.vm.synced_folder "", "/vagrant", disabled: true
-    master.vm.synced_folder "", "/home/vagrant/ginas"
+    master.vm.synced_folder "", "/home/vagrant/debops"
 
     config.vm.provision "ansible" do |ansible|
       ansible.host_key_checking = "false"

@@ -1,3 +1,49 @@
+DebOps changelog
+================
+
+Yup, we're moving.
+
+## Changelog for 26 August 2014
+
+### ginas is renamed to DebOps
+
+Time for another massive commit! :-) This time, we are changing the name of the
+project to [DebOps](http://debops.org/). This is just the first of many changes
+which will come gradually - I will try to keep the playbook operational at
+every step, that's why roles are renamed at the very beginning of the move. In
+the future each role will be moved to it's own git repository, and will be
+published on [Ansible Galaxy](http://galaxy.ansible.com/) but playbook itself
+shouldn't even notice that change.
+
+This patch only renames the role directories themselves and updates all of the
+references to them in playbooks, role dependencies, etc. Name of the old
+project might still be in the README files and other similar, commented out
+places. We will get to them later.
+
+### ginas is renamed to debops
+
+Again, this name change means, that **you need to update your inventory** - all
+of the group names like `[ginas_nginx]` have been renamed to `[debops_nginx]`.
+If you don't update your inventory now, the best case scenario is that only
+roles from the common playbook will run for you, the worst case is total
+destruction of the Solar System and surrounding area. So please, update your
+inventories.
+
+There are some other cases where filenames of scripts have been changed (for
+example scripts that help generate LXC and OpenVZ containers), but that
+shouldn't affect normal operations.
+
+### DebOps.org is born
+
+Once again, I'm sorry for the inconvenience, but I hope that you will like the
+change and everything will turn out for the best! :-) I hope that you like the
+new name, too. As for the domain and what will be available on it? Who knows...
+
+If you want to come by and say hi to the developers, feel free to join
+`#debops` IRC channel on FreeNode.
+
+***
+
 ginas changelog
 ===============
 

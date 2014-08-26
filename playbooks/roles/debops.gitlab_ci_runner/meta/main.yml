@@ -1,0 +1,24 @@
+---
+
+dependencies:
+
+  - role: debops.ruby
+
+  - role: debops.ansible
+    when: "'ansible' in gitlab_ci_runner_dependencies"
+
+  - role: debops.nodejs
+    when: "'nodejs' in gitlab_ci_runner_dependencies"
+
+  - role: debops.mysql
+    mysql_users:
+      - name: '{{ gitlab_ci_runner_mysql_user }}'
+        priv: '{{ gitlab_ci_runner_mysql_database_prefix }}_%.*:ALL'
+        password: "{{ gitlab_ci_runner_mysql_password }}"
+        host: 'localhost'
+        state: 'present'
+    when: "'mysql' in gitlab_ci_runner_dependencies"
+
+  - role: debops.postgresql
+    when: "'postgresql' in gitlab_ci_runner_dependencies"
+
