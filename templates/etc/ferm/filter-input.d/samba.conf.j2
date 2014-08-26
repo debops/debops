@@ -1,0 +1,19 @@
+# This file is managed by Ansible, all changes will be lost
+
+{% if samba_allow is defined and samba_allow %}
+protocol udp dport (netbios-ns netbios-dgm) {
+{% for address in samba_allow %}
+	saddr {{ address }} ACCEPT;
+{% endfor %}
+}
+protocol tcp dport (netbios-ssn microsoft-ds) {
+{% for address in samba_allow %}
+	saddr {{ address }} ACCEPT;
+{% endfor %}
+}
+{% else %}
+protocol udp dport (netbios-ns netbios-dgm) ACCEPT;
+protocol tcp dport (netbios-ssn microsoft-ds) ACCEPT;
+{% endif %}
+
+

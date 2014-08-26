@@ -1,0 +1,36 @@
+---
+
+- name: Install Samba packages
+  apt: pkg={{ item }} state=latest install_recommends=no
+  with_items: [ 'samba', 'samba-common', 'samba-common-bin' ]
+
+- name: Create root Samba directories
+  file: path={{ item }} state=directory owner=root group=root mode=0751
+  with_items: [ '{{ samba_path }}', '{{ samba_homes_path }}', '{{ samba_shares_path }}' ]
+
+- name: Setup samba-homedir.sh script
+  template: src=usr/local/sbin/samba-homedir.sh.j2
+            dest=/usr/local/sbin/samba-homedir.sh
+            owner=root group=root mode=0755
+
+- name: Configure Samba server
+  template: src=etc/samba/smb.conf.j2
+            dest=/etc/samba/smb.conf
+            owner=root group=root mode=0644
+  notify: Reload samba
+
+- name: Load iptables NetBIOS helper kernel module
+  modprobe: name=nf_conntrack_netbios_ns state=present
+  when: samba_iptables is defined and samba_iptables
+
+- name: Add iptables NetBIOS helper module to /etc/modules
+  lineinfile: dest=/etc/modules regexp='^nf_conntrack_netbios_ns'
+              state=present line='nf_conntrack_netbios_ns'
+  when: samba_iptables is defined and samba_iptables
+
+- name: Configure firewall for Samba server
+  template: src=etc/ferm/filter-input.d/samba.conf.j2
+            dest=/etc/ferm/filter-input.d/samba.conf
+            owner=root group=root mode=0644
+  notify: Restart ferm
+
