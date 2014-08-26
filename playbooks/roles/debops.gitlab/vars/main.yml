@@ -1,0 +1,222 @@
+---
+
+# ---- System configuration ----
+
+# System user, group and home directory
+gitlab_user: 'git'
+gitlab_group: 'git'
+gitlab_home: '/srv/users/git'
+
+
+# ---- gitlab-shell & GitLab CE sources ----
+
+# Directory with GitLab source (bare) repositories
+gitlab_sources: '{{ gitlab_home }}/src/gitlab.com/gitlab-org'
+
+# Address of the git server to clone GitLab repositories from
+gitlab_source_address: 'https://gitlab.com/gitlab-org/'
+
+# gitlab-shell and GitLab CE repository names
+gitlab_source_repository:
+  shell: 'gitlab-shell.git'
+  ce:    'gitlab-ce.git'
+
+# Mapping of "official" version to git branches of gitlab-shell and GitLab CE
+gitlab_version_map:
+  '6.7':
+    shell: 'v1.9.1'
+    ce:    '6-7-stable'
+
+  '6.8':
+    shell: 'v1.9.3'
+    ce:    '6-8-stable'
+
+  '6.9':
+    shell: 'v1.9.4'
+    ce:    '6-9-stable'
+
+  '7.0':
+    shell: 'v1.9.6'
+    ce:    '7-0-stable'
+
+  '7.1':
+    shell: 'v1.9.6'
+    ce:    '7-1-stable'
+
+
+# ---- gitlab-shell & GitLab CE configuration ----
+
+# Mapping of "official" version to directories with configuration templates in
+# gitlab role. GitLab 6.5 works with configuration from GitLab 6.6. Next GitLab
+# versions will use 'stable' symlinks unless configuration will have to change
+# - in that case, new directories with changed configuration will be created and
+# symlinks will be updated to mach the new stable release
+gitlab_config_map:
+  '6.7':
+    shell: 'stable'
+    ce:    '6-7-stable'
+
+  '6.8':
+    shell: 'stable'
+    ce:    'stable'
+
+  '6.9':
+    shell: 'stable'
+    ce:    'stable'
+
+  '7.0':
+    shell: 'stable'
+    ce:    'stable'
+
+  '7.1':
+    shell: 'stable'
+    ce:    'stable'
+
+# sha1sum checksums of example configuration files from gitlab-shell and GitLab
+# CE repositories according to git branches. When checksums differ, that means
+# that configuration files in git repository have changed and templates in
+# gitlab role might need to be updated (this is not always the case, for
+# example configuration files from 6.5 to 6.6 have only changed comments,
+# that's why newer configuration files work with older version). In any case,
+# Ansible will stop processing the role when it detects the checksum change, and
+# new checksum needs to be updated here to continue.
+#
+# Example steps to check for changes in configuration files:
+#    git clone https://gitlab.com/gitlab-org/gitlab-ce.git && cd gitlab-ce
+#    git checkout 6-5-stable
+#    git checkout 6-6-stable
+#    git diff 6-5-stable 6-6-stable config/gitlab.yml.example
+gitlab_checksums:
+  shell:
+    'v1.9.1':
+      config: '82958869656cbf5c9fa866bb575c6456b5a39b60'
+
+    'v1.9.3':
+      config: '82958869656cbf5c9fa866bb575c6456b5a39b60'
+
+    'v1.9.4':
+      config: '82958869656cbf5c9fa866bb575c6456b5a39b60'
+
+    'v1.9.6':
+      config: '82958869656cbf5c9fa866bb575c6456b5a39b60'
+
+  ce:
+    '6-7-stable':
+      database:
+        mysql:      'c65c7f983db549155fe67b6d3345ae8b0b96c399'
+        postgresql: '090093b1bf6bacb9f1d32266ad2b1aac56b31236'
+      gitlab:       'c902c7750956e32ee2dd0328325bb0ef03961a4d'
+      unicorn:      '6ad72f0127a8b99af123f5a137f4e1af49c4585a'
+      rack_attack:  '6479dc1a57a7c1905535d59446a370315014e3a3'
+      default:      '365a2ecee8b9266f70db5cc0c9dfa47556eb33f3'
+      logrotate:    'abd8ba666ad8a1834888eedf52371ca4915a714d'
+
+    '6-8-stable':
+      database:
+        mysql:      'acdded987e68662aa9549034e760ae74fb79e7cf'
+        postgresql: '090093b1bf6bacb9f1d32266ad2b1aac56b31236'
+      gitlab:       '3bf66c3c3d48d0cad651d9eee113a2a130f4e92b'
+      unicorn:      '6ad72f0127a8b99af123f5a137f4e1af49c4585a'
+      rack_attack:  '6479dc1a57a7c1905535d59446a370315014e3a3'
+      default:      '365a2ecee8b9266f70db5cc0c9dfa47556eb33f3'
+      logrotate:    'abd8ba666ad8a1834888eedf52371ca4915a714d'
+
+    '6-9-stable':
+      database:
+        mysql:      'acdded987e68662aa9549034e760ae74fb79e7cf'
+        postgresql: '090093b1bf6bacb9f1d32266ad2b1aac56b31236'
+      gitlab:       'bdb49dc9654705dc045bc683393c750368f9aad3'
+      unicorn:      '9abc4417dc38f341b3f3725cbdb12ff21d12ca78'
+      rack_attack:  '6479dc1a57a7c1905535d59446a370315014e3a3'
+      default:      '365a2ecee8b9266f70db5cc0c9dfa47556eb33f3'
+      logrotate:    'abd8ba666ad8a1834888eedf52371ca4915a714d'
+
+    '7-0-stable':
+      database:
+        mysql:      'acdded987e68662aa9549034e760ae74fb79e7cf'
+        postgresql: '090093b1bf6bacb9f1d32266ad2b1aac56b31236'
+      gitlab:       '775e1f2cf8b5fe4b164f387c6cfe0e4c4117f203'
+      unicorn:      'ab92224eaf8e377178fc6f5f629afc6072583b0a'
+      rack_attack:  '6479dc1a57a7c1905535d59446a370315014e3a3'
+      default:      '365a2ecee8b9266f70db5cc0c9dfa47556eb33f3'
+      logrotate:    'abd8ba666ad8a1834888eedf52371ca4915a714d'
+
+    '7-1-stable':
+      database:
+        mysql:      'acdded987e68662aa9549034e760ae74fb79e7cf'
+        postgresql: 'b0a3eb2e13c96f1835462470f744be7ed3791d86'
+      gitlab:       '251aac964449315e8038f74ba8a3177b64e1a7f1'
+      unicorn:      'ab92224eaf8e377178fc6f5f629afc6072583b0a'
+      rack_attack:  '6479dc1a57a7c1905535d59446a370315014e3a3'
+      default:      '365a2ecee8b9266f70db5cc0c9dfa47556eb33f3'
+      logrotate:    'abd8ba666ad8a1834888eedf52371ca4915a714d'
+
+# ---- GitLab CE installation ----
+
+# Arguments to use with 'bundle install' for different database servers
+gitlab_ce_bundle_install_without:
+  'mysql':      'development test aws postgres'
+  'postgresql': 'development test aws mysql'
+
+
+# ---- Database ----
+
+# GitLab MySQL database configuration. Password will be empty by default, or
+# retrieved from "secret" directory, if it is enabled
+gitlab_database_config:
+  mysql:
+    hostname: 'localhost'
+    username: 'git'
+    database: 'gitlabhq_production'
+  postgresql:
+    hostname: 'localhost'
+    username: 'git'
+    database: 'gitlabhq_production'
+    socket:   '/var/run/postgresql'
+    port:     '5432'
+
+
+# ---- Web server ----
+
+# Unicorn port on localhost interface for GitLab
+gitlab_unicorn_port: '8082'
+
+# nginx upstream configuration for gitlab service
+gitlab_nginx_upstream:
+  enabled: True
+  name: 'gitlab'
+  server: 'unix:{{ gitlab_home }}/gitlab/tmp/sockets/gitlab.socket'
+
+# nginx server configuration for GitLab
+gitlab_nginx_server:
+  by_role: 'debops.gitlab'
+  enabled: True
+  default: False
+  name: '{{ gitlab_domain }}'
+  root: '{{ gitlab_home }}/gitlab/public'
+
+  options: |
+    client_max_body_size {{ gitlab_nginx_client_max_body_size }};
+    error_page 502 /502.html;
+
+  location:
+    '/': |
+      try_files $uri $uri/index.html $uri.html @gitlab;
+
+    '~ ^/(assets)/': |
+      root {{ gitlab_home }}/gitlab/public;
+      gzip_static on;
+      expires max;
+      add_header Cache-Control public;
+
+    '@gitlab': |
+      gzip off;
+      proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
+      proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
+      proxy_redirect     off;
+      proxy_set_header   X-Forwarded-Proto $scheme;
+      proxy_set_header   Host              $http_host;
+      proxy_set_header   X-Real-IP         $remote_addr;
+      proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+      proxy_pass         http://gitlab;
+

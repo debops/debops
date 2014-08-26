@@ -1,0 +1,24 @@
+---
+
+dependencies:
+
+  - role: debops.secret
+
+  - role: debops.ferm
+    ferm_input_list:
+
+      - type: 'dport_accept'
+        dport: [ 'mysql' ]
+        saddr: '{{ mysql_mysqld_allow }}'
+        weight: '50'
+        filename: 'mysql_dependency_accept'
+
+  - role: debops.tcpwrappers
+    tcpwrappers_allow:
+
+      - daemon: 'mysqld'
+        client: '{{ mysql_mysqld_allow }}'
+        weight: '50'
+        filename: 'mysql_dependency_allow'
+        comment: 'Allow remote connections to MySQL server'
+

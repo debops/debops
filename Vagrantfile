@@ -1,16 +1,16 @@
 # -*- mode: ruby -*-
 # vim: ft=ruby
 
-# Vagrantfile for ginas project
-# https://github.com/ginas/ginas/
+# Vagrantfile for DebOps project
+# http://debops.org/
 
-# Default ginas inventory
-defined?(GINAS_INVENTORY) or GINAS_INVENTORY = "single"
-#defined?(GINAS_INVENTORY) or GINAS_INVENTORY = "lemp"
+# Default DebOps inventory
+defined?(DEBOPS_INVENTORY) or DEBOPS_INVENTORY = "single"
+#defined?(DEBOPS_INVENTORY) or DEBOPS_INVENTORY = "lemp"
 
 # Load Vagrantfile from selected Vagrant inventory
 begin
-    load "contrib/vagrant/inventory-" + GINAS_INVENTORY + "/Vagrantfile"
+    load "contrib/vagrant/inventory-" + DEBOPS_INVENTORY + "/Vagrantfile"
 rescue LoadError
     # ignore
 end

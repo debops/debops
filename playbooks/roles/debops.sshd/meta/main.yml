@@ -1,0 +1,32 @@
+---
+
+dependencies:
+
+  - role: debops.ferm
+    ferm_input_list:
+
+      - type: 'dport_accept'
+        dport: [ 'ssh' ]
+        saddr: '{{ sshd_allow + sshd_group_allow + sshd_host_allow }}'
+        weight: '30'
+        filename: 'sshd_dependency_accept'
+
+      - type: 'dport_limit'
+        dport: [ 'ssh' ]
+        weight: '30'
+        filename: 'sshd_dependency_limit'
+        disabled: '{{ sshd_unlimited_access }}'
+
+
+  - role: debops.tcpwrappers
+    tcpwrappers_allow:
+
+      - daemon: 'sshd'
+        client: '{{ sshd_allow + sshd_group_allow + sshd_host_allow }}'
+        weight: '30'
+        filename: 'sshd_dependency_allow'
+        comment: 'Allow SSH connections from these hosts (via sshd role dependency)'
+
+  - role: debops.sshkeys
+
+

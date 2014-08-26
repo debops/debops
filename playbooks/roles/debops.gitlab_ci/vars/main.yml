@@ -1,0 +1,111 @@
+---
+
+# ---- System configuration ----
+
+# System user, group and home directory
+gitlab_ci_user: 'gitlab-ci'
+gitlab_ci_group: 'gitlab-ci'
+gitlab_ci_home: '/srv/users/gitlab-ci'
+
+
+# ---- GitLab CI source ----
+
+# Directory with GitLab CI source (bare) repositories
+gitlab_ci_sources: '{{ gitlab_ci_home }}/src/gitlab.com/gitlab-org'
+
+# Address of the git server to clone GitLab CI repositories from
+gitlab_ci_source_address: 'https://gitlab.com/gitlab-org/'
+
+# GitLab CI repository name
+gitlab_ci_source_repository: 'gitlab-ci.git'
+
+# Mapping of "official" version to git branches of GitLab CI
+gitlab_ci_version_map:
+  '5.0': '5-0-stable'
+
+
+# sha1sum checksums of example configuration files from GitLab CI repository
+# according to git branches. When checksums differ, that means that
+# configuration files in git repository have changed and templates in gitlab_ci
+# role might need to be updated. In any case, Ansible will stop processing the
+# role when it detects the checksum change, and new checksum needs to be
+# updated here to continue.
+#
+# Example steps to check for changes in configuration files:
+#    git clone https://gitlab.com/gitlab-org/gitlab-ci.git && cd gitlab-ci
+#    git checkout 4-0-stable
+#    git checkout 5-0-stable
+#    git diff 4-0-stable 5-0-stable config/application.yml.example
+gitlab_ci_checksums:
+  database:
+    mysql:      '35e93bdcf641e3c7adb0f5e106ad3940d81aeee9'
+    postgresql: '0c765c0db24387dcad6bf023eef2b0d6ae7854f2'
+  application:  'd168c899d6bba31b668e7a78e3ccff24c64e5e63'
+  unicorn:      '83f2dc70d4f1d0179ef2cdbda0a5917f9216adb3'
+  default:      '1d7f9dc319c17096b0a04d597ef090e9bdbc3659'
+
+
+# ---- GitLab CI installation ----
+
+# Arguments to use with 'bundle install' for different database servers
+gitlab_ci_bundle_install_without:
+  'mysql':      'development test postgres'
+  'postgresql': 'development test mysql'
+
+
+# ---- Database ----
+
+# GitLab CI MySQL database configuration. Password will be empty by default, or
+# retrieved from "secret" directory, if it is enabled
+gitlab_ci_database_config:
+  mysql:
+    hostname: 'localhost'
+    username: 'gitlab-ci'
+    database: 'gitlab_ci_production'
+  postgresql:
+    hostname: 'localhost'
+    username: 'gitlab-ci'
+    database: 'gitlab_ci_production'
+    socket:   '/var/run/postgresql'
+    port:     '5432'
+
+
+# ---- Web server ----
+
+# Unicorn port on localhost interface for GitLab CI
+gitlab_ci_unicorn_port: '8083'
+
+# nginx upstream configuration for gitlab service
+gitlab_ci_nginx_upstream:
+  enabled: True
+  name: 'gitlab-ci'
+  server: 'unix:{{ gitlab_ci_home }}/gitlab-ci/tmp/sockets/gitlab-ci.socket'
+
+# nginx server configuration for GitLab
+gitlab_ci_nginx_server:
+  by_role: 'debops.gitlab_ci'
+  enabled: True
+  default: False
+  name: '{{ gitlab_ci_domain }}'
+  root: '{{ gitlab_ci_home }}/gitlab-ci/public'
+
+  options: |
+    client_max_body_size {{ gitlab_ci_nginx_client_max_body_size }};
+    error_page 502 /502.html;
+
+  location:
+    '/': |
+      try_files $uri $uri/index.html $uri.html @gitlab_ci;
+
+    '@gitlab_ci': |
+      gzip off;
+      proxy_read_timeout {{ gitlab_ci_nginx_proxy_timeout }};
+      proxy_connect_timeout {{ gitlab_ci_nginx_proxy_timeout }};
+      proxy_redirect     off;
+      proxy_set_header   X-Forwarded-Proto $scheme;
+      proxy_set_header   Host              $http_host;
+      proxy_set_header   X-Real-IP         $remote_addr;
+      proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+      proxy_pass         http://gitlab-ci;
+
+

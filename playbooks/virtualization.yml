@@ -1,26 +1,26 @@
 ---
 
 - name: KVM support
-  hosts: ginas_kvm
+  hosts: debops_kvm
   sudo: yes
 
   roles:
-  - { role: ginas.kvm, tags: kvm }
-  - { role: ginas.nat, tags: nat, nat_subnet: 128, nat_interface: br2 }
-  - { role: ginas.dnsmasq, tags: dnsmasq, dnsmasq_subnet: 128, dnsmasq_interface: br2, dnsmasq_domain: 'nat.{{ ansible_fqdn }}' }
+  - { role: debops.kvm, tags: kvm }
+  - { role: debops.nat, tags: nat, nat_subnet: 128, nat_interface: br2 }
+  - { role: debops.dnsmasq, tags: dnsmasq, dnsmasq_subnet: 128, dnsmasq_interface: br2, dnsmasq_domain: 'nat.{{ ansible_fqdn }}' }
 
 - name: LXC support
-  hosts: ginas_lxc
+  hosts: debops_lxc
   sudo: yes
 
   roles:
-  - { role: ginas.nat, tags: nat, nat_subnet: 144, nat_interface: br2 }
-  - { role: ginas.dnsmasq, tags: dnsmasq, dnsmasq_subnet: 144, dnsmasq_interface: br2, dnsmasq_domain: 'nat.{{ ansible_fqdn }}' }
-  - { role: ginas.lxc, tags: lxc }
+  - { role: debops.nat, tags: nat, nat_subnet: 144, nat_interface: br2 }
+  - { role: debops.dnsmasq, tags: dnsmasq, dnsmasq_subnet: 144, dnsmasq_interface: br2, dnsmasq_domain: 'nat.{{ ansible_fqdn }}' }
+  - { role: debops.lxc, tags: lxc }
 
 - name: OpenVZ support
-  hosts: ginas_openvz
+  hosts: debops_openvz
   sudo: yes
 
   roles:
-    - { role: ginas.openvz, tags: openvz }
+    - { role: debops.openvz, tags: openvz }
