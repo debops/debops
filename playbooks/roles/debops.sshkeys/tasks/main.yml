@@ -1,24 +1,33 @@
 ---
 
 - name: Ensure that system-wide authorized_keys directory exists
-  file: path={{ sshkeys_path }} state=directory owner=root group=root mode=0755
+  file:
+    path: '{{ sshkeys_path }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
 - name: Get list of all user accounts
-  shell: getent passwd|cut -f1 -d":"
+  shell: getent passwd | cut -f1 -d":"
   register: sshkeys_users
   changed_when: False
 
 - name: Configure authorized keys for users
-  authorized_key: key='{{ item.key }}' manage_dir=no key_options='{{ item.options | default("") }}'
-                  path={{ sshkeys_path }}/{{ item.user }} user={{ item.user }}
-                  state={{ item.state | default('present') }}
+  authorized_key:
+    key: '{{ item.sshkeys | unique | join("\n") | string }}'
+    manage_dir: False
+    key_options: '{{ item.options | default("") }}'
+    path: '{{ sshkeys_path }}/{{ item.name }}'
+    user: '{{ item.name }}'
+    state: '{{ item.state | default("present") }}'
   with_flattened:
     - sshkeys_list
     - sshkeys_group_list
     - sshkeys_host_list
   when: (item is defined and item) and
-        (item.key is defined and item.key) and
-        (item.user is defined and item.user) and
-        (sshkeys_users is defined and item.user in sshkeys_users.stdout_lines)
+        (item.sshkeys is defined and item.sshkeys) and
+        (item.name is defined and item.name) and
+        (sshkeys_users is defined and item.name in sshkeys_users.stdout_lines)
 
 

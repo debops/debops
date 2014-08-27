@@ -2,6 +2,7 @@
 # role: sshkeys (authorized SSH keys management)
 
 
+# System-wide authorized_keys directory
 sshkeys_path: '/etc/ssh/authorized_keys'
 
 # Lists of authorized_keys entries for users
@@ -11,8 +12,8 @@ sshkeys_path: '/etc/ssh/authorized_keys'
 # List for "global" entries
 sshkeys_list: []
 
-  #- user: 'username'
-  #  key: 'ssh-rsa AAAAB3NzaC1...'
+  #- name: 'username'
+  #  sshkeys: [ 'ssh-rsa AAAAB3NzaC1...', '{{ lookup("file","~/.ssh/id_rsa.pub") }}' ]
   #  options: 'key-options'	# optional
   #  state: 'present'		# optional, choice: present,absent
 
