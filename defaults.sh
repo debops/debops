@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Simple defaults browser for ginas project
-# https://github.com/ginas/ginas/
+# Simple defaults browser for DebOps project
+# http://debops.org/
 
 # Script uses 'view' command from vim package as convinient pager
 

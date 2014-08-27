@@ -5,7 +5,7 @@ This role enables you to have a separate directory on Ansible Controller
 (different than the playbook directory and inventory directory) which can be
 used as a handy "workspace" for other roles.
 
-Some usage examples of this role in [ginas](https://github.com/ginas/ginas/)
+Some usage examples of this role in [DebOps](http://debops.org/)
 include:
 
 - password lookups, either from current role, or using known location of
@@ -101,7 +101,7 @@ playbook at the beginning:
     ---
     - hosts: all
       roles:
-        - role: ginas.secret
+        - role: debops.secret
 
 That will allow all your roles in this and subsequent plays to access `secret`
 variable and use it consistently.
@@ -117,7 +117,7 @@ it:
 
     ---
     dependencies:
-      - role: ginas.secret
+      - role: debops.secret
 
 This will ensure that roles utilizing `secret` variable will be able to access
 it correctly and you don't need to remember to include 'secret' role in all

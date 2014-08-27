@@ -9,7 +9,7 @@ install required version from `testing` repository.
 
 If successful, newly built backported packages will be uploaded to Ansible
 Controller host which then can make these packages available to the rest of the
-Ansible cluster using `ginas.reprepro` role to create and maintain local APT
+Ansible cluster using `debops.reprepro` role to create and maintain local APT
 repository.
 
 `backporter` role is based on instructions from [Simple Backport Creation
@@ -37,7 +37,7 @@ information about role dependencies:
 
     ---
     dependencies:
-      - role: ginas.backporter
+      - role: debops.backporter
         backporter_package: 'foo'
         backporter_version: '1.0'
 
@@ -88,7 +88,7 @@ automatically removed to prevent subseqent reinstalls (you can block that with
 By default, `backporter` role will try to upload created `.deb` packages to
 Ansible Controller host, to a specific directory within the `secret` directory
 tree. This way packages can be used on other hosts within the Ansible cluster
-using `ginas.reprepro` role.
+using `debops.reprepro` role.
 
 To enable this, you need to specify a FQDN hostname of a host within Ansible
 cluster (or a group within that cluster) which will act as an APT cache and
@@ -98,15 +98,15 @@ the inventory, per group or per host), set variable:
     ---
     apt: 'host.example.com`
 
-This variable will tell `ginas.apt` role to configure `apt-cacher-ng` APT cache
+This variable will tell `debops.apt` role to configure `apt-cacher-ng` APT cache
 and `reprepro` repository on specified host, automatically enabling use of
-these services on other hosts within cluster/group. `ginas.reprepro` role will
+these services on other hosts within cluster/group. `debops.reprepro` role will
 download packages from `secret` directory of Ansible Controller and include
 them in local APT repository, which then can be accessed by other hosts within
 the cluster.
 
 You can easily exploit this feature by, for example, creating temporary LXC
-containers using `ginas.lxc` role, building backported `.deb` packages that
+containers using `debops.lxc` role, building backported `.deb` packages that
 you need (by configuring specific Ansible roles in these temporary containers)
 and distributing them among your other hosts using local APT repository.
 Temporary containers can then be removed to reclaim space/IP addresses, etc.
