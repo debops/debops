@@ -4,10 +4,10 @@ This is an Ansible role which configures [smstools](http://smstools3.kekekasvi.c
 package and sets up a TCP -> SMS and mail -> SMS gateway. This role has been
 tested on Debian and should work on Debian-based systems.
 
-Several other roles from [ginas](https://github.com/ginas/ginas/) project are
-used to configure various parts of the SMS gateway ('postfix' role is used to
-create mail -> SMS gateway, 'etc_services', 'ferm' and 'tcpwrappers' are used
-to configure TCP service which can be used by other hosts to send SMS messages
+Several other roles from [DebOps](http://debops.or/) project are used to
+configure various parts of the SMS gateway ('postfix' role is used to create
+mail -> SMS gateway, 'etc_services', 'ferm' and 'tcpwrappers' are used to
+configure TCP service which can be used by other hosts to send SMS messages
 over the network).
 
 ### Usage examples
