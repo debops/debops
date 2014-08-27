@@ -70,14 +70,14 @@ You can use this role in a playbook directly:
     - hosts: ansible_controller
       sudo: True
       roles:
-        - role: ginas.ansible
+        - role: debops.ansible
 
 Or it can be used as a dependency for another role, which for example downloads
 and sets up your playbook:
 
     ---
     dependencies:
-      - role: ginas.ansible
+      - role: debops.ansible
 
 License
 -------
@@ -89,5 +89,5 @@ Author Information
 
 Maciej Delmanowski <drybjed@gmail.com>
 
-This role is part of the [ginas](https://github.com/ginas/ginas/) project.
+This role is part of the [DebOps](http://debops.org/) project.
 

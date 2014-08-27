@@ -17,7 +17,7 @@ configuring it in your inventory for a certain host/group/etc..
 
 dependencies:
 
-  - role: ginas.monit
+  - role: debops.monit
     monit_process_host_list:
       - pid: '/some/pid/path/foo.pid'
         script: '{{ your_role_monit_script }}'
@@ -27,7 +27,7 @@ dependencies:
 #### inventory/hosts
 
 ```
-[ginas_monit]
+[debops_monit]
 somehost
 ```
 
@@ -42,7 +42,7 @@ monit_process_host_list:
 
 - Receive e-mails or SMS notifications of events.
 - Scope your process list by all servers, groups or single hosts.
-- Optionally disable monit. 
+- Optionally disable monit.
 - Configure all of the mail details as you would expect.
   - Check the `defaults/main.yml` file for the details.
 
@@ -52,5 +52,5 @@ monit_process_host_list:
 
 ### Authors
 
-`ginas.monit` was created by:
+`debops.monit` was created by:
 - Nick Janetakis nick.janetakis@gmail.com

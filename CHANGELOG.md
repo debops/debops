@@ -1,7 +1,21 @@
 DebOps changelog
 ================
 
-Yup, we're moving.
+Commit by commit, closing in on perfection...
+
+## Changelog for 28 August 2014
+
+### Updates in sshkeys role
+
+`sshkeys` role has been cleaned up, two variables have been renamed:
+
+- `item.user` is now called `item.name` to use the same naming scheme as other
+  roles;
+- `item.key` is now `item.sshkeys` and is now a list of SSH keys instead of
+  a single key in a string;
+
+These changes bring `sshkeys` role in line with other similar roles like `users`.
+
 
 ## Changelog for 26 August 2014
 

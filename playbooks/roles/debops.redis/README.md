@@ -9,7 +9,7 @@ Below is the bare minimum to get started to setup a few redis servers acting tog
 #### hosts
 
 ```
-[ginas_redis]
+[debops_redis]
 foo
 bar
 baz
@@ -17,14 +17,14 @@ baz
 # In the above example the 'foo' host would be the redis master and everything
 # else would be a slave of that master.
 
-[ginas_redis_sentinel]
+[debops_redis_sentinel]
 qux
 
 # You can have 1 or more sentinels. The sentinel(s) will control your master
 # and slave relationships.
 ```
 
-#### inventory/group_vars/ginas_redis_sentinel.yml
+#### inventory/group_vars/debops_redis_sentinel.yml
 
 ```
 redis_sentinel_bind: ['0.0.0.0']
@@ -35,7 +35,7 @@ redis_sentinel_allow: ['192.168.0.0/16']
 # white lists your local network to allow connections to it.
 ```
 
-#### inventory/group_vars/ginas_redis.yml
+#### inventory/group_vars/debops_redis.yml
 
 ```
 redis_bind: ['0.0.0.0']
@@ -74,6 +74,6 @@ If you want a sentinel server to also act as a redis server you can combine the 
 
 ### Authors
 
-`ginas.redis` was created by:
+`debops.redis` was created by:
 - Nick Janetakis nick.janetakis@gmail.com
 - Maciej Delmanowski drybjed@gmail.com

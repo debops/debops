@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# site.sh: ansible-playbook wrapper for ginas project
+# site.sh: ansible-playbook wrapper for DebOps project
 # Copyright 2014 Maciej Delmanowski <drybjed@gmail.com>
-# Homepage: https://github.com/ginas/ginas/
+# Homepage: http://debops.org/
 
 
 # This program is free software; you can redistribute
