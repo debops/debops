@@ -29,3 +29,56 @@ dependencies:
       - '{{ sks_nginx_upstreams }}'
     when: sks_frontends is defined and inventory_hostname in sks_frontends
     tags: nginx
+
+galaxy_info:
+  author: 'Maciej Delmanowski'
+  description: 'Install and manage SKS Keyserver cluster'
+  company: 'DebOps'
+  license: 'GNU General Public License v3'
+  min_ansible_version: '1.7.0'
+  platforms:
+  - name: Ubuntu
+    versions:
+    - precise
+    - quantal
+    - raring
+    - saucy
+    - trusty
+  - name: Debian
+    versions:
+    - wheezy
+    - jessie
+  categories:
+  - system
+
+meta_info:
+  github_url: "https://github.com/debops/ansible-sks"
+  git_branch: "master"
+  galaxy_id: ""
+
+  travis: False
+
+  license_url: 'https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3)'
+
+  authors:
+    - name:  'Maciej Delmanowski'
+      url: ''
+      email: 'drybjed@gmail.com'
+      twitter: 'drybjed'
+      github: 'drybjed'
+
+  synopsis: |
+    [SKS Keyserver](https://sks-keyservers.net/) is an OpenPGP/GnuPG key
+    server. This role allows you to install and manage one or more keyservers
+    in a cluster. Specified host (by default first host in `[debops_sks]`
+    Ansible group) will also be configured as a web frontend to the cluster
+    (`nginx` will be used as the frontend webserver).
+    
+    You can use `debops.sks` role to create your own keyserver pool (and in
+    extension your own OpenPGP Web of Trust) or [connect to an existing
+    pool](http://www.keysigning.org/sks/). In the latter case, role supports an
+    option to not initialize the database by default, in which case you can
+    seed your local key database from a keyserver dump (which is a preferred
+    option of connecting to the existing pool because of the size of existing
+    key database dumps).
+

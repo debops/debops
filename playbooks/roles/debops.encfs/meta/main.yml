@@ -1,9 +1,12 @@
 ---
 
+dependencies: []
+
 galaxy_info:
   author: 'Maciej Delmanowski'
-  description: 'Manage directories encrypted with encfs, either on localhost or remote hosts, with either GPG-encrypted keyfile or password'
-  license: 'GPLv3'
+  description: 'Manage directories encrypted with encfs'
+  company: 'DebOps'
+  license: 'GNU General Public License v3'
   min_ansible_version: '1.4'
 
   platforms:
@@ -26,6 +29,102 @@ galaxy_info:
   categories:
   - system
 
-dependencies: []
+meta_info:
+  github_url: "https://github.com/debops/ansible-encfs"
+  git_branch: "master"
+  galaxy_id: ""
 
+  beta: True
+  travis: False
+
+  license_url: 'https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3)'
+
+  authors:
+    - name:  'Maciej Delmanowski'
+      url: ''
+      email: 'drybjed@gmail.com'
+      twitter: 'drybjed'
+      github: 'drybjed'
+
+  synopsis: |
+    Ansible role `encfs` allows you to create and manage directories using
+    [EncFS](https://en.wikipedia.org/wiki/EncFS), FUSE-based encrypted virtual
+    filesystem.
+    
+    Primary mode of operation is to provide encrypted and secure storage space
+    for passwords and sensitive files on localhost (Ansible Controller) using
+    GPG-encrypted keyfile as password for EncFS. Access to 'root' account (via
+    sudo) is only required during a setup phase to install 'fuse' and 'encfs'
+    packages, and fix `/dev/fuse` access permissions; otherwise role works with
+    a regular user account.
+    
+    Role supports directories in remote hosts encrypted using a password with
+    optional "passfile" as a transport for passwords in transit.
+
+  usage: |
+    To use 'encfs' role for encrypted storage for all your hosts, you should
+    set at least one variable (for example `secret`) in
+    `inventory/group_vars/all.yml` which will point to a directory in your
+    local filesystem. By default, 'encfs' will create an keyfile and encrypt it
+    using a GPG passphrase. To change how 'encfs' behaves, in
+    `inventory/host_vars/localhost.yml` set variables like `encfs_gpg`,
+    `encfs_password`, `encfs_passfile` (described above). This way the scope of
+    the `encfs_*` variables will be limited only to `localhost`.
+    
+    You have to add 'localhost' to your inventory, preferably at the begginning
+    of the `hosts` file, like this:
+    
+        localhost ansible_connection=local
+    
+    Add two plays at the beginning and end of your playbook, like this:
+    
+        ---
+        - hosts: localhost
+          sudo: no
+          roles:
+            - role: debops.encfs
+              encfs: '{{ secret }}'
+              encfs_mode: 'open'
+        
+        - hosts: all:!localhost
+          # your plays here
+        
+        - hosts: localhost
+          sudo: no
+          roles:
+            - role: debops.encfs
+              encfs: '{{ secret }}'
+              encfs_mode: 'close'
+    
+    When you will run a playbook modified as above for the first time, Ansible
+    might require `sudo` access to install 'fuse' and 'encfs' packages, fix
+    `/dev/fuse` access permissions and add your user to 'fuse' group. If that
+    happens, 'encfs' role will stop playbook and inform you that you need to
+    log out and back in to have 'fuse' group available.
+    
+    Another way to use 'encfs' role for encrypted global storage is to create
+    a shell script, and run that role using separate `ansible-playbook`
+    commands. Here's an example script:
+    
+        #!/bin/bash
+        
+        if [ $SECRET -gt 0 ] ; then
+        	ansible-playbook -i inventory playbooks/secret.yml --extra-vars='encfs_mode=open'
+        	trap "ansible-playbook -i inventory playbooks/secret.yml --extra-vars='encfs_mode=close'" EXIT
+        fi
+        
+        ansible-playbook -i inventory playbooks/site.yml $@
+    
+    And in `playbooks/secret.yml` you should create a playbook:
+    
+        - hosts: localhost
+          sudo: no
+          roles:
+            - role: debops.encfs
+              encfs: '{{ secret }}'
+    
+    When you run that script, you can specify `ansible-playbook` options as
+    normal, and they will be used with correct command. When last of your plays
+    finishes, shell script will run Ansible with `encfs` role again, to close
+    encrypted filesystem.
 
