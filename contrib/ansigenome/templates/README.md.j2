@@ -1,0 +1,69 @@
+## {{ galaxy_name }}
+{% if meta_info.travis is defined and meta_info.travis %}
+[![Build_Status](https://secure.travis-ci.org/{{ meta_info.travis }}.png)](http://travis-ci.org/{{ meta_info.travis }}){% endif %}{%if meta_info.galaxy_id is defined and meta_info.galaxy_id%}{% if meta_info.travis is defined and meta_info.travis %} | {% endif %}[Ansible Galaxy](https://galaxy.ansible.com/list#/roles/{{ meta_info.galaxy_id }}){% endif %}
+{% if meta_info.beta is defined and meta_info.beta %}### Warning, this is a BETA role
+
+This role has been marked by the author as a beta role, which means that it
+might be significantly changed in the future. Do not use this role in
+a production environment.
+
+***{% endif %}
+{% if meta_info.synopsis is defined %}
+{{ meta_info.synopsis | trim }}{% endif %}
+{% if meta_info.quick_start is defined and meta_info.quick_start %}
+
+### Quick start
+
+{{ meta_info.quick_start | trim | indent(4, true) }}{% endif %}
+{% if dependencies is defined and dependencies -%}
+
+### Role dependencies
+{% for dependency in dependencies %}
+- {{ dependency.role | trim }}{% endfor %}
+{% endif %}
+{% if galaxy_info.platforms and galaxy_info.platforms -%}
+
+### Platform requirements
+{% for platform in galaxy_info.platforms %}
+- **{{ platform.name | trim }}**: {{ platform.versions | join(", ") | trim }}{% endfor %}{% endif %}
+{% if meta_info.defaults is defined and meta_info.defaults %}
+
+### Role variables
+
+List of default variables available in the inventory:
+
+{{ meta_info.defaults | trim | indent(4, true) }}
+{% endif %}
+{% if meta_info.facts is defined and meta_info.facts %}
+
+List of internal variables used by the role:
+
+{{ meta_info.facts | trim | indent(4, true) }}{% endif %}
+
+### Installation
+
+To install `{{ galaxy_name }}` using Ansible Galaxy, run:
+
+    ansible-galaxy install {{ galaxy_name }}
+{% if meta_info.usage is defined and meta_info.usage %}
+
+### Detailed usage guide
+
+{{ meta_info.usage | trim }}{% endif %}
+{% if meta_info.custom is defined and meta_info.custom %}
+
+{{ meta_info.custom | trim }}{% endif %}
+{% if meta_info.authors is defined and meta_info.authors %}
+### Authors and license
+
+`{{ galaxy_name }}` role was written by:
+{% for credit in meta_info.authors %}
+- {% if credit.url is defined and credit.url %}[{% endif %}{{ credit.name }}{% if credit.url is defined and credit.url %}]({{ credit.url }}){% endif %}{% if credit.email is defined and credit.email %} - [e-mail](mailto:{{ credit.email }}){% endif %}{% if credit.twitter is defined and credit.twitter %} - [Twitter](https://twitter.com/{{ credit.twitter }}){% endif %}{% if credit.github is defined and credit.github %} - [GitHub](https://github.com/{{ credit.github }}){% endif %}
+{% endfor %}
+{% if galaxy_info.license is defined and galaxy_info.license %}
+License: {% if meta_info.license_url is defined and meta_info.license_url %}[{% endif %}{{ galaxy_info.license | trim }}{% if meta_info.license_url is defined and meta_info.license_url %}]({{ meta_info.license_url }}){% endif %}{% endif %}
+{% endif %}
+
+This role is part of the [DebOps](http://debops.org/) project.
+
+
