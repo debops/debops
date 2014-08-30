@@ -1,7 +1,21 @@
 DebOps changelog
 ================
 
-Commit by commit, closing in on perfection...
+
+## Changelog for 30 August 2014
+
+### README all the things!
+
+All roles will soon receive their own `README.md` files. They will be generated
+using [Ansigenome](https://github.com/nickjj/ansigenome) tool written by Nick
+Janetakis.
+
+For this to work, `meta/main.yml` files in all of the roles have been updated
+(or added in cases where they were missing) both with data for the [Ansible
+Galaxy](http://galaxy.ansible.com/) service and custom data for Ansigenome.
+Roles with already written README files have their contents moved to specific
+variables in `meta/main.yml` so they can be preserved.
+
 
 ## Changelog for 28 August 2014
 

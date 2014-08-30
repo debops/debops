@@ -58,3 +58,55 @@ dependencies:
                                    'ruby2.1-dev_*.deb', 'ruby-all-dev_*.deb' ]
     when: (ruby_version is defined and ruby_version | version_compare('2.1','>='))
 
+galaxy_info:
+  author: 'Maciej Delmanowski'
+  description: 'Backport Ruby 2.1 packages from Debian Jessie to Debian Wheezy'
+  company: 'DebOps'
+  license: 'GNU General Public License v3'
+  min_ansible_version: '1.7.0'
+  platforms:
+  - name: Ubuntu
+    versions:
+    - trusty
+  - name: Debian
+    versions:
+    - wheezy
+    - jessie
+  categories:
+  - development
+  - packaging
+  - system
+
+meta_info:
+  github_url: "https://github.com/debops/ansible-ruby"
+  git_branch: "master"
+  galaxy_id: ""
+
+  travis: False
+
+  license_url: 'https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3)'
+
+  authors:
+    - name:  'Maciej Delmanowski'
+      url: ''
+      email: 'drybjed@gmail.com'
+      twitter: 'drybjed'
+      github: 'drybjed'
+
+  synopsis: |
+    `debops.ruby` role installs selected Ruby version via APT package manager.
+    By default, version `2.1` will be installed, but you can also specify
+    version `1.9.1` to install packages already present in your distribution
+    (Ubuntu or Debian Wheezy).
+    
+    If you are installing Ruby 2.1 packages on Debian Wheezy, this role will
+    use `debops.backporter` role to automatically backport all required
+    packages from Debian Jessie. These packages will be installed on the build
+    host and uploaded to Ansible Controller to a specific directory, where
+    `debops.reprepro` role can find them and automatically import them to local
+    APT repository, at which point these packages will become available to all
+    hosts in a cluster.
+    
+    This role will also install gems from [RubyGems](http://rubygems.org/)
+    specified in a list.
+

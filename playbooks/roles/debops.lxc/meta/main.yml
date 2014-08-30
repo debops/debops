@@ -16,3 +16,50 @@ dependencies:
                                 'libseccomp-dev', 'libselinux1-dev',
                                 'pkg-config', 'python3-dev' ]
 
+galaxy_info:
+  author: 'Maciej Delmanowski'
+  description: 'Configure and manage LXC environment on a host'
+  company: 'DebOps'
+  license: 'GNU General Public License v3'
+  min_ansible_version: '1.7.0'
+  platforms:
+  - name: Ubuntu
+    versions:
+    - trusty
+  - name: Debian
+    versions:
+    - wheezy
+    - jessie
+  categories:
+  - system
+
+meta_info:
+  github_url: "https://github.com/debops/ansible-lxc"
+  git_branch: "master"
+  galaxy_id: ""
+
+  travis: False
+
+  license_url: 'https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3)'
+
+  authors:
+    - name:  'Maciej Delmanowski'
+      url: ''
+      email: 'drybjed@gmail.com'
+      twitter: 'drybjed'
+      github: 'drybjed'
+
+  synopsis: |
+    `debops.lxc` role can be used to configure and manage LXC environment on
+    a host. Specifically, LXC 1.0 support will be installed on Ubuntu Trusty
+    and Debian Jessie, for Debian Wheezy, LXC 1.0 package will be backported
+    from Jessie using `debops.backporter` role and Linux kernel from
+    `wheezy-backports` will be installed for required kernel features (this
+    will require a reboot of the host).
+    
+    You can use `debops.lxc` role to create and manage Linux Containers with
+    different configurations. These containers can be used on an external
+    interface (DHCP server is recommended) or on an internal NAT interface
+    (network will be configured by a specific play in DebOps, using
+    `debops.dnsmasq` and `debops.nat` roles).
+
