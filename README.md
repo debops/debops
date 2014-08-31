@@ -1,6 +1,6 @@
 ## debops.users
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role can be used to manage user accounts (and user groups). You can
 manage almost all aspects of the users' account, like UID/GID, home
@@ -16,13 +16,13 @@ inventory, with separate lists for:
 for larger number of accounts its preferred to use a dedicated solution,
 like an LDAP directory.
 
-
-
 ### Installation
 
 To install `debops.users` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.users
+
+
 
 
 ### Role variables
