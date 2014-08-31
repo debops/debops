@@ -1,6 +1,6 @@
 ## debops.gitusers
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.gitusers` role can be used to create and maintain user accounts
 accessible over SSH with limited functionality provided by `git-shell` and
@@ -12,16 +12,16 @@ support for other environments might be included in the future).
 You can think of this role as a simple [Heroku](https://www.heroku.com/) or
 [PagodaBox](https://pagodabox.com/) clone.
 
-### Role dependencies
-
-- debops.auth
-
-
 ### Installation
 
 To install `debops.gitusers` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.gitusers
+
+### Role dependencies
+
+- `debops.auth`
+
 
 
 ### Role variables
