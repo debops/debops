@@ -1,5 +1,7 @@
 ## debops.boxbackup
+
 [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+
 ### Warning, this is a BETA role
 
 This role has been marked by the author as a beta role, which means that it
@@ -7,24 +9,23 @@ might be significantly changed in the future. Be careful while using this role
 in a production environment.
 
 ***
-
 [BoxBackup](http://boxbackup.org/) is an automated, centralized, encrypted
 backup service. This role will install and configure the server on
 specified host and then configure all specified clients to create backup on
 the `boxbackup-server` host.
-
-### Role dependencies
-
-- debops.secret
-- debops.etc_services
-- debops.ferm
-
 
 ### Installation
 
 To install `debops.boxbackup` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.boxbackup
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.etc_services`
+- `debops.ferm`
+
 
 
 ### Role variables
