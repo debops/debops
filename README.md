@@ -1,5 +1,7 @@
 ## debops.dnsmasq
+
 [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+
 ### Warning, this is a BETA role
 
 This role has been marked by the author as a beta role, which means that it
@@ -7,24 +9,23 @@ might be significantly changed in the future. Be careful while using this role
 in a production environment.
 
 ***
-
 This role installs and configures `dnsmasq` as a local DNS, DHCP and
 PXE/TFTP server. At the moment configuration is limited, and resulting
 environment is suited for local development only. A NATted network can also
 be configured for ease of use for local virtual machines / LXC containers
 without the need for additional external IP addresses.
 
-### Role dependencies
-
-- debops.ferm
-- debops.tcpwrappers
-
-
 ### Installation
 
 To install `debops.dnsmasq` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.dnsmasq
+
+### Role dependencies
+
+- `debops.ferm`
+- `debops.tcpwrappers`
+
 
 
 ### Role variables
