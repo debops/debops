@@ -1,6 +1,6 @@
 ## debops.monit
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.monit` role allows you to install and configure
 [Monit](http://mmonit.com/monit/) service which can be used to monitor
@@ -12,17 +12,17 @@ Alerts can be sent to an e-mail address (by default
 `monitoring@<your-domain>`, or to a mobile phone or pager using an SMS
 gateway (for example one managed by `debops.smstools` role).
 
-### Role dependencies
-
-- debops.apt_preferences
-- debops.etc_services
-
-
 ### Installation
 
 To install `debops.monit` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.monit
+
+### Role dependencies
+
+- `debops.apt_preferences`
+- `debops.etc_services`
+
 
 
 ### Role variables
@@ -133,7 +133,7 @@ List of default variables available in the inventory:
 
 `debops.monit` role was written by:
 
-- Nick Janetakis | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
+- Nick Janetakis - [e-mail](mailto:nick.janetakis@gmail.com) | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
 
 
 License: [GNU General Public License v3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
