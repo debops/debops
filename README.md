@@ -1,6 +1,6 @@
 ## debops.pki
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role is meant to be a simple SSL certificate manager which:
 
@@ -15,16 +15,16 @@ This role is meant to be a simple SSL certificate manager which:
 `debops.pki` role is planned to be rewritten to support automatic CA
 signing and custom certificates for clients/applications.
 
-### Role dependencies
-
-- debops.secret
-
-
 ### Installation
 
 To install `debops.pki` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.pki
+
+### Role dependencies
+
+- `debops.secret`
+
 
 
 ### Role variables
