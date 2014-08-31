@@ -1,10 +1,5 @@
 ---
 
-- name: Lookup PHPMyAdmin control password if secrets/ directory is defined
-  set_fact:
-    phpmyadmin_control_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/phpmyadmin/password length=' + mysql_password_length) }}"
-  when: secret is defined and secret
-
 - name: Install dbconfig-common
   apt: pkg=dbconfig-common state=latest install_recommends=no
 
