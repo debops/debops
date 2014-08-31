@@ -1,6 +1,6 @@
 ## debops.ferm
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 [ferm](http://ferm.foo-projects.org/) is a wrapper around `iptables`
 command which lets you manage host firewall in an easy and Ansible-friendly
@@ -8,13 +8,13 @@ way. This role can be used to setup firewall rules directly from inventory,
 or it can be used as a dependency by other roles to setup firewall rules
 for other services.
 
-
-
 ### Installation
 
 To install `debops.ferm` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.ferm
+
+
 
 
 ### Role variables
