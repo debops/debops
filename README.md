@@ -1,6 +1,6 @@
 ## debops.reprepro
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.reprepro` role is used to create and manage local APT repository.
 Packages can be uploaded manually to a specific user account, or they can
@@ -11,16 +11,16 @@ all hosts managed by Ansible.
 This role is by default not used directly by the playbook. Instead,
 `debops.apt` role uses it as a dependency.
 
-### Role dependencies
-
-- debops.secret
-
-
 ### Installation
 
 To install `debops.reprepro` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.reprepro
+
+### Role dependencies
+
+- `debops.secret`
+
 
 
 ### Role variables
