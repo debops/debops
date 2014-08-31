@@ -1,6 +1,6 @@
 ## debops.smstools
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This is an Ansible role which configures [smstools](http://smstools3.kekekasvi.com/)
 package and sets up a TCP -> SMS and mail -> SMS gateway. This role has been
@@ -12,20 +12,20 @@ to create mail -> SMS gateway, `debops.etc_services`, `debops.ferm` and
 `debops.tcpwrappers` are used to configure TCP service which can be used by
 other hosts to send SMS messages over the network).
 
-### Role dependencies
-
-- debops.etc_services
-- debops.rsyslog
-- debops.tcpwrappers
-- debops.ferm
-- debops.postfix
-
-
 ### Installation
 
 To install `debops.smstools` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.smstools
+
+### Role dependencies
+
+- `debops.etc_services`
+- `debops.rsyslog`
+- `debops.tcpwrappers`
+- `debops.ferm`
+- `debops.postfix`
+
 
 
 ### Role variables
