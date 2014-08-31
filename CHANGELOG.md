@@ -1,6 +1,23 @@
 DebOps changelog
 ================
 
+## Changelog for 31 August 2014
+
+### 'interfaces' role is renamed to 'ifupdown'
+
+This name change should better describe what this role does - it configures
+`ifupdown` package which in turn manages network interfaces. This opens up
+a possibility for NetworkManager or `systemd-networkd` roles if they ever are
+needed.
+
+Name change means that all associated variables have been renamed - some just
+changed prefix from `interfaces_` to `ifupdown_`, but some were completely
+renamed to more accurately describe what they are defining, for example
+`interfaces_list` has been renamed to `ifupdown_interfaces`. Complete list of
+changes can be found in `git log`. The rule of thumb is - if you have any
+`interfaces_*` variables in your inventory, you will have to rename them, but
+check their correct new naming first.
+
 
 ## Changelog for 30 August 2014
 
