@@ -2,16 +2,16 @@
 
 # Example configuration from interfaces(5) manual
 
-interfaces_default_list:
+ifupdown_default_list:
 
-  - iface: '{{ interfaces_external }}'
+  - iface: '{{ ifupdown_external }}'
     type: 'mapping'
     options: |
       script /usr/local/sbin/map-scheme
-      map HOME {{ interfaces_external }}-home
-      map WORK {{ interfaces_external }}-work
+      map HOME {{ ifupdown_external }}-home
+      map WORK {{ ifupdown_external }}-work
 
-  - iface: '{{ interfaces_external }}-home'
+  - iface: '{{ ifupdown_external }}-home'
     inet: 'static'
     auto: False
     force: True
@@ -20,12 +20,12 @@ interfaces_default_list:
       netmask 255.255.255.0
       up flush-mail
 
-  - iface: '{{ interfaces_external }}-work'
+  - iface: '{{ ifupdown_external }}-work'
     auto: False
     force: True
     inet: 'dhcp'
 
-  - iface: '{{ interfaces_internal }}'
+  - iface: '{{ ifupdown_internal }}'
     allow: 'hotplug'
     inet: 'dhcp'
 
