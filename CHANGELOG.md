@@ -18,6 +18,14 @@ changes can be found in `git log`. The rule of thumb is - if you have any
 `interfaces_*` variables in your inventory, you will have to rename them, but
 check their correct new naming first.
 
+### All roles are now properly documented
+
+`README.md` files for roles have been generated using
+[ansigenome](https://github.com/nickjj/ansigenome/) (thanks, Nick!). Along with
+that, each role has now it's own `LICENSE` file and a standardized
+`.travis.yml` file which lets us easily test roles on Travis-CI. In other
+words, roles are now ready to be split into their own git repositories.
+
 
 ## Changelog for 30 August 2014
 
