@@ -1,6 +1,6 @@
 ## debops.postgresql
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.postgresql` is an Ansible role which can install and manage
 [PostgreSQL](http://postgresql.org/) database servers. It's built around
@@ -12,18 +12,18 @@ you can enable PostgreSQL 9.3 version which will be installed using
 official [PostgreSQL Global Development Group)(https://wiki.postgresql.org/wiki/Apt)
 repositories.
 
-### Role dependencies
-
-- debops.secret
-- debops.etc_services
-- debops.ferm
-
-
 ### Installation
 
 To install `debops.postgresql` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.postgresql
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.etc_services`
+- `debops.ferm`
+
 
 
 ### Role variables
@@ -218,7 +218,7 @@ List of internal variables used by the role:
 
 - Maciej Delmanowski - [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
-- Nick Janetakis | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
+- Nick Janetakis - [e-mail](mailto:nick.janetakis@gmail.com) | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
 
 
 License: [GNU General Public License v3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
