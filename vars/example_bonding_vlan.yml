@@ -1,0 +1,44 @@
+---
+
+# Example bonding/vlan configuration from https://wiki.debian.org/NetworkConfiguration
+
+ifupdown_default_list:
+
+  - iface: 'bond0'
+    type: 'bond'
+    inet: 'manual'
+    options: |
+      up ifconfig bond0 0.0.0.0 up
+      bond_slaves {{ ifupdown_internal }} {{ ifupdown_external }}
+
+  - iface: 'vlan10'
+    type: 'vlan'
+    weight: '10'
+    inet: 'static'
+    device: 'bond0'
+    options: |
+      address 10.10.10.12
+      netmask 255.255.0.0
+      gateway 10.10.0.1
+      dns-search hup.hu
+      dns-nameservers 10.10.0.2
+
+  - iface: 'vlan20'
+    type: 'vlan'
+    weight: '10'
+    inet: 'static'
+    device: 'bond0'
+    options: |
+      address 10.20.10.12
+      netmask 255.255.0.0
+
+  - iface: 'vlan30'
+    type: 'vlan'
+    weight: '10'
+    inet: 'static'
+    device: 'bond0'
+    options: |
+      address 10.30.10.12
+      netmask 255.255.0.0
+
+

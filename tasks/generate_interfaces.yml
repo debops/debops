@@ -1,0 +1,54 @@
+---
+
+- name: Load default interface configuration
+  include_vars: "{{ item }}"
+  with_first_found:
+    - '../vars/{{ ifupdown_default_config }}.yml'
+    - '../vars/networkmanager_{{ ifupdown_networkmanager }}.yml'
+    - '../vars/virtualization_{{ ansible_virtualization_type }}_{{ ansible_virtualization_role }}.yml'
+    - '../vars/default.yml'
+  when: ((ifupdown_list is defined and not ifupdown_list) or ifupdown_list is undefined)
+
+- name: Prepare interface configuration if not defined
+  set_fact:
+    ifupdown_list: '{{ ifupdown_default_list }}'
+  when: (ifupdown_dependent_list is undefined) and
+        (ifupdown_default_list is defined and ifupdown_default_list)
+
+- name: Prepare interface configuration via dependency if defined
+  set_fact:
+    ifupdown_list: '{{ ifupdown_dependent_list }}'
+  when: ifupdown_dependent_list is defined and ifupdown_dependent_list
+
+- name: Create /etc/network/interfaces.d directory
+  file: path=/etc/network/interfaces.d owner=root group=root mode=0755 state=directory
+
+- name: Delete interface configuration if requested
+  file:
+    path: '/etc/network/interfaces.d/{{ item.weight | default("00") }}_{{ item.filename | default(item.type | default("interface") + "_" + item.iface) }}'
+    state: 'absent'
+  with_items: ifupdown_list
+  when: (item.iface is defined and item.iface) and
+        (item.delete is defined and item.delete)
+
+- name: Generate interface configuration
+  template:
+    src: 'etc/network/interfaces.d/{{ item.type | default("interface") }}.j2'
+    dest: '/etc/network/interfaces.d/{{ item.weight | default("00") }}_{{ item.filename | default(item.type | default("interface") + "_" + item.iface) }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: ifupdown_list
+  register: ifupdown_status
+  when: (item.iface is defined and item.iface) and
+        (item.delete is undefined or (item.delete is defined and not item.delete))
+
+- name: Reconfigure interfaces
+  shell: ifdown {{ item.item.iface }} ; sleep {{ ifupdown_ifupdown_delay }} ; ifup {{ item.item.iface }}
+  with_items: ifupdown_status.results
+  when: (ifupdown_status.results is defined and ifupdown_status.results) and
+        (ifupdown_auto_ifupdown is defined and ifupdown_auto_ifupdown == True) and
+        (item.changed == True) and
+        (item.item.inet is undefined or item.item.inet is defined and item.item.inet != 'manual')
+
+

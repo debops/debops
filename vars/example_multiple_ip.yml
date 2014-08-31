@@ -1,0 +1,21 @@
+---
+
+# Example multiple IP address configuration from https://wiki.debian.org/NetworkConfiguration
+
+ifupdown_default_list:
+
+  - iface: '{{ ifupdown_external }}'
+    filename: 'interface_{{ ifupdown_external }}_multi'
+    inet: 'static'
+    allow: 'hotplug'
+    options: |
+      address 192.168.1.42
+      netmask 255.255.255.0
+      gateway 192.168.1.1
+    aliases:
+      - address: '192.168.1.44'
+        netmask: '255.255.255.0'
+      - address: '10.10.10.14'
+        netmask: '255.255.255.0'
+
+

@@ -1,0 +1,65 @@
+---
+# Should Ansible manage /etc/network/interfaces? Set to False to disable
+ifupdown: True
+
+# Default external network interface
+ifupdown_external: 'eth0'
+
+# Default internal network interface
+ifupdown_internal: 'eth1'
+
+# Should ifupdown role automatically try to reconfigure interfaces that have
+# been modified? Set to False to enable "dry-mode"
+ifupdown_auto_ifupdown: True
+
+# Delay in seconds between stopping an interface and starting it again
+ifupdown_ifupdown_delay: '2'
+
+# Should ifupdown role ignore presence of NetworkManager and generate the
+# configuration in /etc/network/interfaces.d/?
+ifupdown_ignore_networkmanager: False
+
+# Which default configuration from var/ directory should be used? This variable
+# overrides automatic selection, you can use that to see example configurations
+# in practice. Specify a filename without '.yml' extension
+ifupdown_default_config: ""
+
+# List of network interfaces. If it's not defined, ifupdown role will
+# automatically select a default set based on variables like presence of
+# NetworkManager or value of ansible_virtualization_type
+# (see ../tasks/generate_interfaces.yml). Default sets are defined in ../vars/*
+# files.
+# If you want to define list of interfaces via dependency variables, set them
+# in 'ifupdown_dependent_list', this variable will override other variables of
+# this type and will allow you to set your interfaces across Ansible plays.
+# Refer to interfaces(5) and https://wiki.debian.org/NetworkConfiguration to
+# see possible configuration options.
+ifupdown_list: []
+  #- iface: 'eth0'			# interface name, required
+  #
+  #  # Optional interface parameters, defaults first
+  #  type:  'interface,bridge,bond,vlan,mapping'
+  #  inet:  'dhcp,static,manual,...'	# mode of operation for IPv4
+  #  inet6: 'dhcp,static,manual,...'	# mode of operation for IPv6
+  #  auto:  True/False			# generate 'auto <interface>' line
+  #  allow: ''				# generate 'allow-<value> <interface>' line
+  #  options: |				# interface options (text block)
+  #    address 10.0.0.1
+  #    netmask 255.255.255.0
+  #    # ...
+  #  aliases:				# list of additional IP addresses for interface
+  #    - address: '192.168.0.2'
+  #      netmask: '255.255.255.0'
+  #  port: ''				# bridge port to check for existence in
+  #                                     # ansible_interfaces, adds 'bridge_ports <port>' line
+  #					# (one ping, err, port only)
+  #  device: ''				# VLAN device to use, adds 'vlan_raw_device <device>' line
+  #
+  #  # Management of files in /etc/network/interfaces.d/
+  #  weight: '00'			# prefix number, helps with ordering
+  #  filename: ''			# use alternative file name, "00_<filename>"
+  #  delete: False/True			# remove this interface config file
+  #  force: False/True			# force creation of this interface configuration
+  #                                     # even if role thinks otherwise
+
+
