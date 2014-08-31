@@ -1,16 +1,137 @@
-## smstools
+## debops.smstools
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+
 
 This is an Ansible role which configures [smstools](http://smstools3.kekekasvi.com/)
 package and sets up a TCP -> SMS and mail -> SMS gateway. This role has been
 tested on Debian and should work on Debian-based systems.
 
-Several other roles from [DebOps](http://debops.or/) project are used to
-configure various parts of the SMS gateway ('postfix' role is used to create
-mail -> SMS gateway, 'etc_services', 'ferm' and 'tcpwrappers' are used to
-configure TCP service which can be used by other hosts to send SMS messages
-over the network).
+Several other roles from [DebOps](http://debops.org/) project are used to
+configure various parts of the SMS gateway (`debops.postfix` role is used
+to create mail -> SMS gateway, `debops.etc_services`, `debops.ferm` and
+`debops.tcpwrappers` are used to configure TCP service which can be used by
+other hosts to send SMS messages over the network).
 
-### Usage examples
+### Role dependencies
+
+- debops.etc_services
+- debops.rsyslog
+- debops.tcpwrappers
+- debops.ferm
+- debops.postfix
+
+
+### Installation
+
+To install `debops.smstools` using Ansible Galaxy, run:
+
+    ansible-galaxy install debops.smstools
+
+
+### Role variables
+
+List of default variables available in the inventory:
+
+    ---
+    
+    # ---- TCP -> SMS gateway ----
+    
+    # List of IP addresses or CIDR network ranges which are allowed to access TCP
+    # service
+    smstools_service_allow: []
+    
+    
+    # ---- mail -> SMS gateway ----
+    
+    # Settings for subdomains and domains which are used to send messages to SMS
+    # gateway
+    
+    # Subdomain for SMS transport
+    smstools_mail_transport_subdomain: 'sms'
+    
+    # Subdomain for mail aliases which are resolved to mobile numbers
+    smstools_mail_alias_subdomain: 'gsm'
+    
+    # Domains that combine above subdomains with main host domain
+    smstools_mail_transport_domain: '{{ smstools_mail_transport_subdomain }}.{{ ansible_domain }}'
+    smstools_mail_alias_domain: '{{ smstools_mail_transport_subdomain }}.{{ ansible_domain }}'
+    
+    # List of default mail senders that are allowed to send mail messages to mobile
+    # recipients
+    # Options:
+    #    - name: 'mail@example.com'            # required
+    #      state: 'permit/deny'                # optional
+    smstools_default_senders:
+      - name: 'root@{{ ansible_domain }}'
+      - name: '{{ ansible_ssh_user }}@{{ ansible_domain }}'
+    
+    # Additional list of mail senders
+    smstools_senders: []
+    
+    # Hash table which specifies mail alias to mobile number mapping. Aliases will
+    # be generated in a domain specified with smstools_mail_alias_* variables
+    smstools_mail_recipients: {}
+      #'recipient1': [ '+00123123123' ]
+      #'recipient2': [ '+00123123123', '+00321321321' ]
+    
+    # Hash table which specifies aliases for groups of recipients from
+    # smstools_mail_recipients table. Aliases will be created in a domain specified
+    # with smstools_mail_alias_* variables
+    smstools_mail_aliases: {}
+      #'alias': [ 'recipient1', 'recipient2' ]
+    
+    # List of regexps which will be used to find and remove strings in SMS messages
+    # before they are sent
+    smstools_mail_msgdel_list: []
+      #- 'linux'
+      #- '^Ansible'
+    
+    # Log sent SMS messages for accounting purposes, use monthly log rotation, logs
+    # should be kept for 2 years
+    smstools_sms_log: '/var/log/sms.log'
+    smstools_sms_log_rotation: 'monthly'
+    smstools_sms_log_rotation_interval: '{{ (12 * 2) }}'
+    
+    
+    # ---- SMS gateway testing ----
+    
+    # List of mobile numbers to send a test message to on host reboot
+    # Example: [ '+00123123123' ]
+    smstools_test_recipients: []
+    
+    # Test message to send on host reboot
+    smstools_test_message: 'This is a test of the SMS gateway on {{ ansible_fqdn }} sent at $(date)'
+    
+    
+    # ---- smstools options ----
+    
+    # Time between queue checks, in seconds
+    smstools_sleep: 1
+    
+    # Generate modem stats once a day
+    smstools_stats_interval: '{{ (60 * 60 * 24)|round|int }}'
+    
+    # Hash with options configured in /etc/smsd.conf
+    smstools_global_options:
+      delaytime: '{{ smstools_sleep }}'
+      delaytime_mainprocess: '{{ smstools_sleep }}'
+      receive_before_send: no
+      autosplit: 3
+      loglevel: 5
+    
+    # List of modems known to smsd, by default it's configured to use one modem on
+    # serial interface
+    smstools_devices:
+      - name: 'GSM1'
+        device: '/dev/ttyS0'
+        options:
+          baudrate: 115200
+          incoming: yes
+
+
+
+
+### Detailed usage guide
 
 #### Sending a text message from command line
 
@@ -70,7 +191,7 @@ alias table in format `<name@gsm>` (from localhost) or `<name@gsm.example.com>`
 Subject of the mail message will be ignored, and body of the message will be
 sent using SMS gateway.
 
-## Warning, this role can generate mail backscatter!
+#### Warning, this role can generate mail backscatter!
 
 At the moment, SMTP server is configured by `smstools` role to accept mail
 messages to subdomains specified above and relay them to `sms` transport which
@@ -102,9 +223,24 @@ messages using the gateway. Steps to determine that:
 Policy service check should be included in `smtpd_recipient_restrictions` list
 to be able to check both recipient and sender addresses.
 
-## Known bugs
+#### Known bugs
 
 - `sendsms` script supports sending SMS messages in UTF-8, but `sms-service`
   and `sms-transport` scripts do not, SMS messages are truncated at first
   UTF-8 character.
+
+
+### Authors and license
+
+`debops.smstools` role was written by:
+
+- Maciej Delmanowski - [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
+
+
+License: [GNU General Public License v3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+
+
+***
+
+This role is part of the [DebOps](http://debops.org/) project. README generated by [ansigenome](https://github.com/nickjj/ansigenome/).
 
