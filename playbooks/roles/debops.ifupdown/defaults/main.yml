@@ -1,43 +1,40 @@
 ---
-# role: interfaces (/etc/interfaces management)
-
-
 # Should Ansible manage /etc/network/interfaces? Set to False to disable
-interfaces: True
+ifupdown: True
 
 # Default external network interface
-interfaces_external: 'eth0'
+ifupdown_external_interface: 'eth0'
 
 # Default internal network interface
-interfaces_internal: 'eth1'
+ifupdown_internal_interface: 'eth1'
 
-# Should interfaces role automatically try to reconfigure interfaces that have
+# Should ifupdown role automatically try to reconfigure interfaces that have
 # been modified? Set to False to enable "dry-mode"
-interfaces_auto_ifupdown: True
+ifupdown_reconfigure: True
 
 # Delay in seconds between stopping an interface and starting it again
-interfaces_ifupdown_delay: '2'
+ifupdown_reconfigure_delay: '2'
 
-# Should interfaces role ignore presence of NetworkManager and generate the
+# Should ifupdown role ignore presence of NetworkManager and generate the
 # configuration in /etc/network/interfaces.d/?
-interfaces_ignore_networkmanager: False
+ifupdown_ignore_networkmanager: False
 
 # Which default configuration from var/ directory should be used? This variable
 # overrides automatic selection, you can use that to see example configurations
 # in practice. Specify a filename without '.yml' extension
-interfaces_default_config: ""
+ifupdown_default_config: ""
 
-# List of network interfaces. If it's not defined, interfaces role will
+# List of network interfaces. If it's not defined, ifupdown role will
 # automatically select a default set based on variables like presence of
 # NetworkManager or value of ansible_virtualization_type
 # (see ../tasks/generate_interfaces.yml). Default sets are defined in ../vars/*
 # files.
 # If you want to define list of interfaces via dependency variables, set them
-# in 'interfaces_dependent_list', this variable will override other variables of
+# in 'ifupdown_dependent_interfaces', this variable will override other variables of
 # this type and will allow you to set your interfaces across Ansible plays.
 # Refer to interfaces(5) and https://wiki.debian.org/NetworkConfiguration to
 # see possible configuration options.
-interfaces_list: []
+ifupdown_interfaces: []
   #- iface: 'eth0'			# interface name, required
   #
   #  # Optional interface parameters, defaults first

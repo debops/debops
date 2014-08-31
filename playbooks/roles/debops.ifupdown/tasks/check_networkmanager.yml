@@ -1,0 +1,14 @@
+---
+
+- name: Check if Network Manager is installed
+  stat:
+    path: '/usr/sbin/NetworkManager'
+  register: ifupdown_nmstatus
+
+- name: Enable Network Manager support if installed
+  set_fact:
+    ifupdown_networkmanager: 'installed'
+  when: ((ifupdown_nmstatus is defined and ifupdown_nmstatus.stat.exists) and
+         (ifupdown_ignore_networkmanager is undefined or
+          (ifupdown_ignore_networkmanager is defined and not ifupdown_ignore_networkmanager)))
+

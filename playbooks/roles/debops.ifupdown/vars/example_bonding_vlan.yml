@@ -2,14 +2,14 @@
 
 # Example bonding/vlan configuration from https://wiki.debian.org/NetworkConfiguration
 
-interfaces_default_list:
+ifupdown_default_interfaces:
 
   - iface: 'bond0'
     type: 'bond'
     inet: 'manual'
     options: |
       up ifconfig bond0 0.0.0.0 up
-      bond_slaves {{ interfaces_internal }} {{ interfaces_external }}
+      bond_slaves {{ ifupdown_internal_interface }} {{ ifupdown_external_interface }}
 
   - iface: 'vlan10'
     type: 'vlan'
