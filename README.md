@@ -1,6 +1,6 @@
 ## debops.redis
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.redis` role allows you to easily setup infrastructure capable of
 running and managing 1 or more Redis servers. It is completely self healing
@@ -15,19 +15,19 @@ Few features available in this role:
 - pretty much every redis config value is tweakable;
 - you can easily use this role as a dependency in your other roles;
 
-### Role dependencies
-
-- debops.secret
-- debops.apt_preferences
-- debops.etc_services
-- debops.ferm
-
-
 ### Installation
 
 To install `debops.redis` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.redis
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.apt_preferences`
+- `debops.etc_services`
+- `debops.ferm`
+
 
 
 ### Role variables
@@ -221,7 +221,7 @@ change the defaults in your inventory.
 
 `debops.redis` role was written by:
 
-- Nick Janetakis | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
+- Nick Janetakis - [e-mail](mailto:nick.janetakis@gmail.com) | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
 
 - Maciej Delmanowski - [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
