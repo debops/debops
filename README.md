@@ -1,6 +1,6 @@
 ## debops.phpmyadmin
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role installs [PHPMyAdmin](http://www.phpmyadmin.net/) interface for
 MySQL database. At the moment it is designed to manage only a database on
@@ -9,18 +9,18 @@ a specifically written play. In the future it will be redesigned as
 a standalone installation when secure access to remote databases is
 available.
 
-### Role dependencies
-
-- debops.secret
-- debops.php5
-- debops.nginx
-
-
 ### Installation
 
 To install `debops.phpmyadmin` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.phpmyadmin
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.php5`
+- `debops.nginx`
+
 
 
 ### Role variables
