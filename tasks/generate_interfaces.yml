@@ -12,13 +12,13 @@
 - name: Prepare interface configuration if not defined
   set_fact:
     ifupdown_interfaces: '{{ ifupdown_default_interfaces }}'
-  when: (ifupdown_dependent_list is undefined) and
+  when: (ifupdown_dependent_interfaces is undefined) and
         (ifupdown_default_interfaces is defined and ifupdown_default_interfaces)
 
 - name: Prepare interface configuration via dependency if defined
   set_fact:
-    ifupdown_interfaces: '{{ ifupdown_dependent_list }}'
-  when: ifupdown_dependent_list is defined and ifupdown_dependent_list
+    ifupdown_interfaces: '{{ ifupdown_dependent_interfaces }}'
+  when: ifupdown_dependent_interfaces is defined and ifupdown_dependent_interfaces
 
 - name: Create /etc/network/interfaces.d directory
   file: path=/etc/network/interfaces.d owner=root group=root mode=0755 state=directory
