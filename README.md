@@ -1,6 +1,6 @@
 ## debops.lxc
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.lxc` role can be used to configure and manage LXC environment on
 a host. Specifically, LXC 1.0 support will be installed on Ubuntu Trusty
@@ -15,18 +15,18 @@ interface (DHCP server is recommended) or on an internal NAT interface
 (network will be configured by a specific play in DebOps, using
 `debops.dnsmasq` and `debops.nat` roles).
 
-### Role dependencies
-
-- debops.secret
-- debops.ferm
-- debops.backporter
-
-
 ### Installation
 
 To install `debops.lxc` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.lxc
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.ferm`
+- `debops.backporter`
+
 
 
 ### Role variables
