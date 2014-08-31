@@ -1,6 +1,6 @@
 ## debops.ifupdown
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role can be used to manage network interface configuration on Debian
 and derivative operating systems. It manages configuration in
@@ -21,13 +21,13 @@ automatically selected configuration using Ansible inventory. This role can
 also be used as a dependency of another role which allows for example to
 easily manage NAT networks using `debops.nat` role.
 
-
-
 ### Installation
 
 To install `debops.ifupdown` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.ifupdown
+
+
 
 
 ### Role variables
