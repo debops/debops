@@ -1,6 +1,6 @@
 ## debops.ruby
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.ruby` role installs selected Ruby version via APT package manager.
 By default, version `2.1` will be installed, but you can also specify
@@ -18,19 +18,19 @@ hosts in a cluster.
 This role will also install gems from [RubyGems](http://rubygems.org/)
 specified in a list.
 
-### Role dependencies
-
-- debops.backporter
-- debops.backporter
-- debops.backporter
-- debops.backporter
-
-
 ### Installation
 
 To install `debops.ruby` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.ruby
+
+### Role dependencies
+
+- `debops.backporter`
+- `debops.backporter`
+- `debops.backporter`
+- `debops.backporter`
+
 
 
 ### Role variables
