@@ -1,5 +1,7 @@
 ## debops.safekeep
+
 [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+
 ### Warning, this is a BETA role
 
 This role has been marked by the author as a beta role, which means that it
@@ -7,7 +9,6 @@ might be significantly changed in the future. Be careful while using this role
 in a production environment.
 
 ***
-
 This role will configure [SafeKeep](http://safekeep.sourceforge.net/)
 scripts to create daily, incremental, centralized backups on a specified
 server, based on `rdiff-backup`.
@@ -16,16 +17,16 @@ Currently SafeKeep packages are not available in Debian repositories; you
 need to provide the packages to APT using some other way, for example via
 local APT repository created using `debops.reprepro` role.
 
-### Role dependencies
-
-- debops.secret
-
-
 ### Installation
 
 To install `debops.safekeep` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.safekeep
+
+### Role dependencies
+
+- `debops.secret`
+
 
 
 ### Role variables

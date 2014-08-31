@@ -1,6 +1,6 @@
 ## debops.secret
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role enables you to have a separate directory on Ansible Controller
 (different than the playbook directory and inventory directory) which can be
@@ -31,13 +31,13 @@ include:
   certificates. Generated .tar.gz files are kept on Ansible Controller in
   secret directory);
 
-
-
 ### Installation
 
 To install `debops.secret` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.secret
+
+
 
 
 ### Role variables

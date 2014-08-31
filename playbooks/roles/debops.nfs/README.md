@@ -1,5 +1,7 @@
 ## debops.nfs
+
 [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+
 ### Warning, this is a BETA role
 
 This role has been marked by the author as a beta role, which means that it
@@ -7,24 +9,23 @@ might be significantly changed in the future. Be careful while using this role
 in a production environment.
 
 ***
-
 This role can be used to configure NFSv3 client and server services between
 many hosts in a group.
 
 This role is an obsolete state and will be replaced in the future. Do not
 use this role in a production environment.
 
-### Role dependencies
-
-- debops.etc_services
-- debops.ferm
-
-
 ### Installation
 
 To install `debops.nfs` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.nfs
+
+### Role dependencies
+
+- `debops.etc_services`
+- `debops.ferm`
+
 
 
 ### Role variables

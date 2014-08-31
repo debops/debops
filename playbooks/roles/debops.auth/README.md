@@ -1,18 +1,18 @@
 ## debops.auth
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.auth` manages basic user authentication and authorization on
 configured host, including setting up system groups with elevated
 privileges.
-
-
 
 ### Installation
 
 To install `debops.auth` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.auth
+
+
 
 
 ### Role variables

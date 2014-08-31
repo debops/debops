@@ -1,6 +1,6 @@
 ## debops.mailman
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 Install and configure [Mailman](https://www.gnu.org/software/mailman/),
 a mailing list manager. It will be installed behind
@@ -11,18 +11,18 @@ serve the web interface. You can also use this role to create or remove
 mailing lists themselves (other management can be done using the web
 interface).
 
-### Role dependencies
-
-- debops.secret
-- debops.postfix
-- debops.nginx
-
-
 ### Installation
 
 To install `debops.mailman` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.mailman
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.postfix`
+- `debops.nginx`
+
 
 
 ### Role variables

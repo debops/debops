@@ -1,21 +1,21 @@
 ## debops.debops
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 Download [DebOps](http://debops.org/) source code to user home directory,
 ready to be used. This role might be useful to setup Ansible Controller
 host automatically.
-
-### Role dependencies
-
-- debops.ansible
-
 
 ### Installation
 
 To install `debops.debops` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.debops
+
+### Role dependencies
+
+- `debops.ansible`
+
 
 
 ### Role variables

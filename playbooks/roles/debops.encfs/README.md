@@ -1,5 +1,7 @@
 ## debops.encfs
+
 [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20genericlinux%20|%20ubuntu-lightgrey.svg)](#)
+
 ### Warning, this is a BETA role
 
 This role has been marked by the author as a beta role, which means that it
@@ -7,7 +9,6 @@ might be significantly changed in the future. Be careful while using this role
 in a production environment.
 
 ***
-
 Ansible role `encfs` allows you to create and manage directories using
 [EncFS](https://en.wikipedia.org/wiki/EncFS), FUSE-based encrypted virtual
 filesystem.
@@ -22,13 +23,13 @@ a regular user account.
 Role supports directories in remote hosts encrypted using a password with
 optional "passfile" as a transport for passwords in transit.
 
-
-
 ### Installation
 
 To install `debops.encfs` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.encfs
+
+
 
 
 ### Role variables

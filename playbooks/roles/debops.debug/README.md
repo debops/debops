@@ -1,18 +1,18 @@
 ## debops.debug
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 Dump all variables used by Ansible during playbook run to a file for
 inspection. This role is not active during normal playbook operation and
 should be used for development only.
-
-
 
 ### Installation
 
 To install `debops.debug` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.debug
+
+
 
 
 ### Role variables

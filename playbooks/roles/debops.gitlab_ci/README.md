@@ -1,6 +1,6 @@
 ## debops.gitlab_ci
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 [GitLab CI](https://about.gitlab.com/gitlab-ci/) is a continuous
 integration service based around [GitLab](https://about.gitlab.com/). It
@@ -9,22 +9,22 @@ uses a GitLab instance for authentication and access to git repositories
 Runner](https://github.com/gitlabhq/gitlab-ci-runner) service to run the
 tests (can be installed using `debops.gitlab_ci_runner` role).
 
-### Role dependencies
-
-- debops.secret
-- debops.etc_services
-- debops.ruby
-- debops.redis
-- debops.mysql
-- debops.postgresql
-- debops.nginx
-
-
 ### Installation
 
 To install `debops.gitlab_ci` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.gitlab_ci
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.etc_services`
+- `debops.ruby`
+- `debops.redis`
+- `debops.mysql`
+- `debops.postgresql`
+- `debops.nginx`
+
 
 
 ### Role variables

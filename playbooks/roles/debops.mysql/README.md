@@ -1,6 +1,6 @@
 ## debops.mysql
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 Install and manage a MySQL database. At the moment only database on
 `localhost` is supported.
@@ -9,18 +9,18 @@ You can use this role as a dependency of another role to easily create
 databases and users for a particular application (database and user
 management is also available using Ansible inventory).
 
-### Role dependencies
-
-- debops.secret
-- debops.ferm
-- debops.tcpwrappers
-
-
 ### Installation
 
 To install `debops.mysql` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.mysql
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.ferm`
+- `debops.tcpwrappers`
+
 
 
 ### Role variables

@@ -1,5 +1,7 @@
 ## debops.monkeysphere
+
 [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+
 ### Warning, this is a BETA role
 
 This role has been marked by the author as a beta role, which means that it
@@ -7,7 +9,6 @@ might be significantly changed in the future. Be careful while using this role
 in a production environment.
 
 ***
-
 This role can be used to give SSH users the ability to login to the server
 using their PGP/GnuPG keys. This functionality is enabled using
 [Monkeysphere](http://web.monkeysphere.info/) project.
@@ -15,13 +16,13 @@ using their PGP/GnuPG keys. This functionality is enabled using
 At the moment role is not fully complete. Required user configuration
 functionality is in the works.
 
-
-
 ### Installation
 
 To install `debops.monkeysphere` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.monkeysphere
+
+
 
 
 ### Role variables

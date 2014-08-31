@@ -1,6 +1,6 @@
 ## debops.apt
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.apt` configures and manages APT package manager in Debian and other
 derivative distributions. Specifically, it will manage:
@@ -12,21 +12,21 @@ derivative distributions. Specifically, it will manage:
 * local APT repository (using `reprepro`)
 * installation of custom packages specified in Ansible inventory
 
-### Role dependencies
-
-- debops.secret
-- debops.apt_preferences
-- debops.etc_services
-- debops.ferm
-- debops.nginx
-- debops.reprepro
-
-
 ### Installation
 
 To install `debops.apt` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.apt
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.apt_preferences`
+- `debops.etc_services`
+- `debops.ferm`
+- `debops.nginx`
+- `debops.reprepro`
+
 
 
 ### Role variables

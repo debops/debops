@@ -1,18 +1,18 @@
 ## debops.kvm
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role installs packages required for KVM support on a host. You can
 then access this host with, for example, `virt-manager` to create and
 manage KVM virtual machines.
-
-
 
 ### Installation
 
 To install `debops.kvm` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.kvm
+
+
 
 
 ### Role variables

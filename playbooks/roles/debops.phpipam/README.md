@@ -1,6 +1,6 @@
 ## debops.phpipam
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role installs [phpIPAM](http://phpipam.net/), an IP Address Manager
 written in PHP5. MySQL will be used as the backend database, and nginx will
@@ -11,19 +11,19 @@ changed in the future.
 
 Default credentials: `Admin:ipamadmin`
 
-### Role dependencies
-
-- debops.secret
-- debops.mysql
-- debops.php5
-- debops.nginx
-
-
 ### Installation
 
 To install `debops.phpipam` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.phpipam
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.mysql`
+- `debops.php5`
+- `debops.nginx`
+
 
 
 ### Role variables
