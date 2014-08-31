@@ -1,6 +1,6 @@
 ## debops.apt_preferences
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 [APT preferences](https://wiki.debian.org/AptPreferences) can be used to
 influence package selection performed by APT during installation or upgrades.
@@ -12,13 +12,13 @@ By default, if you don't specify version or provide custom pin configuration,
 `apt_preferences` role will configure specified packages to be installed from
 backports repository of a current OS release.
 
-
-
 ### Installation
 
 To install `debops.apt_preferences` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.apt_preferences
+
+
 
 
 ### Role variables
