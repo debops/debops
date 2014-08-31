@@ -1,31 +1,31 @@
 ## debops.rails_deploy
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.rails_deploy` role allows you to easily setup infrastructure
 capable of running Rails applications. It removes all of the headaches
 associated to setting up a secure Rails app that is ready for production so
 you can concentrate on developing your app.
 
-### Role dependencies
-
-- debops.secret
-- debops.etc_services
-- debops.nodejs
-- debops.ruby
-- debops.redis
-- debops.postgresql
-- debops.mysql
-- debops.nginx
-- debops.monit
-- debops.monit
-
-
 ### Installation
 
 To install `debops.rails_deploy` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.rails_deploy
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.etc_services`
+- `debops.nodejs`
+- `debops.ruby`
+- `debops.redis`
+- `debops.postgresql`
+- `debops.mysql`
+- `debops.nginx`
+- `debops.monit`
+- `debops.monit`
+
 
 
 ### Role variables
@@ -620,7 +620,7 @@ production if you don't have to worry about a ton of red tape.
 
 `debops.rails_deploy` role was written by:
 
-- Nick Janetakis | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
+- Nick Janetakis - [e-mail](mailto:nick.janetakis@gmail.com) | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
 
 
 License: [GNU General Public License v3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
