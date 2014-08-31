@@ -47,7 +47,7 @@
   shell: ifdown {{ item.item.iface }} ; sleep {{ ifupdown_ifupdown_delay }} ; ifup {{ item.item.iface }}
   with_items: ifupdown_status.results
   when: (ifupdown_status.results is defined and ifupdown_status.results) and
-        (ifupdown_auto_ifupdown is defined and ifupdown_auto_ifupdown == True) and
+        (ifupdown_reconfigure is defined and ifupdown_reconfigure == True) and
         (item.changed == True) and
         (item.item.inet is undefined or item.item.inet is defined and item.item.inet != 'manual')
 
