@@ -1,17 +1,17 @@
 ## debops.java
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role installs OpenJDK Java packages. It is useful as a dependency of
 other roles.
-
-
 
 ### Installation
 
 To install `debops.java` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.java
+
+
 
 
 ### Role variables
@@ -36,7 +36,7 @@ List of default variables available in the inventory:
 
 `debops.java` role was written by:
 
-- Nick Janetakis | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
+- Nick Janetakis - [e-mail](mailto:nick.janetakis@gmail.com) | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
 
 
 License: [GNU General Public License v3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
