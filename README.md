@@ -1,6 +1,6 @@
 ## debops.gitlab
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role installs [GitLab](https://about.gitlab.com/), an Open Source
 [GitHub](https://github.com/) clone. `debops.gitlab` role will also
@@ -14,22 +14,22 @@ support new version shortly after that).
 
 Default credentials: `root:5iveL!fe`
 
-### Role dependencies
-
-- debops.secret
-- debops.etc_services
-- debops.ruby
-- debops.redis
-- debops.mysql
-- debops.postgresql
-- debops.nginx
-
-
 ### Installation
 
 To install `debops.gitlab` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.gitlab
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.etc_services`
+- `debops.ruby`
+- `debops.redis`
+- `debops.mysql`
+- `debops.postgresql`
+- `debops.nginx`
+
 
 
 ### Role variables
