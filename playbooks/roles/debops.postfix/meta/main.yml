@@ -68,3 +68,48 @@ meta_info:
     example, `debops.mailman` role enables mail forwarding to the configured
     mailing lists, and `debops.smstools` role uses Postfix as mail-SMS gateway.
 
+  usage: |
+    List of Postfix capabilities in `postfix` variable - what Postfix can and
+    should do on a host. Set this to `False` and disable Postfix support, set it
+    to `[]` and have Ansible not do anything with Postfix (unsupported). Not all
+    combinations of these capabilities will work correctly (role is still in
+    beta stage).
+    
+    - `null`: Postfix has no local delivery, all mail is sent to a MX for current
+      domain. Configuration similar to that presented here:
+      http://www.postfix.org/STANDARD_CONFIGURATION_README.html#null_client
+      Default. You should remove this capability and replace it with others
+      presented below.
+    
+    - `local`: local delivery is enabled on current host.
+    
+    - `network`: enables access to Postfix-related ports (`25`, `587`, `465`) in
+      firewall, required for incoming mail to be acceped by Postfix.
+    
+    - `mx`: enables support for incoming mail on port `25`, designed for hosts set up
+      as MX. Automatically enables `postscreen` (without `dnsbl`/`dnswl` support),
+      anti-spam restrictions.
+    
+    - `submission`: enables authorized mail submission on ports `25` and `587` (user
+      authentication is currently not supported and needs to be configured
+      separately).
+    
+    - `deprecated`: designed to enable obsolete functions of mail system,
+      currently enables authorized mail submission on port `465` (when
+      `submission` is also present in the list of capabilities).
+    
+    - `postscreen`: allows to enable postscreen support on port `25` independently of
+      `mx` capability.
+    
+    - `dnsbl`: enables support for DNS blacklists in postscreen, automatically
+      enables whitelists.
+    
+    - `dnswl`: enables support for DNS whitelists in postscreen, without blacklists.
+    
+    - `test`: enables "soft_bounce" option and XCLIENT protocol extension for
+      localhost (useful in mail system testing).
+    
+    - `defer`: planned feature to defer mail delivery.
+    
+    - `auth`: planned feature to enable user authentication.
+

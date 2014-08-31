@@ -1,56 +1,13 @@
 ---
-# role: postfix (High-performance mail transport agent)
 
-
-# List of postfix capabilities - what postfix can and should do on a host. Set
-# this to False and disable postfix support, set it to [] and have Ansible not
-# do anything with postfix (unsupported). Not all combinations of these
-# capabilities will work correctly (role is still in alpha stage).
-#
-# - null: postfix has no local delivery, all mail is sent to a MX for current
-#   domain. Configuration similar to that presented here:
-#   http://www.postfix.org/STANDARD_CONFIGURATION_README.html#null_client
-#   Default. You should remove this capability and replace it with others
-#   presented below.
-#
-# - local: local delivery is enabled on current host.
-#
-# - network: enables access to postfix-related ports (25, 587, 465) in
-#   firewall, required for incoming mail to be acceped by postfix.
-#
-# - mx: enables support for incoming mail on port 25, designed for hosts set up
-#   as MX. Automatically enables postscreen (without dnsbl/dnswl support),
-#   anti-spam restrictions.
-#
-# - submission: enables authorized mail submission on ports 25 and 587 (user
-#   authentication is currently not supported and needs to be configured
-#   separately).
-#
-# - deprecated: designed to enable obsolete functions of mail system, currently
-#   enables authorized mail submission on port 465 (when submission also present
-#   in the list of capabilities).
-#
-# - postscreen: allows to enable postscreen support on port 25 independently of
-#   mx support.
-#
-# - dnsbl: enables support for DNS blacklists in postscreen, automatically
-#   enables whitelists.
-#
-# - dnswl: enables support for DNS whitelists in postscreen, without blacklists.
-#
-# - test: enables "soft_bounce" option and XCLIENT protocol extension for
-#   localhost (useful in mail system testing).
-#
-# - defer: planned feature to defer mail delivery.
-#
-# - auth: planned feature to enable user authentication.
-#
+# Active Postfix capabilities (see README.md). By default Postfix is configured
+# with local mail disabled, all mail is sent to local domain MX server
 postfix: [ 'null' ]
 
 
-# Configuration options for postfix. Many options are configured automatically
-# using templates, here you can (mostly) add your own entries to postfix lists
-# (look in postfix manual for details), they will by added or replaced in
+# Configuration options for Postfix. Many options are configured automatically
+# using templates, here you can (mostly) add your own entries to Postfix lists
+# (look in Postfix manual for details), they will by added or replaced in
 # templates.
 
 # Mail host name configured in /etc/mailname
