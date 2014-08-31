@@ -1,6 +1,6 @@
 ## debops.sks
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 [SKS Keyserver](https://sks-keyservers.net/) is an OpenPGP/GnuPG key
 server. This role allows you to install and manage one or more keyservers
@@ -16,19 +16,19 @@ seed your local key database from a keyserver dump (which is a preferred
 option of connecting to the existing pool because of the size of existing
 key database dumps).
 
-### Role dependencies
-
-- debops.apt_preferences
-- debops.etc_services
-- debops.ferm
-- debops.nginx
-
-
 ### Installation
 
 To install `debops.sks` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.sks
+
+### Role dependencies
+
+- `debops.apt_preferences`
+- `debops.etc_services`
+- `debops.ferm`
+- `debops.nginx`
+
 
 
 ### Role variables

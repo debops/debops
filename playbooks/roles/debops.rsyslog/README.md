@@ -1,17 +1,17 @@
 ## debops.rsyslog
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role manages configuration of `rsyslog` server and makes sure that
 it's installed.
-
-
 
 ### Installation
 
 To install `debops.rsyslog` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.rsyslog
+
+
 
 
 ### Role variables

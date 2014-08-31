@@ -1,6 +1,6 @@
 ## debops.ntp
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.ntp` role can be used to install [OpenNTPD](http://www.openntpd.org/)
 time server which will be used both to synchronize time on a localhost and
@@ -10,16 +10,16 @@ also manage timezone settings using `tzdata` Debian package.
 Time server will not be installed in an LXC or OpenVZ container, because
 time synchronization in this case is provided by the host operating system.
 
-### Role dependencies
-
-- debops.ferm
-
-
 ### Installation
 
 To install `debops.ntp` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.ntp
+
+### Role dependencies
+
+- `debops.ferm`
+
 
 
 ### Role variables

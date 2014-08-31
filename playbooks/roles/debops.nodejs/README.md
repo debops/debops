@@ -1,6 +1,6 @@
 ## debops.nodejs
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role can be used as a dependency for other roles to provide NodeJS and
 npm support.
@@ -10,13 +10,13 @@ is installed, and `npm` command is installed from upstream using a script;
 this will be changed in the future to install `npm` package as a backported
 Debian Jessie version.
 
-
-
 ### Installation
 
 To install `debops.nodejs` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.nodejs
+
+
 
 
 ### Role variables

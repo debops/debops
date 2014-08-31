@@ -1,6 +1,6 @@
 ## debops.ansible
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.ansible` is an Ansible role which builds and installs Debian
 package with specified Ansible version (by default, `devel`). It can be
@@ -10,13 +10,13 @@ on a `devel` Ansible version in a container or VM.
 If `redis-server` is found on managed host, this role will automatically
 enable support for host fact caching in Ansible.
 
-
-
 ### Installation
 
 To install `debops.ansible` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.ansible
+
+
 
 
 ### Role variables

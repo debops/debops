@@ -1,6 +1,6 @@
 ## debops.nat
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.nat` is a helper role which configures internal network on
 a separate bridge interface with NAT or MASQUERADE firewall configuration
@@ -14,17 +14,17 @@ be performed by `debops.ferm` and `debops.interfaces` Ansible roles.
 You can use `dnsmasq` server (available via `debops.dnsmasq` Ansible role)
 to complete the network configuration and provide internal DNS/DHCP server.
 
-### Role dependencies
-
-- debops.ifupdown
-- debops.ferm
-
-
 ### Installation
 
 To install `debops.nat` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.nat
+
+### Role dependencies
+
+- `debops.ifupdown`
+- `debops.ferm`
+
 
 
 ### Role variables

@@ -1,6 +1,6 @@
 ## debops.etc_services
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `etc_services` role can be used to "reserve" or "register" a service port
 in `/etc/services` file. Service ports configured this way can appear as
@@ -9,13 +9,13 @@ You can also have convenient database of reserved and free ports on
 a particular host, and reference ports by their names in firewall
 configuration files.
 
-
-
 ### Installation
 
 To install `debops.etc_services` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.etc_services
+
+
 
 
 ### Role variables

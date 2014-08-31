@@ -1,25 +1,25 @@
 ## debops.etherpad
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role installs and configures [Etherpad](http://etherpad.org/), an
 on-line multiuser collabolative text editor. It will be installed behind
 `nginx` server with MySQL as a database backend.
-
-### Role dependencies
-
-- debops.secret
-- debops.etc_services
-- debops.nodejs
-- debops.mysql
-- debops.nginx
-
 
 ### Installation
 
 To install `debops.etherpad` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.etherpad
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.etc_services`
+- `debops.nodejs`
+- `debops.mysql`
+- `debops.nginx`
+
 
 
 ### Role variables

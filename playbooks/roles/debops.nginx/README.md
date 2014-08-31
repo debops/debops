@@ -1,6 +1,6 @@
 ## debops.nginx
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 [nginx](http://nginx.org/) is a fast and light webserver with extensible
 configuration.
@@ -10,17 +10,17 @@ for multiple websites at the same time. Server is configured using
 inventory variables, role can also be used as a dependency of another role
 to configure a webserver for that role using dependency variables.
 
-### Role dependencies
-
-- debops.apt_preferences
-- debops.ferm
-
-
 ### Installation
 
 To install `debops.nginx` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.nginx
+
+### Role dependencies
+
+- `debops.apt_preferences`
+- `debops.ferm`
+
 
 
 ### Role variables

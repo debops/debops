@@ -1,18 +1,18 @@
 ## debops.directories
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This is a simple wrapper role around `file` Ansible module, which lets you
 manage (create, modify or remove) directories using inventory variables,
 including creation on multiple hosts at once.
-
-
 
 ### Installation
 
 To install `debops.directories` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.directories
+
+
 
 
 ### Role variables

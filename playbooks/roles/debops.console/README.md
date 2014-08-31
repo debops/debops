@@ -1,18 +1,18 @@
 ## debops.console
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role manages console-related things, like enabling serial console,
 setting up `/etc/motd` and `/etc/issue` files, configuring system-wide
 locale settings. You can also provide a list of packages to install.
-
-
 
 ### Installation
 
 To install `debops.console` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.console
+
+
 
 
 ### Role variables

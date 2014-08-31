@@ -1,5 +1,7 @@
 ## debops.owncloud
+
 [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+
 ### Warning, this is a BETA role
 
 This role has been marked by the author as a beta role, which means that it
@@ -7,7 +9,6 @@ might be significantly changed in the future. Be careful while using this role
 in a production environment.
 
 ***
-
 This role installs [ownCloud](http://owncloud.org/) instance on a specified
 host, with either MySQL or PostgreSQL database as a backend and an nginx
 webserver as a frontend.
@@ -15,20 +16,20 @@ webserver as a frontend.
 At the moment role doesn't work correctly due to the changes in ownCloud
 repository structure.
 
-### Role dependencies
-
-- debops.secret
-- debops.mysql
-- debops.postgresql
-- debops.php5
-- debops.nginx
-
-
 ### Installation
 
 To install `debops.owncloud` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.owncloud
+
+### Role dependencies
+
+- `debops.secret`
+- `debops.mysql`
+- `debops.postgresql`
+- `debops.php5`
+- `debops.nginx`
+
 
 
 ### Role variables

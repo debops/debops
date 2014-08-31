@@ -1,19 +1,19 @@
 ## debops.sshkeys
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.sshkeys` role can be used to manage users SSH keys in
 `/etc/ssh/authorized_keys/` directory. This role is required for SFTPonly
 accounts created by `debops.sftpusers` role to disallow access to
 `~/.ssh/authorized_keys` for users themselves.
 
-
-
 ### Installation
 
 To install `debops.sshkeys` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.sshkeys
+
+
 
 
 ### Role variables

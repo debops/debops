@@ -1,6 +1,6 @@
 ## debops.postfix
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role installs and manages [Postfix](http://postfix.org/), an SMTP
 server.
@@ -28,17 +28,17 @@ enable more features of the Postfix SMTP server for their own use. For
 example, `debops.mailman` role enables mail forwarding to the configured
 mailing lists, and `debops.smstools` role uses Postfix as mail-SMS gateway.
 
-### Role dependencies
-
-- debops.pki
-- debops.ferm
-
-
 ### Installation
 
 To install `debops.postfix` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.postfix
+
+### Role dependencies
+
+- `debops.pki`
+- `debops.ferm`
+
 
 
 ### Role variables

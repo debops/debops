@@ -1,6 +1,6 @@
 ## debops.gitlab_ci_runner
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 [GitLab CI Runner](https://github.com/gitlabhq/gitlab-ci-runner) is
 a helper Ruby program which is used by [GitLab
@@ -11,20 +11,20 @@ reinstalled if necessary. You will need a GitLab CI instance to use
 Runners, which can be installed and configured using `debops.gitlab_ci`
 role.
 
-### Role dependencies
-
-- debops.ruby
-- debops.ansible
-- debops.nodejs
-- debops.mysql
-- debops.postgresql
-
-
 ### Installation
 
 To install `debops.gitlab_ci_runner` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.gitlab_ci_runner
+
+### Role dependencies
+
+- `debops.ruby`
+- `debops.ansible`
+- `debops.nodejs`
+- `debops.mysql`
+- `debops.postgresql`
+
 
 
 ### Role variables

@@ -1,24 +1,24 @@
 ## debops.sshd
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role configures OpenSSH server for public key access, disables
 password authentication and creates a specific configuration options for
 `sftponly` accounts.
-
-### Role dependencies
-
-- debops.auth
-- debops.ferm
-- debops.tcpwrappers
-- debops.sshkeys
-
 
 ### Installation
 
 To install `debops.sshd` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.sshd
+
+### Role dependencies
+
+- `debops.auth`
+- `debops.ferm`
+- `debops.tcpwrappers`
+- `debops.sshkeys`
+
 
 
 ### Role variables

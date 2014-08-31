@@ -1,6 +1,6 @@
 ## debops.backporter
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This is a helper [Ansible](https://github.com/ansible/ansible.git) role which
 allows you to ensure that Debian packages with certain versions are available
@@ -19,16 +19,16 @@ HOWTO](https://wiki.debian.org/SimpleBackportCreation). `rmadison` utility from
 `devscripts` package is used to check available Debian packages, and depends on
 availability of [Debian QA Madison service](https://qa.debian.org/madison.php).
 
-### Role dependencies
-
-- debops.secret
-
-
 ### Installation
 
 To install `debops.backporter` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.backporter
+
+### Role dependencies
+
+- `debops.secret`
+
 
 
 ### Role variables

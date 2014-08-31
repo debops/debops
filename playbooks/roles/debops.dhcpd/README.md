@@ -1,16 +1,16 @@
 ## debops.dhcpd
+
 [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
-
 Install and configure [ISC DHCP Server](https://www.isc.org/downloads/dhcp/).
-
-
 
 ### Installation
 
 To install `debops.dhcpd` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.dhcpd
+
+
 
 
 ### Role variables

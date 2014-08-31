@@ -1,6 +1,6 @@
 ## debops.tcpwrappers
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role can be used to manage [TCP
 Wrappers](https://en.wikipedia.org/wiki/TCP\_Wrapper) rules located in
@@ -13,13 +13,13 @@ services (for example, `debops.mysql`, `debops.sshd`).
 By default, tcpwrappers will be configured to block access from everywhere
 except `localhost` (relative to remote host) and Ansible Controller.
 
-
-
 ### Installation
 
 To install `debops.tcpwrappers` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.tcpwrappers
+
+
 
 
 ### Role variables

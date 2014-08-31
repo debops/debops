@@ -1,20 +1,20 @@
 ## debops.samba
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role installs and configures a Samba 3 file server with a default file
 share. You can configure your own shares using inventory variables.
-
-### Role dependencies
-
-- debops.ferm
-
 
 ### Installation
 
 To install `debops.samba` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.samba
+
+### Role dependencies
+
+- `debops.ferm`
+
 
 
 ### Role variables

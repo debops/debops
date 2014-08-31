@@ -1,20 +1,20 @@
 ## debops.sftpusers
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.sftpusers` role can be used to create and manage user accounts
 which have system access restricted to SFTP only.
-
-### Role dependencies
-
-- debops.auth
-
 
 ### Installation
 
 To install `debops.sftpusers` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.sftpusers
+
+### Role dependencies
+
+- `debops.auth`
+
 
 
 ### Role variables

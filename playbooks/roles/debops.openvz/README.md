@@ -1,6 +1,6 @@
 ## debops.openvz
-[![Platforms](http://img.shields.io/badge/platforms-debian-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian-lightgrey.svg)](#)
 
 `debops.openvz` role enables [OpenVZ](http://openvz.org/) container support
 on Debian Wheezy hosts. This role has not been tested on Debian Jessie or
@@ -9,16 +9,16 @@ moment unlikely. Main reason for this role is to help ease transition from
 older systems based on Debian Squeeze with OpenVZ into newer systems based
 on Debian Wheezy/Jessie and LXC.
 
-### Role dependencies
-
-- debops.ferm
-
-
 ### Installation
 
 To install `debops.openvz` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.openvz
+
+### Role dependencies
+
+- `debops.ferm`
+
 
 
 ### Role variables

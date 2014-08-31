@@ -1,14 +1,21 @@
 ## {{ galaxy_name }}
+
 {% if meta_info.travis is defined and meta_info.travis %}[![Travis CI](https://secure.travis-ci.org/{{ github_username + '/' + repo_name }}.png)](http://travis-ci.org/{{ github_username + '/' + repo_name }}) [![test-suite](http://img.shields.io/badge/test--suite-{{ repo_name | replace("-","--") | replace("_","__") }}-blue.svg)](https://github.com/{{ github_username }}/test-suite/tree/master/{{ repo_name }}/){% endif %}{% if meta_info.galaxy_id is defined and meta_info.galaxy_id %}{% if meta_info.travis is defined and meta_info.travis %} {% endif %}[![Ansible Galaxy](http://img.shields.io/badge/galaxy-{{ galaxy_name | replace("_","__") }}-660198.svg)](https://galaxy.ansible.com/list#/roles/{{ meta_info.galaxy_id }}){% endif %}{% if (meta_info.travis is defined and meta_info.travis) or (meta_info.galaxy_id is defined and meta_info.galaxy_id) %} {% endif %}[![Platforms](http://img.shields.io/badge/platforms-{{ galaxy_info.platforms | map(attribute='name') | sort | join('%20|%20') | lower }}-lightgrey.svg)](#)
-{% if meta_info.beta is defined and meta_info.beta %}### Warning, this is a BETA role
+{% if meta_info.beta is defined and meta_info.beta %}
+### Warning, this is a BETA role
 
 This role has been marked by the author as a beta role, which means that it
 might be significantly changed in the future. Be careful while using this role
 in a production environment.
 
-***{% endif %}
-{% if meta_info.synopsis is defined %}
+***{% endif %}{% if meta_info.synopsis is defined %}
 {{ meta_info.synopsis | trim }}{% endif %}
+
+### Installation
+
+To install `{{ galaxy_name }}` using Ansible Galaxy, run:
+
+    ansible-galaxy install {{ galaxy_name }}
 {% if meta_info.quick_start is defined and meta_info.quick_start %}
 
 ### Quick start
@@ -18,14 +25,8 @@ in a production environment.
 
 ### Role dependencies
 {% for dependency in dependencies %}
-- {{ dependency.role | trim }}{% endfor %}
+- `{{ dependency.role | trim }}`{% endfor %}
 {% endif %}
-
-### Installation
-
-To install `{{ galaxy_name }}` using Ansible Galaxy, run:
-
-    ansible-galaxy install {{ galaxy_name }}
 {% if meta_info.defaults is defined and meta_info.defaults %}
 
 ### Role variables
