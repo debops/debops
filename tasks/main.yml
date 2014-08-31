@@ -1,12 +1,15 @@
 ---
 
 - name: Install Monit
-  apt: pkg=monit state=present install_recommends=False
+  apt:
+    name: 'monit'
+    state: 'latest'
+    install_recommends: False
 
 - name: Configure Monit
   template: src=etc/monit/monitrc.j2 dest=/etc/monit/monitrc
             owner=root group=root mode=0700
-  notify: [ 'Reload Monit' ]
+  notify: [ 'Test monit and reload' ]
 
 - name: Delete unwanted configs
   file: state=absent
@@ -18,7 +21,7 @@
     - monit_process_dependent_list
   when: item.delete is defined and item.delete and
         item.pid is defined and item.pid
-  notify: [ 'Reload Monit' ]
+  notify: [ 'Test monit and reload' ]
 
 - name: Create configs
   template: src=etc/monit/conf.d/{{ item.type | default('base') }}.conf.j2
@@ -31,7 +34,5 @@
     - monit_process_dependent_list
   when: item.delete is undefined and not item.delete and
         item.pid is defined and item.pid
-  notify: [ 'Reload Monit' ]
+  notify: [ 'Test monit and reload' ]
 
-- name: Start Monit
-  service: name=monit state=started enabled=yes
