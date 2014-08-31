@@ -4,14 +4,14 @@
 
 ifupdown_default_list:
 
-  - iface: '{{ ifupdown_external }}'
+  - iface: '{{ ifupdown_external_interface }}'
     type: 'mapping'
     options: |
       script /usr/local/sbin/map-scheme
-      map HOME {{ ifupdown_external }}-home
-      map WORK {{ ifupdown_external }}-work
+      map HOME {{ ifupdown_external_interface }}-home
+      map WORK {{ ifupdown_external_interface }}-work
 
-  - iface: '{{ ifupdown_external }}-home'
+  - iface: '{{ ifupdown_external_interface }}-home'
     inet: 'static'
     auto: False
     force: True
@@ -20,12 +20,12 @@ ifupdown_default_list:
       netmask 255.255.255.0
       up flush-mail
 
-  - iface: '{{ ifupdown_external }}-work'
+  - iface: '{{ ifupdown_external_interface }}-work'
     auto: False
     force: True
     inet: 'dhcp'
 
-  - iface: '{{ ifupdown_internal }}'
+  - iface: '{{ ifupdown_internal_interface }}'
     allow: 'hotplug'
     inet: 'dhcp'
 
