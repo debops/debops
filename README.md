@@ -1,19 +1,19 @@
 ## debops.php5
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
+[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role can be used as a dependency of other roles to easily enable
 support for PHP5 on a host. `php5-fpm` package will be used as a backend
 for PHP5 applications. This role works very well with `debops.nginx` role
 for setting up `nginx` webserver as a frontend.
 
-
-
 ### Installation
 
 To install `debops.php5` using Ansible Galaxy, run:
 
     ansible-galaxy install debops.php5
+
+
 
 
 ### Role variables
