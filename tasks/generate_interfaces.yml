@@ -7,13 +7,14 @@
     - '../vars/networkmanager_{{ ifupdown_networkmanager }}.yml'
     - '../vars/virtualization_{{ ansible_virtualization_type }}_{{ ansible_virtualization_role }}.yml'
     - '../vars/default.yml'
-  when: ((ifupdown_interfaces is defined and not ifupdown_interfaces) or ifupdown_interfaces is undefined)
+  when: (ifupdown_interface is undefined or
+         (ifupdown_interfaces is defined and not ifupdown_interfaces))
 
 - name: Prepare interface configuration if not defined
   set_fact:
     ifupdown_interfaces: '{{ ifupdown_default_interfaces }}'
-  when: (ifupdown_dependent_interfaces is undefined) and
-        (ifupdown_default_interfaces is defined and ifupdown_default_interfaces)
+  when: (ifupdown_dependent_interfaces is undefined and
+         (ifupdown_default_interfaces is defined and ifupdown_default_interfaces))
 
 - name: Prepare interface configuration via dependency if defined
   set_fact:
@@ -21,15 +22,20 @@
   when: ifupdown_dependent_interfaces is defined and ifupdown_dependent_interfaces
 
 - name: Create /etc/network/interfaces.d directory
-  file: path=/etc/network/interfaces.d owner=root group=root mode=0755 state=directory
+  file:
+    path: '/etc/network/interfaces.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
 - name: Delete interface configuration if requested
   file:
     path: '/etc/network/interfaces.d/{{ item.weight | default("00") }}_{{ item.filename | default(item.type | default("interface") + "_" + item.iface) }}'
     state: 'absent'
   with_items: ifupdown_interfaces
-  when: (item.iface is defined and item.iface) and
-        (item.delete is defined and item.delete)
+  when: ((item.iface is defined and item.iface) and
+         (item.delete is defined and item.delete))
 
 - name: Generate interface configuration
   template:
@@ -39,16 +45,15 @@
     group: 'root'
     mode: '0644'
   with_items: ifupdown_interfaces
-  register: ifupdown_status
-  when: (item.iface is defined and item.iface) and
-        (item.delete is undefined or (item.delete is defined and not item.delete))
+  register: ifupdown_register_status
+  when: ((item.iface is defined and item.iface) and
+         (item.delete is undefined or (item.delete is defined and not item.delete)))
 
 - name: Reconfigure interfaces
   shell: ifdown {{ item.item.iface }} ; sleep {{ ifupdown_reconfigure_delay }} ; ifup {{ item.item.iface }}
-  with_items: ifupdown_status.results
-  when: (ifupdown_status.results is defined and ifupdown_status.results) and
-        (ifupdown_reconfigure is defined and ifupdown_reconfigure == True) and
-        (item.changed == True) and
-        (item.item.inet is undefined or item.item.inet is defined and item.item.inet != 'manual')
-
+  with_items: ifupdown_register_status.results
+  when: ((ifupdown_register_status.results is defined and ifupdown_register_status.results) and
+         (ifupdown_reconfigure is defined and ifupdown_reconfigure == True) and
+         (item.changed == True) and
+         (item.item.inet is undefined or item.item.inet is defined and item.item.inet != 'manual'))
 
