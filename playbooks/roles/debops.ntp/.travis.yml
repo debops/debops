@@ -1,0 +1,19 @@
+---
+
+language: 'python'
+python: '2.7'
+
+addons:
+  hosts:
+    - 'travis.localdomain'
+
+virtualenv:
+  system_site_packages: true
+
+before_install: True
+install: True
+
+script:
+  - 'git clone --depth 1 https://github.com/debops/test-runner'
+  - 'cd test-runner ; ./runner -r https://github.com/debops/test-suite'
+
