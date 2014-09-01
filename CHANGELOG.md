@@ -2,7 +2,11 @@
 
 Welcome... to the Real World.
 
-### Changelog for 1st September 2014
+### v0.0.0 (prerelease pending)
+
+***
+
+##### 2014-09-01
 
 We are starting the main project repository anew! The old `ginas/ginas`
 repository will be preserved for historic reasons as `debops/ginas` after main
