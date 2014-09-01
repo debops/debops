@@ -1,3 +1,10 @@
+This repository is preserved for historical reasons. Last commit happened on
+1st November 2014, almost a full year since it started. Now, project lives on
+under [DebOps](http://debops.org/) name, the corresponding repository can be
+found at https://github.com/debops/debops/.
+
+***
+
 ## DebOps - Open Source infrastructure
 
 [![Travis CI](https://travis-ci.org/ginas/ginas.png?branch=master)](https://travis-ci.org/ginas/ginas)
