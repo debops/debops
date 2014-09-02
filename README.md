@@ -23,10 +23,15 @@ command. Commands to execute on UNIX-like systems:
     cd debops-playbooks
     ansible-galaxy -p playbooks/roles install -r galaxy/requirements.txt
 
-This will download all roles used by DebOps playbooks into
-`debops-playbooks/playbooks/roles/` directory (you can also omit the `-p
-playbooks/roles` argument in which case roles will be installed system-wide,
-which requires `sudo` access or `root` permissions).
+This will download all roles required by the DebOps playbooks.
+
+They will be installed to `debops-playbooks/playbooks/roles/`. You can of
+course omit the `-p` argument and then the roles will be installed to the
+`roles/` path relative to where you installed Ansible. Depending on how you
+installed Ansible this may require `sudo` access.
+
+If you are updating already installed roles, `ansible-galaxy` might require the
+`--force` option to overwrite existing roles.
 
 ### Playbook usage
 
