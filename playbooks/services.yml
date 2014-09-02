@@ -1,0 +1,111 @@
+---
+
+- name: Manage users with git-shell accounts
+  hosts: 'debops_gitusers'
+  sudo: True
+
+  roles:
+    - { role: debops.gitusers, tags: gitusers }
+    - { role: debops.sshkeys,  tags: sshkeys }
+
+
+- name: Manage users with SFTPonly accounts
+  hosts: 'debops_sftpusers'
+  sudo: True
+
+  roles:
+    - { role: debops.sftpusers, tags: sftpusers }
+    - { role: debops.sshkeys,   tags: sshkeys }
+
+
+- name: Manage Monit service
+  hosts: 'debops_monit'
+  sudo: True
+
+  roles:
+    - { role: debops.monit, tags: monit }
+
+
+- name: Manage ISC DHCP server
+  hosts: 'debops_dhcpd'
+  sudo: True
+
+  roles:
+    - { role: debops.dhcpd, tags: dhcpd }
+
+
+- name: Manage SKS Keyserver
+  hosts: 'debops_sks'
+  sudo: True
+
+  roles:
+    - { role: debops.sks, tags: sks }
+
+
+- name: Manage NFSv3 services
+  hosts: 'debops_nfs'
+  sudo: True
+
+  roles:
+    - { role: debops.nfs, tags: nfs }
+
+
+- name: Manage Samba service
+  hosts: 'debops_samba'
+  sudo: True
+
+  roles:
+    - { role: debops.samba, tags: samba }
+
+
+- name: Manage MySQL server
+  hosts: 'debops_mysql'
+  sudo: True
+
+  roles:
+    - { role: debops.mysql, tags: mysql }
+
+    - role: debops.phpmyadmin
+      when: mysql_phpmyadmin is defined and mysql_phpmyadmin
+      tags: [ 'mysql', 'phpmyadmin' ]
+
+
+- name: Manage PostgreSQL server
+  hosts: 'debops_postgresql'
+  sudo: True
+
+  roles:
+    - { role: debops.postgresql, tags: postgresql }
+
+
+- name: Manage Redis server
+  hosts: 'debops_redis'
+  sudo: True
+
+  roles:
+    - { role: debops.redis, tags: redis }
+
+
+- name: Manage Redis sentinel server
+  hosts: 'debops_redis_sentinel'
+  sudo: True
+
+  roles:
+    - { role: debops.redis, tags: redis }
+
+
+- name: Manage nginx server
+  hosts: 'debops_nginx'
+  sudo: True
+
+  roles:
+    - { role: debops.nginx, tags: nginx }
+
+
+- name: Manage SMS gateway
+  hosts: 'debops_smstools'
+  sudo: True
+
+  roles:
+    - { role: debops.smstools, tags: smstools }
+

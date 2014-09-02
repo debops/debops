@@ -1,0 +1,43 @@
+---
+
+- name: Gather default and custom facts
+  hosts: 'all:!localhost'
+  gather_facts: True
+  sudo: False
+
+  tasks:
+    - name: Check IP address of Ansible Controller
+      set_fact:
+        ansible_controller: '{{ ansible_env.SSH_CLIENT.split(" ") | first }}/32'
+      when: (ansible_controller is undefined and ansible_connection != "local")
+      tags: [ 'ferm', 'tcpwrappers' ]
+
+    - name: Update APT cache early if older than 24h
+      apt:
+        update_cache: True
+        cache_valid_time: '86400'
+      sudo: True
+
+- name: Common configuration for all hosts
+  hosts: 'all:!localhost'
+  gather_facts: True
+  sudo: True
+
+  roles:
+    - { role: debops.apt_preferences,      tags: apt_preferences }
+    - { role: debops.etc_services,         tags: etc_services }
+    - { role: debops.auth,                 tags: auth }
+    - { role: debops.pki,                  tags: pki }
+    - { role: debops.apt,                  tags: apt }
+    - { role: debops.ferm,                 tags: ferm }
+    - { role: debops.ntp,                  tags: ntp }
+    - { role: debops.sshd,                 tags: sshd }
+    - { role: debops.ifupdown,             tags: ifupdown }
+    - { role: debops.console,              tags: console }
+    - { role: debops.postfix,              tags: postfix }
+    - { role: debops.rsyslog,              tags: rsyslog }
+    - { role: debops.tcpwrappers,          tags: tcpwrappers }
+    - { role: debops.users,                tags: users }
+    - { role: debops.sshkeys,              tags: sshkeys }
+    - { role: debops.directories,          tags: directories }
+

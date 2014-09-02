@@ -1,0 +1,33 @@
+---
+
+# This is main entry point for DebOps playbooks. By default 'debops' script
+# accesses this playbook; with command line arguments you can access
+# sub-playbooks separately for a lighter ansible-playbook run, if needed.
+
+
+  # This playbook contains roles that are run on all hosts in the inventory
+  # - common services like SMTP server, administrative tasks, authentication
+  # and authorization control, system services used by other applications like
+  # firewall, etc.
+- include: common.yml
+
+  # This playbook manages different programming language environments available
+  # on each host, enabled using Ansible groups.
+- include: environments.yml
+
+  # This playbook manages system services enabled using Ansible groups, like
+  # databases, webservers, application servers, and so on.
+- include: services.yml
+
+  # This playbook contains plays which install and manage more complex
+  # applications which can use multiple services at a time, or are user-facing
+  # applications like webservices.
+- include: applications.yml
+
+  # This playbook manages virtualized environments installed on hosts, like
+  # OpenVZ Hardware Nodes, support for LXC containers in a host, or support for
+  # KVM virtual machines. This is meant for the host-side of the virtualization
+  # support, guest-side is managed by the rest of the playbook without the use
+  # of the plays contained here.
+- include: virtualization.yml
+

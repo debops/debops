@@ -1,0 +1,71 @@
+---
+
+- name: Manage Mailman service
+  hosts: 'debops_mailman'
+  sudo: True
+
+  roles:
+    - { role: debops.mailman, tags: mailman }
+
+
+- name: Manage Etherpad service
+  hosts: 'debops_etherpad'
+  sudo: True
+
+  roles:
+    - { role: debops.etherpad, tags: etherpad }
+
+
+- name: Manage ownCloud service
+  hosts: 'debops_owncloud'
+  sudo: True
+
+  roles:
+    - { role: debops.owncloud, tags: owncloud }
+
+
+- name: Manage phpIPAM service
+  hosts: 'debops_phpipam'
+  sudo: True
+
+  roles:
+    - { role: debops.phpipam, tags: phpipam }
+
+
+- name: Manage GitLab service
+  hosts: 'debops_gitlab'
+  sudo: True
+
+  roles:
+    - { role: debops.gitlab, tags: gitlab }
+
+- name: Manage GitLab CI service
+  hosts: 'debops_gitlab_ci'
+  sudo: True
+
+  roles:
+    - { role: debops.gitlab_ci, tags: gitlab_ci }
+
+- name: Manage GitLab CI Runner service
+  hosts: 'debops_gitlab_ci_runner'
+  sudo: True
+
+  roles:
+    - { role: debops.gitlab_ci_runner, tags: gitlab_ci_runner }
+
+
+- name: Manage Ansible service
+  hosts: 'debops_ansible'
+  sudo: True
+
+  roles:
+    - { role: debops.ansible, tags: ansible }
+
+
+- name: Install DebOps recursively
+  hosts: 'debops_recursively'
+  sudo: True
+
+  roles:
+    - { role: debops.debops, tags: debops }
+
