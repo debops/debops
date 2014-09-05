@@ -33,6 +33,23 @@ installed Ansible this may require `sudo` access.
 If you are updating already installed roles, `ansible-galaxy` might require the
 `--force` option to overwrite existing roles.
 
+### Host requirements
+
+DebOps playbooks and roles work best with [Debian
+GNU/Linux](https://debian.org/) operating system. It is expected that you setup
+new hosts with just base install + `openssh-server` package, no additional
+packages should be installed (`tasksel` list should be empty). You should
+enable `root` account with your own password (DebOps will not change it). After
+the host is installed and rebooted, you can use `playbooks/bootstrap.yml`
+playbook to set up administrator account and configure `sudo` access
+automatically. Make sure that a host has a FQDN address by checking with
+`hostname -f` command.
+
+You can also use the playbook on [Ubuntu Linux](http://ubuntu.com/) (and
+derivative) workstations, however some functionality might be skipped by
+default (for example DebOps tries not to touch network interfaces if
+NetworkManager is found on the host).
+
 ### Playbook usage
 
 To use these playbooks, you will need to create or provide an [Ansible
