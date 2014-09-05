@@ -15,13 +15,13 @@
   with_items: [ '{{ php5_pools }}' ]
   when: item.enabled is defined and item.enabled == True
   notify:
-    - Reload php5-fpm
+    - Restart php5-fpm
 
 - name: Disable php5-fpm pools
   file: path=/etc/php5/fpm/pool.d/{{ item.name }}.conf state=absent
   with_items: [ '{{ php5_pools }}' ]
   when: item.enabled is defined and item.enabled == False
   notify:
-    - Reload php5-fpm
+    - Restart php5-fpm
 
 
