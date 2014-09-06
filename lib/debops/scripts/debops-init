@@ -1,0 +1,38 @@
+#!/bin/bash
+ 
+# debops-init: create a new DebOps project
+# Copyright (C) 2014 Nick Janetakis <nick.janetakis@gmail.com>
+# Part of the DebOps project - http://debops.org/
+
+set -e
+
+DEBOPS_SKEL=(
+  "$HOME/.local/share/debops/skel"
+  "/usr/local/lib/debops/skel"
+  "/usr/lib/debops/skel"
+)
+
+if [ "$1" = "" ]; then
+  echo "You must supply a project name"
+  exit 1
+fi
+
+if [ -e "$1" ]; then
+  echo "$1 already exists"
+  exit 1
+fi
+
+for skel_dir in "${DEBOPS_SKEL[@]}"; do
+  if [ -d "$skel_dir" ]; then
+    cp_source="$skel_dir"
+    break
+  fi
+done
+
+if [ ! -e "$cp_source" ]; then
+  echo "No suitable skeleton path was found"
+  exit 1
+fi
+
+cp -r "$cp_source" "$1"
+echo "Initialized DebOps project in $1"
