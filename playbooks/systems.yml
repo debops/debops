@@ -1,0 +1,27 @@
+---
+
+- name: Manage users with git-shell accounts
+  hosts: 'debops_gitusers'
+  sudo: True
+
+  roles:
+    - { role: debops.gitusers, tags: gitusers }
+    - { role: debops.sshkeys,  tags: sshkeys }
+
+
+- name: Manage users with SFTPonly accounts
+  hosts: 'debops_sftpusers'
+  sudo: True
+
+  roles:
+    - { role: debops.sftpusers, tags: sftpusers }
+    - { role: debops.sshkeys,   tags: sshkeys }
+
+
+- name: Manage NFSv3 services
+  hosts: 'debops_nfs'
+  sudo: True
+
+  roles:
+    - { role: debops.nfs, tags: nfs }
+
