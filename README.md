@@ -1,6 +1,6 @@
 ## ntp
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-ntp.png)](http://travis-ci.org/debops/ansible-ntp) [![test-suite](http://img.shields.io/badge/test--suite-ansible--ntp-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-ntp/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.ntp-660198.svg)](https://galaxy.ansible.com/list#/roles/1582)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-ntp.png)](http://travis-ci.org/debops/ansible-ntp) [![test-suite](http://img.shields.io/badge/test--suite-ansible--ntp-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-ntp/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.ntp-660198.svg)](https://galaxy.ansible.com/list#/roles/1582) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.ntp` role can be used to install [OpenNTPD](http://www.openntpd.org/)
 time server which will be used both to synchronize time on a localhost and
