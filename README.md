@@ -1,6 +1,6 @@
 ## apt
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-apt.png)](http://travis-ci.org/debops/ansible-apt) [![test-suite](http://img.shields.io/badge/test--suite-ansible--apt-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-apt/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.apt-660198.svg)](https://galaxy.ansible.com/list#/roles/1551)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-apt.png)](http://travis-ci.org/debops/ansible-apt) [![test-suite](http://img.shields.io/badge/test--suite-ansible--apt-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-apt/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.apt-660198.svg)](https://galaxy.ansible.com/list#/roles/1551) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.apt` configures and manages APT package manager in Debian and other
 derivative distributions. Specifically, it will manage:
