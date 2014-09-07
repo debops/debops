@@ -1,6 +1,6 @@
 ## sks
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-sks.png)](http://travis-ci.org/debops/ansible-sks) [![test-suite](http://img.shields.io/badge/test--suite-ansible--sks-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-sks/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.sks-660198.svg)](https://galaxy.ansible.com/list#/roles/1600)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-sks.png)](http://travis-ci.org/debops/ansible-sks) [![test-suite](http://img.shields.io/badge/test--suite-ansible--sks-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-sks/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.sks-660198.svg)](https://galaxy.ansible.com/list#/roles/1600) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 [SKS Keyserver](https://sks-keyservers.net/) is an OpenPGP/GnuPG key
 server. This role allows you to install and manage one or more keyservers
