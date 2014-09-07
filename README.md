@@ -1,6 +1,6 @@
 ## postgresql
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-postgresql.png)](http://travis-ci.org/debops/ansible-postgresql) [![test-suite](http://img.shields.io/badge/test--suite-ansible--postgresql-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-postgresql/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.postgresql-660198.svg)](https://galaxy.ansible.com/list#/roles/1590)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-postgresql.png)](http://travis-ci.org/debops/ansible-postgresql) [![test-suite](http://img.shields.io/badge/test--suite-ansible--postgresql-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-postgresql/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.postgresql-660198.svg)](https://galaxy.ansible.com/list#/roles/1590) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.postgresql` is an Ansible role which can install and manage
 [PostgreSQL](http://postgresql.org/) database servers. It's built around
