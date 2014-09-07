@@ -1,6 +1,6 @@
 ## nfs
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-nfs.png)](http://travis-ci.org/debops/ansible-nfs) [![test-suite](http://img.shields.io/badge/test--suite-ansible--nfs-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-nfs/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.nfs-660198.svg)](https://galaxy.ansible.com/list#/roles/1579)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-nfs.png)](http://travis-ci.org/debops/ansible-nfs) [![test-suite](http://img.shields.io/badge/test--suite-ansible--nfs-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-nfs/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.nfs-660198.svg)](https://galaxy.ansible.com/list#/roles/1579) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 ### Warning, this is a BETA role
 
