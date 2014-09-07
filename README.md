@@ -1,6 +1,6 @@
 ## console
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-console.png)](http://travis-ci.org/debops/ansible-console) [![test-suite](http://img.shields.io/badge/test--suite-ansible--console-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-console/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.console-660198.svg)](https://galaxy.ansible.com/list#/roles/1556)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-console.png)](http://travis-ci.org/debops/ansible-console) [![test-suite](http://img.shields.io/badge/test--suite-ansible--console-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-console/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.console-660198.svg)](https://galaxy.ansible.com/list#/roles/1556) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role manages console-related things, like enabling serial console,
 setting up `/etc/motd` and `/etc/issue` files, configuring system-wide
