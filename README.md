@@ -1,6 +1,6 @@
 ## postfix
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-postfix.png)](http://travis-ci.org/debops/ansible-postfix) [![test-suite](http://img.shields.io/badge/test--suite-ansible--postfix-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-postfix/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.postfix-660198.svg)](https://galaxy.ansible.com/list#/roles/1589)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-postfix.png)](http://travis-ci.org/debops/ansible-postfix) [![test-suite](http://img.shields.io/badge/test--suite-ansible--postfix-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-postfix/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.postfix-660198.svg)](https://galaxy.ansible.com/list#/roles/1589) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role installs and manages [Postfix](http://postfix.org/), an SMTP
 server.
