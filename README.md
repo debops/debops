@@ -1,6 +1,6 @@
 ## rsyslog
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-rsyslog.png)](http://travis-ci.org/debops/ansible-rsyslog) [![test-suite](http://img.shields.io/badge/test--suite-ansible--rsyslog-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-rsyslog/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.rsyslog-660198.svg)](https://galaxy.ansible.com/list#/roles/1594)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-rsyslog.png)](http://travis-ci.org/debops/ansible-rsyslog) [![test-suite](http://img.shields.io/badge/test--suite-ansible--rsyslog-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-rsyslog/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.rsyslog-660198.svg)](https://galaxy.ansible.com/list#/roles/1594) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role manages configuration of `rsyslog` server and makes sure that
 it's installed.
