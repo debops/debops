@@ -1,6 +1,6 @@
 ## dnsmasq
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-dnsmasq.png)](http://travis-ci.org/debops/ansible-dnsmasq) [![test-suite](http://img.shields.io/badge/test--suite-ansible--dnsmasq-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-dnsmasq/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.dnsmasq-660198.svg)](https://galaxy.ansible.com/list#/roles/1561)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-dnsmasq.png)](http://travis-ci.org/debops/ansible-dnsmasq) [![test-suite](http://img.shields.io/badge/test--suite-ansible--dnsmasq-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-dnsmasq/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.dnsmasq-660198.svg)](https://galaxy.ansible.com/list#/roles/1561) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 ### Warning, this is a BETA role
 
