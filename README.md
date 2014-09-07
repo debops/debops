@@ -1,6 +1,6 @@
 ## nginx
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-nginx.png)](http://travis-ci.org/debops/ansible-nginx) [![test-suite](http://img.shields.io/badge/test--suite-ansible--nginx-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-nginx/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.nginx-660198.svg)](https://galaxy.ansible.com/list#/roles/1580)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-nginx.png)](http://travis-ci.org/debops/ansible-nginx) [![test-suite](http://img.shields.io/badge/test--suite-ansible--nginx-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-nginx/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.nginx-660198.svg)](https://galaxy.ansible.com/list#/roles/1580) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 [nginx](http://nginx.org/) is a fast and light webserver with extensible
 configuration.
