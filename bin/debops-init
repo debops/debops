@@ -8,8 +8,8 @@ set -e
 
 DEBOPS_SKEL=(
   "$HOME/.local/share/debops/skel"
-  "/usr/local/lib/debops/skel"
-  "/usr/lib/debops/skel"
+  "/usr/local/share/debops/skel"
+  "/usr/share/debops/skel"
 )
 
 project="${1:-$PWD}"
@@ -29,10 +29,47 @@ if [ ! -e "$cp_source" ]; then
   echo >&2 "No suitable project skeleton was found" ; exit 1
 fi
 
-# Change the cp source to copy into the PWD if it's the PWD.
+# Change the cp source to copy into the PWD if it's the PWD
 if [ "$project" = "$PWD" ]; then
   cp_source="$cp_source/."
 fi
 
 cp -r ${cp_source} ${project}
+
+# Swap in different hosts file content depending on the host's OS/distro
+valid_debops_controller=0
+hosts_file="ansible/inventory/hosts"
+
+if [ $(uname) = "Linux" ]; then
+  distro=$(lsb_release -si)
+  if [ "$distro" = "Debian" -o "$distro" = "Ubuntu" ]; then
+    valid_debops_controller=1
+  fi
+fi
+
+if [ "$valid_debops_controller" -eq 1 ]; then
+  hosts_content=$(cat <<EOF
+
+# Your host is eligible to run the above plays, if you want that
+# functionality and more then uncomment the line under [ansible_controllers].
+
+[ansible_controllers]
+#$(hostname) ansible_connection=local
+EOF
+  )
+else
+  hosts_content=$(cat <<EOF
+
+# Your host is not Debian-based so you will not be able to leverage
+# the above features on your current operating system. You can however
+# use Vagrant or something else to setup a VM and install DebOps there.
+
+[ansible_controllers]
+#<VM host IP>
+EOF
+  )
+fi
+
+echo "$hosts_content" >> "$project/$hosts_file"
+
 echo "Initialized DebOps project in $project"
