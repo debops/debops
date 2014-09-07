@@ -1,6 +1,6 @@
 ## debops
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-debops.png)](http://travis-ci.org/debops/ansible-debops) [![test-suite](http://img.shields.io/badge/test--suite-ansible--debops-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-debops/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.debops-660198.svg)](https://galaxy.ansible.com/list#/roles/1557)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-debops.png)](http://travis-ci.org/debops/ansible-debops) [![test-suite](http://img.shields.io/badge/test--suite-ansible--debops-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-debops/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.debops-660198.svg)](https://galaxy.ansible.com/list#/roles/1557) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 Download [DebOps](http://debops.org/) source code to user home directory,
 ready to be used. This role might be useful to setup Ansible Controller
