@@ -1,6 +1,6 @@
 ## owncloud
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-owncloud.png)](http://travis-ci.org/debops/ansible-owncloud) [![test-suite](http://img.shields.io/badge/test--suite-ansible--owncloud-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-owncloud/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.owncloud-660198.svg)](https://galaxy.ansible.com/list#/roles/1584)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-owncloud.png)](http://travis-ci.org/debops/ansible-owncloud) [![test-suite](http://img.shields.io/badge/test--suite-ansible--owncloud-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-owncloud/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.owncloud-660198.svg)](https://galaxy.ansible.com/list#/roles/1584) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 ### Warning, this is a BETA role
 
