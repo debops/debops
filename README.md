@@ -1,6 +1,6 @@
 ## apt_preferences
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-apt_preferences.png)](http://travis-ci.org/debops/ansible-apt_preferences) [![test-suite](http://img.shields.io/badge/test--suite-ansible--apt__preferences-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-apt_preferences/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.apt__preferences-660198.svg)](https://galaxy.ansible.com/list#/roles/1552)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-apt_preferences.png)](http://travis-ci.org/debops/ansible-apt_preferences) [![test-suite](http://img.shields.io/badge/test--suite-ansible--apt__preferences-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-apt_preferences/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.apt__preferences-660198.svg)](https://galaxy.ansible.com/list#/roles/1552) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 [APT preferences](https://wiki.debian.org/AptPreferences) can be used to
 influence package selection performed by APT during installation or upgrades.
