@@ -1,0 +1,114 @@
+#!/bin/bash
+
+# debops-install: install DebOps playbooks and roles
+# Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
+# Part of the DebOps project - http://debops.org/
+
+
+# This program is free software; you can redistribute
+# it and/or modify it under the terms of the
+# GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General
+# Public License along with this program; if not,
+# write to the Free Software Foundation, Inc., 59
+# Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# An on-line copy of the GNU General Public License can
+# be downloaded from the FSF web page at:
+# http://www.gnu.org/copyleft/gpl.html
+
+
+# This is an installer script which should download DebOps playbooks and roles
+# to user $HOME directory if they are not found either in directory relative to
+# $PWD or DebOps is not installed system-wide.
+
+
+set -e
+
+# ---- Variable definitions ----
+
+# Set some global constants
+declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
+declare -r DEBOPS_CONFIG=".debops.cfg"
+declare -r SCRIPT_NAME="$(basename ${0})"
+
+# Paths to look through if 'debops.cfg' is found in local directory
+DEBOPS_PLAYBOOKS_PWD_PATHS=(
+  "${PWD}/debops-playbooks/playbooks"
+)
+
+# Paths to look through if local install is not found
+DEBOPS_PLAYBOOKS_INSTALL_PATHS=(
+  "${DEBOPS_DATA_HOME}/debops-playbooks/playbooks"
+  "/usr/local/share/debops/debops-playbooks/playbooks"
+  "/usr/share/debops/debops-playbooks/playbooks"
+)
+
+# Default installation directory
+DEBOPS_DEFAULT_INSTALL_PATH="${DEBOPS_DATA_HOME}/debops-playbooks"
+
+# Default git sources for debops-playbooks
+DEBOPS_GIT_URI="https://github.com/debops/debops-playbooks"
+
+# Ansible Galaxy requirements file to use by default to download or update
+# Ansible roles, relative to debops-playbooks repository
+DEBOPS_GALAXY_REQUIREMENTS="galaxy/requirements.txt"
+
+# Path to install roles, relative to debops-playbooks repository
+DEBOPS_GALAXY_ROLES="playbooks/roles/"
+
+
+# ---- Main installer script ----
+
+# Check if playbooks are installed in local directory
+if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
+  for playbook_path in "${DEBOPS_PLAYBOOKS_PWD_PATHS[@]}" ; do
+    if [ -f ${playbook_path}/site.yml ] ; then
+      debops_playbooks="${playbook_path}"
+      break
+    fi
+  done
+fi
+
+# If playbooks have not been found in local directory, look for them in known
+# locations
+if [ -z "${debops_playbooks}" ] ; then
+  for playbook_path in "${DEBOPS_PLAYBOOKS_INSTALL_PATHS[@]}" ; do
+    if [ -f ${playbook_path}/site.yml ] ; then
+      debops_playbooks="${playbook_path}"
+      break
+    fi
+  done
+fi
+
+# Playbooks have not been found, at this point assume playbooks are not
+# installed. Install them in user home directory
+if [ -z "${debops_playbooks}" ] ; then
+  echo "DebOps playbooks have not been found, installing in ${DEBOPS_DEFAULT_INSTALL_PATH}"
+
+  if ! type git > /dev/null 2>&1 ; then
+    echo >&2 "${SCRIPT_NAME}: Error: git command not found" ; exit 1
+  fi
+
+  # Download main debops-playbooks repository
+  git clone --quiet ${DEBOPS_GIT_URI} ${DEBOPS_DEFAULT_INSTALL_PATH}
+
+  if ! type ansible-galaxy > /dev/null 2>&1 ; then
+    echo >&2 "${SCRIPT_NAME}: Error: ansible-galaxy command not found" ; exit 1
+  fi
+
+  pushd ${DEBOPS_DEFAULT_INSTALL_PATH}
+  ansible-galaxy --roles-path=${DEBOPS_GALAXY_ROLES} install --role-file=${DEBOPS_GALAXY_REQUIREMENTS}
+else
+  echo "DebOps playbooks have been found in ${debops_playbooks}"
+fi
+

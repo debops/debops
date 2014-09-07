@@ -1,10 +1,15 @@
 ## DebOps Changelog
 
-Welcome... to the Real World.
 
 ### v0.0.0 (prerelease pending)
 
 ***
+
+##### 2014-09-07
+
+* First iteration of the `debops-install` script.
+
+* First iteration of the `debops-init` script.
 
 ##### 2014-09-01
 
