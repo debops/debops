@@ -1,6 +1,6 @@
 ## mailman
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-mailman.png)](http://travis-ci.org/debops/ansible-mailman) [![test-suite](http://img.shields.io/badge/test--suite-ansible--mailman-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-mailman/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.mailman-660198.svg)](https://galaxy.ansible.com/list#/roles/1574)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-mailman.png)](http://travis-ci.org/debops/ansible-mailman) [![test-suite](http://img.shields.io/badge/test--suite-ansible--mailman-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-mailman/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.mailman-660198.svg)](https://galaxy.ansible.com/list#/roles/1574) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 Install and configure [Mailman](https://www.gnu.org/software/mailman/),
 a mailing list manager. It will be installed behind
