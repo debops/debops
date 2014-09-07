@@ -1,6 +1,6 @@
 ## monit
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-monit.png)](http://travis-ci.org/debops/ansible-monit) [![test-suite](http://img.shields.io/badge/test--suite-ansible--monit-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-monit/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.monit-660198.svg)](https://galaxy.ansible.com/list#/roles/1575)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-monit.png)](http://travis-ci.org/debops/ansible-monit) [![test-suite](http://img.shields.io/badge/test--suite-ansible--monit-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-monit/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.monit-660198.svg)](https://galaxy.ansible.com/list#/roles/1575) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.monit` role allows you to install and configure
 [Monit](http://mmonit.com/monit/) service which can be used to monitor
