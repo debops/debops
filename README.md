@@ -1,6 +1,6 @@
 ## php5
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-php5.png)](http://travis-ci.org/debops/ansible-php5) [![test-suite](http://img.shields.io/badge/test--suite-ansible--php5-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-php5/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.php5-660198.svg)](https://galaxy.ansible.com/list#/roles/1585)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-php5.png)](http://travis-ci.org/debops/ansible-php5) [![test-suite](http://img.shields.io/badge/test--suite-ansible--php5-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-php5/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.php5-660198.svg)](https://galaxy.ansible.com/list#/roles/1585) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role can be used as a dependency of other roles to easily enable
 support for PHP5 on a host. `php5-fpm` package will be used as a backend
