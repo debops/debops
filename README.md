@@ -1,6 +1,6 @@
 ## openvz
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-openvz.png)](http://travis-ci.org/debops/ansible-openvz) [![test-suite](http://img.shields.io/badge/test--suite-ansible--openvz-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-openvz/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.openvz-660198.svg)](https://galaxy.ansible.com/list#/roles/1583)[![Platforms](http://img.shields.io/badge/platforms-debian-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-openvz.png)](http://travis-ci.org/debops/ansible-openvz) [![test-suite](http://img.shields.io/badge/test--suite-ansible--openvz-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-openvz/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.openvz-660198.svg)](https://galaxy.ansible.com/list#/roles/1583) [![Platforms](http://img.shields.io/badge/platforms-debian-lightgrey.svg)](#)
 
 `debops.openvz` role enables [OpenVZ](http://openvz.org/) container support
 on Debian Wheezy hosts. This role has not been tested on Debian Jessie or
