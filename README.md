@@ -1,6 +1,6 @@
 ## tcpwrappers
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-tcpwrappers.png)](http://travis-ci.org/debops/ansible-tcpwrappers) [![test-suite](http://img.shields.io/badge/test--suite-ansible--tcpwrappers-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-tcpwrappers/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.tcpwrappers-660198.svg)](https://galaxy.ansible.com/list#/roles/1604)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-tcpwrappers.png)](http://travis-ci.org/debops/ansible-tcpwrappers) [![test-suite](http://img.shields.io/badge/test--suite-ansible--tcpwrappers-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-tcpwrappers/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.tcpwrappers-660198.svg)](https://galaxy.ansible.com/list#/roles/1604) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role can be used to manage [TCP
 Wrappers](https://en.wikipedia.org/wiki/TCP\_Wrapper) rules located in
