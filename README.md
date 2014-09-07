@@ -1,6 +1,6 @@
 ## ifupdown
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-ifupdown.png)](http://travis-ci.org/debops/ansible-ifupdown) [![test-suite](http://img.shields.io/badge/test--suite-ansible--ifupdown-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-ifupdown/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.ifupdown-660198.svg)](https://galaxy.ansible.com/list#/roles/1570)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-ifupdown.png)](http://travis-ci.org/debops/ansible-ifupdown) [![test-suite](http://img.shields.io/badge/test--suite-ansible--ifupdown-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-ifupdown/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.ifupdown-660198.svg)](https://galaxy.ansible.com/list#/roles/1570) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role can be used to manage network interface configuration on Debian
 and derivative operating systems. It manages configuration in
