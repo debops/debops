@@ -1,6 +1,6 @@
 ## auth
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-auth.png)](http://travis-ci.org/debops/ansible-auth) [![test-suite](http://img.shields.io/badge/test--suite-ansible--auth-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-auth/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.auth-660198.svg)](https://galaxy.ansible.com/list#/roles/1553)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-auth.png)](http://travis-ci.org/debops/ansible-auth) [![test-suite](http://img.shields.io/badge/test--suite-ansible--auth-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-auth/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.auth-660198.svg)](https://galaxy.ansible.com/list#/roles/1553) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.auth` manages basic user authentication and authorization on
 configured host, including setting up system groups with elevated
