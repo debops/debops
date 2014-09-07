@@ -1,6 +1,6 @@
 ## secret
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-secret.png)](http://travis-ci.org/debops/ansible-secret) [![test-suite](http://img.shields.io/badge/test--suite-ansible--secret-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-secret/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.secret-660198.svg)](https://galaxy.ansible.com/list#/roles/1598)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-secret.png)](http://travis-ci.org/debops/ansible-secret) [![test-suite](http://img.shields.io/badge/test--suite-ansible--secret-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-secret/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.secret-660198.svg)](https://galaxy.ansible.com/list#/roles/1598) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role enables you to have a separate directory on Ansible Controller
 (different than the playbook directory and inventory directory) which can be
