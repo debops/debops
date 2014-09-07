@@ -1,6 +1,6 @@
 ## gitlab
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-gitlab.png)](http://travis-ci.org/debops/ansible-gitlab) [![test-suite](http://img.shields.io/badge/test--suite-ansible--gitlab-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-gitlab/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.gitlab-660198.svg)](https://galaxy.ansible.com/list#/roles/1566)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-gitlab.png)](http://travis-ci.org/debops/ansible-gitlab) [![test-suite](http://img.shields.io/badge/test--suite-ansible--gitlab-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-gitlab/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.gitlab-660198.svg)](https://galaxy.ansible.com/list#/roles/1566) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role installs [GitLab](https://about.gitlab.com/), an Open Source
 [GitHub](https://github.com/) clone. `debops.gitlab` role will also
