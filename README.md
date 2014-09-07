@@ -1,6 +1,6 @@
 ## rails_deploy
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-rails_deploy.png)](http://travis-ci.org/debops/ansible-rails_deploy) [![test-suite](http://img.shields.io/badge/test--suite-ansible--rails__deploy-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-rails_deploy/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.rails__deploy-660198.svg)](https://galaxy.ansible.com/list#/roles/1591)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-rails_deploy.png)](http://travis-ci.org/debops/ansible-rails_deploy) [![test-suite](http://img.shields.io/badge/test--suite-ansible--rails__deploy-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-rails_deploy/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.rails__deploy-660198.svg)](https://galaxy.ansible.com/list#/roles/1591) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.rails_deploy` role allows you to easily setup infrastructure
 capable of running Rails applications. It removes all of the headaches
