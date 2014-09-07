@@ -1,6 +1,6 @@
 ## phpmyadmin
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-phpmyadmin.png)](http://travis-ci.org/debops/ansible-phpmyadmin) [![test-suite](http://img.shields.io/badge/test--suite-ansible--phpmyadmin-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-phpmyadmin/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.phpmyadmin-660198.svg)](https://galaxy.ansible.com/list#/roles/1587)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-phpmyadmin.png)](http://travis-ci.org/debops/ansible-phpmyadmin) [![test-suite](http://img.shields.io/badge/test--suite-ansible--phpmyadmin-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-phpmyadmin/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.phpmyadmin-660198.svg)](https://galaxy.ansible.com/list#/roles/1587) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 This role installs [PHPMyAdmin](http://www.phpmyadmin.net/) interface for
 MySQL database. At the moment it is designed to manage only a database on
