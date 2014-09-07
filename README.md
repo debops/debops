@@ -1,6 +1,6 @@
 ## ferm
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-ferm.png)](http://travis-ci.org/debops/ansible-ferm) [![test-suite](http://img.shields.io/badge/test--suite-ansible--ferm-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-ferm/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.ferm-660198.svg)](https://galaxy.ansible.com/list#/roles/1565)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-ferm.png)](http://travis-ci.org/debops/ansible-ferm) [![test-suite](http://img.shields.io/badge/test--suite-ansible--ferm-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-ferm/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.ferm-660198.svg)](https://galaxy.ansible.com/list#/roles/1565) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 [ferm](http://ferm.foo-projects.org/) is a wrapper around `iptables`
 command which lets you manage host firewall in an easy and Ansible-friendly
