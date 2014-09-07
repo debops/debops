@@ -1,6 +1,6 @@
 ## sftpusers
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-sftpusers.png)](http://travis-ci.org/debops/ansible-sftpusers) [![test-suite](http://img.shields.io/badge/test--suite-ansible--sftpusers-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-sftpusers/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.sftpusers-660198.svg)](https://galaxy.ansible.com/list#/roles/1599)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-sftpusers.png)](http://travis-ci.org/debops/ansible-sftpusers) [![test-suite](http://img.shields.io/badge/test--suite-ansible--sftpusers-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-sftpusers/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.sftpusers-660198.svg)](https://galaxy.ansible.com/list#/roles/1599) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.sftpusers` role can be used to create and manage user accounts
 which have system access restricted to SFTP only.
