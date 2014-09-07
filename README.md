@@ -1,6 +1,6 @@
 ## etc_services
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-etc_services.png)](http://travis-ci.org/debops/ansible-etc_services) [![test-suite](http://img.shields.io/badge/test--suite-ansible--etc__services-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-etc_services/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.etc__services-660198.svg)](https://galaxy.ansible.com/list#/roles/1563)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-etc_services.png)](http://travis-ci.org/debops/ansible-etc_services) [![test-suite](http://img.shields.io/badge/test--suite-ansible--etc__services-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-etc_services/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.etc__services-660198.svg)](https://galaxy.ansible.com/list#/roles/1563) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `etc_services` role can be used to "reserve" or "register" a service port
 in `/etc/services` file. Service ports configured this way can appear as
