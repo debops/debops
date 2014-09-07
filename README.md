@@ -1,6 +1,6 @@
 ## redis
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-redis.png)](http://travis-ci.org/debops/ansible-redis) [![test-suite](http://img.shields.io/badge/test--suite-ansible--redis-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-redis/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.redis-660198.svg)](https://galaxy.ansible.com/list#/roles/1592)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-redis.png)](http://travis-ci.org/debops/ansible-redis) [![test-suite](http://img.shields.io/badge/test--suite-ansible--redis-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-redis/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.redis-660198.svg)](https://galaxy.ansible.com/list#/roles/1592) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.redis` role allows you to easily setup infrastructure capable of
 running and managing 1 or more Redis servers. It is completely self healing
