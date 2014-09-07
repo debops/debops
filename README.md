@@ -1,6 +1,6 @@
 ## lxc
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-lxc.png)](http://travis-ci.org/debops/ansible-lxc) [![test-suite](http://img.shields.io/badge/test--suite-ansible--lxc-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-lxc/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.lxc-660198.svg)](https://galaxy.ansible.com/list#/roles/1573)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-lxc.png)](http://travis-ci.org/debops/ansible-lxc) [![test-suite](http://img.shields.io/badge/test--suite-ansible--lxc-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-lxc/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.lxc-660198.svg)](https://galaxy.ansible.com/list#/roles/1573) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.lxc` role can be used to configure and manage LXC environment on
 a host. Specifically, LXC 1.0 support will be installed on Ubuntu Trusty
