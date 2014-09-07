@@ -1,6 +1,6 @@
 ## gitusers
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-gitusers.png)](http://travis-ci.org/debops/ansible-gitusers) [![test-suite](http://img.shields.io/badge/test--suite-ansible--gitusers-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-gitusers/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.gitusers-660198.svg)](https://galaxy.ansible.com/list#/roles/1569)[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+[![Travis CI](https://secure.travis-ci.org/debops/ansible-gitusers.png)](http://travis-ci.org/debops/ansible-gitusers) [![test-suite](http://img.shields.io/badge/test--suite-ansible--gitusers-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-gitusers/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.gitusers-660198.svg)](https://galaxy.ansible.com/list#/roles/1569) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
 
 `debops.gitusers` role can be used to create and maintain user accounts
 accessible over SSH with limited functionality provided by `git-shell` and
