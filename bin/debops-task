@@ -1,0 +1,117 @@
+#!/bin/bash
+
+# debops-task: run ansible with some customization
+# Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
+# Part of the DebOps project - http://debops.org/
+
+
+# This program is free software; you can redistribute
+# it and/or modify it under the terms of the
+# GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General
+# Public License along with this program; if not,
+# write to the Free Software Foundation, Inc., 59
+# Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# An on-line copy of the GNU General Public License can
+# be downloaded from the FSF web page at:
+# http://www.gnu.org/copyleft/gpl.html
+
+
+set -e
+
+# ---- Variable definitions ----
+
+# Set some global constants
+declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
+declare -r DEBOPS_CONFIG=".debops.cfg"
+declare -r SCRIPT_NAME="$(basename ${0})"
+declare -r DEBOPS_RESERVED_NAMES=( task init update defaults )
+
+# Debugging (to enable, set DEBUG=1 on the command line)
+[ -z "${DEBUG}" ] && DEBUG=0
+
+# Don't check SSH fingerprint on connection (to enable, set INSECURE=1 on the
+# command line)
+[ -z "${INSECURE}" ] && INSECURE=0
+
+ANSIBLE_INVENTORY_PWD_PATHS=(
+  "${PWD}/ansible/inventory"
+  "${PWD}/inventory"
+)
+
+
+# ---- Main script ----
+
+# Check if we are in DebOps project directory
+if [ ! -f ${PWD}/${DEBOPS_CONFIG} ] ; then
+  [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: ${DEBOPS_CONFIG} file not found in current directory"
+  echo >&2 "${SCRIPT_NAME}: Fatal: not a DebOps project directory" ; exit 1
+fi
+
+# Check if ansible-playbook is available
+if ! type ansible > /dev/null 2>&1 ; then
+  echo >&2 "${SCRIPT_NAME}: Error: ansible: command not found" ; exit 1
+fi
+
+# Check if Ansible inventory can be found in local directory
+if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
+  for inventory_path in "${ANSIBLE_INVENTORY_PWD_PATHS[@]}" ; do
+    [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Checking for Ansible inventory in ${inventory_path} ..."
+    if [ -d ${inventory_path} ] ; then
+      ansible_inventory="${inventory_path}"
+      [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Found Ansible inventory in ${inventory_path}"
+      break
+    fi
+  done
+fi
+
+# Get module name from the script name if script is named 'debops-*'
+module=""
+module_name=${SCRIPT_NAME##*-}
+name_match=0
+for name in "${DEBOPS_RESERVED_NAMES[@]}" ; do
+    if [[ ${name} = "${module_name}" ]] ; then
+        name_match=1
+        break
+    fi
+done
+if [[ ${name_match} = 0 ]] ; then
+    module="-m ${module_name}"
+fi
+
+# Run ansible with specified parameters
+if [ -z "${ansible_inventory}" ] ; then
+  echo >&2 "${SCRIPT_NAME}: Error: Ansible inventory not found" ; exit 1
+else
+  export ANSIBLE_HOSTS="${ansible_inventory}"
+
+  # Allow insecure SSH connections if requested
+  if [ ${INSECURE} -gt 0 ] ; then
+    export ANSIBLE_HOST_KEY_CHECKING=False
+  fi
+
+  # Run ansible-playbook with specified arguments
+  if [ ${DEBUG} -gt 0 ] ; then
+    cat <<EOF >&2
+
+${SCRIPT_NAME}: Debug: ANSIBLE_CONFIG=${ANSIBLE_CONFIG}
+${SCRIPT_NAME}: Debug: ANSIBLE_HOSTS=${ANSIBLE_HOSTS}
+${SCRIPT_NAME}: Debug: ANSIBLE_HOST_KEY_CHECKING=${ANSIBLE_HOST_KEY_CHECKING}
+${SCRIPT_NAME}: Debug: ansible ${module} ${@}
+EOF
+    exit 0
+  else
+    ansible ${module} "${@}"
+  fi
+fi
+

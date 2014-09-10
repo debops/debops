@@ -9,6 +9,10 @@
 
 * DebOps project repositories can now be easily backed up using a Bash script
 
+* New main scripts:
+  - `debops` - run `ansible-playbook` with custom arguments
+  - `debops-task` - run `ansible` with custom arguments
+
 ##### 2014-09-07
 
 * First iteration of the `debops-install` script.
