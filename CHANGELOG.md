@@ -5,6 +5,10 @@
 
 ***
 
+##### 2014-09-10
+
+* DebOps project repositories can now be easily backed up using a Bash script
+
 ##### 2014-09-07
 
 * First iteration of the `debops-install` script.
