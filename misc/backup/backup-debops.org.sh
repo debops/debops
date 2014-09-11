@@ -114,6 +114,42 @@ download_backup_data () {
   verify_signature ${dest_dir}/${debops_backup_data_signature} ${debops_backup_data_fingerprint} || exit 1
 }
 
+# Mirror specified git repository or update
+do_git_mirror () {
+  local source_path="${1}"
+  local destination_path="${2}"
+
+  if [ $DEBUG -gt 0 ] ; then
+    echo git clone --mirror ${source_path} ${destination_path}
+  else
+    if [ ! -d ${destination_path} ]; then
+      git clone --mirror ${source_path} ${destination_path}
+    else
+      pushd ${destination_path}
+      git fetch -a
+      popd
+    fi
+  fi
+}
+
+# Clone specified git repository or update
+do_git_clone () {
+  local source_path="${1}"
+  local destination_path="${2}"
+
+  if [ $DEBUG -gt 0 ] ; then
+    echo git clone ${source_path} ${destination_path}
+  else
+    if [ ! -d ${destination_path} ]; then
+      git clone ${source_path} ${destination_path}
+    else
+      pushd ${destination_path}
+      git pull
+      popd
+    fi
+  fi
+}
+
 # Mirror all repositories
 git_clone_mirror () {
   clone_destination="${1}" ; shift
@@ -122,17 +158,8 @@ git_clone_mirror () {
 
   for repository in ${list_of_repositories[@]} ; do
 
-    if [ $DEBUG -gt 0 ] ; then
-      echo git clone --mirror ${git_uri}${repository} ${clone_destination}/${repository}
-    else
-      if [ ! -d ${clone_destination}/${repository} ]; then
-        git clone --mirror ${git_uri}${repository} ${clone_destination}/${repository}
-      else
-        pushd ${clone_destination}/${repository}
-        git fetch -a
-        popd
-      fi
-    fi
+    do_git_mirror "${git_uri}${repository}" "${clone_destination}/${repository}"
+
   done
 }
 
@@ -145,17 +172,8 @@ git_clone_tools () {
   for repository in ${list_of_repositories[@]} ; do
     repo_name=${repository%.git}
 
-    if [ $DEBUG -gt 0 ] ; then
-      echo git clone ${git_uri}${repository} ${clone_destination}/${repo_name}
-    else
-      if [ ! -d ${clone_destination}/${repo_name} ]; then
-        git clone ${git_uri}${repository} ${clone_destination}/${repo_name}
-      else
-        pushd ${clone_destination}/${repo_name}
-        git pull
-        popd
-      fi
-    fi
+    do_git_clone "${git_uri}${repository}" "${clone_destination}/${repo_name}"
+
   done
 }
 
@@ -168,17 +186,8 @@ git_restore_tools () {
   for repository in ${list_of_repositories[@]} ; do
     repo_name=${repository%.git}
 
-    if [ $DEBUG -gt 0 ] ; then
-      echo git clone ${clone_source}/${repository} ${clone_destination}/${repo_name}
-    else
-      if [ ! -d ${clone_destination}/${repo_name} ]; then
-        git clone ${clone_source}/${repository} ${clone_destination}/${repo_name}
-      else
-        pushd ${clone_destination}/${repo_name}
-        git pull
-        popd
-      fi
-    fi
+    do_git_clone "${clone_source}/${repository}" "${clone_destination}/${repo_name}"
+
   done
 }
 
@@ -197,17 +206,8 @@ git_clone_roles () {
 
     repo_name="debops/${prefix}${cut_final}"
 
-    if [ $DEBUG -gt 0 ] ; then
-      echo git clone ${git_uri}${repository} ${clone_destination}/${repo_name}
-    else
-      if [ ! -d ${clone_destination}/${repo_name} ]; then
-        git clone ${git_uri}${repository} ${clone_destination}/${repo_name}
-      else
-        pushd ${clone_destination}/${repo_name}
-        git pull
-        popd
-      fi
-    fi
+    do_git_clone "${git_uri}${repository}" "${clone_destination}/${repo_name}"
+
   done
 }
 
@@ -226,17 +226,8 @@ git_restore_roles () {
 
     repo_name="debops/${prefix}${cut_final}"
 
-    if [ $DEBUG -gt 0 ] ; then
-      echo git clone ${clone_source}/${repository} ${clone_destination}/${repo_name}
-    else
-      if [ ! -d ${clone_destination}/${repo_name} ]; then
-        git clone ${clone_source}/${repository} ${clone_destination}/${repo_name}
-      else
-        pushd ${clone_destination}/${repo_name}
-        git pull
-        popd
-      fi
-    fi
+    do_git_clone "${clone_source}/${repository}" "${clone_destination}/${repo_name}"
+
   done
 }
 
