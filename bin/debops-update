@@ -1,0 +1,182 @@
+#!/bin/bash
+
+# debops-update: install or update DebOps playbooks and roles
+# Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
+# Part of the DebOps project - http://debops.org/
+
+
+# This program is free software; you can redistribute
+# it and/or modify it under the terms of the
+# GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General
+# Public License along with this program; if not,
+# write to the Free Software Foundation, Inc., 59
+# Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# An on-line copy of the GNU General Public License can
+# be downloaded from the FSF web page at:
+# http://www.gnu.org/copyleft/gpl.html
+
+
+# This script can be used to install or update installed DebOps playbooks and
+# roles to current or specified version. By default it works on the installed
+# playbook in users $HOME/.local/share/debops directory, but it can also be
+# used on locally installed playbooks and roles in current directory.
+#
+# Short usage guide:
+#
+# - 'debops-update' will check if we are in DebOps project directory ('.debops.cfg' exists)
+#     * if yes, it will check if 'debops-playbooks/playbooks/site.yml' exists
+#       * if yes, update playbooks and roles in $PWD
+#     * if no, check if DebOps playbooks are installed in known places, like ~/.local/share/debops
+#       * if yes, update playbooks in a place that they are installed at
+#       * if no, install DebOps playbooks in ~/.local/share/debops/debops-playbooks
+#
+# - 'debops-update path/to/dir' will check if specified directory exists
+#     * if no, create it
+#     * if yes, check if DebOps playbooks are installed at $path/debops-playbooks
+#       * if yes, update them
+#       * if no, install DebOps playbooks at $path/debops-playbooks
+
+
+set -e
+
+# ---- Variable definitions ----
+
+# Set some global constants
+declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
+declare -r DEBOPS_CONFIG=".debops.cfg"
+declare -r SCRIPT_NAME="$(basename ${0})"
+
+# Debugging (to enable, set DEBUG=1 on the command line)
+[ -z "${DEBUG}" ] && DEBUG=0
+
+# Paths to look through if '.debops.cfg' is found in local directory
+DEBOPS_PLAYBOOKS_PWD_PATHS=(
+  "${PWD}/debops-playbooks"
+)
+
+# Paths to look through if local install is not found
+DEBOPS_PLAYBOOKS_INSTALL_PATHS=(
+  "${DEBOPS_DATA_HOME}/debops-playbooks"
+  "/usr/local/share/debops/debops-playbooks"
+  "/usr/share/debops/debops-playbooks"
+)
+
+# Default installation directory
+DEBOPS_DEFAULT_INSTALL_PATH="${DEBOPS_DATA_HOME}/debops-playbooks"
+
+# Default subdirectory where playbooks are stored, relative to the DebOps
+# playbooks directory
+DEBOPS_PLAYBOOK_DIR="playbooks"
+
+# Default site.yml playbook to look for
+DEBOPS_SITE_PLAYBOOK="${DEBOPS_PLAYBOOK_DIR}/site.yml"
+
+# Default git sources for debops-playbooks
+DEBOPS_GIT_URI="https://github.com/debops/debops-playbooks"
+
+# Ansible Galaxy requirements file to use by default to download or update
+# Ansible roles, relative to debops-playbooks repository
+DEBOPS_GALAXY_REQUIREMENTS="galaxy/requirements.txt"
+
+# Path to install roles, relative to debops-playbooks repository
+DEBOPS_GALAXY_ROLES="${DEBOPS_PLAYBOOK_DIR}/roles/"
+
+
+# ---- Main script ----
+
+# Check if required commands are available
+for name in git ansible-galaxy ; do
+  if ! type ${name} > /dev/null 2>&1 ; then
+    echo >&2 "${SCRIPT_NAME}: Error: ${name}: command not found" ; exit 1
+  fi
+done
+
+# Select default installation directory
+debops_install_path="${DEBOPS_DEFAULT_INSTALL_PATH}"
+
+# Check if user specified a directory as a paramter, if yes, use it as
+# a project directory and clone DebOps playbooks inside
+project="${1}"
+if [ -n "${project}" ] ; then
+
+  # If it's a new project, create the directory for it
+  if [ ! -e ${project} ] ; then
+    echo "Creating project directory in ${project}"
+    mkdir -p ${project}
+  fi
+
+  # Make sure that playbooks and roles will be installed in project directory if
+  # it's specified
+  debops_install_path="${project}/debops-playbooks"
+
+  # If playbooks already are installed in specified location, set them as
+  # currently used for eventual update
+  if [ -f ${project}/debops-playbooks/${DEBOPS_SITE_PLAYBOOK} ] ; then
+    debops_playbooks="${project}/debops-playbooks"
+  fi
+
+# If there's no project specified, look for playbooks in known locations
+else
+
+  # Check if playbooks are installed in local directory
+  if [ -z "${debops_playbooks}" ] ;then
+    if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
+      for playbook_path in "${DEBOPS_PLAYBOOKS_PWD_PATHS[@]}" ; do
+        if [ -f ${playbook_path}/${DEBOPS_SITE_PLAYBOOK} ] ; then
+          debops_playbooks="${playbook_path}"
+          break
+        fi
+      done
+    fi
+  fi
+
+  # If playbooks have not been found in local directory, look for them in known
+  # locations
+  if [ -z "${debops_playbooks}" ] ; then
+    for playbook_path in "${DEBOPS_PLAYBOOKS_INSTALL_PATHS[@]}" ; do
+      if [ -f ${playbook_path}/${DEBOPS_SITE_PLAYBOOK} ] ; then
+        debops_playbooks="${playbook_path}"
+        break
+      fi
+    done
+  fi
+
+fi
+
+# Playbooks have not been found, at this point assume playbooks are not
+# installed. Install them in user home directory
+if [ -z "${debops_playbooks}" ] ; then
+
+  echo "DebOps playbooks have not been found, installing in ${debops_install_path}"
+
+  # Download main debops-playbooks repository
+  git clone --quiet ${DEBOPS_GIT_URI} ${debops_install_path}
+
+  pushd ${debops_install_path} > /dev/null
+  mkdir -p ${DEBOPS_GALAXY_ROLES}
+  ansible-galaxy --roles-path=${DEBOPS_GALAXY_ROLES} install --role-file=${DEBOPS_GALAXY_REQUIREMENTS}
+  popd > /dev/null
+
+else
+
+  echo "DebOps playbooks have been found in ${debops_playbooks}"
+
+  # Go to the playbook directory and get latest updates
+  pushd ${debops_playbooks} > /dev/null
+  git pull
+  ansible-galaxy --force --roles-path=${DEBOPS_GALAXY_ROLES} install --role-file=${DEBOPS_GALAXY_REQUIREMENTS}
+  popd > /dev/null
+
+fi
+

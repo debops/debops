@@ -5,6 +5,14 @@
 
 ***
 
+##### 2014-09-11
+
+* Huge update of the `debops-install` script, which has been renamed to
+  `debops-update` and can now both install and update playbooks and roles
+  automatically, either in the user home directory at
+  `$HOME/.local/share/debops` or in the current directory, or a directory
+  specified as a parameter for the script.
+
 ##### 2014-09-10
 
 * DebOps project repositories can now be easily backed up using a Bash script
