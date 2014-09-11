@@ -125,9 +125,9 @@ do_git_mirror () {
     if [ ! -d ${destination_path} ]; then
       git clone --mirror ${source_path} ${destination_path}
     else
-      pushd ${destination_path}
+      pushd ${destination_path} > /dev/null
       git fetch -a
-      popd
+      popd > /dev/null
     fi
   fi
 }
@@ -143,9 +143,9 @@ do_git_clone () {
     if [ ! -d ${destination_path} ]; then
       git clone ${source_path} ${destination_path}
     else
-      pushd ${destination_path}
+      pushd ${destination_path} > /dev/null
       git pull
-      popd
+      popd > /dev/null
     fi
   fi
 }
