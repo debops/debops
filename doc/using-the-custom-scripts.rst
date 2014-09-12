@@ -18,16 +18,8 @@ If you allowed them to be installed on your system path then they will be in
 debops-update
 ^^^^^^^^^^^^^
 
-Updates the various components of DebOps. You can run ``debops-update`` and it
-will update the scripts, playbooks and roles.
-
-You can also limit which components get updated by providing an optional flag:
-
-::
-
-    debops-update --scripts
-    debops-update --playbooks
-    debops-update --roles
+Updates the playbooks and roles relative to where you run it, if none are found
+then it will update them at their default location.
 
 ****
 
