@@ -5,6 +5,15 @@
 
 ***
 
+##### 2014-09-12
+
+* Makefile has been rewritten and streamlined. `make install` will install all
+  scripts, inventory skeleton and playbooks + roles in a system-wide location
+  (by default, `/usr/local`) and `make clean` will remove installed files.
+
+* many different changes in the documentation in preparation of the release.
+  Role README files will use new flat-style buttons.
+
 ##### 2014-09-11
 
 * Huge update of the `debops-install` script, which has been renamed to
