@@ -24,7 +24,7 @@ install-scripts:
 install-skel:
 	@echo "Installing inventory skeleton ..."
 	@test -d ${SKEL_DIR} || mkdir -p ${SKEL_DIR}
-	@cp -r share/debops/skel ${SKEL_DIR}
+	@cp -r share/debops/skel/. ${SKEL_DIR}
 
 install-playbook:
 	@echo "Installing DebOps playbooks and roles in ${SHARE_DIR} ..."
