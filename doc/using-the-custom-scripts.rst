@@ -31,7 +31,7 @@ you should check out ``ansible/inventory/hosts`` relative to your project path.
 
 ::
 
-    debops-init /tmp/myproject
+    debops-init ~/myproject
 
 ****
 
