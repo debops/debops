@@ -11,14 +11,14 @@ Where were they installed to?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you allowed them to be installed on your system path then they will be in
-``/usr/local/bin`` and you can access them directly.
+``/usr/local/bin`` and directly accessible.
 
 ****
 
 debops-update
 ^^^^^^^^^^^^^
 
-Updates the playbooks and roles relative to where you run it, if none are found
+Updates the playbooks and roles relative to ``$PWD``, if none are found
 then it will update them at their default location.
 
 ****
