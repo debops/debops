@@ -11,7 +11,7 @@ Where were they installed to?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you allowed them to be installed on your system path then they will be in
-``/usr/local/bin`` and you can access them directly.
+``/usr/local/bin`` and directly accessible.
 
 ****
 
