@@ -19,7 +19,7 @@ debops-update
 ^^^^^^^^^^^^^
 
 Updates the playbooks and roles relative to where you run it, if none are found
-then it will update them in their default installed location.
+then it will update them at their default location.
 
 ****
 
