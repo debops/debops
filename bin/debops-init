@@ -6,10 +6,10 @@
 
 set -e
 
-DEBOPS_SKEL=(
-  "$HOME/.local/share/debops/skel"
-  "/usr/local/share/debops/skel"
-  "/usr/share/debops/skel"
+SKEL_DIRS=(
+  "ansible/inventory/group_vars/all"
+  "ansible/inventory/host_vars"
+  "ansible/playbooks"
 )
 
 project="${1:-$PWD}"
@@ -18,23 +18,75 @@ if [ -f "$project/.debops.cfg" ]; then
   echo >&2 "$project is already a DebOps project" ; exit 1
 fi
 
-for skel_dir in "${DEBOPS_SKEL[@]}"; do
-  if [ -d "$skel_dir" ]; then
-    cp_source="$skel_dir"
-    break
+for skel_dir in "${SKEL_DIRS[@]}"; do
+  if [ ! -d "$project/$skel_dir" ]; then
+    mkdir -p "$project/$skel_dir"
   fi
 done
 
-if [ ! -e "$cp_source" ]; then
-  echo >&2 "No suitable project skeleton was found" ; exit 1
-fi
+touch "$project/.debops.cfg"
 
-# Change the cp source to copy into the PWD if it's the PWD
-if [ "$project" = "$PWD" ]; then
-  cp_source="$cp_source/."
-fi
+gitignore_content=$(cat <<EOF
+ansible/inventory.secret
 
-cp -r ${cp_source} ${project}
+
+# Created by http://www.gitignore.io
+
+### vim ###
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+
+### Emacs ###
+# -*- mode: gitignore; -*-
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Org-mode
+.org-id-locations
+*_archive
+
+# flymake-mode
+*_flymake.*
+
+# eshell files
+/eshell/history
+/eshell/lastdir
+
+# elpa packages
+/elpa/
+
+# reftex files
+*.rel
+
+# AUCTeX auto folder
+/auto/
+
+
+### SublimeText ###
+# workspace files are user-specific
+*.sublime-workspace
+
+# project files should be checked into the repository, unless a significant
+# proportion of contributors will probably not be using SublimeText
+# *.sublime-project
+
+#sftp configuration file
+sftp-config.json
+
+EOF
+  )
+
+echo "$gitignore_content" >> "$project/.gitignore"
 
 # Swap in different hosts file content depending on the host's OS/distro
 valid_debops_controller=0
@@ -47,8 +99,17 @@ if [ $(uname) = "Linux" ]; then
   fi
 fi
 
+hosts_common=$(cat <<EOF
+# Hosts listed under [ansible_controllers] will have common DebOps
+# plays ran against them. It will setup common functionality such as
+# proper DNS, postfix and other handy services.
+
+EOF
+  )
+
 if [ "$valid_debops_controller" -eq 1 ]; then
   hosts_content=$(cat <<EOF
+$hosts_common
 
 # Your host is eligible to run the above plays, if you want that
 # functionality and more then uncomment the line under [ansible_controllers].
@@ -59,6 +120,7 @@ EOF
   )
 else
   hosts_content=$(cat <<EOF
+$hosts_common
 
 # Your host is not Debian-based so you will not be able to leverage
 # the above features on your current operating system. You can however
