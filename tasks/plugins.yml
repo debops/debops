@@ -1,0 +1,34 @@
+---
+
+- name: Create plugin path
+  file: path={{ elasticsearch_path_plugins }} state=directory
+
+- name: Detect installed plugins
+  command: ls chdir={{ elasticsearch_path_plugins }}
+  changed_when: False
+  register: elasticsearch_register_installed_plugins
+
+- name: Delete plugins
+  shell: bin/plugin -s -r {{ item.name }} chdir={{ elasticsearch_path_home }}
+  when: item.delete is defined and item.delete and
+        (item.name in elasticsearch_register_installed_plugins.stdout or
+        item.name.split('/')[1].split('-')[1:] | join('-') in elasticsearch_register_installed_plugins.stdout)
+  with_items: elasticsearch_plugins
+  notify: [ 'Restart Elasticsearch' ]
+
+- name: Install plugins by name
+  shell: bin/plugin -i {{ item.name }} chdir={{ elasticsearch_path_home }}
+  when: (item.url is undefined or not item.url) and
+        (item.delete is undefined or not item.delete) and
+        not item.name.split('/')[1].split('-')[1:] | join('-') in elasticsearch_register_installed_plugins.stdout
+  with_items: elasticsearch_plugins
+  notify: [ 'Restart Elasticsearch' ]
+
+- name: Install plugins by url
+  shell: bin/plugin -i {{ item.name }} -u {{ item.url }}
+         chdir={{ elasticsearch_path_home }}
+  when: item.url is defined and item.url and
+        (item.delete is undefined or not item.delete) and
+        not item.name in elasticsearch_register_installed_plugins.stdout
+  with_items: elasticsearch_plugins
+  notify: [ 'Restart Elasticsearch' ]
