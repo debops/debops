@@ -17,7 +17,9 @@
 daemonize {{ redis_daemonize }}
 pidfile "{{ redis_pidfile }}"
 port {{ redis_port }}
+{% if redis_tpl_redis_version | version_compare('2.8.5', '>=') -%}
 tcp-backlog {{ redis_tcp_backlog }}
+{% endif -%}
 bind {{ redis_bind | join(' ') }}
 timeout {{ redis_timeout }}
 tcp-keepalive {{ redis_tcp_keepalive }}
