@@ -82,16 +82,23 @@ DEBOPS_PLAYBOOK_DIR="playbooks"
 # Default site.yml playbook to look for
 DEBOPS_SITE_PLAYBOOK="${DEBOPS_PLAYBOOK_DIR}/site.yml"
 
+# Default uri of DebOps
+DEBOPS_GIT_URI="github.com/debops"
+
 # Default git sources for debops-playbooks
-DEBOPS_GIT_URI="https://github.com/debops/debops-playbooks"
+DEBOPS_PLAYBOOKS_GIT_URI="https://${DEBOPS_GIT_URI}/debops-playbooks"
+
+# Default slug prefix for roles
+DEBOPS_GIT_ROLE_PREFIX="ansible-"
 
 # Ansible Galaxy requirements file to use by default to download or update
-# Ansible roles, relative to debops-playbooks repository
 DEBOPS_GALAXY_REQUIREMENTS="galaxy/requirements.txt"
 
-# Path to install roles, relative to debops-playbooks repository
-DEBOPS_GALAXY_ROLES="${DEBOPS_PLAYBOOK_DIR}/roles/"
+# Default Ansible Galaxy user account name
+DEBOPS_GALAXY_ACCOUNT="debops"
 
+# Path to install roles, relative to debops-playbooks repository
+DEBOPS_ROLES_PATH="${DEBOPS_PLAYBOOK_DIR}/roles"
 
 # ---- Main script ----
 
@@ -154,29 +161,105 @@ else
 
 fi
 
+# ---- Efficiently fetch or clone a role ----
+
+function fetch_or_clone_role() {
+  local roles_path="${1}"
+  local requirements_path="${2}"
+
+  # Store the contents of the requirements.txt file into an array
+  IFS=$"\r\n" GLOBIGNORE="*" :; local requirements=($(<${requirements_path}))
+
+  # Output the number of found roles
+  local roles_total="${#requirements[@]}"
+
+  for role in "${!requirements[@]}"; do
+    # Parse the requirements.txt file to extract the role name and version
+    local role_name="$(awk -F',' '{print $1}' <<< ${requirements[$role]} | sed "s/${DEBOPS_GALAXY_ACCOUNT}.//g")"
+    local role_version="$(awk -F',' '{print $2}' <<< ${requirements[$role]})"
+
+    # Make sure to normalize empty versions
+    if [ -z ${role_version} ]; then
+      role_version="master"
+    fi
+
+    local galaxy_name="${DEBOPS_GALAXY_ACCOUNT}.${role_name}"
+    local remote_uri="${DEBOPS_GIT_URI}/${DEBOPS_GIT_ROLE_PREFIX}"
+
+    # Check if the remote repository exists by evaluating its return code
+    local repo_status="$(git ls-remote git://${remote_uri}${role_name} HEAD &> /dev/null ; echo "$?")"
+
+    # Adjust the role's repository name if it cannot be found with the normal name
+    if [ ${repo_status} = "128" ]; then
+      role_name="role-${role_name}"
+    fi
+
+    # Add 1 to the role index because we want to count from 1, not 0
+    role="$((role + 1))"
+
+    # Custom message to show the progress
+    local progress_label="'https://${remote_uri}${role_name}' [$role_version] ($role/$roles_total)"
+
+    # Do we want to update or clone the role?
+    local role_destination="${roles_path}/${galaxy_name}"
+
+    if [ -d ${role_destination} ]; then
+      # Move into the role's directory
+      cd ${role_destination}
+
+      echo "Updating ${progress_label}"
+
+      # Parse out the head branch name
+      local head_branch_path="$(cat .git/HEAD | cut -d" " -f2)"
+      local head_branch="$(basename ${head_branch_path})"
+
+      # Parse out the current sha
+      local current_sha="$(cat .git/refs/heads/${head_branch} | awk '{print $1}')"
+
+      # Fetch it silently and store the new sha
+      git fetch --quiet
+      local fetch_sha="$(cat .git/FETCH_HEAD | awk '{print $1}')"
+
+      # Only merge if the shas are different
+      if [ ! ${current_sha} = ${fetch_sha} ]; then
+        git merge ${fetch_sha}
+        echo
+      fi
+
+      # Move back to the initial directory
+      cd - > /dev/null
+    else
+      echo "Installing ${progress_label}"
+
+      # We could half the time by using git:// instead of https:// but then we
+      # lose the security benefits of https
+      git clone --quiet --branch ${role_version} https://${remote_uri}${role_name} ${role_destination}
+    fi
+  done
+}
+
+# ---- Create or update the playbooks and roles  ----
+
 # Playbooks have not been found, at this point assume playbooks are not
 # installed. Install them in user home directory
 if [ -z "${debops_playbooks}" ] ; then
-
   echo "DebOps playbooks have not been found, installing in ${debops_install_path}"
+  echo
 
   # Download main debops-playbooks repository
-  git clone --quiet ${DEBOPS_GIT_URI} ${debops_install_path}
+  git clone --quiet ${DEBOPS_PLAYBOOKS_GIT_URI} ${debops_install_path}
 
   pushd ${debops_install_path} > /dev/null
-  mkdir -p ${DEBOPS_GALAXY_ROLES}
-  ansible-galaxy --force --roles-path=${DEBOPS_GALAXY_ROLES} install --role-file=${DEBOPS_GALAXY_REQUIREMENTS}
+  mkdir -p ${DEBOPS_ROLES_PATH}
+  fetch_or_clone_role "${DEBOPS_ROLES_PATH}" "${DEBOPS_GALAXY_REQUIREMENTS}"
   popd > /dev/null
-
 else
-
   echo "DebOps playbooks have been found in ${debops_playbooks}"
 
   # Go to the playbook directory and get latest updates
   pushd ${debops_playbooks} > /dev/null
   git pull
-  ansible-galaxy --force --roles-path=${DEBOPS_GALAXY_ROLES} install --role-file=${DEBOPS_GALAXY_REQUIREMENTS}
+  echo
+  fetch_or_clone_role "${DEBOPS_ROLES_PATH}" "${DEBOPS_GALAXY_REQUIREMENTS}"
   popd > /dev/null
-
 fi
-
