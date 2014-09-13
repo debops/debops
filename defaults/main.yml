@@ -1,11 +1,18 @@
 ---
 
 # Specify version of Ruby to install:
-# - '1.9.1' will install Ruby from Debian/Ubuntu stable repositories
-# - '2.1' on Debian Wheezy will backport packages from Debian Jessie, on Jessie
-#   they will be installed as normal (Ubuntu at the moment is not supported)
-ruby_version: '2.1'
+# - 'apt':      (default) will install Ruby packages automatically depending on
+#               what's available in APT at the time
+#
+# - 'backport': will enable backporting of packages from the next distribution
+#               (currently on Debian Wheezy it's required to install Ruby 2.1
+#               packages)
+#
+ruby_version: 'apt'
 
+# Install 'rubygems-integration' package (on older distributions it might not
+# exist)
+ruby_gems_integration: True
 
 # Lists of additional APT packages to install with Ruby packages (for all
 # hosts, group of hosts, specific host or role dependency). You can use these
@@ -18,6 +25,7 @@ ruby_dependent_packages: []
 # Lists of Ruby gems to install from RubyGems.org. Role will use conservative
 # approach and not install or update any gems, that are already installed, either
 # via gem or via APT.
+ruby_default_gems: [ 'bundler' ]
 ruby_gems: []
 ruby_group_gems: []
 ruby_host_gems: []

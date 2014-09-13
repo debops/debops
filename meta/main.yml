@@ -12,7 +12,7 @@ dependencies:
     backporter_install: True
     backporter_cache: '{{ ruby_build_cache }}'
     backporter_install_packages: [ 'rubygems-integration_*.deb' ]
-    when: (ruby_version is defined and ruby_version | version_compare('2.1','>='))
+    when: (ruby_version is defined and ruby_version in [ 'backport' ])
 
     # Backport 'ruby' package
   - role: debops.backporter
@@ -26,7 +26,7 @@ dependencies:
     backporter_cache: '{{ ruby_build_cache }}'
     backporter_upload_packages: [ 'libruby_*.deb', 'libtcltk-ruby_*.deb', 'ri_*.deb', 'ruby-all-dev_*.deb',
                                   'ruby-dev_*.deb', 'ruby-full_*.deb', 'ruby_*.deb' ]
-    when: (ruby_version is defined and ruby_version | version_compare('2.1','>='))
+    when: (ruby_version is defined and ruby_version in [ 'backport' ])
 
     # Backport 'ruby2.1' package
   - role: debops.backporter
@@ -46,7 +46,7 @@ dependencies:
                                 'libncursesw5-dev', 'libreadline6-dev', 'libssl-dev', 'libyaml-dev',
                                 'ruby', 'systemtap-sdt-dev', 'tcl-dev', 'tk-dev', 'tcl8.5-dev',
                                 'tk8.5-dev', 'zlib1g-dev' ]
-    when: (ruby_version is defined and ruby_version | version_compare('2.1','>='))
+    when: (ruby_version is defined and ruby_version in [ 'backport' ])
 
     # Install backported packages
   - role: debops.backporter
@@ -56,11 +56,11 @@ dependencies:
                                    'ruby2.1_*.deb', 'ruby_*.deb', 'ruby2.1-doc_*.deb',
                                    'rubygems-integration_*.deb', 'ruby-dev_*.deb',
                                    'ruby2.1-dev_*.deb', 'ruby-all-dev_*.deb' ]
-    when: (ruby_version is defined and ruby_version | version_compare('2.1','>='))
+    when: (ruby_version is defined and ruby_version in [ 'backport' ])
 
 galaxy_info:
   author: 'Maciej Delmanowski'
-  description: 'Backport Ruby 2.1 packages from Debian Jessie to Debian Wheezy'
+  description: 'Install Ruby from Debian packages'
   company: 'DebOps'
   license: 'GNU General Public License v3'
   min_ansible_version: '1.7.0'
@@ -95,14 +95,16 @@ ansigenome_info:
 
   synopsis: |
     `debops.ruby` role installs selected Ruby version via APT package manager.
-    By default, version `2.1` will be installed, but you can also specify
-    version `1.9.1` to install packages already present in your distribution
-    (Ubuntu or Debian Wheezy).
+    By default APT picks the Ruby packages to install automatically - if you
+    have backported Ruby 2.1 packages, they will be installed if available; if
+    you don't have them, `debops.ruby` will install current Ruby packages
+    available on your system.
     
-    If you are installing Ruby 2.1 packages on Debian Wheezy, this role will
-    use `debops.backporter` role to automatically backport all required
-    packages from Debian Jessie. These packages will be installed on the build
-    host and uploaded to Ansible Controller to a specific directory, where
+    If you want to install Ruby 2.1 packages on Debian Wheezy, set
+    `ruby_version: 'backport'` in your inventory and this role will use
+    `debops.backporter` role to automatically backport all required packages
+    from Debian Jessie. These packages will be installed on the build host and
+    uploaded to Ansible Controller to a specific directory, where
     `debops.reprepro` role can find them and automatically import them to local
     APT repository, at which point these packages will become available to all
     hosts in a cluster.
