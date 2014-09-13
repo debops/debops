@@ -18,6 +18,11 @@
   command: gem list --local --no-verbose --no-versions
   register: ruby_register_installed_gems
   changed_when: False
+  when: ((ruby_default_gems is defined and ruby_default_gems) or
+         (ruby_gems is defined and ruby_gems) or
+         (ruby_group_gems is defined and ruby_group_gems) or
+         (ruby_host_gems is defined and ruby_host_gems) or
+         (ruby_dependent_gems is defined and ruby_dependent_gems))
 
 - name: Install specified gems from RubyGems
   command: gem install --no-verbose --conservative {{ item }}
@@ -27,5 +32,6 @@
     - ruby_group_gems
     - ruby_host_gems
     - ruby_dependent_gems
-  when: (item not in ruby_register_installed_gems.stdout_lines)
+  when: ((ruby_register_installed_gems is defined and ruby_register_installed_gems) and
+         (item not in ruby_register_installed_gems.stdout_lines))
 
