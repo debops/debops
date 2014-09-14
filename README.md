@@ -1,6 +1,14 @@
-## redis
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-redis.png)](http://travis-ci.org/debops/ansible-redis) [![test-suite](http://img.shields.io/badge/test--suite-ansible--redis-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-redis/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.redis-660198.svg)](https://galaxy.ansible.com/list#/roles/1592) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) redis
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-redis.svg?style=flat)](http://travis-ci.org/debops/ansible-redis) [![test-suite](http://img.shields.io/badge/test--suite-ansible--redis-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-redis/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.redis-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1592) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+
+
+
+
+
 
 `debops.redis` role allows you to easily setup infrastructure capable of
 running and managing 1 or more Redis servers. It is completely self healing
@@ -16,11 +24,24 @@ Few features available in this role:
 - you can easily use this role as a dependency in your other roles;
 
 
+
+
+
 ### Installation
 
 This role requires at least Ansible `v1.7.0`. To install it, run:
 
     ansible-galaxy install debops.redis
+
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
 
 
 
@@ -30,6 +51,8 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 - `debops.apt_preferences`
 - `debops.etc_services`
 - `debops.ferm`
+
+
 
 
 
@@ -169,6 +192,8 @@ List of default variables available in the inventory:
 
 
 
+
+
 ### Detailed usage guide
 
 Below is the bare minimum to get started to setup a few Redis servers
@@ -219,6 +244,11 @@ change the defaults in your inventory.
 
     ./site.sh -t redis
 
+
+
+
+
+
 ### Authors and license
 
 `redis` role was written by:
@@ -227,7 +257,9 @@ change the defaults in your inventory.
 
 - Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
