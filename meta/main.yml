@@ -8,24 +8,9 @@ dependencies:
     tags: apt_preferences
     apt_preferences_dependent_list:
 
-        # Remove old version of git pin, temporary
-      - package: 'git'
-        filename: 'apt_git.pref'
-        delete: True
-
-        # Remove old version of nginx pin, temporary
-      - package: 'nginx nginx-*'
-        filename: 'apt_nginx.pref'
-        delete: True
-
       - package: 'git git-*'
         backports: [ 'wheezy' ]
         reason:  'Better support for git submodules - http://stackoverflow.com/a/7593496'
-        by_role: 'debops.apt'
-
-      - package: 'apt-cacher-ng'
-        backports: [ 'wheezy' ]
-        reason: 'acng uses 99% CPU after some time. https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=703296'
         by_role: 'debops.apt'
 
 
