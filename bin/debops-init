@@ -104,9 +104,6 @@ hosts_common=$(cat <<EOF
 # plays ran against them. It will setup common functionality such as
 # proper DNS, postfix and other handy services.
 
-# An Ansible controller could be your workstation, laptop, devbox,
-# or remote instance somewhere on the cloud, etc..
-
 EOF
   )
 
@@ -136,5 +133,21 @@ EOF
 fi
 
 echo "$hosts_content" >> "$project/$hosts_file"
+
+apt_lxc_file="ansible/inventory/group_vars/all/apt_lxc.yml"
+
+apt_lxc_content=$(cat <<EOF
+# Occasionally Debian's CDN is a bit flaky. If you get 404s trying to access
+# source URLs then uncomment the 2 variables below. You may also want to use
+# your location's mirror rather than US, check the list of mirrors here:
+#
+# http://debian.mirrors.tds.net/pub/linux/debian/README.mirrors.html
+#
+#apt_debian_http_mirror: 'ftp.us.debian.org'
+#lxc_template_debootstrap_mirror: 'http://{{ apt_debian_http_mirror }}/debian'
+EOF
+  )
+
+echo "$apt_lxc_content" > "$project/$apt_lxc_file"
 
 echo "Initialized DebOps project in $project"
