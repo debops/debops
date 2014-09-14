@@ -33,9 +33,16 @@ New roles
   clusters, either standalone or on multiple hosts separated and configured
   using Ansible groups. Author: `Nick Janetakis`_.
 
+* `debops.golang`_ role can be used to install and manage `Go language`_
+  environment. By default it will install packages present in the distribution,
+  but on Debian Wheezy a backport of ``golang`` package from Debian Jessie can
+  be automatically created and installed.
+
 .. _Nick Janetakis: https://github.com/nickjj
 .. _debops.elasticsearch: https://github.com/debops/ansible-elasticsearch
 .. _Elasticsearch: http://elasticsearch.org/
+.. _debops.golang: https://github.com/debops/ansible-golang
+.. _Go language: http://golang.org/
 
 Role updates
 ************
