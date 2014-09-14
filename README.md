@@ -1,6 +1,14 @@
-## apt_preferences
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-apt_preferences.png)](http://travis-ci.org/debops/ansible-apt_preferences) [![test-suite](http://img.shields.io/badge/test--suite-ansible--apt__preferences-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-apt_preferences/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.apt__preferences-660198.svg)](https://galaxy.ansible.com/list#/roles/1552) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) apt_preferences
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-apt_preferences.svg?style=flat)](http://travis-ci.org/debops/ansible-apt_preferences) [![test-suite](http://img.shields.io/badge/test--suite-ansible--apt__preferences-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-apt_preferences/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.apt__preferences-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1552) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+
+
+
+
+
 
 [APT preferences](https://wiki.debian.org/AptPreferences) can be used to
 influence package selection performed by APT during installation or upgrades.
@@ -13,11 +21,24 @@ By default, if you don't specify version or provide custom pin configuration,
 backports repository of a current OS release.
 
 
+
+
+
 ### Installation
 
 This role requires at least Ansible `v1.7.0`. To install it, run:
 
     ansible-galaxy install debops.apt_preferences
+
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
 
 
 
@@ -51,6 +72,8 @@ List of default variables available in the inventory:
     
     # Default pin priority used with item.version option
     apt_preferences_priority_version: '1001'
+
+
 
 
 
@@ -153,13 +176,20 @@ You can also use `apt_preferences` as a dependency in another role:
             by_role: 'debops.mysql'
             reason: 'Hold mysql on version 5.5*'
 
+
+
+
+
+
 ### Authors and license
 
 `apt_preferences` role was written by:
 
 - Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
