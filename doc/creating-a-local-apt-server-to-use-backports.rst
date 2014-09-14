@@ -58,7 +58,7 @@ you plan to use GitLab so it's a good idea to learn!
 
   ruby_version: 'backport'
 
-The above tells the `Ruby role <https://github.com/debops/ansible-ruby>`_ to use
+That tells the `Ruby role <https://github.com/debops/ansible-ruby>`_ to use
 the `Backporter role <https://github.com/debops/ansible-backporter>`_ as a
 dependency and that will kick off the entire build process for you.
 
@@ -100,8 +100,8 @@ Make your hosts aware
 
 The last step is to make your hosts aware of the server.
 
-In the example below I'm just assuming you want to make it aware to all of your
-containers and you have your containers inside of a ``[containers]`` group.
+Below I'm just assuming you want to make it aware to all of your containers and
+you have your containers inside of a ``[containers]`` group.
 
 ::
 
