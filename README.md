@@ -1,6 +1,12 @@
-## nfs
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-nfs.png)](http://travis-ci.org/debops/ansible-nfs) [![test-suite](http://img.shields.io/badge/test--suite-ansible--nfs-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-nfs/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.nfs-660198.svg)](https://galaxy.ansible.com/list#/roles/1579) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) nfs
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-nfs.svg?style=flat)](http://travis-ci.org/debops/ansible-nfs) [![test-suite](http://img.shields.io/badge/test--suite-ansible--nfs-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-nfs/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.nfs-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1579) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+
+
+
 
 ### Warning, this is a BETA role
 
@@ -9,11 +15,19 @@ might be significantly changed in the future. Be careful while using this role
 in a production environment.
 
 ***
+
+
+
+
+
 This role can be used to configure NFSv3 client and server services between
 many hosts in a group.
 
 This role is an obsolete state and will be replaced in the future. Do not
 use this role in a production environment.
+
+
+
 
 
 ### Installation
@@ -22,12 +36,24 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 
     ansible-galaxy install debops.nfs
 
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
+
 
 
 ### Role dependencies
 
 - `debops.etc_services`
 - `debops.ferm`
+
+
 
 
 
@@ -70,13 +96,20 @@ List of default variables available in the inventory:
 
 
 
+
+
+
+
+
 ### Authors and license
 
 `nfs` role was written by:
 
 - Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
