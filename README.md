@@ -1,6 +1,14 @@
-## smstools
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-smstools.png)](http://travis-ci.org/debops/ansible-smstools) [![test-suite](http://img.shields.io/badge/test--suite-ansible--smstools-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-smstools/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.smstools-660198.svg)](https://galaxy.ansible.com/list#/roles/1601) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) smstools
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-smstools.svg?style=flat)](http://travis-ci.org/debops/ansible-smstools) [![test-suite](http://img.shields.io/badge/test--suite-ansible--smstools-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-smstools/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.smstools-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1601) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+
+
+
+
+
 
 This is an Ansible role which configures [smstools](http://smstools3.kekekasvi.com/)
 package and sets up a TCP -> SMS and mail -> SMS gateway. This role has been
@@ -13,11 +21,24 @@ to create mail -> SMS gateway, `debops.etc_services`, `debops.ferm` and
 other hosts to send SMS messages over the network).
 
 
+
+
+
 ### Installation
 
 This role requires at least Ansible `v1.7.0`. To install it, run:
 
     ansible-galaxy install debops.smstools
+
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
 
 
 
@@ -28,6 +49,8 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 - `debops.tcpwrappers`
 - `debops.ferm`
 - `debops.postfix`
+
+
 
 
 
@@ -134,6 +157,8 @@ List of default variables available in the inventory:
 
 
 
+
+
 ### Detailed usage guide
 
 #### Sending a text message from command line
@@ -232,13 +257,20 @@ to be able to check both recipient and sender addresses.
   and `sms-transport` scripts do not, SMS messages are truncated at first
   UTF-8 character.
 
+
+
+
+
+
 ### Authors and license
 
 `smstools` role was written by:
 
 - Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
