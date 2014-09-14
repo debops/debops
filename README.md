@@ -1,16 +1,26 @@
-## ruby
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-ruby.png)](http://travis-ci.org/debops/ansible-ruby) [![test-suite](http://img.shields.io/badge/test--suite-ansible--ruby-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-ruby/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.ruby-660198.svg)](https://galaxy.ansible.com/list#/roles/1595) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) ruby
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-ruby.svg?style=flat)](http://travis-ci.org/debops/ansible-ruby) [![test-suite](http://img.shields.io/badge/test--suite-ansible--ruby-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-ruby/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.ruby-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1595) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+
+
+
+
+
 
 `debops.ruby` role installs selected Ruby version via APT package manager.
-By default, version `2.1` will be installed, but you can also specify
-version `1.9.1` to install packages already present in your distribution
-(Ubuntu or Debian Wheezy).
+By default APT picks the Ruby packages to install automatically - if you
+have backported Ruby 2.1 packages, they will be installed if available; if
+you don't have them, `debops.ruby` will install current Ruby packages
+available on your system.
 
-If you are installing Ruby 2.1 packages on Debian Wheezy, this role will
-use `debops.backporter` role to automatically backport all required
-packages from Debian Jessie. These packages will be installed on the build
-host and uploaded to Ansible Controller to a specific directory, where
+If you want to install Ruby 2.1 packages on Debian Wheezy, set
+`ruby_version: 'backport'` in your inventory and this role will use
+`debops.backporter` role to automatically backport all required packages
+from Debian Jessie. These packages will be installed on the build host and
+uploaded to Ansible Controller to a specific directory, where
 `debops.reprepro` role can find them and automatically import them to local
 APT repository, at which point these packages will become available to all
 hosts in a cluster.
@@ -19,11 +29,24 @@ This role will also install gems from [RubyGems](http://rubygems.org/)
 specified in a list.
 
 
+
+
+
 ### Installation
 
 This role requires at least Ansible `v1.7.0`. To install it, run:
 
     ansible-galaxy install debops.ruby
+
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
 
 
 
@@ -31,6 +54,11 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 
 - `debops.apt_preferences`
 - `debops.backporter`
+- `debops.backporter`
+- `debops.backporter`
+- `debops.backporter`
+
+
 
 
 
@@ -41,11 +69,18 @@ List of default variables available in the inventory:
     ---
     
     # Specify version of Ruby to install:
-    # - '1.9.1' will install Ruby from Debian/Ubuntu stable repositories
-    # - '2.1' on Debian Wheezy will backport packages from Debian Jessie, on Jessie
-    #   they will be installed as normal (Ubuntu at the moment is not supported)
-    ruby_version: '2.1'
+    # - 'apt':      (default) will install Ruby packages automatically depending on
+    #               what's available in APT at the time
+    #
+    # - 'backport': will enable backporting of packages from the next distribution
+    #               (currently on Debian Wheezy it's required to install Ruby 2.1
+    #               packages)
+    #
+    ruby_version: 'apt'
     
+    # Install 'rubygems-integration' package (on older distributions it might not
+    # exist)
+    ruby_gems_integration: True
     
     # Lists of additional APT packages to install with Ruby packages (for all
     # hosts, group of hosts, specific host or role dependency). You can use these
@@ -58,10 +93,16 @@ List of default variables available in the inventory:
     # Lists of Ruby gems to install from RubyGems.org. Role will use conservative
     # approach and not install or update any gems, that are already installed, either
     # via gem or via APT.
+    ruby_default_gems: [ 'bundler' ]
     ruby_gems: []
     ruby_group_gems: []
     ruby_host_gems: []
     ruby_dependent_gems: []
+
+
+
+
+
 
 
 
@@ -72,7 +113,9 @@ List of default variables available in the inventory:
 
 - Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
