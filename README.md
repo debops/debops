@@ -1,6 +1,14 @@
-## monit
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-monit.png)](http://travis-ci.org/debops/ansible-monit) [![test-suite](http://img.shields.io/badge/test--suite-ansible--monit-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-monit/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.monit-660198.svg)](https://galaxy.ansible.com/list#/roles/1575) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) monit
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-monit.svg?style=flat)](http://travis-ci.org/debops/ansible-monit) [![test-suite](http://img.shields.io/badge/test--suite-ansible--monit-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-monit/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.monit-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1575) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+
+
+
+
+
 
 `debops.monit` role allows you to install and configure
 [Monit](http://mmonit.com/monit/) service which can be used to monitor
@@ -13,11 +21,24 @@ Alerts can be sent to an e-mail address (by default
 gateway (for example one managed by `debops.smstools` role).
 
 
+
+
+
 ### Installation
 
 This role requires at least Ansible `v1.7.0`. To install it, run:
 
     ansible-galaxy install debops.monit
+
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
 
 
 
@@ -25,6 +46,8 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 
 - `debops.apt_preferences`
 - `debops.etc_services`
+
+
 
 
 
@@ -131,13 +154,20 @@ List of default variables available in the inventory:
 
 
 
+
+
+
+
+
 ### Authors and license
 
 `monit` role was written by:
 
 - Nick Janetakis | [e-mail](mailto:nick.janetakis@gmail.com) | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
