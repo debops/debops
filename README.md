@@ -1,6 +1,14 @@
-## phpmyadmin
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-phpmyadmin.png)](http://travis-ci.org/debops/ansible-phpmyadmin) [![test-suite](http://img.shields.io/badge/test--suite-ansible--phpmyadmin-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-phpmyadmin/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.phpmyadmin-660198.svg)](https://galaxy.ansible.com/list#/roles/1587) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) phpmyadmin
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-phpmyadmin.svg?style=flat)](http://travis-ci.org/debops/ansible-phpmyadmin) [![test-suite](http://img.shields.io/badge/test--suite-ansible--phpmyadmin-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-phpmyadmin/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.phpmyadmin-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1587) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+
+
+
+
+
 
 This role installs [PHPMyAdmin](http://www.phpmyadmin.net/) interface for
 MySQL database. At the moment it is designed to manage only a database on
@@ -10,11 +18,24 @@ a standalone installation when secure access to remote databases is
 available.
 
 
+
+
+
 ### Installation
 
 This role requires at least Ansible `v1.7.0`. To install it, run:
 
     ansible-galaxy install debops.phpmyadmin
+
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
 
 
 
@@ -23,6 +44,8 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 - `debops.secret`
 - `debops.php5`
 - `debops.nginx`
+
+
 
 
 
@@ -57,13 +80,20 @@ List of default variables available in the inventory:
 
 
 
+
+
+
+
+
 ### Authors and license
 
 `phpmyadmin` role was written by:
 
 - Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
