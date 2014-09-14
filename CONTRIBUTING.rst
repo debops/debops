@@ -16,7 +16,7 @@ Philosophy
 
 - Do one thing well
 - Modularity and flexibility
-- DebOps itself is just an name, it is the sum of its parts
+- DebOps itself is just a name, it is the sum of its parts
 
 Discussion
 ^^^^^^^^^^
