@@ -1,6 +1,13 @@
-## golang
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-golang.svg?style=flat)](http://travis-ci.org/debops/ansible-golang) [![test-suite](http://img.shields.io/badge/test--suite-ansible--golang-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-golang/)  [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) golang
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-golang.svg?style=flat)](http://travis-ci.org/debops/ansible-golang) [![test-suite](http://img.shields.io/badge/test--suite-ansible--golang-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-golang/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.golang-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1698) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+
+
+
+
 
 
 Install Go language (golang) support using Debian packages. You can choose
@@ -9,9 +16,31 @@ has been backported from Debian Jessie.
 
 
 
+
+
+### Installation
+
+This role requires at least Ansible `v1.7.1`. To install it, run:
+
+    ansible-galaxy install debops.golang
+
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
+
+
+
 ### Role dependencies
 
 - `debops.backporter`
+
+
 
 
 
@@ -34,6 +63,11 @@ List of default variables available in the inventory:
 
 
 
+
+
+
+
+
 ### Authors and license
 
 `golang` role was written by:
@@ -41,6 +75,8 @@ List of default variables available in the inventory:
 - Nick Janetakis | [e-mail](mailto:nick.janetakis@gmail.com) | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
 
 License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
