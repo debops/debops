@@ -64,7 +64,7 @@ What do you want to learn more about?
 - `How will versions work with so many roles and playbooks? <https://github.com/debops/debops/blob/master/doc/versions.rst>`_
 - DebOps guides and troubleshooting
     - `Using linux containers <https://github.com/debops/debops/blob/master/doc/using-linux-containers.rst>`_
-    - `Creating a local APT server to use backports <https://github.com/debops/debops/blob/master/doc/creating-a-local-apt-server-to-use-backports>`_
+    - `Creating a local APT server to use backports <https://github.com/debops/debops/blob/master/doc/creating-a-local-apt-server-to-use-backports.rst>`_
     - `Solving common problems <https://github.com/debops/debops/wiki/Solutions-to-problems-you-may-encounter>`_
 
 Do you want to contribute?
