@@ -1,6 +1,14 @@
-## lxc
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-lxc.png)](http://travis-ci.org/debops/ansible-lxc) [![test-suite](http://img.shields.io/badge/test--suite-ansible--lxc-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-lxc/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.lxc-660198.svg)](https://galaxy.ansible.com/list#/roles/1573) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) lxc
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-lxc.svg?style=flat)](http://travis-ci.org/debops/ansible-lxc) [![test-suite](http://img.shields.io/badge/test--suite-ansible--lxc-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-lxc/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.lxc-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1573) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+
+
+
+
+
 
 `debops.lxc` role can be used to configure and manage LXC environment on
 a host. Specifically, LXC 1.0 support will be installed on Ubuntu Trusty
@@ -16,11 +24,24 @@ interface (DHCP server is recommended) or on an internal NAT interface
 `debops.dnsmasq` and `debops.nat` roles).
 
 
+
+
+
 ### Installation
 
 This role requires at least Ansible `v1.7.0`. To install it, run:
 
     ansible-galaxy install debops.lxc
+
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
 
 
 
@@ -29,6 +50,8 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 - `debops.secret`
 - `debops.ferm`
 - `debops.backporter`
+
+
 
 
 
@@ -221,13 +244,20 @@ List of default variables available in the inventory:
 
 
 
+
+
+
+
+
 ### Authors and license
 
 `lxc` role was written by:
 
 - Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
