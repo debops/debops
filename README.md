@@ -1,6 +1,14 @@
-## openvz
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-openvz.png)](http://travis-ci.org/debops/ansible-openvz) [![test-suite](http://img.shields.io/badge/test--suite-ansible--openvz-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-openvz/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.openvz-660198.svg)](https://galaxy.ansible.com/list#/roles/1583) [![Platforms](http://img.shields.io/badge/platforms-debian-lightgrey.svg)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) openvz
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-openvz.svg?style=flat)](http://travis-ci.org/debops/ansible-openvz) [![test-suite](http://img.shields.io/badge/test--suite-ansible--openvz-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-openvz/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.openvz-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1583) [![Platforms](http://img.shields.io/badge/platforms-debian-lightgrey.svg?style=flat)](#)
+
+
+
+
+
 
 `debops.openvz` role enables [OpenVZ](http://openvz.org/) container support
 on Debian Wheezy hosts. This role has not been tested on Debian Jessie or
@@ -10,17 +18,32 @@ older systems based on Debian Squeeze with OpenVZ into newer systems based
 on Debian Wheezy/Jessie and LXC.
 
 
+
+
+
 ### Installation
 
 This role requires at least Ansible `v1.7.0`. To install it, run:
 
     ansible-galaxy install debops.openvz
 
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
+
 
 
 ### Role dependencies
 
 - `debops.ferm`
+
+
 
 
 
@@ -132,6 +155,7 @@ List of internal variables used by the role:
     openvz_configfile_calculated_vswap
 
 
+
 ### Detailed usage guide
 
 This role is meant to create and manage OpenVZ Hardware Nodes, not OpenVZ
@@ -160,13 +184,20 @@ the cluster, and the host SSH fingerprints will be registered on each node
 `~/.ssh/known_hosts` file. This allows you to easily migrate containers
 between Hardware Nodes with `vzmigrate` command.
 
+
+
+
+
+
 ### Authors and license
 
 `openvz` role was written by:
 
 - Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
