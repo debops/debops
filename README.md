@@ -1,9 +1,20 @@
-## sftpusers
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-sftpusers.png)](http://travis-ci.org/debops/ansible-sftpusers) [![test-suite](http://img.shields.io/badge/test--suite-ansible--sftpusers-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-sftpusers/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.sftpusers-660198.svg)](https://galaxy.ansible.com/list#/roles/1599) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) sftpusers
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-sftpusers.svg?style=flat)](http://travis-ci.org/debops/ansible-sftpusers) [![test-suite](http://img.shields.io/badge/test--suite-ansible--sftpusers-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-sftpusers/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.sftpusers-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1599) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+
+
+
+
+
 
 `debops.sftpusers` role can be used to create and manage user accounts
 which have system access restricted to SFTP only.
+
+
+
 
 
 ### Installation
@@ -12,11 +23,23 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 
     ansible-galaxy install debops.sftpusers
 
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
+
 
 
 ### Role dependencies
 
 - `debops.auth`
+
+
 
 
 
@@ -108,6 +131,8 @@ List of default variables available in the inventory:
 
 
 
+
+
 ### Detailed usage guide
 
 Access to SFTPonly accounts is allowed only using SSH public keys, but users
@@ -115,13 +140,20 @@ cannot manage their own keys. Instead, sshd server uses keys from
 `/etc/ssh/authorized_keys/<user>` for authorization. Use `debops.sshkeys` role to
 manage these keys separately.
 
+
+
+
+
+
 ### Authors and license
 
 `sftpusers` role was written by:
 
 - Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
