@@ -1,6 +1,14 @@
-## etc_services
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-etc_services.png)](http://travis-ci.org/debops/ansible-etc_services) [![test-suite](http://img.shields.io/badge/test--suite-ansible--etc__services-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-etc_services/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.etc__services-660198.svg)](https://galaxy.ansible.com/list#/roles/1563) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) etc_services
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-etc_services.svg?style=flat)](http://travis-ci.org/debops/ansible-etc_services) [![test-suite](http://img.shields.io/badge/test--suite-ansible--etc__services-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-etc_services/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.etc__services-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1563) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+
+
+
+
+
 
 `etc_services` role can be used to "reserve" or "register" a service port
 in `/etc/services` file. Service ports configured this way can appear as
@@ -10,11 +18,24 @@ a particular host, and reference ports by their names in firewall
 configuration files.
 
 
+
+
+
 ### Installation
 
 This role requires at least Ansible `v1.7.0`. To install it, run:
 
     ansible-galaxy install debops.etc_services
+
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
 
 
 
@@ -64,13 +85,20 @@ List of default variables available in the inventory:
 
 
 
+
+
+
+
+
 ### Authors and license
 
 `etc_services` role was written by:
 
 - Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
