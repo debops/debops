@@ -1,6 +1,13 @@
-## elasticsearch
 
-[![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) elasticsearch
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-elasticsearch.svg?style=flat)](http://travis-ci.org/debops/ansible-elasticsearch) [![test-suite](http://img.shields.io/badge/test--suite-ansible--elasticsearch-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-elasticsearch/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.elasticsearch-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1694) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+
+
+
+
 
 
 `debops.elasticsearch` role allows you to easily setup infrastructure
@@ -16,11 +23,33 @@ capable of running Elasticsearch.
 
 
 
+
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, run:
+
+    ansible-galaxy install debops.elasticsearch
+
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
+
+
+
 ### Role dependencies
 
 - `debops.etc_services`
 - `debops.ferm`
 - `debops.java`
+
+
 
 
 
@@ -308,6 +337,8 @@ List of default variables available in the inventory:
 
 
 
+
+
 ### Detailed usage guide
 
 Below is a breakdown of how you can use groups to allocate different node
@@ -402,6 +433,11 @@ elasticsearch_http_allow: '{{ groups["your_web_apps"] }}'
 # ES HTTP API to actually query ES
 ```
 
+
+
+
+
+
 ### Authors and license
 
 `elasticsearch` role was written by:
@@ -409,6 +445,8 @@ elasticsearch_http_allow: '{{ groups["your_web_apps"] }}'
 - Nick Janetakis | [e-mail](mailto:nick.janetakis@gmail.com) | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
 
 License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
