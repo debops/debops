@@ -1,6 +1,14 @@
-## secret
 
-[![Travis CI](https://secure.travis-ci.org/debops/ansible-secret.png)](http://travis-ci.org/debops/ansible-secret) [![test-suite](http://img.shields.io/badge/test--suite-ansible--secret-blue.svg)](https://github.com/debops/test-suite/tree/master/ansible-secret/) [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.secret-660198.svg)](https://galaxy.ansible.com/list#/roles/1598) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg)](#)
+## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) secret
+
+
+
+[![Travis CI](http://img.shields.io/travis/debops/ansible-secret.svg?style=flat)](http://travis-ci.org/debops/ansible-secret) [![test-suite](http://img.shields.io/badge/test--suite-ansible--secret-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-secret/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.secret-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1598) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+
+
+
+
+
 
 This role enables you to have a separate directory on Ansible Controller
 (different than the playbook directory and inventory directory) which can be
@@ -32,11 +40,24 @@ include:
   secret directory);
 
 
+
+
+
 ### Installation
 
 This role requires at least Ansible `v1.7.0`. To install it, run:
 
     ansible-galaxy install debops.secret
+
+#### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+
+
 
 
 
@@ -64,6 +85,8 @@ List of default variables available in the inventory:
     # Absolute path to directory with secrets. It will be configured as relative to
     # current inventory directory. Use this variable in file and password lookups
     secret: '{{ secret_root + "/" + secret_levels + "/" + secret_dir }}'
+
+
 
 
 
@@ -173,13 +196,20 @@ secret directory:
     copy: dest=/etc/fstab owner=root group=root mode=0644
           src="{{ secret + '/storage/ + ansible_fqdn + '/etc/fstab' }}"
 
+
+
+
+
+
 ### Authors and license
 
 `secret` role was written by:
 
 - Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+
+
 
 ***
 
