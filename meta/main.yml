@@ -2,12 +2,22 @@
 
 dependencies:
 
+  - role: debops.apt_preferences
+    tags: apt_preferences
+    apt_preferences_dependent_list:
+      - package: 'rubygems-integration'
+        pin: 'release n=jessie'
+        reason: 'Version backported manually should be upgraded to official version when available'
+        priority: '501'
+        by_role: 'debops.ruby'
+
     # Backport 'rubygems-integration' package
   - role: debops.backporter
     backporter_package: 'rubygems-integration'
     backporter_version: '1.6'
     backporter_source_version: '1.7'
     backporter_source_orig: '.tar.xz'
+    backporter_changelog_version: False
     backporter_command_dget: 'dget --allow-unauthenticated'
     backporter_install: True
     backporter_cache: '{{ ruby_build_cache }}'

@@ -29,9 +29,7 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 
 ### Role dependencies
 
-- `debops.backporter`
-- `debops.backporter`
-- `debops.backporter`
+- `debops.apt_preferences`
 - `debops.backporter`
 
 
