@@ -8,6 +8,9 @@
   apt: pkg=abiword state=latest install_recommends=no
   when: etherpad_abiword is defined and etherpad_abiword
 
+- name: Make sure that directory for system users exists
+  file: path=/srv/users state=directory owner=root group=root mode=0751
+
 - name: Create Etherpad system group
   group: name={{ etherpad_group }} system=yes state=present
 
