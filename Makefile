@@ -1,5 +1,3 @@
-#!/usr/bin/make
-
 # DebOps Makefile: install, update, uninstall DebOps scripts
 # Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
 # Part of the DebOps project - http://debops.org/
@@ -19,6 +17,7 @@ install-scripts:
 	@cp bin/debops-task ${BIN_DIR}/debops-task
 	@cp bin/debops-init ${BIN_DIR}/debops-init
 	@cp bin/debops-update ${BIN_DIR}/debops-update
+	@cp bin/debops-padlock ${BIN_DIR}/debops-padlock
 
 install-playbook:
 	@echo "Installing DebOps playbooks and roles in ${SHARE_DIR} ..."

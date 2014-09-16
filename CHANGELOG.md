@@ -1,9 +1,17 @@
 ## DebOps Changelog
 
 
-### v0.0.0 (prerelease pending)
+### v0.1.0 (prerelease pending)
 
 ***
+
+##### 2014-09-16
+
+* new `debops-padlock` script, which is a companion Bash script to
+  [debops.secret](https://github.com/debops/ansible-secret) role. It can be
+  used to optionally encrypt secret directory using EncFS and GnuPG keys. Main
+  `debops` script will be able to recognize these encrypted directories and
+  properly open/close them for `ansible-playbook` runs.
 
 ##### 2014-09-12
 
