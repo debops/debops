@@ -58,6 +58,14 @@
            removes={{ tcpwrappers_divert_hosts_allow }}
   when: tcpwrappers is undefined or (tcpwrappers is defined and tcpwrappers == False)
 
+- name: Make sure that Ansible local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
 - name: Save tcpwrappers local facts
   template:
     src: 'etc/ansible/facts.d/tcpwrappers.fact.j2'
