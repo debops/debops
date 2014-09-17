@@ -2,6 +2,18 @@
 
 # iptables firewall managed by ferm
 
+# You can put custom ferm configuration files in directories:
+#
+# - /etc/ferm/filter-input.d/
+#       for table filter, chain INPUT; it will be automatically included in the
+#       chain, so you don't need to add these ferm subsections
+#
+# - /etc/ferm/ferm.d/
+#       for all other tables and chains; you need to add full ferm
+#       configuration here, this directory is included at the end of the file.
+#       ferm will correctly merge your own configuration with the rest.
+
+
 table filter {
 	chain INPUT {
 {% if ferm_comment is defined and ferm_comment %}
