@@ -78,6 +78,14 @@
   changed_when: False
   when: (ferm is undefined or (ferm is defined and not ferm))
 
+- name: Ensure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
 - name: Save ferm local facts
   template:
     src: 'etc/ansible/facts.d/ferm.fact.j2'
