@@ -86,19 +86,19 @@
 
 - name: Reload the backend server
   service: name={{ rails_deploy_service }} state=reloaded
-  when: rails_deploy_register_repo_status is defined and
+  when: rails_deploy_backend and (rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status | changed and
         (inventory_hostname == rails_deploy_hosts_master or
         inventory_hostname != item) and
         not rails_deploy_register_migration | changed and
         rails_deploy_register_mtime_config.stat.mtime == ansible_local.rails_deploy[rails_deploy_service].mtime.config and
-        not rails_deploy_backend_always_restart
+        not rails_deploy_backend_always_restart)
   delegate_to: '{{ item }}'
   with_items: groups[rails_deploy_hosts_group]
 
 - name: Restart the backend server
   service: name={{ rails_deploy_service }} state=restarted
-  when: rails_deploy_database_force_migrate or
+  when: rails_deploy_backend and (rails_deploy_database_force_migrate or
         ((rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status | changed) and rails_deploy_register_migration | changed) and
         (inventory_hostname == rails_deploy_hosts_master or
@@ -107,7 +107,7 @@
         rails_deploy_register_mtime_config.stat.mtime != ansible_local.rails_deploy[rails_deploy_service].mtime.config or
         (rails_deploy_backend_always_restart and rails_deploy_git_location and
         rails_deploy_register_repo_status is defined and
-        rails_deploy_register_repo_status | changed)
+        rails_deploy_register_repo_status | changed))
   delegate_to: '{{ item }}'
   with_items: groups[rails_deploy_hosts_group]
 
@@ -122,7 +122,7 @@
   service: name={{ rails_deploy_service }}
            state={{ rails_deploy_backend_state }}
            enabled={{ rails_deploy_backend_enabled }}
-  when: rails_deploy_git_location is defined and rails_deploy_git_location
+  when: rails_deploy_git_location is defined and rails_deploy_git_location and rails_deploy_backend
 
 - name: Set the initial background worker state
   service: name={{ rails_deploy_worker }}
