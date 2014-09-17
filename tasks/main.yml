@@ -79,3 +79,11 @@
   changed_when: False
   when: (ferm is undefined or (ferm is defined and not ferm))
 
+- name: Save ferm local facts
+  template:
+    src: 'etc/ansible/facts.d/ferm.fact.j2'
+    dest: '/etc/ansible/facts.d/ferm.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
