@@ -35,6 +35,10 @@ Role updates
   Controllers using local Ansible facts, and uses it to enforce current
   configuration.
 
+* similar changes as above are now included in `debops.tcpwrappers`_ role, you
+  can specify a list of Ansible Controllers in
+  ``tcpwrappers_ansible_controllers`` list variable.
+
 * `Debian bug #718639`_ has been fixed which results in changes to serveral
   configuration files, including ``/etc/nginx/fastcgi_params`` and inclusion of
   a new configuration file ``/etc/nginx/fastcgi.conf``. `debops.nginx`_ role
@@ -42,6 +46,7 @@ Role updates
   file to include in PHP5-based server configuration.
 
 .. _debops.ferm: https://github.com/debops/ansible-ferm/
+.. _debops.tcpwrappers: https://github.com/debops/ansible-tcpwrappers/
 .. _Debian bug #718639: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=718639
 .. _debops.nginx: https://github.com/debops/ansible-nginx/
 
