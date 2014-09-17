@@ -27,7 +27,6 @@
     template: 'template1'
   register: rails_deploy_register_database_created
   when: rails_deploy_database_adapter == 'postgresql' and
-        rails_deploy_database_create and
         inventory_hostname == rails_deploy_hosts_master
   sudo_user: '{{ rails_deploy_postgresql_super_username }}'
 
@@ -55,6 +54,5 @@
     state: 'present'
   register: rails_deploy_register_database_created
   when: rails_deploy_database_adapter == 'mysql' and
-        rails_deploy_database_create and
         inventory_hostname == rails_deploy_hosts_master
   sudo_user: '{{ rails_deploy_mysql_super_username }}'
