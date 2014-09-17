@@ -17,7 +17,6 @@
 - name: Allow access from Ansible Controller to sshd
   template: src=etc/hosts.allow.d/ansible_controller.j2 dest=/etc/hosts.allow.d/10_ansible_controller
             owner=root group=root mode=0644
-  when: ansible_controller is defined and ansible_controller
 
 - name: Remove hosts.allow entries if requested
   file:
@@ -59,6 +58,13 @@
            removes={{ tcpwrappers_divert_hosts_allow }}
   when: tcpwrappers is undefined or (tcpwrappers is defined and tcpwrappers == False)
 
+- name: Save tcpwrappers local facts
+  template:
+    src: 'etc/ansible/facts.d/tcpwrappers.fact.j2'
+    dest: '/etc/ansible/facts.d/tcpwrappers.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 # ---- Manage /etc/hosts.deny ----
 
