@@ -158,22 +158,29 @@ rails_deploy_worker_port: '6379'
 rails_deploy_worker_url: 'redis://{{ rails_deploy_worker_host }}:{{ rails_deploy_worker_port }}/0'
 
 
-# ---- Tasks ----
+# ---- Commands ----
 
-# Precompile assets and remove any temporary cache files on each deploy.
-# Add or remove as many tasks as you want. They are executed in the context
-# of the root directory of your app and only happen when the repo changes.
-rails_deploy_default_tasks:
+# Execute shell commands at various points in the deploy life cycle.
+# They are executed in the context of the root directory of your app
+# and are also only ran when your repo has changed.
+
+# Shell commands to run before migration
+# They will still run even if you have migrations turned off.
+rails_deploy_pre_migrate_shell_commands: []
+
+# Shell commands to run after migration
+# They will still run even if you have migrations turned off.
+rails_deploy_post_migrate_shell_commands:
   - 'bundle exec rake assets:precompile'
   - 'rm -rf tmp/cache'
 
-# Execute tasks before and/or after your backend is reloaded/restarted.
-rails_deploy_early_tasks:
-  # Example, let's say you wanted to execute whenever also:
-  # - 'bundle exec whenever --clear-crontab {{ rails_deploy_service }}'
-
+# Shell commands to run after the backend was started
+# Let's say you wanted to execute whenever after your app reloads/restarts:
+#   - 'bundle exec whenever --clear-crontab {{ rails_deploy_service }}'
+#
 # This is the absolute last thing that happens during a deploy.
-rails_deploy_late_tasks: []
+# They will still run even if you have no backend.
+rails_deploy_post_restart_shell_commands: []
 
 
 # ---- Services ----
