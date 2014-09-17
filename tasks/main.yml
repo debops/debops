@@ -41,7 +41,6 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: (ansible_controller is defined and ansible_controller)
   notify: [ 'Restart ferm' ]
 
 - name: Remove iptables INPUT rules if requested
@@ -78,6 +77,14 @@
   command: ferm --flush /etc/ferm/ferm.conf
   changed_when: False
   when: (ferm is undefined or (ferm is defined and not ferm))
+
+- name: Ensure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
 - name: Save ferm local facts
   template:
