@@ -11,6 +11,40 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-09-17
+^^^^^^^^^^
+
+Playbook updates
+****************
+
+* You can now disable early APT cache update using ``apt_update_cache_early``
+  variable from `debops.apt`_ role. This is useful in rare case when your APT
+  mirror suddenly catches fire, and you need to switch to a different one using
+  Ansible.
+
+.. _debops.apt: https://github.com/debops/ansible-apt/
+
+Role updates
+************
+
+* `debops.ferm`_ role has gained new list variable,
+  ``ferm_ansible_controllers``, which can be used to configure CIDR hostnames
+  or networks that shouldn't be blocked by ssh recent filter in the firewall. This
+  is useful in case you don't use DebOps playbook itself, which does that
+  automatically. In addition, `debops.ferm`_ saves list of known Ansible
+  Controllers using local Ansible facts, and uses it to enforce current
+  configuration.
+
+* `Debian bug #718639`_ has been fixed which results in changes to serveral
+  configuration files, including ``/etc/nginx/fastcgi_params`` and inclusion of
+  a new configuration file ``/etc/nginx/fastcgi.conf``. `debops.nginx`_ role
+  will now check the version of installed ``nginx`` server and select correct
+  file to include in PHP5-based server configuration.
+
+.. _debops.ferm: https://github.com/debops/ansible-ferm/
+.. _Debian bug #718639: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=718639
+.. _debops.nginx: https://github.com/debops/ansible-nginx/
+
 2014-09-14
 ^^^^^^^^^^
 

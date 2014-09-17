@@ -15,7 +15,8 @@
     - name: Update APT cache early if older than 24h
       apt:
         update_cache: True
-        cache_valid_time: '86400'
+        cache_valid_time: '{{ apt_update_cache_early }}'
+      when: (apt_update_cache_early is defined and apt_update_cache_early)
       sudo: True
 
 - name: Common configuration for all hosts
