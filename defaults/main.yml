@@ -48,6 +48,10 @@ apt_unattended_upgrades_autoremove: True
 
 apt_debian_http_mirror: 'cdn.debian.net'
 
+# Update APT cache early in the playbook if it's older than 24h
+# Set to False to disable update (useful when changing APT mirrors)
+apt_update_cache_early: '{{ (60 * 60 * 24) }}'
+
 apt_acng_port: 3142
 apt_acng_login: 'admin'
 apt_acng_password: 'password'
