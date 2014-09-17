@@ -57,6 +57,14 @@
   when: inventory_hostname == rails_deploy_hosts_master and
         rails_deploy_git_location is defined and rails_deploy_git_location
 
+- name: Execute shell commands before migration
+  shell: '{{ rails_deploy_env_source }} && {{ item }} chdir={{ rails_deploy_src }}'
+  when: rails_deploy_pre_migrate_shell_commands and rails_deploy_git_location and
+        rails_deploy_register_repo_status is defined and
+        rails_deploy_register_repo_status | changed
+  with_items: rails_deploy_pre_migrate_shell_commands
+  sudo_user: '{{ rails_deploy_service }}'
+
 - name: Migrate the database
   shell: '{{ rails_deploy_env_source }} && bundle exec rake db:migrate chdir={{ rails_deploy_src }}'
   when: inventory_hostname == rails_deploy_hosts_master and
@@ -68,20 +76,12 @@
   register: rails_deploy_register_migration
   sudo_user: '{{ rails_deploy_service }}'
 
-- name: Execute default tasks
+- name: Execute shell commands after migration
   shell: '{{ rails_deploy_env_source }} && {{ item }} chdir={{ rails_deploy_src }}'
-  when: rails_deploy_default_tasks and rails_deploy_git_location and
+  when: rails_deploy_post_migrate_shell_commands and rails_deploy_git_location and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status | changed
-  with_items: rails_deploy_default_tasks
-  sudo_user: '{{ rails_deploy_service }}'
-
-- name: Execute tasks before the backend is ready
-  shell: '{{ rails_deploy_env_source }} && {{ item }} chdir={{ rails_deploy_src }}'
-  when: rails_deploy_early_tasks and rails_deploy_git_location and
-        rails_deploy_register_repo_status is defined and
-        rails_deploy_register_repo_status | changed
-  with_items: rails_deploy_early_tasks
+  with_items: rails_deploy_post_migrate_shell_commands
   sudo_user: '{{ rails_deploy_service }}'
 
 - name: Reload the backend server
@@ -139,12 +139,12 @@
         rails_deploy_extra_services
   with_items: rails_deploy_extra_services
 
-- name: Execute tasks after the backend is ready
+- name: Execute shell commands after the backend is ready
   shell: '{{ rails_deploy_env_source }} && {{ item }} chdir={{ rails_deploy_src }}'
-  when: rails_deploy_late_tasks and rails_deploy_git_location and
+  when: rails_deploy_post_restart_shell_commands and rails_deploy_git_location and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status | changed
-  with_items: rails_deploy_late_tasks
+  with_items: rails_deploy_post_restart_shell_commands
   sudo_user: '{{ rails_deploy_service }}'
 
 - name: Disable the temporary deploy page
