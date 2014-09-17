@@ -14,13 +14,14 @@
   when: etc_services is defined and etc_services
 
 - name: Generate list of local services if requested
-  template: src=etc/services.d/local_service.j2 dest=/etc/services.d/20_local_service_{{ item.name }}
+  template: src=etc/services.d/local_service.j2 dest=/etc/services.d/{{ item.filename | default("20_local_service_" + item.name) }}
             owner=root group=root mode=0644
   with_flattened:
     - etc_services_list
     - etc_services_group_list
     - etc_services_host_list
     - etc_services_dependency_list
+    - etc_services_dependent_list
   when: (etc_services is defined and etc_services) and
         (item.name is defined and item.name) and
         (item.port is defined and item.port)

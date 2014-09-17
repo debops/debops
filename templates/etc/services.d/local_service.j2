@@ -1,12 +1,18 @@
 {% if item.name is defined and item.name %}
-{% if item.protocol is undefined %}
-{% set etc_services_tpl_local_protocol = 'tcp' %}
-{% else %}
-{% set etc_services_tpl_local_protocol = item.protocol %}
+{% if item.protocol is undefined and item.protocols is undefined %}
+{% set etc_services_tpl_protocols = [ 'tcp', 'udp' ] %}
+{% elif (item.protocols is undefined and (item.protocol is defined and item.protocol)) %}
+{% set etc_services_tpl_protocols = [ item.protocol ] %}
+{% elif (item.protocol is undefined and (item.protocols is defined and item.protocols)) %}
+{% set etc_services_tpl_protocols = item.protocols %}
 {% endif %}
 {% if item.comment is undefined %}
-{{ "%-15s %s/%s" | format(item.name, item.port, etc_services_tpl_local_protocol) }}
+{% for element in etc_services_tpl_protocols %}
+{{ "%-15s %s/%s" | format(item.name, item.port, element) }}
+{% endfor %}
 {% else %}
-{{ "%-15s %s/%-26s # %s" | format(item.name, item.port, etc_services_tpl_local_protocol, item.comment) }}
+{% for element in etc_services_tpl_protocols %}
+{{ "%-15s %s/%-26s # %s" | format(item.name, item.port, element, item.comment) }}
+{% endfor %}
 {% endif %}
 {% endif %}
