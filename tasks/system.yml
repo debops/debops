@@ -69,7 +69,7 @@
   template: src=etc/init.d/service.j2 dest=/etc/init.d/{{ rails_deploy_service }}
             owner={{ rails_deploy_service }} group={{ rails_deploy_service }}
             mode=0755
-  when: rails_deploy_service is defined and rails_deploy_service
+  when: rails_deploy_service is defined and rails_deploy_service and rails_deploy_backend
   with_items: [ 'service' ]
 
 - name: Create background worker service
