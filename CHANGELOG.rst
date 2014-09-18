@@ -11,6 +11,25 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-09-19
+^^^^^^^^^^
+
+Role updates
+************
+
+* `debops.postfix`_ role has gained support for `SMTP client SASL authentication`_,
+  in other words the ability to send mail through remote relay MX hosts with
+  client authentication, like public or commercial SMTP servers. You can either
+  configure one username/password pair for a specified relayhost, or enable
+  sender dependent authentication and specify relayhost, user and password for
+  each sender mail address separately. Passwords are never stored in the
+  inventory; instead Postfix role uses `debops.secret`_ role to store user
+  passwords securely.
+
+.. _debops.postfix: https://github.com/debops/ansible-postfix/
+.. _SMTP client SASL authentication: http://www.postfix.org/SASL_README.html#client_sasl
+.. _debops.secret: https://github.com/debops/ansible-secret/
+
 2014-09-18
 ^^^^^^^^^^
 
