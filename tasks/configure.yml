@@ -35,6 +35,11 @@
   with_items: [ 'main.cf.d', 'master.cf.d', 'tables', 'hash_tables' ]
   when: postfix is defined and postfix
 
+- name: Create postfix private configuration directories
+  file: path=/etc/postfix/{{ item }} state=directory owner=root group=root mode=0700
+  with_items: [ 'private_hash_tables' ]
+  when: postfix is defined and postfix
+
 - name: Generate postfix configuration
   template: src=etc/postfix/{{ item }}.j2 dest=/etc/postfix/{{ item }} owner=root group=root mode=0644
   with_items: postfix_configuration_templates
@@ -69,10 +74,21 @@
   register: postfix_register_hash_tables
   when: postfix is defined and postfix
 
+- name: Generate postfix private hash tables sources
+  template: src=etc/postfix/private_hash_tables/{{ item }}.j2 dest=/etc/postfix/private_hash_tables/{{ item }}.in owner=root group=root mode=0600
+  with_items: postfix_postmap_private_hash_tables
+  register: postfix_register_private_hash_tables
+  when: postfix is defined and postfix
+
 - name: Generate postfix hash tables
   command: make chdir=/etc/postfix/hash_tables
   when: postfix is defined and postfix and
         postfix_register_hash_tables is defined and postfix_register_hash_tables.changed == True
+
+- name: Generate postfix private hash tables
+  command: make chdir=/etc/postfix/private_hash_tables
+  when: postfix is defined and postfix and
+        postfix_register_private_hash_tables is defined and postfix_register_private_hash_tables.changed == True
 
 - name: Configure firewall for postfix
   template: src=etc/ferm/filter-input.d/postfix.conf.j2 dest=/etc/ferm/filter-input.d/postfix.conf
