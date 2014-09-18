@@ -62,6 +62,29 @@ postfix_allow_submission: True
 postfix_allow_smtps: True
 
 
+# A map of SMTP SASL passwords used in SMTP client authentication by Postfix.
+# You need to add 'client' in postfix capabilities to enable this feature.
+# Format of the entries:
+#   'smtp.example.org': 'username'
+#   'user@example.org': 'username'
+# Passwords are stored in a secret directory, in path:
+# 'secret/credentials/{{ ansible_fqdn }}/postfix/smtp_sasl_password_map/{{ key }}/{{ value }}'
+# - key   = hostname or email address of the sender
+# - value = username on the remote host
+# Postfix role will generate random passwords by default. To change them to
+# your actual passwords, open the files with passwords in the secret directory
+# and replace them, then re-run the playbook with the role.
+postfix_smtp_sasl_password_map: {}
+
+# A map of sender dependent relayhosts used in SMTP client mail relay by Postfix.
+# You need to add 'client' and 'sender_dependent' in postfix capabilities to
+# enable this feature.
+# Format of the entries:
+#   'sender-address': 'relay-host'
+#   'user@example.org': '[smtp.example.org]:submission'
+postfix_sender_dependent_relayhost_map: {}
+
+
 # Postscreen blacklists
 postfix_postscreen_dnsbl_sites:
 

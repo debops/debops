@@ -1,0 +1,14 @@
+{% import 'macros.j2' as get with context %}
+{% if 'client' in postfix %}
+# Postfix SMTP client configuration
+{% if 'sender_dependent' in postfix %}
+smtp_sender_dependent_authentication = yes
+sender_dependent_relayhost_maps = {{ get.list('sender_dependent_relayhost_maps', [ 'hash:${config_directory}/hash_tables/sender_dependent_relayhost_map' ]) }}
+{% endif %}
+smtp_sasl_auth_enable           = yes
+smtp_sasl_password_maps         = {{ get.list('smtp_sasl_password_maps', [ 'hash:${config_directory}/private_hash_tables/smtp_sasl_password_map' ]) }}
+smtp_sasl_security_options      = noanonymous, noplaintext
+smtp_sasl_tls_security_options  = noanonymous
+smtp_use_tls                    = {{ postfix_smtp_use_tls | default('yes') }}
+
+{% endif %}

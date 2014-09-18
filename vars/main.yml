@@ -4,6 +4,7 @@ postfix_configuration_templates:
   - 'main.cf.d/00_ansible'
   - 'main.cf.d/10_basic_options'
   - 'main.cf.d/20_sasl_auth'
+  - 'main.cf.d/20_smtp_client'
   - 'main.cf.d/20_tls'
   - 'main.cf.d/30_postscreen'
   - 'main.cf.d/40_smtpd_restrictions'
@@ -17,6 +18,7 @@ postfix_configuration_templates:
   - 'master.cf.d/50_uucp'
   - 'master.cf.d/90_local_mastercf'
   - 'hash_tables/Makefile'
+  - 'private_hash_tables/Makefile'
   - 'tables/mx_access.cidr'
   - 'tables/postscreen_access.cidr'
   - 'tables/postscreen_dnsbl_reply_map.pcre'
@@ -24,8 +26,13 @@ postfix_configuration_templates:
 # List of hash tables managed by a Makefile on the remote host
 postfix_postmap_hash_tables:
   - 'sender_mydomains_access'
+  - 'sender_dependent_relayhost_map'
   - 'mx_relay_transport'
   - 'mx_relay_virtual_alias_maps'
+
+# List of private hash tables managed by a Makefile on the remote host
+postfix_postmap_private_hash_tables:
+  - 'smtp_sasl_password_map'
 
 # Hash of default local aliases
 # You can define custom aliases in: postfix_local_aliases hash
