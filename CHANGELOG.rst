@@ -11,6 +11,25 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-09-18
+^^^^^^^^^^
+
+Role updates
+************
+
+* `debops.kvm`_ role has been cleaned up from old and unused code, tasks were
+  put in order and list of administrator accounts that should have access to
+  ``libvirt`` group changed name from ``auth_admin_accounts`` to ``kvm_admins``
+  (Ansible account is enabled automatically).
+
+* `debops.lxc`_ role has been updated with changes to the LXC 1.0.5 package
+  from Debian Jessie (some package dependencies and build requirements were
+  changed). You can read more in the `lxc package changelog`_.
+
+.. _debops.kvm: https://github.com/debops/ansible-kvm/
+.. _debops.lxc: https://github.com/debops/ansible-lxc/
+.. _lxc package changelog: http://metadata.ftp-master.debian.org/changelogs/main/l/lxc/testing_changelog
+
 2014-09-17
 ^^^^^^^^^^
 
