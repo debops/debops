@@ -100,25 +100,18 @@ debops_root="$(dirname ${debops_config})"
 
 # ---- Main script ----
 
-# Check if we are in DebOps project directory
-if [ ! -f ${PWD}/${DEBOPS_CONFIG} ] ; then
-  echo >&2 "${SCRIPT_NAME}: Fatal: not a DebOps project directory" ; exit 1
-fi
-
-# Check if ansible-playbook is available
-if ! type ansible > /dev/null 2>&1 ; then
-  echo >&2 "${SCRIPT_NAME}: Error: ansible: command not found" ; exit 1
-fi
+# Make sure required commands are present
+require_commands ansible
 
 # Check if Ansible inventory can be found in local directory
-if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
-  for inventory_path in "${ANSIBLE_INVENTORY_PATHS[@]}" ; do
-    if [ -d ${inventory_path} ] ; then
-      ansible_inventory="${inventory_path}"
-      break
-    fi
-  done
-fi
+for inventory_path in "${ANSIBLE_INVENTORY_PATHS[@]}" ; do
+  if [ -d ${debops_root}/${inventory_path} ] ; then
+    ansible_inventory="${debops_root}/${inventory_path}"
+    break
+  fi
+done
+
+[ -z "${ansible_inventory}" ] && error_msg "Ansible inventory not found"
 
 # Get module name from the script name if script is named 'debops-*'
 module=""
@@ -134,18 +127,13 @@ if [[ ${name_match} = 0 ]] ; then
     module="-m ${module_name}"
 fi
 
-# Run ansible with specified parameters
-if [ -z "${ansible_inventory}" ] ; then
-  echo >&2 "${SCRIPT_NAME}: Error: Ansible inventory not found" ; exit 1
-else
-  export ANSIBLE_HOSTS="${ansible_inventory}"
+export ANSIBLE_HOSTS="${ansible_inventory}"
 
-  # Allow insecure SSH connections if requested
-  if [ ${INSECURE} -gt 0 ] ; then
-    export ANSIBLE_HOST_KEY_CHECKING=False
-  fi
-
-  # Run ansible with custom environment
-  ansible ${module} "${@}"
+# Allow insecure SSH connections if requested
+if [ ${INSECURE} -gt 0 ] ; then
+  export ANSIBLE_HOST_KEY_CHECKING=False
 fi
+
+# Run ansible with custom environment
+ansible ${module} "${@}"
 
