@@ -136,6 +136,82 @@ require_commands () {
   done
 }
 
+# Efficiently fetch or clone a role
+fetch_or_clone_role() {
+  local roles_path="${1}"
+  local requirements_path="${2}"
+
+  # Store the contents of the requirements.txt file into an array
+  IFS=$"\r\n" GLOBIGNORE="*" :; local requirements=($(<${requirements_path}))
+
+  # Output the number of found roles
+  local roles_total="${#requirements[@]}"
+
+  for role in "${!requirements[@]}"; do
+    # Parse the requirements.txt file to extract the role name and version
+    local role_name="$(awk -F',' '{print $1}' <<< ${requirements[$role]} | sed "s/${DEBOPS_GALAXY_ACCOUNT}.//g")"
+    local role_version="$(awk -F',' '{print $2}' <<< ${requirements[$role]})"
+
+    # Make sure to normalize empty versions
+    if [ -z ${role_version} ]; then
+      role_version="master"
+    fi
+
+    local galaxy_name="${DEBOPS_GALAXY_ACCOUNT}.${role_name}"
+    local remote_uri="${DEBOPS_GIT_URI}/${DEBOPS_GIT_ROLE_PREFIX}"
+
+    # Check if the remote repository exists by evaluating its return code
+    local repo_status="$(git ls-remote git://${remote_uri}${role_name} HEAD &> /dev/null ; echo "$?")"
+
+    # Adjust the role's repository name if it cannot be found with the normal name
+    if [ ${repo_status} = "128" ]; then
+      role_name="role-${role_name}"
+    fi
+
+    # Add 1 to the role index because we want to count from 1, not 0
+    role="$((role + 1))"
+
+    # Custom message to show the progress
+    local progress_label="'https://${remote_uri}${role_name}' [$role_version] ($role/$roles_total)"
+
+    # Do we want to update or clone the role?
+    local role_destination="${roles_path}/${galaxy_name}"
+
+    if [ -d ${role_destination} ]; then
+      # Move into the role's directory
+      cd ${role_destination}
+
+      echo "Updating ${progress_label}"
+
+      # Parse out the head branch name
+      local head_branch_path="$(cat .git/HEAD | cut -d" " -f2)"
+      local head_branch="$(basename ${head_branch_path})"
+
+      # Parse out the current sha
+      local current_sha="$(cat .git/refs/heads/${head_branch} | awk '{print $1}')"
+
+      # Fetch it silently and store the new sha
+      git fetch --quiet
+      local fetch_sha="$(cat .git/FETCH_HEAD | awk '{print $1}')"
+
+      # Only merge if the shas are different
+      if [ ! ${current_sha} = ${fetch_sha} ]; then
+        git merge ${fetch_sha}
+        echo
+      fi
+
+      # Move back to the initial directory
+      cd - > /dev/null
+    else
+      echo "Installing ${progress_label}"
+
+      # We could half the time by using git:// instead of https:// but then we
+      # lose the security benefits of https
+      git clone --quiet --branch ${role_version} https://${remote_uri}${role_name} ${role_destination}
+    fi
+  done
+}
+
 
 # ---- DebOps environment setup ----
 
@@ -210,82 +286,6 @@ else
 
 fi
 
-# ---- Efficiently fetch or clone a role ----
-
-function fetch_or_clone_role() {
-  local roles_path="${1}"
-  local requirements_path="${2}"
-
-  # Store the contents of the requirements.txt file into an array
-  IFS=$"\r\n" GLOBIGNORE="*" :; local requirements=($(<${requirements_path}))
-
-  # Output the number of found roles
-  local roles_total="${#requirements[@]}"
-
-  for role in "${!requirements[@]}"; do
-    # Parse the requirements.txt file to extract the role name and version
-    local role_name="$(awk -F',' '{print $1}' <<< ${requirements[$role]} | sed "s/${DEBOPS_GALAXY_ACCOUNT}.//g")"
-    local role_version="$(awk -F',' '{print $2}' <<< ${requirements[$role]})"
-
-    # Make sure to normalize empty versions
-    if [ -z ${role_version} ]; then
-      role_version="master"
-    fi
-
-    local galaxy_name="${DEBOPS_GALAXY_ACCOUNT}.${role_name}"
-    local remote_uri="${DEBOPS_GIT_URI}/${DEBOPS_GIT_ROLE_PREFIX}"
-
-    # Check if the remote repository exists by evaluating its return code
-    local repo_status="$(git ls-remote git://${remote_uri}${role_name} HEAD &> /dev/null ; echo "$?")"
-
-    # Adjust the role's repository name if it cannot be found with the normal name
-    if [ ${repo_status} = "128" ]; then
-      role_name="role-${role_name}"
-    fi
-
-    # Add 1 to the role index because we want to count from 1, not 0
-    role="$((role + 1))"
-
-    # Custom message to show the progress
-    local progress_label="'https://${remote_uri}${role_name}' [$role_version] ($role/$roles_total)"
-
-    # Do we want to update or clone the role?
-    local role_destination="${roles_path}/${galaxy_name}"
-
-    if [ -d ${role_destination} ]; then
-      # Move into the role's directory
-      cd ${role_destination}
-
-      echo "Updating ${progress_label}"
-
-      # Parse out the head branch name
-      local head_branch_path="$(cat .git/HEAD | cut -d" " -f2)"
-      local head_branch="$(basename ${head_branch_path})"
-
-      # Parse out the current sha
-      local current_sha="$(cat .git/refs/heads/${head_branch} | awk '{print $1}')"
-
-      # Fetch it silently and store the new sha
-      git fetch --quiet
-      local fetch_sha="$(cat .git/FETCH_HEAD | awk '{print $1}')"
-
-      # Only merge if the shas are different
-      if [ ! ${current_sha} = ${fetch_sha} ]; then
-        git merge ${fetch_sha}
-        echo
-      fi
-
-      # Move back to the initial directory
-      cd - > /dev/null
-    else
-      echo "Installing ${progress_label}"
-
-      # We could half the time by using git:// instead of https:// but then we
-      # lose the security benefits of https
-      git clone --quiet --branch ${role_version} https://${remote_uri}${role_name} ${role_destination}
-    fi
-  done
-}
 
 # ---- Create or update the playbooks and roles  ----
 
