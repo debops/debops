@@ -194,6 +194,8 @@ if [ `find ${encfs_decrypted} -prune -empty -type d` ] ; then
 # Part of the DebOps project - http://debops.org/
 
 
+set -e
+
 # ---- Constants ----
 
 # Suffix of the encrypted directory
@@ -238,7 +240,9 @@ encfs_gpg_keyfile="\${encfs_encrypted}/\${ENCFS_KEYFILE}"
 mkdir -p \${encfs_decrypted}
 
 # Check if encrypted directory is already mounted
+set +e
 is_mounted=\$(mount | grep "encfs on \${encfs_decrypted} type fuse.encfs")
+set -e
 
 # Unmount the directory if mounted ...
 if [ -n "\${is_mounted}" ] ; then
