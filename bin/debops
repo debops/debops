@@ -43,11 +43,8 @@ declare -r SCRIPT_NAME="$(basename ${0})"
 # command line)
 [ -z "${INSECURE}" ] && INSECURE=0
 
-# Paths to look through if '.debops.cfg' is found in local directory
-DEBOPS_PLAYBOOKS_PATHS=( "${PWD}/debops-playbooks/playbooks" )
-
-# Paths to look through if local install is not found
-DEBOPS_PLAYBOOKS_INSTALL_PATHS=(
+# Locations where DebOps playbooks might be found
+DEBOPS_PLAYBOOKS_PATHS=(
   "${DEBOPS_DATA_HOME}/debops-playbooks/playbooks"
   "/usr/local/share/debops/debops-playbooks/playbooks"
   "/usr/share/debops/debops-playbooks/playbooks"
@@ -111,77 +108,47 @@ debops_root="$(dirname ${debops_config})"
 
 # ---- Main script ----
 
-# Check if we are in DebOps project directory
-if [ ! -f ${PWD}/${DEBOPS_CONFIG} ] ; then
-  echo >&2 "${SCRIPT_NAME}: Fatal: not a DebOps project directory" ; exit 1
-fi
+# Make sure required commands are present
+require_commands ansible-playbook
 
-# Check if ansible-playbook is available
-if ! type ansible-playbook > /dev/null 2>&1 ; then
-  echo >&2 "${SCRIPT_NAME}: Error: ansible-playbook: command not found" ; exit 1
-fi
+# Check if playbooks are installed in various locations
+for playbook_path in ${debops_root}/debops-playbooks/playbooks ${DEBOPS_PLAYBOOKS_PATHS[@]} ; do
+  if [ -f ${playbook_path}/site.yml ] ; then
+    debops_playbooks="${playbook_path}"
+    break
+  fi
+done
 
-# Check if playbooks are installed in local directory
-if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
-  for playbook_path in "${DEBOPS_PLAYBOOKS_PATHS[@]}" ; do
-    if [ -f ${playbook_path}/site.yml ] ; then
-      debops_playbooks="${playbook_path}"
-      break
-    fi
-  done
-fi
-
-# If playbooks have not been found in local directory, look for them in known
-# locations
-if [ -z "${debops_playbooks}" ] ; then
-  for playbook_path in "${DEBOPS_PLAYBOOKS_INSTALL_PATHS[@]}" ; do
-    if [ -f ${playbook_path}/site.yml ] ; then
-      debops_playbooks="${playbook_path}"
-      break
-    fi
-  done
-fi
+[ -z "${debops_playbooks}" ] && error_msg "DebOps playbooks not installed"
 
 # Check if Ansible inventory can be found in local directory
-if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
-  for inventory_path in "${ANSIBLE_INVENTORY_PATHS[@]}" ; do
-    if [ -d ${inventory_path} ] ; then
-      ansible_inventory="${inventory_path}"
-      break
-    fi
-  done
-fi
-
-# Playbooks have not been found, there's no point in going further
-if [ -z "${debops_playbooks}" ] ; then
-  echo >&2 "${SCRIPT_NAME}: Error: DebOps playbooks not installed" ; exit 1
-else
-
-  # If inventory haven't been found, there's no point in going even further
-  if [ -z "${ansible_inventory}" ] ; then
-    echo >&2 "${SCRIPT_NAME}: Error: Ansible inventory not found" ; exit 1
-  else
-
-    # Check if user specified a potential playbook name as the first argument. If
-    # yes, use it as the playbook name and remove it from the argument list
-    maybe_play="${1}"
-    if [ -f ${debops_playbooks}/${maybe_play}.yml ] ; then
-      play="${maybe_play}.yml" ; shift
-    else
-      play="site.yml"
-    fi
-
-    export ANSIBLE_HOSTS="${ansible_inventory}"
-
-    # Allow insecure SSH connections if requested
-    if [ ${INSECURE} -gt 0 ] ; then
-      export ANSIBLE_HOST_KEY_CHECKING=False
-    fi
-
-    # Run ansible-playbook with custom environment
-    echo "Running Ansible playbook from:"
-    echo "${debops_playbooks}/${play} ..."
-    ansible-playbook ${debops_playbooks}/${play} "${@}"
+for inventory_path in "${ANSIBLE_INVENTORY_PATHS[@]}" ; do
+  if [ -d ${debops_root}/${inventory_path} ] ; then
+    ansible_inventory="${debops_root}/${inventory_path}"
+    break
   fi
+done
+
+[ -z "${ansible_inventory}" ] && error_msg "Ansible inventory not found"
+
+# Check if user specified a potential playbook name as the first argument. If
+# yes, use it as the playbook name and remove it from the argument list
+maybe_play="${1}"
+if [ -f ${debops_playbooks}/${maybe_play}.yml ] ; then
+  play="${maybe_play}.yml" ; shift
+else
+  play="site.yml"
 fi
+
+export ANSIBLE_HOSTS="${ansible_inventory}"
+
+# Allow insecure SSH connections if requested
+if [ ${INSECURE} -gt 0 ] ; then
+  export ANSIBLE_HOST_KEY_CHECKING=False
+fi
+
+# Run ansible-playbook with custom environment
+echo "Running Ansible playbook from:"
+echo "${debops_playbooks}/${play} ..."
+ansible-playbook ${debops_playbooks}/${play} "${@}"
 
