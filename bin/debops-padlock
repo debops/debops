@@ -111,7 +111,9 @@ error_msg () {
   local message="${1}"
 
   echo >&2 "${SCRIPT_NAME}: ${severity}: ${message}"
-  [ "${severity}" == "Error" ] && exit 1
+  set +e
+  [[ "${severity}" == "Error" ]] && exit 1
+  set -e
 }
 
 # Check if required commands exist
