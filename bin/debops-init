@@ -157,19 +157,22 @@ if [ $(uname) = "Linux" ]; then
 fi
 
 cat <<EOF > ${hosts_file}
-# This is Ansible inventory file in INI format. Here you can define list of
-# hosts and host groups managed by this particular inventory.
+# This is an Ansible inventory file in INI format. You can define a list of
+# hosts and groups to be managed by this particular inventory.
 
-# Host group below manages Ansible Controllers, hosts which are used to run the
-# playbooks. To see what roles will be run, look in common playbook, located in
-# debops-playbooks/playbooks/common.yml (these are common services like iptables
-# firewall, Postfix SMTP server, sshd configuration, etc.).
+# Hosts listed under [ansible_controllers] will have common DebOps plays
+# ran against them. It will include services such as iptables, DNS, Postfix,
+# sshd configuration and more.
+#
+# View the list here:
+# https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
+
 EOF
 
 if [ "$valid_debops_controller" -eq 1 ]; then
   cat <<EOF >> ${hosts_file}
-# Your host can be managed by DebOps playbook. If you want above
-# functionality and more, then uncomment your hostname in group below.
+# Your host is eligible to be managed by DebOps' common playbook. If you want
+# that functionality and more, then uncomment your hostname below.
 [ansible_controllers]
 #$(hostname) ansible_connection=local
 
