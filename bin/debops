@@ -60,6 +60,54 @@ ANSIBLE_INVENTORY_PATHS=( "ansible/${DEBOPS_INVENTORY}" "${DEBOPS_INVENTORY}" )
 PADLOCK="padlock"
 
 
+# ---- Functions ----
+
+# Find specified file or directory in parent dir (if not specified, finds $DEBOPS_CONFIG)
+# Source: https://unix.stackexchange.com/questions/13464
+find_up () {
+  local name=${1:-$DEBOPS_CONFIG}
+  local slashes="${PWD//[^\/]/}"
+  local directory="${PWD}"
+
+  for (( n=${#slashes}; n>0; --n )) ; do
+    test -e "${directory}/${name}" && echo "$(readlink -f ${directory}/${name})" && return
+    directory="$directory/.."
+  done
+}
+
+# Display error message and exit
+error_msg () {
+  local severity="${2:-Error}"
+  local message="${1}"
+
+  echo >&2 "${SCRIPT_NAME}: ${severity}: ${message}"
+  [ "${severity}" == "Error" ] && exit 1
+}
+
+# Check if required commands exist
+require_commands () {
+  for name in ${@} ; do
+    if ! type ${name} > /dev/null 2>&1 ; then
+      error_msg "${name}: command not found"
+    fi
+  done
+}
+
+
+# ---- DebOps environment setup ----
+
+# Find DebOps configuration file
+debops_config="$(find_up)"
+
+# Exit if we are outside of project directory
+[ -z "${debops_config}" ] && error_msg "Not a DebOps project directory"
+
+# Find root of the DebOps project dir
+debops_root="$(dirname ${debops_config})"
+
+# Source DebOps configuration file
+[ -r ${debops_config} ] && source ${debops_config}
+
 
 # ---- Main script ----
 
