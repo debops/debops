@@ -29,21 +29,22 @@
 
 set -e
 
-# ---- Variable definitions ----
+# ---- Global constants ----
 
-# Set some global constants
 declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
 declare -r DEBOPS_CONFIG=".debops.cfg"
+declare -r DEBOPS_INVENTORY="inventory"
 declare -r SCRIPT_NAME="$(basename ${0})"
+
+
+# ---- Configuration variables ----
 
 # Don't check SSH fingerprint on connection (to enable, set INSECURE=1 on the
 # command line)
 [ -z "${INSECURE}" ] && INSECURE=0
 
 # Paths to look through if '.debops.cfg' is found in local directory
-DEBOPS_PLAYBOOKS_PWD_PATHS=(
-  "${PWD}/debops-playbooks/playbooks"
-)
+DEBOPS_PLAYBOOKS_PATHS=( "${PWD}/debops-playbooks/playbooks" )
 
 # Paths to look through if local install is not found
 DEBOPS_PLAYBOOKS_INSTALL_PATHS=(
@@ -52,10 +53,12 @@ DEBOPS_PLAYBOOKS_INSTALL_PATHS=(
   "/usr/share/debops/debops-playbooks/playbooks"
 )
 
-ANSIBLE_INVENTORY_PWD_PATHS=(
-  "${PWD}/ansible/inventory"
-  "${PWD}/inventory"
-)
+# List of possible inventory directories, relative to DebOps root project directory
+ANSIBLE_INVENTORY_PATHS=( "ansible/${DEBOPS_INVENTORY}" "${DEBOPS_INVENTORY}" )
+
+# Name of the script used to open/close the encrypted directory
+PADLOCK="padlock"
+
 
 
 # ---- Main script ----
@@ -72,7 +75,7 @@ fi
 
 # Check if playbooks are installed in local directory
 if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
-  for playbook_path in "${DEBOPS_PLAYBOOKS_PWD_PATHS[@]}" ; do
+  for playbook_path in "${DEBOPS_PLAYBOOKS_PATHS[@]}" ; do
     if [ -f ${playbook_path}/site.yml ] ; then
       debops_playbooks="${playbook_path}"
       break
@@ -93,7 +96,7 @@ fi
 
 # Check if Ansible inventory can be found in local directory
 if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
-  for inventory_path in "${ANSIBLE_INVENTORY_PWD_PATHS[@]}" ; do
+  for inventory_path in "${ANSIBLE_INVENTORY_PATHS[@]}" ; do
     if [ -d ${inventory_path} ] ; then
       ansible_inventory="${inventory_path}"
       break
