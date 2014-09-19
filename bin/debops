@@ -36,6 +36,9 @@ declare -r DEBOPS_CONFIG=".debops.cfg"
 declare -r DEBOPS_INVENTORY="inventory"
 declare -r SCRIPT_NAME="$(basename ${0})"
 
+declare -r ENCFS_PREFIX=".encfs."
+declare -r SECRET_SUFFIX=".secret"
+
 
 # ---- Configuration variables ----
 
@@ -145,6 +148,16 @@ export ANSIBLE_HOSTS="${ansible_inventory}"
 # Allow insecure SSH connections if requested
 if [ ${INSECURE} -gt 0 ] ; then
   export ANSIBLE_HOST_KEY_CHECKING=False
+fi
+
+# Create path to EncFS encrypted directory, based on inventory name
+encfs_encrypted="$(dirname ${ansible_inventory})/${ENCFS_PREFIX}${DEBOPS_INVENTORY}${SECRET_SUFFIX}"
+
+# Check if encrypted secret directory exists and use it
+if [ -x ${encfs_encrypted}/${PADLOCK} ] ; then
+  echo "Found encrypted secrets in ${encfs_encrypted}"
+  ${encfs_encrypted}/${PADLOCK} open
+  trap "${encfs_encrypted}/${PADLOCK} close" EXIT
 fi
 
 # Run ansible-playbook with custom environment
