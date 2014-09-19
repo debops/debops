@@ -36,9 +36,6 @@ declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
 declare -r DEBOPS_CONFIG=".debops.cfg"
 declare -r SCRIPT_NAME="$(basename ${0})"
 
-# Debugging (to enable, set DEBUG=1 on the command line)
-[ -z "${DEBUG}" ] && DEBUG=0
-
 # Don't check SSH fingerprint on connection (to enable, set INSECURE=1 on the
 # command line)
 [ -z "${INSECURE}" ] && INSECURE=0
@@ -65,7 +62,6 @@ ANSIBLE_INVENTORY_PWD_PATHS=(
 
 # Check if we are in DebOps project directory
 if [ ! -f ${PWD}/${DEBOPS_CONFIG} ] ; then
-  [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: ${DEBOPS_CONFIG} file not found in current directory"
   echo >&2 "${SCRIPT_NAME}: Fatal: not a DebOps project directory" ; exit 1
 fi
 
@@ -77,10 +73,8 @@ fi
 # Check if playbooks are installed in local directory
 if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
   for playbook_path in "${DEBOPS_PLAYBOOKS_PWD_PATHS[@]}" ; do
-    [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Checking for DebOps playbooks in ${playbook_path} ..."
     if [ -f ${playbook_path}/site.yml ] ; then
       debops_playbooks="${playbook_path}"
-      [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Found DebOps playbooks in ${playbook_path}"
       break
     fi
   done
@@ -90,10 +84,8 @@ fi
 # locations
 if [ -z "${debops_playbooks}" ] ; then
   for playbook_path in "${DEBOPS_PLAYBOOKS_INSTALL_PATHS[@]}" ; do
-    [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Checking for DebOps playbooks in ${playbook_path} ..."
     if [ -f ${playbook_path}/site.yml ] ; then
       debops_playbooks="${playbook_path}"
-      [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Found DebOps playbooks in ${playbook_path}"
       break
     fi
   done
@@ -102,10 +94,8 @@ fi
 # Check if Ansible inventory can be found in local directory
 if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
   for inventory_path in "${ANSIBLE_INVENTORY_PWD_PATHS[@]}" ; do
-    [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Checking for Ansible inventory in ${inventory_path} ..."
     if [ -d ${inventory_path} ] ; then
       ansible_inventory="${inventory_path}"
-      [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Found Ansible inventory in ${inventory_path}"
       break
     fi
   done
@@ -124,10 +114,8 @@ else
     # Check if user specified a potential playbook name as the first argument. If
     # yes, use it as the playbook name and remove it from the argument list
     maybe_play="${1}"
-    [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Checking if '${maybe_play}.yml' is an existing playbook ..."
     if [ -f ${debops_playbooks}/${maybe_play}.yml ] ; then
       play="${maybe_play}.yml" ; shift
-      [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Found '${play}.yml' in DebOps playbooks"
     else
       play="site.yml"
     fi
@@ -139,21 +127,10 @@ else
       export ANSIBLE_HOST_KEY_CHECKING=False
     fi
 
-    # Run ansible-playbook with specified arguments
-    if [ ${DEBUG} -gt 0 ] ; then
-      cat <<EOF >&2
-
-${SCRIPT_NAME}: Debug: ANSIBLE_CONFIG=${ANSIBLE_CONFIG}
-${SCRIPT_NAME}: Debug: ANSIBLE_HOSTS=${ANSIBLE_HOSTS}
-${SCRIPT_NAME}: Debug: ANSIBLE_HOST_KEY_CHECKING=${ANSIBLE_HOST_KEY_CHECKING}
-${SCRIPT_NAME}: Debug: ansible-playbook ${debops_playbooks}/${play} ${@}
-EOF
-      exit 0
-    else
-      echo "Running Ansible playbook from:"
-      echo "${debops_playbooks}/${play} ..."
-      ansible-playbook ${debops_playbooks}/${play} "${@}"
-    fi
+    # Run ansible-playbook with custom environment
+    echo "Running Ansible playbook from:"
+    echo "${debops_playbooks}/${play} ..."
+    ansible-playbook ${debops_playbooks}/${play} "${@}"
   fi
 fi
 
