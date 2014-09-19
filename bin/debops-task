@@ -37,9 +37,6 @@ declare -r DEBOPS_CONFIG=".debops.cfg"
 declare -r SCRIPT_NAME="$(basename ${0})"
 declare -r DEBOPS_RESERVED_NAMES=( task init update defaults )
 
-# Debugging (to enable, set DEBUG=1 on the command line)
-[ -z "${DEBUG}" ] && DEBUG=0
-
 # Don't check SSH fingerprint on connection (to enable, set INSECURE=1 on the
 # command line)
 [ -z "${INSECURE}" ] && INSECURE=0
@@ -54,7 +51,6 @@ ANSIBLE_INVENTORY_PWD_PATHS=(
 
 # Check if we are in DebOps project directory
 if [ ! -f ${PWD}/${DEBOPS_CONFIG} ] ; then
-  [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: ${DEBOPS_CONFIG} file not found in current directory"
   echo >&2 "${SCRIPT_NAME}: Fatal: not a DebOps project directory" ; exit 1
 fi
 
@@ -66,10 +62,8 @@ fi
 # Check if Ansible inventory can be found in local directory
 if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
   for inventory_path in "${ANSIBLE_INVENTORY_PWD_PATHS[@]}" ; do
-    [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Checking for Ansible inventory in ${inventory_path} ..."
     if [ -d ${inventory_path} ] ; then
       ansible_inventory="${inventory_path}"
-      [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Found Ansible inventory in ${inventory_path}"
       break
     fi
   done
@@ -100,18 +94,7 @@ else
     export ANSIBLE_HOST_KEY_CHECKING=False
   fi
 
-  # Run ansible-playbook with specified arguments
-  if [ ${DEBUG} -gt 0 ] ; then
-    cat <<EOF >&2
-
-${SCRIPT_NAME}: Debug: ANSIBLE_CONFIG=${ANSIBLE_CONFIG}
-${SCRIPT_NAME}: Debug: ANSIBLE_HOSTS=${ANSIBLE_HOSTS}
-${SCRIPT_NAME}: Debug: ANSIBLE_HOST_KEY_CHECKING=${ANSIBLE_HOST_KEY_CHECKING}
-${SCRIPT_NAME}: Debug: ansible ${module} ${@}
-EOF
-    exit 0
-  else
-    ansible ${module} "${@}"
-  fi
+  # Run ansible with custom environment
+  ansible ${module} "${@}"
 fi
 
