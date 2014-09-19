@@ -29,22 +29,24 @@
 
 set -e
 
-# ---- Variable definitions ----
+# ---- Global constants ----
 
-# Set some global constants
 declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
 declare -r DEBOPS_CONFIG=".debops.cfg"
+declare -r DEBOPS_INVENTORY="inventory"
 declare -r SCRIPT_NAME="$(basename ${0})"
-declare -r DEBOPS_RESERVED_NAMES=( task init update defaults )
+
+declare -r DEBOPS_RESERVED_NAMES=( task init update defaults padlock )
+
+
+# ---- Configuration variables ----
 
 # Don't check SSH fingerprint on connection (to enable, set INSECURE=1 on the
 # command line)
 [ -z "${INSECURE}" ] && INSECURE=0
 
-ANSIBLE_INVENTORY_PWD_PATHS=(
-  "${PWD}/ansible/inventory"
-  "${PWD}/inventory"
-)
+# List of possible inventory directories, relative to DebOps root project directory
+ANSIBLE_INVENTORY_PATHS=( "ansible/${DEBOPS_INVENTORY}" "${DEBOPS_INVENTORY}" )
 
 
 # ---- Main script ----
@@ -61,7 +63,7 @@ fi
 
 # Check if Ansible inventory can be found in local directory
 if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
-  for inventory_path in "${ANSIBLE_INVENTORY_PWD_PATHS[@]}" ; do
+  for inventory_path in "${ANSIBLE_INVENTORY_PATHS[@]}" ; do
     if [ -d ${inventory_path} ] ; then
       ansible_inventory="${inventory_path}"
       break
