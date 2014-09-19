@@ -50,15 +50,18 @@
 
 set -e
 
-# ---- Variable definitions ----
+# ---- Global constants ----
 
-# Set some global constants
 declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
 declare -r DEBOPS_CONFIG=".debops.cfg"
+declare -r DEBOPS_INVENTORY="inventory"
 declare -r SCRIPT_NAME="$(basename ${0})"
 
+
+# ---- Configuration variables ----
+
 # Paths to look through if '.debops.cfg' is found in local directory
-DEBOPS_PLAYBOOKS_PWD_PATHS=(
+DEBOPS_PLAYBOOKS_PATHS=(
   "${PWD}/debops-playbooks"
 )
 
@@ -136,7 +139,7 @@ else
   # Check if playbooks are installed in local directory
   if [ -z "${debops_playbooks}" ] ;then
     if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
-      for playbook_path in "${DEBOPS_PLAYBOOKS_PWD_PATHS[@]}" ; do
+      for playbook_path in "${DEBOPS_PLAYBOOKS_PATHS[@]}" ; do
         if [ -f ${playbook_path}/${DEBOPS_SITE_PLAYBOOK} ] ; then
           debops_playbooks="${playbook_path}"
           break
