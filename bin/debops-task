@@ -29,51 +29,91 @@
 
 set -e
 
-# ---- Variable definitions ----
+# ---- Global constants ----
 
-# Set some global constants
 declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
 declare -r DEBOPS_CONFIG=".debops.cfg"
+declare -r DEBOPS_INVENTORY="inventory"
 declare -r SCRIPT_NAME="$(basename ${0})"
-declare -r DEBOPS_RESERVED_NAMES=( task init update defaults )
 
-# Debugging (to enable, set DEBUG=1 on the command line)
-[ -z "${DEBUG}" ] && DEBUG=0
+declare -r DEBOPS_RESERVED_NAMES=( task init update defaults padlock )
+
+
+# ---- Configuration variables ----
 
 # Don't check SSH fingerprint on connection (to enable, set INSECURE=1 on the
 # command line)
 [ -z "${INSECURE}" ] && INSECURE=0
 
-ANSIBLE_INVENTORY_PWD_PATHS=(
-  "${PWD}/ansible/inventory"
-  "${PWD}/inventory"
-)
+# List of possible inventory directories, relative to DebOps root project directory
+ANSIBLE_INVENTORY_PATHS=( "ansible/${DEBOPS_INVENTORY}" "${DEBOPS_INVENTORY}" )
+
+
+# ---- Functions ----
+
+# Find specified file or directory in parent dir (if not specified, finds $DEBOPS_CONFIG)
+# Source: https://unix.stackexchange.com/questions/13464
+find_up () {
+  local name=${1:-$DEBOPS_CONFIG}
+  local slashes="${PWD//[^\/]/}"
+  local directory="${PWD}"
+
+  for (( n=${#slashes}; n>0; --n )) ; do
+    test -e "${directory}/${name}" && echo "$(readlink -f ${directory}/${name})" && return
+    directory="$directory/.."
+  done
+}
+
+# Display error message and exit
+error_msg () {
+  local severity="${2:-Error}"
+  local message="${1}"
+
+  echo >&2 "${SCRIPT_NAME}: ${severity}: ${message}"
+  set +e
+  [[ "${severity}" == "Error" ]] && exit 1
+  set -e
+}
+
+# Check if required commands exist
+require_commands () {
+  for name in ${@} ; do
+    if ! type ${name} > /dev/null 2>&1 ; then
+      error_msg "${name}: command not found"
+    fi
+  done
+}
+
+
+# ---- DebOps environment setup ----
+
+# Find DebOps configuration file
+debops_config="$(find_up)"
+
+# Exit if we are outside of project directory
+[ -z "${debops_config}" ] && error_msg "Not a DebOps project directory"
+
+# Find root of the DebOps project dir
+debops_root="$(dirname ${debops_config})"
+
+# Source DebOps configuration file
+[ -r ${debops_config} ] && source ${debops_config}
 
 
 # ---- Main script ----
 
-# Check if we are in DebOps project directory
-if [ ! -f ${PWD}/${DEBOPS_CONFIG} ] ; then
-  [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: ${DEBOPS_CONFIG} file not found in current directory"
-  echo >&2 "${SCRIPT_NAME}: Fatal: not a DebOps project directory" ; exit 1
-fi
-
-# Check if ansible-playbook is available
-if ! type ansible > /dev/null 2>&1 ; then
-  echo >&2 "${SCRIPT_NAME}: Error: ansible: command not found" ; exit 1
-fi
+# Make sure required commands are present
+require_commands ansible
 
 # Check if Ansible inventory can be found in local directory
-if [ -f ${PWD}/${DEBOPS_CONFIG} ] ; then
-  for inventory_path in "${ANSIBLE_INVENTORY_PWD_PATHS[@]}" ; do
-    [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Checking for Ansible inventory in ${inventory_path} ..."
-    if [ -d ${inventory_path} ] ; then
-      ansible_inventory="${inventory_path}"
-      [ ${DEBUG} -gt 0 ] && echo >&2 "${SCRIPT_NAME}: Debug: Found Ansible inventory in ${inventory_path}"
-      break
-    fi
-  done
-fi
+for inventory_path in "${ANSIBLE_INVENTORY_PATHS[@]}" ; do
+  if [ -d ${debops_root}/${inventory_path} ] ; then
+    ansible_inventory="${debops_root}/${inventory_path}"
+    break
+  fi
+done
+
+[ -z "${ansible_inventory}" ] && error_msg "Ansible inventory not found"
 
 # Get module name from the script name if script is named 'debops-*'
 module=""
@@ -89,29 +129,13 @@ if [[ ${name_match} = 0 ]] ; then
     module="-m ${module_name}"
 fi
 
-# Run ansible with specified parameters
-if [ -z "${ansible_inventory}" ] ; then
-  echo >&2 "${SCRIPT_NAME}: Error: Ansible inventory not found" ; exit 1
-else
-  export ANSIBLE_HOSTS="${ansible_inventory}"
+export ANSIBLE_HOSTS="${ansible_inventory}"
 
-  # Allow insecure SSH connections if requested
-  if [ ${INSECURE} -gt 0 ] ; then
-    export ANSIBLE_HOST_KEY_CHECKING=False
-  fi
-
-  # Run ansible-playbook with specified arguments
-  if [ ${DEBUG} -gt 0 ] ; then
-    cat <<EOF >&2
-
-${SCRIPT_NAME}: Debug: ANSIBLE_CONFIG=${ANSIBLE_CONFIG}
-${SCRIPT_NAME}: Debug: ANSIBLE_HOSTS=${ANSIBLE_HOSTS}
-${SCRIPT_NAME}: Debug: ANSIBLE_HOST_KEY_CHECKING=${ANSIBLE_HOST_KEY_CHECKING}
-${SCRIPT_NAME}: Debug: ansible ${module} ${@}
-EOF
-    exit 0
-  else
-    ansible ${module} "${@}"
-  fi
+# Allow insecure SSH connections if requested
+if [ ${INSECURE} -gt 0 ] ; then
+  export ANSIBLE_HOST_KEY_CHECKING=False
 fi
+
+# Run ansible with custom environment
+ansible ${module} "${@}"
 

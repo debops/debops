@@ -5,6 +5,19 @@
 
 ***
 
+##### 2014-09-19
+
+* All `debops*` scripts have been updated with new functions and fixed logic.
+  You can now run DebOps commands inside project subdirectories instead of
+  just at the root of the project directory.
+
+* `debops` script now recognizes encrypted secret directories created by
+  `debops-padlock` and automatically opens them before Ansible playbook run,
+  and closes them afterwards.
+
+* `debops-init` will check if you try to create project directory in another
+  project and if so, will politely refuse your request.
+
 ##### 2014-09-16
 
 * new `debops-padlock` script, which is a companion Bash script to

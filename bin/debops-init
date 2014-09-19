@@ -6,28 +6,108 @@
 
 set -e
 
+# ---- Global constants ----
+
+declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
+declare -r DEBOPS_CONFIG=".debops.cfg"
+declare -r DEBOPS_INVENTORY="inventory"
+declare -r SCRIPT_NAME="$(basename ${0})"
+declare -r SECRET_SUFFIX=".secret"
+
+
+# ---- Configuration variables ----
+
+NEW_INVENTORY="ansible/${DEBOPS_INVENTORY}"
+
 SKEL_DIRS=(
-  "ansible/inventory/group_vars/all"
-  "ansible/inventory/host_vars"
+  "ansible/${DEBOPS_INVENTORY}/group_vars/all"
+  "ansible/${DEBOPS_INVENTORY}/host_vars"
   "ansible/playbooks"
 )
 
+
+# ---- Functions ----
+
+# Find specified file or directory in parent dir (if not specified, finds $DEBOPS_CONFIG)
+# Source: https://unix.stackexchange.com/questions/13464
+find_up () {
+  local name=${1:-$DEBOPS_CONFIG}
+  local slashes="${PWD//[^\/]/}"
+  local directory="${PWD}"
+
+  for (( n=${#slashes}; n>0; --n )) ; do
+    test -e "${directory}/${name}" && echo "$(readlink -f ${directory}/${name})" && return
+    directory="$directory/.."
+  done
+}
+
+# Display error message and exit
+error_msg () {
+  local severity="${2:-Error}"
+  local message="${1}"
+
+  echo >&2 "${SCRIPT_NAME}: ${severity}: ${message}"
+  set +e
+  [[ "${severity}" == "Error" ]] && exit 1
+  set -e
+}
+
+# Check if required commands exist
+require_commands () {
+  for name in ${@} ; do
+    if ! type ${name} > /dev/null 2>&1 ; then
+      error_msg "${name}: command not found"
+    fi
+  done
+}
+
+
+# ---- DebOps environment setup ----
+
+# Specify name of new project directory
 project="${1:-$PWD}"
 
-if [ -f "$project/.debops.cfg" ]; then
-  echo >&2 "$project is already a DebOps project" ; exit 1
+# Find DebOps configuration file
+debops_config="$(find_up)"
+
+# Check if project dir already exists
+new_project="$(find_up ${project})"
+
+# Find root of the DebOps project dir
+[ -n "${debops_config}" ] && debops_root="$(dirname ${debops_config})"
+
+# Exit if we are in a DebOps project dir and nested project would be created
+if [ -n "${debops_root}" ] ; then
+  if [ "${debops_root}" = "${new_project}" ] ; then
+    error_msg "You are inside ${new_project} project already"
+  else
+    [ -z "${project}" ] && error_msg "Cannot create nested project in ${debops_root}"
+  fi
 fi
 
-for skel_dir in "${SKEL_DIRS[@]}"; do
-  if [ ! -d "$project/$skel_dir" ]; then
-    mkdir -p "$project/$skel_dir"
+# Exit if DebOps configuration file has been found
+[ -r "${project}/${DEBOPS_CONFIG}" ] && error_msg "${project} is already a DebOps project"
+
+
+# ---- Main script ----
+
+echo "Creating new DebOps project in ${project} ..."
+
+# Create base project directories
+for skel_dir in "${SKEL_DIRS[@]}" ; do
+  if [ ! -d ${project}/${skel_dir} ] ; then
+    mkdir -p ${project}/${skel_dir}
   fi
 done
 
-touch "$project/.debops.cfg"
+# Create .debops.cfg
+cat <<EOF > ${project}/${DEBOPS_CONFIG}
+EOF
 
-gitignore_content=$(cat <<EOF
-ansible/inventory.secret
+# Create .gitignore
+cat <<EOF > ${project}/.gitignore
+ansible/${DEBOPS_INVENTORY}${SECRET_SUFFIX}
+${DEBOPS_INVENTORY}${SECRET_SUFFIX}
 
 
 # Created by http://www.gitignore.io
@@ -51,26 +131,6 @@ auto-save-list
 tramp
 .\#*
 
-# Org-mode
-.org-id-locations
-*_archive
-
-# flymake-mode
-*_flymake.*
-
-# eshell files
-/eshell/history
-/eshell/lastdir
-
-# elpa packages
-/elpa/
-
-# reftex files
-*.rel
-
-# AUCTeX auto folder
-/auto/
-
 
 ### SublimeText ###
 # workspace files are user-specific
@@ -84,59 +144,51 @@ tramp
 sftp-config.json
 
 EOF
-  )
-
-echo "$gitignore_content" >> "$project/.gitignore"
 
 # Swap in different hosts file content depending on the host's OS/distro
 valid_debops_controller=0
-hosts_file="ansible/inventory/hosts"
+hosts_file="${project}/${NEW_INVENTORY}/hosts"
 
 if [ $(uname) = "Linux" ]; then
   distro=$(lsb_release -si)
-  if [ "$distro" = "Debian" -o "$distro" = "Ubuntu" ]; then
+  if [ "${distro}" = "Debian" -o "${distro}" = "Ubuntu" ]; then
     valid_debops_controller=1
   fi
 fi
 
-hosts_common=$(cat <<EOF
-# Hosts listed under [ansible_controllers] will have common DebOps
-# plays ran against them. It will setup common functionality such as
-# proper DNS, postfix and other handy services.
+cat <<EOF > ${hosts_file}
+# This is Ansible inventory file in INI format. Here you can define list of
+# hosts and host groups managed by this particular inventory.
 
+# Host group below manages Ansible Controllers, hosts which are used to run the
+# playbooks. To see what roles will be run, look in common playbook, located in
+# debops-playbooks/playbooks/common.yml (these are common services like iptables
+# firewall, Postfix SMTP server, sshd configuration, etc.).
 EOF
-  )
 
 if [ "$valid_debops_controller" -eq 1 ]; then
-  hosts_content=$(cat <<EOF
-$hosts_common
-
-# Your host is eligible to run the above plays, if you want that
-# functionality and more then uncomment the line under [ansible_controllers].
-
+  cat <<EOF >> ${hosts_file}
+# Your host can be managed by DebOps playbook. If you want above
+# functionality and more, then uncomment your hostname in group below.
 [ansible_controllers]
 #$(hostname) ansible_connection=local
-EOF
-  )
-else
-  hosts_content=$(cat <<EOF
-$hosts_common
 
+EOF
+else
+  cat <<EOF >> ${hosts_file}
 # Your host is not Debian-based so you will not be able to leverage
 # the above features on your current operating system. You can however
 # use Vagrant or something else to setup a VM and install DebOps there.
 
 [ansible_controllers]
 #<VM host IP>
+
 EOF
-  )
 fi
 
-echo "$hosts_content" >> "$project/$hosts_file"
+apt_lxc_file="${project}/${NEW_INVENTORY}/group_vars/all/apt_lxc.yml"
 
-apt_lxc_file="ansible/inventory/group_vars/all/apt_lxc.yml"
-
-apt_lxc_content=$(cat <<EOF
+cat <<EOF > ${apt_lxc_file}
 # Occasionally Debian's CDN is a bit flaky. If you get 404s trying to access
 # source URLs then uncomment the 2 variables below. You may also want to use
 # your location's mirror rather than US, check the list of mirrors here:
@@ -146,8 +198,4 @@ apt_lxc_content=$(cat <<EOF
 #apt_debian_http_mirror: 'ftp.us.debian.org'
 #lxc_template_debootstrap_mirror: 'http://{{ apt_debian_http_mirror }}/debian'
 EOF
-  )
 
-echo "$apt_lxc_content" > "$project/$apt_lxc_file"
-
-echo "Initialized DebOps project in $project"

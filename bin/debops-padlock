@@ -111,7 +111,9 @@ error_msg () {
   local message="${1}"
 
   echo >&2 "${SCRIPT_NAME}: ${severity}: ${message}"
-  [ "${severity}" == "Error" ] && exit 1
+  set +e
+  [[ "${severity}" == "Error" ]] && exit 1
+  set -e
 }
 
 # Check if required commands exist
@@ -170,8 +172,6 @@ fi
 # inventory name (absolute paths are specified)
 encfs_encrypted="$(dirname ${ansible_inventory})/${ENCFS_PREFIX}${DEBOPS_INVENTORY}${SECRET_SUFFIX}"
 encfs_decrypted="$(dirname ${encfs_encrypted})/${encfs_encrypted##*${ENCFS_PREFIX}}"
-#encfs_encrypted="${ansible_inventory}${SECRET_SUFFIX}${ENCFS_SUFFIX}"
-#encfs="${encfs_encrypted%%${ENCFS_SUFFIX}}"
 
 # EncFS cannot create encrypted directory if directory with decrypted data
 # is not empty
@@ -195,6 +195,8 @@ if [ `find ${encfs_decrypted} -prune -empty -type d` ] ; then
 # Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
 # Part of the DebOps project - http://debops.org/
 
+
+set -e
 
 # ---- Constants ----
 
@@ -240,7 +242,9 @@ encfs_gpg_keyfile="\${encfs_encrypted}/\${ENCFS_KEYFILE}"
 mkdir -p \${encfs_decrypted}
 
 # Check if encrypted directory is already mounted
+set +e
 is_mounted=\$(mount | grep "encfs on \${encfs_decrypted} type fuse.encfs")
+set -e
 
 # Unmount the directory if mounted ...
 if [ -n "\${is_mounted}" ] ; then
