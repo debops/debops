@@ -17,6 +17,8 @@ declare -r SECRET_SUFFIX=".secret"
 
 # ---- Configuration variables ----
 
+NEW_INVENTORY="ansible/${DEBOPS_INVENTORY}"
+
 SKEL_DIRS=(
   "ansible/${DEBOPS_INVENTORY}/group_vars/all"
   "ansible/${DEBOPS_INVENTORY}/host_vars"
@@ -89,15 +91,21 @@ fi
 
 # ---- Main script ----
 
-for skel_dir in "${SKEL_DIRS[@]}"; do
-  if [ ! -d "$project/$skel_dir" ]; then
-    mkdir -p "$project/$skel_dir"
+echo "Creating new DebOps project in ${project} ..."
+
+# Create base project directories
+for skel_dir in "${SKEL_DIRS[@]}" ; do
+  if [ ! -d ${project}/${skel_dir} ] ; then
+    mkdir -p ${project}/${skel_dir}
   fi
 done
 
-touch "$project/${DEBOPS_CONFIG}"
+# Create .debops.cfg
+cat <<EOF > ${project}/${DEBOPS_CONFIG}
+EOF
 
-gitignore_content=$(cat <<EOF
+# Create .gitignore
+cat <<EOF > ${project}/.gitignore
 ansible/${DEBOPS_INVENTORY}${SECRET_SUFFIX}
 ${DEBOPS_INVENTORY}${SECRET_SUFFIX}
 
@@ -123,26 +131,6 @@ auto-save-list
 tramp
 .\#*
 
-# Org-mode
-.org-id-locations
-*_archive
-
-# flymake-mode
-*_flymake.*
-
-# eshell files
-/eshell/history
-/eshell/lastdir
-
-# elpa packages
-/elpa/
-
-# reftex files
-*.rel
-
-# AUCTeX auto folder
-/auto/
-
 
 ### SublimeText ###
 # workspace files are user-specific
@@ -156,59 +144,51 @@ tramp
 sftp-config.json
 
 EOF
-  )
-
-echo "$gitignore_content" >> "$project/.gitignore"
 
 # Swap in different hosts file content depending on the host's OS/distro
 valid_debops_controller=0
-hosts_file="ansible/${DEBOPS_INVENTORY}/hosts"
+hosts_file="${project}/${NEW_INVENTORY}/hosts"
 
 if [ $(uname) = "Linux" ]; then
   distro=$(lsb_release -si)
-  if [ "$distro" = "Debian" -o "$distro" = "Ubuntu" ]; then
+  if [ "${distro}" = "Debian" -o "${distro}" = "Ubuntu" ]; then
     valid_debops_controller=1
   fi
 fi
 
-hosts_common=$(cat <<EOF
-# Hosts listed under [ansible_controllers] will have common DebOps
-# plays ran against them. It will setup common functionality such as
-# proper DNS, postfix and other handy services.
+cat <<EOF > ${hosts_file}
+# This is Ansible inventory file in INI format. Here you can define list of
+# hosts and host groups managed by this particular inventory.
 
+# Host group below manages Ansible Controllers, hosts which are used to run the
+# playbooks. To see what roles will be run, look in common playbook, located in
+# debops-playbooks/playbooks/common.yml (these are common services like iptables
+# firewall, Postfix SMTP server, sshd configuration, etc.).
 EOF
-  )
 
 if [ "$valid_debops_controller" -eq 1 ]; then
-  hosts_content=$(cat <<EOF
-$hosts_common
-
-# Your host is eligible to run the above plays, if you want that
-# functionality and more then uncomment the line under [ansible_controllers].
-
+  cat <<EOF >> ${hosts_file}
+# Your host can be managed by DebOps playbook. If you want above
+# functionality and more, then uncomment your hostname in group below.
 [ansible_controllers]
 #$(hostname) ansible_connection=local
-EOF
-  )
-else
-  hosts_content=$(cat <<EOF
-$hosts_common
 
+EOF
+else
+  cat <<EOF >> ${hosts_file}
 # Your host is not Debian-based so you will not be able to leverage
 # the above features on your current operating system. You can however
 # use Vagrant or something else to setup a VM and install DebOps there.
 
 [ansible_controllers]
 #<VM host IP>
+
 EOF
-  )
 fi
 
-echo "$hosts_content" >> "$project/$hosts_file"
+apt_lxc_file="${project}/${NEW_INVENTORY}/group_vars/all/apt_lxc.yml"
 
-apt_lxc_file="ansible/${DEBOPS_INVENTORY}/group_vars/all/apt_lxc.yml"
-
-apt_lxc_content=$(cat <<EOF
+cat <<EOF > ${apt_lxc_file}
 # Occasionally Debian's CDN is a bit flaky. If you get 404s trying to access
 # source URLs then uncomment the 2 variables below. You may also want to use
 # your location's mirror rather than US, check the list of mirrors here:
@@ -218,8 +198,4 @@ apt_lxc_content=$(cat <<EOF
 #apt_debian_http_mirror: 'ftp.us.debian.org'
 #lxc_template_debootstrap_mirror: 'http://{{ apt_debian_http_mirror }}/debian'
 EOF
-  )
 
-echo "$apt_lxc_content" > "$project/$apt_lxc_file"
-
-echo "Initialized DebOps project in $project"
