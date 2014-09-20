@@ -1,27 +1,36 @@
 ---
 
-- name: Remove unwanted files if postfix is disabled
-  file: path={{ item }} state=absent
-  with_items:
-    - '/etc/postfix/postfix-capabilities'
+- name: Remove unwanted files if Postfix is disabled
+  file:
+    path: '{{ item }}'
+    state: 'absent'
+  with_items: [ '/etc/postfix/postfix-capabilities' ]
 
-- name: Remove firewall configuration for postfix
-  file: path=/etc/ferm/filter-input.d/postfix.conf state=absent
-  notify: Restart ferm
+- name: Remove firewall configuration for Postfix
+  file:
+    path: '/etc/ferm/filter-input.d/postfix.conf'
+    state: 'absent'
+  notify: [ 'Restart ferm' ]
 
-- name: Disable DH params regeneration if postfix is disabled
-  cron: name='Regenerate DH params for postfix' minute=0 hour={{ postfix_cron_dhparams_hour | default('0') }} user=root
-        job='/etc/postfix/postfix-regenerate-dhparams' cron_file='postfix-regenerate-dhparams' state=absent
+- name: Disable DH params regeneration if Postfix is disabled
+  cron:
+    name: 'Regenerate DH params for postfix'
+    minute: '0'
+    hour: '{{ postfix_cron_dhparams_hour | default("0") }}'
+    user: 'root'
+    job: '/etc/postfix/postfix-regenerate-dhparams'
+    cron_file: 'postfix-regenerate-dhparams'
+    state: 'absent'
 
-- name: Move postfix configuration out of the way before reversion
+- name: Move Postfix configuration out of the way before reversion
   command: rm -f /etc/postfix/{{ item }} removes=/etc/postfix/{{ item }}.dpkg-divert
   with_items: [ 'main.cf', 'master.cf' ]
 
-- name: Remove diversion of original postfix configuration
+- name: Remove diversion of original Postfix configuration
   command: dpkg-divert --quiet --local --rename --remove /etc/postfix/{{ item }}
            removes=/etc/postfix/{{ item }}.dpkg-divert
   with_items: [ 'main.cf', 'master.cf' ]
-  notify: Restart postfix
+  notify: [ 'Restart postfix' ]
 
 - name: Move alias database out of the way before reversion
   command: rm -f /etc/aliases removes=/etc/aliases.dpkg-divert
@@ -29,5 +38,4 @@
 - name: Remove diversion of original alias database
   command: dpkg-divert --quiet --local --rename --remove /etc/aliases
            removes=/etc/aliases.dpkg-divert
-
 

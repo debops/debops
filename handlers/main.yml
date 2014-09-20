@@ -1,11 +1,15 @@
 ---
 
 - name: Restart postfix
-  service: name=postfix state=restarted
-  notify: Restart ferm
+  service:
+    name: 'postfix'
+    state: 'restarted'
+  notify: [ 'Restart ferm' ]
 
 - name: Reload postfix
-  service: name=postfix state=reloaded
+  service:
+    name: 'postfix'
+    state: 'reloaded'
 
 - name: Generate mail alias database
   command: newaliases

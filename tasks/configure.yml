@@ -1,70 +1,129 @@
 ---
 
 - name: Configure aliases database
-  template: src=etc/aliases.j2 dest=/etc/aliases owner=root group=root mode=0644
-  notify: Generate mail alias database
+  template:
+    src: 'etc/aliases.j2'
+    dest: '/etc/aliases'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Generate mail alias database' ]
 
 - name: Configure mail system
-  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
-  with_items:
-    - 'etc/mailname'
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: [ 'etc/mailname' ]
 
-- name: Create postfix configuration directories
-  file: path=/etc/postfix/{{ item }} state=directory owner=root group=root mode=0755
+- name: Create Postfix configuration directories
+  file:
+    path: '/etc/postfix/{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
   with_items: [ 'tables', 'hash_tables' ]
 
-- name: Create postfix private configuration directories
-  file: path=/etc/postfix/{{ item }} state=directory owner=root group=root mode=0700
+- name: Create Postfix private configuration directories
+  file:
+    path: '/etc/postfix/{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
   with_items: [ 'private_hash_tables' ]
 
-- name: Generate postfix tables
-  template: src=etc/postfix/{{ item }}.j2 dest=/etc/postfix/{{ item }} owner=root group=root mode=0644
+- name: Generate Postfix tables
+  template:
+    src: 'etc/postfix/{{ item }}.j2'
+    dest: '/etc/postfix/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   with_items: postfix_configuration_templates
 
-- name: Generate postfix configuration
-  template: src=etc/postfix/{{ item }}/ansible.j2 dest=/etc/postfix/{{ item }} owner=root group=root mode=0644
+- name: Generate Postfix configuration
+  template:
+    src: 'etc/postfix/{{ item }}/ansible.j2'
+    dest: '/etc/postfix/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   with_items: [ 'main.cf', 'master.cf' ]
-  notify: Reload postfix
+  notify: [ 'Reload postfix' ]
 
-- name: Generate postfix scripts
-  template: src=etc/postfix/{{ item }}.j2 dest=/etc/postfix/{{ item }} owner=root group=root mode=0755
-  with_items:
-    - 'postfix-regenerate-dhparams'
+- name: Generate Postfix scripts
+  template:
+    src: 'etc/postfix/{{ item }}.j2'
+    dest: '/etc/postfix/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: [ 'postfix-regenerate-dhparams' ]
 
-- name: Generate postfix DH params
+- name: Generate Postfix DH params
   command: /etc/postfix/postfix-regenerate-dhparams 40 chdir=/etc/postfix creates=/etc/postfix/dh2048.pem
   async: 2400
   poll: 0
 
 - name: Setup DH params regeneration
-  cron: name='Regenerate DH params for postfix' minute=0 hour={{ postfix_cron_dhparams_hour | default('0') }} user=root
-        job='/etc/postfix/postfix-regenerate-dhparams' cron_file='postfix-regenerate-dhparams' state=present
+  cron:
+    name: 'Regenerate DH params for postfix'
+    minute: '0'
+    hour: '{{ postfix_cron_dhparams_hour | default("0") }}'
+    user: 'root'
+    job: '/etc/postfix/postfix-regenerate-dhparams'
+    cron_file: 'postfix-regenerate-dhparams'
+    state: 'present'
 
-- name: Generate postfix hash tables sources
-  template: src=etc/postfix/hash_tables/{{ item }}.j2 dest=/etc/postfix/hash_tables/{{ item }}.in owner=root group=root mode=0644
+- name: Generate Postfix hash tables sources
+  template:
+    src: 'etc/postfix/hash_tables/{{ item }}.j2'
+    dest: '/etc/postfix/hash_tables/{{ item }}.in'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   with_items: postfix_postmap_hash_tables
   register: postfix_register_hash_tables
 
-- name: Generate postfix private hash tables sources
-  template: src=etc/postfix/private_hash_tables/{{ item }}.j2 dest=/etc/postfix/private_hash_tables/{{ item }}.in owner=root group=root mode=0600
+- name: Generate Postfix private hash tables sources
+  template:
+    src: 'etc/postfix/private_hash_tables/{{ item }}.j2'
+    dest: '/etc/postfix/private_hash_tables/{{ item }}.in'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
   with_items: postfix_postmap_private_hash_tables
   register: postfix_register_private_hash_tables
 
-- name: Generate postfix hash tables
+- name: Generate Postfix hash tables
   command: make chdir=/etc/postfix/hash_tables
-  when: postfix_register_hash_tables is defined and postfix_register_hash_tables.changed == True
+  when: (postfix_register_hash_tables is defined and
+         postfix_register_hash_tables.changed)
 
-- name: Generate postfix private hash tables
+- name: Generate Postfix private hash tables
   command: make chdir=/etc/postfix/private_hash_tables
-  when: postfix_register_private_hash_tables is defined and postfix_register_private_hash_tables.changed == True
+  when: (postfix_register_private_hash_tables is defined and
+         postfix_register_private_hash_tables.changed)
 
-- name: Configure firewall for postfix
-  template: src=etc/ferm/filter-input.d/postfix.conf.j2 dest=/etc/ferm/filter-input.d/postfix.conf
-            owner=root group=root mode=0644
-  notify: Restart ferm
+- name: Configure firewall for Postfix
+  template:
+    src: 'etc/ferm/filter-input.d/postfix.conf.j2'
+    dest: '/etc/ferm/filter-input.d/postfix.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart ferm' ]
 
-- name: Restart postfix if capabilities change
-  template: src=etc/postfix/postfix-capabilities.j2 dest=/etc/postfix/postfix-capabilities owner=root group=root mode=0644
-  notify: Restart postfix
-
+- name: Restart Postfix if capabilities change
+  template:
+    src: 'etc/postfix/postfix-capabilities.j2'
+    dest: '/etc/postfix/postfix-capabilities'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart postfix' ]
 
