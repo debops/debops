@@ -37,20 +37,24 @@ dependencies:
     nginx_servers: [ '{{ rails_deploy_nginx_server }}' ]
     nginx_upstreams: [ '{{ rails_deploy_nginx_upstream }}' ]
     when: rails_deploy_dependencies is defined and
-          'nginx' in  rails_deploy_dependencies
+          'nginx' in rails_deploy_dependencies
     tags: nginx
 
   - role: debops.monit
     monit_process_host_list:
       - pid: '{{ rails_deploy_service }}/{{ rails_deploy_service }}.pid'
-    when: not rails_deploy_worker_enabled
+    when: rails_deploy_dependencies is defined and
+          'monit' in rails_deploy_dependencies and
+          not rails_deploy_worker_enabled
     tags: monit
 
   - role: debops.monit
     monit_process_host_list:
       - pid: '{{ rails_deploy_service }}/{{ rails_deploy_service }}.pid'
       - pid: '{{ rails_deploy_service }}/{{ rails_deploy_worker }}.pid'
-    when: rails_deploy_worker_enabled
+    when: rails_deploy_dependencies is defined and
+          'monit' in rails_deploy_dependencies and
+          not rails_deploy_worker_enabled
     tags: monit
 
 galaxy_info:
