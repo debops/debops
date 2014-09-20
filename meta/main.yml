@@ -6,9 +6,12 @@ dependencies:
   - role: debops.etc_services
 
   - role: debops.nodejs
+    when: '"assets:precompile" in rails_deploy_post_migrate_shell_commands'
     tags: nodejs
 
   - role: debops.ruby
+    when: rails_deploy_dependencies is defined and
+          'ruby' in rails_deploy_dependencies
     tags: ruby
 
   - role: debops.redis
@@ -34,20 +37,24 @@ dependencies:
     nginx_servers: [ '{{ rails_deploy_nginx_server }}' ]
     nginx_upstreams: [ '{{ rails_deploy_nginx_upstream }}' ]
     when: rails_deploy_dependencies is defined and
-          'nginx' in  rails_deploy_dependencies
+          'nginx' in rails_deploy_dependencies
     tags: nginx
 
   - role: debops.monit
     monit_process_host_list:
       - pid: '{{ rails_deploy_service }}/{{ rails_deploy_service }}.pid'
-    when: not rails_deploy_worker_enabled
+    when: rails_deploy_dependencies is defined and
+          'monit' in rails_deploy_dependencies and
+          not rails_deploy_worker_enabled
     tags: monit
 
   - role: debops.monit
     monit_process_host_list:
       - pid: '{{ rails_deploy_service }}/{{ rails_deploy_service }}.pid'
       - pid: '{{ rails_deploy_service }}/{{ rails_deploy_worker }}.pid'
-    when: rails_deploy_worker_enabled
+    when: rails_deploy_dependencies is defined and
+          'monit' in rails_deploy_dependencies and
+          not rails_deploy_worker_enabled
     tags: monit
 
 galaxy_info:
@@ -125,7 +132,7 @@ ansigenome_info:
       - A few examples would be database creation, migration and force restarting your server
     - Add custom services which get restarted/reloaded at the end of the deploy cycle
       - If you have a SOA setup this could be handy
-    - Add and remove custom tasks
+    - Add and remove custom tasks at various points in the deploy
       - By default it is set to precompile assets and clear the /tmp cache
     - Optionally swap a static deploy page in/out during the deploy cycle
     
@@ -141,7 +148,7 @@ ansigenome_info:
     
     #### hosts
     
-        [debops_rails_yourappname]
+        [debops_rails]
         somehost
     
     #### inventory/host_vars/somehost.yml
@@ -160,7 +167,7 @@ ansigenome_info:
         # playbooks/custom.yml
 
         - name: Deploy yourappname
-          hosts: debops_rails_yourappname
+          hosts: debops_rails
           sudo: true
         
           roles:
@@ -179,6 +186,7 @@ ansigenome_info:
     ##### Gemfile
     
     You must have unicorn **or** puma added.
+
         # Pick one, you may also want to bump the version to the most recent version
         # These are the most recent as of ~August 2014
 
@@ -186,6 +194,7 @@ ansigenome_info:
         gem 'puma', '~> 2.9.0'
     
     You must have pg **or** mysql2 added.
+
         # Pick one, you may also want to bump the version to the most recent version
         # These are the most recent as of ~August 2014
 
@@ -297,3 +306,7 @@ ansigenome_info:
     have to git push somewhere and minutes later you have tested code in
     production if you don't have to worry about a ton of red tape.
 
+    ##### I'm using unicorn and after restarting it's dead (502)
+
+    You need to have something like monit handle keeping the service up. Are you
+    sure you have monit in the `rails_deploy_dependencies` list?

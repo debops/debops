@@ -2,11 +2,12 @@
 
 # ---- System ----
 
-# Should postgresql or mysql and nginx be setup for you automatically?
-# Redis will also be setup if you enable background worker support.
-# Critical dependencies like nodejs and ruby will always be setup for you.
-# If you want anything to be on a non-app host then you would remove it here.
-rails_deploy_dependencies: ['database', 'redis', 'nginx']
+# Should certain services/envs be setup for you automatically?
+# Redis will only be setup if you enable background worker support.
+#
+# Keep in mind that if you remove ruby then you will be expected to put
+# ruby on the system and ensure its binaries are on the system path.
+rails_deploy_dependencies: ['database', 'redis', 'nginx', 'ruby', 'monit']
 
 # Which packages do you want installed?
 # Add as many packages as you want, the database_package will automatically
@@ -25,7 +26,9 @@ rails_deploy_user_sshkey: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
 # ---- Hosts ----
 
 # What inventory group does your app belong to?
-rails_deploy_hosts_group: 'debops_rails_{{ rails_deploy_service }}'
+# If you want to have multiple apps then make this group gather up all sub-groups
+# such as debops_rails_deploy_myapp and debops_rails_deploy_anotherapp.
+rails_deploy_hosts_group: 'debops_rails_deploy'
 
 # Which application server should run database related tasks?
 rails_deploy_hosts_master: '{{ groups[rails_deploy_hosts_group][0] }}'
@@ -63,7 +66,7 @@ rails_deploy_git_access_token: False
 rails_deploy_service: "{{ rails_deploy_git_location | basename | replace('.git', '') }}"
 
 # Where should the user's home directory be?
-rails_deploy_home: '/srv/users/{{ rails_deploy_service }}'
+rails_deploy_home: '/var/local/{{ rails_deploy_service }}'
 
 # Where should the git repository be cloned to?
 rails_deploy_src: '{{ rails_deploy_home }}/{{ rails_deploy_nginx_domains[0] }}/{{ rails_deploy_service }}/src'
