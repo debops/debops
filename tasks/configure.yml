@@ -32,7 +32,7 @@
 
 - name: Create postfix configuration directories
   file: path=/etc/postfix/{{ item }} state=directory owner=root group=root mode=0755
-  with_items: [ 'main.cf.d', 'master.cf.d', 'tables', 'hash_tables' ]
+  with_items: [ 'tables', 'hash_tables' ]
   when: postfix is defined and postfix
 
 - name: Create postfix private configuration directories
@@ -40,13 +40,13 @@
   with_items: [ 'private_hash_tables' ]
   when: postfix is defined and postfix
 
-- name: Generate postfix configuration
+- name: Generate postfix tables
   template: src=etc/postfix/{{ item }}.j2 dest=/etc/postfix/{{ item }} owner=root group=root mode=0644
   with_items: postfix_configuration_templates
   when: postfix is defined and postfix
 
-- name: Assemble postfix configuration
-  assemble: src=/etc/postfix/{{ item }}.d dest=/etc/postfix/{{ item }} backup=no owner=root group=root mode=0644
+- name: Generate postfix configuration
+  template: src=etc/postfix/{{ item }}/ansible.j2 dest=/etc/postfix/{{ item }} owner=root group=root mode=0644
   with_items: [ 'main.cf', 'master.cf' ]
   when: postfix is defined and postfix
   notify: Reload postfix
