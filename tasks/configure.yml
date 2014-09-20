@@ -1,104 +1,70 @@
 ---
 
-  # Fixes 'warning: hostname localhost does not resolve to address ::1: No address associated with hostname'
-  # http://forums.debian.net/viewtopic.php?f=20&t=111671
-- name: Fix missing localhost6 in /etc/hosts
-  lineinfile: >
-              dest=/etc/hosts regexp='^::1\s+localhost'
-              line='::1     localhost6 ip6-localhost ip6-loopback' backup=no state=present
-
-- name: Make sure Ansible local facts directory exists
-  file: dest=/etc/ansible/facts.d state=directory owner=root group=root mode=0755
-
-- name: Configure Postfix local facts
-  template: src=etc/ansible/facts.d/postfix.fact.j2 dest=/etc/ansible/facts.d/postfix.fact
-            owner=root group=root mode=0644
-  register: postfix_register_local_facts
-
-- name: Re-read local facts if they have been modified
-  action: setup
-  when: postfix_register_local_facts is defined and postfix_register_local_facts.changed
-
 - name: Configure aliases database
   template: src=etc/aliases.j2 dest=/etc/aliases owner=root group=root mode=0644
   notify: Generate mail alias database
-  when: postfix is defined and postfix
 
 - name: Configure mail system
   template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
   with_items:
     - 'etc/mailname'
-  when: postfix is defined and postfix
 
 - name: Create postfix configuration directories
   file: path=/etc/postfix/{{ item }} state=directory owner=root group=root mode=0755
   with_items: [ 'tables', 'hash_tables' ]
-  when: postfix is defined and postfix
 
 - name: Create postfix private configuration directories
   file: path=/etc/postfix/{{ item }} state=directory owner=root group=root mode=0700
   with_items: [ 'private_hash_tables' ]
-  when: postfix is defined and postfix
 
 - name: Generate postfix tables
   template: src=etc/postfix/{{ item }}.j2 dest=/etc/postfix/{{ item }} owner=root group=root mode=0644
   with_items: postfix_configuration_templates
-  when: postfix is defined and postfix
 
 - name: Generate postfix configuration
   template: src=etc/postfix/{{ item }}/ansible.j2 dest=/etc/postfix/{{ item }} owner=root group=root mode=0644
   with_items: [ 'main.cf', 'master.cf' ]
-  when: postfix is defined and postfix
   notify: Reload postfix
 
 - name: Generate postfix scripts
   template: src=etc/postfix/{{ item }}.j2 dest=/etc/postfix/{{ item }} owner=root group=root mode=0755
   with_items:
     - 'postfix-regenerate-dhparams'
-  when: postfix is defined and postfix
 
 - name: Generate postfix DH params
   command: /etc/postfix/postfix-regenerate-dhparams 40 chdir=/etc/postfix creates=/etc/postfix/dh2048.pem
   async: 2400
   poll: 0
-  when: postfix is defined and postfix
 
 - name: Setup DH params regeneration
   cron: name='Regenerate DH params for postfix' minute=0 hour={{ postfix_cron_dhparams_hour | default('0') }} user=root
         job='/etc/postfix/postfix-regenerate-dhparams' cron_file='postfix-regenerate-dhparams' state=present
-  when: postfix is defined and postfix
 
 - name: Generate postfix hash tables sources
   template: src=etc/postfix/hash_tables/{{ item }}.j2 dest=/etc/postfix/hash_tables/{{ item }}.in owner=root group=root mode=0644
   with_items: postfix_postmap_hash_tables
   register: postfix_register_hash_tables
-  when: postfix is defined and postfix
 
 - name: Generate postfix private hash tables sources
   template: src=etc/postfix/private_hash_tables/{{ item }}.j2 dest=/etc/postfix/private_hash_tables/{{ item }}.in owner=root group=root mode=0600
   with_items: postfix_postmap_private_hash_tables
   register: postfix_register_private_hash_tables
-  when: postfix is defined and postfix
 
 - name: Generate postfix hash tables
   command: make chdir=/etc/postfix/hash_tables
-  when: postfix is defined and postfix and
-        postfix_register_hash_tables is defined and postfix_register_hash_tables.changed == True
+  when: postfix_register_hash_tables is defined and postfix_register_hash_tables.changed == True
 
 - name: Generate postfix private hash tables
   command: make chdir=/etc/postfix/private_hash_tables
-  when: postfix is defined and postfix and
-        postfix_register_private_hash_tables is defined and postfix_register_private_hash_tables.changed == True
+  when: postfix_register_private_hash_tables is defined and postfix_register_private_hash_tables.changed == True
 
 - name: Configure firewall for postfix
   template: src=etc/ferm/filter-input.d/postfix.conf.j2 dest=/etc/ferm/filter-input.d/postfix.conf
             owner=root group=root mode=0644
-  when: postfix is defined and postfix
   notify: Restart ferm
 
 - name: Restart postfix if capabilities change
   template: src=etc/postfix/postfix-capabilities.j2 dest=/etc/postfix/postfix-capabilities owner=root group=root mode=0644
-  when: postfix is defined and postfix
   notify: Restart postfix
 
 
