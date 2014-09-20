@@ -26,7 +26,9 @@ rails_deploy_user_sshkey: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
 # ---- Hosts ----
 
 # What inventory group does your app belong to?
-rails_deploy_hosts_group: 'debops_rails_{{ rails_deploy_service }}'
+# If you want to have multiple apps then make this group gather up all sub-groups
+# such as debops_rails_deploy_myapp and debops_rails_deploy_anotherapp.
+rails_deploy_hosts_group: 'debops_rails_deploy'
 
 # Which application server should run database related tasks?
 rails_deploy_hosts_master: '{{ groups[rails_deploy_hosts_group][0] }}'
