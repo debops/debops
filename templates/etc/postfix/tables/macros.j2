@@ -1,0 +1,20 @@
+{% macro list(name, list=[]) %}
+{% set postfix_tpl_macro_list = [] %}
+{% if list is defined and list %}
+{% for element in list %}
+{% if postfix_tpl_macro_list.append(element) %}{% endif %}
+{% endfor %}
+{% endif %}
+{% if (ansible_local is defined and ansible_local) and
+      (ansible_local.postfix is defined and ansible_local.postfix) and
+      (ansible_local.postfix.lists is defined and ansible_local.postfix.lists) %}
+{% if name in ansible_local.postfix.lists.keys() %}
+{% for element in ansible_local.postfix.lists[name] %}
+{% if element not in postfix_tpl_macro_list %}
+{% if postfix_tpl_macro_list.append(element) %}{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endif %}
+{{ postfix_tpl_macro_list | join(', ') }}{% endmacro %}
+

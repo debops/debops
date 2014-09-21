@@ -95,6 +95,9 @@ relayhost			= {{ ansible_domain }}
 {% if 'mx' in postfix %}
 {% set postfix_tpl_transport_maps = postfix_tpl_transport_maps + ['hash:${config_directory}/hash_tables/mx_relay_transport'] %}
 {% endif %}
+{% if 'archive' in postfix %}
+{% set postfix_tpl_transport_maps = postfix_tpl_transport_maps + ['hash:${config_directory}/hash_tables/archive_transport'] %}
+{% endif %}
 {% if get.list('transport_maps', postfix_tpl_transport_maps) %}
 transport_maps                  = {{ get.list('transport_maps', postfix_tpl_transport_maps) }}
 
