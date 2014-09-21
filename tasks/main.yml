@@ -1,9 +1,42 @@
 ---
 
+  # Fixes 'warning: hostname localhost does not resolve to address ::1: No address associated with hostname'
+  # http://forums.debian.net/viewtopic.php?f=20&t=111671
+- name: Fix missing localhost6 in /etc/hosts
+  lineinfile:
+    dest: '/etc/hosts'
+    regexp: '^::1\s+localhost'
+    line: '::1             localhost6 ip6-localhost ip6-loopback'
+    backup: False
+    state: 'present'
+
+- name: Make sure Ansible local facts directory exists
+  file:
+    dest: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Configure Postfix local facts
+  template:
+    src: 'etc/ansible/facts.d/postfix.fact.j2'
+    dest: '/etc/ansible/facts.d/postfix.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: postfix_register_local_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: (postfix_register_local_facts is defined and postfix_register_local_facts.changed)
+
 - include: install_divert.yml
+  when: (postfix is defined and postfix)
 
 - include: configure.yml
+  when: (postfix is defined and postfix)
 
 - include: disable_revert.yml
-
+  when: (postfix is undefined or (postfix is defined and not postfix))
 

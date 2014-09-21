@@ -1,7 +1,7 @@
-{% if 'submission' in postfix %}
-submission inet n       -       -       -       -       smtpd
-  -o syslog_name=postfix/submission
-  -o smtpd_tls_security_level=encrypt
+{% if 'submission' in postfix and 'deprecated' in postfix %}
+smtps     inet  n       -       -       -       -       smtpd
+  -o syslog_name=postfix/smtps
+  -o smtpd_tls_wrappermode=yes
   -o smtpd_tls_auth_only=yes
   -o smtpd_sasl_auth_enable=yes
   -o smtpd_sasl_security_options=noanonymous,noplaintext
@@ -14,5 +14,6 @@ submission inet n       -       -       -       -       smtpd
   -o smtpd_sender_restrictions=permit_sasl_authenticated,reject
   -o smtpd_recipient_restrictions=reject_non_fqdn_recipient,reject_unknown_recipient_domain,permit_sasl_authenticated,reject
 {% else %}
-#submission requires: +submission
+#smtps requires: +submission +deprecated
 {% endif %}
+

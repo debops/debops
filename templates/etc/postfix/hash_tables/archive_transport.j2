@@ -1,0 +1,23 @@
+# This file is managed by Ansible, all changes will be lost
+
+# Transport maps for mail archives
+
+{% if 'archive' in postfix %}
+{%   if postfix_archive_to is defined and postfix_archive_to %}
+{%     set account, domain = postfix_archive_to.split('@') %}
+{%     set postfix_tpl_archive_transport_account = account %}
+{%     set postfix_tpl_archive_transport_destination = domain %}
+{%   else %}
+{%     if 'local' in postfix %}
+{%       set postfix_tpl_archive_transport_account = postfix_archive_account %}
+{%       set postfix_tpl_archive_transport_destination = ansible_fqdn %}
+{%     elif 'local' not in postfix %}
+{%       set postfix_tpl_archive_transport_account = postfix_archive_account %}
+{%       set postfix_tpl_archive_transport_destination = (postfix_archive_subdomain | default("")) + ansible_domain %}
+{%     endif %}
+{%   endif %}
+{{ "%-50s %s" | format(postfix_tpl_archive_transport_account + '@' + postfix_tpl_archive_transport_destination, 'smtp:' + postfix_tpl_archive_transport_destination) }}
+{% else %}
+# required postfix capability: +archive
+{% endif %}
+

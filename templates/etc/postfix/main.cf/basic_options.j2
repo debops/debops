@@ -43,7 +43,7 @@ inet_interfaces			= loopback-only
 
 {% set postfix_tpl_mydestination = [] %}
 {% if 'local' in postfix %}
-{% set postfix_tpl_mydestination = postfix_mydestination + ['$myhostname', 'localhost.$mydomain', 'localhost'] %}
+{% set postfix_tpl_mydestination = postfix_mydestination + [postfix_myhostname | default(ansible_fqdn), 'localhost.' + postfix_mydomain | default(ansible_domain), 'localhost'] %}
 {% else %}
 {% set postfix_tpl_mydestination = postfix_mydestination %}
 {% endif %}
@@ -94,6 +94,9 @@ relayhost			= {{ ansible_domain }}
 {% endif %}
 {% if 'mx' in postfix %}
 {% set postfix_tpl_transport_maps = postfix_tpl_transport_maps + ['hash:${config_directory}/hash_tables/mx_relay_transport'] %}
+{% endif %}
+{% if 'archive' in postfix %}
+{% set postfix_tpl_transport_maps = postfix_tpl_transport_maps + ['hash:${config_directory}/hash_tables/archive_transport'] %}
 {% endif %}
 {% if get.list('transport_maps', postfix_tpl_transport_maps) %}
 transport_maps                  = {{ get.list('transport_maps', postfix_tpl_transport_maps) }}

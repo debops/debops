@@ -1,0 +1,18 @@
+# This file is managed by Ansible, all changes will be lost
+
+
+# Current postfix capabilities: {{ ", ".join(postfix) }}
+
+{% set postfix_tpl_maincf_parts = [
+  'basic_options',
+  'sasl_auth',
+  'smtp_client',
+  'archive',
+  'tls',
+  'postscreen',
+  'smtpd_restrictions',
+  'local_maincf' ] %}
+{% for part in postfix_tpl_maincf_parts %}
+{% include part + '.j2' %}
+{% endfor %}
+

@@ -1,24 +1,26 @@
 ---
 
-- name: Install postfix base packages
-  apt: pkg={{ item }} state=latest install_recommends=no
+- name: Install Postfix base packages
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
   with_items: [ 'postfix', 'postfix-pcre', 'bsd-mailx' ]
-  when: postfix is defined and postfix
 
 - name: Install SASL support if enabled
-  apt: pkg=libsasl2-modules state=latest install_recommends=no
-  when: ((postfix is defined and postfix) and ('client' in postfix))
+  apt:
+    name: 'libsasl2-modules'
+    state: 'latest'
+    install_recommends: False
+  when: ('client' in postfix)
 
-- name: Divert original postfix configuration
+- name: Divert original Postfix configuration
   command: dpkg-divert --quiet --local --divert /etc/postfix/{{ item }}.dpkg-divert --rename /etc/postfix/{{ item }}
            creates=/etc/postfix/{{ item }}.dpkg-divert
   with_items: [ 'main.cf', 'master.cf' ]
-  when: postfix is defined and postfix
-  notify: Restart postfix
+  notify: [ 'Restart postfix' ]
 
 - name: Divert original aliases database
   command: dpkg-divert --quiet --local --divert /etc/aliases.dpkg-divert --rename /etc/aliases
            creates=/etc/aliases.dpkg-divert
-  when: postfix is defined and postfix
-
 

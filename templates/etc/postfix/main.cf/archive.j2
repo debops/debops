@@ -1,0 +1,37 @@
+{% if 'archive' in postfix %}
+{%   if postfix_archive_method is defined and postfix_archive_method == 'all' %}
+{%     if postfix_archive_to is defined and postfix_archive_to %}
+# Archive all mail to {{ postfix_archive_to }}
+{%     else %}
+{%       if 'local' in postfix %}
+# Archive all mail to {{ postfix_archive_account + '@' + ansible_fqdn }}
+{%         elif 'local' not in postfix %}
+# Archive all mail to {{ postfix_archive_account + '@' + (postfix_archive_subdomain | default("")) + ansible_domain }}
+{%       endif %}
+{%     endif %}
+{%   elif postfix_archive_method is defined and postfix_archive_method == 'domain' %}
+{%     if postfix_archive_to is defined and postfix_archive_to %}
+# Archive mail on specified domains to {{ postfix_archive_to }}
+{%     else %}
+{%       if 'local' in postfix %}
+# Archive mail on specified domains to {{ postfix_archive_account + '@' + ansible_fqdn }}
+{%       elif 'local' not in postfix %}
+# Archive mail on specified domains to {{ postfix_archive_account + '@' + (postfix_archive_subdomain | default("")) + ansible_domain }}
+{%       endif %}
+{%     endif %}
+{%   elif postfix_archive_method is defined and postfix_archive_method == 'domain-account' %}
+{%     if postfix_archive_to is defined and postfix_archive_to %}
+# Archive mail on specified domains sorted by accounts to {{ postfix_archive_to }}
+{%     else %}
+{%       if 'local' in postfix %}
+# Archive mail on specified domains sorted by accounts to {{ postfix_archive_account + '@' + ansible_fqdn }}
+{%       elif 'local' not in postfix %}
+# Archive mail on specified domains sorted by accounts to {{ postfix_archive_account + '@' + (postfix_archive_subdomain | default("")) + ansible_domain }}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+sender_bcc_maps                 = regexp:${config_directory}/tables/archive_bcc_map.pcre
+recipient_bcc_maps              = regexp:${config_directory}/tables/archive_bcc_map.pcre
+
+{% endif %}
+
