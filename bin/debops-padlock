@@ -27,36 +27,6 @@
 # http://www.gnu.org/copyleft/gpl.html
 
 
-# This script should be run in already prepared DebOps project directory. It
-# will look for an Ansible inventory directory and assume that secret directory
-# is stored relative to that, with a ".secret" suffix (secret directory must be
-# empty at this point).
-#
-# debops-padlock will then create an EncFS-encrypted directory secured with a
-# keyfile, which will be encrypted with GPG key of current user. You can provide
-# list of GPG recipients as arguments to debops-padlock to have easily shareable
-# encrypted storage.
-#
-# Because at this point keyfile must be decrypted to send the password to
-# EncFS for initial creation of the directory, you will need to provide a
-# password (or access to your smartcard, if you use one), otherwise EncFS
-# encrypted directory will be created with an empty password.
-#
-# EncFS configuration file will be encrypted with the same GPG key settings as
-# the keyfile and stored in a separate file inside EncFS encrypted directory.
-#
-# Inside the EncFS encrypted directory you will find a "padlock" script, which
-# will open and close the secure storage. You can run it as 'padlock open', in
-# which case if encrypted directory is opened it will not be closed
-# automatically.
-#
-# Minor inconvenience is the requirement to decrypt EncFS config file and
-# keyfile in two steps - without gpg-agent, you will be asked twice for your
-# GPG passphrase/PIN. The benefit of this setup is the protection of
-# EncFS configuration (salt and other settings set during the initial
-# creation).
-
-
 set -e
 
 # ---- Global constants ----
@@ -86,7 +56,7 @@ ENCFS_KEYFILE=".encfs6.keyfile.asc"
 # Length of the random EncFS password stored in encrypted keyfile
 ENCFS_KEYFILE_LENGTH="256"
 
-# Name of the script used to open/close the encrypted directory
+# Name of the script used to unlock/lock the encrypted directory
 PADLOCK="padlock"
 
 
@@ -191,7 +161,7 @@ if [ `find ${encfs_decrypted} -prune -empty -type d` ] ; then
     cat <<EOF > ${encfs_encrypted}/${PADLOCK}
 #!/bin/sh
 
-# padlock: open/close EncFS-encrypted directory with GPG key/passphrase
+# padlock: lock/unlock EncFS-encrypted directory with GPG key/passphrase
 # Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
 # Part of the DebOps project - http://debops.org/
 
@@ -220,10 +190,10 @@ for name in encfs fusermount gpg ; do
 done
 
 # Handle optional argument to execute specific action
-if [ "\${1}" = "open" ] ; then
-  open="1"
-elif [ "\${1}" = "close" ] ; then
-  close="1"
+if [ "\${1}" = "unlock" ] ; then
+  unlock="1"
+elif [ "\${1}" = "lock" ] ; then
+  lock="1"
 fi
 
 # Get absolute path of the script
@@ -249,14 +219,14 @@ set -e
 # Unmount the directory if mounted ...
 if [ -n "\${is_mounted}" ] ; then
 
-  if [ -z "\${open}" -o -n "\${close}" ]; then
+  if [ -z "\${unlock}" -o -n "\${lock}" ]; then
     fusermount -u \${encfs_decrypted}
   fi
 
 # ... or mount it if unmounted
 elif [ -z "\${is_mounted}" ]; then
 
-  if [ -z "\${close}" ] ; then
+  if [ -z "\${lock}" ] ; then
     [ ! -p \${encfs_encrypted}/\${ENCFS_CONFIG_FILE} ] && mkfifo \${encfs_encrypted}/\${ENCFS_CONFIG_FILE}
     gpg --no-mdc-warning --output - \${encfs_encrypted}/\${ENCFS_CONFIG_FILE}.asc >> \${encfs_encrypted}/\${ENCFS_CONFIG_FILE} &
     encfs \${encfs_encrypted} \${encfs_decrypted} --extpass="gpg --no-mdc-warning --output - \${encfs_gpg_keyfile}"
@@ -268,8 +238,8 @@ fi
 EOF
     chmod +x ${encfs_encrypted}/${PADLOCK}
 
-    # Close the EncFS directory after creation
-    sleep 0.5 ; ${encfs_encrypted}/${PADLOCK} close
+    # lock the EncFS directory after creation
+    sleep 0.5 ; ${encfs_encrypted}/${PADLOCK} lock
 
     # Protect the EncFS configuration file
     gpg --encrypt --armor --output ${encfs_encrypted}/${ENCFS_CONFIG_FILE}.asc ${list_of_recipients} ${encfs_encrypted}/${ENCFS_CONFIG_FILE}
