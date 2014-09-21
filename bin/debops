@@ -56,7 +56,7 @@ DEBOPS_PLAYBOOKS_PATHS=(
 # List of possible inventory directories, relative to DebOps root project directory
 ANSIBLE_INVENTORY_PATHS=( "ansible/${DEBOPS_INVENTORY}" "${DEBOPS_INVENTORY}" )
 
-# Name of the script used to open/close the encrypted directory
+# Name of the script used to unlock/lock the encrypted directory
 PADLOCK="padlock"
 
 
@@ -158,8 +158,8 @@ encfs_encrypted="$(dirname ${ansible_inventory})/${ENCFS_PREFIX}${DEBOPS_INVENTO
 # Check if encrypted secret directory exists and use it
 if [ -x ${encfs_encrypted}/${PADLOCK} ] ; then
   echo "Found encrypted secrets in ${encfs_encrypted}"
-  ${encfs_encrypted}/${PADLOCK} open
-  trap "${encfs_encrypted}/${PADLOCK} close" EXIT
+  ${encfs_encrypted}/${PADLOCK} unlock
+  trap "${encfs_encrypted}/${PADLOCK} lock" EXIT
 fi
 
 # Run ansible-playbook with custom environment
