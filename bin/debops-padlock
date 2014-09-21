@@ -27,36 +27,6 @@
 # http://www.gnu.org/copyleft/gpl.html
 
 
-# This script should be run in already prepared DebOps project directory. It
-# will look for an Ansible inventory directory and assume that secret directory
-# is stored relative to that, with a ".secret" suffix (secret directory must be
-# empty at this point).
-#
-# debops-padlock will then create an EncFS-encrypted directory secured with a
-# keyfile, which will be encrypted with GPG key of current user. You can provide
-# list of GPG recipients as arguments to debops-padlock to have easily shareable
-# encrypted storage.
-#
-# Because at this point keyfile must be decrypted to send the password to
-# EncFS for initial creation of the directory, you will need to provide a
-# password (or access to your smartcard, if you use one), otherwise EncFS
-# encrypted directory will be created with an empty password.
-#
-# EncFS configuration file will be encrypted with the same GPG key settings as
-# the keyfile and stored in a separate file inside EncFS encrypted directory.
-#
-# Inside the EncFS encrypted directory you will find a "padlock" script, which
-# will open and close the secure storage. You can run it as 'padlock open', in
-# which case if encrypted directory is opened it will not be closed
-# automatically.
-#
-# Minor inconvenience is the requirement to decrypt EncFS config file and
-# keyfile in two steps - without gpg-agent, you will be asked twice for your
-# GPG passphrase/PIN. The benefit of this setup is the protection of
-# EncFS configuration (salt and other settings set during the initial
-# creation).
-
-
 set -e
 
 # ---- Global constants ----
