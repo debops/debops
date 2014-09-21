@@ -43,7 +43,7 @@ inet_interfaces			= loopback-only
 
 {% set postfix_tpl_mydestination = [] %}
 {% if 'local' in postfix %}
-{% set postfix_tpl_mydestination = postfix_mydestination + ['$myhostname', 'localhost.$mydomain', 'localhost'] %}
+{% set postfix_tpl_mydestination = postfix_mydestination + [postfix_myhostname | default(ansible_fqdn), 'localhost.' + postfix_mydomain | default(ansible_domain), 'localhost'] %}
 {% else %}
 {% set postfix_tpl_mydestination = postfix_mydestination %}
 {% endif %}
