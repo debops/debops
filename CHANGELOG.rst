@@ -11,6 +11,34 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-09-21
+^^^^^^^^^^
+
+Role updates
+************
+
+* `debops.postfix`_ has been cleaned up, all Ansible tasks have been rewritten
+  from "inline" syntax to YAML syntax. Task conditions have been rearranged,
+  now almost all of them can be found in ``tasks/main.yml`` file instead of in
+  the file that are included.
+
+* The way that `Postfix`_ configuration files (``main.cf`` and ``master.cf``)
+  are created by Ansible has been changed - instead of templating individual
+  pieces on the remote servers and assembling them to finished files,
+  configuration file templates are generated on Ansible Controller from parts
+  included by Jinja and then templated on the servers as a whole. This makes
+  the process much faster and easier to manage.
+
+* Postfix role has gained a new capability, ``archive``. If it's enabled, each
+  mail that passes through the SMTP server is blind carbon-copied to a separate
+  archive mail account on local or remote SMTP server. This function is
+  configured automatically by the role, but can be modified using inventory
+  variables. Archive account and/or archive server need to be configured
+  separately by the system administrator.
+
+.. _debops.postfix: https://github.com/debops/ansible-postfix/
+.. _Postfix: http://postfix.org/
+
 2014-09-19
 ^^^^^^^^^^
 
