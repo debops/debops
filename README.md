@@ -75,8 +75,8 @@ List of default variables available in the inventory:
     secret_root: '{{ inventory_dir | realpath }}'
     
     # Name of the directory which contains secrets. It will be in the form
-    # "inventory.secret" by default
-    secret_dir: '{{ secret_root | basename }}.secret'
+    # "secret" by default
+    secret_dir: 'secret'
     
     # How many directory levels to add relative to secret_root, by default 1 level.
     # For example, to go 2 levels up, set this variable to '../..'
@@ -93,43 +93,44 @@ List of default variables available in the inventory:
 
 ### Detailed usage guide
 
-Here's a simple one level inventory layout with default 'secret' role settings,
-kept in a git repository:
+Here's a default project directory layout kept in a git repository:
 
-    ~/src/ansible/
-    |-- inventory/
-    |   |-- .git/
-    |   |-- group_vars/
-    |   |-- host_vars/
-    |   `-- hosts
-    |
-    `-- inventory.secret/
-        |-- credentials/
-        `-- storage/
+    ~/Projects/
+    `-- data-center/
+        |-- .git/
+        `-- ansible/
+            |-- inventory/
+            |   |-- group_vars/
+            |   |-- host_vars/
+            |   `-- hosts
+            |
+            `-- secret/
+                |-- credentials/
+                `-- storage/
 
-Here's another example - this time Ansible inventory is in a subdirectory of
-git repository, because you want to keep other files in the repository (like
-Vagrant files, README, etc.) without risking interference with Ansible. For that
-you should define `secret_levels: '../..'` in `group_vars/all.yml` to keep
-secrets ouside of main project repository:
+If you use `debops-padlock` script to create encrypted EncFS storage for your
+secrets, directory layout will be slightly different:
 
-    ~/src/project/
-    |-- inventory/
-    |   |-- .git/
-    |   |-- ansible/
-    |   |   |-- group_vars/
-    |   |   |-- host_vars/
-    |   |   `-- hosts
-    |   |
-    |   |-- README
-    |   `-- Vagrantfile
-    |
-    `-- ansible.secret/
-        |-- credentials/
-        `-- storage/
+    ~/Projects/
+    `-- data-center/
+        |-- .git/
+        `-- ansible/
+            |-- .encfs.secret/        <- encrypted secrets
+            |   |-- U8dfMgfgg48vj/
+            |   |-- fk5fkg5NN/
+            |   `-- padlock*          <- unlock/lock script
+            |
+            |-- inventory/
+            |   |-- group_vars/
+            |   |-- host_vars/
+            |   `-- hosts
+            |
+            `-- secret/               <- plaintext secrets
 
-Please note, that secret directory name is derived from the inventory directory
-name. To change it, you can define `secret_dir` variable.
+While project is "at rest", secrets are encrypted inside EncFS directory, and
+they don't show up in the `secret/` directory. When you use `debops` script to
+run the playbook, `padlock` script unlocks the encrypted directory and secrets
+are available again in `secret/` directory for `ansible-playbook` to use.
 
 #### Support for --tags
 
