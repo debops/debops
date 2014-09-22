@@ -5,6 +5,20 @@
 
 ***
 
+##### 2014-09-22
+
+* `debops.secret` main directory has been changed from `inventory.secret` to
+  `secret` (the feature that used name of the Ansible inventory as the prefix
+  for secret directory has been dropped, because secrets are stored inside
+  project directory). Because of that, `debops*` scripts are updated to
+  support new naming scheme.
+
+* If you use `debops.secret` role or DebOps playbooks in general, you will need
+  to rename your current plaintext and encrypted directories.
+
+  - `inventory.secret` becomes `secret`
+  - `.encfs.inventory.secret` becomes `.encfs.secret`
+
 ##### 2014-09-19
 
 * All `debops*` scripts have been updated with new functions and fixed logic.

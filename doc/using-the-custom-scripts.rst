@@ -77,19 +77,19 @@ EncFS and GPG.
 
 1. Make sure you have encfs installed, ie. ``apt-get install encfs``
 2. Make sure you have a `GPG keypair <https://alexcabal.com/creating-the-perfect-gpg-keypair/>`_
-3. Make sure ``$project_dir/ansible/inventory.secret`` is empty
+3. Make sure ``$project_dir/ansible/secret/`` is empty
 4. Run ``debops-padlock`` and enter your GPG password unless you have an agent
-5. Goto ``$project_dir/ansible/.encfs.inventory.secret``
+5. Goto ``$project_dir/ansible/.encfs.secret/``
 6. Run ``./padlock unlock``
-7. Do something that would result in adding files to ``inventory.secret``, such as touching a file
+7. Do something that would result in adding files to ``secret/``, such as touching a file
 8. Run ``./padlock lock``
-9. Confirm you have 1 or more sub-folders in ``.encfs.inventory.secret``
+9. Confirm you have 1 or more sub-folders or files in ``.encfs.secret/``
 
 The above steps performed the following tasks:
 
 - Setup a project directory to use an encrypted secrets directory
 - Added files to be encrypted
-- Locked it, which unmounts ``inventory.secret`` -- it is now secure
+- Locked it, which unmounts ``secret/`` -- it is now secure
 
 That sounds annoying, can it be done better?
 --------------------------------------------
@@ -106,18 +106,18 @@ If you use the ``debops`` script you won't have to worry about anything being ch
 Delete your secrets
 -------------------
 
-Since EncFS mounts ``inventory.secret`` you need to unlock it first. If you
+Since EncFS mounts ``secret/`` you need to unlock it first. If you
 forgot to unlock it first then you will get a device is busy error.
 
 You can fix this by unmounting it yourself before trying to delete it, run:
 
-``fusermount -u <path to inventory.secret>``
+``fusermount -u <path to secret/>``
 
 Migrate an existing secrets directory to be encrypted
 -----------------------------------------------------
 
 EncFS can only mount empty directories but don't worry. Just move the files
-inside of ``inventory.secret`` to somewhere else, then start the steps above.
+inside of ``secret/`` to somewhere else, then start the steps above.
 
 Why does it ask for the GPG password twice?
 -------------------------------------------
