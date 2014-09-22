@@ -38,7 +38,7 @@ declare -r SCRIPT_NAME="$(basename ${0})"
 
 declare -r ENCFS_CONFIG_FILE=".encfs6.xml"
 declare -r ENCFS_PREFIX=".encfs."
-declare -r SECRET_SUFFIX=".secret"
+declare -r SECRET_NAME="secret"
 
 
 # ---- Configuration variables ----
@@ -140,7 +140,7 @@ fi
 
 # Create names of EncFS encrypted and decrypted directories, based on
 # inventory name (absolute paths are specified)
-encfs_encrypted="$(dirname ${ansible_inventory})/${ENCFS_PREFIX}${DEBOPS_INVENTORY}${SECRET_SUFFIX}"
+encfs_encrypted="$(dirname ${ansible_inventory})/${ENCFS_PREFIX}${SECRET_NAME}"
 encfs_decrypted="$(dirname ${encfs_encrypted})/${encfs_encrypted##*${ENCFS_PREFIX}}"
 
 # EncFS cannot create encrypted directory if directory with decrypted data

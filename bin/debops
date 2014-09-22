@@ -37,7 +37,7 @@ declare -r DEBOPS_INVENTORY="inventory"
 declare -r SCRIPT_NAME="$(basename ${0})"
 
 declare -r ENCFS_PREFIX=".encfs."
-declare -r SECRET_SUFFIX=".secret"
+declare -r SECRET_NAME="secret"
 
 
 # ---- Configuration variables ----
@@ -153,7 +153,7 @@ if [ ${INSECURE} -gt 0 ] ; then
 fi
 
 # Create path to EncFS encrypted directory, based on inventory name
-encfs_encrypted="$(dirname ${ansible_inventory})/${ENCFS_PREFIX}${DEBOPS_INVENTORY}${SECRET_SUFFIX}"
+encfs_encrypted="$(dirname ${ansible_inventory})/${ENCFS_PREFIX}${SECRET_NAME}"
 
 # Check if encrypted secret directory exists and use it
 if [ -x ${encfs_encrypted}/${PADLOCK} ] ; then

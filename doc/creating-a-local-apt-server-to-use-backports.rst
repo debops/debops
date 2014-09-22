@@ -73,7 +73,7 @@ Where are the packages
 ``````````````````````
 
 Good question, they have been transferred to your Ansible controller in the
-``inventory.secret/reprepro/includedeb/wheezy-backports/`` directory.
+``secret/reprepro/includedeb/wheezy-backports/`` directory.
 
 At this point you can delete your build server.
 
