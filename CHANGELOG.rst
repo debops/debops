@@ -11,6 +11,42 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-09-22
+^^^^^^^^^^
+
+inventory.secret is renamed to secret
+*************************************
+
+If you use DebOps, or at least some roles from it, you probably are familiar
+with `debops.secret`_ role, which makes handling sensitive and confidental
+data easier within Ansible playbooks and roles. I'm mentioning this because
+``secret`` variable is used thruought the DebOps project and this change will
+be significant - that's why I want to do it right away instead of changing the
+role suddenly some time down the line.
+
+Previously `debops.secret`_ role created directory for secrets adjacent to the
+Ansible inventory directory. Because it was assumed that inventories are kept
+in the same directory, `debops.secret`_ automatically took the name of the
+inventory directory and appended ``.secret`` suffix to it, making the resulting
+directory ``inventory.secret/``.
+
+Now, because each DebOps project lives in its own directory, this feature is no
+longer needed. Additionally in the current state secret directory is kind of
+a show stopper, interfering for example with ``<Tab>``-completion. Because of
+that, I'm changing the "formula" to instead just use the ``secret/`` directory
+by default. It will be still created beside the ``inventory/`` directory.
+
+All DebOps scripts will be updated at the same time, and should work with new
+directory name. However, existing directories will need to be renamed manually,
+otherwise DebOps might create new certificates, passwords, etc.
+
+``inventory.secret`` directory becomes ``secret``.
+
+If you use ``debops-padlock`` script, then ``.encfs.inventory.secret``
+directory becomes ``.encfs.secret``.
+
+.. _debops.secret: https://github.com/debops/ansible-secret/
+
 2014-09-21
 ^^^^^^^^^^
 
@@ -37,7 +73,7 @@ Role updates
   separately by the system administrator.
 
 .. _debops.postfix: https://github.com/debops/ansible-postfix/
-.. _Postfix: http://postfix.org/
+.. _Postfix: http://www.postfix.org/
 
 2014-09-19
 ^^^^^^^^^^
