@@ -13,8 +13,10 @@
 - name: Prepare interface configuration if not defined
   set_fact:
     ifupdown_interfaces: '{{ ifupdown_default_interfaces }}'
-  when: (ifupdown_dependent_interfaces is undefined and
-         (ifupdown_default_interfaces is defined and ifupdown_default_interfaces))
+  when: ((ifupdown_interfaces is undefined or
+         (ifupdown_interfaces is defined and not ifupdown_interfaces)) and
+         (ifupdown_dependent_interfaces is undefined and
+         (ifupdown_default_interfaces is defined and ifupdown_default_interfaces)))
 
 - name: Prepare interface configuration via dependency if defined
   set_fact:
