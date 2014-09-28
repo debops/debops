@@ -1,0 +1,149 @@
+#!/bin/bash
+
+# debops-defaults: aggregate all defaults from Ansible roles into one stream
+# Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
+# Part of the DebOps project - http://debops.org/
+
+
+# This program is free software; you can redistribute
+# it and/or modify it under the terms of the
+# GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General
+# Public License along with this program; if not,
+# write to the Free Software Foundation, Inc., 59
+# Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# An on-line copy of the GNU General Public License can
+# be downloaded from the FSF web page at:
+# http://www.gnu.org/copyleft/gpl.html
+
+
+set -e
+
+# ---- Global constants ----
+
+declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
+declare -r DEBOPS_CONFIG=".debops.cfg"
+declare -r DEBOPS_INVENTORY="inventory"
+declare -r SCRIPT_NAME="$(basename ${0})"
+
+
+# ---- Configuration variables ----
+
+# Locations where DebOps playbooks might be found
+DEBOPS_PLAYBOOKS_PATHS=(
+  "${DEBOPS_DATA_HOME}/debops-playbooks/playbooks"
+  "/usr/local/share/debops/debops-playbooks/playbooks"
+  "/usr/share/debops/debops-playbooks/playbooks"
+)
+
+# List of possible inventory directories, relative to DebOps root project directory
+ANSIBLE_INVENTORY_PATHS=( "ansible/${DEBOPS_INVENTORY}" "${DEBOPS_INVENTORY}" )
+
+# Default role prefix if no roles with prefixes are specified
+ROLE_PREFIX="debops"
+
+
+# ---- Functions ----
+
+# Find specified file or directory in parent dir (if not specified, finds $DEBOPS_CONFIG)
+# Source: https://unix.stackexchange.com/questions/13464
+find_up () {
+  local name=${1:-$DEBOPS_CONFIG}
+  local slashes="${PWD//[^\/]/}"
+  local directory="${PWD}"
+
+  for (( n=${#slashes}; n>0; --n )) ; do
+    test -e "${directory}/${name}" && echo "$(readlink -f ${directory}/${name})" && return
+    directory="$directory/.."
+  done
+}
+
+# Display error message and exit
+error_msg () {
+  local severity="${2:-Error}"
+  local message="${1}"
+
+  echo >&2 "${SCRIPT_NAME}: ${severity}: ${message}"
+  set +e
+  [[ "${severity}" == "Error" ]] && exit 1
+  set -e
+}
+
+# Check if required commands exist
+require_commands () {
+  for name in ${@} ; do
+    if ! type ${name} > /dev/null 2>&1 ; then
+      error_msg "${name}: command not found"
+    fi
+  done
+}
+
+# Aggregate role/defaults/main.yml files from all roles into one stream
+function aggregate_defaults() {
+	if [ -n "${role_list}" ]; then
+		for role in ${role_list}; do
+			if [[ $role != *.* ]] ; then
+				cat ${debops_playbooks}/roles/${ROLE_PREFIX}.${role}/defaults/main.yml
+			else
+				cat ${debops_playbooks}/roles/${role}/defaults/main.yml
+			fi
+		done
+	else
+		cat ${debops_playbooks}/roles/*/defaults/main.yml
+	fi
+}
+
+
+# ---- DebOps environment setup ----
+
+# Find DebOps configuration file
+debops_config="$(find_up)"
+
+# Exit if we are outside of project directory
+[ -z "${debops_config}" ] && error_msg "Not a DebOps project directory"
+
+# Find root of the DebOps project dir
+debops_root="$(dirname ${debops_config})"
+
+# Source DebOps configuration file
+[ -r ${debops_config} ] && source ${debops_config}
+
+
+# ---- Main script ----
+
+# Make sure required commands are present
+require_commands view
+
+# Check if playbooks are installed in various locations
+for playbook_path in ${debops_root}/debops-playbooks/playbooks ${DEBOPS_PLAYBOOKS_PATHS[@]} ; do
+  if [ -f ${playbook_path}/site.yml ] ; then
+    debops_playbooks="${playbook_path}"
+    break
+  fi
+done
+
+[ -z "${debops_playbooks}" ] && error_msg "DebOps playbooks not installed"
+
+# Get list of roles from the script arguments
+if [ $# -gt 0 ]; then
+	role_list=${@}
+fi
+
+if [ -t 1 ]; then
+	# if script is run as standalone, redirect to view
+	( aggregate_defaults ) | view '+set ft=yaml' -
+else
+	# else, send everything to stdout
+	aggregate_defaults
+fi
+
