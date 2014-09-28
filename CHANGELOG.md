@@ -5,6 +5,15 @@
 
 ***
 
+##### 2014-09-28
+
+* new script has been added, `debops-defaults`. It can be used to easily work
+  with defaults files present in all roles - by default it "aggregates" all
+  of them into one stream and sends it to `view` command using STDOUT. By
+  specifying list of roles on the command line you can select which role
+  defaults are aggregated, and by redirecting the script to a file or
+  a command you can manipulate it (for example grep for a string).
+
 ##### 2014-09-22
 
 * `debops.secret` main directory has been changed from `inventory.secret` to

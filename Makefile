@@ -18,6 +18,7 @@ install-scripts:
 	@cp bin/debops-init ${BIN_DIR}/debops-init
 	@cp bin/debops-update ${BIN_DIR}/debops-update
 	@cp bin/debops-padlock ${BIN_DIR}/debops-padlock
+	@cp bin/debops-defaults ${BIN_DIR}/debops-defaults
 
 install-playbook:
 	@echo "Installing DebOps playbooks and roles in ${SHARE_DIR} ..."
