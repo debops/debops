@@ -11,6 +11,38 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-09-29
+^^^^^^^^^^
+
+Playbook updates
+****************
+
+"{{ lookup('file','~/.ssh/id_rsa.pub) }}" considered harmful
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The lookup above is common thruought Ansible playbooks and examples, and it is
+used as a prime method of accessing SSH public keys of current account on
+Ansible Controller host to, for example, install them on remote hosts using
+``authorized_key`` Ansible module.
+
+However, this is by no means a portable solution. Users can have public SSH key
+files with completely different names, or don't even have them at all and
+instead use other means of SSH authentication, like GPG keys or smartcards.
+
+Because of that, I'm changing the way that SSH public keys will be accessed by
+default in DebOps. For now, only ``playbooks/bootstrap.yml`` playbook will be
+updated (this playbook is used to bootstrap new hosts and get them ready for
+Ansible management), changes in other roles will come later. I hope that
+authors of other roles will follow suit.
+
+New way of accessing SSH keys will use SSH agent (or its alternatives): instead
+of accessing the keys directly, Ansible will request a list of currently
+enabled public keys from the SSH agent using ``"{{ lookup('pipe','ssh-add -L') }}"``
+lookup. Because that lookup can return an empty value which will not create an
+error, you want to safeguard against that in a key configuration task using
+``failed_when:`` condition. Look in ``playbooks/bootstrap.yml`` to see how it's
+used with ``authorized_key`` task.
+
 2014-09-22
 ^^^^^^^^^^
 
