@@ -33,7 +33,7 @@
   vars:
     bootstrap_admin_account: '{{ ansible_ssh_user | default(lookup("env","USER")) }}'
     bootstrap_admin_group: 'admins'
-    bootstrap_admin_ssh_key: '{{ lookup("file","~/.ssh/id_rsa.pub") }}'
+    bootstrap_admin_ssh_key: '{{ lookup("pipe","ssh-add -L") }}'
 
   tasks:
   - name: Install minimal Python support for Ansible
@@ -68,6 +68,8 @@
       user: '{{ bootstrap_admin_account }}'
       key: '{{ bootstrap_admin_ssh_key }}'
       state: 'present'
+    failed_when: (bootstrap_admin_ssh_key is undefined or
+                  (bootstrap_admin_ssh_key is defined and not bootstrap_admin_ssh_key))
 
   - name: Configure admin group access in sudo
     lineinfile:
