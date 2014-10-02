@@ -71,35 +71,11 @@
     mode: '0644'
   notify: [ 'Test nginx and reload' ]
 
-- name: Check if fastcgi_params lock exists
-  stat: path=/etc/nginx/fastcgi_params.dpkg-divert.lock
-  register: nginx_register_fastcgi_params_lock
-
-- name: Remove old unused fastcgi_params file if diversion exists
-  command: rm -f /etc/nginx/fastcgi_params removes=/etc/nginx/fastcgi_params.dpkg-divert
-  when: nginx_register_fastcgi_params_lock is defined and not nginx_register_fastcgi_params_lock.stat.exists
-
-- name: Restore diversion of fastcgi_params if it exists
-  command: dpkg-divert --quiet --local --rename --remove /etc/nginx/fastcgi_params
-           removes=/etc/nginx/fastcgi_params.dpkg-divert
+  # Remove temporary old files if they are present
+- name: Remove remnants of dpkg-diverted configuration
+  command: rm -f /etc/nginx/fastcgi_params.dpkg-divert /etc/nginx/fastcgi_params.dpkg-divert.lock
+           removes=/etc/nginx/fastcgi_params.dpkg-divert.lock
   notify: [ 'Test nginx and reload' ]
-  when: nginx_register_fastcgi_params_lock is defined and not nginx_register_fastcgi_params_lock.stat.exists
-
-  # This is to prevent nginx errors about missing files
-- name: Create fake temporary /etc/nginx/fastcgi_params.dpkg-divert
-  template:
-    src: 'etc/nginx/fastcgi_params.j2'
-    dest: '/etc/nginx/fastcgi_params.dpkg-divert'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  notify: [ 'Test nginx and reload' ]
-  when: nginx_register_fastcgi_params_lock is defined and not nginx_register_fastcgi_params_lock.stat.exists
-
-  # Temporary step to prevent removal of real fastcgi_params on the subsequent runs
-- name: Create a lock file for fastcgi_params.dpkg-divert
-  command: touch /etc/nginx/fastcgi_params.dpkg-divert.lock
-           creates=/etc/nginx/fastcgi_params.dpkg-divert.lock
 
 - name: Install DH params regeneration script
   template:
