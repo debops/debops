@@ -8,6 +8,29 @@
     group: 'root'
     mode: '0755'
 
+- name: Remove nginx maps if requested
+  file:
+    dest: '/etc/nginx/conf.d/map_{{ item.name }}.conf'
+    state: 'absent'
+  with_items: [ '{{ nginx_maps }}' ]
+  notify: [ 'Test nginx and reload' ]
+  when: ((nginx_maps is defined and nginx_maps) and
+         (item.name is defined and item.name) and
+         (item.delete is defined and item.delete))
+
+- name: Configure nginx maps
+  template:
+    src: 'etc/nginx/conf.d/map.conf.j2'
+    dest: '/etc/nginx/conf.d/map_{{ item.name }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: [ '{{ nginx_maps }}' ]
+  notify: [ 'Test nginx and reload' ]
+  when: ((nginx_maps is defined and nginx_maps) and
+         (item.name is defined and item.name) and
+         (item.delete is undefined or (item.delete is defined and not item.delete)))
+
 - name: Remove nginx upstreams if requested
   file:
     dest: '/etc/nginx/conf.d/upstream_{{ item.name }}.conf'
