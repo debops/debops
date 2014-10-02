@@ -34,6 +34,15 @@
   when: ((item.locked is undefined or (item.locked is defined and not item.locked)) and
          (item.name is defined) and (item.delete is undefined or (item.delete is defined and not item.delete)))
 
+- name: Disable nginx server configuration
+  file:
+    path: '/etc/nginx/sites-enabled/{{ item.name[0] | default("default") }}.conf'
+    state: 'absent'
+  with_items: [ '{{ nginx_servers }}' ]
+  notify: [ 'Test nginx and reload' ]
+  when: (((item.enabled is defined and not item.enabled) and (item.name is defined)) or
+        (item.delete is defined and item.delete))
+
 - name: Enable nginx server configuration
   file:
     path: '/etc/nginx/sites-enabled/{{ item.name[0] | default("default") }}.conf'
@@ -46,13 +55,4 @@
   notify: [ 'Test nginx and reload' ]
   when: ((item.enabled is undefined or (item.enabled is defined and item.enabled)) and
          (item.name is defined) and (item.delete is undefined or (item.delete is defined and not item.delete)))
-
-- name: Disable nginx server configuration
-  file:
-    path: '/etc/nginx/sites-enabled/{{ item.name[0] | default("default") }}.conf'
-    state: 'absent'
-  with_items: [ '{{ nginx_servers }}' ]
-  notify: [ 'Test nginx and reload' ]
-  when: (((item.enabled is defined and not item.enabled) and (item.name is defined)) or
-        (item.delete is defined and item.delete))
 
