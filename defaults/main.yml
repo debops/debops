@@ -96,8 +96,11 @@ nginx_local_servers: {}
   #'also-removed':
   #'symlink\ with\ spaces.conf': 'other-file.conf'
 
-# Should nginx role generate upstream definitions?
-nginx_manage_upstreams: True
+# List of nginx map definitions
+# Each map should be defined in it's own hash variable, similar to upstreams
+# and servers
+# http://nginx.org/en/docs/http/ngx_http_map_module.html
+nginx_maps: []
 
 # List of nginx upstream definitions
 nginx_upstreams: [ '{{ nginx_upstream_php5 }}' ]
@@ -109,9 +112,6 @@ nginx_upstream_php5:
   type: 'php5'
   php5: 'www-data'
 
-# Should nginx role generate server definitions?
-nginx_manage_servers: True
-
 # List of nginx server definitions
 nginx_servers: [ '{{ nginx_server_default }}' ]
 
@@ -122,6 +122,7 @@ nginx_server_default:
   default: True
   #by_role: ''
   #locked: False
+  #delete: False
   #userdir: False
   #type: 'default'
   #redirect: 'http://other.example.com/'
