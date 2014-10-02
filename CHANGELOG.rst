@@ -11,6 +11,37 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-10-02
+^^^^^^^^^^
+
+Role updates
+************
+
+`debops.nginx`_ role has been updated. Most changes are either cleanup (change
+names of some internal role files, remove unused redundant variables, etc.).
+
+``/etc/nginx/http-default.d/`` directory has been renamed to
+``/etc/nginx/site-default.d/`` which hopefully better shows the purpose of this
+directory in relation to nginx server configuration. Old directories haven't
+been removed; if you use it, you will need to move the configuration files
+manually.
+
+Support for ``map { }`` configuration sections has been added. It works
+similarly to upstreams and servers, that means you can define your maps in
+hashes and enable them using ``nginx_maps`` list. More information about
+`nginx map module`_ can be found at the nginx website.
+
+You can now remove configuration of servers, upstreams and maps from hosts by
+adding ``delete: True`` to the configuration hashes.
+
+Old remnants of the ``fastcgi_params`` configuration files are now
+automatically removed by the nginx role. This is the second step of the switch
+from custom to stock configuration file. Task which removes these old files
+will be removed in the future.
+
+.. _debops.nginx: https://github.com/debops/ansible-nginx/
+.. _nginx map module: http://nginx.org/en/docs/http/ngx_http_map_module.html
+
 2014-09-29
 ^^^^^^^^^^
 
