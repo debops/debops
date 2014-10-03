@@ -16,19 +16,19 @@
 
 - name: Configure autopostgresqlbackup
   template: src=usr/sbin/autopostgresqlbackup.j2
-            dest=/usr/sbin/autopostgresqlbackup-{{ postgresql_version }}-{{ item.name }}
+            dest=/usr/sbin/autopostgresqlbackup-{{ item.version | default(postgresql_version) }}-{{ item.name }}
             owner=root group=root mode=0755
   with_items: postgresql_default_cluster + postgresql_clusters
 
 - name: Disable autopostgresqlbackup from running daily
-  file: path=/etc/cron.daily/autopostgresqlbackup-{{ postgresql_version }}-{{ item.name }}
+  file: path=/etc/cron.daily/autopostgresqlbackup-{{ item.version | default(postgresql_version) }}-{{ item.name }}
         state=absent
   when: not postgresql_auto_backup
   with_items: postgresql_default_cluster + postgresql_clusters
 
 - name: Enable autopostgresqlbackup to run daily
   template: src=etc/cron.daily/autopostgresqlbackup.j2
-        dest=/etc/cron.daily/autopostgresqlbackup-{{ postgresql_version }}-{{ item.name }}
+        dest=/etc/cron.daily/autopostgresqlbackup-{{ item.version | default(postgresql_version) }}-{{ item.name }}
         owner=root group=root mode=0755
   when: postgresql_auto_backup
   with_items: postgresql_default_cluster + postgresql_clusters
