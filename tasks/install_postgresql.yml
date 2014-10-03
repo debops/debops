@@ -9,7 +9,7 @@
   with_items: [ 'python-psycopg2', 'postgresql-{{ postgresql_version }}', 'postgresql-client-{{ postgresql_version }}' ]
 
 - name: Check if default PostgreSQL cluster exists
-  stat: path=/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf
+  stat: path=/var/lib/postgresql/{{ postgresql_version }}/main/postmaster.opts
   register: postgresql_install_main
 
   # Main cluster will be recreated later, with correct encoding
