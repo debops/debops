@@ -20,7 +20,7 @@
             owner=root group=root mode=0755
   with_items: postgresql_default_cluster + postgresql_clusters
 
-- name: Disable autopostgresqlbackup-utopostgresqlbackup from running daily
+- name: Disable autopostgresqlbackup from running daily
   file: path=/etc/cron.daily/autopostgresqlbackup-{{ postgresql_version }}-{{ item.name }}
         state=absent
   when: not postgresql_auto_backup
