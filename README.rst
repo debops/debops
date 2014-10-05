@@ -1,41 +1,55 @@
+|DebOps| rails_deploy
+#####################
 
-## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) rails_deploy
+.. |DebOps| image:: http://debops.org/images/debops-small.png
+   :target: http://debops.org
+
+|Travis CI| |test-suite| |Ansible Galaxy|
+
+.. |Travis CI| image:: http://img.shields.io/travis/debops/ansible-rails_deploy.svg?style=flat
+   :target: http://travis-ci.org/debops/ansible-rails_deploy
+
+.. |test-suite| image:: http://img.shields.io/badge/test--suite-ansible--rails__deploy-blue.svg?style=flat
+   :target: https://github.com/debops/test-suite/tree/master/ansible-rails_deploy/
+
+.. |Ansible Galaxy| image:: http://img.shields.io/badge/galaxy-debops.rails_deploy-660198.svg?style=flat
+   :target: https://galaxy.ansible.com/list#/roles/1591
 
 
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-rails_deploy.svg?style=flat)](http://travis-ci.org/debops/ansible-rails_deploy) [![test-suite](http://img.shields.io/badge/test--suite-ansible--rails__deploy-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-rails_deploy/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.rails__deploy-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1591) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
-
-
-
-
-
-
-`debops.rails_deploy` role allows you to easily setup infrastructure
+``debops.rails_deploy`` role allows you to easily setup infrastructure
 capable of running Rails applications. It removes all of the headaches
 associated to setting up a secure Rails app that is ready for production so
 you can concentrate on developing your app.
 
-#### A few features supplied by this role
+A few features supplied by this role
+====================================
 
-##### High level goals
+High level goals
+^^^^^^^^^^^^^^^^
 
 - Setup an entire rails app server with 1 line of configuration with sane defaults
-- Optionally and easily separate your app servers, database and worker into multiple servers
+- Optionally and easily separate your app servers, database and worker into
+  multiple servers
 - Quickly and easily switch between popular default databases and backend servers
 - Be as secure as possible and adhere to as many best practices as possible
 
-##### Backups and logging
+Backups and logging
+^^^^^^^^^^^^^^^^^^^
 
 - Postgresql runs a daily backup with daily/weekly rotation
 - Both your backend server and background worker get logged to 1 logrotated file
 - The rails process gets sent to syslog.user
 
-##### System level minutia
+System level minutia
+^^^^^^^^^^^^^^^^^^^^
 
 - User accounts, permissions and ssh keys are automatically managed
 - Paths such as logs, pids and sockets are automatically managed
 
-##### Deploy features
+Deploy features
+^^^^^^^^^^^^^^^
+
 - Automatically set deploy keys to github/gitlab with 1 line of configuration
   - This leverages their API, all you have to do is supply their token
 - Keep track of your schema file and config folder's mtime in local facts
@@ -46,69 +60,62 @@ you can concentrate on developing your app.
   - A few examples would be database creation, migration and force restarting your server
 - Add custom services which get restarted/reloaded at the end of the deploy cycle
   - If you have a SOA setup this could be handy
-- Add and remove custom tasks
+- Add and remove custom tasks at various points in the deploy
   - By default it is set to precompile assets and clear the /tmp cache
 - Optionally swap a static deploy page in/out during the deploy cycle
 
-##### Security
+Security
+^^^^^^^^
+
 - Secure passwords are managed automatically for your database
 - Ports are blocked and only whitelisted for IP addresses/masks that you specify
 - SSL is enabled by default but can be turned off if you really don't want it
 - Self signed SSL certs are automatically managed for you
   - Changing to properly signed certificates is a breeze
 
+Installation
+~~~~~~~~~~~~
 
+This role requires at least Ansible ``v1.7.0``. To install it, run:
 
-
-
-### Installation
-
-This role requires at least Ansible `v1.7.0`. To install it, run:
+::
 
     ansible-galaxy install debops.rails_deploy
 
-#### Are you using this as a standalone role without DebOps?
+Are you using this as a standalone role without DebOps?
+=======================================================
 
-You may need to include missing roles from the [DebOps common
-playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+You may need to include missing roles from the `DebOps common playbook`_
 into your playbook.
 
-[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+`Try DebOps now`_ for a complete solution to run your Debian-based infrastructure.
+
+.. _DebOps common playbook: https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
+.. _Try DebOps now: https://github.com/debops/debops/
 
 
+Role dependencies
+~~~~~~~~~~~~~~~~~
 
+- ``debops.etc_services``- ``debops.redis``- ``debops.nginx``- ``debops.nodejs``- ``debops.mysql``- ``debops.ruby``- ``debops.monit``- ``debops.secret``- ``debops.postgresql``
 
-
-### Role dependencies
-
-- `debops.secret`
-- `debops.etc_services`
-- `debops.nodejs`
-- `debops.ruby`
-- `debops.redis`
-- `debops.postgresql`
-- `debops.mysql`
-- `debops.nginx`
-- `debops.monit`
-- `debops.monit`
-
-
-
-
-
-### Role variables
+Role variables
+~~~~~~~~~~~~~~
 
 List of default variables available in the inventory:
+
+::
 
     ---
     
     # ---- System ----
     
-    # Should postgresql or mysql and nginx be setup for you automatically?
-    # Redis will also be setup if you enable background worker support.
-    # Critical dependencies like nodejs and ruby will always be setup for you.
-    # If you want anything to be on a non-app host then you would remove it here.
-    rails_deploy_dependencies: ['database', 'redis', 'nginx']
+    # Should certain services/envs be setup for you automatically?
+    # Redis will only be setup if you enable background worker support.
+    #
+    # Keep in mind that if you remove ruby then you will be expected to put
+    # ruby on the system and ensure its binaries are on the system path.
+    rails_deploy_dependencies: ['database', 'redis', 'nginx', 'ruby', 'monit']
     
     # Which packages do you want installed?
     # Add as many packages as you want, the database_package will automatically
@@ -127,7 +134,9 @@ List of default variables available in the inventory:
     # ---- Hosts ----
     
     # What inventory group does your app belong to?
-    rails_deploy_hosts_group: 'debops_rails_{{ rails_deploy_service }}'
+    # If you want to have multiple apps then make this group gather up all sub-groups
+    # such as debops_rails_deploy_myapp and debops_rails_deploy_anotherapp.
+    rails_deploy_hosts_group: 'debops_rails_deploy'
     
     # Which application server should run database related tasks?
     rails_deploy_hosts_master: '{{ groups[rails_deploy_hosts_group][0] }}'
@@ -164,6 +173,12 @@ List of default variables available in the inventory:
     # The default value plucks out your repo name (without .git) from your location.
     rails_deploy_service: "{{ rails_deploy_git_location | basename | replace('.git', '') }}"
     
+    # Where should the user's home directory be?
+    rails_deploy_home: '/var/local/{{ rails_deploy_service }}'
+    
+    # Where should the git repository be cloned to?
+    rails_deploy_src: '{{ rails_deploy_home }}/{{ rails_deploy_nginx_domains[0] }}/{{ rails_deploy_service }}/src'
+    
     # What should the system environment be set to?
     rails_deploy_system_env: 'production'
     
@@ -175,6 +190,7 @@ List of default variables available in the inventory:
     # ---- Backend ----
     
     # Which backend type are you using? 'unicorn' and 'puma' are supported so far.
+    # You can also disable the backend by setting it to False in case you use passenger.
     rails_deploy_backend: 'unicorn'
     
     # What do you want to listen on? You can choose a tcp addr:port or unix socket.
@@ -253,22 +269,29 @@ List of default variables available in the inventory:
     rails_deploy_worker_url: 'redis://{{ rails_deploy_worker_host }}:{{ rails_deploy_worker_port }}/0'
     
     
-    # ---- Tasks ----
+    # ---- Commands ----
     
-    # Precompile assets and remove any temporary cache files on each deploy.
-    # Add or remove as many tasks as you want. They are executed in the context
-    # of the root directory of your app and only happen when the repo changes.
-    rails_deploy_default_tasks:
+    # Execute shell commands at various points in the deploy life cycle.
+    # They are executed in the context of the root directory of your app
+    # and are also only ran when your repo has changed.
+    
+    # Shell commands to run before migration
+    # They will still run even if you have migrations turned off.
+    rails_deploy_pre_migrate_shell_commands: []
+    
+    # Shell commands to run after migration
+    # They will still run even if you have migrations turned off.
+    rails_deploy_post_migrate_shell_commands:
       - 'bundle exec rake assets:precompile'
       - 'rm -rf tmp/cache'
     
-    # Execute tasks before and/or after your backend is reloaded/restarted.
-    rails_deploy_early_tasks:
-      # Example, let's say you wanted to execute whenever also:
-      # - 'bundle exec whenever --clear-crontab {{ rails_deploy_service }}'
-    
+    # Shell commands to run after the backend was started
+    # Let's say you wanted to execute whenever after your app reloads/restarts:
+    #   - 'bundle exec whenever --clear-crontab {{ rails_deploy_service }}'
+    #
     # This is the absolute last thing that happens during a deploy.
-    rails_deploy_late_tasks: []
+    # They will still run even if you have no backend.
+    rails_deploy_post_restart_shell_commands: []
     
     
     # ---- Services ----
@@ -411,24 +434,28 @@ List of default variables available in the inventory:
     # ---- Deploy to staging instead of production ----
     #rails_deploy_system_env: 'staging'
 
-
-
 List of internal variables used by the role:
 
+::
+
     rails_deploy_key_data
-
-
-
-### Detailed usage guide
+Detailed usage guide
+~~~~~~~~~~~~~~~~~~~~
 
 Below is the bare minimum to get started.
 
-#### hosts
+hosts
+=====
 
-    [debops_rails_yourappname]
+::
+
+    [debops_rails]
     somehost
 
-#### inventory/host_vars/somehost.yml
+inventory/host_vars/somehost.yml
+================================
+
+::
 
     ---
 
@@ -437,68 +464,88 @@ Below is the bare minimum to get started.
 The idea is that you'll push your code somewhere and then the role will
 pull in from that repo.
 
-#### playbook
+playbook
+========
+
+::
 
     ---
 
     # playbooks/custom.yml
 
     - name: Deploy yourappname
-      hosts: debops_rails_yourappname
+      hosts: debops_rails
       sudo: true
-    
+
       roles:
         - { role: debops.rails_deploy, tags: yourappname }
 
-#### Running the playbook with DebOps
+Running the playbook with DebOps
+================================
+
+::
 
     debops -t yourappname
 
-#### Running the playbook without DebOps
+Running the playbook without DebOps
+===================================
+
+::
 
     ansible-playbook playbooks/custom.yml -i /path/to/your/inventory -t yourappname
 
-#### Changes you need to make in your rails application
+Changes you need to make in your rails application
+==================================================
 
-##### Gemfile
+Gemfile
+^^^^^^^
 
 You must have unicorn **or** puma added.
+
+::
+
     # Pick one, you may also want to bump the version to the most recent version
     # These are the most recent as of ~August 2014
-
     gem 'unicorn', '~> 4.8.3'
     gem 'puma', '~> 2.9.0'
 
 You must have pg **or** mysql2 added.
+
+::
+
     # Pick one, you may also want to bump the version to the most recent version
     # These are the most recent as of ~August 2014
-
     gem 'pg', '~> 0.17.1'
     gem 'mysql2', '~> 0.3.16'
 
-##### Backend server config
+Backend server config
+^^^^^^^^^^^^^^^^^^^^^
 
-You should base your unicorn or puma config off our [example
-configs](https://github.com/debops/ansible-rails_deploy/tree/master/docs/examples/rails/config)
+You should base your unicorn or puma config off our `example configs`_
 because certain environment variables are required to exist. Also certain
 signals are sent to reload or restart the backend which require certain
 configuration options to be set. Luckily you don't have to think about any
 of that, just use the pre-written configs in your app.
 
-##### Background worker config
+.. _example configs: https://github.com/debops/ansible-rails_deploy/tree/master/docs/examples/rails/config
 
-You should also base your sidekiq configs off our [example
-configs](https://github.com/debops/ansible-rails_deploy/tree/master/docs/examples/rails/config).
+Background worker config
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+You should also base your sidekiq configs off our `example configs`_.
 Similar to the backend server it expects certain environment variables to
 exist.
 
-##### Database config
+Database config
+^^^^^^^^^^^^^^^
 
 The database configuration below would be reasonable to use. The only
-requirement is that yours must use the `DATABASE_URL` format in whatever
+requirement is that yours must use the ``DATABASE_URL`` format in whatever
 environments you plan to deploy to. That simply means that those
 environments should be removed from your database config file. This role
-sets up the `DATABASE_URL` for you.
+sets up the ``DATABASE_URL`` for you.
+
+::
 
     ---
     development:
@@ -506,34 +553,41 @@ sets up the `DATABASE_URL` for you.
     test:
       url: <%= ENV['DATABASE_URL'].gsub('?', '_test?') %>
 
-##### Application config
+Application config
+^^^^^^^^^^^^^^^^^^
 
 In order to log everything to 1 file you must drop this line into your
 application config. This would apply to all environments. Feel free to move
 this to only staging and/or production if you don't want this to happen in
 development.
 
+::
+
     config.paths['log'] = ENV['LOG_FILE']
 
-##### Production environment config
+Production environment config
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Chances are you'll want your rails app to write to syslog in production or
 on your staging/build/etc. server. Copy this into your production
 environment config.
 
+::
+
     require 'syslog/logger'
-    
+
     # ...
-    
+
     # The tags are optional but it's useful to have.
     config.log_tags = [ :subdomain, :uuid ]
-    
+
     # This allows you to write to syslog::user without any additional gems/config.
     config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new('yourappname'))
 
-##### Public files
+Public files
+^^^^^^^^^^^^
 
-You will likely want the following files to exist in your `/public`
+You will likely want the following files to exist in your ``/public``
 directory:
 
 - 404, 422, 500 and 502 html files to process error pages
@@ -542,24 +596,29 @@ directory:
 The above will allow nginx to serve those files directly before rails even
 gets a chance.
 
-#### Don't feel like making these small changes every time you make a new app?
+Don't feel like making these small changes every time you make a new app?
+=========================================================================
 
-Me neither. That's why I created [orats](https://github.com/nickjj/orats).
-It is a command line tool that generates a shiny new rails application with
-an accumulation of best practices that I have picked up over time. It is
-also a little opinionated. Check out [orats' git
-repo](https://github.com/nickjj/orats) if you're interested.
+Me neither. That's why I created `orats`_. It is a command line tool that
+generates a shiny new rails application with an accumulation of best
+practices that I have picked up over time. It is also a little opinionated.
+Check out `orats`_ git repo if you're interested.
+
+.. _orats: https://github.com/nickjj/orats/
 
 
-#### FAQ / troubleshooting guide
+FAQ / troubleshooting guide
+===========================
 
-##### You switched from unicorn to puma or puma to unicorn and the site is dead
+You switched from unicorn to puma or puma to unicorn and the site is dead
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Chances are you're deploying with tags so the entire role did not run. When
-you switch servers nginx needs to be restarted. Make sure you `-t nginx` or
+you switch servers nginx needs to be restarted. Make sure you ``-t nginx`` or
 just run the whole role when you change servers.
 
-##### You can't clone your repo
+You can't clone your repo
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Since the role needs to pull in from your git repo then it needs permission
 to your repo. The most common way to do that is to setup an API access
@@ -568,7 +627,8 @@ token for GitHub.
 GitLab is also supported, all of this is documented in the default variables
 file.
 
-##### How would you go about setting up a CI platform with this role?
+How would you go about setting up a CI platform with this role?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Rather than impose a CI solution on you, you're free to do whatever you want.
 
@@ -581,21 +641,25 @@ That would allow you to have a sweet CI setup where your developers only
 have to git push somewhere and minutes later you have tested code in
 production if you don't have to worry about a ton of red tape.
 
+I'm using unicorn and after restarting it's dead (502)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You need to have something like monit handle keeping the service up. Are you
+sure you have monit in the ``rails_deploy_dependencies`` list?
 
 
+Authors and license
+~~~~~~~~~~~~~~~~~~~
 
+``rails_deploy`` role was written by:
 
+- Nick Janetakis | `e-mail <mailto:nick.janetakis@gmail.com>`_ | `Twitter <https://twitter.com/nickjanetakis>`_ | `GitHub <https://github.com/nickjj>`_
 
-### Authors and license
+License: `GPLv3 <https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29>`_
 
-`rails_deploy` role was written by:
+****
 
-- Nick Janetakis | [e-mail](mailto:nick.janetakis@gmail.com) | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
+This role is part of the `DebOps`_ project. README generated by `ansigenome`_.
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
-
-
-
-***
-
-This role is part of the [DebOps](http://debops.org/) project. README generated by [ansigenome](https://github.com/nickjj/ansigenome/).
+.. _DebOps: http://debops.org/
+.. _Ansigenome: https://github.com/nickjj/ansigenome/
