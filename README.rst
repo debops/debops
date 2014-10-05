@@ -1,16 +1,23 @@
+|DebOps| redis
+##############
 
-## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) redis
+.. |DebOps| image:: http://debops.org/images/debops-small.png
+   :target: http://debops.org
+
+|Travis CI| |test-suite| |Ansible Galaxy|
+
+.. |Travis CI| image:: http://img.shields.io/travis/debops/ansible-redis.svg?style=flat
+   :target: http://travis-ci.org/debops/ansible-redis
+
+.. |test-suite| image:: http://img.shields.io/badge/test--suite-ansible--redis-blue.svg?style=flat
+   :target: https://github.com/debops/test-suite/tree/master/ansible-redis/
+
+.. |Ansible Galaxy| image:: http://img.shields.io/badge/galaxy-debops.redis-660198.svg?style=flat
+   :target: https://galaxy.ansible.com/list#/roles/1592
 
 
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-redis.svg?style=flat)](http://travis-ci.org/debops/ansible-redis) [![test-suite](http://img.shields.io/badge/test--suite-ansible--redis-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-redis/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.redis-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1592) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
-
-
-
-
-
-
-`debops.redis` role allows you to easily setup infrastructure capable of
+``debops.redis`` role allows you to easily setup infrastructure capable of
 running and managing 1 or more Redis servers. It is completely self healing
 with Redis Sentinel and supports replication seamlessly.
 
@@ -23,42 +30,38 @@ Few features available in this role:
 - pretty much every redis config value is tweakable;
 - you can easily use this role as a dependency in your other roles;
 
+Installation
+~~~~~~~~~~~~
 
+This role requires at least Ansible ``v1.7.0``. To install it, run:
 
-
-
-### Installation
-
-This role requires at least Ansible `v1.7.0`. To install it, run:
+::
 
     ansible-galaxy install debops.redis
 
-#### Are you using this as a standalone role without DebOps?
+Are you using this as a standalone role without DebOps?
+=======================================================
 
-You may need to include missing roles from the [DebOps common
-playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+You may need to include missing roles from the `DebOps common playbook`_
 into your playbook.
 
-[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+`Try DebOps now`_ for a complete solution to run your Debian-based infrastructure.
+
+.. _DebOps common playbook: https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
+.. _Try DebOps now: https://github.com/debops/debops/
 
 
+Role dependencies
+~~~~~~~~~~~~~~~~~
 
+- ``debops.ferm``- ``debops.etc_services``- ``debops.secret``- ``debops.apt_preferences``
 
-
-### Role dependencies
-
-- `debops.secret`
-- `debops.apt_preferences`
-- `debops.etc_services`
-- `debops.ferm`
-
-
-
-
-
-### Role variables
+Role variables
+~~~~~~~~~~~~~~
 
 List of default variables available in the inventory:
+
+::
 
     ---
     
@@ -190,18 +193,18 @@ List of default variables available in the inventory:
     redis_notify_keyspace_events: False
 
 
-
-
-
-
-### Detailed usage guide
+Detailed usage guide
+~~~~~~~~~~~~~~~~~~~~
 
 Below is the bare minimum to get started to setup a few Redis servers
 acting together. If all you want to do is use Redis as a single server
 dependency in another role then include the role in your role's meta main
 file. You don't have to add the groups in your inventory in that case.
 
-##### inventory/hosts
+inventory/hosts
+===============
+
+::
 
     # In this example the 'redis-server0' host would be the redis
     # master and everything else would be a slave of that master.
@@ -209,13 +212,16 @@ file. You don't have to add the groups in your inventory in that case.
     redis-server0
     redis-server1
     redis-server2
-    
+
     # You can have 1 or more sentinels. The sentinel(s) will control your master
     # and slave relationships.
     [debops_redis_sentinel]
     redis-monitor
 
-##### inventory/group_vars/debops_redis_sentinel.yml
+inventory/group_vars/debops_redis_sentinel.yml
+==============================================
+
+::
 
     # It is expected that you have a firewall configured with 'debops.ferm'
     # role, set up to block all ports. Variables below tell Redis role to
@@ -224,7 +230,10 @@ file. You don't have to add the groups in your inventory in that case.
     redis_sentinel_bind: ['0.0.0.0']
     redis_sentinel_allow: ['192.168.0.0/16']
 
-##### inventory/group_vars/debops_redis.yml
+inventory/group_vars/debops_redis.yml
+=====================================
+
+::
 
     # This setup allows you to grant access to your redis servers from your
     # application group and the sentinel group. You can add as many hosts
@@ -233,34 +242,34 @@ file. You don't have to add the groups in your inventory in that case.
     redis_server_allow: '{{ groups["your_web_apps"] + redis_sentinel_hosts_group }}'
 
 If you want a Sentinel server to also act as a Redis server you can combine
-the 2 iservices on 1 host. You will need to set `redis_sentinel_standalone: False`
-in that host's inventory. This is covered in the `defaults/main.yml` file.
+the 2 iservices on 1 host. You will need to set ``redis_sentinel_standalone: False``
+in that host's inventory. This is covered in the ``defaults/main.yml`` file.
 
 You don't need to define a playbook unless you want to use group names other
 than the default. If you use non-default group names then make sure you
 change the defaults in your inventory.
 
-##### Running the playbook
+Running the playbook
+====================
 
-    ./site.sh -t redis
+::
 
-
-
-
-
-
-### Authors and license
-
-`redis` role was written by:
-
-- Nick Janetakis | [e-mail](mailto:nick.janetakis@gmail.com) | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
-
-- Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
-
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+    debops -t redis
 
 
+Authors and license
+~~~~~~~~~~~~~~~~~~~
 
-***
+``redis`` role was written by:
 
-This role is part of the [DebOps](http://debops.org/) project. README generated by [ansigenome](https://github.com/nickjj/ansigenome/).
+- Nick Janetakis | `e-mail <mailto:nick.janetakis@gmail.com>`_ | `Twitter <https://twitter.com/nickjanetakis>`_ | `GitHub <https://github.com/nickjj>`_
+- Maciej Delmanowski | `e-mail <mailto:drybjed@gmail.com>`_ | `Twitter <https://twitter.com/drybjed>`_ | `GitHub <https://github.com/drybjed>`_
+
+License: `GPLv3 <https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29>`_
+
+****
+
+This role is part of the `DebOps`_ project. README generated by `ansigenome`_.
+
+.. _DebOps: http://debops.org/
+.. _Ansigenome: https://github.com/nickjj/ansigenome/
