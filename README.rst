@@ -54,7 +54,12 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.ferm``- ``debops.etc_services``- ``debops.postfix``- ``debops.tcpwrappers``- ``debops.rsyslog``
+- ``debops.ferm``
+- ``debops.etc_services``
+- ``debops.postfix``
+- ``debops.tcpwrappers``
+- ``debops.rsyslog``
+
 
 Role variables
 ~~~~~~~~~~~~~~
@@ -214,14 +219,14 @@ Sending a text message over mail
 
 ``debops.smstools`` role configures two subdomains in local Postfix instance:
 
-  - ``sms.`` subdomain is responsible for mail to SMS transport, Postfix takes
-    mail messages sent to that subdomain and passes them to ``sms`` service
-    (configured in ``/etc/postfix/master.cf`` which is a script that parses the
-    mail message and sends body of that message to specified recipient using
-    ``sendsms`` script;
+- ``sms.`` subdomain is responsible for mail to SMS transport, Postfix takes
+  mail messages sent to that subdomain and passes them to ``sms`` service
+  (configured in ``/etc/postfix/master.cf`` which is a script that parses the
+  mail message and sends body of that message to specified recipient using
+  ``sendsms`` script;
 
-  - ``gsm.`` subdomain is used for aliases which correspond to addresses in the
-    ``sms.`` subdomain or groups of aliases in the same subdomain;
+- ``gsm.`` subdomain is used for aliases which correspond to addresses in the
+  ``sms.`` subdomain or groups of aliases in the same subdomain;
 
 To send a SMS message via mail, send a mail to an address
 ``<+00123123123@sms>`` (on localhost) or ``<+00123123123@sms.example.com>``
@@ -252,14 +257,18 @@ check if a specific mail sender can send SMS messages using the gateway.
 Steps to determine that:
 
 - check recipient domain of a mail message,
-  * if recipient domain is one of the supported subdomains (``sms.`` or ``gsm.``),
-    check mail address or domain of the sender against list of allowed
-    senders,
-    - if mail sender can send SMS messages, return ``PERMIT`` (or ``DUNNO`` if
-      other checks should be performed),
-    - if mail sender is not found, return ``REJECT``,
-  * otherwise (mail recipient not in a supported domain), return ``DUNNO`` to
-    allow other checks to perform.
+
+- if recipient domain is one of the supported subdomains (``sms.`` or ``gsm.``),
+  check mail address or domain of the sender against list of allowed
+  senders,
+
+- if mail sender can send SMS messages, return ``PERMIT`` (or ``DUNNO`` if
+  other checks should be performed),
+
+- if mail sender is not found, return ``REJECT``,
+
+- otherwise (mail recipient not in a supported domain), return ``DUNNO`` to
+  allow other checks to perform.
 
 Policy service check should be included in ``smtpd_recipient_restrictions`` list
 to be able to check both recipient and sender addresses.
