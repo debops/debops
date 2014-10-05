@@ -52,7 +52,10 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.secret``- ``debops.postfix``- ``debops.nginx``
+- ``debops.secret``
+- ``debops.postfix``
+- ``debops.nginx``
+
 
 Role variables
 ~~~~~~~~~~~~~~
