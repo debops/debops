@@ -34,37 +34,40 @@ ansigenome_info:
       github: 'drybjed'
 
   synopsis: |
-    `debops.openvz` role enables [OpenVZ](http://openvz.org/) container support
-    on Debian Wheezy hosts. This role has not been tested on Debian Jessie or
-    Ubuntu systems, and correct support for OpenVZ on these systems is at the
-    moment unlikely. Main reason for this role is to help ease transition from
-    older systems based on Debian Squeeze with OpenVZ into newer systems based
-    on Debian Wheezy/Jessie and LXC.
+    ``debops.openvz`` role enables `OpenVZ`_ container support on Debian Wheezy
+    hosts. This role has not been tested on Debian Jessie or Ubuntu systems,
+    and correct support for OpenVZ on these systems is at the moment unlikely.
+    Main reason for this role is to help ease transition from older systems
+    based on Debian Squeeze with OpenVZ into newer systems based on Debian
+    Wheezy/Jessie and LXC.
+    
+    .. _OpenVZ: http://openvz.org/
 
   usage: |
     This role is meant to create and manage OpenVZ Hardware Nodes, not OpenVZ
     containers themselves.
     
-    `debops.openvz` role uses [Linux kernel from
-    openvz.org](https://openvz.org/Installation_on_Debian) (2.6.32), which is
-    older than the default kernel in Wheezy (3.2.0). Because of that various
+    ``debops.openvz`` role uses `Linux kernel from openvz.org`_ (2.6.32), which
+    is older than the default kernel in Wheezy (3.2.0). Because of that various
     technologies from Wheezy (KVM, LXC for example) might be incompatible with
     older kernel. Thus, this role should not be mixed on one host with those
     technologies.
     
     Because of the kernel downgrade, a reboot of the host will be required, but
-    `debops.openvz` will not reboot managed hosts automatically. Instead, an
-    email will be sent to root account in case a kernel downgrade or update is
-    performed, to notify the administrator about required reboot. This lets the
-    administrator schedule reboots at their convenience. Make sure that your
-    Hardware Nodes have correct mail setup to forward mails to administrators,
-    for example with `debops.postfix` role.
+    ``debops.openvz`` will not reboot managed hosts automatically. Instead, an
+    email will be sent to ``root`` account in case a kernel downgrade or update
+    is performed, to notify the administrator about required reboot. This lets
+    the administrator schedule reboots at their convenience. Make sure that
+    your Hardware Nodes have correct mail setup to forward mails to
+    administrators, for example with ``debops.postfix`` role.
     
     You can specify a group of hosts (by default role looks for
-    `[debops_openvz]` group), in which case they will be treated as a cluster
-    of OpenVZ Hardware Nodes. Each HN will create an SSH keypair on its `root`
+    ``[debops_openvz]`` group), in which case they will be treated as a cluster
+    of OpenVZ Hardware Nodes. Each HN will create an SSH keypair on its ``root``
     account, and these keys will be automatically distributed among nodes in
     the cluster, and the host SSH fingerprints will be registered on each node
-    `~/.ssh/known_hosts` file. This allows you to easily migrate containers
-    between Hardware Nodes with `vzmigrate` command.
+    ``~/.ssh/known_hosts`` file. This allows you to easily migrate containers
+    between Hardware Nodes with ``vzmigrate`` command.
+
+    .. _Linux kernel from openvz.org: https://openvz.org/Installation_on_Debian
 
