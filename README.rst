@@ -47,7 +47,12 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.etc_services``- ``debops.secret``- ``debops.mysql``- ``debops.nginx``- ``debops.nodejs``
+- ``debops.etc_services``
+- ``debops.secret``
+- ``debops.mysql``
+- ``debops.nginx``
+- ``debops.nodejs``
+
 
 Role variables
 ~~~~~~~~~~~~~~
