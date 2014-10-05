@@ -1,55 +1,63 @@
+|DebOps| openvz
+###############
 
-## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) openvz
+.. |DebOps| image:: http://debops.org/images/debops-small.png
+   :target: http://debops.org
 
+|Travis CI| |test-suite| |Ansible Galaxy|
 
+.. |Travis CI| image:: http://img.shields.io/travis/debops/ansible-openvz.svg?style=flat
+   :target: http://travis-ci.org/debops/ansible-openvz
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-openvz.svg?style=flat)](http://travis-ci.org/debops/ansible-openvz) [![test-suite](http://img.shields.io/badge/test--suite-ansible--openvz-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-openvz/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.openvz-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1583) [![Platforms](http://img.shields.io/badge/platforms-debian-lightgrey.svg?style=flat)](#)
+.. |test-suite| image:: http://img.shields.io/badge/test--suite-ansible--openvz-blue.svg?style=flat
+   :target: https://github.com/debops/test-suite/tree/master/ansible-openvz/
 
-
-
-
-
-
-`debops.openvz` role enables [OpenVZ](http://openvz.org/) container support
-on Debian Wheezy hosts. This role has not been tested on Debian Jessie or
-Ubuntu systems, and correct support for OpenVZ on these systems is at the
-moment unlikely. Main reason for this role is to help ease transition from
-older systems based on Debian Squeeze with OpenVZ into newer systems based
-on Debian Wheezy/Jessie and LXC.
+.. |Ansible Galaxy| image:: http://img.shields.io/badge/galaxy-debops.openvz-660198.svg?style=flat
+   :target: https://galaxy.ansible.com/list#/roles/1583
 
 
 
+``debops.openvz`` role enables `OpenVZ`_ container support on Debian Wheezy
+hosts. This role has not been tested on Debian Jessie or Ubuntu systems,
+and correct support for OpenVZ on these systems is at the moment unlikely.
+Main reason for this role is to help ease transition from older systems
+based on Debian Squeeze with OpenVZ into newer systems based on Debian
+Wheezy/Jessie and LXC.
 
+.. _OpenVZ: http://openvz.org/
 
-### Installation
+Installation
+~~~~~~~~~~~~
 
-This role requires at least Ansible `v1.7.0`. To install it, run:
+This role requires at least Ansible ``v1.7.0``. To install it, run:
+
+::
 
     ansible-galaxy install debops.openvz
 
-#### Are you using this as a standalone role without DebOps?
+Are you using this as a standalone role without DebOps?
+=======================================================
 
-You may need to include missing roles from the [DebOps common
-playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+You may need to include missing roles from the `DebOps common playbook`_
 into your playbook.
 
-[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+`Try DebOps now`_ for a complete solution to run your Debian-based infrastructure.
+
+.. _DebOps common playbook: https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
+.. _Try DebOps now: https://github.com/debops/debops/
 
 
+Role dependencies
+~~~~~~~~~~~~~~~~~
 
+- ``debops.ferm``
 
-
-### Role dependencies
-
-- `debops.ferm`
-
-
-
-
-
-### Role variables
+Role variables
+~~~~~~~~~~~~~~
 
 List of default variables available in the inventory:
+
+::
 
     ---
     
@@ -141,9 +149,9 @@ List of default variables available in the inventory:
                        'ipt_TCPMSS', 'ipt_tcpmss', 'ipt_ttl', 'ipt_length', 'ipt_state',
                        'iptable_nat', 'ip_nat_ftp' ]
 
-
-
 List of internal variables used by the role:
+
+::
 
     openvz_configfile_calculated_diskspace
     openvz_configfile_calculated_total_memory
@@ -153,52 +161,49 @@ List of internal variables used by the role:
     openvz_configfile_calculated_diskspace_limit
     openvz_root_ssh_key
     openvz_configfile_calculated_vswap
-
-
-
-### Detailed usage guide
+Detailed usage guide
+~~~~~~~~~~~~~~~~~~~~
 
 This role is meant to create and manage OpenVZ Hardware Nodes, not OpenVZ
 containers themselves.
 
-`debops.openvz` role uses [Linux kernel from
-openvz.org](https://openvz.org/Installation_on_Debian) (2.6.32), which is
-older than the default kernel in Wheezy (3.2.0). Because of that various
+``debops.openvz`` role uses `Linux kernel from openvz.org`_ (2.6.32), which
+is older than the default kernel in Wheezy (3.2.0). Because of that various
 technologies from Wheezy (KVM, LXC for example) might be incompatible with
 older kernel. Thus, this role should not be mixed on one host with those
 technologies.
 
 Because of the kernel downgrade, a reboot of the host will be required, but
-`debops.openvz` will not reboot managed hosts automatically. Instead, an
-email will be sent to root account in case a kernel downgrade or update is
-performed, to notify the administrator about required reboot. This lets the
-administrator schedule reboots at their convenience. Make sure that your
-Hardware Nodes have correct mail setup to forward mails to administrators,
-for example with `debops.postfix` role.
+``debops.openvz`` will not reboot managed hosts automatically. Instead, an
+email will be sent to ``root`` account in case a kernel downgrade or update
+is performed, to notify the administrator about required reboot. This lets
+the administrator schedule reboots at their convenience. Make sure that
+your Hardware Nodes have correct mail setup to forward mails to
+administrators, for example with ``debops.postfix`` role.
 
 You can specify a group of hosts (by default role looks for
-`[debops_openvz]` group), in which case they will be treated as a cluster
-of OpenVZ Hardware Nodes. Each HN will create an SSH keypair on its `root`
+``[debops_openvz]`` group), in which case they will be treated as a cluster
+of OpenVZ Hardware Nodes. Each HN will create an SSH keypair on its ``root``
 account, and these keys will be automatically distributed among nodes in
 the cluster, and the host SSH fingerprints will be registered on each node
-`~/.ssh/known_hosts` file. This allows you to easily migrate containers
-between Hardware Nodes with `vzmigrate` command.
+``~/.ssh/known_hosts`` file. This allows you to easily migrate containers
+between Hardware Nodes with ``vzmigrate`` command.
+
+.. _Linux kernel from openvz.org: https://openvz.org/Installation_on_Debian
 
 
+Authors and license
+~~~~~~~~~~~~~~~~~~~
 
+``openvz`` role was written by:
 
+- Maciej Delmanowski | `e-mail <mailto:drybjed@gmail.com>`_ | `Twitter <https://twitter.com/drybjed>`_ | `GitHub <https://github.com/drybjed>`_
 
+License: `GPLv3 <https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29>`_
 
-### Authors and license
+****
 
-`openvz` role was written by:
+This role is part of the `DebOps`_ project. README generated by `ansigenome`_.
 
-- Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
-
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
-
-
-
-***
-
-This role is part of the [DebOps](http://debops.org/) project. README generated by [ansigenome](https://github.com/nickjj/ansigenome/).
+.. _DebOps: http://debops.org/
+.. _Ansigenome: https://github.com/nickjj/ansigenome/
