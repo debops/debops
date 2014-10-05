@@ -1,59 +1,65 @@
+|DebOps| mailman
+################
 
-## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) mailman
+.. |DebOps| image:: http://debops.org/images/debops-small.png
+   :target: http://debops.org
 
+|Travis CI| |test-suite| |Ansible Galaxy|
 
+.. |Travis CI| image:: http://img.shields.io/travis/debops/ansible-mailman.svg?style=flat
+   :target: http://travis-ci.org/debops/ansible-mailman
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-mailman.svg?style=flat)](http://travis-ci.org/debops/ansible-mailman) [![test-suite](http://img.shields.io/badge/test--suite-ansible--mailman-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-mailman/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.mailman-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1574) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+.. |test-suite| image:: http://img.shields.io/badge/test--suite-ansible--mailman-blue.svg?style=flat
+   :target: https://github.com/debops/test-suite/tree/master/ansible-mailman/
 
-
-
-
-
-
-Install and configure [Mailman](https://www.gnu.org/software/mailman/),
-a mailing list manager. It will be installed behind
-[Postfix](http://postfix.org/) server (using `debops.postfix` role) which
-will serve as an incoming/outgoing mail server, and
-[nginx](http://nginx.org/) server (with help of `debops.nginx` role) will
-serve the web interface. You can also use this role to create or remove
-mailing lists themselves (other management can be done using the web
-interface).
+.. |Ansible Galaxy| image:: http://img.shields.io/badge/galaxy-debops.mailman-660198.svg?style=flat
+   :target: https://galaxy.ansible.com/list#/roles/1574
 
 
 
+Install and configure `Mailman`_, a mailing list manager. It will be
+installed behind `Postfix`_ server (using ``debops.postfix`` role) which
+will serve as an incoming/outgoing mail server, and `nginx`_ server (with
+help of ``debops.nginx`` role) will serve the web interface. You can also
+use this role to create or remove mailing lists themselves (other
+management can be done using the web interface).
 
+.. _Mailman: https://www.gnu.org/software/mailman/
+.. _Postfix: http://postfix.org/
+.. _nginx: http://nginx.org/
 
-### Installation
+Installation
+~~~~~~~~~~~~
 
-This role requires at least Ansible `v1.7.0`. To install it, run:
+This role requires at least Ansible ``v1.7.0``. To install it, run:
+
+::
 
     ansible-galaxy install debops.mailman
 
-#### Are you using this as a standalone role without DebOps?
+Are you using this as a standalone role without DebOps?
+=======================================================
 
-You may need to include missing roles from the [DebOps common
-playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+You may need to include missing roles from the `DebOps common playbook`_
 into your playbook.
 
-[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+`Try DebOps now`_ for a complete solution to run your Debian-based infrastructure.
+
+.. _DebOps common playbook: https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
+.. _Try DebOps now: https://github.com/debops/debops/
 
 
+Role dependencies
+~~~~~~~~~~~~~~~~~
 
+- ``debops.secret``- ``debops.postfix``- ``debops.nginx``
 
-
-### Role dependencies
-
-- `debops.secret`
-- `debops.postfix`
-- `debops.nginx`
-
-
-
-
-
-### Role variables
+Role variables
+~~~~~~~~~~~~~~
 
 List of default variables available in the inventory:
+
+::
 
     ---
     
@@ -185,44 +191,39 @@ List of default variables available in the inventory:
       - 'prune-alias-list.patch'
 
 
-
-
-
-
-### Detailed usage guide
+Detailed usage guide
+~~~~~~~~~~~~~~~~~~~~
 
 Mailman is a bit tricky to manage idempotently - there are many patches
-applied during first install, mailing lists are hard to change once they are
-created and there might be issues with upgrading of configuration files
-(because of that mailman is not upgraded automatically by default). I suggest
-that you prepare your Mailman configuration in development environment, and
-apply it in production when it's ready.
+applied during first install, mailing lists are hard to change once they
+are created and there might be issues with upgrading of configuration files
+(because of that ``mailman`` is not upgraded automatically by default).
+I suggest that you prepare your Mailman configuration in development
+environment, and apply it in production when it's ready.
 
 Postfix will configure Mailman integration differently depending on it's
 enabled capabilities:
 
-- with `local` capability Postfix will pass mail messages to Mailman using
-  mail aliases and `virtual_alias_maps`/`virtual_alias_domains`;
+- with ``local`` capability Postfix will pass mail messages to Mailman
+  using mail aliases and ``virtual_alias_maps``/``virtual_alias_domains``;
 
-- without `local` capability Postfix will pass mail messages to Mailman using
-  `postfix-to-mailman.py` script, `relay_recipient_maps`, `relay_recipient_domains`
-  and `transport_maps`;
-
-
+- without ``local`` capability Postfix will pass mail messages to Mailman
+  using ``postfix-to-mailman.py`` script, ``relay_recipient_maps``,
+  ``relay_recipient_domains`` and ``transport_maps``;
 
 
+Authors and license
+~~~~~~~~~~~~~~~~~~~
 
+``mailman`` role was written by:
 
-### Authors and license
+- Maciej Delmanowski | `e-mail <mailto:drybjed@gmail.com>`_ | `Twitter <https://twitter.com/drybjed>`_ | `GitHub <https://github.com/drybjed>`_
 
-`mailman` role was written by:
+License: `GPLv3 <https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29>`_
 
-- Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
+****
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+This role is part of the `DebOps`_ project. README generated by `ansigenome`_.
 
-
-
-***
-
-This role is part of the [DebOps](http://debops.org/) project. README generated by [ansigenome](https://github.com/nickjj/ansigenome/).
+.. _DebOps: http://debops.org/
+.. _Ansigenome: https://github.com/nickjj/ansigenome/
