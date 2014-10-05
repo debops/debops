@@ -63,11 +63,12 @@ ansigenome_info:
       github: 'nickjj'
 
   synopsis: |
-    `debops.elasticsearch` role allows you to easily setup infrastructure
+    ``debops.elasticsearch`` role allows you to easily setup infrastructure
     capable of running Elasticsearch.
-
-    #### What are a few features available in this role?
-
+    
+    What are a few features available in this role?
+    ===============================================
+    
     - Seamless clustering
     - Easily pick node types through groups and also allow you to do it manually
     - Add/Remove plugins and libs on demand
@@ -79,90 +80,99 @@ ansigenome_info:
     types to a number of servers. If all you want to do is use ES as a single
     server dependency in another role then include the role in your role's
     meta main file. You don't have to add the groups in your inventory in that case.
-
-    #### hosts
-
-    Elasticsearch has 2 settings, `node.master` and `node.data`. A combination
-    of those settings being true or false  determines what type of node your
+    
+    hosts
+    =====
+    
+    Elasticsearch has 2 settings, ``node.master`` and ``node.data``. A combination
+    of those settings being ``True`` or ``False`` determines what type of node your
     server will be.
-
-    ##### Master servers (`node.master: true` and `node.data: true`)
-
+    
+    Master servers (``node.master: True`` and ``node.data: True``)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
     This is the default setting for all nodes in elasticsearch.
-
-    ```
-    [debops_elasticsearch_master]
-    apple
-    orange
-    banana
-    ```
-
-    ##### Workhorse servers (`node.master: false` and `node.data: true`)
-
+    
+    ::
+    
+        [debops_elasticsearch_master]
+        apple
+        orange
+        banana
+    
+    Workhorse servers (``node.master: False`` and ``node.data: True``)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
     The server will never become a master but it will hold data.
-
-    ```
-    [debops_elasticsearch_workhorse]
-    red
-    blue
-    ```
-
-    ##### Coordinator servers (`node.master: true` and `node.data: false`)
-
-    A coordinator can become master but it doesn't store data. Its goal is to always
-    have a lot of free resources.
-
-    ```
-    [debops_elasticsearch_coordinator]
-    nyancat
-    ```
-
-    ##### Search load balancer servers (`node.master: false` and `node.data: false`)
-
+    
+    ::
+    
+        [debops_elasticsearch_workhorse]
+        red
+        blue
+    
+    Coordinator servers (``node.master: True`` and ``node.data: False``)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
+    A coordinator can become master but it doesn't store data. Its goal is to
+    always have a lot of free resources.
+    
+    ::
+    
+        [debops_elasticsearch_coordinator]
+        nyancat
+    
+    Search load balancer servers (``node.master: False` and ``node.data: False``)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
     A server of this type would be used to fetch data from other servers,
     aggregate results, etc..
-
-    ```
-    [debops_elasticsearch_loadbalancer]
-    judge
-    jury
-    ```
-
-    ##### Grouping them all up
-
+    
+    ::
+    
+        [debops_elasticsearch_loadbalancer]
+        judge
+        jury
+    
+    Grouping them all up
+    ====================
+    
     It's always useful to have a common group that composes everything.
     Elasticsearch will be installed on any server that belongs to any of the above groups.
-
+    
     This group would mainly be used for firewall settings which would apply to
     all of your ES nodes. It does not control whether or not ES gets installed.
-
-    ```
-    [debops_elasticsearch:children]
-    debops_elasticsearch_master
-    debops_elasticsearch_workhorse
-    debops_elasticsearch_coordinator
-    debops_elasticsearch_loadbalancer
-    ```
-
-    #### What's with all of the groups?
-
+    
+    ::
+    
+        [debops_elasticsearch:children]
+        debops_elasticsearch_master
+        debops_elasticsearch_workhorse
+        debops_elasticsearch_coordinator
+        debops_elasticsearch_loadbalancer
+    
+    What's with all of the groups?
+    ==============================
+    
     They are just shortcuts to setting the 2 node settings for you. You don't
     have to use the extra groups. By all means create custom groups and set the
     variables yourself if you want.
-
+    
     You can also edit the defaults to use your own custom group names and still
     get the benefits of group based node type separation.
+    
+    inventory/group_vars/debops_elasticsearch.yml
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
+    ::
+    
+        elasticsearch_bind_host: ['0.0.0.0']
+        elasticsearch_node_allow: '{{ groups["debops_elasticsearch"] }}'
+        elasticsearch_http_allow: '{{ groups["your_web_apps"] }}'
+    
+        # The above example tells ES to accept connections from anywhere and then
+        # white lists your ES group so they can all talk to each other
+    
+        # In addition to that is white lists your app servers so they can access the
+        # ES HTTP API to actually query ES
 
-    #### inventory/group_vars/debops_elasticsearch.yml
-
-    ```
-    elasticsearch_bind_host: ['0.0.0.0']
-    elasticsearch_node_allow: '{{ groups["debops_elasticsearch"] }}'
-    elasticsearch_http_allow: '{{ groups["your_web_apps"] }}'
-
-    # The above example tells ES to accept connections from anywhere and then
-    # white lists your ES group so they can all talk to each other
-
-    # In addition to that is white lists your app servers so they can access the
-    # ES HTTP API to actually query ES
-    ```
