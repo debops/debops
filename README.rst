@@ -55,7 +55,9 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.ferm``- ``debops.etc_services``
+- ``debops.ferm``
+- ``debops.etc_services``
+
 
 Role variables
 ~~~~~~~~~~~~~~
