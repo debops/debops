@@ -1,19 +1,27 @@
+|DebOps| elasticsearch
+######################
 
-## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) elasticsearch
+.. |DebOps| image:: http://debops.org/images/debops-small.png
+   :target: http://debops.org
+
+|Travis CI| |test-suite| |Ansible Galaxy|
+
+.. |Travis CI| image:: http://img.shields.io/travis/debops/ansible-elasticsearch.svg?style=flat
+   :target: http://travis-ci.org/debops/ansible-elasticsearch
+
+.. |test-suite| image:: http://img.shields.io/badge/test--suite-ansible--elasticsearch-blue.svg?style=flat
+   :target: https://github.com/debops/test-suite/tree/master/ansible-elasticsearch/
+
+.. |Ansible Galaxy| image:: http://img.shields.io/badge/galaxy-debops.elasticsearch-660198.svg?style=flat
+   :target: https://galaxy.ansible.com/list#/roles/1694
 
 
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-elasticsearch.svg?style=flat)](http://travis-ci.org/debops/ansible-elasticsearch) [![test-suite](http://img.shields.io/badge/test--suite-ansible--elasticsearch-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-elasticsearch/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.elasticsearch-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1694) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
-
-
-
-
-
-
-`debops.elasticsearch` role allows you to easily setup infrastructure
+``debops.elasticsearch`` role allows you to easily setup infrastructure
 capable of running Elasticsearch.
 
-#### What are a few features available in this role?
+What are a few features available in this role?
+===============================================
 
 - Seamless clustering
 - Easily pick node types through groups and also allow you to do it manually
@@ -21,41 +29,38 @@ capable of running Elasticsearch.
   - You can even set custom configuration to each plugin, check the defaults
 - Tweak pretty much everything that ES allows you to
 
+Installation
+~~~~~~~~~~~~
 
+This role requires at least Ansible ``v1.7.0``. To install it, run:
 
-
-
-### Installation
-
-This role requires at least Ansible `v1.7.0`. To install it, run:
+::
 
     ansible-galaxy install debops.elasticsearch
 
-#### Are you using this as a standalone role without DebOps?
+Are you using this as a standalone role without DebOps?
+=======================================================
 
-You may need to include missing roles from the [DebOps common
-playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+You may need to include missing roles from the `DebOps common playbook`_
 into your playbook.
 
-[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+`Try DebOps now`_ for a complete solution to run your Debian-based infrastructure.
+
+.. _DebOps common playbook: https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
+.. _Try DebOps now: https://github.com/debops/debops/
 
 
+Role dependencies
+~~~~~~~~~~~~~~~~~
 
+- ``debops.ferm``- ``debops.etc_services``- ``debops.java``
 
-
-### Role dependencies
-
-- `debops.etc_services`
-- `debops.ferm`
-- `debops.java`
-
-
-
-
-
-### Role variables
+Role variables
+~~~~~~~~~~~~~~
 
 List of default variables available in the inventory:
+
+::
 
     ---
     # role: elasticsearch
@@ -335,66 +340,69 @@ List of default variables available in the inventory:
           conversionPattern: '[%d{ISO8601}][%-5p][%-25c] %m%n'
 
 
-
-
-
-
-### Detailed usage guide
+Detailed usage guide
+~~~~~~~~~~~~~~~~~~~~
 
 Below is a breakdown of how you can use groups to allocate different node
 types to a number of servers. If all you want to do is use ES as a single
 server dependency in another role then include the role in your role's
 meta main file. You don't have to add the groups in your inventory in that case.
 
-#### hosts
+hosts
+=====
 
-Elasticsearch has 2 settings, `node.master` and `node.data`. A combination
-of those settings being true or false  determines what type of node your
+Elasticsearch has 2 settings, ``node.master`` and ``node.data``. A combination
+of those settings being ``True`` or ``False`` determines what type of node your
 server will be.
 
-##### Master servers (`node.master: true` and `node.data: true`)
+Master servers (``node.master: True`` and ``node.data: True``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This is the default setting for all nodes in elasticsearch.
 
-```
-[debops_elasticsearch_master]
-apple
-orange
-banana
-```
+::
 
-##### Workhorse servers (`node.master: false` and `node.data: true`)
+    [debops_elasticsearch_master]
+    apple
+    orange
+    banana
+
+Workhorse servers (``node.master: False`` and ``node.data: True``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The server will never become a master but it will hold data.
 
-```
-[debops_elasticsearch_workhorse]
-red
-blue
-```
+::
 
-##### Coordinator servers (`node.master: true` and `node.data: false`)
+    [debops_elasticsearch_workhorse]
+    red
+    blue
 
-A coordinator can become master but it doesn't store data. Its goal is to always
-have a lot of free resources.
+Coordinator servers (``node.master: True`` and ``node.data: False``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-```
-[debops_elasticsearch_coordinator]
-nyancat
-```
+A coordinator can become master but it doesn't store data. Its goal is to
+always have a lot of free resources.
 
-##### Search load balancer servers (`node.master: false` and `node.data: false`)
+::
+
+    [debops_elasticsearch_coordinator]
+    nyancat
+
+Search load balancer servers (``node.master: False` and ``node.data: False``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A server of this type would be used to fetch data from other servers,
 aggregate results, etc..
 
-```
-[debops_elasticsearch_loadbalancer]
-judge
-jury
-```
+::
 
-##### Grouping them all up
+    [debops_elasticsearch_loadbalancer]
+    judge
+    jury
+
+Grouping them all up
+====================
 
 It's always useful to have a common group that composes everything.
 Elasticsearch will be installed on any server that belongs to any of the above groups.
@@ -402,15 +410,16 @@ Elasticsearch will be installed on any server that belongs to any of the above g
 This group would mainly be used for firewall settings which would apply to
 all of your ES nodes. It does not control whether or not ES gets installed.
 
-```
-[debops_elasticsearch:children]
-debops_elasticsearch_master
-debops_elasticsearch_workhorse
-debops_elasticsearch_coordinator
-debops_elasticsearch_loadbalancer
-```
+::
 
-#### What's with all of the groups?
+    [debops_elasticsearch:children]
+    debops_elasticsearch_master
+    debops_elasticsearch_workhorse
+    debops_elasticsearch_coordinator
+    debops_elasticsearch_loadbalancer
+
+What's with all of the groups?
+==============================
 
 They are just shortcuts to setting the 2 node settings for you. You don't
 have to use the extra groups. By all means create custom groups and set the
@@ -419,35 +428,34 @@ variables yourself if you want.
 You can also edit the defaults to use your own custom group names and still
 get the benefits of group based node type separation.
 
-#### inventory/group_vars/debops_elasticsearch.yml
+inventory/group_vars/debops_elasticsearch.yml
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-```
-elasticsearch_bind_host: ['0.0.0.0']
-elasticsearch_node_allow: '{{ groups["debops_elasticsearch"] }}'
-elasticsearch_http_allow: '{{ groups["your_web_apps"] }}'
+::
 
-# The above example tells ES to accept connections from anywhere and then
-# white lists your ES group so they can all talk to each other
+    elasticsearch_bind_host: ['0.0.0.0']
+    elasticsearch_node_allow: '{{ groups["debops_elasticsearch"] }}'
+    elasticsearch_http_allow: '{{ groups["your_web_apps"] }}'
 
-# In addition to that is white lists your app servers so they can access the
-# ES HTTP API to actually query ES
-```
+    # The above example tells ES to accept connections from anywhere and then
+    # white lists your ES group so they can all talk to each other
 
-
-
+    # In addition to that is white lists your app servers so they can access the
+    # ES HTTP API to actually query ES
 
 
+Authors and license
+~~~~~~~~~~~~~~~~~~~
 
-### Authors and license
+``elasticsearch`` role was written by:
 
-`elasticsearch` role was written by:
+- Nick Janetakis | `e-mail <mailto:nick.janetakis@gmail.com>`_ | `Twitter <https://twitter.com/nickjanetakis>`_ | `GitHub <https://github.com/nickjj>`_
 
-- Nick Janetakis | [e-mail](mailto:nick.janetakis@gmail.com) | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
+License: `GPLv3 <https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29>`_
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+****
 
+This role is part of the `DebOps`_ project. README generated by `ansigenome`_.
 
-
-***
-
-This role is part of the [DebOps](http://debops.org/) project. README generated by [ansigenome](https://github.com/nickjj/ansigenome/).
+.. _DebOps: http://debops.org/
+.. _Ansigenome: https://github.com/nickjj/ansigenome/
