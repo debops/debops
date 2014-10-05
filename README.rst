@@ -47,6 +47,7 @@ Role dependencies
 
 - ``debops.backporter``
 
+
 Role variables
 ~~~~~~~~~~~~~~
 
