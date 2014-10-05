@@ -1,63 +1,64 @@
+|DebOps| apt
+############
 
-## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) apt
+.. |DebOps| image:: http://debops.org/images/debops-small.png
+   :target: http://debops.org
+
+|Travis CI| |test-suite| |Ansible Galaxy|
+
+.. |Travis CI| image:: http://img.shields.io/travis/debops/ansible-apt.svg?style=flat
+   :target: http://travis-ci.org/debops/ansible-apt
+
+.. |test-suite| image:: http://img.shields.io/badge/test--suite-ansible--apt-blue.svg?style=flat
+   :target: https://github.com/debops/test-suite/tree/master/ansible-apt/
+
+.. |Ansible Galaxy| image:: http://img.shields.io/badge/galaxy-debops.apt-660198.svg?style=flat
+   :target: https://galaxy.ansible.com/list#/roles/1551
 
 
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-apt.svg?style=flat)](http://travis-ci.org/debops/ansible-apt) [![test-suite](http://img.shields.io/badge/test--suite-ansible--apt-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-apt/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.apt-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1551) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
-
-
-
-
-
-
-`debops.apt` configures and manages APT package manager in Debian and other
+``debops.apt`` configures and manages APT package manager in Debian and other
 derivative distributions. Specifically, it will manage:
 
 * list of APT sources
-* centralized APT cache (using `apt-cacher-ng`)
-* automatic package updates (using `unattended-upgrades` and `apticron`)
+* centralized APT cache (using ``apt-cacher-ng``)
+* automatic package updates (using ``unattended-upgrades`` and ``apticron``)
 * Debian Preseed configuration
-* local APT repository (using `reprepro`)
+* local APT repository (using ``reprepro``)
 * installation of custom packages specified in Ansible inventory
 
+Installation
+~~~~~~~~~~~~
 
+This role requires at least Ansible ``v1.7.0``. To install it, run:
 
-
-
-### Installation
-
-This role requires at least Ansible `v1.7.0`. To install it, run:
+::
 
     ansible-galaxy install debops.apt
 
-#### Are you using this as a standalone role without DebOps?
+Are you using this as a standalone role without DebOps?
+=======================================================
 
-You may need to include missing roles from the [DebOps common
-playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+You may need to include missing roles from the `DebOps common playbook`_
 into your playbook.
 
-[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+`Try DebOps now`_ for a complete solution to run your Debian-based infrastructure.
+
+.. _DebOps common playbook: https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
+.. _Try DebOps now: https://github.com/debops/debops/
 
 
+Role dependencies
+~~~~~~~~~~~~~~~~~
 
+- ``debops.etc_services``- ``debops.nginx``- ``debops.reprepro``- ``debops.ferm``- ``debops.apt_preferences``- ``debops.secret``
 
-
-### Role dependencies
-
-- `debops.secret`
-- `debops.apt_preferences`
-- `debops.etc_services`
-- `debops.ferm`
-- `debops.nginx`
-- `debops.reprepro`
-
-
-
-
-
-### Role variables
+Role variables
+~~~~~~~~~~~~~~
 
 List of default variables available in the inventory:
+
+::
 
     ---
     
@@ -109,6 +110,10 @@ List of default variables available in the inventory:
     
     apt_debian_http_mirror: 'cdn.debian.net'
     
+    # Update APT cache early in the playbook if it's older than 24h
+    # Set to False to disable update (useful when changing APT mirrors)
+    apt_update_cache_early: '{{ (60 * 60 * 24) }}'
+    
     apt_acng_port: 3142
     apt_acng_login: 'admin'
     apt_acng_password: 'password'
@@ -140,34 +145,31 @@ List of default variables available in the inventory:
     apt_debian_preseed_timezone: 'UTC'
     apt_debian_preseed_keyboardvariant: 'American English'
     apt_debian_preseed_mirror_country: 'United States'
-    apt_debian_preseed_rootpw: 'debian'
     apt_debian_preseed_rootpw_length: '20'
+    apt_debian_preseed_rootpw: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/debian_preseed/system/root/password encrypt=md5_crypt length=' + apt_debian_preseed_rootpw_length) }}"
+    apt_debian_preseed_username: "{{ lookup('env','USER') }}"
+    apt_debian_preseed_sshkey: "{{ lookup('pipe','ssh-add -L') }}"
     apt_debian_preseed_filesystem: 'ext4'
-
-
 
 List of internal variables used by the role:
 
+::
+
     nginx_server_default
-    apt_debian_preseed_username
-    apt_debian_preseed_rootpw
-    apt_debian_preseed_sshkey
 
 
+Authors and license
+~~~~~~~~~~~~~~~~~~~
 
+``apt`` role was written by:
 
+- Maciej Delmanowski | `e-mail <mailto:drybjed@gmail.com>`_ | `Twitter <https://twitter.com/drybjed>`_ | `GitHub <https://github.com/drybjed>`_
 
+License: `GPLv3 <https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29>`_
 
-### Authors and license
+****
 
-`apt` role was written by:
+This role is part of the `DebOps`_ project. README generated by `ansigenome`_.
 
-- Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
-
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
-
-
-
-***
-
-This role is part of the [DebOps](http://debops.org/) project. README generated by [ansigenome](https://github.com/nickjj/ansigenome/).
+.. _DebOps: http://debops.org/
+.. _Ansigenome: https://github.com/nickjj/ansigenome/
