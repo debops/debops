@@ -1,57 +1,63 @@
+|DebOps| nginx
+##############
 
-## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) nginx
+.. |DebOps| image:: http://debops.org/images/debops-small.png
+   :target: http://debops.org
 
+|Travis CI| |test-suite| |Ansible Galaxy|
 
+.. |Travis CI| image:: http://img.shields.io/travis/debops/ansible-nginx.svg?style=flat
+   :target: http://travis-ci.org/debops/ansible-nginx
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-nginx.svg?style=flat)](http://travis-ci.org/debops/ansible-nginx) [![test-suite](http://img.shields.io/badge/test--suite-ansible--nginx-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-nginx/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.nginx-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1580) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+.. |test-suite| image:: http://img.shields.io/badge/test--suite-ansible--nginx-blue.svg?style=flat
+   :target: https://github.com/debops/test-suite/tree/master/ansible-nginx/
 
-
-
-
-
-
-[nginx](http://nginx.org/) is a fast and light webserver with extensible
-configuration.
-
-`debops.nginx` role can be used to install and manage `nginx` configuration
-for multiple websites at the same time. Server is configured using
-inventory variables, role can also be used as a dependency of another role
-to configure a webserver for that role using dependency variables.
+.. |Ansible Galaxy| image:: http://img.shields.io/badge/galaxy-debops.nginx-660198.svg?style=flat
+   :target: https://galaxy.ansible.com/list#/roles/1580
 
 
 
+`nginx`_ is a fast and light webserver with extensible configuration.
 
+``debops.nginx`` role can be used to install and manage ``nginx``
+configuration for multiple websites at the same time. Server is configured
+using inventory variables, role can also be used as a dependency of another
+role to configure a webserver for that role using dependency variables.
 
-### Installation
+.. _nginx: http://nginx.org/
 
-This role requires at least Ansible `v1.7.0`. To install it, run:
+Installation
+~~~~~~~~~~~~
+
+This role requires at least Ansible ``v1.7.0``. To install it, run:
+
+::
 
     ansible-galaxy install debops.nginx
 
-#### Are you using this as a standalone role without DebOps?
+Are you using this as a standalone role without DebOps?
+=======================================================
 
-You may need to include missing roles from the [DebOps common
-playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+You may need to include missing roles from the `DebOps common playbook`_
 into your playbook.
 
-[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+`Try DebOps now`_ for a complete solution to run your Debian-based infrastructure.
+
+.. _DebOps common playbook: https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
+.. _Try DebOps now: https://github.com/debops/debops/
 
 
+Role dependencies
+~~~~~~~~~~~~~~~~~
 
+- ``debops.ferm``- ``debops.apt_preferences``
 
-
-### Role dependencies
-
-- `debops.apt_preferences`
-- `debops.ferm`
-
-
-
-
-
-### Role variables
+Role variables
+~~~~~~~~~~~~~~
 
 List of default variables available in the inventory:
+
+::
 
     ---
     
@@ -151,8 +157,11 @@ List of default variables available in the inventory:
       #'also-removed':
       #'symlink\ with\ spaces.conf': 'other-file.conf'
     
-    # Should nginx role generate upstream definitions?
-    nginx_manage_upstreams: True
+    # List of nginx map definitions
+    # Each map should be defined in it's own hash variable, similar to upstreams
+    # and servers
+    # http://nginx.org/en/docs/http/ngx_http_map_module.html
+    nginx_maps: []
     
     # List of nginx upstream definitions
     nginx_upstreams: [ '{{ nginx_upstream_php5 }}' ]
@@ -164,9 +173,6 @@ List of default variables available in the inventory:
       type: 'php5'
       php5: 'www-data'
     
-    # Should nginx role generate server definitions?
-    nginx_manage_servers: True
-    
     # List of nginx server definitions
     nginx_servers: [ '{{ nginx_server_default }}' ]
     
@@ -177,6 +183,7 @@ List of default variables available in the inventory:
       default: True
       #by_role: ''
       #locked: False
+      #delete: False
       #userdir: False
       #type: 'default'
       #redirect: 'http://other.example.com/'
@@ -236,28 +243,26 @@ List of default variables available in the inventory:
       # Additional parameters can be found in nginx server templates:
       #    templates/etc/nginx/sites-available/*.conf.j2
 
-
-
 List of internal variables used by the role:
+
+::
 
     nginx_ssl
     nginx_ocsp_resolvers
 
 
+Authors and license
+~~~~~~~~~~~~~~~~~~~
 
+``nginx`` role was written by:
 
+- Maciej Delmanowski | `e-mail <mailto:drybjed@gmail.com>`_ | `Twitter <https://twitter.com/drybjed>`_ | `GitHub <https://github.com/drybjed>`_
 
+License: `GPLv3 <https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29>`_
 
-### Authors and license
+****
 
-`nginx` role was written by:
+This role is part of the `DebOps`_ project. README generated by `ansigenome`_.
 
-- Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
-
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
-
-
-
-***
-
-This role is part of the [DebOps](http://debops.org/) project. README generated by [ansigenome](https://github.com/nickjj/ansigenome/).
+.. _DebOps: http://debops.org/
+.. _Ansigenome: https://github.com/nickjj/ansigenome/
