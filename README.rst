@@ -50,7 +50,9 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.ferm``- ``debops.apt_preferences``
+- ``debops.ferm``
+- ``debops.apt_preferences``
+
 
 Role variables
 ~~~~~~~~~~~~~~
