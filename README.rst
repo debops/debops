@@ -55,7 +55,9 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.ferm``- ``debops.tcpwrappers``
+- ``debops.ferm``
+- ``debops.tcpwrappers``
+
 
 Role variables
 ~~~~~~~~~~~~~~
