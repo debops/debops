@@ -11,6 +11,15 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-10-05
+^^^^^^^^^^
+
+All role README files have been converted to reStructuredText format.
+Unfortunately, `Ansible Galaxy`_ does not support ``README.rst`` files at this
+time, so role information cannot be udpated there.
+
+.. _Ansible Galaxy: http://galaxy.ansible.com/
+
 2014-10-02
 ^^^^^^^^^^
 
