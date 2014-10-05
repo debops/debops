@@ -49,7 +49,10 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.secret``- ``debops.php5``- ``debops.nginx``
+- ``debops.secret``
+- ``debops.php5``
+- ``debops.nginx``
+
 
 Role variables
 ~~~~~~~~~~~~~~
