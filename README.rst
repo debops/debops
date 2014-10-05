@@ -60,7 +60,9 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.apt_preferences``- ``debops.backporter``
+- ``debops.apt_preferences``
+- ``debops.backporter``
+
 
 Role variables
 ~~~~~~~~~~~~~~
