@@ -1,19 +1,25 @@
+|DebOps| postfix
+################
 
-## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) postfix
+.. |DebOps| image:: http://debops.org/images/debops-small.png
+   :target: http://debops.org
+
+|Travis CI| |test-suite| |Ansible Galaxy|
+
+.. |Travis CI| image:: http://img.shields.io/travis/debops/ansible-postfix.svg?style=flat
+   :target: http://travis-ci.org/debops/ansible-postfix
+
+.. |test-suite| image:: http://img.shields.io/badge/test--suite-ansible--postfix-blue.svg?style=flat
+   :target: https://github.com/debops/test-suite/tree/master/ansible-postfix/
+
+.. |Ansible Galaxy| image:: http://img.shields.io/badge/galaxy-debops.postfix-660198.svg?style=flat
+   :target: https://galaxy.ansible.com/list#/roles/1589
 
 
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-postfix.svg?style=flat)](http://travis-ci.org/debops/ansible-postfix) [![test-suite](http://img.shields.io/badge/test--suite-ansible--postfix-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-postfix/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.postfix-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1589) [![Platforms](http://img.shields.io/badge/platforms-debian%20|%20ubuntu-lightgrey.svg?style=flat)](#)
+This role installs and manages `Postfix`_, an SMTP server.
 
-
-
-
-
-
-This role installs and manages [Postfix](http://postfix.org/), an SMTP
-server.
-
-`debops.postfix` role is designed to manage Postfix on different hosts in
+``debops.postfix`` role is designed to manage Postfix on different hosts in
 a cluster, with different "capabilities". At the moment role can configure
 Postfix to act as:
 
@@ -25,51 +31,56 @@ Postfix to act as:
   capabilities, to avoid exposing misconfigured SMTP server by mistake and
   becoming an open relay;
 * an incoming MX gateway: Postfix will listen on the port 25 (default SMTP
-  port) and process connections using `postscreen` daemon with automatic
+  port) and process connections using ``postscreen`` daemon with automatic
   greylisting and optional RBL checking;
+* an outgoing SMTP client: Postfix will relay outgoing mail messages to
+  specified remote MX hosts, you can optionally enable SMTP client
+  authentication, passwords will be stored separate from the inventory in
+  ``secret/`` directory (see ``debops.secret`` role). Sender dependent
+  authentication is also available.
 
 More "capabilities" like user authentication, support for virtual mail,
 spam/virus filtering and others will be implemented in the future.
 
 This role can also be used as a dependency of other roles which then can
 enable more features of the Postfix SMTP server for their own use. For
-example, `debops.mailman` role enables mail forwarding to the configured
-mailing lists, and `debops.smstools` role uses Postfix as mail-SMS gateway.
+example, ``debops.mailman`` role enables mail forwarding to the configured
+mailing lists, and ``debops.smstools`` role uses Postfix as mail-SMS gateway.
 
+.. _Postfix: http://postfix.org/
 
+Installation
+~~~~~~~~~~~~
 
+This role requires at least Ansible ``v1.7.0``. To install it, run:
 
-
-### Installation
-
-This role requires at least Ansible `v1.7.0`. To install it, run:
+::
 
     ansible-galaxy install debops.postfix
 
-#### Are you using this as a standalone role without DebOps?
+Are you using this as a standalone role without DebOps?
+=======================================================
 
-You may need to include missing roles from the [DebOps common
-playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+You may need to include missing roles from the `DebOps common playbook`_
 into your playbook.
 
-[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+`Try DebOps now`_ for a complete solution to run your Debian-based infrastructure.
+
+.. _DebOps common playbook: https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
+.. _Try DebOps now: https://github.com/debops/debops/
 
 
+Role dependencies
+~~~~~~~~~~~~~~~~~
 
+- ``debops.ferm``- ``debops.secret``- ``debops.pki``
 
-
-### Role dependencies
-
-- `debops.pki`
-- `debops.ferm`
-
-
-
-
-
-### Role variables
+Role variables
+~~~~~~~~~~~~~~
 
 List of default variables available in the inventory:
+
+::
 
     ---
     
@@ -133,6 +144,62 @@ List of default variables available in the inventory:
     postfix_allow_smtp: True
     postfix_allow_submission: True
     postfix_allow_smtps: True
+    
+    
+    # A map of SMTP SASL passwords used in SMTP client authentication by Postfix.
+    # You need to add 'client' in postfix capabilities to enable this feature.
+    # Format of the entries:
+    #   'smtp.example.org': 'username'
+    #   'user@example.org': 'username'
+    # Passwords are stored in a secret directory, in path:
+    # 'secret/credentials/{{ ansible_fqdn }}/postfix/smtp_sasl_password_map/{{ key }}/{{ value }}'
+    # - key   = hostname or email address of the sender
+    # - value = username on the remote host
+    # Postfix role will generate random passwords by default. To change them to
+    # your actual passwords, open the files with passwords in the secret directory
+    # and replace them, then re-run the playbook with the role.
+    postfix_smtp_sasl_password_map: {}
+    
+    # A map of sender dependent relayhosts used in SMTP client mail relay by Postfix.
+    # You need to add 'client' and 'sender_dependent' in postfix capabilities to
+    # enable this feature.
+    # Format of the entries:
+    #   'sender-address': 'relay-host'
+    #   'user@example.org': '[smtp.example.org]:submission'
+    postfix_sender_dependent_relayhost_map: {}
+    
+    
+    # Mail archive configuration
+    # Archiving is enabled by 'archive' option in Postfix capabilities.
+    # Remember that an archive account on the receiving server needs to exist.
+    
+    # Method of archiving:
+    #   - 'all':            send all mail without sorting
+    #   - 'domain':         send mail sorted by domain
+    #   - 'domain-account': send mail sorted by domain and account, divided by separator
+    postfix_archive_method: 'all'
+    
+    # Optional address of a mail account to send the archived mails to. If not
+    # specified, Ansible will generate an address by itself in format:
+    #   - postfix_archive_account @ ansible_fqdn (if local mail is enabled)
+    #   - postfix_archive_account @ postfix_archive_subdomain.ansible_domain
+    #     (if local mail is disabled).
+    postfix_archive_to: ''
+    
+    # Mail account to send archived mail to (used by Ansible to generate archive address).
+    postfix_archive_account: 'mail-archive'
+    
+    # Subdomain part of a domain used to generate archive address, if 'local' mail
+    # is not enabled in Postfix capabilities (dot at the end is required).
+    postfix_archive_subdomain: 'archive.'
+    
+    # Separator used to separate domain and account part in sorted archive mails.
+    # If you use virtual mail delivery, you can sort mail into subdirectories by
+    # setting separator as '/' (does not work on local mail delivery).
+    postfix_archive_separator: '='
+    
+    # List of domains to archive, if it's empty, everything is archived.
+    postfix_archive_domains: []
     
     
     # Postscreen blacklists
@@ -278,71 +345,76 @@ List of default variables available in the inventory:
     postfix_smtpd_authorized_xclient_hosts: ['127.0.0.1/32']
 
 
+Detailed usage guide
+~~~~~~~~~~~~~~~~~~~~
 
-
-
-
-### Detailed usage guide
-
-List of Postfix capabilities in `postfix` variable - what Postfix can and
-should do on a host. Set this to `False` and disable Postfix support, set it
-to `[]` and have Ansible not do anything with Postfix (unsupported). Not all
+List of Postfix capabilities in ``postfix`` variable - what Postfix can and
+should do on a host. Set this to ``False`` and disable Postfix support, set it
+to ``[]`` and have Ansible not do anything with Postfix (unsupported). Not all
 combinations of these capabilities will work correctly (role is still in
 beta stage).
 
-- `null`: Postfix has no local delivery, all mail is sent to a MX for current
+- ``null``: Postfix has no local delivery, all mail is sent to a MX for current
   domain. Configuration similar to that presented here:
   http://www.postfix.org/STANDARD_CONFIGURATION_README.html#null_client
   Default. You should remove this capability and replace it with others
   presented below.
 
-- `local`: local delivery is enabled on current host.
+- ``local``: local delivery is enabled on current host.
 
-- `network`: enables access to Postfix-related ports (`25`, `587`, `465`) in
-  firewall, required for incoming mail to be acceped by Postfix.
+- ``network``: enables access to Postfix-related ports (``25``, ``587``,
+  ``465``) in firewall, required for incoming mail to be acceped by
+  Postfix.
 
-- `mx`: enables support for incoming mail on port `25`, designed for hosts set up
-  as MX. Automatically enables `postscreen` (without `dnsbl`/`dnswl` support),
+- ``mx``: enables support for incoming mail on port ``25``, designed for hosts set up
+  as MX. Automatically enables ``postscreen`` (without ``dnsbl``/``dnswl`` support),
   anti-spam restrictions.
 
-- `submission`: enables authorized mail submission on ports `25` and `587` (user
-  authentication is currently not supported and needs to be configured
-  separately).
+- ``submission``: enables authorized mail submission on ports ``25`` and
+  ``587`` (user authentication is currently not supported and needs to be
+  configured separately).
 
-- `deprecated`: designed to enable obsolete functions of mail system,
-  currently enables authorized mail submission on port `465` (when
-  `submission` is also present in the list of capabilities).
+- ``deprecated``: designed to enable obsolete functions of mail system,
+  currently enables authorized mail submission on port ``465`` (when
+  ``submission`` is also present in the list of capabilities).
 
-- `postscreen`: allows to enable postscreen support on port `25` independently of
-  `mx` capability.
+- ``client``: enable SASL authentication for SMTP client (for outgoing mail
+  messages sent via relayhosts that require user authentication).
 
-- `dnsbl`: enables support for DNS blacklists in postscreen, automatically
+- ``sender_dependent``: enable sender dependent SMTP client authentication
+  (``client`` capability required)
+
+- ``archive``: BCC all mail (or mail from/to specified domains) passing
+  through the SMTP server to an e-mail account on local or remote server.
+
+- ``postscreen``: allows to enable postscreen support on port ``25``
+  independently of ``mx`` capability.
+
+- ``dnsbl``: enables support for DNS blacklists in postscreen, automatically
   enables whitelists.
 
-- `dnswl`: enables support for DNS whitelists in postscreen, without blacklists.
+- ``dnswl``: enables support for DNS whitelists in postscreen, without blacklists.
 
-- `test`: enables "soft_bounce" option and XCLIENT protocol extension for
+- ``test``: enables "soft_bounce" option and XCLIENT protocol extension for
   localhost (useful in mail system testing).
 
-- `defer`: planned feature to defer mail delivery.
+- ``defer``: planned feature to defer mail delivery.
 
-- `auth`: planned feature to enable user authentication.
-
-
+- ``auth``: planned feature to enable user authentication.
 
 
+Authors and license
+~~~~~~~~~~~~~~~~~~~
 
+``postfix`` role was written by:
 
-### Authors and license
+- Maciej Delmanowski | `e-mail <mailto:drybjed@gmail.com>`_ | `Twitter <https://twitter.com/drybjed>`_ | `GitHub <https://github.com/drybjed>`_
 
-`postfix` role was written by:
+License: `GPLv3 <https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29>`_
 
-- Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
+****
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+This role is part of the `DebOps`_ project. README generated by `ansigenome`_.
 
-
-
-***
-
-This role is part of the [DebOps](http://debops.org/) project. README generated by [ansigenome](https://github.com/nickjj/ansigenome/).
+.. _DebOps: http://debops.org/
+.. _Ansigenome: https://github.com/nickjj/ansigenome/
