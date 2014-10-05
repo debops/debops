@@ -73,7 +73,10 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.ferm``- ``debops.secret``- ``debops.pki``
+- ``debops.ferm``
+- ``debops.secret``
+- ``debops.pki``
+
 
 Role variables
 ~~~~~~~~~~~~~~
