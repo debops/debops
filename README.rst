@@ -48,6 +48,7 @@ Role dependencies
 
 - ``debops.ansible``
 
+
 Role variables
 ~~~~~~~~~~~~~~
 
