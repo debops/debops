@@ -52,7 +52,9 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.etc_services``- ``debops.apt_preferences``
+- ``debops.etc_services``
+- ``debops.apt_preferences``
+
 
 Role variables
 ~~~~~~~~~~~~~~
