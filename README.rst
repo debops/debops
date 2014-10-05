@@ -50,7 +50,9 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.secret``- ``debops.auth``
+- ``debops.secret``
+- ``debops.auth``
+
 
 Role variables
 ~~~~~~~~~~~~~~
