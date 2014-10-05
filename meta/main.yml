@@ -72,10 +72,10 @@ ansigenome_info:
       github: 'drybjed'
 
   synopsis: |
-    `debops.redis` role allows you to easily setup infrastructure capable of
+    ``debops.redis`` role allows you to easily setup infrastructure capable of
     running and managing 1 or more Redis servers. It is completely self healing
     with Redis Sentinel and supports replication seamlessly.
-
+    
     Few features available in this role:
     
     - seamless master/slave replication;
@@ -91,7 +91,10 @@ ansigenome_info:
     dependency in another role then include the role in your role's meta main
     file. You don't have to add the groups in your inventory in that case.
     
-    ##### inventory/hosts
+    inventory/hosts
+    ===============
+    
+    ::
     
         # In this example the 'redis-server0' host would be the redis
         # master and everything else would be a slave of that master.
@@ -99,13 +102,16 @@ ansigenome_info:
         redis-server0
         redis-server1
         redis-server2
-        
+    
         # You can have 1 or more sentinels. The sentinel(s) will control your master
         # and slave relationships.
         [debops_redis_sentinel]
         redis-monitor
     
-    ##### inventory/group_vars/debops_redis_sentinel.yml
+    inventory/group_vars/debops_redis_sentinel.yml
+    ==============================================
+    
+    ::
     
         # It is expected that you have a firewall configured with 'debops.ferm'
         # role, set up to block all ports. Variables below tell Redis role to
@@ -114,7 +120,10 @@ ansigenome_info:
         redis_sentinel_bind: ['0.0.0.0']
         redis_sentinel_allow: ['192.168.0.0/16']
     
-    ##### inventory/group_vars/debops_redis.yml
+    inventory/group_vars/debops_redis.yml
+    =====================================
+    
+    ::
     
         # This setup allows you to grant access to your redis servers from your
         # application group and the sentinel group. You can add as many hosts
@@ -123,15 +132,17 @@ ansigenome_info:
         redis_server_allow: '{{ groups["your_web_apps"] + redis_sentinel_hosts_group }}'
     
     If you want a Sentinel server to also act as a Redis server you can combine
-    the 2 iservices on 1 host. You will need to set `redis_sentinel_standalone: False`
-    in that host's inventory. This is covered in the `defaults/main.yml` file.
+    the 2 iservices on 1 host. You will need to set ``redis_sentinel_standalone: False``
+    in that host's inventory. This is covered in the ``defaults/main.yml`` file.
     
     You don't need to define a playbook unless you want to use group names other
     than the default. If you use non-default group names then make sure you
     change the defaults in your inventory.
     
-    ##### Running the playbook
+    Running the playbook
+    ====================
     
-        ./site.sh -t redis
+    ::
     
+        debops -t redis
 
