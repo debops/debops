@@ -28,8 +28,8 @@ to support new version shortly after that).
 
 Default credentials: ``root:5iveL!fe``
 
-.. GitLab: https://about.gitlab.com/
-.. GitHub: https://github.com/
+.. _GitLab: https://about.gitlab.com/
+.. _GitHub: https://github.com/
 
 Installation
 ~~~~~~~~~~~~
@@ -55,7 +55,14 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.etc_services``- ``debops.redis``- ``debops.nginx``- ``debops.mysql``- ``debops.ruby``- ``debops.secret``- ``debops.postgresql``
+- ``debops.etc_services``
+- ``debops.redis``
+- ``debops.nginx``
+- ``debops.mysql``
+- ``debops.ruby``
+- ``debops.secret``
+- ``debops.postgresql``
+
 
 Role variables
 ~~~~~~~~~~~~~~
