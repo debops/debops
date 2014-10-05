@@ -21,7 +21,7 @@
 capable of running Elasticsearch.
 
 What are a few features available in this role?
-===============================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Seamless clustering
 - Easily pick node types through groups and also allow you to do it manually
@@ -53,7 +53,10 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.ferm``- ``debops.etc_services``- ``debops.java``
+- ``debops.ferm``
+- ``debops.etc_services``
+- ``debops.java``
+
 
 Role variables
 ~~~~~~~~~~~~~~
@@ -389,7 +392,7 @@ always have a lot of free resources.
     [debops_elasticsearch_coordinator]
     nyancat
 
-Search load balancer servers (``node.master: False` and ``node.data: False``)
+Search load balancer servers (``node.master: False`` and ``node.data: False``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A server of this type would be used to fetch data from other servers,
