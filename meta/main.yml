@@ -83,30 +83,32 @@ ansigenome_info:
       github: 'drybjed'
 
   synopsis: |
-    Install and configure [Mailman](https://www.gnu.org/software/mailman/),
-    a mailing list manager. It will be installed behind
-    [Postfix](http://postfix.org/) server (using `debops.postfix` role) which
-    will serve as an incoming/outgoing mail server, and
-    [nginx](http://nginx.org/) server (with help of `debops.nginx` role) will
-    serve the web interface. You can also use this role to create or remove
-    mailing lists themselves (other management can be done using the web
-    interface).
+    Install and configure `Mailman`_, a mailing list manager. It will be
+    installed behind `Postfix`_ server (using ``debops.postfix`` role) which
+    will serve as an incoming/outgoing mail server, and `nginx`_ server (with
+    help of ``debops.nginx`` role) will serve the web interface. You can also
+    use this role to create or remove mailing lists themselves (other
+    management can be done using the web interface).
+    
+    .. _Mailman: https://www.gnu.org/software/mailman/
+    .. _Postfix: http://postfix.org/
+    .. _nginx: http://nginx.org/
 
   usage: |
     Mailman is a bit tricky to manage idempotently - there are many patches
-    applied during first install, mailing lists are hard to change once they are
-    created and there might be issues with upgrading of configuration files
-    (because of that mailman is not upgraded automatically by default). I suggest
-    that you prepare your Mailman configuration in development environment, and
-    apply it in production when it's ready.
+    applied during first install, mailing lists are hard to change once they
+    are created and there might be issues with upgrading of configuration files
+    (because of that ``mailman`` is not upgraded automatically by default).
+    I suggest that you prepare your Mailman configuration in development
+    environment, and apply it in production when it's ready.
     
     Postfix will configure Mailman integration differently depending on it's
     enabled capabilities:
     
-    - with `local` capability Postfix will pass mail messages to Mailman using
-      mail aliases and `virtual_alias_maps`/`virtual_alias_domains`;
+    - with ``local`` capability Postfix will pass mail messages to Mailman
+      using mail aliases and ``virtual_alias_maps``/``virtual_alias_domains``;
     
-    - without `local` capability Postfix will pass mail messages to Mailman using
-      `postfix-to-mailman.py` script, `relay_recipient_maps`, `relay_recipient_domains`
-      and `transport_maps`;
+    - without ``local`` capability Postfix will pass mail messages to Mailman
+      using ``postfix-to-mailman.py`` script, ``relay_recipient_maps``,
+      ``relay_recipient_domains`` and ``transport_maps``;
 
