@@ -45,7 +45,11 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.ferm``- ``debops.sshkeys``- ``debops.auth``- ``debops.tcpwrappers``
+- ``debops.ferm``
+- ``debops.sshkeys``
+- ``debops.auth``
+- ``debops.tcpwrappers``
+
 
 Role variables
 ~~~~~~~~~~~~~~
