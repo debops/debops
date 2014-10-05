@@ -23,10 +23,10 @@ associated to setting up a secure Rails app that is ready for production so
 you can concentrate on developing your app.
 
 A few features supplied by this role
-====================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 High level goals
-^^^^^^^^^^^^^^^^
+================
 
 - Setup an entire rails app server with 1 line of configuration with sane defaults
 - Optionally and easily separate your app servers, database and worker into
@@ -35,20 +35,20 @@ High level goals
 - Be as secure as possible and adhere to as many best practices as possible
 
 Backups and logging
-^^^^^^^^^^^^^^^^^^^
+===================
 
 - Postgresql runs a daily backup with daily/weekly rotation
 - Both your backend server and background worker get logged to 1 logrotated file
 - The rails process gets sent to syslog.user
 
 System level minutia
-^^^^^^^^^^^^^^^^^^^^
+====================
 
 - User accounts, permissions and ssh keys are automatically managed
 - Paths such as logs, pids and sockets are automatically managed
 
 Deploy features
-^^^^^^^^^^^^^^^
+===============
 
 - Automatically set deploy keys to github/gitlab with 1 line of configuration
   - This leverages their API, all you have to do is supply their token
@@ -65,7 +65,7 @@ Deploy features
 - Optionally swap a static deploy page in/out during the deploy cycle
 
 Security
-^^^^^^^^
+========
 
 - Secure passwords are managed automatically for your database
 - Ports are blocked and only whitelisted for IP addresses/masks that you specify
@@ -97,7 +97,16 @@ into your playbook.
 Role dependencies
 ~~~~~~~~~~~~~~~~~
 
-- ``debops.etc_services``- ``debops.redis``- ``debops.nginx``- ``debops.nodejs``- ``debops.mysql``- ``debops.ruby``- ``debops.monit``- ``debops.secret``- ``debops.postgresql``
+- ``debops.etc_services``
+- ``debops.redis``
+- ``debops.nginx``
+- ``debops.nodejs``
+- ``debops.mysql``
+- ``debops.ruby``
+- ``debops.monit``
+- ``debops.secret``
+- ``debops.postgresql``
+
 
 Role variables
 ~~~~~~~~~~~~~~
