@@ -33,9 +33,12 @@ Required:
 {% endif %}
 {% set ferm_tpl_local_ansible_controllers_result = ferm_tpl_local_ansible_controllers | sort | unique %}
 {% if ferm_tpl_local_ansible_controllers_result is defined and ferm_tpl_local_ansible_controllers_result %}
-{% for element in ferm_tpl_local_ansible_controllers_result %}
-protocol tcp dport ssh saddr {{ element }} ACCEPT;
-{% endfor %}
+protocol tcp dport ssh {
+	@def $ITEMS = ( @ipfilter( ({{ ferm_tpl_local_ansible_controllers_result | unique | join(" ") }}) ) );
+	@if @ne($ITEMS,"") {
+		saddr $ITEMS ACCEPT;
+	}
+}
 {% else %}
 # ansible_controller is not set, but this shouldn't be here.
 # Something went wrong, re-run the 'ferm' role.

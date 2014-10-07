@@ -14,7 +14,7 @@
 #       ferm will correctly merge your own configuration with the rest.
 
 
-table filter {
+domain ({{ ferm_filter_domains | unique | join(" ") | default("ip") }}) table filter {
 	chain INPUT {
 {% if ferm_comment is defined and ferm_comment %}
 		mod comment comment "{{ ferm_comment }}" NOP;
@@ -53,7 +53,9 @@ table filter {
 		# Reject everything else
 		protocol udp REJECT reject-with icmp-port-unreachable;
 		protocol tcp REJECT reject-with tcp-reset;
-		REJECT reject-with icmp-proto-unreachable;
+		@if @eq($DOMAIN, ip) {
+			REJECT reject-with icmp-proto-unreachable;
+		}
 	}
 
 	chain OUTPUT {

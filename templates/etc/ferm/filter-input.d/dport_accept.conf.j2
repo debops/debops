@@ -17,7 +17,10 @@ Optional:
 
 protocol {{ item.protocol | default('tcp') }} dport ({{ item.dport | join(' ') }}) {
 {% if item.saddr is defined and item.saddr %}
-	saddr ({{ item.saddr | unique | join(' ') }}) ACCEPT;
+	@def $ITEMS = ( @ipfilter( ({{ item.saddr | unique | join(" ") }}) ) );
+	@if @ne($ITEMS,"") {
+		saddr $ITEMS ACCEPT;
+	}
 {% else %}
 {% if item.accept_any is defined and item.accept_any %}
 	ACCEPT;
