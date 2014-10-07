@@ -221,7 +221,8 @@ server {
 {% if (nginx_version is defined and nginx_version.stdout | version_compare('1.4','>=')) and nginx_ocsp_resolvers is defined and nginx_ocsp_resolvers %}
         ssl_stapling              on;
         ssl_stapling_verify       on;
-        resolver                  {{ nginx_ocsp_resolvers[0] }} valid=300s;
+{% set nginx_tpl_ocsp_resolver = nginx_ocsp_resolvers[0] if '.' in nginx_ocsp_resolvers[0] else '[' + nginx_ocsp_resolvers[0] + ']' %}
+        resolver                  {{ nginx_tpl_ocsp_resolver }} valid=300s;
         resolver_timeout          5s;
 {% endif %}
         add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age | default('15768000') }}{% if nginx_hsts_subdomains is defined and nginx_hsts_subdomains %}; includeSubDomains{% endif %}";
