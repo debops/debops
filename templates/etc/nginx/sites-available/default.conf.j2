@@ -14,8 +14,8 @@
 
     ---- Ports to listen on, default server, HTTPS redirect ----
 #}
-{% set nginx_tpl_listen         = item.listen     | default(['80'])            %}
-{% set nginx_tpl_listen_ssl     = item.listen_ssl | default(['443'])           %}
+{% set nginx_tpl_listen         = item.listen     | default(['[::]:80'])       %}
+{% set nginx_tpl_listen_ssl     = item.listen_ssl | default(['[::]:443'])      %}
 {% set nginx_tpl_default_server = ''                                           %}
 {% if ((item.default is defined and item.default) or
        ((nginx_default_name is defined and nginx_default_name) and
@@ -23,7 +23,7 @@
         (nginx_default_name in item.name) and
         (item.default is undefined or (item.default is defined and item.default))) or
        (item.name is undefined))                                               %}
-{%     set nginx_tpl_default_server = 'default_server'                         %}
+{%     set nginx_tpl_default_server = 'default_server ipv6only=off'            %}
 {% endif                                                                       %}
 {% set nginx_tpl_default_redirect_code = '307'                                 %}
 {% set nginx_tpl_http_redirect = item.redirect | default('https://$host$request_uri') %}
@@ -221,7 +221,8 @@ server {
 {% if (nginx_version is defined and nginx_version.stdout | version_compare('1.4','>=')) and nginx_ocsp_resolvers is defined and nginx_ocsp_resolvers %}
         ssl_stapling              on;
         ssl_stapling_verify       on;
-        resolver                  {{ nginx_ocsp_resolvers[0] }} valid=300s;
+{% set nginx_tpl_ocsp_resolver = nginx_ocsp_resolvers[0] if '.' in nginx_ocsp_resolvers[0] else '[' + nginx_ocsp_resolvers[0] + ']' %}
+        resolver                  {{ nginx_tpl_ocsp_resolver }} valid=300s;
         resolver_timeout          5s;
 {% endif %}
         add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age | default('15768000') }}{% if nginx_hsts_subdomains is defined and nginx_hsts_subdomains %}; includeSubDomains{% endif %}";
