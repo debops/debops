@@ -11,6 +11,27 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-10-07
+^^^^^^^^^^
+
+Role updates
+************
+
+`debops.ferm`_ role is now IPv6-aware and can generate rules for ``iptables``
+and ``ip6tables`` at the same time. The way you use the role as a dependency
+hasn't changed at all, so if you use dependent variables in your roles, you
+should be fine. However, because some roles are managing their firewall rules
+by themselves, IPv6 support is disabled by default - this will change when all
+roles are updated to be IPv6-aware.
+
+`debops.nginx`_ also gained support for IPv6 and will now listen for
+connections on both types of networks by default. If you have an already
+running nginx server, it will require manual restart for the new configuration
+to take effect.
+
+.. _debops.ferm: https://github.com/debops/ansible-ferm/
+.. _debops.nginx: https://github.com/debops/ansible-nginx/
+
 2014-10-05
 ^^^^^^^^^^
 
