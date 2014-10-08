@@ -3,6 +3,22 @@
 dependencies:
 
   - role: debops.ferm
+    ferm_input_list:
+
+      - type: 'dport_accept'
+        dport: [ 'ntp' ]
+        protocol: [ 'tcp', 'udp' ]
+        saddr: '{{ ntp_allow }}'
+        filename: 'ntp_dependency_accept'
+        weight: '50'
+        enabled: '{{ ntp_listen }}'
+
+      - type: 'dport_limit'
+        dport: [ 'ntp' ]
+        protocol: [ 'tcp', 'udp' ]
+        filename: 'ntp_dependency_limit'
+        weight: '50'
+        enabled: '{{ ntp_listen }}'
 
 galaxy_info:
   author: 'Maciej Delmanowski'
