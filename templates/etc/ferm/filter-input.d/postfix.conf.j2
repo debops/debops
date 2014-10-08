@@ -2,31 +2,33 @@
 
 # Current postfix capabilities: {{ ','.join(postfix) }}
 
-{% if 'network' in postfix and ('mx' in postfix or 'submission' in postfix or 'mailman' in postfix) %}
+{% if 'network' in postfix and ('mx' in postfix or 'submission' in postfix) %}
 {% if postfix_allow_smtp is defined %}
 protocol tcp dport smtp {
-{% if postfix_allow_smtp is defined and postfix_allow_smtp == True %}
+{% if postfix_allow_smtp is defined and postfix_allow_smtp %}
+	@def $ITEMS = ( @ipfilter( ({{ postfix_allow_smtp | unique | join(" ") }}) ) );
+	@if @ne($ITEMS,"") {
+		saddr $ITEMS ACCEPT;
+	}
+{% elif postfix_allow_smtp is defined and not postfix_allow_smtp %}
 	ACCEPT;
-{% elif postfix_allow_smtp is defined and postfix_allow_smtp %}
-{% for address in postfix_allow_smtp %}
-	saddr {{ address }} ACCEPT;
-{% endfor %}
 {% endif %}
 }
 {% endif %}
 {% else %}
-# smtp - required capabilities: +network +mx|+submission|+mailman
+# smtp - required capabilities: +network +mx|+submission
 {% endif %}
 
 {% if 'network' in postfix and 'submission' in postfix and 'deprecated' in postfix %}
 {% if postfix_allow_smtps is defined %}
 protocol tcp dport smtps {
-{% if postfix_allow_smtps is defined and postfix_allow_smtps == True %}
+{% if postfix_allow_smtps is defined and postfix_allow_smtps %}
+	@def $ITEMS = ( @ipfilter( ({{ postfix_allow_smtps | unique | join(" ") }}) ) );
+	@if @ne($ITEMS,"") {
+		saddr $ITEMS ACCEPT;
+	}
+{% elif postfix_allow_smtps is defined and not postfix_allow_smtps %}
 	ACCEPT;
-{% elif postfix_allow_smtps is defined and postfix_allow_smtps %}
-{% for address in postfix_allow_smtps %}
-	saddr {{ address }} ACCEPT;
-{% endfor %}
 {% endif %}
 }
 {% endif %}
@@ -37,12 +39,13 @@ protocol tcp dport smtps {
 {% if 'network' in postfix and 'submission' in postfix %}
 {% if postfix_allow_submission is defined %}
 protocol tcp dport submission {
-{% if postfix_allow_submission is defined and postfix_allow_submission == True %}
-	ACCEPT;
+{% if postfix_allow_submission is defined and postfix_allow_submission %}
+	@def $ITEMS = ( @ipfilter( ({{ postfix_allow_submission | unique | join(" ") }}) ) );
+	@if @ne($ITEMS,"") {
+		saddr $ITEMS ACCEPT;
+	}
 {% elif postfix_allow_submission is defined and postfix_allow_submission %}
-{% for address in postfix_allow_submission %}
-	saddr {{ address }} ACCEPT;
-{% endfor %}
+	ACCEPT;
 {% endif %}
 }
 {% endif %}
