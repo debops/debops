@@ -11,6 +11,8 @@ Required:
 
 Optional:
   item.protocol		list of protocols to configure (tcp, udp)
+  item.syn              if defined and True, match SYN packets, if defined and
+                        False, match !SYN packets
   item.seconds		time in seconds to count between hits
   item.hits		how many connections in item.seconds to allow
   item.disabled		if True, disable the rule (can be used to toggle rule via variable)
@@ -18,7 +20,14 @@ Optional:
 #}
 
 {% if item.disabled is undefined or (item.disabled is defined and not item.disabled) or (item.disabled is defined and item.disabled == 'false') %}
-protocol ({{ item.protocol | default(['tcp']) | join(' ') }}) dport ({{ item.dport | join(' ') }}) {
+{% if ((item.syn is defined and item.syn) or
+       (item.syn is defined and item.syn in [ 'True', 'true', 'Yes', 'yes' ])) %}
+{%   set ferm_tpl_syn = 'syn' %}
+{% elif ((item.syn is defined and not item.syn) or
+        (item.syn is defined and item.syn in [ 'False', 'false', 'no', 'no' ])) %}
+{%   set ferm_tpl_syn = '!syn' %}
+{% endif %}
+protocol ({{ item.protocol | default(['tcp']) | join(' ') }}){% if ferm_tpl_syn is defined %} {{ ferm_tpl_syn }}{% endif %} dport ({{ item.dport | join(' ') }}) {
 
 	@subchain "dport-limit-{{ item.dport[0] }}" {
 		mod recent name {{ item.dport[0] | upper }} {
