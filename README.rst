@@ -159,7 +159,16 @@ List of default variables available in the inventory:
         # Stop monitoring the process by deleting the config.
         #delete: False
 
-
+    # ---- M/Monit and HTTP ----
+    monit_mmonit_url: ''
+    # Example:
+    #monit_mmonit_url: http://user:password@mmonithost:8080/collector
+     
+    monit_http_allow: []
+    # Example:
+    #monit_http_allow:
+      #- user:password
+      #- example.com
 
 
 Authors and license

@@ -69,10 +69,19 @@ set alert {{ item.email }}
 {% endfor -%}
 {% endif %}
 
-# Run the http server but only allow localhost to view it, this is required to
+# Set the url for the M/Monit collector
+{% if monit_mmonit_url is defined and monit_mmonit_url %}
+set mmonit {{ monit_mmonit_url }}
+{% endif %}
+
+# Run the http server and allow localhost to view it, this is required to
 # make monit's CLI function.
 set httpd port {{ monit_http_port }}
   use address {{ monit_http_bind }}
   allow {{ monit_http_bind }}
+# Allow additional hosts to access monit's http interface
+{% for item in monit_http_allow %}
+  allow {{ item }}
+{% endfor %}
 
 include /etc/monit/conf.d/*
