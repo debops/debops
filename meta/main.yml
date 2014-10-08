@@ -2,6 +2,23 @@
 
 dependencies:
   - role: debops.ferm
+    ferm_input_list:
+
+      - type: 'dport_accept'
+        protocol: [ 'udp' ]
+        dport: [ 'netbios-ns', 'netbios-dgm' ]
+        saddr: '{{ samba_allow }}'
+        accept_any: True
+        filename: 'samba_dependency_accept_udp'
+        weight: '50'
+
+      - type: 'dport_accept'
+        protocol: [ 'tcp' ]
+        dport: [ 'netbios-ssn', 'microsoft-ds' ]
+        saddr: '{{ samba_allow }}'
+        accept_any: True
+        filename: 'samba_dependency_accept_tcp'
+        weight: '50'
 
 galaxy_info:
   author: 'Maciej Delmanowski'
