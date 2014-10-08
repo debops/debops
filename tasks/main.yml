@@ -28,9 +28,3 @@
               state=present line='nf_conntrack_netbios_ns'
   when: samba_iptables is defined and samba_iptables
 
-- name: Configure firewall for Samba server
-  template: src=etc/ferm/filter-input.d/samba.conf.j2
-            dest=/etc/ferm/filter-input.d/samba.conf
-            owner=root group=root mode=0644
-  notify: Restart ferm
-
