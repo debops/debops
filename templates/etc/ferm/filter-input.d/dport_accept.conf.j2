@@ -9,7 +9,7 @@ Required:
   item.dport		list of destination ports to configure
 
 Optional:
-  item.protocol		protocol to configure (tcp, udp)
+  item.protocol		list of protocols to configure (tcp, udp)
   item.saddr		list of source addresses to accept
   item.accept_any	accept connections from any IP address if True
   item.disabled		if True, disable the rule (can be used to toggle rule via variable)
@@ -19,7 +19,7 @@ Optional:
 
 {% if ((item.disabled is undefined or (item.disabled is defined and not item.disabled)) and
        (item.enabled is undefined or (item.enabled is defined and item.enabled))) %}
-protocol {{ item.protocol | default('tcp') }} dport ({{ item.dport | join(' ') }}) {
+protocol ({{ item.protocol | default(['tcp']) | join(' ') }}) dport ({{ item.dport | join(' ') }}) {
 {% if item.saddr is defined and item.saddr %}
 	@def $ITEMS = ( @ipfilter( ({{ item.saddr | unique | join(" ") }}) ) );
 	@if @ne($ITEMS,"") {

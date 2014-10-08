@@ -10,7 +10,7 @@ Required:
   item.dport		list of destination ports to configure
 
 Optional:
-  item.protocol		protocol to configure (tcp, udp)
+  item.protocol		list of protocols to configure (tcp, udp)
   item.seconds		time in seconds to count between hits
   item.hits		how many connections in item.seconds to allow
   item.disabled		if True, disable the rule (can be used to toggle rule via variable)
@@ -18,7 +18,7 @@ Optional:
 #}
 
 {% if item.disabled is undefined or (item.disabled is defined and not item.disabled) or (item.disabled is defined and item.disabled == 'false') %}
-protocol {{ item.protocol | default('tcp syn') }} dport ({{ item.dport | join(' ') }}) {
+protocol ({{ item.protocol | default(['tcp']) | join(' ') }}) dport ({{ item.dport | join(' ') }}) {
 
 	@subchain "dport-limit-{{ item.dport[0] }}" {
 		mod recent name {{ item.dport[0] | upper }} {
