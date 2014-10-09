@@ -8,7 +8,7 @@
   tasks:
     - name: Check IP address of Ansible Controller
       set_fact:
-        ansible_controller: '{{ ansible_env.SSH_CLIENT.split(" ") | first }}/32'
+        ansible_controller: '{{ ansible_env.SSH_CLIENT.split(" ") | first }}'
       when: (ansible_controller is undefined and ansible_connection != "local")
       tags: [ 'ferm', 'tcpwrappers' ]
 
