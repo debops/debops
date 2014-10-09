@@ -1,15 +1,12 @@
 ---
 
 - include: configure_ca.yml
-  when: boxbackup is defined and boxbackup and
-        secret is defined and secret
+  when: boxbackup_server is defined and boxbackup_server == ansible_fqdn
 
 - include: configure_servers.yml
-  when: boxbackup is defined and boxbackup and
-        secret is defined and secret
+  when: boxbackup_server is defined and boxbackup_server == ansible_fqdn
 
 - include: configure_clients.yml
-  when: boxbackup is defined and boxbackup and
-        secret is defined and secret
+  when: boxbackup_server is defined and boxbackup_server != ansible_fqdn
 
 

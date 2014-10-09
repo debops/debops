@@ -1,13 +1,11 @@
 ---
 
 # FQDN address of the Box Backup server to use
-# Set to False to disable boxbackup role
-boxbackup: False
+boxbackup_server: '{{ hostvars[groups.debops_boxbackup[0]]["ansible_fqdn"] }}'
 
-# Allow access to boxbackup server through firewall
 # Set to list of IP addresses / network ranges to allow access only from these
-# networks. Set to False to disable access
-boxbackup_allow: True
+# networks. Empty list allows access from any host / network.
+boxbackup_allow: []
 
 # Directory where boxbackup-server is storing backups
 boxbackup_storage: '/srv/boxbackup'
