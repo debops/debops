@@ -12,6 +12,15 @@ dependencies:
         comment: 'BoxBackup server'
 
   - role: debops.ferm
+    when: boxbackup_server is defined and boxbackup_server == ansible_fqdn
+    ferm_input_list:
+
+      - type: 'dport_accept'
+        dport: [ 'boxbackup' ]
+        saddr: '{{ boxbackup_allow }}'
+        accept_any: True
+        filename: 'boxbackup_dependency_accept'
+        weight: '20'
 
 galaxy_info:
   author: 'Maciej Delmanowski'
