@@ -2,89 +2,74 @@
 
 - name: Install Box Backup server packages
   apt: pkg=boxbackup-server state=latest install_recommends=no
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Make sure that boxbackup server directories exists
   file: path={{ item }} state=directory owner=bbstored group=bbstored mode=0700
   with_items: [ '/etc/boxbackup', '/etc/boxbackup/bbstored', '{{ boxbackup_storage }}', '{{ boxbackup_storage }}/backup' ]
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Check block size of storage device
   shell: "dumpe2fs -h $(df {{ boxbackup_storage }} | tail -n 1 | awk '{ print $1 }') | grep 'Block size' | awk '{ print $3 }'"
   register: boxbackup_storage_blocksize
   changed_when: False
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Make sure accounts.txt file exists
   command: touch /etc/boxbackup/bbstored/accounts.txt creates=/etc/boxbackup/bbstored/accounts.txt
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Fix accounts.txt permissions
   file: path=/etc/boxbackup/bbstored/accounts.txt state=file owner=bbstored group=bbstored mode=0600
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Create server private key
   command: openssl genrsa -out /etc/boxbackup/bbstored/{{ ansible_fqdn }}-key.pem {{ boxbackup_transfer_bits }}
            creates=/etc/boxbackup/bbstored/{{ ansible_fqdn }}-key.pem
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Create server certificate request
   command: openssl req -batch -new -sha1 -subj "/CN={{ ansible_fqdn }}"
            -key /etc/boxbackup/bbstored/{{ ansible_fqdn }}-key.pem
            -out /etc/boxbackup/bbstored/{{ ansible_fqdn }}-csr.pem
            creates=/etc/boxbackup/bbstored/{{ ansible_fqdn }}-csr.pem
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Upload server certificate request
   fetch: src=/etc/boxbackup/bbstored/{{ ansible_fqdn }}-csr.pem flat=yes
-         dest={{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/servers/{{ ansible_fqdn }}-csr.pem
-  when: boxbackup is defined and boxbackup == ansible_fqdn
+         dest={{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/servers/{{ ansible_fqdn }}-csr.pem
 
 - name: Sign server certificate
   local_action: command openssl x509 -req -sha1 -extensions user_crt -CAcreateserial -days {{ boxbackup_ssl_sign }}
-                -CA {{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/roots/serverCA.pem
-                -CAkey {{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/keys/serverRootKey.pem
-                -CAserial {{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/roots/serverCA.srl
-                -in {{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/servers/{{ ansible_fqdn }}-csr.pem
-                -out {{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/servers/{{ ansible_fqdn }}-cert.pem
-                creates={{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/servers/{{ ansible_fqdn }}-cert.pem
+                -CA {{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/roots/serverCA.pem
+                -CAkey {{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/keys/serverRootKey.pem
+                -CAserial {{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/roots/serverCA.srl
+                -in {{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/servers/{{ ansible_fqdn }}-csr.pem
+                -out {{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/servers/{{ ansible_fqdn }}-cert.pem
+                creates={{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/servers/{{ ansible_fqdn }}-cert.pem
   sudo: no
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Download server certificate
-  copy: src={{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/servers/{{ ansible_fqdn }}-cert.pem
+  copy: src={{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/servers/{{ ansible_fqdn }}-cert.pem
         dest=/etc/boxbackup/bbstored/{{ ansible_fqdn }}-cert.pem owner=bbstored group=bbstored mode=0600
   notify:
     - Restart boxbackup-server
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Download client Root CA certificate
-  copy: src={{ secret }}/storage/boxbackup/servers/{{ boxbackup }}/ca/roots/clientCA.pem
+  copy: src={{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/roots/clientCA.pem
         dest=/etc/boxbackup/bbstored/clientCA.pem owner=bbstored group=bbstored mode=0600
   notify:
     - Restart boxbackup-server
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Configure /etc/services
   template: src=etc/services.d/50_boxbackup.j2 dest=/etc/services.d/50_boxbackup owner=root group=root mode=0644
   notify:
     - Assemble services.d
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Flush handlers for services.d when required
   meta: flush_handlers
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Configure firewall for boxbackup server
   template: src=etc/ferm/filter-input.d/boxbackup.conf.j2 dest=/etc/ferm/filter-input.d/boxbackup.conf owner=root group=root mode=0644
   notify:
     - Restart ferm
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
 - name: Configure boxbackup server
   template: src={{ item }}.j2 dest=/{{ item }} owner=bbstored group=bbstored mode=0640
   with_items: [ 'etc/boxbackup/raidfile.conf', 'etc/boxbackup/bbstored.conf' ]
   notify:
     - Restart boxbackup-server
-  when: boxbackup is defined and boxbackup == ansible_fqdn
 
