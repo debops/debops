@@ -54,14 +54,6 @@
   notify:
     - Restart boxbackup-server
 
-- name: Configure /etc/services
-  template: src=etc/services.d/50_boxbackup.j2 dest=/etc/services.d/50_boxbackup owner=root group=root mode=0644
-  notify:
-    - Assemble services.d
-
-- name: Flush handlers for services.d when required
-  meta: flush_handlers
-
 - name: Configure firewall for boxbackup server
   template: src=etc/ferm/filter-input.d/boxbackup.conf.j2 dest=/etc/ferm/filter-input.d/boxbackup.conf owner=root group=root mode=0644
   notify:

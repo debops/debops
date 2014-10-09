@@ -4,6 +4,13 @@ dependencies:
 
   - role: debops.secret
   - role: debops.etc_services
+    etc_services_dependency_list:
+
+      - name: 'boxbackup'
+        protocols: [ 'tcp' ]
+        port: '2201'
+        comment: 'BoxBackup server'
+
   - role: debops.ferm
 
 galaxy_info:
