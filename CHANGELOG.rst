@@ -11,6 +11,24 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-10-09
+^^^^^^^^^^
+
+Role updates
+************
+
+IPv6 firewall has been enabled by default in `debops.ferm`_ after all roles
+that configure ``ferm`` directly had their configuration files fixed to support
+both ``iptables`` and ``ip6tables`` commands.
+
+`debops.boxbackup`_ has been finally converted from a "common" role (run from
+``common.yml`` playbook) to a group-based role. First host in
+``debops_boxbackup`` will be configured as the BoxBackup server and the rest
+will be set up as its clients.
+
+.. _debops.ferm: https://github.com/debops/ansible-ferm/
+.. _debops.boxbackup: https://github.com/debops/ansible-boxbackup/
+
 2014-10-07
 ^^^^^^^^^^
 
