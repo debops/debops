@@ -11,6 +11,18 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-10-10
+^^^^^^^^^^
+
+Playbook updates
+****************
+
+`Maciej Delmanowski`_ wrote a set of custom filter plugins for Ansible which
+let you manipulate IPv4 and IPv6 addresses. You can test if a string is a valid
+IP address or convert them between various formats.
+
+.. _Maciej Delmanowski: https://github.com/drybjed/
+
 2014-10-09
 ^^^^^^^^^^
 
