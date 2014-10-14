@@ -67,6 +67,12 @@ openvz_template_repos:
   - '{{ openvz_template_prefix }}'
   - '{{ openvz_template_prefix }}/contrib'
 
+# Name of default admin account created by the bootstrap script
+openvz_template_admin_username: '{{ ansible_ssh_user | default(lookup("env","USER")) }}'
+
+# Default SSH keys added on the admin account by the bootstrap script
+openvz_template_admin_sshkey: '{{ lookup("pipe","ssh-add -L") }}'
+
 
 # ---- OpenVZ kernel ----
 
