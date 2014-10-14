@@ -15,239 +15,284 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-import struct
-import socket
 from ansible import errors
 
+try:
+    import netaddr
+except Exception, e:
+    raise errors.AnsibleFilterError('python-netaddr package is not installed')
 
-# ---- General IP address functions ----
 
-def ipaddr(string):
-    ''' Check if string is an IP address '''
-    if ipv6(string):
-        return True
-    elif ipv4(string):
-        return True
-    else:
+# ---- IP address and network filters ----
+
+def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
+    ''' Check if string is an IP address or network and filter it '''
+
+    query_types = [ 'type', 'bool', 'int', 'version', 'size', 'address', 'ip', 'host', \
+                    'network', 'subnet', 'prefix', 'broadcast', 'netmask', 'hostmask', \
+                    'unicast', 'multicast', 'private', 'public', 'loopback', 'lo', \
+                    'revdns', 'wrap', 'ipv6', 'v6', 'ipv4', 'v4' ]
+
+    try:
+        v = netaddr.IPAddress(value)
+        vtype = 'address'
+    except:
+        try:
+            v = netaddr.IPNetwork(value)
+            vtype = 'network'
+        except:
+            if query and query not in [ 'bool' ]:
+                raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
+            else:
+                return False
+
+    if query and query not in query_types and ipaddr(query, 'network'):
+        iplist = netaddr.IPNetwork(query)
+
+    if not query and version and v.version != version:
+        return False
+    elif (query and version and v.version != version) and (query in query_types or iplist):
         return False
 
-
-# ---- IPv4 address functions ----
-
-def ipv4(string):
-    ''' Check if string is an IPv4 address '''
-    try:
-        (address, mask) = string.split('/')
-    except:
-        address = string
-        mask = False
-    try:
-        socket.inet_pton(socket.AF_INET, address)
-        if mask:
-            assert int(mask) >= 0 and int(mask) <= 32
-    except:
-        return False
-    return True
-
-def ipv4_to_int(addr):
-    ''' Convert IPv4 address to integer '''
-    if ipv4(addr):
-        try:
-            (address, mask) = addr.split('/')
-        except:
-            address = addr
-            mask = False
-        try:
-            _str = socket.inet_pton(socket.AF_INET, address)
-            _ret = int(struct.unpack("!I", _str)[0])
-        except Exception, e:
-            raise errors.AnsibleFilterError('Illegal IPv4 address: %s' % addr)
-        if mask:
-            return str(_ret) + '/' + str(mask)
+    if not query:
+        if v:
+            return value
         else:
-            return str(_ret)
+            return False
 
-def int_to_ipv4(integer):
-    ''' Convert integer to IPv4 address '''
-    if ipv4(integer):
-        return integer
-    else:
-        try:
-            (addr, mask) = integer.split('/')
-        except:
-            addr = integer
-            mask = False
-        try:
-            assert int(addr) > 0
-        except Exception, e:
-            raise errors.AnsibleFilterError('Not an integer: %s' % integer)
-        if mask:
+    elif query == 'type':
+        return vtype
+
+    elif query == 'bool':
+        if v:
+            return True
+        else:
+            return False
+
+    elif query == 'int':
+        if vtype == 'address':
+            return int(v)
+        else:
+            return False
+
+    elif query == 'version':
+        return v.version
+
+    elif query == 'size':
+        if vtype == 'address':
+            return 1
+        elif vtype == 'network':
+            return v.size
+
+    elif query in [ 'address', 'ip', 'host' ]:
+        if vtype == 'address':
+            return str(v)
+        elif vtype == 'network':
+            if v.ip != v.network:
+                return str(v.ip)
+            else:
+                return False
+        else:
+            return False
+
+    elif query == 'network':
+        if vtype == 'network':
+            return str(v.network)
+        else:
+            return False
+
+    elif query == 'subnet':
+        if vtype == 'network':
+            return str(v.cidr)
+        else:
+            return False
+
+    elif query == 'prefix':
+        if vtype == 'network':
+            return str(v.prefixlen)
+        else:
+            return False
+
+    elif query == 'broadcast':
+        if vtype == 'network':
+            return str(v.broadcast)
+        else:
+            return False
+
+    elif query == 'netmask':
+        if vtype == 'address' and v.is_netmask():
+            return value
+        elif vtype == 'network':
+            return str(v.netmask)
+        else:
+            return False
+
+    elif query == 'hostmask':
+        if vtype == 'address' and v.is_hostmask():
+            return value
+        elif vtype == 'network':
+            return str(v.hostmask)
+        else:
+            return False
+
+    elif query == 'unicast':
+        if v.is_unicast():
+            return value
+        else:
+            return False
+
+    elif query == 'multicast':
+        if v.is_multicast():
+            return value
+        else:
+            return False
+
+    elif query == 'private':
+        if v.is_private():
+            return value
+        else:
+            return False
+
+    elif query == 'public':
+        if v.is_unicast() and not v.is_private():
+            return value
+        else:
+            return False
+
+    elif query in [ 'loopback', 'lo' ]:
+        if vtype == 'address' and v.is_loopback():
+            return value
+        else:
+            return False
+
+    elif query == 'revdns':
+        if vtype == 'address':
+            return v.reverse_dns
+        else:
+            return False
+
+    elif query == 'wrap':
+        if v.version == 6:
+            if vtype == 'address':
+                return '[' + str(v) + ']'
+            elif vtype == 'network':
+                return '[' + str(v.ip) + ']/' + str(v.prefixlen)
+        else:
+            return value
+
+    elif query in [ 'ipv6', 'v6' ]:
+        if v.version == 4:
+            return str(v.ipv6())
+        else:
+            return value
+
+    elif query in [ 'ipv4', 'v4' ]:
+        if v.version == 6:
             try:
-                assert int(mask) >= 0 and int(mask) <= 32
+                return str(v.ipv4())
             except:
-                try:
-                    mask = ipv4_cidr(mask)
-                    assert int(mask) >= 0 and int(mask) <= 32
-                except Exception, e:
-                    raise errors.AnsibleFilterError('CIDR mask outside of range: %s' % integer)
-        try:
-            _str = socket.inet_ntop(socket.AF_INET, struct.pack("!I", int(addr)))
-        except Exception, e:
-            raise errors.AnsibleFilterError('Outside of IPv4 address space: %s' % addr)
-        if mask:
-            return str(_str + '/' + str(mask))
+                return False
         else:
-            return str(_str)
+            return value
 
-def ipv4_netmask(cidr):
-    ''' Convert CIDR suffix to IPv4 netmask '''
-    try:
-        assert int(cidr) > 0
-        _str = socket.inet_ntop(socket.AF_INET, struct.pack(">I", (0xffffffff << (32 - int(cidr))) & 0xffffffff))
-    except Exception, e:
-        raise errors.AnsibleFilterError('Outside of IPv4 CIDR space: %s' % cidr)
-    return str(_str)
-
-def ipv4_cidr(mask):
-    ''' Convert IPv4 netmask to CIDR suffix '''
-    _binary_str = ''
-    try:
-        for octet in mask.split('.'):
-            _binary_str += bin(int(octet))[2:].zfill(8)
-    except Exception, e:
-        raise errors.AnsibleFilterError('Illegal IPv4 netmask: %s' % mask)
-    return str(len(_binary_str.rstrip('0')))
-
-
-# ---- IPv6 address functions ----
-
-def ipv6(string):
-    ''' Check if string is an IPv6 address '''
-    try:
-        (address, mask) = string.split('/')
-    except:
-        address = string
-        mask = False
-    try:
-        socket.inet_pton(socket.AF_INET6, address)
-        if mask:
-            assert int(mask) >= 0 and int(mask) <= 128
-    except:
-        return False
-    return True
-
-def ipv6_to_int(addr):
-    ''' Convert IPv6 address to integer '''
-    if ipv4(addr):
-        tempaddr = ipv4_to_int(addr)
-        try:
-            (addr, mask) = tempaddr.split('/')
-            mask = int(128) - int(mask)
-        except:
-            addr = tempaddr
-            mask = False
-        if mask:
-            addr = int_to_ipv6(str(addr) + '/' + str(mask))
-        else:
-            addr = int_to_ipv6(addr)
-    if ipv6(addr):
-        try:
-            (address, mask) = addr.split('/')
-        except:
-            address = addr
-            mask = False
-        try:
-            _str = socket.inet_pton(socket.AF_INET6, address)
-            a, b = struct.unpack("!2Q", _str)
-            _ret = (a << 64) | b
-        except Exception, e:
-            raise errors.AnsibleFilterError('Illegal IPv6 address: %s' % addr)
-        if mask:
-            return str(_ret) + '/' + str(mask)
-        else:
-            return str(_ret)
     else:
-            raise errors.AnsibleFilterError('Illegal IPv6 address: %s' % addr)
-
-def int_to_ipv6(integer):
-    ''' Convert integer to IPv6 address '''
-    if ipv6(integer):
-        return integer
-    else:
-        if ipv4(integer):
-            tempaddr = ipv4_to_int(integer)
+        if iplist:
             try:
-                (addr, mask) = tempaddr.split('/')
-                mask = int(128) - int(mask)
-            except:
-                addr = tempaddr
-                mask = False
-        else:
-            try:
-                (addr, mask) = integer.split('/')
-            except:
-                addr = integer
-                mask = False
-        try:
-            assert int(addr) >= 0
-        except Exception, e:
-            raise errors.AnsibleFilterError('Not an integer: %s' % integer)
-        if mask:
-            try:
-                assert int(mask) >= 0 and int(mask) <= 128
+                if vtype == 'address' and v in list(iplist):
+                    return value
+                else:
+                    return False
             except Exception, e:
-                raise errors.AnsibleFilterError('CIDR mask outside of range: %s' % integer)
-        try:
-            a = int(addr) >> 64
-            b = int(addr) & ((1 << 64) - 1)
-            _str = socket.inet_ntop(socket.AF_INET6, struct.pack("!2Q", a, b))
-        except Exception, e:
-            raise errors.AnsibleFilterError('Outside of IPv6 address space: %s' % addr)
-        if mask:
-            return str(_str + '/' + str(mask))
-        else:
-            return str(_str)
+                raise errors.AnsibleFilterError(alias + ': error: %s' % e)
 
-def wrap_ipv6(string):
-    ''' Wrap IPv6 address into square backets '''
-    if ipv6(string):
-        try:
-            (address, mask) = string.split('/')
-        except:
-            address = string
-            mask = False
-        if int(mask):
-            return str('[' + address + ']/' + mask)
         else:
-            return str('[' + address + ']')
+            raise errors.AnsibleFilterError(alias + ': unknown filter type: %s' % query)
+
+
+def ipv4(value, query = ''):
+    return ipaddr(value, query, version = 4, alias = 'ipv4')
+
+
+def ipv6(value, query = ''):
+    return ipaddr(value, query, version = 6, alias = 'ipv6')
+
+
+# ---- HWaddr / MAC address filters ----
+
+def hwaddr(value, query = '', alias = 'hwaddr'):
+    ''' Check if string is a HW/MAC address and filter it '''
+
+    try:
+        v = netaddr.EUI(value)
+    except:
+        if query and query not in [ 'bool' ]:
+            raise errors.AnsibleFilterError(alias + ': not a hardware address: %s' % value)
+        else:
+            return False
+
+    if not query:
+        if v:
+            return value
+        else:
+            return False
+
+    elif query == 'bool':
+        if v:
+            return True
+        else:
+            return False
+
+    elif query in [ 'win', 'eui48' ]:
+        v.dialect = netaddr.mac_eui48
+        return str(v)
+
+    elif query == 'unix':
+        v.dialect = netaddr.mac_unix
+        return str(v)
+
+    elif query in [ 'pgsql', 'postgresql', 'psql' ]:
+        v.dialect = netaddr.mac_pgsql
+        return str(v)
+
+    elif query == 'cisco':
+        v.dialect = netaddr.mac_cisco
+        return str(v)
+
+    elif query == 'bare':
+        v.dialect = netaddr.mac_bare
+        return str(v)
+
+    elif query == 'linux':
+        v.dialect = mac_linux
+        return str(v)
+
     else:
-        return string
+        raise errors.AnsibleFilterError(alias + ': unknown filter type: %s' % query)
+
+class mac_linux(netaddr.mac_unix): pass
+mac_linux.word_fmt = '%.2x'
+
+
+def macaddr(value, query = ''):
+    return hwaddr(value, query, alias = 'macaddr')
 
 
 # ---- Ansible filters ----
 
 class FilterModule(object):
-    ''' IPv4 address and netmask manipulation filters '''
+    ''' IP address and network manipulation filters '''
 
     def filters(self):
         return {
 
-            # IP address manipulation
+            # IP addresses and networks
             'ipaddr': ipaddr,
             'ipv4': ipv4,
             'ipv6': ipv6,
-            'wrap_ipv6': wrap_ipv6,
 
-            # IPv4 address conversion
-            'from_ipv4': ipv4_to_int,
-            'to_ipv4': int_to_ipv4,
+            # MAC / HW addresses
+            'hwaddr': hwaddr,
+            'macaddr': macaddr
 
-            # IPv6 address conversion
-            'from_ipv6': ipv6_to_int,
-            'to_ipv6': int_to_ipv6,
-
-            # IPv4 netmask conversion
-            'ipv4_netmask': ipv4_netmask,
-            'ipv4_cidr': ipv4_cidr
         }
 
