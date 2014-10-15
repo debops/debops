@@ -11,6 +11,13 @@
     install_recommends: False
   with_items: nginx_base_packages
 
+- name: Restart nginx on first install to bypass missing pid bug
+  service:
+    name: 'nginx'
+    state: 'restarted'
+  when: ((nginx_register_installed is defined and nginx_register_installed) and
+         not nginx_register_installed.stat.exists)
+
 - name: Check nginx version
   shell: /usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##'
   register: nginx_version
@@ -143,13 +150,6 @@
 - include: nginx_configs.yml
 
 - include: nginx_servers.yml
-
-- name: Restart nginx on first install to bypass missing pid bug
-  service:
-    name: 'nginx'
-    state: 'restarted'
-  when: ((nginx_register_installed is defined and nginx_register_installed) and
-         not nginx_register_installed.stat.exists)
 
 - name: Make sure that Ansible local facts directory is present
   file:
