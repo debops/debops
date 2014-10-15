@@ -1,5 +1,13 @@
 ---
 
+- name: Manage nginx server
+  hosts: 'debops_nginx'
+  sudo: True
+
+  roles:
+    - { role: debops.nginx, tags: nginx }
+
+
 - name: Manage Monit service
   hosts: 'debops_monit'
   sudo: True
@@ -14,14 +22,6 @@
 
   roles:
     - { role: debops.dhcpd, tags: dhcpd }
-
-
-- name: Manage SKS Keyserver
-  hosts: 'debops_sks'
-  sudo: True
-
-  roles:
-    - { role: debops.sks, tags: sks }
 
 
 - name: Manage Samba service
@@ -74,14 +74,6 @@
 
   roles:
     - { role: debops.redis, tags: redis }
-
-
-- name: Manage nginx server
-  hosts: 'debops_nginx'
-  sudo: True
-
-  roles:
-    - { role: debops.nginx, tags: nginx }
 
 
 - name: Manage SMS gateway
