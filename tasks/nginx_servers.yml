@@ -57,7 +57,7 @@
     path: '/etc/nginx/sites-enabled/{{ item.name[0] | default("default") }}.conf'
     state: 'absent'
   with_items: [ '{{ nginx_servers }}' ]
-  notify: [ 'Test nginx and reload' ]
+  notify: [ 'Test nginx and restart' ]
   when: (((item.enabled is defined and not item.enabled) and (item.name is defined)) or
         (item.delete is defined and item.delete))
 
@@ -70,7 +70,7 @@
     group: 'root'
     mode: '0644'
   with_items: [ '{{ nginx_servers }}' ]
-  notify: [ 'Test nginx and reload' ]
+  notify: [ 'Test nginx and restart' ]
   when: ((item.enabled is undefined or (item.enabled is defined and item.enabled)) and
          (item.name is defined) and (item.delete is undefined or (item.delete is defined and not item.delete)))
 
