@@ -151,3 +151,19 @@
   when: ((nginx_register_installed is defined and nginx_register_installed) and
          not nginx_register_installed.stat.exists)
 
+- name: Make sure that Ansible local facts directory is present
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save nginx local facts
+  template:
+    src: 'etc/ansible/facts.d/nginx.fact.j2'
+    dest: '/etc/ansible/facts.d/nginx.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+

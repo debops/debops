@@ -1,0 +1,16 @@
+{% set nginx_tpl_default_server = ''                                              %}
+{% if ((ansible_local is defined and ansible_local) and
+       (ansible_local.nginx is defined and ansible_local.nginx) and
+       (ansible_local.nginx.default_server is defined and ansible_local.nginx.default_server)) %}
+{%   set nginx_tpl_default_server = ansible_local.nginx.default_server            %}
+{% elif ((nginx_default_name is defined and nginx_default_name) and
+         (nginx_register_default_server_name is defined and nginx_register_default_server_name)) %}
+{%   set nginx_tpl_default_server = nginx_register_default_server_name            %}
+{% elif (nginx_register_default_server_specified is defined and nginx_register_default_server_specified) %}
+{%   set nginx_tpl_default_server = nginx_register_default_server_specified       %}
+{% elif (nginx_register_default_server_first is defined and nginx_register_default_server_first) %}
+{%   set nginx_tpl_default_server = nginx_register_default_server_first           %}
+{% endif                                                                          %}
+{
+"default_server": "{{ nginx_tpl_default_server }}"
+}
