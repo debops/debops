@@ -21,6 +21,24 @@
   when: ((item.locked is undefined or (item.locked is defined and not item.locked)) and
          (item.name is defined) and (item.delete is defined and item.delete))
 
+- name: Check if default server is in the list of nginx servers
+  set_fact:
+    nginx_register_default_server_name: '{{ nginx_default_name }}'
+  with_items: [ '{{ nginx_servers }}' ]
+  when: ((nginx_default_name is defined and nginx_default_name) and
+         (item.name is defined and nginx_default_name in item.name))
+
+- name: Check if one of servers is marked as default
+  set_fact:
+    nginx_register_default_server_specified: '{{ item.name[0] | default("default") }}'
+  with_items: [ '{{ nginx_servers }}' ]
+  when: (item.name is defined) and (item.default is defined and item.default)
+
+- name: Select first configured server as default if default not set
+  set_fact:
+    nginx_register_default_server_first: '{{ nginx_servers[0].name[0] | default("default") }}'
+  when: (nginx_register_default_server_specified is undefined or
+         (nginx_register_default_server_specified is defined and not nginx_register_default_server_specified))
 
 - name: Generate nginx server configuration
   template:

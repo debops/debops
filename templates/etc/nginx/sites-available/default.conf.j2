@@ -22,6 +22,12 @@
         (item.name is defined and item.name) and
         (nginx_default_name in item.name) and
         (item.default is undefined or (item.default is defined and item.default))) or
+       ((ansible_local is defined and ansible_local) and
+        (ansible_local.nginx is defined and ansible_local.nginx) and
+        (ansible_local.nginx.default_server is defined and ansible_local.nginx.default_server) and
+        (ansible_local.nginx.default_server in item.name)) or
+       ((nginx_register_default_server_first is defined and nginx_register_default_server_first) and
+        (nginx_register_default_server_first in item.name)) or
        (item.name is undefined))                                               %}
 {%     set nginx_tpl_default_server = 'default_server ipv6only=off'            %}
 {% endif                                                                       %}
