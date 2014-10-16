@@ -35,6 +35,7 @@ bin="{{ rails_deploy_src }}/bin/{{ rails_deploy_tpl_bin }}"
 socket="{{ rails_deploy_service_socket }}"
 {% endif %}
 pid="{{ rails_deploy_tpl_pid }}"
+service_timeout="{{ rails_deploy_service_timeout }}"
 
 {% if rails_deploy_tpl_bin == 'puma' or rails_deploy_tpl_bin == 'sidekiq' -%}
 config="C"
@@ -112,8 +113,8 @@ wait_for_pids(){
     i=$((i+1))
     if [ $((i%10)) = 0 ]; then
       echo -n "."
-    elif [ $((i)) = 301 ]; then
-      echo "waited 30s for the process to write its pid, something went wrong, exiting"
+    elif [ $((i)) = $(( ${service_timeout} * 10 + 1 )) ]; then
+      echo "waited ${service_timeout}s for the process to write its pid, something went wrong, exiting"
       exit 1;
     fi
   done
