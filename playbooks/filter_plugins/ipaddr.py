@@ -43,8 +43,7 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
         except:
             if query and query not in [ 'bool' ]:
                 raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
-            else:
-                return False
+            return False
 
     try:
         if query and query not in query_types and ipaddr(query, 'network'):
@@ -61,8 +60,6 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
     if not query:
         if v:
             return value
-        else:
-            return False
 
     elif query == 'type':
         return vtype
@@ -70,14 +67,10 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
     elif query == 'bool':
         if v:
             return True
-        else:
-            return False
 
     elif query == 'int':
         if vtype == 'address':
             return int(v)
-        else:
-            return False
 
     elif query == 'version':
         return v.version
@@ -94,86 +87,58 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
         elif vtype == 'network':
             if v.ip != v.network:
                 return str(v.ip)
-            else:
-                return False
-        else:
-            return False
 
     elif query == 'network':
         if vtype == 'network':
             return str(v.network)
-        else:
-            return False
 
     elif query == 'subnet':
         if vtype == 'network':
             return str(v.cidr)
-        else:
-            return False
 
     elif query == 'prefix':
         if vtype == 'network':
             return str(v.prefixlen)
-        else:
-            return False
 
     elif query == 'broadcast':
         if vtype == 'network':
             return str(v.broadcast)
-        else:
-            return False
 
     elif query == 'netmask':
         if vtype == 'address' and v.is_netmask():
             return value
         elif vtype == 'network':
             return str(v.netmask)
-        else:
-            return False
 
     elif query == 'hostmask':
         if vtype == 'address' and v.is_hostmask():
             return value
         elif vtype == 'network':
             return str(v.hostmask)
-        else:
-            return False
 
     elif query == 'unicast':
         if v.is_unicast():
             return value
-        else:
-            return False
 
     elif query == 'multicast':
         if v.is_multicast():
             return value
-        else:
-            return False
 
     elif query == 'private':
         if v.is_private():
             return value
-        else:
-            return False
 
     elif query == 'public':
         if v.is_unicast() and not v.is_private():
             return value
-        else:
-            return False
 
     elif query in [ 'loopback', 'lo' ]:
         if vtype == 'address' and v.is_loopback():
             return value
-        else:
-            return False
 
     elif query == 'revdns':
         if vtype == 'address':
             return v.reverse_dns
-        else:
-            return False
 
     elif query == 'wrap':
         if v.version == 6:
@@ -203,13 +168,13 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
         try:
             if v in iplist:
                 return value
-            else:
-                return False
         except Exception, e:
             raise errors.AnsibleFilterError(alias + ': error: %s' % e)
 
     else:
         raise errors.AnsibleFilterError(alias + ': unknown filter type: %s' % query)
+
+    return False
 
 
 def ipv4(value, query = ''):
@@ -230,20 +195,14 @@ def hwaddr(value, query = '', alias = 'hwaddr'):
     except:
         if query and query not in [ 'bool' ]:
             raise errors.AnsibleFilterError(alias + ': not a hardware address: %s' % value)
-        else:
-            return False
 
     if not query:
         if v:
             return value
-        else:
-            return False
 
     elif query == 'bool':
         if v:
             return True
-        else:
-            return False
 
     elif query in [ 'win', 'eui48' ]:
         v.dialect = netaddr.mac_eui48
@@ -271,6 +230,8 @@ def hwaddr(value, query = '', alias = 'hwaddr'):
 
     else:
         raise errors.AnsibleFilterError(alias + ': unknown filter type: %s' % query)
+
+    return False
 
 class mac_linux(netaddr.mac_unix): pass
 mac_linux.word_fmt = '%.2x'
