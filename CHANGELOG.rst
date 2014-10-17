@@ -11,6 +11,37 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-10-17
+^^^^^^^^^^
+
+Role updates
+************
+
+Many more roles have now partial or full tests on `Travis-CI`_, more to come.
+
+Default version of `Etherpad`_ installed by `debops.etherpad`_ role has been
+changed from ``1.4.0`` to ``develop``, because current stable release does not
+recognize new ``npm`` installed in Debian. It will be switched to the next
+stable release when it's available.
+
+Because of the recent IPv6 changes in `debops.nginx`_, management of ``nginx``
+configuration and daemon had to be changed slightly. Role will try to
+automatically pick a sane server as the "default server", if none are marked as
+one, due to ``ipv6only=off`` parameter tied to ``default_server`` parameter.
+Another added functionality is full nginx server restart when configuration
+symlinks in ``/etc/nginx/sites-enabled/`` directory are added or removed - this
+should help with requirement to restart the service on interface changes.
+
+Default admin username and SSH keys are now exposed as ``defaults/`` variables
+in `debops.openvz`_ role; SSH keys are also sourced from ``ssh-agent`` instead
+of directly from the ``~/.ssh/id_rsa.pub`` file.
+
+.. _Travis-CI: https://travis-ci.org/
+.. _Etherpad: http://etherpad.org/
+.. _debops.etherpad: https://github.com/debops/ansible-etherpad/
+.. _debops.nginx: http://nginx.org/
+.. _debops.openvz: https://github.com/debops/ansible-openvz/
+
 2014-10-10
 ^^^^^^^^^^
 
