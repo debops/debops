@@ -52,9 +52,8 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
     except:
         None
 
-    if not query and version and v.version != version:
-        return False
-    elif (query and version and v.version != version) and (query in query_types or iplist):
+    if (not query and version and v.version != version) or \
+       ((query and version and v.version != version) and (query in query_types or (query == 'cidr_lookup'))):
         return False
 
     if not query:
