@@ -46,8 +46,12 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
             else:
                 return False
 
-    if query and query not in query_types and ipaddr(query, 'network'):
-        iplist = netaddr.IPNetwork(query)
+    try:
+        if query and query not in query_types and ipaddr(query, 'network'):
+            iplist = netaddr.IPSet([netaddr.IPNetwork(query)])
+            query = 'cidr_lookup'
+    except:
+        None
 
     if not query and version and v.version != version:
         return False
@@ -195,18 +199,17 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
         else:
             return value
 
-    else:
-        if iplist:
-            try:
-                if vtype == 'address' and v in list(iplist):
-                    return value
-                else:
-                    return False
-            except Exception, e:
-                raise errors.AnsibleFilterError(alias + ': error: %s' % e)
+    elif query == 'cidr_lookup':
+        try:
+            if v in iplist:
+                return value
+            else:
+                return False
+        except Exception, e:
+            raise errors.AnsibleFilterError(alias + ': error: %s' % e)
 
-        else:
-            raise errors.AnsibleFilterError(alias + ': unknown filter type: %s' % query)
+    else:
+        raise errors.AnsibleFilterError(alias + ': unknown filter type: %s' % query)
 
 
 def ipv4(value, query = ''):
