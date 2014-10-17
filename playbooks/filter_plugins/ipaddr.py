@@ -241,6 +241,16 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
     return False
 
 
+def ipwrap(value, query = 'wrap'):
+    try:
+        _ret = ipaddr(value, query, version = False, alias = 'ipwrap')
+        if _ret:
+            return _ret
+        return False
+    except:
+        return value
+
+
 def ipv4(value, query = ''):
     return ipaddr(value, query, version = 4, alias = 'ipv4')
 
@@ -315,6 +325,7 @@ class FilterModule(object):
 
             # IP addresses and networks
             'ipaddr': ipaddr,
+            'ipwrap': ipwrap,
             'ipv4': ipv4,
             'ipv6': ipv6,
 
