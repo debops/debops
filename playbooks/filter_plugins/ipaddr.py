@@ -33,17 +33,82 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                     'unicast', 'multicast', 'private', 'public', 'loopback', 'lo', \
                     'revdns', 'wrap', 'ipv6', 'v6', 'ipv4', 'v4' ]
 
-    try:
-        v = netaddr.IPAddress(value)
-        vtype = 'address'
-    except:
+    if value.isdigit():
         try:
-            v = netaddr.IPNetwork(value)
-            vtype = 'network'
+            if ((not version) or (version and version == 4)):
+                v = netaddr.IPAddress('0.0.0.0')
+                v.value = int(value)
+            elif version and version == 6:
+                v = netaddr.IPAddress('::')
+                v.value = int(value)
         except:
-            if query and query not in [ 'bool' ]:
-                raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
-            return False
+            try:
+                v = netaddr.IPAddress('::')
+                v.value = int(value)
+            except:
+                if query and query not in [ 'bool' ]:
+                    raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
+                return False
+
+        value = str(v)
+        vtype = 'address'
+
+    else:
+        try:
+            v = netaddr.IPAddress(value)
+            vtype = 'address'
+        except:
+            try:
+                v = netaddr.IPNetwork(value)
+                vtype = 'network'
+            except:
+                try:
+                    address, prefix = value.split('/')
+                except:
+                    if query and query not in [ 'bool' ]:
+                        raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
+                    return False
+                try:
+                    address.isdigit()
+                    address = int(address)
+                    prefix.isdigit()
+                    prefix = int(prefix)
+                except:
+                    if query and query not in [ 'bool' ]:
+                        raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
+                    return False
+
+                if version and version == 4:
+                    network_init = '0.0.0.0/0'
+                elif version and version == 6:
+                    network_init = '::/0'
+                else:
+                    try:
+                        v = netaddr.IPAddress('0.0.0.0')
+                        v.value = address
+                        network_init = '0.0.0.0/0'
+                    except:
+                        try:
+                            v = netaddr.IPAddress('::')
+                            v.value = address
+                            network_init = '::/0'
+                        except:
+                            if query and query not in [ 'bool' ]:
+                                raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
+                            return False
+
+                try:
+                    v = netaddr.IPNetwork(network_init)
+                    v.value = address
+                    v.prefixlen = prefix
+
+                except:
+                    if query and query not in [ 'bool' ]:
+                        raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
+                    return False
+
+                value = str(v)
+                vtype = 'network'
 
     try:
         if query and query not in query_types and ipaddr(query, 'network'):
