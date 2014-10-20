@@ -1,5 +1,242 @@
 {#
-    ==== Default server template for debops.nginx role ====
+#
+#    ==== Default server template for debops.nginx role ====
+#
+# List of parameters supported by this template:
+#
+#   - item.enabled: True/False
+#       Required. Determines if symlink to server configuration is present in
+#       /etc/nginx/sites-enabled/ directory.
+#
+#
+#   - item.name: []
+#       Required. List of domain names compatible with 'server_name' nginx
+#       configuration option.
+#
+#       First element is used to create name of the nginx configuration
+#       file and must be a normal domain name, other elements can include
+#       wildcards and regexp matches.
+#
+#       List can also be empty (but needs to be defined) in which case the
+#       configuration its included in will be named as 'default'.
+#
+#
+#   - item.default: True/False
+#       Optional. Marks this server configuration as the "default_server", if
+#       nginx cannot find correct server name or listen address to pass the
+#       request to, it will use this server instead.
+#
+#       Make sure that only one server is marked as default. If none are marked
+#       and 'nginx_default_name' is not found in any of the nginx server
+#       configurations, first server configured in the 'nginx_servers' list
+#       will be marked as default.
+#
+#
+#   - item.by_role: ''
+#       Optional. Add a comment indicating which role has created this specific
+#       server configuration. Specify just name of the role, ie. "debops.nginx".
+#
+#
+#   - item.delete: True
+#       Optional. Mark this server configuration to be removed on the next
+#       Ansible run (symlink to that configuration will also be removed).
+#
+#
+#   - item.userdir: True/False
+#       Optional. Enable UserDir support on domains configured in this server.
+#       Web pages on https://host/~<user>/ will be read from
+#       /srv/www/<user>/userdir/public directories.
+#
+#
+#   - item.type: ''
+#       Optional. Specify name of the template to use to generate nginx server
+#       configuration. Templates can extend other templates.
+#
+#
+#   - item.redirect: ''
+#       Optional. Redirect incoming requests on HTTP port to different address.
+#
+#
+#   - item.redirect_ssl: ''
+#       Optional. Redirect incoming requests on HTTPS port to different address.
+#
+#
+#   - item.redirect_code: ''
+#       Optional. Specify HTTP code used in the redirect response, by default
+#       307 Temporary Redirect.
+#
+#
+#   - item.redirect_from: True or []
+#       Optional. Create a separate server { } section which will automatically
+#       redirect requests from specified list of server names (or all but the
+#       first name in item.name list if option is set to True) to the first
+#       server name specified in item.name list.
+#
+#
+#   - item.ssl: True/False
+#       Optional. Enable or disable HTTPS for this server configuration (HTTPS
+#       is enabled by default for all servers, you can disable it selectively
+#       using this option).
+#
+#
+#   - item.ssl_type: ''
+#       Optional. Type of the SSL certificate to use for this server,
+#       compatible with 'debops.pki' role. Currently supported types:
+#       selfsigned, signed, wildcard.
+#
+#
+#   - item.ssl_ciphers: ''
+#       Optional. Name of the list of preferred server ciphers to use. Server
+#       ciphers with corresponding names can be found in 'vars/main.yml' file
+#       in 'debops.nginx' role. 'pfs' ciphers are enabled by default.
+#
+#
+#   - item.ssl_curve: ''
+#       Optional. ECC curve enabled for this server. By default, 'secp384r1'.
+#
+#
+#   - item.ssl_name: ''
+#       Optional. Common Name of the SSL certificate to use for this server
+#       configuration, compatible with 'debops.pki' role. Used to select the
+#       certificate if item.ssl_cert and item.ssl_key are not specified and you
+#       want to use custom certificate for this server configuration.
+#
+#
+#   - item.ssl_cert: ''
+#       Optional. Absolute path to SSL certificate to use for this server
+#       configuration.
+#
+#
+#   - item.ssl_key: ''
+#       Optional. Absolute path to SSL certificate key to use for this server
+#       configuration.
+#
+#
+#   - item.owner: ''
+#       Optional. If specified, nginx will configure server root to
+#       '/srv/www/<owner>/sites/<item.name[0]>/public/', if not specified,
+#       nginx will configure server root to
+#       '/srv/www/sites/<item.name[0]/public/'.
+#
+#
+#   - item.keepalive: ''
+#       Optional. Set custom KeepAlive timeout for this server, in seconds.
+#
+#
+#   - item.favicon: True/False
+#       Optional. Enable or disable code that ignores '/favicon.ico' requests
+#       in server logs to reduce noise (enabled by default).
+#
+#
+#   - item.listen: []
+#       Optional. List of ports, IP addresses or sockets this server
+#       configuration should listen on for HTTP connections. By default set to
+#       '[::]:80' for all servers.
+#
+#
+#   - item.listen_ssl: []
+#       Optional. List of ports, IP addresses or socnets this server
+#       configuration should listen on for HTTPS connections. By default set to
+#       '[::]:443' for all servers.
+#
+#
+#   - item.root: ''
+#       Optional. Absolute path to server root to use for this server
+#       configuration. If not specified, nginx role will use
+#       '/srv/www/<item.name[0]>/public/' by default; see also 'item.owner'
+#       parameter.
+#
+#
+#   - item.status: []
+#       Optional. Enable nginx server status page and allow access from list of
+#       IP addresses or CIDR ranges.
+#
+#
+#   - item.options: |
+#       Optional. Add custom options to this server configuration using text
+#       block (semicolons at the end of each line are required).
+#
+#
+#   - item.error_pages: {}
+#       Optional. Dict of error codes in string format as keys and
+#       corresponding error pages to display. Example:
+#
+#         error_pages:
+#           '403 404': '/400.html'
+#           '502':     '/500.html'
+#
+#
+#   - item.location: {}
+#       Optional. Dict of location sections to include in this server
+#       configuration, in text block format (semicolons at end of each
+#       configuration line required). Each key defines string accepted by
+#       "location" option, values are strings or text blocks to be included
+#       inside each location section. Examples:
+#
+#         location:
+#           '/': 'try_files $uri $uri/ /index.html =404;'
+#
+#           '~ ^/doc$': |
+#             alias /usr/share/doc;
+#             autoindex on;
+#
+#
+#   - item.location_allow: {}
+#       Optional. Dict which adds "allow" entries to each location section
+#       defined above from a list. Each location needs to have corresponding
+#       entry in "item.location" dict. If "item.location_deny" is not defined,
+#       'deny all;' is added at the end. Examples:
+#
+#         location_allow:
+#           '~ ^/doc$': [ '127.0.0.1', '::1' ]
+#
+#
+#   - item.location_deny: {}
+#       Optional. Dict which adds "deny" entries to each location section
+#       defined above from a list. Each location needs to have corresponding
+#       entry in "item.location" dict. Examples:
+#
+#         location_deny:
+#           '/': [ '192.168.0.1/24' ]
+#           '~ ^/doc$': [ 'all' ]
+#
+#
+#   - item.location_referers: {}
+#       Optional. Dict with lists of valid referers accepted for a given
+#       location, all other referers will be blocked by nginx. Each location
+#       needs to have corresponding entry in "item.location" dict. Examples:
+#
+#         location_referers:
+#           '/': [ '{{ ansible_fqdn }}', 'www.{{ ansible_fqdn }}', '*.{{ ansible_domain }}' ]
+#
+#
+#   - item.location_list: []
+#       Optional. This is an alternative syntax of item.location_* entries;
+#       instead of using text blocks directly, it uses dict keys and values to
+#       configure each location, which allows for greater control and nesting.
+#       List of known keys and their descriptions:
+#
+#       pattern: ''
+#         location pattern, for example: '/' or '~ ^/doc$' or 'gitlab'
+#
+#       pattern_prefix: ''
+#         string prepended to the location pattern, for example: '@' which will
+#         create named location '@gitlab'
+#
+#       referers: []
+#         list of allowed valid referers, for example [ '{{ ansible_fqdn }}' ]
+#
+#       allow / deny: []
+#         lists of hosts or CIDR ranges to allow or deny, lack of deny implies
+#         'deny all;' at the end of the allow list
+#
+#       options: '' or |
+#         string or text block with options for this location block, semicolons
+#         at the end of each line are required
+#
+#       locations: []
+#         nested list of locations to create in this location section
+#
 #}
 {#
 
