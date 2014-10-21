@@ -5,6 +5,14 @@
 
 ***
 
+##### 2014-10-21
+
+* [docs.debops.org](http://docs.debops.org/) website has been opened to keep
+  DebOps documentation in one easily searchable place. It's based on
+  [ReadTheDocs](http://readthedocs.org/). All documentation already written
+  has been moved from `debops/debops` repository to the new website, more to
+  come.
+
 ##### 2014-09-28
 
 * new script has been added, `debops-defaults`. It can be used to easily work
