@@ -60,11 +60,11 @@ What do you want to learn more about?
 |Gratipay|_
 
 - `Playbooks and roles <https://github.com/debops/debops-playbooks>`_
-- `Custom scripts <https://github.com/debops/debops/blob/master/doc/using-the-custom-scripts.rst>`_
-- `How will versions work with so many roles and playbooks? <https://github.com/debops/debops/blob/master/doc/versions.rst>`_
+- `Custom scripts <http://docs.debops.org/en/latest/scripts/index.html>`_
+- `How will versions work with so many roles and playbooks? <http://docs.debops.org/en/latest/versions.html>`_
 - DebOps guides and troubleshooting
-    - `Using linux containers <https://github.com/debops/debops/blob/master/doc/using-linux-containers.rst>`_
-    - `Creating a local APT server to use backports <https://github.com/debops/debops/blob/master/doc/creating-a-local-apt-server-to-use-backports.rst>`_
+    - `Using linux containers <http://docs.debops.org/en/latest/using-linux-containers.html>`_
+    - `Creating a local APT server to use backports <http://docs.debops.org/en/latest/creating-a-local-apt-server-to-use-backports.html>`_
     - `Solving common problems <https://github.com/debops/debops/wiki/Solutions-to-problems-you-may-encounter>`_
 
 Do you want to contribute?
