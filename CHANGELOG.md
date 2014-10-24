@@ -5,6 +5,13 @@
 
 ***
 
+##### 2014-10-24
+
+* all role documentation from their readme files has been moved to
+  [docs site](http://docs.debops.org/), role README files will be converted to
+  more standardized format, and will use Markdown again, since Ansible Galaxy
+  does not support reStructuredText.
+
 ##### 2014-10-21
 
 * [docs.debops.org](http://docs.debops.org/) website has been opened to keep
