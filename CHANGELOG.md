@@ -12,6 +12,26 @@
   more standardized format, and will use Markdown again, since Ansible Galaxy
   does not support reStructuredText.
 
+* `debops` script will automatically generate custom `ansible.cfg`
+  configuration file in project main directory. This file will be used to
+  enable custom set of role and plugin paths, which allows for example to
+  reorganize playbooks into subdirectories, "overwrite" upstream role with
+  local ones via symlinks and enables support for custom Ansible plugins in
+  all playbooks and roles.
+
+* DebOps roles will be now cloned in different directory, they are moved from
+  `debops-playbooks/playbooks/roles/` to `debops-playbooks/roles/` (one
+  directory up). This allows to overwrite upstream DebOps roles with local
+  modified ones, which enables easy development or customization when needed.
+
+* `debops` script gains even more integration with DebOps project directory.
+  You can put your custom playbooks in `playbooks/` or `ansible/playbooks/`
+  directories and access them by specifying name of a playbook as first
+  argument of `debops` script. Roles can be put in `roles/` and
+  `ansible/roles/` directories and Ansible will automatically look for them
+  there. Various plugins can also be put in their respective
+  `ansible/*_plugins/` directories.
+
 ##### 2014-10-21
 
 * [docs.debops.org](http://docs.debops.org/) website has been opened to keep
