@@ -109,14 +109,11 @@ function aggregate_defaults() {
 # Find DebOps configuration file
 debops_config="$(find_up)"
 
-# Exit if we are outside of project directory
-[ -z "${debops_config}" ] && error_msg "Not a DebOps project directory"
-
 # Find root of the DebOps project dir
-debops_root="$(dirname ${debops_config})"
+[ -n "${debops_config}" ] && debops_root="$(dirname ${debops_config})"
 
 # Source DebOps configuration file
-[ -r ${debops_config} ] && source ${debops_config}
+[ -n "${debops_config}" ] && [ -r ${debops_config} ] && source ${debops_config}
 
 
 # ---- Main script ----
