@@ -41,7 +41,8 @@ in a production environment.
 {{ ansigenome_info.synopsis | trim }}
 {% endblock %}
 {% endif %}
-
+{% block toc %}
+{% endblock %}
 {% if ansigenome_info.galaxy_id is defined and ansigenome_info.galaxy_id %}
 {% block installation %}
 Installation
@@ -67,6 +68,7 @@ Role dependencies
 {% endif %}
 
 {% if ansigenome_info.defaults is defined and ansigenome_info.defaults %}
+{% block defaults %}
 
 Role variables
 ~~~~~~~~~~~~~~
@@ -76,14 +78,16 @@ List of default variables available in the inventory:
 ::
 
 {{ ansigenome_info.defaults | trim | indent(4, true) }}
+{% endblock %}
 {% endif %}
 
 {% if ansigenome_info.facts is defined and ansigenome_info.facts %}
+{% block facts %}
 List of internal variables used by the role:
 
 ::
 
-{{ ansigenome_info.facts | trim | indent(4, true) }}{% endif %}
+{{ ansigenome_info.facts | trim | indent(4, true) }}{% endblock %}{% endif %}
 
 {% if ansigenome_info.usage is defined and ansigenome_info.usage %}
 {% block usage %}
