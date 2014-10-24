@@ -139,10 +139,20 @@ done
 # Check if user specified a potential playbook name as the first argument. If
 # yes, use it as the playbook name and remove it from the argument list
 maybe_play="${1}"
-if [ -f ${debops_playbooks}/${maybe_play}.yml ] ; then
-  play="${maybe_play}.yml" ; shift
+if [ -f ${maybe_play} ] ;then
+  play="${maybe_play}" ; shift
+elif [ -f ${debops_root}/playbooks/${maybe_play}.yml ] ;then
+  play="${debops_root}/playbooks/${maybe_play}.yml" ; shift
+elif [ -f ${debops_root}/ansible/playbooks/${maybe_play}.yml ] ;then
+  play="${debops_root}/ansible/playbooks/${maybe_play}.yml" ; shift
+elif [ -f ${debops_playbooks}/${maybe_play}.yml ] ; then
+  play="${debops_playbooks}/${maybe_play}.yml" ; shift
+elif [ -f ${debops_root}/playbooks/site.yml ] ; then
+  play="${debops_root}/playbooks/site.yml"
+elif [ -f ${debops_root}/ansible/playbooks/site.yml ] ; then
+  play="${debops_root}/ansible/playbooks/site.yml"
 else
-  play="site.yml"
+  play="${debops_playbooks}/site.yml"
 fi
 
 export ANSIBLE_HOSTS="${ansible_inventory}"
@@ -164,6 +174,6 @@ fi
 
 # Run ansible-playbook with custom environment
 echo "Running Ansible playbook from:"
-echo "${debops_playbooks}/${play} ..."
-ansible-playbook ${debops_playbooks}/${play} "${@}"
+echo "${play} ..."
+ansible-playbook ${play} "${@}"
 
