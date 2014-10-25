@@ -6,7 +6,9 @@
 
 - name: Install PostgreSQL packages
   apt: pkg={{ item }} state=present install_recommends=no
-  with_items: [ 'python-psycopg2', 'postgresql-{{ postgresql_version }}', 'postgresql-client-{{ postgresql_version }}' ]
+  with_flattened:
+    - [ 'python-psycopg2', 'postgresql-{{ postgresql_version }}', 'postgresql-client-{{ postgresql_version }}' ]
+    - postgresql_packages
 
 - name: Check if default PostgreSQL cluster exists
   stat: path=/var/lib/postgresql/{{ postgresql_version }}/main/postmaster.opts
