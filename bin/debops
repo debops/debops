@@ -140,19 +140,23 @@ done
 
 # Check if user specified a potential playbook name as the first argument. If
 # yes, use it as the playbook name and remove it from the argument list
-maybe_play="${1}"
-if [ -f ${maybe_play} ] ;then
-  play="${maybe_play}" ; shift
-elif [ -f ${debops_root}/playbooks/${maybe_play}.yml ] ;then
-  play="${debops_root}/playbooks/${maybe_play}.yml" ; shift
-elif [ -f ${debops_root}/ansible/playbooks/${maybe_play}.yml ] ;then
-  play="${debops_root}/ansible/playbooks/${maybe_play}.yml" ; shift
-elif [ -f ${debops_playbooks}/${maybe_play}.yml ] ; then
-  play="${debops_playbooks}/${maybe_play}.yml" ; shift
-elif [ -f ${debops_root}/playbooks/site.yml ] ; then
-  play="${debops_root}/playbooks/site.yml"
-elif [ -f ${debops_root}/ansible/playbooks/site.yml ] ; then
-  play="${debops_root}/ansible/playbooks/site.yml"
+if [ $# -gt 0 ] ; then
+  maybe_play="${1}"
+  if [ -f ${maybe_play} ] ;then
+    play="${maybe_play}" ; shift
+  elif [ -f ${debops_root}/playbooks/${maybe_play}.yml ] ;then
+    play="${debops_root}/playbooks/${maybe_play}.yml" ; shift
+  elif [ -f ${debops_root}/ansible/playbooks/${maybe_play}.yml ] ;then
+    play="${debops_root}/ansible/playbooks/${maybe_play}.yml" ; shift
+  elif [ -f ${debops_playbooks}/${maybe_play}.yml ] ; then
+    play="${debops_playbooks}/${maybe_play}.yml" ; shift
+  elif [ -f ${debops_root}/playbooks/site.yml ] ; then
+    play="${debops_root}/playbooks/site.yml"
+  elif [ -f ${debops_root}/ansible/playbooks/site.yml ] ; then
+    play="${debops_root}/ansible/playbooks/site.yml"
+  else
+    play="${debops_playbooks}/site.yml"
+  fi
 else
   play="${debops_playbooks}/site.yml"
 fi
