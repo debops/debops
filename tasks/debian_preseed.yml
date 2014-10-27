@@ -3,18 +3,18 @@
 - name: Create Debian Preseed directories
   file: path={{ item }} state=directory owner=root group=root mode=0755
   with_items:
-    - '/{{ apt_debian_preseed_default_server_path }}/d-i/{{ apt_codename }}'
-    - '/{{ apt_debian_preseed_destroy_server_path }}/d-i/{{ apt_codename }}'
+    - '/{{ apt_debian_preseed_default_server_path }}/d-i/{{ apt_debian_preseed_release }}'
+    - '/{{ apt_debian_preseed_destroy_server_path }}/d-i/{{ apt_debian_preseed_release }}'
 
 - name: Setup Debian Preseed default template
   template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
   with_items:
-    - '{{ apt_debian_preseed_default_server_path }}/d-i/{{ apt_codename }}/preseed.cfg'
-    - '{{ apt_debian_preseed_default_server_path }}/d-i/{{ apt_codename }}/postinst.sh'
+    - '{{ apt_debian_preseed_default_server_path }}/d-i/{{ apt_debian_preseed_release }}/preseed.cfg'
+    - '{{ apt_debian_preseed_default_server_path }}/d-i/{{ apt_debian_preseed_release }}/postinst.sh'
 
 - name: Setup Debian Preseed destroy template
-  template: src={{ apt_debian_preseed_default_server_path }}/d-i/{{ apt_codename }}/destroy-preseed.cfg.j2
-            dest=/{{ apt_debian_preseed_destroy_server_path }}/d-i/{{ apt_codename }}/preseed.cfg
+  template: src={{ apt_debian_preseed_default_server_path }}/d-i/{{ apt_debian_preseed_release }}/destroy-preseed.cfg.j2
+            dest=/{{ apt_debian_preseed_destroy_server_path }}/d-i/{{ apt_debian_preseed_release }}/preseed.cfg
             owner=root group=root mode=0644
 
 - name: Lock default nginx server template on Debian Preseed host

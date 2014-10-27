@@ -16,11 +16,11 @@ d-i netcfg/wireless_wep string
 # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=642159
 d-i mirror/country string {{ apt_debian_preseed_mirror_country }}
 d-i mirror/http/hostname string {{ apt }}:{{ apt_acng_port }}
-d-i mirror/http/directory string /{{ apt_debian_http_mirror }}/debian
+d-i mirror/http/directory string /{{ apt_debian_preseed_http_mirror }}/debian
 d-i mirror/http/proxy string
 {% else %}
 d-i mirror/country string {{ apt_debian_preseed_mirror_country }}
-d-i mirror/http/hostname string {{ apt_debian_http_mirror }}
+d-i mirror/http/hostname string {{ apt_debian_preseed_http_mirror }}
 d-i mirror/http/directory string /debian
 d-i mirror/http/proxy string
 {% endif %}
@@ -60,7 +60,7 @@ d-i pkgsel/include string	{% for package in apt_base_packages %} {{ package }}{%
 
 d-i pkgsel/upgrade select safe-upgrade
 
-d-i preseed/late_command string in-target wget -O /tmp/postinst.sh http://{{ ansible_fqdn }}/d-i/{{ apt_codename }}/postinst.sh ; in-target chmod +x /tmp/postinst.sh ; in-target /tmp/postinst.sh
+d-i preseed/late_command string in-target wget -O /tmp/postinst.sh http://{{ ansible_fqdn }}/d-i/{{ apt_debian_preseed_release }}/postinst.sh ; in-target chmod +x /tmp/postinst.sh ; in-target /tmp/postinst.sh
 
 popularity-contest popularity-contest/participate boolean false
 
