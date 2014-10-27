@@ -1,18 +1,68 @@
 ---
 
+  # This is a temporary task
+- name: Remove old version of package sources if present
+  file:
+    path: '/etc/apt/sources.list.d/00_ansible_{{ ansible_distribution | lower }}_sources.list'
+    state: 'absent'
+
+- name: Configure APT
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - 'etc/apt/apt.conf.d/20no-recommends'
+    - 'etc/apt/apt.conf.d/70aptitude'
+
+- name: Load default APT mirrors configuration
+  include_vars: '{{ item }}'
+  with_first_found:
+    - '../vars/apt_default_mirrors_{{ apt_default_mirrors_lookup | lower }}.yml'
+    - '../vars/apt_default_mirrors.yml'
+  when: apt_default_mirrors is undefined
+
+- name: Load default APT sources configuration
+  include_vars: '{{ item }}'
+  with_first_found:
+    - '../vars/apt_default_sources_{{ apt_default_sources_lookup | lower }}.yml'
+    - '../vars/apt_default_sources.yml'
+  when: apt_default_sources is undefined
+
+- name: Combine list of default and user APT mirrors
+  set_fact:
+    apt_mirrors_combined: '{{ apt_mirrors + apt_default_mirrors | default([]) }}'
+
+- name: Combine list of default and user APT sources
+  set_fact:
+    apt_sources_combined: '{{ apt_default_sources | default([]) + apt_sources }}'
+
 - name: Divert original /etc/apt/sources.list
   command: dpkg-divert --quiet --local --divert /etc/apt/sources.list.dpkg-divert --rename /etc/apt/sources.list
            creates=/etc/apt/sources.list.dpkg-divert
-  when: ansible_distribution == 'Debian'
+  when: apt_sources_combined is defined and apt_sources_combined
 
-- name: Configure APT and package sources
-  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
-  with_items:
-    - 'etc/apt/sources.list'
-    - 'etc/apt/sources.list.d/00_ansible_{{ ansible_distribution | lower }}_sources.list'
-    - 'etc/apt/apt.conf.d/20no-recommends'
-    - 'etc/apt/apt.conf.d/70aptitude'
-  when: ansible_distribution == 'Debian'
+- name: Configure main APT package sources
+  template:
+    src: 'etc/apt/sources.list.j2'
+    dest: '/etc/apt/sources.list'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: apt_sources_combined is defined and apt_sources_combined
+
+- name: Move sources.list out of the way before reversion
+  command: rm -f /etc/apt/sources.list removes=/etc/apt/sources.list.dpkg-divert
+  when: (apt_sources_combined is undefined or
+         (apt_sources_combined is defined and not apt_sources_combined))
+
+- name: Remove diversion of original /etc/apt/sources.list
+  command: dpkg-divert --quiet --local --rename --remove /etc/apt/sources.list
+           removes=/etc/apt/sources.list.dpkg-divert
+  when: (apt_sources_combined is undefined or
+         (apt_sources_combined is defined and not apt_sources_combined))
 
 - name: Update package lists
   apt: update_cache=yes

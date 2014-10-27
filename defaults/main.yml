@@ -7,12 +7,48 @@
 #    reprepro - Debian local repositories
 apt: True
 
-# Default distribution used by APT
-apt_codename: '{{ ansible_lsb.codename }}'
-apt_codename_backports: '{{ apt_codename }}-backports'
-
 # Send mail notifications from APT to these email addresses
 apt_mail_notifications: [ 'root' ]
+
+
+# ---- APT repository mirrors ----
+
+# List of user-specified APT repository mirrors. These mirrors will be used for
+# all APT repositories that don't specify ther own.
+# Example: [ 'http://cdn.debian.net/debian' ]
+apt_mirrors: []
+
+# String used to select default mirrors based on Linux distribution used on
+# a specific host. Default mirrors are set using
+# 'vars/apt_default_mirrors_*.yml' files. To disable default mirrors, define
+# variable 'apt_default_mirrors: []' in inventory.
+apt_default_mirrors_lookup: '{{ ansible_distribution }}'
+
+
+# ---- APT repositories ----
+
+# List of user-specified APT repositories. More information and list of
+# parameters can be found in 'templates/etc/apt/sources.list.j2'.
+apt_sources: []
+
+# String used to select default repositories based on Linux distribution used
+# on a specific host. Default repositories are set using
+# 'vars/apt_default_sources_*.yml' files. To disable default repositories,
+# define variable 'apt_default_sources: []' in inventory.
+apt_default_sources_lookup: '{{ ansible_distribution }}'
+
+# Linux distribution release to use for default APT repositories
+apt_sources_release: '{{ ansible_distribution_release }}'
+
+# List of releases to enable in default APT repositories
+apt_sources_release_list:
+  - '{{ apt_sources_release }}'
+  - '{{ apt_sources_release }}-updates'
+  - '{{ apt_sources_release }}-backports'
+
+# List of repository types to eanble for default APT repositories. To enable
+# source repositories, add 'deb-src' to the list.
+apt_sources_types: [ 'deb' ]
 
 
 # ---- Update notifications ----
@@ -46,8 +82,6 @@ apt_unattended_upgrades_autoremove: True
 
 # ---- Other ----
 
-apt_debian_http_mirror: 'cdn.debian.net'
-
 # Update APT cache early in the playbook if it's older than 24h
 # Set to False to disable update (useful when changing APT mirrors)
 apt_update_cache_early: '{{ (60 * 60 * 24) }}'
@@ -76,6 +110,8 @@ apt_group_packages: []
 # List of packages to install on a given host
 apt_host_packages: []
 
+apt_debian_preseed_http_mirror: 'cdn.debian.net'
+apt_debian_preseed_release: '{{ ansible_distribution_release }}'
 apt_debian_preseed_hostname: '{{ ansible_hostname }}'
 apt_debian_preseed_domain: '{{ ansible_domain }}'
 apt_debian_preseed_locale: 'en_US.UTF-8'
