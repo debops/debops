@@ -24,7 +24,7 @@ Installation
 ^^^^^^^^^^^^
 
 Dependencies
-------------
+````````````
 
 DebOps requires a dependency that is not installed by Ansible. Install
 ``netaddr`` however you see fit:
@@ -37,7 +37,7 @@ DebOps requires a dependency that is not installed by Ansible. Install
    $ yum install python-netaddr
 
 DebOps scripts
---------------
+``````````````
 
 ::
 
