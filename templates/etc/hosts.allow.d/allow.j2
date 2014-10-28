@@ -4,6 +4,10 @@
 {% if item.custom is defined and item.custom %}
 {{ item.custom }}
 {% else %}
-{{ item.daemon }}: {{ item.client | unique | join(', ') }}
+{% set tcpwrappers_tpl_client = [] %}
+{% for element in item.client %}
+{% set _ = tcpwrappers_tpl_client.append(element | ipwrap) %}
+{% endfor %}
+{{ item.daemon }}: {{ tcpwrappers_tpl_client | unique | join(', ') }}
 {% endif %}
 
