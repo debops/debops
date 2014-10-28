@@ -23,6 +23,22 @@ In fact all of the DebOps playbooks and roles can be ran with Ansible directly.
 Installation
 ^^^^^^^^^^^^
 
+Dependencies
+------------
+
+DebOps requires a dependency that is not installed by Ansible. Install
+``netaddr`` however you see fit:
+
+::
+
+   $ easy_install netaddr
+   $ pip install netaddr
+   $ apt-get install python-netaddr
+   $ yum install python-netaddr
+
+DebOps scripts
+--------------
+
 ::
 
    $ git clone https://github.com/debops/debops
