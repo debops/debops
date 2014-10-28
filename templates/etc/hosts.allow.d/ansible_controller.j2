@@ -4,19 +4,19 @@
        (ansible_local.tcpwrappers is defined and ansible_local.tcpwrappers) and
        (ansible_local.tcpwrappers.ansible_controllers is defined and ansible_local.tcpwrappers.ansible_controllers)) %}
 {%   for element in ansible_local.tcpwrappers.ansible_controllers %}
-{%     set _ = tcpwrappers_tpl_local_ansible_controllers.append(element) %}
+{%     set _ = tcpwrappers_tpl_local_ansible_controllers.append(element | ipwrap) %}
 {%   endfor %}
 {% endif %}
 {% if tcpwrappers_ansible_controllers is defined and tcpwrappers_ansible_controllers %}
 {%   for element in tcpwrappers_ansible_controllers %}
 {%     if element not in tcpwrappers_tpl_local_ansible_controllers %}
-{%       set _ = tcpwrappers_tpl_local_ansible_controllers.append(element) %}
+{%       set _ = tcpwrappers_tpl_local_ansible_controllers.append(element | ipwrap) %}
 {%     endif %}
 {%   endfor %}
 {% endif %}
 {% if ansible_controller is defined and ansible_controller %}
 {%   if ansible_controller not in tcpwrappers_tpl_local_ansible_controllers %}
-{%     set _ = tcpwrappers_tpl_local_ansible_controllers.append(ansible_controller) %}
+{%     set _ = tcpwrappers_tpl_local_ansible_controllers.append(ansible_controller | ipwrap) %}
 {%   endif %}
 {% endif %}
 {% set tcpwrappers_tpl_local_ansible_controllers_result = tcpwrappers_tpl_local_ansible_controllers | sort | unique %}
