@@ -11,6 +11,24 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-10-28
+^^^^^^^^^^
+
+Role upadtes
+************
+
+APT repository management in `debops.apt`_ role has been rewritten. Now role
+supports multiple APT mirrors, as well as custom lists of repositories
+dependent on the current distribution (repository lists for Debian and Ubuntu
+are included). Configuration of default APT repositories has been moved from
+a separate config file in ``/etc/apt/sources.list.d/`` directly to
+``/etc/apt/sources.list``, original configuration file is preserved using
+``dpkg-divert``. Additionally, if `debops.apt`_ cannot recognize current
+distribution, it won't modify the default ``sources.list`` file, this can also
+be enforced manually if needed.
+
+.. _debops.apt: https://github.com/debops/ansible-apt/
+
 2014-10-17
 ^^^^^^^^^^
 
