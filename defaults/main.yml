@@ -25,6 +25,12 @@ ifupdown_ignore_networkmanager: False
 # in practice. Specify a filename without '.yml' extension
 ifupdown_default_config: ""
 
+# Manage automatic 6to4 tunnel - set to IPv4 public address to enable, set
+# to False to disable. This tunnel is configured on hardware hosts only (not on
+# virtual machines or containers). It won't be managed if you have native IPv6
+# connectivity.
+ifupdown_6to4: '{{ ansible_default_ipv4.address }}'
+
 # List of network interfaces. If it's not defined, ifupdown role will
 # automatically select a default set based on variables like presence of
 # NetworkManager or value of ansible_virtualization_type
