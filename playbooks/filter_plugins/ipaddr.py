@@ -231,6 +231,29 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
         else:
             return value
 
+    elif query == '6to4':
+        if v.version == 4:
+            if vtype == 'address':
+                numbers = list(map(int, str(v).split('.')))
+            elif vtype == 'network':
+                if v.ip != v.network:
+                    numbers = list(map(int, str(v.ip).split('.')))
+                else:
+                    return False
+
+            return '2002:{:02x}{:02x}:{:02x}{:02x}::'.format(*numbers)
+
+        elif v.version == 6:
+            if vtype == 'address':
+                if ipaddr(str(v), '2002::/16'):
+                    return value
+            elif vtype == 'network':
+                if v.ip != v.network:
+                    if ipaddr(str(v.ip), '2002::/16'):
+                        return value
+                else:
+                    return False
+
     elif query == 'cidr_lookup':
         try:
             if v in iplist:
