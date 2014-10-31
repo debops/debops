@@ -49,7 +49,7 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                 v = netaddr.IPAddress('::')
                 v.value = int(value)
             except:
-                if query and query not in [ 'bool' ]:
+                if query and query not in [ 'bool', 'ipv4', 'v4', 'ipv6', 'v6' ]:
                     raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
                 return False
 
@@ -68,7 +68,7 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                 try:
                     address, prefix = value.split('/')
                 except:
-                    if query and query not in [ 'bool' ]:
+                    if query and query not in [ 'bool', 'ipv4', 'v4', 'ipv6', 'v6' ]:
                         raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
                     return False
                 try:
@@ -77,7 +77,7 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                     prefix.isdigit()
                     prefix = int(prefix)
                 except:
-                    if query and query not in [ 'bool' ]:
+                    if query and query not in [ 'bool', 'ipv4', 'v4', 'ipv6', 'v6' ]:
                         raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
                     return False
 
@@ -96,7 +96,7 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                             v.value = address
                             network_init = '::/0'
                         except:
-                            if query and query not in [ 'bool' ]:
+                            if query and query not in [ 'bool', 'ipv4', 'v4', 'ipv6', 'v6' ]:
                                 raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
                             return False
 
@@ -106,7 +106,7 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                     v.prefixlen = prefix
 
                 except:
-                    if query and query not in [ 'bool' ]:
+                    if query and query not in [ 'bool', 'ipv4', 'v4', 'ipv6', 'v6' ]:
                         raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
                     return False
 
