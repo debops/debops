@@ -33,7 +33,10 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                     'unicast', 'multicast', 'private', 'public', 'loopback', 'lo', \
                     'revdns', 'wrap', 'ipv6', 'v6', 'ipv4', 'v4' ]
 
-    if value.isdigit():
+    if not value:
+        return False
+
+    elif str(value).isdigit():
         try:
             if ((not version) or (version and version == 4)):
                 v = netaddr.IPAddress('0.0.0.0')
@@ -46,7 +49,7 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                 v = netaddr.IPAddress('::')
                 v.value = int(value)
             except:
-                if query and query not in [ 'bool' ]:
+                if query and query not in [ 'bool', 'ipv4', 'v4', 'ipv6', 'v6' ]:
                     raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
                 return False
 
@@ -65,7 +68,7 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                 try:
                     address, prefix = value.split('/')
                 except:
-                    if query and query not in [ 'bool' ]:
+                    if query and query not in [ 'bool', 'ipv4', 'v4', 'ipv6', 'v6' ]:
                         raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
                     return False
                 try:
@@ -74,7 +77,7 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                     prefix.isdigit()
                     prefix = int(prefix)
                 except:
-                    if query and query not in [ 'bool' ]:
+                    if query and query not in [ 'bool', 'ipv4', 'v4', 'ipv6', 'v6' ]:
                         raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
                     return False
 
@@ -93,7 +96,7 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                             v.value = address
                             network_init = '::/0'
                         except:
-                            if query and query not in [ 'bool' ]:
+                            if query and query not in [ 'bool', 'ipv4', 'v4', 'ipv6', 'v6' ]:
                                 raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
                             return False
 
@@ -103,7 +106,7 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                     v.prefixlen = prefix
 
                 except:
-                    if query and query not in [ 'bool' ]:
+                    if query and query not in [ 'bool', 'ipv4', 'v4', 'ipv6', 'v6' ]:
                         raise errors.AnsibleFilterError(alias + ': not an IP address or network: %s' % value)
                     return False
 
@@ -227,6 +230,29 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                 return False
         else:
             return value
+
+    elif query == '6to4':
+        if v.version == 4:
+            if vtype == 'address':
+                numbers = list(map(int, str(v).split('.')))
+            elif vtype == 'network':
+                if v.ip != v.network:
+                    numbers = list(map(int, str(v.ip).split('.')))
+                else:
+                    return False
+
+            return '2002:{:02x}{:02x}:{:02x}{:02x}::'.format(*numbers)
+
+        elif v.version == 6:
+            if vtype == 'address':
+                if ipaddr(str(v), '2002::/16'):
+                    return value
+            elif vtype == 'network':
+                if v.ip != v.network:
+                    if ipaddr(str(v.ip), '2002::/16'):
+                        return value
+                else:
+                    return False
 
     elif query == 'cidr_lookup':
         try:
