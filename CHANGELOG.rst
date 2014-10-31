@@ -11,10 +11,29 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-10-31
+^^^^^^^^^^
+
+Playbook updates
+****************
+
+New filter, ``split()`` has been added into filter plugins. It lets you split
+strings into a list on a specified separator (by default, space). I'm amazed it
+hasn't been included yet in core Ansible. :-) ``split()`` filter has been
+written by Tim Raasveld and is included with his blessing, thanks!
+
+``ipaddr()`` filter will from now on correctly handle false values like
+``False`` and ``""`` by returning ``False`` when encountered. It also gained
+new query type, ``'6to4'`` which lets you convert public IPv4 addresses into
+`6to4`_ IPv6 addresses or check if a specified IPv6 address/network is in
+``2002::/16`` address range.
+
+.. 6to4: https://en.wikipedia.org/wiki/6to4
+
 2014-10-28
 ^^^^^^^^^^
 
-Role upadtes
+Role updates
 ************
 
 APT repository management in `debops.apt`_ role has been rewritten. Now role
