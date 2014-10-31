@@ -33,7 +33,10 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                     'unicast', 'multicast', 'private', 'public', 'loopback', 'lo', \
                     'revdns', 'wrap', 'ipv6', 'v6', 'ipv4', 'v4' ]
 
-    if value.isdigit():
+    if not value:
+        return False
+
+    elif str(value).isdigit():
         try:
             if ((not version) or (version and version == 4)):
                 v = netaddr.IPAddress('0.0.0.0')
