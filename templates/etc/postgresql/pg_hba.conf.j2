@@ -105,6 +105,12 @@ host    all             all 		::1/128				 md5
 {% set postgresql_tpl_host_ip = item.address | default('127.0.0.0/8') %}
 {% set postgresql_tpl_host_auth = item.auth | default('md5') %}
 {{ "%-7s %-15s %-15s %-13s %21s" | format(postgresql_tpl_host_type, postgresql_tpl_host_database, postgresql_tpl_host_user, postgresql_tpl_host_ip, postgresql_tpl_host_auth) }}
+{% elif item.user is defined and item.user %}
+{% set postgresql_tpl_host_type = item.type | default('local') %}
+{% set postgresql_tpl_host_user = item.user | default('all') %}
+{% set postgresql_tpl_host_database = item.database | default(postgresql_tpl_host_user) %}
+{% set postgresql_tpl_host_auth = item.auth | default('peer') %}
+{{ "%-7s %-15s %-15s %36s" | format(postgresql_tpl_host_type, postgresql_tpl_host_database, postgresql_tpl_host_user, postgresql_tpl_host_auth) }}
 {% endif %}
 {% endfor %}
 {% endif %}
