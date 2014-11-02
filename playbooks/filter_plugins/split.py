@@ -1,5 +1,7 @@
 # (c) 2014 Tim Raasveld <info@webtrein.nl>
 # https://github.com/timraasveld/ansible-string-split-filter/
+# (c) 2014 Maciej Delmanowski <drybjed@gmail.com>
+# http://debops.org/
 
 
 # License: CC0 1.0 Universal
@@ -123,10 +125,16 @@
 import re
 
 def split_string(string, seperator=' '):
-    return string.split(seperator)
+    try:
+        return string.split(seperator)
+    except:
+        return list(string)
 
 def split_regex(string, seperator_pattern):
-    return re.split(seperator_pattern, string)
+    try:
+        return re.split(seperator_pattern, string)
+    except:
+        return list(string)
 
 class FilterModule(object):
     ''' A filter to split a string into a list. '''
