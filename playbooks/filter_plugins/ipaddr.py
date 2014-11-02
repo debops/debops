@@ -296,6 +296,70 @@ def ipv6(value, query = ''):
     return ipaddr(value, query, version = 6, alias = 'ipv6')
 
 
+# Split given subnet into smaller subnets or find out the biggest subnet of
+# a given IP address with given CIDR prefix
+# Usage:
+#
+#  - address or address/prefix | ipsubnet
+#      returns CIDR subnet of a given input
+#
+#  - address/prefix | ipsubnet(cidr)
+#      returns number of possible subnets for given CIDR prefix
+#
+#  - address/prefix | ipsubnet(cidr, index)
+#      returns new subnet with given CIDR prefix
+#
+#  - address | ipsubnet(cidr)
+#      returns biggest subnet with given CIDR prefix that address belongs to
+#
+#  - address | ipsubnet(cidr, index)
+#      returns next indexed subnet which contains given address
+def ipsubnet(value, query = '', index = 'x'):
+    ''' Manipulate IPv4/IPv6 subnets '''
+
+    try:
+        v = ipaddr(value)
+        value = netaddr.IPNetwork(v)
+    except:
+        return False
+
+    if not query:
+        return str(value)
+
+    elif str(query).isdigit():
+        vtype = ipaddr(v, 'type')
+
+        try:
+            float(index)
+
+            if vtype == 'network':
+                try:
+                    return list(value.subnet(query))[index]
+                except:
+                    return False
+
+            elif vtype == 'address':
+                try:
+                    return value.supernet(query)[index]
+                except:
+                    return False
+
+        except:
+            if vtype == 'network':
+                try:
+                    return len(list(value.subnet(query)))
+                except:
+                    return False
+
+            elif vtype == 'address':
+                try:
+                    return value.supernet(query)[0]
+                except:
+                    return False
+
+    return False
+
+
 # ---- HWaddr / MAC address filters ----
 
 def hwaddr(value, query = '', alias = 'hwaddr'):
@@ -365,6 +429,7 @@ class FilterModule(object):
             'ipwrap': ipwrap,
             'ipv4': ipv4,
             'ipv6': ipv6,
+            'ipsubnet': ipsubnet,
 
             # MAC / HW addresses
             'hwaddr': hwaddr,
