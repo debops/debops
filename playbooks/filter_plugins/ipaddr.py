@@ -232,8 +232,9 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
             return value
 
     elif query == '6to4':
+
         if v.version == 4:
-            if vtype == 'address':
+            if vtype == 'address' and ipaddr(str(v), 'public'):
                 numbers = list(map(int, str(v).split('.')))
             elif vtype == 'network':
                 if v.ip != v.network:
