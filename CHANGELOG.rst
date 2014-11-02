@@ -35,6 +35,12 @@ negative numbers in a query, for example ``{{ '192.168.0.1/24' | ipaddr('-1') }}
 will return last IPv4 address from a specified subnet. It's an easy way to
 define DHCP dynamic ranges in ``dnsmasq`` configuration.
 
+New filter, ``ipsubnet()`` has been added. It lets you manipulate IPv4 and IPv6
+subnets; given a subnet and CIDR prefix you can check the number of subnets
+that it can be divided into, adding an index number to the query lets you get
+a specific subnet. You can also check the biggest subnet an address can be in
+by specifying the smallest prefix you're interested in.
+
 2014-10-31
 ^^^^^^^^^^
 
