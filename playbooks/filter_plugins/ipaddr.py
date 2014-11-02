@@ -331,9 +331,11 @@ def ipsubnet(value, query = '', index = 'x'):
 
     elif str(query).isdigit():
         vtype = ipaddr(v, 'type')
+        query = int(query)
 
         try:
             float(index)
+            index = int(index)
 
             if vtype == 'network':
                 try:
