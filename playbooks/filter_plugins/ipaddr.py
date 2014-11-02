@@ -261,7 +261,19 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
             raise errors.AnsibleFilterError(alias + ': error: %s' % e)
 
     else:
-        raise errors.AnsibleFilterError(alias + ': unknown filter type: %s' % query)
+        try:
+            float(query)
+            if vtype == 'network':
+                try:
+                    return str(v[query])
+                except:
+                    return False
+
+            else:
+                return value
+
+        except:
+            raise errors.AnsibleFilterError(alias + ': unknown filter type: %s' % query)
 
     return False
 
