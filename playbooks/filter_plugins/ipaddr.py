@@ -268,7 +268,7 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
             float(query)
             if vtype == 'network':
                 try:
-                    return str(v[query])
+                    return str(v[query]) + '/' + str(v.prefixlen)
                 except:
                     return False
 
@@ -339,26 +339,26 @@ def ipsubnet(value, query = '', index = 'x'):
 
             if vtype == 'network':
                 try:
-                    return list(value.subnet(query))[index]
+                    return str(list(value.subnet(query))[index])
                 except:
                     return False
 
             elif vtype == 'address':
                 try:
-                    return value.supernet(query)[index]
+                    return str(value.supernet(query)[index])
                 except:
                     return False
 
         except:
             if vtype == 'network':
                 try:
-                    return len(list(value.subnet(query)))
+                    return str(len(list(value.subnet(query))))
                 except:
                     return False
 
             elif vtype == 'address':
                 try:
-                    return value.supernet(query)[0]
+                    return str(value.supernet(query)[0])
                 except:
                     return False
 
