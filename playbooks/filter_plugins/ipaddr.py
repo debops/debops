@@ -240,7 +240,10 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
             elif vtype == 'network' and ipaddr(str(v.ip), 'public'):
                 numbers = list(map(int, str(v.ip).split('.')))
 
-            return '2002:{:02x}{:02x}:{:02x}{:02x}::/48'.format(*numbers)
+            try:
+                return '2002:{:02x}{:02x}:{:02x}{:02x}::/48'.format(*numbers)
+            except:
+                return False
 
         elif v.version == 6:
             if vtype == 'address':
@@ -328,9 +331,11 @@ def ipsubnet(value, query = '', index = 'x'):
 
     elif str(query).isdigit():
         vtype = ipaddr(v, 'type')
+        query = int(query)
 
         try:
             float(index)
+            index = int(index)
 
             if vtype == 'network':
                 try:
