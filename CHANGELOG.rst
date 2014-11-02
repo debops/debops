@@ -11,6 +11,30 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-11-02
+^^^^^^^^^^
+
+Playbook updates
+****************
+
+More fixes in filters! ``split()`` filter will now handle incorrect input
+values gracefully and return them in a list, since output is usually expected
+to be a list. If a string cannot be split by specified separator, whole string
+will be returned in a list.
+
+``ipaddr('6to4')`` filter has been updated to not convert private IPv4
+addresses, since their behaviour is unspecified, this way Ansible can easily
+determine if a given IPv4 address can be used in ``6to4`` tunnel.
+
+``6to4`` query will also now return proper ``::/48`` subnet instead of a single
+IPv6 address, this way a subnet can be further manipulated to for example split
+it into smaller ``::/64`` subnets.
+
+New ``ipaddr()`` query type has been added - you can now specify positive or
+negative numbers in a query, for example ``{{ '192.168.0.1/24' | ipaddr('-1') }}``
+will return last IPv4 address from a specified subnet. It's an easy way to
+define DHCP dynamic ranges in ``dnsmasq`` configuration.
+
 2014-10-31
 ^^^^^^^^^^
 
