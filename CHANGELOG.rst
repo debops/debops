@@ -52,7 +52,7 @@ new query type, ``'6to4'`` which lets you convert public IPv4 addresses into
 `6to4`_ IPv6 addresses or check if a specified IPv6 address/network is in
 ``2002::/16`` address range.
 
-.. 6to4: https://en.wikipedia.org/wiki/6to4
+.. _6to4: https://en.wikipedia.org/wiki/6to4
 
 2014-10-28
 ^^^^^^^^^^
