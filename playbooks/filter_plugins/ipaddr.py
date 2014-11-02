@@ -236,13 +236,11 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
         if v.version == 4:
             if vtype == 'address' and ipaddr(str(v), 'public'):
                 numbers = list(map(int, str(v).split('.')))
-            elif vtype == 'network':
-                if v.ip != v.network:
-                    numbers = list(map(int, str(v.ip).split('.')))
-                else:
-                    return False
 
-            return '2002:{:02x}{:02x}:{:02x}{:02x}::'.format(*numbers)
+            elif vtype == 'network' and ipaddr(str(v.ip), 'public'):
+                numbers = list(map(int, str(v.ip).split('.')))
+
+            return '2002:{:02x}{:02x}:{:02x}{:02x}::/48'.format(*numbers)
 
         elif v.version == 6:
             if vtype == 'address':
