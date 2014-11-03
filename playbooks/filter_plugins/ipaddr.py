@@ -54,6 +54,18 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
         value = str(v)
         vtype = 'address'
 
+    elif isinstance(value, (list, tuple)):
+
+        _ret = []
+        for element in value:
+            if ipaddr(element, str(query), version):
+                _ret.append(element)
+
+        if _ret:
+            return _ret
+        else:
+            return list()
+
     else:
         try:
             v = netaddr.IPAddress(value)
