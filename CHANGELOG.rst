@@ -41,6 +41,11 @@ that it can be divided into, adding an index number to the query lets you get
 a specific subnet. You can also check the biggest subnet an address can be in
 by specifying the smallest prefix you're interested in.
 
+You can now pass a list to ``ipaddr()`` filter and it will return only items
+that pass specified criteria, for example returns only list of IP addresses and
+subnets by default, or only IPv6 addresses and subnets, etc. It's not yet 100%
+correct all the time and not all queries work (or make sense in this context).
+
 2014-10-31
 ^^^^^^^^^^
 
