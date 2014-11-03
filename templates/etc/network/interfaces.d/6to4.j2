@@ -1,27 +1,35 @@
+{#
+#    ==== debops.ifupdown template for 6to4 network interface ====
+#
+#    Parameters:
+#
+#    - tunnel_6to4_ipv4_interface: ''
+#        name of IPv4 interface to connect through, it needs a public IPv4
+#        address present
+#
+#    - tunnel_6to4_iface: ''
+#        name of created tunnel interface
+#
+#}
+{% set ifupdown_tpl_6to4_ipv4_interface = item.tunnel_6to4_ipv4_interface | default(ansible_default_ipv4.interface) %}
+{% set ifupdown_tpl_6to4_iface = item.tunnel_6to4_iface | default('6to4') %}
+{% set ifupdown_tpl_6to4_ipv4_address = hostvars[inventory_hostname]["ansible_" + ifupdown_tpl_6to4_ipv4_interface].ipv4.address | default('') %}
 # This file is managed by Ansible, all changes will be lost
 
-{% if ((item.type is defined and item.type == '6to4') and (ifupdown_6to4 is defined and ifupdown_6to4)) %}
-{% if ((item.force is defined and item.force) or (item.local is defined and item.local) or
-       ((ansible_default_ipv6.interface is undefined or (ansible_default_ipv6.interface is defined and ansible_default_ipv6.interface == '6to4')) and
-        ansible_default_ipv4.address | ipv4('public'))) %}
+{% if (item.type is defined and item.type == '6to4') %}
+{% if ((item.force is defined and item.force) or (ifupdown_tpl_6to4_ipv4_address | ipv4('6to4'))) %}
 # Configuration for IPv6 in IPv4 tunnel
 {% if (item.auto is undefined or item.auto) and item.allow is undefined and item.inet is undefined %}
-auto 6to4
+auto {{ ifupdown_tpl_6to4_iface }}
 {% elif (item.auto is undefined or item.auto) and item.allow is undefined and item.inet is defined and item.inet != 'manual' %}
-auto 6to4
+auto {{ ifupdown_tpl_6to4_iface }}
 {% elif (item.auto is defined and item.auto == True) %}
-auto 6to4
+auto {{ ifupdown_tpl_6to4_iface }}
 {% elif (item.auto is undefined or not item.auto) and (item.allow is defined and item.allow) %}
-allow-{{ item.allow }} 6to4
+allow-{{ item.allow }} {{ ifupdown_tpl_6to4_iface }}
 {% endif %}
-iface 6to4 inet6 6to4
-{% if item.local is defined and item.local %}
-        local {{ item.local }}
-{% elif ifupdown_6to4 is defined and ifupdown_6to4 | ipv4 and ifupdown_6to4 | ipv4('public') %}
-        local {{ ifupdown_6to4 }}
-{% else %}
-        local {{ ansible_default_ipv4.address }}
-{% endif %}
+iface {{ ifupdown_tpl_6to4_iface }} inet6 6to4
+        local {{ ifupdown_tpl_6to4_ipv4_address }}
 {% else %}
 # 6to4 autoconfiguration is disabled
 {% endif %}
