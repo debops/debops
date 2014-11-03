@@ -1,11 +1,22 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) radvd
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-radvd.svg?style=flat)](http://travis-ci.org/debops/ansible-radvd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--radvd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-radvd/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-radvd.svg?style=flat)](http://travis-ci.org/debops/ansible-radvd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--radvd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-radvd/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.radvd-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/2096)
 
 `debops.radvd` role manages [Router Advertisement Daemon](https://en.wikipedia.org/wiki/Radvd),
 which is used to advertise configured IPv6 prefixes on local network. Using
 `radvd` advertisements other devices on the network can obtain an IPv6
 address and Internet connectivity.
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, run:
+
+    ansible-galaxy install debops.radvd
+
+### Documentation
+
+More information about `debops.radvd` can be found in the
+[official debops.radvd documentation](http://docs.debops.org/en/latest/ansible/roles/debops.radvd.html).
 
 
 
