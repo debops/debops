@@ -381,7 +381,7 @@ def ipsubnet(value, query = '', index = 'x'):
     try:
         vtype = ipaddr(value, 'type')
         if vtype == 'address':
-            v = ipaddr(value, 'address')
+            v = ipaddr(value, 'cidr')
         elif vtype == 'network':
             v = ipaddr(value, 'subnet')
 
