@@ -36,86 +36,105 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
     if not value:
         return False
 
-    elif str(value).isdigit():
-        try:
-            if ((not version) or (version and version == 4)):
-                v = netaddr.IPAddress('0.0.0.0')
-                v.value = int(value)
-            elif version and version == 6:
-                v = netaddr.IPAddress('::')
-                v.value = int(value)
-        except:
-            try:
-                v = netaddr.IPAddress('::')
-                v.value = int(value)
-            except:
-                return False
+    elif value == True:
+        return False
 
-        value = str(v)
-        vtype = 'address'
-
+    # Check if value is a list and parse each element
     elif isinstance(value, (list, tuple)):
 
         _ret = []
         for element in value:
             if ipaddr(element, str(query), version):
-                _ret.append(element)
+                    _ret.append(ipaddr(element, str(query), version))
 
         if _ret:
             return _ret
         else:
             return list()
 
-    else:
+    # Check if value is a number and convert it to an IP address
+    elif str(value).isdigit():
+
+        # We don't know what IP version to assume, so let's check IPv4 first,
+        # then IPv6
         try:
-            v = netaddr.IPAddress(value)
-            vtype = 'address'
+            if ((not version) or (version and version == 4)):
+                v = netaddr.IPNetwork('0.0.0.0/0')
+                v.value = int(value)
+                v.prefixlen = 32
+            elif version and version == 6:
+                v = netaddr.IPNetwork('::/0')
+                v.value = int(value)
+                v.prefixlen = 128
+
+        # IPv4 didn't work the first time, so it definitely has to be IPv6
         except:
             try:
-                v = netaddr.IPNetwork(value)
+                v = netaddr.IPNetwork('::/0')
+                v.value = int(value)
+                v.prefixlen = 128
+
+            # The value is too big for IPv6. Are you a nanobot?
+            except:
+                return False
+
+        # We got an IP address, let's mark it as such
+        value = str(v)
+        vtype = 'address'
+
+    # value has not been recognized, check if it's a valid IP string
+    else:
+        try:
+            v = netaddr.IPNetwork(value)
+
+            # value is a valid IP string, check if user specified
+            # CIDR prefix or just an IP address, this will indicate default
+            # output format
+            try:
+                address, prefix = value.split('/')
                 vtype = 'network'
             except:
-                try:
-                    address, prefix = value.split('/')
-                except:
-                    return False
+                vtype = 'address'
 
-                try:
-                    address.isdigit()
-                    address = int(address)
-                    prefix.isdigit()
-                    prefix = int(prefix)
-                except:
-                    return False
+        # value hasn't been recognized, maybe it's a numerical CIDR?
+        except:
+            try:
+                address, prefix = value.split('/')
+                address.isdigit()
+                address = int(address)
+                prefix.isdigit()
+                prefix = int(prefix)
 
-                if version and version == 4:
-                    network_init = '0.0.0.0/0'
-                elif version and version == 6:
-                    network_init = '::/0'
-                else:
-                    try:
-                        v = netaddr.IPAddress('0.0.0.0')
-                        v.value = address
-                        network_init = '0.0.0.0/0'
-                    except:
-                        try:
-                            v = netaddr.IPAddress('::')
-                            v.value = address
-                            network_init = '::/0'
-                        except:
-                            return False
+            # It's not numerical CIDR, give up
+            except:
+                return False
 
+            # It is something, so let's try and build a CIDR from the parts
+            try:
+                v = netaddr.IPNetwork('0.0.0.0/0')
+                v.value = address
+                v.prefixlen = prefix
+
+            # It's not a valid IPv4 CIDR
+            except:
                 try:
-                    v = netaddr.IPNetwork(network_init)
+                    v = netaddr.IPNetwork('::/0')
                     v.value = address
                     v.prefixlen = prefix
 
+                # It's not a valid IPv6 CIDR. Give up.
                 except:
                     return False
 
-                value = str(v)
-                vtype = 'network'
+            # We have a valid CIDR, so let's write it in correct format
+            value = str(v)
+            vtype = 'network'
 
+    v_ip = netaddr.IPAddress(str(v.ip))
+
+    # We have a query string but it's not in the known query types. Check if
+    # that string is a valid subnet, if so, we can check later if given IP
+    # address/network is inside that specific subnet
     try:
         if query and query not in query_types and ipaddr(query, 'network'):
             iplist = netaddr.IPSet([netaddr.IPNetwork(query)])
@@ -123,16 +142,29 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
     except:
         None
 
-    if (not query and version and v.version != version) or \
-       ((query and version and v.version != version) and (query in query_types or (query == 'cidr_lookup'))):
+    # This code checks if value maches the IP version the user wants, ie. if
+    # it's any version ("ipaddr()"), IPv4 ("ipv4()") or IPv6 ("ipv6()")
+    # If version does not match, return False
+    if version and v.version != version:
         return False
 
+    # We don't have any query to process, so just check what type the user
+    # expects, and return the IP address in a correct format
     if not query:
         if v:
-            return value
+            if vtype == 'address':
+                return str(v.ip)
+            elif vtype == 'network':
+                return str(v)
 
     elif query == 'type':
-        return vtype
+        if v.size == 1:
+            return 'address'
+        if v.size > 1:
+            if v.ip != v.network:
+                return 'address'
+            else:
+                return 'network'
 
     elif query == 'bool':
         if v:
@@ -140,51 +172,46 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
 
     elif query == 'int':
         if vtype == 'address':
-            return int(v)
+            return int(v.ip)
+        elif vtype == 'network':
+            return str(int(v.ip)) + '/' + str(int(v.prefixlen))
 
     elif query == 'version':
         return v.version
 
     elif query == 'size':
-        if vtype == 'address':
-            return 1
-        elif vtype == 'network':
-            return v.size
+        return v.size
 
     elif query in [ 'address', 'ip', 'host' ]:
-        if vtype == 'address':
-            return str(v)
-        elif vtype == 'network':
+        if v.size == 1:
+            return str(v.ip)
+        if v.size > 1:
             if v.ip != v.network:
                 return str(v.ip)
 
     elif query == 'network':
-        if vtype == 'network':
+        if v.size > 1:
             return str(v.network)
 
     elif query == 'subnet':
-        if vtype == 'network':
-            return str(v.cidr)
+        return str(v.cidr)
+
+    elif query == 'cidr':
+        return str(v)
 
     elif query == 'prefix':
-        if vtype == 'network':
-            return str(v.prefixlen)
+        return int(v.prefixlen)
 
     elif query == 'broadcast':
-        if vtype == 'network':
+        if v.size > 1:
             return str(v.broadcast)
 
     elif query == 'netmask':
-        if vtype == 'address' and v.is_netmask():
-            return value
-        elif vtype == 'network':
+        if v.size > 1:
             return str(v.netmask)
 
     elif query == 'hostmask':
-        if vtype == 'address' and v.is_hostmask():
-            return value
-        elif vtype == 'network':
-            return str(v.hostmask)
+        return str(v.hostmask)
 
     elif query == 'unicast':
         if v.is_unicast():
@@ -199,21 +226,22 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
             return value
 
     elif query == 'public':
-        if v.is_unicast() and not v.is_private():
+        if v_ip.is_unicast() and not v_ip.is_private() and \
+            not v_ip.is_loopback() and not v_ip.is_netmask() and \
+            not v_ip.is_hostmask():
             return value
 
     elif query in [ 'loopback', 'lo' ]:
-        if vtype == 'address' and v.is_loopback():
+        if v_ip.is_loopback():
             return value
 
     elif query == 'revdns':
-        if vtype == 'address':
-            return v.reverse_dns
+            return v_ip.reverse_dns
 
     elif query == 'wrap':
         if v.version == 6:
             if vtype == 'address':
-                return '[' + str(v) + ']'
+                return '[' + str(v.ip) + ']'
             elif vtype == 'network':
                 return '[' + str(v.ip) + ']/' + str(v.prefixlen)
         else:
@@ -237,14 +265,20 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
     elif query == '6to4':
 
         if v.version == 4:
-            if vtype == 'address' and ipaddr(str(v), 'public'):
-                numbers = list(map(int, str(v).split('.')))
 
-            elif vtype == 'network' and ipaddr(str(v.ip), 'public'):
-                numbers = list(map(int, str(v.ip).split('.')))
+            if v.size == 1:
+                ipconv = str(v.ip)
+            elif v.size > 1:
+                if v.ip != v.network:
+                    ipconv = str(v.ip)
+                else:
+                    ipconv = False
+
+            if ipaddr(ipconv, 'public'):
+                numbers = list(map(int, ipconv.split('.')))
 
             try:
-                return '2002:{:02x}{:02x}:{:02x}{:02x}::/48'.format(*numbers)
+                return '2002:{:02x}{:02x}:{:02x}{:02x}::1/48'.format(*numbers)
             except:
                 return False
 
@@ -269,11 +303,14 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
     else:
         try:
             float(query)
-            if vtype == 'network':
-                try:
-                    return str(v[query]) + '/' + str(v.prefixlen)
-                except:
-                    return False
+            if v.size == 1:
+                if vtype == 'address':
+                    return str(v.ip)
+                elif vtype == 'network':
+                    return str(v)
+
+            elif v.size > 1:
+                return str(v[query]) + '/' + str(v.prefixlen)
 
             else:
                 return value
@@ -284,11 +321,11 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
     return False
 
 
-def ipwrap(value, query = 'wrap'):
+def ipwrap(value, query = ''):
     try:
         _ret = ipaddr(value, query, version = False, alias = 'ipwrap')
         if _ret:
-            return _ret
+            return ipaddr(_ret, 'wrap')
         return False
     except:
         return value
@@ -324,7 +361,12 @@ def ipsubnet(value, query = '', index = 'x'):
     ''' Manipulate IPv4/IPv6 subnets '''
 
     try:
-        v = ipaddr(value)
+        vtype = ipaddr(value, 'type')
+        if vtype == 'address':
+            v = ipaddr(value, 'host')
+        elif vtype == 'network':
+            v = ipaddr(value, 'subnet')
+
         value = netaddr.IPNetwork(v)
     except:
         return False
@@ -333,33 +375,33 @@ def ipsubnet(value, query = '', index = 'x'):
         return str(value)
 
     elif str(query).isdigit():
-        vtype = ipaddr(v, 'type')
+        vsize = ipaddr(v, 'size')
         query = int(query)
 
         try:
             float(index)
             index = int(index)
 
-            if vtype == 'network':
+            if vsize > 1:
                 try:
                     return str(list(value.subnet(query))[index])
                 except:
                     return False
 
-            elif vtype == 'address':
+            elif vsize == 1:
                 try:
                     return str(value.supernet(query)[index])
                 except:
                     return False
 
         except:
-            if vtype == 'network':
+            if vsize > 1:
                 try:
                     return str(len(list(value.subnet(query))))
                 except:
                     return False
 
-            elif vtype == 'address':
+            elif vsize == 1:
                 try:
                     return str(value.supernet(query)[0])
                 except:
