@@ -31,7 +31,8 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
     query_types = [ 'type', 'bool', 'int', 'version', 'size', 'address', 'ip', 'host', \
                     'network', 'subnet', 'prefix', 'broadcast', 'netmask', 'hostmask', \
                     'unicast', 'multicast', 'private', 'public', 'loopback', 'lo', \
-                    'revdns', 'wrap', 'ipv6', 'v6', 'ipv4', 'v4' ]
+                    'revdns', 'wrap', 'ipv6', 'v6', 'ipv4', 'v4', 'cidr', 'net', \
+                    'hostnet', 'router', 'gateway', 'gw', 'host/prefix', 'address/prefix' ]
 
     if not value:
         return False
@@ -182,12 +183,29 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
     elif query == 'size':
         return v.size
 
-    elif query in [ 'address', 'ip', 'host' ]:
+    elif query in [ 'address', 'ip' ]:
         if v.size == 1:
             return str(v.ip)
         if v.size > 1:
             if v.ip != v.network:
                 return str(v.ip)
+
+    elif query == 'host':
+        if v.size == 1:
+            return str(v)
+        elif v.size > 1:
+            if v.ip != v.network:
+                return str(v.ip) + '/' + str(v.prefixlen)
+
+    elif query == 'net':
+        if v.size > 1:
+            if v.ip == v.network:
+                return str(v.network) + '/' + str(v.prefixlen)
+
+    elif query in [ 'hostnet', 'router', 'gateway', 'gw', 'host/prefix', 'address/prefix' ]:
+        if v.size > 1:
+            if v.ip != v.network:
+                return str(v.ip) + '/' + str(v.prefixlen)
 
     elif query == 'network':
         if v.size > 1:
@@ -363,7 +381,7 @@ def ipsubnet(value, query = '', index = 'x'):
     try:
         vtype = ipaddr(value, 'type')
         if vtype == 'address':
-            v = ipaddr(value, 'host')
+            v = ipaddr(value, 'address')
         elif vtype == 'network':
             v = ipaddr(value, 'subnet')
 
