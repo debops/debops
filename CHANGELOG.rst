@@ -11,6 +11,25 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-11-04
+^^^^^^^^^^
+
+New roles
+*********
+
+Finally, it's time to start bringing out new toys. :-) For starters,
+`debops.radvd`_ role, which installs and lets you configure ``radvd``, IPv6
+Router Advertisement daemon. It will be used in future IPv6 router roles.
+
+.. _debops.radvd: https://github.com/debops/ansible-radvd/
+
+Playbook updates
+****************
+
+``ipaddr()`` filter has been rewritten again and it works now correctly with
+lists of values. Filter was completely refactored internally and its output
+should be now consistent with expectations. Hopefully for the last time.
+
 2014-11-02
 ^^^^^^^^^^
 
