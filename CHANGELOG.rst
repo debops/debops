@@ -11,6 +11,39 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-11-05
+^^^^^^^^^^
+
+New playbooks
+*************
+
+New playbook has been added, ``net/ipv6/6to4.yml``. This playbook configures
+`6to4 tunnel`_ interface on a host with public IPv4 address and allows you to
+easily connect to IPv6 network. To do that, you need to put a host in
+``[debops_6to4]`` group. Afterwards, you can run the playbook using ``debops``
+script::
+
+  debops net/ipv6/6to4 -l host
+
+This is first step towards transition to playbooks placed in subdirectories.
+These playbooks will probably work correctly only with ``debops`` script, which
+automatically generates ``ansible.cfg`` with correct configuration parameters.
+To use these playbooks standalone, you will need to create your own
+``ansible.cfg`` and include in it paths to DebOps roles and plugins.
+
+.. _6to4 tunnel: https://en.wikipedia.org/wiki/6to4
+
+Role updates
+************
+
+You can now configure custom `ferm`_ rules using a ``custom`` template in
+`debops.ferm`_. New ``ferm_*_rules`` variables allow you to create rules in
+``/etc/ferm/ferm.d/`` directory which can configure tables and chains other
+than ``INPUT``.
+
+.. _ferm: http://ferm.foo-projects.org/
+.. _debops.ferm: https://github.com/debops/ansible-ferm/
+
 2014-11-04
 ^^^^^^^^^^
 
