@@ -1,6 +1,31 @@
 # This file is managed by Ansible, all changes will be lost
 
-# Enable forwarding for LXC containers
-chain FORWARD {
-	policy ACCEPT;
+{% if lxc_ferm_forwarding is defined and lxc_ferm_forwarding %}
+# Configure forwarding for LXC containers
+
+domain $domains table filter chain FORWARD {
+{% if hostvars[inventory_hostname]["ansible_" + lxc_interface_external] is defined and
+      hostvars[inventory_hostname]["ansible_" + lxc_interface_external].active %}
+
+	# Forward external traffic between all hosts
+	interface {{ lxc_interface_external }} ACCEPT;
+	outerface {{ lxc_interface_external }} ACCEPT;
+{% endif %}
+{% if hostvars[inventory_hostname]["ansible_" + lxc_interface_internal] is defined and
+      hostvars[inventory_hostname]["ansible_" + lxc_interface_internal].active %}
+
+	# Forward internal traffic only on internal network
+	interface {{ lxc_interface_internal }} outerface {{ lxc_interface_internal }} ACCEPT;
+{% if hostvars[inventory_hostname]["ansible_" + lxc_interface_lan] is defined and
+      hostvars[inventory_hostname]["ansible_" + lxc_interface_lan].active %}
+
+	# Forward internal traffic to LAN network
+	interface {{ lxc_interface_internal }} outerface {{ lxc_interface_nat }} ACCEPT;
+	interface {{ lxc_interface_nat }} outerface {{ lxc_interface_internal }} ACCEPT;
+{% endif %}
+{% endif %}
 }
+{% else %}
+# Packet forwarding for LXC containers is disabled
+{% endif %}
+
