@@ -14,40 +14,98 @@
 #       ferm will correctly merge your own configuration with the rest.
 
 
-domain ({{ ferm_filter_domains | unique | join(" ") | default("ip") }}) table filter {
+# Global firewall variables
+@def $domains		= ({{ ferm_filter_domains | unique | join(" ") }});
+@def $ipv4_enabled	= {% if 'ip'  in ferm_filter_domains %}1{% else %}0{% endif %};
+@def $ipv6_enabled	= {% if 'ip6' in ferm_filter_domains %}1{% else %}0{% endif %};
+
+
+# Base firewall for IPv4 and IPv6
+domain (ip ip6) table filter {
+
+	# Default chain policy
+	chain INPUT    policy {{ ferm_default_policy_input   | default('DROP') }};
+	chain OUTPUT   policy {{ ferm_default_policy_output  | default('ACCEPT') }};
+	chain FORWARD  policy {{ ferm_default_policy_forward | default('DROP') }};
+
 	chain INPUT {
-{% if ferm_comment is defined and ferm_comment %}
-		mod comment comment "{{ ferm_comment }}" NOP;
+
+		# Allow loopback connections
+		interface lo ACCEPT;
+
+{% if ferm_icmp_limit is defined and ferm_icmp_limit %}
+		# Limit incoming ICMP traffic per source
+		protocol icmp @subchain "ICMP-flood" {
+			mod hashlimit	hashlimit {{ ferm_icmp_limit }}
+					hashlimit-burst {{ ferm_icmp_burst }}
+					hashlimit-mode srcip
+					hashlimit-name ICMP-flood
+					hashlimit-htable-expire 3600000
+			ACCEPT;
+			mod limit limit 3/hour limit-burst 2 {
+				LOG log-prefix "iptables-ICMP-flood: ";
+			}
+			REJECT reject-with icmp-admin-prohibited;
+		}
+{% else %}
+		# Accept incoming ICMP traffic
+		protocol icmp ACCEPT;
 {% endif %}
-		policy {{ ferm_default_policy_input | default('DROP') }};
+	}
+
+	chain (INPUT OUTPUT FORWARD) {
 
 		# Connection tracking
 		mod conntrack ctstate INVALID DROP;
 		mod conntrack ctstate (ESTABLISHED RELATED) ACCEPT;
+	}
 
-		# Allow local connections
-		interface lo ACCEPT;
+	chain INPUT {
+
+{% if ferm_syn_limit is defined and ferm_syn_limit %}
+		# SYN-flood protection per source
+		protocol tcp syn @subchain "SYN-flood" {
+			mod hashlimit	hashlimit {{ ferm_syn_limit }}
+					hashlimit-burst {{ ferm_syn_burst }}
+					hashlimit-mode srcip
+					hashlimit-name SYN-flood
+					hashlimit-htable-expire 3600000
+			RETURN;
+			mod limit limit 3/hour limit-burst 5 {
+				LOG log-prefix "iptables-SYN-flood: ";
+			}
+			REJECT reject-with icmp-admin-prohibited;
+		}
+
+{% endif %}
 
 		# Drop connections from bad guys
 		mod recent name "badguys" update seconds 3600 {
 			mod limit limit 3/hour limit-burst 5 {
 				LOG log-prefix "iptables-recent-badguys: " log-level warning;
 			}
-			DROP;
+			REJECT reject-with icmp-admin-prohibited;
 		}
+	}
+}
 
-		# Allow ICMP protocol
-		protocol icmp ACCEPT;
+# Include INPUT rules for enabled domains (IPv4, IPv6)
+domain $domains table filter chain INPUT {
+	@include 'filter-input.d/';
+}
 
-		@include 'filter-input.d/';
+# Rest of the firewall for IPv4 and IPv6
+domain (ip ip6) table filter {
+
+	chain INPUT {
 
 {% if ferm_mark_portscan is defined and ferm_mark_portscan %}
 		# Catch bad guys (port scanners)
 		mod recent set name "badguys" {
-			mod limit limit 3/hour limit-burst 5 {
-				LOG log-prefix "iptables-portscan: " log-level warning;
-			}
+		mod limit limit 3/hour limit-burst 5 {
+			LOG log-prefix "iptables-portscan: " log-level warning;
 		}
+	}
 
 {% endif %}
 		# Reject everything else
@@ -57,24 +115,8 @@ domain ({{ ferm_filter_domains | unique | join(" ") | default("ip") }}) table fi
 			REJECT reject-with icmp-proto-unreachable;
 		}
 	}
-
-	chain OUTPUT {
-		policy {{ ferm_default_policy_output | default('ACCEPT') }};
-
-		# Connection tracking
-		mod conntrack ctstate INVALID DROP;
-		mod conntrack ctstate (ESTABLISHED RELATED) ACCEPT;
-	}
-
-	chain FORWARD {
-		policy {{ ferm_default_policy_forward | default('DROP') }};
-
-		# Connection tracking
-		mod conntrack ctstate INVALID DROP;
-		mod conntrack ctstate (ESTABLISHED RELATED) ACCEPT;
-	}
 }
 
+# Include other configuration files
 @include 'ferm.d/';
-
 
