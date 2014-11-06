@@ -14,11 +14,6 @@
             owner=root group=root mode=0644
   notify: [ 'Restart ferm' ]
 
-- name: Configure host sysctl for LXC containers
-  template: src=etc/sysctl.d/lxc.conf.j2 dest=/etc/sysctl.d/lxc.conf
-            owner=root group=root mode=0644
-  notify: [ 'Reload sysctl' ]
-
 - name: Generate default LXC configuration
   template: src=etc/lxc/default.conf.j2 dest=/etc/lxc/default.conf
             owner=root group=root mode=0644
