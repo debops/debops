@@ -11,6 +11,32 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-11-07
+^^^^^^^^^^
+
+New roles
+*********
+
+`debops.subnetwork`_ is a replacement for old `debops.nat`_ role, with many
+improvements. You can create a bridge interface with local network behind it
+for virtual machines, or even switch to a real Ethernet interface for your
+physical hosts. You can create both an IPv4 network, which will be
+automatically configured behind NAT, and an IPv6 network (with multiple
+prefixes). `debops.subnetwork`_ is not yet part of the main playbook, it will
+replace the old NAT role when ``dnsmasq`` role is updated to support it.
+
+.. _debops.subnetwork: https://github.com/debops/ansible-subnetwork/
+
+Role updates
+************
+
+Because of the changes related to new networking, some code in `debops.lxc`_, `debops.kvm`_ and `debops.nat`_ had to be moved around. Specifically, parts of the firewall and sysctl settings related to the LAN interface were moved into `debops.subnetwork`_ role and parts of the forwarding configuration to external and internal networks were added respectively to LXC and KVM roles.
+
+.. _debops.lxc: https://github.com/debops/ansible-lxc/
+.. _debops.kvm: https://github.com/debops/ansible-kvm/
+.. _debops.nat: https://github.com/debops/ansible-nat/
+.. _debops.subnetwork: https://github.com/debops/ansible-subnetwork/
+
 2014-11-05
 ^^^^^^^^^^
 
