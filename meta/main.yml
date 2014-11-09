@@ -2,7 +2,20 @@
 
 dependencies:
   - role: debops.secret
+
   - role: debops.ferm
+    ferm_dependent_rules:
+
+      - type: 'custom'
+        dport: []
+        by_role: 'debops.lxc'
+        filename: 'lxc_bootp_checksum'
+        weight: '30'
+        rules: |
+          # Add checksums to BOOTP packets for LXC containers
+          # http://www.redhat.com/archives/libvir-list/2010-August/msg00035.html
+          @hook post "iptables -A POSTROUTING -t mangle -p udp --dport bootpc -j CHECKSUM --checksum-fill";
+
 
     # Make sure that LXC 1.0 is available in Debian Wheezy
   - role: debops.backporter
