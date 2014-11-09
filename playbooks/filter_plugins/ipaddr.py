@@ -239,6 +239,15 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
         if v.is_multicast():
             return value
 
+    elif query == 'link-local':
+        if v.version == 4:
+            if ipaddr(str(v_ip), '169.254.0.0/24'):
+                return value
+
+        elif v.version == 6:
+            if ipaddr(str(v_ip), 'fe80::/10'):
+                return value
+
     elif query == 'private':
         if v.is_private():
             return value
