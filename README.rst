@@ -57,9 +57,9 @@ LXC_ OpenVZ_ KVM_
 
 **Backup and encryption**
 
-========= ========== = ====== ==== =============
-Safekeep_ BoxBackup_   encFS_ SKS_ Monkeysphere_
-========= ========== = ====== ==== =============
+========= ========== ====== ==== =============
+Safekeep_ BoxBackup_ encFS_ SKS_ Monkeysphere_
+========= ========== ====== ==== =============
 
 Overview of how playbooks work within DebOps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
