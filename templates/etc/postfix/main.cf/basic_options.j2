@@ -9,13 +9,19 @@ enable_long_queue_ids		= {{ postfix_long_queue_ids | default('yes') }}
 {% if 'local' in postfix %}
 myorigin			= /etc/mailname
 {% else %}
+{% if ((postfix_mydomain is defined and postfix_mydomain) or (ansible_domain is defined and ansible_domain)) %}
 myorigin			= $mydomain
+{% else %}
+myorigin			= $myhostname
+{% endif %}
 local_recipient_maps		=
 local_transport			= error:local mail delivery is disabled
 
 {% endif %}
 myhostname			= {{ postfix_myhostname | default(ansible_fqdn) }}
+{% if ((postfix_mydomain is defined and postfix_mydomain) or (ansible_domain is defined and ansible_domain)) %}
 mydomain			= {{ postfix_mydomain | default(ansible_domain) }}
+{% endif %}
 smtp_helo_name			= {{ postfix_smtp_helo_name | default(ansible_fqdn) }}
 
 alias_maps                      = {{ get.list('alias_maps', [ 'hash:/etc/aliases' ]) }}
@@ -43,12 +49,16 @@ inet_interfaces			= loopback-only
 
 {% set postfix_tpl_mydestination = [] %}
 {% if 'local' in postfix %}
-{% set postfix_tpl_mydestination = postfix_mydestination + [postfix_myhostname | default(ansible_fqdn), 'localhost.' + postfix_mydomain | default(ansible_domain), 'localhost'] %}
+{% if ((postfix_mydomain is defined and postfix_mydomain) or (ansible_domain is defined and ansible_domain)) %}
+{% set postfix_tpl_mydestination = postfix_mydestination + [postfix_myhostname | default(ansible_fqdn), ansible_hostname, 'localhost.' + postfix_mydomain | default(ansible_domain), 'localhost'] %}
+{% else %}
+{% set postfix_tpl_mydestination = postfix_mydestination + [postfix_myhostname | default(ansible_fqdn), ansible_hostname, 'localhost'] %}
+{% endif %}
 {% else %}
 {% set postfix_tpl_mydestination = postfix_mydestination %}
 {% endif %}
 {% if postfix_tpl_mydestination %}
-mydestination			= {{ ', '.join(postfix_tpl_mydestination) }}
+mydestination			= {{ ', '.join(postfix_tpl_mydestination | unique) }}
 {% else %}
 mydestination			=
 {% endif %}
@@ -85,7 +95,9 @@ relayhost			= {{ postfix_relayhost }}
 {% endif %}
 {% endif %}
 {% elif 'local' not in postfix and 'mx' not in postfix %}
+{% if ansible_domain is defined and ansible_domain %}
 relayhost			= {{ ansible_domain }}
+{% endif %}
 
 {% endif %}
 {% set postfix_tpl_transport_maps = [] %}

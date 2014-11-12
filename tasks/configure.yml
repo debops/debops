@@ -1,5 +1,10 @@
 ---
 
+- name: Override Postfix capabilities if FQDN is not set
+  set_fact:
+    postfix: [ 'local' ]
+  when: ansible_domain is defined and not ansible_domain
+
 - name: Configure aliases database
   template:
     src: 'etc/aliases.j2'
