@@ -6,6 +6,9 @@
     state: 'restarted'
   notify: [ 'Restart ferm' ]
 
+- name: Check postfix
+  command: /usr/sbin/postfix -c /etc/postfix check
+
 - name: Reload postfix
   service:
     name: 'postfix'
