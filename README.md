@@ -1,19 +1,11 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) dnsmasq
 
 [![Travis CI](http://img.shields.io/travis/debops/ansible-dnsmasq.svg?style=flat)](http://travis-ci.org/debops/ansible-dnsmasq) [![test-suite](http://img.shields.io/badge/test--suite-ansible--dnsmasq-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-dnsmasq/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.dnsmasq-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1561)
-### Warning, this is a BETA role
-
-This role has been marked by the author as a beta role, which means that it
-might be significantly changed in the future. Be careful while using this role
-in a production environment.
-
-***
 
 This role installs and configures `dnsmasq` as a local DNS, DHCP and
-PXE/TFTP server. At the moment configuration is limited, and resulting
-environment is suited for local development only. A NATted network can also
-be configured for ease of use for local virtual machines / LXC containers
-without the need for additional external IP addresses.
+PXE/TFTP server. You can use it to configure host-based LAN behind a bridge
+interface for virtual machines / containers, or use it in your internal
+network.
 
 ### Installation
 

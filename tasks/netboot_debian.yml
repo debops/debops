@@ -1,25 +1,38 @@
 ---
 
 - name: Create required directories for Debian PXE boot
-  file: path={{ item }} state=directory owner=root group=root mode=0755
-  with_items:
-    - '/srv/tftp'
-    - '/usr/local/src/dnsmasq_netboot/debian'
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: [ '{{ dnsmasq_tftp_root }}', '/usr/local/src/dnsmasq_netboot/debian' ]
 
 - name: Download Debian netboot image
-  get_url: url={{ dnsmasq_netboot_debian_source }} dest={{ dnsmasq_netboot_debian_archive }}
-           force=no owner=root group=root mode=0644
+  get_url:
+    url: '{{ dnsmasq_netboot_debian_source }}'
+    dest: '{{ dnsmasq_netboot_debian_archive }}'
+    force: False
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 - name: Extract Debian netboot image
   command: tar -zxf {{ dnsmasq_netboot_debian_archive }} -C {{ dnsmasq_netboot_debian_root }} --overwrite --no-overwrite-dir
            creates={{ dnsmasq_netboot_debian_creates }}
 
-- name: Create /etc/hosts.allow.d/50_in.tftpd
-  template: src=etc/hosts.allow.d/50_in.tftpd.j2 dest=/etc/hosts.allow.d/00_in.tftpd owner=root group=root mode=0644
-  notify:
-    - Assemble hosts.allow.d
+- name: Allow access to TFTP in tcpwrappers
+  template:
+    src: 'etc/hosts.allow.d/50_dnsmasq_tftpd.j2'
+    dest: '/etc/hosts.allow.d/50_dnsmasq_tftpd_{{ item.interface }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: dnsmasq_interfaces
+  when: item.interface is defined and item.interface
+  notify: [ 'Assemble hosts.allow.d' ]
 
 - name: Flush handlers if needed for TFTP
   meta: flush_handlers
-
 

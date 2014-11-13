@@ -1,62 +1,96 @@
 ---
 
-# 192.168.x.0/24 subnet to use in dnsmasq configuration
-dnsmasq_subnet: 32
+# ---- Global options ----
 
-# Should dnsmasq support PXE Boot / TFTP server?
-dnsmasq_netboot: True
+# Enable or disable access to local DNS from upstream networks. You can publish
+# your subdomain in public DNS by delegating it in your zone configuration.
+dnsmasq_public_dns: False
 
-# List of hosts/networks allowed to connect to TFTP server
-dnsmasq_netboot_allow: []
-  #'192.168.32.0/24'
+# Enable or disable DHCPv4 support
+dnsmasq_dhcpv4: True
 
-# Network interface dnsmasq should listen on (configured for NAT by default)
-dnsmasq_interface: 'br2'
+# Enable or disable DHCPv6 support (router support is required)
+dnsmasq_dhcpv6: True
 
-# Local domain configuration for NAT
-dnsmasq_subdomain: 'nat'
-dnsmasq_domain: '{{ dnsmasq_subdomain }}.{{ ansible_fqdn }}'
+# Enable or disable local router support (no routing information is sent to
+# hosts, DHCPv6 doesn't work)
+dnsmasq_router: True
 
-# Hostname of router/gateway interface
-dnsmasq_domain_gw: 'gw'
+# Enable or disable TFTP server
+dnsmasq_tftp: True
 
-# Hostname of local domain mail server
-dnsmasq_domain_mx: 'gw'
 
-# List of domain->IP address mappings returned by dnsmasq
-dnsmasq_address: {}
-  #'subdomain.example.org': '10.20.30.40'
-  #'.wildcard.example.org': '10.50.60.70'
+# ---- Network interface options ----
 
-# List of CNAME entries
+# List of network interfaces that are assumed to be upstream networks, if
+# present on the host
+dnsmasq_upstream_interfaces: [ 'br0', 'br1', 'eth0', 'eth1' ]
+
+# Name of the IPv4 gateway interface
+dnsmasq_ipv4_gateway: '{{ ansible_default_ipv4.interface | default("") }}'
+
+# Name of the IPv6 gateway interface
+dnsmasq_ipv6_gateway: '{{ ansible_default_ipv6.interface | default("") }}'
+
+# List of internal interfaces on which dnsmasq will configure its services
+dnsmasq_interfaces:
+
+    # Name of the interface
+  - interface: 'br2'
+
+    # DNS A record of the interface
+    name: 'gw'
+
+    # Optional DNS CNAME records of the interface
+    aliases: [ 'router', 'gateway' ]
+
+    # First IP address in the DHCP range (index)
+    dhcp_range_start: '10'
+
+    # Last IP address in the DHCP range (index)
+    dhcp_range_end: '-10'
+
+    # DHCP lease lifetime
+    dhcp_lease: '24h'
+
+    # DHCPv6 options configured on this interface
+    ipv6_mode: 'ra-names,ra-stateless,slaac'
+
+
+# ---- DNS options ----
+
+# DNS domain configured by dnsmasq for all local networks
+dnsmasq_domain: '{{ ansible_fqdn }}'
+
+# Set DNS MX record of the main domain to dnsmasq host; set to False to disable
+dnsmasq_domain_mx: '{{ ansible_fqdn }}'
+
+# Alternative '/etc/hosts' read by dnsmasq, set to False to use default
+# '/etc/hosts' file
+dnsmasq_etc_hosts: '/etc/hosts.dnsmasq'
+
+# List of additional search domains. Set 'dnsmasq_search' to False
+# to completely disable this functionality.
+dnsmasq_search: [ '{{ dnsmasq_domain }}', '{{ ansible_domain }}' ]
+
+# Hash of DNS CNAME records to configure for hosts found in local DNS
+# Entries should be specified without the domain suffix
 dnsmasq_cname: {}
-  #'host.example.net': 'other.example.net'
-  #'sub.domain.example.org': 'other.example.net'
+  #'host1': 'cname1'
+  #'host2': [ 'list', 'of', 'aliases' ]
 
-# List of CNAME entries on local domain
-dnsmasq_cname_subdomain: {}
-  #'host': 'other'
-  #'sub.domain': 'other'
 
-# Enable or disable DHCP service
-dnsmasq_dhcp: True
+# ---- TFTP options ----
 
-# DHCP range (2-254)
-dnsmasq_dhcp_range: '192.168.{{ dnsmasq_subnet }}.2,192.168.{{ dnsmasq_subnet }}.254'
+# Path to TFTP root directory
+dnsmasq_tftp_root: '/srv/tftpboot'
 
-# Default DHCP lease time
-dnsmasq_lease_time: '24h'
+# BOOTP command passed to clients (see dhcp-boot in dnsmasq(8)
+dnsmasq_tftp_boot: 'pxelinux.0'
 
-# Default router/gateway address
-dnsmasq_router: '192.168.{{ dnsmasq_subnet }}.1'
 
-# Reverse DNS domain mapping
-dnsmasq_revdns: '{{ dnsmasq_subnet }}.168.192.in-addr.arpa'
+# ---- Other options ----
 
-# NAT network to configure
-dnsmasq_network: '192.168.{{ dnsmasq_subnet }}.0/24'
-
-# Tag used in dnsmasq configuration options
-dnsmasq_tag: 'debops{{ dnsmasq_interface }}'
-
+# Additional options passed as a YAML text block
+dnsmasq_options: ''
 
