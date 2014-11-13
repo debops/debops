@@ -11,6 +11,49 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-11-13
+^^^^^^^^^^
+
+Role updates
+************
+
+`debops.postfix`_ role will now correctly work on hosts without FQDN
+configured. On these hosts, Postfix will automatically override its configured
+capabilities and enable local mail delivery, mail will be originating from the
+host instead of the domain. Postfix role will also no longer modify
+``/etc/hosts`` to rewrite IPv6 ``localhost`` address, it seems that the
+annoying warning in the mail log about unknown connection source has been
+fixed.
+
+`debops.dnsmasq`_ role has been completely rewritten and now supports multiple
+network interfaces and IPv6, among other things. It requires ``ipaddr()``
+filter plugin to work, but thanks to that it can automatically configure
+services based on IP addresses configured on specified interface - no more
+separate IP subnet configuration is needed. Role now also creates more
+fine-grained CNAME records and has more configuration options.
+And it's out of beta! :-)
+
+.. _debops.postfix: https://github.com/debops/ansible-postfix/
+.. _debops.dnsmasq: https://github.com/debops/ansible-dnsmasq/
+
+Playbook updates
+****************
+
+Old 'debops.nat' role has been obsoleted by `debops.subnetwork`_ and removed
+from ``ansible-galaxy`` requirements file. It will also be removed from GitHub
+and Ansible Galaxy in the future. Also, `debops.radvd`_ has been added to the
+requirements.
+
+Virtualization playbook has been modified and roles that previously
+automatically configured internal network and DNS services have been removed
+from KVM and LXC plays (yes, this will change instllation procedures in the
+docs, which are not yet updated). New playbook, 'networking.yml' has been added
+where you will find all network-related plays, like subnet creation and
+management (via ``debops.subnetwork`` and DHCP/DNS management.
+
+.. _debops.subnetwork: https://github.com/debops/ansible-subnetwork/
+.. _debops.radvd: https://github.com/debops/ansible-radvd/
+
 2014-11-07
 ^^^^^^^^^^
 
