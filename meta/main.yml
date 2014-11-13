@@ -3,20 +3,8 @@
 dependencies:
 
   - role: debops.ferm
-    when: dnsmasq_netboot is defined and dnsmasq_netboot
-    ferm_input_list:
-
-      - type: 'dport_accept'
-        protocol: [ 'udp' ]
-        dport: [ 'tftp' ]
-        saddr: '{{ dnsmasq_netboot_allow }}'
-        accept_any: True
-        filename: 'dnsmasq_dependency_accept'
-        weight: '20'
 
   - role: debops.tcpwrappers
-    when: dnsmasq_netboot is defined and dnsmasq_netboot
-    tags: dnsmasq
 
 galaxy_info:
   author: 'Maciej Delmanowski'
@@ -42,11 +30,10 @@ galaxy_info:
   - system
 
 ansigenome_info:
-  github_url: "https://github.com/debops/ansible-role-ansible"
+  github_url: "https://github.com/debops/ansible-dnsmasq"
   git_branch: "master"
   galaxy_id: "1561"
 
-  beta: True
   travis: True
 
   license_url: 'https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3)'
@@ -60,8 +47,7 @@ ansigenome_info:
 
   synopsis: |
     This role installs and configures `dnsmasq` as a local DNS, DHCP and
-    PXE/TFTP server. At the moment configuration is limited, and resulting
-    environment is suited for local development only. A NATted network can also
-    be configured for ease of use for local virtual machines / LXC containers
-    without the need for additional external IP addresses.
+    PXE/TFTP server. You can use it to configure host-based LAN behind a bridge
+    interface for virtual machines / containers, or use it in your internal
+    network.
 

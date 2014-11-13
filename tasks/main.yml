@@ -1,23 +1,62 @@
 ---
 
-- name: Make sure dnsmasq is installed
-  apt: pkg={{ item }} state=latest install_recommends=no
-  with_items:
-    - dnsmasq
-    - resolvconf
+- name: Install dnsmasq package
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_items: [ 'dnsmasq', 'resolvconf' ]
 
-- name: Setup dnsmasq configuration
-  template: src=etc/dnsmasq.d/dnsmasq.conf.j2 dest=/etc/dnsmasq.d/{{ dnsmasq_interface }}_{{ dnsmasq_domain }}.conf
-            owner=root group=root mode=0644
-  notify:
-    - Restart dnsmasq
+- name: Get list of local search domains
+  shell: grep search /etc/resolv.conf | cut -d' ' -f2- | tr ' ' '\n'
+  register: dnsmasq_register_search
+  changed_when: False
 
-- name: Setup dnsmasq zone configuration
-  template: src=etc/dnsmasq.d/zone.conf.j2 dest=/etc/dnsmasq.d/{{ dnsmasq_interface }}_{{ dnsmasq_domain }}_zone.conf
-            owner=root group=root mode=0644
-  notify:
-    - Restart dnsmasq
+- name: Get dnsmasq version
+  shell: dnsmasq --version | head -n 1 | awk '{print $3}'
+  register: dnsmasq_version
+  changed_when: False
+
+- name: Create main dnsmasq configuration
+  template:
+    src: 'etc/dnsmasq.d/00_main.conf.j2'
+    dest: '/etc/dnsmasq.d/00_main.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Test and restart dnsmasq' ]
+
+- name: Create interface dnsmasq configuration
+  template:
+    src: 'etc/dnsmasq.d/interface.conf.j2'
+    dest: '/etc/dnsmasq.d/interface_{{ item.interface }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: dnsmasq_interfaces
+  when: item.interface is defined and item.interface
+  notify: [ 'Test and restart dnsmasq' ]
+
+- name: Configure firewall - general options
+  template:
+    src: 'etc/ferm/filter-input.d/dnsmasq.conf.j2'
+    dest: '/etc/ferm/filter-input.d/dnsmasq.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart ferm' ]
+
+- name: Configure firewall on managed interfaces
+  template:
+    src: 'etc/ferm/filter-input.d/dnsmasq_interface.conf.j2'
+    dest: '/etc/ferm/filter-input.d/dnsmasq_interface_{{ item.interface }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: dnsmasq_interfaces
+  when: item.interface is defined and item.interface
+  notify: [ 'Restart ferm' ]
 
 - include: netboot_debian.yml
-  when: dnsmasq_netboot is defined and dnsmasq_netboot
+  when: dnsmasq_tftp is defined and dnsmasq_tftp
 
