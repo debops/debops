@@ -337,7 +337,10 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
                     return str(v)
 
             elif v.size > 1:
-                return str(v[query]) + '/' + str(v.prefixlen)
+                try:
+                    return str(v[query]) + '/' + str(v.prefixlen)
+                except:
+                    return False
 
             else:
                 return value
