@@ -350,10 +350,22 @@ def ipaddr(value, query = '', version = False, alias = 'ipaddr'):
 
 def ipwrap(value, query = ''):
     try:
-        _ret = ipaddr(value, query, version = False, alias = 'ipwrap')
-        if _ret:
-            return ipaddr(_ret, 'wrap')
-        return False
+        if isinstance(value, (list, tuple)):
+            _ret = []
+            for element in value:
+                if ipaddr(element, query, version = False, alias = 'ipwrap'):
+                    _ret.append(ipaddr(element, 'wrap'))
+                else:
+                    _ret.append(element)
+
+            return _ret
+        else:
+            _ret = ipaddr(value, query, version = False, alias = 'ipwrap')
+            if _ret:
+                return ipaddr(_ret, 'wrap')
+            else:
+                return value
+
     except:
         return value
 
