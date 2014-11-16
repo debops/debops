@@ -73,11 +73,16 @@
   - name: Configure admin group access in sudo
     lineinfile:
       dest: '/etc/sudoers.d/{{ bootstrap_admin_group }}'
-      regexp: '^%{{ bootstrap_admin_group }}'
-      line: '%{{ bootstrap_admin_group }} ALL=(ALL:ALL) NOPASSWD: SETENV: ALL'
+      regexp: '{{ item.regexp }}'
+      line: '{{ item.line }}'
       state: 'present'
       create: True
       owner: 'root'
       group: 'root'
       mode: '0440'
+    with_items:
+      - regexp: '^Defaults:%{{ bootstrap_admin_group }} env_check'
+        line:    'Defaults:%{{ bootstrap_admin_group }} env_check += "SSH_CLIENT"'
+      - regexp: '^%{{ bootstrap_admin_group }}'
+        line:    '%{{ bootstrap_admin_group }} ALL=(ALL:ALL) NOPASSWD: SETENV: ALL'
 
