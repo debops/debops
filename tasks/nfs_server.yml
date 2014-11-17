@@ -42,10 +42,17 @@
     - 'etc/default/nfs-common'
     - 'etc/default/nfs-kernel-server'
     - 'etc/modprobe.d/nfs-server.conf'
-    - 'etc/ferm/filter-input.d/nfs-server.conf'
   notify:
     - Restart nfs-common
     - Restart nfs-kernel-server
+  when: nfs_server is defined and nfs_server == True
+  tags:
+    - nfs
+    - nfs_server
+
+- name: Configure NFS server
+  template: src=etc/ferm/filter-input.d/nfs-server.conf.j2 dest=/etc/ferm/filter-input.d/nfs-server.conf owner=root group=adm mode=0644
+  notify:
     - Restart ferm
   when: nfs_server is defined and nfs_server == True
   tags:
