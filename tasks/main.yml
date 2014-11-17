@@ -18,20 +18,28 @@
     path: '{{ item }}'
     state: 'directory'
     owner: 'root'
-    group: 'root'
-    mode: '0755'
+    group: 'adm'
+    mode: '2750'
   with_items:
     - '/etc/ferm/ferm.d'
     - '/etc/ferm/filter-input.d'
 
-- name: Apply firewall configuration
+- name: Configure ferm default variables
   template:
-    src: '{{ item }}.j2'
-    dest: '/{{ item }}'
+    src: 'etc/default/ferm.j2'
+    dest: '/etc/default/ferm'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: [ 'etc/default/ferm', 'etc/ferm/ferm.conf' ]
+  notify: [ 'Restart ferm' ]
+
+- name: Configure main ferm config file
+  template:
+    src: 'etc/ferm/ferm.conf.j2'
+    dest: '/etc/ferm/ferm.conf'
+    owner: 'root'
+    group: 'adm'
+    mode: '0644'
   notify: [ 'Restart ferm' ]
 
 - name: Allow SSH access from Ansible Controller
@@ -39,7 +47,7 @@
     src: 'etc/ferm/filter-input.d/ansible_controller.conf.j2'
     dest: '/etc/ferm/filter-input.d/10_ansible_controller.conf'
     owner: 'root'
-    group: 'root'
+    group: 'adm'
     mode: '0644'
   notify: [ 'Restart ferm' ]
 
@@ -61,7 +69,7 @@
     src: 'etc/ferm/ferm.d/{{ item.type }}.conf.j2'
     dest: '/etc/ferm/ferm.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + (item.dport[0] | default("rules"))) }}.conf'
     owner: 'root'
-    group: 'root'
+    group: 'adm'
     mode: '0644'
   with_flattened:
     - ferm_rules
@@ -90,7 +98,7 @@
     src: 'etc/ferm/filter-input.d/{{ item.type }}.conf.j2'
     dest: '/etc/ferm/filter-input.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + (item.dport[0] | default("rules"))) }}.conf'
     owner: 'root'
-    group: 'root'
+    group: 'adm'
     mode: '0644'
   with_flattened:
     - ferm_input_list
