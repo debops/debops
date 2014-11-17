@@ -14,6 +14,13 @@
     install_recommends: False
   when: ('client' in postfix)
 
+- name: Disable Postfix configuration in debconf
+  debconf:
+    name: 'postfix'
+    question: 'postfix/main_mailer_type'
+    vtype: 'select'
+    value: 'No configuration'
+
 - name: Divert original Postfix configuration
   command: dpkg-divert --quiet --local --divert /etc/postfix/{{ item }}.dpkg-divert --rename /etc/postfix/{{ item }}
            creates=/etc/postfix/{{ item }}.dpkg-divert
