@@ -5,7 +5,7 @@
     name: 'ferm'
     question: 'ferm/enable'
     vtype: 'boolean'
-    value: '{{ ferm | lower }}'
+    value: '{% if ferm is defined and ferm %}yes{% else %}no{% endif %}'
 
 - name: Ensure ferm is installed
   apt:
