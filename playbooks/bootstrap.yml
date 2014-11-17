@@ -18,7 +18,7 @@
 #   - no passwords are set or modified on any account;
 #
 # Usage:
-# ansible-playbook -i inventory playbooks/bootstrap.yml -k --limit host
+# debops bootstrap -k --limit host
 #
 # After securing access to the server by disabling the password authentication
 # in sshd, this playbook is expected to not work correctly.
@@ -59,7 +59,6 @@
     user:
       name: '{{ bootstrap_admin_account }}'
       state: 'present'
-      shell: '/bin/sh'
       groups: '{{ bootstrap_admin_group }}'
       append: True
 
@@ -74,11 +73,22 @@
   - name: Configure admin group access in sudo
     lineinfile:
       dest: '/etc/sudoers.d/{{ bootstrap_admin_group }}'
-      regexp: '^%{{ bootstrap_admin_group }}'
-      line: '%{{ bootstrap_admin_group }} ALL=(ALL:ALL) NOPASSWD: SETENV: ALL'
+      regexp: '{{ item.regexp }}'
+      line: '{{ item.line }}'
       state: 'present'
       create: True
       owner: 'root'
       group: 'root'
       mode: '0440'
+    with_items:
+      - regexp: '^Defaults:%{{ bootstrap_admin_group }} env_check\s'
+        line:    'Defaults:%{{ bootstrap_admin_group }} env_check += "SSH_CLIENT"'
+      - regexp: '^%{{ bootstrap_admin_group }}\s'
+        line:    '%{{ bootstrap_admin_group }} ALL=(ALL:ALL) NOPASSWD: SETENV: ALL'
 
+  - name: Ensure /etc/sudoers includes /etc/sudoers.d
+    lineinfile:
+      dest: '/etc/sudoers'
+      regexp: '^#includedir\s+/etc/sudoers.d$"
+      line: '#includedir /etc/sudoers.d'
+      state: 'present'
