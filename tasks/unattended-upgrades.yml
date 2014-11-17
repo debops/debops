@@ -9,8 +9,8 @@
 - name: Configure unattended-upgrades
   template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
   with_items:
-    - 'etc/apt/apt.conf.d/20auto-upgrades'
-    - 'etc/apt/apt.conf.d/50unattended-upgrades'
+    - 'etc/apt/apt.conf.d/25auto-upgrades.conf'
+    - 'etc/apt/apt.conf.d/55unattended-upgrades.conf'
   when: apt_unattended_upgrades is defined and apt_unattended_upgrades
 
 - name: Remove unattended-upgrades if disabled
