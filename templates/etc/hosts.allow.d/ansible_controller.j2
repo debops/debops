@@ -19,7 +19,7 @@
 {%     set _ = tcpwrappers_tpl_local_ansible_controllers.append(ansible_controller | ipwrap) %}
 {%   endif %}
 {% endif %}
-{% set tcpwrappers_tpl_local_ansible_controllers_result = tcpwrappers_tpl_local_ansible_controllers | sort | unique %}
+{% set tcpwrappers_tpl_local_ansible_controllers_result = tcpwrappers_tpl_local_ansible_controllers | unique | sort %}
 {% if tcpwrappers_tpl_local_ansible_controllers_result is defined and tcpwrappers_tpl_local_ansible_controllers_result %}
 {% for element in tcpwrappers_tpl_local_ansible_controllers_result %}
 sshd: {{ element }}
