@@ -20,8 +20,7 @@
 @def $ipv6_enabled	= {% if 'ip6' in ferm_filter_domains %}1{% else %}0{% endif %};
 
 
-# Base firewall for IPv4 and IPv6
-domain (ip ip6) table filter {
+domain $domains table filter {
 
 	# Default chain policy
 	chain INPUT    policy {{ ferm_default_policy_input   | default('DROP') }};
@@ -78,7 +77,6 @@ domain (ip ip6) table filter {
 		}
 
 {% endif %}
-
 		# Drop connections from bad guys
 		mod recent name "badguys" update seconds 3600 {
 			mod limit limit 3/hour limit-burst 5 {
@@ -86,26 +84,17 @@ domain (ip ip6) table filter {
 			}
 			REJECT reject-with icmp-admin-prohibited;
 		}
-	}
-}
 
-# Include INPUT rules for enabled domains (IPv4, IPv6)
-domain $domains table filter chain INPUT {
-	@include 'filter-input.d/';
-}
-
-# Rest of the firewall for IPv4 and IPv6
-domain (ip ip6) table filter {
-
-	chain INPUT {
+		# Include INPUT rules for enabled domains (IPv4, IPv6)
+		@include 'filter-input.d/';
 
 {% if ferm_mark_portscan is defined and ferm_mark_portscan %}
 		# Catch bad guys (port scanners)
 		mod recent set name "badguys" {
-		mod limit limit 3/hour limit-burst 5 {
-			LOG log-prefix "iptables-portscan: " log-level warning;
+			mod limit limit 3/hour limit-burst 5 {
+				LOG log-prefix "iptables-portscan: " log-level warning;
+			}
 		}
-	}
 
 {% endif %}
 		# Reject everything else
