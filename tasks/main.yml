@@ -2,7 +2,7 @@
 
 - name: Install packages required for LXC
   apt: name={{ item }} state=latest install_recommends=no
-  with_items: lxc_distribution_packages[ansible_distribution + '_' + ansible_distribution_release]
+  with_items: lxc_distribution_packages[ansible_distribution + '_' + (ansible_distribution_release.split("/")[0])]
 
 - name: Check available LXC package version
   shell: lxc-create --version
