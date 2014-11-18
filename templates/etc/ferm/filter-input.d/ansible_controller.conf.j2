@@ -31,7 +31,7 @@ Required:
 {%     set _ = ferm_tpl_local_ansible_controllers.append(ansible_controller) %}
 {%   endif %}
 {% endif %}
-{% set ferm_tpl_local_ansible_controllers_result = ferm_tpl_local_ansible_controllers | sort | unique %}
+{% set ferm_tpl_local_ansible_controllers_result = ferm_tpl_local_ansible_controllers | unique | sort %}
 {% if ferm_tpl_local_ansible_controllers_result is defined and ferm_tpl_local_ansible_controllers_result %}
 protocol tcp dport ssh {
 	@def $ITEMS = ( @ipfilter( ({{ ferm_tpl_local_ansible_controllers_result | unique | join(" ") }}) ) );
