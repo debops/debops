@@ -91,10 +91,10 @@ domain $domains table filter {
 {% if ferm_mark_portscan is defined and ferm_mark_portscan %}
 		# Catch bad guys (port scanners)
 		mod recent set name "badguys" {
-		mod limit limit 3/hour limit-burst 5 {
-			LOG log-prefix "iptables-portscan: " log-level warning;
+			mod limit limit 3/hour limit-burst 5 {
+				LOG log-prefix "iptables-portscan: " log-level warning;
+			}
 		}
-	}
 
 {% endif %}
 		# Reject everything else
