@@ -42,7 +42,7 @@
     src: 'etc/ferm/filter-input.d/dnsmasq.conf.j2'
     dest: '/etc/ferm/filter-input.d/dnsmasq.conf'
     owner: 'root'
-    group: 'root'
+    group: 'adm'
     mode: '0644'
   notify: [ 'Restart ferm' ]
 
@@ -51,7 +51,7 @@
     src: 'etc/ferm/filter-input.d/dnsmasq_interface.conf.j2'
     dest: '/etc/ferm/filter-input.d/dnsmasq_interface_{{ item.interface }}.conf'
     owner: 'root'
-    group: 'root'
+    group: 'adm'
     mode: '0644'
   with_items: dnsmasq_interfaces
   when: item.interface is defined and item.interface
