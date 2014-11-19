@@ -11,6 +11,66 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-11-19
+^^^^^^^^^^
+
+Role updates
+************
+
+Network forwarding configuration in ``iptables`` has been moved from
+`debops.kvm`_, `debops.lxc`_ and `debops.subnetwork`_ roles into `debops.ferm`_
+to avoid duplication. This will also result in forwarded network interfaces
+being able to accept Router Advertisements and configure their IPv6 addresses
+using SLAAC. In short, easier network configuration.
+
+`Hartmut Goebel`_ has provided a set of `Raspbian`_ APT repositories for
+`debops.apt`_ role, thanks! Unfortunately, at the moment Ansible does not
+correctly recognize Raspian as a separate distribution which prevents automatic
+source selection, but there are workarounds.
+
+Because of the recent Debian Jessie freeze, DebOps project is starting
+preparations for full Jessie support, both as a standalone install, as well as
+an upgrade from Wheezy.
+
+All `debops.ferm`_ configuration files had changed ownership from
+``root:root`` to ``root:adm`` which is the default in Debian. This change
+should prevent back-and-forth changes of ownership after system has been
+upgraded, which forces ``ferm`` files to change ownership to ``root:adm``.
+
+Some APT configuration files in `debops.apt`_ role have been renamed to avoid
+conflicts with existing files during the upgrade, this should prevent
+``debconf`` questions about replacing modified configuration files.
+
+Both `debops.apt`_ and `debops.lxc`_ roles now support
+``ansible_distribution_release`` in ``'release/sid`` format, which lets DebOps
+function correctly on Jessie during the freeze. There might be other roles
+which need to be updated to support this syntax, they will be fixed later.
+
+`debops.auth`_ role now uses full templates instead of ``lineinfile`` module to
+configure ``sudo`` and ``su`` admin access. This should prevent ``debconf``
+asking about modifications in ``/etc/pam.d/su`` (which is now diverted), and
+lets ``sudo`` have more configuration options for ``admins`` group.
+
+.. _Hartmut Goebel: https://github.com/htgoebel
+.. _Raspbian: http://raspbian.org/
+.. _debops.apt: https://github.com/debops/ansible-apt/
+.. _debops.kvm: https://github.com/debops/ansible-kvm/
+.. _debops.lxc: https://github.com/debops/ansible-lxc/
+.. _debops.ferm: https://github.com/debops/ansible-ferm/
+.. _debops.subnetwork: https://github.com/debops/ansible-subnetwork/
+.. _debops.auth: https://github.com/debops/ansible-auth/
+
+Playbook updates
+****************
+
+New playbook, ``tools/hostname.yml`` can be used to change the hostname and
+FQDN of a host to those defined in Ansible inventory (and yes, you can do
+multiple hosts at once). It's advised to not do it after services have been
+configured, since some of them may rely on the correct FQDN defined in DNS. If
+you use DHCP to automatically configure DNS (for example with ``dnsmasq``,
+rebooting the host after chaning the hostname should ensure that the new FQDN
+is correct.
+
 2014-11-13
 ^^^^^^^^^^
 
