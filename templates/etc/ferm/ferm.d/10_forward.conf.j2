@@ -1,0 +1,37 @@
+# This file is managed by Ansible, all changes will be lost
+
+{% if ((ferm_forward is defined and ferm_forward) or
+       ((ansible_local is defined and ansible_local) and
+        (ansible_local.ferm is defined and ansible_local.ferm) and
+        (ansible_local.ferm.forward is defined and ansible_local.ferm.forward | bool))) %}
+# Configure forwarding to external and internal networks
+domain $domains table filter chain FORWARD {
+
+{% if ferm_external_interfaces is defined and ferm_external_interfaces %}
+{% for interface in ferm_external_interfaces | unique %}
+{% if interface and
+      (hostvars[inventory_hostname]["ansible_" + interface] is defined and
+       hostvars[inventory_hostname]["ansible_" + interface]) %}
+	# Forward external traffic on {{ interface }} interface
+	interface {{ interface }} ACCEPT;
+	outerface {{ interface }} ACCEPT;
+
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if ferm_internal_interfaces is defined and ferm_internal_interfaces %}
+{% for interface in ferm_internal_interfaces | unique %}
+{% if interface and
+      (hostvars[inventory_hostname]["ansible_" + interface] is defined and
+       hostvars[inventory_hostname]["ansible_" + interface]) %}
+	# Forward internal traffic on {{ interface }} interface
+	interface {{ interface }} outerface {{ interface }} ACCEPT;
+
+{% endif %}
+{% endfor %}
+{% endif %}
+}
+{% else %}
+# Packet forwarding in ip(6)tables is not enabled
+{% endif %}
+

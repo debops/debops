@@ -1,3 +1,10 @@
+{% set ferm_tpl_forward = False                                                       %}
+{% if ((ferm_forward is defined and ferm_forward) or
+       ((ansible_local is defined and ansible_local) and
+        (ansible_local.ferm is defined and ansible_local.ferm) and
+        (ansible_local.ferm.forward is defined and ansible_local.ferm.forward | bool))) %}
+{%   set ferm_tpl_forward = True                                                      %}
+{% endif                                                                              %}
 {% set ferm_tpl_ansible_controllers = []                                              %}
 {% if (ansible_local is defined and ansible_local) and
       (ansible_local.ferm is defined and ansible_local.ferm) and
@@ -20,5 +27,6 @@
 {% endif                                                                              %}
 {% set ferm_tpl_ansible_controllers_result = ferm_tpl_ansible_controllers | unique | sort %}
 {
+"forward": "{{ ferm_tpl_forward }}",
 "ansible_controllers": {{ ferm_tpl_ansible_controllers_result | to_nice_json }}
 }

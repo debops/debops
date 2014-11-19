@@ -22,12 +22,12 @@ ferm_default_policy_output: 'ACCEPT'
 ferm_default_policy_forward: 'DROP'
 
 # ICMP flood mitigation
-ferm_icmp_limit: '5/second'
-ferm_icmp_burst: '8'
+ferm_icmp_limit: '10/second'
+ferm_icmp_burst: '10'
 
 # SYN flood mitigation
-ferm_syn_limit: '10/second'
-ferm_syn_burst: '5'
+ferm_syn_limit: '40/second'
+ferm_syn_burst: '20'
 
 # Mark packets on invalid ports as bad guys (block port scanning)
 ferm_mark_portscan: False
@@ -55,4 +55,19 @@ ferm_input_dependent_list: []
   #  filename: ''         # custom filename instead of a generated one, optional
   #  delete: False/True   # delete specified rule file, optional
 
+
+# Enable forwarding in ip(6)tables. This option can be used by other roles and
+# its status is saved in Ansible local facts, which will override variable
+# status from role defaults or inventory.
+ferm_forward: False
+
+# List of interfaces that are connected to external network, traffic on these
+# interfaces will be forwarded to all hosts
+ferm_external_interfaces:
+  - '{{ ansible_default_ipv4.interface | default("") }}'
+  - '{{ ansible_default_ipv6.interface | default("") }}'
+
+# List of interfaces that are connected to internal network, traffic on these
+# interfaces will be forwarded only between hosts on that network
+ferm_internal_interfaces: [ 'br1' ]
 
