@@ -9,11 +9,6 @@
         (ansible_distribution_release is defined and
          ansible_distribution_release == 'wheezy')
 
-- name: Configure host firewall for LXC containers
-  template: src=etc/ferm/ferm.d/lxc.conf.j2 dest=/etc/ferm/ferm.d/lxc.conf
-            owner=root group=adm mode=0644
-  notify: [ 'Restart ferm' ]
-
 - name: Generate default LXC configuration
   template: src=etc/lxc/default.conf.j2 dest=/etc/lxc/default.conf
             owner=root group=root mode=0644
