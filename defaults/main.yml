@@ -56,3 +56,18 @@ ferm_input_dependent_list: []
   #  delete: False/True   # delete specified rule file, optional
 
 
+# Enable forwarding in ip(6)tables. This option can be used by other roles and
+# its status is saved in Ansible local facts, which will override variable
+# status from role defaults or inventory.
+ferm_forward: False
+
+# List of interfaces that are connected to external network, traffic on these
+# interfaces will be forwarded to all hosts
+ferm_external_interfaces:
+  - '{{ ansible_default_ipv4.interface | default("") }}'
+  - '{{ ansible_default_ipv6.interface | default("") }}'
+
+# List of interfaces that are connected to internal network, traffic on these
+# interfaces will be forwarded only between hosts on that network
+ferm_internal_interfaces: [ 'br1' ]
+

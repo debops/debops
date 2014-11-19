@@ -51,6 +51,15 @@
     mode: '0644'
   notify: [ 'Restart ferm' ]
 
+- name: Configure forwarding in ip(6)tables if enabled
+  template:
+    src: 'etc/ferm/ferm.d/10_forward.conf.j2'
+    dest: '/etc/ferm/ferm.d/10_forward.conf'
+    owner: 'root'
+    group: 'adm'
+    mode: '0644'
+  notify: [ 'Restart ferm' ]
+
 - name: Remove ip(6)tables rules if requested
   file:
     path: '/etc/ferm/ferm.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.dport[0] | default("rules")) }}.conf'
@@ -118,6 +127,23 @@
   command: ferm --flush /etc/ferm/ferm.conf
   changed_when: False
   when: (ferm is undefined or (ferm is defined and not ferm))
+
+- name: Configure sysctl
+  template:
+    src: 'etc/sysctl.d/30-ferm.conf.j2'
+    dest: '/etc/sysctl.d/30-ferm.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Reload sysctl' ]
+
+- name: Configure forwarding in ifupdown if enabled
+  template:
+    src: 'etc/network/if-pre-up.d/ferm-forward.j2'
+    dest: '/etc/network/if-pre-up.d/ferm-forward'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
 - name: Ensure that Ansible local facts directory exists
   file:
