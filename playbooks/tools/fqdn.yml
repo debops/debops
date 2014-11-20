@@ -1,6 +1,6 @@
 ---
 
-# DebOps playbook: tools/hostname
+# DebOps playbook: tools/fqdn
 # (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
 # Homepage: http://debops.org/
 #
@@ -8,10 +8,14 @@
 # Ansible inventory. You can either specify only a hostname to leave domain
 # intact, or specify full FQDN as the host. Example 'inventory/hosts':
 #
-# newhost               ansible_ssh_host=old.example.com
-# newhost.example.org   ansible_ssh_host=old.example.com
-# host                  ansible_ssh_host=192.0.2.1
-# host.example.com      ansible_ssh_host=192.0.2.1
+#   newhost               ansible_ssh_host=old.example.com
+#   newhost.example.org   ansible_ssh_host=old.example.com
+#
+#   host                  ansible_ssh_host=192.0.2.1
+#   host.example.com      ansible_ssh_host=192.0.2.1
+#
+#   host                  ansible_ssh_host=host.example.com    fqdn=newhost
+#   host                  ansible_ssh_host=host.example.com    fqdn=newhost.example.org
 #
 # After changing the hostname or FQDN you should preferably reboot the host to
 # make sure that system uses its new hostname and domain.
@@ -21,15 +25,23 @@
   hosts: all
   sudo: True
 
+  vars:
+
+    # New hostname
+    fqdn_host: '{% if fqdn is defined and fqdn %}{{ fqdn.split(".")[0] }}{% else %}{{ inventory_hostname_short }}{% endif %}'
+
+    # New FQDN address
+    fqdn_full: '{{ fqdn | default(inventory_hostname) }}'
+
   tasks:
 
     - name: Update system hostname in /etc/ssh/*.pub
       replace:
         dest: '/etc/ssh/{{ item }}'
         regexp: '(\s+)root@{{ ansible_hostname }}$'
-        replace: '\1root@{{ inventory_hostname_short }}'
+        replace: '\1root@{{ fqdn_host }}'
       with_items: [ 'ssh_host_dsa_key.pub', 'ssh_host_ecdsa_key.pub', 'ssh_host_rsa_key.pub' ]
-      when: ansible_hostname != inventory_hostname_short
+      when: ansible_hostname != fqdn_host
       notify: [ 'Restart ssh' ]
 
     - name: Check if /etc/mailname exists
@@ -41,25 +53,25 @@
       replace:
         dest: '/etc/mailname'
         regexp: '{{ ansible_fqdn.split(".") | join("\.") }}$'
-        replace: '{% if inventory_hostname != inventory_hostname_short %}{{ inventory_hostname }}{% else %}{{ inventory_hostname_short + "." + ansible_domain }}{% endif %}'
+        replace: '{% if fqdn_full != fqdn_host %}{{ fqdn_full }}{% else %}{{ fqdn_host + "." + ansible_domain }}{% endif %}'
       when: mailname is defined and mailname.stat.exists
 
     - name: Update system FQDN in /etc/hosts
       replace:
         dest: '/etc/hosts'
         regexp: '(\s+){{ ansible_fqdn.split(".") | join("\.") }}(\s+.*)?$'
-        replace: '\1{% if inventory_hostname != inventory_hostname_short %}{{ inventory_hostname }}{% else %}{{ inventory_hostname_short + "." + ansible_domain }}{% endif %}\2'
+        replace: '\1{% if fqdn_full != fqdn_host %}{{ fqdn_full }}{% else %}{{ fqdn_host + "." + ansible_domain }}{% endif %}\2'
 
     - name: Update system hostname in /etc/hosts
       replace:
         dest: '/etc/hosts'
         regexp: '(\s+){{ ansible_hostname }}(\s+.*)?$'
-        replace: '\1{{ inventory_hostname_short }}\2'
+        replace: '\1{{ fqdn_host }}\2'
 
     - name: Change the system hostname
       hostname:
-        name: '{{ inventory_hostname_short }}'
-      when: ansible_hostname != inventory_hostname_short
+        name: '{{ fqdn_host }}'
+      when: ansible_hostname != fqdn_host
 
   handlers:
 
