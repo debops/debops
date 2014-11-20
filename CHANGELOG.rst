@@ -11,6 +11,28 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-11-20
+^^^^^^^^^^
+
+Role updates
+************
+
+`debops.ifupdown`_ will now check if previous network configuration in
+``/etc/network/interfaces`` was using static IP addresses, which indicates that
+DHCP is not available on the network. In that case, a basic static IPv4
+interface configuration will be used with information gathered by Ansible to
+setup a default network interface. This should prevent sudden loss of
+communication in cases where hosts are configured statically.
+
+.. _debops.ifupdown: https://github.com/debops/ansible-ifupdown/
+
+Playbook updates
+****************
+
+``tools/hostname.yml`` playbook has been renamed to ``tools/fqdn.yml`` and can
+get the new hostname and domain from ``fqdn`` variable defined in inventory,
+which is less awkward to use than renaming the host in inventory file directly.
+
 2014-11-19
 ^^^^^^^^^^
 
