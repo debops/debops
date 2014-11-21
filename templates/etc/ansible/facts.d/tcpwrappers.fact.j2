@@ -1,9 +1,11 @@
 {% set tcpwrappers_tpl_ansible_controllers = [] %}
-{% for element in (ansible_local | default([]) and
-                   ansible_local.tcpwrappers | default([]) and
-                   ansible_local.tcpwrappers.ansible_controllers | default([])) %}
+{% if (ansible_local is defined and
+       ansible_local.tcpwrappers is defined and
+       ansible_local.tcpwrappers.ansible_controllers is defined) %}
+{%   for element in ansible_local.tcpwrappers.ansible_controllers %}
 {%     set _ = tcpwrappers_tpl_ansible_controllers.append(element) %}
-{% endfor %}
+{%   endfor %}
+{% endif %}
 {% for element in tcpwrappers_ansible_controllers or [] %}
 {%       set _ = tcpwrappers_tpl_ansible_controllers.append(element) %}
 {% endfor %}
