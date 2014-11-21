@@ -5,11 +5,9 @@
                    ansible_local.tcpwrappers.ansible_controllers | default([])) %}
 {%     set _ = tcpwrappers_tpl_local_ansible_controllers.append(element | ipwrap) %}
 {% endfor %}
-{% if tcpwrappers_ansible_controllers is defined and tcpwrappers_ansible_controllers %}
-{%   for element in tcpwrappers_ansible_controllers %}
+{% for element in tcpwrappers_ansible_controllers or [] %}
 {%       set _ = tcpwrappers_tpl_local_ansible_controllers.append(element | ipwrap) %}
-{%   endfor %}
-{% endif %}
+{% endfor %}
 {% if ansible_controller is defined and ansible_controller %}
 {%     set _ = tcpwrappers_tpl_local_ansible_controllers.append(ansible_controller | ipwrap) %}
 {% endif %}
