@@ -1,24 +1,17 @@
-{% set tcpwrappers_tpl_ansible_controllers = []                                              %}
-{% if (ansible_local is defined and ansible_local) and
-      (ansible_local.tcpwrappers is defined and ansible_local.tcpwrappers) and
-      (ansible_local.tcpwrappers.ansible_controllers is defined and ansible_local.tcpwrappers.ansible_controllers) %}
-{%   for element in ansible_local.tcpwrappers.ansible_controllers                            %}
-{%     set _ = tcpwrappers_tpl_ansible_controllers.append(element)                           %}
-{%   endfor                                                                                  %}
-{% endif                                                                                     %}
-{% if tcpwrappers_ansible_controllers is defined and tcpwrappers_ansible_controllers         %}
-{%   for element in tcpwrappers_ansible_controllers                                          %}
-{%     if element not in tcpwrappers_tpl_ansible_controllers                                 %}
-{%       set _ = tcpwrappers_tpl_ansible_controllers.append(element)                         %}
-{%     endif                                                                                 %}
-{%   endfor                                                                                  %}
-{% endif                                                                                     %}
-{% if ansible_controller is defined and ansible_controller                                   %}
-{%   if ansible_controller not in tcpwrappers_tpl_ansible_controllers                        %}
-{%     set _ = tcpwrappers_tpl_ansible_controllers.append(ansible_controller)                %}
-{%   endif                                                                                   %}
-{% endif                                                                                     %}
-{% set tcpwrappers_tpl_ansible_controllers_result = tcpwrappers_tpl_ansible_controllers | unique | sort %}
+{% set tcpwrappers_tpl_ansible_controllers = [] %}
+{% if (ansible_local is defined and
+       ansible_local.tcpwrappers is defined and
+       ansible_local.tcpwrappers.ansible_controllers is defined) %}
+{%   for element in ansible_local.tcpwrappers.ansible_controllers %}
+{%     set _ = tcpwrappers_tpl_ansible_controllers.append(element) %}
+{%   endfor %}
+{% endif %}
+{% for element in tcpwrappers_ansible_controllers or [] %}
+{%       set _ = tcpwrappers_tpl_ansible_controllers.append(element) %}
+{% endfor %}
+{% if ansible_controller is defined and ansible_controller %}
+{%     set _ = tcpwrappers_tpl_ansible_controllers.append(ansible_controller) %}
+{% endif %}
 {
-"ansible_controllers": {{ tcpwrappers_tpl_ansible_controllers_result | to_nice_json }}
+"ansible_controllers": {{ tcpwrappers_tpl_ansible_controllers | unique | sort | to_nice_json }}
 }
