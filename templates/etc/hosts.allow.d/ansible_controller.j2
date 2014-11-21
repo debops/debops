@@ -11,8 +11,7 @@
 {% if ansible_controller is defined and ansible_controller %}
 {%     set _ = tcpwrappers_tpl_local_ansible_controllers.append(ansible_controller | ipwrap) %}
 {% endif %}
-{% set tcpwrappers_tpl_local_ansible_controllers_result = tcpwrappers_tpl_local_ansible_controllers | unique | sort %}
-{% for element in tcpwrappers_tpl_local_ansible_controllers_result %}
+{% for element in (tcpwrappers_tpl_local_ansible_controllers | unique | sort) %}
 sshd: {{ element }}
 {% endfor %}
 
