@@ -8,14 +8,12 @@
     - '../vars/virtualization_{{ ansible_virtualization_type }}_{{ ansible_virtualization_role }}.yml'
     - '../vars/default_{{ ifupdown_static_config }}.yml'
     - '../vars/default.yml'
-  when: (ifupdown_interface is undefined or
-         (ifupdown_interfaces is defined and not ifupdown_interfaces))
+  when: (ifupdown_interface is undefined or not ifupdown_interfaces)
 
 - name: Prepare interface configuration if not defined
   set_fact:
     ifupdown_interfaces: '{{ ifupdown_default_interfaces }}'
-  when: ((ifupdown_interfaces is undefined or
-         (ifupdown_interfaces is defined and not ifupdown_interfaces)) and
+  when: ((ifupdown_interfaces is undefined or not ifupdown_interfaces)) and
          (ifupdown_dependent_interfaces is undefined and
          (ifupdown_default_interfaces is defined and ifupdown_default_interfaces)))
 
@@ -50,7 +48,7 @@
   with_items: ifupdown_interfaces
   register: ifupdown_register_status
   when: ((item.iface is defined and item.iface) and
-         (item.delete is undefined or (item.delete is defined and not item.delete)))
+         (item.delete is undefined or not item.delete))
 
 - name: Reconfigure interfaces
   shell: ifdown {{ item.item.iface }} ; sleep {{ ifupdown_reconfigure_delay }} ; ifup {{ item.item.iface }}
@@ -58,5 +56,5 @@
   when: ((ifupdown_register_status.results is defined and ifupdown_register_status.results) and
          (ifupdown_reconfigure is defined and ifupdown_reconfigure == True) and
          (item.changed == True) and
-         (item.item.inet is undefined or item.item.inet is defined and item.item.inet != 'manual'))
+         (item.item.inet is undefined or item.item.inet != 'manual'))
 
