@@ -4,6 +4,10 @@
 # with local mail disabled, all mail is sent to local domain MX server
 postfix: [ 'null' ]
 
+# Address of mail host this host should relay all mail to instead of delivering
+# it directly. (Automatic configuration)
+postfix_relayhost: False
+
 
 # Configuration options for Postfix. Many options are configured automatically
 # using templates, here you can (mostly) add your own entries to Postfix lists
@@ -15,10 +19,6 @@ postfix_mailname: '{{ ansible_fqdn }}'
 
 # How long to wait before notifying users about delivery problems
 postfix_delay_warning_time: '4h'
-
-# Address of mail host this host should relay all mail to instead of delivering
-# it directly. (Automatic configuration)
-postfix_relayhost: False
 
 # List of relay domains this host accepts
 postfix_relay_domains: []
