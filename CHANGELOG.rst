@@ -11,6 +11,24 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-11-22
+^^^^^^^^^^
+
+Role updates
+************
+
+You can now specify default value for entries in `debops.tcpwrappers`_ role,
+using ``item.default`` key. If this key is specified, and ``item.clients`` is
+not present or is empty, default value will be used instead. Specify ``'ALL'``
+to allow connections from any host.
+
+Consequently, `debops.sshd`_ role now will allow connections from any host by
+default in ``/etc/hosts.allow``. If you previously used a list of hosts using
+``sshd_*_allow``, your configuration shouldn't be affected.
+
+.. _debops.tcpwrappers: https://github.com/debops/ansible-tcpwrappers/
+.. _debops.sshd: https://github.com/debops/ansible-sshd/
+
 2014-11-20
 ^^^^^^^^^^
 
