@@ -1,0 +1,73 @@
+---
+
+dependencies:
+
+  - role: debops.secret
+
+  - role: debops.ferm
+    ferm_input_list:
+
+      - type: 'dport_accept'
+        protocol: [ 'tcp', 'udp' ]
+        dport: [ 'ldap', 'ldaps' ]
+        saddr: '{{ slapd_allow + slapd_group_allow + slapd_host_allow }}'
+        accept_any: True
+        weight: '50'
+        filename: 'slapd_dependency_accept'
+
+  - role: debops.tcpwrappers
+    tcpwrappers_allow:
+
+      - daemon: 'slapd'
+        client: '{{ slapd_allow + slapd_group_allow + slapd_host_allow }}'
+        default: '{{ slapd_tcpwrappers_default }}'
+        weight: '50'
+        filename: 'slapd_dependency_allow'
+        comment: 'Allow connections to OpenLDAP'
+
+galaxy_info:
+  author: 'Maciej Delmanowski'
+  description: 'Manage slapd - OpenLDAP server'
+  company: 'DebOps'
+  license: 'GNU General Public License v3'
+  min_ansible_version: '1.7'
+
+  platforms:
+  - name: Ubuntu
+    versions:
+    - precise
+    - trusty
+  - name: GenericLinux
+    versions:
+    - all
+  - name: Debian
+    versions:
+    - wheezy
+    - jessie
+
+  categories:
+  - database
+  - system
+
+ansigenome_info:
+  github_url: "https://github.com/debops/ansible-slapd"
+  git_branch: "master"
+  galaxy_id: ""
+
+  beta: True
+  travis: True
+
+  license_url: 'https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3)'
+
+  authors:
+    - name:  'Maciej Delmanowski'
+      url: ''
+      email: 'drybjed@gmail.com'
+      twitter: 'drybjed'
+      github: 'drybjed'
+
+  synopsis: |
+    This role installs and manages `slapd`, OpenLDAP server. It will
+    automatically generate and store secure passwords for administrator
+    accounts and install useful scripts.
+

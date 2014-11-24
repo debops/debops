@@ -1,0 +1,40 @@
+---
+
+- name: Install OpenLDAP packages
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_items: [ 'slapd', 'ldap-utils', 'python-ldap' ]
+
+- name: Install slapd-config script
+  copy:
+    src: 'usr/local/sbin/slapd-config'
+    dest: '/usr/local/sbin/slapd-config'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- include: password_config_admin.yml
+- include: password_basedn_admin.yml
+
+- name: Set slapd log level
+  ldap_attr:
+    dn: 'cn=config'
+    name: '{{ item.key }}'
+    values: '{{ item.value }}'
+    state: 'exact'
+  with_dict:
+    olcLogLevel: '{{ slapd_log_level }}'
+
+- name: Configure enabled services
+  lineinfile:
+    dest: '/etc/default/slapd'
+    regexp: '^SLAPD_SERVICES='
+    line: 'SLAPD_SERVICES="{{ slapd_default_services | join(" ") }}"'
+    state: 'present'
+  notify: [ 'Restart slapd' ]
+
+- include: ldapscripts.yml
+  when: slapd_ldapscripts is defined and slapd_ldapscripts
+
