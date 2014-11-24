@@ -1,0 +1,13 @@
+# This file is managed by Ansible, all changes will be lost
+
+# Manage all *.in files in current directory
+HASH_TABLES = $(patsubst %.in,%.db,$(wildcard *.in))
+
+all: $(HASH_TABLES)
+
+%.db: %.in
+	@postmap $< && mv -- "$<.db" "$@"
+
+clean:
+	@rm *.db
+
