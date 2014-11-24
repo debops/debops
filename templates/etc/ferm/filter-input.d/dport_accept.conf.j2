@@ -21,8 +21,7 @@ Optional:
        (item.disabled is defined and not item.disabled) or
        (item.disabled is defined and item.disabled in [ 'False', 'false', 'No', 'no' ])) and
        (item.enabled is undefined or
-       (item.enabled is defined and item.enabled) or
-       (item.enabled is defined and item.enabled in [ 'True', 'true', 'Yes', 'yes' ]))) %}
+       (item.enabled is defined and item.enabled in [ True, 'True', 'true', 'Yes', 'yes' ]))) %}
 protocol ({{ item.protocol | default(['tcp']) | join(' ') }}) dport ({{ item.dport | join(' ') }}) {
 {% if item.saddr is defined and item.saddr %}
 	@def $ITEMS = ( @ipfilter( ({{ item.saddr | unique | join(" ") }}) ) );
