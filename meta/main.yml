@@ -15,10 +15,13 @@ dependencies:
 
       - type: 'dport_limit'
         dport: [ 'ssh' ]
+        seconds: '{{ sshd_ferm_limit_seconds }}'
+        hits: '{{ sshd_ferm_limit_hits }}'
+        destination: '{{ sshd_ferm_limit_destination }}'
         syn: True
         weight: '30'
         filename: 'sshd_dependency_limit'
-        disabled: '{{ sshd_unlimited_access }}'
+        enabled: '{{ sshd_ferm_limit }}'
 
 
   - role: debops.tcpwrappers
