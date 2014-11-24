@@ -30,7 +30,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  with_items: [ 'tables', 'hash_tables' ]
+  with_items: [ 'tables', 'hash_aliases', 'hash_tables' ]
 
 - name: Create Postfix private configuration directories
   file:
@@ -41,14 +41,26 @@
     mode: '0700'
   with_items: [ 'private_hash_tables' ]
 
-- name: Generate Postfix tables
+- name: Generate postalias Makefiles
   template:
-    src: 'etc/postfix/{{ item }}.j2'
-    dest: '/etc/postfix/{{ item }}'
+    src: 'etc/postfix/Makefile.alias.j2'
+    dest: '{{ item }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: postfix_configuration_templates
+  with_items:
+    - '/etc/postfix/hash_aliases/Makefile'
+
+- name: Generate postmap Makefiles
+  template:
+    src: 'etc/postfix/Makefile.map.j2'
+    dest: '{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - '/etc/postfix/hash_tables/Makefile'
+    - '/etc/postfix/private_hash_tables/Makefile'
 
 - name: Generate Postfix configuration
   template:
