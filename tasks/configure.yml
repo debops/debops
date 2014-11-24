@@ -96,25 +96,49 @@
     cron_file: 'postfix-regenerate-dhparams'
     state: 'present'
 
-- name: Generate Postfix hash tables sources
+- name: Generate Postfix tables sources
   template:
-    src: 'etc/postfix/hash_tables/{{ item }}.j2'
-    dest: '/etc/postfix/hash_tables/{{ item }}.in'
+    src: '{{ item }}'
+    dest: '/etc/postfix/tables/{{ item | basename | replace(".j2", "") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: postfix_postmap_hash_tables
+  with_fileglob: [ '../templates/etc/postfix/tables/*.j2' ]
+
+- name: Generate Postfix hash aliases sources
+  template:
+    src: '{{ item }}'
+    dest: '/etc/postfix/hash_aliases/{{ item | basename | replace(".j2", ".in") }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_fileglob: [ '../templates/etc/postfix/hash_aliases/*.j2' ]
+  register: postfix_register_hash_aliases
+
+- name: Generate Postfix hash tables sources
+  template:
+    src: '{{ item }}'
+    dest: '/etc/postfix/hash_tables/{{ item | basename | replace(".j2", ".in") }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_fileglob: [ '../templates/etc/postfix/hash_tables/*.j2' ]
   register: postfix_register_hash_tables
 
 - name: Generate Postfix private hash tables sources
   template:
-    src: 'etc/postfix/private_hash_tables/{{ item }}.j2'
-    dest: '/etc/postfix/private_hash_tables/{{ item }}.in'
+    src: '{{ item }}'
+    dest: '/etc/postfix/private_hash_tables/{{ item | basename | replace(".j2", ".in") }}'
     owner: 'root'
     group: 'root'
     mode: '0600'
-  with_items: postfix_postmap_private_hash_tables
+  with_fileglob: [ '../templates/etc/postfix/private_hash_tables/*.j2' ]
   register: postfix_register_private_hash_tables
+
+- name: Generate Postfix hash aliases
+  command: make chdir=/etc/postfix/hash_aliases
+  when: (postfix_register_hash_aliases is defined and
+         postfix_register_hash_aliases.changed)
 
 - name: Generate Postfix hash tables
   command: make chdir=/etc/postfix/hash_tables
