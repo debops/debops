@@ -78,9 +78,9 @@ domain $domains table filter {
 
 {% endif %}
 		# Drop connections from bad guys
-		mod recent name "badguys" update seconds 3600 {
+		mod recent name "{{ ferm_block_recent }}" update seconds {{ ferm_block_time }} {
 			mod limit limit 3/hour limit-burst 5 {
-				LOG log-prefix "iptables-recent-badguys: " log-level warning;
+				LOG log-prefix "iptables-recent-{{ ferm_block_recent }}: " log-level warning;
 			}
 			REJECT reject-with icmp-admin-prohibited;
 		}
@@ -90,7 +90,7 @@ domain $domains table filter {
 
 {% if ferm_mark_portscan is defined and ferm_mark_portscan %}
 		# Catch bad guys (port scanners)
-		mod recent set name "badguys" {
+		mod recent set name "{{ ferm_block_recent }}" {
 			mod limit limit 3/hour limit-burst 5 {
 				LOG log-prefix "iptables-portscan: " log-level warning;
 			}

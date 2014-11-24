@@ -32,6 +32,13 @@ ferm_icmp_burst: '10'
 ferm_syn_limit: '40/second'
 ferm_syn_burst: '20'
 
+# Name of recent list to block early
+ferm_block_recent: 'badguys'
+
+# Length of time in seconds to block recent offenders; if they try connecting
+# before the time is up, timer is reset
+ferm_block_time: '{{ (60 * 60 * 2) }}'
+
 # Mark packets on invalid ports as bad guys (block port scanning)
 ferm_mark_portscan: False
 

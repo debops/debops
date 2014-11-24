@@ -15,6 +15,7 @@ Optional:
                         False, match !SYN packets
   item.seconds		time in seconds to count between hits
   item.hits		how many connections in item.seconds to allow
+  item.destination      name of the ip(6)tables recent list where IP address will be added
   item.disabled		if True, disable the rule (can be used to toggle rule via variable)
   item.enabled		if True, enable the rule (can be used to toggle rule via variable)
 
@@ -31,15 +32,14 @@ Optional:
        (item.disabled is defined and not item.disabled) or
        (item.disabled is defined and item.disabled in [ 'False', 'false', 'No', 'no' ])) and
        (item.enabled is undefined or
-       (item.enabled is defined and item.enabled) or
-       (item.enabled is defined and item.enabled in [ 'True', 'true', 'Yes', 'yes' ]))) %}
+       (item.enabled is defined and item.enabled in [ True, 'True', 'true', 'Yes', 'yes' ]))) %}
 protocol ({{ item.protocol | default(['tcp']) | join(' ') }}){% if ferm_tpl_syn is defined %} {{ ferm_tpl_syn }}{% endif %} dport ({{ item.dport | join(' ') }}) {
 
 	@subchain "dport-limit-{{ item.dport[0] }}" {
 		mod recent name {{ item.dport[0] | upper }} {
 			set NOP;
 			update seconds {{ item.seconds | default('300') }} hitcount {{ item.hits | default('5') }} @subchain "dport-log-{{ item.dport[0] }}" {
-				mod recent set name "badguys" {
+				mod recent set name "{{ item.destination | default('badguys') }}" {
 					mod limit limit 3/hour limit-burst 5 {
 						LOG log-prefix "iptables-blocked-{{ item.dport[0] }}: " log-level warning;
 					}
