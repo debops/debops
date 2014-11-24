@@ -12,11 +12,20 @@ sshd_host_allow: []
 # is not specified
 sshd_tcpwrappers_default: 'ALL'
 
-# By default SSH access from unknown IP addresses is limited and filtered by
-# iptables, you can disable this by changing variable below to 'true'. You will
-# have to enable access in iptables and tcpwrappers from any IP address
-# separately.
-sshd_unlimited_access: 'false'
+# Enable or disable limited SSH access from all hosts in ip(6)tables. Recent
+# new connections are filtered and when too many new connections are created in
+# specified time window, host is added to the recent blocklist
+sshd_ferm_limit: 'true'
+
+# Length of the time window used by firewall to catch new offenders,
+# by default 1 hour
+sshd_ferm_limit_seconds: '{{ (60 * 60) }}'
+
+# How many new connections to allow in above time window
+sshd_ferm_limit_hits: '3'
+
+# Name of the iptables recent list where offenders will be added
+sshd_ferm_limit_destination: 'badguys'
 
 sshd_Port: 22
 sshd_PermitRootLogin: 'without-password'
