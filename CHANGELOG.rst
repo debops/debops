@@ -14,6 +14,18 @@ v0.1.0 (release pending)
 2014-11-24
 ^^^^^^^^^^
 
+New roles
+*********
+
+- `debops.slapd`_ role manages OpenLDAP server, ``slapd``. At the moment role
+  is in beta stage - currently there is no SSL encryption available, no
+  backup/restore scripts and no replication. But role installs a few useful
+  scripts and ``slapd`` management is done using custom Ansible modules.
+  Deeper integration between OpenLDAP and other DebOps services will be created
+  in the future.
+
+.. _debops.slapd: https://github.com/debops/ansible-slapd/
+
 Role updates
 ************
 
