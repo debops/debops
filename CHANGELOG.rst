@@ -29,6 +29,18 @@ resetting the timer. All this is now configurable in `debops.sshd`_  and
 .. _debops.sshd: https://github.com/debops/ansible-sshd/
 .. _debops.ferm: https://github.com/debops/ansible-ferm/
 
+Thanks to `htgoebel's suggestion`_ I was able to refactor Postfix hash tables
+management. They are now generated from all ``*.in`` files in current
+directory, which means that other Ansible roles or even other scripts can put
+their own files in ``/etc/postfix/hash_*/`` directories and if they are named
+with ``*.in`` extension, their corresponding ``*.db`` files will be created
+automatically. Thanks to that, `debops.postfix`_ role now generates tables from
+templates using ``with_fileglob`` instead of static lists of templates, which
+makes the process of adding new tables if necessary much easier.
+
+.. _htgoebel's suggestion: https://github.com/debops/ansible-postfix/issues/11#issuecomment-64113942
+.. _debops.postfix: https://github.com/debops/ansible-postfix/
+
 2014-11-22
 ^^^^^^^^^^
 
