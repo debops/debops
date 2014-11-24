@@ -6,16 +6,8 @@
     state: 'restarted'
   notify: [ 'Restart ferm' ]
 
-- name: Generate postfix hash aliases
-  command: make chdir=/etc/postfix/hash_aliases
-  notify: [ 'Check postfix and reload' ]
-
-- name: Generate postfix hash tables
-  command: make chdir=/etc/postfix/hash_tables
-  notify: [ 'Check postfix and reload' ]
-
-- name: Generate postfix private hash tables
-  command: make chdir=/etc/postfix/private_hash_tables
+- name: Run postfix Makefile
+  command: make chdir=/etc/postfix
   notify: [ 'Check postfix and reload' ]
 
 - name: Check postfix
