@@ -1,13 +1,12 @@
 ---
 
 - name: Check if default configuration is static
-  shell: grep 'static' /etc/network/interfaces.dpkg-divert || true
+  command: grep -q 'static' /etc/network/interfaces
   register: ifupdown_register_static_config
   changed_when: False
+  failed_when: False
 
 - name: Enable static default configuration if detected
   set_fact:
-    ifupdown_static_config: 'static'
-  when: ((ifupdown_register_static_config is defined and ifupdown_register_static_config) and
-         ifupdown_register_static_config.stdout)
-
+    ifupdown_static_config:
+       "{{ ifupdown_register_static_config.rc == 0 and 'static' }}"
