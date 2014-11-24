@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) slapd
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-slapd.svg?style=flat)](http://travis-ci.org/debops/ansible-slapd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--slapd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-slapd/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-slapd.svg?style=flat)](http://travis-ci.org/debops/ansible-slapd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--slapd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-slapd/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.slapd-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/2243)
 ### Warning, this is a BETA role
 
 This role has been marked by the author as a beta role, which means that it
@@ -12,6 +12,17 @@ in a production environment.
 This role installs and manages `slapd`, OpenLDAP server. It will
 automatically generate and store secure passwords for administrator
 accounts and install useful scripts.
+
+### Installation
+
+This role requires at least Ansible `v1.7`. To install it, run:
+
+    ansible-galaxy install debops.slapd
+
+### Documentation
+
+More information about `debops.slapd` can be found in the
+[official debops.slapd documentation](http://docs.debops.org/en/latest/ansible/roles/debops.slapd.html).
 
 
 ### Role dependencies
