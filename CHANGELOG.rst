@@ -11,6 +11,24 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-11-24
+^^^^^^^^^^
+
+Role updates
+************
+
+Because of recent changes in `debops.tcpwrappers`_ role I decided to make the
+ferm rules concenring SSH access more strict. From now on, ``iptables`` will
+check new SSH connections over period of 1 hour, if more than 3 new connections
+from 1 IP address are attempted during that time, and address is not in the
+whitelist, it will be blocked for 2 hours, with each new connection attempt
+resetting the timer. All this is now configurable in `debops.sshd`_  and
+`debops.ferm`_ roles.
+
+.. _debops.tcpwrappers: https://github.com/debops/ansible-tcpwrappers/
+.. _debops.sshd: https://github.com/debops/ansible-sshd/
+.. _debops.ferm: https://github.com/debops/ansible-ferm/
+
 2014-11-22
 ^^^^^^^^^^
 
