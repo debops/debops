@@ -41,26 +41,13 @@
     mode: '0700'
   with_items: [ 'private_hash_tables' ]
 
-- name: Generate postalias Makefiles
+- name: Generate Postfix Makefile
   template:
-    src: 'etc/postfix/Makefile.alias.j2'
-    dest: '{{ item }}'
+    src: 'etc/postfix/Makefile.j2'
+    dest: '/etc/postfix/Makefile'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items:
-    - '/etc/postfix/hash_aliases/Makefile'
-
-- name: Generate postmap Makefiles
-  template:
-    src: 'etc/postfix/Makefile.map.j2'
-    dest: '{{ item }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  with_items:
-    - '/etc/postfix/hash_tables/Makefile'
-    - '/etc/postfix/private_hash_tables/Makefile'
 
 - name: Generate Postfix configuration
   template:
@@ -113,7 +100,6 @@
     group: 'root'
     mode: '0644'
   with_fileglob: [ '../templates/etc/postfix/hash_aliases/*.j2' ]
-  register: postfix_register_hash_aliases
 
 - name: Generate Postfix hash tables sources
   template:
@@ -123,7 +109,6 @@
     group: 'root'
     mode: '0644'
   with_fileglob: [ '../templates/etc/postfix/hash_tables/*.j2' ]
-  register: postfix_register_hash_tables
 
 - name: Generate Postfix private hash tables sources
   template:
@@ -133,22 +118,11 @@
     group: 'root'
     mode: '0600'
   with_fileglob: [ '../templates/etc/postfix/private_hash_tables/*.j2' ]
-  register: postfix_register_private_hash_tables
 
-- name: Generate Postfix hash aliases
-  command: make chdir=/etc/postfix/hash_aliases
-  when: (postfix_register_hash_aliases is defined and
-         postfix_register_hash_aliases.changed)
-
-- name: Generate Postfix hash tables
-  command: make chdir=/etc/postfix/hash_tables
-  when: (postfix_register_hash_tables is defined and
-         postfix_register_hash_tables.changed)
-
-- name: Generate Postfix private hash tables
-  command: make chdir=/etc/postfix/private_hash_tables
-  when: (postfix_register_private_hash_tables is defined and
-         postfix_register_private_hash_tables.changed)
+- name: Run tasks from Postfix Makefile
+  command: make chdir=/etc/postfix
+  register: postfix_register_make
+  changed_when: "not postfix_register_make.stdout.startswith('make: Nothing to be done')"
 
 - name: Configure firewall for Postfix
   template:
