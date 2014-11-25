@@ -11,6 +11,18 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-11-25
+^^^^^^^^^^
+
+Role updates
+************
+
+`debops.auth`_ role will now manage ``/etc/ldap/ldap.conf`` configuration file.
+By default, LDAP server on local domain is set up (currently without any
+encryption, so treat this as experimental feature and don't use it in
+production) with local domain specified as BaseDN. you can change this in role
+default variables.
+
 2014-11-24
 ^^^^^^^^^^
 
