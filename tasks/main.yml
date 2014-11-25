@@ -1,0 +1,35 @@
+---
+
+- name: Configure HWRaid APT repository key
+  apt_key:
+    url: '{{ hwraid_repository_key_url }}'
+    state: 'present'
+
+- name: Select supported release for current distribution
+  set_fact:
+    hwraid_register_release: '{{ hwraid_release }}'
+  when: hwraid_release in hwraid_distribution_releases[hwraid_distribution]
+
+- name: Configure HWRaid APT repository
+  apt_repository:
+    repo: 'deb http://hwraid.le-vert.net/{{ hwraid_distribution | lower }} {{ hwraid_release | lower }} main'
+    state: 'present'
+    update_cache: True
+  when: hwraid_register_release is defined and hwraid_register_release
+
+- name: Get list of active kernel modules
+  shell: lsmod | awk '{print $1}'
+  register: hwraid_register_modules
+  changed_when: False
+
+- name: Install packages for recognized RAID devices
+  apt:
+    name: '{{ item.1 }}'
+    state: 'latest'
+    install_recommends: False
+  with_subelements:
+    - hwraid_device_database
+    - packages
+  when: ((hwraid_register_release is defined and hwraid_register_release) and
+         item.0.module in hwraid_register_modules.stdout_lines)
+
