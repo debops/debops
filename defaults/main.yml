@@ -27,3 +27,31 @@ auth_system_groups:
   # (this might be moved to 'nginx' role in the future)
   - 'webadmins'
 
+
+# ---- LDAP options ----
+
+# Enable or disable LDAP configuration
+auth_ldap: True
+
+# Default DNS domain to use to generate BaseDN. Set to False to disable and
+# configure custom BaseDN in 'auth_ldap_hostdn'
+auth_ldap_domain: '{{ ansible_domain }}'
+
+# Custom prefix for BaseDN, each domain component should be an element of
+# a list. If 'auth_ldap_domain' is empty or False, you can configure here full
+# BaseDN for your LDAP server
+auth_ldap_hostdn: []
+
+# List od LDAP servers accessed by this host. See ldap.conf(5) for details
+auth_ldap_uri: [ 'ldap://ldap/', 'ldap://ldap.{{ ansible_domain }}/' ]
+
+# Other LDAP options in text block format
+auth_ldap_options: |
+  SISZELIMIT       12
+  TIMELIMIT        15
+  DEREF            never
+
+# LDAP TLS options in text block format
+auth_ldap_tls_options: |
+  TLS_CACERT    /etc/ssl/certs/ca-certificates.crt
+
