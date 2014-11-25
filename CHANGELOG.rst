@@ -23,6 +23,16 @@ encryption, so treat this as experimental feature and don't use it in
 production) with local domain specified as BaseDN. you can change this in role
 default variables.
 
+DebOps will automatically configure ``hidepid=2`` option in ``/proc``
+filesystem on selected hosts (hardware servers and fully virtualized VMs),
+using `debops.console`_ role. This functionality hides other users' process
+information for unprivileged accounts. A separate system group, ``procadmins``
+has been reserved for monitoring services and users that need full access to
+the ``/proc`` filesystem.
+
+.. _debops.auth: https://github.com/debops/ansible-auth/
+.. _debops.console: https://github.com/debops/ansible-console/
+
 2014-11-24
 ^^^^^^^^^^
 
