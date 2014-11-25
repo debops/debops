@@ -1,0 +1,29 @@
+---
+
+- name: Make sure that system group with access to /proc exists
+  group:
+    name: '{{ console_proc_hidepid_group }}'
+    system: True
+    state: 'present'
+  when: console_proc_hidepid is defined and console_proc_hidepid
+
+- name: Configure /proc with hidepid= in /etc/fstab
+  mount:
+    name: '/proc'
+    src: 'proc'
+    fstype: 'proc'
+    opts: 'defaults,hidepid={{ console_proc_hidepid_level }},gid={{ console_proc_hidepid_group }}'
+    state: 'mounted'
+  when: console_proc_hidepid is defined and console_proc_hidepid
+
+  # This is a workaround for Ubuntu bug: https://bugs.launchpad.net/ubuntu/+source/mountall/+bug/1039887
+- name: Remount /proc from rc.local when needed
+  lineinfile:
+    dest: '/etc/rc.local'
+    regexp: '^mount -o remount,hidepid={{ console_proc_hidepid_level }},gid={{ console_proc_hidepid_group }} /proc'
+    line: 'mount -o remount,hidepid={{ console_proc_hidepid_level }},gid={{ console_proc_hidepid_group }} /proc'
+    insertbefore: 'exit 0'
+    state: 'present'
+  when: ((console_proc_hidepid is defined and console_proc_hidepid) and
+         (ansible_distribution in [ 'Ubuntu' ] and ansible_distribution_release in [ 'trusty' ]))
+
