@@ -14,6 +14,18 @@ v0.1.0 (release pending)
 2014-11-25
 ^^^^^^^^^^
 
+New roles
+*********
+
+- `debops.hwraid`_ is a role that configures access to `HWRaid`_ package
+  repository and installs packages for recognized RAID storage arrays connected
+  to your hosts. It can be used to quickly and easily setup basic monitoring
+  for your storage - many packages contain automated scripts which send mail to
+  ``root`` account in case of issues with RAID.
+
+.. _debops.hwraid: https://github.com/debops/ansible-hwraid/
+.. _HWRaid: http://hwraid.le-vert.net/
+
 Role updates
 ************
 
