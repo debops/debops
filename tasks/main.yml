@@ -68,3 +68,15 @@
     state: 'present'
   with_items: console_locales
   when: (console_locales is defined and console_locales)
+
+  # Enable hidepid= only on specific hosts
+- include: proc_hidepid.yml
+  when: ((ansible_virtualization_type is defined and
+          ansible_virtualization_role is defined and
+         (ansible_virtualization_type in ['kvm','VMware','virtualbox'] and
+          ansible_virtualization_role in ['host','guest']) or
+         (ansible_virtualization_type in ['NA'] and
+          ansible_virtualization_role in ['NA'])) or
+         (ansible_virtualization_type is undefined and
+          ansible_virtualization_role is undefined))
+
