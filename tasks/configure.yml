@@ -120,6 +120,8 @@
   with_fileglob: [ '../templates/etc/postfix/private_hash_tables/*.j2' ]
 
 - name: Run tasks from Postfix Makefile
+  environment:
+    LANG: 'C'
   command: make chdir=/etc/postfix
   register: postfix_register_make
   changed_when: "not postfix_register_make.stdout.startswith('make: Nothing to be done')"
