@@ -102,17 +102,13 @@ for skel_dir in "${SKEL_DIRS[@]}" ; do
 done
 
 # Create .debops.cfg
-cat <<EOF > ${project}/${DEBOPS_CONFIG}
-EOF
+touch ${project}/${DEBOPS_CONFIG}
 
 # Create .gitignore
-cat <<EOF > ${project}/.gitignore
+[ ! -r ${project}/.gitignore ] && cat <<EOF > ${project}/.gitignore
 ansible/${SECRET_NAME}
 ${SECRET_NAME}
 ansible.cfg
-
-
-# Created by http://www.gitignore.io
 
 ### vim ###
 [._]*.s[a-w][a-z]
@@ -160,7 +156,13 @@ if [ $(uname) = "Linux" ]; then
   fi
 fi
 
-cat <<EOF > ${hosts_file}
+if [ -r ${hosts_file} ] ; then
+    echo
+    echo "Hosts file '${hosts_file}' already exists."
+    echo "If you want $(basename $0) to create a fresh one, please delete"
+    echo "this file manually."
+else
+    cat <<EOF > ${hosts_file}
 # This is an Ansible inventory file in INI format. You can define a list of
 # hosts and groups to be managed by this particular inventory.
 
@@ -173,16 +175,16 @@ cat <<EOF > ${hosts_file}
 
 EOF
 
-if [ "$valid_debops_controller" -eq 1 ]; then
-  cat <<EOF >> ${hosts_file}
+    if [ "$valid_debops_controller" -eq 1 ]; then
+	cat <<EOF >> ${hosts_file}
 # Your host is eligible to be managed by DebOps' common playbook. If you want
 # that functionality and more, then uncomment your hostname below.
 [ansible_controllers]
 #$(hostname) ansible_connection=local
 
 EOF
-else
-  cat <<EOF >> ${hosts_file}
+    else
+	cat <<EOF >> ${hosts_file}
 # Your host is not Debian-based so you will not be able to leverage
 # the above features on your current operating system. You can however
 # use Vagrant or something else to setup a VM and install DebOps there.
@@ -191,11 +193,18 @@ else
 #<VM host IP>
 
 EOF
-fi
+    fi
+fi # if ${hosts_file} exists
 
 apt_lxc_file="${project}/${NEW_INVENTORY}/group_vars/all/apt_lxc.yml"
 
-cat <<EOF > ${apt_lxc_file}
+if [ -r ${apt_lxc_file} ] ; then
+    echo
+    echo "File '${apt_lxc_file}' already exists."
+    echo "If you want $(basename $0) to create a fresh one, please delete"
+    echo "this file manually."
+else
+    cat <<EOF > ${apt_lxc_file}
 # Occasionally Debian's CDN is a bit flaky. If you get 404s trying to access
 # source URLs then uncomment the 2 variables below. You may also want to use
 # your location's mirror rather than US, check the list of mirrors here:
@@ -205,4 +214,4 @@ cat <<EOF > ${apt_lxc_file}
 #apt_mirrors: [ 'http://ftp.us.debian.org/debian' ]
 #lxc_template_debootstrap_mirror: '{{ apt_mirrors[0] }}'
 EOF
-
+fi
