@@ -12,7 +12,7 @@ install: install-scripts install-playbook
 
 install-scripts:
 	@echo "Installing DebOps scripts in ${BIN_DIR} ..."
-	@test -d ${BIN_DIR} || mkdir -p ${BIN_DIR}
+	@mkdir -p ${BIN_DIR}
 	@cp bin/debops ${BIN_DIR}/debops
 	@cp bin/debops-task ${BIN_DIR}/debops-task
 	@cp bin/debops-init ${BIN_DIR}/debops-init
