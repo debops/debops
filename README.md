@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) hwraid
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-hwraid.svg?style=flat)](http://travis-ci.org/debops/ansible-hwraid) [![test-suite](http://img.shields.io/badge/test--suite-ansible--hwraid-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-hwraid/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-hwraid.svg?style=flat)](http://travis-ci.org/debops/ansible-hwraid) [![test-suite](http://img.shields.io/badge/test--suite-ansible--hwraid-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-hwraid/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.hwraid-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/2259)
 
 [HWRaid](http://hwraid.le-vert.net/) is a repository of software packages
 useful on hosts with hardware RAID storage arrays for Debian and Ubuntu
@@ -13,6 +13,17 @@ a mail message to `root` account in case of issues with the RAID array.
 
 Some of the software packages offered in HWRaid repository are not Open
 Source, however there are no alternatives available.
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, run:
+
+    ansible-galaxy install debops.hwraid
+
+### Documentation
+
+More information about `debops.hwraid` can be found in the
+[official debops.hwraid documentation](http://docs.debops.org/en/latest/ansible/roles/debops.hwraid.html).
 
 
 
