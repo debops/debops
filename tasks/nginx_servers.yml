@@ -21,6 +21,12 @@
   when: ((item.locked is undefined or (item.locked is defined and not item.locked)) and
          (item.name is defined) and (item.delete is defined and item.delete))
 
+- name: Preserve default server if it's saved in Ansible local facts
+  set_fact:
+    nginx_register_default_server_saved: '{{ ansible_local.nginx.default_server }}'
+  when: (ansible_local is defined and ansible_local.nginx is defined and
+         ansible_local.nginx.default_server is defined)
+
 - name: Check if default server is in the list of nginx servers
   set_fact:
     nginx_register_default_server_name: '{{ nginx_default_name }}'
