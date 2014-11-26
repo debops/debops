@@ -11,6 +11,24 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-11-26
+^^^^^^^^^^
+
+Role updates
+************
+
+`debops.nginx`_ role will now preserve the status for ``default_server`` of
+a particular configuration file in case that another instance of the role is
+added in the Ansible run. Saved local fact about which server is the default
+one will take precedence over automatically calculated setting.
+
+If ``nginx`` role notices that Ansible local facts are missing, it will remove
+all files and symlinks from ``/etc/nginx/sites-enabled/`` directory. This
+should happen in two instances - either ``nginx`` is configured for the first
+time, or ``/etc/ansible/facts.d/nginx.fact`` file has been removed. In that
+case all active config symlinks will be removed to prevent accidental errors
+from some old, not regenerated configuration files.
+
 2014-11-25
 ^^^^^^^^^^
 
