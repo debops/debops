@@ -11,6 +11,32 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-11-27
+^^^^^^^^^^
+
+Role updates
+************
+
+Support for management of SSH host fingerprints in ``/etc/ssh/ssh_known_hosts``
+(via `debops.sshd`_ role) and ``/root/.ssh/known_hosts`` on OpenVZ hosts (via
+`debops.openvz`_ role) has been redesigned and no longer uses ``assemble``
+Ansible module. Instead, Ansible checks already present fingerprints and adds
+new ones if they are not present in the files. This helps better obfuscate
+scanned hosts, which previously could be inferred from filenames of parts
+assembled earlier.
+
+Instances of ``with_items`` using multiple lists in a few roles have been
+replaced with ``with_flattened`` which works better in new release of Ansible,
+1.8+.
+
+`debops.openvz`_ role has been slightly updated and redundant configuration of
+``ferm`` and ``sysctl``, already configured by `debops.ferm`_ role, has been
+dropped to prevent duplication.
+
+.. _debops.sshd: https://github.com/debops/ansible-sshd/
+.. _debops.openvz: https://github.com/debops/ansible-openvz/
+.. _debops.ferm: https://githubc.om/debops/ansible-ferm/
+
 2014-11-26
 ^^^^^^^^^^
 
