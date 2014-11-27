@@ -23,24 +23,6 @@
     install_recommends: False
   with_items: [ 'vzctl', 'vzquota', 'vzdump', 'ploop', 'uuid-runtime' ]
 
-- name: Configure firewall for OpenVZ
-  template:
-    src: 'etc/ferm/ferm.d/openvz.conf.j2'
-    dest: '/etc/ferm/ferm.d/openvz.conf'
-    owner: 'root'
-    group: 'adm'
-    mode: '0644'
-  notify: [ 'Restart ferm' ]
-
-- name: Configure sysctl for OpenVZ
-  template:
-    src: 'etc/sysctl.d/openvz.conf.j2'
-    dest: '/etc/sysctl.d/openvz.conf'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  notify: [ 'Reload sysctl' ]
-
 - name: Symlink container storage to /vz
   file:
     src: '{{ openvz_container_storage }}'
