@@ -17,6 +17,24 @@ openvz_container_storage: '/var/lib/vz'
 openvz_storage_layout: 'ploop'
 
 
+# ---- root SSH keys and /root/.ssh/known_hosts ----
+
+# SSH on root is used for container migration. OpenVZ role will exchange root
+# SSH keys between all hosts in 'openvz_cluster' list.
+
+# Key length of generated root SSH key
+openvz_root_ssh_key_bits: '4096'
+
+# List of custom hosts to add in root's ~/.ssh/known_hosts
+openvz_root_ssh_known_hosts: []
+
+# Command used to scan SSH fingerprints
+openvz_root_ssh_known_hosts_command: 'ssh-keyscan -H -T 10'
+
+# File which holds SSH host fingerprints for root account
+openvz_root_ssh_known_hosts_file: '/root/.ssh/known_hosts'
+
+
 # ---- Configuration file for new OpenVZ containers ----
 
 # Default configuration file for new OpenVZ containers
