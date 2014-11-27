@@ -15,7 +15,10 @@
 
 - name: Get list of already scanned host fingerprints
   shell: ssh-keygen -f {{ sshd_known_hosts_file }} -F {{ item }} | grep -q '^# Host {{ item }} found'
-  with_items: sshd_known_hosts + sshd_group_known_hosts + sshd_host_known_hosts
+  with_flattened:
+    - sshd_known_hosts
+    - sshd_group_known_hosts
+    - sshd_host_known_hosts
   when: item is defined and item
   register: sshd_register_known_hosts
   changed_when: False
