@@ -5,8 +5,10 @@
     name: '{{ item }}'
     state: 'latest'
     install_recommends: False
-  with_items: console_base_packages + console_packages
-  when: (console_packages is defined and console_packages)
+  with_flattened:
+    - console_base_packages
+    - console_packages
+  when: item is defined and item
 
 - name: Check if /etc/inittab exists
   stat:
