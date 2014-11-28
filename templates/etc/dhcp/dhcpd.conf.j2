@@ -120,6 +120,64 @@ host {{ host.hostname }} {
 {% endfor %}
 {% endif %}
 {% endmacro %}
+{% macro print_failover(failover) %}
+{% if failover.comment is defined and failover.comment %}
+# {{ failover.comment }}
+{% endif %}
+failover peer "{{ failover.failover }}" {
+{% if failover.primary is defined and failover.primary ==  inventory_hostname %}
+        primary;
+        mclt {{ failover.mclt|default(3600) }};
+{% if failover.primary_fo_addr is defined and failover.primary_fo_addr %}
+        address {{ failover.primary_fo_addr }};
+{% else %}
+        address {{ failover.primary }};
+{% endif %}
+{% if failover.secondary_fo_addr is defined and failover.secondary_fo_addr %}
+        peer address {{ failover.secondary_fo_addr }};
+{% else %}
+        peer address {{ failover.secondary }};
+{% endif %}
+{% if failover.split is defined and failover.split %}
+        split {{ failover.split }};
+{% elif failover.hba is defined and failover.hba %}
+        hba {{ failover.hba }};
+{% endif %}
+{% else %}
+        secondary;
+{% if failover.secondary_fo_addr is defined and failover.secondary_fo_addr %}
+        address {{ failover.secondary_fo_addr }};
+{% else %}
+        address {{ failover.secondary }};
+{% endif %}
+{% if failover.primary_fo_addr is defined and failover.primary_fo_addr %}
+        peer address {{ failover.primary_fo_addr }};
+{% else %}
+        peer address {{ failover.primary }};
+{% endif %}
+{% endif %}
+        max-response-delay {{ failover.max_response_delay|default(30) }};
+        max-unacked-updates {{ failover.max_unacked_updates|default(10) }};
+{% if failover.load_balance_max_seconds is defined and failover.load_balance_max_seconds %}
+        load balance max seconds {{ failover.load_balance_max_seconds }};
+{% endif %}
+{% if failover.max_lease_misbalance is defined and failover.max_lease_misbalance %}
+        max-lease-misbalance {{ failover.max_lease_misbalance }};
+{% endif %}
+{% if failover.max_lease_ownership is defined and failover.max_lease_ownership %}
+        max-lease-ownership {{ failover.max_lease_ownership }};
+{% endif %}
+{% if failover.min_balance is defined and failover.min_balance %}
+        min-balance {{ failover.min_balance }};
+{% endif %}
+{% if failover.max_balance is defined and failover.max_balance %}
+        max-balance {{ failover.max_balance }};
+{% endif %}
+{% if failover.auto_partner_down is defined and failover.auto_partner_down %}
+        auto-partner-down {{ failover.auto_partner_down }};
+{% endif %}
+}
+{% endmacro %}
 
 {% if dhcpd_authoritative is defined and dhcpd_authoritative %}
 authoritative;
@@ -141,6 +199,11 @@ not authoritative;
 {% if dhcpd_classes is defined and dhcpd_classes %}
 {% for class in dhcpd_classes %}
 {{ print_class(class) }}
+{% endfor %}
+{% endif %}
+{% if dhcpd_failovers is defined and dhcpd_failovers %}
+{% for failover in dhcpd_failovers %}
+{{ print_failover(failover) }}
 {% endfor %}
 {% endif %}
 {% if dhcpd_shared_networks is defined and dhcpd_shared_networks %}
