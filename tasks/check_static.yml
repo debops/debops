@@ -8,7 +8,7 @@
 
 - name: Enable static default configuration if detected
   set_fact:
-    ifupdown_static_config:
-       "{{ ifupdown_register_static_config.rc == 0 and 'static' }}"
+    ifupdown_static_config: 'static'
   when: ifupdown_register_static_config.rc is defined and
-        ifupdown_register_static_config.rc
+        ifupdown_register_static_config.rc == 0
+
