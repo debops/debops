@@ -458,7 +458,7 @@ server {
 server {
 {% endif %}
 {% for port in nginx_tpl_listen_ssl %}
-        listen {{ port }} ssl{% if (nginx_version is defined and nginx_version.stdout | version_compare('1.4','>=')) %} spdy{% endif %}{% if (loop.first and nginx_tpl_default_server) %} {{ nginx_tpl_default_server }}{% endif %};
+        listen {{ port }} ssl{% if (nginx_version is defined and nginx_version | version_compare('1.4','>=')) %} spdy{% endif %}{% if (loop.first and nginx_tpl_default_server) %} {{ nginx_tpl_default_server }}{% endif %};
 {% endfor %}
 
         ssl_certificate           {{ nginx_tpl_ssl_certificate }};
@@ -468,7 +468,7 @@ server {
         ssl_ciphers               "{{ nginx_ssl_ciphers[item.ssl_ciphers | default(nginx_default_ssl_ciphers)] }}"; # SSL cipher list: {{ item.ssl_ciphers | default(nginx_default_ssl_ciphers) }}
         ssl_dhparam               /etc/nginx/dhparam_2048.pem;
         ssl_ecdh_curve            {{ item.ssl_curve | default(nginx_default_ssl_curve) }};
-{% if (nginx_version is defined and nginx_version.stdout | version_compare('1.4','>=')) and nginx_ocsp_resolvers is defined and nginx_ocsp_resolvers %}
+{% if (nginx_version is defined and nginx_version | version_compare('1.4','>=')) and nginx_ocsp_resolvers is defined and nginx_ocsp_resolvers %}
         ssl_stapling              on;
         ssl_stapling_verify       on;
 {% set nginx_tpl_ocsp_resolver = nginx_ocsp_resolvers[0] if '.' in nginx_ocsp_resolvers[0] else '[' + nginx_ocsp_resolvers[0] + ']' %}

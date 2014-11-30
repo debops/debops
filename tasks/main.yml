@@ -20,8 +20,12 @@
 
 - name: Check nginx version
   shell: /usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##'
-  register: nginx_version
+  register: nginx_register_version
   changed_when: False
+
+- name: Define nginx version
+  set_fact:
+    nginx_version: '{{ nginx_register_version.stdout | default("0.0") }}'
 
 - name: Get list of nameservers configured in /etc/resolv.conf
   shell: grep nameserver /etc/resolv.conf | awk '{print $2}' | sed -e 'N;s/\n/ /'
@@ -31,8 +35,9 @@
 - name: Convert list of nameservers to Ansible list
   set_fact:
     nginx_ocsp_resolvers: "{{ nginx_register_nameservers.stdout.split(' ') }}"
-  when: (nginx_ocsp_resolvers is undefined or
-         (nginx_ocsp_resolvers is defined and not nginx_ocsp_resolvers))
+  when: ((nginx_register_nameservers.stdout is defined and nginx_register_nameservers.stdout) and
+         (nginx_ocsp_resolvers is undefined or
+         (nginx_ocsp_resolvers is defined and not nginx_ocsp_resolvers)))
 
 - name: Create default nginx directories
   file:
