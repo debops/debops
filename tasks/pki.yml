@@ -113,7 +113,9 @@
         dest=/usr/local/share/ca-certificates/{{ item | basename }}
   with_items: pki_register_ca_list.stdout_lines
   register: pki_register_ca_symlinks
-  when: pki_register_ca_list is defined and pki_register_ca_list
+  when: ((pki_register_ca_list is defined and pki_register_ca_list) and
+         (pki_register_ca_list.skipped is undefined or
+          (pki_register_ca_list.skipped is defined and not pki_register_ca_list.skipped)))
 
 - name: Update CA certificates database
   command: update-ca-certificates
