@@ -3,7 +3,7 @@
 # Part of the DebOps project - http://debops.org/
 
 
-PREFIX="/usr/local"
+PREFIX?="/usr/local"
 BIN_DIR="${PREFIX}/bin"
 SHARE_DIR="${PREFIX}/share/debops"
 
