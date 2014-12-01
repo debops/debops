@@ -1,37 +1,19 @@
 ---
 
-# User which will be used to clone and manage debops
-# By default, current system user
-debops_user: '{{ ansible_ssh_user | default(lookup("env","USER")) }}'
+# List of packages required by DebOps, if you don't want to install Ansible
+# from a Debian package, you can remove it here
+debops_packages: [ 'ansible', 'python-netaddr' ]
 
-# Where DebOps will be cloned, relative to user's $HOME
-debops_path: 'src/github.com/debops/debops'
+# URL to main DebOps repository
+debops_source_url: 'https://github.com/debops/debops'
 
-# URI to DebOps repository which will be cloned
-debops_git_repository: 'https://github.com/ginas/ginas.git'
+# Path where DebOps source repository will be cloned
+debops_source_path: '/usr/local/src/github.com/debops/debops'
 
-# git branch to clone
-debops_git_branch: 'master'
+# git branch name to clone and update
+debops_source_version: 'master'
 
-# URI of optional inventory repository to clone
-debops_inventory_repository: ""
-
-# git branch of inventory repository to clone
-debops_inventory_branch: 'master'
-
-# Where DebOps inventory repository will be cloned, relative to user's $HOME
-debops_inventory_path: 'src/github.com/debops/debops-inventory'
-
-# Name of a directory inside inventory repository which will be linked as
-# 'inventory' directory inside DebOps repository. See 'site.sh' script for more
-# information
-debops_inventory_name: 'inventory'
-
-# An user account which will be checked for when role creates recursive symlinks
-debops_recursive_user: ""
-
-# Name of a Vagrant inventory directory to link automatically as 'inventory' in
-# main DebOps repository. Specify as 'inventory-<name>'
-debops_vagrant_inventory: ""
-
+# Should DebOps playbooks and roles be installed automatically system-wide?
+# This will be an async operation and it can take a while to complete
+debops_playbooks_systemwide: False
 
