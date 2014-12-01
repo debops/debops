@@ -34,3 +34,10 @@ clean-playbook:
 	@echo "Cleaning up DebOps playbook ..."
 	@rm -rf ${SHARE_DIR}
 
+# Aliases
+uninstall: uninstall-scripts uninstall-playbook
+
+uninstall-scripts: clean-scripts
+
+uninstall-playbook: clean-playbook
+
