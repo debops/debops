@@ -11,6 +11,41 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-12-01
+^^^^^^^^^^
+
+`Hartmut Goebel`_ has joined DebOps team and wrote an excellent guide for using
+DebOps scripts and playbooks with Vagrant on single and multiple hosts. It's
+available in `debops/examples`_ repository.
+
+.. _Hartmut Goebel: https://github.com/htgoebel
+.. _debops/examples: https://github.com/debops/examples/
+
+Role updates
+************
+
+All DebOps roles again use Ansible `devel` branch on Travis CI for tests.
+
+`debops.debops`_ role has been rewritten and updated to support current project
+installation method. By default only DebOps scripts will be installed system
+wide, but you can also install playbooks and roles to `/usr/local` by setting
+a variable. Dependency on `debops.ansible`_ role has been dropped and that role
+will be removed in the future. You can install Ansible from a Debian repository
+or by providing your own ``.deb`` package.
+
+`RedRampage`_ has provided a failover code for `debops.dhcpd`_ role which
+should help set up failover DHCP servers. Thanks!
+
+Several DebOps roles had a small fixes related to ``ansible-playbook --check``
+command, which can now be used to check for possible changes before applying
+them on the remote hosts. Due to bugs in older Ansible versions this
+functionality works correctly on Ansible 1.8+ or current ``devel`` branch.
+
+.. _debops.debops: https://github.com/debops/ansible-debops/
+.. _debops.ansible: https://github.com/debops/ansible-role-ansible/
+.. _RedRampage: https://github.com/redrampage
+.. _debops.dhcpd: https://github.com/debops/ansible-dhcpd/
+
 2014-11-27
 ^^^^^^^^^^
 
