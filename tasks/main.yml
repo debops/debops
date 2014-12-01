@@ -1,60 +1,33 @@
 ---
 
-- name: Get user home directory
-  shell: echo $HOME
-  register: debops_user_home
-  changed_when: False
-  sudo_user: '{{ debops_user }}'
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_flattened:
+    - [ 'git', 'make' ]
+    - debops_packages
 
-- name: Clone DebOps repository
-  git: repo={{ debops_git_repository }} dest={{ debops_user_home.stdout }}/{{ debops_path }}
-       version={{ debops_git_branch }} update=yes
-  register: debops_git
-  sudo_user: '{{ debops_user }}'
+- name: Clone main DebOps source code
+  git:
+    repo: '{{ debops_source_url }}'
+    dest: '{{ debops_source_path }}'
+    version: '{{ debops_source_version }}'
+    update: True
+  register: debops_register_source
 
-- name: Fix permissions of vagrant insecure ssh key
-  file: path={{ debops_user_home.stdout }}/{{ debops_path }}/contrib/vagrant/ssh/id_rsa_insecure
-        state=file mode=0600
+- name: Install DebOps scripts
+  command: make install-scripts
+           chdir={{ debops_source_path }}
+  when: debops_register_source is defined and
+        debops_register_source.changed
 
-- name: Clone DebOps inventory repository
-  git: repo={{ debops_inventory_repository }} dest={{ debops_user_home.stdout }}/{{ debops_inventory_path }}
-       version={{ debops_inventory_branch }} update=yes
-  register: debops_inventory
-  when: debops_inventory_repository is defined and debops_inventory_repository
-  sudo_user: '{{ debops_user }}'
-
-- name: Link custom inventory to DebOps playbook
-  file: path={{ debops_user_home.stdout }}/{{ debops_path }}/inventory state=link
-        src={{ debops_user_home.stdout }}/{{ debops_inventory_path }}/{{ debops_inventory_name }}
-  when: (debops_inventory_repository is defined and debops_inventory_repository) and
-        (debops_vagrant_inventory is undefined or not debops_vagrant_inventory)
-  sudo_user: '{{ debops_user }}'
-
-- name: Link Vagrant inventory to DebOps playbook
-  file: path={{ debops_user_home.stdout }}/{{ debops_path }}/inventory-vagrant state=link
-        src={{ debops_user_home.stdout }}/{{ debops_path }}/contrib/vagrant/inventory-{{ debops_vagrant_inventory }}
-  when: (debops_vagrant_inventory is defined and debops_vagrant_inventory) and
-        (debops_inventory_repository is undefined or not debops_inventory_repository)
-  sudo_user: '{{ debops_user }}'
-
-- name: Create convinient update symlink with custom inventory if enabled
-  file: path={{ debops_user_home.stdout }}/{{ debops_path }}/debops.sh state=link
-        src={{ debops_user_home.stdout }}/{{ debops_path }}/site.sh
-  when: (debops_inventory_repository is defined and debops_inventory_repository) or
-        (debops_vagrant_inventory is defined and debops_vagrant_inventory)
-  sudo_user: '{{ debops_user }}'
-
-- name: Create convinient symlinks if specified user is detected
-  file: path={{ debops_user_home.stdout }}/{{ debops_path }}/{{ item }}.sh state=link
-        src={{ debops_user_home.stdout }}/{{ debops_path }}/site.sh
-  with_items: [ 'vagrant', 'vagrant-debops' ]
-  when: debops_user is defined and debops_user == '{{ debops_recursive_user }}'
-  sudo_user: '{{ debops_user }}'
-
-- name: Create symlinks to task.sh if specified user is detected
-  file: path={{ debops_user_home.stdout }}/{{ debops_path }}/{{ item }}.sh state=link
-        src={{ debops_user_home.stdout }}/{{ debops_path }}/task.sh
-  with_items: [ 'vagrant-task', 'vagrant-shell' ]
-  when: debops_user is defined and debops_user == '{{ debops_recursive_user }}'
-  sudo_user: '{{ debops_user }}'
+- name: Install DebOps playbooks and roles systemw-wide (async)
+  command: make install-playbook
+           chdir={{ debops_source_path }}
+  async: '{{ (60 * 5) | int }}'
+  poll: 0
+  when: debops_install_systemwide is defined and
+        debops_install_systemwide
 

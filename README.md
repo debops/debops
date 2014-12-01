@@ -2,9 +2,9 @@
 
 [![Travis CI](http://img.shields.io/travis/debops/ansible-debops.svg?style=flat)](http://travis-ci.org/debops/ansible-debops) [![test-suite](http://img.shields.io/badge/test--suite-ansible--debops-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-debops/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.debops-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1557)
 
-Download [DebOps](http://debops.org/) source code to user home directory,
-ready to be used. This role might be useful to setup Ansible Controller
-host automatically.
+Install DebOps scripts, and optionally automatically download DebOps
+playbooks and roles and install them system-wide in `/usr/local`. This role
+can be used to easily setup a remote Ansible Controller using Ansible.
 
 ### Installation
 
@@ -18,9 +18,6 @@ More information about `debops.debops` can be found in the
 [official debops.debops documentation](http://docs.debops.org/en/latest/ansible/roles/debops.debops.html).
 
 
-### Role dependencies
-
-- `debops.ansible`
 
 ### Are you using this as a standalone role without DebOps?
 
