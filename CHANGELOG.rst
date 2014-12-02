@@ -11,6 +11,27 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-12-02
+^^^^^^^^^^
+
+`DebOps mailing list`_ has been moved to `groups.io`_.
+
+.. _DebOps mailing list: https://groups.io/org/groupsio/debops
+.. _groups.io: https://groups.io/
+
+Role updates
+************
+
+`debops.gitlab_ci`_ role has been significantly refactored. Due to bug in
+GitLab CI 5.0 at the moment this version cannot be installed, so I decided to
+use this opportunity to make some deep changes in the role. GitLab CI home has
+been moved to ``/var/local/gitlab-ci/`` directory, and various tasks related to
+updating the application have been streamlined. You can read more information
+about various changes in the `commit message`_.
+
+.. _debops.gitlab_ci: https://github.com/debops/ansible-gitlab_ci/
+.. _commit message: https://github.com/debops/ansible-gitlab_ci/commit/64eb393569267f4eebd9264580d9c1fa22dc32e0
+
 2014-12-01
 ^^^^^^^^^^
 
