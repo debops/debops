@@ -11,6 +11,24 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-12-03
+^^^^^^^^^^
+
+Role updates
+************
+
+Continuing the `GitLab`_ revamp, `debops.gitlab_ci_runner`_ role has also been
+refactored and is unfortunately not compatible with the previous version,
+reinstall of the nost is recommended.
+
+Runner home directory has been moved to ``/var/local/`` directory, most of role
+dependencies have been dropped and role now needs less upkeep than before. You
+can read about changes in `latest commit`_.
+
+.. _GitLab: https://about.gitlab.com/
+.. _debops.gitlab_ci_runner: https://github.com/debops/ansible-gitlab_ci_runner/
+.. _latest commit: https://github.com/debops/ansible-gitlab_ci_runner/commit/b46089356e48b4f6719fd9eb64a5684ed0d55ae3
+
 2014-12-02
 ^^^^^^^^^^
 
