@@ -92,6 +92,22 @@ openvz_template_admin_username: '{{ ansible_ssh_user | default(lookup("env","USE
 openvz_template_admin_sshkey: '{{ lookup("pipe","ssh-add -L") }}'
 
 
+# ---- Salt integration ----
+
+# Enable or disable Salt integration in vzbootstrap-ansible script. SaltStack
+# upstream repository will be configured in the newly create OpenVZ container
+# and packages listed below will be installed
+openvz_template_salt: False
+
+# List of Salt packages to install in new hosts
+openvz_template_salt_packages: [ 'salt-minion' ]
+
+# Additional options to set for salt-minion, in YAML text block format
+# Contents will be inserted into a vzbootstrap-ansible Bash script on OpenVZ
+# host and echoed to /etc/salt/minion.d/ansible.conf file
+openvz_template_salt_options: False
+
+
 # ---- OpenVZ kernel ----
 
 # Name of a kernel package (or metapackage) installed by openvz role

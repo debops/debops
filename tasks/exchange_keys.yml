@@ -24,7 +24,8 @@
     state: 'present'
   delegate_to: '{{ item }}'
   with_items: openvz_cluster
-  when: item is defined and item != inventory_hostname
+  when: (item is defined and item != inventory_hostname and
+         hostvars[item].ansible_hostname is defined)
 
 - name: Make sure that /root/.ssh/known_hosts file exists
   command: touch {{ openvz_root_ssh_known_hosts_file }}
