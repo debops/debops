@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) salt
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-salt.svg?style=flat)](http://travis-ci.org/debops/ansible-salt) [![test-suite](http://img.shields.io/badge/test--suite-ansible--salt-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-salt/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-salt.svg?style=flat)](http://travis-ci.org/debops/ansible-salt) [![test-suite](http://img.shields.io/badge/test--suite-ansible--salt-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-salt/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.salt-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/2301)
 
 This role will install and configure [SaltStack](http://www.saltstack.com/)
 master service, which can be used to manage Salt minions. By default, Salt
@@ -8,6 +8,17 @@ master packages from upstream repositories will be installed and configured
 to listen on both IPv4 and IPv6 networks and will accept connections from
 all hosts; you can limit connections through the firewall using
 [debops.ferm](https://github.com/debops/ansible-ferm/) role.
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, run:
+
+    ansible-galaxy install debops.salt
+
+### Documentation
+
+More information about `debops.salt` can be found in the
+[official debops.salt documentation](http://docs.debops.org/en/latest/ansible/roles/debops.salt.html).
 
 
 ### Role dependencies
