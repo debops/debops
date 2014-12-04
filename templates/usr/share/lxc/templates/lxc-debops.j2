@@ -44,6 +44,14 @@ bootstrap_debops()
     rootfs=$1
     hostname=$2
 
+    # Prevent service startup while we are working in chroot
+    cat > $rootfs/usr/sbin/policy-rc.d <<EOF
+#!/bin/sh
+echo "All runlevel operations denied by policy" >&2
+exit 101
+EOF
+    chmod +x $rootfs/usr/sbin/policy-rc.d
+
 {% if lxc_template_security_upgrade is defined and lxc_template_security_upgrade %}
     # debootstrap doesn't know about, nor can use security.debian.org updates.
     # To make new LXC containers secure, let's do a quick upgrade during container
@@ -76,6 +84,9 @@ bootstrap_debops()
     # Set root password in a container
     echo "root:{{ lxc_template_root_password }}" | chroot $rootfs chpasswd
     echo "Container root password is '{{ lxc_template_root_password }}'"
+
+    # Unlock service startup
+    rm -rf $rootfs/usr/sbin/policy-rc.d
 
     return 0
 }
