@@ -1,0 +1,38 @@
+---
+
+# List of packages to install on Salt master host
+salt_packages: [ 'salt-master' ]
+
+# Lists of IP addresses or network CIDR ranges allowed to connect to Salt
+# master through the firewall. If lists are empty, anyone can connect.
+salt_allow: []
+salt_group_allow: []
+salt_host_allow: []
+
+# Configure Salt master using Ansible?
+salt_configuration: True
+
+# File with Ansible-generated Salt master configuration. If configuration is
+# disabled, it will be automatically removed by Ansible on the next run.
+salt_configuration_file: '/etc/salt/master.d/ansible.conf'
+
+# By default Salt master listens for connections on all IPv6 and IPv4
+# interfaces. If you want to disable IPv6, change the value to "0.0.0.0"
+salt_interface: '::'
+
+# Enable/Disable IPv6 support in Salt master
+salt_ipv6: True
+
+# Ports configured in firewall for Salt master
+salt_publish_port: '4505'
+salt_return_port: '4506'
+
+# Salt master worker multiplier
+salt_worker_multiplier: 2
+
+# Number of Salt master workers to run
+salt_worker_threads: '{{ (ansible_processor_cores | int * salt_worker_multiplier | int) }}'
+
+# Additional Salt master options in YAML text block format
+salt_options: False
+

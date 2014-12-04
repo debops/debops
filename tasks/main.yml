@@ -1,0 +1,40 @@
+---
+
+- name: Add SaltStack repository key
+  apt_key:
+    url: '{{ salt_debian_apt_key_url }}'
+    id: '{{ salt_debian_apt_key_id }}'
+    state: 'present'
+  when: ansible_distribution in [ 'Debian' ]
+
+- name: Configure SaltStack repository
+  apt_repository:
+    repo: '{{ salt_upstream_repository[ansible_distribution] }}'
+    state: 'present'
+    update_cache: True
+
+- name: Install Salt packages
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_items: salt_packages
+
+- name: Configure Salt master using Ansible
+  template:
+    src: 'etc/salt/master.d/ansible.conf.j2'
+    dest: '{{ salt_configuration_file }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart salt-master' ]
+  when: salt_configuration is defined and salt_configuration
+
+- name: Remove Salt master config file if disabled
+  file:
+    path: '{{ salt_configuration_file }}'
+    state: 'absent'
+  notify: [ 'Restart salt-master' ]
+  when: (salt_configuration is undefined or
+         (salt_configuration is defined and not salt_configuration))
+
