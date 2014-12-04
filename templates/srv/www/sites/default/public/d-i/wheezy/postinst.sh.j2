@@ -4,6 +4,14 @@
 
 export HOME=/root
 
+# Prevent service startup while we are working in chroot
+cat > /usr/sbin/policy-rc.d <<EOF
+#!/bin/sh
+echo "All runlevel operations denied by policy" >&2
+exit 101
+EOF
+chmod +x /usr/sbin/policy-rc.d
+
 # Setup grub, cgroup, LXC
 
 if [ -r "/etc/default/grub" ]; then
@@ -13,6 +21,23 @@ if [ -r "/etc/default/grub" ]; then
 	update-grub
 fi
 
+{% if apt_debian_preseed_salt is defined and apt_debian_preseed_salt %}
+# Configure Salt APT repository
+echo "{{ apt_debian_preseed_salt_upstream_repository }}" >> /etc/apt/sources.list
+wget -q -O- "{{ apt_debian_preseed_salt_apt_key_url }}" | apt-key add -
+apt-get update
+
+# Install Salt packages
+apt-get -yq install {{ apt_debian_preseed_salt_packages | join(" ") }}
+{% if apt_debian_preseed_salt_options is defined and apt_debian_preseed_salt_options %}
+
+# Configuration for Salt minion
+cat > /etc/salt/minion.d/ansible.conf <<EOF
+{{ apt_debian_preseed_salt_options }}
+EOF
+{% endif %}
+
+{% endif %}
 {% if apt_debian_preseed_sshkey is defined and apt_debian_preseed_sshkey %}
 # Inject ssh key into root account
 mkdir -p -m 700 /root/.ssh
@@ -41,4 +66,6 @@ chown -R {{ apt_debian_preseed_username }}:{{ apt_debian_preseed_username }} /ho
 passwd --expire root
 {% endif %}
 
+# Unlock service startup
+rm -rf /usr/sbin/policy-rc.d
 

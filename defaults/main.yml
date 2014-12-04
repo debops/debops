@@ -124,3 +124,20 @@ apt_debian_preseed_rootpw: "{{ lookup('password', secret + '/credentials/' + ans
 apt_debian_preseed_username: "{{ lookup('env','USER') }}"
 apt_debian_preseed_sshkey: "{{ lookup('pipe','ssh-add -L') }}"
 apt_debian_preseed_filesystem: 'ext4'
+
+
+# ---- Salt integration ----
+
+# Enable or disable Salt integration. SaltStack upstream repository will be
+# configured in the newly installed host and packages listed below will be
+# installed
+apt_debian_preseed_salt: False
+
+# List of Salt packages to install in new hosts
+apt_debian_preseed_salt_packages: [ 'salt-minion' ]
+
+# Additional options to set for salt-minion, in YAML text block format
+# Contents will be inserted into a Bash template script on LXC host and
+# echoed to /etc/salt/minion.d/ansible.conf file
+apt_debian_preseed_salt_options: False
+
