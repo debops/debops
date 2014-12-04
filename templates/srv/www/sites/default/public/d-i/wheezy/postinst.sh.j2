@@ -4,6 +4,14 @@
 
 export HOME=/root
 
+# Prevent service startup while we are working in chroot
+cat > /usr/sbin/policy-rc.d <<EOF
+#!/bin/sh
+echo "All runlevel operations denied by policy" >&2
+exit 101
+EOF
+chmod +x /usr/sbin/policy-rc.d
+
 # Setup grub, cgroup, LXC
 
 if [ -r "/etc/default/grub" ]; then
@@ -41,4 +49,6 @@ chown -R {{ apt_debian_preseed_username }}:{{ apt_debian_preseed_username }} /ho
 passwd --expire root
 {% endif %}
 
+# Unlock service startup
+rm -rf /usr/sbin/policy-rc.d
 
