@@ -110,6 +110,20 @@ lxc_template_debootstrap_packages: [ 'ifupdown', 'locales', 'libui-dialog-perl',
                                      'apt-transport-https', 'vim-tiny', 'cron', 'curl',
                                      'openssl', 'ca-certificates' ]
 
+# ---- Salt integration ----
+
+# Enable or disable Salt integration. SaltStack upstream repository will be
+# configured in the container and packages listed below will be installed
+lxc_template_salt: False
+
+# List of Salt packages to install in LXC containers
+lxc_template_salt_packages: [ 'salt-minion' ]
+
+# Additional options to set for salt-minion, in YAML text block format
+# Contents will be inserted into a Bash template script on LXC host and
+# echoed to /etc/salt/minion.d/ansible.conf file on container creation
+lxc_template_salt_options: False
+
 
 # ---- Manage LXC containers ----
 
