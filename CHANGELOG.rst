@@ -11,6 +11,38 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-12-05
+^^^^^^^^^^
+
+New roles
+*********
+
+- `debops.salt`_ role allows you to install and configure `Salt`_ Master
+  service. You can use this to create Salt control host to which other hosts
+  (Salt Minions) can connect to. At the moment configuration is very basic,
+  Salt master will automatically listen to IPv6 connections and firewall will
+  be configured to accept connections on default ports.
+
+.. _debops.salt: https://github.com/debops/ansible-salt/
+.. _Salt: http://saltstack.com/
+
+Role updates
+************
+
+Salt Minion preseeding has been added in `debops.apt`_ (current Debian Preseed
+configuration is there, will be moved in the future to separate role),
+`debops.lxc`_ and `debops.openvz`_ roles. Automatic minion installation is
+disabled by default and can be enabled separately for each "mode" - Debian
+Preseed postinst script in case of physical hosts or KVM virtual machines, LXC
+template script for LXC containers, OpenVZ bootstrap script for OpenVZ
+containers. After installation, ``salt-minion`` will try to connect to ``salt``
+host, so make sure that it's present in your DNS configuration for best
+results.
+
+.. _debops.apt: https://github.com/debops/ansible-apt/
+.. _debops.lxc: https://github.com/debops/ansible-lxc/
+.. _debops.openvz: https://github.com/debops/ansible-openvz/
+
 2014-12-03
 ^^^^^^^^^^
 
