@@ -122,4 +122,21 @@ nginx_server_default:
   enabled: True
   name: []
   default: True
+  default_index: True
+
+# Contents of default 'index.html' page created automatically if
+# 'item.default_index' is set in the server configuration
+nginx_default_index_html: |
+  <html>
+  <head>
+  <title>Welcome to nginx!</title>
+  </head>
+  <body>
+  {% if item.name %}
+  <h1>{{ item.name[0] }} is working!</h1>
+  {% else %}
+  <h1>Your website is working!</h1>
+  {% endif %}
+  </body>
+  </html>
 
