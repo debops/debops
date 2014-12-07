@@ -14,7 +14,7 @@
 
 - name: Create default index.html if enabled
   copy:
-    content: '{{ nginx_default_index_html }}'
+    content: '{{ item.default_index }}'
     dest: '/srv/www/sites/{{ item.name[0] | default("default") }}/public/index.html'
     owner: '{{ item.owner | default(nginx_webroot_owner) }}'
     group: '{{ item.owner | default(nginx_webroot_group) }}'
