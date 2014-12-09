@@ -56,7 +56,7 @@ sudo apt-get --no-install-recommends -qq -y install git devscripts \
 	build-essential
 
 # Clone Ansible from main project repository (devel branch, default)
-git clone --branch ${branch} ${project} ansible
+git clone --branch ${branch} --recursive ${project} ansible
 cd ansible
 
 # Build Debian package
