@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # debops-task: run ansible with some customization
-# Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014 Hartmut Goebel <h.goebel@crazy-compilers.com>
 # Part of the DebOps project - http://debops.org/
 
 
@@ -27,115 +28,51 @@
 # http://www.gnu.org/copyleft/gpl.html
 
 
-set -e
+from __future__ import print_function
 
-# ---- Global constants ----
+from debops import *
 
-declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
-declare -r DEBOPS_CONFIG=".debops.cfg"
-declare -r DEBOPS_INVENTORY="inventory"
-declare -r SCRIPT_NAME="$(basename ${0})"
-
-declare -r DEBOPS_RESERVED_NAMES=( task init update defaults padlock )
-
-
-# ---- Configuration variables ----
-
-# Don't check SSH fingerprint on connection (to enable, set INSECURE=1 on the
-# command line)
-[ -z "${INSECURE}" ] && INSECURE=0
-
-# List of possible inventory directories, relative to DebOps root project directory
-ANSIBLE_INVENTORY_PATHS=( "ansible/${DEBOPS_INVENTORY}" "${DEBOPS_INVENTORY}" )
-
-
-# ---- Functions ----
-
-# Find specified file or directory in parent dir (if not specified, finds $DEBOPS_CONFIG)
-# Source: https://unix.stackexchange.com/questions/13464
-find_up () {
-  local name=${1:-$DEBOPS_CONFIG}
-  local slashes="${PWD//[^\/]/}"
-  local directory="${PWD}"
-
-  for (( n=${#slashes}; n>0; --n )) ; do
-    test -e "${directory}/${name}" && echo "$(readlink -f ${directory}/${name})" && return
-    directory="$directory/.."
-  done
-}
-
-# Display error message and exit
-error_msg () {
-  local severity="${2:-Error}"
-  local message="${1}"
-
-  echo >&2 "${SCRIPT_NAME}: ${severity}: ${message}"
-  set +e
-  [[ "${severity}" == "Error" ]] && exit 1
-  set -e
-}
-
-# Check if required commands exist
-require_commands () {
-  for name in ${@} ; do
-    if ! type ${name} > /dev/null 2>&1 ; then
-      error_msg "${name}: command not found"
-    fi
-  done
-}
+DEBOPS_RESERVED_NAMES = ["task", "init", "update", "defaults", "padlock"]
 
 
 # ---- DebOps environment setup ----
 
 # Find DebOps configuration file
-debops_config="$(find_up)"
-
-# Exit if we are outside of project directory
-[ -z "${debops_config}" ] && error_msg "Not a DebOps project directory"
-
+debops_config = find_up(DEBOPS_CONFIG)
 # Find root of the DebOps project dir
-debops_root="$(dirname ${debops_config})"
+debops_root = os.path.dirname(debops_config) if debops_config else None
+
+if not debops_config:
+    # Exit if we are outside of project directory
+    error_msg("Not a DebOps project directory")   
 
 # Source DebOps configuration file
-[ -r ${debops_config} ] && source ${debops_config}
+###----- todo: need to decide on semantics!
+#[ -r ${debops_config} ] && source ${debops_config}
 
 
 # ---- Main script ----
 
 # Make sure required commands are present
-require_commands ansible
+require_commands('ansible')
 
-# Check if Ansible inventory can be found in local directory
-for inventory_path in "${ANSIBLE_INVENTORY_PATHS[@]}" ; do
-  if [ -d ${debops_root}/${inventory_path} ] ; then
-    ansible_inventory="${debops_root}/${inventory_path}"
-    break
-  fi
-done
-
-[ -z "${ansible_inventory}" ] && error_msg "Ansible inventory not found"
+debops_playbooks = find_playbookpath()
+ansible_inventory = find_inventorypath()
 
 # Get module name from the script name if script is named 'debops-*'
-module=""
-module_name=${SCRIPT_NAME##*-}
-name_match=0
-for name in "${DEBOPS_RESERVED_NAMES[@]}" ; do
-    if [[ ${name} = "${module_name}" ]] ; then
-        name_match=1
-        break
-    fi
-done
-if [[ ${name_match} = 0 ]] ; then
-    module="-m ${module_name}"
+module_name = SCRIPT_NAME.rsplit('-', 1)[-1]
+if module_name not in DEBOPS_RESERVED_NAMES:
+    module = ["-m", module_name]
+else:
+    module = []
 fi
 
-export ANSIBLE_HOSTS="${ansible_inventory}"
+os.environ['ANSIBLE_HOSTS'] = os.path.abspath(ansible_inventory)
 
 # Allow insecure SSH connections if requested
-if [ ${INSECURE} -gt 0 ] ; then
-  export ANSIBLE_HOST_KEY_CHECKING=False
-fi
+if INSECURE:
+    os.environ['ANSIBLE_HOST_KEY_CHECKING'] = 'False'
 
 # Run ansible with custom environment
-ansible ${module} "${@}"
-
+cmd = ['ansible'] + modules + sys.argv[1:]
+subprocess.call(cmd)

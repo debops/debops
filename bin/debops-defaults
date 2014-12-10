@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # debops-defaults: aggregate all defaults from Ansible roles into one stream
-# Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014 Hartmut Goebel <h.goebel@crazy-compilers.com>
 # Part of the DebOps project - http://debops.org/
 
 
@@ -26,121 +27,80 @@
 # be downloaded from the FSF web page at:
 # http://www.gnu.org/copyleft/gpl.html
 
+from __future__ import print_function
 
-set -e
+import os
+import sys
+import codecs
+import subprocess
+import glob
+import argparse
+import errno
 
-# ---- Global constants ----
+from debops import *
+from debops.cmds import *
 
-declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
-declare -r DEBOPS_CONFIG=".debops.cfg"
-declare -r DEBOPS_INVENTORY="inventory"
-declare -r SCRIPT_NAME="$(basename ${0})"
+def cat(filename, outstream):
+    try:
+        fh = codecs.open(filename, encoding=sys.getdefaultencoding())
+    except IOError, e:
+        # This should only happen if the user listed a unknown role.
+        outstream.write('%s: %s\n' % (e.strerror, e.filename))
+        return
+    try:
+        outstream.writelines(fh)
+    finally:
+        fh.close()
 
-
-# ---- Configuration variables ----
-
-# Locations where DebOps playbooks might be found
-DEBOPS_PLAYBOOKS_PATHS=(
-  "${DEBOPS_DATA_HOME}/debops-playbooks/playbooks"
-  "/usr/local/share/debops/debops-playbooks/playbooks"
-  "/usr/share/debops/debops-playbooks/playbooks"
-)
-
-# List of possible inventory directories, relative to DebOps root project directory
-ANSIBLE_INVENTORY_PATHS=( "ansible/${DEBOPS_INVENTORY}" "${DEBOPS_INVENTORY}" )
-
-# Default role prefix if no roles with prefixes are specified
-ROLE_PREFIX="debops"
-
-
-# ---- Functions ----
-
-# Find specified file or directory in parent dir (if not specified, finds $DEBOPS_CONFIG)
-# Source: https://unix.stackexchange.com/questions/13464
-find_up () {
-  local name=${1:-$DEBOPS_CONFIG}
-  local slashes="${PWD//[^\/]/}"
-  local directory="${PWD}"
-
-  for (( n=${#slashes}; n>0; --n )) ; do
-    test -e "${directory}/${name}" && echo "$(readlink -f ${directory}/${name})" && return
-    directory="$directory/.."
-  done
-}
-
-# Display error message and exit
-error_msg () {
-  local severity="${2:-Error}"
-  local message="${1}"
-
-  echo >&2 "${SCRIPT_NAME}: ${severity}: ${message}"
-  set +e
-  [[ "${severity}" == "Error" ]] && exit 1
-  set -e
-}
-
-# Check if required commands exist
-require_commands () {
-  for name in ${@} ; do
-    if ! type ${name} > /dev/null 2>&1 ; then
-      error_msg "${name}: command not found"
-    fi
-  done
-}
-
-# Aggregate role/defaults/main.yml files from all roles into one stream
-function aggregate_defaults() {
-	if [ -n "${role_list}" ]; then
-		for role in ${role_list}; do
-			if [[ $role != *.* ]] ; then
-				cat ${debops_playbooks}/../roles/${ROLE_PREFIX}.${role}/defaults/main.yml
-			else
-				cat ${debops_playbooks}/../roles/${role}/defaults/main.yml
-			fi
-		done
-	else
-		cat ${debops_playbooks}/../roles/*/defaults/main.yml
-	fi
-}
-
+def aggregate_defaults(playbooks_path, role_list, outstream):
+    # Aggregate role/defaults/main.yml files from all roles into one stream
+    roles_path = os.path.normpath(os.path.join(playbooks_path, '..', 'roles'))
+    if role_list:
+        for role in role_list:
+            if not '.' in role:
+                role = ROLE_PREFIX + '.' + role
+            fn = os.path.join(roles_path, role, 'defaults', 'main.yml')
+            cat(fn, outstream=outstream)
+    else:
+        for fn in glob.glob(os.path.join(roles_path,
+                                         '*', 'defaults', 'main.yml')):
+            cat(fn, outstream=outstream)
 
 # ---- DebOps environment setup ----
 
-# Find DebOps configuration file
-debops_config="$(find_up)"
+def main(role_list):
+    debops_root = find_debops_project(required=False)
+    # :todo: Source DebOps configuration file
+    #[ -r ${debops_config} ] && source ${debops_config}
 
-# Find root of the DebOps project dir
-[ -n "${debops_config}" ] && debops_root="$(dirname ${debops_config})"
+    # Make sure required commands are present
+    require_commands('view')
 
-# Source DebOps configuration file
-[ -n "${debops_config}" ] && [ -r ${debops_config} ] && source ${debops_config}
+    playbooks_path = find_playbookpath(debops_root, required=True)
+
+    if sys.stdout.isatty():
+        # if script is run as standalone, redirect to view
+        #out = subprocess.Popen(['view', '+set ft=yaml', '-'],
+        view = subprocess.Popen(['less', '-'],
+                                stdin=subprocess.PIPE)
+        try:
+            aggregate_defaults(playbooks_path, role_list, view.stdin)
+        except IOError, e:
+            if e.errno not in (errno.EPIPE, errno.EINVAL):
+                # "Invalid pipe" or "Invalid argument"
+                raise
+        finally:
+            view.communicate()
+    else:
+        # else, send everything to stdout
+        aggregate_defaults(playbooks_path, role_list, sys.stdout)
 
 
-# ---- Main script ----
+parser = argparse.ArgumentParser()
+parser.add_argument('role', nargs='*')
+args = parser.parse_args()
 
-# Make sure required commands are present
-require_commands view
-
-# Check if playbooks are installed in various locations
-for playbook_path in ${debops_root}/debops-playbooks/playbooks ${DEBOPS_PLAYBOOKS_PATHS[@]} ; do
-  if [ -f ${playbook_path}/site.yml ] ; then
-    debops_playbooks="${playbook_path}"
-    break
-  fi
-done
-
-[ -z "${debops_playbooks}" ] && error_msg "DebOps playbooks not installed"
-
-# Get list of roles from the script arguments
-if [ $# -gt 0 ]; then
-	role_list=${@}
-fi
-
-if [ -t 1 ]; then
-	# if script is run as standalone, redirect to view
-	( aggregate_defaults ) | view '+set ft=yaml' -
-else
-	# else, send everything to stdout
-	aggregate_defaults
-fi
-
+try:
+    main(args.role)
+except KeyboardInterrupt:
+    raise SystemExit('... aborted')
