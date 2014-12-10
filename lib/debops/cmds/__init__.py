@@ -36,6 +36,10 @@ except ImportError:
     # open DEVNULL like `subprocess` module does
     DEVNULL = os.open(os.devnull, os.O_RDWR)
 
+from .. import find_debops_project as _find_debops_project, \
+    find_playbookpath as _find_playbookpath, \
+    find_inventorypath as _find_inventorypath
+
 SCRIPT_NAME = os.path.basename(sys.argv[0])
 
 # Don't check SSH fingerprint on connection (to enable, set INSECURE=1 on the
@@ -63,3 +67,23 @@ def require_commands(*cmd_names):
     for name in cmd_names:
         if not command_exists(name):
             error_msg("%s: command not found" % name)
+
+
+def find_debops_project(path=None, required=True):
+    debops_root = _find_debops_project(path)
+    if required and not debops_root:
+        # Exit if we are outside of project directory
+        error_msg("Not a DebOps project directory")
+    return debops_root
+
+def find_playbookpath(debops_root, required=True):
+    playbooks_path = _find_playbookpath(debops_root)
+    if required and not playbooks_path:
+        error_msg("DebOps playbooks not installed")
+    return playbooks_path
+
+def find_inventorypath(debops_root, required=True):
+    inventory = _find_inventorypath(debops_root)
+    if required and not inventory:
+        error_msg("Ansible inventory not found")
+    return inventory

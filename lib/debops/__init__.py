@@ -116,7 +116,7 @@ def find_debops_project(path=None):
     return os.path.dirname(debops_config) if debops_config else None
 
 
-def find_playbookpath(debops_root, required=True):
+def find_playbookpath(debops_root):
     """
     Search for playbooks in various locations.
     """
@@ -128,11 +128,9 @@ def find_playbookpath(debops_root, required=True):
     for playbook_path in places:
         if os.path.exists(os.path.join(playbook_path, "site.yml")):
             return playbook_path
-    if required:
-        error_msg("DebOps playbooks not installed")
 
 
-def find_inventorypath(debops_root, required=True):
+def find_inventorypath(debops_root):
     """
     Search Ansible inventory in local directories.
     """
@@ -140,8 +138,7 @@ def find_inventorypath(debops_root, required=True):
         ansible_inventory = os.path.join(debops_root, inventory_path)
         if os.path.isdir(ansible_inventory):
             return ansible_inventory
-    if required:
-        error_msg("Ansible inventory not found")
+
 
 # ---- Encryption support ----
 
