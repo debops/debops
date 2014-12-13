@@ -26,6 +26,7 @@ from __future__ import print_function
 import os
 import subprocess
 import stat
+import ConfigParser
 try:
     # shlex.quote is new in Python 3.3
     from shlex import quote as shquote
@@ -150,6 +151,19 @@ def find_inventorypath(debops_root):
         if os.path.isdir(ansible_inventory):
             return ansible_inventory
 
+# ---- Configuration support ----
+
+def read_config(debops_root):
+    path = os.path.join(debops_root, DEBOPS_CONFIG)
+    cfgparser = ConfigParser.SafeConfigParser()
+    with open(path) as fh:
+        try:
+            cfgparser.readfp(fh)
+        except ConfigParser.Error, e:
+            raise SystemExit('Error in %s: %s' % (DEBOPS_CONFIG, str(e)))
+    cfg = dict((sect, dict(cfgparser.items(sect)))
+                for sect in cfgparser.sections())
+    return cfg
 
 # ---- Encryption support ----
 

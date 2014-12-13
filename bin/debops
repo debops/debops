@@ -53,37 +53,43 @@ def write_config(filename, config):
         cfgparser.write(fh)
 
 
-def gen_ansible_cfg(filename, debops_root, playbooks_path, inventory_path):
+def gen_ansible_cfg(filename, config, debops_root, playbooks_path,
+                    inventory_path):
     # Generate Ansible configuration file
 
     def plugin_paths(type):
+        if type in defaults:
+            # prepend value from .debops.cfg
+            yield defaults[type]
         yield os.path.join(debops_root, "ansible", plugin_type)
         yield os.path.join(playbooks_path, plugin_type)
         yield os.path.join("/usr/share/ansible_plugins", plugin_type)
 
-    cfg = {}
-    defaults = {
-        'hostfile': inventory_path,
-        'roles_path': PATHSEP.join((
-            os.path.join(debops_root, "roles"),
-            os.path.join(debops_root, "ansible", "roles"),
-            os.path.join(playbooks_path, "..", "roles"),
-            os.path.join(playbooks_path, "roles"),
-            "/etc/ansible/roles")),
-        }
+    # Add custom configuration options to ansible.cfg: Take values
+    # from [ansible ...] sections of the .debops.cfg file
+    cfg = dict((sect.split(None, 1)[1], pairs)
+               for sect, pairs in config.items() if sect.startswith('ansible '))
+
+    defaults = cfg.setdefault('defaults', {})
+    defaults['hostfile'] = inventory_path
+    defaults['roles_path'] = PATHSEP.join(filter(None, (
+        defaults.get('roles_path'), # value from .debops.cfg or None
+        os.path.join(debops_root, "roles"),
+        os.path.join(debops_root, "ansible", "roles"),
+        os.path.join(playbooks_path, "..", "roles"),
+        os.path.join(playbooks_path, "roles"),
+        "/etc/ansible/roles")))
     for plugin_type in ('action', 'callback', 'connection',
                         'filter', 'lookup', 'vars'):
         plugin_type = plugin_type+"_plugins"
         defaults[plugin_type] = PATHSEP.join(plugin_paths(plugin_type))
 
-    cfg = {'defaults': defaults}
     write_config(filename, cfg)
 
 
-# ---- DebOps environment setup ----
-
 def main(cmd_args):
     debops_root = find_debops_project(required=True)
+    config = read_config(debops_root)
     # :todo: Source DebOps configuration file
     #[ -r ${debops_config} ] && source ${debops_config}
 
@@ -124,13 +130,8 @@ def main(cmd_args):
 
     ansible_config_file = os.path.join(debops_root, ANSIBLE_CONFIG_FILE)
     os.environ['ANSIBLE_CONIG'] = os.path.abspath(ansible_config_file)
-    gen_ansible_cfg(ansible_config_file, debops_root, playbooks_path,
+    gen_ansible_cfg(ansible_config_file, config, debops_root, playbooks_path,
                     inventory_path)
-
-    # Add custom configuration options to ansible.cfg
-    # :todo: replace ansible_config_hook by data from .debops.cfg
-    #if type(ansible_config_hook):
-    #    ansible_config_hook #>> ${debops_root}/${ANSIBLE_CONFIG_FILE}
 
     # Allow insecure SSH connections if requested
     if INSECURE:
