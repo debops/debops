@@ -145,20 +145,14 @@ def main(cmd_args):
                                    ENCFS_PREFIX + SECRET_NAME)
 
     # Check if encrypted secret directory exists and use it
-    padlock = os.path.join(encfs_encrypted, PADLOCK_CMD)
-    if os.access(path, os.X_OK):
-        print("Found encrypted secrets in", encfs_encrypted)
-        padlock_unlock(encfs_encrypted)
-        # :todo: rethink: install an on-exit handler?
-    else:
-        padlock = None
+    revert_unlock = padlock_unlock(encfs_encrypted)
     try:
         # Run ansible-playbook with custom environment
         print("Running Ansible playbook from:")
         print(play, "...")
         subprocess.call(['ansible-playbook', play] + cmd_args)
     finally:
-        if padlock:
+        if revert_unlock:
             padlock_lock(encfs_encrypted)
 
 
