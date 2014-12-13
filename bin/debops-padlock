@@ -35,6 +35,7 @@ import itertools
 import stat
 import sys
 import time
+from pkg_resources import resource_filename
 
 from debops import *
 from debops.cmds import *
@@ -51,7 +52,7 @@ def gen_pwd():
 # Randomness source for EncFS keyfile generation
 devrandom = os.environ.get('DEVRANDOM', "/dev/urandom")
 
-SCRIPT_FILENAME = os.path.join(os.path.dirname(__file__), 'padlock.py')
+SCRIPT_FILENAME = 'padlock-script'
 
 # ---- DebOps environment setup ----
 
@@ -121,7 +122,9 @@ def main(recipients):
 
     # Create padlock-script
     padlock_script = os.path.join(encfs_encrypted, PADLOCK_CMD)
-    shutil.copy(SCRIPT_FILENAME, padlock_script)
+
+    # :todo: use resource_stream
+    shutil.copy(resource_filename('debops', SCRIPT_FILENAME), padlock_script)
     os.chmod(padlock_script,
              os.stat(padlock_script).st_mode|stat.S_IXUSR|stat.S_IXGRP|stat.S_IXOTH)
 
