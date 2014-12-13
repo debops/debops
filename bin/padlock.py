@@ -26,8 +26,9 @@ encfs_decrypted = os.path.join(os.path.dirname(encfs_encrypted),
                                    SECRET_NAME)
 
 # Check if encrypted directory is already mounted
-is_mounted = subprocess.check_output(['mount'])
-is_mounted = ("encfs on %s type fuse.encfs" % encfs_decrypted) in is_mounted
+# NB: This only tests if encfs_decrypted as a mount-point at all,
+# no matter if it is fuse.encfs or not.
+is_mounted = os.path.ismount(encfs_decrypted)
 
 if action == 'lock':
     if is_mounted:
