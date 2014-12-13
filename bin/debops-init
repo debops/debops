@@ -146,6 +146,8 @@ print("Creating new DebOps project in", args.project_dir, "...")
 
 # Create base project directories
 for skel_dir in SKEL_DIRS:
-    os.makedirs(os.path.join(project_root, skel_dir))
+    skel_dir = os.path.join(project_root, skel_dir)
+    if not os.path.isdir(skel_dir):
+        os.makedirs(skel_dir)
 # Write default config files
 write_config_files(project_root)
