@@ -154,23 +154,49 @@ def find_inventorypath(debops_root):
 # ---- Encryption support ----
 
 def padlock_lock(encrypted_path):
+    """
+    Lock the padlock (this is: unmount the directory).
+
+    Returns True if the padlock originally was unlocked, otherwise False.
+    """
     # Cut the EncFS directory prefix to get the decrypted directory name
     decrypted_path = ''.join(encrypted_path.rsplit(ENCFS_PREFIX, 1))
+    if not os.path.ismount(decrypted_path):
+        return False
     subprocess.call(['fusermount', '-u', decrypted_path])
+    return True
 
 
 def padlock_unlock(encrypted_path):
+    """
+    Lock the padlock (this is: unmount the directory).
+
+    Returns True if the padlock originally was locked, otherwise False.
+    """
+    # Location of GPG-encrypted keyfile to use
+    keyfile = os.path.join(encrypted_path, ENCFS_KEYFILE)
+    configfile = os.path.join(encrypted_path, ENCFS_CONFIGFILE)
+    crypted_configfile = configfile+'.asc'
+
+    if (not os.path.exists(keyfile) or
+        not os.path.exists(os.path.join(encrypted_path, crypted_configfile))):
+        return False
+
     # Cut the EncFS directory prefix to get the decrypted directory name
     decrypted_path = ''.join(encrypted_path.rsplit(ENCFS_PREFIX, 1))
 
-    # Make sure that mount directory exists
+    # Check if encrypted directory is already mounted
+    # NB: This only tests if encfs_decrypted as a mount-point at all,
+    # no matter if it is fuse.encfs or not.
+    if os.path.ismount(decrypted_path):
+        # if it is already mounted, do nothing
+        return False
+
+    # Make sure the mount directory exists
     if not os.path.isdir(decrypted_path):
         os.makedirs(decrypted_path)
 
-    # Location of GPG-encrypted keyfile to use
-    keyfile = os.path.join(encrypted_path, ENCFS_KEYFILE)
-
-    configfile = os.path.join(encrypted_path, ENCFS_CONFIGFILE)
+    # MAke sure the named pipe for the configfile exists
     if not os.path.exists(configfile):
         os.mkfifo(configfile)
     elif not stat.S_ISFIFO(os.stat(configfile).st_mode):
@@ -186,6 +212,7 @@ def padlock_unlock(encrypted_path):
         # NB: gpg must write to stdout to avoid it is asking whether
         # the file should be overwritten
         subprocess.Popen(['gpg', '--no-mdc-warning', '--output', '-',
-                          configfile+'.asc'], stdout=fh).wait()
+                          crypted_configfile], stdout=fh).wait()
     encfs.wait()
     os.remove(configfile)
+    return True
