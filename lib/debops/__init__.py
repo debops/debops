@@ -99,7 +99,7 @@ def find_up(path, name):
     """
     Find specified file or directory in parent dir
     """
-    # :todo: only wlak up to the mount-point llike git does
+    # :todo: only walk up to the mount-point like git does
     path = os.path.abspath(path)
     last = None
     while path != last:
