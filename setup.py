@@ -18,10 +18,17 @@ setup(
     version = "0.1dev",
     install_requires = ['netaddr'],
 
-    packages=find_packages('lib', exclude=['ez_setup']),
+    scripts = ['bin/debops',
+               'bin/debops-defaults',
+               'bin/debops-init',
+               'bin/debops-padlock',
+               'bin/debops-task',
+               'bin/debops-update'],
 
+    packages = find_packages('lib', exclude=['ez_setup']),
+    package_dir = {'':'lib'},
     package_data = {
-        #'debops': ['padlock.sh'],
+        'debops': ['padlock-script'],
         },
 
     # metadata for upload to PyPI
