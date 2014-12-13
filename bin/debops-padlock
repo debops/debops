@@ -140,4 +140,8 @@ def main(recipients):
 parser = argparse.ArgumentParser()
 parser.add_argument('recipients', nargs='*', help="GPG recipients")
 args = parser.parse_args()
-main(args.recipients)
+
+try:
+    main(args.recipients)
+except KeyboardInterrupt:
+    raise SystemExit('... aborted')

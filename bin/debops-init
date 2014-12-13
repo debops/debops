@@ -121,33 +121,40 @@ def write_config_files(project_root):
         write_file(hosts_filename,
                    HOSTS_FILE_HEADER, HOSTS_FILE_CONTENT_NO_CONTROLER)
 
-#-- Parse arguments
+
+def main(project_root):
+    orig_project_root = project_root
+    project_root = os.path.abspath(project_root)
+
+    #-- Check for existing debops project
+    debops_root = find_debops_project(project_root, required=False)
+
+    # Exit if DebOps configuration file has been found in project_dir
+    if os.path.exists(os.path.join(project_root, DEBOPS_CONFIG)):
+        error_msg("%s is already a DebOps project" % project_root)
+
+    # Exit if we are in a DebOps project dir and nested project would be created
+    if debops_root:
+        error_msg("You are inside %s project already" % debops_root)
+
+    #-- Main script
+
+    print("Creating new DebOps project in", orig_project_root, "...")
+
+    # Create base project directories
+    for skel_dir in SKEL_DIRS:
+        skel_dir = os.path.join(project_root, skel_dir)
+        if not os.path.isdir(skel_dir):
+            os.makedirs(skel_dir)
+    # Write default config files
+    write_config_files(project_root)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('project_dir', default=os.curdir)
 args = parser.parse_args()
 
-#-- Check for existing debops project
-
-project_root = os.path.abspath(args.project_dir)
-debops_root = find_debops_project(project_root, required=False)
-
-# Exit if DebOps configuration file has been found in project_dir
-if os.path.exists(os.path.join(project_root, DEBOPS_CONFIG)):
-    error_msg("%s is already a DebOps project" % project_root)
-
-# Exit if we are in a DebOps project dir and nested project would be created
-if debops_root:
-    error_msg("You are inside %s project already" % debops_root)
-
-#-- Main script
-
-print("Creating new DebOps project in", args.project_dir, "...")
-
-# Create base project directories
-for skel_dir in SKEL_DIRS:
-    skel_dir = os.path.join(project_root, skel_dir)
-    if not os.path.isdir(skel_dir):
-        os.makedirs(skel_dir)
-# Write default config files
-write_config_files(project_root)
+try:
+    main(args.project_dir)
+except KeyboardInterrupt:
+    raise SystemExit('... aborted')
