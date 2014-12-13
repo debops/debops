@@ -24,6 +24,17 @@
 from __future__ import print_function
 
 import os
+import subprocess
+import stat
+try:
+    # shlex.quote is new in Python 3.3
+    from shlex import quote as shquote
+except ImportError:
+    # implement subset of shlex.quote
+    def shquote(s):
+        if not s: return "''"
+        return "'" + s.replace("'", "'\"'\"'") + "'"
+
 
 # ---- Global constants ----
 
@@ -73,13 +84,13 @@ ANSIBLE_INVENTORY_PATHS = [
 # Name of the script used to unlock/lock the encrypted directory
 PADLOCK_CMD = "padlock"
 
-ENCFS_CONFIG_FILE=".encfs6.xml"
+ENCFS_CONFIGFILE = ".encfs6.xml"
 ENCFS_PREFIX = ".encfs."
 SECRET_NAME = "secret"
 # Name of the keyfile stored inside EncFS encrypted directory
-ENCFS_KEYFILE=".encfs6.keyfile.asc"
+ENCFS_KEYFILE = ".encfs6.keyfile"
 # Length of the random EncFS password stored in encrypted keyfile
-ENCFS_KEYFILE_LENGTH="256"
+ENCFS_KEYFILE_LENGTH = 256
 
 
 # ---- Functions ----
@@ -159,15 +170,22 @@ def padlock_unlock(encrypted_path):
     # Location of GPG-encrypted keyfile to use
     keyfile = os.path.join(encrypted_path, ENCFS_KEYFILE)
 
-    encfs_configfile = os.path.join(encrypted_path, ENCFS_CONFIG_FILE)
-    if not os.path.ispipe(encfs_configfile):
-        os.mkfifo(encfs_configfile)
+    configfile = os.path.join(encrypted_path, ENCFS_CONFIGFILE)
+    if not os.path.exists(configfile):
+        os.mkfifo(configfile)
+    elif not stat.S_ISFIFO(os.stat(configfile).st_mode):
+        raise IOError(17, configfile+' exists but is not a fifo')
 
-    with open(encfs_configfile, 'a') as fh:
-        # :fixme: put in background – todo: why?
-        subprocess.call(['gpg', '--no-mdc-warning', '--output', '-', 
-                         encfs_configfile+'.asc'], stdout=fh)
-        subprocess.call(['encfs', encrypted_path, decrypted_path, 
-                         '--extpass="gpg --no-mdc-warning --output - %s"' % encfs_keyfile])
-
-    os.remove(encfs_configfile)
+    # Start encfs. It will wait for input on the `configfile` named
+    # pipe.
+    encfs = subprocess.Popen([
+        'encfs', encrypted_path, decrypted_path, 
+        '--extpass', 'gpg --no-mdc-warning --output - %s' % shquote(keyfile)])
+    # now decrypt the config and write it into the named pipe
+    with open(configfile, 'w') as fh:
+        # NB: gpg must write to stdout to avoid it is asking whether
+        # the file should be overwritten
+        subprocess.Popen(['gpg', '--no-mdc-warning', '--output', '-',
+                          configfile+'.asc'], stdout=fh).wait()
+    encfs.wait()
+    os.remove(configfile)

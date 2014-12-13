@@ -146,7 +146,7 @@ def main(cmd_args):
 
     # Check if encrypted secret directory exists and use it
     padlock = os.path.join(encfs_encrypted, PADLOCK_CMD)
-    if False and is_executable(padlock):
+    if os.access(path, os.X_OK):
         print("Found encrypted secrets in", encfs_encrypted)
         padlock_unlock(encfs_encrypted)
         # :todo: rethink: install an on-exit handler?

@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # debops-padlock: encrypt secret directory with EncFS and GPG
-# Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014 Hartmut Goebel <h.goebel@crazy-compilers.com>
 # Part of the DebOps project - http://debops.org/
-
 
 # This program is free software; you can redistribute
 # it and/or modify it under the terms of the
@@ -26,227 +26,118 @@
 # be downloaded from the FSF web page at:
 # http://www.gnu.org/copyleft/gpl.html
 
+from __future__ import print_function
 
-set -e
+import os
+import shutil
+import argparse
+import itertools
+import stat
+import sys
+import time
 
-# ---- Global constants ----
+from debops import *
+from debops.cmds import *
 
-declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
-declare -r DEBOPS_CONFIG=".debops.cfg"
-declare -r DEBOPS_INVENTORY="inventory"
-declare -r SCRIPT_NAME="$(basename ${0})"
+def gen_pwd():
+    from string import ascii_letters, digits, punctuation
+    import random
+    ALLCHARS  = digits + ascii_letters + punctuation
+    ALLCHARS  = digits + ascii_letters + '-_!@#$%^&*()_+{}|:<>?='
+    pwd = ''.join(random.choice(ALLCHARS) for i in range(ENCFS_KEYFILE_LENGTH))
+    return pwd
 
-declare -r ENCFS_CONFIG_FILE=".encfs6.xml"
-declare -r ENCFS_PREFIX=".encfs."
-declare -r SECRET_NAME="secret"
-
-
-# ---- Configuration variables ----
-
-
-# List of possible inventory directories, relative to DebOps root project directory
-ANSIBLE_INVENTORY_PATHS=( "ansible/${DEBOPS_INVENTORY}" "${DEBOPS_INVENTORY}" )
 
 # Randomness source for EncFS keyfile generation
-[ -z "${DEVRANDOM}" ] && DEVRANDOM="/dev/urandom"
+devrandom = os.environ.get('DEVRANDOM', "/dev/urandom")
 
-# Name of the keyfile stored inside EncFS encrypted directory
-ENCFS_KEYFILE=".encfs6.keyfile.asc"
-
-# Length of the random EncFS password stored in encrypted keyfile
-ENCFS_KEYFILE_LENGTH="256"
-
-# Name of the script used to unlock/lock the encrypted directory
-PADLOCK="padlock"
-
-
-# ---- Functions ----
-
-# Find specified file or directory in parent dir (if not specified, finds $DEBOPS_CONFIG)
-# Source: https://unix.stackexchange.com/questions/13464
-find_up () {
-  local name=${1:-$DEBOPS_CONFIG}
-  local slashes="${PWD//[^\/]/}"
-  local directory="${PWD}"
-
-  for (( n=${#slashes}; n>0; --n )) ; do
-    test -e "${directory}/${name}" && echo "$(readlink -f ${directory}/${name})" && return
-    directory="$directory/.."
-  done
-}
-
-# Display error message and exit
-error_msg () {
-  local severity="${2:-Error}"
-  local message="${1}"
-
-  echo >&2 "${SCRIPT_NAME}: ${severity}: ${message}"
-  set +e
-  [[ "${severity}" == "Error" ]] && exit 1
-  set -e
-}
-
-# Check if required commands exist
-require_commands () {
-  for name in ${@} ; do
-    if ! type ${name} > /dev/null 2>&1 ; then
-      error_msg "${name}: command not found"
-    fi
-  done
-}
-
+SCRIPT_FILENAME = os.path.join(os.path.dirname(__file__), 'padlock.py')
 
 # ---- DebOps environment setup ----
 
-# Find DebOps configuration file
-debops_config="$(find_up)"
+def main(recipients):
+    debops_root = find_debops_project(required=True)
+    # :todo: Source DebOps configuration file
+    #[ -r ${debops_config} ] && source ${debops_config}
+    if not debops_root:
+        # Exit if we are outside of project directory
+        error_msg("Not a DebOps project directory")
 
-# Exit if we are outside of project directory
-[ -z "${debops_config}" ] && error_msg "Not a DebOps project directory"
+    # ---- Main script ----
 
-# Find root of the DebOps project dir
-debops_root="$(dirname ${debops_config})"
+    # Make sure required commands are present
+    require_commands('encfs', 'find', 'fusermount', 'gpg')
 
-# Source DebOps configuration file
-[ -r ${debops_config} ] && source ${debops_config}
+    inventory_path = find_inventorypath(debops_root, required=False)
+    # If inventory hasn't been found automatically, assume it's the default
+    if not inventory_path:
+        inventory_path = os.path.join(debops_root, 'ansible', INVENTORY)
 
+    # Create names of EncFS encrypted and decrypted directories, based on
+    # inventory name (absolute paths are specified)
+    encfs_encrypted = os.path.join(os.path.dirname(inventory_path),
+                                   ENCFS_PREFIX + SECRET_NAME)
+    encfs_decrypted = os.path.join(os.path.dirname(inventory_path),
+                                   SECRET_NAME)
 
-# ---- Main script ----
+    # EncFS cannot create encrypted directory if directory with
+    # decrypted data is not empty
+    if not os.path.exists(encfs_decrypted):
+        os.makedirs(encfs_decrypted)
+    elif os.listdir(encfs_decrypted):
+        error_msg("secret directory not empty")
 
-# Make sure required commands are present
-require_commands encfs find fusermount gpg
+    # Quit if encrypted directory already exists.
+    if os.path.isdir(encfs_encrypted):
+        error_msg("EncFS directory already exists")
+    os.makedirs(encfs_encrypted)
 
-# If any arguments are specified, interpret them as list of GPG recipients
-list_of_recipients=""
-if (( $# != 0 )) ; then
-  list_of_recipients="-r ${1}" ; shift
-  if (( $# != 0 )) ; then
-    list_of_recipients="${list_of_recipients}$(printf ' -r %s' ${@})"
-  fi
-fi
+    encfs_keyfile = os.path.join(encfs_encrypted, ENCFS_KEYFILE)
+    encfs_configfile = os.path.join(encfs_encrypted, ENCFS_CONFIGFILE)
 
-# Check if Ansible inventory can be found in local directory
-for inventory_path in "${ANSIBLE_INVENTORY_PATHS[@]}" ; do
-  if [ -d ${debops_root}/${inventory_path} ] ; then
-    ansible_inventory="${debops_root}/${inventory_path}"
-    break
-  fi
-done
+    # put a `-r` in front of each recipient for passing as args to gpg
+    recipients = list(itertools.chain.from_iterable(['-r', r]
+                                                    for r in recipients))
 
-# If inventory hasn't been found automatically, assume it's the default
-if [ -z "${ansible_inventory}" ] ; then
-  ansible_inventory="${debops_root}/ansible/${DEBOPS_INVENTORY}"
-fi
+    # Generate a random password and encrypt it with GPG keys of recipients.
+    print("Generating a random", ENCFS_KEYFILE_LENGTH, "char password")
+    pwd = gen_pwd()
+    gpg = subprocess.Popen(['gpg', '--encrypt', '--armor',
+                            '--output', encfs_keyfile] + recipients,
+                           stdin=subprocess.PIPE)
+    gpg.communicate(pwd)
 
-# Create names of EncFS encrypted and decrypted directories, based on
-# inventory name (absolute paths are specified)
-encfs_encrypted="$(dirname ${ansible_inventory})/${ENCFS_PREFIX}${SECRET_NAME}"
-encfs_decrypted="$(dirname ${encfs_encrypted})/${encfs_encrypted##*${ENCFS_PREFIX}}"
+    # Mount the encfs to the config file will be written. Tell encfs
+    # it to ask gpg for the password.
+    # NB1: Alternativly we could use --stdinpass, but using --extpass makes
+    # the user check if she has the correct passphrase early.
+    # NB2: We can not use padlock_unlock here, because the config file
+    # does not yet exist.
+    encfs = subprocess.Popen([
+        'encfs', encfs_encrypted, encfs_decrypted,
+        '--extpass', 'gpg --no-mdc-warning --output - '+shquote(encfs_keyfile)],
+                             stdin=subprocess.PIPE)
+    encfs.communicate('p\n'+pwd)
 
-# EncFS cannot create encrypted directory if directory with decrypted data
-# is not empty
-mkdir -p ${encfs_decrypted}
-if [ `find ${encfs_decrypted} -prune -empty -type d` ] ; then
+    # Create padlock-script
+    padlock_script = os.path.join(encfs_encrypted, PADLOCK_CMD)
+    shutil.copy(SCRIPT_FILENAME, padlock_script)
+    os.chmod(padlock_script,
+             os.stat(padlock_script).st_mode|stat.S_IXUSR|stat.S_IXGRP|stat.S_IXOTH)
 
-  # Don't do anything if encrypted directory already exists, else, create the
-  # encrypted storage and encrypt the keyfile with GPG keys of recipients.
-  if [ -d ${encfs_encrypted} ] ; then
-    error_msg "EncFS directory already exists"
-  else
-    mkdir -p ${encfs_encrypted} ${encfs_decrypted}
-    echo "Generating a random ${ENCFS_KEYFILE_LENGTH} char password using ${DEVRANDOM} ..."
-    tr -dc 'a-zA-Z0-9-_!@#$%^&*()_+{}|:<>?=' < ${DEVRANDOM} | head -c ${ENCFS_KEYFILE_LENGTH} | gpg --encrypt --armor --output ${encfs_encrypted}/${ENCFS_KEYFILE} ${list_of_recipients}
-    printf "p\n" | encfs ${encfs_encrypted} ${encfs_decrypted} --extpass="gpg --no-mdc-warning --output - ${encfs_encrypted}/${ENCFS_KEYFILE}"
+    # Lock the EncFS directory after creation
+    time.sleep(0.5) # :fixme: why sleeping here?
+    padlock_lock(encfs_encrypted)
 
-    cat <<EOF > ${encfs_encrypted}/${PADLOCK}
-#!/bin/sh
-
-# padlock: lock/unlock EncFS-encrypted directory with GPG key/passphrase
-# Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
-# Part of the DebOps project - http://debops.org/
-
-
-set -e
-
-# ---- Constants ----
-
-# Suffix of the encrypted directory
-ENCFS_PREFIX="${ENCFS_PREFIX}"
-
-# Name of the EncFS config file/fifo
-ENCFS_CONFIG_FILE="${ENCFS_CONFIG_FILE}"
-
-# Name of the GPG keyfile
-ENCFS_KEYFILE="${ENCFS_KEYFILE}"
+    # Protect the EncFS configuration file by also encrypting it with
+    # the GPG keys of recipients.
+    subprocess.call(['gpg', '--encrypt', '--armor',
+                     '--output', encfs_configfile+'.asc']
+                    + recipients + [encfs_configfile])
+    os.remove(encfs_configfile)
 
 
-# ---- Main script ----
-
-# Check if required commands are present
-for name in encfs fusermount gpg ; do
-  if ! type \${name} > /dev/null 2>&1 ; then
-    echo >&2 "\$(basename \${0}): Error: \${name}: command not found" ; exit 1
-  fi
-done
-
-# Handle optional argument to execute specific action
-if [ "\${1}" = "unlock" ] ; then
-  unlock="1"
-elif [ "\${1}" = "lock" ] ; then
-  lock="1"
-fi
-
-# Get absolute path of the script
-script_root_path="\$(readlink -f \${0})"
-
-# Find out absolute path to the work directory relative to the script
-encfs_encrypted="\$(dirname \${script_root_path})"
-
-# Cut the EncFS directory suffix to get the decrypted directory name
-encfs_decrypted="\$(dirname \${encfs_encrypted})/\${encfs_encrypted##*\${ENCFS_PREFIX}}"
-
-# Location of GPG-encrypted keyfile to use
-encfs_gpg_keyfile="\${encfs_encrypted}/\${ENCFS_KEYFILE}"
-
-# Make sure that mount directory exists
-mkdir -p \${encfs_decrypted}
-
-# Check if encrypted directory is already mounted
-set +e
-is_mounted=\$(mount | grep "encfs on \${encfs_decrypted} type fuse.encfs")
-set -e
-
-# Unmount the directory if mounted ...
-if [ -n "\${is_mounted}" ] ; then
-
-  if [ -z "\${unlock}" -o -n "\${lock}" ]; then
-    fusermount -u \${encfs_decrypted}
-  fi
-
-# ... or mount it if unmounted
-elif [ -z "\${is_mounted}" ]; then
-
-  if [ -z "\${lock}" ] ; then
-    [ ! -p \${encfs_encrypted}/\${ENCFS_CONFIG_FILE} ] && mkfifo \${encfs_encrypted}/\${ENCFS_CONFIG_FILE}
-    gpg --no-mdc-warning --output - \${encfs_encrypted}/\${ENCFS_CONFIG_FILE}.asc >> \${encfs_encrypted}/\${ENCFS_CONFIG_FILE} &
-    encfs \${encfs_encrypted} \${encfs_decrypted} --extpass="gpg --no-mdc-warning --output - \${encfs_gpg_keyfile}"
-    rm -f \${encfs_encrypted}/\${ENCFS_CONFIG_FILE}
-  fi
-
-fi
-
-EOF
-    chmod +x ${encfs_encrypted}/${PADLOCK}
-
-    # lock the EncFS directory after creation
-    sleep 0.5 ; ${encfs_encrypted}/${PADLOCK} lock
-
-    # Protect the EncFS configuration file
-    gpg --encrypt --armor --output ${encfs_encrypted}/${ENCFS_CONFIG_FILE}.asc ${list_of_recipients} ${encfs_encrypted}/${ENCFS_CONFIG_FILE}
-    rm -f ${encfs_encrypted}/${ENCFS_CONFIG_FILE}
-  fi
-
-else
-  error_msg "secret directory not empty"
-fi
-
+parser = argparse.ArgumentParser()
+parser.add_argument('recipients', nargs='*', help="GPG recipients")
+args = parser.parse_args()
+main(args.recipients)
