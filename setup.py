@@ -29,14 +29,14 @@ setup(
         },
 
     # metadata for upload to PyPI
-    author = "Hartmut Goebel",
-    author_email = "h.goebel@crazy-compilers.com",
+    author = "DebOps Project",
+    author_email = "debops@groups.io",
     description = "Your Debian-based data center in a box.",
     long_description = README,
     license = "GPL 3.0",
     keywords = "ansible",
     url          = "http://debops.org/",
-    download_url = "https://github.com/debos/debops/",
+    download_url = "https://github.com/debops/debops/",
     classifiers = [
     'Development Status :: 4 - Beta',
     'Environment :: Console',
