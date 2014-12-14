@@ -98,31 +98,33 @@ def main(cmd_args):
 
     playbooks_path = find_playbookpath(debops_root, required=True)
 
+    def find_playbook(playbook):
+        tries = [
+            (debops_root, "playbooks", playbook),
+            (debops_root, "ansible", "playbooks", playbook),
+            (playbooks_path, playbook),
+            ]
+        for parts in tries:
+            play = os.path.join(*parts)
+            if os.path.isfile(play):
+                return play
+
     # Check if user specified a potential playbook name as the first
     # argument. If yes, use it as the playbook name and remove it from
     # the argument list
-    tries = [
-        (debops_root, "playbooks", "site.yml"),
-        (debops_root, "ansible", "playbooks", "site.yml"),
-        (playbooks_path, "site.yml"),
-    ]
+    play = None
     if len(cmd_args) > 0:
         maybe_play = cmd_args[0]
-        tries[:0] = [
-            (maybe_play,),
-            (debops_root, "playbooks", maybe_play + ".yml"),
-            (debops_root, "ansible", "playbooks", maybe_play + ".yml"),
-            (playbooks_path, maybe_play + ".yml"),
-        ]
-    else:
-        # set for error message
-        maybe_play = 'site.yml'
-    for parts in tries:
-        play = os.path.join(*parts)
-        if os.path.isfile(play):
-            break
-    else:
-        # loop finished without finding a playbook
+        if os.path.isfile(maybe_play):
+            play = maybe_play
+        else:
+            play = find_playbook(maybe_play + ".yml")
+        if play:
+            cmd_args.pop(0)
+        del maybe_play
+    if not play:
+        play = find_playbook("site.yml")
+    if not play:
         error_msg("Playbook %s not found" % maybe_play)
 
     inventory_path = find_inventorypath(debops_root)
