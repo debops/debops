@@ -60,7 +60,7 @@ Getting started
 
 Here is a short intro how to use DebOps. Please have a look at the
 `Getting Started Guide
-http://docs.debops.org/en/latest/getting-started.html>`_ for more
+<http://docs.debops.org/en/latest/getting-started.html>`_ for more
 detailed information.
 
 **Make your first project**
