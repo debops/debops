@@ -5,6 +5,32 @@
 
 ***
 
+##### 2014-12-14
+
+Completely rewritten in Python by Hartmut Goebel. This saves a lot of
+code allows for more fertile future changes.
+
+Notable changed related to the shell-version are:
+
+* Playbooks are no longer searched in `/usr/local/share/debops` nor in
+  `/usr/share/debops`. We assume DebOps is used from a user account,
+  so installing playbooks globally is not the common case.
+
+* Sourcing `.debops.cfg` is no longer supported, `.debops.cfg` now is
+  assumed to be an ini-file.
+
+* The `ansible_config_hook` (which was undocumented anyway) is gone.
+  Instead you can put sections `[ansible ...]` into `.debops.cfg`
+  which will go into `ansible.cfg`. This allows for easy adding e.g. a
+  `[paramiko]` section to `ansible.cfg`.
+
+* The padlock-script is no longer used to decide if secrets are
+  encrypted. This is now done by testing for the encrypted keyfile and
+  the encrypted encfs-config.
+
+* The padlock script still exists and has been simplified a lot. Most
+  functionality has been moved into the DebOps python library.
+
 ##### 2014-10-24
 
 * all role documentation from their readme files has been moved to
@@ -125,3 +151,7 @@ instead. That should be fixed soon though, when new role cloning code takes
 shape.
 
 
+Local Variables:
+mode: rst
+ispell-local-dictionary: "american"
+End:
