@@ -13,7 +13,7 @@ README = open('README.rst').read()
 setup(
     name = "debops",
     version = "0.1dev",
-    install_requires = ['netaddr'],
+    install_requires = ['netaddr', 'argparse'],
 
     scripts = ['bin/debops',
                'bin/debops-defaults',
@@ -38,14 +38,15 @@ setup(
     url          = "http://debops.org//",
     download_url = "https://github.io/debos/debops/",
     classifiers = [
-    'Development Status :: 1 - Alpha',
+    'Development Status :: 4 - Beta',
     'Environment :: Console',
     'Intended Audience :: System Administrators',
-    'License :: OSI Approved :: GNU General Public License (GPL)',
+    'License :: OSI Approved :: GNU General Public License or later (GPLv3+)',
     'Natural Language :: English',
     'Operating System :: OS Independent',
-    'Programming Language :: Python',
-    'Topic :: Utilities',
+    'Programming Language :: Python :: 2.6',
+    'Programming Language :: Python :: 2.7',
+    'Topic :: System :: Systems Administration',
     ],
 
     # these are for easy_install (used by bdist_*)
