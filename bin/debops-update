@@ -1,14 +1,16 @@
-#!/bin/bash
-
-# debops-update: install or update DebOps playbooks and roles
-# Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+("""
+debops-update: install or update DebOps playbooks and roles
+"""
+# Copyright (C) 2014 Hartmut Goebel <h.goebel@crazy-compilers.com>
 # Part of the DebOps project - http://debops.org/
 
 
 # This program is free software; you can redistribute
 # it and/or modify it under the terms of the
 # GNU General Public License as published by the Free
-# Software Foundation; either version 2 of the License,
+# Software Foundation; either version 3 of the License,
 # or (at your option) any later version.
 #
 # This program is distributed in the hope that it will
@@ -26,276 +28,217 @@
 # be downloaded from the FSF web page at:
 # http://www.gnu.org/copyleft/gpl.html
 
+"""
+This script can be used to install or update installed DebOps playbooks and
+roles to current or specified version. By default it works on the installed
+playbook in users $HOME/.local/share/debops directory, but it can also be
+used on locally installed playbooks and roles in current directory.
 
-# This script can be used to install or update installed DebOps playbooks and
-# roles to current or specified version. By default it works on the installed
-# playbook in users $HOME/.local/share/debops directory, but it can also be
-# used on locally installed playbooks and roles in current directory.
-#
-# Short usage guide:
-#
-# - 'debops-update' will check if we are in DebOps project directory ('.debops.cfg' exists)
-#     * if yes, it will check if 'debops-playbooks/playbooks/site.yml' exists
-#       * if yes, update playbooks and roles in $PWD
-#     * if no, check if DebOps playbooks are installed in known places, like ~/.local/share/debops
-#       * if yes, update playbooks in a place that they are installed at
-#       * if no, install DebOps playbooks in ~/.local/share/debops/debops-playbooks
-#
-# - 'debops-update path/to/dir' will check if specified directory exists
-#     * if no, create it
-#     * if yes, check if DebOps playbooks are installed at $path/debops-playbooks
-#       * if yes, update them
-#       * if no, install DebOps playbooks at $path/debops-playbooks
+Short usage guide:
 
+- 'debops-update' will check if we are in DebOps project directory
+  ('.debops.cfg' exists)
+    * if yes, it will check if 'debops-playbooks/playbooks/site.yml' exists
+      * if yes, update playbooks and roles in $PWD
+    * if no, check if DebOps playbooks are installed in known places,
+      like ~/.local/share/debops
+      * if yes, update playbooks in a place that they are installed at
+      * if no, install DebOps playbooks in
+        ~/.local/share/debops/debops-playbooks
 
-set -e
+- 'debops-update path/to/dir' will check if specified directory exists
+    * if no, create it
+    * if yes, check if DebOps playbooks are installed at $path/debops-playbooks
+      * if yes, update them
+      * if no, install DebOps playbooks at $path/debops-playbooks
 
-# ---- Global constants ----
+""")
 
-declare -r DEBOPS_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/debops"
-declare -r DEBOPS_CONFIG=".debops.cfg"
-declare -r DEBOPS_INVENTORY="inventory"
-declare -r SCRIPT_NAME="$(basename ${0})"
+from __future__ import print_function
+
+import os
+import subprocess
+import argparse
+
+from debops import *
+from debops.cmds import *
+
+__author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 
 # ---- Configuration variables ----
 
-# Paths to look through if local install is not found
-DEBOPS_PLAYBOOKS_INSTALL_PATHS=(
-  "${DEBOPS_DATA_HOME}/debops-playbooks"
-  "/usr/local/share/debops/debops-playbooks"
-  "/usr/share/debops/debops-playbooks"
-)
-
-# Default installation directory
-DEBOPS_DEFAULT_INSTALL_PATH="${DEBOPS_DATA_HOME}/debops-playbooks"
-
-# Default subdirectory where playbooks are stored, relative to the DebOps
-# playbooks directory
-DEBOPS_PLAYBOOK_DIR="playbooks"
-
-# Default site.yml playbook to look for
-DEBOPS_SITE_PLAYBOOK="${DEBOPS_PLAYBOOK_DIR}/site.yml"
-
-# Default uri of DebOps
-DEBOPS_GIT_URI="github.com/debops"
+# Default URI of DebOps (user https for server authentication)
+GIT_URI = "https://github.com/debops"
+# git:-URL is required for `git ls-remote`
+GIT_GIT_URI  = "git:" + GIT_URI[6:]
 
 # Default git sources for debops-playbooks
-DEBOPS_PLAYBOOKS_GIT_URI="https://${DEBOPS_GIT_URI}/debops-playbooks"
+PLAYBOOKS_GIT_URI = GIT_URI + "/debops-playbooks"
 
 # Default slug prefix for roles
-DEBOPS_GIT_ROLE_PREFIX="ansible-"
+GIT_ROLE_PREFIX = "ansible-"
 
 # Ansible Galaxy requirements file to use by default to download or update
-DEBOPS_GALAXY_REQUIREMENTS="galaxy/requirements.txt"
+GALAXY_REQUIREMENTS = "galaxy/requirements.txt"
 
 # Default Ansible Galaxy user account name
-DEBOPS_GALAXY_ACCOUNT="debops"
-
-# Path to install roles, relative to debops-playbooks repository
-DEBOPS_ROLES_PATH="${DEBOPS_PLAYBOOK_DIR}/../roles"
+GALAXY_ACCOUNT = "debops"
 
 
 # ---- Functions ----
 
-# Find specified file or directory in parent dir (if not specified, finds $DEBOPS_CONFIG)
-# Source: https://unix.stackexchange.com/questions/13464
-find_up () {
-  local name=${1:-$DEBOPS_CONFIG}
-  local slashes="${PWD//[^\/]/}"
-  local directory="${PWD}"
+def fetch_or_clone_roles(roles_path, requirements_file):
+    """
+    Efficiently fetch or clone a role
+    """
+    with open(requirements_file) as fh:
+        requirements = [r.strip().split() for r in fh.readlines()]
+    num_roles = len(requirements)
 
-  for (( n=${#slashes}; n>0; --n )) ; do
-    test -e "${directory}/${name}" && echo "$(readlink -f ${directory}/${name})" && return
-    directory="$directory/.."
-  done
-}
+    for cnt, role_name in enumerate(requirements, 1):
+        # Parse the requirements.txt file to extract the role name and version
+        try:
+            role_name, role_version = role_name[:2]
+        except:
+            role_name = role_name[0]
+            role_version = 'master'
 
-# Display error message and exit
-error_msg () {
-  local severity="${2:-Error}"
-  local message="${1}"
+        # :todo: rethink if we really want this
+        if role_name.startswith(GALAXY_ACCOUNT + '.'):
+            galaxy_name = role_name
+            role_name = role_name.split('.', 1)[1]
+        else:
+            galaxy_name = GALAXY_ACCOUNT + '.' + role_name
 
-  echo >&2 "${SCRIPT_NAME}: ${severity}: ${message}"
-  set +e
-  [[ "${severity}" == "Error" ]] && exit 1
-  set -e
-}
+        # Check if the remote repository exists by evaluating its return code
+        remote_uri = GIT_GIT_URI + '/' + GIT_ROLE_PREFIX + role_name
+        repo_status = subprocess.call(
+            ['git', 'ls-remote', remote_uri, 'HEAD'],
+            stdout=DEVNULL, stderr=subprocess.STDOUT)
 
-# Check if required commands exist
-require_commands () {
-  for name in ${@} ; do
-    if ! type ${name} > /dev/null 2>&1 ; then
-      error_msg "${name}: command not found"
-    fi
-  done
-}
+        # Adjust the role's repository name if it cannot be found with
+        # the normal name
+        if repo_status == 128:
+            role_name = "role-"+role_name
 
-# Efficiently fetch or clone a role
-fetch_or_clone_role() {
-  local roles_path="${1}"
-  local requirements_path="${2}"
-
-  # Store the contents of the requirements.txt file into an array
-  IFS=$"\r\n" GLOBIGNORE="*" :; local requirements=($(<${requirements_path}))
-
-  # Output the number of found roles
-  local roles_total="${#requirements[@]}"
-
-  for role in "${!requirements[@]}"; do
-    # Parse the requirements.txt file to extract the role name and version
-    local role_name="$(awk -F',' '{print $1}' <<< ${requirements[$role]} | sed "s/${DEBOPS_GALAXY_ACCOUNT}.//g")"
-    local role_version="$(awk -F',' '{print $2}' <<< ${requirements[$role]})"
-
-    # Make sure to normalize empty versions
-    if [ -z ${role_version} ]; then
-      role_version="master"
-    fi
-
-    local galaxy_name="${DEBOPS_GALAXY_ACCOUNT}.${role_name}"
-    local remote_uri="${DEBOPS_GIT_URI}/${DEBOPS_GIT_ROLE_PREFIX}"
-
-    # Check if the remote repository exists by evaluating its return code
-    local repo_status="$(git ls-remote git://${remote_uri}${role_name} HEAD &> /dev/null ; echo "$?")"
-
-    # Adjust the role's repository name if it cannot be found with the normal name
-    if [ ${repo_status} = "128" ]; then
-      role_name="role-${role_name}"
-    fi
-
-    # Add 1 to the role index because we want to count from 1, not 0
-    role="$((role + 1))"
-
-    # Custom message to show the progress
-    local progress_label="'https://${remote_uri}${role_name}' [$role_version] ($role/$roles_total)"
-
-    # Do we want to update or clone the role?
-    local role_destination="${roles_path}/${galaxy_name}"
-
-    if [ -d ${role_destination} ]; then
-      # Move into the role's directory
-      cd ${role_destination}
-
-      echo "Updating ${progress_label}"
-
-      # Parse out the head branch name
-      local head_branch_path="$(cat .git/HEAD | cut -d" " -f2)"
-      local head_branch="$(basename ${head_branch_path})"
-
-      # Parse out the current sha
-      local current_sha="$(cat .git/refs/heads/${head_branch} | awk '{print $1}')"
-
-      # Fetch it silently and store the new sha
-      git fetch --quiet
-      local fetch_sha="$(cat .git/FETCH_HEAD | awk '{print $1}')"
-
-      # Only merge if the shas are different
-      if [ ! ${current_sha} = ${fetch_sha} ]; then
-        git merge ${fetch_sha}
-        echo
-      fi
-
-      # Move back to the initial directory
-      cd - > /dev/null
-    else
-      echo "Installing ${progress_label}"
-
-      # We could half the time by using git:// instead of https:// but then we
-      # lose the security benefits of https
-      git clone --quiet --branch ${role_version} https://${remote_uri}${role_name} ${role_destination}
-    fi
-  done
-}
+        remote_uri = GIT_URI + '/' + GIT_ROLE_PREFIX + role_name
+        destination_dir = os.path.join(roles_path, galaxy_name)
+        progress_label="[{role_version}] ({cnt}/{num_roles})".format(**locals())
+        # Either update or clone the role
+        if os.path.exists(destination_dir):
+            print("Updating", remote_uri, progress_label)
+            update_git_repository(destination_dir)
+        else:
+            print("Installing", remote_uri, progress_label)
+            clone_git_repository(remote_uri, role_version, destination_dir)
 
 
-# ---- DebOps environment setup ----
+def clone_git_repository(repo_uri, branch, destination):
+    subprocess.call(['git', 'clone', '--quiet', '--branch', branch,
+                     repo_uri, destination])
 
-# Find DebOps configuration file
-debops_config="$(find_up)"
 
-# Find root of the DebOps project dir
-[ -n "${debops_config}" ] && debops_root="$(dirname ${debops_config})"
+def update_git_repository(path):
+    """
+    Update an exiting git repository.
 
-# Source DebOps configuration file
-[ -n "${debops_config}" ] && [ -r ${debops_config} ] && source ${debops_config}
+    To get nice output, merge only of origin as updates.
+    """
+    # Move into the role's directory
+    old_pwd = os.getcwd()
+    os.chdir(path)
+
+    # Parse out the head branch name
+    with open(os.path.join('.git', 'HEAD')) as fh:
+        head_branch_path = fh.readline().strip().split(None, 1)[1]
+        head_branch = head_branch_path.rsplit('/', 1)[-1]
+
+    # Get the current sha
+    with open(os.path.join('.git', head_branch_path)) as fh:
+        current_sha = fh.readline().strip().split(None, 1)[0]
+
+    # Fetch it silently and store the new sha
+    subprocess.call(['git', 'fetch', '--quiet'])
+
+    with open(os.path.join('.git', 'FETCH_HEAD')) as fh:
+        fetch_sha = fh.readline().split(None, 1)[0]
+
+    if current_sha != fetch_sha:
+        subprocess.call(['git', 'merge', fetch_sha])
+
+    # Move back to the initial directory
+    os.chdir(old_pwd)
 
 
 # ---- Main script ----
 
-# Make sure required commands are present
-require_commands ansible-playbook
+def main(project_dir=None):
 
-# Select default installation directory
-debops_install_path="${DEBOPS_DEFAULT_INSTALL_PATH}"
+    # Check if user specified a directory as a parameter, if yes, use it as
+    # a project directory and clone DebOps playbooks inside
+    if project_dir:
+        # If it's a new project, create the directory for it
+        if not os.path.exists(project_dir):
+            print ("Creating project directory in", project_dir)
+            os.makedirs(project_dir)
 
-# Check if user specified a directory as a paramter, if yes, use it as
-# a project directory and clone DebOps playbooks inside
-project="${1}"
-if [ -n "${project}" ] ; then
+        # Make sure that playbooks and roles will be installed in project
+        # directory if it's specified
+        install_path = os.path.join(project_dir, "debops-playbooks")
 
-  # If it's a new project, create the directory for it
-  if [ ! -e ${project} ] ; then
-    echo "Creating project directory in ${project}"
-    mkdir -p ${project}
-  fi
+        # If playbooks already are installed in specified location, set them as
+        # currently used for eventual update
+        if os.path.isfile(os.path.join(install_path, DEBOPS_SITE_PLAYBOOK)):
+            playbooks_path = install_path
+        else:
+            playbooks_path = None
 
-  # Make sure that playbooks and roles will be installed in project directory if
-  # it's specified
-  debops_install_path="${project}/debops-playbooks"
+    else:
+        # If there's no project specified, look for playbooks in known locations
+        debops_root = find_debops_project(required=False)
+        # :todo: Source DebOps configuration file
+        #[ -r ${debops_config} ] && source ${debops_config}
 
-  # If playbooks already are installed in specified location, set them as
-  # currently used for eventual update
-  if [ -f ${project}/debops-playbooks/${DEBOPS_SITE_PLAYBOOK} ] ; then
-    debops_playbooks="${project}/debops-playbooks"
-  fi
+        playbooks_path = find_playbookpath(debops_root, required=False)
+        if playbooks_path:
+            install_path = os.path.dirname(playbooks_path)
+        else:
+            install_path = DEBOPS_DEFAULT_INSTALL_PATH
 
-# If there's no project specified, look for playbooks in known locations
-else
+    roles_path = os.path.join(install_path, 'roles')
 
-  # Check if playbooks are installed in current project directory
-  if [ -z "${debops_playbooks}" ] ;then
-    if [ -n "${debops_root}" ] ; then
-      if [ -f ${debops_root}/debops-playbooks/${DEBOPS_SITE_PLAYBOOK} ] ; then
-        debops_playbooks="${debops_root}/debops-playbooks"
-      fi
-    fi
-  fi
+    # ---- Create or update the playbooks and roles  ----
 
-  # If playbooks have not been found yet, look for them in known locations
-  if [ -z "${debops_playbooks}" ] ; then
-    for playbook_path in "${DEBOPS_PLAYBOOKS_INSTALL_PATHS[@]}" ; do
-      if [ -f ${playbook_path}/${DEBOPS_SITE_PLAYBOOK} ] ; then
-        debops_playbooks="${playbook_path}"
-        break
-      fi
-    done
-  fi
+    # Playbooks have not been found, at this point assume playbooks are not
+    # installed. Install them in user home directory
+    if not playbooks_path:
+        # Download/clone main debops-playbooks repository
+        print("DebOps playbooks have not been found, installing into",
+              install_path)
+        print()
 
-fi
+        clone_git_repository(PLAYBOOKS_GIT_URI, 'master', install_path)
+        os.chdir(install_path)
+        os.makedirs(roles_path)
+    else:
+        # Update found debops-playbooks repository
+        print("DebOps playbooks have been found in", install_path)
+        update_git_repository(install_path)
+        print()
+        os.chdir(install_path)
+
+    # Now install or update the roles into roles_path
+    fetch_or_clone_roles(roles_path, GALAXY_REQUIREMENTS)
 
 
-# ---- Create or update the playbooks and roles  ----
+parser = argparse.ArgumentParser()
+parser.add_argument('project_dir', nargs='?')
+args = parser.parse_args()
 
-# Playbooks have not been found, at this point assume playbooks are not
-# installed. Install them in user home directory
-if [ -z "${debops_playbooks}" ] ; then
-  echo "DebOps playbooks have not been found, installing in ${debops_install_path}"
-  echo
-
-  # Download main debops-playbooks repository
-  git clone --quiet ${DEBOPS_PLAYBOOKS_GIT_URI} ${debops_install_path}
-
-  pushd ${debops_install_path} > /dev/null
-  mkdir -p ${DEBOPS_ROLES_PATH}
-  fetch_or_clone_role "${DEBOPS_ROLES_PATH}" "${DEBOPS_GALAXY_REQUIREMENTS}"
-  popd > /dev/null
-else
-  echo "DebOps playbooks have been found in ${debops_playbooks}"
-
-  # Go to the playbook directory and get latest updates
-  pushd ${debops_playbooks} > /dev/null
-  git pull
-  echo
-  fetch_or_clone_role "${DEBOPS_ROLES_PATH}" "${DEBOPS_GALAXY_REQUIREMENTS}"
-  popd > /dev/null
-fi
+try:
+    main(args.project_dir)
+except KeyboardInterrupt:
+    raise SystemExit('... aborted')
