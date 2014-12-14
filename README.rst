@@ -104,6 +104,11 @@ Authors
 - Twitter: `@nickjanetakis <https://twitter.com/nickjanetakis>`_
 - Github: `nickjj <https://github.com/nickjj>`_
 
+**Hartmut Goebel**
+
+- Email: h.goebel@crazy-compilers.com
+- Website: http://www.crazy-compilers.com
+
 .. |Gratipay| image:: https://img.shields.io/gratipay/drybjed.svg?style=flat
 .. _Gratipay: https://www.gratipay.com/drybjed/
 .. |debops_logo| image:: http://debops.org/images/debops-small.png
