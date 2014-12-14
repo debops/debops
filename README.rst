@@ -26,12 +26,11 @@ Installation
 Dependencies
 ````````````
 
-DebOps requires a dependency that is not installed by Ansible. Install
-``netaddr`` however you see fit:
+DebOps requires a dependency that is not already installed by Ansible.
+Install ``netaddr`` however you see fit:
 
 ::
 
-   $ easy_install netaddr
    $ pip install netaddr
    $ apt-get install python-netaddr
    $ yum install python-netaddr
@@ -39,7 +38,7 @@ DebOps requires a dependency that is not installed by Ansible. Install
 DebOps scripts
 ``````````````
 
-The easiest way to install debops is::
+The easiest way to install DebOps is::
 
    $ sudo pip install https://github.com/debops/debops/archive/master.zip
    $ debops-update
@@ -58,6 +57,11 @@ details.
 
 Getting started
 ^^^^^^^^^^^^^^^
+
+Here is a short intro how to use DebOps. Please have a look at the
+`Getting Started Guide
+http://docs.debops.org/en/latest/getting-started.html>`_ for more
+detailed information.
 
 **Make your first project**
 
@@ -124,3 +128,11 @@ Authors
 .. |Gratipay| image:: https://img.shields.io/gratipay/drybjed.svg?style=flat
 .. _Gratipay: https://www.gratipay.com/drybjed/
 .. |debops_logo| image:: http://debops.org/images/debops-small.png
+
+
+
+..
+ Local Variables:
+ mode: rst
+ ispell-local-dictionary: "american"
+ End:
