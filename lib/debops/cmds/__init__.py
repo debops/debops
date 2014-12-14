@@ -51,7 +51,7 @@ def error_msg(message, severity="Error"):
     """
     Display error message and exit
     """
-    print(SCRIPT_NAME+':', severity, message)
+    print(SCRIPT_NAME+':', severity+':', message)
     if severity == "Error":
         raise SystemExit(1)
 
