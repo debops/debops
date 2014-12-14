@@ -63,8 +63,6 @@ DEBOPS_PLAYBOOK_DIR = "playbooks"
 # Locations where DebOps playbooks might be found
 DEBOPS_PLAYBOOKS_PATHS = [
     os.path.join(DEBOPS_DATA_HOME, "debops-playbooks", "playbooks"),
-    "/usr/local/share/debops/debops-playbooks/playbooks",
-    "/usr/share/debops/debops-playbooks/playbooks",
 ]
 
 # Default site.yml playbook to look for
