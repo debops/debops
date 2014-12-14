@@ -36,7 +36,7 @@ setup(
     license = "GPL 3.0",
     keywords = "ansible",
     url          = "http://debops.org/",
-    download_url = "https://github.com/debops/debops/",
+    download_url = "https://github.com/debops/debops/tarball/v0.1.0",
     classifiers = [
     'Development Status :: 4 - Beta',
     'Environment :: Console',
