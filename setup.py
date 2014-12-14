@@ -41,7 +41,7 @@ setup(
     'Development Status :: 4 - Beta',
     'Environment :: Console',
     'Intended Audience :: System Administrators',
-    'License :: OSI Approved :: GNU General Public License or later (GPLv3+)',
+    'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
     'Natural Language :: English',
     'Operating System :: OS Independent',
     'Programming Language :: Python :: 2.6',
