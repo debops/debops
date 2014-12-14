@@ -22,7 +22,7 @@ Discussion
 ^^^^^^^^^^
 
 Join us in `#debops <http://webchat.freenode.net/?channels=debops>`_ on Freenode
-or post on the `debops-project <https://groups.google.com/forum/#!forum/debops-project>`_
+or post on the `debops <https://groups.io/org/groupsio/debops>`_
 mailing list.
 
 Issue reporting

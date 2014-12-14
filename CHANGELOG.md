@@ -31,6 +31,11 @@ Notable changed related to the shell-version are:
 * The padlock script still exists and has been simplified a lot. Most
   functionality has been moved into the DebOps python library.
 
+##### 2014-12-02
+
+* [DebOps mailing list](https://groups.io/org/groupsio/debops) has been moved
+  to [groups.io](https://groups.io/).
+
 ##### 2014-10-24
 
 * all role documentation from their readme files has been moved to
