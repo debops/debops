@@ -1,7 +1,7 @@
 ## DebOps Changelog
 
 
-### v0.1.0 (prerelease pending)
+### v0.1.0 (released 2014-12-14)
 
 ***
 
