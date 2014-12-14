@@ -2,10 +2,13 @@
 """
 Support functions for command line utilities (scripts).
 """
+# Copyright (C) 2014 Hartmut Goebel <h.goebel@crazy-compilers.com>
+# Part of the DebOps project - http://debops.org/
+
 # This program is free software; you can redistribute
 # it and/or modify it under the terms of the
 # GNU General Public License as published by the Free
-# Software Foundation; either version 2 of the License,
+# Software Foundation; either version 3 of the License,
 # or (at your option) any later version.
 #
 # This program is distributed in the hope that it will
@@ -39,6 +42,11 @@ except ImportError:
 from .. import find_debops_project as _find_debops_project, \
     find_playbookpath as _find_playbookpath, \
     find_inventorypath as _find_inventorypath
+
+__author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__licence__ = "GNU General Public License version 3 (GPL v3) or later"
+
 
 SCRIPT_NAME = os.path.basename(sys.argv[0])
 
