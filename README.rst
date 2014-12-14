@@ -39,10 +39,22 @@ DebOps requires a dependency that is not installed by Ansible. Install
 DebOps scripts
 ``````````````
 
-::
+The easiest way to install debops is::
+
+   $ sudo pip install https://github.com/debops/debops/archive/master.zip
+   $ debops-update
+
+If you want to have more control on the installation process, you can
+use::
 
    $ git clone https://github.com/debops/debops
-   $ cd debops ; sudo make install
+   $ sudo pip install ./debops
+   $ debops-update
+
+Please see the `Installation Guide
+<http://docs.debops.org/en/latest/installation.html>`_ for more
+details.
+
 
 Getting started
 ^^^^^^^^^^^^^^^
