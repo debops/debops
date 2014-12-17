@@ -1,34 +1,130 @@
 ---
 
-# Should PKI be managed by Ansible
+# Enable or disable PKI support
 pki: True
 
-# Copy wildcard certificates and keys to remote hosts?
-pki_wildcard: True
 
-pki_path: '/srv/pki'
+# ---- Default DN for Certificate Requests ----
+
+pki_country:             'AA'
+pki_state:               'Cyberspace'
+pki_locality:            'Data Center'
+pki_organization:        '{{ ansible_domain.split(".")[0] | capitalize }}'
+pki_organizational_unit: 'Data Center Infrastructure'
+pki_common_name:         '{{ ansible_fqdn }}'
+pki_email:               'root@{{ ansible_domain }}'
+
+
+# ---- PKI main options ----
+
+# List of additional packages to install ('haveged' might be useful for faster
+# randomness in testing environment)
+pki_packages: []
+
+# Base PKI directory on remote hosts
+pki_base_path: '/etc/pki'
+
+# Base PKI directory on Ansible Controller
+# See debops.secret role for more information
+pki_base_src: '{{ secret + "/pki/" + ansible_domain }}'
+
+# Directory and file permissions for public and private data
+pki_owner: 'root'
+pki_public_group: 'root'
 pki_private_group: 'ssl-cert'
+pki_public_dir_mode: '0755'
+pki_private_dir_mode: '2750'
+pki_public_mode: '0644'
+pki_private_mode: '0640'
 
+
+# ---- Certificate defaults ----
+
+# Default digest engine to use for signatures
 pki_digest: 'sha256'
-pki_bits: 2048
-pki_selfsign_days: 365
 
-# Default settings for new Certificate Requests
-pki_country:            'AA'
-pki_state:              '{{ ansible_domain | capitalize }} State'
-pki_locality:           '{{ ansible_domain | capitalize }} City'
-pki_organization:       '{{ ansible_domain | capitalize }} Organization'
-pki_organizationalUnit: '{{ ansible_domain | capitalize }} Department'
-pki_commonName:         '{{ ansible_fqdn }}'
-pki_email:              'root@{{ ansible_domain }}'
+# Default key size
+pki_private_key_size: '2048'
 
-# Default certificate for FQDN of a host
-pki_default_certificate:
-  - cn: '{{ ansible_fqdn }}'
+# Base sign period for "normal" certificates
+pki_sign_days: '365'
 
-# Example list of host certificates to create
-#pki_host_certificates:
-#  - cn: 'example.com'
+# Base multiplier for Root CA - 10 years
+pki_sign_rootca_multiplier: '10'
+
+# Base multiplier for intermediate CA - 5 years
+pki_sign_ca_multiplier: '5'
+
+# Base multiplier for certificate - 1 year
+pki_sign_cert_multiplier: '1'
+
+
+pki_rootca: 'RootCA'
+pki_rootca_filename: '{{ pki_rootca + "-" + ansible_domain }}'
+pki_rootca_private_key_size: '4096'
+pki_rootca_o: '{{ pki_organization + " Certificate Authority" }}'
+pki_rootca_cn: '{{ pki_organization + " Root Certificate" }}'
+
+pki_parent_ca: 'ParentCA'
+
+pki_snapshot: True
+pki_snapshot_path: '/var/backups'
+pki_snapshot_file: '{{ "pki-snapshot-" + ansible_fqdn + ".tar" }}'
+pki_snapshot_owner: 'root'
+pki_snapshot_group: 'root'
+
+pki_library: 'openssl'
+
+pki_default_ca: '/etc/ssl/certs/ca-certificates.crt'
+pki_default_cn: '{{ ansible_fqdn }}'
+
+pki_default_realm: 'host'
+
+pki_realms:
+  - src: 'RootCA'
+    dest: False
+    private_key_size: '{{ pki_rootca_private_key_size }}'
+    filename: '{{ pki_rootca_filename }}'
+    default_dn: False
+    o: '{{ pki_rootca_o }}'
+    cn: '{{ pki_rootca_cn }}'
+
+  - src: 'DomainCA'
+    dest: False
+    parent: '../RootCA'
+    o: '{{ pki_rootca_o }}'
+    ou: '{{ pki_organization + " CA" }}'
+    cn: '{{ "ca." + ansible_domain }}'
+
+  - src: 'internal'
+    dest: 'host'
+    cn: '{{ ansible_domain }}'
+    parent: '../DomainCA'
+    root_ca: '../RootCA/CA.crt'
+
+  - src: 'domain'
+    dest: 'domain'
+    default: '{{ ansible_domain }}'
+    parent: '../DomainCA'
+    cn: 'any.{{ ansible_domain }}'
+
+  - src: '{{ "hosts/" + ansible_fqdn + "/host" }}'
+    dest: 'host'
+    default: '{{ ansible_fqdn }}'
+    requests: False
+
+pki_certificates:
+  - realm: 'host'
+    cn: '{{ ansible_fqdn }}'
+
+  - realm: 'domain'
+    filename: '{{ ansible_domain }}'
+    cn: '*.{{ ansible_domain }}'
+
+
+# Example list of certificate options
+#  - realm: 'host'
+#    cn: 'www.example.com'
 #    mail:
 #      - 'root@example.com'
 #    dns:
@@ -40,9 +136,11 @@ pki_default_certificate:
 #    ip:
 #      - '192.0.2.1'
 #
-#  - cn: 'subdomain.{{ ansible_domain }}'
+#  - realm: 'host'
+#    cn: 'subdomain.{{ ansible_domain }}'
 #
-#  - cn: 'other.{{ ansible_domain }}'
+#  - realm: 'host'
+#    cn: 'other.{{ ansible_domain }}'
 #    ou: 'Other Department'
 #    e: 'root@other.{{ ansible_domain }}'
 #    mail:

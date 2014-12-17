@@ -1,5 +1,79 @@
 ---
 
-- include: pki.yml
+- name: Install PKI packages
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_flattened:
+    - [ 'ssl-cert', 'make', 'ca-certificates', 'gnutls-bin',
+         'openssl', 'openssl-blacklist', 'acl' ]
+    - pki_packages
+
+- include: manage_pki_authorities.yml
   when: pki is defined and pki
+
+- name: Check if snapshot file exists on Ansible Controller
+  stat:
+    path: '{{ pki_base_src + "/snapshots/" + ansible_fqdn + "/" + pki_snapshot_file }}'
+  register: pki_register_snapshot
+  sudo: False
+  delegate_to: 'localhost'
+  when: pki is defined and pki
+
+- name: Transfer PKI snapshot to remote host
+  copy:
+    src: '{{ pki_base_src + "/snapshots/" + ansible_fqdn + "/" + pki_snapshot_file }}'
+    dest: '{{ pki_snapshot_path + "/" + pki_snapshot_file }}'
+    owner: '{{ pki_snapshot_owner }}'
+    group: '{{ pki_snapshot_group }}'
+    mode: '0640'
+  when: ((pki is defined and pki) and (pki_snapshot is defined and pki_snapshot) and
+         (ansible_local is undefined or (ansible_local is defined and ansible_local.pki is undefined)) and
+         (pki_register_snapshot is defined and pki_register_snapshot.stat.exists))
+
+- name: Restore PKI from snapshot
+  environment:
+    LANG: 'C'
+  command: make --no-print-directory restore chdir={{ pki_base_path }}
+  register: pki_register_make
+  changed_when: pki_register_make.stdout is defined and pki_register_make.stdout
+  when: ((pki is defined and pki) and (pki_snapshot is defined and pki_snapshot) and
+         (ansible_local is undefined or (ansible_local is defined and ansible_local.pki is undefined)) and
+         (pki_register_snapshot is defined and pki_register_snapshot.stat.exists))
+
+- include: manage_pki_certificates.yml
+  when: pki is defined and pki
+
+- name: Upload PKI snapshot to Ansible Controller
+  fetch:
+    src: '{{ pki_snapshot_path + "/" + pki_snapshot_file }}'
+    dest: '{{ pki_base_src + "/snapshots/" + ansible_fqdn + "/" + pki_snapshot_file }}'
+    flat: True
+  register: pki_register_snapshot
+  notify: [ 'Regenerate ca-certificates.crt' ]
+  when: pki is defined and pki and pki_snapshot is defined and pki_snapshot
+
+- name: Make sure that Ansile local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save local facts
+  template:
+    src: 'etc/ansible/facts.d/pki.fact.j2'
+    dest: '/etc/ansible/facts.d/pki.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: pki_register_facts
+  notify: [ 'Gather PKI facts' ]
+
+- name: Flush handlers for PKI if needed
+  meta: flush_handlers
+  when: ((pki_register_snapshot is defined and pki_register_snapshot.changed) or
+         (pki_register_facts is defined and pki_register_facts.changed))
 

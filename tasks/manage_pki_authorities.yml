@@ -1,0 +1,76 @@
+---
+
+- name: Create PKI directories (templates)
+  file:
+    path: '{{ pki_base_path + "/" + item.dest + "/templates" }}'
+    state: 'directory'
+    owner: '{{ pki_owner }}'
+    group: '{{ pki_public_group }}'
+    mode: '{{ pki_public_dir_mode }}'
+  with_items: pki_realms
+  when: (item.src is defined and (item.dest is defined and item.dest))
+
+- name: Generate main Makefile
+  template:
+    src: 'etc/pki/Makefile.j2'
+    dest: '{{ pki_base_path + "/Makefile" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Generate realm Makefile
+  template:
+    src: 'etc/pki/realm/Makefile.j2'
+    dest: '{{ pki_base_path + "/" + item.dest + "/Makefile" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: pki_realms
+  when: (item.src is defined and (item.dest is defined and item.dest))
+
+- name: Create source directories (database)
+  file:
+    path: '{{ pki_base_src + "/realms/" + item.src + "/.db" }}'
+    state: 'directory'
+  sudo: False
+  delegate_to: 'localhost'
+  with_items: pki_realms
+  when: item.src is defined and item.dest is defined
+
+- name: Generate make.sh script (source)
+  template:
+    src: 'secret/pki/make.sh.j2'
+    dest: '{{ pki_base_src + "/make.sh" }}'
+    mode: '0755'
+  sudo: False
+  delegate_to: 'localhost'
+
+- name: Generate realm configuration file
+  template:
+    src: 'secret/pki/realms/realm/{{ pki_library }}.cnf.j2'
+    dest: '{{ pki_base_src + "/realms/" + item.src + "/.db/" + pki_library + ".cnf" }}'
+    mode: '{{ pki_public_mode }}'
+  sudo: False
+  run_once: True
+  delegate_to: 'localhost'
+  with_items: pki_realms
+  when: item.src is defined and item.dest is defined
+
+- name: Generate realm Makefile (source)
+  template:
+    src: 'secret/pki/realms/realm/Makefile.j2'
+    dest: '{{ pki_base_src + "/realms/" + item.src + "/Makefile" }}'
+  sudo: False
+  delegate_to: 'localhost'
+  with_items: pki_realms
+  when: item.src is defined and item.dest is defined
+
+- name: Execute source Makefiles
+  environment:
+    LANG: 'C'
+  command: ./make.sh chdir={{ pki_base_src }}
+  sudo: False
+  delegate_to: 'localhost'
+  register: pki_register_make
+  changed_when: pki_register_make.stdout is defined and pki_register_make.stdout
+
