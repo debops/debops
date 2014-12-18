@@ -178,6 +178,15 @@ failover peer "{{ failover.failover }}" {
 {% endif %}
 }
 {% endmacro %}
+{% macro print_key(key) %}
+{% if key.comment is defined and key.comment %}
+# {{ key.comment }}
+{% endif %}
+key "{{ key.key }}" {
+        algorithm {{ key.algorithm|default('hmac-md5') }};
+        secret {{ key.secret }};
+}
+{% endmacro %}
 
 {% if dhcpd_authoritative is defined and dhcpd_authoritative %}
 authoritative;
@@ -195,6 +204,11 @@ not authoritative;
 # Configuration options
 {{ dhcpd_options }}
 
+{% endif %}
+{% if dhcpd_keys is defined and dhcpd_keys %}
+{% for key in dhcpd_keys %}
+{{ print_key(key) }}
+{% endfor %}
 {% endif %}
 {% if dhcpd_classes is defined and dhcpd_classes %}
 {% for class in dhcpd_classes %}
