@@ -62,7 +62,6 @@ if module_name not in DEBOPS_RESERVED_NAMES:
     module = ["-m", module_name]
 else:
     module = []
-fi
 
 os.environ['ANSIBLE_HOSTS'] = os.path.abspath(ansible_inventory)
 
@@ -71,5 +70,5 @@ if INSECURE:
     os.environ['ANSIBLE_HOST_KEY_CHECKING'] = 'False'
 
 # Run ansible with custom environment
-cmd = ['ansible'] + modules + sys.argv[1:]
+cmd = ['ansible'] + module + sys.argv[1:]
 subprocess.call(cmd)
