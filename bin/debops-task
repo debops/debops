@@ -31,6 +31,7 @@ debops-task: run ansible with some customization
 from __future__ import print_function
 
 from debops import *
+from debops.cmds import *
 
 __author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
 __copyright__ = "Copyright 2014 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
@@ -42,17 +43,10 @@ DEBOPS_RESERVED_NAMES = ["task", "init", "update", "defaults", "padlock"]
 # ---- DebOps environment setup ----
 
 # Find DebOps configuration file
-debops_config = find_up(DEBOPS_CONFIG)
-# Find root of the DebOps project dir
-debops_root = os.path.dirname(debops_config) if debops_config else None
-
-if not debops_config:
-    # Exit if we are outside of project directory
-    error_msg("Not a DebOps project directory")   
-
+debops_root = find_debops_project(required=True)
 # Source DebOps configuration file
 ###----- todo: need to decide on semantics!
-#[ -r ${debops_config} ] && source ${debops_config}
+#config = read_config(debops_root)
 
 
 # ---- Main script ----
@@ -60,8 +54,7 @@ if not debops_config:
 # Make sure required commands are present
 require_commands('ansible')
 
-debops_playbooks = find_playbookpath(required=False)
-ansible_inventory = find_inventorypath(required=False)
+ansible_inventory = find_inventorypath(debops_root)
 
 # Get module name from the script name if script is named 'debops-*'
 module_name = SCRIPT_NAME.rsplit('-', 1)[-1]
