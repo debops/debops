@@ -6,11 +6,11 @@ pki: True
 
 # ---- Default DN for Certificate Requests ----
 
-pki_country:             'AA'
-pki_state:               'Cyberspace'
-pki_locality:            'Data Center'
+pki_country:             'QS'
+pki_state:               'Q-Space'
+pki_locality:            'Global'
 pki_organization:        '{{ ansible_domain.split(".")[0] | capitalize }}'
-pki_organizational_unit: 'Data Center Infrastructure'
+pki_organizational_unit: 'Data Center Operations'
 pki_common_name:         '{{ ansible_fqdn }}'
 pki_email:               'root@{{ ansible_domain }}'
 
@@ -80,73 +80,105 @@ pki_default_cn: '{{ ansible_fqdn }}'
 
 pki_default_realm: 'host'
 
+pki_default_host_certificate: '{{ ansible_fqdn }}'
+pki_default_domain_certificate: '{{ "wildcard.domain." + ansible_fqdn }}'
+
 pki_realms:
-  - src: 'RootCA'
-    dest: False
+
+  - source: 'domain'
+    destination: 'domain'
+    ca: [ 'RootCA' ]
+    makefile: False
+
+  - source: 'hosts/{{ ansible_fqdn }}/domain'
+    destination: 'domain'
+    authority: 'domain'
+    default: '{{ pki_default_domain_certificate }}'
+
+  - source: 'hosts/{{ ansible_fqdn }}/host'
+    destination: 'host'
+    authority: 'internal'
+    default: '{{ pki_default_host_certificate }}'
+
+pki_authorities:
+
+  - name: 'RootCA'
+    grants: 'ca'
     private_key_size: '{{ pki_rootca_private_key_size }}'
     filename: '{{ pki_rootca_filename }}'
     default_dn: False
     o: '{{ pki_rootca_o }}'
     cn: '{{ pki_rootca_cn }}'
 
-  - src: 'DomainCA'
-    dest: False
-    parent: '../RootCA'
+  - name: 'DomainCA'
+    grants: 'ca'
+    parent: 'RootCA'
     o: '{{ pki_rootca_o }}'
     ou: '{{ pki_organization + " CA" }}'
     cn: '{{ "ca." + ansible_domain }}'
 
-  - src: 'internal'
-    dest: 'host'
-    cn: '{{ ansible_domain }}'
-    parent: '../DomainCA'
-    root_ca: '../RootCA/CA.crt'
+  - name: 'internal'
+    parent: 'DomainCA'
+    ou: '{{ pki_organization + " Data Center" }}'
+    cn: '{{ "dc." + ansible_domain }}'
 
-  - src: 'domain'
-    dest: 'domain'
-    default: '{{ ansible_domain }}'
-    parent: '../DomainCA'
-    cn: 'any.{{ ansible_domain }}'
+  - name: 'domain'
+    grants: 'server'
+    parent: 'DomainCA'
+    ou: '{{ pki_organizational_unit }}'
+    cn: '{{ "dco." + ansible_domain }}'
 
-  - src: '{{ "hosts/" + ansible_fqdn + "/host" }}'
-    dest: 'host'
-    default: '{{ ansible_fqdn }}'
-    requests: False
+
+pki_routes:
+
+  - name: 'host_{{ ansible_fqdn }}'
+    authority: 'internal/certs'
+    realm: 'hosts/{{ ansible_fqdn }}/host/certs'
+    file: '{{ ansible_fqdn }}.crt'
+
+  - name: 'domain_{{ ansible_fqdn }}'
+    authority: 'domain/certs'
+    realm: 'hosts/{{ ansible_fqdn }}/domain/certs'
+    file: 'wildcard.domain.{{ ansible_fqdn }}.crt'
+
+  - name: 'root_ca'
+    authority: 'RootCA'
+    realm: 'domain/CA'
+    readlink: 'CA.crt'
+
 
 pki_certificates:
-  - realm: 'host'
-    cn: '{{ ansible_fqdn }}'
 
-  - realm: 'domain'
-    filename: '{{ ansible_domain }}'
-    cn: '*.{{ ansible_domain }}'
+  - source: '{{ "hosts/" + ansible_fqdn + "/host" }}'
+    destination: 'host'
+    ou: '{{ pki_organization + " Data Center" }}'
+    cn: '{{ ansible_fqdn }}'
+    dns: [ '{{ "*." + ansible_domain }}' ]
+    ip: '{{ (ansible_all_ipv4_addresses + ansible_all_ipv6_addresses | ipaddr("public")) }}'
+
+  - source: '{{ "hosts/" + ansible_fqdn + "/domain" }}'
+    destination: 'domain'
+    ou: '{{ pki_organizational_unit }}'
+    cn: '{{ ansible_domain }}'
+    dns: [ '{{ "*." + ansible_domain }}' ]
+    filename: 'wildcard.domain.{{ ansible_fqdn }}'
 
 
 # Example list of certificate options
 #  - realm: 'host'
-#    cn: 'www.example.com'
-#    mail:
-#      - 'root@example.com'
-#    dns:
-#      - 'www.example.com'
-#      - 'mail.example.com'
-#      - '*.mail.example.com'
-#    uri:
-#      - 'http://example.com/'
-#    ip:
-#      - '192.0.2.1'
+#    cn:    'www.example.com'
+#    mail:  [ 'root@example.com' ]
+#    dns:   [ 'www.example.com', 'mail.example.com', '*.mail.example.com' ]
+#    uri:   [ 'http://example.com/' ]
+#    ip:    [ '192.0.2.1' ]
 #
 #  - realm: 'host'
-#    cn: 'subdomain.{{ ansible_domain }}'
+#    cn:    'subdomain.{{ ansible_domain }}'
 #
 #  - realm: 'host'
-#    cn: 'other.{{ ansible_domain }}'
-#    ou: 'Other Department'
-#    e: 'root@other.{{ ansible_domain }}'
-#    mail:
-#      - 'others@other.{{ ansible_domain }}'
-#      - 'root@{{ ansible_domain }}'
-#    dns:
-#      - '*.other.{{ ansible_domain }}'
-
+#    cn:    '{{ "other." + ansible_domain }}'
+#    ou:    'Other Department'
+#    e:     '{{ "root@other." + ansible_domain }}'
+#    mail:  [ '{{ "others@other." + ansible_domain }}', '{{ "root@" + ansible_domain }}' ]
+#    dns:   [ '{{ "*.other." + ansible_domain }}' ]
 

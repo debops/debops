@@ -1,18 +1,18 @@
 ---
 
-- name: Generate certificate templates
+- name: Generate certificate requests
   template:
     src: '{{ "etc/pki/realm/templates/" + (item.0.library | default(pki_library)) + "/" + (item.1.template | default("default")) + ".cnf.j2" }}'
-    dest: '{{ pki_base_path + "/" + item.1.realm + "/templates/" + (item.1.filename | default(item.1.cn)) + ".cnf" }}'
+    dest: '{{ pki_base_path + "/" + item.1.destination + "/templates/" + (item.1.filename | default(item.1.cn)) + ".cnf" }}'
     owner: '{{ pki_owner }}'
     group: '{{ pki_public_group }}'
     mode: '{{ pki_public_mode }}'
   with_nested:
     - pki_realms
     - pki_certificates
-  when: ((item.1.realm is defined and item.1.realm) and (item.0.dest is defined and item.0.dest) and
-         (item.0.dest == item.1.realm) and item.1.cn is defined and
-         (item.0.requests is undefined or (item.0.requests is defined and item.0.requests)))
+  when: ((item.1.destination is defined and item.1.destination) and (item.0.destination is defined and item.0.destination) and
+         (item.0.destination == item.1.destination) and item.1.cn is defined and
+         (item.0.source == item.1.source))
 
 - name: Execute remote hosts Makefiles (may take some time)
   environment:
@@ -23,15 +23,15 @@
 
 - name: Upload Certificate Signing Requests
   fetch:
-    src: '{{ pki_base_path + "/" + item.0.dest + "/requests/" + (item.1.filename | default(item.1.cn)) + ".csr" }}'
-    dest: '{{ pki_base_src + "/realms/" + item.0.src + "/requests/" + (item.1.filename | default(item.1.cn)) + ".csr" }}'
+    src: '{{ pki_base_path + "/" + item.0.destination + "/requests/" + (item.1.filename | default(item.1.cn)) + ".csr" }}'
+    dest: '{{ pki_base_src + "/authorities/" + item.0.authority + "/requests/" + (item.1.filename | default(item.1.cn)) + ".csr" }}'
     flat: True
   with_nested:
     - pki_realms
     - pki_certificates
-  when: ((item.1.realm is defined and item.1.realm) and (item.0.dest is defined and item.0.dest) and
-         (item.0.dest == item.1.realm) and item.1.cn is defined and
-         (item.0.requests is undefined or (item.0.requests is defined and item.0.requests)))
+  when: ((item.1.destination is defined and item.1.destination) and (item.0.destination is defined and item.0.destination) and
+         (item.0.destination == item.1.destination) and item.1.cn is defined and
+         (item.0.source == item.1.source))
 
 - name: Execute source Makefiles
   environment:
@@ -44,28 +44,28 @@
 
 - name: Download private files
   copy:
-    src: '{{ pki_base_src + "/realms/" + item.0.src + "/" + item.1 + "/" }}'
-    dest: '{{ pki_base_path + "/" + item.0.dest + "/" + item.1 + "/" }}'
+    src: '{{ pki_base_src + "/realms/" + item.0.source + "/" + item.1 + "/" }}'
+    dest: '{{ pki_base_path + "/" + item.0.destination + "/" + item.1 + "/" }}'
     owner: '{{ pki_owner }}'
     group: '{{ pki_private_group }}'
     mode: '{{ pki_private_mode }}'
   with_nested:
     - pki_realms
     - [ 'private' ]
-  when: (item.0.src is defined and (item.0.dest is defined and item.0.dest) and
+  when: (item.0.source is defined and (item.0.destination is defined and item.0.destination) and
          (item.1 is defined and item.1))
 
 - name: Download public files
   copy:
-    src: '{{ pki_base_src + "/realms/" + item.0.src + "/" + item.1 + "/" }}'
-    dest: '{{ pki_base_path + "/" + item.0.dest + "/" + item.1 }}'
+    src: '{{ pki_base_src + "/realms/" + item.0.source + "/" + item.1 + "/" }}'
+    dest: '{{ pki_base_path + "/" + item.0.destination + "/" + item.1 }}'
     owner: '{{ pki_owner }}'
     group: '{{ pki_public_group }}'
     mode: '{{ pki_public_mode }}'
   with_nested:
     - pki_realms
     - [ 'CA', 'revoked', 'certs' ]
-  when: (item.0.src is defined and (item.0.dest is defined and item.0.dest))
+  when: (item.0.source is defined and (item.0.destination is defined and item.0.destination))
 
 - name: Execute PKI Makefiles
   environment:

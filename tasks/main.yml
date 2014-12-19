@@ -10,9 +10,6 @@
          'openssl', 'openssl-blacklist', 'acl' ]
     - pki_packages
 
-- include: manage_pki_authorities.yml
-  when: pki is defined and pki
-
 - name: Check if snapshot file exists on Ansible Controller
   stat:
     path: '{{ pki_base_src + "/snapshots/" + ansible_fqdn + "/" + pki_snapshot_file }}'
@@ -21,26 +18,19 @@
   delegate_to: 'localhost'
   when: pki is defined and pki
 
-- name: Transfer PKI snapshot to remote host
-  copy:
-    src: '{{ pki_base_src + "/snapshots/" + ansible_fqdn + "/" + pki_snapshot_file }}'
-    dest: '{{ pki_snapshot_path + "/" + pki_snapshot_file }}'
-    owner: '{{ pki_snapshot_owner }}'
-    group: '{{ pki_snapshot_group }}'
-    mode: '0640'
+- name: Restore PKI from snapshot
+  unarchive:
+    src: '{{ pki_base_src + "/snapshots/" + ansible_fqdn + "/" + pki_snapshot_file }}/'
+    dest: '{{ pki_base_path }}'
   when: ((pki is defined and pki) and (pki_snapshot is defined and pki_snapshot) and
          (ansible_local is undefined or (ansible_local is defined and ansible_local.pki is undefined)) and
          (pki_register_snapshot is defined and pki_register_snapshot.stat.exists))
 
-- name: Restore PKI from snapshot
-  environment:
-    LANG: 'C'
-  command: make --no-print-directory restore chdir={{ pki_base_path }}
-  register: pki_register_make
-  changed_when: pki_register_make.stdout is defined and pki_register_make.stdout
-  when: ((pki is defined and pki) and (pki_snapshot is defined and pki_snapshot) and
-         (ansible_local is undefined or (ansible_local is defined and ansible_local.pki is undefined)) and
-         (pki_register_snapshot is defined and pki_register_snapshot.stat.exists))
+- include: manage_pki_realms.yml
+  when: pki is defined and pki
+
+- include: manage_pki_authorities.yml
+  when: pki is defined and pki
 
 - include: manage_pki_certificates.yml
   when: pki is defined and pki
