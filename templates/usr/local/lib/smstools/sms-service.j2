@@ -42,8 +42,8 @@ $input = <STDIN>;
 if ($input =~ /(QUIT|BYE)/i) {
 	print "221 Bye\n";
 } elsif ($input =~ /TEXT\s+([0-9]{9})\s+(.+)/i) {
-	system("/usr/bin/sudo -u smsd /usr/local/bin/sendsms {{ smstools_service_country_prefix }}$1 '$2' > /dev/null");
-	syslog('info',"from=<unknown>, prefix=<{{ smstools_service_country_prefix }}>, to=<$1>, size=".length($2).", msg=[$2]\n");
+	system("/usr/bin/sudo -u smsd /usr/local/bin/sendsms {{ smstools_default_country_prefix }}$1 '$2' > /dev/null");
+	syslog('info',"from=<unknown>, prefix=<{{ smstools_default_country_prefix }}>, to=<$1>, size=".length($2).", msg=[$2]\n");
 	print "OK\n";
 } elsif ($input =~ /TEXT\s+([0-9]{11})\s+(.+)/i) {
 	system("/usr/bin/sudo -u smsd /usr/local/bin/sendsms +$1 '$2' > /dev/null");
