@@ -89,42 +89,11 @@
            removes=/etc/nginx/fastcgi_params.dpkg-divert.lock
   notify: [ 'Test nginx and reload' ]
 
-- name: Install DH params regeneration script
-  template:
-    src: 'etc/nginx/nginx-regenerate-dhparams.j2'
-    dest: '/etc/nginx/nginx-regenerate-dhparams'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Generate nginx DH params
-  command: /etc/nginx/nginx-regenerate-dhparams 1
-           chdir=/etc/nginx creates=/etc/nginx/dhparam_2048.pem
-
-- name: Setup DH params regeneration
-  cron: name='Regenerate DH params for nginx' minute=0
-        hour={{ nginx_cron_dhparams_hour | default('1') }} user=root state=present
-        job='/etc/nginx/nginx-regenerate-dhparams' cron_file='nginx-regenerate-dhparams'
-
 - name: Disable default nginx site
   file:
     path: '/etc/nginx/sites-enabled/default'
     state: 'absent'
   notify: [ 'Test nginx and reload' ]
-
-  # This is a crude method to check if we should enable SSL support by default
-  # in all servers. Clunky, but will suffice for now. Nginx templates will
-  # blindly use paths supported by 'pki' role, so you should use it if you want
-  # SSL.
-- name: Check if nginx should enable SSL support
-  stat: path={{ nginx_pki }}/host/private/{{ nginx_pki_check_key }}.key
-  register: nginx_ssl_check
-  when: nginx_pki is defined and nginx_pki
-
-- name: Enable SSL if host SSL key is present
-  set_fact:
-    nginx_ssl: True
-  when: nginx_ssl_check is defined and nginx_ssl_check.stat.exists
 
 - name: Manage local server definitions - create symlinks
   file:

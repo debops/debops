@@ -85,10 +85,25 @@
 #       using this option).
 #
 #
-#   - item.ssl_type: ''
-#       Optional. Type of the SSL certificate to use for this server,
-#       compatible with 'debops.pki' role. Currently supported types:
-#       selfsigned, signed, wildcard.
+#   - item.pki_realm: ''
+#       Optional. Overwrite default PKI realm used by nginx for this server
+#       configuration. See 'debops.pki' role for more information, as well as
+#       '/etc/pki/' directory for list of available realms.
+#
+#
+#   - item.pki_crt: ''
+#       Optional. Path to custom SSL certificate to use, relative to currently
+#       enabled PKI realm (either system-wide or for current server).
+#
+#
+#   - item.pki_key: ''
+#       Optional. Path to custom SSL private key to use, relative to currently
+#       enabled PKI realm (either system-wide or for current server).
+#
+#
+#   - item.pki_dhparam: ''
+#       Optional. Path to custom DHE parameters to use, relative to currently
+#       enabled PKI realm (either system-wide or for current server).
 #
 #
 #   - item.ssl_ciphers: ''
@@ -99,23 +114,6 @@
 #
 #   - item.ssl_curve: ''
 #       Optional. ECC curve enabled for this server. By default, 'secp384r1'.
-#
-#
-#   - item.ssl_name: ''
-#       Optional. Common Name of the SSL certificate to use for this server
-#       configuration, compatible with 'debops.pki' role. Used to select the
-#       certificate if item.ssl_cert and item.ssl_key are not specified and you
-#       want to use custom certificate for this server configuration.
-#
-#
-#   - item.ssl_cert: ''
-#       Optional. Absolute path to SSL certificate to use for this server
-#       configuration.
-#
-#
-#   - item.ssl_key: ''
-#       Optional. Absolute path to SSL certificate key to use for this server
-#       configuration.
 #
 #
 #   - item.owner: ''
@@ -249,8 +247,8 @@
     ---- SSL is enabled by default, disable if requested ----
 #}
 {% set nginx_tpl_ssl = True                                                    %}
-{% if ((nginx_ssl is undefined or (nginx_ssl is defined and not nginx_ssl)) or
-       (item.ssl is defined and not item.ssl))                                 %}
+{% if (((nginx_pki is undefined or (nginx_pki is defined and not nginx_pki)) or
+        (item.ssl is defined and not item.ssl)))                               %}
 {%     set nginx_tpl_ssl = False                                               %}
 {% endif                                                                       %}
 {#
@@ -287,20 +285,17 @@
 
     ---- SSL certificate ----
 #}
-{% set nginx_tpl_ssl_certificate = item.ssl_cert | default(nginx_pki + "/host/" + item.ssl_type | default(nginx_default_ssl_type) + "/" + item.ssl_name | default(nginx_default_ssl_cert) + ".crt") %}
-{% if ((item.ssl_type is defined and item.ssl_type in ['wildcard']) or
-       (nginx_default_ssl_type is defined and nginx_default_ssl_type in ['wildcard'])) %}
-{%     set nginx_tpl_ssl_certificate = item.ssl_cert | default(nginx_pki + "/wildcard/certs/" +  item.ssl_name | default(nginx_default_ssl_wildcard | default(ansible_domain)) + ".crt") %}
-{% endif                                                                       %}
+{% set nginx_tpl_ssl_certificate = nginx_pki + "/" + item.pki_realm | default(nginx_pki_realm) + "/" + item.pki_crt | default(nginx_pki_crt) %}
 {#
 
     ---- SSL certificate key ----
 #}
-{% set nginx_tpl_ssl_certificate_key = item.ssl_key | default(nginx_pki + "/host/private/" + item.ssl_name | default(nginx_default_ssl_cert) + ".key") %}
-{% if ((item.ssl_type is defined and item.ssl_type in ['wildcard']) or
-       (nginx_default_ssl_type is defined and nginx_default_ssl_type in ['wildcard'])) %}
-{%     set nginx_tpl_ssl_certificate_key = item.ssl_key | default(nginx_pki + "/wildcard/private/" +  item.ssl_name | default(nginx_default_ssl_wildcard | default(ansible_domain)) + ".key") %}
-{% endif                                                                       %}
+{% set nginx_tpl_ssl_certificate_key = nginx_pki + "/" + item.pki_realm | default(nginx_pki_realm) + "/" + item.pki_key | default(nginx_pki_key) %}
+{#
+
+    ---- Diffie-Hellman Key Exchange parameters ----
+#}
+{% set nginx_tpl_ssl_dhparam = nginx_pki + "/" + item.pki_realm | default(nginx_pki_realm) + "/" + item.pki_dhparam | default(nginx_pki_dhparam) %}
 {#
 
     ---- root directory ----
@@ -472,7 +467,7 @@ server {
         ssl_protocols             TLSv1 TLSv1.1 TLSv1.2;
         ssl_prefer_server_ciphers on;
         ssl_ciphers               "{{ nginx_ssl_ciphers[item.ssl_ciphers | default(nginx_default_ssl_ciphers)] }}"; # SSL cipher list: {{ item.ssl_ciphers | default(nginx_default_ssl_ciphers) }}
-        ssl_dhparam               /etc/nginx/dhparam_2048.pem;
+        ssl_dhparam               {{ nginx_tpl_ssl_dhparam }};
         ssl_ecdh_curve            {{ item.ssl_curve | default(nginx_default_ssl_curve) }};
 {% if (nginx_version is defined and nginx_version | version_compare('1.4','>=')) and nginx_ocsp_resolvers is defined and nginx_ocsp_resolvers %}
         ssl_stapling              on;
