@@ -37,15 +37,23 @@ postgresql_default_locale_messages: 'C'
 # from Ansible Controller or fallback to UTC
 postgresql_default_timezone: ""
 
-# Where SSL certificates are stored. See 'pki' role
-postgresql_pki_path: '/srv/pki'
+# Base path of PKI infrastructure, managed by 'debops.pki' role
+postgresql_pki_path: '{{ ansible_local.pki.base_path | default("/etc/pki") }}'
 
-# Certificates used for each PostgreSQL cluster if not changed otherwise
-# By default, use self-signed host certificate
-postgresql_default_ssl_root: '{{ postgresql_pki_path }}/host/selfsigned/{{ ansible_fqdn }}.crt'
-postgresql_default_ssl_crl: '{{ postgresql_pki_path }}/host/crl/{{ ansible_fqdn }}.crl'
-postgresql_default_ssl_crt: '{{ postgresql_pki_path }}/host/selfsigned/{{ ansible_fqdn }}.crt'
-postgresql_default_ssl_key: '{{ postgresql_pki_path }}/host/private/{{ ansible_fqdn }}.key'
+# PKI realm used by PostgreSQL role
+postgresql_pki_realm: '{{ ansible_local.pki.realm | default("system") }}'
+
+# Default Root CA certificate used by PostgreSQL clusters, relative to
+# 'postgresql_pki_realm' path
+postgresql_pki_ca: 'CA.crt'
+
+# SSL certificate, private key and CRL used by PostgreSQL clusters if not
+# specified otherwise, relative to 'postgesql_pki_realm' path
+postgresql_pki_crt: 'default.crt'
+postgresql_pki_key: 'default.key'
+postgresql_pki_crl: 'default.crl'
+
+# Default SSL ciphers enabled in PostgreSQL clusters
 postgresql_default_ssl_ciphers: 'ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH'
 
 # Default startup behaviour: auto, manual, disabled
