@@ -247,8 +247,12 @@ if (defined($sender_given) and $sender_given =~ /([-A-Za-z0-9_+]+\@[-A-Za-z0-9.]
 		if !defined($sender_given);
 	bailout($EX_NOUSER,"Invalid sender address: $sender_given");
 }
-if (defined($recipient_given) and $recipient_given =~ /^([0-9]{9}|[0-9]{11}|\+[0-9]{11})$/) {
-	$recipient=$1;	# now is untainted
+if (defined($recipient_given) and $recipient_given =~ /^([0-9]{9})$/) {
+	$recipient="{{ smstools_default_country_prefix }}$1";	# now is untainted
+} elsif (defined($recipient_given) and $recipient_given =~ /^([0-9]{11})$/) {
+	$recipient="+$1";	# now is untainted
+} elsif (defined($recipient_given) and $recipient_given =~ /^(\+[0-9]{11})$/) {
+	$recipient="$1";	# now is untainted
 } else {
 	bailout($EX_NOUSER,"Mobile number not given")
 		if !defined($recipient_given);
