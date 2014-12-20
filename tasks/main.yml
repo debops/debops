@@ -10,6 +10,15 @@
          'openssl', 'openssl-blacklist', 'acl' ]
     - pki_packages
 
+- name: Create base PKI directory
+  file:
+    path: '{{ pki_base_path }}'
+    state: 'directory'
+    owner: '{{ pki_owner }}'
+    group: '{{ pki_public_group }}'
+    mode: '{{ pki_public_dir_mode }}'
+  when: pki is defined and pki
+
 - name: Check if snapshot file exists on Ansible Controller
   stat:
     path: '{{ pki_base_src + "/snapshots/" + ansible_fqdn + "/" + pki_snapshot_file }}'
