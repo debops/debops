@@ -3,10 +3,10 @@
 [![Travis CI](http://img.shields.io/travis/debops/ansible-ntp.svg?style=flat)](http://travis-ci.org/debops/ansible-ntp) [![test-suite](http://img.shields.io/badge/test--suite-ansible--ntp-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-ntp/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.ntp-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1582)
 
 `debops.ntp` role can be used to install
-[OpenNTPD](http://www.openntpd.org/) time server which will be used both to
-synchronize time on a host and serve accurate time information for other
-hosts (if enabled). This role can also manage timezone settings using
-`tzdata` Debian package.
+[OpenNTPD](http://www.openntpd.org/) or [NTP](http://ntp.org/) time server
+which will be used both to synchronize time on a host and serve accurate time
+information for other hosts (if enabled). This role can also manage timezone
+settings using `tzdata` Debian package.
 
 Time server will not be installed in an LXC or OpenVZ container, because
 time synchronization in this case is provided by the host operating system.
