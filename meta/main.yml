@@ -11,12 +11,14 @@ dependencies:
         saddr: '{{ ntp_allow }}'
         filename: 'ntp_dependency_accept'
         weight: '50'
+        enabled: '{{ ntp_firewall_access }}'
 
       - type: 'dport_limit'
         dport: [ 'ntp' ]
         protocol: [ 'udp' ]
         filename: 'ntp_dependency_limit'
         weight: '50'
+        enabled: '{{ ntp_firewall_access }}'
 
 galaxy_info:
   author: 'Maciej Delmanowski'
