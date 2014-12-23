@@ -1,7 +1,7 @@
 ---
 
 # Which clock management daemon should be installed? Currently only 'openntpd'
-# is supported. Set to False to disable clock management
+# and 'ntpd' is supported. Set to False to disable clock management
 ntp: 'openntpd'
 
 # Timezone configuration
@@ -23,8 +23,25 @@ ntp_listen: []
 ntp_allow: []
 
 # List of NTP servers to synchronize with
+# If you use NTPd, you can add server options in server strings, for example:
+#   '0.debian.pool.ntp.org iburst minpoll 6 maxpoll 10'
+# If you're syncing against local servers, recommended options are --
+# 'burst iburst minpoll 4 maxpoll 4', where:
+#  - 'burst' and 'iburst' -- Get stratum as fast as possible by sending 8 sync
+#                            querys with 2 second interval. (Beware though,
+#                            this is considered as an abuse on public servers!)
+#  - minpoll, maxpoll -- Min/max interval for sync querys to be sent in normal
+#                        operation mode. It's defined in seconds as a
+#                        power of two:
+#                         4 -- 16 seconds (minimal allowed)
+#                         5 -- 32 seconds
+#                         6 -- 64 seconds
+#                        and so on.
 ntp_servers: [ '0.debian.pool.ntp.org',
                '1.debian.pool.ntp.org',
                '2.debian.pool.ntp.org',
                '3.debian.pool.ntp.org' ]
 
+# NTPd specific.
+# Fudge local clock if time servers is not available
+ntp_fudge: True
