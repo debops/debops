@@ -11,6 +11,25 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-12-23
+^^^^^^^^^^
+
+Role updates
+************
+
+`debops.users`_ role can now set or update user passwords (by default no
+passwords are set).
+
+`debops.ntp`_ role has gained support for ``ntpd`` daemon, thanks to
+`RedRampage`_. Because of the issues with role dependency variables and Jinja,
+access to NTP service through firewall is now controlled by a separate
+variable, ``ntp_firewall_access``. By default, remote access is disabled.
+
+.. _debops.users: https://github.com/debops/ansible-users/
+.. _debops.ntp: https://github.com/debops/ansible-ntp/
+.. _RedRampage: https://github.com/redrampage/
+
+
 2014-12-05
 ^^^^^^^^^^
 
