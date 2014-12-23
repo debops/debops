@@ -36,13 +36,13 @@
          (pki_register_snapshot is defined and pki_register_snapshot.stat.exists))
 
 - include: manage_pki_realms.yml
-  when: pki is defined and pki
+  when: ((pki is defined and pki) and (ansible_domain is defined and ansible_domain))
 
 - include: manage_pki_authorities.yml
-  when: pki is defined and pki
+  when: ((pki is defined and pki) and (ansible_domain is defined and ansible_domain))
 
 - include: manage_pki_certificates.yml
-  when: pki is defined and pki
+  when: ((pki is defined and pki) and (ansible_domain is defined and ansible_domain))
 
 - name: Upload PKI snapshot to Ansible Controller
   fetch:
