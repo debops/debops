@@ -31,12 +31,9 @@
     - '../vars/apt_default_sources.yml'
   when: apt_default_sources is undefined
 
-- name: Combine list of default and user APT mirrors
+- name: Combine lists of default and user APT mirrors and sources
   set_fact:
     apt_mirrors_combined: '{{ apt_mirrors + apt_default_mirrors | default([]) }}'
-
-- name: Combine list of default and user APT sources
-  set_fact:
     apt_sources_combined: '{{ apt_default_sources | default([]) + apt_sources }}'
 
 - name: Divert original /etc/apt/sources.list
