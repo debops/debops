@@ -52,14 +52,12 @@
 
 - name: Move sources.list out of the way before reversion
   command: rm -f /etc/apt/sources.list removes=/etc/apt/sources.list.dpkg-divert
-  when: (apt_sources_combined is undefined or
-         (apt_sources_combined is defined and not apt_sources_combined))
+  when: not apt_sources_combined
 
 - name: Remove diversion of original /etc/apt/sources.list
   command: dpkg-divert --quiet --local --rename --remove /etc/apt/sources.list
            removes=/etc/apt/sources.list.dpkg-divert
-  when: (apt_sources_combined is undefined or
-         (apt_sources_combined is defined and not apt_sources_combined))
+  when: not apt_sources_combined
 
 - name: Update package lists
   apt: update_cache=yes
