@@ -4,10 +4,10 @@
   template: src=etc/apt/apt.conf.d/000apt-cacher-ng-proxy.j2
             dest=/etc/apt/apt.conf.d/000apt-cacher-ng-proxy
             owner=root group=root mode=0644
-  when: (apt is defined and apt) and apt != True
+  when: apt != True
 
 - name: Configure APT to not use cache if not available
   file: path=/etc/apt/apt.conf.d/000apt-cacher-ng-proxy state=absent
-  when: apt is undefined or (apt is defined and not apt)
+  when: not apt
 
 

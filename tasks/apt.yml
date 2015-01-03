@@ -42,7 +42,7 @@
 - name: Divert original /etc/apt/sources.list
   command: dpkg-divert --quiet --local --divert /etc/apt/sources.list.dpkg-divert --rename /etc/apt/sources.list
            creates=/etc/apt/sources.list.dpkg-divert
-  when: apt_sources_combined is defined and apt_sources_combined
+  when: apt_sources_combined
 
 - name: Configure main APT package sources
   template:
@@ -51,7 +51,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: apt_sources_combined is defined and apt_sources_combined
+  when: apt_sources_combined
 
 - name: Move sources.list out of the way before reversion
   command: rm -f /etc/apt/sources.list removes=/etc/apt/sources.list.dpkg-divert

@@ -1,26 +1,26 @@
 ---
 
 - include: configure_acng_server.yml
-  when: (apt is defined and apt) and (apt != True and apt == ansible_fqdn)
+  when: apt != True and apt == ansible_fqdn
 
 - include: configure_acng_client.yml
-  when: (apt is defined and apt) and apt != True
+  when: apt != True
 
 - include: debian_preseed.yml
-  when: (apt is defined and apt) and (apt != True and apt == ansible_fqdn)
+  when: apt != True and apt == ansible_fqdn
 
 - include: apt.yml
-  when: apt is defined and apt
+  when: apt
 
 - include: update_notifications.yml
-  when: apt is defined and apt
+  when: apt
 
 - include: unattended-upgrades.yml
-  when: apt is defined and apt
+  when: apt
 
 - include: install_conditional.yml
-  when: apt is defined and apt
+  when: apt
 
 - include: install_packages.yml
-  when: apt is defined and apt
+  when: apt
 
