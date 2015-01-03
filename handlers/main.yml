@@ -1,14 +1,11 @@
 ---
 
-- name: Restart postfix
-  service:
-    name: 'postfix'
-    state: 'restarted'
-  notify: [ 'Restart ferm' ]
-
 - name: Run postfix Makefile
   command: make chdir=/etc/postfix
   notify: [ 'Check postfix and reload' ]
+
+- name: Generate mail alias database
+  command: newaliases
 
 - name: Check postfix
   command: /usr/sbin/postfix -c /etc/postfix check
@@ -17,11 +14,13 @@
   command: /usr/sbin/postfix -c /etc/postfix check
   notify: [ 'Reload postfix' ]
 
+- name: Restart postfix
+  service:
+    name: 'postfix'
+    state: 'restarted'
+  notify: [ 'Restart ferm' ]
+
 - name: Reload postfix
   service:
     name: 'postfix'
     state: 'reloaded'
-
-- name: Generate mail alias database
-  command: newaliases
-

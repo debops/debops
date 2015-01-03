@@ -19,14 +19,14 @@
 
 - name: Re-read local facts if they have been modified
   action: setup
-  when: (postfix_register_local_facts is defined and postfix_register_local_facts.changed)
+  when: postfix_register_local_facts.changed
 
 - include: install_divert.yml
-  when: (postfix is defined and postfix)
+  when: postfix
 
 - include: configure.yml
-  when: (postfix is defined and postfix)
+  when: postfix
 
 - include: disable_revert.yml
-  when: (postfix is undefined or (postfix is defined and not postfix))
+  when: not postfix
 
