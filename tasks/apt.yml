@@ -51,6 +51,7 @@
   when: apt_sources_combined
 
 - name: Move sources.list out of the way before reversion
+  # only remove sources.list if sources.list.dpkg-divert exists
   command: rm -f /etc/apt/sources.list removes=/etc/apt/sources.list.dpkg-divert
   when: not apt_sources_combined
 
