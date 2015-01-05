@@ -20,6 +20,11 @@ all: all-realms
 
 all-realms: $(PKI_REALMS) $(DEFAULT_REALM)
 
+regenerate-dhparams:
+	@for realm in $$(find . -maxdepth 1 -type d -not -name .) ; do \
+		cd $$realm ; make regenerate-dhparams ; cd - > /dev/null ; \
+	done
+
 snapshot: $(SNAPSHOT_DEST)
 
 restore:
