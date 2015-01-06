@@ -37,7 +37,7 @@
 - name: Prepare the database
   shell: '{{ rails_deploy_env_source }} && bundle exec rake db:schema:load db:seed
            chdir={{ rails_deploy_src }}'
-  when: rails_deploy_database_create and rails_deploy_register_database_created is defined and
+  when: (rails_deploy_database_create and rails_deploy_register_database_created is defined and
         rails_deploy_register_database_created | changed and
         rails_app_database_prepare) and
         inventory_hostname == rails_deploy_hosts_master and
