@@ -10,6 +10,8 @@
     password: '{{ rails_deploy_database_user_password }}'
     encrypted: False
     state: 'present'
+    role_attr_flags: '{{ rails_deploy_database_user_role_attrs }}'
+
   when: rails_deploy_database_adapter == 'postgresql' and
         inventory_hostname == rails_deploy_hosts_master
   sudo_user: '{{ rails_deploy_postgresql_super_username }}'
