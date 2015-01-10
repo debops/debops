@@ -89,22 +89,22 @@ pki_realms:
 
   - source: 'domain'
     destination: 'domain'
-    ca: [ 'RootCA' ]
+    ca: [ 'root/RootCA' ]
     makefile: False
 
   - source: 'hosts/{{ ansible_fqdn }}/domain'
     destination: 'domain'
-    authority: 'domain'
+    authority: 'ca/domain'
     default: '{{ pki_default_domain_certificate }}'
 
   - source: 'hosts/{{ ansible_fqdn }}/host'
     destination: 'host'
-    authority: 'internal'
+    authority: 'ca/internal'
     default: '{{ pki_default_host_certificate }}'
 
 pki_authorities:
 
-  - name: 'RootCA'
+  - name: 'root/RootCA'
     grants: 'ca'
     private_key_size: '{{ pki_rootca_private_key_size }}'
     filename: '{{ pki_rootca_filename }}'
@@ -112,21 +112,21 @@ pki_authorities:
     o: '{{ pki_rootca_o }}'
     cn: '{{ pki_rootca_cn }}'
 
-  - name: 'DomainCA'
+  - name: 'intermediate/DomainCA'
     grants: 'ca'
-    parent: 'RootCA'
+    parent: 'root/RootCA'
     o: '{{ pki_rootca_o }}'
     ou: '{{ pki_organization + " CA" }}'
     cn: '{{ "ca." + ansible_domain }}'
 
-  - name: 'internal'
-    parent: 'DomainCA'
+  - name: 'ca/internal'
+    parent: 'intermediate/DomainCA'
     ou: '{{ pki_organization + " Data Center" }}'
     cn: '{{ "dc." + ansible_domain }}'
 
-  - name: 'domain'
+  - name: 'ca/domain'
     grants: 'server'
-    parent: 'DomainCA'
+    parent: 'intermediate/DomainCA'
     ou: '{{ pki_organizational_unit }}'
     cn: '{{ "dco." + ansible_domain }}'
 
@@ -134,17 +134,17 @@ pki_authorities:
 pki_routes:
 
   - name: 'host_{{ ansible_fqdn }}'
-    authority: 'internal/certs'
+    authority: 'ca/internal/certs'
     realm: 'hosts/{{ ansible_fqdn }}/host/certs'
     file: '{{ ansible_fqdn }}.crt'
 
   - name: 'domain_{{ ansible_fqdn }}'
-    authority: 'domain/certs'
+    authority: 'ca/domain/certs'
     realm: 'hosts/{{ ansible_fqdn }}/domain/certs'
     file: 'wildcard.domain.{{ ansible_fqdn }}.crt'
 
   - name: 'root_ca'
-    authority: 'RootCA'
+    authority: 'root/RootCA'
     realm: 'domain/CA'
     readlink: 'CA.crt'
 
