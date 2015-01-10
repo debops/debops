@@ -51,20 +51,6 @@ commonName			= {{ certificate.cn }}
 {% endif %}
 {% endif %}
 
-[ v3_req ]
-basicConstraints		= critical, CA:FALSE
-keyUsage			= critical, digitalSignature, keyEncipherment
-extendedKeyUsage		= serverAuth, clientAuth
-subjectAltName			= @subject_alt_names
-
-#[ v3_ca ]
-#basicConstraints		= critical, CA:FALSE
-#keyUsage			= critical, digitalSignature, keyEncipherment
-#extendedKeyUsage		= serverAuth, clientAuth
-#subjectKeyIdentifier		= hash
-#authorityKeyIdentifier		= keyid:always,issuer:always
-#subjectAltName			= @subject_alt_names
-
 [ subject_alt_names ]
 {% set pki_tpl_mail = [] %}
 {% if (certificate.default_dn is undefined or (certificate.default_dn is defined and certificate.default_dn)) %}
@@ -100,5 +86,23 @@ URI.{{ loop.index0 }}		= {{ uri_name }}
 IP.{{ loop.index0 }}		= {{ ip_name }}
 {% endfor %}
 {% endif %}
+
+[ v3_req ]
+basicConstraints		= critical, CA:FALSE
+keyUsage			= critical, digitalSignature, keyEncipherment
+extendedKeyUsage		= serverAuth, clientAuth
+{% if (pki_tpl_mail or pki_tpl_dns or
+       (certificate.uri is defined and certificate.uri) or
+       (certificate.ip is defined and certificate.ip)) %}
+subjectAltName			= @subject_alt_names
+{% endif %}
+
+#[ v3_ca ]
+#basicConstraints		= critical, CA:FALSE
+#keyUsage			= critical, digitalSignature, keyEncipherment
+#extendedKeyUsage		= serverAuth, clientAuth
+#subjectKeyIdentifier		= hash
+#authorityKeyIdentifier		= keyid:always,issuer:always
+#subjectAltName			= @subject_alt_names
 
 # vim:ft=dosini
