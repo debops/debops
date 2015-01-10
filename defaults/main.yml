@@ -148,6 +148,15 @@ pki_routes:
     realm: 'domain/CA'
     readlink: 'CA.crt'
 
+  - name: 'host_crl_{{ ansible_fqdn }}'
+    authority: 'ca/internal'
+    realm: 'hosts/{{ ansible_fqdn }}/host/revoked'
+    readlink: 'default.crl'
+
+  - name: 'domain_crl_{{ ansible_fqdn }}'
+    authority: 'ca/domain'
+    realm: 'hosts/{{ ansible_fqdn }}/domain/revoked'
+    readlink: 'default.crl'
 
 pki_certificates:
 

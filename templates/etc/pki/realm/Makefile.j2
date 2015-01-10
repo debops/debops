@@ -13,6 +13,13 @@
 
 PKI_BASE_PATH		= {{ pki_base_path           | default('/etc/pki') }}
 PKI_REALM		= {{ item.destination        | default('host') }}
+{% if item.authority is defined and item.authority %}
+{% for authority in pki_authorities %}
+{% if authority.name == item.authority %}
+PKI_AUTHORITY		= {{ authority.filename      | default(authority.cn) }}
+{% endif %}
+{% endfor %}
+{% endif %}
 
 PKI_REALM_CA_PREFIX	= {{ item.destination        | default('host') + '-' }}
 
@@ -39,7 +46,9 @@ PKI_DEFAULT_CA		= {{ item.default_ca         | default(pki_default_ca         | 
 PKI_DEFAULT_CRT		= {{ item.default_crt        | default('$(subst %,$(PKI_DEFAULT),$(CRT))') }}
 PKI_DEFAULT_KEY		= {{ item.default_key        | default('$(subst %,$(PKI_DEFAULT),$(KEY))') }}
 PKI_DEFAULT_PEM		= {{ item.default_pem        | default('$(subst %,$(PKI_DEFAULT),$(PEM))') }}
-PKI_DEFAULT_CRL		= {{ item.default_crl        | default('$(subst %,$(PKI_DEFAULT),$(CRL))') }}
+{% if item.authority is defined and item.authority %}
+PKI_DEFAULT_CRL		= {{ item.default_crl        | default('$(subst %,$(PKI_AUTHORITY),$(CRL))') }}
+{% endif %}
 
 DIR_PREFIX		= directory-
 SYSTEM_CA_PREFIX	= $(PKI_REALM_CA_PREFIX)

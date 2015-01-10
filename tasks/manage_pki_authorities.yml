@@ -30,6 +30,17 @@
   with_items: pki_authorities
   when: item.name is defined and item.name
 
+- name: Generate certificate revocation scripts (source)
+  template:
+    src: 'secret/pki/authorities/authority/revoke-cert.sh'
+    dest: '{{ pki_base_src + "/authorities/" + item.name + "/revoke-cert.sh" }}'
+    mode: '0755'
+  sudo: False
+  run_once: True
+  delegate_to: 'localhost'
+  with_items: pki_authorities
+  when: item.name is defined and item.name
+
 - name: Generate realm Makefile (source)
   template:
     src: 'secret/pki/authorities/authority/Makefile.j2'
