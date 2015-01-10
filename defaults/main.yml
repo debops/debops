@@ -172,6 +172,7 @@ pki_certificates:
     ou: '{{ pki_organizational_unit }}'
     cn: '{{ ansible_domain }}'
     dns: [ '{{ "*." + ansible_domain }}' ]
+    ip: '{{ (ansible_all_ipv4_addresses + ansible_all_ipv6_addresses | ipaddr("public")) }}'
     filename: 'wildcard.domain.{{ ansible_fqdn }}'
 
 
