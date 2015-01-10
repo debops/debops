@@ -68,9 +68,10 @@ dhcp-option = tag:{{ item.interface }},option:domain-search,{{ dnsmasq_tpl_searc
 dhcp-option = tag:{{ item.interface }},option6:domain-search,{{ dnsmasq_tpl_search | join(",") }}
 {% endif %}
 
+{% if dnsmasq_tpl_ipv6 %}
 # Advertise RDNSS servers for local IPv6 network
 dhcp-option = tag:{{ item.interface }},option6:dns-server,{{ dnsmasq_tpl_ipv6 | ipv6('address') | ipwrap | join(",") }}
-
+{% endif %}
 {% if dnsmasq_tftp is defined and dnsmasq_tftp %}
 
 # ---- TFTP options ----
