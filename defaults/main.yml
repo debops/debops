@@ -85,6 +85,11 @@ pki_default_realm: 'host'
 pki_default_host_certificate: '{{ ansible_fqdn }}'
 pki_default_domain_certificate: '{{ "wildcard.domain." + ansible_fqdn }}'
 
+pki_ca_domain: 'pki.{{ ansible_domain }}'
+
+# This string is used to uniquely bind a certificate to the requesting host
+pki_default_certificate_uri: '{{ "http://" + pki_ca_domain + "/cert/" + (ansible_default_ipv4.macaddress | sha1) }}'
+
 pki_realms:
 
   - source: 'domain'
@@ -165,14 +170,14 @@ pki_certificates:
     ou: '{{ pki_organization + " Data Center" }}'
     cn: '{{ ansible_fqdn }}'
     dns: [ '{{ "*." + ansible_domain }}' ]
-    ip: '{{ (ansible_all_ipv4_addresses + ansible_all_ipv6_addresses | ipaddr("public")) }}'
+    uri: [ '{{ pki_default_certificate_uri }}' ]
 
   - source: '{{ "hosts/" + ansible_fqdn + "/domain" }}'
     destination: 'domain'
     ou: '{{ pki_organizational_unit }}'
     cn: '{{ ansible_domain }}'
     dns: [ '{{ "*." + ansible_domain }}' ]
-    ip: '{{ (ansible_all_ipv4_addresses + ansible_all_ipv6_addresses | ipaddr("public")) }}'
+    uri: [ '{{ pki_default_certificate_uri }}' ]
     filename: 'wildcard.domain.{{ ansible_fqdn }}'
 
 
