@@ -15,7 +15,7 @@
   # tzdata ignores debconf answers when configured non-interactively
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=704089
 - name: Configure timezone in /etc/timezone
-  copy: content='{{ ntp_timezone[0] + "/" + ntp_timezone[1] }}'
+  copy: content='{{ ntp_timezone[0] + "/" + ntp_timezone[1] }}\n'
         dest=/etc/timezone owner=root group=root mode=0644
   register: ntp_etc_timezone
   when: ntp_timezone is defined and ntp_timezone
