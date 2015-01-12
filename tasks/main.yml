@@ -19,12 +19,13 @@
     mode: '{{ pki_public_dir_mode }}'
   when: pki is defined and pki
 
-- name: Create private group if requested
+- name: Create private groups if requested
   group:
-    name: '{{ pki_private_group }}'
-    system: '{{ pki_private_group_system | bool }}'
+    name: '{{ item }}'
+    system: 'true'
     state: 'present'
-  when: ((pki is defined and pki) and pki_private_group_create)
+  with_items: pki_private_groups_present
+  when: ((pki is defined and pki) and pki_private_groups_present)
 
 - name: Check if snapshot file exists on Ansible Controller
   stat:
