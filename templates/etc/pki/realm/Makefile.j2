@@ -40,7 +40,7 @@ PKI_DHPARAMS		= {{ item.dhparams           | default(pki_dhparams           | de
 PKI_DEFAULT_DHE		= {{ item.default_dhe        | default(pki_default_dhe        | default('2048')) }}
 PKI_DEFAULT_DHPARAM	= {{ item.default_dhparam    | default('$(subst %,$(PKI_DEFAULT_DHE),$(DHE))') }}
 
-PKI_DEFAULT		= {{ item.default            | default(pki_default_cn         | default(ansible_fqdn)) }}
+PKI_DEFAULT		= {{ item.default            | default(pki_default_certificate | default(ansible_fqdn)) }}
 PKI_DEFAULT_CA		= {{ item.default_ca         | default(pki_default_ca         | default('/etc/ssl/certs/ca-certificates.crt')) }}
 
 PKI_DEFAULT_CRT		= {{ item.default_crt        | default('$(subst %,$(PKI_DEFAULT),$(CRT))') }}
