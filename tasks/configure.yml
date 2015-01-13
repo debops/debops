@@ -59,30 +59,6 @@
   with_items: [ 'main.cf', 'master.cf' ]
   notify: [ 'Check postfix', 'Reload postfix' ]
 
-- name: Generate Postfix scripts
-  template:
-    src: 'etc/postfix/{{ item }}.j2'
-    dest: '/etc/postfix/{{ item }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  with_items: [ 'postfix-regenerate-dhparams' ]
-
-- name: Generate Postfix DH params
-  command: /etc/postfix/postfix-regenerate-dhparams 40 chdir=/etc/postfix creates=/etc/postfix/dh2048.pem
-  async: 2400
-  poll: 0
-
-- name: Setup DH params regeneration
-  cron:
-    name: 'Regenerate DH params for postfix'
-    minute: '0'
-    hour: '{{ postfix_cron_dhparams_hour | default("0") }}'
-    user: 'root'
-    job: '/etc/postfix/postfix-regenerate-dhparams'
-    cron_file: 'postfix-regenerate-dhparams'
-    state: 'present'
-
 - name: Generate Postfix tables sources
   template:
     src: '{{ item }}'
