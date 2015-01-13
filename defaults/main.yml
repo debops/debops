@@ -28,18 +28,18 @@ nginx_server_names_hash_max_size: 512
 
 nginx_default_keepalive_timeout: 60
 
-# Path to PKI infrastructure, set to False to disable nginx SSL support
-nginx_pki: '/srv/pki'
+# PKI base directory. Set to False to disable SSL/TLS support
+nginx_pki: '{{ ansible_local.pki.base_path | default("/etc/pki") }}'
 
-# SSL key hostname to look for to check if SSL should be enabled
-nginx_pki_check_key: '{{ ansible_fqdn }}'
+# PKI realm to use for nginx
+nginx_pki_realm: '{{ ansible_local.pki.realm | default("system") }}'
 
-# Where to look for certificate by default, choices: 'selfsigned', 'signed', 'wildcard'
-# Server-wide.
-nginx_default_ssl_type: 'selfsigned'
-
-# Default hostname used to select SSL certificate if none is defined
-nginx_default_ssl_cert: '{{ ansible_fqdn }}'
+# Path to default certificate, key and DH parameters file used by all nginx
+# servers if not specified otherwise in server configuration. Relative to
+# 'nginx_pki_realm' variable
+nginx_pki_crt: 'default.crt'
+nginx_pki_key: 'default.key'
+nginx_pki_dhparam: 'dhparam.pem'
 
 # Default SSL cipher list. More information in vars/main.yml
 nginx_default_ssl_ciphers: 'pfs'
@@ -49,16 +49,10 @@ nginx_default_ssl_ciphers: 'pfs'
 # See also: https://security.stackexchange.com/questions/31772/
 nginx_default_ssl_curve: 'secp384r1'
 
-# If wildcard SSL certificate is used, which one should be used by default?
-nginx_default_ssl_wildcard: '{{ ansible_domain }}'
-
 # List od DNS servers used to resolve OCSP stapling. If it's empty, nginx role
 # will try to use nameservers from /etc/resolv.conf
 # Currently only the first nameserver is used
 nginx_ocsp_resolvers: []
-
-# At what hour run DH params regeneration script?
-nginx_cron_dhparams_hour: '1'
 
 # HTTP Strict-Transport-Security
 # https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security
@@ -128,15 +122,11 @@ nginx_server_default:
 # 'item.default_index' is set in the server configuration
 nginx_default_index_html: |
   <html>
-  <head>
-  <title>Welcome to nginx!</title>
-  </head>
-  <body>
-  {% if item.name %}
-  <h1>{{ item.name[0] }} is working!</h1>
-  {% else %}
-  <h1>Your website is working!</h1>
-  {% endif %}
-  </body>
+    <head>
+      <title>Welcome to nginx!</title>
+    </head>
+    <body>
+      <h1>Your website is working!</h1>
+    </body>
   </html>
 
