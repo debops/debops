@@ -1,0 +1,108 @@
+{% set realm = item.0 %}
+{% set certificate = item.1 %}
+# This file is managed remotely, all changes will be lost
+
+HOME				= .
+RANDFILE			= $ENV::HOME/.rnd
+
+default_md			= {{ pki_digest }}
+default_bits			= {{ pki_private_key_size }}
+default_keyfile			= {{ "private/" + (certificate.filename | default(certificate.cn + ".key")) }}
+
+[ req ]
+default_md			= {{ pki_digest }}
+default_bits			= {{ pki_private_key_size }}
+default_keyfile			= {{ "private/" + (certificate.filename | default(certificate.cn + ".key")) }}
+prompt				= no
+encrypt_key			= no
+
+distinguished_name		= req_distinguished_name
+req_extensions			= v3_req
+#x509_extensions			= v3_ca
+
+string_mask			= utf8only
+
+[ req_distinguished_name ]
+{% if (certificate.default_dn is undefined or (certificate.default_dn is defined and certificate.default_dn)) %}
+countryName			= {{ certificate.c  | default(realm.c  | default(pki_country))             }}
+stateOrProvinceName		= {{ certificate.st | default(realm.st | default(pki_state))               }}
+localityName			= {{ certificate.l  | default(realm.l  | default(pki_locality))            }}
+organizationName		= {{ certificate.o  | default(realm.o  | default(pki_organization))        }}
+organizationalUnitName		= {{ certificate.ou | default(realm.ou | default(pki_organizational_unit)) }}
+commonName			= {{ certificate.cn | default(realm.cn | default(pki_common_name))         }}
+{% else %}
+{% if certificate.c is defined and certificate.c %}
+countryName			= {{ certificate.c }}
+{% endif %}
+{% if certificate.st is defined and certificate.st %}
+stateOrProvinceName		= {{ certificate.st }}
+{% endif %}
+{% if certificate.l is defined and certificate.l %}
+localityName			= {{ certificate.l }}
+{% endif %}
+{% if certificate.o is defined and certificate.o %}
+organizationName		= {{ certificate.o }}
+{% endif %}
+{% if certificate.ou is defined and certificate.ou %}
+organizationalUnitName		= {{ certificate.ou }}
+{% endif %}
+{% if certificate.cn is defined and certificate.cn %}
+commonName			= {{ certificate.cn }}
+{% endif %}
+{% endif %}
+
+[ subject_alt_names ]
+{% set pki_tpl_mail = [] %}
+{% if (certificate.default_dn is undefined or (certificate.default_dn is defined and certificate.default_dn)) %}
+{%   set _ = pki_tpl_mail.append(certificate.e | default(realm.e | default(pki_email))) %}
+{% endif %}
+{% if certificate.mail is defined and certificate.mail %}
+{%   set pki_tpl_mail = pki_tpl_mail + certificate.mail %}
+{% endif %}
+{% if pki_tpl_mail is defined and pki_tpl_mail %}
+{% for mail_name in pki_tpl_mail %}
+email.{{ loop.index0 }}		= {{ mail_name }}
+{% endfor %}
+{% endif %}
+{% set pki_tpl_dns = [] %}
+{% if (certificate.default_dn is undefined or (certificate.default_dn is defined and certificate.default_dn)) %}
+{%   set _ = pki_tpl_dns.append(certificate.cn | default(realm.cn | default(pki_common_name))) %}
+{% endif %}
+{% if certificate.dns is defined and certificate.dns %}
+{%   set pki_tpl_dns = pki_tpl_dns + certificate.dns %}
+{% endif %}
+{% if pki_tpl_dns is defined and pki_tpl_dns %}
+{% for dns_name in pki_tpl_dns %}
+DNS.{{ loop.index0 }}		= {{ dns_name }}
+{% endfor %}
+{% endif %}
+{% if certificate.uri is defined and certificate.uri %}
+{% for uri_name in certificate.uri %}
+URI.{{ loop.index0 }}		= {{ uri_name }}
+{% endfor %}
+{% endif %}
+{% if certificate.ip is defined and certificate.ip %}
+{% for ip_name in certificate.ip %}
+IP.{{ loop.index0 }}		= {{ ip_name }}
+{% endfor %}
+{% endif %}
+
+[ v3_req ]
+basicConstraints		= critical, CA:FALSE
+keyUsage			= critical, digitalSignature, keyEncipherment
+extendedKeyUsage		= serverAuth, clientAuth
+{% if (pki_tpl_mail or pki_tpl_dns or
+       (certificate.uri is defined and certificate.uri) or
+       (certificate.ip is defined and certificate.ip)) %}
+subjectAltName			= @subject_alt_names
+{% endif %}
+
+#[ v3_ca ]
+#basicConstraints		= critical, CA:FALSE
+#keyUsage			= critical, digitalSignature, keyEncipherment
+#extendedKeyUsage		= serverAuth, clientAuth
+#subjectKeyIdentifier		= hash
+#authorityKeyIdentifier		= keyid:always,issuer:always
+#subjectAltName			= @subject_alt_names
+
+# vim:ft=dosini

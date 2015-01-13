@@ -1,0 +1,9 @@
+{
+{% if ansible_domain is defined and ansible_domain %}
+"enabled":"{{ pki | lower }}",
+{% else %}
+"enabled":"false",
+{% endif %}
+"base_path":"{{ pki_base_path | default('/etc/pki') }}",
+"realm":"{{ pki_default_realm | default('host') }}"
+}

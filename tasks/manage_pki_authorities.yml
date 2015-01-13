@@ -1,0 +1,63 @@
+---
+
+- name: Create source directories (database)
+  file:
+    path: '{{ pki_base_src + "/authorities/" + item.name + "/.db" }}'
+    state: 'directory'
+  sudo: False
+  delegate_to: 'localhost'
+  run_once: True
+  with_items: pki_authorities
+  when: item.name is defined and item.name
+
+- name: Generate make.sh script (source)
+  template:
+    src: 'secret/pki/make.sh.j2'
+    dest: '{{ pki_base_src + "/make.sh" }}'
+    mode: '0755'
+  sudo: False
+  run_once: True
+  delegate_to: 'localhost'
+
+- name: Generate realm configuration file
+  template:
+    src: 'secret/pki/authorities/authority/{{ pki_library }}.cnf.j2'
+    dest: '{{ pki_base_src + "/authorities/" + item.name + "/.db/" + pki_library + ".cnf" }}'
+    mode: '{{ pki_public_mode }}'
+  sudo: False
+  run_once: True
+  delegate_to: 'localhost'
+  with_items: pki_authorities
+  when: item.name is defined and item.name
+
+- name: Generate certificate revocation scripts (source)
+  template:
+    src: 'secret/pki/authorities/authority/revoke-cert.sh'
+    dest: '{{ pki_base_src + "/authorities/" + item.name + "/revoke-cert.sh" }}'
+    mode: '0755'
+  sudo: False
+  run_once: True
+  delegate_to: 'localhost'
+  with_items: pki_authorities
+  when: item.name is defined and item.name
+
+- name: Generate realm Makefile (source)
+  template:
+    src: 'secret/pki/authorities/authority/Makefile.j2'
+    dest: '{{ pki_base_src + "/authorities/" + item.name + "/Makefile" }}'
+  sudo: False
+  run_once: True
+  delegate_to: 'localhost'
+  with_items: pki_authorities
+  when: item.name is defined and item.name
+
+- name: Execute source Makefiles
+  environment:
+    LANG: 'C'
+  command: ./make.sh chdir={{ pki_base_src }}
+  sudo: False
+  run_once: True
+  delegate_to: 'localhost'
+  register: pki_register_make
+  changed_when: pki_register_make.stdout is defined and pki_register_make.stdout
+
