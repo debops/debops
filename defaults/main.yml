@@ -8,7 +8,7 @@ boxbackup_server: '{{ hostvars[groups.debops_boxbackup[0]]["ansible_fqdn"] }}'
 boxbackup_allow: []
 
 # Directory where boxbackup-server is storing backups
-boxbackup_storage: '/srv/boxbackup'
+boxbackup_storage: '/var/local/boxbackup'
 
 # boxbackup-server is listening on this IP address (all interfaces by default)
 boxbackup_listenAddresses: '0.0.0.0'
@@ -17,8 +17,7 @@ boxbackup_listenAddresses: '0.0.0.0'
 boxbackup_verbose: 'no'
 
 # 32-bit hexadecimal number representing the boxbackup-client account on the server
-# By default it is computed automatically as: 'ansible_fqdn | sha1sum | cut -c1-8'
-boxbackup_account: ""
+boxbackup_account: '{{ (ansible_fqdn | sha1)[:8] }}'
 
 # Soft limit for storage space in megabytes, by default it's calculated as
 # total disk space of a given host. When used space is bigger than this,
