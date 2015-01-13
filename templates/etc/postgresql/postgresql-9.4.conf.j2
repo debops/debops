@@ -92,9 +92,9 @@ ssl_ecdh_curve = {{ item.ssl_ecdh_curve | default('prime256v1') }}
 
 ssl_renegotiation_limit = {{ item.ssl_renegotiation_limit | default('512MB') }}{#	# amount of data between renegotiations #}
 
-ssl_cert_file = '{{ item.ssl_cert_file | default(postgresql_default_ssl_crt) }}'
-ssl_key_file = '{{ item.ssl_key_file | default(postgresql_default_ssl_key) }}'
-#ssl_ca_file = ''
+ssl_cert_file = '{{ postgresql_pki_path + "/" + (item.pki_realm | default(postgresql_pki_realm)) + "/" + (item.ssl_cert_file | default(postgresql_pki_crt)) }}'
+ssl_key_file = '{{ postgresql_pki_path + "/" + (item.pki_realm | default(postgresql_pki_realm)) + "/" + (item.ssl_key_file | default(postgresql_pki_key)) }}'
+ssl_ca_file = '{{ postgresql_pki_path + "/" + (item.pki_realm | default(postgresql_pki_realm)) + "/" + (item.ssl_ca_file | default(postgresql_pki_ca)) }}'
 #ssl_crl_file = ''
 
 password_encryption = {{ item.password_encryption | default('on') }}
