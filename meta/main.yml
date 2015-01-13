@@ -8,7 +8,7 @@ dependencies:
 
 galaxy_info:
   author: 'Maciej Delmanowski'
-  description: 'Manage OpenSSL certificates'
+  description: 'Bootstrap and manage internal PKI, Certificate Authorities and OpenSSL/GnuTLS certificates'
   company: 'DebOps'
   license: 'GNU General Public License v3'
   min_ansible_version: '1.7.0'
@@ -25,8 +25,8 @@ galaxy_info:
     - wheezy
     - jessie
   categories:
-  - development
   - packaging
+  - security
   - system
 
 ansigenome_info:
@@ -46,19 +46,14 @@ ansigenome_info:
       github: 'drybjed'
 
   synopsis: |
-    This role is meant to be a simple SSL certificate manager which:
+    This role will bootstrap and manage fully-fledged Public Key Infrastructure
+    entirely within Ansible. You can create Certificate Authorities
+    (stand-alone as well as chained together) which in turn can automatically
+    sign incoming Certificate Requests and provide you with fully-functional
+    OpenSSL or GnuTLS certificates for your entire infrastructure, for free.
     
-    * creates self-signed certificate for a host, along with a CSR;
-    
-    * uploads the CSR for its certificate to Ansible Controller for easy
-      signing by a CA;
-    
-    * downloads signed certificate from Ansible Controller when it becomes
-      available;
-    
-    * downloads custom CA or wildcard certificates provided to the role by
-      administrator in a specifc directory on Ansible Controller;
-    
-    `debops.pki` role is planned to be rewritten to support automatic CA
-    signing and custom certificates for clients/applications.
+    `debops.pki` can also be used to easily distribute private keys and
+    certificates signed by an external CA to your hosts in an easy and
+    convenient way. Role will automatically create a set of symlinks to make
+    use of the certificates within your applications easy and intuitive.
 

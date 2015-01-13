@@ -2,21 +2,16 @@
 
 [![Travis CI](http://img.shields.io/travis/debops/ansible-pki.svg?style=flat)](http://travis-ci.org/debops/ansible-pki) [![test-suite](http://img.shields.io/badge/test--suite-ansible--pki-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-pki/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.pki-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1588)
 
-This role is meant to be a simple SSL certificate manager which:
+This role will bootstrap and manage fully-fledged Public Key Infrastructure
+entirely within Ansible. You can create Certificate Authorities
+(stand-alone as well as chained together) which in turn can automatically
+sign incoming Certificate Requests and provide you with fully-functional
+OpenSSL or GnuTLS certificates for your entire infrastructure, for free.
 
-* creates self-signed certificate for a host, along with a CSR;
-
-* uploads the CSR for its certificate to Ansible Controller for easy
-  signing by a CA;
-
-* downloads signed certificate from Ansible Controller when it becomes
-  available;
-
-* downloads custom CA or wildcard certificates provided to the role by
-  administrator in a specifc directory on Ansible Controller;
-
-`debops.pki` role is planned to be rewritten to support automatic CA
-signing and custom certificates for clients/applications.
+`debops.pki` can also be used to easily distribute private keys and
+certificates signed by an external CA to your hosts in an easy and
+convenient way. Role will automatically create a set of symlinks to make
+use of the certificates within your applications easy and intuitive.
 
 ### Installation
 
