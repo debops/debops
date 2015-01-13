@@ -3,16 +3,6 @@
 - name: Install Box Backup client package
   apt: pkg=boxbackup-client state=latest install_recommends=no
 
-- name: Generate boxbackup account number for client hosts
-  shell: "echo {{ ansible_fqdn }} | sha1sum | cut -c1-8"
-  register: boxbackup_computed_account
-  changed_when: False
-
-- name: Set boxbackup account number if not defined
-  set_fact:
-    boxbackup_account: '{{ boxbackup_computed_account.stdout }}'
-  when: (boxbackup_account is undefined or not boxbackup_account)
-
 - name: Set backup softlimit size for client hosts
   set_fact:
     boxbackup_softlimit: '{{ (ansible_mounts|sum(attribute="size_total")/1024/1024 + boxbackup_softlimit_padding)|int }}'
@@ -32,41 +22,22 @@
   file: path={{ item }} state=directory owner=root group=root mode=0700
   with_items: [ '/etc/boxbackup', '/etc/boxbackup/bbackupd', '/etc/boxbackup/servers/{{ boxbackup_server }}' ]
 
-- name: Create client private key
-  command: openssl genrsa -out /etc/boxbackup/bbackupd/{{ boxbackup_account }}-key.pem {{ boxbackup_transfer_bits }}
-           creates=/etc/boxbackup/bbackupd/{{ boxbackup_account }}-key.pem
+- name: Check if encryption key exists on Ansible Controller
+  stat:
+    path: '{{ secret + "/storage/boxbackup/clients/" + ansible_fqdn + "/" + boxbackup_account + "-FileEncKeys.raw" }}'
+  register: boxbackup_register_enckeys
+  delegate_to: 'localhost'
+  sudo: False
 
-- name: Create client certificate request
-  command: openssl req -batch -new -sha1 -subj "/CN=BACKUP-{{ boxbackup_account }}"
-           -key /etc/boxbackup/bbackupd/{{ boxbackup_account }}-key.pem
-           -out /etc/boxbackup/servers/{{ boxbackup_server }}/{{ boxbackup_account }}-csr.pem
-           creates=/etc/boxbackup/servers/{{ boxbackup_server }}/{{ boxbackup_account }}-csr.pem
-
-- name: Upload client certificate request
-  fetch: src=/etc/boxbackup/servers/{{ boxbackup_server }}/{{ boxbackup_account }}-csr.pem flat=yes
-         dest={{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/clients/{{ boxbackup_account }}-csr.pem
-
-- name: Sign client certificate
-  local_action: command openssl x509 -req -sha1 -extensions user_crt -CAcreateserial -days {{ boxbackup_ssl_sign }}
-                -CA {{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/roots/clientCA.pem
-                -CAkey {{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/keys/clientRootKey.pem
-                -CAserial {{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/roots/clientCA.srl
-                -in {{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/clients/{{ boxbackup_account }}-csr.pem
-                -out {{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/clients/{{ boxbackup_account }}-cert.pem
-                creates={{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/clients/{{ boxbackup_account }}-cert.pem
-  sudo: no
-
-- name: Download client certificate
-  copy: src={{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/clients/{{ boxbackup_account }}-cert.pem
-        dest=/etc/boxbackup/servers/{{ boxbackup_server }}/{{ boxbackup_account }}-cert.pem owner=root group=root mode=0600
-  notify:
-    - Restart boxbackup-client
-
-- name: Download server Root CA certificate
-  copy: src={{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca/roots/serverCA.pem
-        dest=/etc/boxbackup/servers/{{ boxbackup_server }}/serverCA.pem owner=root group=root mode=0600
-  notify:
-    - Restart boxbackup-client
+- name: Download BoxBackup encryption key from archive
+  copy:
+    src: '{{ secret + "/storage/boxbackup/clients/" + ansible_fqdn + "/" + boxbackup_account + "-FileEncKeys.raw" }}'
+    dest: '/etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  when: boxbackup_register_enckeys.stat.exists
+  notify: [ 'Restart boxbackup-client' ]
 
 - name: Create encryption key on client hosts
   command: openssl rand -out /etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw {{ boxbackup_encrypt_bits }}
