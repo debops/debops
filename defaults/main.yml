@@ -97,6 +97,11 @@ pki_default_certificate: '{{ ansible_fqdn }}'
 # as well as symlinked to '/etc/pki/system/')
 pki_default_realm: 'host'
 
+# By default files from all realms are sent to all remote hosts. To prevent
+# access to a realm for a particular host, add the realm name to this list to
+# prevent it being sent to the server
+pki_realm_blacklist: []
+
 # Certificate name to symlink as 'default.*' in PKI 'host' realm
 pki_default_host_certificate: '{{ ansible_fqdn }}'
 
@@ -137,21 +142,24 @@ pki_realms:
     # external entity might have access to private keys, and you want to prevent
     # them access to your wildcard certificates, you might want to disable this
     # realm on a particular host.
-  - source: 'domain'
+  - name: 'domain'
+    source: 'domain'
     destination: 'domain'
     ca: [ 'root/RootCA' ]
     makefile: False
 
     # This realm can be used to manage wildcard certificates per host, instead of
     # globally. It by default provides a wildcard certificate for your domain.
-  - source: 'hosts/{{ ansible_fqdn }}/domain'
+  - name: 'host-domain'
+    source: 'hosts/{{ ansible_fqdn }}/domain'
     destination: 'domain'
     authority: 'ca/domain'
     default: '{{ pki_default_domain_certificate }}'
 
     # This realm can be used to manage host-based certificates, a certificate
     # for your host will be automatically generated.
-  - source: 'hosts/{{ ansible_fqdn }}/host'
+  - name: 'host-internal'
+    source: 'hosts/{{ ansible_fqdn }}/host'
     destination: 'host'
     authority: 'ca/internal'
     default: '{{ pki_default_host_certificate }}'

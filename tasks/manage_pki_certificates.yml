@@ -53,7 +53,7 @@
     - pki_realms
     - [ 'private' ]
   when: (item.0.source is defined and (item.0.destination is defined and item.0.destination) and
-         (item.1 is defined and item.1))
+         (item.1 is defined and item.1) and (item.0.name is undefined or item.0.name not in pki_realm_blacklist))
 
 - name: Download public files
   copy:
@@ -65,7 +65,8 @@
   with_nested:
     - pki_realms
     - [ 'CA', 'revoked', 'certs' ]
-  when: (item.0.source is defined and (item.0.destination is defined and item.0.destination))
+  when: (item.0.source is defined and (item.0.destination is defined and item.0.destination) and
+        (item.0.name is undefined or item.0.name not in pki_realm_blacklist))
 
 - name: Execute PKI Makefiles
   environment:
