@@ -29,10 +29,10 @@ nginx_server_names_hash_max_size: 512
 nginx_default_keepalive_timeout: 60
 
 # PKI base directory. Set to False to disable SSL/TLS support
-nginx_pki: '{{ ansible_local.pki.base_path | default("/etc/pki") }}'
+nginx_pki: '{% if ansible_local.pki is defined %}{{ ansible_local.pki.base_path }}{% else %}/etc/pki{% endif %}'
 
 # PKI realm to use for nginx
-nginx_pki_realm: '{{ ansible_local.pki.realm | default("system") }}'
+nginx_pki_realm: '{% if ansible_local.pki is defined %}{{ ansible_local.pki.realm }}{% else %}system{% endif %}'
 
 # Path to default certificate, key and DH parameters file used by all nginx
 # servers if not specified otherwise in server configuration. Relative to
