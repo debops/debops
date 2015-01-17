@@ -11,6 +11,18 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-01-18
+^^^^^^^^^^
+
+Playbook updates
+****************
+
+``common.yml`` playbook gained new tasks which can be used to set hostname and
+domain on a given host. You can define ``fqdn_hostname`` or ``fqdn_domain``
+variables in inventory and Ansible will try to enforce these settings on
+a given host as well as in ``/etc/hosts``. This functionality makes the
+``tools/fqdn.yml`` playbook redundant, so it's removed.
+
 2015-01-13
 ^^^^^^^^^^
 
