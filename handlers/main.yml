@@ -1,6 +1,15 @@
 ---
 
 - name: Restart gitlab
-  service: name=gitlab state=restarted
-  when: gitlab_status_ce_installed is defined and gitlab_status_ce_installed
+  service:
+    name: 'gitlab'
+    state: 'restarted'
+  notify: [ 'Deactivate GitLab deploy.html page' ]
+  when: (ansible_local is defined and ansible_local.gitlab is defined and
+         ansible_local.gitlab.installed)
+
+- name: Deactivate GitLab deploy.html page
+  file:
+    path: '{{ gitlab_ce_git_checkout + "/public/index.html" }}'
+    state: 'absent'
 

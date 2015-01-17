@@ -3,61 +3,83 @@
 # ---- git clone && git checkout ----
 
 - name: Clone GitLab CE source code
-  git: repo={{ gitlab_source_address + gitlab_source_repository.ce }}
-       dest={{ gitlab_sources + '/' + gitlab_source_repository.ce }}
-       version={{ gitlab_version_map[gitlab_version].ce }}
-       bare=yes update=yes
+  git:
+    repo: '{{ gitlab_ce_git_repo }}'
+    dest: '{{ gitlab_ce_git_dest }}'
+    bare: True
+    update: True
   sudo_user: '{{ gitlab_user }}'
   register: gitlab_register_ce_source
 
-- name: Fail if source changed but auto upgrade is disabled
-  fail: msg="GitLab CE source has changed but auto upgrade is disabled"
-  when: (gitlab_status_ce_installed is defined and gitlab_status_ce_installed) and
-        (gitlab_register_ce_source is defined and gitlab_register_ce_source.changed == True) and
-        (gitlab_auto_upgrade is undefined or (gitlab_auto_ugrade is defined and not gitlab_auto_upgrade))
-
-- name: Check if GitLab is checked out
-  stat: path={{ gitlab_home }}/gitlab
+- name: Check if GitLab CE is checked out
+  stat:
+    path: '{{ gitlab_ce_git_checkout }}'
   register: gitlab_register_ce_directory
 
-- name: Create GitLab directory
-  file: path={{ gitlab_home }}/gitlab state=directory
-        owner={{ gitlab_user }} group={{ gitlab_group }} mode=0755
-  when: (gitlab_register_ce_source is defined and gitlab_register_ce_source.changed == True) or
-        (gitlab_register_ce_directory is defined and gitlab_register_ce_directory.stat.exists == False)
+- name: Create GitLab CE checkout directory
+  file:
+    path: '{{ gitlab_ce_git_checkout }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0755'
 
-- name: Prepare GitLab worktree
-  template: src=srv/users/git/gitlab/git.j2 dest={{ gitlab_home }}/gitlab/.git
-            owner={{ gitlab_user }} group={{ gitlab_group }} mode=0644
-  when: (gitlab_register_ce_source is defined and gitlab_register_ce_source.changed == True) or
-        (gitlab_register_ce_directory is defined and gitlab_register_ce_directory.stat.exists == False)
+- name: Prepare GitLab CE worktree
+  copy:
+    content: 'gitdir: {{ gitlab_ce_git_dest }}'
+    dest: '{{ gitlab_ce_git_checkout + "/.git" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
+
+- name: Get commit hash of target checkout
+  shell: GIT_WORK_TREE={{ gitlab_ce_git_checkout }} git rev-parse {{ gitlab_version_map[gitlab_version].ce }}
+         chdir={{ gitlab_ce_git_dest }}
+  sudo_user: '{{ gitlab_user }}'
+  register: gitlab_register_ce_target_branch
+  changed_when: gitlab_register_ce_target_branch.stdout != gitlab_register_ce_source.before
 
 - include: gitlab_ce_pre_upgrade.yml
-  when: (gitlab_status_ce_installed is defined and gitlab_status_ce_installed) and
-        ((gitlab_status_ce_upgrade is defined and gitlab_status_ce_upgrade) or
-        (gitlab_register_ce_source is defined and gitlab_register_ce_source.changed == True))
+  when: ((ansible_local is defined and ansible_local.gitlab is defined and
+          ansible_local.gitlab.installed is defined and ansible_local.gitlab.installed) and
+         ((gitlab_register_ce_target_branch.stdout != gitlab_register_ce_source.before) or
+         (ansible_local.gitlab.version is defined and ansible_local.gitlab.version != gitlab_version)))
 
 - name: Checkout GitLab CE
-  shell: GIT_WORK_TREE={{ gitlab_home }}/gitlab git checkout -f {{ gitlab_version_map[gitlab_version].ce }}
-         chdir={{ gitlab_sources + '/' + gitlab_source_repository.ce }}
+  shell: GIT_WORK_TREE={{ gitlab_ce_git_checkout }} git checkout -f {{ gitlab_version_map[gitlab_version].ce }}
+         chdir={{ gitlab_ce_git_dest }}
   sudo_user: '{{ gitlab_user }}'
   register: gitlab_register_ce_checkout
-  when: (gitlab_register_ce_source is defined and gitlab_register_ce_source.changed == True) or
-        (gitlab_register_ce_directory is defined and gitlab_register_ce_directory.stat.exists == False) or
-        (gitlab_status_ce_upgrade is defined and gitlab_status_ce_upgrade)
+  when: (gitlab_register_ce_source.before is undefined or
+         (gitlab_register_ce_source.before is defined and
+          gitlab_register_ce_target_branch.stdout is defined and
+          gitlab_register_ce_source.before != gitlab_register_ce_target_branch.stdout))
 
-- name: Manage other GitLab directories
-  file: path={{ item }} state=directory owner={{ gitlab_user }} group={{ gitlab_group }} mode=0755
-  with_items: [ '{{ gitlab_home }}/gitlab/tmp', '{{ gitlab_home }}/gitlab/log',
-                '{{ gitlab_home }}/gitlab/tmp/pids', '{{ gitlab_home }}/gitlab/tmp/sockets',
-                '{{ gitlab_home }}/gitlab/public/uploads', '{{ gitlab_home }}/backups' ]
+- name: Manage other GitLab CE directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0755'
+  with_items: [ '{{ gitlab_ce_git_checkout + "/tmp" }}',
+                '{{ gitlab_ce_git_checkout + "/log" }}',
+                '{{ gitlab_ce_git_checkout + "/tmp/pids" }}',
+                '{{ gitlab_ce_git_checkout + "/tmp/sockets" }}',
+                '{{ gitlab_ce_git_checkout + "/public/uploads" }}' ]
 
 - name: Manage secure GitLab directories
-  file: path={{ item }} state=directory owner={{ gitlab_user }} group={{ gitlab_group }} mode=0750
-  with_items: [ '{{ gitlab_home }}/gitlab-satellites' ]
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0750'
+  with_items: [ '{{ gitlab_home + "/backups" }}',
+                '{{ gitlab_home + "/gitlab-satellites" }}' ]
 
 
-# ---- gitlab/config/database.yml ----
+# ---- Database configuration ----
 
 - name: Set default database password
   set_fact:
@@ -68,28 +90,19 @@
     gitlab_database_password: '{{ lookup("password",secret + "/credentials/" + ansible_fqdn + "/mysql/" + gitlab_database_config[gitlab_database].username + "/password") }}'
   when: (secret is defined and secret) and (gitlab_database is defined and gitlab_database and gitlab_database == 'mysql')
 
-- name: Check GitLab CE database configuration for changes
-  shell: sha1sum {{ gitlab_home }}/gitlab/config/database.yml.{{ gitlab_database }} | cut -d" " -f1
-  register: gitlab_register_ce_database_checksum
-  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True
-
-- name: Fail if GitLab CE database configuration changed
-  fail: msg="GitLab CE database configuration changed, check it and update checksums"
-  when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) and
-        (gitlab_register_ce_database_checksum.stdout != gitlab_checksums.ce[gitlab_version_map[gitlab_version].ce].database[gitlab_database])
-
 - name: Get PostgreSQL database password
   set_fact:
     gitlab_postgresql_database_password: '{{ lookup("password",secret + "/credentials/" + ansible_fqdn + "/gitlab/postgresql/" + gitlab_database_config[gitlab_database].username + "/password") }}'
   when: (secret is defined and secret) and (gitlab_database is defined and gitlab_database and gitlab_database == 'postgresql')
 
-- name: Configure GitLab CE database configuration
-  template: src=srv/users/git/gitlab/{{ gitlab_config_map[gitlab_version].ce }}/config/database.{{ gitlab_database }}.yml.j2
-            dest={{ gitlab_home }}/gitlab/config/database.yml
-            owner={{ gitlab_user }} group={{ gitlab_group }} mode=0644
+- name: Configure GitLab CE database
+  template:
+    src: 'srv/users/git/gitlab/config/database.{{ gitlab_database }}.yml.j2'
+    dest: '{{ gitlab_ce_git_checkout + "/config/database.yml" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0600'
   notify: [ 'Restart gitlab' ]
-  when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) or
-        (gitlab_status_ce_installed is defined and gitlab_status_ce_installed)
 
 - name: Create PostgreSQL role if PostgreSQL enabled
   postgresql_user: name='{{ gitlab_database_config[gitlab_database].username }}'
@@ -108,28 +121,16 @@
   when: gitlab_database is defined and gitlab_database == 'postgresql'
 
 
-# ---- gitlab/config/gitlab.yml ----
+# ---- Application configuration ----
 
-- name: Check GitLab CE main configuration for changes
-  shell: sha1sum {{ gitlab_home }}/gitlab/config/gitlab.yml.example | cut -d" " -f1
-  register: gitlab_register_ce_gitlab_checksum
-  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True
-
-- name: Fail if GitLab CE main configuration changed
-  fail: msg="GitLab CE main configuration changed, check it and update checksums"
-  when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) and
-        (gitlab_register_ce_gitlab_checksum.stdout != gitlab_checksums.ce[gitlab_version_map[gitlab_version].ce].gitlab)
-
-- name: Configure GitLab CE main configuration
-  template: src=srv/users/git/gitlab/{{ gitlab_config_map[gitlab_version].ce }}/config/gitlab.yml.j2
-            dest={{ gitlab_home }}/gitlab/config/gitlab.yml
-            owner={{ gitlab_user }} group={{ gitlab_group }} mode=0600
+- name: Setup GitLab CE main configuration
+  template:
+    src: 'srv/users/git/gitlab/config/gitlab.yml.j2'
+    dest: '{{ gitlab_ce_git_checkout + "/config/gitlab.yml" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0600'
   notify: [ 'Restart gitlab' ]
-  when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) or
-        (gitlab_status_ce_installed is defined and gitlab_status_ce_installed)
-
-
-# ---- gitlab/config/resque.yml ----
 
 - name: Configure custom redis server
   lineinfile:
@@ -141,102 +142,48 @@
     backup: False
   notify: [ 'Restart gitlab' ]
 
-
-# ---- gitlab/config/unicorn.rb ----
-
-- name: Check GitLab CE unicorn configuration for changes
-  shell: sha1sum {{ gitlab_home }}/gitlab/config/unicorn.rb.example | cut -d" " -f1
-  register: gitlab_register_ce_unicorn_checksum
-  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True
-
-- name: Fail if GitLab CE unicorn configuration changed
-  fail: msg="GitLab CE unicorn configuration changed, check it and update checksums"
-  when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) and
-        (gitlab_register_ce_unicorn_checksum.stdout != gitlab_checksums.ce[gitlab_version_map[gitlab_version].ce].unicorn)
-
-- name: Configure GitLab CE unicorn configuration
-  template: src=srv/users/git/gitlab/{{ gitlab_config_map[gitlab_version].ce }}/config/unicorn.rb.j2
-            dest={{ gitlab_home }}/gitlab/config/unicorn.rb
-            owner={{ gitlab_user }} group={{ gitlab_group }} mode=0644
+- name: Setup GitLab CE unicorn configuration
+  template:
+    src: 'srv/users/git/gitlab/config/unicorn.rb.j2'
+    dest: '{{ gitlab_ce_git_checkout + "/config/unicorn.rb" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
   notify: [ 'Restart gitlab' ]
-  when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) or
-        (gitlab_status_ce_installed is defined and gitlab_status_ce_installed)
 
-
-# ---- gitlab/config/initializers/rack_attack.rb ----
-
-- name: Check GitLab CE rack_attack configuration for changes
-  shell: sha1sum {{ gitlab_home }}/gitlab/config/initializers/rack_attack.rb.example | cut -d" " -f1
-  register: gitlab_register_ce_rack_attack_checksum
-  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True
-
-- name: Fail if GitLab CE rack_attack configuration changed
-  fail: msg="GitLab CE rack_attack configuration changed, check it and update checksums"
-  when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) and
-        (gitlab_register_ce_rack_attack_checksum.stdout != gitlab_checksums.ce[gitlab_version_map[gitlab_version].ce].rack_attack)
-
-- name: Configure GitLab CE rack_attack configuration
-  template: src=srv/users/git/gitlab/{{ gitlab_config_map[gitlab_version].ce }}/config/initializers/rack_attack.rb.j2
-            dest={{ gitlab_home }}/gitlab/config/initializers/rack_attack.rb
-            owner={{ gitlab_user }} group={{ gitlab_group }} mode=0644
+- name: Setup GitLab CE rack_attack configuration
+  template:
+    src: 'srv/users/git/gitlab/config/initializers/rack_attack.rb.j2'
+    dest: '{{ gitlab_ce_git_checkout + "/config/initializers/rack_attack.rb" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
   notify: [ 'Restart gitlab' ]
-  when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) or
-        (gitlab_status_ce_installed is defined and gitlab_status_ce_installed)
 
-
-# ---- /etc/default/gitlab ----
-
-- name: Check GitLab CE default configuration for changes
-  shell: sha1sum {{ gitlab_home }}/gitlab/lib/support/init.d/gitlab.default.example | cut -d" " -f1
-  register: gitlab_register_ce_default_checksum
-  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True
-
-- name: Fail if GitLab CE default configuration changed
-  fail: msg="GitLab CE /etc/default/gitlab configuration changed, check it and update checksums"
-  when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) and
-        (gitlab_register_ce_default_checksum.stdout != gitlab_checksums.ce[gitlab_version_map[gitlab_version].ce].default)
-
-- name: Configure GitLab CE default configuration
-  template: src=etc/default/{{ gitlab_config_map[gitlab_version].ce }}/gitlab.j2
-            dest=/etc/default/gitlab
-            owner=root group=root mode=0644
+- name: Setup GitLab CE default variables
+  template:
+    src: 'etc/default/gitlab.j2'
+    dest: '/etc/default/gitlab'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   notify: [ 'Restart gitlab' ]
-  when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) or
-        (gitlab_status_ce_installed is defined and gitlab_status_ce_installed)
-
-
-# ---- /etc/init.d/gitlab ----
 
 - name: Install GitLab service script
-  shell: cp -f {{ gitlab_home }}/gitlab/lib/support/init.d/gitlab /etc/init.d/gitlab
-  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True
+  shell: cp -f {{ gitlab_ce_git_checkout + "/lib/support/init.d/gitlab" }} /etc/init.d/gitlab
+  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed
 
 - name: Enable GitLab service
-  shell: update-rc.d gitlab defaults 21 creates=/etc/rc2.d/S03gitlab
-  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True
+  shell: insserv gitlab
+  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed
 
-
-# ---- /etc/logrotate.d/gitlab ----
-
-- name: Check GitLab CE logrotate configuration for changes
-  shell: sha1sum {{ gitlab_home }}/gitlab/lib/support/logrotate/gitlab | cut -d" " -f1
-  register: gitlab_register_ce_logrotate_checksum
-  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True
-
-- name: Fail if GitLab CE logrotate configuration changed
-  fail: msg="GitLab CE /etc/logrotate.d/gitlab configuration changed, check it and update checksums"
-  when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) and
-        (gitlab_register_ce_logrotate_checksum.stdout != gitlab_checksums.ce[gitlab_version_map[gitlab_version].ce].logrotate)
-
-- name: Configure GitLab CE logrotate configuration
-  template: src=etc/logrotate.d/{{ gitlab_config_map[gitlab_version].ce }}/gitlab.j2
-            dest=/etc/logrotate.d/gitlab
-            owner=root group=root mode=0644
-  when: (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True) or
-        (gitlab_status_ce_installed is defined and gitlab_status_ce_installed)
-
-
-# ---- /etc/services.d/50_gitlab ----
+- name: Setup GitLab CE logrotate configuration
+  template:
+    src: 'etc/logrotate.d/gitlab.j2'
+    dest: '/etc/logrotate.d/gitlab'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 - name: Reserve Unicorn port for GitLab
   template: src=etc/services.d/50_gitlab.j2 dest=/etc/services.d/50_gitlab
@@ -244,57 +191,66 @@
   notify: [ 'Assemble services.d' ]
 
 
-# ---- Setup ----
+# ---- GitLab installation / upgrade ----
 
 - name: Update Ruby gems
   shell: bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab_database] }}
-         chdir={{ gitlab_home }}/gitlab
+         chdir={{ gitlab_ce_git_checkout }}
   sudo_user: '{{ gitlab_user }}'
-  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True
+  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed
 
 - name: Initialize GitLab database
   shell: yes 'yes' | bundle exec rake gitlab:setup RAILS_ENV=production
-         chdir={{ gitlab_home }}/gitlab
+         chdir={{ gitlab_ce_git_checkout }}
   sudo_user: '{{ gitlab_user }}'
   register: gitlab_register_bundle_setup
-  when: gitlab_status_ce_installed is undefined and
-        gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True
+  when: ((ansible_local is undefined or (ansible_local is defined and
+          (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
+           (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
+            not ansible_local.gitlab.installed)))))) and
+         gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed)
 
 - name: Migrate GitLab database
   shell: bundle exec rake db:migrate RAILS_ENV=production
-         chdir={{ gitlab_home }}/gitlab
+         chdir={{ gitlab_ce_git_checkout }}
   sudo_user: '{{ gitlab_user }}'
   register: gitlab_register_bundle_migrate
-  when: gitlab_status_ce_installed is defined and gitlab_status_ce_installed and
-        gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed == True
+  notify: [ 'Restart gitlab' ]
+  when: ((ansible_local is defined and ansible_local.gitlab is defined and
+          ansible_local.gitlab.installed) and
+         gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed)
 
 - name: Clean GitLab assets
   shell: bundle exec rake assets:clean RAILS_ENV=production
-         chdir={{ gitlab_home }}/gitlab
+         chdir={{ gitlab_ce_git_checkout }}
   sudo_user: '{{ gitlab_user }}'
-  when: (gitlab_register_bundle_migrate is defined and gitlab_register_bundle_migrate.changed == True) and
-        (gitlab_status_ce_installed is defined and gitlab_status_ce_installed)
+  when: ((ansible_local is defined and ansible_local.gitlab is defined and
+          ansible_local.gitlab.installed) and
+         gitlab_register_bundle_migrate is defined and gitlab_register_bundle_migrate.changed)
 
 - name: Precompile GitLab assets
   shell: bundle exec rake assets:precompile RAILS_ENV=production
-         chdir={{ gitlab_home }}/gitlab
+         chdir={{ gitlab_ce_git_checkout }}
   sudo_user: '{{ gitlab_user }}'
   notify: [ 'Restart gitlab' ]
-  when: (gitlab_register_bundle_setup is defined and gitlab_register_bundle_setup.changed == True) or
-        (gitlab_register_bundle_migrate is defined and gitlab_register_bundle_migrate.changed == True)
+  when: (gitlab_register_bundle_setup is defined and gitlab_register_bundle_setup.changed) or
+        (gitlab_register_bundle_migrate is defined and gitlab_register_bundle_migrate.changed)
 
 - name: Clear GitLab cache
   shell: bundle exec rake cache:clear RAILS_ENV=production
-         chdir={{ gitlab_home }}/gitlab
+         chdir={{ gitlab_ce_git_checkout }}
   sudo_user: '{{ gitlab_user }}'
-  when: (gitlab_register_bundle_migrate is defined and gitlab_register_bundle_migrate.changed == True) and
-        (gitlab_status_ce_installed is defined and gitlab_status_ce_installed)
+  when: ((ansible_local is defined and ansible_local.gitlab is defined and
+          ansible_local.gitlab.installed) and
+         gitlab_register_bundle_migrate is defined and gitlab_register_bundle_migrate.changed)
 
 - name: Start GitLab instance
-  service: name=gitlab state=started
-  when: gitlab_status_ce_installed is undefined
-
-- name: Deactivate deploy.html page
-  file: path={{ gitlab_home }}/gitlab/public/index.html state=absent
-
+  service:
+    name: 'gitlab'
+    state: 'started'
+  notify: [ 'Deactivate GitLab deploy.html page' ]
+  when: (ansible_local is undefined or (ansible_local is defined and
+         (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
+          (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
+           not ansible_local.gitlab.installed))))))
 
