@@ -8,6 +8,13 @@ gitlab_group: 'git'
 gitlab_home: '/srv/users/git'
 
 
+# ---- gitlab-shell source and install path ----
+
+gitlab_shell_git_repo: 'https://gitlab.com/gitlab-org/gitlab-shell.git'
+gitlab_shell_git_dest: '{{ gitlab_home + "/src/" + gitlab_shell_git_repo.split("://")[1] }}'
+gitlab_shell_git_checkout: '{{ gitlab_home + "/gitlab-shell" }}'
+
+
 # ---- gitlab-shell & GitLab CE sources ----
 
 # Directory with GitLab source (bare) repositories
@@ -95,19 +102,6 @@ gitlab_config_map:
 #    git checkout 6-6-stable
 #    git diff 6-5-stable 6-6-stable config/gitlab.yml.example
 gitlab_checksums:
-  shell:
-    'v1.9.1':
-      config: '82958869656cbf5c9fa866bb575c6456b5a39b60'
-
-    'v1.9.3':
-      config: '82958869656cbf5c9fa866bb575c6456b5a39b60'
-
-    'v1.9.4':
-      config: '82958869656cbf5c9fa866bb575c6456b5a39b60'
-
-    'v1.9.6':
-      config: '82958869656cbf5c9fa866bb575c6456b5a39b60'
-
   ce:
     '6-7-stable':
       database:
