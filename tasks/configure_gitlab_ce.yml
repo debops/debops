@@ -199,6 +199,20 @@
   sudo_user: '{{ gitlab_user }}'
   when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed
 
+- name: Set default administrator email address and password
+  replace:
+    dest: '{{ gitlab_ce_git_checkout + "/db/fixtures/production/001_admin.rb" }}'
+    regexp: '{{ item.0 }}'
+    replace: '{{ item.1 }}'
+  with_together:
+    - [ 'admin@example\.com', '5iveL!fe' ]
+    - [ '{{ gitlab_admin_email }}', '{{ gitlab_admin_password }}' ]
+  no_log: True
+  when: (ansible_local is undefined or (ansible_local is defined and
+         (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
+          (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
+           not ansible_local.gitlab.installed))))))
+
 - name: Initialize GitLab database
   shell: yes 'yes' | bundle exec rake gitlab:setup RAILS_ENV=production
          chdir={{ gitlab_ce_git_checkout }}
@@ -209,6 +223,20 @@
            (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
             not ansible_local.gitlab.installed)))))) and
          gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed)
+
+- name: Reset default administrator email address and password
+  replace:
+    dest: '{{ gitlab_ce_git_checkout + "/db/fixtures/production/001_admin.rb" }}'
+    regexp: '{{ item.0 }}'
+    replace: '{{ item.1 }}'
+  with_together:
+    - [ '{{ gitlab_admin_email | replace(".","\.") }}', '{{ gitlab_admin_password }}' ]
+    - [ 'admin@example.com', '5iveL!fe' ]
+  no_log: True
+  when: (ansible_local is undefined or (ansible_local is defined and
+         (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
+          (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
+           not ansible_local.gitlab.installed))))))
 
 - name: Migrate GitLab database
   shell: bundle exec rake db:migrate RAILS_ENV=production
