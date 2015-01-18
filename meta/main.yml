@@ -5,6 +5,11 @@ dependencies:
   - role: debops.secret
 
   - role: debops.etc_services
+    etc_services_dependent_list:
+
+      - name: 'gitlab'
+        port: '{{ gitlab_unicorn_port }}'
+        comment: 'GitLab'
 
   - role: debops.ruby
 
@@ -81,6 +86,4 @@ ansigenome_info:
     to new version when support for it becomes available (new GitLab version is
     released on 22nd of each month, usually `debops.gitlab` role is updated
     to support new version shortly after that).
-    
-    Default credentials: `root:5iveL!fe`
 
