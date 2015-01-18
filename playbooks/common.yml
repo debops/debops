@@ -19,34 +19,6 @@
       when: (apt_update_cache_early is defined and apt_update_cache_early)
       sudo: True
 
-    - name: Enforce new hostname if requested
-      hostname:
-        name: '{{ fqdn_hostname }}'
-      when: fqdn_hostname is defined and fqdn_hostname
-      sudo: True
-      tags: fqdn
-
-    - name: Save enforced hostname if requested
-      copy:
-        content: '{{ fqdn_hostname + "\n" }}'
-        dest: '/etc/hostname'
-        owner: 'root'
-        group: 'root'
-        mode: '0644'
-      when: fqdn_hostname is defined and fqdn_hostname
-      sudo: True
-      tags: fqdn
-
-    - name: Ensure domain is defined if requested
-      lineinfile:
-        state: 'present'
-        dest: '/etc/hosts'
-        regexp: '{{ "^" + (fqdn_ipv4 | default("127.0.1.1")) | replace(".","\.") }}'
-        line: '{{ (fqdn_ipv4 | default("127.0.1.1")) + "\t" + (fqdn_hostname | default(ansible_hostname)) + "." + fqdn_domain + "\t" + (fqdn_hostname | default(ansible_hostname)) }}'
-      when: fqdn_domain is defined and fqdn_domain
-      sudo: True
-      tags: fqdn
-
 
 - name: Common configuration for all hosts
   hosts: 'all:!localhost'
