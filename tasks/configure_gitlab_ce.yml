@@ -75,7 +75,7 @@
     owner: '{{ gitlab_user }}'
     group: '{{ gitlab_group }}'
     mode: '0750'
-  with_items: [ '{{ gitlab_home + "/backups" }}',
+  with_items: [ '{{ gitlab_backup_path }}',
                 '{{ gitlab_home + "/gitlab-satellites" }}' ]
 
 
@@ -276,4 +276,13 @@
          (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
           (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
            not ansible_local.gitlab.installed))))))
+
+- name: Configure periodical GitLab backups
+  cron:
+    name: 'Create GitLab backup'
+    special_time: '{{ gitlab_backup_frequency }}'
+    state: 'present'
+    user: '{{ gitlab_user }}'
+    job: 'cd {{ gitlab_ce_git_checkout }} ; PATH=/usr/local/bin:/usr/bin:/bin bundle exec rake gitlab:backup:create RAILS_ENV=production CRON=1'
+    cron_file: 'gitlab-backup'
 
