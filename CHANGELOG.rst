@@ -14,6 +14,31 @@ v0.1.0 (release pending)
 2014-01-18
 ^^^^^^^^^^
 
+Role updates
+************
+
+`debops.gitlab`_ role has been finally rewritten. Lots of important changes:
+
+- support for `GitLab`_ 7.7 out of the box, even before official release ;)
+
+- new home directory, ``/var/local/git/``, you might want to reinstall your
+  GitLab instance from scratch or take care with moving your old instance files
+  to new location;
+
+- role does not depend on configuration file hashes anymore, updates should be
+  much easier to perform and support for new versions should be included in
+  a more timely manner;
+
+- ``debops.gitlab`` will configure a daily backup of the application data to
+  ``/var/backups/gitlab/``, backup files older than a week should be
+  automatically cleaned up;
+
+- new GitLab install uses a random password stored in the DebOps ``secret/``
+  directory instead of the official password. Default admin account will have
+  an email address in your domain instead of ``admin@example.com``, so random
+  bounced mails shouldn't be a problem anymore;
+
+
 Playbook updates
 ****************
 

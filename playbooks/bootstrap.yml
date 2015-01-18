@@ -36,6 +36,7 @@
     bootstrap_admin_account: '{{ lookup("env","USER") }}'
     bootstrap_admin_group: 'admins'
     bootstrap_admin_ssh_key: '{{ lookup("pipe","ssh-add -L") }}'
+    bootstrap_hostname: '{{ inventory_hostname_short | default(inventory_hostname) }}'
 
   tasks:
   - name: Install minimal Python support for Ansible
