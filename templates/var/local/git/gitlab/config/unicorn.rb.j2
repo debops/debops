@@ -10,19 +10,14 @@
 # See http://unicorn.bogomips.org/Unicorn/Configurator.html for complete
 # documentation.
 
-# Uncomment and customize the last line to run in a non-root path
-# WARNING: We recommend creating a FQDN to host GitLab in a root path instead of this.
-# Note that four settings need to be changed for this to work.
-# 1) In your application.rb file: config.relative_url_root = "/gitlab"
-# 2) In your gitlab.yml file: relative_url_root: /gitlab
-# 3) In your unicorn.rb: ENV['RAILS_RELATIVE_URL_ROOT'] = "/gitlab"
-# 4) In ../gitlab-shell/config.yml: gitlab_url: "http://127.0.0.1/gitlab"
-# To update the path, run: sudo -u git -H bundle exec rake assets:precompile RAILS_ENV=production
+# WARNING: See config/application.rb under "Relative url support" for the list of
+# other files that need to be changed for relative url support
 #
 # ENV['RAILS_RELATIVE_URL_ROOT'] = "/gitlab"
 
-# Use at least one worker per core if you're on a dedicated server,
-# more will usually help for _short_ waits on databases/caches.
+# Read about unicorn workers here:
+# http://doc.gitlab.com/ee/install/requirements.html#unicorn-workers
+#
 worker_processes {{ ansible_processor_cores }}
 
 # Since Unicorn is never exposed to outside clients, it does not need to
@@ -36,13 +31,28 @@ worker_processes {{ ansible_processor_cores }}
 # "current" directory that Capistrano sets up.
 working_directory "{{ gitlab_ce_git_checkout }}" # available in 0.94.0+
 
-# listen on both a Unix domain socket and a TCP port,
-# we use a shorter backlog for quicker failover when busy
+# Listen on both a Unix domain socket and a TCP port.
+# If you are load-balancing multiple Unicorn masters, lower the backlog
+# setting to e.g. 64 for faster failover.
 listen "{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab.socket", :backlog => 64
 listen "127.0.0.1:{{ gitlab_unicorn_port | default('8080') }}", :tcp_nopush => true
 
 # nuke workers after 30 seconds instead of 60 seconds (the default)
-timeout {{ gitlab_unicorn_timeout | default('30') }}
+#
+# NOTICE: git push over http depends on this value.
+# If you want be able to push huge amount of data to git repository over http
+# you will have to increase this value too.
+#
+# Example of output if you try to push 1GB repo to GitLab over http.
+#   -> git push http://gitlab.... master
+#
+#   error: RPC failed; result=18, HTTP code = 200
+#   fatal: The remote end hung up unexpectedly
+#   fatal: The remote end hung up unexpectedly
+#
+# For more information see http://stackoverflow.com/a/21682112/752049
+#
+timeout {{ gitlab_unicorn_timeout | default('60') }}
 
 # feel free to point this anywhere accessible on the filesystem
 pid "{{ gitlab_ce_git_checkout }}/tmp/pids/unicorn.pid"
