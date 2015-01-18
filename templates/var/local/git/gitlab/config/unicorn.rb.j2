@@ -34,24 +34,24 @@ worker_processes {{ ansible_processor_cores }}
 
 # Help ensure your application will always spawn in the symlinked
 # "current" directory that Capistrano sets up.
-working_directory "{{ gitlab_home }}/gitlab" # available in 0.94.0+
+working_directory "{{ gitlab_ce_git_checkout }}" # available in 0.94.0+
 
 # listen on both a Unix domain socket and a TCP port,
 # we use a shorter backlog for quicker failover when busy
-listen "{{ gitlab_home }}/gitlab/tmp/sockets/gitlab.socket", :backlog => 64
+listen "{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab.socket", :backlog => 64
 listen "127.0.0.1:{{ gitlab_unicorn_port | default('8080') }}", :tcp_nopush => true
 
 # nuke workers after 30 seconds instead of 60 seconds (the default)
 timeout {{ gitlab_unicorn_timeout | default('30') }}
 
 # feel free to point this anywhere accessible on the filesystem
-pid "{{ gitlab_home }}/gitlab/tmp/pids/unicorn.pid"
+pid "{{ gitlab_ce_git_checkout }}/tmp/pids/unicorn.pid"
 
 # By default, the Unicorn logger will write to stderr.
 # Additionally, some applications/frameworks log to stderr or stdout,
 # so prevent them from going to /dev/null when daemonized here:
-stderr_path "{{ gitlab_home }}/gitlab/log/unicorn.stderr.log"
-stdout_path "{{ gitlab_home }}/gitlab/log/unicorn.stdout.log"
+stderr_path "{{ gitlab_ce_git_checkout }}/log/unicorn.stderr.log"
+stdout_path "{{ gitlab_ce_git_checkout }}/log/unicorn.stdout.log"
 
 # combine Ruby 2.0.0dev or REE with "preload_app true" for memory savings
 # http://rubyenterpriseedition.com/faq.html#adapt_apps_for_cow
