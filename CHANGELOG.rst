@@ -38,6 +38,8 @@ Role updates
   an email address in your domain instead of ``admin@example.com``, so random
   bounced mails shouldn't be a problem anymore;
 
+.. _debops.gitlab: https://github.com/debops/ansible-gitlab/
+.. _GitLab: https://about.gitlab.com/
 
 Playbook updates
 ****************
