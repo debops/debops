@@ -46,6 +46,17 @@ gitlab_version_map:
 
 # ---- GitLab CE installation ----
 
+# List of packages required by GitLab
+gitlab_packages: [ 'build-essential', 'zlib1g-dev', 'libyaml-dev', 'libssl-dev',
+                   'libgdbm-dev', 'libreadline-dev', 'libncurses5-dev', 'libffi-dev',
+                   'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev',
+                   'libicu-dev', 'python-docutils', 'cmake' ]
+
+# List of packages required to specified database
+gitlab_database_packages:
+  mysql:      [ 'libmysqlclient-dev', 'ruby-mysql' ]
+  postgresql: [ 'libpq-dev', 'ruby-pg' ]
+
 # Arguments to use with 'bundle install' for different database servers
 gitlab_ce_bundle_install_without:
   'mysql':      'development test aws postgres'

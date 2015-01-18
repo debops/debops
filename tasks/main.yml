@@ -1,46 +1,54 @@
 ---
 
 - name: Install required packages
-  apt: pkg={{ item }} state=latest install_recommends=no
-  with_items: [ 'build-essential', 'zlib1g-dev', 'libyaml-dev', 'libssl-dev',
-                'libgdbm-dev', 'libreadline-dev', 'libncurses5-dev', 'libffi-dev',
-                'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev',
-                'libicu-dev', 'python-docutils', 'cmake']
-
-- name: Install required MySQL database packages
-  apt: pkg={{ item }} state=latest install_recommends=no
-  with_items: [ 'libmysqlclient-dev', 'ruby-mysql' ]
-  when: gitlab_database is defined and gitlab_database and
-        gitlab_database == 'mysql'
-
-- name: Install required PostgreSQL database packages
-  apt: pkg={{ item }} state=latest install_recommends=no
-  with_items: [ 'libpq-dev', 'ruby-pg' ]
-  when: gitlab_database is defined and gitlab_database and
-        gitlab_database == 'postgresql'
-
-- name: Make sure Ansible Facts directory exists
-  file: path=/etc/ansible/facts.d state=directory owner=root group=root mode=0755
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_flattened:
+    - gitlab_packages
+    - gitlab_database_packages[gitlab_database]
 
 - name: Create GitLab system group
-  group: name={{ gitlab_group }} system=yes state=present
+  group:
+    name: '{{ gitlab_group }}'
+    system: True
+    state: 'present'
 
 - name: Create GitLab user
-  user: name={{ gitlab_user }} group={{ gitlab_group }} home={{ gitlab_home }}
-        comment="GitLab" groups=sshusers append=yes system=yes state=present
+  user:
+    name: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    home: '{{ gitlab_home }}'
+    comment: 'GitLab'
+    groups: 'sshusers'
+    append: True
+    system: True
+    state: 'present'
 
 - name: Secure GitLab home directory
-  file: path={{ gitlab_home }} state=directory
-        owner={{ gitlab_user }} group={{ gitlab_group }} mode=0750
+  file:
+    path: '{{ gitlab_home }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0750'
 
 - name: Allow access to GitLab home by the webserver
-  acl: name={{ gitlab_home }} entity='www-data' etype=group permissions="x"
-       state=present
-  changed_when: False
+  acl:
+    name: '{{ gitlab_home }}'
+    entity: 'www-data'
+    etype: 'group'
+    permissions: 'x'
+    state: 'present'
 
 - name: Configure ~/.gitconfig
-  template: src=var/local/git/gitconfig.j2 dest={{ gitlab_home }}/.gitconfig
-            owner={{ gitlab_user }} group={{ gitlab_group }} mode=0644
+  template:
+    src: 'var/local/git/gitconfig.j2'
+    dest: '{{ gitlab_home + "/.gitconfig" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
 
 - include: configure_gitlab-shell.yml
 
@@ -61,5 +69,4 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-
 
