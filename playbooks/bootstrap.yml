@@ -16,6 +16,8 @@
 #   - a normal user account named after your local user account will be
 #     created and added to the 'admins' group;
 #   - no passwords are set or modified on any account;
+#   - if set, playbook will configure hostname and domain on the host using
+#     'bootstrap_hostname' and 'bootstrap_domain' variables;
 #
 # Usage:
 # debops bootstrap -k --limit host
@@ -92,3 +94,26 @@
       regexp: '^#includedir\s+/etc/sudoers.d$'
       line: '#includedir /etc/sudoers.d'
       state: 'present'
+
+  - name: Enforce new hostname
+    hostname:
+      name: '{{ bootstrap_hostname }}'
+    when: bootstrap_hostname is defined and bootstrap_hostname
+
+  - name: Save enforced hostname
+    copy:
+      content: '{{ bootstrap_hostname + "\n" }}'
+      dest: '/etc/hostname'
+      owner: 'root'
+      group: 'root'
+      mode: '0644'
+    when: bootstrap_hostname is defined and bootstrap_hostname
+
+  - name: Ensure domain is defined
+    lineinfile:
+      state: 'present'
+      dest: '/etc/hosts'
+      regexp: '{{ "^" + (bootstrap_ipv4 | default("127.0.1.1")) | replace(".","\.") }}'
+      line: '{{ (bootstrap_ipv4 | default("127.0.1.1")) + "\t" + (bootstrap_hostname | default(ansible_hostname)) + "." + bootstrap_domain + "\t" + (bootstrap_hostname | default(ansible_hostname)) }}'
+    when: bootstrap_domain is defined and bootstrap_domain
+
