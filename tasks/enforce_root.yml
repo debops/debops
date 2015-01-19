@@ -1,16 +1,32 @@
 ---
 
 - name: Enforce root group
-  group: name=root gid=0 system=yes state=present
+  group:
+    name: 'root'
+    gid: '0'
+    system: True
+    state: 'present'
 
 - name: Enforce root user account
-  user: name=root state=present shell={{ item.shell | default(users_default_shell) }}
-        group=root home=/root uid=0 groups='' append=no system=yes
+  user:
+    name: 'root'
+    state: 'present'
+    shell: '{{ item.shell | default(users_default_shell) }}'
+    group: 'root'
+    home: '/root'
+    uid: '0'
+    groups: ''
+    append: False
+    system: True
   with_flattened:
     - users_root
   when: item.name is defined and item.name == 'root'
 
 - name: Enforce root home permissions
-  file: state=directory path=/root owner=root group=root mode=0700
-
+  file:
+    path: '/root'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
 

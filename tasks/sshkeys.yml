@@ -1,7 +1,10 @@
 ---
 
-- name: Configure authorized SSH keys for users
-  authorized_key: key='{{ "\n".join(item.sshkeys) | string }}' state=present user={{ item.name }}
+- name: Configure ~/.ssh/authorized_keys for users
+  authorized_key:
+    key: '{{ "\n".join(item.sshkeys) | string }}'
+    state: 'present'
+    user: '{{ item.name }}'
   with_flattened:
     - users_default
     - users_admins
@@ -13,8 +16,9 @@
          (item.sshkeys is defined and item.sshkeys))
 
 - name: Remove ~/.ssh/authorized_keys from user account if disabled
-  file: state=absent
-        dest={{ item.home | default(users_default_home_prefix + "/" + item.name) }}/.ssh/authorized_keys
+  file:
+    path: '{{ item.home | default(users_default_home_prefix + "/" + item.name) }}/.ssh/authorized_keys'
+    state: 'absent'
   with_flattened:
     - users_default
     - users_admins
