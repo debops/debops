@@ -2,9 +2,10 @@
 
 - name: Get users dotfiles from git repository
   sudo_user: '{{ item.name }}'
-  git: repo={{ item.dotfiles_repo | default(users_dotfiles[users_default_dotfiles_key].repo) }}
-       dest={{ item.dotfiles_dest | default('~/.config/dotfiles') }}
-       update=yes
+  git:
+    repo: '{{ item.dotfiles_repo | default(users_dotfiles[users_default_dotfiles_key].repo) }}'
+    dest: '{{ item.dotfiles_dest | default("~/.config/dotfiles") }}'
+    update: True
   with_flattened:
     - users_root
     - users_default
@@ -12,10 +13,10 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: (item.name is defined and item.name) and
-        ((item.dotfiles is defined and item.dotfiles) or
-        (users_default_dotfiles is defined and users_default_dotfiles)) and
-        (item.state is undefined or item.state is defined and item.state != 'absent')
+  when: ((item.name is defined and item.name) and
+         (item.state is undefined or (item.state is defined and item.state != 'absent')) and
+         ((item.dotfiles is defined and item.dotfiles) or
+          (users_default_dotfiles is defined and users_default_dotfiles)))
 
 - name: Configure users dotfiles
   sudo_user: '{{ item.name }}'
@@ -29,8 +30,8 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: (item.name is defined and item.name) and
-        ((item.dotfiles is defined and item.dotfiles) or
-        (users_default_dotfiles is defined and users_default_dotfiles)) and
-        (item.state is undefined or item.state is defined and item.state != 'absent')
+  when: ((item.name is defined and item.name) and
+         (item.state is undefined or (item.state is defined and item.state != 'absent')) and
+         ((item.dotfiles is defined and item.dotfiles) or
+          (users_default_dotfiles is defined and users_default_dotfiles)))
 

@@ -1,27 +1,17 @@
 ---
 
-- name: Create directory for specific user homes
-  file: path=/srv/users state=directory owner=root group=root mode=0751
-  when: users is defined and users
-
 - include: enforce_root.yml
-  when: users is defined and users
-
-- include: groups_present.yml
-  when: users is defined and users
+  when: users
 
 - include: users.yml
-  when: users is defined and users
+  when: users
 
 - include: forward.yml
-  when: users is defined and users
+  when: users
 
 - include: sshkeys.yml
-  when: users is defined and users
+  when: users
 
 - include: dotfiles.yml
-  when: users is defined and users
-
-- include: groups_absent.yml
-  when: users is defined and users
+  when: users
 
