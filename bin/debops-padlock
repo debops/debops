@@ -61,7 +61,7 @@ SCRIPT_FILENAME = 'padlock-script'
 
 # ---- DebOps environment setup ----
 
-def main(recipients):
+def main(subcommand_func, **kwargs):
     debops_root = find_debops_project(required=True)
     # :todo: Source DebOps configuration file
     #[ -r ${debops_config} ] && source ${debops_config}
@@ -82,7 +82,10 @@ def main(recipients):
                                    ENCFS_PREFIX + SECRET_NAME)
     encfs_decrypted = os.path.join(os.path.dirname(inventory_path),
                                    SECRET_NAME)
+    subcommand_func(encfs_decrypted, encfs_encrypted, **kwargs)
 
+
+def init(encfs_decrypted, encfs_encrypted, recipients):
     # EncFS cannot create encrypted directory if directory with
     # decrypted data is not empty
     if not os.path.exists(encfs_decrypted):
@@ -142,13 +145,43 @@ def main(recipients):
     os.remove(encfs_configfile)
 
 
+def lock(encfs_decrypted, encfs_encrypted, verbose):
+    # Unmount the directory if it is mounted
+    if padlock_lock(encfs_encrypted):
+        if verbose: print("Locked!")
+    else:
+        if verbose: print("Is already locked.")
+
+
+def unlock(encfs_decrypted, encfs_encrypted, verbose):
+    # Mount the directory it if it is unmounted
+    if padlock_unlock(encfs_encrypted):
+        if verbose: print("Unlocked!")
+    else:
+        if verbose: print("Is already unlocked.")
+
+
 parser = argparse.ArgumentParser()
-parser.add_argument('recipients', nargs='*',
-                    help=("GPG recipients for which the secret key should be "
-                          "encrypted for (name, e-mail or key-id)"))
+subparsers = parser.add_subparsers(
+    help='action to perform. Use `%(prog)s --help <action>` for further help.')
+
+p = subparsers.add_parser('init')
+p.add_argument('recipients', nargs='*',
+               help=("GPG recipients for which the secret key should be "
+                     "encrypted for (name, e-mail or key-id)"))
+p.set_defaults(subcommand_func=init)
+
+p = subparsers.add_parser('unlock')
+p.add_argument('-v', '--verbose', action='store_true', help="be verbose")
+p.set_defaults(subcommand_func=unlock)
+
+p = subparsers.add_parser('lock')
+p.add_argument('-v', '--verbose', action='store_true', help="be verbose")
+p.set_defaults(subcommand_func=lock)
+
 args = parser.parse_args()
 
 try:
-    main(args.recipients)
+    main(**vars(args))
 except KeyboardInterrupt:
     raise SystemExit('... aborted')
