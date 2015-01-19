@@ -13,7 +13,7 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: ((item.name is defined and item.name) and
+  when: ((item.name is defined and item.name != 'root') and
          (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
 - name: Manage user accounts
@@ -35,7 +35,8 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: item.name is defined and item.name
+  when: ((item.name is defined and item.name != 'root') and
+         (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
 - name: Manage user default groups
   user:
@@ -49,7 +50,8 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: ((item.name is defined and item.name) and
+  when: ((item.name is defined and item.name != 'root') and
+         (item.state is undefined or (item.state is defined and item.state != 'absent')) and
          (users_default_groups_list is defined and users_default_groups_list))
 
 - name: Manage user groups
@@ -64,7 +66,9 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: ((item.name is defined and item.name) and (item.groups is defined and item.groups))
+  when: ((item.name is defined and item.name != 'root') and
+         (item.state is undefined or (item.state is defined and item.state != 'absent')) and
+         (item.groups is defined and item.groups))
 
 - name: Remove user groups if requested
   group:
@@ -77,5 +81,6 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: (item.name is defined and item.state is defined and item.state == 'absent')
+  when: ((item.name is defined and item.name != 'root') and
+         (item.state is defined and item.state == 'absent'))
 
