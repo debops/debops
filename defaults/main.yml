@@ -126,7 +126,7 @@ apt_debian_preseed_mirror_country: 'United States'
 apt_debian_preseed_rootpw_length: '20'
 apt_debian_preseed_rootpw: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/debian_preseed/system/root/password encrypt=md5_crypt length=' + apt_debian_preseed_rootpw_length) }}"
 apt_debian_preseed_username: "{{ lookup('env','USER') }}"
-apt_debian_preseed_sshkey: "{{ lookup('pipe','ssh-add -L') }}"
+apt_debian_preseed_sshkey: "{{ lookup('pipe','ssh-add -L || true') }}"
 apt_debian_preseed_filesystem: 'ext4'
 
 
