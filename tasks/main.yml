@@ -21,7 +21,7 @@
     group: '{{ gitlab_group }}'
     home: '{{ gitlab_home }}'
     comment: 'GitLab'
-    groups: 'sshusers'
+    groups: '{{ gitlab_user_append_groups | join(",") | default(omit) }}'
     append: True
     system: True
     state: 'present'
@@ -41,6 +41,7 @@
     etype: 'group'
     permissions: 'x'
     state: 'present'
+  when: gitlab_support_filesystem_acl
 
 - name: Configure ~/.gitconfig
   template:

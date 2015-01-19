@@ -82,6 +82,10 @@ gitlab_user: 'git'
 gitlab_group: 'git'
 gitlab_home: '/var/local/git'
 
+# List of additional system groups to add to the GitLab user account
+# 'sshusers' is used in DebOps to limit sshd access. See 'debops.auth' role
+gitlab_user_append_groups: [ 'sshusers' ]
+
 # Server timezone
 gitlab_time_zone: 'UTC'
 
@@ -106,4 +110,9 @@ gitlab_unicorn_port: '18082'
 # unicorn connection timeout in seconds
 gitlab_unicorn_timeout: '60'
 
+
+# ---- Compatibility workarounds ----
+
+# Enable or disable ACL configuration for the webserver
+gitlab_support_filesystem_acl: True
 
