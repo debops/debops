@@ -1,8 +1,9 @@
 ---
 
-- name: Manage user accounts without UIDs
+- name: Manage user accounts
   user:
     name: '{{ item.name }}'
+    uid: '{{ item.uid | default(omit) }}'
     group: '{{ item.group | default(item.name) }}'
     state: '{{ item.state | default("present") }}'
     comment: '{{ item.comment | default("") }}'
@@ -18,28 +19,7 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: ((item.name is defined and item.name) and (item.uid is undefined or (item.uid is defined and not item.uid)))
-
-- name: Manage user accounts with UIDs
-  user:
-    name: '{{ item.name }}'
-    uid: '{{ item.uid }}'
-    group: '{{ item.group | default(item.name) }}'
-    state: '{{ item.state | default("present") }}'
-    comment: '{{ item.comment | default("") }}'
-    password: '{{ item.password | default("*") }}'
-    update_password: '{{ item.update_password | default("on_create") }}'
-    system: '{{ item.systemuser | default("no") }}'
-    shell: '{{ item.shell | default(users_default_shell) }}'
-    home: '{{ item.home | default(users_default_home_prefix + "/" + item.name) }}'
-    createhome: 'yes'
-  with_flattened:
-    - users_default
-    - users_admins
-    - users_list
-    - users_group_list
-    - users_host_list
-  when: ((item.name is defined and item.name) and (item.uid is defined and item.uid))
+  when: item.name is defined and item.name
 
 - name: Manage user default groups
   user:
