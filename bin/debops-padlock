@@ -145,13 +145,27 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
     os.remove(encfs_configfile)
 
 
+def lock(encfs_decrypted, encfs_encrypted, **kwargs):
+    padlock_lock(encfs_encrypted)
+
+def unlock(encfs_decrypted, encfs_encrypted, **kwargs):
+    padlock_unlock(encfs_encrypted)
+
+
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers(help='action to perform. Use `%(prog)s --help <action>` for further help.')
+
 p = subparsers.add_parser('init')
 p.add_argument('recipients', nargs='*',
                help=("GPG recipients for which the secret key should be "
                      "encrypted for (name, e-mail or key-id)"))
 p.set_defaults(subcommand_func=init)
+
+p = subparsers.add_parser('unlock')
+p.set_defaults(subcommand_func=unlock)
+
+p = subparsers.add_parser('lock')
+p.set_defaults(subcommand_func=lock)
 
 args = parser.parse_args()
 
