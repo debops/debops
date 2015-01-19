@@ -1,5 +1,21 @@
 ---
 
+- name: Create user groups
+  group:
+    name: '{{ item.group | default(item.name) }}'
+    system: '{{ item.systemgroup | default("no") }}'
+    gid: '{{ item.gid | default(omit) }}'
+    state: 'present'
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_groups
+    - users_list
+    - users_group_list
+    - users_host_list
+  when: ((item.name is defined and item.name) and
+         (item.state is undefined or (item.state is defined and item.state != 'absent')))
+
 - name: Manage user accounts
   user:
     name: '{{ item.name }}'
@@ -49,4 +65,17 @@
     - users_group_list
     - users_host_list
   when: ((item.name is defined and item.name) and (item.groups is defined and item.groups))
+
+- name: Remove user groups if requested
+  group:
+    name: '{{ item.group | default(item.name) }}'
+    state: 'absent'
+  with_flattened:
+    - users_default
+    - users_admins
+    - users_groups
+    - users_list
+    - users_group_list
+    - users_host_list
+  when: (item.name is defined and item.state is defined and item.state == 'absent')
 
