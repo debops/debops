@@ -1,7 +1,7 @@
 ---
 
 - name: Configure ~/.forward for users
-  template: src=srv/users/forward.j2 owner={{ item.name }} group={{ item.group | default(item.name) }} mode=0644
+  template: src=home/user/forward.j2 owner={{ item.name }} group={{ item.group | default(item.name) }} mode=0644
             dest={{ item.home | default(users_default_home_prefix + "/" + item.name) }}/.forward
   with_flattened:
     - users_default
