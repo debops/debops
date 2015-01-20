@@ -11,6 +11,32 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-01-20
+^^^^^^^^^^
+
+Role updates
+************
+
+`debops.gitlab_ci`_ role has been updated to support `GitLab CI`_ 5.4, with
+GitLab 7.7 providing authorization based on OAuth. Due to the changes in GitLab
+CI itself, some configuration variables have been changed - check the role
+defaults for new ones (mainly, you can define only 1 GitLab instance to connect
+to).
+
+.. _debops.gitlab_ci: https://github.com/debops/ansible-gitlab_ci/
+.. _GitLab CI: https://about.gitlab.com/gitlab-ci/
+
+New playbook plugins
+********************
+
+`Hartmut Goebel`_ created a small lookup plugin, ``with_lists``, which alows
+you to use lists of items as "items" themselves, see an example in the
+`with_lists plugin`_. Thanks!
+
+.. _Hartmut Goebel: https://github.com/htgoebel
+.. _with_lists plugin: https://github.com/debops/debops-playbooks/blob/master/playbooks/lookup_plugins/lists.py
+
+
 2014-01-18
 ^^^^^^^^^^
 
