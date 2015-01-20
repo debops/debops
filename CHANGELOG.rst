@@ -23,8 +23,14 @@ CI itself, some configuration variables have been changed - check the role
 defaults for new ones (mainly, you can define only 1 GitLab instance to connect
 to).
 
+`debops.users`_ role has been slightly clenaed up and ``root``-proofed - it
+shouldn't make an error if you are connecting to your hosts directly as
+``root`` account anymore. Role uses ``default(omit)`` filter in its tasks,
+which means that DebOps now requires Ansible >= 1.8 for correct operation.
+
 .. _debops.gitlab_ci: https://github.com/debops/ansible-gitlab_ci/
 .. _GitLab CI: https://about.gitlab.com/gitlab-ci/
+.. _debops.users: https://github.com/debops/ansible-users/
 
 New playbook plugins
 ********************
