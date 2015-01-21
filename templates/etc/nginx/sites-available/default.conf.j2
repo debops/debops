@@ -530,12 +530,6 @@ server {
         {{ item.options | indent(8) }}
 
 {% endif %}
-	# Temporary fix for CVE-2013-4547
-	# http://mailman.nginx.org/pipermail/nginx-announce/2013/000125.html
-	if ($request_uri ~ " ") {
-		return 444;
-	}
-
 {% if item.userdir is defined and item.userdir %}
 	location ~ ^/~(.+?)(/.*)?$ {
 		alias /srv/www/$1/userdir/public$2;
