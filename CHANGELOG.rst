@@ -11,6 +11,24 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-01-21
+^^^^^^^^^^
+
+Role updates
+************
+
+Webserver status page has been enabled by default in `debops.nginx`_, it's
+accessible on ``/nginx_status`` location, initially only from localhost
+addresses (from the webserver itself). You can add additional IP addresses or
+CIDR ranges using separate list, ``nginx_status``.
+
+Fix for `CVE-2013-4547`_ has been removed from the server template, since the
+issue has already been mitigated in Debian.
+
+.. _debops.nginx: https://github.com/debops/ansible-nginx/
+.. _CVE-2013-4547: https://security-tracker.debian.org/tracker/CVE-2013-4547
+
+
 2014-01-20
 ^^^^^^^^^^
 
