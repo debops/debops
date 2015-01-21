@@ -156,6 +156,11 @@
 #       IP addresses or CIDR ranges.
 #
 #
+#   - item.status_name: ''
+#       Optional. Set the name of the location which should be used for nginx
+#       status page
+#
+#
 #   - item.options: |
 #       Optional. Add custom options to this server configuration using text
 #       block (semicolons at the end of each line are required).
@@ -244,17 +249,9 @@
 #}
 {#
 
-    ---- SSL is enabled by default, disable if requested ----
+    ---- HTTPS, ports to listen on, default server, HTTPS redirect ----
 #}
-{% set nginx_tpl_ssl = True                                                    %}
-{% if (((nginx_pki is undefined or (nginx_pki is defined and not nginx_pki)) or
-        (item.ssl is defined and not item.ssl)))                               %}
-{%     set nginx_tpl_ssl = False                                               %}
-{% endif                                                                       %}
-{#
-
-    ---- Ports to listen on, default server, HTTPS redirect ----
-#}
+{% set nginx_tpl_ssl            = item.ssl        | default(item.pki       | default(nginx_pki)) %}
 {% set nginx_tpl_listen         = item.listen     | default(['[::]:80'])       %}
 {% set nginx_tpl_listen_ssl     = item.listen_ssl | default(['[::]:443'])      %}
 {% set nginx_tpl_default_server = ''                                           %}
@@ -315,7 +312,7 @@
 
     ---- macro which prints location entries from 'location' hash, flat ----
 #}
-{% macro print_location(location,location_allow=[],location_referers=[],location_deny=[])                                              %}
+{% macro print_location(location,location_allow=[],location_referers=[],location_deny=[]) %}
 {%     if location is defined                                                  %}
 {%         for path in location.keys()                                         %}
 {%             if location[path]                                               %}
@@ -451,7 +448,7 @@ server {
 {% endif %}
 {% endif %}
 {% endif %}
-{% if (nginx_tpl_ssl is defined and nginx_tpl_ssl) %}
+{% if nginx_tpl_ssl %}
 {% if (item.listen is undefined or (item.listen is defined and item.listen)) %}
         return {{ item.redirect_code | default(nginx_tpl_default_redirect_code) }} {{ nginx_tpl_http_redirect }};
 }
@@ -459,7 +456,7 @@ server {
 server {
 {% endif %}
 {% for port in nginx_tpl_listen_ssl %}
-        listen {{ port }} ssl{% if (nginx_version is defined and nginx_version | version_compare('1.4','>=')) %} spdy{% endif %}{% if (loop.first and nginx_tpl_default_server) %} {{ nginx_tpl_default_server }}{% endif %};
+        listen {{ port }} ssl{% if nginx_version | version_compare('1.4','>=') %} spdy{% endif %}{% if (loop.first and nginx_tpl_default_server) %} {{ nginx_tpl_default_server }}{% endif %};
 {% endfor %}
 
         ssl_certificate           {{ nginx_tpl_ssl_certificate }};
@@ -469,14 +466,14 @@ server {
         ssl_ciphers               "{{ nginx_ssl_ciphers[item.ssl_ciphers | default(nginx_default_ssl_ciphers)] }}"; # SSL cipher list: {{ item.ssl_ciphers | default(nginx_default_ssl_ciphers) }}
         ssl_dhparam               {{ nginx_tpl_ssl_dhparam }};
         ssl_ecdh_curve            {{ item.ssl_curve | default(nginx_default_ssl_curve) }};
-{% if (nginx_version is defined and nginx_version | version_compare('1.4','>=')) and nginx_ocsp_resolvers is defined and nginx_ocsp_resolvers %}
+{% if nginx_version | version_compare('1.4','>=') and nginx_ocsp_resolvers %}
         ssl_stapling              on;
         ssl_stapling_verify       on;
 {% set nginx_tpl_ocsp_resolver = nginx_ocsp_resolvers[0] if '.' in nginx_ocsp_resolvers[0] else '[' + nginx_ocsp_resolvers[0] + ']' %}
         resolver                  {{ nginx_tpl_ocsp_resolver }} valid=300s;
         resolver_timeout          5s;
 {% endif %}
-        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age | default('15768000') }}{% if nginx_hsts_subdomains is defined and nginx_hsts_subdomains %}; includeSubDomains{% endif %}";
+        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age | default('15768000') }}{% if nginx_hsts_subdomains %}; includeSubDomains{% endif %}";
 
 {% if item.name is defined and item.name %}
 {% if item.redirect_from is defined and item.redirect_from %}
@@ -525,12 +522,6 @@ server {
         {{ item.options | indent(8) }}
 
 {% endif %}
-	# Temporary fix for CVE-2013-4547
-	# http://mailman.nginx.org/pipermail/nginx-announce/2013/000125.html
-	if ($request_uri ~ " ") {
-		return 444;
-	}
-
 {% if item.userdir is defined and item.userdir %}
 	location ~ ^/~(.+?)(/.*)?$ {
 		alias /srv/www/$1/userdir/public$2;
@@ -554,12 +545,17 @@ server {
 	}
 
 {% endif %}
-{% if item.status is defined and item.status or nginx_default_status is defined and nginx_default_status %}
-	location = /nginx_status {
+{% if item.status is defined and item.status or nginx_status or nginx_status_localhost %}
+	location = {{ item.status_name | default(nginx_status_name) }} {
 		stub_status on;
 		access_log off;
-{% if nginx_default_status is defined and nginx_default_status %}
-{% for address in nginx_default_status %}
+{% if nginx_status_localhost %}
+{% for address in nginx_status_localhost %}
+		allow {{ address }};
+{% endfor %}
+{% endif %}
+{% if nginx_status %}
+{% for address in nginx_status %}
 		allow {{ address }};
 {% endfor %}
 {% endif %}
