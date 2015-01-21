@@ -1,13 +1,19 @@
 ---
 
-- include: configure_acng_server.yml
-  when: (apt is defined and apt) and (apt != True and apt == ansible_fqdn)
+#- acng Server
 
-- include: configure_acng_client.yml
-  when: (apt is defined and apt) and apt != True
+- include: configure_acng_server.yml
+  when: apt != True and apt == ansible_fqdn
 
 - include: debian_preseed.yml
-  when: (apt is defined and apt) and (apt != True and apt == ansible_fqdn)
+  when: apt != True and apt == ansible_fqdn
+
+#- acng Client
+
+- include: configure_acng_client.yml
+  when: apt != True
+
+#- common
 
 - include: apt.yml
   when: apt is defined and apt
