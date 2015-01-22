@@ -27,7 +27,7 @@
 
 - name: Remove nginx server configuration if requested
   file:
-    path: '/etc/nginx/sites-available/{{ item.name[0] | default("default") }}.conf'
+    path: '/etc/nginx/sites-available/{{ item.filename | default(item.name[0] | default("default")) }}.conf'
     state: 'absent'
   with_items: [ '{{ nginx_servers }}' ]
   notify: [ 'Test nginx and reload' ]
@@ -62,7 +62,7 @@
 - name: Generate nginx server configuration
   template:
     src: 'etc/nginx/sites-available/{{ item.type | default(nginx_default_type) }}.conf.j2'
-    dest: '/etc/nginx/sites-available/{{ item.name[0] | default("default") }}.conf'
+    dest: '/etc/nginx/sites-available/{{ item.filename | default(item.name[0] | default("default")) }}.conf'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -73,7 +73,7 @@
 
 - name: Disable nginx server configuration
   file:
-    path: '/etc/nginx/sites-enabled/{{ item.name[0] | default("default") }}.conf'
+    path: '/etc/nginx/sites-enabled/{{ item.filename | default(item.name[0] | default("default")) }}.conf'
     state: 'absent'
   with_items: [ '{{ nginx_servers }}' ]
   notify: [ 'Test nginx and restart' ]
@@ -82,8 +82,8 @@
 
 - name: Enable nginx server configuration
   file:
-    path: '/etc/nginx/sites-enabled/{{ item.name[0] | default("default") }}.conf'
-    src: '/etc/nginx/sites-available/{{ item.name[0] | default("default") }}.conf'
+    path: '/etc/nginx/sites-enabled/{{ item.filename | default(item.name[0] | default("default")) }}.conf'
+    src: '/etc/nginx/sites-available/{{ item.filename | default(item.name[0] | default("default")) }}.conf'
     state: 'link'
     owner: 'root'
     group: 'root'
