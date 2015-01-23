@@ -1,9 +1,9 @@
 Key-Type: {{ reprepro_gpg_key_type | default('RSA') }}
 Subkey-Type: {{ reprepro_gpg_key_type | default('RSA') }}
-Key-Length: {{ reprepro_gpg_key_length | default('2048') }}
-Subkey-Length: {{ reprepro_gpg_key_length | default('2048') }}
+Key-Length: {{ reprepro_gpg_key_length | default('4096') }}
+Subkey-Length: {{ reprepro_gpg_key_length | default('4096') }}
 Name-Real: {{ reprepro_gpg_name }}
-Name-Email: {{ reprepro_gpg_email | default('root@' + ansible_fqdn) }}
+Name-Email: {{ reprepro_gpg_email_prefix + item + reprepro_gpg_email_suffix }}
 Expire-Date: {{ reprepro_gpg_expire_days }}
 %no-ask-passphrase
 %no-protection

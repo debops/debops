@@ -1,59 +1,109 @@
 ---
 
 - name: Install packages for Debian repository management
-  apt: pkg={{ item }} state=latest install_recommends=no
-  with_items: [ 'reprepro' ]
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_items: [ 'reprepro', 'dpkg-dev' ]
 
-- name: Make sure that directory for user homes exists
-  file: path=/srv/users state=directory owner=root group=root mode=0751
+- name: Create main reprepro directory
+  file:
+    path: '{{ reprepro_path }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
-- name: Create system group for reprepro
-  group: name={{ reprepro_group }} system=yes state=present
+- name: Create system groups for reprepro
+  group:
+    name: '{{ reprepro_group_prefix + item }}'
+    system: True
+    state: 'present'
+  with_items: reprepro_repositories
 
-- name: Create system user for reprepro
-  user: name={{ reprepro_user }} group={{ reprepro_group }} system=yes home=/srv/users/{{ reprepro_user }} state=present
+- name: Create system users for reprepro
+  user:
+    name: '{{ reprepro_user_prefix + item }}'
+    group: '{{ reprepro_group_prefix + item }}'
+    system: True
+    shell: '/bin/bash'
+    home: '{{ reprepro_path + "/" + reprepro_user_prefix + item }}'
+    state: 'present'
+  with_items: reprepro_repositories
 
 - name: Create system users for reprepro uploads
-  user: name={{ reprepro_incoming_user }} group={{ reprepro_group }} groups=sftponly system=yes
-        home=/srv/users/{{ reprepro_incoming_user }} createhome=no
+  user:
+    name: '{{ reprepro_upload_prefix + item }}'
+    group: '{{ reprepro_group_prefix + item }}'
+    groups: '{{ reprepro_upload_append_groups | join(",") | default(omit) }}'
+    append: True
+    system: True
+    shell: '/sbin/nologin'
+    home: '{{ reprepro_path + "/" + reprepro_upload_prefix + item }}'
+    createhome: False
+    state: 'present'
+  with_items: reprepro_repositories
 
 - name: Fix home directory permissions of reprepro uploads
-  file: path=/srv/users/{{ reprepro_incoming_user }} state=directory owner=root group=root mode=0755
+  file:
+    path: '{{ reprepro_path + "/" + reprepro_upload_prefix + item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: reprepro_repositories
 
-- name: Ensure that authorized_keys directory exist
-  file: path=/etc/ssh/authorized_keys state=directory owner=root group=root mode=0755
+- name: Create upload user directories
+  file:
+    path: '{{ reprepro_path + "/" + reprepro_upload_prefix + item.0 + "/" + item.1 }}'
+    state: 'directory'
+    owner: '{{ reprepro_upload_prefix + item.0 }}'
+    group: '{{ reprepro_group_prefix + item.0 }}'
+    mode: '0771'
+  with_nested:
+    - reprepro_repositories
+    - [ 'incoming' ]
 
-- name: Check if SSH key of current user exists
-  local_action: stat path=~/.ssh/id_rsa.pub
-  sudo: no
-  register: reprepro_sshkey
-
-- name: Add authorized_key from Ansible Controller to reprepro uploads
-  authorized_key:
-    user: '{{ reprepro_incoming_user }}'
-    key: '{{ lookup("file","~/.ssh/id_rsa.pub") }}'
-    manage_dir: 'no'
-    path: '/etc/ssh/authorized_keys/{{ reprepro_incoming_user }}'
-  when: reprepro_sshkey is defined and reprepro_sshkey.stat.exists == True
-
-- name: Create incoming user directories
-  file: path=/srv/users/{{ reprepro_incoming_user }}/{{ item }} state=directory
-        owner={{ reprepro_incoming_user }} group={{ reprepro_group }} mode=0771
-  with_items: [ 'incoming', 'temp' ]
-
-- name: Create reprepro configuration directories
-  file: path=/srv/users/{{ reprepro_user }}/{{ item }} state=directory
-        owner={{ reprepro_user }} group={{ reprepro_group }} mode=0755
-  with_items: [ 'conf' ]
+- name: Create reprepro user directories
+  file:
+    path: '{{ reprepro_path + "/" + reprepro_user_prefix + item.0 + "/" + item.1 }}'
+    state: 'directory'
+    owner: '{{ reprepro_user_prefix + item.0 }}'
+    group: '{{ reprepro_group_prefix + item.0 }}'
+    mode: '0755'
+  with_nested:
+    - reprepro_repositories
+    - [ 'conf', 'tmp' ]
 
 - name: Create reprepro repository
-  file: path={{ reprepro_repository }} state=directory
-        owner={{ reprepro_user }} group={{ reprepro_group }} mode=0755
+  file:
+    path: '{{ reprepro_repository_path + "/" + item }}'
+    state: 'directory'
+    owner: '{{ reprepro_user_prefix + item }}'
+    group: '{{ reprepro_group_prefix + item }}'
+    mode: '0755'
+  with_items: reprepro_repositories
 
-- name: Configure reprepro
-  template: src=srv/users/{{ reprepro_user }}/conf/{{ item }}.j2
-            dest=/srv/users/{{ reprepro_user }}/conf/{{ item }}
-            owner={{ reprepro_user }} group={{ reprepro_group }} mode=0644
-  with_items: [ 'distributions', 'incoming', 'options' ]
+- name: Manage reprepro configuration files
+  template:
+    src: 'srv/users/reprepro/conf/{{ item.1 }}.j2'
+    dest: '{{ reprepro_path + "/" + reprepro_user_prefix + item.0 + "/conf/" + item.1 }}'
+    owner: '{{ reprepro_user_prefix + item.0 }}'
+    group: '{{ reprepro_group_prefix + item.0 }}'
+    mode: '0644'
+  with_nested:
+    - reprepro_repositories
+    - [ 'distributions', 'incoming', 'options', 'pulls', 'updates' ]
 
+- name: Manage reprepro scripts
+  template:
+    src: 'srv/users/reprepro/conf/{{ item.1 }}.j2'
+    dest: '{{ reprepro_path + "/" + reprepro_user_prefix + item.0 + "/conf/" + item.1 }}'
+    owner: '{{ reprepro_user_prefix + item.0 }}'
+    group: '{{ reprepro_group_prefix + item.0 }}'
+    mode: '0755'
+  with_nested:
+    - reprepro_repositories
+    - [ 'email-changes.sh' ]
 

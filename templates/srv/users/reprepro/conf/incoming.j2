@@ -1,7 +1,23 @@
+{% set repository = item.0 %}
+{% set reprepro_tpl_allow = [] %}
+{% for section in reprepro_distributions %}
+{%   if section.Distribution == repository %}
+{%     if section.Codename in reprepro_codenames and section.Pull is undefined %}
+{%       set _ = reprepro_tpl_allow.append(section.Codename) %}
+{%       if section.Suite is defined %}
+{%         set _ = reprepro_tpl_allow.append(section.Suite + ">" + section.Codename) %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
 # This file is managed by Ansible, all changes will be lost
 
 Name: incoming
-IncomingDir: /srv/users/{{ reprepro_incoming_user }}/incoming
-TempDir: /srv/users/{{ reprepro_incoming_user }}/temp
-
+IncomingDir: {{ "../" + reprepro_upload_prefix + repository + "/incoming" }}
+TempDir: tmp
+{% if reprepro_tpl_allow %}
+Allow: {{ reprepro_tpl_allow | join(" ") }}
+{% endif %}
+Cleanup: on_deny on_error
+Multiple: yes
 

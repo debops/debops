@@ -1,8 +1,42 @@
 ---
 
-# Hash mapping between system architecture reported by Ansible and package
-# architectures in Debian
-reprepro_architecture:
-  'i386': 'i386'
-  'x86_64': 'amd64'
+# GnuPG snapshot file prefix
+reprepro_snapshot_prefix: 'reprepro-snapshot-{{ reprepro_domains[0] }}-'
+
+# Path where GnuPG snapshot should be created
+reprepro_snapshot_path: '/var/backups'
+
+
+# ---- nginx configuration ----
+
+# Configuration for HTTP server
+reprepro_nginx_server_http:
+  by_role: 'debops.reprepro'
+  enabled: True
+  ssl: False
+  filename: '{{ reprepro_domains[0] + "_http" }}'
+  name: '{{ reprepro_domains }}'
+  root: '{{ reprepro_repository_path }}'
+  location:
+    '/': |
+      try_files $uri $uri/ =404;
+      autoindex on;
+  location_allow:
+    '/': '{{ reprepro_allow }}'
+
+# Configuration for HTTPS server
+reprepro_nginx_server_https:
+  by_role: 'debops.reprepro'
+  enabled: True
+  listen: False
+  listen_ssl: [ '443' ]
+  filename: '{{ reprepro_domains[0] + "_https" }}'
+  name: '{{ reprepro_domains }}'
+  root: '{{ reprepro_repository_path }}'
+  location:
+    '/': |
+      try_files $uri $uri/ =404;
+      autoindex on;
+  location_allow:
+    '/': '{{ reprepro_allow }}'
 

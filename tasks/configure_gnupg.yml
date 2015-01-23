@@ -1,64 +1,78 @@
 ---
 
-- name: Configure GPG key template
-  template: src=srv/users/{{ reprepro_user }}/gpg-key-template.j2
-            dest=/srv/users/{{ reprepro_user }}/gpg-key-template
-            owner={{ reprepro_user }} group={{ reprepro_group }} mode=0644
+- name: Check if GnuPG directory exists
+  stat:
+    path: '{{ reprepro_path + "/" + reprepro_user_prefix + item + "/.gnupg" }}'
+  register: reprepro_register_gpg
+  with_items: reprepro_repositories
 
-- name: Create ~/.gnupg archive directory on Ansible Controller
-  local_action: file path={{ secret }}/storage/tar/{{ ansible_fqdn }}/reprepro state=directory
-  sudo: no
-  when: secret is defined and secret
+- name: Check if GnuPG snapshot exists on Ansible Controller
+  stat:
+    path: '{{ secret + "/reprepro/" + ansible_domain + "/snapshots/" + reprepro_snapshot_prefix + item + ".tar.gz" }}'
+  with_items: reprepro_repositories
+  register: reprepro_register_gpg_snapshot
+  delegate_to: 'localhost'
+  sudo: False
 
-- name: Download archived ~/.gnupg directory if exists
-  copy: src={{ secret }}/storage/tar/{{ ansible_fqdn }}/reprepro/
-        dest=/srv/users/{{ reprepro_user }}/
-        owner={{ reprepro_user }} group={{ reprepro_group }} mode=0644
-  when: secret is defined and secret
+- name: Restore GnuPG snapshots
+  unarchive:
+    src: '{{ secret + "/reprepro/" + ansible_domain + "/snapshots/" + reprepro_snapshot_prefix + item.0.item + ".tar.gz" }}'
+    dest: '{{ reprepro_path + "/" + reprepro_user_prefix + item.0.item }}'
+  with_together:
+    - reprepro_register_gpg.results
+    - reprepro_register_gpg_snapshot.results
+  when: item.0.item == item.1.item and not item.0.stat.exists and item.1.stat.exists
 
-- name: Check if archive of ~/.gnupg directory exists
-  stat: path=/srv/users/{{ reprepro_user }}/gnupg.tar.gz
-  register: reprepro_gnupg_archive
+- name: Ensure that ~/.gnupg directory exists
+  file:
+    path: '{{ reprepro_path + "/" + reprepro_user_prefix + item + "/.gnupg" }}'
+    state: 'directory'
+    owner: '{{ reprepro_user_prefix + item }}'
+    group: '{{ reprepro_group_prefix + item }}'
+    mode: '0700'
+  with_items: reprepro_repositories
 
-- name: Extract ~/.gnupg directory if present
-  command: tar -x -z -f gnupg.tar.gz chdir=~
-           creates=~/.gnupg/secring.gpg
-  when: reprepro_gnupg_archive is defined and reprepro_gnupg_archive.stat.exists == True
-  sudo_user: '{{ reprepro_user }}'
+- name: Configure reprepro GnuPG instance
+  template:
+    src: 'srv/users/reprepro/gnupg/gpg.conf.j2'
+    dest: '{{ reprepro_path + "/" + reprepro_user_prefix + item + "/.gnupg/gpg.conf" }}'
+    owner: '{{ reprepro_user_prefix + item }}'
+    group: '{{ reprepro_group_prefix + item }}'
+    mode: '0644'
+  with_items: reprepro_repositories
 
-- name: Install haveged to create bigger entropy pool
-  apt: pkg=haveged state=latest install_recommends=no
-  when: (reprepro_haveged is defined and reprepro_haveged) and
-        (reprepro_gnupg_archive is defined and reprepro_gnupg_archive.stat.exists == False)
-
-- name: Make sure haveged is running
-  service: name=haveged state=started
-  when: (reprepro_haveged is defined and reprepro_haveged) and
-        (reprepro_gnupg_archive is defined and reprepro_gnupg_archive.stat.exists == False)
+- name: Create repository key template
+  template:
+    src: 'srv/users/reprepro/gpg-key-template.j2'
+    dest: '{{ reprepro_path + "/" + reprepro_user_prefix + item + "/gpg-key-template" }}'
+    owner: '{{ reprepro_user_prefix + item }}'
+    group: '{{ reprepro_group_prefix + item }}'
+    mode: '0644'
+  with_items: reprepro_repositories
 
 - name: Generate automatic signing key
   command: gpg --batch --gen-key gpg-key-template chdir=~
            creates=~/.gnupg/secring.gpg
-  sudo_user: '{{ reprepro_user }}'
-
-- name: Uninstall haveged when not needed
-  apt: pkg=haveged state=absent
-  when: (reprepro_haveged is defined and reprepro_haveged) and
-        (reprepro_gnupg_archive is defined and reprepro_gnupg_archive.stat.exists == False)
+  sudo_user: '{{ reprepro_user_prefix + item }}'
+  with_items: reprepro_repositories
 
 - name: Create archive of ~/.gnupg directory
-  command: tar -c -z -f gnupg.tar.gz .gnupg chdir=~
-         creates=/srv/users/{{ reprepro_user }}/gnupg.tar.gz
-  sudo_user: '{{ reprepro_user }}'
+  shell: touch {{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz.tmp" }} ;
+         chmod 0600 {{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz.tmp" }} ;
+         tar czvpf {{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz.tmp" }} .gnupg ;
+         mv {{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz.tmp" }} {{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz" }}
+         chdir={{ reprepro_path + "/" + reprepro_user_prefix + item }} creates={{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz" }}
+  with_items: reprepro_repositories
 
 - name: Upload ~/.gnupg archive to Ansible Controller
-  fetch: src=/srv/users/{{ reprepro_user }}/gnupg.tar.gz flat=yes
-         dest={{ secret }}/storage/tar/{{ ansible_fqdn }}/reprepro/gnupg.tar.gz
-  when: secret is defined and secret
+  fetch:
+    src: '{{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz" }}'
+    dest: '{{ secret + "/reprepro/" + ansible_domain + "/snapshots/" + reprepro_snapshot_prefix + item + ".tar.gz" }}'
+    flat: True
+  with_items: reprepro_repositories
 
 - name: Export automatic signing key
-  shell: gpg --armor --export {{ reprepro_gpg_email }} > {{ reprepro_repository }}/{{ ansible_fqdn }}.gpg.key
-         creates={{ reprepro_repository }}/{{ ansible_fqdn }}.gpg.key
-  sudo_user: '{{ reprepro_user }}'
-
+  shell: 'gpg --armor --export "{{ reprepro_gpg_email_prefix + item + reprepro_gpg_email_suffix }}" > {{ reprepro_repository_path + "/" + item + "/" + reprepro_domains[0] + ".asc" }} creates={{ reprepro_repository_path + "/" + item + "/" + reprepro_domains[0] + ".asc" }}'
+  sudo_user: '{{ reprepro_user_prefix + item }}'
+  with_items: reprepro_repositories
 
