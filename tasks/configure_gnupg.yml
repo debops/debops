@@ -8,7 +8,7 @@
 
 - name: Check if GnuPG snapshot exists on Ansible Controller
   stat:
-    path: '{{ secret + "/reprepro/" + ansible_domain + "/snapshots/" + reprepro_snapshot_prefix + item + ".tar.gz" }}'
+    path: '{{ secret + "/reprepro/" + ansible_domain + "/snapshots/" + reprepro_domains[0] + "/" + item + "/gnupg.tar" }}'
   with_items: reprepro_repositories
   register: reprepro_register_gpg_snapshot
   delegate_to: 'localhost'
@@ -16,7 +16,7 @@
 
 - name: Restore GnuPG snapshots
   unarchive:
-    src: '{{ secret + "/reprepro/" + ansible_domain + "/snapshots/" + reprepro_snapshot_prefix + item.0.item + ".tar.gz" }}'
+    src: '{{ secret + "/reprepro/" + ansible_domain + "/snapshots/" + reprepro_domains[0] + "/" + item.0.item + "/gnupg.tar" }}'
     dest: '{{ reprepro_path + "/" + reprepro_user_prefix + item.0.item }}'
   with_together:
     - reprepro_register_gpg.results
@@ -56,18 +56,17 @@
   sudo_user: '{{ reprepro_user_prefix + item }}'
   with_items: reprepro_repositories
 
-- name: Create archive of ~/.gnupg directory
-  shell: touch {{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz.tmp" }} ;
-         chmod 0600 {{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz.tmp" }} ;
-         tar czvpf {{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz.tmp" }} .gnupg ;
-         mv {{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz.tmp" }} {{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz" }}
-         chdir={{ reprepro_path + "/" + reprepro_user_prefix + item }} creates={{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz" }}
+- name: Create or update archive of ~/.gnupg directory
+  shell: tar uvpf gnupg.tar .gnupg && tar dpf gnupg.tar .gnupg || (
+         tar cvpf gnupg.tar .gnupg ; chmod 0600 ~/gnupg.tar) chdir=~
+  sudo_user: '{{ reprepro_user_prefix + item }}'
   with_items: reprepro_repositories
+  changed_when: False
 
 - name: Upload ~/.gnupg archive to Ansible Controller
   fetch:
-    src: '{{ reprepro_snapshot_path + "/" + reprepro_snapshot_prefix + item + ".tar.gz" }}'
-    dest: '{{ secret + "/reprepro/" + ansible_domain + "/snapshots/" + reprepro_snapshot_prefix + item + ".tar.gz" }}'
+    src: '{{ reprepro_path + "/" + reprepro_user_prefix + item + "/gnupg.tar" }}'
+    dest: '{{ secret + "/reprepro/" + ansible_domain + "/snapshots/" + reprepro_domains[0] + "/" + item + "/gnupg.tar" }}'
     flat: True
   with_items: reprepro_repositories
 
