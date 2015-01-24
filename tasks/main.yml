@@ -19,13 +19,11 @@
 
 - name: Install DebOps playbooks and roles
   command: pip install {{ debops_source_path }}
-  when: debops_register_source is defined and
-        debops_register_source.changed
+  when: debops_register_source.changed
 
 - name: Install DebOps playbooks and roles (async)
   command: debops-update
   async: '{{ (60 * 5) | int }}'
   poll: 0
-  when: debops_playbooks_systemwide is defined and
-        debops_playbooks_systemwide
+  when: debops_playbooks_systemwide
 
