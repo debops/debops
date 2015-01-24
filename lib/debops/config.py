@@ -37,14 +37,32 @@ __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 DEBOPS_CONFIG = ".debops.cfg"
 
+def get_config_filenames():
+    if sys.platform.startswith('win'):
+        configdirs = [os.getenv('APPDATA')
+                      or os.path.expanduser('~\\Application Data')]
+    elif sys.platform == 'darwin':  # Mac OS X
+        configdirs = [os.path.expanduser('~/Library/Application Support')]
+    else:
+        # According to XDG specification
+        # http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+
+        configdirs = ([os.getenv('XDG_CONFIG_HOME') or '~/.config'] +
+                      (os.getenv('XDG_CONFIG_DIRS') or '/etc/xdg').split(':') +
+                      ['/etc'])
+        configdirs = [os.path.expanduser(d) for d in configdirs]
+        configdirs.reverse()
+        return [os.path.join(d, 'debops.cfg') for d in configdirs]
+
+_configfiles = get_config_filenames()
+
 def read_config(debops_root):
-    path = os.path.join(debops_root, DEBOPS_CONFIG)
+    configfiles = _configfiles + [os.path.join(debops_root, DEBOPS_CONFIG)]
     cfgparser = ConfigParser.SafeConfigParser()
-    with open(path) as fh:
-        try:
-            cfgparser.readfp(fh)
-        except ConfigParser.Error, e:
-            raise SystemExit('Error in %s: %s' % (DEBOPS_CONFIG, str(e)))
+    try:
+        cfgparser.read(configfiles)
+    except ConfigParser.Error, e:
+        raise SystemExit('Error in %s: %s' % (DEBOPS_CONFIG, str(e)))
     cfg = dict((sect, dict(cfgparser.items(sect)))
-                for sect in cfgparser.sections())
+               for sect in cfgparser.sections())
     return cfg
