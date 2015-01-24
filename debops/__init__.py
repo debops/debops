@@ -39,6 +39,8 @@ except ImportError:
         if not s: return "''"
         return "'" + s.replace("'", "'\"'\"'") + "'"
 
+from .config import *
+
 __author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
 __copyright__ = "Copyright 2014 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
 __licence__ = "GNU General Public License version 3 (GPL v3) or later"
@@ -48,8 +50,6 @@ __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 DEBOPS_DATA_HOME = os.path.expanduser(os.path.join(
     os.environ.get('XDG_DATA_HOME', '~/.local/share'), "debops"))
-
-DEBOPS_CONFIG = ".debops.cfg"
 
 # Default installation directory
 DEBOPS_DEFAULT_INSTALL_PATH = os.path.join(DEBOPS_DATA_HOME, "debops-playbooks")
@@ -155,20 +155,6 @@ def find_inventorypath(debops_root):
         ansible_inventory = os.path.join(debops_root, inventory_path)
         if os.path.isdir(ansible_inventory):
             return ansible_inventory
-
-# ---- Configuration support ----
-
-def read_config(debops_root):
-    path = os.path.join(debops_root, DEBOPS_CONFIG)
-    cfgparser = ConfigParser.SafeConfigParser()
-    with open(path) as fh:
-        try:
-            cfgparser.readfp(fh)
-        except ConfigParser.Error, e:
-            raise SystemExit('Error in %s: %s' % (DEBOPS_CONFIG, str(e)))
-    cfg = dict((sect, dict(cfgparser.items(sect)))
-                for sect in cfgparser.sections())
-    return cfg
 
 # ---- Encryption support ----
 
