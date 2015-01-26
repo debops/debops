@@ -5,22 +5,9 @@
 {{ "#" * title_length }}
 {% endblock %}
 {% block badges %}
-{% if ansigenome_info.travis is defined and ansigenome_info.travis %}|Travis CI| |test-suite|{% endif %}{% if ansigenome_info.galaxy_id is defined and ansigenome_info.galaxy_id %} |Ansible Galaxy|{% endif %}
+`Source code on GitHub`_
 
-
-{% if ansigenome_info.travis is defined and ansigenome_info.travis %}
-.. |Travis CI| image:: http://img.shields.io/travis/{{ scm.user + '/' + role.slug }}.svg?style=flat
-   :target: http://travis-ci.org/{{ scm.user + '/' + role.slug }}
-
-.. |test-suite| image:: http://img.shields.io/badge/test--suite-{{ scm.repo_prefix | replace("-","--") | replace("_","__") + role.name | replace("-","--") | replace("_","__") }}-blue.svg?style=flat
-   :target: https://github.com/{{ scm.user }}/test-suite/tree/master/{{ scm.repo_prefix + role.name }}/
-
-{% endif %}
-{% if ansigenome_info.galaxy_id is defined and ansigenome_info.galaxy_id %}
-.. |Ansible Galaxy| image:: http://img.shields.io/badge/galaxy-{{ role.galaxy_name }}-660198.svg?style=flat
-   :target: https://galaxy.ansible.com/list#/roles/{{ ansigenome_info.galaxy_id }}
-
-{% endif %}
+.. _Source code on GitHub: https://github.com/{{ scm.user + "/" + role.slug }}/
 {% endblock %}
 {% block beta %}
 {% endblock %}

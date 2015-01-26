@@ -1,6 +1,28 @@
 ## DebOps Changelog
 
 
+### v0.2.0 (released 2015-01-26)
+
+***
+
+##### 2015-01-26
+
+`debops-padlock` script has been modified to support "lock" and "unlock"
+sub-commands and it is now used by the `padlock` wrapper script to lock and
+unlock EncFS-encrypted secret directory.
+
+`debops` script can now read configuration from several files:
+
+    /etc/debops.cfg
+    $XDG_CONFIG_DIRS/debops.cfg (defaults to ~/etc/xdg/debops.cfg)
+    $XDG_CONFIG_HOME/debops.cfg (defaults to ~/.config/debops.cfg)
+    ./.debops.cfg
+
+Configuration options from different files are merged together.
+
+Scripts are now tested on Travis-CI using `nosetests`.
+
+
 ### v0.1.0 (released 2014-12-14)
 
 ***
