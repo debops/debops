@@ -12,7 +12,7 @@ README = open('README.rst').read()
 
 setup(
     name = "debops",
-    version = "0.2.0",
+    version = "0.3.0",
     install_requires = ['netaddr', 'argparse'],
 
     scripts = ['bin/debops',
@@ -35,7 +35,7 @@ setup(
     license = "GPL 3.0",
     keywords = "ansible",
     url          = "http://debops.org/",
-    download_url = "https://github.com/debops/debops/archive/v0.2.0.tar.gz",
+    download_url = "https://github.com/debops/debops/archive/v0.3.0.tar.gz",
     classifiers = [
     'Development Status :: 4 - Beta',
     'Environment :: Console',
