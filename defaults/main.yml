@@ -105,6 +105,7 @@ reprepro_distributions_local:
     Label: '{{ reprepro_origin | lower + "-staging" }}'
     Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
     Suite: '{{ reprepro_origin | lower + "-staging" }}'
+    Uploaders: 'uploaders.{{ reprepro_origin | lower }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
     Tracking: 'keep'
@@ -136,6 +137,7 @@ reprepro_distributions_local_backports:
     Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
     Codename: '{{ reprepro_distribution_release }}-backports'
     Suite: 'stable-backports'
+    Uploaders: 'uploaders.wheezy-backports'
     Label: '{{ reprepro_distribution }}'
     Origin: '{{ reprepro_origin }}'
     Scripts: |
@@ -210,6 +212,21 @@ reprepro_incoming_allow:
 
     # stable-backports>distribution-backports
   - 'stable-backports>{{ reprepro_distribution_release + "-backports" }}'
+
+
+# ---- conf/uploaders ----
+
+# Configuration of uploaders files for each repository (Name relative to the
+# 'conf/' directory)
+reprepro_uploaders:
+
+  - Filename: 'uploaders.{{ reprepro_origin | lower }}'
+    Contents: |
+      allow * by any key
+
+  - Filename: 'uploaders.wheezy-backports'
+    Contents: |
+      allow * by any key
 
 
 # ---- conf/pulls ----

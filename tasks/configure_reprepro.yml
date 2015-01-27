@@ -56,6 +56,15 @@
     mode: '0644'
   with_items: [ 'distributions', 'incoming', 'options', 'pulls', 'updates' ]
 
+- name: Configure uploaders configuration files
+  template:
+    src: 'var/lib/reprepro/conf/uploaders.j2'
+    dest: '{{ reprepro_home + "/conf/" + item.Filename }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0644'
+  with_items: reprepro_uploaders
+
 - name: Manage reprepro scripts
   template:
     src: 'var/lib/reprepro/conf/{{ item }}.j2'
