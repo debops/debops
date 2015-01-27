@@ -2,6 +2,12 @@
 
 # ---- General repository layout ----
 
+# Linux distribution managed by this reprepro instance
+reprepro_distribution: '{{ ansible_distribution }}'
+
+# Linux release managed by this reprepro instance
+reprepro_distribution_release: '{{ ansible_distribution_release }}'
+
 # List of repositories managed by this reprepro instance
 reprepro_repositories: '{{ reprepro_distributions | map(attribute="Distribution") | list | sort | unique }}'
 
@@ -95,11 +101,11 @@ reprepro_distributions: '{{ reprepro_distributions_local +
 # account.
 reprepro_distributions_local:
 
-  - Distribution: '{{ ansible_distribution | lower }}'
+  - Distribution: '{{ reprepro_distribution | lower }}'
     Description: '{{ reprepro_origin }} staging repository'
     Origin: '{{ reprepro_origin }}'
     Label: '{{ reprepro_origin | lower + "-staging" }}'
-    Codename: '{{ ansible_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
     Suite: '{{ reprepro_origin | lower + "-staging" }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
@@ -110,11 +116,11 @@ reprepro_distributions_local:
       --type=dsc email-changes.sh
       {% endif %}
 
-  - Distribution: '{{ ansible_distribution | lower }}'
+  - Distribution: '{{ reprepro_distribution | lower }}'
     Description: '{{ reprepro_origin }} production repository'
     Origin: '{{ reprepro_origin }}'
     Label: '{{ reprepro_origin | lower + "-prod" }}'
-    Codename: '{{ ansible_distribution_release + "-" + reprepro_origin | lower + "-prod" }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-prod" }}'
     Suite: '{{ reprepro_origin | lower + "-prod" }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
@@ -128,11 +134,11 @@ reprepro_distributions_local:
 # Repository for backports created locally for current stable distribution
 reprepro_distributions_local_backports:
 
-  - Distribution: '{{ ansible_distribution | lower }}'
-    Description: 'Packages for {{ ansible_distribution }} backported by {{ reprepro_origin }}'
-    Codename: '{{ ansible_distribution_release }}-backports'
+  - Distribution: '{{ reprepro_distribution | lower }}'
+    Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
+    Codename: '{{ reprepro_distribution_release }}-backports'
     Suite: 'stable-backports'
-    Label: '{{ ansible_distribution }}'
+    Label: '{{ reprepro_distribution }}'
     Origin: '{{ reprepro_origin }}'
     Scripts: |
       {% if reprepro_admin_email %}
@@ -193,9 +199,9 @@ reprepro_pulls: '{{ reprepro_pulls_local }}'
 # -staging are pulled to -prod
 reprepro_pulls_local:
 
-  - Distribution: '{{ ansible_distribution | lower }}'
+  - Distribution: '{{ reprepro_distribution | lower }}'
     Name: '{{ reprepro_origin | lower + "_from_staging" }}'
-    From: '{{ ansible_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    From: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
 
 
 # ---- conf/updates ----
