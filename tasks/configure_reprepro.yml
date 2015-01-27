@@ -63,7 +63,7 @@
     mode: '0771'
   with_nested:
     - reprepro_repositories
-    - [ 'incoming' ]
+    - '{{ reprepro_incoming | map(attribute="Name") | list }}'
 
 - name: Create reprepro user directories
   file:

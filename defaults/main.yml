@@ -190,6 +190,22 @@ reprepro_distributions_mirror_ubuntu:
     Description: 'Ubuntu Trusty 14.04 LTS Updates'
 
 
+# ---- conf/incoming ----
+
+reprepro_incoming: '{{ reprepro_incoming_local }}'
+
+reprepro_incoming_local:
+
+  - Distribution: '{{ reprepro_distribution | lower }}'
+    Name: 'incoming'
+    Allow: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}
+            {{ reprepro_origin | lower + "-staging" }}>{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+
+  - Distribution: '{{ reprepro_distribution | lower }}'
+    Name: 'backports'
+    Allow: 'stable-backports>{{ reprepro_distribution_release + "-backports" }}'
+
+
 # ---- conf/pulls ----
 
 # List of pull configurations enabled per distribution
