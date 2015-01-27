@@ -34,7 +34,7 @@
 
 - name: Configure reprepro GnuPG instance
   template:
-    src: 'srv/users/reprepro/gnupg/gpg.conf.j2'
+    src: 'var/lib/reprepro/gnupg/gpg.conf.j2'
     dest: '{{ reprepro_path + "/" + reprepro_user_prefix + item + "/.gnupg/gpg.conf" }}'
     owner: '{{ reprepro_user_prefix + item }}'
     group: '{{ reprepro_group_prefix + item }}'
@@ -43,7 +43,7 @@
 
 - name: Create repository key template
   template:
-    src: 'srv/users/reprepro/gpg-key-template.j2'
+    src: 'var/lib/reprepro/gpg-key-template.j2'
     dest: '{{ reprepro_path + "/" + reprepro_user_prefix + item + "/gpg-key-template" }}'
     owner: '{{ reprepro_user_prefix + item }}'
     group: '{{ reprepro_group_prefix + item }}'
