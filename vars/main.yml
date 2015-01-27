@@ -23,10 +23,24 @@ reprepro_nginx_server_https:
   filename: '{{ reprepro_domains[0] + "_https" }}'
   name: '{{ reprepro_domains }}'
   root: '{{ reprepro_repository_path }}'
+
+  options: |
+    client_max_body_size {{ reprepro_max_body_size }}M;
+
   location:
     '/': |
       try_files $uri $uri/ =404;
       autoindex on;
+
+    '/upload': |
+      alias {{ reprepro_upload }};
+      dav_access all:rw;
+      dav_methods PUT;
+      limit_except PUT {
+              deny all;
+      }
+
   location_allow:
     '/': '{{ reprepro_allow }}'
+    '/upload': '{{ reprepro_allow_upload }}'
 
