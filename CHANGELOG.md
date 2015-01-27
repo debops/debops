@@ -7,12 +7,10 @@ DebOps is included on [Black Duck Software 2014 Open Source Rookies of the Year]
 
 ***
 
-##### 2015-01-27
-
-### v0.2.0 (released 2015-01-26)
-
 Small fixes for bugs in DebOps libraries which prevented corret script
 execution on platforms other than Linux.
+
+### v0.2.0 (released 2015-01-26)
 
 ***
 
