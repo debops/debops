@@ -52,7 +52,7 @@ def get_config_filenames():
                       ['/etc'])
         configdirs = [os.path.expanduser(d) for d in configdirs]
         configdirs.reverse()
-        return [os.path.join(d, 'debops.cfg') for d in configdirs]
+    return [os.path.join(d, 'debops.cfg') for d in configdirs]
 
 _configfiles = get_config_filenames()
 
