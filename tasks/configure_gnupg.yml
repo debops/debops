@@ -58,7 +58,7 @@
 
 - name: Create or update archive of ~/.gnupg directory
   shell: tar uvpf gnupg.tar .gnupg && tar dpf gnupg.tar .gnupg || (
-         tar cvpf gnupg.tar .gnupg ; chmod 0600 ~/gnupg.tar) chdir=~
+         tar cvpf gnupg.tar .gnupg) ; chmod 0600 ~/gnupg.tar chdir=~
   sudo_user: '{{ reprepro_user_prefix + item }}'
   with_items: reprepro_repositories
   changed_when: False
