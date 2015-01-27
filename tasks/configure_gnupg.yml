@@ -37,14 +37,14 @@
 
 - name: Create repository key template
   template:
-    src: 'var/lib/reprepro/gpg-key-template.j2'
+    src: 'var/lib/reprepro/gnupg-key-template.j2'
     dest: '{{ reprepro_home + "/.gnupg-key-template" }}'
     owner: '{{ reprepro_user }}'
     group: '{{ reprepro_group }}'
     mode: '0644'
 
 - name: Generate automatic signing key
-  command: gpg --batch --gen-key gpg-key-template chdir=~
+  command: gpg --batch --gen-key .gnupg-key-template chdir=~
            creates=~/.gnupg/secring.gpg
   sudo_user: '{{ reprepro_user }}'
 
