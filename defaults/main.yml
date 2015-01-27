@@ -8,9 +8,6 @@ reprepro_distribution: '{{ ansible_distribution }}'
 # Linux release managed by this reprepro instance
 reprepro_distribution_release: '{{ ansible_distribution_release }}'
 
-# List of repositories managed by this reprepro instance
-reprepro_repositories: '{{ reprepro_distributions | map(attribute="Distribution") | list | sort | unique }}'
-
 # List of codenames enabled in this repository, filtered by distribution
 reprepro_codenames: '{{ reprepro_distributions | map(attribute="Codename") | list | sort | unique }}'
 
@@ -45,22 +42,20 @@ reprepro_allow: []
 
 # ---- Internal reprepro configuration ----
 
-# Path where reprepro repositories is stored
-reprepro_path: '/var/lib/reprepro'
 
-# Prefix for the system user which manages reprepro, per distribution
-reprepro_user_prefix: 'reprepro-'
+# ---- Internal reprepro configuration ----
 
-# Prefix for the system group which manages reprepro, per distribution
-reprepro_group_prefix: 'reprepro-'
+# Path where reprepro home directory is stored
+reprepro_home: '/var/lib/reprepro'
 
-# Prefix for the upload user account, per distribution
-reprepro_upload_prefix: 'upload-'
+# System user which manages reprepro repository
+reprepro_user: 'reprepro'
 
-# List of additional system groups to which upload accounts will be added.
-# 'sftponly' account in DebOps allows for SFTPonly access, shell or scp access
-# is not allowed. See 'debops.auth' and 'debops.sshd' roles for more details.
-reprepro_upload_append_groups: [ 'sftponly' ]
+# System group which manages reprepro repository and upload account
+reprepro_group: 'reprepro'
+
+# Directory where uploaded packages are stored
+reprepro_upload: '{{ reprepro_home + "/incoming" }}'
 
 # Directory where reprepro will create its repository structure.
 # It will be served publicly by a HTTP/HTTPS webserver.
@@ -79,8 +74,7 @@ reprepro_repository_components:
 reprepro_gpg_key_type: 'RSA'
 reprepro_gpg_key_length: '4096'
 reprepro_gpg_name: '{{ ansible_domain.split(".")[0] | capitalize + " Automatic Signing Key" }}'
-reprepro_gpg_email_prefix: 'ftparchive-'
-reprepro_gpg_email_suffix: '@{{ ansible_domain }}'
+reprepro_gpg_email: '{{ reprepro_distribution | lower + "-packages@" + ansible_domain }}'
 reprepro_gpg_expire_days: '{{ (365 * 5) }}'
 
 # Sign the Release files with default GPG key
@@ -192,18 +186,26 @@ reprepro_distributions_mirror_ubuntu:
 
 # ---- conf/incoming ----
 
-reprepro_incoming: '{{ reprepro_incoming_local }}'
-
-reprepro_incoming_local:
+reprepro_incoming:
 
   - Distribution: '{{ reprepro_distribution | lower }}'
     Name: 'incoming'
-    Allow: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}
-            {{ reprepro_origin | lower + "-staging" }}>{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    Allow: '{{ reprepro_incoming_allow | join(" ") }}'
 
-  - Distribution: '{{ reprepro_distribution | lower }}'
-    Name: 'backports'
-    Allow: 'stable-backports>{{ reprepro_distribution_release + "-backports" }}'
+# List of incoming Allow rules enabled by default
+reprepro_incoming_allow:
+
+    # release-origin-staging
+  - '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+
+    # origin-staging>release-origin-staging
+  - '{{ reprepro_origin | lower + "-staging" }}>{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+
+    # distribution-backports
+  - '{{ reprepro_distribution_release + "-backports" }}'
+
+    # stable-backports>distribution-backports
+  - 'stable-backports>{{ reprepro_distribution_release + "-backports" }}'
 
 
 # ---- conf/pulls ----

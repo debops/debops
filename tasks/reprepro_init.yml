@@ -2,12 +2,10 @@
 
 - name: Initialize reprepro repositories
   command: reprepro export chdir=~ creates=~/db/version
-  sudo_user: '{{ reprepro_user_prefix + item }}'
-  with_items: reprepro_repositories
+  sudo_user: '{{ reprepro_user }}'
 
 - name: Generate reprepro symlinks
   command: reprepro createsymlinks chdir=~
   changed_when: False
-  sudo_user: '{{ reprepro_user_prefix + item }}'
-  with_items: reprepro_repositories
+  sudo_user: '{{ reprepro_user }}'
 

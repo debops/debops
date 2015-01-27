@@ -1,8 +1,7 @@
-{% set repository = item.0 %}
 # This file is managed by Ansible, all changes will be lost
 
 {% for section in reprepro_distributions %}
-{% if section.Distribution == repository %}
+{% if section.Distribution == reprepro_distribution | lower %}
 {% if section.Codename in reprepro_codenames %}
 {% for key, value in section.iteritems() %}
 {% if key not in [ 'Distribution', 'Scripts', 'Components', 'UDebComponents', 'Update' ] and value %}
@@ -12,12 +11,12 @@
 {% if section.Components is defined and section.Components %}
 Components: {{ section.Components }}
 {% elif section.Components is undefined %}
-Components: {{ reprepro_repository_components[repository] | join(" ") }}
+Components: {{ reprepro_repository_components[reprepro_distribution | lower] | join(" ") }}
 {% endif %}
 {% if section.UDebComponents is defined and section.UDebComponents %}
 UDebComponents: {{ section.UDebComponents }}
 {% elif section.UDebComponents is undefined %}
-UDebComponents: {{ reprepro_repository_components[repository] | join(" ") }}
+UDebComponents: {{ reprepro_repository_components[reprepro_distribution | lower] | join(" ") }}
 {% endif %}
 {% if section.SignWith is undefined and reprepro_signwith %}
 SignWith: {{ reprepro_signwith }}

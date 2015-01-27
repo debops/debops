@@ -7,103 +7,61 @@
     install_recommends: False
   with_items: [ 'reprepro', 'dpkg-dev' ]
 
-- name: Create main reprepro directory
-  file:
-    path: '{{ reprepro_path }}'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Create system groups for reprepro
+- name: Create system group for reprepro
   group:
-    name: '{{ reprepro_group_prefix + item }}'
+    name: '{{ reprepro_group }}'
     system: True
     state: 'present'
-  with_items: reprepro_repositories
 
-- name: Create system users for reprepro
+- name: Create system user for reprepro
   user:
-    name: '{{ reprepro_user_prefix + item }}'
-    group: '{{ reprepro_group_prefix + item }}'
+    name: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
     system: True
     shell: '/bin/bash'
-    home: '{{ reprepro_path + "/" + reprepro_user_prefix + item }}'
+    home: '{{ reprepro_home }}'
     state: 'present'
-  with_items: reprepro_repositories
 
-- name: Create system users for reprepro uploads
-  user:
-    name: '{{ reprepro_upload_prefix + item }}'
-    group: '{{ reprepro_group_prefix + item }}'
-    groups: '{{ reprepro_upload_append_groups | join(",") | default(omit) }}'
-    append: True
-    system: True
-    shell: '/sbin/nologin'
-    home: '{{ reprepro_path + "/" + reprepro_upload_prefix + item }}'
-    createhome: False
-    state: 'present'
-  with_items: reprepro_repositories
-
-- name: Fix home directory permissions of reprepro uploads
+- name: Create directory for reprepro uploads
   file:
-    path: '{{ reprepro_path + "/" + reprepro_upload_prefix + item }}'
+    path: '{{ reprepro_home + "/incoming" }}'
     state: 'directory'
-    owner: 'root'
-    group: 'root'
+    owner: '{{ reprepro_user }}'
+    group: 'www-data'
+    mode: '0730'
+
+- name: Create reprepro internal directories
+  file:
+    path: '{{ reprepro_home + "/" + item }}'
+    state: 'directory'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
     mode: '0755'
-  with_items: reprepro_repositories
-
-- name: Create upload user directories
-  file:
-    path: '{{ reprepro_path + "/" + reprepro_upload_prefix + item.0 + "/" + item.1 }}'
-    state: 'directory'
-    owner: '{{ reprepro_upload_prefix + item.0 }}'
-    group: '{{ reprepro_group_prefix + item.0 }}'
-    mode: '0771'
-  with_nested:
-    - reprepro_repositories
-    - '{{ reprepro_incoming | map(attribute="Name") | list }}'
-
-- name: Create reprepro user directories
-  file:
-    path: '{{ reprepro_path + "/" + reprepro_user_prefix + item.0 + "/" + item.1 }}'
-    state: 'directory'
-    owner: '{{ reprepro_user_prefix + item.0 }}'
-    group: '{{ reprepro_group_prefix + item.0 }}'
-    mode: '0755'
-  with_nested:
-    - reprepro_repositories
-    - [ 'conf', 'tmp' ]
+  with_items: [ 'conf', 'tmp' ]
 
 - name: Create reprepro repository
   file:
-    path: '{{ reprepro_repository_path + "/" + item }}'
+    path: '{{ reprepro_repository_path + "/" + reprepro_distribution | lower }}'
     state: 'directory'
-    owner: '{{ reprepro_user_prefix + item }}'
-    group: '{{ reprepro_group_prefix + item }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
     mode: '0755'
-  with_items: reprepro_repositories
 
 - name: Manage reprepro configuration files
   template:
-    src: 'var/lib/reprepro/conf/{{ item.1 }}.j2'
-    dest: '{{ reprepro_path + "/" + reprepro_user_prefix + item.0 + "/conf/" + item.1 }}'
-    owner: '{{ reprepro_user_prefix + item.0 }}'
-    group: '{{ reprepro_group_prefix + item.0 }}'
+    src: 'var/lib/reprepro/conf/{{ item }}.j2'
+    dest: '{{ reprepro_home + "/conf/" + item }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
     mode: '0644'
-  with_nested:
-    - reprepro_repositories
-    - [ 'distributions', 'incoming', 'options', 'pulls', 'updates' ]
+  with_items: [ 'distributions', 'incoming', 'options', 'pulls', 'updates' ]
 
 - name: Manage reprepro scripts
   template:
-    src: 'var/lib/reprepro/conf/{{ item.1 }}.j2'
-    dest: '{{ reprepro_path + "/" + reprepro_user_prefix + item.0 + "/conf/" + item.1 }}'
-    owner: '{{ reprepro_user_prefix + item.0 }}'
-    group: '{{ reprepro_group_prefix + item.0 }}'
+    src: 'var/lib/reprepro/conf/{{ item }}.j2'
+    dest: '{{ reprepro_home + "/conf/" + item }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
     mode: '0755'
-  with_nested:
-    - reprepro_repositories
-    - [ 'email-changes.sh' ]
+  with_items: [ 'email-changes.sh' ]
 
