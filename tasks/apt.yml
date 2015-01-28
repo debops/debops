@@ -25,10 +25,17 @@
     - '../vars/apt_default_sources.yml'
   when: apt_default_sources is undefined
 
+- name: Enable delayed APT configuration
+  set_fact:
+    apt_keys_delayed_enabled: '{{ apt_keys_delayed }}'
+    apt_sources_delayed_enabled: '{{ apt_sources_delayed }}'
+  when: ansible_local is defined and ansible_local.apt is defined
+
 - name: Combine lists of default and user APT mirrors and sources
   set_fact:
+    apt_keys_combined: '{{ apt_keys + apt_keys_delayed_enabled | default([]) }}'
     apt_mirrors_combined: '{{ apt_mirrors + apt_default_mirrors | default([]) }}'
-    apt_sources_combined: '{{ apt_default_sources | default([]) + apt_sources }}'
+    apt_sources_combined: '{{ apt_default_sources | default([]) + apt_sources + apt_sources_delayed_enabled | default([]) }}'
 
 - name: Divert original /etc/apt/sources.list
   command: dpkg-divert --quiet --local --divert /etc/apt/sources.list.dpkg-divert --rename /etc/apt/sources.list
@@ -53,6 +60,19 @@
   command: dpkg-divert --quiet --local --rename --remove /etc/apt/sources.list
            removes=/etc/apt/sources.list.dpkg-divert
   when: not apt_sources_combined
+
+- name: Configure custom APT keys
+  apt_key:
+    data: '{{ item.data   | default(omit) }}'
+    file: '{{ item.file   | default(omit) }}'
+    id:   '{{ item.id     | default(omit) }}'
+    keyring: '{{ item.keyring | default(omit) }}'
+    keyserver: '{{ item.keyserver | default(omit) }}'
+    state: '{{ item.state | default("present") }}'
+    url: '{{ item.url | default(omit) }}'
+  with_items: apt_keys_combined
+  when: (item.url is defined or item.data is defined or item.id is defined or item.file is defined and
+         (item.state is undefined or item.state is defined))
 
 - name: Update package lists
   apt: update_cache=yes

@@ -24,9 +24,24 @@
 - include: unattended-upgrades.yml
   when: apt is defined and apt
 
-- include: install_conditional.yml
+- include: install_packages.yml
   when: apt is defined and apt
 
-- include: install_packages.yml
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: apt is defined and apt
+
+- name: Save APT local facts
+  template:
+    src: 'etc/ansible/facts.d/apt.fact.j2'
+    dest: '/etc/ansible/facts.d/apt.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   when: apt is defined and apt
 

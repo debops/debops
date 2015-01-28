@@ -4,7 +4,6 @@
 # Set to FQDN of a host to specify it as host for
 #    apt-cacher-ng - apt-get cache
 #    Debian Preseed configuration (planned)
-#    reprepro - Debian local repositories
 apt: True
 
 # Send mail notifications from APT to these email addresses
@@ -25,11 +24,38 @@ apt_mirrors: []
 apt_default_mirrors_lookup: '{{ ansible_distribution }}'
 
 
+# ---- APT repository keys ----
+
+# List of additional repository keys enabled automatically by Ansible. See
+# documentation of 'apt_key' module for possible values.
+apt_keys: []
+
+# Secondary list of APT keys, not configured on the first Ansible run, but
+# enabled on subsequent runs. Can be used in cases where APT repository might
+# not be available initially.
+apt_keys_delayed: []
+
+  # Example key definition from default 'debops.reprepro' configuration
+  #- url: '{{ "https://apt." + ansible_domain + "/" + ansible_distribution | lower + "/apt." + ansible_domain + ".asc" }}'
+  #  state: 'present'
+
+
 # ---- APT repositories ----
 
 # List of user-specified APT repositories. More information and list of
 # parameters can be found in 'templates/etc/apt/sources.list.j2'.
 apt_sources: []
+
+# List of secondary APT repositories which are not enabled on the first Ansible
+# run, but are enabled automatically on subsequent runs. It can be used in
+# cases where APT repository might not be available initially.
+apt_sources_delayed: []
+
+  # Example repository definition from default 'debops.reprepro' configuration
+  #- comment:  'Local backports of Debian Testing packages'
+  #  mirrors:  [ '{{ "http://apt." + ansible_domain + "/" + ansible_distribution | lower }}' ]
+  #  releases: [ '{{ apt_sources_release_backports }}' ]
+  #  sections: [ 'main', 'contrib', 'non-free' ]
 
 # String used to select default repositories based on Linux distribution used
 # on a specific host. Default repositories are set using
@@ -113,6 +139,20 @@ apt_group_packages: []
 
 # List of packages to install on a given host
 apt_host_packages: []
+
+# List of conditions that are checked to enable additional packages
+# automatically
+apt_conditional_whitelist:
+
+    # Install firmware packages on selected systems (rack servers, etc.)
+  - 'firmware'
+
+    # Install irqbalance package on multi-core systems
+  - 'irqbalance'
+
+    # Install uptimed on host systems, but not on virtualized guests
+  - 'uptimed'
+
 
 apt_debian_preseed_http_mirror: 'cdn.debian.net'
 apt_debian_preseed_release: '{{ ansible_distribution_release }}'
