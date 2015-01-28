@@ -11,6 +11,63 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2014-01-28
+^^^^^^^^^^
+
+Role updates
+************
+
+`debops.reprepro`_ role is no longer a dependency of `debops.apt`_. Instead
+it's configured like any other service, by adding a host to
+``[debops_reprepro]`` host group. This allows you to create separate hosts with
+different repositories if needed.
+
+Default configuration of `debops.reprepro`_ role has 3 repositories:
+
+- a backport repository configured for your installed release (for example on
+  Debian Wheezy it will manage packages for ``wheezy-backports``). You can
+  upload to this repository directly;
+
+- a "staging" repository for your organization, ``<release>-<domain>-staging``.
+  You can upload to this repository directly;
+
+- a "production" repository for your organization, ``<release>-<domain>-prod``,
+  this repository is currently managed manually from the ``reprepro`` user
+  account. You can promote packages to it from ``-staging`` repository using
+  ``reprepro pull`` command;
+
+You can also enable mirrors of selected distributions as needed, which allows
+you to use local APT mirror as a buffer between official repositories and your
+servers, if you need it. To upload packages to repositories you can use
+``dput`` command to upload ``*.changes`` files over HTTPS.
+
+`debops.reprepro`_ role automatically manages its GnuPG repository keys and
+makes snapshots of current keyring state which are then uploaded to Ansible
+Controller's ``secret/`` directory. In case of a reinstall, role will reuse
+already existing GnuPG keys if they are found on Ansible Controller.
+
+There are many more configuration options prepared in `debops.reprepro`_,
+I suggest that you read its ``defaults/main.yml`` file to see what's available.
+
+Because of above changes, you need to separately add your local repositories in
+`debops.apt`_ configuration variables. To make it easier, there is now
+a separate list variable for APT key definitions (``apt_keys``, as well as
+a way to add APT keys and repositories in a "delayed" way - instead of
+configuring your own repository immediately on first install, which could
+result in an error if repository is not yet set up, you can add configuration
+in separate set of ``apt_{keys,sources}_delayed`` variables which will be used
+only after `debops.apt`_ role had configured a host once.
+
+Another small change in `debops.apt`_ is modification of conditional package
+installations - instead of separate ``apt`` module calls, packages are enabled
+dynamically during Ansible run using ``set_fact`` module. `debops.apt`_ will
+now also correctly distinguish Debian and Ubuntu firmware packages which are
+named differently between those two distributions.
+
+.. _debops.reprepro: https://github.com/debops/ansible-reprepro/
+.. _debops.apt: https://github.com/debops/ansible-apt/
+
+
 2014-01-21
 ^^^^^^^^^^
 
