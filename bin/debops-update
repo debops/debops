@@ -151,20 +151,12 @@ def update_git_repository(path):
     old_pwd = os.getcwd()
     os.chdir(path)
 
-    # Parse out the head branch name
-    with open(os.path.join('.git', 'HEAD')) as fh:
-        head_branch_path = fh.readline().strip().split(None, 1)[1]
-        head_branch = head_branch_path.rsplit('/', 1)[-1]
-
-    # Get the current sha
-    with open(os.path.join('.git', head_branch_path)) as fh:
-        current_sha = fh.readline().strip().split(None, 1)[0]
+    # Get the current sha of the head branch
+    current_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip()
 
     # Fetch it silently and store the new sha
     subprocess.call(['git', 'fetch', '--quiet'])
-
-    with open(os.path.join('.git', 'FETCH_HEAD')) as fh:
-        fetch_sha = fh.readline().split(None, 1)[0]
+    fetch_sha = subprocess.check_output(['git', 'rev-parse', 'FETCH_HEAD']).strip()
 
     if current_sha != fetch_sha:
         subprocess.call(['git', 'merge', fetch_sha])
