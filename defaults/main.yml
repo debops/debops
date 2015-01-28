@@ -222,11 +222,15 @@ reprepro_uploaders:
 
   - Filename: 'uploaders.{{ reprepro_origin | lower }}'
     Contents: |
-      allow * by any key
+      {{ reprepro_uploaders_local }}
 
   - Filename: 'uploaders.wheezy-backports'
     Contents: |
-      allow * by any key
+      {{ reprepro_uploaders_local }}
+
+# By default use the same rules for all repositories
+reprepro_uploaders_local: |
+  allow * by any key
 
 
 # ---- conf/pulls ----
