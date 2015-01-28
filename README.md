@@ -9,7 +9,6 @@ derivative distributions. Specifically, it will manage:
 * centralized APT cache (using `apt-cacher-ng`)
 * automatic package updates (using `unattended-upgrades` and `apticron`)
 * Debian Preseed configuration
-* local APT repository (using `reprepro`)
 * installation of custom packages specified in Ansible inventory
 
 ### Installation
@@ -28,7 +27,6 @@ More information about `debops.apt` can be found in the
 
 - `debops.etc_services`
 - `debops.nginx`
-- `debops.reprepro`
 - `debops.ferm`
 - `debops.apt_preferences`
 - `debops.secret`

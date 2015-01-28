@@ -27,10 +27,6 @@ dependencies:
     when: (apt is defined and apt) and (apt != True and apt == ansible_fqdn)
     tags: nginx
 
-  - role: debops.reprepro
-    reprepro: '{{ apt }}'
-    reprepro_served: True
-    when: (apt is defined and apt) and apt != True
 
 galaxy_info:
   author: 'Maciej Delmanowski'
@@ -77,6 +73,5 @@ ansigenome_info:
     * centralized APT cache (using `apt-cacher-ng`)
     * automatic package updates (using `unattended-upgrades` and `apticron`)
     * Debian Preseed configuration
-    * local APT repository (using `reprepro`)
     * installation of custom packages specified in Ansible inventory
 
