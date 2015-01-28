@@ -2,14 +2,12 @@
 
 [![Travis CI](http://img.shields.io/travis/debops/ansible-reprepro.svg?style=flat)](http://travis-ci.org/debops/ansible-reprepro) [![test-suite](http://img.shields.io/badge/test--suite-ansible--reprepro-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-reprepro/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.reprepro-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1593)
 
-`debops.reprepro` role is used to create and manage local APT repository.
-Packages can be uploaded manually to a specific user account, or they can
-be downloaded by the role from specific directory on Ansible Controller.
-Role will also automatically configure access to created APT repository on
-all hosts managed by Ansible.
-
-This role is by default not used directly by the playbook. Instead,
-`debops.apt` role uses it as a dependency.
+`debops.reprepro` role is used to create and manage local APT repositories.
+Source and binary Debian packages can be uploaded to this repository using
+`dput` command, using WebDAV over HTTPS. Repositories are available over
+HTTP as well as HTTPS, with optional IP/CIDR network restrictions. You need
+to enable these repositories on other hosts separately, for example using
+`debops.apt` role.
 
 ### Installation
 
@@ -26,7 +24,6 @@ More information about `debops.reprepro` can be found in the
 ### Role dependencies
 
 - `debops.secret`
-- `debops.auth`
 
 ### Are you using this as a standalone role without DebOps?
 
