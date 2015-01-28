@@ -13,6 +13,11 @@ dependencies:
         reason:  'Better support for git submodules - http://stackoverflow.com/a/7593496'
         by_role: 'debops.apt'
 
+      - package: 'irqbalance'
+        backports: [ 'wheezy' ]
+        reason:  'Issues in wheezy package - http://debian.distrosfaqs.org/debian-user/wheezy-irqbalance/'
+        by_role: 'debops.apt'
+
 
   - role: debops.etc_services
     when: (apt is defined and apt) and (apt != True and apt == ansible_fqdn)
