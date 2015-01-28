@@ -1,0 +1,24 @@
+# This file is managed by Ansible, all changes will be lost
+
+{% for section in reprepro_incoming %}
+{% if section.Distribution == reprepro_distribution | lower %}
+{% for key, value in section.iteritems() %}
+{% if key not in [ 'Distribution' ] and value %}
+{{ key }}: {{ value }}
+{% endif %}
+{% endfor %}
+{% if section.IncomingDir is undefined %}
+IncomingDir: {{ reprepro_upload }}
+{% endif %}
+{% if section.TempDir is undefined %}
+TempDir: tmp
+{% endif %}
+{% if section.Cleanup is undefined %}
+Cleanup: on_deny on_error
+{% endif %}
+{% if section.Multiple is undefined %}
+Multiple: yes
+{% endif %}
+{% endif %}
+
+{% endfor %}

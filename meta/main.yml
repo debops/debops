@@ -3,7 +3,12 @@
 dependencies:
 
   - role: debops.secret
-  - role: debops.auth
+
+  - role: debops.nginx
+    nginx_servers:
+      - '{{ reprepro_nginx_server_http }}'
+      - '{{ reprepro_nginx_server_https }}'
+    tags: nginx
 
 galaxy_info:
   author: 'Maciej Delmanowski'
@@ -45,12 +50,10 @@ ansigenome_info:
       github: 'drybjed'
 
   synopsis: |
-    `debops.reprepro` role is used to create and manage local APT repository.
-    Packages can be uploaded manually to a specific user account, or they can
-    be downloaded by the role from specific directory on Ansible Controller.
-    Role will also automatically configure access to created APT repository on
-    all hosts managed by Ansible.
-
-    This role is by default not used directly by the playbook. Instead,
-    `debops.apt` role uses it as a dependency.
+    `debops.reprepro` role is used to create and manage local APT repositories.
+    Source and binary Debian packages can be uploaded to this repository using
+    `dput` command, using WebDAV over HTTPS. Repositories are available over
+    HTTP as well as HTTPS, with optional IP/CIDR network restrictions. You need
+    to enable these repositories on other hosts separately, for example using
+    `debops.apt` role.
 

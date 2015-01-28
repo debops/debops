@@ -1,8 +1,53 @@
 ---
 
-# Hash mapping between system architecture reported by Ansible and package
-# architectures in Debian
-reprepro_architecture:
-  'i386': 'i386'
-  'x86_64': 'amd64'
+# Configuration for HTTP server
+reprepro_nginx_server_http:
+  by_role: 'debops.reprepro'
+  enabled: True
+  ssl: False
+  filename: '{{ reprepro_domains[0] + "_http" }}'
+  name: '{{ reprepro_domains }}'
+  root: '{{ reprepro_repository_path }}'
+
+  location:
+    '/': |
+      try_files $uri $uri/ =404;
+      autoindex on;
+      autoindex_exact_size off;
+      autoindex_localtime on;
+
+  location_allow:
+    '/': '{{ reprepro_allow }}'
+
+
+# Configuration for HTTPS server
+reprepro_nginx_server_https:
+  by_role: 'debops.reprepro'
+  enabled: True
+  listen: False
+  filename: '{{ reprepro_domains[0] + "_https" }}'
+  name: '{{ reprepro_domains }}'
+  root: '{{ reprepro_repository_path }}'
+
+  options: |
+    client_max_body_size {{ reprepro_max_body_size }}M;
+
+  location:
+    '/': |
+      try_files $uri $uri/ =404;
+      autoindex on;
+      autoindex_exact_size off;
+      autoindex_localtime on;
+
+    '/upload': |
+      alias {{ reprepro_upload }};
+      dav_access all:rw;
+      dav_methods PUT;
+      limit_except PUT {
+              deny all;
+      }
+
+  location_allow:
+    '/': '{{ reprepro_allow }}'
+    '/upload': '{{ reprepro_allow_upload }}'
 

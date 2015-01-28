@@ -1,60 +1,289 @@
 ---
 
-# The FQDN of the host on which reprepro is configured; other hosts in the
-# group/cluster will use this for obtaining apt keys and repository
-# information. Set to False to disable reprepro. By default, it is defined by the
-# 'apt' role in roles/apt/meta/main.yml
-reprepro: False
+# ---- General repository layout ----
 
-# 'reprepro' role requires a webserver to serve repository data, but currently
-# it's not dependent on one, relying on 'apt' role to configure it beforehand.
-# This variable set by the 'apt' role specifies that 'reprepro' role can
-# configure it's APT repository (webserver is configured)
-reprepro_served: False
+# Linux distribution managed by this reprepro instance
+reprepro_distribution: '{{ ansible_distribution }}'
 
-# User and group for reprepro repository
+# Linux release managed by this reprepro instance
+reprepro_distribution_release: '{{ ansible_distribution_release }}'
+
+# List of codenames enabled in this repository, filtered by distribution
+reprepro_codenames: '{{ reprepro_distributions | map(attribute="Codename") | list | sort | unique }}'
+
+# List of architectures supported by this repository
+reprepro_architectures: [ 'amd64', 'i386', 'source' ]
+
+# List of components defined for local repositories
+reprepro_components: [ 'main' ]
+
+# Origin: field added to the repository configuration files
+reprepro_origin: '{{ ansible_domain.split(".")[0] | capitalize }}'
+
+# List of mail addresses to where reprepro should send mail about changes in
+# selected repositories
+reprepro_admin_email: [ 'root@{{ ansible_domain }}' ]
+
+
+# ---- Webserver configuration ----
+
+# Subdomain used for the APT repository
+reprepro_subdomain: 'apt'
+
+# List of domains for this APT repository, first domain is the main one
+reprepro_domains: [ '{{ reprepro_subdomain + "." + ansible_domain }}',
+                    '{{ reprepro_subdomain + "." + ansible_domain.split(".")[0] }}',
+                    '{{ reprepro_subdomain }}' ]
+
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# webserver with the repository. If empty, everyone can access the repository.
+reprepro_allow: []
+
+# List of IP addresses or CIDR subnets which are allowed to upload packages
+# using WebDAV to /upload location. If empty, you can upload from anywhere.
+reprepro_allow_upload: []
+
+# Maximum size of upload in MB
+reprepro_max_body_size: '20'
+
+
+# ---- Internal reprepro configuration ----
+
+# Path where reprepro home directory is stored
+reprepro_home: '/var/lib/reprepro'
+
+# System user which manages reprepro repository
 reprepro_user: 'reprepro'
+
+# System group which manages reprepro repository and upload account
 reprepro_group: 'reprepro'
 
-# User account of reprepro incoming queue (will be configured as sftponly account)
-reprepro_incoming_user: 'reprepro-upload'
+# Directory where uploaded packages are stored
+reprepro_upload: '{{ reprepro_home + "/incoming" }}'
 
-# Directory where reprepro will create the Debian repositories
-# By default it's the nginx document root directory for default server
-reprepro_repository: '/srv/www/sites/default/public/debian'
+# Directory where reprepro will create its repository structure.
+# It will be served publicly by a HTTP/HTTPS webserver.
+reprepro_repository_path: '/srv/www/sites/{{ reprepro_domains[0] }}/public'
 
-# Install and then uninstall haveged during GPG key generation to make it faster
-# Useful during testing or on virtual machines, but may create weaker GPG keys
-# More information: https://security.stackexchange.com/questions/34523/
-reprepro_haveged: False
+# List of default components used in specific distribution. These lists will be
+# used if components are not specified for a given repository.
+reprepro_repository_components:
+  'debian': [ 'main', 'contrib', 'non-free' ]
+  'ubuntu': [ 'main', 'restricted', 'universe', 'multiverse' ]
+
+
+# ---- GnuPG key configuration ----
 
 # Settings for GPG key used to sign reprepro repository
 reprepro_gpg_key_type: 'RSA'
-reprepro_gpg_key_length: '2048'
-reprepro_gpg_name: 'Reprepro Automatic Signing Key'
-reprepro_gpg_email: 'root@{{ ansible_domain }}'
-reprepro_gpg_expire_days: '1825'
+reprepro_gpg_key_length: '4096'
+reprepro_gpg_name: '{{ ansible_domain.split(".")[0] | capitalize + " Automatic Signing Key" }}'
+reprepro_gpg_email: '{{ reprepro_distribution | lower + "-packages@" + ansible_domain }}'
+reprepro_gpg_expire_days: '{{ (365 * 5) }}'
 
-# List of repositories managed by reprepro (for possible values see
-# man reprepro, section about 'conf/distributions' configuration file)
-reprepro_distributions:
+# Sign the Release files with default GPG key
+reprepro_signwith: 'default'
 
-  - codename: 'wheezy'
-    components: 'main'
-    suite: 'stable'
-    architectures: 'amd64 i386'
-    origin: 'Automatic Reprepro Repository'
-    description: 'Automatic Reprepro Repository'
-    label: 'reprepro-auto'
-    signwith: 'yes'
 
-  - codename: 'wheezy-backports'
-    components: 'main'
-    suite: 'stable-backports'
-    architectures: 'amd64 i386'
-    origin: 'Automatic Reprepro Backports Repository'
-    description: 'Automatic Reprepro Backports Repository'
-    label: 'reprepro-auto'
-    signwith: 'yes'
+# ---- conf/distributions ----
 
+# List of enabled distributions filtered by repository (debian | ubuntu)
+reprepro_distributions: '{{ reprepro_distributions_local +
+                            reprepro_distributions_local_backports }}'
+
+
+# Repositories for local packages
+# By default, debops.reprepro configures two repositories for staging and
+# production. You can only push packages to -staging repository, from which
+# they can be promoted to -prod using 'reprepro pull' on the specific user
+# account.
+reprepro_distributions_local:
+
+  - Distribution: '{{ reprepro_distribution | lower }}'
+    Description: '{{ reprepro_origin }} staging repository'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_origin | lower + "-staging" }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    Suite: '{{ reprepro_origin | lower + "-staging" }}'
+    Uploaders: 'uploaders.{{ reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    NotAutomatic: 'yes'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+  - Distribution: '{{ reprepro_distribution | lower }}'
+    Description: '{{ reprepro_origin }} production repository'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_origin | lower + "-prod" }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-prod" }}'
+    Suite: '{{ reprepro_origin | lower + "-prod" }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    Pull: '{{ reprepro_origin | lower + "_from_staging" }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+# Repository for backports created locally for current stable distribution
+reprepro_distributions_local_backports:
+
+  - Distribution: '{{ reprepro_distribution | lower }}'
+    Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
+    Codename: '{{ reprepro_distribution_release }}-backports'
+    Suite: 'stable-backports'
+    Uploaders: 'uploaders.wheezy-backports'
+    Label: '{{ reprepro_distribution }}'
+    Origin: '{{ reprepro_origin }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+# Mirror repositories for Debian GNU/Linux (not enabled by default)
+reprepro_distributions_mirror_debian:
+
+  - Distribution: 'debian'
+    Description: 'Debian GNU/Linux 7 Wheezy'
+    Codename: 'wheezy'
+    Label: 'Debian'
+    Suite: 'stable'
+    Origin: 'Debian'
+    Tracking: 'minimal'
+    Update: 'debian-wheezy'
+
+  - Distribution: 'debian'
+    Description: 'Debian GNU/Linux 7 Wheezy Updates'
+    Codename: 'wheezy-updates'
+    Label: 'Debian'
+    Suite: 'stable-updates'
+    Origin: 'Debian'
+    Tracking: 'minimal'
+    Update: 'debian-wheezy-updates'
+
+# Mirror repositories for Ubuntu Linux (not enabled by default)
+reprepro_distributions_mirror_ubuntu:
+
+  - Distribution: 'ubuntu'
+    Codename: 'trusty'
+    Label: 'Ubuntu'
+    Origin: 'Ubuntu'
+    Suite: 'trusty'
+    Version: '14.04'
+    Tracking: 'minimal'
+    Update: 'ubuntu-trusty'
+    Description: 'Ubuntu Trusty 14.04 LTS'
+
+  - Distribution: 'ubuntu'
+    Codename: 'trusty-updates'
+    Label: 'Ubuntu'
+    Origin: 'Ubuntu'
+    Suite: 'trusty-updates'
+    Version: '14.04'
+    Tracking: 'minimal'
+    Update: 'ubuntu-trusty-updates'
+    Description: 'Ubuntu Trusty 14.04 LTS Updates'
+
+
+# ---- conf/incoming ----
+
+reprepro_incoming:
+
+  - Distribution: '{{ reprepro_distribution | lower }}'
+    Name: 'incoming'
+    Allow: '{{ reprepro_incoming_allow | join(" ") }}'
+
+# List of incoming Allow rules enabled by default
+reprepro_incoming_allow:
+
+    # release-origin-staging
+  - '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+
+    # origin-staging>release-origin-staging
+  - '{{ reprepro_origin | lower + "-staging" }}>{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+
+    # distribution-backports
+  - '{{ reprepro_distribution_release + "-backports" }}'
+
+    # stable-backports>distribution-backports
+  - 'stable-backports>{{ reprepro_distribution_release + "-backports" }}'
+
+
+# ---- conf/uploaders ----
+
+# Configuration of uploaders files for each repository (Name relative to the
+# 'conf/' directory)
+reprepro_uploaders:
+
+  - Filename: 'uploaders.{{ reprepro_origin | lower }}'
+    Contents: |
+      {{ reprepro_uploaders_local }}
+
+  - Filename: 'uploaders.wheezy-backports'
+    Contents: |
+      {{ reprepro_uploaders_local }}
+
+# By default use the same rules for all repositories
+reprepro_uploaders_local: |
+  allow * by any key
+
+
+# ---- conf/pulls ----
+
+# List of pull configurations enabled per distribution
+reprepro_pulls: '{{ reprepro_pulls_local }}'
+
+# Pull configuration for local -staging and -prod repositories, packages from
+# -staging are pulled to -prod
+reprepro_pulls_local:
+
+  - Distribution: '{{ reprepro_distribution | lower }}'
+    Name: '{{ reprepro_origin | lower + "_from_staging" }}'
+    From: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+
+
+# ---- conf/updates ----
+
+# List of repository mirrors per distribution (not enabled by default)
+reprepro_updates: '{{ reprepro_updates_debian +
+                      reprepro_updates_ubuntu }}'
+
+# Mirrors for Debian GNU/Linux distribution
+reprepro_updates_debian:
+
+  - Distribution: 'debian'
+    Name: 'debian-wheezy'
+    Method: 'http://cdn.debian.net/debian'
+    Fallback: 'http://ftp.us.debian.org/debian'
+    Suite: 'wheezy'
+    VerifyRelease: '46925553'
+
+  - Distribution: 'debian'
+    Name: 'debian-wheezy-updates'
+    Method: 'http://cdn.debian.net/debian'
+    Fallback: 'http://ftp.us.debian.org/debian'
+    Suite: 'wheezy-updates'
+    VerifyRelease: '46925553'
+
+# Mirrors for Ubuntu Linux distribution
+reprepro_updates_ubuntu:
+
+  - Distribution: 'ubuntu'
+    Name: 'ubuntu-trusty'
+    Method: 'http://us.archive.ubuntu.com/ubuntu'
+    Fallback: 'http://archive.ubuntu.com/ubuntu'
+    Suite: 'trusty'
+    VerifyRelease: '437D05B5'
+
+  - Distribution: 'ubuntu'
+    Name: 'ubuntu-trusty-updates'
+    Method: 'http://us.archive.ubuntu.com/ubuntu'
+    Fallback: 'http://archive.ubuntu.com/ubuntu'
+    Suite: 'trusty-updates'
+    VerifyRelease: '437D05B5'
 

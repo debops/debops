@@ -1,0 +1,46 @@
+# This file is managed by Ansible, all changes will be lost
+
+{% for section in reprepro_distributions %}
+{% if section.Distribution == reprepro_distribution | lower %}
+{% if section.Codename in reprepro_codenames %}
+{% for key, value in section.iteritems() %}
+{% if key not in [ 'Distribution', 'Scripts', 'Components', 'UDebComponents', 'Update' ] and value %}
+{{ key }}: {{ value }}
+{% endif %}
+{% endfor %}
+{% if section.Components is defined and section.Components %}
+Components: {{ section.Components }}
+{% elif section.Components is undefined %}
+Components: {{ reprepro_repository_components[reprepro_distribution | lower] | join(" ") }}
+{% endif %}
+{% if section.UDebComponents is defined and section.UDebComponents %}
+UDebComponents: {{ section.UDebComponents }}
+{% elif section.UDebComponents is undefined %}
+UDebComponents: {{ reprepro_repository_components[reprepro_distribution | lower] | join(" ") }}
+{% endif %}
+{% if section.SignWith is undefined and reprepro_signwith %}
+SignWith: {{ reprepro_signwith }}
+{% endif %}
+{% if section.Architectures is undefined %}
+Architectures: {{ reprepro_architectures | join(" ") }}
+{% endif %}
+{% if section.DebIndices is undefined %}
+DebIndices: Packages Release . .gz .bz2
+{% endif %}
+{% if section.DscIndices is undefined %}
+DscIndices: Sources Release .gz .bz2
+{% endif %}
+{% if section.Tracking is undefined %}
+Tracking: keep all keepsources
+{% endif %}
+{% if (section.Update is defined and section.Update) and reprepro_updates %}
+Update: {{ section.Update }}
+{% endif %}
+Log: packages.{{ section.Distribution + "-" + section.Codename }}.log
+{% if section.Scripts is defined and section.Scripts %}
+{{ section.Scripts | indent(1,true) }}
+{% endif %}
+
+{% endif %}
+{% endif %}
+{% endfor %}

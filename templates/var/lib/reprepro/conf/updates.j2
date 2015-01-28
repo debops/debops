@@ -1,0 +1,28 @@
+# This file is managed by Ansible, all changes will be lost
+
+{% for section in reprepro_updates %}
+{% if section.Distribution == reprepro_distribution | lower %}
+{% for key, value in section.iteritems() %}
+{% if key not in [ 'Distribution', 'Scripts', 'Components', 'UDebComponents' ] and value %}
+{{ key }}: {{ value }}
+{% endif %}
+{% endfor %}
+{% if section.Components is defined and section.Components %}
+Components: {{ section.Components }}
+{% else %}
+Components: {{ reprepro_repository_components[reprepro_distribution | lower] | join(" ") }}
+{% endif %}
+{% if section.UDebComponents is defined and section.UDebComponents %}
+UDebComponents: {{ section.UDebComponents }}
+{% else %}
+UDebComponents: {{ reprepro_repository_components[reprepro_distribution | lower] | join(" ") }}
+{% endif %}
+{% if section.Architectures is undefined %}
+Architectures: {{ reprepro_architectures | join(" ") }}
+{% endif %}
+{% if section.GetInRelease is undefined %}
+GetInRelease: no
+{% endif %}
+
+{% endif %}
+{% endfor %}
