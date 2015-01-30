@@ -20,8 +20,12 @@
   register: ntp_etc_timezone
   when: ntp_timezone is defined and ntp_timezone
 
-- name: Install tzdata
-  apt: name=tzdata state=latest install_recommends=no
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_items: [ 'tzdata', 'libcap2-bin' ]
 
 - name: Reconfigure tzdata
   shell: dpkg-reconfigure --frontend noninteractive tzdata
@@ -30,31 +34,18 @@
          (ntp_debconf_set_zone is defined and ntp_debconf_set_zone.changed) or
          (ntp_etc_timezone is defined and ntp_etc_timezone.changed))
 
+- name: Check current host capabilities
+  shell: capsh --print | head -n 1 | sed -e 's/Current:\s=\s//' | tr ',' '\n'
+  register: ntp_host_capabilities
+  changed_when: False
+
   # Install NTPd on all hosts except inside containers
 - include: ntpd.yml
-  when: (ntp is defined and ntp == 'ntpd') and
-        ((ansible_virtualization_type is defined and
-          ansible_virtualization_role is defined and
-         (ansible_virtualization_type in ['kvm','VMware','virtualbox'] and
-          ansible_virtualization_role in ['host','guest']) or
-         (ansible_virtualization_type in ['lxc','openvz'] and
-          ansible_virtualization_role in ['host']) or
-         (ansible_virtualization_type in ['NA'] and
-          ansible_virtualization_role in ['NA'])) or
-         (ansible_virtualization_type is undefined and
-          ansible_virtualization_role is undefined))
+  when: ntp is defined and ntp == 'ntpd' and
+        'cap_sys_time' in ntp_host_capabilities.stdout_lines
 
   # Install OpenNTPd on all hosts except inside containers
 - include: openntpd.yml
-  when: (ntp is defined and ntp == 'openntpd') and
-        ((ansible_virtualization_type is defined and
-          ansible_virtualization_role is defined and
-         (ansible_virtualization_type in ['kvm','VMware','virtualbox'] and
-          ansible_virtualization_role in ['host','guest']) or
-         (ansible_virtualization_type in ['lxc','openvz'] and
-          ansible_virtualization_role in ['host']) or
-         (ansible_virtualization_type in ['NA'] and
-          ansible_virtualization_role in ['NA'])) or
-         (ansible_virtualization_type is undefined and
-          ansible_virtualization_role is undefined))
+  when: ntp is defined and ntp == 'openntpd' and
+        'cap_sys_time' in ntp_host_capabilities.stdout_lines
 
