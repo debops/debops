@@ -1,22 +1,32 @@
 ---
 
 - name: Configure tzdata area in debconf
-  debconf: name=tzdata question='tzdata/Areas'
-           vtype='select' value='{{ ntp_timezone[0] }}'
+  debconf:
+    name: 'tzdata'
+    question: 'tzdata/Areas'
+    vtype: 'select'
+    value: '{{ ntp_timezone.split("/")[0] }}'
   register: ntp_debconf_set_area
   when: ntp_timezone is defined and ntp_timezone
 
 - name: Configure tzdata zone in debconf
-  debconf: name=tzdata question='tzdata/Zones/{{ ntp_timezone[0] }}'
-           vtype='select' value='{{ ntp_timezone[1] }}'
+  debconf:
+    name: 'tzdata'
+    question: 'tzdata/Zones/{{ ntp_timezone.split("/")[0] }}'
+    vtype: 'select'
+    value: '{{ ntp_timezone.split("/")[1] }}'
   register: ntp_debconf_set_zone
   when: ntp_timezone is defined and ntp_timezone
 
   # tzdata ignores debconf answers when configured non-interactively
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=704089
 - name: Configure timezone in /etc/timezone
-  copy: content='{{ ntp_timezone[0] + "/" + ntp_timezone[1] }}\n'
-        dest=/etc/timezone owner=root group=root mode=0644
+  copy:
+    content: '{{ ntp_timezone }}\n'
+    dest: '/etc/timezone'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   register: ntp_etc_timezone
   when: ntp_timezone is defined and ntp_timezone
 
