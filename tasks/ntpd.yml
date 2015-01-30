@@ -1,14 +1,21 @@
 ---
 
 - name: Install NTPd package
-  apt: pkg=ntp state=latest install_recommends=no
+  apt:
+    name: 'ntp'
+    state: 'latest'
+    install_recommends: False
 
 - name: Divert original /etc/ntp.conf
   command: dpkg-divert --quiet --local --divert /etc/ntp.conf.dpkg-divert
            --rename /etc/ntp.conf creates=/etc/ntp.conf.dpkg-divert
 
 - name: Configure NTPd
-  template: src=etc/ntpd/ntp.conf.j2 dest=/etc/ntp.conf
-            owner=root group=root mode=0644
+  template:
+    src: 'etc/ntpd/ntp.conf.j2'
+    dest: '/etc/ntp.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   notify: [ 'Restart ntp' ]
 
