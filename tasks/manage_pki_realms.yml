@@ -32,11 +32,19 @@
 - name: Regenerate Diffie-Hellman parameters periodically
   cron:
     name: 'Regenerate Diffie-Hellman parameters in all PKI realms'
-    special_time: 'daily'
+    special_time: '{{ pki_dhparams_regenerate_frequency }}'
     state: 'present'
     user: 'root'
     job: 'cd {{ pki_base_path }} ; make regenerate-dhparams > /dev/null 2>&1'
     cron_file: 'pki-regenerate-dhparams'
+  when: pki_dhparams_regenerate is defined and pki_dhparams_regenerate
+
+- name: Disable periodic DHparams regeneration
+  cron:
+    name: 'Regenerate Diffie-Hellman parameters in all PKI realms'
+    cron_file: 'pki-regenerate-dhparams'
+    state: 'absent'
+  when: pki_dhparams_regenerate is defined and not pki_dhparams_regenerate
 
 - name: Create realm source directories
   file:
