@@ -11,6 +11,43 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2015-01-31
+^^^^^^^^^^
+
+Playbook updates
+****************
+
+New playbook, ``root.yml`` has been added and part of the ``common.yml``
+playbook has been moved there. This playbook is meant to prepare the system for
+the rest of the DebOps roles by creating a set of base directories:
+
+- a root directory for service home directories, by default ``/var/lib``
+- a root directory for local data managed by the host, ``/srv``
+- a root directory for backups, both automated and manual, ``/var/backups``
+
+Paths to these directories are saved in Ansible local facts. Other DebOps roles
+can then access them using ``ansible_local.root`` hierarchy, for example::
+
+    role_home:   '{{ ansible_local.root.home   + "/role" }}'
+    role_data:   '{{ ansible_local.root.data   + "/role" }}'
+    role_backup: '{{ ansible_local.root.backup + "/role" }}'
+
+Because of the way that Ansible manages dict variables,
+``ansible_local.root.*`` local facts will be required on all hosts managed by
+DebOps playbooks and roles - otherwise you need to specifically check for
+existence of ``ansible_local`` and ``ansible_local.root`` variables before
+using them to avoid errors about missing variables.
+
+If you use DebOps playbooks, this should be handled for you automatically. If
+you use DebOps roles separately, you can add an include of ``root.yml``
+playbook to your set of playbooks and these facts should be created for you
+automatically. ``root.yml`` does not need to be included in all your playbooks,
+just in the first one at the beginning.
+
+At the moment those variables are not used in any DebOps roles, that will
+change over time after a period of testing.
+
+
 2015-01-28
 ^^^^^^^^^^
 
