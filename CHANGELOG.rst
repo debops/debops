@@ -11,7 +11,7 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
-2014-01-28
+2015-01-28
 ^^^^^^^^^^
 
 Role updates
@@ -68,7 +68,7 @@ named differently between those two distributions.
 .. _debops.apt: https://github.com/debops/ansible-apt/
 
 
-2014-01-21
+2015-01-21
 ^^^^^^^^^^
 
 Role updates
@@ -86,7 +86,7 @@ issue has already been mitigated in Debian.
 .. _CVE-2013-4547: https://security-tracker.debian.org/tracker/CVE-2013-4547
 
 
-2014-01-20
+2015-01-20
 ^^^^^^^^^^
 
 Role updates
@@ -118,7 +118,7 @@ you to use lists of items as "items" themselves, see an example in the
 .. _with_lists plugin: https://github.com/debops/debops-playbooks/blob/master/playbooks/lookup_plugins/lists.py
 
 
-2014-01-18
+2015-01-18
 ^^^^^^^^^^
 
 Role updates
