@@ -216,7 +216,7 @@ $(PEM): $(addprefix $(DIR_PREFIX),$(dir $(PEM))) $(KEY)
 
 # pki-signatures.txt
 $(PKI_SIGNATURES):
-	@touch $@.tmp && for file in $$(find */ -type f -or -type l); do $(DIGEST) $$file >> $@.tmp ; done && test -r $@ && $(DIGEST) $@.tmp | sed -e 's/$@\.tmp/$@/' | $(DIGEST) --check --status && ( \
+	@touch $@.tmp && for file in $$(find */ \( -type f -or -type l \) ! -path 'dhparams/*'); do $(DIGEST) $$file >> $@.tmp ; done && test -r $@ && $(DIGEST) $@.tmp | sed -e 's/$@\.tmp/$@/' | $(DIGEST) --check --status && ( \
 		rm -f $@.tmp \
 	) || ( \
 		mv $@.tmp $@ && \

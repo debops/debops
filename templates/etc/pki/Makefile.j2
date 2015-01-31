@@ -45,9 +45,9 @@ $(PKI_REALMS):
 
 $(SNAPSHOT_DEST):
 	@test -n "$(PKI_REALMS)" && test -n "$@" && test -e $@ && \
-		tar uvpf $@ --one-file-system $(PKI_REALMS) && \
-		tar dpf $@ --one-file-system $(PKI_REALMS) || ( \
+		tar --exclude '$(DEFAULT_REALM)' --exclude '*/dhparams' --exclude '*/dhparam.pem' -uvpf $@ --one-file-system $(PKI_REALMS) && \
+		tar --exclude '$(DEFAULT_REALM)' --exclude '*/dhparams' --exclude '*/dhparam.pem' -dpf $@ --one-file-system $(PKI_REALMS) || ( \
 		touch $@.tmp && chmod $(SNAPSHOT_MODE) $@.tmp && chown $(SNAPSHOT_OWNER).$(SNAPSHOT_GROUP) $@.tmp && \
-		tar cvpf $@.tmp --one-file-system $(PKI_REALMS) && mv $@.tmp $@ \
+		tar --exclude '$(DEFAULT_REALM)' -cvpf $@.tmp --one-file-system $(PKI_REALMS) && mv $@.tmp $@ \
 	)
 
