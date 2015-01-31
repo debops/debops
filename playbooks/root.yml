@@ -1,0 +1,68 @@
+---
+
+- name: Gather default and custom facts
+  hosts: 'all:!localhost'
+  gather_facts: True
+  sudo: False
+
+  tasks:
+
+    - name: Check IP address of Ansible Controller
+      set_fact:
+        ansible_controller: '{{ ansible_env.SSH_CLIENT.split(" ") | first }}'
+      when: (ansible_controller is undefined and ansible_connection != "local")
+      tags: [ 'ferm', 'tcpwrappers' ]
+
+
+- name: Prepare base environment
+  hosts: 'all:!localhost'
+  gather_facts: False
+  sudo: True
+
+  vars:
+
+    # These variables can be used by Ansible roles to specify common root
+    # directories for various types of data. They should be accessed using
+    # Ansible local facts, in 'ansible_local.root' hierarchy. Roles expect them
+    # to exist, otherwise it's an error and Ansible should stop execution.
+    # You can override these variables in Ansible inventory.
+    root_service_directories:
+
+        # Path for service home directories
+      - path: '{{ root_service_home   | default("/var/lib")     }}'
+        fact: 'home'
+
+        # Path for local data directories
+      - path: '{{ root_service_data   | default("/srv")         }}'
+        fact: 'data'
+
+        # Path for automatic and manual backups
+      - path: '{{ root_service_backup | default("/var/backups") }}'
+        fact: 'backup'
+
+  tasks:
+
+    - name: Create root directories
+      file:
+        path: '{{ item }}'
+        state: 'directory'
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
+      with_flattened:
+        - '/etc/ansible/facts.d'
+        - '{{ root_service_directories | map(attribute="path") | list }}'
+
+    - name: Save root local facts
+      template:
+        src: 'templates/etc/ansible/facts.d/root.fact.j2'
+        dest: '/etc/ansible/facts.d/root.fact'
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
+
+    - name: Update APT cache early if older than 24h
+      apt:
+        update_cache: True
+        cache_valid_time: '{{ root_apt_cache_valid_time | default(60 * 60 * 24) }}'
+

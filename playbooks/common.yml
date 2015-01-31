@@ -1,24 +1,6 @@
 ---
 
-- name: Gather default and custom facts
-  hosts: 'all:!localhost'
-  gather_facts: True
-  sudo: False
-
-  tasks:
-    - name: Check IP address of Ansible Controller
-      set_fact:
-        ansible_controller: '{{ ansible_env.SSH_CLIENT.split(" ") | first }}'
-      when: (ansible_controller is undefined and ansible_connection != "local")
-      tags: [ 'ferm', 'tcpwrappers' ]
-
-    - name: Update APT cache early if older than 24h
-      apt:
-        update_cache: True
-        cache_valid_time: '{{ apt_update_cache_early }}'
-      when: (apt_update_cache_early is defined and apt_update_cache_early)
-      sudo: True
-
+- include: root.yml
 
 - name: Common configuration for all hosts
   hosts: 'all:!localhost'
