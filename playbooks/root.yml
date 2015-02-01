@@ -40,15 +40,16 @@
       - path: '{{ root_service_backup | default("/var/backups") }}'
         fact: 'backup'
 
+        # Path for local sources (cloned git repositories, etc.)
+      - path: '{{ root_service_src    | default("/usr/local/src") }}'
+        fact: 'src'
+
   tasks:
 
     - name: Create root directories
       file:
         path: '{{ item }}'
         state: 'directory'
-        owner: 'root'
-        group: 'root'
-        mode: '0755'
       with_flattened:
         - '/etc/ansible/facts.d'
         - '{{ root_service_directories | map(attribute="path") | list }}'
