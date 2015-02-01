@@ -146,4 +146,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  register: nginx_register_local_facts
+
+- name: Gather facts if they changed
+  action: setup
+  when: nginx_register_local_facts.changed
 
