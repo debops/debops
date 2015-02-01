@@ -11,6 +11,31 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2015-02-01
+^^^^^^^^^^
+
+Role updates
+************
+
+Small updates in `debops.pki`_ role:
+
+- previously Diffie-Hellman parameter regeneration meant that on each Ansible
+  run contents of ``/etc/pki/`` directory would change. Because role creates
+  a snapshot of ``/etc/pki/`` directory on any changes and sends it to Ansible
+  Controller, if you keep your inventory and secrets in a ``git`` repository,
+  it meant that your repository would constantly grow. Now `debops.pki`_ role
+  will archive DH parameter files only the first time the snapshot file is
+  created; subsequent snapshots will ignore them, and thus no changes will be
+  recorded and snapshot file will not need to be archived, unless something
+  else changes, for example certificates are added or updated.
+
+- you can now disable or change the frequency of Diffie-Hellman parameter
+  regeneration using inventory variables. Default frequency has been changed
+  from ``daily`` to ``weekly``.
+
+.. _debops.pki: https://github.com/debops/ansible-pki/
+
+
 2015-01-31
 ^^^^^^^^^^
 
