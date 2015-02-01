@@ -40,6 +40,10 @@
       - path: '{{ root_service_backup | default("/var/backups") }}'
         fact: 'backup'
 
+        # Path for local sources (cloned git repositories, etc.)
+      - path: '{{ root_service_src    | default("/usr/local/src") }}'
+        fact: 'src'
+
   tasks:
 
     - name: Create root directories
