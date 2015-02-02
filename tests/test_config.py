@@ -220,9 +220,9 @@ class TestReadConfig2(TestCase):
         cfg = self._read_config('/non/existing/dir')
         self.assertDictEqual(
             cfg['paths'],
-            {'data-home': os.path.expanduser('~/.config/debops'),
-             'install-path': os.path.expanduser('~/.config/debops/debops-playbooks'),
-             'playbooks-paths': [os.path.expanduser('~/.config/debops/debops-playbooks/playbooks')],
+            {'data-home': os.path.expanduser('~/.local/share/debops'),
+             'install-path': os.path.expanduser('~/.local/share/debops/debops-playbooks'),
+             'playbooks-paths': [os.path.expanduser('~/.local/share/debops/debops-playbooks/playbooks')],
          })
 
     def test_read_config_files_simple(self):

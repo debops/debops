@@ -40,7 +40,7 @@ DEBOPS_CONFIG = ".debops.cfg"
 
 DEFAULTS = """
 [paths]
-data-home: $XDG_CONFIG_HOME/debops
+data-home: $XDG_DATA_HOME/debops
 
 # Default installation directory
 install-path: %(data-home)s/debops-playbooks
@@ -59,6 +59,8 @@ def _set_xdg_defaults():
         os.environ['XDG_CONFIG_HOME'] = '~/.config'
     if not os.environ.get('XDG_CONFIG_DIRS'):
         os.environ['XDG_CONFIG_DIRS'] = '/etc/xdg'
+    if not os.environ.get('XDG_DATA_HOME'):
+        os.environ['XDG_DATA_HOME'] = '~/.local/share'
 
 
 def get_config_filenames():
