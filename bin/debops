@@ -97,13 +97,10 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
 def main(cmd_args):
     project_root = find_debops_project(required=True)
     config = read_config(project_root)
-    # :todo: Source DebOps configuration file
-    #[ -r ${debops_config} ] && source ${debops_config}
+    playbooks_path = find_playbookpath(config, project_root, required=True)
 
     # Make sure required commands are present
     require_commands('ansible-playbook')
-
-    playbooks_path = find_playbookpath(project_root, required=True)
 
     def find_playbook(playbook):
         tries = [

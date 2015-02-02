@@ -48,12 +48,6 @@ __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 # ---- Global constants ----
 
-DEBOPS_DATA_HOME = os.path.expanduser(os.path.join(
-    os.environ.get('XDG_DATA_HOME', '~/.local/share'), "debops"))
-
-# Default installation directory
-DEBOPS_DEFAULT_INSTALL_PATH = os.path.join(DEBOPS_DATA_HOME, "debops-playbooks")
-
 ANSIBLE_CONFIG_FILE = "ansible.cfg"
 
 #--- Roles
@@ -62,11 +56,6 @@ ANSIBLE_CONFIG_FILE = "ansible.cfg"
 ROLE_PREFIX = "debops"
 
 #--- Playbooks
-
-# Locations where DebOps playbooks might be found
-DEBOPS_PLAYBOOKS_PATHS = [
-    os.path.join(DEBOPS_DATA_HOME, "debops-playbooks", "playbooks"),
-]
 
 # Default site.yml playbook to look for
 DEBOPS_SITE_PLAYBOOK = os.path.join("playbooks", "site.yml")
@@ -129,15 +118,15 @@ def find_debops_project(path=None):
     return os.path.dirname(debops_config) if debops_config else None
 
 
-def find_playbookpath(project_root):
+def find_playbookpath(config, project_root):
     """
     Search for playbooks in various locations.
     """
     if project_root:
         places = [os.path.join(project_root, "debops-playbooks", "playbooks")]
-        places.extend(DEBOPS_PLAYBOOKS_PATHS)
     else:
-        places = DEBOPS_PLAYBOOKS_PATHS
+        places = []
+    places.extend(config['paths']['playbooks-paths'])
     for playbook_path in places:
         if os.path.exists(os.path.join(playbook_path, "site.yml")):
             return playbook_path

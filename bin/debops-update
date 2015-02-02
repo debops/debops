@@ -191,14 +191,12 @@ def main(project_dir=None):
     else:
         # If there's no project specified, look for playbooks in known locations
         project_root = find_debops_project(required=False)
-        # :todo: Source DebOps configuration file
-        #[ -r ${debops_config} ] && source ${debops_config}
-
-        playbooks_path = find_playbookpath(project_root, required=False)
+        config = read_config(project_root)
+        playbooks_path = find_playbookpath(config, project_root, required=False)
         if playbooks_path:
             install_path = os.path.dirname(playbooks_path)
         else:
-            install_path = DEBOPS_DEFAULT_INSTALL_PATH
+            install_path = config['paths']['install-path']
 
     roles_path = os.path.join(install_path, 'roles')
 
