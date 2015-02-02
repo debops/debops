@@ -84,7 +84,10 @@ def _expandpath(path):
     return os.path.expanduser(os.path.expandvars(path.strip()))
 
 def read_config(project_root):
-    configfiles = _configfiles + [os.path.join(project_root, DEBOPS_CONFIG)]
+    if project_root is None:
+        configfiles = _configfiles
+    else:
+        configfiles = _configfiles + [os.path.join(project_root, DEBOPS_CONFIG)]
     cfgparser = ConfigParser.SafeConfigParser()
     cfgparser.readfp(cStringIO.StringIO(DEFAULTS))
     try:
