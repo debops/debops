@@ -55,12 +55,12 @@ def _set_xdg_defaults():
     Set default values for XDG variables according to XDG specification
     http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
     """
-    if not os.environ.get('XDG_CONFIG_HOME'):
-        os.environ['XDG_CONFIG_HOME'] = '~/.config'
-    if not os.environ.get('XDG_CONFIG_DIRS'):
-        os.environ['XDG_CONFIG_DIRS'] = '/etc/xdg'
-    if not os.environ.get('XDG_DATA_HOME'):
-        os.environ['XDG_DATA_HOME'] = '~/.local/share'
+    for name, default in (
+        ('XDG_CONFIG_HOME', '~/.config'),
+        ('XDG_CONFIG_DIRS', '/etc/xdg'),
+        ('XDG_DATA_HOME', '~/.local/share')):
+        if not os.environ.get(name):
+            os.environ[name] = default
 
 
 def get_config_filenames():
