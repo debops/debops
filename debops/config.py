@@ -37,6 +37,17 @@ __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 DEBOPS_CONFIG = ".debops.cfg"
 
+def _set_xdg_defaults():
+    """
+    Set default values for XDG variables according to XDG specification
+    http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+    """
+    if not os.environ.get('XDG_CONFIG_HOME'):
+        os.environ['XDG_CONFIG_HOME'] = '~/.config'
+    if not os.environ.get('XDG_CONFIG_DIRS'):
+        os.environ['XDG_CONFIG_DIRS'] = '/etc/xdg'
+
+
 def get_config_filenames():
     if sys.platform.startswith('win'):
         configdirs = [os.getenv('APPDATA')
@@ -44,11 +55,9 @@ def get_config_filenames():
     elif sys.platform == 'darwin':  # Mac OS X
         configdirs = [os.path.expanduser('~/Library/Application Support')]
     else:
-        # According to XDG specification
-        # http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
-
-        configdirs = ([os.getenv('XDG_CONFIG_HOME') or '~/.config'] +
-                      (os.getenv('XDG_CONFIG_DIRS') or '/etc/xdg').split(':') +
+        _set_xdg_defaults()
+        configdirs = ([os.getenv('XDG_CONFIG_HOME')] +
+                      os.getenv('XDG_CONFIG_DIRS').split(':') +
                       ['/etc'])
         configdirs = [os.path.expanduser(d) for d in configdirs]
         configdirs.reverse()
