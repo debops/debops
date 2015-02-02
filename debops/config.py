@@ -26,6 +26,7 @@
 
 import os
 import sys
+import cStringIO
 import ConfigParser
 
 __all__ = ['DEBOPS_CONFIG', 'read_config']
@@ -36,6 +37,18 @@ __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 
 DEBOPS_CONFIG = ".debops.cfg"
+
+DEFAULTS = """
+[paths]
+data-home: $XDG_CONFIG_HOME/debops
+
+# Default installation directory
+install-path: %(data-home)s/debops-playbooks
+
+# Locations where DebOps playbooks might be found
+# This MUST be a multi-line string to make ConfigParser work
+playbooks-paths: %(install-path)s/playbooks
+"""
 
 def _set_xdg_defaults():
     """
@@ -65,13 +78,25 @@ def get_config_filenames():
 
 _configfiles = get_config_filenames()
 
+def _expandpath(path):
+    return os.path.expanduser(os.path.expandvars(path.strip()))
+
 def read_config(project_root):
     configfiles = _configfiles + [os.path.join(project_root, DEBOPS_CONFIG)]
     cfgparser = ConfigParser.SafeConfigParser()
+    cfgparser.readfp(cStringIO.StringIO(DEFAULTS))
     try:
         cfgparser.read(configfiles)
     except ConfigParser.Error, e:
         raise SystemExit('Error in %s: %s' % (DEBOPS_CONFIG, str(e)))
     cfg = dict((sect, dict(cfgparser.items(sect)))
                for sect in cfgparser.sections())
+    # expand vars and hoem-directory
+    _set_xdg_defaults()
+    for name in ('data-home', 'install-path'):
+        cfg['paths'][name] = _expandpath(cfg['paths'][name])
+    cfg['paths']['playbooks-paths'] = [
+        _expandpath(p)
+        for p in cfg['paths']['playbooks-paths'].splitlines()
+        if p.strip()]
     return cfg
