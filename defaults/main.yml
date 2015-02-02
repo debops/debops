@@ -167,11 +167,27 @@ dhcpd_includes: []
 
 # ---- ISC DHCP failover configuration ----
 #
-# Each failover declaration consists of primary and secondary host, no more
-# than two nodes failover is allowed by isc-dhcpd currently.
+# Each 'failover pair' declaration consists of primary and secondary host,
+# no more than two nodes failover is currently allowed by isc-dhcpd.
 #
-# You must specify which failover each pool should use by specifying a
-# 'failover peer' option in pool declaration.
+# You must specify which failover pair each pool should use by specifying a
+# 'failover peer' statement under an 'options' block in each pool declaration.
+# e.g:
+#
+# dhcpd_failovers:
+#   - failover: "my-failover"
+#     primary: '10.0.30.1'
+#     secondary: '10.0.30.2'
+#     ...
+#
+# dhcpd_subnets:
+#   - subnet: ...
+#     ...
+#     pools:
+#       - comment: "My pool with failover"
+#         range: '10.0.30.10 10.0.30.20'
+#         options: |
+#           failover peer "my-failover";
 #
 # Each failover declaration has a set of an mandatory fields, which is:
 #   primary: ""             Ansible inventory name of a primary DHCP host, if
