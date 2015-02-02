@@ -101,7 +101,7 @@ ENCFS_KEYFILE_LENGTH = 256
 
 # ---- Functions ----
 
-def find_up(path, name):
+def _find_up(path, name):
     """
     Find specified file or directory in parent dir
     """
@@ -128,17 +128,17 @@ def find_debops_project(path=None):
     if path is None:
         path = os.getcwd()
     # Find DebOps configuration file
-    debops_config = find_up(path, DEBOPS_CONFIG)
+    debops_config = _find_up(path, DEBOPS_CONFIG)
     # Find root of the DebOps project dir
     return os.path.dirname(debops_config) if debops_config else None
 
 
-def find_playbookpath(debops_root):
+def find_playbookpath(project_root):
     """
     Search for playbooks in various locations.
     """
-    if debops_root:
-        places = [os.path.join(debops_root, "debops-playbooks", "playbooks")]
+    if project_root:
+        places = [os.path.join(project_root, "debops-playbooks", "playbooks")]
         places.extend(DEBOPS_PLAYBOOKS_PATHS)
     else:
         places = DEBOPS_PLAYBOOKS_PATHS
@@ -147,12 +147,12 @@ def find_playbookpath(debops_root):
             return playbook_path
 
 
-def find_inventorypath(debops_root):
+def find_inventorypath(project_root):
     """
     Search Ansible inventory in local directories.
     """
     for inventory_path in ANSIBLE_INVENTORY_PATHS:
-        ansible_inventory = os.path.join(debops_root, inventory_path)
+        ansible_inventory = os.path.join(project_root, inventory_path)
         if os.path.isdir(ansible_inventory):
             return ansible_inventory
 

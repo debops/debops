@@ -78,20 +78,20 @@ def require_commands(*cmd_names):
 
 
 def find_debops_project(path=None, required=True):
-    debops_root = _find_debops_project(path)
-    if required and not debops_root:
+    project_root = _find_debops_project(path)
+    if required and not project_root:
         # Exit if we are outside of project directory
         error_msg("Not a DebOps project directory")
-    return debops_root
+    return project_root
 
-def find_playbookpath(debops_root, required=True):
-    playbooks_path = _find_playbookpath(debops_root)
+def find_playbookpath(project_root, required=True):
+    playbooks_path = _find_playbookpath(project_root)
     if required and not playbooks_path:
         error_msg("DebOps playbooks not installed")
     return playbooks_path
 
-def find_inventorypath(debops_root, required=True):
-    inventory = _find_inventorypath(debops_root)
+def find_inventorypath(project_root, required=True):
+    inventory = _find_inventorypath(project_root)
     if required and not inventory:
         error_msg("Ansible inventory not found")
     return inventory

@@ -151,15 +151,15 @@ def main(project_root):
     project_root = os.path.abspath(project_root)
 
     #-- Check for existing debops project
-    debops_root = find_debops_project(project_root, required=False)
+    debops_project_root = find_debops_project(project_root, required=False)
 
     # Exit if DebOps configuration file has been found in project_dir
     if os.path.exists(os.path.join(project_root, DEBOPS_CONFIG)):
         error_msg("%s is already a DebOps project" % project_root)
 
     # Exit if we are in a DebOps project dir and nested project would be created
-    if debops_root:
-        error_msg("You are inside %s project already" % debops_root)
+    if debops_project_root:
+        error_msg("You are inside %s project already" % debops_project_root)
 
     #-- Main script
 

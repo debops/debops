@@ -56,8 +56,8 @@ def get_config_filenames():
 
 _configfiles = get_config_filenames()
 
-def read_config(debops_root):
-    configfiles = _configfiles + [os.path.join(debops_root, DEBOPS_CONFIG)]
+def read_config(project_root):
+    configfiles = _configfiles + [os.path.join(project_root, DEBOPS_CONFIG)]
     cfgparser = ConfigParser.SafeConfigParser()
     try:
         cfgparser.read(configfiles)
