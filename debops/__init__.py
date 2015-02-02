@@ -63,17 +63,13 @@ ROLE_PREFIX = "debops"
 
 #--- Playbooks
 
-# Default subdirectory where playbooks are stored, relative to the DebOps
-# playbooks directory
-DEBOPS_PLAYBOOK_DIR = "playbooks"
-
 # Locations where DebOps playbooks might be found
 DEBOPS_PLAYBOOKS_PATHS = [
     os.path.join(DEBOPS_DATA_HOME, "debops-playbooks", "playbooks"),
 ]
 
 # Default site.yml playbook to look for
-DEBOPS_SITE_PLAYBOOK = os.path.join(DEBOPS_PLAYBOOK_DIR, "site.yml")
+DEBOPS_SITE_PLAYBOOK = os.path.join("playbooks", "site.yml")
 
 #--- Inventories
 
