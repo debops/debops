@@ -127,10 +127,6 @@
 - name: Remove all configuration symlinks during config reset
   shell: rm -f /etc/nginx/sites-enabled/* creates=/etc/ansible/facts.d/nginx.fact
 
-- include: nginx_configs.yml
-
-- include: nginx_servers.yml
-
 - name: Make sure that Ansible local facts directory is present
   file:
     path: '/etc/ansible/facts.d'
@@ -138,6 +134,23 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+
+- name: Save nginx local facts
+  template:
+    src: 'etc/ansible/facts.d/nginx.fact.j2'
+    dest: '/etc/ansible/facts.d/nginx.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: nginx_register_local_facts
+
+- name: Gather facts if they changed
+  action: setup
+  when: nginx_register_local_facts.changed
+
+- include: nginx_configs.yml
+
+- include: nginx_servers.yml
 
 - name: Save nginx local facts
   template:
