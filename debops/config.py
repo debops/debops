@@ -71,7 +71,7 @@ def _set_xdg_defaults():
             os.environ[name] = default
 
 
-def get_config_filenames():
+def _get_config_filenames():
     if sys.platform.startswith('win'):
         configdirs = [os.getenv('APPDATA')
                       or os.path.expanduser('~\\Application Data')]
@@ -86,7 +86,7 @@ def get_config_filenames():
         configdirs.reverse()
     return [os.path.join(d, 'debops.cfg') for d in configdirs]
 
-_configfiles = get_config_filenames()
+_configfiles = _get_config_filenames()
 
 def _expandpath(path):
     return os.path.expanduser(os.path.expandvars(path.strip()))

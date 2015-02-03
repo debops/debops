@@ -46,7 +46,7 @@ class TestConfigFilenames(TestCase):
     def test_get_config_filenames_no_env(self):
         unsetenv('XDG_CONFIG_HOME')
         unsetenv('XDG_CONFIG_DIRS')
-        cfn = debops.config.get_config_filenames()
+        cfn = debops.config._get_config_filenames()
         self.assertListEqual(cfn,
                              ['/etc/debops.cfg',
                               '/etc/xdg/debops.cfg',
@@ -55,7 +55,7 @@ class TestConfigFilenames(TestCase):
     def test_get_config_filenames_with_XDG_CONFIG_HOME_set(self):
         setenv('XDG_CONFIG_HOME', '/myhome/mindy')
         unsetenv('XDG_CONFIG_DIRS')
-        cfn = debops.config.get_config_filenames()
+        cfn = debops.config._get_config_filenames()
         self.assertListEqual(cfn,
                              ['/etc/debops.cfg',
                               '/etc/xdg/debops.cfg',
@@ -64,7 +64,7 @@ class TestConfigFilenames(TestCase):
     def test_get_config_filenames_with_XDG_CONFIG_DIRS_set(self):
         unsetenv('XDG_CONFIG_HOME')
         setenv('XDG_CONFIG_DIRS', '/tmp/mindy:/tmp/etc:/usr/local/etc')
-        cfn = debops.config.get_config_filenames()
+        cfn = debops.config._get_config_filenames()
         self.assertListEqual(cfn,
                              ['/etc/debops.cfg',
                               '/usr/local/etc/debops.cfg',
@@ -76,7 +76,7 @@ class TestConfigFilenames(TestCase):
     def test_get_config_filenames_with_XDG_vars_set(self):
         setenv('XDG_CONFIG_HOME', '/myhome/mindy')
         setenv('XDG_CONFIG_DIRS', '/tmp/etc:/usr/local/etc')
-        cfn = debops.config.get_config_filenames()
+        cfn = debops.config._get_config_filenames()
         self.assertListEqual(cfn,
                              ['/etc/debops.cfg',
                               '/usr/local/etc/debops.cfg',
@@ -108,7 +108,7 @@ class TestReadConfig(TestCase):
 
     def _read_config(self, project_dir):
         # refresh debops._configfiles with set environment
-        cfn = debops.config.get_config_filenames()
+        cfn = debops.config._get_config_filenames()
         cfn.remove('/etc/debops.cfg')
         debops.config._configfiles = cfn
         cfg = debops.config.read_config(project_dir)
@@ -206,7 +206,7 @@ class TestReadConfig2(TestCase):
 
     def _read_config(self, project_dir):
         # refresh debops._configfiles with set environment
-        cfn = debops.config.get_config_filenames()
+        cfn = debops.config._get_config_filenames()
         cfn.remove('/etc/debops.cfg')
         debops.config._configfiles = cfn
         return debops.config.read_config(project_dir)
