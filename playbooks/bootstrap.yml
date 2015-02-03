@@ -83,6 +83,7 @@
       owner: 'root'
       group: 'root'
       mode: '0440'
+      validate: 'visudo -cf %s'
     with_items:
       - regexp: '^Defaults:%{{ bootstrap_admin_group }} env_check\s'
         line:    'Defaults:%{{ bootstrap_admin_group }} env_check += "SSH_CLIENT"'
@@ -95,6 +96,7 @@
       regexp: '^#includedir\s+/etc/sudoers.d$'
       line: '#includedir /etc/sudoers.d'
       state: 'present'
+      validate: 'visudo -cf %s'
 
   - name: Enforce new hostname
     hostname:
