@@ -28,17 +28,6 @@
 #       configuration - for example separate configuration for HTTP and HTTPS.
 #
 #
-#   - item.default: True/False
-#       Optional. Marks this server configuration as the "default_server", if
-#       nginx cannot find correct server name or listen address to pass the
-#       request to, it will use this server instead.
-#
-#       Make sure that only one server is marked as default. If none are marked
-#       and 'nginx_default_name' is not found in any of the nginx server
-#       configurations, first server configured in the 'nginx_servers' list
-#       will be marked as default.
-#
-#
 #   - item.default_index: ''
 #       Create an example 'index.html' file in website root directory using
 #       content of this variable. If index.html is present, it won't be
@@ -262,26 +251,9 @@
 {% set nginx_tpl_listen         = item.listen     | default(['[::]:80'])       %}
 {% set nginx_tpl_listen_ssl     = item.listen_ssl | default(['[::]:443'])      %}
 {% set nginx_tpl_default_server = ''                                           %}
-{% if ((nginx_register_default_server_saved is undefined and not item.name) or
-       (nginx_register_default_server_saved is defined and not item.name and
-        nginx_register_default_server_saved == 'default') or
-       nginx_register_default_server_saved is undefined or
-       (nginx_register_default_server_saved is defined and
-        (nginx_register_default_server_saved in item.name)))    %}
-{%   if ((item.default is defined and item.default) or
-         ((nginx_default_name is defined and nginx_default_name) and
-          (item.name is defined and item.name) and
-          (nginx_default_name in item.name) and
-          (item.default is undefined or (item.default is defined and item.default))) or
-         ((ansible_local is defined and ansible_local) and
-          (ansible_local.nginx is defined and ansible_local.nginx) and
-          (ansible_local.nginx.default_server is defined and ansible_local.nginx.default_server) and
-          (ansible_local.nginx.default_server in item.name)) or
-         ((nginx_register_default_server_first is defined and nginx_register_default_server_first) and
-          (nginx_register_default_server_first in item.name)) or
-         (item.name is undefined))                                             %}
-{%       set nginx_tpl_default_server = 'default_server ipv6only=off'          %}
-{% endif                                                                       %}
+{% if (nginx_register_default_server in item.name or
+       not item.name and nginx_register_default_server == "default")           %}
+{%   set nginx_tpl_default_server = 'default_server ipv6only=off'              %}
 {% endif                                                                       %}
 {% set nginx_tpl_default_redirect_code = '307'                                 %}
 {% set nginx_tpl_http_redirect = item.redirect | default('https://$host$request_uri') %}
