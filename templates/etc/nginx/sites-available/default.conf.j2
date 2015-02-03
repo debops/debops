@@ -255,6 +255,11 @@
        not item.name and nginx_register_default_server == "default")           %}
 {%   set nginx_tpl_default_server = 'default_server ipv6only=off'              %}
 {% endif                                                                       %}
+{% set nginx_tpl_default_server_ssl = ''                                       %}
+{% if (nginx_register_default_server_ssl in item.name or
+       not item.name and nginx_register_default_server_ssl == "default")       %}
+{%   set nginx_tpl_default_server_ssl = 'default_server ipv6only=off'          %}
+{% endif                                                                       %}
 {% set nginx_tpl_default_redirect_code = '307'                                 %}
 {% set nginx_tpl_http_redirect = item.redirect | default('https://$host$request_uri') %}
 {#
@@ -435,7 +440,7 @@ server {
 server {
 {% endif %}
 {% for port in nginx_tpl_listen_ssl %}
-        listen {{ port }} ssl{% if nginx_version | version_compare('1.4','>=') %} spdy{% endif %}{% if (loop.first and nginx_tpl_default_server) %} {{ nginx_tpl_default_server }}{% endif %};
+        listen {{ port }} ssl{% if nginx_version | version_compare('1.4','>=') %} spdy{% endif %}{% if (loop.first and nginx_tpl_default_server_ssl) %} {{ nginx_tpl_default_server_ssl }}{% endif %};
 {% endfor %}
 
         ssl_certificate           {{ nginx_tpl_ssl_certificate }};
@@ -547,7 +552,7 @@ server {
 	}
 
 {% endif %}
-{% if nginx_tpl_default_server %}
+{% if nginx_tpl_default_server or nginx_tpl_default_server_ssl %}
         include /etc/nginx/site-default.d/*.conf;
 
 {% endif %}
