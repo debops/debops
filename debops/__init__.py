@@ -48,12 +48,6 @@ __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 # ---- Global constants ----
 
-DEBOPS_DATA_HOME = os.path.expanduser(os.path.join(
-    os.environ.get('XDG_DATA_HOME', '~/.local/share'), "debops"))
-
-# Default installation directory
-DEBOPS_DEFAULT_INSTALL_PATH = os.path.join(DEBOPS_DATA_HOME, "debops-playbooks")
-
 ANSIBLE_CONFIG_FILE = "ansible.cfg"
 
 #--- Roles
@@ -63,17 +57,8 @@ ROLE_PREFIX = "debops"
 
 #--- Playbooks
 
-# Default subdirectory where playbooks are stored, relative to the DebOps
-# playbooks directory
-DEBOPS_PLAYBOOK_DIR = "playbooks"
-
-# Locations where DebOps playbooks might be found
-DEBOPS_PLAYBOOKS_PATHS = [
-    os.path.join(DEBOPS_DATA_HOME, "debops-playbooks", "playbooks"),
-]
-
 # Default site.yml playbook to look for
-DEBOPS_SITE_PLAYBOOK = os.path.join(DEBOPS_PLAYBOOK_DIR, "site.yml")
+DEBOPS_SITE_PLAYBOOK = os.path.join("playbooks", "site.yml")
 
 #--- Inventories
 
@@ -101,7 +86,7 @@ ENCFS_KEYFILE_LENGTH = 256
 
 # ---- Functions ----
 
-def find_up(path, name):
+def _find_up(path, name):
     """
     Find specified file or directory in parent dir
     """
@@ -128,31 +113,31 @@ def find_debops_project(path=None):
     if path is None:
         path = os.getcwd()
     # Find DebOps configuration file
-    debops_config = find_up(path, DEBOPS_CONFIG)
+    debops_config = _find_up(path, DEBOPS_CONFIG)
     # Find root of the DebOps project dir
     return os.path.dirname(debops_config) if debops_config else None
 
 
-def find_playbookpath(debops_root):
+def find_playbookpath(config, project_root):
     """
     Search for playbooks in various locations.
     """
-    if debops_root:
-        places = [os.path.join(debops_root, "debops-playbooks", "playbooks")]
-        places.extend(DEBOPS_PLAYBOOKS_PATHS)
+    if project_root:
+        places = [os.path.join(project_root, "debops-playbooks", "playbooks")]
     else:
-        places = DEBOPS_PLAYBOOKS_PATHS
+        places = []
+    places.extend(config['paths']['playbooks-paths'])
     for playbook_path in places:
         if os.path.exists(os.path.join(playbook_path, "site.yml")):
             return playbook_path
 
 
-def find_inventorypath(debops_root):
+def find_inventorypath(project_root):
     """
     Search Ansible inventory in local directories.
     """
     for inventory_path in ANSIBLE_INVENTORY_PATHS:
-        ansible_inventory = os.path.join(debops_root, inventory_path)
+        ansible_inventory = os.path.join(project_root, inventory_path)
         if os.path.isdir(ansible_inventory):
             return ansible_inventory
 

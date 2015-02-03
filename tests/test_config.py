@@ -24,8 +24,11 @@
 # be downloaded from the FSF web page at:
 # http://www.gnu.org/copyleft/gpl.html
 
-from unittest2 import TestCase
+from unittest import TestCase
 import os
+import sys
+import ConfigParser
+import cStringIO
 import tempfile
 import shutil
 
@@ -46,7 +49,7 @@ class TestConfigFilenames(TestCase):
     def test_get_config_filenames_no_env(self):
         unsetenv('XDG_CONFIG_HOME')
         unsetenv('XDG_CONFIG_DIRS')
-        cfn = debops.config.get_config_filenames()
+        cfn = debops.config._get_config_filenames()
         self.assertListEqual(cfn,
                              ['/etc/debops.cfg',
                               '/etc/xdg/debops.cfg',
@@ -55,7 +58,7 @@ class TestConfigFilenames(TestCase):
     def test_get_config_filenames_with_XDG_CONFIG_HOME_set(self):
         setenv('XDG_CONFIG_HOME', '/myhome/mindy')
         unsetenv('XDG_CONFIG_DIRS')
-        cfn = debops.config.get_config_filenames()
+        cfn = debops.config._get_config_filenames()
         self.assertListEqual(cfn,
                              ['/etc/debops.cfg',
                               '/etc/xdg/debops.cfg',
@@ -64,7 +67,7 @@ class TestConfigFilenames(TestCase):
     def test_get_config_filenames_with_XDG_CONFIG_DIRS_set(self):
         unsetenv('XDG_CONFIG_HOME')
         setenv('XDG_CONFIG_DIRS', '/tmp/mindy:/tmp/etc:/usr/local/etc')
-        cfn = debops.config.get_config_filenames()
+        cfn = debops.config._get_config_filenames()
         self.assertListEqual(cfn,
                              ['/etc/debops.cfg',
                               '/usr/local/etc/debops.cfg',
@@ -76,7 +79,7 @@ class TestConfigFilenames(TestCase):
     def test_get_config_filenames_with_XDG_vars_set(self):
         setenv('XDG_CONFIG_HOME', '/myhome/mindy')
         setenv('XDG_CONFIG_DIRS', '/tmp/etc:/usr/local/etc')
-        cfn = debops.config.get_config_filenames()
+        cfn = debops.config._get_config_filenames()
         self.assertListEqual(cfn,
                              ['/etc/debops.cfg',
                               '/usr/local/etc/debops.cfg',
@@ -108,10 +111,12 @@ class TestReadConfig(TestCase):
 
     def _read_config(self, project_dir):
         # refresh debops._configfiles with set environment
-        cfn = debops.config.get_config_filenames()
+        cfn = debops.config._get_config_filenames()
         cfn.remove('/etc/debops.cfg')
         debops.config._configfiles = cfn
-        return debops.config.read_config(project_dir)
+        cfg = debops.config.read_config(project_dir)
+        del cfg['paths']
+        return cfg
 
     def test_read_config_files_simple(self):
         dirs = [self._make_configfile(dir, sect, data) for
@@ -179,3 +184,102 @@ class TestReadConfig(TestCase):
                              {'debops': {'home': '/my/home',
                                          'name1': 'value2'}
                           })
+
+class TestReadConfig2(TestCase):
+
+    def setUp(self):
+        self.sandbox = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.sandbox)
+        self._saved_configfiles = debops.config._configfiles[:]
+        # remove '/etc/debobs.cfg' to make results predictable
+        debops.config._configfiles.remove('/etc/debops.cfg')
+
+    def tearDown(self):
+        debops.config._configfiles = self._saved_configfiles[:]
+
+    def _make_configfile(self, dir, sect, *data):
+        dir = os.path.join(self.sandbox, dir)
+        os.makedirs(dir)
+        fn = os.path.join(dir, 'debops.cfg')
+        with open(fn, 'w') as fh:
+            print >> fh, "[%s]" % sect
+            for d in data:
+                print >> fh, d
+        return dir
+
+    def _read_config(self, project_dir):
+        # refresh debops._configfiles with set environment
+        cfn = debops.config._get_config_filenames()
+        cfn.remove('/etc/debops.cfg')
+        debops.config._configfiles = cfn
+        return debops.config.read_config(project_dir)
+
+    def test_defaults(self):
+        dirs = [self._make_configfile(dir, sect, data) for
+                dir, sect, data in (
+                    ['xdg_home', 'xpaths', 'data-home: /opt/my/debops'],
+                )]
+        unsetenv('XDG_CONFIG_HOME')
+        cfg = self._read_config('/non/existing/dir')
+        self.assertDictEqual(
+            cfg['paths'],
+            {'data-home': os.path.expanduser('~/.local/share/debops'),
+             'install-path': os.path.expanduser('~/.local/share/debops/debops-playbooks'),
+             'playbooks-paths': [os.path.expanduser('~/.local/share/debops/debops-playbooks/playbooks')],
+         })
+
+    def test_read_config_files_simple(self):
+        dirs = [self._make_configfile(dir, sect, data) for
+                dir, sect, data in (
+                    ['xdg_home', 'paths', 'data-home: /opt/my/debops'],
+                )]
+        setenv('XDG_CONFIG_HOME', dirs[0])
+        cfg = self._read_config('/non/existing/dir')
+        self.assertDictEqual(
+            cfg['paths'],
+            {'data-home': '/opt/my/debops',
+             'install-path': '/opt/my/debops/debops-playbooks',
+             'playbooks-paths': ['/opt/my/debops/debops-playbooks/playbooks'],
+         })
+
+class TestReadConfigDefaultsForPlattforms(TestCase):
+
+    def setUp(self):
+        self.platform = sys.platform
+
+    def tearDown(self):
+        sys.platform = self.platform
+
+    def test_defaults_linux(self):
+        sys.platform = 'linux2'
+        reload(debops.config)
+        cfgparser = ConfigParser.SafeConfigParser()
+        cfgparser.readfp(cStringIO.StringIO(debops.config.DEFAULTS))
+        self.assertEqual(cfgparser.get('paths', 'data-home'),
+                         '$XDG_DATA_HOME/debops')
+
+    def test_defaults_windows_without_APPDATA(self):
+        sys.platform = 'win32'
+        unsetenv('APPDATA')
+        reload(debops.config)
+        cfgparser = ConfigParser.SafeConfigParser()
+        cfgparser.readfp(cStringIO.StringIO(debops.config.DEFAULTS))
+        self.assertEqual(cfgparser.get('paths', 'data-home'),
+                         '~\\Application Data/debops')
+
+    def test_defaults_windows_with_APPDATA(self):
+        sys.platform = 'win32'
+        setenv('APPDATA', 'H:\\my\\own\\data')
+        reload(debops.config)
+        cfgparser = ConfigParser.SafeConfigParser()
+        cfgparser.readfp(cStringIO.StringIO(debops.config.DEFAULTS))
+        self.assertEqual(cfgparser.get('paths', 'data-home'),
+                         'H:\\my\\own\\data/debops')
+
+    def test_defaults_os_x(self):
+        sys.platform = 'darwin'
+        reload(debops.config)
+        cfgparser = ConfigParser.SafeConfigParser()
+        cfgparser.readfp(cStringIO.StringIO(debops.config.DEFAULTS))
+        self.assertEqual(cfgparser.get('paths', 'data-home'),
+                         '~/Library/Application Support/debops')

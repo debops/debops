@@ -62,7 +62,7 @@ SCRIPT_FILENAME = 'padlock-script'
 # ---- DebOps environment setup ----
 
 def main(subcommand_func, **kwargs):
-    debops_root = find_debops_project(required=True)
+    project_root = find_debops_project(required=True)
     # :todo: Source DebOps configuration file
     #[ -r ${debops_config} ] && source ${debops_config}
 
@@ -71,10 +71,10 @@ def main(subcommand_func, **kwargs):
     # Make sure required commands are present
     require_commands('encfs', 'find', 'fusermount', 'gpg')
 
-    inventory_path = find_inventorypath(debops_root, required=False)
+    inventory_path = find_inventorypath(project_root, required=False)
     # If inventory hasn't been found automatically, assume it's the default
     if not inventory_path:
-        inventory_path = os.path.join(debops_root, 'ansible', INVENTORY)
+        inventory_path = os.path.join(project_root, 'ansible', INVENTORY)
 
     # Create names of EncFS encrypted and decrypted directories, based on
     # inventory name (absolute paths are specified)
