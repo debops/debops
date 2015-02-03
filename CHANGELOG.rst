@@ -11,6 +11,42 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2015-02-03
+^^^^^^^^^^
+
+Playbook updates
+****************
+
+New playbook, ``tools/dist-upgrade.yml`` has been added. It should help with
+upgrading to next version of your favourite OS, currently supported upgrade
+paths are from Debian Wheezy to Debian Jessie and from Ubuntu Trusty to Ubuntu
+Utopic.
+
+To use the new playbook on a selected host, run command::
+
+    debops tools/dist-upgrade --limit hostname
+
+Playbook is idempotent and it shouldn't perform an upgrade on already upgraded
+hosts. After an upgrade is performed you should receive email message with the
+log of the procedure for review. After that you might want to re-run at least
+DebOps common playbook to make sure that any changes are accounted for and
+reboot the host.
+
+Just a reminder, that at this time Debian Jessie is still a Testing
+distribution and you shouldn't run the upgrade playbook on your production
+systems, unless you know what you are doing. DebOps playbooks and roles should
+work correctly installed on either Wheezy or Jessie (if not, post an issue),
+but they are not tested against an upgrade from one distribution to another.
+
+I've created a `separate dist-upgrade label`_ for issues related to upgrade
+procedure. You should check it out before upgrading. If you find any issues
+regarding DebOps roles after performing an upgrade, please post them in
+`debops/debops-playbooks`_ repository so that they can be tracked in one place.
+
+.. _separate dist-upgrade label: https://github.com/debops/debops-playbooks/labels/dist-upgrade
+.. _debops/debops-playbooks: https://github.com/debops/debops-playbooks/
+
+
 2015-02-01
 ^^^^^^^^^^
 
