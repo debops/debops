@@ -26,6 +26,9 @@
 
 from unittest import TestCase
 import os
+import sys
+import ConfigParser
+import cStringIO
 import tempfile
 import shutil
 
@@ -238,3 +241,45 @@ class TestReadConfig2(TestCase):
              'install-path': '/opt/my/debops/debops-playbooks',
              'playbooks-paths': ['/opt/my/debops/debops-playbooks/playbooks'],
          })
+
+class TestReadConfigDefaultsForPlattforms(TestCase):
+
+    def setUp(self):
+        self.platform = sys.platform
+
+    def tearDown(self):
+        sys.platform = self.platform
+
+    def test_defaults_linux(self):
+        sys.platform = 'linux2'
+        reload(debops.config)
+        cfgparser = ConfigParser.SafeConfigParser()
+        cfgparser.readfp(cStringIO.StringIO(debops.config.DEFAULTS))
+        self.assertEqual(cfgparser.get('paths', 'data-home'),
+                         '$XDG_DATA_HOME/debops')
+
+    def test_defaults_windows_without_APPDATA(self):
+        sys.platform = 'win32'
+        unsetenv('APPDATA')
+        reload(debops.config)
+        cfgparser = ConfigParser.SafeConfigParser()
+        cfgparser.readfp(cStringIO.StringIO(debops.config.DEFAULTS))
+        self.assertEqual(cfgparser.get('paths', 'data-home'),
+                         '~\\Application Data/debops')
+
+    def test_defaults_windows_with_APPDATA(self):
+        sys.platform = 'win32'
+        setenv('APPDATA', 'H:\\my\\own\\data')
+        reload(debops.config)
+        cfgparser = ConfigParser.SafeConfigParser()
+        cfgparser.readfp(cStringIO.StringIO(debops.config.DEFAULTS))
+        self.assertEqual(cfgparser.get('paths', 'data-home'),
+                         'H:\\my\\own\\data/debops')
+
+    def test_defaults_os_x(self):
+        sys.platform = 'darwin'
+        reload(debops.config)
+        cfgparser = ConfigParser.SafeConfigParser()
+        cfgparser.readfp(cStringIO.StringIO(debops.config.DEFAULTS))
+        self.assertEqual(cfgparser.get('paths', 'data-home'),
+                         '~/Library/Application Support/debops')
