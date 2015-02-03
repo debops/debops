@@ -50,6 +50,14 @@ install-path: %(data-home)s/debops-playbooks
 playbooks-paths: %(install-path)s/playbooks
 """
 
+if sys.platform.startswith('win'):
+    DEFAULTS = DEFAULTS.replace('$XDG_DATA_HOME',
+                                os.getenv('APPDATA') or '~\\Application Data')
+elif sys.platform == 'darwin':  # Mac OS X
+    DEFAULTS = DEFAULTS.replace('$XDG_DATA_HOME',
+                                '~/Library/Application Support')
+
+
 def _set_xdg_defaults():
     """
     Set default values for XDG variables according to XDG specification
