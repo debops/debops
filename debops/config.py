@@ -105,7 +105,6 @@ def read_config(project_root):
     cfg = dict((sect, dict(cfgparser.items(sect)))
                for sect in cfgparser.sections())
     # expand vars and home-directory
-    _set_xdg_defaults()
     for name in ('data-home', 'install-path'):
         cfg['paths'][name] = _expandpath(cfg['paths'][name])
     cfg['paths']['playbooks-paths'] = [
