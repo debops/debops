@@ -14,6 +14,31 @@ v0.1.0 (release pending)
 2015-02-03
 ^^^^^^^^^^
 
+Role updates
+************
+
+`debops.nginx`_ role will now track HTTP and HTTPS ``default_server``
+configuration option separately, which should make it even more roboust and
+hard to break accidentally. Code which selected ``default_server`` was moved
+out of the server template and into separate Ansible tasks.
+
+Nginx role has exposed two variables using local Ansible facts:
+
+- ``ansible_local.nginx.user`` is the default system user (``www-data``) which
+  is used to run the webserver. Some of the roles need to give read-only or
+  read-write access to his user for specific files. To have it work properly,
+  `debops.nginx`_ role needs to be run before your own role, or you need to
+  have it in your role's dependencies.
+
+- ``ansible_local.nginx.www`` is the default directory for web-accessible files
+  (``/srv/www``). Most of the time you will use it by creating separate
+  subdirectory for a specific system user. Nginx role uses a specific structure
+  based on this path to automatically generate ``root`` configuration
+  parameters;
+
+.. _debops.nginx: https://github.com/debops/ansible-nginx/
+
+
 Playbook updates
 ****************
 
