@@ -6,6 +6,10 @@
 # Distributed under a BSD-like license.
 #
 
+.PHONY : all clean celan-files clean-all clean-tox
+.PHONY : xunit-test test test-dist cover
+.PHONY : dump-requirements install-requirements
+
 all: cover
 
 clean: clean-files
