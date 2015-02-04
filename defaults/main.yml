@@ -71,6 +71,17 @@ pki_rootca_o: '{{ pki_organization + " Certificate Authority" }}'
 pki_rootca_cn: '{{ pki_organization + " Root Certificate" }}'
 
 
+# ---- Service Certificate Authority configuration ----
+
+pki_serviceca: 'ServiceCA'
+pki_serviceca_filename: '{{ pki_serviceca + "-" + ansible_domain }}'
+pki_serviceca_private_key_size: '2048'
+pki_serviceca_sign_days: '{{ (365 * 4) }}'
+pki_serviceca_o: '{{ pki_organization + " Certificate Authority" }}'
+pki_serviceca_ou: '{{ pki_organization + " Service CA" }}'
+pki_serviceca_cn: '{{ "srv." + ansible_domain }}'
+
+
 # ---- PKI snapshot configuration ----
 
 pki_snapshot: True
@@ -117,6 +128,9 @@ pki_default_host_certificate: '{{ ansible_fqdn }}'
 # Certificate name to symlink as 'default.*' in PKI 'domain' realm
 pki_default_domain_certificate: '{{ "wildcard.domain." + ansible_fqdn }}'
 
+# Certificate name to symlink as 'default.*' in PKI 'service' realm
+pki_default_service_certificate: '{{ "srv." + ansible_fqdn }}'
+
 # Subdomain reserved for CA server (certificate revocation lists, source for
 # Root certificate, etc.)
 pki_ca_domain: 'pki.{{ ansible_domain }}'
@@ -157,6 +171,26 @@ pki_realms:
     ca: [ 'root/RootCA' ]
     makefile: False
 
+    # Because some applications do not support chained certificates properly
+    # (for example, MySQL built with yaSSL by default), this realm creates an
+    # alternative set of certificates which are signed directly by a Root
+    # Certificate Authority, without any Intermediate CA. This realm is meant
+    # for the internal use only.
+  - name: 'service'
+    source: 'service'
+    destination: 'service'
+    ca: [ 'root/ServiceCA' ]
+    makefile: False
+
+    # This is a host counterpart for the 'service' realm, specific to
+    # a particular host.
+  - name: 'host-service'
+    source: 'hosts/{{ ansible_fqdn }}/service'
+    destination: 'service'
+    authority: 'root/ServiceCA'
+    default: '{{ pki_default_service_certificate }}'
+    default_ca: '{{ "CA/" + pki_serviceca_filename + ".crt" }}'
+
     # This realm can be used to manage wildcard certificates per host, instead of
     # globally. It by default provides a wildcard certificate for your domain.
   - name: 'host-domain'
@@ -188,6 +222,20 @@ pki_realms:
 # proper realms using route scripts (see below).
 pki_authorities:
 
+  # Internal certificate chain, with certificates signed directly by Root Certificate
+  - name: 'root/ServiceCA'
+    grants: 'cert'
+    private_key_size: '{{ pki_serviceca_private_key_size }}'
+    filename: '{{ pki_serviceca_filename }}'
+    policy: 'intermediate'
+    sign_days: '{{ pki_serviceca_sign_days }}'
+    default_dn: False
+    o: '{{ pki_serviceca_o }}'
+    ou: '{{ pki_serviceca_ou }}'
+    cn: '{{ pki_serviceca_cn }}'
+    lock: False
+
+  # Domain-wide certificate chain
   - name: 'root/RootCA'
     grants: 'ca'
     private_key_size: '{{ pki_rootca_private_key_size }}'
@@ -236,6 +284,12 @@ pki_routes:
     realm: 'hosts/{{ ansible_fqdn }}/domain/certs'
     file: 'wildcard.domain.{{ ansible_fqdn }}.crt'
 
+    # Copy signed service certificate to 'service' PKI realm
+  - name: 'service_{{ ansible_fqdn }}'
+    authority: 'root/ServiceCA/certs'
+    realm: 'hosts/{{ ansible_fqdn }}/service/certs'
+    file: '{{ "srv." + ansible_fqdn }}.crt'
+
     # Copy Root CA certificate to 'domain' realm for all hosts
   - name: 'root_ca'
     authority: 'root/RootCA'
@@ -252,6 +306,18 @@ pki_routes:
   - name: 'domain_crl_{{ ansible_fqdn }}'
     authority: 'ca/domain'
     realm: 'hosts/{{ ansible_fqdn }}/domain/revoked'
+    readlink: 'default.crl'
+
+    # Copy Service CA certificate to 'service' realm for all hosts
+  - name: 'service_ca'
+    authority: 'root/ServiceCA'
+    realm: 'service/CA'
+    readlink: 'CA.crt'
+
+    # Copy Service CA CRL file to 'service' realm for all hosts
+  - name: 'service_crl'
+    authority: 'root/ServiceCA'
+    realm: 'service/revoked'
     readlink: 'default.crl'
 
 
@@ -276,6 +342,14 @@ pki_certificates:
     dns: [ '{{ "*." + ansible_domain }}' ]
     uri: [ '{{ pki_default_certificate_uri }}' ]
     filename: 'wildcard.domain.{{ ansible_fqdn }}'
+
+  - source: '{{ "hosts/" + ansible_fqdn + "/service" }}'
+    destination: 'service'
+    ou: '{{ pki_organization + " Service Certificate" }}'
+    cn: '{{ ansible_fqdn }}'
+    dns: [ '{{ "*." + ansible_domain }}' ]
+    uri: [ '{{ pki_default_certificate_uri }}' ]
+    filename: 'srv.{{ ansible_fqdn }}'
 
 
 # Example list of certificate options
