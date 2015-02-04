@@ -11,6 +11,25 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2015-02-04
+^^^^^^^^^^
+
+Role updates
+************
+
+I have found out that some applications do not support SSL/TLS certificate
+chains correctly. Because of that, I have added a separate PKI realm,
+``/etc/pki/service/``, with corresponding Root Certificate Authority, which
+will sign certificates directly. It is meant for internal use only, each host
+in a cluster has its own certificate shared by all services on this host,
+private key is accessible for users belonging to ``ssl-cert`` system group.
+
+For reference, `Debian Bug #630625`_ which indicates that MySQL does not
+support certificate chains out of the box. If other such services are found,
+they will now use ``service`` PKI realm by default.
+
+.. _Debian Bug #630625: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=630625
+
 2015-02-03
 ^^^^^^^^^^
 
