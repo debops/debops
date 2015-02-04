@@ -2,12 +2,9 @@
 
 # This playbook can be used to bootstrap freshly installed minimal Debian
 # system for Ansible management. The expected state the host:
-#   - root account is configured with a known password;
-#   - host has OpenSSH server installed and root can login with a password;
-#   - default administrator account is not created;
-#   - default administrator has no sudo access to root account;
 #   - host is already configured in Ansible inventory/hosts file;
 #   - local user has prepared SSH keypair in RSA format;
+#   - host has OpenSSH server installed;
 #
 # Modifications that will be made on the host:
 #   - playbook will install Python support with some essential software;
@@ -20,23 +17,26 @@
 #     'bootstrap_hostname' and 'bootstrap_domain' variables;
 #
 # Usage:
-# debops bootstrap -k --limit host
+# To connect directly as root, run:
 #
-# After securing access to the server by disabling the password authentication
-# in sshd, this playbook is expected to not work correctly.
+#     debops bootstrap -u root -k --limit host
+#
+# To connect as normal user and switch to sudo, run:
+#
+#     debops bootstrap --sudo --limit host
 
 
 - name: Bootstrap host for Ansible management
   hosts: 'all:!localhost'
-  remote_user: 'root'
   gather_facts: False
-  sudo: False
 
   vars:
     bootstrap_admin_account: '{{ lookup("env","USER") }}'
     bootstrap_admin_group: 'admins'
     bootstrap_admin_ssh_key: '{{ lookup("pipe","ssh-add -L") }}'
     bootstrap_hostname: '{{ inventory_hostname_short | default(inventory_hostname) }}'
+
+    # Specify 'bootstrap_domain' in inventory to set a domain
 
   tasks:
   - name: Install minimal Python support for Ansible
@@ -85,8 +85,8 @@
       mode: '0440'
       validate: 'visudo -cf %s'
     with_items:
-      - regexp: '^Defaults:%{{ bootstrap_admin_group }} env_check\s'
-        line:    'Defaults:%{{ bootstrap_admin_group }} env_check += "SSH_CLIENT"'
+      - regexp: '^Defaults: %{{ bootstrap_admin_group }} env_check\s'
+        line:    'Defaults: %{{ bootstrap_admin_group }} env_check += "SSH_CLIENT"'
       - regexp: '^%{{ bootstrap_admin_group }}\s'
         line:    '%{{ bootstrap_admin_group }} ALL=(ALL:ALL) NOPASSWD: SETENV: ALL'
 
