@@ -22,7 +22,7 @@ setup(
                'bin/debops-task',
                'bin/debops-update'],
 
-    packages = find_packages(exclude=['tests', 'ez_setup']),
+    packages = find_packages(exclude=['tests']),
     package_data = {
         'debops': ['padlock-script'],
         },
