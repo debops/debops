@@ -9,6 +9,7 @@
 .PHONY : all clean celan-files clean-all clean-tox
 .PHONY : xunit-test test test-dist cover
 .PHONY : dump-requirements install-requirements
+.PHONY : dist
 
 all: cover
 
@@ -43,3 +44,9 @@ dump-requirements:
 
 install-requirements:
 	pip install -r .requirements
+
+dist:
+#	ensure a clean build
+	rm -rf build
+	python setup.py sdist
+	python setup.py bdist
