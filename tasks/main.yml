@@ -9,9 +9,13 @@
   notify: [ 'Test sshd configuration and restart' ]
 
 - name: Make sure the system-wide known_hosts file exists
-  command: touch {{ sshd_known_hosts_file }}
-  args:
-    creates: '{{ sshd_known_hosts_file }}'
+  copy:
+    force: false
+    dest:  '{{ sshd_known_hosts_file }}'
+    content: ''
+    owner: root
+    group: root
+    mode: 0644
 
 - name: Get list of already scanned host fingerprints
   shell: ssh-keygen -f {{ sshd_known_hosts_file }} -F {{ item }} | grep -q '^# Host {{ item }} found'
