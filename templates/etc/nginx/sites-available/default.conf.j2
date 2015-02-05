@@ -157,6 +157,11 @@
 #       status page
 #
 #
+#   - item.allow: []
+#       Optional. List of IP addresses or CIDR networks which can access given
+#       server. Automatically adds 'deny: all' at the end of the list.
+#
+#
 #   - item.options: |
 #       Optional. Add custom options to this server configuration using text
 #       block (semicolons at the end of each line are required).
@@ -504,6 +509,17 @@ server {
 {% endif %}
 {% if item.options is defined and item.options %}
         {{ item.options | indent(8) }}
+
+{% endif %}
+{% if item.allow is defined and item.allow %}
+{% if item.allow is string %}
+        allow {{ item.allow }};
+{% else %}
+{% for address in item.allow %}
+	allow {{ address }};
+{% endfor %}
+{% endif %}
+	deny all;
 
 {% endif %}
 {% if item.userdir is defined and item.userdir %}
