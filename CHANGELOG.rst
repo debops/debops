@@ -25,9 +25,18 @@ by default, using PKI infrastructure managed by `debops.pki`_ role.
 available previously). You can use Ansible lists to specify which hosts or
 networks have access to the server.
 
+You can now configure HTTP Basic Authentication in `debops.nginx`_ role. It
+works on a server level (restricted access to individual servers), as well as
+on the host level (restricted access to all nginx servers configured on this
+host). `debops.nginx`_ has a built-in support for ``htpasswd`` files - you
+specify a list of user accounts to configure in Ansible inventory, and
+passwords themselves are stored in ``secret/`` directory, managed by
+`debops.secret`_ role.
+
 .. _debops.mysql: https://github.com/debops/ansible-mysql/
 .. _debops.pki: https://github.com/debops/ansible-pki/
 .. _debops.nginx: https://github.com/debops/ansible-nginx/
+.. _debops.secret: https://github.com/debops/ansible-secret/
 
 
 2015-02-04
