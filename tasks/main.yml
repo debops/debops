@@ -9,7 +9,9 @@
     name: '{{ item }}'
     state: 'latest'
     install_recommends: False
-  with_items: nginx_base_packages
+  with_flattened:
+    - nginx_base_packages
+    - [ 'python-passlib' ]
 
 - name: Restart nginx on first install to bypass missing pid bug
   service:
@@ -147,6 +149,8 @@
 - name: Gather facts if they changed
   action: setup
   when: nginx_register_local_facts.changed
+
+- include: nginx_htpasswd.yml
 
 - include: nginx_configs.yml
 

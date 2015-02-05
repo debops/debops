@@ -2,24 +2,29 @@
 
 user {{ nginx_user }};
 
-worker_priority {{ nginx_worker_priority }};
-worker_processes {{ nginx_worker_processes }};
-worker_rlimit_nofile {{ nginx_worker_rlimit_nofile }};
-
 pid /var/run/nginx.pid;
 
+# Nicenness, from 20 (nice) to -20 (not nice)
+worker_priority {{ nginx_worker_priority | default('0') }};
+
+# Number of workers to run, usually equals number of CPU cores
+worker_processes {{ nginx_worker_processes | default(ansible_processor_cores) }};
+
+# Maximum number of opened files per process, must be higher than worker_connections
+worker_rlimit_nofile {{ nginx_worker_rlimit_nofile | default('4096') }};
+
 events {
-	worker_connections {{ nginx_worker_connections }};
+	worker_connections {{ nginx_worker_connections | default('1024') }};
 }
 
 http {
 	include /etc/nginx/mime.types;
 	default_type application/octet-stream;
 
-	server_tokens {{ nginx_server_tokens }};
+	server_tokens {{ nginx_http_server_tokens | default('off') }};
 
-	server_names_hash_bucket_size {{ nginx_server_names_hash_bucket_size }};
-	server_names_hash_max_size {{ nginx_server_names_hash_max_size }};
+	server_names_hash_bucket_size {{ nginx_http_server_names_hash_bucket_size | default('64') }};
+	server_names_hash_max_size {{ nginx_http_server_names_hash_max_size | default('512') }};
 
 	ssl_session_cache shared:SSL:10m;
 	ssl_session_timeout 5m;
@@ -36,11 +41,31 @@ http {
 	gzip on;
 	gzip_disable "msie6";
 
+{% if ((nginx_http_allow is defined and nginx_http_allow) or
+       (nginx_http_auth_basic is defined and nginx_http_auth_basic) or
+       (nginx_http_satisfy is defined and nginx_http_satisfy)) %}
+        satisfy {{ nginx_http_satisfy | default(nginx_default_satisfy) }};
+
+{% endif %}
+{% if nginx_http_allow is defined and nginx_http_allow %}
+{% if nginx_http_allow is string %}
+        allow {{ nginx_http_allow }};
+{% else %}
+{% for address in nginx_http_allow %}
+	allow {{ address }};
+{% endfor %}
+{% endif %}
+	deny all;
+
+{% endif %}
+{% if nginx_http_auth_basic is defined and nginx_http_auth_basic %}
+        auth_basic "{% if nginx_http_auth_basic_realm is defined and nginx_http_auth_basic_realm %}{{ nginx_http_auth_basic_realm }}{% else %}{{ nginx_default_auth_basic_realm }}{% endif %}";
+        auth_basic_user_file {{ nginx_http_auth_basic_filename | default("/etc/nginx/private/" + nginx_http_auth_basic_name) }};
+
+{% endif %}
 	# Virtual Hosts Configs
 	include /etc/nginx/conf.d/*.conf;
 	include /etc/nginx/sites-enabled/*;
 }
 
 # vim:ft=nginx
-
-

@@ -157,9 +157,38 @@
 #       status page
 #
 #
+#   - item.satisfy: 'any/all'
+#       Optional. Set the server behaviour to either accept any of 'allow,
+#       auth' configuration restrictions, or require all of them to match.
+#       By default, any restriction by itself will match.
+#
+#
 #   - item.allow: []
 #       Optional. List of IP addresses or CIDR networks which can access given
 #       server. Automatically adds 'deny: all' at the end of the list.
+#
+#
+#   - item.auth_basic: True/False
+#       Optional. Enable HTTP Basic Authentication for this server. Instead of
+#       True/False, you can use a list of accounts which will automatically
+#       cast to True, if not empty. Example:
+#
+#           item.auth_basic: '{{ account_list }}'
+#
+#
+#   - item.auth_basic_realm: ''
+#       Optional. String which will be displayed to the user in the
+#       HTTP Basic Auth dialog box.
+#
+#
+#   - item.auth_basic_name: ''
+#       Optional. Required with 'item.auth_basic'. Specifies the name of the
+#       htpasswd file used for this server authentication. htpasswd files are
+#       stored in '/etc/nginx/private/' directory.
+#
+#       You can use 'item.auth_basic_filename' and specify full path to
+#       htpasswd file to use; file needs to be readable by nginx system user
+#       (by default, 'www-data').
 #
 #
 #   - item.options: |
@@ -511,6 +540,12 @@ server {
         {{ item.options | indent(8) }}
 
 {% endif %}
+{% if ((item.allow is defined and item.allow) or
+       (item.auth_basic is defined and item.auth_basic) or
+       (item.satisfy is defined and item.satisfy)) %}
+        satisfy {{ item.satisfy | default(nginx_default_satisfy) }};
+
+{% endif %}
 {% if item.allow is defined and item.allow %}
 {% if item.allow is string %}
         allow {{ item.allow }};
@@ -520,6 +555,11 @@ server {
 {% endfor %}
 {% endif %}
 	deny all;
+
+{% endif %}
+{% if item.auth_basic is defined and item.auth_basic %}
+        auth_basic "{% if item.auth_basic_realm is defined and item.auth_basic_realm %}{{ item.auth_basic_realm }}{% else %}{{ nginx_default_auth_basic_realm }}{% endif %}";
+        auth_basic_user_file {{ item.auth_basic_filename | default("/etc/nginx/private/" + item.auth_basic_name) }};
 
 {% endif %}
 {% if item.userdir is defined and item.userdir %}
