@@ -13,10 +13,13 @@
   changed_when: False
 
 - name: Make sure accounts.txt file exists
-  command: touch /etc/boxbackup/bbstored/accounts.txt creates=/etc/boxbackup/bbstored/accounts.txt
-
-- name: Fix accounts.txt permissions
-  file: path=/etc/boxbackup/bbstored/accounts.txt state=file owner=bbstored group=bbstored mode=0600
+  copy:
+    force: false
+    dest: /etc/boxbackup/bbstored/accounts.txt
+    content: ''
+    owner: bbstored
+    group: bbstored
+    mode: 0600
 
 - name: Configure boxbackup server
   template: src={{ item }}.j2 dest=/{{ item }} owner=bbstored group=bbstored mode=0640
