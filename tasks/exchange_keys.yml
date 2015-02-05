@@ -28,9 +28,13 @@
          hostvars[item].ansible_hostname is defined)
 
 - name: Make sure that /root/.ssh/known_hosts file exists
-  command: touch {{ openvz_root_ssh_known_hosts_file }}
-  args:
-    creates: '{{ openvz_root_ssh_known_hosts_file }}'
+  copy:
+    force: false
+    dest: '{{ openvz_root_ssh_known_hosts_file }}'
+    content: ''
+    owner: root
+    group: root
+    mode: 0644
 
 - name: Get list of already scanned hostname fingerprints
   shell: ssh-keygen -f {{ openvz_root_ssh_known_hosts_file }} -F {{ hostvars[item].ansible_hostname }} | grep -q '^# Host {{ hostvars[item].ansible_hostname }} found'
