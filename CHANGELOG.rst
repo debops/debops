@@ -11,6 +11,25 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2015-02-15
+^^^^^^^^^^
+
+Role updates
+************
+
+`debops.mysql`_ role can now configure a MySQL server with SSL support enabled
+by default, using PKI infrastructure managed by `debops.pki`_ role.
+
+`debops.nginx`_ role gained support for setting server-wide (as in, per domain)
+``allow/deny`` rules, which is more secure than just per-location (which was
+available previously). You can use Ansible lists to specify which hosts or
+networks have access to the server.
+
+.. _debops.mysql: https://github.com/debops/ansible-mysql/
+.. _debops.pki: https://github.com/debops/ansible-pki/
+.. _debops.nginx: https://github.com/debops/ansible-nginx/
+
+
 2015-02-04
 ^^^^^^^^^^
 
