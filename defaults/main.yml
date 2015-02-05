@@ -16,8 +16,26 @@ nginx_base_packages: [ 'nginx-full' ]
 nginx_user: 'www-data'
 
 
+# ---- Global server access and authentication ----
 
+# List of IP addresses or CIDR networks which can access this server. If the
+# list is empty, access is allowed from anywhere
+nginx_http_allow: []
 
+# Enable or disable HTTP Basic Auth for all nginx servers on this host.
+# By default it depends on the contents of 'nginx_http_auth_users' variable, if
+# the list is not empty, authorization is automatically enabled.
+nginx_http_auth_basic: '{{ nginx_http_auth_users }}'
+
+# Name of the htpasswd file in '/etc/nginx/private/' with list of global
+# HTTP Basic Auth accounts
+nginx_http_auth_basic_name: 'nginx_http'
+
+# List of HTTP Basic Auth accounts which need to login before accessing this
+# server. Passwords are generated automatically and stored in 'secret/'
+# directory (see debops.secret role). If this list empty, access is not
+# restricted.
+nginx_http_auth_users: []
 
 
 nginx_default_keepalive_timeout: 60
@@ -97,6 +115,40 @@ nginx_local_servers: {}
   #'removed-file': False
   #'also-removed':
   #'symlink\ with\ spaces.conf': 'other-file.conf'
+
+# Default "satisfy" mode used if not specified, choices: any, all
+nginx_default_satisfy: 'any'
+
+# Default HTTP Basic Auth "realm" presented to the user
+nginx_default_auth_basic_realm: 'Access to this website is restricted'
+
+# Path on the Ansible Controller used to lookup htpasswd passwords (see
+# debops.secret role). You can change this to for example share a set of
+# passwords between different hosts in case you use nginx in a HA setup
+nginx_htpasswd_secret_path: '{{ secret + "/credentials/" + ansible_fqdn + "/nginx/htpasswd" }}'
+
+# List of htpasswd files with user accounts managed by 'debops.nginx'. Example
+# entries below
+nginx_htpasswd: [ '{{ nginx_htpasswd_default }}' ]
+
+  # Create specified user accounts
+  #- name: 'server_domain'
+  #  users: [ 'username1', 'username2@domain' ]
+
+  # Delete specified user accounts
+  #- name: 'server_domain'
+  #  users: []
+  #  state: 'absent'
+
+  # Delete htpasswd file
+  #- name: 'server_domain'
+  #  users: []
+  #  delete: True
+
+# Default htpasswd file used for global HTTP Basic Auth accounts
+nginx_htpasswd_default:
+  name: '{{ nginx_http_auth_basic_name }}'
+  users: '{{ nginx_http_auth_users }}'
 
 # List of nginx map definitions
 # Each map should be defined in it's own hash variable, similar to upstreams
