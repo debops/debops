@@ -17,6 +17,9 @@ postfix_relayhost: False
 # Mail host name configured in /etc/mailname
 postfix_mailname: '{{ ansible_fqdn }}'
 
+# domain name to use for outgoing mails. Default default(ansible_domain)
+# postfix_mydomain: '...'
+
 # How long to wait before notifying users about delivery problems
 postfix_delay_warning_time: '4h'
 
@@ -72,15 +75,18 @@ postfix_allow_smtps: []
 # You need to add 'client' in postfix capabilities to enable this feature.
 # Format of the entries:
 #   'smtp.example.org': 'username'
+# or
 #   'user@example.org': 'username'
 # Passwords are stored in a secret directory, in path:
 # 'secret/credentials/{{ ansible_fqdn }}/postfix/smtp_sasl_password_map/{{ key }}/{{ value }}'
 # - key   = hostname or email address of the sender
 # - value = username on the remote host
-# Postfix role will generate random passwords by default. To change them to
-# your actual passwords, open the files with passwords in the secret directory
-# and replace them, then re-run the playbook with the role.
+# If you do not define the passwords there, this role will generate
+# random passwords by default and store them there. You can use this
+# to your advantage by running debops once without defining the password
+# to let debops generate the right location automatically
 postfix_smtp_sasl_password_map: {}
+
 
 # A map of sender dependent relayhosts used in SMTP client mail relay by Postfix.
 # You need to add 'client' and 'sender_dependent' in postfix capabilities to
