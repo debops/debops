@@ -1,5 +1,13 @@
 ---
 
+- name: Configure domain for OpenLDAP in debconf
+  debconf:
+    name: 'slapd'
+    question: '{{ item }}'
+    vtype: 'string'
+    value: '{{ slapd_domain }}'
+  with_items: [ 'slapd/domain', 'shared/organization' ]
+
 - name: Install OpenLDAP packages
   apt:
     name: '{{ item }}'
@@ -17,6 +25,7 @@
 
 - include: password_config_admin.yml
 - include: password_basedn_admin.yml
+- include: tls.yml
 
 - name: Set slapd log level
   ldap_attr:

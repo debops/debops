@@ -2,8 +2,11 @@
 
 # ---- OpenLDAP BaseDN configuration ----
 
-# BaseDN value of the OpenLDAP server, based on DNS domain
-slapd_basedn: '{{ "dc=" + ansible_domain.split(".") | join(",dc=") }}'
+# DNS domain name which will be used for OpenLDAP BaseDN
+slapd_domain: '{{ ansible_domain }}'
+
+# BaseDN value of the OpenLDAP server
+slapd_basedn: '{{ "dc=" + slapd_domain.split(".") | join(",dc=") }}'
 
 # Length of passwords set on administrator accounts
 slapd_password_length: '128'
@@ -12,7 +15,7 @@ slapd_password_length: '128'
 slapd_log_level: 'none'
 
 # Default services enabled in /etc/default/slapd (change requires restart)
-slapd_default_services: [ 'ldap:///', 'ldapi:///' ]
+slapd_default_services: [ 'ldap:///', 'ldaps:///', 'ldapi:///' ]
 
 
 # ---- Network access to OpenLDAP server ----
@@ -25,6 +28,34 @@ slapd_host_allow: []
 
 # Default setting in /etc/hosts.allow if no hosts are specified in above lists
 slapd_tcpwrappers_default: 'ALL'
+
+
+# ---- slapd system configuration ----
+
+# List of system groups to grant to 'openldap' user. 'ssl-cert' group is
+# required for access to private keys
+slapd_append_groups: [ 'ssl-cert' ]
+
+
+# ---- PKI / TLS and certificates ----
+
+# Enable or disable support for certificates (using debops.pki)
+slapd_pki: True
+
+# Base PKI directory
+slapd_pki_path: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.base_path }}{% else %}/etc/pki{% endif %}'
+
+# Default PKI realm used by OpenLDAP
+slapd_pki_realm: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.realm }}{% else %}system{% endif %}'
+
+# Default CA certificate, server certificate and key used by OpenLDAP server
+slapd_pki_ca: 'CA.crt'
+slapd_pki_crt: 'default.crt'
+slapd_pki_key: 'default.key'
+slapd_pki_dhparam: 'dhparam.pem'
+
+# TLS cipher suite required by the server
+slapd_pki_ciphers: 'SECURE256:-VERS-SSL3.0'
 
 
 # ---- Administrator accounts & passwords ----
