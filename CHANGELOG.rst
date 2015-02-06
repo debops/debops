@@ -11,7 +11,42 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
-2015-02-15
+2015-02-06
+^^^^^^^^^^
+
+Role updates
+************
+
+OpenLDAP server managed by `debops.slapd`_ role has gained support for TLS out
+of the box, using certificates managed by `debops.pki`_ role. By default,
+``slapd`` server listens for normal plaintext connections, which can be
+protected by the client requesting a StartTLS session, as well as for encrypted
+SSL/TLS connections. This also marks the removal of Beta status from
+`debops.slapd`_ role.
+
+To stay on the safe side, `debops.auth`_ role, which configures
+``/etc/ldap/ldap.conf``, will automatically set encrypted connections to
+OpenLDAP server using ``ldaps://`` protocol. You can of course change that
+using role default variables.
+
+.. _debops.slapd: https://github.com/debops/ansible-slapd/
+.. _debops.pki: https://github.com/debops/ansible-pki/
+.. _debops.auth: https://github.com/debops/ansible-auth/
+
+Playbook updates
+****************
+
+To make LDAP use easier within Ansible playbooks, I've included two
+`Ansible LDAP modules`_ created by Peter Sagerson in the main DebOps playbook
+``library/`` directory, which makes them available anywhere within DebOps
+project directories (in playbooks and roles). You can use ``ldap_entry`` and
+``ldap_attr`` modules to manipulate your LDAP database, look in each module
+source code for examples.
+
+.. _Ansible LDAP modules: https://bitbucket.org/psagers/ansible-ldap
+
+
+2015-02-05
 ^^^^^^^^^^
 
 Role updates
