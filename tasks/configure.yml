@@ -86,14 +86,26 @@
     mode: '0644'
   with_fileglob: [ '../templates/etc/postfix/hash_tables/*.j2' ]
 
-- name: Generate Postfix private hash tables sources
+- name: Check what private hash tables templates are available
+  stat:
+    path: '{{ item }}'
+  with_fileglob: [ '../templates/etc/postfix/private_hash_tables/*.j2' ]
+  register: postfix_register_local_private_hash_tables
+
+- name: Check what private hash tables are locked
+  shell: find /etc/postfix/private_hash_tables -maxdepth 1 -type f -name '*.lock' -exec basename {} .lock \;
+  register: postfix_register_remote_private_hash_tables
+  changed_when: False
+
+- name: Generate unlocked Postfix private hash tables
   template:
-    src: '{{ item }}'
-    dest: '/etc/postfix/private_hash_tables/{{ item | basename | replace(".j2", ".in") }}'
+    src: 'etc/postfix/private_hash_tables/{{ item.item | basename }}'
+    dest: '/etc/postfix/private_hash_tables/{{ item.item | basename | replace(".j2", ".in") }}'
     owner: 'root'
     group: 'root'
     mode: '0600'
-  with_fileglob: [ '../templates/etc/postfix/private_hash_tables/*.j2' ]
+  with_items: postfix_register_local_private_hash_tables.results
+  when: item.item | basename | replace('.j2', '') not in postfix_register_remote_private_hash_tables.stdout_lines
 
 - name: Run tasks from Postfix Makefile
   environment:
