@@ -16,7 +16,7 @@ hash_tables/%.db: hash_tables/%.in
 	@postmap "$<" && mv -- "$<.db" "$@"
 
 private_hash_tables/%.db: private_hash_tables/%.in
-	@postmap "$<" && mv -- "$<.db" "$@"
+	@postmap "$<" && mv -- "$<.db" "$@" && touch "$(patsubst %.in,%.lock,$<)" && rm -f "$<"
 
 clean:
 	@rm -f hash_aliases/*.db hash_tables/*.db private_hash_tables/*.db
