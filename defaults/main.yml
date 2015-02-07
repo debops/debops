@@ -150,6 +150,34 @@ nginx_htpasswd_default:
   name: '{{ nginx_http_auth_basic_name }}'
   users: '{{ nginx_http_auth_users }}'
 
+
+# ---- nginx server access policy ----
+
+# Using dicts below you can define a named "access policy" consiting of list
+# of allowed hosts/CIDR networks and/or a name of a htpasswd file in
+# '/etc/nginx/private/' with list of user accounts to allow access. You can
+# also define if any or all restrictions need to be met to gain access to
+# a website. In website configuration dict, you can define an
+# 'item.access_policy' key with a name of a particular policy. Nginx role then
+# will use this information to generate a proper config file with given
+# restrictions in place.
+
+# List of IP addresses or CIDR networks which can access a particular site
+nginx_access_policy_allow_map: {}
+
+  #'my_policy': [ '192.0.2.0/24', '2002:db8::/64' ]
+
+# Name of an HTTP Basic Auth htpasswd file in '/etc/nginx/private/' directory
+nginx_access_policy_auth_basic_map: {}
+
+  #'my_policy': 'htpasswd_file'
+
+# Should all or any restrictions be met to gain access?
+nginx_access_policy_satisfy_map: {}
+
+  #'my_policy': 'any' or 'all'
+
+
 # List of nginx map definitions
 # Each map should be defined in it's own hash variable, similar to upstreams
 # and servers

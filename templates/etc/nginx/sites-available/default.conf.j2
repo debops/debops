@@ -157,6 +157,12 @@
 #       status page
 #
 #
+#   - item.access_policy: ''
+#       Optional. Specify a named "access policy" to use for this server. See
+#       debops.nginx role defaults, 'nginx_access_policy_*' variables for more
+#       information.
+#
+#
 #   - item.satisfy: 'any/all'
 #       Optional. Set the server behaviour to either accept any of 'allow,
 #       auth' configuration restrictions, or require all of them to match.
@@ -540,13 +546,21 @@ server {
         {{ item.options | indent(8) }}
 
 {% endif %}
-{% if ((item.allow is defined and item.allow) or
-       (item.auth_basic is defined and item.auth_basic) or
-       (item.satisfy is defined and item.satisfy)) %}
+{% if ((item.access_policy is defined and item.access_policy) and
+       item.access_policy in nginx_access_policy_satisfy_map.keys()) %}
+        satisfy {{ nginx_access_policy_satisfy_map[item.access_policy] }};
+
+{% elif ((item.allow is defined and item.allow) or
+         (item.auth_basic is defined and item.auth_basic) or
+         (item.satisfy is defined and item.satisfy) or
+         ((item.access_policy is defined and item.access_policy) and
+          item.access_policy not in nginx_access_policy_satisfy_map.keys())) %}
         satisfy {{ item.satisfy | default(nginx_default_satisfy) }};
 
 {% endif %}
-{% if item.allow is defined and item.allow %}
+{% if ((item.allow is defined and item.allow) or
+       (item.access_policy is defined and item.access_policy)) %}
+{% if item.allow is defined %}
 {% if item.allow is string %}
         allow {{ item.allow }};
 {% else %}
@@ -554,10 +568,22 @@ server {
 	allow {{ address }};
 {% endfor %}
 {% endif %}
+{% endif %}
+{% if ((item.access_policy is defined and item.access_policy) and
+       (item.access_policy in nginx_access_policy_allow_map.keys())) %}
+{% for address in nginx_access_policy_allow_map[item.access_policy] %}
+	allow {{ address }};
+{% endfor %}
+{% endif %}
 	deny all;
 
 {% endif %}
-{% if item.auth_basic is defined and item.auth_basic %}
+{% if ((item.access_policy is defined and item.access_policy) and
+       (item.access_policy in nginx_access_policy_auth_basic_map.keys())) %}
+        auth_basic "{% if item.auth_basic_realm is defined and item.auth_basic_realm %}{{ item.auth_basic_realm }}{% else %}{{ nginx_default_auth_basic_realm }}{% endif %}";
+        auth_basic_user_file {{ "/etc/nginx/private/" + nginx_access_policy_auth_basic_map[item.access_policy] }};
+
+{% elif item.auth_basic is defined and item.auth_basic %}
         auth_basic "{% if item.auth_basic_realm is defined and item.auth_basic_realm %}{{ item.auth_basic_realm }}{% else %}{{ nginx_default_auth_basic_realm }}{% endif %}";
         auth_basic_user_file {{ item.auth_basic_filename | default("/etc/nginx/private/" + item.auth_basic_name) }};
 
