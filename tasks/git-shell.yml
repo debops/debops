@@ -42,16 +42,41 @@
   when: ((item.name is defined and item.name) and
          (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
+- name: Get list of available git-shell-commands
+  stat:
+    path: '{{ item }}'
+  with_fileglob: [ '../templates/srv/gitusers/git-shell-commands/*.j2' ]
+  register: gitusers_register_local_git_shell_commands
+
+- name: Remove not allowed git-shell-commands scripts
+  command: >
+            find {{ item.home | default(gitusers_default_home_prefix + "/" + item.name + gitusers_name_suffix) }}/git-shell-commands
+            ! -path {{ item.home | default(gitusers_default_home_prefix + "/" + item.name + gitusers_name_suffix) }}/git-shell-commands
+            -regextype posix-egrep
+            ! -regex '{{ item.home | default(gitusers_default_home_prefix + "/" + item.name + gitusers_name_suffix) }}/git-shell-commands/({{ (item.commands | default(gitusers_default_commands)) | join("|") }})'
+            -exec rm -vrf {} \;
+  register: gitusers_register_git_commands_cleanup
+  changed_when: False
+  with_flattened:
+    - gitusers_list
+    - gitusers_group_list
+    - gitusers_host_list
+  when: ((item.name is defined and item.name) and
+         (item.state is undefined or (item.state is defined and item.state != 'absent')) and
+         (item.commands is undefined or item.commands is defined and item.commands))
+
 - name: Configure git-shell-commands scripts
   template:
-    src: 'srv/gitusers/git-shell-commands/{{ item.1 }}.j2'
-    dest: '{{ item.0.home | default(gitusers_default_home_prefix + "/" + item.0.name + gitusers_name_suffix) }}/git-shell-commands/{{ item.1 }}'
+    src: 'srv/gitusers/git-shell-commands/{{ item.1.item | basename }}'
+    dest: '{{ item.0.home | default(gitusers_default_home_prefix + "/" + item.0.name + gitusers_name_suffix) }}/git-shell-commands/{{ item.1.item | basename | replace(".j2","") }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
   with_nested:
     - '{{ gitusers_list + gitusers_group_list + gitusers_host_list }}'
-    - '{{ gitusers_default_commands }}'
+    - '{{ gitusers_register_local_git_shell_commands.results }}'
   when: ((item.0.name is defined and item.0.name) and
-         (item.0.state is undefined or (item.0.state is defined and item.0.state != 'absent')))
+         (item.0.state is undefined or (item.0.state is defined and item.0.state != 'absent')) and
+         ((item.0.commands is defined   and item.1.item | basename | replace(".j2","") in item.0.commands) or
+          (item.0.commands is undefined and item.1.item | basename | replace(".j2","") in gitusers_default_commands)))
 
