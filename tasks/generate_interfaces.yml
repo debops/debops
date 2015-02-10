@@ -22,6 +22,14 @@
     ifupdown_interfaces: '{{ ifupdown_dependent_interfaces }}'
   when: ifupdown_dependent_interfaces is defined and ifupdown_dependent_interfaces
 
+- name: Add package dependencies for full interface declaration functionality
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_items: [ 'resolvconf' ]
+
+
 - name: Create /etc/network/interfaces.d directory
   file:
     path: '/etc/network/interfaces.d'
