@@ -21,6 +21,10 @@ automatically selected configuration using Ansible inventory. This role can
 also be used as a dependency of another role which allows for example to
 easily manage NAT networks using `debops.nat` role.
 
+Some features of interface declarations require additional packages. These
+are installed with this package unconditionally. For now this is only
+resolvconf, which will start to manage your :file:`/etc/resolv.conf` file.
+
 ### Installation
 
 This role requires at least Ansible `v1.7.0`. To install it, run:
