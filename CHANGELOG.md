@@ -1,6 +1,11 @@
 ## DebOps Changelog
 
 
+### v0.4.0 (released 2015-02-12)
+
+DebOps can now use a system-wide configuration file `/etc/debops.cfg`. You can
+also install DebOps playbooks and roles in a system-wide location.
+
 ### v0.3.0 (released 2015-01-27)
 
 DebOps is included on [Black Duck Software 2014 Open Source Rookies of the Year](https://www.blackducksoftware.com/news/releases/black-duck-software-announces-open-source-rookies-year).
