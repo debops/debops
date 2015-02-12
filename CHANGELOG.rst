@@ -11,6 +11,21 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.1.0 (release pending)
 ------------------------
 
+2015-02-12
+^^^^^^^^^^
+
+Playbook updates
+****************
+
+Due to practical reasons, role updates will be written in roles themselves from
+now on, in ``CHANGES.rst`` files.
+
+New "root variable" has been added to ``root.yml`` playbook,
+``ansible_local.root.uuid``. It will contain a random UUID generated on first
+DebOps run. It can be used to uniquely identify an instance of a particular
+host.
+
+
 2015-02-06
 ^^^^^^^^^^
 

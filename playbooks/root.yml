@@ -21,6 +21,11 @@
 
   vars:
 
+    # Source variable of a random UUID generated at the time of first DebOps
+    # run on a new host and stored in Ansible local facts. UUID can be accessed
+    # as 'ansible_local.root.uuid'
+    root_uuid_random_source: '{{ root_uuid_random | default(lookup("pipe","uuidgen")) }}'
+
     # These variables can be used by Ansible roles to specify common root
     # directories for various types of data. They should be accessed using
     # Ansible local facts, in 'ansible_local.root' hierarchy. Roles expect them
