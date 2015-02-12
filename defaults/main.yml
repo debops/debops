@@ -136,7 +136,7 @@ pki_default_service_certificate: '{{ "srv." + ansible_fqdn }}'
 pki_ca_domain: 'pki.{{ ansible_domain }}'
 
 # This string is used to uniquely bind a certificate to the requesting host
-pki_default_certificate_uri: '{{ "http://" + pki_ca_domain + "/cert/" + (ansible_default_ipv4.macaddress | sha1) }}'
+pki_default_certificate_uri: '{{ "http://" + pki_ca_domain + "/cert/" + (ansible_local.root.uuid | sha1) }}'
 
 
 # ---- PKI realms ----
