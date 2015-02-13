@@ -139,6 +139,40 @@ pki_ca_domain: 'pki.{{ ansible_domain }}'
 pki_default_certificate_uri: '{{ "http://" + pki_ca_domain + "/cert/" + (ansible_local.root.uuid | sha1) }}'
 
 
+# ---- Certificates ----
+
+# This is a list of certificates to manage on a host. Each host sends
+# a Certificate Signing Request to Ansible Controller, where it's signed by
+# designated Certificate Authority and send back to the host.
+pki_certificates: '{{ pki_certificates_default }}'
+
+# List of default certificates created by the role
+pki_certificates_default:
+
+  - source: '{{ "hosts/" + ansible_fqdn + "/host" }}'
+    destination: 'host'
+    ou: '{{ pki_organization + " Data Center" }}'
+    cn: '{{ ansible_fqdn }}'
+    dns: [ '{{ "*." + ansible_domain }}' ]
+    uri: [ '{{ pki_default_certificate_uri }}' ]
+
+  - source: '{{ "hosts/" + ansible_fqdn + "/domain" }}'
+    destination: 'domain'
+    ou: '{{ pki_organizational_unit }}'
+    cn: '{{ ansible_domain }}'
+    dns: [ '{{ "*." + ansible_domain }}' ]
+    uri: [ '{{ pki_default_certificate_uri }}' ]
+    filename: 'wildcard.domain.{{ ansible_fqdn }}'
+
+  - source: '{{ "hosts/" + ansible_fqdn + "/service" }}'
+    destination: 'service'
+    ou: '{{ pki_organization + " Service Certificate" }}'
+    cn: '{{ ansible_fqdn }}'
+    dns: [ '{{ "*." + ansible_domain }}' ]
+    uri: [ '{{ pki_default_certificate_uri }}' ]
+    filename: 'srv.{{ ansible_fqdn }}'
+
+
 # ---- PKI realms ----
 
 # PKI realm is defined as a "channel" through which certificate requests are
@@ -319,54 +353,4 @@ pki_routes:
     authority: 'root/ServiceCA'
     realm: 'service/revoked'
     readlink: 'default.crl'
-
-
-# ---- Certificates ----
-
-# This is a list of certificates to manage on a host. Each host sends
-# a Certificate Signing Request to Ansible Controller, where it's signed by
-# designated Certificate Authority and send back to the host.
-pki_certificates:
-
-  - source: '{{ "hosts/" + ansible_fqdn + "/host" }}'
-    destination: 'host'
-    ou: '{{ pki_organization + " Data Center" }}'
-    cn: '{{ ansible_fqdn }}'
-    dns: [ '{{ "*." + ansible_domain }}' ]
-    uri: [ '{{ pki_default_certificate_uri }}' ]
-
-  - source: '{{ "hosts/" + ansible_fqdn + "/domain" }}'
-    destination: 'domain'
-    ou: '{{ pki_organizational_unit }}'
-    cn: '{{ ansible_domain }}'
-    dns: [ '{{ "*." + ansible_domain }}' ]
-    uri: [ '{{ pki_default_certificate_uri }}' ]
-    filename: 'wildcard.domain.{{ ansible_fqdn }}'
-
-  - source: '{{ "hosts/" + ansible_fqdn + "/service" }}'
-    destination: 'service'
-    ou: '{{ pki_organization + " Service Certificate" }}'
-    cn: '{{ ansible_fqdn }}'
-    dns: [ '{{ "*." + ansible_domain }}' ]
-    uri: [ '{{ pki_default_certificate_uri }}' ]
-    filename: 'srv.{{ ansible_fqdn }}'
-
-
-# Example list of certificate options
-#  - realm: 'host'
-#    cn:    'www.example.com'
-#    mail:  [ 'root@example.com' ]
-#    dns:   [ 'www.example.com', 'mail.example.com', '*.mail.example.com' ]
-#    uri:   [ 'http://example.com/' ]
-#    ip:    [ '192.0.2.1' ]
-#
-#  - realm: 'host'
-#    cn:    'subdomain.{{ ansible_domain }}'
-#
-#  - realm: 'host'
-#    cn:    '{{ "other." + ansible_domain }}'
-#    ou:    'Other Department'
-#    e:     '{{ "root@other." + ansible_domain }}'
-#    mail:  [ '{{ "others@other." + ansible_domain }}', '{{ "root@" + ansible_domain }}' ]
-#    dns:   [ '{{ "*.other." + ansible_domain }}' ]
 
