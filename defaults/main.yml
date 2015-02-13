@@ -122,11 +122,20 @@ pki_default_realm: 'host'
 # prevent it being sent to the server
 pki_realm_blacklist: []
 
+# Organizational Unit Name for internal realm
+pki_default_host_ou: '{{ pki_organization + " Data Center" }}'
+
 # Certificate name to symlink as 'default.*' in PKI 'host' realm
 pki_default_host_certificate: '{{ ansible_fqdn }}'
 
+# Organizational Unit Name for domain realm
+pki_default_domain_ou: '{{ pki_organizational_unit }}'
+
 # Certificate name to symlink as 'default.*' in PKI 'domain' realm
 pki_default_domain_certificate: '{{ "wildcard.domain." + ansible_fqdn }}'
+
+# Organizational Unit Name for service realm
+pki_default_service_ou: '{{ pki_organization + " Service" }}'
 
 # Certificate name to symlink as 'default.*' in PKI 'service' realm
 pki_default_service_certificate: '{{ "srv." + ansible_fqdn }}'
@@ -151,14 +160,12 @@ pki_certificates_default:
 
   - source: '{{ "hosts/" + ansible_fqdn + "/host" }}'
     destination: 'host'
-    ou: '{{ pki_organization + " Data Center" }}'
     cn: '{{ ansible_fqdn }}'
     dns: [ '{{ "*." + ansible_domain }}' ]
     uri: [ '{{ pki_default_certificate_uri }}' ]
 
   - source: '{{ "hosts/" + ansible_fqdn + "/domain" }}'
     destination: 'domain'
-    ou: '{{ pki_organizational_unit }}'
     cn: '{{ ansible_domain }}'
     dns: [ '{{ "*." + ansible_domain }}' ]
     uri: [ '{{ pki_default_certificate_uri }}' ]
@@ -166,7 +173,6 @@ pki_certificates_default:
 
   - source: '{{ "hosts/" + ansible_fqdn + "/service" }}'
     destination: 'service'
-    ou: '{{ pki_organization + " Service Certificate" }}'
     cn: '{{ ansible_fqdn }}'
     dns: [ '{{ "*." + ansible_domain }}' ]
     uri: [ '{{ pki_default_certificate_uri }}' ]
@@ -222,6 +228,7 @@ pki_realms:
     source: 'hosts/{{ ansible_fqdn }}/service'
     destination: 'service'
     authority: 'root/ServiceCA'
+    ou: '{{ pki_default_service_ou }}'
     default: '{{ pki_default_service_certificate }}'
     default_ca: '{{ "CA/" + pki_serviceca_filename + ".crt" }}'
 
@@ -231,6 +238,7 @@ pki_realms:
     source: 'hosts/{{ ansible_fqdn }}/domain'
     destination: 'domain'
     authority: 'ca/domain'
+    ou: '{{ pki_default_domain_ou }}'
     default: '{{ pki_default_domain_certificate }}'
 
     # This realm can be used to manage host-based certificates, a certificate
@@ -239,6 +247,7 @@ pki_realms:
     source: 'hosts/{{ ansible_fqdn }}/host'
     destination: 'host'
     authority: 'ca/internal'
+    ou: '{{ pki_default_host_ou }}'
     default: '{{ pki_default_host_certificate }}'
 
 
@@ -287,13 +296,13 @@ pki_authorities:
 
   - name: 'ca/internal'
     parent: 'intermediate/DomainCA'
-    ou: '{{ pki_organization + " Data Center" }}'
+    ou: '{{ pki_default_host_ou }}'
     cn: '{{ "dc." + ansible_domain }}'
 
   - name: 'ca/domain'
     grants: 'server'
     parent: 'intermediate/DomainCA'
-    ou: '{{ pki_organizational_unit }}'
+    ou: '{{ pki_default_domain_ou }}'
     cn: '{{ "dco." + ansible_domain }}'
 
 
@@ -304,7 +313,10 @@ pki_authorities:
 # have a knowledge about where to copy each file from Certificate Authorities
 # directories to PKI realms, small shell scripts are generated beforehand with
 # proper copy commands.
-pki_routes:
+pki_routes: '{{ pki_routes_default }}'
+
+# Routes provided for default certificates
+pki_routes_default:
 
     # Copy signed host certificate to 'host' PKI realm
   - name: 'host_{{ ansible_fqdn }}'
