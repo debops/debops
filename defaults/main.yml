@@ -313,7 +313,10 @@ pki_authorities:
 # have a knowledge about where to copy each file from Certificate Authorities
 # directories to PKI realms, small shell scripts are generated beforehand with
 # proper copy commands.
-pki_routes:
+pki_routes: '{{ pki_routes_default }}'
+
+# Routes provided for default certificates
+pki_routes_default:
 
     # Copy signed host certificate to 'host' PKI realm
   - name: 'host_{{ ansible_fqdn }}'
