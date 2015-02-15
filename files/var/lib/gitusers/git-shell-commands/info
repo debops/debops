@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# This file is managed by Ansible, all changes will be lost
+
+set -e
+
+parentdomain="$(git config --global --get gitusers.publish.domain)"
+
+userdomain="$(git config --global --get gitusers.userdir.domain)"
+
+publish_path="$(git config --global --get gitusers.publish.path)"
+
+# If no project name is given, display help
+if [ $# -eq 0 ] ; then
+	cat <<-EOF
+	Usage: $(basename ${0}) <repository>
+
+	Shows status of a given repository
+	EOF
+	exit 1
+fi
+
+if [ -n "${1}" ] ; then
+	# Sanitize repository name
+	repository=${1//[^a-zA-Z0-9\.\/\_-]/}
+	project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
+else
+	echo "Error: No repository specified" && exit 1
+fi
+
+if [ -d ${HOME}/${project} ] ; then
+	cd "${HOME}/${project}"
+else
+	echo "Error: Repository ${repository} not found" && exit 1
+fi
+
+set +e
+currentworktree="$(git config deploy.worktree)"
+currentpublic="$(git config deploy.public)"
+currentbranch="$(git config deploy.branch)"
+currentdomain="$(git config deploy.domain)"
+currentuserdir="$(git config --bool deploy.userdir)"
+localbranches="$(git branch | awk -F ' +' '$2 !~ /detached/ {print $2}' | xargs)"
+set -e
+
+echo "Repository directory:		$(pwd)"
+
+if [ -n "${currentworktree}" ] ; then
+	echo "Work directory:			${currentworktree}"
+fi
+if [ -n "${currentpublic}" ] ; then
+	echo "Public directory:		${currentpublic}"
+fi
+if [ -n "${currentbranch}" ] ; then
+	echo "Default branch:			${currentbranch}"
+fi
+if [ -n "${localbranches}" ] ; then
+	echo "Local branches:			${localbranches}"
+fi
+if [ -n "${currentdomain}" ] ; then
+	echo "Domain URL:			http://${currentdomain}/"
+elif [ -n "${currentuserdir}" ] ; then
+	echo "Userdir URL:			http://${userdomain}/~${USER}/"
+fi
+

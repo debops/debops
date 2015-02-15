@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# This file is managed by Ansible, all changes will be lost
+
+set -e
+
+checkout_command="hooks/post-receive.d/00_checkout"
+
+# If no project name is given, display help
+if [ $# -eq 0 ] ; then
+	cat <<-EOF
+	Usage: $(basename ${0}) <repository> [branch]
+
+	Check out <repository> to current work tree from master branch or [branch]
+	If [branch] is specified, set it as default branch
+	After checkout, run post-checkout hooks
+	EOF
+	exit 1
+fi
+
+# Sanitize repository name
+repository="${1//[^a-zA-Z0-9\.\/\_-]/}"
+project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
+
+# Sanitize branch name
+branch="${2//[^a-zA-Z0-9\.\_-]/}"
+
+if [ -d ${project} ] ; then
+	cd "${HOME}/${project}"
+
+	set +e
+	currentworktree="$(git config deploy.worktree)"
+	currentbranch="$(git config deploy.branch)"
+	currentbare="$(git config deploy.bare)"
+	set -e
+
+	if [ -z "${currentbranch}" ] ; then
+		echo "Error: No branches present" && exit 1
+	fi
+
+	if [ -n "${branch}" ] ; then
+		if $(git show-ref --verify --quiet "refs/heads/${branch}") ; then
+			git config deploy.branch ${branch}
+			git config deploy.ref "refs/heads/${branch}"
+			echo "Branch '${branch}' set as default"
+		else
+			echo "Error: Branch '${branch}' not found" && exit 1
+		fi
+	else
+		branch="${currentbranch}"
+	fi
+
+	if [ -z "${currentworktree}" ] ; then
+		echo "Error: No work directory specified" && exit 1
+	fi
+
+	currentrev="$(git rev-parse refs/heads/${currentbranch})"
+	newrev="$(git rev-parse refs/heads/${branch})"
+	if [ -x ${checkout_command} ] ; then
+		if [ -n "${currentbare}" ] && [ "${currentbare}" = "true" ] ; then
+			echo "Converting repository from bare to normal"
+		fi
+		git config deploy.bare false
+		echo "${currentrev} ${newrev} refs/heads/${branch}" | ${checkout_command}
+	fi
+
+else
+	echo "Error: No repository named ${repository}" && exit 1
+fi
+

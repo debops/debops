@@ -1,0 +1,39 @@
+{% set item = item.0 %}
+# This file is managed remotely, all changes will be lost
+
+[user]
+  name          = {{ item.comment | default(item.name | capitalize) }}
+  email         = {{ item.name + "@" + ansible_fqdn }}
+
+[gitusers]
+  home          = {{ gitusers_default_home_prefix + "/" + item.name }}
+  data          = {{ gitusers_default_www_prefix + "/" + item.group | default(item.name + gitusers_name_suffix) }}
+  hooks         = {{ gitusers_default_hooks.keys() | join(" ") }}
+  permissions   = {{ item.permissions | default(gitusers_default_permissions) | join(" ") }}
+
+[gitusers "hookmap"]
+{% for hooktype, hooklist in gitusers_default_hooks.iteritems() %}
+  {{ "%-14s = %s" | format(hooktype, hooklist | join(" ")) }}
+{% endfor %}
+
+[gitusers "permission"]
+  deploy        = {{ item.deploy   | default('false') | lower }}
+  userdir       = {{ item.userdir  | default('true')  | lower }}
+
+[gitusers "system"]
+  functions     = {{ gitusers_git_scripts + "/functions.sh" }}
+  hooks         = {{ gitusers_git_scripts + "/hooks" }}
+
+[gitusers "init"]
+  path          = {{ gitusers_default_www_prefix + "/" + item.group | default(item.name + gitusers_name_suffix) + "/checkouts" }}
+  hooks         = {{ gitusers_git_scripts + "/hooks" }}
+  type          = {{ item.type | default(gitusers_default_hook_list) }}
+
+[gitusers "publish"]
+  path          = {{ gitusers_default_www_prefix + "/" + item.group | default(item.name + gitusers_name_suffix) + "/sites" }}
+  domain        = {{ item.domain | default(gitusers_default_domain) }}
+
+[gitusers "userdir"]
+  path          = {{ gitusers_default_www_prefix + "/" + item.group | default(item.name + gitusers_name_suffix) + "/userdir" }}
+  domain        = {{ gitusers_default_user_domain }}
+
