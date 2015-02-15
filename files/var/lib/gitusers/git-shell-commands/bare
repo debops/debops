@@ -9,7 +9,7 @@ if [ $# -eq 0 ] ; then
 	cat <<-EOF
 	Usage: $(basename ${0}) <repository>
 
-	Delete everything in the work tree of <repository>
+	Convert <repository> to bare repository (no work directory)
 	EOF
 	exit 1
 fi
@@ -25,15 +25,24 @@ else
 fi
 
 set +e
-worktree=$(git config deploy.worktree)
+worktree="$(git config --get core.worktree)"
+denybranch="$(git config --get receive.denyCurrentBranch)"
 set -e
 
-if [ -d ${worktree} ] ; then
-	rm -rf ${worktree}
-	mkdir -p ${worktree}
-	echo "Work tree of ${repository} cleaned"
-else
-	echo "Error: Work tree ${worktree} not found" && exit 1
+if [ -n "${worktree}" ] ; then
+	if [ -d ${worktree} ] ; then
+		rm -rf ${worktree}
+		echo "Work directory of ${repository} deleted"
+	fi
+	git config --unset-all core.worktree
 fi
 
+git config deploy.bare true
+git config core.bare true
+
+if [ -n "${denybranch}" ] ; then
+	git config --unset-all receive.denyCurrentBranch
+fi
+
+echo "Repository ${repository} is now bare"
 
