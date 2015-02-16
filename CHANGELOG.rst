@@ -8,8 +8,27 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 .. _DebOps Changelog: https://github.com/debops/debops/blob/master/CHANGELOG.md
 
 
-v0.1.0 (release pending)
-------------------------
+v0.2.0 (unreleased)
+-------------------
+
+
+v0.1.0 (2015-02-16)
+-------------------
+
+- Format of the Changelog is modified to reflect new versioning. Old entries are
+  preserved. [drybjed]
+
+- ``ansible_local.root.home`` default path has been changed from ``/var/lib``
+  to ``/var/local`` to move home directories out of the way of the system
+  packages. [drybjed]
+
+- New paths have been added to ``root.yml`` service paths. [drybjed]
+
+- ``root.yml`` service paths that are already configured on remote host as facts will
+  override playbook or inventory changes to protect already installed services
+  from future changes. [drybjed]
+
+****
 
 2015-02-12
 ^^^^^^^^^^

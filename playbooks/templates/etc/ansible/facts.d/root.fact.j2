@@ -1,7 +1,13 @@
 {
 "uuid": "{{ ansible_local.root.uuid if (ansible_local is defined and ansible_local.root is defined and ansible_local.root.uuid is defined) else root_uuid_random_source }}",
 {% for item in root_service_directories %}
+{% if hostvars[inventory_hostname]["ansible_local"] is defined and
+      hostvars[inventory_hostname]["ansible_local"]["root"] is defined and
+      hostvars[inventory_hostname]["ansible_local"]["root"][item.fact] is defined %}
+"{{ item.fact }}": "{{ hostvars[inventory_hostname]["ansible_local"]["root"][item.fact] }}"{% if not loop.last %},{% endif %}
+{% else %}
 "{{ item.fact }}": "{{ item.path }}"{% if not loop.last %},{% endif %}
+{% endif %}
 
 {% endfor %}
 }

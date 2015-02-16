@@ -33,9 +33,33 @@
     # You can override these variables in Ansible inventory.
     root_service_directories:
 
-        # Path for service home directories
-      - path: '{{ root_service_home   | default("/var/lib")     }}'
-        fact: 'home'
+        # Path for local Ansible Facts
+      - path: '/etc/ansible/facts.d'
+        fact: 'facts'
+
+        # Path for local service binaries
+      - path: '{{ root_service_bin   | default("/usr/local/bin") }}'
+        fact: 'bin'
+
+        # Path for local service configuration
+      - path: '{{ root_service_etc   | default("/usr/local/etc") }}'
+        fact: 'etc'
+
+        # Path for service static library directories
+      - path: '{{ root_service_lib   | default("/usr/local/lib") }}'
+        fact: 'lib'
+
+        # Path for local service privileged binaries
+      - path: '{{ root_service_sbin   | default("/usr/local/sbin") }}'
+        fact: 'sbin'
+
+        # Path for service static data
+      - path: '{{ root_service_share  | default("/usr/local/share") }}'
+        fact: 'share'
+
+        # Path for local sources (cloned git repositories, etc.)
+      - path: '{{ root_service_src    | default("/usr/local/src") }}'
+        fact: 'src'
 
         # Path for local data directories
       - path: '{{ root_service_data   | default("/srv")         }}'
@@ -45,19 +69,18 @@
       - path: '{{ root_service_backup | default("/var/backups") }}'
         fact: 'backup'
 
-        # Path for local sources (cloned git repositories, etc.)
-      - path: '{{ root_service_src    | default("/usr/local/src") }}'
-        fact: 'src'
+        # Path for local service home directories and internal state data
+      - path: '{{ root_service_home   | default("/var/local") }}'
+        fact: 'home'
+
 
   tasks:
 
     - name: Create root directories
       file:
-        path: '{{ item }}'
+        path: '{{ hostvars[inventory_hostname]["ansible_local"]["root"][item.fact] if (hostvars[inventory_hostname]["ansible_local"] is defined and hostvars[inventory_hostname]["ansible_local"]["root"] is defined and hostvars[inventory_hostname]["ansible_local"]["root"][item.fact] is defined) else item.path }}'
         state: 'directory'
-      with_flattened:
-        - '/etc/ansible/facts.d'
-        - '{{ root_service_directories | map(attribute="path") | list }}'
+      with_items: root_service_directories
 
     - name: Save root local facts
       template:
