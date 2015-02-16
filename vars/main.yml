@@ -1,21 +1,7 @@
 ---
 
-# System user, group and home directory for phpIPAM
-phpipam_user: 'phpipam'
-phpipam_group: 'phpipam'
-phpipam_home: '/srv/users/{{ phpipam_user }}'
-
-# Root directory where phpIPAM sites are located
-phpipam_www: '/srv/www/{{ phpipam_user }}'
-
-# Directory with phpIPAM source repositories
-phpipam_sources: '{{ phpipam_home }}/src'
-
-# Default path where phpIPAM source files will be deployed
-phpipam_deploy_path: '{{ phpipam_www }}/sites/{{ phpipam_domain[0] }}/public'
-
 # phpIPAM database schema loaded by Ansible
-phpipam_database_schema: '{{ phpipam_deploy_path }}/db/SCHEMA.sql'
+phpipam_database_schema: '{{ phpipam_git_checkout + "/db/SCHEMA.sql" }}'
 
 # Configuration for php5-fpm pool
 phpipam_php5_pool:
@@ -35,65 +21,30 @@ phpipam_nginx_upstream_php5:
 phpipam_nginx_server:
   by_role: 'debops.phpipam'
   enabled: True
-  default: False
   type: 'php5'
   name: '{{ phpipam_domain }}'
-  root: '{{ phpipam_deploy_path }}'
+  root: '{{ phpipam_git_checkout }}'
+  access_policy: '{{ phpipam_nginx_access_policy }}'
+  auth_basic_realm: '{{ phpipam_nginx_auth_realm }}'
   php5: 'php5_phpipam'
 
-  upstream_php5_options: |
-    {% if phpipam_allow is defined and phpipam_allow %}
-    {% for address in phpipam_allow %}
-    allow {{ address }};
-    {% endfor %}
-    deny all;
-    {% endif %}
-
-  options: |
-    error_page 400 /error/400/;
-    error_page 401 /error/401/;
-    error_page 403 /error/403/;
-    error_page 404 /error/404/;
-    error_page 500 /error/500/;
-
-  location_allow:
-    '/': '{{ phpipam_allow }}'
+  error_pages:
+    '400': '/index.php?page=error&section=400'
+    '401': '/index.php?page=error&section=401'
+    '403': '/index.php?page=error&section=403'
+    '404': '/index.php?page=error&section=404'
+    '500': '/index.php?page=error&section=500'
 
   location:
     '/': |
-      rewrite ^/error/(.+)/$            /index.php?page=error&eid=$1;
-      rewrite ^/login$                  $scheme://$host/login/;
-      rewrite ^/login/$                 /index.php?page=login;
-      rewrite ^/logout$                 $scheme://$host/logout/;
-      rewrite ^/logout/$                /index.php?page=logout;
-      rewrite ^/request_ip$             $scheme://$host/request_ip/;
-      rewrite ^/request_ip/$            /index.php?page=request_ip;
-      rewrite ^/login/dashboard/$       $scheme://$host/dashboard/;
-      rewrite ^/logout/dashboard/$      $scheme://$host/dashboard/;
-      rewrite ^/upgrade$                $scheme://$host/upgrade/;
-      rewrite ^/upgrade/$               /index.php?page=upgrade;
-      rewrite ^/install$                $scheme://$host/install/;
-      rewrite ^/install/$               /index.php?page=install;
-      rewrite ^/dashboard/$             /index.php?page=dashboard;
-      rewrite ^/widgets/(.+)/$          /index.php?page=widgets&subpage=$1;
-      rewrite ^/subnets/(.+)/(.+)/ipdetails/(.+)/$ /index.php?page=subnets&section=$1&subnetId=$2&ipaddrid=$3;
-      rewrite ^/subnets/(.+)/(.+)/changelog/$ /index.php?page=subnets&section=$1&subnetId=$2&sPage=changelog;
-      rewrite ^/subnets/(.+)/(.+)/(.+)$ /index.php?page=subnets&section=$1&subnetId=$2&sPage=$3;
-      rewrite ^/subnets/(.+)/(.+)/$     /index.php?page=subnets&section=$1&subnetId=$2;
-      rewrite ^/subnets/(.+)/$          /index.php?page=subnets&section=$1;
-      rewrite ^/folder/(.+)/(.+)/$      /index.php?page=folder&section=$1&subnetId=$2;
-      rewrite ^/folder/(.+)/$           /index.php?page=folder&section=$1;
-      rewrite ^/vlan/(.+)/(.+)/$        /index.php?page=vlan&section=$1&vlanId=$2;
-      rewrite ^/vrf/(.+)/(.+)/$         /index.php?page=vrf&section=$1&vrfId=$2;
-      rewrite ^/tools/changelog/(.+)/(.+)/$ /index.php?page=tools&toolsId=changelog&cfilter=$1&climit=$2;
-      rewrite ^/tools/changelog/(.+)/$  /index.php?page=tools&toolsId=changelog&climit=$1;
-      rewrite ^/tools/devices/hosts/(.+)$ /index.php?page=tools&toolsId=devices&deviceid=$1;
-      rewrite ^/tools/search/(.+)$      /index.php?page=tools&toolsId=search&ip=$1;
-      rewrite ^/tools/(.+)/$            /index.php?page=tools&toolsId=$1;
-      rewrite ^/tools/$                 /index.php?page=tools&toolsId=showAll;
-      rewrite ^/administration/manageSection/sectionChangelog/(.+)/$ /index.php?page=administration&adminId=sectionChangelog&sectionId=$1;
-      rewrite ^/administration/(.+)/$   /index.php?page=administration&adminId=$1;
-      rewrite ^/administration/$        /index.php?page=administration&adminId=showAll;
+      rewrite ^/login/$                           /index.php?page=login;
+      rewrite ^/login/dashboard/$                 $scheme://$host/dashboard/;
+      rewrite ^/logout/dashboard/$                $scheme://$host/dashboard/;
+      rewrite ^/tools/search/(.*)/(.*)/(.*)/(.*)$ index.php?page=tools&section=search&addresses=$1&subnets=$2&vlans=$3&ip=$4;
+      rewrite ^/(.*)/(.*)/(.*)/(.*)/(.*)/$        index.php?page=$1&section=$2&subnetId=$3&sPage=$4&ipaddrid=$5;
+      rewrite ^/(.*)/(.*)/(.*)/(.*)/$             index.php?page=$1&section=$2&subnetId=$3&sPage=$4;
+      rewrite ^/(.*)/(.*)/(.*)/$                  index.php?page=$1&section=$2&subnetId=$3;
+      rewrite ^/(.*)/(.*)/$                       index.php?page=$1&section=$2;
+      rewrite ^/(.*)/$                            index.php?page=$1;
       try_files $uri $uri/ $uri.html $uri.htm /index.html /index.htm =404;
-
 

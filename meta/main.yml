@@ -4,10 +4,8 @@ dependencies:
 
   - role: debops.secret
 
-  - role: debops.mysql
-    when: phpipam_dependencies is defined and phpipam_dependencies
-
   - role: debops.php5
+    php5_packages: [ 'php5-mysql', 'php5-gmp', 'php5-curl', 'php5-mcrypt', 'php-net-ipv4', 'php5-ldap' ]
     php5_pools: [ '{{ phpipam_php5_pool }}' ]
     when: phpipam_dependencies is defined and phpipam_dependencies
 
