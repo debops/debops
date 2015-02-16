@@ -1,23 +1,59 @@
 ---
 
+# ---- Basic configuration options ----
+
 # Should phpipam role manage it's own dependencies?
 phpipam_dependencies: True
 
 # Domain on which phpIPAM is configured in nginx
 phpipam_domain: [ 'ipam.{{ ansible_domain }}' ]
 
-# phpIPAM source repository and version to deploy
-phpipam_source_address: 'https://github.com/ginas/'
-phpipam_source_repository: 'phpipam.git'
-phpipam_source_version: 'master'
+phpipam_nginx_auth_realm: 'IPAM access is restricted'
+phpipam_nginx_access_policy: ''
 
-# phpIPAM database configuration
-phpipam_database_host: 'localhost'
+
+# ---- User, group, database configuration ----
+
+# System user and group for phpIPAM application
+phpipam_user: 'phpipam'
+phpipam_group: 'phpipam'
+
+# phpIPAM MySQL database configuration
 phpipam_database_user: 'phpipam'
+phpipam_database_host: 'localhost'
 phpipam_database_name: 'phpipam'
+phpipam_database_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/phpipam/mysql/' + phpipam_database_user + '/password length=30') }}"
 
-# List of hosts or networks in CIDR format allowed to access phpIPAM
-# If empty, allws access from all networks
-phpipam_allow: []
 
+# ---- Base application directories ----
+
+# Base path for git bare repository with phpIPAM source
+phpipam_src: '{{ ansible_local.root.src + "/" + phpipam_user }}'
+
+# Base web root directory for phpIPAM website
+phpipam_www: '{{ (ansible_local.nginx.www if (ansible_local is defined and ansible_local.nginx is defined and ansible_local.nginx.www is defined) else "/srv/www") + "/" + phpipam_user }}'
+
+# phpIPAM webserver user (needs read-only access to the website code)
+phpipam_webserver_user: '{{ ansible_local.nginx.user if (ansible_local is defined and ansible_local.nginx is defined and ansible_local.nginx.user is defined) else "www-data" }}'
+
+
+# ---- git repository and checkout ----
+
+# phpIPAM source repository
+phpipam_git_repo: 'https://github.com/ginas/phpipam.git'
+
+# phpIPAM source directory on the host
+phpipam_git_dest: '{{ phpipam_src + "/" + phpipam_git_repo.split("://")[1] }}'
+
+# phpIPAM git branch to deploy
+phpipam_git_version: 'master'
+
+# Default path where phpIPAM source files will be deployed
+phpipam_git_checkout: '{{ phpipam_www + "/sites/" + phpipam_domain[0] + "/public" }}'
+
+
+# ---- Other variables ----
+
+# Custom PHP session name
+phpipam_php_session_name: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/phpipam/php_session_name chars=hexdigits length=30') }}"
 
