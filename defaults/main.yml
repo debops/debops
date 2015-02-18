@@ -1,9 +1,5 @@
 ---
-# debops.postfix
-# ==============
-# .. include:: ../docs/parts/intro.rst
-#    :start-line: 3
-
+# .. include:: ../docs/parts/defaults/intro.rst
 
 # ---------------------------------
 #   General Postfix configuration
@@ -20,7 +16,7 @@
 # List of active Postfix capabilities. By default Postfix is configured with
 # local mail disabled, all mail is sent to local MX server configured in DNS.
 postfix: [ 'null' ]
-# .. include:: ../docs/parts/postfix_smtp_sasl_password_map.rst
+# .. include:: ../docs/parts/defaults/postfix_capabilities.rst
 #    :start-line: 5
 
 
@@ -168,7 +164,7 @@ postfix_allow_smtps: []
 # Map of SMTP SASL passwords used in SMTP client authentication by Postfix.
 # You need to add ``client`` in Postfix capabilities to enable this feature.
 postfix_smtp_sasl_password_map: {}
-# .. include:: ../docs/parts/postfix_smtp_sasl_password_map.rst
+# .. include:: ../docs/parts/defaults/postfix_smtp_sasl_password_map.rst
 #    :start-line: 5
 
 
@@ -387,7 +383,7 @@ postfix_local_mastercf: False
 # additional lists used in Postfix main.cf configuration file. This variable
 # will be saved in Ansible facts and updated when necessary.
 postfix_dependent_lists: {}
-# .. include:: ../docs/parts/postfix_dependent_lists.rst
+# .. include:: ../docs/parts/defaults/postfix_dependent_lists.rst
 #    :start-line: 6
 
 
@@ -397,7 +393,7 @@ postfix_dependent_lists: {}
 # ``/etc/postfix/main.cf`` using debops.postfix dependency role definition.
 # Configuration will be saved in Ansible facts and updated when necessary.
 postfix_dependent_maincf: []
-# .. include:: ../docs/parts/postfix_dependent_maincf.rst
+# .. include:: ../docs/parts/defaults/postfix_dependent_maincf.rst
 #    :start-line: 6
 
 
@@ -407,7 +403,7 @@ postfix_dependent_maincf: []
 # Postfix dependency variables. Configured services will be saved in Ansible
 # facts and updated when necessary.
 postfix_dependent_mastercf: []
-# .. include:: ../docs/parts/postfix_dependent_mastercf.rst
+# .. include:: ../docs/parts/defaults/postfix_dependent_mastercf.rst
 #    :start-line: 6
 
 
@@ -415,7 +411,9 @@ postfix_dependent_mastercf: []
 #   Mail service debugging
 # --------------------------
 
+# postfix_smtpd_authorized_xclient_hosts
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # List of clients and networks which will have access to ``XCLIENT`` protocol
 # extension when ``test`` Postfix capability is enabled.
-postfix_smtpd_authorized_xclient_hosts: ['127.0.0.1/32']
+postfix_smtpd_authorized_xclient_hosts: [ '127.0.0.1/32' ]
 
