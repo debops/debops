@@ -11,6 +11,7 @@ Ansible role: debops.postfix
    design
    defaults
    troubleshooting
+   copyright
    credits
    changelog
 
