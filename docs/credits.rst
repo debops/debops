@@ -1,8 +1,9 @@
 Credits
 =======
 
-``debops.postfix`` role has been created by `Maciej Delmanowski`_ for the
-`DebOps`_ project.
+Credits, in chronological order
 
-It's source code can be found at: https://github.com/debops/ansible-postfix/
+- Maciej Delmanowski <drybjed_at_gmail.com>
+  * creator of the DebOps Project
+  * current project maintainer
 
