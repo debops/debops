@@ -6,8 +6,8 @@ You need to add ``client`` in Postfix capabilities to enable this feature.
 
 Format of the password entries:
 
-- key: remote SMTP server hostname or sender e-mail address
-- value: username on the remote SMTP server
+- *key*: remote SMTP server hostname or sender e-mail address
+- *value*: username on the remote SMTP server
 
 Example entries::
 

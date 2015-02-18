@@ -3,9 +3,9 @@
 import sys
 import os
 
-# Geenrate documentation on the fly based on Ansible default variables
+# Generate documentation on the fly based on Ansible default variables
 import yaml2rst
-yaml2rst.convert_file('../defaults/main.yml', 'index.rst')
+yaml2rst.convert_file('../defaults/main.yml', 'defaults.rst')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -36,7 +36,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'debops.postfix'
-copyright = u'2014, Maciej Delmanowski, Nick Janetakis'
+copyright = u'2015, DebOps Project'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -189,7 +189,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('index', 'debops.postfix.tex', u'debops.postfix documentation',
-   u'Maciej Delmanowski, Nick Janetakis', 'manual'),
+   u'DebOps Project', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -219,7 +219,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'debops', u'debops.postfix documentation',
-     [u'Maciej Delmanowski, Nick Janetakis'], 1)
+     [u'DebOps Project'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -233,7 +233,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'DebOps', u'debops.postfix documentation',
-   u'Maciej Delmanowski, Nick Janetakis', 'DebOps', 'One line description of project.',
+   u'DebOps Project', 'DebOps', 'One line description of project.',
    'Miscellaneous'),
 ]
 
