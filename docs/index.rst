@@ -37,7 +37,7 @@ mailing lists, and ``debops.smstools`` role uses Postfix as mail-SMS gateway.
 .. _Postfix: http://postfix.org/
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :glob:
 
    installation
