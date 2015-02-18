@@ -3,6 +3,10 @@
 import sys
 import os
 
+# Geenrate documentation on the fly based on Ansible default variables
+import yaml2rst
+yaml2rst.convert_file('../defaults/main.yml', 'index.rst')
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
