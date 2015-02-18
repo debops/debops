@@ -8,8 +8,8 @@ Ansible role: debops.postfix
    introduction
    installation
    getting-started
-   design
    defaults
+   guides
    troubleshooting
    copyright
    credits
