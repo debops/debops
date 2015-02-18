@@ -1,5 +1,5 @@
-Role design
-===========
+Guides and examples
+===================
 
 ``debops.postfix`` is designed to manage a Postfix service by itself. Other
 Ansible roles can use it as a dependency and influence the Postfix
