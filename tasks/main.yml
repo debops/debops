@@ -51,11 +51,15 @@
 
   # Install NTPd on all hosts except inside containers
 - include: ntpd.yml
-  when: ntp is defined and ntp == 'ntpd' and
-        'cap_sys_time' in ntp_host_capabilities.stdout_lines
+  when: (((ntp_daemon is defined and ntp_daemon == 'ntpd') or
+          (ntp is defined and ntp == 'ntpd')) and
+         ('cap_sys_time' in ntp_host_capabilities.stdout_lines or
+          ntp_install_daemon is defined and ntp_install_daemon))
 
   # Install OpenNTPd on all hosts except inside containers
 - include: openntpd.yml
-  when: ntp is defined and ntp == 'openntpd' and
-        'cap_sys_time' in ntp_host_capabilities.stdout_lines
+  when: (((ntp_daemon is defined and ntp_daemon == 'openntpd') or
+          (ntp is defined and ntp == 'openntpd')) and
+         ('cap_sys_time' in ntp_host_capabilities.stdout_lines or
+          ntp_install_daemon is defined and ntp_install_daemon))
 
