@@ -28,12 +28,14 @@
 - name: Enable delayed APT configuration
   set_fact:
     apt_keys_delayed_enabled: '{{ apt_keys_delayed }}'
+    apt_repositories_delayed_enabled: '{{ apt_repositories_delayed }}'
     apt_sources_delayed_enabled: '{{ apt_sources_delayed }}'
   when: ansible_local is defined and ansible_local.apt is defined
 
 - name: Combine lists of default and user APT mirrors and sources
   set_fact:
     apt_keys_combined: '{{ apt_keys + apt_keys_delayed_enabled | default([]) }}'
+    apt_repositories_combined: '{{ apt_repositories + apt_repositories_delayed_enabled | default([]) }}'
     apt_mirrors_combined: '{{ apt_mirrors + apt_default_mirrors | default([]) }}'
     apt_sources_combined: '{{ apt_default_sources | default([]) + apt_sources + apt_sources_delayed_enabled | default([]) }}'
 
@@ -72,6 +74,15 @@
     url: '{{ item.url | default(omit) }}'
   with_items: apt_keys_combined
   when: (item.url is defined or item.data is defined or item.id is defined or item.file is defined and
+         (item.state is undefined or item.state is defined))
+
+- name: Configure custom APT repositories
+  apt_repository:
+    repo: '{{ item.repo }}'
+    state: '{{ item.state | default("present") }}'
+    update_cache: False
+  with_items: apt_repositories_combined
+  when: ((item.repo is defined and item.repo) and
          (item.state is undefined or item.state is defined))
 
 - name: Update package lists
