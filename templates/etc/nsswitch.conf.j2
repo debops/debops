@@ -1,0 +1,27 @@
+# This file is managed remotely, all changes will be lost
+
+# /etc/nsswitch.conf
+
+{% if 'ldap' in auth_nsswitch %}
+passwd:         compat ldap
+group:          compat ldap
+shadow:         compat ldap
+{% else %}
+passwd:         compat
+group:          compat
+shadow:         compat
+{% endif %}
+
+{% if 'mdns' in auth_nsswitch or ansible_distribution in [ 'Ubuntu' ] %}
+hosts:          files mdns4_minimal [NOTFOUND=return] dns
+{% else %}
+hosts:          files dns
+{% endif %}
+networks:       files
+
+protocols:      db files
+services:       db files
+ethers:         db files
+rpc:            db files
+
+netgroup:       nis
