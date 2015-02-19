@@ -31,10 +31,10 @@
   gather_facts: False
 
   vars:
-    bootstrap_admin_account: '{{ lookup("env","USER") }}'
-    bootstrap_admin_group: 'admins'
-    bootstrap_admin_ssh_key: '{{ lookup("pipe","ssh-add -L") }}'
-    bootstrap_hostname: '{{ inventory_hostname_short | default(inventory_hostname) }}'
+    bootstrap_play_admin_name: '{{ bootstrap_admin_name | default(lookup("env","USER")) }}'
+    bootstrap_play_admin_group: '{{ bootstrap_admin_group | default("admins") }}'
+    bootstrap_play_admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L") }}' ]
+    bootstrap_play_hostname: '{{ inventory_hostname_short | default(inventory_hostname) }}'
 
     # Specify 'bootstrap_domain' in inventory to set a domain
 
@@ -48,34 +48,34 @@
   - name: Make sure essential software is installed
     apt:
       name: '{{ item }}'
-      state: 'latest'
+      state: 'present'
       install_recommends: False
     with_items: [ 'python', 'python-apt', 'sudo', 'lsb-release' ]
 
   - name: Create admin system group
     group:
-      name: '{{ bootstrap_admin_group }}'
+      name: '{{ bootstrap_play_admin_group }}'
       state: 'present'
       system: True
 
   - name: Create administrator account
     user:
-      name: '{{ bootstrap_admin_account }}'
+      name: '{{ bootstrap_play_admin_name }}'
       state: 'present'
-      groups: '{{ bootstrap_admin_group }}'
+      groups: '{{ bootstrap_play_admin_group }}'
       append: True
 
   - name: Install ssh public key from current account
     authorized_key:
-      user: '{{ bootstrap_admin_account }}'
-      key: '{{ bootstrap_admin_ssh_key }}'
+      user: '{{ bootstrap_play_admin_name }}'
+      key: '{{ "\n".join(bootstrap_play_admin_sshkeys) | string }}'
       state: 'present'
-    failed_when: (bootstrap_admin_ssh_key is undefined or
-                  (bootstrap_admin_ssh_key is defined and not bootstrap_admin_ssh_key))
+    failed_when: (bootstrap_play_admin_sshkeys is undefined or
+                  (bootstrap_play_admin_sshkeys is defined and not bootstrap_play_admin_sshkeys))
 
   - name: Configure admin group access in sudo
     lineinfile:
-      dest: '/etc/sudoers.d/{{ bootstrap_admin_group }}'
+      dest: '/etc/sudoers.d/{{ bootstrap_play_admin_group }}'
       regexp: '{{ item.regexp }}'
       line: '{{ item.line }}'
       state: 'present'
@@ -85,10 +85,10 @@
       mode: '0440'
       validate: 'visudo -cf %s'
     with_items:
-      - regexp: '^Defaults: %{{ bootstrap_admin_group }} env_check\s'
-        line:    'Defaults: %{{ bootstrap_admin_group }} env_check += "SSH_CLIENT"'
-      - regexp: '^%{{ bootstrap_admin_group }}\s'
-        line:    '%{{ bootstrap_admin_group }} ALL=(ALL:ALL) NOPASSWD: SETENV: ALL'
+      - regexp: '^Defaults: %{{ bootstrap_play_admin_group }} env_check\s'
+        line:    'Defaults: %{{ bootstrap_play_admin_group }} env_check += "SSH_CLIENT"'
+      - regexp: '^%{{ bootstrap_play_admin_group }}\s'
+        line:    '%{{ bootstrap_play_admin_group }} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL'
 
   - name: Ensure /etc/sudoers includes /etc/sudoers.d
     lineinfile:
@@ -100,23 +100,23 @@
 
   - name: Enforce new hostname
     hostname:
-      name: '{{ bootstrap_hostname }}'
-    when: bootstrap_hostname is defined and bootstrap_hostname
+      name: '{{ bootstrap_play_hostname }}'
+    when: bootstrap_play_hostname is defined and bootstrap_play_hostname
 
   - name: Save enforced hostname
     copy:
-      content: '{{ bootstrap_hostname + "\n" }}'
+      content: '{{ bootstrap_play_hostname + "\n" }}'
       dest: '/etc/hostname'
       owner: 'root'
       group: 'root'
       mode: '0644'
-    when: bootstrap_hostname is defined and bootstrap_hostname
+    when: bootstrap_play_hostname is defined and bootstrap_play_hostname
 
   - name: Ensure domain is defined
     lineinfile:
       state: 'present'
       dest: '/etc/hosts'
       regexp: '{{ "^" + (bootstrap_ipv4 | default("127.0.1.1")) | replace(".","\.") }}'
-      line: '{{ (bootstrap_ipv4 | default("127.0.1.1")) + "\t" + (bootstrap_hostname | default(ansible_hostname)) + "." + bootstrap_domain + "\t" + (bootstrap_hostname | default(ansible_hostname)) }}'
+      line: '{{ (bootstrap_ipv4 | default("127.0.1.1")) + "\t" + (bootstrap_play_hostname | default(ansible_hostname)) + "." + bootstrap_domain + "\t" + (bootstrap_play_hostname | default(ansible_hostname)) }}'
     when: bootstrap_domain is defined and bootstrap_domain
 

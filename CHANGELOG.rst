@@ -8,12 +8,23 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 .. _DebOps Changelog: https://github.com/debops/debops/blob/master/CHANGELOG.md
 
 
-v0.2.0 (unreleased)
--------------------
+v0.2.0
+------
+
+*Unreleased*
+
+- Variables from ``bootstrap.yml`` playbook can now be customized using
+  inventory. [drybjed]
+
+- Bootstrap variable names have been changed to be similar to what is used in
+  other DebOps roles. Variable that specifies SSH key to install is now
+  a normal Ansible list. [drybjed]
 
 
-v0.1.0 (2015-02-16)
--------------------
+v0.1.0
+------
+
+*Released: 2015-02-16*
 
 - Format of the Changelog is modified to reflect new versioning. Old entries are
   preserved. [drybjed]
