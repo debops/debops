@@ -1,8 +1,18 @@
 ---
 
+# Should ntp role manage timezone and ntp daemon on this host? Set to False to
+# disable
+# This variable is in transition period, use 'ntp_daemon' instead to specify
+# which daemon should be used.
+ntp: 'openntpd'
+
 # Which clock management daemon should be installed? Currently only 'openntpd'
 # and 'ntpd' is supported. Set to False to disable clock management
-ntp: 'openntpd'
+ntp_daemon: 'openntpd'
+
+# Force installation of specified ntp daemon if Ansible did not detect the
+# environment correctly
+ntp_install_daemon: False
 
 # Timezone configuration
 # Specify timezone as 'Area/Zone', use 'dpkg-reconfigure tzdata' to see list of
