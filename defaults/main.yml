@@ -42,6 +42,26 @@ apt_keys_delayed: []
 
 # ---- APT repositories ----
 
+# List of additional repositories enabled automatically by Ansible. See
+# documentation of 'apt_repository' module for possible values.
+apt_repositories: []
+
+# Secondary list of APT repositories, not configured on the first Ansible run,
+# but enabled on subsequent runs. Can be used in cases where APT repository
+# might not be available initially.
+apt_repositories_delayed: []
+
+  # Example repository definition from default 'debops.reprepro' configuration
+  #- repo: '{{ "deb https://apt." + ansible_domain + "/" + ansible_distribution | lower + " " + ansible_distribution_release + "-backports main" }}'
+  #  state: 'present'
+
+  # Example Ubuntu PPA (works only on Ubuntu)
+  #- repo: 'ppa:nginx/stable'
+  #  state: 'present'
+
+
+# ---- APT default repositories ----
+
 # List of user-specified APT repositories. More information and list of
 # parameters can be found in 'templates/etc/apt/sources.list.j2'.
 apt_sources: []
