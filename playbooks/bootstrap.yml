@@ -31,10 +31,17 @@
   gather_facts: False
 
   vars:
-    bootstrap_play_admin_name: '{{ bootstrap_admin_name | default(lookup("env","USER")) }}'
-    bootstrap_play_admin_group: '{{ bootstrap_admin_group | default("admins") }}'
-    bootstrap_play_admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L") }}' ]
-    bootstrap_play_hostname: '{{ inventory_hostname_short | default(inventory_hostname) }}'
+
+    # Default SSH keys to use if none are specified
+    bootstrap_play_default_sshkeys: [ '{{ lookup("pipe","ssh-add -L") }}' ]
+
+    # Default administrator variables (sshkeys is a list)
+    bootstrap_play_admin_name:    '{{ bootstrap_admin_name     | default(lookup("env","USER")) }}'
+    bootstrap_play_admin_group:   '{{ bootstrap_admin_group    | default("admins") }}'
+    bootstrap_play_admin_sshkeys: '{{ bootstrap_admin_sshkeys  | default(bootstrap_play_default_sshkeys) }}'
+
+    # Hostname based on Ansible inventory
+    bootstrap_play_hostname:      '{{ inventory_hostname_short | default(inventory_hostname) }}'
 
     # Specify 'bootstrap_domain' in inventory to set a domain
 
