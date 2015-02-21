@@ -41,7 +41,7 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 ### Documentation
 
 More information about `debops.postfix` can be found in the
-[official debops.postfix documentation](http://docs.debops.org/en/latest/ansible/roles/debops.postfix.html).
+[official debops.postfix documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-postfix/docs/).
 
 
 ### Role dependencies
