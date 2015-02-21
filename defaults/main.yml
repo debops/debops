@@ -366,3 +366,34 @@ pki_routes_default:
     realm: 'service/revoked'
     readlink: 'default.crl'
 
+
+# ---- Add external file contents from variables ----
+
+# This is a way to add contents of variables into the PKI directory structure
+# on remote hosts. You can use lists below to add certificates and keys from
+# Ansible Vault using variables. Specified paths are relative to
+# 'pki_base_path', by default "/etc/pki/".
+#
+# Files are added just after first Makefile run on remote hosts, and before CSR
+# files are sent to Ansible Controller.
+#
+# For example, a way to add a certificate and private key to PKI host realm
+# using variables:
+#
+# pki_inject_public_files:
+#   - path: 'host/certs/my.{{ ansible_domain }}.crt'
+#     content: '{{ vault_certitifate }}'
+#
+# pki_inject_private_files:
+#   - path: 'host/private/my.{{ ansible_domain }}.key'
+#     content: '{{ vault_private_key }}'
+#
+# If needed, you can specify 'item.{owner,group,mode}' dict keys, otherwise
+# default values will be used. 'item.path' and 'item.content' are required.
+
+# Add content of variables to public files
+pki_inject_public_files: []
+
+# Add content of variables to private files
+pki_inject_private_files: []
+
