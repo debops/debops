@@ -1,5 +1,5 @@
 Ansible role: debops.postfix
-############################
+============================
 
 .. toctree::
    :maxdepth: 3
