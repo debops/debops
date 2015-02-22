@@ -4,5 +4,7 @@ Changelog
 v0.1.0
 ------
 
-- First release [drybjed]
+*Released: 2015-02-22*
+
+- Initial release [drybjed]
 
