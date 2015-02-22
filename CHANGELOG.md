@@ -1,6 +1,12 @@
 ## DebOps Changelog
 
 
+### v0.4.1 (unreleased)
+
+Update role README template to point to new documentation.
+
+Make Travis test script less noisy.
+
 ### v0.4.0 (released 2015-02-12)
 
 DebOps can now use a system-wide configuration file `/etc/debops.cfg`. You can
