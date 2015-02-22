@@ -11,7 +11,9 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.2.0
 ------
 
-*Unreleased*
+*Released: 2015-02-22*
+
+- New role: `debops.rsnapshot`_
 
 - Variables from ``bootstrap.yml`` playbook can now be customized using
   inventory. [drybjed]
@@ -20,6 +22,7 @@ v0.2.0
   other DebOps roles. Variable that specifies SSH key to install is now
   a normal Ansible list. [drybjed]
 
+.. _debops.rsnapshot: https://github.com/debops/ansible-rsnapshot/
 
 v0.1.0
 ------
