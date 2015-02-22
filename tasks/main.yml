@@ -1,0 +1,99 @@
+---
+
+- name: Install required packages on client
+  apt:
+    name: 'rsnapshot'
+    state: 'installed'
+    install_recommends: False
+  when: inventory_hostname in rsnapshot_clients
+
+- name: Enforce rsnapshot root directory permissions
+  file:
+    path: '{{ rsnapshot_snapshot_root }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+  when: inventory_hostname in rsnapshot_clients
+
+- name: Create log directory on client
+  file:
+    path: '/var/log/rsnapshot'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: inventory_hostname in rsnapshot_clients
+
+- name: Create server configuration directories on client
+  file:
+    path: '/etc/rsnapshot/{{ hostvars[item].rsnapshot_backup_host | default(hostvars[item].ansible_fqdn) }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: rsnapshot_servers
+  when: (inventory_hostname in rsnapshot_clients and
+         ((item is defined and item) and item != inventory_hostname and
+          hostvars[item].ansible_fqdn is defined))
+
+- name: Configure servers on rsnapshot clients
+  template:
+    src: 'etc/rsnapshot/server/{{ item.1 }}.j2'
+    dest: '/etc/rsnapshot/{{ hostvars[item.0].rsnapshot_backup_host | default(hostvars[item.0].ansible_fqdn) }}/{{ item.1 }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_nested:
+    - rsnapshot_servers
+    - [ 'include.txt', 'exclude.txt', 'rsnapshot.conf' ]
+  when: (inventory_hostname in rsnapshot_clients and
+         ((item.0 is defined and item.0) and item.0 != inventory_hostname and
+          hostvars[item.0].ansible_fqdn is defined))
+
+- name: Configure runner scripts on rsnapshot clients
+  template:
+    src: 'etc/rsnapshot/server/{{ item.1 }}.j2'
+    dest: '/etc/rsnapshot/{{ hostvars[item.0].rsnapshot_backup_host | default(hostvars[item.0].ansible_fqdn) }}/{{ item.1 }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_nested:
+    - rsnapshot_servers
+    - [ 'runner' ]
+  when: (inventory_hostname in rsnapshot_clients and
+         ((item.0 is defined and item.0) and item.0 != inventory_hostname and
+          hostvars[item.0].ansible_fqdn is defined))
+
+- name: Install requred packages on servers
+  apt:
+    name: 'rsync'
+    state: 'installed'
+    install_recommends: False
+  when: (inventory_hostname in rsnapshot_servers and
+         inventory_hostname not in rsnapshot_clients)
+
+- name: Prepare rrsync script for secure rsync backups
+  shell: gzip -d -c /usr/share/doc/rsync/scripts/rrsync.gz > {{ rsnapshot_rrsync_script }} ;
+         chmod 0755 {{ rsnapshot_rrsync_script }} creates={{ rsnapshot_rrsync_script }}
+  when: (inventory_hostname in rsnapshot_servers and
+         inventory_hostname not in rsnapshot_clients)
+
+- include: configure_ssh_keys.yml
+  when: inventory_hostname in rsnapshot_clients
+
+- include: external_servers.yml
+  when: inventory_hostname in rsnapshot_clients
+
+- include: cron.yml
+  when: inventory_hostname in rsnapshot_clients
+
+- name: Configure logrotate for rsnapshot logs
+  template:
+    src: 'etc/logrotate.d/rsnapshot.j2'
+    dest: '/etc/logrotate.d/rsnapshot'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: inventory_hostname in rsnapshot_clients
+

@@ -1,0 +1,225 @@
+---
+# Default variables
+# =================
+
+# .. cntents:: Sections
+#   :local:
+
+# ---------------
+#   Host groups
+# ---------------
+
+# .. envvar:: rsnapshot_clients
+#
+# Inventory group of hosts that have 'rsnapshot' installed and keep the backup
+# files. Required.
+rsnapshot_clients: '{{ groups.debops_rsnapshot }}'
+
+
+# .. envvar:: rsnapshot_servers
+#
+# Inventory group of hosts that should be backed up by rsnapshot. They have
+# rsync installed and clients connect to them. Required.
+rsnapshot_servers: '{{ groups.debops_rsnapshot_rsync }}'
+
+
+# .. envvar:: rsnapshot_external_servers
+#
+# List of dicts which define external servers to backup on a particular
+# ``rsnapshot`` client host. Most of the keys have the same names as main
+# ``debops.rsnapshot`` variables but without the ``rsnapshot_`` prefix.
+# ``item.name`` key is required. See :ref:`rsnapshot_external_servers` for more
+# information.
+rsnapshot_external_servers: []
+# Examples::
+#
+#   - name: 'host.example.org'
+#     sleep: '10'
+
+
+# -------------------------------
+#   Backup client configuration
+# -------------------------------
+
+# .. envvar:: rsnapshot_snapshot_root
+#
+# Directory where backups are stored
+rsnapshot_snapshot_root: '/var/cache/rsnapshot'
+
+
+# .. envvar:: rsnapshot_link_dest
+#
+# Enable --link-dest option in rsync commands
+rsnapshot_link_dest: '1'
+
+
+# .. envvar:: rsnapshot_sync_first
+#
+# Use separate steps for file synchronization and directory rotation
+rsnapshot_sync_first: '1'
+
+
+# .. envvar:: rsnapshot_mail_to
+#
+# List of mail recipients which should get messages from rsnapshot. By default
+# rsnapshot sends its mails to ``<backup>`` account which should be aliased to
+# an administrator account.
+rsnapshot_mail_to: [ 'backup' ]
+
+
+# -------------------------------
+#   Backup server configuration
+# -------------------------------
+
+# Server configuration should be defined in the respective host file in
+# inventory, either in ``host_vars/`` for a single host, or in `group_vars/``
+# for entire groups of hosts.
+
+# .. envvar:: rsnapshot_sleep
+#
+# Maximum random delay time in minutes for rsnapshot to start synchronization.
+# Set to ``False`` to disable the delay.
+rsnapshot_sleep: '20'
+
+
+# .. envvar:: rsnapshot_hourly
+#
+# Number of hourly snapshots to keep. Set to ``False`` to disable hourly
+# snapshots.
+rsnapshot_hourly: '6'
+
+
+# .. envvar:: rsnapshot_daily
+#
+# Number of daily snapshots to keep. Set to ``False`` to disable daily
+# snapshots.
+rsnapshot_daily: '7'
+
+
+# .. envvar:: rsnapshot_weekly
+#
+# Number of weekly snapshots to keep. Set to ``False`` to disable weekly
+# snapshots.
+rsnapshot_weekly: '4'
+
+
+# .. envvar:: rsnapshot_monthly
+#
+# Number of weekly snapshots to keep. Set to ``False`` to disable weekly
+# snapshots.
+rsnapshot_monthly: '3'
+
+
+# .. envvar:: rsnapshot_one_fs
+#
+# Prevent rsync from crossing filesystem boundaries
+rsnapshot_one_fs: '1'
+
+
+# .. envvar:: rsnapshot_ssh_args
+#
+# Additional arguments for the ``ssh`` command.
+rsnapshot_ssh_args: '-p 22'
+
+
+# .. envvar:: rsnapshot_rrsync_script
+#
+# ``rrsync`` script will be installed in this path (by default,
+# ``/usr/local/lib``).
+rsnapshot_rrsync_script: '{{ ansible_local.root.lib + "/rrsync" }}'
+
+
+# .. envvar:: rsnapshot_ssh_command
+#
+# Command which will be added to the SSH key in ``/root/.ssh/authorized_keys``
+# of each rsnapshot server host. By default it allows for read-only access to
+# entire filesystem.
+rsnapshot_ssh_command: 'ionice -c 3 nice {{ rsnapshot_rrsync_script }} -ro /'
+
+
+# .. envvar:: rsnapshot_backup_user
+#
+# Override server backup user (by default, ``root``)
+rsnapshot_backup_user: False
+
+
+# .. envvar:: rsnapshot_backup_host
+#
+# Override server backup host (by default, FQDN of the host)
+rsnapshot_backup_host: False
+
+
+# .. envvar:: rsnapshot_backup_path
+#
+# Override server backup path (by default, ``/``, root filesystem directory)
+rsnapshot_backup_path: False
+
+
+# .. envvar:: rsnapshot_uuid
+#
+# Add the host's internal UUID to the backup path, creating an unique backup
+# for each instance of the server host, if the hostnames are reused
+rsnapshot_uuid: True
+
+
+# ---------------------------------
+#   Include / Exclude definitions
+# ---------------------------------
+
+# .. envvar:: rsnapshot_exclude
+#
+# Contents of an exclude file, defined as a text block
+rsnapshot_exclude: |
+  {{ rsnapshot_exclude_default }}
+
+
+# .. envvar:: rsnapshot_exclude_default
+#
+# Default list of exclude entries, defined as a text block
+rsnapshot_exclude_default: |
+  - /bin
+  - /boot
+  - /cdrom
+  - /dev
+  - /lib
+  - /lib64
+  - /media
+  - /mnt
+  - /proc
+  - /run
+  - /sbin
+  - /selinux
+  - /sys
+  - /tmp
+  + /usr/local
+  - /usr/*
+  - /var/cache
+  - /var/lib/apt
+  - /var/lib/libvirt/images
+  - /var/lib/lxc
+  - /var/lib/lxcsnaps
+  - /var/lib/mysql
+  - /var/lib/postgresql
+  - /var/lib/python-support
+  - /var/lib/vz
+  - /var/lock
+  - /var/run
+  - /var/spool/postfix
+  - /var/tmp
+  - /initrd*
+  - /vmlinuz*
+
+
+# .. envvar:: rsnapshot_include
+#
+# Contents of an include file, defined as a text block
+rsnapshot_include: |
+  {{ rsnapshot_include_default }}
+
+
+# .. envvar:: rsnapshot_include_default
+#
+# Default list of include entries, defined as a text block
+rsnapshot_include_default: |
+  + /*
+
