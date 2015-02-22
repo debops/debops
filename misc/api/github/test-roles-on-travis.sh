@@ -49,7 +49,7 @@ post_travis_hook () {
   local repository="${1}"
   local id="${2}"
 
-  curl -I -u ${GITHUB_TOKEN}:x-oauth-basic -XPOST https://api.github.com/repos/debops/${repository}/hooks/${id}/tests
+  curl -u ${GITHUB_TOKEN}:x-oauth-basic -XPOST https://api.github.com/repos/debops/${repository}/hooks/${id}/tests
 }
 
 
