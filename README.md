@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) rsnapshot
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-rsnapshot.svg?style=flat)](http://travis-ci.org/debops/ansible-rsnapshot) [![test-suite](http://img.shields.io/badge/test--suite-ansible--rsnapshot-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-rsnapshot/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-rsnapshot.svg?style=flat)](http://travis-ci.org/debops/ansible-rsnapshot) [![test-suite](http://img.shields.io/badge/test--suite-ansible--rsnapshot-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-rsnapshot/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.rsnapshot-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/2937)
 
 `debops.rsnapshot` role allows you to manage a backup host which will use
 [rsnapshot](http://www.rsnapshot.org/) to create remote backups of other
@@ -11,6 +11,17 @@ clients connect to, which run `rsync` in read-only mode on `root` accounts.
 You can also configure `rsnapshot` clients to backup external hosts which
 are not managed by Ansible, but you will need to set up the connection (SSH
 access, `rrsync` script) yourself on the server side.
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, run:
+
+    ansible-galaxy install debops.rsnapshot
+
+### Documentation
+
+More information about `debops.rsnapshot` can be found in the
+[official debops.rsnapshot documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-rsnapshot/docs/).
 
 
 
