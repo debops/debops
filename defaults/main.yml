@@ -67,3 +67,52 @@ auth_ldap_options: |
 auth_ldap_tls_options: |
   TLS_CACERT    /etc/ssl/certs/ca-certificates.crt
 
+
+# ---- Local LDAP Name Service Daemon ----
+
+# Base domain to use for nslcd configuration
+auth_nslcd_domain: '{{ ansible_domain }}'
+
+# FQDN address of a LDAP server to configure in /etc/nslcd.conf
+auth_nslcd_ldap_server: 'ldap.{{ auth_nslcd_domain }}'
+
+# List of LDAP servers to connect to
+auth_nslcd_uri: [ 'ldap://{{ auth_nslcd_ldap_server }}/' ]
+
+# List of LDAP search bases to use
+auth_nslcd_base: [ '{{ "dc=" + auth_nslcd_domain.split(".") | join(",dc=") }}' ]
+
+# CA certficiate file to use to check server certificates
+auth_nslcd_tls_cacertfile: '/etc/ssl/certs/ca-certificates.crt'
+
+
+# ---- LDAP host account ----
+
+# A separate LDAP host account is required for by each host to have access to
+# the LDAP database, because anonymous connections are denied.
+
+# Base DN to use for host account
+auth_nslcd_bind_host_basedn: '{{ "ou=Machines," + auth_nslcd_base[0] }}'
+
+# Host account name
+auth_nslcd_bind_host_cn: 'cn={{ ansible_hostname }}'
+
+# Host account in LDAP database
+auth_nslcd_bind_host_dn: '{{ auth_nslcd_bind_host_cn + "," + auth_nslcd_bind_host_basedn }}'
+
+# Base path to host password in 'secret/' directory.
+# See 'debops.secret' Ansible role for more detauls.
+auth_nslcd_bind_host_basepw: '{{ secret + "/credentials/" + ansible_fqdn + "/auth/nslcd/binddn/" + auth_nslcd_bind_host_dn }}'
+
+# Path to file with plaintext host password saved in secrets
+auth_nslcd_bind_host_password: '{{ auth_nslcd_bind_host_basepw + ".password" }}'
+
+# Path to file with Hash of host password saved in secrets
+auth_nslcd_bind_host_hash: '{{ auth_nslcd_bind_host_basepw + ".hash" }}'
+
+# Length of generated host password
+auth_nslcd_password_length: '64'
+
+# Additional options added to /etc/nslcd.conf, in a text block
+auth_nslcd_options: False
+

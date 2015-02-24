@@ -48,6 +48,11 @@
     validate: 'visudo -cf %s'
   when: auth_wheel_group is defined and auth_wheel_group
 
+- include: auth_ldap.yml
+
+- include: nss_pam_ldap.yml
+  when: auth_nsswitch is defined and 'ldap' in auth_nsswitch
+
 - name: Configure nsswitch.conf
   template:
     src: 'etc/nsswitch.conf.j2'
@@ -55,6 +60,4 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-
-- include: auth_ldap.yml
 
