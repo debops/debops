@@ -34,3 +34,52 @@ secret_levels: '..'
 secret: '{{ secret_root + "/" + secret_levels + "/" + secret_dir }}'
 
 
+# ----------------------------
+#   LDAP server admin access
+# ----------------------------
+
+# ``secret_ldap_*`` variables are used by ``ldap_*`` Ansible modules to access
+# LDAP server for the current domain with administrative privileges, by binding
+# to the admin account with specified bind DN and password. Because these need
+# to be provided with every task that uses ``ldap_*`` modules, variables below
+# are used as a convenient central location.
+
+
+# .. envvar:: secret_ldap_domain
+#
+# Domain used for LDAP base DN and to select default LDAP server
+secret_ldap_domain: '{{ ansible_domain }}'
+
+
+# .. envvar:: secret_ldap_server
+#
+# LDAP server to which ``ldap_*`` tasks will be delegated. Can be specified as
+# a FQDN host or as an Ansible inventory hostname.
+secret_ldap_server: '{{ "ldap." + secret_ldap_domain }}'
+
+
+# .. envvar:: secret_ldap_basedn
+#
+# LDAP Base DN used for to create bind DN
+secret_ldap_basedn: '{{ "dc=" + secret_ldap_domain.split(".") | join(",dc=") }}'
+
+
+# .. envvar:: secret_ldap_admin_bind_dn
+#
+# LDAP administrator account
+secret_ldap_admin_bind_dn: '{{ "cn=admin," + secret_ldap_basedn }}'
+
+
+# .. envvar:: secret_ldap_admin_password
+#
+# Path to a file in ``secret/`` directory which stores password for specified
+# admin account on configured LDAP server. This file will be populated by
+# ``debops.slapd`` role if a server is configured with it.
+secret_ldap_admin_password: '{{ secret + "/ldap/" + ansible_domain + "/credentials/" + secret_ldap_server + "/" + secret_ldap_admin_bind_dn + ".password" }}'
+
+
+# .. envvar:: secret_ldap_admin_bind_pw
+#
+# LDAP administrator password
+secret_ldap_admin_bind_pw: '{{ lookup("password", secret_ldap_admin_password) }}'
+
