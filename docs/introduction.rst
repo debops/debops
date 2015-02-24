@@ -30,3 +30,5 @@ Some usage examples of this role in `DebOps`_ include:
   certificates. Generated .tar.gz files are kept on Ansible Controller in
   secret directory);
 
+.. _DebOps: http://debops.org/
+

@@ -40,7 +40,7 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 ### Documentation
 
 More information about `debops.secret` can be found in the
-[official debops.secret documentation](http://docs.debops.org/en/latest/ansible/roles/debops.secret.html).
+[official debops.secret documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-secret/docs/).
 
 
 
