@@ -8,6 +8,14 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 .. _DebOps Changelog: https://github.com/debops/debops/blob/master/CHANGELOG.md
 
 
+v0.2.1
+------
+
+*Released: 2015-02-24*
+
+- Move ``library/`` directory into correct place and sort modules in
+  subdirectories mirroring the official layout. [drybjed]
+
 v0.2.0
 ------
 
