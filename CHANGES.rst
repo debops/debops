@@ -1,14 +1,20 @@
 Changelog
 =========
 
-v0.2.0 (unreleased)
--------------------
+v0.1.1
+------
 
-- Add CHANGES.rst
-  [drybjed]
+*Released: 2015-02-25*
 
-v0.1.0 (2015-02-09)
--------------------
+- Add CHANGES.rst [drybjed]
+
+- Role will now correctly remove user accounts when requested. You can also
+  optionally remove user's home directory. [drybjed]
+
+v0.1.0
+------
+
+*Released: 2015-02-09*
 
 - First release
   [drybjed]
