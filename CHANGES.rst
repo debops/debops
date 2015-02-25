@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Released: 2015-02-25*
+
+- Redesign LDAP support, add more required variables. [drybjed]
+
 v0.2.0
 ------
 
