@@ -28,7 +28,9 @@
     system: '{{ item.systemuser | default("no") }}'
     shell: '{{ item.shell | default(users_default_shell) }}'
     home: '{{ item.home | default(users_default_home_prefix + "/" + item.name) }}'
-    createhome: 'yes'
+    createhome: '{{ item.createhome | default(True) }}'
+    expires: '{{ item.expires | default(omit) }}'
+    remove: '{{ item.remove | default(omit) }}'
   with_flattened:
     - users_default
     - users_admins
@@ -36,7 +38,7 @@
     - users_group_list
     - users_host_list
   when: ((item.name is defined and item.name != 'root') and
-         (item.state is undefined or (item.state is defined and item.state != 'absent')))
+         (item.state is undefined or (item.state is defined and item.state)))
 
 - name: Manage user default groups
   user:
