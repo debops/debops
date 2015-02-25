@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+- Required Ansible version is changed to ``1.8.0+``. [drybjed]
+
 v0.2.0
 ------
 
