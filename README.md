@@ -9,9 +9,12 @@ accounts and install useful scripts.
 
 ### Installation
 
-This role requires at least Ansible `v1.7`. To install it, run:
+This role requires at least Ansible `v1.8`. To install it, run:
 
     ansible-galaxy install debops.slapd
+
+Additional Ansible modules, `ldap_attr` and `ldap_entry` can be found in
+[DebOps playbooks](https://github.com/debops/debops-playbooks/) repository.
 
 ### Documentation
 
