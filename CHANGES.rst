@@ -9,6 +9,9 @@ v0.2.1
 - ``nslcd`` daemon will now be correctly restarted when its configuration file
   is changed. [drybjed]
 
+- You can now specify the scrutiny level which ``nslcd`` will use while
+  verifying the certificate sent by the LDAP server. [drybjed]
+
 v0.2.0
 ------
 
