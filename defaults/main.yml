@@ -82,6 +82,9 @@ auth_nslcd_uri: [ 'ldap://{{ auth_nslcd_ldap_server }}/' ]
 # List of LDAP search bases to use
 auth_nslcd_base: [ '{{ "dc=" + auth_nslcd_domain.split(".") | join(",dc=") }}' ]
 
+# Level of certificate checking performed by nslcd (never, allow, try, demand)
+auth_nslcd_tls_reqcert: 'demand'
+
 # CA certficiate file to use to check server certificates
 auth_nslcd_tls_cacertfile: '/etc/ssl/certs/ca-certificates.crt'
 

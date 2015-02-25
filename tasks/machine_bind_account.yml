@@ -32,14 +32,18 @@
          (auth_register_nslcd_bind_host_hash is defined and not auth_register_nslcd_bind_host_hash))
   no_log: True
 
-- name: Make sure that host baseDN exists
+- name: Make sure that host base DN exists
   ldap_entry:
     dn: '{{ auth_nslcd_bind_host_basedn }}'
     objectClass: [ 'organizationalUnit', 'top' ]
     state: 'present'
+    server_uri: '{{ secret_ldap_server_uri }}'
+    start_tls:  '{{ secret_ldap_start_tls }}'
     bind_dn: '{{ secret_ldap_admin_bind_dn }}'
     bind_pw: '{{ secret_ldap_admin_bind_pw }}'
-  delegate_to: '{{ secret_ldap_server }}'
+  sudo: '{{ secret_ldap_sudo }}'
+  delegate_to: '{{ secret_ldap_delegate_to }}'
+  no_log: True
 
 - name: Make sure that host account exists
   ldap_entry:
@@ -47,9 +51,12 @@
     objectClass: [ 'device', 'simpleSecurityObject' ]
     userPassword: '{{ auth_register_nslcd_bind_host_password.stdout | default(auth_register_nslcd_bind_host_hash) }}'
     state: 'present'
+    server_uri: '{{ secret_ldap_server_uri }}'
+    start_tls:  '{{ secret_ldap_start_tls }}'
     bind_dn: '{{ secret_ldap_admin_bind_dn }}'
     bind_pw: '{{ secret_ldap_admin_bind_pw }}'
-  delegate_to: '{{ secret_ldap_server }}'
+  sudo: '{{ secret_ldap_sudo }}'
+  delegate_to: '{{ secret_ldap_delegate_to }}'
   no_log: True
 
 - name: Set host bind password in LDAP
@@ -58,9 +65,12 @@
     name: '{{ item.key }}'
     values: '{{ item.value }}'
     state: 'exact'
+    server_uri: '{{ secret_ldap_server_uri }}'
+    start_tls:  '{{ secret_ldap_start_tls }}'
     bind_dn: '{{ secret_ldap_admin_bind_dn }}'
     bind_pw: '{{ secret_ldap_admin_bind_pw }}'
-  delegate_to: '{{ secret_ldap_server }}'
+  sudo: '{{ secret_ldap_sudo }}'
+  delegate_to: '{{ secret_ldap_delegate_to }}'
   with_dict:
     userPassword: '{{ auth_register_nslcd_bind_host_password.stdout | default(auth_register_nslcd_bind_host_hash) }}'
   no_log: True

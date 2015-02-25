@@ -30,7 +30,7 @@ bindpw {{ lookup('password', auth_nslcd_bind_host_password + ' length=' + auth_n
 
 # SSL options
 ssl start_tls
-tls_reqcert demand
+tls_reqcert {{ auth_nslcd_tls_reqcert | default('demand') }}
 tls_cacertfile {{ auth_nslcd_tls_cacertfile }}
 
 # The search scope.

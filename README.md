@@ -8,9 +8,11 @@ privileges.
 
 ### Installation
 
-This role requires at least Ansible `v1.7.0`. To install it, run:
+This role requires at least Ansible `v1.8.0`. To install it, run:
 
     ansible-galaxy install debops.auth
+
+LDAP support requires `python-ldap` package installed on Ansible Controller.
 
 ### Documentation
 
