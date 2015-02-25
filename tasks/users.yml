@@ -28,7 +28,8 @@
     system: '{{ item.systemuser | default("no") }}'
     shell: '{{ item.shell | default(users_default_shell) }}'
     home: '{{ item.home | default(users_default_home_prefix + "/" + item.name) }}'
-    createhome: 'yes'
+    createhome: '{{ item.createhome | default(True) }}'
+    expires: '{{ item.expires | default(omit) }}'
     remove: '{{ item.remove | default(omit) }}'
   with_flattened:
     - users_default
