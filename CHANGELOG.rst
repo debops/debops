@@ -8,6 +8,16 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 .. _DebOps Changelog: https://github.com/debops/debops/blob/master/CHANGELOG.md
 
 
+v0.2.2
+------
+
+*Released: 2015-02-25*
+
+- add support for STARTTLS in ``ldap_attr`` and ``ldap_entry`` modules [psagers]
+
+- fix issue with ``ldap_entry`` not handling ``no_log: True`` in argument list
+  properly [drybjed]
+
 v0.2.1
 ------
 
