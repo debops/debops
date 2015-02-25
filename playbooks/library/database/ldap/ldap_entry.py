@@ -28,6 +28,8 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
 from traceback import format_exc
 
 import ldap
@@ -81,6 +83,11 @@ options:
             - A URI to the LDAP server. The default value lets the underlying
               LDAP client library look for a UNIX domain socket in its default
               location.
+    start_tls:
+        required: false
+        default: false
+        description:
+            - If true, we'll use the START_TLS LDAP extension.
     bind_dn:
         required: false
         description:
@@ -118,6 +125,7 @@ def main():
             'dn': dict(required=True),
             'state': dict(default='present', choices=['present', 'absent']),
             'server_uri': dict(default='ldapi:///'),
+            'start_tls': dict(default='false', choices=BOOLEANS),
             'bind_dn': dict(default=None),
             'bind_pw': dict(default=''),
         },
@@ -142,6 +150,7 @@ class LdapEntry(object):
         self.dn = self._utf8_param('dn')
         self.state = self.module.params['state']
         self.server_uri = self.module.params['server_uri']
+        self.start_tls = self.module.boolean(self.module.params['start_tls'])
         self.bind_dn = self._utf8_param('bind_dn')
         self.bind_pw = self._utf8_param('bind_pw')
         self.attrs = {}
@@ -156,7 +165,7 @@ class LdapEntry(object):
 
     def _load_attrs(self):
         for name, raw in self.module.params.iteritems():
-            if name not in self.module.argument_spec:
+            if name not in self.module.argument_spec and name not in ['NO_LOG']:
                 self.attrs[name] = self._load_attr_values(name, raw)
 
     def _load_attr_values(self, name, raw):
@@ -241,6 +250,10 @@ class LdapEntry(object):
 
     def _connect_to_ldap(self):
         connection = ldap.initialize(self.server_uri)
+
+        if self.start_tls:
+            connection.start_tls_s()
+
         if self.bind_dn is not None:
             connection.simple_bind_s(self.bind_dn, self.bind_pw)
         else:
