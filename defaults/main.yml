@@ -53,9 +53,24 @@ secret_ldap_domain: '{{ ansible_domain }}'
 
 # .. envvar:: secret_ldap_server
 #
-# LDAP server to which ``ldap_*`` tasks will be delegated. Can be specified as
-# a FQDN host or as an Ansible inventory hostname.
+# LDAP server hostname / IP address which holds the database. ``ldap_*``
+# modules will connect to it natively, so it should be available at least from
+# the Ansible Controller.
 secret_ldap_server: '{{ "ldap." + secret_ldap_domain }}'
+
+
+# .. envvar:: secret_ldap_server_uri
+#
+# URI used in tasks to connect to LDAP server natively, it should be used in
+# ``ldap_attr`` and ``ldap_entry`` tasks
+secret_ldap_server_uri: '{{ "ldap://" + secret_ldap_server + "/" }}'
+
+
+# .. envvar:: secret_ldap_start_tls
+#
+# Enable or disable STARTTLS for encrypted communication with the LDAP server.
+# Should always be enabled.
+secret_ldap_start_tls: 'true'
 
 
 # .. envvar:: secret_ldap_basedn
@@ -82,4 +97,20 @@ secret_ldap_admin_password: '{{ secret + "/ldap/" + ansible_domain + "/credentia
 #
 # LDAP administrator password
 secret_ldap_admin_bind_pw: '{{ lookup("password", secret_ldap_admin_password) }}'
+
+
+# .. envvar:: secret_ldap_delegate_to
+#
+# Each LDAP administrative task should be delegated to either ``localhost``
+# (Ansible Controller), or to the LDAP server itself. This host will have
+# access to LDAP admin password, and requires installed ``python-ldap``
+# package.
+secret_ldap_delegate_to: 'localhost'
+
+
+# .. envvar:: secret_ldap_sudo
+#
+# Access through ``sudo`` is not required on ``localhost``, but if LDAP tasks
+# are delegated to different hosts, it might be required there.
+secret_ldap_sudo: False
 
