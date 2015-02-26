@@ -42,3 +42,4 @@
   command: dpkg-divert --quiet --local --divert /etc/default/saslauthd.dpkg-divert --rename /etc/default/saslauthd
            creates=/etc/default/saslauthd.dpkg-divert
   notify: [ 'Restart saslauthd' ]
+  when: ('auth' in postfix and postfix_smtpd_sasl_type == 'cyrus')
