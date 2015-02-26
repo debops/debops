@@ -10,6 +10,8 @@ v0.1.2
   filesystems. This is less surprising and makes sure that everything that
   should be backed up, is backed up by default. [drybjed]
 
+- Add more OpenVZ directories to includes/excludes. [drybjed]
+
 v0.1.1
 ------
 
