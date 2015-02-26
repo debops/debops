@@ -64,13 +64,13 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
                     inventory_path):
     # Generate Ansible configuration file
 
-    def plugin_paths(type):
+    def custom_paths(type):
         if type in defaults:
             # prepend value from .debops.cfg
             yield defaults[type]
-        yield os.path.join(project_root, "ansible", plugin_type)
-        yield os.path.join(playbooks_path, plugin_type)
-        yield os.path.join("/usr/share/ansible_plugins", plugin_type)
+        yield os.path.join(project_root, "ansible", type)
+        yield os.path.join(playbooks_path, type)
+        yield os.path.join("/usr/share/ansible/", type)
 
     # Add custom configuration options to ansible.cfg: Take values
     # from [ansible ...] sections of the .debops.cfg file
@@ -89,7 +89,13 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
     for plugin_type in ('action', 'callback', 'connection',
                         'filter', 'lookup', 'vars'):
         plugin_type = plugin_type+"_plugins"
-        defaults[plugin_type] = PATHSEP.join(plugin_paths(plugin_type))
+        defaults[plugin_type] = PATHSEP.join(custom_paths(plugin_type))
+
+    defaults['library'] = PATHSEP.join(custom_paths('library'))
+
+    # Provide custom value for 'ansible_managed' if one is not set by the user
+    if 'ansible_managed' not in defaults:
+        defaults['ansible_managed'] = "This file is managed remotely, all changes will be lost"
 
     write_config(filename, cfg)
 
