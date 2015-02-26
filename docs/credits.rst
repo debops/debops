@@ -10,3 +10,6 @@ Credits, in chronological order
 
   * current project maintainer
 
+* Reto Gantenbein <reto.gantenbein_at_linuxmonk.ch>
+
+  * add cyrus sasl authentication
