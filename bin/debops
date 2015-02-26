@@ -93,6 +93,10 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
 
     defaults['library'] = PATHSEP.join(custom_paths('library'))
 
+    # Provide custom value for 'ansible_managed' if one is not set by the user
+    if 'ansible_managed' not in defaults:
+        defaults['ansible_managed'] = "This file is managed remotely, all changes will be lost"
+
     write_config(filename, cfg)
 
 
