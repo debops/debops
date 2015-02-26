@@ -8,6 +8,15 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 .. _DebOps Changelog: https://github.com/debops/debops/blob/master/CHANGELOG.md
 
 
+v0.2.3
+------
+
+*Unreleased*
+
+- Roles in ``common.yml`` playbook are rearranged to better support LDAP
+  integration and avoid possible SSH lockdown if host was not prepared using
+  ``bootstrap.yml`` playbook or preseeding. [drybjed]
+
 v0.2.2
 ------
 
