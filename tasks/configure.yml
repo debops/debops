@@ -140,6 +140,7 @@
 
 - name: Add postfix user to sasl group
   user: name='postfix' groups='sasl' append=yes
+  when: ('auth' in postfix and postfix_smtpd_sasl_type == 'cyrus')
 
 - name: Configure Cyrus SASL Authentication for Postfix
   template:
