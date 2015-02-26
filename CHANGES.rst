@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2015-02-26*
+
+- ``rsnapshot_one_fs`` default value is set to ``0`` to enable backups across
+  filesystems. This is less surprising and makes sure that everything that
+  should be backed up, is backed up by default. [drybjed]
+
 v0.1.1
 ------
 
