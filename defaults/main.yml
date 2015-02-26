@@ -40,32 +40,31 @@ auth_system_groups:
 auth_nsswitch: []
 
 
-# ---- LDAP options ----
+# ---- /etc/ldap/ldap.conf options ----
 
-# Enable or disable LDAP configuration
-auth_ldap: True
+# Default DNS domain to use to generate base DN. Set to False to disable and
+# configure custom BaseDN in 'auth_ldap_conf_hostdn'
+auth_ldap_conf_domain: '{{ ansible_domain }}'
 
-# Default DNS domain to use to generate BaseDN. Set to False to disable and
-# configure custom BaseDN in 'auth_ldap_hostdn'
-auth_ldap_domain: '{{ ansible_domain }}'
-
-# Custom prefix for BaseDN, each domain component should be an element of
-# a list. If 'auth_ldap_domain' is empty or False, you can configure here full
-# BaseDN for your LDAP server
-auth_ldap_hostdn: []
+# Custom prefix for base DN, each domain component should be an element of
+# a list. If 'auth_ldap_conf_domain' is empty or False, you can configure here
+# full base DN for your LDAP server
+auth_ldap_conf_hostdn: []
 
 # List od LDAP servers accessed by this host. See ldap.conf(5) for details
-auth_ldap_uri: [ 'ldaps://ldap.{{ ansible_domain }}/' ]
+auth_ldap_conf_uri: [ 'ldaps://ldap.{{ ansible_domain }}/' ]
+
+# CA certificate bundle used to authorize server certificates
+auth_ldap_conf_tls_cacert: '/etc/ssl/certs/ca-certificates.crt'
+
+# Level of certificate checking performed by ldap-utils (never, allow, try, demand)
+auth_ldap_conf_tls_reqcert: 'demand'
 
 # Other LDAP options in text block format
-auth_ldap_options: |
+auth_ldap_conf_options: |
   SISZELIMIT       12
   TIMELIMIT        15
   DEREF            never
-
-# LDAP TLS options in text block format
-auth_ldap_tls_options: |
-  TLS_CACERT    /etc/ssl/certs/ca-certificates.crt
 
 
 # ---- Local LDAP Name Service Daemon ----

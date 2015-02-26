@@ -3,27 +3,28 @@
 # See ldap.conf(5) for details
 # This file should be world readable but not world writable.
 
-{% set auth_tpl_ldap_domain = [] %}
-{% set auth_tpl_ldap_hostdn = [] %}
-{% if auth_ldap_domain is defined and auth_ldap_domain %}
-{% for element in auth_ldap_domain.split(".") %}
-{% set _ = auth_tpl_ldap_domain.append("dc=" + element) %}
+{% set auth_tpl_ldap_conf_domain = [] %}
+{% set auth_tpl_ldap_conf_hostdn = [] %}
+{% if auth_ldap_conf_domain is defined and auth_ldap_conf_domain %}
+{% for element in auth_ldap_conf_domain.split(".") %}
+{% set _ = auth_tpl_ldap_conf_domain.append("dc=" + element) %}
 {% endfor %}
 {% endif %}
-{% if auth_ldap_hostdn is defined and auth_ldap_hostdn %}
-{% for element in auth_ldap_hostdn %}
-{% set _ = auth_tpl_ldap_hostdn.append(element | replace(",","2C")) %}
+{% if auth_ldap_conf_hostdn is defined and auth_ldap_conf_hostdn %}
+{% for element in auth_ldap_conf_hostdn %}
+{% set _ = auth_tpl_ldap_conf_hostdn.append(element | replace(",","2C")) %}
 {% endfor %}
 {% endif %}
-BASE	{{ (auth_tpl_ldap_hostdn + auth_tpl_ldap_domain) | join(",") }}
-URI	{{ auth_ldap_uri | join(" ") }}
-{% if auth_ldap_options is defined and auth_ldap_options %}
+BASE	{{ (auth_tpl_ldap_conf_hostdn + auth_tpl_ldap_conf_domain) | join(",") }}
+URI	{{ auth_ldap_conf_uri | join(" ") }}
+
+# TLS options
+TLS_CACERT {{ auth_ldap_conf_tls_cacert }}
+TLS_REQCERT {{ auth_ldap_conf_tls_reqcert }}
+
+{% if auth_ldap_conf_options is defined and auth_ldap_conf_options %}
 
 # Other options
-{{ auth_ldap_options }}
-{% endif %}
-{% if auth_ldap_tls_options is defined and auth_ldap_tls_options %}
-# TLS options
-{{ auth_ldap_tls_options }}
+{{ auth_ldap_conf_options }}
 {% endif %}
 
