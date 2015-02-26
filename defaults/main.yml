@@ -112,8 +112,8 @@ rsnapshot_monthly: '3'
 
 # .. envvar:: rsnapshot_one_fs
 #
-# Prevent rsync from crossing filesystem boundaries
-rsnapshot_one_fs: '1'
+# Allow or prevent rsync from crossing filesystem boundaries
+rsnapshot_one_fs: '0'
 
 
 # .. envvar:: rsnapshot_ssh_args
@@ -201,13 +201,15 @@ rsnapshot_exclude_default: |
   - /var/lib/mysql
   - /var/lib/postgresql
   - /var/lib/python-support
-  - /var/lib/vz
+  + /var/lib/vz/dump
+  - /var/lib/vz/*
   - /var/lock
   - /var/run
   - /var/spool/postfix
   - /var/tmp
   - /initrd*
   - /vmlinuz*
+  - /vz
 
 
 # .. envvar:: rsnapshot_include
