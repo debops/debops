@@ -149,7 +149,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Restart postfix' ]
-  when: ('auth' in postfix and postfix_sasl_type == 'cyrus')
+  when: ('auth' in postfix and postfix_smtpd_sasl_type == 'cyrus')
 
 - name: Configure Cyrus saslauthd for Postfix
   template:
@@ -159,4 +159,4 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Restart saslauthd' ]
-  when: ('auth' in postfix and postfix_sasl_type == 'cyrus')
+  when: ('auth' in postfix and postfix_smtpd_sasl_type == 'cyrus')
