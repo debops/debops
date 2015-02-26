@@ -1,6 +1,20 @@
 Changelog
 =========
 
+v0.2.2
+------
+
+*Unreleased*
+
+- Move all ``auth_ldap_*`` variables to ``auth_ldap_conf_`` namespace. [drybjed]
+
+- ``auth_ldap`` variable is removed. Instead, ``/etc/ldap/ldap.conf`` is
+  configured either if ``/etc/ldap/`` directory exists, or ``ldap`` is
+  enabled in ``auth_nsswitch`` [drybjed]
+
+- ``auth_ldap_tls`` variable has been converted from a text block into separate
+  TLS variables. [drybjed]
+
 v0.2.1
 ------
 
