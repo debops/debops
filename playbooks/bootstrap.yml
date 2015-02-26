@@ -10,8 +10,11 @@
 #   - playbook will install Python support with some essential software;
 #   - a system 'admins' group will be created for users who have administrator
 #     privileges (full sudo permissions);
-#   - a normal user account named after your local user account will be
-#     created and added to the 'admins' group;
+#   - a normal user account will be created and added to the 'admins' group;
+#     If you are connection directly as root, this accoint will be
+#     named after your local user account, oterhwise it will be named
+#     after the user you are connecting as (option `-u` or
+#     ansible_ssh_user from some config- or inventory-file).
 #   - no passwords are set or modified on any account;
 #   - if set, playbook will configure hostname and domain on the host using
 #     'bootstrap_hostname' and 'bootstrap_domain' variables;
@@ -36,7 +39,7 @@
     bootstrap_play_default_sshkeys: [ '{{ lookup("pipe","ssh-add -L") }}' ]
 
     # Default administrator variables (sshkeys is a list)
-    bootstrap_play_admin_name:    '{{ bootstrap_admin_name     | default(lookup("env","USER")) }}'
+    bootstrap_play_admin_name:    '{{ bootstrap_admin_name     | default(ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER")) }}'
     bootstrap_play_admin_group:   '{{ bootstrap_admin_group    | default("admins") }}'
     bootstrap_play_admin_sshkeys: '{{ bootstrap_admin_sshkeys  | default(bootstrap_play_default_sshkeys) }}'
 
