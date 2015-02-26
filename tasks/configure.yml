@@ -138,3 +138,26 @@
     mode: '0644'
   notify: [ 'Restart postfix' ]
 
+- name: Add postfix user to sasl group
+  user: name='postfix' groups='sasl' append=yes
+  when: ('auth' in postfix and postfix_smtpd_sasl_type == 'cyrus')
+
+- name: Configure Cyrus SASL Authentication for Postfix
+  template:
+    src: 'etc/postfix/sasl/smtpd.conf.j2'
+    dest: '/etc/postfix/sasl/smtpd.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart postfix' ]
+  when: ('auth' in postfix and postfix_smtpd_sasl_type == 'cyrus')
+
+- name: Configure Cyrus saslauthd for Postfix
+  template:
+    src: 'etc/default/saslauthd.j2'
+    dest: '/etc/default/saslauthd'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart saslauthd' ]
+  when: ('auth' in postfix and postfix_smtpd_sasl_type == 'cyrus')

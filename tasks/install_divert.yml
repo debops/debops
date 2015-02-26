@@ -14,6 +14,13 @@
     install_recommends: False
   when: ('client' in postfix)
 
+- name: Install Cyrus SASL if enabled
+  apt:
+    name: 'sasl2-bin'
+    state: 'latest'
+    install_recommends: False
+  when: ('auth' in postfix and postfix_smtpd_sasl_type == 'cyrus')
+
 - name: Disable Postfix configuration in debconf
   debconf:
     name: 'postfix'
@@ -31,3 +38,8 @@
   command: dpkg-divert --quiet --local --divert /etc/aliases.dpkg-divert --rename /etc/aliases
            creates=/etc/aliases.dpkg-divert
 
+- name: Divert Cyrus SASL configuration
+  command: dpkg-divert --quiet --local --divert /etc/default/saslauthd.dpkg-divert --rename /etc/default/saslauthd
+           creates=/etc/default/saslauthd.dpkg-divert
+  notify: [ 'Restart saslauthd' ]
+  when: ('auth' in postfix and postfix_smtpd_sasl_type == 'cyrus')
