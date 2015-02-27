@@ -87,7 +87,7 @@
     - ferm_dependent_rules
   when: ((item.type is defined and item.type) and
          ((item.dport is defined and item.dport) or (item.rules is defined and item.rules)) and
-         (item.delete is undefined or (item.delete is defined and not item.delete)))
+         (item.delete is undefined or not item.delete))
 
 - name: Remove iptables INPUT rules if requested
   file:
@@ -116,7 +116,7 @@
     - ferm_input_dependent_list
   when: ((item.type is defined and item.type) and
          ((item.dport is defined and item.dport) or (item.rules is defined and item.rules)) and
-         (item.delete is undefined or (item.delete is defined and not item.delete)))
+         (item.delete is undefined or not item.delete))
 
 - name: Apply iptables rules if ferm is enabled
   command: ferm --slow /etc/ferm/ferm.conf
