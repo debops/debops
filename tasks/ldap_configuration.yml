@@ -1,0 +1,16 @@
+---
+
+- name: Configure LDAP indices
+  ldap_attr:
+    dn: 'olcDatabase={1}hdb,cn=config'
+    name: 'olcDbIndex'
+    values: '{{ slapd_ldap_index }}'
+    state: 'present'
+
+- name: Configure LDAP Access Control List
+  ldap_attr:
+    dn: 'olcDatabase={1}hdb,cn=config'
+    name: 'olcAccess'
+    values: '{{ slapd_ldap_access_control_list }}'
+    state: 'exact'
+

@@ -138,3 +138,42 @@ slapd_ldapscripts_gdummymember: 'uid=dummy,$USUFFIX,$SUFFIX'
 # User password generation
 slapd_ldapscripts_passwordgen: 'pwgen'
 
+
+# ---- LDAP index configuration ----
+
+# List of index entries configured on the server
+slapd_ldap_index: '{{ slapd_ldap_index_default }}'
+
+# Default list of indices
+slapd_ldap_index_default:
+
+  - 'objectClass eq'
+  - 'cn eq,pres'
+  - 'sn eq,pres'
+  - 'uid eq,pres'
+  - 'uidNumber eq,pres'
+  - 'gidNumber eq,pres'
+
+
+# ---- LDAP Access Control List ----
+
+# List of olcAccess attributes configured on the server
+slapd_ldap_access_control_list: '{{ slapd_ldap_access_control_list_default }}'
+
+# Default LDAP ACL. Order of entries is important!
+slapd_ldap_access_control_list_default:
+
+  - '{0}to attrs=userPassword,shadowLastChange
+        by self write
+        by anonymous auth
+        by dn="{{ slapd_basedn_admin }}" write
+        by * none'
+
+  - '{1}to dn.base=""
+        by * read'
+
+  - '{2}to *
+        by self write
+        by dn="{{ slapd_basedn_admin }}" write
+        by * read'
+
