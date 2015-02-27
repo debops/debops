@@ -5,7 +5,7 @@
     name: 'ferm'
     question: 'ferm/enable'
     vtype: 'boolean'
-    value: '{% if ferm is defined and ferm %}yes{% else %}no{% endif %}'
+    value: '{% if ferm %}yes{% else %}no{% endif %}'
 
 - name: Ensure ferm is installed
   apt:
@@ -121,12 +121,12 @@
 - name: Apply iptables rules if ferm is enabled
   command: ferm --slow /etc/ferm/ferm.conf
   changed_when: False
-  when: (ferm is defined and ferm)
+  when: ferm
 
 - name: Clear iptables rules if ferm is disabled
   command: ferm --flush /etc/ferm/ferm.conf
   changed_when: False
-  when: (ferm is undefined or (ferm is defined and not ferm))
+  when: not ferm
 
 - name: Configure sysctl
   template:
