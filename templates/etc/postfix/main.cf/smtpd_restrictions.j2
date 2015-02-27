@@ -3,6 +3,9 @@ smtpd_client_restrictions =
 {{ ",\n".join(postfix_smtpd_client_restrictions) | indent(6,true) }}
 {% else %}
 {% set postfix_tpl_smtpd_client_restrictions = ['permit_mynetworks'] %}
+{% if 'auth' in postfix and 'deprecated' in postfix %}
+{% set postfix_tpl_smtpd_client_restrictions = postfix_tpl_smtpd_client_restrictions + ['permit_sasl_authenticated'] %}
+{% endif %}
 {% if 'null' in postfix or ('network' in postfix and 'mx' not in postfix) %}
 {% set postfix_tpl_smtpd_client_restrictions = postfix_tpl_smtpd_client_restrictions + ['reject'] %}
 {% endif %}
