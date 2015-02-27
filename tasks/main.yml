@@ -54,8 +54,9 @@
   register: auth_register_etc_ldap
 
 - include: etc_ldap_conf.yml
-  when: ((auth_register_etc_ldap is defined and auth_register_etc_ldap.stat.exists) or
-         (auth_nsswitch is defined and 'ldap' in auth_nsswitch))
+  when: ((auth_ldap_conf is defined and auth_ldap_conf) and
+         ((auth_register_etc_ldap is defined and auth_register_etc_ldap.stat.exists) or
+          (auth_nsswitch is defined and 'ldap' in auth_nsswitch)))
 
 - include: nss_pam_ldap.yml
   when: auth_nsswitch is defined and 'ldap' in auth_nsswitch
