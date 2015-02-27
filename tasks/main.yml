@@ -5,13 +5,14 @@
     name: 'ferm'
     question: 'ferm/enable'
     vtype: 'boolean'
-    value: '{% if ferm is defined and ferm %}yes{% else %}no{% endif %}'
+    value: '{% if ferm %}yes{% else %}no{% endif %}'
 
 - name: Ensure ferm is installed
   apt:
     name: 'ferm'
     state: 'latest'
     install_recommends: 'no'
+  when: ferm
 
 - name: Create configuration directories
   file:
@@ -87,7 +88,7 @@
     - ferm_dependent_rules
   when: ((item.type is defined and item.type) and
          ((item.dport is defined and item.dport) or (item.rules is defined and item.rules)) and
-         (item.delete is undefined or (item.delete is defined and not item.delete)))
+         (item.delete is undefined or not item.delete))
 
 - name: Remove iptables INPUT rules if requested
   file:
@@ -116,17 +117,17 @@
     - ferm_input_dependent_list
   when: ((item.type is defined and item.type) and
          ((item.dport is defined and item.dport) or (item.rules is defined and item.rules)) and
-         (item.delete is undefined or (item.delete is defined and not item.delete)))
+         (item.delete is undefined or not item.delete))
 
 - name: Apply iptables rules if ferm is enabled
   command: ferm --slow /etc/ferm/ferm.conf
   changed_when: False
-  when: (ferm is defined and ferm)
+  when: ferm
 
 - name: Clear iptables rules if ferm is disabled
   command: ferm --flush /etc/ferm/ferm.conf
   changed_when: False
-  when: (ferm is undefined or (ferm is defined and not ferm))
+  when: not ferm and ferm_flush
 
 - name: Configure sysctl
   template:
