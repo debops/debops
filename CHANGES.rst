@@ -12,6 +12,9 @@ v0.2.2
   configured either if ``/etc/ldap/`` directory exists, or ``ldap`` is
   enabled in ``auth_nsswitch`` [drybjed]
 
+- By a popular demand, ``auth_ldap_conf`` variable is brought back and can be
+  used to disable configuration of ``/etc/ldap/ldap.conf``. [drybjed]
+
 - ``auth_ldap_tls`` variable has been converted from a text block into separate
   TLS variables. [drybjed]
 
