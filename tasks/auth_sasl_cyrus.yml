@@ -1,0 +1,40 @@
+---
+
+- name: Install Cyrus SASL if enabled
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_items: [ 'sasl2-bin', 'libsasl2-modules' ]
+
+- name: Add Postfix user to sasl group
+  user:
+    name: 'postfix'
+    groups: 'sasl'
+    append: True
+    createhome: False
+  notify: [ 'Restart postfix' ]
+
+- name: Configure Cyrus SASL Authentication
+  template:
+    src: 'etc/postfix/sasl/smtpd.conf.j2'
+    dest: '/etc/postfix/sasl/smtpd.conf'
+    owner: 'root'
+    group: 'sasl'
+    mode: '0640'
+
+- name: Configure saslauthd service
+  template:
+    src: 'etc/default/saslauthd-smtpd.j2'
+    dest: '/etc/default/saslauthd-smtpd'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart saslauthd' ]
+  register: postfix_register_configure_saslauthd
+
+- name: Override attributes for saslauthd socket in Postfix chroot
+  shell: dpkg-statoverride --add root sasl 710 /var/spool/postfix/var/run/saslauthd || true
+  when: postfix_register_configure_saslauthd is defined and
+        postfix_register_configure_saslauthd.changed
+
