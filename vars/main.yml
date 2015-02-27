@@ -47,6 +47,10 @@ gitlab_version_map:
     shell: 'v2.4.1'
     ce:    '7-7-stable'
 
+  '7.8':
+    shell: 'v2.5.4'
+    ce:    '7-8-stable'
+
 
 # ---- GitLab CE installation ----
 
@@ -113,6 +117,18 @@ gitlab_nginx_server:
       gzip_static on;
       expires max;
       add_header Cache-Control public;
+
+    '/uploads/': |
+      gzip off;
+      proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
+      proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
+      proxy_redirect     off;
+      proxy_set_header   X-Forwarded-Proto $scheme;
+      proxy_set_header   Host              $http_host;
+      proxy_set_header   X-Real-IP         $remote_addr;
+      proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+      proxy_set_header   X-Frame-Options   SAMEORIGIN;
+      proxy_pass         http://gitlab;
 
     '@gitlab': |
       gzip off;
