@@ -1,16 +1,16 @@
+{% set auth_tpl_nsswitch_databases = [] %}
+{% for element in auth_nsswitch %}
+{% if element != "mdns" %}
+{% set _ = auth_tpl_nsswitch_databases.append(element) %}
+{% endif %}
+{% endfor %}
 # This file is managed remotely, all changes will be lost
 
 # /etc/nsswitch.conf
 
-{% if 'ldap' in auth_nsswitch %}
-passwd:         compat ldap
-group:          compat ldap
-shadow:         compat ldap
-{% else %}
-passwd:         compat
-group:          compat
-shadow:         compat
-{% endif %}
+passwd:         {{ auth_tpl_nsswitch_databases | join(" ") }}
+group:          {{ auth_tpl_nsswitch_databases | join(" ") }}
+shadow:         {{ auth_tpl_nsswitch_databases | join(" ") }}
 
 {% if 'mdns' in auth_nsswitch or ansible_distribution in [ 'Ubuntu' ] %}
 hosts:          files mdns4_minimal [NOTFOUND=return] dns

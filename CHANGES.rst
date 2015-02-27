@@ -18,6 +18,10 @@ v0.2.2
 - ``auth_ldap_tls`` variable has been converted from a text block into separate
   TLS variables. [drybjed]
 
+- Configuration of ``/etc/nsswitch.conf`` is slightly modified, now
+  ``auth_nsswitch`` variable controls presence and order of specific database
+  entries in the configuration file. [drybjed]
+
 v0.2.1
 ------
 
