@@ -35,7 +35,11 @@ sshd_ferm_limit_hits: '8'
 # Name of the iptables recent list where offenders will be added
 sshd_ferm_limit_destination: 'badguys'
 
-sshd_Port: 22
+# List of ports which sshd will listen on. iptables and tcpwrappers will only
+# configure the default port (22), other ports need to be managed separately.
+sshd_config_ports: [ '22' ]
+
+
 sshd_PermitRootLogin: 'without-password'
 sshd_PasswordAuthentication: 'no'
 sshd_X11Forwarding: 'no'

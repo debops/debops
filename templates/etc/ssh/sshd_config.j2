@@ -1,7 +1,9 @@
 # This file is managed by Ansible, all changes will be lost
 
 # What ports, IPs and protocols we listen for
-Port {{ sshd_Port }}
+{% for port in sshd_config_ports %}
+Port {{ port }}
+{% endfor %}
 # Use these options to restrict which interfaces/protocols sshd will bind to
 #ListenAddress ::
 #ListenAddress 0.0.0.0
