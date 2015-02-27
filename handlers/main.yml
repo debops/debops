@@ -5,7 +5,13 @@
 
 - name: Update ca-certificates.crt
   command: update-ca-certificates
+  notify: [ 'Install ca-certificates.crt into Postfix chroot' ]
 
 - name: Regenerate ca-certificates.crt
   command: update-ca-certificates --fresh
+  notify: [ 'Install ca-certificates.crt into Postfix chroot' ]
+
+- name: Install ca-certificates.crt into Postfix chroot
+  shell: test -d /var/spool/postfix &&
+         cp -f /etc/ssl/certs/ca-certificates.crt /var/spool/postfix/etc/ssl/certs/ca-certificates.crt || true
 
