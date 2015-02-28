@@ -1,7 +1,8 @@
 ---
 
 # Should Ansible manage /etc/network/interfaces? Set to False to disable
-ifupdown: True
+ifupdown: '{{ not (ansible_virtualization_type == "docker" and
+                   ansible_virtualization_role == "guest") }}'
 
 # Default external network interface
 ifupdown_external_interface: 'eth0'

@@ -2,17 +2,17 @@
 
   # If static configuration is detected, don't manage interfaces automatically
 - include: check_static.yml
-  when: ifupdown
+  when: ifupdown|bool
 
 - include: divert_interfaces.yml
-  when: ifupdown and ifupdown_static_config != 'static'
+  when: ifupdown|bool and ifupdown_static_config != 'static'
 
 - include: check_networkmanager.yml
-  when: ifupdown and not ifupdown_ignore_networkmanager
+  when: ifupdown|bool and not ifupdown_ignore_networkmanager
 
 - include: generate_interfaces.yml
-  when: ifupdown and ifupdown_static_config != 'static'
+  when: ifupdown|bool and ifupdown_static_config != 'static'
 
 - include: revert_interfaces.yml
-  when: not ifupdown and ifupdown_static_config != 'static'
+  when: not ifupdown|bool and ifupdown_static_config != 'static'
 
