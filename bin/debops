@@ -74,6 +74,7 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
 
     # Add custom configuration options to ansible.cfg: Take values
     # from [ansible ...] sections of the .debops.cfg file
+    # Note: To set debops default values, use debops.config.DEFAULTS
     cfg = dict((sect.split(None, 1)[1], pairs)
                for sect, pairs in config.items() if sect.startswith('ansible '))
 
@@ -92,10 +93,6 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
         defaults[plugin_type] = PATHSEP.join(custom_paths(plugin_type))
 
     defaults['library'] = PATHSEP.join(custom_paths('library'))
-
-    # Provide custom value for 'ansible_managed' if one is not set by the user
-    if 'ansible_managed' not in defaults:
-        defaults['ansible_managed'] = "This file is managed remotely, all changes will be lost"
 
     write_config(filename, cfg)
 
