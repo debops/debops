@@ -108,10 +108,18 @@
       state: 'present'
       validate: 'visudo -cf %s'
 
+  - name: Decide whether the hostname should be set
+    set_fact:
+     name: set_hostname
+     set_hostname: |
+         (bootstrap_play_hostname is defined and bootstrap_play_hostname
+          and not (ansible_virtualization_type == 'docker' and
+                   ansible_virtualization_role == 'guest'))
+
   - name: Enforce new hostname
     hostname:
       name: '{{ bootstrap_play_hostname }}'
-    when: bootstrap_play_hostname is defined and bootstrap_play_hostname
+    when: set_hostname
 
   - name: Save enforced hostname
     copy:
@@ -120,7 +128,7 @@
       owner: 'root'
       group: 'root'
       mode: '0644'
-    when: bootstrap_play_hostname is defined and bootstrap_play_hostname
+    when: set_hostname
 
   - name: Ensure domain is defined
     lineinfile:
