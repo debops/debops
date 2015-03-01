@@ -39,7 +39,7 @@
 
 - name: Delete interface configuration if requested
   file:
-    path: '/etc/network/interfaces.d/{{ item.weight | default("00") }}_{{ item.filename | default(item.type | default("interface") + "_" + item.iface) }}_{% if item.inet is defined and item.inet %}ipv4{% endif %}{% if item.inet6 is defined and item.inet6 %}ipv6{% endif %}'
+    path: '/etc/network/interfaces.d/{{ item.weight | default("00") }}_{{ item.filename | default(item.type | default("interface") + "_" + item.iface) }}{% if item.inet is defined and item.inet %}_ipv4{% endif %}{% if item.inet6 is defined and item.inet6 %}_ipv6{% endif %}'
     state: 'absent'
   with_items: ifupdown_interfaces
   when: ((item.iface is defined and item.iface) and
@@ -48,7 +48,7 @@
 - name: Generate interface configuration
   template:
     src: 'etc/network/interfaces.d/{{ item.type | default("interface") }}.j2'
-    dest: '/etc/network/interfaces.d/{{ item.weight | default("00") }}_{{ item.filename | default(item.type | default("interface") + "_" + item.iface) }}_{% if item.inet is defined and item.inet %}ipv4{% endif %}{% if item.inet6 is defined and item.inet6 %}ipv6{% endif %}'
+    dest: '/etc/network/interfaces.d/{{ item.weight | default("00") }}_{{ item.filename | default(item.type | default("interface") + "_" + item.iface) }}{% if item.inet is defined and item.inet %}_ipv4{% endif %}{% if item.inet6 is defined and item.inet6 %}_ipv6{% endif %}'
     owner: 'root'
     group: 'root'
     mode: '0644'
