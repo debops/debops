@@ -1,11 +1,24 @@
 ## cryptsetup_remote_unlock
 
 [![Travis CI](http://img.shields.io/travis/ypid/ansible-cryptsetup_remote_unlock.svg?style=flat)](http://travis-ci.org/ypid/ansible-cryptsetup_remote_unlock)
+[![Ansible Galaxy](http://img.shields.io/badge/galaxy-ypid.cryptsetup_remote_unlock-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/2980)
+[![Platforms](http://img.shields.io/badge/platforms-debian-lightgrey.svg?style=flat)](#)
 
 
 Configure an encrypted headless system to get the password over SSH.
 
 See [SSH to decrypt encrypted LVM during headless server boot?](http://unix.stackexchange.com/a/79203)
+
+### Installation
+
+This role requires at least Ansible `v1.3`. To install it, run:
+
+    ansible-galaxy install ypid.cryptsetup_remote_unlock
+
+To install via git, run either:
+
+    git clone https://github.com/ypid/ansible-cryptsetup_remote_unlock ypid.cryptsetup_remote_unlock
+    git submodule add https://github.com/ypid/ansible-cryptsetup_remote_unlock roles/ypid.cryptsetup_remote_unlock
 
 
 
@@ -27,6 +40,7 @@ List of default variables available in the inventory:
     cryptsetup_remote_unlock_public_key: False
     
     # cryptsetup_remote_network_interface: "eth0"
+    # cryptsetup_remote_network_ip_line: "{{ ansible_default_ipv4.address }}:::{{ ansible_default_ipv4.netmask }}:{{ ansible_hostname }}::off"
     cryptsetup_remote_network_ip_line: "{{ ansible_eth0.ipv4.address }}:::{{ ansible_eth0.ipv4.netmask }}:{{ ansible_hostname }}::off"
     # cryptsetup_remote_network_ip_line: "192.0.2.23:::255.255.255.0:noname::off"
     # ip=<client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
