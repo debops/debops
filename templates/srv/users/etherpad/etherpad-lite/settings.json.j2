@@ -1,8 +1,8 @@
-/*
-  This file is managed by Ansible, all changes will be lost
-
-  This file must be valid JSON. But comments are allowed
-*/
+//
+//  This file is managed by Ansible, all changes will be lost
+//
+//  This file must be valid JSON. But comments are allowed
+//
 {
   // Name your instance!
   "title": "{{ etherpad_title }}",
@@ -67,39 +67,41 @@
   //the default text of a pad
   "defaultPadText" : "{{ etherpad_welcome_text }}",
 
-  /* Users must have a session to access pads. This effectively allows only group pads to be accessed. */
+  // Users must have a session to access pads. This effectively allows only group pads to be accessed.
   "requireSession" : {{ etherpad_require_session | default('false') }},
 
-  /* Users may edit pads but not create new ones. Pad creation is only via the API. This applies both to group pads and regular pads. */
+  // Users may edit pads but not create new ones. Pad creation is only
+  // via the API. This applies both to group pads and regular pads.
   "editOnly" : {{ etherpad_edit_only | default('false') }},
 
-  /* if true, all css & js will be minified before sending to the client. This will improve the loading performance massivly,
-     but makes it impossible to debug the javascript/css */
+  // If true, all css & js will be minified before sending to the
+  // client. This will improve the loading performance massivly, but
+  // makes it impossible to debug the javascript/css
   "minify" : {{ etherpad_minify | default('true') }},
 
-  /* How long may clients use served javascript code (in seconds)? Without versioning this
-     may cause problems during deployment. Set to 0 to disable caching */
+  // How long may clients use served javascript code (in seconds)? Without versioning this
+  // may cause problems during deployment. Set to 0 to disable caching
   "maxAge" : {{ etherpad_max_age | default('21600') }}, // 60 * 60 * 6 = 6 hours
 
-  /* This is the path to the Abiword executable. Setting it to null, disables abiword.
-     Abiword is needed to advanced import/export features of pads*/
+  // This is the path to the Abiword executable. Setting it to null, disables abiword.
+  // Abiword is needed to advanced import/export features of pads
   "abiword" : {% if etherpad_abiword is defined and etherpad_abiword %}"/usr/bin/abiword"{% else %}null{% endif %},
 
-  /* This setting is used if you require authentication of all users.
-     Note: /admin always requires authentication. */
+  // This setting is used if you require authentication of all users.
+  // Note: /admin always requires authentication.
   "requireAuthentication": {{ etherpad_require_authentication | default('false') }},
 
-  /* Require authorization by a module, or a user with is_admin set, see below. */
+  // Require authorization by a module, or a user with is_admin set, see below.
   "requireAuthorization": {{ etherpad_require_authorization | default('false') }},
 
-  /*when you use NginX or another proxy/ load-balancer set this to true*/
+  // When you use NginX or another proxy/ load-balancer set this to true
   "trustProxy": {{ etherpad_trust_proxy | default('false') }},
 
-  /* Privacy: disable IP logging */
+  // Privacy: disable IP logging
   "disableIPlogging": {{ etherpad_disable_ip_logging | default('false') }},
 
-  /* Users for basic authentication. is_admin = true gives access to /admin.
-     If you do not uncomment this, /admin will not be available! */
+  // Users for basic authentication. is_admin = true gives access to /admin.
+  // If you do not uncomment this, /admin will not be available!
 {% if (secret is defined and secret) and ((etherpad_admins is defined and etherpad_admins) or (etherpad_users is defined and etherpad_users)) %}
   "users": {
 {% for name in etherpad_admins %}
@@ -121,7 +123,8 @@
   // restrict socket.io transport methods
   "socketTransportProtocols" : ["xhr-polling", "jsonp-polling", "htmlfile"],
 
-  /* The toolbar buttons configuration.
+  /*
+  // The toolbar buttons configuration.
   "toolbar": {
     "left": [
       ["bold", "italic", "underline", "strikethrough"],
@@ -140,10 +143,10 @@
   },
   */
 
-  /* The log level we are using, can be: DEBUG, INFO, WARN, ERROR */
+  // The log level we are using, can be: DEBUG, INFO, WARN, ERROR
   "loglevel": "{{ etherpad_loglevel | default('INFO') }}",
 
-  //Logging configuration. See log4js documentation for further information
+  // Logging configuration. See log4js documentation for further information
   // https://github.com/nomiddlename/log4js-node
   // You can add as many appenders as you want here:
   "logconfig" :
@@ -157,13 +160,15 @@
       , "maxLogSize": 1024
       , "backups": 3 // how many log files there're gonna be at max
       //, "category": "test" // only log a specific category
-        }*/
+        }
+    */
     /*
       , { "type": "logLevelFilter"
         , "level": "warn" // filters out all log messages that have a lower level than "error"
         , "appender":
           {  Use whatever appender you want here  }
-        }*/
+        }
+    */
     /*
       , { "type": "logLevelFilter"
         , "level": "error" // filters out all log messages that have a lower level than "error"
@@ -181,7 +186,8 @@
               }
             }
           }
-        }*/
+        }
+    */
       ]
 {% if etherpad_custom_json is defined and etherpad_custom_json %}
     },
