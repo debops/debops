@@ -35,7 +35,7 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_items: [ 'tzdata', 'libcap2-bin' ]
+  with_items: [ 'tzdata' ]
 
 - name: Reconfigure tzdata
   shell: dpkg-reconfigure --frontend noninteractive tzdata
@@ -44,22 +44,13 @@
          (ntp_debconf_set_zone is defined and ntp_debconf_set_zone.changed) or
          (ntp_etc_timezone is defined and ntp_etc_timezone.changed))
 
-- name: Check current host capabilities
-  shell: capsh --print | head -n 1 | sed -e 's/Current:\s=\s//' | tr ',' '\n'
-  register: ntp_host_capabilities
-  changed_when: False
-
   # Install NTPd on all hosts except inside containers
 - include: ntpd.yml
-  when: (((ntp_daemon is defined and ntp_daemon == 'ntpd') or
-          (ntp is defined and ntp == 'ntpd')) and
-         ('cap_sys_time' in ntp_host_capabilities.stdout_lines or
-          ntp_install_daemon is defined and ntp_install_daemon))
+  when: ((ntp_daemon == 'ntpd' or ntp == 'ntpd') and (ntp_install_daemon or (ansible_local|d() and ansible_local.cap12s|d() and
+         (not ansible_local.cap12s.enabled or 'cap_sys_time' in ansible_local.cap12s.list))))
 
   # Install OpenNTPd on all hosts except inside containers
 - include: openntpd.yml
-  when: (((ntp_daemon is defined and ntp_daemon == 'openntpd') or
-          (ntp is defined and ntp == 'openntpd')) and
-         ('cap_sys_time' in ntp_host_capabilities.stdout_lines or
-          ntp_install_daemon is defined and ntp_install_daemon))
+  when: ((ntp_daemon == 'openntpd' or ntp == 'openntpd') and (ntp_install_daemon or (ansible_local|d() and ansible_local.cap12s|d() and
+         (not ansible_local.cap12s.enabled or 'cap_sys_time' in ansible_local.cap12s.list))))
 
