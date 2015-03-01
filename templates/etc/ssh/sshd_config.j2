@@ -1,5 +1,11 @@
 # This file is managed by Ansible, all changes will be lost
 
+{% if sshd_config_options_begin is defined and sshd_config_options_begin %}
+# Begin sshd_config_options_begin section (((
+{{ sshd_config_options_begin }}
+# End sshd_config_options_begin section )))
+{% endif %}
+
 # What ports, IPs and protocols we listen for
 {% for port in sshd_config_ports %}
 Port {{ port }}
@@ -9,14 +15,11 @@ Port {{ port }}
 #ListenAddress 0.0.0.0
 Protocol 2
 # HostKeys for protocol version 2
-HostKey /etc/ssh/ssh_host_rsa_key
-HostKey /etc/ssh/ssh_host_dsa_key
-HostKey /etc/ssh/ssh_host_ecdsa_key
+{% for hostkey_cypher_name in sshd_HostKey | unique %}
+HostKey /etc/ssh/ssh_host_{{ hostkey_cypher_name }}_key
+{% endfor %}
 #Privilege Separation is turned on for security
 UsePrivilegeSeparation yes
-
-# Allowed ciphers
-Ciphers aes128-ctr,aes192-ctr,aes256-ctr,aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,aes192-cbc,aes256-cbc
 
 # Lifetime and size of ephemeral version 1 server key
 KeyRegenerationInterval 3600
@@ -107,4 +110,3 @@ Match group sftponly
 {% if sshd_config_options is defined and sshd_config_options %}
 {{ sshd_config_options }}
 {% endif %}
-
