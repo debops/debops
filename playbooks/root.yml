@@ -90,8 +90,20 @@
         group: 'root'
         mode: '0644'
 
-    - name: Update APT cache early if older than 24h
+    - name: Install custom Ansible local facts
+      copy:
+        src: 'files/etc/ansible/facts.d/'
+        dest: '/etc/ansible/facts.d/'
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
+
+    - name: Update APT cache and install required packages
       apt:
+        name: '{{ item }}'
+        state: 'present'
+        install_recommends: False
         update_cache: True
         cache_valid_time: '{{ root_apt_cache_valid_time | default(60 * 60 * 24) }}'
+      with_items: [ 'libcap2-bin' ]
 

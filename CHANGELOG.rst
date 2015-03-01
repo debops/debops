@@ -17,6 +17,14 @@ v0.2.3
   integration and avoid possible SSH lockdown if host was not prepared using
   ``bootstrap.yml`` playbook or preseeding. [drybjed]
 
+- Scripts which provide custom facts will be installed on the first run of
+  the ``root.yml`` playbook. First such script provides a list of currently
+  enabled Linux capabilities, in ``ansible_local.cap12s`` fact tree.
+  [htgoebel, drybjed]
+
+- ``bootstrap.yml`` playbook will check if it can change the hostname before
+  doing it using Linux capabilities. [htgoebel, drybjed]
+
 v0.2.2
 ------
 

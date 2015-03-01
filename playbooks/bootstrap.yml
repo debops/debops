@@ -50,7 +50,15 @@
 
   tasks:
   - name: Install minimal Python support for Ansible
-    raw: apt-get --no-install-recommends -yq install python python-apt
+    raw: apt-get --no-install-recommends -yq install python python-apt libcap2-bin
+
+  - name: Install custom Ansible local facts
+    copy:
+      src: 'files/etc/ansible/facts.d/'
+      dest: '/etc/ansible/facts.d/'
+      owner: 'root'
+      group: 'root'
+      mode: '0755'
 
   - name: Gather host facts
     action: setup
@@ -108,18 +116,12 @@
       state: 'present'
       validate: 'visudo -cf %s'
 
-  - name: Decide whether the hostname should be set
-    set_fact:
-     name: set_hostname
-     set_hostname: |
-         (bootstrap_play_hostname is defined and bootstrap_play_hostname
-          and not (ansible_virtualization_type == 'docker' and
-                   ansible_virtualization_role == 'guest'))
-
   - name: Enforce new hostname
     hostname:
       name: '{{ bootstrap_play_hostname }}'
-    when: set_hostname
+    when: (ansible_local is defined and ansible_local.cap12s is defined and
+           (not ansible_local.cap12s.enabled or
+            (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
 
   - name: Save enforced hostname
     copy:
@@ -128,7 +130,9 @@
       owner: 'root'
       group: 'root'
       mode: '0644'
-    when: set_hostname
+    when: (ansible_local is defined and ansible_local.cap12s is defined and
+           (not ansible_local.cap12s.enabled or
+            (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
 
   - name: Ensure domain is defined
     lineinfile:
