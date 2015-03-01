@@ -12,10 +12,8 @@
     name: 'ferm'
     state: 'latest'
     install_recommends: 'no'
-  when: (ferm and ((ansible_local is undefined or
-         (ansible_local is defined and ansible_local.cap12s is undefined or
-          (ansible_local.cap12s is defined and (not ansible_local.cap12s.enabled or
-           (ansible_local.cap12s.enabled and 'cap_net_admin' in ansible_local.cap12s.list))))) or ferm_ignore_cap12s))
+  when: (ferm and (ferm_ignore_cap12s or (ansible_local|d() and ansible_local.cap12s|d() and
+         (not ansible_local.cap12s.enabled or 'cap_net_admin' in ansible_local.cap12s.list))))
 
 - name: Create configuration directories
   file:
@@ -125,18 +123,14 @@
 - name: Apply iptables rules if ferm is enabled
   command: ferm --slow /etc/ferm/ferm.conf
   changed_when: False
-  when: (ferm and ((ansible_local is undefined or
-         (ansible_local is defined and ansible_local.cap12s is undefined or
-          (ansible_local.cap12s is defined and (not ansible_local.cap12s.enabled or
-           (ansible_local.cap12s.enabled and 'cap_net_admin' in ansible_local.cap12s.list))))) or ferm_ignore_cap12s))
+  when: (ferm and (ferm_ignore_cap12s or (ansible_local|d() and ansible_local.cap12s|d() and
+         (not ansible_local.cap12s.enabled or 'cap_net_admin' in ansible_local.cap12s.list))))
 
 - name: Clear iptables rules if ferm is disabled
   command: ferm --flush /etc/ferm/ferm.conf
   changed_when: False
-  when: ((not ferm and ferm_flush) and ((ansible_local is undefined or
-         (ansible_local is defined and ansible_local.cap12s is undefined or
-          (ansible_local.cap12s is defined and (not ansible_local.cap12s.enabled or
-           (ansible_local.cap12s.enabled and 'cap_net_admin' in ansible_local.cap12s.list))))) or ferm_ignore_cap12s))
+  when: ((not ferm and ferm_flush) and (ferm_ignore_cap12s or (ansible_local|d() and ansible_local.cap12s|d() and
+         (not ansible_local.cap12s.enabled or 'cap_net_admin' in ansible_local.cap12s.list))))
 
 - name: Configure sysctl
   template:
