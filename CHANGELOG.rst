@@ -22,6 +22,9 @@ v0.2.3
   enabled Linux capabilities, in ``ansible_local.cap12s`` fact tree.
   [htgoebel, drybjed]
 
+- ``bootstrap.yml`` playbook will check if it can change the hostname before
+  doing it using Linux capabilities. [htgoebel, drybjed]
+
 v0.2.2
 ------
 
