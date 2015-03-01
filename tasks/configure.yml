@@ -121,13 +121,7 @@
     owner: 'root'
     group: 'adm'
     mode: '0644'
-  register: postfix_register_ferm_rules
-
-- name: Restart ferm if firewall rules change
-  service:
-    name: 'ferm'
-    state: 'restarted'
-  when: postfix_register_ferm_rules.changed
+  notify: [ 'Restart ferm' ]
 
 - name: Restart Postfix if capabilities change
   template:
