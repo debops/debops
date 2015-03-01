@@ -5,5 +5,8 @@
 
 - name: Restart ferm
   service: name=ferm state=restarted
-  when: ferm is defined and ferm
+  when: (ferm and (ansible_local is undefined or
+         (ansible_local is defined and ansible_local.cap12s is undefined or
+          (ansible_local.cap12s is defined and (not ansible_local.cap12s.enabled or
+           (ansible_local.cap12s.enabled and 'cap_net_admin' in ansible_local.cap12s.list))))))
 
