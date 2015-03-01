@@ -39,6 +39,11 @@ sshd_ferm_limit_destination: 'badguys'
 # configure the default port (22), other ports need to be managed separately.
 sshd_config_ports: [ '22' ]
 
+sshd_HostKey:
+  - dsa
+  - rsa
+  - ecdsa
+  # - ed25519
 
 sshd_PermitRootLogin: 'without-password'
 sshd_PasswordAuthentication: 'no'
@@ -67,8 +72,18 @@ sshd_known_hosts_command: 'ssh-keyscan -H -T 10'
 # System-wide file where SSH fingerprints are stored
 sshd_known_hosts_file: '/etc/ssh/ssh_known_hosts'
 
-# Additional options added in /etc/ssh/sshd_config, in text block format
+# ---- Other options ----
+# Additional options added in /etc/ssh/sshd_config, in text block format.
+
+# Added at the begin of the configuration.
+# Openssh reads its configuration form top to bottom and uses the first match for a keyword that it finds.
+# So options set in sshd_config_options_begin will be used instead of options which follow after sshd_config_options_begin.
+sshd_config_options_begin: |
+  # Allowed ciphers
+  Ciphers aes128-ctr,aes192-ctr,aes256-ctr,aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,aes192-cbc,aes256-cbc
+
+  MaxAuthTries 3
+
 # Tips: you can use 'Match LocalPort' to create separate configurations for
 # sshd listening on different ports
 sshd_config_options: False
-
