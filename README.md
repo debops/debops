@@ -5,7 +5,7 @@
 
 Configure an encrypted headless system to get the password over SSH.
 
-See http://unix.stackexchange.com/a/79203
+See [SSH to decrypt encrypted LVM during headless server boot?](http://unix.stackexchange.com/a/79203)
 
 
 
