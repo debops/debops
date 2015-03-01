@@ -29,6 +29,13 @@
   when: ((item.source is defined and item.destination is defined) and
          (item.makefile is undefined or (item.makefile is defined and item.makefile)))
 
+- name: Ensure directory /etc/cron.d exists
+  # ... even if `cron` is not installed
+  file:
+    state: directory
+    name: /etc/cron.d
+    mode: 0755
+
 - name: Regenerate Diffie-Hellman parameters periodically
   cron:
     name: 'Regenerate Diffie-Hellman parameters in all PKI realms'
