@@ -1,0 +1,52 @@
+---
+
+- name: Install dropbear
+  apt:
+    name: "{{ item }}"
+    state: "latest"
+  with_items:
+    - dropbear
+    - busybox
+
+- name: Set IP configuration
+  lineinfile:
+    dest: "/etc/initramfs-tools/initramfs.conf"
+    regexp: "^IP="
+    line: "IP={{ cryptsetup_remote_network_ip_line }}"
+  notify: [ 'Recreate initramfs' ]
+
+- name: Set network device
+  lineinfile:
+    dest: "/etc/initramfs-tools/initramfs.conf"
+    regexp: "^DEVICE="
+    line: "DEVICE={{ cryptsetup_remote_network_interface }}"
+  when: cryptsetup_remote_network_interface is defined and cryptsetup_remote_network_interface
+  notify: [ 'Recreate initramfs' ]
+
+- name: Delete network device
+  lineinfile:
+    dest: "/etc/initramfs-tools/initramfs.conf"
+    regexp: "^DEVICE="
+    state: absent
+  when: cryptsetup_remote_network_interface is undefined or not cryptsetup_remote_network_interface
+  notify: [ 'Recreate initramfs' ]
+
+- name: Copy the private ssh key to the local machine
+  fetch:
+    src: "{{ cryptsetup_remote_unlock_remote_ssh_dir }}/{{ item }}"
+    flat: yes
+    dest: "{{ cryptsetup_remote_unlock_local_ssh_dir}}/dropbear@{{ ansible_hostname }}_{{ item }}"
+  with_items:
+    - id_rsa
+    - id_rsa.pub
+  when: cryptsetup_remote_unlock_public_key is not defined or cryptsetup_remote_unlock_public_key == ""
+
+- name: Append ssh key to authorized_keys
+  lineinfile:
+    dest: "{{ cryptsetup_remote_unlock_remote_ssh_dir }}/authorized_keys"
+    line: "{{ item }}"
+    insertafter: EOF
+  with_file:
+    - "{{ cryptsetup_remote_unlock_local_ssh_dir}}/{{ cryptsetup_remote_unlock_public_key }}.pub"
+  when: cryptsetup_remote_unlock_public_key is defined and cryptsetup_remote_unlock_public_key
+  notify: [ 'Recreate initramfs' ]
