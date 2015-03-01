@@ -129,7 +129,8 @@
 - name: Clear iptables rules if ferm is disabled
   command: ferm --flush /etc/ferm/ferm.conf
   changed_when: False
-  when: ((not ferm and ferm_flush) and (ferm_ignore_cap12s or (ansible_local|d() and ansible_local.cap12s|d() and
+  when: ((not ferm and ferm_flush) and (ansible_local|d() and ansible_local.ferm|d() and
+          ansible_local.ferm.enabled | bool) and (ferm_ignore_cap12s or (ansible_local|d() and ansible_local.cap12s|d() and
          (not ansible_local.cap12s.enabled or 'cap_net_admin' in ansible_local.cap12s.list))))
 
 - name: Configure sysctl
