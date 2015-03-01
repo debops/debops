@@ -119,9 +119,8 @@
   - name: Enforce new hostname
     hostname:
       name: '{{ bootstrap_play_hostname }}'
-    when: (ansible_local is defined and ansible_local.cap12s is defined and
-           (not ansible_local.cap12s.enabled or
-            (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
+    when: (ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled or
+           (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
 
   - name: Save enforced hostname
     copy:
@@ -130,9 +129,8 @@
       owner: 'root'
       group: 'root'
       mode: '0644'
-    when: (ansible_local is defined and ansible_local.cap12s is defined and
-           (not ansible_local.cap12s.enabled or
-            (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
+    when: (ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled or
+           (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
 
   - name: Ensure domain is defined
     lineinfile:
