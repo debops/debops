@@ -16,12 +16,12 @@ install:
   # Add ansible.cfg to pick up roles path.
   - "{ echo '[defaults]'; echo 'roles_path = ../'; } >> ansible.cfg"
 
+  # Get debug output
+  - ansible localhost -m setup -u root -i tests/inventory --connection=local
+
 script:
   # Check the role/playbook's syntax.
   - "ansible-playbook -i tests/inventory tests/$SITE --syntax-check"
-
-  # Get debug output
-  - ansible localhost -m setup -u root -i tests/inventory --connection=local
 
   # Run the role/playbook with ansible-playbook.
   - "ansible-playbook -vvvv -i tests/inventory tests/$SITE --connection=local --sudo"
