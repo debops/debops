@@ -1,5 +1,9 @@
 # This file is managed by Ansible, all changes will be lost
 
+{% if (ferm and ((ansible_local is undefined or
+       (ansible_local is defined and ansible_local.cap12s is undefined or
+        (ansible_local.cap12s is defined and (not ansible_local.cap12s.enabled or
+         (ansible_local.cap12s.enabled and 'cap_net_admin' in ansible_local.cap12s.list))))) or ferm_ignore_cap12s)) %}
 # Enable reverse path filtering
 net.ipv4.conf.default.rp_filter = 1
 net.ipv4.conf.all.rp_filter = 1
@@ -22,4 +26,7 @@ net.ipv6.conf.all.accept_ra = 1
 {% else %}
 # Forwarding in ip(6)tables is not enabled
 
+{% endif %}
+{% else %}
+# ferm support is disabled
 {% endif %}

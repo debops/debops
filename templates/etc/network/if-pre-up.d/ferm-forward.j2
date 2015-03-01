@@ -2,6 +2,10 @@
 
 # This file is managed by Ansible, all changes will be lost
 
+{% if (ferm and ((ansible_local is undefined or
+       (ansible_local is defined and ansible_local.cap12s is undefined or
+        (ansible_local.cap12s is defined and (not ansible_local.cap12s.enabled or
+         (ansible_local.cap12s.enabled and 'cap_net_admin' in ansible_local.cap12s.list))))) or ferm_ignore_cap12s)) %}
 {% if ((ferm_forward is defined and ferm_forward) or
        ((ansible_local is defined and ansible_local) and
         (ansible_local.ferm is defined and ansible_local.ferm) and
@@ -34,5 +38,8 @@ fi
 {% endif %}
 {% else %}
 # Network forwarding in ip(6)tables is not enabled
+{% endif %}
+{% else %}
+# ferm support is disabled
 {% endif %}
 
