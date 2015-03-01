@@ -16,9 +16,15 @@ List of default variables available in the inventory:
 
     ---
     
+    # Where to put the generated ssh key.
     cryptsetup_remote_unlock_local_ssh_dir: "/root/.ssh"
+    # Default path where dropbear expects the ssh keys.
     cryptsetup_remote_unlock_remote_ssh_dir: "/etc/initramfs-tools/root/.ssh"
-    cryptsetup_remote_unlock_public_key: ""
+    # If true, remove all unneeded private keys from the server.
+    cryptsetup_remote_unlock_remote_ssh_remove_after_copy: False
+    # FIXME: Currently does not work. Intended to specify a local public key which
+    # can be used in the authorized_keys file of dropbear.
+    cryptsetup_remote_unlock_public_key: False
     
     # cryptsetup_remote_network_interface: "eth0"
     cryptsetup_remote_network_ip_line: "{{ ansible_eth0.ipv4.address }}:::{{ ansible_eth0.ipv4.netmask }}:{{ ansible_hostname }}::off"
