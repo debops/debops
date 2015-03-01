@@ -31,6 +31,10 @@
   when: ((postfix is defined and postfix) and
          ('auth' in postfix and postfix_smtpd_sasl_type == 'cyrus'))
 
+- include: cleanup_sasl_cyrus.yml
+  when: ((postfix is defined and postfix) and
+         ('auth' not in postfix or postfix_smtpd_sasl_type != 'cyrus'))
+
 - include: disable_revert.yml
   when: not postfix
 
