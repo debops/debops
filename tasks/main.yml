@@ -1,5 +1,42 @@
 ---
 
-- include: nfs_server.yml
-- include: nfs_client.yml
+- name: Install NFS server
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_items: [ 'nfs-common', 'nfs-kernel-server' ]
+
+- name: Configure NFS server
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - 'etc/default/nfs-common'
+    - 'etc/default/nfs-kernel-server'
+    - 'etc/modprobe.d/nfs-server.conf'
+  notify:
+    - 'Restart nfs-common'
+    - 'Restart nfs-kernel-server'
+
+- name: Create required directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: [ '{{ nfs_default_path }}', '/etc/exports.d' ]
+
+- name: Configure Ansible exports
+  template:
+    src: 'etc/exports.d/ansible.exports.j2'
+    dest: '/etc/exports.d/ansible.exports'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Reload NFS exports' ]
 

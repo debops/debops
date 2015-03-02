@@ -1,30 +1,26 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) nfs
 
 [![Travis CI](http://img.shields.io/travis/debops/ansible-nfs.svg?style=flat)](http://travis-ci.org/debops/ansible-nfs) [![test-suite](http://img.shields.io/badge/test--suite-ansible--nfs-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-nfs/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.nfs-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1579)
-### Warning, this is a BETA role
 
-This role has been marked by the author as a beta role, which means that it
-might be significantly changed in the future. Be careful while using this role
-in a production environment.
-
-***
-
-This role can be used to configure NFSv3 client and server services between
-many hosts in a group.
-
-This role is an obsolete state and will be replaced in the future. Do not
-use this role in a production environment.
+`debops.nfs` role manages a NFS server. It can automatically configure
+``iptables`` firewall using
+[debops.ferm](https://github.com/debops/ansible-ferm/) role and reserve ports
+for services required by NFS using
+[debops.etc_services](https://github.com/debops/ansible-etc_services/) role.
+You can also modify default list of exported directories and use host Access
+Control Lists using Ansible inventory. Clients which connect to NFS are
+configured separately.
 
 ### Installation
 
-This role requires at least Ansible `v1.7.0`. To install it, run:
+This role requires at least Ansible `v1.8.0`. To install it, run:
 
     ansible-galaxy install debops.nfs
 
 ### Documentation
 
 More information about `debops.nfs` can be found in the
-[official debops.nfs documentation](http://docs.debops.org/en/latest/ansible/roles/debops.nfs.html).
+[official debops.nfs documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-nfs/docs/).
 
 
 ### Role dependencies

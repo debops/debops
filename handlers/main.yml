@@ -1,12 +1,16 @@
 ---
 
 - name: Restart nfs-common
-  service: name=nfs-common state=restarted
+  service:
+    name: 'nfs-common'
+    state: 'restarted'
   when: ansible_distribution == 'Debian'
 
 - name: Restart nfs-kernel-server
-  service: name=nfs-kernel-server state=restarted
+  service:
+    name: 'nfs-kernel-server'
+    state: 'restarted'
 
-- name: Reload exports
+- name: Reload NFS exports
   command: exportfs -ra
 
