@@ -1,32 +1,156 @@
 ---
+# Default variables
+# =================
 
-# Enable to configure host as NFS server
-nfs_server: False
 
-# Define on NFS clients which server to use
-#nfs_host: 'nfs.{{ ansible_domain }}'
+# -------------------
+#   Basic NFS share
+# -------------------
 
-# List of simple NFS shares, they will be created automatically
-# on NFS server: /srv/nfs/{{ item }}/
-# on NFS client: /media/nfs/{{ item }}/
-#nfs_simple:
-#  - 'home'
-#  - 'usr'
+# .. envvar:: nfs_default_path
+#
+# Export this directory as an NFS share (it will be created automatically)
+nfs_default_path: '{{ ansible_local.root.data + "/nfs" }}'
 
-# Options for simple NFS shares
-nfs_simple_exports: '/srv/nfs'
-nfs_simple_mounts: '/media/nfs'
-nfs_simple_hostname: '192.168.0.0/16'
-nfs_simple_options: 'rw,sync,subtree_check,root_squash'
+
+# .. envvar:: nfs_default_options
+#
+# Default options for above NFS share, see ``exports(5)`` for more details
+nfs_default_options: 'rw,sync,subtree_check,root_squash,sec={{ nfs_security }}'
+
+
+# .. envvar:: nfs_default_clients
+#
+# Default NFS share will be exported to specified list of IP addresses or CIDR
+# networks, by default the same that are allowed access to NFS service by the
+# firewall
+nfs_default_clients: '{{ nfs_allow }}'
+
+
+# ----------------------------
+#   Firewall and host access
+# ----------------------------
 
 # Allow these networks and hosts to connect to NFS server
-nfs_server_allow:
-  - '10.0.0.0/8'
-  - '172.16.0.0/12'
-  - '192.168.0.0/16'
+nfs_allow: []
 
-# List of custom NFS exports
-#nfs_server_exports:
-#  - '/home  192.168.0.0/16(rw,sync,subtree_check,root_squash)'
-#  - '/usr   192.168.0.0/16(rw,sync,subtree_check,root_squash)'
+
+# .. envvar:: nfs_accept_any
+#
+# Allow connections from any hosts, enable only if you have authorization in
+# place (for example Kerberos).
+nfs_accept_any: False
+
+
+# .. envvar:: nfs_protocols
+#
+# List of protocols to open in the firewall
+nfs_protocols: [ 'tcp' ]
+
+
+# .. envvar:: nfs_security
+#
+# List of NFS security flavors enforced on this server.
+nfs_security: 'krb5p:krb5i:krb5:sys'
+
+
+# --------------------------
+#   NFS server performance
+# --------------------------
+
+# .. envvar:: nfs_threads
+#
+# Number of ``nfsd`` threads to run
+nfs_threads: '8'
+
+
+# .. envvar:: nfs_priority
+#
+# Server thread priority, see ``nice(1)`` for more details
+nfs_priority: '0'
+
+
+# ---------------
+#   NFS Exports
+# ---------------
+
+# .. envvar:: nfs_exports
+#
+# List of NFS exports defined as dicts
+nfs_exports: [ '{{ nfs_exports_default }}' ]
+
+
+# .. envvar:: nfs_exports_default
+#
+# Default export directory configured in "Basic NFS share" section
+nfs_exports_default:
+  name: 'default'
+  path: '{{ nfs_default_path }}'
+  options: '{{ nfs_default_options }}'
+
+
+# .. envvar:: nfs_exports_home
+#
+# Example export of a ``/home`` directory. You need to add it to
+# ``nfs_exports`` list to enable it.
+nfs_exports_home:
+  name: 'home'
+  path: '/home'
+  options: '{{ nfs_export_options }}'
+  state: 'present'
+
+
+# .. envvar:: nfs_export_options
+#
+# You can specfy options for each exported directory, or use a variable with
+# defaults, shown here. If ``item.options`` are not specified, no options will
+# be added.
+nfs_export_options: 'rw,sync,subtree_check,root_squash,sec={{ nfs_security }}'
+
+
+# ----------------------
+#   NFS Access Control
+# ----------------------
+
+# .. envvar:: nfs_access_control_lists
+#
+# List of ACL dicts which define what hosts/networks/client can connect to
+# exports. See ``exports(5)`` for more details.
+nfs_access_control_lists: [ '{{ nfs_acl_default_clients }}' ]
+
+
+# .. envvar:: nfs_acl_default_clients
+#
+# An access control list for default clients allowed to connect to the server.
+# They will have access to all exported shares, with options defined in each
+# share.
+nfs_acl_default_clients:
+  exports: '{{ nfs_exports | map(attribute="name") | list }}'
+  clients: '{{ nfs_default_clients }}'
+
+
+# ---------------------
+#   NFS service ports
+# ---------------------
+
+# NFS by default uses random ports for its services. To make it work with
+# ``ip(6)tables`` firewall, NFS services will be listed in ``/etc/services``
+# and then configured using port numbers specified in sequence. ``debops.ferm``
+# uses service names to configure correct firewall rules.
+
+# .. envvar:: nfs_service_port
+#
+# First port number for the NFS services
+nfs_service_port: '3550'
+
+
+# .. envvar:: nfs_service_ports
+#
+# Dict with service names mapped to ports
+nfs_service_ports:
+  'nfs-callback': '{{ (nfs_service_port | int + 0) }}'
+  'nfs-lockd':    '{{ (nfs_service_port | int + 1) }}'
+  'nfs-mountd':   '{{ (nfs_service_port | int + 2) }}'
+  'nfs-statd':    '{{ (nfs_service_port | int + 3) }}'
+  'nfs-statd-bc': '{{ (nfs_service_port | int + 4) }}'
 
