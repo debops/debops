@@ -2,6 +2,14 @@
 
 dependencies:
 
+  - role: debops.apt
+    apt_repositories:
+    - repo: 'deb {{owncloud_apt_repo_base}}/{{owncloud_edition}}:/{{owncloud_release}}/{{ansible_distribution}}_{{ansible_distribution_major_version}}.0/ /'
+      state: present
+    apt_keys:
+    - url: '{{owncloud_apt_repo_base}}/{{owncloud_edition}}:/{{owncloud_release}}/{{ansible_distribution}}_{{ansible_distribution_major_version}}.0/Release.key'
+      state: present
+
   - role: debops.secret
 
   - role: debops.mysql
