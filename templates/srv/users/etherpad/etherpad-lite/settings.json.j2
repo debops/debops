@@ -35,7 +35,7 @@
 
   // The Type of the database. You can choose between dirty, postgres, sqlite and mysql
   // You shouldn't use "dirty" for for anything else than testing or development
-{% if etherpad_database is defined and etherpad_database %}
+{% if etherpad_database %}
 {% if etherpad_database == 'dirty' %}
   "dbType" : "dirty",
   "dbSettings" : {
@@ -46,7 +46,7 @@
    "dbSettings" : {
                     "user"    : "{{ etherpad_database_config[etherpad_database].username }}",
                     "host"    : "{{ etherpad_database_config[etherpad_database].hostname }}",
-{% if etherpad_database_connection is defined and etherpad_database_connection %}
+{% if etherpad_database_connection %}
 {% if etherpad_database_connection == 'port' %}
                     "port"    : "{{ etherpad_database_config[etherpad_database].port }}",
 {% else %}
@@ -68,41 +68,41 @@
   "defaultPadText" : "{{ etherpad_welcome_text }}",
 
   // Users must have a session to access pads. This effectively allows only group pads to be accessed.
-  "requireSession" : {{ etherpad_require_session | default('false') }},
+  "requireSession" : {{ etherpad_require_session }},
 
   // Users may edit pads but not create new ones. Pad creation is only
   // via the API. This applies both to group pads and regular pads.
-  "editOnly" : {{ etherpad_edit_only | default('false') }},
+  "editOnly" : {{ etherpad_edit_only }},
 
   // If true, all css & js will be minified before sending to the
   // client. This will improve the loading performance massivly, but
   // makes it impossible to debug the javascript/css
-  "minify" : {{ etherpad_minify | default('true') }},
+  "minify" : {{ etherpad_minify }},
 
   // How long may clients use served javascript code (in seconds)? Without versioning this
   // may cause problems during deployment. Set to 0 to disable caching
-  "maxAge" : {{ etherpad_max_age | default('21600') }}, // 60 * 60 * 6 = 6 hours
+  "maxAge" : {{ etherpad_max_age }},
 
   // This is the path to the Abiword executable. Setting it to null, disables abiword.
   // Abiword is needed to advanced import/export features of pads
-  "abiword" : {% if etherpad_abiword is defined and etherpad_abiword %}"/usr/bin/abiword"{% else %}null{% endif %},
+  "abiword" : {% if etherpad_abiword %}"/usr/bin/abiword"{% else %}null{% endif %},
 
   // This setting is used if you require authentication of all users.
   // Note: /admin always requires authentication.
-  "requireAuthentication": {{ etherpad_require_authentication | default('false') }},
+  "requireAuthentication": {{ etherpad_require_authentication }},
 
   // Require authorization by a module, or a user with is_admin set, see below.
-  "requireAuthorization": {{ etherpad_require_authorization | default('false') }},
+  "requireAuthorization": {{ etherpad_require_authorization }},
 
   // When you use NginX or another proxy/ load-balancer set this to true
-  "trustProxy": {{ etherpad_trust_proxy | default('false') }},
+  "trustProxy": {{ etherpad_trust_proxy }},
 
   // Privacy: disable IP logging
-  "disableIPlogging": {{ etherpad_disable_ip_logging | default('false') }},
+  "disableIPlogging": {{ etherpad_disable_ip_logging }},
 
   // Users for basic authentication. is_admin = true gives access to /admin.
   // If you do not uncomment this, /admin will not be available!
-{% if (secret is defined and secret) and ((etherpad_admins is defined and etherpad_admins) or (etherpad_users is defined and etherpad_users)) %}
+{% if (secret is defined and secret) and (etherpad_admins or etherpad_users) %}
   "users": {
 {% for name in etherpad_admins %}
     "{{ name }}": {
@@ -144,7 +144,7 @@
   */
 
   // The log level we are using, can be: DEBUG, INFO, WARN, ERROR
-  "loglevel": "{{ etherpad_loglevel | default('INFO') }}",
+  "loglevel": "{{ etherpad_loglevel }}",
 
   // Logging configuration. See log4js documentation for further information
   // https://github.com/nomiddlename/log4js-node
@@ -189,7 +189,7 @@
         }
     */
       ]
-{% if etherpad_custom_json is defined and etherpad_custom_json %}
+{% if etherpad_custom_json %}
     },
     {{ (etherpad_custom_json | to_nice_json)[1:][:-1] | trim }}
 {% else %}
