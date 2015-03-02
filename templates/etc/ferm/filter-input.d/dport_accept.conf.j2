@@ -29,7 +29,7 @@ protocol ({{ item.protocol | default(['tcp']) | join(' ') }}) dport ({{ item.dpo
 		saddr $ITEMS ACCEPT;
 	}
 {% else %}
-{% if item.accept_any is defined and item.accept_any %}
+{% if item.accept_any is defined and item.accept_any | bool %}
 	ACCEPT;
 {% else %}
 	# Connections from any IP address not allowed
