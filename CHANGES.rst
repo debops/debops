@@ -10,6 +10,9 @@ unreleased
 - Make debops-init write some example values into .debops.cfg.
   [htgoebel]
 
+- Add a work-around for ansible's buggy handling of paths containing
+  spaces. [htgoebel]
+
 
 v0.4.1
 ------

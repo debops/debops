@@ -33,6 +33,8 @@ import sys
 import os
 import ConfigParser
 
+import ansible
+
 from debops import *
 from debops.cmds import *
 
@@ -91,6 +93,13 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
                         'filter', 'lookup', 'vars'):
         plugin_type = plugin_type+"_plugins"
         defaults[plugin_type] = PATHSEP.join(custom_paths(plugin_type))
+
+        if ansible.__version__ >= "1.7":
+            # work around a bug obviously introduced in 1.7, see
+            # https://github.com/ansible/ansible/issues/8555
+            if ' ' in defaults[plugin_type]:
+                defaults[plugin_type] = PATHSEP.join(
+                    '"%s"' % p for p in defaults[plugin_type].split(PATHSEP))
 
     defaults['library'] = PATHSEP.join(custom_paths('library'))
 
