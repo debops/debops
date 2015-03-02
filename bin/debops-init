@@ -3,7 +3,7 @@
 """
 debops-init: create a new DebOps project
 """
-# Copyright (C) 2014 Hartmut Goebel <h.goebel@crazy-compilers.com>
+# Copyright (C) 2014-2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
 # Part of the DebOps project - http://debops.org/
 
 # This program is free software; you can redistribute
@@ -39,7 +39,7 @@ from debops import *
 from debops.cmds import *
 
 __author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
-__copyright__ = "Copyright 2014 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014-2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
 __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 SKEL_DIRS = (
@@ -49,7 +49,22 @@ SKEL_DIRS = (
     os.path.join("ansible", "roles"),
 )
 
-DEFAULT_DEBOPS_CONFIG = ""
+DEFAULT_DEBOPS_CONFIG = """
+# -*- conf -*-
+
+[paths]
+;data-home: /opt/debops
+
+[ansible defaults]
+;callback_plugins = /my/plugins/callback
+;roles_path = /my/roles
+
+[ansible paramiko]
+;record_host_keys=True
+
+[ansible ssh_connection]
+;ssh_args = -o ControlMaster=auto -o ControlPersist=60s
+"""
 
 DEFAULT_GITIGNORE = """\
 ansible/{SECRET_NAME}

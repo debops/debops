@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Hartmut Goebel <h.goebel@crazy-compilers.com>
+# Copyright (C) 2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
 # Part of the DebOps project - http://debops.org/
 
 # This program is free software; you can redistribute
@@ -48,6 +48,9 @@ install-path: %(data-home)s/debops-playbooks
 # Locations where DebOps playbooks might be found
 # This MUST be a multi-line string to make ConfigParser work
 playbooks-paths: %(install-path)s/playbooks
+
+[ansible defaults]
+ansible_managed = This file is managed remotely, all changes will be lost
 """
 
 if sys.platform.startswith('win'):
@@ -76,7 +79,9 @@ def _get_config_filenames():
         configdirs = [os.getenv('APPDATA')
                       or os.path.expanduser('~\\Application Data')]
     elif sys.platform == 'darwin':  # Mac OS X
-        configdirs = [os.path.expanduser('~/Library/Application Support')]
+        configdirs = [os.path.expanduser('~/Library/Application Support'),
+                      '/etc']
+        configdirs.reverse()
     else:
         _set_xdg_defaults()
         configdirs = ([os.getenv('XDG_CONFIG_HOME')] +

@@ -1,6 +1,18 @@
 Changelog
 =========
 
+unreleased
+----------
+
+- On OS X search config-file in ``/etc`` too (before searching in
+  ``~/Library/Application Support``). [htgoebel]
+
+- Make debops-init write some example values into .debops.cfg.
+  [htgoebel]
+
+- Add a work-around for ansible's buggy handling of paths containing
+  spaces. [htgoebel]
+
 
 v0.4.1
 ------

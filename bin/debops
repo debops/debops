@@ -3,7 +3,7 @@
 """
 debops: run ansible-playbook with some customization
 """
-# Copyright (C) 2014 Hartmut Goebel <h.goebel@crazy-compilers.com>
+# Copyright (C) 2014-2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
 # Part of the DebOps project - http://debops.org/
 
 # This program is free software; you can redistribute
@@ -33,11 +33,13 @@ import sys
 import os
 import ConfigParser
 
+import ansible
+
 from debops import *
 from debops.cmds import *
 
 __author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
-__copyright__ = "Copyright 2014 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014-2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
 __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 
@@ -74,6 +76,7 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
 
     # Add custom configuration options to ansible.cfg: Take values
     # from [ansible ...] sections of the .debops.cfg file
+    # Note: To set debops default values, use debops.config.DEFAULTS
     cfg = dict((sect.split(None, 1)[1], pairs)
                for sect, pairs in config.items() if sect.startswith('ansible '))
 
@@ -91,11 +94,14 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
         plugin_type = plugin_type+"_plugins"
         defaults[plugin_type] = PATHSEP.join(custom_paths(plugin_type))
 
-    defaults['library'] = PATHSEP.join(custom_paths('library'))
+        if ansible.__version__ >= "1.7":
+            # work around a bug obviously introduced in 1.7, see
+            # https://github.com/ansible/ansible/issues/8555
+            if ' ' in defaults[plugin_type]:
+                defaults[plugin_type] = PATHSEP.join(
+                    '"%s"' % p for p in defaults[plugin_type].split(PATHSEP))
 
-    # Provide custom value for 'ansible_managed' if one is not set by the user
-    if 'ansible_managed' not in defaults:
-        defaults['ansible_managed'] = "This file is managed remotely, all changes will be lost"
+    defaults['library'] = PATHSEP.join(custom_paths('library'))
 
     write_config(filename, cfg)
 
