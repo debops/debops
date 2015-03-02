@@ -87,6 +87,10 @@ class TestConfigFilenames(TestCase):
                               '/myhome/mindy/debops.cfg'])
 
 
+ANSIBLE_DEFAULTS = {'ansible_managed':
+                   'This file is managed remotely, all changes will be lost'}
+
+
 class TestReadConfig(TestCase):
 
     def setUp(self):
@@ -129,7 +133,8 @@ class TestReadConfig(TestCase):
         setenv('XDG_CONFIG_DIRS', ':'.join(dirs[1:]))
         cfg = self._read_config('/non/existing/dir')
         self.assertDictEqual(cfg,
-                             {'debops': {'home': '/var/home',
+                             {'ansible defaults': ANSIBLE_DEFAULTS,
+                              'debops': {'home': '/var/home',
                                          'name1': 'value1',
                                          'name2': 'value2'}
                           })
@@ -146,7 +151,8 @@ class TestReadConfig(TestCase):
         setenv('XDG_CONFIG_DIRS', ':'.join(dirs[1:]))
         cfg = self._read_config('/non/existing/dir')
         self.assertDictEqual(cfg,
-                             {'debops': {'home': '/var/home',
+                             {'ansible defaults': ANSIBLE_DEFAULTS,
+                              'debops': {'home': '/var/home',
                                          'name1': 'value1'}
                           })
 
@@ -163,7 +169,8 @@ class TestReadConfig(TestCase):
                   os.path.join(dirs[2], '.debops.cfg'))
         cfg = self._read_config(dirs[2])
         self.assertDictEqual(cfg,
-                             {'debops': {'home': '/var/home',
+                             {'ansible defaults': ANSIBLE_DEFAULTS,
+                              'debops': {'home': '/var/home',
                                          'name1': 'value1',
                                          'name2': 'value2'}
                           })
@@ -181,7 +188,8 @@ class TestReadConfig(TestCase):
                   os.path.join(dirs[2], '.debops.cfg'))
         cfg = self._read_config(dirs[2])
         self.assertDictEqual(cfg,
-                             {'debops': {'home': '/my/home',
+                             {'ansible defaults': ANSIBLE_DEFAULTS,
+                              'debops': {'home': '/my/home',
                                          'name1': 'value2'}
                           })
 
