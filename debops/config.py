@@ -79,7 +79,9 @@ def _get_config_filenames():
         configdirs = [os.getenv('APPDATA')
                       or os.path.expanduser('~\\Application Data')]
     elif sys.platform == 'darwin':  # Mac OS X
-        configdirs = [os.path.expanduser('~/Library/Application Support')]
+        configdirs = [os.path.expanduser('~/Library/Application Support'),
+                      '/etc']
+        configdirs.reverse()
     else:
         _set_xdg_defaults()
         configdirs = ([os.getenv('XDG_CONFIG_HOME')] +

@@ -4,6 +4,9 @@ Changelog
 unreleased
 ----------
 
+- On OS X search config-file in ``/etc`` too (before searching in
+  ``~/Library/Application Support``). [htgoebel]
+
 - Make debops-init write some example values into .debops.cfg.
   [htgoebel]
 
