@@ -1,6 +1,12 @@
 Changelog
 =========
 
+unreleased
+----------
+
+- Make debops-init write some example values into .debops.cfg.
+  [htgoebel]
+
 
 v0.4.1
 ------
