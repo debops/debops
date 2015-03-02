@@ -1,7 +1,10 @@
 ---
 
 - name: Install required packages for PostgreSQL support
-  apt: pkg={{ item }} state=latest install_recommends=no
+  apt:
+    pkg: '{{ item }}'
+    state: latest
+    install_recommends: no
   with_items: [ 'php5-pgsql' ]
   tags: [ 'owncloud', 'postgresql' ]
 
@@ -11,13 +14,16 @@
   tags: [ 'owncloud', 'postgresql' ]
 
 - name: Create ownCloud PostgreSQL role
-  postgresql_user: name={{ owncloud_database_map[owncloud_database].dbuser }} state=present
+  postgresql_user:
+    name: '{{ owncloud_database_map[owncloud_database].dbuser }}'
+    state: present
   sudo_user: 'postgres'
   tags: [ 'owncloud', 'postgresql' ]
 
 - name: Create ownCloud database
-  postgresql_db: name={{ owncloud_database_map[owncloud_database].dbname }} state=present owner={{ owncloud_database_map[owncloud_database].dbuser }}
+  postgresql_db:
+    name: '{{ owncloud_database_map[owncloud_database].dbname }}'
+    state: present
+    owner: '{{ owncloud_database_map[owncloud_database].dbuser }}'
   sudo_user: 'postgres'
   tags: [ 'owncloud', 'postgresql' ]
-
-

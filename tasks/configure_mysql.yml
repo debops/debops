@@ -1,7 +1,10 @@
 ---
 
 - name: Install required packages for MySQL support
-  apt: pkg={{ item }} state=latest install_recommends=no
+  apt:
+    pkg: '{{ item }}'
+    state: latest
+    install_recommends: no
   with_items: [ 'php5-mysql' ]
   tags: [ 'owncloud', 'mysql' ]
 
@@ -17,13 +20,18 @@
   tags: [ 'owncloud', 'mysql' ]
 
 - name: Create ownCloud MySQL user
-  mysql_user: name={{ owncloud_database_map[owncloud_database].dbuser }}
-              password={{ owncloud_database_password }} state=present
-              host='localhost' priv='{{ owncloud_database_map[owncloud_database].dbname }}.*:ALL'
+  mysql_user:
+    name: '{{ owncloud_database_map[owncloud_database].dbuser }}'
+    password: '{{ owncloud_database_password }}'
+    state: present
+    host: 'localhost'
+    priv: '{{ owncloud_database_map[owncloud_database].dbname }}.*:ALL'
   tags: [ 'owncloud', 'mysql' ]
 
 - name: Create ownCloud database
-  mysql_db: name={{ owncloud_database_map[owncloud_database].dbname }} state=present
+  mysql_db:
+    name: '{{ owncloud_database_map[owncloud_database].dbname }}'
+    state: present
   tags: [ 'owncloud', 'mysql' ]
 
 
