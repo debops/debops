@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Hartmut Goebel <h.goebel@crazy-compilers.com>
+# Copyright (C) 2014-2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
 # Part of the DebOps project - http://debops.org/
 
 # This program is free software; you can redistribute
@@ -35,7 +35,7 @@ import shutil
 import debops
 
 __author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
-__copyright__ = "Copyright 2014 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014-2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
 __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 def setenv(name, value):

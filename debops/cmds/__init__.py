@@ -2,7 +2,7 @@
 """
 Support functions for command line utilities (scripts).
 """
-# Copyright (C) 2014 Hartmut Goebel <h.goebel@crazy-compilers.com>
+# Copyright (C) 2014-2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
 # Part of the DebOps project - http://debops.org/
 
 # This program is free software; you can redistribute
@@ -44,7 +44,7 @@ from .. import find_debops_project as _find_debops_project, \
     find_inventorypath as _find_inventorypath
 
 __author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
-__copyright__ = "Copyright 2014 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014-2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
 __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 
