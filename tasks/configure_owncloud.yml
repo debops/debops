@@ -7,7 +7,6 @@
     user: '{{ owncloud_user }}'
     job: '/usr/bin/php -f {{ owncloud_deploy_path }}/cron.php'
     cron_file: 'owncloud'
-  tags: owncloud
 
 - name: Setup logrotate for owncloud
   template:
@@ -16,19 +15,16 @@
     owner: root
     group: root
     mode: 0644
-  tags: owncloud
 
 - name: Lookup admin password if secrets/ directory is defined
   set_fact:
     owncloud_admin_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/owncloud/admin/' + owncloud_admin_username + '/password length=' + owncloud_password_length) }}"
   when: secret is defined and owncloud_admin_username
-  tags: owncloud
 
 - name: Check if ownCloud is configured
   stat:
     path: '{{ owncloud_deploy_path }}/config/config.php'
   register: owncloud_config_file
-  tags: owncloud
 
 - name: Install ownCloud autoconfig file
   template:
@@ -38,7 +34,6 @@
     group: '{{ owncloud_group }}'
     mode: 0660
   when: not owncloud_config_file.stat.exists
-  tags: owncloud
 
 - name: Install ownCloud default config file
   template:
@@ -48,7 +43,6 @@
     group: '{{ owncloud_group }}'
     mode: 0640
   when: not owncloud_config_file.stat.exists
-  tags: owncloud
 
 - name: Use cron for background jobs (lib/private/...)
   lineinfile:
@@ -57,7 +51,6 @@
     regexp: "return OC_Appconfig::getValue"
     line: "                return OC_Appconfig::getValue( 'core', 'backgroundjobs_mode', 'cron' );"
   when: not owncloud_config_file.stat.exists
-  tags: owncloud
 
 - name: Use cron for background jobs (settings/admin.php)
   lineinfile:
@@ -66,19 +59,16 @@
      regexp: "'backgroundjobs_mode', OC_Appconfig::getValue"
      line: "$tmpl->assign('backgroundjobs_mode', OC_Appconfig::getValue('core', 'backgroundjobs_mode', 'cron'));"
   when: not owncloud_config_file
-  tags: owncloud
 
 - name: Flush handlers if automatic setup is requested
   meta: flush_handlers
   when: not owncloud_config_file.stat.exists and
         owncloud_admin_username and owncloud_autosetup
-  tags: owncloud
 
 - name: Automatically finish setup if allowed
   uri:
     url: 'https://{{ owncloud_domain[0] }}/index.php'
   when: not owncloud_config_file.stat.exists and
         owncloud_admin_username and owncloud_autosetup
-  tags: owncloud
 
 
