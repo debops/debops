@@ -52,6 +52,7 @@ into your playbook.
 
 `owncloud` role was written by:
 - Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
+- Hartmut Goebel | [e-mail](mailto:'h.goebel@crazy-compilers.com) | [website](http://www.crazy-compilers.com) | [GitHub](https://github.com/htgoebel)
 
 License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
 
