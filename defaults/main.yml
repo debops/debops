@@ -164,16 +164,21 @@ slapd_ldap_access_control_list: '{{ slapd_ldap_access_control_list_default }}'
 slapd_ldap_access_control_list_default:
 
   - '{0}to attrs=userPassword,shadowLastChange
-        by self write
-        by anonymous auth
-        by dn="{{ slapd_basedn_admin }}" write
+        by tls_ssf=128 ssf=128 self write
+        by tls_ssf=128 ssf=128 anonymous auth
+        by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
         by * none'
 
-  - '{1}to dn.base=""
-        by * read'
+  - '{1}to attrs=uid,uidNumber,gidNumber,homeDirectory,loginShell
+        by tls_ssf=128 ssf=128 self read
+        by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
+        by tls_ssf=128 ssf=128 users read'
 
-  - '{2}to *
-        by self write
-        by dn="{{ slapd_basedn_admin }}" write
-        by * read'
+  - '{2}to dn.base=""
+        by tls_ssf=128 ssf=128 * read'
+
+  - '{3}to *
+        by tls_ssf=128 ssf=128 self write
+        by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
+        by * none'
 
