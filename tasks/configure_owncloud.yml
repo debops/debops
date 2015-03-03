@@ -33,7 +33,7 @@
     owner: '{{ owncloud_user }}'
     group: '{{ owncloud_group }}'
     mode: 0660
-  when: not owncloud_config_file.stat.exists
+  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists
 
 - name: Install ownCloud default config file
   template:
@@ -42,7 +42,7 @@
     owner: '{{ owncloud_user }}'
     group: '{{ owncloud_group }}'
     mode: 0640
-  when: not owncloud_config_file.stat.exists
+  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists
 
 - name: Use cron for background jobs (lib/private/...)
   lineinfile:
@@ -50,7 +50,7 @@
     state: present
     regexp: "return OC_Appconfig::getValue"
     line: "                return OC_Appconfig::getValue( 'core', 'backgroundjobs_mode', 'cron' );"
-  when: not owncloud_config_file.stat.exists
+  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists
 
 - name: Use cron for background jobs (settings/admin.php)
   lineinfile:
@@ -62,13 +62,12 @@
 
 - name: Flush handlers if automatic setup is requested
   meta: flush_handlers
-  when: not owncloud_config_file.stat.exists and
+  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists and
         owncloud_admin_username and owncloud_autosetup
 
 - name: Automatically finish setup if allowed
   uri:
     url: 'https://{{ owncloud_domain[0] }}/index.php'
-  when: not owncloud_config_file.stat.exists and
+  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists and
         owncloud_admin_username and owncloud_autosetup
-
 
