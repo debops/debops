@@ -15,13 +15,28 @@
     install_recommends: False
   with_items: [ 'slapd', 'ldap-utils', 'python-ldap' ]
 
-- name: Install slapd-config script
+- name: Install helper scripts
   copy:
-    src: 'usr/local/sbin/slapd-config'
-    dest: '/usr/local/sbin/slapd-config'
+    src: 'usr/local/sbin/'
+    dest: '/usr/local/sbin/'
     owner: 'root'
     group: 'root'
     mode: '0755'
+
+- name: Copy custom LDAP schema files
+  copy:
+    src: 'usr/local/etc/ldap/schema/'
+    dest: '/usr/local/etc/ldap/schema/'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Load custom LDAP schema files
+  command: load-ldap-schema {{ item }}
+  with_items: slapd_ldap_schema
+  register: slapd_register_load_schema
+  when: slapd_ldap_schema is defined and slapd_ldap_schema
+  changed_when: slapd_register_load_schema.stdout != ""
 
 - include: password_config_admin.yml
 - include: password_basedn_admin.yml
