@@ -1,5 +1,16 @@
 ---
 
+- name: Configure LDAP connection security
+  ldap_attr:
+    dn: 'olcDatabase={1}hdb,cn=config'
+    name: 'olcSecurity'
+    values:
+      - 'simple_bind=128'
+      - 'update_ssf=128'
+      - 'ssf=128'
+      - 'tls=128'
+    state: 'present'
+
 - name: Configure LDAP indices
   ldap_attr:
     dn: 'olcDatabase={1}hdb,cn=config'
