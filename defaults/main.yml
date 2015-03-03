@@ -106,14 +106,18 @@ owncloud_database_map:
 # Set to False to disable automatic username and password
 owncloud_admin_username: 'admin-{{ lookup("env","USER") }}'
 
-# Default admin password, will be randomly generated if 'secret' role is enabled
+# Default admin password. role is enabled, a randomly password will be
+# generated instead of this value.
 owncloud_admin_password: 'password'
 
 # Length of randomly generated admin password
 owncloud_password_length: '20'
 
-# Should Ansible automatically open ownCloud page to finish setup on it's own?
-# Disabled if admin username is set to False
+# Should Ansible automatically open ownCloud page to finish setup on
+# it's own? Disabled if admin_username is set to False and done only
+# if the config-files are generated in the same run.
+# Important: For this to work, name resolution has to be set up
+# 	     when this role is executed.
 owncloud_autosetup: True
 
 
