@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# This file is managed remotely, all changes will be lost
+
+# Copyright (C) 2015 Maciej Delmanowski <drybjed@gmail.com>
+# Part of the DebOps project: http://debops.org/
+
+# Check if specified LDAP schema file is loaded in the local slapd cn=config
+# database. If not, try loading it in the server.
+
+schema_file="${1}"
+
+if [ -z "${schema_file}" ] ; then
+  echo "Error: You need to specify schema file to load" && exit 1
+fi
+
+if [ ! -e ${schema_file} ] ; then
+  echo "Error: ${schema_file} does not exist" && exit 1
+fi
+
+if [ ! -r ${schema_file} ] ; then
+  echo "Error: ${schema_file} cannot be read" && exit 1
+fi
+
+# Get the DN of the schema
+schema_dn="$(grep -E '^^dn:\s' ${schema_file})"
+
+# Get list of already installed schema's from local LDAP server
+schema_list() {
+  ldapsearch -Y EXTERNAL -H ldapi:/// -LLLQ -b 'cn=schema,cn=config' dn | sed -e '/^$/d' -e 's/{.}//'
+}
+
+if $(schema_list | grep -q "${schema_dn}") ; then
+
+  # Schema is already installed, do nothing
+  exit 0
+
+else
+
+  # Try installing the schema in the database
+  ldapadd -Y EXTERNAL -H ldapi:/// -f ${schema_file}
+
+fi
+
