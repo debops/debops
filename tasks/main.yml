@@ -14,6 +14,7 @@
     regexp: '{{ item.regexp }}'
     line: '{{ item.line }}'
     insertbefore: '{{ item.insertbefore }}'
+  when: apparmor_enable is defined and apparmor_enable
   with_items:
     - regexp: '^GRUB_CMDLINE_LINUX='
       line: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR {{ apparmor_additional_kernel_parameters }}"'
@@ -23,13 +24,34 @@
       insertbefore: '^GRUB_CMDLINE_LINUX='
   notify: [ 'Update grub' ]
 
+- name: Remove apparmor=1 security=apparmor from kernel parameter list
+  lineinfile:
+    dest: '/etc/default/grub'
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    insertbefore: '{{ item.insertbefore }}'
+  when: apparmor_enable is not defined or not apparmor_enable
+  with_items:
+    - regexp: '^GRUB_CMDLINE_LINUX='
+      line: 'GRUB_CMDLINE_LINUX="{{ apparmor_additional_kernel_parameters }}"'
+      insertbefore: ''
+  notify: [ 'Update grub' ]
+
+- command: service apparmor teardown
+  when: apparmor_enable is not defined or not apparmor_enable
+
+- name: Stop service apparmor
+  service: name=apparmor state=stopped enabled=no
+  when: apparmor_enable is not defined or not apparmor_enable
+
 - name: Check if running kernel has apparmor already enabled
   command: egrep 'apparmor=1\s+security=apparmor' /proc/cmdline
   register: apparmor_enabled
+  when: apparmor_enable is defined and apparmor_enable
   failed_when: False
   changed_when: False
 
 - name: You have to reboot the system if apparmor is not yet enabled
   debug:
     msg: "You have to reboot the system to enable apparmor."
-  when: apparmor_enabled.rc != 0
+  when: apparmor_enabled is defined and apparmor_enabled.rc != 0

@@ -37,6 +37,7 @@ List of default variables available in the inventory:
       - apparmor-notify
     
     apparmor_additional_kernel_parameters: ''
+    apparmor_enable: True
 
 
 
