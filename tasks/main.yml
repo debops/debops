@@ -1,0 +1,9 @@
+---
+
+- name: Install apparmor
+  apt:
+    name: "{{ item }}"
+    state: "latest"
+    install_recommends: False
+  with_flattened:
+    - '{{ apparmor_packages }}'
