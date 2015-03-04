@@ -22,6 +22,11 @@ v0.2.2
   ``auth_nsswitch`` variable controls presence and order of specific database
   entries in the configuration file. [drybjed]
 
+- Add LDAP filtering in ``/etc/nslcd.conf``. By default ``nslcd`` will only
+  search LDAP accounts with ``uid`` greater than 1000. With additional
+  ``ldapns`` schema enabled in OpenLDAP server, only accounts with specific
+  attributes will be allowed to login. [drybjed]
+
 v0.2.1
 ------
 

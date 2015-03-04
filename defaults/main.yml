@@ -121,3 +121,25 @@ auth_nslcd_password_length: '64'
 # Additional options added to /etc/nslcd.conf, in a text block
 auth_nslcd_options: False
 
+
+# ---- NSS LDAP authentication and filters ----
+
+# Minimal uidNumber which is considered for an LDAP query
+auth_nslcd_nss_min_uid: '1000'
+
+# LDAP search filters which are used to limit access to the host or services.
+# At least one search needs to return a valid entry, otherwise access is
+# denied.
+# Apparently this option can be specified multiple times in nslcd.conf but that
+# didn't work. You still need to specify a list.
+auth_nslcd_pam_authz_search: [ '{{ auth_nslcd_pam_authz_search_host_and_service }}' ]
+
+# User account needs to have host= attribute
+auth_nslcd_pam_authz_search_host: '(&(objectClass=posixAccount)(uid=$username)(|(host=$hostname)(host=$fqdn)(host=\\*)))'
+
+# User account needs to to have authorizedService= attribute
+auth_nslcd_pam_authz_search_service: '(&(objectClass=posixAccount)(uid=$username)(authorizedService=$service))'
+
+# User account needs to have both host= and authorizedService= attributes
+auth_nslcd_pam_authz_search_host_and_service: '(&(objectClass=posixAccount)(uid=$username)(authorizedService=$service)(|(host=$hostname)(host=$fqdn)(host=\\*)))'
+

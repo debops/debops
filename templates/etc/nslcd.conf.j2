@@ -36,6 +36,18 @@ tls_cacertfile {{ auth_nslcd_tls_cacertfile }}
 # The search scope.
 #scope sub
 
+{% if auth_nslcd_nss_min_uid is defined and auth_nslcd_nss_min_uid %}
+# Lookup users above this uidNumber in LDAP
+nss_min_uid {{ auth_nslcd_nss_min_uid }}
+
+{% endif %}
+{% if auth_nslcd_pam_authz_search is defined and auth_nslcd_pam_authz_search %}
+# Allow/Deny access according to LDAP attributes
+{% for entry in auth_nslcd_pam_authz_search %}
+pam_authz_search {{ entry }}
+{% endfor %}
+
+{% endif %}
 {% if auth_nslcd_options is defined and auth_nslcd_options %}
 {{ auth_nslcd_options }}{% endif %}
 
