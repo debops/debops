@@ -7,3 +7,29 @@
     install_recommends: False
   with_flattened:
     - '{{ apparmor_packages }}'
+
+- name: Setup apparmor=1 security=apparmor as kernel parameter
+  lineinfile:
+    dest: '/etc/default/grub'
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    insertbefore: '{{ item.insertbefore }}'
+  with_items:
+    - regexp: '^GRUB_CMDLINE_LINUX='
+      line: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR {{ apparmor_additional_kernel_parameters }}"'
+      insertbefore: ''
+    - regexp: '^GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR='
+      line: 'GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR="apparmor=1 security=apparmor"'
+      insertbefore: '^GRUB_CMDLINE_LINUX='
+  notify: [ 'Update grub' ]
+
+- name: Check if running kernel has apparmor already enabled
+  command: egrep 'apparmor=1\s+security=apparmor' /proc/cmdline
+  register: apparmor_enabled
+  failed_when: False
+  changed_when: False
+
+- name: You have to reboot the system if apparmor is not yet enabled
+  debug:
+    msg: "You have to reboot the system to enable apparmor."
+  when: apparmor_enabled.rc != 0
