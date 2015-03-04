@@ -29,6 +29,8 @@ List of default variables available in the inventory:
 
     ---
     
+    cryptsetup_remote_unlock_grub_timeout: 1
+    
     # Where to put the generated ssh key.
     cryptsetup_remote_unlock_local_ssh_dir: "/root/.ssh"
     # Default path where dropbear expects the ssh keys.
@@ -39,10 +41,10 @@ List of default variables available in the inventory:
     # can be used in the authorized_keys file of dropbear.
     cryptsetup_remote_unlock_public_key: False
     
-    # cryptsetup_remote_network_interface: "eth0"
-    # cryptsetup_remote_network_ip_line: "{{ ansible_default_ipv4.address }}:::{{ ansible_default_ipv4.netmask }}:{{ ansible_hostname }}::off"
-    cryptsetup_remote_network_ip_line: "{{ ansible_eth0.ipv4.address }}:::{{ ansible_eth0.ipv4.netmask }}:{{ ansible_hostname }}::off"
-    # cryptsetup_remote_network_ip_line: "192.0.2.23:::255.255.255.0:noname::off"
+    # cryptsetup_remote_unlock_network_interface: "eth0"
+    cryptsetup_remote_unlock_network_ip_line: "{{ ansible_default_ipv4.address }}:::{{ ansible_default_ipv4.netmask }}:{{ ansible_hostname }}::off"
+    # cryptsetup_remote_unlock_network_ip_line: "{{ ansible_eth0.ipv4.address }}:::{{ ansible_eth0.ipv4.netmask }}:{{ ansible_hostname }}::off"
+    # cryptsetup_remote_unlock_network_ip_line: "192.0.2.23:::255.255.255.0:noname::off"
     # ip=<client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
     # https://www.kernel.org/doc/Documentation/filesystems/nfs/nfsroot.txt
 

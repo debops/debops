@@ -8,19 +8,27 @@
     - dropbear
     - busybox
 
+- name: Set GRUB_TIMEOUT
+  lineinfile:
+    dest: "/etc/default/grub"
+    regexp: "^GRUB_TIMEOUT="
+    line: "GRUB_TIMEOUT={{ cryptsetup_remote_unlock_grub_timeout }}"
+  when: cryptsetup_remote_unlock_grub_timeout is defined and cryptsetup_remote_unlock_grub_timeout >= 0
+  notify: [ 'Update grub' ]
+
 - name: Set IP configuration
   lineinfile:
     dest: "/etc/initramfs-tools/initramfs.conf"
     regexp: "^IP="
-    line: "IP={{ cryptsetup_remote_network_ip_line }}"
+    line: "IP={{ cryptsetup_remote_unlock_network_ip_line }}"
   notify: [ 'Recreate initramfs' ]
 
 - name: Set network device
   lineinfile:
     dest: "/etc/initramfs-tools/initramfs.conf"
     regexp: "^DEVICE="
-    line: "DEVICE={{ cryptsetup_remote_network_interface }}"
-  when: cryptsetup_remote_network_interface is defined and cryptsetup_remote_network_interface
+    line: "DEVICE={{ cryptsetup_remote_unlock_network_interface }}"
+  when: cryptsetup_remote_unlock_network_interface is defined and cryptsetup_remote_unlock_network_interface
   notify: [ 'Recreate initramfs' ]
 
 - name: Delete network device
@@ -28,7 +36,7 @@
     dest: "/etc/initramfs-tools/initramfs.conf"
     regexp: "^DEVICE="
     state: absent
-  when: cryptsetup_remote_network_interface is undefined or not cryptsetup_remote_network_interface
+  when: cryptsetup_remote_unlock_network_interface is undefined or not cryptsetup_remote_unlock_network_interface
   notify: [ 'Recreate initramfs' ]
 
 - name: Delete private ssh keys on remote
