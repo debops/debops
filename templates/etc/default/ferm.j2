@@ -12,6 +12,11 @@ CACHE=no
 OPTIONS=
 
 # Enable the ferm init script? (i.e. run on bootup)
-ENABLED="{% if ferm is defined and ferm %}yes{% else %}no{% endif %}"
-
+{% if (ferm | bool and (ferm_ignore_cap12s | bool or (ansible_local|d() and ansible_local.cap12s|d() and
+       (not ansible_local.cap12s.enabled | bool or
+        (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))) %}
+ENABLED="yes"
+{% else %}
+ENABLED="no"
+{% endif %}
 
