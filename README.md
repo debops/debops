@@ -1,8 +1,24 @@
 ## apparmor
 
 [![Travis CI](http://img.shields.io/travis/ypid/ansible-apparmor.svg?style=flat)](http://travis-ci.org/ypid/ansible-apparmor)
+[![Ansible Galaxy](http://img.shields.io/badge/galaxy-ypid.apparmor-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/3015)
+[![Platforms](http://img.shields.io/badge/platforms-debian-lightgrey.svg?style=flat)](#)
 
 
+Configure apparmor.
+
+See [Apparmor in the Debian Wiki](https://wiki.debian.org/AppArmor/HowToUse).
+
+### Installation
+
+This role requires at least Ansible `v1.3`. To install it, run:
+
+    ansible-galaxy install ypid.apparmor
+
+To install via git, run either:
+
+    git clone https://github.com/ypid/ansible-apparmor ypid.apparmor
+    git submodule add https://github.com/ypid/ansible-apparmor roles/ypid.apparmor
 
 
 
