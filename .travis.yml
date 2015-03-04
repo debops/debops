@@ -16,6 +16,10 @@ install:
   # Add ansible.cfg to pick up roles path.
   - "{ echo '[defaults]'; echo 'roles_path = ../'; } >> ansible.cfg"
 
+  - "{ echo 'deb http://http.debian.net/debian jessie main'; echo 'deb http://http.debian.net/debian jessie-updates main'; } > /etc/apt/sources.list"
+
+  - sudo apt-get update
+
   # Get debug output
   - "ansible localhost -m setup -u root -i tests/inventory --connection=local"
 
