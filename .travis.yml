@@ -17,7 +17,8 @@ install:
   - "{ echo '[defaults]'; echo 'roles_path = ../'; } >> ansible.cfg"
 
   # msg: Destination /etc/default/grub does not exist!
-  - touch /etc/default/grub
+  - "sudo touch /etc/default/grub"
+  - "sudo cp /bin/true /usr/sbin/update-grub"
 
   # Get debug output
   - ansible localhost -m setup -u root -i tests/inventory --connection=local
