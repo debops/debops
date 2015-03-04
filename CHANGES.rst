@@ -1,8 +1,10 @@
 Changelog
 =========
 
-unreleased
-----------
+v0.4.2
+------
+
+*Released: 2015-03-04*
 
 - On OS X search config-file in ``/etc`` too (before searching in
   ``~/Library/Application Support``). [htgoebel]
