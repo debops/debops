@@ -38,7 +38,7 @@ __author__ = "Robert Chady <rchady@sitepen.com>"
 __copyright__ = "Copyright 2015 by Robert Chady <rchady@sitepen.com>"
 __license__ = "GNU General Public LIcense version 3 (GPL v3) or later"
 
-conf_template = 'template-paths'
+conf_template_paths = 'template-paths'
 
 class LookupModule(object):
 
