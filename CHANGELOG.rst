@@ -25,6 +25,9 @@ v0.2.3
 - ``bootstrap.yml`` playbook will check if it can change the hostname before
   doing it using Linux capabilities. [htgoebel, drybjed]
 
+- Added new lookup plugins, ``file_src`` and ``template_src`` which allow
+  custom template and file search paths in roles. [rchady]
+
 v0.2.2
 ------
 
