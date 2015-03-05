@@ -11,7 +11,7 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.2.3
 ------
 
-*Unreleased*
+*Released: 2015-03-05*
 
 - Roles in ``common.yml`` playbook are rearranged to better support LDAP
   integration and avoid possible SSH lockdown if host was not prepared using
