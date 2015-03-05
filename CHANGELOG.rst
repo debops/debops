@@ -28,6 +28,10 @@ v0.2.3
 - Added new lookup plugins, ``file_src`` and ``template_src`` which allow
   custom template and file search paths in roles. [rchady]
 
+- You can set global "root flags" on hosts using ``root.yml`` playbook.
+  Ansible roles can check for their presence or absence and automatically
+  change their behaviour. [drybjed]
+
 v0.2.2
 ------
 

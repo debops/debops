@@ -21,6 +21,14 @@
 
   vars:
 
+    # Flags are used to globally modify behaviour of DebOps roles.
+    # Roles can check for presence or absence of a particular flag in
+    # 'ansible_local.root.flags' list and act accordingly, for example omitting
+    # or executing certain tasks.
+    # Flags can only be appended by Ansible. To remove them, you need to modify
+    # or remove the flags list from Ansible local facts.
+    root_flags_combined: '{{ root_flags|d([]) + root_group_flags|d([]) + root_host_flags|d([]) }}'
+
     # Source variable of a random UUID generated at the time of first DebOps
     # run on a new host and stored in Ansible local facts. UUID can be accessed
     # as 'ansible_local.root.uuid'
