@@ -17,8 +17,15 @@
     groups: ''
     append: False
     system: True
+
+- name: Enforce root password
+  user:
+    name: 'root'
+    state: 'present'
+    createhome: False
     password: '{{ console_root_password }}'
     update_password: 'always'
+  when: console_root_password is defined and console_root_password
 
 - name: Enforce root shell
   user:

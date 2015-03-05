@@ -28,9 +28,14 @@ console_motd: |
 # List of required console packages
 console_base_packages: [ 'locales' ]
 
-# List of additional packages to install
-console_packages: [ 'ncurses-term', 'vim', 'mc', 'ranger', 'tmux', 'zsh', 'htop',
-                    'less', 'file', 'psmisc', 'iftop', 'nload', 'lsof', 'nmon' ]
+# List of useful console packages to install
+console_extra_packages: [ 'ncurses-term', 'vim', 'mc', 'ranger', 'tmux', 'zsh', 'htop',
+                         'less', 'file', 'psmisc', 'iftop', 'nload', 'lsof', 'nmon' ]
+
+# Custom lists of packages to install
+console_packages: []
+console_group_packages: []
+console_host_packages: []
 
 # Enable or disable FSCKFIX option in /etc/default/rcS
 # This option controls the behaviour of fsck during boot time, if it's enabled,
@@ -79,4 +84,41 @@ console_root_password_length: '32'
 
 # Default root shell, set to False to not change the shell
 console_root_shell: False
+
+
+# ---- Filesystem mount points ----
+
+# You can use console_*_mounts lists to mout local or remote filesystems on
+# hosts. The syntax is the same as the 'mount' Ansible module. 'item.name' and
+# 'item.src' are required, additionally, 'item.fstype' is required for local
+# mount points.
+# For NFS mounts, you need to install 'nfs-common' package, for example by
+# adding it to 'console_packages' list.
+
+# Default mount options for local mount points
+console_default_mount_options: 'defaults'
+
+# Default mount options for NFS mount points
+console_default_mount_nfs_options: 'nosuid,hard,intr,proto=tcp,port=2049,_netdev'
+console_default_mount_nfs_type: 'nfs4'
+
+# Examples:
+# console_mounts:
+#   - name: '/other/data'
+#     src: '/var/lib/data'
+#     opts: 'bind'
+#
+# console_nfs_mounts:
+#   - name: '/media/nfs'
+#     src: 'data.example.org:/srv/nfs'
+
+# Local mount points
+console_mounts: []
+console_group_mounts: []
+console_host_mounts: []
+
+# NFS mount points
+console_mounts_nfs: []
+console_group_mounts_nfs: []
+console_host_mounts_nfs: []
 

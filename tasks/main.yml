@@ -1,13 +1,16 @@
 ---
 
-- name: Install console-related packages
+- name: Install requested packages
   apt:
     name: '{{ item }}'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
   with_flattened:
     - console_base_packages
+    - console_extra_packages
     - console_packages
+    - console_group_packages
+    - console_host_packages
   when: item is defined and item
 
 - name: Check if /etc/inittab exists
@@ -73,15 +76,15 @@
 
   # Enable hidepid= only on specific hosts
 - include: proc_hidepid.yml
-  when: ((ansible_virtualization_type is defined and
-          ansible_virtualization_role is defined and
-         (ansible_virtualization_type in ['kvm','VMware','virtualbox'] and
-          ansible_virtualization_role in ['host','guest']) or
-         (ansible_virtualization_type in ['NA'] and
-          ansible_virtualization_role in ['NA'])) or
-         (ansible_virtualization_type is undefined and
-          ansible_virtualization_role is undefined))
+  when: (ansible_local|d() and ((ansible_local.root|d() and 'ignore-cap12s' in ansible_local.root.flags) or
+         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+          (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
 
 - include: root_account.yml
   when: console_root is defined and console_root
+
+- include: filesystem_mount.yml
+  when: (ansible_local|d() and ((ansible_local.root and 'ignore-cap12s' in ansible_local.root.flags) or
+         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+          (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
 
