@@ -8,6 +8,14 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 .. _DebOps Changelog: https://github.com/debops/debops/blob/master/CHANGELOG.md
 
 
+v0.2.4
+------
+
+*Unreleased*
+
+- Add separate "root fact" directory where applications are installed, by
+  default the same as the path for service home directories. [drybjed]
+
 v0.2.3
 ------
 
