@@ -11,7 +11,7 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.2.3
 ------
 
-*Unreleased*
+*Released: 2015-03-05*
 
 - Roles in ``common.yml`` playbook are rearranged to better support LDAP
   integration and avoid possible SSH lockdown if host was not prepared using
@@ -24,6 +24,13 @@ v0.2.3
 
 - ``bootstrap.yml`` playbook will check if it can change the hostname before
   doing it using Linux capabilities. [htgoebel, drybjed]
+
+- Added new lookup plugins, ``file_src`` and ``template_src`` which allow
+  custom template and file search paths in roles. [rchady]
+
+- You can set global "root flags" on hosts using ``root.yml`` playbook.
+  Ansible roles can check for their presence or absence and automatically
+  change their behaviour. [drybjed]
 
 v0.2.2
 ------
