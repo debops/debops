@@ -1,5 +1,5 @@
 {
-"flags": {{ ((ansible_local.root.flags if (ansible_local is defined and ansible_local.root is defined and ansible_local.root.flags is defined)) + root_flags_combined) | sort | unique | list | to_nice_json }},
+"flags": {{ ((ansible_local.root.flags if (ansible_local is defined and ansible_local.root is defined and ansible_local.root.flags is defined) else []) + root_flags_combined) | sort | unique | list | to_nice_json }},
 "uuid": "{{ ansible_local.root.uuid if (ansible_local is defined and ansible_local.root is defined and ansible_local.root.uuid is defined) else root_uuid_random_source }}",
 {% for item in root_service_directories %}
 {% if hostvars[inventory_hostname]["ansible_local"] is defined and
