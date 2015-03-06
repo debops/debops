@@ -4,14 +4,20 @@
   stat: path=/usr/sbin/nginx
   register: nginx_register_installed
 
+- include: passenger.yml
+  when: nginx_flavor == 'passenger'
+
 - name: Install nginx packages
   apt:
     name: '{{ item }}'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
   with_flattened:
-    - nginx_base_packages
-    - [ 'python-passlib' ]
+    - '{{ nginx_flavor_map[nginx_flavor] }}'
+    - '{{ nginx_base_packages }}'
+
+- include: passenger_config.yml
+  when: nginx_flavor == 'passenger'
 
 - name: Restart nginx on first install to bypass missing pid bug
   service:

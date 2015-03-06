@@ -10,7 +10,17 @@ nginx_group_allow: []
 nginx_host_allow: []
 
 # List of Debian packages installed by this role
-nginx_base_packages: [ 'nginx-full' ]
+nginx_base_packages: [ 'python-passlib' ]
+nginx_flavor: 'full'
+
+# The passenger version is very fragile until Phusion makes a change or two
+nginx_flavor_map:
+  'full': [ 'nginx-full' ]
+  'passenger': [ 'nginx-extras=1:1.6.2-2.4.0.59~wheezy1', 'passenger' ]
+
+# Passenger configuration
+passenger_max_pool_size: 30
+passenger_options: False
 
 # System user used by nginx
 nginx_user: 'www-data'
@@ -216,4 +226,5 @@ nginx_default_index_html: |
       <h1>Your website is working!</h1>
     </body>
   </html>
+
 
