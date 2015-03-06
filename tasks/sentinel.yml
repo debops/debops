@@ -30,7 +30,7 @@
   lineinfile:
     regexp: '^sentinel monitor {{ item.name }}'
     dest: '{{ redis_sentinel_config }}'
-    line: 'sentinel monitor {{ item.name }} {{ item.host | default(redis_hosts_group[0]) }} {{ item.port | default(redis_port) }} {{ item.quorum | default(2) }}'
+    line: 'sentinel monitor {{ item.name }} {{ item.host | default(groups[redis_hosts_group][0]) }} {{ item.port | default(redis_port) }} {{ item.quorum | default(2) }}'
     state: 'present'
   when: not redis_register_custom_sentinel_config.stat.exists
   with_items: redis_sentinel_group_list
