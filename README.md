@@ -1,5 +1,7 @@
 ## snapshot_snapper
 
+[![Ansible Galaxy](http://img.shields.io/badge/galaxy-ypid.snapshot_snapper-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/3042)
+[![Platforms](http://img.shields.io/badge/platforms-debian%20/%20ubuntu-lightgrey.svg?style=flat)](#)
 
 
 Configure snapshots with snapper.
@@ -11,6 +13,17 @@ Snapper can manage snapshots for the following filesystems vlume manges:
 * lvm2
 
 This role allows to setup and configure snapper with Ansible.
+
+### Installation
+
+This role requires at least Ansible `v1.3`. To install it, run:
+
+    ansible-galaxy install ypid.snapshot_snapper
+
+To install via git, run either:
+
+    git clone https://github.com/ypid/ansible-snapshot_snapper ypid.snapshot_snapper
+    git submodule add https://github.com/ypid/ansible-snapshot_snapper roles/ypid.snapshot_snapper
 
 
 
