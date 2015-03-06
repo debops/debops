@@ -13,11 +13,11 @@
   args:
     creates: "{{ item }}.dpkg-divert"
   register: updatedb_diverted
-  when: btrfs_snapper_snapshot_directory is defined and btrfs_snapper_snapshot_directory and ansible_distribution in [ 'Debian', 'Ubuntu' ]
+  when: snapshot_snapper_snapshot_directory is defined and snapshot_snapper_snapshot_directory and ansible_distribution in [ 'Debian', 'Ubuntu' ]
   with_flattened:
-    - btrfs_snapper_updatedb_coniguration_files
+    - snapshot_snapper_updatedb_coniguration_files
   with_items:
-    - "{{ btrfs_snapper_config_templates_dir }}/default"
+    - "{{ snapshot_snapper_config_templates_dir }}/default"
 
 - name: Copy diverted configuration file to original location
   command: cp {{ item }}.dpkg-divert {{ item }}
@@ -25,15 +25,15 @@
     creates: "{{ item }}"
   when: updatedb_diverted|changed
   with_flattened:
-    - btrfs_snapper_updatedb_coniguration_files
+    - snapshot_snapper_updatedb_coniguration_files
   with_items:
-    - "{{ btrfs_snapper_config_templates_dir }}/default"
+    - "{{ snapshot_snapper_config_templates_dir }}/default"
 
 - name: Configure updatedb to not include snapshots
-  command: grep PRUNENAMES=.*{{ btrfs_snapper_snapshot_directory }}.* /etc/updatedb.conf
+  command: grep PRUNENAMES=.*{{ snapshot_snapper_snapshot_directory }}.* /etc/updatedb.conf
   failed_when: False
   changed_when: False
-  when: btrfs_snapper_snapshot_directory is defined and btrfs_snapper_snapshot_directory
+  when: snapshot_snapper_snapshot_directory is defined and snapshot_snapper_snapshot_directory
   register: updatedb_snapshot
 
 - debug:
@@ -44,25 +44,25 @@
     dest: "/etc/updatedb.conf"
     backrefs: yes
     regexp: '^(# )?PRUNENAMES=(".*)"$'
-    line: 'PRUNENAMES=\2 {{ btrfs_snapper_snapshot_directory }}"'
+    line: 'PRUNENAMES=\2 {{ snapshot_snapper_snapshot_directory }}"'
   when: updatedb_snapshot.rc != 0
 
 - name: Configure snapper defaults
   lineinfile:
-    dest: "{{ btrfs_snapper_config_templates_dir }}/default"
+    dest: "{{ snapshot_snapper_config_templates_dir }}/default"
     regexp: '^{{ item.key|upper }}=".*"$'
     line: '{{ item.key|upper }}="{{ item.value }}"'
   when: item.value and item.value > 0
-  with_dict: btrfs_snapper_defaults
+  with_dict: snapshot_snapper_defaults
 
 - name: Create config for subvolume
   command: snapper -c "{{ item.name|default("root") }}" create-config "{{ item.path }}"
   args:
     creates: "/etc/snapper/configs/{{ item.name }}"
   with_flattened:
-    - btrfs_snapper_snapshot_subvols_list
-    - btrfs_snapper_snapshot_subvols_group_list
-    - btrfs_snapper_snapshot_subvols_host_list
+    - snapshot_snapper_snapshot_subvols_list
+    - snapshot_snapper_snapshot_subvols_group_list
+    - snapshot_snapper_snapshot_subvols_host_list
   when: (item.name is defined and (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
 # - name: Applay specific configuration to sub volume snapshot
@@ -70,6 +70,6 @@
     # dest: "/etc/snapper/configs/{{ item.name }}"
     # regexp: '^{{ item.config[0] }}='
     # line: 'TIMELINE_LIMIT_YEARLY="1"'
-  # with_dict: btrfs_snapper_snapshot_subvols_list
-    # # - btrfs_snapper_snapshot_subvols_group_list
-    # # - btrfs_snapper_snapshot_subvols_host_list
+  # with_dict: snapshot_snapper_snapshot_subvols_list
+    # # - snapshot_snapper_snapshot_subvols_group_list
+    # # - snapshot_snapper_snapshot_subvols_host_list
