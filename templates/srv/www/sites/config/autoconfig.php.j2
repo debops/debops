@@ -1,20 +1,24 @@
 <?php
 /* This file is managed by Ansible, all changes will be lost */
-$AUTOCONFIG = array(
-  "directory" => "{{ owncloud_data_path }}",
+{#
+Copyright 2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>
+Licence: GPLv3
+#}
+{% set _cfg = dict() %}
+{%- set _ = _cfg.update(owncloud_default_autoconfig) %}
+{%- set _ = _cfg.update(owncloud_default_autoconfig_group) %}
+{%- set _ = _cfg.update(owncloud_database_map[owncloud_database]) %}
+{%- set _ = _cfg.update(owncloud_autoconfig) %}
+{%- if 'dbpass' in owncloud_database_map[owncloud_database] %}
+{%-    set _ = _cfg.update(dict(dbpass=owncloud_database_password)) %}
+{%- endif %}
+{%- if owncloud_admin_username != False %}
+{%-  set  _ = _cfg.update(dict(adminlogin=owncloud_admin_username)) %}
+{%-  if owncloud_admin_password != False %}
+{%-    set  _ = _cfg.update(dict(adminpass=owncloud_admin_password)) %}
+{%-  endif %}
+{%- endif %}
+$json = {{ _cfg | to_nice_json }};
 
-{% for key, value in owncloud_database_map[owncloud_database].iteritems() %}
-{% if key == 'dbpass' %}
-  "{{ key }}" => "{{ owncloud_database_password }}",
-{% else %}
-  "{{ key }}" => "{{ value }}",
-{% endif %}
-{% endfor %}
-{% if owncloud_admin_username != False %}
-  "adminlogin" => "{{ owncloud_admin_username }}",
-{% if owncloud_admin_password != False %}
-  "adminpass" => "{{ owncloud_admin_password }}",
-{% endif %}
-{% endif %}
-);
+$AUTOCONFIG = json_decode($json);
 ?>
