@@ -1,0 +1,13 @@
+---
+
+- name: Add Passenger PGP key
+  apt_key:
+    keyserver: 'keyserver.ubuntu.com'
+    id: '561F9B9CAC40B2F7'
+
+- name: Add Passenger APT repository
+  apt_repository:
+    repo: '{{ nginx_passenger_phusion_repo }}' 
+    state: 'present'
+    update_cache: 'yes'
+

@@ -1,0 +1,27 @@
+---
+
+- name: Detect passenger root
+  command: passenger-config about root
+  register: register_passenger_root
+
+- name: Set passenger root
+  set_fact:
+   passenger_root: '{{ register_passenger_root.stdout }}'
+
+- name: Detect passenger ruby
+  shell: "passenger-config about ruby-command | grep Command | tail -1 | awk -F: '{print $2}'"
+  register: register_passenger_ruby
+
+- name: Set passenger ruby
+  set_fact:
+    passenger_ruby: '{{ register_passenger_ruby.stdout }}'
+
+- name: Install passenger configuration for nginx
+  template:
+    src: "{{ lookup('template_src', 'etc/nginx/conf.d/passenger.conf.j2') }}"
+    dest: '/etc/nginx/conf.d/passenger.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Test nginx and reload' ]
+
