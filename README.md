@@ -9,12 +9,12 @@ in a production environment.
 
 ***
 
-This role installs [ownCloud](http://owncloud.org/) instance on a specified
-host, with either MySQL or PostgreSQL database as a backend and an nginx
-webserver as a frontend.
+This role installs [ownCloud](http://owncloud.org/) instance on a
+specified host, with either sqlite, MySQL or PostgreSQL database
+as a backend and an nginx webserver as a frontend.
 
-At the moment role doesn't work correctly due to the changes in ownCloud
-repository structure.
+Currently only ownCloud 8.0 is supported because for older
+versions there are no complete deb-packages available.
 
 ### Installation
 
