@@ -47,7 +47,7 @@
 {% endblock %}
 {% block nginx_tpl_block_custom_locations %}
 {% if item.php5 is defined and item.php5 %}
-        location ~ ^(?<script_name>.+\.php)$ {
+        location ~ ^(?!.+\.php/)(?<script_name>.+\.php)$ {
 {% if (item.php5_limit_except is undefined or (item.php5_limit_except is defined and item.php5_limit_except)) %}
                 limit_except {{ item.php5_limit_except | default('GET HEAD POST') }} { deny all; }
 
