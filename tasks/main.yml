@@ -1,15 +1,20 @@
 ---
 
-- include: setup_environment.yml
-- include: setup_deploy_key.yml
-- include: deploy_owncloud.yml
+- name: Ensure owncloud packages are installed
+  apt:
+    name: owncloud
+    state: present
+    install_recommends: False
+  tags: owncloud
 
 - include: configure_mysql.yml
-  when: owncloud_database is defined and owncloud_database == 'mysql'
+  when: owncloud_database == 'mysql'
+  tags: [ 'owncloud', 'mysql' ]
 
 - include: configure_postgresql.yml
-  when: owncloud_database is defined and owncloud_database == 'postgresql'
+  when: owncloud_database == 'postgresql'
+  tags: [ 'owncloud', 'postgresql' ]
 
 - include: configure_owncloud.yml
-
+  tags: owncloud
 

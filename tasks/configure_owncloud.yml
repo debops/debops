@@ -1,59 +1,73 @@
 ---
 
 - name: Setup cron service
-  cron: name='ownCloud Background Jobs' minute={{ owncloud_cron_minute }} user={{ owncloud_user }}
-        job='/usr/bin/php -f {{ owncloud_deploy_path }}/cron.php' cron_file='owncloud'
-  tags: owncloud
+  cron:
+    name: 'ownCloud Background Jobs'
+    minute: '{{ owncloud_cron_minute }}'
+    user: '{{ owncloud_user }}'
+    job: '/usr/bin/php -f {{ owncloud_deploy_path }}/cron.php'
+    cron_file: 'owncloud'
 
 - name: Setup logrotate for owncloud
-  template: src=etc/logrotate.d/owncloud.j2 dest=/etc/logrotate.d/owncloud owner=root group=root mode=0644
-  tags: owncloud
+  template:
+    src: etc/logrotate.d/owncloud.j2
+    dest: /etc/logrotate.d/owncloud
+    owner: root
+    group: root
+    mode: 0644
 
 - name: Lookup admin password if secrets/ directory is defined
   set_fact:
     owncloud_admin_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/owncloud/admin/' + owncloud_admin_username + '/password length=' + owncloud_password_length) }}"
-  when: secret is defined and owncloud_admin_username is defined and owncloud_admin_username
-  tags: owncloud
+  when: secret is defined and owncloud_admin_username
 
 - name: Check if ownCloud is configured
-  stat: path={{ owncloud_deploy_path }}/config/config.php
+  stat:
+    path: '{{ owncloud_deploy_path }}/config/config.php'
   register: owncloud_config_file
-  tags: owncloud
 
 - name: Install ownCloud autoconfig file
-  template: src=srv/www/sites/config/autoconfig.php.j2 dest={{ owncloud_deploy_path }}/config/autoconfig.php
-            owner={{ owncloud_user }} group={{ owncloud_group }} mode=0660
-  when: owncloud_config_file is defined and owncloud_config_file.stat.exists == False
-  tags: owncloud
+  template:
+    src: srv/www/sites/config/autoconfig.php.j2
+    dest: '{{ owncloud_deploy_path }}/config/autoconfig.php'
+    owner: '{{ owncloud_user }}'
+    group: '{{ owncloud_group }}'
+    mode: 0660
+  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists
 
 - name: Install ownCloud default config file
-  template: src=srv/www/sites/config/config.default.php.j2 dest={{ owncloud_deploy_path }}/config/config.php
-            owner={{ owncloud_user }} group={{ owncloud_group }} mode=0640
-  when: owncloud_config_file is defined and owncloud_config_file.stat.exists == False
-  tags: owncloud
+  template:
+    src: srv/www/sites/config/config.default.php.j2
+    dest: '{{ owncloud_deploy_path }}/config/config.php'
+    owner: '{{ owncloud_user }}'
+    group: '{{ owncloud_group }}'
+    mode: 0640
+  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists
 
 - name: Use cron for background jobs (lib/private/...)
-  lineinfile: dest={{ owncloud_deploy_path }}/lib/private/backgroundjob.php state=present regexp="return OC_Appconfig::getValue" line="                return OC_Appconfig::getValue( 'core', 'backgroundjobs_mode', 'cron' );"
-  when: owncloud_config_file is defined and owncloud_config_file.stat.exists == False
-  tags: owncloud
+  lineinfile:
+    dest: '{{ owncloud_deploy_path }}/lib/private/backgroundjob.php'
+    state: present
+    regexp: "return OC_Appconfig::getValue"
+    line: "                return OC_Appconfig::getValue( 'core', 'backgroundjobs_mode', 'cron' );"
+  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists
 
 - name: Use cron for background jobs (settings/admin.php)
-  lineinfile: dest={{ owncloud_deploy_path }}/settings/admin.php state=present regexp="'backgroundjobs_mode', OC_Appconfig::getValue" line="$tmpl->assign('backgroundjobs_mode', OC_Appconfig::getValue('core', 'backgroundjobs_mode', 'cron'));"
-  when: owncloud_config_file is defined and owncloud_config_file.stat.exists == False
-  tags: owncloud
+  lineinfile:
+     dest: '{{ owncloud_deploy_path }}/settings/admin.php'
+     state: present
+     regexp: "'backgroundjobs_mode', OC_Appconfig::getValue"
+     line: "$tmpl->assign('backgroundjobs_mode', OC_Appconfig::getValue('core', 'backgroundjobs_mode', 'cron'));"
+  when: not owncloud_config_file
 
 - name: Flush handlers if automatic setup is requested
   meta: flush_handlers
-  when: owncloud_config_file is defined and owncloud_config_file.stat.exists == False and
-        owncloud_admin_username is defined and owncloud_admin_username and
-        owncloud_autosetup is defined and owncloud_autosetup
-  tags: owncloud
+  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists and
+        owncloud_admin_username and owncloud_autosetup
 
 - name: Automatically finish setup if allowed
-  uri: url=https://{{ owncloud_domain[0] }}/index.php
-  when: owncloud_config_file is defined and owncloud_config_file.stat.exists == False and
-        owncloud_admin_username is defined and owncloud_admin_username and
-        owncloud_autosetup is defined and owncloud_autosetup
-  tags: owncloud
-
+  uri:
+    url: 'https://{{ owncloud_domain[0] }}/index.php'
+  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists and
+        owncloud_admin_username and owncloud_autosetup
 

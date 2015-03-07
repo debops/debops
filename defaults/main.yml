@@ -12,62 +12,21 @@ owncloud_domain: [ 'owncloud.{{ ansible_domain }}' ]
 
 # --- ownCloud source and deployment ---
 
+owncloud_edition: community
+owncloud_release: 8.0
+owncloud_apt_repo_base: 'http://download.opensuse.org/repositories/isv:/ownCloud:'
+
 # User and group that will be used for ownCloud instance
-owncloud_user: 'owncloud'
-owncloud_group: 'owncloud'
-owncloud_home: '/srv/users/{{ owncloud_user }}'
+owncloud_user: 'www-data'
+owncloud_group: 'www-data'
+owncloud_home: '/var/www/owncloud'
+
 
 # Path where ownCloud data/ directory and files are stored
-owncloud_data_path: '/srv/lib/{{ owncloud_user }}/{{ owncloud_domain[0] }}/data'
+owncloud_data_path: '{{ owncloud_home }}/data' #{{ owncloud_domain[0] }}'
 
 # Where ownCloud instance will be deployed (web root)
-owncloud_deploy_path: '/srv/www/{{ owncloud_user }}/sites/{{ owncloud_domain[0] }}/public'
-
-# What source should be used to get ownCloud files (upstream, githost, github, gitlab)
-owncloud_source: 'upstream'
-
-# Default URL and git branch for ownCloud upstream repository
-owncloud_upstream_url: 'https://github.com/owncloud/core.git'
-owncloud_upstream_branch: 'stable6'
-
-# Default settings for ownCloud sources other than "upstream"
-# If you want to use that with github, you can create your ownCloud repository
-# as '<your username>/owncloud' with branch 'master'
-owncloud_deploy_user: 'git'
-owncloud_deploy_server: 'github.com'
-owncloud_deploy_repo: '{{ lookup("env","USER") }}/owncloud.git'
-owncloud_deploy_branch: 'master'
-
-# OAuth token for GitHub / GitLab access, used to setup SSH deploy key
-owncloud_deploy_token: False
-
-# Hash of different ownCloud sources
-owncloud_source_map:
-
-  # Official ownCloud upstream repository on GitHub (basic installation)
-  upstream:
-    url:    '{{ owncloud_upstream_url }}'
-    branch: '{{ owncloud_upstream_branch }}'
-
-  # A git repository configured on a host in the Ansible cluster, for example
-  # with 'githost' role
-  # Ansible will try and setup ssh public key of the 'owncloud' user as deploy
-  # key on the server with git repository, using authorized_key module
-  githost:
-    url:    '{{ owncloud_deploy_user }}@{{ owncloud_deploy_server }}:{{ owncloud_deploy_repo }}'
-    branch: '{{ owncloud_deploy_branch }}'
-
-  # A git repository set up on GitHub, with deploy key configured through API
-  # using OAuth token
-  github:
-    url:    'git@github.com:{{ owncloud_deploy_repo }}'
-    branch: '{{ owncloud_deploy_branch }}'
-
-  # A git repository set up on a GitLab instance, with deploy key configured
-  # through API using OAuth token
-  gitlab:
-    url:    '{{ owncloud_deploy_user }}@{{ owncloud_deploy_server }}:{{ owncloud_deploy_repo }}'
-    branch: '{{ owncloud_deploy_branch }}'
+owncloud_deploy_path: '{{ owncloud_home }}'
 
 
 # --- ownCloud database ---
@@ -94,6 +53,8 @@ owncloud_database_map:
     dbpass: ''
     dbhost: '/var/run/postgresql'
     dbtableprefix: ''
+  sqlite:
+    dbtype: 'sqlite'
 
 
 # --- ownCloud admin login / password ---
@@ -102,14 +63,18 @@ owncloud_database_map:
 # Set to False to disable automatic username and password
 owncloud_admin_username: 'admin-{{ lookup("env","USER") }}'
 
-# Default admin password, will be randomly generated if 'secret' role is enabled
+# Default admin password. role is enabled, a randomly password will be
+# generated instead of this value.
 owncloud_admin_password: 'password'
 
 # Length of randomly generated admin password
 owncloud_password_length: '20'
 
-# Should Ansible automatically open ownCloud page to finish setup on it's own?
-# Disabled if admin username is set to False
+# Should Ansible automatically open ownCloud page to finish setup on
+# it's own? Disabled if admin_username is set to False and done only
+# if the config-files are generated in the same run.
+# Important: For this to work, name resolution has to be set up
+# 	     when this role is executed.
 owncloud_autosetup: True
 
 
@@ -128,3 +93,18 @@ owncloud_php5_max_children: '50'
 owncloud_cron_minute: '*/15'
 
 
+owncloud_initial_config_global:
+ mail_domain: '{{ ansible_domain }}'
+ mail_from_address: owncloud
+ mail_smtpmode: sendmail
+ loglevel: 2
+ logdateformat: Y-m-d H:i:s.u # ISO 8601 date: 2004-02-12T15:19:21+00:00
+ trashbin_auto_expire: True
+ trashbin_retention_obligation: 30
+ remember_login_cookie_lifetime: '{{ 60*60*24*15 }}'
+ session_lifetime: '{{ 60 * 60 * 24 }}'
+ session_keepalive: True
+
+owncloud_initial_config_group: {}
+
+owncloud_initial_config: {}

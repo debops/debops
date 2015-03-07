@@ -2,22 +2,28 @@
 
 dependencies:
 
+  - role: debops.apt
+    apt_repositories:
+    - repo: 'deb {{owncloud_apt_repo_base}}/{{owncloud_edition}}:/{{owncloud_release}}/{{ansible_distribution}}_{{ansible_distribution_major_version}}.0/ /'
+      state: present
+    apt_keys:
+    - url: '{{owncloud_apt_repo_base}}/{{owncloud_edition}}:/{{owncloud_release}}/{{ansible_distribution}}_{{ansible_distribution_major_version}}.0/Release.key'
+      state: present
+
   - role: debops.secret
 
   - role: debops.mysql
-    when: owncloud_dependencies is defined and owncloud_dependencies and
-          owncloud_database is defined and owncloud_database == 'mysql'
+    when: owncloud_dependencies and owncloud_database == 'mysql'
     tags: owncloud
 
   - role: debops.postgresql
-    when: owncloud_dependencies is defined and owncloud_dependencies and
-          owncloud_database is defined and owncloud_database == 'postgresql'
+    when: owncloud_dependencies and owncloud_database == 'postgresql'
     tags: owncloud
 
   - role: debops.php5
     php5_pools:
       - '{{ owncloud_php5_pool }}'
-    when: owncloud_dependencies is defined and owncloud_dependencies
+    when: owncloud_dependencies
     tags: owncloud
 
   - role: debops.nginx
@@ -25,11 +31,11 @@ dependencies:
       - '{{ owncloud_nginx_server }}'
     nginx_upstreams:
       - '{{ owncloud_nginx_upstream_php5 }}'
-    when: owncloud_dependencies is defined and owncloud_dependencies
+    when: owncloud_dependencies
     tags: nginx
 
 galaxy_info:
-  author: 'Maciej Delmanowski'
+  author: 'Maciej Delmanowski, Hartmut Goebel'
   description: 'Install and manage ownCloud instance'
   company: 'DebOps'
   license: 'GNU General Public License v3'

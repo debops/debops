@@ -1,9 +1,15 @@
 <?php
 /* This file is managed by Ansible, all changes will be lost */
+
+{#
+:fixme: login, passwword and directory must be html-enoded, because
+owncloud decodes then (see install() in lib/private/setup.php). But
+double-check first.
+#}
+
 $AUTOCONFIG = array(
   "directory" => "{{ owncloud_data_path }}",
 
-{% if owncloud_database is defined and owncloud_database %}
 {% for key, value in owncloud_database_map[owncloud_database].iteritems() %}
 {% if key == 'dbpass' %}
   "{{ key }}" => "{{ owncloud_database_password }}",
@@ -11,10 +17,9 @@ $AUTOCONFIG = array(
   "{{ key }}" => "{{ value }}",
 {% endif %}
 {% endfor %}
-{% endif %}
-{% if owncloud_admin_username is defined and owncloud_admin_username != False %}
+{% if owncloud_admin_username != False %}
   "adminlogin" => "{{ owncloud_admin_username }}",
-{% if owncloud_admin_password is defined and owncloud_admin_password != False %}
+{% if owncloud_admin_password != False %}
   "adminpass" => "{{ owncloud_admin_password }}",
 {% endif %}
 {% endif %}
