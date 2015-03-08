@@ -57,11 +57,15 @@ class LookupModule(object):
 
         project_root = find_debops_project(required=False)
         config = read_config(project_root)
-        if conf_template_paths in config['paths']:
-            places = config['paths'][conf_template_paths].split(':')
-        else:
-            places = []
+        places = []
 
+        if conf_template_paths in config['paths']:
+            custom_places = config['paths'][conf_template_paths].split(':')
+            for custom_path in custom_places:
+                if os.path.isabs(custom_path):
+                    places.append(custom_path)
+                else:
+                    places.append(os.path.join(project_root, custom_path))
 
         for term in terms:
             if '_original_file' in inject:
