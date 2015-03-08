@@ -152,6 +152,14 @@
     mode: '0644'
   notify: [ 'Reload sysctl' ]
 
+- name: Ensure that /etc/network/if-pre-up.d exists
+  file:
+    path: '/etc/network/if-pre-up.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
 - name: Configure forwarding in ifupdown if enabled
   template:
     src: 'etc/network/if-pre-up.d/ferm-forward.j2'
