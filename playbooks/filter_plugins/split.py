@@ -124,7 +124,7 @@
 
 import re
 
-def split_string(string, seperator=' '):
+def split_string(string, seperator=None):
     try:
         return string.split(seperator)
     except:
