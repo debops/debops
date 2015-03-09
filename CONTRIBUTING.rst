@@ -1,58 +1,51 @@
 Contributing guidelines
 =======================
 
-- `Philosophy`_
-- `Discussion`_
-- `Issue reporting`_
-    - `Scripts and documentation`_
-    - `Playbooks and roles`_
-    - `Tests`_
-- `Code submissions`_
-- `Code style`_
-- `License agreement`_
+.. contents:: Sections
+   :local:
 
 Philosophy
-^^^^^^^^^^
+----------
 
 - Do one thing well
 - Modularity and flexibility
 - DebOps itself is just a name, it is the sum of its parts
 
 Discussion
-^^^^^^^^^^
+----------
 
 Join us in `#debops <http://webchat.freenode.net/?channels=debops>`_ on Freenode
 or post on the `debops <https://groups.io/org/groupsio/debops>`_
 mailing list.
 
 Issue reporting
-^^^^^^^^^^^^^^^
+---------------
 
 DebOps is officially hosted on Github at https://github.com/debops/debops.
 
 Scripts and documentation
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Checkout the `debops/debops issue tracker <https://github.com/debops/debops/issues>`_.
 
 Playbooks and roles
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 Checkout the `debops/debops-playbooks issue tracker <https://github.com/debops/debops-playbooks/issues>`_.
 
 Tests
------
+~~~~~
 
 Checkout the `debops/test-suite issue tracker <https://github.com/debops/test-suite>`_.
 
 Code submissions
-^^^^^^^^^^^^^^^^
+----------------
 
 We accept `pull requests <https://help.github.com/articles/using-pull-requests>`_
 on everything. Here's a quick work flow:
 
 Fork it
--------
+~~~~~~~
 
 - Fork it into your Github account
 - Clone your fork onto your workstation
@@ -61,7 +54,7 @@ Fork it
     - ``git remote add upstream https://github.com/debops/the-repo``
 
 Make your contribution
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -74,12 +67,12 @@ Please try your best to make great commit messages. Have a read through
 and research how to use ``git add -p``.
 
 Submit your pull request through Github
----------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Select the branch on your repo, click the green PR button and submit it.
 
 Update your fork
-----------------
+~~~~~~~~~~~~~~~~
 
 You should do this before making any commits and after your PR has been accepted.
 
@@ -91,7 +84,7 @@ You should do this before making any commits and after your PR has been accepted
     git push origin master
 
 Code style
-^^^^^^^^^^
+----------
 
 For everything:
 
@@ -105,7 +98,7 @@ For just yaml:
 - Use the multi-line style whenever possible (we're working on migrating to that)
 
 License agreement
-^^^^^^^^^^^^^^^^^
+-----------------
 
 By contributing you agree that these contributions are your own
 (or approved by your employer) and you grant a full, complete, irrevocable

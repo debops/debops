@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.4.3
+------
+
+*Unreleased*
+
+- Rearranged documentation. [drybjed]
+
 v0.4.2
 ------
 
