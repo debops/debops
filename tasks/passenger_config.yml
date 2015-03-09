@@ -6,7 +6,7 @@
 
 - name: Set passenger root
   set_fact:
-   passenger_root: '{{ register_passenger_root.stdout }}'
+   nginx_passenger_root: '{{ register_passenger_root.stdout }}'
 
 - name: Detect passenger ruby
   shell: "passenger-config about ruby-command | grep Command | tail -1 | awk -F: '{print $2}'"
@@ -14,7 +14,7 @@
 
 - name: Set passenger ruby
   set_fact:
-    passenger_ruby: '{{ register_passenger_ruby.stdout }}'
+    nginx_passenger_ruby: '{{ register_passenger_ruby.stdout }}'
 
 - name: Install passenger configuration for nginx
   template:
