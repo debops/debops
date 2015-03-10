@@ -9,6 +9,9 @@ Configure an encrypted headless system to get the password over SSH.
 
 See [SSH to decrypt encrypted LVM during headless server boot?](http://unix.stackexchange.com/a/79203)
 
+If you want to show a message above the password promt, check out my
+related role: [initramfs_message](https://galaxy.ansible.com/list#/roles/2807)
+
 ### Installation
 
 This role requires at least Ansible `v1.3`. To install it, run:
