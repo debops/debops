@@ -9,6 +9,9 @@ v0.2.0
 - Add support for `Phusion Passenger`_ nginx flavor, using external APT
   packages. [rchady, drybjed]
 
+- Automatically enable or disable SSL support in ``nginx`` depending on the
+  presence or absence of ``debops.pki`` local Ansible facts. [drybjed]
+
 .. _Phusion Passenger: https://www.phusionpassenger.com/
 
 v0.1.0
