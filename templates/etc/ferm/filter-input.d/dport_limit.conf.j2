@@ -40,9 +40,11 @@ protocol ({{ item.protocol | default(['tcp']) | join(' ') }}){% if ferm_tpl_syn 
 			set NOP;
 			update seconds {{ item.seconds | default('300') }} hitcount {{ item.hits | default('5') }} @subchain "dport-log-{{ item.dport[0] }}" {
 				mod recent set name "{{ item.destination | default('badguys') }}" {
+{% if ferm_log_issues is defined and ferm_log_issues %}
 					mod limit limit 3/hour limit-burst 5 {
 						LOG log-prefix "iptables-blocked-{{ item.dport[0] }}: " log-level warning;
 					}
+{% endif %}
 					DROP;
 				}
 			}

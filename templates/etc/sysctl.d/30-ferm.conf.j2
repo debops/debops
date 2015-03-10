@@ -1,8 +1,9 @@
 # This file is managed by Ansible, all changes will be lost
 
-{% if (ferm | bool and (ferm_ignore_cap12s | bool or (ansible_local|d() and ansible_local.cap12s|d() and
-       (not ansible_local.cap12s.enabled | bool or
-        (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))) %}
+{% if (ferm | bool and (ansible_local|d() and
+       (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
+       (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+       (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list)))))) %}
 # Enable reverse path filtering
 net.ipv4.conf.default.rp_filter = 1
 net.ipv4.conf.all.rp_filter = 1
