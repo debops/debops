@@ -1,4 +1,6 @@
 ---
+- name: Pre hooks
+  include: "{{ lookup('task_src', 'sshd/pre_main.yml') }}"
 
 - name: Ensure SSH support is installed
   apt:
@@ -41,3 +43,5 @@
   with_items: sshd_register_known_hosts.results
   when: item is defined and item.rc > 0
 
+- name: Post hooks
+  include: "{{ lookup('task_src', 'sshd/post_main.yml') }}"
