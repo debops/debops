@@ -638,6 +638,7 @@ server {
         include /etc/nginx/site-default.d/*.conf;
 
 {% endif %}
+{% block nginx_tpl_block_location %}
 {% if (item.location is defined and item.location) or (item.location_list is defined and item.location_list) %}
 {% if item.location_list is defined and item.location_list %}
 {{ print_location_list(item.location_list) }}
@@ -651,6 +652,7 @@ server {
         }
 
 {% endif %}
+{% endblock %}
 {% block nginx_tpl_block_custom_locations %}
 {% endblock %}
 {% endif %}
