@@ -20,8 +20,8 @@
 
 '''
 
-This file implements the `hook_src` lookup filter for Ansible.  In difference
-to the `file` filter, this searches values based on the `hook-paths`
+This file implements the `task_src` lookup filter for Ansible.  In difference
+to the `file` filter, this searches values based on the `task-paths`
 variable (colon separated) as configured in DebOps.
 
 NOTE: This means this filter relies on DebOps.
@@ -38,7 +38,7 @@ __author__ = "Robert Chady <rchady@sitepen.com>"
 __copyright__ = "Copyright 2015 by Robert Chady <rchady@sitepen.com>"
 __license__ = "GNU General Public LIcense version 3 (GPL v3) or later"
 
-conf_template_paths = 'hook-paths'
+conf_template_paths = 'task-paths'
 
 class LookupModule(object):
 
@@ -69,7 +69,7 @@ class LookupModule(object):
 
         for term in terms:
             if '_original_file' in inject:
-                relative_path = utils.path_dwim_relative(inject['_original_file'], 'hooks', '', self.basedir, check=False)
+                relative_path = utils.path_dwim_relative(inject['_original_file'], 'tasks', '', self.basedir, check=False)
                 places.append(relative_path)
             for path in places:
                 template = os.path.join(path, term)
