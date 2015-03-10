@@ -6,7 +6,7 @@
 
 Configure snapshots with snapper.
 
-Snapper can manage snapshots for the following filesystems vlume manges:
+Snapper can manage snapshots for the following filesystems and volume managers:
 
 * btrfs
 * ext4
