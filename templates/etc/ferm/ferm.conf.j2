@@ -41,9 +41,11 @@ domain $domains table filter {
 					hashlimit-name ICMP-flood
 					hashlimit-htable-expire 3600000
 			ACCEPT;
+{% if ferm_log_issues is defined and ferm_log_issues %}
 			mod limit limit 3/hour limit-burst 2 {
 				LOG log-prefix "iptables-ICMP-flood: ";
 			}
+{% endif %}
 			REJECT reject-with icmp-admin-prohibited;
 		}
 {% else %}
@@ -70,18 +72,22 @@ domain $domains table filter {
 					hashlimit-name SYN-flood
 					hashlimit-htable-expire 3600000
 			RETURN;
+{% if ferm_log_issues is defined and ferm_log_issues %}
 			mod limit limit 3/hour limit-burst 5 {
 				LOG log-prefix "iptables-SYN-flood: ";
 			}
+{% endif %}
 			REJECT reject-with icmp-admin-prohibited;
 		}
 
 {% endif %}
 		# Drop connections from bad guys
 		mod recent name "{{ ferm_block_recent }}" update seconds {{ ferm_block_time }} {
+{% if ferm_log_issues is defined and ferm_log_issues %}
 			mod limit limit 3/hour limit-burst 5 {
 				LOG log-prefix "iptables-recent-{{ ferm_block_recent }}: " log-level warning;
 			}
+{% endif %}
 			REJECT reject-with icmp-admin-prohibited;
 		}
 
@@ -91,9 +97,11 @@ domain $domains table filter {
 {% if ferm_mark_portscan is defined and ferm_mark_portscan %}
 		# Catch bad guys (port scanners)
 		mod recent set name "{{ ferm_block_recent }}" {
+{% if ferm_log_issues is defined and ferm_log_issues %}
 			mod limit limit 3/hour limit-burst 5 {
 				LOG log-prefix "iptables-portscan: " log-level warning;
 			}
+{% endif %}
 		}
 
 {% endif %}
