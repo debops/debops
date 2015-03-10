@@ -59,7 +59,7 @@ class LookupModule(object):
         config = read_config(project_root)
         places = []
 
-        if config['paths'] is defined and conf_template_paths in config['paths']:
+        if 'paths' in config and conf_template_paths in config['paths']:
             custom_places = config['paths'][conf_template_paths].split(':')
             for custom_path in custom_places:
                 if os.path.isabs(custom_path):
