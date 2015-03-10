@@ -9,9 +9,6 @@ ferm: True
 # iptables.
 ferm_flush: True
 
-# Force firewall configuration even if role thinks otherwise
-ferm_ignore_cap12s: False
-
 # List of iptables domains enabled in main ferm firewall
 # Currently supported domains:
 #   - 'ip'  - enables IPv4 support (iptables)
@@ -89,4 +86,11 @@ ferm_external_interfaces:
 # List of interfaces that are connected to internal network, traffic on these
 # interfaces will be forwarded only between hosts on that network
 ferm_internal_interfaces: [ 'br1' ]
+
+# List of global root flags to check
+ferm_root_flags:
+
+  # If these flags are present, ignore status of "cap_net_admin" capability and
+  # manage firewall using ferm
+  cap_net_admin: [ 'ignore-cap12s', 'ignore-cap_net_admin' ]
 
