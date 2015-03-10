@@ -69,7 +69,7 @@ class LookupModule(object):
 
         for term in terms:
             if '_original_file' in inject:
-                relative_path = utils.path_dwim_relative(inject['_original_file'], 'files', '', self.basedir, check=False)
+                relative_path = utils.path_dwim_relative(inject['_original_file'], 'hooks', '', self.basedir, check=False)
                 places.append(relative_path)
             for path in places:
                 template = os.path.join(path, term)
