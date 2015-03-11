@@ -24,6 +24,14 @@
   sudo_user: '{{ gitlab_user }}'
   when: gitlab_register_shell_cloned.stat.exists
 
+- name: Create GitLab source directory
+  file:
+    path: '{{ gitlab_src_path }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0750'
+
 - name: Clone gitlab-shell source code
   git:
     repo: '{{ gitlab_shell_git_repo }}'

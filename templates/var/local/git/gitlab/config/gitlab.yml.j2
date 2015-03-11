@@ -241,7 +241,7 @@ production: &base
   # GitLab Satellites
   satellites:
     # Relative paths are relative to Rails.root (default: tmp/repo_satellites/)
-    path: {{ gitlab_home }}/gitlab-satellites/
+    path: {{ gitlab_satellites_path + "/" }}
     timeout: 30
 
   ## Backup settings
@@ -260,11 +260,11 @@ production: &base
 
   ## GitLab Shell settings
   gitlab_shell:
-    path: {{ gitlab_home }}/gitlab-shell/
+    path: {{ gitlab_app_root_path }}/gitlab-shell/
 
     # REPOS_PATH MUST NOT BE A SYMLINK!!!
-    repos_path: {{ gitlab_home }}/repositories/
-    hooks_path: {{ gitlab_home }}/gitlab-shell/hooks/
+    repos_path: {{ gitlab_repositories_path + "/" }}
+    hooks_path: {{ gitlab_app_root_path }}/gitlab-shell/hooks/
 
     # Git over HTTP
     upload_pack: true

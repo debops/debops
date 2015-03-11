@@ -59,9 +59,6 @@ gitlab_default_theme: '2'
 
 # ---- Backup configuration ----
 
-# Where backups are stored
-gitlab_backup_path: '/var/backups/gitlab'
-
 # Backup frequency (daily, weekly, monthly)
 gitlab_backup_frequency: 'daily'
 
@@ -81,12 +78,32 @@ gitlab_redis_host: 'localhost'
 gitlab_redis_port: '6379'
 
 
+# ---- GitLab directory layout ----
+
+# Home directory
+gitlab_home: '{{ ansible_local.root.home + "/" + gitlab_user }}'
+
+# Application installation directory
+gitlab_app_root_path: '{{ ansible_local.root.app + "/" + gitlab_user }}'
+
+# GitLab repositories
+gitlab_repositories_path: '{{ ansible_local.root.data + "/gitlab/repositories" }}'
+
+# GitLab satellites
+gitlab_satellites_path: '{{ ansible_local.root.data + "/gitlab/satellites" }}'
+
+# Backup path
+gitlab_backup_path: '{{ ansible_local.root.backup + "/gitlab" }}'
+
+# GitLab sources root path
+gitlab_src_path: '{{ ansible_local.root.src + "/gitlab" }}'
+
+
 # ---- Internal application settings ----
 
 # System user, group and home directory
 gitlab_user: 'git'
 gitlab_group: 'git'
-gitlab_home: '/var/local/git'
 
 # List of additional system groups to add to the GitLab user account
 # 'sshusers' is used in DebOps to limit sshd access. See 'debops.auth' role
