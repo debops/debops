@@ -10,10 +10,6 @@ ntp: 'openntpd'
 # and 'ntpd' is supported. Set to False to disable clock management
 ntp_daemon: 'openntpd'
 
-# Force installation of specified ntp daemon if Ansible did not detect the
-# environment correctly
-ntp_install_daemon: False
-
 # Timezone configuration
 # Specify timezone as 'Area/Zone', use 'dpkg-reconfigure tzdata' to see list of
 # possible values. To set the UTC timezone, specify it as 'Etc/UTC'
@@ -56,3 +52,11 @@ ntp_servers: [ '0.debian.pool.ntp.org',
 # NTPd specific.
 # Fudge local clock if time servers is not available
 ntp_fudge: True
+
+# List of global root flags to check
+ntp_root_flags:
+
+  # If these flags are present, ignore status of "cap_sys_time" capability and
+  # install specified ntp daemon
+  cap_sys_time: [ 'ignore-cap12s', 'ignore-cap_sys_time' ]
+
