@@ -66,3 +66,13 @@
 - include: ldapscripts.yml
   when: slapd_ldapscripts is defined and slapd_ldapscripts
 
+- name: Create snapshot task in cron
+  cron:
+    name: 'Create snapshots of OpenLDAP database'
+    special_time: '{{ slapd_snapshot_period }}'
+    cron_file: 'ansible_slapd-snapshot'
+    user: 'root'
+    state: 'present'
+    job: '/usr/local/sbin/slapd-snapshot {{ slapd_snapshot_period }} 30'
+  when: slapd_snapshot is defined and slapd_snapshot
+
