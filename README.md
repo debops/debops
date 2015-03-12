@@ -29,6 +29,8 @@ More information about `debops.pki` can be found in the
 
 - `debops.secret`
 
+This role runs some tasks on `localhost`. The machine running debops needs to have `make` and `openssl` available.
+
 ### Are you using this as a standalone role without DebOps?
 
 You may need to include missing roles from the [DebOps common
