@@ -1,10 +1,10 @@
 Changelog
 =========
 
-v0.2.0
+v0.1.1
 ------
 
-*Unreleased*
+*Released: 2015-03-12*
 
 - Add support for `Phusion Passenger`_ nginx flavor, using external APT
   packages. [rchady, drybjed]
