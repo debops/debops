@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+
+# Authentication mechanisms
+auth_mechanisms	= {{ " ".join(dovecot_auth_mechanisms) }}
+
+{% if 'imaps' in dovecot_protocols or 'pop3s' in dovecot_protocols %}
+# TLS parameters
+{% if dovecot_ssl_required %}
+ssl		= required
+{% else %}
+ssl		= yes
+{% endif %}
+{% set dovecot_tpl_tls_cert_file	= dovecot_pki_path + "/" + dovecot_pki_realm + "/" + dovecot_pki_crt %}
+{% set dovecot_tpl_tls_key_file		= dovecot_pki_path + "/" + dovecot_pki_realm + "/" + dovecot_pki_key %}
+ssl_cert	= <{{ dovecot_tpl_tls_cert_file }}
+ssl_key		= <{{ dovecot_tpl_tls_key_file }}
+ssl_protocols	= !SSLv2 !SSLv3
+ssl_cipher_list	= {{ dovecot_ssl_cipher_list }}
+{% else %}
+{% if 'plain' in dovecot_auth_mechanisms or 'login' in dovecot_auth_mechanisms %}
+# !!! WARNING !!!: This allows cleartext passwords to be sent over the network. If you
+# want your passwords to be safe, enable imaps/pops or disable plaintext authentication!
+disable_plaintext_auth=no
+{% endif %}
+{% endif %}

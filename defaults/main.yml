@@ -1,0 +1,105 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# ---------------------------------
+#   General Dovecot configuration
+# ---------------------------------
+
+
+# .. envvar:: dovecot_protocols
+#
+# List of protocols which should be enabled.
+dovecot_protocols: [ 'imap', 'imaps' ]
+
+
+# .. envvar:: dovecot_auth
+#
+# List of authentication mechanisms enabled.
+dovecot_auth_mechanisms: [ 'plain', 'login' ]
+
+
+# ---------------------------
+#   PKI / TLS configuration
+# ---------------------------
+
+# .. envvar:: dovecot_pki
+#
+# Enable or disable support for TLS in Dovecot (using debops.pki)
+dovecot_pki: True
+
+
+# .. envvar:: dovecot_pki_path
+#
+# Base PKI directory
+dovecot_pki_path: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.base_path }}{% else %}/etc/pki{% endif %}'
+
+
+# .. envvar:: dovecot_pki_realm
+#
+# Default PKI realm used by Dovecot
+dovecot_pki_realm: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.realm }}{% else %}system{% endif %}'
+
+
+# .. envvar:: dovecot_pki_crt
+#
+# Default certificate, relative to ``dovecot_pki_realm`` variable
+dovecot_pki_crt: 'default.crt'
+
+
+# .. envvar:: dovecot_pki_crt
+#
+# Default private key, relative to ``dovecot_pki_realm`` variable
+dovecot_pki_key: 'default.key'
+
+
+# .. envvar:: dovecot_ssl_required
+#
+# Requires SSL/TLS also for non-plaintext authentication
+dovecot_ssl_required: True
+
+
+# .. envvar:: dovecot_ssl_cipher_list
+#
+# SSL ciphers to use
+dovecot_ssl_cipher_list: 'TLSv1+HIGH:!SSLv2:!EXPORT:!RC4:!aNULL:!eNULL:!3DES:@STRENGTH'
+
+
+# --------------------------
+#   Firewall configuration
+# --------------------------
+
+# You can limit access to specific hosts or networks using ``dovecot_allow_*``
+# variables.
+
+# .. envvar:: dovecot_allow_imap
+#
+# List of hosts/networks that can access ``imap`` port (143)
+dovecot_allow_imap: []
+
+
+# .. envvar:: dovecot_allow_imaps
+#
+# List of hosts/networks that can access ``imaps`` port (993)
+dovecot_allow_imaps: []
+
+
+# .. envvar:: dovecot_allow_pop3
+#
+# List of hosts/networks that can access ``pop3`` port (110)
+dovecot_allow_pop3: []
+
+
+# .. envvar:: dovecot_allow_pop3s
+#
+# List of hosts/networks that can access ``pop3s`` port (995)
+dovecot_allow_pop3s: []
+
+
+# .. envvar:: dovecot_allow_managesieve
+#
+# List of hosts/networks that can access ``managesieve`` port (4190)
+dovecot_allow_managesieve: []

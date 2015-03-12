@@ -1,0 +1,42 @@
+---
+
+- name: Install Dovecot IMAP daemon package
+  apt:
+    pkg: 'dovecot-imapd'
+    state: 'present'
+    install_recommends: 'no'
+  when: ('imap' in dovecot_protocols or 'imaps' in dovecot_protocols)
+
+- name: Install Dovecot POP3 daemon package
+  apt:
+    pkg: 'dovecot-pop3d'
+    state: 'present'
+    install_recommends: 'no'
+  when: ('pop3' in dovecot_protocols or 'pop3s' in dovecot_protocols)
+  notify: [ 'Restart dovecot' ]
+
+- name: Install Dovecot ManageSieve server package
+  apt:
+    pkg: 'dovecot-managesieved'
+    state: 'present'
+    install_recommends: 'no'
+  when: ('managesieve' in dovecot_protocols)
+  notify: [ 'Restart dovecot' ]
+
+- name: Generate Dovecot configuration
+  template:
+    src: "{{ lookup('template_src', 'etc/dovecot/local.conf.j2') }}"
+    dest: '/etc/dovecot/local.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart dovecot' ]
+
+- name: Configure firewall for Dovecot
+  template:
+    src: 'etc/ferm/filter-input.d/dovecot.conf.j2'
+    dest: '/etc/ferm/filter-input.d/dovecot.conf'
+    owner: 'root'
+    group: 'adm'
+    mode: '0644'
+  notify: [ 'Restart ferm' ]
