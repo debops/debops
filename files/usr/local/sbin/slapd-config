@@ -244,6 +244,8 @@ readSchema()
 # Copy of schema `readAttribute "$dn" cn`
 # DN in LDAP is $dn
 
+`readAttribute "$dn" olcObjectIdentifier | sed 's/^/\nobjectidentifier /;s/ \(NAME\|DESC\|EQUALITY\|SUBSTR\|SYNTAX\|SINGLE-VALUE\|SUP\)/\n\t\1/g'`
+
 `readAttribute "$dn" olcAttributeTypes | sed 's/^/\nattributetype /;s/ \(NAME\|DESC\|EQUALITY\|SUBSTR\|SYNTAX\|SINGLE-VALUE\|SUP\)/\n\t\1/g'`
 
 `readAttribute "$dn" olcObjectClasses | sed 's/^/\nobjectclass /;s/ \(NAME\|DESC\|SUP\|STRUCTURAL\|AUXILIARY\|MAY\|MUST\)/\n\t\1/g'`
@@ -252,57 +254,99 @@ EOT
 
 schemaFileToLDIF()
 {
-	aidx=0
-	oidx=0
+	sed -e '/^#/d;/^ *$/d' | sed -ne '1h;1!H;${;x;s/[ \t]\+/ /g;s/ \?\n / /g;p;}' | (
+		iidx=0
+		aidx=0
+		oidx=0
 
-	sed -e '/^#/d;/^ *$/d' | sed -ne '1h;1!H;${;x;s/[ \t]\+/ /g;s/ \?\n / /g;p;}' | while read rule; do
-		ruletype="${rule%% *}"
-		case "${ruletype,,}" in
-			attributetype)
-				[ $aidx -eq 0 ] || echo -n "\n"
-				echo -n "olcAttributeTypes: {$aidx}${rule#* }"
-				aidx=$((aidx+1))
-				;;
-			objectclass)
-				[ $oidx -eq 0 ] && echo -n "%%toxa%%" || echo -n "\n"
-				echo -n "olcObjectClasses: {$oidx}${rule#* }"
-				oidx=$((oidx+1))
-				;;
-			*)
-				echo -e "invalid rule in schema file:\n$rule" >&2
-				exit 2
-		esac
-	done
+		iline=""
+		aline=""
+		cline=""
+
+		while read rule; do
+			ruletype="${rule%% *}"
+			case "${ruletype,,}" in
+				objectidentifier)
+					[ $iidx -eq 0 ] || iline="${iline}\n"
+					iline="${iline}olcObjectIdentifier: {$iidx}${rule#* }"
+					iidx=$((iidx+1))
+					;;
+				attributetype)
+					[ $aidx -eq 0 ] || aline="${aline}\n"
+					aline="${aline}olcAttributeTypes: {$aidx}${rule#* }"
+					aidx=$((aidx+1))
+					;;
+				objectclass)
+					[ $oidx -eq 0 ] || cline="${cline}\n"
+					cline="${cline}olcObjectClasses: {$oidx}${rule#* }"
+					oidx=$((oidx+1))
+					;;
+				*)
+					echo -e "invalid rule in schema file:\n$rule" >&2
+					exit 2
+			esac
+		done
+
+
+		cat <<-EOT
+$iline
+$aline
+$cline
+		EOT
+	)
 }
 
 writeSchema()
 {
-	code=`schemaFileToLDIF`
+	schemaFileToLDIF | (
+		read -r identifiers
+		read -r attributes
+		read -r classes
 
-	testSchema "${1}"
-	if [ $? -eq 0 ]; then
-		dn="`schema2DN "${1}"`"
+		testSchema "${1}"
+		if [ $? -eq 0 ]; then
+			dn="$(schema2DN "${1}")"
 
-		ldapmodify $AUTHENTICATION <<-EOT
-dn: ${dn}
+			ldif="dn: ${dn}
 changetype: modify
-replace: olcAttributeTypes
-`echo "$code" | sed 's/%%toxa%%/\\n/g' | sed '1!d;s/\\\\n/\\n/g'`
--
-replace: olcObjectClasses
-`echo "$code" | sed 's/%%toxa%%/\\n/g' | sed '2!d;s/\\\\n/\\n/g'`
--
-		EOT
-	else
-		cn="`schema2CN "${1}" y`"
+"
 
-		ldapadd $AUTHENTICATION <<-EOT
-dn: cn=${cn},cn=schema,cn=config
+			[ -n "$identifiers" ] && ldif="${ldif}replace: olcObjectIdentifier
+$(sed 's/\\n/\n/g' <<<"$identifiers")
+-
+"
+
+			[ -n "$attributes" ] && ldif="${ldif}replace: olcAttributeTypes
+$(sed 's/\\n/\n/g' <<<"$attributes")
+-
+"
+
+			[ -n "$classes" ] && ldif="${ldif}replace: olcObjectClasses
+$(sed 's/\\n/\n/g' <<<"$classes")
+-
+"
+
+			ldapmodify $AUTHENTICATION <<<"$ldif"
+		else
+			cn="$(schema2CN "${1}" y)"
+
+			ldif="dn: cn=${cn},cn=schema,cn=config
 objectClass: olcSchemaConfig
 cn: ${cn}
-`echo "$code" | sed 's/%%toxa%%/\\n/g' | sed 's/\\\\n/\\n/g'`
-		EOT
-	fi
+"
+
+			[ -n "$identifiers" ] && ldif="${ldif}$(sed 's/\\n/\n/g' <<<"$identifiers")
+"
+
+			[ -n "$attributes" ] && ldif="${ldif}$(sed 's/\\n/\n/g' <<<"$attributes")
+"
+
+			[ -n "$classes" ] && ldif="${ldif}$(sed 's/\\n/\n/g' <<<"$classes")
+"
+
+			ldapadd $AUTHENTICATION <<<"$ldif"
+		fi
+	)
 }
 
 deleteSchema()
