@@ -19,6 +19,12 @@ gitlab_database: 'mysql'
 # GitLab will be configured with HTTPS enabled by default
 gitlab_domain: [ 'code.{{ ansible_domain }}' ]
 
+# Webserver authentication realm
+gitlab_nginx_auth_realm: 'GitLab access is restricted'
+
+# Name of webserver access policy to enable (see 'debops.nginx' role)
+gitlab_nginx_access_policy: ''
+
 # E-mail sender name used by GitLab
 gitlab_email_name: 'GitLab'
 
@@ -53,9 +59,6 @@ gitlab_default_theme: '2'
 
 # ---- Backup configuration ----
 
-# Where backups are stored
-gitlab_backup_path: '/var/backups/gitlab'
-
 # Backup frequency (daily, weekly, monthly)
 gitlab_backup_frequency: 'daily'
 
@@ -75,12 +78,32 @@ gitlab_redis_host: 'localhost'
 gitlab_redis_port: '6379'
 
 
+# ---- GitLab directory layout ----
+
+# Home directory
+gitlab_home: '{{ ansible_local.root.home + "/" + gitlab_user }}'
+
+# Application installation directory
+gitlab_app_root_path: '{{ ansible_local.root.app + "/" + gitlab_user }}'
+
+# GitLab repositories
+gitlab_repositories_path: '{{ ansible_local.root.data + "/gitlab/repositories" }}'
+
+# GitLab satellites
+gitlab_satellites_path: '{{ ansible_local.root.data + "/gitlab/satellites" }}'
+
+# Backup path
+gitlab_backup_path: '{{ ansible_local.root.backup + "/gitlab" }}'
+
+# GitLab sources root path
+gitlab_src_path: '{{ ansible_local.root.src + "/gitlab" }}'
+
+
 # ---- Internal application settings ----
 
 # System user, group and home directory
 gitlab_user: 'git'
 gitlab_group: 'git'
-gitlab_home: '/var/local/git'
 
 # List of additional system groups to add to the GitLab user account
 # 'sshusers' is used in DebOps to limit sshd access. See 'debops.auth' role
@@ -109,6 +132,9 @@ gitlab_unicorn_port: '18082'
 
 # unicorn connection timeout in seconds
 gitlab_unicorn_timeout: '60'
+
+# Additional options for Phusion Passenger in a text block format
+gitlab_passenger_options: ''
 
 
 # ---- Compatibility workarounds ----

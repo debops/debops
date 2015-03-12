@@ -26,17 +26,17 @@
     system: True
     state: 'present'
 
-- name: Secure GitLab home directory
+- name: Create GitLab application directory
   file:
-    path: '{{ gitlab_home }}'
+    path: '{{ gitlab_app_root_path }}'
     state: 'directory'
     owner: '{{ gitlab_user }}'
     group: '{{ gitlab_group }}'
     mode: '0750'
 
-- name: Allow access to GitLab home by the webserver
+- name: Allow access to GitLab application directory by the webserver
   acl:
-    name: '{{ gitlab_home }}'
+    name: '{{ gitlab_app_root_path }}'
     entity: 'www-data'
     etype: 'group'
     permissions: 'x'

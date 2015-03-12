@@ -2,6 +2,14 @@
 
 # ---- git clone && git checkout ----
 
+- name: Create GitLab source directory
+  file:
+    path: '{{ gitlab_src_path }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0750'
+
 - name: Clone GitLab CE source code
   git:
     repo: '{{ gitlab_ce_git_repo }}'
@@ -76,7 +84,8 @@
     group: '{{ gitlab_group }}'
     mode: '0750'
   with_items: [ '{{ gitlab_backup_path }}',
-                '{{ gitlab_home + "/gitlab-satellites" }}' ]
+                '{{ gitlab_repositories_path }}',
+                '{{ gitlab_satellites_path }}' ]
 
 
 # ---- Database configuration ----
@@ -134,7 +143,7 @@
 
 - name: Configure custom redis server
   lineinfile:
-    dest: '{{ gitlab_home }}/gitlab/config/resque.yml'
+    dest: '{{ gitlab_ce_git_checkout + "/config/resque.yml" }}'
     regexp: '^production:'
     line: 'production: {{ gitlab_redis }}'
     state: 'present'

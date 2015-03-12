@@ -4,13 +4,13 @@
 
 # gitlab-shell source and install path
 gitlab_shell_git_repo: 'https://gitlab.com/gitlab-org/gitlab-shell.git'
-gitlab_shell_git_dest: '{{ gitlab_home + "/src/" + gitlab_shell_git_repo.split("://")[1] }}'
-gitlab_shell_git_checkout: '{{ gitlab_home + "/gitlab-shell" }}'
+gitlab_shell_git_dest: '{{ gitlab_src_path + "/" + gitlab_shell_git_repo.split("://")[1] }}'
+gitlab_shell_git_checkout: '{{ gitlab_app_root_path + "/gitlab-shell" }}'
 
 # GitLab CE source and install path
 gitlab_ce_git_repo: 'https://gitlab.com/gitlab-org/gitlab-ce.git'
-gitlab_ce_git_dest: '{{ gitlab_home + "/src/" + gitlab_ce_git_repo.split("://")[1] }}'
-gitlab_ce_git_checkout: '{{ gitlab_home + "/gitlab" }}'
+gitlab_ce_git_dest: '{{ gitlab_src_path + "/" + gitlab_ce_git_repo.split("://")[1] }}'
+gitlab_ce_git_checkout: '{{ gitlab_app_root_path + "/gitlab" }}'
 
 
 # ---- GitLab version map ----
@@ -93,6 +93,7 @@ gitlab_database_config:
 # nginx upstream configuration for gitlab service
 gitlab_nginx_upstream:
   enabled: True
+  type: 'rails'
   name: 'gitlab'
   server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab.socket'
 
@@ -100,13 +101,23 @@ gitlab_nginx_upstream:
 gitlab_nginx_server:
   by_role: 'debops.gitlab'
   enabled: True
-  default: False
+  type: 'rails'
   name: '{{ gitlab_domain }}'
   root: '{{ gitlab_ce_git_checkout }}/public'
 
+  access_policy: '{{ gitlab_nginx_access_policy }}'
+  auth_basic_realm: '{{ gitlab_nginx_auth_realm }}'
+
+  error_pages:
+    '502': '/502.html'
+
+  # Phusion Passenger options
+  passenger_user: '{{ gitlab_user }}'
+  passenger_group: '{{ gitlab_group }}'
+  passenger_options: '{{ gitlab_passenger_options }}'
+
   options: |
     client_max_body_size {{ gitlab_nginx_client_max_body_size }};
-    error_page 502 /502.html;
 
   location:
     '/': |

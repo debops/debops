@@ -24,6 +24,14 @@
   sudo_user: '{{ gitlab_user }}'
   when: gitlab_register_shell_cloned.stat.exists
 
+- name: Create GitLab source directory
+  file:
+    path: '{{ gitlab_src_path }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0750'
+
 - name: Clone gitlab-shell source code
   git:
     repo: '{{ gitlab_shell_git_repo }}'
@@ -84,6 +92,15 @@
     owner: '{{ gitlab_user }}'
     group: '{{ gitlab_group }}'
     mode: '0644'
+
+- name: Create GitLab data root directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0750'
+  with_items: [ '{{ gitlab_repositories_path }}', '{{ gitlab_satellites_path }}' ]
 
 - name: Setup gitlab-shell
   shell: ./bin/install chdir={{ gitlab_shell_git_checkout }}
