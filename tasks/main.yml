@@ -1,27 +1,15 @@
 ---
 
-- name: Install Dovecot IMAP daemon package
+- name: Install Dovecot packages
   apt:
-    pkg: 'dovecot-imapd'
+    pkg: '{{ item }}'
     state: 'present'
     install_recommends: 'no'
-  when: ('imap' in dovecot_protocols or 'imaps' in dovecot_protocols)
-
-- name: Install Dovecot POP3 daemon package
-  apt:
-    pkg: 'dovecot-pop3d'
-    state: 'present'
-    install_recommends: 'no'
-  when: ('pop3' in dovecot_protocols or 'pop3s' in dovecot_protocols)
-  notify: [ 'Restart dovecot' ]
-
-- name: Install Dovecot ManageSieve server package
-  apt:
-    pkg: 'dovecot-managesieved'
-    state: 'present'
-    install_recommends: 'no'
-  when: ('managesieve' in dovecot_protocols)
-  notify: [ 'Restart dovecot' ]
+  with_flattened:
+    - [ 'dovecot-core' ]
+    - [ '{{ "dovecot-imapd" if ("imap" in dovecot_protocols or "imaps" in dovecot_protocols) else [] }}' ]
+    - [ '{{ "dovecot-pop3d" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else [] }}' ]
+    - [ '{{ "dovecot-managesieved" if "managesieve" in dovecot_protocols else [] }}' ]
 
 - name: Generate Dovecot configuration
   template:
