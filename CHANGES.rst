@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2015-03-13*
+
+- Add a way to redirect HTTP site to HTTPS conditionally, with configuration
+  being set in a separate file. [drybjed]
+
 v0.1.1
 ------
 
