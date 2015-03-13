@@ -27,13 +27,8 @@ reprepro_admin_email: [ 'root@{{ ansible_domain }}' ]
 
 # ---- Webserver configuration ----
 
-# Subdomain used for the APT repository
-reprepro_subdomain: 'apt'
-
-# List of domains for this APT repository, first domain is the main one
-reprepro_domains: [ '{{ reprepro_subdomain + "." + ansible_domain }}',
-                    '{{ reprepro_subdomain + "." + ansible_domain.split(".")[0] }}',
-                    '{{ reprepro_subdomain }}' ]
+# List of domains for this APT repository
+reprepro_domains: [ '{{ "apt." + ansible_domain }}' ]
 
 # List of IP addresses or CIDR subnets which are allowed to connect to the
 # webserver with the repository. If empty, everyone can access the repository.
