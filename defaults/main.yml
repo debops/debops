@@ -96,8 +96,8 @@ reprepro_distributions: '{{ reprepro_distributions_local +
 # Repositories for local packages
 # By default, debops.reprepro configures two repositories for staging and
 # production. You can only push packages to -staging repository, from which
-# they can be promoted to -prod using 'reprepro pull' on the specific user
-# account.
+# they can be promoted to -production using 'reprepro pull' on the specific
+# user account.
 reprepro_distributions_local:
 
   - Distribution: '{{ reprepro_distribution | lower }}'
@@ -119,9 +119,9 @@ reprepro_distributions_local:
   - Distribution: '{{ reprepro_distribution | lower }}'
     Description: '{{ reprepro_origin }} production repository'
     Origin: '{{ reprepro_origin }}'
-    Label: '{{ reprepro_origin | lower + "-prod" }}'
-    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-prod" }}'
-    Suite: '{{ reprepro_origin | lower + "-prod" }}'
+    Label: '{{ reprepro_origin | lower + "-production" }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-production" }}'
+    Suite: '{{ reprepro_origin | lower + "-production" }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
     Tracking: 'keep'
@@ -239,8 +239,8 @@ reprepro_uploaders_local: |
 # List of pull configurations enabled per distribution
 reprepro_pulls: '{{ reprepro_pulls_local }}'
 
-# Pull configuration for local -staging and -prod repositories, packages from
-# -staging are pulled to -prod
+# Pull configuration for local -staging and -production repositories, packages
+# from -staging are pulled to -production
 reprepro_pulls_local:
 
   - Distribution: '{{ reprepro_distribution | lower }}'
