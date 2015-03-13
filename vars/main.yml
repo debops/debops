@@ -5,6 +5,7 @@ reprepro_nginx_server_http:
   by_role: 'debops.reprepro'
   enabled: True
   ssl: False
+  redirect_to_ssl: '{{ reprepro_nginx_access_policy }}'
   filename: '{{ reprepro_domains[0] + "_http" }}'
   name: '{{ reprepro_domains }}'
   root: '{{ reprepro_repository_path }}'
@@ -28,6 +29,9 @@ reprepro_nginx_server_https:
   filename: '{{ reprepro_domains[0] + "_https" }}'
   name: '{{ reprepro_domains }}'
   root: '{{ reprepro_repository_path }}'
+
+  access_policy: '{{ reprepro_nginx_access_policy }}'
+  auth_basic_realm: '{{ reprepro_nginx_auth_realm }}'
 
   options: |
     client_max_body_size {{ reprepro_max_body_size }}M;

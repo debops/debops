@@ -37,7 +37,8 @@
     owner: '{{ reprepro_user }}'
     group: '{{ reprepro_group }}'
     mode: '0755'
-  with_items: [ 'conf', 'tmp' ]
+  with_items: [ 'conf/distributions', 'conf/updates',
+                'conf/pulls', 'conf/uploaders', 'tmp' ]
 
 - name: Create reprepro repository
   file:
@@ -54,12 +55,43 @@
     owner: '{{ reprepro_user }}'
     group: '{{ reprepro_group }}'
     mode: '0644'
-  with_items: [ 'distributions', 'incoming', 'options', 'pulls', 'updates' ]
+  with_items: [ 'incoming', 'options' ]
+
+- name: Configure distributions configuration files
+  template:
+    src: 'var/lib/reprepro/conf/distributions.j2'
+    dest: '{{ reprepro_home + "/conf/distributions/" + item.Distribution | lower + "_" + item.Codename + ".conf" }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0644'
+  with_items: reprepro_distributions
+  when: ((item.Distribution == reprepro_distribution | lower) and
+         (item.Codename in reprepro_codenames))
+
+- name: Configure updates configuration files
+  template:
+    src: 'var/lib/reprepro/conf/updates.j2'
+    dest: '{{ reprepro_home + "/conf/updates/" + item.Name + ".conf" }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0644'
+  with_items: reprepro_updates
+  when: (item.Distribution == reprepro_distribution | lower)
+
+- name: Configure pulls configuration files
+  template:
+    src: 'var/lib/reprepro/conf/pulls.j2'
+    dest: '{{ reprepro_home + "/conf/pulls/" + item.Name + ".conf" }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0644'
+  with_items: reprepro_pulls
+  when: (item.Distribution == reprepro_distribution | lower)
 
 - name: Configure uploaders configuration files
   template:
     src: 'var/lib/reprepro/conf/uploaders.j2'
-    dest: '{{ reprepro_home + "/conf/" + item.Filename }}'
+    dest: '{{ reprepro_home + "/conf/uploaders/" + item.Filename }}'
     owner: '{{ reprepro_user }}'
     group: '{{ reprepro_group }}'
     mode: '0644'

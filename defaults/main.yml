@@ -27,13 +27,8 @@ reprepro_admin_email: [ 'root@{{ ansible_domain }}' ]
 
 # ---- Webserver configuration ----
 
-# Subdomain used for the APT repository
-reprepro_subdomain: 'apt'
-
-# List of domains for this APT repository, first domain is the main one
-reprepro_domains: [ '{{ reprepro_subdomain + "." + ansible_domain }}',
-                    '{{ reprepro_subdomain + "." + ansible_domain.split(".")[0] }}',
-                    '{{ reprepro_subdomain }}' ]
+# List of domains for this APT repository
+reprepro_domains: [ '{{ "apt." + ansible_domain }}' ]
 
 # List of IP addresses or CIDR subnets which are allowed to connect to the
 # webserver with the repository. If empty, everyone can access the repository.
@@ -45,6 +40,12 @@ reprepro_allow_upload: []
 
 # Maximum size of upload in MB
 reprepro_max_body_size: '20'
+
+# Webserver authentication realm
+reprepro_nginx_auth_realm: 'APT access is restricted'
+
+# Name of webserver access policy to enable (see 'debops.nginx' role)
+reprepro_nginx_access_policy: ''
 
 
 # ---- Internal reprepro configuration ----
@@ -95,8 +96,8 @@ reprepro_distributions: '{{ reprepro_distributions_local +
 # Repositories for local packages
 # By default, debops.reprepro configures two repositories for staging and
 # production. You can only push packages to -staging repository, from which
-# they can be promoted to -prod using 'reprepro pull' on the specific user
-# account.
+# they can be promoted to -production using 'reprepro pull' on the specific
+# user account.
 reprepro_distributions_local:
 
   - Distribution: '{{ reprepro_distribution | lower }}'
@@ -105,7 +106,7 @@ reprepro_distributions_local:
     Label: '{{ reprepro_origin | lower + "-staging" }}'
     Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
     Suite: '{{ reprepro_origin | lower + "-staging" }}'
-    Uploaders: 'uploaders.{{ reprepro_origin | lower }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
     Tracking: 'keep'
@@ -118,9 +119,9 @@ reprepro_distributions_local:
   - Distribution: '{{ reprepro_distribution | lower }}'
     Description: '{{ reprepro_origin }} production repository'
     Origin: '{{ reprepro_origin }}'
-    Label: '{{ reprepro_origin | lower + "-prod" }}'
-    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-prod" }}'
-    Suite: '{{ reprepro_origin | lower + "-prod" }}'
+    Label: '{{ reprepro_origin | lower + "-production" }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-production" }}'
+    Suite: '{{ reprepro_origin | lower + "-production" }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
     Tracking: 'keep'
@@ -137,7 +138,7 @@ reprepro_distributions_local_backports:
     Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
     Codename: '{{ reprepro_distribution_release }}-backports'
     Suite: 'stable-backports'
-    Uploaders: 'uploaders.wheezy-backports'
+    Uploaders: 'uploaders/wheezy-backports'
     Label: '{{ reprepro_distribution }}'
     Origin: '{{ reprepro_origin }}'
     Scripts: |
@@ -220,11 +221,11 @@ reprepro_incoming_allow:
 # 'conf/' directory)
 reprepro_uploaders:
 
-  - Filename: 'uploaders.{{ reprepro_origin | lower }}'
+  - Filename: '{{ reprepro_origin | lower }}'
     Contents: |
       {{ reprepro_uploaders_local }}
 
-  - Filename: 'uploaders.wheezy-backports'
+  - Filename: 'wheezy-backports'
     Contents: |
       {{ reprepro_uploaders_local }}
 
@@ -238,8 +239,8 @@ reprepro_uploaders_local: |
 # List of pull configurations enabled per distribution
 reprepro_pulls: '{{ reprepro_pulls_local }}'
 
-# Pull configuration for local -staging and -prod repositories, packages from
-# -staging are pulled to -prod
+# Pull configuration for local -staging and -production repositories, packages
+# from -staging are pulled to -production
 reprepro_pulls_local:
 
   - Distribution: '{{ reprepro_distribution | lower }}'
@@ -258,14 +259,14 @@ reprepro_updates_debian:
 
   - Distribution: 'debian'
     Name: 'debian-wheezy'
-    Method: 'http://cdn.debian.net/debian'
+    Method: 'http://http.debian.net/debian'
     Fallback: 'http://ftp.us.debian.org/debian'
     Suite: 'wheezy'
     VerifyRelease: '46925553'
 
   - Distribution: 'debian'
     Name: 'debian-wheezy-updates'
-    Method: 'http://cdn.debian.net/debian'
+    Method: 'http://http.debian.net/debian'
     Fallback: 'http://ftp.us.debian.org/debian'
     Suite: 'wheezy-updates'
     VerifyRelease: '46925553'
