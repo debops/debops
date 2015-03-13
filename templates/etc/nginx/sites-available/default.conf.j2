@@ -75,6 +75,12 @@
 #       server name specified in item.name list.
 #
 #
+#   - item.redirect_to_ssl: True/False
+#       Optional. If True, redirect connection from HTTP to HTTPS version of
+#       the site. Site is expected to be configured in a separate configuration
+#       file.
+#
+#
 #   - item.ssl: True/False
 #       Optional. Enable or disable HTTPS for this server configuration (HTTPS
 #       is enabled by default for all servers, you can disable it selectively
@@ -515,7 +521,7 @@ server {
 
     ---- Code below is shared between HTTP and HTTPS ----
 #}
-{% if (not nginx_tpl_ssl and (item.redirect is defined and item.redirect)) %}
+{% if (not nginx_tpl_ssl and ((item.redirect is defined and item.redirect) or (item.redirect_to_ssl is defined and item.redirect_to_ssl))) %}
         return {{ item.redirect_code | default(nginx_tpl_default_redirect_code) }} {{ nginx_tpl_http_redirect }};
 {% elif (nginx_tpl_ssl and (item.redirect_ssl is defined and item.redirect_ssl)) %}
         return {{ item.redirect_code | default(nginx_tpl_default_redirect_code) }} {{ item.redirect_ssl }};
