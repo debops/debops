@@ -11,6 +11,15 @@
     - [ '{{ "dovecot-pop3d" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else [] }}' ]
     - [ '{{ "dovecot-managesieved" if "managesieve" in dovecot_protocols else [] }}' ]
 
+- name: Disable default configuration
+  lineinfile:
+    dest: '/etc/dovecot/conf.d/{{ item.path }}'
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    backrefs: 'yes'
+  with_items:
+    - { path: '10-auth.conf', regexp: '^(!include auth-system\.conf\.ext)', line: '#\1' }
+
 - name: Generate Dovecot configuration
   template:
     src: "{{ lookup('template_src', 'etc/dovecot/local.conf.j2') }}"

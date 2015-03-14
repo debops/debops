@@ -2,6 +2,20 @@
 
 # Authentication mechanisms
 auth_mechanisms	= {{ " ".join(dovecot_auth_mechanisms) }}
+{% if dovecot_user_accounts == 'system' %}
+passdb {
+    driver = pam
+    args = session=yes dovecot
+}
+{% endif %}
+
+# User/Mailbox settings
+{% if dovecot_user_accounts == 'system' %}
+userdb {
+    driver = passwd
+    args = blocking=no
+}
+{% endif %}
 
 {% if 'imaps' in dovecot_protocols or 'pop3s' in dovecot_protocols %}
 # TLS parameters
