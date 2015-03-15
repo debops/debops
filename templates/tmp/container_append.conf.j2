@@ -1,0 +1,11 @@
+{% if item.capabilities_drop is defined and item.capabilities_drop %}
+lxc.cap.drop = {{ item.capabilities_drop | join(" ") }}
+
+{% endif %}
+{% if item.auto is undefined or (item.auto is defined and item.auto) %}
+lxc.start.auto = 1
+
+{% endif %}
+{% if item.options is defined and item.options %}
+{{ item.options }}
+{% endif %}

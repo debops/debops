@@ -13,6 +13,14 @@
         (item.name not in lxc_register_existing_containers.stdout_lines) and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))
 
+- name: Generate temporary appended configuration for new containers
+  template: src=tmp/container_append.conf.j2 dest=/tmp/lxc_temp_{{ item.name }}_append.conf
+            owner=root group=root mode=0600
+  with_items: lxc_containers
+  when: (item.name is defined and item.name) and
+        (item.name not in lxc_register_existing_containers.stdout_lines) and
+        (item.state is undefined or (item.state is defined and item.state != 'absent'))
+
 - name: Create LXC containers
   command: lxc-create -n {{ item.name }} -t {{ item.template | default(lxc_default_template) }}
            {% if item.config is undefined %}
@@ -35,8 +43,12 @@
   when: (item.name is defined and item.name) and
         (item.state is undefined or (item.state is defined and item.state != 'absent'))
 
-- name: Remove temporate configuration files
+- name: Remove temporary configuration files
   file: dest=/tmp/lxc_temp_{{ item.name }}.conf state=absent
+  with_items: lxc_containers
+
+- name: Remove temporary append configuration files
+  file: dest=/tmp/lxc_temp_{{ item.name }}_append.conf state=absent
   with_items: lxc_containers
 
 - name: Check status of existing LXC containers
