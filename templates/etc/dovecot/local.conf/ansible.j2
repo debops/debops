@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+
+{% set dovecot_tpl_localconf_parts = [
+  'auth',
+  'mailbox',
+  'tls',
+  'custom' ] %}
+{% for part in dovecot_tpl_localconf_parts %}
+{% include part + '.j2' %}
+{% endfor %}
+
