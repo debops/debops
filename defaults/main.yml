@@ -104,14 +104,24 @@ lxc_template_debootstrap_mirror: 'http://http.debian.net/debian'
 # creation takes longer, but resulting system is more secure.
 lxc_template_security_upgrade: True
 
-# List of packages downloaded and installed by debootstrap
-lxc_template_debootstrap_packages: [ 'ifupdown', 'locales', 'libui-dialog-perl', 'dialog',
-                                     'isc-dhcp-client', 'netbase', 'net-tools', 'iproute',
-                                     'openssh-server', 'sudo', 'lsb-release', 'python',
-                                     'python-apt', 'python-pycurl', 'make', 'git',
-                                     'ncurses-term', 'iputils-ping', 'debian-archive-keyring',
-                                     'apt-transport-https', 'vim-tiny', 'cron', 'curl',
-                                     'openssl', 'ca-certificates', 'resolvconf', 'rdnssd' ]
+# Lists of packages downloaded and installed by debootstrap
+lxc_template_debootstrap_base_packages: [ 'ifupdown', 'locales', 'libui-dialog-perl', 'dialog',
+                                          'isc-dhcp-client', 'netbase', 'net-tools', 'iproute',
+                                          'openssh-server' ]
+
+lxc_template_debootstrap_ansible_packages: [ 'sudo', 'lsb-release', 'make', 'git',
+                                             'python', 'python-apt', 'python-pycurl' ]
+
+lxc_template_debootstrap_system_packages: [ 'ncurses-term', 'debian-archive-keyring',
+                                            'apt-transport-https', 'vim-tiny', 'cron', 'curl',
+                                            'openssl', 'ca-certificates' ]
+
+lxc_template_debootstrap_network_packages: [ 'iputils-ping', 'resolvconf', 'rdnssd' ]
+
+lxc_template_debootstrap_packages: '{{ lxc_template_debootstrap_base_packages +
+                                       lxc_template_debootstrap_ansible_packages +
+                                       lxc_template_debootstrap_system_packages +
+                                       lxc_template_debootstrap_network_packages }}'
 
 # List of POSIX capabilities which should be automatically dropped in all
 # containers created by the 'debops' template, without the 'cap_' prefix.
