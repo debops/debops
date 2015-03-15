@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This file is managed by Ansible, all changes will be lost
+# {{ ansible_managed }}
 
 # lxc: linux Container library
 
@@ -98,12 +98,71 @@ EOF
     echo "{{ lxc_template_admin_authorized_key }}" > $rootfs/home/{{ lxc_template_admin_account }}/.ssh/authorized_keys
     chroot $rootfs chown -R {{ lxc_template_admin_account }}:{{ lxc_template_admin_account }} /home/{{ lxc_template_admin_account }}/.ssh
 
+{% if lxc_hidepid is defined and lxc_hidepid %}
+    # Create system group for /proc access
+    chroot $rootfs addgroup --system {{ lxc_hidepid_group }}
+
+{% endif %}
     # Set root password in a container
     echo "root:{{ lxc_template_root_password }}" | chroot $rootfs chpasswd
     echo "Container root password is '{{ lxc_template_root_password }}'"
 
     # Unlock service startup
     rm -rf $rootfs/usr/sbin/policy-rc.d
+
+    return 0
+}
+
+debops_configuration()
+{
+    path=$1
+    rootfs=$2
+    hostname=$3
+    arch=$4
+
+{% if lxc_hidepid is defined and lxc_hidepid %}
+    # Get the GID of '{{ lxc_hidepid_group }}' inside the container
+    hidepid_group="$(chroot $rootfs getent group {{ lxc_hidepid_group }} | cut -d: -f3)"
+
+    # Configure the /proc with specific gid for the container
+    echo "" >> $path/config
+    echo "# Custom /proc mount point" >> $path/config
+    echo "lxc.mount.entry = proc proc proc nodev,noexec,nosuid,hidepid={{ lxc_hidepid_level }},gid=${hidepid_group} 0 0" >> $path/config
+
+{% endif %}
+{% if lxc_capabilities_drop is defined and lxc_capabilities_drop %}
+    ## Drop these POSIX capabilities in all containers
+    echo "" >> $path/config
+    echo "# Drop these POSIX capabilities in all containers" >> $path/config
+    echo "lxc.cap.drop = {{ lxc_capabilities_drop | join(' ') }}" >> $path/config
+{% endif %}
+{% if lxc_template_capabilities_drop is defined and lxc_template_capabilities_drop %}
+    ## Drop these POSIX capabilities in containers
+    ## created by this template
+    echo "" >> $path/config
+    echo "# Drop these POSIX capabilities in containers created by $(basename $0)" >> $path/config
+    echo "lxc.cap.drop = {{ lxc_template_capabilities_drop | join(' ') }}" >> $path/config
+{% endif %}
+{% if lxc_template_config_options is defined and lxc_template_config_options %}
+
+    ## Additional template options
+    echo "" >> $path/config
+    echo "# Custom template options" >> $path/config
+
+    cat <<EOF >> $path/config
+{{ lxc_template_config_options }}
+EOF
+
+{% endif %}
+    if [ -r /tmp/lxc_temp_${hostname}_append.conf ] ; then
+        echo "" >> $path/config
+        echo "# Custom container options" >> $path/config
+        cat /tmp/lxc_temp_${hostname}_append.conf >> $path/config
+    fi
+    if [ $? -ne 0 ]; then
+        echo "Failed to add configuration"
+        return 1
+    fi
 
     return 0
 }
@@ -172,7 +231,7 @@ EOF
     else
         encoding=$(echo $LANG | cut -d. -f2)
         chroot $rootfs sed -e "s/^# \(${LANG} ${encoding}\)/\1/" \
-            -i /etc/locale.gen 2>/dev/null
+            -i /etc/locale.gen 2> /dev/null
         chroot $rootfs locale-gen $LANG $encoding
         chroot $rootfs update-locale LANG=$LANG
     fi
@@ -200,6 +259,9 @@ EOF
         DPKG_MAINTSCRIPT_PACKAGE=openssh DPKG_MAINTSCRIPT_NAME=postinst chroot $rootfs /var/lib/dpkg/info/openssh-server.postinst configure
         sed -i "s/root@$(hostname)/root@$hostname/g" $rootfs/etc/ssh/ssh_host_*.pub
 
+	# Don't allow root login with password
+	sed -i "s/PermitRootLogin yes/PermitRootLogin without-password/" $rootfs/etc/ssh/sshd_config
+
         if [ -f "$rootfs/etc/init/ssh.conf.disabled" ]; then
             mv $rootfs/etc/init/ssh.conf.disabled $rootfs/etc/init/ssh.conf
         fi
@@ -219,8 +281,10 @@ EOF
         echo "Timezone in container is not configured. Adjust it manually."
     fi
 
-    echo "root:root" | chroot $rootfs chpasswd
-    echo "Root password is 'root', please change !"
+    password="$(dd if=/dev/urandom bs=6 count=1 2> /dev/null | base64)"
+
+    echo "root:$password" | chroot $rootfs chpasswd
+    echo "Root password is '$password', please change !"
 
     return 0
 }
@@ -337,9 +401,15 @@ copy_configuration()
     ## Add all the includes
     echo "" >> $path/config
     echo "# Common configuration" >> $path/config
-    if [ -e "${LXC_TEMPLATE_CONFIG}/debian.common.conf" ]; then
-        echo "lxc.include = ${LXC_TEMPLATE_CONFIG}/debian.common.conf" >> $path/config
+{% if lxc_hidepid is defined and lxc_hidepid %}
+    if [ -e "${LXC_TEMPLATE_CONFIG}/debops.hidepid.conf" ]; then
+        echo "lxc.include = ${LXC_TEMPLATE_CONFIG}/debops.hidepid.conf" >> $path/config
     fi
+{% else %}
+    if [ -e "${LXC_TEMPLATE_CONFIG}/debops.common.conf" ]; then
+        echo "lxc.include = ${LXC_TEMPLATE_CONFIG}/debops.common.conf" >> $path/config
+    fi
+{% endif %}
     if [ -e "${LXC_TEMPLATE_CONFIG}/debian.${release}.conf" ]; then
         echo "lxc.include = ${LXC_TEMPLATE_CONFIG}/debian.${release}.conf" >> $path/config
     fi
@@ -347,7 +417,7 @@ copy_configuration()
     ## Add the container-specific config
     echo "" >> $path/config
     echo "# Container specific configuration" >> $path/config
-    grep -q "^lxc.rootfs" $path/config 2>/dev/null || echo "lxc.rootfs = $rootfs" >> $path/config
+    grep -q "^lxc.rootfs" $path/config 2> /dev/null || echo "lxc.rootfs = $rootfs" >> $path/config
 
     cat <<EOF >> $path/config
 lxc.mount = $path/fstab
@@ -403,7 +473,7 @@ if [ $? -ne 0 ]; then
 fi
 eval set -- "$options"
 
-if which dpkg >/dev/null 2>&1 ; then
+if which dpkg > /dev/null 2>&1 ; then
     arch=$(dpkg --print-architecture)
 else
     arch=$(uname -m)
@@ -477,12 +547,10 @@ if [ "$(id -u)" != "0" ]; then
     exit 1
 fi
 
-current_release=`wget ${MIRROR}/dists/stable/Release -O - 2>/dev/null |\
-head |awk '/^Codename: (.*)$/ { print $2; }'`
+current_release=`wget ${MIRROR}/dists/stable/Release -O - 2> /dev/null | head |awk '/^Codename: (.*)$/ { print $2; }'`
 release=${release:-${current_release}}
 valid_releases=('squeeze' 'wheezy' 'jessie' 'sid')
-if [[ ! "${valid_releases[*]}" =~ (^|[^[:alpha:]])$release([^[:alpha:]]|$) ]]
-then
+if [[ ! "${valid_releases[*]}" =~ (^|[^[:alpha:]])$release([^[:alpha:]]|$) ]]; then
     echo "Invalid release ${release}, valid ones are: ${valid_releases[*]}"
     exit 1
 fi
@@ -490,7 +558,7 @@ fi
 # detect rootfs
 config="$path/config"
 if [ -z "$rootfs" ]; then
-    if grep -q '^lxc.rootfs' $config 2>/dev/null ; then
+    if grep -q '^lxc.rootfs' $config 2> /dev/null ; then
         rootfs=$(awk -F= '/^lxc.rootfs =/{ print $2 }' $config)
     else
         rootfs=$path/rootfs
@@ -517,6 +585,12 @@ if [ $? -ne 0 ]; then
 fi
 
 copy_configuration $path $rootfs $name $arch
+if [ $? -ne 0 ]; then
+    echo "failed write configuration file"
+    exit 1
+fi
+
+debops_configuration $path $rootfs $name $arch
 if [ $? -ne 0 ]; then
     echo "failed write configuration file"
     exit 1

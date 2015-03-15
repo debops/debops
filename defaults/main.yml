@@ -54,7 +54,6 @@ lxc_configuration_map:
     lxc.network.type = veth
     lxc.network.link = {{ lxc_interface_external }}
     lxc.network.flags = up
-    lxc.start.auto = 1
 
   # Configuration with two network interfaces, not tested at the moment
   external_internal: |
@@ -64,14 +63,15 @@ lxc_configuration_map:
     lxc.network.type = veth
     lxc.network.link = {{ lxc_interface_internal }}
     lxc.network.flags = up
-    lxc.start.auto = 1
 
   # Configuration for a container behind NAT
   nat: |
     lxc.network.type = veth
     lxc.network.link = {{ lxc_interface_nat }}
     lxc.network.flags = up
-    lxc.start.auto = 1
+
+# List of default POSIX capabilities which should be dropped in all LXC containers
+lxc_capabilities_drop: [ 'mknod', 'sys_admin', 'sys_rawio', 'syslog', 'wake_alarm' ]
 
 
 # ---- Configure custom templates ----
@@ -108,7 +108,25 @@ lxc_template_debootstrap_packages: [ 'ifupdown', 'locales', 'libui-dialog-perl',
                                      'python-apt', 'python-pycurl', 'make', 'git',
                                      'ncurses-term', 'iputils-ping', 'debian-archive-keyring',
                                      'apt-transport-https', 'vim-tiny', 'cron', 'curl',
-                                     'openssl', 'ca-certificates' ]
+                                     'openssl', 'ca-certificates', 'resolvconf', 'rdnssd' ]
+
+# List of POSIX capabilities which should be automatically dropped in all
+# containers created by the 'debops' template, without the 'cap_' prefix.
+lxc_template_capabilities_drop: []
+
+# Hide processes of other users in created LXC containers
+lxc_hidepid: True
+
+# hidepid= level to use (choices: 0, 1, 2)
+lxc_hidepid_level: '2'
+
+# System group which will see all processes in the container
+lxc_hidepid_group: 'procadmins'
+
+# Additional LXC configuration added to the container configuration files
+# created by 'debops' template, in text block format.
+lxc_template_config_options: ''
+
 
 # ---- Salt integration ----
 
@@ -164,6 +182,11 @@ lxc_default_template: 'debops'
 #                            a "shortcut" to select specific config file from /etc/lxc/*
 #                            (for example, you can specify 'network: "nat"' and host
 #                            will be configured with config file from /etc/lxc/nat.conf).
+#   - capabilities_drop: []  POSIX capabilities which should be dropped in this container,
+#                            without the "cap_" prefix. See capabilities(7) for list of
+#                            available capabilities.
+#   - options: |             text block, will be added at the end of the configuration
+#                            file.
 
 # List of parameters recognized with 'config: True' (generated configuration):
 #   - network: ''            currently you can specify 'external' or 'nat'
@@ -174,8 +197,6 @@ lxc_default_template: 'debops'
 #   - auto: True/False       by default containers are configured to start
 #                            automatically at boot; using this option you can
 #                            disable autostart of a container.
-#   - options: |             text block, will be added at the end of the configuration
-#                            file.
 
 # List of LXC containers managed by Ansible.
 lxc_containers: []
