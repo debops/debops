@@ -36,7 +36,7 @@
     nginx_version: '{{ nginx_register_version.stdout | default("0.0") }}'
 
 - name: Get list of nameservers configured in /etc/resolv.conf
-  shell: grep nameserver /etc/resolv.conf | awk '{print $2}' | sed -e 'N;s/\n/ /'
+  shell: grep -E '^nameserver\s' /etc/resolv.conf | awk '{print $2}' | sed -e 'N;s/\n/ /'
   register: nginx_register_nameservers
   changed_when: False
 
