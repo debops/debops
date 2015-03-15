@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Unreleased*
+
+- Be more explicit while getting the list of nameservers from
+  ``/etc/resolv.conf`` [drybjed]
+
 v0.1.2
 ------
 
