@@ -98,6 +98,11 @@ EOF
     echo "{{ lxc_template_admin_authorized_key }}" > $rootfs/home/{{ lxc_template_admin_account }}/.ssh/authorized_keys
     chroot $rootfs chown -R {{ lxc_template_admin_account }}:{{ lxc_template_admin_account }} /home/{{ lxc_template_admin_account }}/.ssh
 
+{% if lxc_hidepid is defined and lxc_hidepid %}
+    # Create system group for /proc access
+    chroot $rootfs addgroup --system {{ lxc_hidepid_group }}
+
+{% endif %}
     # Set root password in a container
     echo "root:{{ lxc_template_root_password }}" | chroot $rootfs chpasswd
     echo "Container root password is '{{ lxc_template_root_password }}'"
@@ -115,6 +120,16 @@ debops_configuration()
     hostname=$3
     arch=$4
 
+{% if lxc_hidepid is defined and lxc_hidepid %}
+    # Get the GID of '{{ lxc_hidepid_group }}' inside the container
+    hidepid_group="$(chroot $rootfs getent group {{ lxc_hidepid_group }} | cut -d: -f3)"
+
+    # Configure the /proc with specific gid for the container
+    echo "" >> $path/config
+    echo "# Custom /proc mount point" >> $path/config
+    echo "lxc.mount.entry = proc proc proc nodev,noexec,nosuid,hidepid={{ lxc_hidepid_level }},gid=${hidepid_group} 0 0" >> $path/config
+
+{% endif %}
 {% if lxc_capabilities_drop is defined and lxc_capabilities_drop %}
     ## Drop these POSIX capabilities in all containers
     echo "" >> $path/config
@@ -386,9 +401,15 @@ copy_configuration()
     ## Add all the includes
     echo "" >> $path/config
     echo "# Common configuration" >> $path/config
-    if [ -e "${LXC_TEMPLATE_CONFIG}/debian.common.conf" ]; then
-        echo "lxc.include = ${LXC_TEMPLATE_CONFIG}/debian.common.conf" >> $path/config
+{% if lxc_hidepid is defined and lxc_hidepid %}
+    if [ -e "${LXC_TEMPLATE_CONFIG}/debops.hidepid.conf" ]; then
+        echo "lxc.include = ${LXC_TEMPLATE_CONFIG}/debops.hidepid.conf" >> $path/config
     fi
+{% else %}
+    if [ -e "${LXC_TEMPLATE_CONFIG}/debops.common.conf" ]; then
+        echo "lxc.include = ${LXC_TEMPLATE_CONFIG}/debops.common.conf" >> $path/config
+    fi
+{% endif %}
     if [ -e "${LXC_TEMPLATE_CONFIG}/debian.${release}.conf" ]; then
         echo "lxc.include = ${LXC_TEMPLATE_CONFIG}/debian.${release}.conf" >> $path/config
     fi

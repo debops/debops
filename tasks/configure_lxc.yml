@@ -21,6 +21,12 @@
 
 # ---- Configure custom templates ----
 
+- name: Prepare LXC common configuration
+  template: src=usr/share/lxc/config/{{ item }}.j2
+            dest=/usr/share/lxc/config/{{ item }}
+            owner=root group=root mode=0644
+  with_items: [ 'debops.common.conf', 'debops.hidepid.conf' ]
+
 - name: Prepare LXC host templates
   template: src=usr/share/lxc/templates/lxc-{{ item }}.j2
             dest=/usr/share/lxc/templates/lxc-{{ item }}
