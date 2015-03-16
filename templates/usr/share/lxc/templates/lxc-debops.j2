@@ -166,6 +166,15 @@ EOF
         echo "# Custom container options" >> $path/config
         cat /tmp/lxc_temp_${hostname}_append.conf >> $path/config
     fi
+
+{% if lxc_template_autostart is defined and lxc_template_autostart %}
+    if ! $(grep -q -E '^lxc\.start\.auto\s' $path/config) ; then
+        echo "" >> $path/config
+        echo "# Start container at system boot" >> $path/config
+        echo "lxc.start.auto = 1" >> $path/config
+    fi
+
+{% endif %}
     if [ $? -ne 0 ]; then
         echo "Failed to add configuration"
         return 1
