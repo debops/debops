@@ -76,39 +76,52 @@ lxc_capabilities_drop: [ 'mknod', 'sys_admin', 'sys_rawio', 'syslog', 'wake_alar
 
 # ---- Configure custom templates ----
 
-# Length of generated root password
-lxc_template_root_password_length: '20'
-
-# Definition of root password (by default it will be randomly generated and
-# stored in secrets)
-lxc_template_root_password: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/lxc/container/root/password chars=ascii,numbers,digits,hexdigits length=" + lxc_template_root_password_length) }}'
-
-# SSH public key to put in root account of new container
-lxc_template_root_authorized_key: '{{ lookup("pipe", "ssh-add -L") }}'
-
 # Name of administrator account to create (by default, your username)
-lxc_template_admin_account: '{{ lookup("env","USER") }}'
+lxc_template_admin_name: '{{ ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER") }}'
+
+# GECOS comment which will be set on the admin account
+lxc_template_admin_gecos: 'System Administrator'
+
+# Home directory for administrator account
+lxc_template_admin_home: '{{ "/home/" + lxc_template_admin_name }}'
+
+# Should the admin account be created as system account (UID/GID below <1000)?
+lxc_template_admin_system: False
+
+# Admin account will have its own group, here you can specify a system group
+# which will be created for administrative access through 'sudo'
+lxc_template_admin_group: 'admins'
 
 # SSH public key to put in administrator account of new container
-lxc_template_admin_authorized_key: '{{ lookup("pipe", "ssh-add -L") }}'
+lxc_template_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L") }}' ]
 
 # Address of Debian mirror to use in debootstrap
 # Example usage with local apt-cacher-ng proxy: 'http://cache.{{ ansible_domain }}:3142/debian'
-lxc_template_debootstrap_mirror: 'http://cdn.debian.net/debian'
+lxc_template_debootstrap_mirror: 'http://http.debian.net/debian'
 
 # Automatically add 'security.debian.org' repository and perform 'apt-get
 # upgrade' on container creation to get latest security updates. Container
 # creation takes longer, but resulting system is more secure.
 lxc_template_security_upgrade: True
 
-# List of packages downloaded and installed by debootstrap
-lxc_template_debootstrap_packages: [ 'ifupdown', 'locales', 'libui-dialog-perl', 'dialog',
-                                     'isc-dhcp-client', 'netbase', 'net-tools', 'iproute',
-                                     'openssh-server', 'sudo', 'lsb-release', 'python',
-                                     'python-apt', 'python-pycurl', 'make', 'git',
-                                     'ncurses-term', 'iputils-ping', 'debian-archive-keyring',
-                                     'apt-transport-https', 'vim-tiny', 'cron', 'curl',
-                                     'openssl', 'ca-certificates', 'resolvconf', 'rdnssd' ]
+# Lists of packages downloaded and installed by debootstrap
+lxc_template_debootstrap_base_packages: [ 'ifupdown', 'locales', 'libui-dialog-perl', 'dialog',
+                                          'isc-dhcp-client', 'netbase', 'net-tools', 'iproute',
+                                          'openssh-server' ]
+
+lxc_template_debootstrap_ansible_packages: [ 'sudo', 'lsb-release', 'make', 'git',
+                                             'python', 'python-apt', 'python-pycurl' ]
+
+lxc_template_debootstrap_system_packages: [ 'ncurses-term', 'debian-archive-keyring',
+                                            'apt-transport-https', 'vim-tiny', 'cron', 'curl',
+                                            'openssl', 'ca-certificates' ]
+
+lxc_template_debootstrap_network_packages: [ 'iputils-ping', 'resolvconf', 'rdnssd' ]
+
+lxc_template_debootstrap_packages: '{{ lxc_template_debootstrap_base_packages +
+                                       lxc_template_debootstrap_ansible_packages +
+                                       lxc_template_debootstrap_system_packages +
+                                       lxc_template_debootstrap_network_packages }}'
 
 # List of POSIX capabilities which should be automatically dropped in all
 # containers created by the 'debops' template, without the 'cap_' prefix.

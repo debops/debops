@@ -84,29 +84,36 @@ EOF
 {% endif %}
 
 {% endif %}
-    # Configure SSH public key from Ansible Controller for root account
-    mkdir -m 700 $rootfs/root/.ssh
-    echo "{{ lxc_template_root_authorized_key }}" > $rootfs/root/.ssh/authorized_keys
-
+{% if lxc_template_admin_name is defined and lxc_template_admin_name %}
     # Configure admin account
-    chroot $rootfs addgroup --system admins
-    echo "%admins ALL = (ALL) NOPASSWD: ALL" > $rootfs/etc/sudoers.d/admins
-    chroot $rootfs chmod 440 /etc/sudoers.d/admins
-    chroot $rootfs adduser --disabled-password --home /home/{{ lxc_template_admin_account }} --gecos "System Administrator" {{ lxc_template_admin_account }}
-    chroot $rootfs adduser {{ lxc_template_admin_account }} admins
-    chroot $rootfs mkdir -m 700 /home/{{ lxc_template_admin_account }}/.ssh
-    echo "{{ lxc_template_admin_authorized_key }}" > $rootfs/home/{{ lxc_template_admin_account }}/.ssh/authorized_keys
-    chroot $rootfs chown -R {{ lxc_template_admin_account }}:{{ lxc_template_admin_account }} /home/{{ lxc_template_admin_account }}/.ssh
+    chroot $rootfs adduser --disabled-password --home {{ lxc_template_admin_home }}{% if lxc_template_admin_system|d() and lxc_template_admin_system %} --system{% endif %} --gecos "{{ lxc_template_admin_gecos }}" {{ lxc_template_admin_name }}
 
+{% if lxc_template_admin_group is defined and lxc_template_admin_group %}
+    # Configure admin group
+    touch $rootfs/etc/sudoers.d/{{ lxc_template_admin_group }}
+    chroot $rootfs addgroup --system {{ lxc_template_admin_group }}
+    echo "%{{ lxc_template_admin_group }} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > $rootfs/etc/sudoers.d/{{ lxc_template_admin_group }}
+    chroot $rootfs chmod 440 /etc/sudoers.d/{{ lxc_template_admin_group }}
+    chroot $rootfs adduser {{ lxc_template_admin_name }} {{ lxc_template_admin_group }}
+
+{% endif %}
+{% if lxc_template_admin_sshkeys is defined and lxc_template_admin_sshkeys %}
+    # Add SSH keys to admin account
+    chroot $rootfs mkdir -m 700 {{ lxc_template_admin_home }}/.ssh
+    echo "{{ lxc_template_admin_sshkeys | join('\n') }}" > $rootfs{{ lxc_template_admin_home }}/.ssh/authorized_keys
+    chroot $rootfs chown -R {{ lxc_template_admin_name }}:{{ lxc_template_admin_name }} {{ lxc_template_admin_home }}/.ssh
+
+    # Add SSH keys to root account
+    mkdir -m 700 $rootfs/root/.ssh
+    echo "{{ lxc_template_admin_sshkeys | join('\n') }}" > $rootfs/root/.ssh/authorized_keys
+
+{% endif %}
+{% endif %}
 {% if lxc_hidepid is defined and lxc_hidepid %}
     # Create system group for /proc access
     chroot $rootfs addgroup --system {{ lxc_hidepid_group }}
 
 {% endif %}
-    # Set root password in a container
-    echo "root:{{ lxc_template_root_password }}" | chroot $rootfs chpasswd
-    echo "Container root password is '{{ lxc_template_root_password }}'"
-
     # Unlock service startup
     rm -rf $rootfs/usr/sbin/policy-rc.d
 

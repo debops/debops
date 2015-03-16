@@ -1,5 +1,8 @@
 ---
 
+- name: DebOps pre_tasks hook
+  include: "{{ lookup('task_src', 'lxc/pre_main.yml') }}"
+
 - name: Install packages required for LXC
   apt: name={{ item }} state=latest install_recommends=no
   with_items: lxc_distribution_packages[ansible_distribution + '_' + (ansible_distribution_release.split("/")[0])]
@@ -23,4 +26,7 @@
 - include: manage_containers.yml
   when: (lxc_containers is defined and lxc_containers) and
         ansible_kernel | version_compare('3.10','>')
+
+- name: DebOps post_tasks hook
+  include: "{{ lookup('task_src', 'lxc/post_main.yml') }}"
 

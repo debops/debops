@@ -30,7 +30,6 @@ More information about `debops.lxc` can be found in the
 ### Role dependencies
 
 - `debops.ferm`
-- `debops.secret`
 - `debops.backporter`
 
 ### Are you using this as a standalone role without DebOps?
