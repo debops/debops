@@ -1,5 +1,8 @@
 ---
 
+- name: DebOps pre_tasks hook
+  include: "{{ lookup('task_src', 'postfix/pre_main.yml') }}"
+
 - name: Make sure Ansible local facts directory exists
   file:
     dest: '/etc/ansible/facts.d'
@@ -37,4 +40,7 @@
 
 - include: disable_revert.yml
   when: not postfix
+
+- name: DebOps post_tasks hook
+  include: "{{ lookup('task_src', 'postfix/post_main.yml') }}"
 
