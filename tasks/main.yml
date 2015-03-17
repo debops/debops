@@ -35,7 +35,7 @@
   with_items: rsnapshot_servers
   when: (inventory_hostname in rsnapshot_clients and
          ((item is defined and item) and item != inventory_hostname and
-          hostvars[item].ansible_fqdn is defined))
+          item not in rsnapshot_clients and hostvars[item].ansible_fqdn is defined))
 
 - name: Configure servers on rsnapshot clients
   template:
@@ -49,7 +49,7 @@
     - [ 'include.txt', 'exclude.txt', 'rsnapshot.conf' ]
   when: (inventory_hostname in rsnapshot_clients and
          ((item.0 is defined and item.0) and item.0 != inventory_hostname and
-          hostvars[item.0].ansible_fqdn is defined))
+          item.0 not in rsnapshot_clients and hostvars[item.0].ansible_fqdn is defined))
 
 - name: Configure runner scripts on rsnapshot clients
   template:
@@ -63,7 +63,7 @@
     - [ 'runner' ]
   when: (inventory_hostname in rsnapshot_clients and
          ((item.0 is defined and item.0) and item.0 != inventory_hostname and
-          hostvars[item.0].ansible_fqdn is defined))
+          item.0 not in rsnapshot_clients and hostvars[item.0].ansible_fqdn is defined))
 
 - name: Install requred packages on servers
   apt:
