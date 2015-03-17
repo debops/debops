@@ -39,7 +39,7 @@
   "dbSettings" : {
   {% if etherpad_database == 'dirty' -%}
       "filename" : "{{ etherpad_database_config[etherpad_database].filename }}"
-  {% elif etherpad_database == 'mysql' -%}
+  {% elif etherpad_database in ['mysql', 'postgresql'] -%}
       "user"    : "{{ etherpad_database_config[etherpad_database].username }}",
       "host"    : "{{ etherpad_database_config[etherpad_database].hostname }}",
       {% if etherpad_database_connection == 'port' %}
@@ -47,6 +47,7 @@
       {% else %}
          "port"    : "{{ etherpad_database_config[etherpad_database].socket }}",
       {% endif %}
+      {# :FIXME: This should not have 'mysql' in the name #}
       "password": "{{ etherpad_mysql_database_password | default('') }}",
       "database": "{{ etherpad_database_config[etherpad_database].database }}"
    {% endif %}
