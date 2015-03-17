@@ -103,6 +103,13 @@
            creates={{ etherpad_home }}/.node-gyp
   sudo_user: '{{ etherpad_user }}'
 
+- name: Install sqlite3 for Etherpad
+  npm: path={{ etherpad_home + '/' + etherpad_repository }} state=present
+       production=yes name=sqlite3
+  sudo_user: '{{ etherpad_user }}'
+  notify: [ 'Restart etherpad-lite' ]
+  when: etherpad_database == 'sqlite'
+
 - name: Manage Etherpad plugins
   npm: path={{ etherpad_home + '/' + etherpad_repository }} state=present
        production=yes name='ep_{{ item }}'

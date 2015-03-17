@@ -37,7 +37,7 @@
   // You shouldn't use "dirty" for for anything else than testing or development
   "dbType" : "{{ etherpad_database }}",
   "dbSettings" : {
-  {% if etherpad_database == 'dirty' -%}
+  {% if etherpad_database in ['dirty', 'sqlite'] -%}
       "filename" : "{{ etherpad_database_config[etherpad_database].filename }}"
   {% elif etherpad_database in ['mysql', 'postgresql'] -%}
       "user"    : "{{ etherpad_database_config[etherpad_database].username }}",
