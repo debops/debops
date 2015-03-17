@@ -86,7 +86,7 @@ lxc_template_admin_name: '{{ ansible_ssh_user if ansible_ssh_user != "root" else
 lxc_template_admin_gecos: 'System Administrator'
 
 # Home directory for administrator account
-lxc_template_admin_home: '{{ "/home/" + lxc_template_admin_name }}'
+lxc_template_admin_home: '{{ ("/home/" + lxc_template_admin_name) if lxc_template_admin_name else "/home/" + lookup("env","USER") }}'
 
 # Should the admin account be created as system account (UID/GID below <1000)?
 lxc_template_admin_system: False
