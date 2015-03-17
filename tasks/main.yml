@@ -1,6 +1,6 @@
 ---
 
-- name: Install requied Etherpad packages
+- name: Install required Etherpad packages
   apt: pkg={{ item }} state=latest install_recommends=no
   with_items: [ 'build-essential', 'pkg-config', 'libssl-dev', 'libpq-dev' ]
 
@@ -102,6 +102,13 @@
   command: bin/installDeps.sh chdir={{ etherpad_home + '/' + etherpad_repository }}
            creates={{ etherpad_home }}/.node-gyp
   sudo_user: '{{ etherpad_user }}'
+
+- name: Install sqlite3 for Etherpad
+  npm: path={{ etherpad_home + '/' + etherpad_repository }} state=present
+       production=yes name=sqlite3
+  sudo_user: '{{ etherpad_user }}'
+  notify: [ 'Restart etherpad-lite' ]
+  when: etherpad_database == 'sqlite'
 
 - name: Manage Etherpad plugins
   npm: path={{ etherpad_home + '/' + etherpad_repository }} state=present
