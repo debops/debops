@@ -35,14 +35,11 @@
 
   // The Type of the database. You can choose between dirty, postgres, sqlite and mysql
   // You shouldn't use "dirty" for for anything else than testing or development
+  "dbType" : "{{ etherpad_database }}",
+  "dbSettings" : {
   {% if etherpad_database == 'dirty' -%}
-    "dbType" : "dirty",
-    "dbSettings" : {
       "filename" : "{{ etherpad_database_config[etherpad_database].filename }}"
-    },
   {% elif etherpad_database == 'mysql' -%}
-    "dbType" : "mysql",
-    "dbSettings" : {
       "user"    : "{{ etherpad_database_config[etherpad_database].username }}",
       "host"    : "{{ etherpad_database_config[etherpad_database].hostname }}",
       {% if etherpad_database_connection == 'port' %}
@@ -52,8 +49,8 @@
       {% endif %}
       "password": "{{ etherpad_mysql_database_password | default('') }}",
       "database": "{{ etherpad_database_config[etherpad_database].database }}"
-    },
    {% endif %}
+   },
 
   //the default text of a pad
   "defaultPadText" : "{{ etherpad_welcome_text }}",
