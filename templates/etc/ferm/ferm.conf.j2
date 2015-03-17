@@ -81,6 +81,7 @@ domain $domains table filter {
 		}
 
 {% endif %}
+{% if ferm_filter_recent|d() and ferm_filter_recent %}
 		# Drop connections from bad guys
 		mod recent name "{{ ferm_block_recent }}" update seconds {{ ferm_block_time }} {
 {% if ferm_log_issues is defined and ferm_log_issues %}
@@ -91,9 +92,11 @@ domain $domains table filter {
 			REJECT reject-with icmp-admin-prohibited;
 		}
 
+{% endif %}
 		# Include INPUT rules for enabled domains (IPv4, IPv6)
 		@include 'filter-input.d/';
 
+{% if ferm_filter_recent|d() and ferm_filter_recent | bool %}
 {% if ferm_mark_portscan is defined and ferm_mark_portscan %}
 		# Catch bad guys (port scanners)
 		mod recent set name "{{ ferm_block_recent }}" {
@@ -104,6 +107,7 @@ domain $domains table filter {
 {% endif %}
 		}
 
+{% endif %}
 {% endif %}
 		# Reject everything else
 		protocol udp REJECT reject-with icmp-port-unreachable;

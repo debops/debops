@@ -1,7 +1,11 @@
 # This file is managed by Ansible, all changes will be lost
 
+{% if ferm_filter_recent|d() and ferm_filter_recent | bool %}
 # Limit new connections on {{ item.dport | join(',') }} port.
 # Allow no more than {{ item.hits | default('5') }} connection attempts from a source IP in {{ item.seconds | default('300') }} seconds.
+{% else %}
+# iptables recent filter is not available, connections are not filtered.
+{% endif %}
 {#
 
 List of parameters:
@@ -34,6 +38,7 @@ Optional:
        (item.enabled is undefined or
        (item.enabled is defined and item.enabled in [ True, 'True', 'true', 'Yes', 'yes' ]))) %}
 protocol ({{ item.protocol | default(['tcp']) | join(' ') }}){% if ferm_tpl_syn is defined %} {{ ferm_tpl_syn }}{% endif %} dport ({{ item.dport | join(' ') }}) {
+{% if ferm_filter_recent|d() and ferm_filter_recent | bool %}
 
 	@subchain "dport-limit-{{ item.dport[0] }}" {
 		mod recent name {{ item.dport[0] | upper }} {
@@ -51,6 +56,7 @@ protocol ({{ item.protocol | default(['tcp']) | join(' ') }}){% if ferm_tpl_syn 
 		}
 	}
 
+{% endif %}
 	ACCEPT;
 }
 {% else %}
