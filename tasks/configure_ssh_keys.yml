@@ -34,6 +34,11 @@
   args:
     creates: '/root/.ssh/known_hosts'
 
+- name: Remove known host fingerprints from ~/.ssh/known_hosts
+  shell: ssh-keygen -f /root/.ssh/known_hosts -R {{ hostvars[item].rsnapshot_backup_host | default(hostvars[item].ansible_fqdn) }}
+  with_items: rsnapshot_servers
+  when: rsnapshot_reset_sshkeys is defined and rsnapshot_reset_sshkeys
+
 - name: Get list of already scanned host fingerprints
   shell: ssh-keygen -f /root/.ssh/known_hosts -F {{ hostvars[item].rsnapshot_backup_host | default(hostvars[item].ansible_fqdn) }} | grep -q '^# Host {{ hostvars[item].rsnapshot_backup_host | default(hostvars[item].ansible_fqdn) }} found'
   with_items: rsnapshot_servers

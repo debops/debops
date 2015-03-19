@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.4
+------
+
+*Released: 2015-03-19*
+
+- Add a way to reset known SSH host fingerprints in case that hosts are
+  reinstalled or other related issues are occuring. [drybjed]
+
 v0.1.3
 ------
 
