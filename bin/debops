@@ -163,13 +163,13 @@ def main(cmd_args):
         # Run ansible-playbook with custom environment
         print("Running Ansible playbook from:")
         print(play, "...")
-        subprocess.call(['ansible-playbook', play] + cmd_args)
+        return subprocess.call(['ansible-playbook', play] + cmd_args)
     finally:
         if revert_unlock:
             padlock_lock(encfs_encrypted)
 
 
 try:
-    main(sys.argv[1:])
+    sys.exit(main(sys.argv[1:]))
 except KeyboardInterrupt:
     raise SystemExit('... aborted')
