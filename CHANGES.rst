@@ -8,6 +8,8 @@ v0.4.3
 
 - Rearranged documentation. [drybjed]
 
+- Properly propagate exit code when running debops [do3cc]
+
 v0.4.2
 ------
 
