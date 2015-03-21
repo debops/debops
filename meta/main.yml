@@ -2,6 +2,14 @@
 
 dependencies:
 
+  - role: debops.apt_preferences
+    tags: apt_preferences
+    apt_preferences_dependent_list:
+      - package: '{{ lxc_kernel_package }}'
+        backports: [ 'wheezy' ]
+        reason: 'Bug in LXC + iptables recent module - https://bugzilla.netfilter.org/show_bug.cgi?id=759'
+        by_role: 'debops.lxc'
+
   - role: debops.ferm
     ferm_forward: True
     ferm_dependent_rules:

@@ -29,6 +29,7 @@ More information about `debops.lxc` can be found in the
 
 ### Role dependencies
 
+- `debops.apt_preferences`
 - `debops.ferm`
 - `debops.backporter`
 

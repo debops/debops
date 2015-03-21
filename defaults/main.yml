@@ -31,44 +31,8 @@ lxc_interface_internal: 'br1'
 # (in DebOps, it's configured in LXC playbook by 'nat' role)
 lxc_interface_nat: 'br2'
 
-# Which configuration from list below will be included in
-# /etc/lxc/default.conf?
+# /etc/lxc/ configuration file which will be set as default
 lxc_configuration_default: 'external'
-
-# List of configuration files and their contents in /etc/lxc/ directory.
-# Files will be named in the form: /etc/lxc/<key>.conf
-# If you are modifying ths map, make sure that 'lxc' key is present!
-lxc_configuration_map:
-
-  # Global LXC configuration
-  lxc: |
-    lxc.lxcpath = {{ lxc_root_path }}
-
-  # Original contents of /etc/lxc/default.conf
-  empty: |
-    lxc.network.type = empty
-
-  # Simple configuration for "normal" containers with one network interface.
-  # Default in DebOps
-  external: |
-    lxc.network.type = veth
-    lxc.network.link = {{ lxc_interface_external }}
-    lxc.network.flags = up
-
-  # Configuration with two network interfaces, not tested at the moment
-  external_internal: |
-    lxc.network.type = veth
-    lxc.network.link = {{ lxc_interface_external }}
-    lxc.network.flags = up
-    lxc.network.type = veth
-    lxc.network.link = {{ lxc_interface_internal }}
-    lxc.network.flags = up
-
-  # Configuration for a container behind NAT
-  nat: |
-    lxc.network.type = veth
-    lxc.network.link = {{ lxc_interface_nat }}
-    lxc.network.flags = up
 
 # List of default POSIX capabilities which should be dropped in all LXC containers
 lxc_capabilities_drop: [ 'mknod', 'sys_admin', 'sys_rawio', 'syslog', 'wake_alarm' ]
