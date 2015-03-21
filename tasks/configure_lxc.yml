@@ -2,35 +2,50 @@
 
 # ---- Configure LXC environment ----
 
-- name: Mount cgroup filesystem
-  mount: name=/sys/fs/cgroup src=cgroup fstype=cgroup opts=defaults state=mounted
-  when: (ansible_distribution is defined and
-         ansible_distribution == 'Debian') and
-        (ansible_distribution_release is defined and
-         ansible_distribution_release == 'wheezy')
+- name: Mount cgroup filesystem on Debian Wheezy
+  mount:
+    name: '/sys/fs/cgroup'
+    src: 'cgroup'
+    fstype: 'cgroup'
+    opts: 'defaults'
+    state: 'mounted'
+  when: ansible_distribution == 'Debian' and ansible_distribution_release == 'wheezy'
 
 - name: Generate default LXC configuration
-  template: src=etc/lxc/default.conf.j2 dest=/etc/lxc/default.conf
-            owner=root group=root mode=0644
+  template:
+    src: 'etc/lxc/default.conf.j2'
+    dest: '/etc/lxc/default.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 - name: Generate additional LXC configuration
-  template: src=etc/lxc/configuration.conf.j2 dest=/etc/lxc/{{ item }}.conf
-            owner=root group=root mode=0644
+  template:
+    src: 'etc/lxc/configuration.conf.j2'
+    dest: '/etc/lxc/{{ item }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   with_items: lxc_configuration_map.keys()
 
 
 # ---- Configure custom templates ----
 
 - name: Prepare LXC common configuration
-  template: src=usr/share/lxc/config/{{ item }}.j2
-            dest=/usr/share/lxc/config/{{ item }}
-            owner=root group=root mode=0644
+  template:
+    src: 'usr/share/lxc/config/{{ item }}.j2'
+    dest: '/usr/share/lxc/config/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   with_items: [ 'debops.common.conf', 'debops.hidepid.conf' ]
 
 - name: Prepare LXC host templates
-  template: src=usr/share/lxc/templates/lxc-{{ item }}.j2
-            dest=/usr/share/lxc/templates/lxc-{{ item }}
-            owner=root group=root mode=0755
+  template:
+    src: 'usr/share/lxc/templates/lxc-{{ item }}.j2'
+    dest: '/usr/share/lxc/templates/lxc-{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
   with_items: [ 'debops' ]
-
 
