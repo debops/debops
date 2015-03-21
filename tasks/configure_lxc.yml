@@ -33,19 +33,19 @@
 
 - name: Prepare LXC common configuration
   template:
-    src: 'usr/share/lxc/config/{{ item }}.j2'
-    dest: '/usr/share/lxc/config/{{ item }}'
+    src: '{{ lookup("template_src", "usr/share/lxc/config/" + item | basename) }}'
+    dest: '/usr/share/lxc/config/{{ item | basename | replace(".j2","") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: [ 'debops.common.conf', 'debops.hidepid.conf' ]
+  with_fileglob: [ '../templates/usr/share/lxc/config/*.j2' ]
 
 - name: Prepare LXC host templates
   template:
-    src: 'usr/share/lxc/templates/lxc-{{ item }}.j2'
-    dest: '/usr/share/lxc/templates/lxc-{{ item }}'
+    src: '{{ lookup("template_src", "usr/share/lxc/templates/" + item | basename) }}'
+    dest: '/usr/share/lxc/templates/{{ item | basename | replace(".j2","") }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  with_items: [ 'debops' ]
+  with_fileglob: [ '../templates/usr/share/lxc/templates/*.j2' ]
 
