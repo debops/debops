@@ -16,6 +16,32 @@
 {%     endfor %}
 {%   endif %}
 {% endif %}
+{% set ferm_tpl_state = item.default_state | default('enabled') %}
+{% if item.disabled is defined %}
+{%   set ferm_tpl_state = 'enabled' %}
+{%   if item.disabled is string %}
+{%     if item.disabled | bool %}
+{%       set ferm_tpl_state = 'disabled' %}
+{%     endif %}
+{%   else %}
+{%     if item.disabled %}
+{%       set ferm_tpl_state = 'disabled' %}
+{%     endif %}
+{%   endif %}
+{% elif item.enabled is defined %}
+{%   set ferm_tpl_state = 'disabled' %}
+{%   if item.enabled is string %}
+{%     if item.enabled | bool %}
+{%       set ferm_tpl_state = 'enabled' %}
+{%     endif %}
+{%   else %}
+{%     if item.enabled %}
+{%       set ferm_tpl_state = 'enabled' %}
+{%     endif %}
+{%   endif %}
+{% else %}
+{%   set ferm_tpl_state = 'enabled' %}
+{% endif %}
 # This file is managed by Ansible, all changes will be lost
 
 # Accept new connections from specified IP addresses{% if item.dport|d() %} on {{ item.dport | join(',') }} port{% endif %}
@@ -39,11 +65,7 @@ Optional:
 
 #}
 
-{% if ((item.disabled is undefined or
-       (item.disabled is defined and not item.disabled) or
-       (item.disabled is defined and item.disabled in [ 'False', 'false', 'No', 'no' ])) and
-       (item.enabled is undefined or
-       (item.enabled is defined and item.enabled in [ True, 'True', 'true', 'Yes', 'yes' ]))) %}
+{% if ferm_tpl_state == 'enabled' %}
 domain $domains table {{ item.table | default('filter') }} chain "{{ item.chain }}"{% if ferm_tpl_protocol or item.dport|d() %} protocol ({{ (ferm_tpl_protocol if ferm_tpl_protocol else ['tcp']) | join(' ') }}){% endif %}{% if item.dport|d() %} dport ({{ item.dport | join(' ') }}){% endif %} {
 {% if item.saddr is defined and item.saddr %}
 	@def $ITEMS = ( @ipfilter( ({{ item.saddr | unique | join(" ") }}) ) );
