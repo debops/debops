@@ -16,6 +16,7 @@ Optional:
   item.accept_any	accept connections from any IP address if True
   item.disabled		if True, disable the rule (can be used to toggle rule via variable)
   item.enabled		if True, enable the rule (can be used to toggle rule via variable)
+  item.include          include custom file or command output
   item.jump		jump tp specified chain
 
 #}
@@ -34,6 +35,8 @@ domain $domains table {{ item.table | default('filter') }} chain "{{ item.chain 
 {% else %}
 {% if item.accept_any is defined and item.accept_any | bool %}
 	ACCEPT;
+{% elif item.include is defined and item.include %}
+	@include "{{ item.include }}";
 {% elif item.jump is defined and item.jump %}
 	jump "{{ item.jump }}";
 {% else %}
