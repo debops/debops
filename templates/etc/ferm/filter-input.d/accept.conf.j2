@@ -1,0 +1,50 @@
+# This file is managed by Ansible, all changes will be lost
+
+{% if item.jump is undefined or not item.jump %}
+# Accept new connections{% if item.saddr|d() %} from specified IP addresses{% endif %}{% if item.dport|d() %} on {{ item.dport | join(',') }} port{% endif %}
+{% else %}
+# Jump to specified chain
+{% endif %}
+{#
+
+List of parameters:
+
+Optional:
+  item.dport		list of destination ports to configure
+  item.protocol		list of protocols to configure (tcp, udp)
+  item.saddr		list of source addresses to accept
+  item.accept_any	accept connections from any IP address if True
+  item.disabled		if True, disable the rule (can be used to toggle rule via variable)
+  item.enabled		if True, enable the rule (can be used to toggle rule via variable)
+  item.include          include custom file or command output
+  item.jump		jump tp specified chain
+
+#}
+
+{% if ((item.disabled is undefined or
+       (item.disabled is defined and not item.disabled) or
+       (item.disabled is defined and item.disabled in [ 'False', 'false', 'No', 'no' ])) and
+       (item.enabled is undefined or
+       (item.enabled is defined and item.enabled in [ True, 'True', 'true', 'Yes', 'yes' ]))) %}
+{% if item.protocol|d() or item.dport|d() %}protocol ({{ item.protocol | default(['tcp']) | join(' ') }}){% endif %}{% if item.dport|d() %} dport ({{ item.dport | join(' ') }}){% endif %}{% if item.protocol|d() or item.dport|d() %} {% endif %}{
+{% if item.saddr is defined and item.saddr %}
+	@def $ITEMS = ( @ipfilter( ({{ item.saddr | unique | join(" ") }}) ) );
+	@if @ne($ITEMS,"") {
+		saddr $ITEMS ACCEPT;
+	}
+{% else %}
+{% if item.accept_any is defined and item.accept_any | bool %}
+	ACCEPT;
+{% elif item.include is defined and item.include %}
+	@include "{{ item.include }}";
+{% elif item.jump is defined and item.jump %}
+	jump "{{ item.jump }}";
+{% else %}
+	# Connections from any IP address not allowed
+{% endif %}
+{% endif %}
+}
+{% else %}
+# dport_accept rule has been disabled by a variable
+{% endif %}
+
