@@ -1,15 +1,15 @@
 # This file is managed by Ansible, all changes will be lost
 
-# Accept new connections from specified IP addresses{% if item.dport|d() %} on {{ item.dport | join(',') }} port{% endif %}
+{% if item.jump is undefined or not item.jump %}
+# Accept new connections{% if item.saddr|d() %} from specified IP addresses{% endif %}{% if item.dport|d() %} on {{ item.dport | join(',') }} port{% endif %}
+{% else %}
+# Jump to specified chain
+{% endif %}
 {#
 
 List of parameters:
 
-Required:
-  item.chain		name of the chain to create
-
 Optional:
-  item.table		specify which table to add rules into
   item.dport		list of destination ports to configure
   item.protocol		list of protocols to configure (tcp, udp)
   item.saddr		list of source addresses to accept
@@ -26,7 +26,7 @@ Optional:
        (item.disabled is defined and item.disabled in [ 'False', 'false', 'No', 'no' ])) and
        (item.enabled is undefined or
        (item.enabled is defined and item.enabled in [ True, 'True', 'true', 'Yes', 'yes' ]))) %}
-domain $domains table {{ item.table | default('filter') }} chain "{{ item.chain }}"{% if item.protocol|d() or item.dport|d() %} protocol ({{ item.protocol | default(['tcp']) | join(' ') }}){% endif %}{% if item.dport|d() %} dport ({{ item.dport | join(' ') }}){% endif %} {
+{% if item.protocol|d() or item.dport|d() %}protocol ({{ item.protocol | default(['tcp']) | join(' ') }}){% endif %}{% if item.dport|d() %} dport ({{ item.dport | join(' ') }}){% endif %}{% if item.protocol|d() or item.dport|d() %} {% endif %}{
 {% if item.saddr is defined and item.saddr %}
 	@def $ITEMS = ( @ipfilter( ({{ item.saddr | unique | join(" ") }}) ) );
 	@if @ne($ITEMS,"") {
@@ -45,6 +45,6 @@ domain $domains table {{ item.table | default('filter') }} chain "{{ item.chain 
 {% endif %}
 }
 {% else %}
-# chain rule has been disabled by a variable
+# dport_accept rule has been disabled by a variable
 {% endif %}
 
