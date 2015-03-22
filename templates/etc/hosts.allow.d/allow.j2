@@ -1,3 +1,30 @@
+{% set tcpwrappers_tpl_state = item.default_state | default('enabled') %}
+{% if item.disabled is defined %}
+{%   set tcpwrappers_tpl_state = 'enabled' %}
+{%   if item.disabled is string %}
+{%     if item.disabled | bool %}
+{%       set tcpwrappers_tpl_state = 'disabled' %}
+{%     endif %}
+{%   else %}
+{%     if item.disabled %}
+{%       set tcpwrappers_tpl_state = 'disabled' %}
+{%     endif %}
+{%   endif %}
+{% elif item.enabled is defined %}
+{%   set tcpwrappers_tpl_state = 'disabled' %}
+{%   if item.enabled is string %}
+{%     if item.enabled | bool %}
+{%       set tcpwrappers_tpl_state = 'enabled' %}
+{%     endif %}
+{%   else %}
+{%     if item.enabled %}
+{%       set tcpwrappers_tpl_state = 'enabled' %}
+{%     endif %}
+{%   endif %}
+{% else %}
+{%   set tcpwrappers_tpl_state = 'enabled' %}
+{% endif %}
+{% if tcpwrappers_tpl_state == 'enabled' %}
 {% if item.comment is defined and item.comment %}
 # {{ item.comment }}
 {% endif %}
@@ -17,5 +44,8 @@
 {% elif item.default is defined and item.default %}
 {{ item.daemon }}: {{ item.default }}
 {% endif %}
+{% endif %}
+{% else %}
+# TCP wrappers configuration for {{ item.daemon }} is disabled by a variable
 {% endif %}
 
