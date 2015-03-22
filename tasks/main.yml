@@ -30,7 +30,8 @@
     - tcpwrappers_local_allow
   when: ((item.daemon is defined and item.daemon) and
          ((item.client is undefined or (item.client is defined and not item.client)) and
-         (item.default is undefined or (item.default is defined and not item.default))) or
+          (item.accept_any is undefined or not item.accept_any) and
+          (item.default is undefined or (item.default is defined and not item.default))) or
          (item.custom is defined and not item.custom))
 
 - name: Generate hosts.allow entries
@@ -47,7 +48,8 @@
     - tcpwrappers_dependent_allow
     - tcpwrappers_local_allow
   when: (item.daemon is defined and item.daemon and
-         ((item.client is defined and item.client) or (item.default is defined and item.default)) or
+         ((item.client is defined and item.client) or (item.default is defined and item.default) or
+          (item.accept_any is defined and item.accept_any)) or
          (item.custom is defined and item.custom))
 
 - name: Assemble hosts.allow.d

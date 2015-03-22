@@ -12,6 +12,8 @@
 {% endif %}
 {% if tcpwrappers_tpl_client %}
 {{ item.daemon }}: {{ tcpwrappers_tpl_client | unique | join(', ') }}
+{% elif item.accept_any is defined and item.accept_any | bool %}
+{{ item.daemon }}: {{ item.default | default('ALL') }}
 {% elif item.default is defined and item.default %}
 {{ item.daemon }}: {{ item.default }}
 {% endif %}
