@@ -75,7 +75,7 @@
 
 - name: Remove ip(6)tables rules if requested
   file:
-    path: '/etc/ferm/ferm.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.dport[0] | default("rules")) }}.conf'
+    path: '/etc/ferm/ferm.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + (item.dport[0] if item.dport|d() else "rules")) }}.conf'
     state: 'absent'
   with_flattened:
     - ferm_rules
@@ -83,13 +83,12 @@
     - ferm_host_rules
     - ferm_dependent_rules
   when: ((item.type is defined and item.type) and
-         ((item.dport is defined and item.dport) or (item.rules is defined and item.rules)) and
          (item.delete is defined and item.delete | bool))
 
 - name: Configure ip(6)tables rules
   template:
     src: 'etc/ferm/ferm.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/ferm.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + (item.dport[0] | default("rules"))) }}.conf'
+    dest: '/etc/ferm/ferm.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + (item.dport[0] if item.dport|d() else "rules")) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
@@ -99,12 +98,11 @@
     - ferm_host_rules
     - ferm_dependent_rules
   when: ((item.type is defined and item.type) and
-         ((item.dport is defined and item.dport) or (item.rules is defined and item.rules)) and
          (item.delete is undefined or not item.delete | bool))
 
 - name: Remove iptables INPUT rules if requested
   file:
-    path: '/etc/ferm/filter-input.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.dport[0] | default("rules")) }}.conf'
+    path: '/etc/ferm/filter-input.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + (item.dport[0] if item.dport|d() else "rules")) }}.conf'
     state: 'absent'
   with_flattened:
     - ferm_input_list
@@ -112,13 +110,12 @@
     - ferm_input_host_list
     - ferm_input_dependent_list
   when: ((item.type is defined and item.type) and
-         ((item.dport is defined and item.dport) or (item.rules is defined and item.rules)) and
          (item.delete is defined and item.delete | bool))
 
 - name: Configure iptables INPUT rules
   template:
     src: 'etc/ferm/filter-input.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/filter-input.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + (item.dport[0] | default("rules"))) }}.conf'
+    dest: '/etc/ferm/filter-input.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + (item.dport[0] if item.dport|d() else "rules")) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
@@ -128,7 +125,6 @@
     - ferm_input_host_list
     - ferm_input_dependent_list
   when: ((item.type is defined and item.type) and
-         ((item.dport is defined and item.dport) or (item.rules is defined and item.rules)) and
          (item.delete is undefined or not item.delete | bool))
 
 - name: Apply iptables rules if ferm is enabled
