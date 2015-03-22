@@ -3,11 +3,20 @@
 # ---- Manage /etc/hosts.allow ----
 
 - name: Make sure /etc/hosts.allow.d directory exists
-  file: path=/etc/hosts.allow.d state=directory owner=root group=root mode=0755
+  file:
+    path: '/etc/hosts.allow.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
 - name: Create /etc/hosts.allow.d/00_ansible
-  template: src=etc/hosts.allow.d/00_ansible.j2 dest=/etc/hosts.allow.d/00_ansible
-            owner=root group=root mode=0644
+  template:
+    src: 'etc/hosts.allow.d/00_ansible.j2'
+    dest: '/etc/hosts.allow.d/00_ansible'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 - name: Divert original /etc/hosts.allow
   command: dpkg-divert --quiet --local --divert {{ tcpwrappers_divert_hosts_allow }} --rename /etc/hosts.allow
@@ -15,8 +24,12 @@
   when: tcpwrappers is defined and tcpwrappers
 
 - name: Allow access from Ansible Controller to sshd
-  template: src=etc/hosts.allow.d/ansible_controller.j2 dest=/etc/hosts.allow.d/10_ansible_controller
-            owner=root group=root mode=0644
+  template:
+    src: 'etc/hosts.allow.d/ansible_controller.j2'
+    dest: '/etc/hosts.allow.d/10_ansible_controller'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 - name: Remove hosts.allow entries if requested
   file:
@@ -53,7 +66,13 @@
          (item.custom is defined and item.custom))
 
 - name: Assemble hosts.allow.d
-  assemble: src=/etc/hosts.allow.d dest=/etc/hosts.allow backup=no owner=root group=root mode=0644
+  assemble:
+    src: '/etc/hosts.allow.d'
+    dest: '/etc/hosts.allow'
+    backup: False
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   when: tcpwrappers is defined and tcpwrappers
 
 - name: Move current /etc/hosts.allow out of the way before reversion
@@ -84,13 +103,19 @@
 # ---- Manage /etc/hosts.deny ----
 
 - name: Deny access from everywhere if enabled
-  lineinfile: "dest=/etc/hosts.deny regexp='^ALL: ALL' line='ALL: ALL' state=present"
+  lineinfile:
+    dest: '/etc/hosts.deny'
+    regexp: '^ALL: ALL'
+    line: 'ALL: ALL'
+    state: 'present'
   when: (tcpwrappers is defined and tcpwrappers) and
         (tcpwrappers_deny_all is defined and tcpwrappers_deny_all)
 
 - name: Allow access from everywhere if disabled
-  lineinfile: "dest=/etc/hosts.deny regexp='^ALL: ALL' state=absent"
+  lineinfile:
+    dest: '/etc/hosts.deny'
+    regexp: '^ALL: ALL'
+    state: 'absent'
   when: (tcpwrappers is defined and tcpwrappers) and
         (tcpwrappers_deny_all is undefined or (tcpwrappers_deny_all is defined and tcpwrappers_deny_all == False))
-
 
