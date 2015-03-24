@@ -4,9 +4,16 @@
   service:
     name: 'gitlab'
     state: 'restarted'
-  notify: [ 'Deactivate GitLab deploy.html page' ]
+  notify: [ 'Tell Phusion Passenger to restart', 'Deactivate GitLab deploy.html page' ]
   when: (ansible_local is defined and ansible_local.gitlab is defined and
          ansible_local.gitlab.installed)
+
+- name: Tell Phusion Passenger to restart
+  file:
+    path: '{{ gitlab_ce_git_checkout + "/tmp/restart.txt" }}'
+    state: 'touch'
+  when: (ansible_local|d() and ansible_local.nginx|d() and
+         ansible_local.nginx.flavor == 'passenger')
 
 - name: Deactivate GitLab deploy.html page
   file:
