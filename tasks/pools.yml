@@ -7,8 +7,10 @@
     owner: '{{ item.owner | default("root") }}'
     group: '{{ item.group | default("root") }}'
     mode: '{{ item.mode | default("0644") }}'
-    backup: '{{ item.backup | default("yes")  }}'
+    backup: '{{ item.backup | default("no") }}'
   with_items: [ '{{ rsyslog_pools }}' ]
+  when: ((item.name is defined and item.name) and
+    (item.enabled is undefined or not item.enabled))
   notify:
     - Reload rsyslogd
 

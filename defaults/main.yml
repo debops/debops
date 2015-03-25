@@ -15,6 +15,7 @@ rsyslog_pools: [ '{{ rsyslog_pool_default }}', '{{ rsyslog_pool_cron }}' ]
 rsyslog_pool_default:
   enabled: True
   name: '50-default'
+  backup: 'yes'
   options: |
     #  Default rules for rsyslog.
     #
@@ -89,7 +90,6 @@ rsyslog_pool_default:
 rsyslog_pool_cron:
   enabled: True
   name: '49-cron'
-  backup: 'no'
   options: |
     cron.*		/var/log/cron.log
     & stop
