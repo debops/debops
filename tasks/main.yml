@@ -1,10 +1,15 @@
 ---
 
 - name: Make sure rsyslog is installed
-  apt: pkg={{ item }} state=latest install_recommends=no
-  with_items: [ 'rsyslog', 'logrotate' ]
+  apt:
+    pkg: '{{ item }}'
+    state: 'latest'
+    install_recommends: no
+  with_items: [ '{{ rsyslog_packages }}' ]
+  when: rsyslog_packages is defined and rsyslog_packages
+  notify:
+    - Restart rsyslogd
 
-- name: Send log messages from cron to /var/log/cron.log
-  template: src=etc/rsyslog.d/cron.conf.j2 dest=/etc/rsyslog.d/cron.conf owner=root group=root backup=no
-  notify: Restart rsyslogd
+- include: pools.yml
+  when: rsyslog_manage_pools is defined and rsyslog_manage_pools == True
 
