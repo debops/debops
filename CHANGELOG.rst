@@ -8,6 +8,13 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 .. _DebOps Changelog: https://github.com/debops/debops/blob/master/CHANGELOG.md
 
 
+v0.2.5
+------
+
+*Unreleased*
+
+- Add ``debops.dokuwiki`` role. [drybjed]
+
 v0.2.4
 ------
 
