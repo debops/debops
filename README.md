@@ -1,12 +1,23 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) stunnel
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-stunnel.svg?style=flat)](http://travis-ci.org/debops/ansible-stunnel) [![test-suite](http://img.shields.io/badge/test--suite-ansible--stunnel-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-stunnel/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-stunnel.svg?style=flat)](http://travis-ci.org/debops/ansible-stunnel) [![test-suite](http://img.shields.io/badge/test--suite-ansible--stunnel-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-stunnel/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.stunnel-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/3232)
 
 `stunnel` can be used to create encrypted TCP tunnels between two service
 ports, either on the same host or on separate hosts.
 
 Encryption is done using SSL certificates. This Ansible role can be used to
 create tunnels between two or more hosts, using Ansible inventory groups.
+
+### Installation
+
+This role requires at least Ansible `v1.8.0`. To install it, run:
+
+    ansible-galaxy install debops.stunnel
+
+### Documentation
+
+More information about `debops.stunnel` can be found in the
+[official debops.stunnel documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-stunnel/docs/).
 
 
 ### Role dependencies
