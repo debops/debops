@@ -10,6 +10,7 @@ Ansible role: debops.stunnel
    installation
    getting-started
    defaults
+   defaults-configuration
    guides
    troubleshooting
    copyright
