@@ -35,6 +35,12 @@
 
   vars:
 
+    # Base packages installed during bootstrap
+    bootstrap_base_packages:      [ 'python', 'python-apt', 'python-pip', 'sudo', 'lsb-release' ]
+
+    # Install additional packages during bootstrap
+    bootstrap_play_packages:      '{{ bootstrap_packages       | default([]) }}'
+
     # Default SSH keys to use if none are specified
     bootstrap_play_default_sshkeys: [ '{{ lookup("pipe","ssh-add -L") }}' ]
 
@@ -68,7 +74,9 @@
       name: '{{ item }}'
       state: 'present'
       install_recommends: False
-    with_items: [ 'python', 'python-apt', 'python-pip', 'sudo', 'lsb-release' ]
+    with_flattened:
+      - bootstrap_base_packages
+      - bootstrap_play_packages
 
   - name: Create admin system group
     group:

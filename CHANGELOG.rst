@@ -16,6 +16,10 @@ v0.2.4
 - Add separate "root fact" directory where applications are installed, by
   default the same as the path for service home directories. [drybjed]
 
+- Install ``python-pip`` during bootstrapping. [htgoebel]
+
+- Add a way to install custom packages during bootstapping. [drybjed]
+
 v0.2.3
 ------
 
