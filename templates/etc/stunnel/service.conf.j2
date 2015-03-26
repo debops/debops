@@ -1,0 +1,100 @@
+{% set stunnel_tpl_server = [] %}
+{% if item.name in stunnel_server %}
+{%   set _ = stunnel_tpl_server.append('true') %}
+{% endif %}
+{% if ((item.client_accept is undefined or item.client_accept is defined and not item.client_accept) and
+       (item.client_port is undefined or item.client_port is defined and not item.client_port)) %}
+{%   set _ = stunnel_tpl_server.append('true') %}
+# server: {{ stunnel_tpl_server }}
+{% endif %}
+{% if item.client_connect is defined and item.client_connect %}
+{%   if item.client_connect is string %}
+{%     if item.client_connect.split(':')[0] in stunnel_server_addresses %}
+{%       set _ = stunnel_tpl_server.append('true') %}
+{%     endif %}
+{%   elif item.client_connect is mapping %}
+{%     for key, value in item.client_connect.iteritems() %}
+{%       if key in stunnel_server_addresses %}
+{%         set _ = stunnel_tpl_server.append('true') %}
+{%       endif %}
+{%     endfor %}
+{%   else %}
+{%     for entry in item.client_connect %}
+{%       if entry in stunnel_server_addresses %}
+{%         set _ = stunnel_tpl_server.append('true') %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endif %}
+# {{ ansible_managed }}
+
+setuid		= stunnel4
+setgid		= stunnel4
+pid		= /var/run/stunnel4/{{ item.name }}.pid
+debug		= {{ item.debug | default(stunnel_debug) }}
+
+ciphers		= {{ item.ssl_ciphers | default(stunnel_ssl_ciphers) }}
+curve		= {{ item.ssl_curve   | default(stunnel_ssl_curve) }}
+
+sslVersion	= all
+options		= NO_SSLv2
+options		= NO_SSLv3
+verify		= {{ item.ssl_verify | default(stunnel_ssl_verify) }}
+
+{% if stunnel_pki is defined and stunnel_pki %}
+CAfile		= {{ stunnel_pki_path + "/" + stunnel_pki_realm + "/" + item.pki_ca  | default(stunnel_pki_ca)  }}
+{% if stunnel_ssl_check_crl %}
+CRLfile		= {{ stunnel_pki_path + "/" + stunnel_pki_realm + "/" + item.pki_crl | default(stunnel_pki_crl) }}
+{% endif %}
+cert		= {{ stunnel_pki_path + "/" + stunnel_pki_realm + "/" + item.pki_crt | default(stunnel_pki_crt) }}
+key		= {{ stunnel_pki_path + "/" + stunnel_pki_realm + "/" + item.pki_key | default(stunnel_pki_key) }}
+{% endif %}
+{% if stunnel_options is defined and stunnel_options %}
+
+{{ stunnel_options }}
+{% endif %}
+
+[{{ item.name }}]
+
+{% if stunnel_tpl_server %}
+client		= no
+accept		= {{ item.server_accept if item.server_accept|d() else (':::' + item.server_port) }}
+{% if item.server_connect is defined %}
+{% if item.server_connect is string %}
+connect		= {{ item.server_connect }}
+{% elif item.server_connect is mapping %}
+{% for key, value in item.server_connect.iteritems() %}
+connect		= {{ key + ':' + value }}
+{% endfor %}
+{% else %}
+{% for entry in item.server_connect %}
+connect		= {{ entry + ':' + (item.client_accept.split(':')[-1] if item.client_accept|d() else item.client_port) }}
+{% endfor %}
+{% endif %}
+{% else %}
+connect		= {{ item.client_port }}
+{% endif %}
+{% if item.server_options is defined and item.server_options %}
+{{ item.server_options }}
+{% endif %}
+{% else %}
+client		= yes
+accept		= {{ item.client_accept if item.client_accept|d() else (':::' + item.client_port) }}
+{% if item.client_connect is defined and item.client_connect %}
+{% if item.client_connect is string %}
+connect		= {{ item.client_connect }}
+{% elif item.client_connect is mapping %}
+{% for key, value in item.client_connect.iteritems() %}
+connect		= {{ key + ':' + value }}
+{% endfor %}
+{% else %}
+{% for entry in item.client_connect %}
+connect		= {{ entry + ':' + (item.server_accept.split(':')[-1] if item.server_accept|d() else item.server_port) }}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% if item.client_options is defined and item.client_options %}
+{{ item.client_options }}
+{% endif %}
+{% endif %}
+
