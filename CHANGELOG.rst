@@ -20,6 +20,10 @@ v0.2.4
 
 - Add a way to install custom packages during bootstapping. [drybjed]
 
+- Reorder ``networking.yml`` playbook to run network-related roles before main
+  services and applications. This should make sure that networking is correctly
+  set up when it's needed. [drybjed]
+
 v0.2.3
 ------
 
