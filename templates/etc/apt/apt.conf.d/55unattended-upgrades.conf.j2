@@ -13,7 +13,11 @@ Unattended-Upgrade::Package-Blacklist {
 // they can be interrupted with SIGUSR1. This makes the upgrade
 // a bit slower but it has the benefit that shutdown while a upgrade
 // is running is possible (with a small delay)
+{% if apt_unattended_upgrades_minimal_steps is defined and apt_unattended_upgrades_minimal_steps %}
 Unattended-Upgrade::MinimalSteps "true";
+{% else %}
+Unattended-Upgrade::MinimalSteps "false";
+{% endif %}
 
 // Send email to this address for problems or packages upgrades
 // If empty or unset then no email is sent, make sure that you
