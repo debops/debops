@@ -11,10 +11,20 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.2.4
 ------
 
-*Unreleased*
+*Released: 2015-03-26*
 
 - Add separate "root fact" directory where applications are installed, by
   default the same as the path for service home directories. [drybjed]
+
+- Install ``python-pip`` during bootstrapping. [htgoebel]
+
+- Add a way to install custom packages during bootstapping. [drybjed]
+
+- Reorder ``networking.yml`` playbook to run network-related roles before main
+  services and applications. This should make sure that networking is correctly
+  set up when it's needed. [drybjed]
+
+- Add ``debops.stunnel`` role. [drybjed]
 
 v0.2.3
 ------
