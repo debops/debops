@@ -1,9 +1,20 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) dokuwiki
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-dokuwiki.svg?style=flat)](http://travis-ci.org/debops/ansible-dokuwiki) [![test-suite](http://img.shields.io/badge/test--suite-ansible--dokuwiki-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-dokuwiki/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-dokuwiki.svg?style=flat)](http://travis-ci.org/debops/ansible-dokuwiki) [![test-suite](http://img.shields.io/badge/test--suite-ansible--dokuwiki-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-dokuwiki/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.dokuwiki-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/3240)
 
 This role will install and manage [DokuWiki](http://dokuwiki.org/),
 a text-based and easy to use wiki written in PHP5
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, run:
+
+    ansible-galaxy install debops.dokuwiki
+
+### Documentation
+
+More information about `debops.dokuwiki` can be found in the
+[official debops.dokuwiki documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-dokuwiki/docs/).
 
 
 ### Role dependencies
