@@ -1,5 +1,28 @@
 ---
 
+# What service type to configure on this host:
+#   'server' - host is an ISC DHCP server, see dhcpd(8)
+#   'relay'  - host is an ISC DHCP relay, see dhcrelay(8)
+dhcpd_mode: 'relay'
+
+# What packages should be installed, depending on mode of operation
+dhcpd_base_packages_map:
+  'server': [ 'isc-dhcp-server' ]
+  'relay':  [ 'isc-dhcp-relay' ]
+
+
+# ---- ISC DHCP Relay configuration ----
+
+# List of DHCP servers which should receive the relayed packets
+dhcpd_relay_servers: [ '{{ ansible_default_ipv4.gateway }}' ]
+
+# List of network interfaces that dhcrelay should listen on
+dhcpd_relay_interfaces: []
+
+# Additional dhcrelay options
+dhcpd_relay_options: '-4'
+
+
 # ---- Global ISC DHCP Server configuration ----
 
 # Is this DHCP server authoritative?

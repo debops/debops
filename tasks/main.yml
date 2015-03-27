@@ -1,11 +1,29 @@
 ---
 
+- name: Configure DHCP relay in debconf
+  debconf:
+    name: 'isc-dhcp-relay'
+    question: 'isc-dhcp-relay/{{ item.key }}'
+    vtype: 'string'
+    value: '{{ item.value }}'
+  with_dict:
+    servers:    '{{ dhcpd_relay_servers | join(" ") }}'
+    interfaces: '{{ dhcpd_relay_interfaces | join(" ") }}'
+    options:    '{{ dhcpd_relay_options }}'
+  register: dhcpd_register_relay_debconf
+  when: dhcpd_mode == 'relay'
+
 - name: Install DHCP packages
   apt:
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_items: [ 'isc-dhcp-server' ]
+  with_items: dhcpd_base_packages_map[dhcpd_mode]
+
+- name: Reconfigure ISC DHCP relay
+  command: dpkg-reconfigure --frontend=noninteractive isc-dhcp-relay
+  notify: [ 'Restart isc-dhcp-relay' ]
+  when: dhcpd_register_relay_debconf|d() and dhcpd_register_relay_debconf.changed
 
 - name: Configure DHCP server
   template:
@@ -16,4 +34,5 @@
     mode: '0644'
   with_items: [ 'etc/default/isc-dhcp-server', 'etc/dhcp/dhcpd.conf' ]
   notify: [ 'Restart isc-dhcp-server' ]
+  when: dhcpd_mode == 'server'
 
