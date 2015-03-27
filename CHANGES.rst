@@ -4,10 +4,12 @@ Changelog
 v0.1.3
 ------
 
-*Unreleased*
+*Released: 2015-03-27*
 
 - Be more explicit while getting the list of nameservers from
   ``/etc/resolv.conf`` [drybjed]
+
+- Add support for custom configuration templates using text blocks. [drybjed]
 
 v0.1.2
 ------
