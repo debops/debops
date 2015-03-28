@@ -1,49 +1,95 @@
 ---
+# Default variables
+# =================
 
+# .. contents:: Sections
+#    :local:
+#
+# -------------------
+#   General options
+# -------------------
+
+# .. envvar:: dhcpd_mode
+#
 # What service type to configure on this host:
-#   'server' - host is an ISC DHCP server, see dhcpd(8)
-#   'relay'  - host is an ISC DHCP relay, see dhcrelay(8)
-dhcpd_mode: 'relay'
+#
+# - ``server``: host is an ISC DHCP server, see ``dhcpd(8)``
+#
+# - ``relay``: host is an ISC DHCP relay, see dhcrelay(8)
+#
+dhcpd_mode: 'server'
 
+
+# .. envvar:: dhcpd_base_packages_map
+#
 # What packages should be installed, depending on mode of operation
 dhcpd_base_packages_map:
   'server': [ 'isc-dhcp-server' ]
   'relay':  [ 'isc-dhcp-relay' ]
 
 
-# ---- ISC DHCP Relay configuration ----
+# --------------------------------
+#   ISC DHCP Relay configuration
+# --------------------------------
 
+# .. envvar:: dhcpd_relay_servers
+#
 # List of DHCP servers which should receive the relayed packets
 dhcpd_relay_servers: [ '{{ ansible_default_ipv4.gateway }}' ]
 
+
+# .. envvar:: dhcpd_relay_interfaces
+#
 # List of network interfaces that dhcrelay should listen on
 dhcpd_relay_interfaces: []
 
+
+# .. envvar:: dhcpd_relay_options
+#
 # Additional dhcrelay options
 dhcpd_relay_options: '-4'
 
 
-# ---- Global ISC DHCP Server configuration ----
+# ----------------------------------------
+#   Global ISC DHCP Server configuration
+# ----------------------------------------
 
+# .. envvar:: dhcpd_authoritative
+#
 # Is this DHCP server authoritative?
 dhcpd_authoritative: False
 
+
+# .. envvar:: dhcpd_interfaces
+#
 # List of network interfaces to listen on for DHCP requests
 # If this list is empty, Ansible will try to guess correct interfaces
 # automatically
 dhcpd_interfaces: []
 
+
+# .. envvar:: dhcpd_domain
+#
 # Default domain to use
 dhcpd_domain: '{{ ansible_domain }}'
 
+
+# .. envvar:: dhcpd_dns_servers
+#
 # List of default DNS servers. By default, point users to the same host that
 # serves them DHCP requests, on default interface. If this host is a router,
 # you might need to set DNS server to internal interface IP address.
 dhcpd_dns_servers: [ '{{ ansible_default_ipv4.address }}' ]
 
+
+# .. envvar:: dhcpd_lease_time
+#
 # Max lease time in hours (default lease time is calculated below)
 dhcpd_lease_time: 24
 
+
+# .. envvar:: dhcpd_global_options
+#
 # Default global options formatted as a text block
 dhcpd_global_options: |
   option domain-name "{{ ansible_domain }}";
@@ -52,257 +98,76 @@ dhcpd_global_options: |
   max-lease-time {{ (dhcpd_lease_time * 60 * 60)|round|int }};
   log-facility local7;
 
+
+# .. envvar:: dhcpd_options
+#
 # Custom options formatted as a text block
 dhcpd_options: False
 
 
-# ---- ISC DHCP Server configuration scopes ----
+# ----------------------------------------
+#   ISC DHCP Server configuration scopes
+# ----------------------------------------
 
 # These lists allow you to generate nested configuration scopes in
 # dhcpd.conf. Most of the information about them can be found in dhcpd.conf(5)
 # manual page. You can create nested configuration using Ansible variable
-# expansion (examples below).
+# expansion.
 
-# List of general configuration parameters (work in any configuration scope):
-#  - comment: ''            add a comment to a scope
-#  - options: |             custom options for that scope defined as a text block
-#  - include: ''            path to external file to include in this scope
-
-# List of hosts (works in groups, subnets):
-#  - hosts: '' or []        list of hosts to configure in that scope; if this is
-#                           a path to a file, dhcpd will include an external file
-#                           in this scope
-
-# List of parameters specific to dhcpd_classes:
-#  - class: ''              class name
-#  - subclass:              this is a hash with expression as key and additional
-#                           options as value in a text block (see example below);
-#                           each match expression must end with a colon to indicate
-#                           hash key; optional
-
-# List of parameters specific to dhcpd_groups:
-#  - subnets: []            list of subnet scopes to group together
-#  - groups: []             list of other group scopes to include. No recursion!
-
-# List of parameters specific to dhcpd_shared_networks:
-#  - name: ''               name of shared network
-#  - subnets: []            list of subnets in a shared network (do not use
-#                           dhcpd_subnets here, because they will be duplicated
-#                           and DHCP server will not start)
-
-# List of parameters specific to dhcpd_subnets:
-#  - subnet: ''             start of a subnet range (ie.: 192.168.1.0)
-#  - netmask: ''            netmask for this subnet (ie.: 255.255.255.0)
-#  - routers: '' or []      address or list of addresses of gateway for that
-#                           subnet (ie.: 192.168.1.1)
-
-# List of parameters specific to dhcpd_hosts:
-#  - hostname: ''           hostname, without domain part
-#  - address: ''            IP address reserved for that host, optional
-#  - ethernet: ''           Ethernet MAC address of this host, optional
-
+# .. envvar:: dhcpd_keys
+#
+# List of secret keys used for Dynamic DNS configuration. See
+# :ref:`dhcpd_keys` for more details.
 dhcpd_keys: []
-  #- key: "secure-key"
-  #  algorithm: "hmac-md5"
-  #  secret: "JFw7jM2/KVU2hIB4xkDSQmHB6JJOLUu4xkzwLNNpR88="
 
-# List of classes
+
+# .. envvar:: dhcpd_classes
+#
+# List of client classes (see dhcpd.conf(5)). More informaction can be found in
+# :ref:`dhcpd_classes`.
 dhcpd_classes: []
-  #- class 'example-class'
-  #  subclass:
-  #    'match1':
-  #    'match2': |
-  #      # match2 options in a text block;
-
-  #- class 'example-empty-class'
 
 
-# List of groups
+# .. envvar:: dhcpd_groups
+#
+# List of configuration scopes groped together. See :ref:`dhcpd_groups` for
+# more details.
 dhcpd_groups: []
-  #- comment: 'First group'
-  #  hosts: '/etc/dhcp/dhcpd-group1-hosts.conf'
-  #  groups: '{{ dhcpd_group_second }}'
-
-# An example of group nesting
-#dhcpd_group_second:
-#  - comment: 'Second group'
-#    hosts: '/etc/dhcp/dhcpd-group2-hosts.conf'
 
 
-# List of shared networks
+# .. envvar:: dhcpd_shared_networks
+#
+# List of shared networks grouping specified subnets together. See
+# :ref:`dhcpd_shared_networks` for more details.
 dhcpd_shared_networks: []
-  #- name: 'shared-net'
-  #  comment: "Local shared network"
-  #  subnets: '{{ dhcpd_subnets_local }}'
-  #  options: |
-  #    default-lease-time 600;
-  #    max-lease-time 900;
 
 
-# List of subnets not in a shared network
-dhcpd_subnets:
-  - subnet: '{{ ansible_default_ipv4.network }}'
-    netmask: '{{ ansible_default_ipv4.netmask }}'
-    comment: 'Generated automatically by Ansible'
-
-  #- subnet: 'dead:be:ef::/64'
-  #  ipv6: True
-  #  routers: '10.0.10.1'
-  #  comment: "Example IPv6 subnet"
-  #  options: |
-  #    default-lease-time 300;
-  #    max-lease-time 7200;
-  #
-  #- subnet: '10.0.20.0'
-  #  netmask: '255.255.255.0'
-  #  comment: 'Ignored subnet'
-
-# An example subnets included in a shared network
-#dhcpd_subnets_local:
-#  - subnet: '10.0.30.0'
-#    netmask: '255.255.255.0'
-#    routers: [ '10.0.30.1', '10.0.30.2' ]
+# .. envvar:: dhcpd_subnets
 #
-#  - subnet: '10.0.40.0'
-#    netmask: '255.255.255.0'
-#    routers: '19.0.40.1'
-#    options: |
-#      default-lease-time 300;
-#      max-lease-time 7200;
-#    pools:
-#      - comment: "A pool in a subnet"
-#        range: '10.0.30.10 10.0.30.20'
+# List of subnets not in a shared network. See :ref:`dhcpd_subnets` for more
+# details.
+dhcpd_subnets: [ '{{ dhcpd_subnet_default }}' ]
+
+# Default subnet managed automatically
+dhcpd_subnet_default:
+  subnet: '{{ ansible_default_ipv4.network }}'
+  netmask: '{{ ansible_default_ipv4.netmask }}'
+  comment: 'Generated automatically by Ansible'
 
 
-# Global list of hosts in DHCP
+# .. envvar:: dhcpd_hosts
+#
+# Global list of hosts in DHCP. See ref:`dhcpd_hosts` for more details.
 dhcpd_hosts: []
-#  - hostname: 'examplehost'
-#    address: '10.0.10.1'
-#    ethernet: '00:00:00:00:00:00'
-
-# Example global list of hosts read from an external file
-#dhcpd_hosts: '/etc/dhcp/dhcpd.hosts.conf'
 
 
-# List of external files to include
+# List of external files to include. See :ref:`dhcpd_includes` for more
+# details.
 dhcpd_includes: []
-  #- '/etc/dhcp/example.conf'
 
-# ---- ISC DHCP failover configuration ----
+
+# .. envvar:: dhcpd_failovers
 #
-# Each 'failover pair' declaration consists of primary and secondary host,
-# no more than two nodes failover is currently allowed by isc-dhcpd.
-#
-# You must specify which failover pair each pool should use by specifying a
-# 'failover peer' statement under an 'options' block in each pool declaration.
-# e.g:
-#
-# dhcpd_failovers:
-#   - failover: "my-failover"
-#     primary: '10.0.30.1'
-#     secondary: '10.0.30.2'
-#     ...
-#
-# dhcpd_subnets:
-#   - subnet: ...
-#     ...
-#     pools:
-#       - comment: "My pool with failover"
-#         range: '10.0.30.10 10.0.30.20'
-#         options: |
-#           failover peer "my-failover";
-#
-# Each failover declaration has a set of an mandatory fields, which is:
-#   primary: ""             Ansible inventory name of a primary DHCP host, if
-#                           you need failover to work on different IP,
-#                           see primary_fo_addr option below.
-#
-#   secondary: ""           Ansible inventory name of a secondary DHCP host, if
-#                           you need failover to work on different IP,
-#                           see secondary_fo_addr option below.
-#
-# Ansible inventory name is either IP ot hostname specified in inventory file.
-#
-#   mclt: 3600              Max Client Lead Time. The maximum amount of time
-#                           that one server can extend a lease for a DHCP
-#                           client beyond the time known by the partner server.
-#
-#   split: [0-255]          Specifies the split between the primary and
-#                           secondary for the purposes of load balancing.
-#                           Whenever a client makes a DHCP request, the DHCP
-#                           server runs a hash on the client identification,
-#                           resulting in value from 0 to 255. This is used as
-#                           an index into a 256 bit field. If the bit at that
-#                           index is set, the primary is responsible.  If
-#                           the bit at that index is not set, the secondary
-#                           is responsible.
-#    -- or --
-#   hba: ([0-9a-f]{2}:){32} Specifies the split between the primary and
-#                           secondary as a bitmap rather than a cutoff, which
-#                           theoretically allows for finer-grained control.
-#                           In practice, there is probably no need for such
-#                           fine-grained control, however.
-#   max_response_delay: 5   Tells the DHCP server how many seconds may pass
-#                           without receiving a message from its failover peer
-#                           before it assumes that connection has failed.
-#                           This is mandatory according to dhcpd.conf man page.
-#   max_unacked_updates: 10 Tells the remote DHCP server how many BNDUPD
-#                           messages it can send before it receives a BNDACK
-#                           from the local system.
-#                           This is mandatory according to dhcpd.conf man page.
-#
-# You must use either 'split' or 'hba' statement. Split has a preference, so
-# if it's defined, 'hba' will be omitted by configuration template.
-# Optional field are mostly desribed in dhcpd.conf man page:
-#   port: 647               Specifies port on which primary and secondary
-#                           nodes will listen for failover connection.
-#                           Diffirent ports for primary and secondary is
-#                           currently unsupported.
-#
-#   primary_fo_addr: ""     IP/Hostname of a primary DHCP host. This option
-#                           is used if you need failover address be different
-#                           from ansible inventory IP/hostname.
-#                           If omitted, then 'primary' is used.
-#
-#   secondary_fo_addr: ""   IP/Hostname of a secondary DHCP host. This option
-#                           is used if you need failover address be different
-#                           from ansible inventory IP/hostname.
-#                           If omitted, then 'secondary' is used.
-#
-#   auto_partner_down: 0    Number of second to start serving partners IPs
-#                           after the partner's failure.
-#
-#   load_balance_max_seconds: 5
-#   max_lease_misbalance: 15
-#   max_lease_ownership: 10
-#   min_balance: 60
-#   max_balance: 3600
-#
+# DHCP failover configuration. See :ref:`dhcpd_failovers` for more details.
 dhcpd_failovers: []
-  ## Following is full cluster configuration
-  #- failover: 'failover-localsubnet'
-  #  primary: '10.0.10.1'
-  #  primary_fo_addr: '10.5.10.1'
-  #  secondary: '10.0.10.2'
-  #  secondary_fo_addr: '10.5.10.2'
-  #  port: 1337
-  #  split: 128
-  #  hba: aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa:aa
-  #  max_response_delay: 5
-  #  max_unacked_updates: 10
-  #  load_balance_max_seconds: 5
-  #  auto_partner_down: 0
-  #  max_lease_misbalance: 15
-  #  max_lease_ownership: 10
-  #  min_balance: 60
-  #  max_balance: 3600
-  #
-  ## Following is minimal cluster configuration
-  #- failover: 'failover-san'
-  #  primary: '10.0.10.1'
-  #  secondary: '10.0.10.2'
-  #  mclt: 3600
-  #  split: 128
-  #  max_response_delay: 5
-  #  max_unacked_updates: 10
 
