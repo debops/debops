@@ -1,5 +1,8 @@
 ---
 
+- name: Pre hooks
+  include: "{{ lookup('task_src', 'dovecot/pre_main.yml') }}"
+
 - name: Install Dovecot packages
   apt:
     pkg: '{{ item }}'
@@ -46,3 +49,6 @@
     group: 'adm'
     mode: '0644'
   notify: [ 'Restart ferm' ]
+
+- name: Post hooks
+  include: "{{ lookup('task_src', 'dovecot/post_main.yml') }}"
