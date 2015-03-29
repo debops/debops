@@ -1,8 +1,27 @@
-This role installs [Dovecot](http://dovecot.org/) and creates a simple setup where your mailboxes created with the
-[ansible.postfix](https://github.com/debops/ansible-postfix) role can be served over IMAP or POP3.
+This role installs and manages [Dovecot](http://dovecot.org/), an IMAP and
+POP3 server. Combined with the [ansible.postfix](https://github.com/debops/ansible-postfix)
+role, you can quickly setup a powerful mail infrastructure.
 
-**This role is still in development. Use it at your own risk.**
+### Installation
 
+tbd.
+
+### Documentation
+
+tbd.
+
+### Role dependencies
+
+* `debops.ferm`
+
+### Are you using this as a standalone role without DebOps?
+
+You may need to include missing roles from the [DebOps common
+playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml)
+into your playbook.
+
+[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your
+Debian-based infrastructure.
 
 ### Authors and license
 
