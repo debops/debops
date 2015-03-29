@@ -192,6 +192,7 @@ dhcpd_subnets: [ '{{ dhcpd_subnet_default[dhcpd_ipversion] }}' ]
 dhcpd_subnet_default:
   '4':
     subnet: '{{ ansible_default_ipv4.network + "/" + ansible_default_ipv4.netmask }}'
+    routers: '{{ ansible_default_ipv4.gateway | default("") }}'
     comment: 'Generated automatically by Ansible'
   '6':
     subnet: '{{ ansible_default_ipv6.address + "/" + ansible_default_ipv6.prefix }}'
