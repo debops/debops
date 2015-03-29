@@ -1,0 +1,26 @@
+{% if dhcpd_domain_name|d() and dhcpd_domain_name %}
+option domain-name "{{ dhcpd_domain_name }}";
+
+{% endif %}
+{% if dhcpd_domain_search|d() and dhcpd_domain_search %}
+option domain-search "{{ dhcpd_domain_search | join('", "') }}";
+option dhcp6.domain-search "{{ dhcpd_domain_search | join('", "') }}";
+
+{% endif %}
+{% if dhcpd_nameservers|d() and dhcpd_nameservers %}
+{% set dhcpd_tpl_nameservers = dhcpd_nameservers %}
+{% elif dhcpd_runtime_nameservers|d() and dhcpd_runtime_nameservers %}
+{% set dhcpd_tpl_nameservers = dhcpd_runtime_nameservers %}
+{% endif %}
+{% if dhcpd_tpl_nameservers %}
+{% if dhcpd_tpl_nameservers | ipv4 %}
+option domain-name-servers {{ dhcpd_tpl_nameservers | ipv4 | join(", ") }};
+{% endif %}
+{% if dhcpd_tpl_nameservers | ipv6 %}
+option dhcp6.name-servers {{ dhcpd_tpl_nameservers | ipv6 | join(", ") }};
+{% endif %}
+
+{% endif %}
+{#
+    vim: ft=dhcpd
+#}

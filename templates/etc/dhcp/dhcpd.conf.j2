@@ -8,10 +8,19 @@ authoritative;
 not authoritative;
 
 {% endif %}
-{% if dhcpd_global_options is defined and dhcpd_global_options %}
-# Global configuration options
-{{ dhcpd_global_options }}
+{% if dhcpd_global_default_lease_time|d() and dhcpd_global_default_lease_time %}
+default-lease-time {{ dhcpd_global_default_lease_time }};
+{% endif %}
+{% if dhcpd_global_max_lease_time|d() and dhcpd_global_max_lease_time %}
+max-lease-time {{ dhcpd_global_max_lease_time }};
 
+{% endif %}
+{% if dhcpd_log_facility|d() and dhcpd_log_facility %}
+log-facility {{ dhcpd_log_facility }};
+
+{% endif %}
+{% if dhcpd_auto_options|d() and dhcpd_auto_options %}
+{% include 'auto_options.j2' %}
 {% endif %}
 {% if dhcpd_options is defined and dhcpd_options %}
 # Configuration options

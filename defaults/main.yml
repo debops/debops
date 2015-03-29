@@ -76,6 +76,12 @@ dhcpd_server_options: '{{ "-" + dhcpd_ipversion }}'
 dhcpd_authoritative: False
 
 
+# .. envvar:: dhcpd_log_facility
+#
+# Log facility to use
+dhcpd_log_facility: 'local7'
+
+
 # .. envvar:: dhcpd_interfaces
 #
 # List of network interfaces to listen on for DHCP requests
@@ -84,40 +90,58 @@ dhcpd_authoritative: False
 dhcpd_interfaces: []
 
 
-# .. envvar:: dhcpd_domain
-#
-# Default domain to use
-dhcpd_domain: '{{ ansible_domain }}'
-
-
-# .. envvar:: dhcpd_dns_servers
-#
-# List of default DNS servers. By default, point users to the same host that
-# serves them DHCP requests, on default interface. If this host is a router,
-# you might need to set DNS server to internal interface IP address.
-dhcpd_dns_servers: [ '{{ ansible_default_ipv4.address }}' ]
-
-
 # .. envvar:: dhcpd_lease_time
 #
 # Max lease time in hours (default lease time is calculated below)
-dhcpd_lease_time: 24
+dhcpd_lease_time: '24'
 
 
-# .. envvar:: dhcpd_global_options
+# .. envvar:: dhcpd_global_default_lease_time
 #
-# Default global options formatted as a text block
-dhcpd_global_options: |
-  option domain-name "{{ ansible_domain }}";
-  option domain-name-servers {{ dhcpd_dns_servers | join(' ') }};
-  default-lease-time {{ (((dhcpd_lease_time / 2) + 6) * 60 * 60)|round|int }};
-  max-lease-time {{ (dhcpd_lease_time * 60 * 60)|round|int }};
-  log-facility local7;
+# Default lease time for all IP address leases (18 hours)
+dhcpd_global_default_lease_time: '{{ (((dhcpd_lease_time|int / 2) + 6) * 60 * 60)|round|int }}'
+
+
+# .. envvar:: dhcpd_global_max_lease_time
+#
+# Maximum lease time for all IP addresses (24 hours)
+dhcpd_global_max_lease_time: '{{ (dhcpd_lease_time|int * 60 * 60)|round|int }}'
+
+
+# ---------------------------
+#   DHCP advertised options
+# ---------------------------
+
+# .. envvar:: dhcpd_auto_options
+#
+# If enabled, ISC DHCP server will be configured with a set of automatically
+# detected options. See ``auto_options.j2`` template for more details.
+dhcpd_auto_options: True
+
+
+# .. envvar:: dhcpd_domain_name
+#
+# Default host domain to advertise
+dhcpd_domain_name: '{{ ansible_domain }}'
+
+
+# .. envvar:: dhcpd_domain_search
+#
+# List of additional domains which should be checked when looking for hostnames
+dhcpd_domain_search: []
+
+
+# .. envvar:: dhcpd_nameservers
+#
+# List of nameservers to advertise by default
+# If it's not specified, nameservers from ``/etc/resolv.conf`` will be used
+# instead.
+dhcpd_nameservers: []
 
 
 # .. envvar:: dhcpd_options
 #
-# Custom options formatted as a text block
+# Custom global options formatted as a text block
 dhcpd_options: False
 
 
