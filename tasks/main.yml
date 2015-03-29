@@ -36,3 +36,7 @@
   notify: [ 'Restart isc-dhcp-server' ]
   when: dhcpd_mode == 'server'
 
+- name: Make sure that IPv6 lease file exists
+  command: touch /var/lib/dhcp/dhcpd6.leases creates=/var/lib/dhcp/dhcpd6.leases
+  when: dhcpd_ipversion == '6'
+
