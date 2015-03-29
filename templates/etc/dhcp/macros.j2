@@ -77,7 +77,7 @@ subnet {{ subnet.subnet | ipaddr('cidr') | ipaddr('network') }} netmask {{ subne
 {% if subnet.routers is string %}
         option routers {{ subnet.routers }};
 {% else %}
-        option routers {{ subnet.routers | join(' ') }};
+        option routers {{ subnet.routers | join(', ') }};
 {% endif %}
 {% endif %}
 {% if subnet.options is defined and subnet.options %}
