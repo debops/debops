@@ -30,6 +30,14 @@
     mode: '0644'
   notify: [ 'Restart dovecot' ]
 
+- name: Generate Dovecot deny user list
+  template:
+    src: "{{ lookup('template_src', 'etc/dovecot/dovecot.deny.j2') }}"
+    dest: '/etc/dovecot/dovecot.deny'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
 - name: Configure firewall for Dovecot
   template:
     src: 'etc/ferm/filter-input.d/dovecot.conf.j2'

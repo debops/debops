@@ -1,10 +1,18 @@
 # Authentication mechanisms
 auth_mechanisms	= {{ " ".join(dovecot_auth_mechanisms) }}
-{% if dovecot_user_accounts == 'system' %}
+
+{% if dovecot_deny_users is defined and dovecot_deny_users %}
 passdb {
-    driver = pam
-    args = session=yes dovecot
+    driver         = passwd-file
+    args           = /etc/dovecot/dovecot.deny
+    deny           = yes
+    result_failure = return-fail
 }
 {% endif %}
-
+{% if 'system' in dovecot_user_accounts %}
+passdb {
+    driver         = pam
+    args           = session=yes dovecot
+}
+{% endif %}
 
