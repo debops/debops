@@ -20,6 +20,12 @@
 dhcpd_mode: 'server'
 
 
+# .. envvar:: dhcpd_ipversion
+#
+# Internet Protocol version to configure: ``4`` or ``6``
+dhcpd_ipversion: '4'
+
+
 # .. envvar:: dhcpd_base_packages_map
 #
 # What packages should be installed, depending on mode of operation
@@ -47,7 +53,7 @@ dhcpd_relay_interfaces: []
 # .. envvar:: dhcpd_relay_options
 #
 # Additional dhcrelay options
-dhcpd_relay_options: '-4'
+dhcpd_relay_options: '{{ "-" + dhcpd_ipversion }}'
 
 
 # ---------------------------------
@@ -57,7 +63,7 @@ dhcpd_relay_options: '-4'
 # .. envvar:: dhcpd_server_options
 #
 # dhcpd(8) options
-dhcpd_server_options: '-4'
+dhcpd_server_options: '{{ "-" + dhcpd_ipversion }}'
 
 
 # ---------------------------
@@ -156,13 +162,16 @@ dhcpd_shared_networks: []
 #
 # List of subnets not in a shared network. See :ref:`dhcpd_subnets` for more
 # details.
-dhcpd_subnets: [ '{{ dhcpd_subnet_default }}' ]
+dhcpd_subnets: [ '{{ dhcpd_subnet_default[dhcpd_ipversion] }}' ]
 
 # Default subnet managed automatically
 dhcpd_subnet_default:
-  subnet: '{{ ansible_default_ipv4.network }}'
-  netmask: '{{ ansible_default_ipv4.netmask }}'
-  comment: 'Generated automatically by Ansible'
+  '4':
+    subnet: '{{ ansible_default_ipv4.network + "/" + ansible_default_ipv4.netmask }}'
+    comment: 'Generated automatically by Ansible'
+  '6':
+    subnet: '{{ ansible_default_ipv6.address + "/" + ansible_default_ipv6.prefix }}'
+    comment: 'Generated automatically by Ansible'
 
 
 # .. envvar:: dhcpd_hosts
