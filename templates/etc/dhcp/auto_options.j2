@@ -1,10 +1,9 @@
 {% if dhcpd_domain_name|d() and dhcpd_domain_name %}
+{% set dhcpd_tpl_domain_search = [ dhcpd_domain_name ] + dhcpd_domain_search|d([]) %}
 option domain-name "{{ dhcpd_domain_name }}";
 
-{% endif %}
-{% if dhcpd_domain_search|d() and dhcpd_domain_search %}
-option domain-search "{{ dhcpd_domain_search | join('", "') }}";
-option dhcp6.domain-search "{{ dhcpd_domain_search | join('", "') }}";
+option domain-search "{{ dhcpd_tpl_domain_search | join('", "') }}";
+option dhcp6.domain-search "{{ dhcpd_tpl_domain_search | join('", "') }}";
 
 {% endif %}
 {% if dhcpd_nameservers|d() and dhcpd_nameservers %}
