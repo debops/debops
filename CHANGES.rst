@@ -1,10 +1,10 @@
 Changelog
 =========
 
-v0.2.2
+v0.3.0
 ------
 
-*Unreleased*
+*Released: 2015-03-30*
 
 - Move all ``auth_ldap_*`` variables to ``auth_ldap_conf_`` namespace. [drybjed]
 
