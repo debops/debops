@@ -11,8 +11,8 @@ by setting the following configuration:
 
 * Make sure ``local`` is in your ``postfix`` capabilities list
 
-* Set the postfix ``home_location`` configuration value to the desired
-  path. The path must end with a slash **/** to indicate the maildir format:
+* Set the postfix ``home_mailbox`` configuration value to the desired path.
+  The path must end with a slash **/** to indicate the maildir format:
 
     postfix_local_maincf: |
       home_mailbox = Maildir/
