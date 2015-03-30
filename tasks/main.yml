@@ -18,7 +18,9 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_items: dhcpd_base_packages_map[dhcpd_mode]
+  with_flattened:
+    - dhcpd_base_packages_map[dhcpd_mode]
+    - [ '{{ "dhcp-probe" if (dhcpd_probe|d() and dhcpd_probe) else [] }}' ]
 
 - name: Reconfigure ISC DHCP relay
   command: dpkg-reconfigure --frontend=noninteractive isc-dhcp-relay
@@ -50,4 +52,7 @@
 - name: Make sure that IPv6 lease file exists
   command: touch /var/lib/dhcp/dhcpd6.leases creates=/var/lib/dhcp/dhcpd6.leases
   when: dhcpd_ipversion == '6'
+
+- include: dhcp-probe.yml
+  when: dhcpd_probe|d() and dhcpd_probe
 
