@@ -43,6 +43,35 @@ Examples::
       secret: "{{ dhcpd_secret_secure_key }}"
 
 
+.. _dhcpd_zones:
+
+dhcpd_zones
+-----------
+
+This list lets you define DNS zones used to update dynamic DNS with information
+configured using DHCP.
+
+``zone``
+  DNS domain name of a zone, needs to end with a dot (``.``)
+
+``primary``
+  Address of the primary DNS server serving the specified zone
+
+``key``
+  Name of the symmetric key used to authorize Dynamic DNS updates of the
+  specified zone
+
+``comment``
+  An optional comment added in the configuration file
+
+Examples::
+
+  dhcpd_zones:
+    - zone: "example.org."
+      primary: "127.0.0.1"
+      key: "secure-key"
+
+
 .. _dhcpd_classes:
 
 dhcpd_classes

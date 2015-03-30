@@ -32,6 +32,11 @@ log-facility {{ dhcpd_log_facility }};
 {{ print.key(key) }}
 {% endfor %}
 {% endif %}
+{% if dhcpd_zones is defined and dhcpd_zones %}
+{% for zone in dhcpd_zones %}
+{{ print.zone(zone) }}
+{% endfor %}
+{% endif %}
 {% if dhcpd_classes is defined and dhcpd_classes %}
 {% for class in dhcpd_classes %}
 {{ print.class(class) }}

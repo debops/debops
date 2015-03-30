@@ -211,8 +211,21 @@ failover peer "{{ failover.failover }}" {
 {% if key.comment is defined and key.comment %}
 # {{ key.comment }}
 {% endif %}
-key "{{ key.key }}" {
+key {{ key.key }} {
         algorithm {{ key.algorithm|default('hmac-md5') }};
         secret {{ key.secret }};
+}
+{% endmacro %}
+{#
+#
+#   ---- Macro: print.zone() ----
+#}
+{% macro zone(zone) %}
+{% if zone.comment is defined and zone.comment %}
+# {{ zone.comment }}
+{% endif %}
+zone {{ zone.zone }} {
+        primary {{ zone.primary }};
+        key {{ zone.key }};
 }
 {% endmacro %}
