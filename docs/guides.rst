@@ -1,8 +1,8 @@
 Guides and examples
 ===================
 
-Using maildir mail box format
------------------------------
+Using maildir mail storage format
+---------------------------------
 
 If you want to use maildir instead of mbox you first have to make sure,
 that your mail delivery agent is storing the incoming mails in the maildir
@@ -12,7 +12,7 @@ by setting the following configuration:
 * Make sure ``local`` is in your ``postfix`` capabilities list
 
 * Set the postfix ``home_mailbox`` configuration value to the desired path.
-  The path must end with a slash **/** to indicate the maildir format:
+  It must end with a slash **/** to indicate the maildir format:
 
     postfix_local_maincf: |
       home_mailbox = Maildir/
