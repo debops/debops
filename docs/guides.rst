@@ -22,5 +22,11 @@ home directory. You can make dovecot looking for this maildir by setting:
 
     dovecot_mail_location: 'maildir:~/Maildir'
 
+The ``dovecot_mail_location`` variable corresponds to the ``mail_location``
+statement in the dovecot configuration file, so you can also set much more
+advanced values. Check the dovecot `mail_location`_ documentation for more
+examples.
+
 
 .. _ansible-postfix: https://github.com/debops/ansible-postfix
+.. _mail_location: http://wiki2.dovecot.org/MailLocation/
