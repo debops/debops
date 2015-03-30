@@ -15,6 +15,9 @@ v0.2.5
 
 - Add ``debops.dokuwiki`` role. [drybjed]
 
+- Add a "testing channel" Galaxy requirements file, to be used to download
+  Ansible roles with "testing" branch instead of "master". [drybjed]
+
 v0.2.4
 ------
 
