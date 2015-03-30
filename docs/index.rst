@@ -8,7 +8,9 @@ Ansible role: debops.dovecot
 
    introduction
    installation
+   getting-started
    defaults
+   guides
    copyright
    credits
    changelog

@@ -13,8 +13,8 @@ service using the certificates provided by `ansible-pki`_. It will further use t
 and 993 (IMAPS). Every user account which is able to login via PAM, can then also
 login via IMAP and access its mails stored as an mbox file in ``/var/mail/<username>``.
 
-Example inventory:
-------------------
+Example inventory
+-----------------
 
 You can install Dovecot on a host by adding it to the ``[debops_dovecot]`` group
 in your Ansible inventory::
