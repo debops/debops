@@ -2,7 +2,14 @@
 
 [![Travis CI](http://img.shields.io/travis/debops/ansible-dhcpd.svg?style=flat)](http://travis-ci.org/debops/ansible-dhcpd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--dhcpd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-dhcpd/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.dhcpd-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1559)
 
-Install and configure [ISC DHCP Server](https://www.isc.org/downloads/dhcp/).
+`debops.dhcpd` role can be used to configure an [ISC DHCP
+Server](https://www.isc.org/downloads/dhcp/) as standalone or in a 2-host
+failover configuration. Alternatively, you can configure an DHCP relay on
+a host connected to multiple networks which will relay DHCP/BOOTP messages
+to your DHCP server.
+
+`dhcp-probe` script will be used to scan the network for unauthorized DHCP
+servers and notify administrators if they are found.
 
 ### Installation
 
@@ -13,7 +20,7 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 ### Documentation
 
 More information about `debops.dhcpd` can be found in the
-[official debops.dhcpd documentation](http://docs.debops.org/en/latest/ansible/roles/debops.dhcpd.html).
+[official debops.dhcpd documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-dhcpd/docs/).
 
 
 

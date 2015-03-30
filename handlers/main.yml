@@ -1,6 +1,23 @@
 ---
 
 - name: Restart isc-dhcp-server
-  service: name=isc-dhcp-server state=restarted
+  service:
+    name: 'isc-dhcp-server'
+    state: 'restarted'
 
+- name: Restart isc-dhcp-relay
+  service:
+    name: 'isc-dhcp-relay'
+    state: 'restarted'
+
+- name: Restart dhcp-probe
+  service:
+    name: 'dhcp-probe'
+    state: 'stopped'
+  notify: [ 'Start dhcp-probe' ]
+
+- name: Start dhcp-probe
+  service:
+    name: 'dhcp-probe'
+    state: 'started'
 

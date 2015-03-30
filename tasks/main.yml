@@ -1,13 +1,58 @@
 ---
 
-- name: Install DHCP server packages
-  apt: pkg={{ item }} state=latest install_recommends=no
-  with_items: [ 'isc-dhcp-server' ]
+- name: Configure DHCP relay in debconf
+  debconf:
+    name: 'isc-dhcp-relay'
+    question: 'isc-dhcp-relay/{{ item.key }}'
+    vtype: 'string'
+    value: '{{ item.value }}'
+  with_dict:
+    servers:    '{{ dhcpd_relay_servers | join(" ") }}'
+    interfaces: '{{ dhcpd_relay_interfaces | join(" ") }}'
+    options:    '{{ dhcpd_relay_options }}'
+  register: dhcpd_register_relay_debconf
+  when: dhcpd_mode == 'relay'
+
+- name: Install DHCP packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - dhcpd_base_packages_map[dhcpd_mode]
+    - [ '{{ "dhcp-probe" if (dhcpd_probe|d() and dhcpd_probe) else [] }}' ]
+
+- name: Reconfigure ISC DHCP relay
+  command: dpkg-reconfigure --frontend=noninteractive isc-dhcp-relay
+  notify: [ 'Restart isc-dhcp-relay' ]
+  when: dhcpd_register_relay_debconf|d() and dhcpd_register_relay_debconf.changed
+
+- name: Get list of nameservers configured in /etc/resolv.conf
+  shell: grep -E '^nameserver\s' /etc/resolv.conf | awk '{print $2}' | sed -e 'N;s/\n/ /'
+  register: dhcpd_register_nameservers
+  changed_when: False
+  when: dhcpd_mode == 'server'
+
+- name: Convert list of nameservers to Ansible list
+  set_fact:
+    dhcpd_runtime_nameservers: "{{ dhcpd_register_nameservers.stdout.split(' ') }}"
+  when: (dhcpd_register_nameservers is defined and dhcpd_register_nameservers.stdout)
 
 - name: Configure DHCP server
-  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   with_items: [ 'etc/default/isc-dhcp-server', 'etc/dhcp/dhcpd.conf' ]
-  notify: Restart isc-dhcp-server
+  notify: [ 'Restart isc-dhcp-server' ]
+  when: dhcpd_mode == 'server'
 
+- name: Make sure that IPv6 lease file exists
+  command: touch /var/lib/dhcp/dhcpd6.leases creates=/var/lib/dhcp/dhcpd6.leases
+  when: dhcpd_ipversion == '6'
 
+- include: dhcp-probe.yml
+  when: dhcpd_probe|d() and dhcpd_probe
 
