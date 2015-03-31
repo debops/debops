@@ -36,15 +36,17 @@ phpipam_nginx_server:
     '500': '/index.php?page=error&section=500'
 
   location:
+    '/api': |
+      try_files $uri $uri/ /api/index.php?$args =404;
+
     '/': |
-      rewrite ^/login/$                           /index.php?page=login;
-      rewrite ^/login/dashboard/$                 $scheme://$host/dashboard/;
-      rewrite ^/logout/dashboard/$                $scheme://$host/dashboard/;
-      rewrite ^/tools/search/(.*)/(.*)/(.*)/(.*)$ index.php?page=tools&section=search&addresses=$1&subnets=$2&vlans=$3&ip=$4;
-      rewrite ^/(.*)/(.*)/(.*)/(.*)/(.*)/$        index.php?page=$1&section=$2&subnetId=$3&sPage=$4&ipaddrid=$5;
-      rewrite ^/(.*)/(.*)/(.*)/(.*)/$             index.php?page=$1&section=$2&subnetId=$3&sPage=$4;
-      rewrite ^/(.*)/(.*)/(.*)/$                  index.php?page=$1&section=$2&subnetId=$3;
-      rewrite ^/(.*)/(.*)/$                       index.php?page=$1&section=$2;
-      rewrite ^/(.*)/$                            index.php?page=$1;
+      rewrite ^/login/dashboard/$                 /dashboard/ redirect;
+      rewrite ^/logout/dashboard/$                /dashboard/ redirect;
+      rewrite ^/tools/search/(.*)/(.*)/(.*)/(.*)$ /index.php?page=tools&section=search&addresses=$1&subnets=$2&vlans=$3&ip=$4 last;
+      rewrite ^/(.*)/(.*)/(.*)/(.*)/(.*)/$        /index.php?page=$1&section=$2&subnetId=$3&sPage=$4&ipaddrid=$5 last;
+      rewrite ^/(.*)/(.*)/(.*)/(.*)/$             /index.php?page=$1&section=$2&subnetId=$3&sPage=$4 last;
+      rewrite ^/(.*)/(.*)/(.*)/$                  /index.php?page=$1&section=$2&subnetId=$3 last;
+      rewrite ^/(.*)/(.*)/$                       /index.php?page=$1&section=$2 last;
+      rewrite ^/(.*)/$                            /index.php?page=$1 last;
       try_files $uri $uri/ $uri.html $uri.htm /index.html /index.htm =404;
 
