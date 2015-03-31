@@ -48,6 +48,10 @@ http {
 
 	add_header X-Clacks-Overhead "GNU Terry Pratchett";
 
+{% if nginx_http_client_max_body_size|d() and nginx_http_client_max_body_size %}
+        client_max_body_size {{ nginx_http_client_max_body_size }};
+
+{% endif %}
 {% if ((nginx_http_allow is defined and nginx_http_allow) or
        (nginx_http_auth_basic is defined and nginx_http_auth_basic) or
        (nginx_http_satisfy is defined and nginx_http_satisfy)) %}
