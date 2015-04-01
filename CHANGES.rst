@@ -10,6 +10,8 @@ v0.1.4
   server, by setting ``nginx_http_client_max_body_size`` variable in Ansible
   inventory. [drybjed]
 
+- Add DebOps pre-tasks and post-tasks hooks. [drybjed]
+
 v0.1.3
 ------
 
