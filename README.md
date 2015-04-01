@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) dovecot
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-dovecot.svg?style=flat)](http://travis-ci.org/debops/ansible-dovecot) [![test-suite](http://img.shields.io/badge/test--suite-ansible--dovecot-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-dovecot/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-dovecot.svg?style=flat)](http://travis-ci.org/debops/ansible-dovecot) [![test-suite](http://img.shields.io/badge/test--suite-ansible--dovecot-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-dovecot/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.dovecot-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/3271)
 
 This [Ansible](http://ansible.com/) role allows you to install and manage
 the [Dovecot](http://dovecot.org/) IMAP/POP3 server to allow remote access
@@ -10,6 +10,17 @@ can easily protect your access via secure TLS connection.
 
 Additionally it allows you to configure a [sieve](http://sieve.info/)
 service which can be used to store server-side rules for mail filtering.
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, run:
+
+    ansible-galaxy install debops.dovecot
+
+### Documentation
+
+More information about `debops.dovecot` can be found in the
+[official debops.dovecot documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-dovecot/docs/).
 
 
 ### Role dependencies
