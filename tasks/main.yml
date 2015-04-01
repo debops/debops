@@ -1,5 +1,8 @@
 ---
 
+- name: DebOps pre_tasks hook
+  include: "{{ lookup('task_src', 'nginx/pre_main.yml') }}"
+
 - name: Check if nginx is installed
   stat: path=/usr/sbin/nginx
   register: nginx_register_installed
@@ -174,4 +177,7 @@
 - name: Gather facts if they were modified
   action: setup
   when: nginx_register_local_facts.changed
+
+- name: DebOps post_tasks hook
+  include: "{{ lookup('task_src', 'nginx/post_main.yml') }}"
 
