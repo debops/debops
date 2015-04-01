@@ -11,12 +11,19 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.2.5
 ------
 
-*Unreleased*
+*Released: 2015-04-01*
 
 - Add ``debops.dokuwiki`` role. [drybjed]
 
 - Add a "testing channel" Galaxy requirements file, to be used to download
   Ansible roles with "testing" branch instead of "master". [drybjed]
+
+- Reto Gantenbein created a `Dovecot`_ role which has been added to the DebOps
+  project. Thanks! ``debops.dovecot`` can be used to manage IMAP/POP3 service
+  which will let you access your mail remotely over a secure connection.
+  [ganto, drybjed]
+
+.. _Dovecot: http://dovecot.org/
 
 v0.2.4
 ------
