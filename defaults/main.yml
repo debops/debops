@@ -397,3 +397,42 @@ pki_inject_public_files: []
 # Add content of variables to private files
 pki_inject_private_files: []
 
+
+# ---- System CA certificate store management ----
+
+# Set default trust policy for new certificates added to 'ca-certificates'
+# system package. Choices: 'yes', 'no'
+pki_system_ca_certificates_trust_new: 'yes'
+
+# List of blacklisted CA certificates. You can specify either exact names of
+# certificate files, or simple regexps with wildcards. If a certificate is
+# found in both lists, it will be blacklisted.
+pki_system_ca_certificates_blacklist:
+
+  # Blacklist CNNIC Root Certificates
+  # http://googleonlinesecurity.blogspot.com/2015/03/maintaining-digital-certificate-security.html
+  - 'mozilla/CNNIC_ROOT.crt'
+  - 'mozilla/China_Internet_Network_Information_Center_EV_Certificates_Root.crt'
+
+  # Blacklist all certificates
+  #- '.*'
+
+  # Blacklist all Mozilla certificates
+  #- 'mozilla/.*'
+
+  # Blacklist specific group of certificates
+  #- 'mozilla/VeriSign_.*'
+
+# List of whitelisted CA certificates. You can specify either exact names of
+# certificate files, or simple regexps with wildcards.
+pki_system_ca_certificates_whitelist: []
+
+  # Whitelist all certificates
+  #- '.*'
+
+  # Whitelist all Mozilla certificates
+  #- 'mozilla/.*'
+
+  # Whitelist specific group of certificates
+  #- 'mozilla/VeriSign_.*'
+
