@@ -1,0 +1,31 @@
+---
+
+- name: Get default MySQL password
+  set_fact:
+    roundcube_database_password: '{{ roundcube_database_map[roundcube_database].dbpass }}'
+
+- name: Lookup MySQL password if secrets/ directory is defined
+  set_fact:
+    roundcube_database_password: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/roundcube/mysql/" + roundcube_database_map[roundcube_database].dbuser + "/password length=" + mysql_password_length) }}'
+  when: secret is defined
+
+- name: Create Roundcube MySQL user
+  mysql_user:
+    name: '{{ roundcube_database_map[roundcube_database].dbuser }}'
+    password: '{{ roundcube_database_password }}'
+    state: present
+    host: 'localhost'
+    priv: '{{ roundcube_database_map[roundcube_database].dbname }}.*:ALL'
+
+- name: Create Roundcube database
+  mysql_db:
+    name: '{{ roundcube_database_map[roundcube_database].dbname }}'
+    state: present
+  register: roundcube_register_database_status
+
+- name: Import initial database schema
+  mysql_db:
+    name: '{{ roundcube_database_map[roundcube_database].dbname }}'
+    state: import
+    target: '{{ roundcube_database_schema }}'
+  when: roundcube_register_database_status is defined and roundcube_register_database_status.changed

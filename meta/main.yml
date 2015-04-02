@@ -1,0 +1,33 @@
+---
+
+dependencies:
+
+  - role: debops.secret
+
+  - role: debops.php5
+    php5_packages: [ 'php5-mcrypt', 'php5-gd', 'php5-intl', 'php5-json' ]
+    php5_pools: [ '{{ roundcube_php5_pool }}' ]
+    when: roundcube_dependencies is defined and roundcube_dependencies
+
+  - role: debops.nginx
+    nginx_servers: [ '{{ roundcube_nginx_server }}' ]
+    nginx_upstreams: [ '{{ roundcube_nginx_upstream_php5 }}' ]
+    when: roundcube_dependencies is defined and roundcube_dependencies
+    tags: nginx
+
+  - role: debops.mysql
+    when: roundcube_dependencies is defined and roundcube_database == 'mysql'
+    tags: roundcube
+
+galaxy_info:
+  author: 'Reto Gantenbein'
+  description: 'Install Roundcube, a browser-based IMAP client written in PHP'
+  license: 'GNU General Public License v3'
+  min_ansible_version: '1.7.0'
+  platforms:
+  - name: Debian
+    versions:
+    - wheezy
+    - jessie
+  categories:
+  - web

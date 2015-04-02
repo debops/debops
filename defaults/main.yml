@@ -1,0 +1,176 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# -------------------------------
+#   Basic configuration options
+# -------------------------------
+
+# .. envvar:: roundcube_dependencies
+#
+# Should roundcube role manage its own dependencies?
+roundcube_dependencies: True
+
+
+# .. envvar:: roundcube_domain
+#
+# Domain which will be used to host the roundcube instance
+roundcube_domain: [ 'roundcube.{{ ansible_domain }}' ]
+
+
+# .. envvar:: roundcube_nginx_access_policy: ''
+#
+# Access policy defined using ``debops.nginx`` role, applied to this Roundcube
+roundcube_nginx_access_policy: ''
+
+
+# .. envvar:: roundcube_backend_type
+#
+# Database backend for roundcube (choices: mysql, postgresql)
+roundcube_database: 'mysql'
+
+
+# .. envvar:: roundcube_database_map
+#
+# Database connection definitions
+roundcube_database_map:
+  mysql:
+    dbtype: 'mysql'
+    dbname: 'roundcubemail'
+    dbuser: '{{ roundcube_user }}'
+    dbpass: '{{ roundcube_dbpass | default("password") }}'
+    dbhost: 'localhost'
+    dbtableprefix: ''
+
+
+# .. envvar:: roundcube_default_host
+#
+# Mail host chosen to perform the log-in
+roundcube_default_host: 'localhost'
+
+
+# .. envvar:: roundcube_smtp_server
+#
+# SMTP server host (for sending mails)
+roundcube_smtp_server: ''
+
+
+# .. envvar:: roundcube_smtp_port
+#
+# SMTP port
+roundcube_smtp_port: '25'
+
+
+# .. envvar:: roundcube_smtp_user
+#
+# SMTP username (if required) if you use %u as the username Roundcube will
+# use the current username for login
+roundcube_smtp_user: ''
+
+
+# .. envvar:: roundcube_smtp_pass
+#
+# SMTP password (if required) if you use %p as the password Roundcube will
+# use the current user's password for login
+roundcube_smtp_pass: ''
+
+
+# .. envvar:: roundcube_des_key
+#
+# Encryption key for the users imap password which is stored in the session
+# record (and the client cookie if remember password is enabled).
+roundcube_des_key: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/roundcube/des_key chars=hexdigits length=24") }}'
+
+
+# .. envvar:: roundcube_local_config_map
+#
+# Custom configuration values for the Roundcube config.inc.php
+roundcube_local_config_map: []
+
+
+# --------------------------------
+#   User, group, app directories
+# --------------------------------
+
+# .. envvar:: roundcube_user
+#
+# Roundcube system user account
+roundcube_user: 'roundcube'
+
+
+# .. envvar:: roundcube_group
+#
+# Roundcube system user group
+roundcube_group: 'roundcube'
+
+
+# .. envvar:: roundcube_home
+#
+# Roundcube home directory
+roundcube_home: '{{ ansible_local.root.home + "/" + roundcube_user }}'
+
+
+# .. envvar:: roundcube_src
+#
+# Base path for git bare repository with Roundcube source
+roundcube_src: '{{ ansible_local.root.src + "/" + roundcube_user }}'
+
+
+# .. envvar:: roundcube_www
+#
+# Base web root directory for Roundcube website
+roundcube_www: '{{ (ansible_local.nginx.www
+                    if (ansible_local|d() and
+                        ansible_local.nginx|d())
+                    else "/srv/www" ) + "/" + roundcube_user }}'
+
+
+# .. envvar:: roundcube_webserver_user
+#
+# Roundcube webserver user (needs read-only access to the website code)
+roundcube_webserver_user: '{{ ansible_local.nginx.user
+                              if (ansible_local|d() and
+                                  ansible_local.nginx|d() and
+                                  ansible_local.nginx.user|d())
+                              else "www-data" }}'
+
+
+# -----------------------
+#   Application sources
+# -----------------------
+
+# .. envvar:: roundcube_git_repo
+#
+# Roundcube source repository
+roundcube_git_repo: 'https://github.com/roundcube/roundcubemail.git'
+
+
+# .. envvar:: roundcube_git_dest
+#
+# Roundcube source directory on the host
+roundcube_git_dest: '{{ roundcube_src + "/" + roundcube_git_repo.split("://")[1] }}'
+
+
+# .. envvar:: roundcube_git_tag
+#
+# Roundcube release tag to deploy
+roundcube_git_version: '1.1.1'
+
+
+# .. envvar:: roundcube_git_checkout
+#
+# Default path where DokuWiki source files will be deployed
+roundcube_git_checkout: '{{ roundcube_www + "/sites/" + roundcube_domain[0] + "/public" }}'
+
+
+# -------------------
+#   Other variables
+# -------------------
+
+# .. envvar:: roundcube_max_file_size
+#
+# Maximum upload size, in MB
+roundcube_max_file_size: '30'

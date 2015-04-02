@@ -1,0 +1,48 @@
+---
+
+- name: Install Roundcube packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_items:
+    - [ 'roundcube', 'roundcube-core' ]
+  when: (ansible_distribution == 'Debian' and
+        ansible_distribution_release == 'wheezy' )
+
+- name: Create Roundcube group
+  group:
+    name: '{{ roundcube_group }}'
+    system: True
+    state: 'present'
+
+- name: Create Roundcube user
+  user:
+    name: '{{ roundcube_user }}'
+    group: '{{ roundcube_group }}'
+    home: '{{ roundcube_home }}'
+    shell: '/bin/false'
+    comment: 'Roundcube'
+    createhome: False
+    system: True
+    state: present
+
+- include: deploy_roundcube.yml
+  when: (ansible_distribution_release != 'wheezy' )
+
+- name: Install required dependencies for Roundcube
+  apt:
+    pkg: '{{ item }}'
+    state: latest
+    install_recommends: no
+  with_flattened:
+    - [ 'php-pear', 'php-mail-mime', 'php-net-smtp' ]
+    - [ '{{ "php5-mysql" if roundcube_database == "mysql" else [] }}' ]
+#   - [ '{{ "php-crypt-gpg" if "enigma" in roundcube_plugins else [] }}' ]
+
+- include: configure_mysql.yml
+  when: roundcube_database == 'mysql' and
+        roundcube_database_map[roundcube_database].dbhost == 'localhost'
+  tags: [ 'roundcube', 'mysql' ]
+
+- include: configure_roundcube.yml
