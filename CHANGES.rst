@@ -6,6 +6,8 @@ v0.1.0
 
 *Unreleased*
 
+- Change the phpIPAM repository location. [drybjed]
+
 - Change the ``phpipam`` home directory from ``/nonexistent`` to (by default)
   ``/var/local/phpipam``. Home directory will be created automatically by
   ``sudo``, so it should be distinct. [drybjed]
