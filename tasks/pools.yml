@@ -10,7 +10,9 @@
     backup: '{{ item.backup | default("no") }}'
   with_items: [ '{{ rsyslog_pools }}' ]
   when: ((item.name is defined and item.name) and
-    (item.enabled is undefined or not item.enabled))
+      (item.enabled is defined and item.enabled == True))
+#  when: ((item.name is defined and item.name) and
+#    (item.enabled is undefined or not item.enabled))
   notify:
     - Reload rsyslogd
 
