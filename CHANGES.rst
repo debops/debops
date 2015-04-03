@@ -12,6 +12,9 @@ v0.1.4
 
 - Add DebOps pre-tasks and post-tasks hooks. [drybjed]
 
+- Allow to override ``nginx_passenger_root`` and ``nginx_passenger_ruby``
+  variables using Ansible inventory variables. [drybjed]
+
 v0.1.3
 ------
 

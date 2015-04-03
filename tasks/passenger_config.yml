@@ -8,6 +8,7 @@
 - name: Set passenger_root value
   set_fact:
    nginx_passenger_root: '{{ nginx_register_passenger_root.stdout }}'
+  when: nginx_passenger_root is undefined or not nginx_passenger_root
 
 - name: Detect passenger ruby
   shell: "passenger-config about ruby-command | grep Command | tail -1 | awk -F: '{print $2}'"
@@ -17,4 +18,5 @@
 - name: Set passenger_ruby value
   set_fact:
     nginx_passenger_ruby: '{{ nginx_register_passenger_ruby.stdout | trim }}'
+  when: nginx_passenger_ruby is undefined or not nginx_passenger_ruby
 
