@@ -10,7 +10,7 @@
     backup: '{{ item.backup | default("no") }}'
   with_items: [ '{{ rsyslog_pools }}' ]
   when: ((item.name is defined and item.name) and
-      (item.enabled is defined and item.enabled == True))
+        (item.enabled is defined and item.enabled == True))
   notify:
     - Reload rsyslogd
 
@@ -20,7 +20,8 @@
     path: '/etc/rsyslog.d/{{ item.name }}.conf'
     state: 'absent'
   with_items: [ '{{ rsyslogd_pools }}' ]
-  when: item.enabled is defined and item.enabled == False
+  when: ((item.name is defined and item.name) and
+        (item.enabled is defined and item.enabled == False))
   notify:
     - Restart rsyslogd
 
