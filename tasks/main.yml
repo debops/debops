@@ -39,7 +39,8 @@
     - [ 'php-auth-sasl', 'php-pear', 'php-mail-mime', 'php-mail-mimedecode', 'php-net-smtp', 'php-net-socket' ]
     - [ '{{ roundcube_extra_packages }}' ]
     - [ '{{ "php5-mysql" if roundcube_database == "mysql" else [] }}' ]
-#   - [ '{{ "php-crypt-gpg" if "enigma" in roundcube_plugins else [] }}' ]
+    - [ '{{ "php-net-sieve" if "managesieve" in roundcube_plugins else [] }}' ]
+    - [ '{{ "php-crypt-gpg" if "enigma" in roundcube_plugins else [] }}' ]
 
 - include: configure_mysql.yml
   when: roundcube_database == 'mysql' and
