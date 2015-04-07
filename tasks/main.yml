@@ -47,7 +47,20 @@
     mode: '0644'
   with_items: [ 'etc/default/isc-dhcp-server', 'etc/dhcp/dhcpd.conf' ]
   notify: [ 'Restart isc-dhcp-server' ]
+  register: dhcpd_register_config
   when: dhcpd_mode == 'server'
+
+- name: Make sure that included files exist
+  file:
+    path: '{{ item }}'
+    state: 'touch'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: dhcpd_includes
+  notify: [ 'Restart isc-dhcp-server' ]
+  when: ((item is defined and item) and dhcpd_mode == 'server' and
+         (dhcpd_register_config is defined and dhcpd_register_config.changed))
 
 - name: Make sure that IPv6 lease file exists
   command: touch /var/lib/dhcp/dhcpd6.leases creates=/var/lib/dhcp/dhcpd6.leases
