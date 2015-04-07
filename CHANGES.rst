@@ -6,6 +6,15 @@ v0.1.0
 
 *Unreleased*
 
+- Add support for ``phpipam-scripts``, a set of Python/Bash scripts which
+  export the data from phpIPAM database as DHCP configuration files. [drybjed]
+
+- Change the phpIPAM repository location. [drybjed]
+
+- Change the ``phpipam`` home directory from ``/nonexistent`` to (by default)
+  ``/var/local/phpipam``. Home directory will be created automatically by
+  ``sudo``, so it should be distinct. [drybjed]
+
 - Check if ``BASE`` constant in ``config.php`` is defined before defining it
   again, prevents constant notice messages in nginx ``error.log``. [drybjed]
 

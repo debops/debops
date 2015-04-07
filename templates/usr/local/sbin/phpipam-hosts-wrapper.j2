@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# phpipam-hosts wrapper script
+
+{% if phpipam_scripts_config_groups is defined and phpipam_scripts_config_groups %}
+{%   if phpipam_scripts_config_groups.keys() | count == 1 %}
+{%     for group, config in phpipam_scripts_config_groups.iteritems() %}
+/usr/local/sbin/phpipam-hosts -g {{ group }} -x > /dev/null
+{%     endfor %}
+{%   else %}
+{%     for group, config in phpipam_scripts_config_groups.iteritems() %}
+/usr/local/sbin/phpipam-hosts -g {{ group }}
+{%     endfor %}
+/usr/local/sbin/phpipam-hosts -X > /dev/null
+{%   endif %}
+{% endif %}
+
