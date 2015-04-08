@@ -13,12 +13,14 @@
     dest: '{{ phpipam_scripts_git_dest }}'
     version: '{{ phpipam_scripts_git_version }}'
     update: True
+  register: phpipam_register_scripts_src
 
 - name: Install phpipam-scripts
   command: make install
   args:
     chdir: '{{ phpipam_scripts_git_dest }}'
-    creates: '/usr/local/sbin/phpipam-hosts'
+  when: phpipam_register_scripts_src is defined and
+        phpipam_register_scripts_src.changed
 
 - name: Configure phpipam-scripts
   template:
