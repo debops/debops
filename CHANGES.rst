@@ -8,6 +8,8 @@ v0.1.2
 
 - Add DebOps pre/post task hooks using ``task_src`` lookup. [drybjed]
 
+- Add ``users-dotfiles`` Ansible tag for tasks related to dotfiles. [drybjed]
+
 v0.1.1
 ------
 
