@@ -6,6 +6,8 @@ v0.1.0
 
 *Unreleased*
 
+- Create missing import directory for CSV files. [drybjed]
+
 - Add support for ``phpipam-scripts``, a set of Python/Bash scripts which
   export the data from phpIPAM database as DHCP configuration files. [drybjed]
 
