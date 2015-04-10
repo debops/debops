@@ -8,6 +8,13 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 .. _DebOps Changelog: https://github.com/debops/debops/blob/master/CHANGELOG.md
 
 
+v0.2.6
+------
+
+*Unreleased*
+
+- Add ``debops.fail2ban`` role. [drybjed]
+
 v0.2.5
 ------
 
