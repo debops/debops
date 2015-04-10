@@ -121,3 +121,8 @@ domain $domains table filter {
 # Include other configuration files
 @include 'ferm.d/';
 
+{% if ferm_fail2ban is defined and ferm_fail2ban %}
+# Reload fail2ban rules if fail2ban-server is active
+@hook post "type fail2ban-server > /dev/null && (fail2ban-client ping > /dev/null && fail2ban-client reload > /dev/null || true) || true";
+
+{% endif %}
