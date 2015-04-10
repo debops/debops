@@ -1,11 +1,22 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) fail2ban
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-fail2ban.svg?style=flat)](http://travis-ci.org/debops/ansible-fail2ban) [![test-suite](http://img.shields.io/badge/test--suite-ansible--fail2ban-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-fail2ban/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-fail2ban.svg?style=flat)](http://travis-ci.org/debops/ansible-fail2ban) [![test-suite](http://img.shields.io/badge/test--suite-ansible--fail2ban-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-fail2ban/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.fail2ban-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/3377)
 
 [fail2ban](http://www.fail2ban.org/) is a service which parses specified
 log files and can perform configured actions when a given regexp is found.
 It's usually used to ban offending IP addresses using `iptables` rules
 (only IPv4 connections are supported at the moment).
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, run:
+
+    ansible-galaxy install debops.fail2ban
+
+### Documentation
+
+More information about `debops.fail2ban` can be found in the
+[official debops.fail2ban documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-fail2ban/docs/).
 
 
 
