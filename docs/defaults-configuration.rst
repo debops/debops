@@ -28,7 +28,7 @@ variable naming scheme is::
 
     preseed_debian_<key> - item.<key>
 
-Some more important keys::
+Some more important keys:
 
 ``name``
   Name of the Preseed configuration, should be limited to alphanumeric
