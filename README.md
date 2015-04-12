@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) preseed
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-preseed.svg?style=flat)](http://travis-ci.org/debops/ansible-preseed) [![test-suite](http://img.shields.io/badge/test--suite-ansible--preseed-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-preseed/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-preseed.svg?style=flat)](http://travis-ci.org/debops/ansible-preseed) [![test-suite](http://img.shields.io/badge/test--suite-ansible--preseed-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-preseed/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.preseed-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/3388)
 
 [Preseeding](https://wiki.debian.org/DebianInstaller/Preseed) is a way to
 configure the Debian Installer non-interactively. During installation,
@@ -11,6 +11,17 @@ After installation, a custom shell script will be downloaded and run in the
 target environment to prepare host for remote use (an admin account will be
 created, SSH keys will be configured, optionally a Salt Minion will be
 installed and will start on the next boot).
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, run:
+
+    ansible-galaxy install debops.preseed
+
+### Documentation
+
+More information about `debops.preseed` can be found in the
+[official debops.preseed documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-preseed/docs/).
 
 
 ### Role dependencies
