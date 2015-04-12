@@ -15,6 +15,8 @@ v0.2.6
 
 - Add ``debops.fail2ban`` role. [drybjed]
 
+- Add ``debops.preseed`` role. [drybjed]
+
 v0.2.5
 ------
 
