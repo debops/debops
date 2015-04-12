@@ -1,0 +1,49 @@
+---
+
+- name: Create Preseed system group
+  group:
+    name: '{{ preseed_group }}'
+    system: True
+    state: 'present'
+
+- name: Create Preseed system user
+  user:
+    name: '{{ preseed_user }}'
+    group: '{{ preseed_group }}'
+    home: '{{ preseed_home }}'
+    shell: '/bin/false'
+    comment: 'Debian Preseed configuration'
+    createhome: False
+    system: True
+    state: 'present'
+
+- name: Create configuration directories
+  file:
+    path: '{{ preseed_www + "/" + item.name + "/d-i/" + item.release | default(preseed_release) }}'
+    state: 'directory'
+    owner: '{{ preseed_user }}'
+    group: '{{ preseed_group }}'
+    mode: '0755'
+  with_items: preseed_configs
+  when: item.name is defined and item.name
+
+- name: Generate Preseed configuration
+  template:
+    src: '{{ lookup("template_src", "srv/www/preseed/configs/d-i/" + item.type | default(preseed_distribution | lower) + ".cfg.j2") }}'
+    dest: '{{ preseed_www + "/" + item.name + "/d-i/" + item.release | default(preseed_release) + "/preseed.cfg" }}'
+    owner: '{{ preseed_user }}'
+    group: '{{ preseed_group }}'
+    mode: '0644'
+  with_items: preseed_configs
+  when: item.name is defined and item.name
+
+- name: Generate postinst scripts
+  template:
+    src: '{{ lookup("template_src", "srv/www/preseed/configs/d-i/" + item.type | default(preseed_distribution | lower) + ".sh.j2") }}'
+    dest: '{{ preseed_www + "/" + item.name + "/d-i/" + item.release | default(preseed_release) + "/postinst.sh" }}'
+    owner: '{{ preseed_user }}'
+    group: '{{ preseed_group }}'
+    mode: '0644'
+  with_items: preseed_configs
+  when: item.name is defined and item.name
+

@@ -1,0 +1,100 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+export HOME=/root
+
+# Prevent service startup while we are working in chroot
+cat > /usr/sbin/policy-rc.d <<EOF
+#!/bin/sh
+echo "All runlevel operations denied by policy" >&2
+exit 101
+EOF
+chmod +x /usr/sbin/policy-rc.d
+
+# Setup grub, cgroup, LXC
+
+if [ -r "/etc/default/grub" ]; then
+	perl -pi -e 's,^GRUB_TIMEOUT=5$,GRUB_TIMEOUT=1,' /etc/default/grub
+	perl -pi -e 's,GRUB_CMDLINE_LINUX="(.*)"$,GRUB_CMDLINE_LINUX="$1 elevator=noop cgroup_enable=memory swapaccount=1",' /etc/default/grub
+	perl -pi -e 's,^#GRUB_DISABLE_RECOVERY="true"$,GRUB_DISABLE_RECOVERY="true",' /etc/default/grub
+	update-grub
+fi
+
+{% if ((item.salt is defined and item.salt) or (preseed_salt is defined and preseed_salt)) %}
+# Configure Salt APT repository
+echo "{{ preseed_salt_upstream_repository }}" >> /etc/apt/sources.list
+wget -q -O- "{{ preseed_salt_apt_key_url }}" | apt-key add -
+apt-get update
+
+# Install Salt packages
+apt-get -yq install {{ preseed_salt_packages | join(" ") }}
+
+{% if ((item.salt_options is defined and item.salt_options) or (preseed_salt_options is defined and preseed_salt_options)) %}
+
+# Configuration for Salt minion
+cat > /etc/salt/minion.d/ansible.conf <<EOF
+{{ item.salt_options | default(preseed_salt_options) }}
+EOF
+
+{% endif %}
+{% endif %}
+{% if ((item.admin is undefined or item.admin) and (preseed_admin is defined and preseed_admin)) %}
+preseed_admin_name="{{ item.admin_name | default(preseed_admin_name) }}"
+preseed_admin_group="{{ item.admin_group | default(preseed_admin_group | default('admins')) }}"
+preseed_admin_comment="{{ item.admin_comment | default(preseed_admin_comment | default('System Administrator')) }}"
+preseed_admin_shell="{{ item.admin_shell | default(preseed_admin_shell | default('/bin/bash')) }}"
+{% if ((item.admin_system is defined and item.admin_system) or (preseed_admin_system is defined and preseed_admin_system)) %}
+preseed_admin_home="{{ item.admin_system_home | default(preseed_admin_system_home | default('/var/local/' + item.admin_name | default(preseed_admin_name))) }}"
+{% else %}
+preseed_admin_home="{{ item.admin_home | default(preseed_admin_home | default('/home/' + item.admin_name | default(preseed_admin_name))) }}"
+{% endif %}
+
+# Create admin system group
+getent group ${preseed_admin_group} || groupadd --system ${preseed_admin_group}
+
+{% if ((item.admin_sudo is undefined or item.admin_sudo) and (preseed_admin_sudo is defined and preseed_admin_sudo)) %}
+# Configure admin group in sudo
+echo "%${preseed_admin_group} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > /etc/sudoers.d/${preseed_admin_group}
+chmod 0440 /etc/sudoers.d/${preseed_admin_group}
+
+{% endif %}
+# Create administrator account
+{% if ((item.admin_system is defined and item.admin_system) or (preseed_admin_system is defined and preseed_admin_system)) %}
+getent passwd ${preseed_admin_name} || useradd --system --user-group --groups ${preseed_admin_group} --create-home --home ${preseed_admin_home} --comment "${preseed_admin_comment}" --shell ${preseed_admin_shell} ${preseed_admin_name}
+{% else %}
+getent passwd ${preseed_admin_name} || adduser --disabled-password --home ${preseed_admin_home} --gecos "${preseed_admin_comment}" --shell ${preseed_admin_shell} ${preseed_admin_name}
+adduser ${preseed_admin_name} ${preseed_admin_group}
+{% endif %}
+
+{% endif %}
+{% if ((item.admin_sshkeys is defined and item.admin_sshkeys) or (preseed_admin_sshkeys is defined and preseed_admin_sshkeys)) %}
+preseed_admin_sshkeys="{{ (item.admin_sshkeys|d([]) + preseed_admin_sshkeys|d([])) | join('\n') }}"
+{% else %}
+preseed_admin_sshkeys=""
+{% endif %}
+
+if [ -n "${preseed_admin_sshkeys}" ] ; then
+
+  mkdir -p -m 700 /root/.ssh
+  echo "${preseed_admin_sshkeys}" > /root/.ssh/authorized_keys
+
+{% if ((item.admin is undefined or item.admin) and (preseed_admin is defined and preseed_admin)) %}
+  mkdir -p -m 700 ${preseed_admin_home}/.ssh
+  echo "${preseed_admin_sshkeys}" > ${preseed_admin_home}/.ssh/authorized_keys
+  chown -R ${preseed_admin_name}:${preseed_admin_name} ${preseed_admin_home}/.ssh
+
+{% endif %}
+fi
+
+{% if preseed_debian_postinst_commands is defined and preseed_debian_postinst_commands %}
+{{ preseed_debian_postinst_commands }}
+
+{% endif %}
+{% if item.postinst_commands is defined and item.postinst_commands %}
+{{ item.postinst_commands }}
+
+{% endif %}
+# Unlock service startup
+rm -rf /usr/sbin/policy-rc.d
+

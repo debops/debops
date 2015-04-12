@@ -1,0 +1,56 @@
+# {{ ansible_managed }}
+
+{% block warning %}
+{% endblock %}
+d-i debian-installer/locale string {{ item.locale | default(preseed_debian_locale | default('en_US.UTF-8')) }}
+d-i keyboard-configuration/variant select {{ item.keyboard_variant | default(preseed_debian_keyboard_variant | default('American English')) }}
+d-i languagechooser/language-name-fb select {{ item.language | default(preseed_debian_language | default('English')) }}
+
+d-i netcfg/choose_interface select auto
+d-i netcfg/get_hostname string unassigned-hostname
+d-i netcfg/get_domain string unassigned-domain
+d-i netcfg/wireless_wep string
+
+d-i mirror/country string manual
+d-i mirror/http/hostname string {{ item.mirror_hostname | default(preseed_debian_mirror_hostname | default('http.debian.net')) }}
+d-i mirror/http/directory string {{ item.mirror_directory | default(preseed_debian_mirror_directory | default('/debian')) }}
+d-i mirror/http/proxy string
+
+d-i passwd/make-user boolean false
+d-i passwd/root-password-crypted password {{ item.root_password | default(preseed_debian_root_password) }}
+
+d-i clock-setup/utc boolean true
+d-i time/zone string {{ item.timezone | default(preseed_debian_timezone | default('Etc/UTC')) }}
+d-i clock-setup/ntp boolean true
+
+{% block partman %}
+d-i partman/mount_style select uuid
+{% endblock %}
+
+d-i base-installer/install-recommends boolean false
+d-i base-installer/kernel/image string {{ item.kernel_image | default(preseed_debian_kernel_image | default('linux-image-amd64')) }}
+
+d-i apt-setup/main boolean true
+d-i apt-setup/stable-updates boolean true
+d-i apt-setup/contrib boolean true
+d-i apt-setup/non-free boolean true
+d-i apt-setup/use_mirror boolean true
+d-i apt-setup/services-select multiselect security
+d-i apt-setup/security_host string security.debian.org
+
+tasksel tasksel/first multiselect
+{% set preseed_tpl_include_packages = preseed_debian_packages|d([]) + item.packages|d([]) %}
+{% if preseed_tpl_include_packages %}
+d-i pkgsel/include string{% for package in preseed_tpl_include_packages %} {{ package }}{% endfor %}
+{% endif %}
+
+d-i pkgsel/upgrade select safe-upgrade
+
+d-i preseed/late_command string in-target wget -O /tmp/postinst.sh {{ item.postinst | default('http://' + item.name + '.' + preseed_base_domain + '/d-i/' + item.release | default(preseed_release | default(ansible_distribution_release)) + '/postinst.sh') }} ; in-target chmod +x /tmp/postinst.sh ; in-target /tmp/postinst.sh
+
+popularity-contest popularity-contest/participate boolean false
+
+d-i finish-install/keep-consoles boolean true
+d-i finish-install/reboot_in_progress note
+d-i cdrom-detect/eject boolean true
+
