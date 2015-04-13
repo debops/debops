@@ -82,7 +82,7 @@ upstream {{ item.name }} {
 	server 127.0.0.1{% if item.port is defined and item.port %}:{{ item.port }}{% endif %}{% if item.enabled is defined and not item.enabled %} down{% endif %};
 {%             else                                                               %}
 {%                 if host in play_hosts and hostvars[host].ansible_all_ipv4_addresses is defined %}
-{%                     for address in hostvars[host].ansible_all_ipv4_addresses   %}
+{%                     for address in hostvars[host].ansible_all_ipv4_addresses | unique %}
 	server {{ address }}{% if item.port is defined and item.port %}:{{ item.port }}{% endif %}{% if item.enabled is defined and not item.enabled %} down{% endif %};
 {%                     endfor                                                     %}
 {%                 else                                                           %}
