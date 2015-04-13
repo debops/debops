@@ -15,6 +15,10 @@ v0.1.4
 - Allow to override ``nginx_passenger_root`` and ``nginx_passenger_ruby``
   variables using Ansible inventory variables. [drybjed]
 
+- Make sure that lists of IP addresses used in the templates are unique, this
+  is required to eliminate duplicate IPv6 addresses in case of VLAN use.
+  [drybjed]
+
 v0.1.3
 ------
 

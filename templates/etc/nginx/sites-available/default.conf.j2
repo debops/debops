@@ -358,12 +358,12 @@
                 {{ item.location[path] | indent(16) }}
 {%                 if location_allow is defined                                %}
 {%                     if location_allow[path] is defined and location_allow[path] %}
-{%                         for address in location_allow[path]                 %}
+{%                         for address in location_allow[path] | unique        %}
                 allow {{ address }};
 {%                         endfor                                              %}
 {%                         if location_deny is defined                         %}
 {%                             if location_deny[path] is defined               %}
-{%                                 for address in location_deny[path]          %}
+{%                                 for address in location_deny[path] | unique %}
                 deny {{ address }};
 {%                                 endfor                                      %}
 {%                             endif                                           %}
@@ -397,11 +397,11 @@
                 {{ entry.options | indent(16) }}
 {%                 endif                                                       %}
 {%                 if entry.allow is defined and entry.allow                   %}
-{%                     for address in entry.allow                              %}
+{%                     for address in entry.allow | unique                     %}
                 allow {{ address }};
 {%                     endfor                                                  %}
 {%                     if entry.deny is defined and entry.deny                 %}
-{%                         for address in entry.deny                           %}
+{%                         for address in entry.deny | unique                  %}
                 deny {{ address }};
 {%                         endfor                                              %}
 {%                     else                                                    %}
@@ -570,14 +570,14 @@ server {
 {% if item.allow is string %}
         allow {{ item.allow }};
 {% else %}
-{% for address in item.allow %}
+{% for address in item.allow | unique %}
 	allow {{ address }};
 {% endfor %}
 {% endif %}
 {% endif %}
 {% if ((item.access_policy is defined and item.access_policy) and
        (item.access_policy in nginx_access_policy_allow_map.keys())) %}
-{% for address in nginx_access_policy_allow_map[item.access_policy] %}
+{% for address in nginx_access_policy_allow_map[item.access_policy] | unique %}
 	allow {{ address }};
 {% endfor %}
 {% endif %}
@@ -622,17 +622,17 @@ server {
 		stub_status on;
 		access_log off;
 {% if nginx_status_localhost %}
-{% for address in nginx_status_localhost %}
+{% for address in nginx_status_localhost | unique %}
 		allow {{ address }};
 {% endfor %}
 {% endif %}
 {% if nginx_status %}
-{% for address in nginx_status %}
+{% for address in nginx_status | unique %}
 		allow {{ address }};
 {% endfor %}
 {% endif %}
 {% if item.status is defined and item.status %}
-{% for address in item.status %}
+{% for address in item.status | unique %}
 		allow {{ address }};
 {% endfor %}
 {% endif %}
