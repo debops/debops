@@ -8,7 +8,6 @@ derivative distributions. Specifically, it will manage:
 * list of APT sources
 * centralized APT cache (using `apt-cacher-ng`)
 * automatic package updates (using `unattended-upgrades` and `apticron`)
-* Debian Preseed configuration
 * installation of custom packages specified in Ansible inventory
 
 ### Installation
@@ -26,7 +25,6 @@ More information about `debops.apt` can be found in the
 ### Role dependencies
 
 - `debops.etc_services`
-- `debops.nginx`
 - `debops.ferm`
 - `debops.apt_preferences`
 - `debops.secret`
