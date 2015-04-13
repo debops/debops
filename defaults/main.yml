@@ -3,7 +3,6 @@
 # Manage APT package manager (set to False to disable)
 # Set to FQDN of a host to specify it as host for
 #    apt-cacher-ng - apt-get cache
-#    Debian Preseed configuration (planned)
 apt: True
 
 # Send mail notifications from APT to these email addresses
@@ -177,36 +176,4 @@ apt_conditional_whitelist:
 
     # Install uptimed on host systems, but not on virtualized guests
   - 'uptimed'
-
-
-apt_debian_preseed_http_mirror: 'cdn.debian.net'
-apt_debian_preseed_release: '{{ ansible_distribution_release }}'
-apt_debian_preseed_hostname: '{{ ansible_hostname }}'
-apt_debian_preseed_domain: '{{ ansible_domain }}'
-apt_debian_preseed_locale: 'en_US.UTF-8'
-apt_debian_preseed_language: 'English'
-apt_debian_preseed_timezone: 'UTC'
-apt_debian_preseed_keyboardvariant: 'American English'
-apt_debian_preseed_mirror_country: 'United States'
-apt_debian_preseed_rootpw_length: '20'
-apt_debian_preseed_rootpw: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/debian_preseed/system/root/password encrypt=md5_crypt length=' + apt_debian_preseed_rootpw_length) }}"
-apt_debian_preseed_username: "{{ lookup('env','USER') }}"
-apt_debian_preseed_sshkey: "{{ lookup('pipe','ssh-add -L || true') }}"
-apt_debian_preseed_filesystem: 'ext4'
-
-
-# ---- Salt integration ----
-
-# Enable or disable Salt integration. SaltStack upstream repository will be
-# configured in the newly installed host and packages listed below will be
-# installed
-apt_debian_preseed_salt: False
-
-# List of Salt packages to install in new hosts
-apt_debian_preseed_salt_packages: [ 'salt-minion' ]
-
-# Additional options to set for salt-minion, in YAML text block format
-# Contents will be inserted into a Bash template script on Debian Preseed host
-# and echoed to /etc/salt/minion.d/ansible.conf file during installation
-apt_debian_preseed_salt_options: False
 
