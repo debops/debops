@@ -71,7 +71,13 @@ group {
 {% if dhcpd_ipversion is defined and dhcpd_ipversion == '6' %}
 subnet6 {{ subnet.subnet | ipaddr('network') + '/' + subnet.subnet | ipaddr('prefix') | string }} {
 {% else %}
-subnet {{ subnet.subnet | ipaddr('cidr') | ipaddr('network') }} netmask {{ subnet.netmask | default(subnet.subnet | ipaddr('netmask')) }} {
+{% if (subnet.netmask is defined and (subnet.subnet + '/' + subnet.netmask) | ipaddr('cidr') | ipaddr('network')) %}
+subnet {{ (subnet.subnet + '/' + subnet.netmask) | ipaddr('cidr') | ipaddr('network') }} netmask {{ subnet.netmask }} {
+{% elif subnet.subnet | ipaddr('cidr') | ipaddr('network') %}
+subnet {{ subnet.subnet | ipaddr('cidr') | ipaddr('network') }} netmask {{ subnet.subnet | ipaddr('netmask') }} {
+{% else %}
+subnet {{ subnet.subnet | ipaddr('cidr') | ipaddr('address') }} netmask 255.255.255.255 {
+{% endif %}
 {% endif %}
 {% if subnet.routers is defined and subnet.routers %}
 {% if subnet.routers is string %}
