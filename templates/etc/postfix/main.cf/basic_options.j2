@@ -1,6 +1,6 @@
 {% import 'macros.j2' as get with context %}
 # Base options
-smtpd_banner			= $myhostname ESMTP $mail_name
+smtpd_banner			= {{ postfix_smtpd_banner | default('$myhostname ESMTP $mail_name') }}
 biff				= no
 append_dot_mydomain		= no
 delay_warning_time		= {{ postfix_delay_warning_time | default('4h') }}
