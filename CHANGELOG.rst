@@ -17,6 +17,10 @@ v0.2.6
 
 - Add ``debops.preseed`` role. [drybjed]
 
+- Ansible will now try and read the remote host UUID using ``dmidecode`` and
+  prefer that over using a randomly generated UUID if possible. This works on
+  hardware hosts and virtual machines, but shouldn't in containers. [drybjed]
+
 v0.2.5
 ------
 
