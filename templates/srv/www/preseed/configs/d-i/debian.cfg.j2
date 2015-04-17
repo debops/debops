@@ -49,6 +49,8 @@ d-i pkgsel/upgrade select safe-upgrade
 d-i preseed/late_command string in-target wget -O /tmp/postinst.sh {{ item.postinst | default('http://' + item.name + '.' + preseed_base_domain + '/d-i/' + item.release | default(preseed_release | default(ansible_distribution_release)) + '/postinst.sh') }} ; in-target chmod +x /tmp/postinst.sh ; in-target /tmp/postinst.sh
 
 popularity-contest popularity-contest/participate boolean false
+{% block grub_installer %}
+{% endblock %}
 
 d-i finish-install/keep-consoles boolean true
 d-i finish-install/reboot_in_progress note
