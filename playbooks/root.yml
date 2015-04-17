@@ -93,6 +93,11 @@
         state: 'directory'
       with_items: root_service_directories
 
+    - name: Read the host UUID
+      shell: dmidecode --string system-uuid || true
+      register: root_register_uuid
+      changed_when: False
+
     - name: Save root local facts
       template:
         src: 'templates/etc/ansible/facts.d/root.fact.j2'
