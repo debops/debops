@@ -15,6 +15,9 @@ v0.1.2
   should avoid problems with accounts that weren't defined with default values
   and are now managed by Ansible. [drybjed]
 
+- Set user shell separately if dotfiles are enabled and it's specified in the
+  dotfiles dict. [drybjed]
+
 v0.1.1
 ------
 
