@@ -12,6 +12,10 @@ v0.1.1
   ``resolvconf`` prevents loss of configuration like IPv4 nameservers and
   domain/search options. [drybjed]
 
+- Add ``grub-installer`` Jinja block in the preseed templates. The destructive
+  template will automatically install ``grub`` on a default partition on new
+  Jessie installs. [drybjed]
+
 v0.1.0
 ------
 
