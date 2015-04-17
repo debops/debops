@@ -13,7 +13,7 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: ((item.name is defined and item.name != 'root') and
+  when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
 - name: Manage user accounts
@@ -37,7 +37,7 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: ((item.name is defined and item.name != 'root') and
+  when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state is undefined or (item.state is defined and item.state)))
 
 - name: Manage user default groups
@@ -52,7 +52,7 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: ((item.name is defined and item.name != 'root') and
+  when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state is undefined or (item.state is defined and item.state != 'absent')) and
          (users_default_groups_list is defined and users_default_groups_list))
 
@@ -68,7 +68,7 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: ((item.name is defined and item.name != 'root') and
+  when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state is undefined or (item.state is defined and item.state != 'absent')) and
          (item.groups is defined and item.groups))
 
@@ -83,6 +83,6 @@
     - users_list
     - users_group_list
     - users_host_list
-  when: ((item.name is defined and item.name != 'root') and
+  when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state is defined and item.state == 'absent'))
 

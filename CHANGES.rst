@@ -20,6 +20,9 @@ v0.1.2
 
 - Don't change ``root`` shell if none is specified by the user. [drybjed]
 
+- Don't manage default account if it's ``root``, it should fix problems when
+  ``root`` account is used over SSH directly. [drybjed]
+
 v0.1.1
 ------
 
