@@ -10,6 +10,11 @@ v0.1.2
 
 - Add ``users-dotfiles`` Ansible tag for tasks related to dotfiles. [drybjed]
 
+- Don't force certain ``user`` module parameters if they are not specified by
+  the user, like the account ``system`` state or home directory location. This
+  should avoid problems with accounts that weren't defined with default values
+  and are now managed by Ansible. [drybjed]
+
 v0.1.1
 ------
 
