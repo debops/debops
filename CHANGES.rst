@@ -18,6 +18,8 @@ v0.1.2
 - Set user shell separately if dotfiles are enabled and it's specified in the
   dotfiles dict. [drybjed]
 
+- Don't change ``root`` shell if none is specified by the user. [drybjed]
+
 v0.1.1
 ------
 
