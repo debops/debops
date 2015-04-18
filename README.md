@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) ipxe
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-ipxe.svg?style=flat)](http://travis-ci.org/debops/ansible-ipxe) [![test-suite](http://img.shields.io/badge/test--suite-ansible--ipxe-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-ipxe/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-ipxe.svg?style=flat)](http://travis-ci.org/debops/ansible-ipxe) [![test-suite](http://img.shields.io/badge/test--suite-ansible--ipxe-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-ipxe/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.ipxe-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/3444)
 
 [iPXE](http://ipxe.org/) is a network boot loader which allows you to boot
 host operating systems in different ways, including over HTTP, from local
@@ -13,6 +13,17 @@ server. You can use
 [debops.dhcpd](https://github.com/debops/ansible-dhcpd/) +
 [debops.tftpd](https://github.com/debops/ansible-tftpd/) Ansible roles to
 serve these configuration files to your hosts.
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, run:
+
+    ansible-galaxy install debops.ipxe
+
+### Documentation
+
+More information about `debops.ipxe` can be found in the
+[official debops.ipxe documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-ipxe/docs/).
 
 
 
