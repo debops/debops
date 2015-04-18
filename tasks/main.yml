@@ -57,6 +57,15 @@
   when: item.interface is defined and item.interface
   notify: [ 'Restart ferm' ]
 
-- include: netboot_debian.yml
-  when: dnsmasq_tftp is defined and dnsmasq_tftp
+- name: Allow access to TFTP in tcpwrappers
+  template:
+    src: 'etc/hosts.allow.d/50_dnsmasq_tftpd.j2'
+    dest: '/etc/hosts.allow.d/50_dnsmasq_tftpd_{{ item.interface }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: dnsmasq_interfaces
+  when: ((dnsmasq_tftp is defined and dnsmasq_tftp) and
+         (item.interface is defined and item.interface))
+  notify: [ 'Assemble hosts.allow.d' ]
 

@@ -21,7 +21,13 @@ conntrack
 enable-ra
 
 {% endif %}
+{% if dnsmasq_tftp_ipxe is defined and dnsmasq_tftp_ipxe %}
+# Enable chain-loading of iPXE boot loader
+dhcp-match = set:ipxe,175
+dhcp-boot = tag:!ipxe,undionly.kpxe
+dhcp-boot = {{ dnsmasq_tftp_boot | default('menu.ipxe') }}
 
+{% endif %}
 # ---- Network interfaces ----
 
 # Bind only to specified interfaces (this will be set for example by libvirt
