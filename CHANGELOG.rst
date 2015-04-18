@@ -21,6 +21,8 @@ v0.2.6
   prefer that over using a randomly generated UUID if possible. This works on
   hardware hosts and virtual machines, but shouldn't in containers. [drybjed]
 
+- Add ``debops.ipxe`` role. [drybjed]
+
 v0.2.5
 ------
 
