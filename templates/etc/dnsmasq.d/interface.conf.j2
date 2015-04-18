@@ -78,8 +78,10 @@ dhcp-option = tag:{{ item.interface }},option6:dns-server,{{ dnsmasq_tpl_ipv6 | 
 
 # Enable TFTP service on specified interface
 enable-tftp = {{ item.interface }}
-tftp-root = {{ dnsmasq_tftp_root | default('/srv/tftpboot') }},{{ item.interface }}
+tftp-root = {{ dnsmasq_tftp_root | default('/srv/tftp') }},{{ item.interface }}
+{% if dnsmasq_tftp_ipxe is undefined or not dnsmasq_tftp_ipxe %}
 dhcp-boot = tag:{{ item.interface }},{{ dnsmasq_tftp_boot | default('pxelinux.0') }}
+{% endif %}
 
 {% endif %}
 {% if item.name is defined and item.name %}
