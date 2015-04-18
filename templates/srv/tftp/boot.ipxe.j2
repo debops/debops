@@ -1,0 +1,36 @@
+#!ipxe
+
+# {{ ansible_managed }}
+
+# iPXE configuration based on https://gist.github.com/robinsmidsrod/2234639
+
+# Global variables used by all other iPXE scripts
+chain --autofree variables.ipxe ||
+
+# Boot using a dynamic script if it's specified
+# http://ipxe.org/scripting
+isset ${ipxe_boot_url} && chain --replace --autofree ${ipxe_boot_url} ||
+
+# Boot <boot-url>/<boot-path>/hostname-<hostname>.ipxe
+# if hostname DHCP variable is set and script is present
+isset ${hostname} && chain --replace --autofree ${ipxe_boot_path}hostname-${hostname}.ipxe ||
+
+# Boot <boot-url>/<boot-path>/uuid-<UUID>.ipxe
+# if SMBIOS UUID variable is set and script is present
+isset ${uuid} && chain --replace --autofree ${ipxe_boot_path}uuid-${uuid}.ipxe ||
+
+# Boot <boot-url>/<boot-path>/mac-010203040506.ipxe if script is present
+chain --replace --autofree ${ipxe_boot_path}mac-${mac:hexraw}.ipxe ||
+
+# Boot <boot-url>/<boot-path>/pci-8086100e.ipxe if one type of
+# PCI Intel adapter is present and script is present
+chain --replace --autofree ${ipxe_boot_path}pci-${pci/${busloc}.0.2}${pci/${busloc}.2.2}.ipxe ||
+
+# Boot <boot-url>/<boot-path>/chip-82541pi.ipxe if one type of
+# PCI Intel adapter is present and script is present
+chain --replace --autofree ${ipxe_boot_path}chip-${chip}.ipxe ||
+
+# Boot <boot-url>/menu.ipxe script if all other options have been exhausted
+set post_boot true
+chain --replace --autofree menu.ipxe ||
+
