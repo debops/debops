@@ -20,6 +20,9 @@ v0.1.1
   to control specific interfaces by the hotplug events using ``ifup`` and
   ``ifdown`` commands or ``ifup@.service`` under ``systemd``. [drybjed]
 
+- Add IPv6 SLAAC configuration on all default interfaces; this is required on
+  Debian Jessie to enable IPv6 address autoconfiguration.  [drybjed]
+
 v0.1.0
 ------
 
