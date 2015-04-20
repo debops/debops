@@ -23,6 +23,27 @@ v0.1.1
 - Add IPv6 SLAAC configuration on all default interfaces; this is required on
   Debian Jessie to enable IPv6 address autoconfiguration.  [drybjed]
 
+- Rewrite network interface configuration logic.
+
+  Generate interface configuration in a separate
+  ``/etc/network/interfaces.config.d/`` directory instead of directly in
+  ``/etc/network/interfaces.d/`` directory. Provide original configuration at
+  first run of the role, which is required to properly shut down all network
+  interfaces, when state of the networking configuration is undefined.
+
+  Instead of disabling and enabling network interfaces directly using Ansible
+  tasks and ``ifup`` / ``ifdown`` commands, delegate the reconfiguration
+  process to an external script installed on the host. The script will properly
+  disable and enable interfaces in systems using sysvinit, upstart and systemd.
+
+  The ifupdown configuration script will shut down all network interfaces on
+  the first run of the ``debops.ifupdown`` role, apply configuration changes
+  from the ``/etc/network/interfaces.config.d/`` directory to
+  ``/etc/network/interfaces.d/`` directory and then start only enabled
+  interfaces using ``ifup`` command or ``ifup@.service`` systemd service. Only
+  network interfaces which have been modified will be enabled/disabled on
+  subsequent runs. [drybjed]
+
 v0.1.0
 ------
 
