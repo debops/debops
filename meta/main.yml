@@ -10,6 +10,11 @@ dependencies:
         reason: 'Bug in LXC + iptables recent module - https://bugzilla.netfilter.org/show_bug.cgi?id=759'
         by_role: 'debops.lxc'
 
+      - package: 'initramfs-tools'
+        backports: [ 'wheezy' ]
+        reason: 'Requred by newer Linux kernel installed by debops.lxc'
+        by_role: 'debops.lxc'
+
   - role: debops.ferm
     ferm_forward: True
     ferm_dependent_rules:
