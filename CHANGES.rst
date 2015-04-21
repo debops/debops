@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.3.1
+------
+
+*Unreleased*
+
+- Add DebOps pre/post task hooks. [drybjed]
+
 v0.3.0
 ------
 
