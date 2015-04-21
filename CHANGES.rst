@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Unreleased*
+
+- Add an option to set custom Debian-Installer boot parameters during iPXE
+  boot. [drybjed]
+
 v0.1.1
 ------
 

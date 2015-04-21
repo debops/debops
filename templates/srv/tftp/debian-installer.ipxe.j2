@@ -27,6 +27,8 @@ set debian-installer-cursor ${version}
 
 set mirrorcfg mirror/suite=${version} mirror/country=manual mirror/http/hostname=${debian_installer_mirror} mirror/http/directory=/${os}
 
+set boot_params -- quiet
+
 :deb_boot_type_init
 set type text
 
@@ -51,6 +53,7 @@ item config_keymap ${space} Keymap: ${debian_installer_keymap}
 item
 item --gap Installer parameters:
 item config_mirror ${space} Mirror: ${debian_installer_mirror}
+item config_boot_params ${space} Boot: ${boot_params}
 choose --default ${type} type || goto debian-installer
 
 echo ${cls}
@@ -61,6 +64,10 @@ echo -n Set Debian mirror [${debian_installer_mirror}]: && read change_debian_in
 isset ${change_debian_installer_mirror} && set debian_installer_mirror ${change_debian_installer_mirror} || goto deb_boot_type
 clear change_debian_installer_mirror
 set mirrorcfg mirror/suite=${version} mirror/country=manual mirror/http/hostname=${debian_installer_mirror} mirror/http/directory=/${os}
+goto deb_boot_type
+
+:deb_config_boot_params
+echo -n Edit boot options: && read boot_params
 goto deb_boot_type
 
 :deb_config_keymap
@@ -124,8 +131,8 @@ goto deb_boot
 
 :deb_boot
 imgfree
-echo Boot parameters: ${install_params} -- quiet ${params}
-kernel http://${debian_installer_mirror}/${dir}/linux ${install_params} ${netcfg} ${mirrorcfg} -- quiet ${params} initrd=initrd.gz
+echo Boot parameters: ${install_params} ${boot_params}
+kernel http://${debian_installer_mirror}/${dir}/linux initrd=initrd.gz ${netcfg} ${mirrorcfg} ${install_params} ${boot_params}
 initrd http://${debian_installer_mirror}/${dir}/initrd.gz
 boot
 
