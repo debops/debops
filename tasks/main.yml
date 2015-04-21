@@ -1,5 +1,8 @@
 ---
 
+- name: DebOps pre_tasks hook
+  include: "{{ lookup('task_src', 'auth/pre_main.yml') }}"
+
 - name: Install auth-related packages
   apt:
     name: '{{ item }}'
@@ -68,4 +71,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+
+- name: DebOps post_tasks hook
+  include: "{{ lookup('task_src', 'auth/post_main.yml') }}"
 
