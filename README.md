@@ -1,11 +1,22 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) tftpd
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-tftpd.svg?style=flat)](http://travis-ci.org/debops/ansible-tftpd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--tftpd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-tftpd/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-tftpd.svg?style=flat)](http://travis-ci.org/debops/ansible-tftpd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--tftpd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-tftpd/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.tftpd-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/3480)
 
 This Ansible role can configure a standalone TFTP server using `tftpd-hpa`
 package. It can be used to serve files for embedded devices or serve iPXE
 files from [debops.ipxe](https://github.com/debops/ansible-ipxe/) role to
 other hosts on the network.
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, run:
+
+    ansible-galaxy install debops.tftpd
+
+### Documentation
+
+More information about `debops.tftpd` can be found in the
+[official debops.tftpd documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-tftpd/docs/).
 
 
 ### Role dependencies
