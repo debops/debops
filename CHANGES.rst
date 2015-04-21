@@ -23,6 +23,9 @@ v0.1.2
 - Don't manage default account if it's ``root``, it should fix problems when
   ``root`` account is used over SSH directly. [drybjed]
 
+- Use ``sudo_user`` task parameter to operate on files inside user directories
+  instead of relying on static absolute paths as default. [drybjed]
+
 v0.1.1
 ------
 

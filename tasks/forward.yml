@@ -3,10 +3,9 @@
 - name: Configure ~/.forward for users
   template:
     src: 'home/user/forward.j2'
-    dest: '{{ item.home | default(users_default_home_prefix + "/" + item.name) }}/.forward'
-    owner: '{{ item.name }}'
-    group: '{{ item.group | default(item.name) }}'
+    dest: '~/.forward'
     mode: '0644'
+  sudo_user: '{{ item.name }}'
   with_flattened:
     - users_default
     - users_admins
@@ -19,8 +18,9 @@
 
 - name: Remove ~/.forward from user account when disabled
   file:
-    path: '{{ item.home | default(users_default_home_prefix + "/" + item.name) }}/.forward'
+    path: '~/.forward'
     state: 'absent'
+  sudo_user: '{{ item.name }}'
   with_flattened:
     - users_default
     - users_admins
