@@ -26,6 +26,9 @@ More information about `debops.ipxe` can be found in the
 [official debops.ipxe documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-ipxe/docs/).
 
 
+### Role dependencies
+
+- `debops.apt_preferences`
 
 ### Are you using this as a standalone role without DebOps?
 
