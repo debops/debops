@@ -9,6 +9,9 @@ v0.1.2
 - Add an option to set custom Debian-Installer boot parameters during iPXE
   boot. [drybjed]
 
+- Prefer ``ipxe`` package from ``wheezy-backports`` repository on Debian
+  Wheezy, newer version provides useful features. [drybjed]
+
 v0.1.1
 ------
 
