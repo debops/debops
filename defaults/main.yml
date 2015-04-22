@@ -398,6 +398,40 @@ pki_inject_public_files: []
 pki_inject_private_files: []
 
 
+# ---- Copy external files to PKI directories ----
+
+# Using these lists, you can copy arbitrary files from Ansible Controller to
+# remote host's PKI directories. They will automatically be secured with proper
+# permissions. If not specified, files will be copied to default PKI realm.
+
+# Examples:
+#
+#   # Copy a particular certificate file to default realm
+#   pki_copy_public_files:
+#
+#     - src: '/srv/certificates/example.com.crt'
+#       dest: 'certs/example.com.crt'
+#
+#   # Copy a particular private key file to default realm
+#   pki_copy_private_files:
+#
+#     - src: '/srv/certificates/private/example.com.key'
+#       dest: 'private/example.com.key'
+#
+#   # Copy a file to specific realm
+#   pki_copy_public_files:
+#
+#     - src: '/etc/fstab'
+#       dest: 'certs/fstab'
+#       realm: 'domain'
+
+# Copy public files to remote hosts
+pki_copy_public_files: []
+
+# Copy private files to remote hosts
+pki_copy_private_files: []
+
+
 # ---- System CA certificate store management ----
 
 # Set default trust policy for new certificates added to 'ca-certificates'

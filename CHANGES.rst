@@ -19,3 +19,6 @@ v0.1.0
 
 - Reorder Changelog entries. [drybjed]
 
+- Add a way to copy arbitrary files from Ansible Controller to remote host PKI
+  directories. [drybjed]
+
