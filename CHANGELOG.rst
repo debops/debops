@@ -23,6 +23,8 @@ v0.2.6
 
 - Add ``debops.ipxe`` role. [drybjed]
 
+- Add ``debops.tftpd`` role. [drybjed]
+
 v0.2.5
 ------
 
