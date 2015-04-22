@@ -30,6 +30,9 @@ v0.1.2
   ``item.system`` and omit them if not specified (system status won't be
   enforced by the role). [drybjed]
 
+- Add a way to change home directory primary group and permissions using
+  ``item.home_group`` and ``item.home_mode`` parameters. [drybjed]
+
 v0.1.1
 ------
 
