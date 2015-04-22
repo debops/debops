@@ -26,6 +26,10 @@ v0.1.2
 - Use ``sudo_user`` task parameter to operate on files inside user directories
   instead of relying on static absolute paths as default. [drybjed]
 
+- Rename the ``item.systemgroup`` and ``item.systemuser`` parameters to
+  ``item.system`` and omit them if not specified (system status won't be
+  enforced by the role). [drybjed]
+
 v0.1.1
 ------
 
