@@ -13,6 +13,8 @@ v0.1.1
   parsed with errors, now ``debops.dhcpd`` will detect them hand handle
   separately from normal networks. [drybjed]
 
+- Add support for iPXE boot loader chain-loading and DHCP options. [drybjed]
+
 v0.1.0
 ------
 
