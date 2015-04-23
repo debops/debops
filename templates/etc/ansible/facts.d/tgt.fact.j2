@@ -1,0 +1,7 @@
+{% set tgt_tpl_iqn_base = (ansible_local.tgt.iqn_base
+                           if (ansible_local|d() and ansible_local.tgt|d() and
+                               ansible_local.tgt.iqn_base|d())
+                           else tgt_iqn_base) %}
+{
+"iqn_base":"{{ tgt_tpl_iqn_base }}"
+}
