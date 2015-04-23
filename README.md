@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) tgt
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-tgt.svg?style=flat)](http://travis-ci.org/debops/ansible-tgt) [![test-suite](http://img.shields.io/badge/test--suite-ansible--tgt-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-tgt/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-tgt.svg?style=flat)](http://travis-ci.org/debops/ansible-tgt) [![test-suite](http://img.shields.io/badge/test--suite-ansible--tgt-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-tgt/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.tgt-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/3497)
 
 This Ansible role will allow you to configure iSCSI Targets on specified
 hosts using [tgt](http://stgt.sourceforge.net/) package. You can create and
@@ -9,6 +9,17 @@ targets. Only targets that are unused will be modified during normal
 operation. [debops.ferm](https://github.com/debops/ansible-ferm/ role will
 be used to manage `iptables` firewall to allow access from all or specific
 hosts or networks.
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, run:
+
+    ansible-galaxy install debops.tgt
+
+### Documentation
+
+More information about `debops.tgt` can be found in the
+[official debops.tgt documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-tgt/docs/).
 
 
 ### Role dependencies
