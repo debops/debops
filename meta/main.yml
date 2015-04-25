@@ -8,6 +8,11 @@ dependencies:
     tags: apt_preferences
     apt_preferences_dependent_list:
 
+      - package: 'librdmacm1'
+        backports: [ 'wheezy' ]
+        reason:  'Required by tgt packages from wheezy-backports'
+        by_role: 'debops.tgt'
+
       - package: 'tgt tgt-*'
         backports: [ 'wheezy' ]
         reason:  'Many bugfixes and improvements since original Wheezy release'
