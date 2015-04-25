@@ -37,31 +37,64 @@
     group: 'root'
     mode: '0755'
 
+- name: Create /etc/network/interfaces.config.d directory
+  file:
+    path: '/etc/network/interfaces.config.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Install network reconfiguration script
+  template:
+    src: 'usr/local/lib/ifupdown-reconfigure-interfaces.j2'
+    dest: '{{ ansible_local.root.lib + "/ifupdown-reconfigure-interfaces" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
 - name: Delete interface configuration if requested
   file:
-    path: '/etc/network/interfaces.d/{{ item.weight | default("00") }}_{{ item.filename | default(item.type | default("interface") + "_" + item.iface) }}{% if item.inet is defined and item.inet %}_ipv4{% endif %}{% if item.inet6 is defined and item.inet6 %}_ipv6{% endif %}'
+    path: '{{ "/etc/network/interfaces.config.d/" + item.weight | default("00") + "_" + item.filename | default(item.type | default("interface") + "_" + item.iface) + ("_ipv4" if (item.inet is defined and item.inet) else "") + ("_ipv6" if (item.inet6 is defined and item.inet6) else "") }}'
     state: 'absent'
   with_items: ifupdown_interfaces
+  register: ifupdown_register_interfaces_removator
   when: ((item.iface is defined and item.iface) and
          (item.delete is defined and item.delete))
 
 - name: Generate interface configuration
   template:
     src: 'etc/network/interfaces.d/{{ item.type | default("interface") }}.j2'
-    dest: '/etc/network/interfaces.d/{{ item.weight | default("00") }}_{{ item.filename | default(item.type | default("interface") + "_" + item.iface) }}{% if item.inet is defined and item.inet %}_ipv4{% endif %}{% if item.inet6 is defined and item.inet6 %}_ipv6{% endif %}'
+    dest: '{{ "/etc/network/interfaces.config.d/" + item.weight | default("00") + "_" + item.filename | default(item.type | default("interface") + "_" + item.iface) + ("_ipv4" if (item.inet is defined and item.inet) else "") + ("_ipv6" if (item.inet6 is defined and item.inet6) else "") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
   with_items: ifupdown_interfaces
-  register: ifupdown_register_status
+  register: ifupdown_register_interfaces_generator
   when: ((item.iface is defined and item.iface) and
          (item.delete is undefined or not item.delete))
 
-- name: Reconfigure interfaces
-  shell: ifdown {{ item.item.iface }} ; sleep {{ ifupdown_reconfigure_delay }} ; ifup {{ item.item.iface }}
-  with_items: ifupdown_register_status.results
-  when: ((ifupdown_register_status.results is defined and ifupdown_register_status.results) and
-         (ifupdown_reconfigure is defined and ifupdown_reconfigure == True) and
-         (item.changed == True) and
-         (item.item.inet is undefined or item.item.inet != 'manual'))
+- name: Create random temporary directory for ifupdown data
+  command: mktemp -d
+  register: ifupdown_register_tempdir
+  when: (((ifupdown_register_interfaces_removator is defined and ifupdown_register_interfaces_removator.changed) or
+          (ifupdown_register_interfaces_generator is defined and ifupdown_register_interfaces_generator.changed)) and
+         (ifupdown_reconfigure is defined and ifupdown_reconfigure))
+
+- name: Generate list of changed interfaces in temporary file
+  template:
+    src: 'tmp/ifupdown-changed-interfaces.j2'
+    dest: '{{ ifupdown_register_tempdir.stdout + "/ifupdown-changed-interfaces" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: (((ifupdown_register_interfaces_removator is defined and ifupdown_register_interfaces_removator.changed) or
+          (ifupdown_register_interfaces_generator is defined and ifupdown_register_interfaces_generator.changed)) and
+         (ifupdown_reconfigure is defined and ifupdown_reconfigure))
+
+- name: Reconfigure network interfaces
+  command: '{{ ansible_local.root.lib + "/ifupdown-reconfigure-interfaces " + ifupdown_register_tempdir.stdout + "/ifupdown-changed-interfaces" }}'
+  when: (((ifupdown_register_interfaces_removator is defined and ifupdown_register_interfaces_removator.changed) or
+          (ifupdown_register_interfaces_generator is defined and ifupdown_register_interfaces_generator.changed)) and
+         (ifupdown_reconfigure is defined and ifupdown_reconfigure))
 

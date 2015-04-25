@@ -19,13 +19,12 @@
 {% if (item.type is defined and item.type == '6to4') %}
 {% if ((item.force is defined and item.force) or (ifupdown_tpl_6to4_ipv4_address | ipv4('6to4'))) %}
 # Configuration for IPv6 in IPv4 tunnel
-{% if (item.auto is undefined or item.auto) and item.allow is undefined and item.inet is undefined %}
-auto {{ ifupdown_tpl_6to4_iface }}
-{% elif (item.auto is undefined or item.auto) and item.allow is undefined and item.inet is defined and item.inet != 'manual' %}
-auto {{ ifupdown_tpl_6to4_iface }}
-{% elif (item.auto is defined and item.auto == True) %}
-auto {{ ifupdown_tpl_6to4_iface }}
-{% elif (item.auto is undefined or not item.auto) and (item.allow is defined and item.allow) %}
+{% if item.auto is undefined or item.auto %}
+allow-auto {{ item.iface }}
+{% endif %}
+{% if (item.allow is undefined and (item.inet is undefined or (item.inet is defined and item.inet != 'manual'))) %}
+allow-hotplug {{ ifupdown_tpl_6to4_iface }}
+{% elif (item.allow is defined and item.allow) %}
 allow-{{ item.allow }} {{ ifupdown_tpl_6to4_iface }}
 {% endif %}
 iface {{ ifupdown_tpl_6to4_iface }} inet6 6to4

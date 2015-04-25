@@ -19,7 +19,21 @@ ifupdown_default_interfaces:
     type: 'bridge'
     port: '{{ ifupdown_external_interface }}'
 
+  - iface: 'br0'
+    auto: False
+    allow: False
+    type: 'bridge'
+    inet6: 'auto'
+    port_present: '{{ ifupdown_external_interface }}'
+
   - iface: 'br1'
     type: 'bridge'
     port: '{{ ifupdown_internal_interface }}'
+
+  - iface: 'br1'
+    auto: False
+    allow: False
+    type: 'bridge'
+    inet6: 'auto'
+    port_present: '{{ ifupdown_internal_interface }}'
 
