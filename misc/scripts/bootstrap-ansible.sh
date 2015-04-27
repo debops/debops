@@ -34,7 +34,7 @@
 set -e
 
 # Ansible project repository to use
-project="git://github.com/ansible/ansible.git"
+project="https://github.com/ansible/ansible.git"
 
 # Select branch to build
 branch="${1:-devel}"
