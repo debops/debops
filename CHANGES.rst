@@ -21,6 +21,9 @@ v0.1.1
   ``reprepro_uploaders_default_rules`` to allow split between "local"
   repositories and repositories for distribution backports. [drybjed]
 
+- Export repositories when configuration of distributions managed on the server
+  changes. [drybjed]
+
 v0.1.0
 ------
 
