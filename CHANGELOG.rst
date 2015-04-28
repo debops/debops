@@ -27,6 +27,10 @@ v0.2.6
 
 - Add ``debops.tgt`` role. [drybjed]
 
+- During ``root.yml`` playbook, grab only the last line of ``dmidecode`` output
+  in case that it decides to emit comments about not supporting older releases
+  in ``STDOUT``. [drybjed]
+
 v0.2.5
 ------
 
