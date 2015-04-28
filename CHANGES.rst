@@ -24,6 +24,10 @@ v0.1.1
 - Export repositories when configuration of distributions managed on the server
   changes. [drybjed]
 
+- Change the location of gnupg snapshots stored in the DebOps ``secret/``
+  directory on Ansible Controller to not create clashes between different hosts
+  using the same domain name. [drybjed]
+
 v0.1.0
 ------
 
