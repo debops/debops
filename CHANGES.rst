@@ -33,6 +33,9 @@ v0.1.2
 - Add a way to change home directory primary group and permissions using
   ``item.home_group`` and ``item.home_mode`` parameters. [drybjed]
 
+- Allow home group and mode modification without specifying the ``item.home``
+  key. [drybjed]
+
 v0.1.1
 ------
 

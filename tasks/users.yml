@@ -42,7 +42,7 @@
 
 - name: Manage user home directories
   file:
-    path: '{{ item.home }}'
+    path: '{{ item.home | default("~" + item.name) }}'
     state: 'directory'
     group: '{{ item.home_group | default(omit) }}'
     mode: '{{ item.home_mode | default(omit) }}'
@@ -54,7 +54,6 @@
     - users_host_list
   when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state is undefined or (item.state is defined and item.state)) and
-         (item.home is defined and item.home) and
          ((item.home_group is defined and item.home_group) or
           (item.home_mode is defined and item.home_mode)))
 
