@@ -94,7 +94,7 @@
       with_items: root_service_directories
 
     - name: Read the host UUID
-      shell: dmidecode --string system-uuid || true
+      shell: dmidecode --string system-uuid | tail -n 1 || true
       register: root_register_uuid
       changed_when: False
 
