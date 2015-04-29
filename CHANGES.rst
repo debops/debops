@@ -30,6 +30,8 @@ v0.1.1
 
 - Add new mirror configuration for Debian GNU/Linux 8 (Jessie). [drybjed]
 
+- Switch Debian mirror servers to new HTTP redirector address. [drybjed]
+
 v0.1.0
 ------
 
