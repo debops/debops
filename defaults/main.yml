@@ -15,6 +15,8 @@ apt_mail_notifications: [ 'root' ]
 # all APT repositories that don't specify their own.
 # Example: [ 'http://cdn.debian.net/debian' ]
 apt_mirrors: []
+apt_group_mirrors: []
+apt_host_mirrors: []
 
 # String used to select default mirrors based on Linux distribution used on
 # a specific host. Default mirrors are set using
@@ -28,11 +30,15 @@ apt_default_mirrors_lookup: '{{ ansible_distribution }}'
 # List of additional repository keys enabled automatically by Ansible. See
 # documentation of 'apt_key' module for possible values.
 apt_keys: []
+apt_group_keys: []
+apt_host_keys: []
 
 # Secondary list of APT keys, not configured on the first Ansible run, but
 # enabled on subsequent runs. Can be used in cases where APT repository might
 # not be available initially.
 apt_keys_delayed: []
+apt_group_keys_delayed: []
+apt_host_keys_delayed: []
 
   # Example key definition from default 'debops.reprepro' configuration
   #- url: '{{ "https://apt." + ansible_domain + "/" + ansible_distribution | lower + "/apt." + ansible_domain + ".asc" }}'
@@ -44,11 +50,15 @@ apt_keys_delayed: []
 # List of additional repositories enabled automatically by Ansible. See
 # documentation of 'apt_repository' module for possible values.
 apt_repositories: []
+apt_group_repositories: []
+apt_host_repositories: []
 
 # Secondary list of APT repositories, not configured on the first Ansible run,
 # but enabled on subsequent runs. Can be used in cases where APT repository
 # might not be available initially.
 apt_repositories_delayed: []
+apt_group_repositories_delayed: []
+apt_host_repositories_delayed: []
 
   # Example repository definition from default 'debops.reprepro' configuration
   #- repo: '{{ "deb https://apt." + ansible_domain + "/" + ansible_distribution | lower + " " + ansible_distribution_release + "-backports main" }}'
@@ -64,11 +74,15 @@ apt_repositories_delayed: []
 # List of user-specified APT repositories. More information and list of
 # parameters can be found in 'templates/etc/apt/sources.list.j2'.
 apt_sources: []
+apt_group_sources: []
+apt_host_sources: []
 
 # List of secondary APT repositories which are not enabled on the first Ansible
 # run, but are enabled automatically on subsequent runs. It can be used in
 # cases where APT repository might not be available initially.
 apt_sources_delayed: []
+apt_group_sources_delayed: []
+apt_host_sources_delayed: []
 
   # Example repository definition from default 'debops.reprepro' configuration
   #- comment:  'Local backports of Debian Testing packages'
