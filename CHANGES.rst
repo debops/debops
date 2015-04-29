@@ -32,6 +32,18 @@ v0.1.1
 
 - Switch Debian mirror servers to new HTTP redirector address. [drybjed]
 
+- Redesign "local" repositories to support distribution upgrades.
+
+  Repository naming scheme has been changed, new naming scheme::
+
+      <release>-<origin>         (production, direct upload denied)
+      <release>-<origin>-staging (testing, direct upload allowed)
+
+  Previous, current and next Debian Stable releases are configured when
+  repository is enabled on Debian-based hosts. On Ubuntu hosts, only
+  repositories for current Ubuntu LTS release are configured at the moment.
+  [drybjed]
+
 v0.1.0
 ------
 
