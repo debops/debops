@@ -4,7 +4,7 @@ Changelog
 v0.1.1
 ------
 
-*Unreleased*
+*Released: 2015-04-30*
 
 - Backport repositories have been redesigned to support distribution upgrades.
 
