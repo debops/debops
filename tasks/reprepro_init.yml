@@ -1,8 +1,10 @@
 ---
 
 - name: Initialize reprepro repositories
-  command: reprepro export chdir=~ creates=~/db/version
+  command: reprepro export chdir=~
   sudo_user: '{{ reprepro_user }}'
+  when: reprepro_register_conf_distributions is defined and
+        reprepro_register_conf_distributions.changed
 
 - name: Generate reprepro symlinks
   command: reprepro --delete createsymlinks chdir=~

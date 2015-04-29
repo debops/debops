@@ -100,12 +100,13 @@ reprepro_distributions: '{{ reprepro_distributions_local +
 # user account.
 reprepro_distributions_local:
 
-  - Distribution: '{{ reprepro_distribution | lower }}'
-    Description: '{{ reprepro_origin }} staging repository'
+  - Distribution: 'debian'
+    Description: '{{ reprepro_origin }} staging repository for Debian {{ reprepro_debian_previous[reprepro_distribution_release] | capitalize }}'
     Origin: '{{ reprepro_origin }}'
-    Label: '{{ reprepro_origin | lower + "-staging" }}'
-    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
-    Suite: '{{ reprepro_origin | lower + "-staging" }}'
+    Label: '{{ reprepro_debian_previous[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
+    Codename: '{{ reprepro_debian_previous[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]] | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]] + "-" + reprepro_origin | lower + "-staging" }}'
     Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
@@ -116,29 +117,170 @@ reprepro_distributions_local:
       --type=dsc email-changes.sh
       {% endif %}
 
-  - Distribution: '{{ reprepro_distribution | lower }}'
-    Description: '{{ reprepro_origin }} production repository'
+  - Distribution: 'debian'
+    Description: '{{ reprepro_origin }} staging repository for Debian {{ reprepro_distribution_release | capitalize }}'
     Origin: '{{ reprepro_origin }}'
-    Label: '{{ reprepro_origin | lower + "-production" }}'
-    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-production" }}'
-    Suite: '{{ reprepro_origin | lower + "-production" }}'
+    Label: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release] | join(" ") }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
     Tracking: 'keep'
-    Pull: '{{ reprepro_origin | lower + "_from_staging" }}'
+    NotAutomatic: 'yes'
     Scripts: |
       {% if reprepro_admin_email %}
       --type=dsc email-changes.sh
       {% endif %}
 
-# Repository for backports created locally for current stable distribution
+  - Distribution: 'debian'
+    Description: '{{ reprepro_origin }} staging repository for Debian {{ reprepro_debian_next[reprepro_distribution_release] | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_debian_next[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
+    Codename: '{{ reprepro_debian_next[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]] + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]] | join(" ") }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    NotAutomatic: 'yes'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+  - Distribution: 'ubuntu'
+    Description: '{{ reprepro_origin }} staging repository for Ubuntu {{ reprepro_distribution_release | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    NotAutomatic: 'yes'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+  - Distribution: 'debian'
+    Description: '{{ reprepro_origin }} production repository for Debian {{ reprepro_debian_previous[reprepro_distribution_release] | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_debian_previous[reprepro_distribution_release] + "-" + reprepro_origin | lower }}'
+    Codename: '{{ reprepro_debian_previous[reprepro_distribution_release] + "-" + reprepro_origin | lower }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]] | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]] + "-" + reprepro_origin | lower }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    Pull: '{{ reprepro_debian_previous[reprepro_distribution_release] + "_" + reprepro_origin | lower + "_from_staging" }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+  - Distribution: 'debian'
+    Description: '{{ reprepro_origin }} production repository for Debian {{ reprepro_distribution_release | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release] | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_distribution_release] + "-" + reprepro_origin | lower }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    Pull: '{{ reprepro_distribution_release + "_" + reprepro_origin | lower + "_from_staging" }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+  - Distribution: 'debian'
+    Description: '{{ reprepro_origin }} production repository for Debian {{ reprepro_debian_next[reprepro_distribution_release] | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_debian_next[reprepro_distribution_release] + "-" + reprepro_origin | lower }}'
+    Codename: '{{ reprepro_debian_next[reprepro_distribution_release] + "-" + reprepro_origin | lower }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]] | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]] + "-" + reprepro_origin | lower }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    Pull: '{{ reprepro_debian_next[reprepro_distribution_release] + "_" + reprepro_origin | lower + "_from_staging" }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+  - Distribution: 'ubuntu'
+    Description: '{{ reprepro_origin }} production repository for Ubuntu {{ reprepro_distribution_release | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    Pull: '{{ reprepro_distribution_release + "_" + reprepro_origin | lower + "_from_staging" }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+# Repository for backports created locally for currently supported distributions
 reprepro_distributions_local_backports:
 
-  - Distribution: '{{ reprepro_distribution | lower }}'
+    # Repository for previous Debian release backports
+  - Distribution: 'debian'
+    Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
+    Codename: '{{ reprepro_debian_previous[reprepro_distribution_release] + "-backports" }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]] + "-backports" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]] | join(" ") }}'
+    Uploaders: '{{ "uploaders/" + reprepro_debian_previous[reprepro_distribution_release] + "-backports" }}'
+    Label: '{{ reprepro_distribution }}'
+    Origin: '{{ reprepro_origin }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+    # Repository for current Debian release backports
+  - Distribution: 'debian'
+    Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
+    Codename: '{{ reprepro_distribution_release + "-backports" }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_distribution_release] + "-backports" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release] | join(" ") }}'
+    Uploaders: '{{ "uploaders/" + reprepro_distribution_release + "-backports" }}'
+    Label: '{{ reprepro_distribution }}'
+    Origin: '{{ reprepro_origin }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+    # Repository for next Debian release backports
+  - Distribution: 'debian'
+    Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
+    Codename: '{{ reprepro_debian_next[reprepro_distribution_release] + "-backports" }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]] + "-backports" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]] | join(" ") }}'
+    Uploaders: '{{ "uploaders/" + reprepro_debian_next[reprepro_distribution_release] + "-backports" }}'
+    Label: '{{ reprepro_distribution }}'
+    Origin: '{{ reprepro_origin }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+    # Repository for Ubuntu backports for current release
+  - Distribution: 'ubuntu'
     Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
     Codename: '{{ reprepro_distribution_release }}-backports'
-    Suite: 'stable-backports'
-    Uploaders: 'uploaders/wheezy-backports'
+    Uploaders: '{{ "uploaders/" + reprepro_distribution_release + "-backports" }}'
     Label: '{{ reprepro_distribution }}'
     Origin: '{{ reprepro_origin }}'
     Scripts: |
@@ -152,8 +294,9 @@ reprepro_distributions_mirror_debian:
   - Distribution: 'debian'
     Description: 'Debian GNU/Linux 7 Wheezy'
     Codename: 'wheezy'
+    Architectures: '{{ reprepro_debian_architectures["wheezy"] | join(" ") }}'
     Label: 'Debian'
-    Suite: 'stable'
+    Suite: 'oldstable'
     Origin: 'Debian'
     Tracking: 'minimal'
     Update: 'debian-wheezy'
@@ -161,11 +304,32 @@ reprepro_distributions_mirror_debian:
   - Distribution: 'debian'
     Description: 'Debian GNU/Linux 7 Wheezy Updates'
     Codename: 'wheezy-updates'
+    Architectures: '{{ reprepro_debian_architectures["wheezy"] | join(" ") }}'
+    Label: 'Debian'
+    Suite: 'oldstable-updates'
+    Origin: 'Debian'
+    Tracking: 'minimal'
+    Update: 'debian-wheezy-updates'
+
+  - Distribution: 'debian'
+    Description: 'Debian GNU/Linux 8 Jessie'
+    Codename: 'jessie'
+    Architectures: '{{ reprepro_debian_architectures["jessie"] | join(" ") }}'
+    Label: 'Debian'
+    Suite: 'stable'
+    Origin: 'Debian'
+    Tracking: 'minimal'
+    Update: 'debian-jessie'
+
+  - Distribution: 'debian'
+    Description: 'Debian GNU/Linux 8 Jessie Updates'
+    Codename: 'jessie-updates'
+    Architectures: '{{ reprepro_debian_architectures["jessie"] | join(" ") }}'
     Label: 'Debian'
     Suite: 'stable-updates'
     Origin: 'Debian'
     Tracking: 'minimal'
-    Update: 'debian-wheezy-updates'
+    Update: 'debian-jessie-updates'
 
 # Mirror repositories for Ubuntu Linux (not enabled by default)
 reprepro_distributions_mirror_ubuntu:
@@ -200,37 +364,109 @@ reprepro_incoming:
     Allow: '{{ reprepro_incoming_allow | join(" ") }}'
 
 # List of incoming Allow rules enabled by default
-reprepro_incoming_allow:
+reprepro_incoming_allow: '{{ reprepro_incoming_allow_local[reprepro_distribution | lower] +
+                             reprepro_incoming_allow_distribution[reprepro_distribution | lower] }}'
 
-    # release-origin-staging
-  - '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+# Incoming configuration for local repositories
+reprepro_incoming_allow_local:
 
-    # origin-staging>release-origin-staging
-  - '{{ reprepro_origin | lower + "-staging" }}>{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+  'debian':
 
-    # distribution-backports
-  - '{{ reprepro_distribution_release + "-backports" }}'
+    # <prev_release>-<origin>-staging
+    - '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
 
-    # stable-backports>distribution-backports
-  - 'stable-backports>{{ reprepro_distribution_release + "-backports" }}'
+    # <prev_suite>-<origin>-staging><prev_release>-<origin>-staging
+    - '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() + "-" + reprepro_origin | lower + "-staging" }}>{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+
+    # <release>-<origin>-staging
+    - '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+
+    # <suite>-<origin>-staging><release>-<origin>-staging
+    - '{{ reprepro_debian_suites[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}>{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+
+    # <next_release>-<origin>-staging
+    - '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+
+    # <next_suite>-<origin>-staging><next_release>-<origin>-staging
+    - '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]|d()]|d() + "-" + reprepro_origin | lower + "-staging" }}>{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+
+  'ubuntu':
+
+    # <release>-<origin>-staging
+    - '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+
+# Incoming configuration for backport repositories
+reprepro_incoming_allow_distribution:
+
+  'debian':
+
+    # <prev_release>-backports
+    - '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-backports" }}'
+
+    # <prev_suite>-backports><prev_release>-backports
+    - '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() + "-backports>" + reprepro_debian_previous[reprepro_distribution_release]|d() + "-backports" }}'
+
+    # <release>-backports
+    - '{{ reprepro_distribution_release + "-backports" }}'
+
+    # <suite>-backports><release>-backports
+    - '{{ reprepro_debian_suites[reprepro_distribution_release]|d() + "-backports>" + reprepro_distribution_release + "-backports" }}'
+
+    # <next_release>-backports
+    - '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-backports" }}'
+
+    # <next_suite>-backports><next_release>-backports
+    - '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]|d()]|d() + "-backports>" + reprepro_debian_next[reprepro_distribution_release]|d() + "-backports" }}'
+
+  'ubuntu':
+
+    # <release>-backports
+    - '{{ reprepro_distribution_release + "-backports" }}'
 
 
 # ---- conf/uploaders ----
 
 # Configuration of uploaders files for each repository (Name relative to the
 # 'conf/' directory)
-reprepro_uploaders:
+reprepro_uploaders: '{{ reprepro_uploaders_local +
+                        reprepro_uploaders_distribution[reprepro_distribution | lower] }}'
+
+# Definition of uploaders for local repositories
+reprepro_uploaders_local:
 
   - Filename: '{{ reprepro_origin | lower }}'
     Contents: |
-      {{ reprepro_uploaders_local }}
+      {{ reprepro_uploaders_default_rules }}
 
-  - Filename: 'wheezy-backports'
-    Contents: |
-      {{ reprepro_uploaders_local }}
+# Definition of uploaders for backport repositories
+reprepro_uploaders_distribution:
+
+  'debian':
+
+    # <prev_release>-backports
+    - Filename: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-backports" }}'
+      Contents: |
+        {{ reprepro_uploaders_default_rules }}
+
+    # <release>-backports
+    - Filename: '{{ reprepro_distribution_release + "-backports" }}'
+      Contents: |
+        {{ reprepro_uploaders_default_rules }}
+
+    # <next_release>-backports
+    - Filename: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-backports" }}'
+      Contents: |
+        {{ reprepro_uploaders_default_rules }}
+
+  'ubuntu':
+
+    # <release>-backports
+    - Filename: '{{ reprepro_distribution_release + "-backports" }}'
+      Contents: |
+        {{ reprepro_uploaders_default_rules }}
 
 # By default use the same rules for all repositories
-reprepro_uploaders_local: |
+reprepro_uploaders_default_rules: |
   allow * by any key
 
 
@@ -243,8 +479,23 @@ reprepro_pulls: '{{ reprepro_pulls_local }}'
 # from -staging are pulled to -production
 reprepro_pulls_local:
 
-  - Distribution: '{{ reprepro_distribution | lower }}'
-    Name: '{{ reprepro_origin | lower + "_from_staging" }}'
+  - Distribution: 'debian'
+    Name: '{{ reprepro_debian_previous[reprepro_distribution_release] + "_" + reprepro_origin | lower + "_from_staging" }}'
+    From: '{{ reprepro_debian_previous[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]] | join(" ") }}'
+
+  - Distribution: 'debian'
+    Name: '{{ reprepro_distribution_release + "_" + reprepro_origin | lower + "_from_staging" }}'
+    From: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release] | join(" ") }}'
+
+  - Distribution: 'debian'
+    Name: '{{ reprepro_debian_next[reprepro_distribution_release] + "_" + reprepro_origin | lower + "_from_staging" }}'
+    From: '{{ reprepro_debian_next[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]] | join(" ") }}'
+
+  - Distribution: 'ubuntu'
+    Name: '{{ reprepro_distribution_release + "_" + reprepro_origin | lower + "_from_staging" }}'
     From: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
 
 
@@ -259,17 +510,31 @@ reprepro_updates_debian:
 
   - Distribution: 'debian'
     Name: 'debian-wheezy'
-    Method: 'http://http.debian.net/debian'
+    Method: 'http://httpredir.debian.net/debian'
     Fallback: 'http://ftp.us.debian.org/debian'
     Suite: 'wheezy'
     VerifyRelease: '46925553'
 
   - Distribution: 'debian'
     Name: 'debian-wheezy-updates'
-    Method: 'http://http.debian.net/debian'
+    Method: 'http://httpredir.debian.net/debian'
     Fallback: 'http://ftp.us.debian.org/debian'
     Suite: 'wheezy-updates'
     VerifyRelease: '46925553'
+
+  - Distribution: 'debian'
+    Name: 'debian-jessie'
+    Method: 'http://httpredir.debian.net/debian'
+    Fallback: 'http://ftp.us.debian.org/debian'
+    Suite: 'jessie'
+    VerifyRelease: '2B90D010'
+
+  - Distribution: 'debian'
+    Name: 'debian-jessie-updates'
+    Method: 'http://httpredir.debian.net/debian'
+    Fallback: 'http://ftp.us.debian.org/debian'
+    Suite: 'jessie-updates'
+    VerifyRelease: '2B90D010'
 
 # Mirrors for Ubuntu Linux distribution
 reprepro_updates_ubuntu:
