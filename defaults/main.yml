@@ -194,8 +194,9 @@ reprepro_distributions_mirror_debian:
   - Distribution: 'debian'
     Description: 'Debian GNU/Linux 7 Wheezy'
     Codename: 'wheezy'
+    Architectures: '{{ reprepro_debian_architectures["wheezy"] | join(" ") }}'
     Label: 'Debian'
-    Suite: 'stable'
+    Suite: 'oldstable'
     Origin: 'Debian'
     Tracking: 'minimal'
     Update: 'debian-wheezy'
@@ -203,11 +204,32 @@ reprepro_distributions_mirror_debian:
   - Distribution: 'debian'
     Description: 'Debian GNU/Linux 7 Wheezy Updates'
     Codename: 'wheezy-updates'
+    Architectures: '{{ reprepro_debian_architectures["wheezy"] | join(" ") }}'
+    Label: 'Debian'
+    Suite: 'oldstable-updates'
+    Origin: 'Debian'
+    Tracking: 'minimal'
+    Update: 'debian-wheezy-updates'
+
+  - Distribution: 'debian'
+    Description: 'Debian GNU/Linux 8 Jessie'
+    Codename: 'jessie'
+    Architectures: '{{ reprepro_debian_architectures["jessie"] | join(" ") }}'
+    Label: 'Debian'
+    Suite: 'stable'
+    Origin: 'Debian'
+    Tracking: 'minimal'
+    Update: 'debian-jessie'
+
+  - Distribution: 'debian'
+    Description: 'Debian GNU/Linux 8 Jessie Updates'
+    Codename: 'jessie-updates'
+    Architectures: '{{ reprepro_debian_architectures["jessie"] | join(" ") }}'
     Label: 'Debian'
     Suite: 'stable-updates'
     Origin: 'Debian'
     Tracking: 'minimal'
-    Update: 'debian-wheezy-updates'
+    Update: 'debian-jessie-updates'
 
 # Mirror repositories for Ubuntu Linux (not enabled by default)
 reprepro_distributions_mirror_ubuntu:
@@ -365,6 +387,20 @@ reprepro_updates_debian:
     Fallback: 'http://ftp.us.debian.org/debian'
     Suite: 'wheezy-updates'
     VerifyRelease: '46925553'
+
+  - Distribution: 'debian'
+    Name: 'debian-jessie'
+    Method: 'http://http.debian.net/debian'
+    Fallback: 'http://ftp.us.debian.org/debian'
+    Suite: 'jessie'
+    VerifyRelease: '2B90D010'
+
+  - Distribution: 'debian'
+    Name: 'debian-jessie-updates'
+    Method: 'http://http.debian.net/debian'
+    Fallback: 'http://ftp.us.debian.org/debian'
+    Suite: 'jessie-updates'
+    VerifyRelease: '2B90D010'
 
 # Mirrors for Ubuntu Linux distribution
 reprepro_updates_ubuntu:

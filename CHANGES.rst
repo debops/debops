@@ -28,6 +28,8 @@ v0.1.1
   directory on Ansible Controller to not create clashes between different hosts
   using the same domain name. [drybjed]
 
+- Add new mirror configuration for Debian GNU/Linux 8 (Jessie). [drybjed]
+
 v0.1.0
 ------
 
