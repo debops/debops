@@ -12,3 +12,6 @@ v0.1.0
   required by newer Linux kernel packages, also backported from Jessie.
   [drybjed]
 
+- Allow setting default OS release created by the ``lxc-debops`` template.
+  By default the host release will be used as the container release. [drybjed]
+
