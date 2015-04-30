@@ -1,6 +1,20 @@
 Changelog
 =========
 
+v0.1.5
+------
+
+*Released: 2015-04-30*
+
+- Add ``/lib32`` directory to the list of default excluded directories.
+  [drybjed]
+
+- Disable ``ssh_args`` setting on Debian Jessie due to `Debian Bug #717451`_ to
+  allow backups to run. It will be re-enabled when a fix is released in future
+  Jessie point release. [drybjed]
+
+.. _Debian Bug #717451: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=717451
+
 v0.1.4
 ------
 
