@@ -89,31 +89,54 @@ EOF
 {% endif %}
 
 {% endif %}
-{% if lxc_template_admin_name is defined and lxc_template_admin_name %}
-    # Configure admin account
-    chroot $rootfs adduser --disabled-password --home {{ lxc_template_admin_home }}{% if lxc_template_admin_system|d() and lxc_template_admin_system %} --system{% endif %} --gecos "{{ lxc_template_admin_gecos }}" {{ lxc_template_admin_name }}
+{% if lxc_template_admin is defined and lxc_template_admin %}
+    lxc_template_admin_name="{{ lxc_template_admin_name }}"
+    lxc_template_admin_group="{{ lxc_template_admin_group }}"
+    lxc_template_admin_comment="{{ lxc_template_admin_comment }}"
+    lxc_template_admin_shell="{{ lxc_template_admin_shell }}"
+{% if lxc_template_admin_system is defined and lxc_template_admin_system %}
+    lxc_template_admin_home="{{ lxc_template_admin_system_home }}"
+{% else %}
+    lxc_template_admin_home="{{ lxc_template_admin_home }}"
+{% endif %}
 
-{% if lxc_template_admin_group is defined and lxc_template_admin_group %}
-    # Configure admin group
-    touch $rootfs/etc/sudoers.d/{{ lxc_template_admin_group }}
-    chroot $rootfs addgroup --system {{ lxc_template_admin_group }}
-    echo "%{{ lxc_template_admin_group }} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > $rootfs/etc/sudoers.d/{{ lxc_template_admin_group }}
-    chroot $rootfs chmod 440 /etc/sudoers.d/{{ lxc_template_admin_group }}
-    chroot $rootfs adduser {{ lxc_template_admin_name }} {{ lxc_template_admin_group }}
+    # Create admin system group
+    chroot $rootfs getent group ${lxc_template_admin_group} || chroot $rootfs groupadd --system ${lxc_template_admin_group}
+
+{% if lxc_template_admin_sudo is defined and lxc_template_admin_sudo %}
+    # Configure admin group in sudo
+    echo "%${lxc_template_admin_group} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > $rootfs/etc/sudoers.d/${lxc_template_admin_group}
+    chroot $rootfs chmod 0440 /etc/sudoers.d/${lxc_template_admin_group}
+
+{% endif %}
+    # Create administrator account
+{% if lxc_template_admin_system is defined and lxc_template_admin_system %}
+    chroot $rootfs getent passwd ${lxc_template_admin_name} || chroot $rootfs useradd --system --user-group --groups ${lxc_template_admin_group} --create-home --home ${lxc_template_admin_home} --comment "${lxc_template_admin_comment}" --shell ${lxc_template_admin_shell} ${lxc_template_admin_name}
+{% else %}
+    chroot $rootfs getent passwd ${lxc_template_admin_name} || chroot $rootfs adduser --disabled-password --home ${lxc_template_admin_home} --gecos "${lxc_template_admin_comment}" --shell ${lxc_template_admin_shell} ${lxc_template_admin_name}
+    chroot $rootfs adduser ${lxc_template_admin_name} ${lxc_template_admin_group}
+{% endif %}
 
 {% endif %}
 {% if lxc_template_admin_sshkeys is defined and lxc_template_admin_sshkeys %}
-    # Add SSH keys to admin account
-    chroot $rootfs mkdir -m 700 {{ lxc_template_admin_home }}/.ssh
-    echo "{{ lxc_template_admin_sshkeys | join('\n') }}" > $rootfs{{ lxc_template_admin_home }}/.ssh/authorized_keys
-    chroot $rootfs chown -R {{ lxc_template_admin_name }}:{{ lxc_template_admin_name }} {{ lxc_template_admin_home }}/.ssh
+    lxc_template_admin_sshkeys="{{ lxc_template_admin_sshkeys|d([]) | join('\n') }}"
+{% else %}
+    lxc_template_admin_sshkeys=""
+{% endif %}
 
-    # Add SSH keys to root account
-    mkdir -m 700 $rootfs/root/.ssh
-    echo "{{ lxc_template_admin_sshkeys | join('\n') }}" > $rootfs/root/.ssh/authorized_keys
+    if [ -n "${lxc_template_admin_sshkeys}" ] ; then
+
+        chroot $rootfs mkdir -p -m 700 /root/.ssh
+        echo "${lxc_template_admin_sshkeys}" > $rootfs/root/.ssh/authorized_keys
+
+{% if lxc_template_admin is defined and lxc_template_admin %}
+        chroot $rootfs mkdir -p -m 700 ${lxc_template_admin_home}/.ssh
+        echo "${lxc_template_admin_sshkeys}" > ${rootfs}${lxc_template_admin_home}/.ssh/authorized_keys
+        chroot $rootfs chown -R ${lxc_template_admin_name}:${lxc_template_admin_name} ${lxc_template_admin_home}/.ssh
 
 {% endif %}
-{% endif %}
+    fi
+
 {% if lxc_hidepid is defined and lxc_hidepid %}
     # Create system group for /proc access
     chroot $rootfs addgroup --system {{ lxc_hidepid_group }}
