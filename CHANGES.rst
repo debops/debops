@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.5
+------
+
+*Released: 2015-04-30*
+
+- Add ``/lib32`` directory to the list of default excluded directories.
+  [drybjed]
+
 v0.1.4
 ------
 
