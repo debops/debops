@@ -22,3 +22,7 @@ v0.1.0
   (with UID < 1000) with home in ``/var/local/`` directory to avoid clashes
   with ``/home`` directories. You can also specify default shell. [drybjed]
 
+- Switch from creation of 1 system group to a list of system groups that are
+  created if not present. Administrator account will be added to all specified
+  system groups. [drybjed]
+

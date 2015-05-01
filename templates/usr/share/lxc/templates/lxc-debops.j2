@@ -91,7 +91,8 @@ EOF
 {% endif %}
 {% if lxc_template_admin is defined and lxc_template_admin %}
     lxc_template_admin_name="{{ lxc_template_admin_name }}"
-    lxc_template_admin_group="{{ lxc_template_admin_group }}"
+    lxc_template_admin_groups=( {{ lxc_template_admin_groups | join(' ') }} )
+    lxc_template_admin_groups_useradd="{{ lxc_template_admin_groups | join(',') }}"
     lxc_template_admin_comment="{{ lxc_template_admin_comment }}"
     lxc_template_admin_shell="{{ lxc_template_admin_shell }}"
 {% if lxc_template_admin_system is defined and lxc_template_admin_system %}
@@ -100,8 +101,12 @@ EOF
     lxc_template_admin_home="{{ lxc_template_admin_home }}"
 {% endif %}
 
-    # Create admin system group
-    chroot $rootfs getent group ${lxc_template_admin_group} || chroot $rootfs groupadd --system ${lxc_template_admin_group}
+    # Create required system groups if not present
+    if [ ${{ '{' }}#lxc_template_admin_groups[@]} -ge 0 ] ; then
+        for system_group in ${lxc_template_admin_groups[@]} ; do
+            chroot $rootfs getent group ${system_group} > /dev/null || chroot $rootfs groupadd --system ${system_group}
+        done
+    fi
 
 {% if lxc_template_admin_sudo is defined and lxc_template_admin_sudo %}
     # Configure admin group in sudo
@@ -111,10 +116,15 @@ EOF
 {% endif %}
     # Create administrator account
 {% if lxc_template_admin_system is defined and lxc_template_admin_system %}
-    chroot $rootfs getent passwd ${lxc_template_admin_name} || chroot $rootfs useradd --system --user-group --groups ${lxc_template_admin_group} --create-home --home ${lxc_template_admin_home} --comment "${lxc_template_admin_comment}" --shell ${lxc_template_admin_shell} ${lxc_template_admin_name}
+    chroot $rootfs getent passwd ${lxc_template_admin_name} || chroot $rootfs useradd --system --user-group --groups ${lxc_template_admin_groups_useradd} --create-home --home ${lxc_template_admin_home} --comment "${lxc_template_admin_comment}" --shell ${lxc_template_admin_shell} ${lxc_template_admin_name}
 {% else %}
     chroot $rootfs getent passwd ${lxc_template_admin_name} || chroot $rootfs adduser --disabled-password --home ${lxc_template_admin_home} --gecos "${lxc_template_admin_comment}" --shell ${lxc_template_admin_shell} ${lxc_template_admin_name}
-    chroot $rootfs adduser ${lxc_template_admin_name} ${lxc_template_admin_group}
+
+    if [ ${{ '{' }}#lxc_template_admin_groups[@]} -ge 0 ] ; then
+        for system_group in ${lxc_template_admin_groups[@]} ; do
+            chroot $rootfs adduser ${lxc_template_admin_name} ${system_group}
+        done
+    fi
 {% endif %}
 
 {% endif %}
