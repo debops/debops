@@ -43,28 +43,46 @@ lxc_capabilities_drop: [ 'mknod', 'sys_admin', 'sys_rawio', 'syslog', 'wake_alar
 # Mark new containers to be started automatically after reboot
 lxc_template_autostart: True
 
+# Enable or disable creation of an administrator account
+lxc_template_admin: True
+
+# Should the admin account be created as system account (UID/GID below <1000)?
+lxc_template_admin_system: True
+
 # Name of administrator account to create (by default, your username)
 lxc_template_admin_name: '{{ ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER") }}'
 
-# GECOS comment which will be set on the admin account
-lxc_template_admin_gecos: 'System Administrator'
-
-# Home directory for administrator account
-lxc_template_admin_home: '{{ ("/home/" + lxc_template_admin_name) if lxc_template_admin_name else "/home/" + lookup("env","USER") }}'
-
-# Should the admin account be created as system account (UID/GID below <1000)?
-lxc_template_admin_system: False
-
 # Admin account will have its own group, here you can specify a system group
 # which will be created for administrative access through 'sudo'
-lxc_template_admin_group: 'admins'
+lxc_template_admin_groups: [ 'admins', 'staff', 'adm' ]
+
+# Home directory for administrator account (normal)
+lxc_template_admin_home: '{{ "/home/" + lxc_template_admin_name }}'
+
+# Home directory for administrator account (system)
+lxc_template_admin_system_home: '{{ ansible_local.root.home + "/" + lxc_template_admin_name }}'
+
+# GECOS comment which will be set on the admin account
+lxc_template_admin_comment: 'System Administrator'
+
+# Default shell set on the admin account
+lxc_template_admin_shell: '/bin/bash'
+
+# Configure paswordless sudo access for selected accounts
+lxc_template_sudo: True
+
+# A group which grants passwordless sudo access
+lxc_template_sudo_group: '{{ lxc_template_admin_groups[0] | default("") }}'
 
 # SSH public key to put in administrator account of new container
-lxc_template_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L") }}' ]
+lxc_template_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
 # Address of Debian mirror to use in debootstrap
 # Example usage with local apt-cacher-ng proxy: 'http://cache.{{ ansible_domain }}:3142/debian'
 lxc_template_debootstrap_mirror: 'http://http.debian.net/debian'
+
+# Default release installed by debootstrap if no release was specified
+lxc_template_debootstrap_release: '{{ ansible_distribution_release }}'
 
 # Automatically add 'security.debian.org' repository and perform 'apt-get
 # upgrade' on container creation to get latest security updates. Container

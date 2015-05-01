@@ -36,6 +36,11 @@ done
 export PATH=$PATH:/usr/sbin:/usr/bin:/sbin:/bin
 
 MIRROR=${MIRROR:-{{ lxc_template_debootstrap_mirror }}}
+{% if ansible_distribution in [ 'Debian' ] %}
+DEFAULT_RELEASE="{{ lxc_template_debootstrap_release }}"
+{% else %}
+DEFAULT_RELEASE="stable"
+{% endif %}
 LOCALSTATEDIR="/var"
 LXC_TEMPLATE_CONFIG="/usr/share/lxc/config"
 
@@ -58,7 +63,7 @@ EOF
     # creation
 
     # Add Security repository to sources.list
-    echo "deb http://security.debian.org/ stable/updates main" >> $rootfs/etc/apt/sources.list
+    echo "deb http://security.debian.org/ ${DEFAULT_RELEASE}/updates main" >> $rootfs/etc/apt/sources.list
 
     # Update APT cache
     chroot $rootfs apt-get update
@@ -84,31 +89,67 @@ EOF
 {% endif %}
 
 {% endif %}
-{% if lxc_template_admin_name is defined and lxc_template_admin_name %}
-    # Configure admin account
-    chroot $rootfs adduser --disabled-password --home {{ lxc_template_admin_home }}{% if lxc_template_admin_system|d() and lxc_template_admin_system %} --system{% endif %} --gecos "{{ lxc_template_admin_gecos }}" {{ lxc_template_admin_name }}
+{% if lxc_template_admin is defined and lxc_template_admin %}
+    lxc_template_admin_name="{{ lxc_template_admin_name }}"
+    lxc_template_admin_groups=( {{ lxc_template_admin_groups | join(' ') }} )
+    lxc_template_admin_groups_useradd="{{ lxc_template_admin_groups | join(',') }}"
+    lxc_template_admin_comment="{{ lxc_template_admin_comment }}"
+    lxc_template_admin_shell="{{ lxc_template_admin_shell }}"
+{% if lxc_template_admin_system is defined and lxc_template_admin_system %}
+    lxc_template_admin_home="{{ lxc_template_admin_system_home }}"
+{% else %}
+    lxc_template_admin_home="{{ lxc_template_admin_home }}"
+{% endif %}
+{% if lxc_template_sudo is defined and lxc_template_sudo %}
+    lxc_template_sudo_group="{{ lxc_template_sudo_group }}"
+{% endif %}
 
-{% if lxc_template_admin_group is defined and lxc_template_admin_group %}
-    # Configure admin group
-    touch $rootfs/etc/sudoers.d/{{ lxc_template_admin_group }}
-    chroot $rootfs addgroup --system {{ lxc_template_admin_group }}
-    echo "%{{ lxc_template_admin_group }} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > $rootfs/etc/sudoers.d/{{ lxc_template_admin_group }}
-    chroot $rootfs chmod 440 /etc/sudoers.d/{{ lxc_template_admin_group }}
-    chroot $rootfs adduser {{ lxc_template_admin_name }} {{ lxc_template_admin_group }}
+    # Create required system groups if not present
+    if [ ${{ '{' }}#lxc_template_admin_groups[@]} -ge 0 ] ; then
+        for system_group in ${lxc_template_admin_groups[@]} ; do
+            chroot $rootfs getent group ${system_group} > /dev/null || chroot $rootfs groupadd --system ${system_group}
+        done
+    fi
+
+{% if lxc_template_sudo is defined and lxc_template_sudo %}
+    # Configure admin group in sudo
+    echo "%${lxc_template_sudo_group} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > $rootfs/etc/sudoers.d/${lxc_template_sudo_group}
+    chroot $rootfs chmod 0440 /etc/sudoers.d/${lxc_template_sudo_group}
+
+{% endif %}
+    # Create administrator account
+{% if lxc_template_admin_system is defined and lxc_template_admin_system %}
+    chroot $rootfs getent passwd ${lxc_template_admin_name} || chroot $rootfs useradd --system --user-group --groups ${lxc_template_admin_groups_useradd} --create-home --home ${lxc_template_admin_home} --comment "${lxc_template_admin_comment}" --shell ${lxc_template_admin_shell} ${lxc_template_admin_name}
+{% else %}
+    chroot $rootfs getent passwd ${lxc_template_admin_name} || chroot $rootfs adduser --disabled-password --home ${lxc_template_admin_home} --gecos "${lxc_template_admin_comment}" --shell ${lxc_template_admin_shell} ${lxc_template_admin_name}
+
+    if [ ${{ '{' }}#lxc_template_admin_groups[@]} -ge 0 ] ; then
+        for system_group in ${lxc_template_admin_groups[@]} ; do
+            chroot $rootfs adduser ${lxc_template_admin_name} ${system_group}
+        done
+    fi
+{% endif %}
 
 {% endif %}
 {% if lxc_template_admin_sshkeys is defined and lxc_template_admin_sshkeys %}
-    # Add SSH keys to admin account
-    chroot $rootfs mkdir -m 700 {{ lxc_template_admin_home }}/.ssh
-    echo "{{ lxc_template_admin_sshkeys | join('\n') }}" > $rootfs{{ lxc_template_admin_home }}/.ssh/authorized_keys
-    chroot $rootfs chown -R {{ lxc_template_admin_name }}:{{ lxc_template_admin_name }} {{ lxc_template_admin_home }}/.ssh
+    lxc_template_admin_sshkeys="{{ lxc_template_admin_sshkeys|d([]) | join('\n') }}"
+{% else %}
+    lxc_template_admin_sshkeys=""
+{% endif %}
 
-    # Add SSH keys to root account
-    mkdir -m 700 $rootfs/root/.ssh
-    echo "{{ lxc_template_admin_sshkeys | join('\n') }}" > $rootfs/root/.ssh/authorized_keys
+    if [ -n "${lxc_template_admin_sshkeys}" ] ; then
+
+        chroot $rootfs mkdir -p -m 700 /root/.ssh
+        echo "${lxc_template_admin_sshkeys}" > $rootfs/root/.ssh/authorized_keys
+
+{% if lxc_template_admin is defined and lxc_template_admin %}
+        chroot $rootfs mkdir -p -m 700 ${lxc_template_admin_home}/.ssh
+        echo "${lxc_template_admin_sshkeys}" > ${rootfs}${lxc_template_admin_home}/.ssh/authorized_keys
+        chroot $rootfs chown -R ${lxc_template_admin_name}:${lxc_template_admin_name} ${lxc_template_admin_home}/.ssh
 
 {% endif %}
-{% endif %}
+    fi
+
 {% if lxc_hidepid is defined and lxc_hidepid %}
     # Create system group for /proc access
     chroot $rootfs addgroup --system {{ lxc_hidepid_group }}
@@ -515,7 +556,7 @@ usage()
 {
     cat <<EOF
 $1 -h|--help -p|--path=<path> [-a|--arch] [-r|--release=<release>] [-c|--clean]
-release: the debian release (e.g. wheezy): defaults to current stable
+release: the debian release (e.g. wheezy): defaults to host release
 arch: the container architecture (e.g. amd64): defaults to host arch
 EOF
     return 0
@@ -602,7 +643,7 @@ if [ "$(id -u)" != "0" ]; then
     exit 1
 fi
 
-current_release=`wget ${MIRROR}/dists/stable/Release -O - 2> /dev/null | head |awk '/^Codename: (.*)$/ { print $2; }'`
+current_release=`wget ${MIRROR}/dists/${DEFAULT_RELEASE}/Release -O - 2> /dev/null | head |awk '/^Codename: (.*)$/ { print $2; }'`
 release=${release:-${current_release}}
 valid_releases=('squeeze' 'wheezy' 'jessie' 'sid')
 if [[ ! "${valid_releases[*]}" =~ (^|[^[:alpha:]])$release([^[:alpha:]]|$) ]]; then
