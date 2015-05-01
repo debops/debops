@@ -26,3 +26,8 @@ v0.1.0
   created if not present. Administrator account will be added to all specified
   system groups. [drybjed]
 
+- Modify ``sudo`` configuration to specify the name of the group that is
+  configured to have passwordless access to all commands. By default first
+  group specified in ``lxc_template_admin_groups`` will be granted full access.
+  [drybjed]
+

@@ -100,6 +100,9 @@ EOF
 {% else %}
     lxc_template_admin_home="{{ lxc_template_admin_home }}"
 {% endif %}
+{% if lxc_template_sudo is defined and lxc_template_sudo %}
+    lxc_template_sudo_group="{{ lxc_template_sudo_group }}"
+{% endif %}
 
     # Create required system groups if not present
     if [ ${{ '{' }}#lxc_template_admin_groups[@]} -ge 0 ] ; then
@@ -108,10 +111,10 @@ EOF
         done
     fi
 
-{% if lxc_template_admin_sudo is defined and lxc_template_admin_sudo %}
+{% if lxc_template_sudo is defined and lxc_template_sudo %}
     # Configure admin group in sudo
-    echo "%${lxc_template_admin_group} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > $rootfs/etc/sudoers.d/${lxc_template_admin_group}
-    chroot $rootfs chmod 0440 /etc/sudoers.d/${lxc_template_admin_group}
+    echo "%${lxc_template_sudo_group} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > $rootfs/etc/sudoers.d/${lxc_template_sudo_group}
+    chroot $rootfs chmod 0440 /etc/sudoers.d/${lxc_template_sudo_group}
 
 {% endif %}
     # Create administrator account

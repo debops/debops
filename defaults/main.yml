@@ -68,8 +68,11 @@ lxc_template_admin_comment: 'System Administrator'
 # Default shell set on the admin account
 lxc_template_admin_shell: '/bin/bash'
 
-# Configure sudo access for the default admin group
-lxc_template_admin_sudo: True
+# Configure paswordless sudo access for selected accounts
+lxc_template_sudo: True
+
+# A group which grants passwordless sudo access
+lxc_template_sudo_group: '{{ lxc_template_admin_groups[0] | default("") }}'
 
 # SSH public key to put in administrator account of new container
 lxc_template_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L || cat ~/.ssh/id_rsa.pub || true") }}' ]
