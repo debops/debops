@@ -16,6 +16,9 @@ v0.1.1
   template will automatically install ``grub`` on a default partition on new
   Jessie installs. [drybjed]
 
+- Switch from using one admin group to adding the admin account to multiple
+  system groups, which will be created if necessary. [drybjed]
+
 v0.1.0
 ------
 
