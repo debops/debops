@@ -148,11 +148,11 @@ preseed_admin_system: True
 preseed_admin_name: '{{ ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER") }}'
 
 
-# .. envvar:: preseed_admin_group
+# .. envvar:: preseed_admin_groups
 #
-# Default system group to add the administrator account to. Will be created if
-# not present.
-preseed_admin_group: 'admins'
+# Default system groups to add the administrator account to. They will be
+# created if not present.
+preseed_admin_groups: [ 'admins', 'staff', 'adm' ]
 
 
 # .. envvar:: preseed_admin_home
@@ -180,11 +180,18 @@ preseed_admin_comment: "System Administrator"
 preseed_admin_shell: '/bin/bash'
 
 
-# .. envvar:: preseed_admin_sudo
+# .. envvar:: preseed_sudo
 #
 # If enabled, specified admin group will be configured in ``sudo`` to allow
 # access to ``root`` account without password.
-preseed_admin_sudo: True
+preseed_sudo: True
+
+
+# .. envvar:: preseed_sudo_group
+#
+# Name of the system group which will be configured with passwordless ``sudo``
+# access. By default it's the first group set in ``preseed_admin_groups``.
+preseed_sudo_group: '{{ preseed_admin_groups[0] }}'
 
 
 # .. envvar:: preseed_admin_sshkeys

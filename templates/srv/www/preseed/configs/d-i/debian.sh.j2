@@ -41,7 +41,8 @@ EOF
 {% endif %}
 {% if ((item.admin is undefined or item.admin) and (preseed_admin is defined and preseed_admin)) %}
 preseed_admin_name="{{ item.admin_name | default(preseed_admin_name) }}"
-preseed_admin_group="{{ item.admin_group | default(preseed_admin_group | default('admins')) }}"
+preseed_admin_groups=( {{ (item.admin_groups | default(preseed_admin_groups)) | join(" ") }} )
+preseed_admin_groups_useradd="{{ (item.admin_groups | default(preseed_admin_groups)) | join(',') }}"
 preseed_admin_comment="{{ item.admin_comment | default(preseed_admin_comment | default('System Administrator')) }}"
 preseed_admin_shell="{{ item.admin_shell | default(preseed_admin_shell | default('/bin/bash')) }}"
 {% if ((item.admin_system is defined and item.admin_system) or (preseed_admin_system is defined and preseed_admin_system)) %}
@@ -49,22 +50,34 @@ preseed_admin_home="{{ item.admin_system_home | default(preseed_admin_system_hom
 {% else %}
 preseed_admin_home="{{ item.admin_home | default(preseed_admin_home | default('/home/' + item.admin_name | default(preseed_admin_name))) }}"
 {% endif %}
+{% if ((item.sudo is undefined or item.sudo) and (preseed_sudo is defined and preseed_sudo)) %}
+preseed_sudo_group="{{ preseed_sudo_group }}"
+{% endif %}
 
-# Create admin system group
-getent group ${preseed_admin_group} || groupadd --system ${preseed_admin_group}
+# Create required system groups if not present
+if [ ${{ '{' }}#preseed_admin_groups[@]} -ge 0 ] ; then
+    for system_group in ${preseed_admin_groups[@]} ; do
+        getent group ${system_group} > /dev/null || groupadd --system ${system_group}
+    done
+fi
 
-{% if ((item.admin_sudo is undefined or item.admin_sudo) and (preseed_admin_sudo is defined and preseed_admin_sudo)) %}
+{% if ((item.sudo is undefined or item.sudo) and (preseed_sudo is defined and preseed_sudo)) %}
 # Configure admin group in sudo
-echo "%${preseed_admin_group} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > /etc/sudoers.d/${preseed_admin_group}
-chmod 0440 /etc/sudoers.d/${preseed_admin_group}
+echo "%${preseed_sudo_group} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > /etc/sudoers.d/${preseed_sudo_group}
+chmod 0440 /etc/sudoers.d/${preseed_sudo_group}
 
 {% endif %}
 # Create administrator account
 {% if ((item.admin_system is defined and item.admin_system) or (preseed_admin_system is defined and preseed_admin_system)) %}
-getent passwd ${preseed_admin_name} || useradd --system --user-group --groups ${preseed_admin_group} --create-home --home ${preseed_admin_home} --comment "${preseed_admin_comment}" --shell ${preseed_admin_shell} ${preseed_admin_name}
+getent passwd ${preseed_admin_name} || useradd --system --user-group --groups ${preseed_admin_groups_useradd} --create-home --home ${preseed_admin_home} --comment "${preseed_admin_comment}" --shell ${preseed_admin_shell} ${preseed_admin_name}
 {% else %}
 getent passwd ${preseed_admin_name} || adduser --disabled-password --home ${preseed_admin_home} --gecos "${preseed_admin_comment}" --shell ${preseed_admin_shell} ${preseed_admin_name}
 adduser ${preseed_admin_name} ${preseed_admin_group}
+if [ ${{ '{' }}#preseed_admin_groups[@]} -ge 0 ] ; then
+    for system_group in ${preseed_admin_groups[@]} ; do
+        adduser ${preseed_admin_name} ${system_group}
+    done
+fi
 {% endif %}
 
 {% endif %}
