@@ -50,6 +50,9 @@ preseed_admin_home="{{ item.admin_system_home | default(preseed_admin_system_hom
 {% else %}
 preseed_admin_home="{{ item.admin_home | default(preseed_admin_home | default('/home/' + item.admin_name | default(preseed_admin_name))) }}"
 {% endif %}
+{% if ((item.sudo is undefined or item.sudo) and (preseed_sudo is defined and preseed_sudo)) %}
+preseed_sudo_group="{{ preseed_sudo_group }}"
+{% endif %}
 
 # Create required system groups if not present
 if [ ${{ '{' }}#preseed_admin_groups[@]} -ge 0 ] ; then
@@ -58,10 +61,10 @@ if [ ${{ '{' }}#preseed_admin_groups[@]} -ge 0 ] ; then
     done
 fi
 
-{% if ((item.admin_sudo is undefined or item.admin_sudo) and (preseed_admin_sudo is defined and preseed_admin_sudo)) %}
+{% if ((item.sudo is undefined or item.sudo) and (preseed_sudo is defined and preseed_sudo)) %}
 # Configure admin group in sudo
-echo "%${preseed_admin_group} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > /etc/sudoers.d/${preseed_admin_group}
-chmod 0440 /etc/sudoers.d/${preseed_admin_group}
+echo "%${preseed_sudo_group} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > /etc/sudoers.d/${preseed_sudo_group}
+chmod 0440 /etc/sudoers.d/${preseed_sudo_group}
 
 {% endif %}
 # Create administrator account

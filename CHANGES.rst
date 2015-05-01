@@ -4,7 +4,7 @@ Changelog
 v0.1.1
 ------
 
-*Unreleased*
+*Released: 2015-05-01*
 
 - Add ``resolvconf`` to list of packages installed by default. Debian Installer
   installs ``rdnssd`` if IPv6 network is detected which overrides
@@ -18,6 +18,10 @@ v0.1.1
 
 - Switch from using one admin group to adding the admin account to multiple
   system groups, which will be created if necessary. [drybjed]
+
+- Allow configuration of a system group which will be configured with
+  passwordless ``sudo`` access. By default it will be first group defined in
+  ``preseed_admin_groups`` list. [drybjed]
 
 v0.1.0
 ------

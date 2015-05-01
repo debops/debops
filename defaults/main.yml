@@ -180,11 +180,18 @@ preseed_admin_comment: "System Administrator"
 preseed_admin_shell: '/bin/bash'
 
 
-# .. envvar:: preseed_admin_sudo
+# .. envvar:: preseed_sudo
 #
 # If enabled, specified admin group will be configured in ``sudo`` to allow
 # access to ``root`` account without password.
-preseed_admin_sudo: True
+preseed_sudo: True
+
+
+# .. envvar:: preseed_sudo_group
+#
+# Name of the system group which will be configured with passwordless ``sudo``
+# access. By default it's the first group set in ``preseed_admin_groups``.
+preseed_sudo_group: '{{ preseed_admin_groups[0] }}'
 
 
 # .. envvar:: preseed_admin_sshkeys
