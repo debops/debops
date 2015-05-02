@@ -85,11 +85,39 @@ openvz_template_repos:
   - '{{ openvz_template_prefix }}'
   - '{{ openvz_template_prefix }}/contrib'
 
+# Configure administrator account using bootstrap script
+openvz_template_admin: True
+
+# Admin account will be created as a system account (UID < 1000)
+openvz_template_admin_system: True
+
 # Name of default admin account created by the bootstrap script
-openvz_template_admin_username: '{{ ansible_ssh_user | default(lookup("env","USER")) }}'
+openvz_template_admin_name: '{{ ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER") }}'
+
+# List of system groups to which admin account will be added by default
+openvz_template_admin_groups: [ 'admins', 'staff', 'adm' ]
+
+# Path to the home directory of admin account (normal account)
+openvz_template_admin_home: '{{ "/home/" + openvz_template_admin_name }}'
+
+# Path to the home directory of admin account (system account)
+openvz_template_admin_system_home: '{{ ansible_local.root.home + "/" + openvz_template_admin_name }}'
+
+# Comment / GECOS field added to the admin account
+openvz_template_admin_comment: 'System Administrator'
+
+# Default shell enabled on admin account
+openvz_template_admin_shell: '/bin/bash'
+
+# Enable or disable configuration of the passwordless sudo access for
+# a specified system group
+openvz_template_sudo: True
+
+# Which system group should have passwordless sudo access?
+openvz_template_sudo_group: '{{ openvz_template_admin_groups[0] | default("") }}'
 
 # Default SSH keys added on the admin account by the bootstrap script
-openvz_template_admin_sshkey: '{{ lookup("pipe","ssh-add -L") }}'
+openvz_template_admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
 
 # ---- Salt integration ----
