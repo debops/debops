@@ -15,3 +15,6 @@ v0.1.0
   configuration options like default shell, multiple system groups, different
   location of home directories. [drybjed]
 
+- Change how bootstrap script detects that container is already bootstrapped.
+  [drybjed]
+

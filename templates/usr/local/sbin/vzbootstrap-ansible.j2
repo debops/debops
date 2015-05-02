@@ -19,8 +19,7 @@ if [ -z "${check_container}" ]; then
         exit 1
 fi
 
-check_group=$(vzctl exec ${container} getent group | grep '^admins:x')
-if [ -n "${check_group}" ]; then
+if $(vzctl exec ${container} stat /etc/ansible > /dev/null 2>&1) ; then
 	echo "Container ${container} already bootstrapped"
 	exit 1
 fi
@@ -114,6 +113,8 @@ if [ -n "\${openvz_template_admin_sshkeys}" ] ; then
 
 {% endif %}
 fi
+
+mkdir -p /etc/ansible
 
 EOF
 
