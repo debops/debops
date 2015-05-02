@@ -85,11 +85,39 @@ openvz_template_repos:
   - '{{ openvz_template_prefix }}'
   - '{{ openvz_template_prefix }}/contrib'
 
+# Configure administrator account using bootstrap script
+openvz_template_admin: True
+
+# Admin account will be created as a system account (UID < 1000)
+openvz_template_admin_system: True
+
 # Name of default admin account created by the bootstrap script
-openvz_template_admin_username: '{{ ansible_ssh_user | default(lookup("env","USER")) }}'
+openvz_template_admin_name: '{{ ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER") }}'
+
+# List of system groups to which admin account will be added by default
+openvz_template_admin_groups: [ 'admins', 'staff', 'adm' ]
+
+# Path to the home directory of admin account (normal account)
+openvz_template_admin_home: '{{ "/home/" + openvz_template_admin_name }}'
+
+# Path to the home directory of admin account (system account)
+openvz_template_admin_system_home: '{{ ansible_local.root.home + "/" + openvz_template_admin_name }}'
+
+# Comment / GECOS field added to the admin account
+openvz_template_admin_comment: 'System Administrator'
+
+# Default shell enabled on admin account
+openvz_template_admin_shell: '/bin/bash'
+
+# Enable or disable configuration of the passwordless sudo access for
+# a specified system group
+openvz_template_sudo: True
+
+# Which system group should have passwordless sudo access?
+openvz_template_sudo_group: '{{ openvz_template_admin_groups[0] | default("") }}'
 
 # Default SSH keys added on the admin account by the bootstrap script
-openvz_template_admin_sshkey: '{{ lookup("pipe","ssh-add -L") }}'
+openvz_template_admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
 
 # ---- Salt integration ----
@@ -110,8 +138,11 @@ openvz_template_salt_options: False
 
 # ---- OpenVZ kernel ----
 
+# Enable or disable kernel configuration
+openvz_kernel: True
+
 # Name of a kernel package (or metapackage) installed by openvz role
-openvz_kernel: 'linux-image-openvz-amd64'
+openvz_kernel_name: 'linux-image-openvz-amd64'
 
 # Default GRUB menu entry to boot (counting from 0). When OpenVZ-enabled kernel
 # is installed, it will be placed just after the official Debian kernel. Recovery
@@ -127,4 +158,12 @@ openvz_iptables: [ 'ipt_REJECT', 'ipt_tos', 'ipt_TOS', 'ipt_LOG', 'ip_conntrack'
                    'ipt_limit', 'ipt_multiport', 'iptable_filter', 'iptable_mangle',
                    'ipt_TCPMSS', 'ipt_tcpmss', 'ipt_ttl', 'ipt_length', 'ipt_state',
                    'iptable_nat', 'ip_nat_ftp' ]
+
+
+# ---- OpenVZ APT repository configuration ----
+
+openvz_apt_repository: 'http://download.openvz.org/debian'
+openvz_apt_repository_key_url: 'http://download.openvz.org/debian/archive.key'
+openvz_apt_repository_key_id: '0FCA9BAC'
+openvz_apt_distribution: '{{ ansible_distribution_release }}'
 
