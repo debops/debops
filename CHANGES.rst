@@ -18,3 +18,5 @@ v0.1.0
 - Change how bootstrap script detects that container is already bootstrapped.
   [drybjed]
 
+- Add option to disable kernel configuration. [drybjed]
+
