@@ -10,11 +10,11 @@
 #   - playbook will install Python support with some essential software;
 #   - a system 'admins' group will be created for users who have administrator
 #     privileges (full sudo permissions);
-#   - a normal user account will be created and added to the 'admins' group;
-#     If you are connection directly as root, this accoint will be
-#     named after your local user account, oterhwise it will be named
-#     after the user you are connecting as (option `-u` or
-#     ansible_ssh_user from some config- or inventory-file).
+#   - a system administrator account will be created and added to the 'admins'
+#     group; If you are connecting directly as root, this account will be named
+#     after your local user account, oterhwise it will be named after the user
+#     you are connecting as (option `-u` or ansible_ssh_user from some config- or
+#     inventory-file).
 #   - no passwords are set or modified on any account;
 #   - if set, playbook will configure hostname and domain on the host using
 #     'bootstrap_hostname' and 'bootstrap_domain' variables;
@@ -42,12 +42,42 @@
     bootstrap_play_packages:      '{{ bootstrap_packages       | default([]) }}'
 
     # Default SSH keys to use if none are specified
-    bootstrap_play_default_sshkeys: [ '{{ lookup("pipe","ssh-add -L") }}' ]
+    bootstrap_play_default_sshkeys: [ '{{ lookup("pipe","ssh-add -L || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
-    # Default administrator variables (sshkeys is a list)
+
+    # Enable configuration of administrator account
+    bootstrap_play_admin:         '{{ bootstrap_admin          | default(True) }}'
+
+    # Should the admin account be a system account (UID < 1000) ?
+    bootstrap_play_admin_system:  '{{ bootstrap_admin_system | default(True) }}'
+
+    # Name of the admin account
     bootstrap_play_admin_name:    '{{ bootstrap_admin_name     | default(ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER")) }}'
-    bootstrap_play_admin_group:   '{{ bootstrap_admin_group    | default("admins") }}'
+
+    # List of system groups which admin account will be added to
+    bootstrap_play_admin_groups:  '{{ bootstrap_admin_groups   | default([ "admins", "staff", "adm" ]) }}'
+
+    # Home directory of the administrator account (normal)
+    bootstrap_play_admin_home:    '{{ bootstrap_admin_home     | default("/home/" + bootstrap_play_admin_name) }}'
+
+    # Home directory of the administrator account (system)
+    bootstrap_play_admin_system_home: '{{ bootstrap_admin_system_home | default("/var/local/" + bootstrap_play_admin_name) }}'
+
+    # Comment / GECOS field of the administrator account
+    bootstrap_play_admin_comment: '{{ bootstrap_admin_comment  | default("System Administrator") }}'
+
+    # Default shell set on the admin account
+    bootstrap_play_admin_shell:   '{{ bootstrap_admin_shell    | default("/bin/bash") }}'
+
+    # Configure paswordless sudo access for selected accounts
+    bootstrap_play_sudo:          '{{ bootstrap_sudo           | default(True) }}'
+
+    # A group which grants passwordless sudo access
+    bootstrap_play_sudo_group:    '{{ bootstrap_sudo_group     | default(bootstrap_play_admin_groups[0] | default("")) }}'
+
+    # List of SSH keys configured on root and administrator accounts
     bootstrap_play_admin_sshkeys: '{{ bootstrap_admin_sshkeys  | default(bootstrap_play_default_sshkeys) }}'
+
 
     # Hostname based on Ansible inventory
     bootstrap_play_hostname:      '{{ inventory_hostname_short | default(inventory_hostname) }}'
@@ -78,30 +108,85 @@
       - bootstrap_base_packages
       - bootstrap_play_packages
 
-  - name: Create admin system group
+  - name: Create specified system groups
     group:
-      name: '{{ bootstrap_play_admin_group }}'
+      name: '{{ item }}'
       state: 'present'
       system: True
+    with_items: bootstrap_play_admin_groups
+    when: bootstrap_play_admin is defined and bootstrap_play_admin | bool
 
-  - name: Create administrator account
+  - name: Check if potential administrator account exists
+    shell: getent passwd {{ bootstrap_play_admin_name }} || true
+    register: bootstrap_register_admin_account
+    changed_when: False
+
+  - name: Create administrator group (system)
+    group:
+      name: '{{ bootstrap_play_admin_name }}'
+      state: 'present'
+      system: True
+    when: ((bootstrap_play_admin is defined and bootstrap_play_admin | bool) and
+           (bootstrap_register_admin_account is defined and not bootstrap_register_admin_account.stdout) and
+           (bootstrap_play_admin_system is defined and bootstrap_play_admin_system | bool))
+
+  - name: Create administrator group (normal)
+    group:
+      name: '{{ bootstrap_play_admin_name }}'
+      state: 'present'
+    when: ((bootstrap_play_admin is defined and bootstrap_play_admin | bool) and
+           (bootstrap_register_admin_account is defined and not bootstrap_register_admin_account.stdout) and
+           (bootstrap_play_admin_system is defined and not bootstrap_play_admin_system | bool))
+
+  - name: Create administrator account (system)
     user:
       name: '{{ bootstrap_play_admin_name }}'
       state: 'present'
-      groups: '{{ bootstrap_play_admin_group }}'
+      system: True
+      group: '{{ bootstrap_play_admin_name }}'
+      groups: '{{ bootstrap_play_admin_groups | join(",") }}'
       append: True
+      home: '{{ bootstrap_play_admin_system_home }}'
+      shell: '{{ bootstrap_play_admin_shell }}'
+      comment: '{{ bootstrap_play_admin_comment }}'
+    when: ((bootstrap_play_admin is defined and bootstrap_play_admin | bool) and
+           (bootstrap_register_admin_account is defined and not bootstrap_register_admin_account.stdout) and
+           (bootstrap_play_admin_system is defined and bootstrap_play_admin_system | bool))
 
-  - name: Install ssh public key from current account
+  - name: Create administrator account (normal)
+    user:
+      name: '{{ bootstrap_play_admin_name }}'
+      state: 'present'
+      group: '{{ bootstrap_play_admin_name }}'
+      groups: '{{ bootstrap_play_admin_groups | join(",") }}'
+      append: True
+      home: '{{ bootstrap_play_admin_home }}'
+      shell: '{{ bootstrap_play_admin_shell }}'
+      comment: '{{ bootstrap_play_admin_comment }}'
+    when: ((bootstrap_play_admin is defined and bootstrap_play_admin | bool) and
+           (bootstrap_register_admin_account is defined and not bootstrap_register_admin_account.stdout) and
+           (bootstrap_play_admin_system is defined and not bootstrap_play_admin_system | bool))
+
+  - name: Install ssh public key on root account
     authorized_key:
-      user: '{{ bootstrap_play_admin_name }}'
+      user: 'root'
       key: '{{ "\n".join(bootstrap_play_admin_sshkeys) | string }}'
       state: 'present'
     failed_when: (bootstrap_play_admin_sshkeys is undefined or
                   (bootstrap_play_admin_sshkeys is defined and not bootstrap_play_admin_sshkeys))
 
-  - name: Configure admin group access in sudo
+  - name: Install ssh public key on administrator account
+    authorized_key:
+      user: '{{ bootstrap_play_admin_name }}'
+      key: '{{ "\n".join(bootstrap_play_admin_sshkeys) | string }}'
+      state: 'present'
+    when: bootstrap_play_admin is defined and bootstrap_play_admin | bool
+    failed_when: (bootstrap_play_admin_sshkeys is undefined or
+                  (bootstrap_play_admin_sshkeys is defined and not bootstrap_play_admin_sshkeys))
+
+  - name: Configure system group with paswordless access in sudo
     lineinfile:
-      dest: '/etc/sudoers.d/{{ bootstrap_play_admin_group }}'
+      dest: '/etc/sudoers.d/{{ bootstrap_play_sudo_group }}'
       regexp: '{{ item.regexp }}'
       line: '{{ item.line }}'
       state: 'present'
@@ -111,10 +196,11 @@
       mode: '0440'
       validate: 'visudo -cf %s'
     with_items:
-      - regexp: '^Defaults: %{{ bootstrap_play_admin_group }} env_check\s'
-        line:    'Defaults: %{{ bootstrap_play_admin_group }} env_check += "SSH_CLIENT"'
-      - regexp: '^%{{ bootstrap_play_admin_group }}\s'
-        line:    '%{{ bootstrap_play_admin_group }} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL'
+      - regexp: '^Defaults: %{{ bootstrap_play_sudo_group }} env_check\s'
+        line:    'Defaults: %{{ bootstrap_play_sudo_group }} env_check += "SSH_CLIENT"'
+      - regexp: '^%{{ bootstrap_play_sudo_group }}\s'
+        line:    '%{{ bootstrap_play_sudo_group }} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL'
+    when: bootstrap_play_sudo is defined and bootstrap_play_sudo | bool
 
   - name: Ensure /etc/sudoers includes /etc/sudoers.d
     lineinfile:
@@ -123,6 +209,15 @@
       line: '#includedir /etc/sudoers.d'
       state: 'present'
       validate: 'visudo -cf %s'
+
+  - name: Make sure that administrator accout is in passwordless sudo group
+    user:
+      name: '{{ bootstrap_play_admin_name }}'
+      state: 'present'
+      groups: '{{ bootstrap_play_sudo_group }}'
+      append: True
+    when: ((bootstrap_play_admin is defined and bootstrap_play_admin | bool) and
+           (bootstrap_play_sudo is defined and bootstrap_play_sudo | bool))
 
   - name: Enforce new hostname
     hostname:
