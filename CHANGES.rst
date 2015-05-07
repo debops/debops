@@ -21,6 +21,10 @@ v0.1.4
 
 - Add an option to set custom index files in nginx configuration. [drybjed]
 
+- Add ``item.redirect_to`` key which lets you redirect connection from all
+  server names listed in ``item.name`` to a specific server name (inverse
+  ``item.redirect_from``). [drybjed]
+
 v0.1.3
 ------
 

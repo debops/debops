@@ -75,6 +75,13 @@
 #       server name specified in item.name list.
 #
 #
+#   - item.redirect_to: ''
+#       Optional. Create separate server { } section which redirects all
+#       requests on servers specified in 'item.name' list to server specified
+#       in 'item.redirect_to'. Specified server name will be used as the only
+#       name in subsequent HTTP and HTTPS configuration.
+#
+#
 #   - item.redirect_to_ssl: True/False
 #       Optional. If True, redirect connection from HTTP to HTTPS version of
 #       the site. Site is expected to be configured in a separate configuration
@@ -463,6 +470,24 @@ server {
         return {{ item.redirect_code | default(nginx_tpl_default_redirect_code) }} $scheme://{{ item.name[0] }}$request_uri;
 }
 
+{% elif ((item.redirect_to is defined and item.redirect_to) and
+         (item.name is defined and item.name)) %}
+server {
+{% if (item.listen is undefined or (item.listen is defined and item.listen)) %}
+{% for port in nginx_tpl_listen %}
+        listen {{ port }};
+{% endfor %}
+
+{% for address in item.name %}
+{% if address != item.redirect_to %}
+        server_name {{ address }};
+{% endif %}
+{% endfor %}
+
+{% endif %}
+        return {{ item.redirect_code | default(nginx_tpl_default_redirect_code) }} $scheme://{{ item.redirect_to }}$request_uri;
+}
+
 {% endif %}
 server {
 {% if (item.listen is undefined or (item.listen is defined and item.listen)) %}
@@ -473,6 +498,9 @@ server {
 {% if item.name is defined and item.name %}
 {% if item.redirect_from is defined and item.redirect_from %}
         server_name {{ item.name[0] }};
+
+{% elif item.redirect_to is defined and item.redirect_to %}
+        server_name {{ item.redirect_to }};
 
 {% else %}
 {% for name in item.name %}
@@ -512,6 +540,9 @@ server {
 {% if item.name is defined and item.name %}
 {% if item.redirect_from is defined and item.redirect_from %}
         server_name {{ item.name[0] }};
+
+{% elif item.redirect_to is defined and item.redirect_to %}
+        server_name {{ item.redirect_to }};
 
 {% else %}
 {% for name in item.name %}
