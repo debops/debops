@@ -38,6 +38,9 @@ v0.2.6
   account will be in more groups by default (``admins`` (passwordless sudo
   access), ``staff`` and ``adm``). [drybjed]
 
+- Move the Changelog references to the end of the file and remove duplicates,
+  so that Sphinx does not complain about them. [drybjed]
+
 v0.2.5
 ------
 
@@ -52,8 +55,6 @@ v0.2.5
   project. Thanks! ``debops.dovecot`` can be used to manage IMAP/POP3 service
   which will let you access your mail remotely over a secure connection.
   [ganto, drybjed]
-
-.. _Dovecot: http://dovecot.org/
 
 v0.2.4
 ------
@@ -129,8 +130,6 @@ v0.2.0
   other DebOps roles. Variable that specifies SSH key to install is now
   a normal Ansible list. [drybjed]
 
-.. _debops.rsnapshot: https://github.com/debops/ansible-rsnapshot/
-
 v0.1.0
 ------
 
@@ -184,10 +183,6 @@ To stay on the safe side, `debops.auth`_ role, which configures
 OpenLDAP server using ``ldaps://`` protocol. You can of course change that
 using role default variables.
 
-.. _debops.slapd: https://github.com/debops/ansible-slapd/
-.. _debops.pki: https://github.com/debops/ansible-pki/
-.. _debops.auth: https://github.com/debops/ansible-auth/
-
 Playbook updates
 ****************
 
@@ -197,8 +192,6 @@ To make LDAP use easier within Ansible playbooks, I've included two
 project directories (in playbooks and roles). You can use ``ldap_entry`` and
 ``ldap_attr`` modules to manipulate your LDAP database, look in each module
 source code for examples.
-
-.. _Ansible LDAP modules: https://bitbucket.org/psagers/ansible-ldap
 
 
 2015-02-05
@@ -223,11 +216,6 @@ specify a list of user accounts to configure in Ansible inventory, and
 passwords themselves are stored in ``secret/`` directory, managed by
 `debops.secret`_ role.
 
-.. _debops.mysql: https://github.com/debops/ansible-mysql/
-.. _debops.pki: https://github.com/debops/ansible-pki/
-.. _debops.nginx: https://github.com/debops/ansible-nginx/
-.. _debops.secret: https://github.com/debops/ansible-secret/
-
 
 2015-02-04
 ^^^^^^^^^^
@@ -245,8 +233,6 @@ private key is accessible for users belonging to ``ssl-cert`` system group.
 For reference, `Debian Bug #630625`_ which indicates that MySQL does not
 support certificate chains out of the box. If other such services are found,
 they will now use ``service`` PKI realm by default.
-
-.. _Debian Bug #630625: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=630625
 
 2015-02-03
 ^^^^^^^^^^
@@ -272,8 +258,6 @@ Nginx role has exposed two variables using local Ansible facts:
   subdirectory for a specific system user. Nginx role uses a specific structure
   based on this path to automatically generate ``root`` configuration
   parameters;
-
-.. _debops.nginx: https://github.com/debops/ansible-nginx/
 
 
 Playbook updates
@@ -305,9 +289,6 @@ procedure. You should check it out before upgrading. If you find any issues
 regarding DebOps roles after performing an upgrade, please post them in
 `debops/debops-playbooks`_ repository so that they can be tracked in one place.
 
-.. _separate dist-upgrade label: https://github.com/debops/debops-playbooks/labels/dist-upgrade
-.. _debops/debops-playbooks: https://github.com/debops/debops-playbooks/
-
 
 2015-02-01
 ^^^^^^^^^^
@@ -330,8 +311,6 @@ Small updates in `debops.pki`_ role:
 - you can now disable or change the frequency of Diffie-Hellman parameter
   regeneration using inventory variables. Default frequency has been changed
   from ``daily`` to ``weekly``.
-
-.. _debops.pki: https://github.com/debops/ansible-pki/
 
 
 2015-01-31
@@ -424,9 +403,6 @@ dynamically during Ansible run using ``set_fact`` module. `debops.apt`_ will
 now also correctly distinguish Debian and Ubuntu firmware packages which are
 named differently between those two distributions.
 
-.. _debops.reprepro: https://github.com/debops/ansible-reprepro/
-.. _debops.apt: https://github.com/debops/ansible-apt/
-
 
 2015-01-21
 ^^^^^^^^^^
@@ -441,9 +417,6 @@ CIDR ranges using separate list, ``nginx_status``.
 
 Fix for `CVE-2013-4547`_ has been removed from the server template, since the
 issue has already been mitigated in Debian.
-
-.. _debops.nginx: https://github.com/debops/ansible-nginx/
-.. _CVE-2013-4547: https://security-tracker.debian.org/tracker/CVE-2013-4547
 
 
 2015-01-20
@@ -463,19 +436,12 @@ shouldn't make an error if you are connecting to your hosts directly as
 ``root`` account anymore. Role uses ``default(omit)`` filter in its tasks,
 which means that DebOps now requires Ansible >= 1.8 for correct operation.
 
-.. _debops.gitlab_ci: https://github.com/debops/ansible-gitlab_ci/
-.. _GitLab CI: https://about.gitlab.com/gitlab-ci/
-.. _debops.users: https://github.com/debops/ansible-users/
-
 New playbook plugins
 ********************
 
 `Hartmut Goebel`_ created a small lookup plugin, ``with_lists``, which alows
 you to use lists of items as "items" themselves, see an example in the
 `with_lists plugin`_. Thanks!
-
-.. _Hartmut Goebel: https://github.com/htgoebel
-.. _with_lists plugin: https://github.com/debops/debops-playbooks/blob/master/playbooks/lookup_plugins/lists.py
 
 
 2015-01-18
@@ -504,9 +470,6 @@ Role updates
   directory instead of the official password. Default admin account will have
   an email address in your domain instead of ``admin@example.com``, so random
   bounced mails shouldn't be a problem anymore;
-
-.. _debops.gitlab: https://github.com/debops/ansible-gitlab/
-.. _GitLab: https://about.gitlab.com/
 
 Playbook updates
 ****************
@@ -555,13 +518,6 @@ is updated as needed.
 If there are any questions regarding new PKI and how to use it, feel free to
 ask them on the IRC channel or on the mailing list.
 
-.. _debops.pki: https://github.com/debops/ansible-pki/
-.. _debops.secret: https://github.com/debops/ansible-secret/
-.. _debops.nginx: https://github.com/debops/ansible-nginx/
-.. _debops.postfix: https://github.com/debops/ansible-postfix/
-.. _debops.postgresql: https://github.com/debops/ansible-postgresql/
-.. _debops.boxbackup: https://github.com/debops/ansible-boxbackup/
-
 
 2014-12-23
 ^^^^^^^^^^
@@ -577,10 +533,6 @@ passwords are set).
 access to NTP service through firewall is now controlled by a separate
 variable, ``ntp_firewall_access``. By default, remote access is disabled.
 
-.. _debops.users: https://github.com/debops/ansible-users/
-.. _debops.ntp: https://github.com/debops/ansible-ntp/
-.. _RedRampage: https://github.com/redrampage/
-
 
 2014-12-05
 ^^^^^^^^^^
@@ -594,9 +546,6 @@ New roles
   Salt master will automatically listen to IPv6 connections and firewall will
   be configured to accept connections on default ports.
 
-.. _debops.salt: https://github.com/debops/ansible-salt/
-.. _Salt: http://saltstack.com/
-
 Role updates
 ************
 
@@ -609,10 +558,6 @@ template script for LXC containers, OpenVZ bootstrap script for OpenVZ
 containers. After installation, ``salt-minion`` will try to connect to ``salt``
 host, so make sure that it's present in your DNS configuration for best
 results.
-
-.. _debops.apt: https://github.com/debops/ansible-apt/
-.. _debops.lxc: https://github.com/debops/ansible-lxc/
-.. _debops.openvz: https://github.com/debops/ansible-openvz/
 
 2014-12-03
 ^^^^^^^^^^
@@ -628,17 +573,10 @@ Runner home directory has been moved to ``/var/local/`` directory, most of role
 dependencies have been dropped and role now needs less upkeep than before. You
 can read about changes in `latest commit`_.
 
-.. _GitLab: https://about.gitlab.com/
-.. _debops.gitlab_ci_runner: https://github.com/debops/ansible-gitlab_ci_runner/
-.. _latest commit: https://github.com/debops/ansible-gitlab_ci_runner/commit/b46089356e48b4f6719fd9eb64a5684ed0d55ae3
-
 2014-12-02
 ^^^^^^^^^^
 
 `DebOps mailing list`_ has been moved to `groups.io`_.
-
-.. _DebOps mailing list: https://groups.io/org/groupsio/debops
-.. _groups.io: https://groups.io/
 
 Role updates
 ************
@@ -650,18 +588,12 @@ been moved to ``/var/local/gitlab-ci/`` directory, and various tasks related to
 updating the application have been streamlined. You can read more information
 about various changes in the `commit message`_.
 
-.. _debops.gitlab_ci: https://github.com/debops/ansible-gitlab_ci/
-.. _commit message: https://github.com/debops/ansible-gitlab_ci/commit/64eb393569267f4eebd9264580d9c1fa22dc32e0
-
 2014-12-01
 ^^^^^^^^^^
 
 `Hartmut Goebel`_ has joined DebOps team and wrote an excellent guide for using
 DebOps scripts and playbooks with Vagrant on single and multiple hosts. It's
 available in `debops/examples`_ repository.
-
-.. _Hartmut Goebel: https://github.com/htgoebel
-.. _debops/examples: https://github.com/debops/examples/
 
 Role updates
 ************
@@ -682,11 +614,6 @@ Several DebOps roles had a small fixes related to ``ansible-playbook --check``
 command, which can now be used to check for possible changes before applying
 them on the remote hosts. Due to bugs in older Ansible versions this
 functionality works correctly on Ansible 1.8+ or current ``devel`` branch.
-
-.. _debops.debops: https://github.com/debops/ansible-debops/
-.. _debops.ansible: https://github.com/debops/ansible-role-ansible/
-.. _RedRampage: https://github.com/redrampage
-.. _debops.dhcpd: https://github.com/debops/ansible-dhcpd/
 
 2014-11-27
 ^^^^^^^^^^
@@ -709,10 +636,6 @@ replaced with ``with_flattened`` which works better in new release of Ansible,
 `debops.openvz`_ role has been slightly updated and redundant configuration of
 ``ferm`` and ``sysctl``, already configured by `debops.ferm`_ role, has been
 dropped to prevent duplication.
-
-.. _debops.sshd: https://github.com/debops/ansible-sshd/
-.. _debops.openvz: https://github.com/debops/ansible-openvz/
-.. _debops.ferm: https://githubc.om/debops/ansible-ferm/
 
 2014-11-26
 ^^^^^^^^^^
@@ -744,9 +667,6 @@ New roles
   for your storage - many packages contain automated scripts which send mail to
   ``root`` account in case of issues with RAID.
 
-.. _debops.hwraid: https://github.com/debops/ansible-hwraid/
-.. _HWRaid: http://hwraid.le-vert.net/
-
 Role updates
 ************
 
@@ -763,9 +683,6 @@ information for unprivileged accounts. A separate system group, ``procadmins``
 has been reserved for monitoring services and users that need full access to
 the ``/proc`` filesystem.
 
-.. _debops.auth: https://github.com/debops/ansible-auth/
-.. _debops.console: https://github.com/debops/ansible-console/
-
 2014-11-24
 ^^^^^^^^^^
 
@@ -779,8 +696,6 @@ New roles
   Deeper integration between OpenLDAP and other DebOps services will be created
   in the future.
 
-.. _debops.slapd: https://github.com/debops/ansible-slapd/
-
 Role updates
 ************
 
@@ -792,10 +707,6 @@ whitelist, it will be blocked for 2 hours, with each new connection attempt
 resetting the timer. All this is now configurable in `debops.sshd`_  and
 `debops.ferm`_ roles.
 
-.. _debops.tcpwrappers: https://github.com/debops/ansible-tcpwrappers/
-.. _debops.sshd: https://github.com/debops/ansible-sshd/
-.. _debops.ferm: https://github.com/debops/ansible-ferm/
-
 Thanks to `htgoebel's suggestion`_ I was able to refactor Postfix hash tables
 management. They are now generated from all ``*.in`` files in current
 directory, which means that other Ansible roles or even other scripts can put
@@ -804,9 +715,6 @@ with ``*.in`` extension, their corresponding ``*.db`` files will be created
 automatically. Thanks to that, `debops.postfix`_ role now generates tables from
 templates using ``with_fileglob`` instead of static lists of templates, which
 makes the process of adding new tables if necessary much easier.
-
-.. _htgoebel's suggestion: https://github.com/debops/ansible-postfix/issues/11#issuecomment-64113942
-.. _debops.postfix: https://github.com/debops/ansible-postfix/
 
 2014-11-22
 ^^^^^^^^^^
@@ -823,9 +731,6 @@ Consequently, `debops.sshd`_ role now will allow connections from any host by
 default in ``/etc/hosts.allow``. If you previously used a list of hosts using
 ``sshd_*_allow``, your configuration shouldn't be affected.
 
-.. _debops.tcpwrappers: https://github.com/debops/ansible-tcpwrappers/
-.. _debops.sshd: https://github.com/debops/ansible-sshd/
-
 2014-11-20
 ^^^^^^^^^^
 
@@ -838,8 +743,6 @@ DHCP is not available on the network. In that case, a basic static IPv4
 interface configuration will be used with information gathered by Ansible to
 setup a default network interface. This should prevent sudden loss of
 communication in cases where hosts are configured statically.
-
-.. _debops.ifupdown: https://github.com/debops/ansible-ifupdown/
 
 Playbook updates
 ****************
@@ -888,15 +791,6 @@ configure ``sudo`` and ``su`` admin access. This should prevent ``debconf``
 asking about modifications in ``/etc/pam.d/su`` (which is now diverted), and
 lets ``sudo`` have more configuration options for ``admins`` group.
 
-.. _Hartmut Goebel: https://github.com/htgoebel
-.. _Raspbian: http://raspbian.org/
-.. _debops.apt: https://github.com/debops/ansible-apt/
-.. _debops.kvm: https://github.com/debops/ansible-kvm/
-.. _debops.lxc: https://github.com/debops/ansible-lxc/
-.. _debops.ferm: https://github.com/debops/ansible-ferm/
-.. _debops.subnetwork: https://github.com/debops/ansible-subnetwork/
-.. _debops.auth: https://github.com/debops/ansible-auth/
-
 Playbook updates
 ****************
 
@@ -930,9 +824,6 @@ separate IP subnet configuration is needed. Role now also creates more
 fine-grained CNAME records and has more configuration options.
 And it's out of beta! :-)
 
-.. _debops.postfix: https://github.com/debops/ansible-postfix/
-.. _debops.dnsmasq: https://github.com/debops/ansible-dnsmasq/
-
 Playbook updates
 ****************
 
@@ -948,9 +839,6 @@ docs, which are not yet updated). New playbook, 'networking.yml' has been added
 where you will find all network-related plays, like subnet creation and
 management (via ``debops.subnetwork`` and DHCP/DNS management.
 
-.. _debops.subnetwork: https://github.com/debops/ansible-subnetwork/
-.. _debops.radvd: https://github.com/debops/ansible-radvd/
-
 2014-11-07
 ^^^^^^^^^^
 
@@ -965,17 +853,10 @@ automatically configured behind NAT, and an IPv6 network (with multiple
 prefixes). `debops.subnetwork`_ is not yet part of the main playbook, it will
 replace the old NAT role when ``dnsmasq`` role is updated to support it.
 
-.. _debops.subnetwork: https://github.com/debops/ansible-subnetwork/
-
 Role updates
 ************
 
 Because of the changes related to new networking, some code in `debops.lxc`_, `debops.kvm`_ and `debops.nat`_ had to be moved around. Specifically, parts of the firewall and sysctl settings related to the LAN interface were moved into `debops.subnetwork`_ role and parts of the forwarding configuration to external and internal networks were added respectively to LXC and KVM roles.
-
-.. _debops.lxc: https://github.com/debops/ansible-lxc/
-.. _debops.kvm: https://github.com/debops/ansible-kvm/
-.. _debops.nat: https://github.com/debops/ansible-nat/
-.. _debops.subnetwork: https://github.com/debops/ansible-subnetwork/
 
 2014-11-05
 ^^^^^^^^^^
@@ -997,8 +878,6 @@ automatically generates ``ansible.cfg`` with correct configuration parameters.
 To use these playbooks standalone, you will need to create your own
 ``ansible.cfg`` and include in it paths to DebOps roles and plugins.
 
-.. _6to4 tunnel: https://en.wikipedia.org/wiki/6to4
-
 Role updates
 ************
 
@@ -1006,9 +885,6 @@ You can now configure custom `ferm`_ rules using a ``custom`` template in
 `debops.ferm`_. New ``ferm_*_rules`` variables allow you to create rules in
 ``/etc/ferm/ferm.d/`` directory which can configure tables and chains other
 than ``INPUT``.
-
-.. _ferm: http://ferm.foo-projects.org/
-.. _debops.ferm: https://github.com/debops/ansible-ferm/
 
 2014-11-04
 ^^^^^^^^^^
@@ -1019,8 +895,6 @@ New roles
 Finally, it's time to start bringing out new toys. :-) For starters,
 `debops.radvd`_ role, which installs and lets you configure ``radvd``, IPv6
 Router Advertisement daemon. It will be used in future IPv6 router roles.
-
-.. _debops.radvd: https://github.com/debops/ansible-radvd/
 
 Playbook updates
 ****************
@@ -1081,8 +955,6 @@ new query type, ``'6to4'`` which lets you convert public IPv4 addresses into
 `6to4`_ IPv6 addresses or check if a specified IPv6 address/network is in
 ``2002::/16`` address range.
 
-.. _6to4: https://en.wikipedia.org/wiki/6to4
-
 2014-10-28
 ^^^^^^^^^^
 
@@ -1098,8 +970,6 @@ a separate config file in ``/etc/apt/sources.list.d/`` directly to
 ``dpkg-divert``. Additionally, if `debops.apt`_ cannot recognize current
 distribution, it won't modify the default ``sources.list`` file, this can also
 be enforced manually if needed.
-
-.. _debops.apt: https://github.com/debops/ansible-apt/
 
 2014-10-17
 ^^^^^^^^^^
@@ -1126,12 +996,6 @@ Default admin username and SSH keys are now exposed as ``defaults/`` variables
 in `debops.openvz`_ role; SSH keys are also sourced from ``ssh-agent`` instead
 of directly from the ``~/.ssh/id_rsa.pub`` file.
 
-.. _Travis-CI: https://travis-ci.org/
-.. _Etherpad: http://etherpad.org/
-.. _debops.etherpad: https://github.com/debops/ansible-etherpad/
-.. _debops.nginx: http://nginx.org/
-.. _debops.openvz: https://github.com/debops/ansible-openvz/
-
 2014-10-10
 ^^^^^^^^^^
 
@@ -1141,8 +1005,6 @@ Playbook updates
 `Maciej Delmanowski`_ wrote a set of custom filter plugins for Ansible which
 let you manipulate IPv4 and IPv6 addresses. You can test if a string is a valid
 IP address or convert them between various formats.
-
-.. _Maciej Delmanowski: https://github.com/drybjed/
 
 2014-10-09
 ^^^^^^^^^^
@@ -1158,9 +1020,6 @@ both ``iptables`` and ``ip6tables`` commands.
 ``common.yml`` playbook) to a group-based role. First host in
 ``debops_boxbackup`` will be configured as the BoxBackup server and the rest
 will be set up as its clients.
-
-.. _debops.ferm: https://github.com/debops/ansible-ferm/
-.. _debops.boxbackup: https://github.com/debops/ansible-boxbackup/
 
 2014-10-07
 ^^^^^^^^^^
@@ -1180,17 +1039,12 @@ connections on both types of networks by default. If you have an already
 running nginx server, it will require manual restart for the new configuration
 to take effect.
 
-.. _debops.ferm: https://github.com/debops/ansible-ferm/
-.. _debops.nginx: https://github.com/debops/ansible-nginx/
-
 2014-10-05
 ^^^^^^^^^^
 
 All role README files have been converted to reStructuredText format.
 Unfortunately, `Ansible Galaxy`_ does not support ``README.rst`` files at this
 time, so role information cannot be udpated there.
-
-.. _Ansible Galaxy: http://galaxy.ansible.com/
 
 2014-10-02
 ^^^^^^^^^^
@@ -1219,9 +1073,6 @@ Old remnants of the ``fastcgi_params`` configuration files are now
 automatically removed by the nginx role. This is the second step of the switch
 from custom to stock configuration file. Task which removes these old files
 will be removed in the future.
-
-.. _debops.nginx: https://github.com/debops/ansible-nginx/
-.. _nginx map module: http://nginx.org/en/docs/http/ngx_http_map_module.html
 
 2014-09-29
 ^^^^^^^^^^
@@ -1289,8 +1140,6 @@ otherwise DebOps might create new certificates, passwords, etc.
 If you use ``debops-padlock`` script, then ``.encfs.inventory.secret``
 directory becomes ``.encfs.secret``.
 
-.. _debops.secret: https://github.com/debops/ansible-secret/
-
 2014-09-21
 ^^^^^^^^^^
 
@@ -1316,9 +1165,6 @@ Role updates
   variables. Archive account and/or archive server need to be configured
   separately by the system administrator.
 
-.. _debops.postfix: https://github.com/debops/ansible-postfix/
-.. _Postfix: http://www.postfix.org/
-
 2014-09-19
 ^^^^^^^^^^
 
@@ -1333,10 +1179,6 @@ Role updates
   each sender mail address separately. Passwords are never stored in the
   inventory; instead Postfix role uses `debops.secret`_ role to store user
   passwords securely.
-
-.. _debops.postfix: https://github.com/debops/ansible-postfix/
-.. _SMTP client SASL authentication: http://www.postfix.org/SASL_README.html#client_sasl
-.. _debops.secret: https://github.com/debops/ansible-secret/
 
 2014-09-18
 ^^^^^^^^^^
@@ -1353,10 +1195,6 @@ Role updates
   from Debian Jessie (some package dependencies and build requirements were
   changed). You can read more in the `lxc package changelog`_.
 
-.. _debops.kvm: https://github.com/debops/ansible-kvm/
-.. _debops.lxc: https://github.com/debops/ansible-lxc/
-.. _lxc package changelog: http://metadata.ftp-master.debian.org/changelogs/main/l/lxc/testing_changelog
-
 2014-09-17
 ^^^^^^^^^^
 
@@ -1367,8 +1205,6 @@ Playbook updates
   variable from `debops.apt`_ role. This is useful in rare case when your APT
   mirror suddenly catches fire, and you need to switch to a different one using
   Ansible.
-
-.. _debops.apt: https://github.com/debops/ansible-apt/
 
 Role updates
 ************
@@ -1391,11 +1227,6 @@ Role updates
   will now check the version of installed ``nginx`` server and select correct
   file to include in PHP5-based server configuration.
 
-.. _debops.ferm: https://github.com/debops/ansible-ferm/
-.. _debops.tcpwrappers: https://github.com/debops/ansible-tcpwrappers/
-.. _Debian bug #718639: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=718639
-.. _debops.nginx: https://github.com/debops/ansible-nginx/
-
 2014-09-14
 ^^^^^^^^^^
 
@@ -1405,11 +1236,6 @@ Role updates
 * all DebOps roles have been moved to `Ansible Galaxy`_ and are now available
   via ``ansible-galaxy`` utility directly. You can also browse them on the
   `DebOps Galaxy page`_
-
-.. _previous Changelog: https://github.com/ginas/ginas/blob/master/CHANGELOG.md
-.. _ginas: https://github.com/ginas/ginas/
-.. _Ansible Galaxy: https://galaxy.ansible.com/
-.. _DebOps Galaxy page: https://galaxy.ansible.com/list#/users/6081
 
 New roles
 *********
@@ -1422,12 +1248,6 @@ New roles
   environment. By default it will install packages present in the distribution,
   but on Debian Wheezy a backport of ``golang`` package from Debian Jessie can
   be automatically created and installed.
-
-.. _Nick Janetakis: https://github.com/nickjj
-.. _debops.elasticsearch: https://github.com/debops/ansible-elasticsearch
-.. _Elasticsearch: http://elasticsearch.org/
-.. _debops.golang: https://github.com/debops/ansible-golang
-.. _Go language: http://golang.org/
 
 Role updates
 ************
@@ -1445,8 +1265,82 @@ Role updates
   backwards compatibility with `Ubuntu 12.04 LTS (Precise Pangolin)`_
   distribution).
 
+.. _6to4: https://en.wikipedia.org/wiki/6to4
+.. _6to4 tunnel: https://en.wikipedia.org/wiki/6to4
+.. _Ansible Galaxy: https://galaxy.ansible.com/
+.. _Ansible LDAP modules: https://bitbucket.org/psagers/ansible-ldap
+.. _commit message: https://github.com/debops/ansible-gitlab_ci/commit/64eb393569267f4eebd9264580d9c1fa22dc32e0
+.. _CVE-2013-4547: https://security-tracker.debian.org/tracker/CVE-2013-4547
+.. _Debian Bug #630625: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=630625
+.. _Debian bug #718639: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=718639
+.. _debops.ansible: https://github.com/debops/ansible-role-ansible/
+.. _debops.apt: https://github.com/debops/ansible-apt/
+.. _debops.auth: https://github.com/debops/ansible-auth/
+.. _debops.boxbackup: https://github.com/debops/ansible-boxbackup/
+.. _debops.console: https://github.com/debops/ansible-console/
+.. _debops/debops-playbooks: https://github.com/debops/debops-playbooks/
+.. _debops.debops: https://github.com/debops/ansible-debops/
+.. _debops.dhcpd: https://github.com/debops/ansible-dhcpd/
+.. _debops.dnsmasq: https://github.com/debops/ansible-dnsmasq/
+.. _debops.elasticsearch: https://github.com/debops/ansible-elasticsearch
+.. _debops.etherpad: https://github.com/debops/ansible-etherpad/
+.. _debops/examples: https://github.com/debops/examples/
+.. _debops.ferm: https://github.com/debops/ansible-ferm/
+.. _debops.gitlab_ci_runner: https://github.com/debops/ansible-gitlab_ci_runner/
+.. _debops.gitlab_ci: https://github.com/debops/ansible-gitlab_ci/
+.. _debops.gitlab: https://github.com/debops/ansible-gitlab/
+.. _debops.golang: https://github.com/debops/ansible-golang
+.. _debops.hwraid: https://github.com/debops/ansible-hwraid/
+.. _debops.ifupdown: https://github.com/debops/ansible-ifupdown/
+.. _debops.kvm: https://github.com/debops/ansible-kvm/
+.. _debops.lxc: https://github.com/debops/ansible-lxc/
+.. _debops.mysql: https://github.com/debops/ansible-mysql/
+.. _debops.nat: https://github.com/debops/ansible-nat/
+.. _debops.nginx: https://github.com/debops/ansible-nginx/
+.. _debops.ntp: https://github.com/debops/ansible-ntp/
+.. _debops.openvz: https://github.com/debops/ansible-openvz/
+.. _debops.pki: https://github.com/debops/ansible-pki/
+.. _debops.postfix: https://github.com/debops/ansible-postfix/
+.. _debops.postgresql: https://github.com/debops/ansible-postgresql/
+.. _debops.radvd: https://github.com/debops/ansible-radvd/
+.. _debops.reprepro: https://github.com/debops/ansible-reprepro/
+.. _debops.rsnapshot: https://github.com/debops/ansible-rsnapshot/
 .. _debops.ruby: https://github.com/debops/ansible-ruby
-.. _Ubuntu 12.04 LTS (Precise Pangolin): http://releases.ubuntu.com/12.04/
-
+.. _debops.salt: https://github.com/debops/ansible-salt/
+.. _debops.secret: https://github.com/debops/ansible-secret/
+.. _debops.slapd: https://github.com/debops/ansible-slapd/
+.. _debops.sshd: https://github.com/debops/ansible-sshd/
+.. _debops.subnetwork: https://github.com/debops/ansible-subnetwork/
+.. _debops.tcpwrappers: https://github.com/debops/ansible-tcpwrappers/
+.. _debops.users: https://github.com/debops/ansible-users/
+.. _DebOps Galaxy page: https://galaxy.ansible.com/list#/users/6081
 .. _DebOps: http://debops.org/
+.. _DebOps mailing list: https://groups.io/org/groupsio/debops
+.. _Dovecot: http://dovecot.org/
+.. _Elasticsearch: http://elasticsearch.org/
+.. _Etherpad: http://etherpad.org/
+.. _ferm: http://ferm.foo-projects.org/
+.. _ginas: https://github.com/ginas/ginas/
+.. _GitLab CI: https://about.gitlab.com/gitlab-ci/
+.. _GitLab: https://about.gitlab.com/
+.. _Go language: http://golang.org/
+.. _groups.io: https://groups.io/
+.. _Hartmut Goebel: https://github.com/htgoebel
+.. _htgoebel's suggestion: https://github.com/debops/ansible-postfix/issues/11#issuecomment-64113942
+.. _HWRaid: http://hwraid.le-vert.net/
+.. _latest commit: https://github.com/debops/ansible-gitlab_ci_runner/commit/b46089356e48b4f6719fd9eb64a5684ed0d55ae3
+.. _lxc package changelog: http://metadata.ftp-master.debian.org/changelogs/main/l/lxc/testing_changelog
+.. _Maciej Delmanowski: https://github.com/drybjed/
+.. _nginx map module: http://nginx.org/en/docs/http/ngx_http_map_module.html
+.. _Nick Janetakis: https://github.com/nickjj
+.. _Postfix: http://www.postfix.org/
+.. _previous Changelog: https://github.com/ginas/ginas/blob/master/CHANGELOG.md
+.. _Raspbian: http://raspbian.org/
+.. _RedRampage: https://github.com/redrampage/
+.. _Salt: http://saltstack.com/
+.. _separate dist-upgrade label: https://github.com/debops/debops-playbooks/labels/dist-upgrade
+.. _SMTP client SASL authentication: http://www.postfix.org/SASL_README.html#client_sasl
+.. _Travis-CI: https://travis-ci.org/
+.. _Ubuntu 12.04 LTS (Precise Pangolin): http://releases.ubuntu.com/12.04/
+.. _with_lists plugin: https://github.com/debops/debops-playbooks/blob/master/playbooks/lookup_plugins/lists.py
 
