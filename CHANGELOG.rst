@@ -43,6 +43,8 @@ v0.2.6
 
 - Replace old headers in Changelog to use current header order. [drybjed]
 
+- Move relevant documentation to ``debops-playbooks`` repository. [drybjed]
+
 v0.2.5
 ------
 
