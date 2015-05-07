@@ -146,6 +146,10 @@
 #       '[::]:443' for all servers.
 #
 #
+#   - item.index: ''
+#       Optional. String with custom index filenames.
+#
+#
 #   - item.root: ''
 #       Optional. Absolute path to server root to use for this server
 #       configuration. If not specified, nginx role will use
@@ -536,7 +540,7 @@ server {
 {% endif %}
 
 {% block nginx_tpl_block_index %}
-        index index.html index.htm;
+        index {{ item.index | default('index.html index.htm') }};
 {% endblock %}
 
 {% if item.error_pages is defined and item.error_pages %}
@@ -597,7 +601,7 @@ server {
 {% if item.userdir is defined and item.userdir %}
 	location ~ ^/~(.+?)(/.*)?$ {
 		alias /srv/www/$1/userdir/public$2;
-		index index.html index.htm;
+		index {{ item.index | default('index.html index.htm') }};
 		autoindex on;
 	}
 

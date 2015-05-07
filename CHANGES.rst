@@ -19,6 +19,8 @@ v0.1.4
   is required to eliminate duplicate IPv6 addresses in case of VLAN use.
   [drybjed]
 
+- Add an option to set custom index files in nginx configuration. [drybjed]
+
 v0.1.3
 ------
 
