@@ -41,6 +41,8 @@ v0.2.6
 - Move the Changelog references to the end of the file and remove duplicates,
   so that Sphinx does not complain about them. [drybjed]
 
+- Replace old headers in Changelog to use current header order. [drybjed]
+
 v0.2.5
 ------
 
@@ -151,10 +153,10 @@ v0.1.0
 ****
 
 2015-02-12
-^^^^^^^^^^
+----------
 
 Playbook updates
-****************
+~~~~~~~~~~~~~~~~
 
 Due to practical reasons, role updates will be written in roles themselves from
 now on, in ``CHANGES.rst`` files.
@@ -166,10 +168,10 @@ host.
 
 
 2015-02-06
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 OpenLDAP server managed by `debops.slapd`_ role has gained support for TLS out
 of the box, using certificates managed by `debops.pki`_ role. By default,
@@ -184,7 +186,7 @@ OpenLDAP server using ``ldaps://`` protocol. You can of course change that
 using role default variables.
 
 Playbook updates
-****************
+~~~~~~~~~~~~~~~~
 
 To make LDAP use easier within Ansible playbooks, I've included two
 `Ansible LDAP modules`_ created by Peter Sagerson in the main DebOps playbook
@@ -195,10 +197,10 @@ source code for examples.
 
 
 2015-02-05
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 `debops.mysql`_ role can now configure a MySQL server with SSL support enabled
 by default, using PKI infrastructure managed by `debops.pki`_ role.
@@ -218,10 +220,10 @@ passwords themselves are stored in ``secret/`` directory, managed by
 
 
 2015-02-04
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 I have found out that some applications do not support SSL/TLS certificate
 chains correctly. Because of that, I have added a separate PKI realm,
@@ -291,10 +293,10 @@ regarding DebOps roles after performing an upgrade, please post them in
 
 
 2015-02-01
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 Small updates in `debops.pki`_ role:
 
@@ -314,10 +316,10 @@ Small updates in `debops.pki`_ role:
 
 
 2015-01-31
-^^^^^^^^^^
+----------
 
 Playbook updates
-****************
+~~~~~~~~~~~~~~~~
 
 New playbook, ``root.yml`` has been added and part of the ``common.yml``
 playbook has been moved there. This playbook is meant to prepare the system for
@@ -351,10 +353,10 @@ change over time after a period of testing.
 
 
 2015-01-28
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 `debops.reprepro`_ role is no longer a dependency of `debops.apt`_. Instead
 it's configured like any other service, by adding a host to
@@ -405,10 +407,10 @@ named differently between those two distributions.
 
 
 2015-01-21
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 Webserver status page has been enabled by default in `debops.nginx`_, it's
 accessible on ``/nginx_status`` location, initially only from localhost
@@ -420,10 +422,10 @@ issue has already been mitigated in Debian.
 
 
 2015-01-20
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 `debops.gitlab_ci`_ role has been updated to support `GitLab CI`_ 5.4, with
 GitLab 7.7 providing authorization based on OAuth. Due to the changes in GitLab
@@ -437,7 +439,7 @@ shouldn't make an error if you are connecting to your hosts directly as
 which means that DebOps now requires Ansible >= 1.8 for correct operation.
 
 New playbook plugins
-********************
+~~~~~~~~~~~~~~~~~~~~
 
 `Hartmut Goebel`_ created a small lookup plugin, ``with_lists``, which alows
 you to use lists of items as "items" themselves, see an example in the
@@ -445,10 +447,10 @@ you to use lists of items as "items" themselves, see an example in the
 
 
 2015-01-18
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 `debops.gitlab`_ role has been finally rewritten. Lots of important changes:
 
@@ -472,7 +474,7 @@ Role updates
   bounced mails shouldn't be a problem anymore;
 
 Playbook updates
-****************
+~~~~~~~~~~~~~~~~
 
 ``bootstrap.yml`` playbook gained new tasks which can be used to set hostname
 and domain on a given host. You can define ``bootstrap_hostname`` or
@@ -481,12 +483,12 @@ these settings on a given host as well as in ``/etc/hosts``. This functionality
 makes the ``tools/fqdn.yml`` playbook redundant, so it's removed.
 
 2015-01-13
-^^^^^^^^^^
+----------
 
 Happy New Year 2015!
 
 PKI rewrite
-***********
+~~~~~~~~~~~
 
 I've worked on `debops.pki`_ role since December, holiday season delayed it
 slightly, but finally it is here. :-)
@@ -520,10 +522,10 @@ ask them on the IRC channel or on the mailing list.
 
 
 2014-12-23
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 `debops.users`_ role can now set or update user passwords (by default no
 passwords are set).
@@ -535,10 +537,10 @@ variable, ``ntp_firewall_access``. By default, remote access is disabled.
 
 
 2014-12-05
-^^^^^^^^^^
+----------
 
 New roles
-*********
+~~~~~~~~~
 
 - `debops.salt`_ role allows you to install and configure `Salt`_ Master
   service. You can use this to create Salt control host to which other hosts
@@ -547,7 +549,7 @@ New roles
   be configured to accept connections on default ports.
 
 Role updates
-************
+~~~~~~~~~~~~
 
 Salt Minion preseeding has been added in `debops.apt`_ (current Debian Preseed
 configuration is there, will be moved in the future to separate role),
@@ -560,10 +562,10 @@ host, so make sure that it's present in your DNS configuration for best
 results.
 
 2014-12-03
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 Continuing the `GitLab`_ revamp, `debops.gitlab_ci_runner`_ role has also been
 refactored and is unfortunately not compatible with the previous version,
@@ -574,12 +576,12 @@ dependencies have been dropped and role now needs less upkeep than before. You
 can read about changes in `latest commit`_.
 
 2014-12-02
-^^^^^^^^^^
+----------
 
 `DebOps mailing list`_ has been moved to `groups.io`_.
 
 Role updates
-************
+~~~~~~~~~~~~
 
 `debops.gitlab_ci`_ role has been significantly refactored. Due to bug in
 GitLab CI 5.0 at the moment this version cannot be installed, so I decided to
@@ -589,14 +591,14 @@ updating the application have been streamlined. You can read more information
 about various changes in the `commit message`_.
 
 2014-12-01
-^^^^^^^^^^
+----------
 
 `Hartmut Goebel`_ has joined DebOps team and wrote an excellent guide for using
 DebOps scripts and playbooks with Vagrant on single and multiple hosts. It's
 available in `debops/examples`_ repository.
 
 Role updates
-************
+~~~~~~~~~~~~
 
 All DebOps roles again use Ansible `devel` branch on Travis CI for tests.
 
@@ -616,10 +618,10 @@ them on the remote hosts. Due to bugs in older Ansible versions this
 functionality works correctly on Ansible 1.8+ or current ``devel`` branch.
 
 2014-11-27
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 Support for management of SSH host fingerprints in ``/etc/ssh/ssh_known_hosts``
 (via `debops.sshd`_ role) and ``/root/.ssh/known_hosts`` on OpenVZ hosts (via
@@ -638,10 +640,10 @@ replaced with ``with_flattened`` which works better in new release of Ansible,
 dropped to prevent duplication.
 
 2014-11-26
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 `debops.nginx`_ role will now preserve the status for ``default_server`` of
 a particular configuration file in case that another instance of the role is
@@ -656,10 +658,10 @@ case all active config symlinks will be removed to prevent accidental errors
 from some old, not regenerated configuration files.
 
 2014-11-25
-^^^^^^^^^^
+----------
 
 New roles
-*********
+~~~~~~~~~
 
 - `debops.hwraid`_ is a role that configures access to `HWRaid`_ package
   repository and installs packages for recognized RAID storage arrays connected
@@ -668,7 +670,7 @@ New roles
   ``root`` account in case of issues with RAID.
 
 Role updates
-************
+~~~~~~~~~~~~
 
 `debops.auth`_ role will now manage ``/etc/ldap/ldap.conf`` configuration file.
 By default, LDAP server on local domain is set up (currently without any
@@ -684,10 +686,10 @@ has been reserved for monitoring services and users that need full access to
 the ``/proc`` filesystem.
 
 2014-11-24
-^^^^^^^^^^
+----------
 
 New roles
-*********
+~~~~~~~~~
 
 - `debops.slapd`_ role manages OpenLDAP server, ``slapd``. At the moment role
   is in beta stage - currently there is no SSL encryption available, no
@@ -697,7 +699,7 @@ New roles
   in the future.
 
 Role updates
-************
+~~~~~~~~~~~~
 
 Because of recent changes in `debops.tcpwrappers`_ role I decided to make the
 ferm rules concenring SSH access more strict. From now on, ``iptables`` will
@@ -717,10 +719,10 @@ templates using ``with_fileglob`` instead of static lists of templates, which
 makes the process of adding new tables if necessary much easier.
 
 2014-11-22
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 You can now specify default value for entries in `debops.tcpwrappers`_ role,
 using ``item.default`` key. If this key is specified, and ``item.clients`` is
@@ -732,10 +734,10 @@ default in ``/etc/hosts.allow``. If you previously used a list of hosts using
 ``sshd_*_allow``, your configuration shouldn't be affected.
 
 2014-11-20
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 `debops.ifupdown`_ will now check if previous network configuration in
 ``/etc/network/interfaces`` was using static IP addresses, which indicates that
@@ -745,17 +747,17 @@ setup a default network interface. This should prevent sudden loss of
 communication in cases where hosts are configured statically.
 
 Playbook updates
-****************
+~~~~~~~~~~~~~~~~
 
 ``tools/hostname.yml`` playbook has been renamed to ``tools/fqdn.yml`` and can
 get the new hostname and domain from ``fqdn`` variable defined in inventory,
 which is less awkward to use than renaming the host in inventory file directly.
 
 2014-11-19
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 Network forwarding configuration in ``iptables`` has been moved from
 `debops.kvm`_, `debops.lxc`_ and `debops.subnetwork`_ roles into `debops.ferm`_
@@ -792,7 +794,7 @@ asking about modifications in ``/etc/pam.d/su`` (which is now diverted), and
 lets ``sudo`` have more configuration options for ``admins`` group.
 
 Playbook updates
-****************
+~~~~~~~~~~~~~~~~
 
 New playbook, ``tools/hostname.yml`` can be used to change the hostname and
 FQDN of a host to those defined in Ansible inventory (and yes, you can do
@@ -803,10 +805,10 @@ rebooting the host after chaning the hostname should ensure that the new FQDN
 is correct.
 
 2014-11-13
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 `debops.postfix`_ role will now correctly work on hosts without FQDN
 configured. On these hosts, Postfix will automatically override its configured
@@ -825,7 +827,7 @@ fine-grained CNAME records and has more configuration options.
 And it's out of beta! :-)
 
 Playbook updates
-****************
+~~~~~~~~~~~~~~~~
 
 Old 'debops.nat' role has been obsoleted by `debops.subnetwork`_ and removed
 from ``ansible-galaxy`` requirements file. It will also be removed from GitHub
@@ -840,10 +842,10 @@ where you will find all network-related plays, like subnet creation and
 management (via ``debops.subnetwork`` and DHCP/DNS management.
 
 2014-11-07
-^^^^^^^^^^
+----------
 
 New roles
-*********
+~~~~~~~~~
 
 `debops.subnetwork`_ is a replacement for old `debops.nat`_ role, with many
 improvements. You can create a bridge interface with local network behind it
@@ -854,15 +856,15 @@ prefixes). `debops.subnetwork`_ is not yet part of the main playbook, it will
 replace the old NAT role when ``dnsmasq`` role is updated to support it.
 
 Role updates
-************
+~~~~~~~~~~~~
 
 Because of the changes related to new networking, some code in `debops.lxc`_, `debops.kvm`_ and `debops.nat`_ had to be moved around. Specifically, parts of the firewall and sysctl settings related to the LAN interface were moved into `debops.subnetwork`_ role and parts of the forwarding configuration to external and internal networks were added respectively to LXC and KVM roles.
 
 2014-11-05
-^^^^^^^^^^
+----------
 
 New playbooks
-*************
+~~~~~~~~~~~~~
 
 New playbook has been added, ``net/ipv6/6to4.yml``. This playbook configures
 `6to4 tunnel`_ interface on a host with public IPv4 address and allows you to
@@ -879,7 +881,7 @@ To use these playbooks standalone, you will need to create your own
 ``ansible.cfg`` and include in it paths to DebOps roles and plugins.
 
 Role updates
-************
+~~~~~~~~~~~~
 
 You can now configure custom `ferm`_ rules using a ``custom`` template in
 `debops.ferm`_. New ``ferm_*_rules`` variables allow you to create rules in
@@ -887,27 +889,27 @@ You can now configure custom `ferm`_ rules using a ``custom`` template in
 than ``INPUT``.
 
 2014-11-04
-^^^^^^^^^^
+----------
 
 New roles
-*********
+~~~~~~~~~
 
 Finally, it's time to start bringing out new toys. :-) For starters,
 `debops.radvd`_ role, which installs and lets you configure ``radvd``, IPv6
 Router Advertisement daemon. It will be used in future IPv6 router roles.
 
 Playbook updates
-****************
+~~~~~~~~~~~~~~~~
 
 ``ipaddr()`` filter has been rewritten again and it works now correctly with
 lists of values. Filter was completely refactored internally and its output
 should be now consistent with expectations. Hopefully for the last time.
 
 2014-11-02
-^^^^^^^^^^
+----------
 
 Playbook updates
-****************
+~~~~~~~~~~~~~~~~
 
 More fixes in filters! ``split()`` filter will now handle incorrect input
 values gracefully and return them in a list, since output is usually expected
@@ -939,10 +941,10 @@ subnets by default, or only IPv6 addresses and subnets, etc. It's not yet 100%
 correct all the time and not all queries work (or make sense in this context).
 
 2014-10-31
-^^^^^^^^^^
+----------
 
 Playbook updates
-****************
+~~~~~~~~~~~~~~~~
 
 New filter, ``split()`` has been added into filter plugins. It lets you split
 strings into a list on a specified separator (by default, space). I'm amazed it
@@ -956,10 +958,10 @@ new query type, ``'6to4'`` which lets you convert public IPv4 addresses into
 ``2002::/16`` address range.
 
 2014-10-28
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 APT repository management in `debops.apt`_ role has been rewritten. Now role
 supports multiple APT mirrors, as well as custom lists of repositories
@@ -972,10 +974,10 @@ distribution, it won't modify the default ``sources.list`` file, this can also
 be enforced manually if needed.
 
 2014-10-17
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 Many more roles have now partial or full tests on `Travis-CI`_, more to come.
 
@@ -997,20 +999,20 @@ in `debops.openvz`_ role; SSH keys are also sourced from ``ssh-agent`` instead
 of directly from the ``~/.ssh/id_rsa.pub`` file.
 
 2014-10-10
-^^^^^^^^^^
+----------
 
 Playbook updates
-****************
+~~~~~~~~~~~~~~~~
 
 `Maciej Delmanowski`_ wrote a set of custom filter plugins for Ansible which
 let you manipulate IPv4 and IPv6 addresses. You can test if a string is a valid
 IP address or convert them between various formats.
 
 2014-10-09
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 IPv6 firewall has been enabled by default in `debops.ferm`_ after all roles
 that configure ``ferm`` directly had their configuration files fixed to support
@@ -1022,10 +1024,10 @@ both ``iptables`` and ``ip6tables`` commands.
 will be set up as its clients.
 
 2014-10-07
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 `debops.ferm`_ role is now IPv6-aware and can generate rules for ``iptables``
 and ``ip6tables`` at the same time. The way you use the role as a dependency
@@ -1040,17 +1042,17 @@ running nginx server, it will require manual restart for the new configuration
 to take effect.
 
 2014-10-05
-^^^^^^^^^^
+----------
 
 All role README files have been converted to reStructuredText format.
 Unfortunately, `Ansible Galaxy`_ does not support ``README.rst`` files at this
 time, so role information cannot be udpated there.
 
 2014-10-02
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 `debops.nginx`_ role has been updated. Most changes are either cleanup (change
 names of some internal role files, remove unused redundant variables, etc.).
@@ -1075,10 +1077,7 @@ from custom to stock configuration file. Task which removes these old files
 will be removed in the future.
 
 2014-09-29
-^^^^^^^^^^
-
-Playbook updates
-****************
+----------
 
 "{{ lookup('file','~/.ssh/id_rsa.pub) }}" considered harmful
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1107,10 +1106,10 @@ error, you want to safeguard against that in a key configuration task using
 used with ``authorized_key`` task.
 
 2014-09-22
-^^^^^^^^^^
+----------
 
 inventory.secret is renamed to secret
-*************************************
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you use DebOps, or at least some roles from it, you probably are familiar
 with `debops.secret`_ role, which makes handling sensitive and confidental
@@ -1141,10 +1140,10 @@ If you use ``debops-padlock`` script, then ``.encfs.inventory.secret``
 directory becomes ``.encfs.secret``.
 
 2014-09-21
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 * `debops.postfix`_ has been cleaned up, all Ansible tasks have been rewritten
   from "inline" syntax to YAML syntax. Task conditions have been rearranged,
@@ -1166,10 +1165,10 @@ Role updates
   separately by the system administrator.
 
 2014-09-19
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 * `debops.postfix`_ role has gained support for `SMTP client SASL authentication`_,
   in other words the ability to send mail through remote relay MX hosts with
@@ -1181,10 +1180,10 @@ Role updates
   passwords securely.
 
 2014-09-18
-^^^^^^^^^^
+----------
 
 Role updates
-************
+~~~~~~~~~~~~
 
 * `debops.kvm`_ role has been cleaned up from old and unused code, tasks were
   put in order and list of administrator accounts that should have access to
@@ -1196,10 +1195,10 @@ Role updates
   changed). You can read more in the `lxc package changelog`_.
 
 2014-09-17
-^^^^^^^^^^
+----------
 
 Playbook updates
-****************
+~~~~~~~~~~~~~~~~
 
 * You can now disable early APT cache update using ``apt_update_cache_early``
   variable from `debops.apt`_ role. This is useful in rare case when your APT
@@ -1207,7 +1206,7 @@ Playbook updates
   Ansible.
 
 Role updates
-************
+~~~~~~~~~~~~
 
 * `debops.ferm`_ role has gained new list variable,
   ``ferm_ansible_controllers``, which can be used to configure CIDR hostnames
@@ -1228,7 +1227,7 @@ Role updates
   file to include in PHP5-based server configuration.
 
 2014-09-14
-^^^^^^^^^^
+----------
 
 * Start of a new, separate changelog for DebOps_ playbooks and roles. This is
   a continuation of `previous Changelog`_ from `ginas`_ project.
@@ -1238,7 +1237,7 @@ Role updates
   `DebOps Galaxy page`_
 
 New roles
-*********
+~~~~~~~~~
 
 * `debops.elasticsearch`_ is a role written to manage `Elasticsearch`_
   clusters, either standalone or on multiple hosts separated and configured
@@ -1250,7 +1249,7 @@ New roles
   be automatically created and installed.
 
 Role updates
-************
+~~~~~~~~~~~~
 
 * `debops.ruby`_ role has changed the way how different Ruby versions can be
   selected for installation. By default, ``ruby_version: 'apt'`` variable tells
