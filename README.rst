@@ -51,7 +51,7 @@ use::
    $ debops-update
 
 Please see the `Installation Guide
-<http://docs.debops.org/en/latest/installation.html>`_ for more
+<http://docs.debops.org/en/latest/debops/docs/installation.html>`_ for more
 details.
 
 
@@ -60,7 +60,7 @@ Getting started
 
 Here is a short intro how to use DebOps. Please have a look at the
 `Getting Started Guide
-<http://docs.debops.org/en/latest/getting-started.html>`_ for more
+<http://docs.debops.org/en/latest/debops/docs/getting-started.html>`_ for more
 detailed information.
 
 **Make your first project**
@@ -92,17 +92,16 @@ What do you want to learn more about?
 |Gratipay|_
 
 - `Playbooks and roles <https://github.com/debops/debops-playbooks>`_
-- `Custom scripts <http://docs.debops.org/en/latest/scripts/index.html>`_
-- `How will versions work with so many roles and playbooks? <http://docs.debops.org/en/latest/versions.html>`_
+- `Custom scripts <http://docs.debops.org/en/latest/debops-playbooks/docs/custom-features.html>`_
 - DebOps guides and troubleshooting
-    - `Using linux containers <http://docs.debops.org/en/latest/using-linux-containers.html>`_
-    - `Creating a local APT server to use backports <http://docs.debops.org/en/latest/creating-a-local-apt-server-to-use-backports.html>`_
+    - `Using linux containers <http://docs.debops.org/en/latest/debops-playbooks/docs/guides/linux-containers.html>`_
+    - `Creating a local APT server to use backports <http://docs.debops.org/en/latest/debops-playbooks/docs/guides/local-apt-repository.html>`_
     - `Solving common problems <https://github.com/debops/debops/wiki/Solutions-to-problems-you-may-encounter>`_
 
 Do you want to contribute?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Sounds great, check out the `contributing guide <https://github.com/debops/debops/blob/master/CONTRIBUTING.rst>`_
+Sounds great, check out the `contributing guide <http://docs.debops.org/en/latest/debops/docs/contributing.html>`_
 for the details.
 
 Authors
