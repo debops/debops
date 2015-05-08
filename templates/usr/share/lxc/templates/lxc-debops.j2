@@ -100,6 +100,9 @@ EOF
 {% else %}
     lxc_template_admin_home="{{ lxc_template_admin_home }}"
 {% endif %}
+    lxc_template_admin_home_group="{{ lxc_template_admin_home_group }}"
+    lxc_template_admin_home_mode="{{ lxc_template_admin_home_mode }}"
+
 {% if lxc_template_sudo is defined and lxc_template_sudo %}
     lxc_template_sudo_group="{{ lxc_template_sudo_group }}"
 {% endif %}
@@ -120,8 +123,12 @@ EOF
     # Create administrator account
 {% if lxc_template_admin_system is defined and lxc_template_admin_system %}
     chroot $rootfs getent passwd ${lxc_template_admin_name} || chroot $rootfs useradd --system --user-group --groups ${lxc_template_admin_groups_useradd} --create-home --home ${lxc_template_admin_home} --comment "${lxc_template_admin_comment}" --shell ${lxc_template_admin_shell} ${lxc_template_admin_name}
+    chroot $rootfs chgrp ${lxc_template_admin_home_group} ${lxc_template_admin_home}
+    chroot $rootfs chmod ${lxc_template_admin_home_mode} ${lxc_template_admin_home}
 {% else %}
     chroot $rootfs getent passwd ${lxc_template_admin_name} || chroot $rootfs adduser --disabled-password --home ${lxc_template_admin_home} --gecos "${lxc_template_admin_comment}" --shell ${lxc_template_admin_shell} ${lxc_template_admin_name}
+    chroot $rootfs chgrp ${lxc_template_admin_home_group} ${lxc_template_admin_home}
+    chroot $rootfs chmod ${lxc_template_admin_home_mode} ${lxc_template_admin_home}
 
     if [ ${{ '{' }}#lxc_template_admin_groups[@]} -ge 0 ] ; then
         for system_group in ${lxc_template_admin_groups[@]} ; do
