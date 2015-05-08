@@ -31,3 +31,7 @@ v0.1.0
   group specified in ``lxc_template_admin_groups`` will be granted full access.
   [drybjed]
 
+- Add variables to configure administrator account home directory group and
+  permissions. By default, home directory will be owned by ``admins`` group
+  with ``0750`` permissions. [drybjed]
+
