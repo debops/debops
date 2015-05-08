@@ -18,15 +18,6 @@
   with_items: auth_system_groups
   when: auth_system_groups is defined and auth_system_groups
 
-- name: Create administrator accounts
-  user:
-    name: '{{ item }}'
-    groups: 'admins'
-    state: 'present'
-    append: 'yes'
-  with_items: auth_admin_accounts
-  when: auth_admin_accounts is defined and auth_admin_accounts
-
 - name: Divert original /etc/pam.d/su
   command: dpkg-divert --quiet --local --divert /etc/pam.d/su.dpkg-divert --rename /etc/pam.d/su
            creates=/etc/pam.d/su.dpkg-divert

@@ -8,6 +8,15 @@ v0.3.1
 
 - Add DebOps pre/post task hooks. [drybjed]
 
+- Remove ``auth_admin_accounts`` list and related tasks. This list was used to
+  create admin accounts, which interfered when these accounts were supposed to
+  be system accounts instead of normal "user" accounts.
+
+  Use the ``debops.users`` role instead to create local administrator accounts
+  and add them to the ``admins`` group to grant them admin access.
+  Bootstrap playbooks / scripts should do that automatically for default admin
+  account. [drybjed]
+
 v0.3.0
 ------
 
