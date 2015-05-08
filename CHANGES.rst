@@ -21,6 +21,9 @@ v0.3.1
   passwordless access given to specific system group; ``sudo`` is sufficient
   for this functionality. Already existing systems are unchanged. [drybjed]
 
+- Add variable to specify umask for new home directories created by
+  ``pam_mkhomedir`` PAM module. Default umask is set to ``0027``. [drybjed]
+
 v0.3.0
 ------
 
