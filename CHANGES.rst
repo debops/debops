@@ -17,6 +17,10 @@ v0.3.1
   Bootstrap playbooks / scripts should do that automatically for default admin
   account. [drybjed]
 
+- Cease management of ``su`` PAM configuration. Only thing that was managed was
+  passwordless access given to specific system group; ``sudo`` is sufficient
+  for this functionality. Already existing systems are unchanged. [drybjed]
+
 v0.3.0
 ------
 
