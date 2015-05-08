@@ -24,6 +24,10 @@ v0.3.1
 - Add variable to specify umask for new home directories created by
   ``pam_mkhomedir`` PAM module. Default umask is set to ``0027``. [drybjed]
 
+- Set the default ``UMASK`` value for ``useradd`` command to ``0027``. All new
+  home directories will have ``0750`` permissions, which might affect content
+  accessibility for different applications. [drybjed]
+
 v0.3.0
 ------
 
