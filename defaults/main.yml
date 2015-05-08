@@ -1,9 +1,5 @@
 ---
 
-# List of default accounts that are given admin status by being added to
-# 'admins' system group
-auth_admin_accounts: [ '{{ ansible_ssh_user }}' ]
-
 # System group that will be granted unrestricted access to root account
 auth_wheel_group: 'admins'
 
@@ -126,6 +122,9 @@ auth_nslcd_options: False
 
 # Minimal uidNumber which is considered for an LDAP query
 auth_nslcd_nss_min_uid: '1000'
+
+# Default umask for new home directories created by pam_mkhomedir module
+auth_pam_mkhomedir_umask: '0027'
 
 # LDAP search filters which are used to limit access to the host or services.
 # At least one search needs to return a valid entry, otherwise access is
