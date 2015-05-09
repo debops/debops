@@ -67,6 +67,8 @@ openvz_template_admin_home="{{ openvz_template_admin_home }}"
 {% if openvz_template_sudo is defined and openvz_template_sudo %}
 openvz_template_sudo_group="{{ openvz_template_sudo_group }}"
 {% endif %}
+openvz_template_admin_home_group="{{ openvz_template_admin_home_group }}"
+openvz_template_admin_home_mode="{{ openvz_template_admin_home_mode }}"
 
 # Create required system groups if not present
 if [ \${{ '{' }}#openvz_template_admin_groups[@]} -ge 0 ] ; then
@@ -83,15 +85,24 @@ chmod 0440 /etc/sudoers.d/\${openvz_template_sudo_group}
 {% endif %}
 # Create administrator account
 {% if openvz_template_admin_system is defined and openvz_template_admin_system %}
-getent passwd \${openvz_template_admin_name} || useradd --system --user-group --groups \${openvz_template_admin_groups_useradd} --create-home --home \${openvz_template_admin_home} --comment "\${openvz_template_admin_comment}" --shell \${openvz_template_admin_shell} \${openvz_template_admin_name}
-{% else %}
-getent passwd \${openvz_template_admin_name} || adduser --disabled-password --home \${openvz_template_admin_home} --gecos "\${openvz_template_admin_comment}" --shell \${openvz_template_admin_shell} \${openvz_template_admin_name}
-
-if [ \${{ '{' }}#openvz_template_admin_groups[@]} -ge 0 ] ; then
-    for system_group in \${openvz_template_admin_groups[@]} ; do
-        adduser \${openvz_template_admin_name} \${system_group}
-    done
+if ! getent passwd \${openvz_template_admin_name} > /dev/null ; then
+    useradd --system --user-group --groups \${openvz_template_admin_groups_useradd} --create-home --home \${openvz_template_admin_home} --comment "\${openvz_template_admin_comment}" --shell \${openvz_template_admin_shell} \${openvz_template_admin_name}
+    chgrp \${openvz_template_admin_home_group} \${openvz_template_admin_home}
+    chmod \${openvz_template_admin_home_mode} \${openvz_template_admin_home}
 fi
+{% else %}
+if ! getent passwd \${openvz_template_admin_name} > /dev/null ; then
+    adduser --disabled-password --home \${openvz_template_admin_home} --gecos "\${openvz_template_admin_comment}" --shell \${openvz_template_admin_shell} \${openvz_template_admin_name}
+    chgrp \${openvz_template_admin_home_group} \${openvz_template_admin_home}
+    chmod \${openvz_template_admin_home_mode} \${openvz_template_admin_home}
+
+    if [ \${{ '{' }}#openvz_template_admin_groups[@]} -ge 0 ] ; then
+        for system_group in \${openvz_template_admin_groups[@]} ; do
+            adduser \${openvz_template_admin_name} \${system_group}
+        done
+    fi
+fi
+
 {% endif %}
 
 {% endif %}
@@ -107,9 +118,11 @@ if [ -n "\${openvz_template_admin_sshkeys}" ] ; then
     echo "\${openvz_template_admin_sshkeys}" > /root/.ssh/authorized_keys
 
 {% if openvz_template_admin is defined and openvz_template_admin %}
-    mkdir -p -m 700 \${openvz_template_admin_home}/.ssh
-    echo "\${openvz_template_admin_sshkeys}" > \${openvz_template_admin_home}/.ssh/authorized_keys
-    chown -R \${openvz_template_admin_name}:\${openvz_template_admin_name} \${openvz_template_admin_home}/.ssh
+    admin_home="\$(getent passwd \${lxc_template_admin_name} | cut -d: -f6)"
+    mkdir -p -m 700 \${admin_home}/.ssh
+    touch \${admin_home}/.ssh/authorized_keys
+    echo "\${openvz_template_admin_sshkeys}" >> \${admin_home}/.ssh/authorized_keys
+    chown -R \${openvz_template_admin_name}:\${openvz_template_admin_name} \${admin_home}/.ssh
 
 {% endif %}
 fi

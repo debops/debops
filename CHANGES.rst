@@ -20,3 +20,7 @@ v0.1.0
 
 - Add option to disable kernel configuration. [drybjed]
 
+- Add variables to set admin account home directory group and permissions.
+  Admin account will be created only when not already present.
+  [drybjed]
+
