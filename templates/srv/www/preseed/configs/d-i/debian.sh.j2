@@ -50,6 +50,8 @@ preseed_admin_home="{{ item.admin_system_home | default(preseed_admin_system_hom
 {% else %}
 preseed_admin_home="{{ item.admin_home | default(preseed_admin_home | default('/home/' + item.admin_name | default(preseed_admin_name))) }}"
 {% endif %}
+preseed_admin_home_group="{{ preseed_admin_home_group }}"
+preseed_admin_home_mode="{{ preseed_admin_home_mode }}"
 {% if ((item.sudo is undefined or item.sudo) and (preseed_sudo is defined and preseed_sudo)) %}
 preseed_sudo_group="{{ preseed_sudo_group }}"
 {% endif %}
@@ -69,14 +71,22 @@ chmod 0440 /etc/sudoers.d/${preseed_sudo_group}
 {% endif %}
 # Create administrator account
 {% if ((item.admin_system is defined and item.admin_system) or (preseed_admin_system is defined and preseed_admin_system)) %}
-getent passwd ${preseed_admin_name} || useradd --system --user-group --groups ${preseed_admin_groups_useradd} --create-home --home ${preseed_admin_home} --comment "${preseed_admin_comment}" --shell ${preseed_admin_shell} ${preseed_admin_name}
+if ! getent passwd ${preseed_admin_name} ; then
+    useradd --system --user-group --groups ${preseed_admin_groups_useradd} --create-home --home ${preseed_admin_home} --comment "${preseed_admin_comment}" --shell ${preseed_admin_shell} ${preseed_admin_name}
+    chgrp ${preseed_admin_home_group} ${preseed_admin_home}
+    chmod ${preseed_admin_home_mode} ${preseed_admin_home}
+fi
 {% else %}
-getent passwd ${preseed_admin_name} || adduser --disabled-password --home ${preseed_admin_home} --gecos "${preseed_admin_comment}" --shell ${preseed_admin_shell} ${preseed_admin_name}
-adduser ${preseed_admin_name} ${preseed_admin_group}
-if [ ${{ '{' }}#preseed_admin_groups[@]} -ge 0 ] ; then
-    for system_group in ${preseed_admin_groups[@]} ; do
-        adduser ${preseed_admin_name} ${system_group}
-    done
+if ! getent passwd ${preseed_admin_name} ; then
+    adduser --disabled-password --home ${preseed_admin_home} --gecos "${preseed_admin_comment}" --shell ${preseed_admin_shell} ${preseed_admin_name}
+    chgrp ${preseed_admin_home_group} ${preseed_admin_home}
+    chmod ${preseed_admin_home_mode} ${preseed_admin_home}
+
+    if [ ${{ '{' }}#preseed_admin_groups[@]} -ge 0 ] ; then
+        for system_group in ${preseed_admin_groups[@]} ; do
+            adduser ${preseed_admin_name} ${system_group}
+        done
+    fi
 fi
 {% endif %}
 
@@ -93,9 +103,11 @@ if [ -n "${preseed_admin_sshkeys}" ] ; then
   echo "${preseed_admin_sshkeys}" > /root/.ssh/authorized_keys
 
 {% if ((item.admin is undefined or item.admin) and (preseed_admin is defined and preseed_admin)) %}
-  mkdir -p -m 700 ${preseed_admin_home}/.ssh
-  echo "${preseed_admin_sshkeys}" > ${preseed_admin_home}/.ssh/authorized_keys
-  chown -R ${preseed_admin_name}:${preseed_admin_name} ${preseed_admin_home}/.ssh
+  admin_home="$(getent passwd ${preseed_admin_name} | cut -d: -f6)"
+  mkdir -p -m 700 ${admin_home}/.ssh
+  touch ${admin_home}/.ssh/authorized_keys
+  echo "${preseed_admin_sshkeys}" >> ${admin_home}/.ssh/authorized_keys
+  chown -R ${preseed_admin_name}:${preseed_admin_name} ${admin_home}/.ssh
 
 {% endif %}
 fi
