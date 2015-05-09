@@ -122,18 +122,22 @@ EOF
 {% endif %}
     # Create administrator account
 {% if lxc_template_admin_system is defined and lxc_template_admin_system %}
-    chroot $rootfs getent passwd ${lxc_template_admin_name} || chroot $rootfs useradd --system --user-group --groups ${lxc_template_admin_groups_useradd} --create-home --home ${lxc_template_admin_home} --comment "${lxc_template_admin_comment}" --shell ${lxc_template_admin_shell} ${lxc_template_admin_name}
-    chroot $rootfs chgrp ${lxc_template_admin_home_group} ${lxc_template_admin_home}
-    chroot $rootfs chmod ${lxc_template_admin_home_mode} ${lxc_template_admin_home}
+    if ! chroot $rootfs getent passwd ${lxc_template_admin_name} > /dev/null ; then
+        chroot $rootfs useradd --system --user-group --groups ${lxc_template_admin_groups_useradd} --create-home --home ${lxc_template_admin_home} --comment "${lxc_template_admin_comment}" --shell ${lxc_template_admin_shell} ${lxc_template_admin_name}
+        chroot $rootfs chgrp ${lxc_template_admin_home_group} ${lxc_template_admin_home}
+        chroot $rootfs chmod ${lxc_template_admin_home_mode} ${lxc_template_admin_home}
+    fi
 {% else %}
-    chroot $rootfs getent passwd ${lxc_template_admin_name} || chroot $rootfs adduser --disabled-password --home ${lxc_template_admin_home} --gecos "${lxc_template_admin_comment}" --shell ${lxc_template_admin_shell} ${lxc_template_admin_name}
-    chroot $rootfs chgrp ${lxc_template_admin_home_group} ${lxc_template_admin_home}
-    chroot $rootfs chmod ${lxc_template_admin_home_mode} ${lxc_template_admin_home}
+    if ! chroot $rootfs getent passwd ${lxc_template_admin_name} > /dev/null ; then
+        chroot $rootfs adduser --disabled-password --home ${lxc_template_admin_home} --gecos "${lxc_template_admin_comment}" --shell ${lxc_template_admin_shell} ${lxc_template_admin_name}
+        chroot $rootfs chgrp ${lxc_template_admin_home_group} ${lxc_template_admin_home}
+        chroot $rootfs chmod ${lxc_template_admin_home_mode} ${lxc_template_admin_home}
 
-    if [ ${{ '{' }}#lxc_template_admin_groups[@]} -ge 0 ] ; then
-        for system_group in ${lxc_template_admin_groups[@]} ; do
-            chroot $rootfs adduser ${lxc_template_admin_name} ${system_group}
-        done
+        if [ ${{ '{' }}#lxc_template_admin_groups[@]} -ge 0 ] ; then
+            for system_group in ${lxc_template_admin_groups[@]} ; do
+                chroot $rootfs adduser ${lxc_template_admin_name} ${system_group}
+            done
+        fi
     fi
 {% endif %}
 
@@ -150,9 +154,11 @@ EOF
         echo "${lxc_template_admin_sshkeys}" > $rootfs/root/.ssh/authorized_keys
 
 {% if lxc_template_admin is defined and lxc_template_admin %}
-        chroot $rootfs mkdir -p -m 700 ${lxc_template_admin_home}/.ssh
-        echo "${lxc_template_admin_sshkeys}" > ${rootfs}${lxc_template_admin_home}/.ssh/authorized_keys
-        chroot $rootfs chown -R ${lxc_template_admin_name}:${lxc_template_admin_name} ${lxc_template_admin_home}/.ssh
+        admin_home="$(chroot $rootfs getent passwd ${lxc_template_admin_name} | cut -d: -f6)"
+        chroot $rootfs mkdir -p -m 700 ${admin_home}/.ssh
+        touch ${rootfs}${admin_home}/.ssh/authorized_keys
+        echo "${lxc_template_admin_sshkeys}" >> ${rootfs}${admin_home}/.ssh/authorized_keys
+        chroot $rootfs chown -R ${lxc_template_admin_name}:${lxc_template_admin_name} ${admin_home}/.ssh
 
 {% endif %}
     fi
