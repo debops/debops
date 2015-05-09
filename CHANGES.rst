@@ -35,3 +35,6 @@ v0.1.0
   permissions. By default, home directory will be owned by ``admins`` group
   with ``0750`` permissions. [drybjed]
 
+- Change the container bootstrap function to only create or modify admin
+  account if it's not already present in container. [drybjed]
+
