@@ -45,6 +45,9 @@ v0.2.6
 
 - Move relevant documentation to ``debops-playbooks`` repository. [drybjed]
 
+- Add variables to set admin home directory group and permissions in
+  ``bootstrap.yml`` playbook. [drybjed]
+
 v0.2.5
 ------
 
