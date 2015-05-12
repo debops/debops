@@ -19,6 +19,12 @@ dnsmasq_router: True
 # Enable or disable TFTP server
 dnsmasq_tftp: True
 
+# Block private IP addressess coming from upstream nameservers
+dnsmasq_stop_dns_rebind: True
+
+# Don't forwars reverse DNS lookups for private IP addresses
+dnsmasq_bogus_priv: True
+
 
 # ---- Network interface options ----
 
@@ -39,10 +45,10 @@ dnsmasq_interfaces:
   - interface: 'br2'
 
     # DNS A record of the interface
-    name: 'gw'
+    name: '{{ ansible_hostname }}'
 
     # Optional DNS CNAME records of the interface
-    aliases: [ 'router', 'gateway' ]
+    aliases: [ 'gw', 'router', 'gateway' ]
 
     # First IP address in the DHCP range (index)
     dhcp_range_start: '10'
