@@ -4,7 +4,7 @@ Changelog
 v0.1.1
 ------
 
-*Unreleased*
+*Released: 2015-05-12*
 
 - Add ``item.port_present`` parameter in bridge configuration. It can be used
   to enable or disable specific bridge interface depending on presence of
