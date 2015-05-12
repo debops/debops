@@ -9,9 +9,11 @@
        (hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4 is defined and
         hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4) and
        (hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4.address | ipaddr('public'))) %}
+{% if dnsmasq_bogus_priv is defined and dnsmasq_bogus_priv %}
 # Don't forward private IP address queries to external networks
 bogus-priv
 
+{% endif %}
 {% endif %}
 # Enable connection tracking support
 conntrack
@@ -84,9 +86,11 @@ domain-needed
 # Add domain to hostnames in hosts file
 expand-hosts
 
+{% if dnsmasq_stop_dns_rebind is defined and dnsmasq_stop_dns_rebind %}
 # Reject private IP addresses from upstream nameservers
 stop-dns-rebind
 
+{% endif %}
 # Allow rebinding of localhost IP address (for RBL support)
 rebind-localhost-ok
 
