@@ -91,16 +91,9 @@ dhcp-boot = tag:{{ item.interface }},{{ dnsmasq_tftp_boot | default('pxelinux.0'
 # A record of the {{ item.interface }} interface
 interface-name = {{ item.name + '.' + dnsmasq_domain }},{{ item.interface }}
 
-# Additional CNAME records for {{ item.interface }} interface
-cname = {{ item.name + '.' + ansible_hostname }},{{ item.name + '.' + dnsmasq_domain }}
-cname = {{ item.name }},{{ item.name + '.' + dnsmasq_domain }}
-
 {% if item.aliases is defined and item.aliases %}
 {% for name in item.aliases %}
 cname = {{ name + '.' + dnsmasq_domain }},{{ item.name + '.' + dnsmasq_domain }}
-cname = {{ name + '.' + ansible_hostname }},{{ item.name + '.' + dnsmasq_domain }}
-cname = {{ name }},{{ item.name + '.' + dnsmasq_domain }}
-
 {% endfor %}
 {% endif %}
 {% endif %}
