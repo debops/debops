@@ -4,7 +4,7 @@ Changelog
 v0.1.1
 ------
 
-*Unreleased*
+*Released: 2015-05-12*
 
 - Add ``item.port_present`` parameter in bridge configuration. It can be used
   to enable or disable specific bridge interface depending on presence of
@@ -43,6 +43,16 @@ v0.1.1
   interfaces using ``ifup`` command or ``ifup@.service`` systemd service. Only
   network interfaces which have been modified will be enabled/disabled on
   subsequent runs. [drybjed]
+
+- Add a way to delay activation of specific network interface.
+
+  A network interface can be prepared beforehand by ``debops.ifupdown`` role,
+  then additional configuration can be performed (for example an OpenVPN/tinc
+  VPN, GRE tunnel, etc.) and after that the other role can run the script
+  prepared by ``debops.ifupdown`` in a known location to start the interface.
+
+  This option is enabled by adding ``item.auto_ifup: False`` to interface
+  configuration. [drybjed]
 
 v0.1.0
 ------
