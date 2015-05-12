@@ -6,11 +6,17 @@
 # Part of the debops.ifupdown Ansible role
 # See https://github.com/debops/ansible-ifupdown/ for more details
 
+# Script filename to use in log messages
+script="$(basename $0)"
+
 # If this file is present, interfaces are configured for the first time
 interface_init_file="{{ ifupdown_reconfigure_init_file }}"
 
 # Get the name of the temporary file which holds the list of modified interfaces
 interface_file="${1}"
+
+# Path and name of the script which will allow to bring the interface up later
+ifup_delayed="/tmp/ifupdown-delayed"
 
 if [ -z "${interface_file}" ] ; then
   echo "Error: no file with list of interfaces specified" ; exit 1
@@ -28,6 +34,8 @@ containsElement () {
 # Re-initialization of interfaces, stop all/unknown ones
 stop_networking () {
 
+  logger -t ${script} Stopping networking service
+
   if [ -d /run/systemd/system ] ; then
     systemctl stop networking.service
   else
@@ -38,6 +46,8 @@ stop_networking () {
 
 # Check what init we are using and bring interface down correctly
 interface_down () {
+
+  logger -t ${script} Shutting down ${1} interface
 
   if [ -d /run/systemd/system ] ; then
 
@@ -64,10 +74,44 @@ interface_up () {
         ln -s /lib/systemd/system/ifup@.service /etc/systemd/system/multi-user.target.wants/ifup@${1}.service
     fi
 
-    systemctl start ifup@${1}.service
+    if $(containsElement "${1}" "${interface_start[@]}") ; then
+
+      logger -t ${script} Starting up ${1} interface
+
+      systemctl start ifup@${1}.service
+
+    else
+
+      logger -t ${script} Preparing script to activate ${1} later
+
+      ( umask 077 ; touch ${ifup_delayed}-${1} )
+      cat <<EOF >> ${ifup_delayed}-${1}
+#!/bin/sh
+systemctl start ifup@${1}.service
+rm -f ${ifup_delayed}-${1}
+EOF
+      chmod u+x ${ifup_delayed}-${1}
+    fi
 
   else
-    ifup ${1}
+
+    if $(containsElement "${1}" "${interface_start[@]}") ; then
+
+      logger -t ${script} Starting up ${1} interface
+      ifup ${1}
+
+    else
+
+      logger -t ${script} Preparing script to activate ${1} later
+
+      ( umask 077 ; touch ${ifup_delayed}-${1} )
+      cat <<EOF >> ${ifup_delayed}-${1}
+#!/bin/sh
+ifup ${1}
+rm -f ${ifup_delayed}-${1}
+EOF
+      chmod u+x ${ifup_delayed}-${1}
+    fi
   fi
 
 }
