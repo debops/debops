@@ -23,3 +23,6 @@ v0.1.0
   ``search`` parameter in ``/etc/resolv.conf`` includes all relevant domains
   and subdomains instead. [drybjed]
 
+- Use real hostname as the ``A`` record on the gateway interface and point
+  ``gw`` ``CNAME`` to it. [drybjed]
+
