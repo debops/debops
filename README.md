@@ -5,9 +5,12 @@
 [![Platforms](http://img.shields.io/badge/platforms-debian-lightgrey.svg?style=flat)](#)
 
 
-Configure an encrypted headless system to get the password over SSH.
+Configure an encrypted headless system to enter the password over SSH.
 
-See [SSH to decrypt encrypted LVM during headless server boot?](http://unix.stackexchange.com/a/79203)
+Read more about this:
+
+* /usr/share/doc/cryptsetup/README.remote.gz
+* [SSH to decrypt encrypted LVM during headless server boot?](http://unix.stackexchange.com/a/79203)
 
 If you want to show a message above the password promt, check out my
 related role: [initramfs_message](https://galaxy.ansible.com/list#/roles/2807)
@@ -34,12 +37,17 @@ List of default variables available in the inventory:
     
     cryptsetup_remote_unlock_grub_timeout: 1
     
-    # Where to put the generated ssh key.
+    # Where to put the generated ssh key on the client.
     cryptsetup_remote_unlock_local_ssh_dir: "/root/.ssh"
+    
     # Default path where dropbear expects the ssh keys.
     cryptsetup_remote_unlock_remote_ssh_dir: "/etc/initramfs-tools/root/.ssh"
-    # If true, remove all unneeded private keys from the server.
+    
+    # If true, remove all unneeded private keys from the server. Make sure you have
+    # the private keys somewhere else because you will need them to login to your
+    # initramfs system.
     cryptsetup_remote_unlock_remote_ssh_remove_after_copy: False
+    
     # FIXME: Currently does not work. Intended to specify a local public key which
     # can be used in the authorized_keys file of dropbear.
     cryptsetup_remote_unlock_public_key: False
