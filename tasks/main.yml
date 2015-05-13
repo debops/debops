@@ -24,6 +24,9 @@
       insertbefore: '^GRUB_CMDLINE_LINUX='
   notify: [ 'Update grub' ]
 
+# Needed because Ansible will halt if the service can not be started.
+- meta: flush_handlers
+
 - name: Remove apparmor=1 security=apparmor from kernel parameter list
   lineinfile:
     dest: '/etc/default/grub'
@@ -44,10 +47,6 @@
   service: name=apparmor state=stopped enabled=no
   when: apparmor_enable is not defined or not apparmor_enable
 
-- name: Start service apparmor
-  service: name=apparmor state=started enabled=yes
-  when: apparmor_enable is defined and apparmor_enable
-
 - name: Check if running kernel has apparmor already enabled
   command: egrep 'apparmor=1\s+security=apparmor' /proc/cmdline
   register: apparmor_enabled
@@ -59,3 +58,7 @@
   debug:
     msg: "You have to reboot the system to enable apparmor."
   when: apparmor_enabled is defined and apparmor_enabled.rc != 0
+
+- name: Start service apparmor
+  service: name=apparmor state=started enabled=yes
+  when: apparmor_enable is defined and apparmor_enable
