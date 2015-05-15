@@ -24,13 +24,15 @@ rstudio_server_cran_apt_key: '06f90de5381ba480'
 # .. envvar:: rstudio_server_cran_apt_mirror
 #
 # Address of the CRAN Debian repository
-rstudio_server_cran_apt_mirror: '{{ rstudio_server_cran_mirror + "bin/linux/debian" }}'
+rstudio_server_cran_apt_mirror: '{{ rstudio_server_cran_mirror + "bin/linux/" + ansible_distribution | lower }}'
 
 
 # .. envvar:: rstudio_server_cran_release
 #
 # APT repository release on CRAN enabled on the host
-rstudio_server_cran_release: '{{ ansible_distribution_release + "-cran3/" }}'
+rstudio_server_cran_release:
+  'Debian': '{{ ansible_distribution_release + "-cran3/" }}'
+  'Ubuntu': '{{ ansible_distribution_release + "/" }}'
 
 
 # .. envvar:: rstudio_server_cran_packages
