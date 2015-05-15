@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) rstudio_server
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-rstudio_server.svg?style=flat)](http://travis-ci.org/debops/ansible-rstudio_server) [![test-suite](http://img.shields.io/badge/test--suite-ansible--rstudio__server-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-rstudio_server/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-rstudio_server.svg?style=flat)](http://travis-ci.org/debops/ansible-rstudio_server) [![test-suite](http://img.shields.io/badge/test--suite-ansible--rstudio__server-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-rstudio_server/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.rstudio__server-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/3799)
 
 [RStudio](http://rstudio.com/) is an Integrated Development Environment for
 R programming language.
@@ -13,6 +13,17 @@ you want and set up only R).
 Before using this role, you need to provide `rstudio-server` and
 `libssl0.9.8` packages for your host using an APT repository. See the
 Getting Started guide for more details.
+
+### Installation
+
+This role requires at least Ansible `v1.8.0`. To install it, run:
+
+    ansible-galaxy install debops.rstudio_server
+
+### Documentation
+
+More information about `debops.rstudio_server` can be found in the
+[official debops.rstudio_server documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-rstudio_server/docs/).
 
 
 ### Role dependencies
