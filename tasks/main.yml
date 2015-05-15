@@ -1,0 +1,38 @@
+---
+
+- name: Add CRAN signing key
+  apt_key:
+    keyserver: 'sks-keyservers.net'
+    id: '{{ rstudio_server_cran_apt_key }}'
+    state: 'present'
+
+- name: Add CRAN repository
+  apt_repository:
+    repo: 'deb {{ rstudio_server_cran_apt_mirror }} {{ rstudio_server_cran_release }}'
+    state: 'present'
+
+- name: Install R packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_items: rstudio_server_cran_packages
+
+- name: Check if rstudio-server package is available
+  shell: apt-cache pkgnames | grep rstudio-server || true
+  register: rstudio_server_register_package_rstudio
+  changed_when: False
+
+- name: Check if libssl0.9.8 package is available
+  shell: apt-cache pkgnames | grep libssl0.9.8 || true
+  register: rstudio_server_register_package_libssl
+  changed_when: False
+
+- name: Configure RStudio Server when it is available
+  include: configure_rstudio_server.yml
+  when: ((rstudio_server_enabled|d() and rstudio_server_enabled) and
+         (rstudio_server_register_package_rstudio|d() and
+          rstudio_server_register_package_rstudio.stdout) and
+         (rstudio_server_register_package_libssl|d() and
+          rstudio_server_register_package_libssl.stdout))
+

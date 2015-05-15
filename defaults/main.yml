@@ -1,0 +1,129 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# ---------------------
+#   The R environment
+# ---------------------
+
+# .. envvar:: rstudio_server_cran_mirror
+#
+# Address of the CRAN mirror used to install R packages
+rstudio_server_cran_mirror: 'http://cran.rstudio.com/'
+
+
+# .. envvar:: rstudio_server_cran_apt_key
+#
+# ID of the GPG key used to sign Debian CRAN packages
+rstudio_server_cran_apt_key: '06f90de5381ba480'
+
+
+# .. envvar:: rstudio_server_cran_apt_mirror
+#
+# Address of the CRAN Debian repository
+rstudio_server_cran_apt_mirror: '{{ rstudio_server_cran_mirror + "bin/linux/debian" }}'
+
+
+# .. envvar:: rstudio_server_cran_release
+#
+# APT repository release on CRAN enabled on the host
+rstudio_server_cran_release: '{{ ansible_distribution_release + "-cran3/" }}'
+
+
+# .. envvar:: rstudio_server_cran_packages
+#
+# List of R packages to install
+rstudio_server_cran_packages: [ 'r-base', 'r-base-dev', 'r-recommended' ]
+
+
+# --------------------------------
+#   RStudio Server configuration
+# --------------------------------
+
+# .. envvar:: rstudio_server_enabled
+#
+# Enable or disable installation of RStudio Server, you can use this to
+# configure the R environment itself without installing ``nginx`` and RStudio.
+rstudio_server_enabled: True
+
+
+# .. envvar:: rstudio_server_packages
+#
+# List of ``.deb`` packages installed for RStudio Server.
+rstudio_server_packages: [ 'rstudio-server', 'r-doc-html' ]
+
+
+# .. envvar:: rstudio_server_bind
+#
+# IP address of the interface on which ``rstudio`` listens for connections.
+rstudio_server_bind: '127.0.0.1'
+
+
+# .. envvar:: rstudio_server_port
+#
+# RStudio service port
+rstudio_server_port: '8787'
+
+
+# .. envvar:: rstudio_server_user
+#
+# System account used by RStudio Server
+rstudio_server_user: 'rstudio-server'
+
+
+# .. envvar:: rstudio_server_group
+#
+# System group used by RStudio Server
+rstudio_server_group: 'rstudio-server'
+
+
+# .. envvar:: rstudio_server_home
+#
+# RStudio Server home directory
+rstudio_server_home: '{{ ansible_local.root.home + "/rstudio-server" }}'
+
+
+# .. envvar:: rstudio_server_auth_group
+#
+# System group which allows access to RStudio Server.
+rstudio_server_auth_group: 'rstudio-users'
+
+
+# .. envvar:: rstudio_server_session_timeout
+#
+# RStudio session timeout in minutes, when it passes idle sessions will be
+# saved on disk and disabled.
+rstudio_server_session_timeout: '20'
+
+
+# ---------------------------
+#   Webserver configuration
+# ---------------------------
+
+# .. envvar:: rstudio_server_domains
+#
+# List of domains on which RStudio can be accessed.
+rstudio_server_domains: [ 'rstudio.{{ ansible_domain }}' ]
+
+
+# .. envvar:: rstudio_server_upload_size
+#
+# Maximum upload size allowed by the webserver, in megabytes.
+rstudio_server_upload_size: '20m'
+
+
+# .. envvar:: rstudio_server_nginx_access_policy
+#
+# ``nginx`` access policy used for RStudio Server. See ``debops.nginx`` role
+# for more details.
+rstudio_server_nginx_access_policy: ''
+
+
+# .. envvar:: rstudio_server_nginx_auth_realm
+#
+# Text displayed by the browser when authorization is required.
+rstudio_server_nginx_auth_realm: 'Access to RStudio is restricted'
+
