@@ -30,6 +30,9 @@ v0.3.1
 
 - Add support for ``pam_cracklib`` to enforce harder UNIX passwords. [drybjed]
 
+- Remember previous 5 passwords set on each account using ``pam_pwhistory``
+  module to enforce use of different passwords. [drybjed]
+
 v0.3.0
 ------
 
