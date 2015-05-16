@@ -8,7 +8,7 @@
     name: '{{ item }}'
     state: 'latest'
     install_recommends: 'no'
-  with_items: [ 'sudo' ]
+  with_items: auth_packages
 
 - name: Ensure common system groups exist
   group:
@@ -30,6 +30,15 @@
 
 - name: Configure local account options
   include: login_passwd_shadow.yml
+
+- name: Configure pam_cracklib
+  template:
+    src: 'usr/share/pam-configs/cracklib.j2'
+    dest: '/usr/share/pam-configs/cracklib'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Update PAM common configuration' ]
 
 - name: Check if /etc/ldap exists
   stat:
