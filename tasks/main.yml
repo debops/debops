@@ -8,7 +8,7 @@
     name: '{{ item }}'
     state: 'latest'
     install_recommends: 'no'
-  with_items: [ 'sudo' ]
+  with_items: auth_packages
 
 - name: Ensure common system groups exist
   group:
@@ -30,6 +30,38 @@
 
 - name: Configure local account options
   include: login_passwd_shadow.yml
+
+- name: Configure pam_cracklib
+  template:
+    src: 'usr/share/pam-configs/cracklib.j2'
+    dest: '/usr/share/pam-configs/cracklib'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Update PAM common configuration' ]
+
+- name: Check if password history database exists
+  stat:
+    path: '/etc/security/opasswd'
+  register: auth_register_opasswd
+
+- name: Configure password history database
+  file:
+    path: '/etc/security/opasswd'
+    state: 'touch'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  when: auth_register_opasswd is defined and not auth_register_opasswd.stat.exists
+
+- name: Configure pam_pwhistory
+  template:
+    src: 'usr/share/pam-configs/pwhistory.j2'
+    dest: '/usr/share/pam-configs/pwhistory'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Update PAM common configuration' ]
 
 - name: Check if /etc/ldap exists
   stat:
