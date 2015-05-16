@@ -48,6 +48,8 @@ v0.2.6
 - Add variables to set admin home directory group and permissions in
   ``bootstrap.yml`` playbook. [drybjed]
 
+- Add ``debops.rstudio_server`` role. [drybjed]
+
 v0.2.5
 ------
 
