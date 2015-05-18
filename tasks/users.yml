@@ -57,11 +57,16 @@
          ((item.home_group is defined and item.home_group) or
           (item.home_mode is defined and item.home_mode)))
 
+- name: Get list of available groups
+  shell: 'getent group | cut -f1 -d:'
+  register: users_register_groups
+  changed_when: False
+
 - name: Manage user default groups
   user:
     name: '{{ item.name }}'
     state: '{{ item.state | default("present") }}'
-    groups: '{{ users_default_groups_list | join(",") }}'
+    groups: '{{ (users_default_groups_list | intersect(users_register_groups.stdout_lines)) | join(",") }}'
     append: '{{ users_default_groups_append) }}'
   with_flattened:
     - users_default
@@ -77,7 +82,7 @@
   user:
     name: '{{ item.name }}'
     state: '{{ item.state | default("present") }}'
-    groups: '{{ item.groups | join(",") }}'
+    groups: '{{ (item.groups | intersect(users_register_groups.stdout_lines)) | join(",") }}'
     append: '{{ item.append | default("yes") }}'
   with_flattened:
     - users_default
