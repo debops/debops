@@ -36,6 +36,8 @@ v0.1.2
 - Allow home group and mode modification without specifying the ``item.home``
   key. [drybjed]
 
+- Add user accounts only to groups that already exist. [drybjed]
+
 v0.1.1
 ------
 
