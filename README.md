@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) tinc
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-tinc.svg?style=flat)](http://travis-ci.org/debops/ansible-tinc) [![test-suite](http://img.shields.io/badge/test--suite-ansible--tinc-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-tinc/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-tinc.svg?style=flat)](http://travis-ci.org/debops/ansible-tinc) [![test-suite](http://img.shields.io/badge/test--suite-ansible--tinc-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-tinc/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.tinc-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/3855)
 
 [tinc](http://tinc-vpn.org/) is a Virtual Private Network daemon, it can be
 used to create encrypted and tunneled connections to other hosts, forming
@@ -9,6 +9,17 @@ a separate network, either a centralized one or a mesh.
 `debops.tinc` Ansible role allows you to install and configure a mesh VPN
 using `tinc`, including automatic public key exchange between all hosts in
 Ansble inventory, connection to external hosts and secure configuration.
+
+### Installation
+
+This role requires at least Ansible `v1.8.0`. To install it, run:
+
+    ansible-galaxy install debops.tinc
+
+### Documentation
+
+More information about `debops.tinc` can be found in the
+[official debops.tinc documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-tinc/docs/).
 
 
 ### Role dependencies
