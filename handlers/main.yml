@@ -1,0 +1,10 @@
+---
+
+- name: Reload tinc configuration
+  command: tincd -n {{ tinc_network }} -kHUP
+
+- name: Restart tinc VPN connection
+  shell: test -d /run/systemd/system &&
+         ( systemctl restart ifup@{{ tinc_interface }}.service ) ||
+         ( ifdown {{ tinc_interface }} ; ifup {{ tinc_interface }} )
+

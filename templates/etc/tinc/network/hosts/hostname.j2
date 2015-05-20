@@ -1,0 +1,26 @@
+# {{ ansible_managed }}
+
+{% set tinc_tpl_host_keys_seen = [] %}
+{% if tinc_host_configuration is defined and tinc_host_configuration %}
+{% for key, value in tinc_host_configuration.iteritems() %}
+{% if key | lower not in [ '{{ tinc_hostname }}-up', '{{ tinc_hostname }}-down', 'host-up', 'host-down' ] %}
+{% if key not in tinc_tpl_host_keys_seen %}
+{% if value is string %}
+{{ key }} = {{ value }}
+{% else %}
+{% for element in value %}
+{{ key }} = {{ value }}
+{% endfor %}
+{% endif %}
+{% set _ = tinc_tpl_daemon_keys_seen.append(key) %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if (('Address' not in tinc_tpl_host_keys_seen) or ('address' not in tinc_tpl_host_keys_seen)) %}
+{% for address in (tinc_addresses|d([]) + ansible_all_ipv4_addresses|d([]) + ansible_all_ipv6_addresses|d([])) %}
+{% if address | ipaddr('public') %}
+Address = {{ address }}
+{% endif %}
+{% endfor %}
+{% endif %}

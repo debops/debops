@@ -1,0 +1,121 @@
+---
+
+- name: Install required packages
+  apt:
+    name: 'tinc'
+    state: 'present'
+    install_recommends: False
+
+- name: Create system group for VPN service
+  group:
+    name: '{{ tinc_group }}'
+    state: 'present'
+    system: True
+
+- name: Create system user for VPN service
+  user:
+    name: '{{ tinc_user }}'
+    state: 'present'
+    system: True
+    comment: 'tinc VPN service'
+    home: '{{ tinc_home }}'
+    group: '{{ tinc_group }}'
+    shell: '/bin/false'
+    createhome: False
+
+- name: Create required directories
+  file:
+    path: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Set tincd ulimit options
+  template:
+    src: 'etc/default/tinc.j2'
+    dest: '/etc/default/tinc'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart tinc VPN connection' ]
+
+- name: Generate main configuration file
+  template:
+    src: 'etc/tinc/network/tinc.conf.j2'
+    dest: '/etc/tinc/{{ tinc_network }}/tinc.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Reload tinc configuration' ]
+
+- name: Generate network scripts when defined
+  template:
+    src: 'etc/tinc/network/tinc-script.j2'
+    dest: '/etc/tinc/{{ tinc_network }}/{{ item.key }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0750'
+  with_dict: tinc_scripts
+  notify: [ 'Reload tinc configuration' ]
+  when: item.key is defined and item.key
+
+- name: Initialize RSA key pairs
+  shell: yes | tincd -n {{ tinc_network }} -K{{ tinc_rsa_key_length }}
+  args:
+    creates: '/etc/tinc/{{ tinc_network }}/rsa_key.priv'
+
+- name: Create persistent copy of host public key
+  command: cp /etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}
+              /etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname + ".d/99_rsa-public-key" }}
+  args:
+    creates: /etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname + ".d/99_rsa-public-key" }}
+
+- name: Generate host configuration file
+  template:
+    src: 'etc/tinc/network/hosts/hostname.j2'
+    dest: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}.d/00_host-config'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Assemble host configuration file from parts
+  assemble:
+    src: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}.d'
+    dest: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}'
+    owner: 'root'
+    group: '{{ tinc_group }}'
+    mode: '0640'
+  notify: [ 'Reload tinc configuration' ]
+
+- name: Read host configuration file into a variable
+  slurp:
+    src: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}'
+  register: tinc_register_host_config
+
+- name: Redistribute configuration of internal hosts
+  copy:
+    content: '{{ hostvars[inventory_hostname]["tinc_register_host_config"].content | b64decode }}'
+    dest: '/etc/tinc/{{ tinc_network }}/hosts/{{ hostvars[inventory_hostname]["tinc_register_host_config"].source | basename }}'
+    owner: 'root'
+    group: '{{ tinc_group }}'
+    mode: '0640'
+  with_items: tinc_inventory_hosts
+  delegate_to: '{{ item }}'
+  when: item is defined and item != inventory_hostname and
+        hostvars[item].tinc_register_host_config is defined
+
+- name: Add configuration of external hosts
+  copy:
+    content: '{{ item.value }}'
+    dest: '/etc/tinc/{{ tinc_network }}/hosts/{{ item.key }}'
+    owner: 'root'
+    group: '{{ tinc_group }}'
+    mode: '0640'
+  with_dict: tinc_external_hosts
+  when: tinc_external_hosts is defined and tinc_external_hosts
+
+- name: Start VPN interface if required
+  shell: test ! -x /tmp/ifupdown-delayed-{{ tinc_interface }} || /tmp/ifupdown-delayed-{{ tinc_interface }}
+  changed_when: False
+
