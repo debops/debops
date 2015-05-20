@@ -6,7 +6,7 @@
 gitlab_dependencies: True
 
 # What version of GitLab to install / manage
-gitlab_version: '7.9'
+gitlab_version: '7.10'
 
 
 # ---- GitLab instance configuration ----
@@ -26,13 +26,13 @@ gitlab_nginx_auth_realm: 'GitLab access is restricted'
 gitlab_nginx_access_policy: ''
 
 # E-mail sender name used by GitLab
-gitlab_email_name: 'GitLab'
+gitlab_email_display_name: 'GitLab'
 
 # E-mail address used by GitLab
 gitlab_email_from: 'git@{{ gitlab_domain[0] }}'
 
-# E-mail address for GitLab support
-gitlab_email_support: 'root@{{ ansible_domain }}'
+# E-mail Reply-To address added to GitLab mails
+gitlab_email_reply_to: 'admin+gitlab@{{ ansible_domain }}'
 
 # Default admin account options
 gitlab_admin_email: 'admin@{{ ansible_domain }}'
@@ -40,12 +40,6 @@ gitlab_admin_password: '{{ lookup("password", secret + "/credentials/" + ansible
 
 
 # ---- New user configuration ----
-
-# Enable sign up on the front page?
-gitlab_signup_enabled: 'true'
-
-# Default project limit for new users
-gitlab_default_projects_limit: '50'
 
 # Should new users be able to create groups?
 gitlab_default_can_create_group: 'true'
