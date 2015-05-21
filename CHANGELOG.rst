@@ -52,6 +52,11 @@ v0.2.6
 
 - Add ``debops.tinc`` role. [drybjed]
 
+- Add ``ansible_local.timezone`` fact which returns currently set timezone in
+  ``/etc/timezone``. Fact provided by Ansible itself in
+  ``ansible_date_time.tz`` is not suitable to use in application configuration
+  files. [drybjed]
+
 v0.2.5
 ------
 
