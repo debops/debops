@@ -26,7 +26,7 @@ tinc_connection_type: 'dhcp'
 #
 # Name of the bridge interface which will be used to connect to the mesh
 # network in the ``static`` mode; by default it's bridge created by
-# ``debops.subnetwork`` role.
+# ``debops.subnetwork`` role. Set to ``False`` to disable bridged connection.
 tinc_connection_bridge: 'br2'
 
 
@@ -150,8 +150,10 @@ tinc_ifupdown_interface:
 tinc_ifupdown_options_static:
   'tap2': |
     address 0.0.0.0
+    {% if tinc_connection_bridge|d() and tinc_connection_bridge %}
     post-up brctl addif {{ tinc_connection_bridge }} {{ tinc_interface }}
     pre-down brctl delif {{ tinc_connection_bridge }} {{ tinc_interface }}
+    {% endif %}
 
 
 # .. envvar:: tinc_ifupdown_options_dhcp
