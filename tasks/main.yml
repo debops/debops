@@ -69,3 +69,12 @@
          (item.interface is defined and item.interface))
   notify: [ 'Assemble hosts.allow.d' ]
 
+- name: Make sure TFTP root directory exists
+  file:
+    path: '{{ dnsmasq_tftp_root }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: dnsmasq_tftp is defined and dnsmasq_tftp
+
