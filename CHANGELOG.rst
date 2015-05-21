@@ -50,6 +50,8 @@ v0.2.6
 
 - Add ``debops.rstudio_server`` role. [drybjed]
 
+- Add ``debops.tinc`` role. [drybjed]
+
 v0.2.5
 ------
 
