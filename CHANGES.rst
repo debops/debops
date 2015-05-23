@@ -9,6 +9,10 @@ v0.1.2
 - Check first argument in the delayed ifup script, if it's ``false``, specified
   interface won't be brought up at all. [drybjed]
 
+- Remove management if ``ifup@.service`` unit symlinks for configured
+  interfaces. ``ifupdown`` and ``/etc/init.d/networking`` scripts work just
+  fine without them present. [drybjed]
+
 v0.1.1
 ------
 

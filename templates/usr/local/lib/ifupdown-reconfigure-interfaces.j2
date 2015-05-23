@@ -53,11 +53,6 @@ interface_down () {
 
     systemctl stop ifup@${1}.service
 
-    if $(containsElement "${1}" "${interface_removed[@]}") ; then
-      test -e /etc/systemd/system/multi-user.target.wants/ifup@${1}.service && \
-        rm -f /etc/systemd/system/multi-user.target.wants/ifup@${1}.service
-    fi
-
   else
     ifdown ${1}
   fi
@@ -68,11 +63,6 @@ interface_down () {
 interface_up () {
 
   if [ -d /run/systemd/system ] ; then
-
-    if $(containsElement "${1}" "${interface_enabled[@]}") ; then
-      test -e /etc/systemd/system/multi-user.target.wants/ifup@${1}.service || \
-        ln -s /lib/systemd/system/ifup@.service /etc/systemd/system/multi-user.target.wants/ifup@${1}.service
-    fi
 
     if $(containsElement "${1}" "${interface_start[@]}") ; then
 
