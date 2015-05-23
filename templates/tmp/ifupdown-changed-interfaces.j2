@@ -19,6 +19,8 @@
 {% if result.item.auto_ifup is undefined or result.item.auto_ifup %}
 {% set _ = ifupdown_tpl_start_interfaces.append(result.item.iface) %}
 {% endif %}
+{% if result.changed and result.item|d() and (result.item.auto_ifup is undefined or result.item.auto_ifup) %}
+{% set _ = ifupdown_tpl_start_interfaces.append(result.item.iface) %}
 {% endif %}
 {% endfor %}
 {% endif %}
