@@ -13,6 +13,10 @@ v0.1.2
   interfaces. ``ifupdown`` and ``/etc/init.d/networking`` scripts work just
   fine without them present. [drybjed]
 
+- Split ``interface_enabled`` list into two to better track what types of
+  interfaces are enabled. Additionally, send list of configured interfaces to
+  the syslog for debugging purposes. [drybjed]
+
 v0.1.1
 ------
 
