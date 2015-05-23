@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Unreleased*
+
+- Check first argument in the delayed ifup script, if it's ``false``, specified
+  interface won't be brought up at all. [drybjed]
+
 v0.1.1
 ------
 

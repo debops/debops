@@ -87,7 +87,9 @@ interface_up () {
       ( umask 077 ; touch ${ifup_delayed}-${1} )
       cat <<EOF >> ${ifup_delayed}-${1}
 #!/bin/sh
-systemctl start ifup@${1}.service
+if [ -z "\${1}" -o "\${1}" != "false" ] ; then
+  systemctl start ifup@${1}.service
+fi
 rm -f ${ifup_delayed}-${1}
 EOF
       chmod u+x ${ifup_delayed}-${1}
@@ -107,7 +109,9 @@ EOF
       ( umask 077 ; touch ${ifup_delayed}-${1} )
       cat <<EOF >> ${ifup_delayed}-${1}
 #!/bin/sh
-ifup ${1}
+if [ -z "\${1}" -o "\${1}" != "false" ] ; then
+  ifup ${1}
+fi
 rm -f ${ifup_delayed}-${1}
 EOF
       chmod u+x ${ifup_delayed}-${1}
