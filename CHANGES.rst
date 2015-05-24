@@ -4,7 +4,7 @@ Changelog
 v0.1.2
 ------
 
-*Unreleased*
+*Released: 2015-05-24*
 
 - Check first argument in the delayed ifup script, if it's ``false``, specified
   interface won't be brought up at all. [drybjed]
