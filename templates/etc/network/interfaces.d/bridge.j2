@@ -2,7 +2,8 @@
 
 {% if item.type is defined and item.type == 'bridge' %}
 {% if (item.port_present is undefined or item.port_present in ansible_interfaces or (item.force is defined and item.force)) %}
-{% if (item.port is undefined) or (item.port is defined and item.port in ansible_interfaces) or (item.force is defined and item.force) %}
+{% if (item.port is undefined or item.port in ansible_interfaces or (item.force is defined and item.force)) %}
+{% if (item.port_active is undefined or (item.port_active is defined and ((item.port|d() and item.port_active | bool == hostvars[inventory_hostname]["ansible_" + item.port|d()].active | bool) or (item.port_present|d() and item.port_active | bool == hostvars[inventory_hostname]["ansible_" + item.port_present|d()].active | bool)))) %}
 # Configuration for {{ item.iface }} bridge
 {% if item.auto is undefined or item.auto %}
 allow-auto {{ item.iface }}
@@ -36,10 +37,13 @@ iface {{ item.iface }} inet static
 {% endfor %}
 {% endif %}
 {% else %}
-# Cannot find port {{ item.port }} for bridge {{ item.iface }}
+# Bridge {{ item.iface }} wants interface {{ item.port|d(item.port_present|d()) }} active: {{ item.port_active }}, found: {{ hostvars[inventory_hostname]["ansible_" + item.port|d(item.port_present|d())].active }}
 {% endif %}
 {% else %}
-# Interface {{ item.port_present }} not found
+# Interface {{ item.port }} not found
+{% endif %}
+{% else %}
+# Parent interface {{ item.port_present }} not found
 {% endif %}
 {% else %}
 # Wrong configuration for {{ item.iface }} bridge

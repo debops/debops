@@ -17,6 +17,16 @@ v0.1.2
   interfaces are enabled. Additionally, send list of configured interfaces to
   the syslog for debugging purposes. [drybjed]
 
+- Add ``item.port_active`` parameter to bridge configuration.
+
+  If this parameter is set, specified ``item.port`` or ``item.port_present``
+  must be in a given active state (``True`` / ``False``) to configure the
+  bridge.
+
+  This helps mitigate an issue where bridge with DHCP configuration is
+  constantly running ``dhclient`` when its main interface is not connected to
+  the network. [drybjed]
+
 v0.1.1
 ------
 
