@@ -27,6 +27,11 @@ v0.1.2
   constantly running ``dhclient`` when its main interface is not connected to
   the network. [drybjed]
 
+- Add a way to postpone interface configuration entirely using a separate
+  temporary script, with optional pre- and post- commands. This script will be
+  run at the end of the current play, or can be executed independently.
+  [drybjed]
+
 v0.1.1
 ------
 
