@@ -92,9 +92,21 @@
           (ifupdown_register_interfaces_generator is defined and ifupdown_register_interfaces_generator.changed)) and
          (ifupdown_reconfigure is defined and ifupdown_reconfigure))
 
+- name: Generate config script in a known location
+  template:
+    src: 'tmp/ifupdown-apply-config.j2'
+    dest: '/tmp/ifupdown-apply-config'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+  notify: [ 'Apply ifupdown configuration' ]
+  when: (((ifupdown_register_interfaces_removator is defined and ifupdown_register_interfaces_removator.changed) or
+          (ifupdown_register_interfaces_generator is defined and ifupdown_register_interfaces_generator.changed)) and
+         ((ifupdown_reconfigure is defined and ifupdown_reconfigure) and (ifupdown_apply_config is defined and not ifupdown_apply_config | bool)))
+
 - name: Reconfigure network interfaces
   command: '{{ ansible_local.root.lib + "/ifupdown-reconfigure-interfaces " + ifupdown_register_tempdir.stdout + "/ifupdown-changed-interfaces" }}'
   when: (((ifupdown_register_interfaces_removator is defined and ifupdown_register_interfaces_removator.changed) or
           (ifupdown_register_interfaces_generator is defined and ifupdown_register_interfaces_generator.changed)) and
-         (ifupdown_reconfigure is defined and ifupdown_reconfigure))
+         ((ifupdown_reconfigure is defined and ifupdown_reconfigure) and (ifupdown_apply_config is defined and ifupdown_apply_config | bool)))
 

@@ -53,11 +53,6 @@ interface_down () {
 
     systemctl stop ifup@${1}.service
 
-    if $(containsElement "${1}" "${interface_removed[@]}") ; then
-      test -e /etc/systemd/system/multi-user.target.wants/ifup@${1}.service && \
-        rm -f /etc/systemd/system/multi-user.target.wants/ifup@${1}.service
-    fi
-
   else
     ifdown ${1}
   fi
@@ -68,11 +63,6 @@ interface_down () {
 interface_up () {
 
   if [ -d /run/systemd/system ] ; then
-
-    if $(containsElement "${1}" "${interface_enabled[@]}") ; then
-      test -e /etc/systemd/system/multi-user.target.wants/ifup@${1}.service || \
-        ln -s /lib/systemd/system/ifup@.service /etc/systemd/system/multi-user.target.wants/ifup@${1}.service
-    fi
 
     if $(containsElement "${1}" "${interface_start[@]}") ; then
 
@@ -87,7 +77,9 @@ interface_up () {
       ( umask 077 ; touch ${ifup_delayed}-${1} )
       cat <<EOF >> ${ifup_delayed}-${1}
 #!/bin/sh
-systemctl start ifup@${1}.service
+if [ -z "\${1}" -o "\${1}" != "false" ] ; then
+  systemctl start ifup@${1}.service
+fi
 rm -f ${ifup_delayed}-${1}
 EOF
       chmod u+x ${ifup_delayed}-${1}
@@ -107,7 +99,9 @@ EOF
       ( umask 077 ; touch ${ifup_delayed}-${1} )
       cat <<EOF >> ${ifup_delayed}-${1}
 #!/bin/sh
-ifup ${1}
+if [ -z "\${1}" -o "\${1}" != "false" ] ; then
+  ifup ${1}
+fi
 rm -f ${ifup_delayed}-${1}
 EOF
       chmod u+x ${ifup_delayed}-${1}
@@ -121,6 +115,8 @@ EOF
 # interfaces back up
 if [ -r ${interface_file} ] ; then
   source ${interface_file}
+
+  logger -t ${script} Interface state: removed: ${interface_removed[@]}; generated: ${interface_generated[@]}; auto: ${interface_auto[@]}; hotplug: ${interface_hotplug[@]}; start: ${interface_start[@]}; list: ${interface_list[@]}
 
   if [ ${{ '{' }}#interface_list[@]} -ge 0 ]; then
 

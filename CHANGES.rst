@@ -1,6 +1,37 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2015-05-24*
+
+- Check first argument in the delayed ifup script, if it's ``false``, specified
+  interface won't be brought up at all. [drybjed]
+
+- Remove management if ``ifup@.service`` unit symlinks for configured
+  interfaces. ``ifupdown`` and ``/etc/init.d/networking`` scripts work just
+  fine without them present. [drybjed]
+
+- Split ``interface_enabled`` list into two to better track what types of
+  interfaces are enabled. Additionally, send list of configured interfaces to
+  the syslog for debugging purposes. [drybjed]
+
+- Add ``item.port_active`` parameter to bridge configuration.
+
+  If this parameter is set, specified ``item.port`` or ``item.port_present``
+  must be in a given active state (``True`` / ``False``) to configure the
+  bridge.
+
+  This helps mitigate an issue where bridge with DHCP configuration is
+  constantly running ``dhclient`` when its main interface is not connected to
+  the network. [drybjed]
+
+- Add a way to postpone interface configuration entirely using a separate
+  temporary script, with optional pre- and post- commands. This script will be
+  run at the end of the current play, or can be executed independently.
+  [drybjed]
+
 v0.1.1
 ------
 

@@ -31,6 +31,19 @@ ifupdown_ignore_networkmanager: False
 # in practice. Specify a filename without '.yml' extension
 ifupdown_default_config: ""
 
+# Apply generated interface configuration immediately. If set to False, role
+# will generate a script in ``/tmp/`` directory which will apply configuration
+# at the end of the current Ansible play.
+ifupdown_apply_config: True
+
+# Shell commands in YAML text block format, which will be executed by the
+# config script before interface reconfiguration
+ifupdown_apply_config_pre_script: ''
+
+# Shell commands in YAML text block format, which will be executed by the
+# config script after interface reconfiguration
+ifupdown_apply_config_post_script: ''
+
 # List of network interfaces. If it's not defined, ifupdown role will
 # automatically select a default set based on variables like presence of
 # NetworkManager or value of ansible_virtualization_type
@@ -61,6 +74,7 @@ ifupdown_interfaces: []
   #                                     # ansible_interfaces, adds 'bridge_ports <port>' line
   #					# (one ping, err, port only)
   #  port_present: ''                   # enable a bridge if given port is present in ansible_interfaces
+  #  port_active: True/False            # configure bridge only of port is connected / disconnected
   #  device: ''				# VLAN device to use, adds 'vlan_raw_device <device>' line
   #
   #  # Management of files in /etc/network/interfaces.d/
