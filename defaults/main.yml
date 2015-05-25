@@ -119,6 +119,14 @@ tinc_rsa_key_length: '4096'
 tinc_interface: 'tap2'
 
 
+# .. envvar:: tinc_interface_auto
+#
+# Start VPN interface on boot as well as during the Ansible run, or update
+# daemon configuration. Set to ``False`` to not start the VPN automatically and
+# not notify the ``tincd`` daemon about changes.
+tinc_interface_auto: True
+
+
 # .. envvar:: tinc_ifupdown_interfaces
 #
 # Configuration of the VPN network interface passed to ``debops.ifupdown``
@@ -128,6 +136,7 @@ tinc_ifupdown_interface:
   type: 'interface'
   weight: '75'
   inet: '{{ tinc_connection_type }}'
+  auto: '{{ tinc_interface_auto }}'
   auto_ifup: False
   force: True
   options: |

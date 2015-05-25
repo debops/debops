@@ -116,6 +116,6 @@
   when: tinc_external_hosts is defined and tinc_external_hosts
 
 - name: Start VPN interface if required
-  shell: test ! -x /tmp/ifupdown-delayed-{{ tinc_interface }} || /tmp/ifupdown-delayed-{{ tinc_interface }}
+  shell: test ! -x /tmp/ifupdown-delayed-{{ tinc_interface }} || /tmp/ifupdown-delayed-{{ tinc_interface }} {{ tinc_interface_auto | bool | lower }}
   changed_when: False
 
