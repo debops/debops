@@ -61,6 +61,9 @@ v0.2.6
   creating an ``ansible`` Debian package and installing it on remote servers
   using local APT repository. [drybjed]
 
+- Remove ``debops.encfs`` role from requirements, it's not used anymore and is
+  ill designed to be used on servers at this point. [drybjed]
+
 v0.2.5
 ------
 
