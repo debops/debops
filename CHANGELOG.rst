@@ -68,6 +68,9 @@ v0.2.6
   official Debian repositories therefore installation requires manual steps,
   ``debops.rsnapshot`` is a better alternative. [drybjed]
 
+- Remove ``debops.debug`` role from requirements, ``tools/debug.yml`` playbook
+  should be a better alternative and it's easier to use. [drybjed]
+
 v0.2.5
 ------
 
