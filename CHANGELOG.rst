@@ -64,6 +64,10 @@ v0.2.6
 - Remove ``debops.encfs`` role from requirements, it's not used anymore and is
   ill designed to be used on servers at this point. [drybjed]
 
+- Remove ``debops.safekeep`` role from requirements, SafeKeep is not in
+  official Debian repositories therefore installation requires manual steps,
+  ``debops.rsnapshot`` is a better alternative. [drybjed]
+
 v0.2.5
 ------
 
