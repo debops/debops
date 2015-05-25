@@ -4,7 +4,7 @@ Changelog
 v0.4.3
 ------
 
-*Unreleased*
+*Released: 2015-05-25*
 
 - Rearranged documentation. [drybjed]
 
