@@ -57,6 +57,20 @@ v0.2.6
   ``ansible_date_time.tz`` is not suitable to use in application configuration
   files. [drybjed]
 
+- Remove ``debops.ansible`` role from requirements, you should switch to
+  creating an ``ansible`` Debian package and installing it on remote servers
+  using local APT repository. [drybjed]
+
+- Remove ``debops.encfs`` role from requirements, it's not used anymore and is
+  ill designed to be used on servers at this point. [drybjed]
+
+- Remove ``debops.safekeep`` role from requirements, SafeKeep is not in
+  official Debian repositories therefore installation requires manual steps,
+  ``debops.rsnapshot`` is a better alternative. [drybjed]
+
+- Remove ``debops.debug`` role from requirements, ``tools/debug.yml`` playbook
+  should be a better alternative and it's easier to use. [drybjed]
+
 v0.2.5
 ------
 
