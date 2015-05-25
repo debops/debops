@@ -57,6 +57,10 @@ v0.2.6
   ``ansible_date_time.tz`` is not suitable to use in application configuration
   files. [drybjed]
 
+- Remove ``debops.ansible`` role from requirements, you should switch to
+  creating an ``ansible`` Debian package and installing it on remote servers
+  using local APT repository. [drybjed]
+
 v0.2.5
 ------
 
