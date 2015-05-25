@@ -72,8 +72,6 @@ __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 # Default URI of DebOps (user https for server authentication)
 GIT_URI = "https://github.com/debops"
-# git:-URL is required for `git ls-remote`
-GIT_GIT_URI  = "git:" + GIT_URI[6:]
 
 # Default git sources for debops-playbooks
 PLAYBOOKS_GIT_URI = GIT_URI + "/debops-playbooks"
@@ -113,20 +111,10 @@ def fetch_or_clone_roles(roles_path, requirements_file):
         else:
             galaxy_name = GALAXY_ACCOUNT + '.' + role_name
 
-        # Check if the remote repository exists by evaluating its return code
-        remote_uri = GIT_GIT_URI + '/' + GIT_ROLE_PREFIX + role_name
-        repo_status = subprocess.call(
-            ['git', 'ls-remote', remote_uri, 'HEAD'],
-            stdout=DEVNULL, stderr=subprocess.STDOUT)
-
-        # Adjust the role's repository name if it cannot be found with
-        # the normal name
-        if repo_status == 128:
-            role_name = "role-"+role_name
-
         remote_uri = GIT_URI + '/' + GIT_ROLE_PREFIX + role_name
         destination_dir = os.path.join(roles_path, galaxy_name)
         progress_label="[{role_version}] ({cnt}/{num_roles})".format(**locals())
+
         # Either update or clone the role
         if os.path.exists(destination_dir):
             print("Updating", remote_uri, progress_label)
