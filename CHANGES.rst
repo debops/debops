@@ -10,6 +10,9 @@ v0.4.3
 
 - Properly propagate exit code when running debops [do3cc]
 
+- Clone and update roles exclusively over HTTPS to allow operation
+  over a proxy or in case the git protocol is blocked. [ganto]
+
 v0.4.2
 ------
 
