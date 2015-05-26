@@ -38,3 +38,12 @@ v0.1.0
 - Change the container bootstrap function to only create or modify admin
   account if it's not already present in container. [drybjed]
 
+- Mask ``/lib/systemd/system/getty-static.service`` in new LXC containers. This
+  unit starts 6 ``getty`` services by default if ``dbus`` is not installed; LXC
+  containers have 4 static ``getty.service`` units configured instead. This
+  will stop ``getty-static.service`` from spamming the logs. [drybjed]
+
+- Mask ``/lib/systemd/system/proc-sys-fs-binfmt_misc.automount`` in new LXC
+  containers. Containers cannot directly mount filesystems, a separate wrapper
+  needs to be used. [drybjed]
+
