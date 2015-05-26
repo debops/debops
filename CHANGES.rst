@@ -43,3 +43,7 @@ v0.1.0
   containers have 4 static ``getty.service`` units configured instead. This
   will stop ``getty-static.service`` from spamming the logs. [drybjed]
 
+- Mask ``/lib/systemd/system/proc-sys-fs-binfmt_misc.automount`` in new LXC
+  containers. Containers cannot directly mount filesystems, a separate wrapper
+  needs to be used. [drybjed]
+
