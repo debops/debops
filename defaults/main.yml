@@ -16,6 +16,13 @@ ifupdown_internal_interface: 'eth1'
 # been modified? Set to False to enable "dry-mode"
 ifupdown_reconfigure: True
 
+# Path where reconfiguration script is stored
+ifupdown_reconfigure_script: '{{ (ansible_local.root.lib
+                                 if (ansible_local|d() and ansible_local.root|d()
+                                     and ansible_local.root.lib|d())
+                                 else "/usr/local/lib") +
+                                 "/ifupdown-reconfigure-interfaces" }}'
+
 # Name of the file that contains an initial state of the ifupdown configuration
 # and indicates that all network interfaces should be stopped before
 # configuration

@@ -48,7 +48,7 @@
 - name: Install network reconfiguration script
   template:
     src: 'usr/local/lib/ifupdown-reconfigure-interfaces.j2'
-    dest: '{{ ansible_local.root.lib + "/ifupdown-reconfigure-interfaces" }}'
+    dest: '{{ ifupdown_reconfigure_script }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
@@ -105,7 +105,7 @@
          ((ifupdown_reconfigure is defined and ifupdown_reconfigure) and (ifupdown_apply_config is defined and not ifupdown_apply_config | bool)))
 
 - name: Reconfigure network interfaces
-  command: '{{ ansible_local.root.lib + "/ifupdown-reconfigure-interfaces " + ifupdown_register_tempdir.stdout + "/ifupdown-changed-interfaces" }}'
+  command: '{{ ifupdown_reconfigure_script + " " + ifupdown_register_tempdir.stdout + "/ifupdown-changed-interfaces" }}'
   when: (((ifupdown_register_interfaces_removator is defined and ifupdown_register_interfaces_removator.changed) or
           (ifupdown_register_interfaces_generator is defined and ifupdown_register_interfaces_generator.changed)) and
          ((ifupdown_reconfigure is defined and ifupdown_reconfigure) and (ifupdown_apply_config is defined and ifupdown_apply_config | bool)))

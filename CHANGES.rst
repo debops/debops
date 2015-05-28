@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.0
+------
+
+*Unreleased*
+
+- Expose path to reconfiguration script in a default variable, so that it can
+  be changed if needed. [drybjed]
+
 v0.1.2
 ------
 
