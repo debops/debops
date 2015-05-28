@@ -7,20 +7,19 @@ ifupdown_default_interfaces:
   - iface: 'br0'
     type: 'bridge'
     inet: 'static'
+    addresses: [ '10.10.0.15/24' ]
+    gateway: '10.10.0.1'
+    bridge_ports: [ 'eth0', 'eth1' ]
     options: |
-      address 10.10.0.15
-      netmask 255.255.255.0
-      gateway 10.10.0.1
-      bridge_ports eth0 eth1
       up /usr/sbin/brctl stp br0 on
 
   - iface: 'br1'
     type: 'bridge'
     auto: True
     inet: 'manual'
+    bridge_ports: 'eth4'
     options: |
-      bridge_ports eth4
-      up /usr/sbin/brctl setageing brl 0
+      up /usr/sbin/brctl setageing br1 0
       up /usr/sbin/brctl stp br0 off
 
 

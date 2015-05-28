@@ -1,34 +1,23 @@
-# This file is managed by Ansible, all changes will be lost
-
-{% if (item.type is defined and item.type == 'vlan') or (item.force is defined and item.force) %}
-# Configuration for {{ item.iface }} vlan
-{% if item.auto is undefined or item.auto %}
-allow-auto {{ item.iface }}
-{% endif %}
-{% if item.allow is undefined %}
-allow-hotplug {{ item.iface }}
-{% elif (item.allow is defined and item.allow) %}
-allow-{{ item.allow }} {{ item.iface }}
-{% endif %}
-iface {{ item.iface }} {% if item.inet is defined and item.inet %}inet {{ item.inet }}{% elif item.inet6 is defined and item.inet6 %}inet6 {{ item.inet6 }}{% else %}inet dhcp{% endif %}
-{% if item.options is defined and item.options %}
-
-{{ item.options | indent(8, true) }}
-{% endif %}
-{% if item.device is defined and item.device %}
-        vlan_raw_device {{ item.device }}
-{% endif %}
-
-{% if item.aliases is defined and item.aliases %}
-{% for alias in item.aliases %}
-iface {{ item.iface }} inet static
-	address {{ alias.address }}
-	netmask {{ alias.netmask }}
-
-{% endfor %}
-{% endif %}
+{% extends 'interface.j2' %}
+{% set ifupdown_tpl_config_type = 'vlan' %}
+{% set ifupdown_tpl_virtual_interface = True %}
+{% set ifupdown_tpl_vlan_device = '' %}
+{% if ifupdown_map_vlan_device|d() and ifupdown_map_vlan_device[item.iface]|d() %}
+{% set ifupdown_tpl_vlan_device = ifupdown_map_vlan_device[item.iface] %}
 {% else %}
-# Wrong configuration for {{ item.iface }} vlan
+{% if item.device is defined and item.device %}
+{% set ifupdown_tpl_vlan_device = item.device %}
 {% endif %}
-
-
+{% endif %}
+{% if not ifupdown_tpl_vlan_device %}
+{% set ifupdown_tpl_generate_interface = False %}
+{% set ifupdown_tpl_generate_interface_extended = True %}
+{% set ifupdown_tpl_generate_interface_failed = True %}
+{% set ifupdown_tpl_failure_reason = 'VLAN device for ' + item.iface + ' not specified' %}
+{% else %}
+{% set ifupdown_tpl_generate_interface = True %}
+{% set ifupdown_tpl_generate_interface_extended = True %}
+{% endif %}
+{% block ifupdown_block_options4 %}
+        vlan_raw_device {{ ifupdown_tpl_vlan_device }}
+{% endblock %}

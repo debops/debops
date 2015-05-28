@@ -19,6 +19,31 @@ v0.2.0
 - Change reconfiguration script ``logger`` command to not cut the emitted
   string after first variable. And it looks cleaner now. [drybjed]
 
+- Interface configuration overhaul.
+
+  Most changes are related to configuration templates. Instead of having
+  duplicate configuration in each of the templates, most of the configuration
+  is now in ``interface.j2`` template; other templates extend this one.
+
+  ``item.aliases`` list has been removed. Instead, there's now new parameter,
+  ``item.addresses``. This is a list of IP addresses in the ``host/prefix``
+  notation which should be set on a given interface. You can specify multiple
+  IPv4 or IPv6 addresses this way, and role will generate correct configuration
+  depending on if the interface is set in ``dhcp`` or ``static`` mode.
+
+  You can "augment" current interface configuration using separate dict
+  variables in Ansible inventory, in the format
+  ``ifupdown_map_<type>_<variable>``, each dict should have an interface name
+  as the key and list or string of parameters you want to add/change. For
+  example, to add additional IP addresses to an interface using inventory, you
+  can specify them as::
+
+      ifudpdown_map_interface_addresses:
+        'br0': [ '192.0.2.0/24', '2001:db8:dead:beef::1/64' ]
+
+  List of possible dict variables will be added in the documentation in
+  a separate commit. [drybjed]
+
 v0.1.2
 ------
 
