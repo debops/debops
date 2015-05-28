@@ -9,6 +9,10 @@ v0.2.0
 - Expose path to reconfiguration script in a default variable, so that it can
   be changed if needed. [drybjed]
 
+- Add variable with list of APT packages to install and automatically install
+  certain packages depending on what interface types are present in the
+  configuration. [drybjed]
+
 v0.1.2
 ------
 

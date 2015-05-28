@@ -22,12 +22,21 @@
     ifupdown_interfaces: '{{ ifupdown_dependent_interfaces }}'
   when: ifupdown_dependent_interfaces is defined and ifupdown_dependent_interfaces
 
+- name: Gather required network interface capabilities
+  set_fact:
+    ifupdown_capabilities: '{{ ifupdown_interfaces | map(attribute="type") | list }}'
+
 - name: Add package dependencies for full interface declaration functionality
   apt:
     name: '{{ item }}'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
-  with_items: [ 'resolvconf', 'bridge-utils', 'vlan' ]
+  with_flattened:
+    - ifupdown_packages
+    - [ '{{ "bridge-utils" if "bridge" in ifupdown_capabilities else [] }}' ]
+    - [ '{{ "vlan" if "vlan" in ifupdown_capabilities else [] }}' ]
+    - [ '{{ "ifenslave" if ("bond" in ifupdown_capabilities and ansible_distribution_release != "wheezy") else [] }}' ]
+    - [ '{{ "ifenslave-2.6" if ("bond" in ifupdown_capabilities and ansible_distribution_release == "wheezy") else [] }}' ]
 
 - name: Create /etc/network/interfaces.d directory
   file:
