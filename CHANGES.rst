@@ -16,6 +16,9 @@ v0.2.0
 - Add an option to ignore "static" configuration in
   ``/etc/network/interfaces``. [drybjed]
 
+- Change reconfiguration script ``logger`` command to not cut the emitted
+  string after first variable. And it looks cleaner now. [drybjed]
+
 v0.1.2
 ------
 
