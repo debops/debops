@@ -13,6 +13,9 @@ v0.2.0
   certain packages depending on what interface types are present in the
   configuration. [drybjed]
 
+- Add an option to ignore "static" configuration in
+  ``/etc/network/interfaces``. [drybjed]
+
 v0.1.2
 ------
 

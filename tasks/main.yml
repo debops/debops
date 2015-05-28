@@ -10,7 +10,7 @@
 
   # If static configuration is detected, don't manage interfaces automatically
 - include: check_static.yml
-  when: ifupdown|bool
+  when: ifupdown|bool and not ifupdown_ignore_static
 
 - include: divert_interfaces.yml
   when: ifupdown|bool and ifupdown_static_config != 'static'
