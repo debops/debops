@@ -29,10 +29,13 @@
 {% endif %}
 {% endif %}
 {% endif %}
+{% if not ifupdown_tpl_bridge_ports and item.options is undefined %}
+{% set ifupdown_tpl_bridge_ports = [ 'none' ] %}
+{% endif %}
 {% if not ifupdown_tpl_bridge_ports and (item.auto is defined and not item.auto) %}
 {% set ifupdown_tpl_generate_interface = False %}
 {% set ifupdown_tpl_generate_interface_extended = True %}
-{% elif not ifupdown_tpl_bridge_ports %}
+{% elif not ifupdown_tpl_bridge_ports and (item.options is undefined or not item.options) %}
 {% set ifupdown_tpl_generate_interface = False %}
 {% set ifupdown_tpl_generate_interface_extended = True %}
 {% set ifupdown_tpl_generate_interface_failed = True %}
@@ -42,5 +45,7 @@
 {% set ifupdown_tpl_generate_interface_extended = True %}
 {% endif %}
 {% block ifupdown_block_options4 %}
+{% if ifupdown_tpl_bridge_ports %}
         bridge_ports {{ ifupdown_tpl_bridge_ports | join(" ") }}
+{% endif %}
 {% endblock %}
