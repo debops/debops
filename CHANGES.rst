@@ -4,7 +4,7 @@ Changelog
 v0.2.0
 ------
 
-*Unreleased*
+*Released: 2015-05-30*
 
 - Expose path to reconfiguration script in a default variable, so that it can
   be changed if needed. [drybjed]
