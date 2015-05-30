@@ -7,6 +7,12 @@
 {% else %}
 {% if item.device is defined and item.device %}
 {% set ifupdown_tpl_vlan_device = item.device %}
+{% elif item.vlan_device is defined and item.vlan_device %}
+{% set ifupdown_tpl_vlan_device = item.vlan_device %}
+{% elif item.vlan_raw_device is defined and item.vlan_raw_device %}
+{% set ifupdown_tpl_vlan_device = item.vlan_raw_device %}
+{% elif item.port is defined and item.port %}
+{% set ifupdown_tpl_vlan_device = item.port %}
 {% endif %}
 {% endif %}
 {% if not ifupdown_tpl_vlan_device %}
