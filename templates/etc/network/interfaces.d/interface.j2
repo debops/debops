@@ -47,15 +47,18 @@
 {% endif %}
 {% endif %}
 {# -------------------------------------------- #}
-{% set ifupdown_tpl_auto = False %}
+{% set ifupdown_tpl_allow = [] %}
 {% if ((item.auto is undefined or item.auto) and ifupdown_tpl_method not in [ 'manual' ]) %}
-{% set ifupdown_tpl_auto = True %}
+{% set _ = ifupdown_tpl_allow.append('auto') %}
 {% endif %}
-{% set ifupdown_tpl_allow = False %}
 {% if (item.allow is undefined and ifupdown_tpl_method not in [ 'manual' ]) %}
-{% set ifupdown_tpl_allow = 'hotplug' %}
+{% set _ = ifupdown_tpl_allow.append('hotplug') %}
 {% elif (item.allow is defined and item.allow) %}
-{% set ifupdown_tpl_allow = item.allow %}
+{% if item.allow is string %}
+{% set _ = ifupdown_tpl_allow.append(item.allow) %}
+{% else %}
+{% set ifupdown_tpl_allow = (ifupdown_tpl_allow + item.allow) | unique %}
+{% endif %}
 {% endif %}
 {# -------------------------------------------- #}
 {% set ifupdown_tpl_config_type = ifupdown_tpl_config_type | default('interface') %}
@@ -107,11 +110,10 @@
 
 {% if ifupdown_tpl_generate_interface %}
 # Configuration for {{ item.iface }} {{ ifupdown_tpl_config_alias }}
-{% if ifupdown_tpl_auto %}
-allow-auto {{ item.iface }}
-{% endif %}
 {% if ifupdown_tpl_allow %}
-allow-{{ ifupdown_tpl_allow }} {{ item.iface }}
+{% for subsystem in ifupdown_tpl_allow | unique %}
+allow-{{ subsystem }} {{ item.iface }}
+{% endfor %}
 {% endif %}
 iface {{ item.iface }}{% if item.label|d() and item.label %}:{{ item.label }}{% endif %} {{ ifupdown_tpl_family }} {{ ifupdown_tpl_method }}
 {% if ifupdown_tpl_addresses %}
