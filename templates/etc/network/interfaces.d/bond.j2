@@ -1,31 +1,5 @@
-# This file is managed by Ansible, all changes will be lost
-
-{% if (item.type is defined and item.type == 'bond') or (item.force is defined and item.force) %}
-# Configuration for {{ item.iface }} bonding interface
-{% if item.auto is undefined or item.auto %}
-allow-auto {{ item.iface }}
-{% endif %}
-{% if item.allow is undefined %}
-allow-hotplug {{ item.iface }}
-{% elif (item.allow is defined and item.allow) %}
-allow-{{ item.allow }} {{ item.iface }}
-{% endif %}
-iface {{ item.iface }} {% if item.inet is defined and item.inet %}inet {{ item.inet }}{% elif item.inet6 is defined and item.inet6 %}inet6 {{ item.inet6 }}{% else %}inet dhcp{% endif %}
-{% if item.options is defined and item.options %}
-
-{{ item.options | indent(8, true) }}
-{% endif %}
-
-{% if item.aliases is defined and item.aliases %}
-{% for alias in item.aliases %}
-iface {{ item.iface }} inet static
-	address {{ alias.address }}
-	netmask {{ alias.netmask }}
-
-{% endfor %}
-{% endif %}
-{% else %}
-# Wrong configuration for {{ item.iface }} bonding interface
-{% endif %}
-
-
+{% extends "interface.j2" %}
+{% set ifupdown_tpl_config_type = 'bond' %}
+{% set ifupdown_tpl_virtual_interface = True %}
+{% set ifupdown_tpl_generate_interface = True %}
+{% set ifupdown_tpl_generate_interface_extended = True %}

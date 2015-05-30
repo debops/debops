@@ -27,14 +27,15 @@ resolvconf, which will start to manage your :file:`/etc/resolv.conf` file.
 
 ### Installation
 
-This role requires at least Ansible `v1.7.0`. To install it, run:
+This role requires at least Ansible `v1.8.0`. To install it, run:
 
     ansible-galaxy install debops.ifupdown
 
 ### Documentation
 
 More information about `debops.ifupdown` can be found in the
-[official debops.ifupdown documentation](http://docs.debops.org/en/latest/ansible/roles/debops.ifupdown.html).
+[official debops.ifupdown documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-ifupdown/docs/).
+
 
 
 

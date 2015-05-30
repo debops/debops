@@ -22,12 +22,21 @@
     ifupdown_interfaces: '{{ ifupdown_dependent_interfaces }}'
   when: ifupdown_dependent_interfaces is defined and ifupdown_dependent_interfaces
 
+- name: Gather required network interface capabilities
+  set_fact:
+    ifupdown_capabilities: '{{ ifupdown_interfaces | map(attribute="type") | list }}'
+
 - name: Add package dependencies for full interface declaration functionality
   apt:
     name: '{{ item }}'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
-  with_items: [ 'resolvconf', 'bridge-utils', 'vlan' ]
+  with_flattened:
+    - ifupdown_packages
+    - [ '{{ "bridge-utils" if "bridge" in ifupdown_capabilities else [] }}' ]
+    - [ '{{ "vlan" if "vlan" in ifupdown_capabilities else [] }}' ]
+    - [ '{{ "ifenslave" if ("bond" in ifupdown_capabilities and ansible_distribution_release != "wheezy") else [] }}' ]
+    - [ '{{ "ifenslave-2.6" if ("bond" in ifupdown_capabilities and ansible_distribution_release == "wheezy") else [] }}' ]
 
 - name: Create /etc/network/interfaces.d directory
   file:
@@ -48,14 +57,14 @@
 - name: Install network reconfiguration script
   template:
     src: 'usr/local/lib/ifupdown-reconfigure-interfaces.j2'
-    dest: '{{ ansible_local.root.lib + "/ifupdown-reconfigure-interfaces" }}'
+    dest: '{{ ifupdown_reconfigure_script }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
 
 - name: Delete interface configuration if requested
   file:
-    path: '{{ "/etc/network/interfaces.config.d/" + item.weight | default("00") + "_" + item.filename | default(item.type | default("interface") + "_" + item.iface) + ("_ipv4" if (item.inet is defined and item.inet) else "") + ("_ipv6" if (item.inet6 is defined and item.inet6) else "") }}'
+    path: '{{ "/etc/network/interfaces.config.d/" + item.weight | default("00") + "_" + item.filename | default(item.alias | default(item.type | default("interface")) + "_" + item.iface) + (("_" + item.label) if (item.label is defined and item.label) else "") + ("_ipv4" if (item.inet is defined and item.inet) else "") + ("_ipv6" if (item.inet6 is defined and item.inet6) else "") }}'
     state: 'absent'
   with_items: ifupdown_interfaces
   register: ifupdown_register_interfaces_removator
@@ -65,7 +74,7 @@
 - name: Generate interface configuration
   template:
     src: 'etc/network/interfaces.d/{{ item.type | default("interface") }}.j2'
-    dest: '{{ "/etc/network/interfaces.config.d/" + item.weight | default("00") + "_" + item.filename | default(item.type | default("interface") + "_" + item.iface) + ("_ipv4" if (item.inet is defined and item.inet) else "") + ("_ipv6" if (item.inet6 is defined and item.inet6) else "") }}'
+    dest: '{{ "/etc/network/interfaces.config.d/" + item.weight | default("00") + "_" + item.filename | default(item.alias | default(item.type | default("interface")) + "_" + item.iface) + (("_" + item.label) if (item.label is defined and item.label) else "") + ("_ipv4" if (item.inet is defined and item.inet) else "") + ("_ipv6" if (item.inet6 is defined and item.inet6) else "") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -105,7 +114,7 @@
          ((ifupdown_reconfigure is defined and ifupdown_reconfigure) and (ifupdown_apply_config is defined and not ifupdown_apply_config | bool)))
 
 - name: Reconfigure network interfaces
-  command: '{{ ansible_local.root.lib + "/ifupdown-reconfigure-interfaces " + ifupdown_register_tempdir.stdout + "/ifupdown-changed-interfaces" }}'
+  command: '{{ ifupdown_reconfigure_script + " " + ifupdown_register_tempdir.stdout + "/ifupdown-changed-interfaces" }}'
   when: (((ifupdown_register_interfaces_removator is defined and ifupdown_register_interfaces_removator.changed) or
           (ifupdown_register_interfaces_generator is defined and ifupdown_register_interfaces_generator.changed)) and
          ((ifupdown_reconfigure is defined and ifupdown_reconfigure) and (ifupdown_apply_config is defined and ifupdown_apply_config | bool)))

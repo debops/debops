@@ -7,7 +7,7 @@
 {% endif %}
 
 # Reconfigure interfaces
-{{ ansible_local.root.lib + "/ifupdown-reconfigure-interfaces " + ifupdown_register_tempdir.stdout + "/ifupdown-changed-interfaces" }}
+{{ ifupdown_reconfigure_script + " " + ifupdown_register_tempdir.stdout + "/ifupdown-changed-interfaces" }}
 
 {% if ifupdown_apply_config_post_script|d() and ifupdown_apply_config_post_script %}
 {{ ifupdown_apply_config_post_script }}

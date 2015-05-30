@@ -1,51 +1,51 @@
-# This file is managed by Ansible, all changes will be lost
-
-{% if item.type is defined and item.type == 'bridge' %}
-{% if (item.port_present is undefined or item.port_present in ansible_interfaces or (item.force is defined and item.force)) %}
-{% if (item.port is undefined or item.port in ansible_interfaces or (item.force is defined and item.force)) %}
-{% if (item.port_active is undefined or (item.port_active is defined and ((item.port|d() and item.port_active | bool == hostvars[inventory_hostname]["ansible_" + item.port|d()].active | bool) or (item.port_present|d() and item.port_active | bool == hostvars[inventory_hostname]["ansible_" + item.port_present|d()].active | bool)))) %}
-# Configuration for {{ item.iface }} bridge
-{% if item.auto is undefined or item.auto %}
-allow-auto {{ item.iface }}
+{% extends 'interface.j2' %}
+{% set ifupdown_tpl_config_type = 'bridge' %}
+{% set ifupdown_tpl_virtual_interface = True %}
+{% set ifupdown_tpl_bridge_ports = [] %}
+{% if ifupdown_map_bridge_ports|d() and ifupdown_map_bridge_ports[item.iface]|d() %}
+{% if ifupdown_map_bridge_ports[item.iface] is string %}
+{% set ifupdown_tpl_bridge_ports = ifupdown_map_bridge_ports[item.iface].split(" ") %}
+{% else %}
+{% set ifupdown_tpl_bridge_ports = ifupdown_map_bridge_ports[item.iface] %}
 {% endif %}
-{% if (item.allow is undefined and (item.inet is undefined or (item.inet is defined and item.inet != 'manual'))) %}
-allow-hotplug {{ item.iface }}
-{% elif (item.allow is defined and item.allow) %}
-allow-{{ item.allow }} {{ item.iface }}
-{% endif %}
-iface {{ item.iface }} {% if item.inet is defined and item.inet %}inet {{ item.inet }}{% elif item.inet6 is defined and item.inet6 %}inet6 {{ item.inet6 }}{% else %}inet dhcp{% endif %}
-{% if item.options is defined and item.options %}
-
-{{ item.options | indent(8, true) }}
-{% endif %}
+{% else %}
 {% if item.port is defined and item.port %}
-{% if item.options is undefined %}
-
-	bridge_stp on
-	bridge_fd 0
-	bridge_maxwait 0
-{% endif %}
-        bridge_ports {{ item.port }}
-{% endif %}
-
-{% if item.aliases is defined and item.aliases %}
-{% for alias in item.aliases %}
-iface {{ item.iface }} inet static
-	address {{ alias.address }}
-	netmask {{ alias.netmask }}
-
-{% endfor %}
-{% endif %}
+{% if item.port is string %}
+{% set ifupdown_tpl_bridge_ports = item.port.split(" ") %}
 {% else %}
-# Bridge {{ item.iface }} wants interface {{ item.port|d(item.port_present|d()) }} active: {{ item.port_active }}, found: {{ hostvars[inventory_hostname]["ansible_" + item.port|d(item.port_present|d())].active }}
+{% set ifupdown_tpl_bridge_ports = item.port %}
 {% endif %}
+{% elif item.ports is defined and item.ports %}
+{% if item.ports is string %}
+{% set ifupdown_tpl_bridge_ports = item.ports.split(" ") %}
 {% else %}
-# Interface {{ item.port }} not found
+{% set ifupdown_tpl_bridge_ports = item.ports %}
 {% endif %}
+{% elif item.bridge_ports is defined and item.bridge_ports %}
+{% if item.bridge_ports is string %}
+{% set ifupdown_tpl_bridge_ports = item.bridge_ports.split(" ") %}
 {% else %}
-# Parent interface {{ item.port_present }} not found
+{% set ifupdown_tpl_bridge_ports = item.bridge_ports %}
 {% endif %}
+{% endif %}
+{% endif %}
+{% if not ifupdown_tpl_bridge_ports and item.options is undefined %}
+{% set ifupdown_tpl_bridge_ports = [ 'none' ] %}
+{% endif %}
+{% if not ifupdown_tpl_bridge_ports and (item.auto is defined and not item.auto) %}
+{% set ifupdown_tpl_generate_interface = False %}
+{% set ifupdown_tpl_generate_interface_extended = True %}
+{% elif not ifupdown_tpl_bridge_ports and (item.options is undefined or not item.options) %}
+{% set ifupdown_tpl_generate_interface = False %}
+{% set ifupdown_tpl_generate_interface_extended = True %}
+{% set ifupdown_tpl_generate_interface_failed = True %}
+{% set ifupdown_tpl_failure_reason = 'Bridge ports for ' + item.iface + ' not specified. Specify an interface or "none"' %}
 {% else %}
-# Wrong configuration for {{ item.iface }} bridge
+{% set ifupdown_tpl_generate_interface = True %}
+{% set ifupdown_tpl_generate_interface_extended = True %}
 {% endif %}
-
+{% block ifupdown_block_options4 %}
+{% if ifupdown_tpl_bridge_ports %}
+        bridge_ports {{ ifupdown_tpl_bridge_ports | join(" ") }}
+{% endif %}
+{% endblock %}
