@@ -1,106 +1,206 @@
 ---
+# Default variables
+# =================
 
-# Should Ansible manage /etc/network/interfaces? Set to False to disable
+# .. contents:: Sections
+#    :local:
+
+# -----------------
+#   Basic options
+# -----------------
+
+# .. envvar:: ifupdown
+#
+# Should Ansible manage ``/etc/network/interfaces``? Set to False to disable.
 ifupdown: True
 
-# Force network configuration even if POSIX capabilities tell otherwise
-ifupdown_ignore_cap12s: False
 
-# Default external network interface
-ifupdown_external_interface: 'eth0'
-
-# Default internal network interface
-ifupdown_internal_interface: 'eth1'
-
+# .. envvar:: ifupdown_packages
+#
 # List of network-related packages to install. Other packages might be
 # installed as needed.
 ifupdown_packages: [ 'resolvconf' ]
 
+
+# ---------------------------
+#   Configuration overrides
+# ---------------------------
+
+# .. envvar:: ifupdown_ignore_cap12s
+#
+# Force network configuration even if POSIX capabilities tell otherwise.
+ifupdown_ignore_cap12s: False
+
+
+# .. envvar:: ifupdown_ignore_static
+#
+# Should ifupdown role ignore static configuration in
+# ``/etc/network/interfaces``? This might result in loss of connectivity if
+# your interfaces are not configured properly, use with caution.
+ifupdown_ignore_static: False
+
+
+# .. envvar:: ifupdown_ignore_networkmanager
+#
+# Should ifupdown role ignore presence of NetworkManager and generate the
+# configuration in ``/etc/network/interfaces.d/``?
+ifupdown_ignore_networkmanager: False
+
+
+# -----------------------------
+#   Interface reconfiguration
+# -----------------------------
+
+# .. envvar:: ifupdown_reconfigure
+#
 # Should ifupdown role automatically try to reconfigure interfaces that have
-# been modified? Set to False to enable "dry-mode"
+# been modified? Set to False to enable "dry-mode".
 ifupdown_reconfigure: True
 
-# Path where reconfiguration script is stored
+
+# .. envvar:: ifupdown_reconfigure_script
+#
+# Path where reconfiguration script is stored.
 ifupdown_reconfigure_script: '{{ (ansible_local.root.lib
                                  if (ansible_local|d() and ansible_local.root|d()
                                      and ansible_local.root.lib|d())
                                  else "/usr/local/lib") +
                                  "/ifupdown-reconfigure-interfaces" }}'
 
+
+# .. envvar:: ifupdown_reconfigure_init_file
+#
 # Name of the file that contains an initial state of the ifupdown configuration
 # and indicates that all network interfaces should be stopped before
-# configuration
+# configuration.
 ifupdown_reconfigure_init_file: '/etc/network/interfaces.d/old-interfaces'
 
-# Should ifupdown role ignore static configuration in
-# ``/etc/network/interfaces``? This might result in loss of connectivity if
-# your interfaces are not configured properly, use with caution.
-ifupdown_ignore_static: False
 
-# Should ifupdown role ignore presence of NetworkManager and generate the
-# configuration in /etc/network/interfaces.d/?
-ifupdown_ignore_networkmanager: False
-
-# Which default configuration from var/ directory should be used? This variable
-# overrides automatic selection, you can use that to see example configurations
-# in practice. Specify a filename without '.yml' extension
-ifupdown_default_config: ""
-
+# .. envvar:: ifupdown_apply_config
+#
 # Apply generated interface configuration immediately. If set to False, role
 # will generate a script in ``/tmp/`` directory which will apply configuration
 # at the end of the current Ansible play.
 ifupdown_apply_config: True
 
+
+# .. envvar:: ifupdown_apply_config_pre_script
+#
 # Shell commands in YAML text block format, which will be executed by the
-# config script before interface reconfiguration
+# config script before interface reconfiguration.
 ifupdown_apply_config_pre_script: ''
 
+
+# .. envvar:: ifupdown_apply_config_post_script
+#
 # Shell commands in YAML text block format, which will be executed by the
-# config script after interface reconfiguration
+# config script after interface reconfiguration.
 ifupdown_apply_config_post_script: ''
 
+
+# --------------------------------
+#   Network interface definition
+# --------------------------------
+
+# .. envvar:: ifupdown_default_config
+#
+# Which default configuration from var/ directory should be used? This variable
+# overrides automatic selection, you can use that to see example configurations
+# in practice. Specify a filename without '.yml' extension.
+ifupdown_default_config: ""
+
+
+# .. envvar:: ifupdown_external_interface
+#
+# Default external network interface.
+ifupdown_external_interface: 'eth0'
+
+
+# .. envvar:: ifupdown_internal_interface
+#
+# Default internal network interface.
+ifupdown_internal_interface: 'eth1'
+
+
+# .. envvar:: ifupdown_interfaces
+#
 # List of network interfaces. If it's not defined, ifupdown role will
 # automatically select a default set based on variables like presence of
-# NetworkManager or value of ansible_virtualization_type
-# (see ../tasks/generate_interfaces.yml). Default sets are defined in ../vars/*
-# files.
-# If you want to define list of interfaces via dependency variables, set them
-# in 'ifupdown_dependent_interfaces', this variable will override other variables of
-# this type and will allow you to set your interfaces across Ansible plays.
-# Refer to interfaces(5) and https://wiki.debian.org/NetworkConfiguration to
-# see possible configuration options.
+# NetworkManager. Default sets are defined in ``../vars/*`` files.
+# See :ref:`ifupdown_interfaces` for more details.
 ifupdown_interfaces: []
-  #- iface: 'eth0'			# interface name, required
-  #
-  #  # Optional interface parameters, defaults first
-  #  type:  'interface,bridge,bond,vlan,mapping'
-  #  alias: ''                          # Mask interface type with custom name
-  #  enabled: True/False                # you can enable/disable an interface using a variable
-  #  inet:  'dhcp,static,manual,...'	# mode of operation for IPv4
-  #  inet6: 'dhcp,static,manual,...'	# mode of operation for IPv6
-  #  auto:  True/False			# generate 'auto <interface>' line
-  #  allow: ''				# generate 'allow-<value> <interface>' line
-  #  addresses: []                      # list of IPv4 / IPv6 addresses to set
-  #  gateway: ''                        # IP address of the gateway host
-  #  label: ''                          # Add interface label
-  #  options: |				# interface options (text block)
-  #    address 10.0.0.1
-  #    netmask 255.255.255.0
-  #    # ...
-  #  port: ''				# bridge port to check for existence in
-  #                                     # ansible_interfaces, adds 'bridge_ports <port>' line
-  #					# (one ping, err, port only)
-  #  port_present: ''                   # enable interface if given port is present in ansible_interfaces
-  #  port_active: True/False            # configure interface only of port is connected / disconnected
-  #  device: ''				# VLAN device to use, adds 'vlan_raw_device <device>' line
-  #
-  #  # Management of files in /etc/network/interfaces.d/
-  #  weight: '00'			# prefix number, helps with ordering
-  #  filename: ''			# use alternative file name, "00_<filename>"
-  #  delete: False/True			# remove this interface config file
-  #  force: False/True			# force creation of this interface configuration
-  #                                     # even if role thinks otherwise
-  #  auto_ifup: True/False              # don't start the interface automatically, instead
-  #                                     # generate a script that can be executed later
-  #                                     # to bring the interface up
+
+
+# --------------------------
+#   Interface augment maps
+# --------------------------
+
+# Dict variables listed below can be used to modify interface configuration
+# without changing entire ``ifupdown_interfaces`` layout. Each key should be an
+# interface name, values are parameters which should be set for that interface.
+# Examples::
+#
+#     ifupdown_map_interface_method:
+#       'br0': 'static'
+#
+#     ifupdown_map_interface_addresses:
+#       'br0': [ '192.0.2.30/24' ]
+#
+#     ifupdown_map_interface_gateway:
+#       'br0': '192.0.2.1'
+
+# .. envvar:: ifupdown_map_interface_addresses
+#
+# List of IP addresses to configure on a given interface.
+ifupdown_map_interface_addresses: {}
+
+
+# .. envvar:: ifupdown_map_interface_method
+#
+# IPv4 method to use to configure given interface (``dhcp``, ``static``,
+# ``manual``, etc.).
+ifupdown_map_interface_method: {}
+
+
+# .. envvar:: ifupdown_map_interface_method6
+#
+# IPv6 method to use to configure given interface (``dhcp``, ``static``,
+# ``manual``, etc.).
+ifupdown_map_interface_method6: {}
+
+
+# .. envvar:: ifupdown_map_interface_gateway
+#
+# IPv4 gateway to set for a given interface.
+ifupdown_map_interface_gateway: {}
+
+
+# .. envvar:: ifupdown_map_interface_gateway6
+#
+# IPv6 gateway to set for a given interface.
+ifupdown_map_interface_gateway6: {}
+
+
+# .. envvar:: ifupdown_map_interface_options
+#
+# Options to add for a given IPv4 interface, in YAML text block format.
+ifupdown_map_interface_options: {}
+
+
+# .. envvar:: ifupdown_map_interface_options6
+#
+# Options to add for a given IPv6 interface, in YAML text block format.
+ifupdown_map_interface_options6: {}
+
+
+# .. envvar:: ifupdown_map_bridge_ports
+#
+# List of ports to add to a specified bridge interface.
+ifupdown_map_bridge_ports: {}
+
+
+# .. envvar:: ifupdown_map_vlan_device
+#
+# Specify an interface name to set as a VLAN device on a given VLAN interface.
+ifupdown_map_vlan_device: {}
 
