@@ -11,5 +11,7 @@ v0.1.0
 
 - Wrap IPv6 addresses in ``postfix_mynetworks`` in square brackets. [drybjed]
 
+- Use ``$LC_MESSAGES`` to set correct locale instead of ``$LANG``. [drybjed]
+
 - First release [drybjed]
 
