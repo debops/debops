@@ -41,6 +41,9 @@ List of default variables available in the inventory:
     
     apparmor_additional_kernel_parameters: ''
     apparmor_enable: True
+    
+    ## Put all profiles into enforcement mode.
+    apparmor_enforce_all_profiles: False
 
 
 
