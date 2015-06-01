@@ -48,4 +48,7 @@
 {% if ifupdown_tpl_bridge_ports %}
         bridge_ports {{ ifupdown_tpl_bridge_ports | join(" ") }}
 {% endif %}
+{% if (ifupdown_default_bridge_options and item.options is undefined and ifupdown_map_interface_options[item.iface] is undefined) %}
+{{ ifupdown_default_bridge_options | indent(8, true) }}
+{% endif %}
 {% endblock %}
