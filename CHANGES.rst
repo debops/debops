@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Released: 2015-06-01*
+
+- Add a text block variable with options for bridge interfaces which becomes
+  active when user does not specify any options for that bridge. By default
+  these options will set forward delay to ``0`` to make DHCP queries work
+  correctly on virtual machine boot. [drybjed]
+
 v0.2.0
 ------
 
