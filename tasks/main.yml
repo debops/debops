@@ -76,7 +76,7 @@
 
 - name: Remove ip(6)tables rules if requested
   file:
-    path: '/etc/ferm/ferm.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + (item.dport[0] if item.dport|d() else "rules")) }}.conf'
+    path: '/etc/ferm/ferm.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.name | default((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
     - ferm_rules
@@ -89,7 +89,7 @@
 - name: Configure ip(6)tables rules
   template:
     src: 'etc/ferm/ferm.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/ferm.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + (item.dport[0] if item.dport|d() else "rules")) }}.conf'
+    dest: '/etc/ferm/ferm.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.name | default((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
@@ -103,7 +103,7 @@
 
 - name: Remove iptables INPUT rules if requested
   file:
-    path: '/etc/ferm/filter-input.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + (item.dport[0] if item.dport|d() else "rules")) }}.conf'
+    path: '/etc/ferm/filter-input.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.name | default((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
     - ferm_input_list
@@ -116,7 +116,7 @@
 - name: Configure iptables INPUT rules
   template:
     src: 'etc/ferm/filter-input.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/filter-input.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + (item.dport[0] if item.dport|d() else "rules")) }}.conf'
+    dest: '/etc/ferm/filter-input.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.name | default((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'

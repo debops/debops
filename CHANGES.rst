@@ -14,5 +14,8 @@ v0.1.0
   only use the list variable without Jinja templating. This fixes the "It is
   unnecessary to use '{{' in loops" error. [drybjed]
 
+- Add ``item.name`` rule option to specify custom names in rule filenames.
+  [drybjed]
+
 - Add Changelog [drybjed]
 
