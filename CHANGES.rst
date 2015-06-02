@@ -22,3 +22,5 @@ v0.1.0
   Install ``libkrb5-dev`` package before GitLab CE installation (required on
   Debian Jessie). [drybjed]
 
+- Add support for GitLab 7.11. [drybjed]
+
