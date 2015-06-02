@@ -17,5 +17,8 @@ v0.1.0
 - Add ``item.name`` rule option to specify custom names in rule filenames.
   [drybjed]
 
+- Add rule template for simple DMZ-like redirection from public to private IPv4
+  addresses. [drybjed]
+
 - Add Changelog [drybjed]
 
