@@ -28,3 +28,7 @@ v0.1.0
 
 - Create TFTP root directory if not present. [drybjed]
 
+- Use ``bind-dynamic`` option in newer OSes instead of ``bind-interfaces``,
+  this should fix an issue when changes in the network interface topology
+  required ``dnsmasq`` to be restarted to listen on new interfaces. [drybjed]
+

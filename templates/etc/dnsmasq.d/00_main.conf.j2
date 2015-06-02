@@ -32,10 +32,16 @@ dhcp-boot = {{ dnsmasq_tftp_boot | default('menu.ipxe') }}
 {% endif %}
 # ---- Network interfaces ----
 
+{% if dnsmasq_bind_interfaces is defined and dnsmasq_bind_interfaces %}
 # Bind only to specified interfaces (this will be set for example by libvirt
 # package, so we need to just go with it)
+{% if ansible_distribution_release in [ 'wheezy' ] %}
 bind-interfaces
+{% else %}
+bind-dynamic
+{% endif %}
 
+{% endif %}
 # Bind to loopback interface for local DNS queries
 interface = lo
 no-dhcp-interface = lo
