@@ -16,7 +16,8 @@ dependencies:
     tags: nginx
 
   - role: debops.mysql
-    when: roundcube_dependencies is defined and roundcube_database == 'mysql'
+    when: roundcube_dependencies is defined and roundcube_database == 'mysql' and
+          roundcube_database_map[roundcube_database].host == "localhost"
     tags: roundcube
 
 galaxy_info:

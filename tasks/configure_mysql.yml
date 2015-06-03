@@ -1,5 +1,13 @@
 ---
 
+- name: Install MySQL client if required
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: 'no'
+  with_items: [ 'mysql-client', 'python-mysqldb' ]
+  when: 'roundcube_database_map[roundcube_database].dbhost != "localhost"'
+
 - name: Get default MySQL password
   set_fact:
     roundcube_database_password: '{{ roundcube_database_map[roundcube_database].dbpass }}'
@@ -11,21 +19,26 @@
 
 - name: Create Roundcube MySQL user
   mysql_user:
-    name: '{{ roundcube_database_map[roundcube_database].dbuser }}'
+    name: '{{ hostvars[inventory_hostname].ansible_local.roundcube.dbuser }}'
     password: '{{ roundcube_database_map[roundcube_database].dbpass }}'
     state: present
-    host: 'localhost'
-    priv: '{{ roundcube_database_map[roundcube_database].dbname }}.*:ALL'
+    host: '{% if hostvars[inventory_hostname].ansible_local.roundcube.dbhost == "localhost" %}localhost{% else %}{{ ansible_fqdn }}{% endif %}'
+    priv: '{{ hostvars[inventory_hostname].ansible_local.roundcube.dbname }}.*:ALL'
+  delegate_to: '{% if hostvars[inventory_hostname].ansible_local.roundcube.dbhost == "localhost" %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_local.roundcube.dbhost }}{% endif %}'
 
 - name: Create Roundcube database
   mysql_db:
-    name: '{{ roundcube_database_map[roundcube_database].dbname }}'
+    name: '{{ hostvars[inventory_hostname].ansible_local.roundcube.dbname }}'
     state: present
   register: roundcube_register_database_status
+  delegate_to: '{% if hostvars[inventory_hostname].ansible_local.roundcube.dbhost == "localhost" %}{{ inventory_hostname }}{% else %}{{ hostvars[inventory_hostname].ansible_local.roundcube.dbhost }}{% endif %}'
 
 - name: Import initial database schema
   mysql_db:
     name: '{{ roundcube_database_map[roundcube_database].dbname }}'
     state: import
     target: '{{ roundcube_database_schema }}'
+    login_user: '{{ roundcube_database_map[roundcube_database].dbuser }}'
+    login_password: '{{ roundcube_database_map[roundcube_database].dbpass }}'
+    login_host: '{{ roundcube_database_map[roundcube_database].dbhost }}'
   when: roundcube_register_database_status is defined and roundcube_register_database_status.changed

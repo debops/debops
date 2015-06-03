@@ -1,0 +1,12 @@
+{
+{% if roundcube_database is defined and roundcube_database %}
+{% if roundcube_database_map is defined and roundcube_database_map %}
+{% if roundcube_database in roundcube_database_map.keys() %}
+"dbtype":"{{ roundcube_database_map[roundcube_database].dbtype | default('mysql') }}",
+"dbname":"{{ roundcube_database_map[roundcube_database].dbname | default('roundcubemail') }}",
+"dbuser":"{{ roundcube_database_map[roundcube_database].dbuser | default('roundcube') }}",
+"dbhost":"{{ roundcube_database_map[roundcube_database].dbhost | default('localhost') }}"
+{% endif %}
+{% endif %}
+{% endif %}
+}

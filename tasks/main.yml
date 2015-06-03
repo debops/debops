@@ -1,5 +1,26 @@
 ---
 
+- name: Pre hooks
+  include: '{{ lookup("task_src", "roundcube/pre_main.yml") }}'
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save local facts
+  template:
+    src: '{{ lookup("template_src", "etc/ansible/facts.d/roundcube.fact.j2") }}'
+    dest: '/etc/ansible/facts.d/roundcube.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: roundcube_register_facts
+  notify: [ 'Gather Roundcube facts' ]
+
 - name: Install Roundcube packages
   apt:
     name: '{{ item }}'
@@ -43,8 +64,10 @@
     - [ '{{ "php-crypt-gpg" if "enigma" in roundcube_plugins else [] }}' ]
 
 - include: configure_mysql.yml
-  when: roundcube_database == 'mysql' and
-        roundcube_database_map[roundcube_database].dbhost == 'localhost'
+  when: roundcube_database == 'mysql'
   tags: [ 'roundcube', 'mysql' ]
 
 - include: configure_roundcube.yml
+
+- name: Post hooks
+  include: '{{ lookup("task_src", "roundcube/post_main.yml") }}'
