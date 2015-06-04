@@ -1,4 +1,3 @@
-
 # This file is managed by Ansible, all changes will be lost
 
 # # # # # # # # # # # # # # # # # #
@@ -106,7 +105,7 @@ production: &base
   # You can inspect a sample of the LDAP users with login access by running:
   #   bundle exec rake gitlab:ldap:check RAILS_ENV=production
   ldap:
-    enabled: {{ gitlab_ldap.enable | default("false") }}
+    enabled: {{ gitlab_ldap_enable | default("false") }}
     servers:
       ##########################################################################
       #
@@ -124,19 +123,19 @@ production: &base
         # for instance if you find out it is too large to fit on the web page.
         #
         # Example: 'Paris' or 'Acme, Ltd.'
-        label: '{{ gitlab_ldap.label | default("LDAP") }}'
+        label: '{{ gitlab_ldap_label | default("LDAP") }}'
 
-        host: '{{ gitlab_ldap.host | default("") }}'
-        port: '{{ gitlab_ldap.port | default("389") }}'
-        uid: '{{ gitlab_ldap.uid | default("sAMAccountName") }}'
-        method: '{{ gitlab_ldap.method | default("tls") }}'
-        bind_dn: '{{ gitlab_ldap.bind_dn | default("") }}'
-        password: '{{ gitlab_ldap.password | default("") }}'
+        host: '{{ gitlab_ldap_host | default("") }}'
+        port: {{ gitlab_ldap_port | default("389") }}
+        uid: '{{ gitlab_ldap_uid | default("uid") }}'
+        method: '{{ gitlab_ldap_method | default("tls") }}' # "tls" or "ssl" or "plain"
+        bind_dn: '{{ gitlab_ldap_binddn | default("") }}'
+        password: '{{ gitlab_ldap_password | default("") }}'
 
         # This setting specifies if LDAP server is Active Directory LDAP server.
         # For non AD servers it skips the AD specific queries.
         # If your LDAP server is not AD, set this to false.
-        active_directory: {{ gitlab_ldap.activedirectory | default("true") }}
+        active_directory: {{ gitlab_ldap_activedirectory | default("false") }}
 
         # If allow_username_or_email_login is enabled, GitLab will ignore everything
         # after the first '@' in the LDAP username submitted by the user on login.
@@ -158,7 +157,7 @@ production: &base
         #
         #   Ex. ou=People,dc=gitlab,dc=example
         #
-        base: '{{ gitlab_ldap.base | default("") }}'
+        base: '{{ gitlab_ldap_basedn | default("") }}'
 
         # Filter LDAP users
         #
@@ -167,7 +166,7 @@ production: &base
         #
         #   Note: GitLab does not support omniauth-ldap's custom filter syntax.
         #
-        user_filter: '{{ gitlab_ldap.user_filter | default("") }}'
+        user_filter: '{{ gitlab_ldap_userfilter | default("") }}'
 
       # GitLab EE only: add more LDAP servers
       # Choose an ID made of a-z and 0-9 . This ID will be stored in the database
