@@ -2,7 +2,6 @@
 
 # Remember previous local passwords to enforce rotation
 
-{% if auth_pwhistory_remember is defined and auth_pwhistory_remember %}
 Name: Unix password history
 Default: yes
 Priority: 500
@@ -12,6 +11,3 @@ Password:
 	required			pam_pwhistory.so use_authtok enforce_for_root remember={{ auth_pwhistory_remember }}
 Password-Initial:
 	required			pam_pwhistory.so enforce_for_root remember={{ auth_pwhistory_remember }}
-{% else %}
-# Password history is disabled
-{% endif %}

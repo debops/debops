@@ -1,0 +1,24 @@
+---
+
+- name: Check if password history database exists
+  stat:
+    path: '/etc/security/opasswd'
+  register: auth_register_opasswd
+
+- name: Configure password history database
+  file:
+    path: '/etc/security/opasswd'
+    state: 'touch'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  when: auth_register_opasswd is defined and not auth_register_opasswd.stat.exists
+
+- name: Configure pam_pwhistory
+  template:
+    src: 'usr/share/pam-configs/pwhistory.j2'
+    dest: '/usr/share/pam-configs/pwhistory'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Update PAM common configuration' ]
