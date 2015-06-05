@@ -25,6 +25,10 @@ v0.1.4
   server names listed in ``item.name`` to a specific server name (inverse
   ``item.redirect_from``). [drybjed]
 
+- Move most of the http options from ``/etc/nginx/nginx.conf`` template to
+  ``nginx_http_options`` YAML text block for easy modification if necessary.
+  [drybjed]
+
 v0.1.3
 ------
 
