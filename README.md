@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) snmpd
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-snmpd.svg?style=flat)](http://travis-ci.org/debops/ansible-snmpd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--snmpd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-snmpd/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-snmpd.svg?style=flat)](http://travis-ci.org/debops/ansible-snmpd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--snmpd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-snmpd/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.snmpd-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4068)
 
 [SNMP](https://en.wikipedia.org/wiki/Simple_Network_Management_Protocol) is
 an universal protocol which can be used to monitor and manage networked
@@ -8,6 +8,17 @@ devices. `debops.snmpd` role can be used to configure `snmpd` service on
 a Debian or Ubuntu host, which in turn can be used to monitor that host
 resources like CPU utilization, memory and storage capacity, network usage
 and more.
+
+### Installation
+
+This role requires at least Ansible `v1.8.0`. To install it, run:
+
+    ansible-galaxy install debops.snmpd
+
+### Documentation
+
+More information about `debops.snmpd` can be found in the
+[official debops.snmpd documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-snmpd/docs/).
 
 
 ### Role dependencies
