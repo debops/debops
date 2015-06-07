@@ -71,6 +71,8 @@ v0.2.6
 - Remove ``debops.debug`` role from requirements, ``tools/debug.yml`` playbook
   should be a better alternative and it's easier to use. [drybjed]
 
+- Add ``debops.snmpd`` role. [drybjed]
+
 v0.2.5
 ------
 
