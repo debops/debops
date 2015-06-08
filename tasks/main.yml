@@ -20,7 +20,7 @@
 
 - name: Configure admin access in sudo
   template:
-    src: 'etc/sudoers.d/admins.j2'
+    src: '{{ lookup("template_src", "etc/sudoers.d/admins.j2") }}'
     dest: '/etc/sudoers.d/admins'
     owner: 'root'
     group: 'root'
@@ -60,7 +60,7 @@
 
 - name: Configure nsswitch.conf
   template:
-    src: 'etc/nsswitch.conf.j2'
+    src: '{{ lookup("template_src", "etc/nsswitch.conf.j2") }}'
     dest: '/etc/nsswitch.conf'
     owner: 'root'
     group: 'root'
