@@ -74,15 +74,6 @@
     mode: '0755'
   notify: [ 'Restart snmpd' ]
 
-- name: Configure snmpd service
-  template:
-    src: 'etc/snmp/snmpd.conf.j2'
-    dest: '/etc/snmp/snmpd.conf'
-    owner: 'root'
-    group: 'root'
-    mode: '0600'
-  notify: [ 'Restart snmpd' ]
-
 - name: Configure local SNMP credentials
   template:
     src: 'etc/snmp/snmp.local.conf.j2'
@@ -118,6 +109,15 @@
   run_once: True
   no_log: True
   when: snmpd_account|d() and snmpd_account
+
+- name: Configure snmpd service
+  template:
+    src: 'etc/snmp/snmpd.conf.j2'
+    dest: '/etc/snmp/snmpd.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  notify: [ 'Restart snmpd' ]
 
 - name: Configure SNMPv3 credentials
   include: configure_snmpv3_credentials.yml
