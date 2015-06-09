@@ -73,6 +73,8 @@ v0.2.6
 
 - Add ``debops.snmpd`` role. [drybjed]
 
+- Add ``debops.memcached`` role. [drybjed]
+
 v0.2.5
 ------
 
