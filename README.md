@@ -1,10 +1,21 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) memcached
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-memcached.svg?style=flat)](http://travis-ci.org/debops/ansible-memcached) [![test-suite](http://img.shields.io/badge/test--suite-ansible--memcached-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-memcached/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-memcached.svg?style=flat)](http://travis-ci.org/debops/ansible-memcached) [![test-suite](http://img.shields.io/badge/test--suite-ansible--memcached-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-memcached/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.memcached-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4102)
 
 [memcached](http://memcached.org/) is a cache daemon which keeps its data
 in RAM. It can be used by other applications to speed up slow operations on
 the databases / data stores.
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, run:
+
+    ansible-galaxy install debops.memcached
+
+### Documentation
+
+More information about `debops.memcached` can be found in the
+[official debops.memcached documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-memcached/docs/).
 
 
 ### Role dependencies
