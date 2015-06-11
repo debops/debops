@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# Use this script instead of /usr/bin/rsync command to avoid issues with
+# vanishing files.
+# https://bugzilla.samba.org/show_bug.cgi?id=3653
+
+IGNOREEXIT=24
+IGNOREOUT='^(file has vanished: |rsync warning: some files vanished before they could be transferred)'
+
+set -o pipefail
+
+rsync "${@}" 2>&1 | (egrep -v "$IGNOREOUT" || true)
+ret=$?
+
+if [[ $ret == $IGNOREEXIT ]]; then
+    ret=0
+fi
+
+exit $ret

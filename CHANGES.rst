@@ -1,6 +1,20 @@
 Changelog
 =========
 
+v0.1.6
+------
+
+*Released: 2015-06-11*
+
+- Add ``rsnapshot_cmd_rsync`` variable which allows you to set the path to
+  a script executed during backup. [drybjed]
+
+- Add ``rsync-no-vanished`` wrapper script, which bypasses an issue when `files
+  during long backups vanish`_ and the backup cycle is broken. It's set to be
+  run by default for all hosts, can be overriden per host. [drybjed]
+
+.. _files during long backups vanish: https://bugzilla.samba.org/show_bug.cgi?id=3653
+
 v0.1.5
 ------
 

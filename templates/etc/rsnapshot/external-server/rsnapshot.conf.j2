@@ -68,7 +68,11 @@ cmd_cp		/bin/cp
 # rsync must be enabled for anything to work. This is the only command that
 # must be enabled.
 #
-cmd_rsync	/usr/bin/rsync
+{% if (host.cmd_rsync is defined and host.cmd_rsync) %}
+cmd_rsync	{{ host.cmd_rsync }}
+{% elif host.cmd_rsync is undefined %}
+cmd_rsync	{{ rsnapshot_cmd_rsync }}
+{% endif %}
 
 # Uncomment this to enable remote ssh backups over rsync.
 #
