@@ -7,6 +7,15 @@
     install_recommends: False
   when: inventory_hostname in rsnapshot_clients
 
+- name: Install rsync-no-vanished script
+  template:
+    src: 'usr/local/lib/rsync-no-vanished.j2'
+    dest: '{{ ansible_local.root.lib + "/rsync-no-vanished" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: inventory_hostname in rsnapshot_clients
+
 - name: Enforce rsnapshot root directory permissions
   file:
     path: '{{ rsnapshot_snapshot_root }}'
