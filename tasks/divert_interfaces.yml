@@ -5,14 +5,6 @@
            creates=/etc/network/interfaces.dpkg-divert
   register: ifupdown_register_divert
 
-- name: Create /etc/network/interfaces.d directory
-  file:
-    path: '/etc/network/interfaces.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
 - name: Provide original interfaces temporarily
   command: cp /etc/network/interfaces.dpkg-divert {{ ifupdown_reconfigure_init_file }}
   when: ifupdown_register_divert is defined and ifupdown_register_divert.changed
