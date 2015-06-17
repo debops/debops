@@ -38,22 +38,6 @@
     - [ '{{ "ifenslave" if ("bond" in ifupdown_capabilities and ansible_distribution_release != "wheezy") else [] }}' ]
     - [ '{{ "ifenslave-2.6" if ("bond" in ifupdown_capabilities and ansible_distribution_release == "wheezy") else [] }}' ]
 
-- name: Create /etc/network/interfaces.d directory
-  file:
-    path: '/etc/network/interfaces.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Create /etc/network/interfaces.config.d directory
-  file:
-    path: '/etc/network/interfaces.config.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
 - name: Install network reconfiguration script
   template:
     src: 'usr/local/lib/ifupdown-reconfigure-interfaces.j2'
