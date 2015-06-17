@@ -152,15 +152,9 @@ host-record = {{ ansible_fqdn }},{{ ansible_hostname }},{{ element }}
 {% for host, list in dnsmasq_cname.iteritems() %}
 {% if list is string %}
 cname = {{ list + '.' + dnsmasq_domain }},{{ host + '.' + dnsmasq_domain }}
-cname = {{ list + '.' + ansible_hostname }},{{ host + '.' + dnsmasq_domain }}
-cname = {{ list }},{{ host + '.' + dnsmasq_domain }}
-
 {% else %}
 {% for element in list %}
 cname = {{ element + '.' + dnsmasq_domain }},{{ host + '.' + dnsmasq_domain }}
-cname = {{ element + '.' + ansible_hostname }},{{ host + '.' + dnsmasq_domain }}
-cname = {{ element }},{{ host + '.' + dnsmasq_domain }}
-
 {% endfor %}
 {% endif %}
 {% endfor %}
