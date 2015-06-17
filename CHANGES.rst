@@ -11,5 +11,8 @@ v0.1.0
 
 .. _Debian Bug #761406: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=761406
 
+- Move ``olcSecurity`` rules to role defaults, so that they can be easily
+  overridden if necessary. [drybjed]
+
 - First release, add CHANGES.rst [drybjed]
 
