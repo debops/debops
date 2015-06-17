@@ -32,3 +32,6 @@ v0.1.0
   this should fix an issue when changes in the network interface topology
   required ``dnsmasq`` to be restarted to listen on new interfaces. [drybjed]
 
+- Remove "short subdomain" ``CNAME`` entries from main ``dnsmasq``
+  configuration file. [drybjed]
+
