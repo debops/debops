@@ -1,0 +1,37 @@
+---
+
+- name: Drop unnecessary root accounts
+  mysql_user:
+    name: 'root'
+    host: '{{ item }}'
+    state: 'absent'
+  with_items: [ '{{ ansible_hostname }}', '127.0.0.1', '::1' ]
+
+- name: Update database root password
+  mysql_user:
+    name: 'root'
+    host: 'localhost'
+    password: '{{ mariadb_server_root_password }}'
+
+- name: Create /root/.my.cnf file with root credentials
+  template:
+    src: 'root/my.cnf.j2'
+    dest: '/root/.my.cnf'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+
+- name: Delete anonymous database user
+  mysql_user:
+    user: ""
+    host: '{{ item }}'
+    state: 'absent'
+  with_items: [ '{{ ansible_hostname }}', 'localhost' ]
+
+- name: Remove test database on first install
+  mysql_db:
+    db: 'test'
+    state: 'absent'
+  when: ((mariadb_server_register_version|d() and not mariadb_server_register_version.stdout) and
+         (mariadb_server_register_install_status|d() and mariadb_server_register_install_status.changed))
+

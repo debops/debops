@@ -1,0 +1,26 @@
+# {{ ansible_managed }}
+
+[mysqld]
+
+character-set-server    = utf8
+collation-server        = utf8_general_ci
+init-connect            = 'SET NAMES utf8'
+
+bind-address            = {{ mariadb_server_bind_address }}
+port                    = {{ mariadb_server_port }}
+max-connections         = {{ mariadb_server_max_connections }}
+
+{% if mariadb_server_pki|d(False) %}
+ssl
+ssl-ca                  = {{ mariadb_server_pki_path + "/" + mariadb_server_pki_realm + "/" + mariadb_server_pki_ca }}
+ssl-cert                = {{ mariadb_server_pki_path + "/" + mariadb_server_pki_realm + "/" + mariadb_server_pki_crt }}
+ssl-key                 = {{ mariadb_server_pki_path + "/" + mariadb_server_pki_realm + "/" + mariadb_server_pki_key }}
+ssl-cipher              = {{ mariadb_server_pki_cipher | default('DHE-RSA-AES256-SHA') }}
+
+{% endif %}
+{% if mariadb_server_options|d(False) %}
+{% for key, value in mariadb_server_options.iteritems() %}
+{{ key }}{% if value is not none %} = {{ value }}{% endif %}
+{% endfor %}
+
+{% endif %}

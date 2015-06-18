@@ -1,0 +1,179 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# --------------------------------
+#   MariaDB server configuration
+# --------------------------------
+
+# .. envvar:: mariadb_server_flavor
+#
+# Variable which defines what database to use (MariaDB or MySQL).
+mariadb_server_flavor: '{{ mariadb_server_flavor_map[ansible_distribution_release] | default("mariadb") }}'
+
+
+# .. envvar:: mariadb_server_packages
+#
+# List of APT packages to install with MariaDB server.
+mariadb_server_packages: [ '{{ mariadb_server_flavor }}-server',
+                           'python-mysqldb', 'ssl-cert',
+                           'automysqlbackup' ]
+
+
+# .. envvar:: mariadb_server_bind_address
+#
+# IP address on which MariaDB server listens on for new connections. To allow
+# connections from remote hosts, you need to change this to ``0.0.0.0`` for IPv4
+# only connections, or ``::`` for IPv4 and IPv6 connections.
+#
+# When bind address is changed, you need to restart the ``mysqld`` daemon to
+# rebind it to new network interfaces, it won't be restarted automatically by
+# Ansible.
+mariadb_server_bind_address: 'localhost'
+
+
+# .. envvar:: mariadb_server_port
+#
+# Port number on which this MariaDB server listens on.
+mariadb_server_port: '3306'
+
+
+# .. envvar:: mariadb_server_allow
+#
+# List of IP addresses or CIDR subnets which will be allowed to connect to the
+# MariaDB server in ``ip(6)tables`` and TCP wrappers. If it's empty, remote
+# connections are not allowed.
+mariadb_server_allow: []
+
+
+# .. envvar:: mariadb_server_max_connections
+#
+# Maximum number of allowed connections.
+mariadb_server_max_connections: '100'
+
+
+# .. envvar:: mariadb_server_delegate_to
+#
+# Hostname of the server to which Ansible roles will delegate tasks. It should
+# point to "this server", using a FQDN hostname known to Ansible.
+mariadb_server_delegate_to: '{{ ansible_fqdn }}'
+
+
+# .. envvar:: mariadb_server_options
+#
+# Dict with additional MariaDB options, option names as keys and their values
+# as values, added to ``/etc/mysql/conf.d/mysqld.cnf``. Options without
+# specific values should be defined with empty values. Examples::
+#
+#     mariadb_server_options:
+#       'key_buffer': '16M'
+#       'skip-name-resolve':
+#
+mariadb_server_options: {}
+
+
+# .. envvar:: mariadb_erver_append_groups
+#
+# List of additional system groups to append to the MariaDB system user.
+# ``ssl-cert`` group is required for access to certificate private keys.
+mariadb_server_append_groups: [ 'ssl-cert' ]
+
+
+# ---------------------
+#   SSL configuration
+# ---------------------
+
+# .. envvar:: mariadb_server_pki
+#
+# Enable or disable support for SSL in MariaDB (using ``debops.pki``).
+mariadb_server_pki: '{{ (True
+	                 if (ansible_local|d() and ansible_local.pki|d() and
+	                     ansible_local.pki.enabled|d())
+	                 else False) | bool }}'
+
+
+# .. envvar:: mariadb_server_pki_path
+#
+# Base path for PKI directory.
+mariadb_server_pki_path: '{{ (ansible_local.pki.base_path
+	                      if (ansible_local|d() and ansible_local.pki|d() and
+	                          ansible_local.pki.base_path|d())
+	                      else "/etc/pki") }}'
+
+
+# .. envvar:: mariadb_server_pki_realm
+#
+# Default PKI realm used by MariaDB (Debian MariaDB packages do not support chained
+# certificates, see https://bugs.debian.org/630625).
+mariadb_server_pki_realm: 'service'
+
+
+# .. envvar:: mariadb_server_pki_ca
+#
+# Root CA certificate used by MariaDB, relative to ``mariadb_server_pki_realm``.
+mariadb_server_pki_ca: 'CA.crt'
+
+
+# .. envvar:: mariadb_server_pki_crt
+#
+# Host certificate used by MariaDB, relative to ``mariadb_server_pki_realm``.
+mariadb_server_pki_crt: 'default.crt'
+
+
+# .. envvar:: mariadb_server_pki_key
+#
+# Host private key used by MariaDB, relative to ``mariadb_server_pki_realm``.
+mariadb_server_pki_key: 'default.key'
+
+
+# .. envvar:: mariadb_server_pki_cipher
+#
+# Cipher suite used for encrypted connections.
+mariadb_server_pki_cipher: 'DHE-RSA-AES256-SHA'
+
+
+# ---------------------------------
+#   AutoMySQLBackup configuration
+# ---------------------------------
+
+# .. envvar:: mariadb_server_backup_mailaddr
+#
+# Mail address to send messages to (account or alias name will be properly
+# routed by the Postfix SMTP server).
+mariadb_server_backup_mailaddr: 'backup'
+
+
+# .. envvar:: mariadb_server_backup_doweekly
+#
+# Specify the day of the week to create weekly backups
+# (1 - Monday, 7 - Sunday).
+mariadb_server_backup_doweekly: '6'
+
+
+# .. envvar:: mariadb_server_backup_latest
+#
+# Don't keep copies of most recent backups by default.
+mariadb_server_backup_latest: 'no'
+
+
+# ------------------------
+#   MariaDB root account
+# ------------------------
+
+# .. envvar:: mariadb_server_password_length
+#
+# Length of randomly generated passwords.
+mariadb_server_password_length: '48'
+
+
+# .. envvar:: mariadb_server_root_password
+#
+# Randomized password for MariaDB ``root`` account.
+mariadb_server_root_password: '{{ lookup("password", secret +
+                                  "/credentials/" + ansible_fqdn +
+                                  "/mariadb/localhost/root/password " +
+                                  "length=" + mariadb_server_password_length) }}'
+

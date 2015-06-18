@@ -1,0 +1,34 @@
+---
+
+- name: Configure database server
+  template:
+    src: 'etc/mysql/conf.d/mysqld.cnf.j2'
+    dest: '/etc/mysql/conf.d/mysqld.cnf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Reload mysql' ]
+
+- name: Setup automysqlbackup configuration
+  template:
+    src: 'etc/default/automysqlbackup.j2'
+    dest: '/etc/default/automysqlbackup'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Create mysqldump section in /etc/mysql/debian.cnf
+  lineinfile:
+    regexp: '^\[mysqldump\]'
+    dest:   '/etc/mysql/debian.cnf'
+    line:   '[mysqldump]'
+    state:  'present'
+
+- name: Enable events table backup in mysqldump
+  lineinfile:
+    insertafter: '[mysqldump]'
+    regexp: '^events\s'
+    dest:   '/etc/mysql/debian.cnf'
+    line:   'events = true'
+    state:  'present'
+
