@@ -8,3 +8,5 @@ v0.1.0
 
 - Initial release. [drybjed]
 
+- Fix wrongly named variable in ``/etc/default/snmpd``. [drybjed]
+
