@@ -28,6 +28,15 @@
   with_flattened:
     - [ '{{ "lldpd" if not snmpd_lldpd else [] }}' ]
 
+- name: Install custom snmpd.service unit file
+  copy:
+    src: 'etc/systemd/system/snmpd.service'
+    dest: '/etc/systemd/system/snmpd.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart snmpd' ]
+
 - name: Enable MIBs support
   lineinfile:
     dest: '/etc/snmp/snmp.conf'

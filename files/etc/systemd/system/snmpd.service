@@ -1,0 +1,25 @@
+# snmpd.service unit file
+# Copyright (C) Maciej Delmanowski <drybjed@gmail.com>
+# Homepage: http://debops.org/
+
+# This unit file fixes issues with snmpd service running inside LXC containers
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=727105
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=718702
+
+[Unit]
+Description=Simple Network Management Protocol (SNMP) Daemon
+Documentation=man:snmpd(8)
+Documentation=man:snmpcmd(1)
+After=network.target
+
+[Service]
+Environment="MIBDIRS=/usr/share/snmp/mibs:/usr/share/mibs/iana:/usr/share/mibs/ietf"
+EnvironmentFile=-/etc/default/snmpd
+PIDFile=/run/snmpd.pid
+TimeoutStartSec=0
+ExecStart=/usr/sbin/snmpd $SNMPDOPTS -f
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=lldpd.service
+
