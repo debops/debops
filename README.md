@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) mariadb
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-mariadb.svg?style=flat)](http://travis-ci.org/debops/ansible-mariadb) [![test-suite](http://img.shields.io/badge/test--suite-ansible--mariadb-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-mariadb/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-mariadb.svg?style=flat)](http://travis-ci.org/debops/ansible-mariadb) [![test-suite](http://img.shields.io/badge/test--suite-ansible--mariadb-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-mariadb/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.mariadb-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4207)
 
 [MariaDB](http://mariadb.org/) is a popular relational SQL database that
 was forked from MySQL server. Ansible roles `debops.mariadb` and
@@ -11,6 +11,17 @@ access it remotely from other hosts.
 Debian package, and uses Ansible delegation to configure users and databases in
 local or remote MariaDB servers. You can use `debops.mariadb_server` role to
 manage the MariaDB server itself.
+
+### Installation
+
+This role requires at least Ansible `v1.8.0`. To install it, run:
+
+    ansible-galaxy install debops.mariadb
+
+### Documentation
+
+More information about `debops.mariadb` can be found in the
+[official debops.mariadb documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-mariadb/docs/).
 
 
 ### Role dependencies
