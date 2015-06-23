@@ -1,0 +1,132 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# --------------------------------
+#   MariaDB server configuration
+# --------------------------------
+
+# .. envvar:: mariadb_server
+#
+# FQDN hostname of the MariaDB server. If local MariaDB server is detected, it
+# will override this variable automatically. Only one server at a time is
+# currently supported per host.
+mariadb_server: ''
+
+
+# .. envvar:: mariadb_port
+#
+# Port number on which to connect to the server. You usually don't need to
+# change this.
+mariadb_port: '3306'
+
+
+# -------------------------------
+#   Global client configuration
+# -------------------------------
+
+# .. envvar:: mariadb_flavor
+#
+# What database should be installed on a host? You can choose either
+# ``mariadb`` or ``mysql``, on specific Linux distributions ``mysql`` will be
+# chosen automatically.
+mariadb_flavor: '{{ mariadb_flavor_map[ansible_distribution_release] | default("mariadb") }}'
+
+
+# .. envvar:: mariadb_packages
+#
+# List of APT packages to install.
+mariadb_packages: [ '{{ mariadb_flavor }}-client', 'python-mysqldb' ]
+
+
+# .. envvar:: mariadb_client
+#
+# When the database server is used remotely, this variable defines the "host"
+# part of the client username. If local MariaDB server is detected, this
+# variable will be automatically changed to ``localhost``.
+mariadb_client: '{{ ansible_fqdn }}'
+
+
+# .. envvar:: mariadb_delegate_to
+#
+# When MariaDB server is used remotely, Ansible needs to run tasks on the
+# correct host. This variable controls the task delegation to the correct
+# database server.
+#
+# If MariaDB server is run locally, this should point to the FQDN hostname of
+# the current host, NOT ``localhost`` because that would delegate the tasks to
+# Ansible Controller.
+mariadb_delegate_to: '{{ mariadb_server
+	                 if (mariadb_server|d() and
+	                     mariadb_server != "localhost")
+	                 else ansible_fqdn }}'
+
+
+# .. envvar:: mariadb_client_options
+#
+# Dict with additional MariaDB client options set system-wide, option names as
+# keys and their values as values, added to ``/etc/mysql/conf.d/client.cnf``.
+# Options without specific values should be defined with empty values.
+mariadb_client_options: {}
+
+
+# ---------------------------
+#   User account privileges
+# ---------------------------
+
+# .. envvar:: mariadb_default_privileges
+#
+# Should ``debops.mariadb`` automatically grant all privileges to a database
+# named the same as the username for a given user account? This is equivalent
+# to::
+#
+#     GRANT ALL PRIVILEGES ON `<user>`.* TO `<user>`@`<host>`;
+#
+mariadb_default_privileges: True
+
+
+# .. envvar:: mariadb_default_privileges_aux
+#
+# Should ``debops.mariadb`` automatically grant all privileges to databases
+# with the same prefix as the username for a given user account? This is
+# equivalent to::
+#
+#     GRANT ALL PRIVILEGES ON `<user>\_%`.* TO `<user>`@`<host>`;
+#
+mariadb_default_privileges_aux: True
+
+
+# .. envvar:: mariadb_default_privileges_grant
+#
+# Default privileges granted automatically. See Ansible ``mysql_user`` module
+# for list and format of privileges.
+mariadb_default_privileges_grant: 'ALL'
+
+
+# ----------------------------
+#   Databases, user accounts
+# ----------------------------
+
+# .. envvar:: mariadb_password_length
+#
+# Length of automatically generated user accounts, saved in the ``secret/``
+# directory. See ``debops.secret`` role for more details about passwords.
+mariadb_password_length: '48'
+
+
+# .. envvar:: mariadb_databases
+#
+# List of databases configured on the MariaDB server. See
+# :ref:`mariadb_databases` for more details.
+mariadb_databases: []
+
+
+# .. envvar:: mariadb_users
+#
+# List of user accounts configured on the MariaDB server. See
+# :ref:`mariadb_users` for more details.
+mariadb_users: []
+
