@@ -75,6 +75,8 @@ v0.2.6
 
 - Add ``debops.memcached`` role. [drybjed]
 
+- Add MariaDB server and client roles. [drybjed]
+
 v0.2.5
 ------
 
