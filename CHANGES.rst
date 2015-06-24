@@ -25,3 +25,5 @@ v0.1.0
 - Add support for GitLab 7.11. [drybjed]
 
 - Added support for Gitlab LDAP Authentication. [xorgic]
+
+- Add support for GitLab 7.12. [gomez]
