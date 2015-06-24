@@ -47,16 +47,16 @@ group {
 {% endif %}
 {% if group.groups is defined and group.groups %}
 {% for group in group.groups %}
-{{ print.group(group) | indent(8, true) }}
+{{ group(group) | indent(8, true) }}
 {% endfor %}
 {% endif %}
 {% if group.subnets is defined and group.subnets %}
 {% for subnet in group.subnets %}
-{{ print.subnet(subnet) | indent(8, true) }}
+{{ subnet(subnet) | indent(8, true) }}
 {% endfor %}
 {% endif %}
 {% if group.hosts is defined and group.hosts %}
-{{ print.hosts(group.hosts) | indent(8, true) }}
+{{ hosts(group.hosts) | indent(8, true) }}
 {% endif %}
 }
 {% endmacro %}
@@ -113,7 +113,7 @@ subnet {{ subnet.subnet | ipaddr('cidr') | ipaddr('address') }} netmask 255.255.
 {% endfor %}
 {% endif %}
 {% if subnet.hosts is defined and subnet.hosts %}
-{{ print.hosts(subnet.hosts) | indent(8, true) }}
+{{ hosts(subnet.hosts) | indent(8, true) }}
 {% endif %}
 }
 {% endmacro %}
@@ -129,6 +129,23 @@ include "{{ hosts }}";
 {% if host.comment is defined and host.comment %}
 # {{ host.comment }}
 {% endif %}
+{# Hack to support host with multiple MACs #}
+{% if host.ethernet is defined and host.ethernet is sequence and not host.ethernet is string %}
+{% for hwaddr in host.ethernet %}
+host {{ host.hostname }}-hw{{ loop.index }} {
+{% if host.options is defined and host.options %}
+{{ host.options | indent(8,true) }}
+{% endif %}
+        hardware ethernet {{ hwaddr }};
+{% if not host.options is defined or (host.options and not 'host-name' in host.options) %}
+        option host-name = {{ host.hostname }};
+{% endif %}
+{% if host.address is defined and host.address %}
+        fixed-address {{ host.address }};
+{% endif %}
+}
+{% endfor %}
+{% else %}
 host {{ host.hostname }} {
 {% if host.options is defined and host.options %}
 {{ host.options | indent(8,true) }}
@@ -144,6 +161,7 @@ host {{ host.hostname }} {
 {% endif %}
 {% endif %}
 }
+{% endif %}
 {% endfor %}
 {% endif %}
 {% endmacro %}
@@ -156,7 +174,7 @@ host {{ host.hostname }} {
 # {{ failover.comment }}
 {% endif %}
 failover peer "{{ failover.failover }}" {
-{% if failover.primary is defined and failover.primary ==  inventory_hostname %}
+{% if failover.primary is defined and failover.primary in ansible_all_ipv4_addresses %}
         primary;
         mclt {{ failover.mclt|default(3600) }};
 {% if failover.primary_fo_addr is defined and failover.primary_fo_addr %}
