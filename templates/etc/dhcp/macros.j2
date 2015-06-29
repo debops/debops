@@ -2,9 +2,10 @@
 #   List of macros for ISC DHCP configuration, IPv4
 #   ===============================================
 #
-#   ---- Macro: print.class() ----
+#   ---- Macro: print_class() ----
 #}
-{% macro class(class) %}
+{% set print = self %}
+{% macro print_class(class) %}
 {% if class.comment is defined and class.comment %}
 # {{ class.comment }}
 {% endif %}
@@ -32,9 +33,9 @@ subclass "{{ class.class }}" {{ key }};
 {% endmacro %}
 {#
 #
-#   ---- Macro: print.group() ----
+#   ---- Macro: print_group() ----
 #}
-{% macro group(group) %}
+{% macro print_group(group) %}
 {% if group.comment is defined and group.comment %}
 # {{ group.comment }}
 {% endif %}
@@ -47,24 +48,24 @@ group {
 {% endif %}
 {% if group.groups is defined and group.groups %}
 {% for group in group.groups %}
-{{ group(group) | indent(8, true) }}
+{{ print_group(group) | indent(8, true) }}
 {% endfor %}
 {% endif %}
 {% if group.subnets is defined and group.subnets %}
 {% for subnet in group.subnets %}
-{{ subnet(subnet) | indent(8, true) }}
+{{ print_subnet(subnet) | indent(8, true) }}
 {% endfor %}
 {% endif %}
 {% if group.hosts is defined and group.hosts %}
-{{ hosts(group.hosts) | indent(8, true) }}
+{{ print_hosts(group.hosts) | indent(8, true) }}
 {% endif %}
 }
 {% endmacro %}
 {#
 #
-#   ---- Macro: print.subnet() ----
+#   ---- Macro: print_subnet() ----
 #}
-{% macro subnet(subnet) %}
+{% macro print_subnet(subnet) %}
 {% if subnet.comment is defined and subnet.comment %}
 # {{ subnet.comment }}
 {% endif %}
@@ -113,15 +114,15 @@ subnet {{ subnet.subnet | ipaddr('cidr') | ipaddr('address') }} netmask 255.255.
 {% endfor %}
 {% endif %}
 {% if subnet.hosts is defined and subnet.hosts %}
-{{ hosts(subnet.hosts) | indent(8, true) }}
+{{ print_hosts(subnet.hosts) | indent(8, true) }}
 {% endif %}
 }
 {% endmacro %}
 {#
 #
-#   ---- Macro: print.hosts() ----
+#   ---- Macro: print_hosts() ----
 #}
-{% macro hosts(hosts) %}
+{% macro print_hosts(hosts) %}
 {% if hosts is string %}
 include "{{ hosts }}";
 {% else %}
@@ -167,9 +168,9 @@ host {{ host.hostname }} {
 {% endmacro %}
 {#
 #
-#   ---- Macro: print.failover() ----
+#   ---- Macro: print_failover() ----
 #}
-{% macro failover(failover) %}
+{% macro print_failover(failover) %}
 {% if failover.comment is defined and failover.comment %}
 # {{ failover.comment }}
 {% endif %}
@@ -229,9 +230,9 @@ failover peer "{{ failover.failover }}" {
 {% endmacro %}
 {#
 #
-#   ---- Macro: print.key() ----
+#   ---- Macro: print_key() ----
 #}
-{% macro key(key) %}
+{% macro print_key(key) %}
 {% if key.comment is defined and key.comment %}
 # {{ key.comment }}
 {% endif %}
@@ -242,9 +243,9 @@ key {{ key.key }} {
 {% endmacro %}
 {#
 #
-#   ---- Macro: print.zone() ----
+#   ---- Macro: print_zone() ----
 #}
-{% macro zone(zone) %}
+{% macro print_zone(zone) %}
 {% if zone.comment is defined and zone.comment %}
 # {{ zone.comment }}
 {% endif %}
