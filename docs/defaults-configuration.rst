@@ -289,7 +289,8 @@ hosts. Each dict can have following keys:
   Name of the host
 
 ``ethernet``
-  Ethernet address of this host
+  Ethernet address of this host, if host has multiple aggregated(bonded) links
+  you may specify their ethernet addresses as a list.
 
 ``address``
   IP address of this host
@@ -310,6 +311,11 @@ Examples::
     - hostname: 'examplehost'
       address: '10.0.10.1'
       ethernet: '00:00:00:00:00:00'
+    - hostname: 'bondedhost'
+      address: '10.0.10.2'
+      ethernet:
+        - '00:00:00:00:00:01'
+        - '00:00:00:00:00:02'
 
 .. _dhcpd_includes:
 
