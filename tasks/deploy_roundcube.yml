@@ -54,3 +54,12 @@
          (roundcube_register_source.before is defined and
           roundcube_register_target_branch.stdout is defined and
           roundcube_register_source.before != roundcube_register_target_branch.stdout))
+
+- name: Enable cleandb.sh Cron job
+  cron:
+    name: Roundcube daily database housekeeping
+    user: '{{ roundcube_user }}'
+    job: '{{ roundcube_git_checkout }}/bin/cleandb.sh'
+    cron_file: 'roundcube'
+    hour: '22'
+    minute: '0'
