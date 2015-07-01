@@ -38,6 +38,10 @@ v0.1.2
 
 - Add user accounts only to groups that already exist. [drybjed]
 
+- Default user account will be added to ``admins`` group to fix an issue where
+  if that account is added manually, it loses access to ``sudo`` commands.
+  [drybjed]
+
 v0.1.1
 ------
 
