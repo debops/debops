@@ -58,6 +58,14 @@
 - include: nss_pam_ldap.yml
   when: auth_nsswitch is defined and 'ldap' in auth_nsswitch
 
+- name: Check if libnss-mdns package is installed
+  environment:
+    LC_MESSAGES: 'C'
+  shell: dpkg-query -W -f='${Version}\n' 'libnss-mdns' | grep -v '^$'
+  register: auth_register_mdns
+  changed_when: False
+  failed_when: False
+
 - name: Configure nsswitch.conf
   template:
     src: '{{ lookup("template_src", "etc/nsswitch.conf.j2") }}'
