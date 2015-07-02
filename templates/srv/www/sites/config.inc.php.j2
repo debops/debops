@@ -23,7 +23,7 @@ $config = array();
 // Currently supported db_providers: mysql, pgsql, sqlite, mssql or sqlsrv
 // For examples see http://pear.php.net/manual/en/package.database.mdb2.intro-dsn.php
 // NOTE: for SQLite use absolute path: 'sqlite:////full/path/to/sqlite.db?mode=0646' #}
-{% if roundcube_database == 'mysql' %}
+{% if roundcube_database_map[roundcube_database].dbtype == 'mysql' %}
 $config['db_dsnw'] = 'mysql://{{ roundcube_database_map[roundcube_database].dbuser }}:{{ roundcube_database_map[roundcube_database].dbpass }}@{{ roundcube_database_map[roundcube_database].dbhost }}/{{ roundcube_database_map[roundcube_database].dbname }}';
 {% endif %}
 

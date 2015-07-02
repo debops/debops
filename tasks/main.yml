@@ -3,24 +3,6 @@
 - name: Pre hooks
   include: '{{ lookup("task_src", "roundcube/pre_main.yml") }}'
 
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save local facts
-  template:
-    src: '{{ lookup("template_src", "etc/ansible/facts.d/roundcube.fact.j2") }}'
-    dest: '/etc/ansible/facts.d/roundcube.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  register: roundcube_register_facts
-  notify: [ 'Gather Roundcube facts' ]
-
 - name: Install Roundcube packages
   apt:
     name: '{{ item }}'
@@ -59,12 +41,12 @@
   with_flattened:
     - [ 'php-auth-sasl', 'php-pear', 'php5-intl', 'php5-mcrypt', 'php-mail-mime', 'php-mail-mimedecode', 'php-net-smtp', 'php-net-socket' ]
     - [ '{{ roundcube_extra_packages }}' ]
-    - [ '{{ "php5-mysql" if roundcube_database == "mysql" else [] }}' ]
+    - [ '{{ "php5-mysql" if roundcube_database_map[roundcube_database].dbtype == "mysql" else [] }}' ]
     - [ '{{ "php-net-sieve" if "managesieve" in roundcube_plugins else [] }}' ]
     - [ '{{ "php-crypt-gpg" if "enigma" in roundcube_plugins else [] }}' ]
 
 - include: configure_mysql.yml
-  when: roundcube_database == 'mysql'
+  when: roundcube_database_map[roundcube_database].dbtype == 'mysql'
   tags: [ 'roundcube', 'mysql' ]
 
 - include: configure_roundcube.yml
