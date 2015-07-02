@@ -33,6 +33,9 @@ v0.3.1
 - Remember previous 5 passwords set on each account using ``pam_pwhistory``
   module to enforce use of different passwords. [drybjed]
 
+- Role will check if ``libnss-mdns`` package is present and enable/disable
+  mDNS/Avahi support in ``/etc/nsswitch.conf`` accordingly. [drybjed]
+
 v0.3.0
 ------
 
