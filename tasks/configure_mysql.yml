@@ -8,14 +8,10 @@
   with_items: [ 'mysql-client', 'python-mysqldb' ]
   when: 'roundcube_database_map[roundcube_database].dbhost != "localhost"'
 
-- name: Lookup MySQL password
-  set_fact:
-    roundcube_dbpass: '{{ roundcube_database_map[roundcube_database].dbpass }}'
-
 - name: Create Roundcube MySQL user
   mysql_user:
     name: '{{ roundcube_database_map[roundcube_database].dbuser }}'
-    password: '{{ roundcube_dbpass }}'
+    password: '{{ roundcube_database_map[roundcube_database].dbpass }}'
     state: 'present'
     host: '{% if roundcube_database_map[roundcube_database].dbhost == "localhost" %}localhost{% else %}{{ ansible_fqdn }}{% endif %}'
     priv: '{{ roundcube_database_map[roundcube_database].dbname }}.*:ALL'
