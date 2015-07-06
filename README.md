@@ -1,7 +1,13 @@
 This [Ansible](http://ansible.com/) role allows you to install and manage
 [Roundcube](http://roundcube.net/), a IMAP Web client written in PHP.
 
-**This role is still in development. Use it at your own risk.**
+
+### Installation
+
+This role requires at least Ansible `v1.7.0`. To install it, clone it
+to your [DebOps](http://debops.org) project roles directory:
+
+    git clone http://github.com/ganto/ansible-roundcube.git
 
 
 ### Role dependencies
