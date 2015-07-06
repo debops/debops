@@ -8,18 +8,17 @@
     state: 'directory'
     owner: '{{ roundcube_user }}'
     group: '{{ roundcube_group }}'
-    mode: '750'
+    mode: '0750'
 
 - name: Clone Roundcube source from upstream repository
   git:
     repo: '{{ roundcube_git_repo }}'
     dest: '{{ roundcube_git_dest }}'
     bare: True
-    update: False
+    update: True
+    version: 'devel'
   sudo_user: '{{ roundcube_user }}'
   register: roundcube_register_source
-
-#  no_log: True
 
 - name: Create Roundcube checkout directory
   file:
