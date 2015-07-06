@@ -75,14 +75,12 @@ $config['product_name'] = 'Roundcube Webmail';
 // YOUR KEY MUST BE DIFFERENT THAN THE SAMPLE VALUE FOR SECURITY REASONS #}
 $config['des_key'] = '{{ roundcube_des_key }}';
 
-{% if roundcube_plugins is defined and roundcube_plugins %}
 // List of active plugins (in plugins/ directory)
 $config['plugins'] = array(
-{% for plugin in roundcube_plugins %}
+{% for plugin in roundcube_default_plugins + roundcube_plugins %}
     '{{ plugin }}',
 {% endfor %}
 );
-{% endif %}
 
 {% if (roundcube_local_config_map is defined and 'skin' not in roundcube_local_config_map) or
       (roundcube_local_config_map is not defined) %}
