@@ -89,8 +89,29 @@ $config['skin'] = 'larry';
 {% endif %}
 
 // custom configuration options
-{% if roundcube_local_config_map is defined and roundcube_local_config_map %}
-{% for key,value in roundcube_local_config_map.items() %}
+{% for key,value in roundcube_local_config_map.items()|default([]) %}
+{% if key not in roundcube_group_local_config_map.keys() %}
+{% if key not in roundcube_host_local_config_map.keys() %}
+{% if (value.split('(') | first == 'array') or
+      (value in [ 'true', 'false' ]) %}
+$config['{{ key }}'] = {{ value }};
+{% else %}
+$config['{{ key }}'] = '{{ value }}';
+{% endif %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% for key,value in roundcube_group_local_config_map.items()|default([]) %}
+{% if key not in roundcube_host_local_config_map.keys() %}
+{% if (value.split('(') | first == 'array') or
+      (value in [ 'true', 'false' ]) %}
+$config['{{ key }}'] = {{ value }};
+{% else %}
+$config['{{ key }}'] = '{{ value }}';
+{% endif %}
+{% endif %}
+{% endfor %}
+{% for key,value in roundcube_host_local_config_map.items()|default([]) %}
 {% if (value.split('(') | first == 'array') or
       (value in [ 'true', 'false' ]) %}
 $config['{{ key }}'] = {{ value }};
@@ -98,4 +119,3 @@ $config['{{ key }}'] = {{ value }};
 $config['{{ key }}'] = '{{ value }}';
 {% endif %}
 {% endfor %}
-{% endif %}
