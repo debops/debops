@@ -13,7 +13,7 @@ README = open('README.rst').read()
 setup(
     name = "debops",
     version = "0.4.3",
-    install_requires = ['netaddr', 'argparse'],
+    install_requires = ['netaddr', 'argparse', 'passlib'],
 
     scripts = ['bin/debops',
                'bin/debops-defaults',
