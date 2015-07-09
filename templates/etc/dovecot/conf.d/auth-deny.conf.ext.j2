@@ -1,0 +1,19 @@
+# {{ ansible_managed }}
+{#
+
+This file follows the upstream default configuration except for the parts
+that are configurable via DebOps variables. If you need a more customized
+setup, you can provide your own template via lookup mechanism.
+
+#}
+
+{% if dovecot_deny_users is defined and dovecot_deny_users %}
+# Deny access for users. Included from 10-auth.conf.
+passdb {
+    driver  = passwd-file
+    deny    = yes
+    args    = /etc/dovecot/dovecot.deny
+}
+{% else %}
+# DebOps variable dovecot_deny_users={{ dovecot_deny_users|default('') }}
+{% endif %}

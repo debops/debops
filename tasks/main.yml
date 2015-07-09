@@ -14,19 +14,27 @@
     - [ '{{ "dovecot-pop3d" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else [] }}' ]
     - [ '{{ "dovecot-managesieved" if "managesieve" in dovecot_protocols else [] }}' ]
 
-- name: Disable default configuration
-  lineinfile:
-    dest: '/etc/dovecot/conf.d/{{ item.path }}'
-    regexp: '{{ item.regexp }}'
-    line: '{{ item.line }}'
-    backrefs: 'yes'
-  with_items:
-    - { path: '10-auth.conf', regexp: '^(!include auth-system\.conf\.ext)', line: '#\1' }
-    - { path: '10-mail.conf', regexp: '^(mail_location.*)', line: '#\1' }
+- name: Divert original Dovecot configuration
+  command: dpkg-divert --quiet --local --divert /etc/dovecot/conf.d/{{ item }}.dpkg-divert --rename /etc/dovecot/conf.d/{{ item }}
+           creates=/etc/dovecot/conf.d/{{ item }}.dpkg-divert
+  with_flattened:
+    - [ '10-auth.conf', '10-mail.conf', '10-ssl.conf', '15-lda.conf', 'auth-deny.conf.ext', 'auth-system.conf.ext' ]
+  notify: [ 'Restart dovecot' ]
 
 - name: Generate Dovecot configuration
   template:
-    src: "{{ lookup('template_src', 'etc/dovecot/local.conf/ansible.j2') }}"
+    src: '{{ lookup("template_src", "etc/dovecot/conf.d/" + item + ".j2") }}'
+    dest: '/etc/dovecot/conf.d/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - [ '10-auth.conf', '10-mail.conf', '10-ssl.conf', '15-lda.conf', 'auth-deny.conf.ext', 'auth-system.conf.ext' ]
+  notify: [ 'Restart dovecot' ]
+
+- name: Generate Dovecot local configuration
+  template:
+    src: "{{ lookup('template_src', 'etc/dovecot/local.conf.j2') }}"
     dest: '/etc/dovecot/local.conf'
     owner: 'root'
     group: 'root'

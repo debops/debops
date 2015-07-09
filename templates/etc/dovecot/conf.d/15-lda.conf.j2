@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+{#
+
+This file follows the upstream default configuration except for the parts
+that are configurable via DebOps variables. If you need a more customized
+setup, you can provide your own template via lookup mechanism.
+
+#}
+
+##
+## LDA specific settings (also used by LMTP)
+##
+
+protocol lda {
+    mail_plugins = $mail_plugins {% if 'managesieve' in dovecot_protocols %}sieve{% endif %}
+
+}
