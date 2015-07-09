@@ -27,3 +27,7 @@ v0.1.0
   ``debops.auth`` role. This entry allows hosts that are registered in LDAP to
   read all entries in the database. [drybjed]
 
+- Remove index numbers from LDAP Access Control Lists. They will be added
+  dynamically by a lookup template during Ansible run. Old lists are detected
+  and should work as intended. [drybjed]
+

@@ -18,6 +18,6 @@
   ldap_attr:
     dn: 'olcDatabase={1}{{ slapd_backend }},cn=config'
     name: 'olcAccess'
-    values: '{{ slapd_ldap_access_control_list }}'
+    values: '{{ lookup("template", "lookup/slapd_ldap_access_control_list.j2") | from_yaml }}'
     state: 'exact'
 
