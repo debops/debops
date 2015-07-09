@@ -23,3 +23,7 @@ v0.1.0
 - Add ``openssh-lpk`` LDAP schema for support of OpenSSH Public Key lookup in
   LDAP server. [drybjed]
 
+- Add ACL entry ``ou=Machines,<domain>`` to allow easy integration with
+  ``debops.auth`` role. This entry allows hosts that are registered in LDAP to
+  read all entries in the database. [drybjed]
+
