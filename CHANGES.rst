@@ -20,3 +20,6 @@ v0.1.0
   Wheezy it's set to ``hdb`` by default, on Debian Jessie and other
   distributions it's set to ``mdb`` by default. [drybjed]
 
+- Add ``openssh-lpk`` LDAP schema for support of OpenSSH Public Key lookup in
+  LDAP server. [drybjed]
+
