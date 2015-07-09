@@ -8,6 +8,10 @@ slapd_domain: '{{ ansible_domain }}'
 # BaseDN value of the OpenLDAP server
 slapd_basedn: '{{ "dc=" + slapd_domain.split(".") | join(",dc=") }}'
 
+# Specify database backend to use
+slapd_backend: '{{ "hdb" if (ansible_distribution_release in [ "wheezy", "precise" ])
+                         else "mdb" }}'
+
 # Length of passwords set on administrator accounts
 slapd_password_length: '128'
 
