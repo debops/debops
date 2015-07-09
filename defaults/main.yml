@@ -8,6 +8,10 @@ slapd_domain: '{{ ansible_domain }}'
 # BaseDN value of the OpenLDAP server
 slapd_basedn: '{{ "dc=" + slapd_domain.split(".") | join(",dc=") }}'
 
+# Specify database backend to use
+slapd_backend: '{{ "hdb" if (ansible_distribution_release in [ "wheezy", "precise" ])
+                         else "mdb" }}'
+
 # Length of passwords set on administrator accounts
 slapd_password_length: '128'
 
@@ -155,6 +159,9 @@ slapd_ldap_schema:
     # Additional attributes and classes for LDAP Name Service
   - '/usr/local/etc/ldap/schema/ldapns.ldif'
 
+    # Support for SSH Public Key lookup in LDAP
+  - '/usr/local/etc/ldap/schema/openssh-lpk.ldif'
+
 
 # ---- LDAP index configuration ----
 
@@ -196,22 +203,23 @@ slapd_ldap_access_control_list: '{{ slapd_ldap_access_control_list_default }}'
 # Default LDAP ACL. Order of entries is important!
 slapd_ldap_access_control_list_default:
 
-  - '{0}to attrs=userPassword,shadowLastChange
-        by tls_ssf=128 ssf=128 self write
-        by tls_ssf=128 ssf=128 anonymous auth
-        by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
-        by * none'
+  - 'to attrs=userPassword,shadowLastChange
+     by tls_ssf=128 ssf=128 self write
+     by tls_ssf=128 ssf=128 anonymous auth
+     by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
+     by * none'
 
-  - '{1}to attrs=uid,uidNumber,gidNumber,homeDirectory,loginShell
-        by tls_ssf=128 ssf=128 self read
-        by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
-        by tls_ssf=128 ssf=128 users read'
+  - 'to attrs=uid,uidNumber,gidNumber,homeDirectory,loginShell
+     by tls_ssf=128 ssf=128 self read
+     by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
+     by tls_ssf=128 ssf=128 users read'
 
-  - '{2}to dn.base=""
-        by tls_ssf=128 ssf=128 * read'
+  - 'to dn.base=""
+     by tls_ssf=128 ssf=128 * read'
 
-  - '{3}to *
-        by tls_ssf=128 ssf=128 self read
-        by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
-        by * none'
+  - 'to *
+     by tls_ssf=128 ssf=128 self read
+     by tls_ssf=128 ssf=128 dn.subtree="ou=Machines,{{ slapd_basedn }}" read
+     by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
+     by * none'
 

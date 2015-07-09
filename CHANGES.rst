@@ -6,6 +6,8 @@ v0.1.0
 
 *Unreleased*
 
+- First release, add CHANGES.rst [drybjed]
+
 - Change the default ``olcAccess`` rules to not allow users to modify all of
   their own attributes by default. Fixes `Debian Bug #761406`_. [drybjed]
 
@@ -14,5 +16,18 @@ v0.1.0
 - Move ``olcSecurity`` rules to role defaults, so that they can be easily
   overridden if necessary. [drybjed]
 
-- First release, add CHANGES.rst [drybjed]
+- Add a variable that specifies LDAP database backend that's in use. On Debian
+  Wheezy it's set to ``hdb`` by default, on Debian Jessie and other
+  distributions it's set to ``mdb`` by default. [drybjed]
+
+- Add ``openssh-lpk`` LDAP schema for support of OpenSSH Public Key lookup in
+  LDAP server. [drybjed]
+
+- Add ACL entry ``ou=Machines,<domain>`` to allow easy integration with
+  ``debops.auth`` role. This entry allows hosts that are registered in LDAP to
+  read all entries in the database. [drybjed]
+
+- Remove index numbers from LDAP Access Control Lists. They will be added
+  dynamically by a lookup template during Ansible run. Old lists are detected
+  and should work as intended. [drybjed]
 

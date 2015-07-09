@@ -8,6 +8,13 @@
     value: '{{ slapd_domain }}'
   with_items: [ 'slapd/domain', 'shared/organization' ]
 
+- name: Configure database backend for OpenLDAP in debconf
+  debconf:
+    name: 'slapd'
+    question: 'slapd/backend'
+    vtype: 'string'
+    value: '{{ slapd_backend | upper }}'
+
 - name: Install OpenLDAP packages
   apt:
     name: '{{ item }}'
