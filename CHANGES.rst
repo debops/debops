@@ -31,3 +31,14 @@ v0.1.0
   dynamically by a lookup template during Ansible run. Old lists are detected
   and should work as intended. [drybjed]
 
+- Change ``cn=admin,dc=...`` account path in ``secret/`` directory so that it
+  is shared among all ``slapd`` hosts in the cluster. This will stop the
+  password from being updated over and over in ``secret/ldap/`` directory (for
+  other roles), however a tradeoff will be an error at initial creation of the
+  password if multiple ``slapd`` hosts are run at once due to an Ansible
+  ``lookup()`` conflict; this can be avoided by creating the initial
+  configuration on one of the servers instead of all of them.
+
+  This commit might change the LDAP administrator password, you need to update
+  it elsewhere after the change. [drybjed]
+
