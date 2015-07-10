@@ -242,7 +242,8 @@ dhcpd_subnet_default:
     routers: '{{ ansible_default_ipv4.gateway | default("") }}'
     comment: 'Generated automatically by Ansible'
   '6':
-    subnet: '{{ ansible_default_ipv6.address|default("::1") + "/" + ansible_default_ipv6.prefix }}'
+    subnet: '{{ ((ansible_default_ipv6.address + "/" + ansible_default_ipv6.prefix)
+                 if ansible_default_ipv6.address|d() else "") }}'
     comment: 'Generated automatically by Ansible'
 
 
