@@ -15,6 +15,9 @@ v0.1.1
 
 - Add support for iPXE boot loader chain-loading and DHCP options. [drybjed]
 
+- Fix a templating error when IPv6 networking is not present on a host.
+  [drybjed]
+
 v0.1.0
 ------
 
