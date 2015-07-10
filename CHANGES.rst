@@ -15,3 +15,6 @@ v0.1.0
   containers. This unit file will be automatically activated on hosts with
   ``systemd`` enabled. [drybjed]
 
+- Ignore "link-local" IPv6 addresses in list of IP addresses / subnets allowed
+  to connect to ``snmpd``. [drybjed]
+
