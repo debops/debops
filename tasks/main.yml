@@ -83,6 +83,15 @@
 - include: root_account.yml
   when: console_root is defined and console_root
 
+- name: Manage entries in /etc/hosts
+  lineinfile:
+    dest: '/etc/hosts'
+    regexp: '^{{ item.key | replace(".","\.") }}\s+'
+    line: '{{ item.key }}\t{{ item.value if (item.value is string) else (item.value | join(" ")) }}'
+    state: '{{ "present" if item.value|d() else "absent" }}'
+  with_dict: console_hosts
+  when: console_hosts|d()
+
 - include: filesystem_mount.yml
   when: (ansible_local|d() and ((ansible_local.root and 'ignore-cap12s' in ansible_local.root.flags) or
          (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
