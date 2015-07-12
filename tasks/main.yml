@@ -42,6 +42,10 @@
     mode: '0644'
   with_fileglob: [ '../templates/srv/tftp/*.j2' ]
 
+- name: Configure Debian netboot installer
+  include: debian_pxeboot.yml
+  when: ipxe_tftp|d() and ipxe_debian_pxeboot|d()
+
 - name: DebOps post_tasks hook
   include: "{{ lookup('task_src', 'ipxe/post_main.yml') }}"
 

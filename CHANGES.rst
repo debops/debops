@@ -8,6 +8,11 @@ v0.1.3
 
 - Change Debian Installer mirror URL to current HTTP redirector. [drybjed]
 
+- Add support for local Debian netinst installation with optional (enabled by
+  default) non-free firmware added to ``initrd.gz`` to help install Debian on
+  systems that require non-free firmware. Installer uses PXE and TFTP.
+  [drybjed]
+
 v0.1.2
 ------
 

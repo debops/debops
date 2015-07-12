@@ -95,3 +95,40 @@ ipxe_debian_installer_keymap: 'us'
 # Address of the Debian mirror used to download the Installer files.
 ipxe_debian_installer_mirror: 'httpredir.debian.org'
 
+
+# .. envvar:: ipxe_debian_pxeboot
+#
+# Enable configuration of local Debian netinst (amd64) using PXE + TFTP.
+ipxe_debian_pxeboot: True
+
+
+# .. envvar:: ipxe_debian_pxeboot_firmware
+#
+# Add non-free firmware to Debian netinst ``initrd.gz``. See
+# https://wiki.debian.org/DebianInstaller/NetbootFirmware for more details.
+ipxe_debian_pxeboot_firmware: True
+
+
+# .. envvar:: ipxe_debian_pxeboot_release
+#
+# Debian release to use for Debian netinst (``jessie``, ``stable``, etc.).
+ipxe_debian_pxeboot_release: 'stable'
+
+
+# .. envvar:: ipxe_debian_pxeboot_workdir
+#
+# Directory where netinst and firmware tarballs are stored and worked on.
+ipxe_debian_pxeboot_workdir: '/usr/local/src/ipxe/debian-pxeboot'
+
+
+# .. envvar:: ipxe_debian_pxeboot_url
+#
+# URL of the ``netboot.tar.gz`` tarball with Debian netinst.
+ipxe_debian_pxeboot_url: 'http://{{ ipxe_debian_installer_mirror }}/debian/dists/{{ ipxe_debian_pxeboot_release }}/main/installer-amd64/current/images/netboot/netboot.tar.gz'
+
+
+# .. envvar:: ipxe_debian_pxeboot_firmware_url
+#
+# URL of the ``firmware.tar.gz`` tarball with non-free firmware.
+ipxe_debian_pxeboot_firmware_url: 'http://cdimage.debian.org/cdimage/unofficial/non-free/firmware/{{ ipxe_debian_pxeboot_release }}/current/firmware.tar.gz'
+
