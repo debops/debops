@@ -13,6 +13,9 @@ v0.1.3
   systems that require non-free firmware. Installer uses PXE and TFTP.
   [drybjed]
 
+- Add a menu option in iPXE Boot Menu to switch to local PXE Boot Menu.
+  [drybjed]
+
 v0.1.2
 ------
 

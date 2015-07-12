@@ -63,10 +63,15 @@ goto main_menu
 
 :other_boot_menu
 menu Switch to different boot menu
+item pxe_boot_menu Switch to local PXE Boot Menu
 item sal_boot_menu Switch to SAL's Boot Menu
 item rackspace_boot_menu Switch to Rackspace Boot Menu
 choose other_menu || goto main_menu
 goto ${other_menu} || goto error
+goto main_menu
+
+:pxe_boot_menu
+chain pxelinux.0 || goto error
 goto main_menu
 
 :sal_boot_menu
