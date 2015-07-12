@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Released: 2015-07-12*
+
+- Change Debian Installer mirror URL to current HTTP redirector. [drybjed]
+
 v0.1.2
 ------
 
