@@ -32,6 +32,12 @@
   register: ipxe_register_debian_netinst
   when: ipxe_tftp|d()
 
+- name: Fix directory permissions after unarchive
+  file:
+    path: '{{ ipxe_tftp_root }}'
+    state: 'directory'
+    mode: '0755'
+
 - name: Copy original Debian netboot initrd
   command: cp {{ ipxe_tftp_root }}/debian-installer/amd64/initrd.gz {{ ipxe_debian_pxeboot_workdir }}/
   args:
