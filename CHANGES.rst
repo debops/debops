@@ -47,3 +47,6 @@ v0.1.0
   containers. Containers cannot directly mount filesystems, a separate wrapper
   needs to be used. [drybjed]
 
+- Change the SSH public key lookup to avoid issues when ``ssh-add`` does not
+  return any keys. Thanks, xorgic! [drybjed]
+
