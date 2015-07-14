@@ -9,6 +9,9 @@ v0.1.2
 - Add variables to set admin account home directory group and permissions.
   Admin account will be created and managed only if it doesn't exist. [drybjed]
 
+- Change the SSH public key lookup to not cause issues when ``ssh-add`` does
+  not return any keys. Thanks, xorgic! [drybjed]
+
 v0.1.1
 ------
 
