@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Unreleased*
+
+- Change the SSH public key lookup to not cause issues when ``ssh-add`` does
+  not return any keys. Thanks, xorgic! [drybjed]
+
 v0.1.1
 ------
 
