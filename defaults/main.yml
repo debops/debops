@@ -123,7 +123,7 @@ openvz_template_sudo: True
 openvz_template_sudo_group: '{{ openvz_template_admin_groups[0] | default("") }}'
 
 # Default SSH keys added on the admin account by the bootstrap script
-openvz_template_admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L || cat ~/.ssh/id_rsa.pub || true") }}' ]
+openvz_template_admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
 
 # ---- Salt integration ----

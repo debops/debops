@@ -24,3 +24,6 @@ v0.1.0
   Admin account will be created only when not already present.
   [drybjed]
 
+- Change the SSH public key lookup to not cause problems with ``ssh-add`` does
+  not return any keys. Thanks, xorgic! [drybjed]
+
