@@ -1,11 +1,22 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) bootstrap
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-bootstrap.svg?style=flat)](http://travis-ci.org/debops/ansible-bootstrap) [![test-suite](http://img.shields.io/badge/test--suite-ansible--bootstrap-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-bootstrap/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-bootstrap.svg?style=flat)](http://travis-ci.org/debops/ansible-bootstrap) [![test-suite](http://img.shields.io/badge/test--suite-ansible--bootstrap-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-bootstrap/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.bootstrap-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4375)
 
 `debops.bootstrap` is an Ansible role that heps perpare a given
 Debian/Ubuntu host to be managed by Ansible. It will install required
 Python packages, configure hostname and domain, create an admin account and
 set up SSH public keys for passwordless SSH access.
+
+### Installation
+
+This role requires at least Ansible `v1.8.0`. To install it, run:
+
+    ansible-galaxy install debops.bootstrap
+
+### Documentation
+
+More information about `debops.bootstrap` can be found in the
+[official debops.bootstrap documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-bootstrap/docs/).
 
 
 
