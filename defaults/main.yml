@@ -81,7 +81,7 @@ lxc_template_sudo: True
 lxc_template_sudo_group: '{{ lxc_template_admin_groups[0] | default("") }}'
 
 # SSH public key to put in administrator account of new container
-lxc_template_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L || cat ~/.ssh/id_rsa.pub || true") }}' ]
+lxc_template_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
 # Address of Debian mirror to use in debootstrap
 # Example usage with local apt-cacher-ng proxy: 'http://cache.{{ ansible_domain }}:3142/debian'
