@@ -210,7 +210,7 @@ preseed_sudo_group: '{{ preseed_admin_groups[0] }}'
 #
 # List of SSH public keys installed on administrator account, as well as the
 # ``root`` account.
-preseed_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L || cat ~/.ssh/id_rsa.pub || true") }}' ]
+preseed_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
 
 
