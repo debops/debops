@@ -1,0 +1,130 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# -----------------------
+#   Hostname and domain
+# -----------------------
+
+# .. envvar:: bootstrap_domain
+#
+# Set custom DNS domain on a given host.
+bootstrap_domain: ''
+
+
+# .. envvar:: bootstrap_hostname
+#
+# Set custom DNS hostname on a given host.
+bootstrap_hostname: '{{ inventory_hostname_short | default(inventory_hostname) }}'
+
+
+# --------------------
+#   APT and packages
+# --------------------
+
+# .. envvar:: bootstrap_raw
+#
+# Install minimal set of required packages using ``raw`` Ansible module.
+bootstrap_raw: True
+
+
+# .. envvar:: bootstrap_base_packages
+#
+# Base packages installed during bootstrap.
+bootstrap_base_packages: [ 'python', 'python-apt', 'python-pip', 'sudo', 'lsb-release' ]
+
+
+# .. envvar:: bootstrap_packages
+#
+# Install additional packages during bootstrap.
+bootstrap_packages: []
+
+
+# --------------------------------
+#   System Administrator account
+# --------------------------------
+
+# .. envvar:: bootstrap_admin
+#
+# Enable configuration of administrator account.
+bootstrap_admin: True
+
+
+# .. envvar:: bootstrap_admin_system
+#
+# Should the admin account be a system account (UID < 1000) ?
+bootstrap_admin_system: True
+
+
+# .. envvar:: bootstrap_admin_name
+#
+# Name of the admin account.
+bootstrap_admin_name: '{{ ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER") }}'
+
+
+# .. envvar:: bootstrap_admin_group
+#
+# List of local system groups which admin account will be added to.
+bootstrap_admin_groups:  [ "admins", "staff", "adm" ]
+
+
+# .. envvar:: bootstrap_admin_home
+#
+# Home directory of the administrator account, when it's a "normal" account.
+bootstrap_admin_home: '{{ "/home/" + bootstrap_admin_name }}'
+
+
+# .. envvar:: bootstrap_admin_system_home
+#
+# Home directory of the administrator account, when it's a "system" account.
+bootstrap_admin_system_home: '{{ "/var/local/" + bootstrap_admin_name }}'
+
+
+# .. envvar:: bootstrap_admin_home_group
+#
+# Specify administrator account home directory group.
+bootstrap_admin_home_group: '{{ bootstrap_admin_groups[0] }}'
+
+
+# .. envvar:: bootstrap_admin_home_mode
+#
+# Specify permissions for administrator account home directory.
+bootstrap_admin_home_mode: '0750'
+
+
+# .. envvar:: bootstrap_admin_comment
+#
+# Comment / GECOS field of the administrator account.
+bootstrap_admin_comment: 'System Administrator'
+
+
+# .. envvar:: bootstrap_admin_shell
+#
+# Default shell set on the admin account.
+bootstrap_admin_shell: '/bin/bash'
+
+
+# .. envvar:: bootstrap_admin_sshkeys
+#
+# List of SSH keys configured on root and administrator accounts.
+bootstrap_admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
+
+
+# ---------------------------
+#   Access to sudo commands
+# ---------------------------
+
+# .. envvar:: bootstrap_sudo
+#
+# Configure paswordless ``sudo`` access for selected accounts.
+bootstrap_sudo: True
+
+
+# .. envvar:: bootstrap_sudo_group
+#
+# A group which grants passwordless ``sudo`` access.
+bootstrap_sudo_group: '{{ bootstrap_admin_groups[0] | default("") }}'
+
