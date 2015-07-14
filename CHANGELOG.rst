@@ -11,7 +11,7 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.2.6
 ------
 
-*Unreleased*
+*Released: 2015-07-14*
 
 - Add ``debops.fail2ban`` role. [drybjed]
 
@@ -76,6 +76,8 @@ v0.2.6
 - Add ``debops.memcached`` role. [drybjed]
 
 - Add MariaDB server and client roles. [drybjed]
+
+- Convert ``bootstrap.yml`` playbook to an Ansible role. [drybjed]
 
 v0.2.5
 ------
