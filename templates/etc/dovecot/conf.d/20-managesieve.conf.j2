@@ -11,5 +11,26 @@ setup, you can provide your own template via lookup mechanism.
 ## ManageSieve specific settings
 ##
 
+{% if dovecot_protocol_map is defined and dovecot_protocol_map %}
+{% if 'managesieve' in dovecot_protocol_map.keys() %}
+{% if dovecot_protocol_map['managesieve'].port is defined and
+      dovecot_protocol_map['managesieve'].port %}
+service managesieve-login {
+  inet_listener sieve {
+    port = {{ dovecot_protocol_map['managesieve'].port }}
+  }
+}
+
+{% endif %}
+{% endif %}
+{% endif %}
 protocol sieve {
+{% if dovecot_protocol_map is defined and dovecot_protocol_map %}
+{% if 'managesieve' in dovecot_protocol_map.keys() %}
+{% if dovecot_protocol_map['managesieve'].port is defined and
+      dovecot_protocol_map['managesieve'].port %}
+  mail_max_userip_connections = {{ dovecot_protocol_map['managesieve'].max_userip_connections }}
+{% endif %}
+{% endif %}
+{% endif %}
 }

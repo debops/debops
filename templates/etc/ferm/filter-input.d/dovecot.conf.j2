@@ -1,66 +1,37 @@
 # {{ ansible_managed }}
 
-{% if dovecot_allow_imap is defined and 'imap' in dovecot_protocols %}
-protocol tcp dport imap {
-{% if dovecot_allow_imap is defined and dovecot_allow_imap %}
-	@def $ITEMS = ( @ipfilter( ({{ dovecot_allow_imap | unique | join(" ") }}) ) );
+{% for protocol in [ 'imap', 'imaps', 'pop3', 'pop3s', 'managesieve' ] %}
+{% if protocol in dovecot_protocols %}
+{% if protocol not in dovecot_protocol_map.keys() %}
+{% set protocol_allow = [] %}
+{% set protocol_service = protocol %}
+{% else %}
+{% if dovecot_protocol_map[protocol].allow is defined %}
+{% set protocol_allow = dovecot_protocol_map[protocol].allow %}
+{% else %}
+{% set protocol_allow = [] %}
+{% endif %}
+{% if dovecot_protocol_map[protocol].port is defined %}
+{% set protocol_service = dovecot_protocol_map[protocol].port %}
+{% else %}
+{% set protocol_service = protocol %}
+{% endif %}
+{% endif %}
+{% if protocol_service == 'managesieve' %}
+{% set protocol_service = 'sieve' %}
+{% endif %}
+{% if protocol_allow != False %}
+protocol tcp dport {{ protocol_service }} {
+{% if protocol_allow %}
+	@def $ITEMS = ( @ipfilter( ({{ protocol_allow | unique | join(" ") }}) ) );
 	@if @ne($ITEMS,"") {
 		saddr $ITEMS ACCEPT;
 	}
-{% elif dovecot_allow_imap is defined and not dovecot_allow_imap %}
+{% else %}
 	ACCEPT;
 {% endif %}
 }
-{% endif %}
 
-{% if dovecot_allow_imaps is defined and 'imaps' in dovecot_protocols %}
-protocol tcp dport imaps {
-{% if dovecot_allow_imaps is defined and dovecot_allow_imaps %}
-	@def $ITEMS = ( @ipfilter( ({{ dovecot_allow_imaps | unique | join(" ") }}) ) );
-	@if @ne($ITEMS,"") {
-		saddr $ITEMS ACCEPT;
-	}
-{% elif dovecot_allow_imaps is defined and not dovecot_allow_imaps %}
-	ACCEPT;
 {% endif %}
-}
 {% endif %}
-
-{% if dovecot_allow_pop3 is defined and 'pop3' in dovecot_protocols %}
-protocol tcp dport pop3 {
-{% if dovecot_allow_pop3 is defined and dovecot_allow_pop3 %}
-	@def $ITEMS = ( @ipfilter( ({{ dovecot_allow_pop3 | unique | join(" ") }}) ) );
-	@if @ne($ITEMS,"") {
-		saddr $ITEMS ACCEPT;
-	}
-{% elif dovecot_allow_pop3 is defined and not dovecot_allow_pop3 %}
-	ACCEPT;
-{% endif %}
-}
-{% endif %}
-
-{% if dovecot_allow_pop3s is defined and 'pop3s' in dovecot_protocols %}
-protocol tcp dport pop3s {
-{% if dovecot_allow_pop3s is defined and dovecot_allow_pop3s %}
-	@def $ITEMS = ( @ipfilter( ({{ dovecot_allow_pop3s | unique | join(" ") }}) ) );
-	@if @ne($ITEMS,"") {
-		saddr $ITEMS ACCEPT;
-	}
-{% elif dovecot_allow_pop3s is defined and not dovecot_allow_pop3s %}
-	ACCEPT;
-{% endif %}
-}
-{% endif %}
-
-{% if dovecot_allow_managesieve is defined and 'managesieve' in dovecot_protocols %}
-protocol tcp dport sieve {
-{% if dovecot_allow_managesieve is defined and dovecot_allow_managesieve %}
-	@def $ITEMS = ( @ipfilter( ({{ dovecot_allow_managesieve | unique | join(" ") }}) ) );
-	@if @ne($ITEMS,"") {
-		saddr $ITEMS ACCEPT;
-	}
-{% elif dovecot_allow_managesieve is defined and not dovecot_allow_managesieve %}
-	ACCEPT;
-{% endif %}
-}
-{% endif %}
+{% endfor %}

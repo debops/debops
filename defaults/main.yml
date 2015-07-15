@@ -12,9 +12,36 @@
 
 # .. envvar:: dovecot_protocols
 #
-# List of protocols enabled. So far supported are:
-# ``imap``, ``imaps``, ``pop3``, ``pop3s``, ``managesieve``
+# List of protocols to enable. See ``dovecot_protocol_map`` for supported
+# protocols.
 dovecot_protocols: [ 'imap', 'imaps' ]
+
+
+# .. envvar:: dovecot_protocol_map
+#
+# List of protocol definitions. The default configuration will use the
+# standard ports as shown below and allow access from all networks. You
+# can overwrite the defaults by setting a custom value here. Access to
+# specific hosts or networks can be restricted by using the ``allow``
+# keyword. ``allow = False`` means that remote access will be blocked by
+# iptables.
+dovecot_protocol_map: {}
+#  imap:
+#    port: 143
+#    allow: []
+#  imaps:
+#    port: 993
+#    allow: []
+#  pop3:
+#    port: 110
+#    allow: []
+#  pop3s:
+#    port: 995
+#    allow: []
+#  managesieve:
+#    port: 4190
+#    allow: []
+#    mail_max_userip_connections: 10
 
 
 # .. envvar:: dovecot_auth
@@ -97,43 +124,6 @@ dovecot_ssl_required: True
 #
 # SSL ciphers to use
 dovecot_ssl_cipher_list: 'TLSv1+HIGH:!SSLv2:!EXPORT:!RC4:!aNULL:!eNULL:!3DES:@STRENGTH'
-
-
-# --------------------------
-#   Firewall configuration
-# --------------------------
-
-# You can limit access to specific hosts or networks using ``dovecot_allow_*``
-# variables.
-
-# .. envvar:: dovecot_allow_imap
-#
-# List of hosts/networks that can access ``imap`` port (143)
-dovecot_allow_imap: []
-
-
-# .. envvar:: dovecot_allow_imaps
-#
-# List of hosts/networks that can access ``imaps`` port (993)
-dovecot_allow_imaps: []
-
-
-# .. envvar:: dovecot_allow_pop3
-#
-# List of hosts/networks that can access ``pop3`` port (110)
-dovecot_allow_pop3: []
-
-
-# .. envvar:: dovecot_allow_pop3s
-#
-# List of hosts/networks that can access ``pop3s`` port (995)
-dovecot_allow_pop3s: []
-
-
-# .. envvar:: dovecot_allow_managesieve
-#
-# List of hosts/networks that can access ``managesieve`` port (4190)
-dovecot_allow_managesieve: []
 
 
 # --------------------------------

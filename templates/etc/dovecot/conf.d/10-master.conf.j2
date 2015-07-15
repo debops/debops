@@ -1,0 +1,63 @@
+# {{ ansible_managed }}
+{#
+
+This file follows the upstream default configuration except for the parts
+that are configurable via DebOps variables. If you need a more customized
+setup, you can provide your own template via lookup mechanism.
+
+#}
+
+{% if 'imap' in dovecot_protocols or 'imaps' in dovecot_protocols %}
+service imap-login {
+{% for proto in [ 'imap', 'imaps' ] %}
+{% if proto in dovecot_protocols %}
+  inet_listener {{ proto }} {
+{% if dovecot_protocol_map[proto] is defined and dovecot_protocol_map[proto] %}
+{% if dovecot_protocol_map[proto].port is defined and dovecot_protocol_map[proto].port %}
+    port = {{ dovecot_protocol_map[proto].port }}
+{% endif %}
+{% endif %}
+  }
+{% endif %}
+{% endfor %}
+}
+{% endif %}
+
+{% if 'pop3' in dovecot_protocols or 'pop3' in dovecot_protocols %}
+service pop3-login {
+{% for proto in [ 'pop3', 'pop3s' ] %}
+{% if proto in dovecot_protocols %}
+  inet_listener {{ proto }} {
+{% if dovecot_protocol_map[proto] is defined and dovecot_protocol_map[proto] %}
+{% if dovecot_protocol_map[proto].port is defined and dovecot_protocol_map[proto].port %}
+    port = {{ dovecot_protocol_map[proto].port }}
+{% endif %}
+{% endif %}
+  }
+{% endif %}
+{% endfor %}
+}
+{% endif %}
+
+{% if 'imap' in dovecot_protocols or 'imaps' in dovecot_protocols %}
+service imap {
+}
+{% endif %}
+
+{% if 'pop3' in dovecot_protocols or 'pop3' in dovecot_protocols %}
+service pop3 {
+}
+{% endif %}
+
+service auth {
+  unix_listener auth-userdb {
+  }
+}
+
+service auth-worker {
+}
+
+service dict {
+  unix_listener dict {
+  }
+}
