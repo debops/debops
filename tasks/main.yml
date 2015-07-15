@@ -47,11 +47,6 @@
     mode: '0644'
   when: mariadb_server|d(False)
 
-- name: Manage database contents
-  include: 'manage_contents.yml'
-  when: (mariadb_server|d(False) and mariadb_delegate_to)
-  tags: [ 'mariadb/contents' ]
-
 - name: Make sure that local fact directory exists
   file:
     dest: '/etc/ansible/facts.d'
@@ -73,4 +68,9 @@
   action: setup
   when: mariadb_register_local_facts|d() and
         mariadb_register_local_facts.changed
+
+- name: Manage database contents
+  include: 'manage_contents.yml'
+  when: (mariadb_server|d(False) and mariadb_delegate_to)
+  tags: [ 'mariadb/contents' ]
 
