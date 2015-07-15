@@ -29,6 +29,9 @@ v0.1.4
   ``nginx_http_options`` YAML text block for easy modification if necessary.
   [drybjed]
 
+- Add support for ``nginx`` package from upstream (http://nginx.org/), thanks
+  to Pedro Luis López Sánchez. [drybjed]
+
 v0.1.3
 ------
 
