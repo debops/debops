@@ -1,0 +1,55 @@
+---
+
+- name: DebOps pre_tasks hook
+  include: "{{ lookup('task_src', 'lvm/pre_main.yml') }}"
+
+- name: Install LVM support
+  apt:
+    name:  '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_items: lvm_packages
+
+- name: Configure global/use_lvmetad
+  lineinfile:
+    dest:        '/etc/lvm/lvm.conf'
+    insertafter: '^global\s+{$'
+    regexp:      '^\s+use_lvmetad\s=\s'
+    line:        '    use_lvmetad = {{ lvm_global_use_lvmetad }}'
+    state:       'present'
+
+- name: Disable default devices/filter value
+  lineinfile:
+    dest:     '/etc/lvm/lvm.conf'
+    regexp:   '^\s\s\s\sfilter\s=\s\[\s"a/.*/"\s\]$'
+    line:     '    # filter = [ "a/.*/" ]'
+    backrefs: True
+    state:    'present'
+
+- name: Configure devices/filter
+  lineinfile:
+    dest:        '/etc/lvm/lvm.conf'
+    insertafter: '^devices\s+{$'
+    regexp:      '\s+filter\s+=\s+\[\s+\"'
+    line:        '    filter = [ "{{ lvm_devices_filter | join("\", \"") }}" ]'
+    state:       'present'
+  register: lvm_register_devices_filter
+
+- name: Configure devices/global_filter
+  lineinfile:
+    dest:        '/etc/lvm/lvm.conf'
+    insertafter: '^devices\s+{$'
+    regexp:      '\s+global_filter\s+=\s+\['
+    line:        '    global_filter = [ "{{ lvm_devices_global_filter | join("\", \"") }}" ]'
+    state:       'present'
+  register: lvm_register_devices_global_filter
+
+- name: Manage LVM
+  include: manage_lvm.yml
+  when: (ansible_local|d() and ((ansible_local.root and 'ignore-cap12s' in ansible_local.root.flags) or
+         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+          (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
+
+- name: DebOps post_tasks hook
+  include: "{{ lookup('task_src', 'lvm/post_main.yml') }}"
+

@@ -1,0 +1,70 @@
+---
+# Default variables
+# =================
+
+# ---------------------
+#   LVM configuration
+# ---------------------
+
+# .. envvar:: lvm_packages
+#
+# List of LVM-related packages to install.
+lvm_packages: [ 'lvm2' ]
+
+
+# .. envvar:: lvm_global_use_lvmetad
+#
+# Enable ``lvmetad`` daemon by default.
+lvm_global_use_lvmetad: '1'
+
+
+# .. envvar:: lvm_devices_filter
+#
+# List of filters that determine what devices are used by ``lvm`` scripts.
+lvm_devices_filter: [ 'a|sd.*|', 'a|vd.*|', 'a|drbd.*|', 'r|.*|' ]
+
+
+# .. envvar:: lvm_devices_global_filter
+#
+# List of filters that determine what devices are scanned by ``lvm`` scripts.
+lvm_devices_global_filter: '{{ lvm_devices_filter }}'
+
+
+# ------------------------------------
+#   Volume Groups and Logcal Volumes
+# ------------------------------------
+
+# .. envvar:: lvm_default_fs_type
+#
+# Default filesystem used to format and mount volumes if none is specified.
+lvm_default_fs_type: 'ext4'
+
+
+# .. envvar:: lvm_default_mount_options
+#
+# Default mount options used to mount volumes, comma-separated.
+lvm_default_mount_options: 'defaults'
+
+
+# .. envvar:: lvm_volume_groups
+#
+# List of Volume Groups, each one defined as a YAML dict. See
+# :ref:`lvm_volume_groups` for more details.
+lvm_volume_groups: []
+
+
+# .. envvar:: lvm_logical_volumes
+#
+# List of Logical Volumes, each one defined as a YAML dict. See
+# :ref:`lvm_logical_volumes` for more details.
+lvm_logical_volumes: []
+
+#  - lv: 'play_mate'
+#    vg: 'vg_play'
+#    size: '1G'
+#    fs: False
+#    mount: '/srv/playmate'
+#    #mount_state: 'absent'
+#    state: 'absent'
+#    force: True
+

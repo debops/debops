@@ -1,0 +1,40 @@
+Getting started
+===============
+
+.. contents::
+   :local:
+
+Example inventory
+-----------------
+
+To configure LVM on a host without using other roles, you should add that host
+to ``[debops_lvm]`` Ansible group::
+
+    [debops_lvm]
+    hostname
+
+If you use separate host groups, better idea might be to create a parent group
+and add your own host groups to it::
+
+    [servers]
+    host1
+    host2
+
+    [debops_lvm:children]
+    servers
+
+Example playbook
+----------------
+
+Here's an example playbook which uses ``debops.lvm`` role::
+
+    ---
+
+    - name: Configure Logical Volume Manager
+      hosts: debops_lvm
+      sudo: True
+
+      roles:
+        - role: debops.lvm
+          tags: lvm
+
