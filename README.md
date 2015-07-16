@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) lvm
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-lvm.svg?style=flat)](http://travis-ci.org/debops/ansible-lvm) [![test-suite](http://img.shields.io/badge/test--suite-ansible--lvm-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-lvm/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-lvm.svg?style=flat)](http://travis-ci.org/debops/ansible-lvm) [![test-suite](http://img.shields.io/badge/test--suite-ansible--lvm-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-lvm/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.lvm-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4402)
 
 [Logical Volume
 Manager](https://en.wikipedia.org/wiki/Logical_Volume_Manager_(Linux)) lets
@@ -11,6 +11,17 @@ This Ansible role lets you configure `/etc/lvm/lvm.conf` configuration
 file, as well as gives you a set of variables which can be used to manage
 LVM logical volumes, automatically create filesystems on them and mount
 them as needed.
+
+### Installation
+
+This role requires at least Ansible `v1.8.0`. To install it, run:
+
+    ansible-galaxy install debops.lvm
+
+### Documentation
+
+More information about `debops.lvm` can be found in the
+[official debops.lvm documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-lvm/docs/).
 
 
 
