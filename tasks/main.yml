@@ -92,6 +92,19 @@
   with_dict: console_hosts
   when: console_hosts|d()
 
+- name: Copy custom files to remote hosts
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    owner: '{{ item.owner | d(omit) }}'
+    group: '{{ item.group | d(omit) }}'
+    mode: '{{ item.mode | d(omit) }}'
+    directory_mode: '{{ item.directory_mode | d(omit) }}'
+    follow: '{{ item.follow | d(omit) }}'
+    force: '{{ item.force | d(omit) }}'
+  with_items: console_custom_files
+  when: (item.src|d() and item.dest|d())
+
 - include: filesystem_mount.yml
   when: (ansible_local|d() and ((ansible_local.root and 'ignore-cap12s' in ansible_local.root.flags) or
          (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or

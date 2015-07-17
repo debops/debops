@@ -13,3 +13,6 @@ v0.1.0
 
 - Add a way to manage entries in ``/etc/hosts``. [drybjed]
 
+- Add a task that allows to copy custom files from Ansible Controller, list of
+  files is configurable using Ansible inventory. [drybjed]
+
