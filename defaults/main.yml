@@ -1,0 +1,170 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# -------------------------
+#   General configuration
+# -------------------------
+
+# .. envvar:: iscsi_packages
+#
+# List of packages installed for iSCSI Initiator support.
+iscsi_packages: [ 'open-iscsi', 'lvm2' ]
+
+
+# .. envvar:: iscsi_interfaces
+#
+# List of network interfaces configured for iSCSI connections. If not
+# specified, iSCSI targets will be discovered on all network interfaces.
+iscsi_interfaces: []
+
+
+# .. envvar:: iscsi_portals
+#
+# List of FQDN hostnames or IP addresses of iSCSI Target hosts on which Ansible
+# will perform iSCSI discovery. Each discovered host will not be scanned again
+# automatically to not distrupt existing connections. The discovery state is
+# stored in Ansible local facts.
+iscsi_portals: []
+
+
+# .. envvar:: iscsi_targets
+#
+# List of iSCSI Targets configured on a given host. Each iSCSI Target is
+# defined as a YAML dict. Check :ref:`iscsi_targets` for more details.
+iscsi_targets: []
+
+
+# .. envvar:: iscsi_logical_volumes
+#
+# List of LVM Logical Volumes based on iSCSI storage. Each volume is defined as
+# a YAML dict. Check :ref:`iscsi_logical_volumes` for more details.
+iscsi_logical_volumes: []
+
+
+# ------------------------
+#   iSCSI Qualified Name
+# ------------------------
+
+# .. envvar:: iscsi_iqn_date
+#
+# Year and month when the Naming Authority of this iSCSI host was estabilished.
+iscsi_iqn_date: '{{ ansible_date_time.year + "-" + ansible_date_time.month }}'
+
+
+# .. envvar:: iscsi_iqn_authority
+#
+# DNS domain name of the Naming Authority responsible for this iSCSI host.
+iscsi_iqn_authority: '{{ ansible_domain }}'
+
+
+# .. envvar:: iscsi_iqn
+#
+# Base prefix for iSCSI Qualified Name of this iSCSI Initiator host, will be
+# saved in Ansible local facts to prevent changes related to the default date
+# field.
+iscsi_iqn: '{{ (ansible_local.iscsi.iqn
+                if (ansible_local|d() and ansible_local.iscsi|d() and
+                    ansible_local.iscsi.iqn|d())
+                else ("iqn." + iscsi_iqn_date + "." +
+                      iscsi_iqn_authority.split(".")[::-1] | join("."))) }}'
+
+
+# .. envvar:: iscsi_hostname
+#
+# Hostname added to the IQN to create Initiator Name.
+iscsi_hostname: '{{ ansible_hostname }}'
+
+
+# .. envvar:: iscsi_initiator_name
+#
+# iSCSI initiator name of this host.
+iscsi_initiator_name: '{{ iscsi_iqn + ":" + iscsi_hostname }}'
+
+
+# -----------------------------------
+#   Default Initiator configuration
+# -----------------------------------
+
+# .. envvar:: iscsi_node_startup
+#
+# Specify if sessions should be started at boot (``automatic``) or not
+# (``manual``).
+iscsi_node_startup: 'automatic'
+
+
+# .. envvar:: iscsi_discovery_auth
+#
+# Enable or disable iSCSI discovery authentication.
+iscsi_discovery_auth: True
+
+
+# .. envvar:: iscsi_discovery_auth_username
+#
+# Username used for iSCSI discovery authentication on all hosts, should be the
+# same for all iSCSI Targets to work automatically.
+iscsi_discovery_auth_username: '{{ lookup("password", secret + "/iscsi/credentials/discovery/username") }}'
+
+
+# .. envvar:: iscsi_discovery_auth_password
+#
+# Password used for iSCSI discovery authentication on all hosts, should be the
+# same for all iSCSI Targets to work automatically.
+iscsi_discovery_auth_password: '{{ lookup("password", secret + "/iscsi/credentials/discovery/password") }}'
+
+
+# .. envvar:: iscsi_session_auth
+#
+# Enable or disable iSCSI session authentication.
+iscsi_session_auth: True
+
+
+# .. envvar:: iscsi_session_auth_username
+#
+# Username used for iSCSI session authentication on all hosts, should be the
+# same for all iSCSI Targets to work automatically. Can be overriden using
+# ``item.auth_username`` in target configuration.
+iscsi_session_auth_username: '{{ lookup("password", secret + "/iscsi/credentials/session/username") }}'
+
+
+# .. envvar:: iscsi_session_auth_password
+#
+# Password used for iSCSI session authentication on all hosts, should be the
+# same for all iSCSI Targets to work automatically. Can be overriden using
+# ``item.auth_password`` in target configuration.
+iscsi_session_auth_password: '{{ lookup("password", secret + "/iscsi/credentials/session/password") }}'
+
+
+# .. envvar:: iscsi_default_options
+#
+# Dict with options set in ``/etc/iscsi/iscsid.conf``, passed to ``lineinfile``
+# Ansible module.
+iscsi_default_options:
+  'node.startup':                          '{{ iscsi_node_startup }}'
+  'discovery.sendtargets.auth.authmethod': '{{ "CHAP" if (iscsi_discovery_auth|d(False)) else "None" }}'
+  'discovery.sendtargets.auth.username':   '{{ iscsi_discovery_auth_username }}'
+  'discovery.sendtargets.auth.password':   '{{ iscsi_discovery_auth_password }}'
+  'node.session.auth.authmethod':          '{{ "CHAP" if (iscsi_session_auth|d(False)) else "None" }}'
+  'node.session.auth.username':            '{{ iscsi_session_auth_username }}'
+  'node.session.auth.password':            '{{ iscsi_session_auth_password }}'
+
+
+# --------------------------------------
+#   Filesystem and mount configuration
+# --------------------------------------
+
+# .. envvar:: iscsi_default_fs_type
+#
+# Default filesystem created on block devices if none is specified.
+iscsi_default_fs_type: 'ext4'
+
+
+# .. envvar:: iscsi_default_mount_options
+#
+# Default mount options added in ``/etc/fstab`` to all iSCSI-based filesystems,
+# if none are specified.
+iscsi_default_mount_options: 'defaults,_netdev'
+
