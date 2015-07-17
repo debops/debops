@@ -32,6 +32,12 @@ v0.1.4
 - Add support for ``nginx`` package from upstream (http://nginx.org/), thanks
   to Pedro Luis López Sánchez. [drybjed]
 
+- By default access to hidden files is blocked in ``nginx`` servers,
+  ``item.deny_hidden`` key allows you to disable that. [drybjed]
+
+- Filter out ``link-local`` IPv6 addresses from list of addresses that can
+  access the ``/nginx_status`` page. [drybjed]
+
 v0.1.3
 ------
 

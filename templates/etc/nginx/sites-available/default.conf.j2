@@ -136,6 +136,11 @@
 #       Optional. Set custom KeepAlive timeout for this server, in seconds.
 #
 #
+#   - item.deny_hidden: True/False
+#       Optional. Allow or deny access to all hidden files (enabled by
+#       default).
+#
+#
 #   - item.favicon: True/False
 #       Optional. Enable or disable code that ignores '/favicon.ico' requests
 #       in server logs to reduce noise (enabled by default).
@@ -637,13 +642,13 @@ server {
 	}
 
 {% endif %}
+{% if (item.deny_hidden is undefined or item.deny_hidden|d()) %}
 	# Disallow access to hidden files and directories
 	location ~ /\. {
 		return 404;
-		access_log off;
-		log_not_found off;
 	}
 
+{% endif %}
 {% if (item.favicon is defined and item.favicon) or item.favicon is undefined %}
 	location = /favicon.ico {
 		try_files /favicon.ico =204;
