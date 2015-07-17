@@ -15,6 +15,8 @@ v0.2.7
 
 - Add ``debops.lvm`` role. [drybjed]
 
+- Add ``debops.iscsi`` role. [drybjed]
+
 v0.2.6
 ------
 
