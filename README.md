@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) iscsi
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-iscsi.svg?style=flat)](http://travis-ci.org/debops/ansible-iscsi) [![test-suite](http://img.shields.io/badge/test--suite-ansible--iscsi-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-iscsi/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-iscsi.svg?style=flat)](http://travis-ci.org/debops/ansible-iscsi) [![test-suite](http://img.shields.io/badge/test--suite-ansible--iscsi-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-iscsi/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.iscsi-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4411)
 
 [Open-iSCSI](http://open-iscsi.org/) is a Linux iSCSI Initiator which can
 be used to connect to iSCSI Targets to access block storage devices
@@ -9,6 +9,17 @@ remotely as if they were connected locally.
 `debops.iscsi` Ansible role allows you to configure the initiator, targets,
 as well as create LVM Volume Groups from presented iSCSI LUNs and manage
 LVM Logical Volumes.
+
+### Installation
+
+This role requires at least Ansible `v1.8.0`. To install it, run:
+
+    ansible-galaxy install debops.iscsi
+
+### Documentation
+
+More information about `debops.iscsi` can be found in the
+[official debops.iscsi documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-iscsi/docs/).
 
 
 ### Role dependencies
