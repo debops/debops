@@ -18,3 +18,6 @@ v0.1.0
 - Ignore "link-local" IPv6 addresses in list of IP addresses / subnets allowed
   to connect to ``snmpd``. [drybjed]
 
+- Fix wrong permissions in ``/etc/default/{lldpd,snmpd}`` configuration files.
+  [drybjed]
+
