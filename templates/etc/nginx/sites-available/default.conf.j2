@@ -304,6 +304,11 @@
 #       locations: []
 #         nested list of locations to create in this location section
 #
+#   - item.hsts_enabled: true
+#       Optional. If this is set to true and SSL is enabled for this item, the
+#       Strict-Transport-Security header is set in the server's responses. If
+#       this is set to false, the Strict-Transport-Security header will not
+#       be set in the server's responses.
 #}
 {#
 
@@ -540,7 +545,9 @@ server {
         resolver                  {{ nginx_tpl_ocsp_resolver }} valid=300s;
         resolver_timeout          5s;
 {% endif %}
+{% if item.hsts_enabled is undefined or (item.hsts_enabled is defined and item.hsts_enabled) %}
         add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age | default('15768000') }}{% if nginx_hsts_subdomains %}; includeSubDomains{% endif %}";
+{% endif %}
 
 {% if item.name is defined and item.name %}
 {% if item.redirect_from is defined and item.redirect_from %}
