@@ -1,0 +1,13 @@
+---
+
+- name: Add nginx.org PGP key
+  apt_key:
+    keyserver: 'pool.sks-keyservers.net'
+    id: 'ABF5BD827BD9BF62'
+
+- name: Add nginx.org APT repository
+  apt_repository:
+    repo: 'deb http://nginx.org/packages/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} nginx'
+    state: 'present'
+    update_cache: 'yes'
+

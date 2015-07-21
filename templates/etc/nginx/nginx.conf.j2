@@ -31,23 +31,16 @@ http {
 	server_names_hash_bucket_size {{ nginx_http_server_names_hash_bucket_size | default('64') }};
 	server_names_hash_max_size {{ nginx_http_server_names_hash_max_size | default('512') }};
 
-	ssl_session_cache shared:SSL:10m;
-	ssl_session_timeout 5m;
-
-	sendfile on;
-	tcp_nopush on;
-	tcp_nodelay on;
-	types_hash_max_size 2048;
-
 	# Logging
-	access_log /var/log/nginx/access.log;
-	error_log /var/log/nginx/error.log;
-
-	gzip on;
-	gzip_disable "msie6";
+	access_log {{ nginx_http_access_log | default('/var/log/nginx/access.log') }};
+	error_log {{ nginx_http_error_log | default('/var/log/nginx/error.log') }};
 
 	add_header X-Clacks-Overhead "GNU Terry Pratchett";
 
+{% if nginx_http_options|d() and nginx_http_options %}
+{{ nginx_http_options | indent(8, true) }}
+
+{% endif %}
 {% if nginx_http_client_max_body_size|d() and nginx_http_client_max_body_size %}
         client_max_body_size {{ nginx_http_client_max_body_size }};
 

@@ -27,6 +27,10 @@ nginx_flavor_package_map:
   # repository. See http://phusionpassenger.com/ for more details.
   'passenger': [ 'nginx-extras', 'passenger', 'ruby' ]
 
+  # Upstream version from http://nginx.org/ packaged for Debian
+  'nginx.org': [ 'nginx' ]
+
+
 # System user used by nginx
 nginx_user: 'www-data'
 
@@ -74,6 +78,17 @@ nginx_http_auth_basic_name: 'nginx_http'
 # directory (see debops.secret role). If this list empty, access is not
 # restricted.
 nginx_http_auth_users: []
+
+# Default http { } options
+nginx_http_options: |
+  ssl_session_cache shared:SSL:10m;
+  ssl_session_timeout 5m;
+  sendfile on;
+  tcp_nopush on;
+  tcp_nodelay on;
+  types_hash_max_size 2048;
+  gzip on;
+  gzip_disable "msie6";
 
 
 nginx_default_keepalive_timeout: 60
@@ -139,7 +154,9 @@ nginx_webroot_mode: '0755'
 nginx_status: []
 
 # By default allow access to the status page from webserver itself
-nginx_status_localhost: '{{ [ "127.0.0.1/32", "::1/128" ] + ansible_all_ipv4_addresses + ansible_all_ipv6_addresses }}'
+nginx_status_localhost: '{{ [ "127.0.0.1/32", "::1/128" ] + ansible_all_ipv4_addresses +
+                            (ansible_all_ipv6_addresses |
+                             difference(ansible_all_ipv6_addresses | ipaddr("link-local"))) }}'
 
 # Name of the nginx status page location
 nginx_status_name: '/nginx_status'
