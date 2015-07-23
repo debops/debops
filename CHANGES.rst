@@ -16,3 +16,5 @@ v0.1.0
 - Add a task that allows to copy custom files from Ansible Controller, list of
   files is configurable using Ansible inventory. [drybjed]
 
+- Add support for setting default system-wide locale. [drybjed]
+

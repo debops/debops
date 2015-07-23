@@ -74,6 +74,20 @@
   with_items: console_locales
   when: (console_locales is defined and console_locales)
 
+- name: Set default system locale
+  debconf:
+    name: 'locales'
+    question: 'locales/default_environment_locale'
+    vtype: 'string'
+    value: '{{ console_locales_default }}'
+  register: console_register_default_locale
+  when: (console_locales|d() and console_locales_default|d())
+
+- name: Update /etc/default/locale
+  command: update-locale LANG={{ console_locales_default }}
+  when: console_register_default_locale|d() and
+        console_register_default_locale.changed
+
   # Enable hidepid= only on specific hosts
 - include: proc_hidepid.yml
   when: (ansible_local|d() and ((ansible_local.root|d() and 'ignore-cap12s' in ansible_local.root.flags) or
