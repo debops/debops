@@ -1,0 +1,94 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# ---------------------
+#   libvirtd packages
+# ---------------------
+
+# .. envvar:: libvirtd_base_packages
+#
+# List of ``libvirtd`` packages which will be installed on all distribution
+# releases, unless overriden.
+libvirtd_base_packages: [ 'libvirt-daemon-system', 'libvirt-clients' ]
+
+
+# .. envvar:: libvirtd_base_packages_map
+#
+# Override list of base packages for specific distribution releases.
+libvirtd_base_packages_map:
+  'wheezy':  [ 'libvirt-bin' ]
+  'precise': [ 'libvirt-bin' ]
+  'trusty':  [ 'libvirt-bin' ]
+
+
+# .. envvar:: libvirtd_kvm_packages
+#
+# List of QEMU KVM packages to install. They will be installed on all hosts
+# apart from KVM guests, to not create redundant support.
+libvirtd_kvm_packages: [ 'qemu-system-x86', 'qemu-kvm' ]
+
+
+# .. envvar:: libvirtd_network_packgages
+#
+# List of network-related packages to install with ``libvirtd``.
+libvirtd_network_packages: [ 'dnsmasq-base', 'bridge-utils', 'ebtables' ]
+
+
+# .. envvar:: libvirtd_packages
+#
+# List of custom packages to install.
+libvirtd_packages: []
+
+
+# ------------------
+#   Access control
+# ------------------
+
+# .. envvar:: libvirtd_admins
+#
+# List of administrator accounts which should have access to libvirtd.
+libvirtd_admins: [ '{{ ansible_ssh_user
+                       if (ansible_ssh_user != "root")
+                       else "" }}' ]
+
+
+# .. envvar:: libvirtd_group_map
+#
+# Mapping of default UNIX access group on different distributions.
+libvirtd_group_map:
+  'Debian': 'libvirt'
+  'Ubuntu': 'libvirtd'
+
+
+# ---------------------------
+#   libvirtd connection URI
+# ---------------------------
+
+# .. envvar:: libvirtd_system_uri
+#
+# Connection URI for the local ``libvirtd`` instance.
+libvirtd_system_uri: 'qemu:///system'
+
+
+# .. envvar:: libvirtd_connections
+#
+# Dict with connections configured in ``/etc/libvirt/libvirt.conf``.
+#
+# Each key is an alias for a connection, each value should be a valid
+# ``libvirt`` URI connection string. At the moment only local
+# (``qemu:///system``, ``lxc:///``) and SSH (``qemu+ssh://<hostname>/system``,
+# ``lxc+ssh://<hostname>/``) connections are supported by ``debops.libvirtd``.
+libvirtd_connections:
+  'localhost': '{{ libvirtd_system_uri }}'
+
+
+# .. envvar:: libvirtd_uri
+#
+# Name of the connection from ``libvirtd_connections`` configured as default
+# system-wide.
+libvirtd_uri: 'localhost'
+

@@ -1,0 +1,34 @@
+---
+
+- name: Install libvirtd support
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - libvirtd_network_packages
+    - libvirtd_packages
+    - [ 'gawk', 'virt-top', 'netcat-openbsd', 'pm-utils' ]
+    - [ '{{ libvirtd_base_packages_map[ansible_distribution_release]
+            if (ansible_distribution_release in libvirtd_base_packages_map.keys())
+            else libvirtd_base_packages }}' ]
+    - [ '{{ [] if (ansible_virtualization_type in [ "kvm" ] and
+                   ansible_virtualization_role in [ "guest" ])
+                   else libvirtd_kvm_packages }}' ]
+
+- name: Generate system-wide libvirt.conf configuration
+  template:
+    src: 'etc/libvirt/libvirt.conf.j2'
+    dest: '/etc/libvirt/libvirt.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Add administrators to libvirt system group
+  user:
+    name: '{{ item }}'
+    groups: '{{ libvirtd_group_map[ansible_distribution] }}'
+    append: True
+  with_items: libvirtd_admins
+  when: libvirtd_admins|d()
+
