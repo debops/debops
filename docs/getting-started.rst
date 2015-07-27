@@ -12,6 +12,12 @@ remote ``libvirtd`` instances.
 You should still use ``debops.libvirt`` with ``becone: True`` option in your
 playbooks, it will automatically run tasks unprivileged when needed.
 
+Because unprivileged account is used, role won't work correctly if that account
+does not belong to ``libvirt`` group. On Ansible Controller this requires that
+the user needs to log out and back in before new group takes effect. Role will
+check if required group is present and won't run ``libvirt`` tasks otherwise to
+not stop the playbook unnecessarily.
+
 Use via local connection
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

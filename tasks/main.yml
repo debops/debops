@@ -23,11 +23,19 @@
     dest: '~/.config/libvirt/libvirt.conf'
   become: False
 
+- name: Get list of groups admin account belongs to
+  command: groups
+  register: libvirt_register_groups
+  changed_when: False
+  become: False
+
 - name: Manage libvirt networks
   include: manage_networks.yml
+  when: libvirt_group_map[ansible_distribution] in libvirt_register_groups.stdout.split(" ")
   tags: [ 'role::libvirt:networks' ]
 
 - name: Manage libvirt pools
   include: manage_pools.yml
+  when: libvirt_group_map[ansible_distribution] in libvirt_register_groups.stdout.split(" ")
   tags: [ 'role::libvirt:pools' ]
 
