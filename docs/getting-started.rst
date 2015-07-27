@@ -37,7 +37,7 @@ Here's an example playbook which uses ``debops.libvirtd`` role::
           tags: [ 'role::libvirtd' ]
 
 Ansible tags
-~~~~~~~~~~~~
+------------
 
 You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
 tasks are performed during Ansible run. This can be used after host is first
