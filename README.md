@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) libvirt
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-libvirt.svg?style=flat)](http://travis-ci.org/debops/ansible-libvirt) [![test-suite](http://img.shields.io/badge/test--suite-ansible--libvirt-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-libvirt/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-libvirt.svg?style=flat)](http://travis-ci.org/debops/ansible-libvirt) [![test-suite](http://img.shields.io/badge/test--suite-ansible--libvirt-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-libvirt/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.libvirt-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4554)
 
 `debops.libvirt` role can be used to manage networks and storage pools defined
 in [libvirt](http://libvirt.org/) virtualization service. It's designed to be
@@ -9,6 +9,17 @@ host through the API.
 
 To configure a host to provide `libvirtd` service you can use `debops.libvirtd`
 role.
+
+### Installation
+
+This role requires at least Ansible `v1.9.0`. To install it, run:
+
+    ansible-galaxy install debops.libvirt
+
+### Documentation
+
+More information about `debops.libvirt` can be found in the
+[official debops.libvirt documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-libvirt/docs/).
 
 
 ### Role dependencies
