@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) libvirtd
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-libvirtd.svg?style=flat)](http://travis-ci.org/debops/ansible-libvirtd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--libvirtd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-libvirtd/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-libvirtd.svg?style=flat)](http://travis-ci.org/debops/ansible-libvirtd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--libvirtd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-libvirtd/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.libvirtd-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4548)
 
 `debops.libvirtd` Ansible role manages the [libvirtd](http://libvirt.org/)
 daemon on a virtualization host (server side). It will automatically
@@ -9,6 +9,17 @@ easy deployment of KVM virtual machines.
 
 Configuration of `libvirtd` instance (local or remote) can be performed using
 `debops.libvirt` role, which uses `libvirt` API to manage the server.
+
+### Installation
+
+This role requires at least Ansible `v1.8.0`. To install it, run:
+
+    ansible-galaxy install debops.libvirtd
+
+### Documentation
+
+More information about `debops.libvirtd` can be found in the
+[official debops.libvirtd documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-libvirtd/docs/).
 
 
 ### Role dependencies
