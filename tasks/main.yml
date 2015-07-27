@@ -1,0 +1,33 @@
+---
+
+- name: Install libvirt support
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_flattened:
+    - [ 'gawk', 'netcat-openbsd', 'python-libvirt', 'python-lxml' ]
+    - [ '{{ libvirt_packages_map[ansible_distribution_release]
+            if (ansible_distribution_release in libvirt_packages_map.keys())
+            else libvirt_packages }}' ]
+
+- name: Create configuration directory
+  file:
+    path: '~/.config/libvirt'
+    state: 'directory'
+  become: False
+
+- name: Generate libvirt.conf configuration
+  template:
+    src: 'home/config/libvirt/libvirt.conf.j2'
+    dest: '~/.config/libvirt/libvirt.conf'
+  become: False
+
+- name: Manage libvirt networks
+  include: manage_networks.yml
+  tags: [ 'role::libvirt:networks' ]
+
+- name: Manage libvirt pools
+  include: manage_pools.yml
+  tags: [ 'role::libvirt:pools' ]
+

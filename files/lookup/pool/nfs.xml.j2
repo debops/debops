@@ -1,0 +1,14 @@
+<pool type='netfs'>
+  <name>{{ item.name }}</name>
+{% if item.uuid|d() %}
+  <uuid>{{ item.uuid }}</uuid>
+{% endif %}
+  <source>
+    <host name="{{ item.host }}"{% if item.port|d() %} port="{{ item.port }}"{% endif %}/>
+    <dir path="{{ item.src }}"/>
+    <format type="nfs"/>
+  </source>
+  <target>
+    <path>{{ item.path }}</path>
+  </target>
+</pool>

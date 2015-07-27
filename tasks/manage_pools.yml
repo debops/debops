@@ -1,0 +1,81 @@
+---
+
+- name: Stop storage pools if requested
+  virt_pool:
+    name: '{{ item.name }}'
+    uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
+    state: 'inactive'
+  with_items: libvirt_pools
+  become: False
+  register: libvirt_register_stop
+  when: ((item.name|d() and item.name) and
+         (item.state is defined and item.state in [ 'inactive', 'undefined', 'absent' ]))
+
+- name: Delete storage pools if requested
+  virt_pool:
+    name: '{{ item.item.name }}'
+    uri: '{{ libvirt_connections[item.item.uri | d(libvirt_uri)] }}'
+    command: 'delete'
+    mode: '{{ item.item.mode | d(omit) }}'
+  with_items: libvirt_register_stop.results
+  become: False
+  when: (item.changed|d() and item.item.name|d() and item.item.delete|d(False) and
+         item.item.state|d() and item.item.state in [ 'undefined' ] and
+         item.item.type in [ 'dir', 'nfs', 'logical' ])
+
+- name: Undefine storage pools if requested
+  virt_pool:
+    name: '{{ item.name }}'
+    uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
+    state: 'absent'
+  with_items: libvirt_pools
+  become: False
+  when: ((item.name|d() and item.name) and
+         (item.state is defined and item.state in [ 'undefined', 'absent' ]))
+
+- name: Define storage pools
+  virt_pool:
+    name: '{{ item.name }}'
+    xml: '{{ lookup("template", "lookup/pool/" + item.type + ".xml.j2") }}'
+    uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
+    state: 'present'
+  with_items: libvirt_pools
+  become: False
+  register: libvirt_register_define
+  when: ((item.name|d() and item.name) and
+         (item.state is undefined or item.state not in [ 'undefined', 'absent' ]))
+
+- name: Build new storage pools
+  virt_pool:
+    name: '{{ item.item.name }}'
+    uri: '{{ libvirt_connections[item.item.uri | d(libvirt_uri)] }}'
+    command: 'build'
+    mode: '{{ item.item.mode | d(omit) }}'
+  with_items: libvirt_register_define.results
+  become: False
+  when: (item.changed|d() and item.item.name|d() and
+         (item.item.state is undefined or item.item.state not in [ 'undefined', 'absent' ]) and
+         (item.item.build is undefined or item.item.build|d()) and
+         (item.item.type in [ 'dir', 'nfs' ] or
+         (item.item.type == 'logical' and item.item.devices|d())))
+
+- name: Start storage pools if not started
+  virt_pool:
+    name: '{{ item.name }}'
+    state: 'active'
+    uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
+  with_items: libvirt_pools
+  become: False
+  when: ((item.name|d() and item.name) and
+         (item.state is undefined or item.state in [ 'active' ]))
+
+- name: Set autostart attribute on storage pools
+  virt_pool:
+    name: '{{ item.name }}'
+    autostart: '{{ "yes" if (item.autostart is undefined or item.autostart|d()) else "no" }}'
+    uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
+  with_items: libvirt_pools
+  become: False
+  when: ((item.name|d() and item.name) and
+         (item.state is undefined or item.state not in [ 'undefined', 'absent' ]))
+
