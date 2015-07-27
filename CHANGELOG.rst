@@ -17,6 +17,11 @@ v0.2.7
 
 - Add ``debops.iscsi`` role. [drybjed]
 
+- Add ``debops.libvirt`` and ``debops.libvirtd`` roles. ``debops.kvm`` role is
+  dropped, due to being replaced by ``debops.libvirtd``. Hosts in
+  ``[debops_kvm]`` host group will need to be moved to ``[debops_libvirtd]``,
+  there might be some variable changes as well. [drybjed]
+
 v0.2.6
 ------
 
