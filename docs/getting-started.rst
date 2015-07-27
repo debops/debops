@@ -19,7 +19,7 @@ check if required group is present and won't run ``libvirt`` tasks otherwise to
 not stop the playbook unnecessarily.
 
 Use via local connection
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 By default ``debops.libvirt`` will try to connect to a ``libvirtd`` system
 instance on ``localhost`` (your user should be in ``libvirt`` system group to
@@ -31,7 +31,7 @@ a different host, you can change the default connection using
 ``libvirt_default_uri`` variable.
 
 Use via remote connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
 You can use ``debops.libvirt`` from your Ansible Controller host to centrally
 configure ``libvirtd`` instances on remote hosts.
@@ -74,7 +74,7 @@ Here's an example playbook which uses ``debops.libvirt`` role::
           tags: [ 'role::libvirt' ]
 
 Ansible tags
-~~~~~~~~~~~~
+------------
 
 You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
 tasks are performed during Ansible run. This can be used after host is first
