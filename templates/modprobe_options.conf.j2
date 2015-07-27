@@ -1,0 +1,26 @@
+## {{ ansible_managed }}
+
+{% macro output_module_entry(module, comment, loop=none) -%}
+{% if module.params is string and
+    (module.state is defined and module.state == 'present' or module.state is undefined) and
+    (module.persistent is defined and module.persistent or module.persistent is undefined) and
+    (module.blacklist is undefined or not module.blacklist)
+    %}
+{% if loop is defined and loop.first and comment is string %}
+# {{ comment }}:
+{% endif %}
+options {{ module.name }} {{ module.params }}
+{%   endif %}
+{%- endmacro %}
+{##}
+{% for module in kernel_module_list %}
+{{ output_module_entry(module, '"Global" kernel module configuration', loop) }}
+{% endfor %}
+{##}
+{% for module in kernel_module_group_list %}
+{{ output_module_entry(module, '"Host group" kernel module configuration', loop) }}
+{% endfor %}
+{##}
+{% for module in kernel_module_host_list %}
+{{ output_module_entry(module, '"Host" kernel module configuration', loop) }}
+{% endfor %}
