@@ -1,0 +1,58 @@
+---
+
+- name: Ensure required packages are installed
+  apt:
+    name: "{{ item }}"
+    state: "latest"
+    install_recommends: False
+  with_items:
+    - cryptsetup
+
+- name: Add devices to crypttab
+  crypttab:
+    backing_device: '{{ item.backing_device }}'
+    name: '{{ item.name }}'
+    opts: '{{ item.opts | default(crypttab_default_options | default("none")) }}'
+    ## none is required on Debian jessie by cryptdisks_start
+    password: '{{ item.password | default(omit) }}'
+    path: '{{ item.path | default(omit) }}'
+    state: '{{ item.state | default("present") }}'
+  when: (item.name is string)
+  with_flattened:
+    - crypttab_list
+    - crypttab_group_list
+    - crypttab_host_list
+
+# - name: Ensure options are as specified for matching devices
+#   crypttab:
+#     name: '{{ item.device }}'
+#     state: '{{ crypttab_default_options.state }}'
+#     opts: '{{ crypttab_default_options.opts }}'
+#   when: (crypttab_default_options.devices in item.device)
+#   with_items: ansible_mounts
+
+- name: Ensure mountpoints exist in /etc/fstab
+  mount:
+    dump: '{{ item.dump | default(omit) }}'
+    fstab: '{{ item.fstab | default("/etc/fstab") }}'
+    fstype: '{{ item.mount_fstype }}'
+    name: '{% if item.mount == "/media" %}{{ item.mount }}/{{ item.name }}{% else %}{{ item.mount}}{% endif %}'
+    src: '/dev/mapper/{{ item.name }}'
+    opts: '{{ item.mount_opts | default(omit) }}'
+    passno: '{{ item.mount_passno | default(omit) }}'
+    state: '{{ item.mount_state | default("present") }}'
+  when: (item.mount is string)
+  with_flattened:
+    - crypttab_list
+    - crypttab_group_list
+    - crypttab_host_list
+
+- name: Ensure mount directories exist when manually mounted
+  file:
+    path: '{% if item.mount == "/media" %}{{ item.mount }}/{{ item.name }}{% else %}{{ item.mount}}{% endif %}'
+    state: 'directory'
+  when: (item.mount is string and item.mount_state == 'present')
+  with_flattened:
+    - crypttab_list
+    - crypttab_group_list
+    - crypttab_host_list
