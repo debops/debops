@@ -7,25 +7,18 @@
 - name: Blacklist kernel modules
   kernel_blacklist:
     name: '{{ item.name }}'
-    state: '{% if item.blacklist %}present{% else %}absent{% endif %}'
+    state: '{% if item.blacklist is defined and item.blacklist %}present{% else %}absent{% endif %}'
     blacklist_file: '{{ kernel_module_blacklist_file }}'
-  when: (
-          item is mapping and (
-            item.blacklist is defined
-          )
-        )
-  # item.state is undefined
-  ## Ignore state to make it dominant.
   with_items: kernel_module_list_combined
 
-- name: Ensure that kernel module are automaticly loaded
+- name: Save kernel modules which should be loaded on boot
   template:
     src: 'load_module.conf.conf.j2'
     dest: '{{ kernel_module_load_file }}'
   # when: kernel_module_list_combined
   # Don’t use when because modules should be removed from the file file if missing in the Ansible configuration …
 
-- name: Ensure that module parameters are honored
+- name: Save module parameters
   template:
     src: 'modprobe_options.conf.j2'
     dest: '{{ kernel_module_options_file }}'
@@ -34,19 +27,25 @@
   # Don’t use when because parameters should be removed from the file file if missing in the Ansible configuration …
 
 ## See http://unix.stackexchange.com/a/123050
-- name: Force module unload to apply different module parameters
+- name: Force module unload to apply different module parameters or if blacklisted
   modprobe:
     name: '{{ item.name }}'
     state: 'absent'
   when: (
-          kernel_module_options_template|changed and
-          item is mapping and
-          item.state is defined and
-          item.state == 'present' and
-          item.params is string and
-          item.force_params is defined and
-          item.force_params and
-          item.blacklist is undefined
+          item is mapping and (
+            (
+              (
+                (item.persistent is undefined or not item.persistent) or
+                kernel_module_options_template|changed
+              ) and
+              item.state is defined and item.state == 'present' and
+              item.params is string and
+              item.force_params is defined and item.force_params and
+              item.blacklist is undefined
+            ) or (
+              item.blacklist is defined and item.blacklist
+            )
+          )
         )
   with_items: kernel_module_list_combined
 

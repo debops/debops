@@ -50,6 +50,9 @@ List of default variables available in the inventory:
       #   # params: '
       #   state: 'present'
       #   persistent: no
+      #
+      ## This will cause the module pcspkr to be loaded on the next boot.
+      # - name: 'pcspkr'
     
     # "Host group" kernel module configuration
     kernel_module_group_list: []
