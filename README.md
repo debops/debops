@@ -11,6 +11,7 @@ Manage Linux kernel modules.
 
 * Module blacklisting
 * Module loading (with optional parameters)
+* Optionally forces that a module is loaded with certain parameters by unloading it first.
 * Either make changes permanent or only to the running system. Default is permanent.
 
 ### Installation
@@ -32,6 +33,13 @@ To install via git, run either:
 List of default variables available in the inventory:
 
     ---
+    
+    # name (string, required): Name of the kernel module.
+    # blacklist (boolean, optional, default: false): If true, blacklist the module. Note that blacklist dominates the loading of modules.
+    # state (string, optional, default: undefined): If 'present' load the module unless it is blacklisted. Unload if 'absent'.
+    # persistent (boolean, optional, default: true): If true, make changes permanent else the changes will not persist a reboot.
+    # params (string, optional, default: undefined): Kernel module parameters.
+    # force_params (boolean, optional, default: false): If true, force that the module parameters are applied (via unload and load of the module).
     
     # "Global" kernel module configuration
     kernel_module_list: []
@@ -55,7 +63,9 @@ List of default variables available in the inventory:
     kernel_module_options_file: '/etc/modprobe.d/options-ansible-kernel_module-role.conf'
     kernel_module_load_file: '/etc/modules-load.d/ansible-kernel_module-role.conf'
 
+List of internal variables used by the role:
 
+    kernel_module_list_combined
 
 
 ### Authors and license

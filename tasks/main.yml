@@ -1,5 +1,9 @@
 ---
 
+- name: Combine lists of kernel module
+  set_fact:
+    kernel_module_list_combined: '{{ kernel_module_list + kernel_module_group_list + kernel_module_host_list | default([]) }}'
+
 - name: Blacklist kernel modules
   kernel_blacklist:
     name: '{{ item.name }}'
@@ -7,38 +11,54 @@
     blacklist_file: '{{ kernel_module_blacklist_file }}'
   when: (
           item is mapping and (
-            item.blacklist is defined and
-            item.state is undefined
+            item.blacklist is defined
           )
         )
-  with_flattened:
-    - kernel_module_list
-    - kernel_module_group_list
-    - kernel_module_host_list
+  # item.state is undefined
+  ## Ignore state to make it dominant.
+  with_items: kernel_module_list_combined
+
+- name: Ensure that kernel module are automaticly loaded
+  template:
+    src: 'load_module.conf.conf.j2'
+    dest: '{{ kernel_module_load_file }}'
+  # when: kernel_module_list_combined
+  # Don’t use when because modules should be removed from the file file if missing in the Ansible configuration …
+
+- name: Ensure that module parameters are honored
+  template:
+    src: 'modprobe_options.conf.j2'
+    dest: '{{ kernel_module_options_file }}'
+  register: kernel_module_options_template
+  # when: '"parms" in kernel_module_list_combined'
+  # Don’t use when because parameters should be removed from the file file if missing in the Ansible configuration …
+
+## See http://unix.stackexchange.com/a/123050
+- name: Force module unload to apply different module parameters
+  modprobe:
+    name: '{{ item.name }}'
+    state: 'absent'
+  when: (
+          kernel_module_options_template|changed and
+          item is mapping and
+          item.state is defined and
+          item.state == 'present' and
+          item.params is string and
+          item.force_params is defined and
+          item.force_params and
+          item.blacklist is undefined
+        )
+  with_items: kernel_module_list_combined
 
 - name: Modprobe kernel modules
   modprobe:
     name: '{{ item.name }}'
     params: '{{ item.params | default(omit) }}'
     state: '{{ item.state }}'
-    # blacklist_file: '{{ kernel_module_blacklist_file }}'
   when: (
           item is mapping and (
             item.state is defined and
             item.blacklist is undefined
           )
         )
-  with_flattened:
-    - kernel_module_list
-    - kernel_module_group_list
-    - kernel_module_host_list
-
-- name: Ensure that kernel module are automaticly loaded
-  template:
-    src: 'load_module.conf.conf.j2'
-    dest: '{{ kernel_module_load_file }}'
-
-- name: Ensure that module parameters are honored
-  template:
-    src: 'modprobe_options.conf.j2'
-    dest: '{{ kernel_module_options_file }}'
+  with_items: kernel_module_list_combined
