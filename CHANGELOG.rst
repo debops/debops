@@ -22,6 +22,9 @@ v0.2.7
   ``[debops_kvm]`` host group will need to be moved to ``[debops_libvirtd]``,
   there might be some variable changes as well. [drybjed]
 
+- Hosts in ``[debops_no_common]`` host group will no longer run a common
+  playbook. [drybjed]
+
 v0.2.6
 ------
 
