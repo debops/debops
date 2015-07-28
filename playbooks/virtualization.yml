@@ -1,19 +1,29 @@
 ---
 
-- name: Manage KVM hosts
-  hosts: 'debops_kvm'
-  sudo: True
-
-  roles:
-    - { role: debops.kvm, tags: kvm }
-
-
 - name: Manage LXC hosts
   hosts: 'debops_lxc'
   sudo: True
 
   roles:
     - { role: debops.lxc, tags: lxc }
+
+
+- name: Manage libvirt servers
+  hosts: 'debops_libvirtd'
+  sudo: True
+
+  roles:
+    - role: debops.libvirtd
+      tags: [ 'libvirtd', 'role::libvirtd' ]
+
+
+- name: Manage libvirt hosts
+  hosts: 'debops_libvirt'
+  sudo: True
+
+  roles:
+    - role: debops.libvirt
+      tags: [ 'libvirt', 'role::libvirt' ]
 
 
 - name: Manage OpenVZ Hardware Nodes
