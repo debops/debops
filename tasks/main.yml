@@ -73,6 +73,7 @@
     state: 'present'
   with_items: console_locales
   when: (console_locales is defined and console_locales)
+  tags: [ 'role::console:locale' ]
 
 - name: Set default system locale
   debconf:
@@ -82,11 +83,20 @@
     value: '{{ console_locales_default }}'
   register: console_register_default_locale
   when: (console_locales|d() and console_locales_default|d())
+  tags: [ 'role::console:locale' ]
 
 - name: Update /etc/default/locale
   command: update-locale LANG={{ console_locales_default }}
   when: console_register_default_locale|d() and
         console_register_default_locale.changed
+  tags: [ 'role::console:locale' ]
+
+- name: Configure system-wide editor
+  alternatives:
+    name: 'editor'
+    path: '{{ console_editor }}'
+  when: console_editor|d()
+  tags: [ 'role::console:editor' ]
 
   # Enable hidepid= only on specific hosts
 - include: proc_hidepid.yml
@@ -105,6 +115,7 @@
     state: '{{ "present" if item.value|d() else "absent" }}'
   with_dict: console_hosts
   when: console_hosts|d()
+  tags: [ 'role::console:hosts' ]
 
 - name: Copy custom files to remote hosts
   copy:
@@ -118,8 +129,10 @@
     force: '{{ item.force | d(omit) }}'
   with_items: console_custom_files
   when: (item.src|d() and item.dest|d())
+  tags: [ 'role::console:custom_files' ]
 
 - include: filesystem_mount.yml
+  tags: [ 'role::console:mount' ]
   when: (ansible_local|d() and ((ansible_local.root and 'ignore-cap12s' in ansible_local.root.flags) or
          (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
           (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
