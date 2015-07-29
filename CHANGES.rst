@@ -18,3 +18,5 @@ v0.1.0
 
 - Add support for setting default system-wide locale. [drybjed]
 
+- Add option to configure system-wide ``editor`` alternative. [drybjed]
+

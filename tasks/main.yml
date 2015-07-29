@@ -88,6 +88,13 @@
   when: console_register_default_locale|d() and
         console_register_default_locale.changed
 
+- name: Configure system-wide editor
+  alternatives:
+    name: 'editor'
+    path: '{{ console_editor }}'
+  when: console_editor|d()
+  tags: [ 'role::console:editor' ]
+
   # Enable hidepid= only on specific hosts
 - include: proc_hidepid.yml
   when: (ansible_local|d() and ((ansible_local.root|d() and 'ignore-cap12s' in ansible_local.root.flags) or
