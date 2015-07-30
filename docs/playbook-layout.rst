@@ -61,12 +61,12 @@ groups:
 
 ``environments.yml``
   This is a playbook focused on programming language environments, like Ruby,
-  PHP, Java, NodeJS. Since these might be used by mutiple roles further down
+  PHP, Java, NodeJS. Since these might be used by multiple roles further down
   the playbook, they are grouped here to be run first so that other roles might
   be executed faster.
 
 ``networking.yml``
-  Playbook whch focuses on roles that manage various network-related services,
+  Playbook which focuses on roles that manage various network-related services,
   like DHCP, DNS, creating subnetworks or tunnels.
 
 ``services.yml``

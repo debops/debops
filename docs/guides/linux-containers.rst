@@ -20,7 +20,7 @@ virtual machine to act as the container host. You can do this with
 **SSH key pair**
 
 You will also need an SSH key pair on your host. You probably have one setup
-but if you not you can run ``ssh-keygen -t`` and follow the instructions.
+but if you don’t you can run ``ssh-keygen -t`` and follow the instructions.
 DebOps expects the RSA keys to be in ``~/.ssh``.
 
 Configuring a host
