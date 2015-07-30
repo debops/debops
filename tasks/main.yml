@@ -41,11 +41,12 @@
 
 - name: Divert original /etc/issue
   command: dpkg-divert --quiet --local --divert /etc/issue.dpkg-divert --rename /etc/issue
-           creates=/etc/issue.dpkg-divert
+  args:
+    creates: '/etc/issue.dpkg-divert'
 
 - name: Configure /etc/issue
   template:
-    src: 'etc/issue.j2'
+    src: '{{ lookup("template_src", "etc/issue.j2") }}'
     dest: '/etc/issue'
     owner: 'root'
     group: 'root'
@@ -53,7 +54,7 @@
 
 - name: Configure /etc/motd
   template:
-    src: 'etc/motd.j2'
+    src: '{{ lookup("template_src", "etc/motd.j2") }}'
     dest: '/etc/motd'
     owner: 'root'
     group: 'root'
