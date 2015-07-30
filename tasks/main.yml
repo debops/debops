@@ -4,6 +4,8 @@
 
 # nodejs and npm install based on code from https://github.com/f500/ansible-nodejs
 
+- include: upstream.yml
+  when: nodejs_upstream is defined
 
 - name: Install NodeJS packages
   apt: pkg={{ item }} state=latest install_recommends=no
@@ -12,6 +14,17 @@
   # This will be replaced by a .deb package in the future
 - name: Install npm
   shell: curl https://www.npmjs.com/install.sh | bash creates=/usr/bin/npm
+  when: nodejs_upstream is not defined
+
+- name: Install npm package
+  apt: pkg=npm state=latest install_recommends=no
+  when: nodejs_upstream is defined
+
+- name: Check if the node version is already installed
+  command: node --version
+  ignore_errors: yes
+  register: node_version
+  changed_when: False
 
 - name: Get npm global temporary directory
   command: npm -g config get tmp
@@ -21,4 +34,11 @@
 - name: Set npm global temporary directory to /tmp
   command: npm -g config set tmp /tmp
   when: nodejs_npm_tempdir.stdout != '/tmp'
+
+- name: install the latest npm global packages
+  npm:
+    name: '{{ item }}'
+    state: latest
+    global: yes
+  with_items: npm_default
 
