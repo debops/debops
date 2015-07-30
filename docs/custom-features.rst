@@ -9,7 +9,7 @@ The project directory
 ---------------------
 
 By default, Ansible is written to use ``/etc/ansible/`` directory and its
-contents in daily use. In contrast to this, DebOps playbooks are designed to be
+contents is in daily use. In contrast to this, DebOps playbooks are designed to be
 used from a custom local directory, which you can initialize using
 ``debops-init`` command. By using Ansible this way, it's much easier to create
 multiple, separate environments with distinct inventories and configuration. To
@@ -32,7 +32,7 @@ Host group namespace
 Default DebOps playbooks use the ``[debops_*]`` group namespace in Ansible
 inventory (for example, ``debops.nginx`` role is activated on hosts in
 ``[debops_nginx]`` group). This lets you design your own inventory layout with
-groups and parent groups as you with, without worrying that you might clash
+groups and parent groups as you wish, without worrying that you might clash
 with DebOps host groups. You can also define inventory variables for a specific
 DebOps role using its group name.
 
@@ -43,7 +43,7 @@ Some DebOps roles use sets of default variables (usually lists) to allow you to
 define different settings for all hosts in inventory, a group of hosts, or even
 specific hosts. For example, using ``debops.sshd`` role you can whitelist
 a certain subnet for all hosts in your inventory, add another subnet for
-a pariticular group of hosts, and so on. You can also override more general
+a particular group of hosts, and so on. You can also override more general
 list on specific hosts if needed.
 
 File, template and task hooks
@@ -65,7 +65,7 @@ and settings defined in ``.debops.cfg`` configuration file you can "inject"
 your own tasks at the beginning or end of these roles, which gives you more
 control over the configuration.
 
-By combining above techniques, you can very eaily extend DebOps roles without
+By combining above techniques, you can very easily extend DebOps roles without
 losing the ability to update them using ``git`` without merge conflicts.
 
 LDAP integration

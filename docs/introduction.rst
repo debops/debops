@@ -6,8 +6,8 @@ which hosts. ``debops-playbooks`` repository contains a set of such playbooks
 which let you use roles without the need to write them yourself.
 
 Apart from the playbooks, this repository contains a set of Ansible modules,
-various plugins and custom fact scripts used thruought the project. Some of
-them are required by the wole project, some just by a few selected roles.
+various plugins and custom fact scripts used through the project. Some of
+them are required by the whole project, some just by a few selected roles.
 
 
 ..
