@@ -1,0 +1,10 @@
+---
+
+- name: Add NodeJS PGP key
+  apt_key: url=https://deb.nodesource.com/gpgkey/nodesource.gpg.key state=present
+
+- name: Add NodeJS APT repository
+  apt_repository:
+    repo: '{{ nodejs_upstream_repo }}'
+    state: 'present'
+    update_cache: 'yes'
