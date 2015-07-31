@@ -21,12 +21,6 @@
   shell: curl https://www.npmjs.com/install.sh | bash creates=/usr/bin/npm
   when: nodejs_upstream is not defined
 
-- name: Check if the node version is already installed
-  command: node --version
-  ignore_errors: yes
-  register: node_version
-  changed_when: False
-
 - name: Get npm global temporary directory
   command: npm -g config get tmp
   register: nodejs_npm_tempdir
@@ -41,5 +35,5 @@
     name: '{{ item }}'
     state: latest
     global: yes
-  with_items: npm_default
+  with_items: nodejs_npm_packages
 
