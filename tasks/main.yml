@@ -10,11 +10,6 @@
 - name: Install NodeJS packages
   apt: pkg={{ item }} state=latest install_recommends=no
   with_items: nodejs_packages
-  when: nodejs_upstream is not defined
-
-- name: Install NodeJS packages no legacy
-  apt: pkg=nodejs state=latest install_recommends=no
-  when: nodejs_upstream is defined
 
   # This will be replaced by a .deb package in the future
 - name: Install npm
