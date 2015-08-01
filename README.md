@@ -22,8 +22,8 @@ This role requires at least Ansible `v1.3`. To install it, run:
 
 To install via git, run either:
 
-    git clone https://github.com/ypid/ansible-snapshot_snapper ypid.snapshot_snapper
-    git submodule add https://github.com/ypid/ansible-snapshot_snapper roles/ypid.snapshot_snapper
+    git clone https://github.com/ypid/ansible-snapshot_snapper.git ypid.snapshot_snapper
+    git submodule add https://github.com/ypid/ansible-snapshot_snapper.git ypid.snapshot_snapper
 
 
 
@@ -55,7 +55,7 @@ List of default variables available in the inventory:
     
     snapshot_snapper_snapshot_directory: ".snapshots"
     snapshot_snapper_config_templates_dir: "/etc/snapper/config-templates"
-    snapshot_snapper_updatedb_coniguration_files:
+    snapshot_snapper_updatedb_configuration_files:
       - "/etc/updatedb.conf"
 
 

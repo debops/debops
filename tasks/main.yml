@@ -13,9 +13,11 @@
   args:
     creates: "{{ item }}.dpkg-divert"
   register: updatedb_diverted
-  when: snapshot_snapper_snapshot_directory is defined and snapshot_snapper_snapshot_directory and ansible_distribution in [ 'Debian', 'Ubuntu' ]
+  when: (snapshot_snapper_snapshot_directory is defined
+         and snapshot_snapper_snapshot_directory and ansible_distribution in [ 'Debian', 'Ubuntu' ]
+        )
   with_flattened:
-    - snapshot_snapper_updatedb_coniguration_files
+    - snapshot_snapper_updatedb_configuration_files
   with_items:
     - "{{ snapshot_snapper_config_templates_dir }}/default"
 
@@ -25,7 +27,7 @@
     creates: "{{ item }}"
   when: updatedb_diverted|changed
   with_flattened:
-    - snapshot_snapper_updatedb_coniguration_files
+    - snapshot_snapper_updatedb_configuration_files
   with_items:
     - "{{ snapshot_snapper_config_templates_dir }}/default"
 
