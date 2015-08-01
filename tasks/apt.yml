@@ -14,15 +14,15 @@
 - name: Load default APT mirrors configuration
   include_vars: '{{ item }}'
   with_first_found:
-    - '../vars/apt_default_mirrors_{{ apt_default_mirrors_lookup | lower }}.yml'
-    - '../vars/apt_default_mirrors.yml'
+    - 'apt_default_mirrors_{{ apt_default_mirrors_lookup | lower }}.yml'
+    - 'apt_default_mirrors.yml'
   when: apt_default_mirrors is undefined
 
 - name: Load default APT sources configuration
   include_vars: '{{ item }}'
   with_first_found:
-    - '../vars/apt_default_sources_{{ apt_default_sources_lookup | lower }}.yml'
-    - '../vars/apt_default_sources.yml'
+    - 'apt_default_sources_{{ apt_default_sources_lookup | lower }}.yml'
+    - 'apt_default_sources.yml'
   when: apt_default_sources is undefined
 
 - name: Enable delayed APT configuration
@@ -63,7 +63,8 @@
 
 - name: Divert original /etc/apt/sources.list
   command: dpkg-divert --quiet --local --divert /etc/apt/sources.list.dpkg-divert --rename /etc/apt/sources.list
-           creates=/etc/apt/sources.list.dpkg-divert
+  args:
+    creates: '/etc/apt/sources.list.dpkg-divert'
   when: apt_sources_combined
 
 - name: Configure main APT package sources
@@ -77,15 +78,17 @@
 
 - name: Move sources.list out of the way before reversion
   # only remove sources.list if sources.list.dpkg-divert exists
-  command: rm -f /etc/apt/sources.list removes=/etc/apt/sources.list.dpkg-divert
+  command: rm -f /etc/apt/sources.list
+  args:
+    removes: '/etc/apt/sources.list.dpkg-divert'
   when: not apt_sources_combined
 
 - name: Remove diversion of original /etc/apt/sources.list
   command: dpkg-divert --quiet --local --rename --remove /etc/apt/sources.list
-           removes=/etc/apt/sources.list.dpkg-divert
+  args:
+    removes: '/etc/apt/sources.list.dpkg-divert'
   when: not apt_sources_combined
 
 - name: Update package lists
   apt: update_cache=yes
-
 
