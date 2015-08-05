@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.1.1
+------
+
+*Unreleased*
+
+- Add a way to disable ``automysqlbackup`` support. [drybjed]
+
 v0.1.0
 ------
 
