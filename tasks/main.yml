@@ -17,8 +17,10 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
+  with_flattened:
+    - mariadb_server_packages
+    - [ '{{ "automysqlbackup" if mariadb_server_backup|d() else [] }}' ]
   register: mariadb_server_register_install_status
-  with_items: mariadb_server_packages
 
 - name: Add database server user to specified groups
   user:
