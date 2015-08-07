@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) librenms
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-librenms.svg?style=flat)](http://travis-ci.org/debops/ansible-librenms) [![test-suite](http://img.shields.io/badge/test--suite-ansible--librenms-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-librenms/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-librenms.svg?style=flat)](http://travis-ci.org/debops/ansible-librenms) [![test-suite](http://img.shields.io/badge/test--suite-ansible--librenms-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-librenms/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.librenms-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4721)
 
 [LibreNMS](http://librenms.org/) is a network monitoring dashboard written
 in PHP. It can use SNMP, `collectd`, `check_mk` or other agents to gather
@@ -10,6 +10,17 @@ monitor additional devices.
 
 `debops.librenms` role will manage a central LibreNMS monitoring host and
 web interface.
+
+### Installation
+
+This role requires at least Ansible `v1.8.0`. To install it, run:
+
+    ansible-galaxy install debops.librenms
+
+### Documentation
+
+More information about `debops.librenms` can be found in the
+[official debops.librenms documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-librenms/docs/).
 
 
 ### Role dependencies
