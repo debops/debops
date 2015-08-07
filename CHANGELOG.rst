@@ -31,6 +31,8 @@ v0.2.7
   them internally. Old-style tasks will be phased out after some time.
   [drybjed]
 
+- Add ``debops.librenms`` role. [drybjed]
+
 v0.2.6
 ------
 
