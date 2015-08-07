@@ -1,9 +1,9 @@
 ---
 
-- name: Install apparmor
+- name: Ensure apparmor packages are installed
   apt:
-    name: "{{ item }}"
-    state: "latest"
+    name: '{{ item }}'
+    state: 'latest'
     install_recommends: False
   with_flattened:
     - '{{ apparmor_packages }}'
@@ -44,7 +44,10 @@
   when: apparmor_enable is not defined or not apparmor_enable
 
 - name: Stop service apparmor
-  service: name=apparmor state=stopped enabled=no
+  service:
+    name: 'apparmor'
+    state: 'stopped'
+    enabled: no
   when: apparmor_enable is not defined or not apparmor_enable
 
 - name: Check if running kernel has apparmor already enabled
@@ -56,22 +59,24 @@
 
 - name: You have to reboot the system if apparmor is not yet enabled
   debug:
-    msg: "You have to reboot the system to enable apparmor."
+    msg: 'You have to reboot the system to enable apparmor.'
   when: apparmor_enabled is defined and apparmor_enabled.rc != 0
 
 - name: Put all profiles into enforcement mode
   command: |
-    sh -c 'find /etc/apparmor.d -maxdepth 1 -type f | while read file; do
-        if fgrep --quiet "flags=(complain)" "$file"; then
+    sh -c 'find /etc/apparmor.d -maxdepth 1 -type f | while read file
+    do
+        if grep --quiet "flags\s*=.*complain" "$file"; then
           aa-enforce "$file";
-          # apparmor_parser --replace; ## Not sure if this is needed but it does not work. See https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/1066369
         fi;
-      done'
+    done'
   register: apparmor_enforce_all_profiles_cmd
   changed_when: apparmor_enforce_all_profiles_cmd.stdout != ""
   when: apparmor_enforce_all_profiles is defined and apparmor_enforce_all_profiles
-  notify: [ 'Restart apparmor' ]
 
-- name: Start service apparmor
-  service: name=apparmor state=started enabled=yes
+- name: Ensure apparmor service is started
+  service:
+    name: 'apparmor'
+    state: 'started'
+    enabled: yes
   when: apparmor_enable is defined and apparmor_enable

@@ -20,8 +20,8 @@ This role requires at least Ansible `v1.3`. To install it, run:
 
 To install via git, run either:
 
-    git clone https://github.com/ypid/ansible-apparmor ypid.apparmor
-    git submodule add https://github.com/ypid/ansible-apparmor roles/ypid.apparmor
+    git clone https://github.com/ypid/ansible-apparmor.git ypid.apparmor
+    git submodule add https://github.com/ypid/ansible-apparmor.git ypid.apparmor
 
 
 
@@ -37,12 +37,15 @@ List of default variables available in the inventory:
       - apparmor-utils
       - apparmor-profiles
       - apparmor-profiles-extra
-      - apparmor-notify
+    
+      # - apparmor-notify
+      # Not needed/useful for servers.
     
     apparmor_additional_kernel_parameters: ''
     apparmor_enable: True
     
     ## Put all profiles into enforcement mode.
+    ## Use this only if you know what you are doing.
     apparmor_enforce_all_profiles: False
 
 
