@@ -8,6 +8,8 @@ interface {{ item.interface }} protocol (tcp udp) dport domain ACCEPT;
 # Public DNS server is enabled, dnsmasq accepts connections on all interfaces
 
 {% endif %}
+
+{% if item.interface not in dnsmasq_no_dhcp_interfaces %}
 {% if dnsmasq_dhcpv4 is defined and dnsmasq_dhcpv4 %}
 # Accept incoming DHCPv4 requests on internal network
 @if @eq ($DOMAIN, ip) interface {{ item.interface }} protocol udp dport bootps ACCEPT;
@@ -24,6 +26,8 @@ interface {{ item.interface }} protocol (tcp udp) dport domain ACCEPT;
 # DHCPv6 server is disabled
 
 {% endif %}
+{% endif %}
+
 {% if dnsmasq_tftp is defined and dnsmasq_tftp %}
 # Accept connections to TFTP server on internal network
 interface {{ item.interface }} protocol udp dport tftp ACCEPT;
