@@ -52,9 +52,11 @@ The ManageSieve protocol listens on port 4190 and requires STARTTLS for
 authentication. You can restrict access to this port by explicitly listing
 the networks or hosts which are allowed to connect::
 
-    dovecot_protocol_map:
-      managesieve:
-        allow: [ '192.168.1.0/24' ]
+    dovecot_managesieve_config_map:
+      login-service:
+        inet_listener:
+          managesieve:
+            allow: [ '192.168.1.0/24' ]
 
 The sieve filter rules are applied before delivering the mail to the user's
 mailbox. There are various ways for mail delivery but only a few of them
@@ -65,6 +67,13 @@ user's ``~/.forward`` file, to hook-in the Dovecot LDA (local delivery
 agent)::
 
     | "/usr/lib/dovecot/dovecot-lda"
+
+To enable the sieve filter with the Dovecot LDA you further have to enable
+the plugin for the corresponding protocol::
+
+    dovecot_lda_config_map:
+      protocol:
+        mail_plugins: '$mail_plugins sieve'
 
 The Dovecot LDA would then deliver the mail after enquiring the sieve
 files.

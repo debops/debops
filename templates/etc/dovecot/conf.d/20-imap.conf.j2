@@ -6,10 +6,15 @@ that are configurable via DebOps variables. If you need a more customized
 setup, you can provide your own template via lookup mechanism.
 
 #}
+{% import 'dovecot_macros.j2' as macros with context %}
 
 ##
 ## IMAP specific settings
 ##
 
-protocol imap {
-}
+{% if dovecot_imap_config_map is defined and dovecot_imap_config_map %}
+{% if 'protocol' in dovecot_imap_config_map %}
+{% set dovecot_tpl_imap_proto_map = dovecot_imap_config_map['protocol'] %}
+{% endif %}
+{% endif %}
+{{ macros.dovecot_protocol('imap', dovecot_tpl_imap_proto_map|default({})) }}

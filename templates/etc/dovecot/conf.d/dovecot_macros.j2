@@ -1,0 +1,71 @@
+{#
+ # The dovecot_properties() macro will list dovecot properties taken from
+ # a dictionnary (map). Optionally, a list of property keys to ignore can
+ # be given.
+ #}
+
+{% macro dovecot_properties(map, ignore_keys=[]) %}
+{% if map is defined and map %}
+{% for property in map.keys()|difference(ignore_keys) %}
+  {{ property }} = {{ map[property] }}
+{% endfor %}
+{% endif %}
+{% endmacro %}
+
+
+{#
+ # The dovecot_login_service() macro will generate a dovecot login-service
+ # section. The arguments must be the protocol name (protocol), a list of
+ # listener names to lookup or create by default (services) and a dictionary
+ # of configuration properties to set (map).
+ #}
+
+{% macro dovecot_login_service(protocol, services, map) %}
+# dovecot_login_service(protocol={{ protocol }}, services={{ services }}, map={{ map }})
+{% set listener_props = [ 'port', 'ssl' ] %}
+service {{ protocol }}-login {
+{% for svc in services %}
+{% if svc in dovecot_protocols %}
+  inet_listener {{ svc }} {
+{% if map is defined and map %}
+{% if 'inet_listener' in map.keys() %}
+{% if svc in map['inet_listener'].keys() %}
+{% for property in listener_props %}
+{% if property in map['inet_listener'][svc].keys() %}
+    {{ property }} = {{ map['inet_listener'][svc][property] }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% endif %}
+  }
+{% endif %}{% endfor %}
+{{ dovecot_properties(map, ['inet_listener']) }}
+}
+{% endmacro %}
+
+
+{#
+ # The dovecot_service() macro will generate a dovecot service section. The
+ # arguments must be the protocol name and a dictionary of configuration
+ # properties to set (map).
+ #}
+{% macro dovecot_service(protocol, map) %}
+# dovecot_service(protocol={{ protocol }}, map={{ map }})
+service {{ protocol }} {
+{{ dovecot_properties(map) }}
+}
+{% endmacro %}
+
+
+{#
+ # The dovecot_protocol() macro will generate a dovecot protocol section. The
+ # arguments must be the protocol name and a dictionary of configuration
+ # properties to set (map).
+ #}
+{% macro dovecot_protocol(name, map) %}
+# dovecot_protocol(name={{ name }}, map={{ map }})
+protocol {{ name }} {
+{{ dovecot_properties(map) }}
+}
+{% endmacro %}

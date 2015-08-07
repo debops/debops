@@ -6,49 +6,40 @@ that are configurable via DebOps variables. If you need a more customized
 setup, you can provide your own template via lookup mechanism.
 
 #}
+{% import 'dovecot_macros.j2' as macros with context %}
 
-{% if 'imap' in dovecot_protocols or 'imaps' in dovecot_protocols %}
-service imap-login {
-{% for proto in [ 'imap', 'imaps' ] %}
-{% if proto in dovecot_protocols %}
-  inet_listener {{ proto }} {
-{% if dovecot_protocol_map[proto] is defined and dovecot_protocol_map[proto] %}
-{% if dovecot_protocol_map[proto].port is defined and dovecot_protocol_map[proto].port %}
-    port = {{ dovecot_protocol_map[proto].port }}
+{% if dovecot_protocols | intersect(dovecot_imap_services) %}
+{% if dovecot_imap_config_map is defined and dovecot_imap_config_map %}
+{% if 'login-service' in dovecot_imap_config_map %}
+{% set dovecot_tpl_imap_login_map = dovecot_imap_config_map['login-service'] %}
 {% endif %}
 {% endif %}
-  }
+{{ macros.dovecot_login_service('imap', dovecot_imap_services, dovecot_tpl_imap_login_map|default({})) }}
 {% endif %}
-{% endfor %}
-}
-{% endif %}
-
-{% if 'pop3' in dovecot_protocols or 'pop3' in dovecot_protocols %}
-service pop3-login {
-{% for proto in [ 'pop3', 'pop3s' ] %}
-{% if proto in dovecot_protocols %}
-  inet_listener {{ proto }} {
-{% if dovecot_protocol_map[proto] is defined and dovecot_protocol_map[proto] %}
-{% if dovecot_protocol_map[proto].port is defined and dovecot_protocol_map[proto].port %}
-    port = {{ dovecot_protocol_map[proto].port }}
+{% if dovecot_protocols | intersect(dovecot_pop3_services) %}
+{% if dovecot_pop3_config_map is defined and dovecot_pop3_config_map %}
+{% if 'login-service' in dovecot_pop3_config_map %}
+{% set dovecot_tpl_pop3_login_map = dovecot_pop3_config_map['login-service'] %}
 {% endif %}
 {% endif %}
-  }
+{{ macros.dovecot_login_service('pop3', dovecot_pop3_services, dovecot_tpl_pop3_login_map|default({})) }}
 {% endif %}
-{% endfor %}
-}
+{% if dovecot_protocols | intersect(dovecot_imap_services) %}
+{% if dovecot_imap_config_map is defined and dovecot_imap_config_map %}
+{% if 'service' in dovecot_imap_config_map %}
+{% set dovecot_tpl_imap_svc_map = dovecot_imap_config_map['service'] %}
 {% endif %}
-
-{% if 'imap' in dovecot_protocols or 'imaps' in dovecot_protocols %}
-service imap {
-}
 {% endif %}
-
-{% if 'pop3' in dovecot_protocols or 'pop3' in dovecot_protocols %}
-service pop3 {
-}
+{{ macros.dovecot_service('imap', dovecot_tpl_imap_svc_map|default({})) }}
 {% endif %}
-
+{% if dovecot_protocols | intersect(dovecot_pop3_services) %}
+{% if dovecot_pop3_config_map is defined and dovecot_pop3_config_map %}
+{% if 'service' in dovecot_pop3_config_map %}
+{% set dovecot_tpl_pop3_svc_map = dovecot_pop3_config_map['service'] %}
+{% endif %}
+{% endif %}
+{{ macros.dovecot_service('pop3', dovecot_tpl_pop3_svc_map|default({})) }}
+{% endif %}
 service auth {
   unix_listener auth-userdb {
   }

@@ -6,31 +6,22 @@ that are configurable via DebOps variables. If you need a more customized
 setup, you can provide your own template via lookup mechanism.
 
 #}
+{% import 'dovecot_macros.j2' as macros with context %}
 
 ##
 ## ManageSieve specific settings
 ##
 
-{% if dovecot_protocol_map is defined and dovecot_protocol_map %}
-{% if 'managesieve' in dovecot_protocol_map.keys() %}
-{% if dovecot_protocol_map['managesieve'].port is defined and
-      dovecot_protocol_map['managesieve'].port %}
-service managesieve-login {
-  inet_listener sieve {
-    port = {{ dovecot_protocol_map['managesieve'].port }}
-  }
-}
-
+# {{ dovecot_protocols | intersect(dovecot_managesieve_services) }}
+{% if dovecot_protocols | intersect(dovecot_managesieve_services) %}
+{% if dovecot_managesieve_config_map is defined and dovecot_managesieve_config_map %}
+{% if 'login-service' in dovecot_managesieve_config_map %}
+{% set dovecot_tpl_sieve_login_map = dovecot_managesieve_config_map['login-service'] %}
+{% endif %}
+{% if 'service' in dovecot_managesieve_config_map %}
+{% set dovecot_tpl_sieve_svc_map = dovecot_managesieve_config_map['service'] %}
 {% endif %}
 {% endif %}
+{{ macros.dovecot_login_service('mangesieve', dovecot_managesieve_services, dovecot_tpl_sieve_login_map|default({})) }}
+{{ macros.dovecot_service('managesieve', dovecot_tpl_sieve_svc_map|default({})) }}
 {% endif %}
-protocol sieve {
-{% if dovecot_protocol_map is defined and dovecot_protocol_map %}
-{% if 'managesieve' in dovecot_protocol_map.keys() %}
-{% if dovecot_protocol_map['managesieve'].port is defined and
-      dovecot_protocol_map['managesieve'].port %}
-  mail_max_userip_connections = {{ dovecot_protocol_map['managesieve'].max_userip_connections }}
-{% endif %}
-{% endif %}
-{% endif %}
-}

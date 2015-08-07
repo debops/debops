@@ -6,12 +6,15 @@ that are configurable via DebOps variables. If you need a more customized
 setup, you can provide your own template via lookup mechanism.
 
 #}
+{% import 'dovecot_macros.j2' as macros with context %}
 
 ##
 ## LDA specific settings (also used by LMTP)
 ##
 
-protocol lda {
-    mail_plugins = $mail_plugins {% if 'managesieve' in dovecot_protocols %}sieve{% endif %}
-
-}
+{% if dovecot_lda_config_map is defined and dovecot_lda_config_map %}
+{% if 'protocol' in dovecot_lda_config_map %}
+{% set dovecot_tpl_lda_proto_map = dovecot_lda_config_map['protocol'] %}
+{% endif %}
+{% endif %}
+{{ macros.dovecot_protocol('lda', dovecot_tpl_lda_proto_map|default({})) }}

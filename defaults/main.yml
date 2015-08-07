@@ -12,36 +12,61 @@
 
 # .. envvar:: dovecot_protocols
 #
-# List of protocols to enable. See ``dovecot_protocol_map`` for supported
-# protocols.
+# List of protocols to enable. So far supported are:
+# ``imap``, ``imaps``, ``pop3``, ``pop3s``, ``managesieve``
 dovecot_protocols: [ 'imap', 'imaps' ]
 
 
-# .. envvar:: dovecot_protocol_map
+# .. envvar:: dovecot_imap_config_map
 #
-# List of protocol definitions. The default configuration will use the
-# standard ports as shown below and allow access from all networks. You
-# can overwrite the defaults by setting a custom value here. Access to
-# specific hosts or networks can be restricted by using the ``allow``
-# keyword. ``allow = False`` means that remote access will be blocked by
-# iptables.
-dovecot_protocol_map: {}
-#  imap:
-#    port: 143
-#    allow: []
-#  imaps:
-#    port: 993
-#    allow: []
-#  pop3:
-#    port: 110
-#    allow: []
-#  pop3s:
-#    port: 995
-#    allow: []
-#  managesieve:
-#    port: 4190
-#    allow: []
-#    mail_max_userip_connections: 10
+# Custom IMAP configuration properties. The dictionary allows to set all
+# options related to the IMAP protocol and services. All options are
+# optional. If not set, the dovecot defaults will be used. The dictionary
+# layout is as following:
+#
+# dovecot_imap_config_map:
+#   login-service:         Options related to the 'service imap-login'
+#     inet-listener:
+#       imap:              Options related to the IMAP listener
+#         port: 143        Set custom port
+#         allow: []        Restrict network access to addresses/subnets
+#       imaps:             Options related to the IMAPS listener
+#         port: 995        Set custom port
+#         allow: []        Restrict network access to addresses/subnets
+#     service_count: 1     E.g., any 'service imap-login' options...
+# service:                 Options related to the 'service imap'
+#   process_limit: 1024    E.g., any 'service imap' options...
+# protocol:                Options related to the 'protocol imap'
+#   mail_max_userip_connections: 10   E.g. any 'protocol imap' options...
+#
+dovecot_imap_config_map: {}
+
+
+# .. envvar:: dovecot_pop3_config_map
+#
+# Custom POP3 configuration properties. The dictionary allows to set all
+# options related to the POP3 protocol and services. All options are
+# are optional. If not set, the dovecot defaults will be used. See
+# ``dovecot_imap_config_map`` for the dictionary layout.
+dovecot_pop3_config_map: {}
+
+
+# .. envvar:: dovecot_lda_config_map
+#
+# Custom LDA configuration properties. The dictionary allows to set all
+# options related to the LDA protocol. All options are are optional. If
+# not set, the dovecot defaults will be used. See ``dovecot_imap_config_map``
+# for the dictionary layout.
+dovecot_lda_config_map: {}
+
+
+# .. envvar:: dovecot_managesieve_config_map
+#
+# Custom managesieve configuration properties. The dictionary allows to
+# set all options related to the managesieve protocol and services. All
+# options are optional. If not set, the dovecot defaults will be used.
+# See ``dovecot_imap_config_map`` for the dictionary layout.
+dovecot_managesieve_config_map: {}
 
 
 # .. envvar:: dovecot_auth
