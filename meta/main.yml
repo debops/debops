@@ -5,18 +5,6 @@ dependencies:
   - role: debops.secret
     tags: [ 'depend::secret', 'depend::secret:librenms', 'depend-of::librenms', 'type::dependency:hard' ]
 
-  - role: debops.mariadb
-    mariadb_users:
-      - database: '{{ librenms_database_name }}'
-        user: '{{ librenms_database_user }}'
-        owner: '{{ librenms_user }}'
-        group: '{{ librenms_group }}'
-        home: '{{ librenms_home }}'
-        system: True
-        priv_aux: False
-    when: (librenms_dependencies is defined and librenms_dependencies)
-    tags: [ 'depend::mariadb', 'depend::mariadb:librenms', 'depend-of::librenms', 'type::dependency' ]
-
   - role: debops.php5
     php5_packages: [ 'php5-mysql', 'php5-gmp', 'php5-gd', 'php5-snmp',
                      'php5-curl', 'php5-mcrypt', 'php5-json',
@@ -30,6 +18,18 @@ dependencies:
     nginx_upstreams: [ '{{ librenms_nginx_upstream_php5 }}' ]
     when: (librenms_dependencies is defined and librenms_dependencies)
     tags: [ 'depend::nginx', 'depend::nginx:librenms', 'depend-of::librenms', 'type::dependency' ]
+
+  - role: debops.mariadb
+    mariadb_users:
+      - database: '{{ librenms_database_name }}'
+        user: '{{ librenms_database_user }}'
+        owner: '{{ librenms_user }}'
+        group: '{{ librenms_group }}'
+        home: '{{ librenms_home }}'
+        system: True
+        priv_aux: False
+    when: (librenms_dependencies is defined and librenms_dependencies)
+    tags: [ 'depend::mariadb', 'depend::mariadb:librenms', 'depend-of::librenms', 'type::dependency' ]
 
 galaxy_info:
   author: 'Maciej Delmanowski'
