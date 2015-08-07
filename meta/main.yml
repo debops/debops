@@ -21,5 +21,24 @@ ansigenome_info:
   synopsis: |
     See [Apparmor in the Debian Wiki](https://wiki.debian.org/AppArmor/HowToUse).
 
-    By default (e.g. no auditd installed) log messages are logged via syslog to
+    By default (e.g. no [auditd] installed) log messages are logged via syslog to
     the kernel facility which usually ends up under /var/log/kern.log.
+
+    ### Profiles
+
+    If some profiles are not quite working, you can checkout the profiles from Debian Stretch or if the problem is specific to your setup, add an exception for example with the [ypid.apparmor_local_config] role.
+
+    Here is an example snippet which can be used together with the [debops.apt_preferences] role to get a more recent set of profiles in case you are using Debian Jessie. Note that you have to enable the Stretch sources in APT for this to work.
+
+    ```YAML
+    apt_preferences_host_list:
+      - package: 'apparmor-profiles'
+        raw: |
+          Package: apparmor-profiles
+          Pin: release o=Debian,n=stretch
+          Pin-Priority: 800
+    ```
+
+    [auditd]: https://packages.debian.org/search?keywords=auditd
+    [ypid.apparmor_local_config]: https://galaxy.ansible.com/list#/roles/4649
+    [debops.apt_preferences]: https://galaxy.ansible.com/list#/roles/1552
