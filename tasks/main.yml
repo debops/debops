@@ -1,0 +1,197 @@
+---
+
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - [ '{{ "php5-memcached" if librenms_memcached|d() else [] }}' ]
+    - librenms_base_packages
+    - librenms_packages
+
+- name: Enable non-free MIBs support
+  lineinfile:
+    dest: '/etc/snmp/snmp.conf'
+    state: 'present'
+    regexp: 'mibs\s:'
+    line: '#mibs :'
+
+
+# ---- Environment ----
+
+- name: Create LibreNMS group
+  group:
+    name: '{{ librenms_group }}'
+    system: True
+    state: 'present'
+
+- name: Create LibreNMS user
+  user:
+    name: '{{ librenms_user }}'
+    group: '{{ librenms_group }}'
+    home: '{{ librenms_home }}'
+    shell: '{{ librenms_shell }}'
+    comment: 'LibreNMS'
+    system: True
+    state: 'present'
+
+
+# ---- Deployment ----
+
+- name: Clone LibreNMS source from deploy server
+  git:
+    repo: '{{ librenms_install_repo }}'
+    dest: '{{ librenms_install_path }}'
+    version: '{{ librenms_install_version }}'
+    update: True
+  sudo_user: '{{ librenms_user }}'
+  register: librenms_register_source
+  no_log: True
+  tags: [ 'role::librenms:source' ]
+
+- name: Update LibreNMS home directory permissions
+  file:
+    path: '{{ librenms_home }}'
+    state: 'directory'
+    owner: '{{ librenms_user }}'
+    group: '{{ librenms_webserver_user }}'
+    mode: '0750'
+
+- name: Make sure required directories exist
+  file:
+    dest: '{{ item }}'
+    state: 'directory'
+    owner: '{{ librenms_user }}'
+    group: '{{ librenms_group }}'
+    mode: '0750'
+  with_items:
+    - '{{ librenms_data_path }}'
+    - '{{ librenms_rrd_dir }}'
+    - '{{ librenms_log_dir }}'
+  tags: [ 'role::librenms:config' ]
+
+- name: Configure logrotate for LibreNMS
+  template:
+    src: 'etc/logrotate.d/librenms.j2'
+    dest: '/etc/logrotate.d/librenms'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  tags: [ 'role::librenms:config' ]
+
+
+# ---- Configuration ----
+
+  # This should be ran once until bug is fixed
+  # https://github.com/ansible/ansible/issues/10784
+- name: Initialize SNMP credentials
+  set_fact:
+    librenms_fact_snmp_v3_authlevel: '{{ librenms_snmp_credentials[0]["authlevel"] }}'
+    librenms_fact_snmp_v3_authalgo: '{{ librenms_snmp_credentials[0]["authalgo"] }}'
+    librenms_fact_snmp_v3_cryptoalgo: '{{ librenms_snmp_credentials[0]["cryptoalgo"] }}'
+    librenms_fact_snmp_v3_authname: '{{ librenms_snmp_credentials[0]["authname"] }}'
+    librenms_fact_snmp_v3_authpass: '{{ librenms_snmp_credentials[0]["authpass"] }}'
+    librenms_fact_snmp_v3_cryptopass: '{{ librenms_snmp_credentials[0]["cryptopass"] }}'
+  run_once: True
+  no_log: True
+  tags: [ 'role::librenms:config', 'role::librenms:database', 'role::librenms:snmp_conf' ]
+
+- name: Create LibreNMS database
+  mysql_db:
+    name: '{{ librenms_database_name }}'
+    state: 'present'
+  delegate_to: '{{ ansible_local.mariadb.delegate_to }}'
+  register: librenms_register_database_status
+  tags: [ 'role::librenms:database' ]
+
+- name: Configure LibreNMS
+  template:
+    src: 'srv/www/sites/public/config.php.j2'
+    dest: '{{ librenms_install_path + "/config.php" }}'
+    owner: '{{ librenms_user }}'
+    group: '{{ librenms_group }}'
+    mode: '0600'
+  tags: [ 'role::librenms:config', 'role::librenms:database' ]
+
+- name: Initialize database
+  command: php build-base.php
+  args:
+    chdir: '{{ librenms_install_path }}'
+  sudo_user: '{{ librenms_user }}'
+  when: (librenms_register_database_status|d() and librenms_register_database_status.changed)
+  tags: [ 'role::librenms:database' ]
+
+- name: Get list of existing users from LibreNMS database
+  command: mysql -ssNe "select username from users"
+  sudo_user: '{{ librenms_user }}'
+  register: librenms_register_users
+  changed_when: False
+  tags: [ 'role::librenms:config', 'role::librenms:admins' ]
+
+- name: Create admin accounts
+  command: php adduser.php {{ item }} {{ lookup('password', secret + "/credentials/" + ansible_fqdn + "/librenms/admin/" + item + "/password") }} 10
+  args:
+    chdir: '{{ librenms_install_path }}'
+  sudo_user: '{{ librenms_user }}'
+  with_items: librenms_admin_accounts
+  when: (librenms_admin_accounts|d([]) and (item not in librenms_register_users.stdout_lines))
+  no_log: True
+  tags: [ 'role::librenms:config', 'role::librenms:admins' ]
+
+- name: Configure cron tasks
+  template:
+    src: 'etc/cron.d/librenms.j2'
+    dest: '/etc/cron.d/librenms'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  tags: [ 'role::librenms:config' ]
+
+- name: Check list of current user accounts
+  shell: 'getent passwd | cut -d: -f1'
+  register: librenms_register_passwd
+  changed_when: False
+  when: librenms_home_snmp_conf|d() and librenms_home_snmp_conf
+  tags: [ 'role::librenms:config', 'role::librenms:snmp_conf' ]
+
+- name: Create ~/.snmp directories
+  file:
+    path: '{{ "~" + item + "/.snmp" }}'
+    state: 'directory'
+    owner: '{{ item }}'
+    group: '{{ item }}'
+    mode: '0700'
+  with_items: librenms_home_snmp_conf
+  when: ((librenms_home_snmp_conf|d() and librenms_home_snmp_conf) and
+         (librenms_register_passwd|d() and item in librenms_register_passwd.stdout_lines))
+  tags: [ 'role::librenms:config', 'role::librenms:snmp_conf' ]
+
+- name: Generate ~/.snmp/snmp.conf configuration
+  template:
+    src: 'home/snmp/snmp.conf.j2'
+    dest: '{{ "~" + item + "/.snmp/snmp.conf" }}'
+    owner: '{{ item }}'
+    group: '{{ item }}'
+    mode: '0600'
+  with_items: librenms_home_snmp_conf
+  when: ((librenms_home_snmp_conf|d() and librenms_home_snmp_conf) and
+         (librenms_register_passwd|d() and item in librenms_register_passwd.stdout_lines))
+  tags: [ 'role::librenms:config', 'role::librenms:snmp_conf' ]
+
+- name: Get list of known devices from LibreNMS database
+  command: mysql -ssNe "select hostname from devices"
+  sudo_user: '{{ librenms_user }}'
+  register: librenms_register_devices
+  changed_when: False
+  tags: [ 'role::librenms:config', 'role::librenms:devices' ]
+
+- name: Add specified hosts to LibreNMS
+  command: php addhost.php {{ item }}
+  args:
+    chdir: '{{ librenms_install_path }}'
+  sudo_user: '{{ librenms_user }}'
+  with_items: librenms_devices
+  when: (librenms_devices|d([]) and (item not in librenms_register_devices.stdout_lines))
+  tags: [ 'role::librenms:config', 'role::librenms:devices' ]
+

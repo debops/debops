@@ -1,0 +1,452 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# -------------------
+#   System packages
+# -------------------
+
+# .. envvar:: librenms_base_packages
+#
+# List of base packages required by LibreNMS.
+librenms_base_packages: [ 'snmp', 'snmp-mibs-downloader', 'imagemagick',
+                          'fping', 'whois', 'mtr-tiny', 'nmap', 'rrdtool',
+                          'python-mysqldb', 'monitoring-plugins' ]
+
+
+# .. envvar:: librenms_packages
+#
+# List of additional packages installed with LibreNMS.
+librenms_packages: []
+
+
+# ---------------------------
+#   Webserver configuration
+# ---------------------------
+
+# .. envvar:: librenms_dependencies
+#
+# Allow the role to manage its own role dependencies.
+librenms_dependencies: True
+
+
+# .. envvar:: librenms_domain
+#
+# FQDN address of the LibreNMS webpage, configured in ``nginx``.
+librenms_domain: [ 'nms.{{ ansible_domain }}' ]
+
+
+# .. envvar:: librenms_nginx_auth_realm
+#
+# Text displayed in the nginx HTTP Auth window when access policy is enabled.
+librenms_nginx_auth_realm: 'LibreNMS access is restricted'
+
+
+# .. envvar:: librenms_nginx_access_policy
+#
+# Name of the "nginx access policy" for LibreNMS webpage. See ``debops.nginx``
+# Ansible role for more details.
+librenms_nginx_access_policy: ''
+
+
+# .. envvar:: librenms_webserver_user
+#
+# Name of the webserver user account which will be granted read only access to
+# the LibreNMS application directory.
+librenms_webserver_user: '{{ ansible_local.nginx.user
+                             if (ansible_local|d() and ansible_local.nginx|d() and
+                                 ansible_local.nginx.user|d())
+                              else "www-data" }}'
+
+
+# ----------------------------------------
+#   Application user, group, directories
+# ----------------------------------------
+
+# .. envvar:: librenms_user
+#
+# Name of the system user account for LibreNMS application.
+librenms_user: 'librenms'
+
+
+# .. envvar:: librenms_group
+#
+# Name of the system group for LibreNMS application.
+librenms_group: 'librenms'
+
+
+# .. envvar:: librenms_shell
+#
+# Shell configured on LibreNMS account.
+librenms_shell: '/bin/bash'
+
+
+# .. envvar:: librenms_home
+#
+# Home directory of the LibreNMS application.
+librenms_home: '{{ (ansible_local.nginx.www
+	            if (ansible_local|d() and ansible_local.nginx|d() and
+	                ansible_local.nginx.www|d())
+	            else "/srv/www") + "/" + librenms_user }}'
+
+
+# .. envvar:: librenms_install_path
+#
+# Path where LibreNMS application source will be installed, this directory
+# should be readable by the webserver.
+librenms_install_path: '{{ librenms_home + "/sites/public" }}'
+
+
+# .. envvar:: librenms_data_path
+#
+# Path where LibreNMS application data is stored, this directory should be set
+# outside of the webserver root directory.
+librenms_data_path: '{{ (ansible_local.root.data
+                         if (ansible_local|d() and ansible_local.root|d() and
+                             ansible_local.root.data|d())
+                         else "/srv") + "/" + librenms_user }}'
+
+
+# .. envvar:: librenms_rrd_dir
+#
+# Path where LibreNMS RRD files are stored.
+librenms_rrd_dir: '{{ librenms_data_path + "/rrd" }}'
+
+
+# .. envvar:: librenms_log_dir
+#
+# Path where LibreNMS logs are stored.
+librenms_log_dir: '/var/log/librenms'
+
+
+# --------------------
+#   LibreNMS sources
+# --------------------
+
+# .. envvar:: librenms_install_repo
+#
+# URL of the LibreNMS git repository.
+librenms_install_repo: 'https://github.com/librenms/librenms.git'
+
+
+# .. envvar:: librenms_install_version
+#
+# Name of the git branch to install.
+librenms_install_version: 'master'
+
+
+# .. envvar:: librenms_update
+#
+# Enable or disable daily upgrades pulled from LibreNMS ``git`` repository.
+librenms_update: True
+
+
+# --------------------------
+#   Database configuration
+# --------------------------
+
+# .. envvar:: librenms_database_server
+#
+# FQDN address of the MariaDB database host; it will be configured by
+# ``debops.mariadb`` role.
+librenms_database_server: '{{ ansible_local.mariadb.server }}'
+
+
+# .. envvar:: librenms_database_user
+#
+# MariaDB database user to use by LibreNMS.
+librenms_database_user: 'librenms'
+
+
+# .. envvar:: librenms_database_name
+#
+# Name of the MariaDB database to use by LibreNMS.
+librenms_database_name: 'librenms'
+
+
+# .. envvar:: librenms_database_password
+#
+# MariaDB database password to LibreNMS account.
+librenms_database_password: "{{ lookup('password', secret + '/mariadb/' +
+                                ansible_local.mariadb.delegate_to +
+                                '/credentials/' + librenms_database_user +
+                                '/password length=48') }}"
+
+
+# -----------------------------
+#   Application configuration
+# -----------------------------
+
+# .. envvar:: librenms_admin_accounts
+#
+# Names of accounts that will be created in LibreNMS database. It's preferable
+# that these accounts correspond to UNIX accounts on the LibreNMS host, see
+# ``librenms_home_snmp_conf`` variable.
+#
+# Passwords will be automatically stored in ``secret/`` directory (see
+# ``debops.secret`` role for more details).
+librenms_admin_accounts: [ '{{ ansible_ssh_user
+                               if ansible_ssh_user != "root"
+                               else lookup("env", "USER") }}' ]
+
+
+# .. envvar:: librenms_cron_threads
+#
+# Number of LibreNMS poller threads run by ``cron``.
+librenms_cron_threads: '{{ (ansible_processor_cores | int * 4) }}'
+
+
+# ---------------------------
+#   Memcached configuration
+# ---------------------------
+
+# .. envvar:: librenms_memcached
+#
+# Enable or disable support for ``memcached`` service.
+librenms_memcached: False
+
+
+# .. envvar:: librenms_memcached_host
+#
+# Hostname of the ``memcached`` server. If you use multiple LibreNMS instances
+# that should work together, you need to point them to the same server.
+librenms_memcached_host: 'localhost'
+
+
+# .. envvar:: librenms_memcached_port
+#
+# Port on which ``memcached`` service listens for incoming connections.
+librenms_memcached_port: 11211
+
+
+# -------------------------------
+#   Web interface configuration
+# -------------------------------
+
+# .. envvar:: librenms_show_services
+#
+# Enable or disable "Services" tab in LibreNMS interface.
+librenms_show_services: True
+
+
+# .. envvar:: librenms_site_style
+#
+# CSS style to use in LibreNMS UI, either ``light`` or ``dark``.
+librenms_site_style: 'light'
+
+
+# .. envvar:: librenms_network_map_items
+#
+# List of data types to source for the network map:
+#
+# - ``xdp``: data gathered from LLDP, CDP, and similar protocols;
+#
+# - ``mac``: data gathered from ARP tables;
+#
+librenms_network_map_items: [ 'xdp' ]
+
+
+# .. envvar:: librenms_front_page
+#
+# Name of the ``.php`` page that is displayed by default.
+librenms_front_page: 'pages/front/default.php'
+
+
+# .. envvar:: librenms_public_status
+#
+# Enable or disable a public status page with information about monitored
+# devices, which does not require authentication.
+librenms_public_status: False
+
+
+# ------------------------
+#   Device autodiscovery
+# ------------------------
+
+# .. envvar:: librenms_devices
+#
+# List of FQDN hostnames of devices (servers, switches, routers, printers,
+# etc.) which should be added to LibreNMS by the role. By default LibreNMS will
+# add its own host.
+librenms_devices: [ '{{ librenms_own_hostname }}' ]
+
+
+# .. envvar:: librenms_own_hostname
+#
+# Name of the host on which LibreNMS is installed.
+librenms_own_hostname: '{{ ansible_fqdn }}'
+
+
+# .. envvar:: librenms_discover_services
+#
+# Enable or disable SNMP service discovery on servers.
+librenms_discover_services: True
+
+
+# .. envvar:: librenms_autodiscover_networks
+#
+# List of CIDR networks which will be automatically scanned by LibreNMS to find
+# new SNMP devices.
+librenms_autodiscover_networks: [ '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16' ]
+
+
+# .. envvar:: librenms_ignore_mount_string
+#
+# List of partial names of mount points which LibreNMS should ignore.
+librenms_ignore_mount_string: [ 'cgroup', '/run/', '/dev/shm' ]
+
+
+# --------------------------------------
+#   Simple Network Management Protocol
+# --------------------------------------
+
+# .. envvar:: librenms_snmp_version
+#
+# Which SNMP protocol version is used by default to authenticate to SNMP
+# devices (``v1``, ``v2c``, ``v3``).
+librenms_snmp_version: 'v3'
+
+
+# .. envvar:: librenms_snmp_communities
+#
+# List of SNMP v1/v2c community strings to try while authenticating to SNMP
+# devices.
+librenms_snmp_communities: [ 'public' ]
+
+
+# .. envvar:: librenms_snmp_credentials
+#
+# List of SNMP v3 credentials to try while authenticating to SNMP devices. Each
+# entry is a dict with various parameters, see :ref:`librenms_snmp_credentials`
+# for more details.
+librenms_snmp_credentials: [ '{{ librenms_snmp_credentials_default }}' ]
+
+
+# .. envvar:: librenms_snmp_credentials_default
+#
+# SNMPv3 credentials entry with configuration used by default by
+# ``debops.snmpd`` role to configure SNMP service on servers.
+librenms_snmp_credentials_default:
+  authname:   '{{ lookup("password", secret + "/snmp/credentials/agent/username") }}'
+  authpass:   '{{ lookup("password", secret + "/snmp/credentials/agent/password") }}'
+  cryptopass: '{{ lookup("password", secret + "/snmp/credentials/agent/password") }}'
+  authlevel:  'authPriv'
+  authalgo:   'SHA'
+  cryptoalgo: 'AES'
+
+
+# .. envvar:: librenms_home_snmp_conf
+#
+# List of UNIX accounts for which ``~/.snmp/snmp.conf`` will be generated. By
+# default it's a ``root`` account, LibreNMS account and admin accounts that
+# exist on the host.
+librenms_home_snmp_conf: '{{ ([ "root", librenms_user ] +
+                             librenms_admin_accounts|d([])) | unique }}'
+
+
+# --------------------------------
+#   LibreNMS config.php contents
+# --------------------------------
+
+# .. envvar:: librenms_configuration_maps
+#
+# Main list with dictionaries that hold the LibreNMS configuration generated by
+# ``config.php`` template. See :ref:`librenms_configuration_maps` for more
+# details.
+librenms_configuration_maps:
+  - '{{ librenms_config_database }}'
+  - '{{ librenms_config_authentication }}'
+  - '{{ librenms_config_installation }}'
+  - '{{ librenms_config_memcached }}'
+  - '{{ librenms_config_webui }}'
+  - '{{ librenms_config_autodiscovery }}'
+  - '{{ librenms_config_snmp }}'
+  - '{{ librenms_config_custom }}'
+
+
+# .. envvar:: librenms_config_database
+#
+# LibreNMS database configuration.
+librenms_config_database:
+  comment: 'Database configuration'
+  'db_host': '{{ librenms_database_server }}'
+  'db_name': '{{ librenms_database_name }}'
+  'db_user': '{{ librenms_database_user }}'
+  'db_pass': '{{ librenms_database_password }}'
+
+
+# .. envvar:: librenms_config_authentication
+#
+# LibreNMS authentication configuration.
+librenms_config_authentication:
+  comment: 'Authentication configuration'
+  'auth_mechanism': 'mysql'
+
+
+# .. envvar:: librenms_config_installation
+#
+# LibreNMS installation configuration.
+librenms_config_installation:
+  comment: 'Application directories, installation'
+  'install_dir': '{{ librenms_install_path }}'
+  'rrd_dir':     '{{ librenms_rrd_dir }}'
+  'log_dir':     '{{ librenms_log_dir }}'
+  'update':      '{{ librenms_update }}'
+
+
+# .. envvar:: librenms_config_memcached
+#
+# LibreNMS ``memcached`` configuration.
+librenms_config_memcached:
+  comment: 'Memcached configuration'
+  'memcached':
+    'enable': '{{ librenms_memcached }}'
+    'host':   '{{ librenms_memcached_host }}'
+    'port':   '{{ librenms_memcached_port }}'
+
+
+# .. envvar:: librenms_config_webui
+#
+# LibreNMS web interface configuration.
+librenms_config_webui:
+  comment: 'Web interface configuration'
+  'site_style':          '{{ librenms_site_style }}'
+  'front_page':          '{{ librenms_front_page }}'
+  'public_status':       '{{ librenms_public_status }}'
+  'show_services':       '{{ librenms_show_services }}'
+  'network_map_items':   { array: '{{ librenms_network_map_items }}' }
+
+
+# .. envvar:: librenms_config_autodiscovery
+#
+# LibreNMS autodiscovery configuration.
+librenms_config_autodiscovery:
+  comment: 'Autodiscovery configuration'
+  'own_hostname':        '{{ librenms_own_hostname }}'
+  'discover_services':   '{{ librenms_discover_services }}'
+  'nets':                '{{ librenms_autodiscover_networks }}'
+  'ignore_mount_string': '{{ librenms_ignore_mount_string }}'
+  'auth_ldap_groups':
+    'admin':
+      'level': 7
+
+
+# .. envvar:: librenms_config_snmp
+#
+# LibreNMS SNMP configuration.
+librenms_config_snmp:
+  comment: 'SNMP configuration'
+  'snmp':
+    'version': '{{ librenms_snmp_version }}'
+    'community': { array: '{{ librenms_snmp_communities }}' }
+    'v3': '{{ librenms_snmp_credentials }}'
+
+
+# .. envvar:: librenms_config_custom
+#
+# Custom LibreNMS configuration.
+librenms_config_custom: {}
+
