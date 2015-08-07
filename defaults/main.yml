@@ -14,7 +14,22 @@
 # List of base packages required by LibreNMS.
 librenms_base_packages: [ 'snmp', 'snmp-mibs-downloader', 'imagemagick',
                           'fping', 'whois', 'mtr-tiny', 'nmap', 'rrdtool',
-                          'python-mysqldb', 'monitoring-plugins' ]
+                          'python-mysqldb' ]
+
+
+# .. envvar:: librenms_monitoring_packages
+#
+# List of monitoring packages to install (some distributions didn't rename the
+# old packages and they need overrides).
+librenms_monitoring_packages: '{{ librenms_monitoring_packages_map[ansible_distribution]
+                                  | default([ "monitoring-plugins" ]) }}'
+
+
+# .. envvar:: librenms_monitoring_packages_map
+#
+# Map of monitoring packages for different distributions.
+librenms_monitoring_packages_map:
+  'Ubuntu': [ 'nagios-plugins' ]
 
 
 # .. envvar:: librenms_packages
