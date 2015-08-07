@@ -24,7 +24,7 @@ pki_packages: []
 # Base PKI directory on remote hosts
 pki_base_path: '/etc/pki'
 
-# Base PKI directory on Ansible Controller
+# Base PKI directory on the Ansible Controller
 # See debops.secret role for more information
 pki_base_src: '{{ secret + "/pki/" + ansible_domain }}'
 
@@ -151,7 +151,7 @@ pki_default_certificate_uri: '{{ "http://" + pki_ca_domain + "/cert/" + (ansible
 # ---- Certificates ----
 
 # This is a list of certificates to manage on a host. Each host sends
-# a Certificate Signing Request to Ansible Controller, where it's signed by
+# a Certificate Signing Request to the Ansible Controller, where it's signed by
 # designated Certificate Authority and send back to the host.
 pki_certificates: '{{ pki_certificates_default }}'
 
@@ -182,17 +182,17 @@ pki_certificates_default:
 # ---- PKI realms ----
 
 # PKI realm is defined as a "channel" through which certificate requests are
-# sent to the Ansible controller and certificates, as well as other files, are
-# sent to remote hosts. It's defined by a "source directory" (on Ansible
+# sent to the Ansible Controller and certificates, as well as other files, are
+# sent to remote hosts. It's defined by a "source directory" (on the Ansible
 # Controller) and "destination directory" (on a remote host). Multiple sources
 # can be connected to one destination.
 #
 # Each realm can have an optional Certificate Authority bound to it, which is
 # used to sign certificates requested in that realm. Since each realm generates
 # a Makefile in its destination directory, this can be disabled to not
-# interfere if multiple source directories are connected to 1 destination.
+# interfere if multiple source directories are connected to one destination.
 # You can also specify a certificate name which will be symlinked as
-# 'default.*' in main directory of the PKI realm. You can also specify which CA
+# 'default.*' in the main directory of the PKI realm. You can also specify which CA
 # certificates should be installed in a particular realm 'CA/' directory.
 #
 # To provide your own certificates and keys signed by an external CA, put them
@@ -215,7 +215,8 @@ pki_realms:
     # (for example, MySQL built with yaSSL by default), this realm creates an
     # alternative set of certificates which are signed directly by a Root
     # Certificate Authority, without any Intermediate CA. This realm is meant
-    # for the internal use only.
+    # for internal use only.
+
   - name: 'service'
     source: 'service'
     destination: 'service'
@@ -224,6 +225,7 @@ pki_realms:
 
     # This is a host counterpart for the 'service' realm, specific to
     # a particular host.
+
   - name: 'host-service'
     source: 'hosts/{{ ansible_fqdn }}/service'
     destination: 'service'
@@ -233,7 +235,8 @@ pki_realms:
     default_ca: '{{ "CA/" + pki_serviceca_filename + ".crt" }}'
 
     # This realm can be used to manage wildcard certificates per host, instead of
-    # globally. It by default provides a wildcard certificate for your domain.
+    # globally. By default it provides a wildcard certificate for your domain.
+
   - name: 'host-domain'
     source: 'hosts/{{ ansible_fqdn }}/domain'
     destination: 'domain'
@@ -251,10 +254,10 @@ pki_realms:
     default: '{{ pki_default_host_certificate }}'
 
 
-# ---- Certificate Authoriries ----
+# ---- Certificate Authorities ----
 
 # This list defines a chain of Certificate Authorities, from Root CA, through
-# Intermediate CA, ending on the "endpoint" CA which issue client and server
+# Intermediate CA, ending on the "endpoint" CA which issues client and server
 # certificates. Root and Intermediate CA after signing the CSR of sibling CA
 # will automatically lock themselves, which allows you to move their private
 # keys offline to a secure storage.
@@ -313,6 +316,7 @@ pki_authorities:
 # have a knowledge about where to copy each file from Certificate Authorities
 # directories to PKI realms, small shell scripts are generated beforehand with
 # proper copy commands.
+# FIXME: Spelling, meaning.
 pki_routes: '{{ pki_routes_default }}'
 
 # Routes provided for default certificates
@@ -374,8 +378,8 @@ pki_routes_default:
 # Ansible Vault using variables. Specified paths are relative to
 # 'pki_base_path', by default "/etc/pki/".
 #
-# Files are added just after first Makefile run on remote hosts, and before CSR
-# files are sent to Ansible Controller.
+# Files are added just after the first Makefile run on remote hosts, and before CSR
+# files are sent to the Ansible Controller.
 #
 # For example, a way to add a certificate and private key to PKI host realm
 # using variables:
@@ -400,7 +404,7 @@ pki_inject_private_files: []
 
 # ---- Copy external files to PKI directories ----
 
-# Using these lists, you can copy arbitrary files from Ansible Controller to
+# Using these lists, you can copy arbitrary files from the Ansible Controller to
 # remote host's PKI directories. They will automatically be secured with proper
 # permissions. If not specified, files will be copied to default PKI realm.
 
@@ -439,7 +443,7 @@ pki_copy_private_files: []
 pki_system_ca_certificates_trust_new: 'yes'
 
 # List of blacklisted CA certificates. You can specify either exact names of
-# certificate files, or simple regexps with wildcards. If a certificate is
+# certificate files or use regular expressions. If a certificate is
 # found in both lists, it will be blacklisted.
 pki_system_ca_certificates_blacklist:
 
@@ -458,7 +462,7 @@ pki_system_ca_certificates_blacklist:
   #- 'mozilla/VeriSign_.*'
 
 # List of whitelisted CA certificates. You can specify either exact names of
-# certificate files, or simple regexps with wildcards.
+# certificate files or use regular expressions.
 pki_system_ca_certificates_whitelist: []
 
   # Whitelist all certificates
