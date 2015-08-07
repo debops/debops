@@ -26,6 +26,10 @@
 interface = {{ item.interface }}
 
 
+{% if item.interface in dnsmasq_no_dhcp_interfaces %}
+# This interface is only used for DNS
+no-dhcp-interface = {{ item.interface }}
+{% else %}
 # ---- DHCP options ----
 
 {% if dnsmasq_dhcpv4 is defined and dnsmasq_dhcpv4 %}
@@ -72,8 +76,9 @@ dhcp-option = tag:{{ item.interface }},option6:domain-search,{{ dnsmasq_tpl_sear
 # Advertise RDNSS servers for local IPv6 network
 dhcp-option = tag:{{ item.interface }},option6:dns-server,{{ dnsmasq_tpl_ipv6 | ipv6('address') | ipwrap | join(",") }}
 {% endif %}
-{% if dnsmasq_tftp is defined and dnsmasq_tftp %}
+{% endif %}
 
+{% if dnsmasq_tftp is defined and dnsmasq_tftp %}
 # ---- TFTP options ----
 
 # Enable TFTP service on specified interface

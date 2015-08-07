@@ -54,7 +54,8 @@
     group: 'adm'
     mode: '0644'
   with_items: dnsmasq_interfaces
-  when: item.interface is defined and item.interface
+  when: ((item.interface is defined and item.interface) and
+         (item.interface not in dnsmasq_no_dhcp_interfaces))
   notify: [ 'Restart ferm' ]
 
 - name: Allow access to TFTP in tcpwrappers

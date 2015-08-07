@@ -22,7 +22,7 @@ dnsmasq_tftp: True
 # Bind to and listen only on specified interfaces
 dnsmasq_bind_interfaces: True
 
-# Block private IP addressess coming from upstream nameservers
+# Block private IP addresses coming from upstream nameservers
 dnsmasq_stop_dns_rebind: True
 
 # Don't forwars reverse DNS lookups for private IP addresses
@@ -34,6 +34,10 @@ dnsmasq_bogus_priv: True
 # List of network interfaces that are assumed to be upstream networks, if
 # present on the host
 dnsmasq_upstream_interfaces: [ 'br0', 'br1', 'eth0', 'eth1' ]
+
+# List of network interfaces where dnsmasq should not provide DHCP or RA.
+# See https://github.com/debops/ansible-dnsmasq/issues/13 for more information.
+dnsmasq_no_dhcp_interfaces: []
 
 # Name of the IPv4 gateway interface
 dnsmasq_ipv4_gateway: '{{ ansible_default_ipv4.interface | default("") }}'
