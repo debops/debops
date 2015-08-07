@@ -23,7 +23,7 @@ This role requires at least Ansible `v1.8.4`. To install it, run:
 To install via git, run either:
 
     git clone https://github.com/ypid/ansible-kernel_module.git ypid.kernel_module
-    git submodule add https://github.com/ypid/ansible-kernel_module.git roles/ypid.kernel_module
+    git submodule add https://github.com/ypid/ansible-kernel_module.git ypid.kernel_module
 
 
 
@@ -35,11 +35,22 @@ List of default variables available in the inventory:
     ---
     
     # name (string, required): Name of the kernel module.
-    # blacklist (boolean, optional, default: false): If true, blacklist the module. Note that blacklist dominates the loading of modules.
-    # state (string, optional, default: undefined): If 'present' load the module unless it is blacklisted. Unload if 'absent'.
-    # persistent (boolean, optional, default: true): If true, make changes permanent else the changes will not persist a reboot.
+    #
+    # blacklist (boolean, optional, default: false):
+    # If true, blacklist the module. Note that blacklist dominates the loading of
+    # modules.
+    #
+    # state (string, optional, default: undefined):
+    # If 'present' load the module unless it is blacklisted. Unload if 'absent'.
+    #
+    # persistent (boolean, optional, default: true):
+    # If true, make changes permanent else the changes will not persist a reboot.
+    #
     # params (string, optional, default: undefined): Kernel module parameters.
-    # force_params (boolean, optional, default: false): If true, force that the module parameters are applied (via unload and load of the module).
+    #
+    # force_params (boolean, optional, default: false):
+    # If true, force that the module parameters are applied (via unload and load of
+    # the module).
     
     # "Global" kernel module configuration
     kernel_module_list: []
