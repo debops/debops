@@ -4,9 +4,9 @@
   include_vars: "{{ item }}"
   with_first_found:
     - '../vars/{{ ifupdown_default_config }}.yml'
-    - '../vars/networkmanager_{{ ifupdown_networkmanager }}.yml'
-    - '../vars/virtualization_{{ ansible_virtualization_type }}_{{ ansible_virtualization_role }}.yml'
-    - '../vars/default_{{ ifupdown_static_config }}.yml'
+    - '../vars/networkmanager_{{ ifupdown_networkmanager|d() }}.yml'
+    - '../vars/virtualization_{{ ansible_virtualization_type|d() }}_{{ ansible_virtualization_role|d() }}.yml'
+    - '../vars/default_{{ ifupdown_static_config|d() }}.yml'
     - '../vars/default.yml'
   when: (ifupdown_interface is undefined or not ifupdown_interfaces)
 

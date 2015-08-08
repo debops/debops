@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.2.2
+------
+
+*Released: 2015-08-08*
+
+- Streamline directory creation tasks and make sure required packages are
+  installed. [le9i0nx]
+
+- Make sure that Ansible does not stop if a variable is undefined. This change
+  fixes issues with the missing variables in Ansible v2. [drybjed]
+
 v0.2.1
 ------
 
