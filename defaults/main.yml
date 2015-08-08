@@ -16,9 +16,7 @@ dnsmasq_dhcpv6: True
 # hosts, DHCPv6 doesn't work)
 # True means to announce the machine where dnsmasq is running as default gateway.
 # False means to not announce any default route.
-# If dnsmasq_router is a string, it will be announced as default gateway.
 dnsmasq_router: True
-# dnsmasq_router: '{{ ansible_default_ipv4.gateway }}'
 
 # Enable or disable TFTP server
 dnsmasq_tftp: True
@@ -72,6 +70,11 @@ dnsmasq_interfaces:
 
     # DHCPv6 options configured on this interface
     ipv6_mode: 'ra-names,ra-stateless,slaac'
+
+    # Address which dnsmasq will announce as default gateway via DHCPv4.
+    # The default, as defined by dnsmasq_router is to announce the machine
+    # running dnsmasq as default gateway.
+    # gateway: '{{ ansible_default_ipv4.gateway }}'
 
 
 # ---- DNS options ----

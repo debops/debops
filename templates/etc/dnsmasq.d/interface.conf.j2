@@ -48,13 +48,13 @@ dhcp-range = set:{{ item.interface }},{{ element | ipv6(item.dhcp_range_start | 
 
 {% endif %}
 {% endif %}
-{% if dnsmasq_router is defined and dnsmasq_router is not string and dnsmasq_router %}
+{% if dnsmasq_router is defined and dnsmasq_router and item.gateway is not string %}
 # IPv4 router advertisement
 dhcp-option = tag:{{ item.interface }},option:router,0.0.0.0
 
-{% elif dnsmasq_router is string %}
+{% elif dnsmasq_router is defined and dnsmasq_router and item.gateway is string %}
 # IPv4 router
-dhcp-option = tag:{{ item.interface }},option:router,{{ dnsmasq_router }}
+dhcp-option = tag:{{ item.interface }},option:router,{{ item.gateway }}
 
 {% else %}
 # IPv4 router advertisements are disabled
