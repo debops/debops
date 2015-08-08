@@ -14,6 +14,8 @@ dnsmasq_dhcpv6: True
 
 # Enable or disable local router support (no routing information is sent to
 # hosts, DHCPv6 doesn't work)
+# True means to announce the machine where dnsmasq is running as default gateway.
+# False means to not announce any default route.
 dnsmasq_router: True
 
 # Enable or disable TFTP server
@@ -25,7 +27,7 @@ dnsmasq_bind_interfaces: True
 # Block private IP addresses coming from upstream nameservers
 dnsmasq_stop_dns_rebind: True
 
-# Don't forwars reverse DNS lookups for private IP addresses
+# Don't forward reverse DNS lookups for private IP addresses
 dnsmasq_bogus_priv: True
 
 
@@ -68,6 +70,11 @@ dnsmasq_interfaces:
 
     # DHCPv6 options configured on this interface
     ipv6_mode: 'ra-names,ra-stateless,slaac'
+
+    # Address which dnsmasq will announce as default gateway via DHCPv4.
+    # The default, as defined by dnsmasq_router is to announce the machine
+    # running dnsmasq as default gateway.
+    # gateway: '{{ ansible_default_ipv4.gateway }}'
 
 
 # ---- DNS options ----
