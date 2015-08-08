@@ -33,6 +33,10 @@ v0.2.7
 
 - Add ``debops.librenms`` role. [drybjed]
 
+- Lookup plugins ``task_src``, ``template_src`` and ``file_src`` are updated
+  using input from James Cammarata to work both in old Ansible 1.x series as
+  well as in the new 2.x series. Thanks! [drybjed]
+
 v0.2.6
 ------
 
