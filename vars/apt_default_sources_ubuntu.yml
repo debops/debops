@@ -1,15 +1,24 @@
 ---
 
+# Can not changed directly. To change it define apt_default_sources in your
+# inventory variables (same as below).
+# Then you can change the apt_default_sources_sections directly.
+apt_default_sources_sections:
+  - 'main'
+  - 'restricted'
+  - 'universe'
+  - 'multiverse'
+
 # List of default repositories for Ubuntu Linux distribution
 apt_default_sources:
   - comment:  'Ubuntu Security Repository'
     mirrors:  [ 'http://security.ubuntu.com/ubuntu' ]
     releases: [ '{{ apt_sources_release_security }}' ]
-    sections: [ 'main', 'restricted', 'universe', 'multiverse' ]
+    sections: '{{ apt_default_sources_sections }}'
 
   - comment:  'Ubuntu Package Repositories'
     releases: '{{ apt_sources_release_list }}'
-    sections: [ 'main', 'restricted', 'universe', 'multiverse' ]
+    sections: '{{ apt_default_sources_sections }}'
 
   #- comment:  'Ubuntu Partner Repository'
   #  mirrors:  [ 'http://archive.canonical.com/ubuntu' ]
