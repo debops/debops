@@ -55,4 +55,13 @@ owncloud_php5_pool:
     post_max_size: '{{ owncloud_upload_size }}'
     upload_max_filesize: '{{ owncloud_upload_size }}'
 
+  ## https://doc.owncloud.org/server/8.1/admin_manual/installation/source_installation.html#using-php-fpm
+  environment:
+    # HOSTNAME: '$HOSTNAME'
+    # TMP: '/tmp'
+    # TMPDIR: '/tmp'
+    # TEMP: '/tmp'
+
+    ## Fixes warning (ownCloud 8.1): "The test with getenv('PATH') only returns an empty response"
+    PATH: '/usr/local/bin:/usr/bin:/bin'
 
