@@ -8,23 +8,23 @@ setup, you can provide your own template via lookup mechanism.
 #}
 {% import 'dovecot_macros.j2' as macros with context %}
 
-{% if dovecot_protocols | intersect(dovecot_imap_services) %}
+{% if dovecot_protocols | intersect(dovecot_imap_listeners|default([])) %}
 {% if dovecot_imap_config_map is defined and dovecot_imap_config_map %}
 {% if 'login-service' in dovecot_imap_config_map %}
 {% set dovecot_tpl_imap_login_map = dovecot_imap_config_map['login-service'] %}
 {% endif %}
 {% endif %}
-{{ macros.dovecot_login_service('imap', dovecot_imap_services, dovecot_tpl_imap_login_map|default({})) }}
+{{ macros.dovecot_login_service('imap', dovecot_imap_listeners, dovecot_tpl_imap_login_map|default({})) }}
 {% endif %}
-{% if dovecot_protocols | intersect(dovecot_pop3_services) %}
+{% if dovecot_protocols | intersect(dovecot_pop3_listeners|default([])) %}
 {% if dovecot_pop3_config_map is defined and dovecot_pop3_config_map %}
 {% if 'login-service' in dovecot_pop3_config_map %}
 {% set dovecot_tpl_pop3_login_map = dovecot_pop3_config_map['login-service'] %}
 {% endif %}
 {% endif %}
-{{ macros.dovecot_login_service('pop3', dovecot_pop3_services, dovecot_tpl_pop3_login_map|default({})) }}
+{{ macros.dovecot_login_service('pop3', dovecot_pop3_listeners, dovecot_tpl_pop3_login_map|default({})) }}
 {% endif %}
-{% if dovecot_protocols | intersect(dovecot_imap_services) %}
+{% if dovecot_protocols | intersect(dovecot_imap_listeners|default([])) %}
 {% if dovecot_imap_config_map is defined and dovecot_imap_config_map %}
 {% if 'service' in dovecot_imap_config_map %}
 {% set dovecot_tpl_imap_svc_map = dovecot_imap_config_map['service'] %}
@@ -32,7 +32,7 @@ setup, you can provide your own template via lookup mechanism.
 {% endif %}
 {{ macros.dovecot_service('imap', dovecot_tpl_imap_svc_map|default({})) }}
 {% endif %}
-{% if dovecot_protocols | intersect(dovecot_pop3_services) %}
+{% if dovecot_protocols | intersect(dovecot_pop3_listeners|default([])) %}
 {% if dovecot_pop3_config_map is defined and dovecot_pop3_config_map %}
 {% if 'service' in dovecot_pop3_config_map %}
 {% set dovecot_tpl_pop3_svc_map = dovecot_pop3_config_map['service'] %}

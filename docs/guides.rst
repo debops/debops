@@ -55,7 +55,7 @@ the networks or hosts which are allowed to connect::
     dovecot_managesieve_config_map:
       login-service:
         inet_listener:
-          managesieve:
+          sieve:
             allow: [ '192.168.1.0/24' ]
 
 The sieve filter rules are applied before delivering the mail to the user's

@@ -25,8 +25,8 @@ protocol tcp dport {{ ferm_service|default(service) }} {
 {% endif %}
 {% endmacro %}
 
-{% if dovecot_protocols|intersect(dovecot_imap_services) %}
-{% for service in dovecot_protocols|intersect(dovecot_imap_services) %}
+{% if dovecot_protocols|intersect(dovecot_imap_listeners|default([])) %}
+{% for service in dovecot_protocols|intersect(dovecot_imap_listeners) %}
 {% if dovecot_imap_config_map is defined and dovecot_imap_config_map %}
 {% set dovecot_tpl_imap_svc_props = ([ dovecot_imap_config_map ] | map(attribute='login-service') | list | map(attribute='inet_listener') | list | map(attribute=service) | list)[0] %}
 # service_props={{ dovecot_tpl_imap_svc_props|default({}) }}
@@ -34,8 +34,8 @@ protocol tcp dport {{ ferm_service|default(service) }} {
 {{ dovecot_ferm(service, dovecot_tpl_imap_svc_props|default({})) }}
 {% endfor %}
 {% endif %}
-{% if dovecot_protocols|intersect(dovecot_pop3_services) %}
-{% for service in dovecot_protocols|intersect(dovecot_pop3_services) %}
+{% if dovecot_protocols|intersect(dovecot_pop3_listeners|default([])) %}
+{% for service in dovecot_protocols|intersect(dovecot_pop3_listeners) %}
 {% if dovecot_pop3_config_map is defined and dovecot_pop3_config_map %}
 {% set dovecot_tpl_pop3_svc_props = ([ dovecot_pop3_config_map ] | map(attribute='login-service') | list | map(attribute='inet_listener') | list | map(attribute=service) | list)[0] %}
 # service_props={{ dovecot_tpl_pop3_svc_props|default({}) }}
@@ -43,8 +43,8 @@ protocol tcp dport {{ ferm_service|default(service) }} {
 {{ dovecot_ferm(service, dovecot_tpl_pop3_svc_props|default({})) }}
 {% endfor %}
 {% endif %}
-{% if dovecot_protocols|intersect(dovecot_managesieve_services) %}
-{% for service in dovecot_protocols|intersect(dovecot_managesieve_services) %}
+{% if dovecot_protocols|intersect(dovecot_managesieve_listeners|default([])) %}
+{% for service in dovecot_protocols|intersect(dovecot_managesieve_listeners) %}
 {% if dovecot_managesieve_config_map is defined and dovecot_managesieve_config_map %}
 {% set dovecot_tpl_sieve_svc_props = ([ dovecot_managesieve_config_map ] | map(attribute='login-service') | list | map(attribute='inet_listener') | list | map(attribute=service) | list)[0] %}
 # service_props={{ sieve_service_props|default({}) }}
