@@ -9,13 +9,22 @@
     - apt_preferences_group_list
     - apt_preferences_host_list
     - apt_preferences_dependent_list
-  when: (((item.delete is defined and item.delete) and
-          (item.package is defined and item.package) and
-          (item.version is undefined or (item.version is defined and not item.version))) or
-          (item.pin is undefined and
-           (item.backports is undefined or (item.backports is defined and item.backports and
-            ansible_distribution_release not in item.backports)) and
-          ansible_distribution_release not in apt_preferences_next_release.keys()))
+  when: (
+          (
+            (item.delete is defined and item.delete) and
+            (item.package is defined and item.package) and
+            (item.version is undefined or (item.version is defined and not item.version))
+          ) or
+          (
+            item.pin is undefined and
+            (item.backports is undefined or
+             (
+              item.backports is defined and item.backports and
+              ansible_distribution_release not in item.backports
+              )
+            ) and ansible_distribution_release not in apt_preferences_next_release.keys()
+          )
+        )
 
 - name: Create APT preferences
   template:
@@ -29,12 +38,27 @@
     - apt_preferences_group_list
     - apt_preferences_host_list
     - apt_preferences_dependent_list
-  when: ((item.delete is undefined or (item.delete is defined and not item.delete)) and
-         (item.package is defined and item.package) and
-         ((item.version is defined and item.version) or
-          (item.pin is undefined and
-           (item.backports is undefined or (item.backports is defined and item.backports and
-            ansible_distribution_release in item.backports)) and
-           ansible_distribution_release in apt_preferences_next_release.keys()) or
-          (item.pin is defined and item.pin)))
+  when: (
+          (
+            (
+              item.delete is undefined or
+              (item.delete is defined and not item.delete)
+            ) and
+            item.package is string
+          ) and
+          (
+            (item.version is defined and item.version) or
+            (
+              item.pin is undefined and
+              (
+                item.backports is undefined or
+                (
+                  item.backports is defined and item.backports and
+                  ansible_distribution_release in item.backports
+                )
+              ) and
+             ansible_distribution_release in apt_preferences_next_release.keys()
+            ) or (item.pin is defined and item.pin)
+          )
+        )
 

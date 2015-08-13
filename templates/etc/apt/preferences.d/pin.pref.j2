@@ -63,18 +63,18 @@
 #
 #}
 {% if item.raw is undefined %}
-{% if item.by_role is defined and item.by_role %}
+{%   if item.by_role is defined and item.by_role %}
 Explanation: Pin added by role: {{ item.by_role }}
-{% endif %}
+{%   endif %}
 Explanation: {{ item.reason | default('Reason not specified') }}
 Package: {{ item.package }}
-{% if item.version is defined and item.version %}
+{%   if item.version is defined and item.version %}
 Pin: version {{ item.version + '*' }}
 Pin-Priority: {{ item.priority | default(apt_preferences_priority_version) }}
-{% else %}
+{%   else %}
 Pin: {{ item.pin | default('release a=' + ansible_distribution_release + '-backports') }}
 Pin-Priority: {{ item.priority | default(apt_preferences_priority_default) }}
-{% endif %}
+{%   endif %}
 {% elif item.raw is defined and item.raw %}
 {{ item.raw }}
 {% endif %}
