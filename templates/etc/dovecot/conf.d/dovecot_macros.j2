@@ -25,7 +25,6 @@
 {% set listener_props = [ 'port', 'ssl' ] %}
 service {{ protocol }}-login {
 {% for svc in services %}
-{% if svc in dovecot_protocols %}
   inet_listener {{ svc }} {
 {% if map is defined and map %}
 {% if 'inet_listener' in map.keys() %}
@@ -39,7 +38,7 @@ service {{ protocol }}-login {
 {% endif %}
 {% endif %}
   }
-{% endif %}{% endfor %}
+{% endfor %}
 {{ dovecot_properties(map, ['inet_listener']) }}
 }
 {% endmacro %}

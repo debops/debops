@@ -9,38 +9,7 @@ them.
    :local:
    :depth: 1
 
-.. _dovecot_protocols:
 .. _dovecot_imap_config_map:
-.. _dovecot_imap_listeners:
-.. _dovecot_pop3_config_map:
-.. _dovecot_pop3_listeners:
-.. _dovecot_lda_config_map:
-.. _dovecot_managesieve_config_map:
-.. _dovecot_managesieve_listeners:
-
-
-dovecot_protocols
------------------
-
-List of protocols which should be installed and enabled. So far supported are:
-``imap``, ``imaps``, ``pop3``, ``pop3s``, ``managesieve``
-
-
-Examples
-~~~~~~~~
-
-Possible configuration options for enabling IMAP:
-
-+---------------------------------+------------------------+------------------+
-+ Service                         + ``dovecot_protocols``  | ``dovecot_pki``  +
-+=================================+========================+==================+
-+ Port 143 (plain)                + ``[ 'imap' ]``         | ``False``        |
-+---------------------------------+------------------------+------------------+
-+ Port 143 (StartTLS)             + ``[ 'imap' ]``         | ``True``         |
-+---------------------------------+------------------------+------------------+
-+ Port 143 (StartTLS) + 995 (SSL) + ``[ 'imap', 'imaps']`` | ``True``         |
-+---------------------------------+------------------------+------------------+
-
 
 dovecot_imap_config_map
 -----------------------
@@ -107,14 +76,33 @@ waiting for more connections, restrict maximal number of IMAP processes to
 .. _Dovecot inet_listeners: http://wiki2.dovecot.org/Services#inet_listeners
 .. _Dovecot IMAP Service: http://wiki2.dovecot.org/Services#imap.2C_pop3.2C_managesieve
 
+.. _dovecot_imap_listeners:
 
 dovecot_imap_listeners
 ----------------------
 
 List of IMAP network listener names which will be used to decide which
 default listeners to create. Their configuration can be customized via
-:ref:`dovecot_imap_config_map`. This value usually shouldn't be changed.
+:ref:`dovecot_imap_config_map`.
 
+Examples
+~~~~~~~~
+
+Possible configuration options for enabling IMAP:
+
++---------------------------------+-----------------------+----------------------------+------------------+
+| Service                         | ``dovecot_protocols`` | ``dovecot_imap_listeners`` | ``dovecot_pki``  +
++=================================+=======================+============================+==================+
+| Port 143 (plain)                | ``[ 'imap' ]``        | ``[ 'imap' ]``             | ``False``        |
++---------------------------------+-----------------------+----------------------------+------------------+
+| Port 143 (StartTLS)             | ``[ 'imap' ]``        | ``[ 'imap' ]``             | ``True``         |
++---------------------------------+-----------------------+----------------------------+------------------+
+| Port 143 (StartTLS) + 995 (SSL) | ``[ 'imap' ]``        | ``[ 'imap', 'imaps' ]``    | ``True``         |
++---------------------------------+-----------------------+----------------------------+------------------+
+| Port 995 (SSL)                  | ``[ 'imap' ]``        | ``[ 'imaps' ]``            | ``True``         |
++---------------------------------+-----------------------+----------------------------+------------------+
+
+.. _dovecot_pop3_config_map:
 
 dovecot_pop3_config_map
 -----------------------
@@ -122,14 +110,16 @@ dovecot_pop3_config_map
 Configuration dictionary related to the POP3 protocol configuration. Please
 to the :ref:`dovecot_imap_config_map` for a description of the dict layout.
 
+.. _dovecot_pop3_listeners:
 
 dovecot_pop3_listeners
 ----------------------
 
 List of POP3 network listener names which will be used to decide which
 default listeners to create. Their configuration can be customized via
-:ref:`dovecot_pop3_config_map`. This value usually shouldn't be changed.
+:ref:`dovecot_pop3_config_map`.
 
+.. _dovecot_lda_config_map:
 
 dovecot_lda_config_map
 -----------------------
@@ -150,6 +140,7 @@ Enable ``sieve`` mail plugin with local mail delivery::
         protocol:
             mail_plugins: [ 'sieve' ]
 
+.. _dovecot_managesieve_config_map:
 
 dovecot_managesieve_config_map
 ------------------------------
@@ -158,6 +149,7 @@ Configuration dictionary related to the ManageSieve protocol configuration.
 Please refer to the :ref:`dovecot_imap_config_map` for a description of the
 dict layout.
 
+.. _dovecot_managesieve_listeners:
 
 dovecot_managesieve_listeners
 -----------------------------
@@ -165,8 +157,7 @@ dovecot_managesieve_listeners
 List of ManageSieve network listener names which will be used to decide
 which default listeners to create when ``managesieve`` is enabled in
 :ref:`dovecot_protocols`. Their configuration can be customized via
-:ref:`dovecot_managesieve_config_map`. This value usually shouldn't be
-changed.
+:ref:`dovecot_managesieve_config_map`.
 
 Example
 ~~~~~~~

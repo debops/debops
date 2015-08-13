@@ -11,7 +11,7 @@ setup, you can provide your own template via lookup mechanism.
 ##
 ## ManageSieve specific settings
 ##
-{% if dovecot_protocols | intersect(dovecot_managesieve_listeners|default([])) %}
+{% if 'managesieve' in dovecot_protocols %}
 
 # Service definitions
 
@@ -26,7 +26,7 @@ setup, you can provide your own template via lookup mechanism.
 {% set dovecot_tpl_managesieve_proto_map = dovecot_managesieve_config_map['protocol'] %}
 {% endif %}
 {% endif %}
-{{ macros.dovecot_login_service('managesieve', dovecot_managesieve_listeners, dovecot_tpl_sieve_login_map|default({})) }}
+{{ macros.dovecot_login_service('managesieve', dovecot_managesieve_listeners|default([]), dovecot_tpl_sieve_login_map|default({})) }}
 {{ macros.dovecot_service('managesieve', dovecot_tpl_sieve_svc_map|default({})) }}
 
 # Service configuration
