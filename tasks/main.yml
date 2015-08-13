@@ -17,10 +17,11 @@
           ) or
           (
             item.pin is undefined and
-            (item.backports is undefined or
-             (
-              item.backports is iterable and item.backports and
-              ansible_distribution_release not in item.backports
+            (
+              item.backports is undefined or
+              (
+                item.backports is iterable and item.backports and
+                ansible_distribution_release not in item.backports
               )
             ) and ansible_distribution_release not in apt_preferences_next_release.keys()
           )
