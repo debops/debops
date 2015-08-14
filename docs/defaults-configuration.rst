@@ -138,7 +138,7 @@ Enable ``sieve`` mail plugin with local mail delivery::
     dovecot_lda_config_map:
 
       protocol:
-        mail_plugins: [ 'sieve' ]
+        mail_plugins: '$mail_plugins sieve'
 
 .. _dovecot_managesieve_config_map:
 
