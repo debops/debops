@@ -21,7 +21,6 @@
  #}
 
 {% macro dovecot_login_service(protocol, services, map) %}
-# dovecot_login_service(protocol={{ protocol }}, services={{ services }}, map={{ map }})
 {% set listener_props = [ 'port', 'ssl' ] %}
 service {{ protocol }}-login {
 {% for svc in services %}
@@ -50,7 +49,6 @@ service {{ protocol }}-login {
  # properties to set (map).
  #}
 {% macro dovecot_service(protocol, map) %}
-# dovecot_service(protocol={{ protocol }}, map={{ map }})
 service {{ protocol }} {
 {{ dovecot_properties(map) }}
 }
@@ -63,7 +61,6 @@ service {{ protocol }} {
  # properties to set (map).
  #}
 {% macro dovecot_protocol(name, map) %}
-# dovecot_protocol(name={{ name }}, map={{ map }})
 protocol {{ name }} {
 {{ dovecot_properties(map) }}
 }
