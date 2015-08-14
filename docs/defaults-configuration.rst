@@ -156,7 +156,7 @@ dovecot_managesieve_listeners
 
 List of ManageSieve network listener names which will be used to decide
 which default listeners to create when ``managesieve`` is enabled in
-:ref:`dovecot_protocols`. Their configuration can be customized via
+``dovecot_protocols``. Their configuration can be customized via
 :ref:`dovecot_managesieve_config_map`.
 
 Example
