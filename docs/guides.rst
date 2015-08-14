@@ -44,7 +44,7 @@ via Pigeonhole sieve interpreter.
 .. _ManageSieve: http://wiki2.dovecot.org/Pigeonhole/ManageSieve/
 
 To enable the ManageSieve protocol in your Dovecot role you have to add
-it to the :ref:`dovecot_protocols` list::
+it to the ``dovecot_protocols`` list::
 
     dovecot_protocols: [ 'imap', 'managesieve' ]
 
