@@ -6,9 +6,9 @@
 
 {% macro dovecot_properties(map, ignore_keys=[]) %}
 {% if map is defined and map %}
-{% for property in map.keys()|difference(ignore_keys) %}
+{%   for property in map.keys()|difference(ignore_keys) %}
   {{ property }} = {{ map[property] }}
-{% endfor %}
+{%   endfor %}
 {% endif %}
 {% endmacro %}
 
@@ -26,17 +26,17 @@
 service {{ protocol }}-login {
 {% for svc in services %}
   inet_listener {{ svc }} {
-{% if map is defined and map %}
-{% if 'inet_listener' in map.keys() %}
-{% if svc in map['inet_listener'].keys() %}
-{% for property in listener_props %}
-{% if property in map['inet_listener'][svc].keys() %}
+{%   if map is defined and map %}
+{%     if 'inet_listener' in map.keys() %}
+{%       if svc in map['inet_listener'].keys() %}
+{%         for property in listener_props %}
+{%           if property in map['inet_listener'][svc].keys() %}
     {{ property }} = {{ map['inet_listener'][svc][property] }}
-{% endif %}
-{% endfor %}
-{% endif %}
-{% endif %}
-{% endif %}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
   }
 {% endfor %}
 {{ dovecot_properties(map, ['inet_listener']) }}

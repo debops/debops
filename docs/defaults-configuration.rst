@@ -58,18 +58,18 @@ waiting for more connections, restrict maximal number of IMAP processes to
 
     dovecot_imap_config_map:
 
-        login-service:
-            inet_listener:
-                imap:
-                    access: [ '192.168.1.0/24' ]
+      login-service:
+        inet_listener:
+          imap:
+            access: [ '192.168.1.0/24' ]
 
-            process_min_avail: 1
+        process_min_avail: 1
 
-        service:
-            process_limit: 512
+      service:
+        process_limit: 512
 
-        protocol:
-            mail_max_userip_connections: 15
+      protocol:
+        mail_max_userip_connections: 15
 
 
 .. _Dovecot Login Process: http://wiki2.dovecot.org/LoginProcess
@@ -137,8 +137,8 @@ Enable ``sieve`` mail plugin with local mail delivery::
 
     dovecot_lda_config_map:
 
-        protocol:
-            mail_plugins: [ 'sieve' ]
+      protocol:
+        mail_plugins: [ 'sieve' ]
 
 .. _dovecot_managesieve_config_map:
 
@@ -171,8 +171,8 @@ bind a second listener to a specific address on port 2000::
 
     dovecot_managesieve_config_map:
 
-        login-service:
-            inet_listeners:
-                sieve_deprecated:
-                    address: 192.168.1.42
-                    port: 2000
+      login-service:
+        inet_listeners:
+          sieve_deprecated:
+            address: 192.168.1.42
+            port: 2000

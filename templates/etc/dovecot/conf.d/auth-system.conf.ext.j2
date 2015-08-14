@@ -8,7 +8,7 @@ setup, you can provide your own template via lookup mechanism.
 #}
 
 {% if dovecot_user_accounts is defined and dovecot_user_accounts %}
-{% if 'system' in dovecot_user_accounts %}
+{%   if 'system' in dovecot_user_accounts %}
 # Authentication for system users. Included from 10-auth.conf.
 
 passdb {
@@ -24,9 +24,9 @@ userdb {
     driver  = passwd
     args    = blocking=no
 }
-{% else %}
+{%   else %}
 # DebOps variable dovecot_user_accounts={{ dovecot_user_accounts }}
-{% endif %}
+{%   endif %}
 {% else %}
 # DebOps variable dovecot_user_accounts={{ dovecot_user_accounts|default([]) }}
 {% endif %}

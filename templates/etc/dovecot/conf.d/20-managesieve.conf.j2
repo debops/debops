@@ -15,17 +15,17 @@ setup, you can provide your own template via lookup mechanism.
 
 # Service definitions
 
-{% if dovecot_managesieve_config_map is defined and dovecot_managesieve_config_map %}
-{% if 'login-service' in dovecot_managesieve_config_map %}
-{% set dovecot_tpl_sieve_login_map = dovecot_managesieve_config_map['login-service'] %}
-{% endif %}
-{% if 'service' in dovecot_managesieve_config_map %}
-{% set dovecot_tpl_sieve_svc_map = dovecot_managesieve_config_map['service'] %}
-{% endif %}
-{% if 'protocol' in dovecot_managesieve_config_map %}
-{% set dovecot_tpl_managesieve_proto_map = dovecot_managesieve_config_map['protocol'] %}
-{% endif %}
-{% endif %}
+{%   if dovecot_managesieve_config_map is defined and dovecot_managesieve_config_map %}
+{%     if 'login-service' in dovecot_managesieve_config_map %}
+{%       set dovecot_tpl_sieve_login_map = dovecot_managesieve_config_map['login-service'] %}
+{%     endif %}
+{%     if 'service' in dovecot_managesieve_config_map %}
+{%       set dovecot_tpl_sieve_svc_map = dovecot_managesieve_config_map['service'] %}
+{%     endif %}
+{%     if 'protocol' in dovecot_managesieve_config_map %}
+{%       set dovecot_tpl_managesieve_proto_map = dovecot_managesieve_config_map['protocol'] %}
+{%     endif %}
+{%   endif %}
 {{ macros.dovecot_login_service('managesieve', dovecot_managesieve_listeners|default([]), dovecot_tpl_sieve_login_map|default({})) }}
 {{ macros.dovecot_service('managesieve', dovecot_tpl_sieve_svc_map|default({})) }}
 
