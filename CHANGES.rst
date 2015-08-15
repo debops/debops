@@ -48,6 +48,8 @@ v0.2.0
 
 - Rename ``sshd_config_ports`` to ``sshd_ports``. [drybjed]
 
+- Rename ``sshd_PermitRootLogin`` to ``sshd_permit_root_login``. [drybjed]
+
 v0.1.0
 ------
 

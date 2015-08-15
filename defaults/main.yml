@@ -71,7 +71,6 @@ sshd_HostKey:
 sshd_ferm_ports: [ 'ssh' ]
 
 
-sshd_PermitRootLogin: 'without-password'
 sshd_PasswordAuthentication: 'no'
 sshd_X11Forwarding: 'no'
 sshd_AllowGroups: 'root admins sshusers sftponly'
@@ -92,6 +91,11 @@ sshd_authorized_keys_monkeysphere: '/var/lib/monkeysphere/authorized_keys/%u'
 sshd_authorized_keys_global: '{{ sshd_authorized_keys }}/%u'
 sshd_authorized_keys_user: '%h/.ssh/authorized_keys %h/.ssh/authorized_keys2'
 
+# .. envvar:: sshd_permit_root_login
+#
+# Specify if access to ``root`` account should be granted. By default ``root``
+# can be accessed only using SSH public keys.
+sshd_permit_root_login: 'without-password'
 
 # ---- System-wide host SSH fingerprints ----
 
