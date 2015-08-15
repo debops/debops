@@ -77,6 +77,8 @@ v0.2.0
   their preferred order, host keys that are present will be added to ``sshd``
   configuration file. [drybjed]
 
+- Make ``PrivilegeSeparation`` option configurable. [drybjed]
+
 v0.1.0
 ------
 
