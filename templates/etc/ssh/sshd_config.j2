@@ -153,14 +153,13 @@ AllowGroups {{ (sshd_allow_groups|d([]) + sshd_group_allow_groups|d([]) + sshd_h
 {% endif %}
 
 Subsystem sftp internal-sftp
-Match group sftponly
-        ChrootDirectory %h
-        X11Forwarding no
-        AllowAgentForwarding no
-        AllowTcpForwarding no
-        PasswordAuthentication no
-        AuthorizedKeysFile {% if monkeysphere is defined and monkeysphere %}{{ sshd_authorized_keys_monkeysphere | default('/var/lib/monkeysphere/authorized_keys/%u') }} {% endif %}{% if sshd_authorized_keys_global is defined and sshd_authorized_keys_global %}{{ sshd_authorized_keys_global | default('/etc/ssh/authorized_keys/%u') }}{% endif %}
-
-        ForceCommand internal-sftp
+{% if sshd_match_list|d() and sshd_match_list %}
+{% for entry in sshd_match_list %}
+{% if entry.match|d() and entry.options|d() %}
+Match {{ entry.match }}
+{{ entry.options | indent(8, true) }}
 
 {% endif %}
+{% endfor %}
+{% endif %}
+

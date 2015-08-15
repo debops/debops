@@ -274,3 +274,36 @@ sshd_macs_map:
   '6.0': [ 'hmac-sha2-512', 'hmac-sha2-256' , 'hmac-ripemd160' ]
 
 
+# ----------------------------
+#   Match conditional blocks
+# ----------------------------
+
+# .. envvar:: sshd_match_list
+#
+# List of conditional ``Match`` blocks to include in ``sshd_config``.
+# Required parameters:
+#
+# - ``match``: specify User, Group, or other Match arguments which should
+#   activate a given configuration block.
+#
+# - ``options``: YAML text block which contains ``sshd_config(5)`` options
+#   active in a given Match block.
+#
+sshd_match_list: [ '{{ sshd_match_group_sftponly }}' ]
+
+
+# .. envvar:: sshd_match_group_sftponly
+#
+# Default ``Match`` conditional block which defines configuration for SFTPonly
+# accounts.
+sshd_match_group_sftponly:
+  match: 'Group sftponly'
+  options: |
+    AuthorizedKeysFile {{ sshd_authorized_keys_system | join(' ') }}
+    ChrootDirectory %h
+    X11Forwarding no
+    AllowAgentForwarding no
+    AllowTcpForwarding no
+    PermitTunnel no
+    ForceCommand internal-sftp
+

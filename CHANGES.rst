@@ -104,6 +104,15 @@ v0.2.0
   variables and replace them with with ``sshd_custom_options`` YAML text block
   variable. [drybjed]
 
+- Make ``Match`` options configurable.
+
+  Static ``Match`` options defined previously are moved to
+  a ``sshd_match_list`` list variable, with a SFTPonly configuration enabled by
+  default.
+
+  SFTPonly configuration will now use global ``PasswordAuthentication`` option
+  instead of forcibly disabling password authentication. [drybjed]
+
 v0.1.0
 ------
 
