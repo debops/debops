@@ -88,6 +88,18 @@ v0.2.0
 
 - Make ``Banner`` option configurable. [drybjed]
 
+- Refactor ``Ciphers``, ``KexAlgorithms`` and ``MACs`` options.
+
+  Various OpenSSH encryption options are not static anymore. Instead,
+  ``debops.sshd`` will check what version of OpenSSH package is installed on
+  a host and will pick a list of algorithms for each of the mentioned options
+  from a defined set according to what version is installed, to make sure that
+  there won't be an issue with unsupported ciphers.
+
+  Current set of algorithms has been taken from Mozilla and should work with
+  OpenSSH available in Debian Jessie. There's a separate set of algorithms for
+  Debian Wheezy without backported OpenSSH installed as well. [drybjed]
+
 v0.1.0
 ------
 

@@ -220,13 +220,61 @@ sshd_known_hosts_file: '/etc/ssh/ssh_known_hosts'
 # Openssh reads its configuration form top to bottom and uses the first match for a keyword that it finds.
 # So options set in sshd_config_options_begin will be used instead of options which follow after sshd_config_options_begin.
 sshd_config_options_begin: |
-  # Allowed ciphers
-  Ciphers aes128-ctr,aes192-ctr,aes256-ctr,aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,aes192-cbc,aes256-cbc
-  {% if ansible_distribution_release not in [ 'wheezy', 'precise' ] %}
-  KexAlgorithms curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
-  {% endif %}
   MaxAuthTries 3
 
 # Tips: you can use 'Match LocalPort' to create separate configurations for
 # sshd listening on different ports
 sshd_config_options_end: False
+
+# -------------------------
+#   Encryption parameters
+# -------------------------
+
+# .. envvar:: sshd_ciphers_map
+#
+# Dict with list of ciphers which should be used by the ``sshd`` server,
+# depending on available version, ordered from newest to oldest. Newer version
+# supersedes older version.
+sshd_ciphers_map:
+
+  # Source: https://wiki.mozilla.org/Security/Guidelines/OpenSSH
+  '6.5': [ 'chacha20-poly1305@openssh.com', 'aes256-gcm@openssh.com',
+           'aes128-gcm@openssh.com', 'aes256-ctr', 'aes192-ctr',
+           'aes128-ctr' ]
+
+  # Source: https://xivilization.net/~marek/blog/2015/01/12/secure-secure-shell-on-debian-wheezy/
+  '6.0': [ 'aes256-ctr', 'aes192-ctr', 'aes128-ctr' ]
+
+
+# .. envvar:: sshd_kex_algorithms_map
+#
+# Dict with list of key exchange algorithms which should be used by the
+# ``sshd`` server, depending on available version, ordered from newest to
+# oldest. Newer version supersedes older version.
+sshd_kex_algorithms_map:
+
+  # Source: https://wiki.mozilla.org/Security/Guidelines/OpenSSH
+  '6.5': [ 'curve25519-sha256@libssh.org', 'ecdh-sha2-nistp521',
+           'ecdh-sha2-nistp384', 'ecdh-sha2-nistp256',
+           'diffie-hellman-group-exchange-sha256' ]
+
+  # Source: https://xivilization.net/~marek/blog/2015/01/12/secure-secure-shell-on-debian-wheezy/
+  '6.0': [ 'diffie-hellman-group-exchange-sha256' ]
+
+
+# .. envvar:: sshd_macs_map
+#
+# Dict with list of message authentication code algorithms which should be used
+# by the ``sshd`` server, depending on available version, ordered from newest
+# to oldest. Newer version supersedes older version.
+sshd_macs_map:
+
+  # Source: https://wiki.mozilla.org/Security/Guidelines/OpenSSH
+  '6.5': [ 'hmac-sha2-512-etm@openssh.com', 'hmac-sha2-256-etm@openssh.com',
+           'umac-128-etm@openssh.com', 'hmac-sha2-512', 'hmac-sha2-256',
+           'umac-128@openssh.com' ]
+
+  # Source: https://xivilization.net/~marek/blog/2015/01/12/secure-secure-shell-on-debian-wheezy/
+  '6.0': [ 'hmac-sha2-512', 'hmac-sha2-256' , 'hmac-ripemd160' ]
+
+

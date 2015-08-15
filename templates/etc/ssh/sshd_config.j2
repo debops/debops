@@ -26,6 +26,48 @@ HostKey /etc/ssh/ssh_host_{{ hostkey }}_key
 {% endif %}
 {% endfor %}
 
+{% set sshd_tpl_ciphers = [] %}
+{% set sshd_tpl_ciphers_match = False %}
+{% for key, value in sshd_ciphers_map.iteritems() %}
+{% if not sshd_tpl_ciphers_match and sshd_register_version.stdout | version_compare(key, '>=') %}
+{% set sshd_tpl_ciphers_match = True %}
+{% for element in value %}
+{% set _ = sshd_tpl_ciphers.append(element) %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% if sshd_tpl_ciphers %}
+Ciphers {{ sshd_tpl_ciphers | join(",") }}
+
+{% endif %}
+{% set sshd_tpl_kex_algorithms = [] %}
+{% set sshd_tpl_kex_algorithms_match = False %}
+{% for key, value in sshd_kex_algorithms_map.iteritems() %}
+{% if not sshd_tpl_kex_algorithms_match and sshd_register_version.stdout | version_compare(key, '>=') %}
+{% set sshd_tpl_kex_algorithms_match = True %}
+{% for element in value %}
+{% set _ = sshd_tpl_kex_algorithms.append(element) %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% if sshd_tpl_kex_algorithms %}
+KexAlgorithms {{ sshd_tpl_kex_algorithms | join(",") }}
+
+{% endif %}
+{% set sshd_tpl_macs = [] %}
+{% set sshd_tpl_macs_match = False %}
+{% for key, value in sshd_macs_map.iteritems() %}
+{% if not sshd_tpl_macs_match and sshd_register_version.stdout | version_compare(key, '>=') %}
+{% set sshd_tpl_macs_match = True %}
+{% for element in value %}
+{% set _ = sshd_tpl_macs.append(element) %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% if sshd_tpl_macs %}
+MACs {{ sshd_tpl_macs | join(",") }}
+
+{% endif %}
 # Privilege Separation is turned on for security
 UsePrivilegeSeparation {{ sshd_privilege_separation }}
 
