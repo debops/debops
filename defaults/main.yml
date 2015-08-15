@@ -71,7 +71,6 @@ sshd_HostKey:
 sshd_ferm_ports: [ 'ssh' ]
 
 
-sshd_AllowGroups: 'root admins sshusers sftponly'
 # --------------------------------
 #   OpenSSH server configuration
 # --------------------------------
@@ -109,6 +108,28 @@ sshd_password_authentication: 'no'
 #
 # Enable or disable X11 forwarding by the server.
 sshd_x11_forwarding: 'no'
+
+# ------------------------------
+#   Group-based access control
+# ------------------------------
+
+# .. envvar:: sshd_allow_groups
+#
+# List of UNIX groups which allow connections to SSH service (global).
+sshd_allow_groups: [ 'root', 'admins', 'sshusers', 'sftponly' ]
+
+
+# .. envvar:: sshd_group_allow_groups
+#
+# List of UNIX groups which allow connections to SSH service (host group).
+sshd_group_allow_groups: []
+
+
+# .. envvar:: sshd_host_allow_groups
+#
+# List of UNIX groups which allow connections to SSH service (host).
+sshd_host_allow_groups: []
+
 
 sshd_known_hosts: []
 sshd_group_known_hosts: []

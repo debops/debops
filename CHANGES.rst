@@ -55,6 +55,13 @@ v0.2.0
 
 - Rename ``sshd_X11Forwarding`` to ``sshd_x11_forwarding``. [drybjed]
 
+- Rename ``sshd_AllowGroups`` to ``sshd_allow_groups`` and expand it to
+  additional lists, ``sshd_group_allow_groups`` and ``sshd_host_allow_groups``.
+
+  Variable is converted from a string to a YAML list. List of system groups
+  that are allowed to login hasn't been changed. If no groups are specified,
+  option is not enabled and no limits are imposed by ``sshd``. [drybjed]
+
 v0.1.0
 ------
 

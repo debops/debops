@@ -94,7 +94,11 @@ AcceptEnv LANG LC_*
 # and ChallengeResponseAuthentication to 'no'.
 UsePAM yes
 
-AllowGroups {{ sshd_AllowGroups }}
+{% if sshd_allow_groups|d() or sshd_group_allow_groups|d() or sshd_host_allow_groups|d() %}
+AllowGroups {{ (sshd_allow_groups|d([]) + sshd_group_allow_groups|d([]) + sshd_host_allow_groups|d([])) | unique | join(" ") }}
+
+{% endif %}
+
 
 Subsystem sftp internal-sftp
 Match group sftponly
