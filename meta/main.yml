@@ -5,6 +5,15 @@ dependencies:
   - role: debops.secret
     tags: [ 'depend::secret', 'depend::secret:sshd', 'depend-of::sshd', 'type::dependency:hard' ]
 
+  - role: debops.apt_preferences
+    tags: apt_preferences
+    tags: [ 'depend::apt_preferences', 'depend::apt_preferences:sshd', 'depend-of::sshd', 'type::dependency' ]
+    apt_preferences_dependent_list:
+
+      - package: 'ssh ssh-* openssh-*'
+        backports: [ 'wheezy' ]
+        reason:  'Version parity with Debian Jessie, support for AuthorizedKeysCommand, better ciphers'
+        by_role: 'debops.sshd'
 
   - role: debops.ferm
     ferm_input_list:

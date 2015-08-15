@@ -20,6 +20,12 @@ v0.2.0
 - Add ``debops.secret`` role dependency, it's needed for access to LDAP
   secrets. [drybjed]
 
+- Add ``debops.apt_preferences`` role dependency. OpenSSH from
+  ``wheezy-backports`` will be installed on Debian Wheezy, if the repository is
+  present. This brings version parity with Debian Jessie (current Stable), adds
+  support for better encryption ciphers and allows to look up SSH public keys
+  in external authentication sources. [drybjed]
+
 v0.1.0
 ------
 
