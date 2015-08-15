@@ -53,6 +53,8 @@ v0.2.0
 - Rename ``sshd_PasswordAuthentication`` to ``sshd_password_authentication``.
   [drybjed]
 
+- Rename ``sshd_X11Forwarding`` to ``sshd_x11_forwarding``. [drybjed]
+
 v0.1.0
 ------
 
