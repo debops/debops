@@ -21,6 +21,15 @@
   changed_when: False
   tags: [ 'role::sshd:config' ]
 
+- name: Ensure that Ed25519 host key is present
+  command: ssh-keygen -q -t ed25519 -N "" -f ssh_host_ed25519_key
+  args:
+    chdir: '/etc/ssh'
+    creates: '/etc/ssh/ssh_host_ed25519_key'
+  when: sshd_register_version|d() and
+        sshd_register_version.stdout | version_compare('6.5', '>=')
+  tags: [ 'role::sshd:config' ]
+
 - name: Get list of available host keys
   shell: find /etc/ssh -maxdepth 1 -type f -name 'ssh_host_*_key.pub' -exec basename {} .pub \;
   register: sshd_register_host_keys

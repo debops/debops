@@ -113,6 +113,9 @@ v0.2.0
   SFTPonly configuration will now use global ``PasswordAuthentication`` option
   instead of forcibly disabling password authentication. [drybjed]
 
+- Create ``Ed25519`` host key if it's not present and OpenSSH version supports
+  it. [drybjed]
+
 v0.1.0
 ------
 
