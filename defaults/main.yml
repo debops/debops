@@ -81,12 +81,6 @@ sshd_ferm_ports: [ 'ssh' ]
 sshd_ports: [ '22' ]
 
 
-# The role `debops.sshkeys` role can be used to easily manage users SSH keys
-# in the /etc/ssh/authorized_keys/ directory.
-sshd_authorized_keys: '/etc/ssh/authorized_keys'
-sshd_authorized_keys_monkeysphere: '/var/lib/monkeysphere/authorized_keys/%u'
-sshd_authorized_keys_global: '{{ sshd_authorized_keys }}/%u'
-sshd_authorized_keys_user: '%h/.ssh/authorized_keys %h/.ssh/authorized_keys2'
 
 # .. envvar:: sshd_permit_root_login
 #
@@ -129,6 +123,36 @@ sshd_group_allow_groups: []
 #
 # List of UNIX groups which allow connections to SSH service (host).
 sshd_host_allow_groups: []
+
+
+# ------------------------------
+#   Authorized keys management
+# ------------------------------
+
+# .. envvar:: sshd_authorized_keys
+#
+# List of files which contain SSH public keys, to be used to authenticate
+# remote users.
+sshd_authorized_keys: '{{ sshd_authorized_keys_system +
+                          sshd_authorized_keys_user }}'
+
+
+# .. envvar:: sshd_authorized_keys_system
+#
+# List of system-wide files countaining SSH public keys. These files are
+# expeted to be maintained by system administrator and might be used in
+# restricted environments (for example SFTPonly accounts).
+sshd_authorized_keys_system:
+  - '/etc/ssh/authorized_keys/%u'
+
+
+# .. envvar:: sshd_authorized_keys_user
+#
+# List of user files containing SSH public keys. These files are maintained by
+# the users themselves.
+sshd_authorized_keys_user:
+  - '%h/.ssh/authorized_keys'
+  - '%h/.ssh/authorized_keys2'
 
 
 sshd_known_hosts: []

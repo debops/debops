@@ -62,6 +62,11 @@ v0.2.0
   that are allowed to login hasn't been changed. If no groups are specified,
   option is not enabled and no limits are imposed by ``sshd``. [drybjed]
 
+- Reorganize various ``sshd_authorized_keys*`` variables into a list split into
+  "system" and "user" authorized key files. Support for Monkeysphere authorized
+  keys out of the box is dropped, might be re-added in the future if there is
+  interest. [drybjed]
+
 v0.1.0
 ------
 

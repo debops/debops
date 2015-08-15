@@ -36,8 +36,8 @@ StrictModes yes
 
 RSAAuthentication yes
 PubkeyAuthentication yes
-AuthorizedKeysFile {% if monkeysphere is defined and monkeysphere %}{{ sshd_authorized_keys_monkeysphere | default('/var/lib/monkeysphere/authorized_keys/%u') }} {% endif %}{% if sshd_authorized_keys_global is defined and sshd_authorized_keys_global %}{{ sshd_authorized_keys_global | default('/etc/ssh/authorized_keys/%u') }} {% endif %}{% if sshd_authorized_keys_user is defined and sshd_authorized_keys_user %}{{ sshd_authorized_keys_user | default('%h/.ssh/authorized_keys') }}{% endif %}
 
+AuthorizedKeysFile {{ sshd_authorized_keys | join(" ") }}
 
 # Don't read the user's ~/.rhosts and ~/.shosts files
 IgnoreRhosts yes
