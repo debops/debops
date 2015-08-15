@@ -79,6 +79,8 @@ v0.2.0
 
 - Make ``PrivilegeSeparation`` option configurable. [drybjed]
 
+- Make ``LogLevel`` configurable. [drybjed]
+
 v0.1.0
 ------
 
