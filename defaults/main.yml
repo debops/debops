@@ -58,9 +58,6 @@ sshd_ferm_limit_hits: '8'
 # Name of the iptables recent list where offenders will be added
 sshd_ferm_limit_destination: 'badguys'
 
-# List of ports which sshd will listen on. iptables and tcpwrappers will only
-# configure the default port (22), other ports need to be managed separately.
-sshd_config_ports: [ '22' ]
 
 sshd_HostKey:
   - dsa
@@ -78,6 +75,15 @@ sshd_PermitRootLogin: 'without-password'
 sshd_PasswordAuthentication: 'no'
 sshd_X11Forwarding: 'no'
 sshd_AllowGroups: 'root admins sshusers sftponly'
+# --------------------------------
+#   OpenSSH server configuration
+# --------------------------------
+
+# .. envvar:: sshd_ports
+#
+# List of ports which ``sshd`` will listen on.
+sshd_ports: [ '22' ]
+
 
 # The role `debops.sshkeys` role can be used to easily manage users SSH keys
 # in the /etc/ssh/authorized_keys/ directory.

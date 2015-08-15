@@ -46,6 +46,8 @@ v0.2.0
   host. This will automatically switch the ``apt`` module from upgrading the
   packages to ensuring that they are present. [drybjed]
 
+- Rename ``sshd_config_ports`` to ``sshd_ports``. [drybjed]
+
 v0.1.0
 ------
 
