@@ -151,6 +151,12 @@ sshd_login_grace_time: '20s'
 sshd_privilege_separation: 'sandbox'
 
 
+# .. envvar:: sshd_custom_options
+#
+# Additional ``sshd_config(5)`` options specified in a YAML text block format.
+sshd_custom_options: ''
+
+
 # ------------------------------
 #   Group-based access control
 # ------------------------------
@@ -213,18 +219,8 @@ sshd_known_hosts_command: 'ssh-keyscan -H -T 10'
 # System-wide file where SSH fingerprints are stored
 sshd_known_hosts_file: '/etc/ssh/ssh_known_hosts'
 
-# ---- Other options ----
-# Additional options added in /etc/ssh/sshd_config, in text block format.
 
-# Added at the begin of the configuration.
-# Openssh reads its configuration form top to bottom and uses the first match for a keyword that it finds.
-# So options set in sshd_config_options_begin will be used instead of options which follow after sshd_config_options_begin.
-sshd_config_options_begin: |
-  MaxAuthTries 3
 
-# Tips: you can use 'Match LocalPort' to create separate configurations for
-# sshd listening on different ports
-sshd_config_options_end: False
 
 # -------------------------
 #   Encryption parameters

@@ -100,6 +100,10 @@ v0.2.0
   OpenSSH available in Debian Jessie. There's a separate set of algorithms for
   Debian Wheezy without backported OpenSSH installed as well. [drybjed]
 
+- Remove ``sshd_config_options_begin`` and ``sshd_config_options_end``
+  variables and replace them with with ``sshd_custom_options`` YAML text block
+  variable. [drybjed]
+
 v0.1.0
 ------
 
