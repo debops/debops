@@ -81,6 +81,8 @@ v0.2.0
 
 - Make ``LogLevel`` configurable. [drybjed]
 
+- Make ``MaxStartups`` option configurable. [drybjed]
+
 v0.1.0
 ------
 
