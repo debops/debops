@@ -86,6 +86,8 @@ v0.2.0
 - Add configuration variables for ``MaxAuthTries`` and ``LoginGraceTime``
   options. [drybjed]
 
+- Make ``Banner`` option configurable. [drybjed]
+
 v0.1.0
 ------
 
