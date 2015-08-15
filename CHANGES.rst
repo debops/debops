@@ -50,6 +50,9 @@ v0.2.0
 
 - Rename ``sshd_PermitRootLogin`` to ``sshd_permit_root_login``. [drybjed]
 
+- Rename ``sshd_PasswordAuthentication`` to ``sshd_password_authentication``.
+  [drybjed]
+
 v0.1.0
 ------
 
