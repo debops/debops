@@ -9,7 +9,7 @@
 {{ print_location(item.location, item.location_allow, item.location_referers, item.location_deny) }}{% endif %}{% else %}
         location / {
 {% block nginx_tpl_block_location_root %}
-                try_files $uri $uri/ $uri.html $uri.htm /index.html /index.htm =404;
+                try_files {{ item.try_files|default(nginx_default_try_files) | join(' ') }} =404;
 {% endblock %}
         }
 
