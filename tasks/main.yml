@@ -2,12 +2,16 @@
 - name: Pre hooks
   include: "{{ lookup('task_src', 'sshd/pre_main.yml') }}"
 
-- name: Ensure SSH support is installed
+- name: Ensure OpenSSH support is installed
   apt:
-    pkg: '{{ item }}'
-    state: 'present'
-    install_recommends: 'no'
-  with_items: sshd_packages
+    name: '{{ item }}'
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.sshd|d())
+               else "latest" }}'
+    install_recommends: False
+  with_flattened:
+    - sshd_base_packages
+    - sshd_packages
 
 - name: Setup /etc/ssh/sshd_config
   template:
@@ -42,6 +46,22 @@
   shell: '{{ sshd_known_hosts_command }} {{ item.item }} >> {{ sshd_known_hosts_file }}'
   with_items: sshd_register_known_hosts.results
   when: item is defined and item.rc > 0
+
+- name: Make sure that Ansible local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Write Ansible local facts
+  template:
+    src: 'etc/ansible/facts.d/sshd.fact.j2'
+    dest: '/etc/ansible/facts.d/sshd.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 - name: Post hooks
   include: "{{ lookup('task_src', 'sshd/post_main.yml') }}"

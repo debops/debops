@@ -33,6 +33,19 @@ v0.2.0
 - Add tags for ``debops.tcpwrappers`` and ``debops.sshkeys`` role depenencies.
   [drybjed]
 
+- Change how OpenSSH packages are managed.
+
+  Main list of packages is moved to ``sshd_base_packages`` variable,
+  ``sshd_packages`` is an empty list which can be used to include additional
+  packages if needed.
+
+  By default ``debops.sshd`` will automatically upgrade packages - this is
+  needed on Debian Wheezy to install newer version of OpenSSH from
+  ``wheezy-backports``. To disable automatic upgrades, role will add a separate
+  local fact which indicates that ``debops.sshd`` is configured on a given
+  host. This will automatically switch the ``apt`` module from upgrading the
+  packages to ensuring that they are present. [drybjed]
+
 v0.1.0
 ------
 
