@@ -17,6 +17,9 @@ v0.2.0
   assumed to be present, since it's executed as part of the ``common.yml``
   playbook. [drybjed]
 
+- Add ``debops.secret`` role dependency, it's needed for access to LDAP
+  secrets. [drybjed]
+
 v0.1.0
 ------
 
