@@ -83,6 +83,9 @@ v0.2.0
 
 - Make ``MaxStartups`` option configurable. [drybjed]
 
+- Add configuration variables for ``MaxAuthTries`` and ``LoginGraceTime``
+  options. [drybjed]
+
 v0.1.0
 ------
 
