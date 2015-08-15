@@ -272,6 +272,17 @@ nginx_default_index_html: |
     </body>
   </html>
 
+# Checks for the existence of files in order, and returns the
+# first file that is found for location /.
+# http://wiki.nginx.org/NginxHttpCoreModule#try_files
+nginx_default_try_files:
+  - '$uri'
+  - '$uri/'
+  - '$uri.html'
+  - '$uri.htm'
+  - '/index.html'
+  - '/index.htm'
+
 # Custom nginx configuration in /etc/nginx/conf.d/
 nginx_custom_config: []
 

@@ -309,6 +309,11 @@
 #       Strict-Transport-Security header is set in the server's responses. If
 #       this is set to false, the Strict-Transport-Security header will not
 #       be set in the server's responses.
+#
+#   - item.try_files: nginx_default_try_files
+#       Optional. Checks for the existence of files in order, and returns the
+#       first file that is found for location /.
+#       http://wiki.nginx.org/NginxHttpCoreModule#try_files
 #}
 {#
 
@@ -700,7 +705,7 @@ server {
 {{ print_location(item.location, item.location_allow, item.location_referers, item.location_deny) }}{% endif %}{% else %}
         location / {
 {% block nginx_tpl_block_location_root %}
-                try_files $uri $uri/ $uri.html $uri.htm /index.html /index.htm =404;
+                try_files {{ item.try_files|default(nginx_default_try_files) | join(' ') }} =404;
 {% endblock %}
         }
 
