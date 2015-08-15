@@ -9,6 +9,8 @@ v0.2.0
 - Remove ``tasks/backup.yml`` and ``tasks/restore.yml``, they are not used in
   main role task list. [drybjed]
 
+- Request ``sudo`` access on Travis-CI. [drybjed]
+
 v0.1.0
 ------
 
