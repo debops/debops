@@ -2,9 +2,10 @@
 
 [![Travis CI](http://img.shields.io/travis/debops/ansible-sshd.svg?style=flat)](http://travis-ci.org/debops/ansible-sshd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--sshd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-sshd/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.sshd-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1602)
 
-This role configures OpenSSH server for public key access, disables
-password authentication and creates a specific configuration options for
-`sftponly` accounts.
+[OpenSSH](http://www.openssh.com/) is a secure replacement for `telnet`
+and other remote control programs. It allows you to connect to remote hosts
+over encrypted communication channel and perform variety of tasks. It's
+also primary communication channel used by Ansible.
 
 ### Installation
 
@@ -15,14 +16,15 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 ### Documentation
 
 More information about `debops.sshd` can be found in the
-[official debops.sshd documentation](http://docs.debops.org/en/latest/ansible/roles/debops.sshd.html).
+[official debops.sshd documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-sshd/docs/).
 
 
 ### Role dependencies
 
 - `debops.ferm`
 - `debops.sshkeys`
-- `debops.auth`
+- `debops.secret`
+- `debops.apt_preferences`
 - `debops.tcpwrappers`
 
 ### Are you using this as a standalone role without DebOps?

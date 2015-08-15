@@ -11,6 +11,8 @@ v0.2.0
 
 - Request ``sudo`` access on Travis-CI. [drybjed]
 
+- Update documentation. [drybjed]
+
 v0.1.0
 ------
 
