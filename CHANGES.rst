@@ -13,6 +13,10 @@ v0.2.0
 
 - Update documentation. [drybjed]
 
+- Remove ``debops.auth`` role dependency. Configuration done by this role is
+  assumed to be present, since it's executed as part of the ``common.yml``
+  playbook. [drybjed]
+
 v0.1.0
 ------
 
