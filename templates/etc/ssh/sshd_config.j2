@@ -20,8 +20,10 @@ ListenAddress {{ address }}
 
 Protocol 2
 # HostKeys for protocol version 2
-{% for hostkey_cypher_name in sshd_HostKey | unique %}
-HostKey /etc/ssh/ssh_host_{{ hostkey_cypher_name }}_key
+{% for hostkey in sshd_host_keys %}
+{% if ('ssh_host_' + hostkey + '_key') in sshd_register_host_keys.stdout_lines %}
+HostKey /etc/ssh/ssh_host_{{ hostkey }}_key
+{% endif %}
 {% endfor %}
 #Privilege Separation is turned on for security
 UsePrivilegeSeparation yes

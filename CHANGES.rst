@@ -71,6 +71,12 @@ v0.2.0
   interfaces on which ``sshd`` should listen for new connections. If list is
   not specified, ``sshd`` will listen on all interfaces. [drybjed]
 
+- Remove ``sshd_HostKey`` list. Instead of a static list of host keys,
+  ``debops.sshd`` role will check what host keys are present in ``/etc/ssh/``
+  directory. Using ``sshd_host_keys`` list which provides types of keys and
+  their preferred order, host keys that are present will be added to ``sshd``
+  configuration file. [drybjed]
+
 v0.1.0
 ------
 
