@@ -67,6 +67,10 @@ v0.2.0
   keys out of the box is dropped, might be re-added in the future if there is
   interest. [drybjed]
 
+- Add ``sshd_listen`` list which can be used to specify IP addresses of
+  interfaces on which ``sshd`` should listen for new connections. If list is
+  not specified, ``sshd`` will listen on all interfaces. [drybjed]
+
 v0.1.0
 ------
 

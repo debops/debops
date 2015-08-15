@@ -10,9 +10,14 @@
 {% for port in sshd_ports %}
 Port {{ port }}
 {% endfor %}
+{% if sshd_listen|d() and sshd_listen %}
+
 # Use these options to restrict which interfaces/protocols sshd will bind to
-#ListenAddress ::
-#ListenAddress 0.0.0.0
+{% for address in sshd_listen %}
+ListenAddress {{ address }}
+{% endfor %}
+{% endif %}
+
 Protocol 2
 # HostKeys for protocol version 2
 {% for hostkey_cypher_name in sshd_HostKey | unique %}
