@@ -26,6 +26,10 @@ v0.2.0
   support for better encryption ciphers and allows to look up SSH public keys
   in external authentication sources. [drybjed]
 
+- Add separate ``sshd_ferm_ports`` variable which is a list that defines what
+  ports are opened in the firewall for access to OpenSSH server. By default
+  only ``ssh`` port from ``/etc/services`` is opened. [drybjed]
+
 v0.1.0
 ------
 
