@@ -1,25 +1,70 @@
 # {{ ansible_managed }}
 
-{% if sshd_config_options_begin %}
-# Begin sshd_config_options_begin section (((
-{{ sshd_config_options_begin }}
-# End sshd_config_options_begin section )))
-{% endif %}
-
 # What ports, IPs and protocols we listen for
-{% for port in sshd_config_ports %}
+{% for port in sshd_ports %}
 Port {{ port }}
 {% endfor %}
+{% if sshd_listen|d() and sshd_listen %}
+
 # Use these options to restrict which interfaces/protocols sshd will bind to
-#ListenAddress ::
-#ListenAddress 0.0.0.0
-Protocol 2
-# HostKeys for protocol version 2
-{% for hostkey_cypher_name in sshd_HostKey | unique %}
-HostKey /etc/ssh/ssh_host_{{ hostkey_cypher_name }}_key
+{% for address in sshd_listen %}
+ListenAddress {{ address }}
 {% endfor %}
-#Privilege Separation is turned on for security
-UsePrivilegeSeparation yes
+{% endif %}
+
+Protocol 2
+
+# HostKeys for protocol version 2
+{% for hostkey in sshd_host_keys %}
+{% if ('ssh_host_' + hostkey + '_key') in sshd_register_host_keys.stdout_lines %}
+HostKey /etc/ssh/ssh_host_{{ hostkey }}_key
+{% endif %}
+{% endfor %}
+
+{% set sshd_tpl_ciphers = [] %}
+{% set sshd_tpl_ciphers_match = False %}
+{% for key, value in sshd_ciphers_map.iteritems() %}
+{% if not sshd_tpl_ciphers_match and sshd_register_version.stdout | version_compare(key, '>=') %}
+{% set sshd_tpl_ciphers_match = True %}
+{% for element in value %}
+{% set _ = sshd_tpl_ciphers.append(element) %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% if sshd_tpl_ciphers %}
+Ciphers {{ sshd_tpl_ciphers | join(",") }}
+
+{% endif %}
+{% set sshd_tpl_kex_algorithms = [] %}
+{% set sshd_tpl_kex_algorithms_match = False %}
+{% for key, value in sshd_kex_algorithms_map.iteritems() %}
+{% if not sshd_tpl_kex_algorithms_match and sshd_register_version.stdout | version_compare(key, '>=') %}
+{% set sshd_tpl_kex_algorithms_match = True %}
+{% for element in value %}
+{% set _ = sshd_tpl_kex_algorithms.append(element) %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% if sshd_tpl_kex_algorithms %}
+KexAlgorithms {{ sshd_tpl_kex_algorithms | join(",") }}
+
+{% endif %}
+{% set sshd_tpl_macs = [] %}
+{% set sshd_tpl_macs_match = False %}
+{% for key, value in sshd_macs_map.iteritems() %}
+{% if not sshd_tpl_macs_match and sshd_register_version.stdout | version_compare(key, '>=') %}
+{% set sshd_tpl_macs_match = True %}
+{% for element in value %}
+{% set _ = sshd_tpl_macs.append(element) %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% if sshd_tpl_macs %}
+MACs {{ sshd_tpl_macs | join(",") }}
+
+{% endif %}
+# Privilege Separation is turned on for security
+UsePrivilegeSeparation {{ sshd_privilege_separation }}
 
 # Lifetime and size of ephemeral version 1 server key
 KeyRegenerationInterval 3600
@@ -27,24 +72,37 @@ ServerKeyBits 1024
 
 # Logging
 SyslogFacility AUTH
-LogLevel INFO
+LogLevel {{ sshd_log_level }}
+
+MaxAuthTries {{ sshd_max_auth_tries }}
+MaxStartups {{ sshd_max_startups }}
+LoginGraceTime {{ sshd_login_grace_time }}
 
 # Authentication:
 LoginGraceTime 120
-PermitRootLogin {{ sshd_PermitRootLogin }}
+PermitRootLogin {{ sshd_permit_root_login }}
 StrictModes yes
 
 RSAAuthentication yes
 PubkeyAuthentication yes
-AuthorizedKeysFile {% if monkeysphere is defined and monkeysphere %}{{ sshd_authorized_keys_monkeysphere | default('/var/lib/monkeysphere/authorized_keys/%u') }} {% endif %}{% if sshd_authorized_keys_global is defined and sshd_authorized_keys_global %}{{ sshd_authorized_keys_global | default('/etc/ssh/authorized_keys/%u') }} {% endif %}{% if sshd_authorized_keys_user is defined and sshd_authorized_keys_user %}{{ sshd_authorized_keys_user | default('%h/.ssh/authorized_keys') }}{% endif %}
 
+{% if sshd_authorized_keys_lookup|d() and sshd_authorized_keys_lookup and
+      sshd_register_version.stdout | version_compare('6.2', '>=') %}
+AuthorizedKeysCommand /etc/ssh/authorized_keys_lookup
+AuthorizedKeysCommandUser {{ sshd_authorized_keys_lookup_user }}
+
+{% endif %}
+AuthorizedKeysFile {{ sshd_authorized_keys | join(" ") }}
 
 # Don't read the user's ~/.rhosts and ~/.shosts files
 IgnoreRhosts yes
+
 # For this to work you will also need host keys in /etc/ssh_known_hosts
 RhostsRSAAuthentication no
+
 # similar for protocol version 2
 HostbasedAuthentication no
+
 # Uncomment if you don't trust ~/.ssh/known_hosts for RhostsRSAAuthentication
 #IgnoreUserKnownHosts yes
 
@@ -56,7 +114,7 @@ PermitEmptyPasswords no
 ChallengeResponseAuthentication no
 
 # Change to no to disable tunnelled clear text passwords
-PasswordAuthentication {{ sshd_PasswordAuthentication }}
+PasswordAuthentication {{ sshd_password_authentication }}
 
 # Kerberos options
 #KerberosAuthentication no
@@ -68,20 +126,19 @@ PasswordAuthentication {{ sshd_PasswordAuthentication }}
 #GSSAPIAuthentication no
 #GSSAPICleanupCredentials yes
 
-X11Forwarding {{ sshd_X11Forwarding }}
+X11Forwarding {{ sshd_x11_forwarding }}
 X11DisplayOffset 10
 PrintMotd no
 PrintLastLog yes
 TCPKeepAlive yes
 #UseLogin no
 
-#MaxStartups 10:30:60
-#Banner /etc/issue.net
+Banner {{ sshd_banner }}
 
 # Allow client to pass locale environment variables
 AcceptEnv LANG LC_*
 
-#Subsystem sftp /usr/lib/openssh/sftp-server
+Subsystem sftp internal-sftp
 
 # Set this to 'yes' to enable PAM authentication, account processing,
 # and session processing. If this is enabled, PAM authentication will
@@ -94,19 +151,23 @@ AcceptEnv LANG LC_*
 # and ChallengeResponseAuthentication to 'no'.
 UsePAM yes
 
-AllowGroups {{ sshd_AllowGroups }}
+{% if sshd_allow_groups|d() or sshd_group_allow_groups|d() or sshd_host_allow_groups|d() %}
+AllowGroups {{ (sshd_allow_groups|d([]) + sshd_group_allow_groups|d([]) + sshd_host_allow_groups|d([])) | unique | join(" ") }}
 
-Subsystem sftp internal-sftp
-Match group sftponly
-        ChrootDirectory %h
-        X11Forwarding no
-        AllowAgentForwarding no
-        AllowTcpForwarding no
-        PasswordAuthentication no
-        AuthorizedKeysFile {% if monkeysphere is defined and monkeysphere %}{{ sshd_authorized_keys_monkeysphere | default('/var/lib/monkeysphere/authorized_keys/%u') }} {% endif %}{% if sshd_authorized_keys_global is defined and sshd_authorized_keys_global %}{{ sshd_authorized_keys_global | default('/etc/ssh/authorized_keys/%u') }}{% endif %}
-
-        ForceCommand internal-sftp
-
-{% if sshd_config_options_end %}
-{{ sshd_config_options_end }}
 {% endif %}
+
+{% if sshd_custom_options|d() %}
+# Custom options
+{{ sshd_custom_options }}
+
+{% endif %}
+{% if sshd_match_list|d() and sshd_match_list %}
+{% for entry in sshd_match_list %}
+{% if entry.match|d() and entry.options|d() %}
+Match {{ entry.match }}
+{{ entry.options | indent(8, true) }}
+
+{% endif %}
+{% endfor %}
+{% endif %}
+

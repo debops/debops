@@ -2,25 +2,37 @@
 
 dependencies:
 
-  - role: debops.auth
+  - role: debops.secret
+    tags: [ 'depend::secret', 'depend::secret:sshd', 'depend-of::sshd', 'type::dependency:hard' ]
+
+  - role: debops.apt_preferences
+    tags: apt_preferences
+    tags: [ 'depend::apt_preferences', 'depend::apt_preferences:sshd', 'depend-of::sshd', 'type::dependency' ]
+    apt_preferences_dependent_list:
+
+      - package: 'ssh ssh-* openssh-*'
+        backports: [ 'wheezy' ]
+        reason:  'Version parity with Debian Jessie, support for AuthorizedKeysCommand, better ciphers'
+        by_role: 'debops.sshd'
 
   - role: debops.ferm
+    tags: [ 'depend::ferm', 'depend::ferm:sshd', 'depend-of::sshd', 'type::dependency' ]
     ferm_input_list:
 
       - type: 'dport_accept'
-        dport: [ 'ssh' ]
+        dport: '{{ sshd_ferm_ports }}'
         saddr: '{{ sshd_whitelist + sshd_group_whitelist + sshd_host_whitelist }}'
         weight: '25'
         filename: 'sshd_dependency_whitelist'
 
       - type: 'dport_accept'
-        dport: [ 'ssh' ]
+        dport: '{{ sshd_ferm_ports }}'
         saddr: '{{ sshd_allow + sshd_group_allow + sshd_host_allow }}'
         weight: '30'
         filename: 'sshd_dependency_accept'
 
       - type: 'dport_limit'
-        dport: [ 'ssh' ]
+        dport: '{{ sshd_ferm_ports }}'
         seconds: '{{ sshd_ferm_limit_seconds }}'
         hits: '{{ sshd_ferm_limit_hits }}'
         destination: '{{ sshd_ferm_limit_destination }}'
@@ -31,6 +43,7 @@ dependencies:
 
 
   - role: debops.tcpwrappers
+    tags: [ 'depend::tcpwrappers', 'depend::tcpwrappers:sshd', 'depend-of::sshd', 'type::dependency' ]
     tcpwrappers_allow:
 
       - daemon: 'sshd'
@@ -47,10 +60,11 @@ dependencies:
         comment: 'Allow SSH connections from these hosts (via sshd role dependency)'
 
   - role: debops.sshkeys
+    tags: [ 'depend::sshkeys', 'depend::sshkeys:sshd', 'depend-of::sshd', 'type::dependency' ]
 
 galaxy_info:
   author: 'Maciej Delmanowski'
-  description: 'Configure SSH server'
+  description: 'Configure OpenSSH server'
   company: 'DebOps'
   license: 'GNU General Public License v3'
   min_ansible_version: '1.7.0'
