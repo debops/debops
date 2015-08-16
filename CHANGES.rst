@@ -116,6 +116,14 @@ v0.2.0
 - Create ``Ed25519`` host key if it's not present and OpenSSH version supports
   it. [drybjed]
 
+- Add support for public key lookup in external sources.
+
+  Support for ``AuthorizedKeysCommand`` option will be disabled by default, and
+  can be enabled on Debian Jessie as well as on Debian Wheezy with backported
+  OpenSSH version using ``sshd_authorized_keys_lookup`` variable. Scripts that
+  perform the lookups will be executed on a separate system UNIX account to
+  provide privilege separation. [drybjed]
+
 v0.1.0
 ------
 

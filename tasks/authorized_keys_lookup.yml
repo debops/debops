@@ -1,0 +1,46 @@
+---
+
+- name: Create OpenSSH lookup system group
+  group:
+    name: '{{ sshd_authorized_keys_lookup_group }}'
+    state: 'present'
+    system: True
+
+- name: Create OpenSSH lookup system user
+  user:
+    name: '{{ sshd_authorized_keys_lookup_user }}'
+    group: '{{ sshd_authorized_keys_lookup_group }}'
+    home: '{{ sshd_authorized_keys_lookup_home }}'
+    comment: 'OpenSSH Authorized Keys lookup'
+    shell: '/bin/false'
+    state: 'present'
+    createhome: False
+    append: False
+    system: True
+
+- name: Create /etc/ssh/authorized_keys_lookup.d directory
+  file:
+    path: '/etc/ssh/authorized_keys_lookup.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Generate authorized keys lookup scripts
+  template:
+    src: '{{ lookup("template_src", "etc/ssh/authorized_keys_lookup.d/" + item + ".j2") }}'
+    dest: '/etc/ssh/authorized_keys_lookup.d/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: sshd_authorized_keys_lookup_type
+  when: sshd_authorized_keys_lookup_type|d()
+
+- name: Generate authorized keys lookup hook
+  template:
+    src: 'etc/ssh/authorized_keys_lookup.j2'
+    dest: '/etc/ssh/authorized_keys_lookup'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+

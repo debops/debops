@@ -274,6 +274,41 @@ sshd_macs_map:
   '6.0': [ 'hmac-sha2-512', 'hmac-sha2-256' , 'hmac-ripemd160' ]
 
 
+# ---------------------------------------
+#   Authorized key lookup configuration
+# ---------------------------------------
+
+# .. envvar:: sshd_authorized_keys_lookup
+#
+# Enable support for looking up authorized public keys in external data sources
+# (currently LDAP is supported). This function works only with OpenSSH 6.2+.
+sshd_authorized_keys_lookup: False
+
+
+# .. envvar:: sshd_authorized_keys_lookup_user
+#
+# System user account which will be used to look up authorized keys.
+sshd_authorized_keys_lookup_user: 'sshd-lookup'
+
+
+# .. envvar:: sshd_authorized_keys_lookup_group
+#
+# System group which will be used to look up authorized keys.
+sshd_authorized_keys_lookup_group: 'sshd-lookup'
+
+
+# .. envvar:: sshd_authorized_keys_lookup_home
+#
+# Home directory used by authorized key lookup user.
+sshd_authorized_keys_lookup_home: '/var/run/{{ sshd_authorized_keys_lookup_user }}'
+
+
+# .. envvar:: sshd_authorized_keys_lookup_type
+#
+# List of lookup scripts that should be enabled on a host.
+sshd_authorized_keys_lookup_type: []
+
+
 # ----------------------------
 #   Match conditional blocks
 # ----------------------------

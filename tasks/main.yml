@@ -30,6 +30,13 @@
         sshd_register_version.stdout | version_compare('6.5', '>=')
   tags: [ 'role::sshd:config' ]
 
+- name: Configure authorized_keys lookup
+  include: authorized_keys_lookup.yml
+  when: sshd_register_version|d() and
+        sshd_register_version.stdout | version_compare('6.2', '>=') and
+        sshd_authorized_keys_lookup|d() and sshd_authorized_keys_lookup
+  tags: [ 'role::sshd:config' ]
+
 - name: Get list of available host keys
   shell: find /etc/ssh -maxdepth 1 -type f -name 'ssh_host_*_key.pub' -exec basename {} .pub \;
   register: sshd_register_host_keys

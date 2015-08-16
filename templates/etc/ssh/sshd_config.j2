@@ -85,6 +85,12 @@ StrictModes yes
 RSAAuthentication yes
 PubkeyAuthentication yes
 
+{% if sshd_authorized_keys_lookup|d() and sshd_authorized_keys_lookup and
+      sshd_register_version.stdout | version_compare('6.2', '>=') %}
+AuthorizedKeysCommand /etc/ssh/authorized_keys_lookup
+AuthorizedKeysCommandUser {{ sshd_authorized_keys_lookup_user }}
+
+{% endif %}
 AuthorizedKeysFile {{ sshd_authorized_keys | join(" ") }}
 
 # Don't read the user's ~/.rhosts and ~/.shosts files
