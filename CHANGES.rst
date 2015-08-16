@@ -36,6 +36,17 @@ v0.3.1
 - Role will check if ``libnss-mdns`` package is present and enable/disable
   mDNS/Avahi support in ``/etc/nsswitch.conf`` accordingly. [drybjed]
 
+- Change location of machine password in ``secret/``.
+
+  Change where LDAP machine bind password is stored in ``secret/`` directory to
+  make it more general and not based on ``nslcd``. This should make sharing
+  machine password between different services easier.
+
+  If administrator does not move passwords to new location in ``secret/``
+  directory, this will result in Ansible creating new random passwords for each
+  host and updating them in LDAP. This may require update of the machine
+  password for each service that uses it. [drybjed]
+
 v0.3.0
 ------
 
