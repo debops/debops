@@ -49,6 +49,8 @@ v0.3.1
 
 - Change default machine password length to 48 characters. [drybjed]
 
+- Allow for per-domain access in LDAP host filter. [drybjed]
+
 v0.3.0
 ------
 
