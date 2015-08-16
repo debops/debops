@@ -1,5 +1,10 @@
 # {{ ansible_managed }}
 
+{% if sshd_custom_options|d() %}
+# Custom options
+{{ sshd_custom_options }}
+{% endif %}
+
 # What ports, IPs and protocols we listen for
 {% for port in sshd_ports %}
 Port {{ port }}
@@ -156,11 +161,6 @@ AllowGroups {{ (sshd_allow_groups|d([]) + sshd_group_allow_groups|d([]) + sshd_h
 
 {% endif %}
 
-{% if sshd_custom_options|d() %}
-# Custom options
-{{ sshd_custom_options }}
-
-{% endif %}
 {% if sshd_match_list|d() and sshd_match_list %}
 {% for entry in sshd_match_list %}
 {% if entry.match|d() and entry.options|d() %}
