@@ -4,7 +4,7 @@ Changelog
 v0.2.0
 ------
 
-*Unreleased*
+*Released: 2015-08-16*
 
 - Add ``dovecot_<protocol>_listeners`` to manage multiple listeners per
   protocol (e.g. IMAP/IMAPS). Ability to customize and add additional network
