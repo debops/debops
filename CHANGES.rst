@@ -132,6 +132,8 @@ v0.2.0
   valid SSH public keys. LDAP lookup will be configured by default if
   ``AuthorizedKeysCommand`` lookup is enabled on a host. [drybjed]
 
+- Add missing tags to Ansible tasks. [drybjed]
+
 v0.1.0
 ------
 
