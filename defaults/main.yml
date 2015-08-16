@@ -306,7 +306,92 @@ sshd_authorized_keys_lookup_home: '/var/run/{{ sshd_authorized_keys_lookup_user 
 # .. envvar:: sshd_authorized_keys_lookup_type
 #
 # List of lookup scripts that should be enabled on a host.
-sshd_authorized_keys_lookup_type: []
+sshd_authorized_keys_lookup_type: [ 'ldap' ]
+
+
+# -----------------------------
+#   LDAP lookup configuration
+# -----------------------------
+
+# .. envvar:: sshd_ldap_domain
+#
+# Base DNS domain to use for LDAP BaseDN generation.
+sshd_ldap_domain: '{{ ansible_domain }}'
+
+
+# .. envvar:: sshd_ldap_base
+#
+# LDAP base used for BaseDN generation.
+sshd_ldap_base: '{{ "dc=" + sshd_ldap_domain.split(".") | join(",dc=") }}'
+
+
+# .. envvar:: sshd_ldap_bind_basedn
+#
+# LDAP BaseDN of the host account used to bind to the server.
+sshd_ldap_bind_basedn: '{{ "ou=Machines," + sshd_ldap_base }}'
+
+
+# .. envvar:: sshd_ldap_bind_cn
+#
+# Host account name in LDAP.
+sshd_ldap_bind_cn: 'cn={{ ansible_hostname }}'
+
+
+# .. envvar:: sshd_ldap_bind_dn
+#
+# Machine entry used to bind to the LDAP server.
+sshd_ldap_bind_dn: '{{ sshd_ldap_bind_cn + "," + sshd_ldap_bind_basedn }}'
+
+
+# .. envvar:: sshd_ldap_bind_basepw
+#
+# Base path to file with host LDAP password in ``secret/`` directory. See
+# ``debops.secret`` Ansible role for more details.
+sshd_ldap_bind_basepw: '{{ secret + "/credentials/" +
+                           ansible_fqdn + "/ldap/host/binddn/" +
+                           sshd_ldap_bind_dn + ".password" }}'
+
+
+# .. envvar:: sshd_ldap_bind_pw
+#
+# Machine password used for binding to LDAP database.
+sshd_ldap_bind_pw: '{{ lookup("password", sshd_ldap_bind_basepw +
+                       " length=" + sshd_ldap_password_length) }}'
+
+
+# .. envvar:: sshd_ldap_bind_pw_file
+#
+# Path to file which stores machine bind password on remote host.
+sshd_ldap_bind_pw_file: '/etc/ssh/ldap_authorized_keys_bindpw'
+
+
+# .. envvar:: sshd_ldap_password_length
+#
+# Length of generated LDAP machine password.
+sshd_ldap_password_length: '48'
+
+
+# .. envvar:: sshd_ldap_filter
+#
+# Active ``ldapsearch`` filter used to select correct account while looking up
+# the SSH public key.
+sshd_ldap_filter: '{{ sshd_ldap_filter_map["service+host"] }}'
+
+
+# .. envvar:: sshd_ldap_filter_map
+#
+# Dict with set of available LDAP filters that can be used to lookup the SSH
+# public key.
+sshd_ldap_filter_map:
+
+  # User account needs 'authorizedService' attribute
+  'service': '(&(objectClass=posixAccount)(uid=$username)(authorizedService=$service))'
+
+  # User account needs 'host' attribute
+  'host': '(&(objectClass=posixAccount)(uid=$username)(|(host=$hostname)(host=$fqdn)(host=\\*.$domain)(host=\\*)))'
+
+  # User account needs both 'authorizedService' and 'host' attributes.
+  'service+host': '(&(objectClass=posixAccount)(uid=$username)(authorizedService=$service)(|(host=$hostname)(host=$fqdn)(host=\\*.$domain)(host=\\*)))'
 
 
 # ----------------------------

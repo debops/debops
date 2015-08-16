@@ -124,6 +124,14 @@ v0.2.0
   perform the lookups will be executed on a separate system UNIX account to
   provide privilege separation. [drybjed]
 
+- Add LDAP lookup script and configuration.
+
+  When a host is configured using ``debops.auth`` to access account information
+  from LDAP and system-wide configuration in ``/etc/ldap/ldap.conf`` is set
+  properly, OpenSSH can perform LDAP lookups using external script to retrieve
+  valid SSH public keys. LDAP lookup will be configured by default if
+  ``AuthorizedKeysCommand`` lookup is enabled on a host. [drybjed]
+
 v0.1.0
 ------
 

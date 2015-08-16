@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# Lookup SSH public key in LDAP
+
+username="${1}"
+
+service="sshd"
+hostname="$(hostname)"
+domain="$(dnsdomainname)"
+fqdn="$(hostname --fqdn)"
+
+ldap_binddn="{{ sshd_ldap_bind_dn }}"
+ldap_bindpw="{{ sshd_ldap_bind_pw_file }}"
+
+ldap_filter="{{ sshd_ldap_filter }}"
+
+KEY=$(ldapsearch -LLL -x -y ${ldap_bindpw} -D ${ldap_binddn} -o ldif-wrap=no -S sshPublicKey "${ldap_filter}" sshPublicKey | grep -v 'dn:' | perl -pe 's/sshPublicKey: //;')
+
+[ -n "${KEY}" ] && echo "${KEY}" || true
+

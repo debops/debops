@@ -12,6 +12,9 @@
   with_flattened:
     - sshd_base_packages
     - sshd_packages
+    - [ '{{ "ldap-utils" if (sshd_authorized_keys_lookup|d() and
+                             "ldap" in sshd_authorized_keys_lookup_type)
+                         else [] }}' ]
 
 - name: Check OpenSSH server version
   environment:
