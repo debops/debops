@@ -47,6 +47,8 @@ v0.3.1
   host and updating them in LDAP. This may require update of the machine
   password for each service that uses it. [drybjed]
 
+- Change default machine password length to 48 characters. [drybjed]
+
 v0.3.0
 ------
 
