@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Released: 2015-08-16*
+
+- ``sshd_custom_options`` variable has been moved to top of the ``sshd_config``
+  file, that way it can be used to override any option if necessary, since
+  ``sshd`` uses first instance of an option it finds in the config file. [ypid]
+
+- New variable ``sshd_paranoid``, allows to limit the use of various encryption
+  algorithms to only first (presumed safest) choice. [ypid]
+
 v0.2.0
 ------
 
