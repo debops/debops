@@ -36,7 +36,10 @@ HostKey /etc/ssh/ssh_host_{{ hostkey }}_key
 {% endfor %}
 {% endif %}
 {% endfor %}
-{% if sshd_tpl_ciphers %}
+{% if sshd_tpl_ciphers and sshd_paranoid %}
+Ciphers {{ sshd_tpl_ciphers[0] }}
+
+{% elif sshd_tpl_ciphers %}
 Ciphers {{ sshd_tpl_ciphers | join(",") }}
 
 {% endif %}
@@ -50,7 +53,10 @@ Ciphers {{ sshd_tpl_ciphers | join(",") }}
 {% endfor %}
 {% endif %}
 {% endfor %}
-{% if sshd_tpl_kex_algorithms %}
+{% if sshd_tpl_kex_algorithms and sshd_paranoid %}
+KexAlgorithms {{ sshd_tpl_kex_algorithms[0] }}
+
+{% elif sshd_tpl_kex_algorithms %}
 KexAlgorithms {{ sshd_tpl_kex_algorithms | join(",") }}
 
 {% endif %}
@@ -64,7 +70,10 @@ KexAlgorithms {{ sshd_tpl_kex_algorithms | join(",") }}
 {% endfor %}
 {% endif %}
 {% endfor %}
-{% if sshd_tpl_macs %}
+{% if sshd_tpl_macs and sshd_paranoid %}
+MACs {{ sshd_tpl_macs[0] }}
+
+{% elif sshd_tpl_macs %}
 MACs {{ sshd_tpl_macs | join(",") }}
 
 {% endif %}
