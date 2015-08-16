@@ -1,66 +1,50 @@
 # {{ ansible_managed }}
-
-{% if dovecot_allow_imap is defined and 'imap' in dovecot_protocols %}
-protocol tcp dport imap {
-{% if dovecot_allow_imap is defined and dovecot_allow_imap %}
-	@def $ITEMS = ( @ipfilter( ({{ dovecot_allow_imap | unique | join(" ") }}) ) );
+{#
+ # The dovecot_ferm() macro will generate a ferm input filter section
+ # for a network service. The arguments must be a service name and
+ # (service) and a dictionary of inet_listener properties (properties).
+ #}
+{% macro dovecot_ferm(service, properties) %}
+{% if properties %}
+{%   if 'port' in properties %}{% set ferm_service = properties['port'] %}{% endif %}
+{%   if 'allow' in properties %}{% set ferm_allow = properties['allow'] %}{% endif %}
+{% endif %}
+{% if not ferm_allow is defined %}{% set ferm_allow = [] %}{% endif %}
+{% if ferm_allow != False %}
+protocol tcp dport {{ ferm_service|default(service) }} {
+{%   if ferm_allow %}
+	@def $ITEMS = ( @ipfilter( ({{ ferm_allow | unique | join(" ") }}) ) );
 	@if @ne($ITEMS,"") {
 		saddr $ITEMS ACCEPT;
 	}
-{% elif dovecot_allow_imap is defined and not dovecot_allow_imap %}
-	ACCEPT;
-{% endif %}
+{%   else %}
+    ACCEPT;
+{%   endif %}
 }
 {% endif %}
+{% endmacro %}
 
-{% if dovecot_allow_imaps is defined and 'imaps' in dovecot_protocols %}
-protocol tcp dport imaps {
-{% if dovecot_allow_imaps is defined and dovecot_allow_imaps %}
-	@def $ITEMS = ( @ipfilter( ({{ dovecot_allow_imaps | unique | join(" ") }}) ) );
-	@if @ne($ITEMS,"") {
-		saddr $ITEMS ACCEPT;
-	}
-{% elif dovecot_allow_imaps is defined and not dovecot_allow_imaps %}
-	ACCEPT;
+{% if 'imap' in dovecot_protocols %}
+{%   for service in dovecot_imap_listeners|default([]) %}
+{%     if dovecot_imap_config_map is defined and dovecot_imap_config_map %}
+{%       set dovecot_tpl_imap_svc_props = ([ dovecot_imap_config_map ] | map(attribute='login-service') | list | map(attribute='inet_listener') | list | map(attribute=service) | list)[0] %}
+{%     endif %}
+{{ dovecot_ferm(service, dovecot_tpl_imap_svc_props|default({})) }}
+{%   endfor %}
 {% endif %}
-}
+{% if 'pop3' in dovecot_protocols %}
+{%   for service in dovecot_pop3_listeners|default([]) %}
+{%     if dovecot_pop3_config_map is defined and dovecot_pop3_config_map %}
+{%       set dovecot_tpl_pop3_svc_props = ([ dovecot_pop3_config_map ] | map(attribute='login-service') | list | map(attribute='inet_listener') | list | map(attribute=service) | list)[0] %}
+{%     endif %}
+{{ dovecot_ferm(service, dovecot_tpl_pop3_svc_props|default({})) }}
+{%   endfor %}
 {% endif %}
-
-{% if dovecot_allow_pop3 is defined and 'pop3' in dovecot_protocols %}
-protocol tcp dport pop3 {
-{% if dovecot_allow_pop3 is defined and dovecot_allow_pop3 %}
-	@def $ITEMS = ( @ipfilter( ({{ dovecot_allow_pop3 | unique | join(" ") }}) ) );
-	@if @ne($ITEMS,"") {
-		saddr $ITEMS ACCEPT;
-	}
-{% elif dovecot_allow_pop3 is defined and not dovecot_allow_pop3 %}
-	ACCEPT;
-{% endif %}
-}
-{% endif %}
-
-{% if dovecot_allow_pop3s is defined and 'pop3s' in dovecot_protocols %}
-protocol tcp dport pop3s {
-{% if dovecot_allow_pop3s is defined and dovecot_allow_pop3s %}
-	@def $ITEMS = ( @ipfilter( ({{ dovecot_allow_pop3s | unique | join(" ") }}) ) );
-	@if @ne($ITEMS,"") {
-		saddr $ITEMS ACCEPT;
-	}
-{% elif dovecot_allow_pop3s is defined and not dovecot_allow_pop3s %}
-	ACCEPT;
-{% endif %}
-}
-{% endif %}
-
-{% if dovecot_allow_managesieve is defined and 'managesieve' in dovecot_protocols %}
-protocol tcp dport sieve {
-{% if dovecot_allow_managesieve is defined and dovecot_allow_managesieve %}
-	@def $ITEMS = ( @ipfilter( ({{ dovecot_allow_managesieve | unique | join(" ") }}) ) );
-	@if @ne($ITEMS,"") {
-		saddr $ITEMS ACCEPT;
-	}
-{% elif dovecot_allow_managesieve is defined and not dovecot_allow_managesieve %}
-	ACCEPT;
-{% endif %}
-}
+{% if 'managesieve' in dovecot_protocols %}
+{%   for service in dovecot_managesieve_listeners|default([]) %}
+{%     if dovecot_managesieve_config_map is defined and dovecot_managesieve_config_map %}
+{%       set dovecot_tpl_sieve_svc_props = ([ dovecot_managesieve_config_map ] | map(attribute='login-service') | list | map(attribute='inet_listener') | list | map(attribute=service) | list)[0] %}
+{%     endif %}
+{{ dovecot_ferm(service, dovecot_tpl_sieve_svc_props|default({})) }}
+{%   endfor %}
 {% endif %}

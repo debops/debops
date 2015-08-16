@@ -12,9 +12,9 @@
 
 # .. envvar:: dovecot_protocols
 #
-# List of protocols enabled. So far supported are:
-# ``imap``, ``imaps``, ``pop3``, ``pop3s``, ``managesieve``
-dovecot_protocols: [ 'imap', 'imaps' ]
+# List of protocols which should be installed and enabled. So far supported
+# are: ``imap``, ``pop3``, ``managesieve``
+dovecot_protocols: [ 'imap' ]
 
 
 # .. envvar:: dovecot_auth
@@ -99,46 +99,58 @@ dovecot_ssl_required: True
 dovecot_ssl_cipher_list: 'TLSv1+HIGH:!SSLv2:!EXPORT:!RC4:!aNULL:!eNULL:!3DES:@STRENGTH'
 
 
-# --------------------------
-#   Firewall configuration
-# --------------------------
-
-# You can limit access to specific hosts or networks using ``dovecot_allow_*``
-# variables.
-
-# .. envvar:: dovecot_allow_imap
-#
-# List of hosts/networks that can access ``imap`` port (143)
-dovecot_allow_imap: []
-
-
-# .. envvar:: dovecot_allow_imaps
-#
-# List of hosts/networks that can access ``imaps`` port (993)
-dovecot_allow_imaps: []
-
-
-# .. envvar:: dovecot_allow_pop3
-#
-# List of hosts/networks that can access ``pop3`` port (110)
-dovecot_allow_pop3: []
-
-
-# .. envvar:: dovecot_allow_pop3s
-#
-# List of hosts/networks that can access ``pop3s`` port (995)
-dovecot_allow_pop3s: []
-
-
-# .. envvar:: dovecot_allow_managesieve
-#
-# List of hosts/networks that can access ``managesieve`` port (4190)
-dovecot_allow_managesieve: []
-
-
 # --------------------------------
 #   Dovecot custom configuration
 # --------------------------------
+
+# .. envvar:: dovecot_imap_listeners
+#
+# List of IMAP ``inet_listeners`` which will be enabled. See
+# :ref:`dovecot_imap_listeners` for more details.
+dovecot_imap_listeners: [ 'imap', 'imaps' ]
+
+
+# .. envvar:: dovecot_imap_config_map
+#
+# Custom IMAP configuration properties. See :ref:`dovecot_imap_config_map`
+# for more details.
+dovecot_imap_config_map: {}
+
+
+# .. envvar:: dovecot_pop3_listeners
+#
+# List of POP3 ``inet_listeners`` which will be enabled. See
+# :ref:`dovecot_pop3_listeners` for more details.
+dovecot_pop3_listeners: [ 'pop3', 'pop3s' ]
+
+
+# .. envvar:: dovecot_pop3_config_map
+#
+# Custom POP3 configuration properties. See :ref:`dovecot_pop3_config_map`
+# for more details.
+dovecot_pop3_config_map: {}
+
+
+# .. envvar:: dovecot_managesieve_listeners
+#
+# List of ManageSieve ``inet_listeners`` which will be enabled. See
+# :ref:`dovecot_managesieve_listeners` for more details.
+dovecot_managesieve_listeners: [ 'sieve' ]
+
+
+# .. envvar:: dovecot_managesieve_config_map
+#
+# Custom ManageSieve configuration properties. See :ref:`dovecot_managesieve_config_map`
+# for more details.
+dovecot_managesieve_config_map: {}
+
+
+# .. envvar:: dovecot_lda_config_map
+#
+# Custom LDA configuration properties. See :ref:`dovecot_lda_config_map`
+# for more details.
+dovecot_lda_config_map: {}
+
 
 # .. envvar:: dovecot_custom_localconf
 #

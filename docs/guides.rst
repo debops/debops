@@ -43,26 +43,38 @@ via Pigeonhole sieve interpreter.
 .. _Sieve: http://wiki2.dovecot.org/Pigeonhole/Sieve/
 .. _ManageSieve: http://wiki2.dovecot.org/Pigeonhole/ManageSieve/
 
-All you have to do to enable (Manage)Sieve in your Dovecot role is to add
+To enable the ManageSieve protocol in your Dovecot role you have to add
 it to the ``dovecot_protocols`` list::
 
-    dovecot_protocols: [ 'imap', 'imaps', 'managesieve' ]
+    dovecot_protocols: [ 'imap', 'managesieve' ]
 
-The ManageSieve protocol listens on port 4190 and requires STARTTLS for
+It will create a network listener on port 4190 which requires STARTTLS for
 authentication. You can restrict access to this port by explicitly listing
 the networks or hosts which are allowed to connect::
 
-    dovecot_allow_managesieve: [ '192.168.1.0/24' ]
+    dovecot_managesieve_config_map:
+      login-service:
+        inet_listener:
+          sieve:
+            allow: [ '192.168.1.0/24' ]
+
+By default every host can connect.
 
 The sieve filter rules are applied before delivering the mail to the user's
 mailbox. There are various ways for mail delivery but only a few of them
-respect the sieve filters. By default DebOps would simply use postfix to
-write the mail. However, postfix doesn't know anything about sieve.
-Therefore you have to manually add the following configuration to each
-user's ``~/.forward`` file, to hook-in the Dovecot LDA (local delivery
-agent)::
+respect the sieve filters. By default DebOps would simply use Postfix to
+write the mail. However, Postfix doesn't know about sieve. Therefore you
+have to manually add the following configuration to each user's ``~/.forward``
+file, to hook-in the Dovecot LDA (local delivery agent)::
 
     | "/usr/lib/dovecot/dovecot-lda"
+
+To enable the sieve filter with the Dovecot LDA you further have to enable
+the plugin for the corresponding protocol::
+
+    dovecot_lda_config_map:
+      protocol:
+        mail_plugins: '$mail_plugins sieve'
 
 The Dovecot LDA would then deliver the mail after enquiring the sieve
 files.

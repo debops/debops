@@ -10,23 +10,65 @@
     install_recommends: 'no'
   with_flattened:
     - [ 'dovecot-core' ]
-    - [ '{{ "dovecot-imapd" if ("imap" in dovecot_protocols or "imaps" in dovecot_protocols) else [] }}' ]
-    - [ '{{ "dovecot-pop3d" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else [] }}' ]
+    - [ '{{ "dovecot-imapd" if "imap" in dovecot_protocols else [] }}' ]
+    - [ '{{ "dovecot-pop3d" if "pop3" in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-managesieved" if "managesieve" in dovecot_protocols else [] }}' ]
 
-- name: Disable default configuration
-  lineinfile:
-    dest: '/etc/dovecot/conf.d/{{ item.path }}'
-    regexp: '{{ item.regexp }}'
-    line: '{{ item.line }}'
-    backrefs: 'yes'
-  with_items:
-    - { path: '10-auth.conf', regexp: '^(!include auth-system\.conf\.ext)', line: '#\1' }
-    - { path: '10-mail.conf', regexp: '^(mail_location.*)', line: '#\1' }
+- name: Divert original Dovecot configuration
+  command: dpkg-divert --quiet --local --divert /etc/dovecot/conf.d/{{ item }}.dpkg-divert --rename /etc/dovecot/conf.d/{{ item }}
+           creates=/etc/dovecot/conf.d/{{ item }}.dpkg-divert
+  with_flattened:
+    - [ '10-auth.conf', '10-mail.conf', '10-master.conf', '10-ssl.conf', '15-lda.conf', 'auth-deny.conf.ext', 'auth-system.conf.ext' ]
+    - [ '{{ "20-imap.conf" if "imap" in dovecot_protocols else [] }}' ]
+    - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
+    - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ] if "managesieve" in dovecot_protocols else [] }}' ]
+  notify: [ 'Restart dovecot' ]
+
+- name: Remove redundant Dovecot configurations
+  file:
+    dest: '/etc/dovecot/conf.d/{{ item }}'
+    state: absent
+  with_flattened:
+    - [ '{{ "20-imap.conf" if "imap" not in dovecot_protocols else [] }}' ]
+    - [ '{{ "20-pop3.conf" if "pop3" not in dovecot_protocols else [] }}' ]
+    - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ] if "managesieve" not in dovecot_protocols else [] }}' ]
+  notify: [ 'Restart dovecot' ]
+
+- name: Remove diversion of original Dovecot configuration
+  command: dpkg-divert --quiet --local --rename --remove /etc/dovecot/conf.d/{{ item }}
+           removes=/etc/dovecot/conf.d/{{ item }}.dpkg-divert
+  with_flattened:
+    - [ '{{ "20-imap.conf" if "imap" not in dovecot_protocols else [] }}' ]
+    - [ '{{ "20-pop3.conf" if "pop3" not in dovecot_protocols else [] }}' ]
+    - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ] if "managesieve" not in dovecot_protocols else [] }}' ]
+
+- name: Uninstall disabled Dovecot protocols
+  apt:
+    pkg: '{{ item }}'
+    state: 'absent'
+  with_flattened:
+    - [ '{{ "dovecot-imapd" if "imap" not in dovecot_protocols else [] }}' ]
+    - [ '{{ "dovecot-pop3d" if "pop3" not in dovecot_protocols else [] }}' ]
+    - [ '{{ "dovecot-managesieved" if "managesieve" not in dovecot_protocols else [] }}' ]
+  notify: [ 'Restart dovecot' ]
 
 - name: Generate Dovecot configuration
   template:
-    src: "{{ lookup('template_src', 'etc/dovecot/local.conf/ansible.j2') }}"
+    src: '{{ lookup("template_src", "etc/dovecot/conf.d/" + item + ".j2") }}'
+    dest: '/etc/dovecot/conf.d/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - [ '10-auth.conf', '10-mail.conf', '10-master.conf', '10-ssl.conf', '15-lda.conf', 'auth-deny.conf.ext', 'auth-system.conf.ext' ]
+    - [ '{{ "20-imap.conf" if "imap" in dovecot_protocols else [] }}' ]
+    - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
+    - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ] if "managesieve" in dovecot_protocols else [] }}' ]
+  notify: [ 'Restart dovecot' ]
+
+- name: Generate Dovecot local configuration
+  template:
+    src: "{{ lookup('template_src', 'etc/dovecot/local.conf.j2') }}"
     dest: '/etc/dovecot/local.conf'
     owner: 'root'
     group: 'root'

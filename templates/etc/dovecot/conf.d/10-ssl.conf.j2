@@ -1,0 +1,29 @@
+# {{ ansible_managed }}
+{#
+
+This file follows the upstream default configuration except for the parts
+that are configurable via DebOps variables. If you need a more customized
+setup, you can provide your own template via lookup mechanism.
+
+#}
+
+##
+## SSL settings
+##
+
+{% if dovecot_pki is defined and dovecot_pki %}
+{%   if dovecot_ssl_required %}
+ssl = required
+{%   else %}
+ssl = yes
+{%   endif %}
+
+{% set dovecot_tpl_tls_cert_file    = dovecot_pki_path + "/" + dovecot_pki_realm + "/" + dovecot_pki_crt %}
+{% set dovecot_tpl_tls_key_file     = dovecot_pki_path + "/" + dovecot_pki_realm + "/" + dovecot_pki_key %}
+ssl_cert    = <{{ dovecot_tpl_tls_cert_file }}
+ssl_key     = <{{ dovecot_tpl_tls_key_file }}
+ssl_protocols   = !SSLv2 !SSLv3
+ssl_cipher_list = {{ dovecot_ssl_cipher_list }}
+{% else %}
+ssl = no
+{% endif %}
