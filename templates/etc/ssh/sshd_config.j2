@@ -66,6 +66,10 @@ MACs {{ sshd_tpl_macs | join(",") }}
 # Privilege Separation is turned on for security
 UsePrivilegeSeparation {{ sshd_privilege_separation }}
 
+{% if sshd_custom_options|d() %}
+# Custom options
+{{ sshd_custom_options }}
+
 # Lifetime and size of ephemeral version 1 server key
 KeyRegenerationInterval 3600
 ServerKeyBits 1024
@@ -155,10 +159,6 @@ UsePAM yes
 AllowGroups {{ (sshd_allow_groups|d([]) + sshd_group_allow_groups|d([]) + sshd_host_allow_groups|d([])) | unique | join(" ") }}
 
 {% endif %}
-
-{% if sshd_custom_options|d() %}
-# Custom options
-{{ sshd_custom_options }}
 
 {% endif %}
 {% if sshd_match_list|d() and sshd_match_list %}
