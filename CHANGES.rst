@@ -30,7 +30,7 @@ v0.2.0
   ports are opened in the firewall for access to OpenSSH server. By default
   only ``ssh`` port from ``/etc/services`` is opened. [drybjed]
 
-- Add tags for ``debops.tcpwrappers`` and ``debops.sshkeys`` role depenencies.
+- Add tags for ``debops.tcpwrappers`` and ``debops.sshkeys`` role dependencies.
   [drybjed]
 
 - Change how OpenSSH packages are managed.
