@@ -22,40 +22,97 @@ sshd_base_packages: [ 'openssh-server', 'openssh-client',
 sshd_packages: []
 
 
+# -----------------------------------
+#   Host whitelists and allow lists
+# -----------------------------------
 
-# Separate list of IP addresses or CIDR networks which should be allowed to
-# access SSH service. This list is not bound to any restrictions if any entries
-# are set.
+# .. envvar:: sshd_whitelist
+#
+# List of IP addresses or CIDR subnets which should be allowed to connect to
+# SSH without any restrictions. This list does not disallow connections from
+# other hosts. This is a global list.
 sshd_whitelist: []
+
+
+# .. envvar:: sshd_group_whitelist
+#
+# List of IP addresses or CIDR subnets which should be allowed to connect to
+# SSH without any restrictions. This list does not disallow connections from
+# other hosts. This is a group-based list.
 sshd_group_whitelist: []
+
+
+# .. envvar:: sshd_host_whitelist
+#
+# List of IP addresses or CIDR subnets which should be allowed to connect to
+# SSH without any restrictions. This list does not disallow connections from
+# other hosts. This is a host-based list.
 sshd_host_whitelist: []
 
-# List of IP addresses or CIDR networks to allow access to SSH without
-# restrictions. If this list is set, other IP addresses or networks will have
-# limited access.
-# They will be configured in iptables (via ferm) and /etc/hosts.allow (via
-# tcpwrappers).
+
+# .. envvar:: sshd_allow
+#
+# List of IP addresses or CIDR subnets that should be allowed to access SSH
+# service. If it's set, access from hosts and networks not specified here is
+# denied in TCP Wrappers and limited in ``iptables``. This is a global list.
 sshd_allow: []
+
+
+# .. envvar:: sshd_group_allow
+#
+# List of IP addresses or CIDR subnets that should be allowed to access SSH
+# service. If it's set, access from hosts and networks not specified here is
+# denied in TCP Wrappers and limited in ``iptables``. This is a group list.
 sshd_group_allow: []
+
+
+# .. envvar:: sshd_host_allow
+#
+# List of IP addresses or CIDR subnets that should be allowed to access SSH
+# service. If it's set, access from hosts and networks not specified here is
+# denied in TCP Wrappers and limited in ``iptables``. This is a host list.
 sshd_host_allow: []
 
-# Allow connections from all hosts in TCPWrappers by default if list of hosts
-# is not specified
+
+# ------------------------------
+#   TCP Wrappers configuration
+# ------------------------------
+
+# .. envvar:: sshd_tcpwrappers_default
+#
+# If list of allowed hosts is not specified, this value will be set in TCP
+# Wrappers for ``sshd`` service. By default any host is allowed to connect.
 sshd_tcpwrappers_default: 'ALL'
 
-# Enable or disable limited SSH access from all hosts in ip(6)tables. Recent
-# new connections are filtered and when too many new connections are created in
-# specified time window, host is added to the recent blocklist
-sshd_ferm_limit: 'true'
 
+# ---------------------------------
+#   Firewall (ferm) configuration
+# ---------------------------------
+
+# .. envvar:: sshd_ferm_limit
+#
+# Enable or disable limited SSH access from all hosts in ``ip(6)tables``.
+# Recent new connections are filtered and when too many new connections are
+# created in specified time window, host is added to the recent blocklist.
+sshd_ferm_limit: True
+
+
+# .. envvar:: sshd_ferm_limit_seconds
+#
 # Length of the time window used by firewall to catch new offenders,
-# by default 5 minutes
+# by default 5 minutes.
 sshd_ferm_limit_seconds: '{{ (60 * 5) }}'
 
-# How many new connections to allow in above time window
+
+# .. envvar:: sshd_ferm_limit_hits
+#
+# How many new connections to allow in specified time window.
 sshd_ferm_limit_hits: '8'
 
-# Name of the iptables recent list where offenders will be added
+
+# .. envvar:: sshd_ferm_limit_destination
+#
+# Name of the iptables recent list where offenders will be added.
 sshd_ferm_limit_destination: 'badguys'
 
 
@@ -107,10 +164,7 @@ sshd_log_level: 'INFO'
 # can be accessed only using SSH public keys.
 sshd_permit_root_login: 'without-password'
 
-# ---- System-wide host SSH fingerprints ----
 
-# Lists of hosts to scan for SSH fingerprints (global, for a group of hosts and
-# for specific hosts)
 # .. envvar:: sshd_password_authentication
 #
 # Enable or disable password authentication.
@@ -209,17 +263,41 @@ sshd_authorized_keys_user:
   - '%h/.ssh/authorized_keys2'
 
 
+# ---------------------------------
+#   System-wide host fingerprints
+# ---------------------------------
+
+# .. envvar:: sshd_known_hosts
+#
+# List of FQDN hostnames that should be scanned to add host fingerprints to the
+# system-wide known hosts file (global).
 sshd_known_hosts: []
+
+
+# .. envvar:: sshd_group_known_hosts
+#
+# List of FQDN hostnames that should be scanned to add host fingerprints to the
+# system-wide known hosts file (host group).
 sshd_group_known_hosts: []
+
+
+# .. envvar:: sshd_host_known_hosts
+#
+# List of FQDN hostnames that should be scanned to add host fingerprints to the
+# system-wide known hosts file (host).
 sshd_host_known_hosts: []
 
-# Command used to scan host fingerprints
-sshd_known_hosts_command: 'ssh-keyscan -H -T 10'
 
-# System-wide file where SSH fingerprints are stored
+# .. envvar:: sshd_known_hosts_file
+#
+# System-wide file where host fingerprints are stored.
 sshd_known_hosts_file: '/etc/ssh/ssh_known_hosts'
 
 
+# .. envvar:: sshd_known_hosts_command
+#
+# Command used to scan host fingerprints into system-wide known hosts file.
+sshd_known_hosts_command: 'ssh-keyscan -H -T 10'
 
 
 # -------------------------

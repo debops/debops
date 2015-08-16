@@ -134,6 +134,9 @@ v0.2.0
 
 - Add missing tags to Ansible tasks. [drybjed]
 
+- Update ``defaults/main.yml`` file to support ``.rst`` documentation and add
+  whitespace in various files for better readability. [drybjed]
+
 v0.1.0
 ------
 
