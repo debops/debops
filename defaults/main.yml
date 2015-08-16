@@ -118,7 +118,7 @@ auth_nslcd_bind_host_dn: '{{ auth_nslcd_bind_host_cn + "," + auth_nslcd_bind_hos
 
 # Base path to host password in 'secret/' directory.
 # See 'debops.secret' Ansible role for more detauls.
-auth_nslcd_bind_host_basepw: '{{ secret + "/credentials/" + ansible_fqdn + "/auth/nslcd/binddn/" + auth_nslcd_bind_host_dn }}'
+auth_nslcd_bind_host_basepw: '{{ secret + "/credentials/" + ansible_fqdn + "/ldap/host/binddn/" + auth_nslcd_bind_host_dn }}'
 
 # Path to file with plaintext host password saved in secrets
 auth_nslcd_bind_host_password: '{{ auth_nslcd_bind_host_basepw + ".password" }}'
@@ -127,7 +127,7 @@ auth_nslcd_bind_host_password: '{{ auth_nslcd_bind_host_basepw + ".password" }}'
 auth_nslcd_bind_host_hash: '{{ auth_nslcd_bind_host_basepw + ".hash" }}'
 
 # Length of generated host password
-auth_nslcd_password_length: '64'
+auth_nslcd_password_length: '48'
 
 # Additional options added to /etc/nslcd.conf, in a text block
 auth_nslcd_options: False
@@ -149,11 +149,11 @@ auth_pam_mkhomedir_umask: '0027'
 auth_nslcd_pam_authz_search: [ '{{ auth_nslcd_pam_authz_search_host_and_service }}' ]
 
 # User account needs to have host= attribute
-auth_nslcd_pam_authz_search_host: '(&(objectClass=posixAccount)(uid=$username)(|(host=$hostname)(host=$fqdn)(host=\\*)))'
+auth_nslcd_pam_authz_search_host: '(&(objectClass=posixAccount)(uid=$username)(|(host=$hostname)(host=$fqdn)(host=\\*.{{ ansible_domain }})(host=\\*)))'
 
 # User account needs to to have authorizedService= attribute
 auth_nslcd_pam_authz_search_service: '(&(objectClass=posixAccount)(uid=$username)(authorizedService=$service))'
 
 # User account needs to have both host= and authorizedService= attributes
-auth_nslcd_pam_authz_search_host_and_service: '(&(objectClass=posixAccount)(uid=$username)(authorizedService=$service)(|(host=$hostname)(host=$fqdn)(host=\\*)))'
+auth_nslcd_pam_authz_search_host_and_service: '(&(objectClass=posixAccount)(uid=$username)(authorizedService=$service)(|(host=$hostname)(host=$fqdn)(host=\\*.{{ ansible_domain }})(host=\\*)))'
 
