@@ -4,7 +4,7 @@ Changelog
 v0.2.0
 ------
 
-*Unreleased*
+*Released: 2015-08-16*
 
 - Remove ``tasks/backup.yml`` and ``tasks/restore.yml``, they are not used in
   main role task list. [drybjed]
