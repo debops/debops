@@ -48,3 +48,13 @@ protocol tcp dport {{ ferm_service|default(service) }} {
 {{ dovecot_ferm(service, dovecot_tpl_sieve_svc_props|default({})) }}
 {%   endfor %}
 {% endif %}
+{% if 'lmtp' in dovecot_protocols %}
+{%   for service in dovecot_lmtp_listeners|default([]) %}
+{%     if dovecot_lmtp_config_map is defined and dovecot_lmtp_config_map %}
+{%       set dovecot_tpl_lmtp_svc_props = ([ dovecot_lmtp_config_map ] | map(attribute='service') | list | map(attribute='inet_listener') | list | map(attribute=service) | list)[0] %}
+{%       if dovecot_tpl_lmtp_svc_props is defined and dovecot_tpl_lmtp_svc_props %}
+{{ dovecot_ferm(service, dovecot_tpl_lmtp_svc_props|default({})) }}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
