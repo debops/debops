@@ -65,3 +65,61 @@ protocol {{ name }} {
 {{ dovecot_properties(map) }}
 }
 {% endmacro %}
+
+{% macro dovecot_inet_listeners(services, map) %}
+{% set listener_ignore = [ 'allow' ] %}{# Properties to ignore when defining listener #}
+{% for svc in services %}
+  inet_listener {{ svc }} {
+{%   if map is defined and map %}
+{%     if 'inet_listener' in map.keys() %}
+{%       if svc in map['inet_listener'].keys() %}
+{%         for property in map['inet_listener'][svc].keys()|difference(listener_ignore) %}
+{%           if property in map['inet_listener'][svc].keys() %}
+    {{ property }} = {{ map['inet_listener'][svc][property] }}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+  }
+{% endfor %}
+{% endmacro %}
+
+{% macro dovecot_unix_listeners(listeners, map) %}
+# dovecot_unix_listeners(listeners={{ listeners }}, map={{ map }})
+{% for socket in listeners %}
+  unix_listener {{ socket }} {
+{%   if map is defined and map %}
+{%     if 'unix_listener' in map.keys() %}
+{%       if socket in map['unix_listener'].keys() %}
+{%         for property in map['unix_listener'][socket].keys() %}
+    {{ property }} = {{ map['unix_listener'][socket][property] }}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+  }
+{% endfor %}
+{% endmacro %}
+
+
+{#
+ # The dovecot_cfg_section() macro will define a dovecot configuration file
+ # section, as it is used for protocols, services or login-services.
+ #}
+{% macro dovecot_cfg_section(section, name, map, listeners=[]) %}
+# dovecot_cfg_section(section={{ section }}, name={{ name }}, map={{ map }}, listeners={{ listeners }})
+{{ section }} {{ name }} {
+{% if map is defined and map %}
+{%   if 'unix_listener' in map.keys() %}
+{{ dovecot_inet_listeners(listeners|difference(map['unix_listener'].keys()), map) }}
+{{ dovecot_unix_listeners(listeners|intersect(map['unix_listener'].keys()), map) }}
+{%   else %}
+{{ dovecot_inet_listeners(listeners, map) }}
+{%   endif %}
+{% else %}
+{{ dovecot_inet_listeners(listeners, map) }}
+{% endif %}
+{{ dovecot_properties(map, ignore_keys=['inet_listener', 'unix_listener']) }}
+}
+{% endmacro %}

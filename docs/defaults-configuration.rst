@@ -35,6 +35,15 @@ used by Dovecot. Each section ``service imap-login``, ``service imap`` and
     ``address`` (listen address). More information about the ``inet_listener``
     setup can be found at the `Dovecot inet_listeners`_ page.
 
+  ``unix_listener``
+    Will create a Unix socket definition. The key name of the listeners corresponds
+    to the socket path.
+
+    The listener name itself must reference a dict defining socket properties such
+    as ``owner`` (socket owner), ``group`` (socket group) or ``mode`` (access mode).
+    More information about the ``unix_listener`` setup can be found at the
+    `Dovecot unix_listeners`_ page.
+
 ``service``
   Configuration settings under this key will go into the ``service imap {}``
   section which defines the post-login process handling. Possible keys are the
@@ -74,6 +83,7 @@ waiting for more connections, restrict maximal number of IMAP processes to
 
 .. _Dovecot Login Process: http://wiki2.dovecot.org/LoginProcess
 .. _Dovecot inet_listeners: http://wiki2.dovecot.org/Services#inet_listeners
+.. _Dovecot unix_listeners: http://wiki2.dovecot.org/Services#unix_listeners_and_fifo_listeners
 .. _Dovecot IMAP Service: http://wiki2.dovecot.org/Services#imap.2C_pop3.2C_managesieve
 
 .. _dovecot_imap_listeners:
@@ -118,6 +128,29 @@ dovecot_pop3_listeners
 List of POP3 network listener names which will be used to decide which
 default listeners to create. Their configuration can be customized via
 :ref:`dovecot_pop3_config_map`.
+
+.. _dovecot_lmtp_config_map:
+
+dovecot_lmtp_config_map
+-----------------------
+
+Configuration dictionary related to the LMTP protocol configuration. Please
+refer to the :ref:`dovecot_imap_config_map` for a description of the dict
+layout.
+
+In contrast to the other protocol maps, LMTP ``inet_listeners`` must always
+be listed in ``dovecot_lmtp_config_map`` and define the ``port`` property,
+as Dovecot doesn't define a default port for LMTP network listeners.
+
+.. _dovecot_lmtp_listeners:
+
+dovecot_lmtp_listeners
+----------------------
+
+List of LMTP network and unix listener names which will be created. The LMTP
+listeners configuration works a bit different from other network protocols.
+Each listeners mentioned in ``dovecot_lmtp_listeners`` must also be defined
+in :ref:`dovecot_lmtp_config_map`.
 
 .. _dovecot_lda_config_map:
 
@@ -176,3 +209,17 @@ bind a second listener to a specific address on port 2000::
           sieve_deprecated:
             address: 192.168.1.42
             port: 2000
+
+.. _dovecot_postfix_transport:
+
+dovecot_postfix_transport
+-------------------------
+
+LMTP socket name which will be configured in Postfix to send mails for
+delivery. The value is a file system path relative to */var/spool/postfix*
+Make sure there is a corresponding LMTP ``unix_listener`` defined in
+:ref:`dovecot_lmtp_config_map` and enabled via :ref:`dovecot_lmtp_listeners`.
+The LMTP transport target will only be configured in Postfix when 'lmtp'
+is enabled in ``dovecot_protocols``.
+
+For most people the default configuration will be sufficient.

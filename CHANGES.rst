@@ -6,10 +6,14 @@ v0.2.0
 
 *Released: 2015-08-16*
 
+- Add support for LMTP mail delivery protocol. If enabled it will depend
+  on ``debops.postfix`` by default and configure it to use Dovecot LMTP
+  for mail delivery. [ganto]
+
 - Add ``dovecot_<protocol>_listeners`` to manage multiple listeners per
   protocol (e.g. IMAP/IMAPS). Ability to customize and add additional network
   listeners. ``imaps/pop3s`` shouldn't be used in ``dovecot_protocols``
-  anymore now.
+  anymore now. [ganto]
 
 - Introduce new protocol-specific configuration dictionary
   ``dovecot_<protocol>_config_map`` which allows to customize every variable

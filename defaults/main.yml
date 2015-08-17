@@ -24,6 +24,12 @@ dovecot_protocols: [ 'imap' ]
 dovecot_auth_mechanisms: [ 'plain', 'login' ]
 
 
+# .. envvar:: dovecot_dependencies
+#
+# Should the Dovecot role manage it's own dependencies?
+dovecot_dependencies: True
+
+
 # ---------------------------------------
 #   User database/mailbox configuration
 # ---------------------------------------
@@ -150,6 +156,33 @@ dovecot_managesieve_config_map: {}
 # Custom LDA configuration properties. See :ref:`dovecot_lda_config_map`
 # for more details.
 dovecot_lda_config_map: {}
+
+
+# .. envvar:: dovecot_lmtp_listeners
+#
+# List of LMTP ``inet_listeners`` or ``unix_listeners`` which will be enabled.
+# See :ref:`dovecot_lmtp_listeners` for more details.
+dovecot_lmtp_listeners: [ '/var/spool/postfix/private/dovecot-lmtp' ]
+
+
+# .. envvar:: dovecot_lmtp_config_map
+#
+# Custom LMTP configuration properties. See :ref:`dovecot_lmtp_config_map`
+# for more details.
+dovecot_lmtp_config_map:
+  service:
+    unix_listener:
+      /var/spool/postfix/private/dovecot-lmtp:
+        user: 'postfix'
+        group: 'postfix'
+        mode: 0600
+
+
+# .. envvar:: dovecot_postfix_transport
+#
+# Postfix mail transport target if LMTP is enabled. For more details see
+# :ref:`dovecot_postfix_transport`.
+dovecot_postfix_transport: 'lmtp:unix:private/dovecot-lmtp'
 
 
 # .. envvar:: dovecot_custom_localconf

@@ -12,6 +12,7 @@
     - [ 'dovecot-core' ]
     - [ '{{ "dovecot-imapd" if "imap" in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-pop3d" if "pop3" in dovecot_protocols else [] }}' ]
+    - [ '{{ "dovecot-lmtpd" if "lmtp" in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-managesieved" if "managesieve" in dovecot_protocols else [] }}' ]
 
 - name: Divert original Dovecot configuration
@@ -21,6 +22,7 @@
     - [ '10-auth.conf', '10-mail.conf', '10-master.conf', '10-ssl.conf', '15-lda.conf', 'auth-deny.conf.ext', 'auth-system.conf.ext' ]
     - [ '{{ "20-imap.conf" if "imap" in dovecot_protocols else [] }}' ]
     - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
+    - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
     - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ] if "managesieve" in dovecot_protocols else [] }}' ]
   notify: [ 'Restart dovecot' ]
 
@@ -31,6 +33,7 @@
   with_flattened:
     - [ '{{ "20-imap.conf" if "imap" not in dovecot_protocols else [] }}' ]
     - [ '{{ "20-pop3.conf" if "pop3" not in dovecot_protocols else [] }}' ]
+    - [ '{{ "20-lmtp.conf" if "lmtp" not in dovecot_protocols else [] }}' ]
     - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ] if "managesieve" not in dovecot_protocols else [] }}' ]
   notify: [ 'Restart dovecot' ]
 
@@ -40,6 +43,7 @@
   with_flattened:
     - [ '{{ "20-imap.conf" if "imap" not in dovecot_protocols else [] }}' ]
     - [ '{{ "20-pop3.conf" if "pop3" not in dovecot_protocols else [] }}' ]
+    - [ '{{ "20-lmtp.conf" if "lmtp" not in dovecot_protocols else [] }}' ]
     - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ] if "managesieve" not in dovecot_protocols else [] }}' ]
 
 - name: Uninstall disabled Dovecot protocols
@@ -49,6 +53,7 @@
   with_flattened:
     - [ '{{ "dovecot-imapd" if "imap" not in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-pop3d" if "pop3" not in dovecot_protocols else [] }}' ]
+    - [ '{{ "dovecot-lmtpd" if "lmtp" not in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-managesieved" if "managesieve" not in dovecot_protocols else [] }}' ]
   notify: [ 'Restart dovecot' ]
 
@@ -63,6 +68,7 @@
     - [ '10-auth.conf', '10-mail.conf', '10-master.conf', '10-ssl.conf', '15-lda.conf', 'auth-deny.conf.ext', 'auth-system.conf.ext' ]
     - [ '{{ "20-imap.conf" if "imap" in dovecot_protocols else [] }}' ]
     - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
+    - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
     - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ] if "managesieve" in dovecot_protocols else [] }}' ]
   notify: [ 'Restart dovecot' ]
 
