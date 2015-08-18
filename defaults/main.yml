@@ -112,6 +112,14 @@ bootstrap_admin_shell: '/bin/bash'
 # List of SSH keys configured on root and administrator accounts.
 bootstrap_admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
+# .. envvar:: bootstrap_admin_manage_existing
+#
+# Manage the admin user even if it already exists on the system.
+# The default is to not create or modify the admin user if it already exists.
+# Note that SSH key and sudo configuration is still performed, regardless of this variable.
+# Use ``bootstrap_admin_sshkeys`` or ``bootstrap_sudo`` to change that behavior if needed.
+bootstrap_admin_manage_existing: False
+
 
 # ---------------------------
 #   Access to sudo commands

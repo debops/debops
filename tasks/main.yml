@@ -41,7 +41,14 @@
 - name: Check if potential administrator account exists
   shell: getent passwd {{ bootstrap_admin_name }} || true
   register: bootstrap_register_admin_account
+  when: not bootstrap_admin_manage_existing
   changed_when: False
+
+- name: Set admin manage existing to true
+  set_fact:
+    bootstrap_register_admin_account:
+      stdout: False
+  when: bootstrap_admin_manage_existing
 
 - name: Create administrator group (system)
   group:
