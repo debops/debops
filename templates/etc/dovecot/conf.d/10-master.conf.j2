@@ -17,7 +17,7 @@ setup, you can provide your own template via lookup mechanism.
 {%       set dovecot_tpl_imap_svc_map = dovecot_imap_config_map['service'] %}
 {%     endif %}
 {%   endif %}
-{{ macros.dovecot_login_service('imap', dovecot_imap_listeners|default([]), dovecot_tpl_imap_login_map|default({})) }}
+{{ macros.dovecot_cfg_section('service', 'imap-login', dovecot_tpl_imap_login_map|default({}), listeners=dovecot_imap_listeners|default([])) }}
 {% endif %}
 {% if 'pop3' in dovecot_protocols %}
 {%   if dovecot_pop3_config_map is defined and dovecot_pop3_config_map %}
@@ -28,7 +28,7 @@ setup, you can provide your own template via lookup mechanism.
 {%       set dovecot_tpl_pop3_svc_map = dovecot_pop3_config_map['service'] %}
 {%     endif %}
 {%   endif %}
-{{ macros.dovecot_login_service('pop3', dovecot_pop3_listeners|default([]), dovecot_tpl_pop3_login_map|default({})) }}
+{{ macros.dovecot_cfg_section('service', 'pop3-login', dovecot_tpl_pop3_login_map|default({}), listeners=dovecot_pop3_listeners|default([])) }}
 {% endif %}
 {% if 'lmtp' in dovecot_protocols %}
 {%   if dovecot_lmtp_config_map is defined and dovecot_lmtp_config_map %}
@@ -39,10 +39,10 @@ setup, you can provide your own template via lookup mechanism.
 {{ macros.dovecot_cfg_section('service', 'lmtp', dovecot_tpl_lmtp_svc_map|default({}), listeners=dovecot_lmtp_listeners|default([])) }}
 {% endif %}
 {% if 'imap' in dovecot_protocols %}
-{{ macros.dovecot_service('imap', dovecot_tpl_imap_svc_map|default({})) }}
+{{ macros.dovecot_cfg_section('service', 'imap', dovecot_tpl_imap_svc_map|default({})) }}
 {% endif %}
 {% if 'pop3' in dovecot_protocols %}
-{{ macros.dovecot_service('pop3', dovecot_tpl_pop3_svc_map|default({})) }}
+{{ macros.dovecot_cfg_section('service', 'pop3', dovecot_tpl_pop3_svc_map|default({})) }}
 {% endif %}
 service auth {
   unix_listener auth-userdb {
