@@ -23,13 +23,12 @@ setup, you can provide your own template via lookup mechanism.
 {%       set dovecot_tpl_sieve_svc_map = dovecot_managesieve_config_map['service'] %}
 {%     endif %}
 {%     if 'protocol' in dovecot_managesieve_config_map %}
-{%       set dovecot_tpl_managesieve_proto_map = dovecot_managesieve_config_map['protocol'] %}
+{%       set dovecot_tpl_sieve_proto_map = dovecot_managesieve_config_map['protocol'] %}
 {%     endif %}
 {%   endif %}
-{{ macros.dovecot_login_service('managesieve', dovecot_managesieve_listeners|default([]), dovecot_tpl_sieve_login_map|default({})) }}
-{{ macros.dovecot_service('managesieve', dovecot_tpl_sieve_svc_map|default({})) }}
+{{ macros.dovecot_cfg_section('service', 'managesieve-login', dovecot_tpl_sieve_login_map|default({}), listeners=dovecot_managesieve_listeners|default([])) }}
+{{ macros.dovecot_cfg_section('service', 'managesieve', dovecot_tpl_sieve_svc_map|default({})) }}
 
 # Service configuration
-
-{{ macros.dovecot_protocol('sieve', dovecot_tpl_managesieve_proto_map|default({})) }}
+{{ macros.dovecot_cfg_section('protocol', 'sieve', dovecot_tpl_sieve_proto_map|default({})) }}
 {% endif %}

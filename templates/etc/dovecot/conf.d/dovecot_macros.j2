@@ -14,68 +14,22 @@
 
 
 {#
- # The dovecot_login_service() macro will generate a dovecot login-service
- # section. The arguments must be the protocol name (protocol), a list of
- # listener names to lookup or create by default (services) and a dictionary
- # of configuration properties to set (map).
+ # The dovecot_inet_listeners() macro will generate one or multiple dovecot
+ # inet_listener configuration sections. The arguments must be a list of
+ # listener names (listeners) and a dictionary of configuration properties
+ # (map) with the key of each property set being the listener name.
  #}
 
-{% macro dovecot_login_service(protocol, services, map) %}
-{% set listener_props = [ 'port', 'ssl' ] %}
-service {{ protocol }}-login {
-{% for svc in services %}
-  inet_listener {{ svc }} {
-{%   if map is defined and map %}
-{%     if 'inet_listener' in map.keys() %}
-{%       if svc in map['inet_listener'].keys() %}
-{%         for property in listener_props %}
-{%           if property in map['inet_listener'][svc].keys() %}
-    {{ property }} = {{ map['inet_listener'][svc][property] }}
-{%           endif %}
-{%         endfor %}
-{%       endif %}
-{%     endif %}
-{%   endif %}
-  }
-{% endfor %}
-{{ dovecot_properties(map, ['inet_listener']) }}
-}
-{% endmacro %}
-
-
-{#
- # The dovecot_service() macro will generate a dovecot service section. The
- # arguments must be the protocol name and a dictionary of configuration
- # properties to set (map).
- #}
-{% macro dovecot_service(protocol, map) %}
-service {{ protocol }} {
-{{ dovecot_properties(map) }}
-}
-{% endmacro %}
-
-
-{#
- # The dovecot_protocol() macro will generate a dovecot protocol section. The
- # arguments must be the protocol name and a dictionary of configuration
- # properties to set (map).
- #}
-{% macro dovecot_protocol(name, map) %}
-protocol {{ name }} {
-{{ dovecot_properties(map) }}
-}
-{% endmacro %}
-
-{% macro dovecot_inet_listeners(services, map) %}
+{% macro dovecot_inet_listeners(listeners, map) %}
 {% set listener_ignore = [ 'allow' ] %}{# Properties to ignore when defining listener #}
-{% for svc in services %}
-  inet_listener {{ svc }} {
+{% for name in listeners %}
+  inet_listener {{ name }} {
 {%   if map is defined and map %}
 {%     if 'inet_listener' in map.keys() %}
-{%       if svc in map['inet_listener'].keys() %}
-{%         for property in map['inet_listener'][svc].keys()|difference(listener_ignore) %}
-{%           if property in map['inet_listener'][svc].keys() %}
-    {{ property }} = {{ map['inet_listener'][svc][property] }}
+{%       if name in map['inet_listener'].keys() %}
+{%         for property in map['inet_listener'][name].keys()|difference(listener_ignore) %}
+{%           if property in map['inet_listener'][name].keys() %}
+    {{ property }} = {{ map['inet_listener'][name][property] }}
 {%           endif %}
 {%         endfor %}
 {%       endif %}
@@ -84,9 +38,16 @@ protocol {{ name }} {
   }
 {% endfor %}
 {% endmacro %}
+
+
+{#
+ # The dovecot_unix_listeners() macro will generate one or multiple dovecot
+ # unix_listener configuration sections. The arguments must be a list of
+ # socket names (listeners) and a dictionary of configuration properties
+ # (map) with the key of each property set being the listener name.
+ #}
 
 {% macro dovecot_unix_listeners(listeners, map) %}
-# dovecot_unix_listeners(listeners={{ listeners }}, map={{ map }})
 {% for socket in listeners %}
   unix_listener {{ socket }} {
 {%   if map is defined and map %}
@@ -105,10 +66,19 @@ protocol {{ name }} {
 
 {#
  # The dovecot_cfg_section() macro will define a dovecot configuration file
- # section, as it is used for protocols, services or login-services.
+ # section, as it is used for protocols or services. It accepts the following
+ # arguments:
+ #   section: Section identifier, e.g. 'service'
+ #   name: Section name
+ #   map: Configuration dict for given configration section
+ #   listeners: List of (default) listeners to enable
+ #
+ # Listeners listed in 'listeners' but not referenced in the configuration
+ # map are created as inet_listeners. unix_listeners always must be mentioned
+ # in the configuration map.
  #}
+
 {% macro dovecot_cfg_section(section, name, map, listeners=[]) %}
-# dovecot_cfg_section(section={{ section }}, name={{ name }}, map={{ map }}, listeners={{ listeners }})
 {{ section }} {{ name }} {
 {% if map is defined and map %}
 {%   if 'unix_listener' in map.keys() %}
