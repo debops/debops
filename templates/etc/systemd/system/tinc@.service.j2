@@ -5,7 +5,7 @@ Before=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/tincd -D -n %i -o Interface=%i --mlock --chroot --user=tinc-vpn
+ExecStart=/usr/sbin/tincd -D -n %i -o Interface=%i --mlock --chroot --user={{ tinc_user }}
 ExecReload=/usr/sbin/tincd -n %i reload
 ExecStop=/usr/sbin/tincd -n %i stop
 TimeoutStopSec=5
