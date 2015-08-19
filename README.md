@@ -26,6 +26,7 @@ More information about `debops.dovecot` can be found in the
 ### Role dependencies
 
 - `debops.ferm`
+- `debops.postfix`
 
 ### Are you using this as a standalone role without DebOps?
 
