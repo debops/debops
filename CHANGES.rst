@@ -4,7 +4,7 @@ Changelog
 v0.2.1
 ------
 
-*Released: 2015-08-16*
+*Released: 2015-08-19*
 
 - Add support for LMTP mail delivery protocol. If enabled it will depend
   on ``debops.postfix`` by default and configure it to use Dovecot LMTP
