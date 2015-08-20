@@ -69,7 +69,7 @@
 #
 #
 #   - item.redirect_code_ssl: ''
-#       Optional. Specify HTTP code used in the redirect response from HTTP to 
+#       Optional. Specify HTTP code used in the redirect response from HTTP to
 #       HTTPS, by default 301 Moved Permanently.
 #
 #
@@ -172,6 +172,18 @@
 #       configuration. If not specified, nginx role will use
 #       '/srv/www/<item.name[0]>/public/' by default; see also 'item.owner'
 #       parameter.
+#
+#
+#   - item.access_log: ''
+#       Optional. Name of the access log file in the '/var/log/nginx/' directory.
+#       The suffix '.log' will be added automatically. If not specified, nginx
+#       role will use '<item.name[0]>_access' by default.
+#
+#
+#   - item.error_log: ''
+#       Optional. Name of the error log file in the '/var/log/nginx/' directory.
+#       The suffix '.log' will be added automatically. If not specified, nginx
+#       role will use '<item.name[0]>_error' by default.
 #
 #
 #   - item.status: []
@@ -589,8 +601,8 @@ server {
         root {{ nginx_tpl_root }};
 {% if item.name is defined and item.name %}
 
-        access_log /var/log/nginx/{{ item.name[0] }}_access.log;
-        error_log /var/log/nginx/{{ item.name[0] }}_error.log;
+        access_log /var/log/nginx/{{ item.access_log | default(item.filename | default(item.name[0]) + '_access') }}.log;
+        error_log /var/log/nginx/{{ item.error_log | default(item.filename | default(item.name[0]) + '_error') }}.log;
 {% endif %}
 
 {% block nginx_tpl_block_index %}
