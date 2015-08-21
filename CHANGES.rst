@@ -14,6 +14,10 @@ v0.1.3
 - Add ``item.home_owner`` parameter which allows to change the owner of the
   home directory if needed. [drybjed]
 
+- Remove support for ``root`` account management; this functionality has been
+  moved to ``debops.console`` role. Mmanagement of the dotfiles on ``root``
+  account is still done from this role. [drybjed]
+
 v0.1.2
 ------
 
