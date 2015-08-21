@@ -11,6 +11,9 @@ v0.1.3
   configuration of ``~/.forward`` file and dotfiles won't be performed.
   [drybjed]
 
+- Add ``item.home_owner`` parameter which allows to change the owner of the
+  home directory if needed. [drybjed]
+
 v0.1.2
 ------
 
