@@ -83,12 +83,17 @@ The ``[ansible <section>]`` sections
 
 Each configuration section in the form ``[ansible <section>]`` will be written
 into generated ``ansible.cfg`` configuration file, into a corresponding
-``[section]``. This way you can configure Ansible depending on the project
+``[<section>]``. This way you can configure Ansible depending on the project
 directory. For example, to set custom ``{{ ansible_managed }}`` string, you can
 use::
 
     [ansible defaults]
     ansible_managed = Custom string
+
+For the configuration entries representing paths (e.g. ``roles_path``,
+``action_plugins`` and other ``.._plugins``), your value will be
+prepended to the values set up by debops.
+
 
 Example ``debops.cfg`` configuration file
 -----------------------------------------
@@ -100,7 +105,9 @@ This file is created by ``debops-init`` command in the specified project directo
 
     [ansible defaults]
     ;callback_plugins = /my/plugins/callback
-    ;roles_path = /my/roles
+    # Additional paths (will be prepended)
+    ;roles_path = /path/to/my/roles:/even/more/roles
+    ;callback_plugins = /path/to/more/plugins/actions
 
     [ansible paramiko]
     ;record_host_keys=True
