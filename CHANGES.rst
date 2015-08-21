@@ -4,7 +4,7 @@ Changelog
 v0.1.2
 ------
 
-*Unreleased*
+*Released: 2015-08-22*
 
 - Add DebOps pre/post task hooks using ``task_src`` lookup. [drybjed]
 
@@ -41,6 +41,9 @@ v0.1.2
 - Default user account will be added to ``admins`` group to fix an issue where
   if that account is added manually, it loses access to ``sudo`` commands.
   [drybjed]
+
+- Small update of the example user entry to correctly show how a separate Jinja
+  dictionary can be passed to a list of user accounts. [drybjed]
 
 v0.1.1
 ------
