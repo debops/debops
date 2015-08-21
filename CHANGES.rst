@@ -1,6 +1,23 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Released: 2015-08-22*
+
+- Check if ``item.createhome`` is specified or not for an account before doing
+  anything within the home directory. If home creation is disabled,
+  configuration of ``~/.forward`` file and dotfiles won't be performed.
+  [drybjed]
+
+- Add ``item.home_owner`` parameter which allows to change the owner of the
+  home directory if needed. [drybjed]
+
+- Remove support for ``root`` account management; this functionality has been
+  moved to ``debops.console`` role. Mmanagement of the dotfiles on ``root``
+  account is still done from this role. [drybjed]
+
 v0.1.2
 ------
 

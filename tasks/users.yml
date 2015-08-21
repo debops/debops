@@ -44,6 +44,7 @@
   file:
     path: '{{ item.home | default("~" + item.name) }}'
     state: 'directory'
+    owner: '{{ item.home_owner | default(omit) }}'
     group: '{{ item.home_group | default(omit) }}'
     mode: '{{ item.home_mode | default(omit) }}'
   with_flattened:
@@ -54,7 +55,9 @@
     - users_host_list
   when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state is undefined or (item.state is defined and item.state)) and
-         ((item.home_group is defined and item.home_group) or
+         (item.createhome is undefined or item.createhome) and
+         ((item.home_owner is defined and item.home_owner) or
+          (item.home_group is defined and item.home_group) or
           (item.home_mode is defined and item.home_mode)))
 
 - name: Get list of available groups
