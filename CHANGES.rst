@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Released: 2015-08-22*
+
+- Check if ``item.createhome`` is specified or not for an account before doing
+  anything within the home directory. If home creation is disabled,
+  configuration of ``~/.forward`` file and dotfiles won't be performed.
+  [drybjed]
+
 v0.1.2
 ------
 
