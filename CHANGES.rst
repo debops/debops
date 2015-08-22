@@ -1,6 +1,8 @@
 Changelog
 =========
 
+- Get list of available groups even in Ansible check mode to avoid error. [ypid]
+
 v0.1.3
 ------
 
