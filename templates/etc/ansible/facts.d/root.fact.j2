@@ -1,0 +1,30 @@
+{% set core_tpl_tags = [] %}
+{% if not core_reset_tags|d(False) %}
+{%   if ansible_local|d() and ansible_local.tags|d() %}
+{%     for element in ansible_local.tags %}
+{%       set _ = core_tpl_tags.append(element) %}
+{%     endfor %}
+{%   elif ansible_local|d() and ansible_local.root|d() and ansible_local.root.flags|d() %}
+{%     for element in ansible_local.root.flags %}
+{%       set _ = core_tpl_tags.append(element) %}
+{%     endfor %}
+{%   endif %}
+{% endif %}
+{% set core_tpl_tags_list = (core_tpl_tags + core_tags|d([]) + core_group_tags|d([]) + core_host_tags|d([])) | difference(core_remove_tags|d([])) %}
+{% if core_static_tags|d() %}
+{%   set core_tpl_tags_list = core_static_tags|d([]) | difference(core_remove_tags|d([])) %}
+{% endif %}
+{
+"flags": {{ core_tpl_tags_list | sort | unique | to_nice_json }},
+"uuid": "{{ ansible_local.uuid if (ansible_local|d() and ansible_local.uuid|d()) else (core_register_uuid.stdout if (core_register_uuid|d() and core_register_uuid.stdout) else core_uuid_random) | lower }}",
+{% for item in core_root_directories %}
+{% if hostvars[inventory_hostname]["ansible_local"]|d() and
+      hostvars[inventory_hostname]["ansible_local"]["root"]|d() and
+      hostvars[inventory_hostname]["ansible_local"]["root"][item.fact]|d() %}
+"{{ item.fact }}": "{{ hostvars[inventory_hostname]["ansible_local"]["root"][item.fact] }}"{% if not loop.last %},{% endif %}
+{% else %}
+"{{ item.fact }}": "{{ item.path }}"{% if not loop.last %},{% endif %}
+{% endif %}
+
+{% endfor %}
+}
