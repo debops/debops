@@ -1,7 +1,14 @@
 Changelog
 =========
 
+v0.1.4
+------
+
+*Released: 2015-08-22*
+
 - Get list of available groups even in Ansible check mode to avoid error. [ypid]
+
+- Request ``sudo`` access on Travis-CI for testing. [drybjed]
 
 v0.1.3
 ------
