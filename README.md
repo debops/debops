@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) core
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-core.svg?style=flat)](http://travis-ci.org/debops/ansible-core) [![test-suite](http://img.shields.io/badge/test--suite-ansible--core-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-core/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-core.svg?style=flat)](http://travis-ci.org/debops/ansible-core) [![test-suite](http://img.shields.io/badge/test--suite-ansible--core-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-core/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.core-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4836)
 
 `debops.core` Ansible role takes care of variables that are shared among
 different roles and are useful to keep in a central location. This is done by
@@ -8,6 +8,17 @@ leveraging functionality of [Ansible local
 facts](https://docs.ansible.com/ansible/playbooks_variables.html#local-facts-facts-d)
 stored on remote hosts to ensure that the variables are always evaluated by
 Ansible, even when playbook is run with or without different sets of role tags.
+
+### Installation
+
+This role requires at least Ansible `v1.9.0`. To install it, run:
+
+    ansible-galaxy install debops.core
+
+### Documentation
+
+More information about `debops.core` can be found in the
+[official debops.core documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-core/docs/).
 
 
 
