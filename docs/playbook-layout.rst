@@ -4,7 +4,7 @@ Playbook layout
 DebOps playbooks is split into several files to allow partial usage possible::
 
     site.yml
-    |            ,---- <- root.yml
+    |            ,---- <- core.yml
     |-- <- common.yml
     `-,
       |-- <- systems.yml
@@ -21,7 +21,7 @@ narrow the set of roles; this makes the Ansible runs shorter and lowers the
 startup time.
 
 Order of the playbooks apart from the common ones (``common.yml``,
-``root.yml``) is not significant, although running roles that are used many
+``core.yml``) is not significant, although running roles that are used many
 times as role dependencies first might make the whole playbook run faster.
 
 List of playbooks
@@ -38,7 +38,7 @@ Playbooks which are common for all hosts:
   a set of common roles which configure base services like SMTP service, a set
   of user accounts, ``ip(6)tables`` firewall, APT repositories, and so on.
 
-``root.yml``
+``core.yml``
   This is a playbook required on all hosts that use DebOps roles, regardless if
   you are using the playbooks or not. It's included by the ``common.yml``
   playbook. It will set up custom Ansible facts required by some of the roles,
