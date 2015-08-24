@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.3
+------
+
+*Unreleased*
+
+- Fix issues during Ansible ``--check`` mode, role should no longer stop due to
+  not existing dictionary keys. [drybjed]
+
 v0.2.2
 ------
 
