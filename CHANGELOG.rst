@@ -42,6 +42,9 @@ v0.2.7
   the inventory. Check ``debops.core`` role documentation for new variable
   names. [drybjed]
 
+- Remove ``root.yml`` playbook and its additional files - its functionality has
+  been moved to ``debops.core`` Ansible role. [drybjed]
+
 v0.2.6
 ------
 
