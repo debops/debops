@@ -20,7 +20,7 @@
 {% if (('Address' not in tinc_tpl_host_keys_seen) or ('address' not in tinc_tpl_host_keys_seen)) %}
 {% for address in (tinc_addresses|d([]) + ansible_all_ipv4_addresses|d([]) + ansible_all_ipv6_addresses|d([])) %}
 {% if address | ipaddr('public') %}
-Address = {{ address }}
+Address = {{ address }} {{ tinc_host_port }}
 {% endif %}
 {% endfor %}
 {% endif %}
