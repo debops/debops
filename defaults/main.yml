@@ -184,6 +184,7 @@ tinc_ifupdown_options_dhcp: {}
 # "SERVER CONFIGURATION" section for possible configuration options.
 tinc_configuration:
   Mode: 'switch'
+  Port: '{{ tinc_host_port }}'
   DeviceType: 'tap'
   ConnectTo: '{{ tinc_connect_to | difference([ tinc_hostname ]) }}'
 
@@ -211,6 +212,12 @@ tinc_host_configuration: {}
 # will be specified in the host file. If not set, ``tincd`` will listen for
 # connections on all available public IP addresses.
 tinc_host_addresses: []
+
+
+# .. envvar:: tinc_host_port
+#
+# Which port ``tincd`` should listen for new connections.
+tinc_host_port: 655
 
 
 # .. envvar:: tinc_scripts
