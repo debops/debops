@@ -164,14 +164,15 @@
 #
 #
 #   - item.index: ''
-#       Optional. String with custom index filenames.
+#       Optional. String with custom index filenames. If set to False, the
+#       nginx role won't add the directive.
 #
 #
 #   - item.root: ''
 #       Optional. Absolute path to server root to use for this server
 #       configuration. If not specified, nginx role will use
 #       '/srv/www/<item.name[0]>/public/' by default; see also 'item.owner'
-#       parameter.
+#       parameter.  If set to False, the nginx role won't add the directive.
 #
 #
 #   - item.access_log: ''
@@ -598,7 +599,9 @@ server {
 {% else %}
         keepalive_timeout {{ item.keepalive | default(nginx_default_keepalive_timeout) }};
 
+{% if item.root is undefined or item.root != False %}
         root {{ nginx_tpl_root }};
+{% endif %}
 {% if item.name is defined and item.name %}
 
         access_log /var/log/nginx/{{ item.access_log | default(item.filename | default(item.name[0]) + '_access') }}.log;
@@ -606,7 +609,9 @@ server {
 {% endif %}
 
 {% block nginx_tpl_block_index %}
+{% if item.index is undefined or item.index != False %}
         index {{ item.index | default('index.html index.htm') }};
+{% endif %}
 {% endblock %}
 
 {% if item.error_pages is defined and item.error_pages %}
