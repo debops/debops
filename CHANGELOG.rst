@@ -37,6 +37,11 @@ v0.2.7
   using input from James Cammarata to work both in old Ansible 1.x series as
   well as in the new 2.x series. Thanks! [drybjed]
 
+- Add ``debops.core`` role as well as ``core.yml`` playbook and replace the
+  ``root.yml`` playbook. This change may affect any ``root_*`` variables set in
+  the inventory. Check ``debops.core`` role documentation for new variable
+  names. [drybjed]
+
 v0.2.6
 ------
 
