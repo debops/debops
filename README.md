@@ -4,7 +4,7 @@ This [Ansible](http://ansible.com/) role allows you to install and manage
 
 ### Installation
 
-This role requires at least Ansible `v1.7.0`. To install it, clone it
+This role requires at least Ansible `v1.8.0`. To install it, clone it
 to your [DebOps](http://debops.org) project roles directory:
 
     git clone http://github.com/ganto/ansible-roundcube.git
@@ -18,7 +18,7 @@ to your [DebOps](http://debops.org) project roles directory:
 
 * ``debops.php5``
 
-* ``debops.mysql``
+* ``debops.mariadb``
 
 
 ### Authors and license
