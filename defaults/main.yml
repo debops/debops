@@ -17,14 +17,23 @@ roundcube_dependencies: True
 
 # .. envvar:: roundcube_domain
 #
-# Domain which will be used to host the roundcube instance
+# Domain which will be used to host the roundcube instance.
 roundcube_domain: [ 'roundcube.{{ ansible_domain }}' ]
 
 
-# .. envvar:: roundcube_nginx_access_policy: ''
+# .. envvar:: roundcube_nginx_access_policy
 #
-# Access policy defined using ``debops.nginx`` role, applied to this Roundcube
+# Name of the "nginx access policy" for Roundcube webpage. See ``debops.nginx``
+# Ansible role for more details.
 roundcube_nginx_access_policy: ''
+
+
+# .. envvar:: roundcube_php5_packages
+#
+# List of PHP5 packages required by Roundcube.
+roundcube_php5_packages: [ 'php-auth-sasl', 'php5-gd', 'php5-intl', 'php5-json',
+                           'php5-mcrypt', 'php-mail-mime', 'php-mail-mimedecode',
+                           'php-net-smtp', 'php-net-socket', 'php-pear' ]
 
 
 # ---------------------------------------
@@ -71,6 +80,7 @@ roundcube_database: 'mysql-default'
 #
 # Database connection definitions
 roundcube_database_map:
+
   mysql-default:
     dbtype: 'mysql'
     dbname: 'roundcubemail'

@@ -3,6 +3,17 @@
 - name: Pre hooks
   include: '{{ lookup("task_src", "roundcube/pre_main.yml") }}'
 
+- name: Install required dependencies for Roundcube
+  apt:
+    pkg: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - [ '{{ roundcube_extra_packages }}' ]
+    - [ '{{ "php5-mysql" if roundcube_database_map[roundcube_database].dbtype == "mysql" else [] }}' ]
+    - [ '{{ "php-net-sieve" if "managesieve" in roundcube_plugins else [] }}' ]
+    - [ '{{ "php-crypt-gpg" if "enigma" in roundcube_plugins else [] }}' ]
+
 - name: Install Roundcube packages
   apt:
     name: '{{ item }}'
@@ -12,6 +23,9 @@
     - [ 'roundcube', 'roundcube-core' ]
   when: (ansible_distribution == 'Debian' and
         ansible_distribution_release == 'wheezy' )
+
+
+# ---- Environment ----
 
 - name: Create Roundcube group
   group:
@@ -30,26 +44,25 @@
     system: True
     state: present
 
+
+# ---- Deployment ----
+
 - include: deploy_roundcube.yml
   when: (ansible_distribution_release != 'wheezy' )
 
-- name: Install required dependencies for Roundcube
-  apt:
-    pkg: '{{ item }}'
-    state: latest
-    install_recommends: no
-  with_flattened:
-    - [ 'php-auth-sasl', 'php-pear', 'php5-intl', 'php5-mcrypt', 'php-mail-mime', 'php-mail-mimedecode', 'php-net-smtp', 'php-net-socket' ]
-    - [ '{{ roundcube_extra_packages }}' ]
-    - [ '{{ "php5-mysql" if roundcube_database_map[roundcube_database].dbtype == "mysql" else [] }}' ]
-    - [ '{{ "php-net-sieve" if "managesieve" in roundcube_plugins else [] }}' ]
-    - [ '{{ "php-crypt-gpg" if "enigma" in roundcube_plugins else [] }}' ]
+
+# ---- Configuration ----
 
 - include: configure_mysql.yml
   when: roundcube_database_map[roundcube_database].dbtype == 'mysql'
-  tags: [ 'roundcube', 'mysql' ]
 
-- include: configure_roundcube.yml
+- name: Configure Roundcube
+  template:
+    src: 'srv/www/sites/config.inc.php.j2'
+    dest: '{{ roundcube_git_checkout + "/config/config.inc.php" }}'
+    owner: 'root'
+    group: '{{ roundcube_group }}'
+    mode: '0640'
 
 - name: Post hooks
   include: '{{ lookup("task_src", "roundcube/post_main.yml") }}'
