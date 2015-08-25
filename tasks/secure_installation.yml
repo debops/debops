@@ -5,7 +5,10 @@
     name: 'root'
     host: '{{ item }}'
     state: 'absent'
-  with_items: [ '{{ ansible_hostname }}', '127.0.0.1', '::1' ]
+  with_flattened:
+    - [ '127.0.0.1', '::1' ]
+    - [ '{{ ansible_hostname if (ansible_hostname != "localhost") else [] }}' ]
+  when: item|d() and item
 
 - name: Update database root password
   mysql_user:
