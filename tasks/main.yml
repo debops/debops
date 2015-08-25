@@ -173,7 +173,7 @@
   when: (ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled or
          (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
 
-- name: Save enforced hostname
+- name: Save hostname in /etc/hostname
   copy:
     content: '{{ bootstrap_hostname + "\n" }}'
     dest: '/etc/hostname'
@@ -183,11 +183,10 @@
   when: (ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled or
          (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
 
-- name: Ensure domain is defined
+- name: Save hostname and domain in /etc/hosts
   lineinfile:
     state: 'present'
     dest: '/etc/hosts'
     regexp: '{{ "^" + (bootstrap_ipv4 | default("127.0.1.1")) | replace(".","\.") }}'
-    line: '{{ (bootstrap_ipv4 | default("127.0.1.1")) + "\t" + (bootstrap_hostname | default(ansible_hostname)) + "." + bootstrap_domain + "\t" + (bootstrap_hostname | default(ansible_hostname)) }}'
-  when: bootstrap_domain is defined and bootstrap_domain
+    line: '{{ (bootstrap_ipv4 | default("127.0.1.1")) + "\t" + (((bootstrap_hostname | d(ansible_hostname)) + "." + bootstrap_domain + "\t" + (bootstrap_hostname | d(ansible_hostname))) if bootstrap_domain|d() else (bootstrap_hostname | d(ansible_hostname))) }}'
 
