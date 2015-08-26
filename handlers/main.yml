@@ -5,6 +5,7 @@
   when: (tinc_interface_auto | bool and ansible_local|d() and ansible_local.cap12s|d() and
          (not ansible_local.cap12s.enabled | bool or
           (ansible_local.cap12s.enabled | bool and "cap_net_admin" in ansible_local.cap12s.list)))
+  become: True
 
 - name: Restart tinc VPN connection
   shell: test -d /run/systemd/system &&
@@ -13,4 +14,5 @@
   when: (tinc_interface_auto | bool and ansible_local|d() and ansible_local.cap12s|d() and
          (not ansible_local.cap12s.enabled | bool or
           (ansible_local.cap12s.enabled | bool and "cap_net_admin" in ansible_local.cap12s.list)))
+  become: True
 

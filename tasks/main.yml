@@ -5,12 +5,14 @@
     name: 'tinc'
     state: 'present'
     install_recommends: False
+  become: True
 
 - name: Create system group for VPN service
   group:
     name: '{{ tinc_group }}'
     state: 'present'
     system: True
+  become: True
 
 - name: Create system user for VPN service
   user:
@@ -22,6 +24,7 @@
     group: '{{ tinc_group }}'
     shell: '/bin/false'
     createhome: False
+  become: True
 
 - name: Create required directories
   file:
@@ -30,6 +33,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  become: True
 
 - name: Set tincd ulimit options
   template:
@@ -39,6 +43,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Restart tinc VPN connection' ]
+  become: True
 
 - name: Generate main configuration file
   template:
@@ -47,6 +52,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  become: True
   notify: [ 'Reload tinc configuration' ]
 
 - name: Generate network scripts when defined
@@ -59,17 +65,20 @@
   with_dict: tinc_scripts
   notify: [ 'Reload tinc configuration' ]
   when: item.key is defined and item.key
+  become: True
 
 - name: Initialize RSA key pairs
   shell: yes | tincd -n {{ tinc_network }} -K{{ tinc_rsa_key_length }}
   args:
     creates: '/etc/tinc/{{ tinc_network }}/rsa_key.priv'
+  become: True
 
 - name: Create persistent copy of host public key
   command: cp /etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}
               /etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname + ".d/99_rsa-public-key" }}
   args:
     creates: /etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname + ".d/99_rsa-public-key" }}
+  become: True
 
 - name: Generate host configuration file
   template:
@@ -78,6 +87,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  become: True
 
 - name: Assemble host configuration file from parts
   assemble:
@@ -86,11 +96,13 @@
     owner: 'root'
     group: '{{ tinc_group }}'
     mode: '0640'
+  become: True
   notify: [ 'Reload tinc configuration' ]
 
 - name: Read host configuration file into a variable
   slurp:
     src: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}'
+  become: True
   register: tinc_register_host_config
 
 - name: Redistribute configuration of internal hosts
@@ -101,6 +113,7 @@
     group: '{{ tinc_group }}'
     mode: '0640'
   with_items: tinc_inventory_hosts
+  become: True
   delegate_to: '{{ item }}'
   when: item is defined and item != inventory_hostname and
         hostvars[item].tinc_register_host_config is defined
@@ -114,14 +127,24 @@
     mode: '0640'
   with_dict: tinc_external_hosts
   when: tinc_external_hosts is defined and tinc_external_hosts
+  become: True
 
-- name: check systemd
-  shell: "cat /proc/1/comm"
-  ignore_errors: yes
-  register: tinc_init
+- name: install the systemd unit file
+  template:
+    src: 'etc/systemd/system/tinc@.service.j2'
+    dest: '/etc/systemd/system/tinc@.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  become: True
 
-- include: 'systemd_setup.yml'
-  when: tinc_init.stdout.find('systemd') != -1
+- name: register autostart tinc service systemd
+  service:
+    name: 'tinc@{{ tinc_network }}'
+    enabled: 'yes'
+    state: 'started'
+  become: True
+  notify: [ 'Restart tinc VPN connection' ]
 
 - name: Start VPN interface if required
   shell: test ! -x /tmp/ifupdown-delayed-{{ tinc_interface }} || /tmp/ifupdown-delayed-{{ tinc_interface }} {{ tinc_interface_auto | bool | lower }}
