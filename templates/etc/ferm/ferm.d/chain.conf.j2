@@ -57,8 +57,8 @@ Optional:
   item.dport         list of destination ports to configure
   item.protocol(s)   list of protocols to configure (tcp, udp)
   item.saddr         list of source addresses to accept
-  item.in_interface  list of name of an interface via which a packet was received
-  item.out_interface list of name of an interface via which a packet is going to be sent
+  item.interface     list of name of an interface via which a packet was received
+  item.outerface     list of name of an interface via which a packet is going to be sent
   item.accept_any    accept connections from any IP address if True
   item.disabled      if True, disable the rule (can be used to toggle rule via variable)
   item.enabled       if True, enable the rule (can be used to toggle rule via variable)
@@ -73,11 +73,15 @@ domain $domains table {{ item.table | default('filter') }} chain "{{ item.chain 
     @def $ITEMS = ( @ipfilter( ({{ item.saddr | unique | join(" ") }}) ) );
     @if @ne($ITEMS,"") {
         saddr $ITEMS
-{% if item.in_interface|d() %}
-        interface {{ item.in_interface }}
+{% if item.interface|d() and item.interface is string %}
+        interface {{ item.interface }}
+{% elif item.interface|d() and item.interface is iterable %}
+        interface ({{ item.interface | unique | join(' ') }})
 {% endif %}
-{% if item.out_interface|d() %}
-        outerface {{ item.out_interface }}
+{% if item.outerface|d() and item.outerface is string %}
+        outerface {{ item.outerface }}
+{% elif item.outerface|d() and item.outerface is iterable %}
+        outerface ({{ item.outerface | unique | join(' ') }})
 {% endif %}
         ACCEPT;
     }
