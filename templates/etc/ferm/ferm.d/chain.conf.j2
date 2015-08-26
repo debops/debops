@@ -50,18 +50,20 @@
 List of parameters:
 
 Required:
-  item.chain       name of the chain to create
+  item.chain         name of the chain to create
 
 Optional:
-  item.table       specify which table to add rules into
-  item.dport       list of destination ports to configure
-  item.protocol(s) list of protocols to configure (tcp, udp)
-  item.saddr       list of source addresses to accept
-  item.accept_any  accept connections from any IP address if True
-  item.disabled    if True, disable the rule (can be used to toggle rule via variable)
-  item.enabled     if True, enable the rule (can be used to toggle rule via variable)
-  item.include     include custom file or command output
-  item.jump        jump tp specified chain
+  item.table         specify which table to add rules into
+  item.dport         list of destination ports to configure
+  item.protocol(s)   list of protocols to configure (tcp, udp)
+  item.saddr         list of source addresses to accept
+  item.in_interface  list of name of an interface via which a packet was received
+  item.out_interface list of name of an interface via which a packet is going to be sent
+  item.accept_any    accept connections from any IP address if True
+  item.disabled      if True, disable the rule (can be used to toggle rule via variable)
+  item.enabled       if True, enable the rule (can be used to toggle rule via variable)
+  item.include       include custom file or command output
+  item.jump          jump tp specified chain
 
 #}
 
@@ -70,7 +72,14 @@ domain $domains table {{ item.table | default('filter') }} chain "{{ item.chain 
 {% if item.saddr is defined and item.saddr %}
     @def $ITEMS = ( @ipfilter( ({{ item.saddr | unique | join(" ") }}) ) );
     @if @ne($ITEMS,"") {
-        saddr $ITEMS ACCEPT;
+        saddr $ITEMS
+{% if item.in_interface|d() %}
+        interface {{ item.in_interface }}
+{% endif %}
+{% if item.out_interface|d() %}
+        outerface {{ item.out_interface }}
+{% endif %}
+        ACCEPT;
     }
 {% else %}
 {% if item.accept_any is defined and item.accept_any | bool %}
