@@ -18,9 +18,12 @@ smstools_mail_transport_subdomain: 'sms'
 # Subdomain for mail aliases which are resolved to mobile numbers
 smstools_mail_alias_subdomain: 'gsm'
 
+# Main domain used by this role
+smstools_mail_domain: '{{ ansible_domain }}'
+
 # Domains that combine above subdomains with main host domain
-smstools_mail_transport_domain: '{{ smstools_mail_transport_subdomain }}.{{ ansible_domain }}'
-smstools_mail_alias_domain: '{{ smstools_mail_transport_subdomain }}.{{ ansible_domain }}'
+smstools_mail_transport_domain: '{{ smstools_mail_transport_subdomain }}.{{ smstools_mail_domain }}'
+smstools_mail_alias_domain: '{{ smstools_mail_alias_subdomain }}.{{ smstools_mail_domain }}'
 
 # Default country prefix (with +) to add if number has only 9 digits
 smstools_default_country_prefix: ''
@@ -31,8 +34,8 @@ smstools_default_country_prefix: ''
 #    - name: 'mail@example.com'            # required
 #      state: 'permit/deny'                # optional
 smstools_default_senders:
-  - name: 'root@{{ ansible_domain }}'
-  - name: '{{ ansible_ssh_user }}@{{ ansible_domain }}'
+  - name: 'root@{{ smstools_mail_domain }}'
+  - name: '{{ ansible_ssh_user }}@{{ smstools_mail_domain }}'
 
 # Additional list of mail senders
 smstools_senders: []
