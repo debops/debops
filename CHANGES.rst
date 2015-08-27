@@ -15,3 +15,7 @@ v0.1.0
 - Expose the ``smtpd_banner`` variable in role default variables and hide the
   "Postfix" name in the banner. [drybjed]
 
+- ``debops.postfix`` incorrectly added a list value when requirement of
+  a capability was not present. Now role will check if ``item.capability`` or
+  ``item.no_capability`` are specified before adding a value or not. [drybjed]
+
