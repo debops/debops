@@ -19,3 +19,7 @@ v0.1.0
   a capability was not present. Now role will check if ``item.capability`` or
   ``item.no_capability`` are specified before adding a value or not. [drybjed]
 
+- ``debops.postfix`` incorrectly added a ``main.cf`` option with a value when
+  a required capability was specified but was ``False``. Now role will check if
+  an entry has specified value before deciding if it should be added. [drybjed]
+
