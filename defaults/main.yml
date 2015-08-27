@@ -145,7 +145,8 @@ tinc_ifupdown_interface:
     tinc-chroot yes
     tinc-mlock yes
     tinc-user {{ tinc_user }}
-    {% elif tinc_connection_type == 'static' %}
+    {% endif %}
+    {% if tinc_connection_type == 'static' %}
     {{ tinc_ifupdown_options_static[tinc_interface]|d() }}
     {% elif tinc_connection_type == 'dhcp' %}
     {{ tinc_ifupdown_options_dhcp[tinc_interface]|d() }}
