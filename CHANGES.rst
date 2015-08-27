@@ -12,3 +12,6 @@ v0.1.0
 
 - Expose the domain used by SMS gateway in role default variables. [drybjed]
 
+- Restart ``smsd`` after configuration has changed, needed on ``systemd``-based
+  systems. [drybjed]
+
