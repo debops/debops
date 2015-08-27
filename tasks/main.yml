@@ -115,6 +115,25 @@
   with_dict: tinc_external_hosts
   when: tinc_external_hosts is defined and tinc_external_hosts
 
+- name: install the systemd unit file
+  template:
+    src: 'etc/systemd/system/tinc@.service.j2'
+    dest: '/etc/systemd/system/tinc@.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: ansible_local|d() and (ansible_local.init is undefined or
+        ansible_local.init in [ 'systemd' ])
+
+- name: register autostart tinc service systemd
+  service:
+    name: 'tinc@{{ tinc_network }}'
+    enabled: 'yes'
+    state: 'started'
+  notify: [ 'Restart tinc VPN connection' ]
+  when: ansible_local|d() and (ansible_local.init is undefined or
+        ansible_local.init in [ 'systemd' ])
+
 - name: Start VPN interface if required
   shell: test ! -x /tmp/ifupdown-delayed-{{ tinc_interface }} || /tmp/ifupdown-delayed-{{ tinc_interface }} {{ tinc_interface_auto | bool | lower }}
   changed_when: False

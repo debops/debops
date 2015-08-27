@@ -8,7 +8,7 @@
 
 - name: Restart tinc VPN connection
   shell: test -d /run/systemd/system &&
-         ( systemctl restart ifup@{{ tinc_interface }}.service ) ||
+         ( systemctl restart tinc@{{ tinc_network }}.service) ||
          ( ifdown {{ tinc_interface }} ; ifup {{ tinc_interface }} )
   when: (tinc_interface_auto | bool and ansible_local|d() and ansible_local.cap12s|d() and
          (not ansible_local.cap12s.enabled | bool or

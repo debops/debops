@@ -1,0 +1,17 @@
+#{{ ansible_managed }}
+[Unit]
+Description=tinc for network %I
+After=local-fs.target network-pre.target networking.service
+Before=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/tincd -D -n %i -o Interface=%i --mlock --chroot --user={{ tinc_user }}
+ExecReload=/usr/sbin/tincd -n %i reload
+ExecStop=/usr/sbin/tincd -n %i stop
+TimeoutStopSec=5
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target

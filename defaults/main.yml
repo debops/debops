@@ -140,10 +140,12 @@ tinc_ifupdown_interface:
   auto_ifup: False
   force: True
   options: |
+    {% if ansible_local.init != 'systemd' %}
     tinc-net {{ tinc_network }}
     tinc-chroot yes
     tinc-mlock yes
     tinc-user {{ tinc_user }}
+    {% endif %}
     {% if tinc_connection_type == 'static' %}
     {{ tinc_ifupdown_options_static[tinc_interface]|d() }}
     {% elif tinc_connection_type == 'dhcp' %}
