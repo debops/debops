@@ -51,7 +51,7 @@
 {%                   endif                                                            %}
 {%                 endfor                                                             %}
 {%               endif                                                                %}
-{%             else                                                                   %}
+{%             elif (new_element.capability is undefined and new_element.no_capability is undefined) %}
 {%               if new_element.list is defined and new_element.list                  %}
 {%                 for x in new_element.list                                          %}
 {%                   if x not in postfix_tpl_local_list                               %}
@@ -168,7 +168,7 @@
 {%       endif                                                                        %}
 {%       if postfix_tpl_local_value is defined and postfix_tpl_local_value            %}
 {%         set _ = postfix_tpl_local_maincf_result.update({entry.param: postfix_tpl_local_value}) %}
-{%       else                                                                         %}
+{%       elif entry.value is undefined or not entry.value                                         %}
 {%         set _ = postfix_tpl_local_maincf_result.update({entry.param: ''})          %}
 {%       endif                                                                        %}
 {%     endif                                                                          %}
