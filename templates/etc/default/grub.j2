@@ -9,12 +9,12 @@
 {% if grub_save_options %}
   {% set grub_tpl_kernel_params = grub_tpl_kernel_params + grub_fact_default_kernel_parameters %}
 {% endif %}
-{% if grub_serial_console_enable %}
+{% if grub_serial_console %}
   {% set _ = grub_tpl_kernel_params.append('console=tty0') %}
   {% set _ = grub_tpl_kernel_params.append('console=ttyS{},{}n8'.format(grub_serial_console_unit,grub_serial_console_speed)) %}
 {% endif %}
 
-GRUB_DEFAULT=0
+GRUB_DEFAULT={{ grub_default }}
 GRUB_TIMEOUT={{ grub_timeout }}
 GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
 GRUB_CMDLINE_LINUX_DEFAULT="{{ grub_tpl_kernel_params | unique | join(' ')}}"
@@ -42,7 +42,7 @@ GRUB_CMDLINE_LINUX=""
 # Uncomment to get a beep at grub start
 #GRUB_INIT_TUNE="480 440 1"
 
-{% if grub_serial_console_enable %}
+{% if grub_serial_console %}
 GRUB_TERMINAL="serial console"
 GRUB_SERIAL_COMMAND="serial --unit={{ grub_serial_console_unit }} --speed={{ grub_serial_console_speed }} --word=8 --parity=no --stop=1"
 {% endif %}
