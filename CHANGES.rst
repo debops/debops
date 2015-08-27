@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.2
+------
+
+*Released: 2015-08-27*
+
+- Use correct name of the ``debops.postfix`` dependent parameter. [drybjed]
+
+
 v0.2.1
 ------
 
