@@ -38,6 +38,9 @@ v0.1.4
 - Filter out ``link-local`` IPv6 addresses from list of addresses that can
   access the ``/nginx_status`` page. [drybjed]
 
+- Change how list of nameservers is gathered from ``/etc/resolv.conf`` to fix
+  an issue with ``sed`` in shell command. [drybjed]
+
 v0.1.3
 ------
 
