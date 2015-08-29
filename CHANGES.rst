@@ -18,6 +18,9 @@ v0.1.1
 - Fix a templating error when IPv6 networking is not present on a host.
   [drybjed]
 
+- Change the way role gathers the list of nameservers to avoid issue with
+  ``sed`` command in shell module. [drybjed]
+
 v0.1.0
 ------
 
