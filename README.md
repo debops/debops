@@ -9,14 +9,11 @@
 
 Manage cryptsetup devices via /etc/crypttab.
 
-In case you need to copy keyfiles to the target you might want to checkout the [copy role][].
-
 ### Features
 
 * Add or remove devices in /etc/crypttab
 * Optionally add or remove these devices in /etc/fstab
-
-[copy role]: https://galaxy.ansible.com/list#/roles/4558
+* Optionally copy the keyfile to the target
 
 ### Installation
 
@@ -44,21 +41,40 @@ List of default variables available in the inventory:
 ---
 
 ## "Global" crypttab devices
-crypttab_list:
+crypttab_list: []
 
 ## "Host group" crypttab devices
-crypttab_group_list:
+crypttab_group_list: []
 
 ## "Host" crypttab devices
-crypttab_host_list:
-  # - name: 'luks-home'
-  #   backing_device: 'UUID=bb51423a-3384-11e5-beee-3cd92b26fd34'
-  #   password: '/path/to/keyfile'
+crypttab_host_list: []
 
-# crypttab_default_options: 'discard'
+# crypttab_host_list:
+#     ## Name of the cryptsetup device and the mountpoint
+#   - name: 'name'
+#     ## Optional. Filepath for the keyfile on the Ansible controller. Will be copied over to the target.
+#     # keyfile: '/home/admin/encfs/cryptsetup_keyfiles/name.keyfile'
+#     backing_device: 'UUID=bb51423a-3384-11e5-beee-3cd92b26fd34'
+#     mount_state: 'present'
+
+crypttab_default_options: 'luks'
+
+## Path on the target where the keyfiles should be stored.
+crypttab_keyfile_path: '/usr/local/etc'
+
+crypttab_default_mount_fstype: 'ext4'
+crypttab_default_mount_options: 'user,auto,noatime,nodiratime'
+crypttab_default_mount_state: 'present'
+crypttab_default_mountpoint_parent_directory: '/media'
+
+crypttab_default_keyfile_owner: 'root'
+crypttab_default_keyfile_group: 'root'
+crypttab_default_keyfile_mode: '0400'
 ```
 
+List of internal variables used by the role:
 
+    crypttab_list_combined
 
 
 ### Authors and license

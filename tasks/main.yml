@@ -1,5 +1,9 @@
 ---
 
+- name: Combine crypttab lists
+  set_fact:
+    crypttab_list_combined: '{{ crypttab_list + crypttab_group_list + crypttab_host_list | default([]) }}'
+
 - name: Ensure required packages are installed
   apt:
     name: '{{ item }}'
@@ -8,20 +12,56 @@
   with_items:
     - cryptsetup
 
+- name: Ensure keyfile directory exists
+  file:
+    path: '{{ crypttab_keyfile_path }}'
+    state: 'directory'
+
+## Copied from ypid.copy.
+- name: Copy keyfiles to target system
+  copy:
+    dest:           '{{ crypttab_keyfile_path }}/{{ item.name }}.keyfile'
+    backup:         '{{ item.backup         | default(omit) }}'
+    content:        '{{ item.content        | default(omit) }}'
+    directory_mode: '{{ item.directory_mode | default(omit) }}'
+    follow:         '{{ item.follow         | default(omit) }}'
+    force:          '{{ item.force          | default(omit) }}'
+    group:          '{{ item.group          | default(crypttab_default_keyfile_group) }}'
+    mode:           '{{ item.mode           | default(crypttab_default_keyfile_mode) }}'
+    owner:          '{{ item.owner          | default(crypttab_default_keyfile_owner) }}'
+    selevel:        '{{ item.selevel        | default(omit) }}'
+    serole:         '{{ item.serole         | default(omit) }}'
+    setype:         '{{ item.setype         | default(omit) }}'
+    seuser:         '{{ item.seuser         | default(omit) }}'
+    src:            '{{ item.keyfile        | default(omit) }}'
+    validate:       '{{ item.validate       | default(omit) }}'
+  when: (
+          item is mapping and (
+            item.state is string and item.state == 'present' or
+            item.state is undefined
+          ) and
+          item.keyfile is defined or item.content is defined
+        )
+  with_items: crypttab_list_combined
+
+- name: Delete files if state is absent
+  file:
+    dest: '{{ crypttab_keyfile_path }}/{{ item.dest }}'
+    state: 'absent'
+  when: (item.state is string and item.state == 'absent')
+  with_items: crypttab_list_combined
+
 - name: Add devices to crypttab
   crypttab:
     backing_device: '{{ item.backing_device }}'
     name:           '{{ item.name }}'
     opts:           '{{ item.opts     | default(crypttab_default_options | default("none")) }}'
     ## none is required on Debian jessie by cryptdisks_start
-    password:       '{{ item.password | default(omit) }}'
+    password:       '{{ crypttab_keyfile_path }}/{{ item.name }}.keyfile'
     path:           '{{ item.path     | default(omit) }}'
     state:          '{{ item.state    | default("present") }}'
   when: (item.name is string)
-  with_flattened:
-    - crypttab_list
-    - crypttab_group_list
-    - crypttab_host_list
+  with_items: crypttab_list_combined
 
 # - name: Ensure options are as specified for matching devices
 #   crypttab:
@@ -31,28 +71,27 @@
 #   when: (crypttab_default_options.devices in item.device)
 #   with_items: ansible_mounts
 
-- name: Ensure mountpoints exist in /etc/fstab
+- name: Ensure mountpoints exist in fstab
   mount:
-    dump:   '{{ item.dump | default(omit) }}'
-    fstab:  '{{ item.fstab | default("/etc/fstab") }}'
-    fstype: '{{ item.mount_fstype }}'
-    name:   '{% if item.mount == "/media" %}{{ item.mount }}/{{ item.name }}{% else %}{{ item.mount}}{% endif %}'
+    dump:   '{{ item.dump         | default(omit) }}'
+    fstab:  '{{ item.fstab        | default(omit) }}'
+    fstype: '{{ item.mount_fstype | default(crypttab_default_mount_fstype | default (omit))  }}'
+    name:   '{{ item.mount        | default(crypttab_default_mountpoint_parent_directory + "/" + item.name) }}'
     src:    '/dev/mapper/{{ item.name }}'
-    opts:   '{{ item.mount_opts   | default(omit) }}'
+    opts:   '{{ item.mount_opts   | default(crypttab_default_mount_options | default(omit)) }}'
     passno: '{{ item.mount_passno | default(omit) }}'
-    state:  '{{ item.mount_state  | default("present") }}'
-  when: (item.mount is string)
-  with_flattened:
-    - crypttab_list
-    - crypttab_group_list
-    - crypttab_host_list
+    state:  '{{ item.mount_state  | default(crypttab_default_mount_state) }}'
+  when: (item.name is string)
+  with_items: crypttab_list_combined
 
 - name: Ensure mount directories exist when manually mounted
   file:
-    path: '{% if item.mount == "/media" %}{{ item.mount }}/{{ item.name }}{% else %}{{ item.mount }}{% endif %}'
+    path: '{{ item.mount | default(crypttab_default_mountpoint_parent_directory + "/" + item.name) }}'
     state: 'directory'
-  when: (item.mount is string and item.mount_state == 'present')
-  with_flattened:
-    - crypttab_list
-    - crypttab_group_list
-    - crypttab_host_list
+  when: (
+          item.name is defined and (
+            item.mount_state is defined and item.mount_state == 'present' or
+            crypttab_default_mount_state == 'present'
+          )
+        )
+  with_items: crypttab_list_combined
