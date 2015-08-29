@@ -28,14 +28,14 @@
   when: dhcpd_register_relay_debconf|d() and dhcpd_register_relay_debconf.changed
 
 - name: Get list of nameservers configured in /etc/resolv.conf
-  shell: grep -E '^nameserver\s' /etc/resolv.conf | awk '{print $2}' | sed -e 'N;s/\n/ /'
+  shell: grep -E '^nameserver\s' /etc/resolv.conf | awk '{print $2}'
   register: dhcpd_register_nameservers
   changed_when: False
   when: dhcpd_mode == 'server'
 
 - name: Convert list of nameservers to Ansible list
   set_fact:
-    dhcpd_runtime_nameservers: "{{ dhcpd_register_nameservers.stdout.split(' ') }}"
+    dhcpd_runtime_nameservers: "{{ dhcpd_register_nameservers.stdout_lines }}"
   when: (dhcpd_register_nameservers is defined and dhcpd_register_nameservers.stdout)
 
 - name: Configure DHCP server
