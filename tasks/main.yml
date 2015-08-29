@@ -60,13 +60,13 @@
     nginx_version: '{{ nginx_register_version.stdout | default("0.0") }}'
 
 - name: Get list of nameservers configured in /etc/resolv.conf
-  shell: grep -E '^nameserver\s' /etc/resolv.conf | awk '{print $2}' | sed -e 'N;s/\n/ /'
+  shell: "grep -E '^nameserver\\s' /etc/resolv.conf | awk '{print $2}'"
   register: nginx_register_nameservers
   changed_when: False
 
 - name: Convert list of nameservers to Ansible list
   set_fact:
-    nginx_ocsp_resolvers: "{{ nginx_register_nameservers.stdout.split(' ') }}"
+    nginx_ocsp_resolvers: "{{ nginx_register_nameservers.stdout_lines }}"
   when: ((nginx_register_nameservers.stdout is defined and nginx_register_nameservers.stdout) and
          (nginx_ocsp_resolvers is undefined or
          (nginx_ocsp_resolvers is defined and not nginx_ocsp_resolvers)))
