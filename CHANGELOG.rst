@@ -28,7 +28,7 @@ v0.2.7
 - Add a context-based tags to common playbook as an experiment (``libvirt(d)``
   roles already use them). Context tags are inspired by ``debtags`` and will
   allow more fine-grained control over playbook tasks, when roles start to use
-  them internally. Old-style tasks will be phased out after some time.
+  them internally. Old-style tags will be phased out after some time.
   [drybjed]
 
 - Add ``debops.librenms`` role. [drybjed]
@@ -46,6 +46,8 @@ v0.2.7
   been moved to ``debops.core`` Ansible role. [drybjed]
 
 - Add ``debops.fcgiwrap`` role. [drybjed]
+
+- Add new role tags in all playbooks. [drybjed]
 
 v0.2.6
 ------
