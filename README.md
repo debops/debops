@@ -1,11 +1,22 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) fcgiwrap
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-fcgiwrap.svg?style=flat)](http://travis-ci.org/debops/ansible-fcgiwrap) [![test-suite](http://img.shields.io/badge/test--suite-ansible--fcgiwrap-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-fcgiwrap/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-fcgiwrap.svg?style=flat)](http://travis-ci.org/debops/ansible-fcgiwrap) [![test-suite](http://img.shields.io/badge/test--suite-ansible--fcgiwrap-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-fcgiwrap/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.fcgiwrap-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4922)
 
 [fcgiwrap](https://github.com/gnosek/fcgiwrap) is a lightweight FastCGI
 server which can be set up behind `nginx` server to run CGI applications.
 This role allows you to setup separate instances of `fcgiwrap` on different
 user accounts, each one accessible through its own UNIX socket.
+
+### Installation
+
+This role requires at least Ansible `v1.8.0`. To install it, run:
+
+    ansible-galaxy install debops.fcgiwrap
+
+### Documentation
+
+More information about `debops.fcgiwrap` can be found in the
+[official debops.fcgiwrap documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-fcgiwrap/docs/).
 
 
 
