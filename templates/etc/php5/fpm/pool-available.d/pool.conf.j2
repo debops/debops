@@ -47,7 +47,7 @@ listen = {{ item.listen | default('/var/run/php5-fpm-' + item.name + '.sock') }}
 {#
 ; Set permissions for unix socket, if one is used. In Linux, read/write
 ; permissions must be set in order to allow connections from a web server. Many
-; BSD-derived systems allow connections regardless of permissions. 
+; BSD-derived systems allow connections regardless of permissions.
 ; Default Values: user and group are set as the running user
 ;                 mode is set to 0666 #}
 listen.owner = {{ php5_socket_listen_owner | default('www-data') }}
@@ -254,7 +254,7 @@ ping.response = {{ item.ping_response | default(php5_default_ping_response) }}
 {#
 ; The access log file
 ; Default: not set #}
-access.log = var/log/php5-fpm/$pool.access.log
+access.log = /var/log/php5-fpm/$pool.access.log
 {#
 ; The access log format.
 ; The following syntax is allowed
@@ -409,7 +409,7 @@ env[{{ key }}] = {{ value }}
 ; overwrite the values previously defined in the php.ini. The directives are the
 ; same as the PHP SAPI:
 ;   php_value/php_flag             - you can set classic ini defines which can
-;                                    be overwritten from PHP call 'ini_set'. 
+;                                    be overwritten from PHP call 'ini_set'.
 ;   php_admin_value/php_admin_flag - these directives won't be overwritten by
 ;                                     PHP call 'ini_set'
 ; For php_*flag, valid values are on, off, 1, 0, true, false, yes or no.
