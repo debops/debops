@@ -1,0 +1,33 @@
+---
+
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_items: [ 'fcgiwrap' ]
+
+- name: Check the fcgiwrap version
+  environment:
+    LC_MESSAGES: 'C'
+  shell: "dpkg-query -W -f='${Version}\n' 'fcgiwrap'"
+  register: fcgiwrap_register_version
+  changed_when: False
+  failed_when: False
+
+- name: Configure required users and groups
+  include: configure_users.yml
+  when: fcgiwrap_instances|d()
+
+- name: Configure fcgiwrap instances in sysvinit
+  include: configure_sysvinit.yml
+  when: (fcgiwrap_instances|d() and
+         (ansible_local|d() and ansible_local.init|d() and
+          ansible_local.init != 'systemd'))
+
+- name: Configure fcgiwrap instances in systemd
+  include: configure_systemd.yml
+  when: (fcgiwrap_instances|d() and
+         (ansible_local|d() and ansible_local.init|d() and
+          ansible_local.init == 'systemd'))
+

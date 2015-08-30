@@ -1,0 +1,36 @@
+---
+
+- name: Disable default fcgiwrap service and socket
+  service:
+    name: '{{ item }}'
+    state: 'stopped'
+    enabled: False
+  with_items: [ 'fcgiwrap.service', 'fcgiwrap.socket' ]
+  when: fcgiwrap_disable_default|d(False)
+
+- name: Generate systemd units
+  template:
+    src: 'etc/systemd/system/fcgiwrap-instance.{{ item.1 }}.j2'
+    dest: '/etc/systemd/system/fcgiwrap-{{ item.0.name }}.{{ item.1 }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: fcgiwrap_register_systemd
+  with_nested:
+    - fcgiwrap_instances
+    - [ 'socket', 'service' ]
+
+- name: Reload systemd units
+  command: 'systemctl daemon-reload'
+  when: fcgiwrap_register_systemd|d() and
+        fcgiwrap_register_systemd.changed
+
+- name: Enable and start systemd units
+  service:
+    name: 'fcgiwrap-{{ item.0.name }}.{{ item.1 }}'
+    state: 'started'
+    enabled: True
+  with_nested:
+    - fcgiwrap_instances
+    - [ 'socket', 'service' ]
+

@@ -1,0 +1,76 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+
+# --------------------------
+#   fcgiwrap configuration
+# --------------------------
+
+# .. envvar:: fcgiwrap_instances
+#
+# List of ``fcgiwrap`` instances to configure. See :ref:`fcgiwrap_instances`
+# for more details.
+fcgiwrap_instances: []
+
+
+# .. envvar:: fcgiwrap_disable_default
+#
+# By default role disables the original system-wide instance and uses only
+# per-user instances.
+fcgiwrap_disable_default: True
+
+
+# .. envvar:: fcgiwrap_threads
+#
+# Number of cgiwrap threads to start if not specified in instance
+# configuration.
+fcgiwrap_threads: '{{ ansible_processor_cores }}'
+
+
+# .. envvar:: fcgiwrap_options_map
+#
+# Map of options passed to ``fcgiwrap`` depending on the installed version.
+fcgiwrap_options_map:
+  '1.1': '-f -c {{ fcgiwrap_threads }}'
+  '1.0': '-c {{ fcgiwrap_threads }}'
+
+
+# --------------------------------
+#   User and group configuration
+# --------------------------------
+
+# .. envvar:: fcgiwrap_user
+#
+# Default user account which will be used to start ``fcgiwrap`` if none is
+# specified in instance configuration.
+fcgiwrap_user: 'www-data'
+
+
+# .. envvar:: fcgiwrap_group
+#
+# Default group which will be used to start ``fcgiwrap`` if none is specified
+# in instance configuration.
+fcgiwrap_group: 'www-data'
+
+
+# .. envvar:: fcgiwrap_socket_user
+#
+# Owner of the socket used to communicate with ``fcgiwrap`` process if none is
+# specified in instance configuration.
+fcgiwrap_socket_user: 'www-data'
+
+
+# .. envvar:: fcgiwrap_socket_group
+#
+# Default socket group if none is specified in instance configuration.
+fcgiwrap_socket_group: 'www-data'
+
+
+# .. envvar:: fcgiwrap_socket_mode
+#
+# Default permissions set on the ``fcgiwrap`` socket.
+fcgiwrap_socket_mode: '0660'
+
