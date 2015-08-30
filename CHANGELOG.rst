@@ -45,6 +45,8 @@ v0.2.7
 - Remove ``root.yml`` playbook and its additional files - its functionality has
   been moved to ``debops.core`` Ansible role. [drybjed]
 
+- Add ``debops.fcgiwrap`` role. [drybjed]
+
 v0.2.6
 ------
 
