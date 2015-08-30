@@ -46,7 +46,7 @@
 
 - name: Delete files if state is absent
   file:
-    dest: '{{ crypttab_keyfile_path }}/{{ item.dest }}'
+    dest: '{{ crypttab_keyfile_path }}/{{ item.name }}.keyfile'
     state: 'absent'
   when: (item.state is string and item.state == 'absent')
   with_items: crypttab_list_combined
@@ -60,7 +60,7 @@
     password:       '{{ crypttab_keyfile_path }}/{{ item.name }}.keyfile'
     path:           '{{ item.path     | default(omit) }}'
     state:          '{{ item.state    | default("present") }}'
-  when: (item.name is string)
+  when: (item.state is string and item.state == 'absent' and item.name is string)
   with_items: crypttab_list_combined
 
 # - name: Ensure options are as specified for matching devices
@@ -75,13 +75,22 @@
   mount:
     dump:   '{{ item.dump         | default(omit) }}'
     fstab:  '{{ item.fstab        | default(omit) }}'
-    fstype: '{{ item.mount_fstype | default(crypttab_default_mount_fstype | default (omit))  }}'
+    fstype: '{{ item.mount_fstype | default(crypttab_default_mount_fstype) }}'
     name:   '{{ item.mount        | default(crypttab_default_mountpoint_parent_directory + "/" + item.name) }}'
     src:    '/dev/mapper/{{ item.name }}'
     opts:   '{{ item.mount_opts   | default(crypttab_default_mount_options | default(omit)) }}'
     passno: '{{ item.mount_passno | default(omit) }}'
     state:  '{{ item.mount_state  | default(crypttab_default_mount_state) }}'
-  when: (item.name is string)
+  when: (item.state is string and item.state == 'absent' and item.name is string)
+  with_items: crypttab_list_combined
+
+- name: Ensure mountpoints is absent in fstab
+  mount:
+    fstype: '{{ item.mount_fstype | default(crypttab_default_mount_fstype) }}'
+    name:   '{{ item.mount | default(crypttab_default_mountpoint_parent_directory + "/" + item.name) }}'
+    src:    '/dev/mapper/{{ item.name }}'
+    state:  'absent'
+  when: (item.state is string and item.state == 'absent' and item.name is string)
   with_items: crypttab_list_combined
 
 - name: Ensure mount directories exist when manually mounted
@@ -94,4 +103,11 @@
             crypttab_default_mount_state == 'present'
           )
         )
+  with_items: crypttab_list_combined
+
+- name: Ensure mount directories is absent
+  file:
+    path: '{{ item.mount | default(crypttab_default_mountpoint_parent_directory + "/" + item.name) }}'
+    state: 'absent'
+  when: (item.state is string and item.state == 'absent' and item.name is string)
   with_items: crypttab_list_combined
