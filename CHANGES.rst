@@ -51,6 +51,9 @@ v0.3.1
 
 - Allow for per-domain access in LDAP host filter. [drybjed]
 
+- Change quotes in ``lineinfile`` task to correctly pass Tab characters through
+  the template engine. [drybjed]
+
 v0.3.0
 ------
 
