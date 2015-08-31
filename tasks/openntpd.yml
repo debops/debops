@@ -14,7 +14,9 @@
 
 - name: Divert original /etc/openntpd/ntpd.conf
   command: dpkg-divert --quiet --local --divert /etc/openntpd/ntpd.conf.dpkg-divert
-           --rename /etc/openntpd/ntpd.conf creates=/etc/openntpd/ntpd.conf.dpkg-divert
+           --rename /etc/openntpd/ntpd.conf
+  args:
+    creates: '/etc/openntpd/ntpd.conf.dpkg-divert'
 
 - name: Configure OpenNTPd
   template:
