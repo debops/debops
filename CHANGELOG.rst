@@ -49,6 +49,11 @@ v0.2.7
 
 - Add new role tags in all playbooks. [drybjed]
 
+- Split the ``environments.yml`` playbook into smaller plays included in the
+  main playbook to see if this model has any issues. This change should make
+  user of specific role plays easier on the command line and from other
+  playbooks. [drybjed]
+
 v0.2.6
 ------
 
