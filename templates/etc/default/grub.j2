@@ -15,7 +15,11 @@
 {%   set _ = grub_tpl_kernel_params.append('console=ttyS{},{}n8'.format(grub_serial_console_unit,grub_serial_console_speed)) %}
 {% endif %}
 GRUB_DEFAULT={{ grub_default }}
-GRUB_TIMEOUT={{ grub_timeout }}
+{% if ansible_virtualization_role is undefined or ansible_virtualization_role not in [ 'guest' ] %}
+GRUB_TIMEOUT={{ grub_timeout_hardware }}
+{% else %}
+GRUB_TIMEOUT={{ grub_timeout_virtual }}
+{% endif %}
 GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
 GRUB_CMDLINE_LINUX_DEFAULT="{{ grub_tpl_default_kernel_params | join(' ')}}"
 GRUB_CMDLINE_LINUX="{{ grub_tpl_kernel_params | join(' ') }}"
