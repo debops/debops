@@ -7,7 +7,8 @@
 
 {% set grub_tpl_kernel_params = grub_kernel_options %}
 {% if grub_save_options %}
-  {% set grub_tpl_kernel_params = grub_tpl_kernel_params + grub_fact_default_kernel_parameters %}
+{%   set grub_tpl_default_kernel_params = grub_fact_default_kernel_parameters %}
+{%   set grub_tpl_kernel_params = ((grub_tpl_kernel_params + grub_fact_old_kernel_parameters) | sort | unique) %}
 {% endif %}
 {% if grub_serial_console %}
 {%   set _ = grub_tpl_kernel_params.append('console=tty0') %}
@@ -16,8 +17,8 @@
 GRUB_DEFAULT={{ grub_default }}
 GRUB_TIMEOUT={{ grub_timeout }}
 GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
-GRUB_CMDLINE_LINUX_DEFAULT="{{ grub_tpl_kernel_params | unique | join(' ')}}"
-GRUB_CMDLINE_LINUX=""
+GRUB_CMDLINE_LINUX_DEFAULT="{{ grub_tpl_default_kernel_params | join(' ')}}"
+GRUB_CMDLINE_LINUX="{{ grub_tpl_kernel_params | join(' ') }}"
 
 # Uncomment to enable BadRAM filtering, modify to suit your needs
 # This works with Linux (no patch required) and with any kernel that obtains
