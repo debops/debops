@@ -21,13 +21,11 @@
 
 - name: Configure fcgiwrap instances in sysvinit
   include: configure_sysvinit.yml
-  when: (fcgiwrap_instances|d() and
-         (ansible_local|d() and ansible_local.init|d() and
-          ansible_local.init != 'systemd'))
+  when: (ansible_local|d() and ansible_local.init|d() and
+          ansible_local.init != 'systemd')
 
 - name: Configure fcgiwrap instances in systemd
   include: configure_systemd.yml
-  when: (fcgiwrap_instances|d() and
-         (ansible_local|d() and ansible_local.init|d() and
-          ansible_local.init == 'systemd'))
+  when: (ansible_local|d() and ansible_local.init|d() and
+          ansible_local.init == 'systemd')
 
