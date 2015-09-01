@@ -14,11 +14,20 @@
 {%   set grub_tpl_default_kernel_params = grub_fact_default_kernel_parameters %}
 {%   set grub_tpl_kernel_params = ((grub_tpl_kernel_params + grub_fact_old_kernel_parameters + grub_tpl_local_kernel_options + grub_dependent_kernel_options) | sort | unique) %}
 {% endif %}
+{% set grub_tpl_default = "0" %}
+{% if ansible_local|d() and ansible_local.grub|d() and ansible_local.grub.default|d() %}
+{%   set grub_tpl_default = ansible_local.grub.default %}
+{% elif grub_dependent_default %}
+{%   set grub_tpl_default = grub_dependent_default %}
+{% endif %}
+{% if grub_default %}
+{%   set grub_tpl_default = grub_default %}
+{% endif %}
 {% if grub_serial_console %}
 {%   set _ = grub_tpl_kernel_params.append('console=tty0') %}
 {%   set _ = grub_tpl_kernel_params.append('console=ttyS{},{}n8'.format(grub_serial_console_unit,grub_serial_console_speed)) %}
 {% endif %}
-GRUB_DEFAULT={{ grub_default }}
+GRUB_DEFAULT={{ grub_tpl_default }}
 {% if ansible_virtualization_role is undefined or ansible_virtualization_role not in [ 'guest' ] %}
 GRUB_TIMEOUT={{ grub_timeout_hardware }}
 {% else %}

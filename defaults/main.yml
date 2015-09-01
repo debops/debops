@@ -32,8 +32,18 @@ grub_dependent_kernel_options: []
 
 # .. envvar:: grub_default
 #
-# Default kernel to boot
-grub_default: 0
+# By default the first GRUB menu option is active and it will be booted. If you
+# specify your own parameter, it will be used instead.
+grub_default: ''
+
+
+# .. envvar:: grub_dependent_default
+#
+# Other roles that use ``debops.grub`` as a role dependency, can use this
+# variable to override the default menu option. It will be stored in Ansible
+# local facts to preserve idempotency. ``grub_default`` will override this
+# variable.
+grub_dependent_default: ''
 
 
 # .. envvar:: grub_timeout_hardware
