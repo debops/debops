@@ -12,9 +12,16 @@
   changed_when: False
   when: grub_save_options
 
+- name: Get old kernel parameters
+  shell: . /etc/default/grub.dpkg-divert; echo $GRUB_CMDLINE_LINUX | sed -e 's,\s\+,\n,g'
+  register: grub_register_old_cmdline
+  changed_when: False
+  when: grub_save_options
+
 - name: Default kernel parameters
   set_fact:
     grub_fact_default_kernel_parameters: '{{ grub_register_default_cmdline.stdout_lines }}'
+    grub_fact_old_kernel_parameters:     '{{ grub_register_old_cmdline.stdout_lines }}'
   when: grub_save_options
 
 - name: Configure /etc/default/grub
@@ -24,6 +31,21 @@
     owner:  'root'
     group:  'root'
     mode:   '0644'
-  notify: Update grub
+  notify: [ 'Update grub' ]
 
+- name: Make sure that local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save local GRUB facts
+  template:
+    src: 'etc/ansible/facts.d/grub.fact.j2'
+    dest: '/etc/ansible/facts.d/grub.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 

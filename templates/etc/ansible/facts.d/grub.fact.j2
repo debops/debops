@@ -1,0 +1,15 @@
+{% set grub_tpl_default = '' %}
+{% if ansible_local|d() and ansible_local.grub|d() and ansible_local.grub.default|d() %}
+{% set grub_tpl_default = ansible_local.grub.default %}
+{% else %}
+{% set grub_tpl_default = grub_dependent_default %}
+{% endif %}
+{% set grub_tpl_local_kernel_options = [] %}
+{% if ansible_local|d() and ansible_local.grub|d() and ansible_local.grub.kernel_options|d() %}
+{% set grub_tpl_local_kernel_options = ansible_local.grub.kernel_options %}
+{% endif %}
+{% set grub_tpl_local_kernel_options = ((grub_tpl_local_kernel_options + grub_dependent_kernel_options) | sort | unique) %}
+{
+"default": "{{ grub_tpl_default }}",
+"kernel_options": {{ grub_tpl_local_kernel_options | to_nice_json }}
+}

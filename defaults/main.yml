@@ -14,21 +14,55 @@
 # Preserve all original kernel options
 grub_save_options: True
 
+
 # .. envvar:: grub_kernel_options
 #
 # Kernel options. If grub_save_options is true they will be appended after
 # original options.
 grub_kernel_options: []
 
+
+# .. envvar:: grub_dependent_kernel_options
+#
+# List of kernel options used when ``debops.grub`` role is used as a role
+# dependency. Options listed here will be saved in Ansible local facts for
+# idempotency.
+grub_dependent_kernel_options: []
+
+
 # .. envvar:: grub_default
 #
-# Default kernel to boot
-grub_default: 0
+# By default the first GRUB menu option is active and it will be booted. If you
+# specify your own parameter, it will be used instead.
+grub_default: ''
 
-# .. envvar:: grub_timeout
+
+# .. envvar:: grub_dependent_default
 #
-# GRUB timeout
-grub_timeout: 5
+# Other roles that use ``debops.grub`` as a role dependency, can use this
+# variable to override the default menu option. It will be stored in Ansible
+# local facts to preserve idempotency. ``grub_default`` will override this
+# variable.
+grub_dependent_default: ''
+
+
+# .. envvar:: grub_timeout_hardware
+#
+# GRUB timeout for hardware-based devices.
+grub_timeout_hardware: 5
+
+
+# .. envvar:: grub_timeout_virtual
+#
+# GRUB timeout for virtual devices.
+grub_timeout_virtual: 1
+
+
+# .. envvar:: grub_custom_options
+#
+# Additional GRUB options specified as a YAML text block.
+grub_custom_options: ''
+
 
 # --------------------------------
 #   Serial console configuration
@@ -39,10 +73,12 @@ grub_timeout: 5
 # Enable serial console (in both grub and kernel)
 grub_serial_console: False
 
+
 # .. envvar:: grub_serial_console_unit
 #
 # Serial port to enable console on (eg. ttyS0 => 0, ttyS1 => 1)
 grub_serial_console_unit: 0
+
 
 # .. envvar:: grub_serial_console_speed
 #

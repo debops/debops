@@ -6,8 +6,6 @@ which are currently set (probably during installation). Autodetected
 parameters can be merged or overwritten by Ansible variables. It can also
 enable both Linux kernel and GRUB serial console.
 
-Only Debian Jessie is supported.
-
 Parameter autodetection with values that contain spaces is not supported.
 
 ..
