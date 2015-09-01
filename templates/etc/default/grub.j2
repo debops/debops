@@ -10,10 +10,9 @@
   {% set grub_tpl_kernel_params = grub_tpl_kernel_params + grub_fact_default_kernel_parameters %}
 {% endif %}
 {% if grub_serial_console %}
-  {% set _ = grub_tpl_kernel_params.append('console=tty0') %}
-  {% set _ = grub_tpl_kernel_params.append('console=ttyS{},{}n8'.format(grub_serial_console_unit,grub_serial_console_speed)) %}
+{%   set _ = grub_tpl_kernel_params.append('console=tty0') %}
+{%   set _ = grub_tpl_kernel_params.append('console=ttyS{},{}n8'.format(grub_serial_console_unit,grub_serial_console_speed)) %}
 {% endif %}
-
 GRUB_DEFAULT={{ grub_default }}
 GRUB_TIMEOUT={{ grub_timeout }}
 GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
