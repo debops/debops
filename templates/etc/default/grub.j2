@@ -58,8 +58,12 @@ GRUB_CMDLINE_LINUX="{{ grub_tpl_kernel_params | join(' ') }}"
 
 # Uncomment to get a beep at grub start
 #GRUB_INIT_TUNE="480 440 1"
-
 {% if grub_serial_console %}
+
 GRUB_TERMINAL="serial console"
 GRUB_SERIAL_COMMAND="serial --unit={{ grub_serial_console_unit }} --speed={{ grub_serial_console_speed }} --word=8 --parity=no --stop=1"
+{% endif %}
+{% if grub_custom_options %}
+
+{{ grub_custom_options }}
 {% endif %}
