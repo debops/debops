@@ -33,4 +33,19 @@
     mode:   '0644'
   notify: [ 'Update grub' ]
 
+- name: Make sure that local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save local GRUB facts
+  template:
+    src: 'etc/ansible/facts.d/grub.fact.j2'
+    dest: '/etc/ansible/facts.d/grub.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 

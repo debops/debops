@@ -5,10 +5,14 @@
 # For full documentation of the options in this file, see:
 #   info -f grub -n 'Simple configuration'
 
+{% set grub_tpl_local_kernel_options = [] %}
+{% if ansible_local|d() and ansible_local.grub|d() and ansible_local.grub.kernel_options|d() %}
+{% set grub_tpl_local_kernel_options = ansible_local.grub.kernel_options %}
+{% endif %}
 {% set grub_tpl_kernel_params = grub_kernel_options %}
 {% if grub_save_options %}
 {%   set grub_tpl_default_kernel_params = grub_fact_default_kernel_parameters %}
-{%   set grub_tpl_kernel_params = ((grub_tpl_kernel_params + grub_fact_old_kernel_parameters) | sort | unique) %}
+{%   set grub_tpl_kernel_params = ((grub_tpl_kernel_params + grub_fact_old_kernel_parameters + grub_tpl_local_kernel_options + grub_dependent_kernel_options) | sort | unique) %}
 {% endif %}
 {% if grub_serial_console %}
 {%   set _ = grub_tpl_kernel_params.append('console=tty0') %}
