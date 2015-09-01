@@ -19,6 +19,7 @@
   with_nested:
     - fcgiwrap_instances
     - [ 'socket', 'service' ]
+  when: fcgiwrap_instances|d()
 
 - name: Reload systemd units
   command: 'systemctl daemon-reload'
@@ -33,4 +34,5 @@
   with_nested:
     - fcgiwrap_instances
     - [ 'socket', 'service' ]
+  when: fcgiwrap_instances|d()
 
