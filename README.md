@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) grub
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-grub.svg?style=flat)](http://travis-ci.org/debops/ansible-grub) [![test-suite](http://img.shields.io/badge/test--suite-ansible--grub-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-grub/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-grub.svg?style=flat)](http://travis-ci.org/debops/ansible-grub) [![test-suite](http://img.shields.io/badge/test--suite-ansible--grub-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-grub/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.grub-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4952)
 
 debops.grub configures GRUB. It detects kernel parameters which are
 currently set (probably during installation). Autodetected parameters
@@ -8,6 +8,17 @@ can be merged or overwritten by Ansible variables. It can also enable
 both Linux kernel and GRUB serial console.
 
 Parameter autodetection with values that contain spaces is not supported.
+
+### Installation
+
+This role requires at least Ansible `v1.7.1`. To install it, run:
+
+    ansible-galaxy install debops.grub
+
+### Documentation
+
+More information about `debops.grub` can be found in the
+[official debops.grub documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-grub/docs/).
 
 
 
