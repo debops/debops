@@ -54,6 +54,9 @@ v0.2.7
   user of specific role plays easier on the command line and from other
   playbooks. [drybjed]
 
+- Add ``debops.grub`` role, created by Patryk Ściborek (scibi). Thanks!
+  [drybjed]
+
 v0.2.6
 ------
 
