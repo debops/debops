@@ -41,6 +41,12 @@ v0.1.4
 - Change how list of nameservers is gathered from ``/etc/resolv.conf`` to fix
   an issue with ``sed`` in shell command. [drybjed]
 
+- Use ``fastcgi_params`` instead of ``fastcgi.conf`` as the FastCGI parameters
+  file when ``nginx.org`` flavor is installed, because it is not provided by
+  the non-Debian packages. On ``passenger`` and ``nginx.org`` flavors, missing
+  ``SCRIPT_FILENAME`` parameter will be added directly in nginx server
+  configuration. [drybjed]
+
 v0.1.3
 ------
 
