@@ -34,6 +34,13 @@ dokuwiki_nginx_auth_realm: 'Wiki access is restricted'
 dokuwiki_nginx_access_policy: ''
 
 
+# .. envvar:: dokuwiki_nginx_filename
+#
+# Name of the ``nginx`` configuration file for DokuWiki website, without the
+# ``.conf`` extension.
+dokuwiki_nginx_filename: 'debops.dokuwiki'
+
+
 # --------------------------------
 #   User, group, app directories
 # --------------------------------
@@ -53,7 +60,10 @@ dokuwiki_group: 'dokuwiki'
 # .. envvar:: dokuwiki_home
 #
 # DokuWiki home directory
-dokuwiki_home: '{{ ansible_local.root.home + "/" + dokuwiki_user }}'
+dokuwiki_home: '{{ (ansible_local.nginx.www
+                    if (ansible_local|d() and ansible_local.nginx|d() and
+                        ansible_local.nginx.www|d())
+                    else "/srv/www") + "/" + dokuwiki_user }}'
 
 
 # .. envvar:: dokuwiki_src
@@ -66,8 +76,7 @@ dokuwiki_src: '{{ ansible_local.root.src + "/" + dokuwiki_user }}'
 #
 # Base web root directory for DokuWiki website
 dokuwiki_www: '{{ (ansible_local.nginx.www
-                   if (ansible_local|d() and
-                       ansible_local.nginx|d() and
+                   if (ansible_local|d() and ansible_local.nginx|d() and
                        ansible_local.nginx.www|d())
                    else "/srv/www") + "/" + dokuwiki_user }}'
 
@@ -157,6 +166,9 @@ dokuwiki_plugins_syntax:
 
   - repo: 'https://github.com/leibler/dokuwiki-plugin-todo.git'
     dest: 'todo'
+
+  - repo: 'https://github.com/splitbrain/dokuwiki-plugin-gallery'
+    dest: 'gallery'
 
 dokuwiki_plugins_git:
 
