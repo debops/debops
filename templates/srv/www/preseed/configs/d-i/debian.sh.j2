@@ -15,10 +15,10 @@ chmod +x /usr/sbin/policy-rc.d
 # Setup grub, cgroup, LXC
 
 if [ -r "/etc/default/grub" ]; then
-	perl -pi -e 's,^GRUB_TIMEOUT=5$,GRUB_TIMEOUT=1,' /etc/default/grub
-	perl -pi -e 's,GRUB_CMDLINE_LINUX="(.*)"$,GRUB_CMDLINE_LINUX="$1 elevator=noop cgroup_enable=memory swapaccount=1",' /etc/default/grub
-	perl -pi -e 's,^#GRUB_DISABLE_RECOVERY="true"$,GRUB_DISABLE_RECOVERY="true",' /etc/default/grub
-	update-grub
+    perl -pi -e 's,^GRUB_TIMEOUT=5$,GRUB_TIMEOUT=1,' /etc/default/grub
+    perl -pi -e 's,GRUB_CMDLINE_LINUX="(.*)"$,GRUB_CMDLINE_LINUX="$1 elevator=noop cgroup_enable=memory swapaccount=1",' /etc/default/grub
+    perl -pi -e 's,^#GRUB_DISABLE_RECOVERY="true"$,GRUB_DISABLE_RECOVERY="true",' /etc/default/grub
+    update-grub
 fi
 
 {% if ((item.salt is defined and item.salt) or (preseed_salt is defined and preseed_salt)) %}
@@ -99,15 +99,15 @@ preseed_admin_sshkeys=""
 
 if [ -n "${preseed_admin_sshkeys}" ] ; then
 
-  mkdir -p -m 700 /root/.ssh
-  echo "${preseed_admin_sshkeys}" > /root/.ssh/authorized_keys
+    mkdir -p -m 700 /root/.ssh
+    echo "${preseed_admin_sshkeys}" > /root/.ssh/authorized_keys
 
 {% if ((item.admin is undefined or item.admin) and (preseed_admin is defined and preseed_admin)) %}
-  admin_home="$(getent passwd ${preseed_admin_name} | cut -d: -f6)"
-  mkdir -p -m 700 ${admin_home}/.ssh
-  touch ${admin_home}/.ssh/authorized_keys
-  echo "${preseed_admin_sshkeys}" >> ${admin_home}/.ssh/authorized_keys
-  chown -R ${preseed_admin_name}:${preseed_admin_name} ${admin_home}/.ssh
+    admin_home="$(getent passwd ${preseed_admin_name} | cut -d: -f6)"
+    mkdir -p -m 700 ${admin_home}/.ssh
+    touch ${admin_home}/.ssh/authorized_keys
+    echo "${preseed_admin_sshkeys}" >> ${admin_home}/.ssh/authorized_keys
+    chown -R ${preseed_admin_name}:${preseed_admin_name} ${admin_home}/.ssh
 
 {% endif %}
 fi
