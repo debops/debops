@@ -2,7 +2,14 @@
 
 {% block warning %}
 {% endblock %}
+
 d-i debian-installer/locale string {{ item.locale | default(preseed_debian_locale | default('en_US.UTF-8')) }}
+{#
+# Preseeding the country seems to be useless as it is not used for anything except the timezone (which is explicitly set later?
+# d-i debian-installer/country string {{ item.country | default(preseed_debian_country | default('US')) }}
+# d-i debian-installer/language string en
+#}
+
 d-i keyboard-configuration/xkb-keymap select {{ item.keyboard_keymap | default(preseed_debian_keyboard_keymap | default('en')) }}
 d-i languagechooser/language-name-fb select {{ item.language | default(preseed_debian_language | default('English')) }}
 
@@ -38,9 +45,12 @@ d-i apt-setup/non-free boolean {{ item.apt_sources_non_free | default(preseed_de
 d-i apt-setup/use_mirror boolean true
 
 {#
-Only do security updates during installation, no normal updates.
-The default is:
+# The default is:
 # d-i apt-setup/services-select multiselect security, updates
+#
+# Only do security updates during installation, no normal updates.
+# Note that if updates are not specified for apt-setup/services-select then
+# will also not be configured in sources.list.
 #}
 d-i apt-setup/services-select multiselect security
 d-i apt-setup/security_host string security.debian.org
