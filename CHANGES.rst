@@ -17,6 +17,9 @@ v0.2.0
 - Change the ``dokuwiki`` system user home directory to be the same as website
   directory, based on ``ansible_local.nginx.www`` local Ansible fact. [drybjed]
 
+- Add missing ``{% endif %}`` to the ``preload.php.j2`` template, required by
+  Jinja engine to correctly generate the file. [drybjed]
+
 v0.1.0
 ------
 
