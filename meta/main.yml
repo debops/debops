@@ -1,5 +1,12 @@
 ---
 
+dependencies:
+
+  - role: debops.grub
+    grub_dependent_kernel_options: '{{ apparmor_kernel_options }}'
+    when: not apparmor_manage_grub
+    tags: [ 'depend::grub', 'depend::grub:apparmor', 'depend-of::apparmor', 'type::dependency' ]
+
 galaxy_info:
   author: Robin Schneider
   description: Configure apparmor.
@@ -10,7 +17,6 @@ galaxy_info:
   categories:
     - system
   min_ansible_version: 1.3
-dependencies: []
 ansigenome_info:
   github_url: "https://github.com/ypid/ansible-apparmor"
   git_branch: "master"

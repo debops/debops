@@ -7,9 +7,22 @@ apparmor_packages:
   - apparmor-profiles-extra
 
   # - apparmor-notify
-  # Not needed/useful for servers.
+  ## Not needed/useful for servers.
 
+## Default kernel options needed to enable Apparmor.
+## You probably don’t need to change this.
+apparmor_kernel_options: ['apparmor=1', 'security=apparmor']
+
+## How this role should write the required kernel options into the Grub configuration.
+## Default is to use [debops.grub](https://github.com/debops/ansible-grub) as role dependency.
+## If set to False, this role will do that internally without debops.grub as role dependency.
+## Note that this role is not as flexible in configuring Grub as debops.grub is.
+apparmor_manage_grub: False
+
+## Legacy:
+## Only considered when `apparmor_manage_grub == True`.
 apparmor_additional_kernel_parameters: ''
+
 apparmor_enable: True
 
 ## Put all profiles into enforcement mode.
