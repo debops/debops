@@ -22,6 +22,8 @@ v0.2.0
 
 - Update the WikiMedia blacklist URL to use ``https://`` protocl. [drybjed]
 
+- Add ``gallery`` DokuWiki plugin to list of default plugins. [drybjed]
+
 v0.1.0
 ------
 
