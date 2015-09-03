@@ -20,6 +20,8 @@ v0.2.0
 - Add missing ``{% endif %}`` to the ``preload.php.j2`` template, required by
   Jinja engine to correctly generate the file. [drybjed]
 
+- Update the WikiMedia blacklist URL to use ``https://`` protocl. [drybjed]
+
 v0.1.0
 ------
 
