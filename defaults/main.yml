@@ -60,7 +60,10 @@ dokuwiki_group: 'dokuwiki'
 # .. envvar:: dokuwiki_home
 #
 # DokuWiki home directory
-dokuwiki_home: '{{ ansible_local.root.home + "/" + dokuwiki_user }}'
+dokuwiki_home: '{{ (ansible_local.nginx.www
+                    if (ansible_local|d() and ansible_local.nginx|d() and
+                        ansible_local.nginx.www|d())
+                    else "/srv/www") + "/" + dokuwiki_user }}'
 
 
 # .. envvar:: dokuwiki_src
@@ -73,8 +76,7 @@ dokuwiki_src: '{{ ansible_local.root.src + "/" + dokuwiki_user }}'
 #
 # Base web root directory for DokuWiki website
 dokuwiki_www: '{{ (ansible_local.nginx.www
-                   if (ansible_local|d() and
-                       ansible_local.nginx|d() and
+                   if (ansible_local|d() and ansible_local.nginx|d() and
                        ansible_local.nginx.www|d())
                    else "/srv/www") + "/" + dokuwiki_user }}'
 

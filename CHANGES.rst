@@ -14,6 +14,9 @@ v0.2.0
   DokuWiki configuration file to prevent ``nginx`` server from failing to
   restart properly. [drybjed]
 
+- Change the ``dokuwiki`` system user home directory to be the same as website
+  directory, based on ``ansible_local.nginx.www`` local Ansible fact. [drybjed]
+
 v0.1.0
 ------
 
