@@ -24,7 +24,7 @@ fi
 {% if ((item.salt is defined and item.salt) or (preseed_salt is defined and preseed_salt)) %}
 # Configure Salt APT repository
 echo "{{ preseed_salt_upstream_repository }}" >> /etc/apt/sources.list
-wget -q -O- "{{ preseed_salt_apt_key_url }}" | apt-key add -
+wget --no-proxy -q -O- "{{ preseed_salt_apt_key_url }}" | apt-key add -
 apt-get update
 
 # Install Salt packages
