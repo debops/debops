@@ -143,8 +143,8 @@ preseed_admin_system: True
 
 # .. envvar:: preseed_admin_name
 #
-# Name of the administrator account. By default the same as the username of
-# user that uses Ansible, taken from Ansible Controller.
+# Name of the administrator account. By default the same as the
+# user that runs Ansible, taken from Ansible Controller.
 preseed_admin_name: '{{ ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER") }}'
 
 
@@ -228,10 +228,11 @@ preseed_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^ssh || cat ~/.ss
 preseed_debian_locale: 'en_US.UTF-8'
 
 
-# .. envvar:: preseed_debian_keyboard_variant
+# .. envvar:: preseed_debian_keyboard_keymap
 #
 # Keyboard layout enabled during installation.
-preseed_debian_keyboard_variant: 'American English'
+# The current keymap layout can be looked up via ``setxkbmap -query``.
+preseed_debian_keyboard_keymap: 'en'
 
 
 # .. envvar:: preseed_debian_language
@@ -246,6 +247,13 @@ preseed_debian_language: 'English'
 preseed_debian_timezone: 'Etc/UTC'
 
 
+# .. envvar:: preseed_debian_ntp_server
+#
+# NTP server to get the time from when installing.
+# If False, the default will not be changed.
+preseed_debian_ntp_server: False
+
+
 # .. envvar:: preseed_debian_mirror_hostname
 #
 # Address of HTTP mirror used during installation.
@@ -256,6 +264,11 @@ preseed_debian_mirror_hostname: 'http.debian.net'
 #
 # Subdirectory on the HTTP mirror which holds the Debian repository.
 preseed_debian_mirror_directory: '/debian'
+
+# .. envvar:: preseed_debian_mirror_proxy
+#
+# Proxy server to use for APT
+preseed_debian_mirror_proxy: ''
 
 
 # .. envvar:: preseed_debian_packages
