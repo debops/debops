@@ -49,6 +49,9 @@ v0.1.4
 
 - Update userdir support to be more configurable. [drybjed]
 
+- Use all available nameservers as OCSP resolvers instead of just the first
+  one. User can also override the list of OCSP resolvers if needed. [drybjed]
+
 v0.1.3
 ------
 

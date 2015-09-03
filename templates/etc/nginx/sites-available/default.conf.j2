@@ -586,8 +586,7 @@ server {
 {% if nginx_version | version_compare('1.4','>=') and nginx_ocsp_resolvers %}
         ssl_stapling              on;
         ssl_stapling_verify       on;
-{% set nginx_tpl_ocsp_resolver = nginx_ocsp_resolvers[0] if '.' in nginx_ocsp_resolvers[0] else '[' + nginx_ocsp_resolvers[0] + ']' %}
-        resolver                  {{ nginx_tpl_ocsp_resolver }} valid=300s;
+        resolver                  {{ (item.ocsp_resolvers | d(nginx_ocsp_resolvers)) | ipwrap | join(" ") }} valid=300s;
         resolver_timeout          5s;
 {% endif %}
 {% if item.hsts_enabled is undefined or (item.hsts_enabled is defined and item.hsts_enabled) %}
