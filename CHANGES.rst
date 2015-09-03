@@ -47,6 +47,8 @@ v0.1.4
   ``SCRIPT_FILENAME`` parameter will be added directly in nginx server
   configuration. [drybjed]
 
+- Update userdir support to be more configurable. [drybjed]
+
 v0.1.3
 ------
 
