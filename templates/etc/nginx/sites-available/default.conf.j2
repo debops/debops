@@ -50,6 +50,27 @@
 #       /srv/www/<user>/userdir/public directories.
 #
 #
+#   - item.userdir_regexp: ''
+#       Optional. Specify location regexp pattern used by nginx to determine if
+#       a specified URL is an userdir URL.
+#
+#
+#   - item.userdir_alias: ''
+#       Optional. Specify the absolute path to user directories used as an
+#       alias pattern which uses the parameters from location regexp to select
+#       the correct user and file to display.
+#
+#
+#   - item.userdir_index: ''
+#       Optional. Specify list of index files which will be used by nginx
+#       automatically to display a HTML page, if found in current directory.
+#
+#
+#   - item.userdir_options: |
+#       Optional. Specify additional options added to the userdir location
+#       block as a YAML text block.
+#
+#
 #   - item.type: ''
 #       Optional. Specify name of the template to use to generate nginx server
 #       configuration. Templates can extend other templates.
@@ -670,10 +691,15 @@ server {
 
 {% endif %}
 {% if item.userdir is defined and item.userdir %}
-	location ~ ^/~(.+?)(/.*)?$ {
-		alias /srv/www/$1/userdir/public$2;
-		index {{ item.index | default('index.html index.htm') }};
+	location ~ {{ item.userdir_regexp | d('^/~(.+?)(/.*)?$') }} {
+		alias {{ item.userdir_alias | d('/srv/www/$1/userdir/public$2') }};
+		index {{ item.userdir_index | d(item.index | default('index.html index.htm')) }};
+{% if item.userdir_options|d() %}
+{{ item.userdir_options | indent(16, true) }}
+{% else %}
 		autoindex on;
+		autoindex_exact_size off;
+{% endif %}
 	}
 
 {% endif %}

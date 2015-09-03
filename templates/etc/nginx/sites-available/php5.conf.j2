@@ -58,8 +58,9 @@
 {% if (nginx_version is defined and nginx_version | version_compare('1.6.1','<')) %}
                 include {{ item.php5_include | default('fastcgi_params') }};
 {% else %}
-{% if nginx_flavor == 'passenger' %}
+{% if nginx_flavor in [ 'passenger', 'nginx.org' ] %}
                 include {{ item.php5_include | default('fastcgi_params') }};
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
 {% else %}
                 include {{ item.php5_include | default('fastcgi.conf') }};
 {% endif %}
