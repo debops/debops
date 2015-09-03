@@ -33,10 +33,6 @@ d-i partman/mount_style select uuid
 d-i base-installer/install-recommends boolean {{ item.install_recommends | default(preseed_debian_install_recommends | default('false')) }}
 d-i base-installer/kernel/image string {{ item.kernel_image | default(preseed_debian_kernel_image | default('linux-image-amd64')) }}
 
-# set to false to test it
-d-i apt-setup/main boolean false
-d-i apt-setup/stable-updates boolean true
-
 d-i apt-setup/contrib boolean {{ item.apt_sources_contib | default(preseed_debian_apt_sources_contib | default('true')) }}
 d-i apt-setup/non-free boolean {{ item.apt_sources_non_free | default(preseed_debian_apt_sources_non_free | default('true')) }}
 d-i apt-setup/use_mirror boolean true
