@@ -34,6 +34,12 @@ v0.1.1
   outside of ``ferm`` itself and allow to correctly preserve ``ip(6)tables``
   rules when ``ferm`` is restarted or reloaded. [drybjed]
 
+- Due to the huge number of subdirectories in ``/etc/ferm/`` that need to be
+  created, their creation is moved to a separate shell script, which will be
+  run once at the first install of the ``ferm`` firewall.
+
+  Script creates new directory structure for firewall rules. [drybjed]
+
 v0.1.0
 ------
 

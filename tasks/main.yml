@@ -27,19 +27,8 @@
          (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
          (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))))
 
-- name: Create configuration directories
-  file:
-    path: '{{ item }}'
-    state: 'directory'
-    owner: 'root'
-    group: 'adm'
-    mode: '2750'
-  with_flattened:
-    - [ '/etc/ferm/ferm.d', '/etc/ferm/filter-input.d' ]
-    - '{{ [ "/etc/ferm/hooks/pre-start.d", "/etc/ferm/hooks/post-start.d",
-            "/etc/ferm/hooks/pre-reload.d", "/etc/ferm/hooks/post-reload.d",
-            "/etc/ferm/hooks/pre-stop.d", "/etc/ferm/hooks/post-stop.d" ]
-          if ferm_init_hooks|d() else [] }}'
+- name: Install ferm configuration directories
+  script: 'script/install-directories.sh creates=/etc/ferm/filter/input'
 
 - name: Patch ferm init script
   patch:
