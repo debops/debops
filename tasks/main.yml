@@ -34,13 +34,31 @@
     owner: 'root'
     group: 'adm'
     mode: '2750'
-  with_items:
-    - '/etc/ferm/ferm.d'
-    - '/etc/ferm/filter-input.d'
+  with_flattened:
+    - [ '/etc/ferm/ferm.d', '/etc/ferm/filter-input.d' ]
+    - '{{ [ "/etc/ferm/hooks/pre-start.d", "/etc/ferm/hooks/post-start.d",
+            "/etc/ferm/hooks/pre-reload.d", "/etc/ferm/hooks/post-reload.d",
+            "/etc/ferm/hooks/pre-stop.d", "/etc/ferm/hooks/post-stop.d" ]
+          if ferm_init_hooks|d() else [] }}'
 
-- name: Configure ferm default variables
+- name: Patch ferm init script
+  patch:
+    src: 'usr/local/src/ferm/init-hooks.patch'
+    basedir: '/etc/init.d'
+    remote_src: False
+  register: ferm_register_patch_init
+  when: ferm_init_hooks|d()
+
+- name: Reload systemd daemons
+  command: systemctl daemon-reload
+  when: ((ansible_local|d() and ansible_local.init|d() and
+          ansible_local.init == "systemd") and
+         ferm_register_patch_init|d() and
+         ferm_register_patch_init.changed)
+
+- name: Configure ferm default variables (pre)
   template:
-    src: 'etc/default/ferm.j2'
+    src: 'etc/default/ferm-pre.j2'
     dest: '/etc/default/ferm'
     owner: 'root'
     group: 'root'
@@ -133,7 +151,9 @@
   tags: [ 'role::ferm:rules' ]
 
 - name: Apply iptables rules if ferm is enabled
-  command: ferm --slow /etc/ferm/ferm.conf
+  service:
+    name: 'ferm'
+    state: 'restarted'
   changed_when: False
   when: (ferm | bool and (ansible_local|d() and
          (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
@@ -142,8 +162,9 @@
   tags: [ 'role::ferm:rules' ]
 
 - name: Clear iptables rules if ferm is disabled
-  command: ferm --flush /etc/ferm/ferm.conf
-  changed_when: False
+  service:
+    name: 'ferm'
+    state: 'stopped'
   when: ((not ferm | bool and ferm_flush | bool) and (ansible_local|d() and
          (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
          (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
@@ -176,6 +197,15 @@
     group: 'root'
     mode: '0755'
   tags: [ 'role::ferm:rules' ]
+
+- name: Configure ferm default variables (post)
+  template:
+    src: 'etc/default/ferm-post.j2'
+    dest: '/etc/default/ferm'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart ferm' ]
 
 - name: Ensure that Ansible local facts directory exists
   file:

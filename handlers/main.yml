@@ -4,7 +4,9 @@
   command: sysctl --system
 
 - name: Restart ferm
-  service: name=ferm state=restarted
+  service:
+    name: 'ferm'
+    state: 'restarted'
   when: (ferm | bool and (ansible_local|d() and
          (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
          (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
