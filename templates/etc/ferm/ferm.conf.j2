@@ -52,16 +52,8 @@ domain $domains table filter {
 		# Accept incoming ICMP traffic
 		protocol icmp ACCEPT;
 {% endif %}
-	}
 
-	chain (INPUT OUTPUT FORWARD) {
-
-		# Connection tracking
-		mod conntrack ctstate INVALID DROP;
-		mod conntrack ctstate (ESTABLISHED RELATED) ACCEPT;
-	}
-
-	chain INPUT {
+		@include "filter/input/";
 
 {% if ferm_syn_limit is defined and ferm_syn_limit %}
 		# SYN-flood protection per source
@@ -115,6 +107,14 @@ domain $domains table filter {
 		@if @eq($DOMAIN, ip) {
 			REJECT reject-with icmp-proto-unreachable;
 		}
+	}
+
+	chain FORWARD {
+		@include 'filter/forward/';
+	}
+
+	chain OUTPUT {
+		@include "filter/output/";
 	}
 }
 

@@ -27,19 +27,8 @@
          (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
          (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))))
 
-- name: Create configuration directories
-  file:
-    path: '{{ item }}'
-    state: 'directory'
-    owner: 'root'
-    group: 'adm'
-    mode: '2750'
-  with_flattened:
-    - [ '/etc/ferm/ferm.d', '/etc/ferm/filter-input.d' ]
-    - '{{ [ "/etc/ferm/hooks/pre-start.d", "/etc/ferm/hooks/post-start.d",
-            "/etc/ferm/hooks/pre-reload.d", "/etc/ferm/hooks/post-reload.d",
-            "/etc/ferm/hooks/pre-stop.d", "/etc/ferm/hooks/post-stop.d" ]
-          if ferm_init_hooks|d() else [] }}'
+- name: Install ferm configuration directories
+  script: 'script/install-directories.sh creates=/etc/ferm/filter/input'
 
 - name: Patch ferm init script
   patch:
@@ -94,21 +83,22 @@
 
 - name: Remove ip(6)tables rules if requested
   file:
-    path: '/etc/ferm/ferm.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.name | default((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    path: '/etc/ferm/{{ item.table | d("ferm.d" }}/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.name | default((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
     - ferm_rules
     - ferm_group_rules
     - ferm_host_rules
     - ferm_dependent_rules
+    - ferm_default_rules
   when: ((item.type is defined and item.type) and
          (item.delete is defined and item.delete | bool))
   tags: [ 'role::ferm:rules' ]
 
 - name: Configure ip(6)tables rules
   template:
-    src: 'etc/ferm/ferm.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/ferm.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.name | default((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    src: 'etc/ferm/{{ item.category | d(item.table | d("ferm.d")) }}/{{ item.type }}.conf.j2'
+    dest: '/etc/ferm/{{ item.table | d("ferm.d") }}/{{ item.weight | default("50") }}_{{ item.filename | default(item.type + "_" + item.name | default((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
@@ -117,6 +107,7 @@
     - ferm_group_rules
     - ferm_host_rules
     - ferm_dependent_rules
+    - ferm_default_rules
   when: ((item.type is defined and item.type) and
          (item.delete is undefined or not item.delete | bool))
   tags: [ 'role::ferm:rules' ]

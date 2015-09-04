@@ -87,6 +87,26 @@ ferm_input_dependent_list: []
   #  filename: ''         # custom filename instead of a generated one, optional
   #  delete: False/True   # delete specified rule file, optional
 
+# List of default firewall rules defined on each host
+ferm_default_rules: '{{ ferm_filter_conntrack }}'
+
+# Enable connection tracking for incoming, forwarded and outgoing traffic.
+ferm_filter_conntrack:
+
+  - category: 'filter'
+    table: 'filter/input'
+    type: 'conntrack'
+    weight: '20'
+
+  - category: 'filter'
+    table: 'filter/forward'
+    type: 'conntrack'
+    weight: '20'
+
+  - category: 'filter'
+    table: 'filter/output'
+    type: 'conntrack'
+    weight: '20'
 
 # Enable or disable fail2ban integration. ferm will send fail2ban reload
 # command after its own configuration is reloaded. If fail2ban is not present

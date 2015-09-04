@@ -34,6 +34,27 @@ v0.1.1
   outside of ``ferm`` itself and allow to correctly preserve ``ip(6)tables``
   rules when ``ferm`` is restarted or reloaded. [drybjed]
 
+- Due to the huge number of subdirectories in ``/etc/ferm/`` that need to be
+  created, their creation is moved to a separate shell script, which will be
+  run once at the first install of the ``ferm`` firewall.
+
+  Script creates new directory structure for firewall rules. [drybjed]
+
+- Enable support for the new, directory-based ``iptables`` rules management
+  system. New ``item.category`` and ``item.table`` rule arguments allow to
+  specify the source template and destination firewall table where rules should
+  be generated. Rules are defined in existing ``ferm_*_rules`` list variables.
+
+  Old rules are still supported to enable easy transition to the new system.
+  [drybjed]
+
+- Add a ``ferm_default_rules`` list variable with a set of default firewall
+  rules for all hosts.
+
+  Connection tracking rules from main ``ferm`` configuration file are moved to
+  the new directory-based rule structure. They are defined in a separate list
+  variable included in ``ferm_default_rules``. [drybjed]
+
 v0.1.0
 ------
 
