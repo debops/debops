@@ -34,9 +34,27 @@
     owner: 'root'
     group: 'adm'
     mode: '2750'
-  with_items:
-    - '/etc/ferm/ferm.d'
-    - '/etc/ferm/filter-input.d'
+  with_flattened:
+    - [ '/etc/ferm/ferm.d', '/etc/ferm/filter-input.d' ]
+    - '{{ [ "/etc/ferm/hooks/pre-start.d", "/etc/ferm/hooks/post-start.d",
+            "/etc/ferm/hooks/pre-reload.d", "/etc/ferm/hooks/post-reload.d",
+            "/etc/ferm/hooks/pre-stop.d", "/etc/ferm/hooks/post-stop.d" ]
+          if ferm_init_hooks|d() else [] }}'
+
+- name: Patch ferm init script
+  patch:
+    src: 'usr/local/src/ferm/init-hooks.patch'
+    basedir: '/etc/init.d'
+    remote_src: False
+  register: ferm_register_patch_init
+  when: ferm_init_hooks|d()
+
+- name: Reload systemd daemons
+  command: systemctl daemon-reload
+  when: ((ansible_local|d() and ansible_local.init|d() and
+          ansible_local.init == "systemd") and
+         ferm_register_patch_init|d() and
+         ferm_register_patch_init.changed)
 
 - name: Configure ferm default variables (pre)
   template:

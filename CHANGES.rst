@@ -9,6 +9,31 @@ v0.1.1
 - Switch ``debops.ferm`` from using ``ferm`` binary directly to restarting and
   stopping ``ferm`` system service. [drybjed]
 
+- Add support for ferm init script hooks.
+
+  ``ferm`` supports "hooks" in its configuration which allow to run custom
+  commands, however only three hooks are supported at this time:
+
+  * "pre" - commands are executed before rules are applied,
+  * "post" - commands are executed after rules are applied,
+  * "flush" - commands are executed after rules are flushed.
+
+  However for certain use cases this is not enough.
+
+  This patch adds support for running custom scripts during different points in
+  the ``ferm`` init script:
+
+  * "pre-start" - before ``ferm`` service is started,
+  * "post-start" - after ``ferm`` service is started,
+  * "pre-reload" - before ``ferm`` service is reloaded,
+  * "post-reload" - after ``ferm`` service is reloaded,
+  * "pre-stop" - before ``ferm`` service is stopped,
+  * "post-stop" - after ``ferm`` service is stopped.
+
+  This should provide sufficient methods to manipulate firewall dynamically
+  outside of ``ferm`` itself and allow to correctly preserve ``ip(6)tables``
+  rules when ``ferm`` is restarted or reloaded. [drybjed]
+
 v0.1.0
 ------
 

@@ -5,6 +5,11 @@
         (ansible_local.ferm.forward is defined and ansible_local.ferm.forward | bool))) %}
 {%   set ferm_tpl_forward = True                                                      %}
 {% endif                                                                              %}
+{% set ferm_tpl_hooks = ferm_init_hooks | bool %}
+{% if ansible_local|d() and ansible_local.ferm|d() and ansible_local.ferm.hooks|d() and
+      ansible_local.ferm.hooks | bool %}
+{%   set ferm_tpl_hooks = ansible_local.ferm.hooks %}
+{% endif %}
 {% set ferm_tpl_ansible_controllers = []                                              %}
 {% if (ansible_local is defined and ansible_local) and
       (ansible_local.ferm is defined and ansible_local.ferm) and
@@ -29,5 +34,6 @@
 {
 "enabled": "{{ ferm | bool | lower }}",
 "forward": "{{ ferm_tpl_forward }}",
+"hooks": "{{ ferm_tpl_hooks | bool | lower }}",
 "ansible_controllers": {{ ferm_tpl_ansible_controllers_result | to_nice_json }}
 }
