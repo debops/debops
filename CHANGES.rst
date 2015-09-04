@@ -4,7 +4,7 @@ Changelog
 v0.1.0
 ------
 
-*Unreleased*
+*Released: 2015-09-04*
 
 - Add Changelog [drybjed]
 
@@ -24,4 +24,7 @@ v0.1.0
 
 - Add a workaround Ansible emitting ``true`` and ``false`` as boolean values.
   [drybjed]
+
+- Add Ansible tags to tasks that manage the firewall rules to make reloading of
+  them faster. [drybjed]
 
