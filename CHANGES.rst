@@ -40,6 +40,14 @@ v0.1.1
 
   Script creates new directory structure for firewall rules. [drybjed]
 
+- Enable support for the new, directory-based ``iptables`` rules management
+  system. New ``item.category`` and ``item.table`` rule arguments allow to
+  specify the source template and destination firewall table where rules should
+  be generated. Rules are defined in existing ``ferm_*_rules`` list variables.
+
+  Old rules are still supported to enable easy transition to the new system.
+  [drybjed]
+
 v0.1.0
 ------
 
