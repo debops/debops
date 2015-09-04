@@ -22,3 +22,6 @@ v0.1.0
   currently active, ``ferm`` will reload ``fail2ban`` rules after firewall
   configuration is finished. [drybjed]
 
+- Add a workaround Ansible emitting ``true`` and ``false`` as boolean values.
+  [drybjed]
+
