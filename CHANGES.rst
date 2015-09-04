@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.1
+------
+
+*Unreleased*
+
+- Switch ``debops.ferm`` from using ``ferm`` binary directly to restarting and
+  stopping ``ferm`` system service. [drybjed]
+
 v0.1.0
 ------
 
