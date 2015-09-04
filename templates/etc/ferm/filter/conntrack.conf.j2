@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+{% if item.comment|d() and item.comment %}
+# {{ item.comment }}
+{% else %}
+# Enable connection tracking
+{% endif %}
+mod conntrack ctstate INVALID DROP;
+mod conntrack ctstate (ESTABLISHED RELATED) ACCEPT;
+

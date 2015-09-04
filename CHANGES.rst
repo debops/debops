@@ -48,6 +48,13 @@ v0.1.1
   Old rules are still supported to enable easy transition to the new system.
   [drybjed]
 
+- Add a ``ferm_default_rules`` list variable with a set of default firewall
+  rules for all hosts.
+
+  Connection tracking rules from main ``ferm`` configuration file are moved to
+  the new directory-based rule structure. They are defined in a separate list
+  variable included in ``ferm_default_rules``. [drybjed]
+
 v0.1.0
 ------
 
