@@ -1,4 +1,5 @@
 # {{ ansible_managed }}
+# For documentation see: https://www.debian.org/releases/stable/example-preseed.txt
 
 {% block warning %}
 {% endblock %}
@@ -11,6 +12,8 @@ d-i debian-installer/locale string {{ item.locale | default(preseed_debian_local
 #}
 
 d-i keyboard-configuration/xkb-keymap select {{ item.keyboard_keymap | default(preseed_debian_keyboard_keymap | default('en')) }}
+
+## What does this do?
 d-i languagechooser/language-name-fb select {{ item.language | default(preseed_debian_language | default('English')) }}
 
 d-i netcfg/choose_interface select auto
@@ -67,13 +70,18 @@ d-i preseed/late_command string in-target wget --no-proxy -O /tmp/postinst.sh {{
 
 popularity-contest popularity-contest/participate boolean false
 {% block grub_installer %}
-{% endblock %}
-
 {#
 # This is fairly safe to set, it makes grub install automatically to the MBR
 # if no other operating system is detected on the machine.
 #}
 d-i grub-installer/only_debian boolean {{ item.grub_install_auto | default(preseed_debian_grub_install_auto | default('true')) }}
+{#
+
+# This one makes grub-installer install to the MBR if it also finds some other
+# OS, which is less safe as it might not be able to boot that other OS.
+#}
+d-i grub-installer/with_other_os boolean {{ item.grub_install_with_other_os | default(preseed_debian_grub_install_with_other_os | default('false')) }}
+{% endblock %}
 
 {#
 # During installations from serial console, the regular virtual consoles
