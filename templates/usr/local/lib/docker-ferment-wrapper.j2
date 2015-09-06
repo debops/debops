@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# {{ ansible_managed }}
+
+script="/usr/local/bin/ferment"
+interface="${1:-docker0}"
+
+if [ -x ${script} ] ; then
+
+    if $(ip link show ${interface} > /dev/null 2>&1) ; then
+        ${script} docker -i ${interface} -c $(ip address show dev ${interface} scope global | grep inet | awk '{print $2}') config
+    fi
+fi
+

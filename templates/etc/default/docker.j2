@@ -1,0 +1,61 @@
+# {{ ansible_managed }}
+
+# Docker Upstart and SysVinit configuration file
+
+# Customize location of Docker binary (especially for development testing).
+#DOCKER="/usr/local/bin/docker"
+
+{% set docker_tpl_options = [] %}
+{% if docker_bridge|d() and docker_bridge %}
+{%   set _ = docker_tpl_options.append("--bridge " + docker_bridge) %}
+{% endif %}
+{% if docker_fixed_cidr|d() and docker_fixed_cidr %}
+{%   set _ = docker_tpl_options.append("--fixed-cidr " + docker_fixed_cidr) %}
+{% endif %}
+{% if docker_dns_nameserver|d() and docker_dns_nameserver %}
+{%   for nameserver in docker_dns_nameserver %}
+{%     set _ = docker_tpl_options.append("--dns " + nameserver) %}
+{%   endfor %}
+{% endif %}
+{% if docker_dns_search|d() and docker_dns_search %}
+{%   for domain in docker_dns_search %}
+{%     set _ = docker_tpl_options.append("--dns-search " + domain) %}
+{%   endfor %}
+{% endif %}
+{% if docker_listen|d() and docker_listen %}
+{%   for host in docker_listen %}
+{%     if host %}
+{%       set _ = docker_tpl_options.append("-H " + host) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if docker_pki|d() and docker_pki | bool %}
+{%   set _ = docker_tpl_options.append("--tlsverify") %}
+{%   set _ = docker_tpl_options.append("--tlscacert " + docker_pki_path + "/" + docker_pki_realm + "/" + docker_pki_ca) %}
+{%   set _ = docker_tpl_options.append("--tlscert " + docker_pki_path + "/" + docker_pki_realm + "/" + docker_pki_crt) %}
+{%   set _ = docker_tpl_options.append("--tlskey " + docker_pki_path + "/" + docker_pki_realm + "/" + docker_pki_key) %}
+{% endif %}
+{% if docker_labels|d() and docker_labels %}
+{%   for key, value in docker_labels.iteritems() %}
+{%     set _ = docker_tpl_options.append("--label " + key + '="' + value + '"') %}
+{%   endfor %}
+{% endif %}
+{% if docker_options|d() and docker_options %}
+{%   for option in docker_options %}
+{%     if option %}
+{%       set _ = docker_tpl_options.append(option) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+# Use DOCKER_OPTS to modify the daemon startup options.
+{% if docker_tpl_options %}
+DOCKER_OPTS='{{ docker_tpl_options | join(" ") }}'
+{% else %}
+#DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"
+{% endif %}
+
+# If you need Docker to use an HTTP proxy, it can also be specified here.
+#export http_proxy="http://127.0.0.1:3128/"
+
+# This is also a handy place to tweak where Docker's temporary files go.
+#export TMPDIR="/mnt/bigdrive/docker-tmp"
