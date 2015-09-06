@@ -57,6 +57,9 @@ v0.1.1
 
 - Fix missing closing bracket. [drybjed]
 
+- Add support for specifying incoming and outgoing network interfaces in
+  ``filter/conntrack.conf.j2`` template. [drybjed]
+
 v0.1.0
 ------
 
