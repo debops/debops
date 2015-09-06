@@ -1,10 +1,10 @@
 Changelog
 =========
 
-v0.1.2
+v0.2.0
 ------
 
-*Unreleased*
+*Released: 2015-09-06*
 
 - Add variables to set admin account home directory group and permissions.
   Admin account will be created and managed only if it doesn't exist. [drybjed]
