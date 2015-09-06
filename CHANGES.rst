@@ -55,6 +55,8 @@ v0.1.1
   the new directory-based rule structure. They are defined in a separate list
   variable included in ``ferm_default_rules``. [drybjed]
 
+- Fix missing closing bracket. [drybjed]
+
 v0.1.0
 ------
 
