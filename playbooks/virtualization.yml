@@ -1,37 +1,4 @@
 ---
 
-- name: Manage LXC hosts
-  hosts: 'debops_lxc'
-  sudo: True
-
-  roles:
-    - role: debops.lxc
-      tags: [ 'role::lxc', 'lxc' ]
-
-
-- name: Manage libvirt servers
-  hosts: 'debops_libvirtd'
-  sudo: True
-
-  roles:
-    - role: debops.libvirtd
-      tags: [ 'libvirtd', 'role::libvirtd' ]
-
-
-- name: Manage libvirt hosts
-  hosts: 'debops_libvirt'
-  sudo: True
-
-  roles:
-    - role: debops.libvirt
-      tags: [ 'libvirt', 'role::libvirt' ]
-
-
-- name: Manage OpenVZ Hardware Nodes
-  hosts: 'debops_openvz'
-  sudo: True
-
-  roles:
-    - role: debops.openvz
-      tags: [ 'role::openvz', 'openvz' ]
+- include: virtualization/all.yml
 
