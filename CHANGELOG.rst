@@ -59,6 +59,8 @@ v0.2.7
 
 - Split ``virtualization.yml`` playbook into separate plays. [drybjed]
 
+- Add ``debops.docker`` role. [drybjed]
+
 v0.2.6
 ------
 
