@@ -12,6 +12,16 @@ v0.1.2
 - Change the SSH public key lookup to not cause issues when ``ssh-add`` does
   not return any keys. Thanks, xorgic! [drybjed]
 
+- Reworked documentation. [ypid]
+
+- keymap can now be preseeded using ``item.keyboard_keymap`` or ``preseed_debian_keyboard_keymap``. [ypid]
+
+- Made more preseed options configurable via Ansible. [ypid]
+
+- Removed not-working preseed options. [ypid]
+
+- Made APT proxy configurable via ``preseed_debian_mirror_proxy``. [ypid]
+
 v0.1.1
 ------
 
