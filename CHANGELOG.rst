@@ -57,6 +57,10 @@ v0.2.7
 - Add ``debops.grub`` role, created by Patryk Ściborek (scibi). Thanks!
   [drybjed]
 
+- Split ``virtualization.yml`` playbook into separate plays. [drybjed]
+
+- Add ``debops.docker`` role. [drybjed]
+
 v0.2.6
 ------
 
