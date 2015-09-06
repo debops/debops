@@ -1,10 +1,21 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) docker
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-docker.svg?style=flat)](http://travis-ci.org/debops/ansible-docker) [![test-suite](http://img.shields.io/badge/test--suite-ansible--docker-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-docker/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-docker.svg?style=flat)](http://travis-ci.org/debops/ansible-docker) [![test-suite](http://img.shields.io/badge/test--suite-ansible--docker-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-docker/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.docker-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/5015)
 
 [Docker](https://docker.com/) is a lightweight virtualization platform
 based on Linux kernel features that allow creation and management of
 isolated application environments.
+
+### Installation
+
+This role requires at least Ansible `v1.9.0`. To install it, run:
+
+    ansible-galaxy install debops.docker
+
+### Documentation
+
+More information about `debops.docker` can be found in the
+[official debops.docker documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-docker/docs/).
 
 
 ### Role dependencies
