@@ -10,19 +10,19 @@ filegen loopstats file loopstats type day enable
 filegen peerstats file peerstats type day enable
 filegen clockstats file clockstats type day enable
 
+{% if ntp_listen is defined and ntp_listen and ntp_listen != '*' %}
 # Addresses to listen on, default is to block everything
 interface ignore ipv4
 interface ignore ipv6
-{% if ntp_listen is defined and ntp_listen %}
-{% if ntp_listen is string %}
+{%   if ntp_listen is string %}
 interface listen {{ ntp_listen }}
 
-{% else %}
-{% for address in ntp_listen %}
+{%   else %}
+{%     for address in ntp_listen %}
 interface listen {{ address }}
-{% endfor %}
+{%     endfor %}
 
-{% endif %}
+{%   endif %}
 {% else %}
 # ntpd will listen on all interfaces
 
@@ -53,24 +53,23 @@ restrict -6 ::1
 restrict default ignore
 restrict -6 default ignore
 
-{% if ntp_allow is string %}
-{% if ntp_allow|ipv4 %}
+{%   if ntp_allow is string %}
+{%     if ntp_allow|ipv4 %}
 restrict {{ ntp_allow|ipaddr('network') }} mask {{ ntp_allow|ipaddr('netmask') }} notrap nomodify nopeer
-{% else %}
+{%     else %}
 restrict -6 {{ ntp_allow|ipaddr('network') }} mask {{ ntp_allow|ipaddr('netmask') }} notrap nomodify nopeer
-{% endif %}
-{% else %}
-{% for address in ntp_allow %}
-{% if address|ipv4 %}
+{%     endif %}
+{%   else %}
+{%     for address in ntp_allow %}
+{%       if address|ipv4 %}
 restrict {{ address|ipaddr('network') }} mask {{ address|ipaddr('netmask') }} notrap nomodify nopeer
-{% else %}
+{%       else %}
 restrict -6 {{ address|ipaddr('network') }} mask {{ address|ipaddr('netmask') }} notrap nomodify nopeer
-{% endif %}
-{% endfor %}
-{% endif %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
 {% else %}
 # No allow rules specified, so default is to allow everyone to query
 restrict default limited kod nomodify notrap nopeer noquery
 restrict -6 default limited kod nomodify notrap nopeer noquery
 {% endif %}
-

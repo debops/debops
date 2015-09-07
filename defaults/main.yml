@@ -1,13 +1,13 @@
 ---
 
 # Which clock management daemon should be installed? Currently only 'openntpd'
-# and 'ntpd' is supported. Set to False to disable clock management
+# and 'ntpd' are supported. Set to False to disable clock management
 ntp_daemon: 'openntpd'
 
 # Timezone configuration
-# Specify timezone as 'Area/Zone', use 'dpkg-reconfigure tzdata' to see list of
+# Specify timezone as 'Area/Zone', use 'timedatectl list-timezones' to see list of
 # possible values. To set the UTC timezone, specify it as 'Etc/UTC'
-# If this variable is empty or False, timezone won't be changed
+# If this variable is empty or False, the timezone won't be changed
 ntp_timezone: ''
 
 # List of interfaces ntpd should listen on. Specify '*' to listen on all
@@ -18,7 +18,7 @@ ntp_listen: []
 ntp_firewall_access: False
 
 # List of hosts/networks in CIDR format to allow access to ntp port in
-# firewall. If this list is empty, access will be allowed from anywhere. You
+# firewall. If this list is False, access will be allowed from anywhere. You
 # should probably define a list of networks allowed access to mitigate NTP
 # amplification attacks
 ntp_allow: []
@@ -28,17 +28,16 @@ ntp_allow: []
 #   '0.debian.pool.ntp.org iburst minpoll 6 maxpoll 10'
 # If you're syncing against local servers, recommended options are --
 # 'burst iburst minpoll 4 maxpoll 4', where:
-#  - 'burst' and 'iburst' -- Get stratum as fast as possible by sending 8 sync
-#                            querys with 2 second interval. (Beware though,
+#  - 'burst' and 'iburst' -- Get a time sync as fast as possible by sending 8 sync
+#                            queries with 2 second interval. (Beware though,
 #                            this is considered as an abuse on public servers!)
-#  - minpoll, maxpoll -- Min/max interval for sync querys to be sent in normal
+#  - minpoll, maxpoll -- Min/max interval for sync queries to be sent in normal
 #                        operation mode. It's defined in seconds as a
 #                        power of two:
 #                         4 -- 16 seconds (minimal allowed)
 #                         5 -- 32 seconds
 #                         6 -- 64 seconds
 #                        and so on.
-
 ntp_servers:
   - '0.debian.pool.ntp.org'
   - '1.debian.pool.ntp.org'

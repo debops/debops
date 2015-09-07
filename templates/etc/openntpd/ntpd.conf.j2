@@ -2,15 +2,15 @@
 
 {% if ntp_listen is defined and ntp_listen %}
 # Addresses to listen on
-{% if ntp_listen is string %}
+{%   if ntp_listen is string %}
 listen on {{ ntp_listen }}
 
-{% else %}
-{% for address in ntp_listen %}
+{%   else %}
+{%     for address in ntp_listen %}
 listen on {{ address }}
-{% endfor %}
+{%     endfor %}
 
-{% endif %}
+{%   endif %}
 {% else %}
 # ntpd is not listening on any interface
 
