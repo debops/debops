@@ -94,7 +94,7 @@ nginx_http_options: |
 nginx_default_keepalive_timeout: 60
 
 # Enable or disable support for PKI/SSL/TLS in nginx
-nginx_pki: '{{ (True if (ansible_local|d() and ansible_local.pki|d() and ansible_local.pki.enabled|d()) else False) | bool }}'
+nginx_pki: '{{ (True if (ansible_local|d() and ansible_local.pki|d() and ansible_local.pki.enabled|d() | bool) else False) | bool }}'
 
 # PKI base directory
 nginx_pki_path: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.base_path }}{% else %}/etc/pki{% endif %}'

@@ -52,6 +52,9 @@ v0.1.4
 - Use all available nameservers as OCSP resolvers instead of just the first
   one. User can also override the list of OCSP resolvers if needed. [drybjed]
 
+- Fix an issue where ``nginx`` used SSL configuration when support for it was
+  disabled in ``debops.pki`` (or it was not present). [drybjed]
+
 v0.1.3
 ------
 
