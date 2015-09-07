@@ -22,3 +22,4 @@ v0.1.0
 
 - Tag various tasks for convenient use. [drybjed]
 
+- Ensure mount directories exist when manually mounted. [ypid]
