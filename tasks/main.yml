@@ -60,7 +60,7 @@
     password:       '{{ crypttab_keyfile_path }}/{{ item.name }}.keyfile'
     path:           '{{ item.path     | default(omit) }}'
     state:          '{{ item.state    | default("present") }}'
-  when: (item.state is string and item.state == 'absent' and item.name is string)
+  when: (item.name is string)
   with_items: crypttab_list_combined
 
 # - name: Ensure options are as specified for matching devices
@@ -81,7 +81,7 @@
     opts:   '{{ item.mount_opts   | default(crypttab_default_mount_options | default(omit)) }}'
     passno: '{{ item.mount_passno | default(omit) }}'
     state:  '{{ item.mount_state  | default(crypttab_default_mount_state) }}'
-  when: (item.state is string and item.state == 'absent' and item.name is string)
+  when: (item.name is string)
   with_items: crypttab_list_combined
 
 - name: Ensure mountpoints is absent in fstab
