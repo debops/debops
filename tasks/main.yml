@@ -30,47 +30,12 @@
 - name: Install ferm configuration directories
   script: 'script/install-directories.sh creates=/etc/ferm/filter/input'
 
-- name: Create ferm patch directory
-  file:
-    dest: '{{ (ansible_local.root.src
-               if (ansible_local|d() and ansible_local.root|d() and
-                   ansible_local.root.src|d())
-               else "/usr/local/src") + "/ferm" }}'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  when: ferm_init_hooks|d()
-
-- name: Copy ferm init patch to remote host
-  copy:
-    src: 'usr/local/src/ferm/init-hooks.patch'
-    dest: '{{ (ansible_local.root.src
-               if (ansible_local|d() and ansible_local.root|d() and
-                   ansible_local.root.src|d())
-               else "/usr/local/src") + "/ferm/init-hooks.patch" }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  when: ferm_init_hooks|d()
-
-- name: Apply ferm patches
-  patch:
-    src: '{{ (ansible_local.root.src
-              if (ansible_local|d() and ansible_local.root|d() and
-                  ansible_local.root.src|d())
-              else "/usr/local/src") + "/ferm/init-hooks.patch" }}'
-    basedir: '/etc/init.d'
-    remote_src: True
-  register: ferm_register_patch_init
-  when: ferm_init_hooks|d()
-
-- name: Reload systemd daemons
-  command: systemctl daemon-reload
-  when: ((ansible_local|d() and ansible_local.init|d() and
-          ansible_local.init == "systemd") and
-         ferm_register_patch_init|d() and
-         ferm_register_patch_init.changed)
+- name: Patch ferm init script to add custom hooks
+  include: patch_ferm.yml
+  when: (ferm | bool and (ansible_local|d() and
+         (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
+         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+         (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))))
 
 - name: Configure ferm default variables (pre)
   template:
