@@ -29,6 +29,11 @@
     group: 'root'
     mode: '0700'
 
+- name: Check existence of php5-fpm-reopenlogs
+  stat:
+    path: '/usr/lib/php5/php5-fpm-reopenlogs'
+  register: php5_register_reopenlogs
+
 - name: Configure logrotate for php5-fpm
   template:
     src: 'etc/logrotate.d/php5-fpm.j2'
