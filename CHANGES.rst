@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Unreleased*
+
+- Add ``tag`` plugin with required ``pagelist`` plugin for page tagging
+  support. [drybjed]
+
 v0.2.0
 ------
 
