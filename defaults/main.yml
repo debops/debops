@@ -104,7 +104,10 @@ postfix_message_size_limit: 50
 # .. envvar:: postfix_pki
 #
 # Enable or disable support for TLS in Postfix (using debops.pki)
-postfix_pki: True
+postfix_pki: '{{ (True
+                  if (ansible_local|d() and ansible_local.pki|d() and
+                      ansible_local.pki.enabled|d() | bool)
+                  else False) | bool }}'
 
 
 # .. envvar:: postfix_pki_path
