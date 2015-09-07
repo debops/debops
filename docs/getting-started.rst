@@ -119,5 +119,5 @@ And then, in each host inventory, set its specific index::
 Above configuration can be seen as crude implementation of DHCP using
 semi-automatic incrementing IP addresses. Setting up proper DHCP server, for
 example with ``debops.dnsmasq`` or ``debops.dhcpd`` might be easier and more
-benefical in the long run.
+beneficial in the long run.
 
