@@ -63,6 +63,9 @@ v0.1.1
 - Copy ``init-hooks.patch`` file to remote host and patch it from there to fix
   issues with ``patch`` module on older versions of Ansible. [drybjed]
 
+- Move tasks that patch ``ferm`` init script to sepate task list and add
+  a condition that only does the patching if ``ferm`` is enabled. [drybjed]
+
 v0.1.0
 ------
 
