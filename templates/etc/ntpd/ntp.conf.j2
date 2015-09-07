@@ -10,10 +10,10 @@ filegen loopstats file loopstats type day enable
 filegen peerstats file peerstats type day enable
 filegen clockstats file clockstats type day enable
 
+{% if ntp_listen is defined and ntp_listen and ntp_listen != '*' %}
 # Addresses to listen on, default is to block everything
 interface ignore ipv4
 interface ignore ipv6
-{% if ntp_listen is defined and ntp_listen %}
 {%   if ntp_listen is string %}
 interface listen {{ ntp_listen }}
 
@@ -73,4 +73,3 @@ restrict -6 {{ address|ipaddr('network') }} mask {{ address|ipaddr('netmask') }}
 restrict default limited kod nomodify notrap nopeer noquery
 restrict -6 default limited kod nomodify notrap nopeer noquery
 {% endif %}
-
