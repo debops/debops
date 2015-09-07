@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 
 # Extra options to be passed to tincd.
-# EXTRA="-d"
+{% if tinc_extra_options == '' %}# EXTRA="-d" {% else %}EXTRA="{{ tinc_extra_options }}"{% endif %}
 
 # Limits to be configured for the tincd process. Please read your shell
 # (pointed by /bin/sh) documentation for ulimit. You probably want to raise the
