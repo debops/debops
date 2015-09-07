@@ -23,3 +23,6 @@ v0.1.0
   a required capability was specified but was ``False``. Now role will check if
   an entry has specified value before deciding if it should be added. [drybjed]
 
+- Automatically enable or disable TLS certificates depending on status of the
+  ``debops.pki`` role. [drybjed]
+
