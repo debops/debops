@@ -60,6 +60,9 @@ v0.1.1
 - Add support for specifying incoming and outgoing network interfaces in
   ``filter/conntrack.conf.j2`` template. [drybjed]
 
+- Copy ``init-hooks.patch`` file to remote host and patch it from there to fix
+  issues with ``patch`` module on older versions of Ansible. [drybjed]
+
 v0.1.0
 ------
 
