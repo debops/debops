@@ -32,13 +32,24 @@ owncloud_deploy_path: '{{ owncloud_home }}'
 
 # --- ownCloud database ---
 
-# ownCloud recommends MySQL database as the default. Set to False to use SQLite
+# ownCloud recommends MySQL or MariaDB as database. Set to False to use SQLite.
+# https://doc.owncloud.org/server/8.1/admin_manual/configuration_database/linux_database_configuration.html#database-configuration
+# Choices see ``owncloud_database_map``.
 owncloud_database: 'mysql'
 
 owncloud_database_map:
 
   # MySQL database on localhost (random password will be generated when using 'secret' role)
   mysql:
+    dbtype: 'mysql'
+    dbname: '{{ owncloud_user }}'
+    dbuser: '{{ owncloud_user }}'
+    dbpass: '{{ owncloud_dbpass | default("password") }}'
+    dbhost: 'localhost'
+    dbtableprefix: ''
+
+  # MariaDB database on localhost (random password will be generated when using 'secret' role)
+  mariadb:
     dbtype: 'mysql'
     dbname: '{{ owncloud_user }}'
     dbuser: '{{ owncloud_user }}'
