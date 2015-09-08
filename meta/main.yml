@@ -3,9 +3,10 @@
 dependencies:
 
   - role: debops.secret
+    tags: [ 'depend::secret', 'depend::secret:nginx', 'depend-of::nginx', 'type::dependency:hard' ]
 
   - role: debops.apt_preferences
-    tags: apt_preferences
+    tags: [ 'depend::apt_preferences', 'depend::apt_preferences:nginx', 'depend-of::nginx', 'type::dependency' ]
     apt_preferences_dependent_list:
       - package: 'nginx nginx-*'
         backports: [ 'wheezy' ]
@@ -14,7 +15,7 @@ dependencies:
     when: nginx_flavor == 'full'
 
   - role: debops.apt_preferences
-    tags: apt_preferences
+    tags: [ 'depend::apt_preferences', 'depend::apt_preferences:nginx', 'depend-of::nginx', 'type::dependency' ]
     apt_preferences_dependent_list:
       - package: 'nginx nginx-*'
         pin: 'release o=Phusion'
@@ -24,6 +25,7 @@ dependencies:
     when: nginx_flavor == 'passenger'
 
   - role: debops.ferm
+    tags: [ 'depend::ferm', 'depend::ferm:nginx', 'depend-of::nginx', 'type::dependency' ]
     ferm_input_list:
 
       - type: 'dport_accept'
