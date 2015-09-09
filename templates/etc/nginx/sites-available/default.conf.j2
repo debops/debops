@@ -619,21 +619,25 @@ server {
 {% else %}
         keepalive_timeout {{ item.keepalive | default(nginx_default_keepalive_timeout) }};
 
+{% block nginx_tpl_block_root %}
 {% if item.root is undefined or item.root != False %}
         root {{ nginx_tpl_root }};
-{% endif %}
-{% if item.name is defined and item.name %}
 
+{% endif %}
+{% endblock %}
+{% block nginx_tpl_block_log %}
+{% if item.name is defined and item.name %}
         access_log /var/log/nginx/{{ item.access_log | default(item.filename | default(item.name[0]) + '_access') }}.log;
         error_log /var/log/nginx/{{ item.error_log | default(item.filename | default(item.name[0]) + '_error') }}.log;
-{% endif %}
 
+{% endif %}
+{% endblock %}
 {% block nginx_tpl_block_index %}
 {% if item.index is undefined or item.index != False %}
         index {{ item.index | default('index.html index.htm') }};
+
 {% endif %}
 {% endblock %}
-
 {% if item.error_pages is defined and item.error_pages %}
 {% for code, location in item.error_pages.iteritems() %}
         error_page {{ code }} {{ location }};

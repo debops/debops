@@ -55,6 +55,12 @@ v0.1.4
 - Fix an issue where ``nginx`` used SSL configuration when support for it was
   disabled in ``debops.pki`` (or it was not present). [drybjed]
 
+- Rearrange parts of the configuration templates and add more Jinja blocks to
+  be able to remove ``index`` and ``root`` directives programatically.
+  [drybjed]
+
+- Add ``proxy`` nginx server template. [drybjed]
+
 v0.1.3
 ------
 
