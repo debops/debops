@@ -59,6 +59,8 @@ v0.1.4
   be able to remove ``index`` and ``root`` directives programatically.
   [drybjed]
 
+- Add ``proxy`` nginx server template. [drybjed]
+
 v0.1.3
 ------
 
