@@ -3,12 +3,13 @@
 dependencies:
 
   - role: debops.secret
+    tags: [ 'depend::secret', 'depend::secret:preseed', 'depend-of::preseed', 'type::dependency:hard' ]
 
   - role: debops.nginx
     nginx_servers:
       - '{{ preseed_nginx_server_http  }}'
       - '{{ preseed_nginx_server_https }}'
-    tags: nginx
+    tags: [ 'depend::nginx', 'depend::nginx:preseed', 'depend-of::preseed', 'type::dependency' ]
 
 galaxy_info:
   author: 'Maciej Delmanowski'
