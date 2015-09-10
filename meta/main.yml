@@ -2,38 +2,34 @@
 
 dependencies:
 
-  - role: debops.apt
-    apt_repositories:
-    - repo: 'deb {{owncloud_apt_repo_base}}/{{owncloud_edition}}:/{{owncloud_release}}/{{ansible_distribution}}_{{ansible_distribution_major_version}}.0/ /'
-      state: present
-    apt_keys:
-    - url: '{{owncloud_apt_repo_base}}/{{owncloud_edition}}:/{{owncloud_release}}/{{ansible_distribution}}_{{ansible_distribution_major_version}}.0/Release.key'
-      id: '{{ owncloud_apt_repo_key_fingerprint }}'
-      state: present
-
   - role: debops.secret
+    tags: [ 'depend::secret', 'depend::secret:owncloud', 'depend-of::owncloud', 'type::dependency:hard' ]
 
-  - role: debops.mysql
-    when: owncloud_dependencies and owncloud_database == 'mysql'
-    tags: owncloud
+  - role: debops.mariadb
+    tags: [ 'depend::mariadb', 'depend::mariadb:owncloud', 'depend-of::owncloud', 'type::dependency' ]
+    mariadb_users:
+      - database: '{{ owncloud_database_map[owncloud_database].dbname }}'
+        user: '{{ owncloud_database_map[owncloud_database].dbuser }}'
+        password: '{{ owncloud_database_map[owncloud_database].dbpass }}'
+    when: (owncloud_dependencies|d() and owncloud_database == 'mariadb')
 
   - role: debops.postgresql
     when: owncloud_dependencies and owncloud_database == 'postgresql'
     tags: owncloud
 
   - role: debops.php5
+    tags: [ 'depend::php5', 'depend::php5:owncloud', 'depend-of::owncloud', 'type::dependency' ]
     php5_pools:
       - '{{ owncloud_php5_pool }}'
     when: owncloud_dependencies
-    tags: owncloud
 
   - role: debops.nginx
+    tags: [ 'depend::nginx', 'depend::nginx:owncloud', 'depend-of::owncloud', 'type::dependency' ]
     nginx_servers:
       - '{{ owncloud_nginx_server }}'
     nginx_upstreams:
       - '{{ owncloud_nginx_upstream_php5 }}'
     when: owncloud_dependencies
-    tags: nginx
 
 galaxy_info:
   author: 'Maciej Delmanowski, Hartmut Goebel'

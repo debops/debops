@@ -50,7 +50,7 @@
     state: present
     regexp: "return OC_Appconfig::getValue"
     line: "                return OC_Appconfig::getValue( 'core', 'backgroundjobs_mode', 'cron' );"
-  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists
+  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists and owncloud_release == '8.0'
 
 - name: Use cron for background jobs (settings/admin.php)
   lineinfile:

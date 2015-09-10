@@ -1,4 +1,20 @@
 ---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# -------------------
+#   System packages
+# -------------------
+
+# .. envvar:: owncloud_base_packages
+#
+# List of base packages required by ownCloud.
+owncloud_base_packages:
+  - 'owncloud'
+  - 'owncloud-server'
 
 # --- Basic options ---
 
@@ -6,14 +22,14 @@
 # If you want to setup them differently, you should change this to False
 owncloud_dependencies: True
 
-# Domain that will be configured for ownCloud instance
+# Domain that will be configured for the ownCloud instance
 owncloud_domain: [ 'owncloud.{{ ansible_domain }}' ]
 
 
 # --- ownCloud source and deployment ---
 
 owncloud_edition: community
-owncloud_release: 8.0
+owncloud_release: 8.1
 owncloud_apt_repo_base: 'http://download.opensuse.org/repositories/isv:/ownCloud:'
 owncloud_apt_repo_key_fingerprint: 'F9EA4996747310AE79474F44977C43A8BA684223'
 
@@ -30,30 +46,63 @@ owncloud_data_path: '{{ owncloud_home }}/data' #{{ owncloud_domain[0] }}'
 owncloud_deploy_path: '{{ owncloud_home }}'
 
 
-# --- ownCloud database ---
+# --------------------------
+#   Database configuration
+# --------------------------
 
-# ownCloud recommends MySQL database as the default. Set to False to use SQLite
-owncloud_database: 'mysql'
+# .. envvar:: owncloud_database_server
+#
+# FQDN of the database server. It will be configured by
+# the ``debops.mariadb`` role.
+# Currently only supported for MySQL/MariaDB.
+owncloud_database_server: '{{ ansible_local.mariadb.server }}'
+
+
+# .. envvar:: owncloud_database_user
+#
+# Database user to use for ownCloud.
+owncloud_database_user: 'owncloud'
+
+
+# .. envvar:: owncloud_database_name
+#
+# Name of the database to use for ownCloud.
+owncloud_database_name: 'owncloud'
+
+
+# .. envvar:: owncloud_database_password
+#
+# Database password for ownCloud.
+owncloud_database_password: "{{ lookup('password', secret + '/mariadb/' +
+                                ansible_local.mariadb.delegate_to +
+                                '/credentials/' + owncloud_database_user +
+                                '/password length=48') }}"
+
+# ownCloud recommends MySQL or MariaDB as database. Set to False to use SQLite.
+# https://doc.owncloud.org/server/8.1/admin_manual/configuration_database/linux_database_configuration.html#database-configuration
+# Choices see ``owncloud_database_map``.
+owncloud_database: 'mariadb'
 
 owncloud_database_map:
 
-  # MySQL database on localhost (random password will be generated when using 'secret' role)
-  mysql:
+  # MySQL / MariaDB database
+  mariadb:
     dbtype: 'mysql'
-    dbname: '{{ owncloud_user }}'
-    dbuser: '{{ owncloud_user }}'
-    dbpass: '{{ owncloud_dbpass | default("password") }}'
-    dbhost: 'localhost'
+    dbname: '{{ owncloud_database_name|d(owncloud_user) }}'
+    dbuser: '{{ owncloud_database_user|d(owncloud_user) }}'
+    dbpass: '{{ owncloud_database_password }}'
+    dbhost: '{{ owncloud_database_server|d("localhost") }}'
     dbtableprefix: ''
 
   # PostgreSQL database on localhost, connection through Unix socket, no default password
   postgresql:
     dbtype: 'pgsql'
-    dbname: '{{ owncloud_user }}'
-    dbuser: '{{ owncloud_user }}'
+    dbname: '{{ owncloud_database_name|d(owncloud_user) }}'
+    dbuser: '{{ owncloud_database_user|d(owncloud_user) }}'
     dbpass: ''
-    dbhost: '/var/run/postgresql'
+    dbhost: '{{ owncloud_database_server|d("/var/run/postgresql") }}'
     dbtableprefix: ''
+
   sqlite:
     dbtype: 'sqlite'
 
@@ -64,7 +113,7 @@ owncloud_database_map:
 # Set to False to disable automatic username and password
 owncloud_admin_username: 'admin-{{ lookup("env","USER") }}'
 
-# Default admin password. role is enabled, a randomly password will be
+# Default admin password. If ``debops.secret`` role is enabled, a randomly password will be
 # generated instead of this value.
 owncloud_admin_password: 'password'
 
