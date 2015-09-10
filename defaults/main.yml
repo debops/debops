@@ -152,6 +152,15 @@ apt_unattended_upgrades_autoremove: True
 
 # ---- Other ----
 
+# .. envvar:: apt_remove_default_configuration
+#
+# Ensure that ``/etc/apt/apt.conf`` is absent.
+# This file might contain APT proxy or other settings which overwrite options
+# set by ``debops.apt`` if present.
+# Thus the default is to ensure that this file is absent.
+apt_remove_default_configuration: True
+
+
 # Update APT cache early in the playbook if it's older than 24h
 # Set to False to disable update (useful when changing APT mirrors)
 apt_update_cache_early: '{{ (60 * 60 * 24) }}'

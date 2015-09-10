@@ -11,6 +11,14 @@
     - 'etc/apt/apt.conf.d/25no-recommends.conf'
     - 'etc/apt/apt.conf.d/70aptitude'
 
+- name: Ensure that APT default configuration is absent
+  file:
+    path: '{{ item }}'
+    state: 'absent'
+  when: apt_remove_default_configuration|d()
+  with_items:
+    - '/etc/apt/apt.conf'
+
 - name: Load default APT mirrors configuration
   include_vars: '{{ item }}'
   with_first_found:
