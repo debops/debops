@@ -9,7 +9,7 @@ This role installs [ownCloud](http://owncloud.org/) instance on a
 specified host, with either sqlite, MySQL or PostgreSQL database
 as a backend and an nginx webserver as a frontend.
 
-Currently only ownCloud 8.0 is supported because for older
+Only ownCloud 8.0 and later are supported because for older
 versions there are no complete deb-packages available.
 
 ### Installation
