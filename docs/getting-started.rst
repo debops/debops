@@ -4,7 +4,7 @@ Getting started
 .. contents::
    :local:
 
-``debops.mariadb`` role is only the "client" part. To have working
+``debops.mariadb`` role is only the "client" part. To have working a
 MariaDB/MySQL installation, you also need to setup ``debops.mariadb_server``
 role somewhere. It can be either on the same host, or on a separate host.
 See the ``debops.mariadb_server`` documentation to learn how to install the
@@ -13,7 +13,7 @@ database server itself.
 Server configuration
 --------------------
 
-The role supports different modes of operation, depending on the presence of
+The role supports different modes of operation, depending on the presence of a
 MariaDB or MySQL server installed locally or not, or presence of a tunneled
 connection to a remote server.
 
@@ -21,9 +21,9 @@ Local database server
 ~~~~~~~~~~~~~~~~~~~~~
 
 If the database server is installed locally, it will be automatically detected
-and used by ``debops.mariadb`` role without any additional configuration. Also,
-if previously a remote server was used, and a local one was installed, it will
-automatically override remote configuration; you might need to recreate the
+and used by the ``debops.mariadb`` role without any additional configuration. Also,
+if a remote server was used previously, and a local one was installed, it will
+automatically override the remote configuration. You might need to recreate the
 databases and user accounts in that case.
 
 Remote database server
@@ -31,8 +31,8 @@ Remote database server
 
 If your MariaDB server is configured on a remote host and you don't have
 a local installation, ``debops.mariadb`` will detect that and won't manage the
-databases / user accounts without a server specified. To point it to a server,
-you need to set a variable in inventory::
+databases/user accounts without a server specified. To point it to a server,
+you need to set a variable in the inventory::
 
     mariadb_server: 'db.example.org'
 

@@ -1,7 +1,7 @@
 Default variables: configuration
 ================================
 
-some of ``debops.mariadb`` default variables have more extensive configuration
+Some of ``debops.mariadb`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
 
@@ -15,7 +15,7 @@ mariadb_databases
 -----------------
 
 List of databases that should be present or absent on a given MariaDB server.
-Each database is defined as a YAML dict with following keys:
+Each database is defined as a YAML dict with the following keys:
 
 ``database`` or ``name``
   Name of the database, required. Should be composed from alphanumeric
@@ -29,14 +29,14 @@ Each database is defined as a YAML dict with following keys:
 ``source``
   Optional. Path to a file with SQL dump on the Ansible Controller, which will
   be copied to the remote host at the ``target`` location, imported into
-  database (only if it was recently created), and removed afterwards. Role does
+  database (only if it was recently created), and removed afterwards. The role does
   not check if the file exists before copying it, so make sure that it's
   present in the location that you specify beforehand.
 
 ``target``
-  Optional. Path to a file on remote host which will be imported to the
-  database after it has been created (only once). Role does not check if the
-  file exists before trying to import it. You can use ``source`` parameter to
+  Optional. Path to a file on the remote host which will be imported to the
+  database after it has been created (only once). The role does not check if the
+  file exists before trying to import it. You can use the ``source`` parameter to
   specify a file on the Ansible Controller to copy to the ``target`` location
   before import.
 
@@ -58,7 +58,7 @@ Create databases, remove some of the existing ones::
       - name: 'old_database'
         state: 'absent'
 
-Create a database and import its contents from file already present on remote
+Create a database and import its contents from a file already present on remote
 host::
 
     mysql_databases:
@@ -66,7 +66,7 @@ host::
       - name: 'fancy_db'
         target: '/tmp/dbcontents.sql.gz'
 
-Create a database and import its contents from file on Ansible Controller::
+Create a database and import its contents from a file on the Ansible Controller::
 
     mysql_databases:
 
@@ -86,9 +86,9 @@ User account parameters
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 ``user`` or ``name``
-  The "username" part of the user account on the MariaDB server, required. If
+  Required. The "username" part of the user account on the MariaDB server. If
   ``name`` is specified, it will be used to determine the database name for
-  setting default privileges, if ``database`` is not specified.
+  granting default privileges, if ``database`` is not specified.
 
 ``host``
   Optional. The "hostname" part of the user account on the MariaDB server. If
@@ -99,34 +99,34 @@ User account parameters
 ``password``
   Optional. If specified, the role will set it as the password for the MariaDB
   account. If not present, a random password will be generated automatically
-  and stored in ``secret/`` directory on the Ansible Controller. See
+  and stored in the ``secret/`` directory on the Ansible Controller. Refer to the
   ``debops.secret`` role for more details.
 
 ``state``
-  Optional. If ``present``, account will be created on the database server. If
+  Optional. If ``present``, the account will be created on the database server. If
   ``absent``, account will be removed from the database server.
 
 Database privileges
 ~~~~~~~~~~~~~~~~~~~
 
 ``database``
-  Optional. If present, it specifies the database name and / or database prefix
+  Optional. If present, it specifies the database name and/or database prefix
   that a given user account will be able to access using default privileges. If
   not present, ``name`` will be used instead.
 
 ``priv_default``
-  Optional. By default, user accounts will get all privileges to databases with
-  the same name. If this key is present and ``False``, users will not get
+  Optional. By default, the user accounts will get all privileges to databases with
+  the same name. If this key is present and ``False``, the users will not get
   default privileges.
 
 ``priv_aux``
-  Optional. By default, user accounts will get all privileges to database
+  Optional. By default, the user accounts will get all privileges to database
   prefixed with the name of user account. If this key is present and ``False``,
-  users will not get default prefix privileges.
+  the users will not get default prefix privileges.
 
 ``priv``
   Optional. String or list of privileges to grant to a given user account. See
-  ``mysql_user`` documentation for information about how to spefcify the
+  ``mysql_user`` documentation for information about how to specify the
   privileges.
 
 ``append_privs``
@@ -139,10 +139,10 @@ User configuration file
 
 ``owner``
   Optional. It should specify a local UNIX account on the host managed by
-  ``debops.mariadb`` role (not on the host with the database, unless it's
-  a local installation). If specified, ``debops.mariadb`` role will create
-  a local UNIX account if it doesn't exist with specified name and create
-  a ``~/.my.cnf`` configuration file with MariaDB account credentials and
+  the ``debops.mariadb`` role (not on the host with the database, unless it's
+  a local installation). If specified, the ``debops.mariadb`` role will create
+  a local UNIX account if it doesn't exist with the specified name and create
+  a ``~/.my.cnf`` configuration file with the MariaDB account credentials and
   configuration pointing to the MariaDB server.
 
 ``group``
@@ -154,26 +154,26 @@ User configuration file
   given local UNIX account.
 
 ``system``
-  Optional. If specified and ``True``, created local UNIX group/user account
+  Optional. If specified and ``True``, the local UNIX group/user account which is going to be created
   will be a "system" account with UID/GID < 1000. If specified and ``False``,
-  created local UNIX group/user account will be a "normal" account with UID/GID
-  >= 1000. By default created groups and accounts are "system" accounts.
+  local UNIX group/user account will be a "normal" account with UID/GID
+  >= 1000. By default groups and accounts will be created as "system" accounts.
 
 ``mode``
-  Optional. If specified, defines the attributes of ``~/.my.cnf`` configuration
+  Optional. If specified, defines the permissions of the ``~/.my.cnf`` configuration
   file. By default they are set to ``0640``.
 
 Examples
 ~~~~~~~~
 
-Create a MariaDB user account with all privileges to ``someuser.*`` and
+Create a MariaDB user account with all privileges granted to the ``someuser.*`` and
 ``someuser\_%.*`` databases::
 
     mariadb_users:
 
       - name: 'someuser'
 
-Creata a MariaDB user account with all privileges to ``somedatabase.*``
+Create a MariaDB user account with all privileges to ``somedatabase.*``
 without auxiliary privileges::
 
     mariadb_users:
@@ -182,8 +182,8 @@ without auxiliary privileges::
         database: 'somedatabase'
         priv_aux: False
 
-Create a MariaDB user account and set up local system account with
-configuration file::
+Create a MariaDB user account and set up a local system account configured to
+use MariaDB::
 
     mariadb_users:
 
@@ -191,7 +191,7 @@ configuration file::
         owner: 'system-user'
         home: '/var/local/system-user'
 
-Creata a MariaDB user account without default privileges::
+Create a MariaDB user account without default privileges::
 
     mariadb_users:
 
