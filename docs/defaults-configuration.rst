@@ -1,7 +1,7 @@
 Default variables: configuration
 ================================
 
-some of ``debops.librenms`` default variables have more extensive configuration
+Some of ``debops.librenms`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
 
