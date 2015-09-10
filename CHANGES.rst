@@ -14,3 +14,5 @@ v0.1.0
 - Switch the default Debian mirror to new official redirector at
   ``http://httpredir.debian.org/``. [drybjed]
 
+- Added ``apt_remove_default_configuration`` option which defaults to true.
+  This ensures that ``/etc/apt/apt.conf`` is absent. [ypid]
