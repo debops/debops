@@ -2,9 +2,11 @@
 
 - name: Ensure owncloud packages are installed
   apt:
-    name: owncloud
-    state: present
+    name: '{{ item }}'
+    state: 'present'
     install_recommends: False
+  with_flattened:
+    - owncloud_base_packages
   tags: owncloud
 
 - include: configure_mysql.yml

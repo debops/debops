@@ -6,27 +6,3 @@
     state: latest
     install_recommends: no
   with_items: [ 'php5-mysql' ]
-
-- name: Get default MySQL password
-  set_fact:
-    owncloud_database_password: '{{ owncloud_database_map[owncloud_database].dbpass }}'
-
-- name: Lookup MySQL password if secrets/ directory is defined
-  set_fact:
-    owncloud_database_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/owncloud/mysql/' + owncloud_database_map[owncloud_database].dbuser + '/password length=' + mysql_password_length) }}"
-  when: secret is defined
-
-- name: Create ownCloud MySQL user
-  mysql_user:
-    name: '{{ owncloud_database_map[owncloud_database].dbuser }}'
-    password: '{{ owncloud_database_password }}'
-    state: present
-    host: 'localhost'
-    priv: '{{ owncloud_database_map[owncloud_database].dbname }}.*:ALL'
-
-- name: Create ownCloud database
-  mysql_db:
-    name: '{{ owncloud_database_map[owncloud_database].dbname }}'
-    state: present
-
-
