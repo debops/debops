@@ -1,17 +1,5 @@
 ---
 
-- name: Make sure that ntpd is not installed
-  apt:
-    name: 'ntp'
-    state: 'absent'
-    purge: True
-
-- name: Install OpenNTPd package
-  apt:
-    name: 'openntpd'
-    state: 'present'
-    install_recommends: False
-
 - name: Divert original /etc/openntpd/ntpd.conf
   command: dpkg-divert --quiet --local --divert /etc/openntpd/ntpd.conf.dpkg-divert
            --rename /etc/openntpd/ntpd.conf

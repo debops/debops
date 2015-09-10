@@ -3,6 +3,8 @@
 dependencies:
 
   - role: debops.ferm
+    tags: [ 'depend::ferm', 'depend::ferm:ntp', 'depend-of::ntp', 'type::dependency' ]
+    when: ntp_daemon in ['openntpd', 'ntpd']
     ferm_input_list:
 
       - type: 'dport_accept'
@@ -21,7 +23,7 @@ dependencies:
         enabled: '{{ ntp_firewall_access }}'
 
 galaxy_info:
-  author: 'Maciej Delmanowski'
+  author: 'Maciej Delmanowski, Robin Schneider'
   description: 'Manage time synchronization, NTP server and timezone'
   company: 'DebOps'
   license: 'GNU General Public License v3'
