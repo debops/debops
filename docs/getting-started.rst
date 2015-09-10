@@ -8,7 +8,7 @@ LibreNMS configuration
 ----------------------
 
 LibreNMS requires a MariaDB/MySQL database server. You can configure
-one using ``debops.mariadb_server`` or ``debops.mariadb``, either on the
+one using ``debops.mariadb_server`` and ``debops.mariadb``, either on the
 same host as LibreNMS, or remotely.
 
 The SNMP protocol is used to gather metrics from devices. Network switches / routers should
