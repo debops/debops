@@ -11,7 +11,7 @@
 
 # .. envvar:: mariadb_server
 #
-# FQDN hostname of the MariaDB server. If local MariaDB server is detected, it
+# FQDN hostname of the MariaDB server. If a local MariaDB server is detected, it
 # will override this variable automatically. Only one server at a time is
 # currently supported per host.
 mariadb_server: ''
@@ -45,18 +45,18 @@ mariadb_packages: [ '{{ mariadb_flavor }}-client', 'python-mysqldb' ]
 # .. envvar:: mariadb_client
 #
 # When the database server is used remotely, this variable defines the "host"
-# part of the client username. If local MariaDB server is detected, this
+# part of the client username. If a local MariaDB server is detected, this
 # variable will be automatically changed to ``localhost``.
 mariadb_client: '{{ ansible_fqdn }}'
 
 
 # .. envvar:: mariadb_delegate_to
 #
-# When MariaDB server is used remotely, Ansible needs to run tasks on the
+# When the MariaDB server is used remotely, Ansible needs to run tasks on the
 # correct host. This variable controls the task delegation to the correct
 # database server.
 #
-# If MariaDB server is run locally, this should point to the FQDN hostname of
+# If the MariaDB server is run locally, this should point to the FQDN hostname of
 # the current host, NOT ``localhost`` because that would delegate the tasks to
 # Ansible Controller.
 mariadb_delegate_to: '{{ mariadb_server
