@@ -1,5 +1,17 @@
 ---
 
+- name: Get ownCloud APT GPG key
+  apt_key:
+    url: '{{owncloud_apt_repo_base}}/{{owncloud_edition}}:/{{owncloud_release}}/{{ansible_distribution}}_{{ansible_distribution_major_version}}.0/Release.key'
+    id: '{{ owncloud_apt_repo_key_fingerprint }}'
+    state: present
+
+- name: Configure ownCloud APT repository
+  apt_repository:
+    repo: 'deb {{owncloud_apt_repo_base}}/{{owncloud_edition}}:/{{owncloud_release}}/{{ansible_distribution}}_{{ansible_distribution_major_version}}.0/ /'
+    state: present
+    update_cache: True
+
 - name: Ensure owncloud packages are installed
   apt:
     name: '{{ item }}'

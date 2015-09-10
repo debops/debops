@@ -5,16 +5,6 @@ dependencies:
   - role: debops.secret
     tags: [ 'depend::secret', 'depend::secret:owncloud', 'depend-of::owncloud', 'type::dependency:hard' ]
 
-  - role: debops.apt
-    tags: [ 'depend::apt', 'depend::apt:owncloud', 'depend-of::owncloud', 'type::dependency' ]
-    apt_repositories:
-    - repo: 'deb {{owncloud_apt_repo_base}}/{{owncloud_edition}}:/{{owncloud_release}}/{{ansible_distribution}}_{{ansible_distribution_major_version}}.0/ /'
-      state: present
-    apt_keys:
-    - url: '{{owncloud_apt_repo_base}}/{{owncloud_edition}}:/{{owncloud_release}}/{{ansible_distribution}}_{{ansible_distribution_major_version}}.0/Release.key'
-      id: '{{ owncloud_apt_repo_key_fingerprint }}'
-      state: present
-
   - role: debops.mariadb
     tags: [ 'depend::mariadb', 'depend::mariadb:owncloud', 'depend-of::owncloud', 'type::dependency' ]
     mariadb_users:
