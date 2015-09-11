@@ -61,6 +61,9 @@ v0.1.4
 
 - Add ``proxy`` nginx server template. [drybjed]
 
+- Add ``item.ssl_crt``, ``item.ssl_key``, and ``item.ssl_dhparam`` to override
+  pki nginx configuration per site. [patrickheeney]
+
 v0.1.3
 ------
 

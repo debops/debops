@@ -120,6 +120,31 @@
 #       using this option).
 #
 #
+#   - item.ssl_crt: ''
+#       Optional. Absolute path to custom SSL certificate to use, If not
+#       supplied pki_cert will be used instead.
+#
+#
+#   - item.ssl_key: ''
+#       Optional. Absolute path to custom SSL private key to use. If not
+#       supplied pki_key will be used instead.
+#
+#
+#   - item.ssl_dhparam: ''
+#       Optional. Absolute path to custom DHE parameters to use. If not
+#       supplied pki_dhparam will be used instead.
+#
+#
+#   - item.ssl_ciphers: ''
+#       Optional. Name of the list of preferred server ciphers to use. Server
+#       ciphers with corresponding names can be found in 'vars/main.yml' file
+#       in 'debops.nginx' role. 'pfs' ciphers are enabled by default.
+#
+#
+#   - item.ssl_curve: ''
+#       Optional. ECC curve enabled for this server. By default, 'secp384r1'.
+#
+#
 #   - item.pki_realm: ''
 #       Optional. Overwrite default PKI realm used by nginx for this server
 #       configuration. See 'debops.pki' role for more information, as well as
@@ -139,16 +164,6 @@
 #   - item.pki_dhparam: ''
 #       Optional. Path to custom DHE parameters to use, relative to currently
 #       enabled PKI realm (either system-wide or for current server).
-#
-#
-#   - item.ssl_ciphers: ''
-#       Optional. Name of the list of preferred server ciphers to use. Server
-#       ciphers with corresponding names can be found in 'vars/main.yml' file
-#       in 'debops.nginx' role. 'pfs' ciphers are enabled by default.
-#
-#
-#   - item.ssl_curve: ''
-#       Optional. ECC curve enabled for this server. By default, 'secp384r1'.
 #
 #
 #   - item.owner: ''
@@ -379,16 +394,25 @@
     ---- SSL certificate ----
 #}
 {% set nginx_tpl_ssl_certificate = nginx_pki_path + "/" + item.pki_realm | default(nginx_pki_realm) + "/" + item.pki_crt | default(nginx_pki_crt) %}
+{% if (item.ssl_crt is defined and item.ssl_crt)  %}
+{%   set nginx_tpl_ssl_certificate = item.ssl_crt %}
+{% endif                                          %}
 {#
 
     ---- SSL certificate key ----
 #}
 {% set nginx_tpl_ssl_certificate_key = nginx_pki_path + "/" + item.pki_realm | default(nginx_pki_realm) + "/" + item.pki_key | default(nginx_pki_key) %}
+{% if (item.ssl_key is defined and item.ssl_key)      %}
+{%   set nginx_tpl_ssl_certificate_key = item.ssl_key %}
+{% endif                                              %}
 {#
 
     ---- Diffie-Hellman Key Exchange parameters ----
 #}
 {% set nginx_tpl_ssl_dhparam = nginx_pki_path + "/" + item.pki_realm | default(nginx_pki_realm) + "/" + item.pki_dhparam | default(nginx_pki_dhparam) %}
+{% if (item.ssl_dhparam is defined and item.ssl_dhparam) %}
+{%   set nginx_tpl_ssl_dhparam = item.ssl_dhparam        %}
+{% endif                                                 %}
 {#
 
     ---- root directory ----
@@ -489,7 +513,7 @@
 
     ---- nginx server template begins here ----
 #}
-# This file is managed by Ansible, all changes will be lost
+# {{ ansible_managed }}
 
 {% if item.name is defined and item.name %}
 # nginx server configuration for:
