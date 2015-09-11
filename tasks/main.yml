@@ -28,6 +28,7 @@
     copy: False
     owner: 'root'
     group: 'root'
+  register: docker_gen_register_install
 
 - name: Copy docker-gen templates to remote host
   copy:
@@ -81,4 +82,12 @@
   command: systemctl daemon-reload
   when: ((ansible_local|d() and ansible_local.init|d() and ansible_local.init == 'systemd') and
          (docker_gen_register_service|d() and docker_gen_register_service.changed))
+
+- name: Start docker-gen on install
+  service:
+    name: 'docker-gen'
+    state: 'started'
+    enabled: True
+  when: docker_gen_register_install|d() and
+        docker_gen_register_install.changed
 
