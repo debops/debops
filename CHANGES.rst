@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v0.1.5
+------
+
+*Unreleased*
+
+- Add ``users_default_system`` bool variable which, when enabled, will set all
+  user groups and accounts created by ``debops.users`` role as "system"
+  accounts with UID/GID < 1000. These accounts are considered "local" accounts
+  and should not interfere with LDAP accounts. This can still be overriden by
+  explicitly setting ``item.system`` parameter in user account definition.
+  [drybjed]
+
 v0.1.4
 ------
 
