@@ -3,16 +3,18 @@
 # Enable or disable PKI support
 pki: True
 
+# Default domain
+pki_domain: '{{ ansible_domain }}'
 
 # ---- Default DN for Certificate Requests ----
 
 pki_country:             'QS'
 pki_state:               'Q-Space'
 pki_locality:            'Global'
-pki_organization:        '{{ ansible_domain.split(".")[0] | capitalize }}'
+pki_organization:        '{{ pki_domain.split(".")[0] | capitalize }}'
 pki_organizational_unit: 'Data Center Operations'
 pki_common_name:         '{{ ansible_fqdn }}'
-pki_email:               'root@{{ ansible_domain }}'
+pki_email:               'root@{{ pki_domain }}'
 
 
 # ---- PKI main options ----
@@ -26,7 +28,7 @@ pki_base_path: '/etc/pki'
 
 # Base PKI directory on the Ansible Controller
 # See debops.secret role for more information
-pki_base_src: '{{ secret + "/pki/" + ansible_domain }}'
+pki_base_src: '{{ secret + "/pki/" + pki_domain }}'
 
 # Directory and file permissions for public and private data
 pki_owner: 'root'
@@ -65,7 +67,7 @@ pki_sign_cert_multiplier: '1'
 # ---- Root Certificate Authority configuration ----
 
 pki_rootca: 'RootCA'
-pki_rootca_filename: '{{ pki_rootca + "-" + ansible_domain }}'
+pki_rootca_filename: '{{ pki_rootca + "-" + pki_domain }}'
 pki_rootca_private_key_size: '4096'
 pki_rootca_o: '{{ pki_organization + " Certificate Authority" }}'
 pki_rootca_cn: '{{ pki_organization + " Root Certificate" }}'
@@ -74,12 +76,12 @@ pki_rootca_cn: '{{ pki_organization + " Root Certificate" }}'
 # ---- Service Certificate Authority configuration ----
 
 pki_serviceca: 'ServiceCA'
-pki_serviceca_filename: '{{ pki_serviceca + "-" + ansible_domain }}'
+pki_serviceca_filename: '{{ pki_serviceca + "-" + pki_domain }}'
 pki_serviceca_private_key_size: '2048'
 pki_serviceca_sign_days: '{{ (365 * 4) }}'
 pki_serviceca_o: '{{ pki_organization + " Certificate Authority" }}'
 pki_serviceca_ou: '{{ pki_organization + " Service CA" }}'
-pki_serviceca_cn: '{{ "srv." + ansible_domain }}'
+pki_serviceca_cn: '{{ "srv." + pki_domain }}'
 
 
 # ---- PKI snapshot configuration ----
@@ -142,7 +144,7 @@ pki_default_service_certificate: '{{ "srv." + ansible_fqdn }}'
 
 # Subdomain reserved for CA server (certificate revocation lists, source for
 # Root certificate, etc.)
-pki_ca_domain: 'pki.{{ ansible_domain }}'
+pki_ca_domain: 'pki.{{ pki_domain }}'
 
 # This string is used to uniquely bind a certificate to the requesting host
 pki_default_certificate_uri: '{{ "http://" + pki_ca_domain + "/cert/" + (ansible_local.root.uuid | sha1) }}'
@@ -161,20 +163,20 @@ pki_certificates_default:
   - source: '{{ "hosts/" + ansible_fqdn + "/host" }}'
     destination: 'host'
     cn: '{{ ansible_fqdn }}'
-    dns: [ '{{ "*." + ansible_domain }}' ]
+    dns: [ '{{ "*." + pki_domain }}' ]
     uri: [ '{{ pki_default_certificate_uri }}' ]
 
   - source: '{{ "hosts/" + ansible_fqdn + "/domain" }}'
     destination: 'domain'
-    cn: '{{ ansible_domain }}'
-    dns: [ '{{ "*." + ansible_domain }}' ]
+    cn: '{{ pki_domain }}'
+    dns: [ '{{ "*." + pki_domain }}' ]
     uri: [ '{{ pki_default_certificate_uri }}' ]
     filename: 'wildcard.domain.{{ ansible_fqdn }}'
 
   - source: '{{ "hosts/" + ansible_fqdn + "/service" }}'
     destination: 'service'
     cn: '{{ ansible_fqdn }}'
-    dns: [ '{{ "*." + ansible_domain }}' ]
+    dns: [ '{{ "*." + pki_domain }}' ]
     uri: [ '{{ pki_default_certificate_uri }}' ]
     filename: 'srv.{{ ansible_fqdn }}'
 
@@ -295,18 +297,18 @@ pki_authorities:
     parent: 'root/RootCA'
     o: '{{ pki_rootca_o }}'
     ou: '{{ pki_organization + " CA" }}'
-    cn: '{{ "ca." + ansible_domain }}'
+    cn: '{{ "ca." + pki_domain }}'
 
   - name: 'ca/internal'
     parent: 'intermediate/DomainCA'
     ou: '{{ pki_default_host_ou }}'
-    cn: '{{ "dc." + ansible_domain }}'
+    cn: '{{ "dc." + pki_domain }}'
 
   - name: 'ca/domain'
     grants: 'server'
     parent: 'intermediate/DomainCA'
     ou: '{{ pki_default_domain_ou }}'
-    cn: '{{ "dco." + ansible_domain }}'
+    cn: '{{ "dco." + pki_domain }}'
 
 
 # ---- CA - realm route scripts ----
@@ -385,11 +387,11 @@ pki_routes_default:
 # using variables:
 #
 # pki_inject_public_files:
-#   - path: 'host/certs/my.{{ ansible_domain }}.crt'
+#   - path: 'host/certs/my.{{ pki_domain }}.crt'
 #     content: '{{ vault_certitifate }}'
 #
 # pki_inject_private_files:
-#   - path: 'host/private/my.{{ ansible_domain }}.key'
+#   - path: 'host/private/my.{{ pki_domain }}.key'
 #     content: '{{ vault_private_key }}'
 #
 # If needed, you can specify 'item.{owner,group,mode}' dict keys, otherwise
