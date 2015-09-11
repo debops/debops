@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) docker_gen
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-docker_gen.svg?style=flat)](http://travis-ci.org/debops/ansible-docker_gen) [![test-suite](http://img.shields.io/badge/test--suite-ansible--docker__gen-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-docker_gen/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-docker_gen.svg?style=flat)](http://travis-ci.org/debops/ansible-docker_gen) [![test-suite](http://img.shields.io/badge/test--suite-ansible--docker__gen-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-docker_gen/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.docker__gen-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/5078)
 
 [docker-gen](https://github.com/jwilder/docker-gen) can be used to generate
 configuration files for other services based on available Docker container
@@ -10,6 +10,17 @@ This role creates a service and configuration to generate `nginx` upstream
 service definitions, which can be used by `debops.nginx` role to configure
 Dockerized services, either local or remote, behind an `nginx` reverse proxy.
 Other services and templates might be provided in the future.
+
+### Installation
+
+This role requires at least Ansible `v1.8.0`. To install it, run:
+
+    ansible-galaxy install debops.docker_gen
+
+### Documentation
+
+More information about `debops.docker_gen` can be found in the
+[official debops.docker_gen documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-docker_gen/docs/).
 
 
 
