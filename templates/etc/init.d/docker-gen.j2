@@ -44,12 +44,10 @@ if [ ! -x $DOCKER_GEN ]; then
 	exit 1
 fi
 
-check_init() {
-	 # see also init_is_upstart in /lib/lsb/init-functions (which isn't available in Ubuntu 12.04, or we'd use it directly)
-	 if [ -x /sbin/initctl ] && /sbin/initctl version 2>/dev/null | grep -q upstart; then
-                log_failure_msg "$DOCKER_GEN_DESC is managed via upstart, try using service $BASE $1"
-                exit 1
-         fi
+check_for_upstart() {
+    if init_is_upstart; then
+	exit $1
+    fi
 }
 
 fail_unless_root() {
@@ -61,7 +59,7 @@ fail_unless_root() {
 
 case "$1" in
 	start)
-		check_init
+		check_for_upstart 1
 
 		fail_unless_root
 
@@ -87,7 +85,7 @@ case "$1" in
 		;;
 
 	stop)
-		check_init
+		check_for_upstart 0
 		fail_unless_root
 		log_begin_msg "Stopping $DOCKER_GEN_DESC: $BASE"
 		start-stop-daemon --stop --pidfile "$DOCKER_GEN_SSD_PIDFILE"
@@ -95,7 +93,7 @@ case "$1" in
 		;;
 
 	restart)
-		check_init
+		check_for_upstart 1
 		fail_unless_root
 		docker_gen_pid=`cat "$DOCKER_GEN_SSD_PIDFILE" 2>/dev/null`
 		[ -n "$docker_gen_pid" ] \
@@ -105,13 +103,13 @@ case "$1" in
 		;;
 
 	force-reload)
-		check_init
+		check_for_upstart 1
 		fail_unless_root
 		$0 restart
 		;;
 
 	status)
-		check_init
+		check_for_upstart 1
 		status_of_proc -p "$DOCKER_GEN_SSD_PIDFILE" "$DOCKER_GEN" "$DOCKER_GEN_DESC"
 		;;
 
