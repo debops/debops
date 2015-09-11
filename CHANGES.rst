@@ -13,5 +13,7 @@ v0.1.0
 
 - Fixed ``ntp_listen: '*'`` for NTPd. [ypid]
 
+- Added support for ``ntpdate``. [ypid]
+
 .. _ntp and Apparmor issue: https://bugs.launchpad.net/ubuntu/+source/openntpd/+bug/458061
 

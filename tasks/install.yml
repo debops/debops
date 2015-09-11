@@ -1,0 +1,27 @@
+---
+
+- name: Ensure that alternative daemons/programs are not installed
+  apt:
+    name: '{{ item.value }}'
+    state: 'absent'
+    purge: True
+  when: item.key != ntp_daemon
+  with_dict: ntp_daemon_to_package_mapping
+
+- name: Install required packages
+  apt:
+    name: '{{ ntp_daemon_to_package_mapping[ntp_daemon] }}'
+    state: 'present'
+    install_recommends: False
+
+# NTPdate does not need to be configured separately as the script `/usr/sbin/ntpdate-debian`
+# will pick up the configuration from `/etc/ntp.conf` when it exists.
+
+  # Install NTPd on all hosts except inside containers
+- include: ntpd.yml
+  when: ntp_daemon in [ 'ntpd', 'ntpdate' ]
+
+  # Install OpenNTPd on all hosts except inside containers
+- include: openntpd.yml
+  when: ntp_daemon == 'openntpd'
+
