@@ -66,6 +66,8 @@ v0.2.7
   of patterns). This can be used to easily match one or more strings in a list
   using ``*`` and ``?`` characters. [drybjed]
 
+- Add ``debops.docker_gen`` role. [drybjed]
+
 v0.2.6
 ------
 
