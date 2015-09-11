@@ -65,7 +65,18 @@
     mode: '0755'
   notify: [ 'Restart docker-gen' ]
   when: (ansible_local|d() and ansible_local.init|d() and
-         ansible_local.init != "systemd")
+         ansible_local.init == "sysvinit")
+
+- name: Configure docker-gen upstart script
+  template:
+    src: 'etc/init/docker-gen.conf.j2'
+    dest: '/etc/init/docker-gen.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  notify: [ 'Restart docker-gen' ]
+  when: (ansible_local|d() and ansible_local.init|d() and
+         ansible_local.init == "upstart")
 
 - name: Configure docker-gen systemd service
   template:
