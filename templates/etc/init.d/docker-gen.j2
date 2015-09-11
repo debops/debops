@@ -44,12 +44,6 @@ if [ ! -x $DOCKER_GEN ]; then
 	exit 1
 fi
 
-check_for_upstart() {
-    if init_is_upstart; then
-	exit $1
-    fi
-}
-
 fail_unless_root() {
 	if [ "$(id -u)" != '0' ]; then
 		log_failure_msg "$DOCKER_GEN_DESC must be run as root"
@@ -59,8 +53,6 @@ fail_unless_root() {
 
 case "$1" in
 	start)
-		check_for_upstart 1
-
 		fail_unless_root
 
 		touch "$DOCKER_GEN_LOGFILE"
@@ -85,7 +77,6 @@ case "$1" in
 		;;
 
 	stop)
-		check_for_upstart 0
 		fail_unless_root
 		log_begin_msg "Stopping $DOCKER_GEN_DESC: $BASE"
 		start-stop-daemon --stop --pidfile "$DOCKER_GEN_SSD_PIDFILE"
@@ -93,7 +84,6 @@ case "$1" in
 		;;
 
 	restart)
-		check_for_upstart 1
 		fail_unless_root
 		docker_gen_pid=`cat "$DOCKER_GEN_SSD_PIDFILE" 2>/dev/null`
 		[ -n "$docker_gen_pid" ] \
@@ -103,13 +93,11 @@ case "$1" in
 		;;
 
 	force-reload)
-		check_for_upstart 1
 		fail_unless_root
 		$0 restart
 		;;
 
 	status)
-		check_for_upstart 1
 		status_of_proc -p "$DOCKER_GEN_SSD_PIDFILE" "$DOCKER_GEN" "$DOCKER_GEN_DESC"
 		;;
 
