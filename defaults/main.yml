@@ -40,7 +40,10 @@ mariadb_port: '3306'
 #
 # The choice depends on availability of MariaDB packages in a distribution.
 # Percona needs to be selected explicitly.
-mariadb_flavor: '{{ mariadb_flavor_map[ansible_distribution_release] | default("mariadb") }}'
+mariadb_flavor: '{{ (ansible_local.mariadb.flavor
+                     if (ansible_local|d() and ansible_local.mariadb|d() and
+                         ansible_local.mariadb.flavor|d())
+                     else (mariadb_flavor_map[ansible_distribution_release] | default("mariadb"))) }}'
 
 
 # .. envvar:: mariadb_base_packages
