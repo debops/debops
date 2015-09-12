@@ -4,7 +4,7 @@ Changelog
 v0.1.1
 ------
 
-*Unreleased*
+*Released: 2015-09-12*
 
 - Change the order of tasks in the role so that database and user creation can
   use Ansible local facts immediately. [drybjed]
