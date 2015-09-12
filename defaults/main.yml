@@ -21,7 +21,10 @@
 #
 # The choice depends on availability of MariaDB packages in a distribution.
 # Percona needs to be selected explicitly.
-mariadb_server_flavor: '{{ mariadb_server_flavor_map[ansible_distribution_release] | default("mariadb") }}'
+mariadb_server_flavor: '{{ (ansible_local.mariadb.flavor
+                            if (ansible_local|d() and ansible_local.mariadb|d() and
+                                ansible_local.mariadb.flavor|d())
+                            else (mariadb_server_flavor_map[ansible_distribution_release] | default("mariadb"))) }}'
 
 
 # .. envvar:: mariadb_server_base_packages
