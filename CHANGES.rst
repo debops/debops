@@ -11,6 +11,9 @@ v0.1.2
 
 - Add support for Percona Server as an alternative to MariaDB. [drybjed]
 
+- Store the active database flavor in local fact so that other roles can use
+  this information if necessary. [drybjed]
+
 v0.1.1
 ------
 
