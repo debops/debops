@@ -9,6 +9,8 @@ v0.1.1
 - Change the order of tasks in the role so that database and user creation can
   use Ansible local facts immediately. [drybjed]
 
+- Add support for Percona Server client as an alternative to MariaDB. [drybjed]
+
 v0.1.0
 ------
 

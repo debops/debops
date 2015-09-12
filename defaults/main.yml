@@ -30,16 +30,40 @@ mariadb_port: '3306'
 
 # .. envvar:: mariadb_flavor
 #
-# What database should be installed on a host? You can choose either
-# ``mariadb`` or ``mysql``, on specific Linux distributions ``mysql`` will be
-# chosen automatically.
+# Variable which defines what database engine to use:
+#
+# - ``mariadb``: default, use MariaDB engine from Debian repository
+#
+# - ``mysql``: use MySQL engine from Debian repository
+#
+# - ``percona``: use Percona XtraDB engine from upstream repository
+#
+# The choice depends on availability of MariaDB packages in a distribution.
+# Percona needs to be selected explicitly.
 mariadb_flavor: '{{ mariadb_flavor_map[ansible_distribution_release] | default("mariadb") }}'
+
+
+# .. envvar:: mariadb_base_packages
+#
+# List of APT packages that should be installed with any database engine
+# selected.
+mariadb_base_packages: [ 'python-mysqldb' ]
 
 
 # .. envvar:: mariadb_packages
 #
-# List of APT packages to install.
-mariadb_packages: [ '{{ mariadb_flavor }}-client', 'python-mysqldb' ]
+# List of additional packages to install with the database client.
+mariadb_packages: []
+
+
+# .. envvar:: mariadb_packages_map
+#
+# Dictionary with list of packages that will be installed with a particular
+# database engine.
+mariadb_packages_map:
+  'mariadb': [ 'mariadb-client' ]
+  'mysql': [ 'mysql-client' ]
+  'percona': [ 'percona-server-client' ]
 
 
 # .. envvar:: mariadb_client
