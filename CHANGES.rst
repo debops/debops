@@ -9,6 +9,8 @@ v0.1.2
 - Do not delete ``'root'@'localhost'`` database account when hostname is
   ``localhost``. [drybjed]
 
+- Add support for Percona Server as an alternative to MariaDB. [drybjed]
+
 v0.1.1
 ------
 
