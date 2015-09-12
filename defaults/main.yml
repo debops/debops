@@ -11,15 +11,40 @@
 
 # .. envvar:: mariadb_server_flavor
 #
-# Variable which defines what database to use (MariaDB or MySQL).
+# Variable which defines what database engine to use:
+#
+# - ``mariadb``: default, use MariaDB engine from Debian repository
+#
+# - ``mysql``: use MySQL engine from Debian repository
+#
+# - ``percona``: use Percona XtraDB engine from upstream repository
+#
+# The choice depends on availability of MariaDB packages in a distribution.
+# Percona needs to be selected explicitly.
 mariadb_server_flavor: '{{ mariadb_server_flavor_map[ansible_distribution_release] | default("mariadb") }}'
+
+
+# .. envvar:: mariadb_server_base_packages
+#
+# List of APT packages that should be installed with any database engine
+# selected.
+mariadb_server_base_packages: [ 'python-mysqldb', 'ssl-cert' ]
 
 
 # .. envvar:: mariadb_server_packages
 #
-# List of APT packages to install with MariaDB server.
-mariadb_server_packages: [ '{{ mariadb_server_flavor }}-server',
-                           'python-mysqldb', 'ssl-cert' ]
+# List of additional packages to install with the database server.
+mariadb_server_packages: []
+
+
+# .. envvar:: mariadb_server_packages_map
+#
+# Dictionary with list of packages that will be installed with a particular
+# database engine.
+mariadb_server_packages_map:
+  'mariadb': [ 'mariadb-server' ]
+  'mysql': [ 'mysql-server' ]
+  'percona': [ 'percona-server-server' ]
 
 
 # .. envvar:: mariadb_server_bind_address
