@@ -6,10 +6,27 @@
 - name: Check if database server is installed
   environment:
     LC_MESSAGES: 'C'
-  shell: dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server' | grep -v '^$'
+  shell: dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server' 'percona-server-server' | grep -v '^$'
   register: mariadb_register_version
   changed_when: False
   failed_when: False
+
+- name: Add Percona APT GPG key
+  apt_key:
+    state: 'present'
+    id: '1C4CBDCDCD2EFD2A'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver|d())
+                   else "hkp://pool.sks-keyservers.net" }}'
+  when: mariadb_flavor in [ 'percona' ]
+
+- name: Add Percona APT repository
+  apt_repository:
+    repo: 'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
+    state: 'present'
+    update_cache: True
+  when: mariadb_flavor in [ 'percona' ]
 
 - name: Check if local database port is open
   command: nc -z localhost {{ mariadb_port }}
@@ -36,7 +53,10 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_items: mariadb_packages
+  with_flattened:
+    - mariadb_base_packages
+    - mariadb_packages_map[mariadb_flavor]
+    - mariadb_packages
 
 - name: Configure database client defaults
   template:
