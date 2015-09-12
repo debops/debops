@@ -4,7 +4,7 @@ Changelog
 v0.1.2
 ------
 
-*Unreleased*
+*Released: 2015-09-12*
 
 - Do not delete ``'root'@'localhost'`` database account when hostname is
   ``localhost``. [drybjed]
