@@ -91,12 +91,10 @@
 - name: Install etherpad-lite init script
   template: src=etc/init.d/etherpad-lite.j2 dest=/etc/init.d/etherpad-lite
             owner=root group=root mode=0755
-  register: etherpad_register_init_script
   notify: [ 'Restart etherpad-lite' ]
 
 - name: Enable etherpad-lite service
-  command: insserv etherpad-lite
-  when: etherpad_register_init_script is defined and etherpad_register_init_script.changed
+  service: name=etherpad-lite enabled=yes
 
 - name: Install Etherpad dependencies
   command: bin/installDeps.sh chdir={{ etherpad_home + '/' + etherpad_repository }}
