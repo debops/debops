@@ -49,7 +49,7 @@ Examples
 
 Create databases, remove some of the existing ones::
 
-    mysql_databases:
+    mariadb_databases:
 
       - name: 'database1'
 
@@ -61,14 +61,14 @@ Create databases, remove some of the existing ones::
 Create a database and import its contents from a file already present on remote
 host::
 
-    mysql_databases:
+    mariadb_databases:
 
       - name: 'fancy_db'
         target: '/tmp/dbcontents.sql.gz'
 
 Create a database and import its contents from a file on the Ansible Controller::
 
-    mysql_databases:
+    mariadb_databases:
 
       - name: 'new_database'
         source: '/tmp/database-contents.sql.gz'
