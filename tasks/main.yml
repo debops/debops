@@ -2,7 +2,13 @@
 
 - name: Install required Etherpad packages
   apt: pkg={{ item }} state=latest install_recommends=no
-  with_items: [ 'build-essential', 'pkg-config', 'libssl-dev', 'libpq-dev' ]
+  with_items:
+  - build-essential
+  - pkg-config
+  - libssl-dev
+  - libpq-dev
+  - curl
+  - git
 
 - name: Install Abiword if enabled
   apt: pkg=abiword state=latest install_recommends=no
