@@ -2,13 +2,15 @@
 
 [![Travis CI](http://img.shields.io/travis/debops/ansible-libvirtd.svg?style=flat)](http://travis-ci.org/debops/ansible-libvirtd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--libvirtd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-libvirtd/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.libvirtd-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4548)
 
-`debops.libvirtd` Ansible role manages the [libvirtd](http://libvirt.org/)
+The `debops.libvirtd` Ansible role manages the [libvirtd][libvirt]
 daemon on a virtualization host (server side). It will automatically
 install QEMU KVM support on any host that is not a KVM guest, to allow for
 easy deployment of KVM virtual machines.
 
 Configuration of `libvirtd` instance (local or remote) can be performed using
-`debops.libvirt` role, which uses `libvirt` API to manage the server.
+`debops.libvirt` role, which uses the `libvirt` API to manage the server.
+
+[libvirt]: https://libvirt.org/
 
 ### Installation
 

@@ -4,7 +4,7 @@ Getting started
 .. contents::
    :local:
 
-``debops.libvirtd`` role will install ``libvirtd`` along with virtualization
+The ``debops.libvirtd`` role will install ``libvirtd`` along with virtualization
 components required on the server.
 
 Configuration at the moment is very minimal - specified account will be granted
@@ -23,7 +23,7 @@ a host to ``[debops_libvirtd]`` group.
 Example playbook
 ----------------
 
-Here's an example playbook which uses ``debops.libvirtd`` role::
+Here's an example playbook which uses the ``debops.libvirtd`` role::
 
     ---
 
