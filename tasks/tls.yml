@@ -9,6 +9,29 @@
   notify: [ 'Restart slapd' ]
   when: slapd_pki is defined and slapd_pki
 
+- name: Check if TLS certificate is configured
+  shell: ldapsearch -LLL -Y EXTERNAL -H ldapi:/// -b cn=config -s base 'olcTLSCertificateFile=*' olcTLSCertificateFile
+  register: slapd_register_tls_cert_search
+  changed_when: False
+
+- name: Create random temporary directory for ldif file
+  command: mktemp -d
+  register: slapd_register_tempdir
+  when: slapd_pki is defined and slapd_pki and not (slapd_register_tls_cert_search.stdout | search("olcTLSCertificateFile:"))
+
+- name: Prepare temporary ldif file
+  template:
+    src: 'tmp/configure_tlscerts.ldif.j2'
+    dest: '{{ slapd_register_tempdir.stdout|d() + "/configure_tlscerts.ldif" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: slapd_pki is defined and slapd_pki and not (slapd_register_tls_cert_search.stdout | search("olcTLSCertificateFile:"))
+
+- name: Configure TLS certificates (first time only)
+  shell: 'ldapmodify -Y EXTERNAL -H ldapi:/// -f {{ slapd_register_tempdir.stdout|d() + "/configure_tlscerts.ldif" }}'
+  when: slapd_pki is defined and slapd_pki and not (slapd_register_tls_cert_search.stdout | search("olcTLSCertificateFile:"))
+
 - name: Configure TLS certificates
   ldap_attr:
     dn: 'cn=config'
