@@ -7,9 +7,9 @@ support on any host that is not a KVM guest, to allow for easy deployment of
 KVM virtual machines.
 
 Configuration of ``libvirtd`` instance (local or remote) can be performed using
-``debops.libvirt`` role, which uses ``libvirt`` API to manage the server.
+``debops.libvirt`` role, which uses the ``libvirt`` API to manage the server.
 
-.. _libvirtd: http://libvirt.org/
+.. _libvirtd: https://libvirt.org/
 
 Installation
 ~~~~~~~~~~~~
