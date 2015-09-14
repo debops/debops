@@ -1,7 +1,7 @@
 Default variables: configuration
 ================================
 
-some of ``debops.libvirt`` default variables have more extensive configuration
+Some of ``debops.libvirt`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
 

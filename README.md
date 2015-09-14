@@ -2,13 +2,15 @@
 
 [![Travis CI](http://img.shields.io/travis/debops/ansible-libvirt.svg?style=flat)](http://travis-ci.org/debops/ansible-libvirt) [![test-suite](http://img.shields.io/badge/test--suite-ansible--libvirt-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-libvirt/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.libvirt-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/4554)
 
-`debops.libvirt` role can be used to manage networks and storage pools defined
-in [libvirt](http://libvirt.org/) virtualization service. It's designed to be
+The `debops.libvirt` role can be used to manage networks and storage pools defined
+in the [libvirt][] virtualization service. It's designed to be
 used either "locally", directly on a given host, or "remotely" from a central
 host through the API.
 
-To configure a host to provide `libvirtd` service you can use `debops.libvirtd`
+To configure a host to provide the `libvirtd` service you can use the `debops.libvirtd`
 role.
+
+[libvirt]: https://libvirt.org/
 
 ### Installation
 
