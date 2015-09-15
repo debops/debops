@@ -1,7 +1,21 @@
 ---
 
-- include: configure_pgdg.yml
-  when: postgresql_pgdg is defined and postgresql_pgdg
+- name: Add upstream PostgreSQL APT key
+  apt_key:
+    id: '7FCC7D46ACCC4CF8'
+    state: 'present'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+  when: postgresql_server_upstream|d() and postgresql_server_upstream
+
+- name: Add upstream PostgreSQL APT repository
+  apt_repository:
+    repo: 'deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main'
+    state: 'present'
+    update_cache: True
+  when: postgresql_server_upstream|d() and postgresql_server_upstream
 
 - include: install_postgresql.yml
 
