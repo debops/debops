@@ -11,6 +11,12 @@ v0.2.0
   ``postgresql_server_upstream``. Move the task from a separate file to the
   main task file. [drybjed]
 
+- Change what PostgreSQL packages are installed.
+
+  Instead of installing a specific PostgreSQL version directly, install
+  ``postgresql`` and ``postgresql-client`` meta-packages. List of packages to
+  install is moved to the defaults. [drybjed]
+
 v0.1.0
 ------
 
