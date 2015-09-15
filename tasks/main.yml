@@ -2,11 +2,11 @@
 
 - name: Recalculate ifupdown based on POSIX capabilities
   set_fact:
-     ifupdown: |
-       {{ (ifupdown | bool and (ifupdown_ignore_cap12s | bool or
-           (ansible_local|d() and ansible_local.cap12s|d() and
-            (not ansible_local.cap12s.enabled | bool or
-             (ansible_local.cap12s.enabled | bool and "cap_net_admin" in ansible_local.cap12s.list))))) }}
+     ifupdown: '{{ (ifupdown | bool and
+                    (ifupdown_ignore_cap12s | bool or
+                     (ansible_local|d() and ansible_local.cap12s|d() and
+                      (not ansible_local.cap12s.enabled | bool or
+                       (ansible_local.cap12s.enabled | bool and "cap_net_admin" in ansible_local.cap12s.list))))) }}'
 
   # If static configuration is detected, don't manage interfaces automatically
 - include: check_static.yml
