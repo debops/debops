@@ -17,6 +17,10 @@ v0.2.0
   ``postgresql`` and ``postgresql-client`` meta-packages. List of packages to
   install is moved to the defaults. [drybjed]
 
+- Reorganize shared memory configuration. Memory calculations have been moved
+  to the default role variables so they are easier to change if needed.
+  [drybjed]
+
 v0.1.0
 ------
 
