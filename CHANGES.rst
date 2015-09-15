@@ -33,6 +33,12 @@ v0.2.0
   User can install additional PostgreSQL versions as needed using separate list
   of packages to install. [drybjed]
 
+- Merge separate version-based ``postgresql.conf`` files into one, which uses
+  ``version_compare()`` filter to enable or disable parts of the configuration
+  depending on the cluster version. The new configuration file is cleaner,
+  without the extra comments that made the previous versions hard to maintain.
+  [drybjed]
+
 v0.1.0
 ------
 
