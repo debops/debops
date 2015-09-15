@@ -95,8 +95,10 @@ max_prepared_transactions = {{ item.max_prepared_transactions | d('0') }}
 work_mem = {{ item.work_mem | d('1MB') }}
 maintenance_work_mem = {{ item.maintenance_work_mem | d('16MB') }}
 max_stack_depth = {{ item.max_stack_depth | d('2MB') }}
+{% if (item.version | d(postgresql_server_version)) | version_compare('9.4','>=') %}
 huge_pages = {{ item.huge_pages | d('try') }}
 autovacuum_work_mem = {{ item.autovacuum_work_mem | d('-1') }}
+{% endif %}
 max_stack_depth = {{ item.max_stack_depth | d('2MB') }}
 
 {% if (item.version | d(postgresql_server_version)) | version_compare('9.1','>') %}
@@ -108,12 +110,10 @@ dynamic_shared_memory_type = {{ item.dynamic_shared_memory_type | d('sysv') }}
 {% endif %}
 {% if (item.version | d(postgresql_server_version)) | version_compare('9.1','>') %}
 
-
 # - Disk -
 
 temp_file_limit = {{ item.temp_file_limit | d('-1') }}
 {% endif %}
-
 
 # - Kernel Resource Usage -
 
@@ -140,7 +140,9 @@ bgwriter_lru_multiplier = {{ item.bgwriter_lru_multiplier | d('2.0') }}
 # - Asynchronous Behavior -
 
 effective_io_concurrency = {{ item.effective_io_concurrency | d('1') }}
+{% if (item.version | d(postgresql_server_version)) | version_compare('9.4','>=') %}
 max_worker_processes = {{ item.maxworker_processes | d('8') }}
+{% endif %}
 
 
 #------------------------------------------------------------------------------
