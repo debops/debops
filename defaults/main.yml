@@ -37,9 +37,10 @@ postgresql_default_log_destination: 'syslog'
 postgresql_default_locale: 'en_US.UTF-8'
 postgresql_default_locale_messages: 'C'
 
-# Timezone configured in PostgreSQL clusters, by default use timezone settings
-# from Ansible Controller or fallback to UTC
-postgresql_default_timezone: ""
+# Timezone configured in PostgreSQL clusters
+postgresql_server_timezone: '{{ ansible_local.timezone
+                                if (ansible_local|d() and ansible_local.timezone|d())
+                                else "Etc/UTC" }}'
 
 # Base path of PKI infrastructure, managed by 'debops.pki' role
 postgresql_pki_path: '{{ ansible_local.pki.base_path | default("/etc/pki") }}'

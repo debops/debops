@@ -21,6 +21,8 @@ v0.2.0
   to the default role variables so they are easier to change if needed.
   [drybjed]
 
+- Get timezone information from host local facts, if available. [drybjed]
+
 v0.1.0
 ------
 

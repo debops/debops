@@ -1,20 +1,5 @@
 ---
 
-- name: Check if /etc/timezone exists on Ansible Controller
-  local_action: stat path=/etc/timezone
-  sudo: no
-  register: postgresql_etc_timezone
-
-- name: Configure default timezone based on Ansible Controller
-  set_fact:
-    postgresql_default_timezone: '{{ lookup("file","/etc/timezone") }}'
-  when: (postgresql_default_timezone is undefined or not postgresql_default_timezone) and
-        (php5_etc_timezone is defined and php5_etc_timezone.stat.exists == True)
-
-- name: Configure default timezone if not defined
-  set_fact:
-    postgresql_default_timezone: 'UTC'
-  when: postgresql_default_timezone is undefined or not postgresql_default_timezone
 
 - name: Create PostgreSQL clusters
   environment:
