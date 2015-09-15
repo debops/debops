@@ -34,6 +34,15 @@
     mode: '0755'
   when: inventory_hostname in rsnapshot_clients
 
+- name: Check rsnapshot version
+  environment:
+    LC_MESSAGES: 'C'
+  shell: dpkg-query -W -f='${Version}\n' 'rsnapshot' | cut -d- -f1
+  register: rsnapshot_register_version
+  changed_when: False
+  failed_when: False
+  when: inventory_hostname in rsnapshot_clients
+
 - name: Create server configuration directories on client
   file:
     path: '/etc/rsnapshot/{{ hostvars[item].rsnapshot_backup_host | default(hostvars[item].ansible_fqdn) }}'
