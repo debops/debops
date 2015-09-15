@@ -1,5 +1,9 @@
 ---
 
+- name: Check if shared memory support is available
+  shell: mount | grep /dev/shm || true
+  register: postgresql_server_register_shm
+  changed_when: False
 
 - name: Create PostgreSQL clusters
   environment:

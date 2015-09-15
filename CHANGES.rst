@@ -23,6 +23,8 @@ v0.2.0
 
 - Get timezone information from host local facts, if available. [drybjed]
 
+- Check if PostgreSQL can use shared memory through ``/dev/shm``. [drybjed]
+
 v0.1.0
 ------
 
