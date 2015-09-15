@@ -17,6 +17,18 @@
     update_cache: True
   when: postgresql_server_upstream|d() and postgresql_server_upstream
 
+- name: Get default PostgreSQL version
+  shell: "apt-cache show '^postgresql$' | grep -E '^Depends:\\s' | awk '{print $2}' | cut -d- -f2 | head -n 1"
+  register: postgresql_server_register_version
+  changed_when: False
+
+- name: Set default PostgreSQL version variable
+  set_fact:
+    postgresql_server_version: '{{ ansible_local.postgresql.version
+                                   if (ansible_local|d() and ansible_local.postgresql|d() and
+                                       ansible_local.postgresql.version|d())
+                                   else postgresql_server_register_version.stdout }}'
+
 - include: install_postgresql.yml
 
 - name: Count number of currently configured clusters
@@ -35,3 +47,20 @@
 - include: manage_users.yml
 - include: manage_ferm_services.yml
 - include: manage_autopostgresqlbackup.yml
+
+- name: Make sure that Ansible local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save PostgreSQL local facts
+  template:
+    src: 'etc/ansible/facts.d/postgresql.fact.j2'
+    dest: '/etc/ansible/facts.d/postgresql.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+

@@ -25,6 +25,14 @@ v0.2.0
 
 - Check if PostgreSQL can use shared memory through ``/dev/shm``. [drybjed]
 
+- Change how role manages default PostgreSQL version.
+
+  Instead of using a separate static variable, role now checks the version
+  installed by the ``postgresql`` meta-package internally and stores that as
+  a local Ansible fact to keep the cluster versions stable between upgrades.
+  User can install additional PostgreSQL versions as needed using separate list
+  of packages to install. [drybjed]
+
 v0.1.0
 ------
 

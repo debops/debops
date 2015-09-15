@@ -1,0 +1,8 @@
+{% if (ansible_local|d() and ansible_local.postgresql|d() and ansible_local.postgresql.version|d()) %}
+{% set postgresql_server_tpl_version = ansible_local.postgresql.version %}
+{% else %}
+{% set postgresql_server_tpl_version = postgresql_server_version %}
+{% endif %}
+{
+"version": "{{ postgresql_server_tpl_version }}"
+}

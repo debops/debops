@@ -28,7 +28,7 @@
 #
 
 # This gets appended to the BACKUPDIR to form a path for this cluster.
-DBCLUSTER="{{ postgresql_version }}/{{ item.name }}"
+DBCLUSTER="{{ item.version | d(postgresql_server_version) }}/{{ item.name }}"
 
 # Add the port so it supports pg clusters.
 OPT="-p {{ item.port }}"
