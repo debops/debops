@@ -9,6 +9,9 @@ v0.2.3
 - Fix issues during Ansible ``--check`` mode, role should no longer stop due to
   not existing dictionary keys. [drybjed]
 
+- Fix an issue where Jinja templating of the ``ifupdown`` variable resulted in
+  a new line character added in Ansible v2. [drybjed]
+
 v0.2.2
 ------
 
