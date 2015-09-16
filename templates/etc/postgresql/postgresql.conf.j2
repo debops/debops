@@ -80,16 +80,20 @@ tcp_keepalives_count = {{ item.tcp_keepalives_count | d('0') }}
 
 # - Memory -
 
-{% if postgresql_sysctl_shm_multiplier is defined and postgresql_sysctl_shm_multiplier %}
-shared_buffers = {{ item.shared_buffers | d(((ansible_memtotal_mb * 0.4)/postgresql_cluster_count|int)|round|int|string + 'MB') }}
-{% else %}
 {% if item.max_connections is defined and item.max_connections %}
-{% set postgresql_tpl_max_connections = item.max_connections|int %}
+{%   set postgresql_server_tpl_max_connections = item.max_connections|int %}
 {% else %}
-{% set postgresql_tpl_max_connections = postgresql_default_max_connections|int %}
+{%   set postgresql_server_tpl_max_connections = postgresql_server_max_connections|int %}
 {% endif %}
-shared_buffers = {{ item.shared_buffers | d((((postgresql_sysctl_shmmax.stdout|int - (8 * 1024 * 1024) - (16384 * postgresql_tpl_max_connections)) / 1024))|round|int|string + 'kB') }}
+{% if (postgresql_server_register_sysctl_shmmax.stdout|int >= (ansible_memtotal_mb|int * 1024 * 1024)) %}
+{%   set postgresql_server_tpl_shmmax = ((ansible_memtotal_mb|int * 1024 * 1024) * postgresql_server_shm_memory_limiter|float) | round | int %}
+{% else %}
+{%   set postgresql_server_tpl_shmmax = postgresql_server_register_sysctl_shmmax.stdout %}
 {% endif %}
+{% if not item.shared_buffers|d() %}
+# (( {{ (postgresql_server_tpl_shmmax|int / 1024 / 1024)|round|int }} MB of maximum shared buffer size * {{ postgresql_server_shmmax_limiter }} ) - ( 16 kB * {{ postgresql_server_tpl_max_connections }} max connections )) / {{ postgresql_server_fact_cluster_count }} cluster(s)
+{% endif %}
+shared_buffers = {{ item.shared_buffers | d((((((postgresql_server_tpl_shmmax|int * postgresql_server_shmmax_limiter|float)|round|int - (16384 * postgresql_server_tpl_max_connections|int)) / postgresql_server_fact_cluster_count|int) / 1024 / 1024))|round|int|string + 'MB') }}
 temp_buffers = {{ item.temp_buffers | d('8MB') }}
 max_prepared_transactions = {{ item.max_prepared_transactions | d('0') }}
 work_mem = {{ item.work_mem | d('1MB') }}

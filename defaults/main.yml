@@ -75,14 +75,16 @@ postgresql_server_ssl_ciphers: 'ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH'
 # Default startup behaviour: auto, manual, disabled
 postgresql_server_start_conf: 'auto'
 
-# How much % of RAM to use for shared memory?  By default 0.5 means half
-# of system memory will be used for shmmax and shmall calculations
-# http://www.postgresql.org/docs/9.1/static/kernel-resources.html
-# Set to False to disable shared memory changes
-postgresql_sysctl_shm_multiplier: 0.5
+# Percentage of maximum shared memory segment to use for shared buffer
+# calculations
+postgresql_server_shmmax_limiter: '0.8'
+
+# Percentage of available RAM to use for shared buffer calculations, in case
+# that maximum shared buffers are not defined correctly
+postgresql_server_shm_memory_limiter: '0.4'
 
 # Default maximum number of connections
-postgresql_default_max_connections: '100'
+postgresql_server_max_connections: '100'
 
 # Default WAL and archivisation settings
 # Options: minimal, archive, hot_standby

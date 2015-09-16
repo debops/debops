@@ -81,6 +81,17 @@ v0.2.0
 - Remove shared memory configuration from ``debops.postgresql_server``, they
   are now managed by ``debops.console`` role. [drybjed]
 
+- Modify how PostgreSQL ``shared_buffers`` are calculated.
+
+  Several variable names have been changed, see commit for details. Role now
+  checks if ``kernel.shmmax`` variable has been correctly set and uses that if
+  it's lower than the amount of available system RAM. If it's not set
+  correctly, role will use amount of available system RAM (about 40% by
+  default) as a base for calculations.
+
+  Finished size of ``shared_buffers`` is divided equally between all of the
+  PostgreSQL clusters running on a host. [drybjed]
+
 v0.1.0
 ------
 

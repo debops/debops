@@ -33,12 +33,11 @@
 
 - name: Count number of currently configured clusters
   set_fact:
-    postgresql_cluster_count: '{{ (postgresql_default_cluster|length|int + postgresql_clusters|length|int) * 1 }}'
-
+    postgresql_server_fact_cluster_count: '{{ (postgresql_default_cluster|length|int + postgresql_clusters|length|int) * 1 }}'
 
 - name: Get current maximum shared memory value
   shell: cat /proc/sys/kernel/shmmax
-  register: postgresql_sysctl_shmmax
+  register: postgresql_server_register_sysctl_shmmax
   changed_when: False
 
 - include: manage_clusters.yml
