@@ -74,6 +74,10 @@ v0.2.0
 - Rename ``postgresql_default_start_conf`` variable to
   ``postgresql_server_start_conf``.  [drybjed]
 
+- Rename ``postgresql_sysctl_file`` and ``postgresql_sysctl_values`` variables
+  to ``postgresql_server_sysctl_file`` and ``postgresql_server_sysctl_values``.
+  [drybjed]
+
 v0.1.0
 ------
 
