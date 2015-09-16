@@ -1,12 +1,15 @@
 ---
-- name: Update default postgres password
+
+- name: Update default admin password
   postgresql_user:
-    name='{{ postgresql_server_user }}'
-    password='{{ item.postgres_password | default(postgresql_default_postgres_password) }}'
-    encrypted=False
-    port='{{ item.port }}'
-    state='present'
+    name: '{{ item.user | d(postgresql_server_user) }}'
+    password: '{{ item.admin_password | d(postgresql_server_admin_password) }}'
+    encrypted: False
+    port: '{{ item.port }}'
+    state: 'present'
   with_flattened:
     - postgresql_default_cluster
     - postgresql_clusters
-  sudo_user: '{{ postgresql_server_user }}'
+  sudo_user: '{{ item.user | d(postgresql_server_user) }}'
+  no_log: True
+

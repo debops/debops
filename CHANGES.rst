@@ -45,6 +45,9 @@ v0.2.0
 - Change the ``postgresql_default_allow`` variable name to
   ``postgresql_server_allow``. [drybjed]
 
+- Change the ``postgresql_default_postgres_password`` variable to
+  ``postgresql_server_admin_password``. [drybjed]
+
 v0.1.0
 ------
 
