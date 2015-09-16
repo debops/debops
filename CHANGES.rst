@@ -68,6 +68,9 @@ v0.2.0
   to the respective CA/certificate/private key files. If they are not
   specified, default PKI configuration is used instead. [drybjed]
 
+- Rename ``postgresql_default_ssl_ciphers`` variable to
+  ``postgresql_server_ssl_ciphers``. [drybjed]
+
 v0.1.0
 ------
 
