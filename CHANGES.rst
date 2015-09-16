@@ -71,6 +71,9 @@ v0.2.0
 - Rename ``postgresql_default_ssl_ciphers`` variable to
   ``postgresql_server_ssl_ciphers``. [drybjed]
 
+- Rename ``postgresql_default_start_conf`` variable to
+  ``postgresql_server_start_conf``.  [drybjed]
+
 v0.1.0
 ------
 
