@@ -51,6 +51,9 @@ v0.2.0
 - Change the ``postgresql_default_log_destination`` variable to
   ``postgresql_server_log_destination``. [drybjed]
 
+- Change the ``postgresql_default_locale*`` variables to
+  ``postgresql_server_locale*``. [drybjed]
+
 v0.1.0
 ------
 

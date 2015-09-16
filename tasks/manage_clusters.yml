@@ -7,11 +7,11 @@
 
 - name: Create PostgreSQL clusters
   environment:
-    LANG: '{{ item.locale | default(postgresql_default_locale) }}'
-    LC_ALL: '{{ item.locale | default(postgresql_default_locale) }}'
+    LANG: '{{ item.locale | default(postgresql_server_locale) }}'
+    LC_ALL: '{{ item.locale | default(postgresql_server_locale) }}'
   command: pg_createcluster --user={{ item.user | default(postgresql_server_user) }}
            --group={{ item.group | default(postgresql_server_group) }}
-           --locale={{ item.locale | default(postgresql_default_locale) }}
+           --locale={{ item.locale | default(postgresql_server_locale) }}
            --start-conf={{ item.start_conf | default(postgresql_default_start_conf) }}
            --port={{ item.port }} {{ item.version | default(postgresql_server_version) }} {{ item.name }}
            creates=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/postgresql.conf
