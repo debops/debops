@@ -39,6 +39,9 @@ v0.2.0
   without the extra comments that made the previous versions hard to maintain.
   [drybjed]
 
+- Change the ``postgresql_owner`` and ``postgresql_group`` variabeles to
+  ``postgresql_server_user`` and ``postgresql_server_group``. [drybjed]
+
 v0.1.0
 ------
 

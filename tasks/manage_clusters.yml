@@ -9,8 +9,8 @@
   environment:
     LANG: '{{ item.locale | default(postgresql_default_locale) }}'
     LC_ALL: '{{ item.locale | default(postgresql_default_locale) }}'
-  command: pg_createcluster --user={{ item.user | default(postgresql_owner) }}
-           --group={{ item.group | default(postgresql_group) }}
+  command: pg_createcluster --user={{ item.user | default(postgresql_server_user) }}
+           --group={{ item.group | default(postgresql_server_group) }}
            --locale={{ item.locale | default(postgresql_default_locale) }}
            --start-conf={{ item.start_conf | default(postgresql_default_start_conf) }}
            --port={{ item.port }} {{ item.version | default(postgresql_server_version) }} {{ item.name }}
@@ -23,7 +23,7 @@
 - name: Configure PostgreSQL clusters
   template: src=etc/postgresql/postgresql.conf.j2
             dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/postgresql.conf
-            owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0644
+            owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0644
   with_flattened:
     - postgresql_default_cluster
     - postgresql_clusters
@@ -33,7 +33,7 @@
 - name: Configure PostgreSQL cluster environment
   template: src=etc/postgresql/environment.j2
             dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/environment
-            owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0644
+            owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0644
   with_flattened:
     - postgresql_default_cluster
     - postgresql_clusters
@@ -48,7 +48,7 @@
 - name: Configure PostgreSQL user identification
   template: src=etc/postgresql/pg_ident.conf.j2
             dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/pg_ident.conf
-            owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0640
+            owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0640
   with_flattened:
     - postgresql_default_cluster
     - postgresql_clusters
@@ -58,7 +58,7 @@
 - name: Configure PostgreSQL cluster host authentication
   template: src=etc/postgresql/pg_hba.conf.j2
             dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/pg_hba.conf
-            owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0640
+            owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0640
   with_flattened:
     - postgresql_default_cluster
     - postgresql_clusters
@@ -68,7 +68,7 @@
 - name: Configure PostgreSQL cluster start options
   template: src=etc/postgresql/start.conf.j2
             dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/start.conf
-            owner={{ item.user | default(postgresql_owner) }} group={{ item.group | default(postgresql_group) }} mode=0644
+            owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0644
   with_flattened:
     - postgresql_default_cluster
     - postgresql_clusters
