@@ -41,21 +41,33 @@ postgresql_server_timezone: '{{ ansible_local.timezone
                                 if (ansible_local|d() and ansible_local.timezone|d())
                                 else "Etc/UTC" }}'
 
+# Enable or disable support for PKI infrastructure managed by 'debops.pki'
+postgresql_server_pki: '{{ (True
+                            if (ansible_local|d() and ansible_local.pki|d() and
+                                ansible_local.pki.enabled|d() | bool)
+                            else False) | bool }}'
+
 # Base path of PKI infrastructure, managed by 'debops.pki' role
-postgresql_pki_path: '{{ ansible_local.pki.base_path | default("/etc/pki") }}'
+postgresql_server_pki_path: '{{ ansible_local.pki.base_path
+                               if (ansible_local|d() and ansible_local.pki|d() and
+                                   ansible_local.pki.base_path|d())
+                               else "/etc/pki" }}'
 
 # PKI realm used by PostgreSQL role
-postgresql_pki_realm: '{{ ansible_local.pki.realm | default("system") }}'
+postgresql_server_pki_realm: '{{ ansible_local.pki.realm
+                                 if (ansible_local|d() and ansible_local.pki|d() and
+                                     ansible_local.pki.realm|d())
+                                 else "system" }}'
 
 # Default Root CA certificate used by PostgreSQL clusters, relative to
 # 'postgresql_pki_realm' path
-postgresql_pki_ca: 'CA.crt'
+postgresql_server_pki_ca: 'CA.crt'
 
 # SSL certificate, private key and CRL used by PostgreSQL clusters if not
 # specified otherwise, relative to 'postgesql_pki_realm' path
-postgresql_pki_crt: 'default.crt'
-postgresql_pki_key: 'default.key'
-postgresql_pki_crl: 'default.crl'
+postgresql_server_pki_crt: 'default.crt'
+postgresql_server_pki_key: 'default.key'
+postgresql_server_pki_crl: 'default.crl'
 
 # Default SSL ciphers enabled in PostgreSQL clusters
 postgresql_default_ssl_ciphers: 'ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH'
@@ -129,9 +141,9 @@ postgresql_default_cluster:
     #group: 'postgres'
     #postgres_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/postgresql/9.1/main/postgres/password length=20') }}"
     #version: '{{ postgresql_version }}'
-    #ssl_root: '{{ postgresql_default_ssl_root }}'
-    #ssl_crt: '{{ postgresql_default_ssl_crt }}'
-    #ssl_key: '{{ postgresql_default_ssl_key }}'
+    #ssl_root: '{{ postgresql_server_pki_ca }}'
+    #ssl_crt: '{{ postgresql_default_pki_crt }}'
+    #ssl_key: '{{ postgresql_default_pki_key }}'
     #start_conf: 'auto'
     #environment:
     #  VARIABLE: 'value'

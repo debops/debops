@@ -54,6 +54,20 @@ v0.2.0
 - Change the ``postgresql_default_locale*`` variables to
   ``postgresql_server_locale*``. [drybjed]
 
+- Redesign of SSL/PKI support using ``debops.pki``.
+
+  All main PKI-related variables are moved from ``postgresql_pki_*`` namespace
+  to ``postgresql_server_pki_*`` namespace. New ``postgresql_server_pki``
+  variable specifies if ``debops.pki`` support and SSL support in general
+  should be enabled or disabled in all clusters on a given host. By default
+  role checks if ``debops.pki`` is configured and should automatically disable
+  PKI support if it's not.
+
+  Individual clusters can override PKI/SSL settings in their parameters.
+  ``item.ssl_*_file`` parameters if specified, now should have absolute paths
+  to the respective CA/certificate/private key files. If they are not
+  specified, default PKI configuration is used instead. [drybjed]
+
 v0.1.0
 ------
 
