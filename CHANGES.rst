@@ -48,6 +48,9 @@ v0.2.0
 - Change the ``postgresql_default_postgres_password`` variable to
   ``postgresql_server_admin_password``. [drybjed]
 
+- Change the ``postgresql_default_log_destination`` variable to
+  ``postgresql_server_log_destination``. [drybjed]
+
 v0.1.0
 ------
 
