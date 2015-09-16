@@ -42,6 +42,9 @@ v0.2.0
 - Change the ``postgresql_owner`` and ``postgresql_group`` variabeles to
   ``postgresql_server_user`` and ``postgresql_server_group``. [drybjed]
 
+- Change the ``postgresql_default_allow`` variable name to
+  ``postgresql_server_allow``. [drybjed]
+
 v0.1.0
 ------
 

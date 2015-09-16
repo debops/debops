@@ -1,9 +1,9 @@
 # This file is managed by Ansible, all changes will be lost
 
-{% if postgresql_default_allow is defined and postgresql_default_allow %}
+{% if postgresql_server_allow is defined and postgresql_server_allow %}
 # Default allow list for local PostgreSQL clusters
 protocol tcp dport {{ item.port }} {
-	@def $ITEMS = ( @ipfilter( ({{ postgresql_default_allow | unique | join(" ") }}) ) );
+	@def $ITEMS = ( @ipfilter( ({{ postgresql_server_allow | unique | join(" ") }}) ) );
 	@if @ne($ITEMS,"") {
 		saddr $ITEMS ACCEPT;
 	}
