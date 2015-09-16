@@ -32,3 +32,6 @@ v0.1.0
   https://git.kernel.org/cgit/linux/kernel/git/mhocko/mm.git/commit/include/uapi/linux/shm.h?id=060028bac94bf60a65415d1d55a359c3a17d5c31
   [drybjed]
 
+- Install additional packages by default: ``mtr-tiny``, ``tree``, ``at``.
+  Install ``nfs-common`` if NFS mounts are configured.  [drybjed]
+

@@ -11,6 +11,9 @@
     - console_packages
     - console_group_packages
     - console_host_packages
+    - [ '{{ "nfs-common" if (console_mounts_nfs|d() or
+                             console_group_mounts_nfs|d() or
+                             console_host_mounts_nfs|d()) else [] }}' ]
   when: item is defined and item
 
 - name: Check if /etc/inittab exists
