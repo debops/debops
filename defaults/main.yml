@@ -75,19 +75,6 @@ postgresql_server_ssl_ciphers: 'ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH'
 # Default startup behaviour: auto, manual, disabled
 postgresql_server_start_conf: 'auto'
 
-# File with PostgreSQL sysctl configuration
-postgresql_server_sysctl_file: '/etc/sysctl.d/30-postgresql-shm.conf'
-
-# PostgreSQL shared memory configuration set in 'sysctl'
-postgresql_server_sysctl_values:
-
-  # Total amount of shared memory
-  'kernel.shmall': '{{ (((ansible_memtotal_mb * 1024 * 1024) * postgresql_sysctl_shm_multiplier) / 4096)|round|int }}'
-
-  # Maximum size of shared memory segments
-  'kernel.shmmax': '{{ ((ansible_memtotal_mb * 1024 * 1024) * postgresql_sysctl_shm_multiplier)|round|int }}'
-
-
 # How much % of RAM to use for shared memory?  By default 0.5 means half
 # of system memory will be used for shmmax and shmall calculations
 # http://www.postgresql.org/docs/9.1/static/kernel-resources.html

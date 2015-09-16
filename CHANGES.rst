@@ -78,6 +78,9 @@ v0.2.0
   to ``postgresql_server_sysctl_file`` and ``postgresql_server_sysctl_values``.
   [drybjed]
 
+- Remove shared memory configuration from ``debops.postgresql_server``, they
+  are now managed by ``debops.console`` role. [drybjed]
+
 v0.1.0
 ------
 
