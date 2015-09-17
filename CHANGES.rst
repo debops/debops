@@ -100,6 +100,11 @@ v0.2.0
 - Switch ``listen_addresses`` PostgreSQL paramter to use YAML list instead of
   string, and expose default list of addresses for all clusters. [drybjed]
 
+- Rename ``postgresql_default_wal_level`` and
+  ``postgresql_default_archive_command`` variables to
+  ``postgresql_server_wal_level`` and ``postgresql_server_archive_command``.
+  [drybjed]
+
 v0.1.0
 ------
 

@@ -155,7 +155,7 @@ max_worker_processes = {{ item.maxworker_processes | d('8') }}
 
 # - Settings -
 
-wal_level = {{ item.wal_level | d(postgresql_default_wal_level) }}
+wal_level = {{ item.wal_level | d(postgresql_server_wal_level) }}
 fsync = {{ item.fsync | d('on') }}
 synchronous_commit = {{ item.synchronous_commit | d('on') }}
 wal_sync_method = {{ item.wal_sync_method | d('fsync') }}
@@ -180,16 +180,16 @@ checkpoint_warning = {{ item.checkpoint_warning | d('30s') }}
 
 # - Archiving -
 
-{% if item.archive_mode is defined and item.archive_mode %}
+{% if item.archive_mode|d() and item.archive_mode %}
 archive_mode = {{ item.archive_mode }}
-{% elif item.wal_level is defined and item.wal_level == 'archive' %}
+{% elif item.wal_level|d() and item.wal_level == 'archive' %}
 archive_mode = on
-{% elif postgresql_default_wal_level is defined and postgresql_default_wal_level == 'archive' %}
+{% elif postgresql_server_wal_level|d() and postgresql_server_wal_level == 'archive' %}
 archive_mode = on
 {% else %}
 archive_mode = off
 {% endif %}
-archive_command = '{{ item.archive_command | d(postgresql_default_archive_command) }}'
+archive_command = '{{ item.archive_command | d(postgresql_server_archive_command) }}'
 archive_timeout = {{ item.archive_timeout | d('0') }}
 
 
