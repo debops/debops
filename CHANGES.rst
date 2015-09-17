@@ -92,6 +92,11 @@ v0.2.0
   Finished size of ``shared_buffers`` is divided equally between all of the
   PostgreSQL clusters running on a host. [drybjed]
 
+- Merge the ``postgresql_default_cluster`` and ``postgresql_clusters`` lists
+  into ``postgresql_server_clusters`` list. Default cluster configuration has
+  been moved to an exposed ``postgresql_server_cluster_main`` dictionary
+  included by default in ``postgresql_server_clusters`` list. [drybjed]
+
 v0.1.0
 ------
 

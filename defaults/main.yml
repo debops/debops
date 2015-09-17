@@ -109,51 +109,45 @@ postgresql_default_hba: |
 # By default, nothing is configured
 postgresql_default_ident: False
 
-# Lists of PostgreSQL clusters to manage. Each entry should have at least
+# List of PostgreSQL clusters to manage. Each entry should have at least
 # a name and a port on which to bind the cluster. Other options listed below
 # are optional. You can also add all PG parameters from postgresql.conf to
 # a cluster entry
-#
-# To disable one or both lists, set them as empty: '[]'. This will allow for
-# cluster counting task to work correctly (needed to set correct amounts of
-# shared memory for each cluster, divided by number of clusters configured on
-# the host)
+postgresql_server_clusters: [ '{{ postgresql_server_cluster_main }}' ]
 
 # Configuration for default "main" cluster
-postgresql_default_cluster:
+postgresql_server_cluster_main:
+  name: 'main'
+  port: '5432'
 
-  - name: 'main'
-    port: '5432'
-
-    # Parameters below are optional. More parameters can be found in postgresql.conf template
-    #user: 'postgres'
-    #group: 'postgres'
-    #postgres_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/postgresql/9.1/main/postgres/password length=20') }}"
-    #version: '{{ postgresql_version }}'
-    #ssl_root: '{{ postgresql_server_pki_ca }}'
-    #ssl_crt: '{{ postgresql_default_pki_crt }}'
-    #ssl_key: '{{ postgresql_default_pki_key }}'
-    #start_conf: 'auto'
-    #environment:
-    #  VARIABLE: 'value'
-    #listen_addresses: 'localhost'
-    #hba:
-    #  - hosts: [] # example: '{{ groups['apps'] }}'
-    #    type: 'host'
-    #    interface: 'br2'
-    #    user: 'all'
-    #    database: '{{ user }}'
-    #    auth: 'md5'
-    #    address: '' # example: '192.168.0.0/16
-    #ident: |
-    #  # Freeform (see postgresql_default_hba)
-    #allow:
-    #  - '10.0.0.0/8'
-    #  - '172.16.0.0/12'
-    #  - '192.168.0.0/16'
-
-# Configuration for other clusters
-postgresql_clusters: []
+  # Parameters below are optional. More parameters can be found in postgresql.conf template
+  #user: 'postgres'
+  #group: 'postgres'
+  #admin_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/postgresql/9.1/main/postgres/password length=20') }}"
+  #version:  '{{ postgresql_server_version }}'
+  #pki_path: ''
+  #pki_realm: ''
+  #pki_ca: ''
+  #pki_crt: ''
+  #pki_key: ''
+  #start_conf: 'auto'
+  #environment:
+  #  VARIABLE: 'value'
+  #listen_addresses: [ 'localhost', '*', '0.0.0.0', '::' ]
+  #hba:
+  #  - hosts: [] # example: '{{ groups['apps'] }}'
+  #    type: 'host'
+  #    interface: 'br2'
+  #    user: 'all'
+  #    database: '{{ user }}'
+  #    auth: 'md5'
+  #    address: '' # example: '192.168.0.0/16
+  #ident: |
+  #  # Freeform (see postgresql_default_hba)
+  #allow:
+  #  - '10.0.0.0/8'
+  #  - '172.16.0.0/12'
+  #  - '192.168.0.0/16'
 
 
 # ---- Auto backups ----

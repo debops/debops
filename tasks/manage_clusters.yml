@@ -16,8 +16,7 @@
            --port={{ item.port }} {{ item.version | default(postgresql_server_version) }} {{ item.name }}
            creates=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/postgresql.conf
   with_flattened:
-    - postgresql_default_cluster
-    - postgresql_clusters
+    - postgresql_server_clusters
   when: item.name is defined and item.name and item.port is defined and item.port
 
 - name: Configure PostgreSQL clusters
@@ -25,8 +24,7 @@
             dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/postgresql.conf
             owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0644
   with_flattened:
-    - postgresql_default_cluster
-    - postgresql_clusters
+    - postgresql_server_clusters
   when: item.name is defined and item.name
   register: postgresql_config
 
@@ -35,8 +33,7 @@
             dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/environment
             owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0644
   with_flattened:
-    - postgresql_default_cluster
-    - postgresql_clusters
+    - postgresql_server_clusters
   when: item.name is defined and item.name
   register: postgresql_config_environment
 
@@ -50,8 +47,7 @@
             dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/pg_ident.conf
             owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0640
   with_flattened:
-    - postgresql_default_cluster
-    - postgresql_clusters
+    - postgresql_server_clusters
   when: item.name is defined and item.name
   register: postgresql_config_ident
 
@@ -60,8 +56,7 @@
             dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/pg_hba.conf
             owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0640
   with_flattened:
-    - postgresql_default_cluster
-    - postgresql_clusters
+    - postgresql_server_clusters
   when: item.name is defined and item.name
   register: postgresql_config_hba
 
@@ -70,8 +65,7 @@
             dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/start.conf
             owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0644
   with_flattened:
-    - postgresql_default_cluster
-    - postgresql_clusters
+    - postgresql_server_clusters
   when: item.name is defined and item.name
   register: postgresql_config_start
 
@@ -82,7 +76,7 @@
     state: 'link'
   with_flattened:
     - postgresql_default_cluster
-    - postgresql_clusters
+    - postgresql_server_clusters
   when: ((postgresql_server_pki|d() and postgresql_server_pki | bool) and
          (item.name|d() and item.name) and
          ((item.version|d() and item.version == '9.1') or
@@ -94,8 +88,7 @@
     dest: '{{ (item.data_directory | d("/var/lib/postgresql/" + (item.version | d(postgresql_server_version)) + "/" + item.name)) + "/server.crt" }}'
     state: 'link'
   with_flattened:
-    - postgresql_default_cluster
-    - postgresql_clusters
+    - postgresql_server_clusters
   when: ((postgresql_server_pki|d() and postgresql_server_pki | bool) and
          (item.name|d() and item.name) and
          ((item.version|d() and item.version == '9.1') or
@@ -107,8 +100,7 @@
     dest: '{{ (item.data_directory | d("/var/lib/postgresql/" + (item.version | d(postgresql_server_version)) + "/" + item.name)) + "/server.key" }}'
     state: 'link'
   with_flattened:
-    - postgresql_default_cluster
-    - postgresql_clusters
+    - postgresql_server_clusters
   when: ((postgresql_server_pki|d() and postgresql_server_pki | bool) and
          (item.name|d() and item.name) and
          ((item.version|d() and item.version == '9.1') or
@@ -118,8 +110,7 @@
   command: pg_ctlcluster {{ item.version | default(postgresql_server_version) }} {{ item.name }} start
            creates={{ item.external_pid_file | default("/var/run/postgresql/" + (item.version | default(postgresql_server_version)) + "-" + item.name + ".pid") }}
   with_flattened:
-    - postgresql_default_cluster
-    - postgresql_clusters
+    - postgresql_server_clusters
   when: (item.name is defined and item.name) and
         (item.start_conf is undefined or item.start_conf is defined and item.start_conf == 'auto')
 
