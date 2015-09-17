@@ -22,7 +22,7 @@ external_pid_file = '{{ item.external_pid_file | d("/var/run/postgresql/" + item
 
 listen_addresses = '{{ item.listen_addresses | d("localhost") }}'
 port = {{ item.port }}
-max_connections = {{ item.max_connections | d(postgresql_default_max_connections) }}
+max_connections = {{ item.max_connections | d(postgresql_server_max_connections) }}
 superuser_reserved_connections = {{ item.superuser_reserved_connections | d('3') }}
 
 {% if ((item.version | d(postgresql_server_version)) | version_compare('9.1','<=')) %}
