@@ -97,6 +97,9 @@ v0.2.0
   been moved to an exposed ``postgresql_server_cluster_main`` dictionary
   included by default in ``postgresql_server_clusters`` list. [drybjed]
 
+- Switch ``listen_addresses`` PostgreSQL paramter to use YAML list instead of
+  string, and expose default list of addresses for all clusters. [drybjed]
+
 v0.1.0
 ------
 

@@ -20,7 +20,7 @@ external_pid_file = '{{ item.external_pid_file | d("/var/run/postgresql/" + item
 
 # - Connection Settings -
 
-listen_addresses = '{{ item.listen_addresses | d("localhost") }}'
+listen_addresses = '{{ item.listen_addresses | d(postgresql_server_listen_addresses) | join(",") }}'
 port = {{ item.port }}
 max_connections = {{ item.max_connections | d(postgresql_server_max_connections) }}
 superuser_reserved_connections = {{ item.superuser_reserved_connections | d('3') }}
