@@ -124,6 +124,8 @@ v0.2.0
   as the UNIX account. They can also use all other databases that their role
   has access to automatically. [drybjed]
 
+- Set ``stats_temp_directory`` location in ``tmpfs``. [drybjed]
+
 v0.1.0
 ------
 
