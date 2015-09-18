@@ -37,11 +37,6 @@
   when: item.name is defined and item.name
   register: postgresql_config_environment
 
-- name: Configure PostgreSQL system-wide user to cluster mapping
-  template: src=etc/postgresql-common/user_clusters.j2
-            dest=/etc/postgresql-common/user_clusters
-            owner=root group=root mode=0644
-
 - name: Configure PostgreSQL user identification
   template: src=etc/postgresql/pg_ident.conf.j2
             dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/pg_ident.conf

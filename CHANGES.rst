@@ -126,6 +126,10 @@ v0.2.0
 
 - Set ``stats_temp_directory`` location in ``tmpfs``. [drybjed]
 
+- Remove ``/etc/postgresql-common/user_clusters`` configuration from
+  ``debops.postgresql_server`` role, it will be configured in the client role.
+  [drybjed]
+
 v0.1.0
 ------
 
