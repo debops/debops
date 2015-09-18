@@ -105,6 +105,25 @@ v0.2.0
   ``postgresql_server_wal_level`` and ``postgresql_server_archive_command``.
   [drybjed]
 
+- Redesign of the ``pg_hba.conf`` configuration file.
+
+  Instead of a mix of YAML text blocks and YAML lists,
+  ``debops.postgresql_server`` will now use unified dictionary-based HBA
+  configuration stored in multiple lists. Configuration file is generated using
+  a macro, which allows to use multiple lists at once and filter entries based
+  on conditions.
+
+  By default ``pg_hba.conf`` will contain entries that allow access from local
+  networks to which the host is connected directly, requiring SSL to do so. If
+  SSL support is disabled, these entries are disabled in the configuration file
+  automatically. To allow remote access, you still need to change the list of
+  addresses PostgreSQL server listens on and allow access through the firewall.
+
+  Local UNIX accounts have easy access to their own database over PostgreSQL
+  UNIX sockets as long as their PostgreSQL role and database names are the same
+  as the UNIX account. They can also use all other databases that their role
+  has access to automatically. [drybjed]
+
 v0.1.0
 ------
 

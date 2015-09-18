@@ -100,13 +100,63 @@ postgresql_server_archive_command: ''
 # By default, nothing is configured
 postgresql_user_clusters: False
 
-# Host based authentication defaults. This is a text block which will be pasted
-# "as is" into pg_hba.conf *after* any hba settings from a particular cluster.
-# Settings for system superuser (postgres) are set in pg_hba.conf template
-postgresql_default_hba: |
-  local   all             all                             peer
-  host    all             all             127.0.0.1/32    md5
-  host    all             all             ::1/128         md5
+# Host Based Authentication - system accounts
+postgresql_server_hba_system:
+
+  - comment:  'Database superuser account, do not disable'
+    type:     'local'
+    database: 'all'
+    user:     '*postgres*'
+    method:   'peer'
+
+# Host Based Authentication - replication connections
+postgresql_server_hba_replication:
+
+  - comment:  'Remote replication connections'
+    type:     'hostssl'
+    database: 'replication'
+    user:     'replication'
+    address:  'samenet'
+    method:   'md5'
+
+# Host Based Authentication - connections from localhost
+postgresql_server_hba_local:
+
+  - comment:  'Access through local UNIX socket'
+    type:     'local'
+    database: 'samerole'
+    user:     'all'
+    method:   'peer'
+
+  - comment:  'Access through local UNIX socket with password'
+    type:     'local'
+    database: 'samerole'
+    user:     'all'
+    method:   'md5'
+
+  - comment:  'Access from localhost'
+    type:     'host'
+    database: 'samerole'
+    user:     'all'
+    address:  'localhost'
+    method:   'md5'
+
+# Host Based Authentication - remote connections
+postgresql_server_hba_remote:
+
+  - comment:  'Block remote connections to admin account'
+    type:     'host'
+    database: 'all'
+    user:     '*postgres*'
+    address:  'samenet'
+    method:   'reject'
+
+  - comment:  'Remote connections from local networks'
+    type:     'hostssl'
+    database: 'samerole'
+    user:     'all'
+    address:  'samenet'
+    method:   'md5'
 
 # User identification defaults. This is a text block which will be pasted "as
 # is" into pg_ident.conf *before* any ident settings from a particular cluster.
@@ -138,14 +188,19 @@ postgresql_server_cluster_main:
   #environment:
   #  VARIABLE: 'value'
   #listen_addresses: [ 'localhost', '*', '0.0.0.0', '::' ]
+  #hba_replication: False
+  #hba_local: False
+  #hba_remote: False
   #hba:
-  #  - hosts: [] # example: '{{ groups['apps'] }}'
-  #    type: 'host'
-  #    interface: 'br2'
-  #    user: 'all'
-  #    database: '{{ user }}'
-  #    auth: 'md5'
-  #    address: '' # example: '192.168.0.0/16
+  #  - comment:  'Example entry'
+  #    type:     'host'
+  #    database: [ 'db1', 'db2' ]
+  #    user:     [ 'all' ]
+  #    address:  [ '192.0.2.0/24', '2001:db8::/32' ]
+  #    hosts:    [ 'inventory_host1', 'inventory_host2' ]
+  #    method:   'md5'
+  #    options:  [ 'option', 'key=value' ]
+  #    state:    'absent'
   #ident: |
   #  # Freeform (see postgresql_default_hba)
   #allow:
