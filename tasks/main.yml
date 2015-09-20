@@ -35,10 +35,11 @@
   command: npm -g config set tmp /tmp
   when: nodejs_register_tempdir.stdout != '/tmp'
 
-- name: Install global packages
+- name: Install npm global packages
   npm:
-    name: '{{ item }}'
-    state: 'latest'
+    name: '{{ item.name }}'
+    state: '{{ item.state | default("present") }}'
+    version: '{{ item.version | default(omit) }}'
     global: True
-  with_items: nodejs_global_packages
+  with_items: nodejs_npm_global_packages
 
