@@ -1,13 +1,27 @@
 ---
 
-# List of packags to install
-nodejs_packages: [ 'nodejs' ]
-
-nodejs_npm_packages: []
-
-#  replace with the version of Node.js or io.js you want to install, it should take the following
-#  form: node_0.10, node_0.12 or iojs_1.x, iojs_2.x, etc.
+# Replace with the version of node.js or io.js you want to install, it should take the following
+# form: node_0.10, node_0.12 or iojs_1.x, iojs_2.x, or False to disable.
 nodejs_upstream: 'node_0.12'
 
-# APT repository which will be added for nodesource.com
-nodejs_upstream_repo: 'deb https://deb.nodesource.com/{{ nodejs_upstream }} {{ ansible_distribution_release }} main'
+# APT repository for nodesource.com
+nodejs_upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs_upstream }} {{ ansible_distribution_release }} main'
+
+# List of base packages to install
+nodejs_base_packages: [ 'nodejs' ]
+
+# List of additional packages to install
+nodejs_packages: []
+
+# List of npm global packages
+#
+# nodejs_npm_global_packages:
+#   - bower
+#   - name: gulp
+#     version: 3
+#   - name: grunt-cli
+#     state: latest
+#     production: True
+#
+nodejs_npm_global_packages: []
+

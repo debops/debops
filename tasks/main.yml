@@ -1,34 +1,37 @@
 ---
-# role: nodejs - server-side JavaScript application stack
-# Homepage: http://nodejs.org/
 
-# nodejs and npm install based on code from https://github.com/f500/ansible-nodejs
+- name: Get upstream APT GPG key
+  apt_key:
+    id: '9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+    state: 'present'
+  when: nodejs_upstream|d() and nodejs_upstream
 
-- include: upstream.yml
-  when: nodejs_upstream is defined
+- name: Configure upstream APT repository
+  apt_repository:
+    repo: '{{ nodejs_upstream_repository }}'
+    state: 'present'
+    update_cache: True
+  when: nodejs_upstream|d() and nodejs_upstream
 
-- name: Install NodeJS packages
-  apt: pkg={{ item }} state=latest install_recommends=no
-  with_items: nodejs_packages
-
-  # This will be replaced by a .deb package in the future
-- name: Install npm
-  shell: curl https://www.npmjs.com/install.sh | bash creates=/usr/bin/npm
-  when: nodejs_upstream is not defined
-
-- name: Get npm global temporary directory
-  command: npm -g config get tmp
-  register: nodejs_npm_tempdir
-  changed_when: False
-
-- name: Set npm global temporary directory to /tmp
-  command: npm -g config set tmp /tmp
-  when: nodejs_npm_tempdir.stdout != '/tmp'
-
-- name: install the latest npm global packages
-  npm:
+- name: Install required packages
+  apt:
     name: '{{ item }}'
-    state: latest
-    global: yes
-  with_items: nodejs_npm_packages
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - nodejs_base_packages
+    - nodejs_packages
+
+- name: Install npm global packages
+  npm:
+    name: '{{ item.name | default(item) }}'
+    state: '{{ item.state | default("present") }}'
+    version: '{{ item.version | default(omit) }}'
+    production: '{{ item.production | default(omit) }}'
+    global: True
+  with_items: nodejs_npm_global_packages
 
