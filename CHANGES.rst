@@ -157,6 +157,9 @@ v0.2.0
 
 - Add ``postgresql-contrib`` to list of default packages. [drybjed]
 
+- Move the ``pg_hba`` entry that blocks access to ``postgres`` role from remote
+  hosts higher up the list. [drybjed]
+
 v0.1.0
 ------
 

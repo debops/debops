@@ -118,6 +118,13 @@ postgresql_server_hba_system:
     method:   'peer'
     options:  'map=system'
 
+  - comment:  'Block remote connections to admin account'
+    type:     'host'
+    database: 'all'
+    user:     '*postgres*'
+    address:  'all'
+    method:   'reject'
+
 # Host Based Authentication - replication connections
 postgresql_server_hba_replication:
 
@@ -155,13 +162,6 @@ postgresql_server_hba_local:
 
 # Host Based Authentication - remote connections
 postgresql_server_hba_remote:
-
-  - comment:  'Block remote connections to admin account'
-    type:     'host'
-    database: 'all'
-    user:     '*postgres*'
-    address:  'samenet'
-    method:   'reject'
 
   - comment:  'Remote connections from local networks'
     type:     'hostssl'
