@@ -162,6 +162,10 @@ v0.2.0
 
 - Install ``pg_top`` by default. [drybjed]
 
+- Revoke all public privileges from ``template1`` database. This makes the
+  PostgreSQL server more secure by disallowing connections to databases that
+  roles don't have explicit access to. [drybjed]
+
 v0.1.0
 ------
 
