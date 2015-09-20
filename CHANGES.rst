@@ -145,6 +145,16 @@ v0.2.0
   not specified, a mapping for each UNIX account is created with corresponding
   PostgreSQL role. [drybjed]
 
+- Create list of trusted local PostgreSQL roles.
+
+  Trusted roles can login to PostgreSQL without specifying their password. This
+  does not use the ``trust`` authentication method, but a separate list of
+  PostgreSQL roles saved in an external file.
+
+  Trusted roles can only login passwordless through the local UNIX socket. This
+  means that only UNIX accounts available on the PostgreSQL server can use this
+  method. [drybjed]
+
 v0.1.0
 ------
 

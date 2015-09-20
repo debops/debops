@@ -65,6 +65,9 @@
 
 {% if postgresql_server_ident_system|d() and postgresql_server_ident_system %}
 {{ print_ident(postgresql_server_ident_system) }}{% endif %}
+{% if ((postgresql_server_ident_trusted|d() and postgresql_server_ident_trusted) and
+       (item.ident_trusted is undefined or item.ident_trusted)) %}
+{{ print_ident(item.ident_trusted | d(postgresql_server_ident_trusted)) }}{% endif %}
 {% if ((postgresql_server_ident_local|d() and postgresql_server_ident_local) and
        (item.ident_local is undefined or item.ident_local)) %}
 {{ print_ident(item.ident_local | d(postgresql_server_ident_local)) }}{% endif %}

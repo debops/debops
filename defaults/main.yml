@@ -33,6 +33,12 @@ postgresql_server_admin_password: "{{ lookup('password', secret + '/credentials/
                                       ansible_fqdn + '/postgresql/default/' +
                                       postgresql_server_user + '/password length=20') }}"
 
+# List of local UNIX accounts that are implicitly trusted by PostgreSQL server
+# and can login to their own roles without password
+postgresql_server_trusted: [ '{{ ansible_ssh_user
+                                 if (ansible_ssh_user != "root")
+                                 else "" }}' ]
+
 # Where to log system/error messages
 # Options: stderr, csvlog, syslog, and eventlog
 postgresql_server_log_destination: 'syslog'
@@ -122,14 +128,17 @@ postgresql_server_hba_replication:
     address:  'samenet'
     method:   'md5'
 
-# Host Based Authentication - connections from localhost
-postgresql_server_hba_local:
+# Host Based Authentication - trusted connections from localhost
+postgresql_server_hba_trusted:
 
   - comment:  'Access through local UNIX socket'
     type:     'local'
     database: 'samerole'
-    user:     'all'
+    user:     '@trusted'
     method:   'peer'
+
+# Host Based Authentication - connections from localhost
+postgresql_server_hba_local:
 
   - comment:  'Access through local UNIX socket with password'
     type:     'local'
@@ -168,6 +177,9 @@ postgresql_server_ident_system:
     user: '{{ postgresql_server_admins }}'
     role: '*postgres*'
 
+# UNIX account to PostgreSQL role mapping - 'trusted' map
+postgresql_server_ident_trusted: []
+
 # UNIX account to PostgreSQL role mapping - 'local' map
 postgresql_server_ident_local: []
 
@@ -197,6 +209,7 @@ postgresql_server_cluster_main:
   #  VARIABLE: 'value'
   #listen_addresses: [ 'localhost', '*', '0.0.0.0', '::' ]
   #hba_replication: False
+  #hba_trusted: False
   #hba_local: False
   #hba_remote: False
   #hba:
@@ -209,11 +222,13 @@ postgresql_server_cluster_main:
   #    method:   'md5'
   #    options:  [ 'option', 'key=value' ]
   #    state:    'absent'
+  #ident_trusted: False
   #ident_local: False
   #ident:
   #  - map: 'map-name'
   #    user: [ 'user1', 'user2' ]
   #    role: [ 'rolename' ]
+  #trusted: []
   #allow:
   #  - '10.0.0.0/8'
   #  - '172.16.0.0/12'

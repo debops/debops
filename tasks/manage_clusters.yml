@@ -55,6 +55,18 @@
   when: item.name is defined and item.name
   register: postgresql_config_hba
 
+- name: Configure PostgreSQL cluster trusted local roles
+  template:
+    src: 'etc/postgresql/trusted.j2'
+    dest: '/etc/postgresql/{{ (item.version | d(postgresql_server_version)) + "/" + item.name + "/trusted" }}'
+    owner: '{{ item.user | d(postgresql_server_user) }}'
+    group: '{{ item.group | d(postgresql_server_group) }}'
+    mode: '0640'
+  with_flattened:
+    - postgresql_server_clusters
+  when: item.name|d() and item.name
+  register: postgresql_server_register_trusted
+
 - name: Configure PostgreSQL cluster start options
   template: src=etc/postgresql/start.conf.j2
             dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/start.conf
@@ -115,6 +127,7 @@
     - postgresql_config.results
     - postgresql_config_hba.results
     - postgresql_config_ident.results
+    - postgresql_server_register_trusted.results
   when: (item.changed is defined and item.changed) and
         (item.item.start_conf is undefined or item.item.start_conf is defined and item.item.start_conf == 'auto')
 
