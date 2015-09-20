@@ -130,6 +130,21 @@ v0.2.0
   ``debops.postgresql_server`` role, it will be configured in the client role.
   [drybjed]
 
+- Redesign of the ``pg_ident.conf`` configuration file.
+
+  ``postgresql_default_ident`` variable has been removed. Instead, there are
+  new variables, ``postgresql_server_ident_system`` and
+  ``postgresql_server_ident_local`` which can be used to define ident maps
+  (remote ident is not used because it's unreliable as authentication and
+  authorization mechanism). Individual clusters can disable the "local" ident
+  map and/or specify its own maps using ``item.ident`` parameter.
+
+  Each ident map is specified as a dict with ``item.map`` as name of the map
+  (required), ``item.user`` as a list of UNIX user accounts and ``item.role``
+  as a list of PostgreSQL roles that create the given map. If list of roles is
+  not specified, a mapping for each UNIX account is created with corresponding
+  PostgreSQL role. [drybjed]
+
 v0.1.0
 ------
 

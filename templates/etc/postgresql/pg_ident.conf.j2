@@ -1,55 +1,73 @@
-# This file is managed by Ansible, all changes will be lost
+# {{ ansible_managed }}
+{% macro print_ident(postgresql_server_tpl_ident_list) %}
+{% if postgresql_server_tpl_ident_list|d() and postgresql_server_tpl_ident_list %}
+{%   for entry in postgresql_server_tpl_ident_list %}
+{%     set entry_tpl_user = [] %}
+{%     if entry.user %}
+{%       if entry.user is string %}
+{%         if entry.user == '*postgres*' %}
+{%           set entry_tpl_user = [ item.user | d(postgresql_server_user) ] %}
+{%         else %}
+{%           set entry_tpl_user = [ entry.user ] %}
+{%         endif %}
+{%       else %}
+{%         for element in entry.user %}
+{%           if element %}
+{%             if element == '*postgres*' %}
+{%               set _ = entry_tpl_user.append(item.user | d(postgresql_server_user)) %}
+{%             else %}
+{%               set _ = entry_tpl_user.append(element) %}
+{%             endif %}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%     set entry_tpl_role = [] %}
+{%     if entry.role|d() %}
+{%       if entry.role is string %}
+{%         if entry.role == '*postgres*' %}
+{%           set entry_tpl_role = [ item.user | d(postgresql_server_user) ] %}
+{%         else %}
+{%           set entry_tpl_role = [ entry.role ] %}
+{%         endif %}
+{%       else %}
+{%         for element in entry.role %}
+{%           if element %}
+{%             if element == '*postgres*' %}
+{%               set _ = entry_tpl_role.append(item.user | d(postgresql_server_user)) %}
+{%             else %}
+{%               set _ = entry_tpl_role.append(element) %}
+{%             endif %}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%     if entry_tpl_user %}
+{%       for user_name in entry_tpl_user %}
+{%         if entry_tpl_role %}
+{%           for role_name in entry_tpl_role %}
+{{ "%-16s %-24s %s" | format(entry.map, user_name, role_name) }}
+{%           endfor %}
+{%         else %}
+{{ "%-16s %-24s %s" | format(entry.map, user_name, user_name) }}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+
+{%   endfor %}
+{% endif %}
+{% endmacro %}
 
 # PostgreSQL User Name Maps
 # =========================
-{#	# Refer to the PostgreSQL documentation, chapter "Client
-	# Authentication" for a complete description.  A short synopsis
-	# follows.
-	#
-	# This file controls PostgreSQL user name mapping.  It maps external
-	# user names to their corresponding PostgreSQL user names.  Records
-	# are of the form:
-	#
-	# MAPNAME  SYSTEM-USERNAME  PG-USERNAME
-	#
-	# (The uppercase quantities must be replaced by actual values.)
-	#
-	# MAPNAME is the (otherwise freely chosen) map name that was used in
-	# pg_hba.conf.  SYSTEM-USERNAME is the detected user name of the
-	# client.  PG-USERNAME is the requested PostgreSQL user name.  The
-	# existence of a record specifies that SYSTEM-USERNAME may connect as
-	# PG-USERNAME.
-	#
-	# If SYSTEM-USERNAME starts with a slash (/), it will be treated as a
-	# regular expression.  Optionally this can contain a capture (a
-	# parenthesized subexpression).  The substring matching the capture
-	# will be substituted for \1 (backslash-one) if present in
-	# PG-USERNAME.
-	#
-	# Multiple maps may be specified in this file and used by pg_hba.conf.
-	#
-	# No map names are defined in the default configuration.  If all
-	# system user names and PostgreSQL user names are the same, you don't
-	# need anything in this file.
-	#
-	# This file is read on server startup and when the postmaster receives
-	# a SIGHUP signal.  If you edit the file on a running system, you have
-	# to SIGHUP the postmaster for the changes to take effect.  You can
-	# use "pg_ctl reload" to do that.
 
-	# Put your actual configuration here
-	# ---------------------------------- #}
+# MAPNAME        SYSTEM-USERNAME          PG-USERNAME
 
-# MAPNAME       SYSTEM-USERNAME         PG-USERNAME
-
-{% if postgresql_default_ident is defined and postgresql_default_ident %}
-# Default entries for local PostgreSQL clusters
-{{ postgresql_default_ident }}
+{% if postgresql_server_ident_system|d() and postgresql_server_ident_system %}
+{{ print_ident(postgresql_server_ident_system) }}{% endif %}
+{% if ((postgresql_server_ident_local|d() and postgresql_server_ident_local) and
+       (item.ident_local is undefined or item.ident_local)) %}
+{{ print_ident(item.ident_local | d(postgresql_server_ident_local)) }}{% endif %}
+{% if (item.ident|d() and item.ident) %}
+{{ print_ident(item.ident) }}
 {% endif %}
-{% if item.ident is defined and item.ident %}
-# Custom entries for PostgreSQL cluster {{ item.version | default(postgresql_server_version) }} {{ item.name }}
-{{ item.ident }}
-{% endif %}
-
-
-

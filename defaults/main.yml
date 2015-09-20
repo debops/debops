@@ -20,6 +20,13 @@ postgresql_server_group: 'postgres'
 # clusters can add their own firewall rules.
 postgresql_server_allow: []
 
+# List of local UNIX accounts which will be allowed to login to any database
+# as 'postgres' role with peer authentication.
+postgresql_server_admins: [ 'root', '*postgres*',
+                            '{{ ansible_ssh_user
+                                if (ansible_ssh_user != "root")
+                                else "" }}' ]
+
 # The default password for the PostgreSQL admin account (not the 'postgres'
 # UNIX system account)
 postgresql_server_admin_password: "{{ lookup('password', secret + '/credentials/' +
@@ -103,6 +110,7 @@ postgresql_server_hba_system:
     database: 'all'
     user:     '*postgres*'
     method:   'peer'
+    options:  'map=system'
 
 # Host Based Authentication - replication connections
 postgresql_server_hba_replication:
@@ -153,10 +161,15 @@ postgresql_server_hba_remote:
     address:  'samenet'
     method:   'md5'
 
-# User identification defaults. This is a text block which will be pasted "as
-# is" into pg_ident.conf *before* any ident settings from a particular cluster.
-# By default, nothing is configured
-postgresql_default_ident: False
+# UNIX account to PostgreSQL role mapping - 'system' map
+postgresql_server_ident_system:
+
+  - map:  'system'
+    user: '{{ postgresql_server_admins }}'
+    role: '*postgres*'
+
+# UNIX account to PostgreSQL role mapping - 'local' map
+postgresql_server_ident_local: []
 
 # List of PostgreSQL clusters to manage. Each entry should have at least
 # a name and a port on which to bind the cluster. Other options listed below
@@ -196,8 +209,11 @@ postgresql_server_cluster_main:
   #    method:   'md5'
   #    options:  [ 'option', 'key=value' ]
   #    state:    'absent'
-  #ident: |
-  #  # Freeform (see postgresql_default_hba)
+  #ident_local: False
+  #ident:
+  #  - map: 'map-name'
+  #    user: [ 'user1', 'user2' ]
+  #    role: [ 'rolename' ]
   #allow:
   #  - '10.0.0.0/8'
   #  - '172.16.0.0/12'
