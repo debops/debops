@@ -155,6 +155,8 @@ v0.2.0
   means that only UNIX accounts available on the PostgreSQL server can use this
   method. [drybjed]
 
+- Add ``postgresql-contrib`` to list of default packages. [drybjed]
+
 v0.1.0
 ------
 
