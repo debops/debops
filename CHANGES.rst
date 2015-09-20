@@ -160,6 +160,8 @@ v0.2.0
 - Move the ``pg_hba`` entry that blocks access to ``postgres`` role from remote
   hosts higher up the list. [drybjed]
 
+- Install ``pg_top`` by default. [drybjed]
+
 v0.1.0
 ------
 
