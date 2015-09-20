@@ -18,6 +18,9 @@ v0.2.0
 - Remove npm installer as it is now bundled with node.js.
   [patrickheeney]
 
+- Remove npm /tmp directory override. It will now use npm defaults.
+  [patrickheeney]
+
 - Refactor apt keys and apt repositories. [patrickheeney]
 
 v0.1.0

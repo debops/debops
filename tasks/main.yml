@@ -26,20 +26,12 @@
     - nodejs_base_packages
     - nodejs_packages
 
-- name: Get global temporary directory
-  command: npm -g config get tmp
-  register: nodejs_register_tempdir
-  changed_when: False
-
-- name: Set global temporary directory to /tmp
-  command: npm -g config set tmp /tmp
-  when: nodejs_register_tempdir.stdout != '/tmp'
-
 - name: Install npm global packages
   npm:
-    name: '{{ item.name }}'
+    name: '{{ item.name | default(item) }}'
     state: '{{ item.state | default("present") }}'
     version: '{{ item.version | default(omit) }}'
+    production: '{{ item.production | default(omit) }}'
     global: True
   with_items: nodejs_npm_global_packages
 
