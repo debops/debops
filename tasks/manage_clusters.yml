@@ -118,8 +118,21 @@
            creates={{ item.external_pid_file | default("/var/run/postgresql/" + (item.version | default(postgresql_server_version)) + "-" + item.name + ".pid") }}
   with_flattened:
     - postgresql_server_clusters
-  when: (item.name is defined and item.name) and
-        (item.start_conf is undefined or item.start_conf is defined and item.start_conf == 'auto')
+  when: ((ansible_local|d() and ansible_local.init|d() and
+          ansible_local.init != 'systemd') and
+         ((item.name|d() and item.name) and
+          (item.start_conf is undefined or item.start_conf == 'auto')))
+
+- name: Start PostgreSQL clusters when not started (systemd)
+  service:
+    name: 'postgresql@{{ item.version | d(postgresql_server_version) }}-{{ item.name }}.service'
+    state: 'started'
+  with_flattened:
+    - postgresql_server_clusters
+  when: ((ansible_local|d() and ansible_local.init|d() and
+          ansible_local.init == 'systemd') and
+         ((item.name|d() and item.name) and
+          (item.start_conf is undefined or item.start_conf == 'auto')))
 
 - name: Reload PostgreSQL clusters when needed
   command: pg_ctlcluster {{ item.item.version | default(postgresql_server_version) }} {{ item.item.name }} reload
@@ -128,6 +141,22 @@
     - postgresql_config_hba.results
     - postgresql_config_ident.results
     - postgresql_server_register_trusted.results
-  when: (item.changed is defined and item.changed) and
-        (item.item.start_conf is undefined or item.item.start_conf is defined and item.item.start_conf == 'auto')
+  when: ((ansible_local|d() and ansible_local.init|d() and
+          ansible_local.init != 'systemd') and
+         ((item.changed|d() and item.changed) and
+          (item.item.start_conf is undefined or item.item.start_conf == 'auto')))
+
+- name: Reload PostgreSQL clusters when needed (systemd)
+  service:
+    name: 'postgresql@{{ item.item.version | d(postgresql_server_version) }}-{{ item.item.name }}.service'
+    state: 'reloaded'
+  with_flattened:
+    - postgresql_config.results
+    - postgresql_config_hba.results
+    - postgresql_config_ident.results
+    - postgresql_server_register_trusted.results
+  when: ((ansible_local|d() and ansible_local.init|d() and
+          ansible_local.init == 'systemd') and
+         ((item.changed|d() and item.changed) and
+          (item.item.start_conf is undefined or item.item.start_conf == 'auto')))
 

@@ -166,6 +166,8 @@ v0.2.0
   PostgreSQL server more secure by disallowing connections to databases that
   roles don't have explicit access to. [drybjed]
 
+- Support cluster start and reload on ``systemd`` hosts. [drybjed]
+
 v0.1.0
 ------
 
