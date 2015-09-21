@@ -23,12 +23,12 @@ To see what facts are configured on a host, run command::
 Ansible Controller IP addresses
 -------------------------------
 
-``debops.core`` role gathers information about IP address from which the
-Ansible Controller host is connecting, using ``$SSH_CLIENT`` environment
-variable on remote host.
+The ``debops.core`` role gathers information about the IP address(es) from which the
+Ansible Controller host is connecting from using the ``$SSH_CLIENT`` environment
+variable on the remote host.
 
-List of Ansible Controller IP addresses is stored in
-``ansible_local.core.ansible_controllers`` list for other roles to use as
+The list of Ansible Controller IP addresses is accessible as
+``ansible_local.core.ansible_controllers`` for other roles to use as
 needed.
 
 Example playbook
@@ -36,10 +36,15 @@ Example playbook
 
 To get information about the IP address of the Ansible Controller,
 ``debops.core`` needs to be run from special playbook, which does not switch to
-privileged mode by default, but the role within it does. That way, role has
+privileged mode by default, but the role within it does. That way, the role has
 access to the environment variables of the unprivileged account Ansible is
 connecting through and can read the ``$SSH_CLIENT`` environment variable and
 get the IP address.
+
+Note: Hosts provisioned by the ``debops.bootstrap`` role have a workaround in
+place so that the playbook could be run in privileged mode but to avoid
+problems with `other provisioning methods <https://github.com/debops/ansible-core/issues/6#issuecomment-141923939>`
+the role should be run in unprivileged mode as mentioned.
 
 This is a playbook that is used to run the role::
 
@@ -55,7 +60,7 @@ This is a playbook that is used to run the role::
           become: True
 
 If you use your own set of custom playbooks, you can either copy the above
-playbook, or, if you have DebOps playbooks installed in the default location,
+playbook, or, if you have the DebOps playbooks installed in the default location,
 include the ``core.yml`` playbook in your common playbook (it is sufficient to
 run it only once at the start of the playbook)::
 
@@ -71,7 +76,7 @@ run it only once at the start of the playbook)::
 
         - role: example-role
 
-If you use default DebOps playbooks alongside your own custom ones, you don't
+If you use the default DebOps playbooks alongside your own custom ones, you don't
 need to include the ``core.yml`` playbook at all.
 
 See the usage guide in the ``debops.core`` documentation for information about
