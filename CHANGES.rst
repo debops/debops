@@ -168,6 +168,9 @@ v0.2.0
 
 - Support cluster start and reload on ``systemd`` hosts. [drybjed]
 
+- Enable ``trusted`` HBA entry only when list of trusted accounts is not empty
+  and not disabled. [drybjed]
+
 v0.1.0
 ------
 
