@@ -171,6 +171,8 @@ v0.2.0
 - Enable ``trusted`` HBA entry only when list of trusted accounts is not empty
   and not disabled. [drybjed]
 
+- Use old ``pg_stat_tmp`` configuration on PostgreSQL 9.1. [drybjed]
+
 v0.1.0
 ------
 
