@@ -243,38 +243,45 @@ postgresql_server_cluster_main:
 # Monthly backups are not rotated.
 #   It would be a good idea to move monthly backups to a remote server yourself.
 
-# Should auto backups be enabled?
+# Should auto backups be enabled for a given cluster?
 # If set to False, the script will be removed from /etc/cron.daily.
-postgresql_auto_backup: True
+postgresql_server_auto_backup: True
+
+postgresql_server_auto_backup_dir: '/var/lib/autopostgresqlbackup'
 
 # Available options:
 #   - log    : send only the log file
 #   - files  : send the log file and sql files as attachments
 #   - stdout : output the log to the screen if run manually
 #   - quiet : only send logs if an error occurs
-postgresql_auto_backup_mailcontent: 'quiet'
+postgresql_server_auto_backup_mail: 'quiet'
 
 # The maximum allowed size of the e-mail, 4000 = about 5mb.
-postgresql_auto_backup_maxsize: 4000
+postgresql_server_auto_backup_mail_size: 4000
 
 # Who should receive the backup files?
-postgresql_auto_backup_mailaddr: 'backup@{{ ansible_domain }}'
+postgresql_server_auto_backup_mail_to: 'backup@{{ ansible_domain }}'
 
-# Include create database in the backup? Use 'yes' or 'no', not true/false.
-postgresql_auto_backup_create_database: 'yes'
+# Include create database in the backup?
+postgresql_server_auto_backup_create_database: True
 
-# Use a separate backup directory and file for each database? 'yes' or 'no'.
-postgresql_auto_backup_isolate_databases: 'yes'
+# Use a separate backup directory and file for each database?
+postgresql_server_auto_backup_isolate_databases: True
 
 # Which day of the week do you want to perform weekly backups?
 # 1 = Monday , ... , 7 = Sunday.
-postgresql_auto_backup_weekly_day: 6
+postgresql_server_auto_backup_weekly: '6'
 
-# Should the dumps be encrypted? 'yes' or 'no'
-postgresql_auto_backup_encryption: 'no'
-postgresql_auto_backup_encryption_public_key: ''
+# Should the dumps be encrypted?
+postgresql_server_auto_backup_encryption: False
+postgresql_server_auto_backup_encryption_key: ''
 
 # Scripts to execute before and/or after the backup takes place.
 # An empty value disables this feature, provide a path to the script to enable.
-postgresql_auto_backup_pre_script: ''
-postgresql_auto_backup_post_script: ''
+postgresql_server_auto_backup_pre_script: ''
+postgresql_server_auto_backup_post_script: ''
+
+postgresql_server_auto_backup_compression: 'gzip'
+postgresql_server_auto_backup_encryption_cipher: 'aes256'
+postgresql_server_auto_backup_encryption_suffix: '.enc'
+

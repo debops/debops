@@ -12,19 +12,19 @@
 #
 # The following setting has been added to workraound this issue.
 # (if it is set to empty, 'su' usage will be disabled)
-SU_USERNAME="{{ postgresql_server_user }}"
+SU_USERNAME="{{ item.user | d(postgresql_server_user) }}"
 
 # Username to access the PostgreSQL server e.g. dbuser
-USERNAME="{{ postgresql_server_user }}"
+USERNAME="{{ item.user | d(postgresql_server_user) }}"
 
 # Host name (or IP address) of PostgreSQL server e.g localhost
-DBHOST="{{ postgresql_auto_backup_host }}"
+DBHOST="localhost"
 
 # List of DBNAMES for Daily/Weekly Backup e.g. "DB1 DB2 DB3".
 DBNAMES="all"
 
 # Backup directory location e.g /backups
-BACKUPDIR="{{ postgresql_auto_backup_dir }}/$DBCLUSTER"
+BACKUPDIR="{{ item.auto_backup_dir | d(postgresql_server_auto_backup_dir) }}/$DBCLUSTER"
 
 # Mail setup
 # What would you like to be mailed to you?
@@ -32,13 +32,13 @@ BACKUPDIR="{{ postgresql_auto_backup_dir }}/$DBCLUSTER"
 # - files : send log file and sql files as attachments (see docs)
 # - stdout : will simply output the log to the screen if run manually.
 # - quiet : Only send logs if an error occurs to the MAILADDR.
-MAILCONTENT="{{ postgresql_auto_backup_mailcontent }}"
+MAILCONTENT="{{ item.auto_backup_mail | d(postgresql_server_auto_backup_mail) }}"
 
 # Set the maximum allowed email size in k. (4000 = approx 5MB email [see docs])
-MAXATTSIZE="{{ postgresql_auto_backup_maxsize }}"
+MAXATTSIZE="{{ item.auto_backup_mail_size | d(postgresql_server_auto_backup_mail_size) }}"
 
 # Email Address to send mail to? (user@domain.com)
-MAILADDR="{{ postgresql_auto_backup_mailaddr }}"
+MAILADDR="{{ item.auto_backup_mail_to | d(postgresql_server_auto_backup_mail_to) }}"
 
 # ============================================================
 # === ADVANCED OPTIONS ( Read the doc's below for details )===
@@ -47,30 +47,30 @@ MAILADDR="{{ postgresql_auto_backup_mailaddr }}"
 # List of DBBNAMES for Monthly Backups.
 MDBNAMES="template1 all"
 
-# List of DBNAMES to EXCLUDE if DBNAMES are set to all (must be in " quotes).
+# List of DBNAMES to EXCLUDE if DBNAMES are set to all (must be in "" quotes).
 DBEXCLUDE=""
 
 # Include CREATE DATABASE in backup?
-CREATE_DATABASE={{ postgresql_auto_backup_create_database }}
+CREATE_DATABASE={{ "yes" if ((item.auto_backup_create_database | d(postgresql_server_auto_backup_create_database)) | bool) else "no" }}
 
 # Separate backup directory and file for each DB? (yes or no)
-SEPDIR={{ postgresql_auto_backup_isolate_databases }}
+SEPDIR={{ "yes" if ((item.auto_backup_isolate_databases | d(postgresql_server_auto_backup_isolate_databases)) | bool) else "no" }}
 
 # Which day do you want weekly backups? (1 to 7 where 1 is Monday)
-DOWEEKLY={{ postgresql_auto_backup_weekly_day }}
+DOWEEKLY={{ item.auto_backup_weekly | d(postgresql_server_auto_backup_weekly) }}
 
 # Choose Compression type. (gzip or bzip2)
-COMP="{{ postgresql_auto_backup_compression }}"
+COMP="{{ item.auto_backup_compression | d(postgresql_server_auto_backup_compression) }}"
 
 # Compress communications between backup server and PostgreSQL server?
 # set compression level from 0 to 9 (0 means no compression)
-COMMCOMP={{ postgresql_auto_backup_compress_transfer_level }}
+COMMCOMP=0
 
 # Additionally keep a copy of the most recent backup in a seperate directory.
-LATEST={{ postgresql_auto_backup_keep_latest_separate }}
+LATEST=no
 
 # Backup files extension
-EXT="{{ postgresql_auto_backup_extension }}"
+EXT="sql"
 
 # Encyrption settings
 # (inspired by http://blog.altudov.com/2010/09/27/using-openssl-for-asymmetric-encryption-of-backups/)
@@ -87,23 +87,20 @@ EXT="{{ postgresql_auto_backup_extension }}"
 # openssl smime -decrypt -in backup.sql.gz.enc -binary -inform DEM -inkey backup.key -out backup.sql.gz
 
 # Enable encryption
-ENCRYPTION={{ postgresql_auto_backup_encryption }}
+ENCRYPTION={{ "yes" if ((item.auto_backup_encryption | d(postgresql_server_auto_backup_encryption)) | bool) else "no" }}
 
 # Encryption public key
-ENCRYPTION_PUBLIC_KEY="{{ postgresql_auto_backup_encryption_public_key }}"
+ENCRYPTION_PUBLIC_KEY="{{ item.auto_backup_encryption_key | d(postgresql_server_auto_backup_encryption_key) }}"
 
 # Encryption Cipher (see enc manpage)
-ENCRYPTION_CIPHER="{{ postgresql_auto_backup_encryption_cipher }}"
+ENCRYPTION_CIPHER="{{ item.auto_backup_encryption_cipher | d(postgresql_server_auto_backup_encryption_cipher) }}"
 
 # Suffix for encyrpted files
-ENCRYPTION_SUFFIX="{{ postgresql_auto_backup_encryption_suffix }}"
+ENCRYPTION_SUFFIX="{{ item.auto_backup_encryption_suffix | d(postgresql_server_auto_backup_encryption_suffix) }}"
 
-{% if postgresql_auto_backup_pre_script -%}
 # Command to run before backups
-PREBACKUP="{{ postgresql_auto_backup_pre_script }}"
-{% endif %}
+PREBACKUP="{{ item.auto_backup_pre_script | d(postgresql_server_auto_backup_pre_script) }}"
 
-{% if postgresql_auto_backup_post_script -%}
 # Command to run after backups
-POSTBACKUP="{{ postgresql_auto_backup_post_script }}"
-{% endif %}
+POSTBACKUP="{{ item.auto_backup_post_script | d(postgresql_server_auto_backup_post_script) }}"
+

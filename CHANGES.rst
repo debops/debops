@@ -177,6 +177,13 @@ v0.2.0
   so that ``run-parts`` will find and execute them, actually doing the backups
   this time. Ooops... [drybjed]
 
+- Convert ``autopostgresqlbackup`` configuration from centralized to
+  per-cluster. Backup-related variables are renamed from
+  ``postgresql_auto_backup_`` to ``postgresql_server_auto_backup_`` namespace
+  and normalized to use boolean variables where it's useful. Cron scripts will
+  check if PostgreSQL cluster instance is present before performing the backup
+  in case that instance was removed. [drybjed]
+
 v0.1.0
 ------
 
