@@ -19,6 +19,10 @@
     - [ '{{ "ptop"
             if ansible_distribution_release in [ "wheezy", "precise" ]
             else "pgtop" }}' ]
+    - [ '{{ "autopostgresqlbackup"
+            if (postgresql_server_autopostgresqlbackup|d() and
+                postgresql_server_autopostgresqlbackup | bool)
+            else [] }}' ]
 
 - name: Check if default PostgreSQL cluster exists
   stat:

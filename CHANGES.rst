@@ -184,6 +184,9 @@ v0.2.0
   check if PostgreSQL cluster instance is present before performing the backup
   in case that instance was removed. [drybjed]
 
+- Add a variable that enables or disables ``autopostgresqlbackup`` support.
+  [drybjed]
+
 v0.1.0
 ------
 
