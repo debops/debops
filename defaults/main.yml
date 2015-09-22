@@ -157,11 +157,15 @@ gitlab_ldap_enable: false
 gitlab_ldap_domain: '{{ ansible_domain }}'
 gitlab_ldap_label: '{{ gitlab_ldap_domain }}'
 gitlab_ldap_basedn: '{{ "dc=" + gitlab_ldap_domain.split(".") | join(",dc=") }}'
-gitlab_ldap_binddn: '{{ "cn=admin," + gitlab_ldap_basedn }}'
+secret_ldap_services_dn: '{{ "ou=services,dc=" + ansible_domain.split(".") | join(",dc=") }}'
+gitlab_ldap_binddn: '{{ "cn=gitlab," + secret_ldap_services_dn }}'
 gitlab_ldap_uid: 'uid'
 gitlab_ldap_host: 'ldap.{{ ansible_domain }}'
-gitlab_ldap_binddn_password: '{{ secret + "/credentials/" + gitlab_ldap_host + "/slapd/" + gitlab_ldap_basedn + "/" + gitlab_ldap_binddn + ".password" }}'
+gitlab_ldap_binddn_password_base: '{{ secret + "/credentials/" + gitlab_ldap_host + "/slapd/" + gitlab_ldap_basedn + "/" + gitlab_ldap_binddn }}'
+gitlab_ldap_binddn_password: '{{ gitlab_ldap_binddn_password_base + ".password" }}'
+gitlab_ldap_binddn_password_hash: '{{ gitlab_ldap_binddn_password_base + ".hash" }}'
 gitlab_ldap_password: '{{ lookup("password", gitlab_ldap_binddn_password) }}'
 gitlab_ldap_port: '389'
 gitlab_ldap_method: 'tls'
 gitlab_ldap_activedirectory: false
+

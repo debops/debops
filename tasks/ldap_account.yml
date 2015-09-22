@@ -1,0 +1,78 @@
+---
+
+- name: Make sure that services OU exists
+  ldap_entry:
+    dn: '{{ secret_ldap_services_dn }}'
+    objectClass: [ 'organizationalUnit' ]
+    state: 'present'
+    server_uri: '{{ secret_ldap_server_uri }}'
+    start_tls:  '{{ secret_ldap_start_tls }}'
+    bind_dn: '{{ secret_ldap_admin_bind_dn }}'
+    bind_pw: '{{ secret_ldap_admin_bind_pw }}'
+  sudo: '{{ secret_ldap_sudo }}'
+  delegate_to: '{{ secret_ldap_delegate_to }}'
+#  no_log: True
+
+- name: Check if ldap bind password hash exists
+  stat:
+    path: '{{ gitlab_ldap_binddn_password_hash }}'
+  register: gitlab_register_local_ldap_binddn_hashfile
+  sudo: False
+  delegate_to: 'localhost'
+#  no_log: True
+
+- name: Read hash of ldap bind password
+  set_fact:
+    gitlab_register_local_ldap_password_saved_hash: '{{ lookup( "file", gitlab_ldap_binddn_password_hash) }}'
+  when: gitlab_register_local_ldap_binddn_hashfile.stat.exists
+#  no_log: True
+
+- name: Generate ldap bind password hash
+  shell: echo -n {{ gitlab_ldap_password }} | openssl dgst -sha1 -binary | openssl enc -base64 | awk '{print "{SHA}"$0}'
+  register: gitlab_register_local_ldap_password_generated_hash
+  when: (gitlab_register_local_ldap_password_saved_hash is undefined or
+          (gitlab_register_local_ldap_password_saved_hash is defined and not gitlab_register_local_ldap_password_saved_hash))
+  changed_when: False
+#  no_log: True
+
+- name: Save ldap bind password hash
+  copy:
+    content: '{{ gitlab_register_local_ldap_password_generated_hash.stdout }}'
+    dest: '{{ gitlab_ldap_binddn_password_hash }}'
+  sudo: False
+  delegate_to: 'localhost'
+  when: (gitlab_register_local_ldap_password_saved_hash is undefined or
+          (gitlab_register_local_ldap_password_saved_hash is defined and not gitlab_register_local_ldap_password_saved_hash))
+#  no_log: True
+
+- name: Make sure that ldap account exists
+  ldap_entry:
+    dn: '{{ gitlab_ldap_binddn }}'
+    objectClass: [ 'organizationalRole', 'simpleSecurityObject' ]
+    cn: 'gitlab'
+    userPassword: '{{ gitlab_register_local_ldap_password_generated_hash.stdout | default(gitlab_register_local_ldap_password_saved_hash) }}'
+    state: 'present'
+    server_uri: '{{ secret_ldap_server_uri }}'
+    start_tls:  '{{ secret_ldap_start_tls }}'
+    bind_dn: '{{ secret_ldap_admin_bind_dn }}'
+    bind_pw: '{{ secret_ldap_admin_bind_pw }}'
+  sudo: '{{ secret_ldap_sudo }}'
+  delegate_to: '{{ secret_ldap_delegate_to }}'
+#  no_log: True
+
+- name: Set host bind password in LDAP
+  ldap_attr:
+    dn: '{{ gitlab_ldap_binddn }}'
+    name: '{{ item.key }}'
+    values: '{{ item.value }}'
+    state: 'exact'
+    server_uri: '{{ secret_ldap_server_uri }}'
+    start_tls:  '{{ secret_ldap_start_tls }}'
+    bind_dn: '{{ secret_ldap_admin_bind_dn }}'
+    bind_pw: '{{ secret_ldap_admin_bind_pw }}'
+  sudo: '{{ secret_ldap_sudo }}'
+  delegate_to: '{{ secret_ldap_delegate_to }}'
+  with_dict:
+    userPassword: '{{ gitlab_register_local_ldap_password_generated_hash.stdout | default(gitlab_register_local_ldap_password_saved_hash) }}'
+#  no_log: True
+
