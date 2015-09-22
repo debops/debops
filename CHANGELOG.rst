@@ -68,6 +68,8 @@ v0.2.7
 
 - Add ``debops.docker_gen`` role. [drybjed]
 
+- Add ``ldappassword`` filter. [scibi]
+
 v0.2.6
 ------
 
