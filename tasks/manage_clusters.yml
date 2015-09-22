@@ -14,45 +14,58 @@
            --locale={{ item.locale | default(postgresql_server_locale) }}
            --start-conf={{ item.start_conf | default(postgresql_server_start_conf) }}
            --port={{ item.port }} {{ item.version | default(postgresql_server_version) }} {{ item.name }}
-           creates=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/postgresql.conf
+  args:
+    creates: '/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/postgresql.conf'
   with_flattened:
     - postgresql_server_clusters
-  when: item.name is defined and item.name and item.port is defined and item.port
+  when: item.name|d() and item.name and item.port|d() and item.port
 
 - name: Configure PostgreSQL clusters
-  template: src=etc/postgresql/postgresql.conf.j2
-            dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/postgresql.conf
-            owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0644
+  template:
+    src: 'etc/postgresql/postgresql.conf.j2'
+    dest: '/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/postgresql.conf'
+    owner: '{{ item.user | default(postgresql_server_user) }}'
+    group: '{{ item.group | default(postgresql_server_group) }}'
+    mode: '0644'
   with_flattened:
     - postgresql_server_clusters
-  when: item.name is defined and item.name
+  when: item.name|d() and item.name
   register: postgresql_config
 
 - name: Configure PostgreSQL cluster environment
-  template: src=etc/postgresql/environment.j2
-            dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/environment
-            owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0644
+  template:
+    src: 'etc/postgresql/environment.j2'
+    dest: '/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/environment'
+    owner: '{{ item.user | default(postgresql_server_user) }}'
+    group: '{{ item.group | default(postgresql_server_group) }}'
+    mode: '0644'
   with_flattened:
     - postgresql_server_clusters
-  when: item.name is defined and item.name
+  when: item.name|d() and item.name
   register: postgresql_config_environment
 
 - name: Configure PostgreSQL user identification
-  template: src=etc/postgresql/pg_ident.conf.j2
-            dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/pg_ident.conf
-            owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0640
+  template:
+    src: 'etc/postgresql/pg_ident.conf.j2'
+    dest: '/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/pg_ident.conf'
+    owner: '{{ item.user | default(postgresql_server_user) }}'
+    group: '{{ item.group | default(postgresql_server_group) }}'
+    mode: '0640'
   with_flattened:
     - postgresql_server_clusters
-  when: item.name is defined and item.name
+  when: item.name|d() and item.name
   register: postgresql_config_ident
 
 - name: Configure PostgreSQL cluster host authentication
-  template: src=etc/postgresql/pg_hba.conf.j2
-            dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/pg_hba.conf
-            owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0640
+  template:
+    src: 'etc/postgresql/pg_hba.conf.j2'
+    dest: '/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/pg_hba.conf'
+    owner: '{{ item.user | default(postgresql_server_user) }}'
+    group: '{{ item.group | default(postgresql_server_group) }}'
+    mode: '0640'
   with_flattened:
     - postgresql_server_clusters
-  when: item.name is defined and item.name
+  when: item.name|d() and item.name
   register: postgresql_config_hba
 
 - name: Configure PostgreSQL cluster trusted local roles
@@ -68,12 +81,15 @@
   register: postgresql_server_register_trusted
 
 - name: Configure PostgreSQL cluster start options
-  template: src=etc/postgresql/start.conf.j2
-            dest=/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/start.conf
-            owner={{ item.user | default(postgresql_server_user) }} group={{ item.group | default(postgresql_server_group) }} mode=0644
+  template:
+    src: 'etc/postgresql/start.conf.j2'
+    dest: '/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/start.conf'
+    owner: '{{ item.user | default(postgresql_server_user) }}'
+    group: '{{ item.group | default(postgresql_server_group) }}'
+    mode: '0644'
   with_flattened:
     - postgresql_server_clusters
-  when: item.name is defined and item.name
+  when: item.name|d() and item.name
   register: postgresql_config_start
 
 - name: Symlink SSL root certificate
@@ -115,7 +131,8 @@
 
 - name: Start PostgreSQL clusters when not started
   command: pg_ctlcluster {{ item.version | default(postgresql_server_version) }} {{ item.name }} start
-           creates={{ item.external_pid_file | default("/var/run/postgresql/" + (item.version | default(postgresql_server_version)) + "-" + item.name + ".pid") }}
+  args:
+    creates: '{{ item.external_pid_file | default("/var/run/postgresql/" + (item.version | default(postgresql_server_version)) + "-" + item.name + ".pid") }}'
   with_flattened:
     - postgresql_server_clusters
   when: ((ansible_local|d() and ansible_local.init|d() and

@@ -187,6 +187,8 @@ v0.2.0
 - Add a variable that enables or disables ``autopostgresqlbackup`` support.
   [drybjed]
 
+- Clean up all Ansible tasks and rewrite them in YAML format. [drybjed]
+
 v0.1.0
 ------
 
