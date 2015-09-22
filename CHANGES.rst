@@ -173,6 +173,10 @@ v0.2.0
 
 - Use old ``pg_stat_tmp`` configuration on PostgreSQL 9.1. [drybjed]
 
+- Replace dots in ``autopostgresqlbackup`` cron script names with underscores,
+  so that ``run-parts`` will find and execute them, actually doing the backups
+  this time. Ooops... [drybjed]
+
 v0.1.0
 ------
 

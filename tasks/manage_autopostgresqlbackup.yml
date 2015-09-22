@@ -22,7 +22,7 @@
     - postgresql_server_clusters
 
 - name: Disable autopostgresqlbackup from running daily
-  file: path=/etc/cron.daily/autopostgresqlbackup-{{ item.version | default(postgresql_server_version) }}-{{ item.name }}
+  file: path=/etc/cron.daily/autopostgresqlbackup-{{ (item.version | default(postgresql_server_version)) | replace(".","_") }}-{{ item.name }}
         state=absent
   when: not postgresql_auto_backup
   with_flattened:
@@ -30,7 +30,7 @@
 
 - name: Enable autopostgresqlbackup to run daily
   template: src=etc/cron.daily/autopostgresqlbackup.j2
-        dest=/etc/cron.daily/autopostgresqlbackup-{{ item.version | default(postgresql_server_version) }}-{{ item.name }}
+        dest=/etc/cron.daily/autopostgresqlbackup-{{ (item.version | default(postgresql_server_version)) | replace(".","_") }}-{{ item.name }}
         owner=root group=root mode=0755
   when: postgresql_auto_backup
   with_flattened:
