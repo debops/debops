@@ -29,3 +29,6 @@ v0.1.0
 - Add support for GitLab 7.12. [gomez]
 
 - Add support for GitLab 7.13 and 7.14. [scibi]
+
+- Create LDAP accout for gitlab user. [scibi]
+
