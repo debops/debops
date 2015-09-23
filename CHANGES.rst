@@ -4,7 +4,7 @@ Changelog
 v0.2.2
 ------
 
-*Unreleased*
+*Released: 2015-09-23*
 
 - Added secret_ldap_services_dn. [scibi]
 
