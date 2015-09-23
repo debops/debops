@@ -11,7 +11,7 @@
     bind_pw: '{{ secret_ldap_admin_bind_pw }}'
   sudo: '{{ secret_ldap_sudo }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
-#  no_log: True
+  no_log: True
 
 
 - name: Make sure that ldap account exists
@@ -27,7 +27,7 @@
     bind_pw: '{{ secret_ldap_admin_bind_pw }}'
   sudo: '{{ secret_ldap_sudo }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
-#  no_log: True
+  no_log: True
 
 - name: Set host bind password in LDAP
   ldap_attr:
@@ -43,5 +43,5 @@
   delegate_to: '{{ secret_ldap_delegate_to }}'
   with_dict:
     userPassword: '{{ gitlab_ldap_password | ldappassword("SHA") }}'
-#  no_log: True
+  no_log: True
 
