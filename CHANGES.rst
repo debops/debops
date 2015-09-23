@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.2.2
+------
+
+*Unreleased*
+
+- Added secret_ldap_services_dn. [scibi]
+
 v0.2.1
 ------
 
