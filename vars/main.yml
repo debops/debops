@@ -106,12 +106,18 @@ gitlab_ce_bundle_install_without:
 
 # ---- Web server ----
 
+gitlab_nginx_upstreams:
+
 # nginx upstream configuration for gitlab service
-gitlab_nginx_upstream:
-  enabled: True
-  type: 'rails'
-  name: 'gitlab'
-  server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab.socket'
+  - name: 'gitlab'
+    enabled: True
+    type: 'rails'
+    server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab.socket'
+
+# nginx upstream configuration for gitlab-git-http-server used in GitLab 8+
+  - name: 'gitlab-git-http-server'
+    enabled: '{{ gitlab_enable_git_http_server }}'
+    server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab-git-http-server.socket'
 
 # nginx server configuration for GitLab
 gitlab_nginx_server:
@@ -167,4 +173,31 @@ gitlab_nginx_server:
       proxy_set_header   X-Real-IP         $remote_addr;
       proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
       proxy_pass         http://gitlab;
+
+    '~ [-\/\w\.]+\.git\/': |
+      ## If you use HTTPS make sure you disable gzip compression
+      ## to be safe against BREACH attack.
+      # gzip off;
+
+      ## https://github.com/gitlabhq/gitlabhq/issues/694
+      ## Some requests take more than 30 seconds.
+      proxy_read_timeout      300;
+      proxy_connect_timeout   300;
+      proxy_redirect          off;
+  
+      # Do not buffer Git HTTP responses
+      proxy_buffering off;
+
+      # The following settings only work with NGINX 1.7.11 or newer
+      #
+      # # Pass chunked request bodies to gitlab-git-http-server as-is
+      # proxy_request_buffering off;
+      # proxy_http_version 1.1;
+
+      proxy_set_header    Host                $http_host;
+      proxy_set_header    X-Real-IP           $remote_addr;
+      proxy_set_header    X-Forwarded-For     $proxy_add_x_forwarded_for;
+      proxy_set_header    X-Forwarded-Proto   $scheme;
+
+      proxy_pass http://gitlab-git-http-server;
 
