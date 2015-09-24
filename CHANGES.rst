@@ -4,7 +4,7 @@ Changelog
 v0.1.4
 ------
 
-*Unreleased*
+*Released: 2015-09-24*
 
 - Add an option to set ``client_max_body_size`` globally for entire nginx
   server, by setting ``nginx_http_client_max_body_size`` variable in Ansible
