@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.5
+------
+
+*Unreleased*
+
+- Create a proof-of-concept "solo" version of the role, that does not include
+  additional Ansible role dependencies. [drybjed]
+
 v0.1.4
 ------
 
