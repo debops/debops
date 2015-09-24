@@ -35,3 +35,5 @@ v0.1.0
 - Install additional packages by default: ``mtr-tiny``, ``tree``, ``at``.
   Install ``nfs-common`` if NFS mounts are configured.  [drybjed]
 
+- Protect the Tab characters in ``lineinfile`` module. [drybjed]
+
