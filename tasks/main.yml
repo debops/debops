@@ -53,6 +53,9 @@
 
 - include: configure_gitlab-shell.yml
 
+- include: configure_gitlab-git-http-server.yml
+  when: '{{ gitlab_version | version_compare("8.0", operator="ge", strict=True) }}'
+
 - include: configure_gitlab_ce.yml
 
 - name: Make sure that Ansible local facts directory exists
