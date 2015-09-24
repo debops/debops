@@ -344,6 +344,10 @@
 #         string prepended to the location pattern, for example: '@' which will
 #         create named location '@gitlab'
 #
+#       enabled: True/False
+#         boolean value specyfing if location should be included in config,
+#         defaults to True
+#
 #       referers: []
 #         list of allowed valid referers, for example [ '{{ ansible_fqdn }}' ]
 #
@@ -475,7 +479,8 @@
 {% macro print_location_list(location_list)                                    %}
 {%     if location_list is defined                                             %}
 {%         for entry in location_list                                          %}
-{%             if entry.pattern is defined and entry.pattern                   %}
+{%             if (entry.pattern is defined and entry.pattern and 
+                   (entry.enabled is not defined or entry.enabled | bool))     %}
         location {{ entry.pattern_prefix | default('') + entry.pattern }} {
 {%                 if entry.referers is defined and entry.referers             %}
                 valid_referers none blocked {{ entry.referers | join(' ') }};
