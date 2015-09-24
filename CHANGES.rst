@@ -64,6 +64,8 @@ v0.1.4
 - Add ``item.ssl_crt``, ``item.ssl_key``, and ``item.ssl_dhparam`` to override
   pki nginx configuration per site. [patrickheeney]
 
+- Added ``enabled`` to entries in ``item.location_list``. [scibi]
+
 v0.1.3
 ------
 
