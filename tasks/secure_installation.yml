@@ -10,6 +10,7 @@
   with_flattened:
     - postgresql_server_clusters
   sudo_user: '{{ item.user | d(postgresql_server_user) }}'
+  when: item.name|d() and item.name
   no_log: True
 
 - name: Revoke all privileges on template1 from PUBLIC
@@ -33,6 +34,32 @@
     type: 'schema'
     obj: 'public'
     privs: 'ALL'
+    state: 'absent'
+  with_flattened:
+    - postgresql_server_clusters
+  sudo_user: '{{ item.user | d(postgresql_server_user) }}'
+  when: item.name|d() and item.name
+
+- name: Grant connect on postgres to PUBLIC
+  postgresql_privs:
+    database: 'postgres'
+    port: '{{ item.port }}'
+    role: 'PUBLIC'
+    type: 'database'
+    privs: 'CONNECT'
+    state: 'present'
+  with_flattened:
+    - postgresql_server_clusters
+  sudo_user: '{{ item.user | d(postgresql_server_user) }}'
+  when: item.name|d() and item.name
+
+- name: Revoke temporary on postgres from PUBLIC
+  postgresql_privs:
+    database: 'postgres'
+    port: '{{ item.port }}'
+    role: 'PUBLIC'
+    type: 'database'
+    privs: 'TEMPORARY'
     state: 'absent'
   with_flattened:
     - postgresql_server_clusters

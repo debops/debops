@@ -199,6 +199,11 @@ v0.2.0
   some applications like ``phpPgAdmin`` which do not allow selecting the
   database before login. [drybjed]
 
+- The ``template0`` database does not allow for direct connections from remote
+  hosts without additional changes, so instead ``postgres`` database will be
+  used to allow "public" connections, with some additional restrictions.
+  [drybjed]
+
 v0.1.0
 ------
 
