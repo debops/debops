@@ -1,18 +1,25 @@
 ---
 
-# ---- Basic options ----
 
-# Should GitLab role manage it's own dependencies (database, web server)?
+# --------------------
+#   Basic options
+# --------------------
+
+# .. envvar:: gitlab_dependencies
+#
+# Should the ``debops.gitlab`` role manage it's own dependencies (database, web server)?
 gitlab_dependencies: True
 
+# .. envvar:: gitlab_version
+#
 # What version of GitLab to install / manage
 gitlab_version: '8.0'
 
 
 # ---- GitLab instance configuration ----
 
-# What database to use for GitLab instnce? Choices: mysql, postgresql
-# Currently only MySQl is supported
+# What database to use for GitLab instance? Choices: mysql, postgresql
+# Currently only MySQL is supported
 gitlab_database: 'mysql'
 
 # Domain which will be used for nginx server and gitlab-shell access
@@ -22,7 +29,10 @@ gitlab_domain: [ 'code.{{ ansible_domain }}' ]
 # Webserver authentication realm
 gitlab_nginx_auth_realm: 'GitLab access is restricted'
 
-# Name of webserver access policy to enable (see 'debops.nginx' role)
+# .. envvar:: gitlab_nginx_access_policy
+#
+# Name of webserver access policy to enable. Refer to ``debops.nginx`` for
+# details.
 gitlab_nginx_access_policy: ''
 
 # E-mail sender name used by GitLab
@@ -87,23 +97,37 @@ gitlab_redis_host: 'localhost'
 gitlab_redis_port: '6379'
 
 
-# ---- GitLab directory layout ----
+# --------------------
+#   GitLab directory layout
+# --------------------
 
+# .. envvar:: gitlab_home
+#
 # Home directory
 gitlab_home: '{{ ansible_local.root.home + "/" + gitlab_user }}'
 
+# .. envvar:: gitlab_app_root_path
+#
 # Application installation directory
 gitlab_app_root_path: '{{ ansible_local.root.app + "/" + gitlab_user }}'
 
+# .. envvar:: gitlab_repositories_path
+#
 # GitLab repositories
 gitlab_repositories_path: '{{ ansible_local.root.data + "/gitlab/repositories" }}'
 
+# .. envvar:: gitlab_satellites_path
+#
 # GitLab satellites
 gitlab_satellites_path: '{{ ansible_local.root.data + "/gitlab/satellites" }}'
 
+# .. envvar:: gitlab_backup_path
+#
 # Backup path
 gitlab_backup_path: '{{ ansible_local.root.backup + "/gitlab" }}'
 
+# .. envvar:: gitlab_src_path
+#
 # GitLab sources root path
 gitlab_src_path: '{{ ansible_local.root.src + "/gitlab" }}'
 
@@ -142,7 +166,9 @@ gitlab_unicorn_port: '18082'
 # unicorn connection timeout in seconds
 gitlab_unicorn_timeout: '60'
 
-# Additional options for Phusion Passenger in a text block format
+# .. envvar:: gitlab_passenger_options
+#
+# Additional options for Phusion Passenger as text block
 gitlab_passenger_options: ''
 
 
@@ -151,7 +177,7 @@ gitlab_passenger_options: ''
 # Enable or disable ACL configuration for the webserver
 gitlab_support_filesystem_acl: True
 
-# ---- GitLab Ldap Authentication configuration ----
+# ---- GitLab LDAP Authentication configuration ----
 
 gitlab_ldap_enable: false
 gitlab_ldap_domain: '{{ ansible_domain }}'
