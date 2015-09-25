@@ -140,6 +140,23 @@ postgresql_server_hba_replication:
     address:  'samenet'
     method:   'md5'
 
+# Host Based Authentication - public connections to template0, needed by some
+# applications
+postgresql_server_hba_public:
+
+  - comment:  'Allow public connections to template0 database'
+    type:     'local'
+    database: 'template0'
+    user:     'all'
+    method:   'md5'
+
+  - comment:  'Allow public connections to template0 database'
+    type:     'hostssl'
+    database: 'template0'
+    user:     'all'
+    address:  'samenet'
+    method:   'md5'
+
 # Host Based Authentication - trusted connections from localhost
 postgresql_server_hba_trusted:
 
@@ -214,6 +231,7 @@ postgresql_server_cluster_main:
   #  VARIABLE: 'value'
   #listen_addresses: [ 'localhost', '*', '0.0.0.0', '::' ]
   #hba_replication: False
+  #hba_public: False
   #hba_trusted: False
   #hba_local: False
   #hba_remote: False

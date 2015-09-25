@@ -107,6 +107,9 @@
 {% if ((postgresql_server_hba_replication|d() and postgresql_server_hba_replication) and
        (item.hba_replication is undefined or item.hba_replication)) %}
 {{ print_hba(item.hba_replication | d(postgresql_server_hba_replication)) }}{% endif %}
+{% if ((postgresql_server_hba_public|d() and postgresql_server_hba_public) and
+       (item.hba_public is undefined or item.hba_public)) %}
+{{ print_hba(item.hba_public | d(postgresql_server_hba_public)) }}{% endif %}
 {% if ((postgresql_server_trusted|d() and postgresql_server_trusted) and
        (item.trusted is undefined or item.trusted)) %}
 {% if ((postgresql_server_hba_trusted|d() and postgresql_server_hba_trusted) and

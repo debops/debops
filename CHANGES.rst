@@ -195,6 +195,10 @@ v0.2.0
 - Update the local Ansible facts to use the same format as the client role and
   reload facts in case they have been changed. [drybjed]
 
+- Allow for public connections to ``template0`` database. This is required by
+  some applications like ``phpPgAdmin`` which do not allow selecting the
+  database before login. [drybjed]
+
 v0.1.0
 ------
 
