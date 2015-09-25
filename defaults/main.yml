@@ -10,16 +10,63 @@ postgresql_base_packages: [ 'postgresql-client', 'python-psycopg2' ]
 # Install additional packages with PostgreSQL
 postgresql_packages: []
 
+# PostgreSQL user account to which Ansible with switch to perform
+# database-related operations. Should be the same on local and remote database
+# servers.
+postgresql_user: 'postgres'
 
+# FQDN hostname of the remote PostgreSQL server to use. Role detects if a local
+# server is available and uses it automatically.
+postgresql_server: '{{ ansible_local.postgresql.server
+                       if (ansible_local|d() and ansible_local.postgresql|d() and
+                           ansible_local.postgresql.server|d() and
+                           ansible_local.postgresql.server != "localhost")
+                       else "" }}'
 
+# Default port number of the PostgreSQL server to use (local or remote)
+postgresql_port: '5432'
 
+# FQDN hostname of the host that will execute Ansible tasks related to the
+# PostgreSQL database and role management. If PostgreSQL server is available
+# locally, host will delegate the tasks to itself automatically.
+postgresql_delegate_to: '{{ postgresql_server
+                            if (postgresql_server|d() and
+                                (postgresql_server != "localhost" or not postgresql_server))
+                            else ansible_fqdn }}'
 
+# Length of the randomly generated passwords in PostgreSQL database
+postgresql_password_length: '48'
 
+# Name of the database the users should connect to, set as default in
+# ``/etc/postgresql-common/user_clusters``. If the name is ``*``, users will
+# connect to the database with the same name as their login.
+postgresql_default_database: '*'
 
+# Default entry specified in ``/etc/postgresql-common/user_clusters``, used by
+# ``pg_wrapper`` script to direct users to correct PostgreSQL server.
+postgresql_default_user_clusters:
 
+  - user: '*'
+    group: '*'
+    cluster: '{{ (postgresql_server + ":" + postgresql_port)
+                 if (postgresql_server|d() and postgresql_server)
+                 else "main" }}'
+    database: '{{ postgresql_default_database }}'
 
+# Custom user/cluster mappings stored in
+# ``/etc/postgresql-common/user_clusters``.
+postgresql_user_clusters: []
 
+# List of PostgresSQL roles, specified as YAML dicts
+postgresql_roles: []
 
+# List of PostgreSQL role groups, specified as YAML dicts
+postgresql_groups: []
 
+# List of PostgreSQL databases, specified as YAML dicts
+postgresql_databases: []
 
+# List of role/password mappings stored in user directories in ``~/.pgpass``
+# configuration file.
+postgresql_pgpass: []
 

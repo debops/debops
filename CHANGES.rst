@@ -12,6 +12,8 @@ v0.2.0
 
 - Clean up package installation code. [drybjed]
 
+- Add client-side management of PostgreSQL roles and databases. [drybjed]
+
 v0.1.0
 ------
 
