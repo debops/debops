@@ -19,6 +19,14 @@
 
   set_fact:
 
+- name: Install PostgreSQL packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - postgresql_base_packages
+    - postgresql_packages
 
   changed_when: False
 

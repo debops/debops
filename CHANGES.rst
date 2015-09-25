@@ -10,6 +10,8 @@ v0.2.0
 
 - Add support for upstream PostgreSQL repository. [drybjed]
 
+- Clean up package installation code. [drybjed]
+
 v0.1.0
 ------
 
