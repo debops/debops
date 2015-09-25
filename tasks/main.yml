@@ -62,4 +62,10 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  register: postgresql_server_register_local_facts
+
+- name: Re-read local facts if they have been changed
+  action: setup
+  when: postgresql_server_register_local_facts|d() and
+        postgresql_server_register_local_facts.changed
 

@@ -192,6 +192,9 @@ v0.2.0
 - Add ``postgresql_server_delegate_to`` variable used by Ansible to correctly
   delegate tasks related to role and database management. [drybjed]
 
+- Update the local Ansible facts to use the same format as the client role and
+  reload facts in case they have been changed. [drybjed]
+
 v0.1.0
 ------
 
