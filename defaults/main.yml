@@ -6,7 +6,7 @@
 gitlab_dependencies: True
 
 # What version of GitLab to install / manage
-gitlab_version: '7.14'
+gitlab_version: '8.0'
 
 
 # ---- GitLab instance configuration ----
@@ -166,3 +166,5 @@ gitlab_ldap_port: '389'
 gitlab_ldap_method: 'tls'
 gitlab_ldap_activedirectory: false
 
+# In GitLab 8.0 and newer there is separate server for git
+gitlab_enable_git_http_server: '{{ gitlab_version | version_compare("8.0", operator="ge", strict=True) }}'

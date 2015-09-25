@@ -12,6 +12,11 @@ gitlab_ce_git_repo: 'https://gitlab.com/gitlab-org/gitlab-ce.git'
 gitlab_ce_git_dest: '{{ gitlab_src_path + "/" + gitlab_ce_git_repo.split("://")[1] }}'
 gitlab_ce_git_checkout: '{{ gitlab_app_root_path + "/gitlab" }}'
 
+# gitlab-git-http-server source and install path
+gitlab_git_http_server_repo: 'https://gitlab.com/gitlab-org/gitlab-git-http-server.git'
+gitlab_git_http_server_dest: '{{ gitlab_src_path + "/" + gitlab_git_http_server_repo.split("://")[1] }}'
+gitlab_git_http_server_checkout: '{{ gitlab_app_root_path + "/gitlab-git-http-server" }}'
+
 
 # ---- GitLab version map ----
 
@@ -75,6 +80,11 @@ gitlab_version_map:
     shell: 'v2.6.5'
     ce:    '7-14-stable'
 
+  '8.0':
+    shell: 'v2.6.5'
+    ce:    '8-0-stable'
+    git_http_server: '0.2.10'
+
 
 # ---- GitLab CE installation ----
 
@@ -96,12 +106,18 @@ gitlab_ce_bundle_install_without:
 
 # ---- Web server ----
 
+gitlab_nginx_upstreams:
+
 # nginx upstream configuration for gitlab service
-gitlab_nginx_upstream:
-  enabled: True
-  type: 'rails'
-  name: 'gitlab'
-  server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab.socket'
+  - name: 'gitlab'
+    enabled: True
+    type: 'rails'
+    server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab.socket'
+
+# nginx upstream configuration for gitlab-git-http-server used in GitLab 8+
+  - name: 'gitlab-git-http-server'
+    enabled: '{{ gitlab_enable_git_http_server }}'
+    server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab-git-http-server.socket'
 
 # nginx server configuration for GitLab
 gitlab_nginx_server:
@@ -125,36 +141,67 @@ gitlab_nginx_server:
   options: |
     client_max_body_size {{ gitlab_nginx_client_max_body_size }};
 
-  location:
-    '/': |
-      try_files $uri $uri/index.html $uri.html @gitlab;
+  location_list:
+    - pattern: '/'
+      options: |
+        try_files $uri $uri/index.html $uri.html @gitlab;
 
-    '~ ^/(assets)/': |
-      root {{ gitlab_ce_git_checkout }}/public;
-      gzip_static on;
-      expires max;
-      add_header Cache-Control public;
+    - pattern: '/uploads/'
+      options: |
+        gzip off;
+        proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
+        proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
+        proxy_redirect     off;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Host              $http_host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Frame-Options   SAMEORIGIN;
+        proxy_pass         http://gitlab;
 
-    '/uploads/': |
-      gzip off;
-      proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
-      proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
-      proxy_redirect     off;
-      proxy_set_header   X-Forwarded-Proto $scheme;
-      proxy_set_header   Host              $http_host;
-      proxy_set_header   X-Real-IP         $remote_addr;
-      proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-      proxy_set_header   X-Frame-Options   SAMEORIGIN;
-      proxy_pass         http://gitlab;
+    - pattern: '@gitlab'
+      options: |
+        gzip off;
+        proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
+        proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
+        proxy_redirect     off;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Host              $http_host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_pass         http://gitlab;
 
-    '@gitlab': |
-      gzip off;
-      proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
-      proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
-      proxy_redirect     off;
-      proxy_set_header   X-Forwarded-Proto $scheme;
-      proxy_set_header   Host              $http_host;
-      proxy_set_header   X-Real-IP         $remote_addr;
-      proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-      proxy_pass         http://gitlab;
+    - pattern: '~ [-\/\w\.]+\.git\/'
+      enabled: '{{ gitlab_enable_git_http_server }}'
+      options: |
+        gzip off;
+  
+        ## https://github.com/gitlabhq/gitlabhq/issues/694
+        ## Some requests take more than 30 seconds.
+        proxy_read_timeout      300;
+        proxy_connect_timeout   300;
+        proxy_redirect          off;
+    
+        # Do not buffer Git HTTP responses
+        proxy_buffering off;
+  
+        # The following settings only work with NGINX 1.7.11 or newer
+        #
+        # # Pass chunked request bodies to gitlab-git-http-server as-is
+        # proxy_request_buffering off;
+        # proxy_http_version 1.1;
+  
+        proxy_set_header    Host                $http_host;
+        proxy_set_header    X-Real-IP           $remote_addr;
+        proxy_set_header    X-Forwarded-For     $proxy_add_x_forwarded_for;
+        proxy_set_header    X-Forwarded-Proto   $scheme;
+  
+        proxy_pass http://gitlab-git-http-server;
+
+    - pattern: '~ ^/(assets)/'
+      options: |
+        root {{ gitlab_ce_git_checkout }}/public;
+        gzip_static on;
+        expires max;
+        add_header Cache-Control public;
 

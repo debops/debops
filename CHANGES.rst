@@ -32,3 +32,4 @@ v0.1.0
 
 - Create LDAP accout for gitlab user. [scibi]
 
+- Addes support for GitLab 8.0. [scibi]
