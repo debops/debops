@@ -34,6 +34,9 @@ More information about `debops.gitlab` can be found in the
 - `debops.secret`
 - `debops.postgresql`
 
+This role uses `ldappassword` filter to create LDAP account. It is available
+in [DebOps common playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/filter_plugins/ldappassword.py).
+
 ### Are you using this as a standalone role without DebOps?
 
 You may need to include missing roles from the [DebOps common

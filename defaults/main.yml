@@ -12,8 +12,8 @@ gitlab_dependencies: True
 
 # .. envvar:: gitlab_version
 #
-# What version of GitLab to install/manage
-gitlab_version: '7.14'
+# What version of GitLab to install / manage
+gitlab_version: '8.0'
 
 
 # ---- GitLab instance configuration ----
@@ -183,11 +183,14 @@ gitlab_ldap_enable: false
 gitlab_ldap_domain: '{{ ansible_domain }}'
 gitlab_ldap_label: '{{ gitlab_ldap_domain }}'
 gitlab_ldap_basedn: '{{ "dc=" + gitlab_ldap_domain.split(".") | join(",dc=") }}'
-gitlab_ldap_binddn: '{{ "cn=admin," + gitlab_ldap_basedn }}'
+gitlab_ldap_binddn: '{{ "cn=gitlab," + secret_ldap_services_dn }}'
 gitlab_ldap_uid: 'uid'
 gitlab_ldap_host: 'ldap.{{ ansible_domain }}'
-gitlab_ldap_binddn_password: '{{ secret + "/credentials/" + gitlab_ldap_host + "/slapd/" + gitlab_ldap_basedn + "/" + gitlab_ldap_binddn + ".password" }}'
-gitlab_ldap_password: '{{ lookup("password", gitlab_ldap_binddn_password) }}'
+gitlab_ldap_password_file: '{{ secret + "/credentials/" + gitlab_ldap_host + "/slapd/" + gitlab_ldap_basedn + "/" + gitlab_ldap_binddn + ".password" }}'
+gitlab_ldap_password: '{{ lookup("password", gitlab_ldap_password_file) }}'
 gitlab_ldap_port: '389'
 gitlab_ldap_method: 'tls'
 gitlab_ldap_activedirectory: false
+
+# In GitLab 8.0 and newer there is separate server for git
+gitlab_enable_git_http_server: '{{ gitlab_version | version_compare("8.0", operator="ge", strict=True) }}'
