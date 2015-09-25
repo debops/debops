@@ -189,6 +189,9 @@ v0.2.0
 
 - Clean up all Ansible tasks and rewrite them in YAML format. [drybjed]
 
+- Add ``postgresql_server_delegate_to`` variable used by Ansible to correctly
+  delegate tasks related to role and database management. [drybjed]
+
 v0.1.0
 ------
 

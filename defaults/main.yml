@@ -15,6 +15,11 @@ postgresql_server_packages: []
 postgresql_server_user: 'postgres'
 postgresql_server_group: 'postgres'
 
+# This is a counterpart variable to the one in ``debops.postgresql`` role, it
+# should point to the FQDN hostname of the server so that other role can
+# correctly delegate Ansible tasks.
+postgresql_server_delegate_to: '{{ ansible_fqdn }}'
+
 # List of IP addresses or CIDR subnets that can connect to all PostgreSQL
 # clusters. If it's empty, remote connections are blocked, but individual
 # clusters can add their own firewall rules.
