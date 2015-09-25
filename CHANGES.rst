@@ -8,6 +8,8 @@ v0.2.0
 
 - Remove parts of the role that are related to PostgreSQL server management. [drybjed]
 
+- Add support for upstream PostgreSQL repository. [drybjed]
+
 v0.1.0
 ------
 
