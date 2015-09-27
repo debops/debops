@@ -170,6 +170,7 @@
 - name: Enforce new hostname
   hostname:
     name: '{{ bootstrap_hostname }}'
+  tags: [ 'role::bootstrap:hostname' ]
   when: (ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled or
          (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
 
@@ -180,6 +181,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  tags: [ 'role::bootstrap:hostname' ]
   when: (ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled or
          (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
 
@@ -187,6 +189,13 @@
   lineinfile:
     state: 'present'
     dest: '/etc/hosts'
-    regexp: '{{ "^" + (bootstrap_ipv4 | default("127.0.1.1")) | replace(".","\.") }}'
-    line: '{{ (bootstrap_ipv4 | default("127.0.1.1")) + "\t" + (((bootstrap_hostname | d(ansible_hostname)) + "." + bootstrap_domain + "\t" + (bootstrap_hostname | d(ansible_hostname))) if bootstrap_domain|d() else (bootstrap_hostname | d(ansible_hostname))) }}'
+    insertafter: '{{ item.insertafter }}'
+    regexp: '{{ "^" + item.ip_address | replace(".","\.") }}'
+    line: '{{ item.ip_address + "\t" + (((bootstrap_hostname | d(ansible_hostname)) + "." + bootstrap_domain + "\t" + (bootstrap_hostname | d(ansible_hostname))) if bootstrap_domain|d() else (bootstrap_hostname | d(ansible_hostname))) }}'
+  tags: [ 'role::bootstrap:hostname' ]
+  with_items:
+    - ip_address: '{{ bootstrap_ipv4 | default("127.0.1.1") }}'
+      insertafter: '{{ "^127.0.0.1" | replace(".","\.") }}'
+    - ip_address: '{{ bootstrap_ipv6 | default("0::1") }}'
+      insertafter: '^::1'
 
