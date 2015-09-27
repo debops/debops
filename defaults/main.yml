@@ -1,23 +1,42 @@
 ---
+# Default variables
+# =================
 
-# ---- Basic configuration ----
+# .. contents:: Sections
+#    :local:
+#
+# -------------------
+#   Basic configuration
+# -------------------
 
+# .. envvar:: etherpad_version
+#
 # Etherpad git version to install
 etherpad_version: 'develop'
 
-# Should etherpad role manage it's own dependencies?
+# .. envvar:: etherpad_dependencies
+#
+# Should Etherpad role manage it's own dependencies?
 etherpad_dependencies: True
 
+# .. envvar:: etherpad_domain
+#
 # What domain will be configured for Etherpad
 etherpad_domain: [ 'pad.{{ ansible_domain }}' ]
 
+# .. envvar:: etherpad_title
+#
 # Title of Etherpad instance
 etherpad_title: 'Etherpad'
 
+# .. envvar:: etherpad_mail_admin
+#
 # E-mail address of the instance administrator, will be shown on each new pad
 # (see 'etherpad_welcome_text' below)
 etherpad_mail_admin: 'root@{{ ansible_domain }}'
 
+# .. envvar:: etherpad_welcome_text
+#
 # Text displayed on all new pads by default
 etherpad_welcome_text: |
   Welcome to {{ etherpad_title }}!
@@ -27,12 +46,18 @@ etherpad_welcome_text: |
   Contact with administrator: mailto:{{ etherpad_mail_admin }}
 
 
-# ---- Database and network ----
+# -------------------
+#   Database and network
+# -------------------
 
+# .. envvar:: etherpad_allow
+#
 # Allow access only from selected IP addresses/CIDR networks. If empty, allow
 # access from everywhere
 etherpad_allow: []
 
+# .. envvar:: etherpad_database
+#
 # Database to use for data storage (choices: sqlite, mysql, postgresql,
 # dirty). More databases will be available in the future
 etherpad_database: sqlite
@@ -45,7 +70,9 @@ etherpad_bind: '127.0.0.1'
 etherpad_port: '9001'
 
 
-# ---- Authentication ----
+# -------------------
+#   Authentication
+# -------------------
 
 # List of Etherpad administrative and user accounts, only works with 'secret'
 # variable defined (see 'secret' role). Passwords are generated automatically and
@@ -53,67 +80,97 @@ etherpad_port: '9001'
 etherpad_admins: [ 'admin' ]
 etherpad_users: []
 
+# .. envvar:: etherpad_require_authentication
+#
 # Require authentication from all users
 etherpad_require_authentication: False
 
+# .. envvar:: etherpad_require_authorization
+#
 # Require authorization by a module or user with is_admin = True
 etherpad_require_authorization: False
 
+# .. envvar:: etherpad_require_session
+#
 # Require session to access pads
 etherpad_require_session: False
 
+# .. envvar:: etherpad_edit_only
+#
 # Block creation of new pads by unauthorized users?
 etherpad_edit_only: False
 
+# .. envvar:: etherpad_trust_proxy
+#
 # Trust the reverse proxy (nginx)?
 etherpad_trust_proxy: False
 
 
-# ---- Etherpad customization ----
+# -------------------
+#   Etherpad customization
+# -------------------
 
+# .. envvar:: etherpad_abiword
+#
 # Enable Abiword support (for document import)?
 etherpad_abiword: True
 
+# .. envvar:: etherpad_plugins
+#
 # List of Etherpad plugins to enable
 etherpad_plugins:
-    - '{{ etherpad_default_plugins }}'
+  - '{{ etherpad_default_plugins }}'
 
+# .. envvar:: etherpad_default_plugins
+#
+# Default Etherpad plugin list.
 etherpad_default_plugins:
-    - 'adminpads'
-    - 'align'
-    - 'font_color'
-    - 'font_family'
-    - 'font_size'
-    - 'headings'
-    - 'hide_referrer'
-    - 'line_height'
-    - 'linkify'
-    - 'message_all'
-    - 'padlist'
-    - 'page_view'
-    - 'print'
-    - 'rss'
-    - 'scrollto'
-    - 'superscript'
-    - 'subscript'
+  - 'adminpads'
+  - 'align'
+  - 'font_color'
+  - 'font_family'
+  - 'font_size'
+  - 'headings'
+  - 'hide_referrer'
+  - 'line_height'
+  - 'linkify'
+  - 'message_all'
+  - 'padlist'
+  - 'page_view'
+  - 'print'
+  - 'rss'
+  - 'scrollto'
+  - 'superscript'
+  - 'subscript'
 
 
-# ---- Other options ----
+# -------------------
+#   Other options
+# -------------------
 
+# .. envvar:: etherpad_minify
+#
 # Minify CSS and JS assets?
 etherpad_minify: True
 
+# .. envvar:: etherpad_max_age
+#
 # Maximum age of cached assets (6 hours by default)
 etherpad_max_age: '{{ (60 * 60 * 6) }}'
 
+# .. envvar:: etherpad_disable_ip_logging
+#
 # Disable IP addresses in logs?
 etherpad_disable_ip_logging: False
 
+# .. envvar:: etherpad_loglevel
+#
 # Etherpad log level (choices: DEBUG, INFO, WARN, ERROR)
 etherpad_loglevel: 'INFO'
 
+# .. envvar:: etherpad_custom_json
+#
 # Here you can define custom settings.json entries in YAML format, which will
 # be converted to JSON and put at the end of the configuration file
 etherpad_custom_json: False
-
 
