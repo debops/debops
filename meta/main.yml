@@ -3,12 +3,16 @@
 dependencies:
 
   - role: debops.secret
+    tags: [ 'depend::secret', 'depend::secret:etherpad', 'depend-of::etherpad', 'type::dependency:hard' ]
 
   - role: debops.etc_services
+    tags: [ 'depend::etc_services', 'depend::etc_services:etherpad', 'depend-of::etherpad', 'type::dependency' ]
 
   - role: debops.nodejs
+    tags: [ 'depend::nodejs', 'depend::nodejs:etherpad', 'depend-of::etherpad', 'type::dependency' ]
 
   - role: debops.mysql
+    tags: [ 'depend::mysql', 'depend::mysql:etherpad', 'depend-of::etherpad', 'type::dependency' ]
     when: (etherpad_dependencies is defined and etherpad_dependencies) and
           (etherpad_database is defined and etherpad_database and etherpad_database == 'mysql')
 
@@ -23,10 +27,10 @@ dependencies:
         state: 'present'
 
   - role: debops.nginx
+    tags: [ 'depend::nginx', 'depend::nginx:etherpad', 'depend-of::etherpad', 'type::dependency' ]
     nginx_servers: [ '{{ etherpad_nginx_server }}' ]
     nginx_upstreams: [ '{{ etherpad_nginx_upstream }}' ]
     when: (etherpad_dependencies is defined and etherpad_dependencies)
-    tags: nginx
 
 galaxy_info:
   author: 'Maciej Delmanowski'
