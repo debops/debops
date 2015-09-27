@@ -38,3 +38,15 @@ Bootstrap playbook does not have specific host restrictions, so it will be
 executed on all hosts (apart from ``localhost``) if not limited, which you
 should avoid.
 
+Ansible tags
+------------
+
+You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
+tasks are performed during Ansible run. This can be used after host is first
+configured to speed up playbook execution, when you are sure that most of the
+configuration has not been changed.
+
+Available role tags:
+
+``role::bootstrap:hostname``
+  Execute tasks related to configuring the hostname.
