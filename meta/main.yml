@@ -3,7 +3,15 @@
 dependencies:
   - role: debops.secret
   - role: debops.etc_services
+
   - role: debops.ferm
+    ferm_input_dependent_list:
+
+      - type: 'custom'
+        by_role: 'debops.postgresql_server'
+        filename: 'postgresql_dependent_rules'
+        rules: '{{ postgresql_server_ferm_rules }}'
+
 
 galaxy_info:
   author: 'Maciej Delmanowski'

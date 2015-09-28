@@ -204,6 +204,10 @@ v0.2.0
   used to allow "public" connections, with some additional restrictions.
   [drybjed]
 
+- Move ``ferm`` firewall rules from a separate template to a default variable
+  in the form of a YAML text block that is passed to ``debops.ferm`` role.
+  [drybjed]
+
 v0.1.0
 ------
 

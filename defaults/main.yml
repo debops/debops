@@ -311,3 +311,30 @@ postgresql_server_auto_backup_compression: 'gzip'
 postgresql_server_auto_backup_encryption_cipher: 'aes256'
 postgresql_server_auto_backup_encryption_suffix: '.enc'
 
+# YAML text block with ``ferm`` configuration used to generate PostgreSQL
+# firewall rules.
+postgresql_server_ferm_rules: |
+  {% set postgresql_server_tpl_ports = [] %}
+  {% for cluster in postgresql_server_clusters %}
+  {% set _ = postgresql_server_tpl_ports.append(cluster.port) %}
+  {% endfor %}
+  {% if postgresql_server_tpl_ports|d() and postgresql_server_allow|d() %}
+  protocol tcp dport ({{ postgresql_server_tpl_ports | unique | join(" ") }}) {
+          @def $ITEMS = ( @ipfilter( ({{ postgresql_server_allow | unique | join(" ") }}) ) );
+          @if @ne($ITEMS,"") {
+                  saddr $ITEMS ACCEPT;
+          }
+  }
+  
+  {% endif %}
+  {% for cluster in postgresql_server_clusters %}
+  {% if cluster.name|d() and cluster.port|d() and cluster.allow|d() %}
+  protocol tcp dport ({{ cluster.port }}) {
+          @def $ITEMS = ( @ipfilter( ({{ cluster.allow | unique | join(" ") }}) ) );
+          @if @ne($ITEMS,"") {
+                  saddr $ITEMS ACCEPT;
+          }
+  }
+  {% endif %}
+  {% endfor %}
+

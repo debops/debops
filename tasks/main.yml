@@ -42,7 +42,19 @@
 
 - include: manage_clusters.yml
 - include: secure_installation.yml
-- include: manage_ferm_services.yml
+
+- name: Add missing PostgreSQL services in /etc/services
+  template:
+    src: 'etc/services.d/50_postgresql.j2'
+    dest: '/etc/services.d/50_postgresql_{{ item.port }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - postgresql_server_clusters
+  notify: [ 'Assemble services.d' ]
+  when: (item.name|d() and item.name and
+         item.port|d() and item.port and item.port != '5432')
 
 - include: manage_autopostgresqlbackup.yml
   when: postgresql_server_autopostgresqlbackup|d() and postgresql_server_autopostgresqlbackup
