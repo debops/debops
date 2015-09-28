@@ -10,6 +10,7 @@
     install_recommends: False
   with_flattened:
     - [ '{{ roundcube_extra_packages }}' ]
+    - [ '{{ "php5-sqlite" if roundcube_database_map[roundcube_database].dbtype == "sqlite" else [] }}' ]
     - [ '{{ "php5-mysql" if roundcube_database_map[roundcube_database].dbtype == "mysql" else [] }}' ]
     - [ '{{ "php-net-sieve" if "managesieve" in roundcube_plugins else [] }}' ]
     - [ '{{ "php-crypt-gpg" if "enigma" in roundcube_plugins else [] }}' ]
@@ -52,6 +53,15 @@
 
 
 # ---- Configuration ----
+
+- name: Make sure database directory exists
+  file:
+    path: '{{ roundcube_git_checkout }}/{{ roundcube_database_map[roundcube_database].dbname | dirname }}'
+    state: directory
+    owner: '{{ roundcube_user }}'
+    group: '{{ roundcube_group }}'
+    mode: '0750'
+  when: roundcube_database_map[roundcube_database].dbtype == 'sqlite'
 
 - include: configure_mysql.yml
   when: roundcube_database_map[roundcube_database].dbtype == 'mysql'

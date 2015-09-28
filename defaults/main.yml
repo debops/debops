@@ -73,13 +73,17 @@ roundcube_database_password: "{{ lookup('password', secret + '/credentials/' + a
 # .. envvar:: roundcube_database
 #
 # Database definition to use from the ``roundcube_database_map``
-roundcube_database: 'mysql-default'
+roundcube_database: 'sqlite-default'
 
 
 # .. envvar:: roundcube_database_map
 #
 # Database connection definitions
 roundcube_database_map:
+
+  sqlite-default:
+    dbtype: 'sqlite'
+    dbname: 'db/roundcube.db'
 
   mysql-default:
     dbtype: 'mysql'
