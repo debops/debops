@@ -90,20 +90,6 @@
 
 # ---- Database configuration ----
 
-- name: Set default database password
-  set_fact:
-    gitlab_database_password: ""
-
-- name: Get database password from MySQL secrets
-  set_fact:
-    gitlab_database_password: '{{ lookup("password",secret + "/credentials/" + ansible_fqdn + "/mysql/" + gitlab_database_config[gitlab_database].username + "/password") }}'
-  when: (secret is defined and secret) and (gitlab_database is defined and gitlab_database and gitlab_database == 'mysql')
-
-- name: Get PostgreSQL database password
-  set_fact:
-    gitlab_postgresql_database_password: '{{ lookup("password",secret + "/credentials/" + ansible_fqdn + "/gitlab/postgresql/" + gitlab_database_config[gitlab_database].username + "/password") }}'
-  when: (secret is defined and secret) and (gitlab_database is defined and gitlab_database and gitlab_database == 'postgresql')
-
 - name: Configure GitLab CE database
   template:
     src: 'var/local/git/gitlab/config/database.{{ gitlab_database }}.yml.j2'
@@ -115,7 +101,7 @@
 
 - name: Create PostgreSQL role if PostgreSQL enabled
   postgresql_user: name='{{ gitlab_database_config[gitlab_database].username }}'
-                   password='{{ gitlab_postgresql_database_password }}' encrypted=False
+                   password='{{ gitlab_database_password }}' encrypted=False
                    port='{{ gitlab_database_config[gitlab_database].port }}'
                    state=present
   sudo_user: 'postgres'

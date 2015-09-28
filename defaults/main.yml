@@ -18,10 +18,6 @@ gitlab_version: '8.0'
 
 # ---- GitLab instance configuration ----
 
-# What database to use for GitLab instance? Choices: mysql, postgresql
-# Currently only MySQL is supported
-gitlab_database: 'mysql'
-
 # Domain which will be used for nginx server and gitlab-shell access
 # GitLab will be configured with HTTPS enabled by default
 gitlab_domain: [ 'code.{{ ansible_domain }}' ]
@@ -61,20 +57,44 @@ gitlab_username_changing_enabled: 'false'
 gitlab_default_theme: '2'
 
 # ---- Database ----
+#
+# What database to use for GitLab instance? Choices: mysql, postgresql
+# Currently only MySQL is supported
+gitlab_database: 'mariadb'
 
-# GitLab MySQL database configuration. Password will be empty by default, or
-# retrieved from "secret" directory, if it is enabled
-gitlab_database_config:
-  mysql:
-    hostname: 'localhost'
-    username: 'git'
-    database: 'gitlabhq_production'
+# .. envvar:: gitlab_database_server
+#
+# FQDN of the database server. It will be configured by
+# the ``debops.mariadb`` role.
+# Currently only supported for MySQL/MariaDB.
+gitlab_database_mariadb_server: '{{ ansible_local.mariadb.server }}'
+
+gitlab_database_user: 'gitlab'
+
+gitlab_database_name: 'gitlabhq_production'
+
+gitlab_database_password: "{{ lookup('password', secret + '/' + gitlab_database + '/' +
+                              ansible_local.mariadb.delegate_to +
+                              '/credentials/' + gitlab_database_user +
+                              '/password length=48') }}"
+
+gitlab_database_map:
+
+  # MySQL / MariaDB database
+  mariadb:
+    dbtype: 'mysql'
+    dbname: '{{ gitlab_database_name|d(gitlab_user) }}'
+    dbuser: '{{ gitlab_database_user|d(gitlab_user) }}'
+    dbpass: '{{ gitlab_database_password }}'
+    dbhost: '{{ gitlab_database_mariadb_server|d("localhost") }}'
+
+  # PostgreSQL database on localhost, connection through Unix socket, no default password
   postgresql:
-    hostname: 'localhost'
-    username: 'git'
-    database: 'gitlabhq_production'
-    socket:   '/var/run/postgresql'
-    port:     '5432'
+    dbtype: 'pgsql'
+    dbname: '{{ gitlab_database_name|d(gitlab_user) }}'
+    dbuser: '{{ gitlab_database_user|d(gitlab_user) }}'
+    dbpass: ''
+    dbhost: '{{ gitlab_database_server|d("/var/run/postgresql") }}'
 
 # ---- Backup configuration ----
 
