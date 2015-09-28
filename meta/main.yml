@@ -1,0 +1,85 @@
+---
+
+dependencies:
+
+  - role: debops.secret
+    tags: [ 'depend::secret', 'depend::secret:foodsoft', 'depend-of::foodsoft', 'type::dependency:hard' ]
+
+  - role: debops.ruby
+    tags: [ 'depend::ruby', 'depend::ruby:foodsoft', 'depend-of::foodsoft', 'type::dependency' ]
+
+  - role: debops.nginx
+    tags: [ 'depend::nginx', 'depend::nginx:foodsoft', 'depend-of::foodsoft', 'type::dependency' ]
+    nginx_servers: [ '{{ foodsoft_nginx_server }}' ]
+    nginx_upstreams: [ '{{ foodsoft_nginx_upstream }}' ]
+    when: foodsoft_dependencies|d()
+
+  # - role: debops.redis
+  #   tags: [ 'depend::redis', 'depend::redis:foodsoft', 'depend-of::foodsoft', 'type::dependency' ]
+  #   when: foodsoft_dependencies|d()
+
+  - role: debops.mariadb
+    tags: [ 'depend::mariadb', 'depend::mariadb:foodsoft', 'depend-of::foodsoft', 'type::dependency' ]
+    mariadb_users:
+      - database: '{{ foodsoft_database_name }}'
+        user: '{{ foodsoft_database_user }}'
+        password: '{{ foodsoft_database_password }}'
+    when: (
+            foodsoft_dependencies|d() and (
+              foodsoft_database_configuration|d() and (
+                foodsoft_database_configuration.production|d() and foodsoft_database_configuration.production.adapter|d() and
+                  foodsoft_database_configuration.production.adapter in ['mysql2'] or
+                foodsoft_database_configuration.development|d() and foodsoft_database_configuration.development.adapter|d() and
+                  foodsoft_database_configuration.development.adapter in ['mysql2'] or
+                foodsoft_database_configuration.test|d() and foodsoft_database_configuration.test.adapter|d() and
+                  foodsoft_database_configuration.test.adapter in ['mysql2']
+              )
+            )
+          )
+    ## Try to be smart when the dependency is really needed.
+
+
+galaxy_info:
+  author: Robin Schneider
+  description: 'Setup and configure Foodsoft, a web-based software to manage a non-profit food coop (product catalog, ordering, accounting, job scheduling).'
+  license: GNU Affero General Public License v3
+  min_ansible_version: 1.8.4
+  platforms:
+  - name: Debian
+    versions:
+      - jessie
+  categories:
+    - web
+
+ansigenome_info:
+  github_url: "https://github.com/ypid/ansible-foodsoft"
+  git_branch: "master"
+  galaxy_id: ""
+
+  travis: False
+
+  synopsis: |
+    For more details checkout the [README from the Foodsoft project][foodsoft.readme].
+
+    The role will setup Foodsoft ready for production.
+
+    Used Technologies:
+
+    * [nginx](http://nginx.org/)
+    * [Phusion Passenger](https://www.phusionpassenger.com/)
+    * [MariaDB](https://mariadb.org/)/[MySQL](https://www.mysql.de/)
+
+    This role is based on the following documentation:
+
+    * https://github.com/foodcoop-adam/foodsoft/wiki/Deployment-%28Debian%29
+    * https://github.com/foodcoops/foodsoft/blob/master/doc/SETUP_DEVELOPMENT.md#manual-configuration
+    * https://github.com/foodcoops/foodsoft/blob/master/Dockerfile
+
+    And other bits and pieces.
+
+    The default of Foodsoft is to redirect to HTTPS so be sure to setup a certificate for example via [debops.pki].
+    Also note that this role uses the [DebOps](http://debops.org/) to setup the
+    webserver and configure the database. Be sure to check it out! :smile: Thanks to [Maciej Delmanowski](https://github.com/drybjed) for the amazing work.
+
+    [debops.pki]: https://galaxy.ansible.com/list#/roles/1588
+    [foodsoft.readme]: https://github.com/foodcoops/foodsoft
