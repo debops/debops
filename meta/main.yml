@@ -3,8 +3,10 @@
 dependencies:
 
   - role: debops.secret
+    tags: [ 'depend::secret', 'depend::secret:mariadb_server', 'depend-of::mariadb_server', 'type::dependency:hard' ]
 
   - role: debops.ferm
+    tags: [ 'depend::ferm', 'depend::ferm:mariadb_server', 'depend-of::mariadb_server', 'type::dependency' ]
     ferm_input_list:
 
       - type: 'dport_accept'
@@ -14,6 +16,7 @@ dependencies:
         filename: 'mariadb_dependency_accept'
 
   - role: debops.tcpwrappers
+    tags: [ 'depend::tcpwrappers', 'depend::tcpwrappers:mariadb_server', 'depend-of::mariadb_server', 'type::dependency' ]
     tcpwrappers_allow:
 
       - daemon: 'mysqld'
