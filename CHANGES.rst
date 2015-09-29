@@ -10,7 +10,8 @@ v0.1.1
   when ``bootstrap_domain`` is not specified. [drybjed]
 
 - Added a IPv6 entry to ``/etc/hosts`` for the FQDN of the host pointing to the
-  IPv6 loopback address ::1. [ypid]
+  IPv6 loopback address "::1". Not enabled by default because it might break something.
+  Can be enabled by setting ``bootstrap_hostname_v6_loopback`` to True. [ypid]
 
 v0.1.0
 ------
