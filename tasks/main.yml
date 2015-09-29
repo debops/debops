@@ -189,7 +189,8 @@
   lineinfile:
     state: 'present'
     dest: '/etc/hosts'
-    insertafter: '{{ item.insertafter }}'
+    insertbefore: '{{ item.insertbefore | default(omit) }}'
+    insertafter: '{{ item.insertafter | default(omit) }}'
     regexp: '{{ "^" + item.ip_address | replace(".","\.") }}'
     line: '{{ item.ip_address + "\t" + (((bootstrap_hostname | d(ansible_hostname)) + "." + bootstrap_domain + "\t" + (bootstrap_hostname | d(ansible_hostname))) if bootstrap_domain|d() else (bootstrap_hostname | d(ansible_hostname))) }}'
   tags: [ 'role::bootstrap:hostname' ]
@@ -197,5 +198,5 @@
     - ip_address: '{{ bootstrap_ipv4 | default("127.0.1.1") }}'
       insertafter: '{{ "^127.0.0.1" | replace(".","\.") }}'
     - ip_address: '{{ bootstrap_ipv6 | default("0::1") }}'
-      insertafter: '^::1'
+      insertbefore: '^::1'
 
