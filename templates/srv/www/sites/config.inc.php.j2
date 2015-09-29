@@ -15,6 +15,7 @@
    {{ ansible_managed }}
 
 */
+{% import 'roundcube_macros.j2' as macros with context %}
 
 $config = array();
 
@@ -40,7 +41,7 @@ $config['db_dsnw'] = 'mysql://{{ roundcube_database_map[roundcube_database].dbus
 // %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
 // %s - domain name after the '@' from e-mail address provided at login screen
 // For example %n = mail.domain.tld, %t = domain.tld #}
-$config['default_host'] = '{{ roundcube_default_host }}';
+{{ macros.roundcube_config('default_host', roundcube_default_host) }}
 
 // SMTP server host (for sending mails).
 {#// To use SSL/TLS connection, enter hostname with prefix ssl:// or tls://
@@ -95,30 +96,15 @@ $config['skin'] = 'larry';
 {% for key,value in roundcube_local_config_map.items()|default([]) %}
 {% if key not in roundcube_group_local_config_map.keys() %}
 {% if key not in roundcube_host_local_config_map.keys() %}
-{% if (value.split('(') | first == 'array') or
-      (value in [ 'true', 'false' ]) %}
-$config['{{ key }}'] = {{ value }};
-{% else %}
-$config['{{ key }}'] = '{{ value }}';
-{% endif %}
+{{ macros.roundcube_config(key, value) }}
 {% endif %}
 {% endif %}
 {% endfor %}
 {% for key,value in roundcube_group_local_config_map.items()|default([]) %}
 {% if key not in roundcube_host_local_config_map.keys() %}
-{% if (value.split('(') | first == 'array') or
-      (value in [ 'true', 'false' ]) %}
-$config['{{ key }}'] = {{ value }};
-{% else %}
-$config['{{ key }}'] = '{{ value }}';
-{% endif %}
+{{ macros.roundcube_config(key, value) }}
 {% endif %}
 {% endfor %}
 {% for key,value in roundcube_host_local_config_map.items()|default([]) %}
-{% if (value.split('(') | first == 'array') or
-      (value in [ 'true', 'false' ]) %}
-$config['{{ key }}'] = {{ value }};
-{% else %}
-$config['{{ key }}'] = '{{ value }}';
-{% endif %}
+{{ macros.roundcube_config(key, value) }}
 {% endfor %}

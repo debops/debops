@@ -1,0 +1,13 @@
+{#
+ # The roundcube_config() macro will format an Ansible key value/pair as a
+ # valid Roundcube config.inc.php configuration value. The arguments must be
+ # a Roundcube configuration key and its value.
+ #}
+{% macro roundcube_config(key, value) %}{%
+   if (value.split('(') | first == 'array') or
+      (value in [ 'true', 'false' ])
+%}$config['{{ key }}'] = {{ value }};{%
+   else
+%}$config['{{ key }}'] = '{{ value }}';{%
+   endif %}{%
+   endmacro %}
