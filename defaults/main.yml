@@ -146,6 +146,13 @@ owncloud_autosetup: True
 #   ownCloud configuration
 # --------------------
 
+# .. envvar:: owncloud_base_packages
+#
+# Enable APC in PHP CLI. Setting this to True is only needed when you want to
+# use the ``occ`` command and use ``\OC\Memcache\APCu`` as memcache.
+# See https://github.com/owncloud/core/issues/17329
+owncloud_enable_apc_cli: False
+
 # .. envvar:: owncloud_upload_size
 #
 # Max upload size set in nginx and php5, with amount as M or G
@@ -185,3 +192,23 @@ owncloud_initial_config_global:
 owncloud_initial_config_group: {}
 
 owncloud_initial_config: {}
+
+# .. envvar:: owncloud_run_occ_global_commands
+#
+# Run the list of occ commands. It can be used to enable apps, add users and
+# more which can be useful when deploying ownCloud.
+# See: https://doc.owncloud.org/server/8.1/admin_manual/configuration_server/occ_command.html
+owncloud_run_occ_global_commands: []
+  ## Also requires: php5-ldap
+  # - 'app:enable user_ldap'
+  # - 'app:enable external'
+
+# .. envvar:: owncloud_run_occ_group_commands
+#
+# See ``owncloud_run_occ_commands_global``.
+owncloud_run_occ_group_commands: []
+
+# .. envvar:: owncloud_run_occ_group_commands
+#
+# See ``owncloud_run_occ_commands_global``.
+owncloud_run_occ_host_commands: []
