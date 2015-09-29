@@ -1,6 +1,13 @@
 ---
 
 dependencies:
+  - role: debops.apt_preferences
+    tags: [ 'depend::apt_preferences', 'type::dependency', 'depend-of::gitlab', 'type::dependency' ]
+    apt_preferences_dependent_list:
+      - package: 'golang golang-*'
+        backports: [ 'wheezy' ]
+        reason: 'Version parity with Debian Jessie'
+        by_role: 'debops.gitlab'
 
   - role: debops.secret
     tags: [ 'depend::secret', 'depend::secret:gitlab', 'depend-of::gitlab', 'type::dependency:hard' ]
