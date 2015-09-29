@@ -33,3 +33,12 @@ v0.1.0
 - Create LDAP accout for gitlab user. [scibi]
 
 - Addes support for GitLab 8.0. [scibi]
+
+- Migration to debops.mariadb role. If you have exisitng setup you have to:
+  - move some files in secrets directory:
+    ``secret/credentials/[GitLab FQDN]/mysql/root/password`` -> ``secret/credentials/[GitLab FQDN]/mariadb/localhost/root/password``
+    ``secret/credentials/[GitLab FQDN]/mysql/git/password`` -> ``secret/mariadb/[GitLab FQDN]/credentials/gitlab/password``
+  - set ``mariadb_server_flavor`` to ``mysql``
+
+
+
