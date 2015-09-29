@@ -4,7 +4,7 @@ Changelog
 v0.1.0
 ------
 
-*Unreleased*
+*Released: 2015-09-29*
 
 - Add Changelog. [drybjed]
 
@@ -32,4 +32,4 @@ v0.1.0
 
 - Create LDAP accout for gitlab user. [scibi]
 
-- Addes support for GitLab 8.0. [scibi]
+- Add support for GitLab 8.0. [scibi]
