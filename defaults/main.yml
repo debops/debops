@@ -26,7 +26,9 @@ owncloud_dependencies: True
 owncloud_domain: [ 'owncloud.{{ ansible_domain }}' ]
 
 
-# --- ownCloud source and deployment ---
+# --------------------------
+#   ownCloud source and deployment
+# --------------------------
 
 owncloud_edition: community
 owncloud_release: 8.1
@@ -83,9 +85,11 @@ owncloud_database_password: "{{ lookup('password', secret + '/mariadb/' +
 # Choices see ``owncloud_database_map``.
 owncloud_database: 'mariadb'
 
+# .. envvar:: owncloud_database_map
+#
 owncloud_database_map:
 
-  # MySQL / MariaDB database
+  # MySQL/MariaDB database
   mariadb:
     dbtype: 'mysql'
     dbname: '{{ owncloud_database_name|d(owncloud_user) }}'
@@ -107,53 +111,76 @@ owncloud_database_map:
     dbtype: 'sqlite'
 
 
-# --- ownCloud admin login / password ---
+# --------------------
+#   ownCloud admin login/password
+# --------------------
 
+# .. envvar:: owncloud_admin_username
+#
 # Default admin username, in the form 'admin-$USER'
 # Set to False to disable automatic username and password
 owncloud_admin_username: 'admin-{{ lookup("env","USER") }}'
 
-# Default admin password. If ``debops.secret`` role is enabled, a randomly password will be
+# .. envvar:: owncloud_admin_password
+#
+# Default admin password. If the ``debops.secret`` role is enabled, a randomly password will be
 # generated instead of this value.
 owncloud_admin_password: 'password'
 
+# .. envvar:: owncloud_password_length
+#
 # Length of randomly generated admin password
 owncloud_password_length: '20'
 
-# Should Ansible automatically open ownCloud page to finish setup on
+# .. envvar:: owncloud_autosetup
+#
+# Should Ansible automatically open the ownCloud page to finish the setup on
 # it's own? Disabled if admin_username is set to False and done only
 # if the config-files are generated in the same run.
-# Important: For this to work, name resolution has to be set up
-# 	     when this role is executed.
+# Important: For this to work, name resolution has to be set up when this role
+# is executed.
 owncloud_autosetup: True
 
 
-# --- ownCloud configuration ---
+# --------------------
+#   ownCloud configuration
+# --------------------
 
+# .. envvar:: owncloud_upload_size
+#
 # Max upload size set in nginx and php5, with amount as M or G
 owncloud_upload_size: '128M'
 
+# .. envvar:: owncloud_php5_output_buffering
+#
 # Output buffering set in php5, with amount set in megabytes
 owncloud_php5_output_buffering: '128'
 
+# .. envvar:: owncloud_php5_max_children
+#
 # Max children processes to run in php5-fpm
 owncloud_php5_max_children: '50'
 
+# .. envvar:: owncloud_cron_minute
+#
 # At what time cron should execute background jobs
 owncloud_cron_minute: '*/15'
 
-
+# .. envvar:: owncloud_initial_config_global
+#
+# Intitial configuration for ownCloud. Refer to the documentation for details:
+# https://doc.owncloud.org/server/8.1/admin_manual/configuration_server/config_sample_php_parameters.html
 owncloud_initial_config_global:
- mail_domain: '{{ ansible_domain }}'
- mail_from_address: owncloud
- mail_smtpmode: sendmail
- loglevel: 2
- logdateformat: Y-m-d H:i:s.u # ISO 8601 date: 2004-02-12T15:19:21+00:00
- trashbin_auto_expire: True
- trashbin_retention_obligation: 30
- remember_login_cookie_lifetime: '{{ 60*60*24*15 }}'
- session_lifetime: '{{ 60 * 60 * 24 }}'
- session_keepalive: True
+  mail_domain: '{{ ansible_domain }}'
+  mail_from_address: owncloud
+  mail_smtpmode: sendmail
+  loglevel: 2
+  logdateformat: Y-m-d H:i:s.u # ISO 8601 date: 2004-02-12T15:19:21+00:00
+  trashbin_auto_expire: True
+  trashbin_retention_obligation: 30
+  remember_login_cookie_lifetime: '{{ 60*60*24*15 }}'
+  session_lifetime: '{{ 60 * 60 * 24 }}'
+  session_keepalive: True
 
 owncloud_initial_config_group: {}
 
