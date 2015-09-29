@@ -3,28 +3,6 @@
 - name: Pre hooks
   include: '{{ lookup("task_src", "roundcube/pre_main.yml") }}'
 
-- name: Install required dependencies for Roundcube
-  apt:
-    pkg: '{{ item }}'
-    state: 'present'
-    install_recommends: False
-  with_flattened:
-    - [ '{{ roundcube_extra_packages }}' ]
-    - [ '{{ "php5-sqlite" if roundcube_database_map[roundcube_database].dbtype == "sqlite" else [] }}' ]
-    - [ '{{ "php5-mysql" if roundcube_database_map[roundcube_database].dbtype == "mysql" else [] }}' ]
-    - [ '{{ "php-net-sieve" if "managesieve" in roundcube_plugins else [] }}' ]
-    - [ '{{ "php-crypt-gpg" if "enigma" in roundcube_plugins else [] }}' ]
-
-- name: Install Roundcube packages
-  apt:
-    name: '{{ item }}'
-    state: 'present'
-    install_recommends: False
-  with_items:
-    - [ 'roundcube', 'roundcube-core' ]
-  when: (ansible_distribution == 'Debian' and
-        ansible_distribution_release == 'wheezy' )
-
 
 # ---- Environment ----
 
@@ -47,6 +25,28 @@
 
 
 # ---- Deployment ----
+
+- name: Install required dependencies for Roundcube
+  apt:
+    pkg: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - [ '{{ roundcube_extra_packages }}' ]
+    - [ '{{ "php5-sqlite" if roundcube_database_map[roundcube_database].dbtype == "sqlite" else [] }}' ]
+    - [ '{{ "php5-mysql" if roundcube_database_map[roundcube_database].dbtype == "mysql" else [] }}' ]
+    - [ '{{ "php-net-sieve" if "managesieve" in roundcube_plugins else [] }}' ]
+    - [ '{{ "php-crypt-gpg" if "enigma" in roundcube_plugins else [] }}' ]
+
+- name: Install Roundcube packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_items:
+    - [ 'roundcube', 'roundcube-core' ]
+  when: (ansible_distribution == 'Debian' and
+        ansible_distribution_release == 'wheezy' )
 
 - include: deploy_roundcube.yml
   when: (ansible_distribution_release != 'wheezy' )
