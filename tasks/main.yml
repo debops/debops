@@ -194,9 +194,12 @@
     regexp: '{{ "^" + item.ip_address | replace(".","\.") }}'
     line: '{{ item.ip_address + "\t" + (((bootstrap_hostname | d(ansible_hostname)) + "." + bootstrap_domain + "\t" + (bootstrap_hostname | d(ansible_hostname))) if bootstrap_domain|d() else (bootstrap_hostname | d(ansible_hostname))) }}'
   tags: [ 'role::bootstrap:hostname' ]
+  when: ((item.type == 'inet6' and bootstrap_hostname_v6_loopback|d()) or item.type == 'inet4')
   with_items:
     - ip_address: '{{ bootstrap_ipv4 | default("127.0.1.1") }}'
       insertafter: '{{ "^127.0.0.1" | replace(".","\.") }}'
+      type: 'inet4'
     - ip_address: '{{ bootstrap_ipv6 | default("0::1") }}'
       insertbefore: '^::1'
+      type: 'inet6'
 
