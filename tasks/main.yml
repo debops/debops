@@ -19,16 +19,16 @@
     install_recommends: False
   with_flattened:
     - owncloud_base_packages
-  tags: owncloud
+  tags: [ 'role::owncloud:base_install' ]
 
 - include: configure_mysql.yml
-  when: owncloud_database in [ 'mysql', 'mariadb' ]
-  tags: [ 'owncloud', 'mysql' ]
+  when: owncloud_database in [ 'mariadb' ]
+  tags: [ 'role::owncloud:mariadb' ]
 
 - include: configure_postgresql.yml
   when: owncloud_database == 'postgresql'
-  tags: [ 'owncloud', 'postgresql' ]
+  tags: [ 'role::owncloud:postgresql' ]
 
 - include: configure_owncloud.yml
-  tags: owncloud
+  tags: [ 'role::owncloud:configure' ]
 
