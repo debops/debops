@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Unreleased*
+
+- Allow to change the backup directory of ``automysqlbackup`` via
+  ``mariadb_server_backup_directory``. [ypid]
+
 v0.1.2
 ------
 
