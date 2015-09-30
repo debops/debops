@@ -2,4 +2,12 @@
 
 # {{ ansible_managed }}
 
-sudo --user {{ owncloud_user }} php --file "{{ owncloud_home }}/occ" "$@"
+# Environment variable `OC_PASS` is striped normally by `sudo`.
+# `--preserve-env` would preserve all environment variables.
+# This should be OK for this command.
+# It seems to be impossible to set "env_keep" via the command line?
+# Other possibility would be to configure it properly via Defaults!{{ owncloud_home }}/occ env_keep=OC_PASS
+#
+# https://doc.owncloud.org/server/8.1/admin_manual/configuration_server/occ_command.html#user-commands
+
+sudo --preserve-env --user {{ owncloud_user }} php --file "{{ owncloud_home }}/occ" "$@"

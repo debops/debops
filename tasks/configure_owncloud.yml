@@ -91,10 +91,13 @@
   tags: [ 'role::owncloud:occ' ]
 
 - name: Run specified occ commands
-  command: occ {{ item }}
-  changed_when: ('is already enabled' not in owncloud_occ_run.stdout)
+  command: occ {{ item.command }}
+  environment: '{{ item.env|d({}) }}'
+  changed_when: ('is already enabled' not in owncloud_occ_run.stdout and
+                  'already exists' not in owncloud_occ_run.stdout)
+  failed_when: (owncloud_occ_run.rc != 0 and 'already exists' not in owncloud_occ_run.stdout)
   register: owncloud_occ_run
-  when: item|d()
+  when: item|d() and item.command|d()
   with_flattened:
     - owncloud_run_occ_global_commands
     - owncloud_run_occ_group_commands
