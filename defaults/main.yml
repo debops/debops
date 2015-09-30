@@ -10,6 +10,7 @@
 # Should the ``debops.gitlab`` role manage it's own dependencies (database, web server)?
 gitlab_dependencies: True
 
+
 # .. envvar:: gitlab_version
 #
 # What version of GitLab to install / manage
@@ -26,10 +27,12 @@ gitlab_version: '8.0'
 # GitLab will be configured with HTTPS enabled by default
 gitlab_domain: [ 'code.{{ ansible_domain }}' ]
 
+
 # .. envvar:: gitlab_nginx_auth_realm
 #
 # Webserver authentication realm
 gitlab_nginx_auth_realm: 'GitLab access is restricted'
+
 
 # .. envvar:: gitlab_nginx_access_policy
 #
@@ -37,35 +40,42 @@ gitlab_nginx_auth_realm: 'GitLab access is restricted'
 # details.
 gitlab_nginx_access_policy: ''
 
+
 # .. envvar:: gitlab_email_display_name
 #
 # E-mail sender name used by GitLab
 gitlab_email_display_name: 'GitLab'
+
 
 # .. envvar:: gitlab_email_from
 #
 # E-mail address used by GitLab
 gitlab_email_from: 'git@{{ gitlab_domain[0] }}'
 
+
 # .. envvar:: gitlab_email_reply_to
 #
 # E-mail Reply-To address added to GitLab mails
 gitlab_email_reply_to: 'admin+gitlab@{{ ansible_domain }}'
+
 
 # .. envvar:: gitlab_admin_email
 #
 # Default admin account email
 gitlab_admin_email: 'admin@{{ ansible_domain }}'
 
+
 # .. envvar:: gitlab_admin_password
 #
 # Default admin account password
 gitlab_admin_password: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/gitlab/admin/password chars=ascii,numbers") }}'
 
+
 # .. envvar:: gitlab_enable_git_http_server
 #
 # In GitLab 8.0 and newer there is separate server for git
 gitlab_enable_git_http_server: '{{ gitlab_version | version_compare("8.0", operator="ge", strict=True) }}'
+
 
 # --------------------------
 #   New user configuration
@@ -76,15 +86,18 @@ gitlab_enable_git_http_server: '{{ gitlab_version | version_compare("8.0", opera
 # Should new users be able to create groups?
 gitlab_default_can_create_group: 'true'
 
+
 # .. envvar:: gitlab_username_changing_enabled
 #
 # Can users change their own username?
 gitlab_username_changing_enabled: 'false'
 
+
 # .. envvar:: gitlab_default_theme
 #
 # Default GitLab theme to use
 gitlab_default_theme: '2'
+
 
 # --------------------------
 #   Database configuration
@@ -97,6 +110,7 @@ gitlab_default_theme: '2'
 # To choose beteween MySQL and MariaDB you have to set mariadb_server_flavor from debops.mariadb_server role.
 gitlab_database: 'mariadb'
 
+
 # .. envvar:: gitlab_database_server
 #
 # FQDN of the database server. It will be configured by
@@ -104,15 +118,18 @@ gitlab_database: 'mariadb'
 # Currently only supported for MySQL/MariaDB.
 gitlab_database_mariadb_server: '{{ ansible_local.mariadb.server }}'
 
+
 # .. envvar:: gitlab_database_user
 #
 # Database user to use for GitLab.
 gitlab_database_user: 'gitlab'
 
+
 # .. envvar:: gitlab_database_name
 #
 # Name of the database to use for GitLab.
 gitlab_database_name: 'gitlabhq_production'
+
 
 # .. envvar:: gitlab_database_password
 #
@@ -121,6 +138,7 @@ gitlab_database_password: "{{ lookup('password', secret + '/' + gitlab_database 
                               ansible_local.mariadb.delegate_to +
                               '/credentials/' + gitlab_database_user +
                               '/password length=48') }}"
+
 
 # .. envvar:: gitlab_database_map
 #
@@ -143,6 +161,7 @@ gitlab_database_map:
     dbpass: ''
     dbhost: '{{ gitlab_database_server|d("/var/run/postgresql") }}'
 
+
 # ------------------------
 #   Backup configuration 
 # ------------------------
@@ -151,6 +170,7 @@ gitlab_database_map:
 #
 # Backup frequency (daily, weekly, monthly)
 gitlab_backup_frequency: 'daily'
+
 
 # .. envvar:: gitlab_backup_keep_time
 #
@@ -167,10 +187,12 @@ gitlab_backup_keep_time: '{{ (60 * 60 * 24 * 7) }}'
 # Connection string used in the configuration file
 gitlab_redis: 'redis://{{ gitlab_redis_host + ":" + gitlab_redis_port }}'
 
+
 # .. envvar:: gitlab_redis_host
 #
 # Define hostname of redis server to use
 gitlab_redis_host: 'localhost'
+
 
 # .. envvar:: gitlab_redis_port
 #
@@ -187,25 +209,30 @@ gitlab_redis_port: '6379'
 # Home directory
 gitlab_home: '{{ ansible_local.root.home + "/" + gitlab_user }}'
 
+
 # .. envvar:: gitlab_app_root_path
 #
 # Application installation directory
 gitlab_app_root_path: '{{ ansible_local.root.app + "/" + gitlab_user }}'
+
 
 # .. envvar:: gitlab_repositories_path
 #
 # GitLab repositories
 gitlab_repositories_path: '{{ ansible_local.root.data + "/gitlab/repositories" }}'
 
+
 # .. envvar:: gitlab_satellites_path
 #
 # GitLab satellites
 gitlab_satellites_path: '{{ ansible_local.root.data + "/gitlab/satellites" }}'
 
+
 # .. envvar:: gitlab_backup_path
 #
 # Backup path
 gitlab_backup_path: '{{ ansible_local.root.backup + "/gitlab" }}'
+
 
 # .. envvar:: gitlab_src_path
 #
@@ -222,10 +249,12 @@ gitlab_src_path: '{{ ansible_local.root.src + "/gitlab" }}'
 # System user for GitLab instance
 gitlab_user: 'git'
 
+
 # .. envvar:: gitlab_group
 #
 # System group for GitLab instance
 gitlab_group: 'git'
+
 
 # .. envvar:: gitlab_user_append_groups
 #
@@ -233,45 +262,54 @@ gitlab_group: 'git'
 # 'sshusers' is used in DebOps to limit sshd access. See 'debops.auth' role
 gitlab_user_append_groups: [ 'sshusers' ]
 
+
 # .. envvar:: gitlab_time_zone
 #
 # Server timezone
 gitlab_time_zone: 'UTC'
+
 
 # .. envvar:: gitlab_postgresql_database_connection
 #
 # Connection type for PostgreSQL database (choices: socket, port)
 gitlab_postgresql_database_connection: 'socket'
 
+
 # .. envvar:: gitlab_nginx_client_max_body_size
 #
 # nginx client_max_body_size value
 gitlab_nginx_client_max_body_size: '5m'
+
 
 # .. envvar:: gitlab_nginx_proxy_timeout
 #
 # nginx - gitlab proxy timeout in seconds
 gitlab_nginx_proxy_timeout: '300'
 
+
 # .. envvar:: gitlab_git_max_size
 #
 # Max git upload size in bytes
 gitlab_git_max_size: '{{ (1024 * 1024 * 20) }}'
+
 
 # .. envvar:: gitlab_git_timeout
 #
 # git connection timeout in seconds
 gitlab_git_timeout: '10'
 
+
 # .. envvar:: gitlab_unicorn_port
 #
 # Unicorn port on localhost interface for GitLab
 gitlab_unicorn_port: '18082'
 
+
 # .. envvar:: gitlab_unicorn_timeout
 #
 # unicorn connection timeout in seconds
 gitlab_unicorn_timeout: '60'
+
 
 # .. envvar:: gitlab_passenger_options
 #
@@ -288,6 +326,7 @@ gitlab_passenger_options: ''
 # Enable or disable ACL configuration for the webserver
 gitlab_support_filesystem_acl: True
 
+
 # --------------------------------------------
 #   GitLab LDAP Authentication configuration
 # --------------------------------------------
@@ -296,45 +335,56 @@ gitlab_support_filesystem_acl: True
 #
 gitlab_ldap_enable: false
 
+
 # .. envvar:: gitlab_ldap_domain
 #
 gitlab_ldap_domain: '{{ ansible_domain }}'
+
 
 # .. envvar:: gitlab_ldap_label
 #
 gitlab_ldap_label: '{{ gitlab_ldap_domain }}'
 
+
 # .. envvar:: gitlab_ldap_basedn
 #
 gitlab_ldap_basedn: '{{ "dc=" + gitlab_ldap_domain.split(".") | join(",dc=") }}'
+
 
 # .. envvar:: gitlab_ldap_binddn
 #
 gitlab_ldap_binddn: '{{ "cn=gitlab," + secret_ldap_services_dn }}'
 
+
 # .. envvar:: gitlab_ldap_uid
 #
 gitlab_ldap_uid: 'uid'
+
 
 # .. envvar:: gitlab_ldap_host
 #
 gitlab_ldap_host: 'ldap.{{ ansible_domain }}'
 
+
 # .. envvar:: gitlab_ldap_password_file
 #
 gitlab_ldap_password_file: '{{ secret + "/credentials/" + gitlab_ldap_host + "/slapd/" + gitlab_ldap_basedn + "/" + gitlab_ldap_binddn + ".password" }}'
+
 
 # .. envvar:: gitlab_ldap_password
 #
 gitlab_ldap_password: '{{ lookup("password", gitlab_ldap_password_file) }}'
 
+
 # .. envvar:: gitlab_ldap_port
 #
 gitlab_ldap_port: '389'
 
+
 # .. envvar:: gitlab_ldap_method
 #
 gitlab_ldap_method: 'tls'
+
 
 # .. envvar:: gitlab_ldap_activedirectory
 #
