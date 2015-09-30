@@ -71,3 +71,32 @@
   when: owncloud_config_file is defined and not owncloud_config_file.stat.exists and
         owncloud_admin_username and owncloud_autosetup
 
+- name: Allow to use the PHP CLI even if OCMemcacheAPCu is used
+  template:
+    src: 'etc/php5/cli/conf.d/enable_apc.ini.j2'
+    dest: '/etc/php5/cli/conf.d/enable_apc.ini'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: owncloud_enable_apc_cli
+  tags: [ 'role::owncloud:occ' ]
+
+- name: Setup shortcut for the occ command
+  template:
+    src: 'usr/local/bin/occ.j2'
+    dest: '/usr/local/bin/occ'
+    owner: 'root'
+    group: '{{ owncloud_group }}'
+    mode: 0750
+  tags: [ 'role::owncloud:occ' ]
+
+- name: Run specified occ commands
+  command: occ {{ item }}
+  changed_when: ('is already enabled' not in owncloud_occ_run.stdout)
+  register: owncloud_occ_run
+  when: item|d()
+  with_flattened:
+    - owncloud_run_occ_global_commands
+    - owncloud_run_occ_group_commands
+    - owncloud_run_occ_host_commands
+  tags: [ 'role::owncloud:occ' ]
