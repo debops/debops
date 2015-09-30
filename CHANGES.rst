@@ -12,4 +12,4 @@ v0.2.0
 
 - Updated to ownCloud 8.1. [ypid]
 
-- Allow to use ``ooc`` via the Ansible’s inventory. Can be used to enable apps for instance. [ypid]
+- Allow to use ``ooc`` via Ansible’s inventory. Can be used to enable apps for instance. [ypid]
