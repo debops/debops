@@ -26,6 +26,7 @@ owncloud_base_packages:
 # If you want to setup them differently, you should change this to False.
 owncloud_dependencies: True
 
+
 # .. envvar:: owncloud_domain
 #
 # Domain that will be configured for the ownCloud instance.
@@ -40,7 +41,8 @@ owncloud_domain: [ 'owncloud.{{ ansible_domain }}' ]
 #
 # Refer to http://download.opensuse.org/repositories/isv:/ownCloud:/ to see
 # which are available.
-owncloud_edition: community
+owncloud_edition: 'community'
+
 
 # .. envvar:: owncloud_release
 #
@@ -48,25 +50,30 @@ owncloud_edition: community
 # See http://download.opensuse.org/repositories/isv:/ownCloud:/community:/ for the full list.
 owncloud_release: 8.1
 
+
 # .. envvar:: owncloud_apt_repo_base
 #
 # Base APT repository URL.
 owncloud_apt_repo_base: 'http://download.opensuse.org/repositories/isv:/ownCloud:'
+
 
 # .. envvar:: owncloud_apt_repo_key_fingerprint
 #
 # GPG fingerprint for the public key used to sign the APT repository.
 owncloud_apt_repo_key_fingerprint: 'F9EA4996747310AE79474F44977C43A8BA684223'
 
+
 # .. envvar:: owncloud_user
 #
 # User that will be used for the ownCloud instance.
 owncloud_user: 'www-data'
 
+
 # .. envvar:: owncloud_group
 #
 # Group that will be used for the ownCloud instance.
 owncloud_group: 'www-data'
+
 
 # .. envvar:: owncloud_home
 #
@@ -80,6 +87,7 @@ owncloud_home: '/var/www/owncloud'
 # ``owncloud_domain`` is currently not used. See
 # https://github.com/debops/ansible-owncloud/commit/304a66007cb4e5cc8331f98f9c7057b723c5b7fd
 owncloud_data_path: '{{ owncloud_home }}/data' #{{ owncloud_domain[0] }}'
+
 
 # .. envvar:: owncloud_deploy_path
 #
@@ -119,12 +127,14 @@ owncloud_database_password: "{{ lookup('password', secret + '/mariadb/' +
                                 '/credentials/' + owncloud_database_user +
                                 '/password length=48') }}"
 
+
 # .. envvar:: owncloud_database
 #
 # ownCloud recommends MySQL or MariaDB as database. Set to False to use SQLite.
 # https://doc.owncloud.org/server/8.1/admin_manual/configuration_database/linux_database_configuration.html#database-configuration
 # Choices see ``owncloud_database_map``.
 owncloud_database: 'mariadb'
+
 
 # .. envvar:: owncloud_database_map
 #
@@ -162,16 +172,19 @@ owncloud_database_map:
 # Set to False to disable automatic username and password.
 owncloud_admin_username: 'admin-{{ lookup("env","USER") }}'
 
+
 # .. envvar:: owncloud_admin_password
 #
 # Default admin password. If the ``debops.secret`` role is enabled, a randomly password will be
 # generated instead of this value.
 owncloud_admin_password: 'password'
 
+
 # .. envvar:: owncloud_password_length
 #
 # Length of randomly generated admin password.
 owncloud_password_length: '20'
+
 
 # .. envvar:: owncloud_autosetup
 #
@@ -194,25 +207,30 @@ owncloud_autosetup: True
 # See https://github.com/owncloud/core/issues/17329
 owncloud_enable_apc_cli: False
 
+
 # .. envvar:: owncloud_upload_size
 #
 # Max upload size set in nginx and php5, with amount as M or G
 owncloud_upload_size: '128M'
+
 
 # .. envvar:: owncloud_php5_output_buffering
 #
 # Output buffering set in php5, with amount set in megabytes
 owncloud_php5_output_buffering: '128'
 
+
 # .. envvar:: owncloud_php5_max_children
 #
 # Max children processes to run in php5-fpm
 owncloud_php5_max_children: '50'
 
+
 # .. envvar:: owncloud_cron_minute
 #
 # At what time cron should execute background jobs
 owncloud_cron_minute: '*/15'
+
 
 # .. envvar:: owncloud_initial_config_global
 #
@@ -230,9 +248,18 @@ owncloud_initial_config_global:
   session_lifetime: '{{ 60 * 60 * 24 }}'
   session_keepalive: True
 
+
+# .. envvar:: owncloud_initial_config_group
+#
+# See ``owncloud_initial_config_global``.
 owncloud_initial_config_group: {}
 
+
+# .. envvar:: owncloud_initial_config
+#
+# See ``owncloud_initial_config_global``.
 owncloud_initial_config: {}
+
 
 # .. envvar:: owncloud_run_occ_global_commands
 #
@@ -246,10 +273,12 @@ owncloud_run_occ_global_commands: []
   # - 'app:enable external'
   # - 'app:enable files_external'
 
+
 # .. envvar:: owncloud_run_occ_group_commands
 #
 # See ``owncloud_run_occ_global_commands``.
 owncloud_run_occ_group_commands: []
+
 
 # .. envvar:: owncloud_run_occ_host_commands
 #
