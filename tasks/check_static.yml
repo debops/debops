@@ -1,7 +1,7 @@
 ---
 
 - name: Check if default configuration is static
-  command: grep -q 'static' /etc/network/interfaces
+  shell: grep 'static' /etc/network/interfaces | grep -Eq "^[^#]"
   register: ifupdown_register_static_config
   changed_when: False
   failed_when: False
