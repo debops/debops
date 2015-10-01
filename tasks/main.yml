@@ -88,6 +88,23 @@
   when: (((item.name|d() and item.name) or (item.database|d() and item.database)) and
          (item.state is undefined or item.state != 'absent'))
 
+- name: Grant public schema permissions
+  postgresql_privs:
+    roles: '{{ item.owner }}'
+    port: '{{ item.port | d(postgresql_port if postgresql_port else omit) }}'
+    type: 'schema'
+    database: '{{ item.name | d(item.database) }}'
+    objs: 'public'
+    privs: 'ALL'
+    grant_option: 'yes'
+    state: 'present'
+  with_items: postgresql_databases
+  sudo_user: '{{ postgresql_user }}'
+  delegate_to: '{{ postgresql_delegate_to }}'
+  when: (((item.name|d() and item.name) or (item.database|d() and item.database)) and
+         (item.state is undefined or item.state != 'absent') and
+         (item.owner|d() and item.owner))
+
 - name: Grant PostgreSQL groups
   postgresql_privs:
     roles: '{{ item.roles | join(",") }}'
