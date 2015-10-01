@@ -120,6 +120,7 @@
     user: 'root'
     key: '{{ "\n".join(bootstrap_admin_sshkeys) | string }}'
     state: 'present'
+  when: bootstrap_admin is defined and bootstrap_admin | bool
   failed_when: (bootstrap_admin_sshkeys is undefined or
                 (bootstrap_admin_sshkeys is defined and not bootstrap_admin_sshkeys))
 

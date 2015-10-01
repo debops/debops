@@ -13,6 +13,9 @@ v0.1.1
   IPv6 loopback address "::1". Not enabled by default because it might break something.
   Can be enabled by setting ``bootstrap_hostname_v6_loopback`` to True. [ypid]
 
+- Don't try and set SSH public key on ``root`` account when admin account
+  management is disabled. [drybjed]
+
 v0.1.0
 ------
 
