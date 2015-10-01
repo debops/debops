@@ -1,8 +1,8 @@
 {% if ('!postscreen' not in postfix and ('postscreen' in postfix or 'mx' in postfix)) %}
 # postscreen configuration (http://rob0.nodns4.us/postscreen.html)
-postscreen_blacklist_action    = {{ postfix_postscreen_blacklist_action | default('drop') }}
-postscreen_greet_action        = {{ postfix_postscreen_greet_action | default('enforce') }}
-postscreen_dnsbl_action        = {{ postfix_postscreen_dnsbl_action | default('enforce') }}
+postscreen_blacklist_action     = {{ postfix_postscreen_blacklist_action | default('drop') }}
+postscreen_greet_action         = {{ postfix_postscreen_greet_action | default('enforce') }}
+postscreen_dnsbl_action         = {{ postfix_postscreen_dnsbl_action | default('enforce') }}
 
 postscreen_access_list =
 {% if postfix_postscreen_access_list is defined and postfix_postscreen_access_list %}
@@ -37,7 +37,7 @@ postscreen_dnsbl_reply_map =
 {{ ",\n".join(postfix_tpl_postscreen_dnsbl_reply_map) | indent(6,true) }}
 {% endif %}
 
-postscreen_dnsbl_threshold     = {{ postfix_postscreen_dnsbl_threshold | default('3') }}
+postscreen_dnsbl_threshold      = {{ postfix_postscreen_dnsbl_threshold | default('3') }}
 {% else %}
       # required postfix capability: +dnsbl|+dnswl
 {% endif %}
@@ -45,14 +45,14 @@ postscreen_dnsbl_threshold     = {{ postfix_postscreen_dnsbl_threshold | default
 postscreen_whitelist_interfaces = static:all
 
 # postscreen greylisting actions
-postscreen_pipelining_enable   = {{ postfix_postscreen_pipelining_enable | default('yes') }}
-postscreen_pipelining_action   = {{ postfix_postscreen_pipelining_action | default('enforce') }}
+postscreen_pipelining_enable    = {{ postfix_postscreen_pipelining_enable | default('yes') }}
+postscreen_pipelining_action    = {{ postfix_postscreen_pipelining_action | default('enforce') }}
 
 postscreen_non_smtp_command_enable = {{ postfix_postscreen_non_smtp_command_enable | default('yes') }}
 postscreen_non_smtp_command_action = {{ postfix_postscreen_non_smtp_command_action | default('drop') }}
 
-postscreen_bare_newline_enable = {{ postfix_postscreen_bare_newline_enable | default('yes') }}
-postscreen_bare_newline_action = {{ postfix_postscreen_bare_newline_action | default('ignore') }}
+postscreen_bare_newline_enable  = {{ postfix_postscreen_bare_newline_enable | default('yes') }}
+postscreen_bare_newline_action  = {{ postfix_postscreen_bare_newline_action | default('ignore') }}
 {% else %}
 # postscreen disabled, required capabilities: +mx|+postscreen
 {% endif %}

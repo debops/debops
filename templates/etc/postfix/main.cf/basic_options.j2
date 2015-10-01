@@ -1,31 +1,31 @@
 {% import 'macros.j2' as get with context %}
 # Base options
-smtpd_banner			= {{ postfix_smtpd_banner | default('$myhostname ESMTP $mail_name') }}
-biff				= no
-append_dot_mydomain		= no
-delay_warning_time		= {{ postfix_delay_warning_time | default('4h') }}
-enable_long_queue_ids		= {{ postfix_long_queue_ids | default('yes') }}
+smtpd_banner                    = {{ postfix_smtpd_banner | default('$myhostname ESMTP $mail_name') }}
+biff                            = no
+append_dot_mydomain             = no
+delay_warning_time              = {{ postfix_delay_warning_time | default('4h') }}
+enable_long_queue_ids           = {{ postfix_long_queue_ids | default('yes') }}
 
 {% if 'local' in postfix %}
-myorigin			= /etc/mailname
+myorigin                        = /etc/mailname
 {% else %}
 {% if ((postfix_mydomain is defined and postfix_mydomain) or (ansible_domain is defined and ansible_domain)) %}
-myorigin			= $mydomain
+myorigin                        = $mydomain
 {% else %}
-myorigin			= $myhostname
+myorigin                        = $myhostname
 {% endif %}
-local_recipient_maps		=
-local_transport			= error:local mail delivery is disabled
+local_recipient_maps            =
+local_transport                 = error:local mail delivery is disabled
 
 {% endif %}
-myhostname			= {{ postfix_myhostname | default(ansible_fqdn) }}
+myhostname                      = {{ postfix_myhostname | default(ansible_fqdn) }}
 {% if ((postfix_mydomain is defined and postfix_mydomain) or (ansible_domain is defined and ansible_domain)) %}
-mydomain			= {{ postfix_mydomain | default(ansible_domain) }}
+mydomain                        = {{ postfix_mydomain | default(ansible_domain) }}
 {% endif %}
-smtp_helo_name			= {{ postfix_smtp_helo_name | default(ansible_fqdn) }}
+smtp_helo_name                  = {{ postfix_smtp_helo_name | default(ansible_fqdn) }}
 
 alias_maps                      = {{ get.list('alias_maps', [ 'hash:/etc/aliases' ]) }}
-alias_database			= hash:/etc/aliases
+alias_database                  = hash:/etc/aliases
 {% set postfix_tpl_virtual_alias_maps = [] %}
 {% if ('mx' in postfix or 'submission' in postfix) and 'local' not in postfix %}
 {% set postfix_tpl_virtual_alias_maps = postfix_tpl_virtual_alias_maps + ['hash:${config_directory}/hash_tables/mx_relay_virtual_alias_maps'] %}
@@ -34,17 +34,17 @@ alias_database			= hash:/etc/aliases
 virtual_alias_maps              = {{ get.list('virtual_alias_maps', postfix_tpl_virtual_alias_maps + postfix_virtual_alias_maps) }}
 {% endif %}
 
-mailbox_size_limit		= {{ postfix_mailbox_size_limit | default('0') }}
-message_size_limit		= {{ (postfix_message_size_limit | default(50) * 1024 * 1024|int)|round|int|string }}
-recipient_delimiter		= {{ postfix_recipient_delimiter | default('+') }}
+mailbox_size_limit              = {{ postfix_mailbox_size_limit | default('0') }}
+message_size_limit              = {{ (postfix_message_size_limit | default(50) * 1024 * 1024|int)|round|int|string }}
+recipient_delimiter             = {{ postfix_recipient_delimiter | default('+') }}
 {% if 'network' in postfix %}
 {% if postfix_inet_interfaces is defined and postfix_inet_interfaces %}
-inet_interfaces			= {{ postfix_inet_interfaces }}
+inet_interfaces                 = {{ postfix_inet_interfaces }}
 {% else %}
-inet_interfaces			= all
+inet_interfaces                 = all
 {% endif %}
 {% else %}
-inet_interfaces			= loopback-only
+inet_interfaces                 = loopback-only
 {% endif %}
 
 {% set postfix_tpl_mydestination = [] %}
@@ -58,11 +58,11 @@ inet_interfaces			= loopback-only
 {% set postfix_tpl_mydestination = postfix_mydestination %}
 {% endif %}
 {% if postfix_tpl_mydestination %}
-mydestination			= {{ ', '.join(postfix_tpl_mydestination | unique) }}
+mydestination                   = {{ ', '.join(postfix_tpl_mydestination | unique) }}
 {% else %}
-mydestination			=
+mydestination                   =
 {% endif %}
-mynetworks			= {{ ', '.join((postfix_mynetworks + ['127.0.0.0/8','::ffff:127.0.0.0/104', '::1/128']) | ipwrap) }}
+mynetworks                      = {{ ', '.join((postfix_mynetworks + ['127.0.0.0/8','::ffff:127.0.0.0/104', '::1/128']) | ipwrap) }}
 
 {% if get.list('virtual_alias_domains') %}
 virtual_alias_domains           = {{ get.list('virtual_alias_domains') }}
@@ -82,21 +82,21 @@ relay_domains                   = {{ get.list('relay_domains', postfix_tpl_relay
 {% endif %}
 {% if get.list('relay_recipient_maps', postfix_tpl_relay_recipient_maps) %}
 relay_recipient_maps            = {{ get.list('relay_recipient_maps', postfix_tpl_relay_recipient_maps) }}
-show_user_unknown_table_name	= no
+show_user_unknown_table_name    = no
 {% endif %}
 {% if postfix_relayhost is defined and postfix_relayhost %}
 {% if postfix_relayhost == True %}
-relayhost			= {{ ansible_domain }}
+relayhost                       = {{ ansible_domain }}
 
 {% else %}
 {% if postfix_relayhost != ansible_fqdn %}
-relayhost			= {{ postfix_relayhost }}
+relayhost                       = {{ postfix_relayhost }}
 
 {% endif %}
 {% endif %}
 {% elif 'local' not in postfix and 'mx' not in postfix %}
 {% if ansible_domain is defined and ansible_domain %}
-relayhost			= {{ ansible_domain }}
+relayhost                       = {{ ansible_domain }}
 {% endif %}
 
 {% endif %}
@@ -117,15 +117,15 @@ transport_maps                  = {{ get.list('transport_maps', postfix_tpl_tran
 {% if 'mx' in postfix %}
 parent_domain_matches_subdomains = debug_peer_list, smtpd_access_maps
 {% endif %}
-disable_vrfy_command		= {{ postfix_disable_vrfy_command | default('yes') }}
-strict_rfc821_envelopes		= {{ postfix_strict_rfc821_envelopes | default('yes') }}
-smtpd_helo_required		= {{ postfix_smtpd_helo_required | default('yes') }}
-smtpd_reject_unlisted_sender	= {{ postfix_smtpd_reject_unlisted_sender | default('yes') }}
+disable_vrfy_command            = {{ postfix_disable_vrfy_command | default('yes') }}
+strict_rfc821_envelopes         = {{ postfix_strict_rfc821_envelopes | default('yes') }}
+smtpd_helo_required             = {{ postfix_smtpd_helo_required | default('yes') }}
+smtpd_reject_unlisted_sender    = {{ postfix_smtpd_reject_unlisted_sender | default('yes') }}
 {% if 'test' in postfix or 'defer' in postfix or (postfix_soft_bounce is defined and postfix_soft_bounce) %}
-soft_bounce			= {{ postfix_soft_bounce | default('yes') }}
+soft_bounce                     = {{ postfix_soft_bounce | default('yes') }}
 
 {% endif %}
 {% if 'test' in postfix and postfix_smtpd_authorized_xclient_hosts is defined and postfix_smtpd_authorized_xclient_hosts %}
-smtpd_authorized_xclient_hosts	= {{ ', '.join(postfix_smtpd_authorized_xclient_hosts) }}
+smtpd_authorized_xclient_hosts  = {{ ', '.join(postfix_smtpd_authorized_xclient_hosts) }}
 {% endif %}
 
