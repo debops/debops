@@ -12,6 +12,9 @@ v0.2.3
 - Fix an issue where Jinja templating of the ``ifupdown`` variable resulted in
   a new line character added in Ansible v2. [drybjed]
 
+- Ignore comment lines while checking if static network configuration is
+  present. [drybjed]
+
 v0.2.2
 ------
 
