@@ -114,9 +114,14 @@ gitlab_database: 'mariadb'
 # .. envvar:: gitlab_database_server
 #
 # FQDN of the database server. It will be configured by
-# the ``debops.mariadb`` role.
-# Currently only supported for MySQL/MariaDB.
-gitlab_database_mariadb_server: '{{ ansible_local.mariadb.server }}'
+# the ``debops.mariadb`` or ``debops.postgresql`` role.
+gitlab_database_server: "{{ ansible_local[gitlab_database].server }}"
+
+
+# .. envvar:: gitlab_database_port
+#
+# Port database is listening on.
+gitlab_database_port: "{{ ansible_local[gitlab_database].port }}"
 
 
 # .. envvar:: gitlab_database_user
@@ -131,35 +136,25 @@ gitlab_database_user: 'gitlab'
 gitlab_database_name: 'gitlabhq_production'
 
 
+# .. envvar:: gitlab_database_password_path
+#
+# Path to database password file.
+gitlab_database_password_path: "{{ secret + '/' + gitlab_database + '/' +
+                                   ansible_local[gitlab_database].delegate_to }}{%
+                                     if gitlab_database=='postgresql' %}/{{ ansible_local[gitlab_database].port }}{% endif
+                                   %}{{ '/credentials/' + gitlab_database_user +
+                                   '/password' }}"
+
 # .. envvar:: gitlab_database_password
 #
 # Database password for GitLab.
-gitlab_database_password: "{{ lookup('password', secret + '/' + gitlab_database + '/' +
-                              ansible_local.mariadb.delegate_to +
-                              '/credentials/' + gitlab_database_user +
-                              '/password length=48') }}"
+gitlab_database_password: "{{ lookup('password', gitlab_database_password_path + ' length=48') }}"
 
-
-# .. envvar:: gitlab_database_map
+# .. envvar:: gitlab_postgresql_database_connection
 #
-# Map of configuration parameters for different DBs
-gitlab_database_map:
-
-  # MySQL / MariaDB database
-  mariadb:
-    dbtype: 'mysql'
-    dbname: '{{ gitlab_database_name|d(gitlab_user) }}'
-    dbuser: '{{ gitlab_database_user|d(gitlab_user) }}'
-    dbpass: '{{ gitlab_database_password }}'
-    dbhost: '{{ gitlab_database_mariadb_server|d("localhost") }}'
-
-  # PostgreSQL database on localhost, connection through Unix socket, no default password
-  postgresql:
-    dbtype: 'pgsql'
-    dbname: '{{ gitlab_database_name|d(gitlab_user) }}'
-    dbuser: '{{ gitlab_database_user|d(gitlab_user) }}'
-    dbpass: ''
-    dbhost: '{{ gitlab_database_server|d("/var/run/postgresql") }}'
+# Connection type for PostgreSQL database (choices: socket, port)
+# FIXME: not supported yet
+gitlab_postgresql_database_connection: 'socket'
 
 
 # ------------------------
@@ -268,11 +263,6 @@ gitlab_user_append_groups: [ 'sshusers' ]
 # Server timezone
 gitlab_time_zone: 'UTC'
 
-
-# .. envvar:: gitlab_postgresql_database_connection
-#
-# Connection type for PostgreSQL database (choices: socket, port)
-gitlab_postgresql_database_connection: 'socket'
 
 
 # .. envvar:: gitlab_nginx_client_max_body_size

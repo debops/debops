@@ -99,22 +99,6 @@
     mode: '0600'
   notify: [ 'Restart gitlab' ]
 
-- name: Create PostgreSQL role if PostgreSQL enabled
-  postgresql_user: name='{{ gitlab_database_config[gitlab_database].username }}'
-                   password='{{ gitlab_database_password }}' encrypted=False
-                   port='{{ gitlab_database_config[gitlab_database].port }}'
-                   state=present
-  sudo_user: 'postgres'
-  when: gitlab_database is defined and gitlab_database == 'postgresql'
-
-- name: Create PostgreSQL database if PostgreSQL enabled
-  postgresql_db: name='{{ gitlab_database_config[gitlab_database].database }}'
-                 owner='{{ gitlab_database_config[gitlab_database].username }}'
-                 port='{{ gitlab_database_config[gitlab_database].port }}'
-                 state=present template='template1'
-  sudo_user: 'postgres'
-  when: gitlab_database is defined and gitlab_database == 'postgresql'
-
 
 # ---- Application configuration ----
 
