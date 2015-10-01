@@ -27,6 +27,8 @@ dependencies:
     tags: [ 'depend::redis', 'depend::redis:gitlab', 'depend-of::gitlab', 'type::dependency' ]
 
   - role: debops.mariadb
+    mariadb_databases:
+      - database: '{{ gitlab_database_map[gitlab_database].dbname }}'
     mariadb_users:
       - database: '{{ gitlab_database_map[gitlab_database].dbname }}'
         user: '{{ gitlab_database_map[gitlab_database].dbuser }}'
