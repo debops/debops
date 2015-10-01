@@ -5,7 +5,10 @@
     name: '{{ item }}'
     state: 'latest'
     install_recommends: False
-  with_items: [ 'postfix', 'postfix-pcre', 'bsd-mailx' ]
+  with_items:
+    - [ 'postfix', 'postfix-pcre', 'bsd-mailx' ]
+    - '{{ postfix_packages }}'
+  when: item is defined and item
 
 - name: Disable Postfix configuration in debconf
   debconf:
