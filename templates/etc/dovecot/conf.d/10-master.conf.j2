@@ -44,10 +44,12 @@ setup, you can provide your own template via lookup mechanism.
 {% if 'pop3' in dovecot_protocols %}
 {{ macros.dovecot_cfg_section('service', 'pop3', dovecot_tpl_pop3_svc_map|default({})) }}
 {% endif %}
-service auth {
-  unix_listener auth-userdb {
-  }
-}
+{% if dovecot_auth_config_map is defined and dovecot_auth_config_map %}
+{%   if 'service' in dovecot_auth_config_map %}
+{%     set dovecot_tpl_auth_svc_map = dovecot_auth_config_map['service'] %}
+{%   endif %}
+{% endif %}
+{{ macros.dovecot_cfg_section('service', 'auth', dovecot_tpl_auth_svc_map|default({}), listeners=dovecot_auth_listeners|default([])) }}
 
 service auth-worker {
 }
