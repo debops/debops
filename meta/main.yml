@@ -26,20 +26,16 @@ dependencies:
   - role: debops.redis
     tags: [ 'depend::redis', 'depend::redis:gitlab', 'depend-of::gitlab', 'type::dependency' ]
 
-  - role: debops.mysql
-    tags: [ 'depend::mysql', 'depend::mysql:gitlab', 'depend-of::gitlab', 'type::dependency' ]
+  - role: debops.mariadb
+    mariadb_databases:
+      - database: '{{ gitlab_database_map[gitlab_database].dbname }}'
+    mariadb_users:
+      - database: '{{ gitlab_database_map[gitlab_database].dbname }}'
+        user: '{{ gitlab_database_map[gitlab_database].dbuser }}'
+        password: '{{ gitlab_database_map[gitlab_database].dbpass }}'
     when: (gitlab_dependencies is defined and gitlab_dependencies) and
-          (gitlab_database is defined and gitlab_database and gitlab_database == 'mysql')
-
-    mysql_databases:
-      - name: '{{ gitlab_database_config[gitlab_database].database }}'
-        state: 'present'
-
-    mysql_users:
-      - name: '{{ gitlab_database_config[gitlab_database].username }}'
-        host: '{{ gitlab_database_config[gitlab_database].hostname }}'
-        priv: '{{ gitlab_database_config[gitlab_database].database }}.*:ALL'
-        state: 'present'
+          (gitlab_database is defined and gitlab_database and gitlab_database == 'mariadb')
+    tags: [ 'depend::mariadb', 'depend::mariadb:gitlab', 'depend-of::gitlab', 'type::dependency' ]
 
   - role: debops.postgresql
     tags: [ 'depend::postgresql', 'depend::postgresql:gitlab', 'depend-of::gitlab', 'type::dependency' ]

@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v0.1.1
+------
+
+*Unreleased*
+
+- Migration to debops.mariadb role. [scibi]
+  If you have exisitng setup you have to:
+  - move some files in secrets directory:
+    ``secret/credentials/[GitLab FQDN]/mysql/root/password`` to ``secret/credentials/[GitLab FQDN]/mariadb/localhost/root/password``
+    ``secret/credentials/[GitLab FQDN]/mysql/git/password`` to ``secret/mariadb/[GitLab FQDN]/credentials/gitlab/password``
+  - set ``mariadb_server_flavor`` to ``mysql``
+
+
 v0.1.0
 ------
 
