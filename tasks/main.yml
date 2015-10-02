@@ -119,7 +119,8 @@
   delegate_to: '{{ postgresql_delegate_to }}'
   when: ((item.roles|d() and item.roles) and
          (item.groups|d() and item.groups) and
-         (item.database|d() and item.database))
+         (item.database|d() and item.database) and
+         (item.enabled is undefined or item.enabled|bool))
 
 - name: Grant database privileges to PostgreSQL roles
   postgresql_user:
