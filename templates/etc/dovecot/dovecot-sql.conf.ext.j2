@@ -39,10 +39,8 @@ setup, you can provide your own template via lookup mechanism.
 
 # Database driver: mysql, pgsql, sqlite
 #driver =
-{% if dovecot_user_accounts is defined and dovecot_user_accounts %}
-{%   if 'mysql' in dovecot_user_accounts %}
-driver = mysql
-{%   endif %}
+{% if dovecot_sql_driver is defined and dovecot_sql_driver %}
+driver = {{ dovecot_sql_driver }}
 {% endif %}
 
 # Database connection string. This is driver-specific setting.

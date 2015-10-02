@@ -13,7 +13,8 @@
     - [ '{{ "dovecot-imapd" if "imap" in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-pop3d" if "pop3" in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-lmtpd" if "lmtp" in dovecot_protocols else [] }}' ]
-    - [ '{{ "dovecot-mysql" if "mysql" in dovecot_user_accounts else [] }}' ]
+    - [ '{{ "dovecot-mysql" if (("sql" in dovecot_user_accounts) and ("mysql" in dovecot_sql_driver)) else [] }}' ]
+    - [ '{{ "dovecot-pgsql" if (("sql" in dovecot_user_accounts) and ("pgsql" in dovecot_sql_driver)) else [] }}' ]
     - [ '{{ "dovecot-managesieved" if "managesieve" in dovecot_protocols else [] }}' ]
 
 - name: Divert original Dovecot configuration
@@ -25,7 +26,7 @@
     - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
     - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
     - [ '{{ [ "auth-deny.conf.ext", "auth-system.conf.ext" ] if "system" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ "auth-sql.conf.ext" if "mysql" in dovecot_user_accounts else [] }}' ]
+    - [ '{{ "auth-sql.conf.ext" if "sql" in dovecot_user_accounts else [] }}' ]
     - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ] if "managesieve" in dovecot_protocols else [] }}' ]
   notify: [ 'Restart dovecot' ]
 
@@ -57,7 +58,8 @@
     - [ '{{ "dovecot-imapd" if "imap" not in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-pop3d" if "pop3" not in dovecot_protocols else [] }}' ]
     - [ '{{ "dovecot-lmtpd" if "lmtp" not in dovecot_protocols else [] }}' ]
-    - [ '{{ "dovecot-mysql" if "mysql" not in dovecot_user_accounts else [] }}' ]
+    - [ '{{ "dovecot-mysql" if (("sql" not in dovecot_user_accounts) or ("mysql" not in dovecot_sql_driver)) else [] }}' ]
+    - [ '{{ "dovecot-pgsql" if (("sql" not in dovecot_user_accounts) or ("pgsql" not in dovecot_sql_driver)) else [] }}' ]
     - [ '{{ "dovecot-managesieved" if "managesieve" not in dovecot_protocols else [] }}' ]
   notify: [ 'Restart dovecot' ]
 
@@ -74,7 +76,7 @@
     - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
     - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
     - [ '{{ [ "auth-deny.conf.ext", "auth-system.conf.ext" ] if "system" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ "auth-sql.conf.ext" if "mysql" in dovecot_user_accounts else [] }}' ]
+    - [ '{{ "auth-sql.conf.ext" if "sql" in dovecot_user_accounts else [] }}' ]
     - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ] if "managesieve" in dovecot_protocols else [] }}' ]
   notify: [ 'Restart dovecot' ]
 
@@ -95,7 +97,7 @@
     group: 'dovecot'
     mode: '0640'
   notify: [ 'Restart dovecot' ]
-  when: "'mysql' in dovecot_user_accounts"
+  when: "'sql' in dovecot_user_accounts"
 
 - name: Generate Dovecot deny user list
   template:
