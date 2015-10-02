@@ -38,9 +38,11 @@ dovecot_dependencies: True
 #
 # User account lookup. So far supported are:
 #
+# - ``deny``: Deny access for users
 # - ``system``: Mail users are Linux system users
+# - ``sql``: Mail users are stored in a SQL database
 #
-dovecot_user_accounts: [ 'system' ]
+dovecot_user_accounts: [ 'deny', 'system' ]
 
 
 # .. envvar:: dovecot_deny_users
@@ -55,6 +57,79 @@ dovecot_deny_users: [ 'root' ]
 # For more information about the supported format, check `Dovecot Mail
 # Location <http://wiki2.dovecot.org/MailLocation>`_
 dovecot_mail_location: 'mbox:~/mail:INBOX=/var/mail/%u'
+
+
+# .. envvar:: dovecot_sql_driver
+#
+# The SQL driver defines which SQL is used. This can be either ``mysql``
+# or ``pgsql``.
+#
+# The database should have a structure like this:
+#
+# ::
+#
+#   CREATE TABLE `users` (
+#     `userid` varchar(128) NOT NULL,
+#     `domain` varchar(128) NOT NULL,
+#     `password` varchar(128) NOT NULL,
+#     `home` varchar(255) NOT NULL,
+#     `uid` int(11) NOT NULL,
+#     `gid` int(11) NOT NULL,
+#     `active` char(1) NOT NULL DEFAULT 'Y',
+#     `maildir` varchar(255) NOT NULL
+#   )
+#
+dovecot_sql_driver: 'mysql'
+
+
+# .. envvar:: dovecot_sql_host
+#
+# The hostname of the SQL server.
+dovecot_sql_host: ''
+
+
+# .. envvar:: dovecot_sql_dbname
+#
+# The SQL database name.
+dovecot_sql_dbname: ''
+
+
+# .. envvar:: dovecot_sql_user
+#
+# The username to access the SQL server.
+dovecot_sql_user: ''
+
+
+# .. envvar:: dovecot_sql_password
+#
+# The password to login into the SQL server.
+dovecot_sql_password: ''
+
+
+# .. envvar:: dovecot_sql_default_pass_scheme
+#
+# Default passwort scheme for passwords, stored in a SQL database.
+# For more information about the supported schemes, check `Authentication /
+# PasswordSchemes <http://wiki2.dovecot.org/Authentication/PasswordSchemes>`_
+dovecot_sql_default_pass_scheme: 'SSHA512'
+
+
+# .. envvar:: dovecot_sql_password_query
+#
+# SQL query string to get the password. This function should return the values
+# ``username``, ``domain`` and ``password``.
+dovecot_sql_password_query: "SELECT userid AS username, domain, password FROM users WHERE userid = '%n' AND domain = '%d'"
+
+
+# .. envvar:: dovecot_sql_user_query
+#
+# SQL query string to get the userdb. This function should return the values
+# ``home``, ``uid`` and ``gid``.
+#
+# Optional the mail_location can be defined with the option ``mail``.
+# For more information about the mail_location, check `MailLocation
+# <http://wiki2.dovecot.org/MailLocation>`_
+dovecot_sql_user_query: "SELECT home, uid, gid FROM users WHERE userid = '%n' AND domain = '%d'"
 
 
 # ---------------------------
