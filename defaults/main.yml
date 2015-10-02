@@ -308,3 +308,76 @@ owncloud_run_occ_group_commands: []
 #
 # See ``owncloud_run_occ_global_commands``.
 owncloud_run_occ_host_commands: []
+
+
+# --------------------------------------------
+#   ownCloud LDAP Authentication configuration
+# --------------------------------------------
+
+# .. envvar:: owncloud_ldap_enable
+#
+# Enable LDAP support. ownCloud support multiple LDAP servers but this role
+# configures only default one. If you need something more complex you can
+# use ``owncloud_run_occ_global_commands``.
+owncloud_ldap_enable: false
+
+
+# .. envvar:: owncloud_ldap_domain
+#
+# Domain name used to generate base DN
+owncloud_ldap_domain: '{{ ansible_domain }}'
+
+
+# .. envvar:: owncloud_ldap_basedn
+#
+# Base DN
+owncloud_ldap_basedn: '{{ "dc=" + owncloud_ldap_domain.split(".") | join(",dc=") }}'
+
+
+# .. envvar:: owncloud_ldap_binddn
+#
+# DN to bind as
+owncloud_ldap_binddn: '{{ "cn=owncloud," + secret_ldap_services_dn }}'
+
+
+# .. envvar:: owncloud_ldap_host
+#
+owncloud_ldap_host: 'ldap.{{ ansible_domain }}'
+
+
+# .. envvar:: owncloud_ldap_password_file
+#
+owncloud_ldap_password_file: '{{ secret + "/credentials/" + owncloud_ldap_host + "/slapd/" + owncloud_ldap_basedn + "/" + owncloud_ldap_binddn + ".password" }}'
+
+
+# .. envvar:: owncloud_ldap_password
+#
+owncloud_ldap_password: '{{ lookup("password", owncloud_ldap_password_file) }}'
+
+
+# .. envvar:: owncloud_ldap_port
+#
+owncloud_ldap_port: '636'
+
+
+# .. envvar:: owncloud_ldap_method
+#
+owncloud_ldap_method: 'ssl'
+
+
+# .. envvar:: gitlab_ldap_conf_map
+#
+owncloud_ldap_conf_map:
+  ldapAgentName: "{{ owncloud_ldap_binddn }}"
+  ldapBase: "{{ owncloud_ldap_basedn }}"
+  ldapEmailAttribute: "mail"
+  ldapConfigurationActive: "1"
+  ldapGroupFilter: "(&(|(objectclass=posixGroup)))"
+  ldapGroupFilterObjectclass: "posixGroup"
+  ldapHost: "{% if owncloud_ldap_method == 'ssl' %}ldaps://{% endif %}{{ owncloud_ldap_host }}"
+  ldapLoginFilter: "(&(|(objectclass=inetOrgPerson))(uid=%uid))"
+  ldapPort: "{{ owncloud_ldap_port }}"
+  ldapUserDisplayName: "cn"
+  ldapUserFilter: "(|(objectclass=inetOrgPerson))"
+  ldapUserFilterObjectclass: "inetOrgPerson"
+
