@@ -87,6 +87,16 @@
     mode: '0644'
   notify: [ 'Restart dovecot' ]
 
+- name: Generate Dovecot sql configuration
+  template:
+    src: "{{ lookup('template_src', 'etc/dovecot/dovecot-sql.conf.ext.j2') }}"
+    dest: '/etc/dovecot/dovecot-sql.conf.ext'
+    owner: 'root'
+    group: 'dovecot'
+    mode: '0640'
+  notify: [ 'Restart dovecot' ]
+  when: "'mysql' in dovecot_user_accounts"
+
 - name: Generate Dovecot deny user list
   template:
     src: "{{ lookup('template_src', 'etc/dovecot/dovecot.deny.j2') }}"
