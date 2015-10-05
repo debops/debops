@@ -101,15 +101,7 @@
         (etherpad_register_directory is defined and etherpad_register_directory.stat.exists == False)
   tags: [ 'role::etherpad:source' ]
 
-- name: Set default MySQL password
-  set_fact:
-    etherpad_mysql_database_password: ""
-
-- name: Lookup MySQL password if secrets/ directory is defined
-  set_fact:
-    etherpad_mysql_database_password: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/mysql/" + etherpad_database_config[etherpad_database].username + "/password") }}'
-  when: (secret is defined and secret) and (etherpad_database is defined and etherpad_database == 'mysql')
-
+## Not used anywhere but it should stay for now: See https://github.com/debops/ansible-etherpad/pull/13
 - name: Generate Etherpad session key
   set_fact:
     etherpad_session_key: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/etherpad/session_key chars=ascii,numbers,digits,hexdigits length=30") }}'

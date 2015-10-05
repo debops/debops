@@ -62,10 +62,32 @@ etherpad_welcome_text: |
 etherpad_database_server: '{{ ansible_local.mariadb.server }}'
 
 
+# .. envvar:: etherpad_database_user
+#
+# MariaDB database user to use for Etherpad.
+etherpad_database_user: '{{ etherpad_system_name }}'
+
+
+# .. envvar:: etherpad_database_name
+#
+# Name of the MariaDB database to use for Etherpad.
+etherpad_database_name: '{{ etherpad_system_name }}'
+
+
+# .. envvar:: etherpad_database_password
+#
+# MariaDB database password for the Etherpad database user.
+etherpad_database_password: "{{ lookup('password', secret + '/mariadb/' +
+                                ansible_local.mariadb.delegate_to +
+                                '/credentials/' + etherpad_database_user +
+                                '/password length=48') }}"
+
+
 # .. envvar:: etherpad_database
 #
 # Database to use for data storage (choices: sqlite, mysql, postgresql,
-# dirty). More databases will be available in the future
+# dirty). Choose mysql even when you use different mysql flavors. More
+# databases will be available in the future.
 etherpad_database: sqlite
 
 
