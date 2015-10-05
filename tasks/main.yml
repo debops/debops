@@ -60,11 +60,13 @@
     update: yes
   sudo_user: '{{ etherpad_user }}'
   register: etherpad_register_source
+  tags: [ 'role::etherpad:source' ]
 
 - name: Check if Etherpad is checked out
   stat:
     path: '{{ etherpad_home + "/" + etherpad_repository }}'
   register: etherpad_register_directory
+  tags: [ 'role::etherpad:source' ]
 
 - name: Create Etherpad directory
   file:
@@ -75,6 +77,7 @@
     mode: '0755'
   when: (etherpad_register_source is defined and etherpad_register_source.changed == True) or
         (etherpad_register_directory is defined and etherpad_register_directory.stat.exists == False)
+  tags: [ 'role::etherpad:source' ]
 
 - name: Prepare Etherpad worktree
   template:
@@ -85,6 +88,7 @@
     mode: '0644'
   when: (etherpad_register_source is defined and etherpad_register_source.changed == True) or
         (etherpad_register_directory is defined and etherpad_register_directory.stat.exists == False)
+  tags: [ 'role::etherpad:source' ]
 
 - name: Checkout Etherpad
   shell: GIT_WORK_TREE={{ etherpad_home + '/' + etherpad_repository }}
@@ -95,6 +99,7 @@
   notify: [ 'Restart etherpad-lite' ]
   when: (etherpad_register_source is defined and etherpad_register_source.changed == True) or
         (etherpad_register_directory is defined and etherpad_register_directory.stat.exists == False)
+  tags: [ 'role::etherpad:source' ]
 
 - name: Set default MySQL password
   set_fact:
