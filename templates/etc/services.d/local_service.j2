@@ -1,3 +1,6 @@
+{% if item.custom is defined and item.custom %}
+{{ item.custom }}
+{% else %}
 {% if item.name is defined and item.name %}
 {% if item.protocol is undefined and item.protocols is undefined %}
 {% set etc_services_tpl_protocols = [ 'tcp', 'udp' ] %}
@@ -14,5 +17,6 @@
 {% for element in etc_services_tpl_protocols %}
 {{ "%-15s %s/%-26s # %s" | format(item.name, item.port, element, item.comment) }}
 {% endfor %}
+{% endif %}
 {% endif %}
 {% endif %}

@@ -22,9 +22,10 @@
     - etc_services_host_list
     - etc_services_dependency_list
     - etc_services_dependent_list
-  when: (etc_services is defined and etc_services) and
-        (item.name is defined and item.name) and
-        (item.port is defined and item.port)
+  when: ((etc_services is defined and etc_services) and
+         (item.name is defined and item.name) and
+         ((item.port is defined and item.port) or
+          (item.custom is defined and item.custom)))
 
 - name: Assemble /etc/services.d
   assemble: src=/etc/services.d dest=/etc/services

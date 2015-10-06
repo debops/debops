@@ -8,3 +8,5 @@ v0.1.0
 
 - Add Changelog. [drybjed]
 
+- Support custom service definitions. [drybjed]
+
