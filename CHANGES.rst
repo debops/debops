@@ -16,6 +16,9 @@ v0.1.1
 - Don't try and set SSH public key on ``root`` account when admin account
   management is disabled. [drybjed]
 
+- Remove the "\n" from ``/etc/hostname`` content line to prevent issues on
+  Ansible v2. [drybjed]
+
 v0.1.0
 ------
 
