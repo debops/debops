@@ -120,8 +120,8 @@ Database privileges
   default privileges.
 
 ``priv_aux``
-  Optional. By default, the user accounts will get all privileges to database
-  prefixed with the name of user account. If this key is present and ``False``,
+  Optional. By default, the user accounts will get all privileges to the database
+  prefixed with the name of the user account. If this key is present and ``False``,
   the users will not get default prefix privileges.
 
 ``priv``
