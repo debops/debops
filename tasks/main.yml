@@ -9,6 +9,7 @@
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
   when: postgresql_server_upstream|d() and postgresql_server_upstream
+  tags: [ 'role::postgresql_server:packages' ]
 
 - name: Add upstream PostgreSQL APT repository
   apt_repository:
@@ -16,11 +17,14 @@
     state: 'present'
     update_cache: True
   when: postgresql_server_upstream|d() and postgresql_server_upstream
+  tags: [ 'role::postgresql_server:packages' ]
 
 - name: Get default PostgreSQL version
   shell: "apt-cache show '^postgresql$' | grep -E '^Depends:\\s' | awk '{print $2}' | cut -d- -f2 | head -n 1"
   register: postgresql_server_register_version
   changed_when: False
+  tags: [ 'role::postgresql_server:packages', 'role::postgresql_server:config',
+          'role::postgresql_server:auto_backup' ]
 
 - name: Set default PostgreSQL version variable
   set_fact:
@@ -28,23 +32,30 @@
                                    if (ansible_local|d() and ansible_local.postgresql|d() and
                                        ansible_local.postgresql.version|d())
                                    else postgresql_server_register_version.stdout }}'
+  tags: [ 'role::postgresql_server:packages', 'role::postgresql_server:config',
+          'role::postgresql_server:auto_backup' ]
 
 - include: install_postgresql.yml
+  tags: [ 'role::postgresql_server:packages' ]
 
 - name: Count number of currently configured clusters
   set_fact:
     postgresql_server_fact_cluster_count: '{{ (postgresql_server_clusters|length|int) * 1 }}'
+  tags: [ 'role::postgresql_server:config' ]
 
 - name: Get current maximum shared memory value
   shell: cat /proc/sys/kernel/shmmax
   register: postgresql_server_register_sysctl_shmmax
   changed_when: False
+  tags: [ 'role::postgresql_server:config' ]
 
 - include: manage_clusters.yml
+
 - include: secure_installation.yml
 
 - include: manage_autopostgresqlbackup.yml
   when: postgresql_server_autopostgresqlbackup|d() and postgresql_server_autopostgresqlbackup
+  tags: [ 'role::postgresql_server:auto_backup' ]
 
 - name: Make sure that Ansible local fact directory exists
   file:
@@ -62,9 +73,11 @@
     group: 'root'
     mode: '0644'
   register: postgresql_server_register_local_facts
+  tags: [ 'role::postgresql_server:config' ]
 
 - name: Re-read local facts if they have been changed
   action: setup
   when: postgresql_server_register_local_facts|d() and
         postgresql_server_register_local_facts.changed
+  tags: [ 'role::postgresql_server:config' ]
 

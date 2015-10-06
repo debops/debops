@@ -211,6 +211,8 @@ v0.2.0
   variable which is passed to the role using role dependent variables.
   [drybjed]
 
+- Add tags to various role tasks. [drybjed]
+
 v0.1.0
 ------
 

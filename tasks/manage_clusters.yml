@@ -4,6 +4,7 @@
   shell: mount | grep /dev/shm || true
   register: postgresql_server_register_shm
   changed_when: False
+  tags: [ 'role::postgresql_server:config' ]
 
 - name: Create PostgreSQL clusters
   environment:
@@ -31,6 +32,7 @@
     - postgresql_server_clusters
   when: item.name|d() and item.name
   register: postgresql_config
+  tags: [ 'role::postgresql_server:config' ]
 
 - name: Configure PostgreSQL cluster environment
   template:
@@ -43,6 +45,7 @@
     - postgresql_server_clusters
   when: item.name|d() and item.name
   register: postgresql_config_environment
+  tags: [ 'role::postgresql_server:config' ]
 
 - name: Configure PostgreSQL user identification
   template:
@@ -55,6 +58,7 @@
     - postgresql_server_clusters
   when: item.name|d() and item.name
   register: postgresql_config_ident
+  tags: [ 'role::postgresql_server:config' ]
 
 - name: Configure PostgreSQL cluster host authentication
   template:
@@ -67,6 +71,7 @@
     - postgresql_server_clusters
   when: item.name|d() and item.name
   register: postgresql_config_hba
+  tags: [ 'role::postgresql_server:config' ]
 
 - name: Configure PostgreSQL cluster trusted local roles
   template:
@@ -79,6 +84,7 @@
     - postgresql_server_clusters
   when: item.name|d() and item.name
   register: postgresql_server_register_trusted
+  tags: [ 'role::postgresql_server:config' ]
 
 - name: Configure PostgreSQL cluster start options
   template:
@@ -91,6 +97,7 @@
     - postgresql_server_clusters
   when: item.name|d() and item.name
   register: postgresql_config_start
+  tags: [ 'role::postgresql_server:config' ]
 
 - name: Symlink SSL root certificate
   file:
@@ -162,6 +169,7 @@
           ansible_local.init != 'systemd') and
          ((item.changed|d() and item.changed) and
           (item.item.start_conf is undefined or item.item.start_conf == 'auto')))
+  tags: [ 'role::postgresql_server:config' ]
 
 - name: Reload PostgreSQL clusters when needed (systemd)
   service:
@@ -176,4 +184,5 @@
           ansible_local.init == 'systemd') and
          ((item.changed|d() and item.changed) and
           (item.item.start_conf is undefined or item.item.start_conf == 'auto')))
+  tags: [ 'role::postgresql_server:config' ]
 
