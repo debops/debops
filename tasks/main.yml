@@ -2,7 +2,7 @@
 
 - name: Ensure that configuration is supported
   assert:
-    that: not ntp_daemon or ntp_daemon in ntp_daemon_to_package_mapping
+    that: not ntp_daemon or ntp_daemon in [ 'ntpd', 'ntpdate', 'openntpd' ]
 
 - name: Configure tzdata area in debconf
   debconf:
