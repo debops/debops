@@ -207,6 +207,10 @@ v0.2.0
 - Move ``ferm`` firewall rules from a separate template to a default variable
   with configuration that should be passed to ``debops.ferm`` role. [drybjed]
 
+- Move ``debops.etc_services`` configuration from a custom file to the default
+  variable which is passed to the role using role dependent variables.
+  [drybjed]
+
 v0.1.0
 ------
 

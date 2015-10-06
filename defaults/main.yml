@@ -311,7 +311,19 @@ postgresql_server_auto_backup_compression: 'gzip'
 postgresql_server_auto_backup_encryption_cipher: 'aes256'
 postgresql_server_auto_backup_encryption_suffix: '.enc'
 
-# Configuration for ``debops.ferm`` firewall
+# Configuration for ``debops.etc_services`` role. It will set up custom
+# ``/etc/services`` entries for additional PostgreSQL clusters.
+postgresql_server_etc_services_dependent_list:
+  name: 'postgresql'
+  custom: |
+    {% for item in postgresql_server_clusters %}
+    {% if item.port is defined and item.port != "5432" %}
+    postgresql-{{ (item.port|int - 5430) }}    {{ item.port }}/tcp
+    {% endif %}
+    {% endfor %}
+
+# Configuration for ``debops.ferm`` firewall. It should be added when
+# ``debops.ferm`` role is used to configure PostgreSQL firewall rules.
 postgresql_server_ferm_dependent_rules:
   category: 'filter'
   table: 'filter/input'
