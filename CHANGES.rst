@@ -17,3 +17,5 @@ v0.1.0
 
 .. _ntp and Apparmor issue: https://bugs.launchpad.net/ubuntu/+source/openntpd/+bug/458061
 
+- Rewrite the installation tasks to work correctly on Ansible v2. [drybjed]
+
