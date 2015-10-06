@@ -138,7 +138,8 @@ etherpad_require_session: False
 
 # .. envvar:: etherpad_edit_only
 #
-# Block creation of new pads by unauthorized users?
+# Users may edit pads but not create new ones. Pad creation is only via the
+# API. This applies both to group pads and regular pads.
 etherpad_edit_only: False
 
 
@@ -161,19 +162,24 @@ etherpad_abiword: True
 # .. envvar:: etherpad_plugins
 #
 # List of Etherpad plugins to enable.
+# Checkout the list of available plugins for more: https://static.etherpad.org/plugins.html.
 etherpad_plugins:
   - '{{ etherpad_default_plugins }}'
 
 
 # .. envvar:: etherpad_default_plugins
 #
-# Default Etherpad plugin list.
+# Default Etherpad plugin list (alphabetically sorted).
 etherpad_default_plugins:
   - 'adminpads'
   - 'align'
   - 'font_color'
   - 'font_family'
   - 'font_size'
+
+  ## TODO(ypid): The current version (1.0.2) only supports SHA2. I replaced the SHA2 with bcrypt and am wanting for response from the maintainer.
+  # - 'hash_auth'
+
   - 'headings'
   - 'hide_referrer'
   - 'line_height'
@@ -184,8 +190,8 @@ etherpad_default_plugins:
   - 'print'
   - 'rss'
   - 'scrollto'
-  - 'superscript'
   - 'subscript'
+  - 'superscript'
 
 
 # -------------------
@@ -229,3 +235,19 @@ etherpad_loglevel: 'INFO'
 # be converted to JSON and put at the end of the configuration file.
 etherpad_custom_json: False
 
+
+# .. envvar:: etherpad_api_calls
+#
+# Allows you configure all aspects of Etherpad via its API.
+# See http://etherpad.org/doc/v1.5.1/#index_api_methods for details.
+etherpad_api_calls:
+  # - method: 'createPad'
+  #   args:
+  #     'padID': 'testing'
+
+
+# .. envvar:: etherpad_api_version
+#
+# Against which API version should the API calls be executed?
+# Only applies for :ref:`etherpad_api_calls`.
+etherpad_api_version: '1.2.12'

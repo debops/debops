@@ -91,9 +91,11 @@
   tags: [ 'role::etherpad:source' ]
 
 - name: Checkout Etherpad
-  shell: GIT_WORK_TREE={{ etherpad_home + '/' + etherpad_repository }}
-         git checkout -f {{ etherpad_version }}
-         chdir={{ etherpad_sources + '/' + etherpad_repository }}
+  command: git checkout --force {{ etherpad_version }}
+  args:
+    chdir: '{{ etherpad_sources + "/" + etherpad_repository }}'
+  environment:
+    GIT_WORK_TREE: '{{ etherpad_home + "/" + etherpad_repository }}'
   sudo_user: '{{ etherpad_user }}'
   register: etherpad_register_checkout
   notify: [ 'Restart etherpad-lite' ]
@@ -115,6 +117,7 @@
     group: '{{ etherpad_group }}'
     mode: '0644'
   notify: [ 'Restart etherpad-lite' ]
+  tags: [ 'role::etherpad:config' ]
 
 - name: Reserve Etherpad port
   template:
@@ -165,7 +168,7 @@
     creates: '{{ etherpad_home }}/.node-gyp'
   sudo_user: '{{ etherpad_user }}'
 
-- name: Install sqlite3 for Etherpad
+- name: Install sqlite3 NPM dependency for Etherpad
   npm:
     name: 'sqlite3'
     path: '{{ etherpad_home + "/" + etherpad_repository }}'
@@ -177,13 +180,31 @@
 
 - name: Manage Etherpad plugins
   npm:
-    name: 'sqlite3'
+    name: 'ep_{{ item }}'
     path: '{{ etherpad_home + "/" + etherpad_repository }}'
     state: 'present'
     production: yes
-    name: 'ep_{{ item }}'
-  with_items: etherpad_plugins
+  with_flattened: etherpad_plugins
   sudo_user: '{{ etherpad_user }}'
   notify: [ 'Restart etherpad-lite' ]
   when: etherpad_plugins is defined and etherpad_plugins
+  tags: [ 'role::etherpad:plugins' ]
 
+- name: Get the generated API key
+  command: cat {{ etherpad_home + "/" + etherpad_repository }}/APIKEY.txt
+  register: etherpad_api_key
+  changed_when: False
+  tags: [ 'role::etherpad:api' ]
+
+- name: Make API calls
+  uri:
+    url: 'http://localhost:{{ etherpad_port }}/api/{{ etherpad_api_version }}/{{ item.method }}?apikey={{ etherpad_api_key.stdout }}{% if item.args|d() %}{% for key, value in item.args.iteritems() %}{{ "&" + key + "=" + value }}{% endfor %}{% endif %}'
+  register: etherpad_api_calls_exec
+  ## error while evaluating conditional???
+  # failed_when: etherpad_api_calls_exec.rc != 0 or etherpad_api_calls_exec.json.code|d()
+  with_items: etherpad_api_calls
+  # no_log: True
+  tags: [ 'role::etherpad:api' ]
+
+- debug: var=etherpad_api_calls_exec
+  tags: [ 'role::etherpad:api' ]
