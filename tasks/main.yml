@@ -190,8 +190,20 @@
   when: etherpad_plugins is defined and etherpad_plugins
   tags: [ 'role::etherpad:plugins' ]
 
+- meta: flush_handlers
+
+- name: Wait for the API key file generation
+  wait_for:
+    path: '{{ etherpad_api_key_file }}'
+    timeout: 30
+
+- name: Wait for Etherpad application port to be reachable
+  wait_for:
+    port: '{{ etherpad_port }}'
+    timeout: 30
+
 - name: Get the generated API key
-  command: cat {{ etherpad_home + "/" + etherpad_repository }}/APIKEY.txt
+  command: cat {{ etherpad_api_key_file }}
   register: etherpad_api_key
   changed_when: False
   tags: [ 'role::etherpad:api' ]
@@ -203,8 +215,9 @@
   ## error while evaluating conditional???
   # failed_when: etherpad_api_calls_exec.rc != 0 or etherpad_api_calls_exec.json.code|d()
   with_items: etherpad_api_calls
-  # no_log: True
+  no_log: True
   tags: [ 'role::etherpad:api' ]
 
 - debug: var=etherpad_api_calls_exec
+  when: etherpad_api_calls_exec|d() and etherpad_api_calls_debug
   tags: [ 'role::etherpad:api' ]
