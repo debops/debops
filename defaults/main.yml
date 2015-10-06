@@ -5,6 +5,36 @@
 # .. contents:: Sections
 #    :local:
 #
+# ----------------------------------------
+#   Application user, group, directories
+# ----------------------------------------
+
+# .. envvar:: etherpad_system_name
+#
+# Base name for Etherpad instance
+etherpad_system_name: 'etherpad-lite'
+
+
+# .. envvar:: etherpad_user
+#
+# Name of the system user account for Etherpad.
+etherpad_user: '{{ etherpad_system_name }}'
+
+
+# .. envvar:: etherpad_group
+#
+# Name of the system group account for Etherpad.
+etherpad_group: '{{ etherpad_system_name }}'
+
+
+# .. envvar:: etherpad_home
+#
+# Home directory of Etherpad.
+etherpad_home: '{{ (ansible_local.root.app
+	            if (ansible_local|d() and ansible_local.root|d() and
+	                ansible_local.root.app|d())
+	            else "/var/local") + "/" + etherpad_user }}'
+
 # -------------------
 #   Basic configuration
 # -------------------
