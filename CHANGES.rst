@@ -13,6 +13,8 @@ v0.1.1
 - Change the ``tinc_host_port`` type from Int to String, so that there are no
   issues in ``debops.ferm`` role. [drybjed]
 
+- Fix wrong name of the variable in host template. [drybjed]
+
 v0.1.0
 ------
 
