@@ -10,6 +10,11 @@ v0.1.1
   started at boot time, and if Ansible will automatically manage it during
   playbook runs if any changes occur. [drybjed]
 
+- Change the ``tinc_host_port`` type from Int to String, so that there are no
+  issues in ``debops.ferm`` role. [drybjed]
+
+- Fix wrong name of the variable in host template. [drybjed]
+
 v0.1.0
 ------
 
