@@ -19,6 +19,9 @@ v0.1.1
 - Remove the "\n" from ``/etc/hostname`` content line to prevent issues on
   Ansible v2. [drybjed]
 
+- Replace the quotes in ``lineinfile`` module to prevent issues with ``\t``
+  characters on Ansible v2. [drybjed]
+
 v0.1.0
 ------
 
