@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Unreleased*
+
+- Changed tag from ``mariadb/contents`` to ``role::mariadb:contents`` to
+  control database contents tasks. [ypid]
+
+
 v0.1.1
 ------
 
