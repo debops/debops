@@ -1,12 +1,23 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) postgresql_server
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-postgresql_server.svg?style=flat)](http://travis-ci.org/debops/ansible-postgresql_server) [![test-suite](http://img.shields.io/badge/test--suite-ansible--postgresql__server-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-postgresql_server/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-postgresql_server.svg?style=flat)](http://travis-ci.org/debops/ansible-postgresql_server) [![test-suite](http://img.shields.io/badge/test--suite-ansible--postgresql__server-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-postgresql_server/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.postgresql__server-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/5410)
 
 [PostgreSQL](http://www.postgresql.org/) is a popular relational open
 source database. This role can be used to install and manage a set of
 PostgreSQL clusters on Debian-based systems. You can use
 ``debops.postgresql`` role to configure roles and databases on local or
 remote PostgreSQL servers.
+
+### Installation
+
+This role requires at least Ansible `v1.9.0`. To install it, run:
+
+    ansible-galaxy install debops.postgresql_server
+
+### Documentation
+
+More information about `debops.postgresql_server` can be found in the
+[official debops.postgresql_server documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-postgresql_server/docs/).
 
 
 ### Role dependencies

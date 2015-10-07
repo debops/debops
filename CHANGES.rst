@@ -4,7 +4,7 @@ Changelog
 v0.2.0
 ------
 
-*Unreleased*
+*Released: 2015-10-08*
 
 - Change how upstream PGDG APT key and repository are managed. Remove the
   unneeded variables and rename ``postgresql_pgdg`` variable to
