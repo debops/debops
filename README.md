@@ -25,7 +25,7 @@ This role is based on the following documentation:
 And other bits and pieces.
 
 The default of Foodsoft is to redirect to HTTPS so be sure to setup a certificate for example via [debops.pki].
-Also note that this role uses the [DebOps](http://debops.org/) to setup the
+Also note that this role uses the [DebOps](http://debops.org/) project to setup the
 webserver and configure the database. Be sure to check it out! :smile: Thanks to [Maciej Delmanowski](https://github.com/drybjed) for the amazing work.
 
 [debops.pki]: https://galaxy.ansible.com/list#/roles/1588
@@ -55,7 +55,6 @@ List of default variables available in the inventory:
 # .. envvar:: foodsoft_base_packages
 #
 # List of base packages required by foodsoft.
-# foodsoft_base_packages: []
 foodsoft_base_packages:
 
   ## charlock_holmes
@@ -87,6 +86,7 @@ foodsoft_base_packages:
 # Should the ``ypid.foodsoft`` role manage it's own dependencies (database, web server)?
 foodsoft_dependencies: True
 
+
 # .. envvar:: foodsoft_bundler_exclude_groups
 #
 # Don’t install the Gems in the listed groups.
@@ -96,11 +96,14 @@ foodsoft_bundler_exclude_groups:
   ## Contains SQLite gem.
   - 'development'
 
+
 # -------------------
 #   Web server
 # -------------------
 
-# nginx server configuration for foodsoft
+# .. envvar:: foodsoft_nginx_server
+#
+# nginx server configuration for Foodsoft.
 foodsoft_nginx_server:
   by_role: 'ypid.foodsoft'
   enabled: True
@@ -115,6 +118,7 @@ foodsoft_nginx_server:
   passenger_group: '{{ foodsoft_group }}'
   passenger_options: '{{ foodsoft_passenger_options }}'
 
+
 # --------------------
 #   Database setup
 # --------------------
@@ -124,10 +128,12 @@ foodsoft_nginx_server:
 # Name of the database to use for Foodsoft.
 foodsoft_database_name: 'foodsoft'
 
+
 # .. envvar:: foodsoft_database_user
 #
 # Database user for Foodsoft.
 foodsoft_database_user: '{{ foodsoft_user }}'
+
 
 # .. envvar:: foodsoft_database_user
 #
@@ -136,6 +142,7 @@ foodsoft_database_password: "{{ lookup('password', secret + '/mariadb/' +
                                 ansible_local.mariadb.delegate_to +
                                 '/credentials/' + foodsoft_database_user +
                                 '/password length=48') }}"
+
 
 # .. envvar:: foodsoft_database_configuration
 #
@@ -168,6 +175,7 @@ foodsoft_database_configuration:
     username: '{{ foodsoft_database_user }}'
     password: '{{ foodsoft_database_password }}'
 
+
 # ---------------------------
 #   Webserver configuration
 # ---------------------------
@@ -180,6 +188,7 @@ foodsoft_webserver_user: '{{ ansible_local.nginx.user
                              if (ansible_local|d() and ansible_local.nginx|d() and
                                  ansible_local.nginx.user|d())
                               else "www-data" }}'
+
 
 # --------------------
 #   Foodsoft sources
@@ -207,22 +216,18 @@ foodsoft_install_version: '7801b364c9bce770a1321eb58d5f0486dc67cb24'
 
 # .. envvar:: foodsoft_home
 #
-# Application installation directory
+# Application installation directory.
 foodsoft_home: '{{ (ansible_local.nginx.www
 	            if (ansible_local|d() and ansible_local.nginx|d() and
 	                ansible_local.nginx.www|d())
 	            else "/srv/www") + "/" + foodsoft_user }}'
+
 
 # .. envvar:: foodsoft_install_path
 #
 # Path where Foodsoft application source will be installed, this directory
 # should be readable by the webserver.
 foodsoft_install_path: '{{ foodsoft_home + "/sites/public" }}'
-
-# .. envvar:: foodsoft_backup_path
-#
-# Backup path
-foodsoft_backup_path: '{{ ansible_local.root.backup + "/foodsoft" }}'
 
 
 # --------------------
@@ -231,21 +236,20 @@ foodsoft_backup_path: '{{ ansible_local.root.backup + "/foodsoft" }}'
 
 # .. envvar:: foodsoft_user
 #
-# Foodsoft user.
+# Name of the system user account for Foodsoft.
 foodsoft_user: 'foodsoft'
 
 # .. envvar:: foodsoft_user
 #
-# Foodsoft user group.
+# Name of the system group account for Foodsoft.
 foodsoft_group: 'foodsoft'
-# .. envvar:: foodsoft_user
-#
-# , group and home directory
+
 
 # .. envvar:: foodsoft_user_append_groups
 #
 # List of additional system groups to add to the foodsoft user account.
 foodsoft_user_append_groups: []
+
 
 # .. envvar:: foodsoft_user_append_groups
 #
@@ -258,16 +262,19 @@ foodsoft_domain: [ 'foodsoft.{{ ansible_domain }}' ]
 # details.
 foodsoft_nginx_access_policy: ''
 
+
 # .. envvar:: foodsoft_passenger_options
 #
 # Additional options for Phusion Passenger as text block
 foodsoft_passenger_options: ''
 # foodsoft_passenger_options: 'passenger_friendly_error_pages on;'
 
+
 # .. envvar:: foodsoft_name
 #
 # Name of this Foodcoop.
 foodsoft_name: 'FC Test'
+
 
 # .. envvar:: foodsoft_contact
 #
@@ -280,20 +287,24 @@ foodsoft_contact:
   email: 'foodsoft@foodcoop.test'
   phone: '030 323 23249'
 
+
 # .. envvar:: foodsoft_homepage
 #
 # Homepage.
 foodsoft_homepage: 'https://{{ foodsoft_domain[0] }}/{{ foodsoft_default_scope }}'
+
 
 # .. envvar:: foodsoft_custom_url
 #
 # Custom foodsoft software URL (used in footer).
 foodsoft_custom_url: ''
 
+
 # .. envvar:: foodsoft_email_sender
 #
 # Email address to be used as sender.
 foodsoft_email_sender: 'foodsoft@foodcoop.test'
+
 
 # .. envvar:: foodsoft_error_recipients
 #
@@ -301,17 +312,20 @@ foodsoft_email_sender: 'foodsoft@foodcoop.test'
 foodsoft_error_recipients:
   - 'admin@foodcoop.test'
 
+
 # .. envvar:: foodsoft_multi_coop_install
 #
 # If you wanna serve more than one Foodcoop with one installation.
 # Don't forget to setup databases for each Foodcoop. See also MULTI_COOP_INSTALL.
 foodsoft_multi_coop_install: 'false'
 
+
 # .. envvar:: foodsoft_multi_coop_install
 #
 # If ``foodsoft_multi_coop_install`` is true you have to use a coop name, which
 # you you wanna be selected by default.
 foodsoft_default_scope: 'f'
+
 
 # .. envvar:: foodsoft_use_nick
 #
@@ -320,12 +334,14 @@ foodsoft_default_scope: 'f'
 # Members of a user's groups and administrators can still see full names.
 foodsoft_use_nick: false
 
+
 # .. envvar:: foodsoft_use_wiki
 #
 # Most plugins can be enabled/disabled here as well. Messages and wiki are enabled
 # by default and need to be set to false to disable. Most other plugins needs to
 # be enabled before they do anything.
 foodsoft_use_wiki: true
+
 
 # .. envvar:: foodsoft_use_messages
 #
@@ -334,21 +350,25 @@ foodsoft_use_wiki: true
 # be enabled before they do anything.
 foodsoft_use_messages: true
 
+
 # .. envvar:: foodsoft_page_footer
 #
 # Page footer (html allowed). Default is a Foodsoft footer. Set to the word
 # "blank" for no footer. If unchanged, the default footer of Foodsoft will be used.
 foodsoft_page_footer: ''
 
+
 # .. envvar:: foodsoft_price_markup
 #
 # Price markup in percent.
 foodsoft_price_markup: 2.0
 
+
 # .. envvar:: foodsoft_tax_default
 #
 # Default vat percentage for new articles.
 foodsoft_tax_default: 7.0
+
 
 # .. envvar:: foodsoft_app_configuration
 #
