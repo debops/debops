@@ -2,21 +2,23 @@
 
 - name: Check if shared memory support is available
   shell: mount | grep /dev/shm || true
+  args:
+    warn: False
   register: postgresql_server_register_shm
   changed_when: False
   tags: [ 'role::postgresql_server:config' ]
 
 - name: Create PostgreSQL clusters
   environment:
-    LANG: '{{ item.locale | default(postgresql_server_locale) }}'
-    LC_ALL: '{{ item.locale | default(postgresql_server_locale) }}'
-  command: pg_createcluster --user={{ item.user | default(postgresql_server_user) }}
-           --group={{ item.group | default(postgresql_server_group) }}
-           --locale={{ item.locale | default(postgresql_server_locale) }}
-           --start-conf={{ item.start_conf | default(postgresql_server_start_conf) }}
-           --port={{ item.port }} {{ item.version | default(postgresql_server_version) }} {{ item.name }}
+    LANG: '{{ item.locale | d(postgresql_server_locale) }}'
+    LC_ALL: '{{ item.locale | d(postgresql_server_locale) }}'
+  command: pg_createcluster --user={{ item.user | d(postgresql_server_user) }}
+           --group={{ item.group | d(postgresql_server_group) }}
+           --locale={{ item.locale | d(postgresql_server_locale) }}
+           --start-conf={{ item.start_conf | d(postgresql_server_start_conf) }}
+           --port={{ item.port }} {{ item.version | d(postgresql_server_version) }} {{ item.name }}
   args:
-    creates: '/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/postgresql.conf'
+    creates: '/etc/postgresql/{{ item.version | d(postgresql_server_version) }}/{{ item.name }}/postgresql.conf'
   with_flattened:
     - postgresql_server_clusters
   when: item.name|d() and item.name and item.port|d() and item.port
@@ -24,9 +26,9 @@
 - name: Configure PostgreSQL clusters
   template:
     src: 'etc/postgresql/postgresql.conf.j2'
-    dest: '/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/postgresql.conf'
-    owner: '{{ item.user | default(postgresql_server_user) }}'
-    group: '{{ item.group | default(postgresql_server_group) }}'
+    dest: '/etc/postgresql/{{ item.version | d(postgresql_server_version) }}/{{ item.name }}/postgresql.conf'
+    owner: '{{ item.user | d(postgresql_server_user) }}'
+    group: '{{ item.group | d(postgresql_server_group) }}'
     mode: '0644'
   with_flattened:
     - postgresql_server_clusters
@@ -37,9 +39,9 @@
 - name: Configure PostgreSQL cluster environment
   template:
     src: 'etc/postgresql/environment.j2'
-    dest: '/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/environment'
-    owner: '{{ item.user | default(postgresql_server_user) }}'
-    group: '{{ item.group | default(postgresql_server_group) }}'
+    dest: '/etc/postgresql/{{ item.version | d(postgresql_server_version) }}/{{ item.name }}/environment'
+    owner: '{{ item.user | d(postgresql_server_user) }}'
+    group: '{{ item.group | d(postgresql_server_group) }}'
     mode: '0644'
   with_flattened:
     - postgresql_server_clusters
@@ -50,9 +52,9 @@
 - name: Configure PostgreSQL user identification
   template:
     src: 'etc/postgresql/pg_ident.conf.j2'
-    dest: '/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/pg_ident.conf'
-    owner: '{{ item.user | default(postgresql_server_user) }}'
-    group: '{{ item.group | default(postgresql_server_group) }}'
+    dest: '/etc/postgresql/{{ item.version | d(postgresql_server_version) }}/{{ item.name }}/pg_ident.conf'
+    owner: '{{ item.user | d(postgresql_server_user) }}'
+    group: '{{ item.group | d(postgresql_server_group) }}'
     mode: '0640'
   with_flattened:
     - postgresql_server_clusters
@@ -63,9 +65,9 @@
 - name: Configure PostgreSQL cluster host authentication
   template:
     src: 'etc/postgresql/pg_hba.conf.j2'
-    dest: '/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/pg_hba.conf'
-    owner: '{{ item.user | default(postgresql_server_user) }}'
-    group: '{{ item.group | default(postgresql_server_group) }}'
+    dest: '/etc/postgresql/{{ item.version | d(postgresql_server_version) }}/{{ item.name }}/pg_hba.conf'
+    owner: '{{ item.user | d(postgresql_server_user) }}'
+    group: '{{ item.group | d(postgresql_server_group) }}'
     mode: '0640'
   with_flattened:
     - postgresql_server_clusters
@@ -89,9 +91,9 @@
 - name: Configure PostgreSQL cluster start options
   template:
     src: 'etc/postgresql/start.conf.j2'
-    dest: '/etc/postgresql/{{ item.version | default(postgresql_server_version) }}/{{ item.name }}/start.conf'
-    owner: '{{ item.user | default(postgresql_server_user) }}'
-    group: '{{ item.group | default(postgresql_server_group) }}'
+    dest: '/etc/postgresql/{{ item.version | d(postgresql_server_version) }}/{{ item.name }}/start.conf'
+    owner: '{{ item.user | d(postgresql_server_user) }}'
+    group: '{{ item.group | d(postgresql_server_group) }}'
     mode: '0644'
   with_flattened:
     - postgresql_server_clusters
@@ -105,7 +107,6 @@
     dest: '{{ (item.data_directory | d("/var/lib/postgresql/" + (item.version | d(postgresql_server_version)) + "/" + item.name)) + "/root.crt" }}'
     state: 'link'
   with_flattened:
-    - postgresql_default_cluster
     - postgresql_server_clusters
   when: ((postgresql_server_pki|d() and postgresql_server_pki | bool) and
          (item.name|d() and item.name) and
@@ -137,9 +138,9 @@
           (postgresql_server_version|d() and postgresql_server_version == '9.1')))
 
 - name: Start PostgreSQL clusters when not started
-  command: pg_ctlcluster {{ item.version | default(postgresql_server_version) }} {{ item.name }} start
+  command: pg_ctlcluster {{ item.version | d(postgresql_server_version) }} {{ item.name }} start
   args:
-    creates: '{{ item.external_pid_file | default("/var/run/postgresql/" + (item.version | default(postgresql_server_version)) + "-" + item.name + ".pid") }}'
+    creates: '{{ item.external_pid_file | d("/var/run/postgresql/" + (item.version | d(postgresql_server_version)) + "-" + item.name + ".pid") }}'
   with_flattened:
     - postgresql_server_clusters
   when: ((ansible_local|d() and ansible_local.init|d() and
@@ -159,7 +160,7 @@
           (item.start_conf is undefined or item.start_conf == 'auto')))
 
 - name: Reload PostgreSQL clusters when needed
-  command: pg_ctlcluster {{ item.item.version | default(postgresql_server_version) }} {{ item.item.name }} reload
+  command: pg_ctlcluster {{ item.item.version | d(postgresql_server_version) }} {{ item.item.name }} reload
   with_flattened:
     - postgresql_config.results
     - postgresql_config_hba.results
