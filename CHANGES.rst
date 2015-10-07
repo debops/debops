@@ -15,6 +15,9 @@ v0.1.1
 
 - Fix wrong name of the variable in host template. [drybjed]
 
+- Wrap the name of the VPN node and replace all hypens with underscores, which
+  is a ``tinc`` requirement. [drybjed]
+
 v0.1.0
 ------
 

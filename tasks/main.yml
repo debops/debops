@@ -25,7 +25,7 @@
 
 - name: Create required directories
   file:
-    path: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}.d'
+    path: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname | replace("-","_") }}.d'
     state: 'directory'
     owner: 'root'
     group: 'root'
@@ -66,23 +66,23 @@
     creates: '/etc/tinc/{{ tinc_network }}/rsa_key.priv'
 
 - name: Create persistent copy of host public key
-  command: cp /etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}
-              /etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname + ".d/99_rsa-public-key" }}
+  command: cp /etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname | replace("-","_") }}
+              /etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname | replace("-","_") + ".d/99_rsa-public-key" }}
   args:
-    creates: /etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname + ".d/99_rsa-public-key" }}
+    creates: /etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname | replace("-","_") + ".d/99_rsa-public-key" }}
 
 - name: Generate host configuration file
   template:
     src: 'etc/tinc/network/hosts/hostname.j2'
-    dest: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}.d/00_host-config'
+    dest: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname | replace("-","_") }}.d/00_host-config'
     owner: 'root'
     group: 'root'
     mode: '0644'
 
 - name: Assemble host configuration file from parts
   assemble:
-    src: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}.d'
-    dest: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}'
+    src: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname | replace("-","_") }}.d'
+    dest: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname | replace("-","_") }}'
     owner: 'root'
     group: '{{ tinc_group }}'
     mode: '0640'
@@ -90,13 +90,13 @@
 
 - name: Read host configuration file into a variable
   slurp:
-    src: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname }}'
+    src: '/etc/tinc/{{ tinc_network }}/hosts/{{ tinc_hostname | replace("-","_") }}'
   register: tinc_register_host_config
 
 - name: Redistribute configuration of internal hosts
   copy:
     content: '{{ hostvars[inventory_hostname]["tinc_register_host_config"].content | b64decode }}'
-    dest: '/etc/tinc/{{ tinc_network }}/hosts/{{ hostvars[inventory_hostname]["tinc_register_host_config"].source | basename }}'
+    dest: '/etc/tinc/{{ tinc_network }}/hosts/{{ hostvars[inventory_hostname]["tinc_register_host_config"].source | basename | replace("-","_") }}'
     owner: 'root'
     group: '{{ tinc_group }}'
     mode: '0640'
@@ -108,7 +108,7 @@
 - name: Add configuration of external hosts
   copy:
     content: '{{ item.value }}'
-    dest: '/etc/tinc/{{ tinc_network }}/hosts/{{ item.key }}'
+    dest: '/etc/tinc/{{ tinc_network }}/hosts/{{ item.key | replace("-","_") }}'
     owner: 'root'
     group: '{{ tinc_group }}'
     mode: '0640'

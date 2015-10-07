@@ -2,7 +2,7 @@
 
 {% set tinc_tpl_daemon_keys_seen = [] %}
 {% if tinc_hostname is defined and tinc_hostname %}
-Name = {{ tinc_hostname }}
+Name = {{ tinc_hostname | replace("-","_") }}
 {% else %}
 Name = $HOST
 {% endif %}
@@ -10,19 +10,35 @@ Name = $HOST
 {% if key | lower not in [ 'name', 'tinc-up', 'tinc-down', 'host-up', 'host-down', 'subnet-up', 'subnet-down' ] %}
 {% if key in tinc_daemon_configuration.keys() %}
 {% if tinc_daemon_configuration[key] is string %}
+{% if key | lower in [ 'connectto' ] %}
+{{ key }} = {{ tinc_daemon_configuration[key] | replace("-","_") }}
+{% else %}
 {{ key }} = {{ tinc_daemon_configuration[key] }}
+{% endif %}
 {% else %}
 {% for element in tinc_daemon_configuration[key] %}
+{% if key | lower in [ 'connectto' ] %}
+{{ key }} = {{ element | replace("-","_") }}
+{% else %}
 {{ key }} = {{ element }}
+{% endif %}
 {% endfor %}
 {% endif %}
 {% set _ = tinc_tpl_daemon_keys_seen.append(key) %}
 {% else %}
 {% if value is string %}
+{% if key | lower in [ 'connectto' ] %}
+{{ key }} = {{ value | replace("-","_") }}
+{% else %}
 {{ key }} = {{ value }}
+{% endif %}
 {% else %}
 {% for element in value %}
+{% if key | lower in [ 'connectto' ] %}
+{{ key }} = {{ element | replace("-","_") }}
+{% else %}
 {{ key }} = {{ element }}
+{% endif %}
 {% endfor %}
 {% endif %}
 {% set _ = tinc_tpl_daemon_keys_seen.append(key) %}
@@ -33,10 +49,18 @@ Name = $HOST
 {% if key | lower not in [ 'name', 'tinc-up', 'tinc-down', 'host-up', 'host-down', 'subnet-up', 'subnet-down' ] %}
 {% if key not in tinc_tpl_daemon_keys_seen %}
 {% if value is string %}
+{% if key | lower in [ 'connectto' ] %}
+{{ key }} = {{ value | replace("-","_") }}
+{% else %}
 {{ key }} = {{ value }}
+{% endif %}
 {% else %}
 {% for element in value %}
+{% if key | lower in [ 'connectto' ] %}
+{{ key }} = {{ element | replace("-","_") }}
+{% else %}
 {{ key }} = {{ element }}
+{% endif %}
 {% endfor %}
 {% endif %}
 {% set _ = tinc_tpl_daemon_keys_seen.append(key) %}
