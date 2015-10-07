@@ -7,19 +7,5 @@
     install_recommends: no
   with_items: [ 'php5-pgsql' ]
 
-- name: Get default PostgreSQL password
-  set_fact:
-    owncloud_database_password: '{{ owncloud_database_map[owncloud_database].dbpass }}'
 
-- name: Create ownCloud PostgreSQL role
-  postgresql_user:
-    name: '{{ owncloud_database_map[owncloud_database].dbuser }}'
-    state: present
-  sudo_user: 'postgres'
 
-- name: Create ownCloud database
-  postgresql_db:
-    name: '{{ owncloud_database_map[owncloud_database].dbname }}'
-    state: present
-    owner: '{{ owncloud_database_map[owncloud_database].dbuser }}'
-  sudo_user: 'postgres'

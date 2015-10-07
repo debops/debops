@@ -14,8 +14,19 @@ dependencies:
     when: (owncloud_dependencies|d() and owncloud_database == 'mariadb')
 
   - role: debops.postgresql
+    postgresql_roles:
+      - name: '{{ owncloud_database_name }}' # Separate role is needed when owncloud_database_name != owncloud_database_user
+      - name: '{{ owncloud_database_user }}' # Password is not passed directly - it will be read for the file
+    postgresql_groups:
+      - roles: [ '{{ owncloud_database_user }}' ]
+        groups: [ '{{ owncloud_database_name }}' ]
+        database: '{{ owncloud_database_name }}'
+        enabled: '{{ owncloud_database_name != owncloud_database_user }}'
+    postgresql_databases:
+      - name: '{{ owncloud_database_name }}'
+        owner: '{{ owncloud_database_user }}'
     when: owncloud_dependencies and owncloud_database == 'postgresql'
-    tags: owncloud
+    tags: [ 'depend::postgresql', 'depend::postgresql:owncloud', 'depend-of::owncloud', 'type::dependency' ]
 
   - role: debops.php5
     tags: [ 'depend::php5', 'depend::php5:owncloud', 'depend-of::owncloud', 'type::dependency' ]

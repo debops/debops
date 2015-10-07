@@ -99,12 +99,25 @@ owncloud_deploy_path: '{{ owncloud_home }}'
 #   Database configuration
 # --------------------------
 
+# .. envvar:: owncloud_database
+#
+# ownCloud recommends MySQL or MariaDB as database. Set to False to use SQLite.
+# https://doc.owncloud.org/server/8.1/admin_manual/configuration_database/linux_database_configuration.html#database-configuration
+# Choices see ``owncloud_database_map``.
+owncloud_database: 'mariadb'
+
+
 # .. envvar:: owncloud_database_server
 #
 # FQDN of the database server. It will be configured by
-# the ``debops.mariadb`` role.
-# Currently only supported for MySQL/MariaDB.
-owncloud_database_server: '{{ ansible_local.mariadb.server }}'
+# # the ``debops.mariadb`` or ``debops.postgresql`` role.
+owncloud_database_server: "{{ ansible_local[owncloud_database].server }}"
+
+
+# .. envvar:: gitlab_database_port
+#
+# Port database is listening on.
+owncloud_database_port: "{{ ansible_local[owncloud_database].port }}"
 
 
 # .. envvar:: owncloud_database_user
@@ -119,21 +132,20 @@ owncloud_database_user: 'owncloud'
 owncloud_database_name: 'owncloud'
 
 
+# .. envvar:: gitlab_database_password_path
+#
+# Path to database password file.
+owncloud_database_password_path: "{{ secret + '/' + owncloud_database + '/' +
+                                     ansible_local[owncloud_database].delegate_to }}{%
+                                       if owncloud_database=='postgresql' %}/{{ ansible_local[owncloud_database].port }}{% endif
+                                     %}{{ '/credentials/' + owncloud_database_user +
+                                     '/password' }}"
+
+
 # .. envvar:: owncloud_database_password
 #
 # Database password for ownCloud.
-owncloud_database_password: "{{ lookup('password', secret + '/mariadb/' +
-                                ansible_local.mariadb.delegate_to +
-                                '/credentials/' + owncloud_database_user +
-                                '/password length=48') }}"
-
-
-# .. envvar:: owncloud_database
-#
-# ownCloud recommends MySQL or MariaDB as database. Set to False to use SQLite.
-# https://doc.owncloud.org/server/8.1/admin_manual/configuration_database/linux_database_configuration.html#database-configuration
-# Choices see ``owncloud_database_map``.
-owncloud_database: 'mariadb'
+owncloud_database_password: "{{ lookup('password', owncloud_database_password_path + ' length=48') }}"
 
 
 # .. envvar:: owncloud_database_map
