@@ -20,14 +20,6 @@
     install_recommends: no
   when: etherpad_abiword is defined and etherpad_abiword
 
-- name: Make sure that directory for system users exists
-  file:
-    path: '/srv/users'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0751'
-
 - name: Create Etherpad system group
   group:
     name: '{{ etherpad_group }}'
@@ -43,6 +35,14 @@
     system: yes
     state: 'present'
 
+- name: Create Etherpad source directory
+  file:
+    path: '{{ etherpad_src_dir }}'
+    state: 'directory'
+    owner: '{{ etherpad_user }}'
+    group: '{{ etherpad_group }}'
+    mode: '0750'
+
 - name: Secure Etherpad home directory
   file:
     path: '{{ etherpad_home }}'
@@ -54,7 +54,7 @@
 - name: Clone Etherpad source code
   git:
     repo: '{{ etherpad_source_address + "/" + etherpad_repository }}'
-    dest: '{{ etherpad_sources + "/" + etherpad_repository }}'
+    dest: '{{ etherpad_src_dir + "/" + etherpad_repository }}'
     version: '{{ etherpad_version }}'
     bare: yes
     update: yes
@@ -81,7 +81,7 @@
 
 - name: Prepare Etherpad worktree
   template:
-    src: 'srv/users/etherpad/etherpad-lite/git.j2'
+    src: 'var/local/etherpad-lite/etherpad-lite/git.j2'
     dest: '{{ etherpad_home + "/" + etherpad_repository }}/.git'
     owner: '{{ etherpad_user }}'
     group: '{{ etherpad_group }}'
@@ -93,7 +93,7 @@
 - name: Checkout Etherpad
   command: git checkout --force {{ etherpad_version }}
   args:
-    chdir: '{{ etherpad_sources + "/" + etherpad_repository }}'
+    chdir: '{{ etherpad_src_dir + "/" + etherpad_repository }}'
   environment:
     GIT_WORK_TREE: '{{ etherpad_home + "/" + etherpad_repository }}'
   sudo_user: '{{ etherpad_user }}'
@@ -111,7 +111,7 @@
 
 - name: Generate Etherpad configuration
   template:
-    src: 'srv/users/etherpad/etherpad-lite/settings.json.j2'
+    src: 'var/local/etherpad-lite/etherpad-lite/settings.json.j2'
     dest: '{{ etherpad_home + "/" + etherpad_repository }}/settings.json'
     owner: '{{ etherpad_user }}'
     group: '{{ etherpad_group }}'
