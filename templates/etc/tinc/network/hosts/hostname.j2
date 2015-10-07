@@ -3,7 +3,7 @@
 {% set tinc_tpl_host_keys_seen = [] %}
 {% if tinc_host_configuration is defined and tinc_host_configuration %}
 {% for key, value in tinc_host_configuration.iteritems() %}
-{% if key | lower not in [ '{{ tinc_hostname }}-up', '{{ tinc_hostname }}-down', 'host-up', 'host-down' ] %}
+{% if key | lower not in [ '{{ tinc_hostname | replace("-","_") }}-up', '{{ tinc_hostname | replace("-","_") }}-down', 'host-up', 'host-down' ] %}
 {% if key not in tinc_tpl_host_keys_seen %}
 {% if value is string %}
 {{ key }} = {{ value }}
