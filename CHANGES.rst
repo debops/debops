@@ -4,7 +4,7 @@ Changelog
 v0.1.1
 ------
 
-*Unreleased*
+*Released: 2015-10-08*
 
 - Switch ``debops.ferm`` from using ``ferm`` binary directly to restarting and
   stopping ``ferm`` system service. [drybjed]
@@ -65,6 +65,8 @@ v0.1.1
 
 - Move tasks that patch ``ferm`` init script to sepate task list and add
   a condition that only does the patching if ``ferm`` is enabled. [drybjed]
+
+- Add "custom" rule template. [drybjed]
 
 v0.1.0
 ------
