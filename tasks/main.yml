@@ -192,15 +192,23 @@
 
 - meta: flush_handlers
 
+- name: Ensure that etherpad-lite is started
+  service:
+    name: 'etherpad-lite'
+    state: 'started'
+  tags: [ 'role::etherpad:api' ]
+
 - name: Wait for the API key file generation
   wait_for:
     path: '{{ etherpad_api_key_file }}'
     timeout: 30
+  tags: [ 'role::etherpad:api' ]
 
 - name: Wait for Etherpad application port to be reachable
   wait_for:
     port: '{{ etherpad_port }}'
     timeout: 30
+  tags: [ 'role::etherpad:api' ]
 
 - name: Get the generated API key
   command: cat {{ etherpad_api_key_file }}
