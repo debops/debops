@@ -1,24 +1,97 @@
 ---
+# Default variables
+# =================
 
-# ---- Basic configuration ----
+# .. contents:: Sections
+#    :local:
+#
+# ----------------------------------------
+#   Application user, group, directories
+# ----------------------------------------
 
-# Etherpad git version to install
+# .. envvar:: etherpad_system_name
+#
+# Base name for Etherpad instance
+etherpad_system_name: 'etherpad-lite'
+
+
+# .. envvar:: etherpad_user
+#
+# Name of the system user account for Etherpad.
+etherpad_user: '{{ etherpad_system_name }}'
+
+
+# .. envvar:: etherpad_group
+#
+# Name of the system group account for Etherpad.
+etherpad_group: '{{ etherpad_system_name }}'
+
+
+# .. envvar:: etherpad_home
+#
+# Home directory of Etherpad.
+etherpad_home: '{{ (ansible_local.root.app
+                if (ansible_local|d() and ansible_local.root|d() and
+                    ansible_local.root.app|d())
+                else "/var/local") + "/" + etherpad_user }}'
+
+
+# .. envvar:: etherpad_src_dir
+#
+# Etherpad sources root directory.
+etherpad_src_dir: '{{ (ansible_local.root.src
+                         if (ansible_local|d() and ansible_local.root|d() and
+                             ansible_local.root.src|d())
+                         else "/usr/local/src") + "/" + etherpad_system_name }}'
+
+
+# .. envvar:: etherpad_log_dir
+#
+# Path where Etherpad logs are stored.
+etherpad_log_dir: '{{ (ansible_local.root.log
+                         if (ansible_local|d() and ansible_local.root|d() and
+                             ansible_local.root.log|d())
+                         else "/var/log") + "/" + etherpad_system_name }}'
+
+
+# -------------------
+#   Basic configuration
+# -------------------
+
+# .. envvar:: etherpad_version
+#
+# Etherpad git version to install.
 etherpad_version: 'develop'
 
-# Should etherpad role manage it's own dependencies?
+
+# .. envvar:: etherpad_dependencies
+#
+# Should the ``debops.etherpad`` role manage it's own dependencies (database, web server)?
 etherpad_dependencies: True
 
-# What domain will be configured for Etherpad
+
+# .. envvar:: etherpad_domain
+#
+# What domain will be configured for Etherpad.
 etherpad_domain: [ 'pad.{{ ansible_domain }}' ]
 
-# Title of Etherpad instance
+
+# .. envvar:: etherpad_title
+#
+# Title of the Etherpad instance.
 etherpad_title: 'Etherpad'
 
+
+# .. envvar:: etherpad_mail_admin
+#
 # E-mail address of the instance administrator, will be shown on each new pad
-# (see 'etherpad_welcome_text' below)
+# (see ``etherpad_welcome_text`` below).
 etherpad_mail_admin: 'root@{{ ansible_domain }}'
 
-# Text displayed on all new pads by default
+
+# .. envvar:: etherpad_welcome_text
+#
+# Text displayed on all new pads by default.
 etherpad_welcome_text: |
   Welcome to {{ etherpad_title }}!
 
@@ -27,15 +100,53 @@ etherpad_welcome_text: |
   Contact with administrator: mailto:{{ etherpad_mail_admin }}
 
 
-# ---- Database and network ----
+# -------------------
+#   Database and network
+# -------------------
 
-# Allow access only from selected IP addresses/CIDR networks. If empty, allow
-# access from everywhere
-etherpad_allow: []
+# .. envvar:: etherpad_database_server
+#
+# FQDN of the MariaDB database host. It will be configured by
+# the ``debops.mariadb`` role.
+etherpad_database_server: '{{ ansible_local.mariadb.server
+                  if (ansible_local|d() and ansible_local.mariadb|d() and
+                      ansible_local.mariadb.server|d())
+                  else "" }}'
 
+
+# .. envvar:: etherpad_database_user
+#
+# MariaDB database user to use for Etherpad.
+etherpad_database_user: '{{ etherpad_system_name }}'
+
+
+# .. envvar:: etherpad_database_name
+#
+# Name of the MariaDB database to use for Etherpad.
+etherpad_database_name: '{{ etherpad_system_name }}'
+
+
+# .. envvar:: etherpad_database_password
+#
+# MariaDB database password for the Etherpad database user.
+etherpad_database_password: "{{ lookup('password', secret + '/mariadb/' +
+                                (ansible_local.mariadb.delegate_to + '/'
+                                    if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.delegate_to|d()
+                                    else '') +
+                                (ansible_local.mariadb.port + '/'
+                                    if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.port|d()
+                                    else '') +
+                                '/credentials/' + etherpad_database_user +
+                                '/password length=48') }}"
+
+
+# .. envvar:: etherpad_database
+#
 # Database to use for data storage (choices: sqlite, mysql, postgresql,
-# dirty). More databases will be available in the future
+# dirty). Choose mysql even when you use different mysql flavors. More
+# databases will be available in the future.
 etherpad_database: sqlite
+
 
 # Connection type used for the database
 etherpad_database_connection: 'socket'
@@ -45,75 +156,181 @@ etherpad_bind: '127.0.0.1'
 etherpad_port: '9001'
 
 
-# ---- Authentication ----
+# -------------------
+#   Authentication
+# -------------------
 
-# List of Etherpad administrative and user accounts, only works with 'secret'
-# variable defined (see 'secret' role). Passwords are generated automatically and
-# saved in secret/ directory
+# .. envvar:: etherpad_admins
+#
+# List of Etherpad administrative accounts. Passwords are generated
+# automatically and are saved in the secret/ directory. Refer to the
+# ``debops.secret`` role for more details.
 etherpad_admins: [ 'admin' ]
+
+# .. envvar:: etherpad_admins
+#
+# List of Etherpad user accounts. Passwords are generated automatically and
+# are saved in the secret/ directory. Refer to the ``debops.secret`` role for
+# more details.
 etherpad_users: []
 
-# Require authentication from all users
+
+# .. envvar:: etherpad_password_hashing_algo
+#
+# TODO: Not implemented yet.
+# Hashing algorithm to use for handling passwords.
+# See https://github.com/LaKing/ep_hash_auth for details.
+etherpad_password_hashing_algo: 'bcrypt'
+
+
+# .. envvar:: etherpad_password_hashing_rounds
+#
+# TODO: Not implemented yet.
+# How much rounds the hashing algorithm should do before using using the password hash.
+# This option depends on the hashing algorithm selected by :ref:`etherpad_password_hashing_algo`.
+# Some hashing algorithms implementations may not support rounds. The SHA
+# family currently does not and defaults to one round which is considered
+# insecure. bcrypt however does support it.
+etherpad_password_hashing_rounds: '10'
+
+
+# .. envvar:: etherpad_require_authentication
+#
+# Require authentication from all users.
 etherpad_require_authentication: False
 
-# Require authorization by a module or user with is_admin = True
+
+# .. envvar:: etherpad_require_authorization
+#
+# Require authorization by a module or user with ``is_admin = True``.
 etherpad_require_authorization: False
 
-# Require session to access pads
+
+# .. envvar:: etherpad_require_session
+#
+# Require session to access pads.
 etherpad_require_session: False
 
-# Block creation of new pads by unauthorized users?
+
+# .. envvar:: etherpad_edit_only
+#
+# Users may edit pads but not create new ones. Pad creation is only via the
+# API. This applies both to group pads and regular pads.
 etherpad_edit_only: False
 
+
+# .. envvar:: etherpad_trust_proxy
+#
 # Trust the reverse proxy (nginx)?
 etherpad_trust_proxy: False
 
 
-# ---- Etherpad customization ----
+# -------------------
+#   Etherpad customization
+# -------------------
 
+# .. envvar:: etherpad_abiword
+#
 # Enable Abiword support (for document import)?
 etherpad_abiword: True
 
-# List of Etherpad plugins to enable
+
+# .. envvar:: etherpad_plugins
+#
+# List of Etherpad plugins to enable.
+# Checkout the list of available plugins for more: https://static.etherpad.org/plugins.html.
 etherpad_plugins:
-    - '{{ etherpad_default_plugins }}'
+  - '{{ etherpad_default_plugins }}'
 
+
+# .. envvar:: etherpad_default_plugins
+#
+# Default Etherpad plugin list (alphabetically sorted).
 etherpad_default_plugins:
-    - 'adminpads'
-    - 'align'
-    - 'font_color'
-    - 'font_family'
-    - 'font_size'
-    - 'headings'
-    - 'hide_referrer'
-    - 'line_height'
-    - 'linkify'
-    - 'message_all'
-    - 'padlist'
-    - 'page_view'
-    - 'print'
-    - 'rss'
-    - 'scrollto'
-    - 'superscript'
-    - 'subscript'
+  - 'adminpads'
+  - 'align'
+  - 'font_color'
+  - 'font_family'
+  - 'font_size'
+
+  ## TODO(ypid): The current version (1.0.2) only supports SHA2. I replaced the SHA2 with bcrypt and am wanting for response from the maintainer.
+  # - 'hash_auth'
+
+  - 'headings'
+  - 'hide_referrer'
+  - 'line_height'
+  - 'linkify'
+  - 'message_all'
+  - 'padlist'
+  - 'page_view'
+  - 'print'
+  - 'rss'
+  - 'scrollto'
+  - 'subscript'
+  - 'superscript'
 
 
-# ---- Other options ----
+# -------------------
+#   Other options
+# -------------------
 
+# .. envvar:: etherpad_allow
+#
+# Allow access only from selected IP addresses/CIDR networks. If empty, allow
+# access from everywhere.
+etherpad_allow: []
+
+
+# .. envvar:: etherpad_minify
+#
 # Minify CSS and JS assets?
 etherpad_minify: True
 
-# Maximum age of cached assets (6 hours by default)
+
+# .. envvar:: etherpad_max_age
+#
+# Maximum age of cached assets (6 hours by default).
 etherpad_max_age: '{{ (60 * 60 * 6) }}'
 
+
+# .. envvar:: etherpad_disable_ip_logging
+#
 # Disable IP addresses in logs?
 etherpad_disable_ip_logging: False
 
+
+# .. envvar:: etherpad_loglevel
+#
 # Etherpad log level (choices: DEBUG, INFO, WARN, ERROR)
 etherpad_loglevel: 'INFO'
 
+
+# .. envvar:: etherpad_custom_json
+#
 # Here you can define custom settings.json entries in YAML format, which will
-# be converted to JSON and put at the end of the configuration file
+# be converted to JSON and put at the end of the configuration file.
 etherpad_custom_json: False
 
 
+# .. envvar:: etherpad_api_calls
+#
+# Allows you configure all aspects of Etherpad via its API.
+# See http://etherpad.org/doc/v1.5.1/#index_api_methods for details.
+etherpad_api_calls: []
+  # - method: 'createPad'
+  #   args:
+  #     'padID': 'testing'
+
+
+# .. envvar:: etherpad_api_version
+#
+# Against which API version should the API calls be executed?
+# Only applies for :ref:`etherpad_api_calls`.
+etherpad_api_version: '1.2.12'
+
+
+# .. envvar:: etherpad_api_calls_debug
+#
+# If True, you will get debugging output for the API calls defined by
+# :ref:`etherpad_api_calls`. Default is False.
+etherpad_api_calls_debug: False
