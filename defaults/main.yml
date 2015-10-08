@@ -31,9 +31,9 @@ etherpad_group: '{{ etherpad_system_name }}'
 #
 # Home directory of Etherpad.
 etherpad_home: '{{ (ansible_local.root.app
-	            if (ansible_local|d() and ansible_local.root|d() and
-	                ansible_local.root.app|d())
-	            else "/var/local") + "/" + etherpad_user }}'
+                if (ansible_local|d() and ansible_local.root|d() and
+                    ansible_local.root.app|d())
+                else "/var/local") + "/" + etherpad_user }}'
 
 
 # .. envvar:: etherpad_src_dir
@@ -109,9 +109,9 @@ etherpad_welcome_text: |
 # FQDN of the MariaDB database host. It will be configured by
 # the ``debops.mariadb`` role.
 etherpad_database_server: '{{ ansible_local.mariadb.server
-			      if (ansible_local|d() and ansible_local.mariadb|d() and
-				  ansible_local.mariadb.server|d())
-			      else "" }}'
+                  if (ansible_local|d() and ansible_local.mariadb|d() and
+                      ansible_local.mariadb.server|d())
+                  else "" }}'
 
 
 # .. envvar:: etherpad_database_user
@@ -130,7 +130,12 @@ etherpad_database_name: '{{ etherpad_system_name }}'
 #
 # MariaDB database password for the Etherpad database user.
 etherpad_database_password: "{{ lookup('password', secret + '/mariadb/' +
-                                ansible_local.mariadb.delegate_to +
+                                (ansible_local.mariadb.delegate_to + '/'
+                                    if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.delegate_to|d()
+                                    else '') +
+                                (ansible_local.mariadb.port + '/'
+                                    if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.port|d()
+                                    else '') +
                                 '/credentials/' + etherpad_database_user +
                                 '/password length=48') }}"
 
