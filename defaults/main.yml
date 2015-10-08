@@ -377,6 +377,18 @@ owncloud_ldap_port: '636'
 owncloud_ldap_method: 'ssl'
 
 
+# .. envvar:: owncloud_ldap_group_assoc_attribute
+#
+# Attribute which OwnCloud uses to match members of the group.
+#
+# Possible values:
+# - memberUid: Usefull for OpenLDAP with PosixGroups. Attibute contains only UID of the user.
+# - uniqueMember: Attribute contains full DN of the user.
+# - member: Attribute contains full DN of the user.
+#
+owncloud_ldap_group_assoc_attribute: 'memberUid'
+
+
 # .. envvar:: gitlab_ldap_conf_map
 #
 owncloud_ldap_conf_map:
@@ -392,4 +404,5 @@ owncloud_ldap_conf_map:
   ldapUserDisplayName: "cn"
   ldapUserFilter: "(|(objectclass=inetOrgPerson))"
   ldapUserFilterObjectclass: "inetOrgPerson"
+  ldapGroupMemberAssocAttr:  "{{ owncloud_ldap_group_assoc_attribute }}"
 
