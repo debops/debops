@@ -108,7 +108,10 @@ etherpad_welcome_text: |
 #
 # FQDN of the MariaDB database host. It will be configured by
 # the ``debops.mariadb`` role.
-etherpad_database_server: '{{ ansible_local.mariadb.server }}'
+etherpad_database_server: '{{ ansible_local.mariadb.server
+			      if (ansible_local|d() and ansible_local.mariadb|d() and
+				  ansible_local.mariadb.server|d())
+			      else "" }}'
 
 
 # .. envvar:: etherpad_database_user
