@@ -214,7 +214,7 @@
   command: cat {{ etherpad_api_key_file }}
   register: etherpad_api_key
   changed_when: False
-  tags: [ 'role::etherpad:api' ]
+  tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
 
 - name: Make API calls
   uri:
@@ -224,8 +224,8 @@
   # failed_when: etherpad_api_calls_exec.rc != 0 or etherpad_api_calls_exec.json.code|d()
   with_items: etherpad_api_calls
   no_log: True
-  tags: [ 'role::etherpad:api' ]
+  tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
 
 - debug: var=etherpad_api_calls_exec
   when: etherpad_api_calls_exec|d() and etherpad_api_calls_debug
-  tags: [ 'role::etherpad:api' ]
+  tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
