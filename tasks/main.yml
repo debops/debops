@@ -37,7 +37,9 @@
 
 - name: Divert default.conf in case nginx nginx.org flavor is used
   command: dpkg-divert --quiet --local --divert /etc/nginx/conf.d/default.conf.dpkg-divert
-           --rename /etc/nginx/conf.d/default.conf creates=/etc/nginx/conf.d/default.conf.dpkg-divert
+           --rename /etc/nginx/conf.d/default.conf
+  args:
+    creates: '/etc/nginx/conf.d/default.conf.dpkg-divert'
   when: nginx_flavor == 'nginx.org'
 
 - include: passenger_config.yml
