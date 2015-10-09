@@ -99,12 +99,25 @@ owncloud_deploy_path: '{{ owncloud_home }}'
 #   Database configuration
 # --------------------------
 
+# .. envvar:: owncloud_database
+#
+# ownCloud recommends MySQL or MariaDB as database. Set to False to use SQLite.
+# https://doc.owncloud.org/server/8.1/admin_manual/configuration_database/linux_database_configuration.html#database-configuration
+# Choices see ``owncloud_database_map``.
+owncloud_database: 'mariadb'
+
+
 # .. envvar:: owncloud_database_server
 #
 # FQDN of the database server. It will be configured by
-# the ``debops.mariadb`` role.
-# Currently only supported for MySQL/MariaDB.
-owncloud_database_server: '{{ ansible_local.mariadb.server }}'
+# # the ``debops.mariadb`` or ``debops.postgresql`` role.
+owncloud_database_server: "{{ ansible_local[owncloud_database].server }}"
+
+
+# .. envvar:: owncloud_database_port
+#
+# Port database is listening on.
+owncloud_database_port: "{{ ansible_local[owncloud_database].port }}"
 
 
 # .. envvar:: owncloud_database_user
@@ -119,21 +132,20 @@ owncloud_database_user: 'owncloud'
 owncloud_database_name: 'owncloud'
 
 
+# .. envvar:: owncloud_database_password_path
+#
+# Path to database password file.
+owncloud_database_password_path: "{{ secret + '/' + owncloud_database + '/' +
+                                     ansible_local[owncloud_database].delegate_to }}{%
+                                       if owncloud_database=='postgresql' %}/{{ ansible_local[owncloud_database].port }}{% endif
+                                     %}{{ '/credentials/' + owncloud_database_user +
+                                     '/password' }}"
+
+
 # .. envvar:: owncloud_database_password
 #
 # Database password for ownCloud.
-owncloud_database_password: "{{ lookup('password', secret + '/mariadb/' +
-                                ansible_local.mariadb.delegate_to +
-                                '/credentials/' + owncloud_database_user +
-                                '/password length=48') }}"
-
-
-# .. envvar:: owncloud_database
-#
-# ownCloud recommends MySQL or MariaDB as database. Set to False to use SQLite.
-# https://doc.owncloud.org/server/8.1/admin_manual/configuration_database/linux_database_configuration.html#database-configuration
-# Choices see ``owncloud_database_map``.
-owncloud_database: 'mariadb'
+owncloud_database_password: "{{ lookup('password', owncloud_database_password_path + ' length=48') }}"
 
 
 # .. envvar:: owncloud_database_map
@@ -240,6 +252,7 @@ owncloud_initial_config_global:
   mail_domain: '{{ ansible_domain }}'
   mail_from_address: owncloud
   mail_smtpmode: sendmail
+  logtimezone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
   loglevel: 2
   logdateformat: Y-m-d H:i:s.u # ISO 8601 date: 2004-02-12T15:19:21+00:00
   trashbin_auto_expire: True
@@ -365,7 +378,19 @@ owncloud_ldap_port: '636'
 owncloud_ldap_method: 'ssl'
 
 
-# .. envvar:: gitlab_ldap_conf_map
+# .. envvar:: owncloud_ldap_group_assoc_attribute
+#
+# Attribute which OwnCloud uses to match members of the group.
+#
+# Possible values:
+# - memberUid: Usefull for OpenLDAP with PosixGroups. Attibute contains only UID of the user.
+# - uniqueMember: Attribute contains full DN of the user.
+# - member: Attribute contains full DN of the user.
+#
+owncloud_ldap_group_assoc_attribute: 'memberUid'
+
+
+# .. envvar:: owncloud_ldap_conf_map
 #
 owncloud_ldap_conf_map:
   ldapAgentName: "{{ owncloud_ldap_binddn }}"
@@ -380,4 +405,6 @@ owncloud_ldap_conf_map:
   ldapUserDisplayName: "cn"
   ldapUserFilter: "(|(objectclass=inetOrgPerson))"
   ldapUserFilterObjectclass: "inetOrgPerson"
+  ldapGroupMemberAssocAttr:  "{{ owncloud_ldap_group_assoc_attribute }}"
+  homeFolderNamingRule: 'attr:uid'
 

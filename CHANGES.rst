@@ -16,3 +16,9 @@ v0.2.0
 
 - Setup shortcut for the `occ` command when not logged in as ``owncloud_user`` user and sudo allows it.
   Disabled by default. Can be enabled via ``owncloud_enable_occ_shortcut``. [ypid]
+
+- Improved LDAP support. Now role will create service account (default: ``cn=owncloud,dc=ansible,dc=fqdn``)
+  in ldap server. You still have to provied proper permission for this account. [scibi]
+
+- New PostgreSQL role support. Now PostgreSQL and MariaDB/MySQL support is unified. [scibi]
+
