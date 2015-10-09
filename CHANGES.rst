@@ -22,3 +22,4 @@ v0.2.0
 
 - New PostgreSQL role support. Now PostgreSQL and MariaDB/MySQL support is unified. [scibi]
 
+- New variable: ``owncloud_timeout`` needed to handle very large files uploads. [scibi]

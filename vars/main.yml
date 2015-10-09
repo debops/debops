@@ -36,6 +36,8 @@ owncloud_nginx_server:
 
   php5: 'php5_owncloud'
   php5_limit_except: False
+  php5_options: |
+    fastcgi_read_timeout {{ owncloud_timeout }};
 
 
 owncloud_nginx_upstream_php5:
@@ -54,6 +56,8 @@ owncloud_php5_pool:
     output_buffering: '{{ owncloud_php5_output_buffering }}'
     post_max_size: '{{ owncloud_upload_size }}'
     upload_max_filesize: '{{ owncloud_upload_size }}'
+    max_input_time: '{{ owncloud_timeout }}'
+    max_execution_time: '{{ owncloud_timeout }}'
 
   ## https://doc.owncloud.org/server/8.1/admin_manual/installation/source_installation.html#using-php-fpm
   environment:
