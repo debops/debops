@@ -56,15 +56,18 @@
   shell: /usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##'
   register: nginx_register_version
   changed_when: False
+  tags: [ 'role::nginx:servers' ]
 
 - name: Define nginx version
   set_fact:
     nginx_version: '{{ nginx_register_version.stdout | default("0.0") }}'
+  tags: [ 'role::nginx:servers' ]
 
 - name: Get list of nameservers configured in /etc/resolv.conf
   shell: "grep -E '^nameserver\\s' /etc/resolv.conf | awk '{print $2}'"
   register: nginx_register_nameservers
   changed_when: False
+  tags: [ 'role::nginx:servers' ]
 
 - name: Convert list of nameservers to Ansible list
   set_fact:
@@ -72,6 +75,7 @@
   when: ((nginx_register_nameservers.stdout is defined and nginx_register_nameservers.stdout) and
          (nginx_ocsp_resolvers is undefined or
          (nginx_ocsp_resolvers is defined and not nginx_ocsp_resolvers)))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Ensure that webadmins privileged group exists
   group:
@@ -183,6 +187,7 @@
 - include: nginx_configs.yml
 
 - include: nginx_servers.yml
+  tags: [ 'role::nginx:servers' ]
 
 - name: Save nginx local facts
   template:
