@@ -16,7 +16,7 @@
 {%   if item.proxy_headers is undefined or item.proxy_headers | bool %}
                 proxy_set_header Host              $host;
                 proxy_set_header X-Real-IP         $remote_addr;
-{%     if item.redirect_to_ssl is defined and not item.redirect_to_ssl %}
+{%     if not (item.redirect_to_ssl|d(True) | bool) %}
                 set $X_Forwarded_Proto "http";
                 set $X_Forwarded_Port 80;
                 if ($https) {
