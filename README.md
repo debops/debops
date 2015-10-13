@@ -2,33 +2,28 @@
 
 [![Travis CI](http://img.shields.io/travis/debops/ansible-postgresql.svg?style=flat)](http://travis-ci.org/debops/ansible-postgresql) [![test-suite](http://img.shields.io/badge/test--suite-ansible--postgresql-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-postgresql/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.postgresql-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1590)
 
-`debops.postgresql` is an Ansible role which can install and manage
-[PostgreSQL](http://postgresql.org/) database servers. It's built around
-Debian solution for managing PostgreSQL "clusters" and can manage multiple
-clusters and PostgreSQL versions at once.
+[PostgreSQL](http://www.postgresql.org/) is a popular relational open
+source database. The `debops.postgresql` role can be used to create and
+manage PostgreSQL roles and databases on local or remote PostgreSQL
+servers.
 
-By default PostgreSQL 9.1 available in Debian Wheezy will be installed, but
-you can enable PostgreSQL 9.3 version which will be installed using
-official
-[PostgreSQL Global Development Group](https://wiki.postgresql.org/wiki/Apt)
-repositories.
+To manage the PostgreSQL server itself, you will need to use
+`debops.postgresql_server` role.
 
 ### Installation
 
-This role requires at least Ansible `v1.7.0`. To install it, run:
+This role requires at least Ansible `v1.9.0`. To install it, run:
 
     ansible-galaxy install debops.postgresql
 
 ### Documentation
 
 More information about `debops.postgresql` can be found in the
-[official debops.postgresql documentation](http://docs.debops.org/en/latest/ansible/roles/debops.postgresql.html).
+[official debops.postgresql documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-postgresql/docs/).
 
 
 ### Role dependencies
 
-- `debops.ferm`
-- `debops.etc_services`
 - `debops.secret`
 
 ### Are you using this as a standalone role without DebOps?

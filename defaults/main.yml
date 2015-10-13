@@ -1,20 +1,43 @@
 ---
+# Default variables
+# =================
 
+# .. contents:: Sections
+#    :local:
+#
+# -------------------------------------
+#   PostgreSQL installation, packages
+# -------------------------------------
+
+# .. envvar:: postgresql_upstream
+#
 # Enable PostgreSQL Global Developmet Group APT repository?
 # More information: https://wiki.postgresql.org/wiki/Apt
 postgresql_upstream: False
 
-# List of base PostgreSQL packages to install
+
+# .. envvar:: postgresql_base_packages
+#
+# List of base PostgreSQL packages to install.
 postgresql_base_packages: [ 'postgresql-client', 'python-psycopg2' ]
 
-# Install additional packages with PostgreSQL
+
+# .. envvar:: postgresql_packages
+#
+# Install additional packages with PostgreSQL.
 postgresql_packages: []
 
-# PostgreSQL user account to which Ansible with switch to perform
+
+# .. envvar:: postgresql_user
+#
+# PostgreSQL user account to which Ansible will switch to perform
 # database-related operations. Should be the same on local and remote database
 # servers.
 postgresql_user: 'postgres'
 
+
+# .. envvar:: postgresql_server
+#
 # FQDN hostname of the remote PostgreSQL server to use. Role detects if a local
 # server is available and uses it automatically.
 postgresql_server: '{{ ansible_local.postgresql.server
@@ -23,9 +46,15 @@ postgresql_server: '{{ ansible_local.postgresql.server
                            ansible_local.postgresql.server != "localhost")
                        else "" }}'
 
-# Default port number of the PostgreSQL server to use (local or remote)
+
+# .. envvar:: postgresql_port
+#
+# Default port number of the PostgreSQL server to use (local or remote).
 postgresql_port: '5432'
 
+
+# .. envvar:: postgresql_delegate_to
+#
 # FQDN hostname of the host that will execute Ansible tasks related to the
 # PostgreSQL database and role management. If PostgreSQL server is available
 # locally, host will delegate the tasks to itself automatically.
@@ -34,16 +63,30 @@ postgresql_delegate_to: '{{ postgresql_server
                                 (postgresql_server != "localhost" or not postgresql_server))
                             else ansible_fqdn }}'
 
-# Length of the randomly generated passwords in PostgreSQL database
+
+# .. envvar:: postgresql_password_length
+#
+# Length of the randomly generated passwords in PostgreSQL database.
 postgresql_password_length: '48'
 
+
+# --------------------------
+#   pg_wrapper integration
+# --------------------------
+
+# .. envvar:: postgresql_default_database
+#
 # Name of the database the users should connect to, set as default in
 # ``/etc/postgresql-common/user_clusters``. If the name is ``*``, users will
 # connect to the database with the same name as their login.
 postgresql_default_database: '*'
 
+
+# .. envvar:: postgresql_default_user_clusters
+#
 # Default entry specified in ``/etc/postgresql-common/user_clusters``, used by
-# ``pg_wrapper`` script to direct users to correct PostgreSQL server.
+# ``pg_wrapper`` script to direct users to correct PostgreSQL server. See
+# :ref:`postgresql_user_clusters` for more details.
 postgresql_default_user_clusters:
 
   - user: '*'
@@ -53,20 +96,43 @@ postgresql_default_user_clusters:
                  else "main" }}'
     database: '{{ postgresql_default_database }}'
 
+
+# .. envvar:: postgresql_user_clusters
+#
 # Custom user/cluster mappings stored in
-# ``/etc/postgresql-common/user_clusters``.
+# ``/etc/postgresql-common/user_clusters``. See :ref:`postgresql_user_clusters`
+# for more details.
 postgresql_user_clusters: []
 
-# List of PostgresSQL roles, specified as YAML dicts
+
+# ----------------------------------
+#   PostgreSQL roles and databases
+# ----------------------------------
+
+# .. envvar:: postgresql_roles
+#
+# List of PostgresSQL roles, specified as YAML dicts. See
+# :ref:`postgresql_roles` for more details.
 postgresql_roles: []
 
-# List of PostgreSQL role groups, specified as YAML dicts
+
+# .. envvar:: postgresql_groups
+#
+# List of PostgreSQL role groups, specified as YAML dicts. See
+# :ref:`postgresql_groups` for more details.
 postgresql_groups: []
 
-# List of PostgreSQL databases, specified as YAML dicts
+
+# .. envvar:: postgresql_databases
+#
+# List of PostgreSQL databases, specified as YAML dicts. See
+# :ref:`postgresql_databases` for more details.
 postgresql_databases: []
 
+
+# .. envvar:: postgresql_pgpass
+#
 # List of role/password mappings stored in user directories in ``~/.pgpass``
-# configuration file.
+# configuration file. See :ref:`postgresql_pgpass` for more details.
 postgresql_pgpass: []
 
