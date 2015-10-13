@@ -1,4 +1,4 @@
-; This file is managed by Ansible, all changes will be lost
+; {{ ansible_managed }}
 
 {#
 ; Start a new pool named 'www'.
@@ -250,7 +250,7 @@ ping.path = {{ item.ping_path | default(php5_default_ping_path) }}
 ping.response = {{ item.ping_response | default(php5_default_ping_response) }}
 
 {% endif %}
-{% if item.accesslog is defined and item.accesslog == True %}
+{% if item.accesslog is defined and item.accesslog|bool %}
 {#
 ; The access log file
 ; Default: not set #}
@@ -323,34 +323,28 @@ slowlog = var/log/php5-fpm/$pool.slow.log
 ; dumped to the 'slowlog' file. A value of '0s' means 'off'.
 ; Available units: s(econds)(default), m(inutes), h(ours), or d(ays)
 ; Default Value: 0 #}
-request_slowlog_timeout = {{ item.request_slowlog_timeout | default('30s') }}
+request_slowlog_timeout = {{ item.request_slowlog_timeout }}
 
 {% endif %}
-{% if item.request_terminate_timeout is defined %}
 {#
 ; The timeout for serving a single request after which the worker process will
 ; be killed. This option should be used when the 'max_execution_time' ini option
 ; does not stop script execution for some reason. A value of '0' means 'off'.
 ; Available units: s(econds)(default), m(inutes), h(ours), or d(ays)
 ; Default Value: 0 #}
-request_terminate_timeout = {{ item.request_terminate_timeout | default('5m') }}
+request_terminate_timeout = {{ item.request_terminate_timeout | default(php5_max_execution_time) }}
 
-{% endif %}
-{% if item.rlimit_files is defined %}
 {#
 ; Set open file descriptor rlimit.
 ; Default Value: system defined value #}
 rlimit_files = {{ item.rlimit_files | default(php5_default_rlimit_files) }}
 
-{% endif %}
-{% if item.rlimit_core is defined %}
 {#
 ; Set max core size rlimit.
 ; Possible Values: 'unlimited' or an integer greater or equal to 0
 ; Default Value: system defined value #}
 rlimit_core = {{ item.rlimit_core | default(php5_default_rlimit_core) }}
 
-{% endif %}
 {% if item.chroot is defined and item.chroot %}
 {#
 ; Chroot to this directory at the start. This value must be defined as an
@@ -370,7 +364,7 @@ chroot = {{ item.chroot }}
 ; Default Value: current directory or / when chroot #}
 chdir = {{ item.chdir | default('/') }}
 
-{% if item.catch_workers_output is defined and item.catch_workers_output == True %}
+{% if item.catch_workers_output is defined and item.catch_workers_output|bool %}
 {#
 ; Redirect worker stdout and stderr into main error log. If not set, stdout and
 ; stderr will be redirected to /dev/null according to FastCGI specs.
@@ -456,5 +450,4 @@ php_admin_value[{{ key }}] = {{ value }}
 {% endfor %}
 
 {% endif %}
-
 
