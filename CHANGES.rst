@@ -9,6 +9,12 @@ v0.1.5
 - Create a proof-of-concept "solo" version of the role, that does not include
   additional Ansible role dependencies. [drybjed]
 
+- Fix https site detection when using debops.nginx as a dependency.
+  [patrickheeney]
+
+- Remove ``item.pki`` in favor of ``item.ssl`` in the nginx site configuration.
+  [patrickheeney]
+
 v0.1.4
 ------
 
