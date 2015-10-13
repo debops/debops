@@ -70,6 +70,8 @@ v0.2.7
 
 - Add ``ldappassword`` filter. [scibi]
 
+- Add ``debops.postgresql_server`` role. [drybjed]
+
 v0.2.6
 ------
 
