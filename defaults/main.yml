@@ -1,183 +1,138 @@
 ---
+# Default variables
+# =================
 
-# PostgreSQL version installed by default and used for all PG clusters
-postgresql_version: '9.1'
+# .. contents:: Sections
+#    :local:
+#
+# -------------------------------------
+#   PostgreSQL installation, packages
+# -------------------------------------
 
+# .. envvar:: postgresql_upstream
+#
 # Enable PostgreSQL Global Developmet Group APT repository?
 # More information: https://wiki.postgresql.org/wiki/Apt
-postgresql_pgdg: False
+postgresql_upstream: False
 
-# Install additional packages with PostgreSQL
+
+# .. envvar:: postgresql_base_packages
+#
+# List of base PostgreSQL packages to install.
+postgresql_base_packages: [ 'postgresql-client', 'python-psycopg2' ]
+
+
+# .. envvar:: postgresql_packages
+#
+# Install additional packages with PostgreSQL.
 postgresql_packages: []
 
-# System user and group which managages PostgreSQL clusters
-postgresql_owner: 'postgres'
-postgresql_group: 'postgres'
 
-# List od hosts/networks to allow through firewall. By default nothing is allowed
-#postgresql_default_allow:
-#  - '192.168.0.0/16'
-
-# The default password for the postgres user.
-# This is set for each cluster by default but you can override it for each cluster.
-# Check https://github.com/ginas/ginas/tree/master/playbooks/roles/ginas.secret for more information on how this works.
-postgresql_default_postgres_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/postgresql/default/postgres/password length=20') }}"
-
-# Where to log system/error messages
-# Options: stderr, csvlog, syslog, and eventlog
-postgresql_default_log_destination: 'syslog'
-
-# Default localisation settings. Error messages will be printed in English
-# independently of selected PostgreSQL locale. This locale will also be used at
-# cluster creation to set default database encoding
-postgresql_default_locale: 'en_US.UTF-8'
-postgresql_default_locale_messages: 'C'
-
-# Timezone configured in PostgreSQL clusters, by default use timezone settings
-# from Ansible Controller or fallback to UTC
-postgresql_default_timezone: ""
-
-# Base path of PKI infrastructure, managed by 'debops.pki' role
-postgresql_pki_path: '{{ ansible_local.pki.base_path | default("/etc/pki") }}'
-
-# PKI realm used by PostgreSQL role
-postgresql_pki_realm: '{{ ansible_local.pki.realm | default("system") }}'
-
-# Default Root CA certificate used by PostgreSQL clusters, relative to
-# 'postgresql_pki_realm' path
-postgresql_pki_ca: 'CA.crt'
-
-# SSL certificate, private key and CRL used by PostgreSQL clusters if not
-# specified otherwise, relative to 'postgesql_pki_realm' path
-postgresql_pki_crt: 'default.crt'
-postgresql_pki_key: 'default.key'
-postgresql_pki_crl: 'default.crl'
-
-# Default SSL ciphers enabled in PostgreSQL clusters
-postgresql_default_ssl_ciphers: 'ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH'
-
-# Default startup behaviour: auto, manual, disabled
-postgresql_default_start_conf: 'auto'
-
-# How much % of RAM to use for shared memory?  By default 0.5 means half
-# of system memory will be used for shmmax and shmall calculations
-# http://www.postgresql.org/docs/9.1/static/kernel-resources.html
-# Set to False to disable shared memory changes
-postgresql_sysctl_shm_multiplier: 0.5
-
-# Default maximum number of connections
-postgresql_default_max_connections: '100'
-
-# Default WAL and archivisation settings
-# Options: minimal, archive, hot_standby
-postgresql_default_wal_level: 'minimal'
-postgresql_default_archive_command: ''
-
-# User to cluster mapping. This is a text block which will be pasted "as is"
-# into /etc/postgresql-common/user_clusters
-# By default, nothing is configured
-postgresql_user_clusters: False
-
-# Host based authentication defaults. This is a text block which will be pasted
-# "as is" into pg_hba.conf *after* any hba settings from a particular cluster.
-# Settings for system superuser (postgres) are set in pg_hba.conf template
-postgresql_default_hba: |
-  local   all             all                             peer
-  host    all             all             127.0.0.1/32    md5
-  host    all             all             ::1/128         md5
-
-# User identification defaults. This is a text block which will be pasted "as
-# is" into pg_ident.conf *before* any ident settings from a particular cluster.
-# By default, nothing is configured
-postgresql_default_ident: False
-
-# Lists of PostgreSQL clusters to manage. Each entry should have at least
-# a name and a port on which to bind the cluster. Other options listed below
-# are optional. You can also add all PG parameters from postgresql.conf to
-# a cluster entry
+# .. envvar:: postgresql_user
 #
-# To disable one or both lists, set them as empty: '[]'. This will allow for
-# cluster counting task to work correctly (needed to set correct amounts of
-# shared memory for each cluster, divided by number of clusters configured on
-# the host)
-
-# Configuration for default "main" cluster
-postgresql_default_cluster:
-
-  - name: 'main'
-    port: '5432'
-
-    # Parameters below are optional. More parameters can be found in postgresql.conf template
-    #user: 'postgres'
-    #group: 'postgres'
-    #postgres_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/postgresql/9.1/main/postgres/password length=20') }}"
-    #version: '{{ postgresql_version }}'
-    #ssl_root: '{{ postgresql_default_ssl_root }}'
-    #ssl_crt: '{{ postgresql_default_ssl_crt }}'
-    #ssl_key: '{{ postgresql_default_ssl_key }}'
-    #start_conf: 'auto'
-    #environment:
-    #  VARIABLE: 'value'
-    #listen_addresses: 'localhost'
-    #hba:
-    #  - hosts: [] # example: '{{ groups['apps'] }}'
-    #    type: 'host'
-    #    interface: 'br2'
-    #    user: 'all'
-    #    database: '{{ user }}'
-    #    auth: 'md5'
-    #    address: '' # example: '192.168.0.0/16
-    #ident: |
-    #  # Freeform (see postgresql_default_hba)
-    #allow:
-    #  - '10.0.0.0/8'
-    #  - '172.16.0.0/12'
-    #  - '192.168.0.0/16'
-
-# Configuration for other clusters
-postgresql_clusters: []
+# PostgreSQL user account to which Ansible will switch to perform
+# database-related operations. Should be the same on local and remote database
+# servers.
+postgresql_user: 'postgres'
 
 
-# ---- Auto backups ----
+# .. envvar:: postgresql_server
+#
+# FQDN hostname of the remote PostgreSQL server to use. Role detects if a local
+# server is available and uses it automatically.
+postgresql_server: '{{ ansible_local.postgresql.server
+                       if (ansible_local|d() and ansible_local.postgresql|d() and
+                           ansible_local.postgresql.server|d() and
+                           ansible_local.postgresql.server != "localhost")
+                       else "" }}'
 
-# Backups will be ran daily and are rotated weekly.
-# Weekly backups are rotated on a 5 week cycle.
-# Monthly backups are ran on the first of the month.
-# Monthly backups are not rotated.
-#   It would be a good idea to move monthly backups to a remote server yourself.
 
-# Should auto backups be enabled?
-# If set to False, the script will be removed from /etc/cron.daily.
-postgresql_auto_backup: True
+# .. envvar:: postgresql_port
+#
+# Default port number of the PostgreSQL server to use (local or remote).
+postgresql_port: '5432'
 
-# Available options:
-#   - log    : send only the log file
-#   - files  : send the log file and sql files as attachments
-#   - stdout : output the log to the screen if run manually
-#   - quiet : only send logs if an error occurs
-postgresql_auto_backup_mailcontent: 'quiet'
 
-# The maximum allowed size of the e-mail, 4000 = about 5mb.
-postgresql_auto_backup_maxsize: 4000
+# .. envvar:: postgresql_delegate_to
+#
+# FQDN hostname of the host that will execute Ansible tasks related to the
+# PostgreSQL database and role management. If PostgreSQL server is available
+# locally, host will delegate the tasks to itself automatically.
+postgresql_delegate_to: '{{ postgresql_server
+                            if (postgresql_server|d() and
+                                (postgresql_server != "localhost" or not postgresql_server))
+                            else ansible_fqdn }}'
 
-# Who should receive the backup files?
-postgresql_auto_backup_mailaddr: 'backup@{{ ansible_domain }}'
 
-# Include create database in the backup? Use 'yes' or 'no', not true/false.
-postgresql_auto_backup_create_database: 'yes'
+# .. envvar:: postgresql_password_length
+#
+# Length of the randomly generated passwords in PostgreSQL database.
+postgresql_password_length: '48'
 
-# Use a separate backup directory and file for each database? 'yes' or 'no'.
-postgresql_auto_backup_isolate_databases: 'yes'
 
-# Which day of the week do you want to perform weekly backups?
-# 1 = Monday , ... , 7 = Sunday.
-postgresql_auto_backup_weekly_day: 6
+# --------------------------
+#   pg_wrapper integration
+# --------------------------
 
-# Should the dumps be encrypted? 'yes' or 'no'
-postgresql_auto_backup_encryption: 'no'
-postgresql_auto_backup_encryption_public_key: ''
+# .. envvar:: postgresql_default_database
+#
+# Name of the database the users should connect to, set as default in
+# ``/etc/postgresql-common/user_clusters``. If the name is ``*``, users will
+# connect to the database with the same name as their login.
+postgresql_default_database: '*'
 
-# Scripts to execute before and/or after the backup takes place.
-# An empty value disables this feature, provide a path to the script to enable.
-postgresql_auto_backup_pre_script: ''
-postgresql_auto_backup_post_script: ''
+
+# .. envvar:: postgresql_default_user_clusters
+#
+# Default entry specified in ``/etc/postgresql-common/user_clusters``, used by
+# ``pg_wrapper`` script to direct users to correct PostgreSQL server. See
+# :ref:`postgresql_user_clusters` for more details.
+postgresql_default_user_clusters:
+
+  - user: '*'
+    group: '*'
+    cluster: '{{ (postgresql_server + ":" + postgresql_port)
+                 if (postgresql_server|d() and postgresql_server)
+                 else "main" }}'
+    database: '{{ postgresql_default_database }}'
+
+
+# .. envvar:: postgresql_user_clusters
+#
+# Custom user/cluster mappings stored in
+# ``/etc/postgresql-common/user_clusters``. See :ref:`postgresql_user_clusters`
+# for more details.
+postgresql_user_clusters: []
+
+
+# ----------------------------------
+#   PostgreSQL roles and databases
+# ----------------------------------
+
+# .. envvar:: postgresql_roles
+#
+# List of PostgresSQL roles, specified as YAML dicts. See
+# :ref:`postgresql_roles` for more details.
+postgresql_roles: []
+
+
+# .. envvar:: postgresql_groups
+#
+# List of PostgreSQL role groups, specified as YAML dicts. See
+# :ref:`postgresql_groups` for more details.
+postgresql_groups: []
+
+
+# .. envvar:: postgresql_databases
+#
+# List of PostgreSQL databases, specified as YAML dicts. See
+# :ref:`postgresql_databases` for more details.
+postgresql_databases: []
+
+
+# .. envvar:: postgresql_pgpass
+#
+# List of role/password mappings stored in user directories in ``~/.pgpass``
+# configuration file. See :ref:`postgresql_pgpass` for more details.
+postgresql_pgpass: []
+

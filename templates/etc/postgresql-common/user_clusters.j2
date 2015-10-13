@@ -1,29 +1,69 @@
-# This file is managed by Ansible, all changes will be lost
+# {{ ansible_managed }}
+{% macro print_user_clusters(postgresql_tpl_user_clusters_list) %}
+{% if postgresql_tpl_user_clusters_list|d() and postgresql_tpl_user_clusters_list %}
+{%   for entry in postgresql_tpl_user_clusters_list %}
+{%     set entry_tpl_user = [] %}
+{%     if entry.name|d() %}
+{%       if entry.name is string %}
+{%           set entry_tpl_user = [ entry.name ] %}
+{%       else %}
+{%         for element in entry.name %}
+{%           if element %}
+{%             set _ = entry_tpl_user.append(element) %}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     elif entry.user|d() %}
+{%       if entry.user is string %}
+{%           set entry_tpl_user = [ entry.user ] %}
+{%       else %}
+{%         for element in entry.user %}
+{%           if element %}
+{%             set _ = entry_tpl_user.append(element) %}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%     set entry_tpl_group = [] %}
+{%     if entry.group|d() %}
+{%       if entry.group is string %}
+{%           set entry_tpl_group = [ entry.group ] %}
+{%       else %}
+{%         for element in entry.group %}
+{%           if element %}
+{%             set _ = entry_tpl_group.append(element) %}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%     set entry_tpl_cluster = "main" %}
+{%     if entry.cluster|d() %}
+{%       set entry_tpl_cluster = entry.cluster %}
+{%     elif entry.host|d() and entry.port|d() %}
+{%       set entry_tpl_host = entry.host %}
+{%       set entry_tpl_port = entry.port %}
+{%       set entry_tpl_cluster = entry.host + ":" + entry_tpl_port %}
+{%     endif %}
+{%     set entry_tpl_database = entry.database | d("*") %}
+{%     if entry_tpl_user %}
+{%       for user_name in entry_tpl_user %}
+{%         if entry_tpl_group %}
+{%           for group_name in entry_tpl_group %}
+{{ "%-14s %-14s %-10s %-20s %s" | format(user_name, group_name, entry.version | d(postgresql_version), entry_tpl_cluster, entry_tpl_database) }}
+{%           endfor %}
+{%         else %}
+{{ "%-14s %-14s %-10s %-20s %s" | format(user_name, user_name, entry.version | d(postgresql_version), entry_tpl_cluster, entry_tpl_database) }}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
 
-# This file maps users against the database clusters to which they
-# will connect by default.  Any user may create ~/.postgresqlrc which
-# will supersede the defaults stored here.  If a database is
-# specified, that will be the one connected to by client tools if none
-# is specified on the command line.  If the database specified here is
-# "*", this is interpreted as the database whose name is the same as
-# the user's login.  (Setting the database to "*" will provide the
-# current default upstream behaviour for command line tools.)
-#
-# When pg_wrapper scans this file, the first matching line is used.
-# It is a good idea to provide a default explicitly, with a final line
-# where both user and group are set to "*".  If there is no default,
-# the implicit default is to connect to the cluster whose postmaster
-# is listening on port 5432 and to the database matching the user's
-# login name.
-#
-# In the context of this file, user and group refer to the Unix login
-# or group, not to PostgreSQL users and groups.
-#
-# Please see user_clusters(5) and postgresqlrc(5) for more information.
-#
-# USER	GROUP	VERSION	CLUSTER	DATABASE
-{% if postgresql_user_clusters is defined and postgresql_user_clusters %}
-{{ postgresql_user_clusters }}
+{%   endfor %}
 {% endif %}
+{% endmacro %}
 
+# USER         GROUP          VERSION    CLUSTER              DATABASE
 
+{% if postgresql_user_clusters|d() and postgresql_user_clusters %}
+{{ print_user_clusters(postgresql_user_clusters) }}{% endif %}
+{% if postgresql_default_user_clusters|d() and postgresql_default_user_clusters %}
+{{ print_user_clusters(postgresql_default_user_clusters) }}{% endif %}
