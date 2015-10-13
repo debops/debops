@@ -75,7 +75,7 @@ EOF
 {% if lxc_template_salt is defined and lxc_template_salt %}
     # Configure Salt APT repository
     echo "{{ lxc_template_salt_upstream_repository }}" >> $rootfs/etc/apt/sources.list
-    wget -q -O- "{{ lxc_template_salt_apt_key_url }}" | chroot $rootfs apt-key add -
+    chroot $rootfs apt-key adv --keyserver "{{ lxc_default_gpg_keyserver }}" --recv-keys "{{ lxc_template_salt_apt_key_fingerprint }}"
     chroot $rootfs apt-get update
 
     # Install Salt packages
