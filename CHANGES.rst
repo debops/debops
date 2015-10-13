@@ -42,3 +42,8 @@ v0.1.0
   This commit might change the LDAP administrator password, you need to update
   it elsewhere after the change. [drybjed]
 
+- Move lookup template directory to ``templates/`` directory where Ansible v2
+  expects these templates. Ansible v1 still looks in ``files/`` so symlink to
+  the new directory is created there for the role to work on older Ansible
+  version. [drybjed]
+
