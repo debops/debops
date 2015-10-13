@@ -168,7 +168,7 @@ v0.2.4
 
 - Install ``python-pip`` during bootstrapping. [htgoebel]
 
-- Add a way to install custom packages during bootstapping. [drybjed]
+- Add a way to install custom packages during bootstrapping. [drybjed]
 
 - Reorder ``networking.yml`` playbook to run network-related roles before main
   services and applications. This should make sure that networking is correctly
@@ -198,7 +198,7 @@ v0.2.3
 
 - You can set global "root flags" on hosts using ``root.yml`` playbook.
   Ansible roles can check for their presence or absence and automatically
-  change their behaviour. [drybjed]
+  change their behavior. [drybjed]
 
 v0.2.2
 ------
@@ -275,7 +275,7 @@ Role updates
 
 OpenLDAP server managed by `debops.slapd`_ role has gained support for TLS out
 of the box, using certificates managed by `debops.pki`_ role. By default,
-``slapd`` server listens for normal plaintext connections, which can be
+``slapd`` server listens for normal plain text connections, which can be
 protected by the client requesting a StartTLS session, as well as for encrypted
 SSL/TLS connections. This also marks the removal of Beta status from
 `debops.slapd`_ role.
@@ -366,7 +366,7 @@ Playbook updates
 ****************
 
 New playbook, ``tools/dist-upgrade.yml`` has been added. It should help with
-upgrading to next version of your favourite OS, currently supported upgrade
+upgrading to next version of your favorite OS, currently supported upgrade
 paths are from Debian Wheezy to Debian Jessie and from Ubuntu Trusty to Ubuntu
 Utopic.
 
@@ -533,7 +533,7 @@ CI itself, some configuration variables have been changed - check the role
 defaults for new ones (mainly, you can define only 1 GitLab instance to connect
 to).
 
-`debops.users`_ role has been slightly clenaed up and ``root``-proofed - it
+`debops.users`_ role has been slightly cleaned up and ``root``-proofed - it
 shouldn't make an error if you are connecting to your hosts directly as
 ``root`` account anymore. Role uses ``default(omit)`` filter in its tasks,
 which means that DebOps now requires Ansible >= 1.8 for correct operation.
@@ -541,7 +541,7 @@ which means that DebOps now requires Ansible >= 1.8 for correct operation.
 New playbook plugins
 ~~~~~~~~~~~~~~~~~~~~
 
-`Hartmut Goebel`_ created a small lookup plugin, ``with_lists``, which alows
+`Hartmut Goebel`_ created a small lookup plugin, ``with_lists``, which allows
 you to use lists of items as "items" themselves, see an example in the
 `with_lists plugin`_. Thanks!
 
@@ -801,8 +801,8 @@ New roles
 Role updates
 ~~~~~~~~~~~~
 
-Because of recent changes in `debops.tcpwrappers`_ role I decided to make the
-ferm rules concenring SSH access more strict. From now on, ``iptables`` will
+Because of recent changes in the `debops.tcpwrappers`_ role I decided to make the
+ferm rules for SSH access more strict. From now on, ``iptables`` will
 check new SSH connections over period of 1 hour, if more than 3 new connections
 from 1 IP address are attempted during that time, and address is not in the
 whitelist, it will be blocked for 2 hours, with each new connection attempt
@@ -901,7 +901,7 @@ FQDN of a host to those defined in Ansible inventory (and yes, you can do
 multiple hosts at once). It's advised to not do it after services have been
 configured, since some of them may rely on the correct FQDN defined in DNS. If
 you use DHCP to automatically configure DNS (for example with ``dnsmasq``,
-rebooting the host after chaning the hostname should ensure that the new FQDN
+rebooting the host after changing the hostname should ensure that the new FQDN
 is correct.
 
 2014-11-13
@@ -936,7 +936,7 @@ requirements.
 
 Virtualization playbook has been modified and roles that previously
 automatically configured internal network and DNS services have been removed
-from KVM and LXC plays (yes, this will change instllation procedures in the
+from KVM and LXC plays (yes, this will change installation procedures in the
 docs, which are not yet updated). New playbook, 'networking.yml' has been added
 where you will find all network-related plays, like subnet creation and
 management (via ``debops.subnetwork`` and DHCP/DNS management.
@@ -958,7 +958,11 @@ replace the old NAT role when ``dnsmasq`` role is updated to support it.
 Role updates
 ~~~~~~~~~~~~
 
-Because of the changes related to new networking, some code in `debops.lxc`_, `debops.kvm`_ and `debops.nat`_ had to be moved around. Specifically, parts of the firewall and sysctl settings related to the LAN interface were moved into `debops.subnetwork`_ role and parts of the forwarding configuration to external and internal networks were added respectively to LXC and KVM roles.
+Because of the changes related to new networking, some code in `debops.lxc`_,
+`debops.kvm`_ and `debops.nat`_ had to be moved around. Specifically, parts of
+the firewall and sysctl settings related to the LAN interface were moved into
+`debops.subnetwork`_ role and parts of the forwarding configuration to external
+and internal networks were added respectively to LXC and KVM roles.
 
 2014-11-05
 ----------
@@ -1017,7 +1021,7 @@ to be a list. If a string cannot be split by specified separator, whole string
 will be returned in a list.
 
 ``ipaddr('6to4')`` filter has been updated to not convert private IPv4
-addresses, since their behaviour is unspecified, this way Ansible can easily
+addresses, since their behavior is unspecified, this way Ansible can easily
 determine if a given IPv4 address can be used in ``6to4`` tunnel.
 
 ``6to4`` query will also now return proper ``::/48`` subnet instead of a single
@@ -1146,7 +1150,7 @@ to take effect.
 
 All role README files have been converted to reStructuredText format.
 Unfortunately, `Ansible Galaxy`_ does not support ``README.rst`` files at this
-time, so role information cannot be udpated there.
+time, so role information cannot be updated there.
 
 2014-10-02
 ----------
@@ -1182,7 +1186,7 @@ will be removed in the future.
 "{{ lookup('file','~/.ssh/id_rsa.pub) }}" considered harmful
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The lookup above is common thruought Ansible playbooks and examples, and it is
+The lookup above is common through Ansible playbooks and examples, and it is
 used as a prime method of accessing SSH public keys of current account on
 Ansible Controller host to, for example, install them on remote hosts using
 ``authorized_key`` Ansible module.
@@ -1212,9 +1216,9 @@ inventory.secret is renamed to secret
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you use DebOps, or at least some roles from it, you probably are familiar
-with `debops.secret`_ role, which makes handling sensitive and confidental
+with `debops.secret`_ role, which makes handling sensitive and confidential
 data easier within Ansible playbooks and roles. I'm mentioning this because
-``secret`` variable is used thruought the DebOps project and this change will
+``secret`` variable is used through the DebOps project and this change will
 be significant - that's why I want to do it right away instead of changing the
 role suddenly some time down the line.
 
@@ -1320,7 +1324,7 @@ Role updates
   can specify a list of Ansible Controllers in
   ``tcpwrappers_ansible_controllers`` list variable.
 
-* `Debian bug #718639`_ has been fixed which results in changes to serveral
+* `Debian bug #718639`_ has been fixed which results in changes to several
   configuration files, including ``/etc/nginx/fastcgi_params`` and inclusion of
   a new configuration file ``/etc/nginx/fastcgi.conf``. `debops.nginx`_ role
   will now check the version of installed ``nginx`` server and select correct
