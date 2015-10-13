@@ -142,7 +142,10 @@ librenms_rrd_dir: '{{ librenms_data_path + "/rrd" }}'
 # .. envvar:: librenms_log_dir
 #
 # Path where LibreNMS logs are stored.
-librenms_log_dir: '/var/log/librenms'
+librenms_log_dir: '{{ (ansible_local.root.log
+                         if (ansible_local|d() and ansible_local.root|d() and
+                             ansible_local.root.log|d())
+                         else "/var/log") + "/librenms" }}'
 
 
 # --------------------
