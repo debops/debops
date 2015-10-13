@@ -14,6 +14,8 @@ v0.2.0
 
 - Add client-side management of PostgreSQL roles and databases. [drybjed]
 
+- Add an option to set role password expiration. [drybjed]
+
 v0.1.0
 ------
 

@@ -64,6 +64,7 @@
                   "/credentials/" + item.name | d(item.role) + "/password " +
                   "length=" + postgresql_password_length)) }}'
     encrypted: '{{ item.encrypted | d(omit) }}'
+    expires: '{{ item.expires | d(omit) }}'
     role_attr_flags: '{{ (item.flags|d() | join(",")) | d(omit) }}'
     state: 'present'
   with_items: postgresql_roles
