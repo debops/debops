@@ -117,8 +117,8 @@
 #
 #   - item.ssl: True/False
 #       Optional. Enable or disable HTTPS for this server configuration (HTTPS
-#       is enabled by default for all servers, you can disable it selectively
-#       using this option).
+#       is enabled by default for all servers when using debops.pki. You can
+#       disable it selectively using this option).
 #
 #
 #   - item.ssl_crt: ''
@@ -188,13 +188,13 @@
 #       in server logs to reduce noise (enabled by default).
 #
 #
-#   - item.listen: []
+#   - item.listen: []/False
 #       Optional. List of ports, IP addresses or sockets this server
 #       configuration should listen on for HTTP connections. By default set to
 #       '[::]:80' for all servers.
 #
 #
-#   - item.listen_ssl: []
+#   - item.listen_ssl: []/False
 #       Optional. List of ports, IP addresses or socnets this server
 #       configuration should listen on for HTTPS connections. By default set to
 #       '[::]:443' for all servers.
@@ -378,7 +378,7 @@
 
     ---- HTTPS, ports to listen on, default server, HTTPS redirect ----
 #}
-{% set nginx_tpl_ssl            = item.ssl        | default(item.pki       | default(nginx_pki)) | bool %}
+{% set nginx_tpl_ssl            = item.ssl        | default(nginx_pki) | bool  %}
 {% set nginx_tpl_listen         = item.listen     | default(['[::]:80'])       %}
 {% set nginx_tpl_listen_ssl     = item.listen_ssl | default(['[::]:443'])      %}
 {% set nginx_tpl_default_server = ''                                           %}
@@ -480,7 +480,7 @@
 {% macro print_location_list(location_list)                                    %}
 {%     if location_list is defined                                             %}
 {%         for entry in location_list                                          %}
-{%             if (entry.pattern is defined and entry.pattern and 
+{%             if (entry.pattern is defined and entry.pattern and
                    (entry.enabled is not defined or entry.enabled | bool))     %}
         location {{ entry.pattern_prefix | default('') + entry.pattern }} {
 {%                 if entry.referers is defined and entry.referers             %}
