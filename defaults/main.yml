@@ -1,85 +1,74 @@
 ---
+# Default variables
+# =================
 
-#... py:function:: apt_preferences_list(list)
-#.
-#.   List of apt_preferences(5) pins to configure in ``/etc/apt/preferences.d/``.
-#.   These pins will be configured on all hosts in the cluster, if set in
-#.   ``inventory/group_vars/all/``.
-#.
-#.   :param str  package:   Name(s) of the packages to include in this pin
-#.   :param list backports: If present, this pin defines a preference for
-#.                          backported package. You can specify names of OS
-#.                          distributions on which this backport pin should be
-#.                          enabled
-# List of APT pins to configure for all hosts in the cluster, when set in
-# 'inventory/group_vars/all/'
+# .. contents:: Sections
+#    :local:
+
+# .. envvar:: apt_preferences_list
+#
+# List of apt_preferences(5) pins to configure in ``/etc/apt/preferences.d/``.
+# These pins will be configured on all hosts in the cluster, if set in
+# ``inventory/group_vars/all/``. See :ref:`apt_preferences_list` for more
+# details.
 apt_preferences_list: []
 
-  #- package: 'nginx nginx-*'
-  #  backports: [ 'wheezy' ]
 
-#... py:function:: apt_preferences_group_list(list)
-#.
-#.   List of apt_preferences(5) pins to configure in ``/etc/apt/preferences.d/``.
-#.   These pins will be configured on hosts in a specified group, if set in
-#.   ``inventory/group_vars/group_name/``. Only one group "level" is supported.
-#.
-#.   :param str  package:   Name(s) of the packages to include in this pin
-#.   :param list backports: If present, this pin defines a preference for
-#.                          backported package. You can specify names of OS
-#.                          distributions on which this backport pin should be
-#.                          enabled
-# List of APT pins to configure for specific group of hosts (only 1 group level
-# is supported)
+# .. envvar:: apt_preferences_group_list
+#
+# List of apt_preferences(5) pins to configure in ``/etc/apt/preferences.d/``.
+# These pins will be configured on hosts in a specified group, if set in
+# ``inventory/group_vars/group_name/``. Only one group "level" is supported.
 apt_preferences_group_list: []
 
-#.
-#... py:function:: apt_preferences_host_list(list)
-#.
-#.   List of apt_preferences(5) pins to configure in ``/etc/apt/preferences.d/``.
-#.   These pins will be configured on specific hosts, if set in
-#.   ``inventory/host_vars/host_name/``.
-#.
-#.   :param str  package:   Name(s) of the packages to include in this pin
-#.   :param list backports: If present, this pin defines a preference for
-#.                          backported package. You can specify names of OS
-#.                          distributions on which this backport pin should be
-#.                          enabled
-# List of APT pins to configure for a specific host
+
+# .. envvar:: apt_preferences_host_list
+#
+# List of apt_preferences(5) pins to configure in ``/etc/apt/preferences.d/``.
+# These pins will be configured on specific hosts, if set in
+# ``inventory/host_vars/host_name/``.
 apt_preferences_host_list: []
 
-#.
-#... py:function:: apt_preferences_dependent_list(list)
-#.
-#.   List of apt_preferences(5) pins to configure in ``/etc/apt/preferences.d/``.
-#.   This variable is meant to be used from a role dependency in
-#.   ``role/meta/main.yml``.
-#.
-#.   :param str  package:   Name(s) of the packages to include in this pin
-#.   :param list backports: If present, this pin defines a preference for
-#.                          backported package. You can specify names of OS
-#.                          distributions on which this backport pin should be
-#.                          enabled
-# List of APT pins to configure from another role via dependency variables
+
+# .. envvar:: apt_preferences_dependent_list
+#
+# List of apt_preferences(5) pins to configure in ``/etc/apt/preferences.d/``.
+# This variable is meant to be used from a role dependency in
+# ``role/meta/main.yml`` or in a playbook.
 apt_preferences_dependent_list: []
 
-#.
-#... py:function:: apt_preferences_priority_default(str)
-#.
-#.   Default pin priority used, if custom priority is not specified in a pin definition.
-#.   By default, ``'500'``.
-# Default pin priority used, if custom priority is not specified in a pin definition
+
+# .. envvar:: apt_preferences_priority_default
+#
+# Default pin priority used, if custom priority is not specified in a pin
+# definition.
 apt_preferences_priority_default: '500'
 
-#.
-#... py:function:: apt_preferences_priority_version(str)
-#.
-#.   Default pin priority used if custom priority is not specified in
-#.   a versioned pin definition. By default, ``'500'``.
+
+# .. envvar:: apt_preferences_priority_version
+#
 # Default pin priority used if custom priority is not specified in a versioned
 # pin definition.
 apt_preferences_priority_version: '1001'
 
 
-# vim: set foldmethod=expr:
-# vim: set foldexpr=getline(v\:lnum)=~'^#\\.':
+# .. envvar:: apt_preferences_next_release
+#
+# Hash of future releases of current stable distributions. This is used to
+# check if role can create autogenerated pin with preference for backported
+# packages from ``<release>-backports`` repository.
+apt_preferences_next_release:
+
+  # Debian releases
+  'lenny':    'squeeze'
+  'squeeze':  'wheezy'
+  'wheezy':   'jessie'
+  'jessie':   'stretch'
+
+  # Ubuntu releases
+  'precise':  'quantal'
+  'quantal':  'raring'
+  'raring':   'saucy'
+  'saucy':    'trusty'
+  'trusty':   'utopic'
+
