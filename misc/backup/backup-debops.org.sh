@@ -269,7 +269,7 @@ lockfile="/var/lock/$(basename ${0}).lock"
   fi
 
   # Clone all DebOps Ansible roles in 'roles/' directory; if you want not
-  # modified remository names, change the function name from "_roles" to "_tools"
+  # modified repository names, change the function name from "_roles" to "_tools"
   if [ -n "${debops_github_roles}" ] ; then
     if [[ "${mode}" == "mirror" ]] ; then
       git_clone_mirror "${backup_root_dir}/debops.org/mirror/${debops_roles_dir}/github.com" "${git_github_uri}" "${debops_github_roles[@]}"

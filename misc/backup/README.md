@@ -4,15 +4,15 @@ This script can be used to backup essential git repositories of the
 [DebOps](http://debops.org/) project.
 
 Current list of git repositories is stored in `backup-data.txt` file (it is
-a shell script with list of repositories stored in arrays, sourced by the main
-script). This file is downloaded directly from GitHub, so that the list of
+a shell script with the list of repositories stored in arrays, sourced by the main
+script). This file is downloaded directly from GitHub, so that the list of the
 repositories can be easily updated (new roles are added from time to time, some
-roles are removed, etc.) and kept current without changing the main script.
+roles are removed, etc.) and kept up-to-date without changing the main script.
 
 #### Security
 
 To prevent tampering and code injection by a MITM attack in the part of the
-script sourced from the data file, list of repositories is signed by a GPG key
+script sourced from the data file, the list of repositories is signed by a GPG key
 `0xA1BAC21E8F22D9E4` (author's own key) and signature is provided in a separate
 file. Backup script downloads both files to a random temporary directory and
 checks the validity of the signature before sourcing the data file. If the
