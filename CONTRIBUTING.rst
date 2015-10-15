@@ -90,7 +90,7 @@ For everything:
 
 - Try your best to stay under 80 characters but don't go crazy trying
 - 2 space indentation for everything unless noted otherwise
-- Comments and output start with a capital letter and have no periods
+- Comments and output start with a capital letter and end with a period
 
 For just yaml:
 
