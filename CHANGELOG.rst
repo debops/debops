@@ -11,7 +11,7 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.2.7
 ------
 
-*Unreleased*
+*Released: 2015-10-15*
 
 - Add ``debops.lvm`` role. [drybjed]
 
@@ -71,6 +71,9 @@ v0.2.7
 - Add ``ldappassword`` filter. [scibi]
 
 - Add ``debops.postgresql_server`` role. [drybjed]
+
+- All playbooks have been split into small plays. Playbook directories have
+  shorter names, which are easier to use from the command line. [drybjed]
 
 v0.2.6
 ------

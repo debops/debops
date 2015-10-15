@@ -1,0 +1,21 @@
+---
+
+- name: Manage Redis server
+  hosts: 'debops_redis'
+  become: True
+
+  roles:
+
+    - role: debops.redis
+      tags: [ 'role::redis', 'redis' ]
+
+
+- name: Manage Redis sentinel server
+  hosts: 'debops_redis_sentinel'
+  become: True
+
+  roles:
+
+    - role: debops.redis
+      tags: [ 'role::redis', 'redis' ]
+
