@@ -19,7 +19,7 @@ dictionary. Supported parameters:
 
 ``package``
   Required. String of package names affected by this pin, each package
-  separated by space. You can use 'package-*' wildcard to specify multiple
+  separated by space. You can use ``package-*`` wildcard to specify multiple
   packages. First package name will be included in automatically generated
   filename of the pin preferences file.
 
