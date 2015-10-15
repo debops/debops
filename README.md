@@ -21,7 +21,7 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 ### Documentation
 
 More information about `debops.apt_preferences` can be found in the
-[official debops.apt_preferences documentation](http://docs.debops.org/en/latest/ansible/roles/debops.apt_preferences.html).
+[official debops.apt_preferences documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-apt_preferences/docs/).
 
 
 
