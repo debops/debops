@@ -8,14 +8,14 @@
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
-  when: docker_upstream|d() and docker_upstream
+  when: docker_upstream|d() | bool
 
 - name: Configure upstream APT repository
   apt_repository:
     repo: '{{ docker_upstream_repository }}'
     state: 'present'
     update_cache: True
-  when: docker_upstream|d() and docker_upstream
+  when: docker_upstream|d() | bool
 
 - name: Install required packages
   apt:
@@ -31,7 +31,7 @@
   pip:
     name: 'ferment'
     state: 'present'
-  when: docker_ferment|d() and docker_ferment
+  when: docker_ferment|d() | bool
 
 - name: Install ferment wrapper script
   template:
@@ -40,7 +40,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: docker_ferment|d() and docker_ferment
+  when: docker_ferment|d() | bool
 
 - name: Check Docker version
   environment:
@@ -70,7 +70,7 @@
     mode: '0644'
   notify: [ 'Restart docker' ]
   register: docker_register_systemd_service
-  when: docker_upstream|d() and docker_upstream
+  when: docker_upstream|d() | bool
   tags: [ 'role::docker:config' ]
 
 - name: Reload systemd daemons
@@ -87,6 +87,6 @@
     groups: 'docker'
     append: True
   with_items: docker_admins
-  when: item|d() and item
+  when: item|d()
   tags: [ 'role::docker:config', 'role::docker:admins' ]
 
