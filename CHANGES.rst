@@ -4,7 +4,7 @@ Changelog
 v0.1.1
 ------
 
-*Unreleased*
+*Released: 2015-10-15*
 
 - Make sure that files specified in ``dhcpd_includes`` list exist before the
   DHCP server is restarted. [drybjed]
@@ -20,6 +20,9 @@ v0.1.1
 
 - Change the way role gathers the list of nameservers to avoid issue with
   ``sed`` command in shell module. [drybjed]
+
+- Provide empty list of relay servers if default IPv4 gateway is not defined.
+  [drybjed]
 
 v0.1.0
 ------

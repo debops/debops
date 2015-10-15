@@ -44,7 +44,9 @@ dhcpd_base_packages_map:
 # .. envvar:: dhcpd_relay_servers
 #
 # List of DHCP servers which should receive the relayed packets
-dhcpd_relay_servers: [ '{{ ansible_default_ipv4.gateway }}' ]
+dhcpd_relay_servers: [ '{{ ansible_default_ipv4.gateway
+                           if (ansible_default_ipv4.gateway|d())
+                           else [] }}' ]
 
 
 # .. envvar:: dhcpd_relay_interfaces
