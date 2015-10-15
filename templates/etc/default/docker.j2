@@ -6,41 +6,41 @@
 #DOCKER="/usr/local/bin/docker"
 
 {% set docker_tpl_options = [] %}
-{% if docker_bridge|d() and docker_bridge %}
+{% if docker_bridge|d() | bool %}
 {%   set _ = docker_tpl_options.append("--bridge " + docker_bridge) %}
 {% endif %}
-{% if docker_fixed_cidr|d() and docker_fixed_cidr %}
+{% if docker_fixed_cidr|d() | bool %}
 {%   set _ = docker_tpl_options.append("--fixed-cidr " + docker_fixed_cidr) %}
 {% endif %}
-{% if docker_dns_nameserver|d() and docker_dns_nameserver %}
+{% if docker_dns_nameserver|d() | bool %}
 {%   for nameserver in docker_dns_nameserver %}
 {%     set _ = docker_tpl_options.append("--dns " + nameserver) %}
 {%   endfor %}
 {% endif %}
-{% if docker_dns_search|d() and docker_dns_search %}
+{% if docker_dns_search|d() | bool %}
 {%   for domain in docker_dns_search %}
 {%     set _ = docker_tpl_options.append("--dns-search " + domain) %}
 {%   endfor %}
 {% endif %}
-{% if docker_listen|d() and docker_listen %}
+{% if docker_listen|d() | bool %}
 {%   for host in docker_listen %}
 {%     if host %}
 {%       set _ = docker_tpl_options.append("-H " + host) %}
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{% if docker_pki|d() and docker_pki | bool %}
+{% if docker_pki|d() | bool %}
 {%   set _ = docker_tpl_options.append("--tlsverify") %}
 {%   set _ = docker_tpl_options.append("--tlscacert " + docker_pki_path + "/" + docker_pki_realm + "/" + docker_pki_ca) %}
 {%   set _ = docker_tpl_options.append("--tlscert " + docker_pki_path + "/" + docker_pki_realm + "/" + docker_pki_crt) %}
 {%   set _ = docker_tpl_options.append("--tlskey " + docker_pki_path + "/" + docker_pki_realm + "/" + docker_pki_key) %}
 {% endif %}
-{% if docker_labels|d() and docker_labels %}
+{% if docker_labels|d() | bool %}
 {%   for key, value in docker_labels.iteritems() %}
 {%     set _ = docker_tpl_options.append("--label " + key + '="' + value + '"') %}
 {%   endfor %}
 {% endif %}
-{% if docker_options|d() and docker_options %}
+{% if docker_options|d() | bool %}
 {%   for option in docker_options %}
 {%     if option %}
 {%       set _ = docker_tpl_options.append(option) %}
