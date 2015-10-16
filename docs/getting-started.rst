@@ -7,13 +7,13 @@ Getting started
 Example inventory
 -----------------
 
-To enable swap files on a host, it needs to be added to ``[debops_swapfile]``
-Ansible group in inventory::
+To enable swap files on a host, it needs to be added to the ``[debops_swapfile]``
+group in Ansible’s inventory::
 
     [debops_swapfile]
     hostname
 
-Default configuration will create a 512 MB ``/swapfile`` and will make sure
+The default configuration will create a 512 MB ``/swapfile`` and will make sure
 that it's added in ``/etc/fstab``.
 
 Example playbook
