@@ -1,9 +1,20 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) swapfile
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-swapfile.svg?style=flat)](http://travis-ci.org/debops/ansible-swapfile) [![test-suite](http://img.shields.io/badge/test--suite-ansible--swapfile-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-swapfile/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-swapfile.svg?style=flat)](http://travis-ci.org/debops/ansible-swapfile) [![test-suite](http://img.shields.io/badge/test--suite-ansible--swapfile-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-swapfile/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.swapfile-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/5618)
 
 This Ansible role lets you manage one or multiple swap files. You can also
 manage kernel parameters related to how swap is used by the system.
+
+### Installation
+
+This role requires at least Ansible `v1.9.0`. To install it, run:
+
+    ansible-galaxy install debops.swapfile
+
+### Documentation
+
+More information about `debops.swapfile` can be found in the
+[official debops.swapfile documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-swapfile/docs/).
 
 
 
