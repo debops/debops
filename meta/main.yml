@@ -3,9 +3,12 @@
 dependencies:
 
   - role: debops.secret
+    tags: [ 'depend::secret', 'depend::secret:apt',
+            'depend-of::apt', 'type::dependency:hard' ]
 
   - role: debops.apt_preferences
-    tags: apt_preferences
+    tags: [ 'depend::apt_preferences', 'depend::apt_preferences:apt',
+            'depend-of::apt', 'type::dependency:hard' ]
     apt_preferences_dependent_list:
 
       - package: 'git git-*'
