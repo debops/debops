@@ -14,7 +14,9 @@
   shell: test -f {{ item.path | d(item) }} && swapoff {{ item.path | d(item) }} || true
   changed_when: False
   with_items: swapfile_files
-  when: swapfile_files|d() and item.state|d() and item.state == 'absent'
+  when: ((swapfile_files|d() and item.state|d() and item.state == 'absent') and
+         (ansible_local|d() and (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+          (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
 
 - name: Remove swap files
   file:
@@ -59,9 +61,10 @@
 - name: Enable swap files
   command: swapon -p {{ item.item.priority | d(swapfile_priority) }} {{ item.item.path | d(item.item) }}
   with_items: swapfile_register_allocation.results
-  when: ((swapfile_files|d() and swapfile_register_allocation|d() and
-          item.changed | bool) and
-         (item.state is undefined or item.state != 'absent'))
+  when: ((swapfile_files|d() and swapfile_register_allocation|d() and item.changed | bool) and
+         (item.state is undefined or item.state != 'absent') and
+          (ansible_local|d() and (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+           (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
 
 - name: Manage swap files in /etc/fstab
   mount:
