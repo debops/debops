@@ -15,6 +15,9 @@ v0.2.8
 
 - Add ``debops.swapfile`` role. [drybjed]
 
+- All playbooks now use ``become: True`` instead of ``sudo: True`` to enable
+  privileged operation. [drybjed]
+
 v0.2.7
 ------
 
