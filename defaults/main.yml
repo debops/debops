@@ -94,6 +94,18 @@ core_reset_tags: False
 core_ansible_controllers: []
 
 
+# .. envvar:: core_active_controller
+#
+# IP address from which the SSH connection to a given host originates. It
+# usually is the external IP address of Ansible Controller host, but it might be
+# an internal IP address of a gateway or SSH jumphost through which the
+# connection is proxied. This IP address will be added to list of Ansible
+# Controllers defined above.
+core_active_controller: '{{ ((ansible_env.SSH_CLIENT.split(" ") | first)
+                             if (ansible_env|d() and ansible_env.SSH_CLIENT|d())
+                             else "") }}'
+
+
 # .. envvar:: core_cache_valid_time
 #
 # Time in seconds which specifies how long APT cache should be considered

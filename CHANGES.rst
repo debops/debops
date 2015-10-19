@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2015-10-19*
+
+- Add a ``core_active_controller`` variable which specifies IP address of
+  active Ansible Controller. [drybjed]
+
 v0.1.1
 ------
 
