@@ -12,8 +12,8 @@
 
 - name: Check IP address of current Ansible Controller
   set_fact:
-    ansible_controller: '{{ ansible_env.SSH_CLIENT.split(" ") | first }}'
-    core_fact_ansible_controller: '{{ ansible_env.SSH_CLIENT.split(" ") | first }}'
+    ansible_controller: '{{ core_active_controller }}'
+    core_fact_ansible_controller: '{{ core_active_controller }}'
   when: core_fact_ansible_controller is undefined and ansible_connection != "local"
   tags: [ 'role::core', 'role::ferm', 'role::ferm:config', 'role::tcpwrappers' ]
   become: False
