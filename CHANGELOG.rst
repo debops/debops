@@ -5,7 +5,7 @@ DebOps playbooks Changelog
 This is a Changelog related to DebOps_ playbooks and roles. You can also read
 `DebOps Changelog`_ to see changes to the DebOps project itself.
 
-.. _DebOps Changelog: https://github.com/debops/debops/blob/master/CHANGELOG.md
+.. _DebOps Changelog: https://github.com/debops/debops/blob/master/CHANGES.rst
 
 
 v0.2.8
