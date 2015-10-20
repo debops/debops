@@ -1,0 +1,14 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Deferred execution scheduler
+Documentation=man:atd(8)
+
+[Service]
+EnvironmentFile=-/etc/default/atd
+ExecStart=/usr/sbin/atd -f -l $BATCH_LOAD -b $BATCH_INTERVAL
+IgnoreSIGPIPE=false
+
+[Install]
+WantedBy=multi-user.target
+

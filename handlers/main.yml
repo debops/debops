@@ -1,0 +1,12 @@
+---
+
+- name: Reload systemd units
+  command: systemctl daemon-reload
+  when: ansible_local|d() and ansible_local.init|d() and
+        ansible_local.init in [ 'systemd' ]
+
+- name: Restart atd
+  service:
+    name: 'atd'
+    state: 'restarted'
+

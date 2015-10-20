@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+
+# Configuration of atd and batch
+
+# Average CPU load above which batch jobs are kept on hold
+BATCH_LOAD={{ atd_fact_batch_load }}
+
+# Minimum interval in seconds between start of two batch jobs
+BATCH_INTERVAL={{ atd_fact_batch_interval }}
+
+# Options passed to atd
+EXTRA_OPTS="-l ${BATCH_LOAD} -b ${BATCH_INTERVAL}"
+
