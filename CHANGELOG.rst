@@ -18,6 +18,11 @@ v0.2.8
 - All playbooks now use ``become: True`` instead of ``sudo: True`` to enable
   privileged operation. [drybjed]
 
+- Add ``debops.atd`` role, included in the ``common.yml`` playbook by default.
+
+  The ``at`` and ``batch`` commands can be used to schedule delayed jobs using
+  Ansible ``at`` module. [drybjed]
+
 v0.2.7
 ------
 
