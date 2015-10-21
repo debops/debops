@@ -12,14 +12,14 @@
 # .. envvar:: atd_enabled
 #
 # Enable or disable support for ``at`` and ``batch`` commands. Setting this
-# variable to ``False`` will uninstall ``at`` package.
+# variable to ``False`` will uninstall the ``at`` package.
 atd_enabled: True
 
 
 # .. envvar:: atd_default_allow
 #
 # List of default UNIX user accounts which are allowed to use ``at`` and
-# ``batch`` commands. If this list is empty and ``atd_allow`` is also empty, any
+# ``batch`` commands. If this list is empty and :ref:`atd_allow` is also empty, any
 # account is allowed to use these commands.
 atd_default_allow: [ '{{ (ansible_ssh_user
                           if (ansible_ssh_user != "root")
@@ -29,8 +29,8 @@ atd_default_allow: [ '{{ (ansible_ssh_user
 # .. envvar:: atd_allow
 #
 # List of UNIX user accounts which are allowed to use ``at`` and ``batch``. If
-# this list is empty any user can use them as long as ``/etc/at.deny`` file is
-# present, otherwise only superuser is granted access. This list is meant to be
+# this list is empty any user can use them as long as the ``/etc/at.deny`` file is
+# present, otherwise only the superuser is granted access. This list is meant to be
 # used for user accounts on all hosts in the cluster.
 atd_allow: []
 
@@ -38,8 +38,8 @@ atd_allow: []
 # .. envvar:: atd_group_allow
 #
 # List of UNIX user accounts which are allowed to use ``at`` and ``batch``. If
-# this list is empty any user can use them as long as ``/etc/at.deny`` file is
-# present, otherwise only superuser is granted access. This list is meant to be
+# this list is empty any user can use them as long as the ``/etc/at.deny`` file is
+# present, otherwise only the superuser is granted access. This list is meant to be
 # used for user accounts on a group of hosts in the cluster, only one group is
 # supported at a time.
 atd_group_allow: []
@@ -48,8 +48,8 @@ atd_group_allow: []
 # .. envvar:: atd_host_allow
 #
 # List of UNIX user accounts which are allowed to use ``at`` and ``batch``. If
-# this list is empty any user can use them as long as ``/etc/at.deny`` file is
-# present, otherwise only superuser is granted access. This list is meant to be
+# this list is empty any user can use them as long as the ``/etc/at.deny`` file is
+# present, otherwise only the superuser is granted access. This list is meant to be
 # used for user accounts on specific hosts.
 atd_host_allow: []
 
@@ -81,19 +81,19 @@ atd_batch_base: '{{ ansible_processor_vcpus }}'
 
 # .. envvar:: atd_multiplier_min
 #
-# Minimum procentage of CPU load average boundary.
+# Minimum percentage of CPU load average boundary.
 atd_multiplier_min: '80'
 
 
 # .. envvar:: atd_multiplier_max
 #
-# Maximum procentage of CPU load average boundary.
+# Maximum percentage of CPU load average boundary.
 atd_multiplier_max: '100'
 
 
 # .. envvar:: atd_batch_multiplier
 #
-# This variable will be multiplied by number of CPUs available on a host to
+# This variable will be multiplied the by number of CPUs available on a host to
 # modify the final CPU load average which prevents batch job execution.
 atd_batch_multiplier: '{{ ((atd_multiplier_max | int |
                             random(atd_multiplier_min | int)) / 100) }}'
@@ -112,7 +112,7 @@ atd_batch_load: '{{ (ansible_local.atd.batch_load
 
 # .. envvar:: atd_interval_min
 #
-# Mininum time between batch job execution in seconds.
+# Minimum time between batch job execution in seconds.
 atd_interval_min: '30'
 
 
