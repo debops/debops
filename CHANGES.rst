@@ -15,6 +15,8 @@ v0.2.3
 - Ignore comment lines while checking if static network configuration is
   present. [drybjed]
 
+- Updated documentation and fixed spelling. [ypid]
+
 v0.2.2
 ------
 

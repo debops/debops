@@ -14,14 +14,14 @@ them.
 ifupdown_interfaces
 -------------------
 
-This is a list of dicts, each dict defines a network interface. Basic
+This is a list of dicts, each dict defines a network interface. The basic
 configuration is very similar to how ``/etc/network/interfaces`` is configured,
 you can read about it on the Debian Wiki `NetworkConfiguration`_ page.
 
 .. _NetworkConfiguration: https://wiki.debian.org/NetworkConfiguration
 
-Each interface definition requires at least ``iface`` parameter; other
-parameters are (mostly) optional and usually change how basic network interface
+Each interface definition requires at least the ``iface`` parameter. Other
+parameters are (mostly) optional and usually change how the network interface
 is configured. For example, to specify that a given interface is a bridge, you
 need to select a specific type::
 
@@ -48,7 +48,7 @@ List of interface parameters
   Alternative name of the interface type, used in the comments and filename.
 
 ``enabled``
-  Boolean variable (``True``/``False``). If present, interface configuration
+  Boolean variable (``True``/``False``). If present, the interface configuration
   can be generated or not depending on a variable, for example::
 
       - iface: 'br2'
@@ -66,7 +66,7 @@ List of interface parameters
   The value of this parameter specifies what configuration method is used to
   configure given interface. It can be ``dhcp``, ``static``, ``manual`` or
   other methods, depending on what each interface type allows. See
-  ``interfaces(5)`` for list of available methods. If parameter is not
+  ``interfaces(5)`` for a list of available methods. If parameter is not
   specified, ``dhcp`` is used as default for IPv4 network.
 
 ``auto``
@@ -78,7 +78,7 @@ List of interface parameters
   Name or list of names of "subsystems" which can enable the interface, for
   example ``hotplug``. By default, if nothing is specified and interface is not
   configured manually, ``allow-hotplug`` will be added automatically so that
-  ``systemd`` ``ifup@.service`` unit can work correctly.
+  the ``systemd`` ``ifup@.service`` unit can work correctly.
 
 ``addresses``
   List of IPv4 or IPv6 addresses in the ``host/prefix`` format which should be
@@ -86,10 +86,10 @@ List of interface parameters
   addresses, they will be filtered according to the interface "family" - this
   allows you to keep all of the host IP addresses in one list.
 
-  IP addresses will be configured in the order they are listed. If interface is
-  configured as ``static``, first IPv4 address will be the main one, the rest
-  will be added with numbered labels; when interface is configured to get its
-  IP address from DHCP, all IPv4 addresses will be added with numbered labels.
+  The IP addresses will be configured in the order they are listed. If the interface is
+  configured as ``static``, the first IPv4 address will be the main one, the rest
+  will be added with numbered labels. When the interface is configured to get its
+  IP address via DHCP, all IPv4 addresses will be added with numbered labels.
 
 ``gateway``
   IP address of the gateway configured for this interface; only one gateway can
@@ -109,33 +109,33 @@ List of interface parameters
   Name of other network interface which this interface might depend on. Usage
   depends on the interface type.
 
-  In ``bridge`` interfaces, you can specify name or list of interfaces to add
+  In ``bridge`` interfaces, you can specify the name or list of interfaces to add
   to the bridge.
 
-  In ``vlan`` interfaces, you can define name of the interface used as
+  In ``vlan`` interfaces, you can define the name of the interface used as
   ``vlan_raw_device``.
 
-  In ``6to4`` interface, you can specify name of the interface which will be
-  checked for IPv4 address to use to configure IPv6 6to4 tunnel.
+  In ``6to4`` interface, you can specify the name of the interface which will be
+  checked for IPv4 address to use to configure the IPv6 6to4 tunnel.
 
 ``ports`` | ``bridge_ports``
   Alternative names for list of ports to add to a given bridge.
 
 ``device`` | ``vlan_device`` | ``vlan_raw_device``
-  Alternative names for name of the interface to use as VLAN raw device.
+  Alternative names for the name of the interface to use as VLAN raw device.
 
 ``port_present``
   If you specify a name of an interface with this parameter,
   ``debops.ifupdown`` will check if that interface exists (usually these are
-  physical interfaces like ``eth0``). If the interface exists, role will
-  generate the configuration of an interface with this parameter; if it does
-  not, configuration won't be generated.
+  physical interfaces like ``eth0``). If the interface exists, the role will
+  generate the configuration of an interface with this parameter. If it does
+  not, the configuration won't be generated.
 
 ``port_active``
-  Bool variable (``True``/``False``) which specifies the state of
-  ``item.port_present`` interface that you want, either active (``True``, port
+  Boolean variable (``True``/``False``) which specifies the state of
+  the ``item.port_present`` interface that you want, either active (``True``, port
   has a connection) or inactive (``False``, port does not have connection). If
-  port is not in a given state, configuration won't be generated.
+  the port is not in a given state, then the configuration won't be generated.
 
 ``weight``
   Numerical value added at the beginning of the interface configuration file,
@@ -143,31 +143,31 @@ List of interface parameters
 
 ``filename``
   Name of the configuration file to generate. If not specified, an unique
-  configuration file name will ge created, based on interface type, interface
+  configuration file name will created, based on the interface type, interface
   name, label and interface family.
 
 ``delete``
-  If specified and ``True``, file with configuration for a given interface will
+  If specified and ``True``, the configuration file for a given interface will
   be deleted from ``/etc/network/interfaces.d/`` and won't be generated again.
 
 ``force``
-  If specified and ``True`` force the role to generate specified interface,
+  If specified and ``True`` force the role to generate a specified interface,
   even if various conditions say otherwise.
 
 ``auto_ifup``
-  By default when interface configuration changes, ``debops.ifupdown`` role
+  By default when the interface configuration changes, the ``debops.ifupdown`` role
   will automatically stop that interface and start it again. If this parameter
-  is present and ``True``, role will stop the interface and generate a script
+  is present and ``True``, the role will stop the interface and generate a script
   in ``/tmp`` directory which can be used to start it again from another
   Ansible role or manually.
 
 Example interface configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Configuration examples can be found in ``var/`` directory of
+Configuration examples can be found in the ``var/`` directory of the
 ``debops.ifupdown`` role, or `on GitHub`_. If you want to use them as a base
-for your own configuration, add them to ``ifupdown_interfaces`` list in Ansible
-inventory, so they can correctly override the defaults.
+for your own configuration, add them to the ``ifupdown_interfaces`` list in Ansible’s
+inventory, so they can override the defaults.
 
 .. _on GitHub: https://github.com/debops/ansible-ifupdown/tree/master/vars
 
