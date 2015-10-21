@@ -2,7 +2,8 @@
 
 - name: Divert original /etc/network/interfaces
   command: dpkg-divert --quiet --local --divert /etc/network/interfaces.dpkg-divert --rename /etc/network/interfaces
-           creates=/etc/network/interfaces.dpkg-divert
+  args:
+    creates: '/etc/network/interfaces.dpkg-divert'
   register: ifupdown_register_divert
 
 - name: Provide original interfaces temporarily

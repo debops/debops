@@ -17,19 +17,19 @@ Without any additional configuration, ``debops.ifupdown`` tries to recognize
 several different environments and configure them as needed. The parameters
 taken into account are:
 
-- if ``cap_net_admin`` POSIX capability is not present when capabilities are
+- if the ``cap_net_admin`` POSIX capability is not present when capabilities are
   enabled, network configuration is skipped;
 
-- if network configuration is presumed to be "static" (``static`` anywhere in
-  ``/etc/network/interfaces``), network configuration is not performed;
+- if the network configuration is presumed to be "static" (``static`` anywhere in
+  ``/etc/network/interfaces``), the network configuration is not performed;
 
-- if NetworkManager is detected, ``debops.ifupdown`` will not configure default
+- if NetworkManager is detected, ``debops.ifupdown`` will not configure the default
   set of network interfaces, but will work as a role dependency if used in that
   way;
 
-If above conditions are not met, ``debops.ifupdown`` will select one of
-available network configurations in ``vars/`` directory based on condition it
-detects. Basic network configuration is designed to configure one or two
+If the above conditions are not met, ``debops.ifupdown`` will select one of
+the available network configurations in the ``vars/`` directory based on the condition it
+detects. The basic network configuration is designed to configure one or two
 network interfaces (public network and private network), each one with their
 own bridge, getting the required configuration via DHCP requests. If an LXC
 guest is detected, normal network interfaces will be configured instead, also
@@ -38,21 +38,21 @@ using DHCP.
 Example inventory
 -----------------
 
-if you are using official DebOps playbooks, ``debops.ifupdown`` role is part of
+If you are using the official DebOps playbooks, the ``debops.ifupdown`` role is part of
 the ``common.yml`` playbook, which means that it's run by default on all hosts,
-and there's no specific host group set to enabled it.
+and there's no specific host group set to enable it.
 
 By default ``eth0`` and ``eth1`` network interfaces will be configured with
 ``br0`` (public network) and ``br1`` (private network) bridges respectively. If
 on a given host these ports are reversed or different, you can specify the
-correct ones in two variables::
+correct ones using two variables::
 
     ifupdown_external_interface: 'eth0'
     ifupdown_internal_interface: 'eth1'
 
-Bridges will be configured to ask DHCP server for their configuration. You can
-easily add static IP addresses to selected interfaces if needed, for example
-for NAT or virtual IP addresses. To do that, you can use separate dict variable
+The bridges will be configured to ask the DHCP server for their configuration. You can
+easily add static IP addresses to the selected interfaces if needed, for example
+for NAT or virtual IP addresses. To do that, you can use a separate dict variable
 with IP addresses specified in 'host/prefix' format::
 
     ifupdown_map_interface_addresses:
@@ -60,11 +60,11 @@ with IP addresses specified in 'host/prefix' format::
 
 Unfortunately you cannot use variables as keys in above dict, only strings;
 because of that it's better to correctly specify external/internal interfaces
-(which can change) and then configure IP addresses on their respective bridges
+(which can change) and then configure the IP addresses on their respective bridges
 (which should have static names).
 
 If you want to define your own interface layout, you can put it in
-``ifupdown_interfaces`` list. It will override the automatic selection by the
+the ``ifupdown_interfaces`` list. It will override the automatic selection by the
 role, which is very handy when role is used as a dependency::
 
     ifupdown_interfaces:
