@@ -3,10 +3,10 @@
 [![Travis CI](http://img.shields.io/travis/debops/ansible-atd.svg?style=flat)](http://travis-ci.org/debops/ansible-atd) [![test-suite](http://img.shields.io/badge/test--suite-ansible--atd-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-atd/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.atd-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/5670)
 
 The `at` and `batch` commands can be used to compliment `cron` and run
-one-off tasks either at a specified time, or when host CPU utilization is
+one-off tasks either at a specified time, or when the host CPU utilization is
 on a low enough level.
 
-`debops.atd` role can be used to configure `atd` service, including
+The `debops.atd` role can be used to configure `atd` service, including
 randomized load average threshold and randomized time between batch job
 execution, as well as access control to the `at` and `batch` commands by
 the users.

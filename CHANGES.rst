@@ -13,6 +13,8 @@ Great Scott!
   local facts template generation failed. Now in this case Ansible will use
   empty values. [drybjed]
 
+- Quick review and fixed spelling. [ypid]
+
 v0.1.0
 ------
 
