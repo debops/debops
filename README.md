@@ -4,10 +4,10 @@
 
 This role can be used to manage network interface configuration on Debian
 and derivative operating systems. It manages configuration in
-`/etc/network/interfaces` directory and can be used to create different
+the `/etc/network/` directory and can be used to create different
 interface layouts across the cluster.
 
-`debops.ifupdown` role tries to recognize several environments (LXC
+The `debops.ifupdown` role tries to recognize several environments (LXC
 container, OpenVZ container, system with installed NetworkManager) and can
 automatically select one of the suggested configurations. For most
 scenarios, `debops.ifupdown` will try to configure up to two network
@@ -17,13 +17,13 @@ or containers to the public or private network.
 
 In case an advanced configuration is required (more than two network
 interfaces, bonding, modem connections, NAT, etc.), you can easily override
-automatically selected configuration using Ansible inventory. This role can
+the automatically selected configuration using Ansible inventory. This role can
 also be used as a dependency of another role which allows for example to
-easily manage NAT networks using `debops.nat` role.
+easily manage NAT networks using the `debops.subnetwork` role.
 
-Some features of interface declarations require additional packages. These
-are installed with this package unconditionally. For now this is only
-resolvconf, which will start to manage your :file:`/etc/resolv.conf` file.
+Some features of interface declarations require additional packages.
+One of those packages is `resolvconf` (as defined in `ifupdown_packages`)
+which will start to manage your `/etc/resolv.conf` file.
 
 ### Installation
 
