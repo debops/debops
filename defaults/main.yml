@@ -1,74 +1,121 @@
 ---
+# Default variables
+# =================
 
-# ---- Global options ----
+# .. contents:: Sections
+#    :local:
+#
+# ------------------------------------
+#   Global options
+# ------------------------------------
 
-# Enable or disable access to local DNS from upstream networks. You can publish
-# your subdomain in public DNS by delegating it in your zone configuration.
+# .. envvar:: dnsmasq_public_dns
+#
+# Enable or disable access to the local DNS from upstream networks. You can publish
+# your subdomain in the public DNS by delegating it in your zone configuration.
 dnsmasq_public_dns: False
 
-# Enable or disable DHCPv4 support
+
+# .. envvar:: dnsmasq_dhcpv4
+#
+# Enable or disable DHCPv4 support.
 dnsmasq_dhcpv4: True
 
-# Enable or disable DHCPv6 support (router support is required)
+
+# .. envvar:: dnsmasq_dhcpv6
+#
+# Enable or disable DHCPv6 support (router support is required).
 dnsmasq_dhcpv6: True
 
+
+# .. envvar:: dnsmasq_router
+#
 # Enable or disable local router support (no routing information is sent to
-# hosts, DHCPv6 doesn't work)
-# True means to announce the machine where dnsmasq is running as default gateway.
+# hosts, DHCPv6 doesn't work).
+# True means to announce the machine where dnsmasq is running as default
+# gateway unless the gateway was explicitly given in :ref:`dnsmasq_interfaces`.
 # False means to not announce any default route.
 dnsmasq_router: True
 
-# Enable or disable TFTP server
+
+# .. envvar:: dnsmasq_tftp
+#
+# Enable or disable TFTP server.
 dnsmasq_tftp: True
 
-# Bind to and listen only on specified interfaces
+
+# .. envvar:: dnsmasq_bind_interfaces
+#
+# Bind to and listen only on specified interfaces.
 dnsmasq_bind_interfaces: True
 
-# Block private IP addresses coming from upstream nameservers
+
+# .. envvar:: dnsmasq_stop_dns_rebind
+#
+# Block private IP addresses coming from upstream nameservers.
 dnsmasq_stop_dns_rebind: True
 
-# Don't forward reverse DNS lookups for private IP addresses
+
+# .. envvar:: dnsmasq_bogus_priv
+#
+# Don't forward reverse DNS lookups for private IP addresses.
 dnsmasq_bogus_priv: True
 
 
-# ---- Network interface options ----
+# ------------------------------------
+#   Network interface options
+# ------------------------------------
 
+# .. envvar:: dnsmasq_upstream_interfaces
+#
 # List of network interfaces that are assumed to be upstream networks, if
-# present on the host
+# present on the host.
 dnsmasq_upstream_interfaces: [ 'br0', 'br1', 'eth0', 'eth1' ]
 
+
+# .. envvar:: dnsmasq_no_dhcp_interfaces
+#
 # List of network interfaces where dnsmasq should not provide DHCP or RA.
 # See https://github.com/debops/ansible-dnsmasq/issues/13 for more information.
 dnsmasq_no_dhcp_interfaces: []
 
-# Name of the IPv4 gateway interface
+
+# .. envvar:: dnsmasq_ipv4_gateway
+#
+# Name of the IPv4 gateway interface.
 dnsmasq_ipv4_gateway: '{{ ansible_default_ipv4.interface | default("") }}'
 
-# Name of the IPv6 gateway interface
+
+# .. envvar:: dnsmasq_ipv6_gateway
+#
+# Name of the IPv6 gateway interface.
 dnsmasq_ipv6_gateway: '{{ ansible_default_ipv6.interface | default("") }}'
 
-# List of internal interfaces on which dnsmasq will configure its services
+
+# .. envvar:: dnsmasq_interfaces
+#
+# List of internal interfaces on which dnsmasq will configure its services.
 dnsmasq_interfaces:
 
-    # Name of the interface
+    # Name of the interface.
   - interface: 'br2'
 
-    # DNS A record of the interface
+    # DNS A record of the interface.
     name: '{{ ansible_hostname }}'
 
-    # Optional DNS CNAME records of the interface
+    # Optional DNS CNAME records of the interface.
     aliases: [ 'gw', 'router', 'gateway' ]
 
-    # First IP address in the DHCP range (index)
+    # First IP address in the DHCP range (index).
     dhcp_range_start: '10'
 
-    # Last IP address in the DHCP range (index)
+    # Last IP address in the DHCP range (index).
     dhcp_range_end: '-10'
 
-    # DHCP lease lifetime
+    # DHCP lease lifetime.
     dhcp_lease: '24h'
 
-    # DHCPv6 options configured on this interface
+    # DHCPv6 options configured on this interface.
     ipv6_mode: 'ra-names,ra-stateless,slaac'
 
     # Address which dnsmasq will announce as default gateway via DHCPv4.
@@ -77,43 +124,77 @@ dnsmasq_interfaces:
     # gateway: '{{ ansible_default_ipv4.gateway }}'
 
 
-# ---- DNS options ----
+# ------------------------------------
+#   DNS options
+# ------------------------------------
 
-# DNS domain configured by dnsmasq for all local networks
+# .. envvar:: dnsmasq_domain
+#
+# DNS domain configured by dnsmasq for all local networks.
 dnsmasq_domain: '{{ ansible_fqdn }}'
 
-# Set DNS MX record of the main domain to dnsmasq host; set to False to disable
+
+# .. envvar:: dnsmasq_domain_mx
+#
+# Set DNS MX record of the main domain to dnsmasq host. Set to False to
+# disable.
 dnsmasq_domain_mx: '{{ ansible_fqdn }}'
 
-# Alternative '/etc/hosts' read by dnsmasq, set to False to use default
-# '/etc/hosts' file
+
+# .. envvar:: dnsmasq_etc_hosts
+#
+# Alternative ``/etc/hosts`` read by dnsmasq, set to False to use the default
+# `/etc/hosts`` file.
 dnsmasq_etc_hosts: '/etc/hosts.dnsmasq'
 
-# List of additional search domains. Set 'dnsmasq_search' to False
+
+# .. envvar:: dnsmasq_search
+#
+# List of additional search domains. Set ref:`dnsmasq_search` to False
 # to completely disable this functionality.
 dnsmasq_search: [ '{{ dnsmasq_domain }}', '{{ ansible_domain }}' ]
 
-# Hash of DNS CNAME records to configure for hosts found in local DNS
-# Entries should be specified without the domain suffix
+
+# .. envvar:: dnsmasq_cname
+#
+# Hash of DNS CNAME records to configure for hosts found in local DNS.
+# Entries should be specified without the domain suffix.
+# Example::
+#
+#     dnsmasq_cname:
+#       'host1': 'cname1'
+#       'host2': [ 'list', 'of', 'aliases' ]
+#
 dnsmasq_cname: {}
-  #'host1': 'cname1'
-  #'host2': [ 'list', 'of', 'aliases' ]
 
 
-# ---- TFTP options ----
+# ------------------------------------
+#   TFTP options
+# ------------------------------------
 
-# Path to TFTP root directory
+# .. envvar:: dnsmasq_tftp_root
+#
+# Path to TFTP root directory.
 dnsmasq_tftp_root: '/srv/tftp'
 
-# BOOTP command passed to clients (see dhcp-boot in dnsmasq(8)
+
+# .. envvar:: dnsmasq_tftp_boot
+#
+# BOOTP command passed to clients (see dhcp-boot in dnsmasq(8)).
 dnsmasq_tftp_boot: 'menu.ipxe'
 
-# Enable iPXE support
+
+# .. envvar:: dnsmasq_tftp_ipxe
+#
+# Enable iPXE support.
 dnsmasq_tftp_ipxe: True
 
 
-# ---- Other options ----
+# ------------------------------------
+#   Other options
+# ------------------------------------
 
+# .. envvar:: dnsmasq_options
+#
 # Additional options passed as a YAML text block
 dnsmasq_options: ''
-
