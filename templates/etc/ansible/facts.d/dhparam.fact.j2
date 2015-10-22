@@ -1,0 +1,26 @@
+{% set dhparam_tpl_bits = dhparam_bits %}
+{% set dhparam_tpl_default = dhparam_path + "/" + dhparam_default_set %}
+{% set dhparam_tpl_default_length = dhparam_default_length %}
+{% set dhparam_tpl_set_prefix = dhparam_set_prefix %}
+{% set dhparam_tpl_sets = [] %}
+{% for number in range(0, dhparam_sets|int) %}
+{%   set _ = dhparam_tpl_sets.append(number) %}
+{% endfor %}
+{% set dhparam_tpl_hooks = dhparam_hook_path %}
+{% set dhparam_tpl_library = dhparam_library %}
+{% set dhparam_tpl_path = dhparam_path %}
+{% set dhparam_tpl_params = dhparam_path + "/params" %}
+{
+"bits": {{ dhparam_tpl_bits | to_nice_json }},
+"default": "{{ dhparam_tpl_default }}",
+"default_length": "{{ dhparam_tpl_default_length }}",
+"set_prefix": "{{ dhparam_tpl_set_prefix }}",
+"sets": {{ dhparam_tpl_sets | to_nice_json }},
+{% for number in dhparam_tpl_sets %}
+"{{ dhparam_set_prefix + number | string }}": "{{ dhparam_tpl_path + '/' + dhparam_set_prefix + number | string }}",
+{% endfor %}
+"hooks": "{{ dhparam_tpl_hooks }}",
+"library": "{{ dhparam_tpl_library }}",
+"path": "{{ dhparam_tpl_path }}",
+"params": "{{ dhparam_tpl_params }}"
+}
