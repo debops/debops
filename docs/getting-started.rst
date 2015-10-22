@@ -1,8 +1,8 @@
 Getting started
 ===============
 
-By default all you need to do to use ``debops.secret`` role is include it
-in your common playbook at the beginning::
+By default all you need to do to use the ``debops.secret`` role is to
+include it in your common playbook at the beginning::
 
     ---
     - hosts: all
@@ -10,14 +10,14 @@ in your common playbook at the beginning::
         - role: debops.secret
 
 That will allow all your roles in this and subsequent plays to access
-``secret`` variable and use it consistently.
+the ``secret`` variable and use it consistently.
 
 Unfortunately, it doesn't work well when you use Ansible with ``--tags``
 parameter, which might omit your common play, thus not setting ``secret*``
 variables at all and changing your passwords to empty values, modifying config
 files incorrectly, basically not honoring the idempotency principle.
 
-Solution to that problem is to either include ``debops.secret`` role in all
+The solution to that problem is to either include ``debops.secret`` role in all
 your plays (similar to the one above), or include it as a dependency in roles
 that require it::
 

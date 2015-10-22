@@ -38,19 +38,19 @@ secrets, directory layout will be slightly different::
             |
             `-- secret/               <- plaintext secrets
 
-While project is "at rest", secrets are encrypted inside EncFS directory, and
-they don't show up in the ``secret/`` directory. When you use ``debops`` script to
-run the playbook, ``padlock`` script unlocks the encrypted directory and secrets
-are available again in ``secret/`` directory for ``ansible-playbook`` to use.
+While the project is "at rest", secrets are encrypted inside EncFS directory, and
+they don't show up in the ``secret/`` directory. When you use the ``debops`` script to
+run the playbook, the ``padlock`` script unlocks the encrypted directory and secrets
+are available again in the ``secret/`` directory for ``ansible-playbook`` to use.
 
 
 How to use LDAP variables
 -------------------------
 
-In `main DebOps playbook repository`_ you can find Ansible modules
+In the `main DebOps playbook repository`_ you can find the Ansible modules
 ``ldap_attr`` and ``ldap_entry``. They can be used to access and control LDAP
 servers. In various DebOps roles, they are used to perform certain tasks in
-shared environment.
+a shared environment.
 
 Some of the above tasks require admin privileges on the LDAP server. To provide
 access to it in a secure manner, ``debops.secret`` role keeps a set of
@@ -100,7 +100,7 @@ playbook, either as a role, or a role dependency. You can change the values of
 ``secret_ldap_*`` variables in inventory as you need.
 
 If you use `debops.slapd`_ role to configure an LDAP server, it will
-automatically copy the admin accout password to a location defined in
+automatically copy the admin account password to a location defined in
 ``secret_ldap_admin_password`` variable to be accessed by the ``debops.secret``
 role as needed.
 
