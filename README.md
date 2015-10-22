@@ -4,8 +4,8 @@
 
 This role installs and manages [Postfix](http://postfix.org/), an SMTP server.
 
-`debops.postfix` role is designed to manage Postfix on different hosts in
-a cluster, with different "capabilities". At the moment role can configure
+The `debops.postfix` role is designed to manage Postfix on different hosts in
+a cluster, with different "capabilities". At the moment the role can configure
 Postfix to act as:
 
 * a null client: Postfix sends all mail to another system specified
@@ -20,8 +20,8 @@ Postfix to act as:
   greylisting and optional RBL checking;
 * an outgoing SMTP client: Postfix will relay outgoing mail messages to
   specified remote MX hosts, you can optionally enable SMTP client
-  authentication, passwords will be stored separate from the inventory in
-  `secret/` directory (see `debops.secret` role). Sender dependent
+  authentication, the passwords will be stored separate from the inventory in
+  the `secret/` directory (see `debops.secret` role). Sender dependent
   authentication is also available.
 
 More "capabilities" like user authentication, support for virtual mail,
@@ -29,8 +29,8 @@ spam/virus filtering and others will be implemented in the future.
 
 This role can also be used as a dependency of other roles which then can
 enable more features of the Postfix SMTP server for their own use. For
-example, `debops.mailman` role enables mail forwarding to the configured
-mailing lists, and `debops.smstools` role uses Postfix as mail-SMS gateway.
+example, the `debops.mailman` role enables mail forwarding to the configured
+mailing lists, and the `debops.smstools` role uses Postfix as mail-SMS gateway.
 
 ### Installation
 
