@@ -29,8 +29,8 @@ dhparam_library: '{{ dhparam_source_library }}'
 #
 # Default symlinks will point to a specific Diffie-Hellman parameter file named
 # ``dh<length>.pem``. This variable specifies which ``<length>`` value will be
-# used, which by default is the first value from the list of DH param sizes to
-# generate.
+# used, which by default is the first value from the list of DH parameter sizes
+# to generate.
 dhparam_default_length: '{{ dhparam_bits[0] }}'
 
 
@@ -66,9 +66,9 @@ dhparam_set_prefix: 'set'
 
 # .. envvar:: dhparam_source_path
 #
-# Path on the Ansible Controller in ``secret/`` directory where initial set of
-# Diffie-Hellman parameters is stored. See ``debops.secret`` role for more
-# details.
+# Path on the Ansible Controller in the ``secret/`` directory where the initial
+# set of Diffie-Hellman parameters is stored. See ``debops.secret`` role for
+# more details.
 dhparam_source_path: '{{ secret + "/dhparam/params" }}'
 
 
@@ -125,7 +125,7 @@ dhparam_hook_path: '{{ dhparam_path + "/hooks.d" }}'
 #
 # Schedule a background job on the first configuration of ``debops.dhparam`` on
 # a particular host to re-generate the DH parameters? It will only be done if
-# ``debops.atd`` role is enabled on the host. If disabled, hosts will use the
+# the ``debops.atd`` role is enabled on the host. If disabled, hosts will use the
 # default DH parameters seeded from the Ansible Controller.
 dhparam_generate_init: True
 
@@ -140,7 +140,7 @@ dhparam_generate_init_units: 'minutes'
 # .. envvar:: dhparam_generate_init_count
 #
 # Unit count of the initial DH re-generation. By default Diffie-Hellman
-# parameters will be re-generated about 20 minutes after initial Ansible run,
+# parameters will be re-generated about 20 minutes after the initial Ansible run,
 # depending on system CPU load.
 dhparam_generate_init_count: '20'
 

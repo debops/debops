@@ -8,3 +8,4 @@ v0.1.0
 
 - Initial release. [drybjed]
 
+- Reviewed and fixed spelling. [ypid]

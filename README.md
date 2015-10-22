@@ -4,11 +4,11 @@
 
 [Diffie-Hellman Key Exchange][] is a way to securely share encryption keys
 publicly between two parties. It's used in TLS and SSL connections to
-provide [Perfect Forward Secrecy][]. Unfortunately, default DH parameters
-distributed with applications are suspectible to a [downgrade attack][].
+provide [Perfect Forward Secrecy][]. Unfortunately, the default DH parameters
+distributed with applications are susceptible to a [downgrade attack][].
 
 The `debops.dhparam` Ansible role will generate a set of strong
-Diffie-Hellman parameters on Ansible Controller, which will be preseeded on
+Diffie-Hellman parameters on the Ansible Controller, which will be preseeded on
 remote hosts, and will be ready to use by other applications. A separate
 script can then be used on remote hosts in the background to generate new
 random DH parameters, either once or in regular intervals.
