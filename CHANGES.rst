@@ -1,13 +1,6 @@
 Changelog
 =========
 
-v0.1.2
-------
-
-*Unreleased*
-
-- Allow to run the role in Ansible check mode. [ypid]
-
 v0.1.1
 ------
 
