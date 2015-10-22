@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) dhparam
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-dhparam.svg?style=flat)](http://travis-ci.org/debops/ansible-dhparam) [![test-suite](http://img.shields.io/badge/test--suite-ansible--dhparam-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-dhparam/) 
+[![Travis CI](http://img.shields.io/travis/debops/ansible-dhparam.svg?style=flat)](http://travis-ci.org/debops/ansible-dhparam) [![test-suite](http://img.shields.io/badge/test--suite-ansible--dhparam-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-dhparam/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.dhparam-660198.svg?style=flat)](https://galaxy.ansible.com/detail#/role/5691)
 
 [Diffie-Hellman Key Exchange][] is a way to securely share encryption keys
 publicly between two parties. It's used in TLS and SSL connections to
@@ -16,6 +16,17 @@ random DH parameters, either once or in regular intervals.
 [Diffie-Hellman Key Exchange]: https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange
 [Perfect Forward Secrecy]: https://en.wikipedia.org/wiki/Forward_secrecy
 [downgrade attack]: https://weakdh.org/
+
+### Installation
+
+This role requires at least Ansible `v1.9.0`. To install it, run:
+
+    ansible-galaxy install debops.dhparam
+
+### Documentation
+
+More information about `debops.dhparam` can be found in the
+[official debops.dhparam documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-dhparam/docs/).
 
 
 ### Role dependencies
