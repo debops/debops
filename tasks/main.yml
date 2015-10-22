@@ -7,21 +7,29 @@
     creates: '/etc/default/grub.dpkg-divert'
 
 - name: Get default kernel parameters
-  shell: . /etc/default/grub.dpkg-divert; echo $GRUB_CMDLINE_LINUX_DEFAULT | sed -e 's,\s\+,\n,g'
+  shell: . "{{ item }}"; echo $GRUB_CMDLINE_LINUX_DEFAULT | sed -e 's,\s\+,\n,g'
   register: grub_register_default_cmdline
   changed_when: False
+  always_run: yes
   when: grub_save_options
+  with_first_found:
+    - '/etc/default/grub.dpkg-divert'
+    - '/etc/default/grub'
 
 - name: Get old kernel parameters
-  shell: . /etc/default/grub.dpkg-divert; echo $GRUB_CMDLINE_LINUX | sed -e 's,\s\+,\n,g'
+  shell: . "{{ item }}"; echo $GRUB_CMDLINE_LINUX | sed -e 's,\s\+,\n,g'
   register: grub_register_old_cmdline
   changed_when: False
+  always_run: yes
   when: grub_save_options
+  with_first_found:
+    - '/etc/default/grub.dpkg-divert'
+    - '/etc/default/grub'
 
 - name: Default kernel parameters
   set_fact:
-    grub_fact_default_kernel_parameters: '{{ grub_register_default_cmdline.stdout_lines }}'
-    grub_fact_old_kernel_parameters:     '{{ grub_register_old_cmdline.stdout_lines }}'
+    grub_fact_default_kernel_parameters: '{{ grub_register_default_cmdline.results[0].stdout_lines }}'
+    grub_fact_old_kernel_parameters:     '{{ grub_register_old_cmdline.results[0].stdout_lines }}'
   when: grub_save_options
 
 - name: Configure /etc/default/grub
