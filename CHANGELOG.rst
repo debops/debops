@@ -23,6 +23,9 @@ v0.2.8
   The ``at`` and ``batch`` commands can be used to schedule delayed jobs using
   Ansible ``at`` module. [drybjed]
 
+- Add ``debops.dhparam`` role, included in the ``common.yml`` playbook by
+  default. [drybjed]
+
 v0.2.7
 ------
 
