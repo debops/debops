@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.4.4
+------
+
+*Unreleased*
+
+- Fix issue with ``bootstrap-ansible.sh`` script not able to install latest
+  Ansible stable version, make the process more verbose and don't remove the
+  temporary directory by default. [drybjed]
+
+- Update Ansible Galaxy role links in ``ansigenome`` templates. [drybjed]
+
 v0.4.3
 ------
 
