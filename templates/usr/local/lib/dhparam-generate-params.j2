@@ -30,7 +30,7 @@ log_message () {
   fi
 }
 
-if [ "${command}" = "run" ] ; then
+if [ "${command}" == "run" ] ; then
 
   if [ -f ${pidfile_run} ] ; then
     log_message DH parameter generation already in progress managed by PID $(cat ${pidfile_run}), exiting
@@ -45,7 +45,7 @@ if [ "${command}" = "run" ] ; then
     exit 0
   fi
 
-elif [ "${command}" = "schedule" ] ; then
+elif [ "${command}" == "schedule" ] ; then
 
   if [ -f ${pidfile_run} ] ; then
     log_message DH parameter generation found at PID $(cat ${pidfile_run}), aborting scheduler
@@ -96,9 +96,9 @@ generate_params () {
       log_message Generating new Diffie-Hellman parameters in $(basename ${set}) with ${length} bits
 
       dhparam_file="${dhparam_prefix}${length}${dhparam_suffix}"
-      if [ "${dhparam_library}" = "gnutls" ] ; then
+      if [ "${dhparam_library}" == "gnutls" ] ; then
         certtool --generate-dh-params --outfile ${dhparam_file}.tmp --bits ${length} > /dev/null 2>&1 && mv ${dhparam_file}.tmp ${dhparam_file}
-      elif [ "${dhparam_library}" = "openssl" ] ; then
+      elif [ "${dhparam_library}" == "openssl" ] ; then
         openssl dhparam -out ${dhparam_file}.tmp ${length} > /dev/null 2>&1 && mv ${dhparam_file}.tmp ${dhparam_file}
       fi
 
