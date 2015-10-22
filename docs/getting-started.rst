@@ -7,36 +7,36 @@ Getting started
 Initial configuration
 ---------------------
 
-On the first run of ``debops.dhparam`` role, Ansible will generate a set of
+On the first run of the ``debops.dhparam`` role, Ansible will generate a set of
 Diffie-Hellman parameters (one or more, depending on what key sizes are
-configured) and store them on Ansible Controller, in ``secret/`` directory
-managed by ``debops.secret`` role. This set of DH parameters will be used to
+configured) and store them on the Ansible Controller, in ``secret/`` directory
+managed by the ``debops.secret`` role. This set of DH parameters will be used to
 "preseed" the remote hosts during initial Ansible playbook run to make
 configuration of new hosts faster without the need to wait for new DH
 parameters to be generated, which might take some time.
 
-If ``atd`` service is installed and configured on remote host (using
-``debops.atd`` role), and parameter initialization is enabled, role on first
+If ``atd`` service is installed and configured on the remote host (using
+the ``debops.atd`` role), and parameter initialization is enabled, the role on first
 run will create a batch job which will regenerate the DH parameters on the
 remote hosts to make them unique. This will be done in the background with
-lower process priority to minimalize impact on the host performance. This way,
-preseeded DH parameters can be used right away, and when new parameters are
+lower process priority to minimize impact on the host performance. This way,
+the preseeded DH parameters can be used right away, and when new parameters are
 ready, they will automatically replace the preseeded ones.
 
 Periodically (by default monthly) DH generator script will be run again, to
-regenerate the DH parameters - this can be disabled as well if needed.
+regenerate the DH parameters – this can be disabled as well if needed.
 
 Configuration of DH parameters in applications
 ----------------------------------------------
 
 Diffie-Hellman parameters managed by ``debops.dhparam`` can be found in
-``/etc/pki/dhparam/`` directory. By default, role creates 1 set of parameters,
+the ``/etc/pki/dhparam/`` directory. By default, the role creates one set of parameters,
 ``set0`` with ``3072`` bit parameter length. You can increase the number of
-sets, to use different DH parameters in different applications - each one will
+sets, to use different DH parameters in different applications – each one will
 be automatically preseeded by the pre-generated parameters, and managed by
 regeneration script.
 
-An example usage in ``nginx`` configuration file::
+An example usage in a ``nginx`` configuration file::
 
     # Configuration in nginx server using a symlink
     ssl_dhparam /etc/pki/dhparam/set0
@@ -64,9 +64,9 @@ parameters correctly using Ansible variables. These facts can be found in
 Those two variables allow to easily change the default set of DH parameters to
 a different one, or specify the path to DH parameters file directly. The
 ``d()`` pattern in the first variable is a short version of ``default()`` Jinja
-filter and ensures that if ``debops.dhparam`` role was not configured, Ansible
+filter and ensures that if the ``debops.dhparam`` role was not configured, Ansible
 will not stop execution and instead will template an empty ``role_dhparam``
-variable which role can check and disable DH parameter support if necessary.
+variable which this role can check and disable DH parameter support if necessary.
 
 Because the configuration is passed using local Ansible facts,
 ``debops.dhparam`` role doesn't need to be used as a role dependency.
@@ -74,14 +74,14 @@ Because the configuration is passed using local Ansible facts,
 If any special operations have to be done when DH parameters file is replaced,
 you can create scripts in ``/etc/pki/dhparam/hooks.d/`` directory
 (or ``'{{ ansible_local.dhparam.hooks }}'``). These hooks will be executed
-using ``run-parts`` command after all DH parameters have been regenerated.
+using the ``run-parts`` command after all DH parameters have been regenerated.
 
 Example inventory
 -----------------
 
-In DebOps, ``debops.dhparam`` role is included in ``common.yml`` playbook and
+In DebOps, the ``debops.dhparam`` role is included in the ``common.yml`` playbook and
 is run automatically on all of the managed hosts. You don't need to
-specifically enable it in Ansible inventory.
+specifically enable it in Ansible's inventory.
 
 Example playbook
 ----------------
