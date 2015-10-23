@@ -7,15 +7,17 @@
     creates: '/etc/default/grub.dpkg-divert'
 
 - name: Get default kernel parameters
-  shell: . /etc/default/grub.dpkg-divert; echo $GRUB_CMDLINE_LINUX_DEFAULT | sed -e 's,\s\+,\n,g'
+  shell: test -f /etc/default/grub.dpkg-divert && . /etc/default/grub.dpkg-divert || . /etc/default/grub ; echo $GRUB_CMDLINE_LINUX_DEFAULT | tr " " "\n"
   register: grub_register_default_cmdline
   changed_when: False
+  always_run: True
   when: grub_save_options
 
 - name: Get old kernel parameters
-  shell: . /etc/default/grub.dpkg-divert; echo $GRUB_CMDLINE_LINUX | sed -e 's,\s\+,\n,g'
+  shell: test -f /etc/default/grub.dpkg-divert && . /etc/default/grub.dpkg-divert || . /etc/default/grub ; echo $GRUB_CMDLINE_LINUX | tr " " "\n"
   register: grub_register_old_cmdline
   changed_when: False
+  always_run: True
   when: grub_save_options
 
 - name: Default kernel parameters
