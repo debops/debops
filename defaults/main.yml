@@ -33,6 +33,16 @@ console_extra_packages: [ 'ncurses-term', 'vim', 'mc', 'ranger', 'tmux', 'zsh', 
                           'less', 'file', 'psmisc', 'iftop', 'nload', 'lsof', 'nmon',
                           'mtr-tiny', 'tree' ]
 
+# List of packages to install depending on a condition
+console_conditional_packages:
+
+  # Install NFS support when remote filesystems are configured
+  - [ '{{ "nfs-common"
+          if (console_mounts_nfs|d() or
+              console_group_mounts_nfs|d() or
+              console_host_mounts_nfs|d())
+          else [] }}' ]
+
 # Custom lists of packages to install
 console_packages: []
 console_group_packages: []

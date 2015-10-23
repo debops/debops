@@ -40,3 +40,5 @@ v0.1.0
 - Remove the ``at`` package from list of installed packages, it's now managed
   by separate ``debops.atd`` role. [drybjed]
 
+- Create list of conditionally installed packages. [drybjed]
+
