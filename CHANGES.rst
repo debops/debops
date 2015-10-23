@@ -37,3 +37,6 @@ v0.1.0
 
 - Protect the Tab characters in ``lineinfile`` module. [drybjed]
 
+- Remove the ``at`` package from list of installed packages, it's now managed
+  by separate ``debops.atd`` role. [drybjed]
+
