@@ -43,6 +43,13 @@ console_conditional_packages:
               console_host_mounts_nfs|d())
           else [] }}' ]
 
+  # Install PAM systemd support, which is not included in standard Debian
+  # install, but it's recommended to separate user sessions in their own cgroups
+  - [ '{{ "libpam-systemd"
+          if (ansible_local|d() and ansible_local.init|d() and
+              ansible_local.init == "systemd")
+          else [] }}' ]
+
 # Custom lists of packages to install
 console_packages: []
 console_group_packages: []

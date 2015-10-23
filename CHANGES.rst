@@ -42,3 +42,8 @@ v0.1.0
 
 - Create list of conditionally installed packages. [drybjed]
 
+- Install ``libpam-systemd`` on hosts managed by ``systemd`` init. This
+  provides better support for user sessions which will be moved to their own
+  separate cgroups. Users are also able to create their own ``systemd``
+  services, timers, and other units. [drybjed]
+
