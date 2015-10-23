@@ -50,6 +50,11 @@ console_conditional_packages:
               ansible_local.init == "systemd")
           else [] }}' ]
 
+  # Install 'sysnews' when news support is enabled
+  - [ '{{ "sysnews"
+          if (console_sysnews|d() and console_sysnews|bool)
+          else [] }}' ]
+
 # Custom lists of packages to install
 console_packages: []
 console_group_packages: []
@@ -218,4 +223,29 @@ console_host_mounts: []
 console_mounts_nfs: []
 console_group_mounts_nfs: []
 console_host_mounts_nfs: []
+
+
+# ---- sysnews support ----
+
+# Install ``sysnews`` package to present system-related news to users on log
+# in.
+console_sysnews: False
+
+# Add ``sysnews`` support in ``/etc/profile.d/`` so it's executed conditionally
+# on user login.
+console_sysnews_global: True
+
+# Accounts with UID bigger than this variable's value will be shown the news on
+# interactive login.
+console_sysnews_min_uid: '500'
+
+# Dict variable with news entries. Each key is name of the news file, and
+# a value should be a YAML text block with the message stored in the file.
+# Example:
+#
+#   console_sysnews_entries:
+#     'WELCOME': |
+#       Welcome on the {{ ansible_fqdn }} server!
+#
+console_sysnews_entries: {}
 

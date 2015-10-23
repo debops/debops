@@ -47,3 +47,5 @@ v0.1.0
   separate cgroups. Users are also able to create their own ``systemd``
   services, timers, and other units. [drybjed]
 
+- Add support for ``sysnews`` package, useful on multiuser systems. [drybjed]
+
