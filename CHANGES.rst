@@ -9,6 +9,8 @@ v0.1.2
 - Change the way role gathers default and old kernel parameters to avoid issues
   with ``sed`` in Ansible v2. [drybjed]
 
+- Make sure that role works in Ansible check mode. [drybjed]
+
 v0.1.1
 ------
 
