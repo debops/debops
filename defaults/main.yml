@@ -334,19 +334,23 @@ lxc_default_template: 'debops'
 # .. envvar:: lxc_containers
 #
 # List of LXC containers managed by Ansible.
+# Examples::
+#
+#     lxc_containers:
+#
+#       # Simple container, not started by default, autostart on boot enabled
+#       - name: 'example-container'
+
+#       # Simple container started automatically
+#       - name: 'container'
+#         state: 'started'
+
+#       # Debian container, started automatically, network behind NAT
+#       - name: 'natted-container'
+#         config: True
+#         network: 'nat'
+#         state: 'started'
+#         template: 'debian'
+#
 lxc_containers: []
-
-  # Simple container, not started by default, autostart on boot enabled
-  #- name: 'example-container'
-
-  # Simple container started automatically
-  #- name: 'container'
-  #  state: 'started'
-
-  # Debian container, started automatically, network behind NAT
-  #- name: 'natted-container'
-  #  config: True
-  #  network: 'nat'
-  #  state: 'started'
-  #  template: 'debian'
 
