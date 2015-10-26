@@ -10,7 +10,7 @@
     path: '{{ secret + "/reprepro/" + ansible_domain + "/snapshots/" + ansible_fqdn + "/" + reprepro_distribution | lower + "/gnupg.tar" }}'
   register: reprepro_register_gpg_snapshot
   delegate_to: 'localhost'
-  sudo: False
+  become: False
 
 - name: Restore GnuPG snapshots
   unarchive:
@@ -46,9 +46,9 @@
 - name: Generate automatic signing key
   command: gpg --batch --gen-key .gnupg-key-template chdir=~
            creates=~/.gnupg/secring.gpg
-  sudo_user: '{{ reprepro_user }}'
+  become_user: '{{ reprepro_user }}'
 
 - name: Export automatic signing key
   shell: 'gpg --armor --export "{{ reprepro_gpg_email }}" > {{ reprepro_repository_path + "/" + reprepro_distribution | lower + "/" + reprepro_domains[0] + ".asc" }} creates={{ reprepro_repository_path + "/" + reprepro_distribution | lower + "/" + reprepro_domains[0] + ".asc" }}'
-  sudo_user: '{{ reprepro_user }}'
+  become_user: '{{ reprepro_user }}'
 

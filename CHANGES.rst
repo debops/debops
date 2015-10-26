@@ -1,6 +1,20 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2015-10-26*
+
+- All dictionary lookups in different lists are wrapped in ``d()`` default
+  value to make sure that when a dictionary key does not exist, the list is
+  still correctly templated and used in Ansible v2. [drybjed]
+
+- Package installation task won't automatically upgrade the installed packages.
+  [drybjed]
+
+- Convert all Ansible tasks from ``sudo`` to ``become``. [drybjed]
+
 v0.1.1
 ------
 
