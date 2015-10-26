@@ -3,7 +3,9 @@
 - name: Create or update archive of ~/.gnupg directory
   shell: tar uvpf gnupg.tar .gnupg && tar dpf gnupg.tar .gnupg || (
          tar cvpf gnupg.tar .gnupg) ; chmod 0600 ~/gnupg.tar chdir=~
-  sudo_user: '{{ reprepro_user }}'
+  args:
+    warn: False
+  become_user: '{{ reprepro_user }}'
   changed_when: False
 
 - name: Upload ~/.gnupg archive to Ansible Controller

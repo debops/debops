@@ -13,6 +13,8 @@ v0.1.2
 - Package installation task won't automatically upgrade the installed packages.
   [drybjed]
 
+- Convert all Ansible tasks from ``sudo`` to ``become``. [drybjed]
+
 v0.1.1
 ------
 
