@@ -101,12 +101,12 @@ reprepro_distributions: '{{ reprepro_distributions_local +
 reprepro_distributions_local:
 
   - Distribution: 'debian'
-    Description: '{{ reprepro_origin }} staging repository for Debian {{ reprepro_debian_previous[reprepro_distribution_release] | capitalize }}'
+    Description: '{{ reprepro_origin }} staging repository for Debian {{ reprepro_debian_previous[reprepro_distribution_release]|d() | capitalize }}'
     Origin: '{{ reprepro_origin }}'
-    Label: '{{ reprepro_debian_previous[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
-    Codename: '{{ reprepro_debian_previous[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
-    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]] | join(" ") }}'
-    Suite: '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]] + "-" + reprepro_origin | lower + "-staging" }}'
+    Label: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Codename: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() + "-" + reprepro_origin | lower + "-staging" }}'
     Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
@@ -122,8 +122,8 @@ reprepro_distributions_local:
     Origin: '{{ reprepro_origin }}'
     Label: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
     Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
-    Suite: '{{ reprepro_debian_suites[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
-    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release] | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release]|d() | join(" ") }}'
     Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
@@ -135,12 +135,12 @@ reprepro_distributions_local:
       {% endif %}
 
   - Distribution: 'debian'
-    Description: '{{ reprepro_origin }} staging repository for Debian {{ reprepro_debian_next[reprepro_distribution_release] | capitalize }}'
+    Description: '{{ reprepro_origin }} staging repository for Debian {{ reprepro_debian_next[reprepro_distribution_release]|d() | capitalize }}'
     Origin: '{{ reprepro_origin }}'
-    Label: '{{ reprepro_debian_next[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
-    Codename: '{{ reprepro_debian_next[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
-    Suite: '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]] + "-" + reprepro_origin | lower + "-staging" }}'
-    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]] | join(" ") }}'
+    Label: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Codename: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]|d()]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]|d()]|d() | join(" ") }}'
     Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
@@ -167,17 +167,17 @@ reprepro_distributions_local:
       {% endif %}
 
   - Distribution: 'debian'
-    Description: '{{ reprepro_origin }} production repository for Debian {{ reprepro_debian_previous[reprepro_distribution_release] | capitalize }}'
+    Description: '{{ reprepro_origin }} production repository for Debian {{ reprepro_debian_previous[reprepro_distribution_release]|d() | capitalize }}'
     Origin: '{{ reprepro_origin }}'
-    Label: '{{ reprepro_debian_previous[reprepro_distribution_release] + "-" + reprepro_origin | lower }}'
-    Codename: '{{ reprepro_debian_previous[reprepro_distribution_release] + "-" + reprepro_origin | lower }}'
-    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]] | join(" ") }}'
-    Suite: '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]] + "-" + reprepro_origin | lower }}'
+    Label: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower }}'
+    Codename: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() + "-" + reprepro_origin | lower }}'
     Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
     Tracking: 'keep'
-    Pull: '{{ reprepro_debian_previous[reprepro_distribution_release] + "_" + reprepro_origin | lower + "_from_staging" }}'
+    Pull: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "_" + reprepro_origin | lower + "_from_staging" }}'
     Scripts: |
       {% if reprepro_admin_email %}
       --type=dsc email-changes.sh
@@ -188,8 +188,8 @@ reprepro_distributions_local:
     Origin: '{{ reprepro_origin }}'
     Label: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower }}'
     Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower }}'
-    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release] | join(" ") }}'
-    Suite: '{{ reprepro_debian_suites[reprepro_distribution_release] + "-" + reprepro_origin | lower }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release]|d() | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower }}'
     Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
@@ -201,17 +201,17 @@ reprepro_distributions_local:
       {% endif %}
 
   - Distribution: 'debian'
-    Description: '{{ reprepro_origin }} production repository for Debian {{ reprepro_debian_next[reprepro_distribution_release] | capitalize }}'
+    Description: '{{ reprepro_origin }} production repository for Debian {{ reprepro_debian_next[reprepro_distribution_release]|d() | capitalize }}'
     Origin: '{{ reprepro_origin }}'
-    Label: '{{ reprepro_debian_next[reprepro_distribution_release] + "-" + reprepro_origin | lower }}'
-    Codename: '{{ reprepro_debian_next[reprepro_distribution_release] + "-" + reprepro_origin | lower }}'
-    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]] | join(" ") }}'
-    Suite: '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]] + "-" + reprepro_origin | lower }}'
+    Label: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower }}'
+    Codename: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]|d()]|d() | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]|d()]|d() + "-" + reprepro_origin | lower }}'
     Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
     Components: '{{ reprepro_components | join(" ") }}'
     UDebComponents: False
     Tracking: 'keep'
-    Pull: '{{ reprepro_debian_next[reprepro_distribution_release] + "_" + reprepro_origin | lower + "_from_staging" }}'
+    Pull: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "_" + reprepro_origin | lower + "_from_staging" }}'
     Scripts: |
       {% if reprepro_admin_email %}
       --type=dsc email-changes.sh
@@ -237,10 +237,10 @@ reprepro_distributions_local_backports:
     # Repository for previous Debian release backports
   - Distribution: 'debian'
     Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
-    Codename: '{{ reprepro_debian_previous[reprepro_distribution_release] + "-backports" }}'
-    Suite: '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]] + "-backports" }}'
-    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]] | join(" ") }}'
-    Uploaders: '{{ "uploaders/" + reprepro_debian_previous[reprepro_distribution_release] + "-backports" }}'
+    Codename: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-backports" }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() + "-backports" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() | join(" ") }}'
+    Uploaders: '{{ "uploaders/" + reprepro_debian_previous[reprepro_distribution_release]|d() + "-backports" }}'
     Label: '{{ reprepro_distribution }}'
     Origin: '{{ reprepro_origin }}'
     Scripts: |
@@ -252,8 +252,8 @@ reprepro_distributions_local_backports:
   - Distribution: 'debian'
     Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
     Codename: '{{ reprepro_distribution_release + "-backports" }}'
-    Suite: '{{ reprepro_debian_suites[reprepro_distribution_release] + "-backports" }}'
-    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release] | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_distribution_release]|d() + "-backports" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release]|d() | join(" ") }}'
     Uploaders: '{{ "uploaders/" + reprepro_distribution_release + "-backports" }}'
     Label: '{{ reprepro_distribution }}'
     Origin: '{{ reprepro_origin }}'
@@ -265,10 +265,10 @@ reprepro_distributions_local_backports:
     # Repository for next Debian release backports
   - Distribution: 'debian'
     Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
-    Codename: '{{ reprepro_debian_next[reprepro_distribution_release] + "-backports" }}'
-    Suite: '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]] + "-backports" }}'
-    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]] | join(" ") }}'
-    Uploaders: '{{ "uploaders/" + reprepro_debian_next[reprepro_distribution_release] + "-backports" }}'
+    Codename: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-backports" }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]|d()]|d() + "-backports" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]|d()]|d() | join(" ") }}'
+    Uploaders: '{{ "uploaders/" + reprepro_debian_next[reprepro_distribution_release]|d() + "-backports" }}'
     Label: '{{ reprepro_distribution }}'
     Origin: '{{ reprepro_origin }}'
     Scripts: |
@@ -480,19 +480,19 @@ reprepro_pulls: '{{ reprepro_pulls_local }}'
 reprepro_pulls_local:
 
   - Distribution: 'debian'
-    Name: '{{ reprepro_debian_previous[reprepro_distribution_release] + "_" + reprepro_origin | lower + "_from_staging" }}'
-    From: '{{ reprepro_debian_previous[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
-    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]] | join(" ") }}'
+    Name: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "_" + reprepro_origin | lower + "_from_staging" }}'
+    From: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() | join(" ") }}'
 
   - Distribution: 'debian'
     Name: '{{ reprepro_distribution_release + "_" + reprepro_origin | lower + "_from_staging" }}'
     From: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
-    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release] | join(" ") }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release]|d() | join(" ") }}'
 
   - Distribution: 'debian'
-    Name: '{{ reprepro_debian_next[reprepro_distribution_release] + "_" + reprepro_origin | lower + "_from_staging" }}'
-    From: '{{ reprepro_debian_next[reprepro_distribution_release] + "-" + reprepro_origin | lower + "-staging" }}'
-    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]] | join(" ") }}'
+    Name: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "_" + reprepro_origin | lower + "_from_staging" }}'
+    From: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]|d()]|d() | join(" ") }}'
 
   - Distribution: 'ubuntu'
     Name: '{{ reprepro_distribution_release + "_" + reprepro_origin | lower + "_from_staging" }}'
