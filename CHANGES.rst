@@ -10,6 +10,9 @@ v0.1.2
   value to make sure that when a dictionary key does not exist, the list is
   still correctly templated and used in Ansible v2. [drybjed]
 
+- Package installation task won't automatically upgrade the installed packages.
+  [drybjed]
+
 v0.1.1
 ------
 
