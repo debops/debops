@@ -10,39 +10,34 @@
     install_recommends: False
   with_items: lvm_packages
 
-- name: Configure global/use_lvmetad
-  lineinfile:
-    dest:        '/etc/lvm/lvm.conf'
-    insertafter: '^global\s+{$'
-    regexp:      '^\s+use_lvmetad\s=\s'
-    line:        '    use_lvmetad = {{ lvm_global_use_lvmetad }}'
-    state:       'present'
+- name: Divert original lvm.conf
+  command: dpkg-divert --quiet --local --divert /etc/lvm/lvm.conf.dpkg-divert --rename /etc/lvm/lvm.conf
+  args:
+    creates: '/etc/lvm/lvm.conf.dpkg-divert'
 
-- name: Disable default devices/filter value
-  lineinfile:
-    dest:     '/etc/lvm/lvm.conf'
-    regexp:   '^\s\s\s\sfilter\s=\s\[\s"a/.*/"\s\]$'
-    line:     '    # filter = [ "a/.*/" ]'
-    backrefs: True
-    state:    'present'
+- name: Check LVM version
+  environment:
+    LC_MESSAGES: 'C'
+  shell: dpkg-query -W -f='${Version}\n' 'lvm2' | grep -v '^$' | cut -d- -f1
+  register: lvm_register_version
+  changed_when: False
 
-- name: Configure devices/filter
-  lineinfile:
-    dest:        '/etc/lvm/lvm.conf'
-    insertafter: '^devices\s+{$'
-    regexp:      '\s+filter\s+=\s+\[\s+\"'
-    line:        '    filter = [ "{{ lvm_devices_filter | join("\", \"") }}" ]'
-    state:       'present'
-  register: lvm_register_devices_filter
+- name: Lookup base LVM configuration
+  include_vars: '{{ item }}'
+  with_first_found:
+    - '{{ "lvm_config_" + lvm_config_lookup + ".yml" }}'
+    - '{{ "lvm_config_" + lvm_register_version.stdout + ".yml" }}'
+    - '{{ "lvm_config_" + ansible_distribution | lower + "_" + ansible_distribution_release + ".yml" }}'
+    - '{{ "lvm_config_" + ansible_distribution | lower + ".yml" }}'
+    - 'lvm_config_default.yml'
 
-- name: Configure devices/global_filter
-  lineinfile:
-    dest:        '/etc/lvm/lvm.conf'
-    insertafter: '^devices\s+{$'
-    regexp:      '\s+global_filter\s+=\s+\['
-    line:        '    global_filter = [ "{{ lvm_devices_global_filter | join("\", \"") }}" ]'
-    state:       'present'
-  register: lvm_register_devices_global_filter
+- name: Configure LVM
+  template:
+    src: 'etc/lvm/lvm.conf.j2'
+    dest: '/etc/lvm/lvm.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 - name: Manage LVM
   include: manage_lvm.yml
