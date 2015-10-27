@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.7
+------
+
+*Unreleased*
+
+- Be more restrictive about log files on clients. Only allow members of the
+  ``adm`` group read access. [ypid]
+
 v0.1.6
 ------
 
