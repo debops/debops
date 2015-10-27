@@ -3,12 +3,18 @@
 dependencies:
 
   - role: debops.etc_services
+    tags: [ 'depend::etc_services', 'depend::etc_services:memcached',
+            'depend-of::memcached', 'type::dependency' ]
+
     etc_services_dependent_list:
 
       - name: 'memcache'
         port: '11211'
 
   - role: debops.ferm
+    tags: [ 'depend::ferm', 'depend::ferm:memcached',
+            'depend-of::memcached', 'type::dependency' ]
+
     ferm_input_dependent_list:
 
       - type: 'dport_accept'
