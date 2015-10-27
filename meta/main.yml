@@ -3,7 +3,8 @@
 dependencies:
 
   - role: debops.apt_preferences
-    tags: apt_preferences
+    tags: [ 'depend::apt_preferences', 'depend::apt_preferences:lxc',
+            'depend-of::lxc', 'type::dependency' ]
     apt_preferences_dependent_list:
       - package: '{{ lxc_kernel_package }}'
         backports: [ 'wheezy' ]
@@ -16,6 +17,8 @@ dependencies:
         by_role: 'debops.lxc'
 
   - role: debops.ferm
+    tags: [ 'depend::ferm', 'depend::ferm:lxc',
+            'depend-of::lxc', 'type::dependency' ]
     ferm_forward: True
     ferm_dependent_rules:
 
@@ -32,6 +35,8 @@ dependencies:
 
     # Make sure that LXC 1.0 is available in Debian Wheezy
   - role: debops.backporter
+    tags: [ 'depend::backporter', 'depend::backporter:lxc',
+            'depend-of::lxc', 'type::dependency' ]
     backporter_package: 'lxc'
     backporter_version: '1.0'
     backporter_source_version: '1.0.5-3'
