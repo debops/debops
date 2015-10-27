@@ -10,7 +10,7 @@ Required Ansible host groups
 ``[debops_rsnapshot]``
   Defines a group of hosts which will be configured as "clients".
 
-  These hosts will have ``rsnapshot`` installed and will connect to configured
+  These hosts will have ``rsnapshot`` installed and will connect to the configured
   "servers" at random times through the day, synchronize the specified files
   and rotate archived snapshots.
 
@@ -27,7 +27,7 @@ Required Ansible host groups
   configured on the server ``root`` account to allow unrestricted access from
   the client.
 
-  A ``rrsync`` script provided with ``rsync`` package will be installed to
+  A ``rrsync`` script provided with the ``rsync`` package will be installed to
   permit for restricted, read-only access using an SSH command stored in
   ``~/.ssh/authorized_keys``.
 

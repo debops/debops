@@ -2,7 +2,7 @@
 
 [![Travis CI](http://img.shields.io/travis/debops/ansible-rsnapshot.svg?style=flat)](http://travis-ci.org/debops/ansible-rsnapshot) [![test-suite](http://img.shields.io/badge/test--suite-ansible--rsnapshot-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-rsnapshot/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.rsnapshot-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/2937)
 
-`debops.rsnapshot` role allows you to manage a backup host which will use
+The `debops.rsnapshot` role allows you to manage a backup host which will use
 [rsnapshot](http://www.rsnapshot.org/) to create remote backups of other
 hosts. You can let Ansible configure both the central backup "clients",
 which run `rsnapshot` and store backups, as well as the "servers" which the
