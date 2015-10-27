@@ -74,7 +74,7 @@
          ((item.0 is defined and item.0) and item.0 != inventory_hostname and
           item.0 not in rsnapshot_clients and hostvars[item.0].ansible_fqdn is defined))
 
-- name: Install requred packages on servers
+- name: Install required packages on servers
   apt:
     name: 'rsync'
     state: 'installed'
@@ -84,7 +84,9 @@
 
 - name: Prepare rrsync script for secure rsync backups
   shell: gzip -d -c /usr/share/doc/rsync/scripts/rrsync.gz > {{ rsnapshot_rrsync_script }} ;
-         chmod 0755 {{ rsnapshot_rrsync_script }} creates={{ rsnapshot_rrsync_script }}
+         chmod 0755 {{ rsnapshot_rrsync_script }}
+  args:
+    creates: '{{ rsnapshot_rrsync_script }}'
   when: (inventory_hostname in rsnapshot_servers and
          inventory_hostname not in rsnapshot_clients)
 
