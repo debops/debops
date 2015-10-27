@@ -1,8 +1,5 @@
 ---
 
-- name: DebOps pre_tasks hook
-  include: "{{ lookup('task_src', 'lvm/pre_main.yml') }}"
-
 - name: Install LVM support
   apt:
     name:  '{{ item }}'
@@ -44,7 +41,4 @@
   when: (ansible_local|d() and ((ansible_local.root and 'ignore-cap12s' in ansible_local.root.flags) or
          (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
           (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
-
-- name: DebOps post_tasks hook
-  include: "{{ lookup('task_src', 'lvm/post_main.yml') }}"
 

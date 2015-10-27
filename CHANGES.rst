@@ -11,6 +11,8 @@ v0.1.2
   to generate the configuration from scratch using a base LVM configuration and
   modifying it by user variables. [drybjed]
 
+- Remove DebOps hooks from the role, they are not needed here. [drybjed]
+
 v0.1.1
 ------
 
