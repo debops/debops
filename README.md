@@ -4,7 +4,7 @@
 
 [memcached](http://memcached.org/) is a cache daemon which keeps its data
 in RAM. It can be used by other applications to speed up slow operations on
-the databases / data stores.
+the databases/data stores.
 
 ### Installation
 
