@@ -15,7 +15,7 @@ lvm_packages: [ 'lvm2' ]
 # .. envvar:: lvm_global_use_lvmetad
 #
 # Enable ``lvmetad`` daemon by default.
-lvm_global_use_lvmetad: '1'
+lvm_global_use_lvmetad: True
 
 
 # .. envvar:: lvm_devices_filter
@@ -28,6 +28,30 @@ lvm_devices_filter: [ 'a|sd.*|', 'a|vd.*|', 'a|drbd.*|', 'r|.*|' ]
 #
 # List of filters that determine what devices are scanned by ``lvm`` scripts.
 lvm_devices_global_filter: '{{ lvm_devices_filter }}'
+
+
+# .. envvar:: lvm_config_lookup
+#
+# Ansible selects the base LVM configuration based on available version,
+# distribution and release. Using this variable you can override the automatic
+# choice if needed.
+lvm_config_lookup: ''
+
+
+# .. envvar:: lvm_config
+#
+# Dictionary variable with LVM configuration which will be merged with base
+# ``lvm.conf`` configuration variables. Each key is a section name, and values
+# are dictionary variables themselves. See files in ``var/`` directory for
+# examples and possible values.
+lvm_config:
+
+  global:
+    use_lvmetad: '{{ lvm_global_use_lvmetad }}'
+
+  devices:
+    filter: '{{ lvm_devices_filter }}'
+    global_filter: '{{ lvm_devices_global_filter }}'
 
 
 # ------------------------------------
