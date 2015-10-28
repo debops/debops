@@ -59,7 +59,7 @@ service on a set of hosts:
 Ansible tags
 ------------
 
-You can use Ansible :option:`--tags` or :option:`--skip-tags` parameters to limit what
+You can use Ansible --tags or --skip-tags parameters to limit what
 tasks are performed during Ansible run. This can be used after the host is first
 configured to speed up playbook execution, when you are sure that most of the
 configuration has not been changed.
