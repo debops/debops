@@ -1,21 +1,26 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) debops
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-debops.svg?style=flat)](http://travis-ci.org/debops/ansible-debops) [![test-suite](http://img.shields.io/badge/test--suite-ansible--debops-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-debops/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.debops-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1557)
+[![Travis CI](http://img.shields.io/travis/debops/ansible-debops.svg?style=flat)](http://travis-ci.org/debops/ansible-debops) [![test-suite](http://img.shields.io/badge/test--suite-ansible--debops-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-debops/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.debops-660198.svg?style=flat)](https://galaxy.ansible.com/detail#/role/1557)
 
-Install DebOps scripts, and optionally automatically download DebOps
-playbooks and roles and install them system-wide in `/usr/local`. This role
-can be used to easily setup a remote Ansible Controller using Ansible.
+[DebOps](http://www.debops.org/) is a set of Python scripts, Ansible
+playbooks and Ansible roles designed to work together to create a
+consistent data center environment based on Debian GNU/Linux distribution.
+
+This role installs the DebOps scripts, playbooks and roles on a specified
+host.  It can be used to create remote Ansible Controller hosts, which then
+can be used to control other hosts using DebOps. Roles and playbooks will
+be installed in a central, system-wide location, available to all users.
 
 ### Installation
 
-This role requires at least Ansible `v1.7.0`. To install it, run:
+This role requires at least Ansible `v1.9.0`. To install it, run:
 
     ansible-galaxy install debops.debops
 
 ### Documentation
 
 More information about `debops.debops` can be found in the
-[official debops.debops documentation](http://docs.debops.org/en/latest/ansible/roles/debops.debops.html).
+[official debops.debops documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-debops/docs/).
 
 
 

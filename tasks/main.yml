@@ -7,23 +7,24 @@
     install_recommends: False
   with_flattened:
     - [ 'git', 'python-pip' ]
+    - debops_base_packages
+    - debops_ansible_packages
     - debops_packages
+  when: item|d()
 
-- name: Clone main DebOps source code
-  git:
-    repo: '{{ debops_source_url }}'
-    dest: '{{ debops_source_path }}'
-    version: '{{ debops_source_version }}'
-    update: True
-  register: debops_register_source
+- name: Install DebOps from PyPI
+  pip:
+    name: '{{ item }}'
+    state: 'present'
+  with_items: debops_pip_packages
+  notify: [ 'Update DebOps in the background with {{ debops_update_method }}' ]
+  when: item|d()
 
-- name: Install DebOps playbooks and roles
-  command: pip install {{ debops_source_path }}
-  when: debops_register_source.changed
-
-- name: Install DebOps playbooks and roles (async)
-  command: debops-update
-  async: '{{ (60 * 5) | int }}'
-  poll: 0
-  when: debops_playbooks_systemwide
+- name: Configure system-wide DebOps scripts
+  template:
+    src: 'etc/debops.cfg.j2'
+    dest: '/etc/debops.cfg'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
