@@ -115,7 +115,7 @@ ferm_weight_map:
 
 # List of default firewall rules defined on each host
 ferm_default_rules: '{{ ferm_rules_filter_icmp +
-                        ferm_filter_conntrack +
+                        ferm_rules_filter_conntrack +
                         ferm_rules_filter_syn }}'
 
 # Filter ICMP packets
@@ -134,22 +134,25 @@ ferm_rules_filter_icmp:
     hashlimit_expire: '{{ ferm_filter_icmp_expire }}'
 
 # Enable connection tracking for incoming, forwarded and outgoing traffic.
-ferm_filter_conntrack:
+ferm_rules_filter_conntrack:
 
   - category: 'filter'
     table: 'filter/input'
     type: 'conntrack'
-    weight: '20'
+    weight: '05'
+    weight_class: 'conntrack'
 
   - category: 'filter'
     table: 'filter/forward'
     type: 'conntrack'
-    weight: '20'
+    weight: '05'
+    weight_class: 'conntrack'
 
   - category: 'filter'
     table: 'filter/output'
     type: 'conntrack'
-    weight: '20'
+    weight: '05'
+    weight_class: 'conntrack'
 
 # Filter TCP SYN packets
 ferm_rules_filter_syn:

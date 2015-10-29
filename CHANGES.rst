@@ -38,6 +38,12 @@ v0.1.2
   ``/etc/ferm/ferm.conf``, have been moved to their own configuration files in
   ``/etc/ferm/rules/filter/input/`` directory. [drybjed]
 
+- Rename ``conntrack`` list, rebalance rule weight.
+
+  This change will create new ``conntrack`` rules with different filenames due
+  to changed weight of the rules and addition of "weight classes". Make sure to
+  remove the old rules manually to not create duplicates. [drybjed]
+
 v0.1.1
 ------
 
