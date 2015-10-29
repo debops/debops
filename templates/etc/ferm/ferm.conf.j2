@@ -53,7 +53,7 @@ domain $domains table filter {
 		protocol icmp ACCEPT;
 {% endif %}
 
-		@include "filter/input/";
+		@include "rules/filter/input/";
 
 {% if ferm_syn_limit is defined and ferm_syn_limit %}
 		# SYN-flood protection per source
@@ -110,11 +110,11 @@ domain $domains table filter {
 	}
 
 	chain FORWARD {
-		@include 'filter/forward/';
+		@include 'rules/filter/forward/';
 	}
 
 	chain OUTPUT {
-		@include "filter/output/";
+		@include "rules/filter/output/";
 	}
 }
 

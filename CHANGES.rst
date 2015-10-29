@@ -14,6 +14,21 @@ v0.1.2
   will be used for that rule, if not, the weight specified in the rule will be
   used instead. [drybjed]
 
+- Move firewall rules into ``rules/`` subdirectory.
+
+  All directories in ``/etc/ferm/`` that contain firewall rules in different
+  chains have been moved to ``/etc/ferm/rules/`` subdirectory for more
+  readability.
+
+  This is an incompatible change, check on a test host first to see what will
+  happen.
+
+  This change will recreate all rule directories and all default firewall
+  rules. If you added your own rules in Ansible inventory or other roles, make
+  sure that you re-run these roles to recreate their rules as well. To not
+  create duplicate firewall rules, ``ferm`` will only include rules from the
+  new directories. [drybjed]
+
 v0.1.1
 ------
 

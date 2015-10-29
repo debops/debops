@@ -28,7 +28,9 @@
          (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))))
 
 - name: Install ferm configuration directories
-  script: 'script/install-directories.sh creates=/etc/ferm/filter/input'
+  script: 'script/install-directories.sh {{ ferm_custom_chains | join(" ") }}'
+  args:
+    creates: '/etc/ferm/rules/filter/input'
 
 - name: Patch ferm init script to add custom hooks
   include: patch_ferm.yml
@@ -75,7 +77,7 @@
 
 - name: Remove ip(6)tables rules if requested
   file:
-    path: '/etc/ferm/{{ item.table | d("ferm.d") }}/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | default(item.type + "_" + item.name | default((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    path: '/etc/ferm/{{ (("rules/" + item.table) if item.table|d() else "ferm.d") }}/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
     - ferm_rules
@@ -90,7 +92,7 @@
 - name: Configure ip(6)tables rules
   template:
     src: 'etc/ferm/{{ item.category | d(item.table | d("ferm.d")) }}/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/{{ item.table | d("ferm.d") }}/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | default(item.type + "_" + item.name | default((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    dest: '/etc/ferm/{{ (("rules/" + item.table) if item.table|d() else "ferm.d") }}/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
@@ -106,7 +108,7 @@
 
 - name: Remove iptables INPUT rules if requested
   file:
-    path: '/etc/ferm/filter-input.d/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | default(item.type + "_" + item.name | default((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    path: '/etc/ferm/filter-input.d/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
     - ferm_input_list
@@ -120,7 +122,7 @@
 - name: Configure iptables INPUT rules
   template:
     src: 'etc/ferm/filter-input.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/filter-input.d/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | default(item.type + "_" + item.name | default((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    dest: '/etc/ferm/filter-input.d/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
