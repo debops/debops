@@ -87,6 +87,24 @@ ferm_input_dependent_list: []
   #  filename: ''         # custom filename instead of a generated one, optional
   #  delete: False/True   # delete specified rule file, optional
 
+# Set the default rule weight for rules that do not specify it.
+ferm_default_weight: '50'
+
+# Dictionary with mapping between "rule classes" and their desired weight.
+ferm_weight_map:
+  'loopback': '00'
+  'ansible-controller': '01'
+  'any-whitelist': '02'
+  'filter-icmp': '03'
+  'conntrack': '05'
+  'filter-syn': '07'
+  'any-blacklist': '09'
+  'any-ssh-whitelist': '25'
+  'any-ssh-accept': '30'
+  'any-ssh-filter': '31'
+  'any-service': '50'
+  'any-reject': '99'
+
 # List of default firewall rules defined on each host
 ferm_default_rules: '{{ ferm_filter_conntrack }}'
 

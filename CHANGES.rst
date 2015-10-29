@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Unreleased*
+
+- Add support for different "weight classes" of rules.
+
+  This should help manage order of firewall rules. Each rule can specify its
+  own weight class along with weight, the class will be checked in the
+  ``ferm_weight_map`` dictionary, if a corresponding entry is found, its weight
+  will be used for that rule, if not, the weight specified in the rule will be
+  used instead. [drybjed]
+
 v0.1.1
 ------
 
