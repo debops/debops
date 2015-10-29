@@ -4,40 +4,51 @@
 
 root="/etc/ferm"
 
+rules="${root}/rules"
+
+hooks="${root}/hooks"
+
 directories=(
 
   "${root}"
+  "${rules}"
+  "${hooks}"
 
   "${root}/ferm.d"
 
   "${root}/filter-input.d"
 
-  "${root}/filter"
-  "${root}/filter/input"
-  "${root}/filter/forward"
-  "${root}/filter/output"
+  "${rules}/filter"
+  "${rules}/filter/input"
+  "${rules}/filter/forward"
+  "${rules}/filter/output"
 
-  "${root}/nat"
-  "${root}/nat/prerouting"
-  "${root}/nat/input"
-  "${root}/nat/output"
-  "${root}/nat/postrouting"
+  "${rules}/nat"
+  "${rules}/nat/prerouting"
+  "${rules}/nat/input"
+  "${rules}/nat/output"
+  "${rules}/nat/postrouting"
 
-  "${root}/mangle"
-  "${root}/mangle/prerouting"
-  "${root}/mangle/input"
-  "${root}/mangle/forward"
-  "${root}/mangle/output"
-  "${root}/mangle/postrouting"
+  "${rules}/mangle"
+  "${rules}/mangle/prerouting"
+  "${rules}/mangle/input"
+  "${rules}/mangle/forward"
+  "${rules}/mangle/output"
+  "${rules}/mangle/postrouting"
 
-  "${root}/hooks"
-  "${root}/hooks/pre-start.d"
-  "${root}/hooks/post-start.d"
-  "${root}/hooks/pre-stop.d"
-  "${root}/hooks/post-stop.d"
-  "${root}/hooks/pre-reload.d"
-  "${root}/hooks/post-reload.d"
+  "${hooks}/pre-start.d"
+  "${hooks}/post-start.d"
+  "${hooks}/pre-stop.d"
+  "${hooks}/post-stop.d"
+  "${hooks}/pre-reload.d"
+  "${hooks}/post-reload.d"
 )
 
 install -o root -g adm -m 2750 -d ${directories[@]}
+
+if [ $# -gt 0 ] ; then
+  for directory in "${@}" ; do
+    install -o root -g adm -m 2750 -d ${rules}/${directory}
+  done
+fi
 

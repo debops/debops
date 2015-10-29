@@ -1,6 +1,58 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Unreleased*
+
+- Add support for different "weight classes" of rules.
+
+  This should help manage order of firewall rules. Each rule can specify its
+  own weight class along with weight, the class will be checked in the
+  ``ferm_weight_map`` dictionary, if a corresponding entry is found, its weight
+  will be used for that rule, if not, the weight specified in the rule will be
+  used instead. [drybjed]
+
+- Move firewall rules into ``rules/`` subdirectory.
+
+  All directories in ``/etc/ferm/`` that contain firewall rules in different
+  chains have been moved to ``/etc/ferm/rules/`` subdirectory for more
+  readability.
+
+  This is an incompatible change, check on a test host first to see what will
+  happen.
+
+  This change will recreate all rule directories and all default firewall
+  rules. If you added your own rules in Ansible inventory or other roles, make
+  sure that you re-run these roles to recreate their rules as well. To not
+  create duplicate firewall rules, ``ferm`` will only include rules from the
+  new directories. [drybjed]
+
+- Add ``hashlimit`` filter, move filtering rules.
+
+  New ``hashlimit`` filter allows configuration of firewall rules using
+  ``hashlimit`` module.
+
+  Existing firewall rules which filtered ICMP and TCP SYN packets, defined in
+  ``/etc/ferm/ferm.conf``, have been moved to their own configuration files in
+  ``/etc/ferm/rules/filter/input/`` directory. [drybjed]
+
+- Rename ``conntrack`` list, rebalance rule weight.
+
+  This change will create new ``conntrack`` rules with different filenames due
+  to changed weight of the rules and addition of "weight classes". Make sure to
+  remove the old rules manually to not create duplicates. [drybjed]
+
+- Rename ``ferm`` variable to ``ferm_enabled``.
+
+  This change is needed to avoid issues with Ansible templating the ``ferm``
+  package in lists with contents of the ``ferm`` variable.
+
+  If you have ``ferm`` disabled anywhere (set to ``False``), you will need to
+  change the name of the variable in inventory to the new one before running
+  this role. Otherwise there should be no changes necessary. [drybjed]
+
 v0.1.1
 ------
 

@@ -1,13 +1,13 @@
 ---
 
 # Enable or disable iptables management
-ferm: True
+ferm_enabled: True
 
 # Should ferm-rules be flushed when ferm is disabled? The default is
 # true, but you may need set both `ferm` and this to ``False`` if you
 # are running in some container and are not allowed to change
 # iptables.
-ferm_flush: '{{ ferm | bool }}'
+ferm_flush: '{{ ferm_enabled | bool }}'
 
 # List of packages to install
 ferm_packages: [ 'ferm', 'patch' ]
@@ -36,13 +36,17 @@ ferm_default_policy_input: 'DROP'
 ferm_default_policy_output: 'ACCEPT'
 ferm_default_policy_forward: 'DROP'
 
-# ICMP flood mitigation
-ferm_icmp_limit: '10/second'
-ferm_icmp_burst: '10'
+# Manage filtering of ICMP packets using ``hashlimit`` module.
+ferm_filter_icmp: True
+ferm_filter_icmp_limit: '10/second'
+ferm_filter_icmp_burst: '10'
+ferm_filter_icmp_expire: '{{ (60 * 60) }}'
 
-# SYN flood mitigation
-ferm_syn_limit: '40/second'
-ferm_syn_burst: '20'
+# Manage filtering of TCP SYN packets using ``hashlimit`` module.
+ferm_filter_syn: True
+ferm_filter_syn_limit: '40/second'
+ferm_filter_syn_burst: '20'
+ferm_filter_syn_expire: '{{ (60 * 60) }}'
 
 # Enable recent filter in respective rules. You might need to disable it on
 # certain hosts, like OpenVZ containers that don't have 'recent' module
@@ -62,6 +66,10 @@ ferm_mark_portscan: False
 # Enable or disable logging of blocked/dropped/marked packets to syslog.
 # Disabling might help reduce log spam but will make debugging issues harder.
 ferm_log_issues: True
+
+# List of custom chain directories to create, each entry should be written as
+# ``table/chain``.
+ferm_custom_chains: []
 
 # List of iptables rules to manage, templates used by these rules are included
 # in templates/etc/ferm/ferm.d/ directory.
@@ -87,26 +95,80 @@ ferm_input_dependent_list: []
   #  filename: ''         # custom filename instead of a generated one, optional
   #  delete: False/True   # delete specified rule file, optional
 
+# Set the default rule weight for rules that do not specify it.
+ferm_default_weight: '50'
+
+# Dictionary with mapping between "rule classes" and their desired weight.
+ferm_weight_map:
+  'loopback': '00'
+  'ansible-controller': '01'
+  'any-whitelist': '02'
+  'filter-icmp': '03'
+  'conntrack': '05'
+  'filter-syn': '07'
+  'any-blacklist': '09'
+  'any-ssh-whitelist': '25'
+  'any-ssh-accept': '30'
+  'any-ssh-filter': '31'
+  'any-service': '50'
+  'any-reject': '99'
+
 # List of default firewall rules defined on each host
-ferm_default_rules: '{{ ferm_filter_conntrack }}'
+ferm_default_rules: '{{ ferm_rules_filter_icmp +
+                        ferm_rules_filter_conntrack +
+                        ferm_rules_filter_syn }}'
+
+# Filter ICMP packets
+ferm_rules_filter_icmp:
+
+  - category: 'filter'
+    table: 'filter/input'
+    type: 'hashlimit'
+    weight: '03'
+    weight_class: 'filter-icmp'
+    name: 'icmp-flood'
+    protocol: 'icmp'
+    enabled: '{{ ferm_filter_icmp | bool }}'
+    hashlimit: '{{ ferm_filter_icmp_limit }}'
+    hashlimit_burst: '{{ ferm_filter_icmp_burst }}'
+    hashlimit_expire: '{{ ferm_filter_icmp_expire }}'
 
 # Enable connection tracking for incoming, forwarded and outgoing traffic.
-ferm_filter_conntrack:
+ferm_rules_filter_conntrack:
 
   - category: 'filter'
     table: 'filter/input'
     type: 'conntrack'
-    weight: '20'
+    weight: '05'
+    weight_class: 'conntrack'
 
   - category: 'filter'
     table: 'filter/forward'
     type: 'conntrack'
-    weight: '20'
+    weight: '05'
+    weight_class: 'conntrack'
 
   - category: 'filter'
     table: 'filter/output'
     type: 'conntrack'
-    weight: '20'
+    weight: '05'
+    weight_class: 'conntrack'
+
+# Filter TCP SYN packets
+ferm_rules_filter_syn:
+
+  - category: 'filter'
+    table: 'filter/input'
+    type: 'hashlimit'
+    weight: '07'
+    weight_class: 'filter-syn'
+    name: 'syn-flood'
+    protocol: 'tcp'
+    protocol_syn: True
+    when: '{{ ferm_filter_syn | bool }}'
+    hashlimit: '{{ ferm_filter_syn_limit }}'
+    hashlimit_burst: '{{ ferm_filter_syn_burst }}'
+    hashlimit_expire: '{{ ferm_filter_syn_expire }}'
 
 # Enable or disable fail2ban integration. ferm will send fail2ban reload
 # command after its own configuration is reloaded. If fail2ban is not present
