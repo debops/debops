@@ -1,0 +1,74 @@
+Default variables: configuration
+================================
+
+Some of ``debops.cryptsetup`` default variables have more extensive configuration
+than simple strings or lists, here you can find documentation and examples for
+them.
+
+.. contents::
+   :local:
+   :depth: 1
+
+.. _ifupdown_interfaces:
+
+
+cryptsetup_devices
+------------------
+
+``name``
+  Required. Name of the plaintext device mapper target and the mount point.
+  Must be unique among all device mapper targets.
+  The mount point will be created as:
+
+  .. code:: jinja
+
+    {{ cryptsetup_mountpoint_parent_directory + "/" + item.name }}
+
+``ciphertext_block_device``
+  Required. File path to the ciphertext block device, either the block device
+  itself e.g. :file:`/dev/sdb` or a partition on the block device e.g.
+  :file:`/dev/sdb5`.
+
+``crypttab_options``
+  List of options to configure for each device in
+  :file:`/etc/crypttab`.
+  Overwrites the default as configured by :ref:`cryptsetup_crypttab_options`.
+
+``keyfile``
+  Optional. File path for the keyfile on the Ansible controller. Will be copied
+  over to the remote system. If it does not exist yet it will be generated from
+  :file:`/dev/random` on the Ansible controller as it is expected that the
+  entropy pool on the Ansible controller is better mixed.
+  Defaults to:
+
+  .. code:: jinja
+
+    {{ cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw" }}
+
+``backup_header``
+  Optional. Disable backing up the `LUKS`_ header to the Ansible controller for this item.
+  See :ref:`cryptsetup_keyfile_location`.
+
+``fstype``
+  Optional. Filesystem type to create on the plaintext device mapper target.
+  Defaults to :ref:`cryptsetup_fstype`.
+
+``state``
+  Optional. There are four states which can be choose for each filesystem.
+  If no state is given, the value of :ref:`cryptsetup_state` will be used.
+
+  ``mounted``
+    Ensure that cryptsetup and filesystem are in place on the block device and
+    the filesystem is mounted.
+
+  ``unmounted``
+    Ensure that cryptsetup and filesystem are in place on the block device and
+    the filesystem is unmounted. Additionally ensures that the cryptsetup mapping
+    is removed so that no direct access to the plain-text block device is possible.
+
+  ``present``
+    Ensure that cryptsetup and filesystem are in place on the block device.
+
+  ``absent``
+    Same as ``unmounted`` but additionally removes all configuration and the
+    keyfile from the remote system for this item.
