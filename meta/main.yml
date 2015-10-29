@@ -1,5 +1,49 @@
 ---
 
+ansigenome_info:
+  github_url: "https://github.com/debops-contrib/ansible-cryptsetup"
+  git_branch: "master"
+  galaxy_id: "4559"
+
+  travis: False
+
+  license_url: 'https://tldrlegal.com/license/gnu-affero-general-public-license-v3-(agpl-3.0)'
+
+  authors:
+    - name:  'Robin Schneider'
+      url: 'http://ypid.de/'
+      email: 'ypid@riseup.net'
+      twitter: 'ypid'
+      github: 'ypid'
+
+  synopsis: |
+    This role allows you to configure a encrypted filesystem on top of any given
+    block device using [dm-crypt][] and [LUKS][].  A random keyfile generated on the Ansible
+    controller will be used for the encryption by default.  It is your
+    responsibility that the keyfile is kept secure for this to make sense.  For
+    example by storing the keyfile on an already encrypted filesystem.
+
+    [LUKS]: https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup
+    [dm-crypt]: https://en.wikipedia.org/wiki/Dm-crypt
+
+    ### Features
+
+    * Create a random key or use an already existing key.
+    * Manage `/etc/crypttab` and `/etc/fstab`.
+    * Create a LUKS header backup and store it on the Ansible controller.
+
+    ### Notes
+
+    This role is currently being migrated to the DebOps project.
+    For the time in between v0.1.0 is available on Ansible Galaxy as
+    [`ypid.crypttab`](https://galaxy.ansible.com/detail#/role/4559).
+
+dependencies:
+
+  - role: debops.secret
+    tags: [ 'depend::secret', 'depend::secret:owncloud',
+            'depend-of::owncloud', 'type::dependency:hard' ]
+
 galaxy_info:
   author: Robin Schneider
   description: Manage cryptsetup devices via /etc/crypttab.
@@ -14,18 +58,3 @@ galaxy_info:
   categories:
     - system
   min_ansible_version: 1.8.4
-dependencies: []
-ansigenome_info:
-  github_url: "https://github.com/ypid/ansible-crypttab"
-  git_branch: "master"
-  galaxy_id: "4559"
-
-  travis: True
-
-  synopsis: |
-
-    ### Features
-
-    * Add or remove devices in /etc/crypttab
-    * Optionally add or remove these devices in /etc/fstab
-    * Optionally copy the keyfile to the target
