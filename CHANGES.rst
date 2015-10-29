@@ -29,6 +29,15 @@ v0.1.2
   create duplicate firewall rules, ``ferm`` will only include rules from the
   new directories. [drybjed]
 
+- Add ``hashlimit`` filter, move filtering rules.
+
+  New ``hashlimit`` filter allows configuration of firewall rules using
+  ``hashlimit`` module.
+
+  Existing firewall rules which filtered ICMP and TCP SYN packets, defined in
+  ``/etc/ferm/ferm.conf``, have been moved to their own configuration files in
+  ``/etc/ferm/rules/filter/input/`` directory. [drybjed]
+
 v0.1.1
 ------
 

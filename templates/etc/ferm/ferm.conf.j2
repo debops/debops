@@ -32,47 +32,8 @@ domain $domains table filter {
 		# Allow loopback connections
 		interface lo ACCEPT;
 
-{% if ferm_icmp_limit is defined and ferm_icmp_limit %}
-		# Limit incoming ICMP traffic per source
-		protocol icmp @subchain "ICMP-flood" {
-			mod hashlimit	hashlimit {{ ferm_icmp_limit }}
-					hashlimit-burst {{ ferm_icmp_burst }}
-					hashlimit-mode srcip
-					hashlimit-name ICMP-flood
-					hashlimit-htable-expire 3600000
-			ACCEPT;
-{% if ferm_log_issues is defined and ferm_log_issues %}
-			mod limit limit 3/hour limit-burst 2 {
-				LOG log-prefix "iptables-ICMP-flood: ";
-			}
-{% endif %}
-			REJECT reject-with icmp-admin-prohibited;
-		}
-{% else %}
-		# Accept incoming ICMP traffic
-		protocol icmp ACCEPT;
-{% endif %}
-
 		@include "rules/filter/input/";
 
-{% if ferm_syn_limit is defined and ferm_syn_limit %}
-		# SYN-flood protection per source
-		protocol tcp syn @subchain "SYN-flood" {
-			mod hashlimit	hashlimit {{ ferm_syn_limit }}
-					hashlimit-burst {{ ferm_syn_burst }}
-					hashlimit-mode srcip
-					hashlimit-name SYN-flood
-					hashlimit-htable-expire 3600000
-			RETURN;
-{% if ferm_log_issues is defined and ferm_log_issues %}
-			mod limit limit 3/hour limit-burst 5 {
-				LOG log-prefix "iptables-SYN-flood: ";
-			}
-{% endif %}
-			REJECT reject-with icmp-admin-prohibited;
-		}
-
-{% endif %}
 {% if ferm_filter_recent|d() and ferm_filter_recent %}
 		# Drop connections from bad guys
 		mod recent name "{{ ferm_block_recent }}" update seconds {{ ferm_block_time }} {

@@ -36,13 +36,17 @@ ferm_default_policy_input: 'DROP'
 ferm_default_policy_output: 'ACCEPT'
 ferm_default_policy_forward: 'DROP'
 
-# ICMP flood mitigation
-ferm_icmp_limit: '10/second'
-ferm_icmp_burst: '10'
+# Manage filtering of ICMP packets using ``hashlimit`` module.
+ferm_filter_icmp: True
+ferm_filter_icmp_limit: '10/second'
+ferm_filter_icmp_burst: '10'
+ferm_filter_icmp_expire: '{{ (60 * 60) }}'
 
-# SYN flood mitigation
-ferm_syn_limit: '40/second'
-ferm_syn_burst: '20'
+# Manage filtering of TCP SYN packets using ``hashlimit`` module.
+ferm_filter_syn: True
+ferm_filter_syn_limit: '40/second'
+ferm_filter_syn_burst: '20'
+ferm_filter_syn_expire: '{{ (60 * 60) }}'
 
 # Enable recent filter in respective rules. You might need to disable it on
 # certain hosts, like OpenVZ containers that don't have 'recent' module
@@ -110,7 +114,24 @@ ferm_weight_map:
   'any-reject': '99'
 
 # List of default firewall rules defined on each host
-ferm_default_rules: '{{ ferm_filter_conntrack }}'
+ferm_default_rules: '{{ ferm_rules_filter_icmp +
+                        ferm_filter_conntrack +
+                        ferm_rules_filter_syn }}'
+
+# Filter ICMP packets
+ferm_rules_filter_icmp:
+
+  - category: 'filter'
+    table: 'filter/input'
+    type: 'hashlimit'
+    weight: '03'
+    weight_class: 'filter-icmp'
+    name: 'icmp-flood'
+    protocol: 'icmp'
+    enabled: '{{ ferm_filter_icmp | bool }}'
+    hashlimit: '{{ ferm_filter_icmp_limit }}'
+    hashlimit_burst: '{{ ferm_filter_icmp_burst }}'
+    hashlimit_expire: '{{ ferm_filter_icmp_expire }}'
 
 # Enable connection tracking for incoming, forwarded and outgoing traffic.
 ferm_filter_conntrack:
@@ -129,6 +150,22 @@ ferm_filter_conntrack:
     table: 'filter/output'
     type: 'conntrack'
     weight: '20'
+
+# Filter TCP SYN packets
+ferm_rules_filter_syn:
+
+  - category: 'filter'
+    table: 'filter/input'
+    type: 'hashlimit'
+    weight: '07'
+    weight_class: 'filter-syn'
+    name: 'syn-flood'
+    protocol: 'tcp'
+    protocol_syn: True
+    when: '{{ ferm_filter_syn | bool }}'
+    hashlimit: '{{ ferm_filter_syn_limit }}'
+    hashlimit_burst: '{{ ferm_filter_syn_burst }}'
+    hashlimit_expire: '{{ ferm_filter_syn_expire }}'
 
 # Enable or disable fail2ban integration. ferm will send fail2ban reload
 # command after its own configuration is reloaded. If fail2ban is not present
