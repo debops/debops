@@ -44,6 +44,15 @@ v0.1.2
   to changed weight of the rules and addition of "weight classes". Make sure to
   remove the old rules manually to not create duplicates. [drybjed]
 
+- Rename ``ferm`` variable to ``ferm_enabled``.
+
+  This change is needed to avoid issues with Ansible templating the ``ferm``
+  package in lists with contents of the ``ferm`` variable.
+
+  If you have ``ferm`` disabled anywhere (set to ``False``), you will need to
+  change the name of the variable in inventory to the new one before running
+  this role. Otherwise there should be no changes necessary. [drybjed]
+
 v0.1.1
 ------
 
