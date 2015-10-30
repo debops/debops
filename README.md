@@ -31,7 +31,7 @@ The default of Foodsoft is to redirect to HTTPS so be sure to setup a certificat
 Also note that this role uses the [DebOps](http://debops.org/) project to setup the
 webserver and configure the database. Be sure to check it out! :smile: Thanks to [Maciej Delmanowski](https://github.com/drybjed) for the amazing work.
 
-[debops.pki]: https://galaxy.ansible.com/list#/roles/1588
+[debops.pki]: https://galaxy.ansible.com/detail#/role/1588
 [foodsoft.readme]: https://github.com/foodcoops/foodsoft
 
 
@@ -41,7 +41,6 @@ webserver and configure the database. Be sure to check it out! :smile: Thanks to
 - `debops.secret`
 - `debops.mariadb`
 - `debops.nginx`
-
 
 ### Role variables
 
@@ -536,10 +535,9 @@ foodsoft_app_configuration:
 ### Authors and license
 
 `foodsoft` role was written by:
+- [Robin Schneider](http://ypid.de/) | [e-mail](mailto:ypid@riseup.net) | [Twitter](https://twitter.com/ypid) | [GitHub](https://github.com/ypid)
 
-- [Robin Schneider](https://github.com/ypid) | [e-mail](mailto:ypid@riseup.net)
-
-License: [AGPLv3](https://tldrlegal.com/license/gnu-affero-general-public-license-v3-%28agpl-3.0%29)
+License: [AGPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
 
 ***
 
