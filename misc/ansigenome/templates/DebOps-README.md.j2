@@ -8,11 +8,11 @@
 {% block installation %}
 ### Installation
 
-This role requires at least Ansible{% if galaxy_info.min_ansible_version is
-defined and galaxy_info.min_ansible_version %} `v{{
-galaxy_info.min_ansible_version }}`{% endif %}. To install it, run:
+This role requires at least Ansible{% if galaxy_info.min_ansible_version is defined and galaxy_info.min_ansible_version %} `v{{ galaxy_info.min_ansible_version }}`{% endif %}. To install it, run:
 
-    ansible-galaxy install {{ role.galaxy_name }}
+```Shell
+ansible-galaxy install {{ role.galaxy_name }}
+```
 
 ### Documentation
 
@@ -31,29 +31,11 @@ into your playbook.
 [Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
 
 {% endblock %}
-{% block dependencies %}
-### Role dependencies
-
-{% for dependency in dependencies | unique_dict("role") %}
-- `{{ dependency.role | trim }}`
-{% endfor %}
-{% endblock %}
 {% block defaults %}
 {% endblock %}
 {% block facts %}
 {% endblock %}
 {% block usage %}
-{% endblock %}
-{% block authors %}
-### Authors and license
-
-`{{ role.name }}` role was written by:
-{% for credit in authors %}
-- {% if credit.url is defined and credit.url %}[{% endif %}{{ credit.name }}{% if credit.url is defined and credit.url %}]({{ credit.url }}){% endif %}{% if credit.email is defined and credit.email %} | [e-mail](mailto:{{ credit.email }}){% endif %}{% if credit.twitter is defined and credit.twitter %} | [Twitter](https://twitter.com/{{ credit.twitter }}){% endif %}{% if credit.github is defined and credit.github %} | [GitHub](https://github.com/{{ credit.github }}){% endif %}
-
-{% endfor %}
-
-License: [{{ license.type | trim }}]({{ license.url | trim }})
 {% endblock %}
 {% block footer %}
 ***
