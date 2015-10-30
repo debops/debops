@@ -138,8 +138,9 @@ List of interface parameters
   the port is not in a given state, then the configuration won't be generated.
 
 ``weight``
-  Numerical value added at the beginning of the interface configuration file,
-  by default ``00``. Can be used to influence the order of interfaces.
+  Numerical value added at the beginning of the interface configuration file.
+  If not specified, a value will be set from ``ifupdown_interface_weight_map``
+  variable depending on the type of the interface.
 
 ``filename``
   Name of the configuration file to generate. If not specified, an unique

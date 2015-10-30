@@ -17,6 +17,33 @@ v0.2.3
 
 - Updated documentation and fixed spelling. [ypid]
 
+- Add ``ifupdown_interface_weight_map`` variable.
+
+  This variable defines default values of ``item.weight`` parameter for
+  different interface types. This is needed because order of interfaces managed
+  by ``ifupdown`` is significant and different interface types should be
+  specified in correct order (for example interface definitions should be
+  specified before bridges that use these interfaces).
+
+  If you specify the weight of each interface manually using ``item.weight``
+  parameter, your configuration shouldn't be affected.
+
+  This change will most likely generate new sets of interface configuration in
+  ``/etc/network/interfaces.d/`` on already configured hosts. To prevent
+  duplication of configuration, you can remove the configuration stored in
+  ``/etc/network/interfaces.config.d/`` before running the role.
+
+  Because from the ``ifupdown`` perspective configuration of each interface
+  changed, after new configuration is generated each interface will be brought
+  down and up again. You shouldn't lose the connection to remote host, but
+  local (or remote console) access might be handy.
+
+  Because bridges will be restarted, any external interfaces connected to them
+  will be dropped. That means that virtual machines and containers will lose
+  the network connection permanently. Restarting the afftected virtual machines
+  and containers should bring everything back to normal. [drybjed]
+
+
 v0.2.2
 ------
 
