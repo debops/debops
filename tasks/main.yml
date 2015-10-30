@@ -138,6 +138,7 @@
   command: blkid -s UUID -o value "{{ item.0.ciphertext_block_device }}"
   register: cryptsetup_register_ciphertext_blkid
   changed_when: False
+  failed_when: (cryptsetup_register_ciphertext_blkid.rc not in [ 0, 2 ])
   always_run: True
   when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
