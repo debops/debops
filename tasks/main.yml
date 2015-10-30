@@ -5,6 +5,14 @@
     cryptsetup_devices_combined: '{{ cryptsetup_devices + cryptsetup_group_devices + cryptsetup_host_devices | d([]) }}'
   tags: [ 'role::cryptsetup:backup' ]
 
+- name: Ensure that required options are specified and valid for each given device
+  assert:
+    that:
+      - item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present', 'absent' ]
+      - item.name is defined and item.name is string
+      - item.ciphertext_block_device is defined and item.ciphertext_block_device is string
+  with_items: cryptsetup_devices_combined
+
 - name: Ensure required packages are installed
   apt:
     name: '{{ item }}'
