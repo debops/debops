@@ -156,7 +156,7 @@
 
 - name: Ensure ciphertext block device is configured in crypttab
   crypttab:
-    backing_device: '{{ ("UUID=" + item.1.stdout) if (item.1.stdout|d()) else item.0.ciphertext_block_device }}'
+    backing_device: '{{ ("UUID=" + item.1.stdout) if (item.1.stdout|d() and item.0.use_uuid|d(cryptsetup_use_uuid)|bool) else item.0.ciphertext_block_device }}'
     name: '{{ item.0.name }}'
     opts: '{{ item.0.crypttab_options | d(cryptsetup_crypttab_options | d("none")) }}'
     ## ``none`` is required on Debian jessie by :command:`cryptdisks_start` if no options are given.
@@ -185,7 +185,7 @@
 - name: Create filesystem on plaintext device mapper target
   filesystem:
     dev:    '/dev/mapper/{{ item.0.name }}'
-    force:  '{{ item.0.force          | d(omit) }}'
+    force:  '{{ item.0.format_force   | d(omit) }}'
     fstype: '{{ item.0.fstype         | d(cryptsetup_fstype) }}'
     opts:   '{{ item.0.format_options | d(omit) }}'
   when: item.1|d() and item.1.stat|d() and item.1.stat.exists|d()
