@@ -121,6 +121,7 @@
   command: blkid -s UUID -o value "{{ item.ciphertext_block_device }}"
   register: cryptsetup_register_ciphertext_blkid
   changed_when: False
+  always_run: True
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
   with_items: cryptsetup_devices_combined
 
@@ -136,7 +137,7 @@
   when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
   with_together:
     - '{{ cryptsetup_devices_combined }}'
-    - '{{ cryptsetup_register_ciphertext_blkid.results }}'
+    - '{{ cryptsetup_register_ciphertext_blkid.results|d([]) }}'
 
 - name: Start plaintext device mapper target
   command: cryptdisks_start "{{ item.name }}"
@@ -161,7 +162,7 @@
   when: item.1|d() and item.1.stat|d() and item.1.stat.exists|d()
   with_together:
     - '{{ cryptsetup_devices_combined }}'
-    - '{{ cryptsetup_register_plaintext_device.results }}'
+    - '{{ cryptsetup_register_plaintext_device.results|d([]) }}'
 
 - name: Ensure mount directories exist when manually mounted
   file:
