@@ -47,9 +47,9 @@
     cryptsetup_dd_bs: '{{ ((512/8) if cryptsetup_key_size|d() == "default" else ((cryptsetup_key_size)/8))|int }}'
 
 - name: Generate keyfile on Ansible controller
-  command: dd if=/dev/random of="{{ cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw" }}" bs={{ cryptsetup_dd_bs }} count=1 iflag=fullblock
+  command: dd if=/dev/random of="{{ item.keyfile | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}" bs={{ cryptsetup_dd_bs }} count=1 iflag=fullblock
   args:
-    creates: '{{ cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw" }}'
+    creates: '{{ item.keyfile | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}'
   sudo: False
   delegate_to: 'localhost'
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
