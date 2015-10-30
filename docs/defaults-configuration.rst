@@ -78,6 +78,12 @@ you to use more specific parameters which are not documented below.
 
   ``present``
     Ensure that cryptsetup and filesystem are in place on the block device.
+    The plaintext device mapper target will be created as needed to ensure the
+    filesystem on it is present. When it was not available prior to this
+    Ansible run, it will be stopped at the end of the role run again.
+    So basically, this option never changes the mounted/unmounted state of the
+    plaintext device mapper target or the plaintext mount point of the
+    filesystem.
 
   ``absent``
     Same as ``unmounted`` but additionally removes all configuration and the
