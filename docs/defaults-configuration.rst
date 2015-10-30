@@ -15,6 +15,9 @@ them.
 cryptsetup_devices
 ------------------
 
+Note the following list only documents the common parameters. The role allows
+you to use more specific parameters which are not documented below.
+
 ``name``
   Required. Name of the plaintext device mapper target and the mount point.
   Must be unique among all device mapper targets.
@@ -52,6 +55,17 @@ cryptsetup_devices
 ``fstype``
   Optional. Filesystem type to create on the plaintext device mapper target.
   Defaults to :ref:`cryptsetup_fstype`.
+
+``mount``
+  Optional. Plaintext mount point of the filesystem. Defaults to:
+
+  .. code:: jinja
+
+    {{ cryptsetup_mountpoint_parent_directory + "/" + item.name }}
+
+``mount_options``
+  Optional. Mount options associated with the filesystem.
+  For more details see :manpage:`mount(8)`.
 
 ``state``
   Optional. There are four states which can be choose for each filesystem.

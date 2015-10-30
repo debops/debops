@@ -17,7 +17,7 @@ the Ansible controller and the remote system).
 
 ### Features
 
-* Create a random key or use an already existing key.
+* Create a random keyfile or use an already existing file.
 * Manage `/etc/crypttab` and `/etc/fstab`.
 * Create a LUKS header backup and store it on the Ansible controller.
 
@@ -31,7 +31,9 @@ For the time in between, v0.1.0 of the role is available on Ansible Galaxy as
 
 This role requires at least Ansible `v1.8.4`. To install it, run:
 
-    ansible-galaxy install debops.cryptsetup
+```Shell
+ansible-galaxy install debops.cryptsetup
+```
 
 ### Documentation
 

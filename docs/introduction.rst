@@ -11,7 +11,7 @@ the Ansible controller and the remote system).
 .. _LUKS: https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup
 .. _dm-crypt: https://en.wikipedia.org/wiki/Dm-crypt
 
-* Create a random key or use an already existing key.
+* Create a random keyfile or use an already existing file.
 * Manage :file:`/etc/crypttab` and :file:`/etc/fstab`.
 * Create a LUKS header backup and store it on the Ansible controller.
 
