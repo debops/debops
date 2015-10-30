@@ -20,12 +20,8 @@ you to use more specific parameters which are not documented below.
 
 ``name``
   Required. Name of the plaintext device mapper target and the mount point.
-  Must be unique among all device mapper targets.
-  The mount point will be created as:
-
-  .. code:: jinja
-
-    {{ cryptsetup_mountpoint_parent_directory + "/" + item.name }}
+  Must be unique among all device mapper targets and should not be changed once
+  it was used.
 
 ``ciphertext_block_device``
   Required. File path to the ciphertext block device, either the block device
