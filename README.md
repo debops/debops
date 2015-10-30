@@ -6,7 +6,8 @@ This role allows you to configure a encrypted filesystem on top of any given
 block device using [dm-crypt][] and [LUKS][].  A random keyfile generated on the Ansible
 controller will be used for the encryption by default.  It is your
 responsibility that the keyfile is kept secure for this to make sense.  For
-example by storing the keyfile on an already encrypted filesystem.
+example by storing the keyfile on a already encrypted filesystem (both on
+the Ansible controller and the remote system).
 
 [LUKS]: https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup
 [dm-crypt]: https://en.wikipedia.org/wiki/Dm-crypt
@@ -17,10 +18,10 @@ example by storing the keyfile on an already encrypted filesystem.
 * Manage `/etc/crypttab` and `/etc/fstab`.
 * Create a LUKS header backup and store it on the Ansible controller.
 
-### Notes
+### Note
 
 This role is currently being migrated to the DebOps project.
-For the time in between v0.1.0 is available on Ansible Galaxy as
+For the time in between, v0.1.0 of the role is available on Ansible Galaxy as
 [`ypid.crypttab`](https://galaxy.ansible.com/detail#/role/4559).
 
 ### Installation

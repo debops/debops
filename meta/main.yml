@@ -21,7 +21,8 @@ ansigenome_info:
     block device using [dm-crypt][] and [LUKS][].  A random keyfile generated on the Ansible
     controller will be used for the encryption by default.  It is your
     responsibility that the keyfile is kept secure for this to make sense.  For
-    example by storing the keyfile on an already encrypted filesystem.
+    example by storing the keyfile on a already encrypted filesystem (both on
+    the Ansible controller and the remote system).
 
     [LUKS]: https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup
     [dm-crypt]: https://en.wikipedia.org/wiki/Dm-crypt
@@ -32,29 +33,45 @@ ansigenome_info:
     * Manage `/etc/crypttab` and `/etc/fstab`.
     * Create a LUKS header backup and store it on the Ansible controller.
 
-    ### Notes
+    ### Note
 
     This role is currently being migrated to the DebOps project.
-    For the time in between v0.1.0 is available on Ansible Galaxy as
+    For the time in between, v0.1.0 of the role is available on Ansible Galaxy as
     [`ypid.crypttab`](https://galaxy.ansible.com/detail#/role/4559).
 
 dependencies:
 
   - role: debops.secret
-    tags: [ 'depend::secret', 'depend::secret:owncloud',
-            'depend-of::owncloud', 'type::dependency:hard' ]
+    tags: [ 'depend::secret', 'depend::secret:cryptsetup',
+            'depend-of::cryptsetup', 'type::dependency:hard' ]
 
 galaxy_info:
-  author: Robin Schneider
-  description: Setup and manage encrypted filesystem.
-  license: AGPLv3
+
+  company: 'DebOps'
+  author: 'Robin Schneider'
+  description: 'Setup and manage encrypted filesystems.'
+  license: 'GNU Affero General Public License v3'
+  min_ansible_version: '1.8.4'
+
   platforms:
-  - name: Debian
-    versions:
-      - all
-  - name: Ubuntu
-    versions:
-      - all
-  categories:
-    - system
-  min_ansible_version: 1.8.4
+
+    - name: Ubuntu
+      versions:
+        - precise
+        - quantal
+        - raring
+        - saucy
+        - trusty
+
+    - name: Debian
+      versions:
+        - wheezy
+        - jessie
+
+  galaxy_tags:
+    - encryption
+    - security
+    - filesystem
+    - cryptsetup
+    - dm-crypt
+    - luks
