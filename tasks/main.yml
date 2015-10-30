@@ -96,8 +96,23 @@
 #   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'present' ] and item.create_partition_on_block_device|d(False))
 #   with_items: cryptsetup_devices_combined
 
+- name: Check if ciphertext block device exists
+  stat:
+    path: '{{ item.ciphertext_block_device }}'
+  register: cryptsetup_register_ciphertext_device
+  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
+  with_items: cryptsetup_devices_combined
+
+- name: Fail when ciphertext block device does not exist
+  fail:
+    msg: 'Ciphertext block device {{ item.0.ciphertext_block_device }} does not exist and state is {{ item.0.state|d(cryptsetup_state|d("mounted")) }}!'
+  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted' ] and not item.1.stat.exists)
+  with_together:
+    - '{{ cryptsetup_devices_combined }}'
+    - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
+
 - name: Create encryption layer
-  shell: cryptsetup isLuks "{{ item.ciphertext_block_device }}" || cryptsetup luksFormat
+  shell: cryptsetup isLuks "{{ item.0.ciphertext_block_device }}" || cryptsetup luksFormat
          --batch-mode --verbose
          {{ "" if cryptsetup_hash|d() == "default" else ("--hash=" + cryptsetup_hash) }}
          {{ "" if cryptsetup_cipher|d() == "default" else ("--cipher=" + cryptsetup_cipher) }}
@@ -110,24 +125,28 @@
          --use-urandom
          {% endif %}
          {% endif %}
-         --key-file "{{ cryptsetup_keyfile_remote_location + "/" + item.name + "_keyfile.raw" }}"
-         "{{ item.ciphertext_block_device }}"
+         --key-file "{{ cryptsetup_keyfile_remote_location + "/" + item.0.name + "_keyfile.raw" }}"
+         "{{ item.0.ciphertext_block_device }}"
   changed_when: ("Command successful." == cryptsetup_register_cmd.stdout)
   register: cryptsetup_register_cmd
-  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
-  with_items: cryptsetup_devices_combined
+  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  with_together:
+    - '{{ cryptsetup_devices_combined }}'
+    - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
 
 - name: Get UUID for ciphertext block device
-  command: blkid -s UUID -o value "{{ item.ciphertext_block_device }}"
+  command: blkid -s UUID -o value "{{ item.0.ciphertext_block_device }}"
   register: cryptsetup_register_ciphertext_blkid
   changed_when: False
   always_run: True
-  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
-  with_items: cryptsetup_devices_combined
+  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  with_together:
+    - '{{ cryptsetup_devices_combined }}'
+    - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
 
 - name: Ensure ciphertext block device is configured in crypttab
   crypttab:
-    backing_device: '{{ "UUID=" + item.1.stdout }}'
+    backing_device: '{{ ("UUID=" + item.1.stdout) if (item.1.stdout|d() | bool) else item.0.ciphertext_block_device }}'
     name: '{{ item.0.name }}'
     opts: '{{ item.0.crypttab_options | d(cryptsetup_crypttab_options | d("none")) }}'
     ## ``none`` is required on Debian jessie by :command:`cryptdisks_start` if no options are given.
@@ -178,23 +197,27 @@
 ## The header backup might change for example when new keys are added manually.
 ## Thus we need to do the following steps each time the play is executed.
 - name: Create LUKS header backup
-  shell: |
-    rm -f "{{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}"
-    cryptsetup luksHeaderBackup "{{ item.ciphertext_block_device }}" --header-backup-file "{{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}"
-  changed_when: False
-  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
-  with_items: cryptsetup_devices_combined
   tags: [ 'role::cryptsetup:backup' ]
+  shell: |
+    rm -f "{{ cryptsetup_header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}"
+    cryptsetup luksHeaderBackup "{{ item.0.ciphertext_block_device }}" --header-backup-file "{{ cryptsetup_header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}"
+  changed_when: False
+  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  with_together:
+    - '{{ cryptsetup_devices_combined }}'
+    - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
 
 - name: Store the header backup in secret directory on to the Ansible controller
+  tags: [ 'role::cryptsetup:backup' ]
   fetch:
-    src: '{{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}'
-    dest: '{{ cryptsetup_keyfile_location + "/" + item.name }}/header_backup.raw'
+    src: '{{ cryptsetup_header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}'
+    dest: '{{ cryptsetup_keyfile_location + "/" + item.0.name }}/header_backup.raw'
     fail_on_missing: True
     flat: True
-  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
-  with_items: cryptsetup_devices_combined
-  tags: [ 'role::cryptsetup:backup' ]
+  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  with_together:
+    - '{{ cryptsetup_devices_combined }}'
+    - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
 
 ## )))
 
