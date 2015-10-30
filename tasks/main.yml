@@ -26,7 +26,7 @@
     state: 'directory'
     owner: 'root'
     group: 'root'
-    group: '0700'
+    mode: '0700'
   with_flattened:
     - '{{ cryptsetup_keyfile_remote_location }}'
     - '{{ cryptsetup_header_backup_remote_location }}'
@@ -133,7 +133,7 @@
     password: '{{ cryptsetup_keyfile_remote_location + "/" + item.0.name + "_keyfile.raw" }}'
     path: '{{ item.0.crypttab_path | d(omit) }}'
     state: 'present'
-  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
+  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_blkid.results }}'
@@ -145,14 +145,23 @@
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted' ])
   with_items: cryptsetup_devices_combined
 
-- name: Create filesystem on plaintext device mapper target
-  filesystem:
-    dev:    '/dev/mapper/{{ item.name }}'
-    force:  '{{ item.force          | d(omit) }}'
-    fstype: '{{ item.fstype         | d(cryptsetup_fstype) }}'
-    opts:   '{{ item.format_options | d(omit) }}'
+- name: Check if plaintext device mapper target exists
+  stat:
+    path: '/dev/mapper/{{ item.name }}'
+  register: cryptsetup_register_plaintext_device
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
   with_items: cryptsetup_devices_combined
+
+- name: Create filesystem on plaintext device mapper target
+  filesystem:
+    dev:    '/dev/mapper/{{ item.0.name }}'
+    force:  '{{ item.0.force          | d(omit) }}'
+    fstype: '{{ item.0.fstype         | d(cryptsetup_fstype) }}'
+    opts:   '{{ item.0.format_options | d(omit) }}'
+  when: item.1|d() and item.1.stat|d() and item.1.stat.exists|d()
+  with_together:
+    - '{{ cryptsetup_devices_combined }}'
+    - '{{ cryptsetup_register_plaintext_device.results }}'
 
 - name: Ensure mount directories exist when manually mounted
   file:
