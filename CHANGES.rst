@@ -6,6 +6,9 @@ v0.2.1
 
 *Unreleased*
 
+- Fail when keyfile has been generated but ciphertext block device is not
+  available. [ypid]
+
 v0.2.0
 ------
 
