@@ -1,16 +1,8 @@
 Default variables: configuration
 ================================
 
-Some of ``debops.cryptsetup`` default variables have more extensive configuration
-than simple strings or lists, here you can find documentation and examples for
-them.
-
-.. contents::
-   :local:
-   :depth: 1
-
-.. _ifupdown_interfaces:
-
+Some of ``debops.cryptsetup`` variables have more extensive configuration.
+Here you can find documentation and examples for them.
 
 cryptsetup_devices
 ------------------
@@ -29,7 +21,7 @@ you to use more specific parameters which are not documented below.
   :file:`/dev/sdb5`.
 
 ``crypttab_options``
-  List of options to configure for each device in
+  Optional. List of options to configure for each device in
   :file:`/etc/crypttab`.
   Overwrites the default as configured by :ref:`cryptsetup_crypttab_options`.
 
@@ -64,8 +56,9 @@ you to use more specific parameters which are not documented below.
   For more details see :manpage:`mount(8)`.
 
 ``state``
-  Optional. There are four states which can be choose for each filesystem.
-  If no state is given, the value of :ref:`cryptsetup_state` will be used.
+  Optional. There are four states which can be chosen for each encrypted
+  filesystem.  If no state is given, the value of :ref:`cryptsetup_state` will
+  be used which defaults to ``mounted``.
 
   ``mounted``
     Ensure that the encryption and filesystem layer are in place on the block device and

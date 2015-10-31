@@ -18,7 +18,7 @@ the Ansible controller and the remote system).
 The following layers are involved in configuring an encrypted filesystem using
 block device encryption:
 
-#. Ciphertext block device: This can be any block device or partition on an block device.
+#. Ciphertext block device: This can be any block device or partition on a block device.
 #. Plaintext device mapper target: Created by `dm-crypt`_ under :file:`/etc/mapper/`.
 #. Plaintext mount point of the filesystem: Where the plaintext files can be accessed.
 
