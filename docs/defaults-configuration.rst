@@ -4,10 +4,10 @@ Default variables: configuration
 Some of ``ypid.kernel_module`` variables have more extensive configuration.
 Here you can find documentation and examples for them.
 
-divert_files_list
------------------
+kernel_module_list
+------------------
 
-``name ``
+``name``
   Required, string. Name of the kernel module.
 
 ``blacklist``
