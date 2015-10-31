@@ -7,24 +7,24 @@
 - name: Blacklist kernel modules
   kernel_blacklist:
     name: '{{ item.name }}'
-    state: '{% if item.blacklist is defined and item.blacklist %}present{% else %}absent{% endif %}'
+    state: '{{ "present" if (item.blacklist|d() | bool) else "absent" }}'
     blacklist_file: '{{ kernel_module_blacklist_file }}'
   with_items: kernel_module_list_combined
 
 - name: Save kernel modules which should be loaded on boot
   template:
-    src: 'load_module.conf.conf.j2'
+    src: 'etc/modules-load.d/ansible-kernel_module-role.conf.j2'
     dest: '{{ kernel_module_load_file }}'
   # when: kernel_module_list_combined
-  # Don’t use when because modules should be removed from the file file if missing in the Ansible configuration …
+  # Don’t use when because modules should be removed from the file if missing in the Ansible configuration …
 
-- name: Save module parameters
+- name: Save kernel module parameters
   template:
-    src: 'modprobe_options.conf.j2'
+    src: 'etc/modprobe.d/options-ansible-kernel_module-role.conf.j2'
     dest: '{{ kernel_module_options_file }}'
   register: kernel_module_options_template
   # when: '"parms" in kernel_module_list_combined'
-  # Don’t use when because parameters should be removed from the file file if missing in the Ansible configuration …
+  # Don’t use when because parameters should be removed from the file if missing in the Ansible configuration …
 
 ## See http://unix.stackexchange.com/a/123050
 - name: Force module unload to apply different module parameters or if blacklisted
@@ -32,19 +32,15 @@
     name: '{{ item.name }}'
     state: 'absent'
   when: (
-          item is mapping and (
+          item.blacklist|d(False) or
+          (
             (
-              (
-                (item.persistent is undefined or not item.persistent) or
-                kernel_module_options_template|changed
-              ) and
-              item.state is defined and item.state == 'present' and
-              item.params is string and
-              item.force_params is defined and item.force_params and
-              item.blacklist is undefined
-            ) or (
-              item.blacklist is defined and item.blacklist
-            )
+              not (item.persistent|d(True) | bool) or
+              kernel_module_options_template|changed
+            ) and
+            item.state|d('present') == 'present' and
+            (item.params_force|d(kernel_module_params_force|d(False)) | bool) and
+            not (item.blacklist|d(False) | bool)
           )
         )
   with_items: kernel_module_list_combined
@@ -55,9 +51,7 @@
     params: '{{ item.params | default(omit) }}'
     state: '{{ item.state }}'
   when: (
-          item is mapping and (
-            item.state is defined and
-            item.blacklist is undefined
-          )
+          item.state is defined and
+          not (item.blacklist|d(False) | bool)
         )
   with_items: kernel_module_list_combined

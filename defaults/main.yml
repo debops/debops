@@ -1,44 +1,66 @@
 ---
+# Default variables
+# =================
 
-# name (string, required): Name of the kernel module.
+# .. contents:: Sections
+#    :local:
 #
-# blacklist (boolean, optional, default: false):
-# If true, blacklist the module. Note that blacklist dominates the loading of
-# modules.
-#
-# state (string, optional, default: undefined):
-# If 'present' load the module unless it is blacklisted. Unload if 'absent'.
-#
-# persistent (boolean, optional, default: true):
-# If true, make changes permanent else the changes will not persist a reboot.
-#
-# params (string, optional, default: undefined): Kernel module parameters.
-#
-# force_params (boolean, optional, default: false):
-# If true, force that the module parameters are applied (via unload and load of
-# the module).
+# ------------------------------------
+#   Lists of module definitions
+# ------------------------------------
 
-# "Global" kernel module configuration
+# .. envvar:: kernel_module_list
+#
+# "Global" kernel module configuration.
+# Examples:
+#
+# .. code:: YAML
+#
+#    kernel_module_list:
+#
+#        ## Ensure that ``nf_conntrack_snmp`` is loaded and will be loaded after reboot.
+#      - name: 'nf_conntrack_snmp'
+#
+#        ## Ensure that ``pcspkr`` is blacklisted.
+#      - name: 'pcspkr'
+#        blacklist: yes
+#
+#        ## Ensure that ``aacraid`` is loaded with the kernel module parameter
+#        ## ``expose_physicals=1``.
+#      - name: 'aacraid'
+#        params: 'expose_physicals=1'
+#        params_force: True
+#
 kernel_module_list: []
-  # - name: 'pcspkr'
-  #   blacklist: yes
-  #   blacklist: no
-  # - name: 'pcspkr'
-  #   # params: '
-  #   state: 'present'
-  #   persistent: no
-  #
-  ## This will cause the module pcspkr to be loaded on the next boot.
-  # - name: 'pcspkr'
 
-# "Host group" kernel module configuration
+
+# .. envvar:: kernel_module_group_list
+#
+# "Host group" kernel module configuration.
 kernel_module_group_list: []
 
-# "Host" kernel module configuration
+
+# .. envvar:: kernel_module_host_list
+#
+# "Host" kernel module configuration.
 kernel_module_host_list: []
 
 
-# Internals:
+# ------------------------------------
+#   Default options
+# ------------------------------------
+
+# .. envvar:: kernel_module_params_force
+#
+# If ``True``, force that the module parameters are applied (via unloading and
+# loading of the module).
+kernel_module_params_force: False
+
+
+# ------------------------------------
+#   Configuration files used for configuring
+# ------------------------------------
+
 kernel_module_blacklist_file: '/etc/modprobe.d/blacklist-ansible-kernel_module-role.conf'
 kernel_module_options_file: '/etc/modprobe.d/options-ansible-kernel_module-role.conf'
 kernel_module_load_file: '/etc/modules-load.d/ansible-kernel_module-role.conf'
