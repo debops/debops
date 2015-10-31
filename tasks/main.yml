@@ -52,6 +52,7 @@
     creates: '{{ item.keyfile | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}'
   sudo: False
   delegate_to: 'localhost'
+  register: cryptsetup_register_keyfile_gen
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
   with_items: cryptsetup_devices_combined
 
@@ -112,13 +113,22 @@
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
   with_items: cryptsetup_devices_combined
 
-- name: Fail when ciphertext block device does not exist
+- name: Fail when ciphertext block device does not exist but the state requires for it to exist
   fail:
     msg: 'Ciphertext block device {{ item.0.ciphertext_block_device }} does not exist and state is {{ item.0.state|d(cryptsetup_state|d("mounted")) }}!'
   when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted' ] and not item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
+
+- name: Fail when ciphertext block device does not exist but the keyfile has changed
+  fail:
+    msg: 'Ciphertext block device {{ item.0.ciphertext_block_device }} does not exist but the keyfile has just been generated. You will need to make the block device available during a following Ansible run so that the encryption and filesystem layer can be setup. You will not see this error on following runs but that does not mean that the encryption and filesystem setup was successfully until you make the block device available. See documentation for details.'
+  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and not item.1.stat.exists and item.2|changed)
+  with_together:
+    - '{{ cryptsetup_devices_combined }}'
+    - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
+    - '{{ cryptsetup_register_keyfile_gen.results|d([]) }}'
 
 - name: Create encryption layer
   shell: cryptsetup isLuks "{{ item.0.ciphertext_block_device }}" || cryptsetup luksFormat
