@@ -85,7 +85,9 @@ Each configuration section in the form ``[ansible <section>]`` will be written
 into generated ``ansible.cfg`` configuration file, into a corresponding
 ``[<section>]``. This way you can configure Ansible depending on the project
 directory. For example, to set custom ``{{ ansible_managed }}`` string, you can
-use::
+use:
+
+.. code:: ini
 
     [ansible defaults]
     ansible_managed = Custom string
@@ -98,7 +100,9 @@ prepended to the values set up by debops.
 Example ``debops.cfg`` configuration file
 -----------------------------------------
 
-This file is created by ``debops-init`` command in the specified project directory::
+This file is created by ``debops-init`` command in the specified project directory:
+
+.. code:: ini
 
     [paths]
     ;data-home: /opt/debops
