@@ -1,8 +1,15 @@
 ---
 
 dependencies:
+
   - role: debops.secret
+    tags: [ 'depend::secret', 'depend::secret:postfix',
+            'depend-of::postfix', 'type::dependency:hard' ]
+
   - role: debops.ferm
+    tags: [ 'depend::ferm', 'depend::ferm:postfix',
+            'depend-of::postfix', 'type::dependency' ]
+    when: postfix
 
 galaxy_info:
   author: 'Maciej Delmanowski'
