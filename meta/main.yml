@@ -3,11 +3,12 @@
 dependencies:
 
   - role: debops.secret
-    tags: [ 'depend::secret', 'depend::secret:sshd', 'depend-of::sshd', 'type::dependency:hard' ]
+    tags: [ 'depend::secret', 'depend::secret:sshd',
+            'depend-of::sshd', 'type::dependency:hard' ]
 
   - role: debops.apt_preferences
-    tags: apt_preferences
-    tags: [ 'depend::apt_preferences', 'depend::apt_preferences:sshd', 'depend-of::sshd', 'type::dependency' ]
+    tags: [ 'depend::apt_preferences', 'depend::apt_preferences:sshd',
+            'depend-of::sshd', 'type::dependency' ]
     apt_preferences_dependent_list:
 
       - package: 'ssh ssh-* openssh-*'
@@ -16,7 +17,8 @@ dependencies:
         by_role: 'debops.sshd'
 
   - role: debops.ferm
-    tags: [ 'depend::ferm', 'depend::ferm:sshd', 'depend-of::sshd', 'type::dependency' ]
+    tags: [ 'depend::ferm', 'depend::ferm:sshd',
+            'depend-of::sshd', 'type::dependency' ]
     ferm_input_list:
 
       - type: 'dport_accept'
@@ -43,7 +45,8 @@ dependencies:
 
 
   - role: debops.tcpwrappers
-    tags: [ 'depend::tcpwrappers', 'depend::tcpwrappers:sshd', 'depend-of::sshd', 'type::dependency' ]
+    tags: [ 'depend::tcpwrappers', 'depend::tcpwrappers:sshd',
+            'depend-of::sshd', 'type::dependency' ]
     tcpwrappers_allow:
 
       - daemon: 'sshd'
@@ -60,7 +63,8 @@ dependencies:
         comment: 'Allow SSH connections from these hosts (via sshd role dependency)'
 
   - role: debops.sshkeys
-    tags: [ 'depend::sshkeys', 'depend::sshkeys:sshd', 'depend-of::sshd', 'type::dependency' ]
+    tags: [ 'depend::sshkeys', 'depend::sshkeys:sshd',
+            'depend-of::sshd', 'type::dependency' ]
 
 galaxy_info:
   author: 'Maciej Delmanowski'
