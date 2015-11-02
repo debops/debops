@@ -6,7 +6,9 @@ one output stream.
 
 By default the output will be displayed using `view`.
 
-Example commands::
+Example commands:
+
+.. code:: shell
 
     debops-defaults
 

@@ -2,7 +2,9 @@ Getting started
 ===============
 
 After DebOps scripts are installed, you need to download playbooks and roles
-provided with the project. To do that, you need to run command::
+provided with the project. To do that, you need to run command:
+
+.. code:: shell
 
     debops-update
 
@@ -19,7 +21,9 @@ When all roles are downloaded and installed, you can start using DebOps by
 creating a project directory. This will be a directory which contains
 everything related to a specific environment - Ansible inventory, custom
 playbooks, roles, templates and files. Most of the time you will run commands
-from the base of that directory. You can create it by running command::
+from the base of that directory. You can create it by running command:
+
+.. code:: shell
 
     debops-init ~/project-directory
 
@@ -37,7 +41,9 @@ a project directory and contains configuration related to it.
 Main Ansible inventory file is ``ansible/inventory/hosts``. You should add
 hosts that you want to manage to it, just make sure that you can access them
 through SSH without issues. It's a good idea to start using groups right away
-to keep many hosts under control. An example inventory file::
+to keep many hosts under control. An example inventory file:
+
+.. code:: ini
 
     [group-of-hosts]
     host1
@@ -45,7 +51,9 @@ to keep many hosts under control. An example inventory file::
 
 If you want, and your Ansible Control is Debian/Ubuntu based, you can manage it
 using DebOps as well. You can do it by adding its hostname to Ansible inventory
-with "local" connection type::
+with "local" connection type:
+
+.. code:: ini
 
     myhostname ansible_connection=local
 
@@ -53,9 +61,13 @@ When all hosts you want to use are written in inventory and you checked the
 connectivity, you can run main DebOps script to generate Ansible configuration
 and execute default DebOps playbooks::
 
+.. code:: shell
+
     debops
 
 The ``debops`` command is a wrapper for ``ansible-playbook``, which means that you can pass any ``ansible-playbook`` parameters to it. For example, to limit the Ansible run to a specific host, you can execute command::
+
+.. code:: shell
 
     debops --limit host1
 

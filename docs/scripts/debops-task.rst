@@ -8,7 +8,9 @@ use the ``ansible`` command directly.
 
 You could use it to run adhoc tasks against your hosts.
 
-Example commands::
+Example commands:
+
+.. code:: shell
 
     debops-task all -m setup
 

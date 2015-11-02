@@ -10,7 +10,9 @@ You don't need to specify an inventory or playbook. Part of the benefit of
 using this tool is that it figures out all of that stuff for you. You can still
 chain together multiple playbooks, custom or not.
 
-Example commands::
+Example commands:
+
+.. code:: shell
 
     debops -l mygroup
 
