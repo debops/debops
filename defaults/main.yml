@@ -251,9 +251,6 @@ owncloud_cron_minute: '*/15'
 # Initial configuration for ownCloud. Refer to the documentation for details:
 # https://doc.owncloud.org/server/8.1/admin_manual/configuration_server/config_sample_php_parameters.html
 owncloud_initial_config_global:
-  mail_domain: '{{ ansible_domain }}'
-  mail_from_address: owncloud
-  mail_smtpmode: sendmail
   logtimezone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
   loglevel: 2
   logdateformat: Y-m-d H:i:s.u # ISO 8601 date: 2004-02-12T15:19:21+00:00
@@ -420,3 +417,40 @@ owncloud_ldap_conf_map:
   ldapGroupMemberAssocAttr:  "{{ owncloud_ldap_group_assoc_attribute }}"
   homeFolderNamingRule: 'attr:uid'
 
+
+# -----------------------------
+#   ownCloud Mail configuration
+# -----------------------------
+
+
+# .. envvar:: owncloud_mail_domain
+#
+owncloud_mail_domain: '{{ ansible_domain }}'
+
+
+# .. envvar:: owncloud_mail_domain
+#
+owncloud_mail_from_address: 'owncloud'
+
+
+# .. envvar:: owncloud_mail_domain
+#
+owncloud_mail_smtpmode: 'sendmail'
+
+
+# .. envvar:: owncloud_mail_conf_map
+#
+owncloud_mail_conf_map:
+  mail_domain: "{{ owncloud_mail_domain }}"
+  mail_from_address: "{{ owncloud_mail_from_address  }}"
+  mail_smtpmode: "{{ owncloud_mail_smtpmode  }}"
+
+# ------------------------------------------
+#   ownCloud custom config.php configuration
+# ------------------------------------------
+
+# .. envvar:: owncloud_custom_conf_map
+# This parameters ends up in custom.config.php and override the values
+# from config.php. Refer to the documentation for details:
+# https://doc.owncloud.org/server/8.1/admin_manual/configuration_server/config_sample_php_parameters.html
+owncloud_custom_conf_map: {}
