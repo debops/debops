@@ -53,6 +53,10 @@ v0.1.2
   change the name of the variable in inventory to the new one before running
   this role. Otherwise there should be no changes necessary. [drybjed]
 
+- Add ``accept`` filter template which can be used to create rules that match
+  interfaces, ports, remote IP addresses/subnets and can accept the packets,
+  reject, or redirect to a different chain. [drybjed]
+
 v0.1.1
 ------
 
