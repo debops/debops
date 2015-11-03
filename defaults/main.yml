@@ -114,9 +114,21 @@ ferm_weight_map:
   'any-reject': '99'
 
 # List of default firewall rules defined on each host
-ferm_default_rules: '{{ ferm_rules_filter_icmp +
+ferm_default_rules: '{{ ferm_rules_filter_loopback +
+                        ferm_rules_filter_icmp +
                         ferm_rules_filter_conntrack +
                         ferm_rules_filter_syn }}'
+
+# Allow connections from localhost
+ferm_rules_filter_loopback:
+
+  - category: 'filter'
+    table: 'filter/input'
+    type: 'accept'
+    weight: '00'
+    weight_class: 'loopback'
+    name: 'loopback'
+    interface: 'lo'
 
 # Filter ICMP packets
 ferm_rules_filter_icmp:

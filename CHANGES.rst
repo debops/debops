@@ -57,6 +57,9 @@ v0.1.2
   interfaces, ports, remote IP addresses/subnets and can accept the packets,
   reject, or redirect to a different chain. [drybjed]
 
+- Move the default loopback accept ``iptables`` rule to the new directory-based
+  setup. [drybjed]
+
 v0.1.1
 ------
 
