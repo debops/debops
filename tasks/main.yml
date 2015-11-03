@@ -21,6 +21,25 @@
     - owncloud_base_packages
   tags: [ 'role::owncloud:base_install' ]
 
+- name: Install ownCloud mail config file
+  template:
+    src: srv/www/sites/config/mail.config.php.j2
+    dest: '{{ owncloud_deploy_path }}/config/mail.config.php'
+    owner: '{{ owncloud_user }}'
+    group: '{{ owncloud_group }}'
+    mode: 0640
+  tags: [ 'role::owncloud:mail' ]
+
+- name: Install ownCloud custom config file
+  template:
+    src: srv/www/sites/config/custom.config.php.j2
+    dest: '{{ owncloud_deploy_path }}/config/custom.config.php'
+    owner: '{{ owncloud_user }}'
+    group: '{{ owncloud_group }}'
+    mode: 0640
+  when: owncloud_custom_conf_map
+  tags: [ 'role::owncloud:custom_config' ]
+
 - include: configure_mysql.yml
   when: owncloud_database in [ 'mariadb' ]
   tags: [ 'role::owncloud:mariadb' ]
@@ -34,3 +53,4 @@
 
 - include: configure_ldap.yml
   when: owncloud_ldap_enable
+
