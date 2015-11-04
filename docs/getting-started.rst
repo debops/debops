@@ -65,9 +65,6 @@ Available role tags:
 ``depend::ferm:sshd``
   Run ``debops.ferm`` dependent role in ``debops.sshd`` context.
 
-``depend::sshkeys:sshd``
-  Run ``debops.sshkeys`` dependent role in ``debops.sshd`` context.
-
 ``depend::tcpwrappers:sshd``
   Run ``debops.tcpwrappers`` dependent role in ``debops.sshd`` context.
 

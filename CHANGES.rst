@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.2
+------
+
+*Unreleased*
+
+- Removed ``debops.sshkeys`` from role dependencies as it is also run from the
+  ``common.yml`` playbook. [ypid]
+
 v0.2.1
 ------
 
