@@ -35,3 +35,5 @@ v0.1.0
 - Remove "short subdomain" ``CNAME`` entries from main ``dnsmasq``
   configuration file. [drybjed]
 
+- Allow to use custom upstream nameservers. [ypid]
+

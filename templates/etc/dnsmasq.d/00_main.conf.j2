@@ -159,6 +159,11 @@ cname = {{ element + '.' + dnsmasq_domain }},{{ host + '.' + dnsmasq_domain }}
 {% endif %}
 {% endfor %}
 {% endif %}
+{% if dnsmasq_nameservers|d() %}
+
+# Use the nameservers in this file instead of the system upstream nameservers.
+resolv-file = /etc/resolvconf/upstream.conf
+{% endif %}
 {% if dnsmasq_options is defined and dnsmasq_options %}
 
 # ---- Custom options ----
