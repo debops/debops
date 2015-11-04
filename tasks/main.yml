@@ -26,6 +26,25 @@
     mode: '0644'
   notify: [ 'Test and restart dnsmasq' ]
 
+- name: Configure defaults for dnsmasq service
+  template:
+    src: 'etc/default/dnsmasq.j2'
+    dest: '/etc/default/dnsmasq'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Test and restart dnsmasq' ]
+
+- name: Configure custom nameservers
+  template:
+    src: 'etc/resolvconf/upstream.conf.j2'
+    dest: '/etc/resolvconf/upstream.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Test and restart dnsmasq' ]
+  when: dnsmasq_nameservers|d()
+
 - name: Create interface dnsmasq configuration
   template:
     src: 'etc/dnsmasq.d/interface.conf.j2'
@@ -78,3 +97,8 @@
     mode: '0755'
   when: dnsmasq_tftp is defined and dnsmasq_tftp
 
+- name: Remove custom nameservers
+  file:
+    path: '/etc/resolvconf/upstream.conf'
+    state: 'absent'
+  when: not dnsmasq_nameservers|d()

@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+
+{% if dnsmasq_nameservers is iterable %}
+{% for nameserver in dnsmasq_nameservers %}
+nameserver {{ nameserver }}
+{% endfor %}
+{% elif dnsmasq_nameservers is string %}
+nameserver {{ dnsmasq_nameservers }}
+{% endif %}
