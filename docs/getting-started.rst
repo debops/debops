@@ -10,7 +10,7 @@ Required Ansible host groups
 ``[debops_rsnapshot]``
   Defines a group of hosts which will be configured as "clients".
 
-  These hosts will have ``rsnapshot`` installed and will connect to the configured
+  These hosts will have `:program:`rsnapshot` installed and will connect to the configured
   "servers" at random times through the day, synchronize the specified files
   and rotate archived snapshots.
 
@@ -23,11 +23,11 @@ Required Ansible host groups
 ``[debops_rsnapshot_rsync]``
   Defines a group of hosts which are configured as "servers".
 
-  These hosts will have ``rsync`` installed, and SSH keys from clients will be
+  These hosts will have :command:`rsync` installed, and SSH keys from clients will be
   configured on the server ``root`` account to allow unrestricted access from
   the client.
 
-  A ``rrsync`` script provided with the ``rsync`` package will be installed to
+  A ``rrsync`` script provided with the :command:`rsync` package will be installed to
   permit for restricted, read-only access using an SSH command stored in
   ``~/.ssh/authorized_keys``.
 
@@ -44,9 +44,9 @@ primary groups can be automatically prepared to be backed up.
 Default directories
 -------------------
 
-Configuration files are stored in ``/etc/rsnapshot/`` directory.
+Configuration files are stored in :file:`/etc/rsnapshot/` directory.
 
-Backups are stored by default in ``/var/cache/rsnapshot/`` directory.
+Backups are stored by default in :file:`/var/cache/rsnapshot/` directory.
 
 
 Example inventory
@@ -86,6 +86,6 @@ have them correctly configured::
     debops -t rsnapshot
 
 You might want to see :doc:`list of default variables <defaults>` to change how
-``rsnapshot`` is configured, and a separate :doc:`advanced guides <guides>` to
+`:program:`rsnapshot` is configured, and a separate :doc:`advanced guides <guides>` to
 see how you can use the role in different environments.
 

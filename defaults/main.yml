@@ -11,22 +11,22 @@
 
 # .. envvar:: rsnapshot_clients
 #
-# Inventory group of hosts that have ``rsnapshot`` installed and keep the backup
-# files. Required.
+# Required. Inventory group of hosts that have :program:`rsnapshot` installed
+# and keep the backup files.
 rsnapshot_clients: '{{ groups.debops_rsnapshot }}'
 
 
 # .. envvar:: rsnapshot_servers
 #
-# Inventory group of hosts that should be backed up by rsnapshot. They have
-# ``rsync`` installed and clients connect to them. Required.
+# Required. Inventory group of hosts that should be backed up by rsnapshot. They have
+# :command:`rsync` installed and clients connect to them.
 rsnapshot_servers: '{{ groups.debops_rsnapshot_rsync }}'
 
 
 # .. envvar:: rsnapshot_external_servers
 #
 # List of dicts which define external servers to backup on a particular
-# ``rsnapshot`` client host. Most of the keys have the same names as main
+# :program:`rsnapshot` client host. Most of the keys have the same names as the main
 # ``debops.rsnapshot`` variables but without the ``rsnapshot_`` prefix.
 # The ``name`` key is required. See :ref:`rsnapshot_external_servers` for more
 # information.
@@ -49,13 +49,13 @@ rsnapshot_snapshot_root: '/var/cache/rsnapshot'
 
 # .. envvar:: rsnapshot_cmd_rsync
 #
-# Main script executed by ``rsnapshot`` script to perform backups.
+# Main script executed by :program:`rsnapshot` script to perform backups.
 rsnapshot_cmd_rsync: '/usr/local/lib/rsync-no-vanished'
 
 
 # .. envvar:: rsnapshot_link_dest
 #
-# Enable ``--link-dest`` option in ``rsync`` commands.
+# Enable ``--link-dest`` option in :command:`rsync`` commands.
 rsnapshot_link_dest: '1'
 
 
@@ -118,26 +118,26 @@ rsnapshot_monthly: '3'
 
 # .. envvar:: rsnapshot_one_fs
 #
-# Allow or prevent ``rsync`` from crossing filesystem boundaries.
+# Allow or prevent :command:`rsync`` from crossing filesystem boundaries.
 rsnapshot_one_fs: '0'
 
 
 # .. envvar:: rsnapshot_ssh_args
 #
-# Additional arguments for the ``ssh`` command.
+# Additional arguments for the :command:`ssh`` command.
 rsnapshot_ssh_args: '-p 22'
 
 
 # .. envvar:: rsnapshot_rrsync_script
 #
 # ``rrsync`` script will be installed in this path (by default,
-# ``/usr/local/lib``).
+# :file:`/usr/local/lib`).
 rsnapshot_rrsync_script: '{{ ansible_local.root.lib + "/rrsync" }}'
 
 
 # .. envvar:: rsnapshot_ssh_command
 #
-# Command which will be added to the SSH key in ``/root/.ssh/authorized_keys``
+# Command which will be added to the SSH key in :file:`/root/.ssh/authorized_keys`
 # of each rsnapshot server host. By default it allows for read-only access to
 # the entire filesystem.
 rsnapshot_ssh_command: 'ionice -c 3 nice {{ rsnapshot_rrsync_script }} -ro /'

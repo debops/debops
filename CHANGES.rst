@@ -28,7 +28,7 @@ v0.1.5
 
 *Released: 2015-04-30*
 
-- Add ``/lib32`` directory to the list of default excluded directories.
+- Add :file:`/lib32` directory to the list of default excluded directories.
   [drybjed]
 
 - Disable ``ssh_args`` setting on Debian Jessie due to `Debian Bug #717451`_ to
@@ -50,8 +50,8 @@ v0.1.3
 
 *Released: 2015-02-26*
 
-- Role will ignore other ``rsnapshot`` client hosts while configuring the
-  servers. This allows multiple ``rsnapshot`` clients to exist in
+- Role will ignore other `:program:`rsnapshot` client hosts while configuring the
+  servers. This allows multiple `:program:`rsnapshot` clients to exist in
   ``[debops_rsnapshot]`` group and other groups without issues. [drybjed]
 
 - You can create a client host without internal servers by setting
