@@ -4,8 +4,8 @@
 
 [OpenSSH](http://www.openssh.com/) is a secure replacement for `telnet`
 and other remote control programs. It allows you to connect to remote hosts
-over encrypted communication channel and perform variety of tasks. It's
-also primary communication channel used by Ansible.
+over a encrypted communication channel and perform a variety of tasks. It's
+also the main communication channel used by Ansible.
 
 ### Installation
 
@@ -22,7 +22,6 @@ More information about `debops.sshd` can be found in the
 ### Role dependencies
 
 - `debops.ferm`
-- `debops.sshkeys`
 - `debops.secret`
 - `debops.apt_preferences`
 - `debops.tcpwrappers`
