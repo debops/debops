@@ -13,20 +13,26 @@
   notify: [ 'Restart ferm' ]
 
 - name: Move Postfix configuration out of the way before reversion
-  command: rm -f /etc/postfix/{{ item }} removes=/etc/postfix/{{ item }}.dpkg-divert
+  command: rm -f /etc/postfix/{{ item }}
+  args:
+    removes: '/etc/postfix/{{ item }}.dpkg-divert'
   with_items: [ 'main.cf', 'master.cf' ]
 
 - name: Remove diversion of original Postfix configuration
   command: dpkg-divert --quiet --local --rename --remove /etc/postfix/{{ item }}
-           removes=/etc/postfix/{{ item }}.dpkg-divert
+  args:
+    removes: '/etc/postfix/{{ item }}.dpkg-divert'
   with_items: [ 'main.cf', 'master.cf' ]
   notify: [ 'Restart postfix' ]
 
 - name: Move alias database out of the way before reversion
-  command: rm -f /etc/aliases removes=/etc/aliases.dpkg-divert
+  command: rm -f /etc/aliases
+  args:
+    removes: '/etc/aliases.dpkg-divert'
 
 - name: Remove diversion of original alias database
   command: dpkg-divert --quiet --local --rename --remove /etc/aliases
-           removes=/etc/aliases.dpkg-divert
+  args:
+    removes: '/etc/aliases.dpkg-divert'
 
 - include: cleanup_sasl_cyrus.yml
