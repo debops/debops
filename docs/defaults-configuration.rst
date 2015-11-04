@@ -15,13 +15,14 @@ postfix_capabilities
 --------------------
 
 List of active Postfix capabilities. By default Postfix is configured with
-local mail disabled, all mail is sent to local MX server configured in DNS.
+local mail disabled, all mail is sent to a local MX server configured in DNS.
 
 List of available Postfix capabilities:
 
 ``null``
-  **Enabled by default.** Postfix has no local delivery, all mail is sent to a MX for current
-  domain. These settings are based on `Postfix null client`_ configuration.
+  **Enabled by default.** Postfix has no local delivery, all mail is sent to a
+  MX for the current domain. These settings are based on `Postfix null client`_
+  configuration.
 
   You should remove this capability and replace it with others presented below.
 
@@ -32,7 +33,8 @@ List of available Postfix capabilities:
 
 ``network``
   enables access to Postfix-related ports (``25``, ``587``, ``465``)
-  in firewall, required for incoming mail to be acceped by Postfix.
+  in the firewall which is required for incoming mail to be accepted by
+  Postfix.
 
 ``mx``
   enables support for incoming mail on port ``25``, designed for hosts set up
@@ -45,7 +47,7 @@ List of available Postfix capabilities:
   configured separately).
 
 ``deprecated``
-  designed to enable obsolete functions of mail system,
+  designed to enable obsolete functions of the mail system,
   currently enables authorized mail submission on port ``465`` (when
   ``submission`` is also present in the list of capabilities).
 
@@ -55,15 +57,15 @@ List of available Postfix capabilities:
 
 ``sender_dependent``
   enable sender dependent SMTP client authentication
-  (``client`` capability required)
+  (``client`` capability required).
 
 ``archive``
   BCC all mail (or mail from/to specified domains) passing
-  through the SMTP server to an e-mail account on local or remote server.
+  through the SMTP server to an e-mail account on a local or remote server.
 
 ``postscreen``
-  allows to enable postscreen support on port ``25`` independently of ``mx``
-  capability.
+  allows to enable postscreen support on port ``25`` independently of the
+  ``mx`` capability.
 
 ``dnsbl``
   enables support for DNS blacklists in postscreen, automatically enables
@@ -73,8 +75,8 @@ List of available Postfix capabilities:
   enables support for DNS whitelists in postscreen, without blacklists.
 
 ``test``
-  enables "soft_bounce" option and XCLIENT protocol extension for ``localhost``
-  (useful in mail system testing).
+  enables the "soft_bounce" option and XCLIENT protocol extension for
+  ``localhost`` (useful in mail system testing).
 
 ``defer``
   planned feature to defer mail delivery.

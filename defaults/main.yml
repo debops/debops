@@ -11,14 +11,14 @@
 
 # Configuration options for Postfix. Many options are configured automatically
 # using templates, here you can (mostly) add your own entries to Postfix lists
-# (look in Postfix manual for details), they will by added or replaced in
-# templates.
+# (look in the Postfix manual for details), they will by added or replaced in
+# the templates.
 
 
 # .. envvar:: postfix
 #
 # List of active Postfix capabilities. By default Postfix is configured with
-# local mail disabled, all mail is sent to local MX server configured in DNS.
+# local mail disabled, all mail is sent to a local MX server configured in DNS.
 # See :ref:`postfix_capabilities` for more details.
 postfix: [ 'null' ]
 
@@ -31,38 +31,38 @@ postfix_packages: []
 
 # .. envvar:: postfix_relayhost
 #
-# Address of mail host this host should relay all mail to instead of delivering
-# it directly. (Automatic configuration)
+# Address of a mail host where this host should relay all mail to instead of
+# delivering them directly. (Automatic configuration).
 postfix_relayhost: False
 
 
 # .. envvar:: postfix_mailname
 #
-# Mail host name configured in /etc/mailname
+# Mail host name as configured in :file:`/etc/mailname`.
 postfix_mailname: '{{ ansible_fqdn }}'
 
 
 # .. envvar:: postfix_mydomain
 #
-# Domain name to use for outgoing mail messages
+# Domain name to use for outgoing mail messages.
 postfix_mydomain: '{{ ansible_domain }}'
 
 
 # .. envvar:: postfix_smtpd_banner
 #
-# Default SMTP server greeting string
+# Default SMTP server greeting string.
 postfix_smtpd_banner: '$myhostname ESMTP'
 
 
 # .. envvar:: postfix_delay_warning_time
 #
-# How long to wait before notifying users about delivery problems
+# How long to wait before notifying users about delivery problems.
 postfix_delay_warning_time: '4h'
 
 
 # .. envvar:: postfix_relay_domains
 #
-# List of relay domains this host accepts
+# List of relay domains this host accepts.
 postfix_relay_domains: []
 
 
@@ -109,7 +109,7 @@ postfix_message_size_limit: 50
 
 # .. envvar:: postfix_pki
 #
-# Enable or disable support for TLS in Postfix (using debops.pki)
+# Enable or disable support for TLS in Postfix (using ``debops.pki``).
 postfix_pki: '{{ (True
                   if (ansible_local|d() and ansible_local.pki|d() and
                       ansible_local.pki.enabled|d() | bool)
@@ -118,32 +118,32 @@ postfix_pki: '{{ (True
 
 # .. envvar:: postfix_pki_path
 #
-# Base PKI directory
+# Base PKI directory.
 postfix_pki_path: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.base_path }}{% else %}/etc/pki{% endif %}'
 
 
 # .. envvar:: postfix_pki_realm
 #
-# Default PKI realm used by Postfix
+# Default PKI realm used by Postfix.
 postfix_pki_realm: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.realm }}{% else %}system{% endif %}'
 
 
 # .. envvar:: postfix_pki_crt
 #
-# Default certificate, relative to ``postfix_pki_realm`` variable
+# Default certificate, relative to ``postfix_pki_realm`` variable.
 postfix_pki_crt: 'default.crt'
 
 
 # .. envvar:: postfix_pki_key
 #
-# Default private key, relative to ``postfix_pki_realm`` variable
+# Default private key, relative to ``postfix_pki_realm`` variable.
 postfix_pki_key: 'default.key'
 
 
 # .. envvar:: postfix_pki_dhparam
 #
 # Default Diffie-Hellman parameters file (2048 bits), relative to
-# ``postfix_pki_realm`` variable
+# ``postfix_pki_realm`` variable.
 postfix_pki_dhparam: 'dhparam.pem'
 
 
@@ -157,19 +157,19 @@ postfix_pki_dhparam: 'dhparam.pem'
 
 # .. envvar:: postfix_allow_smtp
 #
-# List of hosts/networks that can access ``smtp`` port (25)
+# List of hosts/networks that can access the ``smtp`` port (25).
 postfix_allow_smtp: []
 
 
 # .. envvar:: postfix_allow_submission
 #
-# List of hosts/networks that can access ``submission`` port (587)
+# List of hosts/networks that can access the ``submission`` port (587).
 postfix_allow_submission: []
 
 
 # .. envvar:: postfix_allow_smtps
 #
-# List of hosts/networks that can access ``smtps`` port (465), deprecated.
+# List of hosts/networks that can access the ``smtps`` port (465), deprecated.
 postfix_allow_smtps: []
 
 
@@ -190,18 +190,21 @@ postfix_smtp_sasl_password_map: {}
 # Map of sender dependent relayhosts used in SMTP client mail relay by Postfix.
 # You need to add ``client`` and ``sender_dependent`` in Postfix capabilities to
 # enable this feature.
-postfix_sender_dependent_relayhost_map: {}
-# Example entries::
 #
-#   '<sender-address>': '<relay-host>'
-#   'user@example.org': '[smtp.example.org]:submission'
+# Example::
+#
+#   postfix_sender_dependent_relayhost_map:
+#     '<sender-address>': '<relay-host>'
+#     'user@example.org': '[smtp.example.org]:submission'
+#
+postfix_sender_dependent_relayhost_map: {}
 
 
 # ------------------------
 #   Mail archive options
 # ------------------------
 
-# Archiving is enabled by ``archive`` option in Postfix capabilities.
+# Archiving is enabled by the ``archive`` option in Postfix capabilities.
 # Remember that an archive account on the receiving server needs to exist.
 
 
@@ -209,11 +212,11 @@ postfix_sender_dependent_relayhost_map: {}
 #
 # How Postfix should redistribute archived messages:
 #
-# - ``all``:            send all mail without sorting
+# - ``all``:            Send all mail without sorting.
 #
-# - ``domain``:         send mail sorted by domain
+# - ``domain``:         Send mail sorted by domain.
 #
-# - ``domain-account``: send mail sorted by domain and account, divided by separator
+# - ``domain-account``: Send mail sorted by domain and account, divided by separator.
 #
 postfix_archive_method: 'all'
 
@@ -221,7 +224,7 @@ postfix_archive_method: 'all'
 # .. envvar:: postfix_archive_to
 #
 # Optional address of a mail account to send the archived mails to. If not
-# specified, Ansible will generate an address by itself in format:
+# specified, Ansible will generate an address by itself of the format:
 #
 # - ``<postfix_archive_account>@<ansible_fqdn>`` (if local mail is enabled)
 #
@@ -268,27 +271,27 @@ postfix_archive_domains: []
 # capabilities.
 postfix_postscreen_dnsbl_sites:
 
-  # Spamhaus ZEN: http://www.spamhaus.org/zen/
-  # Might require registration
+  # Spamhaus ZEN: https://www.spamhaus.org/zen/
+  # Might require registration.
   - 'zen.spamhaus.org*3'
 
   # Barracuda Reputation Block List: http://barracudacentral.org/rbl
-  # Requires registration
+  # Requires registration.
   #- 'b.barracudacentral.org*2'
 
   # Spam Eating Monkey: http://spameatingmonkey.com/lists.html
-  # Might require registration
+  # Might require registration.
   - 'bl.spameatingmonkey.net*2'
   - 'backscatter.spameatingmonkey.net*2'
 
-  # SpamCop Blocking List: http://www.spamcop.net/bl.shtml
+  # SpamCop Blocking List: https://www.spamcop.net/bl.shtml
   - 'bl.spamcop.net'
 
   # Passive Spam Block List: http://psbl.org/
   - 'psbl.surriel.com'
 
   # mailspike: http://mailspike.net/usage.html
-  # Might require contact
+  # Might require contact.
   - 'bl.mailspike.net'
 
 
@@ -300,11 +303,11 @@ postfix_postscreen_dnsbl_sites:
 postfix_postscreen_dnswl_sites:
 
   # SpamHaus Whitelist: http://www.spamhauswhitelist.com/en/usage.html
-  # Might require registration
+  # Might require registration.
   - 'swl.spamhaus.org*-4'
 
-  # DNS Whitelist: http://dnswl.org/tech
-  # Might require registration
+  # DNS Whitelist: https://dnswl.org/tech
+  # Might require registration.
   - 'list.dnswl.org=127.[0..255].[0..255].0*-2'
   - 'list.dnswl.org=127.[0..255].[0..255].1*-3'
   - 'list.dnswl.org=127.[0..255].[0..255].[2..255]*-4'
@@ -317,7 +320,7 @@ postfix_postscreen_dnswl_sites:
 # .. envvar:: postfix_smtpd_sasl_type
 #
 # The SASL plug-in type that the Postfix SMTP server should use for
-# authentication (currently supported: cyrus)
+# authentication (currently supported: ``cyrus``).
 postfix_smtpd_sasl_type: 'cyrus'
 
 
@@ -333,8 +336,9 @@ postfix_cyrus_smtpd_conf: |
 
 # .. envvar:: postfix_cyrus_saslauthd_options
 #
-# Configuration parameters passed to ``saslauthd`` daemon. Path to the UNIX
-# socket is added automatically. See ``saslauthd(8)`` for more details.
+# Configuration parameters passed to the :program:`saslauthd` daemon. Path to
+# the UNIX socket is added automatically. See :manpage:`saslauthd(8)` for more
+# details.
 postfix_cyrus_saslauthd_options: '-c'
 
 
@@ -344,43 +348,43 @@ postfix_cyrus_saslauthd_options: '-c'
 
 # ``debops.postfix`` creates a base set of various smtpd restrictions by
 # itself, to protect the SMTP server against spam. However this functionality
-# is currently basic. Using lists below you can define your own set of smtpd
-# restrictions, which will override anything generated automatically by the
-# role.
+# is currently basic. Using the lists below you can define your own set of
+# smtpd restrictions, which will override anything generated automatically by
+# the role.
 
 # .. envvar:: postfix_smtpd_client_restrictions
 #
-# Client restrictions, processed at the connection stage
+# Client restrictions, processed at the connection stage.
 postfix_smtpd_client_restrictions: []
 
 
 # .. envvar:: postfix_smtpd_helo_restrictions
 #
-# Hello restrictions, processed at HELO/EHLO stage
+# Hello restrictions, processed at HELO/EHLO stage.
 postfix_smtpd_helo_restrictions: []
 
 
 # .. envvar:: postfix_smtpd_sender_restrictions
 #
-# Sender restrictions, processed at MAIL FROM stage
+# Sender restrictions, processed at MAIL FROM stage.
 postfix_smtpd_sender_restrictions: []
 
 
 # .. envvar:: postfix_smtpd_relay_restrictions
 #
-# Relay restrictions (currently not supported in the role)
+# Relay restrictions (currently not supported in the role).
 postfix_smtpd_relay_restrictions: []
 
 
 # .. envvar:: postfix_smtpd_recipient_restrictions
 #
-# Recipient restrictions, processed at RCPT TO stage
+# Recipient restrictions, processed at RCPT TO stage.
 postfix_smtpd_recipient_restrictions: []
 
 
 # .. envvar:: postfix_smtpd_data_restrictions
 #
-# Data restrictions, processed at DATA stage
+# Data restrictions, processed at DATA stage.
 postfix_smtpd_data_restrictions: []
 
 
@@ -388,8 +392,8 @@ postfix_smtpd_data_restrictions: []
 #   Mail aliases
 # ----------------
 
-# Postfix role automatically manages ``/etc/aliases`` file with a set of
-# default aliases redirected to ``root`` and ``staff`` accounts.
+# The Postfix role automatically manages the :file:`/etc/aliases` file with a
+# set of default aliases redirected to ``root`` and ``staff`` accounts.
 
 
 # .. envvar:: postfix_default_local_alias_recipients
@@ -402,14 +406,17 @@ postfix_default_local_alias_recipients: ['{{ lookup("env","USER") }}']
 # .. envvar:: postfix_local_aliases
 #
 # Hash of local aliases which will be merged with default aliases in
-# vars/main.yml
-postfix_local_aliases: {}
+# vars/main.yml.
+#
 # Examples::
 #
-#   'alias': [ 'account1', 'account2' ]
-#   'other': [ 'user@email', '"|/dir/command"' ]
-#   'blackhole': [ '/dev/null' ]
-#   'send_to_default_recipients': []
+#   postfix_local_aliases:
+#     'alias': [ 'account1', 'account2' ]
+#     'other': [ 'user@email', '"|/dir/command"' ]
+#     'blackhole': [ '/dev/null' ]
+#     'send_to_default_recipients': []
+#
+postfix_local_aliases: {}
 
 
 # --------------------------------
@@ -418,14 +425,14 @@ postfix_local_aliases: {}
 
 # .. envvar:: postfix_local_maincf
 #
-# Custom Postfix configuration added at the end of ``/etc/postfix/main.cf``
+# Custom Postfix configuration added at the end of :file:`/etc/postfix/main.cf`
 # in a text block format
 postfix_local_maincf: False
 
 
 # .. envvar:: postfix_local_mastercf
 #
-# Custom Postfix configuration added at the end of ``/etc/postfix/master.cf``
+# Custom Postfix configuration added at the end of :file:`/etc/postfix/master.cf`
 # in a text block format
 postfix_local_mastercf: False
 
@@ -442,7 +449,7 @@ postfix_dependent_lists: {}
 # .. envvar:: postfix_dependent_maincf
 #
 # Here you can specify Postfix configuration options which should be enabled in
-# ``/etc/postfix/main.cf`` using debops.postfix dependency role definition.
+# :file:`/etc/postfix/main.cf` using debops.postfix dependency role definition.
 # Configuration will be saved in Ansible facts and updated when necessary.
 # See :ref:`postfix_dependent_maincf` for more information.
 postfix_dependent_maincf: []
