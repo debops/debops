@@ -19,7 +19,7 @@ v0.1.6
 
 - Add ``rsync-no-vanished`` wrapper script, which bypasses an issue when `files
   during long backups vanish`_ and the backup cycle is broken. It's set to be
-  run by default for all hosts, can be overriden per host. [drybjed]
+  run by default for all hosts, can be overridden per host. [drybjed]
 
 .. _files during long backups vanish: https://bugzilla.samba.org/show_bug.cgi?id=3653
 
@@ -28,7 +28,7 @@ v0.1.5
 
 *Released: 2015-04-30*
 
-- Add ``/lib32`` directory to the list of default excluded directories.
+- Add :file:`/lib32` directory to the list of default excluded directories.
   [drybjed]
 
 - Disable ``ssh_args`` setting on Debian Jessie due to `Debian Bug #717451`_ to
@@ -43,15 +43,15 @@ v0.1.4
 *Released: 2015-03-19*
 
 - Add a way to reset known SSH host fingerprints in case that hosts are
-  reinstalled or other related issues are occuring. [drybjed]
+  reinstalled or other related issues are occurring. [drybjed]
 
 v0.1.3
 ------
 
 *Released: 2015-02-26*
 
-- Role will ignore other ``rsnapshot`` client hosts while configuring the
-  servers. This allows multiple ``rsnapshot`` clients to exist in
+- Role will ignore other `:program:`rsnapshot` client hosts while configuring the
+  servers. This allows multiple `:program:`rsnapshot` clients to exist in
   ``[debops_rsnapshot]`` group and other groups without issues. [drybjed]
 
 - You can create a client host without internal servers by setting
