@@ -52,3 +52,5 @@ v0.1.0
 
 - Allow to use mirror/proxy for security.debian.org as well. [ypid]
 
+- Switched the default Debian mirror to the new official redirector at
+  ``http://httpredir.debian.org/``. [ypid]
