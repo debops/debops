@@ -159,9 +159,12 @@ lxc_template_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^ssh || cat 
 
 # .. envvar:: lxc_template_debootstrap_mirror
 #
-# Address of Debian mirror to use in ``debootstrap``.
-# Example usage with local apt-cacher-ng proxy: 'http://cache.{{ ansible_domain }}:3142/debian'
-lxc_template_debootstrap_mirror: 'http://http.debian.net/debian'
+# Address of a Debian mirror to use in ``debootstrap``.
+# Example usage with local apt-cacher-ng proxy::
+#
+#   lxc_template_debootstrap_mirror: 'http://cache.{{ ansible_domain }}:3142/debian'
+#
+lxc_template_debootstrap_mirror: 'http://httpredir.debian.org/debian'
 
 
 # .. envvar:: lxc_template_debootstrap_release
@@ -172,10 +175,22 @@ lxc_template_debootstrap_release: '{{ ansible_distribution_release }}'
 
 # .. envvar:: lxc_template_security_upgrade
 #
-# Automatically add 'security.debian.org' repository and perform 'apt-get
-# upgrade' during container creation to get the latest security updates.
+# Automatically add ``security.debian.org`` repository and perform :command:`apt-get
+# upgrade` during container creation to get the latest security updates.
 # Container creation takes longer, but the resulting system is more secure.
 lxc_template_security_upgrade: True
+
+
+# .. envvar:: lxc_template_security_mirror
+#
+# Address of a Debian mirror to use by APT for security updates.
+# Note that ``http://security.debian.org/`` is still going to be configured as
+# fallback security update source.
+# Example usage with local apt-cacher-ng proxy::
+#
+#   lxc_template_security_mirror: 'http://cache.{{ ansible_domain }}:3142/security.debian.org/'
+#
+lxc_template_security_mirror: ''
 
 
 # .. envvar:: lxc_template_debootstrap_base_packages

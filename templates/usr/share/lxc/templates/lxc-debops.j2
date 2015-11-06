@@ -62,6 +62,12 @@ EOF
     # To make new LXC containers secure, let's do a quick upgrade during container
     # creation
 
+{% if lxc_template_security_mirror|d() %}
+    # Add Security repository to sources.list
+    # For the security repository, you should not rely on third party mirrors. You should always use them in addition to the main mirrors. I.e. list the third party mirror first, and then security.debian.org.
+    echo "deb {{ lxc_template_security_mirror }} ${DEFAULT_RELEASE}/updates main" >> $rootfs/etc/apt/sources.list
+
+{% endif %}
     # Add Security repository to sources.list
     echo "deb http://security.debian.org/ ${DEFAULT_RELEASE}/updates main" >> $rootfs/etc/apt/sources.list
 

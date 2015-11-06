@@ -50,3 +50,7 @@ v0.1.0
 - Change the SSH public key lookup to avoid issues when ``ssh-add`` does not
   return any keys. Thanks, xorgic! [drybjed]
 
+- Allow to use mirror/proxy for security.debian.org as well. [ypid]
+
+- Switched the default Debian mirror to the new official redirector at
+  ``http://httpredir.debian.org/``. [ypid]
