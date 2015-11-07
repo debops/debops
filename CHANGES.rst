@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2015-11-07*
+
+- Change the way Ansible gets the default user account which is allowed to use
+  ``atd`` to support changes introduced in Ansible v2. [drybjed]
+
 v0.1.1
 ------
 
