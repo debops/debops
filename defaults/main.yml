@@ -71,7 +71,10 @@ bootstrap_admin_system: True
 # .. envvar:: bootstrap_admin_name
 #
 # Name of the admin account.
-bootstrap_admin_name: '{{ ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER") }}'
+bootstrap_admin_name: '{{ (ansible_ssh_user
+                           if (ansible_ssh_user | bool and
+                               ansible_ssh_user != "root")
+                           else lookup("env","USER")) }}'
 
 
 # .. envvar:: bootstrap_admin_group

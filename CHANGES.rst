@@ -4,7 +4,7 @@ Changelog
 v0.1.1
 ------
 
-*Unreleased*
+*Released: 2015-11-07*
 
 - Update the task list so that correct hostname is set in ``/etc/hosts`` even
   when ``bootstrap_domain`` is not specified. [drybjed]
@@ -21,6 +21,8 @@ v0.1.1
 
 - Replace the quotes in ``lineinfile`` module to prevent issues with ``\t``
   characters on Ansible v2. [drybjed]
+
+- Fix issue with empty ``ansible_ssh_user`` on Ansible v2. [drybjed]
 
 v0.1.0
 ------
