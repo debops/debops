@@ -76,6 +76,10 @@ v0.1.2
   will change after roles are converted to the new firewall configuration
   style. [drybjed]
 
+- Update configuration templates in ``templates/etc/ferm/ferm.d/`` role
+  directory. A few new templates have been added which will generate rules that
+  were defined in ``/etc/ferm/ferm.conf`` configuration files. [drybjed]
+
 v0.1.1
 ------
 
