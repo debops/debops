@@ -54,11 +54,11 @@ ferm_filter_syn_expire: '{{ (60 * 60) }}'
 ferm_filter_recent: True
 
 # Name of recent list to block early
-ferm_block_recent: 'badguys'
+ferm_filter_recent_name: 'badguys'
 
 # Length of time in seconds to block recent offenders; if they try connecting
 # before the time is up, timer is reset
-ferm_block_time: '{{ (60 * 60 * 2) }}'
+ferm_filter_recent_time: '{{ (60 * 60 * 2) }}'
 
 # Mark packets on invalid ports as bad guys (block port scanning)
 ferm_mark_portscan: False
@@ -67,6 +67,9 @@ ferm_mark_portscan: False
 # Disabling might help reduce log spam but will make debugging issues harder.
 ferm_log_issues: True
 
+# Include legacy firewall rules. This variable should allow for easier
+# transition to the new firewall rules in the future.
+ferm_include_legacy: True
 
 # List of iptables rules to manage, templates used by these rules are included
 # in templates/etc/ferm/ferm.d/ directory.
@@ -111,17 +114,42 @@ ferm_weight_map:
   'any-reject': '99'
 
 # List of default firewall rules defined on each host
-ferm_default_rules: '{{ ferm_rules_filter_loopback +
+ferm_default_rules: '{{ ferm_rules_default_policy +
+                        ferm_rules_filter_loopback +
                         ferm_rules_filter_icmp +
                         ferm_rules_filter_conntrack +
-                        ferm_rules_filter_syn }}'
+                        ferm_rules_filter_syn +
+                        ferm_rules_filter_recent_badguys +
+                        ferm_rules_filter_include_legacy +
+                        ferm_rules_filter_recent_scanners +
+                        ferm_rules_filter_reject_all +
+                        ferm_rules_fail2ban }}'
+
+# Configure default policies for built-in iptables chains
+ferm_rules_default_policy:
+
+  - type: 'default_policy'
+    chain: 'INPUT'
+    weight: '00'
+    name: 'filter_input'
+    policy: '{{ ferm_default_policy_input }}'
+
+  - type: 'default_policy'
+    chain: 'FORWARD'
+    weight: '00'
+    name: 'filter_forward'
+    policy: '{{ ferm_default_policy_forward }}'
+
+  - type: 'default_policy'
+    chain: 'OUTPUT'
+    weight: '00'
+    name: 'filter_output'
+    policy: '{{ ferm_default_policy_output }}'
 
 # Allow connections from localhost
 ferm_rules_filter_loopback:
 
-  - category: 'filter'
-    table: 'filter/input'
-    type: 'accept'
+  - type: 'accept'
     weight: '00'
     weight_class: 'loopback'
     name: 'loopback'
@@ -130,9 +158,7 @@ ferm_rules_filter_loopback:
 # Filter ICMP packets
 ferm_rules_filter_icmp:
 
-  - category: 'filter'
-    table: 'filter/input'
-    type: 'hashlimit'
+  - type: 'hashlimit'
     weight: '03'
     weight_class: 'filter-icmp'
     name: 'icmp-flood'
@@ -145,30 +171,15 @@ ferm_rules_filter_icmp:
 # Enable connection tracking for incoming, forwarded and outgoing traffic.
 ferm_rules_filter_conntrack:
 
-  - category: 'filter'
-    table: 'filter/input'
-    type: 'conntrack'
+  - type: 'connection_tracking'
     weight: '05'
     weight_class: 'conntrack'
-
-  - category: 'filter'
-    table: 'filter/forward'
-    type: 'conntrack'
-    weight: '05'
-    weight_class: 'conntrack'
-
-  - category: 'filter'
-    table: 'filter/output'
-    type: 'conntrack'
-    weight: '05'
-    weight_class: 'conntrack'
+    chain: [ 'INPUT', 'OUTPUT', 'FORWARD' ]
 
 # Filter TCP SYN packets
 ferm_rules_filter_syn:
 
-  - category: 'filter'
-    table: 'filter/input'
-    type: 'hashlimit'
+  - type: 'hashlimit'
     weight: '07'
     weight_class: 'filter-syn'
     name: 'syn-flood'
@@ -178,6 +189,78 @@ ferm_rules_filter_syn:
     hashlimit: '{{ ferm_filter_syn_limit }}'
     hashlimit_burst: '{{ ferm_filter_syn_burst }}'
     hashlimit_expire: '{{ ferm_filter_syn_expire }}'
+
+# Block all packets marked as "badguys" later in the firewall
+ferm_rules_filter_recent_badguys:
+
+  - type: 'recent'
+    weight: '09'
+    weight_class: 'any-blacklist'
+    name: 'block-recent-badguys'
+    comment: 'Reject packets marked as "badguys"'
+    when: '{{ ferm_filter_recent | bool }}'
+    recent_name: '{{ ferm_filter_recent_name }}'
+    recent_update: True
+    recent_seconds: '{{ ferm_filter_recent_time }}'
+    recent_target: 'REJECT'
+
+  - type: 'recent'
+    weight: '09'
+    weight_class: 'any-blacklist'
+    name: 'clean-recent-badguys'
+    comment: 'Reject packets marked as "badguys"'
+    when: '{{ ferm_filter_recent | bool }}'
+    recent_name: '{{ ferm_filter_recent_name }}'
+    recent_remove: True
+    recent_log: False
+
+# Include rules from legacy ferm directory
+ferm_rules_filter_include_legacy:
+
+  - type: 'accept'
+    weight: '50'
+    weight_class: 'any-service'
+    filename: 'jump_legacy-rules'
+    comment: 'Jump to legacy firewall rules'
+    target: 'debops-legacy-input-rules'
+    when: '{{ ferm_include_legacy | bool }}'
+    delete: '{{ not ferm_include_legacy | bool }}'
+
+  - type: 'include'
+    weight: 'zz'
+    chain: 'debops-legacy-input-rules'
+    comment: 'Include legacy firewall rules'
+    name: 'legacy-input-rules'
+    include: '/etc/ferm/filter-input.d/'
+    when: '{{ ferm_include_legacy | bool }}'
+    delete: '{{ not ferm_include_legacy | bool }}'
+
+# Block potential port scanners that try to access closed ports
+ferm_rules_filter_recent_scanners:
+
+  - type: 'recent'
+    weight: '85'
+    name: 'block-portscans'
+    comment: 'Mark potential port scanners as bad guys'
+    recent_set_name: '{{ ferm_filter_recent_name }}'
+    when: '{{ ferm_mark_portscan | bool }}'
+    delete: '{{ not ferm_mark_portscan | bool }}'
+
+# Reject all incoming packets not handled by previous rules
+ferm_rules_filter_reject_all:
+
+  - type: 'reject'
+    weight: '99'
+    weight_class: 'any-reject'
+
+# fail2ban support rules for ferm
+ferm_rules_fail2ban:
+
+  - type: 'fail2ban'
+    weight: 'zz'
+    comment: 'Reload fail2ban rules'
+    when: '{{ ferm_fail2ban | bool }}'
+    delete: '{{ not ferm_fail2ban | bool }}'
 
 # Enable or disable fail2ban integration. ferm will send fail2ban reload
 # command after its own configuration is reloaded. If fail2ban is not present

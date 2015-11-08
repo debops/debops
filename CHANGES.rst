@@ -80,6 +80,16 @@ v0.1.2
   directory. A few new templates have been added which will generate rules that
   were defined in ``/etc/ferm/ferm.conf`` configuration files. [drybjed]
 
+- Split ``/etc/ferm/ferm.conf`` config into parts.
+
+  Static firewall configuration in ``/etc/ferm/ferm.conf`` has been split into
+  separate files in ``/etc/ferm/ferm.d/`` directory. Each firewall rule is
+  generated using templates, defined in default variables, which makes it
+  easier to change or redesign the firewall from scratch.
+
+  Some default variables have been renamed to better indicate their use in the
+  firewall configuration. [drybjed]
+
 v0.1.1
 ------
 
