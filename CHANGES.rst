@@ -64,6 +64,18 @@ v0.1.2
   indicate that it is used in all firewall contexts, not just the "filter"
   table. [drybjed]
 
+- Redesign the directory structure of ``ferm`` configuration.
+
+  Different parts of the firewall configuration will be stored and managed in
+  ``/etc/ferm/ferm.d/`` directory instead of various subdirectories. This makes
+  management of configuration simplier and more flexible to adapt to different
+  environments.
+
+  Existing firewall configuration in ``/etc/ferm/filter-input.d/`` will be
+  included by default, so the already configured firewalls still work. This
+  will change after roles are converted to the new firewall configuration
+  style. [drybjed]
+
 v0.1.1
 ------
 
