@@ -60,6 +60,10 @@ v0.1.2
 - Move the default loopback accept ``iptables`` rule to the new directory-based
   setup. [drybjed]
 
+- Rename the ``ferm_filter_domains`` default variable to ``ferm_domains`` to
+  indicate that it is used in all firewall contexts, not just the "filter"
+  table. [drybjed]
+
 v0.1.1
 ------
 
