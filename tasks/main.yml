@@ -58,15 +58,6 @@
     mode: '0644'
   notify: [ 'Restart ferm' ]
 
-- name: Allow SSH access from Ansible Controller
-  template:
-    src: 'etc/ferm/filter-input.d/ansible_controller.conf.j2'
-    dest: '/etc/ferm/filter-input.d/10_ansible_controller.conf'
-    owner: 'root'
-    group: 'adm'
-    mode: '0644'
-  notify: [ 'Restart ferm' ]
-
 - name: Configure forwarding in ip(6)tables if enabled
   template:
     src: 'etc/ferm/ferm.d/10_forward.conf.j2'

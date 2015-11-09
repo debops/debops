@@ -31,6 +31,9 @@ ferm_domains: [ 'ip', 'ip6' ]
 #       be to use the `debops.sshd` role to configure ssh service.
 ferm_ansible_controllers: []
 
+# List of ports which are opened for access from Ansible Controllers
+ferm_ansible_controllers_ports: [ 'ssh' ]
+
 # Default iptables policy for INPUT, OUTPUT and FORWARD chains
 ferm_default_policy_input: 'DROP'
 ferm_default_policy_output: 'ACCEPT'
@@ -116,6 +119,7 @@ ferm_weight_map:
 # List of default firewall rules defined on each host
 ferm_default_rules: '{{ ferm_rules_default_policy +
                         ferm_rules_filter_loopback +
+                        ferm_rules_filter_ansible_controller +
                         ferm_rules_filter_icmp +
                         ferm_rules_filter_conntrack +
                         ferm_rules_filter_syn +
@@ -154,6 +158,18 @@ ferm_rules_filter_loopback:
     weight_class: 'loopback'
     name: 'loopback'
     interface: 'lo'
+
+# Allow connections from Ansible Controllers
+ferm_rules_filter_ansible_controller:
+
+  - type: 'ansible_controller'
+    weight: '01'
+    weight_class: 'ansible-controller'
+    comment: 'Accept SSH connections from Ansible Controllers'
+    name: 'rules'
+    dport: '{{ ferm_ansible_controllers_ports }}'
+    multiport: True
+    accept_any: False
 
 # Filter ICMP packets
 ferm_rules_filter_icmp:

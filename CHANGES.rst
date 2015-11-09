@@ -90,6 +90,9 @@ v0.1.2
   Some default variables have been renamed to better indicate their use in the
   firewall configuration. [drybjed]
 
+- Switch Ansible Controller accept rules to new configuration structure.
+  [drybjed]
+
 v0.1.1
 ------
 
