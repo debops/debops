@@ -11,25 +11,25 @@ Note the following list only documents the common parameters. The role allows
 you to use more specific parameters which are not documented below.
 
 ``name``
-  Required. Name of the plaintext device mapper target and the mount point.
+  Required, string. Name of the plaintext device mapper target and the mount point.
   Must be unique among all device mapper targets and should not be changed once
   it was used.
 
 ``ciphertext_block_device``
-  Required. File path to the ciphertext block device, either the block device
-  itself e.g. :file:`/dev/sdb` or a partition on the block device e.g.
+  Required, string. File path to the ciphertext block device, either the block
+  device itself e.g. :file:`/dev/sdb` or a partition on the block device e.g.
   :file:`/dev/sdb5`.
 
 ``crypttab_options``
-  Optional. List of options to configure for each device in
+  Optional, string. List of options to configure for each device in
   :file:`/etc/crypttab`.
   Overwrites the default as configured by :ref:`cryptsetup_crypttab_options`.
 
 ``keyfile``
-  Optional. File path for the keyfile on the Ansible controller. Will be copied
-  over to the remote system. If it does not exist yet it will be generated from
-  :file:`/dev/random` on the Ansible controller as it is expected that the
-  entropy pool on the Ansible controller is better mixed.
+  Optional, string. File path for the keyfile on the Ansible controller. Will
+  be copied over to the remote system. If it does not exist yet it will be
+  generated from :file:`/dev/random` on the Ansible controller as it is
+  expected that the entropy pool on the Ansible controller is better mixed.
   Defaults to:
 
   .. code:: jinja
@@ -37,28 +37,31 @@ you to use more specific parameters which are not documented below.
     {{ cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw" }}
 
 ``backup_header``
-  Optional. Disable backing up the `LUKS`_ header to the Ansible controller for this item.
+  Optional, string. Disable backing up the `LUKS`_ header to the Ansible
+  controller for this item.
   See :ref:`cryptsetup_keyfile_location`.
 
 ``fstype``
-  Optional. Filesystem type to create on the plaintext device mapper target.
+  Optional, string. Filesystem type to create on the plaintext device mapper
+  target.
   Defaults to :ref:`cryptsetup_fstype`.
 
 ``mount``
-  Optional. Plaintext mount point of the filesystem. Defaults to:
+  Optional, string. Plaintext mount point of the filesystem.
+  Defaults to:
 
   .. code:: jinja
 
     {{ cryptsetup_mountpoint_parent_directory + "/" + item.name }}
 
 ``mount_options``
-  Optional. Mount options associated with the filesystem.
+  Optional, string. Mount options associated with the filesystem.
   For more details see :manpage:`mount(8)`.
 
 ``state``
-  Optional. There are four states which can be chosen for each encrypted
-  filesystem.  If no state is given, the value of :ref:`cryptsetup_state` will
-  be used which defaults to ``mounted``.
+  Optional, string. There are four states which can be chosen for each
+  encrypted filesystem.  If no state is given, the value of
+  :ref:`cryptsetup_state` will be used which defaults to ``mounted``.
 
   ``mounted``
     Ensure that the encryption and filesystem layer are in place on the block device and
