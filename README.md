@@ -17,9 +17,9 @@ Used Technologies:
 
 This role is based on the following documentation:
 
-* https://github.com/foodcoop-adam/foodsoft/wiki/Deployment-%28Debian%29
-* https://github.com/foodcoops/foodsoft/blob/master/doc/SETUP_DEVELOPMENT.md#manual-configuration
-* https://github.com/foodcoops/foodsoft/blob/master/Dockerfile
+* [Deployment (Debian)](https://github.com/foodcoop-adam/foodsoft/wiki/Deployment-%28Debian%29)
+* [SETUP_DEVELOPMENT.md](https://github.com/foodcoops/foodsoft/blob/master/doc/SETUP_DEVELOPMENT.md#manual-configuration)
+* [Dockerfile](https://github.com/foodcoops/foodsoft/blob/master/Dockerfile)
 
 And other bits and pieces.
 
