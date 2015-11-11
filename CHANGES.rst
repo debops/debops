@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Unreleased*
+
+- Fix empty default admin account on Ansible v2. [drybjed]
+
 v0.1.1
 ------
 
