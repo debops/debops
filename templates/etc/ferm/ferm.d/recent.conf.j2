@@ -147,16 +147,38 @@
 {% endif %}
 {% set ferm_tpl_arguments = [] %}
 {% if ferm_tpl_protocol %}
-{%   set _ = ferm_tpl_arguments.append("protocol (" + ferm_tpl_protocol | join(" ") + ")") %}
+{%   if ferm_tpl_protocol | length == 1 %}
+{%     set _ = ferm_tpl_arguments.append("protocol " +  ferm_tpl_protocol | join(" ")) %}
+{%   else %}
+{%     set _ = ferm_tpl_arguments.append("protocol (" + ferm_tpl_protocol | join(" ") + ")") %}
+{%   endif %}
+{% elif not ferm_tpl_protocol and ferm_tpl_dport %}
+{%   set _ = ferm_tpl_arguments.append("protocol tcp") %}
 {% endif %}
 {% if ferm_tpl_protocol_syn %}
 {%   set _ = ferm_tpl_arguments.append(ferm_tpl_protocol_syn | join(" ")) %}
 {% endif %}
 {% if ferm_tpl_dport %}
-{%   set _ = ferm_tpl_arguments.append("dport (" + ferm_tpl_dport | join(" ") + ")") %}
+{%   if item.multiport|d() and item.multiport | bool %}
+{%     if ferm_tpl_dport | length == 1 %}
+{%       set _ = ferm_tpl_arguments.append("dport " +  ferm_tpl_dport | join(" ")) %}
+{%     else %}
+{%       set _ = ferm_tpl_arguments.append("mod multiport destination-ports (" + ferm_tpl_dport | join(" ") + ")") %}
+{%     endif %}
+{%   else %}
+{%     if ferm_tpl_dport | length == 1 %}
+{%       set _ = ferm_tpl_arguments.append("dport " +  ferm_tpl_dport | join(" ")) %}
+{%     else %}
+{%       set _ = ferm_tpl_arguments.append("dport (" + ferm_tpl_dport | join(" ") + ")") %}
+{%     endif %}
+{%   endif %}
 {% endif %}
 {% if ferm_tpl_state %}
-{%   set _ = ferm_tpl_arguments.append("mod state state (" + ferm_tpl_state | join(" ") + ")") %}
+{%   if ferm_tpl_state | length == 1 %}
+{%     set _ = ferm_tpl_arguments.append("mod state state " +  ferm_tpl_state | join(" ")) %}
+{%   else %}
+{%     set _ = ferm_tpl_arguments.append("mod state state (" + ferm_tpl_state | join(" ") + ")") %}
+{%   endif %}
 {% endif %}
 {% if ferm_tpl_arguments %}
 {%   if ferm_tpl_subchain %}
@@ -215,7 +237,7 @@
             REJECT reject-with {{ ferm_tpl_reject_with }};
 {%     else %}
 
-        {{ ferm_tpl_recent_target }};
+            {{ ferm_tpl_recent_target }};
 {%     endif %}
 {%   endif %}
         }

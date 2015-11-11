@@ -203,7 +203,11 @@
 {% endif %}
 {% if ferm_tpl_dport %}
 {%   if item.multiport|d() and item.multiport | bool %}
-{%     set _ = ferm_tpl_arguments.append("mod multiport destination-ports (" + ferm_tpl_dport | join(" ") + ")") %}
+{%     if ferm_tpl_dport | length == 1 %}
+{%       set _ = ferm_tpl_arguments.append("dport " +  ferm_tpl_dport | join(" ")) %}
+{%     else %}
+{%       set _ = ferm_tpl_arguments.append("mod multiport destination-ports (" + ferm_tpl_dport | join(" ") + ")") %}
+{%     endif %}
 {%   else %}
 {%     if ferm_tpl_dport | length == 1 %}
 {%       set _ = ferm_tpl_arguments.append("dport " +  ferm_tpl_dport | join(" ")) %}

@@ -167,20 +167,20 @@
 {%     if ferm_tpl_hashlimit_target not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
 {%       if item.include|d() %}
 
-        @include "{{ item.include }}";
+            @include "{{ item.include }}";
 {%       elif item.realgoto is undefined or not item.realgoto | bool %}
 
-        jump "{{ ferm_tpl_target }}";
+            jump "{{ ferm_tpl_target }}";
 {%       elif item.realgoto|d() and item.realgoto | bool %}
 
-        realgoto "{{ ferm_tpl_target }}";
+            realgoto "{{ ferm_tpl_target }}";
 {%       endif %}
 {%     elif ferm_tpl_hashlimit_target in [ 'REJECT' ] %}
 
-        REJECT reject-with {{ ferm_tpl_reject_with }};
+            REJECT reject-with {{ ferm_tpl_reject_with }};
 {%     else %}
 
-        {{ ferm_tpl_hashlimit_target }};
+            {{ ferm_tpl_hashlimit_target }};
 {%     endif %}
 {%     if item.log is undefined or item.log | bool %}
 
