@@ -183,6 +183,8 @@ ferm_rules_filter_icmp:
     hashlimit: '{{ ferm_filter_icmp_limit }}'
     hashlimit_burst: '{{ ferm_filter_icmp_burst }}'
     hashlimit_expire: '{{ ferm_filter_icmp_expire }}'
+    hashlimit_target: 'ACCEPT'
+    target: 'REJECT'
 
 # Enable connection tracking for incoming, forwarded and outgoing traffic.
 ferm_rules_filter_conntrack:
@@ -205,6 +207,8 @@ ferm_rules_filter_syn:
     hashlimit: '{{ ferm_filter_syn_limit }}'
     hashlimit_burst: '{{ ferm_filter_syn_burst }}'
     hashlimit_expire: '{{ ferm_filter_syn_expire }}'
+    hashlimit_target: 'RETURN'
+    target: 'REJECT'
 
 # Block all packets marked as "badguys" later in the firewall
 ferm_rules_filter_recent_badguys:
