@@ -214,9 +214,10 @@ librenms_database_password: "{{ lookup('password', secret + '/mariadb/' +
 #
 # Passwords will be automatically stored in ``secret/`` directory (see
 # ``debops.secret`` role for more details).
-librenms_admin_accounts: [ '{{ ansible_ssh_user
-                               if ansible_ssh_user != "root"
-                               else lookup("env", "USER") }}' ]
+librenms_admin_accounts: [ '{{ (ansible_ssh_user
+                                if (ansible_ssh_user | bool and
+                                    ansible_ssh_user != "root")
+                                else lookup("env", "USER")) }}' ]
 
 
 # .. envvar:: librenms_cron_threads
