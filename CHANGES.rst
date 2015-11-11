@@ -98,6 +98,10 @@ v0.1.2
   ``item.weight`` for all rules of a particular Ansible role and still lets you
   order rules within the role itself. [drybjed]
 
+- Change default ``hashlimit`` rule target to ``RETURN``, this allows packets
+  to be filtered further in the firewall instead of accepting them right away.
+  [drybjed]
+
 v0.1.1
 ------
 
