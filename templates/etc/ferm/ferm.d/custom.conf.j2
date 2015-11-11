@@ -1,30 +1,89 @@
-{#
-#    ==== Custom ip(6)tables rules for debops.ferm role ====
-#
-# Rules created by this template should be defined in ferm configuration
-# format, in 'item.rules' variable as YAML text block. See ferm(1) manual for
-# information abut ferm syntax.
-#
-# Remember that ferm by default configures both iptables and ip6tables at the
-# same time and write your rules accordingly. For example, put them in:
-#
-#   domain (ip ip6) table filter chain OUTPUT { }
-#
-# You can also use @if ferm function to specify only a particular domain:
-#
-#   @if @eq($DOMAIN, ip) { }
-#
-# To filter the list of IP addresses for a particular domain, you can use
-# the ipfilter() ferm function. See examples of dport_* rules for usage patterns.
-#
-#}
-# This file is managed by Ansible, all changes will be lost
+# {{ ansible_managed }}
 
-{% if item.by_role is defined and item.by_role %}
-# ip(6)tables rules defined by Ansible role: {{ item.by_role }}
+{# Domain, table, chain #}
+{# ==================== #}
+{% set ferm_tpl_domain = [] %}
+{% set ferm_tpl_table = [] %}
+{% set ferm_tpl_chain = [] %}
+{% if item.domain|d() %}
+{%   if item.domain is string %}
+{%     set ferm_tpl_domain = [ item.domain ] %}
+{%   else %}
+{%     set ferm_tpl_domain = item.domain | unique %}
+{%   endif %}
+{% elif item.domains|d() %}
+{%   if item.domains is string %}
+{%     set ferm_tpl_domain = [ item.domains ] %}
+{%   else %}
+{%     set ferm_tpl_domain = item.domains | unique %}
+{%   endif %}
+{% endif %}
+{% if item.table|d() %}
+{%   if item.table is string %}
+{%     set ferm_tpl_table = [ item.table ] %}
+{%   else %}
+{%     set ferm_tpl_table = item.table | unique %}
+{%   endif %}
+{% elif item.tables|d() %}
+{%   if item.tables is string %}
+{%     set ferm_tpl_table = [ item.tables ] %}
+{%   else %}
+{%     set ferm_tpl_table = item.tables | unique %}
+{%   endif %}
+{% endif %}
+{% if item.chain|d() %}
+{%   if item.chain is string %}
+{%     set ferm_tpl_chain = [ item.chain ] %}
+{%   else %}
+{%     set ferm_tpl_chain = item.chain | unique %}
+{%   endif %}
+{% elif item.chains|d() %}
+{%   if item.chains is string %}
+{%     set ferm_tpl_chain = [ item.chains ] %}
+{%   else %}
+{%     set ferm_tpl_chain = item.chains | unique %}
+{%   endif %}
+{% endif %}
+{% set ferm_tpl_domain_args = [] %}
+{% if ferm_tpl_domain %}
+{%   if ferm_tpl_domain | length == 1 %}
+{%     set _ = ferm_tpl_domain_args.append("domain " +  ferm_tpl_domain | join(" ")) %}
+{%   else %}
+{%     set _ = ferm_tpl_domain_args.append("domain (" + ferm_tpl_domain | join(" ") + ")") %}
+{%   endif %}
+{% endif %}
+{% if ferm_tpl_table %}
+{%   if ferm_tpl_table | length == 1 %}
+{%     set _ = ferm_tpl_domain_args.append("table " +  ferm_tpl_table | join(" ")) %}
+{%   else %}
+{%     set _ = ferm_tpl_domain_args.append("table (" + ferm_tpl_table | join(" ") + ")") %}
+{%   endif %}
+{% endif %}
+{% if ferm_tpl_chain %}
+{%   if ferm_tpl_chain | length == 1 %}
+{%     set _ = ferm_tpl_domain_args.append("chain " +  ferm_tpl_chain | join(" ")) %}
+{%   else %}
+{%     set _ = ferm_tpl_domain_args.append("chain (" + ferm_tpl_chain | join(" ") + ")") %}
+{%   endif %}
+{% endif %}
+{# Main template #}
+{# ============= #}
+{% if item.comment|d() %}
+# {{ item.comment }}
 
 {% endif %}
-{% if item.rules is defined and item.rules %}
+{% if item.when is undefined or item.when | bool %}
+{%   if ferm_tpl_domain_args %}{{ ferm_tpl_domain_args | join(" ") + " {" }}
+{% endif %}
+{%   if item.rules|d() %}
+{%     if ferm_tpl_domain_args %}
+{{ item.rules | indent(4,true) }}
+{%     else %}
 {{ item.rules }}
+{%     endif %}
+{%   endif %}
+{%   if ferm_tpl_domain_args %}}{% endif %}
+{% else %}
+# Rule disabled by 'item.when' condition
 {% endif %}
 
