@@ -102,6 +102,10 @@ v0.1.2
   to be filtered further in the firewall instead of accepting them right away.
   [drybjed]
 
+- Change default ``recent`` rule target to ``NOP``, this ensures that if no
+  other target is specified, rule will still be added to the firewall.
+  [drybjed]
+
 v0.1.1
 ------
 
