@@ -109,6 +109,10 @@ v0.1.2
 - Add a separate ``&log()`` ferm function and use it for logging packets in
   other ``ferm`` rules. [drybjed]
 
+- Remove ``ferm.d/chain.conf.j2`` Ansible template as well as other unused
+  templates. Functionality of this template is replaced by
+  ``ferm.d/accept.conf.j2`` template. [drybjed]
+
 v0.1.1
 ------
 
