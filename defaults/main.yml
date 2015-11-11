@@ -66,9 +66,31 @@ ferm_filter_recent_time: '{{ (60 * 60 * 2) }}'
 # Mark packets on invalid ports as bad guys (block port scanning)
 ferm_mark_portscan: False
 
-# Enable or disable logging of blocked/dropped/marked packets to syslog.
-# Disabling might help reduce log spam but will make debugging issues harder.
-ferm_log_issues: True
+# Enable/disable custom ``&log()`` ferm function used in different firewall
+# rules.
+ferm_log: True
+
+# Select how firewall performs logging. By default, it uses normal syslog
+# calls, there are other ways to log packets listed below.
+ferm_log_type: 'LOG'
+
+# Dictionary map with actual firewall rules mapped to different log types.
+ferm_log_map:
+  'LOG':   'LOG log-ip-options log-prefix "$msg"'
+  'ULOG':  'ULOG ulog-nlgroup {{ ferm_log_group }} ulog-prefix "$msg"'
+  'NFLOG': 'NFLOG nflog-group {{ ferm_log_group }} nflog-prefix "$msg"'
+
+# Firewall log target used in the ``&log()`` ferm function.
+ferm_log_target: '{{ ferm_log_map[ferm_log_type] }}'
+
+# Limit the amount of packets logged by the firewall.
+ferm_log_limit: '2/min'
+
+# Set the burst limit for the logged packets.
+ferm_log_burst: '5'
+
+# ULOG/NFLOG group used by the firewall logs.
+ferm_log_group: '32'
 
 # Include legacy firewall rules. This variable should allow for easier
 # transition to the new firewall rules in the future.
@@ -118,6 +140,7 @@ ferm_weight_map:
 
 # List of default firewall rules defined on each host
 ferm_default_rules: '{{ ferm_rules_default_policy +
+                        ferm_rules_log +
                         ferm_rules_filter_loopback +
                         ferm_rules_filter_ansible_controller +
                         ferm_rules_filter_icmp +
@@ -149,6 +172,23 @@ ferm_rules_default_policy:
     weight: '00'
     name: 'filter_output'
     policy: '{{ ferm_default_policy_output }}'
+
+# Create custom log function which is used by other firewall rules to log
+# packets.
+ferm_rules_log:
+
+  - type: 'custom'
+    name: 'log'
+    weight: '00'
+    comment: 'Custom log function used by other rules'
+    when: '{{ ferm_log | bool }}'
+    delete: '{{ not ferm_log | bool }}'
+    rules: |
+      @def &log($msg) = {
+          mod limit limit {{ ferm_log_limit }}
+                    limit-burst {{ ferm_log_burst }}
+              {{ ferm_log_target }};
+      }
 
 # Allow connections from localhost
 ferm_rules_filter_loopback:

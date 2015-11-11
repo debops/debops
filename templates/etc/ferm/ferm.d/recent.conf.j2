@@ -214,11 +214,9 @@
     {% if ferm_tpl_arguments %}{{ ferm_tpl_arguments | join(" ") }} {% endif %}{
 
         mod recent {{ ferm_tpl_recent_args | join(" ") }} {
-{%   if item.recent_log is undefined or item.recent_log | bool %}
+{%   if ((item.recent_log is undefined or item.recent_log | bool) and ferm_log | bool) %}
 
-            mod limit limit {{ item.recent_log_limit | d("3/hour") }} limit-burst {{ item.recent_log_burst | d("5") }} {
-                LOG log-prefix "{{ item.recent_log_prefix | d('iptables-recent-' + item.recent_name | d(item.recent_set_name) + ': ') }}" log-level {{ item.recent_log_level | d('warning') }};
-            }
+            &log("{{ item.recent_log_prefix | d('ipt-recent-' + item.recent_name | d(item.recent_set_name) + ': ') }}");
 {%   endif %}
 {%   if ferm_tpl_recent_target %}
 {%     if ferm_tpl_recent_target not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}

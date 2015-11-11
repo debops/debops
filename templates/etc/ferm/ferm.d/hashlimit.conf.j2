@@ -182,11 +182,9 @@
 
             {{ ferm_tpl_hashlimit_target }};
 {%     endif %}
-{%     if item.log is undefined or item.log | bool %}
+{%     if ((item.log is undefined or item.log | bool) and (ferm_log | bool)) %}
 
-        mod limit        limit {{ item.log_limit | d("3/hour") }} limit-burst {{ item.log_burst | d("5") }} {
-            LOG log-prefix "{{ item.log_prefix | d('iptables-' + item.name | d(item.hashlimit_name) + ': ') }}";
-        }
+        &log("{{ item.log_prefix | d('ipt-hashlimit-' + item.name | d(item.hashlimit_name) + ': ') }}");
 {%     endif %}
 {%     if ferm_tpl_target not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
 {%       if item.include|d() %}

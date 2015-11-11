@@ -106,6 +106,9 @@ v0.1.2
   other target is specified, rule will still be added to the firewall.
   [drybjed]
 
+- Add a separate ``&log()`` ferm function and use it for logging packets in
+  other ``ferm`` rules. [drybjed]
+
 v0.1.1
 ------
 
