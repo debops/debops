@@ -93,6 +93,11 @@ v0.1.2
 - Switch Ansible Controller accept rules to new configuration structure.
   [drybjed]
 
+- Rule definitions can now specify ``item.role_weight`` parameter which is
+  added after ``item.role`` parameter. This allows to set the same
+  ``item.weight`` for all rules of a particular Ansible role and still lets you
+  order rules within the role itself. [drybjed]
+
 v0.1.1
 ------
 
