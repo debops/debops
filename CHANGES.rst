@@ -13,6 +13,8 @@ v0.1.5
   explicitly setting ``item.system`` parameter in user account definition.
   [drybjed]
 
+- Fix empty list of default users on Ansible v2. [drybjed]
+
 v0.1.4
 ------
 
