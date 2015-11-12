@@ -117,6 +117,8 @@ v0.1.2
   ``active`` rule template. These parameters check if specified network
   interfaces exist before adding the firewall rules. [drybjed]
 
+- Convert forward firewall rules to the new ``ferm`` configuration. [drybjed]
+
 v0.1.1
 ------
 

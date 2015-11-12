@@ -150,7 +150,8 @@ ferm_default_rules: '{{ ferm_rules_default_policy +
                         ferm_rules_filter_include_legacy +
                         ferm_rules_filter_recent_scanners +
                         ferm_rules_filter_reject_all +
-                        ferm_rules_fail2ban }}'
+                        ferm_rules_fail2ban +
+                        ferm_rules_forward }}'
 
 # Configure default policies for built-in iptables chains
 ferm_rules_default_policy:
@@ -321,6 +322,58 @@ ferm_rules_fail2ban:
     comment: 'Reload fail2ban rules'
     when: '{{ ferm_fail2ban | bool }}'
     delete: '{{ not ferm_fail2ban | bool }}'
+
+# Manage packet forwarding to other hosts/containers
+ferm_rules_forward:
+
+  - chain: 'FORWARD'
+    type: 'accept'
+    interface_present: '{{ ferm_external_interfaces }}'
+    weight: '10'
+    role: 'forward'
+    role_weight: '10'
+    name: 'external_in'
+    comment: 'Forward incoming traffic to other hosts'
+    when: '{{ (ferm_forward | bool or
+               (ansible_local|d() and ansible_local.ferm|d() and
+                ansible_local.ferm.forward | bool)) }}'
+    delete: '{{ (not ferm_forward | bool and
+                 (ansible_local|d(True) and (ansible_local.ferm is undefined or
+                   (ansible_local.ferm.forward is undefined or
+                    not ansible_local.ferm.forward | bool)))) }}'
+
+  - chain: 'FORWARD'
+    type: 'accept'
+    outerface_present: '{{ ferm_external_interfaces }}'
+    weight: '10'
+    role: 'forward'
+    role_weight: '20'
+    name: 'external_out'
+    comment: 'Forward outgoing traffic to other hosts'
+    when: '{{ (ferm_forward | bool or
+               (ansible_local|d() and ansible_local.ferm|d() and
+                ansible_local.ferm.forward | bool)) }}'
+    delete: '{{ (not ferm_forward | bool and
+                 (ansible_local|d(True) and (ansible_local.ferm is undefined or
+                   (ansible_local.ferm.forward is undefined or
+                    not ansible_local.ferm.forward | bool)))) }}'
+
+  - chain: 'FORWARD'
+    type: 'accept'
+    interface_present: '{{ ferm_internal_interfaces }}'
+    outerface_present: '{{ ferm_internal_interfaces }}'
+    weight: '10'
+    role: 'forward'
+    role_weight: '30'
+    name: 'internal'
+    comment: 'Forward internal traffic between hosts'
+    when: '{{ (ferm_forward | bool or
+               (ansible_local|d() and ansible_local.ferm|d() and
+                ansible_local.ferm.forward | bool)) }}'
+    delete: '{{ (not ferm_forward | bool and
+                 (ansible_local|d(True) and (ansible_local.ferm is undefined or
+                   (ansible_local.ferm.forward is undefined or
+                    not ansible_local.ferm.forward | bool)))) }}'
 
 # Enable or disable fail2ban integration. ferm will send fail2ban reload
 # command after its own configuration is reloaded. If fail2ban is not present
