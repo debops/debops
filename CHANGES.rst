@@ -4,7 +4,7 @@ Changelog
 v0.2.0
 ------
 
-*Unreleased*
+*Released: 2015-11-12*
 
 - Add Changelog. [ypid]
 
@@ -23,3 +23,17 @@ v0.2.0
 - New PostgreSQL role support. Now PostgreSQL and MariaDB/MySQL support is unified. [scibi]
 
 - New variable: ``owncloud_timeout`` needed to handle very large files uploads. [scibi]
+
+- Switch ownCloud APT repository to upstram repository, support different Linux
+  distributions and releases out of the box. [drybjed]
+
+- Use ``http://`` protocol instead of ``https://`` for APT repository URL,
+  because encrypted connection has issues. [drybjed]
+
+v0.1.0
+------
+
+*Released: 2015-08-11*
+
+- First release. [drybjed]
+
