@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Released: 2015-11-13*
+
+- Redesign hook support. Instead of patching the ``ferm`` init script, use
+  internal ``@hook`` commands to run scripts in specific directories using
+  ``run-parts``. [drybjed]
+
 v0.1.2
 ------
 

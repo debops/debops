@@ -141,6 +141,7 @@ ferm_weight_map:
 # List of default firewall rules defined on each host
 ferm_default_rules: '{{ ferm_rules_default_policy +
                         ferm_rules_log +
+                        ferm_rules_hooks +
                         ferm_rules_filter_loopback +
                         ferm_rules_filter_ansible_controller +
                         ferm_rules_filter_icmp +
@@ -173,6 +174,18 @@ ferm_rules_default_policy:
     weight: '00'
     name: 'filter_output'
     policy: '{{ ferm_default_policy_output }}'
+
+# Implement custom firewall hooks
+ferm_rules_hooks:
+
+  - type: 'custom'
+    name: 'hooks'
+    weight: '00'
+    comment: 'Run custom hooks at various firewall stages'
+    rules: |
+      @hook pre   "run-parts /etc/ferm/hooks/pre.d";
+      @hook post  "run-parts /etc/ferm/hooks/post.d";
+      @hook flush "run-parts /etc/ferm/hooks/flush.d";
 
 # Create custom log function which is used by other firewall rules to log
 # packets.
