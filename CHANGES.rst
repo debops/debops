@@ -53,6 +53,72 @@ v0.1.2
   change the name of the variable in inventory to the new one before running
   this role. Otherwise there should be no changes necessary. [drybjed]
 
+- Add ``accept`` filter template which can be used to create rules that match
+  interfaces, ports, remote IP addresses/subnets and can accept the packets,
+  reject, or redirect to a different chain. [drybjed]
+
+- Move the default loopback accept ``iptables`` rule to the new directory-based
+  setup. [drybjed]
+
+- Rename the ``ferm_filter_domains`` default variable to ``ferm_domains`` to
+  indicate that it is used in all firewall contexts, not just the "filter"
+  table. [drybjed]
+
+- Redesign the directory structure of ``ferm`` configuration.
+
+  Different parts of the firewall configuration will be stored and managed in
+  ``/etc/ferm/ferm.d/`` directory instead of various subdirectories. This makes
+  management of configuration simplier and more flexible to adapt to different
+  environments.
+
+  Existing firewall configuration in ``/etc/ferm/filter-input.d/`` will be
+  included by default, so the already configured firewalls still work. This
+  will change after roles are converted to the new firewall configuration
+  style. [drybjed]
+
+- Update configuration templates in ``templates/etc/ferm/ferm.d/`` role
+  directory. A few new templates have been added which will generate rules that
+  were defined in ``/etc/ferm/ferm.conf`` configuration files. [drybjed]
+
+- Split ``/etc/ferm/ferm.conf`` config into parts.
+
+  Static firewall configuration in ``/etc/ferm/ferm.conf`` has been split into
+  separate files in ``/etc/ferm/ferm.d/`` directory. Each firewall rule is
+  generated using templates, defined in default variables, which makes it
+  easier to change or redesign the firewall from scratch.
+
+  Some default variables have been renamed to better indicate their use in the
+  firewall configuration. [drybjed]
+
+- Switch Ansible Controller accept rules to new configuration structure.
+  [drybjed]
+
+- Rule definitions can now specify ``item.role_weight`` parameter which is
+  added after ``item.role`` parameter. This allows to set the same
+  ``item.weight`` for all rules of a particular Ansible role and still lets you
+  order rules within the role itself. [drybjed]
+
+- Change default ``hashlimit`` rule target to ``RETURN``, this allows packets
+  to be filtered further in the firewall instead of accepting them right away.
+  [drybjed]
+
+- Change default ``recent`` rule target to ``NOP``, this ensures that if no
+  other target is specified, rule will still be added to the firewall.
+  [drybjed]
+
+- Add a separate ``&log()`` ferm function and use it for logging packets in
+  other ``ferm`` rules. [drybjed]
+
+- Remove ``ferm.d/chain.conf.j2`` Ansible template as well as other unused
+  templates. Functionality of this template is replaced by
+  ``ferm.d/accept.conf.j2`` template. [drybjed]
+
+- Add ``item.interface_present`` and ``item.outerface_present`` parameters to
+  ``active`` rule template. These parameters check if specified network
+  interfaces exist before adding the firewall rules. [drybjed]
+
+- Convert forward firewall rules to the new ``ferm`` configuration. [drybjed]
+
 v0.1.1
 ------
 

@@ -2,9 +2,9 @@
 
 {# Domain, table, chain #}
 {# ==================== #}
-{% set ferm_tpl_domain = [] %}
-{% set ferm_tpl_table = [] %}
-{% set ferm_tpl_chain = [] %}
+{% set ferm_tpl_domain = ferm_domains %}
+{% set ferm_tpl_table = [ 'filter' ] %}
+{% set ferm_tpl_chain = [ 'INPUT' ] %}
 {% if item.domain|d() %}
 {%   if item.domain is string %}
 {%     set ferm_tpl_domain = [ item.domain ] %}
@@ -66,6 +66,12 @@
 {%     set _ = ferm_tpl_domain_args.append("chain (" + ferm_tpl_chain | join(" ") + ")") %}
 {%   endif %}
 {% endif %}
+{# Rule arguments #}
+{# ============== #}
+{% set ferm_tpl_policy = 'ACCEPT' %}
+{% if item.policy|d() %}
+{%   set ferm_tpl_policy = item.policy %}
+{% endif %}
 {# Main template #}
 {# ============= #}
 {% if item.comment|d() %}
@@ -73,16 +79,9 @@
 
 {% endif %}
 {% if item.when is undefined or item.when | bool %}
-{%   if ferm_tpl_domain_args %}{{ ferm_tpl_domain_args | join(" ") + " {" }}
-{% endif %}
-{%   if item.rules|d() %}
-{%     if ferm_tpl_domain_args %}
-{{ item.rules | indent(4,true) }}
-{%     else %}
-{{ item.rules }}
-{%     endif %}
-{%   endif %}
-{%   if ferm_tpl_domain_args %}}{% endif %}
+{%   if ferm_tpl_domain_args %}{{ ferm_tpl_domain_args | join(" ") }} {% endif %}{
+    policy {{ ferm_tpl_policy }};
+}
 {% else %}
 # Rule disabled by 'item.when' condition
 {% endif %}

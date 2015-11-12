@@ -2,9 +2,9 @@
 
 {# Domain, table, chain #}
 {# ==================== #}
-{% set ferm_tpl_domain = [] %}
-{% set ferm_tpl_table = [] %}
-{% set ferm_tpl_chain = [] %}
+{% set ferm_tpl_domain = ferm_domains %}
+{% set ferm_tpl_table = [ 'filter' ] %}
+{% set ferm_tpl_chain = [ 'INPUT' ] %}
 {% if item.domain|d() %}
 {%   if item.domain is string %}
 {%     set ferm_tpl_domain = [ item.domain ] %}
@@ -73,16 +73,13 @@
 
 {% endif %}
 {% if item.when is undefined or item.when | bool %}
-{%   if ferm_tpl_domain_args %}{{ ferm_tpl_domain_args | join(" ") + " {" }}
-{% endif %}
-{%   if item.rules|d() %}
-{%     if ferm_tpl_domain_args %}
-{{ item.rules | indent(4,true) }}
-{%     else %}
-{{ item.rules }}
-{%     endif %}
-{%   endif %}
-{%   if ferm_tpl_domain_args %}}{% endif %}
+{%   if ferm_tpl_domain_args %}{{ ferm_tpl_domain_args | join(" ") }} {% endif %}{
+    protocol udp REJECT reject-with icmp-port-unreachable;
+    protocol tcp REJECT reject-with tcp-reset;
+    @if @eq($DOMAIN, ip) {
+        REJECT reject-with icmp-proto-unreachable;
+    }
+}
 {% else %}
 # Rule disabled by 'item.when' condition
 {% endif %}
