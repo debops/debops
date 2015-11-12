@@ -9,7 +9,7 @@
     state: 'present'
   with_flattened:
     - postgresql_server_clusters
-  sudo_user: '{{ item.user | d(postgresql_server_user) }}'
+  become_user: '{{ item.user | d(postgresql_server_user) }}'
   when: item.name|d() and item.name
   no_log: True
 
@@ -23,7 +23,7 @@
     state: 'absent'
   with_flattened:
     - postgresql_server_clusters
-  sudo_user: '{{ item.user | d(postgresql_server_user) }}'
+  become_user: '{{ item.user | d(postgresql_server_user) }}'
   when: item.name|d() and item.name
 
 - name: Revoke all privileges on schema public from PUBLIC
@@ -37,7 +37,7 @@
     state: 'absent'
   with_flattened:
     - postgresql_server_clusters
-  sudo_user: '{{ item.user | d(postgresql_server_user) }}'
+  become_user: '{{ item.user | d(postgresql_server_user) }}'
   when: item.name|d() and item.name
 
 - name: Grant connect on postgres to PUBLIC
@@ -50,7 +50,7 @@
     state: 'present'
   with_flattened:
     - postgresql_server_clusters
-  sudo_user: '{{ item.user | d(postgresql_server_user) }}'
+  become_user: '{{ item.user | d(postgresql_server_user) }}'
   when: item.name|d() and item.name
 
 - name: Revoke temporary on postgres from PUBLIC
@@ -63,6 +63,6 @@
     state: 'absent'
   with_flattened:
     - postgresql_server_clusters
-  sudo_user: '{{ item.user | d(postgresql_server_user) }}'
+  become_user: '{{ item.user | d(postgresql_server_user) }}'
   when: item.name|d() and item.name
 
