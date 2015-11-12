@@ -27,6 +27,9 @@ v0.2.0
 - Switch ownCloud APT repository to upstram repository, support different Linux
   distributions and releases out of the box. [drybjed]
 
+- Use ``http://`` protocol instead of ``https://`` for APT repository URL,
+  because encrypted connection has issues. [drybjed]
+
 v0.1.0
 ------
 
