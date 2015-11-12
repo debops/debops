@@ -4,7 +4,7 @@ Changelog
 v0.1.2
 ------
 
-*Unreleased*
+*Released: 2015-11-12*
 
 - Add support for different "weight classes" of rules.
 
