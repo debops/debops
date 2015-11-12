@@ -113,6 +113,10 @@ v0.1.2
   templates. Functionality of this template is replaced by
   ``ferm.d/accept.conf.j2`` template. [drybjed]
 
+- Add ``item.interface_present`` and ``item.outerface_present`` parameters to
+  ``active`` rule template. These parameters check if specified network
+  interfaces exist before adding the firewall rules. [drybjed]
+
 v0.1.1
 ------
 
