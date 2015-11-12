@@ -142,6 +142,7 @@ ferm_weight_map:
 ferm_default_rules: '{{ ferm_rules_default_policy +
                         ferm_rules_log +
                         ferm_rules_hooks +
+                        ferm_rules_variables +
                         ferm_rules_filter_loopback +
                         ferm_rules_filter_ansible_controller +
                         ferm_rules_filter_icmp +
@@ -186,6 +187,18 @@ ferm_rules_hooks:
       @hook pre   "run-parts /etc/ferm/hooks/pre.d";
       @hook post  "run-parts /etc/ferm/hooks/post.d";
       @hook flush "run-parts /etc/ferm/hooks/flush.d";
+
+# Provide custom variables in the firewall configuration
+ferm_rules_variables:
+
+  - type: 'custom'
+    name: 'variables'
+    weight: '00'
+    comment: 'Define custom variables available in the firewall'
+    rules: |
+      @def $domains      = ({{ ferm_domains | unique | join(" ") }});
+      @def $ipv4_enabled = {{ "1" if "ip"  in ferm_domains else "0" }};
+      @def $ipv6_enabled = {{ "1" if "ip6" in ferm_domains else "0" }};
 
 # Create custom log function which is used by other firewall rules to log
 # packets.

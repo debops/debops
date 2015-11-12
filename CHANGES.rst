@@ -10,6 +10,8 @@ v0.1.3
   internal ``@hook`` commands to run scripts in specific directories using
   ``run-parts``. [drybjed]
 
+- Add set of predefined ``ferm`` variables used by other Ansible roles. [drybjed]
+
 v0.1.2
 ------
 
