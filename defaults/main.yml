@@ -33,9 +33,9 @@ owncloud_dependencies: True
 owncloud_domain: [ 'owncloud.{{ ansible_domain }}' ]
 
 
-# --------------------------
+# ----------------------------------
 #   ownCloud source and deployment
-# --------------------------
+# ----------------------------------
 
 # .. envvar:: owncloud_edition
 #
@@ -51,16 +51,54 @@ owncloud_edition: 'community'
 owncloud_release: 8.1
 
 
+# .. envvar:: owncloud_distribution
+#
+# Name and version of OS distribution to use for ownCloud packages.
+owncloud_distribution: '{{ owncloud_distribution_name + "_" +
+                           owncloud_distribution_version }}'
+
+
+# .. envvar:: owncloud_distribution_name
+#
+# Name of the OS distribution to use for ownCloud URLs. Why...
+owncloud_distribution_name: '{{ "xUbuntu"
+                                 if ansible_distribution in [ "Ubuntu" ]
+                                 else ansible_distribution }}'
+
+
+# .. envvar:: owncloud_distribution_version
+#
+# Version number of the OS distribution for ownCloud URLs.
+owncloud_distribution_version: '{{ ((ansible_distribution_major_version + ".0")
+                                    if ansible_distribution in [ "Debian" ]
+                                    else ansible_distribution_version) }}'
+
+
 # .. envvar:: owncloud_apt_repo_base
 #
 # Base APT repository URL.
-owncloud_apt_repo_base: 'http://download.opensuse.org/repositories/isv:/ownCloud:'
+owncloud_apt_repo_base: 'https://download.owncloud.org/download/repositories/stable'
 
 
-# .. envvar:: owncloud_apt_repo_key_fingerprint
+# .. envvar:: owncloud_apt_repo_key_id
 #
 # GPG fingerprint for the public key used to sign the APT repository.
-owncloud_apt_repo_key_fingerprint: 'F9EA4996747310AE79474F44977C43A8BA684223'
+owncloud_apt_repo_key_id: '0xAB7C32C35180350A'
+
+
+# .. envvar:: owncloud_apt_repo_key_url
+#
+# URL of the GPG keys used by the ownCloud project.
+owncloud_apt_repo_key_url: '{{ owncloud_apt_repo_base + "/" +
+                               owncloud_distribution + "/"
+                               "Release.key" }}'
+
+
+# .. envvar:: owncloud_apt_repo_source
+#
+# APT ``sources.list`` URL of the ownCloud ``.deb`` repository.
+owncloud_apt_repo_source: '{{ "deb " + owncloud_apt_repo_base + "/" +
+                              owncloud_distribution + "/ /" }}'
 
 
 # .. envvar:: owncloud_user
