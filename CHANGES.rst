@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Released: 2015-11-12*
+
+- Switch from ``sudo_user`` to ``become_user`` parameter. [drybjed]
+
 v0.2.0
 ------
 
