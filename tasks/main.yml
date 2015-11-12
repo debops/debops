@@ -27,18 +27,16 @@
          (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
          (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))))
 
-- name: Install ferm configuration directories
-  script: 'script/install-directories.sh'
-  args:
-    creates: '/etc/ferm/ferm.d'
-  changed_when: False
-
-- name: Patch ferm init script to add custom hooks
-  include: patch_ferm.yml
-  when: (ferm_enabled | bool and (ansible_local|d() and
-         (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
-         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-         (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))))
+- name: Make sure required directories exist
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'adm'
+    mode: '2750'
+  with_items: [ '/etc/ferm/ferm.d', '/etc/ferm/filter-input.d',
+                '/etc/ferm/hooks/pre.d', '/etc/ferm/hooks/post.d',
+                '/etc/ferm/hooks/flush.d' ]
 
 - name: Configure ferm default variables (pre)
   template:
