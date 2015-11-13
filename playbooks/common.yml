@@ -10,6 +10,8 @@
   roles:
     - role: debops.apt_preferences
       tags: [ 'apt_preferences', 'role::apt_preferences' ]
+      apt_preferences_dependent_list:
+        - '{{ sshd_apt_preferences_dependent_list | d([]) }}'
 
     - role: debops.etc_services
       tags: [ 'etc_services', 'role::etc_services' ]
@@ -31,9 +33,13 @@
 
     - role: debops.ferm
       tags: [ 'ferm', 'role::ferm' ]
+      ferm_dependent_rules:
+        - '{{ (sshd_ferm_dependent_rules | d([])) }}'
 
     - role: debops.tcpwrappers
       tags: [ 'tcpwrappers', 'role::tcpwrappers' ]
+      tcpwrappers_dependent_allow:
+        - '{{ sshd_tcpwrappers_dependent_allow | d([]) }}'
 
     - role: debops.ntp
       tags: [ 'ntp', 'role::ntp' ]

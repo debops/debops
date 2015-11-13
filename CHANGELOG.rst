@@ -31,6 +31,10 @@ v0.2.8
   non-DebOps managed hosts in Ansible inventory, but it requires modification
   of existing inventories. [drybjed]
 
+- Add ``debops.sshd`` configuration variables to ``debops.apt_preferences``,
+  ``debops.ferm`` and ``debops.tcpwrappers`` configuration in common playbook.
+  [drybjed]
+
 v0.2.7
 ------
 
