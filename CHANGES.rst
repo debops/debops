@@ -17,6 +17,8 @@ v0.2.2
   by Ansible playbooks to configure settings related to ``sshd`` in other
   services. [drybjed]
 
+- Make sure that role works in Ansible check mode. [drybjed]
+
 v0.2.1
 ------
 
