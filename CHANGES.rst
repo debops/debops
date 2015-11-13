@@ -15,6 +15,9 @@ v0.1.5
 - Remove ``item.pki`` in favor of ``item.ssl`` in the nginx site configuration.
   [patrickheeney]
 
+- Remove the "solo" version of the role, a different concept will be created in
+  its place. [drybjed]
+
 v0.1.4
 ------
 
