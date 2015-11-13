@@ -2,7 +2,7 @@
 
 - name: Remove APT preferences
   file:
-    dest: '/etc/apt/preferences.d/{{ item.filename | default((item.by_role | default("pin")) + "_"  + item.package.split(" ")[0] + (item.suffix | default("")) + ".pref") | replace("*","all") }}'
+    dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin"))) + "_"  + item.package.split(" ")[0] + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
     state: 'absent'
   with_flattened:
     - apt_preferences_list
@@ -30,7 +30,7 @@
 - name: Create APT preferences
   template:
     src: 'etc/apt/preferences.d/pin.pref.j2'
-    dest: '/etc/apt/preferences.d/{{ item.filename | default((item.by_role | default("pin")) + "_" + item.package.split(" ")[0] + (item.suffix | default("")) + ".pref") | replace("*","all") }}'
+    dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin"))) + "_" + item.package.split(" ")[0] + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
