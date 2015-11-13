@@ -70,6 +70,10 @@ dictionary. Supported parameters:
   block for pin configuration. Might be used to create several pins in one
   file.
 
+``when``
+  If this parameter is defined and ``True`` or ``False``, enable or disable
+  a particular pin conditionally.
+
 ``delete``
   If this parameter is defined and ``True``, the preferences file for this pin
   will be deleted and a new one will not be created.

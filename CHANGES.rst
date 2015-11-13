@@ -8,6 +8,9 @@ v0.1.2
 
 - Support ``item.role`` as an alternative parameter. [drybjed]
 
+- Add support for ``item.when`` parameter, which introduces a way to
+  enable/disable a particular pin conditionally. [drybjed]
+
 v0.1.1
 ------
 
