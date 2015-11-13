@@ -1,26 +1,6 @@
 ---
 
-dependencies:
-
-  - role: debops.ferm
-    tags: [ 'depend::ferm', 'depend::ferm:ntp', 'depend-of::ntp', 'type::dependency' ]
-    when: ntp_daemon in ['openntpd', 'ntpd']
-    ferm_input_list:
-
-      - type: 'dport_accept'
-        dport: [ 'ntp' ]
-        protocol: [ 'udp' ]
-        saddr: '{{ ntp_allow }}'
-        filename: 'ntp_dependency_accept'
-        weight: '50'
-        enabled: '{{ ntp_firewall_access }}'
-
-      - type: 'dport_limit'
-        dport: [ 'ntp' ]
-        protocol: [ 'udp' ]
-        filename: 'ntp_dependency_limit'
-        weight: '50'
-        enabled: '{{ ntp_firewall_access }}'
+dependencies: []
 
 galaxy_info:
   author: 'Maciej Delmanowski, Robin Schneider'
