@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block badges %}
-{% if ansigenome_info.travis is defined and ansigenome_info.travis %}[![Travis CI](http://img.shields.io/travis/{{ scm.user + '/' + role.slug }}.svg?style=flat)](http://travis-ci.org/{{ scm.user + '/' + role.slug }}){% endif %} {% if ansigenome_info.galaxy_id is defined and ansigenome_info.galaxy_id %} [![Ansible Galaxy](http://img.shields.io/badge/galaxy-{{ role.galaxy_name | replace('-', '–')}}-660198.svg?style=flat)](https://galaxy.ansible.com/detail#/role/{{ ansigenome_info.galaxy_id }}){% endif %}{% if galaxy_info.platforms is defined and galaxy_info.platforms %} [![Platforms](http://img.shields.io/badge/platforms-{{ galaxy_info.platforms | map(attribute='name') | sort | join('%20/%20') | lower }}-lightgrey.svg?style=flat)](#){% endif %}
+{% if ansigenome_info.travis is defined and ansigenome_info.travis %}[![Travis CI](http://img.shields.io/travis/{{ scm.user + '/' + role.slug }}.svg?style=flat)](http://travis-ci.org/{{ scm.user + '/' + role.slug }}){% endif %} {% if ansigenome_info.galaxy_id is defined and ansigenome_info.galaxy_id %} [![Ansible Galaxy](http://img.shields.io/badge/galaxy-{{ role.galaxy_name | replace('-', '--')}}-660198.svg?style=flat)](https://galaxy.ansible.com/detail#/role/{{ ansigenome_info.galaxy_id }}){% endif %}{% if galaxy_info.platforms is defined and galaxy_info.platforms %} [![Platforms](http://img.shields.io/badge/platforms-{{ galaxy_info.platforms | map(attribute='name') | sort | join('%20/%20') | lower }}-lightgrey.svg?style=flat)](#){% endif %}
 {% endblock %}
 
 {% if ansigenome_info.beta is defined and ansigenome_info.beta %}
@@ -47,8 +47,8 @@ ansible-galaxy install {{ role.galaxy_name }}
 {% block dependencies %}
 ### Role dependencies
 
-{% for dependency in dependencies | unique_dict("role") %}
-- `{{ dependency.role | trim }}`
+{% for role_dependency_name in dependencies | map(attribute='role') | unique %}
+- `{{ role_dependency_name | trim }}`
 {% endfor %}
 {% endblock %}
 {% endif %}
@@ -89,6 +89,7 @@ List of internal variables used by the role:
 ### Authors and license
 
 `{{ role.name }}` role was written by:
+
 {% for credit in authors %}
 - {% if credit.url is defined and credit.url %}[{% endif %}{{ credit.name }}{% if credit.url is defined and credit.url %}]({{ credit.url }}){% endif %}{% if credit.email is defined and credit.email %} | [e-mail](mailto:{{ credit.email }}){% endif %}{% if credit.twitter is defined and credit.twitter %} | [Twitter](https://twitter.com/{{ credit.twitter }}){% endif %}{% if credit.github is defined and credit.github %} | [GitHub](https://github.com/{{ credit.github }}){% endif %}
 
