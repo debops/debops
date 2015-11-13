@@ -4,10 +4,18 @@ Changelog
 v0.2.2
 ------
 
-*Unreleased*
+*Released: 2015-11-13*
 
 - Removed ``debops.sshkeys`` from role dependencies as it is also run from the
   ``common.yml`` playbook. [ypid]
+
+- Remove most of the Ansible role dependencies, leaving only those that are
+  required for the role to run correctly.
+
+  Configuration of dependent services like firewall, TCP Wrappers, APT
+  preferences is set in separate default variables. These variables can be used
+  by Ansible playbooks to configure settings related to ``sshd`` in other
+  services. [drybjed]
 
 v0.2.1
 ------

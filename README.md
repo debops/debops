@@ -21,10 +21,7 @@ More information about `debops.sshd` can be found in the
 
 ### Role dependencies
 
-- `debops.ferm`
 - `debops.secret`
-- `debops.apt_preferences`
-- `debops.tcpwrappers`
 
 ### Are you using this as a standalone role without DebOps?
 
