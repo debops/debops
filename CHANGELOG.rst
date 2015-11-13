@@ -26,6 +26,11 @@ v0.2.8
 - Add ``debops.dhparam`` role, included in the ``common.yml`` playbook by
   default. [drybjed]
 
+- Redesign common playbooks to only work with hosts that are in
+  ``[debops_all_hosts]`` inventory group. This should improve support for
+  non-DebOps managed hosts in Ansible inventory, but it requires modification
+  of existing inventories. [drybjed]
+
 v0.2.7
 ------
 
