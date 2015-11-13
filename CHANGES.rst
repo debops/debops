@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2015-11-13*
+
+- Support ``item.role`` as an alternative parameter. [drybjed]
+
+- Add support for ``item.when`` parameter, which introduces a way to
+  enable/disable a particular pin conditionally. [drybjed]
+
+- Check ``item.delete`` explicitly as a boolean. [drybjed]
+
 v0.1.1
 ------
 

@@ -2,7 +2,7 @@
 
 - name: Remove APT preferences
   file:
-    dest: '/etc/apt/preferences.d/{{ item.filename | default((item.by_role | default("pin")) + "_"  + item.package.split(" ")[0] + (item.suffix | default("")) + ".pref") | replace("*","all") }}'
+    dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin"))) + "_"  + item.package.split(" ")[0] + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
     state: 'absent'
   with_flattened:
     - apt_preferences_list
@@ -11,7 +11,7 @@
     - apt_preferences_dependent_list
   when: (
           (
-            (item.delete is defined and item.delete) and
+            (item.delete|d() and item.delete | bool) and
             (item.package is string and item.package) and
             (item.version is undefined or (item.version is defined and not item.version))
           ) or
@@ -30,7 +30,7 @@
 - name: Create APT preferences
   template:
     src: 'etc/apt/preferences.d/pin.pref.j2'
-    dest: '/etc/apt/preferences.d/{{ item.filename | default((item.by_role | default("pin")) + "_" + item.package.split(" ")[0] + (item.suffix | default("")) + ".pref") | replace("*","all") }}'
+    dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin"))) + "_" + item.package.split(" ")[0] + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -41,10 +41,7 @@
     - apt_preferences_dependent_list
   when: (
           (
-            (
-              item.delete is undefined or
-              (item.delete is defined and not item.delete)
-            ) and
+            (item.delete is undefined or not item.delete | bool) and
             item.package is string and item.package
           ) and
           (
