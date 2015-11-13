@@ -38,6 +38,9 @@ v0.2.8
 - Add set of common "service" playbooks that invoke Ansible roles that are used
   on all hosts. [drybjed]
 
+- Add playbook for ``debops.ntp`` role and update ``common.yml`` playbook with
+  ``debops.ntp`` firewall configuration. [drybjed]
+
 v0.2.7
 ------
 
