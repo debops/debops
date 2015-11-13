@@ -59,3 +59,89 @@ ntp_root_flags:
   # install specified ntp daemon
   cap_sys_time: [ 'ignore-cap12s', 'ignore-cap_sys_time' ]
 
+# Name of the ``iptables`` chain to use for filtering NTP connections.
+ntp_ferm_chain: 'filter-ntp'
+
+# Weight of the ``debops.ntp`` firewall rules, determines the order of the
+# configuration files.
+ntp_ferm_weight: '40'
+
+# Time window which firewall checks to filter too many connections, specified
+# in seconds.
+ntp_ferm_recent_seconds: '{{ (60 * 60) }}'
+
+# Maximum number of new connections from a host in the specified time window.
+ntp_ferm_recent_hitcount: 5
+
+# Specify what should firewall do with packets that exceed allowed limits. You
+# can use ``DROP`` (recommended), ``REJECT`` (high risk of reflection attacks) or
+# specify name of an ``iptables`` chain to sent the packets into.
+ntp_ferm_recent_target: 'DROP'
+
+# Configuration of iptables firewall using ``ferm``.
+ntp_ferm_dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'ntp' ]
+    protocol: 'udp'
+    weight: '{{ ntp_ferm_weight }}'
+    role: 'ntp'
+    role_weight: '10'
+    name: 'jump-filter-ntp'
+    target: '{{ ntp_ferm_chain }}'
+    when: '{{ ntp_daemon in [ "openntpd", "ntpd" ] and
+              ntp_firewall_access | bool }}'
+    delete: '{{ ntp_daemon not in [ "openntpd", "ntp" ] or
+                not ntp_firewall_access | bool }}'
+
+  - chain: '{{ ntp_ferm_chain }}'
+    type: 'recent'
+    dport: [ 'ntp' ]
+    protocol: 'udp'
+    saddr: '{{ ntp_allow }}'
+    weight: '{{ ntp_ferm_weight }}'
+    role: 'ntp'
+    role_weight: '20'
+    name: 'mark'
+    subchain: False
+    recent_set_name: 'ntp-new'
+    recent_log: False
+    when: '{{ ntp_daemon in [ "openntpd", "ntpd" ] and
+              ntp_firewall_access | bool }}'
+    delete: '{{ ntp_daemon not in [ "openntpd", "ntp" ] or
+                not ntp_firewall_access | bool }}'
+
+  - chain: '{{ ntp_ferm_chain }}'
+    type: 'recent'
+    dport: [ 'ntp' ]
+    protocol: [ 'udp' ]
+    weight: '{{ ntp_ferm_weight }}'
+    role: 'ntp'
+    role_weight: '30'
+    name: 'filter'
+    subchain: False
+    recent_name: 'ntp-new'
+    recent_update: True
+    recent_seconds: '{{ ntp_ferm_recent_seconds }}'
+    recent_hitcount: '{{ ntp_ferm_recent_hitcount }}'
+    recent_target: '{{ ntp_ferm_recent_target }}'
+    recent_log_prefix: 'ipt-recent-ntp: '
+    when: '{{ ntp_daemon in [ "openntpd", "ntpd" ] and
+              ntp_firewall_access | bool }}'
+    delete: '{{ ntp_daemon not in [ "openntpd", "ntp" ] or
+                not ntp_firewall_access | bool }}'
+
+  - chain: '{{ ntp_ferm_chain }}'
+    type: 'accept'
+    dport: [ 'ntp' ]
+    protocol: 'udp'
+    state: 'NEW'
+    saddr: '{{ ntp_allow }}'
+    weight: '{{ ntp_ferm_weight }}'
+    role: 'ntp'
+    role_weight: '40'
+    when: '{{ ntp_daemon in [ "openntpd", "ntpd" ] and
+              ntp_firewall_access | bool }}'
+    delete: '{{ ntp_daemon not in [ "openntpd", "ntp" ] or
+                not ntp_firewall_access | bool }}'
+
