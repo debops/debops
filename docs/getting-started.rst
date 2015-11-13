@@ -52,22 +52,6 @@ Available role tags:
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
 
-``type::dependency``
-  This tag specifies which tasks are defined in role dependencies. You can use
-  this to omit them using ``--skip-tags`` parameter.
-
-``depend-of::sshd``
-  Execute all ``debops.sshd`` role dependencies in its context.
-
-``depend::apt_preferences:sshd``
-  Run ``debops.apt_preferences`` dependent role in ``debops.sshd`` context.
-
-``depend::ferm:sshd``
-  Run ``debops.ferm`` dependent role in ``debops.sshd`` context.
-
-``depend::tcpwrappers:sshd``
-  Run ``debops.tcpwrappers`` dependent role in ``debops.sshd`` context.
-
 ``role::sshd:config``
   Execute tasks related to ``sshd`` configuration file.
 

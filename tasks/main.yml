@@ -23,6 +23,7 @@
   shell: 'dpkg-query -W -f="\${Version}\n" "openssh-server" | sed -re "s/^.*:([0-9]+\.[0-9]+).*/\1/"'
   register: sshd_register_version
   changed_when: False
+  always_run: True
   tags: [ 'role::sshd:config' ]
 
 - name: Ensure that Ed25519 host key is present
@@ -45,6 +46,7 @@
   shell: find /etc/ssh -maxdepth 1 -type f -name 'ssh_host_*_key.pub' -exec basename {} .pub \;
   register: sshd_register_host_keys
   changed_when: False
+  always_run: True
   tags: [ 'role::sshd:config' ]
 
 - name: Setup /etc/ssh/sshd_config

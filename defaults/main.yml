@@ -89,6 +89,15 @@ sshd_tcpwrappers_default: 'ALL'
 #   Firewall (ferm) configuration
 # ---------------------------------
 
+# .. envvar:: sshd_ferm_weight
+#
+# Specify the "weight" of the ``sshd`` firewall rules. The more weight they
+# have, he later in the firewall they will be defined. If you change the
+# default weight, you will need to remove the old rules manually from the remote
+# host.
+sshd_ferm_weight: '30'
+
+
 # .. envvar:: sshd_ferm_limit
 #
 # Enable or disable limited SSH access from all hosts in ``ip(6)tables``.
@@ -110,10 +119,18 @@ sshd_ferm_limit_seconds: '{{ (60 * 5) }}'
 sshd_ferm_limit_hits: '8'
 
 
-# .. envvar:: sshd_ferm_limit_destination
+# .. envvar:: sshd_ferm_limit_chain
 #
-# Name of the iptables recent list where offenders will be added.
-sshd_ferm_limit_destination: 'badguys'
+# Name of the iptables chain used for filtering SSH connections.
+sshd_ferm_limit_chain: 'filter-ssh'
+
+
+# .. envvar:: sshd_ferm_limit_target
+#
+# Specify what happens with packets filtered by the firewall that are above the
+# specified limit. Either ``REJECT``, ``DROP`` or name of ``iptables`` chain
+# where packets will be sent through.
+sshd_ferm_limit_target: 'REJECT'
 
 
 # .. envvar:: sshd_ferm_ports
@@ -514,4 +531,118 @@ sshd_match_group_sftponly:
     AllowTcpForwarding no
     PermitTunnel no
     ForceCommand internal-sftp
+
+
+# -----------------------------------
+#   Configuration of other services
+# -----------------------------------
+
+# .. envvar:: sshd_apt_preferences_dependent_list
+#
+# List of ``apt_preferences(5)`` rules. This is used to change what package
+# versions are installed on a particular distribution.
+sshd_apt_preferences_dependent_list:
+
+  - package: 'ssh ssh-* openssh-*'
+    backports: [ 'wheezy' ]
+    reason:  'Version parity with Debian Jessie, support for AuthorizedKeysCommand, better ciphers'
+    by_role: 'debops.sshd'
+
+
+# .. envvar:: sshd_ferm_dependent_rules:
+#
+# Configuration for ``iptables`` firewall managed by ``ferm``.
+sshd_ferm_dependent_rules:
+
+  - type: 'accept'
+    dport: '{{ sshd_ferm_ports }}'
+    weight: '{{ sshd_ferm_weight }}'
+    role: 'sshd'
+    role_weight: '10'
+    name: 'jump-filter-ssh'
+    target: '{{ sshd_ferm_limit_chain }}'
+    when: '{{ sshd_ferm_limit | bool }}'
+    delete: '{{ not sshd_ferm_limit | bool }}'
+
+  - chain: '{{ sshd_ferm_limit_chain if sshd_ferm_limit | bool else "INPUT" }}'
+    type: 'accept'
+    dport: '{{ sshd_ferm_ports }}'
+    saddr: '{{ sshd_whitelist + sshd_group_whitelist + sshd_host_whitelist }}'
+    weight: '{{ sshd_ferm_weight }}'
+    role: 'sshd'
+    role_weight: '20'
+    name: 'whitelist'
+    subchain: False
+    accept_any: False
+
+  - chain: '{{ sshd_ferm_limit_chain if sshd_ferm_limit | bool else "INPUT" }}'
+    type: 'accept'
+    dport: '{{ sshd_ferm_ports }}'
+    saddr: '{{ sshd_allow + sshd_group_allow + sshd_host_allow }}'
+    weight: '{{ sshd_ferm_weight }}'
+    role: 'sshd'
+    role_weight: '30'
+    name: 'allow'
+    subchain: False
+    accept_any: '{{ False if sshd_ferm_limit | bool else True }}'
+
+  - chain: '{{ sshd_ferm_limit_chain }}'
+    type: 'recent'
+    weight: '{{ sshd_ferm_weight }}'
+    role: 'sshd'
+    role_weight: '40'
+    name: 'block-ssh'
+    dport: '{{ sshd_ferm_ports }}'
+    state: [ 'NEW' ]
+    subchain: False
+    recent_name: 'ssh-new'
+    recent_update: True
+    recent_seconds: '{{ sshd_ferm_limit_seconds }}'
+    recent_hitcount: '{{ sshd_ferm_limit_hits }}'
+    recent_target: 'REJECT'
+    when: '{{ sshd_ferm_limit | bool }}'
+    delete: '{{ not sshd_ferm_limit | bool }}'
+
+  - chain: '{{ sshd_ferm_limit_chain }}'
+    type: 'recent'
+    weight: '{{ sshd_ferm_weight }}'
+    role: 'sshd'
+    role_weight: '50'
+    name: 'mark-ssh'
+    dport: '{{ sshd_ferm_ports }}'
+    state: [ 'NEW' ]
+    subchain: False
+    recent_set_name: 'ssh-new'
+    recent_log: False
+    when: '{{ sshd_ferm_limit | bool }}'
+    delete: '{{ not sshd_ferm_limit | bool }}'
+
+  - chain: '{{ sshd_ferm_limit_chain }}'
+    type: 'accept'
+    weight: '{{ sshd_ferm_weight }}'
+    role: 'sshd'
+    role_weight: '60'
+    name: 'ssh'
+    dport: '{{ sshd_ferm_ports }}'
+    when: '{{ sshd_ferm_limit | bool }}'
+    delete: '{{ not sshd_ferm_limit | bool }}'
+
+
+# .. envvar:: sshd_tcpwrappers_dependent_allow
+#
+# Configure TCP wrappers to allow access to the ``sshd`` daemon.
+sshd_tcpwrappers_dependent_allow:
+
+  - daemon: 'sshd'
+    client: '{{ sshd_whitelist + sshd_group_whitelist + sshd_host_whitelist }}'
+    weight: '25'
+    filename: 'sshd_dependent_whitelist'
+    comment: 'Whitelist of hosts allowed to connect to ssh'
+
+  - daemon: 'sshd'
+    client: '{{ sshd_allow + sshd_group_allow + sshd_host_allow }}'
+    default: '{{ sshd_tcpwrappers_default }}'
+    weight: '30'
+    filename: 'sshd_dependent_allow'
+    comment: 'List of hosts allowed to connect to ssh'
 
