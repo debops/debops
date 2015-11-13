@@ -35,6 +35,9 @@ v0.2.8
   ``debops.ferm`` and ``debops.tcpwrappers`` configuration in common playbook.
   [drybjed]
 
+- Add set of common "service" playbooks that invoke Ansible roles that are used
+  on all hosts. [drybjed]
+
 v0.2.7
 ------
 
