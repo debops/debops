@@ -35,6 +35,14 @@ v0.1.5
 - Add support for getting the client IP address from a custom header, when
   ``nginx`` is used behind a proxy server. [drybjed]
 
+- Move configuration of ``debops.nginx`` role dependencies to default
+  variables. It can be used to configure firewall and APT preferences using
+  Ansible playbooks instead of hardcoding the dependencies in the role itself.
+
+  Existing role dependencies are still used, and will be removed once all
+  involved application playbooks which depend on ``debops.nginx`` are updated.
+  [drybjed]
+
 v0.1.4
 ------
 

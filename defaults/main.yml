@@ -363,3 +363,39 @@ nginx_custom_config: []
   #    text block {
   #    }
 
+# Enable execution of ``debops.nginx`` role dependencies. This variable can be
+# used in playbooks to disable hardcoded dependencies during transition to
+# playbook-based ones.
+nginx_dependencies: True
+
+# Configuration of custom APT preferences.
+nginx_apt_preferences_dependent_list:
+
+  - package: 'nginx nginx-*'
+    backports: [ 'wheezy' ]
+    reason: 'Support for SPDY, OCSP stapling'
+    role: 'debops.nginx'
+    when: '{{ (nginx_flavor == "full") | bool }}'
+    delete: '{{ not (nginx_flavor == "full") | bool }}'
+
+  - package: 'nginx nginx-*'
+    pin: 'release o=Phusion'
+    reason: 'Support for Phusion Passenger'
+    priority: '600'
+    suffix: '_passenger'
+    role: 'debops.nginx'
+    when: '{{ (nginx_flavor == "passenger") | bool }}'
+    delete: '{{ not (nginx_flavor == "passenger") | bool }}'
+
+# Configuration of the ``iptables`` firewall using ``ferm``.
+nginx_ferm_dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'http', 'https' ]
+    saddr: '{{ nginx_allow + nginx_group_allow + nginx_host_allow }}'
+    accept_any: True
+    weight: '40'
+    role: 'nginx'
+    name: 'http_https'
+    multiport: True
+
