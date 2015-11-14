@@ -1,8 +1,13 @@
 # {{ ansible_managed }}
 
+{% if nginx_user|d() %}
 user {{ nginx_user }};
 
-pid /var/run/nginx.pid;
+{% endif %}
+pid {{ nginx_run_path }}/nginx.pid;
+
+# Default error_log
+error_log {{ nginx_http_error_log | default(nginx_log_path + '/error.log') }};
 
 # Nicenness, from 20 (nice) to -20 (not nice)
 worker_priority {{ nginx_worker_priority | default('0') }};
@@ -31,9 +36,16 @@ http {
 	server_names_hash_bucket_size {{ nginx_http_server_names_hash_bucket_size | default('64') }};
 	server_names_hash_max_size {{ nginx_http_server_names_hash_max_size | default('512') }};
 
+        # Custom file paths
+        client_body_temp_path {{ nginx_client_body_temp_path | d("/var/lib/nginx/body") }};
+        fastcgi_temp_path     {{ nginx_fastcgi_temp_path | d("/var/lib/nginx/fastcgi") }};
+        proxy_temp_path       {{ nginx_proxy_temp_path | d("/var/lib/nginx/proxy") }};
+        scgi_temp_path        {{ nginx_scgi_temp_path | d("/var/lib/nginx/scgi") }};
+        uwsgi_temp_path       {{ nginx_uwsgi_temp_path | d("/var/lib/nginx/uwsgi") }};
+
 	# Logging
-	access_log {{ nginx_http_access_log | default('/var/log/nginx/access.log') }};
-	error_log {{ nginx_http_error_log | default('/var/log/nginx/error.log') }};
+	access_log {{ nginx_http_access_log | default(nginx_log_path + '/access.log') }};
+	error_log  {{ nginx_http_error_log  | default(nginx_log_path + '/error.log')  }};
 
 	add_header X-Clacks-Overhead "GNU Terry Pratchett";
 
@@ -64,7 +76,7 @@ http {
 {% endif %}
 {% if nginx_http_auth_basic is defined and nginx_http_auth_basic %}
         auth_basic "{% if nginx_http_auth_basic_realm is defined and nginx_http_auth_basic_realm %}{{ nginx_http_auth_basic_realm }}{% else %}{{ nginx_default_auth_basic_realm }}{% endif %}";
-        auth_basic_user_file {{ nginx_http_auth_basic_filename | default("/etc/nginx/private/" + nginx_http_auth_basic_name) }};
+        auth_basic_user_file {{ nginx_http_auth_basic_filename | default(nginx_private_path + "/" + nginx_http_auth_basic_name) }};
 
 {% endif %}
 {% if nginx_flavor == 'passenger' %}
@@ -81,8 +93,8 @@ http {
 {% endif %}
 {% endif %}
 	# Virtual Hosts Configs
-	include /etc/nginx/conf.d/*.conf;
-	include /etc/nginx/sites-enabled/*;
+	include {{ nginx_etc_path }}/conf.d/*.conf;
+	include {{ nginx_etc_path }}/sites-enabled/*.conf;
 }
 
 # vim:ft=nginx

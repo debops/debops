@@ -417,9 +417,9 @@
 {% set nginx_tpl_root = item.root | default(nginx_default_root)                %}
 {% if (item.name is defined and item.name)                                     %}
 {%     if (item.owner is defined and item.owner)                               %}
-{%         set nginx_tpl_root = item.root | default('/srv/www/' + item.owner + '/sites/' + item.name[0] + '/public') %}
+{%         set nginx_tpl_root = item.root | default(nginx_www + '/' + item.owner + '/sites/' + item.name[0] + '/public') %}
 {%     else                                                                    %}
-{%         set nginx_tpl_root = item.root | default('/srv/www/sites/' + item.name[0] + '/public') %}
+{%         set nginx_tpl_root = item.root | default(nginx_www + '/sites/' + item.name[0] + '/public') %}
 {%     endif                                                                   %}
 {% endif                                                                       %}
 {% if (item.root_suffix is defined and item.root_suffix)                       %}
@@ -527,8 +527,8 @@
 {% endblock %}
 {% block nginx_tpl_block_log %}
 {% if item.name is defined and item.name %}
-        access_log /var/log/nginx/{{ item.access_log | default(item.filename | default(item.name[0]) + '_access') }}.log;
-        error_log /var/log/nginx/{{ item.error_log | default(item.filename | default(item.name[0]) + '_error') }}.log;
+        access_log {{ nginx_log_path + '/' + item.access_log | default(item.filename | default(item.name[0]) + '_access') }}.log;
+        error_log {{ nginx_log_path + '/' + item.error_log | default(item.filename | default(item.name[0]) + '_error') }}.log;
 
 {% endif %}
 {% endblock %}
@@ -586,16 +586,16 @@
 {% if ((item.access_policy is defined and item.access_policy) and
        (item.access_policy in nginx_access_policy_auth_basic_map.keys())) %}
         auth_basic "{% if item.auth_basic_realm is defined and item.auth_basic_realm %}{{ item.auth_basic_realm }}{% else %}{{ nginx_default_auth_basic_realm }}{% endif %}";
-        auth_basic_user_file {{ "/etc/nginx/private/" + nginx_access_policy_auth_basic_map[item.access_policy] }};
+        auth_basic_user_file {{ nginx_private_path + "/" + nginx_access_policy_auth_basic_map[item.access_policy] }};
 
 {% elif item.auth_basic is defined and item.auth_basic %}
         auth_basic "{% if item.auth_basic_realm is defined and item.auth_basic_realm %}{{ item.auth_basic_realm }}{% else %}{{ nginx_default_auth_basic_realm }}{% endif %}";
-        auth_basic_user_file {{ item.auth_basic_filename | default("/etc/nginx/private/" + item.auth_basic_name) }};
+        auth_basic_user_file {{ item.auth_basic_filename | default(nginx_private_path + "/" + item.auth_basic_name) }};
 
 {% endif %}
 {% if item.userdir is defined and item.userdir %}
 	location ~ {{ item.userdir_regexp | d('^/~(.+?)(/.*)?$') }} {
-		alias {{ item.userdir_alias | d('/srv/www/$1/userdir/public$2') }};
+		alias {{ item.userdir_alias | d(nginx_www + '/$1/userdir/public$2') }};
 		index {{ item.userdir_index | d(item.index | default('index.html index.htm')) }};
 {% if item.userdir_options|d() %}
 {{ item.userdir_options | indent(16, true) }}

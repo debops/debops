@@ -34,6 +34,37 @@ nginx_flavor_package_map:
 # System user used by nginx
 nginx_user: 'www-data'
 
+# nginx base path for website directories
+# It is exposed using Ansible local facts as 'ansible_local.nginx.www'
+nginx_www: '/srv/www'
+
+# Directory where ``nginx`` configuration is stored.
+nginx_etc_path: '/etc/nginx'
+
+# Directory where private files used by ``nginx`` are stored (for example
+# htpasswd files).
+nginx_private_path: '{{ nginx_etc_path + "/private" }}'
+
+# Directory where runtime ``nginx`` files are stored.
+nginx_run_path: '/run'
+
+# Directory where ``nginx`` log files are stored.
+nginx_log_path: '/var/log/nginx'
+
+# Path of temporary client body files
+nginx_client_body_temp_path: '/var/lib/nginx/body'
+
+# Path of temporary FastCGI files
+nginx_fastcgi_temp_path: '/var/lib/nginx/fastcgi'
+
+# Path of temporary proxy files
+nginx_proxy_temp_path: '/var/lib/nginx/proxy'
+
+# Path of temporary sCGI files
+nginx_scgi_temp_path: '/var/lib/nginx/scgi'
+
+# Path of temporary iwsgi files
+nginx_uwsgi_temp_path: '/var/lib/nginx/uwsgi'
 
 # ---- Phusion Passenger support ----
 
@@ -144,12 +175,8 @@ nginx_default_ssl_name: ''
 # Default server template used if no type is selected
 nginx_default_type: 'default'
 
-# nginx base path for website directories
-# It is exposed using Ansible local facts as 'ansible_local.nginx.www'
-nginx_root_www_path: '/srv/www'
-
 # Default server root
-nginx_default_root: '{{ nginx_root_www_path + "/sites/default/public" }}'
+nginx_default_root: '{{ nginx_www + "/sites/default/public" }}'
 
 # Create global webroot directories?
 # Path: /srv/www/sites/*/public

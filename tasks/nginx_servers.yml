@@ -2,7 +2,7 @@
 
 - name: Create global webroot directories if allowed
   file:
-    path: '/srv/www/sites/{{ item.name[0] | default("default") }}/public'
+    path: '{{ nginx_www }}/sites/{{ item.name[0] | default("default") }}/public'
     state: 'directory'
     owner: '{{ nginx_webroot_owner }}'
     group: '{{ nginx_webroot_group }}'
@@ -15,7 +15,7 @@
 - name: Create default index.html if enabled
   copy:
     content: '{{ item.default_index }}'
-    dest: '/srv/www/sites/{{ item.name[0] | default("default") }}/public/index.html'
+    dest: '{{ nginx_www }}/sites/{{ item.name[0] | default("default") }}/public/index.html'
     owner: '{{ item.owner | default(nginx_webroot_owner) }}'
     group: '{{ item.owner | default(nginx_webroot_group) }}'
     mode: '0644'
