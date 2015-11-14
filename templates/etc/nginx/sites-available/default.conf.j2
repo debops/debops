@@ -540,6 +540,25 @@
 
 {% endif %}
 {% endblock %}
+{% if nginx_real_ip_from|d() and nginx_real_ip_from %}
+{% if nginx_real_ip_header|d() and nginx_real_ip_header %}
+        real_ip_header {{ nginx_real_ip_header }};
+{% endif %}
+{% if nginx_real_ip_recursive | bool %}
+        real_ip_recursive on;
+{% elif not nginx_real_ip_recursive | bool %}
+        real_ip_recursive off;
+{% endif %}
+{% if nginx_real_ip_from is string %}
+        set_real_ip_from {{ nginx_real_ip_from }};
+
+{% else %}
+{% for element in nginx_real_ip_from %}
+        set_real_ip_from {{ element }};
+{% endfor %}
+{% endif %}
+
+{% endif %}
 {% if item.error_pages is defined and item.error_pages %}
 {% for code, location in item.error_pages.iteritems() %}
         error_page {{ code }} {{ location }};

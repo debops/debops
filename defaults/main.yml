@@ -134,6 +134,21 @@ nginx_listen_socket: []
 # Default listen socket for HTTPS connections.
 nginx_listen_ssl_socket: []
 
+# List of IP addresses or CIDR subnets that the server should trust about real
+# IP addresses of clients. If this list is specified, ``nginx`` will read the
+# client IP address from the specified header. This is useful when ``nginx``
+# server is used behind another proxy server (local or remote).
+nginx_real_ip_from: []
+
+# Specify the header used to lookup client IP addresses given by another
+# server.
+nginx_real_ip_header: 'X-Forwarded-For'
+
+# If this variable is enabled, ``nginx`` will ignore client IP addresses that
+# match the ones from list of trusted upstream servers. This is useful when the
+# upstream server is also a proxy.
+nginx_real_ip_recursive: False
+
 nginx_default_keepalive_timeout: 60
 
 # Enable or disable support for PKI/SSL/TLS in nginx

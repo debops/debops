@@ -32,6 +32,9 @@ v0.1.5
 - Add default ``localhost`` nginx server. It has disabled HTTPS support and can
   be used by other applications to get the nginx status page locally. [drybjed]
 
+- Add support for getting the client IP address from a custom header, when
+  ``nginx`` is used behind a proxy server. [drybjed]
+
 v0.1.4
 ------
 
