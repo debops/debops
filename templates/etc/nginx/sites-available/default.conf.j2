@@ -373,7 +373,7 @@
 
     ---- HTTPS, ports to listen on, default server, HTTPS redirect ----
 #}
-{% set nginx_tpl_ssl            = item.ssl        | default(nginx_pki) | bool  %}
+{% set nginx_tpl_ssl            = (item.ssl       | default(nginx_pki)) | bool %}
 {% set nginx_tpl_listen         = item.listen     | default(nginx_listen_port if nginx_listen_port else nginx_listen_socket) %}
 {% if nginx_tpl_ssl | bool %}
 {% set nginx_tpl_listen_ssl     = item.listen_ssl | default(nginx_listen_ssl_port if nginx_listen_ssl_port else nginx_listen_ssl_socket) %}
