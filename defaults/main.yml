@@ -107,7 +107,15 @@ nginx_pki_realm: '{% if (ansible_local is defined and ansible_local.pki is defin
 # 'nginx_pki_realm' variable
 nginx_pki_crt: 'default.crt'
 nginx_pki_key: 'default.key'
-nginx_pki_dhparam: 'dhparam.pem'
+
+# Path to the file with Diffie-Hellman parameters to use by the webserver.
+nginx_ssl_dhparam: '{{ (ansible_local.dhparam[nginx_ssl_dhparam_set]
+                        if (ansible_local|d() and ansible_local.dhparam|d() and
+                            ansible_local.dhparam[nginx_ssl_dhparam_set]|d())
+                        else "") }}'
+
+# Name of the ``dhparam`` set to use.
+nginx_ssl_dhparam_set: 'default'
 
 # Default SSL cipher list. More information in vars/main.yml
 nginx_default_ssl_ciphers: 'pfs'
