@@ -133,7 +133,7 @@
 #
 #   - item.ssl_dhparam: ''
 #       Optional. Absolute path to custom DHE parameters to use. If not
-#       supplied pki_dhparam will be used instead.
+#       supplied, nginx_ssl_dhparam will be used instead.
 #
 #
 #   - item.ssl_ciphers: ''
@@ -159,11 +159,6 @@
 #
 #   - item.pki_key: ''
 #       Optional. Path to custom SSL private key to use, relative to currently
-#       enabled PKI realm (either system-wide or for current server).
-#
-#
-#   - item.pki_dhparam: ''
-#       Optional. Path to custom DHE parameters to use, relative to currently
 #       enabled PKI realm (either system-wide or for current server).
 #
 #
@@ -378,19 +373,25 @@
 
     ---- HTTPS, ports to listen on, default server, HTTPS redirect ----
 #}
-{% set nginx_tpl_ssl            = item.ssl        | default(nginx_pki) | bool  %}
-{% set nginx_tpl_listen         = item.listen     | default(['[::]:80'])       %}
-{% set nginx_tpl_listen_ssl     = item.listen_ssl | default(['[::]:443'])      %}
+{% set nginx_tpl_ssl            = (item.ssl       | default(nginx_pki)) | bool %}
+{% set nginx_tpl_listen         = item.listen     | default(nginx_listen_port if nginx_listen_port else nginx_listen_socket) %}
+{% if nginx_tpl_ssl | bool %}
+{% set nginx_tpl_listen_ssl     = item.listen_ssl | default(nginx_listen_ssl_port if nginx_listen_ssl_port else nginx_listen_ssl_socket) %}
+{% endif %}
 {% set nginx_tpl_default_server = ''                                           %}
+{% if nginx_register_default_server|d() %}
 {% if (nginx_register_default_server in item.name or
        not item.name and nginx_register_default_server == "default")           %}
 {%   set nginx_tpl_default_server = 'default_server ipv6only=off'              %}
 {% endif                                                                       %}
+{% endif %}
 {% set nginx_tpl_default_server_ssl = ''                                       %}
+{% if nginx_register_default_server_ssl|d() %}
 {% if (nginx_register_default_server_ssl in item.name or
        not item.name and nginx_register_default_server_ssl == "default")       %}
 {%   set nginx_tpl_default_server_ssl = 'default_server ipv6only=off'          %}
 {% endif                                                                       %}
+{% endif %}
 {% set nginx_tpl_default_redirect_code = '307'                                 %}
 {% set nginx_tpl_default_redirect_code_ssl = '301'                             %}
 {% set nginx_tpl_http_redirect = item.redirect | default('https://$host$request_uri') %}
@@ -414,10 +415,7 @@
 
     ---- Diffie-Hellman Key Exchange parameters ----
 #}
-{% set nginx_tpl_ssl_dhparam = nginx_pki_path + "/" + item.pki_realm | default(nginx_pki_realm) + "/" + item.pki_dhparam | default(nginx_pki_dhparam) %}
-{% if (item.ssl_dhparam is defined and item.ssl_dhparam) %}
-{%   set nginx_tpl_ssl_dhparam = item.ssl_dhparam        %}
-{% endif                                                 %}
+{% set nginx_tpl_ssl_dhparam = item.ssl_dhparam | default(nginx_ssl_dhparam) %}
 {#
 
     ---- root directory ----
@@ -425,9 +423,9 @@
 {% set nginx_tpl_root = item.root | default(nginx_default_root)                %}
 {% if (item.name is defined and item.name)                                     %}
 {%     if (item.owner is defined and item.owner)                               %}
-{%         set nginx_tpl_root = item.root | default('/srv/www/' + item.owner + '/sites/' + item.name[0] + '/public') %}
+{%         set nginx_tpl_root = item.root | default(nginx_www + '/' + item.owner + '/sites/' + item.name[0] + '/public') %}
 {%     else                                                                    %}
-{%         set nginx_tpl_root = item.root | default('/srv/www/sites/' + item.name[0] + '/public') %}
+{%         set nginx_tpl_root = item.root | default(nginx_www + '/sites/' + item.name[0] + '/public') %}
 {%     endif                                                                   %}
 {% endif                                                                       %}
 {% if (item.root_suffix is defined and item.root_suffix)                       %}
@@ -535,8 +533,8 @@
 {% endblock %}
 {% block nginx_tpl_block_log %}
 {% if item.name is defined and item.name %}
-        access_log /var/log/nginx/{{ item.access_log | default(item.filename | default(item.name[0]) + '_access') }}.log;
-        error_log /var/log/nginx/{{ item.error_log | default(item.filename | default(item.name[0]) + '_error') }}.log;
+        access_log {{ nginx_log_path + '/' + item.access_log | default(item.filename | default(item.name[0]) + '_access') }}.log;
+        error_log {{ nginx_log_path + '/' + item.error_log | default(item.filename | default(item.name[0]) + '_error') }}.log;
 
 {% endif %}
 {% endblock %}
@@ -546,6 +544,25 @@
 
 {% endif %}
 {% endblock %}
+{% if nginx_real_ip_from|d() and nginx_real_ip_from %}
+{% if nginx_real_ip_header|d() and nginx_real_ip_header %}
+        real_ip_header {{ nginx_real_ip_header }};
+{% endif %}
+{% if nginx_real_ip_recursive | bool %}
+        real_ip_recursive on;
+{% elif not nginx_real_ip_recursive | bool %}
+        real_ip_recursive off;
+{% endif %}
+{% if nginx_real_ip_from is string %}
+        set_real_ip_from {{ nginx_real_ip_from }};
+
+{% else %}
+{% for element in nginx_real_ip_from %}
+        set_real_ip_from {{ element }};
+{% endfor %}
+{% endif %}
+
+{% endif %}
 {% if item.error_pages is defined and item.error_pages %}
 {% for code, location in item.error_pages.iteritems() %}
         error_page {{ code }} {{ location }};
@@ -594,16 +611,16 @@
 {% if ((item.access_policy is defined and item.access_policy) and
        (item.access_policy in nginx_access_policy_auth_basic_map.keys())) %}
         auth_basic "{% if item.auth_basic_realm is defined and item.auth_basic_realm %}{{ item.auth_basic_realm }}{% else %}{{ nginx_default_auth_basic_realm }}{% endif %}";
-        auth_basic_user_file {{ "/etc/nginx/private/" + nginx_access_policy_auth_basic_map[item.access_policy] }};
+        auth_basic_user_file {{ nginx_private_path + "/" + nginx_access_policy_auth_basic_map[item.access_policy] }};
 
 {% elif item.auth_basic is defined and item.auth_basic %}
         auth_basic "{% if item.auth_basic_realm is defined and item.auth_basic_realm %}{{ item.auth_basic_realm }}{% else %}{{ nginx_default_auth_basic_realm }}{% endif %}";
-        auth_basic_user_file {{ item.auth_basic_filename | default("/etc/nginx/private/" + item.auth_basic_name) }};
+        auth_basic_user_file {{ item.auth_basic_filename | default(nginx_private_path + "/" + item.auth_basic_name) }};
 
 {% endif %}
 {% if item.userdir is defined and item.userdir %}
 	location ~ {{ item.userdir_regexp | d('^/~(.+?)(/.*)?$') }} {
-		alias {{ item.userdir_alias | d('/srv/www/$1/userdir/public$2') }};
+		alias {{ item.userdir_alias | d(nginx_www + '/$1/userdir/public$2') }};
 		index {{ item.userdir_index | d(item.index | default('index.html index.htm')) }};
 {% if item.userdir_options|d() %}
 {{ item.userdir_options | indent(16, true) }}
@@ -778,7 +795,9 @@ server {
         ssl_protocols             TLSv1 TLSv1.1 TLSv1.2;
         ssl_prefer_server_ciphers on;
         ssl_ciphers               "{{ nginx_ssl_ciphers[item.ssl_ciphers | default(nginx_default_ssl_ciphers)] }}"; # SSL cipher list: {{ item.ssl_ciphers | default(nginx_default_ssl_ciphers) }}
+{% if nginx_tpl_ssl_dhparam %}
         ssl_dhparam               {{ nginx_tpl_ssl_dhparam }};
+{% endif %}
         ssl_ecdh_curve            {{ item.ssl_curve | default(nginx_default_ssl_curve) }};
 {% if nginx_version | version_compare('1.4','>=') and nginx_ocsp_resolvers %}
         ssl_stapling              on;

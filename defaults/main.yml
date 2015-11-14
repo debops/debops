@@ -34,6 +34,37 @@ nginx_flavor_package_map:
 # System user used by nginx
 nginx_user: 'www-data'
 
+# nginx base path for website directories
+# It is exposed using Ansible local facts as 'ansible_local.nginx.www'
+nginx_www: '/srv/www'
+
+# Directory where ``nginx`` configuration is stored.
+nginx_etc_path: '/etc/nginx'
+
+# Directory where private files used by ``nginx`` are stored (for example
+# htpasswd files).
+nginx_private_path: '{{ nginx_etc_path + "/private" }}'
+
+# Directory where runtime ``nginx`` files are stored.
+nginx_run_path: '/run'
+
+# Directory where ``nginx`` log files are stored.
+nginx_log_path: '/var/log/nginx'
+
+# Path of temporary client body files
+nginx_client_body_temp_path: '/var/lib/nginx/body'
+
+# Path of temporary FastCGI files
+nginx_fastcgi_temp_path: '/var/lib/nginx/fastcgi'
+
+# Path of temporary proxy files
+nginx_proxy_temp_path: '/var/lib/nginx/proxy'
+
+# Path of temporary sCGI files
+nginx_scgi_temp_path: '/var/lib/nginx/scgi'
+
+# Path of temporary iwsgi files
+nginx_uwsgi_temp_path: '/var/lib/nginx/uwsgi'
 
 # ---- Phusion Passenger support ----
 
@@ -91,6 +122,33 @@ nginx_http_options: |
   gzip_disable "msie6";
 
 
+# Default listen port for HTTP connections.
+nginx_listen_port: [ '[::]:80' ]
+
+# Default listen port for HTTPS connections.
+nginx_listen_ssl_port: [ '[::]:443' ]
+
+# Default listen socket for HTTP connections.
+nginx_listen_socket: []
+
+# Default listen socket for HTTPS connections.
+nginx_listen_ssl_socket: []
+
+# List of IP addresses or CIDR subnets that the server should trust about real
+# IP addresses of clients. If this list is specified, ``nginx`` will read the
+# client IP address from the specified header. This is useful when ``nginx``
+# server is used behind another proxy server (local or remote).
+nginx_real_ip_from: []
+
+# Specify the header used to lookup client IP addresses given by another
+# server.
+nginx_real_ip_header: 'X-Forwarded-For'
+
+# If this variable is enabled, ``nginx`` will ignore client IP addresses that
+# match the ones from list of trusted upstream servers. This is useful when the
+# upstream server is also a proxy.
+nginx_real_ip_recursive: False
+
 nginx_default_keepalive_timeout: 60
 
 # Enable or disable support for PKI/SSL/TLS in nginx
@@ -107,7 +165,15 @@ nginx_pki_realm: '{% if (ansible_local is defined and ansible_local.pki is defin
 # 'nginx_pki_realm' variable
 nginx_pki_crt: 'default.crt'
 nginx_pki_key: 'default.key'
-nginx_pki_dhparam: 'dhparam.pem'
+
+# Path to the file with Diffie-Hellman parameters to use by the webserver.
+nginx_ssl_dhparam: '{{ (ansible_local.dhparam[nginx_ssl_dhparam_set]
+                        if (ansible_local|d() and ansible_local.dhparam|d() and
+                            ansible_local.dhparam[nginx_ssl_dhparam_set]|d())
+                        else "") }}'
+
+# Name of the ``dhparam`` set to use.
+nginx_ssl_dhparam_set: 'default'
 
 # Default SSL cipher list. More information in vars/main.yml
 nginx_default_ssl_ciphers: 'pfs'
@@ -136,12 +202,8 @@ nginx_default_ssl_name: ''
 # Default server template used if no type is selected
 nginx_default_type: 'default'
 
-# nginx base path for website directories
-# It is exposed using Ansible local facts as 'ansible_local.nginx.www'
-nginx_root_www_path: '/srv/www'
-
 # Default server root
-nginx_default_root: '{{ nginx_root_www_path + "/sites/default/public" }}'
+nginx_default_root: '{{ nginx_www + "/sites/default/public" }}'
 
 # Create global webroot directories?
 # Path: /srv/www/sites/*/public
@@ -250,7 +312,9 @@ nginx_upstream_php5:
   php5: 'www-data'
 
 # List of nginx server definitions
-nginx_servers: [ '{{ nginx_server_default }}' ]
+nginx_servers:
+  - '{{ nginx_server_default }}'
+  - '{{ nginx_server_localhost }}'
 
 # Default nginx site
 # List and description of available parameters can be found in nginx server
@@ -258,6 +322,14 @@ nginx_servers: [ '{{ nginx_server_default }}' ]
 nginx_server_default:
   enabled: True
   name: []
+  default_index: '{{ nginx_default_index_html }}'
+
+# Default nginx ``localhost`` server. It can be used to access ``nginx`` status
+# page by other services.
+nginx_server_localhost:
+  enabled: True
+  name: [ 'localhost' ]
+  ssl: False
   default_index: '{{ nginx_default_index_html }}'
 
 # Contents of default 'index.html' page created automatically if
@@ -290,4 +362,40 @@ nginx_custom_config: []
   #  custom: |
   #    text block {
   #    }
+
+# Enable execution of ``debops.nginx`` role dependencies. This variable can be
+# used in playbooks to disable hardcoded dependencies during transition to
+# playbook-based ones.
+nginx_dependencies: True
+
+# Configuration of custom APT preferences.
+nginx_apt_preferences_dependent_list:
+
+  - package: 'nginx nginx-*'
+    backports: [ 'wheezy' ]
+    reason: 'Support for SPDY, OCSP stapling'
+    role: 'debops.nginx'
+    when: '{{ (nginx_flavor == "full") | bool }}'
+    delete: '{{ not (nginx_flavor == "full") | bool }}'
+
+  - package: 'nginx nginx-*'
+    pin: 'release o=Phusion'
+    reason: 'Support for Phusion Passenger'
+    priority: '600'
+    suffix: '_passenger'
+    role: 'debops.nginx'
+    when: '{{ (nginx_flavor == "passenger") | bool }}'
+    delete: '{{ not (nginx_flavor == "passenger") | bool }}'
+
+# Configuration of the ``iptables`` firewall using ``ferm``.
+nginx_ferm_dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'http', 'https' ]
+    saddr: '{{ nginx_allow + nginx_group_allow + nginx_host_allow }}'
+    accept_any: True
+    weight: '40'
+    role: 'nginx'
+    name: 'http_https'
+    multiport: True
 
