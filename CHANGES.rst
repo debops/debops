@@ -26,6 +26,9 @@ v0.1.5
 
   ``nginx_root_www_path`` variable has been renamed to ``nginx_www``. [drybjed]
 
+- Allow configuration of default ``listen`` and ``listen_ssl`` directives using
+  default variables. [drybjed]
+
 v0.1.4
 ------
 
