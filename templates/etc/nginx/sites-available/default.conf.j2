@@ -379,15 +379,19 @@
 {% set nginx_tpl_listen_ssl     = item.listen_ssl | default(nginx_listen_ssl_port if nginx_listen_ssl_port else nginx_listen_ssl_socket) %}
 {% endif %}
 {% set nginx_tpl_default_server = ''                                           %}
+{% if nginx_register_default_server|d() %}
 {% if (nginx_register_default_server in item.name or
        not item.name and nginx_register_default_server == "default")           %}
 {%   set nginx_tpl_default_server = 'default_server ipv6only=off'              %}
 {% endif                                                                       %}
+{% endif %}
 {% set nginx_tpl_default_server_ssl = ''                                       %}
+{% if nginx_register_default_server_ssl|d() %}
 {% if (nginx_register_default_server_ssl in item.name or
        not item.name and nginx_register_default_server_ssl == "default")       %}
 {%   set nginx_tpl_default_server_ssl = 'default_server ipv6only=off'          %}
 {% endif                                                                       %}
+{% endif %}
 {% set nginx_tpl_default_redirect_code = '307'                                 %}
 {% set nginx_tpl_default_redirect_code_ssl = '301'                             %}
 {% set nginx_tpl_http_redirect = item.redirect | default('https://$host$request_uri') %}
