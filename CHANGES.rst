@@ -29,6 +29,9 @@ v0.1.5
 - Allow configuration of default ``listen`` and ``listen_ssl`` directives using
   default variables. [drybjed]
 
+- Add default ``localhost`` nginx server. It has disabled HTTPS support and can
+  be used by other applications to get the nginx status page locally. [drybjed]
+
 v0.1.4
 ------
 

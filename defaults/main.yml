@@ -297,7 +297,9 @@ nginx_upstream_php5:
   php5: 'www-data'
 
 # List of nginx server definitions
-nginx_servers: [ '{{ nginx_server_default }}' ]
+nginx_servers:
+  - '{{ nginx_server_default }}'
+  - '{{ nginx_server_localhost }}'
 
 # Default nginx site
 # List and description of available parameters can be found in nginx server
@@ -305,6 +307,14 @@ nginx_servers: [ '{{ nginx_server_default }}' ]
 nginx_server_default:
   enabled: True
   name: []
+  default_index: '{{ nginx_default_index_html }}'
+
+# Default nginx ``localhost`` server. It can be used to access ``nginx`` status
+# page by other services.
+nginx_server_localhost:
+  enabled: True
+  name: [ 'localhost' ]
+  ssl: False
   default_index: '{{ nginx_default_index_html }}'
 
 # Contents of default 'index.html' page created automatically if
