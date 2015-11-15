@@ -29,31 +29,6 @@
   when: ((item.source is defined and item.destination is defined) and
          (item.makefile is undefined or (item.makefile is defined and item.makefile)))
 
-- name: Ensure directory /etc/cron.d exists
-  # ... even if `cron` is not installed
-  file:
-    state: directory
-    name: /etc/cron.d
-    mode: 0755
-  when: pki_dhparams_regenerate
-
-- name: Regenerate Diffie-Hellman parameters periodically
-  cron:
-    name: 'Regenerate Diffie-Hellman parameters in all PKI realms'
-    special_time: '{{ pki_dhparams_regenerate_frequency }}'
-    state: 'present'
-    user: 'root'
-    job: 'cd {{ pki_base_path }} ; make regenerate-dhparams > /dev/null 2>&1'
-    cron_file: 'pki-regenerate-dhparams'
-  when: pki_dhparams_regenerate
-
-- name: Disable periodic DHparams regeneration
-  cron:
-    name: 'Regenerate Diffie-Hellman parameters in all PKI realms'
-    cron_file: 'pki-regenerate-dhparams'
-    state: 'absent'
-  when: not pki_dhparams_regenerate|bool
-
 - name: Create realm source directories
   file:
     path: '{{ pki_base_src + "/realms/" + item.0.source + "/" + item.1 }}'
