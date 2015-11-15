@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v0.1.1
+------
+
+*Unreleased*
+
+- The ``tzdata`` package is frequently updated after the Debian Stable release
+  and almost always newer version will be available from ``stable-updates``
+  repository. This results in frequent e-mail messages informing about updated
+  ``tzdata`` package available to install. This change ensures that on first
+  configuration of a host, ``tzdata`` package will be updated automatically,
+  which should help ensure that mentioned e-mails won't be sent. [drybjed]
+
 v0.1.0
 ------
 
