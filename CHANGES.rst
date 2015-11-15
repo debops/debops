@@ -26,3 +26,6 @@ v0.1.0
 - Automatically enable or disable TLS certificates depending on status of the
   ``debops.pki`` role. [drybjed]
 
+- Use the Diffie-Hellman parameter files managed by ``debops.dhparam`` Ansible
+  role. [drybjed]
+
