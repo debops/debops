@@ -22,3 +22,7 @@ v0.1.0
 - Add a way to copy arbitrary files from Ansible Controller to remote host PKI
   directories. [drybjed]
 
+- Remove Diffie-Hellman parameter support from the role, it's now managed by
+  a separate ``debops.dhparam`` Ansible role. Existing hosts won't be affected.
+  [drybjed]
+

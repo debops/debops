@@ -36,10 +36,6 @@ PKI_PRIVATE_DIR_MODE	= {{ item.private_dir_mode   | default(pki_private_dir_mode
 PKI_PUBLIC_MODE		= {{ item.public_mode        | default(pki_public_mode        | default('0644')) }}
 PKI_PRIVATE_MODE	= {{ item.private_mode	     | default(pki_private_mode       | default('0440')) }}
 
-PKI_DHPARAMS		= {{ item.dhparams           | default(pki_dhparams           | default(['512','1024','2048'])) | join(' ') }}
-PKI_DEFAULT_DHE		= {{ item.default_dhe        | default(pki_default_dhe        | default('2048')) }}
-PKI_DEFAULT_DHPARAM	= {{ item.default_dhparam    | default('$(subst %,$(PKI_DEFAULT_DHE),$(DHE))') }}
-
 PKI_DEFAULT		= {{ item.default            | default(pki_default_certificate | default(ansible_fqdn)) }}
 PKI_DEFAULT_CA		= {{ item.default_ca         | default(pki_default_ca         | default('/etc/ssl/certs/ca-certificates.crt')) }}
 
@@ -72,15 +68,12 @@ DIGEST			= sha256sum
 CA			= CA/%.crt
 SYSTEM_CA		= /usr/local/share/ca-certificates/$(SYSTEM_CA_PREFIX)%.crt
 
-DHE			= dhparams/dh%.pem
 CNF			= templates/%.cnf
 KEY			= private/%.key
 CSR			= requests/%.csr
 CRT			= certs/%.crt
 PEM			= combined/%.pem
 CRL			= revoked/%.crl
-
-DEFAULT_DHPARAM		= dhparam.pem
 
 DEFAULT_CA_NAME		= CA
 DEFAULT_NAME		= default
@@ -91,12 +84,10 @@ DEFAULT_KEY		= $(DEFAULT_NAME).key
 DEFAULT_PEM		= $(DEFAULT_NAME).pem
 DEFAULT_CRL		= $(DEFAULT_NAME).crl
 
-DEFAULT_SYMLINKS	= DEFAULT_DHPARAM DEFAULT_CA DEFAULT_CRT DEFAULT_KEY DEFAULT_PEM DEFAULT_CRL
+DEFAULT_SYMLINKS	= DEFAULT_CA DEFAULT_CRT DEFAULT_KEY DEFAULT_PEM DEFAULT_CRL
 
-PUBLIC_DIRECTORIES	= $(addprefix $(DIR_PREFIX),$(sort $(dir $(DHE)) $(dir $(CA)) $(dir $(CNF)) $(dir $(CRL)) $(dir $(CSR)) $(dir $(CRT))))
+PUBLIC_DIRECTORIES	= $(addprefix $(DIR_PREFIX),$(sort $(dir $(CA)) $(dir $(CNF)) $(dir $(CRL)) $(dir $(CSR)) $(dir $(CRT))))
 PRIVATE_DIRECTORIES	= $(addprefix $(DIR_PREFIX),$(sort $(dir $(KEY)) $(dir $(PEM))))
-
-DIFFIE_HELLMAN_PARAMETERS		= $(patsubst %,$(DHE),$(PKI_DHPARAMS))
 
 PRIVATE_KEYS				= $(patsubst $(CNF),$(KEY),		$(wildcard $(subst %,*,$(CNF))))
 CERTIFICATE_SIGNING_REQUESTS		= $(patsubst $(CNF),$(CSR),		$(wildcard $(subst %,*,$(CNF))))
@@ -112,11 +103,9 @@ BUNDLED_CERTIFICATE_AUTHORITIES		= $(patsubst $(CA),$(SYSTEM_CA),$(wildcard $(su
 	$(DEFAULT_SYMLINKS) $(PKI_SIGNATURES) $(PKI_PERMISSIONS) \
 	$(addsuffix .tmp,$(DIFFIE_HELLMAN_PARAMETERS)) clean-certificates list
 
-all: all-directories all-dhparams all-private-keys all-requests all-combined-certificates all-default-symlinks clean-certificate-symlinks all-bundled-certificates signatures-permissions
+all: all-directories all-private-keys all-requests all-combined-certificates all-default-symlinks clean-certificate-symlinks all-bundled-certificates signatures-permissions
 
 all-directories: $(PUBLIC_DIRECTORIES) $(PRIVATE_DIRECTORIES)
-
-all-dhparams: $(DIFFIE_HELLMAN_PARAMETERS)
 
 all-private-keys: $(PRIVATE_KEYS)
 
@@ -141,7 +130,7 @@ $(BUNDLED_CERTIFICATE_AUTHORITIES):
 		test -L $@ && rm -f $@ || true \
 	)
 
-# default.* CA.crt dhparam.pem
+# default.* CA.crt
 $(DEFAULT_SYMLINKS):
 	@test -n "$(PKI_$@)" && test -e "$(PKI_$@)" && ( \
 		test -L $($@) && test "$(shell readlink -f $($@))" = "$(shell readlink -f "$(PKI_$@)")" || ( \
@@ -152,7 +141,7 @@ $(DEFAULT_SYMLINKS):
 		test -L $($@) && rm -f $($@) || true \
 	)
 
-# CA/ templates/ requests/ selfsigned/ signed/ certs/ revoked/ dhparams/
+# CA/ templates/ requests/ selfsigned/ signed/ certs/ revoked/
 $(PUBLIC_DIRECTORIES):
 	@test -d $(subst $(DIR_PREFIX),,$@) -a "$(shell stat -L -c "%a %U %G" $(subst $(DIR_PREFIX),,$@) 2> /dev/null)" = "755 $(PKI_OWNER) $(PKI_PUBLIC_GROUP)" || ( \
 		mkdir -m $(PKI_PUBLIC_DIR_MODE) -p $(subst $(DIR_PREFIX),,$@) && \
@@ -233,32 +222,6 @@ $(PKI_PERMISSIONS):
 		echo "Updated $@" \
 	)
 
-OPENSSL_DHPARAMS_COMMAND	= $(OPENSSL) dhparam -out $@.tmp $(patsubst $(DHE),%,$@)
-GNUTLS_DHPARAMS_COMMAND		= $(GNUTLS) --generate-dh-params --bits $(patsubst $(DHE),%,$@) --outfile $@.tmp
-
-OPENSSL_DHPARAMS_REGEN_COMMAND	= $(OPENSSL) dhparam -out $@ $(patsubst $(addsuffix .tmp,$(DHE)),%,$@)
-GNUTLS_DHPARAMS_REGEN_COMMAND	= $(GNUTLS) --generate-dh-params --bits $(patsubst $(addsuffix .tmp,$(DHE)),%,$@) --outfile $@
-
-# dhparams/dh*.pem
-$(DIFFIE_HELLMAN_PARAMETERS): $(addprefix $(DIR_PREFIX),$(dir $(DHE)))
-	@test -e $@ || ( \
-		touch $@.tmp && \
-		chmod $(PKI_PUBLIC_MODE) $@.tmp && \
-		chown $(PKI_OWNER).$(PKI_PUBLIC_GROUP) $@.tmp && \
-		$($(LIBRARY)_DHPARAMS_COMMAND) && \
-		mv $@.tmp $@ \
-	)
-
-# dhparams/dh*.pem (regeneration)
-$(addsuffix .tmp,$(DIFFIE_HELLMAN_PARAMETERS)): $(addprefix $(DIR_PREFIX),$(dir $(DHE)))
-	touch $@ && \
-	chmod $(PKI_PUBLIC_MODE) $@ && \
-	chown $(PKI_OWNER).$(PKI_PUBLIC_GROUP) $@ && \
-	$($(LIBRARY)_DHPARAMS_REGEN_COMMAND) && \
-	mv $@ $(patsubst %.tmp,%,$@)
-
-regenerate-dhparams: $(addsuffix .tmp,$(DIFFIE_HELLMAN_PARAMETERS))
-
 check:
 	@$(DIGEST) --check $(PKI_SIGNATURES) --strict --status || $(DIGEST) --check $(PKI_SIGNATURES) --strict
 	@find . -exec getfacl {} \; | diff -u $(PKI_PERMISSIONS) -
@@ -291,7 +254,7 @@ heartbleed: clean-private clean-requests clean-selfcrt clean-crt
 	@make all
 
 clean-symlinks:
-	@rm -vrf $(BUNDLED_CERTIFICATE_AUTHORITIES) $(DEFAULT_CA) $(DEFAULT_DHPARAM) $(DEFAULT_CRT) $(DEFAULT_KEY) $(DEFAULT_PEM) $(DEFAULT_CRL)
+	@rm -vrf $(BUNDLED_CERTIFICATE_AUTHORITIES) $(DEFAULT_CA) $(DEFAULT_CRT) $(DEFAULT_KEY) $(DEFAULT_PEM) $(DEFAULT_CRL)
 
 clean-signatures-permissions:
 	@rm -vrf pki-signatures.txt pki-permissions.txt
