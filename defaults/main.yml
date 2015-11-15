@@ -513,3 +513,66 @@ postfix_dependent_mastercf: []
 # extension when ``test`` Postfix capability is enabled.
 postfix_smtpd_authorized_xclient_hosts: [ '127.0.0.1/32' ]
 
+
+# ----------------------------------
+#   External service configuration
+# ----------------------------------
+
+# .. envvar:: postfix_dependencies
+#
+# Enable or disable Ansible role dependencies used by Postfix role.
+postfix_dependencies: True
+
+
+# .. envvar:: postfix_ferm_weight
+#
+# Determines the order of the files in the configuration directory, and order
+# of the firewall rules.
+postfix_ferm_weight: '40'
+
+
+# .. envvar:: postfix_ferm_dependent_rules
+#
+# Configuration of the firewall rules managed by ``debops.ferm`` role.
+postfix_ferm_dependent_rules:
+
+  - type: 'accept'
+    weight: '{{ postfix_ferm_weight }}'
+    role: 'postfix'
+    name: 'smtp'
+    dport: [ 'smtp' ]
+    saddr: '{{ postfix_allow_smtp }}'
+    accept_any: True
+    when: '{{ ("network" in postfix_capabilities and
+               ("mx" in postfix_capabilities or
+                "submission" in postfix_capabilities)) | bool }}'
+    delete: '{{ ("network" not in postfix_capabilities or
+                 ("mx" not in postfix_capabilities and
+                  "submission" not in postfix_capabilities)) | bool }}'
+
+  - type: 'accept'
+    weight: '{{ postfix_ferm_weight }}'
+    role: 'postfix'
+    name: 'smtps'
+    dport: [ 'smtps' ]
+    saddr: '{{ postfix_allow_smtps }}'
+    accept_any: True
+    when: '{{ ("network" in postfix_capabilities and
+               "submission" in postfix_capabilities and
+               "deprecated" in postfix_capabilities) | bool }}'
+    delete: '{{ ("network" not in postfix_capabilities or
+                 ("submission" not in postfix_capabilities or
+                  "deprecated" not in postfix_capabilities)) | bool }}'
+
+  - type: 'accept'
+    weight: '{{ postfix_ferm_weight }}'
+    role: 'postfix'
+    name: 'submission'
+    dport: [ 'submission' ]
+    saddr: '{{ postfix_allow_submission }}'
+    accept_any: True
+    when: '{{ ("network" in postfix_capabilities and
+               "submission" in postfix_capabilities) | bool }}'
+    delete: '{{ ("network" not in postfix_capabilities or
+                 "submission" not in postfix_capabilities) | bool }}'
+

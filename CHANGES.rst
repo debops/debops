@@ -35,3 +35,6 @@ v0.1.0
 
 - Purge other SMTP server packages when Postfix is installed. [drybjed]
 
+- Replace the filewall configuration file with list of ``debops.ferm``
+  configuration rules defined in default variables. [drybjed]
+

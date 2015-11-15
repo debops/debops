@@ -116,15 +116,6 @@
   register: postfix_register_make
   changed_when: "not postfix_register_make.stdout.startswith('make: Nothing to be done')"
 
-- name: Configure firewall for Postfix
-  template:
-    src: 'etc/ferm/filter-input.d/postfix.conf.j2'
-    dest: '/etc/ferm/filter-input.d/postfix.conf'
-    owner: 'root'
-    group: 'adm'
-    mode: '0644'
-  notify: [ 'Restart ferm' ]
-
 - name: Restart Postfix if capabilities change
   template:
     src: 'etc/postfix/postfix-capabilities.j2'
