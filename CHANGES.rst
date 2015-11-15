@@ -33,3 +33,5 @@ v0.1.0
   capabilities. The old ``postfix`` variable is still present and will be
   removed at a later time. [drybjed]
 
+- Purge other SMTP server packages when Postfix is installed. [drybjed]
+

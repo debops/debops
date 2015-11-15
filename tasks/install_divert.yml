@@ -10,6 +10,14 @@
     - '{{ postfix_packages }}'
   when: item is defined and item
 
+- name: Purge other SMTP servers
+  apt:
+    name: '{{ item }}'
+    state: 'absent'
+    purge: True
+  with_items: '{{ postfix_purge_packages }}'
+  when: postfix_purge_packages|d()
+
 - name: Disable Postfix configuration in debconf
   debconf:
     name: 'postfix'
