@@ -66,7 +66,17 @@ slapd_pki_realm: '{% if (ansible_local is defined and ansible_local.pki is defin
 slapd_pki_ca: 'CA.crt'
 slapd_pki_crt: 'default.crt'
 slapd_pki_key: 'default.key'
-slapd_pki_dhparam: 'dhparam.pem'
+
+# Specify the Diffie-Hellman parameter set to use. See ``debops.dhparam`` role
+# for more details.
+slapd_dhparam_set: 'default'
+
+# Absolute path to file with Diffie-Hellman parameters.
+slapd_dhparam_file: '{{ (ansible_local.dhparam[slapd_dhparam_set]
+                         if (ansible_local|d() and ansible_local.dhparam|d() and
+                             ansible_local.dhparam[slapd_dhparam_set]|d())
+                         else "") }}'
+
 
 # TLS cipher suite required by the server
 slapd_pki_ciphers: 'SECURE256:-VERS-SSL3.0'
