@@ -23,10 +23,25 @@
 postfix: [ 'null' ]
 
 
+# .. envvar:: postfix_capabilities
+#
+# List of active Postfix capabilities. By default Postfix is configured with
+# local mail disabled, all mail is sent to a local MX server configured in DNS.
+# See :ref:`postfix_capabilities` for more details.
+postfix_capabilities: '{{ postfix }}'
+
+
 # .. envvar:: postfix_packages
 #
 # List of additional Postfix packages.
 postfix_packages: []
+
+
+# .. envvar:: postfix_purge_packages
+#
+# Remove packages and configuration of other SMTP servers.
+postfix_purge_packages: [ 'exim4-base', 'exim4-config',
+                          'exim4-daemon-light', 'nullmailer' ]
 
 
 # .. envvar:: postfix_relayhost
@@ -497,4 +512,67 @@ postfix_dependent_mastercf: []
 # List of clients and networks which will have access to ``XCLIENT`` protocol
 # extension when ``test`` Postfix capability is enabled.
 postfix_smtpd_authorized_xclient_hosts: [ '127.0.0.1/32' ]
+
+
+# ----------------------------------
+#   External service configuration
+# ----------------------------------
+
+# .. envvar:: postfix_dependencies
+#
+# Enable or disable Ansible role dependencies used by Postfix role.
+postfix_dependencies: True
+
+
+# .. envvar:: postfix_ferm_weight
+#
+# Determines the order of the files in the configuration directory, and order
+# of the firewall rules.
+postfix_ferm_weight: '40'
+
+
+# .. envvar:: postfix_ferm_dependent_rules
+#
+# Configuration of the firewall rules managed by ``debops.ferm`` role.
+postfix_ferm_dependent_rules:
+
+  - type: 'accept'
+    weight: '{{ postfix_ferm_weight }}'
+    role: 'postfix'
+    name: 'smtp'
+    dport: [ 'smtp' ]
+    saddr: '{{ postfix_allow_smtp }}'
+    accept_any: True
+    when: '{{ ("network" in postfix_capabilities and
+               ("mx" in postfix_capabilities or
+                "submission" in postfix_capabilities)) | bool }}'
+    delete: '{{ ("network" not in postfix_capabilities or
+                 ("mx" not in postfix_capabilities and
+                  "submission" not in postfix_capabilities)) | bool }}'
+
+  - type: 'accept'
+    weight: '{{ postfix_ferm_weight }}'
+    role: 'postfix'
+    name: 'smtps'
+    dport: [ 'smtps' ]
+    saddr: '{{ postfix_allow_smtps }}'
+    accept_any: True
+    when: '{{ ("network" in postfix_capabilities and
+               "submission" in postfix_capabilities and
+               "deprecated" in postfix_capabilities) | bool }}'
+    delete: '{{ ("network" not in postfix_capabilities or
+                 ("submission" not in postfix_capabilities or
+                  "deprecated" not in postfix_capabilities)) | bool }}'
+
+  - type: 'accept'
+    weight: '{{ postfix_ferm_weight }}'
+    role: 'postfix'
+    name: 'submission'
+    dport: [ 'submission' ]
+    saddr: '{{ postfix_allow_submission }}'
+    accept_any: True
+    when: '{{ ("network" in postfix_capabilities and
+               "submission" in postfix_capabilities) | bool }}'
+    delete: '{{ ("network" not in postfix_capabilities or
+                 "submission" not in postfix_capabilities) | bool }}'
 

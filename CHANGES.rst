@@ -29,3 +29,12 @@ v0.1.0
 - Use the Diffie-Hellman parameter files managed by ``debops.dhparam`` Ansible
   role. [drybjed]
 
+- Add ``postfix_capabilities`` variable which will define the list of Postfix
+  capabilities. The old ``postfix`` variable is still present and will be
+  removed at a later time. [drybjed]
+
+- Purge other SMTP server packages when Postfix is installed. [drybjed]
+
+- Replace the filewall configuration file with list of ``debops.ferm``
+  configuration rules defined in default variables. [drybjed]
+

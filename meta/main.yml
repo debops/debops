@@ -9,7 +9,8 @@ dependencies:
   - role: debops.ferm
     tags: [ 'depend::ferm', 'depend::ferm:postfix',
             'depend-of::postfix', 'type::dependency' ]
-    when: postfix
+    ferm_dependent_rules: '{{ postfix_ferm_dependent_rules }}'
+    when: postfix_dependencies|d() and postfix_dependencies | bool
 
 galaxy_info:
   author: 'Maciej Delmanowski'
