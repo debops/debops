@@ -140,11 +140,35 @@ postfix_pki_crt: 'default.crt'
 postfix_pki_key: 'default.key'
 
 
-# .. envvar:: postfix_pki_dhparam
+# -----------------------------
+#   Diffie-Hellman parameters
+# -----------------------------
+
+# .. envvar:: postfix_smtpd_tls_dhparam_set
 #
-# Default Diffie-Hellman parameters file (2048 bits), relative to
-# ``postfix_pki_realm`` variable.
-postfix_pki_dhparam: 'dhparam.pem'
+# Name of the Diffie-Hellman parameter set to use in Postfix configuration. See
+# ``debops.dhparam`` role for more details.
+postfix_smtpd_tls_dhparam_set: 'default'
+
+
+# .. envvar:: postfix_smtpd_tls_dh1024_param_file
+#
+# Absolute path to Diffie-Hellman parameters file which should be used for
+# non-export grade connections.
+postfix_smtpd_tls_dh1024_param_file: '{{ (ansible_local.dhparam[postfix_smtpd_tls_dhparam_set]
+                                          if (ansible_local|d() and ansible_local.dhparam|d() and
+                                              ansible_local.dhparam[postfix_smtpd_tls_dhparam_set]|d())
+                                          else "") }}'
+
+
+# .. envvar:: postfix_smtpd_tls_dh1024_param_file
+#
+# Absolute path to Diffie-Hellman parameters file which should be used for
+# export grade connections.
+postfix_smtpd_tls_dh512_param_file: '{{ (ansible_local.dhparam[postfix_smtpd_tls_dhparam_set]
+                                         if (ansible_local|d() and ansible_local.dhparam|d() and
+                                             ansible_local.dhparam[postfix_smtpd_tls_dhparam_set]|d())
+                                         else "") }}'
 
 
 # --------------------------
