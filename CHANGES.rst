@@ -47,3 +47,6 @@ v0.1.0
   the new directory is created there for the role to work on older Ansible
   version. [drybjed]
 
+- Switch the Diffie-Hellman parameter file to the one managed by
+  ``debops.dhparam`` Ansible role. [drybjed]
+
