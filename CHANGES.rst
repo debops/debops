@@ -64,3 +64,5 @@ v0.1.0
   configure ``slapd`` only with plain connection support. You are advised to
   not use this mode in production environment. [drybjed]
 
+- Change ``sudo`` task parameters to ``become``. [drybjed]
+
