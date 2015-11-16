@@ -50,3 +50,5 @@ v0.1.0
 - Switch the Diffie-Hellman parameter file to the one managed by
   ``debops.dhparam`` Ansible role. [drybjed]
 
+- Add more keys indexed by default. [drybjed]
+
