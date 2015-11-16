@@ -4,27 +4,6 @@ dependencies:
 
   - role: debops.secret
 
-  - role: debops.ferm
-    ferm_input_list:
-
-      - type: 'dport_accept'
-        protocol: [ 'tcp', 'udp' ]
-        dport: [ 'ldap', 'ldaps' ]
-        saddr: '{{ slapd_allow + slapd_group_allow + slapd_host_allow }}'
-        accept_any: True
-        weight: '50'
-        filename: 'slapd_dependency_accept'
-
-  - role: debops.tcpwrappers
-    tcpwrappers_allow:
-
-      - daemon: 'slapd'
-        client: '{{ slapd_allow + slapd_group_allow + slapd_host_allow }}'
-        default: '{{ slapd_tcpwrappers_default }}'
-        weight: '50'
-        filename: 'slapd_dependency_allow'
-        comment: 'Allow connections to OpenLDAP'
-
 galaxy_info:
   author: 'Maciej Delmanowski'
   description: 'Manage slapd - OpenLDAP server'

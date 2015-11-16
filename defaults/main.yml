@@ -241,3 +241,27 @@ slapd_ldap_access_control_list_default:
     by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
     by * none
 
+# A prefix number added to the filename which helps order the firewall rules.
+slapd_ferm_weight: '40'
+
+# Firewall configuration managed by ``ferm``.
+slapd_ferm_dependent_rules:
+
+  - type: 'accept'
+    protocol: [ 'tcp', 'udp' ]
+    dport: [ 'ldap', 'ldaps' ]
+    saddr: '{{ slapd_allow + slapd_group_allow + slapd_host_allow }}'
+    accept_any: True
+    weight: '{{ slapd_ferm_weight }}'
+    role: 'slapd'
+
+# Configuration of TCP Wrappers.
+slapd_tcpwrappers_dependent_allow:
+
+  - daemon: 'slapd'
+    client: '{{ slapd_allow + slapd_group_allow + slapd_host_allow }}'
+    default: '{{ slapd_tcpwrappers_default }}'
+    weight: '50'
+    filename: 'slapd_dependent_allow'
+    comment: 'Allow connections to OpenLDAP'
+
