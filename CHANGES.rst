@@ -59,3 +59,10 @@ v0.1.0
   configuration to default variables. It can be used by other roles through the
   playbooks. [drybjed]
 
+- Update the support for encrypted connections and DebOps PKI. Role should now
+  correctly detect that ``debops.pki`` hasn't been configured on a host and
+  configure ``slapd`` only with plain connection support. You are advised to
+  not use this mode in production environment. [drybjed]
+
+- Change ``sudo`` task parameters to ``become``. [drybjed]
+

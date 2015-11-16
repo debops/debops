@@ -54,13 +54,22 @@ slapd_snapshot_period: 'weekly'
 # ---- PKI / TLS and certificates ----
 
 # Enable or disable support for certificates (using debops.pki)
-slapd_pki: True
+slapd_pki: '{{ (ansible_local.pki.enabled
+                if (ansible_local|d() and ansible_local.pki|d() and
+                    ansible_local.pki.enabled|d())
+                else True) | bool }}'
 
 # Base PKI directory
-slapd_pki_path: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.base_path }}{% else %}/etc/pki{% endif %}'
+slapd_pki_path: '{{ (ansible_local.pki.base_path
+                     if (ansible_local|d() and ansible_local.pki|d() and
+                         ansible_local.pki.base_path|d())
+                     else "/etc/pki") }}'
 
 # Default PKI realm used by OpenLDAP
-slapd_pki_realm: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.realm }}{% else %}system{% endif %}'
+slapd_pki_realm: '{{ (ansible_local.pki.realm
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                          ansible_local.pki.realm|d())
+                      else "system") }}'
 
 # Default CA certificate, server certificate and key used by OpenLDAP server
 slapd_pki_ca: 'CA.crt'
@@ -198,10 +207,15 @@ slapd_ldap_index_default:
 # ---- LDAP connection security ----
 
 # List of security rules enabled on the OpenLDAP server
-slapd_ldap_security: '{{ slapd_ldap_security_default }}'
+slapd_ldap_security: '{{ slapd_ldap_security_tls
+                         if slapd_pki | bool
+                         else slapd_ldap_security_default }}'
 
-# Default security rules (require TLS for all connections)
-slapd_ldap_security_default:
+# Don't require encryption for all connections
+slapd_ldap_security_default: []
+
+# Require encryption for all connections
+slapd_ldap_security_tls:
 
   - 'simple_bind=128'
   - 'update_ssf=128'
@@ -214,31 +228,35 @@ slapd_ldap_security_default:
 # List of olcAccess attributes configured on the server
 slapd_ldap_access_control_list: '{{ slapd_ldap_access_control_list_default }}'
 
+# Security Strength Factor used in ACL entries
+slapd_acl_tls_ssf: '{{ "tls_ssf=128 ssf=128"
+                       if slapd_pki | bool else "" }}'
+
 # Default LDAP ACL. Order of entries is important!
 slapd_ldap_access_control_list_default:
 
   - |
     to attrs=userPassword,shadowLastChange
-    by tls_ssf=128 ssf=128 self write
-    by tls_ssf=128 ssf=128 anonymous auth
-    by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
+    by {{ slapd_acl_tls_ssf }} self write
+    by {{ slapd_acl_tls_ssf }} anonymous auth
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
     by * none
 
   - |
     to attrs=uid,uidNumber,gidNumber,homeDirectory,loginShell
-    by tls_ssf=128 ssf=128 self read
-    by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
-    by tls_ssf=128 ssf=128 users read
+    by {{ slapd_acl_tls_ssf }} self read
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
+    by {{ slapd_acl_tls_ssf }} users read
 
   - |
     to dn.base=""
-    by tls_ssf=128 ssf=128 * read
+    by {{ slapd_acl_tls_ssf }} * read
 
   - |
     to *
-    by tls_ssf=128 ssf=128 self read
-    by tls_ssf=128 ssf=128 dn.subtree="ou=Machines,{{ slapd_basedn }}" read
-    by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
+    by {{ slapd_acl_tls_ssf }} self read
+    by {{ slapd_acl_tls_ssf }} dn.subtree="ou=Machines,{{ slapd_basedn }}" read
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
     by * none
 
 # A prefix number added to the filename which helps order the firewall rules.
