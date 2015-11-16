@@ -50,3 +50,12 @@ v0.1.0
 - Switch the Diffie-Hellman parameter file to the one managed by
   ``debops.dhparam`` Ansible role. [drybjed]
 
+- Add more keys indexed by default. [drybjed]
+
+- Convert the ACL entries into YAML text blocks. This makes modifications to
+  the list easier and allows for better Jinja templating. [drybjed]
+
+- Remove the Ansible role dependencies and move the firewall and TCP Wrappers
+  configuration to default variables. It can be used by other roles through the
+  playbooks. [drybjed]
+

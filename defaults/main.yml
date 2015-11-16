@@ -189,6 +189,10 @@ slapd_ldap_index_default:
   - 'uidNumber eq'
   - 'gidNumber eq'
   - 'memberUid eq'
+  - 'authorizedService eq'
+  - 'host eq'
+  - 'entryCSN eq'
+  - 'entryUUID eq'
 
 
 # ---- LDAP connection security ----
@@ -213,23 +217,51 @@ slapd_ldap_access_control_list: '{{ slapd_ldap_access_control_list_default }}'
 # Default LDAP ACL. Order of entries is important!
 slapd_ldap_access_control_list_default:
 
-  - 'to attrs=userPassword,shadowLastChange
-     by tls_ssf=128 ssf=128 self write
-     by tls_ssf=128 ssf=128 anonymous auth
-     by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
-     by * none'
+  - |
+    to attrs=userPassword,shadowLastChange
+    by tls_ssf=128 ssf=128 self write
+    by tls_ssf=128 ssf=128 anonymous auth
+    by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
+    by * none
 
-  - 'to attrs=uid,uidNumber,gidNumber,homeDirectory,loginShell
-     by tls_ssf=128 ssf=128 self read
-     by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
-     by tls_ssf=128 ssf=128 users read'
+  - |
+    to attrs=uid,uidNumber,gidNumber,homeDirectory,loginShell
+    by tls_ssf=128 ssf=128 self read
+    by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
+    by tls_ssf=128 ssf=128 users read
 
-  - 'to dn.base=""
-     by tls_ssf=128 ssf=128 * read'
+  - |
+    to dn.base=""
+    by tls_ssf=128 ssf=128 * read
 
-  - 'to *
-     by tls_ssf=128 ssf=128 self read
-     by tls_ssf=128 ssf=128 dn.subtree="ou=Machines,{{ slapd_basedn }}" read
-     by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
-     by * none'
+  - |
+    to *
+    by tls_ssf=128 ssf=128 self read
+    by tls_ssf=128 ssf=128 dn.subtree="ou=Machines,{{ slapd_basedn }}" read
+    by tls_ssf=128 ssf=128 dn="{{ slapd_basedn_admin }}" write
+    by * none
+
+# A prefix number added to the filename which helps order the firewall rules.
+slapd_ferm_weight: '40'
+
+# Firewall configuration managed by ``ferm``.
+slapd_ferm_dependent_rules:
+
+  - type: 'accept'
+    protocol: [ 'tcp', 'udp' ]
+    dport: [ 'ldap', 'ldaps' ]
+    saddr: '{{ slapd_allow + slapd_group_allow + slapd_host_allow }}'
+    accept_any: True
+    weight: '{{ slapd_ferm_weight }}'
+    role: 'slapd'
+
+# Configuration of TCP Wrappers.
+slapd_tcpwrappers_dependent_allow:
+
+  - daemon: 'slapd'
+    client: '{{ slapd_allow + slapd_group_allow + slapd_host_allow }}'
+    default: '{{ slapd_tcpwrappers_default }}'
+    weight: '50'
+    filename: 'slapd_dependent_allow'
+    comment: 'Allow connections to OpenLDAP'
 
