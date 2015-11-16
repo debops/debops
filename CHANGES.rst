@@ -52,3 +52,6 @@ v0.1.0
 
 - Add more keys indexed by default. [drybjed]
 
+- Convert the ACL entries into YAML text blocks. This makes modifications to
+  the list easier and allows for better Jinja templating. [drybjed]
+
