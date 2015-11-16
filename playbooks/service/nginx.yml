@@ -1,0 +1,21 @@
+---
+
+- name: Manage nginx service
+  hosts: 'debops_service_nginx'
+  become: True
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences_dependent_list:
+        - '{{ nginx_apt_preferences_dependent_list | d([]) }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm_dependent_rules:
+        - '{{ nginx_ferm_dependent_rules | d([]) }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+
