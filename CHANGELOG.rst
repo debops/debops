@@ -41,6 +41,12 @@ v0.2.8
 - Add playbook for ``debops.ntp`` role and update ``common.yml`` playbook with
   ``debops.ntp`` firewall configuration. [drybjed]
 
+- Update the Postfix, nginx and slapd playbooks to include the firewall and TCP
+  Wrappers roles. OpenLDAP and nginx Ansible host groups have been renamed, you
+  will need to update the inventory. Postfix plybook is prepared to manage
+  Postfix as standalone service, not part of the ``common.yml`` playbook.
+  [drybjed]
+
 v0.2.7
 ------
 

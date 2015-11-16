@@ -1,0 +1,16 @@
+---
+
+- name: Manage Postfix SMTP service
+  hosts: 'debops_service_postfix'
+  become: True
+
+  roles:
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm_dependent_rules:
+        - '{{ postfix_ferm_dependent_rules | d([]) }}'
+
+    - role: debops.postfix
+      tags: [ 'role::postfix' ]
+
