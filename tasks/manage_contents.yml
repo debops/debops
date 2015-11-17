@@ -123,7 +123,7 @@
     name: '{{ item.0.user | d(item.0.name) }}'
     host: '{{ item.0.host | default(mariadb_client) }}'
     priv: '{{ item.0.priv if (item.0.priv is string) else (item.0.priv | join("/")) }}'
-    append_privs: '{{ item.0.append_privs | default("yes") }}'
+    append_privs: '{{ item.0.append_privs | default(True) }}'
   with_together:
     - mariadb_users
     - mariadb_register_create_users.results
@@ -167,10 +167,23 @@
          item.owner|d(False))
   no_log: True
 
+- name: Ensure that directory for custom file path .my.cnf exists
+  file:
+    path: '{{ item.0.creds_path | regex_replace("^(.*/).*$", "\\1") }}'
+    state: 'directory'
+  with_together:
+    - mariadb_users
+    - mariadb_register_create_users.results
+  when: ((item.0.user|d(False) or item.0.name|d(False)) and
+         (item.0.state|d("present") != "absent") and
+         item.0.creds_path|d(False) and
+         item.0.owner|d(False))
+  no_log: True
+
 - name: Write ~/.my.cnf in owner home directory
   template:
     src: 'home/my.cnf.j2'
-    dest: '{{ "~" + item.0.owner + "/.my.cnf" }}'
+    dest: '{{ item.0.creds_path|d("~" + item.0.owner + "/.my.cnf") }}'
     owner: '{{ item.0.owner }}'
     group: '{{ item.0.group | default(item.0.owner) }}'
     mode: '{{ item.0.mode | default("0640") }}'
@@ -181,4 +194,3 @@
          (item.0.state is undefined or item.0.state != "absent") and
          item.0.owner|d(False))
   no_log: True
-

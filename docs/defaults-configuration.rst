@@ -163,6 +163,11 @@ User configuration file
   Optional. If specified, defines the permissions of the ``~/.my.cnf`` configuration
   file. By default they are set to ``0640``.
 
+``creds_path``
+  Optional, string. Allows you to change the file path for the credentials file
+  which defaults to ``~/.my.cnf``.
+
+
 Examples
 ~~~~~~~~
 

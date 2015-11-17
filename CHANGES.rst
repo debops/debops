@@ -9,6 +9,9 @@ v0.1.2
 - Changed tag from ``mariadb/contents`` to ``role::mariadb:contents`` to
   control database contents tasks. [ypid]
 
+- Allow to change the file path for the credentials file which defaults to
+  ``~/.my.cnf``. [ypid]
+
 
 v0.1.1
 ------
