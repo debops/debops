@@ -37,7 +37,7 @@
     owner: '{{ owncloud_user }}'
     group: '{{ owncloud_group }}'
     mode: 0640
-  when: owncloud_custom_conf_map
+  when: (owncloud_custom_conf_map is defined and owncloud_custom_conf_map is mapping)
   tags: [ 'role::owncloud:custom_config' ]
 
 - include: configure_mysql.yml
