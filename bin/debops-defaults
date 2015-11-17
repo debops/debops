@@ -52,7 +52,8 @@ def cat(filename, outstream):
         outstream.write('%s: %s\n' % (e.strerror, e.filename))
         return
     try:
-        outstream.writelines(fh)
+        # Read input file as Unicode object and pass it to outstream.
+        outstream.write(fh.read())
     finally:
         fh.close()
 
