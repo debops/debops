@@ -88,8 +88,8 @@ you to use more specific parameters which are not documented below.
     execution of this role.
 
   ``absent``
-    Same as ``unmounted`` but additionally removes all configuration and the
-    keyfile from the remote system for this item.
+    Same as ``unmounted`` but additionally removes all configuration, the
+    keyfile and the header backup from the remote system for this item.
 
 .. _LUKS: https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup
 .. _dm-crypt: https://en.wikipedia.org/wiki/Dm-crypt
