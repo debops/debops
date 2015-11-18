@@ -20,7 +20,11 @@ ssl-cipher              = {{ mariadb_server_pki_cipher | default('DHE-RSA-AES256
 {% endif %}
 {% if mariadb_server_options|d(False) %}
 {% for key, value in mariadb_server_options.iteritems() %}
-{{ key }}{% if value is not none %} = {{ value }}{% endif %}
+{% if value is not none %}
+{{ "%-23s = %s" | format(key, value) }}
+{% else %}
+{{ key }}
+{% endif %}
 {% endfor %}
 
 {% endif %}
