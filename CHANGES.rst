@@ -9,6 +9,9 @@ v0.1.3
 - Allow to change the backup directory of ``automysqlbackup`` via
   ``mariadb_server_backup_directory``. [ypid]
 
+- Fix the ``/etc/mysql/conf.d/mysql.cnf`` template writing multiple custom
+  MariaDB options in one line. [drybjed]
+
 v0.1.2
 ------
 
