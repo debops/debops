@@ -43,6 +43,11 @@ v0.1.5
   involved application playbooks which depend on ``debops.nginx`` are updated.
   [drybjed]
 
+- Add a way to control if ``debops.nginx`` role automatically adds
+  ``ipv6only=false`` to the configuration to support dual-stack IPv4/IPv6
+  connections. This was the default, now it can be disabled so that users can
+  control the listening ports themselves. [drybjed]
+
 v0.1.4
 ------
 
