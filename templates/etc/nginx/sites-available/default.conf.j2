@@ -378,18 +378,26 @@
 {% if nginx_tpl_ssl | bool %}
 {% set nginx_tpl_listen_ssl     = item.listen_ssl | default(nginx_listen_ssl_port if nginx_listen_ssl_port else nginx_listen_ssl_socket) %}
 {% endif %}
-{% set nginx_tpl_default_server = ''                                           %}
+{% set nginx_tpl_default_server = []                                           %}
+{% set nginx_tpl_ipv6only = []                                                 %}
 {% if nginx_register_default_server|d() %}
 {% if (nginx_register_default_server in item.name or
        not item.name and nginx_register_default_server == "default")           %}
-{%   set nginx_tpl_default_server = 'default_server ipv6only=off'              %}
+{%   set _ = nginx_tpl_default_server.append('default_server')                 %}
+{%   if (nginx_manage_ipv6only | bool)                                         %}
+{%     set _ = nginx_tpl_ipv6only.append('ipv6only=off')                       %}
+{%  endif                                                                      %}
 {% endif                                                                       %}
 {% endif %}
-{% set nginx_tpl_default_server_ssl = ''                                       %}
+{% set nginx_tpl_default_server_ssl = []                                       %}
+{% set nginx_tpl_ipv6only_ssl = []                                             %}
 {% if nginx_register_default_server_ssl|d() %}
 {% if (nginx_register_default_server_ssl in item.name or
        not item.name and nginx_register_default_server_ssl == "default")       %}
-{%   set nginx_tpl_default_server_ssl = 'default_server ipv6only=off'          %}
+{%   set _ = nginx_tpl_default_server_ssl.append('default_server')             %}
+{%   if (nginx_manage_ipv6only | bool)                                         %}
+{%     set _ = nginx_tpl_ipv6only_ssl.append('ipv6only=off')                   %}
+{%  endif                                                                      %}
 {% endif                                                                       %}
 {% endif %}
 {% set nginx_tpl_default_redirect_code = '307'                                 %}
@@ -757,7 +765,7 @@ server {
 server {
 {% if (item.listen is undefined or (item.listen is defined and item.listen)) %}
 {% for port in nginx_tpl_listen %}
-        listen {{ port }}{% if (loop.first and nginx_tpl_default_server) %} {{ nginx_tpl_default_server }}{% endif %};
+        listen {{ port }}{% if nginx_tpl_default_server %} {{ nginx_tpl_default_server | join(" ") }}{% endif %}{% if (loop.first and nginx_tpl_ipv6only) %} {{ nginx_tpl_ipv6only | join(" ") }}{% endif %};
 {% endfor %}
 
 {% if item.name is defined and item.name %}
@@ -787,7 +795,7 @@ server {
 server {
 {% endif %}
 {% for port in nginx_tpl_listen_ssl %}
-        listen {{ port }} ssl{% if nginx_version | version_compare('1.4','>=') %} spdy{% endif %}{% if (loop.first and nginx_tpl_default_server_ssl) %} {{ nginx_tpl_default_server_ssl }}{% endif %};
+        listen {{ port }} ssl{% if nginx_version | version_compare('1.4','>=') %} spdy{% endif %}{% if nginx_tpl_default_server_ssl %} {{ nginx_tpl_default_server_ssl | join(" ") }}{% endif %}{% if (loop.first and nginx_tpl_ipv6only_ssl) %} {{ nginx_tpl_ipv6only_ssl | join(" ") }}{% endif %};
 {% endfor %}
 
         ssl_certificate           {{ nginx_tpl_ssl_certificate }};

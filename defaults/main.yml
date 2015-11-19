@@ -121,6 +121,16 @@ nginx_http_options: |
   gzip on;
   gzip_disable "msie6";
 
+# If this variable is enabled, ``debops.nginx`` role will automatically add
+# ``ipv6only=false`` to the default nginx server configuration. You can disable
+# it and manage IPv4 and IPv6 listen directives yourself. nginx daemon needs to
+# be restarted when this variable changes. More information can be found at:
+#
+# - https://github.com/debops/ansible-nginx/issues/86
+#
+# - http://stefanchrist.eu/blog/2015_01_21/Using%20ipv6only%20in%20Nginx.xhtml
+#
+nginx_manage_ipv6only: True
 
 # Default listen port for HTTP connections.
 nginx_listen_port: [ '[::]:80' ]
