@@ -1,57 +1,69 @@
 ---
+# Default variables
+# =================
 
-# Which clock management daemon should be installed?
-# Supported:
+# .. contents:: Sections
+#    :local:
+#
+# ------------------------------------
+#   Global options
+# ------------------------------------
+
+# .. envvar:: ntp_daemon
+#
+# Which clock management daemon/program should be setup?
+#
+# Choices (string):
+#
 # * ntpdate
 # * ntpd
 # * openntpd
-# Set to False to disable clock management
+#
+# Set to ``False`` to disable clock management.
 ntp_daemon: 'openntpd'
 
-# Timezone configuration
-# Specify timezone as 'Area/Zone', use 'timedatectl list-timezones' to see list of
-# possible values. To set the UTC timezone, specify it as 'Etc/UTC'
-# If this variable is empty or False, the timezone won't be changed
-ntp_timezone: ''
 
-# List of interfaces ntpd should listen on. Specify '*' to listen on all
-# interfaces.
-ntp_listen: []
-
-# Enable or disable access to ntpd service through firewall
-ntp_firewall_access: False
-
-# List of hosts/networks in CIDR format to allow access to ntp port in
-# firewall. If this list is False, access will be allowed from anywhere. You
-# should probably define a list of networks allowed access to mitigate NTP
-# amplification attacks
-ntp_allow: []
-
+# .. envvar:: ntp_servers
+#
 # List of NTP servers to synchronize with
-# If you use NTPd, you can add server options in server strings, for example:
-#   '0.debian.pool.ntp.org iburst minpoll 6 maxpoll 10'
-# If you're syncing against local servers, recommended options are --
+# If you use :program:`ntpd`, you can add server options in server strings, for example::
+#
+#     ntp_servers:
+#       - '0.debian.pool.ntp.org iburst minpoll 6 maxpoll 10'
+#
+# If you're syncing against local servers, recommended options are:
 # 'burst iburst minpoll 4 maxpoll 4', where:
-#  - 'burst' and 'iburst' -- Get a time sync as fast as possible by sending 8 sync
-#                            queries with 2 second interval. (Beware though,
-#                            this is considered as an abuse on public servers!)
-#  - minpoll, maxpoll -- Min/max interval for sync queries to be sent in normal
-#                        operation mode. It's defined in seconds as a
-#                        power of two:
-#                         4 -- 16 seconds (minimal allowed)
-#                         5 -- 32 seconds
-#                         6 -- 64 seconds
-#                        and so on.
+#
+# ``burst`` and ``iburst``:
+#   Get a time sync as fast as possible by sending 8 sync queries with 2 second
+#   interval. (Beware though, this is considered as an abuse on public servers!)
+#
+# ``minpoll``, ``maxpoll``:
+#   Min/max interval for sync queries to be sent in normal operation mode. It's
+#   defined in seconds as a power of two:
+#
+#   * 4 -- 16 seconds (minimal allowed)
+#   * 5 -- 32 seconds
+#   * 6 -- 64 seconds
+#
+#   and so on.
+#
 ntp_servers:
   - '0.debian.pool.ntp.org'
   - '1.debian.pool.ntp.org'
   - '2.debian.pool.ntp.org'
   - '3.debian.pool.ntp.org'
 
-# NTPd specific.
-# Fudge local clock if time servers is not available
+
+# .. envvar:: ntp_fudge
+#
+# :program:`ntpd` specific.
+# Fudge local clock if time servers is not available.
 ntp_fudge: True
 
+
+# .. envvar:: ntp_root_flags
+#
 # List of global root flags to check
 ntp_root_flags:
 
@@ -59,26 +71,88 @@ ntp_root_flags:
   # install specified ntp daemon
   cap_sys_time: [ 'ignore-cap12s', 'ignore-cap_sys_time' ]
 
-# Name of the ``iptables`` chain to use for filtering NTP connections.
+
+# ------------------------------------
+#   Timezone configuration
+# ------------------------------------
+
+# .. envvar:: ntp_timezone
+#
+# Specify timezone in the format of 'Area/Zone'. Use :command:`timedatectl
+# list-timezones` to see a list of possible values. To set the UTC timezone,
+# specify it as 'Etc/UTC'.
+# If this variable is empty or set to ``False``, the timezone won't be changed.
+ntp_timezone: ''
+
+
+# ------------------------------------
+#   Network accessibility
+# ------------------------------------
+
+# .. envvar:: ntp_listen
+#
+# List of interfaces :program:`ntpd` should listen on.
+# Specify::
+#
+#     ntp_listen: '*'
+#
+# to listen on all interfaces.
+ntp_listen: []
+
+
+# .. envvar:: ntp_firewall_access
+#
+# Enable or disable access to NTP through the firewall.
+ntp_firewall_access: False
+
+
+# .. envvar:: ntp_allow
+#
+# List of hosts/networks in CIDR format to allow access to the NTP port by the
+# firewall. If this list is set to ``False``, access will be allowed from
+# anywhere. You should probably define a list of networks allowed access to
+# mitigate NTP amplification attacks.
+ntp_allow: []
+
+
+# .. envvar:: ntp_ferm_chain
+#
+# Name of the :command:`iptables` chain to use for filtering NTP connections.
 ntp_ferm_chain: 'filter-ntp'
 
+
+# .. envvar:: ntp_ferm_weight
+#
 # Weight of the ``debops.ntp`` firewall rules, determines the order of the
 # configuration files.
 ntp_ferm_weight: '40'
 
+
+# .. envvar:: ntp_ferm_recent_seconds
+#
 # Time window which firewall checks to filter too many connections, specified
 # in seconds.
 ntp_ferm_recent_seconds: '{{ (60 * 60) }}'
 
+
+# .. envvar:: ntp_ferm_recent_hitcount
+#
 # Maximum number of new connections from a host in the specified time window.
 ntp_ferm_recent_hitcount: 5
 
-# Specify what should firewall do with packets that exceed allowed limits. You
-# can use ``DROP`` (recommended), ``REJECT`` (high risk of reflection attacks) or
-# specify name of an ``iptables`` chain to sent the packets into.
+
+# .. envvar:: ntp_ferm_recent_target
+#
+# Specify what the firewall should do with packets that exceed the allowed
+# limits. You can use ``DROP`` (recommended), ``REJECT`` (high risk of
+# reflection attacks) or specify name of an :command:`iptables` chain to
+# further process the packet(s).
 ntp_ferm_recent_target: 'DROP'
 
-# Configuration of iptables firewall using ``ferm``.
+
+# .. envvar:: ntp_ferm_dependent_rules
+#
+# Configuration of the Linux firewall using ``debops.ferm``.
 ntp_ferm_dependent_rules:
 
   - type: 'accept'
