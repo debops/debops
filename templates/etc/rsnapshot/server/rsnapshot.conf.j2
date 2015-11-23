@@ -123,25 +123,14 @@ cmd_logger	/usr/bin/logger
 # i.e. hourly, daily, weekly, etc.      #
 #########################################
 
-{% if (host.rsnapshot_hourly is defined and host.rsnapshot_hourly) %}
-retain	hourly	{{ host.rsnapshot_hourly }}
-{% elif host.rsnapshot_hourly is undefined %}
-retain	hourly	{{ rsnapshot_hourly }}
-{% endif %}
-{% if (host.rsnapshot_daily is defined and host.rsnapshot_daily) %}
-retain	daily	{{ host.rsnapshot_daily }}
-{% elif host.rsnapshot_daily is undefined %}
-retain	daily	{{ rsnapshot_daily }}
-{% endif %}
-{% if (host.rsnapshot_weekly is defined and host.rsnapshot_weekly) %}
-retain	weekly	{{ host.rsnapshot_weekly }}
-{% elif host.rsnapshot_weekly is undefined %}
-retain	weekly	{{ rsnapshot_weekly }}
-{% endif %}
-{% if (host.rsnapshot_monthly is defined and host.rsnapshot_monthly) %}
-retain	monthly	{{ host.rsnapshot_monthly }}
-{% elif host.rsnapshot_weekly is undefined %}
-retain	monthly	{{ rsnapshot_monthly }}
+{% if (host.retain is undefined or not host.retain | bool) %}
+{% for element in rsnapshot_retain %}
+retain	{{ element.name }}	{{ element.number }}
+{% endfor %}
+{% elif host.retain|d() and host.retain %}
+{% for element in host.retain %}
+retain	{{ element.name }}	{{ element.number }}
+{% endfor %}
 {% endif %}
 
 ############################################

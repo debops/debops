@@ -105,32 +105,51 @@ rsnapshot_scheduler_run_max_delay: '5'
 # inventory, either in ``host_vars/`` for a single host, or in ``group_vars/``
 # for entire groups of hosts.
 
-# .. envvar:: rsnapshot_hourly
+
+# .. envvar:: rsnapshot_retain
 #
-# Number of hourly snapshots to keep. Set to ``False`` to disable hourly
-# snapshots.
-rsnapshot_hourly: '6'
-
-
-# .. envvar:: rsnapshot_daily
+# List of snapshots managed by ``rsnapshot`` for a given host. Each element is
+# a YAML dictionary with following keys:
 #
-# Number of daily snapshots to keep. Set to ``False`` to disable daily
-# snapshots.
-rsnapshot_daily: '7'
-
-
-# .. envvar:: rsnapshot_weekly
+# - ``name``: name of the snapshot
 #
-# Number of weekly snapshots to keep. Set to ``False`` to disable weekly
-# snapshots.
-rsnapshot_weekly: '4'
-
-
-# .. envvar:: rsnapshot_monthly
+# - ``number``: number of snapshots to preserve
 #
-# Number of monthly snapshots to keep. Set to ``False`` to disable monthly
-# snapshots.
-rsnapshot_monthly: '3'
+rsnapshot_retain: '{{ rsnapshot_retain_hourly }}'
+
+
+# .. envvar:: rsnapshot_retain_hourly
+#
+# Keep a set of hourly snapshots which are then rotated daily, weekly and
+# monthly.
+rsnapshot_retain_hourly:
+
+  - name: 'hourly'
+    number: 6
+
+  - name: 'daily'
+    number: 7
+
+  - name: 'weekly'
+    number: 4
+
+  - name: 'monthly'
+    number: 6
+
+
+# .. envvar:: rsnapshot_retain_daily
+#
+# Keep a set of daily snapshots which are then rotated weekly and monthly.
+rsnapshot_retain_daily:
+
+  - name: 'daily'
+    number: 7
+
+  - name: 'weekly'
+    number: 4
+
+  - name: 'monthly'
+    number: 6
 
 
 # .. envvar:: rsnapshot_one_fs

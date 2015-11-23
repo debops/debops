@@ -32,6 +32,13 @@ v0.1.7
   the scripts executed by ``cron`` should ensure that they are not executed.
   But you should still check if everything works correctly. [drybjed]
 
+- Change how list of snapshots is defined.
+
+  Instead of separate static variable for each snapshot (hourly, daily, weekly,
+  monthly), list of snapshots is now defined using dictionary variables. This
+  allows definition of different snapshot lists or creation of differently
+  scheduled snapshots. [drybjed]
+
 v0.1.6
 ------
 
