@@ -13,14 +13,18 @@
 #
 # Required. Inventory group of hosts that have :program:`rsnapshot` installed
 # and keep the backup files.
-rsnapshot_clients: '{{ groups.debops_rsnapshot }}'
+rsnapshot_clients: '{{ groups.debops_service_rsnapshot|d([]) +
+                       groups.debops_service_rsnapshot_clients|d([]) +
+                       groups.debops_rsnapshot|d([]) }}'
 
 
 # .. envvar:: rsnapshot_servers
 #
 # Required. Inventory group of hosts that should be backed up by rsnapshot. They have
 # :command:`rsync` installed and clients connect to them.
-rsnapshot_servers: '{{ groups.debops_rsnapshot_rsync }}'
+rsnapshot_servers: '{{ groups.debops_service_rsnapshot_rsync|d([]) +
+                       groups.debops_service_rsnapshot_servers|d([]) +
+                       groups.debops_rsnapshot_rsync|d([]) }}'
 
 
 # .. envvar:: rsnapshot_external_servers

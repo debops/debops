@@ -39,6 +39,9 @@ v0.1.7
   allows definition of different snapshot lists or creation of differently
   scheduled snapshots. [drybjed]
 
+- Use more inventory group names to define which hosts are clients and which
+  are servers. [drybjed]
+
 v0.1.6
 ------
 
