@@ -13,6 +13,8 @@ v0.1.7
 
 - Make sure that assymetric host configuration works on Ansible v2. [drybjed]
 
+- Make sure that role works without ``debops.core`` configuration. [drybjed]
+
 v0.1.6
 ------
 

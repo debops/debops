@@ -132,7 +132,10 @@ rsnapshot_ssh_args: '-p 22'
 #
 # ``rrsync`` script will be installed in this path (by default,
 # :file:`/usr/local/lib`).
-rsnapshot_rrsync_script: '{{ ansible_local.root.lib + "/rrsync" }}'
+rsnapshot_rrsync_script: '{{ (ansible_local.root.lib
+                              if (ansible_local|d() and ansible_local.root|d() and
+                                  ansible_local.root.lib|d())
+                              else "/usr/local/lib") + "/rrsync" }}'
 
 
 # .. envvar:: rsnapshot_ssh_command

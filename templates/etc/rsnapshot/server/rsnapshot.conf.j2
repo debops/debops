@@ -15,9 +15,9 @@
 {% set rsnapshot_tpl_path = '/' %}
 {% endif %}
 {% if host.rsnapshot_uuid is defined and host.rsnapshot_uuid %}
-{% set rsnapshot_tpl_uuid = host.ansible_local.root.uuid + "/" %}
+{% set rsnapshot_tpl_uuid = ((host.ansible_local.uuid + "/") if (host.ansible_local|d() and host.ansible_local.uuid|d()) else "") %}
 {% elif rsnapshot_uuid is defined and rsnapshot_uuid %}
-{% set rsnapshot_tpl_uuid = host.ansible_local.root.uuid + "/" %}
+{% set rsnapshot_tpl_uuid = ((host.ansible_local.uuid + "/") if (host.ansible_local|d() and host.ansible_local.uuid|d()) else "") %}
 {% else %}
 {% set rsnapshot_tpl_uuid = '' %}
 {% endif %}
