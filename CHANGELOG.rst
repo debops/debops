@@ -47,6 +47,9 @@ v0.2.8
   Postfix as standalone service, not part of the ``common.yml`` playbook.
   [drybjed]
 
+- Remove the ``default([])`` alternatives from playbooks to make them work
+  correctly on Ansible v1. [drybjed]
+
 v0.2.7
 ------
 
