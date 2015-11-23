@@ -65,12 +65,36 @@ rsnapshot_link_dest: '1'
 rsnapshot_sync_first: '1'
 
 
-# .. envvar:: rsnapshot_mail_to
+# .. envvar:: rsnapshot_config_dir
 #
-# List of mail recipients which should get messages from rsnapshot. By default
-# rsnapshot sends its mails to ``<backup>`` account which should be aliased to
-# an administrator account.
-rsnapshot_mail_to: [ 'backup' ]
+# Directory where rsnapshot configuration files for each host are stored.
+rsnapshot_config_dir: '/etc/rsnapshot'
+
+
+# .. envvar:: rsnapshot_scheduler_type
+#
+# Method by which ``rsnapshot-scheduler`` issues new backup jobs:
+#
+# - ``batch``: use ``batch`` from the ``at`` package to run backups depending
+#   on system load. If not present, it falls back to ``sleep``.
+#
+# - ``sleep``: use ``sleep`` command with a random delay in minutes to spread
+#   the load of the backup jobs.
+#
+rsnapshot_scheduler_type: 'batch'
+
+
+# .. envvar:: rsnapshot_scheduler_sleep_max_delay
+#
+# Maximum delay in minutes for the ``sleep`` scheduler type.
+rsnapshot_scheduler_sleep_max_delay: '20'
+
+
+# .. envvar:: rsnapshot_scheduler_run_max_delay
+#
+# Maximum delay in minutes for the scheduler to check if another backup job has
+# finished before running.
+rsnapshot_scheduler_run_max_delay: '5'
 
 
 # -------------------------------
@@ -80,13 +104,6 @@ rsnapshot_mail_to: [ 'backup' ]
 # Server configuration should be defined in the respective host file in the
 # inventory, either in ``host_vars/`` for a single host, or in ``group_vars/``
 # for entire groups of hosts.
-
-# .. envvar:: rsnapshot_sleep
-#
-# Maximum random delay time in minutes for rsnapshot to start synchronization.
-# Set to ``False`` to disable the delay.
-rsnapshot_sleep: '20'
-
 
 # .. envvar:: rsnapshot_hourly
 #

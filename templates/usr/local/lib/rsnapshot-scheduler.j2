@@ -1,0 +1,204 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# Manage rsnapshot backups configured in /etc/rsnapshot/
+
+
+display_usage () {
+
+    cat <<EOF
+Usage: $(basename ${0}) <run|schedule> <level> <all|host>
+
+run           start the backup of a given host on a given level
+schedule      create a backup job with given parameters
+
+<level>       name of a rsnapshot backup level to use
+              (hourly, daily, weekly, monthly, etc.)
+
+all           schedule backup job for all hosts
+<host>        name of the host directory in /etc/rsnapshot
+EOF
+
+}
+
+script="$0"
+
+scheduler_config="/etc/$(basename ${script}).conf"
+
+scheduler_config_dir="/etc/rsnapshot"
+scheduler_type="batch"
+scheduler_sleep_max_delay="20"
+scheduler_run_max_delay="5"
+
+[ -r ${scheduler_config} ] && . ${scheduler_config}
+
+pid="$$"
+
+mode="${1}"
+backup_level="${2}"
+host="${3}"
+
+log_message () {
+    if tty -s > /dev/null 2>&1 ; then
+        echo "$(basename ${script}): ${@}"
+    elif type logger > /dev/null 2>&1 ; then
+        logger -t "$(basename ${script})[${pid}]" "${@}"
+    fi
+}
+
+if [ -z "${mode}" ] ; then
+    display_usage
+    exit 0
+fi
+
+if [ -z "${backup_level}" ] ; then
+    log_message "Error: backup level not specified"
+    exit 1
+fi
+
+if [ -z "${host}" ] ; then
+    log_message "Error: host not specified"
+    exit 1
+fi
+
+scheduler_pidfile="/run/$(basename ${script})-${backup_level}-${host}.pid"
+
+clean_up () {
+    test -f ${scheduler_pidfile} && rm -f ${scheduler_pidfile}
+}
+
+if [ -r ${scheduler_config_dir}/${host}/stop -o -r ${scheduler_config_dir}/${host}/disable -o -r ${scheduler_config_dir}/${host}/disabled ] ; then
+    log_message "Exit: backup of ${host} is disabled"
+    exit 0
+fi
+
+if [ "${host}" != "all" ] ; then
+    if [ -d ${scheduler_config_dir}/${host} ] ; then
+        config="${scheduler_config_dir}/${host}/rsnapshot.conf"
+    else
+        log_message "Error: configuration for ${host} not found"
+        exit 1
+    fi
+fi
+
+delay_backup () {
+    sleep $[ ( $RANDOM % ${scheduler_sleep_max_delay} ) + 1 ]m
+}
+
+run_backup () {
+
+    if [ "${host}" == "all" ] ; then
+        log_message "Error: cannot backup host ${host}"
+        exit 1
+    fi
+
+    if [ -r ${config} ] ; then
+
+        if [ -f ${scheduler_pidfile} ] ; then
+            if $(kill -0 $(<${scheduler_pidfile}) > /dev/null 2>&1) ; then
+                log_message "Exit: Backup of ${host} at ${backup_level} level already in progress, managed by PID $(cat ${scheduler_pidfile})"
+                exit 0
+            else
+                rm -f ${scheduler_pidfile}
+            fi
+        fi
+
+        echo ${pid} > ${scheduler_pidfile}
+        sleep 1
+
+        if [ "x$(cat ${scheduler_pidfile})" != "x"${pid} ] ; then
+            log_message "Exit: Backup of ${host} at ${backup_level} level started by PID $(cat ${scheduler_pidfile}), exiting"
+            exit 0
+        fi
+
+        trap clean_up EXIT
+
+        sync_first=( $(grep -E "^sync_first\s+1" ${config}) )
+        retain_first=( $(grep -E "^retain\s+" ${config} | awk '{print $2}' | head -n 1) )
+        retain_name=( $(grep -E "^retain\s+${backup_level}\s+" ${config} | awk '{print $2}' | head -n 1) )
+        lockfile=( $(grep -E "^lockfile\s+" ${config} | awk '{print $2}' | head -n 1) )
+
+        if [ -n "${lockfile}" ] && [ -r ${lockfile} ] ; then
+            if $(kill -0 $(<${lockfile}) > /dev/null 2>&1) ; then
+                while [ -r ${lockfile} ] ; do
+                    sleep $[ ( $RANDOM % ${scheduler_run_max_delay} ) + 1]m
+                done
+            fi
+        fi
+
+        if [ "${retain_name}" == "${backup_level}" ] ; then
+            if [ -n "${sync_first}" ] && [ "${retain_name}" == "${retain_first}" ] ; then
+                rsnapshot -c ${config} sync
+            fi
+            rsnapshot -c ${config} ${backup_level}
+        else
+            log_message "Error: Specified backup level '${backup_level}' is not configured in ${config}"
+            exit 1
+        fi
+
+    else
+
+        log_message "Error: Config file ${config} not found"
+        exit 1
+
+    fi
+}
+
+prepare_backup () {
+
+    local backup_level="${1}"
+    local host="${2}"
+
+    if [ -d ${scheduler_config_dir}/${host} ] ; then
+        local config="${scheduler_config_dir}/${host}/rsnapshot.conf"
+    else
+        log_message "Error: configuration for ${host} not found"
+        exit 1
+    fi
+
+    retain_name=( $(grep -E "^retain\s+${backup_level}\s+" ${config} | awk '{print $2}' | head -n 1) )
+
+    if [ "${retain_name}" == "${backup_level}" ] ; then
+
+        if [ "${scheduler_type}" == "batch" ] ; then
+
+            if type batch > /dev/null 2>&1 ; then
+                log_message "Scheduling ${backup_level} backup of ${host} using batch"
+                echo "${script} run ${backup_level} ${host}" | batch > /dev/null 2>&1
+            else
+                log_message "Scheduling ${backup_level} backup of ${host}"
+                (${script} delayrun ${backup_level} ${host}) &
+            fi
+
+        elif [ "${scheduler_type}" == "sleep" ] ; then
+
+            log_message "Scheduling ${backup_level} backup of ${host}"
+            (${script} delayrun ${backup_level} ${host}) &
+
+        fi
+
+    fi
+}
+
+schedule_backup () {
+
+    if [ "${host}" != "all" ] ; then
+
+        prepare_backup ${backup_level} ${host}
+
+    elif [ "${host}" == "all" ] ; then
+        for name in ${scheduler_config_dir}/* ; do
+            prepare_backup ${backup_level} $(basename ${name})
+        done
+    fi
+
+}
+
+case ${mode} in
+    run)         run_backup ;;
+    delayrun)    delay_backup ; run_backup ;;
+    schedule)    schedule_backup ;;
+    *)           display_usage && exit 0 ;;
+esac
+

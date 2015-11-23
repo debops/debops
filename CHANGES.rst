@@ -15,6 +15,23 @@ v0.1.7
 
 - Make sure that role works without ``debops.core`` configuration. [drybjed]
 
+- Redesign the ``rsnapshot`` execution scripts.
+
+  Instead of multiple scripts launched from ``cron``, role now uses single
+  ``rsnapshot-scheduler`` script to prepare backups jobs and start them using
+  ``batch`` command when available. The scheduler script gets the configuration
+  of a particular backup job from the ``rsnapshot.conf`` configuration file of
+  each host, and because of that different retain values are not hardcoded and
+  depend entirely on the ``rsnapshot`` configuration.
+
+  If ``batch`` is not installed, backup jobs will be scheduler with random
+  pause using ``sleep``, meant to lessen the impact of multiple jobs running at
+  once.
+
+  Old ``rsnapshot`` scripts are not removed with this update, but changes to
+  the scripts executed by ``cron`` should ensure that they are not executed.
+  But you should still check if everything works correctly. [drybjed]
+
 v0.1.6
 ------
 

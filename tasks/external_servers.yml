@@ -2,7 +2,7 @@
 
 - name: Create server configuration directories on client
   file:
-    path: '/etc/rsnapshot/{{ item.backup_host | default(item.name) }}'
+    path: '{{ rsnapshot_config_dir }}/{{ item.backup_host | default(item.name) }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
@@ -15,7 +15,7 @@
 - name: Configure servers on rsnapshot clients
   template:
     src: 'etc/rsnapshot/external-server/{{ item.1 }}.j2'
-    dest: '/etc/rsnapshot/{{ item.0.backup_host | default(item.0.name) }}/{{ item.1 }}'
+    dest: '{{ rsnapshot_config_dir }}/{{ item.0.backup_host | default(item.0.name) }}/{{ item.1 }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -29,7 +29,7 @@
 - name: Configure runner scripts on rsnapshot clients
   template:
     src: 'etc/rsnapshot/external-server/{{ item.1 }}.j2'
-    dest: '/etc/rsnapshot/{{ item.0.backup_host | default(item.0.name) }}/{{ item.1 }}'
+    dest: '{{ rsnapshot_config_dir }}/{{ item.0.backup_host | default(item.0.name) }}/{{ item.1 }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
