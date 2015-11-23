@@ -60,6 +60,9 @@ v0.2.8
   patterns. This should ensure that during transition from colons to commas
   there shouldn't be any issues. [drybjed]
 
+  You can use :command:`sed --regexp-extended --in-place '/\[debops_service_/! s/^\[debops_(.+)\]$/[debops_service_\1]/' hosts`
+  to update your inventory file. [ypid]
+
 v0.2.7
 ------
 
