@@ -13,14 +13,18 @@
 #
 # Required. Inventory group of hosts that have :program:`rsnapshot` installed
 # and keep the backup files.
-rsnapshot_clients: '{{ groups.debops_rsnapshot }}'
+rsnapshot_clients: '{{ groups.debops_service_rsnapshot|d([]) +
+                       groups.debops_service_rsnapshot_clients|d([]) +
+                       groups.debops_rsnapshot|d([]) }}'
 
 
 # .. envvar:: rsnapshot_servers
 #
 # Required. Inventory group of hosts that should be backed up by rsnapshot. They have
 # :command:`rsync` installed and clients connect to them.
-rsnapshot_servers: '{{ groups.debops_rsnapshot_rsync }}'
+rsnapshot_servers: '{{ groups.debops_service_rsnapshot_rsync|d([]) +
+                       groups.debops_service_rsnapshot_servers|d([]) +
+                       groups.debops_rsnapshot_rsync|d([]) }}'
 
 
 # .. envvar:: rsnapshot_external_servers
@@ -65,12 +69,36 @@ rsnapshot_link_dest: '1'
 rsnapshot_sync_first: '1'
 
 
-# .. envvar:: rsnapshot_mail_to
+# .. envvar:: rsnapshot_config_dir
 #
-# List of mail recipients which should get messages from rsnapshot. By default
-# rsnapshot sends its mails to ``<backup>`` account which should be aliased to
-# an administrator account.
-rsnapshot_mail_to: [ 'backup' ]
+# Directory where rsnapshot configuration files for each host are stored.
+rsnapshot_config_dir: '/etc/rsnapshot'
+
+
+# .. envvar:: rsnapshot_scheduler_type
+#
+# Method by which ``rsnapshot-scheduler`` issues new backup jobs:
+#
+# - ``batch``: use ``batch`` from the ``at`` package to run backups depending
+#   on system load. If not present, it falls back to ``sleep``.
+#
+# - ``sleep``: use ``sleep`` command with a random delay in minutes to spread
+#   the load of the backup jobs.
+#
+rsnapshot_scheduler_type: 'batch'
+
+
+# .. envvar:: rsnapshot_scheduler_sleep_max_delay
+#
+# Maximum delay in minutes for the ``sleep`` scheduler type.
+rsnapshot_scheduler_sleep_max_delay: '20'
+
+
+# .. envvar:: rsnapshot_scheduler_run_max_delay
+#
+# Maximum delay in minutes for the scheduler to check if another backup job has
+# finished before running.
+rsnapshot_scheduler_run_max_delay: '5'
 
 
 # -------------------------------
@@ -81,39 +109,51 @@ rsnapshot_mail_to: [ 'backup' ]
 # inventory, either in ``host_vars/`` for a single host, or in ``group_vars/``
 # for entire groups of hosts.
 
-# .. envvar:: rsnapshot_sleep
+
+# .. envvar:: rsnapshot_retain
 #
-# Maximum random delay time in minutes for rsnapshot to start synchronization.
-# Set to ``False`` to disable the delay.
-rsnapshot_sleep: '20'
-
-
-# .. envvar:: rsnapshot_hourly
+# List of snapshots managed by ``rsnapshot`` for a given host. Each element is
+# a YAML dictionary with following keys:
 #
-# Number of hourly snapshots to keep. Set to ``False`` to disable hourly
-# snapshots.
-rsnapshot_hourly: '6'
-
-
-# .. envvar:: rsnapshot_daily
+# - ``name``: name of the snapshot
 #
-# Number of daily snapshots to keep. Set to ``False`` to disable daily
-# snapshots.
-rsnapshot_daily: '7'
-
-
-# .. envvar:: rsnapshot_weekly
+# - ``number``: number of snapshots to preserve
 #
-# Number of weekly snapshots to keep. Set to ``False`` to disable weekly
-# snapshots.
-rsnapshot_weekly: '4'
+rsnapshot_retain: '{{ rsnapshot_retain_hourly }}'
 
 
-# .. envvar:: rsnapshot_monthly
+# .. envvar:: rsnapshot_retain_hourly
 #
-# Number of monthly snapshots to keep. Set to ``False`` to disable monthly
-# snapshots.
-rsnapshot_monthly: '3'
+# Keep a set of hourly snapshots which are then rotated daily, weekly and
+# monthly.
+rsnapshot_retain_hourly:
+
+  - name: 'hourly'
+    number: 6
+
+  - name: 'daily'
+    number: 7
+
+  - name: 'weekly'
+    number: 4
+
+  - name: 'monthly'
+    number: 6
+
+
+# .. envvar:: rsnapshot_retain_daily
+#
+# Keep a set of daily snapshots which are then rotated weekly and monthly.
+rsnapshot_retain_daily:
+
+  - name: 'daily'
+    number: 7
+
+  - name: 'weekly'
+    number: 4
+
+  - name: 'monthly'
+    number: 6
 
 
 # .. envvar:: rsnapshot_one_fs
@@ -132,7 +172,10 @@ rsnapshot_ssh_args: '-p 22'
 #
 # ``rrsync`` script will be installed in this path (by default,
 # :file:`/usr/local/lib`).
-rsnapshot_rrsync_script: '{{ ansible_local.root.lib + "/rrsync" }}'
+rsnapshot_rrsync_script: '{{ (ansible_local.root.lib
+                              if (ansible_local|d() and ansible_local.root|d() and
+                                  ansible_local.root.lib|d())
+                              else "/usr/local/lib") + "/rrsync" }}'
 
 
 # .. envvar:: rsnapshot_ssh_command
@@ -200,6 +243,7 @@ rsnapshot_exclude_default: |
   - /tmp
   + /usr/local
   - /usr/*
+  - /var/agentx
   - /var/cache
   - /var/lib/apt
   - /var/lib/libvirt/images
@@ -215,6 +259,7 @@ rsnapshot_exclude_default: |
   - /var/spool/postfix
   - /var/tmp
   - /initrd*
+  - /swapfile*
   - /vmlinuz*
   - /vz
 

@@ -9,6 +9,39 @@ v0.1.7
 - Be more restrictive about log files on clients. Only allow members of the
   ``adm`` group read access. [ypid]
 
+- Add ``/var/agentx`` and ``/swapfile*`` to list of excluded paths. [drybjed]
+
+- Make sure that assymetric host configuration works on Ansible v2. [drybjed]
+
+- Make sure that role works without ``debops.core`` configuration. [drybjed]
+
+- Redesign the ``rsnapshot`` execution scripts.
+
+  Instead of multiple scripts launched from ``cron``, role now uses single
+  ``rsnapshot-scheduler`` script to prepare backups jobs and start them using
+  ``batch`` command when available. The scheduler script gets the configuration
+  of a particular backup job from the ``rsnapshot.conf`` configuration file of
+  each host, and because of that different retain values are not hardcoded and
+  depend entirely on the ``rsnapshot`` configuration.
+
+  If ``batch`` is not installed, backup jobs will be scheduler with random
+  pause using ``sleep``, meant to lessen the impact of multiple jobs running at
+  once.
+
+  Old ``rsnapshot`` scripts are not removed with this update, but changes to
+  the scripts executed by ``cron`` should ensure that they are not executed.
+  But you should still check if everything works correctly. [drybjed]
+
+- Change how list of snapshots is defined.
+
+  Instead of separate static variable for each snapshot (hourly, daily, weekly,
+  monthly), list of snapshots is now defined using dictionary variables. This
+  allows definition of different snapshot lists or creation of differently
+  scheduled snapshots. [drybjed]
+
+- Use more inventory group names to define which hosts are clients and which
+  are servers. [drybjed]
+
 v0.1.6
 ------
 

@@ -7,13 +7,17 @@
     install_recommends: False
   when: inventory_hostname in rsnapshot_clients
 
-- name: Install rsync-no-vanished script
+- name: Install custom backup scripts
   template:
-    src: 'usr/local/lib/rsync-no-vanished.j2'
-    dest: '{{ ansible_local.root.lib + "/rsync-no-vanished" }}'
+    src: 'usr/local/lib/{{ item }}.j2'
+    dest: '{{ (ansible_local.root.lib
+               if (ansible_local|d() and ansible_local.root|d() and
+                   ansible_local.root.lib|d())
+               else "/usr/local/lib") + "/" + item }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
+  with_items: [ 'rsync-no-vanished', 'rsnapshot-scheduler' ]
   when: inventory_hostname in rsnapshot_clients
 
 - name: Enforce rsnapshot root directory permissions
@@ -43,9 +47,21 @@
   failed_when: False
   when: inventory_hostname in rsnapshot_clients
 
+- name: Configure rsnapshot-scheduler
+  template:
+    src: 'etc/rsnapshot-scheduler.conf.j2'
+    dest: '/etc/rsnapshot-scheduler.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: inventory_hostname in rsnapshot_clients
+
 - name: Create server configuration directories on client
   file:
-    path: '/etc/rsnapshot/{{ hostvars[item].rsnapshot_backup_host | default(hostvars[item].ansible_fqdn) }}'
+    path: '{{ rsnapshot_config_dir }}/{{ hostvars[item].rsnapshot_backup_host
+                                         if (hostvars[item].rsnapshot_backup_host|d() and
+                                             hostvars[item].rsnapshot_backup_host|bool)
+                                         else hostvars[item].ansible_fqdn }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
@@ -58,27 +74,16 @@
 - name: Configure servers on rsnapshot clients
   template:
     src: 'etc/rsnapshot/server/{{ item.1 }}.j2'
-    dest: '/etc/rsnapshot/{{ hostvars[item.0].rsnapshot_backup_host | default(hostvars[item.0].ansible_fqdn) }}/{{ item.1 }}'
+    dest: '{{ rsnapshot_config_dir }}/{{ hostvars[item.0].rsnapshot_backup_host
+                                         if (hostvars[item.0].rsnapshot_backup_host|d() and
+                                             hostvars[item.0].rsnapshot_backup_host|bool)
+                                         else hostvars[item.0].ansible_fqdn }}/{{ item.1 }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
   with_nested:
     - rsnapshot_servers
     - [ 'include.txt', 'exclude.txt', 'rsnapshot.conf' ]
-  when: (inventory_hostname in rsnapshot_clients and
-         ((item.0 is defined and item.0) and item.0 != inventory_hostname and
-          item.0 not in rsnapshot_clients and hostvars[item.0].ansible_fqdn is defined))
-
-- name: Configure runner scripts on rsnapshot clients
-  template:
-    src: 'etc/rsnapshot/server/{{ item.1 }}.j2'
-    dest: '/etc/rsnapshot/{{ hostvars[item.0].rsnapshot_backup_host | default(hostvars[item.0].ansible_fqdn) }}/{{ item.1 }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  with_nested:
-    - rsnapshot_servers
-    - [ 'runner' ]
   when: (inventory_hostname in rsnapshot_clients and
          ((item.0 is defined and item.0) and item.0 != inventory_hostname and
           item.0 not in rsnapshot_clients and hostvars[item.0].ansible_fqdn is defined))
@@ -106,7 +111,14 @@
 - include: external_servers.yml
   when: inventory_hostname in rsnapshot_clients
 
-- include: cron.yml
+- name: Configure rsnapshot backup scripts in cron
+  template:
+    src: 'etc/cron/rsnapshot-wrapper.j2'
+    dest: '/etc/cron.{{ item }}/rsnapshot-wrapper'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: [ 'hourly', 'daily', 'weekly', 'monthly' ]
   when: inventory_hostname in rsnapshot_clients
 
 - name: Configure logrotate for rsnapshot logs

@@ -2,7 +2,7 @@
 
 - name: Create server configuration directories on client
   file:
-    path: '/etc/rsnapshot/{{ item.backup_host | default(item.name) }}'
+    path: '{{ rsnapshot_config_dir }}/{{ item.backup_host | default(item.name) }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
@@ -15,7 +15,7 @@
 - name: Configure servers on rsnapshot clients
   template:
     src: 'etc/rsnapshot/external-server/{{ item.1 }}.j2'
-    dest: '/etc/rsnapshot/{{ item.0.backup_host | default(item.0.name) }}/{{ item.1 }}'
+    dest: '{{ rsnapshot_config_dir }}/{{ item.0.backup_host | default(item.0.name) }}/{{ item.1 }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -29,7 +29,7 @@
 - name: Configure runner scripts on rsnapshot clients
   template:
     src: 'etc/rsnapshot/external-server/{{ item.1 }}.j2'
-    dest: '/etc/rsnapshot/{{ item.0.backup_host | default(item.0.name) }}/{{ item.1 }}'
+    dest: '{{ rsnapshot_config_dir }}/{{ item.0.backup_host | default(item.0.name) }}/{{ item.1 }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
@@ -48,7 +48,7 @@
   tags: [ 'rsnapshot-sshkeys' ]
 
 - name: Remove known host fingerprints from ~/.ssh/known_hosts
-  shell: ssh-keygen -f /root/.ssh/known_hosts -R {{ hostvars[item].rsnapshot_backup_host | default(hostvars[item].ansible_fqdn) }}
+  shell: ssh-keygen -f /root/.ssh/known_hosts -R {{ hostvars[item].rsnapshot_backup_host if (hostvars[item].rsnapshot_backup_host|d() and hostvars[item].rsnapshot_backup_host|bool) else hostvars[item].ansible_fqdn }}
   with_items: rsnapshot_external_servers
   when: rsnapshot_reset_sshkeys is defined and rsnapshot_reset_sshkeys
   tags: [ 'rsnapshot-sshkeys' ]
