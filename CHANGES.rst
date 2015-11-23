@@ -11,6 +11,8 @@ v0.1.7
 
 - Add ``/var/agentx`` and ``/swapfile*`` to list of excluded paths. [drybjed]
 
+- Make sure that assymetric host configuration works on Ansible v2. [drybjed]
+
 v0.1.6
 ------
 

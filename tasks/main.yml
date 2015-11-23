@@ -45,7 +45,10 @@
 
 - name: Create server configuration directories on client
   file:
-    path: '/etc/rsnapshot/{{ hostvars[item].rsnapshot_backup_host | default(hostvars[item].ansible_fqdn) }}'
+    path: '/etc/rsnapshot/{{ hostvars[item].rsnapshot_backup_host
+                             if (hostvars[item].rsnapshot_backup_host|d() and
+                                 hostvars[item].rsnapshot_backup_host|bool)
+                             else hostvars[item].ansible_fqdn }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
@@ -58,7 +61,10 @@
 - name: Configure servers on rsnapshot clients
   template:
     src: 'etc/rsnapshot/server/{{ item.1 }}.j2'
-    dest: '/etc/rsnapshot/{{ hostvars[item.0].rsnapshot_backup_host | default(hostvars[item.0].ansible_fqdn) }}/{{ item.1 }}'
+    dest: '/etc/rsnapshot/{{ hostvars[item.0].rsnapshot_backup_host
+                             if (hostvars[item.0].rsnapshot_backup_host|d() and
+                                 hostvars[item.0].rsnapshot_backup_host|bool)
+                             else hostvars[item.0].ansible_fqdn }}/{{ item.1 }}'
     owner: 'root'
     group: 'root'
     mode: '0644'

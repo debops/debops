@@ -22,7 +22,7 @@
   authorized_key:
     user: 'root'
     key: '{{ rsnapshot_register_ssh.key + " " + rsnapshot_register_ssh.comment }}'
-    key_options: 'no-pty,no-agent-forwarding,no-X11-forwarding,no-port-forwarding,command="{{ hostvars[item].rsnapshot_ssh_command | default(rsnapshot_ssh_command) }}"'
+    key_options: 'no-pty,no-agent-forwarding,no-X11-forwarding,no-port-forwarding,command="{{ hostvars[item].rsnapshot_ssh_command if (hostvars[item].rsnapshot_ssh_command|d() and hostvars[item].rsnapshot_ssh_command|bool) else rsnapshot_ssh_command }}"'
     state: 'present'
   delegate_to: '{{ item }}'
   with_items: rsnapshot_servers
@@ -33,14 +33,15 @@
   command: touch /root/.ssh/known_hosts
   args:
     creates: '/root/.ssh/known_hosts'
+    warn: False
 
 - name: Remove known host fingerprints from ~/.ssh/known_hosts
-  shell: ssh-keygen -f /root/.ssh/known_hosts -R {{ hostvars[item].rsnapshot_backup_host | default(hostvars[item].ansible_fqdn) }}
+  shell: ssh-keygen -f /root/.ssh/known_hosts -R {{ hostvars[item].rsnapshot_backup_host if (hostvars[item].rsnapshot_backup_host|d() and hostvars[item].rsnapshot_backup_host|bool) else hostvars[item].ansible_fqdn }}
   with_items: rsnapshot_servers
   when: rsnapshot_reset_sshkeys is defined and rsnapshot_reset_sshkeys
 
 - name: Get list of already scanned host fingerprints
-  shell: ssh-keygen -f /root/.ssh/known_hosts -F {{ hostvars[item].rsnapshot_backup_host | default(hostvars[item].ansible_fqdn) }} | grep -q '^# Host {{ hostvars[item].rsnapshot_backup_host | default(hostvars[item].ansible_fqdn) }} found'
+  shell: ssh-keygen -f /root/.ssh/known_hosts -F {{ hostvars[item].rsnapshot_backup_host if (hostvars[item].rsnapshot_backup_host|d() and hostvars[item].rsnapshot_backup_host|bool) else hostvars[item].ansible_fqdn }} | grep -q '^# Host {{ hostvars[item].rsnapshot_backup_host if (hostvars[item].rsnapshot_backup_host|d() and hostvars[item].rsnapshot_backup_host|bool) else hostvars[item].ansible_fqdn }} found'
   with_items: rsnapshot_servers
   when: ((item is defined and item) and item != inventory_hostname and
          hostvars[item].ansible_fqdn is defined)
