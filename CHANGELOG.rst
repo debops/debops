@@ -53,6 +53,8 @@ v0.2.8
 - Move all role playbooks to ``service/`` subdirectory and create symlinks in
   old locations. [drybjed]
 
+- Remove legacy tags from role playbooks. [drybjed]
+
 v0.2.7
 ------
 
