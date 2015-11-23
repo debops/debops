@@ -50,6 +50,9 @@ v0.2.8
 - Remove the ``default([])`` alternatives from playbooks to make them work
   correctly on Ansible v1. [drybjed]
 
+- Move all role playbooks to ``service/`` subdirectory and create symlinks in
+  old locations. [drybjed]
+
 v0.2.7
 ------
 
