@@ -9,6 +9,8 @@ v0.1.7
 - Be more restrictive about log files on clients. Only allow members of the
   ``adm`` group read access. [ypid]
 
+- Add ``/var/agentx`` and ``/swapfile*`` to list of excluded paths. [drybjed]
+
 v0.1.6
 ------
 
