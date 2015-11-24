@@ -63,6 +63,9 @@ v0.2.8
   You can use :command:`sed --regexp-extended --in-place '/\[debops_service_/! s/^\[debops_(.+)\]$/[debops_service_\1]/' hosts`
   to update your inventory file. [ypid]
 
+- Remove ``d([])`` from ``common.yml`` playbook to pass the variables correctly
+  between roles. [drybjed]
+
 v0.2.7
 ------
 
