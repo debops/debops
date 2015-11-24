@@ -4,7 +4,7 @@ Changelog
 v0.2.3
 ------
 
-*Unreleased*
+*Released: 2015-11-24*
 
 - Fix issues during Ansible ``--check`` mode, role should no longer stop due to
   not existing dictionary keys. [drybjed]
@@ -43,6 +43,17 @@ v0.2.3
   the network connection permanently. Restarting the afftected virtual machines
   and containers should bring everything back to normal. [drybjed]
 
+- Add a way to set custom comments for each interface using dictionary maps.
+  [drybjed]
+
+- Add a way to prevent modification of live interfaces.
+
+  By setting ``ifupdown_reconfigure_auto`` variable to ``False`` you can
+  prevent the role from messing with the live network configuration, but still
+  configure the interfaces in ``/etc/network/interfaces``. This is useful on
+  a production server with virtual machines or containers running, since it
+  prevents modification to network bridges which requires restart of the
+  network interfaces and may drop the existing bridge layout. [drybjed]
 
 v0.2.2
 ------
