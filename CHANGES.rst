@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.1.1
+------
+
+*Released: 2015-11-24*
+
+- Support Ansible check mode. [drybjed]
+
 v0.1.0
 ------
 
