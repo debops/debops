@@ -18,6 +18,10 @@ interface_file="${1}"
 # Path and name of the script which will allow to bring the interface up later
 ifup_delayed="/tmp/ifupdown-delayed"
 
+# Name of the file that indicates that interfaces should not be stopped/started
+# automatically
+ifupdown_manual="{{ ifupdown_reconfigure_auto_file }}"
+
 if [ -z "${interface_file}" ] ; then
   echo "Error: no file with list of interfaces specified" ; exit 1
 fi
@@ -120,25 +124,35 @@ if [ -r ${interface_file} ] ; then
 
   if [ ${{ '{' }}#interface_list[@]} -ge 0 ]; then
 
-    # Stop all interfaces on the first run
-    if [ -e ${interface_init_file} ] ; then
+    # Stop interfaces if automatic reconfiguration is allowed
+    if [ ! -e ${ifupdown_manual} ] ; then
 
-      stop_networking
+      # Stop all interfaces on the first run
+      if [ -e ${interface_init_file} ] ; then
 
-    else
+        stop_networking
 
-      for iface in ${interface_list[@]} ; do
-        interface_down ${iface}
-      done
+      else
+
+        for iface in ${interface_list[@]} ; do
+          interface_down ${iface}
+        done
+
+      fi
 
     fi
 
     # Apply new interface configuration
     rsync -a --delete /etc/network/interfaces.config.d/ /etc/network/interfaces.d
 
-    for iface in ${interface_list[@]} ; do
-      interface_up ${iface}
-    done
+    # Start interfaces if automatic reconfiguration is allowed
+    if [ ! -e ${ifupdown_manual} ] ; then
+
+      for iface in ${interface_list[@]} ; do
+        interface_up ${iface}
+      done
+
+    fi
 
   fi
 

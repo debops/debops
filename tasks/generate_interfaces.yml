@@ -86,6 +86,15 @@
           (ifupdown_register_interfaces_generator is defined and ifupdown_register_interfaces_generator.changed)) and
          (ifupdown_reconfigure is defined and ifupdown_reconfigure))
 
+- name: Enable/disable automatic interface reconfiguration
+  file:
+    path: '{{ ifupdown_reconfigure_auto_file }}'
+    state: '{{ "absent" if ifupdown_reconfigure_auto|bool else "touch" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  changed_when: False
+
 - name: Generate config script in a known location
   template:
     src: 'tmp/ifupdown-apply-config.j2'
