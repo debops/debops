@@ -93,7 +93,10 @@ lxc_template_admin_system: True
 # .. envvar:: lxc_template_admin_name
 #
 # Name of administrator account to create (by default, your username).
-lxc_template_admin_name: '{{ ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER") }}'
+lxc_template_admin_name: '{{ ansible_ssh_user
+                             if (ansible_ssh_user|d() and
+                                 ansible_ssh_user != "root")
+                             else lookup("env","USER") }}'
 
 
 # .. envvar:: lxc_template_admin_groups
