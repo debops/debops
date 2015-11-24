@@ -54,3 +54,6 @@ v0.1.0
 
 - Switched the default Debian mirror to the new official redirector at
   ``http://httpredir.debian.org/``. [ypid]
+
+- Correctly detect the container admin account name on Ansible v2. [drybjed]
+
