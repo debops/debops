@@ -43,6 +43,8 @@ v0.2.3
   the network connection permanently. Restarting the afftected virtual machines
   and containers should bring everything back to normal. [drybjed]
 
+- Add a way to set custom comments for each interface using dictionary maps.
+  [drybjed]
 
 v0.2.2
 ------

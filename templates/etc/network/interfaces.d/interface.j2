@@ -109,7 +109,17 @@
 # {{ ansible_managed }}
 
 {% if ifupdown_tpl_generate_interface %}
+{% set ifupdown_tpl_comment = '' %}
+{% if ifupdown_map_interface_comment|d() and ifupdown_map_interface_comment[item.iface]|d() %}
+{% set ifupdown_tpl_comment = ifupdown_map_interface_comment[item.iface] %}
+{% elif item.comment|d() %}
+{% set ifupdown_tpl_comment = item.comment %}
+{% endif %}
+{% if ifupdown_tpl_comment %}
+# {{ ifupdown_tpl_comment }}
+{% else %}
 # Configuration for {{ item.iface }} {{ ifupdown_tpl_config_alias }}
+{% endif %}
 {% if ifupdown_tpl_allow %}
 {% for subsystem in ifupdown_tpl_allow | unique %}
 allow-{{ subsystem }} {{ item.iface }}
