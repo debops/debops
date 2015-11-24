@@ -21,6 +21,8 @@ v0.1.1
   file has correct formatting and should stop generating idempotency issues
   with ``tzdata`` package configuration. [drybjed]
 
+- Check if NTP daemon can be installed in Ansible facts. [drybjed]
+
 v0.1.0
 ------
 
