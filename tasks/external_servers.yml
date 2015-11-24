@@ -26,20 +26,6 @@
          ((item.0 is defined and item.0) and item.0 != inventory_hostname and
           item.0.name is defined))
 
-- name: Configure runner scripts on rsnapshot clients
-  template:
-    src: 'etc/rsnapshot/external-server/{{ item.1 }}.j2'
-    dest: '{{ rsnapshot_config_dir }}/{{ item.0.backup_host | default(item.0.name) }}/{{ item.1 }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  with_nested:
-    - rsnapshot_external_servers
-    - [ 'runner' ]
-  when: (inventory_hostname in rsnapshot_clients and
-         ((item.0 is defined and item.0) and item.0 != inventory_hostname and
-          item.0.name is defined))
-
 - name: Make sure /root/.ssh/known_hosts file exists
   command: touch /root/.ssh/known_hosts
   args:
