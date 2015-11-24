@@ -123,11 +123,11 @@ cmd_logger	/usr/bin/logger
 # i.e. hourly, daily, weekly, etc.      #
 #########################################
 
-{% if (host.retain is undefined or not host.retain | bool) %}
+{% if (host.retain is undefined or not host.retain) %}
 {% for element in rsnapshot_retain %}
 retain	{{ element.name }}	{{ element.number }}
 {% endfor %}
-{% elif host.retain|d() and host.retain %}
+{% elif host.retain %}
 {% for element in host.retain %}
 retain	{{ element.name }}	{{ element.number }}
 {% endfor %}
