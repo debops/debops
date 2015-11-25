@@ -45,6 +45,21 @@ v0.1.7
 - Add ``rsnapshot_ssh_port`` variable. This allows management of SSH public
   keys and host fingerprints on hosts with non-default SSH port. [drybjed]
 
+- Various updates in ``renspahost-scheduler`` script.
+
+  Scheduler PID files are now stored in separate ``/run/rsnapshot-scheduler/``
+  subdirectory. Scheduler stores the PID of its process for each backup job
+  before scheduling it using ``batch`` or ``sleep``, therefore repeated
+  execution of the scheduler script won't result in multiple backup jobs of the
+  same type.
+
+  Scheduler logs are now more verbose, you can see each operation as it
+  happens.
+
+  Because ``batch`` processes submitted jobs in order, scheduler now randomizes
+  list of hosts to make backup jobs less repetitive and hopefully less resource
+  intensive in the long run. [drybjed]
+
 v0.1.6
 ------
 
