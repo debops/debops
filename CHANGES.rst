@@ -42,6 +42,9 @@ v0.1.7
 - Use more inventory group names to define which hosts are clients and which
   are servers. [drybjed]
 
+- Add ``rsnapshot_ssh_port`` variable. This allows management of SSH public
+  keys and host fingerprints on hosts with non-default SSH port. [drybjed]
+
 v0.1.6
 ------
 
