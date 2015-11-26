@@ -65,6 +65,8 @@ v0.1.7
   but reconfiguring the host using Ansible should create the new one correctly.
   [drybjed]
 
+- Update role tags to current format. [drybjed]
+
 v0.1.6
 ------
 
