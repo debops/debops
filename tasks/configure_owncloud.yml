@@ -101,8 +101,8 @@
 - name: Run specified occ commands
   command: php --file "{{ owncloud_home }}/occ" {{ item.command }}
   environment: '{{ item.env|d({}) }}'
-  changed_when: ('is already enabled' not in owncloud_occ_run.stdout and
-                  'already exists' not in owncloud_occ_run.stdout)
+  changed_when: ('No such app enabled:' not in owncloud_occ_run.stdout and
+                  ' already ' not in owncloud_occ_run.stdout)
   failed_when: (owncloud_occ_run.rc != 0 and 'already exists' not in owncloud_occ_run.stdout)
   no_log: True
   register: owncloud_occ_run
