@@ -30,6 +30,8 @@ v0.2.0
 - Use ``http://`` protocol instead of ``https://`` for APT repository URL,
   because encrypted connection has issues. [drybjed]
 
+- Disabled ``updater`` app as it does not work with this role anyway. [ypid]
+
 v0.1.0
 ------
 

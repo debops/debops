@@ -327,29 +327,37 @@ owncloud_enable_occ_shortcut: False
 # Run the list of occ commands. It can be used to enable apps, add users and
 # more which can be useful when deploying ownCloud.
 # See: https://doc.owncloud.org/server/8.1/admin_manual/configuration_server/occ_command.html
-owncloud_run_occ_global_commands: []
-  ## Requires: php5-ldap
-  # - command: 'app:enable user_ldap'
-
-  # - command: 'app:enable external'
-
-  ## Requires: php5-libsmbclient
-  # - command: 'app:enable files_external'
-
-  ## Create an additional admin account.
-  # - command: 'user:add --password-from-env --display-name="Administrator" --group="admin" admin'
-  #   env:
-  #     OC_PASS: "{{ lookup('password', secret + '/credentials/' +
-  #                  ansible_fqdn + '/owncloud/admin/' + 'admin' +
-  #                  '/password length=' + owncloud_password_length) }}"
-
-  ## Create an regular user. Note that you probably want to use an existing
-  ## user database like LDAP if that is setup in your environment.
-  # - command: 'user:add --password-from-env --display-name="Normal user" user'
-  #   env:
-  #     OC_PASS: "{{ lookup('password', secret + '/credentials/' +
-  #                  ansible_fqdn + '/owncloud/users/' + 'user' +
-  #                  '/password length=' + owncloud_password_length) }}"
+#
+# Examples::
+#
+#   owncloud_run_occ_global_commands
+#
+#     ## Requires: php5-ldap
+#     - command: 'app:enable user_ldap'
+#
+#     - command: 'app:enable external'
+#
+#     ## Requires: php5-libsmbclient
+#     - command: 'app:enable files_external'
+#
+#     ## Create an additional admin account.
+#     - command: 'user:add --password-from-env --display-name="Administrator" --group="admin" admin'
+#       env:
+#         OC_PASS: "{{ lookup('password', secret + '/credentials/' +
+#                      ansible_fqdn + '/owncloud/admin/' + 'admin' +
+#                      '/password length=' + owncloud_password_length) }}"
+#
+#     ## Create an regular user. Note that you probably want to use an existing
+#     ## user database like LDAP if that is setup in your environment.
+#     - command: 'user:add --password-from-env --display-name="Normal user" user'
+#       env:
+#         OC_PASS: "{{ lookup('password', secret + '/credentials/' +
+#                      ansible_fqdn + '/owncloud/users/' + 'user' +
+#                      '/password length=' + owncloud_password_length) }}"
+#
+owncloud_run_occ_global_commands:
+  ## Disable the updater because it does not work anyway with the way ownCloud is setup by this role using packages.
+  - command: 'app:disable updater'
 
 
 # .. envvar:: owncloud_run_occ_group_commands
