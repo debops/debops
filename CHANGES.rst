@@ -60,6 +60,11 @@ v0.1.7
   list of hosts to make backup jobs less repetitive and hopefully less resource
   intensive in the long run. [drybjed]
 
+- Remote hosts are now configured in separate directory, by default
+  ``/etc/rsnapshot/hosts/``. Old configuration won't be moved automatically,
+  but reconfiguring the host using Ansible should create the new one correctly.
+  [drybjed]
+
 v0.1.6
 ------
 

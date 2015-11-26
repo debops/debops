@@ -208,8 +208,8 @@ one_fs		{{ host.one_fs | default(rsnapshot_one_fs | default("0")) }}
 # passed directly to rsync. Please look up the --include-from and
 # --exclude-from options in the rsync man page for more details.
 #
-exclude_file	/etc/rsnapshot/{{ rsnapshot_tpl_host }}/exclude.txt
-include_file	/etc/rsnapshot/{{ rsnapshot_tpl_host }}/include.txt
+exclude_file	{{ rsnapshot_hosts_dir }}/{{ rsnapshot_tpl_host }}/exclude.txt
+include_file	{{ rsnapshot_hosts_dir }}/{{ rsnapshot_tpl_host }}/include.txt
 
 # If your version of rsync supports --link-dest, consider enable this.
 # This is the best way to support special files (FIFOs, etc) cross-platform.
