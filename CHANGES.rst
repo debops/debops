@@ -73,6 +73,9 @@ v0.1.7
 - Split ``rsnapshot_exclude_default`` variable into more manageable parts.
   [drybjed]
 
+- Fix ``ssh-keyscan`` command to correctly scan host SSH fingerprints.
+  [drybjed]
+
 v0.1.6
 ------
 
