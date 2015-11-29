@@ -19,7 +19,7 @@ When hosts are reinstalled, SSH host fingerprints might be changed in which
 case `:program:`rsnapshot` will send e-mails to system administrator. To fix these
 errors, you can use a special set of a variable and tag::
 
-    debops --tags rsnapshot-sshkeys --extra-vars='rsnapshot_reset_sshkeys=True'
+    debops --tags role::rsnapshot:sshkeys --extra-vars='rsnapshot_reset_sshkeys=True'
 
 This command will remove all known SSH host fingerprints from
 :file:`/root/.ssh/known_hosts` on the backup clients and rescan the hosts, as well

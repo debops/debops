@@ -20,6 +20,15 @@
   with_items: [ 'rsync-no-vanished', 'rsnapshot-scheduler' ]
   when: inventory_hostname in rsnapshot_clients
 
+- name: Create rsnapshot configuration directory
+  file:
+    path: '{{ rsnapshot_config_dir }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: inventory_hostname in rsnapshot_clients
+
 - name: Enforce rsnapshot root directory permissions
   file:
     path: '{{ rsnapshot_snapshot_root }}'
@@ -58,10 +67,10 @@
 
 - name: Create server configuration directories on client
   file:
-    path: '{{ rsnapshot_config_dir }}/{{ hostvars[item].rsnapshot_backup_host
-                                         if (hostvars[item].rsnapshot_backup_host|d() and
-                                             hostvars[item].rsnapshot_backup_host|bool)
-                                         else hostvars[item].ansible_fqdn }}'
+    path: '{{ rsnapshot_hosts_dir }}/{{ hostvars[item].rsnapshot_backup_host
+                                        if (hostvars[item].rsnapshot_backup_host|d() and
+                                            hostvars[item].rsnapshot_backup_host|bool)
+                                        else hostvars[item].ansible_fqdn }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
@@ -74,10 +83,10 @@
 - name: Configure servers on rsnapshot clients
   template:
     src: 'etc/rsnapshot/server/{{ item.1 }}.j2'
-    dest: '{{ rsnapshot_config_dir }}/{{ hostvars[item.0].rsnapshot_backup_host
-                                         if (hostvars[item.0].rsnapshot_backup_host|d() and
-                                             hostvars[item.0].rsnapshot_backup_host|bool)
-                                         else hostvars[item.0].ansible_fqdn }}/{{ item.1 }}'
+    dest: '{{ rsnapshot_hosts_dir }}/{{ hostvars[item.0].rsnapshot_backup_host
+                                        if (hostvars[item.0].rsnapshot_backup_host|d() and
+                                            hostvars[item.0].rsnapshot_backup_host|bool)
+                                        else hostvars[item.0].ansible_fqdn }}/{{ item.1 }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -106,7 +115,7 @@
 
 - include: configure_ssh_keys.yml
   when: inventory_hostname in rsnapshot_clients
-  tags: [ 'rsnapshot-sshkeys' ]
+  tags: [ 'role::rsnapshot:sshkeys' ]
 
 - include: external_servers.yml
   when: inventory_hostname in rsnapshot_clients

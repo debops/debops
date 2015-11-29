@@ -4,7 +4,7 @@ Changelog
 v0.1.7
 ------
 
-*Unreleased*
+*Released: 2015-11-29*
 
 - Be more restrictive about log files on clients. Only allow members of the
   ``adm`` group read access. [ypid]
@@ -41,6 +41,42 @@ v0.1.7
 
 - Use more inventory group names to define which hosts are clients and which
   are servers. [drybjed]
+
+- Add ``rsnapshot_ssh_port`` variable. This allows management of SSH public
+  keys and host fingerprints on hosts with non-default SSH port. [drybjed]
+
+- Various updates in ``renspahost-scheduler`` script.
+
+  Scheduler PID files are now stored in separate ``/run/rsnapshot-scheduler/``
+  subdirectory. Scheduler stores the PID of its process for each backup job
+  before scheduling it using ``batch`` or ``sleep``, therefore repeated
+  execution of the scheduler script won't result in multiple backup jobs of the
+  same type.
+
+  Scheduler logs are now more verbose, you can see each operation as it
+  happens.
+
+  Because ``batch`` processes submitted jobs in order, scheduler now randomizes
+  list of hosts to make backup jobs less repetitive and hopefully less resource
+  intensive in the long run. [drybjed]
+
+- Remote hosts are now configured in separate directory, by default
+  ``/etc/rsnapshot/hosts/``. Old configuration won't be moved automatically,
+  but reconfiguring the host using Ansible should create the new one correctly.
+  [drybjed]
+
+- Update role tags to current format. [drybjed]
+
+- Allow modification of scheduler ``batch`` command, as well as selection of
+  the ``at`` queue to use. [drybjed]
+
+- Split ``rsnapshot_exclude_default`` variable into more manageable parts.
+  [drybjed]
+
+- Fix ``ssh-keyscan`` command to correctly scan host SSH fingerprints.
+  [drybjed]
+
+- Update role documentation. [drybjed]
 
 v0.1.6
 ------
