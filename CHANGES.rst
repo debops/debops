@@ -67,6 +67,9 @@ v0.1.7
 
 - Update role tags to current format. [drybjed]
 
+- Allow modification of scheduler ``batch`` command, as well as selection of
+  the ``at`` queue to use. [drybjed]
+
 v0.1.6
 ------
 

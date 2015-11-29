@@ -94,6 +94,20 @@ rsnapshot_hosts_dir: '{{ rsnapshot_config_dir + "/hosts" }}'
 rsnapshot_scheduler_type: 'batch'
 
 
+# .. envvar:: rsnapshot_scheduler_batch_queue
+#
+# Queue used by the ``rsnapshot`` backup jobs. A queue should be defined by a
+# single, capital letter to ensure that the jobs are managed by ``batch`` command
+# according to the current load average.
+rsnapshot_scheduler_batch_queue: 'R'
+
+
+# .. envvar:: rsnapshot_scheduler_batch_command
+#
+# Command used to schedule backup jobs.
+rsnapshot_scheduler_batch_command: 'at -q {{ rsnapshot_scheduler_batch_queue }} now'
+
+
 # .. envvar:: rsnapshot_scheduler_sleep_max_delay
 #
 # Maximum delay in minutes for the ``sleep`` scheduler type.

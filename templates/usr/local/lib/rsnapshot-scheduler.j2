@@ -30,6 +30,7 @@ scheduler_config_dir="/etc/rsnapshot"
 scheduler_hosts_dir="${scheduler_config_dir}/hosts"
 scheduler_lock_dir="/run/rsnapshot-scheduler"
 scheduler_type="batch"
+scheduler_batch_command="at -q R now"
 scheduler_sleep_max_delay="20"
 scheduler_run_max_delay="5"
 
@@ -234,7 +235,7 @@ prepare_backup () {
 
                 if type batch > /dev/null 2>&1 ; then
                     log_message "Scheduling ${backup_level} backup of ${host} using batch"
-                    echo "${script} batchrun ${backup_level} ${host}" | batch > /dev/null 2>&1
+                    echo "${script} batchrun ${backup_level} ${host}" | ${scheduler_batch_command} > /dev/null 2>&1
                 else
                     log_message "Scheduling ${backup_level} backup of ${host}"
                     (${script} delayrun ${backup_level} ${host}) &
