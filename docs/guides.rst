@@ -4,44 +4,63 @@ Guides and examples
 .. contents::
    :local:
 
+Role design goals
+-----------------
+
+Host backups performed by :program:`snapshot` are very efficient method to keep
+time-based snapshots of local or remote systems. Unfortunately, default method
+of creating backups using one configuration file and backing up remote hosts in
+order is inconvenient: all hosts managed through this single file will be
+backed up each time, there's only one set of snapshots that can be used this
+way, and any error will stop backups of hosts further along the config file.
+
+To avoid this issue, ``debops.rsnapshot`` role uses combination of
+:program:`batch`, :program:`cron` and custom scheduler script written in Bash
+to perform backups of multiple remote hosts at the same time, each one
+configured in its own :file:`rsnapshot.conf` configuration file, with its own
+lists of snapshots to manage, its own include/execlude lists, and so on.
+
 How rsnapshot backups are performed
 -----------------------------------
 
-``debops.rsnapshot`` role configures a set of scripts launched from :program:`cron`
-periodically, and a set of configuration files for each host that is being
-backed up in :file:`/etc/rsnapshot/<host>/` directory.
-
 The whole backup sequence is:
 
-1. :program:`cron` launches :program:`rsnapshot-cron-wrapper` script with a specified interval
-   (hourly, daily, weekly, monthly).
+1. :program:`cron` launches :program:`rsnapshot-wrapper` script with
+   a specified interval (hourly, daily, weekly, monthly). Custom intervals are
+   also possible, but not implemented at this time.
 
-2. :program:`rsnapshot-cron-wrapper` scans :file:`/etc/rsnapshot/` directory looking for
-   configuration files, and checks if a given configuration uses specific
-   interval - for example when a ``hourly`` interval is executed, script checks
-   if ``retain hourly`` is present in the :file:`rsnapshot.conf` configuration
-   file.
+2. :program:`rsnapshot-wrapper` launches the :program:`rsnapshot-scheduler`
+   script, requesting a ``schedule`` operation for a given backup interval for
+   all hosts found in the :file:`/etc/rsnapshot/hosts/` directory.
 
-3. If current interval is found and particular configuration is not disabled
-   (file :file:`/etc/rsnapshot/<host>/disabled` is absent), script launches another
-   script, :program:`runner` using ``nohup`` and puts it in the background. This is
-   done to all host configurations at once.
+3. :program:`rsnapshot-scheduler` scans :file:`/etc/rsnapshot/hosts/` directory
+   looking for configuration files, and checks if a given configuration uses
+   specific interval - for example when a ``hourly`` interval is executed,
+   script checks if ``retain hourly`` is present in the :file:`rsnapshot.conf`
+   configuration file.
 
-4. :program:`runner` script picks a random interval between 1 minute and 20 minutes
-   (depending on the configuration) and sleeps. This is done to prevent huge
-   repeating waves of disk activity on all hosts at once.
+4. :program:`rsnapshot-scheduler` checks if current backup interval for a given
+   host is already scheduled using a pidfile in
+   :file:`/run/rsnapshot-scheduler/` directory. If one is found, script
+   finishes gracefully to not create duplicate backup jobs.
 
-5. When the time comes, :program:`runner` script starts the :program:`rsnapshot` command with
-   specified host configuration file. File synchronization is performed and
-   then backups are rotated.
+5. If current interval is found and particular configuration is not disabled
+   (file :file:`/etc/rsnapshot/hosts/<host>/disabled` is absent),
+   :program:`rsnapshot-scheduler` creates a "backup job" for a given host. If
+   :program:`at` is installed, backup job will be added to the :program:`batch`
+   queue; otherwise, a background instance of :program:`rsnapshot-scheduler`
+   will be started with a random short :program:`sleep` interval to not create
+   high load spikes on the backup machine when multiple backups are scheduled
+   at the same time.
 
-6. If any output is present from :program:`runner` or :program:`rsnapshot`, it is collected
-   and sent to system administrator via e-mail.
+6. If :program:`at` is installed, it will start backup jobs in order depending
+   on the current system load (you can use ``debops.atd`` role to manage that).
+   Depending on available CPU cores and system load backups might be done
+   within the selected interval (hourly, for example). If not, duplicate backup
+   jobs won't be created as long as the previous backup job is queued.
 
-The whole process is repeated for hourly, daily, weekly and monthly intervals.
-:program:`runner` script checks before main execution if a :program:`rsnapshot` lock file
-exists and exits gracefully if it's found, betting on the next interval.
-
+7. On the next specified interval, :program:`cron` will run the
+   :program:`rsnapshot-scheduler` again, scheduling new backup jobs.
 
 .. _rsnapshot_external_servers:
 
@@ -160,12 +179,12 @@ Here's an example Ansible inventory::
    delta
 
    # List of rsnapshot clients
-   [debops_rsnapshot]
+   [debops_service_rsnapshot]
    archive-one
    archive-two
 
    # List of rsnapshot servers
-   [debops_rsnapshot_rsync:children]
+   [debops_service_rsnapshot_rsync:children]
    archive_group_one
    archive_group_two
 

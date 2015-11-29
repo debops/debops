@@ -4,7 +4,7 @@ Changelog
 v0.1.7
 ------
 
-*Unreleased*
+*Released: 2015-11-29*
 
 - Be more restrictive about log files on clients. Only allow members of the
   ``adm`` group read access. [ypid]
@@ -75,6 +75,8 @@ v0.1.7
 
 - Fix ``ssh-keyscan`` command to correctly scan host SSH fingerprints.
   [drybjed]
+
+- Update role documentation. [drybjed]
 
 v0.1.6
 ------
