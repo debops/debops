@@ -70,6 +70,9 @@ v0.1.7
 - Allow modification of scheduler ``batch`` command, as well as selection of
   the ``at`` queue to use. [drybjed]
 
+- Split ``rsnapshot_exclude_default`` variable into more manageable parts.
+  [drybjed]
+
 v0.1.6
 ------
 

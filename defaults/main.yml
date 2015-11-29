@@ -254,6 +254,14 @@ rsnapshot_exclude: |
 #
 # Default list of exclude entries, defined as a text block.
 rsnapshot_exclude_default: |
+  {{ rsnapshot_exclude_default_root }}
+  {{ rsnapshot_exclude_default_var }}
+
+
+# .. envvar:: rsnapshot_exclude_default_root
+#
+# List of directories in ``/`` to exclude from backups.
+rsnapshot_exclude_default_root: |
   - /bin
   - /boot
   - /cdrom
@@ -271,9 +279,20 @@ rsnapshot_exclude_default: |
   - /tmp
   + /usr/local
   - /usr/*
+  - /initrd*
+  - /swapfile*
+  - /vmlinuz*
+  - /vz
+
+
+# .. envvar:: rsnapshot_exclude_default_var
+#
+# List of directories in ``/var`` to exclude from backups.
+rsnapshot_exclude_default_var: |
   - /var/agentx
   - /var/cache
   - /var/lib/apt
+  - /var/lib/amavis/tmp
   - /var/lib/libvirt/images
   - /var/lib/lxc
   - /var/lib/lxcsnaps
@@ -286,10 +305,6 @@ rsnapshot_exclude_default: |
   - /var/run
   - /var/spool/postfix
   - /var/tmp
-  - /initrd*
-  - /swapfile*
-  - /vmlinuz*
-  - /vz
 
 
 # .. envvar:: rsnapshot_include
