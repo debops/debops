@@ -97,7 +97,7 @@ you to use more specific parameters which are not documented below.
 Examples
 ~~~~~~~~
 
-Create an encrypted LUKS device using existing partition. Device will be
+Create an encrypted LUKS device using an existing partition. Device will be
 mounted at ``/media/crypt0`` and will be automatically mounted at boot:
 
 .. code:: yaml
