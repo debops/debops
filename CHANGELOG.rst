@@ -66,6 +66,9 @@ v0.2.8
 - Remove ``d([])`` from ``common.yml`` playbook to pass the variables correctly
   between roles. [drybjed]
 
+- Add ``debops.cryptsetup`` role, which can be used to manage filesystems
+  encrypted using LUKS. Role was created by Robin Schneider. Thanks! [drybjed]
+
 v0.2.7
 ------
 
