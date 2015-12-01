@@ -9,6 +9,9 @@ v0.2.1
 - Fail when keyfile has been generated but ciphertext block device is not
   available. [ypid]
 
+- Update :file:`.travis.yml` configuration to test the role on Travis-CI.
+  [drybjed]
+
 v0.2.0
 ------
 
