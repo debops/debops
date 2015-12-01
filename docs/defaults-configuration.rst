@@ -23,7 +23,7 @@ you to use more specific parameters which are not documented below.
 ``crypttab_options``
   Optional, string. List of options to configure for each device in
   :file:`/etc/crypttab`.
-  Overwrites the default as configured by :ref:`cryptsetup_crypttab_options`.
+  Overwrites the default as configured by :var:`cryptsetup_crypttab_options`.
 
 ``keyfile``
   Optional, string. File path for the keyfile on the Ansible controller. Will
