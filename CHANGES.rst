@@ -4,10 +4,16 @@ Changelog
 v0.2.1
 ------
 
-*Unreleased*
+*Released: 2015-12-01*
 
 - Fail when keyfile has been generated but ciphertext block device is not
   available. [ypid]
+
+- Update :file:`.travis.yml` configuration to test the role on Travis-CI.
+  [drybjed]
+
+- Update documentation and change the required Ansible version to ``v1.9.0``
+  due to the ``become`` option replacing ``sudo``. [drybjed]
 
 v0.2.0
 ------

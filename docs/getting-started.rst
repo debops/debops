@@ -8,12 +8,12 @@ Getting started
 Example inventory
 -----------------
 
-To configure encrypted filesystems on host given in ``debops_cryptsetup``
-Ansible inventory group:
+To configure encrypted filesystems on host given in
+``debops_service_cryptsetup`` Ansible inventory group:
 
 .. code:: ini
 
-    [debops_cryptsetup]
+    [debops_service_cryptsetup]
     hostname
 
 Example playbook
@@ -22,7 +22,7 @@ Example playbook
 Here's an example playbook that can be used to manage cryptsetup::
 
     ---
-    - hosts: debops_cryptsetup
+    - hosts: debops_service_cryptsetup
       become: True
 
       roles:

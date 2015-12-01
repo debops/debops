@@ -23,7 +23,8 @@ you to use more specific parameters which are not documented below.
 ``crypttab_options``
   Optional, string. List of options to configure for each device in
   :file:`/etc/crypttab`.
-  Overwrites the default as configured by :ref:`cryptsetup_crypttab_options`.
+  Overwrites the default as configured by ``cryptsetup_crypttab_options``
+  variable.
 
 ``keyfile``
   Optional, string. File path for the keyfile on the Ansible controller. Will
@@ -39,12 +40,12 @@ you to use more specific parameters which are not documented below.
 ``backup_header``
   Optional, string. Disable backing up the `LUKS`_ header to the Ansible
   controller for this item.
-  See :ref:`cryptsetup_keyfile_location`.
+  See ``cryptsetup_keyfile_location`` variable.
 
 ``fstype``
   Optional, string. Filesystem type to create on the plaintext device mapper
   target.
-  Defaults to :ref:`cryptsetup_fstype`.
+  Defaults to ``cryptsetup_fstype`` variable.
 
 ``mount``
   Optional, string. Plaintext mount point of the filesystem.
@@ -61,7 +62,7 @@ you to use more specific parameters which are not documented below.
 ``state``
   Optional, string. There are four states which can be chosen for each
   encrypted filesystem.  If no state is given, the value of
-  :ref:`cryptsetup_state` will be used which defaults to ``mounted``.
+  ``cryptsetup_state`` will be used which defaults to ``mounted``.
 
   ``mounted``
     Ensure that the encryption and filesystem layer are in place on the block device and
@@ -93,3 +94,16 @@ you to use more specific parameters which are not documented below.
 
 .. _LUKS: https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup
 .. _dm-crypt: https://en.wikipedia.org/wiki/Dm-crypt
+
+Examples
+~~~~~~~~
+
+Create an encrypted LUKS device using an existing partition. Device will be
+mounted at ``/media/crypt0`` and will be automatically mounted at boot:
+
+.. code:: yaml
+
+    cryptsetup_devices:
+      - name: 'crypt0'
+        ciphertext_block_device: '/dev/sdb1'
+
