@@ -9,6 +9,7 @@ Ansible role: debops.cryptsetup
    introduction
    getting-started
    defaults
+   defaults-configuration
    copyright
    changelog
 
