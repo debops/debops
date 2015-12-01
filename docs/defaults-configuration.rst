@@ -93,3 +93,16 @@ you to use more specific parameters which are not documented below.
 
 .. _LUKS: https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup
 .. _dm-crypt: https://en.wikipedia.org/wiki/Dm-crypt
+
+Examples
+~~~~~~~~
+
+Create an encrypted LUKS device using existing partition. Device will be
+mounted at ``/media/crypt0`` and will be automatically mounted at boot:
+
+.. code:: yaml
+
+    cryptsetup_devices:
+      - name: 'crypt0'
+        ciphertext_block_device: '/dev/sdb1'
+

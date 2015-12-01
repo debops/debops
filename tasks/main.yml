@@ -37,7 +37,7 @@
   file:
     path: '{{ cryptsetup_keyfile_location + "/" + item.name }}'
     state: 'directory'
-  sudo: False
+  become: False
   delegate_to: 'localhost'
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
   with_items: cryptsetup_devices_combined
@@ -50,7 +50,7 @@
   command: dd if=/dev/random of="{{ item.keyfile | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}" bs={{ cryptsetup_dd_bs }} count=1 iflag=fullblock
   args:
     creates: '{{ item.keyfile | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}'
-  sudo: False
+  become: False
   delegate_to: 'localhost'
   register: cryptsetup_register_keyfile_gen
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
