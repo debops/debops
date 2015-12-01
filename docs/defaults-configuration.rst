@@ -40,12 +40,12 @@ you to use more specific parameters which are not documented below.
 ``backup_header``
   Optional, string. Disable backing up the `LUKS`_ header to the Ansible
   controller for this item.
-  See :ref:`cryptsetup_keyfile_location`.
+  See ``cryptsetup_keyfile_location`` variable.
 
 ``fstype``
   Optional, string. Filesystem type to create on the plaintext device mapper
   target.
-  Defaults to :ref:`cryptsetup_fstype`.
+  Defaults to ``cryptsetup_fstype`` variable.
 
 ``mount``
   Optional, string. Plaintext mount point of the filesystem.
@@ -62,7 +62,7 @@ you to use more specific parameters which are not documented below.
 ``state``
   Optional, string. There are four states which can be chosen for each
   encrypted filesystem.  If no state is given, the value of
-  :ref:`cryptsetup_state` will be used which defaults to ``mounted``.
+  ``cryptsetup_state`` will be used which defaults to ``mounted``.
 
   ``mounted``
     Ensure that the encryption and filesystem layer are in place on the block device and
