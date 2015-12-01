@@ -67,7 +67,7 @@ into your playbook.
 
 - [Robin Schneider](http://ypid.de/) | [e-mail](mailto:ypid@riseup.net) | [Twitter](https://twitter.com/ypid) | [GitHub](https://github.com/ypid)
 
-License: [AGPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
 
 ***
 
