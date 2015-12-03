@@ -12,6 +12,23 @@
   changed_when: False
   failed_when: False
 
+- name: Add MariaDB APT GPG key
+  apt_key:
+    state: 'present'
+    id: '{{ mariadb_server_upstream_key }}'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver|d())
+                   else "hkp://pool.sks-keyservers.net" }}'
+  when: mariadb_server_flavor in [ 'mariadb_upstream' ]
+
+- name: Add MariaDB APT repository
+  apt_repository:
+    repo: '{{ mariadb_server_upstream_repository }}'
+    state: 'present'
+    update_cache: True
+  when: mariadb_server_flavor in [ 'mariadb_upstream' ]
+
 - name: Add Percona APT GPG key
   apt_key:
     state: 'present'

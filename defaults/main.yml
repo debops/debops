@@ -15,6 +15,8 @@
 #
 # - ``mariadb``: default, use MariaDB engine from Debian repository
 #
+# - ``mariadb_upstream``: use MariaDB engine from upstream repository
+#
 # - ``mysql``: use MySQL engine from Debian repository
 #
 # - ``percona``: use Percona XtraDB engine from upstream repository
@@ -25,6 +27,24 @@ mariadb_server_flavor: '{{ (ansible_local.mariadb.flavor
                             if (ansible_local|d() and ansible_local.mariadb|d() and
                                 ansible_local.mariadb.flavor|d())
                             else (mariadb_server_flavor_map[ansible_distribution_release] | default("mariadb"))) }}'
+
+
+# .. envvar:: mariadb_server_upstream_key
+#
+# APT GPG key fingerprint used to sign the upstream MariaDB packages.
+mariadb_server_upstream_key: 'cbcb082a1bb943db'
+
+
+# .. envvar:: mariadb_server_upstream_version
+#
+# Version of the MariaDB upstream.
+mariadb_server_upstream_version: '10.1'
+
+
+# .. envvar:: mariadb_server_upstream_repository
+#
+# Address of the MariaDB upstream APT repository.
+mariadb_server_upstream_repository: 'deb [arch=amd64,i386] http://nyc2.mirrors.digitalocean.com/mariadb/repo/{{ mariadb_server_upstream_version }}/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
 
 
 # .. envvar:: mariadb_server_base_packages
@@ -46,6 +66,7 @@ mariadb_server_packages: []
 # database engine.
 mariadb_server_packages_map:
   'mariadb': [ 'mariadb-server' ]
+  'mariadb_upstream': [ 'mariadb-server' ]
   'mysql': [ 'mysql-server' ]
   'percona': [ 'percona-server-server' ]
 
