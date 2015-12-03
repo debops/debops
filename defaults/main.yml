@@ -32,7 +32,7 @@ mariadb_server_flavor: '{{ (ansible_local.mariadb.flavor
 # .. envvar:: mariadb_server_upstream_key
 #
 # APT GPG key fingerprint used to sign the upstream MariaDB packages.
-mariadb_server_upstream_key: 'cbcb082a1bb943db'
+mariadb_server_upstream_key: '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB'
 
 
 # .. envvar:: mariadb_server_upstream_version
@@ -41,10 +41,16 @@ mariadb_server_upstream_key: 'cbcb082a1bb943db'
 mariadb_server_upstream_version: '10.1'
 
 
+# .. envvar:: mariadb_server_upstream_mirror
+#
+# URL of the MariaDB upstream mirror.
+mariadb_server_upstream_mirror: 'http://nyc2.mirrors.digitalocean.com/mariadb/repo/{{ mariadb_server_upstream_version }}/{{ ansible_distribution | lower }}'
+
+
 # .. envvar:: mariadb_server_upstream_repository
 #
 # Address of the MariaDB upstream APT repository.
-mariadb_server_upstream_repository: 'deb [arch=amd64,i386] http://nyc2.mirrors.digitalocean.com/mariadb/repo/{{ mariadb_server_upstream_version }}/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+mariadb_server_upstream_repository: 'deb {{ mariadb_server_upstream_mirror }} {{ ansible_distribution_release }} main'
 
 
 # .. envvar:: mariadb_server_base_packages
