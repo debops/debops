@@ -26,3 +26,6 @@ v0.1.0
   a separate ``debops.dhparam`` Ansible role. Existing hosts won't be affected.
   [drybjed]
 
+- Expose ``ansible_fqdn`` variable as ``pki_fqdn`` so that it can be overriden
+  if necessary. [drybjed]
+

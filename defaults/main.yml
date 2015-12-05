@@ -3,6 +3,9 @@
 # Enable or disable PKI support
 pki: True
 
+# Default FQDN
+pki_fqdn: '{{ ansible_fqdn }}'
+
 # Default domain
 pki_domain: '{{ ansible_domain }}'
 
@@ -13,7 +16,7 @@ pki_state:               'Q-Space'
 pki_locality:            'Global'
 pki_organization:        '{{ pki_domain.split(".")[0] | capitalize }}'
 pki_organizational_unit: 'Data Center Operations'
-pki_common_name:         '{{ ansible_fqdn }}'
+pki_common_name:         '{{ pki_fqdn }}'
 pki_email:               'root@{{ pki_domain }}'
 
 
@@ -88,7 +91,7 @@ pki_serviceca_cn: '{{ "srv." + pki_domain }}'
 
 pki_snapshot: True
 pki_snapshot_path: '/var/backups'
-pki_snapshot_file: '{{ "pki-snapshot-" + ansible_fqdn + ".tar" }}'
+pki_snapshot_file: '{{ "pki-snapshot-" + pki_fqdn + ".tar" }}'
 pki_snapshot_owner: 'root'
 pki_snapshot_group: 'root'
 
@@ -104,7 +107,7 @@ pki_default_ca: '/etc/ssl/certs/ca-certificates.crt'
 
 # Name of the certificates to symlink as 'default.*' if no default has been
 # specified
-pki_default_certificate: '{{ ansible_fqdn }}'
+pki_default_certificate: '{{ pki_fqdn }}'
 
 # PKI realm to set as the default (it will be written in Ansible local facts,
 # as well as symlinked to '/etc/pki/system/')
@@ -119,19 +122,19 @@ pki_realm_blacklist: []
 pki_default_host_ou: '{{ pki_organization + " Data Center" }}'
 
 # Certificate name to symlink as 'default.*' in PKI 'host' realm
-pki_default_host_certificate: '{{ ansible_fqdn }}'
+pki_default_host_certificate: '{{ pki_fqdn }}'
 
 # Organizational Unit Name for domain realm
 pki_default_domain_ou: '{{ pki_organizational_unit }}'
 
 # Certificate name to symlink as 'default.*' in PKI 'domain' realm
-pki_default_domain_certificate: '{{ "wildcard.domain." + ansible_fqdn }}'
+pki_default_domain_certificate: '{{ "wildcard.domain." + pki_fqdn }}'
 
 # Organizational Unit Name for service realm
 pki_default_service_ou: '{{ pki_organization + " Service" }}'
 
 # Certificate name to symlink as 'default.*' in PKI 'service' realm
-pki_default_service_certificate: '{{ "srv." + ansible_fqdn }}'
+pki_default_service_certificate: '{{ "srv." + pki_fqdn }}'
 
 # Subdomain reserved for CA server (certificate revocation lists, source for
 # Root certificate, etc.)
@@ -151,25 +154,25 @@ pki_certificates: '{{ pki_certificates_default }}'
 # List of default certificates created by the role
 pki_certificates_default:
 
-  - source: '{{ "hosts/" + ansible_fqdn + "/host" }}'
+  - source: '{{ "hosts/" + pki_fqdn + "/host" }}'
     destination: 'host'
-    cn: '{{ ansible_fqdn }}'
+    cn: '{{ pki_fqdn }}'
     dns: [ '{{ "*." + pki_domain }}' ]
     uri: [ '{{ pki_default_certificate_uri }}' ]
 
-  - source: '{{ "hosts/" + ansible_fqdn + "/domain" }}'
+  - source: '{{ "hosts/" + pki_fqdn + "/domain" }}'
     destination: 'domain'
     cn: '{{ pki_domain }}'
     dns: [ '{{ "*." + pki_domain }}' ]
     uri: [ '{{ pki_default_certificate_uri }}' ]
-    filename: 'wildcard.domain.{{ ansible_fqdn }}'
+    filename: 'wildcard.domain.{{ pki_fqdn }}'
 
-  - source: '{{ "hosts/" + ansible_fqdn + "/service" }}'
+  - source: '{{ "hosts/" + pki_fqdn + "/service" }}'
     destination: 'service'
-    cn: '{{ ansible_fqdn }}'
+    cn: '{{ pki_fqdn }}'
     dns: [ '{{ "*." + pki_domain }}' ]
     uri: [ '{{ pki_default_certificate_uri }}' ]
-    filename: 'srv.{{ ansible_fqdn }}'
+    filename: 'srv.{{ pki_fqdn }}'
 
 
 # ---- PKI realms ----
@@ -220,7 +223,7 @@ pki_realms:
     # a particular host.
 
   - name: 'host-service'
-    source: 'hosts/{{ ansible_fqdn }}/service'
+    source: 'hosts/{{ pki_fqdn }}/service'
     destination: 'service'
     authority: 'root/ServiceCA'
     ou: '{{ pki_default_service_ou }}'
@@ -231,7 +234,7 @@ pki_realms:
     # globally. By default it provides a wildcard certificate for your domain.
 
   - name: 'host-domain'
-    source: 'hosts/{{ ansible_fqdn }}/domain'
+    source: 'hosts/{{ pki_fqdn }}/domain'
     destination: 'domain'
     authority: 'ca/domain'
     ou: '{{ pki_default_domain_ou }}'
@@ -240,7 +243,7 @@ pki_realms:
     # This realm can be used to manage host-based certificates, a certificate
     # for your host will be automatically generated.
   - name: 'host-internal'
-    source: 'hosts/{{ ansible_fqdn }}/host'
+    source: 'hosts/{{ pki_fqdn }}/host'
     destination: 'host'
     authority: 'ca/internal'
     ou: '{{ pki_default_host_ou }}'
@@ -316,22 +319,22 @@ pki_routes: '{{ pki_routes_default }}'
 pki_routes_default:
 
     # Copy signed host certificate to 'host' PKI realm
-  - name: 'host_{{ ansible_fqdn }}'
+  - name: 'host_{{ pki_fqdn }}'
     authority: 'ca/internal/certs'
-    realm: 'hosts/{{ ansible_fqdn }}/host/certs'
-    file: '{{ ansible_fqdn }}.crt'
+    realm: 'hosts/{{ pki_fqdn }}/host/certs'
+    file: '{{ pki_fqdn }}.crt'
 
     # Copy signed domain certificate to 'domain' PKI realm
-  - name: 'domain_{{ ansible_fqdn }}'
+  - name: 'domain_{{ pki_fqdn }}'
     authority: 'ca/domain/certs'
-    realm: 'hosts/{{ ansible_fqdn }}/domain/certs'
-    file: 'wildcard.domain.{{ ansible_fqdn }}.crt'
+    realm: 'hosts/{{ pki_fqdn }}/domain/certs'
+    file: 'wildcard.domain.{{ pki_fqdn }}.crt'
 
     # Copy signed service certificate to 'service' PKI realm
-  - name: 'service_{{ ansible_fqdn }}'
+  - name: 'service_{{ pki_fqdn }}'
     authority: 'root/ServiceCA/certs'
-    realm: 'hosts/{{ ansible_fqdn }}/service/certs'
-    file: '{{ "srv." + ansible_fqdn }}.crt'
+    realm: 'hosts/{{ pki_fqdn }}/service/certs'
+    file: '{{ "srv." + pki_fqdn }}.crt'
 
     # Copy Root CA certificate to 'domain' realm for all hosts
   - name: 'root_ca'
@@ -340,15 +343,15 @@ pki_routes_default:
     readlink: 'CA.crt'
 
     # Copy internal CA CRL file to 'host' PKI realm
-  - name: 'host_crl_{{ ansible_fqdn }}'
+  - name: 'host_crl_{{ pki_fqdn }}'
     authority: 'ca/internal'
-    realm: 'hosts/{{ ansible_fqdn }}/host/revoked'
+    realm: 'hosts/{{ pki_fqdn }}/host/revoked'
     readlink: 'default.crl'
 
     # Copy domain CA CRL file to 'domain' PKI realm
-  - name: 'domain_crl_{{ ansible_fqdn }}'
+  - name: 'domain_crl_{{ pki_fqdn }}'
     authority: 'ca/domain'
-    realm: 'hosts/{{ ansible_fqdn }}/domain/revoked'
+    realm: 'hosts/{{ pki_fqdn }}/domain/revoked'
     readlink: 'default.crl'
 
     # Copy Service CA certificate to 'service' realm for all hosts

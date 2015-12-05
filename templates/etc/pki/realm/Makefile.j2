@@ -36,7 +36,7 @@ PKI_PRIVATE_DIR_MODE	= {{ item.private_dir_mode   | default(pki_private_dir_mode
 PKI_PUBLIC_MODE		= {{ item.public_mode        | default(pki_public_mode        | default('0644')) }}
 PKI_PRIVATE_MODE	= {{ item.private_mode	     | default(pki_private_mode       | default('0440')) }}
 
-PKI_DEFAULT		= {{ item.default            | default(pki_default_certificate | default(ansible_fqdn)) }}
+PKI_DEFAULT		= {{ item.default            | default(pki_default_certificate | default(pki_fqdn)) }}
 PKI_DEFAULT_CA		= {{ item.default_ca         | default(pki_default_ca         | default('/etc/ssl/certs/ca-certificates.crt')) }}
 
 PKI_DEFAULT_CRT		= {{ item.default_crt        | default('$(subst %,$(PKI_DEFAULT),$(CRT))') }}
