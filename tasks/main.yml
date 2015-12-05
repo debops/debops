@@ -29,7 +29,7 @@
 
 - name: Check if snapshot file exists on the Ansible Controller
   stat:
-    path: '{{ pki_base_src + "/snapshots/" + ansible_fqdn + "/" + pki_snapshot_file }}'
+    path: '{{ pki_base_src + "/snapshots/" + pki_fqdn + "/" + pki_snapshot_file }}'
   register: pki_register_snapshot
   sudo: False
   delegate_to: 'localhost'
@@ -37,7 +37,7 @@
 
 - name: Restore PKI from snapshot
   unarchive:
-    src: '{{ pki_base_src + "/snapshots/" + ansible_fqdn + "/" + pki_snapshot_file }}/'
+    src: '{{ pki_base_src + "/snapshots/" + pki_fqdn + "/" + pki_snapshot_file }}/'
     dest: '{{ pki_base_path }}'
   when: ((pki is defined and pki) and (pki_snapshot is defined and pki_snapshot) and
          (ansible_local is undefined or (ansible_local is defined and ansible_local.pki is undefined)) and
@@ -55,7 +55,7 @@
 - name: Upload PKI snapshot to Ansible Controller
   fetch:
     src: '{{ pki_snapshot_path + "/" + pki_snapshot_file }}'
-    dest: '{{ pki_base_src + "/snapshots/" + ansible_fqdn + "/" + pki_snapshot_file }}'
+    dest: '{{ pki_base_src + "/snapshots/" + pki_fqdn + "/" + pki_snapshot_file }}'
     flat: True
   register: pki_register_snapshot
   notify: [ 'Regenerate ca-certificates.crt' ]
