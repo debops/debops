@@ -60,6 +60,10 @@ v0.1.5
 
 - Support ``item.options`` YAML text block in nginx upstreams. [drybjed]
 
+- Move the ``root`` parameter to its own macro block and use it separately in
+  HTTP and HTTPS server configuration section. This is needed for the HTTP
+  configuration to serve files from a sane directory. [drybjed]
+
 v0.1.4
 ------
 
