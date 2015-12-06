@@ -91,6 +91,9 @@ upstream {{ item.name }} {
 {%             endif                                                              %}
 {%         endfor                                                                 %}
 {%     endif                                                                      %}
+{%     if item.options|d()                                                        %}
+{{ item.options | indent(8, true) }}
+{%     endif                                                                      %}
 {%     block nginx_tpl_block_custom_upstreams                                     %}
 {%     endblock                                                                   %}
 }

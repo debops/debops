@@ -222,6 +222,26 @@ nginx_webroot_owner: 'root'
 nginx_webroot_group: 'root'
 nginx_webroot_mode: '0755'
 
+# Enable or disable support for Automated Certificate Management Environment
+# (ACME) on all servers. This can be overriden per server using ``item.acme``
+# variable.
+nginx_acme: True
+
+# Global directory where ACME challenges will be served from. It's not created
+# by the role automatically and left to be managed by other Ansible roles.
+nginx_acme_root: '{{ nginx_www + "/sites/acme/public" }}'
+
+# Enable or disable custom ACME challenge server configuration. It will answer
+# queries on a specified domain, from ``nginx_acme_root`` directory. It can be
+# used for other things as well, for example to serve signed certificates to
+# other hosts.
+nginx_acme_server: False
+
+# Specify the DNS domain to which ACME challenge queries will be redirected if
+# they are not found on the host. The domain must exist in the DNS and a web
+# server needs to be configured to answer the queries.
+nginx_acme_domain: 'acme.{{ ansible_domain }}'
+
 # List of IP addresses or CIDR ranges to allow access to the status page
 nginx_status: []
 
@@ -325,6 +345,7 @@ nginx_upstream_php5:
 nginx_servers:
   - '{{ nginx_server_default }}'
   - '{{ nginx_server_localhost }}'
+  - '{{ nginx_server_acme }}'
 
 # Default nginx site
 # List and description of available parameters can be found in nginx server
@@ -339,8 +360,17 @@ nginx_server_default:
 nginx_server_localhost:
   enabled: True
   name: [ 'localhost', '127.0.0.1', '[::1]' ]
+  acme: False
   ssl: False
   default_index: '{{ nginx_default_index_html }}'
+
+# Custom server for ACME challenge queries
+nginx_server_acme:
+  enabled: '{{ nginx_acme_server | bool }}'
+  delete: '{{ not nginx_acme_server | bool }}'
+  name: [ '{{ nginx_acme_domain }}' ]
+  filename: 'acme-challenge'
+  root: '{{ nginx_acme_root }}'
 
 # Contents of default 'index.html' page created automatically if
 # 'item.default_index' is set in the server configuration

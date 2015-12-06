@@ -48,6 +48,25 @@ v0.1.5
   connections. This was the default, now it can be disabled so that users can
   control the listening ports themselves. [drybjed]
 
+- Update ``localhost`` server to also accept connections on loopback IP
+  addresses, so that check plugins like ``check_mk`` can work correctly. [ypid]
+
+- Add support for ``HTTP/2`` deprecating ``SPDY`` in ``nginx`` 1.9.5.
+  [MatthewMi11er]
+
+- Wrap the default HTTP redirect configuration in ``location / {}`` section.
+  This allows addition of other location sections as necessary without breaking
+  the page. [drybjed]
+
+- Support ``item.options`` YAML text block in nginx upstreams. [drybjed]
+
+- Move the ``root`` parameter to its own macro block and use it separately in
+  HTTP and HTTPS server configuration section. This is needed for the HTTP
+  configuration to serve files from a sane directory. [drybjed]
+
+- Add support for Automated Certificate Management Environment (ACME)
+  challenges. [drybjed]
+
 v0.1.4
 ------
 
