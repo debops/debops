@@ -58,6 +58,8 @@ v0.1.5
   This allows addition of other location sections as necessary without breaking
   the page. [drybjed]
 
+- Support ``item.options`` YAML text block in nginx upstreams. [drybjed]
+
 v0.1.4
 ------
 
