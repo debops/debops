@@ -48,6 +48,12 @@ v0.1.5
   connections. This was the default, now it can be disabled so that users can
   control the listening ports themselves. [drybjed]
 
+- Update ``localhost`` server to also accept connections on loopback IP
+  addresses, so that check plugins like ``check_mk`` can work correctly. [ypid]
+
+- Add support for ``HTTP/2`` deprecating ``SPDY`` in ``nginx`` 1.9.5.
+  [MatthewMi11er]
+
 v0.1.4
 ------
 
