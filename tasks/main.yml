@@ -34,6 +34,7 @@
     - '{{ nginx_default_root }}'
     - '/etc/nginx/sites-available'
     - '/etc/nginx/sites-enabled'
+    - '/etc/nginx/snippets'
 
 - name: Divert default.conf in case nginx nginx.org flavor is used
   command: dpkg-divert --quiet --local --divert /etc/nginx/conf.d/default.conf.dpkg-divert
@@ -112,6 +113,16 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  notify: [ 'Test nginx and reload' ]
+
+- name: Generate custom nginx snippets
+  template:
+    src: 'etc/nginx/snippets/{{ item }}.conf.j2'
+    dest: '/etc/nginx/snippets/{{ item }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: [ 'acme-challenge' ]
   notify: [ 'Test nginx and reload' ]
 
   # Remove temporary old files if they are present

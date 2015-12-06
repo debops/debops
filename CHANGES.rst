@@ -64,6 +64,9 @@ v0.1.5
   HTTP and HTTPS server configuration section. This is needed for the HTTP
   configuration to serve files from a sane directory. [drybjed]
 
+- Add support for Automated Certificate Management Environment (ACME)
+  challenges. [drybjed]
+
 v0.1.4
 ------
 
