@@ -54,6 +54,10 @@ v0.1.5
 - Add support for ``HTTP/2`` deprecating ``SPDY`` in ``nginx`` 1.9.5.
   [MatthewMi11er]
 
+- Wrap the default HTTP redirect configuration in ``location / {}`` section.
+  This allows addition of other location sections as necessary without breaking
+  the page. [drybjed]
+
 v0.1.4
 ------
 

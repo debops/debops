@@ -788,7 +788,9 @@ server {
 {% if not (item.redirect_to_ssl|d(True) | bool) %}
 {{ print_shared_nginx_server_block() }}
 {% else %}
-        return {{ item.redirect_code_ssl | default(nginx_tpl_default_redirect_code_ssl) }} {{ nginx_tpl_http_redirect }};
+        location / {
+                return {{ item.redirect_code_ssl | default(nginx_tpl_default_redirect_code_ssl) }} {{ nginx_tpl_http_redirect }};
+        }
 {% endif %}
 }
 
