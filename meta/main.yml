@@ -1,43 +1,6 @@
 ---
 
-dependencies:
-
-  - role: debops.etc_services
-    tags: [ 'depend::etc_services', 'depend::etc_services:docker',
-            'depend-of::docker', 'type::dependency' ]
-
-    etc_services_dependent_list:
-
-      - name: 'docker'
-        port: '2375'
-        comment: 'Docker REST API (plain text)'
-
-      - name: 'docker-s'
-        port: '2376'
-        comment: 'Docker REST API (SSL)'
-
-  - role: debops.ferm
-    tags: [ 'depend::ferm', 'depend::ferm:docker',
-            'depend-of::docker', 'type::dependency' ]
-
-    ferm_dependent_rules:
-
-      - type: 'custom'
-        weight: '99'
-        filename: 'docker_ferment_rules'
-        rules: |
-          @def $DOCKER_FERMENT = `test -x {{ docker_ferment_wrapper }} && echo 1 || echo 0`;
-          @if $DOCKER_FERMENT {
-              @include '{{ docker_ferment_wrapper + (" " + docker_bridge if docker_bridge else "") }}|';
-          }
-
-    ferm_input_dependent_list:
-
-      - type: 'dport_accept'
-        dport: [ '{{ docker_tcp_port }}' ]
-        saddr: '{{ docker_tcp_allow }}'
-        weight: '50'
-        filename: 'docker_dependency_accept'
+dependencies: []
 
 galaxy_info:
   author: 'Maciej Delmanowski'
