@@ -69,6 +69,9 @@ v0.2.8
 - Add ``debops.cryptsetup`` role, which can be used to manage filesystems
   encrypted using LUKS. Role was created by Robin Schneider. Thanks! [drybjed]
 
+- Update ``service/docker.yml`` playbook and include additional roles required
+  to configure the service properly. [drybjed]
+
 v0.2.7
 ------
 
