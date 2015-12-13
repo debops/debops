@@ -43,9 +43,9 @@ Example inventory
 -----------------
 
 To configure Docker on a given remote host, it need to be added to
-``[debops_docker]`` Ansible inventory group::
+``[debops_service_docker]`` Ansible inventory group::
 
-    [debops_docker]
+    [debops_service_docker]
     hostname
 
 Example playbook
@@ -54,7 +54,7 @@ Example playbook
 Here's an example playbook that can be used to manage Docker::
 
     ---
-    - hosts: debops_docker
+    - hosts: debops_service_docker
       become: True
 
       roles:
@@ -75,19 +75,6 @@ Available role tags:
 ``role::docker``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
-
-``type::dependency``
-  This tag specifies which tasks are defined in role dependencies. You can use
-  this to omit them using ``--skip-tags`` parameter.
-
-``depend-of::docker``
-  Execute all ``debops.docker`` role dependencies in its context.
-
-``depend::etc_services:docker``
-  Run ``debops.etc_services`` dependent role in ``debops.docker`` context.
-
-``depend::ferm:docker``
-  Run ``debops.ferm`` dependent role in ``debops.docker`` context.
 
 ``role::docker:config``
   Run tasks related to Docker configuration.

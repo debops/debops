@@ -230,3 +230,47 @@ docker_ferment_wrapper: '{{ (ansible_local.root.lib
                                  ansible_local.root.lib|d())
                              else "/usr/local/lib") + "/docker-ferment-wrapper" }}'
 
+
+# ----------------------------------------
+#   Configuration of other Ansible roles
+# ----------------------------------------
+
+# .. envvar:: docker_etc_services_dependent_list
+#
+# Configuration for ``debops.etc_services`` role which registers port numbers
+# for Docker REST API.
+docker_etc_services_dependent_list:
+
+  - name: 'docker'
+    port: '2375'
+    comment: 'Docker REST API (plain text)'
+
+  - name: 'docker-s'
+    port: '2376'
+    comment: 'Docker REST API (SSL)'
+
+
+# .. envvar:: docker_ferm_dependent_rules
+#
+# Configuration for ``debops.ferm`` role which enables support for ``ferment``
+# script and opens access to the Docker REST API in the firewall.
+docker_ferm_dependent_rules:
+
+  - type: 'custom'
+    weight: '99'
+    role: 'docker'
+    name: 'ferment_rules'
+    rules: |
+      @def $DOCKER_FERMENT = `test -x {{ docker_ferment_wrapper }} && echo 1 || echo 0`;
+      @if $DOCKER_FERMENT {
+          @include '{{ docker_ferment_wrapper + (" " + docker_bridge if docker_bridge else "") }}|';
+      }
+
+  - type: 'accept'
+    dport: [ '{{ docker_tcp_port }}' ]
+    saddr: '{{ docker_tcp_allow }}'
+    accept_any: False
+    weight: '50'
+    role: 'docker'
+    name: 'rest_api_rules'
+
