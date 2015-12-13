@@ -10,6 +10,10 @@ v0.1.1
   default variables. Ansible playbook can use this configuration to set up
   firewall rules and reserve ports in ``/etc/services``. [drybjed]
 
+- Check if ``ansible_ssh_user`` contains a value before adding the default user
+  to ``docker`` group, otherwise use name of the user account running the
+  Ansible playbook. [drybjed]
+
 v0.1.0
 ------
 
