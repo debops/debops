@@ -38,6 +38,25 @@
                 '/etc/ferm/hooks/pre.d', '/etc/ferm/hooks/post.d',
                 '/etc/ferm/hooks/flush.d' ]
 
+- name: Copy custom files to remote hosts
+  copy:
+    src: '{{ item.src | d(omit) }}'
+    content: '{{ item.content | d(omit) }}'
+    dest: '{{ item.dest }}'
+    owner: '{{ item.owner | d(omit) }}'
+    group: '{{ item.group | d(omit) }}'
+    mode: '{{ item.mode | d(omit) }}'
+    directory_mode: '{{ item.directory_mode | d(omit) }}'
+    follow: '{{ item.follow | d(omit) }}'
+    force: '{{ item.force | d(omit) }}'
+  with_flattened:
+    - '{{ ferm_custom_files }}'
+    - '{{ ferm_group_custom_files }}'
+    - '{{ ferm_host_custom_files }}'
+  when: ((item.src is defined or item.content is defined) and
+         item.dest is defined)
+  tags: [ 'role::ferm:custom_files' ]
+
 - name: Configure ferm default variables (pre)
   template:
     src: 'etc/default/ferm-pre.j2'
