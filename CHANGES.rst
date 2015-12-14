@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.1.4
+------
+
+*Unreleased*
+
+- Add a way to copy custom files to remote hosts before starting the firewall.
+  This allows users to add custom scripts that generate firewall rules in case
+  of more esoteric environments. [drybjed]
+
 v0.1.3
 ------
 
