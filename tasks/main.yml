@@ -163,7 +163,12 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  notify: [ 'Reload sysctl' ]
+  register: ferm_register_sysctl
+  tags: [ 'role::ferm:rules' ]
+
+- name: Reload sysctl configuration if changed
+  command: sysctl -p /etc/sysctl.d/30-ferm.conf
+  when: ferm_register_sysctl.changed | bool
   tags: [ 'role::ferm:rules' ]
 
 - name: Ensure that /etc/network/if-pre-up.d exists

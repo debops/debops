@@ -10,6 +10,9 @@ v0.1.4
   This allows users to add custom scripts that generate firewall rules in case
   of more esoteric environments. [drybjed]
 
+- Change the sysctl configuration from a handler to a conditional task. This
+  should make sure ``debops.ferm`` works on older operating systems. [drybjed]
+
 v0.1.3
 ------
 
