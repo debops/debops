@@ -70,6 +70,9 @@ v0.1.5
 - Don't print ``root`` option in the ``nginx`` server configuration if it's set
   as ``False`` (shouldn't be used, but it is checked just in case). [drybjed]
 
+- Make sure that ``root`` and ACME configuration is not added two times when
+  HTTP listen configuration is disabled. [drybjed]
+
 v0.1.4
 ------
 
