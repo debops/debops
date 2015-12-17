@@ -447,7 +447,7 @@
 {% endif                                                                       %}
 {% macro print_root() %}
 {% block nginx_tpl_block_root %}
-{% if item.root is undefined or not item.root | bool %}
+{% if ((item.root is undefined or not item.root | bool) and nginx_tpl_root) %}
         root {{ nginx_tpl_root }};
 {% endif %}
 {% endblock %}
@@ -789,11 +789,11 @@ server {
 
 {% endif %}
 {% endif %}
-{% endif %}
 {{ print_root() }}
 {% if nginx_tpl_acme | bool %}
         include snippets/acme-challenge.conf;
 
+{% endif %}
 {% endif %}
 {% if nginx_tpl_ssl %}
 {% if (item.listen is undefined or (item.listen is defined and item.listen)) %}
