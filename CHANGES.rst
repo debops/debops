@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Released: 2015-12-17*
+
+- Gather local facts if they changed, in case the role is used in a play with
+  other roles. [drybjed]
+
 v0.1.2
 ------
 
