@@ -67,6 +67,9 @@ v0.1.5
 - Add support for Automated Certificate Management Environment (ACME)
   challenges. [drybjed]
 
+- Don't print ``root`` option in the ``nginx`` server configuration if it's set
+  as ``False`` (shouldn't be used, but it is checked just in case). [drybjed]
+
 v0.1.4
 ------
 

@@ -447,7 +447,7 @@
 {% endif                                                                       %}
 {% macro print_root() %}
 {% block nginx_tpl_block_root %}
-{% if item.root is undefined or not item.root | bool %}
+{% if ((item.root is undefined or not item.root | bool) and nginx_tpl_root) %}
         root {{ nginx_tpl_root }};
 {% endif %}
 {% endblock %}
