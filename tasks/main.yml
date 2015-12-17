@@ -30,6 +30,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  register: core_register_fact_files
   with_items: [ 'core', 'root', 'tags', 'uuid' ]
 
 - name: Install local fact scripts
@@ -39,6 +40,12 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  register: core_register_fact_scripts
+
+- name: Gather local facts if they changed
+  action: setup
+  when: core_register_fact_files.changed | bool or
+        core_register_fact_scripts.changed | bool
 
 - name: Update APT cache and install required packages
   apt:
