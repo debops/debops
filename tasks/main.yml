@@ -61,6 +61,16 @@
   notify: [ 'Restart docker' ]
   tags: [ 'role::docker:config' ]
 
+- name: Make sure that systemd directory exists
+  file:
+    path: '/etc/systemd/system'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: docker_upstream|d() | bool
+  tags: [ 'role::docker:config' ]
+
 - name: Install Debian systemd service unit
   template:
     src: 'etc/systemd/system/docker.service.j2'
