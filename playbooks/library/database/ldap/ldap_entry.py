@@ -165,7 +165,7 @@ class LdapEntry(object):
 
     def _load_attrs(self):
         for name, raw in self.module.params.iteritems():
-            if name not in self.module.argument_spec and name not in ['NO_LOG']:
+            if name not in self.module.argument_spec and not name.startswith('_') and name not in ['NO_LOG']:
                 self.attrs[name] = self._load_attr_values(name, raw)
 
     def _load_attr_values(self, name, raw):
