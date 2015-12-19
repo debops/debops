@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2015-12-19*
+
+- Add a default list variable which can be used to open additional ports in the
+  firewall for Docker-related services. [drybjed]
+
 v0.1.1
 ------
 
