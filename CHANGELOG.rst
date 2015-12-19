@@ -72,6 +72,9 @@ v0.2.8
 - Update ``service/docker.yml`` playbook and include additional roles required
   to configure the service properly. [drybjed]
 
+- Fix support for ``no_log: True`` parameter in ``ldap_entry`` Ansible module,
+  so that it works correctly on Ansible v2. [drybjed]
+
 v0.2.7
 ------
 
