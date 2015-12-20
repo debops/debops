@@ -121,12 +121,27 @@ docker_tcp_port: '2375'
 docker_custom_tcp_ports: []
 
 
+# .. envvar:: docker_custom_udp_ports
+#
+# List of additional UDP ports to allow in the firewall, useful for other
+# Docker-related services, like Consul.
+docker_custom_udp_ports: []
+
+
 # .. envvar:: docker_tcp_allow
 #
 # List of IP addresses or subnets in CIDR format which are allowed to connect
 # to the Docker daemon over TLS. If it's not specified, remote connections are
 # denied by the firewall.
 docker_tcp_allow: []
+
+
+# .. envvar:: docker_udp_allow
+#
+# List of IP addresses or subnets in CIDR format which are allowed to connect
+# to the Docker containers over UDP.  If it's not specified, remote connections
+# are denied by the firewall.
+docker_udp_allow: []
 
 
 # .. envvar:: docker_tcp_listen
@@ -280,5 +295,13 @@ docker_ferm_dependent_rules:
     accept_any: False
     weight: '50'
     role: 'docker'
-    name: 'rest_api_rules'
+    name: 'docker_services_rules'
 
+  - type: 'accept'
+    dport: '{{ docker_custom_udp_ports }}'
+    saddr: '{{ docker_udp_allow }}'
+    protocol: 'udp'
+    accept_any: False
+    weight: '60'
+    role: 'docker'
+    name: 'docker_services_rules'
