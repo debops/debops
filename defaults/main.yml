@@ -114,13 +114,6 @@ docker_tcp_bind: '0.0.0.0'
 docker_tcp_port: '2375'
 
 
-# .. envvar:: docker_custom_tcp_ports
-#
-# List of additional TCP ports to allow in the firewall, useful for other
-# Docker-related services, like Swarm, Consul.
-docker_custom_tcp_ports: []
-
-
 # .. envvar:: docker_tcp_allow
 #
 # List of IP addresses or subnets in CIDR format which are allowed to connect
@@ -135,6 +128,13 @@ docker_tcp_allow: []
 # TCP over TLS.
 docker_tcp_listen: '{{ ("tcp://" + docker_tcp_bind + ":" + docker_tcp_port)
                         if (docker_tcp|d() | bool) else "" }}'
+
+
+# .. envvar:: docker_custom_ports
+#
+# List of additional TCP/UDP ports to allow in the firewall, useful for other
+# Docker-related services, like Swarm, Consul.
+docker_custom_ports: []
 
 
 # --------------------------------
@@ -275,10 +275,10 @@ docker_ferm_dependent_rules:
       }
 
   - type: 'accept'
-    dport: '{{ [ docker_tcp_port ] + docker_custom_tcp_ports }}'
+    dport: '{{ [ docker_tcp_port ] + docker_custom_ports }}'
+    protocol: [ 'tcp', 'udp' ]
     saddr: '{{ docker_tcp_allow }}'
     accept_any: False
     weight: '50'
     role: 'docker'
-    name: 'rest_api_rules'
-
+    name: 'service_rules'
