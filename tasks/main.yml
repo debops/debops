@@ -113,6 +113,15 @@
     - '{{ grub_users_combined }}'
     - '{{ grub_register_pw_hashes.results|d({}) }}'
 
+  ## http://stackoverflow.com/a/28888474
+- name: Test if Ansible is running in check mode
+  command: /bin/true
+  changed_when: False
+  register: cryptsetup_register_check_mode
+
+- name: Save fact if Ansible is running in check mode in variable
+  set_fact: check_mode={{ cryptsetup_register_check_mode|skipped }}
+
 - name: Configure users and passwords
   template:
     src: 'etc/grub.d/01_users.j2'
@@ -120,6 +129,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  when: (not check_mode)
   notify: [ 'Update GRUB' ]
 
 ## FIXME: Remove when patched upstream has reached Debian stable.
