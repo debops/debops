@@ -28,3 +28,22 @@ Here's an example playbook which uses ``debops.grub`` role::
       roles:
         - role: debops.grub
           tags: grub
+
+
+Password protection
+-------------------
+
+To enable password protection, simply define a superuser like this::
+
+    grub_users:
+      - name: 'su'
+        password: 'NBLWAThUq5'
+        superuser: True
+
+The password will be hashed and salted on the Ansible controller and only the
+salted hash will be configured in the GRUB configuration.
+
+With this change, GRUB will require authentication when attempting to change
+boot options or invoking a recovery shell. Booting menu entires will not
+require authentication so this configuration should be safe for normal
+operation.
