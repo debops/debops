@@ -1,6 +1,10 @@
 ---
 # tasks file for debops.grub
 
+- name: Combine Grub users
+  set_fact:
+    grub_users_combined: '{{ (grub_users|d([])) + (grub_group_users|d([])) + (grub_host_users|d([])) }}'
+
 - name: Divert original /etc/default/grub
   command: dpkg-divert --quiet --local --divert /etc/default/grub.dpkg-divert --rename /etc/default/grub
   args:
@@ -51,3 +55,80 @@
     group: 'root'
     mode: '0644'
 
+## Security and users (((
+
+- name: Ensure secrets directories exist
+  file:
+    path: '{{ secret + "/credentials/" + ansible_fqdn + "/grub/" + item.name }}'
+    state: 'directory'
+    mode: '0750'
+  become: False
+  delegate_to: 'localhost'
+  no_log: True
+  when: item.name|d()
+  with_items: grub_users_combined
+
+- name: Save plaintext password in secrets
+  copy:
+    content: '{{ item.password }}\n'
+    dest: '{{ secret + "/credentials/" + ansible_fqdn + "/grub/" + item.name + "/password" }}'
+    mode: '0640'
+  become: False
+  delegate_to: 'localhost'
+  no_log: True
+  register: grub_register_pw_plain
+  when: item.name|d()
+  with_items: grub_users_combined
+
+## There seems to be no way to specify the salt (except using a custom script).
+## Only generating the hashed password when the plaintext password has changed
+## is the workaround to make it idempotent.
+## This is not too bad because depending on the iteration count chosen this operation could take a while ;)
+- name: Generate salted hash from user password
+  shell: echo '{{ item.0.password }}\n{{ item.0.password }}' | grub-mkpasswd-pbkdf2
+         {{ "" if grub_iter_time|d()   == "default" else ("--iteration-count=" + grub_iter_time) }}
+         {{ "" if grub_salt_length|d() == "default" else ("--salt=" + grub_salt_length) }}
+         {{ "" if grub_hash_length|d() == "default" else ("--buflen=" + grub_hash_length) }}
+         | perl -ne 's/^PBKDF2 hash of your password is //ms && print'
+  become: False
+  delegate_to: 'localhost'
+  no_log: True
+  changed_when: False
+  register: grub_register_pw_hashes
+  when: (item.0.name|d() and item.1|changed)
+  with_together:
+    - '{{ grub_users_combined }}'
+    - '{{ grub_register_pw_plain.results|d({}) }}'
+
+- name: Save plaintext password in secrets
+  copy:
+    content: '{{ item.1.stdout_lines.0 }}\n'
+    dest: '{{ secret + "/credentials/" + ansible_fqdn + "/grub/" + item.0.name + "/password_hash" }}'
+    mode: '0640'
+  become: False
+  delegate_to: 'localhost'
+  no_log: True
+  when: (not item.1|skipped)
+  with_together:
+    - '{{ grub_users_combined }}'
+    - '{{ grub_register_pw_hashes.results|d({}) }}'
+
+- name: Configure users and passwords
+  template:
+    src: 'etc/grub.d/01_users.j2'
+    dest: '/etc/grub.d/01_users'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  notify: [ 'Update grub' ]
+
+## FIXME: Remove when patched upstream has reached Debian stable.
+## It has been decided to not divert this script because there is a chance that
+## security fixes could affect this file.
+- name: Apply patch to allow to configure the default menu entry parameters
+  replace:
+    dest: '/etc/grub.d/10_linux'
+    regexp: "^CLASS=(?:\\$\\{[A-Z_]+:-)?([\"'][\\w _-]+)([\"'])\\}?"
+    replace: 'CLASS=${GRUB_LINUX_MENUENTRY_CLASS:-\1 ${GRUB_LINUX_MENUENTRY_CLASS_ADDITIONAL:-}\2}'
+
+## )))

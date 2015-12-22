@@ -68,6 +68,12 @@ GRUB_CMDLINE_LINUX="{{ grub_tpl_kernel_params | join(' ') }}"
 GRUB_TERMINAL="serial console"
 GRUB_SERIAL_COMMAND="serial --unit={{ grub_serial_console_unit }} --speed={{ grub_serial_console_speed }} --word=8 --parity=no --stop=1"
 {% endif %}
+{% if grub_users_combined|length > 0 and grub_menuentry_access is string %}
+
+# Needs to be exported until it is patched upstream.
+## FIXME: Remove `export` when patched upstream has reached Debian stable.
+export GRUB_LINUX_MENUENTRY_CLASS_ADDITIONAL="{{ grub_menuentry_access }}"
+{% endif %}
 {% if grub_custom_options %}
 
 {{ grub_custom_options }}

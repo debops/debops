@@ -2,5 +2,6 @@
 # handlers file for debops.grub
 
 - name: Update grub
-  shell: update-grub 2>&1
-
+  command: update-grub
+  failed_when: ('error' in grub_register_update.stderr)
+  register: grub_register_update
