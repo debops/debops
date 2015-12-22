@@ -89,7 +89,7 @@
          {{ "" if grub_iter_time|d()   == "default" else ("--iteration-count=" + grub_iter_time) }}
          {{ "" if grub_salt_length|d() == "default" else ("--salt=" + grub_salt_length) }}
          {{ "" if grub_hash_length|d() == "default" else ("--buflen=" + grub_hash_length) }}
-         | perl -ne 's/^PBKDF2 hash of your password is //ms && print'
+         | perl -ne 's/^(:?Your PBKDF2|PBKDF2 hash of your password) is //ms && print'
   become: False
   delegate_to: 'localhost'
   no_log: True
@@ -100,7 +100,7 @@
     - '{{ grub_users_combined }}'
     - '{{ grub_register_pw_plain.results|d({}) }}'
 
-- name: Save plaintext password in secrets
+- name: Save hashed password in secrets
   copy:
     content: '{{ item.1.stdout_lines.0 }}\n'
     dest: '{{ secret + "/credentials/" + ansible_fqdn + "/grub/" + item.0.name + "/password_hash" }}'
