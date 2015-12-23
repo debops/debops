@@ -9,7 +9,7 @@ to use, and can perform autodiscovery to find and monitor additional devices.
 ``debops.librenms`` role will manage a central LibreNMS monitoring host and web
 interface.
 
-.. _LibreNMS: http://librenms.org/
+.. _LibreNMS: http://www.librenms.org/
 
 Installation
 ~~~~~~~~~~~~
