@@ -8,7 +8,7 @@
 - name: Unmount filesystems if requested
   mount:
     name:   '{{ item.mount }}'
-    src:    '{{ "/dev/mapper/" + item.vg + "-" + item.lv }}'
+    src:    '{{ "/dev/mapper/" + item.vg | regex_replace("-", "--") + "-" + item.lv | regex_replace("-", "--") }}'
     fstype: '{{ item.fs_type | d(lvm_default_fs_type) }}'
     state:  'absent'
   with_items: lvm_logical_volumes
@@ -54,7 +54,7 @@
 
 - name: Manage filesystems
   filesystem:
-    dev:    '{{ "/dev/mapper/" + item.vg + "-" + item.lv }}'
+    dev:    '{{ "/dev/mapper/" + item.vg | regex_replace("-", "--") + "-" + item.lv | regex_replace("-", "--") }}'
     fstype: '{{ item.fs_type  | d(lvm_default_fs_type) }}'
     force:  '{{ item.fs_force | d(omit) }}'
     opts:   '{{ item.fs_opts  | d(omit) }}'
@@ -68,7 +68,7 @@
 - name: Manage mount points
   mount:
     name:   '{{ item.mount }}'
-    src:    '{{ "/dev/mapper/" + item.vg + "-" + item.lv }}'
+    src:    '{{ "/dev/mapper/" + item.vg | regex_replace("-", "--") + "-" + item.lv | regex_replace("-", "--") }}'
     fstype: '{{ item.fs_type      | d(lvm_default_fs_type) }}'
     opts:   '{{ item.mount_opts   | d(lvm_default_mount_options) }}'
     state:  '{{ item.mount_state  | d("mounted") }}'
