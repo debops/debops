@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.3
+------
+
+*Released: 2016-01-04*
+
+- Rename ``secret_dir`` variable to ``secret_name`` to avoid ambiguity.
+  [drybjed]
+
 v0.2.2
 ------
 
