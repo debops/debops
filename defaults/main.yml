@@ -13,11 +13,11 @@
 secret_root: '{{ inventory_dir | realpath }}'
 
 
-# .. envvar:: secret_dir
+# .. envvar:: secret_name
 #
 # Name of the directory which contains secrets. It will be in the form
 # "secret" by default
-secret_dir: 'secret'
+secret_name: 'secret'
 
 
 # .. envvar:: secret_levels
@@ -31,7 +31,14 @@ secret_levels: '..'
 #
 # Absolute path to directory with secrets. It will be configured as relative to
 # current inventory directory. Use this variable in file and password lookups
-secret: '{{ secret_root + "/" + secret_levels + "/" + secret_dir }}'
+secret: '{{ secret_root + "/" + ((secret_levels + "/")
+            if secret_levels else "") + secret_name }}'
+
+
+# .. envvar:: secret_directories
+#
+# List of directories which should be present in the ``secret/`` directory.
+secret_directories: []
 
 
 # ----------------------------

@@ -1,0 +1,12 @@
+---
+
+- name: Create secret directories on Ansible Controller
+  file:
+    path: '{{ secret + "/" + item }}'
+    state: 'directory'
+  become: False
+  delegate_to: 'localhost'
+  with_items: '{{ secret_directories }}'
+  when: secret_directories and item
+  changed_when: False
+

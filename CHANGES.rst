@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v0.2.3
+------
+
+*Released: 2016-01-04*
+
+- Rename ``secret_dir`` variable to ``secret_name`` to avoid ambiguity.
+  [drybjed]
+
+- Add ``secret_directories`` list which can be used to create directories on
+  Ansible Controller inside ``secret/`` directory for other roles to use.
+  [drybjed]
+
 v0.2.2
 ------
 
