@@ -1,16 +1,37 @@
 ---
+# Default variables
+# =================
 
+# ----------
+#   Packages
+# ----------
+
+# .. envvar:: rsyslog_packages
+#
 # Install set of standard packages
 rsyslog_packages: [ 'rsyslog', 'logrotate' ]
 
+
+# --------------
+#   Manage pools
+# --------------
+
+# .. envvar:: rsyslog_manage_pools
+#
 # Should rsyslog role manage server pools?
 rsyslog_manage_pools: True
 
-# List of managed pools
+
+# .. envvar:: rsyslog_pools
+#
+# List of managed pools.
 rsyslog_pools: [ '{{ rsyslog_pool_cron }}' ]
 
-# Default rsyslog pool , explanation of variables can be found
-# in templates/etc/rsyslog.d/pool.conf.j2
+
+# .. envvar:: rsyslog_pool_cron
+#
+# Default rsyslog pool, explanation of variables can be found
+# in :file:`templates/etc/rsyslog.d/pool.conf.j2`.
 # Everything commented out is optional.
 rsyslog_pool_cron:
   enabled: True
@@ -24,5 +45,3 @@ rsyslog_pool_cron:
 
     :msg, contains, "pam_unix(cron:session): session closed for user" /var/log/cron.log
     & stop
-
-
