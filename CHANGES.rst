@@ -4,7 +4,7 @@ Changelog
 v0.1.5
 ------
 
-*Unreleased*
+*Released: 2016-01-05*
 
 - Add ``users_default_system`` bool variable which, when enabled, will set all
   user groups and accounts created by ``debops.users`` role as "system"
@@ -14,6 +14,12 @@ v0.1.5
   [drybjed]
 
 - Fix empty list of default users on Ansible v2. [drybjed]
+
+- Remove unneeded bracket. [sean]
+
+- Add dependency on ``debops.secret`` role which can be accessed by
+  ``debops.users``, for example to retrieve SSH keys. This ensures that the
+  required ``secret`` variable is always present. [drybjed]
 
 v0.1.4
 ------
