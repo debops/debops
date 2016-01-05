@@ -1,9 +1,25 @@
-{
-{% if pki_domain is defined and pki_domain %}
-"enabled":"{{ pki | lower }}",
-{% else %}
-"enabled":"false",
+{% set pki_tpl_acme = pki_acme | bool %}
+{% set pki_tpl_enabled = pki_enabled | bool %}
+{% set pki_tpl_internal = pki_internal | bool %}
+{% set pki_tpl_path = pki_root + "/realms" %}
+{% set pki_tpl_realm = pki_system_realm %}
+{% set pki_tpl_ca_realm = pki_system_ca_realm %}
+{% set pki_tpl_known_realms = [] %}
+{% if pki_enabled | bool %}
+{%   for realm in (pki_realms + pki_default_realms + pki_group_realms + pki_host_realms) %}
+{%     set _ = pki_tpl_known_realms.append(realm.name) %}
+{%   endfor %}
 {% endif %}
-"base_path":"{{ pki_base_path | default('/etc/pki') }}",
-"realm":"{{ pki_default_realm | default('host') }}"
+{
+"acme": "{{ pki_tpl_acme | bool | lower }}",
+"base_path": "{{ pki_tpl_path }}",
+"ca": "CA.crt",
+"ca_realm": "{{ pki_tpl_ca_realm }}",
+"crt": "default.crt",
+"enabled": "{{ pki_tpl_enabled | bool | lower }}",
+"key": "default.key",
+"known_realms": {{ pki_tpl_known_realms | to_nice_json }},
+"path": "{{ pki_tpl_path }}",
+"pem": "default.pem",
+"realm": "{{ pki_tpl_realm }}"
 }

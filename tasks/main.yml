@@ -1,23 +1,51 @@
 ---
 
+- name: Expose host FQDN in temporary variable
+  set_fact:
+    pki_fact_fqdn: '{{ pki_fqdn }}'
+
 - name: Install PKI packages
   apt:
     name: '{{ item }}'
     state: 'latest'
     install_recommends: False
   with_flattened:
-    - [ 'ssl-cert', 'make', 'ca-certificates', 'gnutls-bin',
-         'openssl', 'acl' ]
+    - pki_base_packages
     - pki_packages
+  when: pki_enabled | bool
 
-- name: Create base PKI directory
+- name: Create library directory
   file:
-    path: '{{ pki_base_path }}'
+    path: '{{ (ansible_local.root.lib
+               if (ansible_local|d() and ansible_local.root|d() and
+                   ansible_local.root.lib|d())
+               else "/usr/local/lib") + "/pki" }}'
     state: 'directory'
-    owner: '{{ pki_owner }}'
-    group: '{{ pki_public_group }}'
-    mode: '{{ pki_public_dir_mode }}'
-  when: pki is defined and pki
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: pki_enabled | bool
+
+- name: Install local PKI scripts
+  copy:
+    src: 'secret/pki/lib/'
+    dest: '{{ secret + "/pki/lib/" }}'
+    mode: '0755'
+  become: False
+  delegate_to: 'localhost'
+  run_once: True
+
+- name: Install remote PKI scripts
+  copy:
+    src: 'usr/local/lib/pki/'
+    dest: '{{ (ansible_local.root.lib
+               if (ansible_local|d() and ansible_local.root|d() and
+                   ansible_local.root.lib|d())
+               else "/usr/local/lib") + "/pki/" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: pki_enabled | bool
 
 - name: Create private groups if requested
   group:
@@ -25,41 +53,281 @@
     system: 'true'
     state: 'present'
   with_items: pki_private_groups_present
-  when: ((pki is defined and pki) and pki_private_groups_present)
+  when: (pki_enabled | bool and pki_private_groups_present)
 
-- name: Check if snapshot file exists on the Ansible Controller
-  stat:
-    path: '{{ pki_base_src + "/snapshots/" + pki_fqdn + "/" + pki_snapshot_file }}'
-  register: pki_register_snapshot
-  sudo: False
-  delegate_to: 'localhost'
-  when: pki is defined and pki
+- name: Create ACME system group
+  group:
+    name: '{{ pki_acme_group }}'
+    state: 'present'
+    system: True
+  when: pki_enabled | bool and pki_acme | bool
 
-- name: Restore PKI from snapshot
-  unarchive:
-    src: '{{ pki_base_src + "/snapshots/" + pki_fqdn + "/" + pki_snapshot_file }}/'
-    dest: '{{ pki_base_path }}'
-  when: ((pki is defined and pki) and (pki_snapshot is defined and pki_snapshot) and
-         (ansible_local is undefined or (ansible_local is defined and ansible_local.pki is undefined)) and
-         (pki_register_snapshot is defined and pki_register_snapshot.stat.exists))
+- name: Create ACME system account
+  user:
+    name: '{{ pki_acme_user }}'
+    group: '{{ pki_acme_group }}'
+    home: '{{ pki_acme_home }}'
+    state: 'present'
+    system: True
+    createhome: False
+    shell: '/bin/false'
+  when: pki_enabled | bool and pki_acme | bool
 
-- include: manage_pki_realms.yml
-  when: ((pki is defined and pki) and pki_domain)
+- name: Initialize PKI realms
+  environment:
+    PKI_ROOT: '{{ pki_root }}'
+    PKI_ACME: '{{ (item.acme | d(pki_acme)) | bool | lower }}'
+    PKI_INTERNAL: '{{ (item.internal | d(pki_internal)) | bool | lower }}'
+    PKI_LIBRARY: '{{ item.library | d(pki_library) }}'
+  command: /usr/local/lib/pki/pki-realm init -n "{{ item.name }}" --library "{{ item.library | d(pki_library) }}"
+           --internal "{{ (item.internal | d(pki_internal)) | bool | lower }}" --private-dir-group "{{ item.private_dir_group | d(pki_private_group) }}"
+           --private-file-group "{{ item.private_file_group | d(pki_private_group) }}"
+  args:
+    creates: '{{ pki_root + "/realms/" + item.name + "/config/realm.conf" }}'
+  with_flattened:
+    - '{{ pki_realms }}'
+    - '{{ pki_group_realms }}'
+    - '{{ pki_host_realms }}'
+    - '{{ pki_default_realms }}'
+  when: (pki_enabled | bool and item.name is defined and
+         (item.enabled is undefined or item.enabled|bool))
 
-- include: manage_pki_authorities.yml
-  when: ((pki is defined and pki) and pki_domain)
+- name: Download custom private files
+  copy:
+    src: '{{ item.src | d(omit) }}'
+    content: '{{ item.content | d(omit) }}'
+    dest: '{{ item.dest }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d(pki_private_group) }}'
+    mode: '{{ item.mode | d("0640") }}'
+    directory_mode: '{{ item.directory_mode | d(omit) }}'
+    follow: '{{ item.follow | d(omit) }}'
+    force: '{{ item.force | d(omit) }}'
+  with_flattened:
+    - '{{ pki_private_files }}'
+    - '{{ pki_group_private_files }}'
+    - '{{ pki_host_private_files }}'
+  when: (pki_enabled | bool and (item.src is defined or item.content is defined) and
+         item.dest is defined)
 
-- include: manage_pki_certificates.yml
-  when: ((pki is defined and pki) and pki_domain)
+- name: Download private realm contents by host
+  copy:
+    src: '{{ secret + "/pki/realms/by-host/" + pki_fqdn + "/" + item.name + "/private/" }}'
+    dest: '/etc/pki/realms/{{ item.name }}/private/'
+    owner: 'root'
+    group: '{{ item.private_file_group | d(pki_private_group) }}'
+    mode: '0640'
+  with_items:
+    - '{{ pki_realms + pki_group_realms + pki_host_realms + pki_default_realms }}'
+  when: (pki_enabled | bool and item.name is defined and
+         (item.enabled is undefined or item.enabled|bool))
 
-- name: Upload PKI snapshot to Ansible Controller
+- name: Download private realm contents by group
+  copy:
+    src: '{{ secret + "/pki/realms/by-group/" + item.1 + "/" + item.0.name + "/private/" }}'
+    dest: '/etc/pki/realms/{{ item.0.name }}/private/'
+    owner: 'root'
+    group: '{{ item.private_file_group | d(pki_private_group) }}'
+    mode: '0640'
+    force: False
+  with_nested:
+    - '{{ pki_group_realms }}'
+    - '{{ pki_inventory_groups }}'
+  when: (pki_enabled | bool and (item.0.name is defined and
+         (item.0.enabled is undefined or item.0.enabled|bool)) and
+         (item.1 is defined and item.1 in group_names))
+
+- name: Download private realm contents for all hosts
+  copy:
+    src: '{{ secret + "/pki/realms/by-group/all/" + item.name + "/private/" }}'
+    dest: '/etc/pki/realms/{{ item.name }}/private/'
+    owner: 'root'
+    group: '{{ item.private_file_group | d(pki_private_group) }}'
+    mode: '0640'
+    force: False
+  with_items:
+    - '{{ pki_realms + pki_default_realms }}'
+  when: (pki_enabled | bool and item.name is defined and
+         (item.enabled is undefined or item.enabled|bool))
+
+- name: Create PKI realms
+  environment:
+    PKI_SESSION_TOKEN: '{{ omit | md5 }}'
+  command: /usr/local/lib/pki/pki-realm new-realm -n "{{ item.name }}" --subject "{{ item.subject|d([]) | join('/') }}"
+           --domains "{{ item.domains|d([]) | join('/') }}" --subdomains "{{ item.subdomains|d([]) | join('/') }}"
+           --acme "{{ item.acme|d(pki_acme) | bool | lower }}" --acme-subject "{{ item.acme_subject|d([]) | join('/') }}"
+           --acme-domains "{{ item.acme_domains|d([]) | join('/') }}" --acme-subdomains "{{ item.acme_subdomains|d([]) | join('/') }}"
+  args:
+    creates: '/etc/pki/realms/{{ item.name }}/public/cert.pem'
+  with_flattened:
+    - '{{ pki_realms }}'
+    - '{{ pki_group_realms }}'
+    - '{{ pki_host_realms }}'
+    - '{{ pki_default_realms }}'
+  when: (pki_enabled | bool and item.name is defined and
+         ((item.internal is undefined or item.internal|bool) and pki_internal|bool) and
+         (item.enabled is undefined or item.enabled|bool))
+
+- name: Execute PKI realm commands
+  environment:
+    PKI_SESSION_TOKEN: '{{ omit | md5 }}'
+  command: /usr/local/lib/pki/pki-realm run -n {{ item.name }}
+  with_flattened:
+    - '{{ pki_realms }}'
+    - '{{ pki_group_realms }}'
+    - '{{ pki_host_realms }}'
+    - '{{ pki_default_realms }}'
+  changed_when: False
+  when: (pki_enabled | bool and item.name is defined and
+         (item.enabled is undefined or item.enabled|bool))
+
+- name: Upload internal certificate requests
   fetch:
-    src: '{{ pki_snapshot_path + "/" + pki_snapshot_file }}'
-    dest: '{{ pki_base_src + "/snapshots/" + pki_fqdn + "/" + pki_snapshot_file }}'
+    src: '/etc/pki/realms/{{ item.name }}/internal/request.pem'
+    dest: '{{ secret + "/pki/requests/" + (item.authority | d(pki_default_authority)) + "/" + pki_fqdn + "/" + item.name + "/request.pem" }}'
     flat: True
-  register: pki_register_snapshot
+  with_flattened:
+    - '{{ pki_realms }}'
+    - '{{ pki_group_realms }}'
+    - '{{ pki_host_realms }}'
+    - '{{ pki_default_realms }}'
+  when: (pki_enabled | bool and item.name is defined and
+         ((item.internal is undefined or item.internal|bool) and pki_internal|bool) and
+         (item.enabled is undefined or item.enabled|bool))
+
+- name: Initialize PKI authorities
+  environment:
+    PKI_ROOT: '{{ secret + "/pki" }}'
+    PKI_LIBRARY: '{{ item.pki_ca_library | d(pki_ca_library) }}'
+  command: ./lib/pki-authority init --name "{{ item.name }}" --default-sign-base "{{ pki_default_sign_base }}"
+           --root-sign-multiplier "{{ pki_default_root_sign_multiplier }}" --ca-sign-multiplier "{{ pki_default_ca_sign_multiplier }}"
+           --cert-sign-multiplier "{{ pki_default_cert_sign_multiplier }}"
+  args:
+    chdir: '{{ secret + "/pki" }}'
+    creates: '{{ secret + "/pki/authorities/" + item.name + "/config/authority.conf" }}'
+  delegate_to: 'localhost'
+  become: False
+  run_once: True
+  with_flattened:
+    - '{{ pki_authorities }}'
+  when: (item.name is defined and
+         (item.enabled is undefined or item.enabled|bool))
+
+- name: Create PKI authorities
+  environment:
+    PKI_SESSION_TOKEN: '{{ omit | md5 }}'
+    PKI_ROOT: '{{ secret + "/pki" }}'
+    PKI_LIBRARY: '{{ item.pki_ca_library | d(pki_ca_library) }}'
+  command: ./lib/pki-authority new-ca --name "{{ item.name }}" --type "{{ item.type | d('') }}" --domain "{{ item.domain | d(pki_ca_domain) }}"
+           --subdomain "{{ item.subdomain }}" --subject "{{ item.subject | join('/') }}" --issuer-name "{{ item.issuer_name | d('') }}"
+           --root-sign-days "{{ item.root_sign_days | d('') }}" --ca-sign-days "{{ item.ca_sign_days | d('') }}"
+           --cert-sign-days "{{ item.cert_sign_days | d('') }}"
+  args:
+    chdir: '{{ secret + "/pki" }}'
+    creates: '{{ secret + "/pki/authorities/" + item.name + "/subject/cert.pem" }}'
+  delegate_to: 'localhost'
+  become: False
+  run_once: True
+  with_flattened:
+    - '{{ pki_authorities }}'
+  when: (item.name is defined and
+         (item.enabled is undefined or item.enabled|bool))
+
+- name: Sign certificate requests for current hosts
+  environment:
+    PKI_SESSION_TOKEN: '{{ omit | md5 }}'
+  command: ./lib/pki-authority sign-by-host {% for host in play_hosts %}{{ hostvars[host].pki_fact_fqdn }} {% endfor %}
+  args:
+    chdir: '{{ secret + "/pki" }}'
+  delegate_to: 'localhost'
+  register: pki_register_sign_by_host
+  become: False
+  run_once: True
+  changed_when: pki_register_sign_by_host.stdout != ""
+
+- name: Download public realm contents by host
+  copy:
+    src: '{{ secret + "/pki/realms/by-host/" + pki_fqdn + "/" + item.0.name + "/" + item.1 + "/" }}'
+    dest: '/etc/pki/realms/{{ item.0.name }}/{{ item.1 }}/'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_nested:
+    - '{{ pki_realms + pki_group_realms + pki_host_realms + pki_default_realms }}'
+    - [ 'external', 'internal' ]
+  when: (pki_enabled | bool and item.0.name is defined and
+         (item.0.enabled is undefined or item.0.enabled|bool))
+
+- name: Download custom public files
+  copy:
+    src: '{{ item.src | d(omit) }}'
+    content: '{{ item.content | d(omit) }}'
+    dest: '{{ item.dest }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d(pki_public_group) }}'
+    mode: '{{ item.mode | d("0644") }}'
+    directory_mode: '{{ item.directory_mode | d(omit) }}'
+    follow: '{{ item.follow | d(omit) }}'
+    force: '{{ item.force | d(omit) }}'
+  with_flattened:
+    - '{{ pki_public_files }}'
+    - '{{ pki_group_public_files }}'
+    - '{{ pki_host_public_files }}'
+  when: (pki_enabled | bool and (item.src is defined or item.content is defined) and
+         item.dest is defined)
+
+- name: Download external realm contents by group
+  copy:
+    src: '{{ secret + "/pki/realms/by-group/" + item.1 + "/" + item.0.name + "/external/" }}'
+    dest: '/etc/pki/realms/{{ item.0.name }}/external/'
+    owner: 'root'
+    group: 'root'
+    force: False
+  with_nested:
+    - '{{ pki_group_realms }}'
+    - '{{ pki_inventory_groups }}'
+  when: (pki_enabled | bool and (item.0.name is defined and
+          (item.0.enabled is undefined or item.0.enabled|bool)) and
+          (item.1 is defined and item.1 in group_names))
+
+- name: Download external realm contents for all hosts
+  copy:
+    src: '{{ secret + "/pki/realms/by-group/all/" + item.name + "/external/" }}'
+    dest: '/etc/pki/realms/{{ item.name }}/external/'
+    owner: 'root'
+    group: 'root'
+    force: False
+  with_items:
+    - '{{ pki_realms + pki_default_realms }}'
+  when: (pki_enabled | bool and item.name is defined and
+         (item.enabled is undefined or item.enabled|bool))
+
+- name: Download custom CA certificates
+  copy:
+    src: '{{ secret + "/pki/ca-certificates/" }}'
+    dest: '/usr/local/share/ca-certificates/pki/'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   notify: [ 'Regenerate ca-certificates.crt' ]
-  when: pki is defined and pki and pki_snapshot is defined and pki_snapshot
+  when: pki_enabled | bool
+
+- name: Execute PKI realm commands
+  environment:
+    PKI_SESSION_TOKEN: '{{ omit | md5 }}'
+  command: /usr/local/lib/pki/pki-realm run -n {{ item.name }}
+  with_flattened:
+    - '{{ pki_realms }}'
+    - '{{ pki_group_realms }}'
+    - '{{ pki_host_realms }}'
+    - '{{ pki_default_realms }}'
+  changed_when: False
+  when: (pki_enabled | bool and item.name is defined and
+         (item.enabled is undefined or item.enabled|bool))
+
+- name: Manage system CA certificates
+  include: ca_certificates.yml
+  when: pki_enabled | bool
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -81,8 +349,5 @@
 
 - name: Flush handlers for PKI if needed
   meta: flush_handlers
-  when: ((pki_register_snapshot is defined and pki_register_snapshot.changed) or
-         (pki_register_facts is defined and pki_register_facts.changed))
-
-- include: ca_certificates.yml
+  when: pki_register_facts.changed | bool
 
