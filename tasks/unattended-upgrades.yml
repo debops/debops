@@ -1,22 +1,31 @@
 ---
 
 - name: Install unattended-upgrades if enabled
-  apt: pkg={{ item }} state=latest install_recommends=False
+  apt:
+    pkg: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
   with_items:
-    - unattended-upgrades
+    - 'unattended-upgrades'
   when: apt_unattended_upgrades
 
 - name: Configure unattended-upgrades
-  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   with_items:
     - 'etc/apt/apt.conf.d/25auto-upgrades.conf'
     - 'etc/apt/apt.conf.d/55unattended-upgrades.conf'
   when: apt_unattended_upgrades
 
 - name: Remove unattended-upgrades if disabled
-  apt: pkg={{ item }} state=absent purge=yes
+  apt:
+    pkg: '{{ item }}'
+    state: 'absent'
+    purge: True
   with_items:
-    - unattended-upgrades
+    - 'unattended-upgrades'
   when: not apt_unattended_upgrades
-
-
