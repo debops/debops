@@ -37,6 +37,7 @@
   file:
     path: '{{ cryptsetup_keyfile_location + "/" + item.name }}'
     state: 'directory'
+    mode: '0750'
   become: False
   delegate_to: 'localhost'
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
@@ -85,7 +86,7 @@
 
 ## )))
 
-## Create and mount (((
+## Create and open crypto layer (((
 
 # You will have to do this with another role if you need it.
 #
@@ -255,9 +256,9 @@
     state:  '{{ item.state         | d(cryptsetup_state) }}'
   with_items: cryptsetup_devices_combined
 
-## Unmount and remove (((
+## Close crypto layer and remove (((
 
-- name: Ensure mount directories is absent
+- name: Ensure mount directory is absent
   file:
     path: '{{ item.mount | d(cryptsetup_mountpoint_parent_directory + "/" + item.name) }}'
     state: 'absent'
@@ -287,10 +288,10 @@
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'absent' ])
   with_items: cryptsetup_devices_combined
 
-## Depending on which filesystem and lower levels the keyfile is stored, the
+## Depending on which filesystem and lower levels the keyfile is stored on, the
 ## ``shred`` operation might be of limited use e.g. because of snapshots or copy-on-write. Try it anyway.
 ## Note that there is still at least one copy of the keyfile on the Ansible controller.
-- name: Ensure keyfiles are unaccessible on the remote system
+- name: Ensure keyfile is unaccessible on the remote system
   command: shred --remove --zero --iterations=42 "{{ cryptsetup_keyfile_remote_location + "/" + item.name + "_keyfile.raw" }}"
   args:
     removes: '{{ cryptsetup_keyfile_remote_location + "/" + item.name + "_keyfile.raw" }}'
@@ -299,7 +300,7 @@
 
 ## Note that there are still two copies of the header on the ciphertext block device
 ## and on the Ansible controller.
-- name: Ensure header backup are unaccessible on the remote system
+- name: Ensure header backup is unaccessible on the remote system
   command: shred --remove --zero --iterations=42 "{{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}"
   args:
     removes: '{{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}'

@@ -15,6 +15,8 @@ v0.2.1
 - Update documentation and change the required Ansible version to ``v1.9.0``
   due to the ``become`` option replacing ``sudo``. [drybjed]
 
+- Migrated to the DebOps project as ``debops.cryptsetup``. [drybjed]
+
 v0.2.0
 ------
 

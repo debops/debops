@@ -174,7 +174,9 @@ cryptsetup_crypttab_options: 'luks'
 #
 # The current default of :command:`cryptsetup` (as shown by
 # :command:`cryptsetup --help`) is ``sha1``.
-# Set to ``default`` to use the compiled-in default of cryptsetup.
+# Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
+#
+# Refs: https://security.stackexchange.com/a/40218
 cryptsetup_hash: 'sha512'
 
 
@@ -185,7 +187,7 @@ cryptsetup_hash: 'sha512'
 #
 # The current default of :command:`cryptsetup` (as shown by
 # :command:`cryptsetup --help`) is ``aes-xts-plain64``.
-# Set to ``default`` to use the compiled-in default of cryptsetup.
+# Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
 cryptsetup_cipher: 'default'
 
 
@@ -197,7 +199,16 @@ cryptsetup_cipher: 'default'
 #
 # The current default of :command:`cryptsetup` (as shown by
 # :command:`cryptsetup --help`) is ``256``.
-# Set to ``default`` to use the compiled-in default of cryptsetup.
+# Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
+#
+# Note that in XTS mode, only half of the key size specified here will be used
+# for the block cypher (512 will result in AES-256).
+# Using AES-128 is still considered secure and will probably be faster.
+# The reason to go with a different default value then the compiled-in default
+# of :command:`cryptsetup` was to have long-term secure storage even with
+# quantum-computing available.
+#
+# Refs: https://crypto.stackexchange.com/a/7869
 cryptsetup_key_size: 512
 
 
@@ -209,7 +220,7 @@ cryptsetup_key_size: 512
 #
 # The current default of :command:`cryptsetup` (as shown by
 # :command:`cryptsetup --help`) is :file:`/dev/urandom`.
-# Set to ``default`` to use the compiled-in default of cryptsetup.
+# Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
 cryptsetup_use_random: True
 
 
@@ -220,5 +231,5 @@ cryptsetup_use_random: True
 #
 # The current default of :command:`cryptsetup` (as shown by
 # :command:`cryptsetup --help`) is ``1000`` milliseconds.
-# Set to ``default`` to use the compiled-in default of cryptsetup.
+# Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
 cryptsetup_iter_time: 'default'
