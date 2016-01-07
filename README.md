@@ -49,19 +49,46 @@ List of default variables available in the inventory:
 #    :local:
 #
 # ------------------------------------
+#   Kernel module configuration presets
+# ------------------------------------
+
+
+# .. envvar:: kernel_module_security_list
+#
+# A preset of kernel module configuration intended to increase the security of
+# the system against known attacks.
+kernel_module_security_list:
+
+  ## Protecting against Firewire DMA: https://security.stackexchange.com/a/49158/79474
+  - name: 'firewire-sbp2'
+    blacklist: yes
+
+
+# .. envvar:: kernel_module_security_list
+#
+# A preset of kernel module configuration which is often chosen.
+kernel_module_common_list:
+  - name: 'pcspkr'
+    blacklist: True
+
+
+# ------------------------------------
 #   Lists of module definitions
 # ------------------------------------
 
 # .. envvar:: kernel_module_list
 #
 # "Global" kernel module configuration.
+#
+# Refer to docs/defaults-configuration.rst for the full documentation.
+#
 # Examples:
 #
 # .. code:: YAML
 #
 #    kernel_module_list:
 #
-#        ## Ensure that ``nf_conntrack_snmp`` is loaded and will be loaded after reboot.
+#        ## Ensure that ``nf_conntrack_snmp`` is loaded and automatically during each boot.
 #      - name: 'nf_conntrack_snmp'
 #
 #        ## Ensure that ``pcspkr`` is blacklisted.
@@ -74,7 +101,11 @@ List of default variables available in the inventory:
 #        params: 'expose_physicals=1'
 #        params_force: True
 #
-kernel_module_list: []
+kernel_module_list: |
+  {{
+    (kernel_module_security_list|d([])|list) +
+    (kernel_module_common_list|d()|list)
+  }}
 
 
 # .. envvar:: kernel_module_group_list
@@ -117,9 +148,10 @@ List of internal variables used by the role:
 ### Authors and license
 
 `kernel_module` role was written by:
+
 - [Robin Schneider](http://ypid.de/) | [e-mail](mailto:ypid@riseup.net) | [Twitter](https://twitter.com/ypid) | [GitHub](https://github.com/ypid)
 
-License: [AGPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+License: [AGPLv3](https://tldrlegal.com/license/gnu-affero-general-public-license-v3-%28agpl-3.0%29)
 
 ***
 
