@@ -2,7 +2,7 @@
 
 - name: Combine lists of kernel module
   set_fact:
-    kernel_module_list_combined: '{{ kernel_module_list + kernel_module_group_list + kernel_module_host_list | default([]) }}'
+    kernel_module_list_combined: '{{ (kernel_module_list|d([])|list) + (kernel_module_group_list|d([])|list) + (kernel_module_host_list|d([])|list) }}'
 
 - name: Blacklist kernel modules
   kernel_blacklist:
@@ -15,18 +15,15 @@
   template:
     src: 'etc/modules-load.d/ansible-kernel_module-role.conf.j2'
     dest: '{{ kernel_module_load_file }}'
-  # when: kernel_module_list_combined
-  # Don’t use when because modules should be removed from the file if missing in the Ansible configuration …
 
 - name: Save kernel module parameters
   template:
     src: 'etc/modprobe.d/options-ansible-kernel_module-role.conf.j2'
     dest: '{{ kernel_module_options_file }}'
   register: kernel_module_options_template
-  # when: '"parms" in kernel_module_list_combined'
-  # Don’t use when because parameters should be removed from the file if missing in the Ansible configuration …
 
 ## See http://unix.stackexchange.com/a/123050
+## Could be handled by writing to to '/sys/{{ item.name }}/parameters/{{ item.parm_name }}' but this should be handled by the modprobe module.
 - name: Force module unload to apply different module parameters or if blacklisted
   modprobe:
     name: '{{ item.name }}'
@@ -48,10 +45,7 @@
 - name: Modprobe kernel modules
   modprobe:
     name: '{{ item.name }}'
-    params: '{{ item.params | default(omit) }}'
-    state: '{{ item.state }}'
-  when: (
-          item.state is defined and
-          not (item.blacklist|d(False) | bool)
-        )
+    params: '{{ item.params | d(omit) }}'
+    state: '{{ item.state | d("present") }}'
+  when: (not (item.blacklist|d(False) | bool))
   with_items: kernel_module_list_combined
