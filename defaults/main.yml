@@ -1,0 +1,122 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. Package management options (((
+# -------------------
+#   Package management options
+# -------------------
+
+# .. envvar:: etckeeper_highlevel_package_manager
+#
+# The high-level package manager that's being used.
+# (``apt``, ``pacman-g2``, ``yum``, ``dnf``, ``zypper`` etc).
+# This will only be used when your distribution was not able to predefine this.
+etckeeper_highlevel_package_manager: '{{ ansible_pkg_mgr }}'
+
+
+# .. envvar:: etckeeper_lowlevel_package_manager
+#
+# The low-level package manager that's being used.
+# (``dpkg``, ``rpm``, ``pacman``, ``pacman-g2``, etc)
+# This will only be used when your distribution was not able to predefine this.
+etckeeper_lowlevel_package_manager: |
+  {{ etckeeper_highlevel_to_lowlevel_package_manager_mapping[etckeeper_highlevel_package_manager]|d("") }}
+
+# .. )))
+
+
+# .. Version control options (((
+# -------------------
+#   Version control options
+# -------------------
+
+# .. envvar:: etckeeper_vcs
+#
+# Which VCS to use to version :file:`/etc/`.
+# Choices are:
+#
+# * ``git`` (default)
+# * ``hg``
+# * ``bzr``
+# * ``darcs``
+#
+etckeeper_vcs: 'git'
+
+
+# .. envvar:: etckeeper_git_commit_options
+#
+# Options passed to git commit when run by etckeeper.
+etckeeper_git_commit_options: ''
+
+
+# .. envvar:: etckeeper_hg_commit_options
+#
+# Options passed to hg commit when run by etckeeper.
+etckeeper_hg_commit_options: ''
+
+
+# .. envvar:: etckeeper_hg_commit_options
+#
+# Options passed to bzr commit when run by etckeeper.
+etckeeper_bzr_commit_options: ''
+
+
+# .. envvar:: etckeeper_darcs_commit_options
+#
+# Options passed to darcs record when run by etckeeper.
+etckeeper_darcs_commit_options: '-a'
+
+
+# .. envvar:: etckeeper_avoid_daily_autocommits
+#
+# Uncomment to avoid ``etckeeper`` committing existing changes
+# to :file:`/etc` automatically once per day.
+etckeeper_avoid_daily_autocommits: False
+
+
+# .. envvar:: etckeeper_avoid_special_file_warning
+#
+# Uncomment the following to avoid special file warning
+# (the option is enabled automatically by cronjob regardless).
+etckeeper_avoid_special_file_warning: False
+
+
+# .. envvar:: etckeeper_avoid_commit_before_install
+#
+# Uncomment the following to avoid special file warning
+# (the option is enabled automatically by cronjob regardless).
+etckeeper_avoid_commit_before_install: True
+
+
+# .. envvar:: etckeeper_push_remote
+#
+# To push each commit to a remote, put the name of the remote here.
+# (eg, "origin" for git). Space-separated lists of multiple remotes
+# also work (eg, "origin gitlab github" for git).
+etckeeper_push_remote: ''
+
+
+# .. envvar:: etckeeper_gitignore
+#
+# "Global" list of gitignore entries.
+etckeeper_gitignore:
+  ## There is no benefit in tracking Tor keys and is a potential security vulnerability.
+  - 'tor/keys/'
+
+
+# .. envvar:: etckeeper_gitignore_group
+#
+# "Host group" list of gitignore entries.
+etckeeper_gitignore_group: []
+
+
+# .. envvar:: etckeeper_gitignore_host
+#
+# "Host" list of gitignore entries.
+etckeeper_gitignore_host: []
+
+# .. )))

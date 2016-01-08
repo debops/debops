@@ -1,0 +1,85 @@
+---
+
+- name: Assert etckeeper_vcs is valid
+  assert:
+    that:
+      - etckeeper_vcs in etckeeper_supported_vcs
+
+## Diverting the main configuration of etckeeper away leaves the VCS
+## uninitiated until it has been fully configured.
+- name: Divert original configuration under /etc
+  command: dpkg-divert --quiet --local --divert "{{ item }}.dpkg-divert" --rename "{{ item }}"
+  args:
+    creates: "{{ item }}.dpkg-divert"
+  when: (ansible_pkg_mgr == 'apt')
+  with_items: [ '/etc/etckeeper/etckeeper.conf' ]
+
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  when: (ansible_pkg_mgr == 'apt')
+  with_flattened:
+    - '{{ etckeeper_vcs_command_to_package_mapping[etckeeper_vcs]|d(etckeeper_vcs) }}'
+    - 'etckeeper'
+
+## The main configuration file provided installed by your distribution is
+## expected to be already configured in regards to the used package manager, so
+## this value will be preferred.
+- name: Read HIGHLEVEL_PACKAGE_MANAGER configured by the distribution
+  shell: .  /etc/etckeeper/etckeeper.conf.dpkg-divert && echo ${HIGHLEVEL_PACKAGE_MANAGER}
+  changed_when: False
+  failed_when: False
+  register: etckeeper_register_highlevel_package_manager
+
+- name: Read LOWLEVEL_PACKAGE_MANAGER configured by the distribution
+  shell: .  /etc/etckeeper/etckeeper.conf.dpkg-divert && echo ${LOWLEVEL_PACKAGE_MANAGER}
+  changed_when: False
+  failed_when: False
+  register: etckeeper_register_lowlevel_package_manager
+
+- name: Create etckeeper configuration
+  template:
+    src: 'etc/etckeeper/etckeeper.conf.j2'
+    dest: '/etc/etckeeper/etckeeper.conf'
+    mode: 0644
+    owner: 'root'
+    group: 'root'
+
+- name: Add entries to /etc/.gitignore
+  lineinfile:
+    dest: '/etc/.gitignore'
+    line: '{{ item }}'
+    insertbefore: 'BOF'
+  with_flattened:
+    - etckeeper_gitignore
+    - etckeeper_gitignore_group
+    - etckeeper_gitignore_host
+
+- name: Install /etc/.gitattributes configuration
+  template:
+    src: 'etc/gitattributes.j2'
+    dest: '/etc/.gitattributes'
+    mode: 0644
+    owner: 'root'
+    group: 'root'
+  when: (etckeeper_vcs == 'git')
+
+- name: Set repository permissions
+  file:
+    state: 'directory'
+    path: '/etc/.git'
+    mode: '{{ etckeeper_repository_permissions|d("0700") }}'
+    owner: 'root'
+    group: '{{ etckeeper_repository_group|d("root") }}'
+
+- name: Initial VCS
+  command: etckeeper init
+  args:
+    creates: '/etc/.etckeeper'
+  register: etckeeper_register_init
+
+- name: Create root commit
+  command: etckeeper commit 'Initial commit created by Ansible.'
+  when: etckeeper_register_init|changed
