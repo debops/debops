@@ -12,8 +12,8 @@
 # .. envvar:: docker_upstream
 #
 # By default ``debops.docker`` installs Docker from the system distribution
-# repositories. Here you can enable upstream repositories and install upstream
-# version of Docker.
+# repositories. Here you can enable upstream repositories and install the
+# upstream version of Docker provides.
 docker_upstream: False
 
 
@@ -70,8 +70,8 @@ docker_fixed_cidr: ''
 
 # .. envvar:: docker_dns_nameserver
 #
-# List of IP addresses of the the nameservers used by Docker. By default they
-# are gathered by ``debops.core`` role from the ``/etc/resolv.conf`` file of
+# List of IP addresses of nameservers used by Docker. By default they
+# are gathered by the ``debops.core`` role from the :file:`/etc/resolv.conf` file of
 # the remote host.
 docker_dns_nameserver: '{{ ansible_local.resolver.nameserver
                            if (ansible_local|d() and ansible_local.resolver|d() and
@@ -82,7 +82,7 @@ docker_dns_nameserver: '{{ ansible_local.resolver.nameserver
 # .. envvar:: docker_dns_search
 #
 # List of DNS search domains to use by Docker. By default they are gathered by
-# ``debops.core`` role from the ``/etc/resolv.conf`` file of the remote host.
+# the ``debops.core`` role from the :file:`/etc/resolv.conf` file of the remote host.
 docker_dns_search: '{{ ansible_local.resolver.search
                        if (ansible_local|d() and ansible_local.resolver|d() and
                            ansible_local.resolver.search|d())
@@ -96,7 +96,7 @@ docker_dns_search: '{{ ansible_local.resolver.search
 # .. envvar:: docker_tcp
 #
 # Enable or disable listening for TLS connections on the TCP docker port. By
-# default remote connections are enabled if ``debops.pki`` role has been
+# default remote connections are enabled if the ``debops.pki`` role has been
 # configured on remote host (access is controlled by the firewall).
 docker_tcp: '{{ docker_pki | bool }}'
 
@@ -149,7 +149,7 @@ docker_listen: [ '{{ docker_tcp_listen }}' ]
 
 # .. envvar:: docker_labels
 #
-# Dictionary with labels configured on Docker daemon, each key is the label
+# Dictionary with labels configured on the Docker daemon, each key is the label
 # name and value is the label attribute. Examples::
 #
 #     docker_labels:
@@ -225,14 +225,14 @@ docker_pki_key: 'default.key'
 
 # .. envvar:: docker_ferment
 #
-# Enable or disable support for ``ferment`` script, which can generate ``ferm``
-# configuration with current Docker state.
+# Enable or disable support for :program:`ferment` script, which can generate ``ferm``
+# configuration with the current Docker state.
 docker_ferment: True
 
 
 # .. envvar:: docker_ferment_wrapper
 #
-# Path to the ``ferment`` wrapper script used to generate ``ferm`` configuration.
+# Path to the :program:`ferment` wrapper script used to generate ``ferm`` configuration.
 docker_ferment_wrapper: '{{ (ansible_local.root.lib
                              if (ansible_local|d() and ansible_local.root|d() and
                                  ansible_local.root.lib|d())
@@ -260,7 +260,7 @@ docker_etc_services_dependent_list:
 
 # .. envvar:: docker_ferm_dependent_rules
 #
-# Configuration for ``debops.ferm`` role which enables support for ``ferment``
+# Configuration for ``debops.ferm`` role which enables support for :program:`ferment`
 # script and opens access to the Docker REST API in the firewall.
 docker_ferm_dependent_rules:
 
