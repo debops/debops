@@ -17,7 +17,7 @@ on its TCP port for incoming TLS connections, which is by default blocked by
 the ``ferm`` firewall. If you don't use a firewall or have it disabled, you might
 want to set ``docker_tcp`` to ``False`` to disable this behavior.
 
-Docker manages its own network bridge and ``iptables`` entries. The ``ferment``
+Docker manages its own network bridge and :command:`iptables` entries. The :program:`ferment`
 Python script will be installed to allow ``ferm`` firewall to reload Docker
 firewall rules automatically, however it does not fully support Docker yet, so
 be aware of this when you modify the firewall configuration. You can restart
