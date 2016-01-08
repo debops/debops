@@ -8,14 +8,14 @@ Initial configuration
 ---------------------
 
 The Docker package from distribution repositories will be installed by default
-(on Jessie it means that ``jessie-backports`` repository needs to be available,
+(on Jessie it means that the ``jessie-backports`` repository needs to be available,
 which is the default in DebOps). You can install the upstream version of Docker
-by setting the ``docker_upstream: True`` variable in Ansible inventory.
+by setting the ``docker_upstream: True`` variable in Ansible’s inventory.
 
 If ``debops.pki`` was configured on the host, Docker will automatically listen
 on its TCP port for incoming TLS connections, which is by default blocked by
-the ``ferm`` firewall. If you don't use firewall or have it disabled, you might
-want to set ``docker_tcp`` to ``False`` to disable this behaviour.
+the ``ferm`` firewall. If you don't use a firewall or have it disabled, you might
+want to set ``docker_tcp`` to ``False`` to disable this behavior.
 
 Docker manages its own network bridge and ``iptables`` entries. The ``ferment``
 Python script will be installed to allow ``ferm`` firewall to reload Docker
