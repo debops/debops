@@ -11,6 +11,9 @@ v0.1.1
 
 - Remove not needed task that cleans up the firewall configuration. [drybjed]
 
+- Use ``$LC_ALL`` variable instead of ``$LC_MESSAGES`` in a task to get the
+  expected ``make`` output. [drybjed]
+
 v0.1.0
 ------
 
