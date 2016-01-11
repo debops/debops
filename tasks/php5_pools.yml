@@ -19,7 +19,7 @@
     group: 'root'
     mode: '0644'
   with_items: php5_pools
-  when: item.enabled is defined and item.enabled == True
+  when: item.enabled is not defined or item.enabled == True
   notify: [ 'Restart php5-fpm' ]
 
 - name: Disable php5-fpm pools
