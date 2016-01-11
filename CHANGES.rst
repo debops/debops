@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v0.1.1
+------
+
+*Released: 2016-01-11*
+
+- Remove redundant reload handlers and use only 1 handler to restart Postfix.
+  [drybjed]
+
+- Remove not needed task that cleans up the firewall configuration. [drybjed]
+
+- Use ``$LC_ALL`` variable instead of ``$LC_MESSAGES`` in a task to get the
+  expected ``make`` output. [drybjed]
+
 v0.1.0
 ------
 
