@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.1
+------
+
+*Released: 2016-01-11*
+
+- Remove redundant reload handlers and use only 1 handler to restart Postfix.
+  [drybjed]
+
 v0.1.0
 ------
 

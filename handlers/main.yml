@@ -2,28 +2,19 @@
 
 - name: Run postfix Makefile
   command: make chdir=/etc/postfix
-  notify: [ 'Check postfix and reload' ]
+  notify: [ 'Check postfix and restart' ]
 
 - name: Generate mail alias database
   command: newaliases
 
-- name: Check postfix
+- name: Check postfix and restart
   command: /usr/sbin/postfix -c /etc/postfix check
-
-- name: Check postfix and reload
-  command: /usr/sbin/postfix -c /etc/postfix check
-  notify: [ 'Reload postfix' ]
+  notify: [ 'Restart postfix' ]
 
 - name: Restart postfix
   service:
     name: 'postfix'
     state: 'restarted'
-  notify: [ 'Restart ferm' ]
-
-- name: Reload postfix
-  service:
-    name: 'postfix'
-    state: 'reloaded'
 
 - name: Restart saslauthd
   service:

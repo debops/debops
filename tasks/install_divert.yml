@@ -29,7 +29,7 @@
   command: dpkg-divert --quiet --local --divert /etc/postfix/{{ item }}.dpkg-divert --rename /etc/postfix/{{ item }}
            creates=/etc/postfix/{{ item }}.dpkg-divert
   with_items: [ 'main.cf', 'master.cf' ]
-  notify: [ 'Restart postfix' ]
+  notify: [ 'Check postfix and restart' ]
 
 - name: Divert original aliases database
   command: dpkg-divert --quiet --local --divert /etc/aliases.dpkg-divert --rename /etc/aliases
