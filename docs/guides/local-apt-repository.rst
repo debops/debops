@@ -49,7 +49,7 @@ you plan to use GitLab so it's a good idea to learn!
 
   # inventory/hosts
 
-  [debops_ruby]
+  [debops_service_ruby]
   yourbuildserver
 
 ::

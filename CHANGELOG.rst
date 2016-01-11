@@ -75,6 +75,8 @@ v0.2.8
 - Fix support for ``no_log: True`` parameter in ``ldap_entry`` Ansible module,
   so that it works correctly on Ansible v2. [drybjed]
 
+- Update "Getting Started Guide" and parts of other documentation. [drybjed]
+
 v0.2.7
 ------
 

@@ -34,7 +34,7 @@ The paths are relative to where you ``debops-init`` a new project.
 
 ::
 
-    [debops_lxc]
+    [debops_service_lxc]
     yourhostname
 
 **Decide on which network adapter you're using**
@@ -57,7 +57,7 @@ you have configured DNS yourself.
 
 **Make the host an LXC host by running DebOps**
 
-Run this from your terminal: ``debops -l debops_lxc``.
+Run this from your terminal: ``debops -l debops_service_lxc``.
 
 If you are running Debian Wheezy you will have to reboot your LXC host due to
 a kernal update. Other operating systems like Ubuntu 14.x and Debian Jessie
