@@ -9,8 +9,8 @@ The project directory
 ---------------------
 
 By default, Ansible is written to use ``/etc/ansible/`` directory and its
-contents is in daily use. In contrast to this, DebOps playbooks are designed to be
-used from a custom local directory, which you can initialize using
+contents in its daily use. In contrast to this, DebOps playbooks are designed
+to be used from a custom local directory, which you can initialize using
 ``debops-init`` command. By using Ansible this way, it's much easier to create
 multiple, separate environments with distinct inventories and configuration. To
 change the environment you are working in, you just need to switch to
@@ -26,15 +26,38 @@ project directory.
 You can store your custom playbooks and roles in the project directory, in
 ``playbooks/`` and ``roles/`` subdirectories.
 
+Common playbooks
+----------------
+
+In many Ansible environments a popular practice is to have a "common role" that
+contains tasks that are expected to be run on any and all hosts managed by
+Ansible.
+
+In DebOps, there is an entire playbook dedicated to this, located in
+``playbooks/common.yml``. It includes multiple roles that prepare a host from
+an unknown to a known state - for example, a ``ferm``-based firewall will be
+installed and configured on a given host, unless disabled, some common, useful
+packages will be installed, and so on. Other DebOps roles not included in the
+``common.yml`` playbook are designed for hosts that were configured by it
+- they might work outside of that environment, but it's not guaranteed.
+
 Host group namespace
 --------------------
 
-Default DebOps playbooks use the ``[debops_*]`` group namespace in Ansible
+To make host configuration in Ansible inventory more explicit, DebOps uses
+a set of Ansible host groups. All of the official groups are set in the
+``[debops_*]`` namespace, so you are free to use other names without any
+possibility of a collision.
+
+Common DebOps playbook, as well as some other service playbooks that are
+included in it, use ``[debops_all_hosts]`` group. This is a base group of the
+project and all hosts managed by DebOps should be included in it.
+
+Service playbooks use the ``[debops_service_*]`` group namespace in Ansible
 inventory (for example, ``debops.nginx`` role is activated on hosts in
-``[debops_nginx]`` group). This lets you design your own inventory layout with
-groups and parent groups as you wish, without worrying that you might clash
-with DebOps host groups. You can also define inventory variables for a specific
-DebOps role using its group name.
+``[debops_service_nginx]`` group). Some service playbooks use additional groups
+for various purposes; you are advised to check the role documentation to see
+what is their intended use case.
 
 Flattened lists in inventory
 ----------------------------
