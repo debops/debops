@@ -9,6 +9,8 @@ v0.1.1
 - Remove redundant reload handlers and use only 1 handler to restart Postfix.
   [drybjed]
 
+- Remove not needed task that cleans up the firewall configuration. [drybjed]
+
 v0.1.0
 ------
 

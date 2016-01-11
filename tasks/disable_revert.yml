@@ -6,12 +6,6 @@
     state: 'absent'
   with_items: [ '/etc/postfix/postfix-capabilities' ]
 
-- name: Remove firewall configuration for Postfix
-  file:
-    path: '/etc/ferm/filter-input.d/postfix.conf'
-    state: 'absent'
-  notify: [ 'Restart ferm' ]
-
 - name: Move Postfix configuration out of the way before reversion
   command: rm -f /etc/postfix/{{ item }}
   args:
