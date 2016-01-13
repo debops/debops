@@ -15,9 +15,13 @@ pki_internal: '{{ (True
                    if ansible_domain|d(False)
                    else False) | bool }}'
 
+pki_acme_library: 'openssl'
+
 pki_acme_user: 'pki-acme'
 pki_acme_group: 'pki-acme'
 pki_acme_home: '/run/pki-acme'
+
+pki_acme_default_subdomains: [ 'www' ]
 
 pki_acme_type: 'acme-tiny'
 
@@ -29,7 +33,21 @@ pki_acme_tiny_src: '{{ (ansible_local.root.src
                             ansible_local.root.src|d())
                         else "/usr/local/src") + "/" + pki_acme_user }}'
 
-pki_acme_tiny_bin: /usr/local/lib/pki/acme-tiny'
+pki_acme_tiny_bin: '/usr/local/lib/pki/acme-tiny'
+
+pki_acme_ca: 'le-live'
+
+pki_acme_ca_api_map:
+  'le-live':    'https://acme-v01.api.letsencrypt.org'
+  'le-staging': 'https://acme-staging.api.letsencrypt.org'
+
+pki_acme_ca_api: '{{ pki_acme_ca_api_map[pki_acme_ca] }}'
+
+pki_acme_challenge_dir: '{{ (ansible_local.nginx.acme_root
+                             if (ansible_local|d() and ansible_local.nginx|d() and
+                                 ansible_local.nginx.acme_root|d())
+                             else "/srv/www/sites/acme/public") +
+                             "/.well-known/acme-challenge" }}'
 
 # Default FQDN
 pki_fqdn: '{{ ansible_fqdn }}'

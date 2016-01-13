@@ -47,22 +47,22 @@ initialize_environment () {
 
     config["acme_client_script"]="${acme_client_script_map[${config['acme_client']}]}"
 
-    config["acme_ca"]="staging"
+    config["acme_ca"]="le-staging"
 
     local -A acme_ca_api_map
     acme_ca_api_map=(
-        ["default"]="https://acme-v01.api.letsencrypt.org"
-        ["staging"]="https://acme-staging.api.letsencrypt.org"
+        ["le-live"]="https://acme-v01.api.letsencrypt.org"
+        ["le-staging"]="https://acme-staging.api.letsencrypt.org"
     )
 
     config["acme_ca_api"]="${acme_ca_api_map[${config['acme_ca']}]}"
 
-    config["acme_expiration_days"]="60"
+    config["acme_expiration_days"]="30"
 
     config["acme_expiration_seconds"]="$(( 60 * 60 * 24 * ${config['acme_expiration_days']} ))"
 
-    config["acme_root_path"]="/usr/share/ca-certificates"
-    config["acme_root_file"]="mozilla/DST_Root_CA_X3.crt"
+    config["acme_root_ca_path"]="/usr/share/ca-certificates"
+    config["acme_root_ca_file"]="mozilla/DST_Root_CA_X3.crt"
 
     config["acme_intermediate_url"]="https://letsencrypt.org/certs/lets-encrypt-x1-cross-signed.pem"
 
@@ -71,6 +71,9 @@ initialize_environment () {
     config["pki_default_fqdn"]="$(hostname --fqdn)"
     config["pki_default_domain"]="$(dnsdomainname)"
     config["pki_default_subdomains"]="_wildcard_"
+
+    config["internal_expiration_days"]="14"
+    config["internal_expiration_seconds"]="$(( 60 * 60 * 24 * ${config['internal_expiration_days']} ))"
 
     config["subject"]=""
     config["domains"]=""
@@ -89,6 +92,7 @@ initialize_environment () {
         config["pki_root"]="${PKI_ROOT:-/etc/pki}"
         config["pki_library"]="${PKI_LIBRARY:-openssl}"
         config["pki_acme"]="${PKI_ACME:-true}"
+        config["pki_acme_library"]="${PKI_ACME_LIBRARY:-openssl}"
         config["pki_internal"]="${PKI_INTERNAL:-true}"
 
         config["pki_realms"]="${config['pki_root']}/realms"
@@ -117,10 +121,12 @@ initialize_environment () {
         fi
 
         config["public_dir_mode"]="755"
+        config["acme_dir_mode"]="770"
         config["private_dir_mode"]="750"
         config["realm_dir_mode"]="700"
 
         config["public_file_mode"]="644"
+        config["acme_file_mode"]="640"
         config["private_file_mode"]="640"
         config["realm_file_mode"]="400"
 
@@ -129,10 +135,11 @@ initialize_environment () {
         config["pki_root"]="${PKI_ROOT:-${XDG_CONFIG_HOME:-${HOME}/.config}/pki}"
         config["pki_library"]="${PKI_LIBRARY:-openssl}"
         config["pki_acme"]="${PKI_ACME:-true}"
+        config["pki_acme_library"]="${PKI_ACME_LIBRARY:-openssl}"
         config["pki_internal"]="${PKI_INTERNAL:-true}"
 
-        config["pki_realms"]="${pki_root}/realms"
-        config["pki_hooks"]="${pki_root}/hooks"
+        config["pki_realms"]="${config['pki_root']}/realms"
+        config["pki_hooks"]="${config['pki_root']}/hooks"
 
         config["public_dir_group"]="$(id -gn)"
         config["public_file_group"]="$(id -gn)"
@@ -147,10 +154,12 @@ initialize_environment () {
         config["acme_file_group"]="$(id -gn)"
 
         config["public_dir_mode"]="755"
+        config["acme_dir_mode"]="770"
         config["private_dir_mode"]="700"
         config["realm_dir_mode"]="700"
 
         config["public_file_mode"]="644"
+        config["acme_file_mode"]="640"
         config["private_file_mode"]="600"
         config["realm_file_mode"]="400"
 
@@ -180,11 +189,6 @@ check_openssl_key_req_match () {
     fi
 }
 
-check_gnutls_key_req_match () {
-    local rc=$(check_openssl_key_req_match "${@}")
-    return ${rc}
-}
-
 check_openssl_key_crt_match () {
     local check_key="${1}"
     local check_crt="${2}"
@@ -201,11 +205,6 @@ check_openssl_key_crt_match () {
     else
         return 1
     fi
-}
-
-check_gnutls_key_crt_match () {
-    local rc=$(check_openssl_key_crt_match "${@}")
-    return ${rc}
 }
 
 enter_realm () {
@@ -266,9 +265,10 @@ update_symlink () {
 create_openssl_config () {
 
     local config_file="${1:-config/openssl.conf}"
-    local req_dn="${2}"
-    local req_domains="${3}"
-    local req_subdomains="${4}"
+    local config_type="${2:-internal}"
+    local req_dn="${3}"
+    local req_domains="${4}"
+    local req_subdomains="${5}"
 
     if [ -n "${config_file}" -a -n "${req_dn}" ] ; then
 
@@ -278,17 +278,25 @@ create_openssl_config () {
 [ req ]
 default_md         = sha256
 default_bits       = 2048
-default_keyfile    = private/realm_key.pem
+default_keyfile    = private/key.pem
 prompt             = no
 encrypt_key        = no
 distinguished_name = req_dn
 req_extensions     = ext_req
 utf8               = yes
 string_mask        = utf8only
+EOF
+
+        if [ "${config_type}" = "internal" ] ; then
+            cat << EOF >> ${config_file}
 attributes         = req_attributes
 
 [ req_attributes ]
 challengePassword  = \${ENV::PKI_SESSION_TOKEN}
+EOF
+        fi
+
+        cat << EOF >> ${config_file}
 
 [ req_dn ]
 EOF
@@ -343,9 +351,10 @@ EOF
 create_gnutls_config () {
 
     local config_file="${1:-config/gnutls.conf}"
-    local req_dn="${2}"
-    local req_domains="${3}"
-    local req_subdomains="${4}"
+    local config_type="${2:-internal}"
+    local req_dn="${3}"
+    local req_domains="${4}"
+    local req_subdomains="${5}"
 
     if [ -n "${config_file}" -a -n "${req_dn}" ] ; then
 
@@ -359,7 +368,7 @@ tls_www_server
 
 EOF
 
-        if [ -n "${PKI_SESSION_TOKEN:-}" ] ; then
+        if [ -n "${PKI_SESSION_TOKEN:-}" -a "${config_type}" = "internal" ] ; then
             cat << EOF >> ${config_file}
 # This password is meaningless outside of current session
 challenge_password  = ${PKI_SESSION_TOKEN:-}
@@ -454,7 +463,7 @@ generate_gnutls_request () {
         if [ -r ${req_config} -a ! -r ${req_out} ] ; then
 
             certtool --generate-request --template ${req_config} \
-                     --load-privkey private/realm_key.pem --outfile ${req_out}.tmp
+                     --load-privkey private/key.pem --outfile ${req_out}.tmp
             # Remove text output from the request
             test -r ${req_out}.tmp && sed -n -i '/-----BEGIN NEW CERTIFICATE REQUEST-----/,$ p' ${req_out}.tmp
             test -r ${req_out}.tmp && mv ${req_out}.tmp ${req_out}
@@ -644,38 +653,57 @@ check_expiration_time () {
 
 request_acme_tiny_certificate () {
 
-    local realm="${1}"
+    if [ "${config['pki_acme']}" = "true" -a -x ${config['acme_client_script']} -a -d ${config['acme_challenge_dir']} -a ! -r acme/error.log -a -r acme/request.pem ] ; then
 
-    enter_realm ${realm}
+        if ! ( check_expiration_time acme/cert.pem ${config['acme_expiration_seconds']} && check_openssl_key_crt_match private/key.pem acme/cert.pem ) ; then
 
-    if [ -r acme/request.pem ] ; then
+            if [ "$EUID" -eq 0 ] ; then
 
-        if ! check_expiration_time acme/cert.pem ${config['acme_expiration_time']} ; then
+                set +e
+                su --shell /bin/sh -c "${config['acme_client_script']} --account-key acme/account_key.pem \
+                    --ca ${config['acme_ca_api']} --csr acme/request.pem \
+                    --acme-dir ${config['acme_challenge_dir']} > acme/cert.pem.tmp 2>acme/error.log" "${config['acme_user']}"
+                set -e
 
-            ${config['acme_client_script']} --account-key acme/account_key.pem \
-              --ca ${config['acme_ca_api']} --csr acme/request.pem \
-              --acme-dir ${config['acme_challenge_dir']} > acme/cert.pem.tmp
+            else
 
-            if [ -r acme/cert.pem.tmp ] ; then
+                set +e
+                ${config['acme_client_script']} --account-key acme/account_key.pem \
+                    --ca ${config['acme_ca_api']} --csr acme/request.pem \
+                    --acme-dir ${config['acme_challenge_dir']} > acme/cert.pem.tmp 2>acme/error.log
+                set -e
+
+            fi
+
+            if [ -r acme/cert.pem.tmp -a -s acme/cert.pem.tmp ] ; then
+
                 test -r acme/cert.pem && mv acme/cert.pem acme/cert.pem.old || true
                 mv acme/cert.pem.tmp acme/cert.pem
-            fi
 
-        fi
-
-        if [ ! -r acme/root.pem ] ; then
-            if [ -n "${config['acme_root_path']}" -a -n "${config['acme_root_file']}" ] ; then
-                if [ -r ${config['acme_root_path']}/${config['acme_root_file']} ] && grep -q "${config['acme_root_file']}" /etc/ca-certificates.conf ; then
-                    ln -s ${config['acme_root_path']}/${config['acme_root_file']} acme/root.pem
+                if [ ! -r acme/root.pem ] ; then
+                    if [ -n "${config['acme_root_ca_path']}" -a -n "${config['acme_root_ca_file']}" ] ; then
+                        if [ -r ${config['acme_root_ca_path']}/${config['acme_root_ca_file']} ] && grep -q "${config['acme_root_ca_file']}" /etc/ca-certificates.conf ; then
+                            ln -s ${config['acme_root_ca_path']}/${config['acme_root_ca_file']} acme/root.pem
+                        fi
+                    fi
                 fi
+
+                if [ ! -r acme/intermediate.pem ] ; then
+                    if [ -n "${config['acme_intermediate_url']}" ] ; then
+                        curl -s -o acme/intermediate.pem ${config['acme_intermediate_url']}
+                    fi
+                fi
+
+                if [ -r acme/error.log ] ; then
+                    rm -f acme/error.log
+                fi
+
+            elif [ -r acme/cert.pem.tmp -a ! -s acme/cert.pem.tmp ] ; then
+                rm -f acme/cert.pem.tmp
             fi
+
         fi
 
-        if [ ! -r acme/intermediate.pem ] ; then
-            if [ -n "${config['acme_intermediate_url']}" ] ; then
-                curl -s -o acme/intermediate.pem ${config['acme_intermediate_url']}
-            fi
-        fi
     fi
 
 }
@@ -684,15 +712,21 @@ check_files () {
 
     local name="${config['name']}"
     local library="${config['pki_library']}"
+    local acme_library="${config['pki_acme_library']}"
 
     if [ "${config['pki_internal']}" == "true" ] ; then
 
         if [ ! -r private/realm_key.pem ] ; then
             generate_${library}_rsa_realm_key private/realm_key.pem
+            if [ ! -r private/key.pem ] ; then
+                install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
+                cat private/realm_key.pem >> private/key.pem.tmp
+                mv private/key.pem.tmp private/key.pem
+            fi
         fi
 
         if [ -n "${PKI_SESSION_TOKEN:-}" -a -r internal/cert.pem ] ; then
-            if ! check_expiration_time internal/cert.pem $(( 60 * 60 * 24 * 7 )) ; then
+            if ! ( check_expiration_time internal/cert.pem ${config['internal_expiration_seconds']} && check_openssl_key_crt_match private/key.pem internal/cert.pem ) ; then
                 rm -f internal/${library}.conf internal/request.pem
             fi
         fi
@@ -701,30 +735,19 @@ check_files () {
 
             if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
-                create_${library}_config internal/${library}.conf "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}"
-
-                if [ "${config['pki_acme']}" = "true" ] ; then
-                    create_${library}_config acme/${library}.conf "${config['acme_subject']:-${config['acme_default_subject']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
-                fi
+                create_${library}_config internal/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}"
 
             elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
-                create_${library}_config internal/${library}.conf "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}"
-
-                if [ "${config['pki_acme']}" = "true" ] ; then
-                    create_${library}_config acme/${library}.conf "${config['acme_subject']:-cn=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
-                fi
+                create_${library}_config internal/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}"
 
             fi
 
             generate_${library}_request internal/${library}.conf internal/request.pem
-            if [ "${config['pki_acme']}" = "true" ] ; then
-                generate_${library}_request acme/${library}.conf acme/request.pem
-            fi
         fi
 
         if [ -r internal/${library}.conf -a -r internal/request.pem ] ; then
-            if ! check_${library}_key_req_match private/realm_key.pem internal/request.pem ; then
+            if ! check_openssl_key_req_match private/key.pem internal/request.pem ; then
 
                 rm -f internal/request.pem
                 generate_${library}_request internal/${library}.conf internal/request.pem
@@ -732,16 +755,55 @@ check_files () {
             fi
         fi
 
-        if [ -n "${config['pki_acme']}" -a "${config['pki_acme']}" = "true" ] ; then
-            if [ -r acme/${library}.conf -a -r acme/request.pem ] ; then
-                if ! check_${library}_key_req_match private/realm_key.pem acme/request.pem ; then
-                    rm -f acme/request.pem
-                    generate_${library}_request acme/${library}.conf acme/request.pem
-                fi
+    fi
+
+    if [ "${config['pki_acme']}" = "true" ] ; then
+
+        if [ -r acme/cert.pem -a -r acme/${acme_library}.conf -a -r acme/request.pem ] ; then
+            if ! check_expiration_time acme/cert.pem ${config['acme_expiration_seconds']} ; then
+                rm -f acme/${acme_library}.conf acme/request.pem
             fi
         fi
 
+        if [ ! -r acme/${acme_library}.conf -a ! -r acme/request.pem ] ; then
+
+            if [[ ${name} != *.* && ${name} != *@* ]] ; then
+
+                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-${config['acme_default_subject']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
+
+            elif [[ ${name} == *.* && ${name} != *@* ]] ; then
+
+                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-cn=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
+
+            fi
+
+            generate_${library}_rsa_private_key acme/account_key.pem 4096 "${config['acme_file_group']}"
+            generate_${acme_library}_request acme/${acme_library}.conf acme/request.pem
+            chgrp "${config['acme_file_group']}" acme/request.pem
+            chmod "${config['acme_file_mode']}" acme/request.pem
+            chmod "${config['acme_dir_mode']}" acme
+        fi
+
+        if [ -r acme/${acme_library}.conf -a -r acme/request.pem ] ; then
+            if ! check_openssl_key_req_match private/key.pem acme/request.pem ; then
+
+                rm -f acme/request.pem
+                generate_${acme_library}_request acme/${acme_library}.conf acme/request.pem
+                chgrp "${config['acme_file_group']}" acme/request.pem
+                chmod "${config['acme_file_mode']}" acme/request.pem
+
+            fi
+
+        elif [ -r acme/${acme_library}.conf -a ! -r acme/request.pem ] ; then
+
+            generate_${acme_library}_request acme/${acme_library}.conf acme/request.pem
+            chgrp "${config['acme_file_group']}" acme/request.pem
+            chmod "${config['acme_file_mode']}" acme/request.pem
+
+        fi
+
     fi
+
 }
 
 # Select the preferred authority in a given PKI realm (external, acme,
@@ -752,7 +814,7 @@ process_public_files () {
 
     for authority in ${authority_preference[@]} ; do
 
-        if [ -r ${authority}/cert.pem ] && ( check_expiration_time ${authority}/cert.pem $(( 60 * 60 * 24 * 7 )) || [ "${authority}" = "${authority_preference[-1]}" ] ) ; then
+        if [ -r ${authority}/cert.pem ] && ( check_expiration_time ${authority}/cert.pem $(( 60 * 60 * 24 * 10 )) || [ "${authority}" = "${authority_preference[-1]}" ] ) ; then
 
             if ! diff -q -N ${authority}/cert.pem public/cert.pem > /dev/null ; then
 
@@ -762,6 +824,8 @@ process_public_files () {
                         if ! diff -q -N ${source_file} ${source_file/${authority}/public} > /dev/null ; then
                             ln -sf $(get_relative_path "${source_file}" "public") ${source_file/${authority}/public}.tmp
                         fi
+                    elif [ ! -r ${source_file} -a -r ${source_file/${authority}/public} ] ; then
+                        rm -f ${source_file/${authority}/public}
                     fi
 
                 done
@@ -777,6 +841,14 @@ process_public_files () {
                     cat public/intermediate.pem public/root.pem.tmp > public/intermediate_root.pem.tmp
                 fi
 
+            fi
+
+            if [ -r private/key.pem -a -r public/cert.pem -a -r public/intermediate.pem -a -r public/cert_intermediate.pem ] ; then
+
+                if ! check_openssl_key_crt_match private/key.pem public/cert_intermediate.pem ; then
+                    test -r public/cert_intermediate.pem.tmp && rm -f public/cert_intermediate.pem.tmp || true
+                    cat public/cert.pem public/intermediate.pem > public/cert_intermediate.pem.tmp
+                fi
             fi
 
             break
@@ -820,11 +892,11 @@ process_private_files () {
 
     for authority in ${authority_preference[@]} ; do
 
-        if [ -r ${authority}/cert.pem ] && ( check_expiration_time ${authority}/cert.pem $(( 60 * 60 * 24 * 7 )) || [ "${authority}" = "${authority_preference[-1]}" ] ) ; then
+        if [ -r ${authority}/cert.pem ] && ( check_expiration_time ${authority}/cert.pem $(( 60 * 60 * 24 * 10 )) || [ "${authority}" = "${authority_preference[-1]}" ] ) ; then
 
             if [ ! -r private/key.pem ] ; then
 
-                if check_${config['pki_library']}_key_crt_match private/realm_key.pem ${authority}/cert.pem ; then
+                if check_openssl_key_crt_match private/realm_key.pem ${authority}/cert.pem ; then
 
                     test -r private/key.pem.tmp && rm -f private/key.pem.tmp || true
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
@@ -837,7 +909,7 @@ process_private_files () {
 
                 if [ -r public/cert.pem.tmp -a -r private/realm_key.pem ] ; then
 
-                    if ! check_${config['pki_library']}_key_crt_match private/key.pem public/cert.pem.tmp ; then
+                    if ! check_openssl_key_crt_match private/key.pem public/cert.pem.tmp ; then
 
                         test -r private/key.pem.tmp && rm -f private/key.pem.tmp || true
                         install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
@@ -851,23 +923,41 @@ process_private_files () {
 
                     test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain.pem.tmp
-                    if [ -r private/realm_key.pem ] && check_${config['pki_library']}_key_crt_match private/realm_key.pem public/cert_intermediate.pem.tmp ; then
-                        cat private/realm_key.pem public/cert_intermediate.pem.tmp >> private/key_chain.pem.tmp
-                    elif [ -r private/key.pem ] && check_${config['pki_library']}_key_crt_match private/key.pem public/cert_intermediate.pem.tmp ; then
+                    if [ -r private/key.pem ] && check_openssl_key_crt_match private/key.pem public/cert_intermediate.pem.tmp ; then
                         cat private/key.pem public/cert_intermediate.pem.tmp >> private/key_chain.pem.tmp
+                    elif [ -r private/realm_key.pem ] && check_openssl_key_crt_match private/realm_key.pem public/cert_intermediate.pem.tmp ; then
+                        cat private/realm_key.pem public/cert_intermediate.pem.tmp >> private/key_chain.pem.tmp
                     fi
 
                 elif [ -r public/cert.pem.tmp ] ; then
 
                     test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain.pem.tmp
-                    if [ -r private/realm_key.pem ] ; then
-                        cat private/realm_key.pem public/cert.pem.tmp >> private/key_chain.pem.tmp
-                    elif [ -r private/key.pem ] ; then
+                    if [ -r private/key.pem ] ; then
                         cat private/key.pem public/cert.pem.tmp >> private/key_chain.pem.tmp
+                    elif [ -r private/realm_key.pem ] ; then
+                        cat private/realm_key.pem public/cert.pem.tmp >> private/key_chain.pem.tmp
                     fi
 
                 fi
+            fi
+
+            if [ -r private/key.pem -a -r public/cert_intermediate.pem ] ; then
+
+                if ! check_openssl_key_crt_match private/key.pem public/cert_intermediate.pem ; then
+                    test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
+                    install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain.pem.tmp
+                    cat private/key.pem public/cert_intermediate.pem >> private/key_chain.pem.tmp
+                fi
+
+            elif [ -r private/key.pem -a -r public/cert.pem ] ; then
+
+                if ! check_openssl_key_crt_match private/key.pem public/cert.pem ; then
+                    test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
+                    install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain.pem.tmp
+                    cat private/key.pem public/cert.pem >> private/key_chain.pem.tmp
+                fi
+
             fi
 
             break
@@ -886,17 +976,18 @@ activate_new_files () {
             rm -f public/intermediate.pem public/cert_intermediate.pem public/chain.pem
         fi
 
-        for new_file in $(find public/ -maxdepth 1 -name '*.tmp') ; do
-            mv --force ${new_file} ${new_file/.tmp/}
-        done
-
-        for new_file in $(find private/ -maxdepth 1 -name '*.tmp') ; do
-            mv --force ${new_file} ${new_file/.tmp/}
-        done
-
-        update_realm_symlinks
-
     fi
+
+    for new_file in $(find public/ -maxdepth 1 -name '*.tmp') ; do
+        mv --force ${new_file} ${new_file/.tmp/}
+    done
+
+    for new_file in $(find private/ -maxdepth 1 -name '*.tmp') ; do
+        mv --force ${new_file} ${new_file/.tmp/}
+    done
+
+    update_realm_symlinks
+
 }
 
 update_realm_symlinks () {
@@ -915,36 +1006,6 @@ update_realm_symlinks () {
 
 }
 
-check_acme_certificate_expiration () {
-
-    local realms="${@}"
-
-    for realm in ${realms[@]} ; do
-
-        enter_realm ${realm}
-
-        if [ -r acme/acme-tiny.conf ] ; then
-            . acme/acme-tiny.conf
-            check_expiration_time ${acme_cert} ${acme_expiration_time}
-        fi
-
-    done
-
-}
-
-request_acme_certificate () {
-
-    local realms="${@}"
-
-    for realm in ${realms[@]} ; do
-
-        enter_realm ${realm}
-
-        request_${acme_client}_certificate ${realm}
-
-    done
-}
-
 sub_new-realm () {
 
     local -A args
@@ -955,64 +1016,70 @@ sub_new-realm () {
             -)
                 case "${OPTARG}" in
                     name)
-                        local args["name"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        args["name"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                         ;;
                     name=*)
-                        local args["name"]=${OPTARG#*=}
+                        args["name"]=${OPTARG#*=}
                         ;;
                     library)
-                        local args["pki_library"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        args["pki_library"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                         ;;
                     library=*)
-                        local args["pki_library"]=${OPTARG#*=}
+                        args["pki_library"]=${OPTARG#*=}
+                        ;;
+                    acme-library)
+                        args["pki_acme_library"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    acme-library=*)
+                        args["pki_acme_library"]=${OPTARG#*=}
                         ;;
                     internal)
-                        local args["pki_internal"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        args["pki_internal"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                         ;;
                     internal=*)
-                        local args["pki_internal"]=${OPTARG#*=}
+                        args["pki_internal"]=${OPTARG#*=}
                         ;;
                     subject)
-                        local args["subject"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        args["subject"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                         ;;
                     subject=*)
-                        local args["subject"]=${OPTARG#*=}
+                        args["subject"]=${OPTARG#*=}
                         ;;
                     domains)
-                        local args["domains"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        args["domains"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                         ;;
                     domains=*)
-                        local args["domains"]=${OPTARG#*=}
+                        args["domains"]=${OPTARG#*=}
                         ;;
                     subdomains)
-                        local args["subdomains"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        args["subdomains"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                         ;;
                     subdomains=*)
-                        local args["subdomains"]=${OPTARG#*=}
+                        args["subdomains"]=${OPTARG#*=}
                         ;;
                     acme)
-                        local args["pki_acme"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        args["pki_acme"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                         ;;
                     acme=*)
-                        local args["pki_acme"]=${OPTARG#*=}
+                        args["pki_acme"]=${OPTARG#*=}
                         ;;
                     acme-subject)
-                        local args["acme_subject"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        args["acme_subject"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                         ;;
                     acme-subject=*)
-                        local args["acme_subject"]=${OPTARG#*=}
+                        args["acme_subject"]=${OPTARG#*=}
                         ;;
                     acme-domains)
-                        local args["acme_domains"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        args["acme_domains"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                         ;;
                     acme-domains=*)
-                        local args["acme_domains"]=${OPTARG#*=}
+                        args["acme_domains"]=${OPTARG#*=}
                         ;;
                     acme-subdomains)
-                        local args["acme_subdomains"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        args["acme_subdomains"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                         ;;
                     acme-subdomains=*)
-                        local args["acme_subdomains"]=${OPTARG#*=}
+                        args["acme_subdomains"]=${OPTARG#*=}
                         ;;
                     *)
                         if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]; then
@@ -1026,7 +1093,7 @@ sub_new-realm () {
                 exit 2
                 ;;
             n)
-                local args["name"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                args["name"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                 ;;
             *)
                 if [ "$OPTERR" != 1 ] || [ "${optspec:0:1}" = ":" ]; then
@@ -1066,32 +1133,42 @@ sub_new-realm () {
 
         local name="${config['name']}"
         local library="${config['pki_library']}"
+        local acme_library="${config['pki_acme_library']}"
 
         if [ "${config['pki_internal']}" = "true" ] ; then
             generate_${library}_rsa_realm_key private/realm_key.pem
+            if [ ! -r private/key.pem ] ; then
+                install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
+                cat private/realm_key.pem >> private/key.pem.tmp
+                mv private/key.pem.tmp private/key.pem
+            fi
         fi
 
         if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
-            create_${library}_config internal/${library}.conf "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}"
+            create_${library}_config internal/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}"
 
             if [ "${config['pki_acme']}" = "true" ] ; then
-                create_${library}_config acme/${library}.conf "${config['acme_subject']:-${config['acme_default_subject']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
+                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-${config['acme_default_subject']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
             fi
 
         elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
-            create_${library}_config internal/${library}.conf "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}"
+            create_${library}_config internal/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}"
 
             if [ "${config['pki_acme']}" = "true" ] ; then
-                create_${library}_config acme/${library}.conf "${config['acme_subject']:-cn=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
+                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-cn=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
             fi
 
         fi
 
         generate_${library}_request internal/${library}.conf internal/request.pem
         if [ "${config['pki_acme']}" = "true" ] ; then
-            generate_${library}_request acme/${library}.conf acme/request.pem
+            generate_${library}_rsa_private_key acme/account_key.pem 4096 "${config['acme_file_group']}"
+            generate_${acme_library}_request acme/${acme_library}.conf acme/request.pem
+            chgrp "${config['acme_file_group']}" acme/request.pem
+            chmod "${config['acme_file_mode']}" acme/request.pem
+            chmod "${config['acme_dir_mode']}" acme
         fi
 
         update_realm_symlinks
@@ -1185,6 +1262,30 @@ sub_init () {
                         ;;
                     acme-subdomains=*)
                         args["acme_subdomains"]=${OPTARG#*=}
+                        ;;
+                    acme-ca)
+                        args["acme_ca"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    acme-ca=*)
+                        args["acme_ca"]=${OPTARG#*=}
+                        ;;
+                    acme-ca-api)
+                        args["acme_ca_api"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    acme-ca-api=*)
+                        args["acme_ca_api"]=${OPTARG#*=}
+                        ;;
+                    acme-default-subdomains)
+                        args["acme_default_subdomains"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    acme-default-subdomains=*)
+                        args["acme_default_subdomains"]=${OPTARG#*=}
+                        ;;
+                    acme-challenge-dir)
+                        args["acme_challenge_dir"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    acme-challenge-dir=*)
+                        args["acme_challenge_dir"]=${OPTARG#*=}
                         ;;
                     *)
                         if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]; then
@@ -1281,6 +1382,7 @@ sub_run () {
         enter_realm ${args['name']}
 
         check_files
+        request_acme_tiny_certificate
         run_external_script
         process_public_files
         process_private_files

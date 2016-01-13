@@ -55,22 +55,8 @@
   with_items: pki_private_groups_present
   when: (pki_enabled | bool and pki_private_groups_present)
 
-- name: Create ACME system group
-  group:
-    name: '{{ pki_acme_group }}'
-    state: 'present'
-    system: True
-  when: pki_enabled | bool and pki_acme | bool
-
-- name: Create ACME system account
-  user:
-    name: '{{ pki_acme_user }}'
-    group: '{{ pki_acme_group }}'
-    home: '{{ pki_acme_home }}'
-    state: 'present'
-    system: True
-    createhome: False
-    shell: '/bin/false'
+- name: Configure acme-tiny support
+  include: acme_tiny.yml
   when: pki_enabled | bool and pki_acme | bool
 
 - name: Initialize PKI realms
@@ -79,9 +65,13 @@
     PKI_ACME: '{{ (item.acme | d(pki_acme)) | bool | lower }}'
     PKI_INTERNAL: '{{ (item.internal | d(pki_internal)) | bool | lower }}'
     PKI_LIBRARY: '{{ item.library | d(pki_library) }}'
+    PKI_ACME_LIBRARY: '{{ item.acme_library | d(pki_acme_library) }}'
   command: /usr/local/lib/pki/pki-realm init -n "{{ item.name }}" --library "{{ item.library | d(pki_library) }}"
            --internal "{{ (item.internal | d(pki_internal)) | bool | lower }}" --private-dir-group "{{ item.private_dir_group | d(pki_private_group) }}"
            --private-file-group "{{ item.private_file_group | d(pki_private_group) }}"
+           --acme-ca "{{ item.acme_ca | d(pki_acme_ca) }}" --acme-ca-api "{{ item.acme_ca_api | d(pki_acme_ca_api) }}"
+           --acme-default-subdomains "{{ (item.acme_default_subdomains | d(pki_acme_default_subdomains)) | join('/') }}"
+           --acme-challenge-dir "{{ item.acme_challenge_dir | d(pki_acme_challenge_dir) }}"
   args:
     creates: '{{ pki_root + "/realms/" + item.name + "/config/realm.conf" }}'
   with_flattened:
