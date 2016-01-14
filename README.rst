@@ -15,51 +15,57 @@ Here are a few services that are available
 
 **Fully loaded ready to go applications**
 
-======= ========= ========= ========= ======== ========
-GitLab_ GitLabCI_ Etherpad_ ownCloud_ phpIPAM_ Mailman_
-======= ========= ========= ========= ======== ========
++---------+-----------+-----------+-----------+-----------+----------+----------+
+| GitLab_ | GitLabCI_ | Etherpad_ | DokuWiki_ | ownCloud_ | phpIPAM_ | Mailman_ |
++---------+-----------+-----------+-----------+-----------+----------+----------+
 
 **Databases**
 
-=========== ====== ====== ==============
-PostgreSQL_ MySQL_ Redis_ Elasticsearch_
-=========== ====== ====== ==============
++-------------+----------+--------+--------+------------+----------------+
+| PostgreSQL_ | MariaDB_ | MySQL_ | Redis_ | Memcached_ | Elasticsearch_ |
++-------------+----------+--------+--------+------------+----------------+
 
 **Programming languages**
 
-===== ======= ===== ======= ====
-Ruby_ Golang_ Java_ NodeJS_ PHP_
-===== ======= ===== ======= ====
++-------+---------+-------+---------+------+
+| Ruby_ | Golang_ | Java_ | NodeJS_ | PHP_ |
++-------+---------+-------+---------+------+
 
 **Web application deployment**
 
-====== ============
-nginx_ RubyOnRails_
-====== ============
++--------+--------------+
+| nginx_ | RubyOnRails_ |
++--------+--------------+
 
 **Service monitoring and logging**
 
-====== ========
-monit_ rsyslog_
-====== ========
++-----------+--------+----------+
+| LibreNMS_ | monit_ | rsyslog_ |
++-----------+--------+----------+
 
 **Networking**
 
-======== ===== ===== ======== ==== ==== =====
-dnsmasq_ DHCP_ ferm_ postfix_ SMS_ SSH_  NFS_
-======== ===== ===== ======== ==== ==== =====
++----------+-------+--------+-------+----------+------+------+------+--------+
+| dnsmasq_ | DHCP_ | Radvd_ | ferm_ | postfix_ | SMS_ | SSH_ | NFS_ | Samba_ |
++----------+-------+--------+-------+----------+------+------+------+--------+
 
 **Virtualization**
 
-==== ======= ====
-LXC_ OpenVZ_ KVM_
-==== ======= ====
++------+---------+---------+------+
+| LXC_ | Docker_ | OpenVZ_ | KVM_ |
++------+---------+---------+------+
 
 **Backup and encryption**
 
-========= ========== ====== ==== =============
-Safekeep_ BoxBackup_ encFS_ SKS_ Monkeysphere_
-========= ========== ====== ==== =============
++-----------+------------+--------+------+---------------+
+| Safekeep_ | BoxBackup_ | encFS_ | SKS_ | Monkeysphere_ |
++-----------+------------+--------+------+---------------+
+
+**Security**
+
++------+----------+--------+-------------+--------+
+| PKI_ | dhparam_ | slapd_ | cryptsetup_ | EncFS_ |
++------+----------+--------+-------------+--------+
 
 Overview of how playbooks work within DebOps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -100,13 +106,16 @@ If you want to keep tabs on each role's status then check out our
 .. _Gitlab: https://github.com/debops/ansible-gitlab
 .. _GitlabCI: https://github.com/debops/ansible-gitlab_ci
 .. _Etherpad: https://github.com/debops/ansible-etherpad
+.. _DokuWiki: https://github.com/debops/ansible-dokuwiki
 .. _ownCloud: https://github.com/debops/ansible-ownCloud
 .. _phpIPAM: https://github.com/debops/ansible-phpipam
 .. _Mailman: https://github.com/debops/ansible-mailman
 
-.. _PostgreSQL: https://github.com/debops/ansible-postgresql
+.. _PostgreSQL: https://github.com/debops/ansible-postgresql_server
+.. _MariaDB: https://github.com/debops/ansible-mariadb_server
 .. _MySQL: https://github.com/debops/ansible-mysql
 .. _Redis: https://github.com/debops/ansible-redis
+.. _Memcached: https://github.com/debops/ansible-memcached
 .. _Elasticsearch: https://github.com/debops/ansible-elasticsearch
 
 .. _Ruby: https://github.com/debops/ansible-ruby
@@ -118,18 +127,22 @@ If you want to keep tabs on each role's status then check out our
 .. _nginx: https://github.com/debops/ansible-nginx
 .. _RubyOnRails: https://github.com/debops/ansible-rails_deploy
 
+.. _LibreNMS: https://github.com/debops/ansible-librenms
 .. _monit: https://github.com/debops/ansible-monit
 .. _rsyslog: https://github.com/debops/ansible-rsyslog
 
 .. _dnsmasq: https://github.com/debops/ansible-dnsmasq
 .. _DHCP: https://github.com/debops/ansible-dhcpd
+.. _Radvd: https://github.com/debops/ansible-radvd
 .. _ferm: https://github.com/debops/ansible-ferm
 .. _postfix: https://github.com/debops/ansible-postfix
 .. _SMS: https://github.com/debops/ansible-smstools
 .. _SSH: https://github.com/debops/ansible-sshd
 .. _NFS: https://github.com/debops/ansible-nfs
+.. _Samba: https://github.com/debops/ansible-samba
 
 .. _LXC: https://github.com/debops/ansible-lxc
+.. _Docker: https://github.com/debops/ansible-docker
 .. _OpenVZ: https://github.com/debops/ansible-openvz
 .. _KVM: https://github.com/debops/ansible-kvm
 
@@ -138,3 +151,9 @@ If you want to keep tabs on each role's status then check out our
 .. _encFS: https://github.com/debops/ansible-encfs
 .. _SKS: https://github.com/debops/ansible-sks
 .. _Monkeysphere: https://github.com/debops/ansible-monkeysphere
+
+.. _PKI: https://github.com/debops/ansible-pki
+.. _dhparam: https://github.com/debops/ansible-dhparam
+.. _slapd: https://github.com/debops/ansible-slapd
+.. _cryptsetup: https://github.com/debops-contrib/ansible-cryptsetup
+.. _EncFS: https://github.com/debops/ansible-encfs
