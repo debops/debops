@@ -1,7 +1,7 @@
 |debops_logo| DebOps Contrib playbooks
 ======================================
 
-Ansible playbooks to run DebOps contrib roles. `DebOps Contrib <https://github.com/debops-contrib/debops-contrib>`_.
+Ansible playbooks to run `DebOps contrib <https://github.com/debops-contrib/debops-contrib>`_ roles.
 
 Here are a few services that are available
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -12,12 +12,6 @@ Here are a few services that are available
 | foodsoft_ |
 +-----------+
 
-**Security**
-
-+-------------+
-| cryptsetup_ |
-+-------------+
-
 **Service monitoring and logging**
 
 +-------------------+
@@ -25,8 +19,6 @@ Here are a few services that are available
 +-------------------+
 
 .. |debops_logo| image:: http://debops.org/images/debops-small.png
-
-.. _cryptsetup: https://github.com/debops-contrib/ansible-cryptsetup
 
 .. _foodsoft: https://github.com/debops-contrib/ansible-foodsoft
 
