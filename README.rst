@@ -24,6 +24,12 @@ Here are a few services that are available
 | etckeeper_ | FUSE_ |
 +------------+-------+
 
+**Security**
+
++-----------+
+| AppArmor_ |
++-----------+
+
 .. |debops_logo| image:: http://debops.org/images/debops-small.png
 
 .. _foodsoft: https://github.com/debops-contrib/ansible-foodsoft
@@ -32,3 +38,5 @@ Here are a few services that are available
 
 .. _etckeeper: https://github.com/debops-contrib/ansible-etckeeper
 .. _FUSE: https://github.com/debops-contrib/ansible-fuse
+
+.. _AppArmor: https://github.com/debops-contrib/ansible-apparmor

@@ -1,0 +1,15 @@
+---
+
+- name: Install and configure AppArmor
+  hosts: 'debops_service_apparmor'
+  become: True
+
+  roles:
+
+    - role: debops.grub
+      grub_dependent_kernel_options: '{{ apparmor_kernel_options }}'
+      when: (not (apparmor_manage_grub|d() | bool))
+      tags: [ 'role::grub' ]
+
+    - role: debops.contrib-apparmor
+      tags: [ 'role::apparmor' ]
