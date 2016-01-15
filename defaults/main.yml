@@ -13,7 +13,7 @@
 # .. envvar:: etckeeper_highlevel_package_manager
 #
 # The high-level package manager that's being used.
-# (``apt``, ``pacman-g2``, ``yum``, ``dnf``, ``zypper`` etc).
+# (:command:`apt`, :command:`pacman-g2`, :command:`yum`, :command:`dnf`, :command:`zypper` etc).
 # This will only be used when your distribution was not able to predefine this.
 etckeeper_highlevel_package_manager: '{{ ansible_pkg_mgr }}'
 
@@ -21,7 +21,7 @@ etckeeper_highlevel_package_manager: '{{ ansible_pkg_mgr }}'
 # .. envvar:: etckeeper_lowlevel_package_manager
 #
 # The low-level package manager that's being used.
-# (``dpkg``, ``rpm``, ``pacman``, ``pacman-g2``, etc)
+# (:command:`dpkg`, :command:`rpm`, :command:`pacman`, :command:`pacman-g2`, etc)
 # This will only be used when your distribution was not able to predefine this.
 etckeeper_lowlevel_package_manager: |
   {{ etckeeper_highlevel_to_lowlevel_package_manager_mapping[etckeeper_highlevel_package_manager]|d("") }}
@@ -39,10 +39,10 @@ etckeeper_lowlevel_package_manager: |
 # Which VCS to use to version :file:`/etc/`.
 # Choices are:
 #
-# * ``git`` (default)
-# * ``hg``
-# * ``bzr``
-# * ``darcs``
+# * :command:`git` (default)
+# * :command:`hg`
+# * :command:`bzr`
+# * :command:`darcs`
 #
 etckeeper_vcs: 'git'
 
@@ -73,7 +73,7 @@ etckeeper_darcs_commit_options: '-a'
 
 # .. envvar:: etckeeper_avoid_daily_autocommits
 #
-# Uncomment to avoid ``etckeeper`` committing existing changes
+# Uncomment to avoid :program:`etckeeper` committing existing changes
 # to :file:`/etc` automatically once per day.
 etckeeper_avoid_daily_autocommits: False
 
