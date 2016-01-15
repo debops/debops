@@ -1,0 +1,13 @@
+## {{ ansible_managed }}
+# /etc/fuse.conf - Configuration file for Filesystem in Userspace (FUSE)
+
+# Set the maximum number of FUSE mounts allowed to non-root users.
+# The default is 1000.
+{% if fuse_mount_max == 'default' %}
+#mount_max = 1000
+{% else %}
+mount_max = {{ fuse_mount_max|int }}
+{% endif %}
+
+# Allow non-root users to specify the allow_other or allow_root mount options.
+{{ '' if fuse_user_allow_other else '#' }}user_allow_other

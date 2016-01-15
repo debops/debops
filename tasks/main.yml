@@ -1,0 +1,44 @@
+---
+
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened: fuse_base_packages
+
+- name: Divert original /etc/fuse.conf
+  command: dpkg-divert --quiet --local --divert /etc/fuse.conf.dpkg-divert --rename /etc/fuse.conf
+  args:
+    creates: '/etc/fuse.conf.dpkg-divert'
+
+- name: Setup udev rule for fuse to change file permissions
+  template:
+    src: 'etc/fuse.conf.j2'
+    dest: '/etc/fuse.conf'
+
+- name: Ensure fuse system group is present
+  group:
+    name: 'fuse'
+    state: 'present'
+    system: True
+  when: fuse_restrict_access
+
+- name: Add fuse_users to fuse group
+  user:
+    name: '{{ item }}'
+    groups: 'fuse'
+    append: True
+  with_flattened: fuse_users
+
+- name: Setup udev rule for fuse to change file permissions
+  template:
+    src: 'etc/udev/rules.d/fuse.rules.j2'
+    dest: '/etc/udev/rules.d/99-fuse.rules'
+  when: fuse_restrict_access
+
+- name: Remove udev rule for fuse
+  file:
+    path: '/etc/udev/rules.d/99-usbmon.rules'
+    state: 'absent'
+  when: not fuse_restrict_access
