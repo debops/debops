@@ -1,12 +1,24 @@
 ---
 
-- name: Ensure apparmor packages are installed
+- name: Combine variables
+  set_fact:
+    apparmor_profile_status: '{{
+      apparmor_global_profile_status|d({})
+      | combine(apparmor_host_group_profile_status|d({}))
+      | combine(apparmor_host_profile_status|d({})) }}'
+    apparmor_local_config: '{{
+      apparmor_local_config_global|d({})
+      | combine(apparmor_local_config_host_group|d({}))
+      | combine(apparmor_local_config_host|d({})) }}'
+
+- name: Install required packages
   apt:
     name: '{{ item }}'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ apparmor_packages }}'
+    - apparmor_base_packages
+    - apparmor_packages
 
 - name: Setup apparmor=1 security=apparmor as kernel parameter
   lineinfile:
@@ -14,7 +26,7 @@
     regexp: '{{ item.regexp }}'
     line: '{{ item.line }}'
     insertbefore: '{{ item.insertbefore }}'
-  when: apparmor_manage_grub and apparmor_enable is defined and apparmor_enable
+  when: (apparmor_manage_grub and (apparmor_enable|d() | bool))
   with_items:
     - regexp: '^GRUB_CMDLINE_LINUX='
       line: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR {{ apparmor_additional_kernel_parameters }}"'
@@ -24,55 +36,79 @@
       insertbefore: '^GRUB_CMDLINE_LINUX='
   notify: [ 'Update grub' ]
 
-# Needed because Ansible will halt if the service can not be started.
-- meta: flush_handlers
-
 - name: Remove apparmor=1 security=apparmor from kernel parameter list
   lineinfile:
     dest: '/etc/default/grub'
     regexp: '^GRUB_CMDLINE_LINUX="(.*?)\$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR(.*)"'
     line: 'GRUB_CMDLINE_LINUX="\1 \2"'
     backrefs: yes
-  when: apparmor_manage_grub and apparmor_enable is not defined or not apparmor_enable
+  when: (apparmor_manage_grub and not (apparmor_enable|d() | bool))
   notify: [ 'Update grub' ]
 
-- command: service apparmor teardown
-  when: apparmor_enable is not defined or not apparmor_enable
-
-- name: Stop service apparmor
-  service:
-    name: 'apparmor'
-    state: 'stopped'
-    enabled: no
-  when: apparmor_enable is not defined or not apparmor_enable
-
-- name: Check if running kernel has apparmor already enabled
-  command: egrep 'apparmor=1\s+security=apparmor' /proc/cmdline
-  register: apparmor_enabled
-  when: apparmor_enable is defined and apparmor_enable
+- name: Check if the running kernel has been started with AppArmor enabled
+  shell: egrep --quiet 'apparmor=1' /proc/cmdline && egrep --quiet 'security=apparmor' /proc/cmdline
+  register: apparmor_register_kernel_cmdline
+  when: (apparmor_enable|d() | bool)
   failed_when: False
   changed_when: False
+  always_run: True
 
 - name: Check if reboot is required to enable apparmor
-  debug:
-    msg: 'You have to reboot the system to enable apparmor.'
-  when: apparmor_enabled is defined and apparmor_enabled.rc != 0
+  fail:
+    msg: 'You have to reboot the system to enable AppArmor.'
+  when: (apparmor_register_kernel_cmdline.rc != 0)
 
+## Seems that there is currently a bug in the version include in Debian Jessie
+## which thoughts an exception when AppArmor has not been enabled yet.
 - name: Put all profiles into enforcement mode
-  command: |
-    sh -c 'find /etc/apparmor.d -maxdepth 1 -type f | while read file
+  shell: |
+    find /etc/apparmor.d -maxdepth 1 -type f | while read file
     do
-        if grep --quiet "flags\s*=.*complain" "$file"; then
-          aa-enforce "$file";
-        fi;
-    done'
-  register: apparmor_enforce_all_profiles_cmd
-  changed_when: apparmor_enforce_all_profiles_cmd.stdout != ""
-  when: apparmor_enforce_all_profiles is defined and apparmor_enforce_all_profiles
+      if grep --quiet "flags\s*=.*complain" "$file"; then
+        aa-enforce "$file"
+      fi
+    done
+  register: apparmor_register_enforce_all_profiles
+  changed_when: (apparmor_register_enforce_all_profiles.stdout != "")
+  when: (apparmor_enforce_all_profiles|d() | bool)
+
+- name: Set profile status
+  command: aa-{{ item.value }} "{{ item.key }}"
+  register: apparmor_register_profile_status
+  # changed_when: (apparmor_register_profile_status.stdout|d() != "")
+  ## FIXME: Currently it seems to be tricky.
+  changed_when: False
+  with_dict: apparmor_profile_status
 
 - name: Ensure apparmor service is started
   service:
     name: 'apparmor'
     state: 'started'
-    enabled: yes
-  when: apparmor_enable is defined and apparmor_enable
+    enabled: True
+  when: (apparmor_enable|d() | bool)
+
+- name: Configure additions or overrides of system profiles
+  template:
+    src: 'etc/apparmor.d/local/local.j2'
+    dest: '/etc/apparmor.d/local/{{ item.key }}'
+    mode: 0640
+    owner: 'root'
+    group: 'root'
+  register: apparmor_register_local_config
+  with_dict: apparmor_local_config
+
+- name: Reload changed profiles
+  command: apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"
+  when: item|changed
+  with_items: apparmor_register_local_config.results
+
+- name: Unload AppArmor profiles
+  command: service apparmor teardown
+  when: (not (apparmor_enable|d() | bool))
+
+- name: Stop service apparmor
+  service:
+    name: 'apparmor'
+    state: 'stopped'
+    enabled: False
+  when: (not (apparmor_enable|d() | bool))

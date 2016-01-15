@@ -1,30 +1,145 @@
 ---
+# Default variables
+# =================
 
-apparmor_packages:
-  - apparmor
-  - apparmor-utils
-  - apparmor-profiles
-  - apparmor-profiles-extra
+# .. contents:: Sections
+#    :local:
+#
+# ---------------------------
+#   Packages and installation
+# ---------------------------
 
-  # - apparmor-notify
-  ## Not needed/useful for servers.
+# .. envvar:: apparmor_base_packages
+#
+# List of base packages to install.
+apparmor_base_packages:
+  - 'apparmor'
+  - 'apparmor-utils'
+  - 'apparmor-profiles'
+  - 'apparmor-profiles-extra'
 
-## Default kernel options needed to enable Apparmor.
-## You probably don’t need to change this.
-apparmor_kernel_options: ['apparmor=1', 'security=apparmor']
 
-## How this role should write the required kernel options into the Grub configuration.
-## Default is to use [debops.grub](https://github.com/debops/ansible-grub) as role dependency.
-## If set to False, this role will do that internally without debops.grub as role dependency.
-## Note that this role is not as flexible in configuring Grub as debops.grub is.
-apparmor_manage_grub: False
+# .. envvar:: apparmor_packages
+#
+# List of additional packages to install with AppArmor.
+#
+# Example::
+#
+#    apparmor_packages:
+#      - 'apparmor-notify'
+#
+apparmor_packages: []
 
-## Legacy:
-## Only considered when `apparmor_manage_grub == True`.
-apparmor_additional_kernel_parameters: ''
 
+# .. envvar:: apparmor_packages
+#
+# Should AppArmor be loaded?
 apparmor_enable: True
 
-## Put all profiles into enforcement mode.
-## Use this only if you know what you are doing.
+
+# .. envvar:: apparmor_kernel_options
+#
+# Default kernel options needed to enable AppArmor.
+# You probably don’t need to change this.
+apparmor_kernel_options:
+  - 'apparmor=1'
+  - 'security=apparmor'
+
+
+# .. envvar:: apparmor_manage_grub
+#
+# How should role write the required kernel options into the Grub configuration.
+# The default is delegate this to the ``debops.grub`` role.
+# If set to False, this role will do that internally without ``debops.grub``.
+# Note that this role is not as flexible in configuring Grub as ``debops.grub`` is.
+apparmor_manage_grub: False
+
+
+# .. envvar:: apparmor_additional_kernel_parameters
+#
+# Legacy:
+# Only considered when `apparmor_manage_grub == True`.
+apparmor_additional_kernel_parameters: ''
+
+
+# -------------------
+#   AppArmor profiles
+# -------------------
+
+# .. envvar:: apparmor_enforce_all_profiles
+#
+# Put all profiles into enforcement mode.
+# Use this only if you know what you are doing.
 apparmor_enforce_all_profiles: False
+
+
+# .. envvar:: apparmor_global_profile_status
+#
+# Global configuration of the status of individual profiles.
+# More specific matches overwrite more generic matches (example host overrules
+# global).
+#
+# Choices are:
+#
+# * ``disable``
+# * ``complain``
+# * ``enforce``
+#
+# Example::
+#
+#    apparmor_global_profile_status:
+#      'usr.sbin.nmbd': 'complain'
+#
+apparmor_global_profile_status: {}
+
+
+# .. envvar:: apparmor_host_group_profile_status
+#
+# Host group configuration of the status of individual profiles.
+apparmor_host_group_profile_status: {}
+
+
+# .. envvar:: apparmor_host_profile_status
+#
+# Host configuration of the status of individual profiles.
+apparmor_host_profile_status: {}
+
+
+# .. envvar:: apparmor_local_config_global
+#
+# Global additions or overrides of system profiles.
+# Those changes will be configured in :file:`/etc/apparmor.d/local/`.
+# Check :file:`/etc/apparmor.d/local/README` for details.
+# All three dictionaries are merged into one profile configuration.
+#
+# Example::
+#
+#    apparmor_local_config_global:
+#
+#      'usr.sbin.dnsmasq':
+#        - comment: 'Allow dnsmasq to read upstream DNS servers'
+#          rules:
+#            - '/etc/resolvconf/upstream.conf r'
+#            - '/etc/hosts.dnsmasq r'
+#        - comment: 'Allow dnsmasq to read /usr/share/dnsmasq-base/trust-anchors.conf'
+#          rules:
+#            - '/usr/share/dnsmasq-base/* r'
+#
+#      'usr.bin.pidgin':
+#        - comment: 'Allow local Pidgin plugins'
+#          rules:
+#            - '@{HOME}/.purple/plugins/** rm'
+#
+apparmor_local_config_global: {}
+
+
+# .. envvar:: apparmor_local_config_host_group
+#
+# Host group additions or overrides of system profiles.
+apparmor_local_config_host_group: {}
+
+
+# .. envvar:: apparmor_local_config_host
+#
+# Host additions or overrides of system profiles.
+apparmor_local_config_host: {}
