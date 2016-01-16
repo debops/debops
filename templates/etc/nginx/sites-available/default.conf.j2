@@ -661,7 +661,7 @@
 	}
 
 {% endif %}
-{% if item.status is defined and item.status or nginx_status or nginx_status_localhost %}
+{% if item.status|d(True) and (nginx_status or nginx_status_localhost) %}
 	location = {{ item.status_name | default(nginx_status_name) }} {
 		stub_status on;
 		access_log off;
