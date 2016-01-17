@@ -49,11 +49,12 @@
 
 - name: Create private groups if requested
   group:
-    name: '{{ item }}'
+    name: '{{ item.name | d(item) }}'
     system: 'true'
     state: 'present'
   with_items: pki_private_groups_present
-  when: (pki_enabled | bool and pki_private_groups_present)
+  when: ((pki_enabled | bool and pki_private_groups_present) and
+         (item.when is undefined or item.when|bool))
 
 - name: Configure acme-tiny support
   include: acme_tiny.yml
@@ -79,8 +80,10 @@
     - '{{ pki_group_realms }}'
     - '{{ pki_host_realms }}'
     - '{{ pki_default_realms }}'
+    - '{{ pki_dependent_realms }}'
   when: (pki_enabled | bool and item.name is defined and
-         (item.enabled is undefined or item.enabled|bool))
+         (item.enabled is undefined or item.enabled|bool) and
+         (item.when is undefined or item.when|bool))
 
 - name: Download custom private files
   copy:
@@ -108,9 +111,10 @@
     group: '{{ item.private_file_group | d(pki_private_group) }}'
     mode: '0640'
   with_items:
-    - '{{ pki_realms + pki_group_realms + pki_host_realms + pki_default_realms }}'
+    - '{{ pki_realms + pki_group_realms + pki_host_realms + pki_default_realms + pki_dependent_realms }}'
   when: (pki_enabled | bool and item.name is defined and
-         (item.enabled is undefined or item.enabled|bool))
+         (item.enabled is undefined or item.enabled|bool) and
+         (item.when is undefined or item.when|bool))
 
 - name: Download private realm contents by group
   copy:
@@ -124,7 +128,8 @@
     - '{{ pki_group_realms }}'
     - '{{ pki_inventory_groups }}'
   when: (pki_enabled | bool and (item.0.name is defined and
-         (item.0.enabled is undefined or item.0.enabled|bool)) and
+         (item.0.enabled is undefined or item.0.enabled|bool) and
+         (item.0.when is undefined or item.0.when|bool)) and
          (item.1 is defined and item.1 in group_names))
 
 - name: Download private realm contents for all hosts
@@ -138,7 +143,8 @@
   with_items:
     - '{{ pki_realms + pki_default_realms }}'
   when: (pki_enabled | bool and item.name is defined and
-         (item.enabled is undefined or item.enabled|bool))
+         (item.enabled is undefined or item.enabled|bool) and
+         (item.when is undefined or item.when|bool))
 
 - name: Create PKI realms
   environment:
@@ -154,9 +160,11 @@
     - '{{ pki_group_realms }}'
     - '{{ pki_host_realms }}'
     - '{{ pki_default_realms }}'
+    - '{{ pki_dependent_realms }}'
   when: (pki_enabled | bool and item.name is defined and
          ((item.internal is undefined or item.internal|bool) and pki_internal|bool) and
-         (item.enabled is undefined or item.enabled|bool))
+         (item.enabled is undefined or item.enabled|bool) and
+         (item.when is undefined or item.when|bool))
 
 - name: Execute PKI realm commands
   environment:
@@ -167,9 +175,11 @@
     - '{{ pki_group_realms }}'
     - '{{ pki_host_realms }}'
     - '{{ pki_default_realms }}'
+    - '{{ pki_dependent_realms }}'
   changed_when: False
   when: (pki_enabled | bool and item.name is defined and
-         (item.enabled is undefined or item.enabled|bool))
+         (item.enabled is undefined or item.enabled|bool) and
+         (item.when is undefined or item.when|bool))
 
 - name: Upload internal certificate requests
   fetch:
@@ -181,9 +191,11 @@
     - '{{ pki_group_realms }}'
     - '{{ pki_host_realms }}'
     - '{{ pki_default_realms }}'
+    - '{{ pki_dependent_realms }}'
   when: (pki_enabled | bool and item.name is defined and
          ((item.internal is undefined or item.internal|bool) and pki_internal|bool) and
-         (item.enabled is undefined or item.enabled|bool))
+         (item.enabled is undefined or item.enabled|bool) and
+         (item.when is undefined or item.when|bool))
 
 - name: Initialize PKI authorities
   environment:
@@ -199,7 +211,7 @@
   become: False
   run_once: True
   with_flattened:
-    - '{{ pki_authorities }}'
+    - '{{ pki_authorities + pki_dependent_authorities }}'
   when: (item.name is defined and
          (item.enabled is undefined or item.enabled|bool))
 
@@ -219,7 +231,7 @@
   become: False
   run_once: True
   with_flattened:
-    - '{{ pki_authorities }}'
+    - '{{ pki_authorities + pki_dependent_authorities }}'
   when: (item.name is defined and
          (item.enabled is undefined or item.enabled|bool))
 
@@ -243,10 +255,11 @@
     group: 'root'
     mode: '0644'
   with_nested:
-    - '{{ pki_realms + pki_group_realms + pki_host_realms + pki_default_realms }}'
+    - '{{ pki_realms + pki_group_realms + pki_host_realms + pki_default_realms + pki_dependent_realms }}'
     - [ 'external', 'internal' ]
   when: (pki_enabled | bool and item.0.name is defined and
-         (item.0.enabled is undefined or item.0.enabled|bool))
+         (item.0.enabled is undefined or item.0.enabled|bool) and
+         (item.0.when is undefined or item.0.when|bool))
 
 - name: Download custom public files
   copy:
@@ -277,7 +290,8 @@
     - '{{ pki_group_realms }}'
     - '{{ pki_inventory_groups }}'
   when: (pki_enabled | bool and (item.0.name is defined and
-          (item.0.enabled is undefined or item.0.enabled|bool)) and
+          (item.0.enabled is undefined or item.0.enabled|bool) and
+          (item.0.when is undefined or item.0.when|bool)) and
           (item.1 is defined and item.1 in group_names))
 
 - name: Download external realm contents for all hosts
@@ -290,7 +304,8 @@
   with_items:
     - '{{ pki_realms + pki_default_realms }}'
   when: (pki_enabled | bool and item.name is defined and
-         (item.enabled is undefined or item.enabled|bool))
+         (item.enabled is undefined or item.enabled|bool) and
+         (item.when is undefined or item.when|bool))
 
 - name: Download custom CA certificates
   copy:
@@ -311,9 +326,11 @@
     - '{{ pki_group_realms }}'
     - '{{ pki_host_realms }}'
     - '{{ pki_default_realms }}'
+    - '{{ pki_dependent_realms }}'
   changed_when: False
   when: (pki_enabled | bool and item.name is defined and
-         (item.enabled is undefined or item.enabled|bool))
+         (item.enabled is undefined or item.enabled|bool) and
+         (item.when is undefined or item.when|bool))
 
 - name: Manage system CA certificates
   include: ca_certificates.yml

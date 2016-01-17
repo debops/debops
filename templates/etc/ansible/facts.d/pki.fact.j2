@@ -6,9 +6,18 @@
 {% set pki_tpl_ca_realm = pki_system_ca_realm %}
 {% set pki_tpl_known_realms = [] %}
 {% if pki_enabled | bool %}
-{%   for realm in (pki_realms + pki_default_realms + pki_group_realms + pki_host_realms) %}
-{%     set _ = pki_tpl_known_realms.append(realm.name) %}
+{%   for realm in (pki_realms + pki_default_realms + pki_group_realms + pki_host_realms + pki_dependent_realms) %}
+{%     if (realm.name is defined and ((realm.enabled is undefined or realm.enabled|bool) and (realm.when is undefined or realm.when|bool))) %}
+{%       set _ = pki_tpl_known_realms.append(realm.name) %}
+{%     endif %}
 {%   endfor %}
+{%   if (ansible_local|d() and ansible_local.pki|d() and ansible_local.pki.known_realms|d()) %}
+{%     for realm in ansible_local.pki.known_realms %}
+{%       if realm not in pki_tpl_known_realms %}
+{%         set _ = pki_tpl_known_realms.append(realm) %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
 {% endif %}
 {
 "acme": "{{ pki_tpl_acme | bool | lower }}",
