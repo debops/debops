@@ -818,7 +818,7 @@ process_public_files () {
 
             if ! diff -q -N ${authority}/cert.pem public/cert.pem > /dev/null ; then
 
-                for source_file in ${authority}/cert.pem ${authority}/intermediate.pem ${authority}/root.pem ; do
+                for source_file in ${authority}/cert.pem ${authority}/intermediate.pem ${authority}/root.pem ${authority}/alt_intermediate.pem ${authority}/alt_root.pem ; do
 
                     if [ -r ${source_file} ] ; then
                         if ! diff -q -N ${source_file} ${source_file/${authority}/public} > /dev/null ; then
@@ -835,10 +835,17 @@ process_public_files () {
                 elif [ -r public/cert.pem.tmp -a -r public/intermediate.pem ] ; then
                         cat public/cert.pem.tmp public/intermediate.pem > public/cert_intermediate.pem.tmp
                 fi
+
                 if [ -r public/intermediate.pem.tmp -a -r public/root.pem.tmp ] ; then
                     cat public/intermediate.pem.tmp public/root.pem.tmp > public/intermediate_root.pem.tmp
                 elif [ -r public/intermediate.pem -a -r public/root.pem.tmp ] ; then
                     cat public/intermediate.pem public/root.pem.tmp > public/intermediate_root.pem.tmp
+                fi
+
+                if [ -r public/alt_intermediate.pem.tmp -a -r public/alt_root.pem.tmp ] ; then
+                    cat public/alt_intermediate.pem.tmp public/alt_root.pem.tmp > public/alt_intermediate_root.pem.tmp
+                elif [ -r public/alt_intermediate.pem -a -r public/alt_root.pem.tmp ] ; then
+                    cat public/alt_intermediate.pem public/alt_root.pem.tmp > public/alt_intermediate_root.pem.tmp
                 fi
 
             fi
@@ -857,7 +864,7 @@ process_public_files () {
 
             if ! diff -q -N ${authority}/root.pem public/root.pem > /dev/null ; then
 
-                for source_file in ${authority}/intermediate.pem ${authority}/root.pem ; do
+                for source_file in ${authority}/intermediate.pem ${authority}/root.pem ${authority}/alt_intermediate.pem ${authority}/alt_root.pem ; do
 
                     if [ -r ${source_file} ] ; then
                         if ! diff -q -N ${source_file} ${source_file/${authority}/public} > /dev/null ; then
@@ -871,6 +878,12 @@ process_public_files () {
                     cat public/intermediate.pem.tmp public/root.pem.tmp > public/intermediate_root.pem.tmp
                 elif [ -r public/intermediate.pem -a -r public/root.pem.tmp ] ; then
                     cat public/intermediate.pem public/root.pem.tmp > public/intermediate_root.pem.tmp
+                fi
+
+                if [ -r public/alt_intermediate.pem.tmp -a -r public/alt_root.pem.tmp ] ; then
+                    cat public/alt_intermediate.pem.tmp public/alt_root.pem.tmp > public/alt_intermediate_root.pem.tmp
+                elif [ -r public/alt_intermediate.pem -a -r public/alt_root.pem.tmp ] ; then
+                    cat public/alt_intermediate.pem public/alt_root.pem.tmp > public/alt_intermediate_root.pem.tmp
                 fi
 
             fi
@@ -976,6 +989,10 @@ activate_new_files () {
             rm -f public/intermediate.pem public/cert_intermediate.pem public/chain.pem
         fi
 
+        if [ ! -r public/alt_intermediate.pem.tmp -a -r public/alt_intermediate.pem ] ; then
+            rm -f public/alt_intermediate.pem public/alt_intermediate_root.pem public/alt_trusted.pem
+        fi
+
     fi
 
     for new_file in $(find public/ -maxdepth 1 -name '*.tmp') ; do
@@ -999,10 +1016,16 @@ update_realm_symlinks () {
         cd - > /dev/null
     fi
 
+    if [ -r public/alt_intermediate_root.pem ] ; then
+        cd public
+        update_symlink alt_trusted.pem alt_intermediate_root.pem alt_root.pem
+        cd - > /dev/null
+    fi
+
     update_symlink default.crt public/chain.pem public/cert.pem
     update_symlink default.key private/key.pem
     update_symlink default.pem private/key_chain.pem
-    update_symlink CA.crt public/trusted.pem public/root.pem ${config['pki_default_ca_bundle']}
+    update_symlink CA.crt public/alt_trusted.pem public/alt_root.pem public/trusted.pem public/root.pem ${config['pki_default_ca_bundle']}
 
 }
 
@@ -1238,6 +1261,18 @@ sub_init () {
                         ;;
                     subdomains=*)
                         args["subdomains"]=${OPTARG#*=}
+                        ;;
+                    default-domain)
+                        args["pki_default_domain"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    default-domain=*)
+                        args["pki_default_domain"]=${OPTARG#*=}
+                        ;;
+                    default-subdomains)
+                        args["pki_default_subdomains"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    default-subdomains=*)
+                        args["pki_default_subdomains"]=${OPTARG#*=}
                         ;;
                     acme)
                         args["pki_acme"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
