@@ -17,13 +17,24 @@ cryptsetup_base_packages:
   - 'parted'
 
 
-# ----------------------------------------
-#   Lists of encrypted filesystems items
-# ----------------------------------------
+# ----------------------------------
+#   Lists of encrypted filesystems
+# ----------------------------------
 
 # .. envvar:: cryptsetup_devices
 #
 # Global definition list of encrypted filesystems.
+#
+# Example:
+#
+# .. code::
+#
+#    cryptsetup_devices:
+#      - name: 'sdb5_crypt'
+#        ciphertext_block_device: '/dev/sdb5'
+#
+# Setup a encrypted filesystem on top of :file:`/dev/sdb5` which will be
+# available after role execution under :file:`/media/sdb5_crypt`.
 cryptsetup_devices: []
 
 
@@ -36,18 +47,6 @@ cryptsetup_group_devices: []
 # .. envvar:: cryptsetup_host_devices
 #
 # Host definition list of encrypted filesystems.
-#
-# Example:
-#
-# * Setup a encrypted filesystem on top of :file:`/dev/sdb5` which will be
-#   available after role execution under
-#   :file:`/media/name_of_mountpoint_and_device_mapper_target`.
-#
-# .. code:: YAML
-#
-#    cryptsetup_host_devices:
-#      - name: 'name_of_mountpoint_and_device_mapper_target'
-#        ciphertext_block_device: '/dev/sdb5'
 cryptsetup_host_devices: []
 
 
@@ -65,9 +64,9 @@ cryptsetup_keyfile_location: "{{ secret + '/cryptsetup/' + ansible_fqdn }}"
 #
 # Directory where the keyfiles will be stored in on the remote system.
 cryptsetup_keyfile_remote_location: '{{ (ansible_local.root.var
-                                      if (ansible_local|d() and ansible_local.root|d() and
-                                          ansible_local.root.var|d())
-                                      else "/var/local") + "/keyfiles" }}'
+                                        if (ansible_local|d() and ansible_local.root|d() and
+                                            ansible_local.root.var|d())
+                                        else "/var/local") + "/keyfiles" }}'
 
 
 # .. envvar:: cryptsetup_keyfile_owner
@@ -96,9 +95,9 @@ cryptsetup_keyfile_mode: '0600'
 #
 # Directory the header backups from LUKS will be stored in on the remote system.
 cryptsetup_header_backup_remote_location: '{{ (ansible_local.root.backup
-                                      if (ansible_local|d() and ansible_local.root|d() and
-                                          ansible_local.root.backup|d())
-                                      else "/var/backups") + "/luks_header_backup" }}'
+                                              if (ansible_local|d() and ansible_local.root|d() and
+                                                  ansible_local.root.backup|d())
+                                              else "/var/backups") + "/luks_header_backup" }}'
 
 
 # .. envvar:: cryptsetup_backup_header
