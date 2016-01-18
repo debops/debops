@@ -21,8 +21,8 @@ you to use more specific parameters which are not documented below.
   :file:`/dev/sdb5`.
 
 ``crypttab_options``
-  Optional, string. List of options to configure for each device in
-  :file:`/etc/crypttab`.
+  Optional, list of strings. Each string represents an option to configure for
+  each device in :file:`/etc/crypttab`.
   Overwrites the default as configured by ``cryptsetup_crypttab_options``
   variable.
 
@@ -56,7 +56,7 @@ you to use more specific parameters which are not documented below.
     {{ cryptsetup_mountpoint_parent_directory + "/" + item.name }}
 
 ``mount_options``
-  Optional, string. Mount options associated with the filesystem.
+  Optional, list of strings. Mount options associated with the filesystem.
   For more details see :manpage:`mount(8)`.
 
 ``state``
@@ -79,8 +79,8 @@ you to use more specific parameters which are not documented below.
 
     To avoid this, you need to set the following options for the item::
 
-      crypttab_options: 'noauto{{ "" if (cryptsetup_crypttab_options|d("") == "") else ("," + cryptsetup_crypttab_options) }}'
-      mount_options: 'noauto{{ "" if (cryptsetup_mount_options|d("") == "") else ("," + cryptsetup_mount_options) }}'
+      crypttab_options: '{{ ["noauto"] + (cryptsetup_crypttab_options|d([])) }}'
+      mount_options: '{{ ["noauto"] + (cryptsetup_mount_options|d([])) }}'
 
     Note that this option is currently not idempotent because it copes the
     keyfile to the remote system and erases it again.

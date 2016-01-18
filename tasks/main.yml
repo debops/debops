@@ -188,7 +188,7 @@
   crypttab:
     backing_device: '{{ ("UUID=" + item.1.stdout) if (item.1.stdout|d() and item.0.use_uuid|d(cryptsetup_use_uuid)|bool) else item.0.ciphertext_block_device }}'
     name: '{{ item.0.name }}'
-    opts: '{{ item.0.crypttab_options | d(cryptsetup_crypttab_options | d("none")) }}'
+    opts: '{{ (item.0.crypttab_options | d(cryptsetup_crypttab_options | d(["none"]))) | list | join(",") }}'
     ## ``none`` is required on Debian jessie by :command:`cryptdisks_start` if no options are given.
     password: '{{ ("/dev/shm"
               if (item.0.state|d(cryptsetup_state|d("mounted")) == "ansible_controller_mounted")
@@ -269,12 +269,12 @@
 - name: Mount or unmount the plaintext device mapper target
   mount:
     src:    '/dev/mapper/{{ item.name }}'
-    dump:   '{{ item.mount_dump    | d(omit) }}'
-    fstab:  '{{ item.fstab_path    | d(omit) }}'
-    fstype: '{{ item.fstype        | d(cryptsetup_fstype) }}'
-    name:   '{{ item.mount         | d(cryptsetup_mountpoint_parent_directory + "/" + item.name) }}'
-    opts:   '{{ item.mount_options | d(cryptsetup_mount_options | d(omit)) }}'
-    passno: '{{ item.mount_passno  | d(omit) }}'
+    dump:   '{{ item.mount_dump     | d(omit) }}'
+    fstab:  '{{ item.fstab_path     | d(omit) }}'
+    fstype: '{{ item.fstype         | d(cryptsetup_fstype) }}'
+    name:   '{{ item.mount          | d(cryptsetup_mountpoint_parent_directory + "/" + item.name) }}'
+    opts:   '{{ (item.mount_options | d(cryptsetup_mount_options | d([]))) | list | join(",") }}'
+    passno: '{{ item.mount_passno   | d(omit) }}'
     state:  '{{ "mounted" if (item.state|d(cryptsetup_state) == "ansible_controller_mounted") else item.state|d(cryptsetup_state) }}'
   with_items: cryptsetup_devices_combined
 

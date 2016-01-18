@@ -16,6 +16,9 @@ v0.3.0
 - Removed default mount options ``user`` and ``auto`` because they are not good
   defaults for the role. [ypid]
 
+- ``cryptsetup_mount_options`` and ``cryptsetup_crypttab_options`` are now
+  lists of strings to allow more flexibility. [ypid]
+
 v0.2.1
 ------
 
