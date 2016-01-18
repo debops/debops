@@ -73,6 +73,7 @@
            --acme-ca "{{ item.acme_ca | d(pki_acme_ca) }}" --acme-ca-api "{{ item.acme_ca_api | d(pki_acme_ca_api_map[item.acme_ca|d(pki_acme_ca)]) }}"
            --acme-default-subdomains "{{ (item.acme_default_subdomains | d(pki_acme_default_subdomains)) | join('/') }}"
            --acme-challenge-dir "{{ item.acme_challenge_dir | d(pki_acme_challenge_dir) }}"
+           --default-domain "{{ item.default_domain | d(pki_default_domain) }}"
            --default-subdomains "{{ (item.default_subdomains | d(pki_default_subdomains)) | join('/') }}"
   args:
     creates: '{{ pki_root + "/realms/" + item.name + "/config/realm.conf" }}'
