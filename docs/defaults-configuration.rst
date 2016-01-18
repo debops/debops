@@ -105,6 +105,11 @@ you to use more specific parameters which are not documented below.
     devices which have been setup previously and are not available during
     execution of this role.
 
+    Note that if the encrypted filesystem is not mounted when this option is
+    used then this role will not be idempotent because the crypto layer needs
+    to be opened in order to check if the filesystem has been created on top of
+    it.
+
   ``absent``
     Same as ``unmounted`` but additionally removes all configuration, the
     keyfile and the header backup from the remote system for this item.
