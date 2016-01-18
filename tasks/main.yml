@@ -188,7 +188,7 @@
   crypttab:
     backing_device: '{{ ("UUID=" + item.1.stdout) if (item.1.stdout|d() and item.0.use_uuid|d(cryptsetup_use_uuid)|bool) else item.0.ciphertext_block_device }}'
     name: '{{ item.0.name }}'
-    opts: '{{ (item.0.crypttab_options | d(cryptsetup_crypttab_options | d(["none"]))) | list | join(",") }}'
+    opts: '{{ (item.0.crypttab_options | d(cryptsetup_crypttab_options | d(["none"])) ) | list | sort | unique | join(",") }}'
     ## ``none`` is required on Debian jessie by :command:`cryptdisks_start` if no options are given.
     password: '{{ ("/dev/shm"
               if (item.0.state|d(cryptsetup_state|d("mounted")) == "ansible_controller_mounted")
