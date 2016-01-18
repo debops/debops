@@ -73,6 +73,18 @@ you to use more specific parameters which are not documented below.
     Might be useful when you don’t have a secure place to store the keyfile on the remote system.
     With this option you will be required to run this role after each reboot to mount the filesystem again.
 
+    Note that the default is ``auto`` which means that your init system will
+    try to mount the filesystem on boot and might drop you to a root shell if
+    it can’t.
+
+    To avoid this, you need to set the following options for the item::
+
+      crypttab_options: 'noauto{{ "" if (cryptsetup_crypttab_options|d("") == "") else ("," + cryptsetup_crypttab_options) }}'
+      mount_options: 'noauto{{ "" if (cryptsetup_mount_options|d("") == "") else ("," + cryptsetup_mount_options) }}'
+
+    Note that this option is currently not idempotent because it copes the
+    keyfile to the remote system and erases it again.
+
   ``unmounted``
     Ensure that the encryption and filesystem layer are in place on the block device and
     the filesystem is unmounted. Additionally ensures that the cryptsetup mapping

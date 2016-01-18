@@ -161,11 +161,11 @@
          {% if cryptsetup_use_random|d("default") != "default" %}
          {{ "--use-random" if cryptsetup_use_random|d() else "--use-urandom" }}
          {% endif %}
-         --key-file '{{ cryptsetup_keyfile_remote_location + "/" + item.0.name + "_keyfile.raw" }}'
-         '{{ ("/dev/shm"
-            if (item.0.state|d(cryptsetup_state|d("mounted")) == "ansible_controller_mounted")
-            else cryptsetup_keyfile_remote_location)
-            + "/" + item.0.name + "_keyfile.raw" }}'
+         --key-file '{{ ("/dev/shm"
+                        if (item.0.state|d(cryptsetup_state|d("mounted")) == "ansible_controller_mounted")
+                        else cryptsetup_keyfile_remote_location)
+                        + "/" + item.0.name + "_keyfile.raw" }}'
+         '{{ item.0.ciphertext_block_device }}'
   changed_when: ("Command successful." == cryptsetup_register_cmd.stdout)
   register: cryptsetup_register_cmd
   when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)

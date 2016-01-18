@@ -13,6 +13,9 @@ v0.3.0
 - Added support to setup and mount a encrypted filesystem without storing the
   keyfile on persistent storage of the remote system. [ypid]
 
+- Removed default mount options ``user`` and ``auto`` because they are not good
+  defaults for the role. [ypid]
+
 v0.2.1
 ------
 
