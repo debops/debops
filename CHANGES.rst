@@ -10,6 +10,9 @@ v0.3.0
   and fixed the task to allow to disable header backups.
   Only disable header backups when you know what you are doing! [ypid]
 
+- Added support to setup and mount a encrypted filesystem without storing the
+  keyfile on persistent storage of the remote system. [ypid]
+
 v0.2.1
 ------
 

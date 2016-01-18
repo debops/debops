@@ -68,6 +68,11 @@ you to use more specific parameters which are not documented below.
     Ensure that the encryption and filesystem layer are in place on the block device and
     the filesystem is mounted.
 
+  ``ansible_controller_mounted``
+    Same as ``mounted`` except that the keyfile is never stored on persistent storage of the remote system.
+    Might be useful when you don’t have a secure place to store the keyfile on the remote system.
+    With this option you will be required to run this role after each reboot to mount the filesystem again.
+
   ``unmounted``
     Ensure that the encryption and filesystem layer are in place on the block device and
     the filesystem is unmounted. Additionally ensures that the cryptsetup mapping

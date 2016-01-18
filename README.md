@@ -24,6 +24,8 @@ the Ansible controller and the remote system).
 * Create a random keyfile or use an already existing file.
 * Manage `/etc/crypttab` and `/etc/fstab`.
 * Create a LUKS header backup and store it on the Ansible controller.
+* Setup and mount the encrypted filesystem without storing the keyfile on
+  persistent storage of the remote system.
 
 ### Installation
 
