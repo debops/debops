@@ -17,13 +17,24 @@ cryptsetup_base_packages:
   - 'parted'
 
 
-# ----------------------------------------
-#   Lists of encrypted filesystems items
-# ----------------------------------------
+# ---------------------------------
+#   List of encrypted filesystems
+# ---------------------------------
 
 # .. envvar:: cryptsetup_devices
 #
 # Global definition list of encrypted filesystems.
+#
+# Example:
+#
+# .. code::
+#
+#    cryptsetup_devices:
+#      - name: 'sdb5_crypt'
+#        ciphertext_block_device: '/dev/sdb5'
+#
+# Setup a encrypted filesystem on top of :file:`/dev/sdb5` which will be
+# available after role execution under :file:`/media/sdb5_crypt`.
 cryptsetup_devices: []
 
 
@@ -36,18 +47,6 @@ cryptsetup_group_devices: []
 # .. envvar:: cryptsetup_host_devices
 #
 # Host definition list of encrypted filesystems.
-#
-# Example:
-#
-# * Setup a encrypted filesystem on top of :file:`/dev/sdb5` which will be
-#   available after role execution under
-#   :file:`/media/name_of_mountpoint_and_device_mapper_target`.
-#
-# .. code:: YAML
-#
-#    cryptsetup_host_devices:
-#      - name: 'name_of_mountpoint_and_device_mapper_target'
-#        ciphertext_block_device: '/dev/sdb5'
 cryptsetup_host_devices: []
 
 
@@ -65,9 +64,9 @@ cryptsetup_keyfile_location: "{{ secret + '/cryptsetup/' + ansible_fqdn }}"
 #
 # Directory where the keyfiles will be stored in on the remote system.
 cryptsetup_keyfile_remote_location: '{{ (ansible_local.root.var
-                                      if (ansible_local|d() and ansible_local.root|d() and
-                                          ansible_local.root.var|d())
-                                      else "/var/local") + "/keyfiles" }}'
+                                        if (ansible_local|d() and ansible_local.root|d() and
+                                            ansible_local.root.var|d())
+                                        else "/var/local") + "/keyfiles" }}'
 
 
 # .. envvar:: cryptsetup_keyfile_owner
@@ -95,22 +94,29 @@ cryptsetup_keyfile_mode: '0600'
 # .. envvar:: cryptsetup_header_backup_remote_location
 #
 # Directory the header backups from LUKS will be stored in on the remote system.
+#
+# The LUKS header backup will be stored in this file on the Ansible controller:
+#
+# .. code:: jinja
+#
+#    {{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}
+#
 cryptsetup_header_backup_remote_location: '{{ (ansible_local.root.backup
-                                      if (ansible_local|d() and ansible_local.root|d() and
-                                          ansible_local.root.backup|d())
-                                      else "/var/backups") + "/luks_header_backup" }}'
+                                              if (ansible_local|d() and ansible_local.root|d() and
+                                                  ansible_local.root.backup|d())
+                                              else "/var/backups") + "/luks_header_backup" }}'
 
 
-# .. envvar:: cryptsetup_backup_header
+# .. envvar:: cryptsetup_header_backup
 #
-# By default save a backup of the LUKS header on the Ansible controller under:
+# Should a header backup be created?
 #
-# .. code:: YAML
+# .. note:: The LUKS header is only stored once in the beginning of your block device.
+#    When the header gets corrupted, the plaintext data might be inaccessible!
+#    Thus it is recommended to have a header backup on hand.
 #
-#   {{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}
-#
-# Set to ``False`` to disable it.
-cryptsetup_backup_header: True
+# Set to ``False`` to disable header backup creation.
+cryptsetup_header_backup: True
 
 
 # -----------------------------------
@@ -214,13 +220,14 @@ cryptsetup_key_size: 512
 
 # .. envvar:: cryptsetup_use_random
 #
-# Sets key size in bits. The argument has to be a multiple of 8. The possible
-# key-sizes are limited by the cipher and mode used.
+# Should :file:`/dev/random` be used to generate the LUKS master key?
 # Corresponds with the ``--use-random`` and ``--use-urandom`` parameter.
 #
 # The current default of :command:`cryptsetup` (as shown by
 # :command:`cryptsetup --help`) is :file:`/dev/urandom`.
 # Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
+#
+# Check :manpage:`random(4)` for details.
 cryptsetup_use_random: True
 
 

@@ -2,7 +2,10 @@
 
 - name: Combine cryptsetup device lists
   set_fact:
-    cryptsetup_devices_combined: '{{ cryptsetup_devices + cryptsetup_group_devices + cryptsetup_host_devices | d([]) }}'
+    cryptsetup_devices_combined: '{{
+      (cryptsetup_devices|d([]) | list) +
+      (cryptsetup_group_devices|d([]) | list) +
+      (cryptsetup_host_devices|d([]) | list) }}'
   tags: [ 'role::cryptsetup:backup' ]
 
 - name: Ensure that required options are specified and valid for each given device
@@ -45,10 +48,10 @@
 
 - name: Calculate keyfile creation options
   set_fact:
-    cryptsetup_dd_bs: '{{ ((512/8) if cryptsetup_key_size|d() == "default" else ((cryptsetup_key_size)/8))|int }}'
+    cryptsetup_dd_bs: '{{ ((512/8) if cryptsetup_key_size|d() == "default" else ((cryptsetup_key_size)/8)) | int }}'
 
 - name: Generate keyfile on Ansible controller
-  command: dd if=/dev/random of="{{ item.keyfile | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}" bs={{ cryptsetup_dd_bs }} count=1 iflag=fullblock
+  command: dd if=/dev/random of='{{ item.keyfile | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}' bs={{ cryptsetup_dd_bs }} count=1 iflag=fullblock
   args:
     creates: '{{ item.keyfile | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}'
   become: False
@@ -116,7 +119,7 @@
 
 - name: Fail when ciphertext block device does not exist but the state requires for it to exist
   fail:
-    msg: 'Ciphertext block device {{ item.0.ciphertext_block_device }} does not exist and state is {{ item.0.state|d(cryptsetup_state|d("mounted")) }}!'
+    msg: 'Ciphertext block device {{ item.0.ciphertext_block_device }} does not exist and state was requested to be {{ item.0.state|d(cryptsetup_state|d("mounted")) }}!'
   when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted' ] and not item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
@@ -218,14 +221,14 @@
 ## LUKS header backup (((
 
 ## The header backup might change for example when new keys are added manually.
-## Thus we need to do the following steps each time the play is executed.
+## Thus we need to do the following steps each time the role is executed.
 - name: Create LUKS header backup
   tags: [ 'role::cryptsetup:backup' ]
   shell: |
     rm -f "{{ cryptsetup_header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}"
     cryptsetup luksHeaderBackup "{{ item.0.ciphertext_block_device }}" --header-backup-file "{{ cryptsetup_header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}"
   changed_when: False
-  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  when: ((cryptsetup_header_backup|d() | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
@@ -237,7 +240,7 @@
     dest: '{{ cryptsetup_keyfile_location + "/" + item.0.name }}/header_backup.raw'
     fail_on_missing: True
     flat: True
-  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  when: ((cryptsetup_header_backup|d() | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
