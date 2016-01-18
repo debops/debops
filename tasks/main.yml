@@ -166,8 +166,8 @@
                         else cryptsetup_keyfile_remote_location)
                         + "/" + item.0.name + "_keyfile.raw" }}'
          '{{ item.0.ciphertext_block_device }}'
-  changed_when: ("Command successful." == cryptsetup_register_cmd.stdout)
   register: cryptsetup_register_cmd
+  changed_when: ("Command successful." == cryptsetup_register_cmd.stdout)
   when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
@@ -203,8 +203,8 @@
 
 - name: Start plaintext device mapper target
   command: cryptdisks_start "{{ item.0.name }}"
-  changed_when: ("(started)" in cryptsetup_register_cryptdisks_start.stdout)
   register: cryptsetup_register_cryptdisks_start
+  changed_when: ("(started)" in cryptsetup_register_cryptdisks_start.stdout)
   when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
@@ -273,7 +273,7 @@
     fstab:  '{{ item.fstab_path     | d(omit) }}'
     fstype: '{{ item.fstype         | d(cryptsetup_fstype) }}'
     name:   '{{ item.mount          | d(cryptsetup_mountpoint_parent_directory + "/" + item.name) }}'
-    opts:   '{{ (item.mount_options | d(cryptsetup_mount_options | d([]))) | list | join(",") }}'
+    opts:   '{{ (item.mount_options | d(cryptsetup_mount_options | d([]))) | list | sort | unique | join(",") }}'
     passno: '{{ item.mount_passno   | d(omit) }}'
     state:  '{{ "mounted" if (item.state|d(cryptsetup_state) == "ansible_controller_mounted") else item.state|d(cryptsetup_state) }}'
   with_items: cryptsetup_devices_combined
@@ -289,12 +289,12 @@
 
 - name: Stop plaintext device mapper target
   command: cryptdisks_stop "{{ item.0.name }}"
+  register: cryptsetup_register_cryptdisks_stop
   changed_when: ("(stopping)" in cryptsetup_register_cryptdisks_stop.stdout)
   failed_when: (
                 cryptsetup_register_cryptdisks_stop.rc != 0 and not
                 ('Stopping crypto disk...' == cryptsetup_register_cryptdisks_stop.stdout and cryptsetup_register_cryptdisks_stop.rc == 1)
                )
-  register: cryptsetup_register_cryptdisks_stop
   when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'unmounted', 'absent' ] or
           (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'present' ] and item.1|changed)
         )
