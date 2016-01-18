@@ -94,22 +94,29 @@ cryptsetup_keyfile_mode: '0600'
 # .. envvar:: cryptsetup_header_backup_remote_location
 #
 # Directory the header backups from LUKS will be stored in on the remote system.
+#
+# The LUKS header backup will be stored in this file on the Ansible controller:
+#
+# .. code:: YAML
+#
+#    {{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}
+#
 cryptsetup_header_backup_remote_location: '{{ (ansible_local.root.backup
                                               if (ansible_local|d() and ansible_local.root|d() and
                                                   ansible_local.root.backup|d())
                                               else "/var/backups") + "/luks_header_backup" }}'
 
 
-# .. envvar:: cryptsetup_backup_header
+# .. envvar:: cryptsetup_header_backup
 #
-# By default save a backup of the LUKS header on the Ansible controller under:
+# Should a header backup be created?
 #
-# .. code:: YAML
+# .. note:: The LUKS header is only stored once in the beginning of your block device.
+#    When the header gets corrupted, the plaintext data might be inaccessible!
+#    Thus it is recommended to have a header backup on hand.
 #
-#   {{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}
-#
-# Set to ``False`` to disable it.
-cryptsetup_backup_header: True
+# Set to ``False`` to disable header backup creation.
+cryptsetup_header_backup: True
 
 
 # -----------------------------------

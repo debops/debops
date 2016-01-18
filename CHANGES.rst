@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.3.0
+------
+
+*Unreleased*
+
+- Renamed option ``cryptsetup_backup_header`` to ``cryptsetup_header_backup``
+  and fixed the task to allow to disable header backups.
+  Only disable header backups when you know what you are doing! [ypid]
+
 v0.2.1
 ------
 
