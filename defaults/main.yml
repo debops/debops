@@ -8,11 +8,12 @@ pki: '{{ pki_enabled | bool }}'
 
 pki_acme: '{{ (True
                if ((ansible_all_ipv4_addresses +
-                    ansible_all_ipv6_addresses) | ipaddr("public"))
+                    ansible_all_ipv6_addresses) | ipaddr("public") and
+                    pki_default_domain)
                else False) | bool }}'
 
 pki_internal: '{{ (True
-                   if ansible_domain|d(False)
+                   if pki_default_domain
                    else False) | bool }}'
 
 pki_acme_library: 'openssl'
