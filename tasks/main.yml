@@ -11,7 +11,9 @@
     install_recommends: False
   with_flattened:
     - pki_base_packages
-    - '{{ pki_acme_packages if pki_acme|bool else [] }}'
+    - '{{ pki_acme_packages
+          if (pki_acme|bool or pki_acme_install|bool)
+          else [] }}'
     - pki_packages
   when: pki_enabled | bool
 
@@ -59,7 +61,8 @@
 
 - name: Configure acme-tiny support
   include: acme_tiny.yml
-  when: pki_enabled | bool and pki_acme | bool
+  when: (pki_enabled | bool and
+         (pki_acme | bool or pki_acme_install | bool))
 
 - name: Initialize PKI realms
   environment:
