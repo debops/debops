@@ -230,11 +230,21 @@ run_external_script () {
 
     if [ -r external/script ] ; then
 
+        if [ ! -r private/realm_key.pem ] ; then
+            generate_${config['pki_library']}_rsa_realm_key private/realm_key.pem
+            if [ ! -r private/key.pem ] ; then
+                install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
+                cat private/realm_key.pem >> private/key.pem.tmp
+                mv private/key.pem.tmp private/key.pem
+            fi
+        fi
+
         export PKI_SCRIPT_REALM="${config['name']}"
         export PKI_SCRIPT_FQDN="${config['pki_default_fqdn']}"
         export PKI_SCRIPT_SUBJECT="${config['subject']:-${config['pki_default_subject']}}"
         export PKI_SCRIPT_DOMAINS="${config['domains']:-${config['pki_default_domain']}}"
         export PKI_SCRIPT_SUBDOMAINS="${config['subdomains']:-${config['pki_default_subdomains']}}"
+        export PKI_SCRIPT_PRIVATE_KEY="$(get_absolute_path private/key.pem)"
 
         test -x external/script || chmod ug+x external/script
 
@@ -758,6 +768,15 @@ check_files () {
     fi
 
     if [ "${config['pki_acme']}" = "true" ] ; then
+
+        if [ ! -r private/realm_key.pem ] ; then
+            generate_${library}_rsa_realm_key private/realm_key.pem
+            if [ ! -r private/key.pem ] ; then
+                install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
+                cat private/realm_key.pem >> private/key.pem.tmp
+                mv private/key.pem.tmp private/key.pem
+            fi
+        fi
 
         if [ -r acme/cert.pem -a -r acme/${acme_library}.conf -a -r acme/request.pem ] ; then
             if ! check_expiration_time acme/cert.pem ${config['acme_expiration_seconds']} ; then
