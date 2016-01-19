@@ -1,6 +1,7 @@
 {% set pki_tpl_acme = pki_acme | bool %}
 {% set pki_tpl_enabled = pki_enabled | bool %}
 {% set pki_tpl_internal = pki_internal | bool %}
+{% set pki_tpl_hooks = pki_root + "/hooks" %}
 {% set pki_tpl_path = pki_root + "/realms" %}
 {% set pki_tpl_realm = pki_system_realm %}
 {% set pki_tpl_ca_realm = pki_system_ca_realm %}
@@ -26,6 +27,7 @@
 "ca_realm": "{{ pki_tpl_ca_realm }}",
 "crt": "default.crt",
 "enabled": "{{ pki_tpl_enabled | bool | lower }}",
+"hooks": "{{ pki_tpl_hooks }}",
 "internal": "{{ pki_tpl_internal | bool | lower }}",
 "key": "default.key",
 "known_realms": {{ pki_tpl_known_realms | to_nice_json }},

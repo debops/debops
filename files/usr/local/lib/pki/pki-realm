@@ -10,6 +10,8 @@ umask 022
 
 script="$(basename ${0})"
 
+state=()
+
 # Check if an associative array has a specified key present
 key_exists() {
     eval '[ ${'$1'[$2]+test_of_existence} ]'
@@ -207,12 +209,36 @@ check_openssl_key_crt_match () {
     fi
 }
 
+check_file_signature () {
+    local check_file="${1}"
+
+    if [ -r ${check_file} -a -r ${check_file}.sig ] ; then
+        set +s
+        md5sum --quiet --status -c ${check_file}.sig
+        local rc=$?
+        set -s
+        if [ ${rc} -ne 0 ] ; then
+            rm -rf ${check_file}.sig
+            md5sum ${check_file} > ${check_file}.sig
+            return ${rc}
+        fi
+    else
+        md5sum ${check_file} > ${check_file}.sig
+        return 0
+    fi
+}
+
 enter_realm () {
 
     local realm="${1}"
     local config_file="${2:-config/realm.conf}"
 
-    test -d ${config['pki_realms']}/${realm} || mkdir -p -m ${config['public_dir_mode']} ${config['pki_realms']}/${realm}
+    test -d ${config['pki_hooks']} || mkdir -p -m ${config['public_dir_mode']} ${config['pki_hooks']}
+
+    if [ ! -d ${config['pki_realms']}/${realm} ] ; then
+        mkdir -p -m ${config['public_dir_mode']} ${config['pki_realms']}/${realm}
+        state+=('new-realm')
+    fi
 
     cd ${config['pki_realms']}/${realm}
     local rc=$?
@@ -224,6 +250,32 @@ enter_realm () {
     fi
 
     return ${rc}
+}
+
+run_pki_hooks () {
+
+    if [ -n "${state:-}" -a -d ${config['pki_hooks']} ] ; then
+
+        export PKI_SCRIPT_REALM="${config['name']}"
+        export PKI_SCRIPT_FQDN="${config['pki_default_fqdn']}"
+        export PKI_SCRIPT_SUBJECT="${config['subject']:-${config['pki_default_subject']}}"
+        export PKI_SCRIPT_DOMAINS="${config['domains']:-${config['pki_default_domain']}}"
+        export PKI_SCRIPT_SUBDOMAINS="${config['subdomains']:-${config['pki_default_subdomains']}}"
+        export PKI_SCRIPT_PRIVATE_KEY="$(get_absolute_path private/key.pem)"
+
+        export PKI_SCRIPT_DEFAULT_CRT="$(get_absolute_path default.crt)"
+        export PKI_SCRIPT_DEFAULT_KEY="$(get_absolute_path default.key)"
+        export PKI_SCRIPT_DEFAULT_PEM="$(get_absolute_path default.pem)"
+
+        local current_state=$(printf ",%s" "${state[@]}")
+        local current_state="${current_state:1}"
+        export PKI_SCRIPT_STATE="${current_state}"
+
+        cd ${config['pki_hooks']}
+        ( run-parts . )
+        cd - > /dev/null 2>&1
+
+    fi
 }
 
 run_external_script () {
@@ -245,6 +297,14 @@ run_external_script () {
         export PKI_SCRIPT_DOMAINS="${config['domains']:-${config['pki_default_domain']}}"
         export PKI_SCRIPT_SUBDOMAINS="${config['subdomains']:-${config['pki_default_subdomains']}}"
         export PKI_SCRIPT_PRIVATE_KEY="$(get_absolute_path private/key.pem)"
+
+        export PKI_SCRIPT_DEFAULT_CRT="$(get_absolute_path default.crt)"
+        export PKI_SCRIPT_DEFAULT_KEY="$(get_absolute_path default.key)"
+        export PKI_SCRIPT_DEFAULT_PEM="$(get_absolute_path default.pem)"
+
+        local current_state=$(printf ",%s" "${state[@]}")
+        local current_state="${current_state:1}"
+        export PKI_SCRIPT_STATE="${current_state}"
 
         test -x external/script || chmod ug+x external/script
 
@@ -718,6 +778,17 @@ request_acme_tiny_certificate () {
 
 }
 
+check_public_certificate () {
+
+    if [ -r public/cert.pem ] ; then
+        if ! $(check_file_signature public/cert.pem) ; then
+            state+=("changed-certificate")
+            state+=("file-change")
+        fi
+    fi
+
+}
+
 check_files () {
 
     local name="${config['name']}"
@@ -732,6 +803,7 @@ check_files () {
                 install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
                 cat private/realm_key.pem >> private/key.pem.tmp
                 mv private/key.pem.tmp private/key.pem
+                state+=('new-private-key')
             fi
         fi
 
@@ -754,6 +826,7 @@ check_files () {
             fi
 
             generate_${library}_request internal/${library}.conf internal/request.pem
+            state+=('new-internal-request')
         fi
 
         if [ -r internal/${library}.conf -a -r internal/request.pem ] ; then
@@ -761,6 +834,7 @@ check_files () {
 
                 rm -f internal/request.pem
                 generate_${library}_request internal/${library}.conf internal/request.pem
+                state+=('new-internal-request')
 
             fi
         fi
@@ -775,6 +849,7 @@ check_files () {
                 install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
                 cat private/realm_key.pem >> private/key.pem.tmp
                 mv private/key.pem.tmp private/key.pem
+                state+=('new-private-key')
             fi
         fi
 
@@ -801,6 +876,7 @@ check_files () {
             chgrp "${config['acme_file_group']}" acme/request.pem
             chmod "${config['acme_file_mode']}" acme/request.pem
             chmod "${config['acme_dir_mode']}" acme
+            state+=('new-acme-request')
         fi
 
         if [ -r acme/${acme_library}.conf -a -r acme/request.pem ] ; then
@@ -810,6 +886,7 @@ check_files () {
                 generate_${acme_library}_request acme/${acme_library}.conf acme/request.pem
                 chgrp "${config['acme_file_group']}" acme/request.pem
                 chmod "${config['acme_file_mode']}" acme/request.pem
+                state+=('new-acme-request')
 
             fi
 
@@ -818,6 +895,7 @@ check_files () {
             generate_${acme_library}_request acme/${acme_library}.conf acme/request.pem
             chgrp "${config['acme_file_group']}" acme/request.pem
             chmod "${config['acme_file_mode']}" acme/request.pem
+            state+=('new-acme-request')
 
         fi
 
@@ -1006,20 +1084,26 @@ activate_new_files () {
 
         if [ ! -r public/intermediate.pem.tmp -a -r public/intermediate.pem ] ; then
             rm -f public/intermediate.pem public/cert_intermediate.pem public/chain.pem
+            state+=("file-change")
         fi
 
         if [ ! -r public/alt_intermediate.pem.tmp -a -r public/alt_intermediate.pem ] ; then
             rm -f public/alt_intermediate.pem public/alt_intermediate_root.pem public/alt_trusted.pem
+            state+=("file-change")
         fi
 
     fi
 
     for new_file in $(find public/ -maxdepth 1 -name '*.tmp') ; do
         mv --force ${new_file} ${new_file/.tmp/}
+        state+=("changed-public-file")
+        state+=("file-change")
     done
 
     for new_file in $(find private/ -maxdepth 1 -name '*.tmp') ; do
         mv --force ${new_file} ${new_file/.tmp/}
+        state+=("changed-private-file")
+        state+=("file-change")
     done
 
     update_realm_symlinks
@@ -1183,6 +1267,7 @@ sub_new-realm () {
                 install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
                 cat private/realm_key.pem >> private/key.pem.tmp
                 mv private/key.pem.tmp private/key.pem
+                state+=("new-private-key")
             fi
         fi
 
@@ -1205,15 +1290,19 @@ sub_new-realm () {
         fi
 
         generate_${library}_request internal/${library}.conf internal/request.pem
+        state+=("new-internal-request")
         if [ "${config['pki_acme']}" = "true" ] ; then
             generate_${library}_rsa_private_key acme/account_key.pem 4096 "${config['acme_file_group']}"
             generate_${acme_library}_request acme/${acme_library}.conf acme/request.pem
             chgrp "${config['acme_file_group']}" acme/request.pem
             chmod "${config['acme_file_mode']}" acme/request.pem
             chmod "${config['acme_dir_mode']}" acme
+            state+=("new-acme-request")
         fi
 
         update_realm_symlinks
+
+        run_pki_hooks
 
     fi
 }
@@ -1391,6 +1480,8 @@ sub_init () {
             save_realm_config config/realm.conf
         fi
 
+        run_pki_hooks
+
     fi
 }
 
@@ -1442,6 +1533,8 @@ sub_run () {
         process_private_files
         activate_new_files
         update_realm_symlinks
+        check_public_certificate
+        run_pki_hooks
 
     fi
 }
