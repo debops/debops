@@ -191,9 +191,9 @@
     opts: '{{ (item.0.crypttab_options | d(cryptsetup_crypttab_options | d(["none"])) ) | list | sort | unique | join(",") }}'
     ## ``none`` is required on Debian jessie by :command:`cryptdisks_start` if no options are given.
     password: '{{ ("/dev/shm"
-              if (item.0.state|d(cryptsetup_state|d("mounted")) == "ansible_controller_mounted")
-              else cryptsetup_keyfile_remote_location)
-              + "/" + item.0.name + "_keyfile.raw" }}'
+                  if (item.0.state|d(cryptsetup_state|d("mounted")) == "ansible_controller_mounted")
+                  else cryptsetup_keyfile_remote_location)
+                  + "/" + item.0.name + "_keyfile.raw" }}'
     path: '{{ item.0.crypttab_path | d(omit) }}'
     state: 'present'
   when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
@@ -266,7 +266,7 @@
 
 ## )))
 
-- name: Mount or unmount the plaintext device mapper target
+- name: Handle fstab and mounting of the plaintext device mapper target
   mount:
     src:    '/dev/mapper/{{ item.name }}'
     dump:   '{{ item.mount_dump     | d(omit) }}'
