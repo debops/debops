@@ -22,13 +22,49 @@ lxc_kernel_package: 'linux-image-{{ (ansible_kernel | split("-") | last) | d("am
                                                                    # ]]]
 # .. envvar:: lxc_kernel_mail_to [[[
 #
-# Address of recipients of a mail message with information about updated
-# kernel and reboot requirement.
+# List of recipients to which a mail will be send in case a reboot is required
+# after a kernel upgrade.
 lxc_kernel_mail_to: [ 'root@{{ ansible_domain }}' ]
                                                                    # ]]]
                                                                    # ]]]
 # Configure LXC environment [[[
 # -----------------------------
+
+# .. envvar:: lxc_kernel_mail_subject
+#
+# Subject of the Email to be send in case a reboot is required to boot into a
+# updated kernel version.
+lxc_kernel_mail_subject: 'System reboot required {{ ansible_fqdn }} (needed for LXC)'
+
+
+# .. envvar:: lxc_kernel_mail_body
+#
+# Body of the Email to be send in case a reboot is required to boot into a
+# updated kernel version.
+lxc_kernel_mail_body: |
+  Ansible has updated the Linux kernel to support LXC on host {{ ansible_fqdn }}.
+  You should check the status of the host and reboot it when convenient.
+
+  Current kernel: {{ ansible_kernel }}
+
+  Output of install command:
+  ---------------------------------------------------------------
+  {% for line in lxc_register_kernel_upgrade.stdout_lines %}
+  {{ line }}
+  {% endfor %}
+  ---------------------------------------------------------------
+
+  Output of lxc-ls -f:
+  ---------------------------------------------------------------
+  {% for line in lxc_list_status.stdout_lines %}
+  {{ line }}
+  {% endfor %}
+  ---------------------------------------------------------------
+
+
+# ------------------------------------
+#   Configure LXC environment
+# ------------------------------------
 
 # .. envvar:: lxc_root_path [[[
 #
