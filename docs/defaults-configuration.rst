@@ -79,8 +79,8 @@ you to use more specific parameters which are not documented below.
 
     To avoid this, you need to set the following options for the item::
 
-      crypttab_options: '{{ ["noauto"] + (cryptsetup_crypttab_options|d([])) }}'
-      mount_options: '{{ ["noauto"] + (cryptsetup_mount_options|d([])) }}'
+      crypttab_options: '{{ ["noauto"] + (cryptsetup_crypttab_options|d([]) | list) }}'
+      mount_options: '{{ ["noauto"] + (cryptsetup_mount_options|d([]) | list) }}'
 
     Note that this option is currently not idempotent because it copes the
     keyfile to the remote system and erases it again.
