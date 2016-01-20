@@ -26,7 +26,7 @@
     regexp: '{{ item.regexp }}'
     line: '{{ item.line }}'
     insertbefore: '{{ item.insertbefore }}'
-  when: (apparmor_manage_grub and (apparmor_enable|d() | bool))
+  when: ((apparmor_manage_grub|d() | bool) and (apparmor_enable|d() | bool))
   with_items:
     - regexp: '^GRUB_CMDLINE_LINUX='
       line: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR {{ apparmor_additional_kernel_parameters }}"'
@@ -46,16 +46,20 @@
   notify: [ 'Update grub' ]
 
 - name: Check if the running kernel has been started with AppArmor enabled
-  shell: egrep --quiet 'apparmor=1' /proc/cmdline && egrep --quiet 'security=apparmor' /proc/cmdline
+  shell: grep --quiet 'apparmor=1' /proc/cmdline && grep --quiet 'security=apparmor' /proc/cmdline
   register: apparmor_register_kernel_cmdline
   when: (apparmor_enable|d() | bool)
   failed_when: False
   changed_when: False
   always_run: True
 
-- name: Check if reboot is required to enable apparmor
-  fail:
-    msg: 'You have to reboot the system to enable AppArmor.'
+- name: Send mail to administrator if reboot is required to enable AppArmor
+  mail:
+    from: 'root@{{ ansible_fqdn }}'
+    subject: '{{ apparmor_mail_subject }}'
+    to: '{{ apparmor_mail_to | list | join(",") }}'
+    charset: 'utf8'
+    body: '{{ apparmor_mail_body }}'
   when: (apparmor_register_kernel_cmdline.rc != 0)
 
 ## Seems that there is currently a bug in the version include in Debian Jessie
@@ -76,16 +80,24 @@
   command: aa-{{ item.value }} "{{ item.key }}"
   register: apparmor_register_profile_status
   # changed_when: (apparmor_register_profile_status.stdout|d() != "")
-  ## FIXME: Currently it seems to be tricky.
+  ## FIXME: Currently changed_when seems to be tricky.
   changed_when: False
+  failed_when: |
+    apparmor_register_profile_status.rc != 0 and (
+      "Warning: unable to find a suitable fs in /proc/mounts, is it mounted?" not in apparmor_register_profile_status.stderr and
+      apparmor_register_kernel_cmdline.rc != 0
+    )
+  ## AppArmor tries to load the profile with the new status into the Kernel after changing it.
+  ## This does not work if the Kernel has not been started with AppArmor support.
+  ## But the profile configuration file is updated anyway and will be picked up on next reboot with AppArmor support.
   with_dict: apparmor_profile_status
 
-- name: Ensure apparmor service is started
+- name: Ensure AppArmor service is started
   service:
     name: 'apparmor'
     state: 'started'
     enabled: True
-  when: (apparmor_enable|d() | bool)
+  when: ((apparmor_enable|d() | bool) and (apparmor_register_kernel_cmdline.rc == 0))
 
 - name: Configure additions or overrides of system profiles
   template:
@@ -106,7 +118,7 @@
   command: service apparmor teardown
   when: (not (apparmor_enable|d() | bool))
 
-- name: Stop service apparmor
+- name: Ensure AppArmor service is stopped
   service:
     name: 'apparmor'
     state: 'stopped'

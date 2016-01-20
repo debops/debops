@@ -62,6 +62,29 @@ apparmor_manage_grub: False
 apparmor_additional_kernel_parameters: ''
 
 
+# .. envvar:: apparmor_mail_to
+#
+# List of recipients to which a mail will be send in case a reboot is required.
+apparmor_mail_to: [ 'root@{{ ansible_domain }}' ]
+
+
+# .. envvar:: apparmor_mail_subject
+#
+# Subject of the Email to be send in case a reboot is required to boot into a
+# updated kernel version.
+apparmor_mail_subject: 'Reboot required by AppArmor on {{ ansible_fqdn }}'
+
+
+# .. envvar:: apparmor_mail_body
+#
+# Body of the Email to be send in case a reboot is required to boot into a
+# updated kernel version.
+apparmor_mail_body: |
+  Ansible has enabled AppArmor thought the boot loader configuration for the
+  Linux kernel parameters on host {{ ansible_fqdn }}.
+  You should check the status of the host and reboot it when convenient.
+
+
 # -------------------
 #   AppArmor profiles
 # -------------------
