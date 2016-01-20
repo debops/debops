@@ -213,10 +213,10 @@ check_file_signature () {
     local check_file="${1}"
 
     if [ -r ${check_file} -a -r ${check_file}.sig ] ; then
-        set +s
+        set +e
         md5sum --quiet --status -c ${check_file}.sig
         local rc=$?
-        set -s
+        set -e
         if [ ${rc} -ne 0 ] ; then
             rm -rf ${check_file}.sig
             md5sum ${check_file} > ${check_file}.sig
