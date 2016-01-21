@@ -42,11 +42,12 @@ wait_for_pid () {
     local pidfile="${1}"
 
     if [ -n "${pidfile}" -a -r ${pidfile} ] ; then
-        while $(kill -0 $(<${pidfile}) > /dev/null 2>&1) ; do
-            log_message "Waiting for PID $(<${pidfile}) to finish"
-            sleep $[ ( $RANDOM % 5 ) + 1]m
+        local wait_pid="$(<${pidfile})"
+        while kill -0 ${wait_pid} > /dev/null 2>&1 ; do
+            log_message "Waiting for PID ${wait_pid} to finish"
+            sleep $(( ( $RANDOM % 30 ) + 5 ))
         done
-        test -f ${pidfile} && rm -f ${pidfile}
+        test -f ${pidfile} && rm -f ${pidfile} || true
     fi
 }
 
@@ -326,7 +327,7 @@ run_pki_hooks () {
         export PKI_SCRIPT_DEFAULT_KEY="$(get_absolute_path default.key)"
         export PKI_SCRIPT_DEFAULT_PEM="$(get_absolute_path default.pem)"
 
-        local current_state=$(printf ",%s" "${state[@]}")
+        local current_state=$(printf ",%s" "${state[@]:-}")
         local current_state="${current_state:1}"
         export PKI_SCRIPT_STATE="${current_state}"
 
@@ -361,7 +362,7 @@ run_external_script () {
         export PKI_SCRIPT_DEFAULT_KEY="$(get_absolute_path default.key)"
         export PKI_SCRIPT_DEFAULT_PEM="$(get_absolute_path default.pem)"
 
-        local current_state=$(printf ",%s" "${state[@]}")
+        local current_state=$(printf ",%s" "${state[@]:-}")
         local current_state="${current_state:1}"
         export PKI_SCRIPT_STATE="${current_state}"
 
