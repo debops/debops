@@ -338,6 +338,15 @@
          (item.enabled is undefined or item.enabled|bool) and
          (item.when is undefined or item.when|bool))
 
+- name: Manage PKI scheduler
+  cron:
+    name: 'Process PKI system realms'
+    user: 'root'
+    cron_file: 'pki-realm-scheduler'
+    job: 'test -x /usr/local/lib/pki/pki-realm && /usr/local/lib/pki/pki-realm schedule'
+    special_time: '{{ pki_scheduler_interval }}'
+    state: '{{ "present" if pki_scheduler|bool else "absent" }}'
+
 - name: Manage system CA certificates
   include: ca_certificates.yml
   when: pki_enabled | bool

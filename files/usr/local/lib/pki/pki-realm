@@ -1614,6 +1614,103 @@ sub_run () {
     fi
 }
 
+schedule_job () {
+    local name="${1}"
+    local scheduler_type="${2}"
+    local min_delay="${3:-30}"
+    local max_delay="${4:-300}"
+
+    if [ -n "${scheduler_type}" -a "${scheduler_type}" = "batch" ] ; then
+        if type batch > /dev/null 2>&1 ; then
+            echo "${script} run -n '${name}'" | batch > /dev/null 2>&1
+        fi
+    elif [ -n "${scheduler_type}" -a "${scheduler_type}" = "sleep" ] ; then
+        ( sleep $(( ( $RANDOM % ${max_delay} ) + ${min_delay} )) ; ${script} run -n "${name}" ) &
+    else
+        if type batch > /dev/null 2>&1 ; then
+            echo "${script} run -n '${name}'" | batch > /dev/null 2>&1
+        else
+            ( sleep $(( ( $RANDOM % ${max_delay} ) + ${min_delay} )) ; ${script} run -n "${name}" ) &
+        fi
+    fi
+}
+
+sub_schedule () {
+
+    local -A args
+
+    local optspec=":hn-:"
+    while getopts "${optspec}" optchar; do
+        case "${optchar}" in
+            -)
+                case "${OPTARG}" in
+                    name)
+                        args["name"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    name=*)
+                        args["name"]=${OPTARG#*=}
+                        ;;
+                    realm-dir)
+                        args["realm_dir"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    realm-dir=*)
+                        args["realm_dir"]=${OPTARG#*=}
+                        ;;
+                    type)
+                        args["type"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    type=*)
+                        args["type"]=${OPTARG#*=}
+                        ;;
+                    min-delay)
+                        args["min_delay"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    min-delay=*)
+                        args["min_delay"]=${OPTARG#*=}
+                        ;;
+                    max-delay)
+                        args["max_delay"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    max-delay=*)
+                        args["max_delay"]=${OPTARG#*=}
+                        ;;
+                    *)
+                        if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]; then
+                            echo "Unknown option --${OPTARG}" >&2
+                        fi
+                        ;;
+                esac
+                ;;
+            h)
+                echo "usage: ${script_name} schedule <-n|--name[=]realm>" >&2
+                exit 2
+                ;;
+            n)
+                args["name"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                ;;
+            *)
+                if [ "$OPTERR" != 1 ] || [ "${optspec:0:1}" = ":" ]; then
+                    echo "Non-option argument: '-${OPTARG}'" >&2
+                fi
+                ;;
+        esac
+    done
+
+    if key_exists args "name" ; then
+        schedule_job "${args['name']}" "${args['type']:-}" "${args['min_delay']:-}" "${args['max_delay']:-}"
+    elif key_exists args "realm_dir" ; then
+        for realm in ${args['realm_dir']}/* ; do
+            schedule_job "$(basename ${realm})" "${args['type']:-}" "${args['min_delay']:-}" "${args['max_delay']:-}"
+        done
+    else
+        if [ -d ${config['pki_realms']} ] ; then
+            for realm in ${config['pki_realms']}/* ; do
+                schedule_job "$(basename ${realm})" "${args['type']:-}" "${args['min_delay']:-}" "${args['max_delay']:-}"
+            done
+        fi
+    fi
+}
+
 subcommand=""
 
 initialize_environment
@@ -1624,7 +1721,7 @@ if [ $# -gt 0 ] ; then
 
     if [ -n "${subcommand}" ] ; then
         case "${subcommand}" in
-            init|new-realm|run)
+            init|new-realm|run|schedule)
                 shift
                 sub_${subcommand} "${@}"
                 ;;
