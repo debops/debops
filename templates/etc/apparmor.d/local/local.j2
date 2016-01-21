@@ -4,33 +4,19 @@
 # For more details, please see /etc/apparmor.d/local/README.
 #
 
-{% macro apparmor_write_local_profile_part(profile_part) %}{# ((( #}
-{% for rules_group in profile_part %}
+{% macro apparmor_write_local_profile_part(scope, apparmor_local) %}{# ((( #}
+{% if apparmor_local[item.key] is defined %}
+## {{ scope }}. {{ '{{{' }}
+{% for rules_group in apparmor_local[item.key] %}
 # {{ rules_group.comment | default('Uncommented rule group') }}:
 {%   for rule in rules_group.rules %}
 {{ rule }},
 {%   endfor %}
-
 {%- endfor %}
+## {{ '}}}' }}
+{% endif %}
 {%- endmacro %}{# ))) #}
 
-{% if apparmor_local_config_global[item.key] is defined %}
-# Global additions or overrides of system profiles. {{ '{{{' }}
-
-{{ apparmor_write_local_profile_part(apparmor_local_config_global[item.key]) }}
-# {{ '}}}' }}
-{% endif %}
-
-{% if apparmor_local_config_host_group[item.key] is defined %}
-# Host group additions or overrides of system profiles. {{ '{{{' }}
-
-{{ apparmor_write_local_profile_part(apparmor_local_config_host_group[item.key]) }}
-# {{ '}}}' }}
-{% endif %}
-
-{% if apparmor_local_config_host[item.key] is defined %}
-# Host additions or overrides of system profiles. {{ '{{{' }}
-
-{{ apparmor_write_local_profile_part(apparmor_local_config_host[item.key]) }}
-# {{ '}}}' }}
-{% endif %}
+{{ apparmor_write_local_profile_part("Global additions or overrides of system profiles", apparmor_local_config_global) }}
+{{ apparmor_write_local_profile_part("Host group additions or overrides of system profiles", apparmor_local_config_host_group) }}
+{{ apparmor_write_local_profile_part("Host additions or overrides of system profiles", apparmor_local_config_host) }}

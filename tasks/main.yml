@@ -10,6 +10,10 @@
       apparmor_local_config_global|d({})
       | combine(apparmor_local_config_host_group|d({}))
       | combine(apparmor_local_config_host|d({})) }}'
+    apparmor_tunables: '{{
+      (apparmor_tunables_global|d([])     | list) +
+      (apparmor_tunables_host_group|d([]) | list) +
+      (apparmor_tunables_host|d([])       | list) }}'
 
 - name: Install required packages
   apt:
@@ -99,6 +103,15 @@
     enabled: True
   when: ((apparmor_enable|d() | bool) and (apparmor_register_kernel_cmdline.rc == 0))
 
+- name: Configure tunables
+  template:
+    src: 'etc/apparmor.d/tunables/home.d/debops.j2'
+    dest: '/etc/apparmor.d/tunables/home.d/debops'
+    mode: 0640
+    owner: 'root'
+    group: 'root'
+  register: apparmor_register_tunables
+
 - name: Configure additions or overrides of system profiles
   template:
     src: 'etc/apparmor.d/local/local.j2'
@@ -111,8 +124,14 @@
 
 - name: Reload changed profiles
   command: apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"
-  when: item|changed
+  when: (item|changed and not apparmor_register_tunables|changed)
   with_items: apparmor_register_local_config.results
+
+- name: Reload AppArmor all profiles
+  service:
+    name: 'apparmor'
+    state: 'reloaded'
+  when: ((apparmor_enable|d() | bool) and (apparmor_register_kernel_cmdline.rc == 0) and apparmor_register_tunables|changed)
 
 - name: Unload AppArmor profiles
   command: service apparmor teardown
