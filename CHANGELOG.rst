@@ -43,7 +43,7 @@ v0.2.8
 
 - Update the Postfix, nginx and slapd playbooks to include the firewall and TCP
   Wrappers roles. OpenLDAP and nginx Ansible host groups have been renamed, you
-  will need to update the inventory. Postfix plybook is prepared to manage
+  will need to update the inventory. Postfix playbook is prepared to manage
   Postfix as standalone service, not part of the ``common.yml`` playbook.
   [drybjed]
 
@@ -76,6 +76,8 @@ v0.2.8
   so that it works correctly on Ansible v2. [drybjed]
 
 - Update "Getting Started Guide" and parts of other documentation. [drybjed]
+
+- Moved roles dependencies from ``debops.owncloud`` to owncloud playbook. [ypid]
 
 v0.2.7
 ------
