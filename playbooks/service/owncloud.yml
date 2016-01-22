@@ -34,6 +34,16 @@
       php5_pools:
         - '{{ owncloud_php5_pool }}'
 
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences_dependent_list:
+        - '{{ nginx_apt_preferences_dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm_dependent_rules:
+        - '{{ nginx_ferm_dependent_rules }}'
+
     - role: debops.nginx
       tags: [ 'role::nginx' ]
       nginx_servers:
