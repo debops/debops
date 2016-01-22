@@ -1,6 +1,20 @@
 Changelog
 =========
 
+v0.3.0
+------
+
+*Unreleased*
+
+- Remove most of the Ansible role dependencies.
+  Note that ``owncloud_autosetup`` requires that a webserver is installed to
+  initialize the ownCloud database.
+  Further configuration will not be possible when the database has not been
+  initialized.
+
+  Please run the DebOps playbook to make sure that webserver and database are
+  ready. [ypid]
+
 v0.2.0
 ------
 

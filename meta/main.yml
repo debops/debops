@@ -5,43 +5,6 @@ dependencies:
   - role: debops.secret
     tags: [ 'depend::secret', 'depend::secret:owncloud', 'depend-of::owncloud', 'type::dependency:hard' ]
 
-  - role: debops.mariadb
-    tags: [ 'depend::mariadb', 'depend::mariadb:owncloud', 'depend-of::owncloud', 'type::dependency' ]
-    mariadb_users:
-      - database: '{{ owncloud_database_map[owncloud_database].dbname }}'
-        user: '{{ owncloud_database_map[owncloud_database].dbuser }}'
-        password: '{{ owncloud_database_map[owncloud_database].dbpass }}'
-    when: (owncloud_dependencies|d() and owncloud_database == 'mariadb')
-
-  - role: debops.postgresql
-    postgresql_roles:
-      - name: '{{ owncloud_database_name }}' # Separate role is needed when owncloud_database_name != owncloud_database_user
-      - name: '{{ owncloud_database_user }}' # Password is not passed directly - it will be read for the file
-    postgresql_groups:
-      - roles: [ '{{ owncloud_database_user }}' ]
-        groups: [ '{{ owncloud_database_name }}' ]
-        database: '{{ owncloud_database_name }}'
-        enabled: '{{ owncloud_database_name != owncloud_database_user }}'
-    postgresql_databases:
-      - name: '{{ owncloud_database_name }}'
-        owner: '{{ owncloud_database_user }}'
-    when: owncloud_dependencies and owncloud_database == 'postgresql'
-    tags: [ 'depend::postgresql', 'depend::postgresql:owncloud', 'depend-of::owncloud', 'type::dependency' ]
-
-  - role: debops.php5
-    tags: [ 'depend::php5', 'depend::php5:owncloud', 'depend-of::owncloud', 'type::dependency' ]
-    php5_pools:
-      - '{{ owncloud_php5_pool }}'
-    when: owncloud_dependencies
-
-  - role: debops.nginx
-    tags: [ 'depend::nginx', 'depend::nginx:owncloud', 'depend-of::owncloud', 'type::dependency' ]
-    nginx_servers:
-      - '{{ owncloud_nginx_server }}'
-    nginx_upstreams:
-      - '{{ owncloud_nginx_upstream_php5 }}'
-    when: owncloud_dependencies
-
 galaxy_info:
 
   author: 'Maciej Delmanowski, Hartmut Goebel'
