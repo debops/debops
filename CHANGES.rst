@@ -1,6 +1,20 @@
 Changelog
 =========
 
+v0.3.0
+------
+
+*Unreleased*
+
+- Remove most of the Ansible role dependencies.
+  Note that ``owncloud_autosetup`` requires that a webserver is installed to
+  initialize the ownCloud database.
+  Further configuration will not be possible when the database has not been
+  initialized.
+
+  Please run the DebOps playbook to make sure that webserver and database are
+  ready. [ypid]
+
 v0.2.0
 ------
 
@@ -18,19 +32,19 @@ v0.2.0
   Disabled by default. Can be enabled via ``owncloud_enable_occ_shortcut``. [ypid]
 
 - Improved LDAP support. Now role will create service account (default: ``cn=owncloud,dc=ansible,dc=fqdn``)
-  in ldap server. You still have to provied proper permission for this account. [scibi]
+  in LDAP server. You still have to provide proper permission for this account. [scibi]
 
 - New PostgreSQL role support. Now PostgreSQL and MariaDB/MySQL support is unified. [scibi]
 
 - New variable: ``owncloud_timeout`` needed to handle very large files uploads. [scibi]
 
-- Switch ownCloud APT repository to upstram repository, support different Linux
+- Switch ownCloud APT repository to upstream repository, support different Linux
   distributions and releases out of the box. [drybjed]
 
 - Use ``http://`` protocol instead of ``https://`` for APT repository URL,
   because encrypted connection has issues. [drybjed]
 
-- Disabled ``updater`` app as it does not work with this role anyway. [ypid]
+- Disabled ``updater`` App as it does not work with this role anyway. [ypid]
 
 v0.1.0
 ------
