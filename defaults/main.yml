@@ -124,10 +124,6 @@ pki_host_realms: []
 
 pki_default_realms:
 
-  - name: 'service'
-    authority: 'service'
-    acme: False
-
   - name: 'domain'
 
 pki_realms: []
@@ -143,6 +139,8 @@ pki_ca_domain: '{{ ansible_domain }}'
 pki_ca_root_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }} Certificate Authority' ]
 
 pki_ca_domain_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }}', 'ou=Domain CA' ]
+
+pki_ca_service_enabled: False
 
 pki_ca_service_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }}', 'ou=Internal Services CA' ]
 
@@ -167,6 +165,7 @@ pki_authorities_ca_service:
   subdomain: 'service-ca'
   subject: '{{ pki_ca_service_dn }}'
   type: 'service'
+  enabled: '{{ pki_ca_service_enabled | bool }}'
 
 pki_dependent_authorities: []
 
