@@ -42,7 +42,7 @@ Ansible inventory to customize Docker:
 Example inventory
 -----------------
 
-To configure Docker on a given remote host, it need to be added to
+To configure Docker on a given remote host, it needs to be added to
 ``[debops_service_docker]`` Ansible inventory group::
 
     [debops_service_docker]
