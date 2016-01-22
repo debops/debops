@@ -15,6 +15,8 @@ v0.3.0
   Please run the DebOps playbook to make sure that webserver and database are
   ready. [ypid]
 
+- Wrote initial documentation. [ypid]
+
 v0.2.0
 ------
 

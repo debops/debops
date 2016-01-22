@@ -16,9 +16,9 @@ owncloud_base_packages:
   - 'owncloud'
   - 'owncloud-server'
 
-# -------------------
+# -----------------
 #   Basic options
-# -------------------
+# -----------------
 
 # .. envvar:: owncloud_domain
 #
@@ -130,7 +130,7 @@ owncloud_deploy_path: '{{ owncloud_home }}'
 
 # .. envvar:: owncloud_database
 #
-# ownCloud recommends MySQL or MariaDB as database. Set to False to use SQLite.
+# ownCloud recommends MySQL or MariaDB as database. Set to ``False`` to use SQLite.
 # https://doc.owncloud.org/server/8.1/admin_manual/configuration_database/linux_database_configuration.html#database-configuration
 # Choices see ``owncloud_database_map``.
 owncloud_database: 'mariadb'
@@ -139,7 +139,7 @@ owncloud_database: 'mariadb'
 # .. envvar:: owncloud_database_server
 #
 # FQDN of the database server. It will be configured by
-# # the ``debops.mariadb`` or ``debops.postgresql`` role.
+# the ``debops.mariadb`` or ``debops.postgresql`` role.
 owncloud_database_server: "{{ ansible_local[owncloud_database].server }}"
 
 
@@ -203,14 +203,14 @@ owncloud_database_map:
     dbtype: 'sqlite'
 
 
-# --------------------
+# ---------------------------------
 #   ownCloud admin login/password
-# --------------------
+# ---------------------------------
 
 # .. envvar:: owncloud_admin_username
 #
 # Default admin username, in the form 'admin-$USER'.
-# Set to False to disable automatic username and password.
+# Set to ``False`` to disable automatic username and password.
 owncloud_admin_username: 'admin-{{ lookup("env","USER") }}'
 
 
@@ -230,7 +230,7 @@ owncloud_password_length: '20'
 # .. envvar:: owncloud_autosetup
 #
 # Should Ansible automatically open the ownCloud page to finish the setup on
-# it's own? Disabled if admin_username is set to False and done only
+# it's own? Disabled if admin_username is set to ``False`` and done only
 # if the config-files are generated in the same run.
 # Important: For this to work, name resolution has to be set up when this role
 # is executed.
@@ -243,14 +243,14 @@ owncloud_autosetup: True
 owncloud_autosetup_url: 'http://{{ owncloud_domain[0] }}/index.php'
 
 
-# --------------------
+# --------------------------
 #   ownCloud configuration
-# --------------------
+# --------------------------
 
 # .. envvar:: owncloud_enable_apc_cli
 #
-# Enable APC in PHP CLI. Setting this to True is only needed when you want to
-# use the ``occ`` command and use ``\OC\Memcache\APCu`` as memcache.
+# Enable APC in PHP CLI. Setting this to ``True`` is only needed when you want to
+# use the :command:`occ` command and use ``\OC\Memcache\APCu`` as memcache.
 # See https://github.com/owncloud/core/issues/17329
 owncloud_enable_apc_cli: False
 
@@ -264,7 +264,7 @@ owncloud_upload_size: '128M'
 # .. envvar:: owncloud_php5_output_buffering
 #
 # Output buffering set in php5, with amount set in megabytes
-# Setting according to: 
+# Setting according to:
 # https://doc.owncloud.org/server/8.0/admin_manual/configuration_files/big_file_upload_configuration.html#configuring-php
 owncloud_php5_output_buffering: '0'
 
@@ -375,16 +375,16 @@ owncloud_run_occ_host_commands: []
 owncloud_timeout: 300
 
 
-# --------------------------------------------
+# ----------------------------------------------
 #   ownCloud LDAP Authentication configuration
-# --------------------------------------------
+# ----------------------------------------------
 
 # .. envvar:: owncloud_ldap_enable
 #
 # Enable LDAP support. ownCloud support multiple LDAP servers but this role
 # configures only default one. If you need something more complex you can
 # use ``owncloud_run_occ_global_commands``.
-owncloud_ldap_enable: false
+owncloud_ldap_enable: False
 
 
 # .. envvar:: owncloud_ldap_domain
@@ -461,9 +461,9 @@ owncloud_ldap_conf_map:
   homeFolderNamingRule: 'attr:uid'
 
 
-# -----------------------------
+# -------------------------------
 #   ownCloud Mail configuration
-# -----------------------------
+# -------------------------------
 
 
 # .. envvar:: owncloud_mail_domain
@@ -471,12 +471,12 @@ owncloud_ldap_conf_map:
 owncloud_mail_domain: '{{ ansible_domain }}'
 
 
-# .. envvar:: owncloud_mail_domain
+# .. envvar:: owncloud_mail_from_address
 #
 owncloud_mail_from_address: 'owncloud'
 
 
-# .. envvar:: owncloud_mail_domain
+# .. envvar:: owncloud_mail_smtpmode
 #
 owncloud_mail_smtpmode: 'sendmail'
 
@@ -488,11 +488,12 @@ owncloud_mail_conf_map:
   mail_from_address: "{{ owncloud_mail_from_address  }}"
   mail_smtpmode: "{{ owncloud_mail_smtpmode  }}"
 
-# ------------------------------------------
+# --------------------------------------------
 #   ownCloud custom config.php configuration
-# ------------------------------------------
+# --------------------------------------------
 
 # .. envvar:: owncloud_custom_conf_map
+#
 # This parameters ends up in custom.config.php and override the values
 # from config.php. Refer to the documentation for details:
 # https://doc.owncloud.org/server/8.1/admin_manual/configuration_server/config_sample_php_parameters.html

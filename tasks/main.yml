@@ -5,12 +5,14 @@
     url: '{{ owncloud_apt_repo_key_url }}'
     id: '{{ owncloud_apt_repo_key_id }}'
     state: present
+  tags: [ 'role::owncloud:base_install' ]
 
 - name: Configure ownCloud APT repository
   apt_repository:
     repo: '{{ owncloud_apt_repo_source }}'
     state: present
     update_cache: True
+  tags: [ 'role::owncloud:base_install' ]
 
 - name: Ensure owncloud packages are installed
   apt:
@@ -19,38 +21,14 @@
     install_recommends: False
   with_flattened:
     - owncloud_base_packages
+    - '{{ [ "php5-mysql" ] if (owncloud_database in [ "mariadb" ]) else [] }}'
+    - '{{ [ "php5-pgsql" ] if (owncloud_database in [ "postgresql" ]) else [] }}'
   tags: [ 'role::owncloud:base_install' ]
-
-- name: Install ownCloud mail config file
-  template:
-    src: srv/www/sites/config/mail.config.php.j2
-    dest: '{{ owncloud_deploy_path }}/config/mail.config.php'
-    owner: '{{ owncloud_user }}'
-    group: '{{ owncloud_group }}'
-    mode: 0640
-  tags: [ 'role::owncloud:mail' ]
-
-- name: Install ownCloud custom config file
-  template:
-    src: srv/www/sites/config/custom.config.php.j2
-    dest: '{{ owncloud_deploy_path }}/config/custom.config.php'
-    owner: '{{ owncloud_user }}'
-    group: '{{ owncloud_group }}'
-    mode: 0640
-  when: (owncloud_custom_conf_map is defined and owncloud_custom_conf_map is mapping)
-  tags: [ 'role::owncloud:custom_config' ]
-
-- include: configure_mysql.yml
-  when: owncloud_database in [ 'mariadb' ]
-  tags: [ 'role::owncloud:mariadb' ]
-
-- include: configure_postgresql.yml
-  when: owncloud_database == 'postgresql'
-  tags: [ 'role::owncloud:postgresql' ]
 
 - include: configure_owncloud.yml
   tags: [ 'role::owncloud:configure' ]
 
 - include: configure_ldap.yml
   when: owncloud_ldap_enable
+  tags: [ 'role::owncloud:ldap' ]
 
