@@ -10,7 +10,7 @@ Example inventory
 To setup ownCloud on a given remote host, it needs to be added to
 ``[debops_service_owncloud]`` Ansible inventory group:
 
-.. code-block:: ini
+.. code-block:: none
 
     [debops_service_owncloud]
     hostname
@@ -18,7 +18,7 @@ To setup ownCloud on a given remote host, it needs to be added to
 Additionally it is recommended that you install a database server. You can
 install one on the same host as ownCloud or choose a different host:
 
-.. code-block:: ini
+.. code-block:: none
 
     [debops_service_mariadb_server]
     hostname
