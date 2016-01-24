@@ -85,7 +85,7 @@ the project directory this file is located in ``ansible/inventory/hosts``. Open
 it in your favorite text editor and add the remote host in the main DebOps
 host group:
 
-.. code-block:: ini
+.. code-block:: none
 
    [debops_all_hosts]
    server    ansible_ssh_host=server.example.com
@@ -122,7 +122,7 @@ Ansible depends on SSH defaults which conventionally use the name of the
 current user as the remote username. It's customary to specify this variable
 directly in the ``hosts`` file, that way it can be unique for each host:
 
-.. code-block:: ini
+.. code-block:: none
 
    [debops_all_hosts]
    server    ansible_ssh_host=server.example.com ansible_ssh_user=ansible-admin
@@ -358,7 +358,7 @@ role in Ansible inventory. This is done by creating a new host group,
 ``[debops_service_dokuwiki]`` in the ``hosts`` file, and adding the desired
 hosts to it:
 
-.. code-block:: ini
+.. code-block:: none
 
    [debops_all_hosts]
    server    ansible_ssh_host=server.example.com
