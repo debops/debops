@@ -33,6 +33,15 @@ Example playbook
 Here's an example playbook that can be used to manage ownCloud::
 
     ---
+    - name: Manage MariaDB server
+      hosts: debops_service_mariadb_server
+      become: True
+
+      roles:
+
+        - role: debops.mariadb_server
+          tags: [ 'role::mariadb_server' ]
+
     - hosts: debops_service_owncloud
       become: True
 
