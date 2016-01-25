@@ -417,7 +417,7 @@ utf8               = yes
 string_mask        = utf8only
 EOF
 
-        if [ "${config_type}" = "internal" ] ; then
+        if [ -n "${PKI_SESSION_TOKEN:-}" -a "${config_type}" = "internal" ] ; then
             cat << EOF >> ${config_file}
 attributes         = req_attributes
 
