@@ -1,28 +1,6 @@
 ---
 
-dependencies:
-
-  - role: debops.apt_preferences
-    tags: apt_preferences
-    apt_preferences_dependent_list:
-
-      - package: 'tinc'
-        backports: [ 'wheezy' ]
-        reason:  'Backport installed on Wheezy for version parity with Debian Jessie'
-        by_role: 'debops.tinc'
-
-  - role: debops.ferm
-    ferm_input_dependent_list:
-
-      - type: 'dport_accept'
-        protocol: [ 'tcp', 'udp' ]
-        dport: [ '{{ tinc_host_port }}' ]
-        accept_any: '{{ tinc_ferm_allow_any }}'
-        weight: '50'
-        filename: 'tinc_dependency_accept'
-
-  - role: debops.ifupdown
-    ifupdown_dependent_interfaces: [ '{{ tinc_ifupdown_interface }}' ]
+dependencies: []
 
 galaxy_info:
   author: 'Maciej Delmanowski'
