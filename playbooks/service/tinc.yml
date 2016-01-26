@@ -6,6 +6,21 @@
 
   roles:
 
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences_dependent_list:
+        - '{{ tinc_apt_preferences_dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm_dependent_rules:
+        - '{{ tinc_ferm_dependent_rules }}'
+
+    - role: debops.ifupdown
+      tags: [ 'role::ifupdown' ]
+      ifupdown_dependent_interfaces:
+        - '{{ tinc_ifupdown_interface }}'
+
     - role: debops.tinc
       tags: [ 'role::tinc' ]
 
