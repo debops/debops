@@ -1,4 +1,13 @@
-// This file is managed by Ansible, all changes will be lost
+// {{ ansible_managed }}
+
+// The list of repositories from which you can automatically update
+Unattended-Upgrade::Origins-Pattern {
+{% if apt_unattended_upgrades_repositories is defined and apt_unattended_upgrades_repositories %}
+{% for item in apt_unattended_upgrades_repositories %}
+        "{{ item }}";
+{% endfor %}
+{% endif %}
+};
 
 // List of blacklisted packages that shouldn't be automatically upgraded
 Unattended-Upgrade::Package-Blacklist {
