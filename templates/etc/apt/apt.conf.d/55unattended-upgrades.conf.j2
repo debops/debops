@@ -4,7 +4,9 @@
 Unattended-Upgrade::Origins-Pattern {
 {% if apt_unattended_upgrades_repositories is defined and apt_unattended_upgrades_repositories %}
 {% for item in apt_unattended_upgrades_repositories %}
+{% if item is defined and item %}
         "{{ item }}";
+{% endif %}
 {% endfor %}
 {% endif %}
 };
