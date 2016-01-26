@@ -155,8 +155,8 @@ apt_unattended_upgrades_autoremove: True
 #
 # The list of repositories from which you can automatically update
 apt_unattended_upgrades_repositories:
-    - "{%if ansible_distribution = 'Debian' %} origin={{ ansible_distribution }},codename={{ apt_sources_release }},label=Debian-Security {% endif %}"
-    - "{%if ansible_distribution = 'Ubuntu' %} origin={{ ansible_distribution }},codename={{ apt_sources_release }},archive={{ apt_sources_release_security }} {% endif %}"
+    - "{%if ansible_distribution == 'Debian' %}origin={{ ansible_distribution }},codename={{ apt_sources_release }},label=Debian-Security{% endif %}"
+    - "{%if ansible_distribution == 'Ubuntu' %}origin={{ ansible_distribution }},codename={{ apt_sources_release }},archive={{ apt_sources_release_security }}{% endif %}"
 
 # ---- Other ----
 
