@@ -235,3 +235,25 @@ tinc_scripts: {}
 # String with extra options to be passed to tincd in the 
 # /etc/default/tinc config file
 tinc_extra_options: ''
+
+# .. envvar:: tinc_apt_preferences_dependent_list
+#
+# Configuration of custom APT preferences.
+tinc_apt_preferences_dependent_list:
+
+  - package: 'tinc'
+    backports: [ 'wheezy' ]
+    reason:  'Backport installed on Wheezy for version parity with Debian Jessie'
+    by_role: 'debops.tinc'
+
+# .. envvar:: tinc_ferm_dependent_rules
+#
+# Configuration for ``iptables`` firewall managed by ``ferm``.
+tinc_ferm_dependent_rules:
+
+  - type: 'accept'
+    protocol: [ 'tcp', 'udp' ]
+    dport: [ '{{ tinc_host_port }}' ]
+    accept_any: '{{ tinc_ferm_allow_any }}'
+    filename: 'tinc'
+
