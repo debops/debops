@@ -18,3 +18,6 @@ v0.1.0
   This ensures that ``/etc/apt/apt.conf`` is absent. [ypid]
 
 - Use backported apt-cacher-ng on Debian Jessie. [ypid]
+
+- Allow to modify APT sections without defining ``apt_default_sources`` by
+  using the added ``apt_sources_sections`` variable. [ypid]

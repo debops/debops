@@ -14,11 +14,11 @@ apt_default_sources:
   - comment:  'Ubuntu Security Repository'
     mirrors:  [ 'http://security.ubuntu.com/ubuntu' ]
     releases: [ '{{ apt_sources_release_security }}' ]
-    sections: '{{ apt_default_sources_sections }}'
+    sections: '{{ apt_sources_sections|d(apt_default_sources_sections) }}'
 
   - comment:  'Ubuntu Package Repositories'
     releases: '{{ apt_sources_release_list }}'
-    sections: '{{ apt_default_sources_sections }}'
+    sections: '{{ apt_sources_sections|d(apt_default_sources_sections) }}'
 
   #- comment:  'Ubuntu Partner Repository'
   #  mirrors:  [ 'http://archive.canonical.com/ubuntu' ]
