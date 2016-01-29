@@ -1,3 +1,5 @@
+.. _acme_integration:
+
 ACME Integration
 ================
 
@@ -191,6 +193,12 @@ can have several parameters related to the ACME certificates:
 ``item.acme_domains``
   List of additional apex (root) domains to add in ACME Certificate Signing
   Request. Each domain will have the default or custom subdomains added to it.
+
+``item.acme_default_subdomains``
+  List of subdomains that should be added to all of the ACME apex/root domains.
+  If you want to create an ACME certificate only with the apex domain, you need
+  to use this parameter with ``[]`` value to override
+  ``pki_acme_default_subdomains``.
 
 ``item.acme_subdomains``
   List of subdomains added to each apex (root) domain configured in the ACME

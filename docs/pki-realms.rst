@@ -1,3 +1,5 @@
+.. _pki_realms:
+
 PKI Realms
 ==========
 
@@ -19,7 +21,7 @@ support both schemes at once.
 
 The realms are located in ``/etc/pki/realms/`` directory. Each realm is
 contained in its own subdirectory. By default a ``domain`` realm is configured
-by the role, and it's simplified directory structure looks like this::
+by the role, and its simplified directory structure looks like this::
 
     /etc/pki/realms/
     └── domain/
@@ -95,6 +97,12 @@ something similar to this example in your config file:
 This configuration explains where each certificate is used, but this is not
 sufficient configuration to enable HTTPS webserver. Refer to the ``nginx``
 documentation for the rest of the required configuration options.
+
+If you use the ``debops.nginx`` Ansible role provided with the project, it has
+extensive integration with the ``debops.pki`` role and can configure the
+webserver automatically. Usually all you would need to do is to specify
+a default realm for each server configuration, if the incorrect one is
+detected.
 
 The PKI realm directory structure
 ---------------------------------
@@ -174,8 +182,8 @@ Both directories are maintained and kept in sync using two Bash scripts
 provided by the role, ``pki-realm`` and ``pki-authority``. Ansible tasks are
 used to copy files to and from Ansible Controller to remote hosts.
 
-How PKI realm is created
-------------------------
+How a PKI realm is created
+--------------------------
 
 Each PKI realm starts with a simple directory structure created on the Ansible
 Controller in the ``secret/`` directory::
@@ -218,7 +226,8 @@ to generate the certificates, owner and group of various directories and files,
 permissions applied to various directory and file types, and so on.
 
 The ``acme/``, ``external/`` and ``internal/`` subdirectories hold data files
-for different Certificate Authorities.
+for different Certificate Authorities. Each CA is described in more detail in
+a separate document, here is a brief overview:
 
 ``acme/``
   This is directory used by the ACME Certificate Authority (currently only the
@@ -308,7 +317,7 @@ uploaded to the ``secret/`` directory::
                 └── domain/
                     └── request.pem
 
-To avoid possible conclusion, the ``secret/pki/requests/domain/`` directory
+To avoid possible confusion, the ``secret/pki/requests/domain/`` directory
 points to the "domain" internal CA which is an intermediate CA located under
 "root" CA. The ``hostname.example.com/domain/`` directory inside the
 ``domain/`` directory points to the "domain" realm on the

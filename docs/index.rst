@@ -10,7 +10,11 @@ Ansible role: debops.pki
    getting-started
    pki-realms
    acme-integration
+   external-certificates
    defaults
+   defaults-configuration
+   system-ca-certificates
+   custom-files
    copyright
    changelog
 
