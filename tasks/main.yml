@@ -53,7 +53,7 @@
 - name: Create private groups if requested
   group:
     name: '{{ item.name | d(item) }}'
-    system: 'true'
+    system: '{{ (item.system | d(True)) | bool }}'
     state: 'present'
   with_items: pki_private_groups_present
   when: ((pki_enabled | bool and pki_private_groups_present) and
