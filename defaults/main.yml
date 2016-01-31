@@ -15,6 +15,37 @@
 pki_enabled: True
 
 
+# .. envvar:: pki_internal
+#
+# Enable or disable support for internal certificates.
+pki_internal: '{{ (True
+                   if pki_default_domain
+                   else False) | bool }}'
+
+
+# .. envvar:: pki_fqdn
+#
+# Fully Qualified Domain Name of the remote host that is managed by
+# the ``debops.pki`` role. This variable is important in Ansible tasks that
+# maintain files in the ``secret/`` directory, as well as correct
+# identification of hosts which should have certificates signed by the internal
+# Certificate Authority.
+pki_fqdn: '{{ ansible_fqdn }}'
+
+
+# .. envvar:: pki_inventory_groups
+#
+# List of Ansible inventory group names which are taken into account while
+# managing the PKI realms. These inventory groups will have their own directories
+# in ``secret/pki/realms/by-group/`` directory on Ansible Controller, and files
+# put there will be copied to remote hosts.
+pki_inventory_groups: [ 'debops_service_pki' ]
+
+
+# ------------------------------------------------
+#   Automatic Certificate Management Environment
+# ------------------------------------------------
+
 # .. envvar:: pki_acme
 #
 # Enable or disable support for ACME certificates.
@@ -23,14 +54,6 @@ pki_acme: '{{ (True
                     ansible_all_ipv6_addresses) | ipaddr("public") and
                     pki_default_domain)
                else False) | bool }}'
-
-
-# .. envvar:: pki_internal
-#
-# Enable or disable support for internal certificates.
-pki_internal: '{{ (True
-                   if pki_default_domain
-                   else False) | bool }}'
 
 
 # .. envvar:: pki_acme_install
@@ -136,32 +159,9 @@ pki_acme_challenge_dir: '{{ (ansible_local.nginx.acme_root
                              "/.well-known/acme-challenge" }}'
 
 
-# .. envvar:: pki_fqdn
-#
-# Fully Qualified Domain Name of the remote host that is managed by
-# the ``debops.pki`` role. This variable is important in Ansible tasks that
-# maintain files in the ``secret/`` directory, as well as correct
-# identification of hosts which should have certificates signed by the internal
-# Certificate Authority.
-pki_fqdn: '{{ ansible_fqdn }}'
-
-
-# .. envvar:: pki_default_domain
-#
-# Default DNS domain used to create Certificate Signing Requests. It will be
-# specified in the certificate Subject if it's not redefined, as well as in the
-# certificate SubjectAltName field.
-pki_default_domain: '{{ ansible_domain }}'
-
-
-# .. envvar:: pki_default_subdomains
-#
-# List of additional subdomains added by default to all domain specified in the
-# Certificate Signing Request. The ``_wildcard_`` is a replacement for the ``*``
-# character and means that each domain will have an alternative wildcard
-# SubjectAltName.
-pki_default_subdomains: [ '_wildcard_' ]
-
+# ---------------------
+#   APT package lists
+# ---------------------
 
 # .. envvar:: pki_base_packages
 #
@@ -182,6 +182,10 @@ pki_acme_packages: [ 'curl', 'git' ]
 # List of additional APT packages to install.
 pki_packages: []
 
+
+# ------------------------------------------------
+#   Directory, file and user/group configuration
+# ------------------------------------------------
 
 # .. envvar:: pki_root
 #
@@ -234,6 +238,10 @@ pki_private_mode: '0640'
 pki_private_groups_present: []
 
 
+# --------------------------
+#   Certificate sign times
+# --------------------------
+
 # .. envvar:: pki_default_sign_base
 #
 # The base amount of time in days which is used for signing various
@@ -262,6 +270,10 @@ pki_default_ca_sign_multiplier: '10'
 pki_default_cert_sign_multiplier: '3'
 
 
+# -------------------------------
+#   Configuration of PKI Realms
+# -------------------------------
+
 # .. envvar:: pki_library
 #
 # The crypto library used to manage PKI realms on remote hosts, either
@@ -285,6 +297,56 @@ pki_system_realm: 'domain'
 pki_system_ca_realm: '{{ pki_system_realm }}'
 
 
+# .. envvar:: pki_default_domain
+#
+# Default DNS domain used to create Certificate Signing Requests. It will be
+# specified in the certificate Subject if it's not redefined, as well as in the
+# certificate SubjectAltName field.
+pki_default_domain: '{{ ansible_domain }}'
+
+
+# .. envvar:: pki_default_subdomains
+#
+# List of additional subdomains added by default to all domain specified in the
+# Certificate Signing Request. The ``_wildcard_`` is a replacement for the ``*``
+# character and means that each domain will have an alternative wildcard
+# SubjectAltName.
+pki_default_subdomains: [ '_wildcard_' ]
+
+
+# .. envvar:: pki_realms
+#
+# List of PKI realms configured on all hosts.
+pki_realms: []
+
+
+# .. envvar:: pki_default_realms
+#
+# List of the default PKI realms configured on all hosts.
+pki_default_realms:
+
+  - name: 'domain'
+    acme: False
+
+
+# .. envvar:: pki_group_realms
+#
+# List of PKI realms configured in specific inventory groups.
+pki_group_realms: []
+
+
+# .. envvar:: pki_host_realms
+#
+# List of PKI realms configured on specific hosts.
+pki_host_realms: []
+
+
+# .. envvar:: pki_dependent_realms
+#
+# List of PKI realms configured in a role dependency.
+pki_dependent_realms: []
+
+
 # .. envvar:: pki_scheduler
 #
 # Enable periodic runs of ``pki-realm`` script for all PKI realms. The script
@@ -300,57 +362,91 @@ pki_scheduler: True
 pki_scheduler_interval: 'weekly'
 
 
-# .. envvar:: pki_inventory_groups
+# ------------------------------------------------
+#   Configuration of PKI Certificate Authorities
+# ------------------------------------------------
+
+# .. envvar:: pki_ca_library
 #
-# List of Ansible inventory group names which are taken into account while
-# managing the PKI realms. These inventory groups will have their own directories
-# in ``secret/pki/realms/by-group/`` directory on Ansible Controller, and files
-# put there will be copied to remote hosts.
-pki_inventory_groups: [ 'debops_service_pki' ]
-
-pki_group_realms: []
-
-pki_host_realms: []
-
-pki_default_realms:
-
-  - name: 'domain'
-    acme: False
-
-pki_realms: []
-
-pki_dependent_realms: []
-
-pki_default_authority: 'domain'
-
+# The crypto library used by the Certificate Authorities on the Ansible
+# Controller, either ``openssl`` or ``gnutls``. Currently OpenSSL library is
+# preferred due to rich functionality.
 pki_ca_library: 'openssl'
 
+
+# .. envvar:: pki_default_authority
+#
+# Name of the default Certificate Authority to which host certificates are
+# directed if a PKI realm does not specify a default Authority.
+pki_default_authority: 'domain'
+
+
+# .. envvar:: pki_ca_domain
+#
+# The DNS domain used by default for an Certificate Authority configuration if
+# no specific ``item.domain`` is configured.
 pki_ca_domain: '{{ ansible_domain }}'
 
-pki_ca_root_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }} Certificate Authority' ]
 
-pki_ca_domain_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }}', 'ou=Domain CA' ]
-
-pki_ca_service_enabled: False
-
-pki_ca_service_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }}', 'ou=Internal Services CA' ]
-
+# .. envvar:: pki_authorities
+#
+# List of internal Certificate Authorities managed on an Ansible Controller.
+# Each CA is defined as a dictionary variable.
 pki_authorities:
   - '{{ pki_authorities_ca_root }}'
   - '{{ pki_authorities_ca_domain }}'
   - '{{ pki_authorities_ca_service }}'
 
+
+# .. envvar:: pki_ca_root_dn
+#
+# The Distinguished Name (subject) of the Root Certificate Authority.
+pki_ca_root_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }} Certificate Authority' ]
+
+
+# .. envvar:: pki_ca_domain_dn
+#
+# The Distinguished Name (subject) of the Domain Certificate Authority.
+pki_ca_domain_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }}', 'ou=Domain CA' ]
+
+
+# .. envvar:: pki_ca_service_enabled
+#
+# Enable or disable special Service Certificate Authority, which is a Root CA
+# without intermediate CA and sign server certificates directly. This might be
+# needed by specific applications like MySQL which do not support an
+# intermediate CA.
+pki_ca_service_enabled: False
+
+
+# .. envvar:: pki_ca_service_dn
+#
+# The Distinguished Name (subject) of the Service Certificate Authority.
+pki_ca_service_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }}', 'ou=Internal Services CA' ]
+
+
+# .. envvar:: pki_authorities_ca_root
+#
+# Configuration of the Root Certificate Authority.
 pki_authorities_ca_root:
   name: 'root'
   subdomain: 'root-ca'
   subject: '{{ pki_ca_root_dn }}'
 
+
+# .. envvar:: pki_authorities_ca_domain
+#
+# Configuration of the Domain Certificate Authority.
 pki_authorities_ca_domain:
   name: 'domain'
   subdomain: 'domain-ca'
   subject: '{{ pki_ca_domain_dn }}'
   issuer_name: 'root'
 
+
+# .. envvar:: pki_authorities_ca_service
+#
+# Configuration of the Service Certificate Authority.
 pki_authorities_ca_service:
   name: 'service'
   subdomain: 'service-ca'
@@ -358,6 +454,10 @@ pki_authorities_ca_service:
   type: 'service'
   enabled: '{{ pki_ca_service_enabled | bool }}'
 
+
+# .. envvar:: pki_dependent_authorities
+#
+# List of Certificate Authorities defined as a role dependency.
 pki_dependent_authorities: []
 
 
