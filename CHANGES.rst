@@ -10,6 +10,10 @@ v0.3.0
   and fixed the task to allow to disable header backups.
   Only disable header backups when you know what you are doing! [ypid]
 
+- Renamed option ``cryptsetup_keyfile_location`` to
+  ``cryptsetup_secret_location`` as it also contains the header backup on the
+  Ansible controller. [ypid]
+
 - Added support to setup and mount a encrypted filesystem without storing the
   keyfile on persistent storage of the remote system. [ypid]
 
@@ -18,6 +22,10 @@ v0.3.0
 
 - ``cryptsetup_mount_options`` and ``cryptsetup_crypttab_options`` are now
   lists of strings to allow more flexibility. [ypid]
+
+- Added ``cryptsetup_secret_owner``, ``cryptsetup_secret_group`` and
+  ``cryptsetup_secret_mode`` to allow to change file permissions of the secrets
+  directory and files on the Ansible controller. [ypid]
 
 v0.2.1
 ------

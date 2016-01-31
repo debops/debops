@@ -38,9 +38,11 @@
 
 - name: Create secrets directory on Ansible controller
   file:
-    path: '{{ cryptsetup_keyfile_location + "/" + item.name }}'
+    path:  '{{ cryptsetup_secret_path + "/" + item.name }}'
     state: 'directory'
-    mode: '0750'
+    owner: '{{ cryptsetup_secret_owner }}'
+    group: '{{ cryptsetup_secret_group }}'
+    mode:  '{{ cryptsetup_secret_mode }}'
   become: False
   delegate_to: 'localhost'
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
@@ -50,10 +52,23 @@
   set_fact:
     cryptsetup_dd_bs: '{{ ((512/8) if cryptsetup_key_size|d() == "default" else ((cryptsetup_key_size)/8)) | int }}'
 
-- name: Generate keyfile on Ansible controller
-  command: dd if=/dev/random of='{{ item.keyfile | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}' bs={{ cryptsetup_dd_bs }} count=1 iflag=fullblock
+- name: Generate keyfile on the Ansible controller
+  command: dd if=/dev/random of='{{ item.keyfile | d(cryptsetup_secret_path + "/" + item.name + "/keyfile.raw") }}' bs={{ cryptsetup_dd_bs }} count=1 iflag=fullblock
   args:
-    creates: '{{ item.keyfile | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}'
+    creates: '{{ item.keyfile | d(cryptsetup_secret_path + "/" + item.name + "/keyfile.raw") }}'
+  become: False
+  delegate_to: 'localhost'
+  register: cryptsetup_register_keyfile_gen
+  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
+  with_items: cryptsetup_devices_combined
+
+- name: Enforce permissions of the keyfile on the Ansible controller
+  tags: [ 'role::cryptsetup:backup' ]
+  file:
+    path:  '{{ item.keyfile | d(cryptsetup_secret_path + "/" + item.name + "/keyfile.raw") }}'
+    owner: '{{ cryptsetup_secret_owner }}'
+    group: '{{ cryptsetup_secret_group }}'
+    mode:  '{{ cryptsetup_secret_mode }}'
   become: False
   delegate_to: 'localhost'
   register: cryptsetup_register_keyfile_gen
@@ -90,7 +105,7 @@
     serole:   '{{ item.keyfile_serole         | d(omit) }}'
     setype:   '{{ item.keyfile_setype         | d(omit) }}'
     seuser:   '{{ item.keyfile_seuser         | d(omit) }}'
-    src:      '{{ item.keyfile                | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}'
+    src:      '{{ item.keyfile                | d(cryptsetup_secret_path + "/" + item.name + "/keyfile.raw") }}'
     validate: '{{ item.keyfile_validate       | d(omit) }}'
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and not check_mode)
   with_items: cryptsetup_devices_combined
@@ -146,7 +161,7 @@
 ## does not work because Ansible/Python tries to decode the random bytes as UTF-8.
 ## Issue: https://github.com/ansible/ansible/issues/7957
 # - name: Read the content of the keyfile and encoding it using base64
-#   command: base64 '{{ item.0.keyfile | d(cryptsetup_keyfile_location + "/" + item.0.name + "/keyfile.raw") }}'
+#   command: base64 '{{ item.0.keyfile | d(cryptsetup_secret_path + "/" + item.0.name + "/keyfile.raw") }}'
 #   register: cryptsetup_register_keyfile_b64encode
 #   become: False
 #   delegate_to: 'localhost'
@@ -255,10 +270,22 @@
 - name: Store the header backup in secret directory on to the Ansible controller
   tags: [ 'role::cryptsetup:backup' ]
   fetch:
-    src: '{{ cryptsetup_header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}'
-    dest: '{{ cryptsetup_keyfile_location + "/" + item.0.name }}/header_backup.raw'
+    src:  '{{ cryptsetup_header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}'
+    dest: '{{ cryptsetup_secret_path + "/" + item.0.name + "/header_backup.raw" }}'
     fail_on_missing: True
     flat: True
+  when: ((cryptsetup_header_backup|d() | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  with_together:
+    - '{{ cryptsetup_devices_combined }}'
+    - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
+
+- name: Enforce permissions of the header backup in secret directory on the Ansible controller
+  tags: [ 'role::cryptsetup:backup' ]
+  file:
+    path:  '{{ cryptsetup_secret_path + "/" + item.0.name + "/header_backup.raw" }}'
+    owner: '{{ cryptsetup_secret_owner }}'
+    group: '{{ cryptsetup_secret_group }}'
+    mode:  '{{ cryptsetup_secret_mode }}'
   when: ((cryptsetup_header_backup|d() | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'

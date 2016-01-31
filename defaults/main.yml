@@ -54,10 +54,36 @@ cryptsetup_host_devices: []
 #   Keyfile settings
 # --------------------
 
-# .. envvar:: cryptsetup_keyfile_location
+# .. envvar:: cryptsetup_secret_path
 #
 # Location where keyfiles are generated and stored on the Ansible controller.
-cryptsetup_keyfile_location: "{{ secret + '/cryptsetup/' + ansible_fqdn }}"
+cryptsetup_secret_path: '{{ secret + "/cryptsetup/" + ansible_fqdn }}'
+
+
+# .. envvar:: cryptsetup_secret_owner
+#
+# System user which owns the secret directory and all files in it on the Ansible controller.
+# You might want to change that if you run this role as root on the Ansible
+# controller itself but the secrets directory is managed by another user.
+# The default is set to the special value ``omit`` to use the owner under which
+# the role is run.
+cryptsetup_secret_owner: '{{ omit }}'
+
+
+# .. envvar:: cryptsetup_secret_group
+#
+# System group of the secret directory and all files in it on the Ansible controller.
+# You might want to change that if you run this role as root on the Ansible
+# controller itself but the secrets directory is managed by another user.
+# The default is set to the special value ``omit`` to use the primary group
+# under which the role is run.
+cryptsetup_secret_group: '{{ omit }}'
+
+
+# .. envvar:: cryptsetup_secret_mode
+#
+# File mode used for the secret directory and all files in it on the Ansible controller.
+cryptsetup_secret_mode: 'u=rwX,g=,o='
 
 
 # .. envvar:: cryptsetup_keyfile_remote_location
@@ -71,19 +97,19 @@ cryptsetup_keyfile_remote_location: '{{ (ansible_local.root.var
 
 # .. envvar:: cryptsetup_keyfile_owner
 #
-# System user which owns the keyfile(s).
+# System user which owns the keyfile(s) on the remote system.
 cryptsetup_keyfile_owner: 'root'
 
 
 # .. envvar:: cryptsetup_keyfile_group
 #
-# System group which owns the keyfile(s).
+# System group of the keyfile(s) on the remote system.
 cryptsetup_keyfile_group: 'root'
 
 
 # .. envvar:: cryptsetup_keyfile_mode
 #
-# File mode used for the keyfile(s).
+# File mode used for the keyfile(s) on the remote system.
 cryptsetup_keyfile_mode: '0600'
 
 
