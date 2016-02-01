@@ -84,6 +84,9 @@ v0.2.8
 - Moved roles dependencies from ``debops.postgresql_server`` to
   postgresql_server playbook. [drybjed]
 
+- Add ``debops.apt_preferences`` role to ``service/postgresql.yml`` playbook.
+  [drybjed]
+
 v0.2.7
 ------
 
