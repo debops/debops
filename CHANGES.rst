@@ -4,7 +4,7 @@ Changelog
 v0.2.2
 ------
 
-*Unreleased*
+*Released: 2016-02-01*
 
 - Change how role detects PostgreSQL version. The new method will use
   ``apt-cache policy`` to use the version determined by APT preferences instead
