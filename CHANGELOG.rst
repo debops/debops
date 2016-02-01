@@ -89,6 +89,9 @@ v0.2.8
 
 - Add missing ``ferm`` configuration for ``debops.postfix`` role. [drybjed]
 
+- Update the ``common.yml`` playbook and ``service/pki.yml`` playbook with new
+  ``debops.pki`` role requirements. [drybjed]
+
 v0.2.7
 ------
 
