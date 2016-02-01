@@ -79,6 +79,16 @@ v0.2.8
 
 - Moved roles dependencies from ``debops.owncloud`` to owncloud playbook. [ypid]
 
+- Moved roles dependencies from ``debops.tinc`` to tinc playbook. [le9i0nx]
+
+- Moved roles dependencies from ``debops.postgresql_server`` to
+  postgresql_server playbook. [drybjed]
+
+- Add ``debops.apt_preferences`` role to ``service/postgresql.yml`` playbook.
+  [drybjed]
+
+- Add missing ``ferm`` configuration for ``debops.postfix`` role. [drybjed]
+
 v0.2.7
 ------
 
