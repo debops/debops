@@ -154,3 +154,14 @@ together with ``debops-padlock`` script to keep the ``secret/`` directory
 encrypted at rest. You should make sure that Ansible Controller uses encrypted
 filesystem during Ansible runs, if possible, to avoid leaks of private keys.
 
+The Certificate Signing Requests created by ``debops.pki`` Ansible role contain
+a random challenge password (different on each run) which is then checked on
+Ansible Controller, and only the CSR with correct passwords are signed by the
+Certificate Authorities. This should prevent signing of Certificate Signing
+Requests modified by a third party, unless the challenge password can be
+intercepted (it's currently passed using environment variables).
+
+If for any reason CSR signing cannot be completed, you will need to remove the
+``internal/gnutls.conf`` and ``internal/request.pem`` files to re-initialize
+the certificate signing.
+

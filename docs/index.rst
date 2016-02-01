@@ -16,6 +16,8 @@ Ansible role: debops.pki
    defaults-configuration
    system-ca-certificates
    custom-files
+   custom-hooks
+   ansible-integration
    copyright
    changelog
 
