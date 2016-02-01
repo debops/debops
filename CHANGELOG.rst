@@ -87,6 +87,8 @@ v0.2.8
 - Add ``debops.apt_preferences`` role to ``service/postgresql.yml`` playbook.
   [drybjed]
 
+- Add missing ``ferm`` configuration for ``debops.postfix`` role. [drybjed]
+
 v0.2.7
 ------
 
