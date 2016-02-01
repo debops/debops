@@ -518,6 +518,17 @@ postgresql_server_auto_backup_post_script: ''
 #   Role-dependent configuration
 # --------------------------------
 
+# .. envvar:: postgresql_server_apt_preferences_dependent_list
+#
+# Configuration for ``debops.apt_preferences`` role. PostgreSQL from backports
+# will be preferred on specified Debian releases.
+postgresql_server_apt_preferences_dependent_list:
+
+  - package: 'postgresql postgresql-* libpq5'
+    backports: [ 'wheezy' ]
+    reason: 'Version parity with Debian Jessie'
+    role: 'debops.postgresql_server'
+
 # .. envvar:: postgresql_server_etc_services_dependent_list
 #
 # Configuration for ``debops.etc_services`` role. It will set up custom
