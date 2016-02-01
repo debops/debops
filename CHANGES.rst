@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Released: 2016-02-01*
+
+- Update old README with new documentation. [drybjed]
+
 v0.2.0
 ------
 
