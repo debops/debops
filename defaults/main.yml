@@ -548,9 +548,10 @@ postgresql_server_etc_services_dependent_list:
 # Configuration for ``debops.ferm`` firewall. It should be added when
 # ``debops.ferm`` role is used to configure PostgreSQL firewall rules.
 postgresql_server_ferm_dependent_rules:
-  category: 'filter'
-  table: 'filter/input'
   type: 'custom'
+  domains: '$domains'
+  table: 'filter'
+  chain: 'INPUT'
   by_role: 'debops.postgresql_server'
   filename: 'postgresql_dependent_rules'
   rules: |

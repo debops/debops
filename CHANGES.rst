@@ -19,6 +19,10 @@ v0.2.2
   configure APT on Debian Wheezy to prefer PostgreSQL version from
   ``jessie-backports`` repository (9.4). [drybjed]
 
+- Update ``debops.ferm`` configuration to work with new role templates. The
+  ``ferm`` configuration file is moved to ``/etc/ferm/ferm.d/`` directory, you
+  might want to check the firewall configuration. [drybjed]
+
 v0.2.1
 ------
 
