@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.2.0
+------
+
+*Unreleased*
+
+- Replace old ``debops.pki`` role with a new, redesigned version. Some
+  additional code, variable cleanup and documentation is still missing, but
+  role is usable at this point. [drybjed]
+
 v0.1.0
 ------
 

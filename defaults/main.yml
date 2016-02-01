@@ -1,443 +1,526 @@
 ---
+# Default variables
+# =================
 
-# Enable or disable PKI support
-pki: True
+# .. contents:: Sections
+#    :local:
+#
+# ----------------------------
+#   Global PKI configuration
+# ----------------------------
 
-# Default FQDN
+# .. envvar:: pki_enabled
+#
+# Enable or disable PKI support.
+pki_enabled: True
+
+
+# .. envvar:: pki_internal
+#
+# Enable or disable support for internal certificates.
+pki_internal: '{{ (True
+                   if pki_default_domain
+                   else False) | bool }}'
+
+
+# .. envvar:: pki_fqdn
+#
+# Fully Qualified Domain Name of the remote host that is managed by
+# the ``debops.pki`` role. This variable is important in Ansible tasks that
+# maintain files in the ``secret/`` directory, as well as correct
+# identification of hosts which should have certificates signed by the internal
+# Certificate Authority.
 pki_fqdn: '{{ ansible_fqdn }}'
 
-# Default domain
-pki_domain: '{{ ansible_domain }}'
 
-# ---- Default DN for Certificate Requests ----
-
-pki_country:             'QS'
-pki_state:               'Q-Space'
-pki_locality:            'Global'
-pki_organization:        '{{ pki_domain.split(".")[0] | capitalize }}'
-pki_organizational_unit: 'Data Center Operations'
-pki_common_name:         '{{ pki_fqdn }}'
-pki_email:               'root@{{ pki_domain }}'
+# .. envvar:: pki_inventory_groups
+#
+# List of Ansible inventory group names which are taken into account while
+# managing the PKI realms. These inventory groups will have their own directories
+# in ``secret/pki/realms/by-group/`` directory on Ansible Controller, and files
+# put there will be copied to remote hosts.
+pki_inventory_groups: [ 'debops_service_pki' ]
 
 
-# ---- PKI main options ----
+# ------------------------------------------------
+#   Automatic Certificate Management Environment
+# ------------------------------------------------
 
-# List of additional packages to install ('haveged' might be useful for faster
-# randomness in testing environment)
+# .. envvar:: pki_acme
+#
+# Enable or disable support for ACME certificates.
+pki_acme: '{{ (True
+               if ((ansible_all_ipv4_addresses +
+                    ansible_all_ipv6_addresses) | ipaddr("public") and
+                    pki_default_domain)
+               else False) | bool }}'
+
+
+# .. envvar:: pki_acme_install
+#
+# Install ACME support but don't enable it by default for each realm.
+pki_acme_install: '{{ pki_acme | bool }}'
+
+
+# .. envvar:: pki_acme_library
+#
+# The crypto library used to generate Certificate Signing Requests for ACME
+# certificates, either ``openssl`` or ``gnutls``. Currently OpenSSL is
+# recommended due to issues with GnuTLS generation.
+pki_acme_library: 'openssl'
+
+
+# .. envvar:: pki_acme_user
+#
+# Name of the system user account which will be used to interact with the ACME
+# Certificate Authority.
+pki_acme_user: 'pki-acme'
+
+
+# .. envvar:: pki_acme_group
+#
+# Name of the system group which will be used to interact with the ACME
+# Certificate Authority.
+pki_acme_group: 'pki-acme'
+
+
+# .. envvar:: pki_acme_home
+#
+# Home of the user account that interacts with ACME Certificate Authority.
+pki_acme_home: '/run/pki-acme'
+
+
+# .. envvar:: pki_acme_default_subdomains
+#
+# List of DNS subdomains that will be added by default to each apex (root)
+# domain configured in ACME Certificate Signing Requests.
+pki_acme_default_subdomains: [ 'www' ]
+
+
+# .. envvar:: pki_acme_type
+#
+# ACME client to use to interact with the ACME Certificate Authority. At the
+# moment only ``acme-tiny`` is supported.
+pki_acme_type: 'acme-tiny'
+
+
+# .. envvar:: pki_acme_tiny_repo
+#
+# URL of the ``acme-tiny`` ``git`` repository.
+pki_acme_tiny_repo: 'https://github.com/diafygi/acme-tiny'
+
+
+# .. envvar:: pki_acme_tiny_version
+#
+# Branch of the ``acme-tiny`` source which should be checked out for
+# deployment.
+pki_acme_tiny_version: 'master'
+
+
+# .. envvar:: pki_acme_tiny_src
+#
+# Directory where ``acme-tiny`` source code will be cloned into for deployment.
+pki_acme_tiny_src: '{{ (ansible_local.root.src
+                        if (ansible_local|d() and ansible_local.root|d() and
+                            ansible_local.root.src|d())
+                        else "/usr/local/src") + "/" + pki_acme_user }}'
+
+
+# .. envvar:: pki_acme_tiny_bin
+#
+# Path where ``acme-tiny`` script will be installed.
+pki_acme_tiny_bin: '/usr/local/lib/pki/acme-tiny'
+
+
+# .. envvar:: pki_acme_ca
+#
+# Name of the ACME API endpoint used by the ACME client. The name-URL mapping
+# is done in ``pki_acme_ca_api_map`` dictionary variable.
+pki_acme_ca: 'le-live'
+
+
+# .. envvar:: pki_acme_ca_api_map
+#
+# Dictionary map of the ACME API endpoints, mapped to custom names, used by the
+# ACME client.
+pki_acme_ca_api_map:
+  'le-live':    'https://acme-v01.api.letsencrypt.org'
+  'le-staging': 'https://acme-staging.api.letsencrypt.org'
+
+
+# .. envvar:: pki_acme_challenge
+#
+# Directory where ACME client should store responses to ACME CA challenges. By
+# default it's defined by the ``debops.nginx`` Ansible role using Ansible facts.
+pki_acme_challenge_dir: '{{ (ansible_local.nginx.acme_root
+                             if (ansible_local|d() and ansible_local.nginx|d() and
+                                 ansible_local.nginx.acme_root|d())
+                             else "/srv/www/sites/acme/public") +
+                             "/.well-known/acme-challenge" }}'
+
+
+# ---------------------
+#   APT package lists
+# ---------------------
+
+# .. envvar:: pki_base_packages
+#
+# List of APT packages to install by default on the remote host for
+# cryptographic support.
+pki_base_packages: [ 'ssl-cert', 'make', 'ca-certificates',
+                     'gnutls-bin', 'openssl' ]
+
+
+# .. envvar:: pki_acme_packages
+#
+# List of APT packages required by ACME support.
+pki_acme_packages: [ 'curl', 'git' ]
+
+
+# .. envvar:: pki_packages
+#
+# List of additional APT packages to install.
 pki_packages: []
 
-# Base PKI directory on remote hosts
-pki_base_path: '/etc/pki'
 
-# Base PKI directory on the Ansible Controller
-# See debops.secret role for more information
-pki_base_src: '{{ secret + "/pki/" + pki_domain }}'
+# ------------------------------------------------
+#   Directory, file and user/group configuration
+# ------------------------------------------------
 
-# Directory and file permissions for public and private data
-pki_owner: 'root'
+# .. envvar:: pki_root
+#
+# Root directory of the PKI configuration on remote hosts.
+pki_root: '/etc/pki'
+
+
+# .. envvar:: pki_public_group
+#
+# Default system group which owns the public files and directories.
 pki_public_group: 'root'
+
+
+# .. envvar:: pki_private_group
+#
+# Default system group which owns the private files and directories.
 pki_private_group: 'ssl-cert'
+
+
+# .. envvar:: pki_public_dir_mode
+#
+# Octal permissions of the public directories.
 pki_public_dir_mode: '0755'
-pki_private_dir_mode: '2750'
+
+
+# .. envvar:: pki_private_dir_mode
+#
+# Octal permissions of private directories.
+pki_private_dir_mode: '0750'
+
+
+# .. envvar:: pki_public_mode
+#
+# Octal permissions of public files.
 pki_public_mode: '0644'
+
+
+# .. envvar:: pki_private_mode
+#
+# Octal permissions of private files.
 pki_private_mode: '0640'
 
-# Make sure these private system groups exist
+
+# .. envvar:: pki_private_groups_present
+#
+# Create system group specified here if they don't exist. This can be used to
+# ensure that private directories and files are owned by correct group before the
+# role that creates the group is run by Ansible. See
+# :ref:`pki_private_groups_present` for more details.
 pki_private_groups_present: []
 
 
-# ---- Certificate defaults ----
+# --------------------------
+#   Certificate sign times
+# --------------------------
 
-# Default digest engine to use for signatures
-pki_digest: 'sha256'
-
-# Default key size
-pki_private_key_size: '2048'
-
-# Base sign period for "normal" certificates
-pki_sign_days: '365'
-
-# Base multiplier for Root CA - 10 years
-pki_sign_rootca_multiplier: '10'
-
-# Base multiplier for intermediate CA - 5 years
-pki_sign_ca_multiplier: '5'
-
-# Base multiplier for certificate - 1 year
-pki_sign_cert_multiplier: '1'
-
-
-# ---- Root Certificate Authority configuration ----
-
-pki_rootca: 'RootCA'
-pki_rootca_filename: '{{ pki_rootca + "-" + pki_domain }}'
-pki_rootca_private_key_size: '4096'
-pki_rootca_o: '{{ pki_organization + " Certificate Authority" }}'
-pki_rootca_cn: '{{ pki_organization + " Root Certificate" }}'
-
-
-# ---- Service Certificate Authority configuration ----
-
-pki_serviceca: 'ServiceCA'
-pki_serviceca_filename: '{{ pki_serviceca + "-" + pki_domain }}'
-pki_serviceca_private_key_size: '2048'
-pki_serviceca_sign_days: '{{ (365 * 4) }}'
-pki_serviceca_o: '{{ pki_organization + " Certificate Authority" }}'
-pki_serviceca_ou: '{{ pki_organization + " Service CA" }}'
-pki_serviceca_cn: '{{ "srv." + pki_domain }}'
-
-
-# ---- PKI snapshot configuration ----
-
-pki_snapshot: True
-pki_snapshot_path: '/var/backups'
-pki_snapshot_file: '{{ "pki-snapshot-" + pki_fqdn + ".tar" }}'
-pki_snapshot_owner: 'root'
-pki_snapshot_group: 'root'
-
-
-# ---- Other configuration ----
-
-# Default library used to manage the certificates (openssl or gnutls)
-# Currently only OpenSSL is fully supported
-pki_library: 'openssl'
-
-# Certificate bundle configured as 'CA.crt' if no CA has been specified
-pki_default_ca: '/etc/ssl/certs/ca-certificates.crt'
-
-# Name of the certificates to symlink as 'default.*' if no default has been
-# specified
-pki_default_certificate: '{{ pki_fqdn }}'
-
-# PKI realm to set as the default (it will be written in Ansible local facts,
-# as well as symlinked to '/etc/pki/system/')
-pki_default_realm: 'host'
-
-# By default files from all realms are sent to all remote hosts. To prevent
-# access to a realm for a particular host, add the realm name to this list to
-# prevent it being sent to the server
-pki_realm_blacklist: []
-
-# Organizational Unit Name for internal realm
-pki_default_host_ou: '{{ pki_organization + " Data Center" }}'
-
-# Certificate name to symlink as 'default.*' in PKI 'host' realm
-pki_default_host_certificate: '{{ pki_fqdn }}'
-
-# Organizational Unit Name for domain realm
-pki_default_domain_ou: '{{ pki_organizational_unit }}'
-
-# Certificate name to symlink as 'default.*' in PKI 'domain' realm
-pki_default_domain_certificate: '{{ "wildcard.domain." + pki_fqdn }}'
-
-# Organizational Unit Name for service realm
-pki_default_service_ou: '{{ pki_organization + " Service" }}'
-
-# Certificate name to symlink as 'default.*' in PKI 'service' realm
-pki_default_service_certificate: '{{ "srv." + pki_fqdn }}'
-
-# Subdomain reserved for CA server (certificate revocation lists, source for
-# Root certificate, etc.)
-pki_ca_domain: 'pki.{{ pki_domain }}'
-
-# This string is used to uniquely bind a certificate to the requesting host
-pki_default_certificate_uri: '{{ "http://" + pki_ca_domain + "/cert/" + (ansible_local.root.uuid | sha1) }}'
-
-
-# ---- Certificates ----
-
-# This is a list of certificates to manage on a host. Each host sends
-# a Certificate Signing Request to the Ansible Controller, where it's signed by
-# designated Certificate Authority and send back to the host.
-pki_certificates: '{{ pki_certificates_default }}'
-
-# List of default certificates created by the role
-pki_certificates_default:
-
-  - source: '{{ "hosts/" + pki_fqdn + "/host" }}'
-    destination: 'host'
-    cn: '{{ pki_fqdn }}'
-    dns: [ '{{ "*." + pki_domain }}' ]
-    uri: [ '{{ pki_default_certificate_uri }}' ]
-
-  - source: '{{ "hosts/" + pki_fqdn + "/domain" }}'
-    destination: 'domain'
-    cn: '{{ pki_domain }}'
-    dns: [ '{{ "*." + pki_domain }}' ]
-    uri: [ '{{ pki_default_certificate_uri }}' ]
-    filename: 'wildcard.domain.{{ pki_fqdn }}'
-
-  - source: '{{ "hosts/" + pki_fqdn + "/service" }}'
-    destination: 'service'
-    cn: '{{ pki_fqdn }}'
-    dns: [ '{{ "*." + pki_domain }}' ]
-    uri: [ '{{ pki_default_certificate_uri }}' ]
-    filename: 'srv.{{ pki_fqdn }}'
-
-
-# ---- PKI realms ----
-
-# PKI realm is defined as a "channel" through which certificate requests are
-# sent to the Ansible Controller and certificates, as well as other files, are
-# sent to remote hosts. It's defined by a "source directory" (on the Ansible
-# Controller) and "destination directory" (on a remote host). Multiple sources
-# can be connected to one destination.
+# .. envvar:: pki_default_sign_base
 #
-# Each realm can have an optional Certificate Authority bound to it, which is
-# used to sign certificates requested in that realm. Since each realm generates
-# a Makefile in its destination directory, this can be disabled to not
-# interfere if multiple source directories are connected to one destination.
-# You can also specify a certificate name which will be symlinked as
-# 'default.*' in the main directory of the PKI realm. You can also specify which CA
-# certificates should be installed in a particular realm 'CA/' directory.
-#
-# To provide your own certificates and keys signed by an external CA, put them
-# in 'secret/pki/realms/' directory in a desired realm.
-pki_realms:
+# The base amount of time in days which is used for signing various
+# certificates. By default, 1 year.
+pki_default_sign_base: '365'
 
-    # This realm is used to distribute certificates to all hosts in a domain. It
-    # does not have its own CA, and additionally distributes the main Root
-    # Certificate Authority to all hosts. If you manage hosts on which an
-    # external entity might have access to private keys, and you want to prevent
-    # them access to your wildcard certificates, you might want to disable this
-    # realm on a particular host.
+
+# .. envvar:: pki_default_root_sign_multiplier
+#
+# Amount of time which Root Certificate Authority will be valid, multiplied by
+# the base time amount.
+pki_default_root_sign_multiplier: '12'
+
+
+# .. envvar:: pki_default_ca_sign_multiplier
+#
+# Amount of time which intermediate CA certificates will be valid, multiplied
+# by the base time amount.
+pki_default_ca_sign_multiplier: '10'
+
+
+# .. envvar:: pki_default_cert_sign_multiplier
+#
+# Amount of time which client/server certificates will be valid, multiplied by
+# the base time amount.
+pki_default_cert_sign_multiplier: '3'
+
+
+# -------------------------------
+#   Configuration of PKI Realms
+# -------------------------------
+
+# .. envvar:: pki_library
+#
+# The crypto library used to manage PKI realms on remote hosts, either
+# ``gnutls`` or ``openssl``. GnuTLS is preferred on Debian hosts.
+pki_library: 'gnutls'
+
+
+# .. envvar:: pki_system_realm
+#
+# System-wide PKI realm which is used by services by default for server
+# certificates. It will be set in Ansible local facts for use by other Ansible
+# roles.
+pki_system_realm: 'domain'
+
+
+# .. envvar:: pki_system_ca_realm
+#
+# System-wide PKI realm which is used by services by default for CA certificate
+# (client authentication). It will be set in Ansible local facts for use by other
+# Ansible roles.
+pki_system_ca_realm: '{{ pki_system_realm }}'
+
+
+# .. envvar:: pki_default_domain
+#
+# Default DNS domain used to create Certificate Signing Requests. It will be
+# specified in the certificate Subject if it's not redefined, as well as in the
+# certificate SubjectAltName field.
+pki_default_domain: '{{ ansible_domain }}'
+
+
+# .. envvar:: pki_default_subdomains
+#
+# List of additional subdomains added by default to all domain specified in the
+# Certificate Signing Request. The ``_wildcard_`` is a replacement for the ``*``
+# character and means that each domain will have an alternative wildcard
+# SubjectAltName.
+pki_default_subdomains: [ '_wildcard_' ]
+
+
+# .. envvar:: pki_realms
+#
+# List of PKI realms configured on all hosts.
+pki_realms: []
+
+
+# .. envvar:: pki_default_realms
+#
+# List of the default PKI realms configured on all hosts.
+pki_default_realms:
+
   - name: 'domain'
-    source: 'domain'
-    destination: 'domain'
-    ca: [ 'root/RootCA' ]
-    makefile: False
-
-    # Because some applications do not support chained certificates properly
-    # (for example, MySQL built with yaSSL by default), this realm creates an
-    # alternative set of certificates which are signed directly by a Root
-    # Certificate Authority, without any Intermediate CA. This realm is meant
-    # for internal use only.
-
-  - name: 'service'
-    source: 'service'
-    destination: 'service'
-    ca: [ 'root/ServiceCA' ]
-    makefile: False
-
-    # This is a host counterpart for the 'service' realm, specific to
-    # a particular host.
-
-  - name: 'host-service'
-    source: 'hosts/{{ pki_fqdn }}/service'
-    destination: 'service'
-    authority: 'root/ServiceCA'
-    ou: '{{ pki_default_service_ou }}'
-    default: '{{ pki_default_service_certificate }}'
-    default_ca: '{{ "CA/" + pki_serviceca_filename + ".crt" }}'
-
-    # This realm can be used to manage wildcard certificates per host, instead of
-    # globally. By default it provides a wildcard certificate for your domain.
-
-  - name: 'host-domain'
-    source: 'hosts/{{ pki_fqdn }}/domain'
-    destination: 'domain'
-    authority: 'ca/domain'
-    ou: '{{ pki_default_domain_ou }}'
-    default: '{{ pki_default_domain_certificate }}'
-
-    # This realm can be used to manage host-based certificates, a certificate
-    # for your host will be automatically generated.
-  - name: 'host-internal'
-    source: 'hosts/{{ pki_fqdn }}/host'
-    destination: 'host'
-    authority: 'ca/internal'
-    ou: '{{ pki_default_host_ou }}'
-    default: '{{ pki_default_host_certificate }}'
+    acme: False
 
 
-# ---- Certificate Authorities ----
-
-# This list defines a chain of Certificate Authorities, from Root CA, through
-# Intermediate CA, ending on the "endpoint" CA which issues client and server
-# certificates. Root and Intermediate CA after signing the CSR of sibling CA
-# will automatically lock themselves, which allows you to move their private
-# keys offline to a secure storage.
+# .. envvar:: pki_group_realms
 #
-# CA will automatically sign all incoming Certificate Signing Requests and
-# create chained certificates (with intermediate CA certificates included).
-# Signed certificates will be stored in a central location and distributed to
-# proper realms using route scripts (see below).
+# List of PKI realms configured in specific inventory groups.
+pki_group_realms: []
+
+
+# .. envvar:: pki_host_realms
+#
+# List of PKI realms configured on specific hosts.
+pki_host_realms: []
+
+
+# .. envvar:: pki_dependent_realms
+#
+# List of PKI realms configured in a role dependency.
+pki_dependent_realms: []
+
+
+# .. envvar:: pki_scheduler
+#
+# Enable periodic runs of ``pki-realm`` script for all PKI realms. The script
+# will check realm structure and renew certificates that are near their
+# expiration date.
+pki_scheduler: True
+
+
+# .. envvar:: pki_scheduler_interval
+#
+# Specify the interval of periodical tasks: ``hourly``, ``daily``, ``weekly``
+# or ``monthly``.
+pki_scheduler_interval: 'weekly'
+
+
+# ------------------------------------------------
+#   Configuration of PKI Certificate Authorities
+# ------------------------------------------------
+
+# .. envvar:: pki_ca_library
+#
+# The crypto library used by the Certificate Authorities on the Ansible
+# Controller, either ``openssl`` or ``gnutls``. Currently OpenSSL library is
+# preferred due to rich functionality.
+pki_ca_library: 'openssl'
+
+
+# .. envvar:: pki_default_authority
+#
+# Name of the default Certificate Authority to which host certificates are
+# directed if a PKI realm does not specify a default Authority.
+pki_default_authority: 'domain'
+
+
+# .. envvar:: pki_ca_domain
+#
+# The DNS domain used by default for an Certificate Authority configuration if
+# no specific ``item.domain`` is configured.
+pki_ca_domain: '{{ ansible_domain }}'
+
+
+# .. envvar:: pki_authorities
+#
+# List of internal Certificate Authorities managed on an Ansible Controller.
+# Each CA is defined as a dictionary variable.
 pki_authorities:
-
-  # Internal certificate chain, with certificates signed directly by Root Certificate
-  - name: 'root/ServiceCA'
-    grants: 'cert'
-    private_key_size: '{{ pki_serviceca_private_key_size }}'
-    filename: '{{ pki_serviceca_filename }}'
-    policy: 'intermediate'
-    sign_days: '{{ pki_serviceca_sign_days }}'
-    default_dn: False
-    o: '{{ pki_serviceca_o }}'
-    ou: '{{ pki_serviceca_ou }}'
-    cn: '{{ pki_serviceca_cn }}'
-    lock: False
-
-  # Domain-wide certificate chain
-  - name: 'root/RootCA'
-    grants: 'ca'
-    private_key_size: '{{ pki_rootca_private_key_size }}'
-    filename: '{{ pki_rootca_filename }}'
-    default_dn: False
-    o: '{{ pki_rootca_o }}'
-    cn: '{{ pki_rootca_cn }}'
-
-  - name: 'intermediate/DomainCA'
-    grants: 'ca'
-    parent: 'root/RootCA'
-    o: '{{ pki_rootca_o }}'
-    ou: '{{ pki_organization + " CA" }}'
-    cn: '{{ "ca." + pki_domain }}'
-
-  - name: 'ca/internal'
-    parent: 'intermediate/DomainCA'
-    ou: '{{ pki_default_host_ou }}'
-    cn: '{{ "dc." + pki_domain }}'
-
-  - name: 'ca/domain'
-    grants: 'server'
-    parent: 'intermediate/DomainCA'
-    ou: '{{ pki_default_domain_ou }}'
-    cn: '{{ "dco." + pki_domain }}'
+  - '{{ pki_authorities_ca_root }}'
+  - '{{ pki_authorities_ca_domain }}'
+  - '{{ pki_authorities_ca_service }}'
 
 
-# ---- CA - realm route scripts ----
-
-# Route scripts provide a "glue" between Ansible facts and filesystem
-# directories. Because at the time of the Makefile execution system does not
-# have a knowledge about where to copy each file from Certificate Authorities
-# directories to PKI realms, small shell scripts are generated beforehand with
-# proper copy commands.
-# FIXME: Spelling, meaning.
-pki_routes: '{{ pki_routes_default }}'
-
-# Routes provided for default certificates
-pki_routes_default:
-
-    # Copy signed host certificate to 'host' PKI realm
-  - name: 'host_{{ pki_fqdn }}'
-    authority: 'ca/internal/certs'
-    realm: 'hosts/{{ pki_fqdn }}/host/certs'
-    file: '{{ pki_fqdn }}.crt'
-
-    # Copy signed domain certificate to 'domain' PKI realm
-  - name: 'domain_{{ pki_fqdn }}'
-    authority: 'ca/domain/certs'
-    realm: 'hosts/{{ pki_fqdn }}/domain/certs'
-    file: 'wildcard.domain.{{ pki_fqdn }}.crt'
-
-    # Copy signed service certificate to 'service' PKI realm
-  - name: 'service_{{ pki_fqdn }}'
-    authority: 'root/ServiceCA/certs'
-    realm: 'hosts/{{ pki_fqdn }}/service/certs'
-    file: '{{ "srv." + pki_fqdn }}.crt'
-
-    # Copy Root CA certificate to 'domain' realm for all hosts
-  - name: 'root_ca'
-    authority: 'root/RootCA'
-    realm: 'domain/CA'
-    readlink: 'CA.crt'
-
-    # Copy internal CA CRL file to 'host' PKI realm
-  - name: 'host_crl_{{ pki_fqdn }}'
-    authority: 'ca/internal'
-    realm: 'hosts/{{ pki_fqdn }}/host/revoked'
-    readlink: 'default.crl'
-
-    # Copy domain CA CRL file to 'domain' PKI realm
-  - name: 'domain_crl_{{ pki_fqdn }}'
-    authority: 'ca/domain'
-    realm: 'hosts/{{ pki_fqdn }}/domain/revoked'
-    readlink: 'default.crl'
-
-    # Copy Service CA certificate to 'service' realm for all hosts
-  - name: 'service_ca'
-    authority: 'root/ServiceCA'
-    realm: 'service/CA'
-    readlink: 'CA.crt'
-
-    # Copy Service CA CRL file to 'service' realm for all hosts
-  - name: 'service_crl'
-    authority: 'root/ServiceCA'
-    realm: 'service/revoked'
-    readlink: 'default.crl'
-
-
-# ---- Add external file contents from variables ----
-
-# This is a way to add contents of variables into the PKI directory structure
-# on remote hosts. You can use lists below to add certificates and keys from
-# Ansible Vault using variables. Specified paths are relative to
-# 'pki_base_path', by default "/etc/pki/".
+# .. envvar:: pki_ca_root_dn
 #
-# Files are added just after the first Makefile run on remote hosts, and before CSR
-# files are sent to the Ansible Controller.
+# The Distinguished Name (subject) of the Root Certificate Authority.
+pki_ca_root_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }} Certificate Authority' ]
+
+
+# .. envvar:: pki_ca_domain_dn
 #
-# For example, a way to add a certificate and private key to PKI host realm
-# using variables:
+# The Distinguished Name (subject) of the Domain Certificate Authority.
+pki_ca_domain_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }}', 'ou=Domain CA' ]
+
+
+# .. envvar:: pki_ca_service_enabled
 #
-# pki_inject_public_files:
-#   - path: 'host/certs/my.{{ pki_domain }}.crt'
-#     content: '{{ vault_certitifate }}'
+# Enable or disable special Service Certificate Authority, which is a Root CA
+# without intermediate CA and sign server certificates directly. This might be
+# needed by specific applications like MySQL which do not support an
+# intermediate CA.
+pki_ca_service_enabled: False
+
+
+# .. envvar:: pki_ca_service_dn
 #
-# pki_inject_private_files:
-#   - path: 'host/private/my.{{ pki_domain }}.key'
-#     content: '{{ vault_private_key }}'
+# The Distinguished Name (subject) of the Service Certificate Authority.
+pki_ca_service_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }}', 'ou=Internal Services CA' ]
+
+
+# .. envvar:: pki_authorities_ca_root
 #
-# If needed, you can specify 'item.{owner,group,mode}' dict keys, otherwise
-# default values will be used. 'item.path' and 'item.content' are required.
-
-# Add content of variables to public files
-pki_inject_public_files: []
-
-# Add content of variables to private files
-pki_inject_private_files: []
+# Configuration of the Root Certificate Authority.
+pki_authorities_ca_root:
+  name: 'root'
+  subdomain: 'root-ca'
+  subject: '{{ pki_ca_root_dn }}'
 
 
-# ---- Copy external files to PKI directories ----
-
-# Using these lists, you can copy arbitrary files from the Ansible Controller to
-# remote host's PKI directories. They will automatically be secured with proper
-# permissions. If not specified, files will be copied to default PKI realm.
-
-# Examples:
+# .. envvar:: pki_authorities_ca_domain
 #
-#   # Copy a particular certificate file to default realm
-#   pki_copy_public_files:
+# Configuration of the Domain Certificate Authority.
+pki_authorities_ca_domain:
+  name: 'domain'
+  subdomain: 'domain-ca'
+  subject: '{{ pki_ca_domain_dn }}'
+  issuer_name: 'root'
+
+
+# .. envvar:: pki_authorities_ca_service
 #
-#     - src: '/srv/certificates/example.com.crt'
-#       dest: 'certs/example.com.crt'
+# Configuration of the Service Certificate Authority.
+pki_authorities_ca_service:
+  name: 'service'
+  subdomain: 'service-ca'
+  subject: '{{ pki_ca_service_dn }}'
+  type: 'service'
+  enabled: '{{ pki_ca_service_enabled | bool }}'
+
+
+# .. envvar:: pki_dependent_authorities
 #
-#   # Copy a particular private key file to default realm
-#   pki_copy_private_files:
+# List of Certificate Authorities defined as a role dependency.
+pki_dependent_authorities: []
+
+
+# --------------------------
+#   Custom file management
+# --------------------------
+
+# You can use custom file lists to copy files to remote hosts or install
+# contents of Jinja variables. See :ref:`custom_file_management` for more
+# details.
+
+# .. envvar:: pki_private_files
 #
-#     - src: '/srv/certificates/private/example.com.key'
-#       dest: 'private/example.com.key'
+# Copy private files to all hosts in inventory.
+pki_private_files: []
+
+
+# .. envvar:: pki_group_private_files
 #
-#   # Copy a file to specific realm
-#   pki_copy_public_files:
+# Copy private files to hosts in specific inventory groups.
+pki_group_private_files: []
+
+
+# .. envvar:: pki_host_private_files
 #
-#     - src: '/etc/fstab'
-#       dest: 'certs/fstab'
-#       realm: 'domain'
-
-# Copy public files to remote hosts
-pki_copy_public_files: []
-
-# Copy private files to remote hosts
-pki_copy_private_files: []
+# Copy private files to specific hosts in inventory.
+pki_host_private_files: []
 
 
-# ---- System CA certificate store management ----
+# .. envvar:: pki_public_files
+#
+# Copy public files to all hosts in inventory.
+pki_public_files: []
 
-# Set default trust policy for new certificates added to 'ca-certificates'
-# system package. Choices: 'yes', 'no'
-pki_system_ca_certificates_trust_new: 'yes'
 
+# .. envvar:: pki_group_public_files
+#
+# Copy public files to hosts in specific inventory group.
+pki_group_public_files: []
+
+
+# .. envvar:: pki_host_public_files
+#
+# Copy public files to specific hosts in inventory.
+pki_host_public_files: []
+
+
+# ------------------------------------
+#   System-wide Root CA Certificates
+# ------------------------------------
+
+# See :ref:`system_ca_certificates` for more details about management of
+# system-wide CA certificates.
+
+# .. envvar:: pki_system_ca_certificates_trust_new
+#
+# Set default trust policy for new certificates added to ``ca-certificates``
+# system package.
+pki_system_ca_certificates_trust_new: True
+
+
+# .. envvar:: pki_system_ca_certificates_blacklist
+#
 # List of blacklisted CA certificates. You can specify either exact names of
 # certificate files or use regular expressions. If a certificate is
 # found in both lists, it will be blacklisted.
@@ -448,25 +531,10 @@ pki_system_ca_certificates_blacklist:
   - 'mozilla/CNNIC_ROOT.crt'
   - 'mozilla/China_Internet_Network_Information_Center_EV_Certificates_Root.crt'
 
-  # Blacklist all certificates
-  #- '.*'
 
-  # Blacklist all Mozilla certificates
-  #- 'mozilla/.*'
-
-  # Blacklist specific group of certificates
-  #- 'mozilla/VeriSign_.*'
-
+# .. envvar:: pki_system_ca_certificates_whitelist
+#
 # List of whitelisted CA certificates. You can specify either exact names of
 # certificate files or use regular expressions.
 pki_system_ca_certificates_whitelist: []
-
-  # Whitelist all certificates
-  #- '.*'
-
-  # Whitelist all Mozilla certificates
-  #- 'mozilla/.*'
-
-  # Whitelist specific group of certificates
-  #- 'mozilla/VeriSign_.*'
 
