@@ -23,6 +23,10 @@ v0.2.2
   ``ferm`` configuration file is moved to ``/etc/ferm/ferm.d/`` directory, you
   might want to check the firewall configuration. [drybjed]
 
+- Remove hard role dependencies on ``debops.etc_services`` and ``debops.ferm``
+  roles. They will be configured in the service playbook located in
+  ``debops-playbooks`` repository. [drybjed]
+
 v0.2.1
 ------
 
