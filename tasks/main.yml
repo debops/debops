@@ -20,7 +20,9 @@
   tags: [ 'role::postgresql_server:packages' ]
 
 - name: Get default PostgreSQL version
-  shell: "apt-cache show '^postgresql$' | grep -E '^Depends:\\s' | awk '{print $2}' | cut -d- -f2 | head -n 1"
+  environment:
+    LC_ALL: 'C'
+  shell: "apt-cache policy postgresql | grep -E '^\\s+Candidate:\\s+' | awk '{print $2}' | cut -d+ -f1"
   register: postgresql_server_register_version
   changed_when: False
   tags: [ 'role::postgresql_server:packages', 'role::postgresql_server:config',
