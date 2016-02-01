@@ -79,6 +79,21 @@ Here's an example playbook which uses the ``debops.postgresql_server`` role::
 
       roles:
 
+        - role: debops.apt_preferences
+          tags: [ 'role::apt_preferences' ]
+          apt_preferences_dependent_list:
+            - '{{ postgresql_server_apt_preferences_dependent_list }}'
+
+        - role: debops.etc_services
+          tags: [ 'role::etc_services' ]
+          etc_services_dependent_list:
+            - '{{ postgresql_server_etc_services_dependent_list }}'
+
+        - role: debops.ferm
+          tags: [ 'role::ferm' ]
+          ferm_dependent_rules:
+            - '{{ postgresql_server_ferm_dependent_rules }}'
+
         - role: debops.postgresql_server
           tags: [ 'role::postgresql_server' ]
 

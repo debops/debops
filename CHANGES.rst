@@ -4,7 +4,7 @@ Changelog
 v0.2.2
 ------
 
-*Unreleased*
+*Released: 2016-02-01*
 
 - Change how role detects PostgreSQL version. The new method will use
   ``apt-cache policy`` to use the version determined by APT preferences instead
@@ -14,6 +14,18 @@ v0.2.2
 
 - Update the ``postgresql.conf`` file template to support changes in PostgreSQL
   9.5. [drybjed]
+
+- Add configuration variables for ``debops.apt_preferences`` role, which will
+  configure APT on Debian Wheezy to prefer PostgreSQL version from
+  ``jessie-backports`` repository (9.4). [drybjed]
+
+- Update ``debops.ferm`` configuration to work with new role templates. The
+  ``ferm`` configuration file is moved to ``/etc/ferm/ferm.d/`` directory, you
+  might want to check the firewall configuration. [drybjed]
+
+- Remove hard role dependencies on ``debops.etc_services`` and ``debops.ferm``
+  roles. They will be configured in the service playbook located in
+  ``debops-playbooks`` repository. [drybjed]
 
 v0.2.1
 ------
