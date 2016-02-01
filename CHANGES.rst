@@ -1,6 +1,21 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Released: 2016-02-01*
+
+- Change how role detects PostgreSQL version. The new method will use
+  ``apt-cache policy`` to use the version determined by APT preferences instead
+  of choosing first version from available packages. This fixes an issue when
+  multiple PostgreSQL versions are available but the preferred one is not the
+  first one. [drybjed]
+
+- Add configuration variables for ``debops.apt_preferences`` role. The
+  configuration will make sure that PostgreSQL 9.4 from ``jessie-backports``
+  repository is installed on Debian Wheezy hosts. [drybjed]
+
 v0.2.0
 ------
 

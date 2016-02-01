@@ -18,7 +18,9 @@
   when: postgresql_upstream|d() and postgresql_upstream
 
 - name: Get default PostgreSQL version
-  shell: "apt-cache show '^postgresql$' | grep -E '^Depends:\\s' | awk '{print $2}' | cut -d- -f2 | head -n 1"
+  environment:
+    LC_ALL: 'C'
+  shell: "apt-cache policy postgresql-client | grep -E '^\\s+Candidate:\\s+' | awk '{print $2}' | cut -d+ -f1"
   register: postgresql_register_version
   changed_when: False
 
