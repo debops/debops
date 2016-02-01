@@ -136,3 +136,19 @@ postgresql_databases: []
 # configuration file. See :ref:`postgresql_pgpass` for more details.
 postgresql_pgpass: []
 
+
+# --------------------------------
+#   Role-dependent configuration
+# --------------------------------
+
+# .. envvar:: postgresql_apt_preferences_dependent_list
+#
+# Configuration for ``debops.apt_preferences`` role. PostgreSQL from backports
+# will be preferred on specified Debian releases.
+postgresql_apt_preferences_dependent_list:
+
+  - package: 'postgresql postgresql-* libpq5'
+    backports: [ 'wheezy' ]
+    reason: 'Version parity with Debian Jessie'
+    role: 'debops.postgresql'
+

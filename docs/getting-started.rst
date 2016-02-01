@@ -100,6 +100,12 @@ Here's an example Ansible playbook that uses the ``debops.postgresql`` role::
       sudo: True
 
       roles:
+
+        - role: debops.apt_preferences
+          tags: [ 'role::apt_preferences' ]
+          apt_preferences_dependent_list:
+            - '{{ postgresql_apt_preferences_dependent_list }}'
+
         - role: debops.postgresql
           tags: [ 'role::postgresql' ]
 
