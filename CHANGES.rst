@@ -98,6 +98,9 @@ v0.1.5
   ``item.pki_realm`` parameter. If a corresponding realm is not found, that
   vhost will use the default PKI realm. [drybjed]
 
+- Support `HSTS preloading <https://hstspreload.appspot.com/>`_ in ``nginx``
+  server configuration. [drybjed]
+
 v0.1.4
 ------
 

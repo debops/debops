@@ -399,6 +399,13 @@
 #       this is set to false, the Strict-Transport-Security header will not
 #       be set in the server's responses.
 #
+#
+#   - item.hsts_preload: True/False
+#       Optional. Add a "preload" parameter to the HSTS header which can be
+#       used with https://hstspreload.appspot.com/ site to configure HSTS
+#       preloading for a given website.
+#
+#
 #   - item.try_files: nginx_default_try_files
 #       Optional. Checks for the existence of files in order, and returns the
 #       first file that is found for location /.
@@ -889,7 +896,7 @@ server {
         resolver_timeout          5s;
 {% endif %}
 {% if item.hsts_enabled is undefined or (item.hsts_enabled is defined and item.hsts_enabled) %}
-        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age | default('15768000') }}{% if nginx_hsts_subdomains %}; includeSubDomains{% endif %}";
+        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age | default('15768000') }}{% if nginx_hsts_subdomains|bool %}; includeSubDomains{% endif %}{% if (item.hsts_preload | d(nginx_hsts_preload)) | bool %}; preload{% endif %}";
 {% endif %}
 
 {% if item.name is defined and item.name %}
