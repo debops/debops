@@ -161,7 +161,7 @@
            --acme "{{ item.acme|d(pki_acme) | bool | lower }}" --acme-subject "{{ item.acme_subject|d([]) | join('/') }}"
            --acme-domains "{{ item.acme_domains|d([]) | join('/') }}" --acme-subdomains "{{ item.acme_subdomains|d([]) | join('/') }}"
   args:
-    creates: '/etc/pki/realms/{{ item.name }}/public/cert.pem'
+    creates: '/etc/pki/realms/{{ item.name }}/default.key'
   with_flattened:
     - '{{ pki_realms }}'
     - '{{ pki_group_realms }}'

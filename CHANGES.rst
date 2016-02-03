@@ -27,6 +27,11 @@ v0.2.2
   fine otherwise, and internal Certificate Authorities are easy to recreate
   with correct configuration. [drybjed]
 
+- Change the file tracked by the PKI realm creation task to be the realm
+  private key instead of the certificate. This allows for realms that only
+  contain Root CA certificates and does not create idempotency issues.
+  [drybjed]
+
 v0.2.1
 ------
 
