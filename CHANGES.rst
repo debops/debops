@@ -90,6 +90,14 @@ v0.1.5
   The internal ``debops.pki`` certificates should work out of the box.
   [drybjed]
 
+- Support autodetection of PKI realms.
+
+  The ``debops.nginx`` role will check if any of the server names for a given
+  vhost have corresponding PKI realms. If a corresponding realm is found, its
+  certificates will be used for that server, unless overriden by
+  ``item.pki_realm`` parameter. If a corresponding realm is not found, that
+  vhost will use the default PKI realm. [drybjed]
+
 v0.1.4
 ------
 

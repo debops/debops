@@ -439,11 +439,23 @@
 {% set nginx_tpl_default_redirect_code = '307'                                 %}
 {% set nginx_tpl_default_redirect_code_ssl = '301'                             %}
 {% set nginx_tpl_http_redirect = item.redirect | default('https://$host$request_uri') %}
+{% set nginx_tpl_pki_custom_realm = '' %}
+{% set nginx_tpl_pki_custom_realm_list = [] %}
+{% if (nginx_pki | bool and item.name | d() and (ansible_local|d() and ansible_local.pki|d() and ansible_local.pki.known_realms|d())) %}
+{%   for name in item.name %}
+{%     if name in ansible_local.pki.known_realms %}
+{%       set _ = nginx_tpl_pki_custom_realm_list.append(name) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if nginx_tpl_pki_custom_realm_list %}
+{%   set nginx_tpl_pki_custom_realm = nginx_tpl_pki_custom_realm_list[0] %}
+{% endif %}
 {#
 
     ---- SSL certificate ----
 #}
-{% set nginx_tpl_ssl_certificate = nginx_pki_path + "/" + item.pki_realm | default(nginx_pki_realm) + "/" + item.pki_crt | default(nginx_pki_crt) %}
+{% set nginx_tpl_ssl_certificate = nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + item.pki_crt | d(nginx_pki_crt) %}
 {% if (item.ssl_crt is defined and item.ssl_crt)  %}
 {%   set nginx_tpl_ssl_certificate = item.ssl_crt %}
 {% endif                                          %}
@@ -451,7 +463,7 @@
 
     ---- SSL certificate key ----
 #}
-{% set nginx_tpl_ssl_certificate_key = nginx_pki_path + "/" + item.pki_realm | default(nginx_pki_realm) + "/" + item.pki_key | default(nginx_pki_key) %}
+{% set nginx_tpl_ssl_certificate_key = nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + item.pki_key | d(nginx_pki_key) %}
 {% if (item.ssl_key is defined and item.ssl_key)      %}
 {%   set nginx_tpl_ssl_certificate_key = item.ssl_key %}
 {% endif                                              %}
