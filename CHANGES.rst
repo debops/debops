@@ -9,6 +9,10 @@ v0.2.2
 - Add support for Diffie-Hellman parameters appended to certificate chains. DHE
   parameters are managed by ``debops.dhparam`` Ansible role. [drybjed]
 
+- When an active authority directory is changed, correctly clean up files not
+  present in the new authority directory and symlinks without existing targets.
+  [drybjed]
+
 v0.2.1
 ------
 

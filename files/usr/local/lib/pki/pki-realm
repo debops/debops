@@ -275,19 +275,27 @@ check_openssl_key_crt_match () {
 check_file_signature () {
     local check_file="${1}"
 
-    if [ -r ${check_file} -a -r ${check_file}.sig ] ; then
-        set +e
-        md5sum --quiet --status -c ${check_file}.sig
-        local rc=$?
-        set -e
-        if [ ${rc} -ne 0 ] ; then
-            rm -rf ${check_file}.sig
-            md5sum ${check_file} > ${check_file}.sig
-            return ${rc}
+    if [ -n "${check_file}" ] ; then
+        if [ -r ${check_file} ] ; then
+            if [ -r ${check_file}.sig ] ; then
+                set +e
+                md5sum --quiet --status -c ${check_file}.sig
+                local rc=$?
+                set -e
+                if [ ${rc} -ne 0 ] ; then
+                    rm -rf ${check_file}.sig
+                    md5sum ${check_file} > ${check_file}.sig
+                    return ${rc}
+                fi
+            else
+                md5sum ${check_file} > ${check_file}.sig
+                return 0
+            fi
+        else
+            if [ -r ${check_file}.sig ] ; then
+                rm -f ${check_file}.sig
+            fi
         fi
-    else
-        md5sum ${check_file} > ${check_file}.sig
-        return 0
     fi
 }
 
@@ -391,6 +399,10 @@ update_symlink () {
                 break
             fi
         done
+
+        if [ ! -e ${symlink_target} ] ; then
+            rm -f ${symlink_target}
+        fi
 
     fi
 }
@@ -1008,6 +1020,12 @@ process_public_files () {
                     cat public/alt_intermediate.pem public/alt_root.pem.tmp > public/alt_intermediate_root.pem.tmp
                 fi
 
+                for public_file in public/*.pem ; do
+                    if [ ! -r ${public_file/public/${authority}} -a ! -r ${public_file}.tmp ] ; then
+                        touch ${public_file}.rm
+                    fi
+                done
+
             fi
 
             if [ -r private/key.pem -a -r public/cert.pem -a -r public/intermediate.pem -a -r public/cert_intermediate.pem ] ; then
@@ -1064,15 +1082,21 @@ process_public_files () {
 
                 if [ -r public/intermediate.pem.tmp -a -r public/root.pem.tmp ] ; then
                     cat public/intermediate.pem.tmp public/root.pem.tmp > public/intermediate_root.pem.tmp
-                elif [ -r public/intermediate.pem -a -r public/root.pem.tmp ] ; then
+                elif [ -r ${authority}/intermediate.pem -a -r public/intermediate.pem -a -r public/root.pem.tmp ] ; then
                     cat public/intermediate.pem public/root.pem.tmp > public/intermediate_root.pem.tmp
                 fi
 
                 if [ -r public/alt_intermediate.pem.tmp -a -r public/alt_root.pem.tmp ] ; then
                     cat public/alt_intermediate.pem.tmp public/alt_root.pem.tmp > public/alt_intermediate_root.pem.tmp
-                elif [ -r public/alt_intermediate.pem -a -r public/alt_root.pem.tmp ] ; then
+                elif [ -r ${authority}/alt_intermediate.pem -a -r public/alt_intermediate.pem -a -r public/alt_root.pem.tmp ] ; then
                     cat public/alt_intermediate.pem public/alt_root.pem.tmp > public/alt_intermediate_root.pem.tmp
                 fi
+
+                for public_file in public/*.pem ; do
+                    if [ ! -r ${public_file/public/${authority}} -a ! -r ${public_file}.tmp ] ; then
+                        touch ${public_file}.rm
+                    fi
+                done
 
             fi
 
@@ -1180,6 +1204,21 @@ process_private_files () {
             fi
 
             break
+
+        elif [ ! -r ${authority}/cert.pem -a -r ${authority}/root.pem ] ; then
+
+            if ! diff -q -N ${authority}/root.pem public/root.pem > /dev/null ; then
+
+                if [ -r private/key_chain.pem ] ; then
+                    touch private/key_chain.pem.rm
+                fi
+                if [ -r private/key_chain_dhparam.pem ] ; then
+                    touch private/key_chain_dhparam.pem.rm
+                fi
+
+            fi
+
+            break
         fi
 
     done
@@ -1204,10 +1243,24 @@ activate_new_files () {
         state+=("changed-certificate")
     fi
 
+    for rm_file in $(find public/ -maxdepth 1 -name '*.rm') ; do
+        rm -f ${rm_file/.rm/} ${rm_file}
+        state+=("file-deletion")
+    done
+
+    if [ ! -r public/cert.pem -a public/cert.pem.sig ] ; then
+        rm -f public/cert.pem.sig
+    fi
+
     for new_file in $(find public/ -maxdepth 1 -name '*.tmp') ; do
         mv --force ${new_file} ${new_file/.tmp/}
         state+=("changed-public-file")
         state+=("file-change")
+    done
+
+    for rm_file in $(find private/ -maxdepth 1 -name '*.rm') ; do
+        rm -f ${rm_file/.rm/} ${rm_file}
+        state+=("file-deletion")
     done
 
     for new_file in $(find private/ -maxdepth 1 -name '*.tmp') ; do

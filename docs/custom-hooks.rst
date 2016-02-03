@@ -90,6 +90,9 @@ List of known states:
 ``file-change``
   A generic file change notification.
 
+``file-deletion``
+  A file has been deleted.
+
 ``changed-public-file``
   Some of the files in ``public/`` directory have been changed/replaced.
 
