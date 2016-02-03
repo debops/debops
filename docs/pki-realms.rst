@@ -126,6 +126,7 @@ is provided by the internal ``debops.pki`` Certificate Authority::
         │   ├── request.pem
         │   └── root.pem
         ├── private/
+        │   ├── key_chain_dhparam.pem
         │   ├── key_chain.pem
         │   ├── key.pem
         │   └── realm_key.pem
@@ -134,17 +135,18 @@ is provided by the internal ``debops.pki`` Certificate Authority::
         │   ├── alt_intermediate_root.pem
         │   ├── alt_root.pem -> ../internal/alt_root.pem
         │   ├── alt_trusted.pem -> alt_intermediate_root.pem
+        │   ├── cert_intermediate_dhparam.pem
         │   ├── cert_intermediate.pem
         │   ├── cert.pem -> ../internal/cert.pem
         │   ├── cert.pem.sig
-        │   ├── chain.pem -> cert_intermediate.pem
+        │   ├── chain.pem -> cert_intermediate_dhparam.pem
         │   ├── intermediate_root.pem
         │   ├── root.pem -> ../internal/root.pem
         │   └── trusted.pem -> intermediate_root.pem
         ├── CA.crt -> public/alt_trusted.pem
         ├── default.crt -> public/chain.pem
         ├── default.key -> private/key.pem
-        ├── default.pem -> private/key_chain.pem
+        ├── default.pem -> private/key_chain_dhparam.pem
         └── trusted.crt -> public/trusted.pem
 
 On the Ansible Controller, there's a corresponding directory structure located
@@ -406,6 +408,14 @@ root files to the ``public/`` directory and generation of various chain files
 - certificate + intermediate, intermediate + root and key + certificate
 + intermediate (which is stored securely in the ``private/`` directory).
 
+Some applications do not support separate ``dhparam`` file, and instead expect
+that the DHE parameters are present after the X.509 certificate chain. If the
+``debops.dhparam`` role has been configured on a host and Diffie-Hellman
+parameter support is enabled in a given PKI realm, DHE parameters will be
+appended to the final certificate chains (both public and private). When the
+``debops.dhparam`` regenerates the parameters, ``pki-realm`` script will
+automatically detect the new ones and update the certificate chains.
+
 The end result is fully configured PKI realm with a set of valid certificates
 available for other applications and services::
 
@@ -424,6 +434,7 @@ available for other applications and services::
         │   ├── request.pem
         │   └── root.pem
         ├── private/
+        │   ├── key_chain_dhparam.pem
         │   ├── key_chain.pem
         │   ├── key.pem
         │   └── realm_key.pem
@@ -432,17 +443,18 @@ available for other applications and services::
         │   ├── alt_intermediate_root.pem
         │   ├── alt_root.pem -> ../internal/alt_root.pem
         │   ├── alt_trusted.pem -> alt_intermediate_root.pem
+        │   ├── cert_intermediate_dhparam.pem
         │   ├── cert_intermediate.pem
         │   ├── cert.pem -> ../internal/cert.pem
         │   ├── cert.pem.sig
-        │   ├── chain.pem -> cert_intermediate.pem
+        │   ├── chain.pem -> cert_intermediate_dhparam.pem
         │   ├── intermediate_root.pem
         │   ├── root.pem -> ../internal/root.pem
         │   └── trusted.pem -> intermediate_root.pem
         ├── CA.crt -> public/alt_trusted.pem
         ├── default.crt -> public/chain.pem
         ├── default.key -> private/key.pem
-        ├── default.pem -> private/key_chain.pem
+        ├── default.pem -> private/key_chain_dhparam.pem
         └── trusted.crt -> public/trusted.pem
 
 During this process, at various stages special "hook" scripts might be run,

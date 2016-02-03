@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.2
+------
+
+*Released: 2016-02-03*
+
+- Add support for Diffie-Hellman parameters appended to certificate chains. DHE
+  parameters are managed by ``debops.dhparam`` Ansible role. [drybjed]
+
 v0.2.1
 ------
 

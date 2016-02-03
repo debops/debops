@@ -362,6 +362,27 @@ pki_scheduler: True
 pki_scheduler_interval: 'weekly'
 
 
+# .. envvar:: pki_dhparam
+#
+# Specify if Diffie-Hellman parameters should be appended to the certificate
+# chain, required by specific applications like HAproxy, ZNC or others that don't
+# support DHE parameters in a separate file.
+pki_dhparam: '{{ (True
+                  if (ansible_local|d() and ansible_local.dhparam|d() and
+                      ansible_local.dhparam.default|d())
+                  else False) | bool }}'
+
+
+# .. envvar:: pki_dhparam_file
+#
+# Path to the Diffie-Hellman parameters file which will be appended to the
+# certificate chain, if specified.
+pki_dhparam_file: '{{ ansible_local.dhparam.default
+                      if (ansible_local|d() and ansible_local.dhparam|d() and
+                          ansible_local.dhparam.default)
+                      else "" }}'
+
+
 # ------------------------------------------------
 #   Configuration of PKI Certificate Authorities
 # ------------------------------------------------

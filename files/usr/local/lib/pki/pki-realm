@@ -130,6 +130,9 @@ initialize_environment () {
     config["pki_default_domain"]="$(dnsdomainname)"
     config["pki_default_subdomains"]="_wildcard_"
 
+    config["pki_dhparam"]="false"
+    config["dhparam_file"]=""
+
     config["internal_expiration_days"]="14"
     config["internal_expiration_seconds"]="$(( 60 * 60 * 24 * ${config['internal_expiration_days']} ))"
 
@@ -1015,6 +1018,34 @@ process_public_files () {
                 fi
             fi
 
+            if [ "${config['pki_dhparam']}" = "true" -a -n "${config['dhparam_file']}" -a -r ${config['dhparam_file']} ] ; then
+
+                if [ -r public/cert_intermediate.pem.tmp ] ; then
+                    cat public/cert_intermediate.pem.tmp ${config['dhparam_file']} > public/cert_intermediate_dhparam.pem.tmp
+                    state+=("changed-dhparam")
+                elif [ -r public/cert.pem.tmp ] ; then
+                    cat public/cert.pem.tmp ${config['dhparam_file']} > public/cert_dhparam.pem.tmp
+                    state+=("changed-dhparam")
+                elif [ ! -r public/cert_intermediate_dhparam.pem -a -r public/cert_intermediate.pem ] ; then
+                    cat public/cert_intermediate.pem ${config['dhparam_file']} > public/cert_intermediate_dhparam.pem.tmp
+                    state+=("changed-dhparam")
+                elif [ ! -r public/cert_dhparam.pem -a ! -r public/cert_intermediate.pem -a -r public/cert.pem ] ; then
+                    cat public/cert.pem ${config['dhparam_file']} > public/cert_dhparam.pem.tmp
+                    state+=("changed-dhparam")
+                elif [ -r public/cert_intermediate_dhparam.pem ] ; then
+                    if ! diff -q -N ${config['dhparam_file']} <( sed -n '/-----BEGIN DH PARAMETERS-----/,/-----END DH PARAMETERS-----/p' public/cert_intermediate_dhparam.pem ) > /dev/null ; then
+                        cat public/cert_intermediate.pem ${config['dhparam_file']} > public/cert_intermediate_dhparam.pem.tmp
+                        state+=("changed-dhparam")
+                    fi
+                elif [ -r public/cert_dhparam.pem ] ; then
+                    if ! diff -q -N ${config['dhparam_file']} <( sed -n '/-----BEGIN DH PARAMETERS-----/,/-----END DH PARAMETERS-----/p' public/cert_dhparam.pem ) > /dev/null ; then
+                        cat public/cert.pem ${config['dhparam_file']} > public/cert_dhparam.pem.tmp
+                        state+=("changed-dhparam")
+                    fi
+                fi
+
+            fi
+
             break
 
         elif [ ! -r ${authority}/cert.pem -a -r ${authority}/root.pem ] ; then
@@ -1130,6 +1161,24 @@ process_private_files () {
 
             fi
 
+            if [ "${config['pki_dhparam']}" = "true" -a -n "${config['dhparam_file']}" -a -r ${config['dhparam_file']} ] ; then
+                if [ -r private/key_chain.pem.tmp ] ; then
+                    install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain_dhparam.pem.tmp
+                    cat private/key_chain.pem.tmp ${config['dhparam_file']} >> private/key_chain_dhparam.pem.tmp
+                    state+=("changed-dhparam")
+                elif [ ! -r private/key_chain_dhparam.pem -a -r private/key_chain.pem ] ; then
+                    install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain_dhparam.pem.tmp
+                    cat private/key_chain.pem ${config['dhparam_file']} >> private/key_chain_dhparam.pem.tmp
+                    state+=("changed-dhparam")
+                elif [ -r private/key_chain_dhparam.pem ] ; then
+                    if ! diff -q -N ${config['dhparam_file']} <( sed -n '/-----BEGIN DH PARAMETERS-----/,/-----END DH PARAMETERS-----/p' private/key_chain_dhparam.pem ) > /dev/null ; then
+                        install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain_dhparam.pem.tmp
+                        cat private/key_chain.pem ${config['dhparam_file']} >> private/key_chain_dhparam.pem.tmp
+                        state+=("changed-dhparam")
+                    fi
+                fi
+            fi
+
             break
         fi
 
@@ -1143,7 +1192,7 @@ activate_new_files () {
     if [ -r public/cert.pem.tmp -o -r public/root.pem.tmp ] ; then
 
         if [ ! -r public/intermediate.pem.tmp -a -r public/intermediate.pem ] ; then
-            rm -f public/intermediate.pem public/cert_intermediate.pem public/chain.pem
+            rm -f public/intermediate.pem public/cert_intermediate.pem public/cert_intermediate_dhparam.pem public/chain.pem public/intermediate_root.pem
             state+=("file-change")
         fi
 
@@ -1173,9 +1222,9 @@ activate_new_files () {
 
 update_realm_symlinks () {
 
-    if [ -r public/cert_intermediate.pem ] ; then
+    if [ -r public/intermediate.pem ] ; then
         cd public
-        update_symlink chain.pem cert_intermediate.pem cert.pem
+        update_symlink chain.pem cert_intermediate_dhparam.pem cert_intermediate.pem cert_dhparam.pem cert.pem
         update_symlink trusted.pem intermediate_root.pem root.pem
         cd - > /dev/null
     fi
@@ -1186,9 +1235,9 @@ update_realm_symlinks () {
         cd - > /dev/null
     fi
 
-    update_symlink default.crt public/chain.pem public/cert.pem
+    update_symlink default.crt public/chain.pem public/cert_dhparam.pem public/cert.pem
     update_symlink default.key private/key.pem
-    update_symlink default.pem private/key_chain.pem
+    update_symlink default.pem private/key_chain_dhparam.pem private/key_chain.pem
     update_symlink CA.crt public/alt_trusted.pem public/alt_root.pem public/trusted.pem public/root.pem ${config['pki_default_ca_bundle']}
     update_symlink trusted.crt public/trusted.pem public/root.pem
 
@@ -1448,6 +1497,18 @@ sub_init () {
                         ;;
                     default-subdomains=*)
                         args["pki_default_subdomains"]=${OPTARG#*=}
+                        ;;
+                    dhparam)
+                        args["pki_dhparam"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    dhparam=*)
+                        args["pki_dhparam"]=${OPTARG#*=}
+                        ;;
+                    dhparam-file)
+                        args["dhparam_file"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    dhparam-file=*)
+                        args["dhparam_file"]=${OPTARG#*=}
                         ;;
                     acme)
                         args["pki_acme"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))

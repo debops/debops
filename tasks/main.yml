@@ -79,6 +79,7 @@
            --acme-challenge-dir "{{ item.acme_challenge_dir | d(pki_acme_challenge_dir) }}"
            --default-domain "{{ item.default_domain | d(pki_default_domain) }}"
            --default-subdomains "{{ (item.default_subdomains | d(pki_default_subdomains)) | join('/') }}"
+           --dhparam "{{ (item.dhparam | d(pki_dhparam)) | bool | lower }}" --dhparam-file "{{ item.dhparam_file | d(pki_dhparam_file) }}"
   args:
     creates: '{{ pki_root + "/realms/" + item.name + "/config/realm.conf" }}'
   with_flattened:
