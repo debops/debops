@@ -288,7 +288,10 @@ pki_library: 'gnutls'
 # System-wide PKI realm which is used by services by default for server
 # certificates. It will be set in Ansible local facts for use by other Ansible
 # roles.
-pki_system_realm: 'domain'
+pki_system_realm: '{{ ansible_local.pki.realm
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                          ansible_local.pki.realm|d())
+                      else "domain" }}'
 
 
 # .. envvar:: pki_system_ca_realm

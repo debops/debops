@@ -17,6 +17,10 @@ v0.2.2
   this applications try to use non-existent X.509 certificates and fail.
   [drybjed]
 
+- Make system PKI realm selection idempotent. Now, if another role changes the
+  default system realm, running ``debops.pki`` role without that override will
+  keep the realm specified in Ansible local facts. [drybjed]
+
 v0.2.1
 ------
 
