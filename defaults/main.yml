@@ -12,7 +12,9 @@
 # .. envvar:: pki_enabled
 #
 # Enable or disable PKI support.
-pki_enabled: True
+pki_enabled: '{{ (True
+                  if pki_default_domain
+                  else False) | bool }}'
 
 
 # .. envvar:: pki_internal

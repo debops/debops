@@ -13,6 +13,10 @@ v0.2.2
   present in the new authority directory and symlinks without existing targets.
   [drybjed]
 
+- Do not enable PKI support on remote hosts without defined domain. Without
+  this applications try to use non-existent X.509 certificates and fail.
+  [drybjed]
+
 v0.2.1
 ------
 
