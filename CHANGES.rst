@@ -77,6 +77,19 @@ v0.1.5
   configure client CA and trusted CA for OCSP stapling in ``default.conf``
   template. [drybjed]
 
+- Update OCSP stapling support. Two new default variables are added to better
+  control OCSP configuration.
+
+  The ``debops.nginx`` role will now use the trusted certificate chain from
+  ``debops.pki`` by default. The caveat is, if at least a Root CA certificate
+  is not provided in the ``debops.pki`` realm, ``nginx`` configuration will be
+  invalid and restarting the webserver will fail. Right now you can avoid this
+  by setting ``nginx_ocsp_verify`` variable to ``False`` if needed, there's
+  also per-vhost ``item.ocsp_verify`` rquivalent.
+
+  The internal ``debops.pki`` certificates should work out of the box.
+  [drybjed]
+
 v0.1.4
 ------
 

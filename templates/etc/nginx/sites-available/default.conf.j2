@@ -188,6 +188,15 @@
 #       OCSP stapling verification, relative to currently enabled PKI realm.
 #
 #
+#   - item.ocsp: True/False
+#       Optional. Enable or disable OCSP stapling for a given server.
+#
+#
+#   - item.ocsp_verify: True/False
+#       Optional. Enable or disable OCSP stapling verification for a given
+#       server. An intermediate+root CA certificate is required.
+#
+#
 #   - item.owner: ''
 #       Optional. If specified, nginx will configure server root to
 #       '/srv/www/<owner>/sites/<item.name[0]>/public/', if not specified,
@@ -858,9 +867,12 @@ server {
         ssl_dhparam               {{ nginx_tpl_ssl_dhparam }};
 {% endif %}
         ssl_ecdh_curve            {{ item.ssl_curve | default(nginx_default_ssl_curve) }};
-{% if nginx_version | version_compare('1.4','>=') and nginx_ocsp_resolvers %}
+{% if nginx_version | version_compare('1.4','>=') and (item.ocsp | d(nginx_ocsp)) | bool %}
         ssl_stapling              on;
+{% if (item.ocsp_verify | d(nginx_ocsp_verify)) | bool %}
         ssl_stapling_verify       on;
+        ssl_trusted_certificate   {{ nginx_tpl_ssl_trusted_certificate }};
+{% endif %}
         resolver                  {{ (item.ocsp_resolvers | d(nginx_ocsp_resolvers)) | ipwrap | join(" ") }} valid=300s;
         resolver_timeout          5s;
 {% endif %}

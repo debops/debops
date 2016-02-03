@@ -210,6 +210,12 @@ nginx_default_ssl_ciphers: 'pfs'
 # See also: https://security.stackexchange.com/questions/31772/
 nginx_default_ssl_curve: 'secp384r1'
 
+# Enable or disable OCSP support
+nginx_ocsp: True
+
+# Verify OCSP by the server, requires chained intermediate and Root CA certificates
+nginx_ocsp_verify: '{{ nginx_ocsp | bool }}'
+
 # List of DNS servers used to resolve OCSP stapling. If it's empty, nginx role
 # will try to use the nameservers from /etc/resolv.conf
 # Currently only the first nameserver is used
