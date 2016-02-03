@@ -73,6 +73,10 @@ v0.1.5
 - Make sure that ``root`` and ACME configuration is not added two times when
   HTTP listen configuration is disabled. [drybjed]
 
+- Clean up default variables related to ``debops.pki`` role, add variables that
+  configure client CA and trusted CA for OCSP stapling in ``default.conf``
+  template. [drybjed]
+
 v0.1.4
 ------
 

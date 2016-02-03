@@ -136,6 +136,17 @@
 #       supplied pki_key will be used instead.
 #
 #
+#   - item.ssl_ca: ''
+#       Optional. Specify absolute path to the client CA certificate used to
+#       authenticate clients. If not specified, pki_ca will be used instead.
+#
+#
+#   - item.ssl_trusted: ''
+#       Optional. Specify absolute path to the intermediate+root CA server
+#       certificate which will be used for OCSP stapling verification. If not
+#       specified, value of pki_trusted will be used instead.
+#
+#
 #   - item.ssl_dhparam: ''
 #       Optional. Absolute path to custom DHE parameters to use. If not
 #       supplied, nginx_ssl_dhparam will be used instead.
@@ -165,6 +176,16 @@
 #   - item.pki_key: ''
 #       Optional. Path to custom SSL private key to use, relative to currently
 #       enabled PKI realm (either system-wide or for current server).
+#
+#
+#   - item.pki_ca: ''
+#       Optional. Path to custom client CA certificate to use for client
+#       authentication, relative to currently enabled PKI realm.
+#
+#
+#   - item.pki_trusted: ''
+#       Optional. Path to custom intermediate+root CA certificate to use for
+#       OCSP stapling verification, relative to currently enabled PKI realm.
 #
 #
 #   - item.owner: ''
@@ -424,6 +445,22 @@
 {% set nginx_tpl_ssl_certificate_key = nginx_pki_path + "/" + item.pki_realm | default(nginx_pki_realm) + "/" + item.pki_key | default(nginx_pki_key) %}
 {% if (item.ssl_key is defined and item.ssl_key)      %}
 {%   set nginx_tpl_ssl_certificate_key = item.ssl_key %}
+{% endif                                              %}
+{#
+
+    ---- SSL client CA certificate ----
+#}
+{% set nginx_tpl_ssl_client_certificate = nginx_pki_path + "/" + item.pki_ca_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_ca_realm) + "/" + item.pki_ca | d(nginx_pki_ca) %}
+{% if (item.ssl_ca is defined and item.ssl_ca)      %}
+{%   set nginx_tpl_ssl_client_certificate = item.ssl_ca %}
+{% endif                                              %}
+{#
+
+    ---- SSL trusted CA certificate ----
+#}
+{% set nginx_tpl_ssl_trusted_certificate = nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + item.pki_trusted | d(nginx_pki_trusted) %}
+{% if (item.ssl_trusted is defined and item.ssl_trusted)      %}
+{%   set nginx_tpl_ssl_trusted_certificate = item.ssl_trusted %}
 {% endif                                              %}
 {#
 

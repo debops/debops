@@ -162,19 +162,36 @@ nginx_real_ip_recursive: False
 nginx_default_keepalive_timeout: 60
 
 # Enable or disable support for PKI/SSL/TLS in nginx
-nginx_pki: '{{ (True if (ansible_local|d() and ansible_local.pki|d() and ansible_local.pki.enabled|d() | bool) else False) | bool }}'
+nginx_pki: '{{ (True
+                if (ansible_local|d() and ansible_local.pki|d() and
+                    ansible_local.pki.enabled|d() | bool)
+                else False) | bool }}'
 
 # PKI base directory
-nginx_pki_path: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.base_path }}{% else %}/etc/pki{% endif %}'
+nginx_pki_path: '{{ ansible_local.pki.path
+                    if (ansible_local|d() and ansible_local.pki|d() and
+                        ansible_local.pki.path|d())
+                    else "/etc/pki/realms" }}'
 
-# PKI realm to use for nginx
-nginx_pki_realm: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.realm }}{% else %}system{% endif %}'
+# PKI realm to use for nginx server
+nginx_pki_realm: '{{ ansible_local.pki.realm
+                     if (ansible_local|d() and ansible_local.pki|d() and
+                         ansible_local.pki.realm|d())
+                     else "domain" }}'
+
+# PKI realm to use for client CA
+nginx_pki_ca_realm: '{{ ansible_local.pki.ca_realm
+                        if (ansible_local|d() and ansible_local.pki|d() and
+                            ansible_local.pki.ca_realm|d())
+                        else "domain" }}'
 
 # Path to default certificate, key and DH parameters file used by all nginx
 # servers if not specified otherwise in server configuration. Relative to
 # 'nginx_pki_realm' variable
 nginx_pki_crt: 'default.crt'
 nginx_pki_key: 'default.key'
+nginx_pki_ca:  'CA.crt'
+nginx_pki_trusted: 'trusted.crt'
 
 # Path to the file with Diffie-Hellman parameters to use by the webserver.
 nginx_ssl_dhparam: '{{ (ansible_local.dhparam[nginx_ssl_dhparam_set]
