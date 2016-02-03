@@ -21,6 +21,12 @@ v0.2.2
   default system realm, running ``debops.pki`` role without that override will
   keep the realm specified in Ansible local facts. [drybjed]
 
+- Make sure that CA organization is non-empty. If a host domain is not
+  configured correctly, hostname will be used instead. This makes some of the
+  URLs in created CA certificates incorrect, but the ``debops.pki`` role works
+  fine otherwise, and internal Certificate Authorities are easy to recreate
+  with correct configuration. [drybjed]
+
 v0.2.1
 ------
 
