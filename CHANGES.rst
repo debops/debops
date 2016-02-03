@@ -32,6 +32,9 @@ v0.2.2
   contain Root CA certificates and does not create idempotency issues.
   [drybjed]
 
+- Do not create a ``cron`` task when support for PKI is disabled on a host.
+  [drybjed]
+
 v0.2.1
 ------
 

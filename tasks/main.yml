@@ -346,7 +346,7 @@
     cron_file: 'pki-realm-scheduler'
     job: 'test -x /usr/local/lib/pki/pki-realm && /usr/local/lib/pki/pki-realm schedule'
     special_time: '{{ pki_scheduler_interval }}'
-    state: '{{ "present" if pki_scheduler|bool else "absent" }}'
+    state: '{{ "present" if (pki_enabled | bool and pki_scheduler | bool) else "absent" }}'
 
 - name: Manage system CA certificates
   include: ca_certificates.yml
