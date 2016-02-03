@@ -79,6 +79,7 @@
            --acme-challenge-dir "{{ item.acme_challenge_dir | d(pki_acme_challenge_dir) }}"
            --default-domain "{{ item.default_domain | d(pki_default_domain) }}"
            --default-subdomains "{{ (item.default_subdomains | d(pki_default_subdomains)) | join('/') }}"
+           --dhparam "{{ (item.dhparam | d(pki_dhparam)) | bool | lower }}" --dhparam-file "{{ item.dhparam_file | d(pki_dhparam_file) }}"
   args:
     creates: '{{ pki_root + "/realms/" + item.name + "/config/realm.conf" }}'
   with_flattened:
@@ -160,7 +161,7 @@
            --acme "{{ item.acme|d(pki_acme) | bool | lower }}" --acme-subject "{{ item.acme_subject|d([]) | join('/') }}"
            --acme-domains "{{ item.acme_domains|d([]) | join('/') }}" --acme-subdomains "{{ item.acme_subdomains|d([]) | join('/') }}"
   args:
-    creates: '/etc/pki/realms/{{ item.name }}/public/cert.pem'
+    creates: '/etc/pki/realms/{{ item.name }}/default.key'
   with_flattened:
     - '{{ pki_realms }}'
     - '{{ pki_group_realms }}'
@@ -345,7 +346,7 @@
     cron_file: 'pki-realm-scheduler'
     job: 'test -x /usr/local/lib/pki/pki-realm && /usr/local/lib/pki/pki-realm schedule'
     special_time: '{{ pki_scheduler_interval }}'
-    state: '{{ "present" if pki_scheduler|bool else "absent" }}'
+    state: '{{ "present" if (pki_enabled | bool and pki_scheduler | bool) else "absent" }}'
 
 - name: Manage system CA certificates
   include: ca_certificates.yml

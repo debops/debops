@@ -116,21 +116,23 @@ The realm directory after the process is complete::
         │   ├── request.pem
         │   └── root.pem
         ├── private/
+        │   ├── key_chain_dhparam.pem
         │   ├── key_chain.pem
         │   ├── key.pem
         │   └── realm_key.pem
         ├── public/
+        │   ├── cert_intermediate_dhparam.pem
         │   ├── cert_intermediate.pem
         │   ├── cert.pem -> ../acme/cert.pem
         │   ├── cert.pem.sig
-        │   ├── chain.pem -> cert_intermediate.pem
+        │   ├── chain.pem -> cert_intermediate_dhparam.pem
         │   ├── intermediate_root.pem
         │   ├── root.pem -> ../acme/root.pem
         │   └── trusted.pem -> intermediate_root.pem
         ├── CA.crt -> public/trusted.pem
         ├── default.crt -> public/chain.pem
         ├── default.key -> private/key.pem
-        ├── default.pem -> private/key_chain.pem
+        ├── default.pem -> private/key_chain_dhparam.pem
         └── trusted.crt -> public/trusted.pem
 
 If the request is not successful, you will find a ``acme/error.log`` file with

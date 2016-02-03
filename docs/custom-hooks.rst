@@ -84,8 +84,14 @@ List of known states:
   A new certificate has been activated, or there has been change of the active
   Certificate Authority (internal, external, acme).
 
+``changed-dhparam``
+  Diffie-Hellman parameters in the certificate chain have been added/upated.
+
 ``file-change``
   A generic file change notification.
+
+``file-deletion``
+  A file has been deleted.
 
 ``changed-public-file``
   Some of the files in ``public/`` directory have been changed/replaced.

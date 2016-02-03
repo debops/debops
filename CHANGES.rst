@@ -1,6 +1,40 @@
 Changelog
 =========
 
+v0.2.2
+------
+
+*Released: 2016-02-03*
+
+- Add support for Diffie-Hellman parameters appended to certificate chains. DHE
+  parameters are managed by ``debops.dhparam`` Ansible role. [drybjed]
+
+- When an active authority directory is changed, correctly clean up files not
+  present in the new authority directory and symlinks without existing targets.
+  [drybjed]
+
+- Do not enable PKI support on remote hosts without defined domain. Without
+  this applications try to use non-existent X.509 certificates and fail.
+  [drybjed]
+
+- Make system PKI realm selection idempotent. Now, if another role changes the
+  default system realm, running ``debops.pki`` role without that override will
+  keep the realm specified in Ansible local facts. [drybjed]
+
+- Make sure that CA organization is non-empty. If a host domain is not
+  configured correctly, hostname will be used instead. This makes some of the
+  URLs in created CA certificates incorrect, but the ``debops.pki`` role works
+  fine otherwise, and internal Certificate Authorities are easy to recreate
+  with correct configuration. [drybjed]
+
+- Change the file tracked by the PKI realm creation task to be the realm
+  private key instead of the certificate. This allows for realms that only
+  contain Root CA certificates and does not create idempotency issues.
+  [drybjed]
+
+- Do not create a ``cron`` task when support for PKI is disabled on a host.
+  [drybjed]
+
 v0.2.1
 ------
 
