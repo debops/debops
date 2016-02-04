@@ -124,6 +124,8 @@ v0.1.5
   for the default ``www-data`` PHP5 pool used by various services packaged in
   Debian. You might need to update the Ansible inventory. [drybjed]
 
+- Fix bare variables due to deprecation. [drybjed]
+
 v0.1.4
 ------
 
