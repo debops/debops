@@ -136,6 +136,17 @@
 #       supplied pki_key will be used instead.
 #
 #
+#   - item.ssl_ca: ''
+#       Optional. Specify absolute path to the client CA certificate used to
+#       authenticate clients. If not specified, pki_ca will be used instead.
+#
+#
+#   - item.ssl_trusted: ''
+#       Optional. Specify absolute path to the intermediate+root CA server
+#       certificate which will be used for OCSP stapling verification. If not
+#       specified, value of pki_trusted will be used instead.
+#
+#
 #   - item.ssl_dhparam: ''
 #       Optional. Absolute path to custom DHE parameters to use. If not
 #       supplied, nginx_ssl_dhparam will be used instead.
@@ -165,6 +176,25 @@
 #   - item.pki_key: ''
 #       Optional. Path to custom SSL private key to use, relative to currently
 #       enabled PKI realm (either system-wide or for current server).
+#
+#
+#   - item.pki_ca: ''
+#       Optional. Path to custom client CA certificate to use for client
+#       authentication, relative to currently enabled PKI realm.
+#
+#
+#   - item.pki_trusted: ''
+#       Optional. Path to custom intermediate+root CA certificate to use for
+#       OCSP stapling verification, relative to currently enabled PKI realm.
+#
+#
+#   - item.ocsp: True/False
+#       Optional. Enable or disable OCSP stapling for a given server.
+#
+#
+#   - item.ocsp_verify: True/False
+#       Optional. Enable or disable OCSP stapling verification for a given
+#       server. An intermediate+root CA certificate is required.
 #
 #
 #   - item.owner: ''
@@ -369,6 +399,13 @@
 #       this is set to false, the Strict-Transport-Security header will not
 #       be set in the server's responses.
 #
+#
+#   - item.hsts_preload: True/False
+#       Optional. Add a "preload" parameter to the HSTS header which can be
+#       used with https://hstspreload.appspot.com/ site to configure HSTS
+#       preloading for a given website.
+#
+#
 #   - item.try_files: nginx_default_try_files
 #       Optional. Checks for the existence of files in order, and returns the
 #       first file that is found for location /.
@@ -409,11 +446,23 @@
 {% set nginx_tpl_default_redirect_code = '307'                                 %}
 {% set nginx_tpl_default_redirect_code_ssl = '301'                             %}
 {% set nginx_tpl_http_redirect = item.redirect | default('https://$host$request_uri') %}
+{% set nginx_tpl_pki_custom_realm = '' %}
+{% set nginx_tpl_pki_custom_realm_list = [] %}
+{% if (nginx_pki | bool and item.name | d() and (ansible_local|d() and ansible_local.pki|d() and ansible_local.pki.known_realms|d())) %}
+{%   for name in item.name %}
+{%     if name in ansible_local.pki.known_realms %}
+{%       set _ = nginx_tpl_pki_custom_realm_list.append(name) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if nginx_tpl_pki_custom_realm_list %}
+{%   set nginx_tpl_pki_custom_realm = nginx_tpl_pki_custom_realm_list[0] %}
+{% endif %}
 {#
 
     ---- SSL certificate ----
 #}
-{% set nginx_tpl_ssl_certificate = nginx_pki_path + "/" + item.pki_realm | default(nginx_pki_realm) + "/" + item.pki_crt | default(nginx_pki_crt) %}
+{% set nginx_tpl_ssl_certificate = nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + item.pki_crt | d(nginx_pki_crt) %}
 {% if (item.ssl_crt is defined and item.ssl_crt)  %}
 {%   set nginx_tpl_ssl_certificate = item.ssl_crt %}
 {% endif                                          %}
@@ -421,9 +470,25 @@
 
     ---- SSL certificate key ----
 #}
-{% set nginx_tpl_ssl_certificate_key = nginx_pki_path + "/" + item.pki_realm | default(nginx_pki_realm) + "/" + item.pki_key | default(nginx_pki_key) %}
+{% set nginx_tpl_ssl_certificate_key = nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + item.pki_key | d(nginx_pki_key) %}
 {% if (item.ssl_key is defined and item.ssl_key)      %}
 {%   set nginx_tpl_ssl_certificate_key = item.ssl_key %}
+{% endif                                              %}
+{#
+
+    ---- SSL client CA certificate ----
+#}
+{% set nginx_tpl_ssl_client_certificate = nginx_pki_path + "/" + item.pki_ca_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_ca_realm) + "/" + item.pki_ca | d(nginx_pki_ca) %}
+{% if (item.ssl_ca is defined and item.ssl_ca)      %}
+{%   set nginx_tpl_ssl_client_certificate = item.ssl_ca %}
+{% endif                                              %}
+{#
+
+    ---- SSL trusted CA certificate ----
+#}
+{% set nginx_tpl_ssl_trusted_certificate = nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + item.pki_trusted | d(nginx_pki_trusted) %}
+{% if (item.ssl_trusted is defined and item.ssl_trusted)      %}
+{%   set nginx_tpl_ssl_trusted_certificate = item.ssl_trusted %}
 {% endif                                              %}
 {#
 
@@ -821,14 +886,17 @@ server {
         ssl_dhparam               {{ nginx_tpl_ssl_dhparam }};
 {% endif %}
         ssl_ecdh_curve            {{ item.ssl_curve | default(nginx_default_ssl_curve) }};
-{% if nginx_version | version_compare('1.4','>=') and nginx_ocsp_resolvers %}
+{% if nginx_version | version_compare('1.4','>=') and (item.ocsp | d(nginx_ocsp)) | bool %}
         ssl_stapling              on;
+{% if (item.ocsp_verify | d(nginx_ocsp_verify)) | bool %}
         ssl_stapling_verify       on;
+        ssl_trusted_certificate   {{ nginx_tpl_ssl_trusted_certificate }};
+{% endif %}
         resolver                  {{ (item.ocsp_resolvers | d(nginx_ocsp_resolvers)) | ipwrap | join(" ") }} valid=300s;
         resolver_timeout          5s;
 {% endif %}
 {% if item.hsts_enabled is undefined or (item.hsts_enabled is defined and item.hsts_enabled) %}
-        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age | default('15768000') }}{% if nginx_hsts_subdomains %}; includeSubDomains{% endif %}";
+        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age | default('15768000') }}{% if nginx_hsts_subdomains|bool %}; includeSubDomains{% endif %}{% if (item.hsts_preload | d(nginx_hsts_preload)) | bool %}; preload{% endif %}";
 {% endif %}
 
 {% if item.name is defined and item.name %}

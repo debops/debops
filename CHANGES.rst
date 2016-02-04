@@ -73,6 +73,34 @@ v0.1.5
 - Make sure that ``root`` and ACME configuration is not added two times when
   HTTP listen configuration is disabled. [drybjed]
 
+- Clean up default variables related to ``debops.pki`` role, add variables that
+  configure client CA and trusted CA for OCSP stapling in ``default.conf``
+  template. [drybjed]
+
+- Update OCSP stapling support. Two new default variables are added to better
+  control OCSP configuration.
+
+  The ``debops.nginx`` role will now use the trusted certificate chain from
+  ``debops.pki`` by default. The caveat is, if at least a Root CA certificate
+  is not provided in the ``debops.pki`` realm, ``nginx`` configuration will be
+  invalid and restarting the webserver will fail. Right now you can avoid this
+  by setting ``nginx_ocsp_verify`` variable to ``False`` if needed, there's
+  also per-vhost ``item.ocsp_verify`` rquivalent.
+
+  The internal ``debops.pki`` certificates should work out of the box.
+  [drybjed]
+
+- Support autodetection of PKI realms.
+
+  The ``debops.nginx`` role will check if any of the server names for a given
+  vhost have corresponding PKI realms. If a corresponding realm is found, its
+  certificates will be used for that server, unless overriden by
+  ``item.pki_realm`` parameter. If a corresponding realm is not found, that
+  vhost will use the default PKI realm. [drybjed]
+
+- Support `HSTS preloading <https://hstspreload.appspot.com/>`_ in ``nginx``
+  server configuration. [drybjed]
+
 v0.1.4
 ------
 
