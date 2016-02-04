@@ -140,6 +140,9 @@ v0.1.5
   ``welcome`` "hostname" most likely won't ever be present in the DNS and
   nothing should directly point to it. [drybjed]
 
+- Create the specified ``nginx`` maps and upstreams even when ``nginx_maps``
+  and ``nginx_upstreams`` lists are empty. [drybjed]
+
 v0.1.4
 ------
 
