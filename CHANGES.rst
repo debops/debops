@@ -129,6 +129,17 @@ v0.1.5
 - Remove ``nginx_default_root`` variable. A default root directory is managed
   dynamically in the ``default.conf`` server template. [drybjed]
 
+- The default "welcome page" ``nginx`` server will use the ``welcome`` server
+  name, so that role users can use empty name (``[]``) parameter in Ansible
+  inventory without the configuration being constantly overwritten in an
+  idempotency loop. The welcome page automatically gets its own web root
+  directory ``/srv/www/sites/welcome/public/``, and shouldn't conflict with the
+  default root.
+
+  This shouldn't affect the effect of ``default_server`` option. The
+  ``welcome`` "hostname" most likely won't ever be present in the DNS and
+  nothing should directly point to it. [drybjed]
+
 v0.1.4
 ------
 
