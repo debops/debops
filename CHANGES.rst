@@ -126,6 +126,9 @@ v0.1.5
 
 - Fix bare variables due to deprecation. [drybjed]
 
+- Remove ``nginx_default_root`` variable. A default root directory is managed
+  dynamically in the ``default.conf`` server template. [drybjed]
+
 v0.1.4
 ------
 
