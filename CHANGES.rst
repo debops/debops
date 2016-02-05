@@ -143,6 +143,10 @@ v0.1.5
 - Create the specified ``nginx`` maps and upstreams even when ``nginx_maps``
   and ``nginx_upstreams`` lists are empty. [drybjed]
 
+- Provide a clean and simple welcome page which is displayed by default if
+  specified server does not exist. The welcome page will be generated only if
+  ``index.html`` is not present in the webroot directory. [drybjed]
+
 v0.1.4
 ------
 

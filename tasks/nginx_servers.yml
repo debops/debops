@@ -12,18 +12,17 @@
          (item.name is defined) and
          (item.root is undefined and item.owner is undefined and item.group is undefined))
 
-- name: Create default index.html if enabled
-  copy:
-    content: '{{ item.default_index }}'
+- name: Create default welcome page if enabled
+  template:
+    src: '{{ item.welcome_template | d(nginx_welcome_template) }}'
     dest: '{{ nginx_www }}/sites/{{ item.name[0] | default("default") }}/public/index.html'
     owner: '{{ item.owner | default(nginx_webroot_owner) }}'
     group: '{{ item.owner | default(nginx_webroot_group) }}'
-    mode: '0644'
     force: False
   with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
   when: ((item.locked is undefined or (item.locked is defined and not item.locked)) and
          (item.name is defined) and (item.delete is undefined or (item.delete is defined and not item.delete)) and
-         (item.default_index is defined and item.default_index))
+         (item.welcome is defined and item.welcome | bool))
 
 - name: Remove nginx server configuration if requested
   file:
