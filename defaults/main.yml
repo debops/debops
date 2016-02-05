@@ -246,6 +246,12 @@ nginx_webroot_owner: 'root'
 nginx_webroot_group: 'root'
 nginx_webroot_mode: '0755'
 
+# Name of the Jinja2 template used as a welcome page
+nginx_welcome_template: 'srv/www/sites/welcome/public/index.html.j2'
+
+# The domain used on the default welcome page
+nginx_welcome_domain: '{{ ansible_domain }}'
+
 # Enable or disable support for Automated Certificate Management Environment
 # (ACME) on all servers. This can be overriden per server using ``item.acme``
 # variable.
@@ -398,7 +404,8 @@ nginx_dependent_servers: []
 nginx_server_welcome:
   enabled: True
   name: [ 'welcome' ]
-  default_index: '{{ nginx_default_index_html }}'
+  welcome: True
+  welcome_domain: '{{ nginx_welcome_domain }}'
 
 # Default nginx ``localhost`` server. It can be used to access ``nginx`` status
 # page by other services.
@@ -407,7 +414,8 @@ nginx_server_localhost:
   name: [ 'localhost', '127.0.0.1', '[::1]' ]
   acme: False
   ssl: False
-  default_index: '{{ nginx_default_index_html }}'
+  welcome: True
+  welcome_css: False
 
 # Custom server for ACME challenge queries
 nginx_server_acme:
@@ -416,18 +424,6 @@ nginx_server_acme:
   name: [ '{{ nginx_acme_domain }}' ]
   filename: 'acme-challenge'
   root: '{{ nginx_acme_root }}'
-
-# Contents of default 'index.html' page created automatically if
-# 'item.default_index' is set in the server configuration
-nginx_default_index_html: |
-  <html>
-    <head>
-      <title>Welcome to nginx!</title>
-    </head>
-    <body>
-      <h1>Your website is working!</h1>
-    </body>
-  </html>
 
 # Checks for the existence of files in order, and returns the
 # first file that is found for location /.
