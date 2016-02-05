@@ -12,10 +12,9 @@
   file:
     dest: '/etc/nginx/conf.d/map_{{ item.name }}.conf'
     state: 'absent'
-  with_items: [ '{{ nginx_maps }}' ]
+  with_items: '{{ nginx_maps + nginx_default_maps + nginx_dependent_maps }}'
   notify: [ 'Test nginx and reload' ]
-  when: ((nginx_maps is defined and nginx_maps) and
-         (item.name is defined and item.name) and
+  when: ((item.name is defined and item.name) and
          (item.delete is defined and item.delete))
 
 - name: Configure nginx maps
@@ -25,20 +24,18 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: [ '{{ nginx_maps }}' ]
+  with_items: '{{ nginx_maps + nginx_default_maps + nginx_dependent_maps }}'
   notify: [ 'Test nginx and reload' ]
-  when: ((nginx_maps is defined and nginx_maps) and
-         (item.name is defined and item.name) and
+  when: ((item.name is defined and item.name) and
          (item.delete is undefined or (item.delete is defined and not item.delete)))
 
 - name: Remove nginx upstreams if requested
   file:
     dest: '/etc/nginx/conf.d/upstream_{{ item.name }}.conf'
     state: 'absent'
-  with_items: nginx_upstreams
+  with_items: '{{ nginx_upstreams + nginx_default_upstreams + nginx_dependent_upstreams }}'
   notify: [ 'Test nginx and reload' ]
-  when: ((nginx_upstreams is defined and nginx_upstreams) and
-         (item.name is defined and item.name) and
+  when: ((item.name is defined and item.name) and
          (item.delete is defined and item.delete))
 
 - name: Configure nginx upstreams
@@ -48,10 +45,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: nginx_upstreams
+  with_items: '{{ nginx_upstreams + nginx_default_upstreams + nginx_dependent_upstreams }}'
   notify: [ 'Test nginx and reload' ]
-  when: ((nginx_upstreams is defined and nginx_upstreams) and
-         (item.name is defined and item.name) and
+  when: ((item.name is defined and item.name) and
          (item.delete is undefined or (item.delete is defined and not item.delete)))
 
 - name: Remove custom nginx configuration if requested

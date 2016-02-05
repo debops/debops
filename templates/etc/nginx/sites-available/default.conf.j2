@@ -499,14 +499,11 @@
 
     ---- root directory ----
 #}
-{% set nginx_tpl_root = item.root | default(nginx_default_root)                %}
-{% if (item.name is defined and item.name)                                     %}
-{%     if (item.owner is defined and item.owner)                               %}
-{%         set nginx_tpl_root = item.root | default(nginx_www + '/' + item.owner + '/sites/' + item.name[0] + '/public') %}
-{%     else                                                                    %}
-{%         set nginx_tpl_root = item.root | default(nginx_www + '/sites/' + item.name[0] + '/public') %}
-{%     endif                                                                   %}
-{% endif                                                                       %}
+{% if (item.owner is defined and item.owner)                               %}
+{%     set nginx_tpl_root = item.root | default(nginx_www + '/' + item.owner + '/sites/' + item.name[0] | d('default') + '/public') %}
+{% else                                                                    %}
+{%     set nginx_tpl_root = item.root | default(nginx_www + '/sites/' + item.name[0] | d('default') + '/public') %}
+{% endif                                                                   %}
 {% if (item.root_suffix is defined and item.root_suffix)                       %}
 {%     set nginx_tpl_root = nginx_tpl_root + '/' + item.root_suffix            %}
 {% endif                                                                       %}

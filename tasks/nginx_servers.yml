@@ -7,7 +7,7 @@
     owner: '{{ nginx_webroot_owner }}'
     group: '{{ nginx_webroot_group }}'
     mode: '{{ nginx_webroot_mode }}'
-  with_items: nginx_servers
+  with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
   when: ((nginx_webroot_create is defined and nginx_webroot_create) and
          (item.name is defined) and
          (item.root is undefined and item.owner is undefined and item.group is undefined))
@@ -20,7 +20,7 @@
     group: '{{ item.owner | default(nginx_webroot_group) }}'
     mode: '0644'
     force: False
-  with_items: nginx_servers
+  with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
   when: ((item.locked is undefined or (item.locked is defined and not item.locked)) and
          (item.name is defined) and (item.delete is undefined or (item.delete is defined and not item.delete)) and
          (item.default_index is defined and item.default_index))
@@ -29,7 +29,7 @@
   file:
     path: '/etc/nginx/sites-available/{{ item.filename | default(item.name[0] | default("default")) }}.conf'
     state: 'absent'
-  with_items: nginx_servers
+  with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
   notify: [ 'Test nginx and reload' ]
   when: ((item.locked is undefined or (item.locked is defined and not item.locked)) and
          (item.name is defined) and (item.delete is defined and item.delete))
@@ -59,7 +59,7 @@
 - name: Get first server that listens on http port for default_server roulette
   set_fact:
     nginx_register_default_server_http: '{{ item.name[0] | default("default") }}'
-  with_items: nginx_servers[::-1]
+  with_items: '{{ (nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers)[::-1] }}'
   when: ((item.enabled is defined and item.enabled) and
          (item.listen is undefined or (item.listen is defined and item.listen)) and
          ((item.ssl is undefined or not item.ssl | bool) or not nginx_pki | bool))
@@ -67,7 +67,7 @@
 - name: Get first server that listens on https port for default_server roulette
   set_fact:
     nginx_register_default_server_https: '{{ item.name[0] | default("default") }}'
-  with_items: nginx_servers[::-1]
+  with_items: '{{ (nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers)[::-1] }}'
   when: ((item.enabled is defined and item.enabled) and
          (item.listen_ssl is undefined or (item.listen_ssl is defined and item.listen_ssl)) and
          ((item.ssl is defined and item.ssl | bool) or
@@ -94,7 +94,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: nginx_servers
+  with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
   notify: [ 'Test nginx and reload' ]
   when: ((item.locked is undefined or (item.locked is defined and not item.locked)) and
          (item.name is defined) and (item.delete is undefined or (item.delete is defined and not item.delete)))
@@ -103,7 +103,7 @@
   file:
     path: '/etc/nginx/sites-enabled/{{ item.filename | default(item.name[0] | default("default")) }}.conf'
     state: 'absent'
-  with_items: nginx_servers
+  with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
   notify: [ 'Test nginx and restart' ]
   when: (((item.enabled is defined and not item.enabled) and (item.name is defined)) or
         (item.delete is defined and item.delete))
@@ -116,7 +116,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: nginx_servers
+  with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
   notify: [ 'Test nginx and restart' ]
   when: ((item.enabled is undefined or (item.enabled is defined and item.enabled)) and
          (item.name is defined) and (item.delete is undefined or (item.delete is defined and not item.delete)))

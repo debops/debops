@@ -239,9 +239,6 @@ nginx_default_ssl_name: ''
 # Default server template used if no type is selected
 nginx_default_type: 'default'
 
-# Default server root
-nginx_default_root: '{{ nginx_www + "/sites/default/public" }}'
-
 # Create global webroot directories?
 # Path: /srv/www/sites/*/public
 nginx_webroot_create: True
@@ -358,28 +355,49 @@ nginx_access_policy_satisfy_map: {}
 # http://nginx.org/en/docs/http/ngx_http_map_module.html
 nginx_maps: []
 
+# List of default nginx map definitions
+nginx_default_maps: []
+
+# List of nginx maps defined in Ansible roles
+nginx_dependent_maps: []
+
 # List of nginx upstream definitions
-nginx_upstreams: [ '{{ nginx_upstream_php5 }}' ]
+nginx_upstreams: []
+
+# List of default nginx upstream definitions
+nginx_default_upstreams:
+  - '{{ nginx_upstream_php5_www_data }}'
+
+# List of nginx upstreams defined in Ansible roles
+nginx_dependent_upstreams: []
 
 # Upstream for default php5-fpm configuration
-nginx_upstream_php5:
+nginx_upstream_php5_www_data:
   enabled: True
   name: 'php5_www-data'
   type: 'php5'
   php5: 'www-data'
 
 # List of nginx server definitions
-nginx_servers:
-  - '{{ nginx_server_default }}'
+nginx_servers: []
+
+nginx_default_servers:
+  - '{{ nginx_server_welcome }}'
+
+# List of internal nginx servers
+nginx_internal_servers:
   - '{{ nginx_server_localhost }}'
   - '{{ nginx_server_acme }}'
+
+# List of nginx servers defined in Ansible roles
+nginx_dependent_servers: []
 
 # Default nginx site
 # List and description of available parameters can be found in nginx server
 # templates: templates/etc/nginx/sites-available/*.conf.j2
-nginx_server_default:
+nginx_server_welcome:
   enabled: True
-  name: []
+  name: [ 'welcome' ]
   default_index: '{{ nginx_default_index_html }}'
 
 # Default nginx ``localhost`` server. It can be used to access ``nginx`` status

@@ -101,6 +101,48 @@ v0.1.5
 - Support `HSTS preloading <https://hstspreload.appspot.com/>`_ in ``nginx``
   server configuration. [drybjed]
 
+- Reorganize server, upstream and map default variables.
+
+  The ``nginx_servers`` variable has been split into
+
+  - ``nginx_default_servers`` (default welcome page of the server);
+  - ``nginx_internal_servers`` (``localhost`` and ``acme`` servers);
+  - ``nginx_dependent_servers`` (webservers managed by other roles);
+
+  Similar split has been done with ``nginx_upstreams`` and ``nginx_maps``
+  variables. The order of the variables is designed so that if you configure an
+  ``nginx`` website in the ``nginx_servers`` list (the same as up until now),
+  the first one on the list will be marked as default, easily overriding the
+  welcome page defined in ``nginx_default_servers``.
+
+  The ``nginx_server_default`` dictionary variable has been renamed to
+  ``nginx_server_welcome`` and now defines the default welcome page. You might
+  need to update the Ansible inventory.
+
+  The ``nginx_upstream_php5`` dictionary variable has been renamed to
+  ``nginx_upstream_php5_www_data`` to be more specific. It defines an upstream
+  for the default ``www-data`` PHP5 pool used by various services packaged in
+  Debian. You might need to update the Ansible inventory. [drybjed]
+
+- Fix bare variables due to deprecation. [drybjed]
+
+- Remove ``nginx_default_root`` variable. A default root directory is managed
+  dynamically in the ``default.conf`` server template. [drybjed]
+
+- The default "welcome page" ``nginx`` server will use the ``welcome`` server
+  name, so that role users can use empty name (``[]``) parameter in Ansible
+  inventory without the configuration being constantly overwritten in an
+  idempotency loop. The welcome page automatically gets its own web root
+  directory ``/srv/www/sites/welcome/public/``, and shouldn't conflict with the
+  default root.
+
+  This shouldn't affect the effect of ``default_server`` option. The
+  ``welcome`` "hostname" most likely won't ever be present in the DNS and
+  nothing should directly point to it. [drybjed]
+
+- Create the specified ``nginx`` maps and upstreams even when ``nginx_maps``
+  and ``nginx_upstreams`` lists are empty. [drybjed]
+
 v0.1.4
 ------
 
