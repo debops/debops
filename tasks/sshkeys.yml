@@ -6,6 +6,7 @@
     state: 'present'
     user: '{{ item.name }}'
   with_flattened:
+    - '{{ users_root }}'
     - '{{ users_default }}'
     - '{{ users_admins }}'
     - '{{ users_list }}'
@@ -22,6 +23,7 @@
     state: 'absent'
   become_user: '{{ item.name }}'
   with_flattened:
+    - '{{ users_root }}'
     - '{{ users_default }}'
     - '{{ users_admins }}'
     - '{{ users_list }}'

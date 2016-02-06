@@ -17,6 +17,8 @@ v0.1.6
 
 - Fix Ansible 2.1.0 deprecation warnings. [drybjed]
 
+- Enable support for SSH key management on ``root`` account. [drybjed]
+
 v0.1.5
 ------
 
