@@ -21,6 +21,11 @@ v0.1.4
 - Change the way ``debops.ferm`` disables ``ferm`` support to avoid idempotency
   issues with ``ansible_managed`` variable. [drybjed]
 
+- Change what variable ``debops.ferm`` looks for when checking if ``ferm``
+  should be enabled depending on current host capabilities. Now role will check
+  the status in ``ansible_local.tags`` variable which is configured by the
+  ``debops.core`` role. [drybjed]
+
 v0.1.3
 ------
 
