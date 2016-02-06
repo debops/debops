@@ -45,9 +45,9 @@
          item.dest is defined)
   tags: [ 'role::ferm:custom_files' ]
 
-- name: Configure ferm default variables (pre)
+- name: Configure ferm default variables
   template:
-    src: 'etc/default/ferm-pre.j2'
+    src: 'etc/default/ferm.j2'
     dest: '/etc/default/ferm'
     owner: 'root'
     group: 'root'
@@ -170,14 +170,12 @@
     mode: '0755'
   tags: [ 'role::ferm:rules' ]
 
-- name: Configure ferm default variables (post)
-  template:
-    src: 'etc/default/ferm-post.j2'
+- name: Disable ferm after changes when requested
+  lineinfile:
     dest: '/etc/default/ferm'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  notify: [ 'Restart ferm' ]
+    regexp: '^ENABLED="'
+    line: 'ENABLED="no"'
+  when: not ferm_enabled | bool
 
 - name: Ensure that Ansible local facts directory exists
   file:

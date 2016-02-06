@@ -18,6 +18,9 @@ v0.1.4
 
 - Fix deprecation warnings in Ansible 2.1.0. [drybjed]
 
+- Change the way ``debops.ferm`` disables ``ferm`` support to avoid idempotency
+  issues with ``ansible_managed`` variable. [drybjed]
+
 v0.1.3
 ------
 
