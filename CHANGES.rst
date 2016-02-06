@@ -13,6 +13,9 @@ v0.1.4
 - Change the sysctl configuration from a handler to a conditional task. This
   should make sure ``debops.ferm`` works on older operating systems. [drybjed]
 
+- Move the logic that enables or disables ``ferm`` to a default variable to
+  consolidate it in one place. [drybjed]
+
 v0.1.3
 ------
 

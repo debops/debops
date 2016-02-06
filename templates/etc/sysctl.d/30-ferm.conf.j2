@@ -1,9 +1,6 @@
 # {{ ansible_managed }}
 
-{% if (ferm_enabled | bool and (ansible_local|d() and
-       (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
-       (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-       (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list)))))) %}
+{% if ferm_enabled | bool %}
 # Enable reverse path filtering
 net.ipv4.conf.default.rp_filter = 1
 net.ipv4.conf.all.rp_filter = 1

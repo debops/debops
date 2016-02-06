@@ -1,20 +1,11 @@
 ---
 
-- name: Calculate debconf answer
-  set_fact:
-    ferm_register_debconf: |
-      {% if (ferm_enabled | bool and (ansible_local|d() and
-             (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
-             (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-             (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list)))))) %}
-      yes{% else %}no{% endif %}
-
 - name: Configure ferm status in debconf
   debconf:
     name: 'ferm'
     question: 'ferm/enable'
     vtype: 'boolean'
-    value: '{{ "yes" if ferm_register_debconf else "no" }}'
+    value: '{{ "yes" if ferm_enabled|bool else "no" }}'
 
 - name: Ensure ferm is installed
   apt:
@@ -22,10 +13,7 @@
     state: 'present'
     install_recommends: 'no'
   with_items: ferm_packages
-  when: (ferm_enabled | bool and (ansible_local|d() and
-         (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
-         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-         (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))))
+  when: ferm_enabled | bool
 
 - name: Make sure required directories exist
   file:
@@ -140,20 +128,14 @@
     name: 'ferm'
     state: 'restarted'
   changed_when: False
-  when: (ferm_enabled | bool and (ansible_local|d() and
-         (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
-         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-         (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))))
+  when: ferm_enabled | bool
   tags: [ 'role::ferm:rules' ]
 
 - name: Clear iptables rules if ferm is disabled
   service:
     name: 'ferm'
     state: 'stopped'
-  when: ((not ferm_enabled | bool and ferm_flush | bool) and (ansible_local|d() and
-         (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
-         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-         (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))))
+  when: (not ferm_enabled | bool and ferm_flush | bool)
   tags: [ 'role::ferm:rules' ]
 
 - name: Configure sysctl
