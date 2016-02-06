@@ -7,12 +7,12 @@
     dest: '{{ item.dotfiles_dest | default("~/.config/dotfiles") }}'
     update: True
   with_flattened:
-    - users_root
-    - users_default
-    - users_admins
-    - users_list
-    - users_group_list
-    - users_host_list
+    - '{{ users_root }}'
+    - '{{ users_default }}'
+    - '{{ users_admins }}'
+    - '{{ users_list }}'
+    - '{{ users_group_list }}'
+    - '{{ users_host_list }}'
   when: ((item.name is defined and item.name) and
          (item.state is undefined or (item.state is defined and item.state != 'absent')) and
          (item.createhome is undefined or item.createhome) and
@@ -25,12 +25,12 @@
            {{ item.dotfiles_command | default(users_dotfiles[users_default_dotfiles_key].command) }}
   become_user: '{{ item.name }}'
   with_flattened:
-    - users_root
-    - users_default
-    - users_admins
-    - users_list
-    - users_group_list
-    - users_host_list
+    - '{{ users_root }}'
+    - '{{ users_default }}'
+    - '{{ users_admins }}'
+    - '{{ users_list }}'
+    - '{{ users_group_list }}'
+    - '{{ users_host_list }}'
   when: ((item.name is defined and item.name) and
          (item.state is undefined or (item.state is defined and item.state != 'absent')) and
          (item.createhome is undefined or item.createhome) and
@@ -42,12 +42,12 @@
     name: '{{ item.name }}'
     shell: '{{ item.shell | default(users_dotfiles[users_default_dotfiles_key].shell | default(omit)) }}'
   with_flattened:
-    - users_root
-    - users_default
-    - users_admins
-    - users_list
-    - users_group_list
-    - users_host_list
+    - '{{ users_root }}'
+    - '{{ users_default }}'
+    - '{{ users_admins }}'
+    - '{{ users_list }}'
+    - '{{ users_group_list }}'
+    - '{{ users_host_list }}'
   when: ((item.name is defined and item.name) and
          (item.state is undefined or (item.state is defined and item.state != 'absent')) and
          (item.createhome is undefined or item.createhome) and

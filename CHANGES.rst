@@ -15,6 +15,8 @@ v0.1.6
 
 - Switch ``sudo_user`` to ``become_user``. [drybjed]
 
+- Fix Ansible 2.1.0 deprecation warnings. [drybjed]
+
 v0.1.5
 ------
 
