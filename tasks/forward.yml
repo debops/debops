@@ -5,13 +5,13 @@
     src: 'home/user/forward.j2'
     dest: '~/.forward'
     mode: '0644'
-  sudo_user: '{{ item.name }}'
+  become_user: '{{ item.name }}'
   with_flattened:
-    - users_default
-    - users_admins
-    - users_list
-    - users_group_list
-    - users_host_list
+    - '{{ users_default }}'
+    - '{{ users_admins }}'
+    - '{{ users_list }}'
+    - '{{ users_group_list }}'
+    - '{{ users_host_list }}'
   when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state is undefined or (item.state is defined and item.state != 'absent')) and
          (item.createhome is undefined or item.createhome) and
@@ -21,13 +21,13 @@
   file:
     path: '~/.forward'
     state: 'absent'
-  sudo_user: '{{ item.name }}'
+  become_user: '{{ item.name }}'
   with_flattened:
-    - users_default
-    - users_admins
-    - users_list
-    - users_group_list
-    - users_host_list
+    - '{{ users_default }}'
+    - '{{ users_admins }}'
+    - '{{ users_list }}'
+    - '{{ users_group_list }}'
+    - '{{ users_host_list }}'
   when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state is undefined or (item.state is defined and item.state != 'absent')) and
          (item.createhome is undefined or item.createhome) and

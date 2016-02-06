@@ -1,7 +1,7 @@
 ---
 
 # Should Ansible manage user accounts? Set to False to disable
-users: True
+users_enabled: True
 
 
 # --- Lists of different accounts to create/manage ---
@@ -13,7 +13,7 @@ users_root:
 # Default user created by Ansible
 users_default:
   - name: '{{ (ansible_ssh_user
-               if (ansible_ssh_user | bool and
+               if (ansible_ssh_user | d() and
                    ansible_ssh_user != "root")
                else lookup("env","USER")) }}'
     groups: [ 'admins' ]
@@ -79,10 +79,10 @@ users_host_list: []
 # If enabled, user groups and accounts will be considered "system" accounts by
 # default (ie. local accounts vs LDAP accounts) and will be created with UID
 # and GID < 1000.
-users_default_system: '{{ ((True | bool)
+users_default_system: '{{ (True
                            if (ansible_local|d() and ansible_local.ldap|d() and
                                ansible_local.ldap.enabled | bool)
-                           else (False | bool)) }}'
+                           else False) }}'
 
 # List of default groups added to new accounts
 users_default_groups_list: []

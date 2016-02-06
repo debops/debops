@@ -1,6 +1,26 @@
 Changelog
 =========
 
+v0.1.6
+------
+
+*Released: 2016-02-06*
+
+- Rename the ``users`` variable to ``users_enabled`` to avoid the issue with
+  single-word variables. You might need to update the Ansible inventory.
+  [drybjed]
+
+- Change the method that role detects and uses ``ansible_ssh_user`` variable to
+  set up default user account. [drybjed]
+
+- Switch ``sudo_user`` to ``become_user``. [drybjed]
+
+- Fix Ansible 2.1.0 deprecation warnings. [drybjed]
+
+- Enable support for SSH key management on ``root`` account. [drybjed]
+
+- Add more useful parameters to user management. [drybjed]
+
 v0.1.5
 ------
 

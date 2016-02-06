@@ -1,18 +1,18 @@
 ---
 
 - name: Get users dotfiles from git repository
-  sudo_user: '{{ item.name }}'
+  become_user: '{{ item.name }}'
   git:
     repo: '{{ item.dotfiles_repo | default(users_dotfiles[users_default_dotfiles_key].repo) }}'
     dest: '{{ item.dotfiles_dest | default("~/.config/dotfiles") }}'
     update: True
   with_flattened:
-    - users_root
-    - users_default
-    - users_admins
-    - users_list
-    - users_group_list
-    - users_host_list
+    - '{{ users_root }}'
+    - '{{ users_default }}'
+    - '{{ users_admins }}'
+    - '{{ users_list }}'
+    - '{{ users_group_list }}'
+    - '{{ users_host_list }}'
   when: ((item.name is defined and item.name) and
          (item.state is undefined or (item.state is defined and item.state != 'absent')) and
          (item.createhome is undefined or item.createhome) and
@@ -20,17 +20,18 @@
           (users_default_dotfiles is defined and users_default_dotfiles)))
 
 - name: Configure users dotfiles
-  sudo_user: '{{ item.name }}'
-  command: chdir={{ item.dotfiles_dest | default('~/.config/dotfiles') }}
-           creates="{{item.dotfiles_creates | default(users_dotfiles[users_default_dotfiles_key].creates)}}"
-           {{ item.dotfiles_command | default(users_dotfiles[users_default_dotfiles_key].command) }}
+  become_user: '{{ item.name }}'
+  command: '{{ item.dotfiles_command | default(users_dotfiles[users_default_dotfiles_key].command) }}'
+  args:
+    chdir: '{{ item.dotfiles_dest | default("~/.config/dotfiles") }}'
+    creates: '{{item.dotfiles_creates | default(users_dotfiles[users_default_dotfiles_key].creates)}}'
   with_flattened:
-    - users_root
-    - users_default
-    - users_admins
-    - users_list
-    - users_group_list
-    - users_host_list
+    - '{{ users_root }}'
+    - '{{ users_default }}'
+    - '{{ users_admins }}'
+    - '{{ users_list }}'
+    - '{{ users_group_list }}'
+    - '{{ users_host_list }}'
   when: ((item.name is defined and item.name) and
          (item.state is undefined or (item.state is defined and item.state != 'absent')) and
          (item.createhome is undefined or item.createhome) and
@@ -42,12 +43,12 @@
     name: '{{ item.name }}'
     shell: '{{ item.shell | default(users_dotfiles[users_default_dotfiles_key].shell | default(omit)) }}'
   with_flattened:
-    - users_root
-    - users_default
-    - users_admins
-    - users_list
-    - users_group_list
-    - users_host_list
+    - '{{ users_root }}'
+    - '{{ users_default }}'
+    - '{{ users_admins }}'
+    - '{{ users_list }}'
+    - '{{ users_group_list }}'
+    - '{{ users_host_list }}'
   when: ((item.name is defined and item.name) and
          (item.state is undefined or (item.state is defined and item.state != 'absent')) and
          (item.createhome is undefined or item.createhome) and
