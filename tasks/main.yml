@@ -4,16 +4,16 @@
   include: "{{ lookup('task_src', 'users/pre_main.yml') }}"
 
 - include: users.yml
-  when: users
+  when: users_enabled | bool
 
 - include: forward.yml
-  when: users
+  when: users_enabled | bool
 
 - include: sshkeys.yml
-  when: users
+  when: users_enabled | bool
 
 - include: dotfiles.yml
-  when: users
+  when: users_enabled | bool
   tags: users-dotfiles
 
 - name: DebOps post_tasks hook

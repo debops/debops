@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.1.6
+------
+
+*Released: 2016-02-06*
+
+- Rename the ``users`` variable to ``users_enabled`` to avoid the issue with
+  single-word variables. You might need to update the Ansible inventory.
+  [drybjed]
+
 v0.1.5
 ------
 
