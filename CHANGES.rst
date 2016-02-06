@@ -19,6 +19,8 @@ v0.1.6
 
 - Enable support for SSH key management on ``root`` account. [drybjed]
 
+- Add more useful parameters to user management. [drybjed]
+
 v0.1.5
 ------
 
