@@ -3,9 +3,9 @@
 - name: Combine cryptsetup device lists
   set_fact:
     cryptsetup_devices_combined: '{{
-      (cryptsetup_devices|d([]) | list) +
-      (cryptsetup_group_devices|d([]) | list) +
-      (cryptsetup_host_devices|d([]) | list) }}'
+      (cryptsetup_devices       | d([]) | list) +
+      (cryptsetup_group_devices | d([]) | list) +
+      (cryptsetup_host_devices  | d([]) | list) }}'
   tags: [ 'role::cryptsetup:backup' ]
 
 - name: Ensure that required options are specified and valid for each given device
