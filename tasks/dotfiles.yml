@@ -20,10 +20,11 @@
           (users_default_dotfiles is defined and users_default_dotfiles)))
 
 - name: Configure users dotfiles
-  command: chdir={{ item.dotfiles_dest | default('~/.config/dotfiles') }}
-           creates="{{item.dotfiles_creates | default(users_dotfiles[users_default_dotfiles_key].creates)}}"
-           {{ item.dotfiles_command | default(users_dotfiles[users_default_dotfiles_key].command) }}
   become_user: '{{ item.name }}'
+  command: '{{ item.dotfiles_command | default(users_dotfiles[users_default_dotfiles_key].command) }}'
+  args:
+    chdir: '{{ item.dotfiles_dest | default("~/.config/dotfiles") }}'
+    creates: '{{item.dotfiles_creates | default(users_dotfiles[users_default_dotfiles_key].creates)}}'
   with_flattened:
     - '{{ users_root }}'
     - '{{ users_default }}'
