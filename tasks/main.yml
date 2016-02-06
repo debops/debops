@@ -73,7 +73,7 @@
     - '{{ ferm_host_rules }}'
     - '{{ ferm_dependent_rules }}'
     - '{{ ferm_default_rules }}'
-  when: ((item.type is defined and item.type) and
+  when: (ferm_enabled|bool and (item.type is defined and item.type) and
          (item.delete is defined and item.delete | bool))
   tags: [ 'role::ferm:rules' ]
 
@@ -90,7 +90,7 @@
     - '{{ ferm_host_rules }}'
     - '{{ ferm_dependent_rules }}'
     - '{{ ferm_default_rules }}'
-  when: ((item.type is defined and item.type) and
+  when: (ferm_enabled|bool and (item.type is defined and item.type) and
          (item.delete is undefined or not item.delete | bool))
   tags: [ 'role::ferm:rules' ]
 
@@ -103,7 +103,7 @@
     - '{{ ferm_input_group_list }}'
     - '{{ ferm_input_host_list }}'
     - '{{ ferm_input_dependent_list }}'
-  when: ((item.type is defined and item.type) and
+  when: (ferm_enabled|bool and (item.type is defined and item.type) and
          (item.delete is defined and item.delete | bool))
   tags: [ 'role::ferm:rules' ]
 
@@ -119,7 +119,7 @@
     - '{{ ferm_input_group_list }}'
     - '{{ ferm_input_host_list }}'
     - '{{ ferm_input_dependent_list }}'
-  when: ((item.type is defined and item.type) and
+  when: (ferm_enabled|bool and (item.type is defined and item.type) and
          (item.delete is undefined or not item.delete | bool))
   tags: [ 'role::ferm:rules' ]
 

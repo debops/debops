@@ -4,7 +4,7 @@ Changelog
 v0.1.4
 ------
 
-*Unreleased*
+*Released: 2016-02-07*
 
 - Add a way to copy custom files to remote hosts before starting the firewall.
   This allows users to add custom scripts that generate firewall rules in case
@@ -25,6 +25,9 @@ v0.1.4
   should be enabled depending on current host capabilities. Now role will check
   the status in ``ansible_local.tags`` variable which is configured by the
   ``debops.core`` role. [drybjed]
+
+- Do not remove or generate firewall rules when ``ferm`` is disabled to improve
+  Ansible performance. [drybjed]
 
 v0.1.3
 ------
