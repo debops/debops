@@ -10,6 +10,9 @@ v0.1.6
   single-word variables. You might need to update the Ansible inventory.
   [drybjed]
 
+- Change the method that role detects and uses ``ansible_ssh_user`` variable to
+  set up default user account. [drybjed]
+
 v0.1.5
 ------
 

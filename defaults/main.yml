@@ -13,7 +13,7 @@ users_root:
 # Default user created by Ansible
 users_default:
   - name: '{{ (ansible_ssh_user
-               if (ansible_ssh_user | bool and
+               if (ansible_ssh_user | d() and
                    ansible_ssh_user != "root")
                else lookup("env","USER")) }}'
     groups: [ 'admins' ]
