@@ -12,7 +12,7 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: 'no'
-  with_items: ferm_packages
+  with_items: '{{ ferm_packages }}'
   when: ferm_enabled | bool
 
 - name: Make sure required directories exist
@@ -68,11 +68,11 @@
     path: '/etc/ferm/ferm.d/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | d(((item.role + "_" + ((item.role_weight + "_") if item.role_weight|d() else "")) if item.role|d() else "") + item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
-    - ferm_rules
-    - ferm_group_rules
-    - ferm_host_rules
-    - ferm_dependent_rules
-    - ferm_default_rules
+    - '{{ ferm_rules }}'
+    - '{{ ferm_group_rules }}'
+    - '{{ ferm_host_rules }}'
+    - '{{ ferm_dependent_rules }}'
+    - '{{ ferm_default_rules }}'
   when: ((item.type is defined and item.type) and
          (item.delete is defined and item.delete | bool))
   tags: [ 'role::ferm:rules' ]
@@ -85,11 +85,11 @@
     group: 'adm'
     mode: '0644'
   with_flattened:
-    - ferm_rules
-    - ferm_group_rules
-    - ferm_host_rules
-    - ferm_dependent_rules
-    - ferm_default_rules
+    - '{{ ferm_rules }}'
+    - '{{ ferm_group_rules }}'
+    - '{{ ferm_host_rules }}'
+    - '{{ ferm_dependent_rules }}'
+    - '{{ ferm_default_rules }}'
   when: ((item.type is defined and item.type) and
          (item.delete is undefined or not item.delete | bool))
   tags: [ 'role::ferm:rules' ]
@@ -99,10 +99,10 @@
     path: '/etc/ferm/filter-input.d/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
-    - ferm_input_list
-    - ferm_input_group_list
-    - ferm_input_host_list
-    - ferm_input_dependent_list
+    - '{{ ferm_input_list }}'
+    - '{{ ferm_input_group_list }}'
+    - '{{ ferm_input_host_list }}'
+    - '{{ ferm_input_dependent_list }}'
   when: ((item.type is defined and item.type) and
          (item.delete is defined and item.delete | bool))
   tags: [ 'role::ferm:rules' ]
@@ -115,10 +115,10 @@
     group: 'adm'
     mode: '0644'
   with_flattened:
-    - ferm_input_list
-    - ferm_input_group_list
-    - ferm_input_host_list
-    - ferm_input_dependent_list
+    - '{{ ferm_input_list }}'
+    - '{{ ferm_input_group_list }}'
+    - '{{ ferm_input_host_list }}'
+    - '{{ ferm_input_dependent_list }}'
   when: ((item.type is defined and item.type) and
          (item.delete is undefined or not item.delete | bool))
   tags: [ 'role::ferm:rules' ]

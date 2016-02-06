@@ -16,6 +16,8 @@ v0.1.4
 - Move the logic that enables or disables ``ferm`` to a default variable to
   consolidate it in one place. [drybjed]
 
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+
 v0.1.3
 ------
 
