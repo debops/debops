@@ -13,6 +13,8 @@ v0.1.6
 - Change the method that role detects and uses ``ansible_ssh_user`` variable to
   set up default user account. [drybjed]
 
+- Switch ``sudo_user`` to ``become_user``. [drybjed]
+
 v0.1.5
 ------
 

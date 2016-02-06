@@ -5,7 +5,7 @@
     src: 'home/user/forward.j2'
     dest: '~/.forward'
     mode: '0644'
-  sudo_user: '{{ item.name }}'
+  become_user: '{{ item.name }}'
   with_flattened:
     - users_default
     - users_admins
@@ -21,7 +21,7 @@
   file:
     path: '~/.forward'
     state: 'absent'
-  sudo_user: '{{ item.name }}'
+  become_user: '{{ item.name }}'
   with_flattened:
     - users_default
     - users_admins

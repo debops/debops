@@ -1,7 +1,7 @@
 ---
 
 - name: Get users dotfiles from git repository
-  sudo_user: '{{ item.name }}'
+  become_user: '{{ item.name }}'
   git:
     repo: '{{ item.dotfiles_repo | default(users_dotfiles[users_default_dotfiles_key].repo) }}'
     dest: '{{ item.dotfiles_dest | default("~/.config/dotfiles") }}'
@@ -20,10 +20,10 @@
           (users_default_dotfiles is defined and users_default_dotfiles)))
 
 - name: Configure users dotfiles
-  sudo_user: '{{ item.name }}'
   command: chdir={{ item.dotfiles_dest | default('~/.config/dotfiles') }}
            creates="{{item.dotfiles_creates | default(users_dotfiles[users_default_dotfiles_key].creates)}}"
            {{ item.dotfiles_command | default(users_dotfiles[users_default_dotfiles_key].command) }}
+  become_user: '{{ item.name }}'
   with_flattened:
     - users_root
     - users_default
