@@ -10,7 +10,7 @@
 - name: Divert original configuration under /etc
   command: dpkg-divert --quiet --local --divert "{{ item }}.dpkg-divert" --rename "{{ item }}"
   args:
-    creates: "{{ item }}.dpkg-divert"
+    creates: '{{ item }}.dpkg-divert'
   when: (ansible_pkg_mgr == 'apt')
   with_items: [ '/etc/etckeeper/etckeeper.conf' ]
 
@@ -28,13 +28,13 @@
 ## expected to be already configured in regards to the used package manager, so
 ## this value will be preferred.
 - name: Read HIGHLEVEL_PACKAGE_MANAGER configured by the distribution
-  shell: .  /etc/etckeeper/etckeeper.conf.dpkg-divert && echo ${HIGHLEVEL_PACKAGE_MANAGER}
+  shell: . /etc/etckeeper/etckeeper.conf.dpkg-divert && echo ${HIGHLEVEL_PACKAGE_MANAGER}
   changed_when: False
   failed_when: False
   register: etckeeper_register_highlevel_package_manager
 
 - name: Read LOWLEVEL_PACKAGE_MANAGER configured by the distribution
-  shell: .  /etc/etckeeper/etckeeper.conf.dpkg-divert && echo ${LOWLEVEL_PACKAGE_MANAGER}
+  shell: . /etc/etckeeper/etckeeper.conf.dpkg-divert && echo ${LOWLEVEL_PACKAGE_MANAGER}
   changed_when: False
   failed_when: False
   register: etckeeper_register_lowlevel_package_manager
@@ -46,6 +46,12 @@
     mode: 0644
     owner: 'root'
     group: 'root'
+
+- name: Initial VCS
+  command: etckeeper init
+  args:
+    creates: '/etc/.etckeeper'
+  register: etckeeper_register_init
 
 - name: Add entries to /etc/.gitignore
   lineinfile:
@@ -73,12 +79,6 @@
     mode: '{{ etckeeper_repository_permissions|d("0700") }}'
     owner: 'root'
     group: '{{ etckeeper_repository_group|d("root") }}'
-
-- name: Initial VCS
-  command: etckeeper init
-  args:
-    creates: '/etc/.etckeeper'
-  register: etckeeper_register_init
 
 - name: Create root commit
   command: etckeeper commit 'Initial commit created by Ansible.'
