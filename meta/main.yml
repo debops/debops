@@ -4,32 +4,6 @@ dependencies:
 
   - role: debops.secret
 
-  - role: debops.apt_preferences
-    tags: apt_preferences
-    apt_preferences_dependent_list:
-
-      - package: 'lldpd'
-        backports: [ 'wheezy' ]
-        reason:  'Version parity with Debian Jessie'
-        by_role: 'debops.snmpd'
-
-  - role: debops.ferm
-    ferm_input_dependent_list:
-
-      - type: 'dport_accept'
-        protocol: [ 'udp' ]
-        dport: [ 'snmp' ]
-        saddr: '{{ snmpd_allow + snmpd_group_allow + snmpd_host_allow + snmpd_local_allow }}'
-
-  - role: debops.tcpwrappers
-    tcpwrappers_allow:
-
-      - daemon: 'snmpd'
-        client: '{{ snmpd_allow + snmpd_group_allow + snmpd_host_allow + snmpd_local_allow }}'
-        weight: '50'
-        filename: 'snmpd_dependency_allow'
-        comment: 'Allow remote connections to SNMP daemon'
-
 galaxy_info:
   author: 'Maciej Delmanowski'
   description: 'Install and configure SNMP service'

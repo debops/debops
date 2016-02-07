@@ -244,6 +244,30 @@ snmpd_load_15min: '{{ (((snmpd_load_base | float) *
                        snmpd_load_weight_map[snmpd_load_weight][2] | float) }}'
 
 
+# ----------------------
+#   Process monitoring
+# ----------------------
+
+# .. envvar:: snmpd_proc_hidepid
+#
+# Should the ``debops.snmpd`` add the ``snmp`` user account to a group that has
+# access to the ``/proc`` filesystem?
+snmpd_proc_hidepid: '{{ True
+                        if (ansible_local|d() and ansible_local.proc|d() and
+                            ansible_local.proc.hidepid|bool)
+                        else False }}'
+
+
+# .. envvar:: snmpd_proc_hidepid_group
+#
+# Name of the system group which ``snmp`` user will be added to to get
+# information about processes.
+snmpd_proc_hidepid_group: '{{ (ansible_local.proc.hidepid_group
+                               if (ansible_local|d() and ansible_local.proc|d() and
+                                   ansible_local.proc.hidepid_group|d())
+                               else "") }}'
+
+
 # ------------------------------------------
 #   SNMPv3 admin, agent and local accounts
 # ------------------------------------------
@@ -299,4 +323,43 @@ snmpd_account_agent_username: '{{ lookup("password", secret +
 snmpd_account_agent_password: '{{ lookup("password", secret +
                                   "/snmp/credentials/agent/password chars=ascii_letters,digits,hexdigits length=" +
                                   snmpd_account_password_length) }}'
+
+
+# ----------------------------------------
+#   Configuration of other Ansible roles
+# ----------------------------------------
+
+# .. envvar:: snmpd_apt_preferences_dependent_list
+#
+# Configuration for ``debops.apt_preferences`` role.
+snmpd_apt_preferences_dependent_list:
+
+  - package: 'lldpd libbsd0'
+    backports: [ 'wheezy' ]
+    reason:  'Version parity with Debian Jessie'
+    by_role: 'debops.snmpd'
+
+
+# .. envvar:: snmpd_ferm_dependent_rules
+#
+# Configuration for ``debops.ferm`` role.
+snmpd_ferm_dependent_rules:
+
+  - type: 'accept'
+    protocol: [ 'udp' ]
+    dport: [ 'snmp' ]
+    saddr: '{{ snmpd_allow + snmpd_group_allow + snmpd_host_allow + snmpd_local_allow }}'
+    role: 'snmpd'
+
+
+# .. envvar:: snmpd_tcpwrappers_dependent_allow
+#
+# Configuration for ``debops.tcpwrappers`` role.
+snmpd_tcpwrappers_dependent_allow:
+
+  - daemon: 'snmpd'
+    client: '{{ snmpd_allow + snmpd_group_allow + snmpd_host_allow + snmpd_local_allow }}'
+    weight: '50'
+    filename: 'snmpd_dependency_allow'
+    comment: 'Allow remote connections to SNMP daemon'
 

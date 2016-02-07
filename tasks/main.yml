@@ -18,7 +18,7 @@
     - [ '{{ "snmp-mibs-downloader" if snmpd_download_mibs else [] }}' ]
     - [ '{{ "lldpd" if snmpd_lldpd else [] }}' ]
     - [ '{{ "lm-sensors" if (ansible_virtualization_role is undefined or ansible_virtualization_role not in [ "guest" ]) else [] }}' ]
-    - snmpd_packages
+    - '{{ snmpd_packages }}'
 
 - name: Uninstall packages if requested
   apt:
@@ -35,6 +35,14 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  notify: [ 'Reload systemd daemon', 'Restart snmpd' ]
+
+- name: Allow 'snmp' user access to /proc if needed
+  user:
+    name: 'snmp'
+    groups: '{{ snmpd_proc_hidepid_group }}'
+    append: True
+  when: snmpd_proc_hidepid | bool
   notify: [ 'Restart snmpd' ]
 
 - name: Enable MIBs support
@@ -107,15 +115,12 @@
     group: 'root'
     mode: '0755'
 
-  # This should be ran once until bug is fixed
-  # https://github.com/ansible/ansible/issues/10784
 - name: Initialize admin and agent accounts
   set_fact:
     snmpd_fact_account_admin_username: '{{ snmpd_account_admin_username }}'
     snmpd_fact_account_admin_password: '{{ snmpd_account_admin_password }}'
     snmpd_fact_account_agent_username: '{{ snmpd_account_agent_username }}'
     snmpd_fact_account_agent_password: '{{ snmpd_account_agent_password }}'
-  run_once: True
   no_log: True
   when: snmpd_account|d() and snmpd_account
 
