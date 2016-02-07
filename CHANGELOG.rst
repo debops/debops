@@ -95,6 +95,9 @@ v0.2.8
 - Add missing playbooks for roles included in ``common.yml`` playbook so that
   they can be easily executed on their own. [drybjed]
 
+- Allow execution of ``debops.pki`` role with ``role::pki:secret`` tag so that
+  it will create secret directories but nothing else. [drybjed]
+
 v0.2.7
 ------
 
