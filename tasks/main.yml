@@ -5,10 +5,10 @@
     dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin"))) + "_"  + item.package.split(" ")[0] + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
     state: 'absent'
   with_flattened:
-    - apt_preferences_list
-    - apt_preferences_group_list
-    - apt_preferences_host_list
-    - apt_preferences_dependent_list
+    - '{{ apt_preferences_list }}'
+    - '{{ apt_preferences_group_list }}'
+    - '{{ apt_preferences_host_list }}'
+    - '{{ apt_preferences_dependent_list }}'
   when: (
           (
             (item.delete|d() and item.delete | bool) and
@@ -35,10 +35,10 @@
     group: 'root'
     mode: '0644'
   with_flattened:
-    - apt_preferences_list
-    - apt_preferences_group_list
-    - apt_preferences_host_list
-    - apt_preferences_dependent_list
+    - '{{ apt_preferences_list }}'
+    - '{{ apt_preferences_group_list }}'
+    - '{{ apt_preferences_host_list }}'
+    - '{{ apt_preferences_dependent_list }}'
   when: (
           (
             (item.delete is undefined or not item.delete | bool) and
