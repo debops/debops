@@ -51,3 +51,6 @@ v0.1.0
 
 - Fix deprecation warnings on Ansible 2.1.0. [drybjed]
 
+- Make sure that ``systemd-logind`` service is included in the ``procadmins``
+  system group when ``/proc`` ``hidepid`` option is enabled. [drybjed]
+
