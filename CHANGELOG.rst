@@ -92,6 +92,9 @@ v0.2.8
 - Update the ``common.yml`` playbook and ``service/pki.yml`` playbook with new
   ``debops.pki`` role requirements. [drybjed]
 
+- Add missing playbooks for roles included in ``common.yml`` playbook so that
+  they can be easily executed on their own. [drybjed]
+
 v0.2.7
 ------
 
