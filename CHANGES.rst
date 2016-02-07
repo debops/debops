@@ -21,3 +21,5 @@ v0.1.0
 - Fix wrong permissions in ``/etc/default/{lldpd,snmpd}`` configuration files.
   [drybjed]
 
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+
