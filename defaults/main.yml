@@ -193,6 +193,18 @@ nginx_pki_key: 'default.key'
 nginx_pki_ca:  'CA.crt'
 nginx_pki_trusted: 'trusted.crt'
 
+# Name of the hook script which will be stored in hook directory
+nginx_pki_hook_name: 'nginx'
+
+# Directory with PKI hooks
+nginx_pki_hook_path: '{{ ansible_local.pki.hooks
+                         if (ansible_local|d() and ansible_local.pki|d() and
+                             ansible_local.pki.hooks|d())
+                         else "/etc/pki/hooks" }}'
+
+# Specify how changes in PKI should affect nginx, either 'reload' or 'restart'
+nginx_pki_hook_action: 'reload'
+
 # Path to the file with Diffie-Hellman parameters to use by the webserver.
 nginx_ssl_dhparam: '{{ (ansible_local.dhparam[nginx_ssl_dhparam_set]
                         if (ansible_local|d() and ansible_local.dhparam|d() and

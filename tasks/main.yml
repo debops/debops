@@ -200,6 +200,24 @@
 - include: nginx_servers.yml
   tags: [ 'role::nginx:servers' ]
 
+- name: Make sure that PKI hook directory exists
+  file:
+    path: '{{ nginx_pki_hook_path }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: nginx_pki | bool
+
+- name: Manage PKI nginx hook
+  template:
+    src: 'etc/pki/hooks/nginx.j2'
+    dest: '{{ nginx_pki_hook_path + "/" + nginx_pki_hook_name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: nginx_pki | bool
+
 - name: Save nginx local facts
   template:
     src: 'etc/ansible/facts.d/nginx.fact.j2'

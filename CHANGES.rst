@@ -4,7 +4,7 @@ Changelog
 v0.1.5
 ------
 
-*Unreleased*
+*Released: 2016-02-07*
 
 - Create a proof-of-concept "solo" version of the role, that does not include
   additional Ansible role dependencies. [drybjed]
@@ -146,6 +146,9 @@ v0.1.5
 - Provide a clean and simple welcome page which is displayed by default if
   specified server does not exist. The welcome page will be generated only if
   ``index.html`` is not present in the webroot directory. [drybjed]
+
+- Add a hook script in ``/etc/pki/hooks/`` directory. When certificates used by
+  ``nginx`` are changed, it will reload the webserver to enable them. [drybjed]
 
 v0.1.4
 ------
