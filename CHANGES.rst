@@ -23,3 +23,8 @@ v0.1.0
 
 - Fix deprecation warnings in Ansible 2.1.0. [drybjed]
 
+- Reload ``systemd`` daemons when a replacement ``snmpd.service`` unit is
+  installed and enable it "manually" because the Ansible ``service`` module
+  doesn't want to play nice with both ``systemd`` unit and ``sysvinit`` script
+  being present. [drybjed]
+
