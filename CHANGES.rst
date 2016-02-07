@@ -49,3 +49,5 @@ v0.1.0
 
 - Add support for ``sysnews`` package, useful on multiuser systems. [drybjed]
 
+- Fix deprecation warnings on Ansible 2.1.0. [drybjed]
+

@@ -6,12 +6,12 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - console_base_packages
-    - console_extra_packages
-    - console_conditional_packages
-    - console_packages
-    - console_group_packages
-    - console_host_packages
+    - '{{ console_base_packages }}'
+    - '{{ console_extra_packages }}'
+    - '{{ console_conditional_packages }}'
+    - '{{ console_packages }}'
+    - '{{ console_group_packages }}'
+    - '{{ console_host_packages }}'
   when: item is defined and item
 
 - name: Check if /etc/inittab exists
@@ -73,7 +73,7 @@
   locale_gen:
     name: '{{ item }}'
     state: 'present'
-  with_items: console_locales
+  with_items: '{{ console_locales }}'
   when: (console_locales is defined and console_locales)
   tags: [ 'role::console:locale' ]
 
@@ -118,7 +118,7 @@
     regexp: '^{{ item.key | replace(".","\.") }}\s+'
     line: "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value | join(' ')) }}"
     state: '{{ "present" if item.value|d() else "absent" }}'
-  with_dict: console_hosts
+  with_dict: '{{ console_hosts }}'
   when: console_hosts|d()
   tags: [ 'role::console:hosts' ]
 
@@ -132,7 +132,7 @@
     directory_mode: '{{ item.directory_mode | d(omit) }}'
     follow: '{{ item.follow | d(omit) }}'
     force: '{{ item.force | d(omit) }}'
-  with_items: console_custom_files
+  with_items: '{{ console_custom_files }}'
   when: (item.src|d() and item.dest|d())
   tags: [ 'role::console:custom_files' ]
 
