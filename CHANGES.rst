@@ -4,7 +4,7 @@ Changelog
 v0.1.5
 ------
 
-*Unreleased*
+*Released: 2016-02-07*
 
 - Create a proof-of-concept "solo" version of the role, that does not include
   additional Ansible role dependencies. [drybjed]
