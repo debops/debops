@@ -4,7 +4,7 @@ Changelog
 v0.1.0
 ------
 
-*Unreleased*
+*Released: 2016-02-07*
 
 - Add Changelog. [drybjed]
 
@@ -48,4 +48,12 @@ v0.1.0
   services, timers, and other units. [drybjed]
 
 - Add support for ``sysnews`` package, useful on multiuser systems. [drybjed]
+
+- Fix deprecation warnings on Ansible 2.1.0. [drybjed]
+
+- Make sure that ``systemd-logind`` service is included in the ``procadmins``
+  system group when ``/proc`` ``hidepid`` option is enabled. [drybjed]
+
+- Add ``proc.fact`` fact script which contains information about ``hidepid``
+  options for other Ansible roles to use. [drybjed]
 

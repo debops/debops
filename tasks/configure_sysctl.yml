@@ -7,7 +7,7 @@
     value: '{{ item.value }}'
     state: 'present'
     reload: True
-  with_dict: console_sysctl_kernel_shm_values
+  with_dict: '{{ console_sysctl_kernel_shm_values }}'
   when: console_sysctl_kernel_shm_values|d()
 
 - name: Configure sys_admin kernel parameters
@@ -17,7 +17,7 @@
     value: '{{ item.value }}'
     state: 'present'
     reload: True
-  with_dict: console_sysctl_sys_admin_values
+  with_dict: '{{ console_sysctl_sys_admin_values }}'
   when: (console_sysctl_sys_admin_values|d() and
          (ansible_local|d() and ((ansible_local.root|d() and 'ignore-cap12s' in ansible_local.root.flags) or
           (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
