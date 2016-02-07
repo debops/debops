@@ -32,3 +32,7 @@ v0.1.0
   preferences. Move their configuration to default variables, which can be used
   from an Ansible playbook. [drybjed]
 
+- Add support for ``/proc`` ``hidepid`` option. Role will detect it using
+  Ansible local facts provided by the ``debops.console`` role and add ``snmp``
+  user to the required system group. [drybjed]
+

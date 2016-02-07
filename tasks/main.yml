@@ -37,6 +37,14 @@
     mode: '0644'
   notify: [ 'Reload systemd daemon', 'Restart snmpd' ]
 
+- name: Allow 'snmp' user access to /proc if needed
+  user:
+    name: 'snmp'
+    groups: '{{ snmpd_proc_hidepid_group }}'
+    append: True
+  when: snmpd_proc_hidepid | bool
+  notify: [ 'Restart snmpd' ]
+
 - name: Enable MIBs support
   lineinfile:
     dest: '/etc/snmp/snmp.conf'

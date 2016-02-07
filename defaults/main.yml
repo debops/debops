@@ -244,6 +244,30 @@ snmpd_load_15min: '{{ (((snmpd_load_base | float) *
                        snmpd_load_weight_map[snmpd_load_weight][2] | float) }}'
 
 
+# ----------------------
+#   Process monitoring
+# ----------------------
+
+# .. envvar:: snmpd_proc_hidepid
+#
+# Should the ``debops.snmpd`` add the ``snmp`` user account to a group that has
+# access to the ``/proc`` filesystem?
+snmpd_proc_hidepid: '{{ True
+                        if (ansible_local|d() and ansible_local.proc|d() and
+                            ansible_local.proc.hidepid|bool)
+                        else False }}'
+
+
+# .. envvar:: snmpd_proc_hidepid_group
+#
+# Name of the system group which ``snmp`` user will be added to to get
+# information about processes.
+snmpd_proc_hidepid_group: '{{ (ansible_local.proc.hidepid_group
+                               if (ansible_local|d() and ansible_local.proc|d() and
+                                   ansible_local.proc.hidepid_group|d())
+                               else "") }}'
+
+
 # ------------------------------------------
 #   SNMPv3 admin, agent and local accounts
 # ------------------------------------------
