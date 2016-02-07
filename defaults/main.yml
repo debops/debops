@@ -300,3 +300,42 @@ snmpd_account_agent_password: '{{ lookup("password", secret +
                                   "/snmp/credentials/agent/password chars=ascii_letters,digits,hexdigits length=" +
                                   snmpd_account_password_length) }}'
 
+
+# ----------------------------------------
+#   Configuration of other Ansible roles
+# ----------------------------------------
+
+# .. envvar:: snmpd_apt_preferences_dependent_list
+#
+# Configuration for ``debops.apt_preferences`` role.
+snmpd_apt_preferences_dependent_list:
+
+  - package: 'lldpd libbsd0'
+    backports: [ 'wheezy' ]
+    reason:  'Version parity with Debian Jessie'
+    by_role: 'debops.snmpd'
+
+
+# .. envvar:: snmpd_ferm_dependent_rules
+#
+# Configuration for ``debops.ferm`` role.
+snmpd_ferm_dependent_rules:
+
+  - type: 'accept'
+    protocol: [ 'udp' ]
+    dport: [ 'snmp' ]
+    saddr: '{{ snmpd_allow + snmpd_group_allow + snmpd_host_allow + snmpd_local_allow }}'
+    role: 'snmpd'
+
+
+# .. envvar:: snmpd_tcpwrappers_dependent_allow
+#
+# Configuration for ``debops.tcpwrappers`` role.
+snmpd_tcpwrappers_dependent_allow:
+
+  - daemon: 'snmpd'
+    client: '{{ snmpd_allow + snmpd_group_allow + snmpd_host_allow + snmpd_local_allow }}'
+    weight: '50'
+    filename: 'snmpd_dependency_allow'
+    comment: 'Allow remote connections to SNMP daemon'
+

@@ -28,3 +28,7 @@ v0.1.0
   doesn't want to play nice with both ``systemd`` unit and ``sysvinit`` script
   being present. [drybjed]
 
+- Remove hard role dependencies on ``ferm``, ``tcpwrappers`` and APT
+  preferences. Move their configuration to default variables, which can be used
+  from an Ansible playbook. [drybjed]
+
