@@ -147,6 +147,9 @@ v0.1.5
   specified server does not exist. The welcome page will be generated only if
   ``index.html`` is not present in the webroot directory. [drybjed]
 
+- Add a hook script in ``/etc/pki/hooks/`` directory. When certificates used by
+  ``nginx`` are changed, it will reload the webserver to enable them. [drybjed]
+
 v0.1.4
 ------
 
