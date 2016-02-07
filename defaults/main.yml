@@ -1,7 +1,12 @@
 ---
 
 # Enable or disable iptables management
-ferm_enabled: True
+ferm_enabled: '{{ True
+                  if ((ansible_local|d() and ansible_local.tags|d() and
+                      (ansible_local.tags | intersect(ferm_local_tags.ignore_cap_net_admin)) or
+                      (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+                      (ansible_local.cap12s.enabled | bool and "cap_net_admin" in ansible_local.cap12s.list)))))
+                  else False }}'
 
 # Should ferm-rules be flushed when ferm is disabled? The default is
 # true, but you may need set both `ferm` and this to ``False`` if you
@@ -427,10 +432,10 @@ ferm_external_interfaces:
 # interfaces will be forwarded only between hosts on that network
 ferm_internal_interfaces: [ 'br1' ]
 
-# List of global root flags to check
-ferm_root_flags:
+# List of local Ansible "tags" which will affect role behaviour
+ferm_local_tags:
 
-  # If these flags are present, ignore status of "cap_net_admin" capability and
+  # If these tags are present, ignore status of "cap_net_admin" capability and
   # manage firewall using ferm
-  cap_net_admin: [ 'ignore-cap12s', 'ignore-cap_net_admin' ]
+  ignore_cap_net_admin: [ 'ignore-cap12s', 'ignore-cap_net_admin' ]
 

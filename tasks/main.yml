@@ -1,31 +1,19 @@
 ---
 
-- name: Calculate debconf answer
-  set_fact:
-    ferm_register_debconf: |
-      {% if (ferm_enabled | bool and (ansible_local|d() and
-             (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
-             (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-             (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list)))))) %}
-      yes{% else %}no{% endif %}
-
 - name: Configure ferm status in debconf
   debconf:
     name: 'ferm'
     question: 'ferm/enable'
     vtype: 'boolean'
-    value: '{{ "yes" if ferm_register_debconf else "no" }}'
+    value: '{{ "yes" if ferm_enabled|bool else "no" }}'
 
 - name: Ensure ferm is installed
   apt:
     name: '{{ item }}'
     state: 'present'
     install_recommends: 'no'
-  with_items: ferm_packages
-  when: (ferm_enabled | bool and (ansible_local|d() and
-         (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
-         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-         (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))))
+  with_items: '{{ ferm_packages }}'
+  when: ferm_enabled | bool
 
 - name: Make sure required directories exist
   file:
@@ -57,9 +45,9 @@
          item.dest is defined)
   tags: [ 'role::ferm:custom_files' ]
 
-- name: Configure ferm default variables (pre)
+- name: Configure ferm default variables
   template:
-    src: 'etc/default/ferm-pre.j2'
+    src: 'etc/default/ferm.j2'
     dest: '/etc/default/ferm'
     owner: 'root'
     group: 'root'
@@ -80,12 +68,12 @@
     path: '/etc/ferm/ferm.d/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | d(((item.role + "_" + ((item.role_weight + "_") if item.role_weight|d() else "")) if item.role|d() else "") + item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
-    - ferm_rules
-    - ferm_group_rules
-    - ferm_host_rules
-    - ferm_dependent_rules
-    - ferm_default_rules
-  when: ((item.type is defined and item.type) and
+    - '{{ ferm_rules }}'
+    - '{{ ferm_group_rules }}'
+    - '{{ ferm_host_rules }}'
+    - '{{ ferm_dependent_rules }}'
+    - '{{ ferm_default_rules }}'
+  when: (ferm_enabled|bool and (item.type is defined and item.type) and
          (item.delete is defined and item.delete | bool))
   tags: [ 'role::ferm:rules' ]
 
@@ -97,12 +85,12 @@
     group: 'adm'
     mode: '0644'
   with_flattened:
-    - ferm_rules
-    - ferm_group_rules
-    - ferm_host_rules
-    - ferm_dependent_rules
-    - ferm_default_rules
-  when: ((item.type is defined and item.type) and
+    - '{{ ferm_rules }}'
+    - '{{ ferm_group_rules }}'
+    - '{{ ferm_host_rules }}'
+    - '{{ ferm_dependent_rules }}'
+    - '{{ ferm_default_rules }}'
+  when: (ferm_enabled|bool and (item.type is defined and item.type) and
          (item.delete is undefined or not item.delete | bool))
   tags: [ 'role::ferm:rules' ]
 
@@ -111,11 +99,11 @@
     path: '/etc/ferm/filter-input.d/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
-    - ferm_input_list
-    - ferm_input_group_list
-    - ferm_input_host_list
-    - ferm_input_dependent_list
-  when: ((item.type is defined and item.type) and
+    - '{{ ferm_input_list }}'
+    - '{{ ferm_input_group_list }}'
+    - '{{ ferm_input_host_list }}'
+    - '{{ ferm_input_dependent_list }}'
+  when: (ferm_enabled|bool and (item.type is defined and item.type) and
          (item.delete is defined and item.delete | bool))
   tags: [ 'role::ferm:rules' ]
 
@@ -127,11 +115,11 @@
     group: 'adm'
     mode: '0644'
   with_flattened:
-    - ferm_input_list
-    - ferm_input_group_list
-    - ferm_input_host_list
-    - ferm_input_dependent_list
-  when: ((item.type is defined and item.type) and
+    - '{{ ferm_input_list }}'
+    - '{{ ferm_input_group_list }}'
+    - '{{ ferm_input_host_list }}'
+    - '{{ ferm_input_dependent_list }}'
+  when: (ferm_enabled|bool and (item.type is defined and item.type) and
          (item.delete is undefined or not item.delete | bool))
   tags: [ 'role::ferm:rules' ]
 
@@ -140,20 +128,14 @@
     name: 'ferm'
     state: 'restarted'
   changed_when: False
-  when: (ferm_enabled | bool and (ansible_local|d() and
-         (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
-         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-         (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))))
+  when: ferm_enabled | bool
   tags: [ 'role::ferm:rules' ]
 
 - name: Clear iptables rules if ferm is disabled
   service:
     name: 'ferm'
     state: 'stopped'
-  when: ((not ferm_enabled | bool and ferm_flush | bool) and (ansible_local|d() and
-         (ansible_local.root|d() and (ansible_local.root.flags | intersect(ferm_root_flags.cap_net_admin)) or
-         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-         (ansible_local.cap12s.enabled | bool and 'cap_net_admin' in ansible_local.cap12s.list))))))
+  when: (not ferm_enabled | bool and ferm_flush | bool)
   tags: [ 'role::ferm:rules' ]
 
 - name: Configure sysctl
@@ -188,14 +170,12 @@
     mode: '0755'
   tags: [ 'role::ferm:rules' ]
 
-- name: Configure ferm default variables (post)
-  template:
-    src: 'etc/default/ferm-post.j2'
+- name: Disable ferm after changes when requested
+  lineinfile:
     dest: '/etc/default/ferm'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  notify: [ 'Restart ferm' ]
+    regexp: '^ENABLED="'
+    line: 'ENABLED="no"'
+  when: not ferm_enabled | bool
 
 - name: Ensure that Ansible local facts directory exists
   file:
