@@ -115,15 +115,12 @@
     group: 'root'
     mode: '0755'
 
-  # This should be ran once until bug is fixed
-  # https://github.com/ansible/ansible/issues/10784
 - name: Initialize admin and agent accounts
   set_fact:
     snmpd_fact_account_admin_username: '{{ snmpd_account_admin_username }}'
     snmpd_fact_account_admin_password: '{{ snmpd_account_admin_password }}'
     snmpd_fact_account_agent_username: '{{ snmpd_account_agent_username }}'
     snmpd_fact_account_agent_password: '{{ snmpd_account_agent_password }}'
-  run_once: True
   no_log: True
   when: snmpd_account|d() and snmpd_account
 

@@ -36,3 +36,6 @@ v0.1.0
   Ansible local facts provided by the ``debops.console`` role and add ``snmp``
   user to the required system group. [drybjed]
 
+- Make sure that variables which define SNMP passwords are set on all hosts
+  during Ansible playbook run, since the old issue has been resolved. [drybjed]
+
