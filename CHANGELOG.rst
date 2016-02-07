@@ -8,6 +8,14 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 .. _DebOps Changelog: https://github.com/debops/debops/blob/master/CHANGES.rst
 
 
+v0.2.9
+------
+
+*Unreleased*
+
+- Add ``debops.snmpd`` role dependencies to ``service/snmpd.yml`` playbook.
+  [drybjed]
+
 v0.2.8
 ------
 
