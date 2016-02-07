@@ -11,7 +11,7 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.2.8
 ------
 
-*Unreleased*
+*Released: 2016-02-07*
 
 - Add ``debops.swapfile`` role. [drybjed]
 
@@ -91,6 +91,12 @@ v0.2.8
 
 - Update the ``common.yml`` playbook and ``service/pki.yml`` playbook with new
   ``debops.pki`` role requirements. [drybjed]
+
+- Add missing playbooks for roles included in ``common.yml`` playbook so that
+  they can be easily executed on their own. [drybjed]
+
+- Allow execution of ``debops.pki`` role with ``role::pki:secret`` tag so that
+  it will create secret directories but nothing else. [drybjed]
 
 v0.2.7
 ------
