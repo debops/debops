@@ -54,3 +54,6 @@ v0.1.0
 - Make sure that ``systemd-logind`` service is included in the ``procadmins``
   system group when ``/proc`` ``hidepid`` option is enabled. [drybjed]
 
+- Add ``proc.fact`` fact script which contains information about ``hidepid``
+  options for other Ansible roles to use. [drybjed]
+
