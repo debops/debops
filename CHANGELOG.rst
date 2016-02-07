@@ -11,7 +11,7 @@ This is a Changelog related to DebOps_ playbooks and roles. You can also read
 v0.2.8
 ------
 
-*Unreleased*
+*Released: 2016-02-07*
 
 - Add ``debops.swapfile`` role. [drybjed]
 
