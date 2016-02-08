@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.2.3
+------
+
+*Released: 2016-02-08*
+
+- Replace the example hook script with something that actually works. [drybjed]
+
 v0.2.2
 ------
 
