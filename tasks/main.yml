@@ -1,12 +1,8 @@
 ---
 
-- name: Populate and update the package index files
-  raw: apt-get update
-  when: bootstrap_raw is defined and bootstrap_raw
-
-- name: Install minimal Python support for Ansible
-  raw: apt-get --no-install-recommends -yq install python python-apt libcap2-bin
-  when: bootstrap_raw is defined and bootstrap_raw
+- name: Update APT repositories, install base requirements
+  raw:  'apt-get update ; apt-get --no-install-recommends -yq install python python-apt libcap2-bin'
+  when: bootstrap_raw | bool
 
 - name: Install custom Ansible local facts
   copy:
@@ -27,21 +23,21 @@
     cache_valid_time: '3600'
     install_recommends: False
   with_flattened:
-    - bootstrap_base_packages
-    - bootstrap_packages
+    - '{{ bootstrap_base_packages }}'
+    - '{{ bootstrap_packages }}'
 
 - name: Create specified system groups
   group:
     name: '{{ item }}'
     state: 'present'
     system: True
-  with_items: bootstrap_admin_groups
-  when: bootstrap_admin is defined and bootstrap_admin | bool
+  with_items: '{{ bootstrap_admin_groups }}'
+  when: bootstrap_admin | bool
 
 - name: Check if potential administrator account exists
   shell: getent passwd {{ bootstrap_admin_name }} || true
   register: bootstrap_register_admin_account
-  when: not bootstrap_admin_manage_existing
+  when: not bootstrap_admin_manage_existing | bool
   changed_when: False
   always_run: yes
 
@@ -49,24 +45,24 @@
   set_fact:
     bootstrap_register_admin_account:
       stdout: False
-  when: bootstrap_admin_manage_existing
+  when: bootstrap_admin_manage_existing | bool
 
 - name: Create administrator group (system)
   group:
     name: '{{ bootstrap_admin_name }}'
     state: 'present'
     system: True
-  when: ((bootstrap_admin is defined and bootstrap_admin | bool) and
-         (bootstrap_register_admin_account is defined and not bootstrap_register_admin_account.stdout) and
-         (bootstrap_admin_system is defined and bootstrap_admin_system | bool))
+  when: (bootstrap_admin | bool and
+         not bootstrap_register_admin_account.stdout and
+         bootstrap_admin_system | bool)
 
 - name: Create administrator group (normal)
   group:
     name: '{{ bootstrap_admin_name }}'
     state: 'present'
-  when: ((bootstrap_admin is defined and bootstrap_admin | bool) and
-         (bootstrap_register_admin_account is defined and not bootstrap_register_admin_account.stdout) and
-         (bootstrap_admin_system is defined and not bootstrap_admin_system | bool))
+  when: (bootstrap_admin | bool and
+         not bootstrap_register_admin_account.stdout and
+         bootstrap_admin_system | bool)
 
 - name: Create administrator account (system)
   user:
@@ -79,9 +75,9 @@
     home: '{{ bootstrap_admin_system_home }}'
     shell: '{{ bootstrap_admin_shell }}'
     comment: '{{ bootstrap_admin_comment }}'
-  when: ((bootstrap_admin is defined and bootstrap_admin | bool) and
-         (bootstrap_register_admin_account is defined and not bootstrap_register_admin_account.stdout) and
-         (bootstrap_admin_system is defined and bootstrap_admin_system | bool))
+  when: (bootstrap_admin | bool and
+         not bootstrap_register_admin_account.stdout and
+         bootstrap_admin_system | bool)
 
 - name: Create administrator account (normal)
   user:
@@ -93,34 +89,34 @@
     home: '{{ bootstrap_admin_home }}'
     shell: '{{ bootstrap_admin_shell }}'
     comment: '{{ bootstrap_admin_comment }}'
-  when: ((bootstrap_admin is defined and bootstrap_admin | bool) and
-         (bootstrap_register_admin_account is defined and not bootstrap_register_admin_account.stdout) and
-         (bootstrap_admin_system is defined and not bootstrap_admin_system | bool))
+  when: (bootstrap_admin | bool and
+         not bootstrap_register_admin_account.stdout and
+         bootstrap_admin_system | bool)
 
 - name: Set admin home directory group and permissions (system)
   file:
     path: '{{ bootstrap_admin_system_home }}'
     group: '{{ bootstrap_admin_home_group }}'
     mode: '{{ bootstrap_admin_home_mode }}'
-  when: ((bootstrap_admin is defined and bootstrap_admin | bool) and
-         (bootstrap_register_admin_account is defined and not bootstrap_register_admin_account.stdout) and
-         (bootstrap_admin_system is defined and bootstrap_admin_system | bool))
+  when: (bootstrap_admin | bool and
+         not bootstrap_register_admin_account.stdout and
+         bootstrap_admin_system | bool)
 
 - name: Set admin home directory group and permissions (normal)
   file:
     path: '{{ bootstrap_admin_home }}'
     group: '{{ bootstrap_admin_home_group }}'
     mode: '{{ bootstrap_admin_home_mode }}'
-  when: ((bootstrap_admin is defined and bootstrap_admin | bool) and
-         (bootstrap_register_admin_account is defined and not bootstrap_register_admin_account.stdout) and
-         (bootstrap_admin_system is defined and not bootstrap_admin_system | bool))
+  when: (bootstrap_admin | bool and
+         not bootstrap_register_admin_account.stdout and
+         bootstrap_admin_system | bool)
 
 - name: Install ssh public key on root account
   authorized_key:
     user: 'root'
     key: '{{ "\n".join(bootstrap_admin_sshkeys) | string }}'
     state: 'present'
-  when: bootstrap_admin is defined and bootstrap_admin | bool
+  when: bootstrap_admin | bool
   failed_when: (bootstrap_admin_sshkeys is undefined or
                 (bootstrap_admin_sshkeys is defined and not bootstrap_admin_sshkeys))
 
@@ -129,7 +125,7 @@
     user: '{{ bootstrap_admin_name }}'
     key: '{{ "\n".join(bootstrap_admin_sshkeys) | string }}'
     state: 'present'
-  when: bootstrap_admin is defined and bootstrap_admin | bool
+  when: bootstrap_admin | bool
   failed_when: (bootstrap_admin_sshkeys is undefined or
                 (bootstrap_admin_sshkeys is defined and not bootstrap_admin_sshkeys))
 
@@ -149,7 +145,7 @@
       line:    'Defaults: %{{ bootstrap_sudo_group }} env_check += "SSH_CLIENT"'
     - regexp: '^%{{ bootstrap_sudo_group }}\s'
       line:    '%{{ bootstrap_sudo_group }} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL'
-  when: bootstrap_sudo is defined and bootstrap_sudo | bool
+  when: bootstrap_sudo | bool
 
 - name: Ensure /etc/sudoers includes /etc/sudoers.d
   lineinfile:
@@ -165,14 +161,14 @@
     state: 'present'
     groups: '{{ bootstrap_sudo_group }}'
     append: True
-  when: ((bootstrap_admin is defined and bootstrap_admin | bool) and
-         (bootstrap_sudo is defined and bootstrap_sudo | bool))
+  when: (bootstrap_admin | bool and bootstrap_sudo | bool)
 
 - name: Enforce new hostname
   hostname:
     name: '{{ bootstrap_hostname }}'
   tags: [ 'role::bootstrap:hostname' ]
-  when: (ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled or
+  when: (bootstrap_hostname != ansible_hostname and
+         ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
          (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
 
 - name: Save hostname in /etc/hostname
@@ -183,7 +179,8 @@
     group: 'root'
     mode: '0644'
   tags: [ 'role::bootstrap:hostname' ]
-  when: (ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled or
+  when: (bootstrap_hostname != ansible_hostname and
+         ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
          (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
 
 - name: Save hostname and domain in /etc/hosts

@@ -1,6 +1,23 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2016-02-08*
+
+- Preserve existing DNS domain if any has been detected by Ansible. This solves
+  an issue where an existing domain is removed from a host when
+  ``bootstrap_domain`` is not defined in inventory. [drybjed]
+
+- Change the way ``ansible_ssh_user`` variable is detected. [drybjed]
+
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+
+- Clean up task logic. [drybjed]
+
+- Change the hostname only when current one differs. [drybjed]
+
 v0.1.1
 ------
 
