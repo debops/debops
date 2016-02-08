@@ -14,6 +14,8 @@ v0.1.2
 
 - Fix deprecation warnings in Ansible 2.1.0. [drybjed]
 
+- Clean up task logic. [drybjed]
+
 v0.1.1
 ------
 
