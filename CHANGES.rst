@@ -10,6 +10,8 @@ v0.1.2
   an issue where an existing domain is removed from a host when
   ``bootstrap_domain`` is not defined in inventory. [drybjed]
 
+- Change the way ``ansible_ssh_user`` variable is detected. [drybjed]
+
 v0.1.1
 ------
 
