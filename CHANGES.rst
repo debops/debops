@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.1.4
+------
+
+*Released: 2016-02-08*
+
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+
 v0.1.3
 ------
 
