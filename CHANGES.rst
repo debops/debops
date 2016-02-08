@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Released: 2016-02-08*
+
+- Change the way the role detects admin user account. [drybjed]
+
 v0.1.2
 ------
 
