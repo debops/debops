@@ -15,3 +15,6 @@ v0.1.0
 
 - Fix deprecation warnings in Ansible 2.1.0. [drybjed]
 
+- Small clean up of logic in templates, add support for ``debops.core``
+  ``ansible_controllers`` variable. [drybjed]
+
