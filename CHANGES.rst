@@ -8,6 +8,9 @@ v0.1.4
 
 - Fix deprecation warnings in Ansible 2.1.0. [drybjed]
 
+- Add a note about IP addresses of Ansible Controller and ``become`` setting in
+  inventory. [drybjed]
+
 v0.1.3
 ------
 
