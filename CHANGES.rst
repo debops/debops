@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2016-02-08*
+
+- Preserve existing DNS domain if any has been detected by Ansible. This solves
+  an issue where an existing domain is removed from a host when
+  ``bootstrap_domain`` is not defined in inventory. [drybjed]
+
 v0.1.1
 ------
 
