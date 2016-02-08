@@ -31,6 +31,13 @@ The list of Ansible Controller IP addresses is accessible as
 ``ansible_local.core.ansible_controllers`` for other roles to use as
 needed.
 
+.. warning::
+
+   For the IP address gathering to work correctly, you shouldn't specify
+   ``become`` parameters in the Ansible inventory. In that case the playbook or
+   task level setting won't be able to override the inventory setting and the
+   IP address will be inaccessible to Ansible.
+
 Example playbook
 ----------------
 

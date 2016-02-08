@@ -8,7 +8,7 @@
                   hostvars[inventory_hostname]["ansible_local"]["root"][item.fact]|d())
               else item.path }}'
     state: 'directory'
-  with_items: core_root_directories
+  with_items: '{{ core_root_directories }}'
 
 - name: Check IP address of current Ansible Controller
   set_fact:
@@ -55,6 +55,6 @@
     update_cache: True
     cache_valid_time: '{{ core_cache_valid_time }}'
   with_flattened:
-    - core_base_packages
-    - core_packages
+    - '{{ core_base_packages }}'
+    - '{{ core_packages }}'
 
