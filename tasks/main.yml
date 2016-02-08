@@ -37,11 +37,11 @@
     path: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.daemon + "_allow") }}'
     state: 'absent'
   with_flattened:
-    - tcpwrappers_allow
-    - tcpwrappers_group_allow
-    - tcpwrappers_host_allow
-    - tcpwrappers_dependent_allow
-    - tcpwrappers_local_allow
+    - '{{ tcpwrappers_allow }}'
+    - '{{ tcpwrappers_group_allow }}'
+    - '{{ tcpwrappers_host_allow }}'
+    - '{{ tcpwrappers_dependent_allow }}'
+    - '{{ tcpwrappers_local_allow }}'
   when: ((item.daemon is defined and item.daemon) and
          ((item.client is undefined or (item.client is defined and not item.client)) and
           (item.accept_any is undefined or not item.accept_any) and
@@ -56,11 +56,11 @@
     group: 'root'
     mode: '0644'
   with_flattened:
-    - tcpwrappers_allow
-    - tcpwrappers_group_allow
-    - tcpwrappers_host_allow
-    - tcpwrappers_dependent_allow
-    - tcpwrappers_local_allow
+    - '{{ tcpwrappers_allow }}'
+    - '{{ tcpwrappers_group_allow }}'
+    - '{{ tcpwrappers_host_allow }}'
+    - '{{ tcpwrappers_dependent_allow }}'
+    - '{{ tcpwrappers_local_allow }}'
   when: (item.daemon is defined and item.daemon and
          ((item.client is defined and item.client) or (item.default is defined and item.default) or
           (item.accept_any is defined and item.accept_any)) or

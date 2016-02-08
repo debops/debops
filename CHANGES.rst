@@ -13,3 +13,5 @@ v0.1.0
 
 - Move a variable from ``vars/main.yml`` to ``defaults/main.yml``. [drybjed]
 
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+
