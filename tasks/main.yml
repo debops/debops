@@ -20,8 +20,9 @@
 
 - name: Divert original /etc/hosts.allow
   command: dpkg-divert --quiet --local --divert {{ tcpwrappers_divert_hosts_allow }} --rename /etc/hosts.allow
-           creates={{ tcpwrappers_divert_hosts_allow }}
-  when: tcpwrappers is defined and tcpwrappers
+  args:
+    creates: '{{ tcpwrappers_divert_hosts_allow }}'
+  when: tcpwrappers_enabled | bool
 
 - name: Allow access from Ansible Controller to sshd
   template:
@@ -36,11 +37,11 @@
     path: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename | default(item.daemon + "_allow") }}'
     state: 'absent'
   with_flattened:
-    - tcpwrappers_allow
-    - tcpwrappers_group_allow
-    - tcpwrappers_host_allow
-    - tcpwrappers_dependent_allow
-    - tcpwrappers_local_allow
+    - '{{ tcpwrappers_allow }}'
+    - '{{ tcpwrappers_group_allow }}'
+    - '{{ tcpwrappers_host_allow }}'
+    - '{{ tcpwrappers_dependent_allow }}'
+    - '{{ tcpwrappers_local_allow }}'
   when: ((item.daemon is defined and item.daemon) and
          ((item.client is undefined or (item.client is defined and not item.client)) and
           (item.accept_any is undefined or not item.accept_any) and
@@ -55,11 +56,11 @@
     group: 'root'
     mode: '0644'
   with_flattened:
-    - tcpwrappers_allow
-    - tcpwrappers_group_allow
-    - tcpwrappers_host_allow
-    - tcpwrappers_dependent_allow
-    - tcpwrappers_local_allow
+    - '{{ tcpwrappers_allow }}'
+    - '{{ tcpwrappers_group_allow }}'
+    - '{{ tcpwrappers_host_allow }}'
+    - '{{ tcpwrappers_dependent_allow }}'
+    - '{{ tcpwrappers_local_allow }}'
   when: (item.daemon is defined and item.daemon and
          ((item.client is defined and item.client) or (item.default is defined and item.default) or
           (item.accept_any is defined and item.accept_any)) or
@@ -73,16 +74,20 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: tcpwrappers is defined and tcpwrappers
+  when: tcpwrappers_enabled | bool
 
 - name: Move current /etc/hosts.allow out of the way before reversion
-  command: rm -f /etc/hosts.allow removes={{ tcpwrappers_divert_hosts_allow }}
-  when: tcpwrappers is undefined or (tcpwrappers is defined and tcpwrappers == False)
+  command: rm -f /etc/hosts.allow
+  args:
+    removes: '{{ tcpwrappers_divert_hosts_allow }}'
+    warn: False
+  when: not tcpwrappers_enabled | bool
 
 - name: Remove diversion of /etc/hosts.allow
   command: dpkg-divert --quiet --local --rename --remove /etc/hosts.allow
-           removes={{ tcpwrappers_divert_hosts_allow }}
-  when: tcpwrappers is undefined or (tcpwrappers is defined and tcpwrappers == False)
+  args:
+    removes: '{{ tcpwrappers_divert_hosts_allow }}'
+  when: not tcpwrappers_enabled | bool
 
 - name: Make sure that Ansible local fact directory exists
   file:
@@ -102,20 +107,13 @@
 
 # ---- Manage /etc/hosts.deny ----
 
-- name: Deny access from everywhere if enabled
+- name: Manage access from anywhere
   lineinfile:
     dest: '/etc/hosts.deny'
     regexp: '^ALL: ALL'
     line: 'ALL: ALL'
-    state: 'present'
-  when: (tcpwrappers is defined and tcpwrappers) and
-        (tcpwrappers_deny_all is defined and tcpwrappers_deny_all)
-
-- name: Allow access from everywhere if disabled
-  lineinfile:
-    dest: '/etc/hosts.deny'
-    regexp: '^ALL: ALL'
-    state: 'absent'
-  when: (tcpwrappers is defined and tcpwrappers) and
-        (tcpwrappers_deny_all is undefined or (tcpwrappers_deny_all is defined and tcpwrappers_deny_all == False))
+    state: '{{ "present"
+               if (tcpwrappers_enabled  | bool and
+                   tcpwrappers_deny_all | bool)
+               else "absent" }}'
 

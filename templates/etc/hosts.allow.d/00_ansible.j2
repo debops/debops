@@ -1,4 +1,4 @@
-# This file is managed by Ansible, all changes will be lost
+# {{ ansible_managed }}
 
 # Warning: this file is created by Ansible 'assemble' module, that combines
 # files in /etc/hosts.allow.d/ directory into file /etc/hosts.allow. Do not
@@ -7,12 +7,11 @@
 # original /etc/hosts.allow. Your changes will be included and preserved on the
 # next Ansible run.
 #
-{% if tcpwrappers is defined and tcpwrappers %}
+{% if tcpwrappers_enabled | bool %}
 # Original /etc/hosts.allow has been diverted to {{ tcpwrappers_divert_hosts_allow }}
 # Original contents follow.
 {% else %}
 # /etc/hosts.allow diversion is not active, contents of /etc/hosts.allow.d/ won't be
 # included in /etc/hosts.allow
 {% endif %}
-
 
