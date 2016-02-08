@@ -167,7 +167,8 @@
   hostname:
     name: '{{ bootstrap_hostname }}'
   tags: [ 'role::bootstrap:hostname' ]
-  when: (ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+  when: (bootstrap_hostname != ansible_hostname and
+         ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
          (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
 
 - name: Save hostname in /etc/hostname
@@ -178,7 +179,8 @@
     group: 'root'
     mode: '0644'
   tags: [ 'role::bootstrap:hostname' ]
-  when: (ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+  when: (bootstrap_hostname != ansible_hostname and
+         ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
          (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
 
 - name: Save hostname and domain in /etc/hosts

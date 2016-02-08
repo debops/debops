@@ -16,6 +16,8 @@ v0.1.2
 
 - Clean up task logic. [drybjed]
 
+- Change the hostname only when current one differs. [drybjed]
+
 v0.1.1
 ------
 
