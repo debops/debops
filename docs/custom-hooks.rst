@@ -110,29 +110,51 @@ it reloads the ``nginx`` daemon so that new certificate can be activated.
 
    #!/bin/bash
 
+   # Reload or restart nginx on a certificate state change
+
    set -eu -o pipefail
 
+   nginx_config="/etc/nginx/nginx.conf"
+   nginx_sites="/etc/nginx/sites-enabled"
+   nginx_action="reload"
+
    # Check if current PKI realm is used by the 'nginx' webserver
-   certificate=$(grep -r "${PKI_SCRIPT_DEFAULT_CRT}" /etc/nginx/sites-enabled || true)
+   certificate=$(grep -r "${PKI_SCRIPT_DEFAULT_CRT:-}" ${nginx_sites}/* || true)
 
    # Get list of current realm states
-   states=( $(echo "${PKI_SCRIPT_STATE}" | tr "," " ") )
+   states=( $(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ") )
 
    if [ -n "${certificate}" -a "${#states[@]}" -gt 0 ] ; then
 
        for state in "${states[@]}" ; do
 
-           if [ "${state}" = "changed-certificate" ] ; then
+           if [ "${state}" = "changed-certificate" -o "${state}" = "changed-dhparam" ] ; then
 
-               if [ -d /run/systemd/system ] ; then
-                   systemctl reload nginx.service
+               # Check if current init is systemd
+               if $(pidof systemd > /dev/null 2>&1) ; then
+
+                   nginx_state="$(systemctl is-active nginx.service)"
+                   if [ ${nginx_state} = "active" ] ; then
+                       if $(/usr/sbin/nginx -c ${nginx_config} -t > /dev/null 2>&1) ; then
+                           systemctl ${nginx_action} nginx.service
+                       fi
+                   fi
+
                else
-                   service nginx reload
+
+                   nginx_pidfile="$(grep -E '^pid\s+' ${nginx_config} | awk '{print $2}' | cut -d\; -f1)"
+                   if $(kill -0 $(<${nginx_pidfile}) > /dev/null 2>&1) ; then
+                       if $(/usr/sbin/nginx -c ${nginx_config} -t > /dev/null 2>&1) ; then
+                           service nginx ${nginx_action}
+                       fi
+                   fi
+
                fi
 
                break
            fi
 
        done
+
    fi
 

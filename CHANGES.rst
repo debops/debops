@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.2.3
+------
+
+*Released: 2016-02-08*
+
+- Replace the example hook script with something that actually works. [drybjed]
+
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+
 v0.2.2
 ------
 

@@ -10,11 +10,11 @@
     state: 'latest'
     install_recommends: False
   with_flattened:
-    - pki_base_packages
+    - '{{ pki_base_packages }}'
     - '{{ pki_acme_packages
           if (pki_acme|bool or pki_acme_install|bool)
           else [] }}'
-    - pki_packages
+    - '{{ pki_packages }}'
   when: pki_enabled | bool
 
 - name: Create library directory
@@ -55,7 +55,7 @@
     name: '{{ item.name | d(item) }}'
     system: '{{ (item.system | d(True)) | bool }}'
     state: 'present'
-  with_items: pki_private_groups_present
+  with_items: '{{ pki_private_groups_present }}'
   when: ((pki_enabled | bool and pki_private_groups_present) and
          (item.when is undefined or item.when|bool))
 
