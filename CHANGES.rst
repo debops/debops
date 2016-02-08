@@ -12,6 +12,8 @@ v0.1.2
 
 - Change the way ``ansible_ssh_user`` variable is detected. [drybjed]
 
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+
 v0.1.1
 ------
 

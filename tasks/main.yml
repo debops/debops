@@ -27,15 +27,15 @@
     cache_valid_time: '3600'
     install_recommends: False
   with_flattened:
-    - bootstrap_base_packages
-    - bootstrap_packages
+    - '{{ bootstrap_base_packages }}'
+    - '{{ bootstrap_packages }}'
 
 - name: Create specified system groups
   group:
     name: '{{ item }}'
     state: 'present'
     system: True
-  with_items: bootstrap_admin_groups
+  with_items: '{{ bootstrap_admin_groups }}'
   when: bootstrap_admin is defined and bootstrap_admin | bool
 
 - name: Check if potential administrator account exists
