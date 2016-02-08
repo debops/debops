@@ -11,3 +11,5 @@ v0.1.0
 - Rename the ``tcpwrappers`` variable to ``tcpwrappers_enabled`` and clean up
   of some tasks to use YAML format. [drybjed]
 
+- Move a variable from ``vars/main.yml`` to ``defaults/main.yml``. [drybjed]
+
