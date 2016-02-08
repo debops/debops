@@ -22,8 +22,8 @@ atd_enabled: True
 # :command:`batch` commands. If this list is empty and ``atd_allow`` is also empty, any
 # account is allowed to use these commands.
 atd_default_allow: [ '{{ (ansible_ssh_user
-                          if (ansible_ssh_user | bool and
-                              (ansible_ssh_user != "root"))
+                          if (ansible_ssh_user|d() and
+                              ansible_ssh_user != "root")
                           else lookup("env","USER")) }}' ]
 
 

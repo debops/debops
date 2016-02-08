@@ -54,10 +54,10 @@
     group: 'daemon'
     mode: '0640'
   with_flattened:
-    - atd_default_allow
-    - atd_allow
-    - atd_group_allow
-    - atd_host_allow
+    - '{{ atd_default_allow }}'
+    - '{{ atd_allow }}'
+    - '{{ atd_group_allow }}'
+    - '{{ atd_host_allow }}'
   when: (atd_enabled|bool and
          (atd_default_allow|d() or atd_allow|d() or
           atd_group_allow|d() or atd_host_allow|d()) and
@@ -84,8 +84,8 @@
     group: 'daemon'
     mode: '0640'
   with_flattened:
-    - atd_default_deny
-    - atd_deny
+    - '{{ atd_default_deny }}'
+    - '{{ atd_deny }}'
   when: (atd_enabled|bool and
          (atd_default_deny|d() or atd_deny|d()) and
           item|d())

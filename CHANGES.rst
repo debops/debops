@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Released: 2016-02-08*
+
+- Change the way the role detects admin user account. [drybjed]
+
+- Fix the deprecation warning in Ansible 2.1.0. [drybjed]
+
 v0.1.2
 ------
 
