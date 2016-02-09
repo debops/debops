@@ -16,6 +16,11 @@ v0.2.9
 - Add ``debops.snmpd`` role dependencies to ``service/snmpd.yml`` playbook.
   [drybjed]
 
+- Add ``debops.unattended_upgrades`` role to the ``common.yml`` playbook as
+  well as its own ``service/unattended_upgrades.yml`` playbook. The support for
+  ``unattended-upgrades`` package in ``debops.apt`` role will be removed.
+  [drybjed]
+
 v0.2.8
 ------
 
