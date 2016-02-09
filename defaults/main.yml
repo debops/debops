@@ -130,36 +130,6 @@ apt_update_notifications_type_apticron: 'both'
 apt_update_notifications_diff: True
 
 
-# -----------------------------------
-#  unattended-upgrades
-# -----------------------------------
-
-# Enable unattended-upgrades
-apt_unattended_upgrades: True
-
-# Do not automatically upgrade these packages
-apt_unattended_upgrades_blacklist: [ 'vim', 'libc6' ]
-
-# If True, send mail notifications about all performed automatic upgrades
-# If False, send mail notifications only on errors
-apt_unattended_upgrades_notify_always: True
-
-# If True, split the upgrade into the smallest possible chunks so that
-# they can be interrupted with SIGUSR1. This makes the upgrade
-# a bit slower but it has the benefit that shutdown while a upgrade
-# is running is possible (with a small delay)
-apt_unattended_upgrades_minimal_steps: False
-
-# Automatically remove unused dependencies
-apt_unattended_upgrades_autoremove: True
-
-# .. envvar:: apt_unattended_upgrades_repositories
-#
-# The list of repositories from which you can automatically update
-apt_unattended_upgrades_repositories:
-    - "{%if ansible_distribution == 'Debian' %}origin={{ ansible_distribution }},codename={{ apt_sources_release }},label=Debian-Security{% endif %}"
-    - "{%if ansible_distribution == 'Ubuntu' %}origin={{ ansible_distribution }},codename={{ apt_sources_release }},archive={{ apt_sources_release_security }}{% endif %}"
-
 # ---- Other ----
 
 # .. envvar:: apt_remove_default_configuration
