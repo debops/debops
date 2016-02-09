@@ -359,26 +359,26 @@ postfix_postscreen_dnswl_sites:
 # .. envvar:: postfix_smtpd_sasl_type
 #
 # The SASL plug-in type that the Postfix SMTP server should use for
-# authentication (currently supported: ``cyrus``).
+# authentication (currently supported: ``cyrus`` and ``dovecot``).
 postfix_smtpd_sasl_type: 'cyrus'
 
 
-# .. envvar:: postfix_cyrus_smtpd_conf:
+# .. envvar:: postfix_smtpd_conf:
 #
-# Configuration for Cyrus SASL authentication plugin, in text block format.
-# See `Postfix SASL README <http://www.postfix.org/SASL_README.html>`_ for more
-# details.
-postfix_cyrus_smtpd_conf: |
+# Configuration for Cyrus and Dovecot SASL authentication plugin, in text block
+# format.  See `Postfix SASL README <http://www.postfix.org/SASL_README.html>`_
+# for more details.
+postfix_smtpd_conf: |
   pwcheck_method: saslauthd
   mech_list: PLAIN LOGIN
 
 
-# .. envvar:: postfix_cyrus_saslauthd_options
+# .. envvar:: postfix_saslauthd_options
 #
 # Configuration parameters passed to the :program:`saslauthd` daemon. Path to
 # the UNIX socket is added automatically. See :manpage:`saslauthd(8)` for more
 # details.
-postfix_cyrus_saslauthd_options: '-c'
+postfix_saslauthd_options: '-c'
 
 
 # ------------------------------

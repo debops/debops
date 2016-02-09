@@ -30,13 +30,15 @@
 - include: configure.yml
   when: postfix
 
-- include: auth_sasl_cyrus.yml
+- include: auth_sasl.yml
   when: ((postfix is defined and postfix) and
-         ('auth' in postfix and postfix_smtpd_sasl_type == 'cyrus'))
+         ('auth' in postfix and ( postfix_smtpd_sasl_type == 'cyrus' 
+          or postfix_smtpd_sasl_type == 'dovecot')))
 
-- include: cleanup_sasl_cyrus.yml
+- include: cleanup_sasl.yml
   when: ((postfix is defined and postfix) and
-         ('auth' not in postfix or postfix_smtpd_sasl_type != 'cyrus'))
+         ('auth' not in postfix or ( postfix_smtpd_sasl_type != 'cyrus' 
+          and postfix_smtpd_sasl_type != 'dovecot')))
 
 - include: disable_revert.yml
   when: not postfix
