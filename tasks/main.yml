@@ -80,6 +80,16 @@
     owner: 'root'
     group: '{{ etckeeper_repository_group|d("root") }}'
 
+## set VCS credentials
+- include: bzr.yml
+  when: (etckeeper_vcs == 'bzr')
+- include: darcs.yml
+  when: (etckeeper_vcs == 'darcs')
+- include: git.yml
+  when: (etckeeper_vcs == 'git')
+- include: hg.yml
+  when: (etckeeper_vcs == 'hg')
+
 - name: Create root commit
   command: etckeeper commit 'Initial commit created by Ansible.'
   when: etckeeper_register_init|changed
