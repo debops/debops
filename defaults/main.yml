@@ -41,6 +41,7 @@ dovecot_dependencies: True
 # - ``deny``: Deny access for users
 # - ``system``: Mail users are Linux system users
 # - ``sql``: Mail users are stored in a SQL database
+# - ``passwdfile``: Users password are stored in a file
 #
 dovecot_user_accounts: [ 'deny', 'system' ]
 
@@ -131,6 +132,30 @@ dovecot_sql_password_query: "SELECT userid AS username, domain, password FROM us
 # <http://wiki2.dovecot.org/MailLocation>`_
 dovecot_sql_user_query: "SELECT home, uid, gid FROM users WHERE userid = '%n' AND domain = '%d'"
 
+# .. envvar:: dovecot_passwdfile_scheme
+#
+# Scheme method use by dovecot with password authentication
+dovecot_passwdfile_scheme: 'cram-md5'
+
+# .. envvar:: dovecot_passwdfile_path
+#
+# Path to the dovecot password file
+dovecot_passwdfile_path: '/etc/dovecot/dovecot.pwd'
+
+# .. envvar:: dovecot_passwordfile_uid
+#
+# uid use by Dovecot when it store mail in mailbox
+dovecot_passwdfile_uid: 'vmail'
+
+# .. envvar:: dovecot_passwordfile_gid
+#
+# gid use by Dovecot when it store mail in mailbox
+dovecot_passwdfile_gid: 'vmail'
+
+# .. envvar:: dovecot_passwordfile_home
+#
+# Path to the mailbox
+dovecot_passwdfile_home: '/home/vmail/%u'
 
 # ---------------------------
 #   PKI / TLS configuration
