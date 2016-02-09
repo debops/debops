@@ -27,3 +27,5 @@ v0.1.0
   have a task for some time which removes old configuration files related to
   ``unattended-upgrades`` to clean up the old systems. [drybjed]
 
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+
