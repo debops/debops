@@ -18,8 +18,13 @@
 - include: update_notifications.yml
   when: apt is defined and apt
 
-- include: unattended-upgrades.yml
-  when: apt is defined and apt
+- name: Remove old unattended-upgrades configuration
+  file:
+    path: '/etc/apt/apt.conf.d/{{ item }}'
+    state: 'absent'
+  with_items:
+    - '25auto-upgrades.conf'
+    - '55unattended-upgrades.conf'
 
 - include: install_packages.yml
   when: apt is defined and apt

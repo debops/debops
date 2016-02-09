@@ -21,3 +21,9 @@ v0.1.0
 
 - Allow to modify APT sections without defining ``apt_default_sources`` by
   using the added ``apt_sources_sections`` variable. [ypid]
+
+- Remove support for ``unattended-upgrades``. The new role
+  ``debops.unattended_upgrades`` handles this now. The ``debops.apt`` role will
+  have a task for some time which removes old configuration files related to
+  ``unattended-upgrades`` to clean up the old systems. [drybjed]
+
