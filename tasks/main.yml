@@ -119,6 +119,15 @@
     mode: '0644'
   notify: [ 'Restart ferm' ]
 
+- name: Create private directory to store passwdfile 
+  file: 
+    path: "{{dovecot_passwdfile_path}}" 
+    state: directory 
+    owner: 'root'
+    group: 'dovecot'
+    mode: '0650'
+  when: "'passwdfile' in dovecot_user_accounts"
+
 - name: Create user used in passwdfile 
   user: 
     name: "{{ dovecot_passwdfile_uid }}"
