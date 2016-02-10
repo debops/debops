@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Released: 2016-02-10*
+
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+
+- Update all role variables to use distinct namespace. [drybjed]
+
 v0.1.2
 ------
 

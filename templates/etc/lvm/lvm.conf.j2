@@ -1,11 +1,11 @@
 # {{ ansible_managed }}
 
-{% if lvm_config_base_version|d() %}
-# lvm.conf based on lvm2 package version: {{ lvm_config_base_version }}
+{% if lvm__config_base_version|d() %}
+# lvm.conf based on lvm2 package version: {{ lvm__config_base_version }}
 
 {% endif %}
-{% set lvm_tpl_base = lvm_config_base %}
-{% set lvm_tpl_config = lvm_config %}
+{% set lvm__tpl_base = lvm__config_base %}
+{% set lvm__tpl_config = lvm__config %}
 {% macro print_content (key, value) %}
 {% if value is not iterable %}
 {% if value in [ 0, 1 ] %}
@@ -60,16 +60,16 @@
 }
 {% endmacro %}
 {% set seen_sections = [] %}
-{% for section, keys in lvm_tpl_base.iteritems() %}
-{% if section in lvm_tpl_config.keys() %}
-{{ print_section (section, keys, lvm_tpl_config[section]) }}
+{% for section, keys in lvm__tpl_base.iteritems() %}
+{% if section in lvm__tpl_config.keys() %}
+{{ print_section (section, keys, lvm__tpl_config[section]) }}
 {% set _ = seen_sections.append(section) %}
 {% else %}
 {{ print_section (section, keys, {}) }}
 {% set _ = seen_sections.append(section) %}
 {% endif %}
 {% endfor %}
-{% for section, keys in lvm_tpl_config.iteritems() %}
+{% for section, keys in lvm__tpl_config.iteritems() %}
 {% if section not in seen_sections %}
 {{ print_section (section, keys, {}) }}
 {% endif %}

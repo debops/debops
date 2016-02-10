@@ -5,7 +5,7 @@
     name:  '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_items: lvm_packages
+  with_items: '{{ lvm__packages }}'
 
 - name: Divert original lvm.conf
   command: dpkg-divert --quiet --local --divert /etc/lvm/lvm.conf.dpkg-divert --rename /etc/lvm/lvm.conf
@@ -16,15 +16,15 @@
   environment:
     LC_MESSAGES: 'C'
   shell: dpkg-query -W -f='${Version}\n' 'lvm2' | grep -v '^$' | cut -d- -f1
-  register: lvm_register_version
+  register: lvm__register_version
   changed_when: False
   always_run: True
 
 - name: Lookup base LVM configuration
   include_vars: '{{ item }}'
   with_first_found:
-    - '{{ "lvm_config_" + lvm_config_lookup + ".yml" }}'
-    - '{{ "lvm_config_" + lvm_register_version.stdout + ".yml" }}'
+    - '{{ "lvm_config_" + lvm__config_lookup + ".yml" }}'
+    - '{{ "lvm_config_" + lvm__register_version.stdout + ".yml" }}'
     - '{{ "lvm_config_" + ansible_distribution | lower + "_" + ansible_distribution_release + ".yml" }}'
     - '{{ "lvm_config_" + ansible_distribution | lower + ".yml" }}'
     - 'lvm_config_default.yml'

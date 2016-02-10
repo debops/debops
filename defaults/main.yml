@@ -6,80 +6,80 @@
 #   LVM configuration
 # ---------------------
 
-# .. envvar:: lvm_packages
+# .. envvar:: lvm__packages
 #
 # List of LVM-related packages to install.
-lvm_packages: [ 'lvm2' ]
+lvm__packages: [ 'lvm2' ]
 
 
-# .. envvar:: lvm_global_use_lvmetad
+# .. envvar:: lvm__global_use_lvmetad
 #
 # Enable ``lvmetad`` daemon by default.
-lvm_global_use_lvmetad: True
+lvm__global_use_lvmetad: True
 
 
-# .. envvar:: lvm_devices_filter
+# .. envvar:: lvm__devices_filter
 #
 # List of filters that determine what devices are used by ``lvm`` scripts.
-lvm_devices_filter: [ 'a|sd.*|', 'a|vd.*|', 'a|drbd.*|', 'r|.*|' ]
+lvm__devices_filter: [ 'a|sd.*|', 'a|vd.*|', 'a|drbd.*|', 'r|.*|' ]
 
 
-# .. envvar:: lvm_devices_global_filter
+# .. envvar:: lvm__devices_global_filter
 #
 # List of filters that determine what devices are scanned by ``lvm`` scripts.
-lvm_devices_global_filter: '{{ lvm_devices_filter }}'
+lvm__devices_global_filter: '{{ lvm__devices_filter }}'
 
 
-# .. envvar:: lvm_config_lookup
+# .. envvar:: lvm__config_lookup
 #
 # Ansible selects the base LVM configuration based on available version,
 # distribution and release. Using this variable you can override the automatic
 # choice if needed.
-lvm_config_lookup: ''
+lvm__config_lookup: ''
 
 
-# .. envvar:: lvm_config
+# .. envvar:: lvm__config
 #
 # Dictionary variable with LVM configuration which will be merged with base
 # ``lvm.conf`` configuration variables. Each key is a section name, and values
 # are dictionary variables themselves. See files in ``var/`` directory for
 # examples and possible values.
-lvm_config:
+lvm__config:
 
   global:
-    use_lvmetad: '{{ lvm_global_use_lvmetad }}'
+    use_lvmetad: '{{ lvm__global_use_lvmetad }}'
 
   devices:
-    filter: '{{ lvm_devices_filter }}'
-    global_filter: '{{ lvm_devices_global_filter }}'
+    filter: '{{ lvm__devices_filter }}'
+    global_filter: '{{ lvm__devices_global_filter }}'
 
 
 # ------------------------------------
 #   Volume Groups and Logcal Volumes
 # ------------------------------------
 
-# .. envvar:: lvm_default_fs_type
+# .. envvar:: lvm__default_fs_type
 #
 # Default filesystem used to format and mount volumes if none is specified.
-lvm_default_fs_type: 'ext4'
+lvm__default_fs_type: 'ext4'
 
 
-# .. envvar:: lvm_default_mount_options
+# .. envvar:: lvm__default_mount_options
 #
 # Default mount options used to mount volumes, comma-separated.
-lvm_default_mount_options: 'defaults'
+lvm__default_mount_options: 'defaults'
 
 
-# .. envvar:: lvm_volume_groups
+# .. envvar:: lvm__volume_groups
 #
 # List of Volume Groups, each one defined as a YAML dict. See
-# :ref:`lvm_volume_groups` for more details.
-lvm_volume_groups: []
+# :ref:`lvm__volume_groups` for more details.
+lvm__volume_groups: []
 
 
-# .. envvar:: lvm_logical_volumes
+# .. envvar:: lvm__logical_volumes
 #
 # List of Logical Volumes, each one defined as a YAML dict. See
-# :ref:`lvm_logical_volumes` for more details.
-lvm_logical_volumes: []
+# :ref:`lvm__logical_volumes` for more details.
+lvm__logical_volumes: []
 

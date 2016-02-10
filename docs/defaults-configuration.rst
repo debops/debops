@@ -8,10 +8,10 @@ simple strings or lists, here you can find documentation and examples for them.
    :local:
    :depth: 1
 
-.. _lvm_volume_groups:
+.. _lvm__volume_groups:
 
-lvm_vlume_groups
-----------------
+lvm__vlume_groups
+-----------------
 
 This is a list of LVM Volume Groups, each one defined by a YAML dict. Volume
 Group is a set of Physical Volumes that create a single unit which can then be
@@ -52,22 +52,22 @@ Examples
 
 Create a Volume Group using 1 Physical Volume::
 
-    lvm_volume_groups:
+    lvm__volume_groups:
 
       - vg: 'vg_alpha'
         pvs: '/dev/sda'
 
 Create a Volume Group with multiple Physical Volumes::
 
-    lvm_volume_groups:
+    lvm__volume_groups:
 
       - vg: 'vg_multi'
         pvs: [ '/dev/sdb', '/dev/sdc' ]
 
-.. _lvm_logical_volumes:
+.. _lvm__logical_volumes:
 
-lvm_logical_volumes
--------------------
+lvm__logical_volumes
+--------------------
 
 This is a list of LVM Logical Volumes, each one defined as a YAML dict. Logical
 Volumes are slices of a Volume Group which can then be formatted with
@@ -129,7 +129,7 @@ List of optional mount parameters:
 
 ``mount_opts``
   String with mount options added in ``/etc/fstab``. If not specified, options
-  set in ``lvm_default_mount_options`` will be used instead.
+  set in ``lvm__default_mount_options`` will be used instead.
 
 ``mount_fstab``
   Alternative path to ``/etc/fstab``.
@@ -145,7 +145,7 @@ Examples
 
 Create a Logical Volume::
 
-    lvm_logical_volumes:
+    lvm__logical_volumes:
 
       - lv: 'not_formatted_volume'
         vg: 'vg_alpha'
@@ -153,7 +153,7 @@ Create a Logical Volume::
 
 Create a Logical Volume, format it and mount in a given path::
 
-    lvm_logical_volumes:
+    lvm__logical_volumes:
 
       - lv: 'data'
         vg: 'vg_multi'
@@ -162,7 +162,7 @@ Create a Logical Volume, format it and mount in a given path::
 
 Remove a mounted Logical Volume (destroys the data)::
 
-    lvm_logical_volumes:
+    lvm__logical_volumes:
 
       - lv: 'to_be_removed'
         vg: 'vg_multi'
