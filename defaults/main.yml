@@ -158,7 +158,12 @@ dovecot_passwdfile_gid: 'dovecot-vmail'
 dovecot_passwdfile_home: '{{ (ansible_local.root.home
                              if (ansible_local|d() and ansible_local.root|d() and
                                   ansible_local.root.home|d())
-                             else "/var/local") + "/" + dovecot_passwdfile_uid + "/%u" }}'
+                             else "/var/local") + "/" + dovecot_passwdfile_uid }}'
+
+# .. envvar:: dovecot_passwordfile_mailbox_path
+#
+# Path inside the mailbox home directory
+dovecot_passwdfile_mailbox_path: '%u'
 
 # ---------------------------
 #   PKI / TLS configuration
