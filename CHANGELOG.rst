@@ -21,6 +21,9 @@ v0.2.9
   ``unattended-upgrades`` package in ``debops.apt`` role will be removed.
   [drybjed]
 
+- Update the ``service/iscsi.yml`` playbook to use roles that were previously
+  hard dependencies of the ``debops.iscsi`` role. [drybjed]
+
 v0.2.8
 ------
 
