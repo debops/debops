@@ -174,3 +174,17 @@ iscsi_default_fs_type: 'ext4'
 # if none are specified.
 iscsi_default_mount_options: 'defaults,_netdev'
 
+
+# ----------------------------------------
+#   Configuration of other Ansible roles
+# ----------------------------------------
+
+# .. envvar:: iscsi_unattended_upgrades__dependent_blacklist
+#
+# Configuration of the ``debops.unattended_upgrades`` role.
+iscsi_unattended_upgrades__dependent_blacklist:
+
+  # Prevent automatic upgrades of the ``open-iscsi`` package. The upgrade
+  # results in a restart of the service and all existing connections are lost.
+  - 'open-iscsi'
+

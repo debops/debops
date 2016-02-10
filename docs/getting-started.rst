@@ -10,6 +10,11 @@ packages like ``targetcli``, ``tgt`` and others. You can use ``debops.tgt``
 role to create a simple iSCSI Target server, however using ``targetcli`` to
 setup a LIO-based iSCSI Target might be easier.
 
+The ``debops.unattended_upgrades`` role can be used with a provided list of
+blacklisted packages to prevent the unattended upgrade of the ``open-iscsi``
+package, which might result in connection loss to the iSCSI Target and broken
+services.
+
 Example inventory
 -----------------
 
@@ -65,6 +70,11 @@ Here's an example playbook which uses ``debops.iscsi`` role::
       sudo: True
 
       roles:
+
+        - role: debops.unattended_upgrades
+          tags: [ 'role::unattended_upgrades' ]
+          unattended_upgrades__dependent_blacklist: '{{ iscsi_unattended_upgrades__dependent_blacklist }}'
+
         - role: debops.iscsi
           tags: iscsi
 
