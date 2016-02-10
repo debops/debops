@@ -54,8 +54,8 @@ storage to discover iSCSI Targets::
 
     iscsi__portals: [ 'storage.iscsi.{{ ansible_domain }}' ]
 
-You will also want to configure :ref:`iscsi_targets` and
-:ref:`iscsi_logical_volumes` to specify what iSCSI Targets to connect to, as
+You will also want to configure :ref:`iscsi__targets` and
+:ref:`iscsi__logical_volumes` to specify what iSCSI Targets to connect to, as
 well as how to manage the storage volumes.
 
 Default usernames and passwords for discovery and session authentication can be
