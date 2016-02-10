@@ -9,15 +9,15 @@
 #   Main configuration
 # ----------------------
 
-# .. envvar:: unattended_upgrades_enabled
+# .. envvar:: unattended_upgrades__enabled
 #
 # Enable or disable unattended package upgrades. If disabled,
 # ``unattended-upgrades`` package won't be removed if it's installed, and its
 # configuration will be restored to default values.
-unattended_upgrades_enabled: True
+unattended_upgrades__enabled: True
 
 
-# .. envvar:: unattended_upgrades_release
+# .. envvar:: unattended_upgrades__release
 #
 # By default, ``unattended-upgrades`` performs only upgrades of packages from
 # security repositories. This variable allows you to enable upgrades from all
@@ -26,77 +26,77 @@ unattended_upgrades_enabled: True
 # If a host does not have a domain set, it will be considered as a workstation
 # or a laptop and ``unattended-upgrades`` will perform upgrades of packages
 # from all repositories.
-unattended_upgrades_release: '{{ False if ansible_domain else True }}'
+unattended_upgrades__release: '{{ False if ansible_domain else True }}'
 
 
-# .. envvar:: unattended_upgrades_base_packages
+# .. envvar:: unattended_upgrades__base_packages
 #
 # List of base APT packages which will be installed by the role.
-unattended_upgrades_base_packages: [ 'unattended-upgrades' ]
+unattended_upgrades__base_packages: [ 'unattended-upgrades' ]
 
 
-# .. envvar:: unattended_upgrades_packages
+# .. envvar:: unattended_upgrades__packages
 #
 # List of additional APT packages which will be installed by the role.
-unattended_upgrades_packages: []
+unattended_upgrades__packages: []
 
 
 # ------------------------
 #   Periodic APT updates
 # ------------------------
 
-# .. envvar:: unattended_upgrades_periodic
+# .. envvar:: unattended_upgrades__periodic
 #
 # Enable or disable daily execution of ``/etc/cron.daily/apt`` script. This
 # script runs ``unattended-upgrades``, but also performs some other actions
 # which can be useful on their own. Enabling periodic APT runs automatically
 # enables repository updates, but not upgrades.
-unattended_upgrades_periodic: '{{ unattended_upgrades_enabled }}'
+unattended_upgrades__periodic: '{{ unattended_upgrades__enabled }}'
 
 
-# .. envvar:: unattended_upgrades_periodic_download
+# .. envvar:: unattended_upgrades__periodic_download
 #
 # Download new versions of installed packages without upgrading.
-unattended_upgrades_periodic_download: '{{ unattended_upgrades_periodic }}'
+unattended_upgrades__periodic_download: '{{ unattended_upgrades__periodic }}'
 
 
-# .. envvar:: unattended_upgrades_periodic_autoclean
+# .. envvar:: unattended_upgrades__periodic_autoclean
 #
 # Clean up obsolete and removed packages in APT cache every n days.
-unattended_upgrades_periodic_autoclean: '7'
+unattended_upgrades__periodic_autoclean: '7'
 
 
-# .. envvar:: unattended_upgrades_periodic_verbosity
+# .. envvar:: unattended_upgrades__periodic_verbosity
 #
 # Specify verbosity level of the ``/etc/cron.daily/apt`` script, supported
 # levels are 0-3, higher level means higher verbosity. Enabling this option will
 # result in mails from ``cron`` with the script output being sent to ``root``.
-unattended_upgrades_periodic_verbosity: '0'
+unattended_upgrades__periodic_verbosity: '0'
 
 
 # --------------------------------------
 #   Unattended upgrade origin patterns
 # --------------------------------------
 
-# .. envvar:: unattended_upgrades_origins
+# .. envvar:: unattended_upgrades__origins
 #
 # List of origin patterns which define repositories that will be considered for
 # unattended package upgrades. More information about possible values can be
 # found in the ``50unattended-upgrades.j2`` template.
-unattended_upgrades_origins: []
+unattended_upgrades__origins: []
 
 
-# .. envvar:: unattended_upgrades_security_lookup
+# .. envvar:: unattended_upgrades__security_lookup
 #
 # Variable which is used to select which security repository will be enabled,
 # by default it depends on the host OS distribution.
-unattended_upgrades_security_lookup: '{{ ansible_distribution }}'
+unattended_upgrades__security_lookup: '{{ ansible_distribution }}'
 
 
-# .. envvar:: unattended_upgrades_security_origins
+# .. envvar:: unattended_upgrades__security_origins
 #
 # Map of the security repositories of different Linux distributions.
-unattended_upgrades_security_origins:
+unattended_upgrades__security_origins:
 
   # https://www.debian.org/security/
   'Debian':
@@ -107,136 +107,136 @@ unattended_upgrades_security_origins:
     - 'o=Ubuntu,n=${distro_codename},l=${distro_codename}-security'
 
 
-# .. envvar:: unattended_upgrades_release_origins
+# .. envvar:: unattended_upgrades__release_origins
 #
 # List of origin patterns that specify the default repositories of the current
-# OS release. Enabled/disabled by the ``unattended_upgrades_release`` variable.
-unattended_upgrades_release_origins:
+# OS release. Enabled/disabled by the ``unattended_upgrades__release`` variable.
+unattended_upgrades__release_origins:
   - 'o=${distro_id},n=${distro_codename}'
   - 'o=${distro_id},n=${distro_codename}-updates'
   - 'o=${distro_id},n=${distro_codename}-backports'
 
 
-# .. envvar:: unattended_upgrades_dependent_origins
+# .. envvar:: unattended_upgrades__dependent_origins
 #
 # List of origin patterns which can be used by other Ansible roles to add their
 # own repositories to be automatically upgraded. This list is saved in the remote
 # host Ansible local facts to avoid idempotency loops.
-unattended_upgrades_dependent_origins: []
+unattended_upgrades__dependent_origins: []
 
 
 # ---------------------------------
 #   Unattended upgrade blacklists
 # ---------------------------------
 
-# .. envvar:: unattended_upgrades_default_blacklist
+# .. envvar:: unattended_upgrades__default_blacklist
 #
 # Default list of APT packages which should not be upgraded automatically.
-unattended_upgrades_default_blacklist:
+unattended_upgrades__default_blacklist:
   - 'vim'
   - 'libc6'
   - 'libc6-dev'
   - 'libc6-i686'
 
 
-# .. envvar:: unattended_upgrades_blacklist
+# .. envvar:: unattended_upgrades__blacklist
 #
 # List of APT packages that won't be upgraded automatically, used on all hosts.
-unattended_upgrades_blacklist: []
+unattended_upgrades__blacklist: []
 
 
-# .. envvar:: unattended_upgrades_group_blacklist
+# .. envvar:: unattended_upgrades__group_blacklist
 #
 # List of APT packages that won't be upgraded automatically, specific to a
 # group of hosts in Ansible inventory.
-unattended_upgrades_group_blacklist: []
+unattended_upgrades__group_blacklist: []
 
 
-# .. envvar:: unattended_upgrades_host_blacklist
+# .. envvar:: unattended_upgrades__host_blacklist
 #
 # List of APT packages that won't be upgraded automatically, host-specific.
-unattended_upgrades_host_blacklist: []
+unattended_upgrades__host_blacklist: []
 
 
-# .. envvar:: unattended_upgrades_dependent_blacklist
+# .. envvar:: unattended_upgrades__dependent_blacklist
 #
 # List of APT packages that won't be upgraded automatically. This list should
 # be used by other Ansible roles through role dependencies. Its contents will be
 # saved in the remote host Ansible local facts to avoid idempotency loops.
-unattended_upgrades_dependent_blacklist: []
+unattended_upgrades__dependent_blacklist: []
 
 
 # -----------------------------------
 #   Unattended upgrade misc options
 # -----------------------------------
 
-# .. envvar:: unattended_upgrades_auto_fix_interrupted_dpkg
+# .. envvar:: unattended_upgrades__auto_fix_interrupted_dpkg
 #
 # Automatically run ``dpkg --force-confold --configure -a`` before unattended
 # upgrades to fix any ``dpkg`` errors.
-unattended_upgrades_auto_fix_interrupted_dpkg: True
+unattended_upgrades__auto_fix_interrupted_dpkg: True
 
 
-# .. envvar:: unattended_upgrades_ignore_app_require_restart
+# .. envvar:: unattended_upgrades__ignore_app_require_restart
 #
 # The ``unattended-upgrade`` script will automatically upgrade packages that
 # require a service restart. To disable this, set the option to ``False``.
-unattended_upgrades_ignore_app_require_restart: True
+unattended_upgrades__ignore_app_require_restart: True
 
 
-# .. envvar:: unattended_upgrades_minimal_steps
+# .. envvar:: unattended_upgrades__minimal_steps
 #
 # Split the upgrades into smallest possible steps so that the upgrade process
 # can be interrupted if necessary.
-unattended_upgrades_minimal_steps: True
+unattended_upgrades__minimal_steps: True
 
 
-# .. envvar:: unattended_upgrades_install_on_shutdown
+# .. envvar:: unattended_upgrades__install_on_shutdown
 #
 # Enable or disable unattended upgrades at the host shutdown instead of
 # performing it in the background.
-unattended_upgrades_install_on_shutdown: False
+unattended_upgrades__install_on_shutdown: False
 
 
-# .. envvar:: unattended_upgrades_mail_to
+# .. envvar:: unattended_upgrades__mail_to
 #
 # List of e-mail addresses to which the ``unattended-upgrade`` script will sent
 # the e-mails with upgrade results. Specify empty list to disable e-mails. By
 # default no mails are sent if the host does not have configured domain.
-unattended_upgrades_mail_to: [ '{{ (("root@" + ansible_domain)
-                                    if ansible_domain
-                                    else "") }}' ]
+unattended_upgrades__mail_to: [ '{{ (("root@" + ansible_domain)
+                                     if ansible_domain
+                                     else "") }}' ]
 
 
-# .. envvar:: unattended_upgrades_mail_only_on_error
+# .. envvar:: unattended_upgrades__mail_only_on_error
 #
 # Enable or disable an option to only send mail messages when errors occur
 # during unattended upgrades.
-unattended_upgrades_mail_only_on_error: False
+unattended_upgrades__mail_only_on_error: False
 
 
-# .. envvar:: unattended_upgrades_remove_unused
+# .. envvar:: unattended_upgrades__remove_unused
 #
 # Enable or disable automatic removal of the unused package dependencies after
 # unattended upgrade (``apt-get autoremove``).
-unattended_upgrades_remove_unused: False
+unattended_upgrades__remove_unused: False
 
 
-# .. envvar:: unattended_upgrades_auto_reboot
+# .. envvar:: unattended_upgrades__auto_reboot
 #
 # Automatically reboot the host without confirmation after unattended upgrade
 # if any packages require it.
-unattended_upgrades_auto_reboot: False
+unattended_upgrades__auto_reboot: False
 
 
-# .. envvar:: unattended_upgrades_auto_reboot_time
+# .. envvar:: unattended_upgrades__auto_reboot_time
 #
 # Specify the time of the automatic reboot instead of ``now``.
-unattended_upgrades_auto_reboot_time: '02:30'
+unattended_upgrades__auto_reboot_time: '02:30'
 
 
-# .. envvar:: unattended_upgrades_bandwidth_limit
+# .. envvar:: unattended_upgrades__bandwidth_limit
 #
 # Limit the amount of bandwidth used by APT to download packages, in kb/s.
-unattended_upgrades_bandwidth_limit: ''
+unattended_upgrades__bandwidth_limit: ''
 
