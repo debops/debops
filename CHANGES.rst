@@ -13,6 +13,8 @@ v0.1.1
 - Remove hard dependency on ``debops.lvm`` role. It can be used through the
   Ansible playbook if needed. [drybjed]
 
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+
 v0.1.0
 ------
 

@@ -8,7 +8,7 @@
     name:  '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_items: iscsi_packages
+  with_items: '{{ iscsi_packages }}'
 
 - name: Configure iSCSI Initiator IQN
   lineinfile:
@@ -39,14 +39,14 @@
          iscsiadm -m iface -I {{ item }} --op=update -n iface.net_ifacename -v {{ item }}
   args:
     creates: '/etc/iscsi/ifaces/{{ item }}'
-  with_items: iscsi_interfaces
+  with_items: '{{ iscsi_interfaces }}'
   when: (iscsi_interfaces|d(False) and item in ansible_interfaces)
 
 - name: Discover iSCSI targets on portals
   open_iscsi:
     discover: True
     portal:   '{{ item }}'
-  with_items: iscsi_portals
+  with_items: '{{ iscsi_portals }}'
   register: iscsi_register_discover_targets
   when: (iscsi_portals|d(False) and (ansible_local|d() and ansible_local.iscsi|d() and
          ansible_local.iscsi.discovered_portals is undefined or
@@ -60,7 +60,7 @@
     node_user: '{{ item.auth_username if (item.auth|d(False)) else omit }}'
     node_pass: '{{ item.auth_password if (item.auth|d(False)) else omit }}'
     auto_node_startup: '{{ False if (not item.auto|d(True)) else True }}'
-  with_items: iscsi_targets
+  with_items: '{{ iscsi_targets }}'
   register: iscsi_register_targets
   when: iscsi_targets|d()
   no_log: True

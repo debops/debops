@@ -6,7 +6,7 @@
     src:    '{{ "/dev/mapper/" + item.vg + "-" + item.lv }}'
     fstype: '{{ item.fs_type | d(iscsi_default_fs_type) }}'
     state:  'absent'
-  with_items: iscsi_logical_volumes
+  with_items: '{{ iscsi_logical_volumes }}'
   when: iscsi_logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
         item.mount|d(False) and
@@ -19,7 +19,7 @@
     size:  '{{ item.size }}'
     force: '{{ item.force | d(omit) }}'
     state: 'absent'
-  with_items: iscsi_logical_volumes
+  with_items: '{{ iscsi_logical_volumes }}'
   when: iscsi_logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
         item.state|d() and item.state == 'absent'
@@ -32,7 +32,7 @@
     pesize:     '{{ item.item.lvm_pesize  | d(omit) }}'
     force:      '{{ item.item.lvm_force   | d(omit) }}'
     vg_options: '{{ item.item.lvm_options | d(omit) }}'
-  with_items: iscsi_register_targets.results
+  with_items: '{{ iscsi_register_targets.results }}'
   when: iscsi_register_targets|d(False) and iscsi_register_targets.results|d() and
         item.devicenodes|d() and item.item.lvm_vg|d()
 
@@ -43,7 +43,7 @@
     size:  '{{ item.size }}'
     force: '{{ item.force | d(omit) }}'
     state: 'present'
-  with_items: iscsi_logical_volumes
+  with_items: '{{ iscsi_logical_volumes }}'
   when: iscsi_logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
         (item.state is undefined or item.state != 'absent')
@@ -54,7 +54,7 @@
     fstype: '{{ item.fs_type  | d(iscsi_default_fs_type) }}'
     force:  '{{ item.fs_force | d(omit) }}'
     opts:   '{{ item.fs_opts  | d(omit) }}'
-  with_items: iscsi_logical_volumes
+  with_items: '{{ iscsi_logical_volumes }}'
   when: iscsi_logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
         (item.state is undefined or item.state != 'absent') and
@@ -71,7 +71,7 @@
     dump:   '{{ item.mount_dump   | d(omit) }}'
     passno: '{{ item.mount_passno | d(omit) }}'
     fstab:  '{{ item.mount_fstab  | d(omit) }}'
-  with_items: iscsi_logical_volumes
+  with_items: '{{ iscsi_logical_volumes }}'
   when: iscsi_logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
         item.mount|d(False) and
