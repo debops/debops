@@ -11,7 +11,7 @@
     src:    '{{ "/dev/mapper/" + item.vg | regex_replace("-", "--") + "-" + item.lv | regex_replace("-", "--") }}'
     fstype: '{{ item.fs_type | d(lvm_default_fs_type) }}'
     state:  'absent'
-  with_items: lvm_logical_volumes
+  with_items: '{{ lvm_logical_volumes }}'
   when: lvm_logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
         item.mount|d(False) and
@@ -24,7 +24,7 @@
     size:  '{{ item.size }}'
     force: '{{ item.force | d(omit) }}'
     state: 'absent'
-  with_items: lvm_logical_volumes
+  with_items: '{{ lvm_logical_volumes }}'
   when: lvm_logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
         item.state|d() and item.state == 'absent'
@@ -37,7 +37,7 @@
     pesize:     '{{ item.pesize  | d(omit) }}'
     force:      '{{ item.force   | d(omit) }}'
     vg_options: '{{ item.options | d(omit) }}'
-  with_items: lvm_volume_groups
+  with_items: '{{ lvm_volume_groups }}'
   when: item.vg|d(False) and item.pvs|d(False)
 
 - name: Manage LVM Logical Volumes
@@ -47,7 +47,7 @@
     size:  '{{ item.size }}'
     force: '{{ item.force | d(omit) }}'
     state: 'present'
-  with_items: lvm_logical_volumes
+  with_items: '{{ lvm_logical_volumes }}'
   when: lvm_logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
         (item.state is undefined or item.state != 'absent')
@@ -58,7 +58,7 @@
     fstype: '{{ item.fs_type  | d(lvm_default_fs_type) }}'
     force:  '{{ item.fs_force | d(omit) }}'
     opts:   '{{ item.fs_opts  | d(omit) }}'
-  with_items: lvm_logical_volumes
+  with_items: '{{ lvm_logical_volumes }}'
   when: lvm_logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
         (item.state is undefined or item.state != 'absent') and
@@ -75,7 +75,7 @@
     dump:   '{{ item.mount_dump   | d(omit) }}'
     passno: '{{ item.mount_passno | d(omit) }}'
     fstab:  '{{ item.mount_fstab  | d(omit) }}'
-  with_items: lvm_logical_volumes
+  with_items: '{{ lvm_logical_volumes }}'
   when: lvm_logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
         (item.fs is undefined or item.fs|d()) and item.mount|d() and

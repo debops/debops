@@ -5,7 +5,7 @@
     name:  '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_items: lvm_packages
+  with_items: '{{ lvm_packages }}'
 
 - name: Divert original lvm.conf
   command: dpkg-divert --quiet --local --divert /etc/lvm/lvm.conf.dpkg-divert --rename /etc/lvm/lvm.conf
