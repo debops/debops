@@ -1,26 +1,26 @@
-{% set unattended_upgrades_tpl_origins = [] %}
+{% set unattended_upgrades__tpl_origins = [] %}
 {% if (ansible_local|d() and ansible_local.unattended_upgrades|d() and
        ansible_local.unattended_upgrades.origins|d()) %}
 {%   for item in ansible_local.unattended_upgrades.origins %}
-{%     set _ = unattended_upgrades_tpl_origins.append(item) %}
+{%     set _ = unattended_upgrades__tpl_origins.append(item) %}
 {%   endfor %}
 {% endif %}
-{% for item in unattended_upgrades_dependent_origins %}
-{%   set _ = unattended_upgrades_tpl_origins.append(item) %}
+{% for item in unattended_upgrades__dependent_origins %}
+{%   set _ = unattended_upgrades__tpl_origins.append(item) %}
 {% endfor %}
-{% set unattended_upgrades_tpl_blacklist = [] %}
+{% set unattended_upgrades__tpl_blacklist = [] %}
 {% if (ansible_local|d() and ansible_local.unattended_upgrades|d() and
        ansible_local.unattended_upgrades.blacklist|d()) %}
 {%   for item in ansible_local.unattended_upgrades.blacklist %}
-{%     set _ = unattended_upgrades_tpl_blacklist.append(item) %}
+{%     set _ = unattended_upgrades__tpl_blacklist.append(item) %}
 {%   endfor %}
 {% endif %}
-{% for item in unattended_upgrades_dependent_blacklist %}
-{%   set _ = unattended_upgrades_tpl_blacklist.append(item) %}
+{% for item in unattended_upgrades__dependent_blacklist %}
+{%   set _ = unattended_upgrades__tpl_blacklist.append(item) %}
 {% endfor %}
 {
-"blacklist": {{ unattended_upgrades_tpl_blacklist | sort | unique | to_nice_json }},
-"enabled": "{{ unattended_upgrades_enabled | bool | lower }}",
-"origins": {{ unattended_upgrades_tpl_origins | sort | unique | to_nice_json }},
-"periodic": "{{ unattended_upgrades_periodic | bool | lower }}"
+"blacklist": {{ unattended_upgrades__tpl_blacklist | sort | unique | to_nice_json }},
+"enabled": "{{  unattended_upgrades__enabled       | bool | lower }}",
+"origins": {{   unattended_upgrades__tpl_origins   | sort | unique | to_nice_json }},
+"periodic": "{{ unattended_upgrades__periodic      | bool | lower }}"
 }

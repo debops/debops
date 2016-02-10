@@ -22,8 +22,8 @@ weither or not a DNS domain is configured on the host:
   repositories of the given OS distribution (main, updates, backports,
   security). The e-mail messages about the upgrades won't be generated.
 
-You can control the above behaviour using ``unattended_upgrades_release`` and
-``unattended_upgrades_mail_to`` default variables.
+You can control the above behaviour using ``unattended_upgrades__release`` and
+``unattended_upgrades__mail_to`` default variables.
 
 Example inventory
 -----------------
@@ -36,7 +36,7 @@ this by the setting variable:
 
 .. code:: YAML
 
-   unattended_upgrades_enabled: False
+   unattended_upgrades__enabled: False
 
 in Ansible's inventory. The ``unattended-upgrades`` package won't be installed.
 If it is already present on the host, it won't be removed, but its
@@ -70,11 +70,11 @@ important packages by a given Ansible role. To do this, you can specify
 ``debops.unattended_upgrades`` role as a dependency and use two custom
 variables:
 
-``unattended_upgrades_dependent_origins``
+``unattended_upgrades__dependent_origins``
   This is a list of package origins which should be considered for unattended
   upgrades of packages.
 
-``unattended_upgrades_dependent_blacklist``
+``unattended_upgrades__dependent_blacklist``
   This is a list of APT packages which should be exempt from unattended
   upgrades.
 

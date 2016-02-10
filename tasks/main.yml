@@ -6,16 +6,16 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ unattended_upgrades_base_packages }}'
-    - '{{ unattended_upgrades_packages }}'
-  when: unattended_upgrades_enabled | bool
+    - '{{ unattended_upgrades__base_packages }}'
+    - '{{ unattended_upgrades__packages }}'
+  when: unattended_upgrades__enabled | bool
 
 - name: Configure debconf answer
   debconf:
     name: 'unattended-upgrades'
     question: 'unattended-upgrades/enable_auto_updates'
     vtype: 'boolean'
-    value: '{{ "true" if unattended_upgrades_enabled|bool else "false" }}'
+    value: '{{ "true" if unattended_upgrades__enabled|bool else "false" }}'
 
 - name: Configure periodic APT updates
   template:
@@ -24,7 +24,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: ((unattended_upgrades_periodic|bool) or
+  when: ((unattended_upgrades__periodic|bool) or
          (ansible_local|d() and ansible_local.unattended_upgrades|d() and
           ansible_local.unattended_upgrades.periodic|bool))
 
@@ -35,7 +35,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: ((unattended_upgrades_enabled|bool) or
+  when: ((unattended_upgrades__enabled|bool) or
          (ansible_local|d() and ansible_local.unattended_upgrades|d() and
           ansible_local.unattended_upgrades.enabled|bool))
 
@@ -44,7 +44,7 @@
            --rename /etc/apt/apt.conf.d/50unattended-upgrades
   args:
     creates: '/etc/apt/apt.conf.d/50unattended-upgrades.dpkg-divert'
-  when: unattended_upgrades_enabled | bool
+  when: unattended_upgrades__enabled | bool
 
 - name: Configure unattended-upgrades
   template:
@@ -53,21 +53,21 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: unattended_upgrades_enabled | bool
+  when: unattended_upgrades__enabled | bool
 
 - name: Remove configs out of the way before reversion
   command: rm -f /etc/apt/apt.conf.d/50unattended-upgrades
   args:
     removes: '/etc/apt/apt.conf.d/50unattended-upgrades.dpkg-divert'
     warn: False
-  when: not unattended_upgrades_enabled | bool
+  when: not unattended_upgrades__enabled | bool
 
 - name: Revert unattended-upgrades configuration
   command: dpkg-divert --quiet --local --rename
            --remove /etc/apt/apt.conf.d/50unattended-upgrades
   args:
     removes: '/etc/apt/apt.conf.d/50unattended-upgrades.dpkg-divert'
-  when: not unattended_upgrades_enabled | bool
+  when: not unattended_upgrades__enabled | bool
 
 - name: Make sure that Ansible local fact directory exists
   file:
