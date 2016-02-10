@@ -119,5 +119,14 @@
     mode: '0644'
   notify: [ 'Restart ferm' ]
 
+- name: Create user used in passwdfile 
+  user: 
+    name: "{{ dovecot_passwdfile_uid }}"
+    home: "{{ dovecot_passwdfile_home }}"
+    system: yes
+  when: "'passwdfile' in dovecot_user_accounts"
+
+
+
 - name: Post hooks
   include: "{{ lookup('task_src', 'dovecot/post_main.yml') }}"

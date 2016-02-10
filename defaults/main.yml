@@ -135,27 +135,30 @@ dovecot_sql_user_query: "SELECT home, uid, gid FROM users WHERE userid = '%n' AN
 # .. envvar:: dovecot_passwdfile_scheme
 #
 # Scheme method use by dovecot with password authentication
-dovecot_passwdfile_scheme: 'cram-md5'
+dovecot_passwdfile_scheme: 'sha512-crypt'
 
 # .. envvar:: dovecot_passwdfile_path
 #
 # Path to the dovecot password file
-dovecot_passwdfile_path: '/etc/dovecot/dovecot.pwd'
+dovecot_passwdfile_path: '/etc/dovecot/private/passwd'
 
 # .. envvar:: dovecot_passwordfile_uid
 #
 # uid use by Dovecot when it store mail in mailbox
-dovecot_passwdfile_uid: 'vmail'
+dovecot_passwdfile_uid: 'dovecot-vmail'
 
 # .. envvar:: dovecot_passwordfile_gid
 #
 # gid use by Dovecot when it store mail in mailbox
-dovecot_passwdfile_gid: 'vmail'
+dovecot_passwdfile_gid: 'dovecot-vmail'
 
 # .. envvar:: dovecot_passwordfile_home
 #
 # Path to the mailbox
-dovecot_passwdfile_home: '/home/vmail/%u'
+dovecot_passwdfile_home: '{{ (ansible_local.root.home
+                             if (ansible_local|d() and ansible_local.root|d() and
+                                  ansible_local.root.home|d())
+                             else "/var/local") + "/" + dovecot_passwdfile_uid + "/%u" }}'
 
 # ---------------------------
 #   PKI / TLS configuration
