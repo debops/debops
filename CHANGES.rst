@@ -8,3 +8,6 @@ v0.1.0
 *Unreleased*
 
 - Initial release. [ypid]
+
+- Added support to configure the user and email used by the VCS in commits.
+  [joh6nn, ypid]
