@@ -10,6 +10,9 @@ v0.1.1
   adds the ``open-iscsi`` package to list of blacklisted packages so that it
   will not be upgraded automatically. [drybjed]
 
+- Remove hard dependency on ``debops.lvm`` role. It can be used through the
+  Ansible playbook if needed. [drybjed]
+
 v0.1.0
 ------
 

@@ -4,6 +4,10 @@ Getting started
 .. contents::
    :local:
 
+The ``debops.iscsi`` role depends heavily on the LVM support. It can be
+configured using ``debops.lvm`` role added to the playbook before the
+``debops.iscsi`` role.
+
 Before using ``debops.iscsi`` role, you should configure an iSCSI Target. It
 can be configured either on a dedicated SAN storage host, or using Linux
 packages like ``targetcli``, ``tgt`` and others. You can use ``debops.tgt``
@@ -74,6 +78,9 @@ Here's an example playbook which uses ``debops.iscsi`` role::
         - role: debops.unattended_upgrades
           tags: [ 'role::unattended_upgrades' ]
           unattended_upgrades__dependent_blacklist: '{{ iscsi_unattended_upgrades__dependent_blacklist }}'
+
+        - role: debops.lvm
+          tags: [ 'role::lvm' ]
 
         - role: debops.iscsi
           tags: iscsi
