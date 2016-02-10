@@ -23,9 +23,9 @@ Example inventory
 -----------------
 
 To configure iSCSI Initiator to connect to remote storage, you should add
-a given host to ``[debops_iscsi]`` Ansible group::
+a given host to ``[debops_service_iscsi]`` Ansible group::
 
-    [debops_iscsi]
+    [debops_service_iscsi]
     hostname
 
 Inventory variables
@@ -70,8 +70,8 @@ Here's an example playbook which uses ``debops.iscsi`` role::
     ---
 
     - name: Configure iSCSI Initiator
-      hosts: debops_iscsi
-      sudo: True
+      hosts: [ 'debops_service_iscsi' ]
+      become: True
 
       roles:
 
@@ -83,5 +83,5 @@ Here's an example playbook which uses ``debops.iscsi`` role::
           tags: [ 'role::lvm' ]
 
         - role: debops.iscsi
-          tags: iscsi
+          tags: [ 'role::iscsi' ]
 
