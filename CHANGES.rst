@@ -17,6 +17,8 @@ v0.1.1
 
 - Update documentation. [drybjed]
 
+- Update all of the role variables to have a distinct namespace. [drybjed]
+
 v0.1.0
 ------
 

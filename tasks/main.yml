@@ -8,15 +8,15 @@
     name:  '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_items: '{{ iscsi_packages }}'
+  with_items: '{{ iscsi__packages }}'
 
 - name: Configure iSCSI Initiator IQN
   lineinfile:
     dest:   '/etc/iscsi/initiatorname.iscsi'
     regexp: '^InitiatorName=iqn'
-    line:   'InitiatorName={{ iscsi_initiator_name }}'
+    line:   'InitiatorName={{ iscsi__initiator_name }}'
     state:  'present'
-  register: iscsi_register_initiatorname
+  register: iscsi__register_initiatorname
 
 - name: Configure iSCSI discovery authentication
   lineinfile:
@@ -24,7 +24,7 @@
     regexp:  '{{ (item.key | replace(".","\.")) + "\s=\s" }}'
     line:    '{{ item.key + " = " + item.value }}'
     state:   'present'
-  with_dict: '{{ iscsi_default_options }}'
+  with_dict: '{{ iscsi__default_options }}'
   when: item|d(False) and item.value
   no_log: True
 
@@ -32,23 +32,23 @@
   service:
     name:  'open-iscsi'
     state: 'restarted'
-  when: iscsi_enabled|d() and iscsi_register_initiatorname|d() and iscsi_register_initiatorname.changed
+  when: iscsi__enabled|d() and iscsi__register_initiatorname|d() and iscsi__register_initiatorname.changed
 
 - name: Generate iSCSI interface configuration
   shell: iscsiadm -m iface -I {{ item }} -o new ;
          iscsiadm -m iface -I {{ item }} --op=update -n iface.net_ifacename -v {{ item }}
   args:
     creates: '/etc/iscsi/ifaces/{{ item }}'
-  with_items: '{{ iscsi_interfaces }}'
-  when: (iscsi_interfaces|d(False) and item in ansible_interfaces)
+  with_items: '{{ iscsi__interfaces }}'
+  when: (iscsi__interfaces|d(False) and item in ansible_interfaces)
 
 - name: Discover iSCSI targets on portals
   open_iscsi:
     discover: True
     portal:   '{{ item }}'
-  with_items: '{{ iscsi_portals }}'
-  register: iscsi_register_discover_targets
-  when: (iscsi_portals|d(False) and (ansible_local|d() and ansible_local.iscsi|d() and
+  with_items: '{{ iscsi__portals }}'
+  register: iscsi__register_discover_targets
+  when: (iscsi__portals|d(False) and (ansible_local|d() and ansible_local.iscsi|d() and
          ansible_local.iscsi.discovered_portals is undefined or
          (item not in ansible_local.iscsi.discovered_portals)))
 
@@ -60,9 +60,9 @@
     node_user: '{{ item.auth_username if (item.auth|d(False)) else omit }}'
     node_pass: '{{ item.auth_password if (item.auth|d(False)) else omit }}'
     auto_node_startup: '{{ False if (not item.auto|d(True)) else True }}'
-  with_items: '{{ iscsi_targets }}'
-  register: iscsi_register_targets
-  when: iscsi_targets|d()
+  with_items: '{{ iscsi__targets }}'
+  register: iscsi__register_targets
+  when: iscsi__targets|d()
   no_log: True
 
 - name: Make sure that local facts directory exists
