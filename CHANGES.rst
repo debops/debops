@@ -9,5 +9,5 @@ v0.1.0
 
 - Initial release. [ypid]
 
-- Added support to configure the user and email used by the VCS in commits.
+- Added support to configure the user and email used by etckeeper.
   [joh6nn, ypid]
