@@ -9,10 +9,10 @@ them.
    :local:
    :depth: 1
 
-.. _iscsi_targets:
+.. _iscsi__targets:
 
-iscsi_targets
--------------
+iscsi__targets
+--------------
 
 This is a list of iSCSI Targets, each one defined by a YAML dict. Dict
 parameters are mapped to ``open_iscsi`` and ``lvg`` Ansible module options.
@@ -72,16 +72,16 @@ Examples
 
 Connect to an iSCSI Target using global session authentication settings::
 
-    iscsi_targets:
+    iscsi__targets:
 
       - target: 'iqn.1995-08.org.example:server:storage'
 
-Connect to an iSCSI Target using ``iscsi_iqn`` value for IQN base string (must
+Connect to an iSCSI Target using ``iscsi__iqn`` value for IQN base string (must
 be the same on the iSCSI Target) and custom session credentials::
 
-    iscsi_targets:
+    iscsi__targets:
 
-      - target: '{{ iscsi_iqn + ":server:storage" }}'
+      - target: '{{ iscsi__iqn + ":server:storage" }}'
         auth: True
         auth_username: 'custom_user'
         auth_password: 'custom_password'
@@ -89,16 +89,16 @@ be the same on the iSCSI Target) and custom session credentials::
 Connect to an iSCSI Target and create a LVM Volume Group from all of the
 presented iSCSI LUNs::
 
-    iscsi_targets:
+    iscsi__targets:
 
-      - target: '{{ iscsi_iqn }}:server:storage'
+      - target: '{{ iscsi__iqn }}:server:storage'
         lvm_vg: 'vg_iscsi_target'
 
 
-.. _iscsi_logical_volumes:
+.. _iscsi__logical_volumes:
 
-iscsi_logical_volumes
----------------------
+iscsi__logical_volumes
+----------------------
 
 This is a list of LVM Logical Volumes, each one defined as a YAML dict. Logical
 Volumes are slices of a Volume Group which can then be formatted with
@@ -136,7 +136,7 @@ List of optional filesystem parameters:
   Bool. Enables or disables creation of a filesystem in the new Logical Volume
   (existing Logical Volumes are not affected).
 
-  By default, a filesystem specified in ``iscsi_default_fs_type`` variable is
+  By default, a filesystem specified in ``iscsi__default_fs_type`` variable is
   created in all new Logical Volumes if ``item.mount`` is specified.
 
 ``fs_type``
@@ -163,7 +163,7 @@ List of optional mount parameters:
 
 ``mount_opts``
   String with mount options added in ``/etc/fstab``. If not specified, options
-  set in ``iscsi_default_mount_options`` will be used instead.
+  set in ``iscsi__default_mount_options`` will be used instead.
 
   Make sure that ``_netdev`` option is present in your mount options, to not
   block the system startup.
@@ -182,7 +182,7 @@ Examples
 
 Create a Logical Volume::
 
-    iscsi_logical_volumes:
+    iscsi__logical_volumes:
 
       - lv: 'not_formatted_volume'
         vg: 'vg_iscsi_target'
@@ -190,7 +190,7 @@ Create a Logical Volume::
 
 Create a Logical Volume, format it and mount in a given path::
 
-    iscsi_logical_volumes:
+    iscsi__logical_volumes:
 
       - lv: 'data'
         vg: 'vg_iscsi_target'
@@ -199,7 +199,7 @@ Create a Logical Volume, format it and mount in a given path::
 
 Remove a mounted Logical Volume (destroys the data)::
 
-    iscsi_logical_volumes:
+    iscsi__logical_volumes:
 
       - lv: 'to_be_removed'
         vg: 'vg_iscsi_target'
