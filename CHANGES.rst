@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v0.2.4
+------
+
+*Released: 2016-02-11*
+
+- Fix deprecation warnings on Ansible 2.1.0. [drybjed]
+
+- The ``item.delete`` parameter will be now tested as a boolean. [drybjed]
+
+- Rename the ``ifupdown`` variable to ``ifupdown_enabled`` and move the POSIX
+  capability detection to default variables. You might need to update inventory
+  if you disabled ``debops.ifupdown`` role. [drybjed]
+
 v0.2.3
 ------
 

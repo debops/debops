@@ -1,16 +1,8 @@
 ---
 
-- name: Recalculate ifupdown based on POSIX capabilities
-  set_fact:
-     ifupdown: '{{ (ifupdown | bool and
-                    (ifupdown_ignore_cap12s | bool or
-                     (ansible_local|d() and ansible_local.cap12s|d() and
-                      (not ansible_local.cap12s.enabled | bool or
-                       (ansible_local.cap12s.enabled | bool and "cap_net_admin" in ansible_local.cap12s.list))))) }}'
-
   # If static configuration is detected, don't manage interfaces automatically
 - include: check_static.yml
-  when: ifupdown|bool and not ifupdown_ignore_static
+  when: ifupdown_enabled|bool and not ifupdown_ignore_static
 
 - name: Create directory
   file:
@@ -22,16 +14,17 @@
   with_items:
     - { path: '/etc/network/interfaces.d' }
     - { path: '/etc/network/interfaces.config.d' }
-  when: ifupdown|bool and ifupdown_static_config != 'static'
+  when: ifupdown_enabled|bool and ifupdown_static_config != 'static'
 
 - include: divert_interfaces.yml
-  when: ifupdown|bool and ifupdown_static_config != 'static'
+  when: ifupdown_enabled|bool and ifupdown_static_config != 'static'
 
 - include: check_networkmanager.yml
-  when: ifupdown|bool and not ifupdown_ignore_networkmanager
+  when: ifupdown_enabled|bool and not ifupdown_ignore_networkmanager
 
 - include: generate_interfaces.yml
-  when: ifupdown|bool and ifupdown_static_config != 'static'
+  when: ifupdown_enabled|bool and ifupdown_static_config != 'static'
 
 - include: revert_interfaces.yml
-  when: not ifupdown|bool and ifupdown_static_config != 'static'
+  when: not ifupdown_enabled|bool and ifupdown_static_config != 'static'
+
