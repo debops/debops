@@ -10,6 +10,10 @@ v0.2.4
 
 - The ``item.delete`` parameter will be now tested as a boolean. [drybjed]
 
+- Rename the ``ifupdown`` variable to ``ifupdown_enabled`` and move the POSIX
+  capability detection to default variables. You might need to update inventory
+  if you disabled ``debops.ifupdown`` role. [drybjed]
+
 v0.2.3
 ------
 
