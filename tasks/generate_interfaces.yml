@@ -54,7 +54,7 @@
   with_items: '{{ ifupdown_interfaces }}'
   register: ifupdown_register_interfaces_removator
   when: ((item.iface is defined and item.iface) and
-         (item.delete is defined and item.delete))
+         (item.delete is defined and item.delete | bool))
 
 - name: Generate interface configuration
   template:
@@ -66,7 +66,7 @@
   with_items: '{{ ifupdown_interfaces }}'
   register: ifupdown_register_interfaces_generator
   when: ((item.iface is defined and item.iface) and
-         (item.delete is undefined or not item.delete))
+         (item.delete is undefined or not item.delete | bool))
 
 - name: Create random temporary directory for ifupdown data
   command: mktemp -d

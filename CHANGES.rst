@@ -8,6 +8,8 @@ v0.2.4
 
 - Fix deprecation warnings on Ansible 2.1.0. [drybjed]
 
+- The ``item.delete`` parameter will be now tested as a boolean. [drybjed]
+
 v0.2.3
 ------
 
