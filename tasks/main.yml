@@ -128,10 +128,18 @@
     mode: '0650'
   when: "'passwdfile' in dovecot_user_accounts"
 
+- name: Create group used in passwdfile 
+  user: 
+    name: "{{ dovecot_passwdfile_gid }}"
+    system: yes
+  when: "'passwdfile' in dovecot_user_accounts"
+
 - name: Create user used in passwdfile 
   user: 
     name: "{{ dovecot_passwdfile_uid }}"
+    group: "{{ dovecot_passwdfile_gid }}"
     home: "{{ dovecot_passwdfile_home }}"
+    shell: "/usr/sbin/nologin"
     system: yes
   when: "'passwdfile' in dovecot_user_accounts"
 
