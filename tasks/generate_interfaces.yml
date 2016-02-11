@@ -32,7 +32,7 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - ifupdown_packages
+    - '{{ ifupdown_packages }}'
     - [ 'bsdutils', 'rsync' ]
     - [ '{{ "bridge-utils" if "bridge" in ifupdown_capabilities else [] }}' ]
     - [ '{{ "vlan" if "vlan" in ifupdown_capabilities else [] }}' ]
@@ -51,7 +51,7 @@
   file:
     path: '{{ "/etc/network/interfaces.config.d/" + (item.weight | d(ifupdown_interface_weight_map[item.type|d("interface")])) + "_" + item.filename | default(item.alias | default(item.type | default("interface")) + "_" + item.iface) + (("_" + item.label) if (item.label is defined and item.label) else "") + ("_ipv4" if (item.inet is defined and item.inet) else "") + ("_ipv6" if (item.inet6 is defined and item.inet6) else "") }}'
     state: 'absent'
-  with_items: ifupdown_interfaces
+  with_items: '{{ ifupdown_interfaces }}'
   register: ifupdown_register_interfaces_removator
   when: ((item.iface is defined and item.iface) and
          (item.delete is defined and item.delete))
@@ -63,7 +63,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: ifupdown_interfaces
+  with_items: '{{ ifupdown_interfaces }}'
   register: ifupdown_register_interfaces_generator
   when: ((item.iface is defined and item.iface) and
          (item.delete is undefined or not item.delete))
