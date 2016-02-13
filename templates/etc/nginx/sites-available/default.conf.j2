@@ -333,6 +333,33 @@
 #           '502':     '/500.html'
 #
 #
+#   - item.error_pages_list: []
+#       Optional. List of dictionaries, each one describing an error page. List
+#       of known keys and their descriptions:
+#
+#       code: '' or []
+#         Required. String or list of error codes to include in this
+#         configuration section.
+#
+#       uri: ''
+#         Required. URI or location to redirect the request to.
+#
+#       location and location_options: ''
+#         Optional. if specified, an additional location section will be added
+#         with contents of 'location_options' parameter. If only
+#         'location_options' is present, the 'uri' parameter will be used as
+#         the location.
+#
+#       Examples:
+#
+#         error_pages_list:
+#           - code: [ '403', '404', '=500' ]
+#             uri: '/error.html'
+#             location: '= /error.html'
+#             location_options: |
+#               internal;
+#
+#
 #   - item.location: {}
 #       Optional. Dict of location sections to include in this server
 #       configuration, in text block format (semicolons at end of each
@@ -663,6 +690,23 @@
         }
 
 {% endfor %}
+{% endif %}
+{% if item.error_pages_list|d() %}
+{% for element in item.error_pages_list %}
+{% if element.location|d() or element.location_options|d() %}
+
+{% endif %}
+        error_page {{ element.code if (element.code is string) else (element.code | join(" ")) }} {{ element.uri }};
+{% if element.location|d() or element.location_options|d() %}
+        location {{ element.location | d(element.uri) }} {
+{{ element.location_options | indent(16, true) }}
+        }
+{% if not loop.last %}
+
+{% endif %}
+{% endif %}
+{% endfor %}
+
 {% endif %}
 {% if item.options is defined and item.options %}
         {{ item.options | indent(8) }}

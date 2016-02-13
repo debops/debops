@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.6
+------
+
+*Unreleased*
+
+- Add support for defining error pages in a list, with better control over
+  their configuration. [drybjed]
+
 v0.1.5
 ------
 
