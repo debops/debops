@@ -15,3 +15,10 @@ Credits
 
   * rewrote DebOps scripts in Python
 
+* Robin `ypid` Schneider <ypid_at_riseup.net>
+
+  * Patches/improvements to various parts of DebOps.
+  * Keeping the documentation up-to-date :)
+  * Security related work.
+  * Author and maintainer of a few roles in DebOps.
+
