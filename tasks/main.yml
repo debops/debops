@@ -9,7 +9,7 @@
     name: '{{ item.name }}'
     state: '{{ "present" if (item.blacklist|d() | bool) else "absent" }}'
     blacklist_file: '{{ kernel_module_blacklist_file }}'
-  with_items: kernel_module_list_combined
+  with_items: '{{ kernel_module_list_combined }}'
 
 - name: Save kernel modules which should be loaded on boot
   template:
@@ -40,7 +40,7 @@
             not (item.blacklist|d(False) | bool)
           )
         )
-  with_items: kernel_module_list_combined
+  with_items: '{{ kernel_module_list_combined }}'
 
 - name: Modprobe kernel modules
   modprobe:
@@ -48,4 +48,4 @@
     params: '{{ item.params | d(omit) }}'
     state: '{{ item.state | d("present") }}'
   when: (not (item.blacklist|d(False) | bool))
-  with_items: kernel_module_list_combined
+  with_items: '{{ kernel_module_list_combined }}'
