@@ -3,25 +3,25 @@
 - name: Combine cryptsetup device lists
   set_fact:
     cryptsetup_devices_combined: '{{
-      (cryptsetup_devices|d([]) | list) +
-      (cryptsetup_group_devices|d([]) | list) +
-      (cryptsetup_host_devices|d([]) | list) }}'
+      (cryptsetup_devices       | d([]) | list) +
+      (cryptsetup_group_devices | d([]) | list) +
+      (cryptsetup_host_devices  | d([]) | list) }}'
   tags: [ 'role::cryptsetup:backup' ]
 
 - name: Ensure that required options are specified and valid for each given device
   assert:
     that:
-      - item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present', 'absent' ]
+      - item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present', 'absent' ]
       - item.name is defined and item.name is string
       - item.ciphertext_block_device is defined and item.ciphertext_block_device is string
-  with_items: cryptsetup_devices_combined
+  with_items: '{{ cryptsetup_devices_combined }}'
 
 - name: Ensure required packages are installed
   apt:
     name: '{{ item }}'
     state: 'latest'
     install_recommends: False
-  with_flattened: cryptsetup_base_packages
+  with_flattened: '{{ cryptsetup_base_packages }}'
 
 - name: Ensure keyfile and backup directories exist on the remote system
   file:
@@ -38,27 +38,42 @@
 
 - name: Create secrets directory on Ansible controller
   file:
-    path: '{{ cryptsetup_keyfile_location + "/" + item.name }}'
+    path:  '{{ cryptsetup_secret_path + "/" + item.name }}'
     state: 'directory'
-    mode: '0750'
+    owner: '{{ cryptsetup_secret_owner }}'
+    group: '{{ cryptsetup_secret_group }}'
+    mode:  '{{ cryptsetup_secret_mode }}'
   become: False
   delegate_to: 'localhost'
-  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
-  with_items: cryptsetup_devices_combined
+  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
+  with_items: '{{ cryptsetup_devices_combined }}'
 
 - name: Calculate keyfile creation options
   set_fact:
     cryptsetup_dd_bs: '{{ ((512/8) if cryptsetup_key_size|d() == "default" else ((cryptsetup_key_size)/8)) | int }}'
 
-- name: Generate keyfile on Ansible controller
-  command: dd if=/dev/random of='{{ item.keyfile | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}' bs={{ cryptsetup_dd_bs }} count=1 iflag=fullblock
+- name: Generate keyfile on the Ansible controller
+  command: dd if=/dev/random of='{{ item.keyfile | d(cryptsetup_secret_path + "/" + item.name + "/keyfile.raw") }}' bs={{ cryptsetup_dd_bs }} count=1 iflag=fullblock
   args:
-    creates: '{{ item.keyfile | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}'
+    creates: '{{ item.keyfile | d(cryptsetup_secret_path + "/" + item.name + "/keyfile.raw") }}'
   become: False
   delegate_to: 'localhost'
   register: cryptsetup_register_keyfile_gen
-  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
-  with_items: cryptsetup_devices_combined
+  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
+  with_items: '{{ cryptsetup_devices_combined }}'
+
+- name: Enforce permissions of the keyfile on the Ansible controller
+  tags: [ 'role::cryptsetup:backup' ]
+  file:
+    path:  '{{ item.keyfile | d(cryptsetup_secret_path + "/" + item.name + "/keyfile.raw") }}'
+    owner: '{{ cryptsetup_secret_owner }}'
+    group: '{{ cryptsetup_secret_group }}'
+    mode:  '{{ cryptsetup_secret_mode }}'
+  become: False
+  delegate_to: 'localhost'
+  register: cryptsetup_register_keyfile_gen
+  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
+  with_items: '{{ cryptsetup_devices_combined }}'
 
   ## http://stackoverflow.com/a/28888474
 - name: Test if Ansible is running in check mode
@@ -69,9 +84,17 @@
 - name: Save fact if Ansible is running in check mode in variable
   set_fact: check_mode={{ cryptsetup_register_check_mode|skipped }}
 
+- name: Ensure that /dev/shm/ is stored in RAM (assumed to be non-persistent)
+  ## Also assuming that the keyfile is not swapped out in the short time it is going to exist in tmpfs.
+  command: df /dev/shm --type tmpfs
+  changed_when: False
+
 - name: Copy keyfiles to remote system
   copy:
-    dest:     '{{ cryptsetup_keyfile_remote_location + "/" + item.name + "_keyfile.raw" }}'
+    dest: '{{ ("/dev/shm"
+              if (item.state|d(cryptsetup_state|d("mounted")) == "ansible_controller_mounted")
+              else cryptsetup_keyfile_remote_location)
+              + "/" + item.name + "_keyfile.raw" }}'
     backup:   '{{ item.keyfile_backup         | d(omit) }}'
     follow:   '{{ item.keyfile_follow         | d(omit) }}'
     force:    '{{ item.keyfile_force          | d(omit) }}'
@@ -82,10 +105,10 @@
     serole:   '{{ item.keyfile_serole         | d(omit) }}'
     setype:   '{{ item.keyfile_setype         | d(omit) }}'
     seuser:   '{{ item.keyfile_seuser         | d(omit) }}'
-    src:      '{{ item.keyfile                | d(cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw") }}'
+    src:      '{{ item.keyfile                | d(cryptsetup_secret_path + "/" + item.name + "/keyfile.raw") }}'
     validate: '{{ item.keyfile_validate       | d(omit) }}'
-  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and not check_mode)
-  with_items: cryptsetup_devices_combined
+  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and not check_mode)
+  with_items: '{{ cryptsetup_devices_combined }}'
 
 ## )))
 
@@ -107,32 +130,41 @@
 #   args:
 #     creates: '{{ item.ciphertext_block_device }}{{ item.label_of_first_partition|d("1") }}'
 #     executable: '/bin/bash'
-#   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'present' ] and item.create_partition_on_block_device|d(False))
-#   with_items: cryptsetup_devices_combined
+#   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'present' ] and item.create_partition_on_block_device|d(False))
+#   with_items: '{{ cryptsetup_devices_combined }}'
 
 - name: Check if ciphertext block device exists
   stat:
     path: '{{ item.ciphertext_block_device }}'
   register: cryptsetup_register_ciphertext_device
-  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
-  with_items: cryptsetup_devices_combined
+  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
+  with_items: '{{ cryptsetup_devices_combined }}'
 
 - name: Fail when ciphertext block device does not exist but the state requires for it to exist
   fail:
     msg: 'Ciphertext block device {{ item.0.ciphertext_block_device }} does not exist and state was requested to be {{ item.0.state|d(cryptsetup_state|d("mounted")) }}!'
-  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted' ] and not item.1.stat.exists)
+  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted' ] and not item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
 
 - name: Fail when ciphertext block device does not exist but the keyfile has changed
   fail:
-    msg: 'Ciphertext block device {{ item.0.ciphertext_block_device }} does not exist but the keyfile has just been generated. You will need to make the block device available during a following Ansible run so that the encryption and filesystem layer can be setup. You will not see this error on following runs but that does not mean that the encryption and filesystem setup was successfully until you make the block device available. See documentation for details.'
-  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and not item.1.stat.exists and item.2|changed)
+    msg: 'Ciphertext block device {{ item.0.ciphertext_block_device }} does not exist but the keyfile has just been generated. You will need to make the block device available during a later Ansible run so that the encryption and filesystem layer can be setup. You will not see this error on later runs but that does not mean that the encryption and filesystem setup was successfully until you make the block device available. See documentation for details.'
+  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and not item.1.stat.exists and item.2|changed)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
     - '{{ cryptsetup_register_keyfile_gen.results|d([]) }}'
+
+## Using {{ lookup("file", item.0.keyfile|d(…)) | b64encode }}
+## does not work because Ansible/Python tries to decode the random bytes as UTF-8.
+## Issue: https://github.com/ansible/ansible/issues/7957
+# - name: Read the content of the keyfile and encoding it using base64
+#   command: base64 '{{ item.0.keyfile | d(cryptsetup_secret_path + "/" + item.0.name + "/keyfile.raw") }}'
+#   register: cryptsetup_register_keyfile_b64encode
+#   become: False
+#   delegate_to: 'localhost'
 
 - name: Create encryption layer
   shell: cryptsetup isLuks "{{ item.0.ciphertext_block_device }}" || cryptsetup luksFormat
@@ -142,17 +174,16 @@
          {{ "" if cryptsetup_key_size|d() == "default" else ("--key-size=" + cryptsetup_key_size|string) }}
          {{ "" if cryptsetup_iter_time|d() == "default" else ("--iter-time=" + cryptsetup_iter_time|string) }}
          {% if cryptsetup_use_random|d("default") != "default" %}
-         {% if cryptsetup_use_random|d() %}
-         --use-random
-         {% else %}
-         --use-urandom
+         {{ "--use-random" if cryptsetup_use_random|d() else "--use-urandom" }}
          {% endif %}
-         {% endif %}
-         --key-file "{{ cryptsetup_keyfile_remote_location + "/" + item.0.name + "_keyfile.raw" }}"
-         "{{ item.0.ciphertext_block_device }}"
-  changed_when: ("Command successful." == cryptsetup_register_cmd.stdout)
+         --key-file '{{ ("/dev/shm"
+                        if (item.0.state|d(cryptsetup_state|d("mounted")) == "ansible_controller_mounted")
+                        else cryptsetup_keyfile_remote_location)
+                        + "/" + item.0.name + "_keyfile.raw" }}'
+         '{{ item.0.ciphertext_block_device }}'
   register: cryptsetup_register_cmd
-  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  changed_when: ("Command successful." == cryptsetup_register_cmd.stdout)
+  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
@@ -163,7 +194,7 @@
   changed_when: False
   failed_when: (cryptsetup_register_ciphertext_blkid.rc not in [ 0, 2 ])
   always_run: True
-  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
@@ -172,21 +203,24 @@
   crypttab:
     backing_device: '{{ ("UUID=" + item.1.stdout) if (item.1.stdout|d() and item.0.use_uuid|d(cryptsetup_use_uuid)|bool) else item.0.ciphertext_block_device }}'
     name: '{{ item.0.name }}'
-    opts: '{{ item.0.crypttab_options | d(cryptsetup_crypttab_options | d("none")) }}'
+    opts: '{{ (item.0.crypttab_options | d(cryptsetup_crypttab_options | d(["none"])) ) | list | sort | unique | join(",") }}'
     ## ``none`` is required on Debian jessie by :command:`cryptdisks_start` if no options are given.
-    password: '{{ cryptsetup_keyfile_remote_location + "/" + item.0.name + "_keyfile.raw" }}'
+    password: '{{ ("/dev/shm"
+                  if (item.0.state|d(cryptsetup_state|d("mounted")) == "ansible_controller_mounted")
+                  else cryptsetup_keyfile_remote_location)
+                  + "/" + item.0.name + "_keyfile.raw" }}'
     path: '{{ item.0.crypttab_path | d(omit) }}'
     state: 'present'
-  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
+  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_blkid.results|d([]) }}'
 
 - name: Start plaintext device mapper target
   command: cryptdisks_start "{{ item.0.name }}"
-  changed_when: ("(started)" in cryptsetup_register_cryptdisks_start.stdout)
   register: cryptsetup_register_cryptdisks_start
-  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  changed_when: ("(started)" in cryptsetup_register_cryptdisks_start.stdout)
+  when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
@@ -195,8 +229,8 @@
   stat:
     path: '/dev/mapper/{{ item.name }}'
   register: cryptsetup_register_plaintext_device
-  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ])
-  with_items: cryptsetup_devices_combined
+  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
+  with_items: '{{ cryptsetup_devices_combined }}'
 
 - name: Create filesystem on plaintext device mapper target
   filesystem:
@@ -214,7 +248,7 @@
     path: '{{ item.mount | d(cryptsetup_mountpoint_parent_directory + "/" + item.name) }}'
     state: 'directory'
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'present' ])
-  with_items: cryptsetup_devices_combined
+  with_items: '{{ cryptsetup_devices_combined }}'
 
 ## )))
 
@@ -228,7 +262,7 @@
     rm -f "{{ cryptsetup_header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}"
     cryptsetup luksHeaderBackup "{{ item.0.ciphertext_block_device }}" --header-backup-file "{{ cryptsetup_header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}"
   changed_when: False
-  when: ((cryptsetup_header_backup|d() | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  when: ((cryptsetup_header_backup|d() | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
@@ -236,28 +270,40 @@
 - name: Store the header backup in secret directory on to the Ansible controller
   tags: [ 'role::cryptsetup:backup' ]
   fetch:
-    src: '{{ cryptsetup_header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}'
-    dest: '{{ cryptsetup_keyfile_location + "/" + item.0.name }}/header_backup.raw'
+    src:  '{{ cryptsetup_header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}'
+    dest: '{{ cryptsetup_secret_path + "/" + item.0.name + "/header_backup.raw" }}'
     fail_on_missing: True
     flat: True
-  when: ((cryptsetup_header_backup|d() | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  when: ((cryptsetup_header_backup|d() | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  with_together:
+    - '{{ cryptsetup_devices_combined }}'
+    - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
+
+- name: Enforce permissions of the header backup in secret directory on the Ansible controller
+  tags: [ 'role::cryptsetup:backup' ]
+  file:
+    path:  '{{ cryptsetup_secret_path + "/" + item.0.name + "/header_backup.raw" }}'
+    owner: '{{ cryptsetup_secret_owner }}'
+    group: '{{ cryptsetup_secret_group }}'
+    mode:  '{{ cryptsetup_secret_mode }}'
+  when: ((cryptsetup_header_backup|d() | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
 
 ## )))
 
-- name: Mount or unmount the plaintext device mapper target
+- name: Handle fstab and mounting of the plaintext device mapper target
   mount:
     src:    '/dev/mapper/{{ item.name }}'
-    dump:   '{{ item.mount_dump    | d(omit) }}'
-    fstab:  '{{ item.fstab_path    | d(omit) }}'
-    fstype: '{{ item.fstype        | d(cryptsetup_fstype) }}'
-    name:   '{{ item.mount         | d(cryptsetup_mountpoint_parent_directory + "/" + item.name) }}'
-    opts:   '{{ item.mount_options | d(cryptsetup_mount_options | d(omit)) }}'
-    passno: '{{ item.mount_passno  | d(omit) }}'
-    state:  '{{ item.state         | d(cryptsetup_state) }}'
-  with_items: cryptsetup_devices_combined
+    dump:   '{{ item.mount_dump     | d(omit) }}'
+    fstab:  '{{ item.fstab_path     | d(omit) }}'
+    fstype: '{{ item.fstype         | d(cryptsetup_fstype) }}'
+    name:   '{{ item.mount          | d(cryptsetup_mountpoint_parent_directory + "/" + item.name) }}'
+    opts:   '{{ (item.mount_options | d(cryptsetup_mount_options | d([]))) | list | sort | unique | join(",") }}'
+    passno: '{{ item.mount_passno   | d(omit) }}'
+    state:  '{{ "mounted" if (item.state|d(cryptsetup_state) == "ansible_controller_mounted") else item.state|d(cryptsetup_state) }}'
+  with_items: '{{ cryptsetup_devices_combined }}'
 
 ## Close crypto layer and remove (((
 
@@ -266,16 +312,16 @@
     path: '{{ item.mount | d(cryptsetup_mountpoint_parent_directory + "/" + item.name) }}'
     state: 'absent'
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'absent' ])
-  with_items: cryptsetup_devices_combined
+  with_items: '{{ cryptsetup_devices_combined }}'
 
 - name: Stop plaintext device mapper target
   command: cryptdisks_stop "{{ item.0.name }}"
+  register: cryptsetup_register_cryptdisks_stop
   changed_when: ("(stopping)" in cryptsetup_register_cryptdisks_stop.stdout)
   failed_when: (
                 cryptsetup_register_cryptdisks_stop.rc != 0 and not
                 ('Stopping crypto disk...' == cryptsetup_register_cryptdisks_stop.stdout and cryptsetup_register_cryptdisks_stop.rc == 1)
                )
-  register: cryptsetup_register_cryptdisks_stop
   when: (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'unmounted', 'absent' ] or
           (item.0.state|d(cryptsetup_state|d('mounted')) in [ 'present' ] and item.1|changed)
         )
@@ -289,17 +335,24 @@
     path:  '{{ item.crypttab_path | d(omit) }}'
     state: 'absent'
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'absent' ])
-  with_items: cryptsetup_devices_combined
+  with_items: '{{ cryptsetup_devices_combined }}'
 
 ## Depending on which filesystem and lower levels the keyfile is stored on, the
 ## ``shred`` operation might be of limited use e.g. because of snapshots or copy-on-write. Try it anyway.
 ## Note that there is still at least one copy of the keyfile on the Ansible controller.
 - name: Ensure keyfile is unaccessible on the remote system
-  command: shred --remove --zero --iterations=42 "{{ cryptsetup_keyfile_remote_location + "/" + item.name + "_keyfile.raw" }}"
+  command: shred --remove --zero --iterations=42
+           '{{ ("/dev/shm"
+              if (item.state|d(cryptsetup_state|d("mounted")) == "ansible_controller_mounted")
+              else cryptsetup_keyfile_remote_location)
+              + "/" + item.name + "_keyfile.raw" }}'
   args:
-    removes: '{{ cryptsetup_keyfile_remote_location + "/" + item.name + "_keyfile.raw" }}'
-  when: (item.state|d(cryptsetup_state|d('mounted')) == 'absent')
-  with_items: cryptsetup_devices_combined
+    removes: '{{ ("/dev/shm"
+                 if (item.state|d(cryptsetup_state|d("mounted")) == "ansible_controller_mounted")
+                 else cryptsetup_keyfile_remote_location)
+                 + "/" + item.name + "_keyfile.raw" }}'
+  when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'ansible_controller_mounted', 'absent'])
+  with_items: '{{ cryptsetup_devices_combined }}'
 
 ## Note that there are still two copies of the header on the ciphertext block device
 ## and on the Ansible controller.
@@ -308,7 +361,7 @@
   args:
     removes: '{{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}'
   when: (item.state|d(cryptsetup_state|d('mounted')) == 'absent')
-  with_items: cryptsetup_devices_combined
+  with_items: '{{ cryptsetup_devices_combined }}'
   tags: [ 'role::cryptsetup:backup' ]
 
 ## )))

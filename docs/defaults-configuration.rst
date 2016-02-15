@@ -21,8 +21,8 @@ you to use more specific parameters which are not documented below.
   :file:`/dev/sdb5`.
 
 ``crypttab_options``
-  Optional, string. List of options to configure for each device in
-  :file:`/etc/crypttab`.
+  Optional, list of strings. Each string represents an option to configure for
+  each device in :file:`/etc/crypttab`.
   Overwrites the default as configured by ``cryptsetup_crypttab_options``
   variable.
 
@@ -56,7 +56,7 @@ you to use more specific parameters which are not documented below.
     {{ cryptsetup_mountpoint_parent_directory + "/" + item.name }}
 
 ``mount_options``
-  Optional, string. Mount options associated with the filesystem.
+  Optional, list of strings. Mount options associated with the filesystem.
   For more details see :manpage:`mount(8)`.
 
 ``state``
@@ -67,6 +67,23 @@ you to use more specific parameters which are not documented below.
   ``mounted``
     Ensure that the encryption and filesystem layer are in place on the block device and
     the filesystem is mounted.
+
+  ``ansible_controller_mounted``
+    Same as ``mounted`` except that the keyfile is never stored on persistent storage of the remote system.
+    Might be useful when you don’t have a secure place to store the keyfile on the remote system.
+    With this option you will be required to run this role after each reboot to mount the filesystem again.
+
+    Note that the default is ``auto`` which means that your init system will
+    try to mount the filesystem on boot and might drop you to a root shell if
+    it can’t.
+
+    To avoid this, you need to set the following options for the item::
+
+      crypttab_options: '{{ ["noauto"] + (cryptsetup_crypttab_options|d([]) | list) }}'
+      mount_options: '{{ ["noauto"] + (cryptsetup_mount_options|d([]) | list) }}'
+
+    Note that this option is currently not idempotent because it copes the
+    keyfile to the remote system and erases it again.
 
   ``unmounted``
     Ensure that the encryption and filesystem layer are in place on the block device and
@@ -87,6 +104,11 @@ you to use more specific parameters which are not documented below.
     This was done to allow to provision remote systems with keys for ciphertext block
     devices which have been setup previously and are not available during
     execution of this role.
+
+    Note that if the encrypted filesystem is not mounted when this option is
+    used then this role will not be idempotent because the crypto layer needs
+    to be opened in order to check if the filesystem has been created on top of
+    it.
 
   ``absent``
     Same as ``unmounted`` but additionally removes all configuration, the
