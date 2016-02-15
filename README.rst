@@ -124,6 +124,12 @@ Authors
 - Email: h.goebel@crazy-compilers.com
 - Website: http://www.crazy-compilers.com
 
+**Robin `ypid` Schneider**
+
+- Email: ypid@riseup.net
+- Website: http://ypid.de/
+- GitHub: `ypid <https://github.com/ypid>`_
+
 .. |Gratipay| image:: https://img.shields.io/gratipay/drybjed.svg?style=flat
 .. _Gratipay: https://www.gratipay.com/drybjed/
 .. |debops_logo| image:: http://debops.org/images/debops-small.png
