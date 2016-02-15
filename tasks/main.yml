@@ -21,8 +21,8 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - apparmor_base_packages
-    - apparmor_packages
+    - '{{ apparmor_base_packages }}'
+    - '{{ apparmor_packages }}'
 
 - name: Setup apparmor=1 security=apparmor as kernel parameter
   lineinfile:
@@ -94,7 +94,7 @@
   ## AppArmor tries to load the profile with the new status into the Kernel after changing it.
   ## This does not work if the Kernel has not been started with AppArmor support.
   ## But the profile configuration file is updated anyway and will be picked up on next reboot with AppArmor support.
-  with_dict: apparmor_profile_status
+  with_dict: '{{ apparmor_profile_status }}'
 
 - name: Ensure AppArmor service is started
   service:
@@ -120,12 +120,12 @@
     owner: 'root'
     group: 'root'
   register: apparmor_register_local_config
-  with_dict: apparmor_local_config
+  with_dict: '{{ apparmor_local_config }}'
 
 - name: Reload changed profiles
   command: apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"
   when: (item|changed and not apparmor_register_tunables|changed)
-  with_items: apparmor_register_local_config.results
+  with_items: '{{ apparmor_register_local_config.results }}'
 
 - name: Reload AppArmor all profiles
   service:
