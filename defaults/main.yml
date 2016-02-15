@@ -424,16 +424,22 @@ pki_authorities:
   - '{{ pki_authorities_ca_service }}'
 
 
+# .. envvar:: pki_ca_organization
+#
+# The organizations name to be used in Distinguished Names (subject).
+pki_ca_organization: '{{ pki_ca_domain.split(".") | first | capitalize }}'
+
+
 # .. envvar:: pki_ca_root_dn
 #
 # The Distinguished Name (subject) of the Root Certificate Authority.
-pki_ca_root_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }} Certificate Authority' ]
+pki_ca_root_dn: [ 'o={{ pki_ca_organization }} Certificate Authority' ]
 
 
 # .. envvar:: pki_ca_domain_dn
 #
 # The Distinguished Name (subject) of the Domain Certificate Authority.
-pki_ca_domain_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }}', 'ou=Domain CA' ]
+pki_ca_domain_dn: [ 'o={{ pki_ca_organization }}', 'ou=Domain CA' ]
 
 
 # .. envvar:: pki_ca_service_enabled
@@ -448,7 +454,7 @@ pki_ca_service_enabled: False
 # .. envvar:: pki_ca_service_dn
 #
 # The Distinguished Name (subject) of the Service Certificate Authority.
-pki_ca_service_dn: [ 'o={{ pki_ca_domain.split(".") | first | capitalize }}', 'ou=Internal Services CA' ]
+pki_ca_service_dn: [ 'o={{ pki_ca_organization }}', 'ou=Internal Services CA' ]
 
 
 # .. envvar:: pki_authorities_ca_root
