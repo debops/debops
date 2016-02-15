@@ -2,7 +2,10 @@
 
 - name: Combine lists of kernel module
   set_fact:
-    kernel_module_list_combined: '{{ (kernel_module_list|d([])|list) + (kernel_module_group_list|d([])|list) + (kernel_module_host_list|d([])|list) }}'
+    kernel_module_list_combined: '{{
+      (kernel_module_list       | d([]) | list) +
+      (kernel_module_group_list | d([]) | list) +
+      (kernel_module_host_list  | d([]) | list) }}'
 
 - name: Blacklist kernel modules
   kernel_blacklist:
@@ -23,7 +26,7 @@
   register: kernel_module_options_template
 
 ## See http://unix.stackexchange.com/a/123050
-## Could be handled by writing to to '/sys/{{ item.name }}/parameters/{{ item.parm_name }}' but this should be handled by the modprobe module.
+## Could be handled by writing to '/sys/{{ item.name }}/parameters/{{ item.parm_name }}' but this should be handled by the modprobe module.
 - name: Force module unload to apply different module parameters or if blacklisted
   modprobe:
     name: '{{ item.name }}'
