@@ -3,17 +3,17 @@
 - name: Combine variables
   set_fact:
     apparmor_profile_status: '{{
-      apparmor_global_profile_status|d({})
-      | combine(apparmor_host_group_profile_status|d({}))
-      | combine(apparmor_host_profile_status|d({})) }}'
+      apparmor_global_profile_status               |d({})
+      | combine(apparmor_host_group_profile_status |d({}))
+      | combine(apparmor_host_profile_status       |d({})) }}'
     apparmor_local_config: '{{
-      apparmor_local_config_global|d({})
-      | combine(apparmor_local_config_host_group|d({}))
-      | combine(apparmor_local_config_host|d({})) }}'
+      apparmor_local_config_global               |d({})
+      | combine(apparmor_local_config_host_group |d({}))
+      | combine(apparmor_local_config_host       |d({})) }}'
     apparmor_tunables: '{{
-      (apparmor_tunables_global|d([])     | list) +
-      (apparmor_tunables_host_group|d([]) | list) +
-      (apparmor_tunables_host|d([])       | list) }}'
+      (apparmor_tunables_global     |d([]) | list) +
+      (apparmor_tunables_host_group |d([]) | list) +
+      (apparmor_tunables_host       |d([]) | list) }}'
 
 - name: Install required packages
   apt:
