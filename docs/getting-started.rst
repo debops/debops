@@ -57,6 +57,10 @@ ones you are likely to change are:
   configured with no default domain, or the provider domain might be set up by
   default. Make sure that you check what domain is used by your remote hosts.
 
+``pki_ca_organization``
+  This is the Organizations name used as a base for the internal
+  Certificate Authority Distinguished Names.
+
 ``pki_ca_root_dn``, ``pki_ca_domain_dn``, ``pki_ca_service_dn``
   These variables define the Distinguished Name, or Subject, of the Root
   Certificate Authority and Domain Certificate Authority. The value is a list
