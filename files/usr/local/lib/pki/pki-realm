@@ -154,6 +154,7 @@ initialize_environment () {
     config["subject"]=""
     config["domains"]=""
     config["subdomains"]=""
+    config["subject_alt_names"]=""
 
     config["acme_default_subject"]="CN=$(get_dnsdomainname)"
     config["acme_default_domain"]="$(get_dnsdomainname)"
@@ -162,6 +163,7 @@ initialize_environment () {
     config["acme_subject"]=""
     config["acme_domains"]=""
     config["acme_subdomains"]=""
+    config["acme_alt_names"]=""
 
     if [ "$EUID" -eq 0 ] ; then
 
@@ -429,6 +431,7 @@ create_openssl_config () {
     local req_dn="${3}"
     local req_domains="${4}"
     local req_subdomains="${5}"
+    local req_san="${6}"
 
     if [ -n "${config_file}" -a -n "${req_dn}" ] ; then
 
@@ -476,7 +479,7 @@ basicConstraints   = CA:FALSE
 keyUsage           = digitalSignature, keyEncipherment
 extendedKeyUsage   = serverAuth, clientAuth
 EOF
-        if [ -n "${req_domains}" ] ; then
+        if [ -n "${req_domains}" -o -n "${req_subdomains}" -o -n "${req_san}" ] ; then
             cat << EOF >> ${config_file}
 subjectAltName     = @ext_req_san
 
@@ -486,22 +489,42 @@ EOF
             local domains=( $(echo "${req_domains}" | tr "/" " ") )
             local subdomains=( $(echo "${req_subdomains}" | tr "/" " ") )
 
-            for i in "${!domains[@]}" ; do
-                printf "%-18s = %s\n" "DNS.${i}" "${domains[${i}]}" >> ${config_file}
-            done
+            local san_ip=(    $( echo "${req_san}" | tr "|" "\n" | awk '/^[Ii][Pp]:/ {print;}' | sed -e 's/^[Ii][Pp]://' | xargs ) )
+            local san_dns=(   $( echo "${req_san}" | tr "|" "\n" | awk '/^[Dd][Nn][Ss]:/ {print;}' | sed -e 's/^[Dd][Nn][Ss]://' | xargs ) )
+            local san_uri=(   $( echo "${req_san}" | tr "|" "\n" | awk '/^[Uu][Rr][Ii]:/ {print;}' | sed -e 's/^[Uu][Rr][Ii]://' | xargs ) )
+            local san_email=( $( echo "${req_san}" | tr "|" "\n" | awk '/^[Ee][Mm][Aa][Ii][Ll]:/ {print;}' | sed -e 's/^[Ee][Mm][Aa][Ii][Ll]://' | xargs ) )
+
+            local all_dns=( ${domains[@]:-} )
+
             if [ ${#subdomains[@]} -gt 0 ] ; then
-                local dnsid="${#domains[@]}"
                 for i in "${!domains[@]}" ; do
                     for j in "${!subdomains[@]}" ; do
                         if [ "${subdomains[${j}]}" == "_wildcard_" ] ; then
-                            printf "%-18s = %s\n" "DNS.${dnsid}" "*.${domains[${i}]}" >> ${config_file}
+                            all_dns+=( "*.${domains[${i}]}" )
                         else
-                            printf "%-18s = %s\n" "DNS.${dnsid}" "${subdomains[${j}]}.${domains[${i}]}" >> ${config_file}
+                            all_dns+=( "${subdomains[${j}]}.${domains[${i}]}" )
                         fi
-                        local dnsid="$(( ${dnsid} + 1 ))"
                     done
                 done
             fi
+
+            all_dns+=( ${san_dns[@]:-} )
+
+            for i in "${!all_dns[@]}" ; do
+                printf "%-18s = %s\n" "DNS.${i}" "${all_dns[${i}]}" >> ${config_file}
+            done
+
+            for i in "${!san_ip[@]}" ; do
+                printf "%-18s = %s\n" "IP.${i}" "${san_ip[${i}]}" >> ${config_file}
+            done
+
+            for i in "${!san_uri[@]}" ; do
+                printf "%-18s = %s\n" "URI.${i}" "${san_uri[${i}]}" >> ${config_file}
+            done
+
+            for i in "${!san_email[@]}" ; do
+                printf "%-18s = %s\n" "email.${i}" "${san_email[${i}]}" >> ${config_file}
+            done
 
         fi
 
@@ -515,6 +538,7 @@ create_gnutls_config () {
     local req_dn="${3}"
     local req_domains="${4}"
     local req_subdomains="${5}"
+    local req_san="${6}"
 
     if [ -n "${config_file}" -a -n "${req_dn}" ] ; then
 
@@ -545,29 +569,45 @@ EOF
             -e 's/^[Cc][Nn]=/cn = "/' \
             -e 's/$/"/' >> ${config_file}
 
-        if [ -n "${req_domains}" ] ; then
+        local domains=( $(echo "${req_domains}" | tr "/" " ") )
+        local subdomains=( $(echo "${req_subdomains}" | tr "/" " ") )
 
-            local domains=( $(echo "${req_domains}" | tr "/" " ") )
-            local subdomains=( $(echo "${req_subdomains}" | tr "/" " ") )
+        local san_ip=(    $( echo "${req_san}" | tr "|" "\n" | awk '/^[Ii][Pp]:/ {print;}' | sed -e 's/^[Ii][Pp]://' | xargs ) )
+        local san_dns=(   $( echo "${req_san}" | tr "|" "\n" | awk '/^[Dd][Nn][Ss]:/ {print;}' | sed -e 's/^[Dd][Nn][Ss]://' | xargs ) )
+        local san_uri=(   $( echo "${req_san}" | tr "|" "\n" | awk '/^[Uu][Rr][Ii]:/ {print;}' | sed -e 's/^[Uu][Rr][Ii]://' | xargs ) )
+        local san_email=( $( echo "${req_san}" | tr "|" "\n" | awk '/^[Ee][Mm][Aa][Ii][Ll]:/ {print;}' | sed -e 's/^[Ee][Mm][Aa][Ii][Ll]://' | xargs ) )
 
+        local all_dns=( ${domains[@]:-} )
+
+        if [ ${#subdomains[@]} -gt 0 ] ; then
             for i in "${!domains[@]}" ; do
-                printf 'dns_name = "%s"\n' "${domains[${i}]}" >> ${config_file}
-            done
-            if [ ${#subdomains[@]} -gt 0 ] ; then
-                local dnsid="${#domains[@]}"
-                for i in "${!domains[@]}" ; do
-                    for j in "${!subdomains[@]}" ; do
-                        if [ "${subdomains[${j}]}" == "_wildcard_" ] ; then
-                            printf 'dns_name = "%s"\n' "*.${domains[${i}]}" >> ${config_file}
-                        else
-                            printf 'dns_name = "%s"\n' "${subdomains[${j}]}.${domains[${i}]}" >> ${config_file}
-                        fi
-                        local dnsid="$(( ${dnsid} + 1 ))"
-                    done
+                for j in "${!subdomains[@]}" ; do
+                    if [ "${subdomains[${j}]}" == "_wildcard_" ] ; then
+                        all_dns+=( "*.${domains[${i}]}" )
+                    else
+                        all_dns+=( "${subdomains[${j}]}.${domains[${i}]}" )
+                    fi
                 done
-            fi
-
+            done
         fi
+
+        all_dns+=( ${san_dns[@]:-} )
+
+        for i in "${!all_dns[@]}" ; do
+            printf 'dns_name = "%s"\n' "${all_dns[${i}]}" >> ${config_file}
+        done
+
+        for i in "${!san_ip[@]}" ; do
+            printf 'ip_address = "%s"\n' "${san_ip[${i}]}" >> ${config_file}
+        done
+
+        for i in "${!san_uri[@]}" ; do
+            printf 'uri = "%s"\n' "${san_uri[${i}]}" >> ${config_file}
+        done
+
+        for i in "${!san_email[@]}" ; do
+            printf 'email = "%s"\n' "${san_email[${i}]}" >> ${config_file}
+        done
 
     fi
 }
@@ -907,11 +947,11 @@ check_files () {
 
             if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
-                create_${library}_config internal/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}"
+                create_${library}_config internal/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
 
             elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
-                create_${library}_config internal/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}"
+                create_${library}_config internal/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
 
             fi
 
@@ -1362,6 +1402,12 @@ sub_new-realm () {
                     subdomains=*)
                         args["subdomains"]=${OPTARG#*=}
                         ;;
+                    subject-alt-names)
+                        args["subject_alt_names"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    subjest-alt-names=*)
+                        args["subject_alt_names"]=${OPTARG#*=}
+                        ;;
                     acme)
                         args["pki_acme"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                         ;;
@@ -1385,6 +1431,12 @@ sub_new-realm () {
                         ;;
                     acme-subdomains=*)
                         args["acme_subdomains"]=${OPTARG#*=}
+                        ;;
+                    acme-alt-names)
+                        args["acme_alt_names"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    acme-alt-names=*)
+                        args["acme_alt_names"]=${OPTARG#*=}
                         ;;
                     *)
                         if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]; then
@@ -1457,18 +1509,18 @@ sub_new-realm () {
 
         if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
-            create_${library}_config internal/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}"
+            create_${library}_config internal/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
 
             if [ "${config['pki_acme']}" = "true" ] ; then
-                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-${config['acme_default_subject']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
+                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-${config['acme_default_subject']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}" "${config['acme_alt_names']:-}"
             fi
 
         elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
-            create_${library}_config internal/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}"
+            create_${library}_config internal/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
 
             if [ "${config['pki_acme']}" = "true" ] ; then
-                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-cn=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
+                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-cn=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}" "${config['acme_alt_names']:-}"
             fi
 
         fi
@@ -1554,6 +1606,12 @@ sub_init () {
                     subdomains=*)
                         args["subdomains"]=${OPTARG#*=}
                         ;;
+                    subject-alt-names)
+                        args["subject_alt_names"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    subjest-alt-names=*)
+                        args["subject_alt_names"]=${OPTARG#*=}
+                        ;;
                     default-domain)
                         args["pki_default_domain"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                         ;;
@@ -1601,6 +1659,12 @@ sub_init () {
                         ;;
                     acme-subdomains=*)
                         args["acme_subdomains"]=${OPTARG#*=}
+                        ;;
+                    acme-alt-names)
+                        args["acme_alt_names"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    acme-alt-names=*)
+                        args["acme_alt_names"]=${OPTARG#*=}
                         ;;
                     acme-ca)
                         args["acme_ca"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))

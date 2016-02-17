@@ -13,6 +13,9 @@ v0.2.4
 
 - Use short ``hostname -f`` argument for portability. [drybjed]
 
+- Update support for ``subjectAltName`` extension in certificates. Currently
+  only IP addresses, DNS records, URI paths and emails are supported. [drybjed]
+
 v0.2.3
 ------
 
