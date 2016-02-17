@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.2.4
+------
+
+*Unreleased*
+
+- Use a more portable "shebang" string in Bash scripts. [drybjed]
+
 v0.2.3
 ------
 
