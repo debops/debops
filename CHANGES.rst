@@ -11,6 +11,8 @@ v0.2.4
 - Provide a portable ``dnsdomainname`` alternative function which works on
   operating systems without the former command present. [drybjed]
 
+- Use short ``hostname -f`` argument for portability. [drybjed]
+
 v0.2.3
 ------
 
