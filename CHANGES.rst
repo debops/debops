@@ -16,6 +16,8 @@ v0.2.4
 - Update support for ``subjectAltName`` extension in certificates. Currently
   only IP addresses, DNS records, URI paths and emails are supported. [drybjed]
 
+- Document ``pki_realms`` lists. [drybjed]
+
 v0.2.3
 ------
 
