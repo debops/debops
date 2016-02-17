@@ -1,7 +1,7 @@
-.. _pki_realms:
+.. _pki_realms_structure:
 
-PKI Realms
-==========
+PKI realms structure
+====================
 
 The concept of PKI realms is designed to provide a standardized way for various
 applications to access X.509 certificates and private keys. The management of
