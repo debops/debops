@@ -83,6 +83,21 @@ get_relative_path () {
     python -c 'import sys, os.path; print os.path.relpath(sys.argv[1], sys.argv[2])' "${1}" "${2:-$PWD}"
 }
 
+# Wrap dnsdomainname if it's not present (on MacOS X)
+get_dnsdomainname () {
+    if type dnsdomainname > /dev/null 2>&1 ; then
+        dnsdomainname
+    else
+
+        local fqdn="$(hostname -f)"
+        if [[ ${fqdn} == *.* ]] ; then
+            echo "${fqdn#*.}"
+        else
+            echo ""
+        fi
+    fi
+}
+
 initialize_environment () {
 
     declare -gA config
@@ -127,7 +142,7 @@ initialize_environment () {
     config["pki_default_ca_bundle"]="/etc/ssl/certs/ca-certificates.crt"
     config["pki_default_subject"]="CN=$(hostname --fqdn)"
     config["pki_default_fqdn"]="$(hostname --fqdn)"
-    config["pki_default_domain"]="$(dnsdomainname)"
+    config["pki_default_domain"]="$(get_dnsdomainname)"
     config["pki_default_subdomains"]="_wildcard_"
 
     config["pki_dhparam"]="false"
@@ -140,8 +155,8 @@ initialize_environment () {
     config["domains"]=""
     config["subdomains"]=""
 
-    config["acme_default_subject"]="CN=$(dnsdomainname)"
-    config["acme_default_domain"]="$(dnsdomainname)"
+    config["acme_default_subject"]="CN=$(get_dnsdomainname)"
+    config["acme_default_domain"]="$(get_dnsdomainname)"
     config["acme_default_subdomains"]="www/ftp/mail/smtp/imap"
 
     config["acme_subject"]=""

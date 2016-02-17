@@ -8,6 +8,9 @@ v0.2.4
 
 - Use a more portable "shebang" string in Bash scripts. [drybjed]
 
+- Provide a portable ``dnsdomainname`` alternative function which works on
+  operating systems without the former command present. [drybjed]
+
 v0.2.3
 ------
 
