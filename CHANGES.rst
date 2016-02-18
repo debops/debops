@@ -18,6 +18,10 @@ v0.2.4
 
 - Document ``pki_realms`` lists. [drybjed]
 
+- Redesign the ``secret/pki/ca-certificates/`` directory. It's now based on
+  Ansible inventory groups and allows distribution of CA certificates to all
+  hosts, specific host groups, or specific hosts. [drybjed]
+
 v0.2.3
 ------
 

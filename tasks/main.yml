@@ -210,6 +210,7 @@
   environment:
     PKI_ROOT: '{{ secret + "/pki" }}'
     PKI_LIBRARY: '{{ item.pki_ca_library | d(pki_ca_library) }}'
+    PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/" + (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
   command: ./lib/pki-authority init --name "{{ item.name }}" --default-sign-base "{{ pki_default_sign_base }}"
            --root-sign-multiplier "{{ pki_default_root_sign_multiplier }}" --ca-sign-multiplier "{{ pki_default_ca_sign_multiplier }}"
            --cert-sign-multiplier "{{ pki_default_cert_sign_multiplier }}"
@@ -229,6 +230,7 @@
     PKI_SESSION_TOKEN: '{{ omit | md5 }}'
     PKI_ROOT: '{{ secret + "/pki" }}'
     PKI_LIBRARY: '{{ item.pki_ca_library | d(pki_ca_library) }}'
+    PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/" + (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
   command: ./lib/pki-authority new-ca --name "{{ item.name }}" --type "{{ item.type | d('') }}" --domain "{{ item.domain | d(pki_ca_domain) }}"
            --subdomain "{{ item.subdomain }}" --subject "{{ item.subject | join('/') }}" --issuer-name "{{ item.issuer_name | d('') }}"
            --root-sign-days "{{ item.root_sign_days | d('') }}" --ca-sign-days "{{ item.ca_sign_days | d('') }}"
@@ -316,13 +318,34 @@
          (item.enabled is undefined or item.enabled|bool) and
          (item.when is undefined or item.when|bool))
 
-- name: Download custom CA certificates
+- name: Download custom CA certificates by host
   copy:
-    src: '{{ secret + "/pki/ca-certificates/" }}'
+    src: '{{ secret + "/pki/ca-certificates/by-host/" + pki_fqdn + "/" }}'
     dest: '/usr/local/share/ca-certificates/pki/'
     owner: 'root'
     group: 'root'
     mode: '0644'
+  notify: [ 'Regenerate ca-certificates.crt' ]
+  when: pki_enabled | bool
+
+- name: Download custom CA certificates by group
+  copy:
+    src: '{{ secret + "/pki/ca-certificates/by-group/" + item + "/" }}'
+    dest: '/usr/local/share/ca-certificates/pki/'
+    owner: 'root'
+    group: 'root'
+    force: False
+  with_items: '{{ pki_inventory_groups }}'
+  notify: [ 'Regenerate ca-certificates.crt' ]
+  when: (pki_enabled | bool and item in group_names)
+
+- name: Download custom CA certificates for all hosts
+  copy:
+    src: '{{ secret + "/pki/ca-certificates/by-group/all/" }}'
+    dest: '/usr/local/share/ca-certificates/pki/'
+    owner: 'root'
+    group: 'root'
+    force: False
   notify: [ 'Regenerate ca-certificates.crt' ]
   when: pki_enabled | bool
 
