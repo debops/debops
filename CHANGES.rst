@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.1.1
+------
+
+*Released: 2016-02-18*
+
+- Fix a bug with wrong ``ansible_local.proc.hidepid_group`` value when hidepid
+  was not enabled in ``/proc``. [prahal]
+
+- Be more strict in parsing ``/proc/mounts`` when looking for a ``/proc`` entry
+  with enabled ``hidepid=`` parameter. [drybjed]
+
 v0.1.0
 ------
 

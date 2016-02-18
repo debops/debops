@@ -11,15 +11,15 @@ hidepid_type=""
 hidepid_gid=""
 hidepid_group=""
 
-if grep -qs '/proc' /proc/mounts ; then
+if grep -qs -E '^proc\s+.*hidepid=' /proc/mounts ; then
 
     hidepid="true"
 
     # Find the hidepid value
-    hidepid_type="$(grep -E '^proc' /proc/mounts | awk '{print $4}' | awk -F',' '{for (i=1;i<=NF;i++) {if ($i ~ /hidepid=/) {print $i}}}' | cut -d= -f2)"
+    hidepid_type="$(grep -E '^proc\s+.*hidepid=' /proc/mounts | awk '{print $4}' | awk -F',' '{for (i=1;i<=NF;i++) {if ($i ~ /hidepid=/) {print $i}}}' | cut -d= -f2)"
 
     # Find the hidepid gid
-    hidepid_gid="$(grep -E '^proc' /proc/mounts | awk '{print $4}' | awk -F',' '{for (i=1;i<=NF;i++) {if ($i ~ /gid=/) {print $i}}}' | cut -d= -f2)"
+    hidepid_gid="$(grep -E '^proc\s+.*hidepid=' /proc/mounts | awk '{print $4}' | awk -F',' '{for (i=1;i<=NF;i++) {if ($i ~ /gid=/) {print $i}}}' | cut -d= -f2)"
 
     # Find the hidepid group
     if [ -n "${hidepid_gid}" ]; then
