@@ -1,6 +1,23 @@
 Changelog
 =========
 
+v0.2.4
+------
+
+*Unreleased*
+
+- Use a more portable "shebang" string in Bash scripts. [drybjed]
+
+- Provide a portable ``dnsdomainname`` alternative function which works on
+  operating systems without the former command present. [drybjed]
+
+- Use short ``hostname -f`` argument for portability. [drybjed]
+
+- Update support for ``subjectAltName`` extension in certificates. Currently
+  only IP addresses, DNS records, URI paths and emails are supported. [drybjed]
+
+- Document ``pki_realms`` lists. [drybjed]
+
 v0.2.3
 ------
 

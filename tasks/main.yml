@@ -160,6 +160,8 @@
            --domains "{{ item.domains|d([]) | join('/') }}" --subdomains "{{ item.subdomains|d([]) | join('/') }}"
            --acme "{{ item.acme|d(pki_acme) | bool | lower }}" --acme-subject "{{ item.acme_subject|d([]) | join('/') }}"
            --acme-domains "{{ item.acme_domains|d([]) | join('/') }}" --acme-subdomains "{{ item.acme_subdomains|d([]) | join('/') }}"
+           --subject-alt-names "{{ item.subject_alt_names | d([]) | join('|') }}"
+           --acme-alt-names "{{ item.acme_alt_names | d([]) | join('|') }}"
   args:
     creates: '/etc/pki/realms/{{ item.name }}/default.key'
   with_flattened:
