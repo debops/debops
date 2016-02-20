@@ -1086,7 +1086,7 @@ process_public_files () {
 
         if [ -r ${authority}/cert.pem ] && ( check_expiration_time ${authority}/cert.pem $(( 60 * 60 * 24 * 10 )) || [ "${authority}" = "${authority_preference[-1]}" ] ) ; then
 
-            if ! diff -q -N ${authority}/cert.pem public/cert.pem > /dev/null ; then
+            if ! ( diff -q -N ${authority}/cert.pem public/cert.pem > /dev/null && check_file_signature public/cert.pem ) ; then
 
                 for source_file in ${authority}/cert.pem ${authority}/intermediate.pem ${authority}/root.pem ${authority}/alt_intermediate.pem ${authority}/alt_root.pem ; do
 
@@ -1099,6 +1099,15 @@ process_public_files () {
                     fi
 
                 done
+
+                if [ -r public/cert.pem ] ; then
+                    if ! check_file_signature public/cert.pem ; then
+                        if [ -r public/intermediate.pem ] ; then
+                            test -r public/cert_intermediate.pem.tmp && rm -f public/cert_intermediate.pem.tmp || true
+                            cat public/cert.pem public/intermediate.pem > public/cert_intermediate.pem.tmp
+                        fi
+                    fi
+                fi
 
                 if [ -r public/cert.pem.tmp -a -r public/intermediate.pem.tmp ] ; then
                         cat public/cert.pem.tmp public/intermediate.pem.tmp > public/cert_intermediate.pem.tmp
@@ -1132,6 +1141,7 @@ process_public_files () {
                     test -r public/cert_intermediate.pem.tmp && rm -f public/cert_intermediate.pem.tmp || true
                     cat public/cert.pem public/intermediate.pem > public/cert_intermediate.pem.tmp
                 fi
+
             fi
 
             if [ "${config['pki_dhparam']}" = "true" -a -n "${config['dhparam_file']}" -a -r ${config['dhparam_file']} ] ; then
@@ -1155,6 +1165,9 @@ process_public_files () {
                     fi
                 elif [ -r public/cert_dhparam.pem ] ; then
                     if ! diff -q -N ${config['dhparam_file']} <( sed -n '/-----BEGIN DH PARAMETERS-----/,/-----END DH PARAMETERS-----/p' public/cert_dhparam.pem ) > /dev/null ; then
+                        cat public/cert.pem ${config['dhparam_file']} > public/cert_dhparam.pem.tmp
+                        state+=("changed-dhparam")
+                    elif ! check_file_signature public/cert.pem ; then
                         cat public/cert.pem ${config['dhparam_file']} > public/cert_dhparam.pem.tmp
                         state+=("changed-dhparam")
                     fi
@@ -1228,7 +1241,7 @@ process_private_files () {
                 fi
             fi
 
-            if ! diff -q -N ${authority}/cert.pem public/cert.pem > /dev/null ; then
+            if [ -r public/cert.pem.tmp -o -r public/cert_intermediate.pem.tmp ] ; then
 
                 if [ -r public/cert.pem.tmp -a -r private/realm_key.pem ] ; then
 
@@ -1276,6 +1289,10 @@ process_private_files () {
             elif [ -r private/key.pem -a -r public/cert.pem ] ; then
 
                 if ! check_openssl_key_crt_match private/key.pem public/cert.pem ; then
+                    test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
+                    install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain.pem.tmp
+                    cat private/key.pem public/cert.pem >> private/key_chain.pem.tmp
+                elif ! check_file_signature public/cert.pem ; then
                     test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain.pem.tmp
                     cat private/key.pem public/cert.pem >> private/key_chain.pem.tmp

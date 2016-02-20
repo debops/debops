@@ -48,6 +48,10 @@ v0.2.4
   not download the intermediate certificate every time the ``pki-realm`` script
   is run. [drybjed]
 
+- Slight changes in certificate chaining logic, to ensure that when
+  certificates are changed, all generated chained certificate files are
+  correctly updated. [drybjed]
+
 v0.2.3
 ------
 
