@@ -28,6 +28,9 @@ v0.2.4
   file signature is correct without updating it, so that it can be performed at
   different stages of the script. [drybjed]
 
+- Make sure that request generation works without subdomains and SANs present.
+  [drybjed]
+
 v0.2.3
 ------
 
