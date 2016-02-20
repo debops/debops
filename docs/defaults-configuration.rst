@@ -85,6 +85,12 @@ List of parameters related to the entire PKI realm:
        # Custom PKI realm
        - name: 'example.org'
 
+``authority``
+  Specify name of the internal Certificate Authority to send the internal
+  certificate requests to instead of the default one configured in
+  ``pki_default_authority`` variable. This should be the "normal" name of the
+  authority, not its subdomain name.
+
 ``acme``
   Optional, boolean. Enable or disable support for ACME Certificate Authority.
   Can be used to invert the global ``pki_acme`` setting per PKI realm if

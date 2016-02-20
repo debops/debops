@@ -137,8 +137,6 @@ initialize_environment () {
     config["acme_root_ca_path"]="/usr/share/ca-certificates"
     config["acme_root_ca_file"]="mozilla/DST_Root_CA_X3.crt"
 
-    config["acme_intermediate_url"]="https://letsencrypt.org/certs/lets-encrypt-x1-cross-signed.pem"
-
     config["pki_default_ca_bundle"]="/etc/ssl/certs/ca-certificates.crt"
     config["pki_default_subject"]="CN=$(hostname -f)"
     config["pki_default_fqdn"]="$(hostname -f)"
@@ -289,31 +287,38 @@ check_openssl_key_crt_match () {
     fi
 }
 
+update_file_signature () {
+    local check_file="${1}"
+
+    if [ -n "${check_file}" -a -r ${check_file} ] ; then
+        if [ -r ${check_file}.sig ] ; then
+            set +e
+            md5sum --quiet --status -c ${check_file}.sig
+            local rc=$?
+            set -e
+            if [ ${rc} -ne 0 ] ; then
+                rm -rf ${check_file}.sig
+                md5sum ${check_file} > ${check_file}.sig
+            fi
+        else
+            md5sum ${check_file} > ${check_file}.sig
+        fi
+    fi
+}
+
 check_file_signature () {
     local check_file="${1}"
 
-    if [ -n "${check_file}" ] ; then
-        if [ -r ${check_file} ] ; then
-            if [ -r ${check_file}.sig ] ; then
-                set +e
-                md5sum --quiet --status -c ${check_file}.sig
-                local rc=$?
-                set -e
-                if [ ${rc} -ne 0 ] ; then
-                    rm -rf ${check_file}.sig
-                    md5sum ${check_file} > ${check_file}.sig
-                    return ${rc}
-                fi
-            else
-                md5sum ${check_file} > ${check_file}.sig
-                return 0
-            fi
-        else
-            if [ -r ${check_file}.sig ] ; then
-                rm -f ${check_file}.sig
-            fi
+    if [ -n "${check_file}" -a -r ${check_file} ] ; then
+        if [ -r ${check_file}.sig ] ; then
+            set +e
+            md5sum --quiet --status -c ${check_file}.sig
+            local rc=$?
+            set -e
+            return ${rc}
         fi
     fi
+    return 1
 }
 
 enter_realm () {
@@ -412,7 +417,11 @@ update_symlink () {
 
         for target in ${@} ; do
             if  [ -r ${target} ] ; then
-                ln -sf ${target} ${symlink_target}
+                if [ -L ${symlink_target} -a "$(readlink ${symlink_target})" == "${target}" ] ; then
+                    break
+                else
+                    ln -sf ${target} ${symlink_target}
+                fi
                 break
             fi
         done
@@ -430,8 +439,8 @@ create_openssl_config () {
     local config_type="${2:-internal}"
     local req_dn="${3}"
     local req_domains="${4}"
-    local req_subdomains="${5}"
-    local req_san="${6}"
+    local req_subdomains="${5:-}"
+    local req_san="${6:-}"
 
     if [ -n "${config_file}" -a -n "${req_dn}" ] ; then
 
@@ -537,8 +546,8 @@ create_gnutls_config () {
     local config_type="${2:-internal}"
     local req_dn="${3}"
     local req_domains="${4}"
-    local req_subdomains="${5}"
-    local req_san="${6}"
+    local req_subdomains="${5:-}"
+    local req_san="${6:-}"
 
     if [ -n "${config_file}" -a -n "${req_dn}" ] ; then
 
@@ -880,17 +889,45 @@ request_acme_tiny_certificate () {
                 test -r acme/cert.pem && mv acme/cert.pem acme/cert.pem.old || true
                 mv acme/cert.pem.tmp acme/cert.pem
 
+                local acme_intermediate_uri="$(openssl x509 -in acme/cert.pem -text -noout -certopt ca_default,no_validity,no_serial | grep -E '^\s+CA\s+Issuers\s+-\s+URI:' | awk '{print $4}' | sed -e 's/^URI://')"
+
+                if [ ! -r acme/intermediate.pem ] ; then
+
+                    if [ -n "${acme_intermediate_uri}" ] ; then
+                        curl -s -o acme/intermediate.pem.tmp ${acme_intermediate_uri}
+                        mv acme/intermediate.pem.tmp acme/intermediate.pem
+                        if [ ! -r acme/intermediate_uri.txt ] ; then
+                            echo "${acme_intermediate_uri}" > acme/intermediate_uri.txt
+                        fi
+                    fi
+
+                elif [ -r acme/intermediate.pem ] ; then
+
+                    if [ -n "${acme_intermediate_uri}" -a -r acme/intermediate_uri.txt ] ; then
+                        if [ "${acme_intermediate_uri}" != "$(<acme/intermediate_uri.txt)" ] ; then
+                            curl -s -o acme/intermediate.pem.tmp ${acme_intermediate_uri}
+                            if ! diff -q -N acme/intermediate.pem acme/intermediate.pem.tmp > /dev/null ; then
+                                rm -f acme/intermediate.pem acme/intermediate_uri.txt
+                                mv acme/intermediate.pem.tmp acme/intermediate.pem
+                                if [ ! -r acme/intermediate_uri.txt ] ; then
+                                    echo "${acme_intermediate_uri}" > acme/intermediate_uri.txt
+                                fi
+                            else
+                                rm -f acme/intermediate.pem.tmp acme/intermediate_uri.txt
+                                if [ ! -r acme/intermediate_uri.txt ] ; then
+                                    echo "${acme_intermediate_uri}" > acme/intermediate_uri.txt
+                                fi
+                            fi
+                        fi
+                    fi
+
+                fi
+
                 if [ ! -r acme/root.pem ] ; then
                     if [ -n "${config['acme_root_ca_path']}" -a -n "${config['acme_root_ca_file']}" ] ; then
                         if [ -r ${config['acme_root_ca_path']}/${config['acme_root_ca_file']} ] && grep -q "${config['acme_root_ca_file']}" /etc/ca-certificates.conf ; then
                             ln -s ${config['acme_root_ca_path']}/${config['acme_root_ca_file']} acme/root.pem
                         fi
-                    fi
-                fi
-
-                if [ ! -r acme/intermediate.pem ] ; then
-                    if [ -n "${config['acme_intermediate_url']}" ] ; then
-                        curl -s -o acme/intermediate.pem ${config['acme_intermediate_url']}
                     fi
                 fi
 
@@ -938,6 +975,12 @@ check_files () {
         fi
 
         if [ -n "${PKI_SESSION_TOKEN:-}" -a -r internal/cert.pem ] ; then
+            if ! ( check_expiration_time internal/cert.pem ${config['internal_expiration_seconds']} && check_openssl_key_crt_match private/key.pem internal/cert.pem ) ; then
+                rm -f internal/${library}.conf internal/request.pem
+            fi
+        fi
+
+        if [ -n "${PKI_SESSION_TOKEN:-}" -a ! -r public/cert.pem ] ; then
             if ! ( check_expiration_time internal/cert.pem ${config['internal_expiration_seconds']} && check_openssl_key_crt_match private/key.pem internal/cert.pem ) ; then
                 rm -f internal/${library}.conf internal/request.pem
             fi
@@ -1043,7 +1086,7 @@ process_public_files () {
 
         if [ -r ${authority}/cert.pem ] && ( check_expiration_time ${authority}/cert.pem $(( 60 * 60 * 24 * 10 )) || [ "${authority}" = "${authority_preference[-1]}" ] ) ; then
 
-            if ! diff -q -N ${authority}/cert.pem public/cert.pem > /dev/null ; then
+            if ! ( diff -q -N ${authority}/cert.pem public/cert.pem > /dev/null && check_file_signature public/cert.pem ) ; then
 
                 for source_file in ${authority}/cert.pem ${authority}/intermediate.pem ${authority}/root.pem ${authority}/alt_intermediate.pem ${authority}/alt_root.pem ; do
 
@@ -1056,6 +1099,15 @@ process_public_files () {
                     fi
 
                 done
+
+                if [ -r public/cert.pem ] ; then
+                    if ! check_file_signature public/cert.pem ; then
+                        if [ -r public/intermediate.pem ] ; then
+                            test -r public/cert_intermediate.pem.tmp && rm -f public/cert_intermediate.pem.tmp || true
+                            cat public/cert.pem public/intermediate.pem > public/cert_intermediate.pem.tmp
+                        fi
+                    fi
+                fi
 
                 if [ -r public/cert.pem.tmp -a -r public/intermediate.pem.tmp ] ; then
                         cat public/cert.pem.tmp public/intermediate.pem.tmp > public/cert_intermediate.pem.tmp
@@ -1089,6 +1141,7 @@ process_public_files () {
                     test -r public/cert_intermediate.pem.tmp && rm -f public/cert_intermediate.pem.tmp || true
                     cat public/cert.pem public/intermediate.pem > public/cert_intermediate.pem.tmp
                 fi
+
             fi
 
             if [ "${config['pki_dhparam']}" = "true" -a -n "${config['dhparam_file']}" -a -r ${config['dhparam_file']} ] ; then
@@ -1112,6 +1165,9 @@ process_public_files () {
                     fi
                 elif [ -r public/cert_dhparam.pem ] ; then
                     if ! diff -q -N ${config['dhparam_file']} <( sed -n '/-----BEGIN DH PARAMETERS-----/,/-----END DH PARAMETERS-----/p' public/cert_dhparam.pem ) > /dev/null ; then
+                        cat public/cert.pem ${config['dhparam_file']} > public/cert_dhparam.pem.tmp
+                        state+=("changed-dhparam")
+                    elif ! check_file_signature public/cert.pem ; then
                         cat public/cert.pem ${config['dhparam_file']} > public/cert_dhparam.pem.tmp
                         state+=("changed-dhparam")
                     fi
@@ -1185,7 +1241,7 @@ process_private_files () {
                 fi
             fi
 
-            if ! diff -q -N ${authority}/cert.pem public/cert.pem > /dev/null ; then
+            if [ -r public/cert.pem.tmp -o -r public/cert_intermediate.pem.tmp ] ; then
 
                 if [ -r public/cert.pem.tmp -a -r private/realm_key.pem ] ; then
 
@@ -1233,6 +1289,10 @@ process_private_files () {
             elif [ -r private/key.pem -a -r public/cert.pem ] ; then
 
                 if ! check_openssl_key_crt_match private/key.pem public/cert.pem ; then
+                    test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
+                    install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain.pem.tmp
+                    cat private/key.pem public/cert.pem >> private/key_chain.pem.tmp
+                elif ! check_file_signature public/cert.pem ; then
                     test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain.pem.tmp
                     cat private/key.pem public/cert.pem >> private/key_chain.pem.tmp
@@ -1324,6 +1384,7 @@ activate_new_files () {
         state+=("file-change")
     done
 
+    update_file_signature public/cert.pem
     update_realm_symlinks
 
 }

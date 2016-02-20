@@ -22,6 +22,36 @@ v0.2.4
   Ansible inventory groups and allows distribution of CA certificates to all
   hosts, specific host groups, or specific hosts. [drybjed]
 
+- Don't update symlinks if the target is correct. [drybjed]
+
+- Split file signature creation and verification. This allows checking if the
+  file signature is correct without updating it, so that it can be performed at
+  different stages of the script. [drybjed]
+
+- Make sure that request generation works without subdomains and SANs present.
+  [drybjed]
+
+- Automatically reset incomplete internal certificate requests.
+
+  If a signed certificate does not exist in the realm and internal certificates
+  are enabled, something must have gone wrong with the certificate signing. To
+  make it easier, generated configuration file and CSR are removed so that they
+  can be recreated further in the script with current session token and not
+  rejected by the internal CA. [drybjed]
+
+- Change the way ACME intermediate CA certificate is downloaded.
+
+  Instead of using a static URL to download an intermediate certificate,
+  ``pki-realm`` script will now check the signed certificate for the "CA
+  Issuers" URI and download the certificate using it. The URI is stored and
+  used later to check if the new certificate has the same or different URI, to
+  not download the intermediate certificate every time the ``pki-realm`` script
+  is run. [drybjed]
+
+- Slight changes in certificate chaining logic, to ensure that when
+  certificates are changed, all generated chained certificate files are
+  correctly updated. [drybjed]
+
 v0.2.3
 ------
 
