@@ -22,6 +22,8 @@ v0.2.4
   Ansible inventory groups and allows distribution of CA certificates to all
   hosts, specific host groups, or specific hosts. [drybjed]
 
+- Don't update symlinks if the target is correct. [drybjed]
+
 v0.2.3
 ------
 
