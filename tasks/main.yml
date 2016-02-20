@@ -43,7 +43,7 @@
     - '{{ ferm_host_custom_files }}'
   when: ((item.src is defined or item.content is defined) and
          item.dest is defined)
-  notify: [ 'Restart ferm' ]
+  register: ferm_register_files
   tags: [ 'role::ferm:custom_files' ]
 
 - name: Configure ferm default variables
@@ -76,7 +76,7 @@
     - '{{ ferm_default_rules }}'
   when: (ferm_enabled|bool and (item.type is defined and item.type) and
          (item.delete is defined and item.delete | bool))
-  notify: [ 'Restart ferm' ]
+  register: ferm_register_rules_del
   tags: [ 'role::ferm:rules' ]
 
 - name: Configure ip(6)tables rules
@@ -94,7 +94,7 @@
     - '{{ ferm_default_rules }}'
   when: (ferm_enabled|bool and (item.type is defined and item.type) and
          (item.delete is undefined or not item.delete | bool))
-  notify: [ 'Restart ferm' ]
+  register: ferm_register_rules_add
   tags: [ 'role::ferm:rules' ]
 
 - name: Remove iptables INPUT rules if requested
@@ -108,7 +108,7 @@
     - '{{ ferm_input_dependent_list }}'
   when: (ferm_enabled|bool and (item.type is defined and item.type) and
          (item.delete is defined and item.delete | bool))
-  notify: [ 'Restart ferm' ]
+  register: ferm_register_input_rules_del
   tags: [ 'role::ferm:rules' ]
 
 - name: Configure iptables INPUT rules
@@ -125,12 +125,16 @@
     - '{{ ferm_input_dependent_list }}'
   when: (ferm_enabled|bool and (item.type is defined and item.type) and
          (item.delete is undefined or not item.delete | bool))
-  notify: [ 'Restart ferm' ]
+  register: ferm_register_input_rules_add
   tags: [ 'role::ferm:rules' ]
 
-- name: Flush handlers to restart ferm if changes were made
-  meta: flush_handlers
-  tags: [ 'role::ferm:rules' ]
+- name: Restart ferm
+  service:
+    name: 'ferm'
+    state: 'restarted'
+  when: (ferm_enabled | bool and (ferm_register_files.changed|bool or
+         ferm_register_rules_del.changed|bool or ferm_register_rules_add.changed|bool or
+         ferm_register_input_rules_del.changed|bool or ferm_register_input_rules_add.changed|bool))
 
 - name: Clear iptables rules if ferm is disabled
   service:
