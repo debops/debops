@@ -20,11 +20,18 @@ Another alternative is to disable APT Ansible package and enable installation
 from PyPI alongside ``debops`` package. However, APT method is preferred, since
 it automatically installs all required APT packages.
 
-The ``debops.debops`` role will install the DebOps playbooks and roles from GitHub
-in the background, using either the ``batch`` command from the ``at`` package, or
-if the former is not available, ``async`` Ansible task. Keep in mind that
-downloading all of the repositories might take a while and the code won't be
+By default the ``debops.debops`` role will install the DebOps playbooks and roles
+from GitHub in the background, using either the ``batch`` command from the ``at``
+package, or if the former is not available, ``async`` Ansible task. Keep in mind
+that downloading all of the repositories might take a while and the code won't be
 available for some time after initial Ansible playbook run.
+
+If you cannot accept this behaviour you can set ``debops_update_method`` to
+``sync``. This will make the roles and playbooks immediately available after the
+task is run. However, this will introduce a significant delay in every playbook
+run even when no upstream changes will be found. You should only choose this if
+you plan to run ``debops`` from the same playbook where you also include the
+``debops.debops`` role, e.g. when provisioning a new DebOps environment.
 
 Example inventory
 -----------------
