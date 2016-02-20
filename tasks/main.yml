@@ -20,11 +20,6 @@
   notify: [ 'Update DebOps in the background with {{ debops_update_method }}' ]
   when: item|d()
 
-- name: Update roles and playbooks
-  command: debops-update
-  when: debops_install_systemwide|bool and
-        debops_update_method == 'sync'
-
 - name: Configure system-wide DebOps scripts
   template:
     src: 'etc/debops.cfg.j2'
@@ -33,3 +28,7 @@
     group: 'root'
     mode: '0644'
 
+- name: Update roles and playbooks
+  command: debops-update
+  when: debops_install_systemwide|bool and
+        debops_update_method == 'sync'
