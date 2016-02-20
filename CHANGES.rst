@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.1.5
+------
+
+*Released: 2016-02-20*
+
+- Restart ``fail2ban`` when firewall rules are flushed, in case it's set up on
+  the host. [bleuchtang]
+
+- Restart ``ferm`` only when the firewall rules have been modified, to not rest
+  the firewall counters on every Ansible run. [Logan2211, drybjed]
+
 v0.1.4
 ------
 
