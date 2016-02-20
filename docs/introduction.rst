@@ -8,7 +8,7 @@ data center environment based on Debian GNU/Linux distribution.
 This role installs the DebOps scripts, playbooks and roles on a specified host.
 It can be used to create remote Ansible Controller hosts, which then can be
 used to control other hosts using DebOps. Roles and playbooks will be installed
-in a central, system-wide location, available to all users.
+by default in a central, system-wide location, available to all users.
 
 Installation
 ~~~~~~~~~~~~

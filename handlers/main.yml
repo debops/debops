@@ -1,16 +1,16 @@
 ---
 
 - name: Update DebOps in the background with async
+  become: debops_install_systemwide|bool
   command: debops-update
   async: '{{ debops_async_timeout | int }}'
   poll: 0
-  when: debops_install_systemwide|bool and
-        not debops_update_method == 'sync'
+  when: not debops_update_method == 'sync'
 
 - name: Update DebOps in the background with batch
+  become: debops_install_systemwide|bool
   shell: |
     type debops-update > /dev/null 2>&1 && (echo 'debops-update' | batch > /dev/null 2>&1) || true
-  when: (debops_install_systemwide|bool and
+  when: (not debops_update_method == 'sync' and
          (ansible_local|d() and ansible_local.atd|d() and
-          ansible_local.atd.enabled|bool) and
-         not debops_update_method == 'sync')
+          ansible_local.atd.enabled|bool))
