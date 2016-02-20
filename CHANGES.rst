@@ -31,6 +31,14 @@ v0.2.4
 - Make sure that request generation works without subdomains and SANs present.
   [drybjed]
 
+- Automatically reset incomplete internal certificate requests.
+
+  If a signed certificate does not exist in the realm and internal certificates
+  are enabled, something must have gone wrong with the certificate signing. To
+  make it easier, generated configuration file and CSR are removed so that they
+  can be recreated further in the script with current session token and not
+  rejected by the internal CA. [drybjed]
+
 v0.2.3
 ------
 

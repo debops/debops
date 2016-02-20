@@ -954,6 +954,12 @@ check_files () {
             fi
         fi
 
+        if [ -n "${PKI_SESSION_TOKEN:-}" -a ! -r public/cert.pem ] ; then
+            if ! ( check_expiration_time internal/cert.pem ${config['internal_expiration_seconds']} && check_openssl_key_crt_match private/key.pem internal/cert.pem ) ; then
+                rm -f internal/${library}.conf internal/request.pem
+            fi
+        fi
+
         if [ ! -r internal/${library}.conf -a ! -r internal/request.pem ] ; then
 
             if [[ ${name} != *.* && ${name} != *@* ]] ; then
