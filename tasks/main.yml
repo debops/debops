@@ -32,3 +32,19 @@
   become: debops_install_systemwide|bool
   command: debops-update
   when: debops_update_method == 'sync'
+
+- name: Clone project repository
+  become: debops_install_systemwide|bool
+  git:
+    repo: '{{ debops_project_git_repo }}'
+    dest: '{{ debops_project_name if debops_project_name else debops_project_git_repo | basename }}'
+    update: True
+  when: debops_project_git_repo
+
+- name: Initialize new project
+  become: debops_install_systemwide|bool
+  command: debops-init '{{ debops_project_name }}'
+  args:
+    creates: '{{ debops_project_name }}/.debops.cfg'
+  when: debops_project_name|d() and
+        not debops_project_git_repo
