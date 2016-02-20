@@ -24,6 +24,10 @@ v0.2.4
 
 - Don't update symlinks if the target is correct. [drybjed]
 
+- Split file signature creation and verification. This allows checking if the
+  file signature is correct without updating it, so that it can be performed at
+  different stages of the script. [drybjed]
+
 v0.2.3
 ------
 

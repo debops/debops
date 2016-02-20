@@ -289,31 +289,38 @@ check_openssl_key_crt_match () {
     fi
 }
 
+update_file_signature () {
+    local check_file="${1}"
+
+    if [ -n "${check_file}" -a -r ${check_file} ] ; then
+        if [ -r ${check_file}.sig ] ; then
+            set +e
+            md5sum --quiet --status -c ${check_file}.sig
+            local rc=$?
+            set -e
+            if [ ${rc} -ne 0 ] ; then
+                rm -rf ${check_file}.sig
+                md5sum ${check_file} > ${check_file}.sig
+            fi
+        else
+            md5sum ${check_file} > ${check_file}.sig
+        fi
+    fi
+}
+
 check_file_signature () {
     local check_file="${1}"
 
-    if [ -n "${check_file}" ] ; then
-        if [ -r ${check_file} ] ; then
-            if [ -r ${check_file}.sig ] ; then
-                set +e
-                md5sum --quiet --status -c ${check_file}.sig
-                local rc=$?
-                set -e
-                if [ ${rc} -ne 0 ] ; then
-                    rm -rf ${check_file}.sig
-                    md5sum ${check_file} > ${check_file}.sig
-                    return ${rc}
-                fi
-            else
-                md5sum ${check_file} > ${check_file}.sig
-                return 0
-            fi
-        else
-            if [ -r ${check_file}.sig ] ; then
-                rm -f ${check_file}.sig
-            fi
+    if [ -n "${check_file}" -a -r ${check_file} ] ; then
+        if [ -r ${check_file}.sig ] ; then
+            set +e
+            md5sum --quiet --status -c ${check_file}.sig
+            local rc=$?
+            set -e
+            return ${rc}
         fi
     fi
+    return 1
 }
 
 enter_realm () {
@@ -1328,6 +1335,7 @@ activate_new_files () {
         state+=("file-change")
     done
 
+    update_file_signature public/cert.pem
     update_realm_symlinks
 
 }
