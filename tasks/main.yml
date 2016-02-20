@@ -17,8 +17,13 @@
     name: '{{ item }}'
     state: 'present'
   with_items: debops_pip_packages
-  notify: [ 'Update DebOps in the background with {{ debops_update_method }}' ]
+  notify: '[ "Update DebOps in the background with {{ debops_update_method }}" ] if debops_update_method is not "sync" else []'
   when: item|d()
+
+- name: Update roles and playbooks
+  command: debops-update
+  when: debops_install_systemwide|bool and
+        debops_update_method == 'sync'
 
 - name: Configure system-wide DebOps scripts
   template:
