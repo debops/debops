@@ -70,6 +70,15 @@
     group: 'root'
     mode: '0644'
 
+- name: Ensure pool.d/ directory for php5-fpm exists
+  # Just for the case it has been deleted manually
+  file:
+    path: '/etc/php5/fpm/pool.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
 - include: php5_pools.yml
   when: php5_manage_pools is defined and php5_manage_pools == True
 
