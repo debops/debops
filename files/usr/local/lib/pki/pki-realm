@@ -137,8 +137,6 @@ initialize_environment () {
     config["acme_root_ca_path"]="/usr/share/ca-certificates"
     config["acme_root_ca_file"]="mozilla/DST_Root_CA_X3.crt"
 
-    config["acme_intermediate_url"]="https://letsencrypt.org/certs/lets-encrypt-x1-cross-signed.pem"
-
     config["pki_default_ca_bundle"]="/etc/ssl/certs/ca-certificates.crt"
     config["pki_default_subject"]="CN=$(hostname -f)"
     config["pki_default_fqdn"]="$(hostname -f)"
@@ -891,17 +889,45 @@ request_acme_tiny_certificate () {
                 test -r acme/cert.pem && mv acme/cert.pem acme/cert.pem.old || true
                 mv acme/cert.pem.tmp acme/cert.pem
 
+                local acme_intermediate_uri="$(openssl x509 -in acme/cert.pem -text -noout -certopt ca_default,no_validity,no_serial | grep -E '^\s+CA\s+Issuers\s+-\s+URI:' | awk '{print $4}' | sed -e 's/^URI://')"
+
+                if [ ! -r acme/intermediate.pem ] ; then
+
+                    if [ -n "${acme_intermediate_uri}" ] ; then
+                        curl -s -o acme/intermediate.pem.tmp ${acme_intermediate_uri}
+                        mv acme/intermediate.pem.tmp acme/intermediate.pem
+                        if [ ! -r acme/intermediate_uri.txt ] ; then
+                            echo "${acme_intermediate_uri}" > acme/intermediate_uri.txt
+                        fi
+                    fi
+
+                elif [ -r acme/intermediate.pem ] ; then
+
+                    if [ -n "${acme_intermediate_uri}" -a -r acme/intermediate_uri.txt ] ; then
+                        if [ "${acme_intermediate_uri}" != "$(<acme/intermediate_uri.txt)" ] ; then
+                            curl -s -o acme/intermediate.pem.tmp ${acme_intermediate_uri}
+                            if ! diff -q -N acme/intermediate.pem acme/intermediate.pem.tmp > /dev/null ; then
+                                rm -f acme/intermediate.pem acme/intermediate_uri.txt
+                                mv acme/intermediate.pem.tmp acme/intermediate.pem
+                                if [ ! -r acme/intermediate_uri.txt ] ; then
+                                    echo "${acme_intermediate_uri}" > acme/intermediate_uri.txt
+                                fi
+                            else
+                                rm -f acme/intermediate.pem.tmp acme/intermediate_uri.txt
+                                if [ ! -r acme/intermediate_uri.txt ] ; then
+                                    echo "${acme_intermediate_uri}" > acme/intermediate_uri.txt
+                                fi
+                            fi
+                        fi
+                    fi
+
+                fi
+
                 if [ ! -r acme/root.pem ] ; then
                     if [ -n "${config['acme_root_ca_path']}" -a -n "${config['acme_root_ca_file']}" ] ; then
                         if [ -r ${config['acme_root_ca_path']}/${config['acme_root_ca_file']} ] && grep -q "${config['acme_root_ca_file']}" /etc/ca-certificates.conf ; then
                             ln -s ${config['acme_root_ca_path']}/${config['acme_root_ca_file']} acme/root.pem
                         fi
-                    fi
-                fi
-
-                if [ ! -r acme/intermediate.pem ] ; then
-                    if [ -n "${config['acme_intermediate_url']}" ] ; then
-                        curl -s -o acme/intermediate.pem ${config['acme_intermediate_url']}
                     fi
                 fi
 

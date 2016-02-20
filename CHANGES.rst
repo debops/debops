@@ -39,6 +39,15 @@ v0.2.4
   can be recreated further in the script with current session token and not
   rejected by the internal CA. [drybjed]
 
+- Change the way ACME intermediate CA certificate is downloaded.
+
+  Instead of using a static URL to download an intermediate certificate,
+  ``pki-realm`` script will now check the signed certificate for the "CA
+  Issuers" URI and download the certificate using it. The URI is stored and
+  used later to check if the new certificate has the same or different URI, to
+  not download the intermediate certificate every time the ``pki-realm`` script
+  is run. [drybjed]
+
 v0.2.3
 ------
 
