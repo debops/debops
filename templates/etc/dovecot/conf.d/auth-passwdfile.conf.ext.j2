@@ -1,0 +1,34 @@
+# {{ ansible_managed }}
+{#
+
+This file follows the upstream default configuration except for the parts
+that are configurable via DebOps variables. If you need a more customized
+setup, you can provide your own template via lookup mechanism.
+
+#}
+
+{% if dovecot_user_accounts is defined and dovecot_user_accounts %}
+{%   if 'passwdfile' in dovecot_user_accounts %}
+# Authentication for passwd-file users. Included from 10-auth.conf.
+
+passdb {
+  driver = passwd-file
+  args = scheme={{dovecot_passwdfile_scheme}} {{dovecot_passwdfile_path}}/{{dovecot_passwdfile_name}}
+}
+
+userdb {
+  driver = static
+  args = uid={{dovecot_passwdfile_uid}} gid={{dovecot_passwdfile_gid}} home={{dovecot_passwdfile_home}}/{{dovecot_passwdfile_mailbox_path}}
+
+  # Default fields that can be overridden by passwd-file
+  #default_fields = quota_rule=*:storage=1G
+
+  # Override fields from passwd-file
+  #override_fields = home=/home/virtual/%u
+}
+{%   else %}
+# DebOps variable dovecot_user_accounts={{ dovecot_user_accounts }}
+{%   endif %}
+{% else %}
+# DebOps variable dovecot_user_accounts={{ dovecot_user_accounts|default([]) }}
+{% endif %}
