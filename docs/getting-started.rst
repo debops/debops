@@ -63,7 +63,7 @@ you can specify the URL of the Preseed file.
 
 An example boot command line in Debian Installer::
 
-    url=debian.seed hostname=<host>
+    auto url=debian.seed hostname=<host>
 
 After you press ``<Enter>``, the Debian Installer should start the installation
 process. If you specified ``debian.seed`` as the Preseed file, the Debian Installer
