@@ -35,6 +35,7 @@ preseed_base_domain: '{{ preseed_subdomain + "." + ansible_domain }}'
 # expressions which look up correct subdirectories to serve files.
 preseed_domains:
   - '{{ preseed_base_domain }}'
+  - '{{ preseed_base_domain | split(".") | first }}'
   - '{{ "~^(?<preseed>.+)\." + preseed_base_domain | replace(".","\.") + "$" }}'
   - '{{ "~^(?<preseed>.+)\." + ansible_domain      | replace(".","\.") + "$" }}'
   - '{{ "~^(?<preseed>.+)\." + preseed_subdomain   | replace(".","\.") + "$" }}'
