@@ -171,8 +171,8 @@ own DHCP server.
 
 You can check `other debops.bootstrap variables <http://docs.debops.org/en/latest/ansible/roles/ansible-bootstrap/docs/defaults.html>`_ for some more useful configuration, like the name of the administrator account.
 
-sshd_whitelist
-~~~~~~~~~~~~~~
+sshd__whitelist
+~~~~~~~~~~~~~~~
 
 Protection of the SSH service is very important. Hosts configured by DebOps use
 a firewall and TCP Wrappers to restrict what hosts can connect to it and
@@ -189,7 +189,7 @@ To do that, in ``inventory/ansible/group_vars/all/sshd.yml`` add:
 .. code-block:: yaml
 
    ---
-   sshd_whitelist: [ '192.0.2.0/24', '2001:db8::/32' ]
+   sshd__whitelist: [ '192.0.2.0/24', '2001:db8::/32' ]
 
 This will configure the ``debops.ferm`` and ``debops.tcpwrappers`` roles
 to allow connections to the ``ssh`` service from specified networks.
