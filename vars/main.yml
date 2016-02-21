@@ -1,5 +1,13 @@
 ---
 
+preseed_nginx_server_location:
+    '/': |
+      try_files $uri $uri/ $uri.html /index.html =404;
+      autoindex on;
+      types {
+              text/plain cfg sh;
+      }
+
 # nginx configuration - HTTP server
 preseed_nginx_server_http:
   by_role: 'debops.preseed'
@@ -12,14 +20,7 @@ preseed_nginx_server_http:
   access_policy: '{{ preseed_nginx_access_policy }}'
   auth_basic_realm: '{{ preseed_nginx_auth_realm }}'
 
-  location:
-    '/': |
-      try_files $uri $uri/ $uri.html /index.html =404;
-      autoindex on;
-      types {
-              text/plain cfg sh;
-      }
-
+  location: '{{ preseed_nginx_server_location }}'
 
 # nginx configuration - HTTPS server
 preseed_nginx_server_https:
@@ -33,13 +34,7 @@ preseed_nginx_server_https:
   access_policy: '{{ preseed_nginx_access_policy }}'
   auth_basic_realm: '{{ preseed_nginx_auth_realm }}'
 
-  location:
-    '/': |
-      try_files $uri $uri/ $uri.html /index.html =404;
-      autoindex on;
-      types {
-              text/plain cfg sh;
-      }
+  location: '{{ preseed_nginx_server_location }}'
 
 
 # SaltStack Debian repository GPG key
