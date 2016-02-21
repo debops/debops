@@ -78,3 +78,10 @@ without asking the user. This Preseed configuration is designed primary for
 virtual machines, which usually have 1 partition stored in an image file or
 a block device.
 
+If you are not able to add `*.seed` to your DNS, you might use
+``preseed_base_domain`` to make the server listen on a hostname
+available via DNS. For this case the boot command line in Debian
+Installer would require a different URL, like in this example (for
+jessie)::
+
+    auto url=<myhost>/debian/d-i/jessie hostname=<host>
