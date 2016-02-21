@@ -10,23 +10,26 @@ Useful variables
 This is a list of role variables which your most likely want to define in
 Ansible inventory to customize OpenSSH server:
 
-``sshd_whitelist`` / ``sshd_group_whitelist`` / ``sshd_host_whitelist``
+``sshd__whitelist`` / ``sshd__group_whitelist`` / ``sshd__host_whitelist``
   Lists which contain IP addresses or CIDR subnets that are permitted to
   connect to OpenSSH without restrictions or firewall limits. Adding entries
-  here will not impose additional restrictions, unlike using ``sshd_*_allow``
+  here will not impose additional restrictions, unlike using ``sshd__*_allow``
   lists.
 
-``sshd_known_hosts`` / ``sshd_group_known_hosts`` / ``sshd_host_known_hosts``
+``sshd__known_hosts`` / ``sshd__group_known_hosts`` / ``sshd__host_known_hosts``
   You can add here lists of FQDN hostnames which should be added to systemwide
-  ``/etc/ssh/ssh_known_hosts`` file. For example, setting ``sshd_known_hosts:
-  [ 'github.com' ]`` will add GitHub SSH fingerprint and allow you to clone git
-  repositories over SSH with proper host authentication, without need to ignore
-  host fingerprints.
+  ``/etc/ssh/ssh_known_hosts`` file. For example, setting::
 
-``sshd_authorized_keys_lookup``
+      sshd__known_hosts: [ 'github.com' ]
+
+  will add GitHub SSH fingerprint and allow you to clone git repositories over
+  SSH with proper host authentication, without need to ignore host
+  fingerprints.
+
+``sshd__authorized_keys_lookup``
   Boolean. If ``True``, role will enable lookup of SSH public keys in external
   authentication databases, like LDAP. This might require additional
-  configuration using ``sshd_ldap_*`` variables.
+  configuration using ``sshd__ldap_*`` variables.
 
   LDAP key lookup depends on system-wide LDAP configuration in
   ``/etc/ldap/ldap.conf``, which can be performed (at the moment) using

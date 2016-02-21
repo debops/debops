@@ -1,6 +1,20 @@
 Changelog
 =========
 
+v0.2.3
+------
+
+*Released: 2016-02-21*
+
+- Fix deprecation warnings on Ansible 2.1.0. [drybjed]
+
+- Automatically remove Diffie-Hellman parameters from ``/etc/ssh/moduli`` which
+  are smaller than the size specified in ``sshd_moduli_minimum`` variable (by
+  default 2048 bits). [drybjed]
+
+- Rename all role variables to put them in ``sshd__`` namespace. You might need
+  to update your Ansible inventory. [drybjed]
+
 v0.2.2
 ------
 
