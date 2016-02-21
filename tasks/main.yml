@@ -85,6 +85,18 @@
   when: item is defined and item.rc > 0
   tags: [ 'role::sshd:known_hosts' ]
 
+- name: Check if /etc/ssh/moduli contains weak DH parameters
+  shell: awk '$5 < {{ sshd_moduli_minimum }}' /etc/ssh/moduli
+  register: sshd_register_moduli
+  changed_when: sshd_register_moduli.stdout
+  always_run: True
+
+- name: Remove DH parameters smaller than the requested size
+  shell: awk '$5 >= {{ sshd_moduli_minimum }}' /etc/ssh/moduli > /etc/ssh/moduli.new ;
+         [ -r /etc/ssh/moduli.new -a -s /etc/ssh/moduli.new ] && mv /etc/ssh/moduli.new /etc/ssh/moduli || true
+  notify: [ 'Test sshd configuration and restart' ]
+  when: sshd_register_moduli.stdout
+
 - name: Make sure that Ansible local fact directory exists
   file:
     path: '/etc/ansible/facts.d'
