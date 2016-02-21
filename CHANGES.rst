@@ -4,7 +4,7 @@ Changelog
 v0.2.4
 ------
 
-*Unreleased*
+*Released: 2016-02-21*
 
 - Use a more portable "shebang" string in Bash scripts. [drybjed]
 
