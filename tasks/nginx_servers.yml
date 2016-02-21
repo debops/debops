@@ -20,7 +20,7 @@
     group: '{{ item.owner | default(nginx_webroot_group) }}'
     force: False
   with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
-  when: ((item.locked is undefined or (item.locked is defined and not item.locked)) and
+  when: (nginx_webroot_create|bool and (item.locked is undefined or (item.locked is defined and not item.locked)) and
          (item.name is defined) and (item.delete is undefined or (item.delete is defined and not item.delete)) and
          (item.welcome is defined and item.welcome | bool))
 

@@ -9,6 +9,9 @@ v0.1.6
 - Add support for defining error pages in a list, with better control over
   their configuration. [drybjed]
 
+- Do not create welcome pages automatically if creation of webroot directories
+  is disabled. [drybjed]
+
 v0.1.5
 ------
 
