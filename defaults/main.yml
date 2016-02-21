@@ -16,6 +16,16 @@ sshd_base_packages: [ 'openssh-server', 'openssh-client',
                       'openssh-blacklist', 'openssh-blacklist-extra',
                       'molly-guard' ]
 
+
+# .. envvar:: sshd_ldap_packages
+#
+# List of packages related to LDAP support required by OpenSSH.
+sshd_ldap_packages: '{{ [ "ldap-utils" ]
+                        if (sshd_authorized_keys_lookup|bool and
+                            ("ldap" in sshd_authorized_keys_lookup_type))
+                        else [] }}'
+
+
 # .. envvar:: sshd_packages
 #
 # List of additional packages to install.
