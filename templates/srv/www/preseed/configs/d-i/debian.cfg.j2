@@ -66,7 +66,7 @@ d-i pkgsel/include string{% for package in preseed_tpl_include_packages %} {{ pa
 
 d-i pkgsel/upgrade select safe-upgrade
 
-d-i preseed/late_command string in-target wget --no-proxy -O /tmp/postinst.sh {{ item.postinst | default('http://' + item.name + '.' + preseed_base_domain + '/d-i/' + item.release | default(preseed_release | default(ansible_distribution_release)) + '/postinst.sh') }} ; in-target chmod +x /tmp/postinst.sh ; in-target /tmp/postinst.sh
+d-i preseed/late_command string in-target wget --no-proxy -O /tmp/postinst.sh {{ item.postinst | default('http://' + preseed_base_domain + '/' + item.name + '/d-i/' + item.release | default(preseed_release | default(ansible_distribution_release)) + '/postinst.sh') }} ; in-target chmod +x /tmp/postinst.sh ; in-target /tmp/postinst.sh
 
 popularity-contest popularity-contest/participate boolean false
 {% block grub_installer %}
