@@ -24,6 +24,9 @@ v0.2.9
 - Update the ``service/iscsi.yml`` playbook to use roles that were previously
   hard dependencies of the ``debops.iscsi`` role. [drybjed]
 
+- Update the variables related to ``debops.sshd`` due to change in the variable
+  naming scheme. You might need to update your Ansible inventory. [drybjed]
+
 v0.2.8
 ------
 
