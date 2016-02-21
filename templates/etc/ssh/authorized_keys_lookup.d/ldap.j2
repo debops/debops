@@ -11,10 +11,10 @@ hostname="$(hostname)"
 domain="$(dnsdomainname)"
 fqdn="$(hostname --fqdn)"
 
-ldap_binddn="{{ sshd_ldap_bind_dn }}"
-ldap_bindpw="{{ sshd_ldap_bind_pw_file }}"
+ldap_binddn="{{ sshd__ldap_bind_dn }}"
+ldap_bindpw="{{ sshd__ldap_bind_pw_file }}"
 
-ldap_filter="{{ sshd_ldap_filter }}"
+ldap_filter="{{ sshd__ldap_filter }}"
 
 KEY=$(ldapsearch -LLL -x -y ${ldap_bindpw} -D ${ldap_binddn} -o ldif-wrap=no -S sshPublicKey "${ldap_filter}" sshPublicKey | grep -v 'dn:' | perl -pe 's/sshPublicKey: //;')
 

@@ -9,283 +9,283 @@
 #   OpenSSH packages
 # --------------------
 
-# .. envvar:: sshd_base_packages
+# .. envvar:: sshd__base_packages
 #
 # List of base packages that should be installed for OpenSSH support.
-sshd_base_packages: [ 'openssh-server', 'openssh-client',
-                      'openssh-blacklist', 'openssh-blacklist-extra',
-                      'molly-guard' ]
+sshd__base_packages: [ 'openssh-server', 'openssh-client',
+                       'openssh-blacklist', 'openssh-blacklist-extra',
+                       'molly-guard' ]
 
 
-# .. envvar:: sshd_ldap_packages
+# .. envvar:: sshd__ldap_packages
 #
 # List of packages related to LDAP support required by OpenSSH.
-sshd_ldap_packages: '{{ [ "ldap-utils" ]
-                        if (sshd_authorized_keys_lookup|bool and
-                            ("ldap" in sshd_authorized_keys_lookup_type))
-                        else [] }}'
+sshd__ldap_packages: '{{ [ "ldap-utils" ]
+                         if (sshd__authorized_keys_lookup|bool and
+                             ("ldap" in sshd__authorized_keys_lookup_type))
+                         else [] }}'
 
 
-# .. envvar:: sshd_packages
+# .. envvar:: sshd__packages
 #
 # List of additional packages to install.
-sshd_packages: []
+sshd__packages: []
 
 
 # -----------------------------------
 #   Host whitelists and allow lists
 # -----------------------------------
 
-# .. envvar:: sshd_whitelist
+# .. envvar:: sshd__whitelist
 #
 # List of IP addresses or CIDR subnets which should be allowed to connect to
 # SSH without any restrictions. This list does not disallow connections from
 # other hosts. This is a global list.
-sshd_whitelist: []
+sshd__whitelist: []
 
 
-# .. envvar:: sshd_group_whitelist
+# .. envvar:: sshd__group_whitelist
 #
 # List of IP addresses or CIDR subnets which should be allowed to connect to
 # SSH without any restrictions. This list does not disallow connections from
 # other hosts. This is a group-based list.
-sshd_group_whitelist: []
+sshd__group_whitelist: []
 
 
-# .. envvar:: sshd_host_whitelist
+# .. envvar:: sshd__host_whitelist
 #
 # List of IP addresses or CIDR subnets which should be allowed to connect to
 # SSH without any restrictions. This list does not disallow connections from
 # other hosts. This is a host-based list.
-sshd_host_whitelist: []
+sshd__host_whitelist: []
 
 
-# .. envvar:: sshd_allow
+# .. envvar:: sshd__allow
 #
 # List of IP addresses or CIDR subnets that should be allowed to access SSH
 # service. If it's set, access from hosts and networks not specified here is
 # denied in TCP Wrappers and limited in ``iptables``. This is a global list.
-sshd_allow: []
+sshd__allow: []
 
 
-# .. envvar:: sshd_group_allow
+# .. envvar:: sshd__group_allow
 #
 # List of IP addresses or CIDR subnets that should be allowed to access SSH
 # service. If it's set, access from hosts and networks not specified here is
 # denied in TCP Wrappers and limited in ``iptables``. This is a group list.
-sshd_group_allow: []
+sshd__group_allow: []
 
 
-# .. envvar:: sshd_host_allow
+# .. envvar:: sshd__host_allow
 #
 # List of IP addresses or CIDR subnets that should be allowed to access SSH
 # service. If it's set, access from hosts and networks not specified here is
 # denied in TCP Wrappers and limited in ``iptables``. This is a host list.
-sshd_host_allow: []
+sshd__host_allow: []
 
 
 # ------------------------------
 #   TCP Wrappers configuration
 # ------------------------------
 
-# .. envvar:: sshd_tcpwrappers_default
+# .. envvar:: sshd__tcpwrappers_default
 #
 # If list of allowed hosts is not specified, this value will be set in TCP
 # Wrappers for ``sshd`` service. By default any host is allowed to connect.
-sshd_tcpwrappers_default: 'ALL'
+sshd__tcpwrappers_default: 'ALL'
 
 
 # ---------------------------------
 #   Firewall (ferm) configuration
 # ---------------------------------
 
-# .. envvar:: sshd_ferm_weight
+# .. envvar:: sshd__ferm_weight
 #
 # Specify the "weight" of the ``sshd`` firewall rules. The more weight they
 # have, he later in the firewall they will be defined. If you change the
 # default weight, you will need to remove the old rules manually from the remote
 # host.
-sshd_ferm_weight: '30'
+sshd__ferm_weight: '30'
 
 
-# .. envvar:: sshd_ferm_limit
+# .. envvar:: sshd__ferm_limit
 #
 # Enable or disable limited SSH access from all hosts in ``ip(6)tables``.
 # Recent new connections are filtered and when too many new connections are
 # created in specified time window, host is added to the recent blocklist.
-sshd_ferm_limit: True
+sshd__ferm_limit: True
 
 
-# .. envvar:: sshd_ferm_limit_seconds
+# .. envvar:: sshd__ferm_limit_seconds
 #
 # Length of the time window used by firewall to catch new offenders,
 # by default 5 minutes.
-sshd_ferm_limit_seconds: '{{ (60 * 5) }}'
+sshd__ferm_limit_seconds: '{{ (60 * 5) }}'
 
 
-# .. envvar:: sshd_ferm_limit_hits
+# .. envvar:: sshd__ferm_limit_hits
 #
 # How many new connections to allow in specified time window.
-sshd_ferm_limit_hits: '8'
+sshd__ferm_limit_hits: '8'
 
 
-# .. envvar:: sshd_ferm_limit_chain
+# .. envvar:: sshd__ferm_limit_chain
 #
 # Name of the iptables chain used for filtering SSH connections.
-sshd_ferm_limit_chain: 'filter-ssh'
+sshd__ferm_limit_chain: 'filter-ssh'
 
 
-# .. envvar:: sshd_ferm_limit_target
+# .. envvar:: sshd__ferm_limit_target
 #
 # Specify what happens with packets filtered by the firewall that are above the
 # specified limit. Either ``REJECT``, ``DROP`` or name of ``iptables`` chain
 # where packets will be sent through.
-sshd_ferm_limit_target: 'REJECT'
+sshd__ferm_limit_target: 'REJECT'
 
 
-# .. envvar:: sshd_ferm_ports
+# .. envvar:: sshd__ferm_ports
 #
 # List of TCP ports to open in the firewall for SSH connections. You can use
 # port numbers or service names from ``/etc/services``.
-sshd_ferm_ports: [ 'ssh' ]
+sshd__ferm_ports: [ 'ssh' ]
 
 
 # --------------------------------
 #   OpenSSH server configuration
 # --------------------------------
 
-# .. envvar:: sshd_ports
+# .. envvar:: sshd__ports
 #
 # List of ports which ``sshd`` will listen on.
-sshd_ports: [ '22' ]
+sshd__ports: [ '22' ]
 
 
-# .. envvar:: sshd_listen
+# .. envvar:: sshd__listen
 #
 # List of IP addresses on which ``sshd`` should listen for new connections. If
 # it's empty, ``sshd`` listens on all interfaces.
-sshd_listen: []
+sshd__listen: []
 
 
-# .. envvar:: sshd_host_keys
+# .. envvar:: sshd__host_keys
 #
 # List of SSH host keys that should be enabled, in order of preference.
-sshd_host_keys: [ 'ed25519', 'rsa', 'ecdsa' ]
+sshd__host_keys: [ 'ed25519', 'rsa', 'ecdsa' ]
 
 
-# .. envvar:: sshd_banner
+# .. envvar:: sshd__banner
 #
 # Path to file which should be displayed before user authentication.
-sshd_banner: 'none'
+sshd__banner: 'none'
 
 
-# .. envvar:: sshd_log_level
+# .. envvar:: sshd__log_level
 #
 # How much information should be logged by ``sshd`` server.
-sshd_log_level: 'INFO'
+sshd__log_level: 'INFO'
 
 
-# .. envvar:: sshd_permit_root_login
+# .. envvar:: sshd__permit_root_login
 #
 # Specify if access to ``root`` account should be granted. By default ``root``
 # can be accessed only using SSH public keys.
-sshd_permit_root_login: 'without-password'
+sshd__permit_root_login: 'without-password'
 
 
-# .. envvar:: sshd_password_authentication
+# .. envvar:: sshd__password_authentication
 #
 # Enable or disable password authentication.
-sshd_password_authentication: 'no'
+sshd__password_authentication: 'no'
 
 
-# .. envvar:: sshd_x11_forwarding
+# .. envvar:: sshd__x11_forwarding
 #
 # Enable or disable X11 forwarding by the server.
-sshd_x11_forwarding: 'no'
+sshd__x11_forwarding: 'no'
 
 
-# .. envvar:: sshd_max_auth_tries
+# .. envvar:: sshd__max_auth_tries
 #
 # Maximum number of failed authentication attempts allowed by the server.
-sshd_max_auth_tries: '4'
+sshd__max_auth_tries: '4'
 
 
-# .. envvar:: sshd_max_startups
+# .. envvar:: sshd__max_startups
 #
 # Maximum number of unauthenticated connections (3), after which there's 80%
 # probability of next unauthenticated connection to be dropped, finishing at 7,
 # after which all new unauthenticated connections will be refused.
-sshd_max_startups: '3:80:7'
+sshd__max_startups: '3:80:7'
 
 
-# .. envvar:: sshd_login_grace_time
+# .. envvar:: sshd__login_grace_time
 #
 # Time after which unauthenticated sessions are disconnected.
-sshd_login_grace_time: '20s'
+sshd__login_grace_time: '20s'
 
 
-# .. envvar:: sshd_privilege_separation
+# .. envvar:: sshd__privilege_separation
 #
 # Specify if ``sshd`` should use unprivileged processes for incoming session
 # authentication. Setting this to ``sandbox`` enables use of additional
 # kernel restrictions.
-sshd_privilege_separation: 'sandbox'
+sshd__privilege_separation: 'sandbox'
 
 
-# .. envvar:: sshd_custom_options
+# .. envvar:: sshd__custom_options
 #
 # Additional ``sshd_config(5)`` options specified in a YAML text block format.
-sshd_custom_options: ''
+sshd__custom_options: ''
 
 
 # ------------------------------
 #   Group-based access control
 # ------------------------------
 
-# .. envvar:: sshd_allow_groups
+# .. envvar:: sshd__allow_groups
 #
 # List of UNIX groups which allow connections to SSH service (global).
-sshd_allow_groups: [ 'root', 'admins', 'sshusers', 'sftponly' ]
+sshd__allow_groups: [ 'root', 'admins', 'sshusers', 'sftponly' ]
 
 
-# .. envvar:: sshd_group_allow_groups
+# .. envvar:: sshd__group_allow_groups
 #
 # List of UNIX groups which allow connections to SSH service (host group).
-sshd_group_allow_groups: []
+sshd__group_allow_groups: []
 
 
-# .. envvar:: sshd_host_allow_groups
+# .. envvar:: sshd__host_allow_groups
 #
 # List of UNIX groups which allow connections to SSH service (host).
-sshd_host_allow_groups: []
+sshd__host_allow_groups: []
 
 
 # ------------------------------
 #   Authorized keys management
 # ------------------------------
 
-# .. envvar:: sshd_authorized_keys
+# .. envvar:: sshd__authorized_keys
 #
 # List of files which contain SSH public keys, to be used to authenticate
 # remote users.
-sshd_authorized_keys: '{{ sshd_authorized_keys_system +
-                          sshd_authorized_keys_user }}'
+sshd__authorized_keys: '{{ sshd__authorized_keys_system +
+                           sshd__authorized_keys_user }}'
 
 
-# .. envvar:: sshd_authorized_keys_system
+# .. envvar:: sshd__authorized_keys_system
 #
 # List of system-wide files containing SSH public keys. These files are
 # expected to be maintained by system administrator and might be used in
 # restricted environments (for example SFTPonly accounts).
-sshd_authorized_keys_system:
+sshd__authorized_keys_system:
   - '/etc/ssh/authorized_keys/%u'
 
 
-# .. envvar:: sshd_authorized_keys_user
+# .. envvar:: sshd__authorized_keys_user
 #
 # List of user files containing SSH public keys. These files are maintained by
 # the users themselves.
-sshd_authorized_keys_user:
+sshd__authorized_keys_user:
   - '%h/.ssh/authorized_keys'
   - '%h/.ssh/authorized_keys2'
 
@@ -294,49 +294,49 @@ sshd_authorized_keys_user:
 #   System-wide host fingerprints
 # ---------------------------------
 
-# .. envvar:: sshd_known_hosts
+# .. envvar:: sshd__known_hosts
 #
 # List of FQDN hostnames that should be scanned to add host fingerprints to the
 # system-wide known hosts file (global).
-sshd_known_hosts: []
+sshd__known_hosts: []
 
 
-# .. envvar:: sshd_group_known_hosts
+# .. envvar:: sshd__group_known_hosts
 #
 # List of FQDN hostnames that should be scanned to add host fingerprints to the
 # system-wide known hosts file (host group).
-sshd_group_known_hosts: []
+sshd__group_known_hosts: []
 
 
-# .. envvar:: sshd_host_known_hosts
+# .. envvar:: sshd__host_known_hosts
 #
 # List of FQDN hostnames that should be scanned to add host fingerprints to the
 # system-wide known hosts file (host).
-sshd_host_known_hosts: []
+sshd__host_known_hosts: []
 
 
-# .. envvar:: sshd_known_hosts_file
+# .. envvar:: sshd__known_hosts_file
 #
 # System-wide file where host fingerprints are stored.
-sshd_known_hosts_file: '/etc/ssh/ssh_known_hosts'
+sshd__known_hosts_file: '/etc/ssh/ssh_known_hosts'
 
 
-# .. envvar:: sshd_known_hosts_command
+# .. envvar:: sshd__known_hosts_command
 #
 # Command used to scan host fingerprints into system-wide known hosts file.
-sshd_known_hosts_command: 'ssh-keyscan -H -T 10'
+sshd__known_hosts_command: 'ssh-keyscan -H -T 10'
 
 
 # -------------------------
 #   Encryption parameters
 # -------------------------
 
-# .. envvar:: sshd_ciphers_map
+# .. envvar:: sshd__ciphers_map
 #
 # Dict with list of ciphers which should be used by the ``sshd`` server,
 # depending on available version, ordered from newest to oldest. Newer version
 # supersedes older version.
-sshd_ciphers_map:
+sshd__ciphers_map:
 
   # Source: https://wiki.mozilla.org/Security/Guidelines/OpenSSH
   '6.5': [ 'chacha20-poly1305@openssh.com', 'aes256-gcm@openssh.com',
@@ -347,12 +347,12 @@ sshd_ciphers_map:
   '6.0': [ 'aes256-ctr', 'aes192-ctr', 'aes128-ctr' ]
 
 
-# .. envvar:: sshd_kex_algorithms_map
+# .. envvar:: sshd__kex_algorithms_map
 #
 # Dict with list of key exchange algorithms which should be used by the
 # ``sshd`` server, depending on available version, ordered from newest to
 # oldest. Newer version supersedes older version.
-sshd_kex_algorithms_map:
+sshd__kex_algorithms_map:
 
   # Source: https://wiki.mozilla.org/Security/Guidelines/OpenSSH
   '6.5': [ 'curve25519-sha256@libssh.org', 'ecdh-sha2-nistp521',
@@ -363,12 +363,12 @@ sshd_kex_algorithms_map:
   '6.0': [ 'diffie-hellman-group-exchange-sha256' ]
 
 
-# .. envvar:: sshd_macs_map
+# .. envvar:: sshd__macs_map
 #
 # Dict with list of message authentication code algorithms which should be used
 # by the ``sshd`` server, depending on available version, ordered from newest
 # to oldest. Newer version supersedes older version.
-sshd_macs_map:
+sshd__macs_map:
 
   # Source: https://wiki.mozilla.org/Security/Guidelines/OpenSSH
   '6.5': [ 'hmac-sha2-512-etm@openssh.com', 'hmac-sha2-256-etm@openssh.com',
@@ -379,134 +379,134 @@ sshd_macs_map:
   '6.0': [ 'hmac-sha2-512', 'hmac-sha2-256' , 'hmac-ripemd160' ]
 
 
-# .. envvar:: sshd_moduli_minimum
+# .. envvar:: sshd__moduli_minimum
 #
 # Specify minimum size of Diffie-Hellman parameters available to the SSH
 # server. Parameters smaller than the given amount will be removed from the
 # ``/etc/ssh/moduli`` file.
-sshd_moduli_minimum: '2048'
+sshd__moduli_minimum: '2048'
 
 
-# .. envvar:: sshd_paranoid
+# .. envvar:: sshd__paranoid
 #
 # If set to True, only the first item (which is considered the strongest method
-# available) from the lists ``sshd_ciphers_map``,
-# ``sshd_kex_algorithms_map`` and ``sshd_macs_map`` will be configured for
+# available) from the lists ``sshd__ciphers_map``,
+# ``sshd__kex_algorithms_map`` and ``sshd__macs_map`` will be configured for
 # ``sshd``. Use this with care as it will deny access to anyone not able to use
 # the first cryptographic method.
 # See https://github.com/debops/ansible-sshd/issues/20
-sshd_paranoid: False
+sshd__paranoid: False
 
 
 # ---------------------------------------
 #   Authorized key lookup configuration
 # ---------------------------------------
 
-# .. envvar:: sshd_authorized_keys_lookup
+# .. envvar:: sshd__authorized_keys_lookup
 #
 # Enable support for looking up authorized public keys in external data sources
 # (currently LDAP is supported). This function works only with OpenSSH 6.2+.
-sshd_authorized_keys_lookup: False
+sshd__authorized_keys_lookup: False
 
 
-# .. envvar:: sshd_authorized_keys_lookup_user
+# .. envvar:: sshd__authorized_keys_lookup_user
 #
 # System user account which will be used to look up authorized keys.
-sshd_authorized_keys_lookup_user: 'sshd-lookup'
+sshd__authorized_keys_lookup_user: 'sshd-lookup'
 
 
-# .. envvar:: sshd_authorized_keys_lookup_group
+# .. envvar:: sshd__authorized_keys_lookup_group
 #
 # System group which will be used to look up authorized keys.
-sshd_authorized_keys_lookup_group: 'sshd-lookup'
+sshd__authorized_keys_lookup_group: 'sshd-lookup'
 
 
-# .. envvar:: sshd_authorized_keys_lookup_home
+# .. envvar:: sshd__authorized_keys_lookup_home
 #
 # Home directory used by authorized key lookup user.
-sshd_authorized_keys_lookup_home: '/var/run/{{ sshd_authorized_keys_lookup_user }}'
+sshd__authorized_keys_lookup_home: '/var/run/{{ sshd__authorized_keys_lookup_user }}'
 
 
-# .. envvar:: sshd_authorized_keys_lookup_type
+# .. envvar:: sshd__authorized_keys_lookup_type
 #
 # List of lookup scripts that should be enabled on a host.
-sshd_authorized_keys_lookup_type: [ 'ldap' ]
+sshd__authorized_keys_lookup_type: [ 'ldap' ]
 
 
 # -----------------------------
 #   LDAP lookup configuration
 # -----------------------------
 
-# .. envvar:: sshd_ldap_domain
+# .. envvar:: sshd__ldap_domain
 #
 # Base DNS domain to use for LDAP BaseDN generation.
-sshd_ldap_domain: '{{ ansible_domain }}'
+sshd__ldap_domain: '{{ ansible_domain }}'
 
 
-# .. envvar:: sshd_ldap_base
+# .. envvar:: sshd__ldap_base
 #
 # LDAP base used for BaseDN generation.
-sshd_ldap_base: '{{ "dc=" + sshd_ldap_domain.split(".") | join(",dc=") }}'
+sshd__ldap_base: '{{ "dc=" + sshd__ldap_domain.split(".") | join(",dc=") }}'
 
 
-# .. envvar:: sshd_ldap_bind_basedn
+# .. envvar:: sshd__ldap_bind_basedn
 #
 # LDAP BaseDN of the host account used to bind to the server.
-sshd_ldap_bind_basedn: '{{ "ou=Machines," + sshd_ldap_base }}'
+sshd__ldap_bind_basedn: '{{ "ou=Machines," + sshd__ldap_base }}'
 
 
-# .. envvar:: sshd_ldap_bind_cn
+# .. envvar:: sshd__ldap_bind_cn
 #
 # Host account name in LDAP.
-sshd_ldap_bind_cn: 'cn={{ ansible_hostname }}'
+sshd__ldap_bind_cn: 'cn={{ ansible_hostname }}'
 
 
-# .. envvar:: sshd_ldap_bind_dn
+# .. envvar:: sshd__ldap_bind_dn
 #
 # Machine entry used to bind to the LDAP server.
-sshd_ldap_bind_dn: '{{ sshd_ldap_bind_cn + "," + sshd_ldap_bind_basedn }}'
+sshd__ldap_bind_dn: '{{ sshd__ldap_bind_cn + "," + sshd__ldap_bind_basedn }}'
 
 
-# .. envvar:: sshd_ldap_bind_basepw
+# .. envvar:: sshd__ldap_bind_basepw
 #
 # Base path to file with host LDAP password in ``secret/`` directory. See
 # ``debops.secret`` Ansible role for more details.
-sshd_ldap_bind_basepw: '{{ secret + "/credentials/" +
-                           ansible_fqdn + "/ldap/host/binddn/" +
-                           sshd_ldap_bind_dn + ".password" }}'
+sshd__ldap_bind_basepw: '{{ secret + "/credentials/" +
+                            ansible_fqdn + "/ldap/host/binddn/" +
+                            sshd__ldap_bind_dn + ".password" }}'
 
 
-# .. envvar:: sshd_ldap_bind_pw
+# .. envvar:: sshd__ldap_bind_pw
 #
 # Machine password used for binding to LDAP database.
-sshd_ldap_bind_pw: '{{ lookup("password", sshd_ldap_bind_basepw +
-                       " length=" + sshd_ldap_password_length) }}'
+sshd__ldap_bind_pw: '{{ lookup("password", sshd__ldap_bind_basepw +
+                        " length=" + sshd__ldap_password_length) }}'
 
 
-# .. envvar:: sshd_ldap_bind_pw_file
+# .. envvar:: sshd__ldap_bind_pw_file
 #
 # Path to file which stores machine bind password on remote host.
-sshd_ldap_bind_pw_file: '/etc/ssh/ldap_authorized_keys_bindpw'
+sshd__ldap_bind_pw_file: '/etc/ssh/ldap_authorized_keys_bindpw'
 
 
-# .. envvar:: sshd_ldap_password_length
+# .. envvar:: sshd__ldap_password_length
 #
 # Length of generated LDAP machine password.
-sshd_ldap_password_length: '48'
+sshd__ldap_password_length: '48'
 
 
-# .. envvar:: sshd_ldap_filter
+# .. envvar:: sshd__ldap_filter
 #
 # Active ``ldapsearch`` filter used to select correct account while looking up
 # the SSH public key.
-sshd_ldap_filter: '{{ sshd_ldap_filter_map["service+host"] }}'
+sshd__ldap_filter: '{{ sshd__ldap_filter_map["service+host"] }}'
 
 
-# .. envvar:: sshd_ldap_filter_map
+# .. envvar:: sshd__ldap_filter_map
 #
 # Dict with set of available LDAP filters that can be used to lookup the SSH
 # public key.
-sshd_ldap_filter_map:
+sshd__ldap_filter_map:
 
   # User account needs 'authorizedService' attribute
   'service': '(&(objectClass=posixAccount)(uid=$username)(authorizedService=$service))'
@@ -522,7 +522,7 @@ sshd_ldap_filter_map:
 #   Match conditional blocks
 # ----------------------------
 
-# .. envvar:: sshd_match_list
+# .. envvar:: sshd__match_list
 #
 # List of conditional ``Match`` blocks to include in ``sshd_config``.
 # Required parameters:
@@ -533,17 +533,17 @@ sshd_ldap_filter_map:
 # - ``options``: YAML text block which contains ``sshd_config(5)`` options
 #   active in a given Match block.
 #
-sshd_match_list: [ '{{ sshd_match_group_sftponly }}' ]
+sshd__match_list: [ '{{ sshd__match_group_sftponly }}' ]
 
 
-# .. envvar:: sshd_match_group_sftponly
+# .. envvar:: sshd__match_group_sftponly
 #
 # Default ``Match`` conditional block which defines configuration for SFTPonly
 # accounts.
-sshd_match_group_sftponly:
+sshd__match_group_sftponly:
   match: 'Group sftponly'
   options: |
-    AuthorizedKeysFile {{ sshd_authorized_keys_system | join(' ') }}
+    AuthorizedKeysFile {{ sshd__authorized_keys_system | join(' ') }}
     ChrootDirectory %h
     X11Forwarding no
     AllowAgentForwarding no
@@ -556,11 +556,11 @@ sshd_match_group_sftponly:
 #   Configuration of other services
 # -----------------------------------
 
-# .. envvar:: sshd_apt_preferences_dependent_list
+# .. envvar:: sshd__apt_preferences__dependent_list
 #
 # List of ``apt_preferences(5)`` rules. This is used to change what package
 # versions are installed on a particular distribution.
-sshd_apt_preferences_dependent_list:
+sshd__apt_preferences__dependent_list:
 
   - package: 'ssh ssh-* openssh-*'
     backports: [ 'wheezy' ]
@@ -568,99 +568,99 @@ sshd_apt_preferences_dependent_list:
     by_role: 'debops.sshd'
 
 
-# .. envvar:: sshd_ferm_dependent_rules:
+# .. envvar:: sshd__ferm__dependent_rules:
 #
 # Configuration for ``iptables`` firewall managed by ``ferm``.
-sshd_ferm_dependent_rules:
+sshd__ferm__dependent_rules:
 
   - type: 'accept'
-    dport: '{{ sshd_ferm_ports }}'
-    weight: '{{ sshd_ferm_weight }}'
+    dport: '{{ sshd__ferm_ports }}'
+    weight: '{{ sshd__ferm_weight }}'
     role: 'sshd'
     role_weight: '10'
     name: 'jump-filter-ssh'
-    target: '{{ sshd_ferm_limit_chain }}'
-    when: '{{ sshd_ferm_limit | bool }}'
-    delete: '{{ not sshd_ferm_limit | bool }}'
+    target: '{{ sshd__ferm_limit_chain }}'
+    when: '{{ sshd__ferm_limit | bool }}'
+    delete: '{{ not sshd__ferm_limit | bool }}'
 
-  - chain: '{{ sshd_ferm_limit_chain if sshd_ferm_limit | bool else "INPUT" }}'
+  - chain: '{{ sshd__ferm_limit_chain if sshd__ferm_limit | bool else "INPUT" }}'
     type: 'accept'
-    dport: '{{ sshd_ferm_ports }}'
-    saddr: '{{ sshd_whitelist + sshd_group_whitelist + sshd_host_whitelist }}'
-    weight: '{{ sshd_ferm_weight }}'
+    dport: '{{ sshd__ferm_ports }}'
+    saddr: '{{ sshd__whitelist + sshd__group_whitelist + sshd__host_whitelist }}'
+    weight: '{{ sshd__ferm_weight }}'
     role: 'sshd'
     role_weight: '20'
     name: 'whitelist'
     subchain: False
     accept_any: False
 
-  - chain: '{{ sshd_ferm_limit_chain if sshd_ferm_limit | bool else "INPUT" }}'
+  - chain: '{{ sshd__ferm_limit_chain if sshd__ferm_limit | bool else "INPUT" }}'
     type: 'accept'
-    dport: '{{ sshd_ferm_ports }}'
-    saddr: '{{ sshd_allow + sshd_group_allow + sshd_host_allow }}'
-    weight: '{{ sshd_ferm_weight }}'
+    dport: '{{ sshd__ferm_ports }}'
+    saddr: '{{ sshd__allow + sshd__group_allow + sshd__host_allow }}'
+    weight: '{{ sshd__ferm_weight }}'
     role: 'sshd'
     role_weight: '30'
     name: 'allow'
     subchain: False
-    accept_any: '{{ False if sshd_ferm_limit | bool else True }}'
+    accept_any: '{{ False if sshd__ferm_limit | bool else True }}'
 
-  - chain: '{{ sshd_ferm_limit_chain }}'
+  - chain: '{{ sshd__ferm_limit_chain }}'
     type: 'recent'
-    weight: '{{ sshd_ferm_weight }}'
+    weight: '{{ sshd__ferm_weight }}'
     role: 'sshd'
     role_weight: '40'
     name: 'block-ssh'
-    dport: '{{ sshd_ferm_ports }}'
+    dport: '{{ sshd__ferm_ports }}'
     state: [ 'NEW' ]
     subchain: False
     recent_name: 'ssh-new'
     recent_update: True
-    recent_seconds: '{{ sshd_ferm_limit_seconds }}'
-    recent_hitcount: '{{ sshd_ferm_limit_hits }}'
+    recent_seconds: '{{ sshd__ferm_limit_seconds }}'
+    recent_hitcount: '{{ sshd__ferm_limit_hits }}'
     recent_target: 'REJECT'
-    when: '{{ sshd_ferm_limit | bool }}'
-    delete: '{{ not sshd_ferm_limit | bool }}'
+    when: '{{ sshd__ferm_limit | bool }}'
+    delete: '{{ not sshd__ferm_limit | bool }}'
 
-  - chain: '{{ sshd_ferm_limit_chain }}'
+  - chain: '{{ sshd__ferm_limit_chain }}'
     type: 'recent'
-    weight: '{{ sshd_ferm_weight }}'
+    weight: '{{ sshd__ferm_weight }}'
     role: 'sshd'
     role_weight: '50'
     name: 'mark-ssh'
-    dport: '{{ sshd_ferm_ports }}'
+    dport: '{{ sshd__ferm_ports }}'
     state: [ 'NEW' ]
     subchain: False
     recent_set_name: 'ssh-new'
     recent_log: False
-    when: '{{ sshd_ferm_limit | bool }}'
-    delete: '{{ not sshd_ferm_limit | bool }}'
+    when: '{{ sshd__ferm_limit | bool }}'
+    delete: '{{ not sshd__ferm_limit | bool }}'
 
-  - chain: '{{ sshd_ferm_limit_chain }}'
+  - chain: '{{ sshd__ferm_limit_chain }}'
     type: 'accept'
-    weight: '{{ sshd_ferm_weight }}'
+    weight: '{{ sshd__ferm_weight }}'
     role: 'sshd'
     role_weight: '60'
     name: 'ssh'
-    dport: '{{ sshd_ferm_ports }}'
-    when: '{{ sshd_ferm_limit | bool }}'
-    delete: '{{ not sshd_ferm_limit | bool }}'
+    dport: '{{ sshd__ferm_ports }}'
+    when: '{{ sshd__ferm_limit | bool }}'
+    delete: '{{ not sshd__ferm_limit | bool }}'
 
 
-# .. envvar:: sshd_tcpwrappers_dependent_allow
+# .. envvar:: sshd__tcpwrappers__dependent_allow
 #
 # Configure TCP wrappers to allow access to the ``sshd`` daemon.
-sshd_tcpwrappers_dependent_allow:
+sshd__tcpwrappers__dependent_allow:
 
   - daemon: 'sshd'
-    client: '{{ sshd_whitelist + sshd_group_whitelist + sshd_host_whitelist }}'
+    client: '{{ sshd__whitelist + sshd__group_whitelist + sshd__host_whitelist }}'
     weight: '25'
     filename: 'sshd_dependent_whitelist'
     comment: 'Whitelist of hosts allowed to connect to ssh'
 
   - daemon: 'sshd'
-    client: '{{ sshd_allow + sshd_group_allow + sshd_host_allow }}'
-    default: '{{ sshd_tcpwrappers_default }}'
+    client: '{{ sshd__allow + sshd__group_allow + sshd__host_allow }}'
+    default: '{{ sshd__tcpwrappers_default }}'
     weight: '30'
     filename: 'sshd_dependent_allow'
     comment: 'List of hosts allowed to connect to ssh'

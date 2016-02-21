@@ -2,15 +2,15 @@
 
 - name: Create OpenSSH lookup system group
   group:
-    name: '{{ sshd_authorized_keys_lookup_group }}'
+    name: '{{ sshd__authorized_keys_lookup_group }}'
     state: 'present'
     system: True
 
 - name: Create OpenSSH lookup system user
   user:
-    name: '{{ sshd_authorized_keys_lookup_user }}'
-    group: '{{ sshd_authorized_keys_lookup_group }}'
-    home: '{{ sshd_authorized_keys_lookup_home }}'
+    name: '{{ sshd__authorized_keys_lookup_user }}'
+    group: '{{ sshd__authorized_keys_lookup_group }}'
+    home: '{{ sshd__authorized_keys_lookup_home }}'
     comment: 'OpenSSH Authorized Keys lookup'
     shell: '/bin/false'
     state: 'present'
@@ -20,14 +20,14 @@
 
 - name: Create OpenSSH LDAP bind password file
   environment:
-    ANSIBLE_SSHD_LDAP_BINDPW: '{{ sshd_ldap_bind_pw }}'
-  shell: echo -n ${ANSIBLE_SSHD_LDAP_BINDPW} > {{ sshd_ldap_bind_pw_file }} ;
-         chmod 0640 {{ sshd_ldap_bind_pw_file }} ;
-         chown root.{{ sshd_authorized_keys_lookup_user }} {{ sshd_ldap_bind_pw_file }}
+    ANSIBLE_SSHD_LDAP_BINDPW: '{{ sshd__ldap_bind_pw }}'
+  shell: echo -n ${ANSIBLE_SSHD_LDAP_BINDPW} > {{ sshd__ldap_bind_pw_file }} ;
+         chmod 0640 {{ sshd__ldap_bind_pw_file }} ;
+         chown root.{{ sshd__authorized_keys_lookup_user }} {{ sshd__ldap_bind_pw_file }}
   args:
-    creates: '{{ sshd_ldap_bind_pw_file }}'
-  when: sshd_authorized_keys_lookup_type|d() and
-        "ldap" in sshd_authorized_keys_lookup_type
+    creates: '{{ sshd__ldap_bind_pw_file }}'
+  when: sshd__authorized_keys_lookup_type|d() and
+        "ldap" in sshd__authorized_keys_lookup_type
   no_log: True
 
 - name: Create /etc/ssh/authorized_keys_lookup.d directory
@@ -45,8 +45,8 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  with_items: '{{ sshd_authorized_keys_lookup_type }}'
-  when: sshd_authorized_keys_lookup_type|d()
+  with_items: '{{ sshd__authorized_keys_lookup_type }}'
+  when: sshd__authorized_keys_lookup_type|d()
 
 - name: Generate authorized keys lookup hook
   template:
