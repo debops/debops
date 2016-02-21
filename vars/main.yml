@@ -8,6 +8,14 @@ preseed_nginx_server_location:
               text/plain cfg sh;
       }
 
+    '~ /d-i/': |
+      index index.html index.htm preseed.cfg ;
+      try_files $uri $uri/ $uri.html /index.html =404;
+      autoindex on;
+      types {
+              text/plain cfg sh;
+      }
+
 # nginx configuration - HTTP server
 preseed_nginx_server_http:
   by_role: 'debops.preseed'
