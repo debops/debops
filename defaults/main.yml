@@ -86,17 +86,24 @@ unattended_upgrades__periodic_verbosity: '0'
 unattended_upgrades__origins: []
 
 
-# .. envvar:: unattended_upgrades__security_lookup
+# .. envvar:: unattended_upgrades__origins_lookup
 #
-# Variable which is used to select which security repository will be enabled,
-# by default it depends on the host OS distribution.
-unattended_upgrades__security_lookup: '{{ ansible_distribution }}'
+# List of strings which are used to select different origin patterns depending
+# on installd OS and its release. The first found match wins.
+unattended_upgrades__origins_lookup:
+  - '{{ ansible_distribution + "_" + (ansible_distribution_release.split("/")[0]) }}'
+  - '{{ ansible_distribution }}'
+  - 'default'
 
 
 # .. envvar:: unattended_upgrades__security_origins
 #
 # Map of the security repositories of different Linux distributions.
 unattended_upgrades__security_origins:
+
+  # https://www.debian.org/security/
+  'Debian_wheezy':
+    - 'o=Debian,l=Debian-Security'
 
   # https://www.debian.org/security/
   'Debian':
@@ -106,15 +113,24 @@ unattended_upgrades__security_origins:
   'Ubuntu':
     - 'o=Ubuntu,n=${distro_codename},l=${distro_codename}-security'
 
+  'default':
+    - 'o=${distro_id},n=${distro_codename},l=${distro_id}-Security'
+
 
 # .. envvar:: unattended_upgrades__release_origins
 #
 # List of origin patterns that specify the default repositories of the current
 # OS release. Enabled/disabled by the ``unattended_upgrades__release`` variable.
 unattended_upgrades__release_origins:
-  - 'o=${distro_id},n=${distro_codename}'
-  - 'o=${distro_id},n=${distro_codename}-updates'
-  - 'o=${distro_id},n=${distro_codename}-backports'
+
+  'Debian_wheezy':
+    - 'o=Debian'
+    - 'o=Debian Backports'
+
+  'default':
+    - 'o=${distro_id},n=${distro_codename}'
+    - 'o=${distro_id},n=${distro_codename}-updates'
+    - 'o=${distro_id},n=${distro_codename}-backports'
 
 
 # .. envvar:: unattended_upgrades__dependent_origins
