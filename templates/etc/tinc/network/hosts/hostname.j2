@@ -1,26 +1,26 @@
 # {{ ansible_managed }}
 
 {% set tinc_tpl_host_keys_seen = [] %}
-{% if tinc_host_configuration is defined and tinc_host_configuration %}
-{% for key, value in tinc_host_configuration.iteritems() %}
-{% if key | lower not in [ '{{ tinc_hostname | replace("-","_") }}-up', '{{ tinc_hostname | replace("-","_") }}-down', 'host-up', 'host-down' ] %}
-{% if key not in tinc_tpl_host_keys_seen %}
-{% if value is string %}
+{% if item.tinc_host_options|d() %}
+{%   for key, value in item.tinc_host_options.iteritems() %}
+{%     if key | lower not in [ '{{ (item.hostname | d(tinc_hostname)) | replace("-","_") }}-up', '{{ (item.hostname | d(tinc_hostname)) | replace("-","_") }}-down', 'host-up', 'host-down' ] %}
+{%       if key not in tinc_tpl_host_keys_seen %}
+{%         if value is string %}
 {{ key }} = {{ value }}
-{% else %}
-{% for element in value %}
+{%         else %}
+{%           for element in value %}
 {{ key }} = {{ element }}
-{% endfor %}
-{% endif %}
-{% set _ = tinc_tpl_host_keys_seen.append(key) %}
-{% endif %}
-{% endif %}
-{% endfor %}
+{%           endfor %}
+{%         endif %}
+{%         set _ = tinc_tpl_host_keys_seen.append(key) %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
 {% endif %}
 {% if (('Address' not in tinc_tpl_host_keys_seen) or ('address' not in tinc_tpl_host_keys_seen)) %}
-{% for address in (tinc_addresses|d([]) + ansible_all_ipv4_addresses|d([]) + ansible_all_ipv6_addresses|d([])) %}
-{% if address | ipaddr('public') %}
-Address = {{ address }} {{ tinc_host_port }}
-{% endif %}
-{% endfor %}
+{%   for address in (item.tinc_addresses|d([]) + tinc_host_addresses|d([])) %}
+{%     if address %}
+Address = {{ address }} {{ item.tinc_options.Port if item.tinc_options.Port|d() else item.port }}
+{%     endif %}
+{%   endfor %}
 {% endif %}

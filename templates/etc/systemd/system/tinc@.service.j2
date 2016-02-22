@@ -1,17 +1,23 @@
 #{{ ansible_managed }}
+
 [Unit]
-Description=tinc for network %I
-After=local-fs.target network-pre.target networking.service
-Before=network.target
+Description=Tinc VPN for %i network
+Documentation=man:tincd(8) man:tinc.conf(5)
+Documentation=http://tinc-vpn.org/docs/
+PartOf=tinc.service
+ReloadPropagatedFrom=tinc.service
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/tincd -D -n %i -o Interface=%i --mlock --chroot --user={{ tinc_user }}
-ExecReload=/usr/sbin/tincd -n %i reload
-ExecStop=/usr/sbin/tincd -n %i stop
-TimeoutStopSec=5
-Restart=always
-RestartSec=60
+WorkingDirectory=/etc/tinc/%i
+EnvironmentFile=-/etc/default/tinc
+EnvironmentFile=-/etc/default/tinc-%i
+ExecStart=/usr/sbin/tincd --net %i --no-detach $EXTRA $TINC_NETWORK_OPTIONS
+ExecReload=/usr/sbin/tincd --net %i --kill=HUP
+ExecStop=/usr/sbin/tincd --net %i --kill
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=tinc.service
