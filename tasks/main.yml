@@ -189,7 +189,7 @@
 
 - name: Download public keys per host
   copy:
-    src: '{{ secret + "/tinc/networks/" + item.name + "/by-host/" + ((item.hostname | d(tinc_hostname)) | replace("-","_")) + "/hosts/" }}'
+    src: '{{ secret + "/tinc/networks/" + item.name + "/by-host/" + ((item.hostname | d(tinc_hostname))) + "/hosts/" }}'
     dest: '/etc/tinc/{{ item.name }}/hosts/'
     owner: 'root'
     group: '{{ tinc_group }}'
