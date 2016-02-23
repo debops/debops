@@ -5,6 +5,26 @@
 # .. contents:: Sections
 #    :local:
 
+# ----------------
+#   Installation
+# ----------------
+
+# .. envvar:: dhparam_base_packages
+#
+# List of APT packages which will be installed to support Diffie-Hellman
+# parameters.
+dhparam_base_packages:
+  - [ '{{ "gnutls-bin" if (dhparam_library == "gnutls")  else [] }}' ]
+  - [ '{{ "openssl"    if (dhparam_library == "openssl") else [] }}' ]
+  - [ '{{ "cron"       if (dhparam_generate_cron | bool) else [] }}' ]
+
+
+# .. envvar:: dhparam_packages
+#
+# List of additional APT packages to install.
+dhparam_packages: []
+
+
 # ----------------------------
 #   Cryptographic parameters
 # ----------------------------

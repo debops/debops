@@ -50,8 +50,8 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - [ '{{ "gnutls-bin" if (dhparam_library == "gnutls")  else [] }}' ]
-    - [ '{{ "openssl"    if (dhparam_library == "openssl") else [] }}' ]
+    - '{{ dhparam_base_packages }}'
+    - '{{ dhparam_packages }}'
 
 - name: Create required directories
   file:
