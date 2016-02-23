@@ -6,24 +6,24 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ tinc_base_packages }}'
-    - '{{ tinc_packages }}'
-  register: tinc_register_install
+    - '{{ tinc__base_packages }}'
+    - '{{ tinc__packages }}'
+  register: tinc__register_install
 
 - name: Create system group for VPN service
   group:
-    name: '{{ tinc_group }}'
+    name: '{{ tinc__group }}'
     state: 'present'
     system: True
 
 - name: Create system user for VPN service
   user:
-    name: '{{ tinc_user }}'
+    name: '{{ tinc__user }}'
     state: 'present'
     system: True
     comment: 'tinc VPN service'
-    home: '{{ tinc_home }}'
-    group: '{{ tinc_group }}'
+    home: '{{ tinc__home }}'
+    group: '{{ tinc__group }}'
     shell: '/bin/false'
     createhome: False
 
@@ -31,8 +31,8 @@
   modprobe:
     name: '{{ item }}'
     state: 'present'
-  with_items: '{{ tinc_modprobe_modules }}'
-  when: (tinc_modprobe|bool and ansible_local|d() and ansible_local.cap12s|d() and
+  with_items: '{{ tinc__modprobe_modules }}'
+  when: (tinc__modprobe|bool and ansible_local|d() and ansible_local.cap12s|d() and
          (not ansible_local.cap12s.enabled | bool or
           (ansible_local.cap12s.enabled | bool and
            'cap_sys_admin' in ansible_local.cap12s.list)))
@@ -43,8 +43,8 @@
     regexp: '^{{ item }}$'
     line: '{{ item }}'
     state: 'present'
-  with_items: '{{ tinc_modprobe_modules }}'
-  when: (tinc_modprobe|bool and ansible_local|d() and ansible_local.cap12s|d() and
+  with_items: '{{ tinc__modprobe_modules }}'
+  when: (tinc__modprobe|bool and ansible_local|d() and ansible_local.cap12s|d() and
          (not ansible_local.cap12s.enabled | bool or
           (ansible_local.cap12s.enabled | bool and
            'cap_sys_admin' in ansible_local.cap12s.list)))
@@ -60,12 +60,12 @@
 
 - name: Create required directories
   file:
-    path: '/etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc_hostname)) | replace("-","_") }}.d'
+    path: '/etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc__hostname)) | replace("-","_") }}.d'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: item.name|d()
 
 - name: Generate main configuration file
@@ -75,7 +75,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: item.name|d() and item.tinc_options|d()
   notify: [ 'Reload tinc' ]
 
@@ -84,9 +84,9 @@
     src: 'etc/tinc/network/tinc-up.j2'
     dest: '/etc/tinc/{{ item.name }}/tinc-up'
     owner: 'root'
-    group: '{{ tinc_group }}'
+    group: '{{ tinc__group }}'
     mode: '0750'
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: (item.name|d() and item.tinc_options|d() and
          (item.generate_tinc_up is undefined or item.generate_tinc_up|bool))
 
@@ -95,9 +95,9 @@
     src: 'etc/tinc/network/tinc-down.j2'
     dest: '/etc/tinc/{{ item.name }}/tinc-down'
     owner: 'root'
-    group: '{{ tinc_group }}'
+    group: '{{ tinc__group }}'
     mode: '0750'
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: (item.name|d() and item.tinc_options|d() and
          (item.generate_tinc_down is undefined or item.generate_tinc_down|bool))
 
@@ -110,47 +110,47 @@
     mode: '0644'
 
 - name: Initialize RSA key pairs
-  shell: yes | tincd -n {{ item.name }} -K{{ item.rsa_key_length | d(tinc_rsa_key_length) }}
+  shell: yes | tincd -n {{ item.name }} -K{{ item.rsa_key_length | d(tinc__rsa_key_length) }}
   args:
     creates: '/etc/tinc/{{ item.name }}/rsa_key.priv'
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: item.name is defined and item.tinc_options is defined
 
 - name: Create persistent copy of host public key
-  command: cp /etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc_hostname)) | replace("-","_") }}
-              /etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc_hostname)) | replace("-","_") + ".d/99_rsa-public-key" }}
+  command: cp /etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc__hostname)) | replace("-","_") }}
+              /etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc__hostname)) | replace("-","_") + ".d/99_rsa-public-key" }}
   args:
-    creates: /etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc_hostname)) | replace("-","_") + ".d/99_rsa-public-key" }}
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
+    creates: /etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc__hostname)) | replace("-","_") + ".d/99_rsa-public-key" }}
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: item.name is defined and item.tinc_options is defined
 
 - name: Generate host configuration file
   template:
     src: 'etc/tinc/network/hosts/hostname.j2'
-    dest: '/etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc_hostname)) | replace("-","_") }}.d/00_host-config'
+    dest: '/etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc__hostname)) | replace("-","_") }}.d/00_host-config'
     owner: 'root'
     group: 'root'
     mode: '0640'
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: item.name is defined and item.tinc_options is defined
 
 - name: Assemble host configuration file from parts
   assemble:
-    src: '/etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc_hostname)) | replace("-","_") }}.d'
-    dest: '/etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc_hostname)) | replace("-","_") }}'
+    src: '/etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc__hostname)) | replace("-","_") }}.d'
+    dest: '/etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc__hostname)) | replace("-","_") }}'
     owner: 'root'
-    group: '{{ tinc_group }}'
+    group: '{{ tinc__group }}'
     mode: '0640'
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: item.name is defined and item.tinc_options is defined
   notify: [ 'Reload tinc' ]
 
 - name: Upload public keys from hosts
   fetch:
-    src: '/etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc_hostname)) | replace("-","_") }}'
-    dest: '{{ secret + "/tinc/networks/" + item.name + "/by-network/" + item.name + "/hosts/" + (item.hostname | d(tinc_hostname) | replace("-","_")) }}'
+    src: '/etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc__hostname)) | replace("-","_") }}'
+    dest: '{{ secret + "/tinc/networks/" + item.name + "/by-network/" + item.name + "/hosts/" + (item.hostname | d(tinc__hostname) | replace("-","_")) }}'
     flat: True
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: item.name|d() and item.tinc_options|d()
 
 - name: Download public keys per network
@@ -158,9 +158,9 @@
     src: '{{ secret + "/tinc/networks/" + item.name + "/by-network/" + item.name + "/hosts/" }}'
     dest: '/etc/tinc/{{ item.name }}/hosts/'
     owner: 'root'
-    group: '{{ tinc_group }}'
+    group: '{{ tinc__group }}'
     mode: '0640'
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: item.name is defined and item.tinc_options is defined
   notify: [ 'Reload tinc' ]
 
@@ -169,9 +169,9 @@
     src: '{{ secret + "/tinc/networks/" + item.name + "/by-group/all/hosts/" }}'
     dest: '/etc/tinc/{{ item.name }}/hosts/'
     owner: 'root'
-    group: '{{ tinc_group }}'
+    group: '{{ tinc__group }}'
     mode: '0640'
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: item.name is defined and item.tinc_options is defined
   notify: [ 'Reload tinc' ]
 
@@ -180,23 +180,23 @@
     src: '{{ secret + "/tinc/networks/" + item.0.name + "/by-group/" + item.1 + "/hosts/" }}'
     dest: '/etc/tinc/{{ item.0.name }}/hosts/'
     owner: 'root'
-    group: '{{ tinc_group }}'
+    group: '{{ tinc__group }}'
     mode: '0640'
   with_nested:
-    - '{{ tinc_default_networks + tinc_networks }}'
-    - '{{ tinc_inventory_groups }}'
+    - '{{ tinc__default_networks + tinc__networks }}'
+    - '{{ tinc__inventory_groups }}'
   when: (item.0.name|d() and item.0.tinc_options|d() and
          item.1 in group_names)
   notify: [ 'Reload tinc' ]
 
 - name: Download public keys per host
   copy:
-    src: '{{ secret + "/tinc/networks/" + item.name + "/by-host/" + ((item.hostname | d(tinc_hostname))) + "/hosts/" }}'
+    src: '{{ secret + "/tinc/networks/" + item.name + "/by-host/" + ((item.hostname | d(tinc__hostname))) + "/hosts/" }}'
     dest: '/etc/tinc/{{ item.name }}/hosts/'
     owner: 'root'
-    group: '{{ tinc_group }}'
+    group: '{{ tinc__group }}'
     mode: '0640'
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: item.name|d() and item.tinc_options|d()
   notify: [ 'Reload tinc' ]
 
@@ -207,8 +207,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
-  when: tinc_systemd|bool and item.name|d() and item.tinc_options|d()
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
+  when: tinc__systemd|bool and item.name|d() and item.tinc_options|d()
   notify: [ 'Reload tinc' ]
 
 - name: Configure systemd unit files
@@ -219,18 +219,18 @@
     group: 'root'
     mode: '0644'
   with_items: [ 'tinc.service', 'tinc@.service' ]
-  register: tinc_register_systemd
-  when: tinc_systemd | bool
+  register: tinc__register_systemd
+  when: tinc__systemd | bool
 
 - name: Reload systemd daemon configuration
   shell: systemctl daemon-reload ; systemctl enable tinc.service
-  when: tinc_register_systemd.changed | bool
+  when: tinc__register_systemd.changed | bool
 
 - name: Start tinc VPN networks on first install
   service:
     name: 'tinc'
     state: 'restarted'
-  when: not tinc_systemd | bool and tinc_register_install.changed | bool
+  when: not tinc__systemd | bool and tinc__register_install.changed | bool
 
 - name: Manage tinc network services in systemd
   service:
@@ -239,6 +239,6 @@
                            (item.boot is undefined or item.boot|bool))
                        else False) | bool }}'
     state: '{{ ("stopped" if (item.delete|d() and item.delete|bool) else "started") }}'
-  with_items: '{{ tinc_default_networks + tinc_networks }}'
-  when: tinc_systemd | bool and item.name|d() and item.tinc_options|d()
+  with_items: '{{ tinc__default_networks + tinc__networks }}'
+  when: tinc__systemd | bool and item.name|d() and item.tinc_options|d()
 

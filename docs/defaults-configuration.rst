@@ -9,10 +9,10 @@ them.
    :local:
    :depth: 1
 
-.. _tinc_networks:
+.. _tinc__networks:
 
-tinc_networks
--------------
+tinc__networks
+--------------
 
 This is a list of mesh networks managed by ``debops.tinc`` role. Each network
 is described by a YAML dictionary which should have the following keys:
@@ -77,7 +77,7 @@ is described by a YAML dictionary which should have the following keys:
 
   To see the list of available options, check the ``tinc.conf(5)`` manual page.
 
-``host_options``
+``tinc_host_options``
   Optional. Dictionary variable which specifies options stored in the
   ``/etc/tinc/<network>/hosts/<hostname>`` configuration file. Each key of the
   dict is the option name, values can be strings or lists of strings, in which
@@ -91,9 +91,9 @@ Examples
 
 Minimal configuration of a default Tinc ``mesh0`` VPN::
 
-    tinc_networks: [ '{{ tinc_network_mesh0 }}' ]
+    tinc__networks: [ '{{ tinc__network_mesh0 }}' ]
 
-    tinc_network_mesh0:
+    tinc__network_mesh0:
       name: 'mesh0'
       interface: 'tap0'
       port: '655'

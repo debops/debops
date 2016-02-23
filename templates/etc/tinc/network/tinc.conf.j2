@@ -1,24 +1,24 @@
 # {{ ansible_managed }}
 
-{% set tinc_tpl_seen_keys = [ 'name', 'tinc-up', 'tinc-down', 'host-up', 'host-down', 'subnet-up', 'subnet-down' ] %}
+{% set tinc__tpl_seen_keys = [ 'name', 'tinc-up', 'tinc-down', 'host-up', 'host-down', 'subnet-up', 'subnet-down' ] %}
 {% if item.tinc_options|d() %}
 {%   if item.hostname|d() %}
 Name = {{ item.hostname | replace("-","_") }}
 {%   elif item.tinc_options.Name|d() %}
 Name = {{ item.tinc_options.Name | replace("-","_") }}
 {%   else %}
-Name = {{ tinc_hostname | replace("-","_") }}
+Name = {{ tinc__hostname | replace("-","_") }}
 {%   endif %}
 {%   if item.port|d() %}
 Port = {{ item.port }}
-{%     set _ = tinc_tpl_seen_keys.append('port') %}
+{%     set _ = tinc__tpl_seen_keys.append('port') %}
 {%   endif %}
 {%   if item.interface|d() %}
 Interface = {{ item.interface }}
-{%     set _ = tinc_tpl_seen_keys.append('interface') %}
+{%     set _ = tinc__tpl_seen_keys.append('interface') %}
 {%   endif %}
 {%   for key, value in item.tinc_options.iteritems() %}
-{%     if key | lower not in tinc_tpl_seen_keys %}
+{%     if key | lower not in tinc__tpl_seen_keys %}
 {%       if value is string %}
 {%         if key | lower in [ 'connectto' ] %}
 {{ key }} = {{ value | replace("-","_") }}

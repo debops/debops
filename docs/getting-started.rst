@@ -34,7 +34,7 @@ hosts acting as the DHCP/DNS server and optionally a gateway::
     debops_service_tinc_mesh0
 
     [debops_service_tinc_mesh0]
-    gateway   tinc_bridge_mesh0="br2" tinc_link_type_mesh0="static"
+    gateway   tinc__bridge_mesh0="br2" tinc__link_type_mesh0="static"
     hostname1
     hostname2
 
@@ -52,7 +52,7 @@ connections between hosts, you can tell the ``debops.tinc`` role to add the
 private IP addresses of the hosts to their public key files by adding in the
 Ansible inventory::
 
-    tinc_host_addresses: '{{ tinc_host_addresses_ip }}'
+    tinc__host_addresses: '{{ tinc__host_addresses_ip }}'
 
 Example playbook
 ----------------
@@ -79,7 +79,7 @@ Here's an example playbook which uses ``debops.tinc`` role::
 
         - role: debops.secret
           tags: [ 'role::secret', 'role::tinc:secret' ]
-          secret_directories: '{{ tinc_env_secret_directories }}'
+          secret_directories: '{{ tinc__env_secret__directories }}'
 
         - role: debops.apt_preferences
           tags: [ 'role::apt_preferences' ]
@@ -87,11 +87,11 @@ Here's an example playbook which uses ``debops.tinc`` role::
 
         - role: debops.etc_services
           tags: [ 'role::etc_services' ]
-          etc_services_dependent_list: '{{ tinc_etc_services_dependent_list }}'
+          etc_services_dependent_list: '{{ tinc__env_etc_services__dependent_list }}'
 
         - role: debops.ferm
           tags: [ 'role::ferm' ]
-          ferm_dependent_rules: '{{ tinc_env_ferm_dependent_rules }}'
+          ferm_dependent_rules: '{{ tinc__env_ferm__dependent_rules }}'
 
         - role: debops.tinc
           tags: [ 'role::tinc' ]
@@ -109,7 +109,7 @@ a bridge which connects to a network with DHCP/DNS server:
 
 .. code-block:: yaml
 
-   tinc_network_dict:
+   tinc__network_dict:
      link_type: 'static'
      bridge: 'br2'
 

@@ -9,17 +9,17 @@
 #   Network configuration
 # -------------------------
 
-# .. envvar:: tinc_networks
+# .. envvar:: tinc__networks
 #
-# List of Tinc Virtual Private Networks to configure. See :ref:`tinc_networks`
+# List of Tinc Virtual Private Networks to configure. See :ref:`tinc__networks`
 # for more details.
-tinc_networks: []
+tinc__networks: []
 
 
-# .. envvar:: tinc_default_networks
+# .. envvar:: tinc__default_networks
 #
 # List of default networks which are created by the ``debops.tinc`` role.
-tinc_default_networks: [ '{{ tinc_network_mesh0 }}' ]
+tinc__default_networks: [ '{{ tinc__network_mesh0 }}' ]
 
 
 # --------------------------------------
@@ -31,39 +31,39 @@ tinc_default_networks: [ '{{ tinc_network_mesh0 }}' ]
 # a bridge to which the ``tun0`` interface will be connected; on that bridge
 # you should configure DHCP and DNS server to provide interface configuration.
 
-# .. envvar:: tinc_network_mesh0
+# .. envvar:: tinc__network_mesh0
 #
 # The dictionary variable which defines the ``mesh0`` network. See
-# :ref:`tinc_networks` for more details about available options. Some of the
+# :ref:`tinc__networks` for more details about available options. Some of the
 # configuration parameters are exposed in their own default variables to make
 # simple config changes easier.
-tinc_network_mesh0:
+tinc__network_mesh0:
   name: 'mesh0'
-  interface: '{{ tinc_interface_mesh0 }}'
-  hwaddr: '{{ tinc_hwaddr_mesh0 }}'
-  bridge: '{{ tinc_bridge_mesh0 }}'
-  link_type: '{{ tinc_link_type_mesh0 }}'
-  boot: '{{ tinc_boot_mesh0 }}'
+  interface: '{{ tinc__interface_mesh0 }}'
+  hwaddr: '{{ tinc__hwaddr_mesh0 }}'
+  bridge: '{{ tinc__bridge_mesh0 }}'
+  link_type: '{{ tinc__link_type_mesh0 }}'
+  boot: '{{ tinc__boot_mesh0 }}'
   port: '655'
   mlock: True
   chroot: True
-  allow: '{{ tinc_allow_mesh0 }}'
-  user: '{{ tinc_user }}'
+  allow: '{{ tinc__allow_mesh0 }}'
+  user: '{{ tinc__user }}'
   tinc_options:
     Mode: 'switch'
     DeviceType: 'tap'
     Cipher: 'aes-256-cbc'
     Digest: 'SHA512'
-    ConnectTo: '{{ tinc_connect_to_mesh0 }}'
+    ConnectTo: '{{ tinc__connect_to_mesh0 }}'
 
 
-# .. envvar:: tinc_interface_mesh0
+# .. envvar:: tinc__interface_mesh0
 #
 # Name of the network interface to use for the Tinc ``mesh0`` VPN.
-tinc_interface_mesh0: 'tap-mesh0'
+tinc__interface_mesh0: 'tap-mesh0'
 
 
-# .. envvar:: tinc_link_type_mesh0
+# .. envvar:: tinc__link_type_mesh0
 #
 # Link type to set for the Tinc ``mesh0`` VPN. If empty, ``debops.tinc``
 # defaults to a standalone network interface with ``dhclient`` requesting
@@ -73,47 +73,47 @@ tinc_interface_mesh0: 'tap-mesh0'
 #   optionally attached to a network bridge. This should usually be done just
 #   on 1 host in the mesh to provide DHCP/DNS services.
 #
-tinc_link_type_mesh0: ''
+tinc__link_type_mesh0: ''
 
 
-# .. envvar:: tinc_hwaddr_mesh0
+# .. envvar:: tinc__hwaddr_mesh0
 #
 # Specify the Media Access Control address of the Tinc ``mesh0`` interface. If
 # not specified, a randomized stable MAC address will be generated
 # automatically. Set the MAC address value to ``'*'`` to generate a random
 # hardware address.
-tinc_hwaddr_mesh0: ''
+tinc__hwaddr_mesh0: ''
 
 
-# .. envvar:: tinc_boot_mesh0
+# .. envvar:: tinc__boot_mesh0
 #
 # Specify if the Tinc ``mesh0`` network should be started at boot.
-tinc_boot_mesh0: True
+tinc__boot_mesh0: True
 
 
-# .. envvar:: tinc_bridge_mesh0
+# .. envvar:: tinc__bridge_mesh0
 #
 # Name of the bridge to connect the interface of the Tinc ``mesh0`` VPN. This
 # should be set on a host that provides the DHCP and DNS services for the mesh.
-tinc_bridge_mesh0: ''
+tinc__bridge_mesh0: ''
 
 
-# .. envvar:: tinc_allow_mesh0
+# .. envvar:: tinc__allow_mesh0
 #
 # List of IP addresses or CIDR subnets which will be allowed to connect to the
 # Tinc ``mesh0`` VPN port (655) through the firewall. If this list is empty,
 # any IP address can connect.
-tinc_allow_mesh0: []
+tinc__allow_mesh0: []
 
 
-# .. envvar:: tinc_connect_to_mesh0
+# .. envvar:: tinc__connect_to_mesh0
 #
 # List of hosts specified as the ``ConnectTo`` option in the Tinc configuration
 # file of the ``mesh0`` network.
-tinc_connect_to_mesh0: '{{ tinc_inventory_hosts_mesh0 + tinc_external_hosts_mesh0 }}'
+tinc__connect_to_mesh0: '{{ tinc__inventory_hosts_mesh0 + tinc__external_hosts_mesh0 }}'
 
 
-# .. envvar:: tinc_inventory_hosts_mesh0
+# .. envvar:: tinc__inventory_hosts_mesh0
 #
 # List of other hosts in the Ansible inventory that are participating in the
 # ``mesh0`` network besides the current one. They will be listed in the
@@ -121,40 +121,40 @@ tinc_connect_to_mesh0: '{{ tinc_inventory_hosts_mesh0 + tinc_external_hosts_mesh
 # IP address. If not, you might want to specify the list of hosts to connect to
 # manually, otherwise Tinc will try and connect to the unreachable hosts all
 # the time.
-tinc_inventory_hosts_mesh0: '{{ (groups.debops_service_tinc_mesh0
-                                   if groups.debops_service_tinc_mesh0|d()
-                                   else []) | difference([ tinc_hostname ]) }}'
+tinc__inventory_hosts_mesh0: '{{ (groups.debops_service_tinc_mesh0
+                                  if groups.debops_service_tinc_mesh0|d()
+                                  else []) | difference([ tinc__hostname ]) }}'
 
 
-# .. envvar:: tinc_external_hosts_mesh0
+# .. envvar:: tinc__external_hosts_mesh0
 #
 # List of hosts to connect to which are not in the Ansible inventory. You
 # should provide the corresponding public key files through the directories in
 # ``secret/`` directory.
-tinc_external_hosts_mesh0: []
+tinc__external_hosts_mesh0: []
 
 
 # ----------------
 #   APT packages
 # ----------------
 
-# .. envvar:: tinc_base_packages
+# .. envvar:: tinc__base_packages
 #
 # List of APT packages to install for ``tinc`` support.
-tinc_base_packages: [ 'tinc' ]
+tinc__base_packages: [ 'tinc' ]
 
 
-# .. envvar:: tinc_packages
+# .. envvar:: tinc__packages
 #
 # List of additional APT packages to install during ``tinc`` configuration.
-tinc_packages: []
+tinc__packages: []
 
 
 # --------------------------------
 #   Ansible inventory parameters
 # --------------------------------
 
-# .. envvar:: tinc_inventory_groups
+# .. envvar:: tinc__inventory_groups
 #
 # List of Ansible inventory groups which are used by ``debops.tinc`` role to
 # manage separate ``tinc`` networks. Each group will have corresponding
@@ -162,127 +162,127 @@ tinc_packages: []
 #
 # The default Ansible group ``debops_service_tinc_mesh0`` specifies hosts that
 # are participating in the ``mesh0`` VPN.
-tinc_inventory_groups: [ 'debops_service_tinc_mesh0' ]
+tinc__inventory_groups: [ 'debops_service_tinc_mesh0' ]
 
 
-# .. envvar:: tinc_inventory_hosts
+# .. envvar:: tinc__inventory_hosts
 #
 # This list defines what hosts in Ansible inventory participate in a Tinc VPN.
 # They will have their own directories in ``secret/`` store on Ansible
 # Controller used to distribute public host keys.
-tinc_inventory_hosts: '{{ groups.debops_service_tinc
-                          if groups.debops_service_tinc|d()
-                          else [] }}'
+tinc__inventory_hosts: '{{ groups.debops_service_tinc
+                           if groups.debops_service_tinc|d()
+                           else [] }}'
 
 
-# .. envvar:: tinc_hostname
+# .. envvar:: tinc__hostname
 #
 # Name of this node used in configuration files thruought the mesh. Don't
 # change this unless you know what you are doing.
-tinc_hostname: '{{ inventory_hostname_short }}'
+tinc__hostname: '{{ inventory_hostname_short }}'
 
 
 # ---------------------------
 #   Application environment
 # ---------------------------
 
-# .. envvar:: tinc_user
+# .. envvar:: tinc__user
 #
 # System user account which is used to run ``tincd``.
-tinc_user: 'tinc-vpn'
+tinc__user: 'tinc-vpn'
 
 
-# .. envvar:: tinc_group
+# .. envvar:: tinc__group
 #
 # System group which is used to access ``tincd`` configuration files.
-tinc_group: 'tinc-vpn'
+tinc__group: 'tinc-vpn'
 
 
-# .. envvar:: tinc_home
+# .. envvar:: tinc__home
 #
 # Home directory of the ``tincd`` user.
-tinc_home: '/etc/tinc'
+tinc__home: '/etc/tinc'
 
 
-# .. envvar:: tinc_ulimit_options
+# .. envvar:: tinc__ulimit_options
 #
 # List of options passed to ``ulimit`` command before starting ``tincd``
 # processs. Set maximum size of address space locked into memory, in KB.
-tinc_ulimit_options: '-l {{ (1024 * 64) }}'
+tinc__ulimit_options: '-l {{ (1024 * 64) }}'
 
 
-# .. envvar:: tinc_extra_options
+# .. envvar:: tinc__extra_options
 #
 # String with extra options to be passed to all ``tincd`` instances in the
 # ``/etc/default/tinc`` config file
-tinc_extra_options: ''
+tinc__extra_options: ''
 
 
-# .. envvar:: tinc_systemd
+# .. envvar:: tinc__systemd
 #
 # Enable support for ``systemd`` if it's detected as the init system.
-tinc_systemd: '{{ True
-                  if (ansible_local|d() and ansible_local.init|d() and
-                      ansible_local.init == "systemd")
-                  else False }}'
+tinc__systemd: '{{ True
+                   if (ansible_local|d() and ansible_local.init|d() and
+                       ansible_local.init == "systemd")
+                   else False }}'
 
 
 # -----------------------------
 #   tinc daemon configuration
 # -----------------------------
 
-# .. envvar:: tinc_rsa_key_length
+# .. envvar:: tinc__rsa_key_length
 #
 # Length of the RSA private key generated on each node
-tinc_rsa_key_length: '4096'
+tinc__rsa_key_length: '4096'
 
 
-# .. envvar:: tinc_hwaddr_prefix
+# .. envvar:: tinc__hwaddr_prefix
 #
 # A stable MAC address prefix that will make sure that the randomly generated
 # MAC address of any Tinc interface is located within a set of Locally
 # Administered Address Ranges. https://serverfault.com/questions/40712/
-tinc_hwaddr_prefix: 'de'
+tinc__hwaddr_prefix: 'de'
 
 
-# .. envvar:: tinc_host_addresses
+# .. envvar:: tinc__host_addresses
 #
 # List of FQDN or IP addresses which are included in the public key file of
 # a given host. Other hosts will use these addresses to connect to that host.
-tinc_host_addresses: '{{ tinc_host_addresses_fqdn }}'
+tinc__host_addresses: '{{ tinc__host_addresses_fqdn }}'
 
 
-# .. envvar:: tinc_host_addresses_fqdn
+# .. envvar:: tinc__host_addresses_fqdn
 #
 # Include the host FQDN if public IP addresses are available.
-tinc_host_addresses_fqdn: '{{ ansible_fqdn
-                              if ((ansible_all_ipv4_addresses + (ansible_all_ipv6_addresses |
-                                  difference(ansible_all_ipv6_addresses | ipaddr("link-local")))
-                                  ) | ipaddr("public")) else [] }}'
+tinc__host_addresses_fqdn: '{{ ansible_fqdn
+                               if ((ansible_all_ipv4_addresses + (ansible_all_ipv6_addresses |
+                                   difference(ansible_all_ipv6_addresses | ipaddr("link-local")))
+                                   ) | ipaddr("public")) else [] }}'
 
 
-# .. envvar:: tinc_host_addresses_ip
+# .. envvar:: tinc__host_addresses_ip
 #
 # Include all public and private IP addresses, without IPv6 link-local.
-tinc_host_addresses_ip: '{{ ansible_all_ipv4_addresses + (ansible_all_ipv6_addresses |
-                            difference(ansible_all_ipv6_addresses | ipaddr("link-local"))) }}'
+tinc__host_addresses_ip: '{{ ansible_all_ipv4_addresses + (ansible_all_ipv6_addresses |
+                             difference(ansible_all_ipv6_addresses | ipaddr("link-local"))) }}'
 
 
 # ------------------
 #   Kernel modules
 # ------------------
 
-# .. envvar:: tinc_modprobe
+# .. envvar:: tinc__modprobe
 #
 # Load required kernel modules if they are not present, and ensure that they
 # are loaded at boot time.
-tinc_modprobe: True
+tinc__modprobe: True
 
 
-# .. envvar:: tinc_modprobe_modules
+# .. envvar:: tinc__modprobe_modules
 #
 # List of kernel modules to load.
-tinc_modprobe_modules: [ 'tun' ]
+tinc__modprobe_modules: [ 'tun' ]
 
 
 # ----------------------------------------
