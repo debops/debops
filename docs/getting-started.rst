@@ -53,13 +53,13 @@ parameters correctly using Ansible variables. These facts can be found in
 ``ansible_local.dhparam.*`` dictionary and can be used by other roles as::
 
     # Specify the absolute path to the DH parameters
-    role_dhparam: '{{ (ansible_local.dhparam[role_dhparam_set]
-                       if (ansible_local|d() and ansible_local.dhparam|d() and
-                           ansible_local.dhparam[role_dhparam_set]|d())
+    role__dhparam: '{{ (ansible_local.dhparam[role__dhparam_set]
+                        if (ansible_local|d() and ansible_local.dhparam|d() and
+                            ansible_local.dhparam[role__dhparam_set]|d())
                        else "") }}'
 
     # Specify default parameter set to use
-    role_dhparam_set: 'default'
+    role__dhparam_set: 'default'
 
 Those two variables allow to easily change the default set of DH parameters to
 a different one, or specify the path to DH parameters file directly. The

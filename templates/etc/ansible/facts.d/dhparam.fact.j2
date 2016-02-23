@@ -1,26 +1,27 @@
-{% set dhparam_tpl_bits = dhparam_bits %}
-{% set dhparam_tpl_default = dhparam_path + "/" + dhparam_default_set %}
-{% set dhparam_tpl_default_length = dhparam_default_length %}
-{% set dhparam_tpl_set_prefix = dhparam_set_prefix %}
-{% set dhparam_tpl_sets = [] %}
-{% for number in range(0, dhparam_sets|int) %}
-{%   set _ = dhparam_tpl_sets.append(number) %}
+{% set dhparam__tpl_bits = dhparam__bits %}
+{% set dhparam__tpl_default = dhparam__path + "/" + dhparam__default_set %}
+{% set dhparam__tpl_default_length = dhparam__default_length %}
+{% set dhparam__tpl_set_prefix = dhparam__set_prefix %}
+{% set dhparam__tpl_sets = [] %}
+{% for number in range(0, dhparam__sets|int) %}
+{%   set _ = dhparam__tpl_sets.append(number) %}
 {% endfor %}
-{% set dhparam_tpl_hooks = dhparam_hook_path %}
-{% set dhparam_tpl_library = dhparam_library %}
-{% set dhparam_tpl_path = dhparam_path %}
-{% set dhparam_tpl_params = dhparam_path + "/params" %}
+{% set dhparam__tpl_hooks = dhparam__hook_path %}
+{% set dhparam__tpl_library = dhparam__library %}
+{% set dhparam__tpl_path = dhparam__path %}
+{% set dhparam__tpl_params = dhparam__path + "/params" %}
 {
-"bits": {{ dhparam_tpl_bits | to_nice_json }},
-"default": "{{ dhparam_tpl_default }}",
-"default_length": "{{ dhparam_tpl_default_length }}",
-"set_prefix": "{{ dhparam_tpl_set_prefix }}",
-"sets": {{ dhparam_tpl_sets | to_nice_json }},
-{% for number in dhparam_tpl_sets %}
-"{{ dhparam_set_prefix + number | string }}": "{{ dhparam_tpl_path + '/' + dhparam_set_prefix + number | string }}",
+"bits": {{ dhparam__tpl_bits | to_nice_json }},
+"default": "{{ dhparam__tpl_default }}",
+"default_length": "{{ dhparam__tpl_default_length }}",
+"enabled": "true",
+"set_prefix": "{{ dhparam__tpl_set_prefix }}",
+"sets": {{ dhparam__tpl_sets | to_nice_json }},
+{% for number in dhparam__tpl_sets %}
+"{{ dhparam__set_prefix + number | string }}": "{{ dhparam__tpl_path + '/' + dhparam__set_prefix + number | string }}",
 {% endfor %}
-"hooks": "{{ dhparam_tpl_hooks }}",
-"library": "{{ dhparam_tpl_library }}",
-"path": "{{ dhparam_tpl_path }}",
-"params": "{{ dhparam_tpl_params }}"
+"hooks": "{{ dhparam__tpl_hooks }}",
+"library": "{{ dhparam__tpl_library }}",
+"path": "{{ dhparam__tpl_path }}",
+"params": "{{ dhparam__tpl_params }}"
 }

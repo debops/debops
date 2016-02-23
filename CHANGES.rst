@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2016-02-23*
+
+- Move the list of APT packages to a default variable, install ``cron`` package
+  when necessary. [drybjed]
+
+- Fix deprecation warnings on Ansible 2.1.0. [drybjed]
+
+- Rename all role variables from ``dhparam_*`` to ``dhparam__*`` to move them
+  to their own namespace. [drybjed]
+
 v0.1.1
 ------
 
