@@ -2,13 +2,13 @@
 
 - name: Check Ansible Controller library version
   shell: |
-    {% if dhparam_source_library == 'gnutls' %}
+    {% if dhparam__source_library == 'gnutls' %}
     certtool --version | head -n 1 | awk '{print $NF}'
-    {% elif dhparam_source_library == 'openssl' %}
+    {% elif dhparam__source_library == 'openssl' %}
     openssl version | awk '{print $2}'
     {% endif %}
   changed_when: False
-  register: dhparam_register_version
+  register: dhparam__register_version
   delegate_to: 'localhost'
   become: False
   run_once: True
@@ -17,14 +17,14 @@
 - name: Assert that required software is installed
   assert:
     that:
-      - 'dhparam_register_version is defined and dhparam_register_version.stdout'
+      - 'dhparam__register_version is defined and dhparam__register_version.stdout'
   delegate_to: 'localhost'
   become: False
   run_once: True
 
 - name: Create required directories on Ansible Controller
   file:
-    path: '{{ dhparam_source_path }}'
+    path: '{{ dhparam__source_path }}'
     state: 'directory'
   delegate_to: 'localhost'
   become: False
@@ -32,14 +32,14 @@
 
 - name: Generate Diffie-Hellman params on Ansible Controller
   command: |
-    {% if dhparam_source_library == 'gnutls' %}
-    certtool --generate-dh-params --outfile {{ dhparam_source_path + "/" + dhparam_prefix + item + dhparam_suffix }} --bits {{ item }}
-    {% elif dhparam_source_library == 'openssl' %}
-    openssl dhparam -out {{ dhparam_source_path + "/" + dhparam_prefix + item + dhparam_suffix }} {{ item }}
+    {% if dhparam__source_library == 'gnutls' %}
+    certtool --generate-dh-params --outfile {{ dhparam__source_path + "/" + dhparam__prefix + item + dhparam__suffix }} --bits {{ item }}
+    {% elif dhparam__source_library == 'openssl' %}
+    openssl dhparam -out {{ dhparam__source_path + "/" + dhparam__prefix + item + dhparam__suffix }} {{ item }}
     {% endif %}
   args:
-    creates: '{{ dhparam_source_path + "/" + dhparam_prefix + item + dhparam_suffix }}'
-  with_items: '{{ dhparam_bits }}'
+    creates: '{{ dhparam__source_path + "/" + dhparam__prefix + item + dhparam__suffix }}'
+  with_items: '{{ dhparam__bits }}'
   delegate_to: 'localhost'
   become: False
   run_once: True
@@ -50,12 +50,12 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ dhparam_base_packages }}'
-    - '{{ dhparam_packages }}'
+    - '{{ dhparam__base_packages }}'
+    - '{{ dhparam__packages }}'
 
 - name: Create required directories
   file:
-    path: '{{ dhparam_hook_path }}'
+    path: '{{ dhparam__hook_path }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
@@ -64,25 +64,25 @@
 
 - name: Preseed Diffie-Hellman parameters
   copy:
-    src: '{{ dhparam_source_path + "/" }}'
-    dest: '{{ dhparam_path + "/params/" + dhparam_set_prefix + item + "/" }}'
+    src: '{{ dhparam__source_path + "/" }}'
+    dest: '{{ dhparam__path + "/params/" + dhparam__set_prefix + item + "/" }}'
     owner: 'root'
     group: 'root'
     force: False
-  with_sequence: 'start=0 count={{ dhparam_sets }}'
+  with_sequence: 'start=0 count={{ dhparam__sets }}'
   notify: [ 'Execute DH parameter hooks' ]
 
 - name: Create default symlinks for all sets
   file:
-    src: '{{ "params/" + dhparam_set_prefix + item + "/" + dhparam_prefix + dhparam_default_length + dhparam_suffix }}'
-    path: '{{ dhparam_path + "/" + dhparam_set_prefix + item }}'
+    src: '{{ "params/" + dhparam__set_prefix + item + "/" + dhparam__prefix + dhparam__default_length + dhparam__suffix }}'
+    path: '{{ dhparam__path + "/" + dhparam__set_prefix + item }}'
     state: 'link'
-  with_sequence: 'start=0 count={{ dhparam_sets }}'
+  with_sequence: 'start=0 count={{ dhparam__sets }}'
 
 - name: Install DHE generation script
   template:
     src: 'usr/local/lib/dhparam-generate-params.j2'
-    dest: '{{ dhparam_generate_params }}'
+    dest: '{{ dhparam__generate_params }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
@@ -90,11 +90,11 @@
 - name: Enable periodic DH parameters generation
   cron:
     name: 'Generate new Diffie-Hellman ephemeral parameters'
-    job: 'test -x {{ dhparam_generate_params }} && {{ dhparam_generate_params }} schedule'
+    job: 'test -x {{ dhparam__generate_params }} && {{ dhparam__generate_params }} schedule'
     cron_file: 'dhparam-generate-params'
     user: 'root'
-    special_time: '{{ dhparam_generate_cron_period }}'
-    state: '{{ "present" if dhparam_generate_cron|bool else "absent" }}'
+    special_time: '{{ dhparam__generate_cron_period }}'
+    state: '{{ "present" if dhparam__generate_cron|bool else "absent" }}'
 
 - name: Make sure the Ansible local facts directory exists
   file:

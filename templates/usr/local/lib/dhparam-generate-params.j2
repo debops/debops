@@ -15,7 +15,7 @@ pidfile_scheduler="/run/$(basename ${0})-scheduler.pid"
 
 pidfile_run="/run/$(basename ${0}).pid"
 
-dhparam_log="{{ 'true' if dhparam_generate_log|bool else '' }}"
+dhparam_log="{{ 'true' if dhparam__generate_log|bool else '' }}"
 
 clean_up () {
   test -f ${pidfile_run} && rm -f ${pidfile_run}
@@ -67,14 +67,14 @@ elif [ "${command}" == "schedule" ] ; then
 
 fi
 
-dhparam_library="{{ dhparam_library }}"
-dhparam_path="{{ dhparam_path + '/params' }}"
+dhparam_library="{{ dhparam__library }}"
+dhparam_path="{{ dhparam__path + '/params' }}"
 
-dhparam_prefix="{{ dhparam_prefix }}"
-dhparam_bits=( {{ dhparam_bits | join(" ") }} )
-dhparam_suffix="{{ dhparam_suffix }}"
+dhparam_prefix="{{ dhparam__prefix }}"
+dhparam_bits=( {{ dhparam__bits | join(" ") }} )
+dhparam_suffix="{{ dhparam__suffix }}"
 
-dhparam_hooks="{{ dhparam_hook_path }}"
+dhparam_hooks="{{ dhparam__hook_path }}"
 
 
 # Generate Diffie-Hellman parameters

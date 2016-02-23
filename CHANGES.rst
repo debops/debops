@@ -11,6 +11,9 @@ v0.1.2
 
 - Fix deprecation warnings on Ansible 2.1.0. [drybjed]
 
+- Rename all role variables from ``dhparam_*`` to ``dhparam__*`` to move them
+  to their own namespace. [drybjed]
+
 v0.1.1
 ------
 
