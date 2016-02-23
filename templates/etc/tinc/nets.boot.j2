@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+
+## This file contains all names of the networks to be started on system startup.
+
+{% for item in (tinc__default_networks + tinc__networks) %}
+{%   if (item.name|d() and item.tinc_options|d() and
+         (item.state is undefined or item.state != "absent") and
+         (item.boot is undefined or item.boot|bool)) %}
+{{ item.name }}
+{%   endif %}
+{% endfor %}

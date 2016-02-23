@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+{% if item.tinc_up is undefined %}
+{%   if item.hwaddr is undefined or not item.hwaddr %}
+# Create random but predictable MAC address
+hwaddr=$(echo "$(hostname -f)${INTERFACE}" | md5sum | sed 's/^\(..\)\(..\)\(..\)\(..\)\(..\).*$/{{ item.hwaddr_prefix|d(tinc__hwaddr_prefix) }}:\1:\2:\3:\4:\5/')
+{%   endif %}
+{%   if item.hwaddr|d() and item.hwaddr == "*" %}
+ip link set dev ${INTERFACE}  up
+{%   else %}
+ip link set dev ${INTERFACE} address {{ item.hwaddr if item.hwaddr|d() else '${hwaddr}' }} up
+{% endif %}
+
+{%   if item.link_type|d() %}
+{%     if item.link_type == 'static' %}
+ip addr add {{ item.interface_ipv4 | d('0.0.0.0') }} dev ${INTERFACE}
+
+{%       if item.bridge|d() %}
+tinc_bridge="{{ item.bridge }}"
+if [ -d /sys/class/net/${tinc_bridge}/bridge ] ; then
+    brctl addif ${tinc_bridge} ${INTERFACE}
+fi
+
+{%       endif %}
+{%     endif %}
+{%   else %}
+{%     if ((item.dhclient is undefined or item.dhclient|bool) and
+           item.tinc_options|d() and item.tinc_options.Mode|d() and item.tinc_options.Mode == 'switch') %}
+dhclient -v -pf /run/dhclient.${INTERFACE}.pid \
+         -lf /var/lib/dhcp/dhclient.${INTERFACE}.leases \
+         ${INTERFACE} &
+{%     endif %}
+{%   endif %}
+{% else %}
+{{ item.tinc_up }}
+{% endif %}

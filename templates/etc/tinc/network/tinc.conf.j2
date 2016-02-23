@@ -1,70 +1,40 @@
 # {{ ansible_managed }}
 
-{% set tinc_tpl_daemon_keys_seen = [] %}
-{% if tinc_hostname is defined and tinc_hostname %}
-Name = {{ tinc_hostname | replace("-","_") }}
-{% else %}
-Name = $HOST
-{% endif %}
-{% for key, value in tinc_configuration.iteritems() %}
-{% if key | lower not in [ 'name', 'tinc-up', 'tinc-down', 'host-up', 'host-down', 'subnet-up', 'subnet-down' ] %}
-{% if key in tinc_daemon_configuration.keys() %}
-{% if tinc_daemon_configuration[key] is string %}
-{% if key | lower in [ 'connectto' ] %}
-{{ key }} = {{ tinc_daemon_configuration[key] | replace("-","_") }}
-{% else %}
-{{ key }} = {{ tinc_daemon_configuration[key] }}
-{% endif %}
-{% else %}
-{% for element in tinc_daemon_configuration[key] %}
-{% if key | lower in [ 'connectto' ] %}
-{{ key }} = {{ element | replace("-","_") }}
-{% else %}
-{{ key }} = {{ element }}
-{% endif %}
-{% endfor %}
-{% endif %}
-{% set _ = tinc_tpl_daemon_keys_seen.append(key) %}
-{% else %}
-{% if value is string %}
-{% if key | lower in [ 'connectto' ] %}
+{% set tinc__tpl_seen_keys = [ 'name', 'tinc-up', 'tinc-down', 'host-up', 'host-down', 'subnet-up', 'subnet-down' ] %}
+{% if item.tinc_options|d() %}
+{%   if item.hostname|d() %}
+Name = {{ item.hostname | replace("-","_") }}
+{%   elif item.tinc_options.Name|d() %}
+Name = {{ item.tinc_options.Name | replace("-","_") }}
+{%   else %}
+Name = {{ tinc__hostname | replace("-","_") }}
+{%   endif %}
+{%   if item.port|d() %}
+Port = {{ item.port }}
+{%     set _ = tinc__tpl_seen_keys.append('port') %}
+{%   endif %}
+{%   if item.interface|d() %}
+Interface = {{ item.interface }}
+{%     set _ = tinc__tpl_seen_keys.append('interface') %}
+{%   endif %}
+{%   for key, value in item.tinc_options.iteritems() %}
+{%     if key | lower not in tinc__tpl_seen_keys %}
+{%       if value is string %}
+{%         if key | lower in [ 'connectto' ] %}
 {{ key }} = {{ value | replace("-","_") }}
-{% else %}
+{%         else %}
 {{ key }} = {{ value }}
-{% endif %}
-{% else %}
-{% for element in value %}
-{% if key | lower in [ 'connectto' ] %}
+{%         endif %}
+{%       else %}
+{%         for element in value %}
+{%           if key | lower in [ 'connectto' ] %}
 {{ key }} = {{ element | replace("-","_") }}
-{% else %}
+{%           else %}
 {{ key }} = {{ element }}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
 {% endif %}
-{% endfor %}
-{% endif %}
-{% set _ = tinc_tpl_daemon_keys_seen.append(key) %}
-{% endif %}
-{% endif %}
-{% endfor %}
-{% for key, value in tinc_daemon_configuration.iteritems() %}
-{% if key | lower not in [ 'name', 'tinc-up', 'tinc-down', 'host-up', 'host-down', 'subnet-up', 'subnet-down' ] %}
-{% if key not in tinc_tpl_daemon_keys_seen %}
-{% if value is string %}
-{% if key | lower in [ 'connectto' ] %}
-{{ key }} = {{ value | replace("-","_") }}
-{% else %}
-{{ key }} = {{ value }}
-{% endif %}
-{% else %}
-{% for element in value %}
-{% if key | lower in [ 'connectto' ] %}
-{{ key }} = {{ element | replace("-","_") }}
-{% else %}
-{{ key }} = {{ element }}
-{% endif %}
-{% endfor %}
-{% endif %}
-{% set _ = tinc_tpl_daemon_keys_seen.append(key) %}
-{% endif %}
-{% endif %}
-{% endfor %}
 
