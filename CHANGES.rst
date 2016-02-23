@@ -9,6 +9,8 @@ v0.1.2
 - Move the list of APT packages to a default variable, install ``cron`` package
   when necessary. [drybjed]
 
+- Fix deprecation warnings on Ansible 2.1.0. [drybjed]
+
 v0.1.1
 ------
 
