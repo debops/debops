@@ -27,6 +27,9 @@ v0.2.9
 - Update the variables related to ``debops.sshd`` due to change in the variable
   naming scheme. You might need to update your Ansible inventory. [drybjed]
 
+- Update the ``service/tinc.yml`` playbook with support for new ``debops.tinc``
+  release. [drybjed]
+
 v0.2.8
 ------
 

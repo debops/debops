@@ -1,25 +1,29 @@
 ---
 
-- name: Configure tinc VPN
+- name: Configure Tinc VPN
   hosts: [ 'debops_service_tinc', 'debops_tinc' ]
   become: True
 
   roles:
 
+    - role: debops.tinc/env
+      tags: [ 'role::tinc', 'role::tinc:secret', 'role::secret', 'role::ferm', 'role::ifupdown' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::tinc:secret' ]
+      secret_directories: '{{ tinc__env_secret__directories }}'
+
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences' ]
-      apt_preferences_dependent_list:
-        - '{{ tinc_apt_preferences_dependent_list }}'
+      apt_preferences_dependent_list: '{{ tinc__apt_preferences__dependent_list }}'
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services_dependent_list: '{{ tinc__env_etc_services__dependent_list }}'
 
     - role: debops.ferm
       tags: [ 'role::ferm' ]
-      ferm_dependent_rules:
-        - '{{ tinc_ferm_dependent_rules }}'
-
-    - role: debops.ifupdown
-      tags: [ 'role::ifupdown' ]
-      ifupdown_dependent_interfaces:
-        - '{{ tinc_ifupdown_interface }}'
+      ferm_dependent_rules: '{{ tinc__env_ferm__dependent_rules }}'
 
     - role: debops.tinc
       tags: [ 'role::tinc' ]
