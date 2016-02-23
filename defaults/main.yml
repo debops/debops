@@ -268,6 +268,23 @@ tinc_host_addresses_ip: '{{ ansible_all_ipv4_addresses + (ansible_all_ipv6_addre
                             difference(ansible_all_ipv6_addresses | ipaddr("link-local"))) }}'
 
 
+# ------------------
+#   Kernel modules
+# ------------------
+
+# .. envvar:: tinc_modprobe
+#
+# Load required kernel modules if they are not present, and ensure that they
+# are loaded at boot time.
+tinc_modprobe: True
+
+
+# .. envvar:: tinc_modprobe_modules
+#
+# List of kernel modules to load.
+tinc_modprobe_modules: [ 'tun' ]
+
+
 # ----------------------------------------
 #   Configuration of other Ansible roles
 # ----------------------------------------

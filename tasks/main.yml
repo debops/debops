@@ -27,22 +27,24 @@
     shell: '/bin/false'
     createhome: False
 
-- name: Load the tun kernel module
+- name: Load the required kernel modules
   modprobe:
-    name: 'tun'
+    name: '{{ item }}'
     state: 'present'
-  when: (ansible_local|d() and ansible_local.cap12s|d() and
+  with_items: '{{ tinc_modprobe_modules }}'
+  when: (tinc_modprobe|bool and ansible_local|d() and ansible_local.cap12s|d() and
          (not ansible_local.cap12s.enabled | bool or
           (ansible_local.cap12s.enabled | bool and
            'cap_sys_admin' in ansible_local.cap12s.list)))
 
-- name: Make sure that tun module is loaded on boot
+- name: Make sure that required modules are loaded on boot
   lineinfile:
     dest: '/etc/modules'
-    regexp: '^tun$'
-    line: 'tun'
+    regexp: '^{{ item }}$'
+    line: '{{ item }}'
     state: 'present'
-  when: (ansible_local|d() and ansible_local.cap12s|d() and
+  with_items: '{{ tinc_modprobe_modules }}'
+  when: (tinc_modprobe|bool and ansible_local|d() and ansible_local.cap12s|d() and
          (not ansible_local.cap12s.enabled | bool or
           (ansible_local.cap12s.enabled | bool and
            'cap_sys_admin' in ansible_local.cap12s.list)))
