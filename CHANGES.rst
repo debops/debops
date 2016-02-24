@@ -15,3 +15,8 @@ v0.1.0
   Remove direct configuration of ``fcgiwrap`` instance and use
   ``debops.fcgiwrap`` role to configure a ``mailman`` instance. [drybjed]
 
+- Switch from patching the Mailman source code manually to using the ``patch``
+  Ansible module. Patches are no longer copied to remote host and their state
+  is not stored on the server, however it's easy to apply them again if
+  necessary using a dedicated tag. [drybjed]
+

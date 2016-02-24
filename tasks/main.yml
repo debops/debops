@@ -38,10 +38,14 @@
   when: (mailman_convert_languages is defined and mailman_convert_languages) and
         (mailman_package_reconfigure is defined and mailman_package_reconfigure.changed)
 
-- include: patch_mailman_source.yml
-  when: mailman_patches is defined and mailman_patches and
-        ((ansible_local.mailman.mailman.patches_applied is defined and not ansible_local.mailman.mailman.patches_applied|bool) or
-        ansible_local.mailman.mailman.patches_applied is undefined)
+- name: Apply patches to Mailman source code
+  patch:
+    src: 'patches/{{ item }}.patch'
+    basedir: '/usr/lib/mailman'
+  with_items: '{{ mailman_patch_list }}'
+  when: mailman_patch | bool
+  notify: [ 'Restart mailman' ]
+  tags: [ 'role::mailman:patch' ]
 
 - name: Check if site list is created
   stat: path=/var/lib/mailman/lists/{{ mailman_site_list }}/config.pck

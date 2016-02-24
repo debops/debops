@@ -98,28 +98,33 @@ mailman_lists: []
   #  purge: False,True                          # remove list archives when deleting?
 
 
-# ---- Mailman patches ----
+# -------------------------------
+#   Mailman source code patches
+# -------------------------------
 
-# List of patches applied to Mailman source code after installation
-# Patch status is saved in /etc/ansible/facts.d/mailman.fact on remote host
-# Set to False to disable patch application
-mailman_patches:
+# .. envvar:: mailman_patch
+#
+# Enable or disable patching of the Mailman source code.
+mailman_patch: True
+
+
+# .. envvar:: mailman_patch_list
+#
+# List of patches applied to Mailman source code.
+mailman_patch_list:
 
   # Add direct link to moderation page
-  # https://github.com/okfn/infra/commit/06b83759238e38d1b239ee1e04d75ae3e46365ae
-  - 'add-moderator-link.patch'
+  - 'add-moderator-link'
 
   # Remove automatic capitalization of list names
-  # https://mail.python.org/pipermail/mailman-users/2002-January/016732.html
-  - 'remove-upper-list-name.patch'
+  - 'remove-upper-list-name'
 
-  # Ignore commands from non-members (reduces backscatter, but blocks mail registration)
-  # https://mail.python.org/pipermail/mailman-users/2013-June/075270.html
-  - 'ignore-commands-from-nonmembers.patch'
+  # Ignore commands from non-members (reduces backscatter, but blocks mail
+  # registration)
+  - 'ignore-commands-from-nonmembers'
 
   # Remove extra aliases that are not needed (reduces backscatter)
-  # https://mail.python.org/pipermail/mailman-users/2008-March/060870.html
-  - 'prune-alias-list.patch'
+  - 'prune-alias-list'
 
 
 # -----------------------------------------
