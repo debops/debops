@@ -11,6 +11,10 @@ v0.1.2
 - Disable default ``fcgiwrap`` service on both ``systemd`` and ``sysvinit``
   systems. [drybjed]
 
+- Don't recreate new default ``systemd`` units to replace the ones in
+  ``/lib/systemd/``. The role is focused on managing multiple ``fcgiwrap``
+  instances and not the default one. [drybjed]
+
 v0.1.1
 ------
 
