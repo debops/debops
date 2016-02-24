@@ -62,6 +62,7 @@
 
 # Convert Polish language pack
 function convert_polish () {
+{% if ansible_distribution_release in [ 'wheezy', 'precise' ] %}
 	cd /usr/share/mailman/pl
 	for file in *; do
 		mv $file $file.old; iconv -f iso8859-2 -t utf-8 $file.old > $file
@@ -74,9 +75,11 @@ function convert_polish () {
 	done
 	rm -f *.old
 
+{% endif %}
 	sed -i "s/charset=iso-8859-2/charset=utf-8/" /usr/share/mailman/pl/* /etc/mailman/pl/*
 	sed -i "s/charset=ISO-8859-2/charset=utf-8/" /usr/share/mailman/pl/* /etc/mailman/pl/*
 
+{% if ansible_distribution_release in [ 'wheezy', 'precise' ] %}
 	cd /var/lib/mailman/messages/pl/LC_MESSAGES
 	mv mailman.po mailman.po.orig
 	iconv -f iso8859-2 -t utf-8 mailman.po.orig > mailman.po
@@ -105,6 +108,7 @@ function convert_polish () {
 EOF
 	msgfmt mailman.po -o mailman.mo
 
+{% endif %}
 	cd /usr/lib/mailman/Mailman
 	cat << EOF | patch -N -r-
 --- Defaults.py

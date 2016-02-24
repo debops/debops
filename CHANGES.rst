@@ -20,3 +20,6 @@ v0.1.0
   is not stored on the server, however it's easy to apply them again if
   necessary using a dedicated tag. [drybjed]
 
+- Perform UTF-8 conversion of Polish language pack only on Debian Wheezy and
+  Ubuntu Precise, newer OS releases should be fine. [drybjed]
+
