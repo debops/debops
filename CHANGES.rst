@@ -25,3 +25,6 @@ v0.1.0
 
 - Restart Mailman on configuration changes. [drybjed]
 
+- Clean up APT package installation, expose list of packages in default
+  variables. [drybjed]
+

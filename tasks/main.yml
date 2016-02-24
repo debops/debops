@@ -1,17 +1,16 @@
 ---
 
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_items: '{{ mailman_packages }}'
+
 - name: Configure language pack conversion script
   template: src=usr/local/sbin/convert-mailman-to-utf8.j2
             dest=/usr/local/sbin/convert-mailman-to-utf8
             owner=root group=root mode=0755
-
-- name: Install Mailman prerequisites
-  apt: pkg={{ item }} state=latest install_recommends=no
-  with_items: [ 'gettext', 'patch' ]
-
-- name: Install Mailman package
-  apt: pkg={{ item }} state=installed install_recommends=no
-  with_items: [ 'mailman' ]
 
 # mailman package forgets configuration preconfigured by debconf
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=339059
