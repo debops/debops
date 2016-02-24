@@ -1,16 +1,5 @@
 ---
 
-- name: Generate default systemd units
-  template:
-    src: 'etc/systemd/system/fcgiwrap.{{ item }}.j2'
-    dest: '/etc/systemd/system/fcgiwrap.{{ item }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  with_items: [ 'socket', 'service' ]
-  register: fcgiwrap_register_systemd_default
-  when: fcgiwrap_disable_default|d(False)
-
 - name: Generate systemd units
   template:
     src: 'etc/systemd/system/fcgiwrap-instance.{{ item.1 }}.j2'
@@ -18,27 +7,15 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: fcgiwrap_register_systemd
+  register: fcgiwrap__register_systemd
   with_nested:
-    - fcgiwrap_instances
+    - '{{ fcgiwrap__instances }}'
     - [ 'socket', 'service' ]
-  when: fcgiwrap_instances|d()
+  when: fcgiwrap__instances
 
 - name: Reload systemd units
   command: 'systemctl daemon-reload'
-  when: ((fcgiwrap_register_systemd_default|d() and
-          fcgiwrap_register_systemd_default.changed) or
-         (fcgiwrap_register_systemd|d() and
-          fcgiwrap_register_systemd.changed))
-
-- name: Stop default fcgiwrap service
-  service:
-    name: '{{ item }}'
-    state: 'stopped'
-    enabled: False
-  with_items: [ 'fcgiwrap.service', 'fcgiwrap.socket' ]
-  when: fcgiwrap_register_systemd_default|d() and
-        fcgiwrap_register_systemd_default.changed
+  when: fcgiwrap__register_systemd.changed|bool
 
 - name: Enable and start systemd units
   service:
@@ -46,7 +23,7 @@
     state: 'started'
     enabled: True
   with_nested:
-    - fcgiwrap_instances
+    - '{{ fcgiwrap__instances }}'
     - [ 'socket', 'service' ]
-  when: fcgiwrap_instances|d()
+  when: fcgiwrap__instances and fcgiwrap__register_systemd.changed|bool
 

@@ -9,10 +9,10 @@ them.
    :local:
    :depth: 1
 
-.. _fcgiwrap_instances:
+.. _fcgiwrap__instances:
 
-fcgiwrap_instances
-------------------
+fcgiwrap__instances
+-------------------
 
 List of ``fcgiwrap`` user instances, each one defined by a YAML dictionary.
 These instances will configure system services (init scripts on ``sysvinit``
