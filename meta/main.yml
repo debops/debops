@@ -4,46 +4,6 @@ dependencies:
 
   - role: debops.secret
 
-  - role: debops.postfix
-    postfix_dependent_lists:
-      alias_maps:
-        - capability: 'local'
-          list: [ 'hash:/var/lib/mailman/data/aliases' ]
-      relay_domains:
-        - no_capability: 'local'
-          list: '{{ mailman_domains }}'
-      relay_recipient_maps:
-        - no_capability: 'local'
-          list: [ 'hash:/var/lib/mailman/data/virtual-mailman' ]
-      transport_maps:
-        - no_capability: 'local'
-          list: [ 'hash:/etc/mailman/postfix_transport' ]
-      virtual_alias_domains:
-        - capability: 'local'
-          list: '{{ mailman_domains }}'
-      virtual_alias_maps:
-        - capability: 'local'
-          list: [ 'hash:/var/lib/mailman/data/virtual-mailman' ]
-    postfix_dependent_maincf:
-      - param: 'mailman_destination_recipient_limit'
-        value: '1'
-        no_capability: 'local'
-    postfix_dependent_mastercf:
-      - service: 'mailman'
-        type: 'unix'
-        command: 'pipe'
-        options: |
-          flags=FR user=list
-          argv=/var/lib/mailman/bin/postfix-to-mailman.py ${nexthop} ${user}
-        no_capability: 'local'
-    when: mailman_dependencies is defined and mailman_dependencies
-    tags: postfix
-
-  - role: debops.nginx
-    nginx_servers: [ '{{ mailman_nginx_server }}' ]
-    when: mailman_dependencies is defined and mailman_dependencies
-    tags: nginx
-
 galaxy_info:
   author: 'Maciej Delmanowski'
   description: 'Install and manage Mailman Mailing List Manager'

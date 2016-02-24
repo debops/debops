@@ -7,7 +7,7 @@
 
 - name: Install Mailman prerequisites
   apt: pkg={{ item }} state=latest install_recommends=no
-  with_items: [ 'fcgiwrap', 'gettext', 'patch' ]
+  with_items: [ 'gettext', 'patch' ]
 
 - name: Install Mailman package
   apt: pkg={{ item }} state=installed install_recommends=no
@@ -37,8 +37,6 @@
   command: /usr/local/sbin/convert-mailman-to-utf8 {{ mailman_convert_languages | join(' ') }}
   when: (mailman_convert_languages is defined and mailman_convert_languages) and
         (mailman_package_reconfigure is defined and mailman_package_reconfigure.changed)
-
-- include: fcgiwrap-mailman.yml
 
 - include: patch_mailman_source.yml
   when: mailman_patches is defined and mailman_patches and

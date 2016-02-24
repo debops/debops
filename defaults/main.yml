@@ -1,11 +1,5 @@
 ---
 
-# ---- General options ----
-
-# Should mailman role manage it's own dependencies?
-mailman_dependencies: True
-
-
 # ---- Language and localization ----
 
 # Responses for Debconf questions, need to be the same format as in Debconf.
@@ -127,4 +121,106 @@ mailman_patches:
   # https://mail.python.org/pipermail/mailman-users/2008-March/060870.html
   - 'prune-alias-list.patch'
 
+
+# -----------------------------------------
+#   Configuration for other Ansible roles
+# -----------------------------------------
+
+# .. envvar:: mailman__fcgiwrap__instance
+#
+# Configure ``fcgiwrap`` instance for Mailman using ``debops.fcgiwrap`` role.
+mailman__fcgiwrap__instance:
+  name: 'mailman'
+  user: 'list'
+  group: 'list'
+
+
+# .. envvar:: mailman__postfix__dependent_lists
+#
+# Configuration of Postfix list variables in ``debops.postfix`` role.
+mailman__postfix__dependent_lists:
+  alias_maps:
+    - capability: 'local'
+      list: [ 'hash:/var/lib/mailman/data/aliases' ]
+  relay_domains:
+    - no_capability: 'local'
+      list: '{{ mailman_domains }}'
+  relay_recipient_maps:
+    - no_capability: 'local'
+      list: [ 'hash:/var/lib/mailman/data/virtual-mailman' ]
+  transport_maps:
+    - no_capability: 'local'
+      list: [ 'hash:/etc/mailman/postfix_transport' ]
+  virtual_alias_domains:
+    - capability: 'local'
+      list: '{{ mailman_domains }}'
+  virtual_alias_maps:
+    - capability: 'local'
+      list: [ 'hash:/var/lib/mailman/data/virtual-mailman' ]
+
+
+# .. envvar:: mailman__postfix__dependent_maincf
+#
+# Configuration of Postfix ``main.cf`` in ``debops.postfix`` role.
+mailman__postfix__dependent_maincf:
+  - param: 'mailman_destination_recipient_limit'
+    value: '1'
+    no_capability: 'local'
+
+
+# .. envvar:: mailman__postfix__dependent_mastercf
+#
+# Configuration of Postfix ``master.cf`` in ``debops.postfix`` role.
+mailman__postfix__dependent_mastercf:
+  - service: 'mailman'
+    type: 'unix'
+    unpriv: 'n'
+    chroot: 'n'
+    command: 'pipe'
+    options: |
+      flags=FR user=list
+      argv=/var/lib/mailman/bin/postfix-to-mailman.py ${nexthop} ${user}
+    no_capability: 'local'
+
+
+# .. envvar:: mailman__nginx__servers
+#
+# Configuration of ``nginx`` server to access Mailman web interface, using
+# ``debops.nginx`` Ansible role.
+mailman__nginx__servers:
+  - by_role: 'debops.mailman'
+    enabled: True
+    name: '{{ mailman_domains }}'
+    filename: 'debops.mailman'
+    root: '/usr/lib/cgi-bin/mailman'
+
+    location:
+
+      '~ ^/(mailman/?)?$': |
+        rewrite ^ /mailman/listinfo permanent;
+
+      '~ ^/mailman/.': |
+        gzip off;
+        root /usr/lib/cgi-bin/mailman;
+        fastcgi_split_path_info       ^/mailman(/[^/]*)(.*)$;
+        include       fastcgi_params;
+        fastcgi_param PATH_INFO       $fastcgi_path_info;
+        fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;
+        fastcgi_param SCRIPT_FILENAME  /usr/lib/cgi-bin/mailman$fastcgi_script_name;
+        fastcgi_pass  unix:/run/fcgiwrap-mailman.socket;
+
+      '/images/mailman': |
+        alias /var/lib/mailman/icons;
+
+      '/pipermail': |
+        alias /var/lib/mailman/archives/public;
+        autoindex on;
+
+    location_allow:
+      '~ ^/mailman/.':   '{{ mailman_allow }}'
+      '/images/mailman': '{{ mailman_allow }}'
+      '/pipermail':      '{{ mailman_allow }}'
+
+    location_referers:
+      '~ ^/mailman/.': '{{ mailman_referers }}'
 
