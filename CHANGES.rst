@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+**Haste makes waste.**
+
+*Released: 2016-02-24*
+
+- Remove not used handlers. [drybjed]
+
 v0.1.2
 ------
 
