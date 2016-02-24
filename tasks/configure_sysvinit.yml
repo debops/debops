@@ -1,12 +1,5 @@
 ---
 
-- name: Disable default fcgiwrap init script
-  service:
-    name: 'fcgiwrap'
-    state: 'stopped'
-    enabled: False
-  when: fcgiwrap_disable_default|d(False)
-
 - name: Create init script configuration
   template:
     src: 'etc/default/fcgiwrap-instance.j2'

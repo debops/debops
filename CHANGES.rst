@@ -8,6 +8,9 @@ v0.1.2
 
 - Move the list of APT packages to defaults. [drybjed]
 
+- Disable default ``fcgiwrap`` service on both ``systemd`` and ``sysvinit``
+  systems. [drybjed]
+
 v0.1.1
 ------
 

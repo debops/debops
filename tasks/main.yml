@@ -5,6 +5,7 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
+  register: fcgiwrap_register_install
   with_items: '{{ fcgiwrap_packages }}'
 
 - name: Check the fcgiwrap version
@@ -18,6 +19,13 @@
 - name: Configure required users and groups
   include: configure_users.yml
   when: fcgiwrap_instances|d()
+
+- name: Disable default fcgiwrap init script
+  service:
+    name: 'fcgiwrap'
+    state: 'stopped'
+    enabled: False
+  when: fcgiwrap_disable_default|bool and fcgiwrap_register_install.changed|bool
 
 - name: Configure fcgiwrap instances in sysvinit
   include: configure_sysvinit.yml
