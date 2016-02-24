@@ -19,6 +19,8 @@ v0.1.2
 
 - Fix deprecation warnings on Ansible 2.1.0. [drybjed]
 
+- Clean up ``when`` conditions. [drybjed]
+
 v0.1.1
 ------
 
