@@ -15,6 +15,8 @@ v0.1.2
   ``/lib/systemd/``. The role is focused on managing multiple ``fcgiwrap``
   instances and not the default one. [drybjed]
 
+- Move user management tasks to ``tasks/main.yml``. [drybjed]
+
 v0.1.1
 ------
 
