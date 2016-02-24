@@ -1,11 +1,12 @@
 ---
 
-# Enable or disable iptables management
+# Enable or disable iptables management by checking if 'cap_sys_admin' POSIX
+# capability is set on the host.
 ferm_enabled: '{{ True
-                  if ((ansible_local|d() and ansible_local.tags|d() and
-                      (ansible_local.tags | intersect(ferm_local_tags.ignore_cap_net_admin)) or
-                      (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-                      (ansible_local.cap12s.enabled | bool and "cap_net_admin" in ansible_local.cap12s.list)))))
+                  if (ansible_local is undefined or
+                       (ansible_local.cap12s|d() and ansible_local.cap12s.enabled|d() and
+                         (not ansible_local.cap12s.enabled | bool or
+                           (ansible_local.cap12s.enabled | bool and "cap_net_admin" in ansible_local.cap12s.list))))
                   else False }}'
 
 # Should ferm-rules be flushed when ferm is disabled? The default is
@@ -431,11 +432,4 @@ ferm_external_interfaces:
 # List of interfaces that are connected to internal network, traffic on these
 # interfaces will be forwarded only between hosts on that network
 ferm_internal_interfaces: [ 'br1' ]
-
-# List of local Ansible "tags" which will affect role behaviour
-ferm_local_tags:
-
-  # If these tags are present, ignore status of "cap_net_admin" capability and
-  # manage firewall using ferm
-  ignore_cap_net_admin: [ 'ignore-cap12s', 'ignore-cap_net_admin' ]
 

@@ -1,6 +1,21 @@
 Changelog
 =========
 
+v0.1.6
+------
+
+*Unreleased*
+
+- Remove ``ferm_local_tags`` variable and its use in ``ferm_enabled``. This
+  solution was needed when the POSIX capability detection was located in the
+  tasks. Because now the templating is done in default variables which can be
+  easily overridden by Ansible inventory, having a separate way of affecting
+  POSIX capability detection is unnecessary.
+
+- Enable the firewall if ``ansible_local`` and local Ansible facts are
+  undefined. This will ensure that role works on hosts which din't have it
+  applied yet. [drybjed]
+
 v0.1.5
 ------
 
