@@ -23,3 +23,5 @@ v0.1.0
 - Perform UTF-8 conversion of Polish language pack only on Debian Wheezy and
   Ubuntu Precise, newer OS releases should be fine. [drybjed]
 
+- Restart Mailman on configuration changes. [drybjed]
+
