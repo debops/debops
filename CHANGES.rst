@@ -21,6 +21,8 @@ v0.1.2
 
 - Clean up ``when`` conditions. [drybjed]
 
+- Rename all variables from ``fcgiwrap_*`` to ``fcgiwrap__*``. [drybjed]
+
 v0.1.1
 ------
 

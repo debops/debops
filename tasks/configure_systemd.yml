@@ -7,15 +7,15 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: fcgiwrap_register_systemd
+  register: fcgiwrap__register_systemd
   with_nested:
-    - '{{ fcgiwrap_instances }}'
+    - '{{ fcgiwrap__instances }}'
     - [ 'socket', 'service' ]
-  when: fcgiwrap_instances
+  when: fcgiwrap__instances
 
 - name: Reload systemd units
   command: 'systemctl daemon-reload'
-  when: fcgiwrap_register_systemd.changed|bool
+  when: fcgiwrap__register_systemd.changed|bool
 
 - name: Enable and start systemd units
   service:
@@ -23,7 +23,7 @@
     state: 'started'
     enabled: True
   with_nested:
-    - '{{ fcgiwrap_instances }}'
+    - '{{ fcgiwrap__instances }}'
     - [ 'socket', 'service' ]
-  when: fcgiwrap_instances and fcgiwrap_register_systemd.changed|bool
+  when: fcgiwrap__instances and fcgiwrap__register_systemd.changed|bool
 

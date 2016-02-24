@@ -24,15 +24,15 @@ Example inventory
 -----------------
 
 To enable ``fcgiwrap`` on a host by hand, you need to add that host to
-``[debops_fcgiwrap]`` host group in Ansible inventory. You will also need to
-specify an instance to create. Example inventory::
+``[debops_service_fcgiwrap]`` host group in Ansible inventory. You will also
+need to specify an instance to create. Example inventory::
 
     # inventory/hosts
-    [debops_fcgiwrap]
+    [debops_service_fcgiwrap]
     hostname
 
     # inventory/host_vars/hostname/fcgiwrap.yml
-    fcgiwrap_instances:
+    fcgiwrap__instances:
       - name: 'webapp'
         user: 'webapp'
         group: 'webapp'
@@ -51,15 +51,15 @@ dependency. Here's an example configuration::
 
     ---
     - name: Set up web application
-      hosts: debops_fcgiwrap
+      hosts: [ 'debops_service_fcgiwrap' ]
       become: True
 
       roles:
 
         - role: debops.fcgiwrap
-          fcgiwrap_instances:
+          tags: [ 'role::fcgiwrap' ]
+          fcgiwrap__instances:
             - name: 'webapp'
               user: 'webapp'
               group: 'webapp'
-          tags: [ 'depend::fcgiwrap' ]
 

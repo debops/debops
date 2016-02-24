@@ -5,14 +5,14 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
-  register: fcgiwrap_register_install
-  with_items: '{{ fcgiwrap_packages }}'
+  register: fcgiwrap__register_install
+  with_items: '{{ fcgiwrap__packages }}'
 
 - name: Check the fcgiwrap version
   environment:
     LC_MESSAGES: 'C'
   shell: "dpkg-query -W -f='${Version}\n' 'fcgiwrap'"
-  register: fcgiwrap_register_version
+  register: fcgiwrap__register_version
   changed_when: False
   failed_when: False
 
@@ -21,8 +21,8 @@
     name:   '{{ item.group  | d(item.user) }}'
     system: '{{ item.system | d(True) }}'
     state: 'present'
-  with_items: '{{ fcgiwrap_instances }}'
-  when: fcgiwrap_instances and item.user | d(False)
+  with_items: '{{ fcgiwrap__instances }}'
+  when: fcgiwrap__instances and item.user | d(False)
 
 - name: Make sure required system accounts exist
   user:
@@ -33,15 +33,15 @@
     createhome: '{{ item.createhome | d(False) }}'
     system:     '{{ item.system     | d(True) }}'
     state:      'present'
-  with_items: '{{ fcgiwrap_instances }}'
-  when: fcgiwrap_instances and item.user | d(False)
+  with_items: '{{ fcgiwrap__instances }}'
+  when: fcgiwrap__instances and item.user | d(False)
 
 - name: Disable default fcgiwrap init script
   service:
     name: 'fcgiwrap'
     state: 'stopped'
     enabled: False
-  when: fcgiwrap_disable_default|bool and fcgiwrap_register_install.changed|bool
+  when: fcgiwrap__disable_default|bool and fcgiwrap__register_install.changed|bool
 
 - name: Configure fcgiwrap instances in sysvinit
   include: configure_sysvinit.yml
