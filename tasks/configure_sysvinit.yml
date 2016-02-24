@@ -7,7 +7,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: fcgiwrap_instances
+  with_items: '{{ fcgiwrap_instances }}'
   register: fcgiwrap_register_init_config
 
 - name: Copy fcgiwrap init script to new instance
@@ -15,7 +15,7 @@
   args:
     creates: '/etc/init.d/fcgiwrap-{{ item.name }}'
   register: fcgiwrap_register_init_script
-  with_items: fcgiwrap_instances
+  with_items: '{{ fcgiwrap_instances }}'
 
 - name: Modify fcgiwrap instance init script (insserv)
   lineinfile:
@@ -23,7 +23,7 @@
     regexp: '^# Provides:\s+fcgiwrap.*$'
     line: '# Provides:          fcgiwrap-{{ item.name }}'
     state: 'present'
-  with_items: fcgiwrap_instances
+  with_items: '{{ fcgiwrap_instances }}'
 
 - name: Modify fcgiwrap instance init script (name)
   lineinfile:
@@ -31,12 +31,12 @@
     regexp: '^NAME="fcgiwrap.*"$'
     line: 'NAME="fcgiwrap-{{ item.name }}"'
     state: 'present'
-  with_items: fcgiwrap_instances
+  with_items: '{{ fcgiwrap_instances }}'
 
 - name: Enable fcgiwrap instance init script
   service:
     name: 'fcgiwrap-{{ item.name }}'
     state: 'started'
     enabled: True
-  with_items: fcgiwrap_instances
+  with_items: '{{ fcgiwrap_instances }}'
 

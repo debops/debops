@@ -17,6 +17,8 @@ v0.1.2
 
 - Move user management tasks to ``tasks/main.yml``. [drybjed]
 
+- Fix deprecation warnings on Ansible 2.1.0. [drybjed]
+
 v0.1.1
 ------
 
