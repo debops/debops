@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2016-02-24*
+
+- Move the list of APT packages to defaults. [drybjed]
+
 v0.1.1
 ------
 
