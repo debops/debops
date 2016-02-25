@@ -40,3 +40,5 @@ v0.1.0
   it's not installed on the remote host, but executed by the ``script`` module
   if any changes are detected. [drybjed]
 
+- Drop Ansible local facts related to Mailman. [drybjed]
+
