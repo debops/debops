@@ -1,0 +1,44 @@
+{% set mailman__tpl_language_map = {
+"ar": "ar (Arabic)",
+"ca": "ca (Catalan)",
+"cs": "cs (Czech)",
+"da": "da (Danish)",
+"de": "de (German)",
+"en": "en (English)",
+"es": "es (Spanish)",
+"et": "et (Estonian)",
+"eu": "eu (Basque)",
+"fi": "fi (Finnish)",
+"fr": "fr (French)",
+"hr": "hr (Croatian)",
+"hu": "hu (Hungarian)",
+"ia": "ia (Interlingua)",
+"it": "it (Italian)",
+"ja": "ja (Japanese)",
+"ko": "ko (Korean)",
+"lt": "lt (Lithuanian)",
+"nl": "nl (Dutch)",
+"no": "no (Norwegian)",
+"pl": "pl (Polish)",
+"pt": "pt (Portuguese)",
+"pt_BR": "pt_BR (Brasilian Portuguese)",
+"ro": "ro (Romanian)",
+"ru": "ru (Russian)",
+"sl": "sl (Slovenian)",
+"sr": "sr (Serbian)",
+"sv": "sv (Swedish)",
+"tr": "tr (Turkish)",
+"uk": "uk (Ukrainian)",
+"vi": "vi (Vietnamese)",
+"zh_CN": "zh_CN (Chinese - China)",
+"zh_TW": "zh_TW (Chinese - Taiwan)"
+} %}
+{% set mailman__tpl_used_languages = [] %}
+{% if mailman__register_debconf|d() %}
+{%   set mailman__tpl_used_languages = mailman__register_debconf.current["mailman/used_languages"].split(" ") %}
+{% endif %}
+{% for item in (mailman__default_languages + mailman__languages + mailman__tpl_used_languages) | unique %}
+{%   if item in mailman__tpl_language_map.keys() %}
+  - "{{ mailman__tpl_language_map[item] }}"
+{%   endif %}
+{% endfor %}

@@ -15,20 +15,28 @@
 mailman_packages: [ 'mailman', 'gettext', 'patch' ]
 
 
-# ---- Language and localization ----
+# -----------------------------
+#   Language and localization
+# -----------------------------
 
-# Responses for Debconf questions, need to be the same format as in Debconf.
-# To see available responses, run 'dpkg-reconfigure mailman'
-mailman_debconf_languages: [ 'en (English)' ]
-mailman_debconf_default_language: 'en (English)'
+# .. envvar:: mailman__default_languages
+#
+# List of default language packs enabled in Mailman, specified as two letter
+# names. First element is used as the site language.
+mailman__default_languages: [ 'en' ]
 
-# Default language used on this Mailman host
-mailman_default_language: 'en'
 
-# List of languages (as two-letter names spearated by spaces) to convert to
-# UTF-8 charset using 'convert-mailman-to-utf8' script. If you have primarily
-# English site, you don't need to mess with that. :-)
-mailman_convert_languages: []
+# .. envvar:: mailman__languages
+#
+# List of additional language packs to enable in Mailman, specified as two
+# letter names.
+mailman__languages: []
+
+
+# .. envvar:: mailman__site_language
+#
+# Default language used for new mailing lists and in the web interface.
+mailman__site_language: '{{ mailman__default_languages[0] }}'
 
 
 # --- Site configuration ----

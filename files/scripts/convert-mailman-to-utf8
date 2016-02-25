@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# This file is managed by Ansible, all changes will be lost
-
-# convert-mailman-to-utf8: convert mailman language pack to UTF-8 charset
+# convert-mailman-to-utf8: convert mailman language packs to UTF-8 charset and
+# apply some patches
 # Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
 # Homepage: http://debops.org/
 
@@ -32,21 +31,16 @@
 # mailman package in Debian Wheezy (version 2.1.15-1) comes with many language
 # packs written in charsets other than UTF-8. This has been already fixed in
 # Debian Jessie (https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=668304), but
-# not entirely, and at the moment backport to Wheezy is unlikely.
+# not entirely, and at the moment backport to Wheezy is unlikely. In Debian
+# Jessie there are now some mailman packages which contain misleading encoding
+# information: files are encoded in UTF-8 but the contents say that the charset
+# is different, which produces misencoded content in browsers that interpret
+# them.
 #
-# This script (based on
-# http://www.divideandconquer.se/2009/08/17/convert-mailman-translation-to-utf-8/)
-# will help you convert mailman language packs to UTF-8, and fix small issues
-# along the way. Conversion of the language packs should be propagated to mailman
-# upstream (I'm not sure if Mailman developers will accept changes in mailman
-# 2.x) or at least to Debian.
-#
-# This script is meant to be run just after mailman package installation on
-# Debian Wheezy. It was designed to be run via Ansible playbook, only once after
-# initial installation. If at any point you upgrade mailman, these changes will
-# most likely be overwritten by the package and this script will have to be run
-# again. Not all language packs are supported at the moment, pull requests are
-# welcome at the main project GitHub page - https://github.com/ginas/ginas/
+# This script will help you convert mailman language packs to UTF-8, and fix
+# small issues along the way. Conversion of the language packs should be
+# propagated to mailman upstream (I'm not sure if Mailman developers will
+# accept changes in mailman 2.x) or at least to Debian.
 #
 # Script requires patch and gettext packages.
 #
@@ -55,36 +49,44 @@
 #    convert-mailman-to-utf8 <lang> [lang] ... [lang]
 #
 # lang - two letter language name to convert
-#
-# Warning: at the moment script is not idempotent and should be run only once
-# after install/upgrade of mailman package.
 
+convert_to_utf8 () {
+    local from_encoding="${1}"
+    shift
+
+    for filename in ${@} ; do
+        if [ -e ${filename} ] ; then
+            local file_encoding="$(file -b --mime-encoding "${filename}")"
+
+            if [ "${file_encoding}" != "utf-8" -a "${file_encoding}" != "us-ascii" ] ; then
+
+                echo "Converting ${filename} from ${file_encoding} to UTF-8"
+                iconv -f "${from_encoding}" -t utf-8 -o "${filename}.new" "${filename}"
+                mv "${filename}.new" "${filename}"
+
+            fi
+
+            if [ "${from_encoding}" = "iso8859-2" ] ; then
+                if $(grep -q -E 'charset=[Ii][Ss][Oo]-8859-2' ${filename}) ; then
+                    echo "Updating the MIME charset string in ${filename}"
+                    sed -i "s/charset=[Ii][Ss][Oo]-8859-2/charset=utf-8/" ${filename}
+                fi
+            fi
+
+        fi
+    done
+}
 
 # Convert Polish language pack
-function convert_polish () {
-{% if ansible_distribution_release in [ 'wheezy', 'precise' ] %}
-	cd /usr/share/mailman/pl
-	for file in *; do
-		mv $file $file.old; iconv -f iso8859-2 -t utf-8 $file.old > $file
-	done
-	rm -f *.old
+convert_polish () {
 
-	cd /etc/mailman/pl
-	for file in *; do
-		mv $file $file.old; iconv -f iso8859-2 -t utf-8 $file.old > $file
-	done
-	rm -f *.old
+    convert_to_utf8 iso8859-2 /usr/share/mailman/pl/* /etc/mailman/pl/* /var/lib/mailman/messages/pl/LC_MESSAGES/mailman.po
 
-{% endif %}
-	sed -i "s/charset=iso-8859-2/charset=utf-8/" /usr/share/mailman/pl/* /etc/mailman/pl/*
-	sed -i "s/charset=ISO-8859-2/charset=utf-8/" /usr/share/mailman/pl/* /etc/mailman/pl/*
+    if [ -r /var/lib/mailman/messages/pl/LC_MESSAGES/mailman.po ] ; then
 
-{% if ansible_distribution_release in [ 'wheezy', 'precise' ] %}
-	cd /var/lib/mailman/messages/pl/LC_MESSAGES
-	mv mailman.po mailman.po.orig
-	iconv -f iso8859-2 -t utf-8 mailman.po.orig > mailman.po
-	rm mailman.po.orig
-	cat << EOF | patch -N -r-
+        cd /var/lib/mailman/messages/pl/LC_MESSAGES
+
+        read -r -d '' mailman_messages_patch <<EOF
 --- mailman.po
 +++ mailman.po
 @@ -1370,7 +1370,7 @@
@@ -106,13 +108,21 @@ function convert_polish () {
  #: Mailman/Cgi/confirm.py:491 Mailman/Cgi/options.py:767
  #: Mailman/Cgi/options.py:911 Mailman/Cgi/options.py:921
 EOF
-	msgfmt mailman.po -o mailman.mo
 
-{% endif %}
-	cd /usr/lib/mailman/Mailman
-	cat << EOF | patch -N -r-
---- Defaults.py
-+++ Defaults.py
+        if $(patch -p0 -N --dry-run --silent <<< "${mailman_messages_patch}" > /dev/null 2>&1) ; then
+	    patch -p0 -N <<< "${mailman_messages_patch}"
+	    msgfmt mailman.po -o mailman.mo
+        fi
+
+    fi
+
+    if [ -r /usr/lib/mailman/Mailman/Defaults.py ] ; then
+
+        cd /usr/lib/mailman
+
+        read -r -d '' mailman_defaults_patch <<EOF
+--- Mailman/Defaults.py
++++ Mailman/Defaults.py
 @@ -1509,7 +1509,7 @@
  add_language('lt',    _('Lithuanian'),          'iso-8859-13', 'ltr')
  add_language('nl',    _('Dutch'),               'iso-8859-1',  'ltr')
@@ -124,14 +134,18 @@ EOF
  add_language('ro',    _('Romanian'),            'iso-8859-2',  'ltr')
 EOF
 
+        if $(patch -p0 -N --dry-run --silent <<< "${mailman_defaults_patch}" > /dev/null 2>&1) ; then
+	    patch -p0 -N <<< "${mailman_defaults_patch}"
+        fi
+
+    fi
+
 }
 
-
 for lang in ${@}; do
-	case ${lang} in
-		pl)	shift ; convert_polish ;;
-		*)	shift ;;
-	esac
+    case ${lang} in
+        pl)   shift ; convert_polish ;;
+        *)    shift ;;
+    esac
 done
-
 

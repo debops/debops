@@ -7,44 +7,59 @@
     install_recommends: False
   with_items: '{{ mailman_packages }}'
 
-- name: Configure language pack conversion script
-  template: src=usr/local/sbin/convert-mailman-to-utf8.j2
-            dest=/usr/local/sbin/convert-mailman-to-utf8
-            owner=root group=root mode=0755
-
-# mailman package forgets configuration preconfigured by debconf
-# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=339059
-# Because of that we need to reconfigure it after installation
-
-- name: Preconfigure language list in debconf
-  debconf: name=mailman question='mailman/site_languages' vtype='multiselect'
-           value='{{ mailman_debconf_languages | join(", ") }}'
-  register: mailman_debconf_question1
-
-- name: Preconfigure default language in debconf
-  debconf: name=mailman question='mailman/default_server_language' vtype='select'
-           value='{{ mailman_debconf_default_language }}'
-  register: mailman_debconf_question2
-
-- name: Reconfigure mailman package
-  shell: dpkg-reconfigure --frontend noninteractive mailman
-  register: mailman_package_reconfigure
-  when: (mailman_debconf_question1 is defined and mailman_debconf_question1.changed) or
-        (mailman_debconf_question2 is defined and mailman_debconf_question2.changed)
-
-- name: Run language pack conversion script
-  command: /usr/local/sbin/convert-mailman-to-utf8 {{ mailman_convert_languages | join(' ') }}
-  when: (mailman_convert_languages is defined and mailman_convert_languages) and
-        (mailman_package_reconfigure is defined and mailman_package_reconfigure.changed)
-
 - name: Apply patches to Mailman source code
   patch:
     src: 'patches/{{ item }}.patch'
     basedir: '/usr/lib/mailman'
   with_items: '{{ mailman_patch_list }}'
+  register: mailman_register_patches
   when: mailman_patch | bool
   notify: [ 'Restart mailman' ]
   tags: [ 'role::mailman:patch' ]
+
+# mailman package forgets configuration preconfigured by debconf
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=339059
+# Because of that we need to reconfigure it after installation
+
+- name: Check current language settings in debconf
+  debconf:
+    name: 'mailman'
+  register: mailman__register_debconf
+  tags: [ 'role::mailman:patch', 'role::mailman:lang' ]
+
+- name: Preconfigure language list in debconf
+  debconf:
+    name: 'mailman'
+    question: 'mailman/site_languages'
+    vtype: 'multiselect'
+    value: '{{ (lookup("template", "lookup/mailman__languages.j2") | from_yaml) | join(", ") }}'
+  register: mailman_register_debconf_question1
+  tags: [ 'role::mailman:lang' ]
+
+- name: Preconfigure default language in debconf
+  debconf:
+    name: 'mailman'
+    question: 'mailman/default_server_language'
+    vtype: 'select'
+    value: '{{ lookup("template", "lookup/mailman__site_language.j2") | from_yaml }}'
+  register: mailman_register_debconf_question2
+  tags: [ 'role::mailman:lang' ]
+
+- name: Reconfigure mailman package
+  shell: dpkg-reconfigure --frontend noninteractive mailman
+  register: mailman_package_reconfigure
+  when: (mailman_register_debconf_question1.changed|bool or
+         mailman_register_debconf_question2.changed|bool)
+  tags: [ 'role::mailman:lang' ]
+
+- name: Run language pack conversion script
+  script: scripts/convert-mailman-to-utf8 {{ (mailman__default_languages + mailman__languages + mailman__register_debconf.current["mailman/used_languages"].split(" ") | unique) | join(' ') }}
+  register: mailman_register_convert_script
+  changed_when: mailman_register_convert_script.stdout
+  when: ((mailman_register_patches|d() and mailman_register_patches.changed|bool) or
+         (mailman_register_debconf_question1|d() and mailman_register_debconf_question1.changed|bool) or
+         (mailman_register_debconf_question2|d() and mailman_register_debconf_question2.changed|bool))
+  tags: [ 'role::mailman:patch', 'role::mailman:lang' ]
 
 - name: Check if site list is created
   stat: path=/var/lib/mailman/lists/{{ mailman_site_list }}/config.pck
@@ -66,7 +81,7 @@
         mailman_register_postfix_transport.changed
 
 - name: Create Mailman site list
-  shell: yes | newlist --language={{ mailman_default_language }} {{ mailman_site_list }} {{ mailman_site_admin }}
+  shell: yes | newlist --language={{ mailman__site_language }} {{ mailman_site_list }} {{ mailman_site_admin }}
          {% if mailman_domains is defined and mailman_domains %}
          {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman_domains[0] + '/' + mailman_site_list + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
          {% else %}
@@ -96,7 +111,7 @@
   when: item.name is defined and item.name and item.state is defined and item.state == 'absent'
 
 - name: Create Mailman lists
-  shell: yes | newlist --language={{ item.language | default(mailman_default_language) }}
+  shell: yes | newlist --language={{ item.language | default(mailman__site_language) }}
          {% if item.notify is defined and not item.notify %} --quiet {% endif %}
          {% if item.domain is defined and item.domain %}
          --urlhost={{ item.domain }} --emailhost={{ item.domain }}

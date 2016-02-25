@@ -28,3 +28,15 @@ v0.1.0
 - Clean up APT package installation, expose list of packages in default
   variables. [drybjed]
 
+- Rewrite the language pack support.
+
+  The role now exposes simple list of languages which is converted by a lookup
+  template to set the ``debconf`` questions correctly. List of active languages
+  is taken into account, so both data sources (Ansible default variables and
+  ``debconf`` database) shouldn't fight over which languages are active
+  anymore.
+
+  The language pack conversion script has been rewritten to be idempotent and
+  it's not installed on the remote host, but executed by the ``script`` module
+  if any changes are detected. [drybjed]
+
