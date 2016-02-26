@@ -20,7 +20,7 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - owncloud_base_packages
+    - '{{ owncloud_base_packages }}'
     - '{{ [ "php5-mysql" ] if (owncloud_database in [ "mariadb" ]) else [] }}'
     - '{{ [ "php5-pgsql" ] if (owncloud_database in [ "postgresql" ]) else [] }}'
   tags: [ 'role::owncloud:base_install' ]
