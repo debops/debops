@@ -276,8 +276,8 @@ tinc__extra_options: ''
 #
 # Enable support for ``systemd`` if it's detected as the init system.
 tinc__systemd: '{{ True
-                   if (ansible_local|d() and ansible_local.init|d() and
-                       ansible_local.init == "systemd")
+                   if (ansible_service_mgr|d() and
+                       ansible_service_mgr == "systemd")
                    else False }}'
 
 

@@ -19,6 +19,10 @@ v0.2.1
   ``mesh0`` configuration will automatically gather all relevant IP addresses
   and exclude them from the host files. [drybjed]
 
+- Switch init service detection from ``debops.core`` Ansible local fact to
+  internal ``ansible_service_mgr`` variable. This increases the role
+  requirements to Ansible v2.0. [drybjed]
+
 v0.2.0
 ------
 
