@@ -49,6 +49,7 @@ tinc__network_mesh0:
   chroot: True
   allow: '{{ tinc__allow_mesh0 }}'
   user: '{{ tinc__user }}'
+  tinc_exclude_addresses: '{{ tinc__exclude_addresses_mesh0 }}'
   tinc_options:
     Mode: 'switch'
     DeviceType: 'tap'
@@ -61,6 +62,24 @@ tinc__network_mesh0:
 #
 # Name of the network interface to use for the Tinc ``mesh0`` VPN.
 tinc__interface_mesh0: 'tap-mesh0'
+
+
+# .. envvar:: tinc__exclude_interface_mesh0
+#
+# This is a list of all of the IPv4 and IPv6 addresses which are set on the VPN
+# interface, when it's configured. This list gathers these IP addresses so that
+# they can be excluded from the Tinc VPN public key files.
+tinc__exclude_interface_mesh0: '{{
+  (([ hostvars[inventory_hostname]["ansible_"+(tinc__interface_mesh0|replace("-","_"))]["ipv4"]["address"] ])
+    if (tinc__interface_mesh0 and hostvars[inventory_hostname]["ansible_"+(tinc__interface_mesh0|replace("-","_"))]|d() and
+        hostvars[inventory_hostname]["ansible_"+(tinc__interface_mesh0|replace("-","_"))]["ipv4"]|d()) else []) +
+  ((hostvars[inventory_hostname]["ansible_"+(tinc__interface_mesh0|replace("-","_"))]["ipv4_secondaries"]|map(attribute="address")|list)
+    if (tinc__interface_mesh0 and (hostvars[inventory_hostname]["ansible_"+(tinc__interface_mesh0|replace("-","_"))]|d() and
+        hostvars[inventory_hostname]["ansible_"+(tinc__interface_mesh0|replace("-","_"))]["ipv4_secondaries"]|d())) else []) +
+  ((hostvars[inventory_hostname]["ansible_"+(tinc__interface_mesh0|replace("-","_"))]["ipv6"]|map(attribute="address")|list)
+    if (tinc__interface_mesh0 and (hostvars[inventory_hostname]["ansible_"+(tinc__interface_mesh0|replace("-","_"))]|d() and
+        hostvars[inventory_hostname]["ansible_"+(tinc__interface_mesh0|replace("-","_"))]["ipv6"]|d())) else [])
+  }}'
 
 
 # .. envvar:: tinc__link_type_mesh0
@@ -98,6 +117,24 @@ tinc__boot_mesh0: True
 tinc__bridge_mesh0: ''
 
 
+# .. envvar:: tinc__exclude_bridge_mesh0
+#
+# This is a list of all of the IPv4 and IPv6 addresses which are set on the
+# bridge interface, when it's configured. This list gathers these IP addresses
+# so that they can be excluded from the Tinc VPN public key files.
+tinc__exclude_bridge_mesh0: '{{
+  (([ hostvars[inventory_hostname]["ansible_"+(tinc__bridge_mesh0|replace("-","_"))]["ipv4"]["address"] ])
+    if (tinc__bridge_mesh0 and hostvars[inventory_hostname]["ansible_"+(tinc__bridge_mesh0|replace("-","_"))]|d() and
+        hostvars[inventory_hostname]["ansible_"+(tinc__bridge_mesh0|replace("-","_"))]["ipv4"]|d()) else []) +
+  ((hostvars[inventory_hostname]["ansible_"+(tinc__bridge_mesh0|replace("-","_"))]["ipv4_secondaries"]|map(attribute="address")|list)
+    if (tinc__bridge_mesh0 and (hostvars[inventory_hostname]["ansible_"+(tinc__bridge_mesh0|replace("-","_"))]|d() and
+        hostvars[inventory_hostname]["ansible_"+(tinc__bridge_mesh0|replace("-","_"))]["ipv4_secondaries"]|d())) else []) +
+  ((hostvars[inventory_hostname]["ansible_"+(tinc__bridge_mesh0|replace("-","_"))]["ipv6"]|map(attribute="address")|list)
+    if (tinc__bridge_mesh0 and (hostvars[inventory_hostname]["ansible_"+(tinc__bridge_mesh0|replace("-","_"))]|d() and
+        hostvars[inventory_hostname]["ansible_"+(tinc__bridge_mesh0|replace("-","_"))]["ipv6"]|d())) else [])
+  }}'
+
+
 # .. envvar:: tinc__allow_mesh0
 #
 # List of IP addresses or CIDR subnets which will be allowed to connect to the
@@ -111,6 +148,15 @@ tinc__allow_mesh0: []
 # List of hosts specified as the ``ConnectTo`` option in the Tinc configuration
 # file of the ``mesh0`` network.
 tinc__connect_to_mesh0: '{{ tinc__inventory_hosts_mesh0 + tinc__external_hosts_mesh0 }}'
+
+
+# .. envvar:: tinc__exclude_addresses_mesh0
+#
+# List of FQDN or IP addresses which should be exluded from the public key file
+# of a given host. This list excludes the IP addresses of the mesh interface as
+# well as the bridge interface, so that Tinc doesn't try to connect to remote
+# hosts over the VPN connection.
+tinc__exclude_addresses_mesh0: '{{ tinc__exclude_interface_mesh0 + tinc__exclude_bridge_mesh0 }}'
 
 
 # .. envvar:: tinc__inventory_hosts_mesh0
@@ -274,6 +320,13 @@ tinc__host_addresses_fqdn: '{{ [ ansible_fqdn ]
 # Include all public and private IP addresses, without IPv6 link-local.
 tinc__host_addresses_ip: '{{ ansible_all_ipv4_addresses + (ansible_all_ipv6_addresses |
                              difference(ansible_all_ipv6_addresses | ipaddr("link-local"))) }}'
+
+
+# .. envvar:: tinc__exclude_host_addresses
+#
+# List of FQDN host entries or IP addresses which should be excluded from the
+# list of connection addresses in the public key file.
+tinc__exclude_host_addresses: []
 
 
 # ------------------

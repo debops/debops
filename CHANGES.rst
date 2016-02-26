@@ -15,6 +15,10 @@ v0.2.1
   ``inventory_hostname`` variable to transfer files correctly between hosts.
   [drybjed]
 
+- Add a way to exclude addresses from the public key host files. The default
+  ``mesh0`` configuration will automatically gather all relevant IP addresses
+  and exclude them from the host files. [drybjed]
+
 v0.2.0
 ------
 
