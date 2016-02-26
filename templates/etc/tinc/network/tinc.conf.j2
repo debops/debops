@@ -21,14 +21,14 @@ Interface = {{ item.interface }}
 {%     if key | lower not in tinc__tpl_seen_keys %}
 {%       if value is string %}
 {%         if key | lower in [ 'connectto' ] %}
-{{ key }} = {{ value | replace("-","_") }}
+{{ key }} = {{ value.split(".") | first | replace("-","_") }}
 {%         else %}
 {{ key }} = {{ value }}
 {%         endif %}
 {%       else %}
 {%         for element in value %}
 {%           if key | lower in [ 'connectto' ] %}
-{{ key }} = {{ element | replace("-","_") }}
+{{ key }} = {{ element.split(".") | first | replace("-","_") }}
 {%           else %}
 {{ key }} = {{ element }}
 {%           endif %}

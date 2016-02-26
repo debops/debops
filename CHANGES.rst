@@ -23,6 +23,9 @@ v0.2.1
   internal ``ansible_service_mgr`` variable. This increases the role
   requirements to Ansible v2.0. [drybjed]
 
+- Use only the hostname in the ``ConnectTo`` list if a FQDN name is used in the
+  inventory. [drybjed]
+
 v0.2.0
 ------
 
