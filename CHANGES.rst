@@ -11,6 +11,10 @@ v0.2.1
 
 - Support both strings and lists in ``tinc__host_addresses``. [drybjed]
 
+- Use separate ``tinc__inventory_hostname`` variable synchronized with the
+  ``inventory_hostname`` variable to transfer files correctly between hosts.
+  [drybjed]
+
 v0.2.0
 ------
 
