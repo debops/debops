@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Released: 2016-02-26*
+
+- Use the same value type in ``tinc__host_addresses_fqdn`` and
+  ``tinc__host_addresses_ip`` for consistency. [drybjed]
+
 v0.2.0
 ------
 

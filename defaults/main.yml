@@ -255,7 +255,7 @@ tinc__host_addresses: '{{ tinc__host_addresses_fqdn }}'
 # .. envvar:: tinc__host_addresses_fqdn
 #
 # Include the host FQDN if public IP addresses are available.
-tinc__host_addresses_fqdn: '{{ ansible_fqdn
+tinc__host_addresses_fqdn: '{{ [ ansible_fqdn ]
                                if ((ansible_all_ipv4_addresses + (ansible_all_ipv6_addresses |
                                    difference(ansible_all_ipv6_addresses | ipaddr("link-local")))
                                    ) | ipaddr("public")) else [] }}'
