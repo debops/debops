@@ -9,6 +9,81 @@ them.
    :local:
    :depth: 1
 
+.. _fail2ban_actions:
+
+fail2ban_actions
+----------------
+
+List of local ``fail2ban`` actions that should be present or absent when configuring
+``fail2ban``. Each action is defined as a YAML dict with the following keys:
+
+``name``
+  Required. Name of the filter.
+
+``ban``
+  Required. Command executed when banning an IP. Take care that the command is executed
+  with ``fail2ban`` user rights.
+
+``check``
+  Optional. Command executed once before each ``ban`` command.
+
+``filename``
+  Optional. Alternative name of the action configuration file.
+
+``start``
+  Optional. Command executed once at the start of ``fail2ban``.
+
+``state``
+  Optional. If ``present``, the action will be created when configuring ``fail2ban``.
+  If ``absent``, the action will be removed when configuring ``fail2ban``.
+
+``stop``
+  Optional. Command executed once at the end of ``fail2ban``.
+
+``unban``
+  Optional. Command executed when unbanning an IP. Take care that the command is executed
+  with ``fail2ban`` user rights.
+
+.. _fail2ban_filters:
+
+fail2ban_filters
+----------------
+
+List of local ``fail2ban`` filters that should be present or absent when configuring
+``fail2ban``. Each filter is defined as a YAML dict with the following keys:
+
+``name``
+  Required. Name of the filter.
+
+``after``
+  Optional. Specify an addtional filter configuration file that ``fail2ban`` will
+  read after reading this filter configuration filer.
+
+``before``
+  Optional. Specify an addtional filter configuration file that ``fail2ban`` will
+  read before reading this filter configuration file.
+
+``definitions``
+  Optional. Custom definitions used by the filter.
+
+``failregex``
+  Required. Regular expression(s) used by the filter to detect break-in attempts.
+  You can have the filter try to match multiple regular expressions. Each regular
+  expression should be on its own line.
+
+``filename``
+  Optional. Alternative name of the filter configuration file. If not specfied, it
+  will use the ``name`` of the filter.
+
+``ignoreregex``
+  Optional. Regular expression(s) used to filter out invalid break-in attempts. You
+  can have the filter try to match multiple regular expressions. Each regular
+  expression should be on its own line.
+
+``state``
+  Optional. If ``present``, the filter will be created when configuring ``fail2ban``.
+  If ``absent``, the filter will be removed when configuring ``fail2ban``.
+
 .. _fail2ban_jails:
 
 fail2ban_jails

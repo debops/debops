@@ -15,6 +15,50 @@
     group: 'root'
   notify: [ 'Reload fail2ban jails' ]
 
+- name: Configure custom fail2ban actions
+  template:
+    src: '{{ lookup("template_src", "etc/fail2ban/action.d/action.local.j2") }}'
+    dest: '/etc/fail2ban/action.d/{{ item.filename | d(item.name) }}.local'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ fail2ban_actions }}'
+  notify: [ 'Restart fail2ban' ]
+  when: ((item.name is defined and item.name) and
+         (item.ban is defined and item.ban) and
+         (item.state | d('present') not in ['absent']))
+
+- name: Remove custom fail2ban actions if requested
+  file:
+    path: '/etc/fail2ban/action.d/{{ item.filename | d(item.name) }}.local'
+    state: 'absent'
+  with_items: '{{ fail2ban_actions }}'
+  notify: [ 'Restart fail2ban' ]
+  when: ((item.name is defined and item.name) and
+         (item.state | d('present') in ['absent']))
+
+- name: Configure custom fail2ban filters
+  template:
+    src: '{{ lookup("template_src", "etc/fail2ban/filter.d/filter.local.j2") }}'
+    dest: '/etc/fail2ban/filter.d/{{ item.filename | d(item.name) }}.local'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ fail2ban_filters }}'
+  notify: [ 'Restart fail2ban' ]
+  when: ((item.name is defined and item.name) and
+         (item.failregex is defined and item.failregex) and
+         (item.state | d('present') not in ['absent']))
+
+- name: Remove custom fail2ban filters if requested
+  file:
+    path: '/etc/fail2ban/filter.d/{{ item.filename | d(item.name) }}.local'
+    state: 'absent'
+  with_items: '{{ fail2ban_filters }}'
+  notify: [ 'Restart fail2ban' ]
+  when: ((item.name is defined and item.name) and
+         (item.state | d('present') in ['absent']))
+
 - name: Configure fail2ban
   template:
     src: '{{ lookup("template_src", "etc/fail2ban/fail2ban.local.j2") }}'
