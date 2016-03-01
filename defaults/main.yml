@@ -14,7 +14,7 @@ gitlab_dependencies: True
 # .. envvar:: gitlab_version
 #
 # What version of GitLab to install / manage
-gitlab_version: '8.1'
+gitlab_version: '8.5'
 
 
 # ---------------------------------
@@ -74,7 +74,12 @@ gitlab_admin_password: '{{ lookup("password", secret + "/credentials/" + ansible
 # .. envvar:: gitlab_enable_git_http_server
 #
 # In GitLab 8.0 and newer there is separate server for git
-gitlab_enable_git_http_server: '{{ gitlab_version | version_compare("8.0", operator="ge", strict=True) }}'
+gitlab_enable_git_http_server: '{{ gitlab_version | version_compare("8.0", operator="ge", strict=True) and not gitlab_enable_gitlab_workhorse | bool }}'
+
+# .. envvar:: gitlab_enable_gitlab_workhorse
+#
+# In GitLab 8.2 and newer, gitlab-workhorse replaces gitlab-git-http-server
+gitlab_enable_gitlab_workhorse: '{{ gitlab_version | version_compare("8.2", operator="ge", strict=True) }}'
 
 
 # --------------------------
