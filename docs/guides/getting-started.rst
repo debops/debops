@@ -184,7 +184,7 @@ expected, but if you still are getting blocked, or to be sure that remote
 access won't be interrupted, you can define a list of IP addresses or CIDR
 subnets that will be allowed to connect to SSH without restrictions.
 
-To do that, in ``inventory/ansible/group_vars/all/sshd.yml`` add:
+To do that, in ``ansible/inventory/group_vars/all/sshd.yml`` add:
 
 .. code-block:: yaml
 
