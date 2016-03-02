@@ -1,10 +1,19 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2016-03-02*
+
+- Add support for GitLab 8.1 [gomez]
+
+- Add support for GitLab 8.5 [benalbrecht]
+
 v0.1.1
 ------
 
-*Unreleased*
+*Released: 2015-10-13*
 
 - Migration to debops.mariadb role. [scibi]
   If you have exisitng setup you have to:
