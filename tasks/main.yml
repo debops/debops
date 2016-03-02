@@ -62,19 +62,26 @@
   tags: [ 'role::mailman:patch', 'role::mailman:lang' ]
 
 - name: Configure Mailman
-  template: src=etc/mailman/mm_cfg.py.j2 dest=/etc/mailman/mm_cfg.py
-            owner=root group=root mode=0644
+  template:
+    src: 'etc/mailman/mm_cfg.py.j2'
+    dest: '/etc/mailman/mm_cfg.py'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   notify: [ 'Restart mailman' ]
 
 - name: Configure Postfix transport map
-  template: src=etc/mailman/postfix_transport.j2 dest=/etc/mailman/postfix_transport
-            owner=root group=root mode=0644
+  template:
+    src: 'etc/mailman/postfix_transport.j2'
+    dest: '/etc/mailman/postfix_transport'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   register: mailman_register_postfix_transport
 
 - name: Generate postfix_transport map
   command: /usr/sbin/postmap /etc/mailman/postfix_transport
-  when: mailman_register_postfix_transport is defined and
-        mailman_register_postfix_transport.changed
+  when: mailman_register_postfix_transport.changed|bool
 
 - name: Create Mailman site list
   shell: yes | newlist --language={{ mailman__site_language }} {{ mailman_site_list }} {{ mailman_site_admin }}
@@ -96,36 +103,35 @@
   no_log: True
 
 - name: Remove Mailman lists if requested
-  command: rmlist {% if item.purge is defined and item.purge %} --archives {% endif %}
-           {{ item.name }} removes=/var/lib/mailman/lists/{{ item.name }}/config.pck
-  with_items: mailman_lists
-  sudo_user: 'list'
-  when: item.name is defined and item.name and item.state is defined and item.state == 'absent'
+  command: rmlist {% if item.purge|d() and item.purge|bool %} --archives {% endif %}
+           {{ item.name }}
+  args:
+    removes: '/var/lib/mailman/lists/{{ item.name }}/config.pck'
+  with_items: '{{ mailman_lists }}'
+  become_user: 'list'
+  when: item.name|d() and item.state|d() and item.state == 'absent'
 
 - name: Create Mailman lists
   shell: yes | newlist --language={{ item.language | default(mailman__site_language) }}
-         {% if item.notify is defined and not item.notify %} --quiet {% endif %}
-         {% if item.domain is defined and item.domain %}
+         {% if item.notify|d() and not item.notify|bool %} --quiet {% endif %}
+         {% if item.domain|d() and item.domain %}
          --urlhost={{ item.domain }} --emailhost={{ item.domain }}
          {% endif %}
          {{ item.name }} {{ item.owner | default(mailman_site_admin) }}
-         {% if item.password is defined and item.password %}
+         {% if item.password|d() and item.password %}
          {{ item.password }}
          {% else %}
-         {% if item.domain is defined and item.domain %}
+         {% if item.domain|d() and item.domain %}
          {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + item.domain + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman_admin_password_length) }}
          {% else %}
-         {% if mailman_domains is defined and mailman_domains %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman_domains[0] + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman_admin_password_length) }}
-         {% else %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + ansible_fqdn + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman_admin_password_length) }}
+         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman__site_domain + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman_admin_password_length) }}
          {% endif %}
          {% endif %}
-         {% endif %}
-         creates=/var/lib/mailman/lists/{{ item.name }}/config.pck
-  with_items: mailman_lists
-  sudo_user: 'list'
-  when: item.name is defined and item.name and secret is defined and secret and
-        ((item.state is defined and item.state == 'present') or item.state is undefined)
+  args:
+    creates: '/var/lib/mailman/lists/{{ item.name }}/config.pck'
+  with_items: '{{ mailman_lists }}'
+  become_user: 'list'
+  when: (item.name|d() and item.name and
+         (item.state is undefined or item.state != 'absent'))
   no_log: True
 

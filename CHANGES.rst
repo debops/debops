@@ -46,3 +46,5 @@ v0.1.0
   in a separate ``mailman__site_domain`` variable, and additional virtual
   domains have their own list. [drybjed]
 
+- Clean up role tasks and handlers, conver them to YAML syntax. [drybjed]
+
