@@ -16,7 +16,19 @@
 {%   endfor %}
 {% endif %}
 {% for item in unattended_upgrades__dependent_blacklist %}
-{%   set _ = unattended_upgrades__tpl_blacklist.append(item) %}
+{%   if item is mapping %}
+{%     if (item.name|d() and item.when|d() and item.when|bool) %}
+{%       if item.name is string %}
+{%         set _ = unattended_upgrades__tpl_blacklist.append(item.name) %}
+{%       else %}
+{%         for element in item.name %}
+{%           set _ = unattended_upgrades__tpl_blacklist.append(element) %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   else %}
+{%     set _ = unattended_upgrades__tpl_blacklist.append(item) %}
+{%   endif %}
 {% endfor %}
 {
 "blacklist": {{ unattended_upgrades__tpl_blacklist | sort | unique | to_nice_json }},
