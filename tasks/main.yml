@@ -257,6 +257,7 @@
   register: pki_register_sign_by_host
   become: False
   run_once: True
+  when: (pki_authorities or pki_dependent_authorities)
   changed_when: pki_register_sign_by_host.stdout != ""
 
 - name: Download public realm contents by host
