@@ -50,3 +50,5 @@ v0.1.0
 
 - Clean up Mailman configuration file. [drybjed]
 
+- Rename all variables to put them in a clear namespace. [drybjed]
+

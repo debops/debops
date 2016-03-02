@@ -36,35 +36,35 @@ POSTFIX_STYLE_VIRTUAL_DOMAINS = [ "{{ ([ mailman__site_domain ] + mailman__virtu
 
 # Mail server configuration
 MTA = 'Postfix'
-SMTP_MAX_RCPTS = {{ mailman_smtp_max_recipients | default('500') }}
+SMTP_MAX_RCPTS = {{ mailman__smtp_max_recipients | default('500') }}
 
 # Settings for postfix-to-mailman.py script (used only when Postfix has no
 # local delivery)
-DEB_LISTMASTER = '{{ mailman_site_postmaster }}'
+DEB_LISTMASTER = '{{ mailman__site_postmaster }}'
 
 # Default language for this server.
 DEFAULT_SERVER_LANGUAGE = '{{ mailman__site_language }}'
 
 # Allow download of .mbox files on public mailing lists
-PUBLIC_MBOX = {{ "Yes" if mailman_public_mbox|bool else "No" }}
+PUBLIC_MBOX = {{ "Yes" if mailman__public_mbox|bool else "No" }}
 
 # Unset send_reminders on newly created lists
 DEFAULT_SEND_REMINDERS = 0
 
 # Maximum message size in kilobytes
-DEFAULT_MAX_MESSAGE_SIZE = {{ mailman_max_message_size | default('40') }}
+DEFAULT_MAX_MESSAGE_SIZE = {{ mailman__max_message_size | default('40') }}
 
 # Do not send notifications to non-members by default (minimize backscatter)
 DEFAULT_RESPOND_TO_POST_REQUESTS = No
 
 # How much of the original message to include in automatic responses
-RESPONSE_INCLUDE_LEVEL = {{ mailman_response_include_level | default('0') }}
+RESPONSE_INCLUDE_LEVEL = {{ mailman__response_include_level | default('0') }}
 
 # What to do with messages from non-members by default?
-DEFAULT_GENERIC_NONMEMBER_ACTION = {{ mailman_default_generic_nonmember_action | default('3') }}
+DEFAULT_GENERIC_NONMEMBER_ACTION = {{ mailman__default_generic_nonmember_action | default('3') }}
 
 # Forward discarded messages to list owner by default?
-DEFAULT_FORWARD_AUTO_DISCARDS = {{ mailman_default_forward_auto_discards | default('No') }}
+DEFAULT_FORWARD_AUTO_DISCARDS = {{ "Yes" if mailman__default_forward_auto_discards|bool else "No" }}
 
 # Default haracter set
 DEFAULT_CHARSET = 'utf-8'
@@ -75,16 +75,16 @@ import email.Charset
 email.Charset.add_charset('utf-8',email.Charset.SHORTEST, None, None)
 
 # Password configuration
-USER_FRIENDLY_PASSWORDS = {{ mailman_user_friendly_passwords | default('Yes') }}
-ADMIN_PASSWORD_LENGTH = {{ mailman_admin_password_length | default('10') }}
-MEMBER_PASSWORD_LENGTH = {{ mailman_member_password_length | default('8') }}
+USER_FRIENDLY_PASSWORDS = {{ "Yes" if mailman__user_friendly_passwords|bool else "No" }}
+ADMIN_PASSWORD_LENGTH = {{ mailman__admin_password_length | default('10') }}
+MEMBER_PASSWORD_LENGTH = {{ mailman__member_password_length | default('8') }}
 
 # The name of the list Mailman uses to send password reminders
 # and similar. Don't change if you want mailman-owner to be
 # a valid local part.
-MAILMAN_SITE_LIST = '{{ mailman_site_list }}'
+MAILMAN_SITE_LIST = '{{ mailman__site_list }}'
 
-{% if mailman_options is defined and mailman_options %}
-{{ mailman_options }}
+{% if mailman__custom_options %}
+{{ mailman__custom_options }}
 
 {% endif %}
