@@ -82,7 +82,19 @@ Unattended-Upgrade::Package-Blacklist {
                 unattended_upgrades__blacklist +
                 unattended_upgrades__group_blacklist +
                 unattended_upgrades__dependent_blacklist) %}
-{%   set _ = unattended_upgrades__tpl_blacklist.append(item) %}
+{%   if item is mapping %}
+{%     if (item.name|d() and item.when|d() and item.when|bool) %}
+{%       if item.name is string %}
+{%         set _ = unattended_upgrades__tpl_blacklist.append(item.name) %}
+{%       else %}
+{%         for element in item.name %}
+{%           set _ = unattended_upgrades__tpl_blacklist.append(element) %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   else %}
+{%     set _ = unattended_upgrades__tpl_blacklist.append(item) %}
+{%   endif %}
 {% endfor %}
 {% if (ansible_local|d() and ansible_local.unattended_upgrades|d() and
        ansible_local.unattended_upgrades.blacklist|d()) %}

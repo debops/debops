@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Released: 2016-03-02*
+
+- Add support for conditional package blacklisting. [drybjed]
+
 v0.1.2
 ------
 
