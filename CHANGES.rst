@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.5
+------
+
+*Released: 2016-03-02*
+
+- Don't run ``pki-authority`` script on Ansible Controller if list of
+  ``pki_authorities`` is not defined. [drybjed]
+
 v0.2.4
 ------
 
