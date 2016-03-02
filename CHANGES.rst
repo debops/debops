@@ -48,3 +48,5 @@ v0.1.0
 
 - Clean up role tasks and handlers, conver them to YAML syntax. [drybjed]
 
+- Clean up Mailman configuration file. [drybjed]
+

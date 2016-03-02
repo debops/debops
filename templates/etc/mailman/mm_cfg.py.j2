@@ -1,6 +1,6 @@
 # -*- python -*-
 
-# This file is managed by Ansible, all changes will be lost
+# {{ ansible_managed }}
 
 # Note - if you're looking for something that is imported from mm_cfg, but you
 # didn't find it in this file, it's probably in /usr/lib/mailman/Mailman/Defaults.py
@@ -45,11 +45,9 @@ DEB_LISTMASTER = '{{ mailman_site_postmaster }}'
 # Default language for this server.
 DEFAULT_SERVER_LANGUAGE = '{{ mailman__site_language }}'
 
-{% if mailman_public_mbox is defined and mailman_public_mbox %}
-# Allow downloading of .mbox files on public mailing lists
-PUBLIC_MBOX = Yes
+# Allow download of .mbox files on public mailing lists
+PUBLIC_MBOX = {{ "Yes" if mailman_public_mbox|bool else "No" }}
 
-{% endif %}
 # Unset send_reminders on newly created lists
 DEFAULT_SEND_REMINDERS = 0
 
