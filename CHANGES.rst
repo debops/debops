@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.1.4
+------
+
+*Released: 2016-03-02*
+
+- Fix issue with role import on Ansible Galaxy. [drybjed]
+
 v0.1.3
 ------
 
