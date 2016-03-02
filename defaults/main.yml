@@ -39,18 +39,40 @@ mailman__languages: []
 mailman__site_language: '{{ mailman__default_languages[0] }}'
 
 
-# --- Site configuration ----
+# ------------------------
+#   Mailing list domains
+# ------------------------
 
-# List of "virtual domains" recognized by Mailman. The first domain on the list
-# will be a default domain. If this list is empty, Mailman will use ansible_fqdn
-# as it's default domain (requires 'local' capability in postfix).
-mailman_domains: [ 'lists.{{ ansible_domain }}' ]
+# .. envvar:: mailman__fqdn
+#
+# A fully qualified domain name of the host that manages the mailing lists.
+mailman__fqdn: '{{ ansible_fqdn }}'
+
+
+# .. envvar:: mailman__domain
+#
+# A DNS domain name of the host that manages the default mailing lists.
+mailman__domain: '{{ ansible_domain if ansible_domain else ansible_hostname }}'
+
+
+# .. envvar:: mailman__site_domain
+#
+# The primary domain used by the Mailing List Manager to serve its Web
+# interface and host the default mailing lists.
+mailman__site_domain: '{{ ("lists." + mailman__domain) }}'
+
+
+# .. envvar:: mailman__virtual_domains
+#
+# List of additional virtual domains which are used by Mailman.
+mailman__virtual_domains: []
+
 
 # Site administrator e-mail address
-mailman_site_admin: 'listmaster@{{ ansible_domain }}'
+mailman_site_admin: 'listmaster@{{ mailman__domain }}'
 
 # Postmaster address, required by 'postfix-to-mailman.py' script
-mailman_site_postmaster: 'postmaster@{{ ansible_domain }}'
+mailman_site_postmaster: 'postmaster@{{ mailman__domain }}'
 
 # Maximum message size enforced by Mailman by default, in kilobytes. Can be
 # changed for each list independently in the web interface
@@ -101,7 +123,7 @@ mailman_response_include_level: '0'
 mailman_default_generic_nonmember_action: '3'
 
 # List of domains allowed as referers
-mailman_referers: '{{ (mailman_domains + [ ansible_fqdn, "*." + ansible_domain ]) }}'
+mailman_referers: '{{ ([ mailman__site_domain ] + mailman__virtual_domains + [ mailman__fqdn, "*." + mailman__domain ]) }}'
 
 
 # ---- Other options ----
@@ -172,7 +194,7 @@ mailman__postfix__dependent_lists:
       list: [ 'hash:/var/lib/mailman/data/aliases' ]
   relay_domains:
     - no_capability: 'local'
-      list: '{{ mailman_domains }}'
+      list: '{{ [ mailman__site_domain ] + mailman__virtual_domains }}'
   relay_recipient_maps:
     - no_capability: 'local'
       list: [ 'hash:/var/lib/mailman/data/virtual-mailman' ]
@@ -181,7 +203,7 @@ mailman__postfix__dependent_lists:
       list: [ 'hash:/etc/mailman/postfix_transport' ]
   virtual_alias_domains:
     - capability: 'local'
-      list: '{{ mailman_domains }}'
+      list: '{{ [ mailman__site_domain ] + mailman__virtual_domains }}'
   virtual_alias_maps:
     - capability: 'local'
       list: [ 'hash:/var/lib/mailman/data/virtual-mailman' ]
@@ -218,7 +240,7 @@ mailman__postfix__dependent_mastercf:
 mailman__nginx__servers:
   - by_role: 'debops.mailman'
     enabled: True
-    name: '{{ mailman_domains }}'
+    name: '{{ [ mailman__site_domain ] + mailman__virtual_domains }}'
     filename: 'debops.mailman'
     root: '/usr/lib/cgi-bin/mailman'
 

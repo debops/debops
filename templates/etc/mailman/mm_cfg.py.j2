@@ -15,42 +15,25 @@ PUBLIC_ARCHIVE_URL  = 'https://%(hostname)s/pipermail/%(listname)s'
 PRIVATE_ARCHIVE_URL = '/mailman/private/'
 IMAGE_LOGOS         = '/images/mailman/'
 
-{% if mailman_domains is defined and mailman_domains %}
 # Default domain for email addresses of newly created MLs
-DEFAULT_EMAIL_HOST = '{{ mailman_domains[0] }}'
+DEFAULT_EMAIL_HOST = '{{ mailman__site_domain }}'
 
 # Default host for web interface of newly created MLs
-DEFAULT_URL_HOST   = '{{ mailman_domains[0] }}'
+DEFAULT_URL_HOST   = '{{ mailman__site_domain }}'
 
 # Required when setting any of its arguments.
 add_virtualhost(DEFAULT_URL_HOST, DEFAULT_EMAIL_HOST)
 
-{% if mailman_domains[1:] is defined and mailman_domains[1:] %}
-# Additional mailman virtual domains
-{% set mailman_tpl_domains = [] %}
-{% for domain in mailman_domains[1:] %}
+{% if mailman__virtual_domains %}
+# Additional Mailman virtual domains
+{%   for domain in mailman__virtual_domains %}
 add_virtualhost('{{ domain }}', '{{ domain }}')
-{% if mailman_tpl_domains.append('"' + domain + '"') %}{% endif %}
-{% endfor %}
-
-{% set mailman_tpl_combined_domains = [ '"' + mailman_domains[0] + '"' ] + mailman_tpl_domains %}
-POSTFIX_STYLE_VIRTUAL_DOMAINS = [{{ mailman_tpl_combined_domains | join(', ') }}]
-
-{% else %}
-POSTFIX_STYLE_VIRTUAL_DOMAINS = ["{{ mailman_domains[0]}}"]
+{%   endfor %}
 
 {% endif %}
-{% else %}
-# Default domain for email addresses of newly created MLs
-DEFAULT_EMAIL_HOST = '{{ ansible_fqdn }}'
+# Postfix virtual domains
+POSTFIX_STYLE_VIRTUAL_DOMAINS = [ "{{ ([ mailman__site_domain ] + mailman__virtual_domains) | join('", "') }}" ]
 
-# Default host for web interface of newly created MLs
-DEFAULT_URL_HOST   = '{{ ansible_fqdn }}'
-
-# Required when setting any of its arguments.
-add_virtualhost(DEFAULT_URL_HOST, DEFAULT_EMAIL_HOST)
-
-{% endif %}
 # Mail server configuration
 MTA = 'Postfix'
 SMTP_MAX_RCPTS = {{ mailman_smtp_max_recipients | default('500') }}

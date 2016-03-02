@@ -61,10 +61,6 @@
          (mailman_register_debconf_question2|d() and mailman_register_debconf_question2.changed|bool))
   tags: [ 'role::mailman:patch', 'role::mailman:lang' ]
 
-- name: Check if site list is created
-  stat: path=/var/lib/mailman/lists/{{ mailman_site_list }}/config.pck
-  register: mailman_stat_site_list
-
 - name: Configure Mailman
   template: src=etc/mailman/mm_cfg.py.j2 dest=/etc/mailman/mm_cfg.py
             owner=root group=root mode=0644
@@ -82,25 +78,21 @@
 
 - name: Create Mailman site list
   shell: yes | newlist --language={{ mailman__site_language }} {{ mailman_site_list }} {{ mailman_site_admin }}
-         {% if mailman_domains is defined and mailman_domains %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman_domains[0] + '/' + mailman_site_list + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
-         {% else %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + ansible_fqdn + '/' + mailman_site_list + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
-         {% endif %}
-         creates=/var/lib/mailman/lists/{{ mailman_site_list }}/config.pck
-  sudo_user: 'list'
-  notify: [ 'Start mailman' ]
-  when: secret is defined and secret
+         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman__site_domain + '/' + mailman_site_list + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
+  args:
+    creates: '/var/lib/mailman/lists/{{ mailman_site_list }}/config.pck'
+  become_user: 'list'
+  register: mailman_register_site_list
   no_log: True
 
 - name: Set site administrator password
   command: mmsitepass {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/site_administrator_password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
-  when: mailman_stat_site_list is defined and mailman_stat_site_list.stat.exists == False
+  when: mailman_register_site_list.changed|bool
   no_log: True
 
 - name: Set list creator password
   command: mmsitepass -c {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/list_creator_password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
-  when: mailman_stat_site_list is defined and mailman_stat_site_list.stat.exists == False
+  when: mailman_register_site_list.changed|bool
   no_log: True
 
 - name: Remove Mailman lists if requested

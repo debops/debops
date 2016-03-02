@@ -42,3 +42,7 @@ v0.1.0
 
 - Drop Ansible local facts related to Mailman. [drybjed]
 
+- Redesign the configuration of Mailman domains. The default domain is now set
+  in a separate ``mailman__site_domain`` variable, and additional virtual
+  domains have their own list. [drybjed]
+
