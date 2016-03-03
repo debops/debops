@@ -52,3 +52,6 @@ v0.1.0
 
 - Rename all variables to put them in a clear namespace. [drybjed]
 
+- Add configuration for ``debops.apt_preferences`` and
+  ``debops.unattended_upgrades`` Ansible roles. [drybjed]
+

@@ -237,6 +237,27 @@ mailman__patch_list:
 #   Configuration for other Ansible roles
 # -----------------------------------------
 
+# .. envvar:: mailman__apt_preferences__dependent_list
+#
+# Configuration of custom ``debops.apt_preferences`` role.
+mailman__apt_preferences__dependent_list:
+
+  - package: 'mailman'
+    backports: [ 'wheezy' ]
+    reason: 'Version parity with Debian Jessie'
+    role: 'debops.mailman'
+
+
+# .. envvar:: mailman__unattended_upgrades__dependent_blacklist
+#
+# Configuration of the ``debops.unattended_upgrades`` role.
+mailman__unattended_upgrades__dependent_blacklist:
+
+  # Don't upgrade ``mailman`` package automatically if patches are enabled.
+  - name: 'mailman'
+    when: '{{ mailman__patch | bool }}'
+
+
 # .. envvar:: mailman__fcgiwrap__instance
 #
 # Configure ``fcgiwrap`` instance for Mailman using ``debops.fcgiwrap`` role.
