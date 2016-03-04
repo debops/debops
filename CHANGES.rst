@@ -55,3 +55,5 @@ v0.1.0
 - Add configuration for ``debops.apt_preferences`` and
   ``debops.unattended_upgrades`` Ansible roles. [drybjed]
 
+- Update documentation. [drybjed]
+

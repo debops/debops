@@ -2,30 +2,28 @@
 
 [![Travis CI](http://img.shields.io/travis/debops/ansible-mailman.svg?style=flat)](http://travis-ci.org/debops/ansible-mailman) [![test-suite](http://img.shields.io/badge/test--suite-ansible--mailman-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-mailman/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.mailman-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1574)
 
-Install and configure [Mailman](https://www.gnu.org/software/mailman/), a mailing list manager. It will be
-installed behind Postfix server (using `debops.postfix` role) which
-will serve as an incoming/outgoing mail server, and nginx server (with
-help of `debops.nginx` role) will serve the web interface. You can also
-use this role to create or remove mailing lists themselves (other
-management can be done using the web interface).
+The `debops.mailman` Ansible role can be used to create and manage mailing
+lists using [GNU Mailman](http://list.org/) package.
+
+By default the role provides configuration for `debops.postfix` role to
+configure the SMTP server integration, as well as `debops.nginx` role to
+configure access to the web control panel.
 
 ### Installation
 
-This role requires at least Ansible `v1.7.0`. To install it, run:
+This role requires at least Ansible `v2.0.0`. To install it, run:
 
     ansible-galaxy install debops.mailman
 
 ### Documentation
 
 More information about `debops.mailman` can be found in the
-[official debops.mailman documentation](http://docs.debops.org/en/latest/ansible/roles/debops.mailman.html).
+[official debops.mailman documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-mailman/docs/).
 
 
 ### Role dependencies
 
 - `debops.secret`
-- `debops.postfix`
-- `debops.nginx`
 
 ### Are you using this as a standalone role without DebOps?
 
