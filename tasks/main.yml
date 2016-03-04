@@ -35,6 +35,9 @@
     - '/etc/nginx/sites-enabled'
     - '/etc/nginx/snippets'
 
+- include: nginx_org_directories.yml
+  when: nginx_flavor == 'nginx.org'
+
 - name: Divert default.conf in case nginx nginx.org flavor is used
   command: dpkg-divert --quiet --local --divert /etc/nginx/conf.d/default.conf.dpkg-divert
            --rename /etc/nginx/conf.d/default.conf
