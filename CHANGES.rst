@@ -16,6 +16,9 @@ v0.1.6
 
 - Ensure that list of site referers is unique. [drybjed]
 
+- Use an absolute path in the ``nginx`` PKI hook for ``service`` command, since
+  it's outside of the default ``$PATH`` defined by ``cron``. [drybjed]
+
 v0.1.5
 ------
 

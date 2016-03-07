@@ -37,7 +37,7 @@ if [ -n "${certificate}" -a "${{ '{#' }}states[@]}" -gt 0 ] ; then
                 nginx_pidfile="$(grep -E '^pid\s+' ${nginx_config} | awk '{print $2}' | cut -d\; -f1)"
                 if $(kill -0 $(<${nginx_pidfile}) > /dev/null 2>&1) ; then
                     if $(/usr/sbin/nginx -c ${nginx_config} -t > /dev/null 2>&1) ; then
-                        service nginx ${nginx_action}
+                        /usr/sbin/service nginx ${nginx_action}
                     fi
                 fi
 
