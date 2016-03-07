@@ -60,3 +60,7 @@ v0.1.0
 - Add a default variable with custom ``debops.nginx`` server options for
   Mailman server. [drybjed]
 
+- Reorder the fastcgi parameters in ``nginx`` configuration to fix issue with
+  `fcgiwrap interpreting the first occurence <http://mailman.nginx.org/pipermail/nginx/2012-June/034224.html>`_
+  of the variable instead of the last. [drybjed]
+

@@ -336,10 +336,9 @@ mailman__nginx__servers:
         gzip off;
         root /usr/lib/cgi-bin/mailman;
         fastcgi_split_path_info       ^/mailman(/[^/]*)(.*)$;
-        include       fastcgi_params;
-        fastcgi_param PATH_INFO       $fastcgi_path_info;
-        fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;
         fastcgi_param SCRIPT_FILENAME  /usr/lib/cgi-bin/mailman$fastcgi_script_name;
+        fastcgi_param PATH_INFO       $fastcgi_path_info;
+        include       fastcgi_params;
         fastcgi_pass  unix:/run/fcgiwrap-mailman.socket;
 
       '/images/mailman': |
