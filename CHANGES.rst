@@ -57,3 +57,6 @@ v0.1.0
 
 - Update documentation. [drybjed]
 
+- Add a default variable with custom ``debops.nginx`` server options for
+  Mailman server. [drybjed]
+

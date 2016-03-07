@@ -308,6 +308,13 @@ mailman__postfix__dependent_mastercf:
     no_capability: 'local'
 
 
+# .. envvar:: mailman__nginx_server_options
+#
+# Set custom options for Mailman nginx server
+mailman__nginx_server_options: |
+  referer_hash_bucket_size 128;
+
+
 # .. envvar:: mailman__nginx__servers
 #
 # Configuration of ``nginx`` server to access Mailman web interface, using
@@ -318,6 +325,7 @@ mailman__nginx__servers:
     name: '{{ [ mailman__site_domain ] + mailman__virtual_domains }}'
     filename: 'debops.mailman'
     root: '/usr/lib/cgi-bin/mailman'
+    options: '{{ mailman__nginx_server_options }}'
 
     location:
 
