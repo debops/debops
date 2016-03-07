@@ -12,6 +12,8 @@ v0.1.3
 - Expose ``gnupg.tar`` filename and location in the ``secret/`` directory in
   role default variables, so that they can be changed if needed. [drybjed]
 
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+
 v0.1.2
 ------
 
