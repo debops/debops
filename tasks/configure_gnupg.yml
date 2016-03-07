@@ -7,14 +7,14 @@
 
 - name: Check if GnuPG snapshot exists on Ansible Controller
   stat:
-    path: '{{ secret + "/reprepro/" + reprepro_domain + "/snapshots/" + reprepro_fqdn + "/" + reprepro_distribution | lower + "/gnupg.tar" }}'
+    path: '{{ reprepro_gpg_snapshot_path + "/" + reprepro_gpg_snapshot_name }}'
   register: reprepro_register_gpg_snapshot
   delegate_to: 'localhost'
   become: False
 
 - name: Restore GnuPG snapshots
   unarchive:
-    src: '{{ secret + "/reprepro/" + reprepro_domain + "/snapshots/" + reprepro_fqdn + "/" + reprepro_distribution | lower + "/gnupg.tar" }}'
+    src: '{{ reprepro_gpg_snapshot_path + "/" + reprepro_gpg_snapshot_name }}'
     dest: '{{ reprepro_home }}'
   when: reprepro_register_gpg is defined and not reprepro_register_gpg.stat.exists and
         reprepro_register_gpg_snapshot.stat.exists

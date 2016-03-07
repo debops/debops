@@ -88,6 +88,13 @@ reprepro_gpg_name: '{{ reprepro_domain.split(".")[0] | capitalize + " Automatic 
 reprepro_gpg_email: '{{ reprepro_distribution | lower + "-packages@" + reprepro_domain }}'
 reprepro_gpg_expire_days: '{{ (365 * 5) }}'
 
+# Name of the snapshot file which contains reprepro GnuPG key
+reprepro_gpg_snapshot_name: 'gnupg.tar'
+
+# Directory on Ansible Controller where reprepro GnuPG key will be archived
+reprepro_gpg_snapshot_path: '{{ secret + "/reprepro/" + reprepro_domain + "/snapshots/" +
+                                reprepro_fqdn + "/" + reprepro_distribution | lower }}'
+
 # Sign the Release files with default GPG key
 reprepro_signwith: 'default'
 

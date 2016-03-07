@@ -1,8 +1,8 @@
 ---
 
 - name: Create or update archive of ~/.gnupg directory
-  shell: tar uvpf gnupg.tar .gnupg && tar dpf gnupg.tar .gnupg || (
-         tar cvpf gnupg.tar .gnupg) ; chmod 0600 ~/gnupg.tar chdir=~
+  shell: tar uvpf {{ reprepro_gpg_snapshot_name }} .gnupg && tar dpf {{ reprepro_gpg_snapshot_name }} .gnupg || (
+         tar cvpf {{ reprepro_gpg_snapshot_name }} .gnupg) ; chmod 0600 ~/{{ reprepro_gpg_snapshot_name }} chdir=~
   args:
     warn: False
   become_user: '{{ reprepro_user }}'
@@ -10,7 +10,7 @@
 
 - name: Upload ~/.gnupg archive to Ansible Controller
   fetch:
-    src: '{{ reprepro_home + "/gnupg.tar" }}'
-    dest: '{{ secret + "/reprepro/" + reprepro_domain + "/snapshots/" + reprepro_fqdn + "/" + reprepro_distribution | lower + "/gnupg.tar" }}'
+    src: '{{ reprepro_home + "/" + reprepro_gpg_snapshot_name }}'
+    dest: '{{ reprepro_gpg_snapshot_path + "/" + reprepro_gpg_snapshot_name }}'
     flat: True
 

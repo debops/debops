@@ -9,6 +9,9 @@ v0.1.3
 - Expose ``ansible_domain`` and ``ansible_fqdn`` in default variables so they
   can be modified if necessary. [drybjed]
 
+- Expose ``gnupg.tar`` filename and location in the ``secret/`` directory in
+  role default variables, so that they can be changed if needed. [drybjed]
+
 v0.1.2
 ------
 
