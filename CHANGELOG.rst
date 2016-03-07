@@ -30,6 +30,9 @@ v0.2.9
 - Update the ``service/tinc.yml`` playbook with support for new ``debops.tinc``
   release. [drybjed]
 
+- Update the ``service/mailman.yml`` playbook with support for new
+  ``debops.mailman`` release. [drybjed]
+
 v0.2.8
 ------
 
