@@ -1,6 +1,6 @@
 # -*- python -*-
 
-# This file is managed by Ansible, all changes will be lost
+# {{ ansible_managed }}
 
 # Note - if you're looking for something that is imported from mm_cfg, but you
 # didn't find it in this file, it's probably in /usr/lib/mailman/Mailman/Defaults.py
@@ -15,75 +15,56 @@ PUBLIC_ARCHIVE_URL  = 'https://%(hostname)s/pipermail/%(listname)s'
 PRIVATE_ARCHIVE_URL = '/mailman/private/'
 IMAGE_LOGOS         = '/images/mailman/'
 
-{% if mailman_domains is defined and mailman_domains %}
 # Default domain for email addresses of newly created MLs
-DEFAULT_EMAIL_HOST = '{{ mailman_domains[0] }}'
+DEFAULT_EMAIL_HOST = '{{ mailman__site_domain }}'
 
 # Default host for web interface of newly created MLs
-DEFAULT_URL_HOST   = '{{ mailman_domains[0] }}'
+DEFAULT_URL_HOST   = '{{ mailman__site_domain }}'
 
 # Required when setting any of its arguments.
 add_virtualhost(DEFAULT_URL_HOST, DEFAULT_EMAIL_HOST)
 
-{% if mailman_domains[1:] is defined and mailman_domains[1:] %}
-# Additional mailman virtual domains
-{% set mailman_tpl_domains = [] %}
-{% for domain in mailman_domains[1:] %}
+{% if mailman__virtual_domains %}
+# Additional Mailman virtual domains
+{%   for domain in mailman__virtual_domains %}
 add_virtualhost('{{ domain }}', '{{ domain }}')
-{% if mailman_tpl_domains.append('"' + domain + '"') %}{% endif %}
-{% endfor %}
-
-{% set mailman_tpl_combined_domains = [ '"' + mailman_domains[0] + '"' ] + mailman_tpl_domains %}
-POSTFIX_STYLE_VIRTUAL_DOMAINS = [{{ mailman_tpl_combined_domains | join(', ') }}]
-
-{% else %}
-POSTFIX_STYLE_VIRTUAL_DOMAINS = ["{{ mailman_domains[0]}}"]
+{%   endfor %}
 
 {% endif %}
-{% else %}
-# Default domain for email addresses of newly created MLs
-DEFAULT_EMAIL_HOST = '{{ ansible_fqdn }}'
+# Postfix virtual domains
+POSTFIX_STYLE_VIRTUAL_DOMAINS = [ "{{ ([ mailman__site_domain ] + mailman__virtual_domains) | join('", "') }}" ]
 
-# Default host for web interface of newly created MLs
-DEFAULT_URL_HOST   = '{{ ansible_fqdn }}'
-
-# Required when setting any of its arguments.
-add_virtualhost(DEFAULT_URL_HOST, DEFAULT_EMAIL_HOST)
-
-{% endif %}
 # Mail server configuration
 MTA = 'Postfix'
-SMTP_MAX_RCPTS = {{ mailman_smtp_max_recipients | default('500') }}
+SMTP_MAX_RCPTS = {{ mailman__smtp_max_recipients | default('500') }}
 
 # Settings for postfix-to-mailman.py script (used only when Postfix has no
 # local delivery)
-DEB_LISTMASTER = '{{ mailman_site_postmaster }}'
+DEB_LISTMASTER = '{{ mailman__site_postmaster }}'
 
 # Default language for this server.
-DEFAULT_SERVER_LANGUAGE = '{{ mailman_default_language }}'
+DEFAULT_SERVER_LANGUAGE = '{{ mailman__site_language }}'
 
-{% if mailman_public_mbox is defined and mailman_public_mbox %}
-# Allow downloading of .mbox files on public mailing lists
-PUBLIC_MBOX = Yes
+# Allow download of .mbox files on public mailing lists
+PUBLIC_MBOX = {{ "Yes" if mailman__public_mbox|bool else "No" }}
 
-{% endif %}
 # Unset send_reminders on newly created lists
 DEFAULT_SEND_REMINDERS = 0
 
 # Maximum message size in kilobytes
-DEFAULT_MAX_MESSAGE_SIZE = {{ mailman_max_message_size | default('40') }}
+DEFAULT_MAX_MESSAGE_SIZE = {{ mailman__max_message_size | default('40') }}
 
 # Do not send notifications to non-members by default (minimize backscatter)
 DEFAULT_RESPOND_TO_POST_REQUESTS = No
 
 # How much of the original message to include in automatic responses
-RESPONSE_INCLUDE_LEVEL = {{ mailman_response_include_level | default('0') }}
+RESPONSE_INCLUDE_LEVEL = {{ mailman__response_include_level | default('0') }}
 
 # What to do with messages from non-members by default?
-DEFAULT_GENERIC_NONMEMBER_ACTION = {{ mailman_default_generic_nonmember_action | default('3') }}
+DEFAULT_GENERIC_NONMEMBER_ACTION = {{ mailman__default_generic_nonmember_action | default('3') }}
 
 # Forward discarded messages to list owner by default?
-DEFAULT_FORWARD_AUTO_DISCARDS = {{ mailman_default_forward_auto_discards | default('No') }}
+DEFAULT_FORWARD_AUTO_DISCARDS = {{ "Yes" if mailman__default_forward_auto_discards|bool else "No" }}
 
 # Default haracter set
 DEFAULT_CHARSET = 'utf-8'
@@ -94,16 +75,16 @@ import email.Charset
 email.Charset.add_charset('utf-8',email.Charset.SHORTEST, None, None)
 
 # Password configuration
-USER_FRIENDLY_PASSWORDS = {{ mailman_user_friendly_passwords | default('Yes') }}
-ADMIN_PASSWORD_LENGTH = {{ mailman_admin_password_length | default('10') }}
-MEMBER_PASSWORD_LENGTH = {{ mailman_member_password_length | default('8') }}
+USER_FRIENDLY_PASSWORDS = {{ "Yes" if mailman__user_friendly_passwords|bool else "No" }}
+ADMIN_PASSWORD_LENGTH = {{ mailman__admin_password_length | default('10') }}
+MEMBER_PASSWORD_LENGTH = {{ mailman__member_password_length | default('8') }}
 
 # The name of the list Mailman uses to send password reminders
 # and similar. Don't change if you want mailman-owner to be
 # a valid local part.
-MAILMAN_SITE_LIST = '{{ mailman_site_list }}'
+MAILMAN_SITE_LIST = '{{ mailman__site_list }}'
 
-{% if mailman_options is defined and mailman_options %}
-{{ mailman_options }}
+{% if mailman__custom_options %}
+{{ mailman__custom_options }}
 
 {% endif %}

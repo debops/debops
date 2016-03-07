@@ -1,132 +1,137 @@
 ---
 
-- name: Configure language pack conversion script
-  template: src=usr/local/sbin/convert-mailman-to-utf8.j2
-            dest=/usr/local/sbin/convert-mailman-to-utf8
-            owner=root group=root mode=0755
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_items: '{{ mailman__packages }}'
 
-- name: Install Mailman prerequisites
-  apt: pkg={{ item }} state=latest install_recommends=no
-  with_items: [ 'fcgiwrap', 'gettext', 'patch' ]
-
-- name: Install Mailman package
-  apt: pkg={{ item }} state=installed install_recommends=no
-  with_items: [ 'mailman' ]
+- name: Apply patches to Mailman source code
+  patch:
+    src: 'patches/{{ item }}.patch'
+    basedir: '/usr/lib/mailman'
+  with_items: '{{ mailman__patch_list }}'
+  register: mailman__register_patches
+  when: mailman__patch | bool
+  notify: [ 'Restart mailman' ]
+  tags: [ 'role::mailman:patch' ]
 
 # mailman package forgets configuration preconfigured by debconf
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=339059
 # Because of that we need to reconfigure it after installation
 
+- name: Check current language settings in debconf
+  debconf:
+    name: 'mailman'
+  register: mailman__register_debconf
+  tags: [ 'role::mailman:patch', 'role::mailman:lang' ]
+
 - name: Preconfigure language list in debconf
-  debconf: name=mailman question='mailman/site_languages' vtype='multiselect'
-           value='{{ mailman_debconf_languages | join(", ") }}'
-  register: mailman_debconf_question1
+  debconf:
+    name: 'mailman'
+    question: 'mailman/site_languages'
+    vtype: 'multiselect'
+    value: '{{ (lookup("template", "lookup/mailman__languages.j2") | from_yaml) | join(", ") }}'
+  register: mailman__register_debconf_question1
+  tags: [ 'role::mailman:lang' ]
 
 - name: Preconfigure default language in debconf
-  debconf: name=mailman question='mailman/default_server_language' vtype='select'
-           value='{{ mailman_debconf_default_language }}'
-  register: mailman_debconf_question2
+  debconf:
+    name: 'mailman'
+    question: 'mailman/default_server_language'
+    vtype: 'select'
+    value: '{{ lookup("template", "lookup/mailman__site_language.j2") | from_yaml }}'
+  register: mailman__register_debconf_question2
+  tags: [ 'role::mailman:lang' ]
 
 - name: Reconfigure mailman package
   shell: dpkg-reconfigure --frontend noninteractive mailman
-  register: mailman_package_reconfigure
-  when: (mailman_debconf_question1 is defined and mailman_debconf_question1.changed) or
-        (mailman_debconf_question2 is defined and mailman_debconf_question2.changed)
+  register: mailman__package_reconfigure
+  when: (mailman__register_debconf_question1.changed|bool or
+         mailman__register_debconf_question2.changed|bool)
+  tags: [ 'role::mailman:lang' ]
 
 - name: Run language pack conversion script
-  command: /usr/local/sbin/convert-mailman-to-utf8 {{ mailman_convert_languages | join(' ') }}
-  when: (mailman_convert_languages is defined and mailman_convert_languages) and
-        (mailman_package_reconfigure is defined and mailman_package_reconfigure.changed)
-
-- include: fcgiwrap-mailman.yml
-
-- include: patch_mailman_source.yml
-  when: mailman_patches is defined and mailman_patches and
-        ((ansible_local.mailman.mailman.patches_applied is defined and not ansible_local.mailman.mailman.patches_applied|bool) or
-        ansible_local.mailman.mailman.patches_applied is undefined)
-
-- name: Check if site list is created
-  stat: path=/var/lib/mailman/lists/{{ mailman_site_list }}/config.pck
-  register: mailman_stat_site_list
+  script: scripts/convert-mailman-to-utf8 {{ (mailman__default_languages + mailman__languages + mailman__register_debconf.current["mailman/used_languages"].split(" ") | unique) | join(' ') }}
+  register: mailman__register_convert_script
+  changed_when: mailman__register_convert_script.stdout
+  when: ((mailman__register_patches|d() and mailman__register_patches.changed|bool) or
+         (mailman__register_debconf_question1|d() and mailman__register_debconf_question1.changed|bool) or
+         (mailman__register_debconf_question2|d() and mailman__register_debconf_question2.changed|bool))
+  tags: [ 'role::mailman:patch', 'role::mailman:lang' ]
 
 - name: Configure Mailman
-  template: src=etc/mailman/mm_cfg.py.j2 dest=/etc/mailman/mm_cfg.py
-            owner=root group=root mode=0644
-  notify: [ 'Reload mailman' ]
+  template:
+    src: 'etc/mailman/mm_cfg.py.j2'
+    dest: '/etc/mailman/mm_cfg.py'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart mailman' ]
 
 - name: Configure Postfix transport map
-  template: src=etc/mailman/postfix_transport.j2 dest=/etc/mailman/postfix_transport
-            owner=root group=root mode=0644
-  register: mailman_register_postfix_transport
+  template:
+    src: 'etc/mailman/postfix_transport.j2'
+    dest: '/etc/mailman/postfix_transport'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: mailman__register_postfix_transport
 
 - name: Generate postfix_transport map
   command: /usr/sbin/postmap /etc/mailman/postfix_transport
-  when: mailman_register_postfix_transport is defined and
-        mailman_register_postfix_transport.changed
+  when: mailman__register_postfix_transport.changed|bool
 
 - name: Create Mailman site list
-  shell: yes | newlist --language={{ mailman_default_language }} {{ mailman_site_list }} {{ mailman_site_admin }}
-         {% if mailman_domains is defined and mailman_domains %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman_domains[0] + '/' + mailman_site_list + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
-         {% else %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + ansible_fqdn + '/' + mailman_site_list + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
-         {% endif %}
-         creates=/var/lib/mailman/lists/{{ mailman_site_list }}/config.pck
-  sudo_user: 'list'
-  notify: [ 'Start mailman' ]
-  when: secret is defined and secret
+  shell: yes | newlist --language={{ mailman__site_language }} {{ mailman__site_list }} {{ mailman__site_admin }}
+         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman__site_domain + '/' + mailman__site_list + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
+  args:
+    creates: '/var/lib/mailman/lists/{{ mailman__site_list }}/config.pck'
+  become_user: 'list'
+  register: mailman__register_site_list
   no_log: True
 
 - name: Set site administrator password
-  command: mmsitepass {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/site_administrator_password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
-  when: mailman_stat_site_list is defined and mailman_stat_site_list.stat.exists == False
+  command: mmsitepass {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/site_administrator_password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
+  when: mailman__register_site_list.changed|bool
   no_log: True
 
 - name: Set list creator password
-  command: mmsitepass -c {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/list_creator_password chars=ascii,numbers,digits,hexdigits length=' + mailman_site_password_length) }}
-  when: mailman_stat_site_list is defined and mailman_stat_site_list.stat.exists == False
+  command: mmsitepass -c {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/list_creator_password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
+  when: mailman__register_site_list.changed|bool
   no_log: True
 
 - name: Remove Mailman lists if requested
-  command: rmlist {% if item.purge is defined and item.purge %} --archives {% endif %}
-           {{ item.name }} removes=/var/lib/mailman/lists/{{ item.name }}/config.pck
-  with_items: mailman_lists
-  sudo_user: 'list'
-  when: item.name is defined and item.name and item.state is defined and item.state == 'absent'
+  command: rmlist {% if item.purge|d() and item.purge|bool %} --archives {% endif %}
+           {{ item.name }}
+  args:
+    removes: '/var/lib/mailman/lists/{{ item.name }}/config.pck'
+  with_items: '{{ mailman__lists }}'
+  become_user: 'list'
+  when: item.name|d() and item.state|d() and item.state == 'absent'
 
 - name: Create Mailman lists
-  shell: yes | newlist --language={{ item.language | default(mailman_default_language) }}
-         {% if item.notify is defined and not item.notify %} --quiet {% endif %}
-         {% if item.domain is defined and item.domain %}
+  shell: yes | newlist --language={{ item.language | default(mailman__site_language) }}
+         {% if item.notify|d() and not item.notify|bool %} --quiet {% endif %}
+         {% if item.domain|d() and item.domain %}
          --urlhost={{ item.domain }} --emailhost={{ item.domain }}
          {% endif %}
-         {{ item.name }} {{ item.owner | default(mailman_site_admin) }}
-         {% if item.password is defined and item.password %}
+         {{ item.name }} {{ item.owner | default(mailman__site_admin) }}
+         {% if item.password|d() and item.password %}
          {{ item.password }}
          {% else %}
-         {% if item.domain is defined and item.domain %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + item.domain + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman_admin_password_length) }}
+         {% if item.domain|d() and item.domain %}
+         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + item.domain + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman__admin_password_length) }}
          {% else %}
-         {% if mailman_domains is defined and mailman_domains %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman_domains[0] + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman_admin_password_length) }}
-         {% else %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + ansible_fqdn + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman_admin_password_length) }}
+         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman__site_domain + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman__admin_password_length) }}
          {% endif %}
          {% endif %}
-         {% endif %}
-         creates=/var/lib/mailman/lists/{{ item.name }}/config.pck
-  with_items: mailman_lists
-  sudo_user: 'list'
-  when: item.name is defined and item.name and secret is defined and secret and
-        ((item.state is defined and item.state == 'present') or item.state is undefined)
+  args:
+    creates: '/var/lib/mailman/lists/{{ item.name }}/config.pck'
+  with_items: '{{ mailman__lists }}'
+  become_user: 'list'
+  when: (item.name|d() and item.name and
+         (item.state is undefined or item.state != 'absent'))
   no_log: True
-
-- name: Make sure Ansible Facts directory exists
-  file: path=/etc/ansible/facts.d state=directory
-        owner=root group=root mode=0755
-
-- name: Record Mailman Ansible Facts
-  template: src=etc/ansible/facts.d/mailman.fact.j2 dest=/etc/ansible/facts.d/mailman.fact
-            owner=root group=root mode=0644
-
 

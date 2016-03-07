@@ -1,9 +1,7 @@
 ---
 
-- name: Start mailman
-  service: name=mailman state=started
-
-- name: Reload mailman
-  command: /etc/init.d/mailman reload
-  when: mailman_stat_site_list is defined and mailman_stat_site_list.stat.exists
+- name: Restart mailman
+  service:
+    name: 'mailman'
+    state: 'restarted'
 
