@@ -4,7 +4,7 @@ Changelog
 v0.1.6
 ------
 
-*Released: 2016-03-7*
+*Released: 2016-03-07*
 
 - Add support for defining error pages in a list, with better control over
   their configuration. [drybjed]
