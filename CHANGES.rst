@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Unreleased*
+
+- Expose ``ansible_domain`` and ``ansible_fqdn`` in default variables so they
+  can be modified if necessary. [drybjed]
+
 v0.1.2
 ------
 
