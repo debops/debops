@@ -567,7 +567,7 @@
         location {{ path }} {
 {%                 if location_referers is defined                             %}
 {%                     if location_referers[path] is defined and location_referers[path] %}
-                valid_referers none blocked {{ location_referers[path] | join(' ') }};
+                valid_referers none blocked {{ location_referers[path] | unique | join(' ') }};
                 if ($invalid_referer) {
                         return 403;
                 }
@@ -607,7 +607,7 @@
                    (entry.enabled is not defined or entry.enabled | bool))     %}
         location {{ entry.pattern_prefix | default('') + entry.pattern }} {
 {%                 if entry.referers is defined and entry.referers             %}
-                valid_referers none blocked {{ entry.referers | join(' ') }};
+                valid_referers none blocked {{ entry.referers | unique | join(' ') }};
                 if ($invalid_referer) {
                         return 403;
                 }
