@@ -34,7 +34,7 @@ EOF
 EOF
 	cat "$dsc" >> "$tmp/mail"
 
-	mail -r {{ reprepro_user + "@" + ansible_fqdn }} \
+	mail -r {{ reprepro_user + "@" + reprepro_fqdn }} \
 	     -s "[PACKAGES] $CODENAME/$COMPONENT: $ACTION $NAME" \
 	     {{ reprepro_admin_email | join(" ") }} < "$tmp/mail"
 }

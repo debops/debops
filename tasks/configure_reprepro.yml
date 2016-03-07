@@ -64,7 +64,7 @@
     owner: '{{ reprepro_user }}'
     group: '{{ reprepro_group }}'
     mode: '0644'
-  with_items: reprepro_distributions
+  with_items: '{{ reprepro_distributions }}'
   register: reprepro_register_conf_distributions
   when: ((item.Distribution == reprepro_distribution | lower) and
          (item.Codename in reprepro_codenames))
@@ -76,7 +76,7 @@
     owner: '{{ reprepro_user }}'
     group: '{{ reprepro_group }}'
     mode: '0644'
-  with_items: reprepro_updates
+  with_items: '{{ reprepro_updates }}'
   when: (item.Distribution == reprepro_distribution | lower)
 
 - name: Configure pulls configuration files
@@ -86,7 +86,7 @@
     owner: '{{ reprepro_user }}'
     group: '{{ reprepro_group }}'
     mode: '0644'
-  with_items: reprepro_pulls
+  with_items: '{{ reprepro_pulls }}'
   when: (item.Distribution == reprepro_distribution | lower)
 
 - name: Configure uploaders configuration files
@@ -96,7 +96,7 @@
     owner: '{{ reprepro_user }}'
     group: '{{ reprepro_group }}'
     mode: '0644'
-  with_items: reprepro_uploaders
+  with_items: '{{ reprepro_uploaders }}'
 
 - name: Manage reprepro scripts
   template:

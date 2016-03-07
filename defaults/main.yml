@@ -17,18 +17,24 @@ reprepro_architectures: [ 'amd64', 'i386', 'source' ]
 # List of components defined for local repositories
 reprepro_components: [ 'main' ]
 
+# The base FQDN used by reprepro
+reprepro_fqdn: '{{ ansible_fqdn }}'
+
+# The base domain used by reprepro
+reprepro_domain: '{{ ansible_domain }}'
+
 # Origin: field added to the repository configuration files
-reprepro_origin: '{{ ansible_domain.split(".")[0] | capitalize }}'
+reprepro_origin: '{{ reprepro_domain.split(".")[0] | capitalize }}'
 
 # List of mail addresses to where reprepro should send mail about changes in
 # selected repositories
-reprepro_admin_email: [ 'root@{{ ansible_domain }}' ]
+reprepro_admin_email: [ 'root@{{ reprepro_domain }}' ]
 
 
 # ---- Webserver configuration ----
 
 # List of domains for this APT repository
-reprepro_domains: [ '{{ "apt." + ansible_domain }}' ]
+reprepro_domains: [ '{{ "apt." + reprepro_domain }}' ]
 
 # List of IP addresses or CIDR subnets which are allowed to connect to the
 # webserver with the repository. If empty, everyone can access the repository.
@@ -78,9 +84,16 @@ reprepro_repository_components:
 # Settings for GPG key used to sign reprepro repository
 reprepro_gpg_key_type: 'RSA'
 reprepro_gpg_key_length: '4096'
-reprepro_gpg_name: '{{ ansible_domain.split(".")[0] | capitalize + " Automatic Signing Key" }}'
-reprepro_gpg_email: '{{ reprepro_distribution | lower + "-packages@" + ansible_domain }}'
+reprepro_gpg_name: '{{ reprepro_domain.split(".")[0] | capitalize + " Automatic Signing Key" }}'
+reprepro_gpg_email: '{{ reprepro_distribution | lower + "-packages@" + reprepro_domain }}'
 reprepro_gpg_expire_days: '{{ (365 * 5) }}'
+
+# Name of the snapshot file which contains reprepro GnuPG key
+reprepro_gpg_snapshot_name: 'gnupg.tar'
+
+# Directory on Ansible Controller where reprepro GnuPG key will be archived
+reprepro_gpg_snapshot_path: '{{ secret + "/reprepro/" + reprepro_domain + "/snapshots/" +
+                                reprepro_fqdn + "/" + reprepro_distribution | lower }}'
 
 # Sign the Release files with default GPG key
 reprepro_signwith: 'default'
