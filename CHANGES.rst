@@ -4,13 +4,17 @@ Changelog
 v0.1.6
 ------
 
-*Unreleased*
+*Released: 2016-03-7*
 
 - Add support for defining error pages in a list, with better control over
   their configuration. [drybjed]
 
 - Do not create welcome pages automatically if creation of webroot directories
   is disabled. [drybjed]
+
+- Make sure that ``/var/lib/nginx/`` directory exists. [pedroluislopez]
+
+- Ensure that list of site referers is unique. [drybjed]
 
 v0.1.5
 ------
