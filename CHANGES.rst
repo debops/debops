@@ -6,6 +6,16 @@ v0.1.3
 
 *Unreleased*
 
+- Move the following variables from ``vars/main.yml`` to ``defaults/main.yml``:
+  - reprepro_nginx_server_http
+  - reprepro_nginx_server_https
+  - reprepro_debian_previous
+  - reprepro_debian_next
+  - reprepro_debian_releases
+  - reprepro_debian_suites
+  - reprepro_debian_architectures
+  [timitos]
+
 - Expose ``ansible_domain`` and ``ansible_fqdn`` in default variables so they
   can be modified if necessary. [drybjed]
 
