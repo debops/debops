@@ -22,7 +22,7 @@
     group: 'root'
     mode: '0644'
   with_flattened:
-    - postgresql_server_clusters
+    - '{{ postgresql_server_clusters }}'
 
 - name: Configure autopostgresqlbackup
   template:
@@ -32,7 +32,7 @@
     group: 'root'
     mode: '0755'
   with_flattened:
-    - postgresql_server_clusters
+    - '{{ postgresql_server_clusters }}'
 
 - name: Disable autopostgresqlbackup from running daily
   file:
@@ -40,7 +40,7 @@
     state: 'absent'
   when: ((item.auto_backup|d() and not item.auto_backup | bool) or not postgresql_server_auto_backup | bool)
   with_flattened:
-    - postgresql_server_clusters
+    - '{{ postgresql_server_clusters }}'
 
 - name: Enable autopostgresqlbackup to run daily
   template:
@@ -51,5 +51,5 @@
     mode: '0755'
   when: ((item.auto_backup is undefined or item.auto_backup | bool) and postgresql_server_auto_backup | bool)
   with_flattened:
-    - postgresql_server_clusters
+    - '{{ postgresql_server_clusters }}'
 

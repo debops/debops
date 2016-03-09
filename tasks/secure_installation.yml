@@ -8,7 +8,7 @@
     port: '{{ item.port }}'
     state: 'present'
   with_flattened:
-    - postgresql_server_clusters
+    - '{{ postgresql_server_clusters }}'
   become_user: '{{ item.user | d(postgresql_server_user) }}'
   when: item.name|d() and item.name
   no_log: True
@@ -22,7 +22,7 @@
     privs: 'ALL'
     state: 'absent'
   with_flattened:
-    - postgresql_server_clusters
+    - '{{ postgresql_server_clusters }}'
   become_user: '{{ item.user | d(postgresql_server_user) }}'
   when: item.name|d() and item.name
 
@@ -36,7 +36,7 @@
     privs: 'ALL'
     state: 'absent'
   with_flattened:
-    - postgresql_server_clusters
+    - '{{ postgresql_server_clusters }}'
   become_user: '{{ item.user | d(postgresql_server_user) }}'
   when: item.name|d() and item.name
 
@@ -49,7 +49,7 @@
     privs: 'CONNECT'
     state: 'present'
   with_flattened:
-    - postgresql_server_clusters
+    - '{{ postgresql_server_clusters }}'
   become_user: '{{ item.user | d(postgresql_server_user) }}'
   when: item.name|d() and item.name
 
@@ -62,7 +62,7 @@
     privs: 'TEMPORARY'
     state: 'absent'
   with_flattened:
-    - postgresql_server_clusters
+    - '{{ postgresql_server_clusters }}'
   become_user: '{{ item.user | d(postgresql_server_user) }}'
   when: item.name|d() and item.name
 
