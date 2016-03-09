@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v0.2.3
+------
+
+*Unreleased*
+
+- Change how ``ansible_ssh_user`` variable is detected by the role to fix error
+  when it's not set in inventory. [drybjed]
+
+- Fix deprecation warnings on Ansible 2.1.0. [drybjed]
+
 v0.2.2
 ------
 
