@@ -1,74 +1,73 @@
 ---
 
+- name: Combine snapper inventory variables
+  set_fact:
+    snapshot_snapper_templates_combined: '{{
+      (         snapshot_snapper_templates            | d({}) )
+      | combine(snapshot_snapper_host_group_templates | d({}), recursive=True )
+      | combine(snapshot_snapper_host_templates       | d({}), recursive=True ) }}'
+    snapshot_snapper_volumes_combined: '{{
+      (snapshot_snapper_volumes            | d([]) | list) +
+      (snapshot_snapper_host_group_volumes | d([]) | list) +
+      (snapshot_snapper_host_volumes       | d([]) | list) }}'
+
 - name: Install snapper
   apt:
-    name: "{{ item }}"
-    state: "latest"
+    name: '{{ item }}'
+    state: 'latest'
     install_recommends: False
-  with_items:
-    - snapper
+  with_flattened: '{{ snapshot_snapper_base_packages }}'
 
-- name: Divert original configuration under /etc
-  command: dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert --rename {{ item }}
+- name: 'Divert original configuration under /etc'
+  command: dpkg-divert --quiet --local --divert "{{ item }}.dpkg-divert" --rename "{{ item }}"
   args:
-    creates: "{{ item }}.dpkg-divert"
-  register: updatedb_diverted
-  when: (snapshot_snapper_snapshot_directory is defined
-         and snapshot_snapper_snapshot_directory and ansible_distribution in [ 'Debian', 'Ubuntu' ]
-        )
-  with_flattened:
-    - snapshot_snapper_updatedb_configuration_files
-  with_items:
-    - "{{ snapshot_snapper_config_templates_dir }}/default"
+    creates: '{{ item }}.dpkg-divert'
+  register: snapshot_snapper__updatedb_diverted_register
+  when: ansible_distribution in [ 'Debian', 'Ubuntu' ]
+  with_flattened: '{{ snapshot_snapper_divert_files }}'
 
 - name: Copy diverted configuration file to original location
   command: cp {{ item }}.dpkg-divert {{ item }}
   args:
-    creates: "{{ item }}"
-  when: updatedb_diverted|changed
-  with_flattened:
-    - snapshot_snapper_updatedb_configuration_files
-  with_items:
-    - "{{ snapshot_snapper_config_templates_dir }}/default"
+    creates: '{{ item }}'
+  when: snapshot_snapper__updatedb_diverted_register|changed
+  with_flattened: '{{ snapshot_snapper_divert_files }}'
 
 - name: Configure updatedb to not include snapshots
-  command: grep PRUNENAMES=.*{{ snapshot_snapper_snapshot_directory }}.* /etc/updatedb.conf
+  command: grep PRUNENAMES=.*{{ snapshot_snapper_directory }}.* /etc/updatedb.conf
   failed_when: False
   changed_when: False
-  when: snapshot_snapper_snapshot_directory is defined and snapshot_snapper_snapshot_directory
-  register: updatedb_snapshot
+  always_run: True
+  when: snapshot_snapper_directory|d()
+  register: snapshot_snapper_register_updatedb_configured
 
 - name: Configure updatedb to not include snapshots
   lineinfile:
-    dest: "/etc/updatedb.conf"
+    dest: '/etc/updatedb.conf'
     backrefs: yes
     regexp: '^(# )?PRUNENAMES=(".*)"$'
-    line: 'PRUNENAMES=\2 {{ snapshot_snapper_snapshot_directory }}"'
-  when: updatedb_snapshot.rc != 0
+    line: 'PRUNENAMES=\2 {{ snapshot_snapper_directory }}"'
+  when: snapshot_snapper_register_updatedb_configured.rc != 0
 
 - name: Configure snapper defaults
-  lineinfile:
-    dest: "{{ snapshot_snapper_config_templates_dir }}/default"
-    regexp: '^{{ item.key|upper }}=".*"$'
-    line: '{{ item.key|upper }}="{{ item.value }}"'
-  when: item.value and item.value > 0
-  with_dict: snapshot_snapper_defaults
+  template:
+    src: 'etc/snapper/config-templates/item.j2'
+    dest: '/etc/snapper/config-templates/{{ item.key }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_dict: '{{ snapshot_snapper_templates_combined }}'
 
-- name: Create config for subvolume
-  command: snapper -c "{{ item.name|default("root") }}" create-config "{{ item.path }}"
+- name: Create inital configiguration for volume
+  command: snapper --config '{{ item.name|default("root") }}'
+           create-config
+           {{ ("'--template' '" + item.template + "'") if (item.template|d()) else '' }}
+           '{{ item.path }}'
   args:
-    creates: "/etc/snapper/configs/{{ item.name }}"
-  with_flattened:
-    - snapshot_snapper_snapshot_subvols_list
-    - snapshot_snapper_snapshot_subvols_group_list
-    - snapshot_snapper_snapshot_subvols_host_list
-  when: (item.name is defined and (item.state is undefined or (item.state is defined and item.state != 'absent')))
+    creates: '/etc/snapper/configs/{{ item.name }}'
+  with_items: '{{ snapshot_snapper_volumes_combined }}'
+  when: (item.path|d() and item.name|d() and (item.state|d("present") == "present"))
 
-# - name: Applay specific configuration to sub volume snapshot
-  # lineinfile:
-    # dest: "/etc/snapper/configs/{{ item.name }}"
-    # regexp: '^{{ item.config[0] }}='
-    # line: 'TIMELINE_LIMIT_YEARLY="1"'
-  # with_dict: snapshot_snapper_snapshot_subvols_list
-    # # - snapshot_snapper_snapshot_subvols_group_list
-    # # - snapshot_snapper_snapshot_subvols_host_list
+- name: Adjust configuration for volume
+  include: configure_snapper_volume.yml
+  with_items: '{{ snapshot_snapper_volumes_combined }}'

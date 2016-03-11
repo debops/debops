@@ -1,25 +1,137 @@
 ---
+# Default variables
+# =================
 
-# "Global" sub volume snapshots
-snapshot_snapper_snapshot_subvols_list:
+# .. contents:: Sections
+#    :local:
+#
+# .. Required packages (((
+#
+# ---------------------
+#   Required packages
+# ---------------------
 
-# "Host group" sub volume snapshots
-snapshot_snapper_snapshot_subvols_group_list:
+# .. envvar:: snapshot_snapper_base_packages
+#
+# List of base packages to install.
+snapshot_snapper_base_packages:
+  - 'snapper'
 
-# "Host" sub volume snapshots
-snapshot_snapper_snapshot_subvols_host_list:
-  # - path: "/home/btrfs-testings"
-    # name: "btrfs-tests"
+# .. )))
 
-# Sets the default timeline limit for snapper. If empty, the default of snapper
+
+# .. Snapper templates (((
+#
+# ---------------------
+#   Snapper templates
+# ---------------------
+
+# .. envvar:: snapshot_snapper_templates
+#
+# Sets the global default settings for snapper. If empty, the default of snapper
 # will be left unchanged.
-snapshot_snapper_defaults:
-  TIMELINE_LIMIT_HOURLY:
-  TIMELINE_LIMIT_DAILY:
-  TIMELINE_LIMIT_MONTHLY:
-  TIMELINE_LIMIT_YEARLY: 2
+#
+# Example:
+#
+# .. code::
+#
+#    snapshot_snapper_templates:
+#      default:
+#        TIMELINE_LIMIT_HOURLY: 12
+#        TIMELINE_LIMIT_DAILY: 10
+#        TIMELINE_LIMIT_MONTHLY: 6
+#        TIMELINE_LIMIT_YEARLY: 0
+#
+snapshot_snapper_templates: {}
 
-snapshot_snapper_snapshot_directory: ".snapshots"
-snapshot_snapper_config_templates_dir: "/etc/snapper/config-templates"
-snapshot_snapper_updatedb_configuration_files:
-  - "/etc/updatedb.conf"
+
+# .. envvar:: snapshot_snapper_host_group_templates
+#
+# Sets the host group default settings for snapper.
+snapshot_snapper_host_group_templates: {}
+
+
+# .. envvar:: snapshot_snapper_host_templates
+#
+# Sets the host default settings for snapper.
+snapshot_snapper_host_templates: {}
+
+# .. )))
+
+
+# .. Volume configuration (((
+#
+# ------------------------
+#   Volume configuration
+# ------------------------
+
+# .. envvar:: snapshot_snapper_volumes
+#
+# "Global" list of volumes to snapshot.
+#
+# ``path``
+#   String, required. Path of the volume.
+#
+# ``name``
+#   String, required. Name of the volume. Only used by snapper.
+#
+# ``template``
+#   String, optional. Defaults to ``default``.
+#   Name of the template to base the configuration on.
+#
+# ``config``
+#   Dictionary of strings, optional.
+#   Allows you to overwrite a setting from the template.
+#
+# ``state``
+#   String, optional. Defaults to ``present``.
+#   Choices ``present``, ``absent``.
+#
+# Example:
+#
+# .. code::
+#
+#    snapshot_snapper_volumes:
+#      - path: '/'
+#        name: 'root'
+#        template: 'common'
+#        config:
+#          TIMELINE_LIMIT_MONTHLY: 9
+#          TIMELINE_LIMIT_YEARLY: 2
+#
+snapshot_snapper_volumes: []
+
+
+# .. envvar:: snapshot_snapper_host_group_volumes
+#
+# "Host group" list of volumes to snapshot.
+snapshot_snapper_host_group_volumes: []
+
+
+# .. envvar:: snapshot_snapper_host_volumes
+#
+# "Host" list of volumes to snapshot.
+snapshot_snapper_host_volumes: []
+
+# .. )))
+
+
+# .. Role internal configuration (((
+#
+# -------------------------------
+#   Role internal configuration
+# -------------------------------
+
+# .. envvar:: snapshot_snapper_directory
+#
+# Name of the directory in the root of the volume containing the snapshots and metadata.
+snapshot_snapper_directory: '.snapshots'
+
+
+# .. envvar:: snapshot_snapper_divert_files
+#
+snapshot_snapper_divert_files:
+  - '/etc/updatedb.conf'
+  - '/etc/snapper/config-templates/default'
+
+# .. )))

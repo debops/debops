@@ -1,0 +1,51 @@
+## {{ ansible_managed }}
+
+# subvolume to snapshot
+SUBVOLUME="{{ item.value.SUBVOLUME | d("/") }}"
+
+# filesystem type
+FSTYPE="{{ item.value.FSTYPE | d("btrfs") }}"
+
+
+# users and groups allowed to work with config
+ALLOW_USERS="{{ item.value.ALLOW_USERS | d("") }}"
+ALLOW_GROUPS="{{ item.value.ALLOW_GROUPS | d("") }}"
+
+# sync users and groups from ALLOW_USERS and ALLOW_GROUPS to .snapshots
+# directory
+SYNC_ACL="{{ item.value.SYNC_ACL | d("no") }}"
+
+
+# start comparing pre- and post-snapshot in background after creating
+# post-snapshot
+BACKGROUND_COMPARISON="{{ item.value.BACKGROUND_COMPARISON | d("yes") }}"
+
+
+# run daily number cleanup
+NUMBER_CLEANUP="{{ item.value.NUMBER_CLEANUP | d("yes") }}"
+
+# limit for number cleanup
+NUMBER_MIN_AGE="{{ item.value.NUMBER_MIN_AGE | d("1800") }}"
+NUMBER_LIMIT="{{ item.value.NUMBER_LIMIT | d("50") }}"
+NUMBER_LIMIT_IMPORTANT="{{ item.value.NUMBER_LIMIT_IMPORTANT | d("10") }}"
+
+
+# create hourly snapshots
+TIMELINE_CREATE="{{ item.value.TIMELINE_CREATE | d("yes") }}"
+
+# cleanup hourly snapshots after some time
+TIMELINE_CLEANUP="{{ item.value.TIMELINE_CLEANUP | d("yes") }}"
+
+# limits for timeline cleanup
+TIMELINE_MIN_AGE="{{ item.value.TIMELINE_MIN_AGE | d("1800") }}"
+TIMELINE_LIMIT_HOURLY="{{ item.value.TIMELINE_LIMIT_HOURLY | d("10") }}"
+TIMELINE_LIMIT_DAILY="{{ item.value.TIMELINE_LIMIT_DAILY | d("10") }}"
+TIMELINE_LIMIT_MONTHLY="{{ item.value.TIMELINE_LIMIT_MONTHLY | d("10") }}"
+TIMELINE_LIMIT_YEARLY="{{ item.value.TIMELINE_LIMIT_YEARLY | d("10") }}"
+
+
+# cleanup empty pre-post-pairs
+EMPTY_PRE_POST_CLEANUP="{{ item.value.EMPTY_PRE_POST_CLEANUP | d("yes") }}"
+
+# limits for empty pre-post-pair cleanup
+EMPTY_PRE_POST_MIN_AGE="{{ item.value.EMPTY_PRE_POST_MIN_AGE | d("1800") }}"

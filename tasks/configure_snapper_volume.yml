@@ -1,0 +1,12 @@
+---
+
+- name: Save outer loop variable
+  set_fact:
+    snapshot_snapper_volume: '{{ item }}'
+
+- name: Configure snapper volume
+  lineinfile:
+    dest: '/etc/snapper/configs/{{ snapshot_snapper_volume.name }}'
+    regexp: '^{{ item.key }}='
+    line: '{{ item.key }}="{{ item.value }}"'
+  with_dict: '{{ (snapshot_snapper_templates_combined[snapshot_snapper_volume.template|d("default")]|d({})) | combine(snapshot_snapper_volume.config|d({})) }}'
