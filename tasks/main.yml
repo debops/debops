@@ -2,77 +2,81 @@
 
 - name: Install dropbear
   apt:
-    name: "{{ item }}"
-    state: "latest"
+    name: '{{ item }}'
+    state: 'latest'
   with_items:
-    - dropbear
-    - busybox
+    - 'dropbear'
+    - 'busybox'
 
 - name: Set GRUB_TIMEOUT
   lineinfile:
-    dest: "/etc/default/grub"
-    regexp: "^GRUB_TIMEOUT="
-    line: "GRUB_TIMEOUT={{ cryptsetup_remote_unlock_grub_timeout }}"
+    dest: '/etc/default/grub'
+    regexp: '^GRUB_TIMEOUT='
+    line: 'GRUB_TIMEOUT={{ cryptsetup_remote_unlock_grub_timeout }}'
   when: cryptsetup_remote_unlock_grub_timeout is defined and cryptsetup_remote_unlock_grub_timeout >= 0
   notify: [ 'Update grub' ]
 
 - name: Make sure that BUSYBOX=y exists
   lineinfile:
-    dest: "/etc/initramfs-tools/initramfs.conf"
-    regexp: "^BUSYBOX="
-    line: "BUSYBOX=y"
+    dest: '/etc/initramfs-tools/initramfs.conf'
+    regexp: '^BUSYBOX='
+    line: 'BUSYBOX=y'
   notify: [ 'Recreate initramfs' ]
 
 - name: Set IP configuration
   lineinfile:
-    dest: "/etc/initramfs-tools/initramfs.conf"
-    regexp: "^IP="
-    line: "IP={{ cryptsetup_remote_unlock_network_ip_line }}"
+    dest: '/etc/initramfs-tools/initramfs.conf'
+    regexp: '^IP='
+    line: 'IP={{ cryptsetup_remote_unlock_network_ip_line }}'
   notify: [ 'Recreate initramfs' ]
 
 - name: Set network device
   lineinfile:
-    dest: "/etc/initramfs-tools/initramfs.conf"
-    regexp: "^DEVICE="
+    dest: '/etc/initramfs-tools/initramfs.conf'
+    regexp: '^DEVICE='
     line: "DEVICE={{ cryptsetup_remote_unlock_network_interface }}"
   when: cryptsetup_remote_unlock_network_interface is defined and cryptsetup_remote_unlock_network_interface
   notify: [ 'Recreate initramfs' ]
 
 - name: Delete network device
   lineinfile:
-    dest: "/etc/initramfs-tools/initramfs.conf"
-    regexp: "^DEVICE="
-    state: absent
+    dest: '/etc/initramfs-tools/initramfs.conf'
+    regexp: '^DEVICE='
+    state: 'absent'
   when: cryptsetup_remote_unlock_network_interface is undefined or not cryptsetup_remote_unlock_network_interface
   notify: [ 'Recreate initramfs' ]
 
 - name: Copy the private ssh key to the local machine
   fetch:
-    src: "{{ cryptsetup_remote_unlock_remote_ssh_dir }}/{{ item }}"
-    flat: yes
+    src: '{{ cryptsetup_remote_unlock_remote_ssh_dir }}/{{ item }}'
+    flat: True
     mode: '0600'
-    dest: "{{ cryptsetup_remote_unlock_local_ssh_dir }}/dropbear@{{ ansible_hostname }}_{{ item }}"
+    dest: '{{ cryptsetup_remote_unlock_local_ssh_dir }}/dropbear@{{ ansible_hostname }}_{{ item }}'
   register: cryptsetup_remote_unlock_fetched_ssh_keys
   with_items:
-    - id_rsa
-    - id_rsa.pub
+    - 'id_rsa'
+    - 'id_rsa.pub'
 
 - name: Change mode of ssh key files to 600 on the local machine
-  sudo: no
-  local_action: file state='file' path="{{ cryptsetup_remote_unlock_local_ssh_dir }}/dropbear@{{ ansible_hostname }}_{{ item }}" mode='0600'
+  file:
+    state: 'file'
+    path: '{{ cryptsetup_remote_unlock_local_ssh_dir }}/dropbear@{{ ansible_hostname }}_{{ item }}'
+    mode: '0600'
+  become: False
+  delegate_to: 'localhost'
   when: cryptsetup_remote_unlock_fetched_ssh_keys|changed
   with_items:
-    - id_rsa
-    - id_rsa.pub
+    - 'id_rsa'
+    - 'id_rsa.pub'
 
 - name: Delete private ssh keys on remote
   file:
-    dest: "{{ cryptsetup_remote_unlock_remote_ssh_dir }}/{{ item }}"
-    state: absent
+    dest: '{{ cryptsetup_remote_unlock_remote_ssh_dir }}/{{ item }}'
+    state: 'absent'
   with_items:
-    - id_rsa
-    - id_rsa.pub
-    - id_rsa.dropbear
+    - 'id_rsa'
+    - 'id_rsa.pub'
+    - 'id_rsa.dropbear'
   when: cryptsetup_remote_unlock_remote_ssh_remove_after_copy
   notify: [ 'Recreate initramfs' ]
 
