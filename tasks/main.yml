@@ -5,7 +5,7 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_flattened: fuse_base_packages
+  with_flattened: '{{ fuse_base_packages }}'
 
 - name: Divert original /etc/fuse.conf
   command: dpkg-divert --quiet --local --divert /etc/fuse.conf.dpkg-divert --rename /etc/fuse.conf
@@ -29,7 +29,7 @@
     name: '{{ item }}'
     groups: 'fuse'
     append: True
-  with_flattened: fuse_users
+  with_flattened: '{{ fuse_users }}'
 
 - name: Setup udev rule for fuse to change file permissions
   template:
