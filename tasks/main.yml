@@ -17,9 +17,9 @@
     mode:  '0644'
 
 - name: Divert original /etc/services
-  command: dpkg-divert --quiet --local --divert "{{ etc_services_diversion }}" --rename "/etc/services"
+  command: dpkg-divert --quiet --local --divert "{{ etc_services__diversion }}" --rename "/etc/services"
   args:
-    creates: '{{ etc_services_diversion }}'
+    creates: '{{ etc_services__diversion }}'
   when: etc_services__enabled|d()
 
 - name: Generate list of local services if requested
@@ -30,11 +30,17 @@
     group: 'root'
     mode:  '0644'
   with_flattened:
-    - '{{ etc_services_list }}'
-    - '{{ etc_services_group_list }}'
-    - '{{ etc_services_host_list }}'
-    - '{{ etc_services_dependency_list }}'
-    - '{{ etc_services_dependent_list }}'
+    ## Deprecated: (((
+    - '{{ etc_services_list|d([]) }}'
+    - '{{ etc_services_group_list|d([]) }}'
+    - '{{ etc_services_host_list|d([]) }}'
+    - '{{ etc_services_dependency_list|d([]) }}'
+    - '{{ etc_services_dependent_list|d([]) }}'
+    ## )))
+    - '{{ etc_services__list }}'
+    - '{{ etc_services__group_list }}'
+    - '{{ etc_services__host_list }}'
+    - '{{ etc_services__dependent_list }}'
   when: ((etc_services__enabled|d() and item.name|d() and item.port|d()) or item.custom|d())
 
 - name: Assemble services.d
@@ -50,12 +56,12 @@
 - name: Remove current /etc/services before removing the diversion
   command: rm -f /etc/services
   args:
-    removes: '{{ etc_services_diversion }}'
+    removes: '{{ etc_services__diversion }}'
   when: etc_services__enabled is undefined or (etc_services__enabled|d() == False)
 
 - name: Remove diversion of /etc/services
   command: dpkg-divert --quiet --local --rename --remove /etc/services
   args:
-    removes: '{{ etc_services_diversion }}'
+    removes: '{{ etc_services__diversion }}'
   when: etc_services__enabled is undefined or (etc_services__enabled|d() == False)
 

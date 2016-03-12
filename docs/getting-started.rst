@@ -9,7 +9,7 @@ Useful variables
 
 This is a list of role variables which your might want to define to create local services:
 
-``etc_services_host_list``
+``etc_services__host_list``
   Local services on a per host basis. :ref:`Local services <debops.etc_services-local_services>`.
 
 Using debops.etc_services from other roles
@@ -43,7 +43,7 @@ And then in the playbook for this role, hand the
 
        - role: debops.etc_services
          tags: [ 'role::etc_services' ]
-         etc_services_dependent_list:
+         etc_services__dependent_list:
            - '{{ apt_cacher_ng__etc_services__dependent_list }}'
 
 Example inventory
