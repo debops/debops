@@ -1,7 +1,7 @@
 Introduction
 ============
 
-``debops.secret`` role enables you to have a separate directory on Ansible
+``debops.secret`` role enables you to have a separate directory on the Ansible
 Controller (different than the playbook directory and inventory directory)
 which can be used as a handy "workspace" for other roles.
 
@@ -20,7 +20,7 @@ Some usage examples of this role in `DebOps`_ include:
   encryption provided by default);
 
 - secure workspace (``debops.boxbackup`` role, again, uses the secret directory
-  to create and manage Root CA for backup servers - client and server
+  to create and manage Root CA for backup servers – client and server
   certificates are automatically downloaded to Ansible Controller, signed and
   uploaded to destination hosts);
 
@@ -28,7 +28,7 @@ Some usage examples of this role in `DebOps`_ include:
   ``debops.pki`` and ``debops.monkeysphere`` have separate task lists that
   are invoked by custom playbooks to allow backup and restoration of ssh host
   keys and SSL certificates. Generated .tar.gz files are kept on Ansible
-  Controller in secret directory);
+  Controller in secret directory).
 
 .. _DebOps: http://debops.org/
 
