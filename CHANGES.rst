@@ -6,7 +6,9 @@ v0.2.0
 
 *Unreleased*
 
-- Updated documentation. [ypid]
+- Wrote documentation. [ypid]
+
+- Reworked role, updated metadata. [ypid]
 
 - Renamed ``etc_services`` to ``etc_services__enabled``. [ypid]
 
