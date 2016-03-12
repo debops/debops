@@ -35,39 +35,41 @@ Usage examples
 
 Example password lookup with password written to a variable. You can define
 this variable anywhere Ansible variables can be defined, but if you want to
-give playbook users ability to overwrite it in inventory, you should define it
-in ``role/defaults/main.yml``::
+give playbook users the ability to overwrite it in inventory, you should define
+it in ``role/defaults/main.yml``::
 
     ---
-    mysql_root_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/root/password') }}"
+    mysql_root_password: '{{ lookup("password", secret + "/credentials/" +
+                             ansible_fqdn + "/mysql/root/password length=20") }}'
 
 When this variable is set in ``role/defaults/main.yml``, you can easily
 overwrite it in your inventory, like this::
 
     ---
-    mysql_root_password: "correct horse battery staple"
+    mysql_root_password: 'correct horse battery staple'
 
-You can also change the password directly in secret directory, in this case in
-``secret/credentials/hostname/mysql/root/password`` and Ansible should update the
-password on the remote server (if role is written to support this).
+You can also change the password directly in the secret directory, in this case
+in ``secret/credentials/hostname/mysql/root/password`` and Ansible should
+update the password on the remote server (if the role is written to support
+this).
 
-Example file download task from remote host to Ansible controller, sored in
+Example file download task from remote host to Ansible controller, stored in
 secret directory::
 
     ---
     fetch:
-      src: "/etc/fstab"
+      src: '/etc/fstab'
       flat: True
-      dest: "{{ secret + '/storage/' + ansible_fqdn + '/etc/fstab' }}"
+      dest: '{{ secret + "/storage/" + ansible_fqdn + "/etc/fstab" }}'
 
 Example file upload task from Ansible Controller to remote host with file from
 secret directory::
 
     ---
     copy:
-      dest: "/etc/fstab"
-      owner: "root"
-      group: "root"
-      mode: "0644"
-      src: "{{ secret + '/storage/ + ansible_fqdn + '/etc/fstab' }}"
+      dest: '/etc/fstab'
+      owner: 'root'
+      group: 'root'
+      mode: '0644'
+      src: '{{ secret + "/storage/ + ansible_fqdn + "/etc/fstab" }}"
 
