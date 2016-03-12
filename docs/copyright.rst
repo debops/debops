@@ -31,4 +31,4 @@ Credits
 
 * Robin Schneider <ypid_at_riseup.net>
 
-  * Major rework of the role.
+  * Rework of the role.
