@@ -19,16 +19,16 @@ Some usage examples of this role in `DebOps`_ include:
   external means, for example encrypted filesystem (currently there is no
   encryption provided by default);
 
-- secure workspace (``debops.boxbackup`` role, again, uses secret directory
+- secure workspace (``debops.boxbackup`` role, again, uses the secret directory
   to create and manage Root CA for backup servers - client and server
-  certificates are automatically downloaded to Ansible Controller, signed
-  and uploaded to destination hosts);
+  certificates are automatically downloaded to Ansible Controller, signed and
+  uploaded to destination hosts);
 
-- simple centralized backup (specific roles like ``sshd``, ``pki`` and
-  ``monkeysphere`` have a separate task lists that are invoked by custom
-  playbooks to allow backup and restoration of ssh host keys and SSL
-  certificates. Generated .tar.gz files are kept on Ansible Controller in
-  secret directory);
+- simple centralized backup (specific roles like ``debops.sshd``,
+  ``debops.pki`` and ``debops.monkeysphere`` have separate task lists that
+  are invoked by custom playbooks to allow backup and restoration of ssh host
+  keys and SSL certificates. Generated .tar.gz files are kept on Ansible
+  Controller in secret directory);
 
 .. _DebOps: http://debops.org/
 
