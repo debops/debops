@@ -16,7 +16,7 @@ Using debops.etc_services from other roles
 ------------------------------------------
 
 One common use case for ``debops.etc_services`` is to use it form other roles
-to configure ``/etc/services``.
+to configure :file:`/etc/services`.
 
 To do this, you can define the services in your ``defaults/main.yml`` file.
 Example::
@@ -30,7 +30,7 @@ Example::
        comment: 'Apt-Cacher NG caching proxy server'
 
 And then in the playbook for this role, hand the
-``apt_cacher_ng__etc_services__dependent_list`` variable over to the
+:command:`apt_cacher_ng__etc_services__dependent_list` variable over to the
 ``debops.etc_services`` role::
 
    ---
