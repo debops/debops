@@ -1,41 +1,108 @@
 ---
+# Default variables
+# =================
 
-# Enable /etc/services.d/ support?
+# .. contents:: Sections
+#    :local:
+#
+# ------------------------------------
+#   Role configuration and internals
+# ------------------------------------
+
+# .. envvar:: etc_services
+#
+# Enable ``/etc/services.d/`` support?
+# FIXME: Renamed ``etc_services`` to ``etc_services__enabled``. [ypid]
 etc_services: True
 
-# Name of diverted /etc/services, do not change if diversion is active!
+
+# .. envvar:: etc_services_diversion
+#
+# Name of diverted ``/etc/services`` file, do not change if the diversion
+# already is active!
 etc_services_diversion: '/etc/services.d/10_debian_etc_services'
 
+# .. _debops.etc_services-local_services:
+#
+# ------------------
+#   Local services
+# ------------------
 
-# ---- Local services ----
+# The following lists allow you to generate entries for local services not
+# included in the officially distributed ``/etc/services`` file. They will
+# generate separate files for each configured service in ``/etc/services.d/``
+# which then will be assembled into the ``/etc/services`` file.
+#
+# ``name``
+#   String, required. Name of the service.
+#
+# ``port``
+#   String, required. Port of the service.
+#
+# ``protocols``
+#   List of strings, optional. Transport layer protocols of the service
+#   corresponding with ``port``.
+#   Common choices: ``tcp``, ``udp``.
+#
+# ``protocol``
+#   Deprecated! Use ``protocol``.
+#
+# ``comment``
+#   String, optional. Comment to add to the service entry.
+#
+# ``filename``
+#   String, optional. Use this filename instead of a generated one.
+#
+# ``custom``
+#   String, optional. Specify custom file contents instead of templated one. If
+#   it is used, options like ``name`` and ``port`` are ignored.
+#
+# Example::
+#
+#    etc_services_list:
+#
+#      - name: 'servicename'
+#        port: '12345'
+#        protocols: [ 'tcp', 'udp' ]
+#        comment: 'Example service'
+#
 
-# These lists allow you to generate entries for local services not included in
-# officially distributed /etc/services file. They will generate separate files
-# for each configured service in /etc/services.d/ which then will be assembled
-# into complete /etc/services file.
 
-# List of known parameters:
-#  - name: ''                      name of the service, required
-#  - port: ''                      port on which service is accessed, required
-#  - protocols: [ 'tcp','udp' ]    list of protocols to generate, optional
-#  - protocol: ''                  legacy protocol name to use, deprecated
-#  - comment: ''                   comment to add to the service entry, optional
-#  - filename: ''                  use this filename instead of a generated one
-#  - custom: ''                    specify custom file contents instead of templated
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   Ansible inventory usage
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# The following lists are indented to be used from Ansible's inventory.
 
-# These lists should be used in inventory
+# .. envvar:: etc_services_list
+#
+# Global list of local services.
 etc_services_list: []
+
+
+# .. envvar:: etc_services_group_list
+#
+# Host group list of local services.
 etc_services_group_list: []
+
+
+# .. envvar:: etc_services_host_list
+#
+# Host group list of local services.
 etc_services_host_list: []
 
-# This list can be used in a dependency variables for 'etc_services' role
-etc_services_dependency_list: []       # deprecated
+
+# ~~~~~~~~~~~~~~~~~~~~~
+#   Other roles usage
+# ~~~~~~~~~~~~~~~~~~~~~
+
+# .. envvar:: etc_services_dependent_list
+#
+# Dependency variable to be used by other roles.
 etc_services_dependent_list: []
 
-  # Example entry
-  #- name: 'servicename'
-  #  port: '12345'
-  #  protocols: [ 'tcp', 'udp' ]
-  #  porotol: 'tcp'                    # deprecated
-  #  comment: 'Example service'
 
+# .. envvar:: etc_services_dependency_list
+#
+# Deprecated version of ``etc_services_dependent_list``. Use ``etc_services_dependent_list`` instead.
+etc_services_dependency_list: []

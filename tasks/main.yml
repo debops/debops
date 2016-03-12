@@ -1,43 +1,61 @@
 ---
 
 - name: Make sure /etc/services.d directory exists
-  file: path=/etc/services.d state=directory
-        owner=root group=root mode=0755
+  file:
+    path:  '/etc/services.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode:  '0755'
 
 - name: Create /etc/services.d/00_ansible
-  template: src=etc/services.d/00_ansible.j2 dest=/etc/services.d/00_ansible
-            owner=root group=root mode=0644
+  template:
+    src:  'etc/services.d/00_ansible.j2'
+    dest: '/etc/services.d/00_ansible'
+    owner: 'root'
+    group: 'root'
+    mode:  '0644'
 
 - name: Divert original /etc/services
-  command: dpkg-divert --quiet --local --divert {{ etc_services_diversion }}
-           --rename /etc/services creates={{ etc_services_diversion }}
-  when: etc_services is defined and etc_services
+  command: dpkg-divert --quiet --local --divert "{{ etc_services_diversion }}" --rename "/etc/services"
+  args:
+    creates: '{{ etc_services_diversion }}'
+  when: etc_services|d()
 
 - name: Generate list of local services if requested
-  template: src=etc/services.d/local_service.j2 dest=/etc/services.d/{{ item.filename | default("20_local_service_" + item.name) }}
-            owner=root group=root mode=0644
+  template:
+    src:  'etc/services.d/local_service.j2'
+    dest: '/etc/services.d/{{ item.filename | default("20_local_service_" + item.name) }}'
+    owner: 'root'
+    group: 'root'
+    mode:  '0644'
   with_flattened:
-    - etc_services_list
-    - etc_services_group_list
-    - etc_services_host_list
-    - etc_services_dependency_list
-    - etc_services_dependent_list
-  when: ((etc_services is defined and etc_services) and
-         (item.name is defined and item.name) and
-         ((item.port is defined and item.port) or
-          (item.custom is defined and item.custom)))
+    - '{{ etc_services_list }}'
+    - '{{ etc_services_group_list }}'
+    - '{{ etc_services_host_list }}'
+    - '{{ etc_services_dependency_list }}'
+    - '{{ etc_services_dependent_list }}'
+  when: ((etc_services|d() and item.name|d() and item.port|d()) or item.custom|d())
 
-- name: Assemble /etc/services.d
-  assemble: src=/etc/services.d dest=/etc/services
-            backup=no owner=root group=root mode=0644
-  when: etc_services is defined and etc_services
+- name: Assemble services.d
+  assemble:
+    src:  '/etc/services.d'
+    dest: '/etc/services'
+    backup: False
+    owner: 'root'
+    group: 'root'
+    mode:  '0644'
+  when: etc_services|d()
 
-- name: Move current /etc/services out of the way before reversion
-  command: rm -f /etc/services removes={{ etc_services_diversion }}
-  when: etc_services is undefined or (etc_services is defined and etc_services == False)
+- name: Remove current /etc/services before removing the diversion
+  command: rm -f /etc/services
+  args:
+    removes: '{{ etc_services_diversion }}'
+  when: etc_services is undefined or (etc_services|d() == False)
 
 - name: Remove diversion of /etc/services
   command: dpkg-divert --quiet --local --rename --remove /etc/services
-           removes={{ etc_services_diversion }}
-  when: etc_services is undefined or (etc_services is defined and etc_services == False)
+  args:
+    removes: '{{ etc_services_diversion }}'
+  when: etc_services is undefined or (etc_services|d() == False)
 

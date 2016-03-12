@@ -10,3 +10,4 @@ v0.1.0
 
 - Support custom service definitions. [drybjed]
 
+- Updated documentation. [ypid]
