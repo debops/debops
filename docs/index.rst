@@ -1,7 +1,7 @@
-.. _debops.dhparam:
+.. _debops.owncloud:
 
-Ansible role: debops.dhparam
-============================
+Ansible role: debops.owncloud
+=============================
 
 .. toctree::
    :maxdepth: 2
