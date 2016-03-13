@@ -27,6 +27,9 @@ v0.3.0
   ``cryptsetup_secret_mode`` to allow to change file permissions of the secrets
   directory and files on the Ansible controller. [ypid]
 
+- Renamed ``cryptsetup_use_random`` to ``cryptsetup_use_dev_random`` to
+  emphasize it’s meaning. [ypid]
+
 v0.2.1
 ------
 

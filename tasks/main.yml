@@ -173,8 +173,8 @@
          {{ "" if cryptsetup_cipher|d() == "default" else ("--cipher=" + cryptsetup_cipher) }}
          {{ "" if cryptsetup_key_size|d() == "default" else ("--key-size=" + cryptsetup_key_size|string) }}
          {{ "" if cryptsetup_iter_time|d() == "default" else ("--iter-time=" + cryptsetup_iter_time|string) }}
-         {% if cryptsetup_use_random|d("default") != "default" %}
-         {{ "--use-random" if cryptsetup_use_random|d() else "--use-urandom" }}
+         {% if cryptsetup_use_dev_random|d("default") != "default" %}
+         {{ "--use-random" if cryptsetup_use_dev_random|d() else "--use-urandom" }}
          {% endif %}
          --key-file '{{ ("/dev/shm"
                         if (item.0.state|d(cryptsetup_state|d("mounted")) == "ansible_controller_mounted")

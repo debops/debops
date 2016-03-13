@@ -147,7 +147,7 @@ cryptsetup_header_backup_remote_location: '{{ (ansible_local.root.backup
 #
 # Should a header backup be created?
 #
-# .. note:: The LUKS header is only stored once in the beginning of your block device.
+# .. note:: The LUKS header is only stored once at the beginning of your block device.
 #    When the header gets corrupted, the plaintext data might be inaccessible!
 #    Thus it is recommended to have a header backup on hand.
 #
@@ -185,7 +185,6 @@ cryptsetup_fstype: 'ext4'
 # .. envvar:: cryptsetup_mount_options
 #
 # List of default mount options.
-# Multiple options can be separated by comma.
 cryptsetup_mount_options:
   - 'noatime'
   - 'nodiratime'
@@ -266,7 +265,7 @@ cryptsetup_cipher: 'default'
 cryptsetup_key_size: 512
 
 
-# .. envvar:: cryptsetup_use_random
+# .. envvar:: cryptsetup_use_dev_random
 #
 # Should :file:`/dev/random` be used to generate the LUKS master key?
 # Corresponds with the ``--use-random`` and ``--use-urandom`` parameter.
@@ -276,7 +275,7 @@ cryptsetup_key_size: 512
 # Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
 #
 # Check :manpage:`random(4)` for details.
-cryptsetup_use_random: True
+cryptsetup_use_dev_random: True
 
 
 # .. envvar:: cryptsetup_iter_time
