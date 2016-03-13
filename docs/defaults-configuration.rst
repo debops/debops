@@ -12,7 +12,7 @@ examples for them.
 .. _apt_preferences__list:
 
 apt_preferences__list
---------------------
+---------------------
 
 List of ``apt_preferences(5)`` "pins", each pin is defined by a YAML
 dictionary. Supported parameters:
