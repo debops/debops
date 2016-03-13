@@ -29,3 +29,5 @@ v0.1.0
 
 - Fix deprecation warnings in Ansible 2.1.0. [drybjed]
 
+- Remove support for ``apt-cacher-ng``. The new role ``debops.apt_cacher_ng``
+  handles this now. [ypid]
