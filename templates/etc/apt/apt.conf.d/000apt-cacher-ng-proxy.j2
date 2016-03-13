@@ -1,11 +1,14 @@
-// This file is managed by Ansible, all changes will be lost
+// {{ ansible_managed }}
 
-// This configuration snipped is intended to be stored in /etc/apt/apt.conf.d/
-// on the client system in order to change a regular setup to use apt-cacher-ng.
+// This configuration file is intended to be stored in /etc/apt/apt.conf.d/
+// on the client system in order to use a software repository proxy server like
+// Apt-Cacher NG.
 
-{% if (apt is defined and apt) and apt != True %}
-Acquire::http::Proxy "http://{{ apt }}:{{ apt_acng_port | default('3142') }}/";
+{% if apt__proxy_url | match("http://") %}
+Acquire::http::Proxy "{{ apt__proxy_url }}";
 Acquire::https::Proxy "false";
+{% elif apt__proxy_url | match("https://") %}
+Acquire::http::Proxy "false";
+Acquire::https::Proxy "{{ apt__proxy_url }}";
 {% endif %}
-
-
+{{ 'Acquire::http::Proxy::bugs.debian.org "DIRECT";' if (apt__proxy_bypass_for_bugs_debian_org|d() | bool) else '' }}

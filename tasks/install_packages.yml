@@ -18,11 +18,12 @@
   when: ('uptimed' in apt_conditional_whitelist and
          (ansible_virtualization_role is undefined or ansible_virtualization_role not in [ 'guest' ]))
 
-- name: Gather conditional packages in one list
+- name: Combine conditional packages into one list
   set_fact:
-    apt_conditional_packages: '{{ apt_conditional_firmware     | default([]) +
-                                  apt_conditional_irqbalance   | default([]) +
-                                  apt_conditional_uptimed      | default([]) }}'
+    apt_conditional_packages: '{{
+      (apt_conditional_firmware   | d([]) | list ) +
+      (apt_conditional_irqbalance | d([]) | list) +
+      (apt_conditional_uptimed    | d([]) | list) }}'
 
 - name: Install requested packages
   apt:
