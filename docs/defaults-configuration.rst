@@ -14,7 +14,7 @@ examples for them.
 apt_preferences__list
 ---------------------
 
-List of ``apt_preferences(5)`` "pins", each pin is defined by a YAML
+List of :manpage:`apt_preferences(5)` "pins", each pin is defined by a YAML
 dictionary. Supported parameters:
 
 ``package``
@@ -49,7 +49,7 @@ dictionary. Supported parameters:
 
 ``filename``
   Name of the generated file with pin preferences, saved in
-  ``/etc/apt/preferences.d/``. If undefined, the ``debops.apt_preferences`` role
+  :file:`/etc/apt/preferences.d/`. If undefined, the ``debops.apt_preferences`` role
   will automatically generate a filename.
 
 ``suffix``
