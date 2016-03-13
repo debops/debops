@@ -7,10 +7,10 @@ Package: {{ item.package }}
 {%   if item.when is undefined or item.when | bool %}
 {%     if item.version|d() %}
 Pin: version {{ item.version + '*' }}
-Pin-Priority: {{ item.priority | d(apt_preferences_priority_version) }}
+Pin-Priority: {{ item.priority | d(apt_preferences__priority_version) }}
 {%     else %}
 Pin: {{ item.pin | d('release a=' + ansible_distribution_release + '-backports') }}
-Pin-Priority: {{ item.priority | d(apt_preferences_priority_default) }}
+Pin-Priority: {{ item.priority | d(apt_preferences__priority_default) }}
 {%     endif %}
 {%   else %}
 Explanation: Pin disabled by item.when condition

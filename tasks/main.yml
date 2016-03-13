@@ -5,10 +5,16 @@
     dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin"))) + "_"  + item.package.split(" ")[0] + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
     state: 'absent'
   with_flattened:
-    - '{{ apt_preferences_list }}'
-    - '{{ apt_preferences_group_list }}'
-    - '{{ apt_preferences_host_list }}'
-    - '{{ apt_preferences_dependent_list }}'
+    ## Deprecated: (((
+    - '{{ apt_preferences_list|d([]) }}'
+    - '{{ apt_preferences_group_list|d([]) }}'
+    - '{{ apt_preferences_host_list|d([]) }}'
+    - '{{ apt_preferences_dependent_list|d([]) }}'
+    ## )))
+    - '{{ apt_preferences__list }}'
+    - '{{ apt_preferences__group_list }}'
+    - '{{ apt_preferences__host_list }}'
+    - '{{ apt_preferences__dependent_list }}'
   when: (
           (
             (item.delete|d() and item.delete | bool) and
@@ -23,7 +29,7 @@
                 item.backports is iterable and item.backports and
                 ansible_distribution_release not in item.backports
               )
-            ) and ansible_distribution_release not in apt_preferences_next_release.keys()
+            ) and ansible_distribution_release not in apt_preferences__next_release.keys()
           )
         )
 
@@ -35,10 +41,16 @@
     group: 'root'
     mode: '0644'
   with_flattened:
-    - '{{ apt_preferences_list }}'
-    - '{{ apt_preferences_group_list }}'
-    - '{{ apt_preferences_host_list }}'
-    - '{{ apt_preferences_dependent_list }}'
+    ## Deprecated: (((
+    - '{{ apt_preferences_list|d([]) }}'
+    - '{{ apt_preferences_group_list|d([]) }}'
+    - '{{ apt_preferences_host_list|d([]) }}'
+    - '{{ apt_preferences_dependent_list|d([]) }}'
+    ## )))
+    - '{{ apt_preferences__list }}'
+    - '{{ apt_preferences__group_list }}'
+    - '{{ apt_preferences__host_list }}'
+    - '{{ apt_preferences__dependent_list }}'
   when: (
           (
             (item.delete is undefined or not item.delete | bool) and
@@ -55,7 +67,7 @@
                   ansible_distribution_release in item.backports
                 )
               ) and
-             ansible_distribution_release in apt_preferences_next_release.keys()
+             ansible_distribution_release in apt_preferences__next_release.keys()
             ) or (item.pin is defined and item.pin)
           )
         )

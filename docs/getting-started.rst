@@ -33,7 +33,7 @@ the Wheezy Backports repository::
       roles:
 
         - role: debops.apt_preferences
-          apt_preferences_dependent_list:
+          apt_preferences__dependent_list:
 
             - package: 'nginx nginx-*'
               backports: [ 'wheezy' ]
