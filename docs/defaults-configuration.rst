@@ -9,12 +9,12 @@ examples for them.
    :local:
    :depth: 1
 
-.. _apt_preferences_list:
+.. _apt_preferences__list:
 
-apt_preferences_list
---------------------
+apt_preferences__list
+---------------------
 
-List of ``apt_preferences(5)`` "pins", each pin is defined by a YAML
+List of :manpage:`apt_preferences(5)` "pins", each pin is defined by a YAML
 dictionary. Supported parameters:
 
 ``package``
@@ -49,7 +49,7 @@ dictionary. Supported parameters:
 
 ``filename``
   Name of the generated file with pin preferences, saved in
-  ``/etc/apt/preferences.d/``. If undefined, the ``debops.apt_preferences`` role
+  :file:`/etc/apt/preferences.d/`. If undefined, the ``debops.apt_preferences`` role
   will automatically generate a filename.
 
 ``suffix``
@@ -83,20 +83,20 @@ Examples
 
 Ensure that Perl 5.10 is installed on the system::
 
-    apt_preferences_list:
+    apt_preferences__list:
       - package: 'perl'
         version: '5.10'
 
 Prefer packages from a specific site::
 
-    apt_preferences_list:
+    apt_preferences__list:
       - package: '*'
         pin: 'origin "ftp.de.debian.org"
         priority: '999'
 
 Install the ``nginx`` packages from backports on Debian Wheezy and Debian Jessie::
 
-    apt_preferences_list:
+    apt_preferences__list:
       - package: 'nginx nginx-*'
         backports: [ 'wheezy', 'jessie' ]
 
