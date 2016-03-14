@@ -4,7 +4,7 @@ Changelog
 v0.2.0
 ------
 
-*Unreleased*
+*Released: 2016-03-14*
 
 - Wrote documentation. [ypid]
 
@@ -21,7 +21,7 @@ v0.2.0
 v0.1.0
 ------
 
-*Unreleased*
+*Released: 2016-03-14*
 
 - Add Changelog. [drybjed]
 
