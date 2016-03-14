@@ -15,6 +15,9 @@ v0.2.0
 - Renamed ``etc_services_([^_].+)`` to ``etc_services__\1``.
   Old list variables are deprecated but still work for now. [ypid]
 
+- Change the task conditions to test for boolean values instead of only
+  checking if a variable is defined. [drybjed]
+
 v0.1.0
 ------
 
