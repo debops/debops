@@ -59,9 +59,10 @@
     line: '{{ item }}'
     insertbefore: 'BOF'
   with_flattened:
-    - '{{ etckeeper_gitignore }}'
-    - '{{ etckeeper_gitignore_group }}'
-    - '{{ etckeeper_gitignore_host }}'
+    - '{{ (etckeeper_ignore_role_list       |d([]) | list) }}'
+    - '{{ (etckeeper_ignore_list            |d([]) | list) }}'
+    - '{{ (etckeeper_ignore_host_group_list |d([]) | list) }}'
+    - '{{ (etckeeper_ignore_host_list       |d([]) | list) }}'
 
 - name: Install /etc/.gitattributes configuration
   template:
