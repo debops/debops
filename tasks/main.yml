@@ -30,7 +30,7 @@
     regexp: '{{ item.regexp }}'
     line: '{{ item.line }}'
     insertbefore: '{{ item.insertbefore }}'
-  when: ((apparmor_manage_grub|d() | bool) and (apparmor_enable|d() | bool))
+  when: ((apparmor_manage_grub|d() | bool) and (apparmor_enabled|d() | bool))
   with_items:
     - regexp: '^GRUB_CMDLINE_LINUX='
       line: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR {{ apparmor_additional_kernel_parameters }}"'
@@ -46,13 +46,13 @@
     regexp: '^GRUB_CMDLINE_LINUX="(.*?)\$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR(.*)"'
     line: 'GRUB_CMDLINE_LINUX="\1 \2"'
     backrefs: yes
-  when: (apparmor_manage_grub and not (apparmor_enable|d() | bool))
+  when: (apparmor_manage_grub and not (apparmor_enabled|d() | bool))
   notify: [ 'Update grub' ]
 
 - name: Check if the running kernel has been started with AppArmor enabled
   shell: grep --quiet 'apparmor=1' /proc/cmdline && grep --quiet 'security=apparmor' /proc/cmdline
   register: apparmor_register_kernel_cmdline
-  when: (apparmor_enable|d() | bool)
+  when: (apparmor_enabled|d() | bool)
   failed_when: False
   changed_when: False
   always_run: True
@@ -61,10 +61,10 @@
   mail:
     from: 'root@{{ ansible_fqdn }}'
     subject: '{{ apparmor_mail_subject }}'
-    to: '{{ apparmor_mail_to | list | join(",") }}'
+    to: '{{ apparmor_mail_to|d([]) | list | join(",") }}'
     charset: 'utf8'
     body: '{{ apparmor_mail_body }}'
-  when: (apparmor_register_kernel_cmdline.rc != 0)
+  when: (apparmor_register_kernel_cmdline.rc != 0 and apparmor_mail_to|d())
 
 ## Seems that there is currently a bug in the version include in Debian Jessie
 ## which thoughts an exception when AppArmor has not been enabled yet.
@@ -101,7 +101,7 @@
     name: 'apparmor'
     state: 'started'
     enabled: True
-  when: ((apparmor_enable|d() | bool) and (apparmor_register_kernel_cmdline.rc == 0))
+  when: ((apparmor_enabled|d() | bool) and (apparmor_register_kernel_cmdline.rc == 0))
 
 - name: Configure tunables
   template:
@@ -131,15 +131,15 @@
   service:
     name: 'apparmor'
     state: 'reloaded'
-  when: ((apparmor_enable|d() | bool) and (apparmor_register_kernel_cmdline.rc == 0) and apparmor_register_tunables|changed)
+  when: ((apparmor_enabled|d() | bool) and (apparmor_register_kernel_cmdline.rc == 0) and apparmor_register_tunables|changed)
 
 - name: Unload AppArmor profiles
   command: service apparmor teardown
-  when: (not (apparmor_enable|d() | bool))
+  when: (not (apparmor_enabled|d() | bool))
 
 - name: Ensure AppArmor service is stopped
   service:
     name: 'apparmor'
     state: 'stopped'
     enabled: False
-  when: (not (apparmor_enable|d() | bool))
+  when: (not (apparmor_enabled|d() | bool))

@@ -5,9 +5,11 @@
 # .. contents:: Sections
 #    :local:
 #
-# ---------------------------
+# .. Packages and installation (((
+#
+# -----------------------------
 #   Packages and installation
-# ---------------------------
+# -----------------------------
 
 # .. envvar:: apparmor_base_packages
 #
@@ -31,10 +33,10 @@ apparmor_base_packages:
 apparmor_packages: []
 
 
-# .. envvar:: apparmor_packages
+# .. envvar:: apparmor_enabled
 #
-# Should AppArmor be loaded?
-apparmor_enable: True
+# Should AppArmor be enabled?
+apparmor_enabled: True
 
 
 # .. envvar:: apparmor_kernel_options
@@ -84,10 +86,13 @@ apparmor_mail_body: |
   Linux kernel parameters on host {{ ansible_fqdn }}.
   You should check the status of the host and reboot it when convenient.
 
+# .. )))
 
-# -------------------
+# .. AppArmor profiles (((
+#
+# ---------------------
 #   AppArmor profiles
-# -------------------
+# ---------------------
 
 # .. envvar:: apparmor_enforce_all_profiles
 #
@@ -104,9 +109,15 @@ apparmor_enforce_all_profiles: False
 #
 # Choices are:
 #
-# * ``disable``
-# * ``complain``
-# * ``enforce``
+# ``enforce``
+#   Result in enforcement of the policy defined in the profile as well as
+#   logging policy violation attempts.
+#
+# ``complain``
+#  This will not enforce the policy.  Instead, it will log policy violations.
+#
+# ``disable``
+#   In this mode, policy violations are neither prevented nor logged.
 #
 # Example::
 #
@@ -192,3 +203,5 @@ apparmor_tunables_host_group: ''
 #
 # Host additions or overrides of system profiles.
 apparmor_tunables_host: ''
+
+# .. )))
