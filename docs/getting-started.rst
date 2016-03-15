@@ -8,9 +8,9 @@ Example inventory
 -----------------
 
 To manage GRUB configuration on a given host with DebOps you should add it to the
-``[debops_grub]`` Ansible host group::
+``[debops_service_grub]`` Ansible host group::
 
-    [debops_grub]
+    [debops_service_grub]
     hostname
 
 
@@ -22,12 +22,13 @@ Here's an example playbook which uses ``debops.grub`` role::
     ---
 
     - name: Configure GRUB
-      hosts: debops_grub
-      sudo: True
+      hosts: [ 'debops_service_grub' ]
+      become: True
 
       roles:
+
         - role: debops.grub
-          tags: grub
+          tags: [ 'role::grub' ]
 
 
 Password protection

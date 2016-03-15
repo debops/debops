@@ -8,6 +8,8 @@ v0.1.3
 
 - Fix deprecation warnings in Ansible 2.1.0. [ypid]
 
+- Updated example playbook and inventory in the documentation. [ypid]
+
 v0.1.2
 ------
 
