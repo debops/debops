@@ -20,9 +20,9 @@ Here are a few services that are available
 
 **System**
 
-+------------+-------+
-| etckeeper_ | FUSE_ |
-+------------+-------+
++------------+-------+-------------------+
+| etckeeper_ | FUSE_ | snapshot_snapper_ |
++------------+-------+-------------------+
 
 **Security**
 
@@ -38,5 +38,6 @@ Here are a few services that are available
 
 .. _etckeeper: https://github.com/debops-contrib/ansible-etckeeper
 .. _FUSE: https://github.com/debops-contrib/ansible-fuse
+.. _snapshot_snapper: https://github.com/debops-contrib/ansible-snapshot_snapper
 
 .. _AppArmor: https://github.com/debops-contrib/ansible-apparmor
