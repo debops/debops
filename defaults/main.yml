@@ -5,6 +5,8 @@
 # .. contents:: Sections
 #    :local:
 #
+# .. libvirt system configuration (((
+#
 # --------------------------------
 #   libvirt system configuration
 # --------------------------------
@@ -32,7 +34,10 @@ libvirt_group_map:
   'Debian': 'libvirt'
   'Ubuntu': 'libvirtd'
 
+# .. )))
 
+# .. libvirt connection URI (((
+#
 # --------------------------
 #   libvirt connection URI
 # --------------------------
@@ -56,7 +61,10 @@ libvirt_connections:
 # ``libvirt`` clients on the admin account.
 libvirt_uri: 'localhost'
 
+# .. )))
 
+# .. libvirt network configuration (((
+#
 # ---------------------------------
 #   libvirt network configuration
 # ---------------------------------
@@ -65,7 +73,9 @@ libvirt_uri: 'localhost'
 #
 # List of network definitions in ``libvirt``, specified as YAML dicts. See
 # :ref:`libvirt_networks` for more details.
-libvirt_networks: '{{ libvirt_networks_default + libvirt_networks_virt_nat }}'
+libvirt_networks:
+  - '{{ libvirt_networks_default }}'
+  - '{{ libvirt_networks_virt_nat }}'
 
 
 # .. envvar:: libvirt_networks_default
@@ -117,7 +127,10 @@ libvirt_networks_virt_nat:
     forward: True
     dhcp: True
 
+# .. )))
 
+# .. libvirt storage pool configuration (((
+#
 # --------------------------------------
 #   libvirt storage pool configuration
 # --------------------------------------
@@ -126,7 +139,8 @@ libvirt_networks_virt_nat:
 #
 # List of storage pool definitions in ``libvirt``, specified as YAML dicts. See
 # :ref:`libvirt_pools` for more details.
-libvirt_pools: '{{ libvirt_pools_default }}'
+libvirt_pools:
+  - '{{ libvirt_pools_default }}'
 
 
 # .. envvar:: libvirt_pools_default
@@ -138,3 +152,4 @@ libvirt_pools_default:
     type: 'dir'
     path: '/var/lib/libvirt/images'
 
+# .. )))

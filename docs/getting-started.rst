@@ -48,13 +48,13 @@ Example inventory
 To run this role directly on ``libvirtd`` servers, they should be included
 in the ``[debops_libvirt]`` Ansible group::
 
-    [debops_libvirt]
+    [debops_service_libvirt]
     hostname
 
 If you want to use this role on your Ansible Controller, put it in the same
 group as well::
 
-    [debops_libvirt]
+    [debops_service_libvirt]
     hostname ansible_connection=local
 
 Example playbook
@@ -64,14 +64,14 @@ Here's an example playbook which uses the ``debops.libvirt`` role::
 
     ---
 
-    - name: Configure libvirt service
-      hosts: debops_libvirt
-      tags: [ 'aspect::virtualization' ]
-      become: False
+    - name: Manage libvirt hosts
+      hosts: [ 'debops_service_libvirt' ]
+      become: True
 
       roles:
         - role: debops.libvirt
           tags: [ 'role::libvirt' ]
+
 
 Ansible tags
 ------------
