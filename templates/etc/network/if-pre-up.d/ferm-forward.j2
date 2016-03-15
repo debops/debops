@@ -3,39 +3,23 @@
 # {{ ansible_managed }}
 
 {% if ferm_enabled | bool %}
-{% if ((ferm_forward is defined and ferm_forward) or
-       ((ansible_local is defined and ansible_local) and
-        (ansible_local.ferm is defined and ansible_local.ferm) and
-        (ansible_local.ferm.forward is defined and ansible_local.ferm.forward | bool))) %}
-{% if ferm_external_interfaces is defined and ferm_external_interfaces %}
-{% for interface in ferm_external_interfaces | unique %}
-{% if interface and
-      (hostvars[inventory_hostname]["ansible_" + interface] is defined and
-       hostvars[inventory_hostname]["ansible_" + interface]) %}
+{%   if ferm_forward|d() or
+       (ansible_local|d() and ansible_local.ferm|d() and
+        (ansible_local.ferm.forward|d() | bool)) %}
+{%     set ferm_tpl_interfaces = (ferm_external_interfaces|d([]) | list) +
+                                 (ferm_internal_interfaces|d([]) | list) %}
+{%     for interface in ferm_tpl_interfaces | unique %}
+{%       if interface and hostvars[inventory_hostname]["ansible_" + interface] | d() %}
 # Force Router Advertisement support on {{ interface }} interface
-if [ "$IFACE" = "{{ interface }}" ] ; then
+i [ "$IFACE" = "{{ interface }}" ] ; then
   sysctl -w net/ipv6/conf/{{ interface }}/accept_ra=2
 fi
 
-{% endif %}
-{% endfor %}
-{% endif %}
-{% if ferm_internal_interfaces is defined and ferm_internal_interfaces %}
-{% for interface in ferm_internal_interfaces | unique %}
-{% if interface and
-      (hostvars[inventory_hostname]["ansible_" + interface] is defined and
-       hostvars[inventory_hostname]["ansible_" + interface]) %}
-# Force Router Advertisement support on {{ interface }} interface
-if [ "$IFACE" = "{{ interface }}" ] ; then
-  sysctl -w net/ipv6/conf/{{ interface }}/accept_ra=2
-fi
-
-{% endif %}
-{% endfor %}
-{% endif %}
-{% else %}
+{%       endif %}
+{%     endfor %}
+{%   else %}
 # Network forwarding in ip(6)tables is not enabled
-{% endif %}
+{%   endif %}
 {% else %}
 # ferm support is disabled
 {% endif %}
