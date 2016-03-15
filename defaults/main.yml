@@ -5,9 +5,11 @@
 # .. contents:: Sections
 #    :local:
 #
-# -----------------------------
+# .. General GRUB options (((
+#
+# ------------------------
 #   General GRUB options
-# -----------------------------
+# ------------------------
 
 # .. envvar:: grub_save_options
 #
@@ -63,7 +65,10 @@ grub_timeout_virtual: 1
 # Additional GRUB options specified as a YAML text block.
 grub_custom_options: ''
 
+# .. )))
 
+# .. Serial console configuration (((
+#
 # --------------------------------
 #   Serial console configuration
 # --------------------------------
@@ -86,17 +91,32 @@ grub_serial_console_unit: 0
 # Other parameters (8 bits, no parity, 1 stop bit are hardcoded)
 grub_serial_console_speed: 115200
 
+# .. )))
 
-# --------------------------------
+# .. Security and users (((
+#
+# ----------------------
 #   Security and users
-# --------------------------------
+# ----------------------
 
 # .. envvar:: grub_users
 #
-# List of in GRUB. Defaults to a empty list which results in no
-# users being created and thus leaving GRUB without password protection.
+# Global list of GRUB user. Defaults to an empty list which results in no users
+# being created and thus leaving GRUB without password protection.
 grub_users: []
+
+
+# .. envvar:: grub_group_users
+#
+# Host group list of GRUB user. Defaults to an empty list which results in no
+# users being created and thus leaving GRUB without password protection.
 grub_group_users: []
+
+
+# .. envvar:: grub_host_users
+#
+# Host list of GRUB user. Defaults to an empty list which results in no users
+# being created and thus leaving GRUB without password protection.
 grub_host_users: []
 
 
@@ -148,3 +168,5 @@ grub_salt_length: 'default'
 # The current default of :command:`grub-mkpasswd-pbkdf2` is ``64`` characters.
 # Set to ``default`` to use the compiled-in default of :command:`grub-mkpasswd-pbkdf2`.
 grub_hash_length: 'default'
+
+# .. )))

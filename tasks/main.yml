@@ -66,7 +66,7 @@
   delegate_to: 'localhost'
   no_log: True
   when: item.name|d()
-  with_items: grub_users_combined
+  with_items: '{{ grub_users_combined }}'
 
 - name: Save plaintext password in secrets
   copy:
@@ -78,7 +78,7 @@
   no_log: True
   register: grub_register_pw_plain
   when: item.name|d()
-  with_items: grub_users_combined
+  with_items: '{{ grub_users_combined }}'
 
 ## There seems to be no way to specify the salt (except using a custom script).
 ## Only generating the hashed password when the plaintext password has changed
