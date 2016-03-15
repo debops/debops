@@ -20,7 +20,7 @@ Example inventory
 .. code:: YAML
 
    ## If you don’t what to track hashed passwords.
-   etckeeper_gitignore_group:
+   etckeeper__gitignore_group:
      - 'shadow'
      - 'shadow-'
 

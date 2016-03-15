@@ -18,3 +18,13 @@ v0.1.0
 
 - Moved role default ignore list from ``etckeeper_ignore_list`` to it’s own
   ignore list ``etckeeper_ignore_role_list``. [ypid]
+
+- Changed namespace from ``etckeeper_`` to ``etckeeper__``.
+  ``etckeeper_[^_]`` variables are hereby deprecated and you might need to
+  update your inventory. This oneliner might come in handy to do this.
+
+  .. code:: shell
+
+     git ls-files | xargs sed --in-place --regexp-extended 's/etckeeper_([^_])/etckeeper__\1/g'
+
+  [ypid]

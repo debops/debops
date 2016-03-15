@@ -1,7 +1,7 @@
 Introduction
 ============
 
-etckeeper_ makes it easy to put :file:`/etc`
+etckeeper__ makes it easy to put :file:`/etc`
 under version control by hooking into the package management systems and
 automatically committing changes. This makes it easy to see which changes
 are applied on a specific host and quickly revert them, if something

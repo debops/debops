@@ -1,9 +1,9 @@
 ---
 
-- name: Assert etckeeper_vcs is valid
+- name: Assert etckeeper__vcs is valid
   assert:
     that:
-      - etckeeper_vcs in etckeeper_supported_vcs
+      - etckeeper__vcs in etckeeper__supported_vcs
 
 ## Diverting the main configuration of etckeeper away leaves the VCS
 ## uninitiated until it has been fully configured.
@@ -21,7 +21,7 @@
     install_recommends: False
   when: (ansible_pkg_mgr == 'apt')
   with_flattened:
-    - '{{ etckeeper_vcs_command_to_package_mapping[etckeeper_vcs]|d(etckeeper_vcs) }}'
+    - '{{ etckeeper__vcs_command_to_package_mapping[etckeeper__vcs]|d(etckeeper__vcs) }}'
     - 'etckeeper'
 
 ## The main configuration file provided installed by your distribution is
@@ -31,13 +31,13 @@
   shell: . /etc/etckeeper/etckeeper.conf.dpkg-divert && echo ${HIGHLEVEL_PACKAGE_MANAGER}
   changed_when: False
   failed_when: False
-  register: etckeeper_register_highlevel_package_manager
+  register: etckeeper__register_highlevel_package_manager
 
 - name: Read LOWLEVEL_PACKAGE_MANAGER configured by the distribution
   shell: . /etc/etckeeper/etckeeper.conf.dpkg-divert && echo ${LOWLEVEL_PACKAGE_MANAGER}
   changed_when: False
   failed_when: False
-  register: etckeeper_register_lowlevel_package_manager
+  register: etckeeper__register_lowlevel_package_manager
 
 - name: Create etckeeper configuration
   template:
@@ -51,7 +51,7 @@
   command: etckeeper init
   args:
     creates: '/etc/.etckeeper'
-  register: etckeeper_register_init
+  register: etckeeper__register_init
 
 - name: Add entries to /etc/.gitignore
   lineinfile:
@@ -59,10 +59,10 @@
     line: '{{ item }}'
     insertbefore: 'BOF'
   with_flattened:
-    - '{{ (etckeeper_ignore_role_list       |d([]) | list) }}'
-    - '{{ (etckeeper_ignore_list            |d([]) | list) }}'
-    - '{{ (etckeeper_ignore_host_group_list |d([]) | list) }}'
-    - '{{ (etckeeper_ignore_host_list       |d([]) | list) }}'
+    - '{{ (etckeeper__ignore_role_list       |d([]) | list) }}'
+    - '{{ (etckeeper__ignore_list            |d([]) | list) }}'
+    - '{{ (etckeeper__ignore_host_group_list |d([]) | list) }}'
+    - '{{ (etckeeper__ignore_host_list       |d([]) | list) }}'
 
 - name: Install /etc/.gitattributes configuration
   template:
@@ -71,15 +71,15 @@
     mode: 0644
     owner: 'root'
     group: 'root'
-  when: (etckeeper_vcs == 'git')
+  when: (etckeeper__vcs == 'git')
 
 - name: Set repository permissions
   file:
     state: 'directory'
     path: '/etc/.git'
-    mode: '{{ etckeeper_repository_permissions|d("0700") }}'
+    mode: '{{ etckeeper__repository_permissions|d("0700") }}'
     owner: 'root'
-    group: '{{ etckeeper_repository_group|d("root") }}'
+    group: '{{ etckeeper__repository_group|d("root") }}'
 
 ## Set VCS user, email used for auto committing changes (((
 - name: Set user, email for the git repository
@@ -89,27 +89,27 @@
     option: '{{ item.key }}'
     value: '{{ item.value }}'
   with_dict:
-    name: '{{ etckeeper_vcs_user }}'
-    email: '{{ etckeeper_vcs_email }}'
-  when: (etckeeper_vcs == 'git' and etckeeper_vcs_user|d() and etckeeper_vcs_email|d())
+    name: '{{ etckeeper__vcs_user }}'
+    email: '{{ etckeeper__vcs_email }}'
+  when: (etckeeper__vcs == 'git' and etckeeper__vcs_user|d() and etckeeper__vcs_email|d())
   tags: [ 'role::etckeeper:vcs_config' ]
 
 - name: Set user, email for the bzr repository
-  command: etckeeper vcs whoami '{{ etckeeper_vcs_user }} <{{ etckeeper_vcs_email }}>'
-  when: (etckeeper_vcs == 'bzr' and etckeeper_vcs_user|d() and etckeeper_vcs_email|d())
+  command: etckeeper vcs whoami '{{ etckeeper__vcs_user }} <{{ etckeeper__vcs_email }}>'
+  when: (etckeeper__vcs == 'bzr' and etckeeper__vcs_user|d() and etckeeper__vcs_email|d())
   tags: [ 'role::etckeeper:vcs_config' ]
 
 - name: Set user, email for the darcs repository
-  command: etckeeper vcs setpref author '{{ etckeeper_vcs_user }} <{{ etckeeper_vcs_email }}>'
-  when: (etckeeper_vcs == 'darcs' and etckeeper_vcs_user|d() and etckeeper_vcs_email|d())
+  command: etckeeper vcs setpref author '{{ etckeeper__vcs_user }} <{{ etckeeper__vcs_email }}>'
+  when: (etckeeper__vcs == 'darcs' and etckeeper__vcs_user|d() and etckeeper__vcs_email|d())
   tags: [ 'role::etckeeper:vcs_config' ]
 
 - name: Set user, email for the hg repository
-  command: "etckeeper vcs --config 'ui.username={{ etckeeper_vcs_user }} <{{ etckeeper_vcs_email }}>'"
-  when: (etckeeper_vcs == 'hg' and etckeeper_vcs_user|d() and etckeeper_vcs_email|d())
+  command: "etckeeper vcs --config 'ui.username={{ etckeeper__vcs_user }} <{{ etckeeper__vcs_email }}>'"
+  when: (etckeeper__vcs == 'hg' and etckeeper__vcs_user|d() and etckeeper__vcs_email|d())
   tags: [ 'role::etckeeper:vcs_config' ]
 ## )))
 
 - name: Create root commit
   command: etckeeper commit 'Initial commit created by Ansible.'
-  when: etckeeper_register_init|changed
+  when: etckeeper__register_init|changed

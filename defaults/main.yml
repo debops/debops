@@ -11,21 +11,21 @@
 #   Package management options
 # ------------------------------
 
-# .. envvar:: etckeeper_highlevel_package_manager
+# .. envvar:: etckeeper__highlevel_package_manager
 #
 # The high-level package manager that's being used.
 # (:command:`apt`, :command:`pacman-g2`, :command:`yum`, :command:`dnf`, :command:`zypper` etc).
 # This will only be used when your distribution was not able to predefine this.
-etckeeper_highlevel_package_manager: '{{ ansible_pkg_mgr }}'
+etckeeper__highlevel_package_manager: '{{ ansible_pkg_mgr }}'
 
 
-# .. envvar:: etckeeper_lowlevel_package_manager
+# .. envvar:: etckeeper__lowlevel_package_manager
 #
 # The low-level package manager that's being used.
 # (:command:`dpkg`, :command:`rpm`, :command:`pacman`, :command:`pacman-g2`, etc)
 # This will only be used when your distribution was not able to predefine this.
-etckeeper_lowlevel_package_manager: |
-  {{ etckeeper_highlevel_to_lowlevel_package_manager_mapping[etckeeper_highlevel_package_manager]|d("") }}
+etckeeper__lowlevel_package_manager: |
+  {{ etckeeper__highlevel_to_lowlevel_package_manager_mapping[etckeeper__highlevel_package_manager]|d("") }}
 
 # .. )))
 
@@ -35,30 +35,30 @@ etckeeper_lowlevel_package_manager: |
 #   Version control ignore list
 # -------------------------------
 
-# .. envvar:: etckeeper_ignore_list
+# .. envvar:: etckeeper__ignore_list
 #
 # Role defaults list of files and directories which should not be kept under version control.
-etckeeper_ignore_role_list:
+etckeeper__ignore_role_list:
   ## There is no benefit in tracking Tor keys and is a potential security vulnerability.
   - 'tor/keys/'
 
 
-# .. envvar:: etckeeper_ignore_list
+# .. envvar:: etckeeper__ignore_list
 #
 # Global list of files and directories which should not be kept under version control.
-etckeeper_ignore_list: []
+etckeeper__ignore_list: []
 
 
-# .. envvar:: etckeeper_ignore_host_group_list
+# .. envvar:: etckeeper__ignore_host_group_list
 #
 # Host group list of files and directories which should not be kept under version control.
-etckeeper_ignore_host_group_list: []
+etckeeper__ignore_host_group_list: []
 
 
-# .. envvar:: etckeeper_ignore_host_list
+# .. envvar:: etckeeper__ignore_host_list
 #
 # Host list of files and directories which should not be kept under version control.
-etckeeper_ignore_host_list: []
+etckeeper__ignore_host_list: []
 
 # .. )))
 
@@ -68,7 +68,7 @@ etckeeper_ignore_host_list: []
 #   Version control options
 # ---------------------------
 
-# .. envvar:: etckeeper_vcs
+# .. envvar:: etckeeper__vcs
 #
 # Which VCS to use to version :file:`/etc/`.
 # Choices are:
@@ -80,10 +80,10 @@ etckeeper_ignore_host_list: []
 #
 # Note that any other VCS than :command:`git` has not really been tested. You might
 # have to fix some bugs in this role when you want to use them.
-etckeeper_vcs: 'git'
+etckeeper__vcs: 'git'
 
 
-# .. envvar:: etckeeper_vcs_user
+# .. envvar:: etckeeper__vcs_user
 #
 # User for :program:`etckeeper` to use in commits if no interactive user was
 # detected.
@@ -94,12 +94,12 @@ etckeeper_vcs: 'git'
 #
 # .. code::
 #
-#    etckeeper_vcs_user: 'root'
+#    etckeeper__vcs_user: 'root'
 #
-etckeeper_vcs_user: ''
+etckeeper__vcs_user: ''
 
 
-# .. envvar:: etckeeper_vcs_email
+# .. envvar:: etckeeper__vcs_email
 #
 # Email address for :program:`etckeeper` to use in commits if no interactive user was
 # detected.
@@ -110,61 +110,61 @@ etckeeper_vcs_user: ''
 #
 # .. code::
 #
-#    etckeeper_vcs_email: '{{ etckeeper_vcs_user + "@" + ansible_fqdn }}'
+#    etckeeper__vcs_email: '{{ etckeeper__vcs_user + "@" + ansible_fqdn }}'
 #
-etckeeper_vcs_email: ''
+etckeeper__vcs_email: ''
 
 
-# .. envvar:: etckeeper_git_commit_options
+# .. envvar:: etckeeper__git_commit_options
 #
 # Options passed to git commit when run by etckeeper.
-etckeeper_git_commit_options: ''
+etckeeper__git_commit_options: ''
 
 
-# .. envvar:: etckeeper_hg_commit_options
+# .. envvar:: etckeeper__hg_commit_options
 #
 # Options passed to hg commit when run by etckeeper.
-etckeeper_hg_commit_options: ''
+etckeeper__hg_commit_options: ''
 
 
-# .. envvar:: etckeeper_bzr_commit_options
+# .. envvar:: etckeeper__bzr_commit_options
 #
 # Options passed to bzr commit when run by etckeeper.
-etckeeper_bzr_commit_options: ''
+etckeeper__bzr_commit_options: ''
 
 
-# .. envvar:: etckeeper_darcs_commit_options
+# .. envvar:: etckeeper__darcs_commit_options
 #
 # Options passed to darcs record when run by etckeeper.
-etckeeper_darcs_commit_options: '-a'
+etckeeper__darcs_commit_options: '-a'
 
 
-# .. envvar:: etckeeper_avoid_daily_autocommits
+# .. envvar:: etckeeper__avoid_daily_autocommits
 #
 # Uncomment to avoid :program:`etckeeper` committing existing changes
 # to :file:`/etc` automatically once per day.
-etckeeper_avoid_daily_autocommits: False
+etckeeper__avoid_daily_autocommits: False
 
 
-# .. envvar:: etckeeper_avoid_special_file_warning
+# .. envvar:: etckeeper__avoid_special_file_warning
 #
 # Uncomment the following to avoid special file warning
 # (the option is enabled automatically by cronjob regardless).
-etckeeper_avoid_special_file_warning: False
+etckeeper__avoid_special_file_warning: False
 
 
-# .. envvar:: etckeeper_avoid_commit_before_install
+# .. envvar:: etckeeper__avoid_commit_before_install
 #
 # Uncomment the following to avoid special file warning
 # (the option is enabled automatically by cronjob regardless).
-etckeeper_avoid_commit_before_install: False
+etckeeper__avoid_commit_before_install: False
 
 
-# .. envvar:: etckeeper_push_remote
+# .. envvar:: etckeeper__push_remote
 #
 # To push each commit to a remote, put the name of the remote here.
 # (eg, "origin" for git). Space-separated lists of multiple remotes
 # also work (eg, "origin gitlab github" for git).
-etckeeper_push_remote: ''
+etckeeper__push_remote: ''
 
 # .. )))
