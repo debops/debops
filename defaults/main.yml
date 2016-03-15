@@ -11,77 +11,77 @@
 #   Packages and installation
 # -----------------------------
 
-# .. envvar:: apparmor_base_packages
+# .. envvar:: apparmor__base_packages
 #
 # List of base packages to install.
-apparmor_base_packages:
+apparmor__base_packages:
   - 'apparmor'
   - 'apparmor-utils'
   - 'apparmor-profiles'
   - 'apparmor-profiles-extra'
 
 
-# .. envvar:: apparmor_packages
+# .. envvar:: apparmor__packages
 #
 # List of additional packages to install with AppArmor.
 #
 # Example::
 #
-#    apparmor_packages:
+#    apparmor__packages:
 #      - 'apparmor-notify'
 #
-apparmor_packages: []
+apparmor__packages: []
 
 
-# .. envvar:: apparmor_enabled
+# .. envvar:: apparmor__enabled
 #
 # Should AppArmor be enabled?
-apparmor_enabled: True
+apparmor__enabled: True
 
 
-# .. envvar:: apparmor_kernel_options
+# .. envvar:: apparmor__kernel_options
 #
 # Default kernel options needed to enable AppArmor.
 # You probably don’t need to change this.
-apparmor_kernel_options:
+apparmor__kernel_options:
   - 'apparmor=1'
   - 'security=apparmor'
 
 
-# .. envvar:: apparmor_manage_grub
+# .. envvar:: apparmor__manage_grub
 #
 # How should role write the required kernel options into the Grub configuration.
 # The default is delegate this to the ``debops.grub`` role.
 # If set to False, this role will do that internally without ``debops.grub``.
 # Note that this role is not as flexible in configuring Grub as ``debops.grub`` is.
-apparmor_manage_grub: False
+apparmor__manage_grub: False
 
 
-# .. envvar:: apparmor_additional_kernel_parameters
+# .. envvar:: apparmor__additional_kernel_parameters
 #
 # Legacy:
-# Only considered when `apparmor_manage_grub == True`.
-apparmor_additional_kernel_parameters: ''
+# Only considered when `apparmor__manage_grub == True`.
+apparmor__additional_kernel_parameters: ''
 
 
-# .. envvar:: apparmor_mail_to
+# .. envvar:: apparmor__mail_to
 #
 # List of recipients to which a mail will be send in case a reboot is required.
-apparmor_mail_to: [ 'root@{{ ansible_domain }}' ]
+apparmor__mail_to: [ 'root@{{ ansible_domain }}' ]
 
 
-# .. envvar:: apparmor_mail_subject
+# .. envvar:: apparmor__mail_subject
 #
 # Subject of the Email to be send in case a reboot is required to boot into a
 # updated kernel version.
-apparmor_mail_subject: 'Reboot required by AppArmor on {{ ansible_fqdn }}'
+apparmor__mail_subject: 'Reboot required by AppArmor on {{ ansible_fqdn }}'
 
 
-# .. envvar:: apparmor_mail_body
+# .. envvar:: apparmor__mail_body
 #
 # Body of the Email to be send in case a reboot is required to boot into a
 # updated kernel version.
-apparmor_mail_body: |
+apparmor__mail_body: |
   Ansible has enabled AppArmor thought the boot loader configuration for the
   Linux kernel parameters on host {{ ansible_fqdn }}.
   You should check the status of the host and reboot it when convenient.
@@ -94,14 +94,14 @@ apparmor_mail_body: |
 #   AppArmor profiles
 # ---------------------
 
-# .. envvar:: apparmor_enforce_all_profiles
+# .. envvar:: apparmor__enforce_all_profiles
 #
 # Put all profiles into enforcement mode.
 # Use this only if you know what you are doing.
-apparmor_enforce_all_profiles: False
+apparmor__enforce_all_profiles: False
 
 
-# .. envvar:: apparmor_global_profile_status
+# .. envvar:: apparmor__global_profile_status
 #
 # Global configuration of the status of individual profiles.
 # More specific matches overwrite more generic matches (example host overrules
@@ -121,25 +121,25 @@ apparmor_enforce_all_profiles: False
 #
 # Example::
 #
-#    apparmor_global_profile_status:
+#    apparmor__global_profile_status:
 #      'usr.sbin.nmbd': 'complain'
 #
-apparmor_global_profile_status: {}
+apparmor__global_profile_status: {}
 
 
-# .. envvar:: apparmor_host_group_profile_status
+# .. envvar:: apparmor__host_group_profile_status
 #
 # Host group configuration of the status of individual profiles.
-apparmor_host_group_profile_status: {}
+apparmor__host_group_profile_status: {}
 
 
-# .. envvar:: apparmor_host_profile_status
+# .. envvar:: apparmor__host_profile_status
 #
 # Host configuration of the status of individual profiles.
-apparmor_host_profile_status: {}
+apparmor__host_profile_status: {}
 
 
-# .. envvar:: apparmor_local_config_global
+# .. envvar:: apparmor__local_config_global
 #
 # Global additions or overrides of system profiles.
 # Those changes will be configured in :file:`/etc/apparmor.d/local/`.
@@ -148,7 +148,7 @@ apparmor_host_profile_status: {}
 #
 # Example::
 #
-#    apparmor_local_config_global:
+#    apparmor__local_config_global:
 #
 #      'usr.sbin.dnsmasq':
 #        - comment: 'Allow dnsmasq to read upstream DNS servers'
@@ -164,22 +164,22 @@ apparmor_host_profile_status: {}
 #          rules:
 #            - '@{HOME}/.purple/plugins/** rm'
 #
-apparmor_local_config_global: {}
+apparmor__local_config_global: {}
 
 
-# .. envvar:: apparmor_local_config_host_group
+# .. envvar:: apparmor__local_config_host_group
 #
 # Host group additions or overrides of system profiles.
-apparmor_local_config_host_group: {}
+apparmor__local_config_host_group: {}
 
 
-# .. envvar:: apparmor_local_config_host
+# .. envvar:: apparmor__local_config_host
 #
 # Host additions or overrides of system profiles.
-apparmor_local_config_host: {}
+apparmor__local_config_host: {}
 
 
-# .. envvar:: apparmor_tunables_global
+# .. envvar:: apparmor__tunables_global
 #
 # Allows you to define or append variables which will be included by most
 # profiles via the tunable concept of AppArmor.
@@ -187,21 +187,21 @@ apparmor_local_config_host: {}
 #
 # Example::
 #
-#    apparmor_tunables_global: |
+#    apparmor__tunables_global: |
 #      @{HOMEDIRS}+=/exports/home/
 #
-apparmor_tunables_global: ''
+apparmor__tunables_global: ''
 
 
-# .. envvar:: apparmor_tunables_host_group
+# .. envvar:: apparmor__tunables_host_group
 #
 # Host group additions or overrides of system profiles.
-apparmor_tunables_host_group: ''
+apparmor__tunables_host_group: ''
 
 
-# .. envvar:: apparmor_tunables_host
+# .. envvar:: apparmor__tunables_host
 #
 # Host additions or overrides of system profiles.
-apparmor_tunables_host: ''
+apparmor__tunables_host: ''
 
 # .. )))

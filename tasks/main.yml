@@ -2,18 +2,18 @@
 
 - name: Combine variables
   set_fact:
-    apparmor_profile_status: '{{
-      apparmor_global_profile_status               |d({})
-      | combine(apparmor_host_group_profile_status |d({}))
-      | combine(apparmor_host_profile_status       |d({})) }}'
-    apparmor_local_config: '{{
-      apparmor_local_config_global               |d({})
-      | combine(apparmor_local_config_host_group |d({}))
-      | combine(apparmor_local_config_host       |d({})) }}'
-    apparmor_tunables: '{{
-      (apparmor_tunables_global     |d([]) | list) +
-      (apparmor_tunables_host_group |d([]) | list) +
-      (apparmor_tunables_host       |d([]) | list) }}'
+    apparmor__profile_status: '{{
+      apparmor__global_profile_status               |d({})
+      | combine(apparmor__host_group_profile_status |d({}))
+      | combine(apparmor__host_profile_status       |d({})) }}'
+    apparmor__local_config: '{{
+      apparmor__local_config_global               |d({})
+      | combine(apparmor__local_config_host_group |d({}))
+      | combine(apparmor__local_config_host       |d({})) }}'
+    apparmor__tunables: '{{
+      (apparmor__tunables_global     |d([]) | list) +
+      (apparmor__tunables_host_group |d([]) | list) +
+      (apparmor__tunables_host       |d([]) | list) }}'
 
 - name: Install required packages
   apt:
@@ -21,8 +21,8 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ apparmor_base_packages }}'
-    - '{{ apparmor_packages }}'
+    - '{{ apparmor__base_packages }}'
+    - '{{ apparmor__packages }}'
 
 - name: Setup apparmor=1 security=apparmor as kernel parameter
   lineinfile:
@@ -30,10 +30,10 @@
     regexp: '{{ item.regexp }}'
     line: '{{ item.line }}'
     insertbefore: '{{ item.insertbefore }}'
-  when: ((apparmor_manage_grub|d() | bool) and (apparmor_enabled|d() | bool))
+  when: ((apparmor__manage_grub|d() | bool) and (apparmor__enabled|d() | bool))
   with_items:
     - regexp: '^GRUB_CMDLINE_LINUX='
-      line: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR {{ apparmor_additional_kernel_parameters }}"'
+      line: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR {{ apparmor__additional_kernel_parameters }}"'
       insertbefore: ''
     - regexp: '^GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR='
       line: 'GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR="apparmor=1 security=apparmor"'
@@ -46,13 +46,13 @@
     regexp: '^GRUB_CMDLINE_LINUX="(.*?)\$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR(.*)"'
     line: 'GRUB_CMDLINE_LINUX="\1 \2"'
     backrefs: yes
-  when: (apparmor_manage_grub and not (apparmor_enabled|d() | bool))
+  when: (apparmor__manage_grub and not (apparmor__enabled|d() | bool))
   notify: [ 'Update grub' ]
 
 - name: Check if the running kernel has been started with AppArmor enabled
   shell: grep --quiet 'apparmor=1' /proc/cmdline && grep --quiet 'security=apparmor' /proc/cmdline
-  register: apparmor_register_kernel_cmdline
-  when: (apparmor_enabled|d() | bool)
+  register: apparmor__register_kernel_cmdline
+  when: (apparmor__enabled|d() | bool)
   failed_when: False
   changed_when: False
   always_run: True
@@ -60,11 +60,11 @@
 - name: Send mail to administrator if reboot is required to enable AppArmor
   mail:
     from: 'root@{{ ansible_fqdn }}'
-    subject: '{{ apparmor_mail_subject }}'
-    to: '{{ apparmor_mail_to|d([]) | list | join(",") }}'
+    subject: '{{ apparmor__mail_subject }}'
+    to: '{{ apparmor__mail_to|d([]) | list | join(",") }}'
     charset: 'utf8'
-    body: '{{ apparmor_mail_body }}'
-  when: (apparmor_register_kernel_cmdline.rc != 0 and apparmor_mail_to|d())
+    body: '{{ apparmor__mail_body }}'
+  when: (apparmor__register_kernel_cmdline.rc != 0 and apparmor__mail_to|d())
 
 ## Seems that there is currently a bug in the version include in Debian Jessie
 ## which thoughts an exception when AppArmor has not been enabled yet.
@@ -76,32 +76,32 @@
         aa-enforce "$file"
       fi
     done
-  register: apparmor_register_enforce_all_profiles
-  changed_when: (apparmor_register_enforce_all_profiles.stdout != "")
-  when: (apparmor_enforce_all_profiles|d() | bool)
+  register: apparmor__register_enforce_all_profiles
+  changed_when: (apparmor__register_enforce_all_profiles.stdout != "")
+  when: (apparmor__enforce_all_profiles|d() | bool)
 
 - name: Set profile status
   command: aa-{{ item.value }} "{{ item.key }}"
-  register: apparmor_register_profile_status
-  # changed_when: (apparmor_register_profile_status.stdout|d() != "")
+  register: apparmor__register_profile_status
+  # changed_when: (apparmor__register_profile_status.stdout|d() != "")
   ## FIXME: Currently changed_when seems to be tricky.
   changed_when: False
   failed_when: |
-    apparmor_register_profile_status.rc != 0 and (
-      "Warning: unable to find a suitable fs in /proc/mounts, is it mounted?" not in apparmor_register_profile_status.stderr and
-      apparmor_register_kernel_cmdline.rc != 0
+    apparmor__register_profile_status.rc != 0 and (
+      "Warning: unable to find a suitable fs in /proc/mounts, is it mounted?" not in apparmor__register_profile_status.stderr and
+      apparmor__register_kernel_cmdline.rc != 0
     )
   ## AppArmor tries to load the profile with the new status into the Kernel after changing it.
   ## This does not work if the Kernel has not been started with AppArmor support.
   ## But the profile configuration file is updated anyway and will be picked up on next reboot with AppArmor support.
-  with_dict: '{{ apparmor_profile_status }}'
+  with_dict: '{{ apparmor__profile_status }}'
 
 - name: Ensure AppArmor service is started
   service:
     name: 'apparmor'
     state: 'started'
     enabled: True
-  when: ((apparmor_enabled|d() | bool) and (apparmor_register_kernel_cmdline.rc == 0))
+  when: ((apparmor__enabled|d() | bool) and (apparmor__register_kernel_cmdline.rc == 0))
 
 - name: Configure tunables
   template:
@@ -110,7 +110,7 @@
     mode: 0640
     owner: 'root'
     group: 'root'
-  register: apparmor_register_tunables
+  register: apparmor__register_tunables
 
 - name: Configure additions or overrides of system profiles
   template:
@@ -119,27 +119,27 @@
     mode: 0640
     owner: 'root'
     group: 'root'
-  register: apparmor_register_local_config
-  with_dict: '{{ apparmor_local_config }}'
+  register: apparmor__register_local_config
+  with_dict: '{{ apparmor__local_config }}'
 
 - name: Reload changed profiles
-  command: apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"
-  when: (item|changed and not apparmor_register_tunables|changed)
-  with_items: '{{ apparmor_register_local_config.results }}'
+  command: apparmor__parser --replace "/etc/apparmor.d/{{ item.item.key }}"
+  when: (item|changed and not apparmor__register_tunables|changed)
+  with_items: '{{ apparmor__register_local_config.results }}'
 
 - name: Reload AppArmor all profiles
   service:
     name: 'apparmor'
     state: 'reloaded'
-  when: ((apparmor_enabled|d() | bool) and (apparmor_register_kernel_cmdline.rc == 0) and apparmor_register_tunables|changed)
+  when: ((apparmor__enabled|d() | bool) and (apparmor__register_kernel_cmdline.rc == 0) and apparmor__register_tunables|changed)
 
 - name: Unload AppArmor profiles
   command: service apparmor teardown
-  when: (not (apparmor_enabled|d() | bool))
+  when: (not (apparmor__enabled|d() | bool))
 
 - name: Ensure AppArmor service is stopped
   service:
     name: 'apparmor'
     state: 'stopped'
     enabled: False
-  when: (not (apparmor_enabled|d() | bool))
+  when: (not (apparmor__enabled|d() | bool))
