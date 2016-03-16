@@ -22,21 +22,24 @@
     owner: 'root'
     group: 'adm'
     mode: '2750'
-  with_items: [ '/etc/ferm/ferm.d', '/etc/ferm/filter-input.d',
-                '/etc/ferm/hooks/pre.d', '/etc/ferm/hooks/post.d',
-                '/etc/ferm/hooks/flush.d' ]
+  with_items:
+    - '/etc/ferm/ferm.d'
+    - '/etc/ferm/filter-input.d'
+    - '/etc/ferm/hooks/pre.d'
+    - '/etc/ferm/hooks/post.d'
+    - '/etc/ferm/hooks/flush.d'
 
 - name: Copy custom files to remote hosts
   copy:
     src: '{{ item.src | d(omit) }}'
     content: '{{ item.content | d(omit) }}'
-    dest: '{{ item.dest }}'
+    dest:  '{{ item.dest }}'
     owner: '{{ item.owner | d(omit) }}'
     group: '{{ item.group | d(omit) }}'
-    mode: '{{ item.mode | d(omit) }}'
+    mode:  '{{ item.mode  | d(omit) }}'
     directory_mode: '{{ item.directory_mode | d(omit) }}'
     follow: '{{ item.follow | d(omit) }}'
-    force: '{{ item.force | d(omit) }}'
+    force:  '{{ item.force  | d(omit) }}'
   with_flattened:
     - '{{ ferm_custom_files }}'
     - '{{ ferm_group_custom_files }}'
@@ -74,8 +77,7 @@
     - '{{ ferm_host_rules }}'
     - '{{ ferm_dependent_rules }}'
     - '{{ ferm_default_rules }}'
-  when: (ferm_enabled|bool and (item.type is defined and item.type) and
-         (item.delete is defined and item.delete | bool))
+  when: (ferm_enabled|bool and item.type|d() and (item.delete|d() | bool))
   register: ferm_register_rules_del
   tags: [ 'role::ferm:rules' ]
 
@@ -92,8 +94,7 @@
     - '{{ ferm_host_rules }}'
     - '{{ ferm_dependent_rules }}'
     - '{{ ferm_default_rules }}'
-  when: (ferm_enabled|bool and (item.type is defined and item.type) and
-         (item.delete is undefined or not item.delete | bool))
+  when: (ferm_enabled|bool and item.type|d() and not (item.delete|d() | bool))
   register: ferm_register_rules_add
   tags: [ 'role::ferm:rules' ]
 
@@ -106,8 +107,7 @@
     - '{{ ferm_input_group_list }}'
     - '{{ ferm_input_host_list }}'
     - '{{ ferm_input_dependent_list }}'
-  when: (ferm_enabled|bool and (item.type is defined and item.type) and
-         (item.delete is defined and item.delete | bool))
+  when: (ferm_enabled|bool and item.type|d() and (item.delete|d() | bool))
   register: ferm_register_input_rules_del
   tags: [ 'role::ferm:rules' ]
 
@@ -123,8 +123,7 @@
     - '{{ ferm_input_group_list }}'
     - '{{ ferm_input_host_list }}'
     - '{{ ferm_input_dependent_list }}'
-  when: (ferm_enabled|bool and (item.type is defined and item.type) and
-         (item.delete is undefined or not item.delete | bool))
+  when: (ferm_enabled|bool and item.type|d() and not (item.delete|d() | bool))
   register: ferm_register_input_rules_add
   tags: [ 'role::ferm:rules' ]
 

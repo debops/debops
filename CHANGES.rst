@@ -13,7 +13,7 @@ v0.1.6
   POSIX capability detection is unnecessary.
 
 - Enable the firewall if ``ansible_local`` and local Ansible facts are
-  undefined. This will ensure that role works on hosts which din't have it
+  undefined. This will ensure that the role works on hosts which don't have it
   applied yet. [drybjed]
 
 v0.1.5
@@ -133,7 +133,7 @@ v0.1.2
 
   Different parts of the firewall configuration will be stored and managed in
   ``/etc/ferm/ferm.d/`` directory instead of various subdirectories. This makes
-  management of configuration simplier and more flexible to adapt to different
+  management of configuration simpler and more flexible to adapt to different
   environments.
 
   Existing firewall configuration in ``/etc/ferm/filter-input.d/`` will be
@@ -246,7 +246,7 @@ v0.1.1
 - Copy ``init-hooks.patch`` file to remote host and patch it from there to fix
   issues with ``patch`` module on older versions of Ansible. [drybjed]
 
-- Move tasks that patch ``ferm`` init script to sepate task list and add
+- Move tasks that patch ``ferm`` init script to separate task list and add
   a condition that only does the patching if ``ferm`` is enabled. [drybjed]
 
 - Add "custom" rule template. [drybjed]
