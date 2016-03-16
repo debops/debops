@@ -33,6 +33,8 @@ v0.2.9
 - Update the ``service/mailman.yml`` playbook with support for new
   ``debops.mailman`` release. [drybjed]
 
+- Moved roles dependencies from ``debops.subnetwork`` to subnetwork playbook. [ypid]
+
 v0.2.8
 ------
 
