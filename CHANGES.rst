@@ -17,6 +17,9 @@ v0.3.0
 
 - Wrote initial documentation. [ypid]
 
+- Remove the ``owncloud-server`` package from list of installed packages, it
+  has been dropped as of ownCloud 9.0. [drybjed]
+
 v0.2.0
 ------
 
