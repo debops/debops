@@ -35,17 +35,43 @@
 
 - name: Enable delayed APT configuration
   set_fact:
-    apt_keys_delayed_enabled: '{{ apt_keys_delayed + apt_group_keys_delayed + apt_host_keys_delayed }}'
-    apt_repositories_delayed_enabled: '{{ apt_repositories_delayed + apt_group_repositories_delayed + apt_host_repositories_delayed }}'
-    apt_sources_delayed_enabled: '{{ apt_sources_delayed + apt_group_sources_delayed + apt_host_sources_delayed }}'
-  when: ansible_local is defined and ansible_local.apt is defined
+    apt_keys_delayed_enabled: '{{
+      (apt_keys_delayed               |d([]) | list) +
+      (apt_group_keys_delayed         |d([]) | list) +
+      (apt_host_keys_delayed          |d([]) | list) }}'
+    apt_repositories_delayed_enabled: '{{
+      (apt_repositories_delayed       |d([]) | list) +
+      (apt_group_repositories_delayed |d([]) | list) +
+      (apt_host_repositories_delayed  |d([]) | list) }}'
+    apt_sources_delayed_enabled: '{{
+      (apt_sources_delayed            |d([]) | list) +
+      (apt_group_sources_delayed      |d([]) | list) +
+      (apt_host_sources_delayed       |d([]) | list) }}'
+  when: (ansible_local|d() and ansible_local.apt|d())
 
 - name: Combine lists of default and user APT mirrors and sources
   set_fact:
-    apt_keys_combined: '{{ apt_keys + apt_group_keys + apt_host_keys + apt_keys_delayed_enabled | default([]) }}'
-    apt_repositories_combined: '{{ apt_repositories + apt_group_repositories + apt_host_repositories + apt_repositories_delayed_enabled | default([]) }}'
-    apt_mirrors_combined: '{{ apt_mirrors + apt_group_mirrors + apt_host_mirrors + apt_default_mirrors | default([]) }}'
-    apt_sources_combined: '{{ apt_default_sources | default([]) + apt_sources + apt_group_sources + apt_host_sources + apt_sources_delayed_enabled | default([]) }}'
+    apt_keys_combined: '{{
+      (apt_keys               |d([]) | list) +
+      (apt_group_keys         |d([]) | list) +
+      (apt_host_keys          |d([]) | list) +
+      (apt_keys_delayed_enabled|d([]) | list) }}'
+    apt_repositories_combined: '{{
+      (apt_repositories       |d([]) | list) +
+      (apt_group_repositories |d([]) | list) +
+      (apt_host_repositories  |d([]) | list) +
+      (apt_repositories_delayed_enabled|d([]) | list) }}'
+    apt_mirrors_combined: '{{
+      (apt_mirrors            |d([]) | list) +
+      (apt_group_mirrors      |d([]) | list) +
+      (apt_host_mirrors       |d([]) | list) +
+      (apt_default_mirrors    |d([]) | list) }}'
+    apt_sources_combined: '{{
+      (apt_default_sources    |d([]) | list) +
+      (apt_sources            |d([]) | list) +
+      (apt_group_sources      |d([]) | list) +
+      (apt_host_sources       |d([]) | list) +
+      (apt_sources_delayed_enabled|d([]) | list) }}'
 
 - name: Configure custom APT keys
   apt_key:
