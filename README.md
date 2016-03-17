@@ -12,7 +12,7 @@ This role allows you to configure a encrypted filesystem on top of any given
 block device using [dm-crypt][]/[cryptsetup][] and [LUKS][].  A random keyfile generated on the Ansible
 controller will be used for the encryption by default.  It is your
 responsibility that the keyfile is kept secure for this to make sense.  For
-example by storing the keyfile on a already encrypted filesystem (both on
+example by storing the keyfile on an already encrypted filesystem (both on
 the Ansible controller and the remote system).
 
 [LUKS]: https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup
