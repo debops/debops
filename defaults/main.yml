@@ -102,13 +102,13 @@ ferm_log_group: '32'
 # transition to the new firewall rules in the future.
 ferm_include_legacy: True
 
-# List of iptables rules to manage, templates used by these rules are included
-# in templates/etc/ferm/ferm.d/ directory.
+# List of ``iptables`` rules to manage, templates used by these rules are included
+# in :file:`templates/etc/ferm/ferm.d/` directory.
 # Additional variables are described below.
-ferm_rules: []
-ferm_group_rules: []
-ferm_host_rules: []
-ferm_dependent_rules: []
+ferm__rules: []
+ferm__group_rules: []
+ferm__host_rules: []
+ferm__dependent_rules: []
 
 # List of iptables INPUT rules to manage, many variables can be found in
 # template files, located in templates/etc/ferm/filter-input.d/ directory.
@@ -145,7 +145,7 @@ ferm_weight_map:
   'any-reject': '99'
 
 # List of default firewall rules defined on each host
-ferm_default_rules: '{{ ferm_rules_default_policy +
+ferm__default_rules: '{{ ferm_rules_default_policy +
                         ferm_rules_log +
                         ferm_rules_hooks +
                         ferm_rules_variables +
@@ -366,10 +366,10 @@ ferm_rules_forward:
     role_weight: '10'
     name: 'external_in'
     comment: 'Forward incoming traffic to other hosts'
-    when: '{{ (ferm_forward | bool or
+    when: '{{ ((ferm__forward|d(ferm_forward) | bool) or
                (ansible_local|d() and ansible_local.ferm|d() and
                 ansible_local.ferm.forward | bool)) }}'
-    delete: '{{ (not ferm_forward | bool and
+    delete: '{{ (not (ferm__forward|d(ferm_forward) | bool) and
                  (ansible_local|d(True) and (ansible_local.ferm is undefined or
                    (ansible_local.ferm.forward is undefined or
                     not ansible_local.ferm.forward | bool)))) }}'
@@ -382,10 +382,10 @@ ferm_rules_forward:
     role_weight: '20'
     name: 'external_out'
     comment: 'Forward outgoing traffic to other hosts'
-    when: '{{ (ferm_forward | bool or
+    when: '{{ ((ferm__forward|d(ferm_forward) | bool) or
                (ansible_local|d() and ansible_local.ferm|d() and
                 ansible_local.ferm.forward | bool)) }}'
-    delete: '{{ (not ferm_forward | bool and
+    delete: '{{ (not (ferm__forward|d(ferm_forward) | bool) and
                  (ansible_local|d(True) and (ansible_local.ferm is undefined or
                    (ansible_local.ferm.forward is undefined or
                     not ansible_local.ferm.forward | bool)))) }}'
@@ -399,10 +399,10 @@ ferm_rules_forward:
     role_weight: '30'
     name: 'internal'
     comment: 'Forward internal traffic between hosts'
-    when: '{{ (ferm_forward | bool or
+    when: '{{ ((ferm__forward|d(ferm_forward) | bool) or
                (ansible_local|d() and ansible_local.ferm|d() and
                 ansible_local.ferm.forward | bool)) }}'
-    delete: '{{ (not ferm_forward | bool and
+    delete: '{{ (not (ferm__forward|d(ferm_forward) | bool) and
                  (ansible_local|d(True) and (ansible_local.ferm is undefined or
                    (ansible_local.ferm.forward is undefined or
                     not ansible_local.ferm.forward | bool)))) }}'
@@ -413,15 +413,19 @@ ferm_custom_files: []
 ferm_group_custom_files: []
 ferm_host_custom_files: []
 
-# Enable or disable fail2ban integration. ``ferm`` will send ``fail2ban`` a reload
+# Enable or disable ``fail2ban`` integration. ``ferm`` will send ``fail2ban`` a reload
 # command after its own configuration is reloaded. If ``fail2ban`` is not present
 # or turned off, nothing will happen.
 ferm_fail2ban: True
 
-# Enable forwarding in ip(6)tables. This option can be used by other roles and
-# its status is saved in Ansible local facts, which will override variable
+
+# .. envvar:: ferm__forward
+#
+# Enable forwarding in ``ip(6)tables``. This option can be used by other roles and
+# it's status is saved in Ansible local facts, which will override variable
 # status from role defaults or inventory.
-ferm_forward: False
+ferm__forward: False
+
 
 # List of interfaces that are connected to external network, traffic on these
 # interfaces will be forwarded to all hosts
