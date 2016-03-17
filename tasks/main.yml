@@ -72,11 +72,16 @@
     path: '/etc/ferm/ferm.d/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | d(((item.role + "_" + ((item.role_weight + "_") if item.role_weight|d() else "")) if item.role|d() else "") + item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
-    - '{{ ferm_rules }}'
-    - '{{ ferm_group_rules }}'
-    - '{{ ferm_host_rules }}'
-    - '{{ ferm_dependent_rules }}'
-    - '{{ ferm_default_rules }}'
+    - '{{ ferm_rules           | d([]) | list }}'
+    - '{{ ferm_group_rules     | d([]) | list }}'
+    - '{{ ferm_host_rules      | d([]) | list }}'
+    - '{{ ferm_dependent_rules | d([]) | list }}'
+    - '{{ ferm_default_rules   | d([]) | list }}'
+    - '{{ ferm__rules }}'
+    - '{{ ferm__group_rules }}'
+    - '{{ ferm__host_rules }}'
+    - '{{ ferm__dependent_rules }}'
+    - '{{ ferm__default_rules }}'
   when: (ferm_enabled|bool and item.type|d() and (item.delete|d() | bool))
   register: ferm_register_rules_del
   tags: [ 'role::ferm:rules' ]
@@ -89,11 +94,16 @@
     group: 'adm'
     mode: '0644'
   with_flattened:
-    - '{{ ferm_rules }}'
-    - '{{ ferm_group_rules }}'
-    - '{{ ferm_host_rules }}'
-    - '{{ ferm_dependent_rules }}'
-    - '{{ ferm_default_rules }}'
+    - '{{ ferm_rules           | d([]) | list }}'
+    - '{{ ferm_group_rules     | d([]) | list }}'
+    - '{{ ferm_host_rules      | d([]) | list }}'
+    - '{{ ferm_dependent_rules | d([]) | list }}'
+    - '{{ ferm_default_rules   | d([]) | list }}'
+    - '{{ ferm__rules }}'
+    - '{{ ferm__group_rules }}'
+    - '{{ ferm__host_rules }}'
+    - '{{ ferm__dependent_rules }}'
+    - '{{ ferm__default_rules }}'
   when: (ferm_enabled|bool and item.type|d() and not (item.delete|d() | bool))
   register: ferm_register_rules_add
   tags: [ 'role::ferm:rules' ]

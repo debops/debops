@@ -5,7 +5,7 @@
 net.ipv4.conf.default.rp_filter = 1
 net.ipv4.conf.all.rp_filter = 1
 
-{%   if ((ferm_forward|d()) or
+{%   if ((ferm__forward|d(ferm_forward) | bool) or
          (ansible_local|d() and ansible_local.ferm|d() and (ansible_local.ferm.forward|d() | bool))) %}
 # Enable IPv4 forwarding
 net.ipv4.ip_forward = 1

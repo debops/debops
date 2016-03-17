@@ -16,6 +16,10 @@ v0.1.6
   undefined. This will ensure that the role works on hosts which don't have it
   applied yet. [drybjed]
 
+- Renamed ``ferm_.*rules`` to ``ferm__.*rules`` and ``ferm_forward`` to ``ferm__forward``.
+  Old names are currently still supported to not break stuff while updating the
+  code which depends on the old names. [ypid]
+
 v0.1.5
 ------
 

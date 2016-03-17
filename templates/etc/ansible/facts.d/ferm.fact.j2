@@ -1,5 +1,5 @@
 {% set ferm_tpl_forward = False                                                       %}
-{% if ((ferm_forward|d()) or
+{% if ((ferm__forward|d(ferm_forward) | bool) or
        (ansible_local|d() and ansible_local.ferm|d() and
         (ansible_local.ferm.forward|d() | bool)))                                     %}
 {%   set ferm_tpl_forward = True                                                      %}
