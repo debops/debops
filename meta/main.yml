@@ -2,10 +2,6 @@
 
 dependencies:
 
-  - role: debops.secret
-    tags: [ 'depend::secret', 'depend::secret:apt',
-            'depend-of::apt', 'type::dependency:hard' ]
-
   - role: debops.apt_preferences
     tags: [ 'depend::apt_preferences', 'depend::apt_preferences:apt',
             'depend-of::apt', 'type::dependency:hard' ]
@@ -21,13 +17,11 @@ dependencies:
         reason:  'Issues in wheezy package - http://debian.distrosfaqs.org/debian-user/wheezy-irqbalance/'
         by_role: 'debops.apt'
 
-
-  #- role: debops.etc_services
-  #  when: (apt is defined and apt) and (apt != True and apt == ansible_fqdn)
-
-  #- role: debops.ferm
-  #  when: (apt is defined and apt) and (apt != True and apt == ansible_fqdn)
-
+      - package: 'apt-cacher-ng'
+        backports: [ 'jessie' ]
+        reason:  'http://httpredir.debian.org/debian is not included in the deb_mirrors.gz file of apt-cacher-ng as of 0.8.0-3 (latest in Debian Jessie). This can results in unnecessary resource (bandwidth, storage) usage.'
+        by_role: 'debops.apt'
+        delete: True
 
 galaxy_info:
   author: 'Maciej Delmanowski'
