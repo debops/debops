@@ -16,8 +16,24 @@
 # Enable or disable this role.
 apt__enabled: True
 
-# .. )))
 
+# .. envvar:: apt_remove_default_configuration
+#
+# Ensure that ``/etc/apt/apt.conf`` is absent.
+# This file might contain APT proxy or other settings which overwrite options
+# set by ``debops.apt`` if present.
+# Thus the default is to ensure that this file is absent.
+apt_remove_default_configuration: True
+
+
+# .. envvar:: apt_update_cache_early
+#
+# FIXME: Not implemented yet.
+# Update APT cache early in the playbook if it's older than 24h
+# Set to False to disable update (useful when changing APT mirrors)
+apt_update_cache_early: '{{ (60 * 60 * 24) }}'
+
+# .. )))
 
 # .. Packages to install (((
 #
@@ -62,10 +78,10 @@ apt_conditional_whitelist:
     # Install firmware packages on selected systems (rack servers, etc.).
   - 'firmware'
 
-    # Install irqbalance package on multi-core systems.
+    # Install ``irqbalance`` package on multi-core systems.
   - 'irqbalance'
 
-    # Install uptimed on host systems, but not on virtualized guests.
+    # Install ``uptimed`` on host systems, but not on virtualized guests.
   - 'uptimed'
 
 # .. )))
@@ -102,15 +118,11 @@ apt__proxy_bypass_for_bugs_debian_org: False
 
 # .. )))
 
-
-# Manage APT package manager
-
-
-# Send mail notifications from APT to these email addresses
-apt_mail_notifications: [ 'root' ]
-
-
-# ---- APT repository mirrors ----
+# .. APT repository mirrors (((
+#
+# --------------------------
+#   APT repository mirrors
+# --------------------------
 
 # List of user-specified APT repository mirrors. These mirrors will be used for
 # all APT repositories that don't specify their own.
@@ -172,77 +184,161 @@ apt_host_repositories_delayed: []
 
 # ---- APT default repositories ----
 
-# List of user-specified APT repositories. More information and list of
-# parameters can be found in 'templates/etc/apt/sources.list.j2'.
+
+# .. envvar:: apt_sources
+#
+# Global list of user-specified APT repositories. More information and list of
+# parameters can be found in :file:`templates/etc/apt/sources.list.j2`.
+#
+# Examples::
+#
+# .. code::
+#
+#    apt_sources:
+#
+#      ## Enable Debian Testing Repository.
+#      - comment:  'Debian Testing Repository'
+#        releases:
+#          - 'stretch'
+#        sections:
+#          - 'main'
+#
+#      ## Example repository definition from default ``debops.reprepro`` configuration.
+#      - comment:  'Local backports of Debian Testing packages'
+#        mirrors:  [ '{{ "http://apt." + ansible_domain + "/" + ansible_distribution | lower }}' ]
+#        releases: [ '{{ apt_sources_release_backports }}' ]
+#        sections: [ 'main', 'contrib', 'non-free' ]
+#
 apt_sources: []
+
+
+# .. envvar:: apt_group_sources
+#
+# Host group list of user-specified APT repositories. More information and list
+# of parameters can be found in :file:`templates/etc/apt/sources.list.j2`.
 apt_group_sources: []
+
+
+# .. envvar:: apt_host_sources
+#
+# Host list of user-specified APT repositories. More information and list of
+# parameters can be found in :file:`templates/etc/apt/sources.list.j2`.
 apt_host_sources: []
 
-# List of secondary APT repositories which are not enabled on the first Ansible
+
+# .. envvar:: apt_sources_delayed
+#
+# Global list of secondary APT repositories which are not enabled on the first Ansible
 # run, but are enabled automatically on subsequent runs. It can be used in
 # cases where APT repository might not be available initially.
 apt_sources_delayed: []
+
+
+# .. envvar:: apt_group_sources_delayed
+#
+# Host group list of secondary APT repositories which are not enabled on the first Ansible
+# run, but are enabled automatically on subsequent runs. It can be used in
+# cases where APT repository might not be available initially.
 apt_group_sources_delayed: []
+
+
+# .. envvar:: apt_host_sources_delayed
+#
+# Host group list of secondary APT repositories which are not enabled on the first Ansible
+# run, but are enabled automatically on subsequent runs. It can be used in
+# cases where APT repository might not be available initially.
 apt_host_sources_delayed: []
 
-  # Example repository definition from default 'debops.reprepro' configuration
-  #- comment:  'Local backports of Debian Testing packages'
-  #  mirrors:  [ '{{ "http://apt." + ansible_domain + "/" + ansible_distribution | lower }}' ]
-  #  releases: [ '{{ apt_sources_release_backports }}' ]
-  #  sections: [ 'main', 'contrib', 'non-free' ]
 
+# .. envvar:: apt_default_sources_lookup
+#
 # String used to select default repositories based on Linux distribution used
 # on a specific host. Default repositories are set using
-# 'vars/apt_default_sources_*.yml' files. To disable default repositories,
-# define variable 'apt_default_sources: []' in inventory.
+# :file:`vars/apt_default_sources_*.yml` files. To disable default repositories,
+# define ``apt_default_sources: []`` in inventory.
 # If you just need to modify the APT sections, you can define them as
 # ``apt_sources_sections``.
 apt_default_sources_lookup: '{{ ansible_distribution }}'
 
-# Linux distribution release to use for default APT repositories
+
+# .. envvar:: apt_sources_release
+#
+# Linux distribution release to use for default APT repositories.
 apt_sources_release: '{{ ansible_distribution_release.split("/")[0] }}'
+
+
+# .. envvar:: apt_sources_release_updates
+#
+# Linux distribution updates release to use for default APT repositories.
 apt_sources_release_updates: '{{ apt_sources_release }}-updates'
+
+
+# .. envvar:: apt_sources_release_security
+#
+# Linux distribution security release to use for default APT repositories.
 apt_sources_release_security: '{{ apt_sources_release }}-security'
+
+
+# .. envvar:: apt_sources_release_backports
+#
+# Linux distribution backports to use for default APT repositories.
 apt_sources_release_backports: '{{ apt_sources_release }}-backports'
 
-# List of releases to enable in default APT repositories
+
+# .. envvar:: apt_sources_release_list
+#
+# List of releases to enable in default APT repositories.
 apt_sources_release_list:
   - '{{ apt_sources_release }}'
   - '{{ apt_sources_release_updates }}'
   - '{{ apt_sources_release_backports }}'
 
+
+# .. envvar:: apt_sources_types
+#
 # List of repository types to enable for default APT repositories. To enable
-# source repositories, add 'deb-src' to the list.
+# source repositories, add ``deb-src`` to the list.
 apt_sources_types: [ 'deb' ]
 
+# .. )))
 
-# ---- Update notifications ----
+# .. Update notifications (((
+#
+# ------------------------
+#   Update notifications
 
-# Enable mail notifications about updates (apticron and apt-listchanges)
+
+# .. envvar:: apt_mail_notifications
+#
+# Send mail notifications from APT to these email addresses.
+apt_mail_notifications: [ 'root' ]
+# ------------------------
+
+
+# .. envvar:: apt_update_notifications
+#
+# Enable mail notifications about updates (``apticron`` and
+# ``apt-listchanges``).
 apt_update_notifications: True
 
-# What type of notifications to send (choices: news, changelogs, both)
+
+# .. envvar:: apt_update_notifications_type_listchanges
+#
+# What type of notifications to send.
+# Choices: ``news``, ``changelogs``, ``both``.
 apt_update_notifications_type_listchanges: 'news'
+
+
+# .. envvar:: apt_update_notifications_type_apticron
+#
+# What type of notifications to send.
+# Choices: ``news``, ``changelogs``, ``both``.
 apt_update_notifications_type_apticron: 'both'
 
+
+# .. envvar:: apt_update_notifications_diff
+#
 # Send only information about changes from the last notification?
 apt_update_notifications_diff: True
 
-
-# ---- Other ----
-
-# .. envvar:: apt_remove_default_configuration
-#
-# Ensure that ``/etc/apt/apt.conf`` is absent.
-# This file might contain APT proxy or other settings which overwrite options
-# set by ``debops.apt`` if present.
-# Thus the default is to ensure that this file is absent.
-apt_remove_default_configuration: True
-
-
-# .. envvar:: apt_update_cache_early
-#
-# FIXME: Not implemented yet.
-# Update APT cache early in the playbook if it's older than 24h
-# Set to False to disable update (useful when changing APT mirrors)
-apt_update_cache_early: '{{ (60 * 60 * 24) }}'
+# .. )))
