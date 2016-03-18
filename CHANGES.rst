@@ -30,4 +30,9 @@ v0.1.0
 - Fix deprecation warnings in Ansible 2.1.0. [drybjed]
 
 - Remove support for ``apt-cacher-ng``. The new role ``debops.apt_cacher_ng``
-  handles this now. [ypid]
+  handles this now. The overloaded ``apt`` variable as been split into
+  ``apt__enabled`` and ``apt__proxy``. [ypid]
+
+- Added ``apt__proxy_bypass_for_bugs_debian_org`` which you can enable if you
+  hit a problem with a proxy server not allowing access to
+  https://bugs.debian.org. [ypid]
