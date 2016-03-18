@@ -146,6 +146,21 @@ apparmor__host_profile_status: {}
 # Check :file:`/etc/apparmor.d/local/README` for details.
 # All three dictionaries are merged into one profile configuration.
 #
+# ``comment``
+#   String, optional, default "Uncommented rule group". Comment for the given
+#   rules.
+#
+# ``rules``
+#   List of strings, required. AppArmor rules. Note that the rules are not
+#   comma terminated, this is done by the role template.
+#
+# ``by_role``
+#   Strings, optional, default "". Name of a role which manages the rules.
+#   Useful for using this role as role dependency.
+#
+# ``delete``
+#   Boolean, optional, default ``False``. Delete the given rule(s).
+#
 # Example::
 #
 #    apparmor__local_config_global:
@@ -155,9 +170,11 @@ apparmor__host_profile_status: {}
 #          rules:
 #            - '/etc/resolvconf/upstream.conf r'
 #            - '/etc/hosts.dnsmasq r'
+#          by_role: 'debops.dnsmasq'
 #        - comment: 'Allow dnsmasq to read /usr/share/dnsmasq-base/trust-anchors.conf'
 #          rules:
 #            - '/usr/share/dnsmasq-base/* r'
+#          by_role: 'debops.dnsmasq'
 #
 #      'usr.bin.pidgin':
 #        - comment: 'Allow local Pidgin plugins'

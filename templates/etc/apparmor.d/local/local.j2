@@ -7,7 +7,7 @@
 {% macro apparmor__write_local_profile_part(scope, apparmor__local) %}{# ((( #}
 {% if apparmor__local[item.key] is defined %}
 ## {{ scope }}. {{ '{{{' }}
-{%   for rules_group in apparmor__local[item.key] %}
+{%   for rules_group in apparmor__local[item.key] if (not rules_group.delete|d()) %}
 # {{ rules_group.comment | default('Uncommented rule group') }}{{ (" managed by role " + rules_group.by_role) if (rules_group.by_role|d()) else "" }}:
 {%     for rule in rules_group.rules %}
 {{ rule }},

@@ -24,3 +24,5 @@ v0.1.0
 - Added ``apparmor__local_dependent_config`` and
   ``apparmor__tunables_dependent`` to use this role as dependency for other
   roles.
+
+- Added ``delete`` and ``by_role`` options to ``apparmor__local_config_global``. [ypid]
