@@ -36,7 +36,7 @@ v0.2.9
 - Moved roles dependencies from ``debops.subnetwork`` to subnetwork playbook. [ypid]
 
 - Add ``debops.apt_cacher_ng`` role to it's own
-  ``service/unattended_upgrades.yml`` playbook. The server-side support for the
+  ``service/apt_cacher_ng.yml`` playbook. The server-side support for the
   ``apt-cacher-ng`` package in ``debops.apt`` role has be removed. Client-side
   support is being reworked in ``debops.apt``. [ypid]
 
