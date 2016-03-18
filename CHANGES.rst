@@ -20,3 +20,7 @@ v0.1.0
      git ls-files -z | find -type f -print0 | xargs --null sed --in-place --regexp-extended 's/(apparmor)_([^_])/\1__\2/g'
 
   [ypid]
+
+- Added ``apparmor__local_dependent_config`` and
+  ``apparmor__tunables_dependent`` to use this role as dependency for other
+  roles.

@@ -7,10 +7,12 @@
       | combine(apparmor__host_group_profile_status |d({}))
       | combine(apparmor__host_profile_status       |d({})) }}'
     apparmor__local_config: '{{
-      apparmor__local_config_global               |d({})
+      apparmor__local_dependent_config            |d({})
+      | combine(apparmor__local_config_global     |d({}))
       | combine(apparmor__local_config_host_group |d({}))
       | combine(apparmor__local_config_host       |d({})) }}'
     apparmor__tunables: '{{
+      (apparmor__tunables_dependent  |d([]) | list) +
       (apparmor__tunables_global     |d([]) | list) +
       (apparmor__tunables_host_group |d([]) | list) +
       (apparmor__tunables_host       |d([]) | list) }}'
@@ -123,7 +125,7 @@
   with_dict: '{{ apparmor__local_config }}'
 
 - name: Reload changed profiles
-  command: apparmor__parser --replace "/etc/apparmor.d/{{ item.item.key }}"
+  command: apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"
   when: (item|changed and not apparmor__register_tunables|changed)
   with_items: '{{ apparmor__register_local_config.results }}'
 
