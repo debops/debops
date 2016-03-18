@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.3.0
+------
+
+*Unreleased*
+
+- Added ``delete`` boolean switch to allow to delete local services. [ypid]
+
 v0.2.0
 ------
 
