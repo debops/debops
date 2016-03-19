@@ -1,0 +1,21 @@
+---
+
+# Can not changed directly. To change it define apt__default_sources in your
+# inventory variables (same as below).
+# Then you can change the apt__default_sources_sections directly.
+apt__default_sources_sections:
+  - 'main'
+  - 'contrib'
+  - 'non-free'
+
+# List of default repositories for Debian GNU/Linux
+apt__default_sources:
+  - comment:  'Debian Security Repository'
+    mirrors:  [ 'http://security.debian.org/' ]
+    releases: [ '{{ apt__sources_release }}/updates' ]
+    sections: '{{ apt__sources_sections|d(apt__default_sources_sections) }}'
+
+  - comment:  'Debian Package Repositories'
+    releases: '{{ apt__sources_release_list }}'
+    sections: '{{ apt__sources_sections|d(apt__default_sources_sections) }}'
+

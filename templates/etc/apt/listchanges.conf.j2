@@ -2,19 +2,19 @@
 
 [apt]
 frontend=mail
-email_address={{ apt_mail_notifications|d(['root']) | join(',') }}
+email_address={{ apt__mail_notifications|d(['root']) | join(',') }}
 confirm=0
-which={{ apt_update_notifications_type_listchanges | default('news') }}
-{% if apt_update_notifications_diff|d() %}
+which={{ apt__update_notifications_type_listchanges | default('news') }}
+{% if apt__update_notifications_diff|d() %}
 save_seen=/var/lib/apt/listchanges.db
 {% endif %}
 
 [apticron]
 frontend=mail
-email_address={{ apt_mail_notifications|d(['root']) | join(',') }}
+email_address={{ apt__mail_notifications|d(['root']) | join(',') }}
 confirm=0
-which={{ apt_update_notifications_type_apticron | default('both') }}
-{% if apt_update_notifications_diff|d() %}
+which={{ apt__update_notifications_type_apticron | default('both') }}
+{% if apt__update_notifications_diff|d() %}
 save_seen=/var/lib/apt/listchanges.db
 {% endif %}
 

@@ -20,6 +20,16 @@ v0.2.0
 
 - Updated/Reworked documentation. [ypid]
 
+- Changed namespace from ``apt_`` to ``apt__``.
+  ``apt_[^_]`` variables are hereby deprecated and you might need to
+  update your inventory. This oneliner might come in handy to do this.
+
+  .. code:: shell
+
+     git ls-files -z | find -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(apt)_([^_])/\1__\2/g;s/apt__(key|repository|preferences|cacher)/apt_\1/g;s/apt_keys_delayed/apt__keys_delayed/g;'
+
+  [ypid]
+
 v0.1.0
 ------
 
@@ -33,13 +43,13 @@ v0.1.0
 - Switch the default Debian mirror to new official redirector at
   http://httpredir.debian.org/. [drybjed]
 
-- Added ``apt_remove_default_configuration`` option which defaults to true.
+- Added ``apt__remove_default_configuration`` option which defaults to true.
   This ensures that ``/etc/apt/apt.conf`` is absent. [ypid]
 
 - Use backported apt-cacher-ng on Debian Jessie. [ypid]
 
-- Allow to modify APT sections without defining ``apt_default_sources`` by
-  using the added ``apt_sources_sections`` variable. [ypid]
+- Allow to modify APT sections without defining ``apt__default_sources`` by
+  using the added ``apt__sources_sections`` variable. [ypid]
 
 - Remove support for ``unattended-upgrades``. The new role
   ``debops.unattended_upgrades`` handles this now. The ``debops.apt`` role will

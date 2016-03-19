@@ -15,63 +15,63 @@
   file:
     path: '{{ item }}'
     state: 'absent'
-  when: apt_remove_default_configuration|d()
+  when: apt__remove_default_configuration|d()
   with_items:
     - '/etc/apt/apt.conf'
 
 - name: Load default APT mirrors configuration
   include_vars: '{{ item }}'
   with_first_found:
-    - 'apt_default_mirrors_{{ apt_default_mirrors_lookup | lower }}.yml'
-    - 'apt_default_mirrors.yml'
-  when: apt_default_mirrors is undefined
+    - 'apt__default_mirrors_{{ apt__default_mirrors_lookup | lower }}.yml'
+    - 'apt__default_mirrors.yml'
+  when: apt__default_mirrors is undefined
 
 - name: Load default APT sources configuration
   include_vars: '{{ item }}'
   with_first_found:
-    - 'apt_default_sources_{{ apt_default_sources_lookup | lower }}.yml'
-    - 'apt_default_sources.yml'
-  when: apt_default_sources is undefined
+    - 'apt__default_sources_{{ apt__default_sources_lookup | lower }}.yml'
+    - 'apt__default_sources.yml'
+  when: apt__default_sources is undefined
 
 - name: Enable delayed APT configuration
   set_fact:
-    apt_keys_delayed_enabled: '{{
-      (apt_keys_delayed               |d([]) | list) +
-      (apt_group_keys_delayed         |d([]) | list) +
-      (apt_host_keys_delayed          |d([]) | list) }}'
-    apt_repositories_delayed_enabled: '{{
-      (apt_repositories_delayed       |d([]) | list) +
-      (apt_group_repositories_delayed |d([]) | list) +
-      (apt_host_repositories_delayed  |d([]) | list) }}'
-    apt_sources_delayed_enabled: '{{
-      (apt_sources_delayed            |d([]) | list) +
-      (apt_group_sources_delayed      |d([]) | list) +
-      (apt_host_sources_delayed       |d([]) | list) }}'
+    apt__keys_delayed_enabled: '{{
+      (apt__keys_delayed               |d([]) | list) +
+      (apt__group_keys_delayed         |d([]) | list) +
+      (apt__host_keys_delayed          |d([]) | list) }}'
+    apt__repositories_delayed_enabled: '{{
+      (apt__repositories_delayed       |d([]) | list) +
+      (apt__group_repositories_delayed |d([]) | list) +
+      (apt__host_repositories_delayed  |d([]) | list) }}'
+    apt__sources_delayed_enabled: '{{
+      (apt__sources_delayed            |d([]) | list) +
+      (apt__group_sources_delayed      |d([]) | list) +
+      (apt__host_sources_delayed       |d([]) | list) }}'
   when: (ansible_local|d() and ansible_local.apt|d())
 
 - name: Combine lists of default and user APT mirrors and sources
   set_fact:
     apt_keys_combined: '{{
       (apt_keys               |d([]) | list) +
-      (apt_group_keys         |d([]) | list) +
-      (apt_host_keys          |d([]) | list) +
-      (apt_keys_delayed_enabled|d([]) | list) }}'
-    apt_repositories_combined: '{{
-      (apt_repositories       |d([]) | list) +
-      (apt_group_repositories |d([]) | list) +
-      (apt_host_repositories  |d([]) | list) +
-      (apt_repositories_delayed_enabled|d([]) | list) }}'
-    apt_mirrors_combined: '{{
-      (apt_mirrors            |d([]) | list) +
-      (apt_group_mirrors      |d([]) | list) +
-      (apt_host_mirrors       |d([]) | list) +
-      (apt_default_mirrors    |d([]) | list) }}'
-    apt_sources_combined: '{{
-      (apt_default_sources    |d([]) | list) +
-      (apt_sources            |d([]) | list) +
-      (apt_group_sources      |d([]) | list) +
-      (apt_host_sources       |d([]) | list) +
-      (apt_sources_delayed_enabled|d([]) | list) }}'
+      (apt__group_keys         |d([]) | list) +
+      (apt__host_keys          |d([]) | list) +
+      (apt__keys_delayed_enabled|d([]) | list) }}'
+    apt__repositories_combined: '{{
+      (apt__repositories       |d([]) | list) +
+      (apt__group_repositories |d([]) | list) +
+      (apt__host_repositories  |d([]) | list) +
+      (apt__repositories_delayed_enabled|d([]) | list) }}'
+    apt__mirrors_combined: '{{
+      (apt__mirrors            |d([]) | list) +
+      (apt__group_mirrors      |d([]) | list) +
+      (apt__host_mirrors       |d([]) | list) +
+      (apt__default_mirrors    |d([]) | list) }}'
+    apt__sources_combined: '{{
+      (apt__default_sources    |d([]) | list) +
+      (apt__sources            |d([]) | list) +
+      (apt__group_sources      |d([]) | list) +
+      (apt__host_sources       |d([]) | list) +
+      (apt__sources_delayed_enabled|d([]) | list) }}'
 
 - name: Configure custom APT keys
   apt_key:
@@ -91,7 +91,7 @@
     repo: '{{ item.repo }}'
     state: '{{ item.state | default("present") }}'
     update_cache: False
-  with_items: '{{ apt_repositories_combined }}'
+  with_items: '{{ apt__repositories_combined }}'
   when: ((item.repo is defined and item.repo) and
          (item.state is undefined or item.state is defined))
 
@@ -99,7 +99,7 @@
   command: dpkg-divert --quiet --local --divert /etc/apt/sources.list.dpkg-divert --rename /etc/apt/sources.list
   args:
     creates: '/etc/apt/sources.list.dpkg-divert'
-  when: apt_sources_combined
+  when: apt__sources_combined
 
 - name: Configure main APT package sources
   template:
@@ -108,20 +108,20 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: apt_sources_combined
+  when: apt__sources_combined
 
 - name: Move sources.list out of the way before reversion
   # only remove sources.list if sources.list.dpkg-divert exists
   command: rm -f /etc/apt/sources.list
   args:
     removes: '/etc/apt/sources.list.dpkg-divert'
-  when: not apt_sources_combined
+  when: not apt__sources_combined
 
 - name: Remove diversion of original /etc/apt/sources.list
   command: dpkg-divert --quiet --local --rename --remove /etc/apt/sources.list
   args:
     removes: '/etc/apt/sources.list.dpkg-divert'
-  when: not apt_sources_combined
+  when: not apt__sources_combined
 
 - name: Update package lists
   apt:
