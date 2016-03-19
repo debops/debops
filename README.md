@@ -8,12 +8,12 @@
 [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.apt-660198.svg?style=flat)](https://galaxy.ansible.com/detail#/role/1551)
 
 
-`debops.apt` configures and manages APT package manager in Debian and other
-derivative distributions. Specifically, it will manage:
+`debops.apt` configures and manages the APT package manager in Debian and
+other derivative distributions. Specifically, it will manage:
 
 * The APT sources
 * The use of a APT proxy server in the network
-* installation of custom packages specified in Ansible inventory
+* Installation of custom packages specified in Ansible inventory
 
 ### Installation
 
@@ -26,7 +26,7 @@ ansible-galaxy install debops.apt
 ### Documentation
 
 More information about `debops.apt` can be found in the
-[official debops.apt documentation](http://docs.debops.org/en/latest/ansible/roles/debops.apt.html).
+[official debops.apt documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-apt/docs/).
 
 
 
@@ -47,6 +47,7 @@ into your playbook.
 `apt` role was written by:
 
 - Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
+- [Robin Schneider](http://ypid.de/) | [e-mail](mailto:ypid@riseup.net) | [Twitter](https://twitter.com/ypid) | [GitHub](https://github.com/ypid)
 
 License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
 

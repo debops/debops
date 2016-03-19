@@ -12,7 +12,7 @@ v0.1.0
   lists of mirrors. [drybjed]
 
 - Switch the default Debian mirror to new official redirector at
-  ``http://httpredir.debian.org/``. [drybjed]
+  http://httpredir.debian.org/. [drybjed]
 
 - Added ``apt_remove_default_configuration`` option which defaults to true.
   This ensures that ``/etc/apt/apt.conf`` is absent. [ypid]
@@ -40,3 +40,5 @@ v0.1.0
 - Removed ``debops.apt_preferences`` as role hard dependency and added
   ``apt__apt_preferences__dependent_list`` which you can feed to
   ``debops.apt_preferences`` in your playbook. [ypid]
+
+- Updated/Reworked documentation. [ypid]

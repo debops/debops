@@ -142,7 +142,6 @@ apt__proxy_bypass_for_bugs_debian_org: False
 #
 #    apt_mirrors: [ 'http://cdn.debian.net/debian' ]
 #
-# [ 'http://cdn.debian.net/debian' ]
 apt_mirrors: []
 
 
@@ -164,8 +163,9 @@ apt_host_mirrors: []
 #
 # String used to select default mirrors based on Linux distribution used on
 # a specific host. Default mirrors are set using
-# 'vars/apt_default_mirrors_*.yml' files. To disable default mirrors, define
-# variable 'apt_default_mirrors: []' in inventory.
+# `vars/apt_default_mirrors_*.yml <https://github.com/debops/ansible-apt/tree/master/vars>`_
+# files. To disable default mirrors, define
+# variable ``apt_default_mirrors: []`` in inventory.
 apt_default_mirrors_lookup: '{{ ansible_distribution }}'
 
 # .. )))
@@ -309,7 +309,9 @@ apt_host_repositories_delayed: []
 # .. envvar:: apt_sources
 #
 # Global list of user-specified APT repositories. More information and list of
-# parameters can be found in :file:`templates/etc/apt/sources.list.j2`.
+# parameters can be found in `templates/etc/apt/sources.list.j2`_.
+#
+# .. _`templates/etc/apt/sources.list.j2`: https://github.com/debops/ansible-apt/blob/master/templates/etc/apt/sources.list.j2
 #
 # Examples::
 #
@@ -334,14 +336,14 @@ apt_sources: []
 # .. envvar:: apt_group_sources
 #
 # Host group list of user-specified APT repositories. More information and list
-# of parameters can be found in :file:`templates/etc/apt/sources.list.j2`.
+# of parameters can be found in `templates/etc/apt/sources.list.j2`_.
 apt_group_sources: []
 
 
 # .. envvar:: apt_host_sources
 #
 # Host list of user-specified APT repositories. More information and list of
-# parameters can be found in :file:`templates/etc/apt/sources.list.j2`.
+# parameters can be found in `templates/etc/apt/sources.list.j2`_.
 apt_host_sources: []
 
 
@@ -482,9 +484,10 @@ apt__apt_preferences__dependent_list:
     reason:  'Issues in wheezy package - http://debian.distrosfaqs.org/debian-user/wheezy-irqbalance/'
     by_role: 'debops.apt'
 
+    ## Remove configuration from ``debops.apt`` context which is now managed by
+    ## ``debops.apt_cacher_ng``.
   - package: 'apt-cacher-ng'
     delete: True
-    ## Remove file by ``debops.apt`` which is now managed by ``debops.apt_cacher_ng``.
     by_role: 'debops.apt'
     backports: [ 'jessie' ]
 
