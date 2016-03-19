@@ -10,7 +10,7 @@
 
 - name: Configure apt-cacher-ng
   template:
-    src: '{{ item.path }}.j2'
+    src: '{{ item.src|d(item.path) }}.j2'
     dest: '/{{ item.path }}'
     owner: '{{ item.owner|d("root") }}'
     group: '{{ item.group|d("root") }}'
