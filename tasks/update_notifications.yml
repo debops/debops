@@ -5,7 +5,7 @@
     pkg: '{{ item }}'
     state: 'latest'
     install_recommends: no
-  with_items: [ 'apt-listchanges', 'apticron' ]
+  with_flattened: '{{ apt_update_notification_packages | list }}'
   when: (apt_update_notifications|d() | bool)
 
 - name: Configure apticron and apt-listchanges
@@ -15,7 +15,9 @@
     owner: 'root'
     group: 'root'
     mode: 0644
-  with_items: [ 'etc/apt/listchanges.conf', 'etc/apticron/apticron.conf' ]
+  with_items:
+    - 'etc/apt/listchanges.conf'
+    - 'etc/apticron/apticron.conf'
   when: (apt_update_notifications|d() | bool)
 
 - name: Remove apticron and apt-listchanges
@@ -23,7 +25,7 @@
     pkg: '{{ item }}'
     state: 'absent'
     purge: yes
-  with_items: [ 'apt-listchanges', 'apticron' ]
+  with_flattened: '{{ apt_update_notification_packages | list }}'
   when: (apt_update_notifications|d() | bool)
 
 
