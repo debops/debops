@@ -1,22 +1,25 @@
 ---
 
-#- acng Server
+- name: Configure APT to use a proxy server
+  template:
+    src: 'etc/apt/apt.conf.d/000apt-cacher-ng-proxy.j2'
+    dest: '/etc/apt/apt.conf.d/000apt-cacher-ng-proxy'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: (apt__enabled|d() | bool) and ((apt__proxy_url is defined and apt__proxy_url is string and apt__proxy_url) or apt__proxy_bypass_for_bugs_debian_org)
 
-#- include: configure_acng_server.yml
-#  when: apt != True and apt == ansible_fqdn
-
-#- acng Client
-
-- include: configure_acng_client.yml
-  when: apt != True
-
-#- common
+- name: Configure APT to not use a proxy server
+  file:
+    path: '/etc/apt/apt.conf.d/000apt-cacher-ng-proxy'
+    state: 'absent'
+  when: (apt__enabled|d() | bool) and not ((apt__proxy_url is defined and apt__proxy_url is string and apt__proxy_url) or apt__proxy_bypass_for_bugs_debian_org)
 
 - include: apt.yml
-  when: apt is defined and apt
+  when: (apt__enabled|d() | bool)
 
 - include: update_notifications.yml
-  when: apt is defined and apt
+  when: (apt__enabled|d() | bool)
 
 - name: Remove old unattended-upgrades configuration
   file:
@@ -25,9 +28,10 @@
   with_items:
     - '25auto-upgrades.conf'
     - '55unattended-upgrades.conf'
+  when: (apt__enabled|d() | bool)
 
 - include: install_packages.yml
-  when: apt is defined and apt
+  when: (apt__enabled|d() | bool)
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -36,7 +40,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: apt is defined and apt
+  when: (apt__enabled|d() | bool)
 
 - name: Save APT local facts
   template:
@@ -45,5 +49,5 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: apt is defined and apt
+  when: (apt__enabled|d() | bool)
 

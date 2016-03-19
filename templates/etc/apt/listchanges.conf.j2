@@ -1,28 +1,20 @@
-# This file is managed by Ansible, all changes will be lost
+# {{ ansible_managed }}
 
 [apt]
 frontend=mail
-{% if apt_mail_notifications is defined and apt_mail_notifications %}
-email_address={{ apt_mail_notifications | join(',') }}
-{% else %}
-email_address=root
-{% endif %}
+email_address={{ apt__mail_notifications|d(['root']) | join(',') }}
 confirm=0
-which={{ apt_update_notifications_type_listchanges | default('news') }}
-{% if apt_update_notifications_diff is defined and apt_update_notifications_diff %}
+which={{ apt__update_notifications_type_listchanges | default('news') }}
+{% if apt__update_notifications_diff|d() %}
 save_seen=/var/lib/apt/listchanges.db
 {% endif %}
 
 [apticron]
 frontend=mail
-{% if apt_mail_notifications is defined and apt_mail_notifications %}
-email_address={{ apt_mail_notifications | join(',') }}
-{% else %}
-email_address=root
-{% endif %}
+email_address={{ apt__mail_notifications|d(['root']) | join(',') }}
 confirm=0
-which={{ apt_update_notifications_type_apticron | default('both') }}
-{% if apt_update_notifications_diff is defined and apt_update_notifications_diff %}
+which={{ apt__update_notifications_type_apticron | default('both') }}
+{% if apt__update_notifications_diff|d() %}
 save_seen=/var/lib/apt/listchanges.db
 {% endif %}
 
