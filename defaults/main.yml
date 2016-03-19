@@ -28,10 +28,12 @@ apt__remove_default_configuration: True
 
 # .. envvar:: apt__update_cache_early
 #
-# FIXME: Not implemented yet.
 # Update APT cache early in the playbook if it's older than 24h
 # Set to False to disable update (useful when changing APT mirrors)
-apt__update_cache_early: '{{ (60 * 60 * 24) }}'
+apt__update_cache_early: '{{ ansible_local.core.cache_valid_time
+                             if (ansible_local|d() and ansible_local.core|d() and
+                                 ansible_local.core.cache_valid_time|d())
+                             else (60 * 60 * 24) }}'
 
 # .. )))
 
