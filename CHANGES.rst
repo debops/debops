@@ -1,6 +1,25 @@
 Changelog
 =========
 
+v0.2.0
+------
+
+*Unreleased*
+
+- Remove support for ``apt-cacher-ng``. The new role ``debops.apt_cacher_ng``
+  handles this now. The overloaded ``apt`` variable as been split into
+  ``apt__enabled`` and ``apt__proxy``. [ypid]
+
+- Added ``apt__proxy_bypass_for_bugs_debian_org`` which you can enable if you
+  hit a problem with a proxy server not allowing access to
+  https://bugs.debian.org. [ypid]
+
+- Removed ``debops.apt_preferences`` as role hard dependency and added
+  ``apt__apt_preferences__dependent_list`` which you can feed to
+  ``debops.apt_preferences`` in your playbook. [ypid]
+
+- Updated/Reworked documentation. [ypid]
+
 v0.1.0
 ------
 
@@ -28,17 +47,3 @@ v0.1.0
   ``unattended-upgrades`` to clean up the old systems. [drybjed]
 
 - Fix deprecation warnings in Ansible 2.1.0. [drybjed]
-
-- Remove support for ``apt-cacher-ng``. The new role ``debops.apt_cacher_ng``
-  handles this now. The overloaded ``apt`` variable as been split into
-  ``apt__enabled`` and ``apt__proxy``. [ypid]
-
-- Added ``apt__proxy_bypass_for_bugs_debian_org`` which you can enable if you
-  hit a problem with a proxy server not allowing access to
-  https://bugs.debian.org. [ypid]
-
-- Removed ``debops.apt_preferences`` as role hard dependency and added
-  ``apt__apt_preferences__dependent_list`` which you can feed to
-  ``debops.apt_preferences`` in your playbook. [ypid]
-
-- Updated/Reworked documentation. [ypid]
