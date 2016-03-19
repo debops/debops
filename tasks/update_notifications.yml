@@ -26,7 +26,7 @@
     state: 'absent'
     purge: yes
   with_flattened: '{{ apt__update_notification_packages | list }}'
-  when: (apt__update_notifications|d() | bool)
+  when: not (apt__update_notifications|d() | bool)
 
 
 
