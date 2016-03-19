@@ -46,9 +46,13 @@ apt_cacher_ng__deploy_state: 'present'
 # This variable allows you to change which configuration files this role is
 # going to create and which permissions to use for them.
 #
-# ``path``
-#   String, required. Do not change. Corresponds with the target name and the
+# ``src``
+#   String, optional, defaults to ``{{ item.path }}``. Corresponds with the
 #   name of the template file.
+#
+# ``path``
+#   String, required. Corresponds with the target name and
+#   provides the default name of the template file.
 #
 # ``owner``
 #   String, optional, defaults to ``root``. Unix user which owns the
@@ -67,6 +71,13 @@ apt_cacher_ng__deploy_state: 'present'
 #
 apt_cacher_ng__configuration_files:
 
+  - path: 'etc/apt-cacher-ng/backends_debian'
+    mode: '0644'
+  - path: 'etc/apt-cacher-ng/backends_ubuntu'
+    mode: '0644'
+  - path: 'etc/apt-cacher-ng/backends_gentoo'
+    mode: '0644'
+    divert: False
   - path: 'etc/apt-cacher-ng/acng.conf'
     mode: '0644'
   - path: 'etc/apt-cacher-ng/security.conf'
@@ -139,6 +150,40 @@ apt_cacher_ng__network_timeout: 60
 # overall download speed limit. Unit: KiB/s, Default: unlimited.
 apt_cacher_ng__max_download_speed_kib: ''
 
+
+# .. )))
+
+# .. Upstream mirrors (((
+#
+# --------------------
+#   Upstream mirrors
+# --------------------
+
+# .. envvar:: apt_cacher_ng__upstream_mirror_debian
+#
+# Which upstream mirror(s) should be used for Debian repositories?
+# One mirror per line.
+# Set to an empty string to let the package scripts from Apt-Cacher NG decide
+# which upstream mirror to use.
+apt_cacher_ng__upstream_mirror_debian: 'http://httpredir.debian.org/debian/'
+
+
+# .. envvar:: apt_cacher_ng__upstream_mirror_ubuntu
+#
+# Which upstream mirror(s) should be used for Ubuntu repositories?
+# One mirror per line.
+# Set to an empty string to let the package scripts from Apt-Cacher NG decide
+# which upstream mirror to use.
+apt_cacher_ng__upstream_mirror_ubuntu: ''
+
+
+# .. envvar:: apt_cacher_ng__upstream_mirror_gentoo
+#
+# Which upstream mirror(s) should be used for Gentoo repositories?
+# One mirror per line.
+# Set to an empty string to let the package scripts from Apt-Cacher NG decide
+# which upstream mirror to use.
+apt_cacher_ng__upstream_mirror_gentoo: ''
 
 # .. )))
 
@@ -289,6 +334,8 @@ apt_cacher_ng__verbose_log: True
 # Forbid downloads from locations that are directly specified in the user
 # request, i.e. all downloads must be processed by the preconfigured remapping
 # backends.
+# Set to ``False`` by default to allow to download other repositories via the proxy like
+# `download.owncloud.org <http://download.owncloud.org/download/repositories/>`_.
 apt_cacher_ng__force_managed: False
 
 
