@@ -36,3 +36,7 @@ v0.1.0
 - Added ``apt__proxy_bypass_for_bugs_debian_org`` which you can enable if you
   hit a problem with a proxy server not allowing access to
   https://bugs.debian.org. [ypid]
+
+- Removed ``debops.apt_preferences`` as role hard dependency and added
+  ``apt__apt_preferences__dependent_list`` which you can feed to
+  ``debops.apt_preferences`` in your playbook. [ypid]

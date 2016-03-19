@@ -460,3 +460,32 @@ apt_update_notifications_type_apticron: 'both'
 apt_update_notifications_diff: True
 
 # .. )))
+
+# .. Role-dependent configuration (((
+#
+# --------------------------------
+#   Role-dependent configuration
+# --------------------------------
+
+# .. envvar:: apt__apt_preferences__dependent_list
+#
+# Configuration for the ``debops.apt_preferences`` role.
+apt__apt_preferences__dependent_list:
+
+  - package: 'git git-*'
+    backports: [ 'wheezy' ]
+    reason:  'Better support for git submodules - http://stackoverflow.com/a/7593496'
+    by_role: 'debops.apt'
+
+  - package: 'irqbalance'
+    backports: [ 'wheezy' ]
+    reason:  'Issues in wheezy package - http://debian.distrosfaqs.org/debian-user/wheezy-irqbalance/'
+    by_role: 'debops.apt'
+
+  - package: 'apt-cacher-ng'
+    delete: True
+    ## Remove file by ``debops.apt`` which is now managed by ``debops.apt_cacher_ng``.
+    by_role: 'debops.apt'
+    backports: [ 'jessie' ]
+
+# .. )))
