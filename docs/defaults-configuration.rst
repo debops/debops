@@ -1,3 +1,6 @@
+.. include:: global.rst.inc
+
+
 Default variables: configuration
 ================================
 
@@ -23,24 +26,25 @@ you to use more specific parameters which are not documented below.
 ``crypttab_options``
   Optional, list of strings. Each string represents an option to configure for
   each device in :file:`/etc/crypttab`.
-  Overwrites the default as configured by ``cryptsetup_crypttab_options``
+  Overwrites the default as configured by the ``cryptsetup_crypttab_options``
   variable.
 
 ``keyfile``
   Optional, string. File path for the keyfile on the Ansible controller. Will
   be copied over to the remote system. If it does not exist yet it will be
-  generated from :file:`/dev/random` on the Ansible controller as it is
-  expected that the entropy pool on the Ansible controller is better mixed.
+  generated using the systems random number generator on the Ansible controller
+  as it is expected that the entropy pool on the Ansible controller is better
+  mixed.
   Defaults to:
 
   .. code:: jinja
 
-    {{ cryptsetup_keyfile_location + "/" + item.name + "/keyfile.raw" }}
+     {{ cryptsetup_secret_path + "/" + item.name + "/keyfile.raw" }}
 
 ``backup_header``
   Optional, string. Disable backing up the `LUKS`_ header to the Ansible
   controller for this item.
-  See ``cryptsetup_keyfile_location`` variable.
+  See ``cryptsetup_secret_path`` variable.
 
 ``fstype``
   Optional, string. Filesystem type to create on the plaintext device mapper
@@ -114,14 +118,11 @@ you to use more specific parameters which are not documented below.
     Same as ``unmounted`` but additionally removes all configuration, the
     keyfile and the header backup from the remote system for this item.
 
-.. _LUKS: https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup
-.. _dm-crypt: https://en.wikipedia.org/wiki/Dm-crypt
-
 Examples
 ~~~~~~~~
 
 Create an encrypted LUKS device using an existing partition. Device will be
-mounted at ``/media/crypt0`` and will be automatically mounted at boot:
+mounted at :file:`/media/crypt0` and will be automatically mounted at boot:
 
 .. code:: yaml
 

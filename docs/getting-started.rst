@@ -1,9 +1,27 @@
+.. include:: global.rst.inc
+
+
 Getting started
 ===============
 
 .. contents::
    :local:
 
+Overview and terminology
+------------------------
+
+The following layers are involved in configuring an encrypted filesystem using
+block device encryption:
+
+#. Ciphertext block device: This can be any block device or partition on a block device.
+
+#. Plaintext device mapper target: Created by `dm-crypt`_ under :file:`/dev/mapper/`.
+   Opening this layer is called "mapping" or "decrypting" which means making
+   the plaintext device mapper target available by loading and keeping the
+   master key for the block cypher in volatile memory (RAM).
+
+#. Plaintext mount point of the filesystem: Where the plaintext files can be accessed.
+   Opening this layer is called "mounting".
 
 Example inventory
 -----------------
@@ -22,7 +40,8 @@ Example playbook
 Here's an example playbook that can be used to manage cryptsetup::
 
     ---
-    - hosts: debops_service_cryptsetup
+    - name: Configure encrypted filesystems
+      hosts: [ 'debops_service_cryptsetup' ]
       become: True
 
       roles:
