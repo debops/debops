@@ -83,6 +83,9 @@ apt_cacher_ng__configuration_files:
   - path: 'etc/apt-cacher-ng/security.conf'
     group: 'apt-cacher-ng'
     mode: '0640'
+  - path: 'etc/apt-cacher-ng/userinfo.html'
+    mode: '0644'
+    divert: False
 
 # .. )))
 
@@ -116,6 +119,13 @@ apt_cacher_ng__port: 3142
 #
 # Default: listens on all interfaces and protocols
 apt_cacher_ng__bind_address: []
+
+
+# .. envvar:: apt_cacher_ng__fqdn
+#
+# The FQDN subdomain of the ``apt-cacher-ng`` proxy which will be used by
+# ``nginx`` webserver.
+apt_cacher_ng__fqdn: 'apt-cache.{{ ansible_domain }}'
 
 
 # .. envvar:: apt_cacher_ng__proxy
@@ -369,6 +379,13 @@ apt_cacher_ng__expiration_abort_on_problems: 'default'
 apt_cacher_ng__dns_cache_seconds: 1800
 
 
+# .. envvar:: apt_cacher_ng__log_submitted_origin
+#
+# Trust the downstream HTTP proxy and log the X-Forwarded-For header as the
+# client IP address.
+apt_cacher_ng__log_submitted_origin: True
+
+
 # .. envvar:: apt_cacher_ng__user_agent
 #
 # The version string reported to the peer, to be displayed as HTTP client (and
@@ -428,7 +445,7 @@ apt_cacher_ng__etc_services__dependent_list:
 apt_cacher_ng__apt_preferences__dependent_list:
 
   - package: 'apt-cacher-ng'
-    backports: [ 'jessie' ]
+    backports: [ 'wheezy', 'jessie' ]
     reason:  'http://httpredir.debian.org/debian is not included in the deb_mirrors.gz file of apt-cacher-ng as of 0.8.0-3 (latest in Debian Jessie). This can results in unnecessary resource (bandwidth, storage) usage. https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=782643'
     by_role: 'debops.apt_cacher_ng'
     delete: '{{ apt_cacher_ng__deploy_state != "present" }}'
@@ -487,5 +504,63 @@ apt_cacher_ng__apparmor__dependent_config:
       rules:
         - '{{ apt_cacher_ng__cache_dir }}/ r'
         - '{{ apt_cacher_ng__cache_dir }}/** rw'
+
+
+# .. envvar:: apt_cacher_ng__nginx_upstream_servers
+#
+# List of upstream ``nginx`` proxy servers.
+apt_cacher_ng__nginx_upstream_servers:
+  - 'localhost:{{ apt_cacher_ng__port }}'
+
+
+# .. envvar:: apt_cacher_ng__nginx_upstream
+#
+# The ``nginx`` upstream configuration, managed by ``debops.nginx`` role.
+apt_cacher_ng__nginx_upstream:
+  enabled: True
+  name: 'apt-cacher-ng'
+  server: '{{ apt_cacher_ng__nginx_upstream_servers }}'
+
+
+# .. envvar:: apt_cacher_ng__nginx__servers
+#
+# List of ``nginx`` server configurations managed by ``debops.nginx`` role.
+# There is separate configuration for HTTP and HTTPS connections to allow access
+# for hosts without SSL support installed.
+apt_cacher_ng__nginx__servers:
+
+  - by_role: 'debops.apt_cacher_ng'
+    name: [ '{{ apt_cacher_ng__fqdn }}' ]
+    filename: 'debops.apt_cacher_ng_http'
+    enabled: True
+    allow: '{{ apt_cacher_ng__allow + apt_cacher_ng__group_allow + apt_cacher_ng__host_allow }}'
+    ssl: False
+    type: 'proxy'
+    proxy_pass: 'http://apt-cacher-ng'
+    proxy_options: |
+      if ($request_uri !~ "^/.*(\.js|\.css|\.html|\.ico)(.*)?$") {
+              rewrite ^/(.*)$ /$host/$1 break;
+      }
+      proxy_redirect off;
+      proxy_buffering off;
+    options: |
+      location ~ /acng-report.html {
+              return 307 https://$host$request_uri;
+      }
+
+  - by_role: 'debops.apt_cacher_ng'
+    name: [ '{{ apt_cacher_ng__fqdn }}' ]
+    filename: 'debops.apt_cacher_ng_https'
+    enabled: True
+    allow: '{{ apt_cacher_ng__allow + apt_cacher_ng__group_allow + apt_cacher_ng__host_allow }}'
+    listen: False
+    type: 'proxy'
+    proxy_pass: 'http://apt-cacher-ng'
+    proxy_options: |
+      if ($request_uri !~ "^/.*(\.js|\.css|\.html|\.ico)(.*)?$") {
+              rewrite ^/(.*)$ /$host/$1 break;
+      }
+      proxy_redirect off;
+      proxy_buffering off;
 
 # .. )))
