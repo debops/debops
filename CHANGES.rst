@@ -18,3 +18,5 @@ v0.1.0
 - Enable installation of backported ``apt-cacher-ng`` package on Debian Wheezy.
   [drybjed]
 
+- Check boolean values in configuration template. [drybjed]
+

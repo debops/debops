@@ -106,7 +106,7 @@ ReportPage: acng-report.html
 # activity type, time and transfer sizes are logged.
 #
 # VerboseLog: 1
-VerboseLog: {{ "1" if apt_cacher_ng__verbose_log else "0" }}
+VerboseLog: {{ "1" if apt_cacher_ng__verbose_log|bool else "0" }}
 
 # Don't detach from the starting console.
 #
@@ -121,14 +121,14 @@ VerboseLog: {{ "1" if apt_cacher_ng__verbose_log else "0" }}
 # respond with 503 error where it's not possible.
 #
 # Offlinemode: 0
-Offlinemode: {{ "1" if apt_cacher_ng__offline_mode else "0" }}
+Offlinemode: {{ "1" if apt_cacher_ng__offline_mode|bool else "0" }}
 
 # Forbid downloads from locations that are directly specified in the user
 # request, i.e. all downloads must be processed by the preconfigured remapping
 # backends (see above).
 #
 # ForceManaged: 0
-ForceManaged: {{ "1" if apt_cacher_ng__force_managed else "0" }}
+ForceManaged: {{ "1" if apt_cacher_ng__force_managed|bool else "0" }}
 
 # Days before considering an unreferenced file expired (to be deleted).
 # WARNING: if the value is set too low and particular index files are not
