@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+      <meta http-equiv="X-UA-Compatible" content="IE=8" />
+      <meta name="MSSmartTagsPreventParsing" content="true" />
+      <title>Not Found or APT Reconfiguration required</title>
+      <link rel="stylesheet" type="text/css" href="/style.css" />
+   </head>
+   <body>
+      <table border=0 cellspacing=0 cellpadding=0 width=580 class="center">
+         <tr>
+            <td class="title" style="width:580px;">The requested page is not accessible.</td>
+         </tr>
+         <tr>
+            <td>
+               <div class="visarea" style="width:580px;text-align:left;"><br>
+                  You attempted to browse the contents of a virtual HTTP repository.
+                  However, the intended way of use is the configuration of APT and
+                  related package management systems to retrieve the software packages
+                  through this service.
+                  <p>To configure APT for use of Apt-Cacher&nbsp;NG you need to...  
+                  <br>
+                  <ul>
+                     <li>
+                     <b>EITHER:</b>  Configure APT to use a HTTP proxy by specifying
+                     it in apt.conf or related configuration files, see
+                     apt.conf manual page for details. Server and Port need to match
+                     the values used to visit this page. For example,
+                     edit&nbsp;<i>/etc/apt/apt.conf</i> (or create a new file called like <i>/etc/apt/apt.conf.d/00aptproxy</i>) and add the line:
+                     <p />
+            <div class="rawstyle">Acquire::http::Proxy "http://{{ apt_cacher_ng__fqdn }}";</div>
+                     <p />
+                     </li>
+
+                     <li>
+                     <b>OR:</b>
+                     Edit the <i>/etc/apt/sources.list</i> file and edit the source lines
+                     therein, replacing the mirror hostname with the hostname of this
+                     server machine. For example:
+                     <p /><div class="rawstyle" style="color:gray;">
+                        deb http://ftp.debian.org/debian stable main contrib non-free<br>
+                     deb-src http://ftp.debian.org/debian stable main contrib non-free<br>
+                     deb https://get.docker.com/ubuntu docker main<br></div><p/>
+                     becomes:<p/>
+                     <div class="rawstyle">deb http://<span style="color:red">{{ apt_cacher_ng__fqdn }}/</span>ftp.debian.org/debian stable main contrib non-free<br/>
+                        deb-src http://<span style="color:red">{{ apt_cacher_ng__fqdn }}/</span>ftp.debian.org/debian stable main contrib non-free<br/>
+                        deb <span style="color:red">http://{{ apt_cacher_ng__fqdn }}//HTTPS///</span>get.docker.com/ubuntu docker main</div><p/>
+                     Depending on the configuration, it might be possible to use a shortcut
+                     for the base URLs without knowing the mirror, for example:<p/>
+                     <div class="rawstyle">deb http://{{ apt_cacher_ng__fqdn }}/debian stable main contrib non-free</div><p/>
+                     Ask your system administrator for details.
+                     </li>
+                  </ul>
+                  <h3>Related links</h3>
+                  <ul>
+                     <li><a href="${cfg:ReportPage}">Statistics report and configuration page</a> for this Apt-Cacher NG installation</li>
+                     <li><a href="http://www.unix-ag.uni-kl.de/~bloch/acng/">Project Homepage</a>
+                  </ul>
+
+                  ${footer}
+               </div>
+            </td>
+         </tr>
+      </table>
+   </body>
+</html>
+

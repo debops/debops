@@ -4,6 +4,31 @@ Getting started
 .. contents::
    :local:
 
+Client configuration
+--------------------
+
+The ``debops.apt_cacher_ng`` role will use the ``debops.nginx`` role to
+configure a proxied access to the cache over a custom subdomain, by default
+``apt-cache.{{ ansible_domain }}``. This subdomain should be configured in the
+DNS and point to the server where the proxy is installed. You can open this
+address in a web browser to access the ``apt-cacher-ng`` web interface.
+
+To enable support for ``apt-cacher-ng`` cache on a host, you can configure it
+in APT using separate file, for example ``/etc/apt/apt.conf.d/000proxy``. The
+host can access the cache either directly or over the configured ``nginx``
+proxy.
+
+Configuration for direct cache connections without proxying the HTTPS
+repositories::
+
+    Acquire::http::Proxy "http://apt-cache.<domain>:3142";
+    Acquire::https::Proxy "DIRECT";
+
+Configuration for ``nginx`` proxy without proxying the HTTPS repositories::
+
+    Acquire::http::Proxy "http://apt-cache.<domain>";
+    Acquire::https::Proxy "DIRECT";
+
 Example inventory
 -----------------
 
@@ -32,6 +57,7 @@ Here's an example playbook that can be used to install and manage Apt-Cacher NG:
           tags: [ 'role::etc_services' ]
           etc_services__dependent_list:
             - '{{ apt_cacher_ng__etc_services__dependent_list }}'
+            - '{{ nginx_apt_preferences_dependent_list }}'
 
         - role: debops.apt_preferences
           tags: [ 'role::apt_preferences' ]
@@ -42,7 +68,14 @@ Here's an example playbook that can be used to install and manage Apt-Cacher NG:
           tags: [ 'role::ferm' ]
           ferm__dependent_rules:
             - '{{ apt_cacher_ng__ferm__dependent_rules }}'
+            - '{{ nginx_ferm_dependent_rules }}'
 
+        - role: debops.nginx
+          tags: [ 'role::nginx' ]
+          nginx_servers:
+            - '{{ apt_cacher_ng__nginx__servers }}'
+          nginx_upstreams:
+            - '{{ apt_cacher_ng__nginx_upstream }}'
 
         # - role: debops.contrib-apparmor
         #   tags: [ 'role::apparmor' ]
@@ -51,3 +84,4 @@ Here's an example playbook that can be used to install and manage Apt-Cacher NG:
 
         - role: debops.apt_cacher_ng
           tags: [ 'role::apt_cacher_ng' ]
+
