@@ -40,6 +40,9 @@ v0.2.9
   ``apt-cacher-ng`` package in ``debops.apt`` role has be removed. Client-side
   support is being reworked in ``debops.apt``. [ypid]
 
+- Update ``debops.apt_cacher_ng`` playbook and add support for ``nginx`` proxy
+  for the cache. [drybjed]
+
 v0.2.8
 ------
 
