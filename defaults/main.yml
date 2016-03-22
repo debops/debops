@@ -445,7 +445,7 @@ apt_cacher_ng__etc_services__dependent_list:
 apt_cacher_ng__apt_preferences__dependent_list:
 
   - package: 'apt-cacher-ng'
-    backports: [ 'jessie' ]
+    backports: [ 'wheezy', 'jessie' ]
     reason:  'http://httpredir.debian.org/debian is not included in the deb_mirrors.gz file of apt-cacher-ng as of 0.8.0-3 (latest in Debian Jessie). This can results in unnecessary resource (bandwidth, storage) usage. https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=782643'
     by_role: 'debops.apt_cacher_ng'
     delete: '{{ apt_cacher_ng__deploy_state != "present" }}'

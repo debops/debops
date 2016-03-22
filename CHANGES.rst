@@ -15,3 +15,6 @@ v0.1.0
 - Add support for proxying the ``apt-cacher-ng`` server via ``nginx`` on
   a subdomain. Direct access to the cache is still possible. [drybjed]
 
+- Enable installation of backported ``apt-cacher-ng`` package on Debian Wheezy.
+  [drybjed]
+
