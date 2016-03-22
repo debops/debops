@@ -5,7 +5,7 @@ Changelog
 v0.1.0
 ------
 
-*Unreleased*
+*Released: 2016-03-22*
 
 - Initial release. [ypid]
 
