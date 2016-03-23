@@ -22,7 +22,7 @@ filesystem (both on the Ansible controller and the remote system).
 ### Features
 
 * Create a random keyfile or use an already existing keyfile.
-* Manage :file:`/etc/crypttab` and :file:`/etc/fstab` and mount point directories.
+* Manage `/etc/crypttab` and `/etc/fstab` and mount point directories.
 * Create a LUKS header backup and store it on the Ansible controller.
 * Decrypt and mount a encrypted filesystem and delete the decryption key from
   persistent storage after mounting.
