@@ -44,7 +44,6 @@ you to use more specific parameters which are not documented below.
 ``backup_header``
   Optional, string. Disable backing up the `LUKS`_ header to the Ansible
   controller for this item.
-  See ``cryptsetup_secret_path`` variable.
 
 ``fstype``
   Optional, string. Filesystem type to create on the plaintext device mapper

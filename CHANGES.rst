@@ -8,6 +8,7 @@ v0.3.0
 
 - Renamed option ``cryptsetup_backup_header`` to ``cryptsetup_header_backup``
   and fixed the task to allow to disable header backups.
+  Fixed: Honor the value of ``item.backup_header`` (``cryptsetup_devices``).
   Only disable header backups when you know what you are doing! [ypid]
 
 - Renamed option ``cryptsetup_keyfile_location`` to
