@@ -66,7 +66,7 @@ apt_cacher_ng__deploy_state: 'present'
 #   configuration file.
 #
 # ``divert``
-#   Boolean, optional, defaults to True. Should the original configuration file
+#   Boolean, optional, defaults to ``True``. Should the original configuration file
 #   be diverted away before creating our version of the file?
 #
 apt_cacher_ng__configuration_files:
@@ -98,7 +98,7 @@ apt_cacher_ng__configuration_files:
 # .. envvar:: apt_cacher_ng__port
 #
 # TCP server port for incoming http (or HTTP proxy) connections.
-# Can be set to ``9999`` to emulate ``apt-proxy``.
+# Can be set to ``9999`` to emulate :program:`apt-proxy`.
 apt_cacher_ng__port: 3142
 
 
@@ -117,15 +117,15 @@ apt_cacher_ng__port: 3142
 #      - '192.168.7.254'
 #      - 'publicNameOnMainInterface'
 #
-# Default: listens on all interfaces and protocols
+# Defaults to listening on all interfaces and protocols.
 apt_cacher_ng__bind_address: []
 
 
 # .. envvar:: apt_cacher_ng__fqdn
 #
-# The FQDN subdomain of the ``apt-cacher-ng`` proxy which will be used by
-# ``nginx`` webserver.
-apt_cacher_ng__fqdn: 'apt-cache.{{ ansible_domain }}'
+# The FQDN subdomain of the Apt-Cacher NG proxy which will be used by
+# :program:`nginx` webserver.
+apt_cacher_ng__fqdn: 'software-cache.{{ ansible_domain }}'
 
 
 # .. envvar:: apt_cacher_ng__proxy
@@ -137,7 +137,7 @@ apt_cacher_ng__fqdn: 'apt-cache.{{ ansible_domain }}'
 #
 #    apt_cacher_ng__proxy: 'https://username:proxypassword@proxy.example.net:3129'
 #
-# Default: uses direct connection
+# Defaults to using a direct connection.
 apt_cacher_ng__proxy: ''
 
 
@@ -224,8 +224,8 @@ apt_cacher_ng__cache_dir_group: 'apt-cacher-ng'
 # .. envvar:: apt_cacher_ng__dir_perms
 #
 # Default permission set of freshly created files and directories, as octal
-# numbers (see chmod(1) for details).
-# Can by limited by the umask value (see umask(2) for details) if it's set in
+# numbers (see :manpage:`chmod(1)` for details).
+# Can by limited by the umask value (see :manpage:`umask(2)` for details) if it's set in
 # the environment of the starting shell, e.g. in apt-cacher-ng init script or
 # in its configuration file.
 apt_cacher_ng__dir_perms: '02755'
@@ -234,8 +234,8 @@ apt_cacher_ng__dir_perms: '02755'
 # .. envvar:: apt_cacher_ng__file_perms
 #
 # Default permission set of freshly created files and directories, as octal
-# numbers (see chmod(1) for details).
-# Can by limited by the umask value (see umask(2) for details) if it's set in
+# numbers (see :manpage:`chmod(1)` for details).
+# Can by limited by the umask value (see :manpage:`umask(2)` for details) if it's set in
 # the environment of the starting shell, e.g. in apt-cacher-ng init script or
 # in its configuration file.
 apt_cacher_ng__file_perms: '00644'
@@ -256,7 +256,7 @@ apt_cacher_ng__file_perms: '00644'
 #        the number of files/directories in your cache directory.
 #
 # ``lazy``
-#   Check the file:`_expending_damaged` file in the root of
+#   Check the :file:`_expending_damaged` file in the root of
 #   ``apt_cacher_ng__cache_dir`` and only enforce permissions on all other
 #   files if this one file needed to be changed.
 #
@@ -290,31 +290,33 @@ apt_cacher_ng__password: '{{ lookup("password", secret + "/credentials/" +
 
 # .. )))
 
-# .. Tuning and debugging, further options (((
+# .. Tuning, debugging and further options (((
 #
 # -----------------------------------------
-#   Tuning and debugging, further options
+#   Tuning, debugging and further options
 # -----------------------------------------
 
 # .. envvar:: apt_cacher_ng__log_dir
 #
-# Log file directory, can be set empty to disable logging
+# Log file directory, can be set empty to disable logging.
 apt_cacher_ng__log_dir: '/var/log/apt-cacher-ng'
 
 
 # .. envvar:: apt_cacher_ng__support_dir
 #
-# Log file directory, can be set empty to disable logging
+# A place to look for additional configuration and resource files if they are not
+# found in the configuration directory.
 apt_cacher_ng__support_dir: '/usr/lib/apt-cacher-ng'
 
 
 # .. envvar:: apt_cacher_ng__debug
 #
-# A bitmask type value declaring the loging verbosity and behavior of the error
+# A bitmask type value declaring the logging verbosity and behavior of the error
 # log writing. Non-zero value triggers at least faster log file flushing.
 #
 # Some higher bits only working with a special debug build of apt-cacher-ng,
-# see the manual for details. The setting has an alias named UnbufferLogs.
+# see the manual for details. The setting has an alias named ``UnbufferLogs``.
+# Setting ``apt_cacher_ng__debug: 1`` will result in unbuffer log writes.
 #
 # .. warning:: This can write significant amount of data into the
 #      :file:`apt-cacher.err` logfile.
@@ -416,7 +418,8 @@ apt_cacher_ng__recompress_bz2: False
 
 # .. envvar:: apt_cacher_ng__custom
 #
-# Just configuration block for Apt-Cacher NG.
+# Configuration block for Apt-Cacher NG for additional configuration for
+# example custom remap settings.
 apt_cacher_ng__custom: ''
 
 # .. )))
@@ -454,21 +457,21 @@ apt_cacher_ng__apt_preferences__dependent_list:
 # .. envvar:: apt_cacher_ng__allow
 #
 # Allow access to apt-cacher-ng service from specified IP addresses or CIDR networks.
-# If not specified, allows access from all networks
+# If not specified, allows access from all networks.
 apt_cacher_ng__allow: []
 
 
 # .. envvar:: apt_cacher_ng__group_allow
 #
 # Allow access to apt-cacher-ng service from specified IP addresses or CIDR networks.
-# If not specified, allows access from all networks
+# If not specified, allows access from all networks.
 apt_cacher_ng__group_allow: []
 
 
 # .. envvar:: apt_cacher_ng__host_allow
 #
 # Allow access to apt-cacher-ng service from specified IP addresses or CIDR networks.
-# If not specified, allows access from all networks
+# If not specified, allows access from all networks.
 apt_cacher_ng__host_allow: []
 
 
@@ -506,25 +509,25 @@ apt_cacher_ng__apparmor__dependent_config:
         - '{{ apt_cacher_ng__cache_dir }}/** rw'
 
 
-# .. envvar:: apt_cacher_ng__nginx_upstream_servers
+# .. envvar:: apt_cacher_ng__upstream_servers
 #
-# List of upstream ``nginx`` proxy servers.
-apt_cacher_ng__nginx_upstream_servers:
+# List of upstream :program:`nginx` proxy servers.
+apt_cacher_ng__upstream_servers:
   - 'localhost:{{ apt_cacher_ng__port }}'
 
 
-# .. envvar:: apt_cacher_ng__nginx_upstream
+# .. envvar:: apt_cacher_ng__nginx__upstream
 #
-# The ``nginx`` upstream configuration, managed by ``debops.nginx`` role.
-apt_cacher_ng__nginx_upstream:
+# The :program:`nginx` upstream configuration, managed by ``debops.nginx`` role.
+apt_cacher_ng__nginx__upstream:
   enabled: True
   name: 'apt-cacher-ng'
-  server: '{{ apt_cacher_ng__nginx_upstream_servers }}'
+  server: '{{ apt_cacher_ng__upstream_servers }}'
 
 
 # .. envvar:: apt_cacher_ng__nginx__servers
 #
-# List of ``nginx`` server configurations managed by ``debops.nginx`` role.
+# List of :program:`nginx` server configurations managed by ``debops.nginx`` role.
 # There is separate configuration for HTTP and HTTPS connections to allow access
 # for hosts without SSL support installed.
 apt_cacher_ng__nginx__servers:
