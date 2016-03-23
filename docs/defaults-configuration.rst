@@ -78,8 +78,8 @@ List of parameters supported by all network types:
     creation time, or if it's inactive.
 
 ``autostart``
-  Boolean. Specify if a network should start (``True``) or not (``False``) at boot
-  time.
+  Boolean, optional, defaults to ``True``. Specify if a network should start
+  (``True``) or not (``False``) at boot time.
 
 ``uri``
   Name of the ``libvirt`` connection configured in
@@ -219,8 +219,8 @@ List of parameters supported by all storage pool types:
     started at creation time, or if it's inactive.
 
 ``autostart``
-  Boolean. Specify if a storage pool should start (``True``) or not (``False``) at
-  boot time.
+  Boolean, optional, defaults to ``True``. Specify if a storage pool should
+  start (``True``) or not (``False``) at boot time.
 
 ``uri``
   Name of the ``libvirt`` connection configured in

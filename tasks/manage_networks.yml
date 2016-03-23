@@ -7,8 +7,7 @@
     state: 'inactive'
   with_flattened: '{{ libvirt_networks }}'
   become: False
-  when: ((item.name|d() and item.name) and
-         (item.state is defined and item.state in [ 'inactive', 'undefined', 'absent' ]))
+  when: (item.name|d() and (item.state|d() in [ 'inactive', 'undefined', 'absent' ]))
 
 - name: Undefine networks if requested
   virt_net:
@@ -17,8 +16,7 @@
     state: 'absent'
   with_flattened: '{{ libvirt_networks }}'
   become: False
-  when: ((item.name|d() and item.name) and
-         (item.state is defined and item.state in [ 'undefined', 'absent' ]))
+  when: (item.name|d() and (item.state|d() in [ 'undefined', 'absent' ]))
 
 - name: Define networks
   virt_net:
@@ -28,7 +26,7 @@
     state: 'present'
   with_flattened: '{{ libvirt_networks }}'
   become: False
-  when: ((item.name|d() and item.name) and
+  when: ((item.name|d()) and
          (item.state is undefined or item.state not in [ 'undefined', 'absent' ]) and
          (item.interface_present is undefined or
           (item.interface_present in ansible_interfaces and not item.uri|d())))
@@ -40,7 +38,7 @@
     uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
   with_flattened: '{{ libvirt_networks }}'
   become: False
-  when: ((item.name|d() and item.name) and
+  when: ((item.name|d()) and
          (item.state is undefined or item.state in [ 'active' ]) and
          (item.interface_present is undefined or
           (item.interface_present in ansible_interfaces and not item.uri|d())))
@@ -48,11 +46,11 @@
 - name: Set autostart attribute on networks
   virt_net:
     name: '{{ item.name }}'
-    autostart: '{{ "yes" if (item.autostart is undefined or item.autostart|d()) else "no" }}'
+    autostart: '{{ "True" if (item.autostart|d(True)) else "False" }}'
     uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
   with_flattened: '{{ libvirt_networks }}'
   become: False
-  when: ((item.name|d() and item.name) and
+  when: ((item.name|d()) and
          (item.state is undefined or item.state not in [ 'undefined', 'absent' ]) and
          (item.interface_present is undefined or
           (item.interface_present in ansible_interfaces and not item.uri|d())))

@@ -7,9 +7,7 @@
     install_recommends: False
   with_flattened:
     - [ 'gawk', 'netcat-openbsd', 'python-libvirt', 'python-lxml' ]
-    - [ '{{ libvirt_packages_map[ansible_distribution_release]
-            if (ansible_distribution_release in libvirt_packages_map.keys())
-            else libvirt_packages }}' ]
+    - [ '{{ libvirt_packages_map[ansible_distribution_release]|d(libvirt_packages) }}' ]
 
 - name: Create configuration directory
   file:
