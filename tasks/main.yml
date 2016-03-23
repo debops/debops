@@ -2,6 +2,7 @@
 
 - name: DebOps pre_tasks hook
   include: '{{ lookup("task_src", "nginx/pre_main.yml") }}'
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Check if nginx is installed
   stat:
@@ -9,10 +10,10 @@
   register: nginx_register_installed
 
 - include: passenger.yml
-  when: nginx_flavor == 'passenger'
+  when: (nginx_flavor == 'passenger' and nginx__deploy_state in [ 'present' ])
 
 - include: nginx_org_packages.yml
-  when: nginx_flavor == 'nginx.org'
+  when: (nginx_flavor == 'nginx.org' and nginx__deploy_state in [ 'present' ])
 
 - name: Install nginx packages
   apt:
@@ -22,6 +23,7 @@
   with_flattened:
     - '{{ nginx_flavor_package_map[nginx_flavor] }}'
     - '{{ nginx_base_packages }}'
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Create default nginx directories
   file:
@@ -36,38 +38,42 @@
     - '/etc/nginx/sites-enabled'
     - '/etc/nginx/snippets'
     - '{{ nginx_temp_root_path }}'
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Divert default.conf in case nginx nginx.org flavor is used
   command: dpkg-divert --quiet --local --divert /etc/nginx/conf.d/default.conf.dpkg-divert
            --rename /etc/nginx/conf.d/default.conf
   args:
     creates: '/etc/nginx/conf.d/default.conf.dpkg-divert'
-  when: nginx_flavor == 'nginx.org'
+  when: (nginx_flavor == 'nginx.org' and nginx__deploy_state in [ 'present' ])
 
 - include: passenger_config.yml
-  when: nginx_flavor == 'passenger'
+  when: (nginx_flavor == 'passenger' and nginx__deploy_state in [ 'present' ])
 
 - name: Restart nginx on first install to bypass missing pid bug
   service:
     name: 'nginx'
     state: 'restarted'
-  when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists)
+  when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists and nginx__deploy_state in [ 'present' ])
 
 - name: Check nginx version
   shell: /usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##'
   register: nginx_register_version
   changed_when: False
+  when: (nginx__deploy_state in [ 'present' ])
   tags: [ 'role::nginx:servers' ]
 
 - name: Define nginx version
   set_fact:
     nginx_version: '{{ nginx_register_version.stdout | default("0.0") }}'
+  when: (nginx__deploy_state in [ 'present' ])
   tags: [ 'role::nginx:servers' ]
 
 - name: Get list of nameservers configured in /etc/resolv.conf
   shell: "grep -E '^nameserver\\s' /etc/resolv.conf | awk '{print $2}'"
   register: nginx_register_nameservers
   changed_when: False
+  when: (nginx__deploy_state in [ 'present' ])
   tags: [ 'role::nginx:servers' ]
 
 - name: Convert list of nameservers to Ansible list
@@ -75,7 +81,8 @@
     nginx_ocsp_resolvers: "{{ nginx_register_nameservers.stdout_lines }}"
   when: ((nginx_register_nameservers.stdout is defined and nginx_register_nameservers.stdout) and
          (nginx_ocsp_resolvers is undefined or
-         (nginx_ocsp_resolvers is defined and not nginx_ocsp_resolvers)))
+         (nginx_ocsp_resolvers is defined and not nginx_ocsp_resolvers)) and
+         (nginx__deploy_state in [ 'present' ]))
   tags: [ 'role::nginx:servers' ]
 
 - name: Ensure that webadmins privileged group exists
@@ -83,6 +90,7 @@
     name: '{{ nginx_privileged_group }}'
     state: 'present'
     system: True
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Create directory for webadmins configuration
   file:
@@ -91,6 +99,7 @@
     owner: 'root'
     group: '{{ nginx_privileged_group }}'
     mode: '0775'
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Allow webadmins to reload nginx using sudo
   template:
@@ -99,12 +108,14 @@
     owner: 'root'
     group: 'root'
     mode: '0440'
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Divert original /etc/nginx/nginx.conf
   command: dpkg-divert --quiet --local --divert /etc/nginx/nginx.conf.dpkg-divert
            --rename /etc/nginx/nginx.conf
   args:
     creates: '/etc/nginx/nginx.conf.dpkg-divert'
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Setup /etc/nginx/nginx.conf
   template:
@@ -114,6 +125,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Test nginx and reload' ]
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Generate custom nginx snippets
   template:
@@ -123,6 +135,7 @@
     group: 'root'
     mode: '0644'
   with_items: [ 'acme-challenge' ]
+  when: (nginx__deploy_state in [ 'present' ])
   notify: [ 'Test nginx and reload' ]
 
   # Remove temporary old files if they are present
@@ -131,12 +144,14 @@
   args:
     removes: '/etc/nginx/fastcgi_params.dpkg-divert.lock'
   notify: [ 'Test nginx and reload' ]
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Disable default nginx site
   file:
     path: '/etc/nginx/sites-enabled/default'
     state: 'absent'
   notify: [ 'Test nginx and reload' ]
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Manage local server definitions - create symlinks
   file:
@@ -146,15 +161,15 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: (item.value)
+  when: (item.value and nginx__deploy_state in [ 'present' ])
   with_dict: '{{ nginx_local_servers|d({}) }}'
   notify: [ 'Test nginx and reload' ]
 
 - name: Manage local server definitions - remove symlinks
   file:
-    path: '/etc/nginx/sites-enabled/{{ item.1 }}'
+    path: '/etc/nginx/sites-enabled/{{ item.key }}'
     state: 'absent'
-  when: (item.0 is undefined or (item.0 is defined and not item.0)
+  when: ((not item.value|d()) and nginx__deploy_state in [ 'present' ])
   with_dict: '{{ nginx_local_servers|d({}) }}'
   notify: [ 'Test nginx and reload' ]
 
@@ -166,6 +181,7 @@
   args:
     creates: '/etc/ansible/facts.d/nginx.fact'
     warn: False
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Make sure that Ansible local facts directory is present
   file:
@@ -174,6 +190,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Save nginx local facts
   template:
@@ -183,17 +200,21 @@
     group: 'root'
     mode: '0644'
   register: nginx_register_local_facts
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Gather facts if they were modified
   action: setup
-  when: nginx_register_local_facts.changed
+  when: (nginx_register_local_facts.changed and nginx__deploy_state in [ 'present' ])
 
 - include: nginx_htpasswd.yml
+  when: (nginx__deploy_state in [ 'present' ])
 
 - include: nginx_configs.yml
+  when: (nginx__deploy_state in [ 'present' ])
 
 - include: nginx_servers.yml
   tags: [ 'role::nginx:servers' ]
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Make sure that PKI hook directory exists
   file:
@@ -202,7 +223,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: nginx_pki | bool
+  when: (nginx_pki|bool and nginx__deploy_state in [ 'present' ])
 
 - name: Manage PKI nginx hook
   template:
@@ -211,7 +232,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: nginx_pki | bool
+  when: (nginx_pki|bool and nginx__deploy_state in [ 'present' ])
 
 - name: Save nginx local facts
   template:
@@ -221,11 +242,13 @@
     group: 'root'
     mode: '0644'
   register: nginx_register_local_facts
+  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Gather facts if they were modified
   action: setup
-  when: nginx_register_local_facts.changed
+  when: (nginx_register_local_facts.changed and nginx__deploy_state in [ 'present' ])
 
 - name: DebOps post_tasks hook
   include: '{{ lookup("task_src", "nginx/post_main.yml") }}'
+  when: (nginx__deploy_state in [ 'present' ])
 
