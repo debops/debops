@@ -11,7 +11,7 @@ v0.2.0
 
   Configuration of dependent services like firewall, TCP Wrappers, APT
   preferences is set in separate default variables. These variables can be used
-  by Ansible playbooks to configure settings related to ``libvirtd`` in other
+  by Ansible playbooks to configure settings related to :program:`libvirtd` in other
   services. [ypid]
 
 - Fix deprecation warnings in Ansible 2.1.0. [ypid]
