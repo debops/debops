@@ -66,7 +66,7 @@ apt_cacher_ng__deploy_state: 'present'
 #   configuration file.
 #
 # ``divert``
-#   Boolean, optional, defaults to True. Should the original configuration file
+#   Boolean, optional, defaults to ``True``. Should the original configuration file
 #   be diverted away before creating our version of the file?
 #
 apt_cacher_ng__configuration_files:
@@ -117,7 +117,7 @@ apt_cacher_ng__port: 3142
 #      - '192.168.7.254'
 #      - 'publicNameOnMainInterface'
 #
-# Default: listens on all interfaces and protocols
+# Default to listens on all interfaces and protocols.
 apt_cacher_ng__bind_address: []
 
 
@@ -137,7 +137,7 @@ apt_cacher_ng__fqdn: 'apt-cache.{{ ansible_domain }}'
 #
 #    apt_cacher_ng__proxy: 'https://username:proxypassword@proxy.example.net:3129'
 #
-# Default: uses direct connection
+# Default to using a direct connection.
 apt_cacher_ng__proxy: ''
 
 
@@ -256,7 +256,7 @@ apt_cacher_ng__file_perms: '00644'
 #        the number of files/directories in your cache directory.
 #
 # ``lazy``
-#   Check the file:`_expending_damaged` file in the root of
+#   Check the :file:`_expending_damaged` file in the root of
 #   ``apt_cacher_ng__cache_dir`` and only enforce permissions on all other
 #   files if this one file needed to be changed.
 #
@@ -290,31 +290,33 @@ apt_cacher_ng__password: '{{ lookup("password", secret + "/credentials/" +
 
 # .. )))
 
-# .. Tuning and debugging, further options (((
+# .. Tuning, debugging and further options (((
 #
 # -----------------------------------------
-#   Tuning and debugging, further options
+#   Tuning, debugging and further options
 # -----------------------------------------
 
 # .. envvar:: apt_cacher_ng__log_dir
 #
-# Log file directory, can be set empty to disable logging
+# Log file directory, can be set empty to disable logging.
 apt_cacher_ng__log_dir: '/var/log/apt-cacher-ng'
 
 
 # .. envvar:: apt_cacher_ng__support_dir
 #
-# Log file directory, can be set empty to disable logging
+# A place to look for additional configuration and resource files if they are not
+# found in the configuration directory.
 apt_cacher_ng__support_dir: '/usr/lib/apt-cacher-ng'
 
 
 # .. envvar:: apt_cacher_ng__debug
 #
-# A bitmask type value declaring the loging verbosity and behavior of the error
+# A bitmask type value declaring the logging verbosity and behavior of the error
 # log writing. Non-zero value triggers at least faster log file flushing.
 #
 # Some higher bits only working with a special debug build of apt-cacher-ng,
-# see the manual for details. The setting has an alias named UnbufferLogs.
+# see the manual for details. The setting has an alias named ``UnbufferLogs``.
+# Setting ``apt_cacher_ng__debug: 1`` will result in unbuffer log writes.
 #
 # .. warning:: This can write significant amount of data into the
 #      :file:`apt-cacher.err` logfile.
@@ -416,7 +418,8 @@ apt_cacher_ng__recompress_bz2: False
 
 # .. envvar:: apt_cacher_ng__custom
 #
-# Just configuration block for Apt-Cacher NG.
+# Configuration block for Apt-Cacher NG for additional configuration for
+# example custom remap settings.
 apt_cacher_ng__custom: ''
 
 # .. )))
@@ -454,21 +457,21 @@ apt_cacher_ng__apt_preferences__dependent_list:
 # .. envvar:: apt_cacher_ng__allow
 #
 # Allow access to apt-cacher-ng service from specified IP addresses or CIDR networks.
-# If not specified, allows access from all networks
+# If not specified, allows access from all networks.
 apt_cacher_ng__allow: []
 
 
 # .. envvar:: apt_cacher_ng__group_allow
 #
 # Allow access to apt-cacher-ng service from specified IP addresses or CIDR networks.
-# If not specified, allows access from all networks
+# If not specified, allows access from all networks.
 apt_cacher_ng__group_allow: []
 
 
 # .. envvar:: apt_cacher_ng__host_allow
 #
 # Allow access to apt-cacher-ng service from specified IP addresses or CIDR networks.
-# If not specified, allows access from all networks
+# If not specified, allows access from all networks.
 apt_cacher_ng__host_allow: []
 
 
