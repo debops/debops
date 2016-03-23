@@ -1,10 +1,11 @@
 ---
 
 - name: DebOps pre_tasks hook
-  include: "{{ lookup('task_src', 'nginx/pre_main.yml') }}"
+  include: '{{ lookup("task_src", "nginx/pre_main.yml") }}'
 
 - name: Check if nginx is installed
-  stat: path=/usr/sbin/nginx
+  stat:
+    path: '/usr/sbin/nginx'
   register: nginx_register_installed
 
 - include: passenger.yml
@@ -50,8 +51,7 @@
   service:
     name: 'nginx'
     state: 'restarted'
-  when: ((nginx_register_installed is defined and nginx_register_installed) and
-         not nginx_register_installed.stat.exists)
+  when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists)
 
 - name: Check nginx version
   shell: /usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##'
@@ -140,29 +140,23 @@
 
 - name: Manage local server definitions - create symlinks
   file:
-    src: '/etc/nginx/sites-local/{{ item.0 }}'
-    path: '/etc/nginx/sites-enabled/{{ item.1 }}'
+    src: '/etc/nginx/sites-local/{{ item.value }}'
+    path: '/etc/nginx/sites-enabled/{{ item.key }}'
     state: 'link'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_together:
-    - '{{ nginx_local_servers.values() }}'
-    - '{{ nginx_local_servers.keys() }}'
+  when: (item.value)
+  with_dict: '{{ nginx_local_servers|d({}) }}'
   notify: [ 'Test nginx and reload' ]
-  when: ((nginx_local_servers is defined and nginx_local_servers) and
-         (item.0 is defined and item.0))
 
 - name: Manage local server definitions - remove symlinks
   file:
     path: '/etc/nginx/sites-enabled/{{ item.1 }}'
     state: 'absent'
-  with_together:
-    - '{{ nginx_local_servers.values() }}'
-    - '{{ nginx_local_servers.keys() }}'
+  when: (item.0 is undefined or (item.0 is defined and not item.0)
+  with_dict: '{{ nginx_local_servers|d({}) }}'
   notify: [ 'Test nginx and reload' ]
-  when: ((nginx_local_servers is defined and nginx_local_servers) and
-         (item.0 is undefined or (item.0 is defined and not item.0)))
 
   # If nginx local facts are not present, assume that configuration
   # is being reset and move all symlinks out of the way to prevent
@@ -233,5 +227,5 @@
   when: nginx_register_local_facts.changed
 
 - name: DebOps post_tasks hook
-  include: "{{ lookup('task_src', 'nginx/post_main.yml') }}"
+  include: '{{ lookup("task_src", "nginx/post_main.yml") }}'
 
