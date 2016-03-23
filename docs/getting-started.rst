@@ -11,11 +11,11 @@ The ``debops.apt_cacher_ng`` role will use the ``debops.nginx`` role to
 configure a proxied access to the cache over a custom subdomain, by default
 ``apt-cache.{{ ansible_domain }}``. This subdomain should be configured in the
 DNS and point to the server where the proxy is installed. You can open this
-address in a web browser to access the ``apt-cacher-ng`` web interface.
+address in a web browser to access the :program:`apt-cacher-ng` web interface.
 
-To enable support for ``apt-cacher-ng`` cache on a host, you can configure it
-in APT using separate file, for example ``/etc/apt/apt.conf.d/000proxy``. The
-host can access the cache either directly or over the configured ``nginx``
+To enable support for :program:`apt-cacher-ng` cache on a host, you can configure it
+in APT using separate file, for example :file:`/etc/apt/apt.conf.d/000proxy`. The
+host can access the cache either directly or over the configured :program:`nginx`
 proxy.
 
 Configuration for direct cache connections without proxying the HTTPS
@@ -24,7 +24,7 @@ repositories::
     Acquire::http::Proxy "http://apt-cache.<domain>:3142";
     Acquire::https::Proxy "DIRECT";
 
-Configuration for ``nginx`` proxy without proxying the HTTPS repositories::
+Configuration for :program:`nginx` proxy without proxying the HTTPS repositories::
 
     Acquire::http::Proxy "http://apt-cache.<domain>";
     Acquire::https::Proxy "DIRECT";

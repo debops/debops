@@ -12,7 +12,7 @@ v0.1.0
 - Switch the default Debian mirror to new official redirector at
   http://httpredir.debian.org/. [ypid]
 
-- Add support for proxying the ``apt-cacher-ng`` server via ``nginx`` on
+- Add support for proxying the :program:`apt-cacher-ng` server via :program:`nginx` on
   a subdomain. Direct access to the cache is still possible. [drybjed]
 
 - Enable installation of backported ``apt-cacher-ng`` package on Debian Wheezy.
