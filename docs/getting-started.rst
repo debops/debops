@@ -9,25 +9,28 @@ Client configuration
 
 The ``debops.apt_cacher_ng`` role will use the ``debops.nginx`` role to
 configure a proxied access to the cache over a custom subdomain, by default
-``apt-cache.{{ ansible_domain }}``. This subdomain should be configured in the
+``software-cache.{{ ansible_domain }}``. This subdomain should be configured in the
 DNS and point to the server where the proxy is installed. You can open this
-address in a web browser to access the :program:`apt-cacher-ng` web interface.
+address in a web browser to access the web interface Apt-Cacher NG.
 
-To enable support for :program:`apt-cacher-ng` cache on a host, you can configure it
-in APT using separate file, for example :file:`/etc/apt/apt.conf.d/000proxy`. The
-host can access the cache either directly or over the configured :program:`nginx`
-proxy.
+To use the Apt-Cacher NG proxy, the host can ether access the cache directly or
+over the configured :program:`nginx` reverse proxy:
 
-Configuration for direct cache connections without proxying the HTTPS
-repositories::
+#. To configure direct cache connections include the following line in your inventory::
 
-    Acquire::http::Proxy "http://apt-cache.<domain>:3142";
-    Acquire::https::Proxy "DIRECT";
+    apt__proxy_url: 'http://software-cache.<domain>:3142/'
 
-Configuration for :program:`nginx` proxy without proxying the HTTPS repositories::
+#. To use the :program:`nginx` reverse proxy include the following line in your inventory::
 
-    Acquire::http::Proxy "http://apt-cache.<domain>";
-    Acquire::https::Proxy "DIRECT";
+    apt__proxy_url: 'http://software-cache.<domain>/'
+
+The ``debops.apt`` role will ensure, that the host uses the given proxy server.
+
+.. note:: Currently, for HTTPS repositories a direct connection to the destination domain
+   will be used and the proxy server will not be used at all.
+   This might be changed in the future. See
+   `this GitHub issue <https://github.com/debops/ansible-apt_cacher_ng/issues/1>`_ for more
+   information.
 
 Example inventory
 -----------------
