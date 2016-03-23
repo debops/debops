@@ -10,6 +10,8 @@ v0.1.1
 
 - Updated example playbook and inventory in the documentation. [ypid]
 
+- Fixed Ansible check mode support. [ypid]
+
 v0.1.1
 ------
 
