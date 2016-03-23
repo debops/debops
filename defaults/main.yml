@@ -34,11 +34,13 @@ cryptsetup_base_packages:
 # .. code::
 #
 #    cryptsetup_devices:
+#
 #      - name: 'sdb5_crypt'
 #        ciphertext_block_device: '/dev/sdb5'
 #
 # Setup a encrypted filesystem on top of :file:`/dev/sdb5` which will be
-# available after role execution under :file:`/media/sdb5_crypt`.
+# mounted after role execution under :file:`/media/sdb5_crypt` (assuming the
+# value of ``cryptsetup_state`` is left unchanged).
 cryptsetup_devices: []
 
 
@@ -95,7 +97,7 @@ cryptsetup_secret_mode: 'u=rwX,g=,o='
 
 # .. envvar:: cryptsetup_keyfile_remote_location
 #
-# Directory where the keyfiles will be stored in on the remote system.
+# Directory where the keyfiles will be stored on the remote system.
 cryptsetup_keyfile_remote_location: '{{ (ansible_local.root.var
                                         if (ansible_local|d() and ansible_local.root|d() and
                                             ansible_local.root.var|d())
@@ -129,14 +131,15 @@ cryptsetup_keyfile_mode: '0600'
 
 # .. envvar:: cryptsetup_header_backup_remote_location
 #
-# Directory the header backups from LUKS will be stored in on the remote system.
+# Directory where the header backups from LUKS will be stored on the remote system.
 #
-# The LUKS header backup will be stored in this file on the Ansible controller:
+# The LUKS header backup will be stored in this file:
 #
 # .. code:: jinja
 #
 #    {{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}
 #
+# on the Ansible controller.
 cryptsetup_header_backup_remote_location: '{{ (ansible_local.root.backup
                                               if (ansible_local|d() and ansible_local.root|d() and
                                                   ansible_local.root.backup|d())
@@ -145,9 +148,11 @@ cryptsetup_header_backup_remote_location: '{{ (ansible_local.root.backup
 
 # .. envvar:: cryptsetup_header_backup
 #
-# Should a header backup be created?
+# Should a header backup be created and stored on the remote system and the
+# Ansible controller?
 #
-# .. note:: The LUKS header is only stored once at the beginning of your block device.
+# .. note:: The LUKS header is only stored once in the first few kilobytes of
+#    your block device.
 #    When the header gets corrupted, the plaintext data might be inaccessible!
 #    Thus it is recommended to have a header backup on hand.
 #
@@ -268,7 +273,7 @@ cryptsetup_key_size: 512
 # .. envvar:: cryptsetup_use_dev_random
 #
 # Should :file:`/dev/random` be used to generate the LUKS master key?
-# Corresponds with the ``--use-random`` and ``--use-urandom`` parameter.
+# Corresponds with the ``--use-random`` and ``--use-urandom`` parameters.
 #
 # The current default of :command:`cryptsetup` (as shown by
 # :command:`cryptsetup --help`) is :file:`/dev/urandom`.

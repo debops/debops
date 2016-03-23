@@ -262,7 +262,7 @@
     rm -f "{{ cryptsetup_header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}"
     cryptsetup luksHeaderBackup "{{ item.0.ciphertext_block_device }}" --header-backup-file "{{ cryptsetup_header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}"
   changed_when: False
-  when: ((cryptsetup_header_backup|d() | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  when: ((item.backup_header|d(cryptsetup_header_backup) | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
@@ -274,7 +274,7 @@
     dest: '{{ cryptsetup_secret_path + "/" + item.0.name + "/header_backup.raw" }}'
     fail_on_missing: True
     flat: True
-  when: ((cryptsetup_header_backup|d() | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  when: ((item.backup_header|d(cryptsetup_header_backup) | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'
@@ -286,7 +286,7 @@
     owner: '{{ cryptsetup_secret_owner }}'
     group: '{{ cryptsetup_secret_group }}'
     mode:  '{{ cryptsetup_secret_mode }}'
-  when: ((cryptsetup_header_backup|d() | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  when: ((item.backup_header|d(cryptsetup_header_backup) | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
     - '{{ cryptsetup_register_ciphertext_device.results|d([]) }}'

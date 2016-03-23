@@ -8,12 +8,12 @@
 [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.cryptsetup-660198.svg?style=flat)](https://galaxy.ansible.com/detail#/role/6309)
 
 
-This role allows you to configure a encrypted filesystem on top of any given
-block device using [dm-crypt][]/[cryptsetup][] and [LUKS][].  A random keyfile generated on the Ansible
-controller will be used for the encryption by default.  It is your
-responsibility that the keyfile is kept secure for this to make sense.  For
-example by storing the keyfile on an already encrypted filesystem (both on
-the Ansible controller and the remote system).
+`debops.cryptsetup` allows you to configure encrypted filesystems on top of
+any given block device using [dm-crypt][]/[cryptsetup][] and [LUKS][].  A random
+keyfile generated on the Ansible controller will be used for the encryption by
+default.  It is your responsibility that the keyfile is kept secure for this to
+make sense.  For example by storing the keyfile on an already encrypted
+filesystem (both on the Ansible controller and the remote system).
 
 [LUKS]: https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup
 [dm-crypt]: https://en.wikipedia.org/wiki/Dm-crypt
@@ -21,11 +21,11 @@ the Ansible controller and the remote system).
 
 ### Features
 
-* Create a random keyfile or use an already existing file.
-* Manage `/etc/crypttab` and `/etc/fstab`.
+* Create a random keyfile or use an already existing keyfile.
+* Manage :file:`/etc/crypttab` and :file:`/etc/fstab` and mount point directories.
 * Create a LUKS header backup and store it on the Ansible controller.
-* Setup and mount the encrypted filesystem without storing the keyfile on
-  persistent storage of the remote system.
+* Decrypt and mount a encrypted filesystem and delete the decryption key from
+  persistent storage after mounting.
 
 ### Installation
 
