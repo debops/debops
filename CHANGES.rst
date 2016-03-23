@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v0.2.4
+------
+
+*Unreleased*
+
+- Fixed Ansible check mode support to not fail when running with
+  ``ansible_connection=local`` against a host which does not have ``sshd``
+  installed yet. [ypid]
+
+
 v0.2.3
 ------
 

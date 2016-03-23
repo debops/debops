@@ -29,7 +29,9 @@ HostKey /etc/ssh/ssh_host_{{ hostkey }}_key
 {% set sshd__tpl_ciphers = [] %}
 {% set sshd__tpl_ciphers_match = False %}
 {% for key, value in sshd__ciphers_map.iteritems() %}
-{% if not sshd__tpl_ciphers_match and sshd__register_version.stdout | version_compare(key, '>=') %}
+{% if not sshd__tpl_ciphers_match and
+      sshd__register_version.stdout|d() and
+      sshd__register_version.stdout | version_compare(key, '>=') %}
 {% set sshd__tpl_ciphers_match = True %}
 {% for element in value %}
 {% set _ = sshd__tpl_ciphers.append(element) %}
@@ -46,7 +48,9 @@ Ciphers {{ sshd__tpl_ciphers | join(",") }}
 {% set sshd__tpl_kex_algorithms = [] %}
 {% set sshd__tpl_kex_algorithms_match = False %}
 {% for key, value in sshd__kex_algorithms_map.iteritems() %}
-{% if not sshd__tpl_kex_algorithms_match and sshd__register_version.stdout | version_compare(key, '>=') %}
+{% if not sshd__tpl_kex_algorithms_match and
+      sshd__register_version.stdout|d() and
+      sshd__register_version.stdout | version_compare(key, '>=') %}
 {% set sshd__tpl_kex_algorithms_match = True %}
 {% for element in value %}
 {% set _ = sshd__tpl_kex_algorithms.append(element) %}
@@ -63,7 +67,9 @@ KexAlgorithms {{ sshd__tpl_kex_algorithms | join(",") }}
 {% set sshd__tpl_macs = [] %}
 {% set sshd__tpl_macs_match = False %}
 {% for key, value in sshd__macs_map.iteritems() %}
-{% if not sshd__tpl_macs_match and sshd__register_version.stdout | version_compare(key, '>=') %}
+{% if not sshd__tpl_macs_match and
+      sshd__register_version.stdout|d() and
+      sshd__register_version.stdout | version_compare(key, '>=') %}
 {% set sshd__tpl_macs_match = True %}
 {% for element in value %}
 {% set _ = sshd__tpl_macs.append(element) %}
@@ -100,6 +106,7 @@ RSAAuthentication yes
 PubkeyAuthentication yes
 
 {% if sshd__authorized_keys_lookup|d() and sshd__authorized_keys_lookup and
+      sshd__register_version.stdout|d() and
       sshd__register_version.stdout | version_compare('6.2', '>=') %}
 AuthorizedKeysCommand /etc/ssh/authorized_keys_lookup
 AuthorizedKeysCommandUser {{ sshd__authorized_keys_lookup_user }}
