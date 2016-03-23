@@ -6,8 +6,8 @@ Getting started
 
 The ``debops.libvirt`` role is designed to use your normal admin account instead of
 a ``root`` account for managing ``libvirt`` via it's API. That way Ansible can
-access your own SSH keys through ``ssh-agent`` if necessary to connect to the
-remote ``libvirtd`` instances.
+access your own SSH keys through :command:`ssh-agent` if necessary to connect to the
+remote :program:`libvirtd` instances.
 
 You should still use ``debops.libvirt`` with the ``become: True`` option in your
 playbooks, it will automatically run tasks unprivileged when needed.
@@ -21,12 +21,12 @@ effect. This role will check if the required group is present and won't run
 Use via local connection
 ------------------------
 
-By default ``debops.libvirt`` will try to connect to a ``libvirtd`` system
+By default ``debops.libvirt`` will try to connect to a :program:`libvirtd` system
 instance on ``localhost``. Your user should be in the ``libvirt`` system group
 to be able to do this. The ``debops.libvirtd`` role configures this automatically.
 
 Network and storage pool configuration without specified ``item.uri`` parameter
-applies to default connection. If your main ``libvirtd`` daemon is on
+applies to default connection. If your main :program:`libvirtd` daemon is on
 a different host, you can change the default connection using the
 ``libvirt_default_uri`` variable.
 
@@ -34,7 +34,7 @@ Use via remote connections
 --------------------------
 
 You can use ``debops.libvirt`` from your Ansible Controller host to centrally
-configure ``libvirtd`` instances on remote hosts.
+configure :program:`libvirtd` instances on remote hosts.
 
 Use the ``libvirt_connections`` dict variable to specify libvirt URI connections
 with aliases, they will be configured in ``~/.config/libvirt/libvirt.conf`` on
@@ -45,7 +45,7 @@ that definition.
 Example inventory
 -----------------
 
-To run this role directly on ``libvirtd`` servers, they should be included
+To run this role directly on :program:`libvirtd` servers, they should be included
 in the ``[debops_libvirt]`` Ansible group::
 
     [debops_service_libvirt]

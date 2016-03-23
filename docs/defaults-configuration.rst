@@ -130,7 +130,7 @@ List of parameters supported by ``dnsmasq`` network type:
 
 ``bootp_file``
   File path sent to the host which instructs them to download a given file from
-  TFTP server. If none is specified, ``/undionly.kpxe`` is used, which is
+  TFTP server. If none is specified, :file:`/undionly.kpxe` is used, which is
   default for iPXE.
 
 ``bootp_server``
@@ -234,11 +234,11 @@ List of parameters supported by ``nfs`` storage pool type:
   IP address or hostname of NFS server which holds the exported filesystem.
 
 ``src``
-  Path on the NFS server with exported filesystem, for example ``/srv/nfs``.
+  Path on the NFS server with exported filesystem, for example :file:`/srv/nfs`.
 
 ``path``
   Path in the local filesystem where remote NFS share should be mounted, for
-  example ``/media/nfs/remote-vm``. If this directory does not exist, it will
+  example :file:`/media/nfs/remote-vm`. If this directory does not exist, it will
   be created by ``debops.libvirt`` role automatically.
 
 List of parameters supported by ``logical`` storage pool type:
