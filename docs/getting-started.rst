@@ -78,7 +78,7 @@ Here's an example playbook that can be used to install and manage Apt-Cacher NG:
           nginx_servers:
             - '{{ apt_cacher_ng__nginx__servers }}'
           nginx_upstreams:
-            - '{{ apt_cacher_ng__nginx_upstream }}'
+            - '{{ apt_cacher_ng__nginx__upstream }}'
 
         # - role: debops.contrib-apparmor
         #   tags: [ 'role::apparmor' ]

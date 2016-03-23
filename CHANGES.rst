@@ -20,3 +20,5 @@ v0.1.0
 
 - Check boolean values in configuration template. [drybjed]
 
+- Renamed ``apt_cacher_ng__nginx_upstream`` to ``apt_cacher_ng__nginx__upstream``.
+  Renamed ``apt_cacher_ng__nginx_upstream_servers`` to ``apt_cacher_ng__upstream_servers``. [ypid]
