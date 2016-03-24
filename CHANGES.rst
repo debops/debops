@@ -1,6 +1,21 @@
 Changelog
 =========
 
+v0.2.0
+------
+
+*Unreleased*
+
+- Remove most of the Ansible role dependencies, leaving only those that are
+  required for the role to run correctly.
+
+  Configuration of dependent services like firewall, TCP Wrappers, APT
+  preferences is set in separate default variables. These variables can be used
+  by Ansible playbooks to configure settings related to :program:`libvirtd` in other
+  services. [ypid]
+
+- Fix deprecation warnings in Ansible 2.1.0. [ypid]
+
 v0.1.2
 ------
 

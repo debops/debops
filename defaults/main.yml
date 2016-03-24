@@ -5,6 +5,8 @@
 # .. contents:: Sections
 #    :local:
 #
+# .. libvirtd packages (((
+#
 # ---------------------
 #   libvirtd packages
 # ---------------------
@@ -13,7 +15,9 @@
 #
 # List of ``libvirtd`` packages which will be installed on all distribution
 # releases, unless overridden.
-libvirtd_base_packages: [ 'libvirt-daemon-system', 'libvirt-clients' ]
+libvirtd_base_packages:
+  - 'libvirt-daemon-system'
+  - 'libvirt-clients'
 
 
 # .. envvar:: libvirtd_base_packages_map
@@ -29,13 +33,18 @@ libvirtd_base_packages_map:
 #
 # List of QEMU KVM packages to install. They will be installed on all hosts
 # apart from KVM guests, to not create redundant support.
-libvirtd_kvm_packages: [ 'qemu-system-x86', 'qemu-kvm' ]
+libvirtd_kvm_packages:
+  - 'qemu-system-x86'
+  - 'qemu-kvm'
 
 
 # .. envvar:: libvirtd_network_packages
 #
 # List of network-related packages to install with ``libvirtd``.
-libvirtd_network_packages: [ 'dnsmasq-base', 'bridge-utils', 'ebtables' ]
+libvirtd_network_packages:
+  - 'dnsmasq-base'
+  - 'bridge-utils'
+  - 'ebtables'
 
 
 # .. envvar:: libvirtd_packages
@@ -43,7 +52,10 @@ libvirtd_network_packages: [ 'dnsmasq-base', 'bridge-utils', 'ebtables' ]
 # List of custom packages to install.
 libvirtd_packages: []
 
+# .. )))
 
+# .. Access control (((
+#
 # ------------------
 #   Access control
 # ------------------
@@ -64,20 +76,23 @@ libvirtd_group_map:
   'Debian': 'libvirt'
   'Ubuntu': 'libvirtd'
 
+# .. )))
 
+# libvirtd connection URI (((
+#
 # ---------------------------
 #   libvirtd connection URI
 # ---------------------------
 
 # .. envvar:: libvirtd_system_uri
 #
-# Connection URI for the local ``libvirtd`` instance.
+# Connection URI for the local :program:`libvirtd` instance.
 libvirtd_system_uri: 'qemu:///system'
 
 
 # .. envvar:: libvirtd_connections
 #
-# Dict with connections configured in ``/etc/libvirt/libvirt.conf``.
+# Dict with connections configured in :file:`/etc/libvirt/libvirt.conf`.
 #
 # Each key is an alias for a connection, each value should be a valid
 # ``libvirt`` URI connection string. At the moment only local
@@ -93,3 +108,42 @@ libvirtd_connections:
 # system-wide.
 libvirtd_uri: 'localhost'
 
+# .. )))
+
+# .. Role-dependent configuration (((
+#
+# --------------------------------
+#   Role-dependent configuration
+# --------------------------------
+
+# .. envvar:: libvirtd__apt_preferences__dependent_list
+#
+# Configuration for the ``debops.apt_preferences`` role.
+libvirtd__apt_preferences__dependent_list:
+
+  - package: 'libvirt0 libvirt0-dbg libvirt-* python-libvirt libspice-server1 libusb-1.0-0 qemu-* seabios ipxe-qemu'
+    backports: [ 'wheezy' ]
+    reason: 'Version parity with Debian Jessie'
+    by_role: 'debops.libvirtd'
+
+
+# .. envvar:: libvirtd__ferm__dependent_rules
+#
+# Configuration for ``debops.ferm`` firewall.
+libvirtd__ferm__dependent_rules:
+
+  - type: 'custom'
+    filename: 'bootpc_checksum'
+    weight: '30'
+    rules: |
+      # Add checksums to BOOTP packets from virtual machines and containers.
+      # https://www.redhat.com/archives/libvir-list/2010-August/msg00035.html
+      @hook post "iptables -A POSTROUTING -t mangle -p udp --dport bootpc -j CHECKSUM --checksum-fill";
+
+
+# .. envvar:: libvirtd__ferm__forward
+#
+# Enable/disable IP forwarding on the host.
+libvirtd__ferm__forward: True
+
+# .. )))

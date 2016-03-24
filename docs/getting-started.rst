@@ -4,11 +4,11 @@ Getting started
 .. contents::
    :local:
 
-The ``debops.libvirtd`` role will install ``libvirtd`` along with virtualization
+The ``debops.libvirtd`` role will install :program:`libvirtd` along with virtualization
 components required on the server.
 
 Configuration at the moment is very minimal - specified account will be granted
-access to ``libvirt`` system group which has access to ``libvirtd`` daemon. If
+access to ``libvirt`` system group which has access to :program:`libvirtd` daemon. If
 more configuration is required, it will be added at a later time.
 
 Example inventory
@@ -17,7 +17,7 @@ Example inventory
 This role should be enabled on virtualization hosts, you can do this by adding
 a host to ``[debops_libvirtd]`` group.
 
-    [debops_libvirtd]
+    [debops_service_libvirtd]
     hostname
 
 Example playbook
@@ -27,14 +27,26 @@ Here's an example playbook which uses the ``debops.libvirtd`` role::
 
     ---
 
-    - name: Configure libvirtd service
-      hosts: debops_libvirtd
-      tags: [ 'aspect::virtualization' ]
-      sudo: True
+    - name: Install and manage libvirtd.
+      hosts: [ 'debops_service_libvirtd' ]
+      become: True
 
       roles:
+
+        - role: debops.apt_preferences
+          tags: [ 'depend::apt_preferences', 'type::dependency' ]
+          apt_preferences__dependent_list:
+            - '{{ libvirtd__apt_preferences__dependent_list }}'
+
+        - role: debops.ferm
+          tags: [ 'depend::ferm', 'type::dependency' ]
+          ferm_forward: '{{ libvirtd__ferm__forward|d() | bool }}'
+          ferm_dependent_rules:
+            - '{{ libvirtd__ferm__dependent_rules }}'
+
         - role: debops.libvirtd
           tags: [ 'role::libvirtd' ]
+
 
 Ansible tags
 ------------

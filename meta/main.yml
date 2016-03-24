@@ -1,44 +1,27 @@
 ---
 
-dependencies:
-
-  - role: debops.apt_preferences
-    tags: [ 'depend::apt_preferences', 'type::dependency' ]
-    apt_preferences_dependent_list:
-      - package: 'libvirt0 libvirt0-dbg libvirt-* python-libvirt libspice-server1 libusb-1.0-0 qemu-* seabios ipxe-qemu'
-        backports: [ 'wheezy' ]
-        reason: 'Version parity with Debian Jessie'
-        by_role: 'debops.libvirtd'
-
-  - role: debops.ferm
-    tags: [ 'depend::ferm', 'type::dependency' ]
-    ferm_forward: True
-    ferm_dependent_rules:
-
-      - type: 'custom'
-        filename: 'bootpc_checksum'
-        weight: '30'
-        rules: |
-          # Add checksums to BOOTP packets from virtual machines and containers
-          # http://www.redhat.com/archives/libvir-list/2010-August/msg00035.html
-          @hook post "iptables -A POSTROUTING -t mangle -p udp --dport bootpc -j CHECKSUM --checksum-fill";
-
+dependencies: []
 
 galaxy_info:
-  author: 'Maciej Delmanowski'
-  description: 'Manage libvirtd instance with KVM support'
+
   company: 'DebOps'
+  author: 'Maciej Delmanowski'
+  description: 'Install and manage libvirtd.'
   license: 'GNU General Public License v3'
   min_ansible_version: '1.8.0'
+
   platforms:
-  - name: Ubuntu
-    versions:
-    - trusty
-  - name: Debian
-    versions:
-    - wheezy
-    - jessie
-  categories:
+
+    - name: Ubuntu
+      versions:
+        - trusty
+
+    - name: Debian
+      versions:
+        - wheezy
+        - jessie
+
+  galaxy_tags:
   - system
   - virtualization
 
