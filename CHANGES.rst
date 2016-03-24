@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.7
+------
+
+*Unreleased*
+
+- Added ``nginx__deploy_state`` to allow to specify the desired state this role
+  should achieve. State ``absent`` is not fully implemented yet. [ypid]
+
 v0.1.6
 ------
 

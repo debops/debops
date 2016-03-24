@@ -9,6 +9,24 @@ nginx_allow: []
 nginx_group_allow: []
 nginx_host_allow: []
 
+
+# .. envvar:: nginx__deploy_state
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that Nginx is installed and configured as requested.
+#
+# ``absent``
+#   Ensure that Nginx is uninstalled and it's configuration is removed.
+#
+#   .. warning:: The roles is currently not able to dismantle from ``present``
+#      state. This needs to be implemented. This option can only be achieved
+#      currently when ``present`` has never been set before on a host.
+#
+nginx__deploy_state: 'present'
+
+
 # List of Debian packages installed by this role
 nginx_base_packages: [ 'python-passlib' ]
 
@@ -501,7 +519,7 @@ nginx_apt_preferences_dependent_list:
     reason: 'Support for SPDY, OCSP stapling'
     role: 'debops.nginx'
     when: '{{ (nginx_flavor == "full") | bool }}'
-    delete: '{{ not (nginx_flavor == "full") | bool }}'
+    delete: '{{ nginx__deploy_state != "present" or (not (nginx_flavor == "full") | bool) }}'
 
   - package: 'nginx nginx-*'
     pin: 'release o=Phusion'
@@ -510,7 +528,7 @@ nginx_apt_preferences_dependent_list:
     suffix: '_passenger'
     role: 'debops.nginx'
     when: '{{ (nginx_flavor == "passenger") | bool }}'
-    delete: '{{ not (nginx_flavor == "passenger") | bool }}'
+    delete: '{{ nginx__deploy_state != "present" or (not (nginx_flavor == "passenger") | bool) }}'
 
 # Configuration of the ``iptables`` firewall using ``ferm``.
 nginx_ferm_dependent_rules:
@@ -523,4 +541,5 @@ nginx_ferm_dependent_rules:
     role: 'nginx'
     name: 'http_https'
     multiport: True
+    delete: '{{ nginx__deploy_state != "present" }}'
 
