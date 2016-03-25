@@ -51,7 +51,7 @@
     line: 'save {{ item }}'
     state: 'present'
   when: redis_save is defined and redis_save
-  with_items: redis_save
+  with_items: '{{ redis_save }}'
   notify: ['Restart Redis Server']
 
 - name: Insert include line above the first save line to the main Redis config
