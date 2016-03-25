@@ -4,7 +4,7 @@
   mysql_db:
     name: '{{ item.database | d(item.name) }}'
     state: 'absent'
-  with_items: mariadb_databases
+  with_items: '{{ mariadb_databases }}'
   delegate_to: '{{ mariadb_delegate_to }}'
   when: ((item.database|d(False) or item.name|d(False)) and
          (item.state is defined and item.state == 'absent'))
@@ -13,7 +13,7 @@
   mysql_db:
     name: '{{ item.database | d(item.name) }}'
     state: 'present'
-  with_items: mariadb_databases
+  with_items: '{{ mariadb_databases }}'
   delegate_to: '{{ mariadb_delegate_to }}'
   when: ((item.database|d(False) or item.name|d(False)) and
          (item.state is undefined or item.state != 'absent'))
@@ -27,8 +27,8 @@
     group: 'root'
     mode: '0600'
   with_together:
-    - mariadb_databases
-    - mariadb_register_database_status.results
+    - '{{ mariadb_databases }}'
+    - '{{ mariadb_register_database_status.results }}'
   delegate_to: '{{ mariadb_delegate_to }}'
   when: ((item.0.database|d(False) or item.0.name|d(False)) and
          (item.0.state is undefined or item.0.state != 'absent') and
@@ -41,8 +41,8 @@
     target: '{{ item.0.target }}'
     state: 'import'
   with_together:
-    - mariadb_databases
-    - mariadb_register_database_status.results
+    - '{{ mariadb_databases }}'
+    - '{{ mariadb_register_database_status.results }}'
   delegate_to: '{{ mariadb_delegate_to }}'
   when: ((item.0.database|d(False) or item.0.name|d(False)) and
          (item.0.state is undefined or item.0.state != 'absent') and
@@ -52,7 +52,7 @@
   file:
     dest: '{{ item.target }}'
     state: 'absent'
-  with_items: mariadb_databases
+  with_items: '{{ mariadb_databases }}'
   delegate_to: '{{ mariadb_delegate_to }}'
   when: ((item.database|d(False) or item.name|d(False)) and
          (item.state is undefined or item.state != 'absent') and
@@ -64,7 +64,7 @@
     name: '{{ item.user | d(item.name) }}'
     host: '{{ item.host | default(mariadb_client) }}'
     state: 'absent'
-  with_items: mariadb_users
+  with_items: '{{ mariadb_users }}'
   delegate_to: '{{ mariadb_delegate_to }}'
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is defined and item.state == "absent"))
@@ -79,7 +79,7 @@
                   secret + "/mariadb/" + mariadb_delegate_to +
                   "/credentials/" + item.user | d(item.name) + "/password " +
                   "length=" + mariadb_password_length)) }}'
-  with_items: mariadb_users
+  with_items: '{{ mariadb_users }}'
   delegate_to: '{{ mariadb_delegate_to }}'
   register: mariadb_register_create_users
   when: ((item.user|d(False) or item.name|d(False)) and
@@ -93,8 +93,8 @@
     priv: '{{ (item.0.database | d(item.0.name)) + ".*:" + mariadb_default_privileges_grant }}'
     append_privs: True
   with_together:
-    - mariadb_users
-    - mariadb_register_create_users.results
+    - '{{ mariadb_users }}'
+    - '{{ mariadb_register_create_users.results }}'
   delegate_to: '{{ mariadb_delegate_to }}'
   when: ((item.0.user|d(False) or item.0.name|d(False)) and
          (item.0.state is undefined or item.0.state != "absent") and
@@ -109,8 +109,8 @@
     priv: '{{ (item.0.database | d(item.0.name)) + "\_%.*:" + mariadb_default_privileges_grant }}'
     append_privs: True
   with_together:
-    - mariadb_users
-    - mariadb_register_create_users.results
+    - '{{ mariadb_users }}'
+    - '{{ mariadb_register_create_users.results }}'
   delegate_to: '{{ mariadb_delegate_to }}'
   when: ((item.0.user|d(False) or item.0.name|d(False)) and
          (item.0.state is undefined or item.0.state != "absent") and
@@ -125,8 +125,8 @@
     priv: '{{ item.0.priv if (item.0.priv is string) else (item.0.priv | join("/")) }}'
     append_privs: '{{ item.0.append_privs | default(True) }}'
   with_together:
-    - mariadb_users
-    - mariadb_register_create_users.results
+    - '{{ mariadb_users }}'
+    - '{{ mariadb_register_create_users.results }}'
   delegate_to: '{{ mariadb_delegate_to }}'
   when: ((item.0.user|d(False) or item.0.name|d(False)) and
          (item.0.state is undefined or item.0.state != "absent") and
@@ -138,7 +138,7 @@
     name: '{{ item.group | d(item.owner) }}'
     state: 'present'
     system: '{{ item.system | d(True) }}'
-  with_items: mariadb_users
+  with_items: '{{ mariadb_users }}'
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is undefined or item.state != "absent") and
          item.owner|d(False) and item.home|d(False))
@@ -151,7 +151,7 @@
     home: '{{ item.home }}'
     state: 'present'
     system: '{{ item.system | d(True) }}'
-  with_items: mariadb_users
+  with_items: '{{ mariadb_users }}'
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is undefined or item.state != "absent") and
          item.owner|d(False) and item.home|d(False))
@@ -161,7 +161,7 @@
   file:
     dest: '{{ "~" + item.owner + "/.my.cnf" }}'
     state: 'absent'
-  with_items: mariadb_users
+  with_items: '{{ mariadb_users }}'
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is defined and item.state == "absent") and
          item.owner|d(False))
@@ -172,8 +172,8 @@
     path: '{{ item.0.creds_path | regex_replace("^(.*/).*$", "\\1") }}'
     state: 'directory'
   with_together:
-    - mariadb_users
-    - mariadb_register_create_users.results
+    - '{{ mariadb_users }}'
+    - '{{ mariadb_register_create_users.results }}'
   when: ((item.0.user|d(False) or item.0.name|d(False)) and
          (item.0.state|d("present") != "absent") and
          item.0.creds_path|d(False) and
@@ -188,8 +188,8 @@
     group: '{{ item.0.group | default(item.0.owner) }}'
     mode: '{{ item.0.mode | default("0640") }}'
   with_together:
-    - mariadb_users
-    - mariadb_register_create_users.results
+    - '{{ mariadb_users }}'
+    - '{{ mariadb_register_create_users.results }}'
   when: ((item.0.user|d(False) or item.0.name|d(False)) and
          (item.0.state is undefined or item.0.state != "absent") and
          item.0.owner|d(False))
