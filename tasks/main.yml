@@ -5,9 +5,10 @@
     name: '{{ item }}'
     state: 'latest'
     install_recommends: False
-  with_items: rsyslog_packages
-  when: rsyslog_packages is defined and rsyslog_packages
+  with_flattened:
+    - '{{ rsyslog_packages }}'
+  when: rsyslog_packages|d()
   notify: [ 'Restart rsyslogd' ]
 
 - include: pools.yml
-  when: rsyslog_manage_pools is defined and rsyslog_manage_pools == True
+  when: rsyslog_manage_pools|d() == True
