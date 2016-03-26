@@ -46,7 +46,7 @@
 - name: Set autostart attribute on networks
   virt_net:
     name: '{{ item.name }}'
-    autostart: '{{ "True" if (item.autostart|d(True)) else "False" }}'
+    autostart: '{{ "yes" if (item.autostart|d(True)) else "no" }}'
     uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
   with_flattened: '{{ libvirt_networks }}'
   become: False

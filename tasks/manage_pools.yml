@@ -16,7 +16,7 @@
     uri: '{{ libvirt_connections[item.item.uri | d(libvirt_uri)] }}'
     command: 'delete'
     mode: '{{ item.item.mode | d(omit) }}'
-  with_flattened: libvirt_register_stop.results
+  with_flattened: '{{ libvirt_register_stop.results }}'
   become: False
   when: (item.changed|d() and item.item.name|d() and item.item.delete|d(False) and
          item.item.state|d() in [ 'undefined' ] and
@@ -48,7 +48,7 @@
     uri: '{{ libvirt_connections[item.item.uri | d(libvirt_uri)] }}'
     command: 'build'
     mode: '{{ item.item.mode | d(omit) }}'
-  with_flattened: libvirt_register_define.results
+  with_flattened: '{{ libvirt_register_define.results }}'
   become: False
   when: (item.changed|d() and item.item.name|d() and
          (item.item.state|d('active') not in [ 'undefined', 'absent' ]) and
@@ -68,9 +68,9 @@
 - name: Set autostart attribute on storage pools
   virt_pool:
     name: '{{ item.name }}'
-    autostart: '{{ "True" if (item.autostart|d(True)) else "False" }}'
+    autostart: '{{ "yes" if (item.autostart|d(True)) else "no" }}'
     uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
   with_flattened: '{{ libvirt_pools }}'
   become: False
-  when: (item.name|d() and item.state|d('active') not in [ 'undefined', 'absent' ]))
+  when: (item.name|d() and item.state|d('active') not in [ 'undefined', 'absent' ])
 
