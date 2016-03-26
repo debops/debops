@@ -9,7 +9,7 @@
     mode:  '{{ item.mode    | default("0644") }}'
     backup: '{{ item.backup | default("no") }}'
   with_items: '{{ rsyslog_pools }}'
-  when: (item.name|d() and item.enabled|d() == True)
+  when: (item.name|d() and item.enabled|d(True) == True)
   notify: [ 'Restart rsyslogd' ]
 
 - name: Disable rsyslog pools
