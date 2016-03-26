@@ -12,6 +12,11 @@ v0.1.1
 
 - Fixed Ansible check mode support. [ypid]
 
+- Moved lookup files to templates directory to allow them to be found. [ypid]
+
+- Removed ``virt_net`` and ``virt_pool`` from the role and require Ansible 2.0
+  which includes them. [ypid]
+
 v0.1.1
 ------
 
