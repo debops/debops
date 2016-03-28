@@ -7,12 +7,8 @@ Getting started
 Initial configuration
 ---------------------
 
-``debops.contrib-etckeeper`` will install the ``etckeeper`` Debian package
-which will hook into the package management and from now on automatically
-commit changes to a local git repository under :file:`/etc/.git`.
-
-By default :command:`git` is used as VCS. This can be changed by inventory
-variables.
+By default :command:`git` is used as VCS. This can be changed by the inventory
+variables ``etckeeper__vcs``.
 
 Example inventory
 -----------------
@@ -29,14 +25,14 @@ In Ansible's inventory.
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to enable and manage the :program:`atd`
-service on a set of hosts:
+Here's an example playbook that can be used to put :file:`/etc` under version
+control using :program:`etckeeper` on a set of hosts:
 
 .. code:: YAML
 
    ---
    - name: Put /etc under version control using etckeeper
-     hosts: debops_all_hosts
+     hosts: 'debops_service_etckeeper'
      become: True
 
      roles:
