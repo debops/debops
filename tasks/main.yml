@@ -17,7 +17,7 @@
     - '{{ apt_preferences__dependent_list }}'
   when: (
           (
-            (item.delete|d() and item.delete | bool) and
+            (item.delete|d() | bool) and
             (item.package is string and item.package) and
             (item.version is undefined or (item.version is defined and not item.version))
           ) or
@@ -53,11 +53,11 @@
     - '{{ apt_preferences__dependent_list }}'
   when: (
           (
-            (item.delete is undefined or not item.delete | bool) and
+            (not (item.delete|d() | bool)) and
             item.package is string and item.package
           ) and
           (
-            (item.version is defined and item.version) or
+            item.version|d() or
             (
               item.pin is undefined and
               (
@@ -68,7 +68,7 @@
                 )
               ) and
              ansible_distribution_release in apt_preferences__next_release.keys()
-            ) or (item.pin is defined and item.pin)
+            ) or item.pin|d()
           )
         )
 
