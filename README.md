@@ -10,7 +10,7 @@ a particular version no matter what (among other things).
 
 By default, if you don't specify version or provide custom pin configuration,
 `debops.apt_preferences` role will configure specified packages to be installed from
-backports repository of a current OS release.
+backports repository of the current OS release.
 
 ### Installation
 
