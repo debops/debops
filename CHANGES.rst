@@ -8,7 +8,17 @@ v0.1.4
 
 - Changed namespace from ``apt_preferences_`` to ``apt_preferences__``.
   ``apt_preferences_[^_]`` variables are hereby deprecated but are currently
-  still supported to allow a soft migration. [ypid]
+  still supported to allow a soft migration.
+
+  You might need to update your inventory. This oneliner might come in handy to
+  do this:
+
+  .. code:: shell
+
+     git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(apt_preferences)_([^_])/\1__\2/g;'
+
+  [ypid]
+
 
 v0.1.3
 ------
