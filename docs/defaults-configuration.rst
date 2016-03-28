@@ -7,6 +7,9 @@ Default variables: configuration
 Some of ``debops.cryptsetup`` variables have more extensive configuration.
 Here you can find documentation and examples for them.
 
+
+.. _cryptsetup_devices:
+
 cryptsetup_devices
 ------------------
 
@@ -76,9 +79,10 @@ you to use more specific parameters which are not documented below.
     Might be useful when you don’t have a secure place to store the keyfile on the remote system.
     With this option you will be required to run this role after each reboot to mount the filesystem again.
 
-    Note that the default is ``auto`` which means that your init system will
-    try to mount the filesystem on boot and might drop you to a root shell if
-    it can’t.
+    Note that the implicit default for ``crypttab_options`` and
+    ``mount_options`` is ``auto`` which means that your init system will try to
+    mount the filesystem on boot and might drop you to a root shell if it
+    can’t.
 
     To avoid this, you need to set the following options for the item::
 
@@ -120,12 +124,14 @@ you to use more specific parameters which are not documented below.
 Examples
 ~~~~~~~~
 
-Create an encrypted LUKS device using an existing partition. Device will be
-mounted at :file:`/media/crypt0` and will be automatically mounted at boot:
+Setup a encrypted filesystem on top of :file:`/dev/sdb5` which will be
+mounted after role execution under :file:`/media/sdb5_crypt` (assuming the
+value of ``cryptsetup_state`` is left unchanged) and will be automatically
+mounted at boot:
 
 .. code:: yaml
 
-    cryptsetup_devices:
-      - name: 'crypt0'
-        ciphertext_block_device: '/dev/sdb1'
+   cryptsetup_devices:
 
+     - name: 'sdb5_crypt'
+       ciphertext_block_device: '/dev/sdb5'
