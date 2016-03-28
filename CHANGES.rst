@@ -10,6 +10,8 @@ v0.1.4
   ``apt_preferences_[^_]`` variables are hereby deprecated but are currently
   still supported to allow a soft migration. [ypid]
 
+- Added ``apt_preferences__preset_list`` for advanced users. [ypid]
+
 v0.1.3
 ------
 
