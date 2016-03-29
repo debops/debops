@@ -24,8 +24,8 @@
     owner: '{{ preseed_user }}'
     group: '{{ preseed_group }}'
     mode: '0755'
-  with_items: preseed_configs
-  when: item.name is defined and item.name
+  with_items: '{{ preseed_configs }}'
+  when: item.name|d()
 
 - name: Generate Preseed configuration
   template:
@@ -34,8 +34,8 @@
     owner: '{{ preseed_user }}'
     group: '{{ preseed_group }}'
     mode: '0644'
-  with_items: preseed_configs
-  when: item.name is defined and item.name
+  with_items: '{{ preseed_configs }}'
+  when: item.name|d()
 
 - name: Generate postinst scripts
   template:
@@ -44,6 +44,6 @@
     owner: '{{ preseed_user }}'
     group: '{{ preseed_group }}'
     mode: '0644'
-  with_items: preseed_configs
-  when: item.name is defined and item.name
+  with_items: '{{ preseed_configs }}'
+  when: item.name|d()
 

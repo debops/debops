@@ -8,6 +8,8 @@ v0.2.1
 
 - Added ``preseed_dependencies`` to allow to disable role dependencies. [ypid]
 
+- Fix deprecation warnings in Ansible 2.1.0. [ypid]
+
 v0.2.0
 ------
 
