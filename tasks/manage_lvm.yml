@@ -15,7 +15,7 @@
   when: lvm__logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
         item.mount|d(False) and
-        (item.state is defined and item.state == 'absent')
+        item.state|d('present') == 'absent'
 
 - name: Remove Logical Volumes if requested
   lvol:
@@ -27,7 +27,7 @@
   with_items: '{{ lvm__logical_volumes }}'
   when: lvm__logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
-        item.state|d() and item.state == 'absent'
+        item.state|d('present') == 'absent'
 
 - name: Manage LVM Volume Groups
   lvg:
@@ -50,7 +50,7 @@
   with_items: '{{ lvm__logical_volumes }}'
   when: lvm__logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
-        (item.state is undefined or item.state != 'absent')
+        item.state|d('present') != 'absent'
 
 - name: Manage filesystems
   filesystem:
@@ -61,9 +61,8 @@
   with_items: '{{ lvm__logical_volumes }}'
   when: lvm__logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
-        (item.state is undefined or item.state != 'absent') and
-        ((item.mount|d() and (item.fs is undefined or item.fs|d()) or
-         item.fs|d()))
+        item.state|d('present') != 'absent' and
+        ((item.mount|d() and item.fs|d()) or item.fs|d()))
 
 - name: Manage mount points
   mount:
@@ -78,6 +77,6 @@
   with_items: '{{ lvm__logical_volumes }}'
   when: lvm__logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
-        (item.fs is undefined or item.fs|d()) and item.mount|d() and
-        (item.state is undefined or item.state != 'absent')
+        item.fs|d() and item.mount|d() and
+        item.state|d('present') != 'absent'
 
