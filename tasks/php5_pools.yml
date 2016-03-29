@@ -7,7 +7,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: php5_pools
+  with_items: '{{ php5_pools }}'
   notify: [ 'Reload php5-fpm' ]
 
 - name: Enable php5-fpm pools
@@ -18,7 +18,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: php5_pools
+  with_items: '{{ php5_pools }}'
   when: item.enabled is not defined or item.enabled == True
   notify: [ 'Restart php5-fpm' ]
 
@@ -26,7 +26,7 @@
   file:
     path: '/etc/php5/fpm/pool.d/{{ item.name }}.conf'
     state: 'absent'
-  with_items: php5_pools
+  with_items: '{{ php5_pools }}'
   when: item.enabled is defined and item.enabled == False
   notify: [ 'Restart php5-fpm' ]
 
