@@ -33,7 +33,7 @@
     line: 'sentinel monitor {{ item.name }} {{ item.host | default(groups[redis_hosts_group][0]) }} {{ item.port | default(redis_port) }} {{ item.quorum | default(2) }}'
     state: 'present'
   when: not redis_register_custom_sentinel_config.stat.exists
-  with_items: redis_sentinel_group_list
+  with_items: '{{ redis_sentinel_group_list }}'
   notify: ['Restart Redis Sentinel']
 
 - name: Insert failover-timeout lines to the main Sentinel config
@@ -44,7 +44,7 @@
     insertafter: 'sentinel monitor {{ item.name }}'
     state: 'present'
   when: not redis_register_custom_sentinel_config.stat.exists
-  with_items: redis_sentinel_group_list
+  with_items: '{{ redis_sentinel_group_list }}'
   notify: ['Restart Redis Sentinel']
 
 - name: Insert down-after-milliseconds lines to the main Sentinel config
@@ -55,7 +55,7 @@
     insertafter: 'sentinel monitor {{ item.name }}'
     state: 'present'
   when: not redis_register_custom_sentinel_config.stat.exists
-  with_items: redis_sentinel_group_list
+  with_items: '{{ redis_sentinel_group_list }}'
   notify: ['Restart Redis Sentinel']
 
 - name: Insert parallel-syncs lines to the main Sentinel config
@@ -66,7 +66,7 @@
     insertafter: 'sentinel monitor {{ item.name }}'
     state: 'present'
   when: not redis_register_custom_sentinel_config.stat.exists
-  with_items: redis_sentinel_group_list
+  with_items: '{{ redis_sentinel_group_list }}'
   notify: ['Restart Redis Sentinel']
 
 - name: Remove include line from the middle of the main Sentinel config
@@ -108,7 +108,7 @@
             owner=redis group=redis mode=0755
   register: redis_register_trigger_scripts
   with_nested:
-    - redis_sentinel_group_list
+    - '{{ redis_sentinel_group_list }}'
     - ['notification', 'client_reconfig']
   notify: ['Restart Redis Sentinel']
 
