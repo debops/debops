@@ -26,8 +26,8 @@ List of required parameters:
 
 ``pvs``
   String (if single PV) or a list of Physical Volumes to use for a given Volume
-  Group. Should be absolute paths to devices in ``/dev`` directory tree, for
-  example ``/dev/sda``.
+  Group. Should be absolute paths to devices in :file:`/dev` directory tree, for
+  example :file:`/dev/sda`.
 
 List of optional parameters:
 
@@ -45,7 +45,7 @@ List of optional parameters:
   existing Volume Groups.
 
 ``options``
-  String with additional options passed to ``vgcreate``.
+  String with additional options passed to :command:`vgcreate`.
 
 Examples
 ~~~~~~~~
@@ -110,7 +110,7 @@ List of optional filesystem parameters:
   used to mount the filesystem.
 
 ``fs_opts``
-  Additional options passed to ``mkfs``.
+  Additional options passed to :command:`mkfs`.
 
 ``fs_force``
   Boolean. If present and ``True``, allows Ansible to reformat already existing
@@ -128,17 +128,17 @@ List of optional mount parameters:
   explanation of the possible states.
 
 ``mount_opts``
-  String with mount options added in ``/etc/fstab``. If not specified, options
+  String with mount options added in :file:`/etc/fstab`. If not specified, options
   set in ``lvm__default_mount_options`` will be used instead.
 
 ``mount_fstab``
-  Alternative path to ``/etc/fstab``.
+  Alternative path to :file:`/etc/fstab`.
 
 ``mount_dump``
-  Filesystem ``dump(8)`` backup frequency. See ``fstab(5)`` for more details.
+  Filesystem :manpage:`dump(8)` backup frequency. See :manpage:`fstab(5)` for more details.
 
 ``mount_passno``
-  Filesystem ``fsck`` pass order. See ``fstab(5)`` for more details.
+  Filesystem :command:`fsck` pass order. See :manpage:`fstab(5)` for more details.
 
 Examples
 ~~~~~~~~
