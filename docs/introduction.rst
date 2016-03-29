@@ -8,7 +8,7 @@ version no matter what (among other things).
 
 By default, if you don't specify a version or provide a custom pin configuration,
 ``debops.apt_preferences`` role will configure the specified packages to be
-installed from the backports repository of a current OS release.
+installed from the backports repository of the current OS release.
 
 .. _APT preferences: https://wiki.debian.org/AptPreferences
 
