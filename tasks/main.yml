@@ -52,9 +52,9 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - mariadb_server_base_packages
-    - mariadb_server_packages_map[mariadb_server_flavor]
-    - mariadb_server_packages
+    - '{{ mariadb_server_base_packages }}'
+    - '{{ mariadb_server_packages_map[mariadb_server_flavor] }}'
+    - '{{ mariadb_server_packages }}'
     - [ '{{ "automysqlbackup" if mariadb_server_backup|d() else [] }}' ]
   register: mariadb_server_register_install_status
 
