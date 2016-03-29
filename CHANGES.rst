@@ -20,6 +20,8 @@ v0.1.4
   [ypid]
 
 
+- Added ``apt_preferences__preset_list`` for advanced users. [ypid]
+
 v0.1.3
 ------
 
