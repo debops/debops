@@ -81,7 +81,7 @@
 
 - name: Scan SSH fingerprints of specified hosts
   shell: '{{ sshd__known_hosts_command }} {{ item.item }} >> {{ sshd__known_hosts_file }}'
-  with_items: '{{ sshd__register_known_hosts.results }}'
+  with_items: '{{ sshd__register_known_hosts.results|d([]) }}'
   when: item is defined and item.rc > 0
   tags: [ 'role::sshd:known_hosts' ]
 
