@@ -13,7 +13,7 @@ to ``[debops_service_lvm]`` Ansible group::
     [debops_service_lvm]
     hostname
 
-If you use separate host groups, better idea might be to create a parent group
+If you use separate host groups, a better idea might be to create a parent group
 and add your own host groups to it::
 
     [servers]
