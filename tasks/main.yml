@@ -8,14 +8,14 @@
     name: '{{ item }}'
     state: 'latest'
     install_recommends: 'no'
-  with_items: auth_packages
+  with_items: '{{ auth_packages }}'
 
 - name: Ensure common system groups exist
   group:
     name: '{{ item }}'
     system: 'yes'
     state: 'present'
-  with_items: auth_system_groups
+  with_items: '{{ auth_system_groups }}'
   when: auth_system_groups is defined and auth_system_groups
 
 - name: Configure admin access in sudo
