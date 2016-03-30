@@ -9,32 +9,34 @@
 {% for port in sshd__ports %}
 Port {{ port }}
 {% endfor %}
-{% if sshd__listen|d() and sshd__listen %}
+{% if sshd__listen|d() %}
 
 # Use these options to restrict which interfaces/protocols sshd will bind to
-{% for address in sshd__listen %}
+{%   for address in sshd__listen %}
 ListenAddress {{ address }}
-{% endfor %}
+{%   endfor %}
 {% endif %}
 
 Protocol 2
 
 # HostKeys for protocol version 2
 {% for hostkey in sshd__host_keys %}
-{% if ('ssh_host_' + hostkey + '_key') in sshd__register_host_keys.stdout_lines %}
+{%   if ('ssh_host_' + hostkey + '_key') in sshd__register_host_keys.stdout_lines %}
 HostKey /etc/ssh/ssh_host_{{ hostkey }}_key
-{% endif %}
+{%   endif %}
 {% endfor %}
 
 {% set sshd__tpl_ciphers = [] %}
 {% set sshd__tpl_ciphers_match = False %}
 {% for key, value in sshd__ciphers_map.iteritems() %}
-{% if not sshd__tpl_ciphers_match and sshd__register_version.stdout | version_compare(key, '>=') %}
-{% set sshd__tpl_ciphers_match = True %}
-{% for element in value %}
-{% set _ = sshd__tpl_ciphers.append(element) %}
-{% endfor %}
-{% endif %}
+{%   if not sshd__tpl_ciphers_match and
+        sshd__register_version.stdout|d() and
+        sshd__register_version.stdout | version_compare(key, '>=') %}
+{%     set sshd__tpl_ciphers_match = True %}
+{%     for element in value %}
+{%       set _ = sshd__tpl_ciphers.append(element) %}
+{%     endfor %}
+{%   endif %}
 {% endfor %}
 {% if sshd__tpl_ciphers and sshd__paranoid|bool %}
 Ciphers {{ sshd__tpl_ciphers[0] }}
@@ -46,12 +48,14 @@ Ciphers {{ sshd__tpl_ciphers | join(",") }}
 {% set sshd__tpl_kex_algorithms = [] %}
 {% set sshd__tpl_kex_algorithms_match = False %}
 {% for key, value in sshd__kex_algorithms_map.iteritems() %}
-{% if not sshd__tpl_kex_algorithms_match and sshd__register_version.stdout | version_compare(key, '>=') %}
-{% set sshd__tpl_kex_algorithms_match = True %}
-{% for element in value %}
-{% set _ = sshd__tpl_kex_algorithms.append(element) %}
-{% endfor %}
-{% endif %}
+{%   if not sshd__tpl_kex_algorithms_match and
+      sshd__register_version.stdout|d() and
+      sshd__register_version.stdout | version_compare(key, '>=') %}
+{%   set sshd__tpl_kex_algorithms_match = True %}
+{%     for element in value %}
+{%       set _ = sshd__tpl_kex_algorithms.append(element) %}
+{%     endfor %}
+{%   endif %}
 {% endfor %}
 {% if sshd__tpl_kex_algorithms and sshd__paranoid|bool %}
 KexAlgorithms {{ sshd__tpl_kex_algorithms[0] }}
@@ -63,12 +67,14 @@ KexAlgorithms {{ sshd__tpl_kex_algorithms | join(",") }}
 {% set sshd__tpl_macs = [] %}
 {% set sshd__tpl_macs_match = False %}
 {% for key, value in sshd__macs_map.iteritems() %}
-{% if not sshd__tpl_macs_match and sshd__register_version.stdout | version_compare(key, '>=') %}
-{% set sshd__tpl_macs_match = True %}
-{% for element in value %}
-{% set _ = sshd__tpl_macs.append(element) %}
-{% endfor %}
-{% endif %}
+{%   if not sshd__tpl_macs_match and
+        sshd__register_version.stdout|d() and
+        sshd__register_version.stdout | version_compare(key, '>=') %}
+{%     set sshd__tpl_macs_match = True %}
+{%     for element in value %}
+{%       set _ = sshd__tpl_macs.append(element) %}
+{%     endfor %}
+{%   endif %}
 {% endfor %}
 {% if sshd__tpl_macs and sshd__paranoid|bool %}
 MACs {{ sshd__tpl_macs[0] }}
@@ -99,7 +105,8 @@ StrictModes yes
 RSAAuthentication yes
 PubkeyAuthentication yes
 
-{% if sshd__authorized_keys_lookup|d() and sshd__authorized_keys_lookup and
+{% if sshd__authorized_keys_lookup|d() and
+      sshd__register_version.stdout|d() and
       sshd__register_version.stdout | version_compare('6.2', '>=') %}
 AuthorizedKeysCommand /etc/ssh/authorized_keys_lookup
 AuthorizedKeysCommandUser {{ sshd__authorized_keys_lookup_user }}
@@ -165,17 +172,18 @@ Subsystem sftp internal-sftp
 UsePAM yes
 
 {% if sshd__allow_groups|d() or sshd__group_allow_groups|d() or sshd__host_allow_groups|d() %}
-AllowGroups {{ (sshd__allow_groups|d([]) + sshd__group_allow_groups|d([]) + sshd__host_allow_groups|d([])) | unique | join(" ") }}
+AllowGroups {{ (
+      (sshd__allow_groups|d([]) | list) +
+      (sshd__group_allow_groups|d([]) | list) +
+      (sshd__host_allow_groups|d([]) | list)) | unique | join(" ") }}
 
 {% endif %}
 
-{% if sshd__match_list|d() and sshd__match_list %}
-{% for entry in sshd__match_list %}
-{% if entry.match|d() and entry.options|d() %}
+{% for entry in sshd__match_list|d([]) %}
+{%   if entry.match|d() and entry.options|d() %}
 Match {{ entry.match }}
 {{ entry.options | indent(8, true) }}
 
-{% endif %}
+{%   endif %}
 {% endfor %}
-{% endif %}
 

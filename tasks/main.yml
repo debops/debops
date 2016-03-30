@@ -1,7 +1,7 @@
 ---
 
 - name: Pre hooks
-  include: "{{ lookup('task_src', 'sshd/pre_main.yml') }}"
+  include: '{{ lookup("task_src", "sshd/pre_main.yml") }}'
 
 - name: Ensure OpenSSH support is installed
   apt:
@@ -29,13 +29,13 @@
   args:
     chdir: '/etc/ssh'
     creates: '/etc/ssh/ssh_host_ed25519_key'
-  when: sshd__register_version|d() and
+  when: sshd__register_version.stdout|d() and
         sshd__register_version.stdout | version_compare('6.5', '>=')
   tags: [ 'role::sshd:config' ]
 
 - name: Configure authorized_keys lookup
   include: authorized_keys_lookup.yml
-  when: sshd__register_version|d() and
+  when: sshd__register_version.stdout|d() and
         sshd__register_version.stdout | version_compare('6.2', '>=') and
         sshd__authorized_keys_lookup|d() and sshd__authorized_keys_lookup
   tags: [ 'role::sshd:config' ]
@@ -49,7 +49,7 @@
 
 - name: Setup /etc/ssh/sshd_config
   template:
-    src:    "{{ lookup('template_src', 'etc/ssh/sshd_config.j2') }}"
+    src:    '{{ lookup("template_src", "etc/ssh/sshd_config.j2") }}'
     dest:   '/etc/ssh/sshd_config'
     owner:  'root'
     group:  'root'
@@ -114,5 +114,5 @@
     mode: '0644'
 
 - name: Post hooks
-  include: "{{ lookup('task_src', 'sshd/post_main.yml') }}"
+  include: '{{ lookup("task_src", "sshd/post_main.yml") }}'
 
