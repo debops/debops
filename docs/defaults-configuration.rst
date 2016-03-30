@@ -1,7 +1,7 @@
 Default variables: configuration
 ================================
 
-some of ``debops.lvm`` default variables have more extensive configuration than
+Some of ``debops.lvm`` default variables have more extensive configuration than
 simple strings or lists, here you can find documentation and examples for them.
 
 .. contents::
@@ -15,19 +15,19 @@ lvm__vlume_groups
 
 This is a list of LVM Volume Groups, each one defined by a YAML dict. Volume
 Group is a set of Physical Volumes that create a single unit which can then be
-divided into Logical Volumes. Dict parameters are mapped to ``lvg`` Ansible
+divided into Logical Volumes. Dict parameters are mapped to the ``lvg`` Ansible
 module options.
 
 List of required parameters:
 
 ``vg``
   Name of a Volume Group, should only have alphanumeric characters and
-  underscores. Do not use hypens (``-``) in the name.
+  underscores. Do not use hyphens (``-``) in the name.
 
 ``pvs``
   String (if single PV) or a list of Physical Volumes to use for a given Volume
-  Group. Should be absolute paths to devices in ``/dev`` directory tree, for
-  example ``/dev/sda``.
+  Group. Should be absolute paths to devices in :file:`/dev` directory tree, for
+  example :file:`/dev/sda`.
 
 List of optional parameters:
 
@@ -36,7 +36,7 @@ List of optional parameters:
   (``absent``). If not specified, defaults to ``present``.
 
 ``force``
-  Bool. If present and set to ``True``, allows you to remove a Volume Group if
+  Boolean. If present and set to ``True``, allows you to remove a Volume Group if
   it has any Logical Volumes present.
 
 ``pesize``
@@ -45,7 +45,7 @@ List of optional parameters:
   existing Volume Groups.
 
 ``options``
-  String with additional options passed to ``vgcreate``.
+  String with additional options passed to :command:`vgcreate`.
 
 Examples
 ~~~~~~~~
@@ -78,7 +78,7 @@ List of required parameters:
 
 ``lv``
   Name of a Logical Volume, should only have alphanumeric characters and
-  underscores. Do not use hypens (``-``) in the name.
+  underscores. Do not use hyphens (``-``) in the name.
 
 ``vg``
   Name of a Volume Group which should be used to create a given Logical Volume.
@@ -93,13 +93,13 @@ List of optional LVM parameters:
   Specifies if a Logical Volume should exist (``present``) or not (``absent``).
 
 ``force``
-  Bool. If present and ``True`` allows ``lvol`` module to shrink or remove
+  Boolean. If present and ``True`` allows ``lvol`` module to shrink or remove
   Logical Volumes.
 
 List of optional filesystem parameters:
 
 ``fs``
-  Bool. Enables or disables creation of a filesystem in the new Logical Volume
+  Boolean. Enables or disables creation of a filesystem in the new Logical Volume
   (existing Logical Volumes are not affected).
 
   By default, a filesystem specified in ``lvm_default_fs_type`` variable is
@@ -110,10 +110,10 @@ List of optional filesystem parameters:
   used to mount the filesystem.
 
 ``fs_opts``
-  Additional options passed to ``mkfs``.
+  Additional options passed to :command:`mkfs`.
 
 ``fs_force``
-  Bool. If present and ``True``, allows Ansible to reformat already exising
+  Boolean. If present and ``True``, allows Ansible to reformat already existing
   filesystem. Use with caution.
 
 List of optional mount parameters:
@@ -128,17 +128,17 @@ List of optional mount parameters:
   explanation of the possible states.
 
 ``mount_opts``
-  String with mount options added in ``/etc/fstab``. If not specified, options
+  String with mount options added in :file:`/etc/fstab`. If not specified, options
   set in ``lvm__default_mount_options`` will be used instead.
 
 ``mount_fstab``
-  Alternative path to ``/etc/fstab``.
+  Alternative path to :file:`/etc/fstab`.
 
 ``mount_dump``
-  Filesystem ``dump(8)`` backup frequency. See ``fstab(5)`` for more details.
+  Filesystem :manpage:`dump(8)` backup frequency. See :manpage:`fstab(5)` for more details.
 
 ``mount_passno``
-  Filesystem ``fsck`` pass order. See ``fstab(5)`` for more details.
+  Filesystem :command:`fsck` pass order. See :manpage:`fstab(5)` for more details.
 
 Examples
 ~~~~~~~~

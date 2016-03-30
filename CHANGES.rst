@@ -15,7 +15,7 @@ v0.1.2
 
 *Released: 2015-10-27*
 
-- Rewrite the ``/etc/lvm/lvm.conf`` configuration. Instead of using
+- Rewrite the :file:`/etc/lvm/lvm.conf` configuration. Instead of using
   ``lineinfile`` Ansible module to modify the original, use a normal template
   to generate the configuration from scratch using a base LVM configuration and
   modifying it by user variables. [drybjed]
