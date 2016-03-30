@@ -19,6 +19,9 @@ v0.1.2
 
 - Fix deprecation warnings on Ansible 2.1.0. [thiagotalma]
 
+- Allow ``mydestination`` values to be set via Ansible local facts by other
+  Ansible roles. [drybjed]
+
 v0.1.1
 ------
 

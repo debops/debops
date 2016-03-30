@@ -48,14 +48,20 @@ inet_interfaces                 = loopback-only
 {% endif %}
 
 {% set postfix_tpl_mydestination = [] %}
+{% set postfix_tpl_local_mydestination = [] %}
+{% if (ansible_local|d() and ansible_local.postfix|d() and ansible_local.postfix.lists|d() and ansible_local.postfix.lists.mydestination|d()) %}
+{% for element in ansible_local.postfix.lists.mydestination %}
+{% set _ = postfix_tpl_local_mydestination.append(element) %}
+{% endfor %}
+{% endif %}
 {% if 'local' in postfix %}
 {% if ((postfix_mydomain is defined and postfix_mydomain) or (ansible_domain is defined and ansible_domain)) %}
-{% set postfix_tpl_mydestination = postfix_mydestination + [postfix_myhostname | default(ansible_fqdn), ansible_hostname, 'localhost.' + postfix_mydomain | default(ansible_domain), 'localhost'] %}
+{% set postfix_tpl_mydestination = postfix_mydestination + postfix_tpl_local_mydestination + [postfix_myhostname | default(ansible_fqdn), ansible_hostname, 'localhost.' + postfix_mydomain | default(ansible_domain), 'localhost'] %}
 {% else %}
-{% set postfix_tpl_mydestination = postfix_mydestination + [postfix_myhostname | default(ansible_fqdn), ansible_hostname, 'localhost'] %}
+{% set postfix_tpl_mydestination = postfix_mydestination + postfix_tpl_local_mydestination + [postfix_myhostname | default(ansible_fqdn), ansible_hostname, 'localhost'] %}
 {% endif %}
 {% else %}
-{% set postfix_tpl_mydestination = postfix_mydestination %}
+{% set postfix_tpl_mydestination = postfix_mydestination + postfix_tpl_local_mydestination %}
 {% endif %}
 {% if postfix_tpl_mydestination %}
 mydestination                   = {{ ', '.join(postfix_tpl_mydestination | unique) }}
