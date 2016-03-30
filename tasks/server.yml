@@ -59,7 +59,7 @@
     regexp: '^include {{ redis_custom_config }}'
     dest: '{{ redis_config }}'
     line: 'include {{ redis_custom_config }}'
-    insertbefore: '{{ redis_save[0] }}'
+    insertbefore: '{{ redis_save[0] | d(omit) }}'
     state: 'present'
   notify: ['Restart Redis Server']
 
