@@ -1,6 +1,24 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2016-03-30*
+
+- Add ``make`` package as a dependency. [pipitone]
+
+- Allow ``!postscreen`` capability to disable ``postscreen`` filtering of
+  incoming SMTP messages. [bleuchtang]
+
+- Rename variables related to SASL authentication to be more generic instead of
+  Cyrus-based. [bleuchtang]
+
+- Fix "unexpected type error" when ``postfix`` variable has wrong value type.
+  [htgoebel]
+
+- Fix deprecation warnings on Ansible 2.1.0. [thiagotalma]
+
 v0.1.1
 ------
 
