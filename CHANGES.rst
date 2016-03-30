@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v0.1.1
+------
+
+*Released: 2016-03-30*
+
+- Configure the site domain in Postfix using Ansible local facts.
+
+  The site domain should be configured as ``mydestination`` when local mail is
+  enabled in Postfix. It should not be set as a virtual domain in Mailman to
+  not generate unnecessary virtual aliases, which break mail delivery.
+  [drybjed]
+
 v0.1.0
 ------
 

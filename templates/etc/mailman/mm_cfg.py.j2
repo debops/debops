@@ -32,7 +32,11 @@ add_virtualhost('{{ domain }}', '{{ domain }}')
 
 {% endif %}
 # Postfix virtual domains
-POSTFIX_STYLE_VIRTUAL_DOMAINS = [ "{{ ([ mailman__site_domain ] + mailman__virtual_domains) | join('", "') }}" ]
+{% if mailman__virtual_domains %}
+POSTFIX_STYLE_VIRTUAL_DOMAINS = [ "{{ mailman__virtual_domains | join('", "') }}" ]
+{% else %}
+POSTFIX_STYLE_VIRTUAL_DOMAINS = []
+{% endif %}
 
 # Mail server configuration
 MTA = 'Postfix'
