@@ -276,9 +276,12 @@ mailman__postfix__dependent_lists:
   transport_maps:
     - no_capability: 'local'
       list: [ 'hash:/etc/mailman/postfix_transport' ]
+  mydestination:
+    - capability: 'local'
+      list: [ '{{ mailman__site_domain }}' ]
   virtual_alias_domains:
     - capability: 'local'
-      list: '{{ [ mailman__site_domain ] + mailman__virtual_domains }}'
+      list: '{{ mailman__virtual_domains }}'
   virtual_alias_maps:
     - capability: 'local'
       list: [ 'hash:/var/lib/mailman/data/virtual-mailman' ]
