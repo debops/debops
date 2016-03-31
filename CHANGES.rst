@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+- Add support for GitLab 8.6 [gomez]
+
 v0.1.2
 ------
 
