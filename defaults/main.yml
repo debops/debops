@@ -56,6 +56,7 @@ tinc__network_mesh0:
     Cipher: 'aes-256-cbc'
     Digest: 'SHA512'
     Compression: '{{ tinc__compression }}'
+    AddressFamily: '{{ tinc__address_family }}'
     ConnectTo: '{{ tinc__connect_to_mesh0 }}'
 
 
@@ -152,6 +153,18 @@ tinc__allow_mesh0: []
 # values are 0 (off), 1 (fast zlib) and any integer up to 9 (best zlib), 10
 # (fast lzo) and 11 (best lzo).
 tinc__compression: '0'
+
+
+# .. envvar:: tinc__address_family
+#
+# ipv4 | ipv6 | any (any)
+#
+# Default address family as the ``AddressFamily`` option in the Tinc
+# configuration file of the ``mesh0`` network.
+# This option affects the address family of listening and outgoing sockets. If
+# "any" is selected, then depending on the operating system both IPv4 and IPv6
+# or just IPv6 listening sockets will be created.
+tinc__address_family: 'any'
 
 
 # .. envvar:: tinc__connect_to_mesh0
