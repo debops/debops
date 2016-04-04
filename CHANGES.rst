@@ -4,13 +4,16 @@ Changelog
 v0.3.1
 ------
 
-*Unreleased*
+*Released: 2016-04-04*
 
 * Fixed usage of the ``role::cryptsetup:backup`` tag. [ypid]
 
 * Fixed permission enforcement of the header backup on the Ansible controller. [jacksingleton]
 
 * Remove header backups on remote system when ``cryptsetup_header_backup`` is set to ``False``. [ypid]
+
+* No need to have a default for ``cryptsetup_state`` in the tasks.
+  ``cryptsetup_state`` is expected to be a valid option. [ypid]
 
 v0.3.0
 ------
