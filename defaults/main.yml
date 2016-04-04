@@ -9,60 +9,62 @@
 #   Swap file configuration
 # ---------------------------
 
-# .. envvar:: swapfile_size
+# .. envvar:: swapfile__size
 #
 # Default size of swap files, in MB.
-swapfile_size: '512'
+swapfile__size: '{{ ((ansible_memtotal_mb|int * 2)
+                     if (ansible_memtotal_mb|int <= 2048)
+                     else "512") }}'
 
 
-# .. envvar:: swapfile_priority
+# .. envvar:: swapfile__priority
 #
 # Default swap file priority, from ``-1`` to ``32767``.
-swapfile_priority: '-1'
+swapfile__priority: '-1'
 
 
-# .. envvar:: swapfile_use_dd
+# .. envvar:: swapfile__use_dd
 #
 # By default ``debops.swapfile`` uses the ``fallocate`` command to create the swap
 # files. If you use unsupported filesystems (``ext4`` is supported) you can
 # enable this variable to use ``dd`` command to create the files.
-swapfile_use_dd: False
+swapfile__use_dd: False
 
 
-# .. envvar:: swapfile_files
+# .. envvar:: swapfile__files
 #
 # List of swap files. Specify either a path to a file on a filesystem, or
-# a YAML dict. See :ref:`swapfile_files` for more details.
-swapfile_files: [ '/swapfile' ]
+# a YAML dict. See :ref:`swapfile__files` for more details.
+swapfile__files: [ '/swapfile' ]
 
 
 # ---------------------
 #   Kernel parameters
 # ---------------------
 
-# .. envvar:: swapfile_swappiness
+# .. envvar:: swapfile__swappiness
 #
 # Set ``vm.swappiness`` kernel parameter.
-swapfile_swappiness: '60'
+swapfile__swappiness: '60'
 
 
-# .. envvar:: swapfile_cache_pressure
+# .. envvar:: swapfile__cache_pressure
 #
 # Set ``vm.vfs_cache_pressure`` kernel parameter.
-swapfile_cache_pressure: '100'
+swapfile__cache_pressure: '100'
 
 
-# .. envvar:: swapfile_sysctl_file
+# .. envvar:: swapfile__sysctl_file
 #
 # Name of the file with kernel parameters.
-swapfile_sysctl_file: '/etc/sysctl.d/30-debops.swapfile.conf'
+swapfile__sysctl_file: '/etc/sysctl.d/30-debops.swapfile.conf'
 
 
-# .. envvar:: swapfile_sysctl_map
+# .. envvar:: swapfile__sysctl_map
 #
 # YAML dictionary with kernel parameters to set. Change it to an empty dict
 # to disable the kernel configuration.
-swapfile_sysctl_map:
-  'vm.swappiness': '{{ swapfile_swappiness }}'
-  'vm.vfs_cache_pressure': '{{ swapfile_cache_pressure }}'
+swapfile__sysctl_map:
+  'vm.swappiness': '{{ swapfile__swappiness }}'
+  'vm.vfs_cache_pressure': '{{ swapfile__cache_pressure }}'
 

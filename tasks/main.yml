@@ -2,19 +2,19 @@
 
 - name: Configure kernel parameters
   sysctl:
-    sysctl_file: '{{ swapfile_sysctl_file }}'
+    sysctl_file: '{{ swapfile__sysctl_file }}'
     name: '{{ item.key }}'
     value: '{{ item.value }}'
     state: 'present'
     reload: True
-  with_dict: '{{ swapfile_sysctl_map }}'
-  when: swapfile_sysctl_map|d()
+  with_dict: '{{ swapfile__sysctl_map }}'
+  when: swapfile__sysctl_map|d()
 
 - name: Disable swap files when requested
   shell: test -f {{ item.path | d(item) }} && swapoff {{ item.path | d(item) }} || true
   changed_when: False
-  with_items: '{{ swapfile_files }}'
-  when: ((swapfile_files|d() and item.state|d() and item.state == 'absent') and
+  with_items: '{{ swapfile__files }}'
+  when: ((swapfile__files|d() and item.state|d() and item.state == 'absent') and
          (ansible_local|d() and (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
           (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
 
@@ -22,21 +22,21 @@
   file:
     path: '{{ item.path | d(item) }}'
     state: 'absent'
-  with_items: '{{ swapfile_files }}'
-  when: swapfile_files|d() and item.state|d() and item.state == 'absent'
+  with_items: '{{ swapfile__files }}'
+  when: swapfile__files|d() and item.state|d() and item.state == 'absent'
 
 - name: Create swap files
   command: |
-    {% if swapfile_use_dd|bool %}
-    dd if=/dev/zero of={{ item.path | d(item) }} bs=1M count={{ item.size | d(swapfile_size) }}
+    {% if swapfile__use_dd|bool %}
+    dd if=/dev/zero of={{ item.path | d(item) }} bs=1M count={{ item.size | d(swapfile__size) }}
     {% else %}
-    fallocate -l {{ ((item.size | d(swapfile_size))|int * 1024 * 1024) }} {{ item.path | d(item) }}
+    fallocate -l {{ ((item.size | d(swapfile__size))|int * 1024 * 1024) }} {{ item.path | d(item) }}
     {% endif %}
   args:
     creates: '{{ item.path | d(item) }}'
-  register: swapfile_register_allocation
-  with_items: '{{ swapfile_files }}'
-  when: (swapfile_files|d() and
+  register: swapfile__register_allocation
+  with_items: '{{ swapfile__files }}'
+  when: (swapfile__files|d() and
          (item.state is undefined or item.state != 'absent'))
 
 - name: Enforce permissions
@@ -46,22 +46,22 @@
     owner: 'root'
     group: 'root'
     mode: '0600'
-  with_items: '{{ swapfile_files }}'
-  when: (swapfile_files|d() and
+  with_items: '{{ swapfile__files }}'
+  when: (swapfile__files|d() and
          (item.state is undefined or item.state != 'absent'))
 
 - name: Initialize swap files
   command: mkswap {{ item.item.path | d(item.item) }}
-  register: swapfile_register_init
-  with_items: '{{ swapfile_register_allocation.results }}'
-  when: ((swapfile_files|d() and swapfile_register_allocation|d() and
+  register: swapfile__register_init
+  with_items: '{{ swapfile__register_allocation.results }}'
+  when: ((swapfile__files|d() and swapfile__register_allocation|d() and
           item.changed | bool) and
          (item.state is undefined or item.state != 'absent'))
 
 - name: Enable swap files
-  command: swapon -p {{ item.item.priority | d(swapfile_priority) }} {{ item.item.path | d(item.item) }}
-  with_items: '{{ swapfile_register_allocation.results }}'
-  when: ((swapfile_files|d() and swapfile_register_allocation|d() and item.changed | bool) and
+  command: swapon -p {{ item.item.priority | d(swapfile__priority) }} {{ item.item.path | d(item.item) }}
+  with_items: '{{ swapfile__register_allocation.results }}'
+  when: ((swapfile__files|d() and swapfile__register_allocation|d() and item.changed | bool) and
          (item.state is undefined or item.state != 'absent') and
           (ansible_local|d() and (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
            (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
@@ -71,10 +71,10 @@
     src: '{{ item.path | d(item) }}'
     name:   'none'
     fstype: 'swap'
-    opts:   'sw,nofail,pri={{ item.priority | d(swapfile_priority) }}'
+    opts:   'sw,nofail,pri={{ item.priority | d(swapfile__priority) }}'
     dump:   '0'
     passno: '0'
     state:  '{{ item.state | d("present") }}'
-  with_items: '{{ swapfile_files }}'
-  when: swapfile_files|d()
+  with_items: '{{ swapfile__files }}'
+  when: swapfile__files|d()
 

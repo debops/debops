@@ -10,10 +10,10 @@ them.
    :depth: 1
 
 
-.. _swapfile_files:
+.. _swapfile__files:
 
-swapfile_files
---------------
+swapfile__files
+---------------
 
 ``debops.swapfile`` can manage multiple swap files at once. This list in
 a simple form specifies absolute filenames of the swap files to manage.
@@ -39,7 +39,7 @@ Examples
 
 Manage two swap files at once::
 
-    swapfile_files:
+    swapfile__files:
 
       - '/swapfile0'
 
