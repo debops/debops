@@ -7,10 +7,10 @@ Getting started
 Example inventory
 -----------------
 
-To enable swap files on a host, it needs to be added to the ``[debops_swapfile]``
-group in Ansible’s inventory::
+To enable swap files on a host, it needs to be added to the
+``[debops_service_swapfile]`` group in Ansible’s inventory::
 
-    [debops_swapfile]
+    [debops_service_swapfile]
     hostname
 
 The default configuration will create a 512 MB ``/swapfile`` and will make sure
@@ -23,7 +23,7 @@ Here's an example playbook you can use to configure swap on a host::
 
     ---
     - name: Manage swap
-      hosts: 'debops_swapfile'
+      hosts: 'debops_service_swapfile'
       become: True
 
       roles:
