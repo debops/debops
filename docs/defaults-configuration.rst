@@ -23,7 +23,8 @@ you to use more specific parameters which are not documented below.
 
   If you want to change it, you can set ``state`` to ``False``, execute the
   role, rename the secrets directory corresponding to this item, adopt your
-  inventory accordingly and run the role again to apply the configuration.
+  inventory accordingly and run the role again to configure the item with the
+  new name.
 
 ``ciphertext_block_device``
   Required, string. File path to the ciphertext block device, either the block
