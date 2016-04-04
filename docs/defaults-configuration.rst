@@ -27,7 +27,7 @@ you to use more specific parameters which are not documented below.
 
 ``ciphertext_block_device``
   Required, string. File path to the ciphertext block device, either the block
-  device itself e.g. :file:`/dev/sdb` or a partition on the block device e.g.
+  device itself e. g. :file:`/dev/sdb` or a partition on the block device e. g.
   :file:`/dev/sdb5`.
 
 ``crypttab_options``
