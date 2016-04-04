@@ -139,6 +139,7 @@
   register: cryptsetup_register_ciphertext_device
   when: (item.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
   with_items: '{{ cryptsetup_devices_combined }}'
+  tags: [ 'role::cryptsetup:backup' ]
 
 - name: Fail when ciphertext block device does not exist but the state requires for it to exist
   fail:
@@ -286,6 +287,8 @@
     owner: '{{ cryptsetup_secret_owner }}'
     group: '{{ cryptsetup_secret_group }}'
     mode:  '{{ cryptsetup_secret_mode }}'
+  become: False
+  delegate_to: 'localhost'
   when: ((item.backup_header|d(cryptsetup_header_backup) | bool) and item.0.state|d(cryptsetup_state|d('mounted')) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup_devices_combined }}'
