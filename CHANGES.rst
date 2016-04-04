@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.3.1
+------
+
+*Unreleased*
+
+* Fixed usage of the ``role::cryptsetup:backup`` tag. [ypid]
+
+* Fixed permission enforcement of the header backup on the Ansible controller. [jacksingleton]
+
 v0.3.0
 ------
 
