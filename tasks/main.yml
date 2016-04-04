@@ -54,7 +54,7 @@
 
 - name: Calculate keyfile creation options
   set_fact:
-    cryptsetup_dd_bs: '{{ ((512/8) if cryptsetup_key_size|d() == "default" else ((cryptsetup_key_size)/8)) | int }}'
+    cryptsetup_dd_bs: '{{ ((512/8) if (cryptsetup_key_size|d() == "default") else ((cryptsetup_key_size)/8)) | int }}'
 
 - name: Generate keyfile on the Ansible controller
   command: dd if=/dev/random of='{{ item.keyfile | d(cryptsetup_secret_path + "/" + item.name + "/keyfile.raw") }}' bs={{ cryptsetup_dd_bs }} count=1 iflag=fullblock
@@ -174,10 +174,10 @@
 - name: Create encryption layer
   shell: cryptsetup isLuks "{{ item.0.ciphertext_block_device }}" || cryptsetup luksFormat
          --batch-mode --verbose
-         {{ "" if cryptsetup_hash|d() == "default" else ("--hash=" + cryptsetup_hash) }}
-         {{ "" if cryptsetup_cipher|d() == "default" else ("--cipher=" + cryptsetup_cipher) }}
-         {{ "" if cryptsetup_key_size|d() == "default" else ("--key-size=" + cryptsetup_key_size|string) }}
-         {{ "" if cryptsetup_iter_time|d() == "default" else ("--iter-time=" + cryptsetup_iter_time|string) }}
+         {{ "" if (cryptsetup_hash|d()      == "default") else ("--hash=" + cryptsetup_hash) }}
+         {{ "" if (cryptsetup_cipher|d()    == "default") else ("--cipher=" + cryptsetup_cipher) }}
+         {{ "" if (cryptsetup_key_size|d()  == "default") else ("--key-size=" + cryptsetup_key_size|string) }}
+         {{ "" if (cryptsetup_iter_time|d() == "default") else ("--iter-time=" + cryptsetup_iter_time|string) }}
          {% if cryptsetup_use_dev_random|d("default") != "default" %}
          {{ "--use-random" if cryptsetup_use_dev_random|d() else "--use-urandom" }}
          {% endif %}
