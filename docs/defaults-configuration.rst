@@ -21,9 +21,14 @@ you to use more specific parameters which are not documented below.
   Must be unique among all device mapper targets and should not be changed once
   it was used.
 
+  If you want to change it, you can set ``state`` to ``False``, execute the
+  role, rename the secrets directory corresponding to this item, adopt your
+  inventory accordingly and run the role again to configure the item with the
+  new name.
+
 ``ciphertext_block_device``
   Required, string. File path to the ciphertext block device, either the block
-  device itself e.g. :file:`/dev/sdb` or a partition on the block device e.g.
+  device itself e. g. :file:`/dev/sdb` or a partition on the block device e. g.
   :file:`/dev/sdb5`.
 
 ``crypttab_options``
@@ -45,13 +50,16 @@ you to use more specific parameters which are not documented below.
      {{ cryptsetup_secret_path + "/" + item.name + "/keyfile.raw" }}
 
 ``backup_header``
-  Optional, string. Disable backing up the `LUKS`_ header to the Ansible
-  controller for this item.
+  Optional, boolean. Should a header backup be created and stored
+  on the remote system and the Ansible controller?
+  Set to ``False`` to disable header backup creation and to ensure that the
+  header backup on the remote system is absent.
+  Defaults to the ``cryptsetup_header_backup`` variable.
 
 ``fstype``
   Optional, string. Filesystem type to create on the plaintext device mapper
   target.
-  Defaults to ``cryptsetup_fstype`` variable.
+  Defaults to the ``cryptsetup_fstype`` variable.
 
 ``mount``
   Optional, string. Plaintext mount point of the filesystem.
@@ -119,12 +127,12 @@ you to use more specific parameters which are not documented below.
 
   ``absent``
     Same as ``unmounted`` but additionally removes all configuration, the
-    keyfile and the header backup from the remote system for this item.
+    keyfile and the header backup from the remote system.
 
 Examples
 ~~~~~~~~
 
-Setup a encrypted filesystem on top of :file:`/dev/sdb5` which will be
+Setup an encrypted filesystem on top of :file:`/dev/sdb5` which will be
 mounted after role execution under :file:`/media/sdb5_crypt` (assuming the
 value of ``cryptsetup_state`` is left unchanged) and will be automatically
 mounted at boot:

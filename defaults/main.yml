@@ -60,7 +60,7 @@ cryptsetup_secret_path: '{{ secret + "/cryptsetup/" + ansible_fqdn }}'
 
 # .. envvar:: cryptsetup_secret_owner
 #
-# System user which owns the secret directory and all files in it on the Ansible controller.
+# System user who owns the secret directory and all files in it on the Ansible controller.
 # You might want to change that if you run this role as root on the Ansible
 # controller itself but the secrets directory is managed by another user.
 # The default is set to the special value ``omit`` to use the owner under which
@@ -95,19 +95,19 @@ cryptsetup_keyfile_remote_location: '{{ (ansible_local.root.var
 
 # .. envvar:: cryptsetup_keyfile_owner
 #
-# System user which owns the keyfile(s) on the remote system.
+# System user who owns the keyfiles on the remote system.
 cryptsetup_keyfile_owner: 'root'
 
 
 # .. envvar:: cryptsetup_keyfile_group
 #
-# System group of the keyfile(s) on the remote system.
+# System group of the keyfiles on the remote system.
 cryptsetup_keyfile_group: 'root'
 
 
 # .. envvar:: cryptsetup_keyfile_mode
 #
-# File mode used for the keyfile(s) on the remote system.
+# File mode used for the keyfiles on the remote system.
 cryptsetup_keyfile_mode: '0600'
 
 # .. )))
@@ -145,7 +145,8 @@ cryptsetup_header_backup_remote_location: '{{ (ansible_local.root.backup
 #    When the header gets corrupted, the plaintext data might be inaccessible!
 #    Thus it is recommended to have a header backup on hand.
 #
-# Set to ``False`` to disable header backup creation.
+# Set to ``False`` to disable header backup creation and to ensure that the
+# header backup on the remote system is absent.
 cryptsetup_header_backup: True
 
 # .. )))
@@ -208,7 +209,6 @@ cryptsetup_mountpoint_parent_directory: '/media'
 #
 # Default list of options to configure for each device in
 # :file:`/etc/crypttab`. Can be overwritten by ``item.crypttab_options``.
-# Multiple options can be separated by comma.
 # See :manpage:`crypttab(5)` for details.
 cryptsetup_crypttab_options:
   - 'luks'
@@ -216,7 +216,7 @@ cryptsetup_crypttab_options:
 # .. envvar:: cryptsetup_hash
 #
 # Specifies the hash used in the LUKS key setup scheme and volume key digest
-# for luksFormat.
+# for :command:`cryptsetup luksFormat`.
 # Corresponds with the ``--hash`` parameter.
 #
 # The current default of :command:`cryptsetup` (as shown by
