@@ -21,6 +21,10 @@ you to use more specific parameters which are not documented below.
   Must be unique among all device mapper targets and should not be changed once
   it was used.
 
+  If you want to change it, you can set ``state`` to ``False``, execute the
+  role, rename the secrets directory corresponding to this item, adopt your
+  inventory accordingly and run the role again to apply the configuration.
+
 ``ciphertext_block_device``
   Required, string. File path to the ciphertext block device, either the block
   device itself e.g. :file:`/dev/sdb` or a partition on the block device e.g.
@@ -54,7 +58,7 @@ you to use more specific parameters which are not documented below.
 ``fstype``
   Optional, string. Filesystem type to create on the plaintext device mapper
   target.
-  Defaults to ``cryptsetup_fstype`` variable.
+  Defaults to the ``cryptsetup_fstype`` variable.
 
 ``mount``
   Optional, string. Plaintext mount point of the filesystem.
