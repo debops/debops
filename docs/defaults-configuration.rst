@@ -49,7 +49,7 @@ you to use more specific parameters which are not documented below.
      {{ cryptsetup_secret_path + "/" + item.name + "/keyfile.raw" }}
 
 ``backup_header``
-  Optional, boolean. Should a header backup for this item be created and stored
+  Optional, boolean. Should a header backup be created and stored
   on the remote system and the Ansible controller?
   Set to ``False`` to disable header backup creation and to ensure that the
   header backup on the remote system is absent.
@@ -126,12 +126,12 @@ you to use more specific parameters which are not documented below.
 
   ``absent``
     Same as ``unmounted`` but additionally removes all configuration, the
-    keyfile and the header backup from the remote system for this item.
+    keyfile and the header backup from the remote system.
 
 Examples
 ~~~~~~~~
 
-Setup a encrypted filesystem on top of :file:`/dev/sdb5` which will be
+Setup an encrypted filesystem on top of :file:`/dev/sdb5` which will be
 mounted after role execution under :file:`/media/sdb5_crypt` (assuming the
 value of ``cryptsetup_state`` is left unchanged) and will be automatically
 mounted at boot:
