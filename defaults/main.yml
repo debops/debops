@@ -12,7 +12,9 @@
 # .. envvar:: swapfile_size
 #
 # Default size of swap files, in MB.
-swapfile_size: '512'
+swapfile_size: '{{ ((ansible_memtotal_mb|int * 2)
+                    if (ansible_memtotal_mb|int <= 2048)
+                    else "512") }}'
 
 
 # .. envvar:: swapfile_priority
