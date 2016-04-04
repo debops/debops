@@ -363,7 +363,7 @@
   command: shred --remove --zero --iterations=42 "{{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}"
   args:
     removes: '{{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}'
-  when: (item.state|d(cryptsetup_state|d('mounted')) == 'absent')
+  when: (item.state|d(cryptsetup_state|d('mounted')) == 'absent' or not (item.backup_header|d(cryptsetup_header_backup) | bool))
   with_items: '{{ cryptsetup_devices_combined }}'
   tags: [ 'role::cryptsetup:backup' ]
 

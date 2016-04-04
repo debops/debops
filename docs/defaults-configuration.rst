@@ -45,8 +45,11 @@ you to use more specific parameters which are not documented below.
      {{ cryptsetup_secret_path + "/" + item.name + "/keyfile.raw" }}
 
 ``backup_header``
-  Optional, string. Disable backing up the `LUKS`_ header to the Ansible
-  controller for this item.
+  Optional, boolean. Should a header backup for this item be created and stored
+  on the remote system and the Ansible controller?
+  Set to ``False`` to disable header backup creation and to ensure that the
+  header backup on the remote system is absent.
+  Defaults to the ``cryptsetup_header_backup`` variable.
 
 ``fstype``
   Optional, string. Filesystem type to create on the plaintext device mapper

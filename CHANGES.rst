@@ -10,6 +10,8 @@ v0.3.1
 
 * Fixed permission enforcement of the header backup on the Ansible controller. [jacksingleton]
 
+* Remove header backups on remote system when ``cryptsetup_header_backup`` is set to ``False``. [ypid]
+
 v0.3.0
 ------
 
