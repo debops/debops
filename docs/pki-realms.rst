@@ -370,7 +370,7 @@ are not present. This allows the administrator to provide the shared scripts or
 private keys/certificates as needed, per host, per group or for all managed
 hosts.
 
-After certificates singed by internal CA are downloaded to remote host, the
+After certificates signed by internal CA are downloaded to remote host, the
 directory structure might look similar to::
 
     /etc/pki/realms/
