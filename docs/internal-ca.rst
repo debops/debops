@@ -140,7 +140,7 @@ This key allows you to create new Intermediate Certificate Authorities as well
 as revoke existing ones (although enforcement of the revocation in the form or
 distribution of Certificate Revocation Lists or an OCSP service is not
 currently implemented). You should protect access to it by moving the file to
-a secure location (preferably and encrypted, offline filesystem) and replacing
+a secure location (preferably an encrypted, offline filesystem) and replacing
 it with an empty ``key.pem`` file (otherwise the ``debops.pki`` role will
 replace the private key and regenerate all of the CA certificates).
 
