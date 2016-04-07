@@ -35,7 +35,7 @@ Examples::
   # Read the secret key from an external file
   dhcpd_secret_secure_key: '{{ lookup("password",
                                secret + "/" + ansible_domain +
-                               "/shared/ddns/keys/secure-key" }}'
+                               "/shared/ddns/keys/secure-key") }}'
 
   dhcpd_keys:
     - key: "secure-key"
