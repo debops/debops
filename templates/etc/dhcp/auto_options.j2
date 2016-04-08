@@ -6,10 +6,10 @@ option domain-search "{{ dhcpd_tpl_domain_search | join('", "') }}";
 option dhcp6.domain-search "{{ dhcpd_tpl_domain_search | join('", "') }}";
 
 {% endif %}
+{% set dhcpd_tpl_nameservers = [] %}
 {% if dhcpd_nameservers|d() and dhcpd_nameservers %}
 {% set dhcpd_tpl_nameservers = dhcpd_nameservers %}
 {% elif dhcpd_runtime_nameservers|d() and dhcpd_runtime_nameservers %}
-{% set dhcpd_tpl_nameservers = [] %}
 {% for server in dhcpd_runtime_nameservers %}
 {%   if server not in [ '127.0.0.1', '::1' ] %}
 {%     set _ = dhcpd_tpl_nameservers.append(server) %}
