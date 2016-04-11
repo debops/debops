@@ -43,6 +43,8 @@ v0.2.9
 - Update ``debops.apt_cacher_ng`` playbook and add support for ``nginx`` proxy
   for the cache. [drybjed]
 
+- Add ``debops.gitlab_runner`` role and playbook. [drybjed]
+
 v0.2.8
 ------
 
