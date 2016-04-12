@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.6
+------
+
+*Released: 2016-04-12*
+
+- Convert ACME intermediate certificate from DER to PEM format automatically.
+  [drybjed]
+
 v0.2.5
 ------
 

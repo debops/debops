@@ -860,6 +860,18 @@ check_expiration_time () {
     fi
 }
 
+convert_der_to_pem () {
+
+    local input_file="${1}"
+
+    if [ -n "${input_file}" -a -r ${input_file} ] ; then
+        if ! openssl x509 -in "${input_file}" -noout 2>/dev/null ; then
+            openssl x509 -inform DER -in "${input_file}" -out "${input_file}.tmp"
+            mv "${input_file}.tmp" "${input_file}"
+        fi
+    fi
+}
+
 request_acme_tiny_certificate () {
 
     if [ "${config['pki_acme']}" = "true" -a -x ${config['acme_client_script']} -a -d ${config['acme_challenge_dir']} -a ! -r acme/error.log -a -r acme/request.pem ] ; then
@@ -895,6 +907,7 @@ request_acme_tiny_certificate () {
 
                     if [ -n "${acme_intermediate_uri}" ] ; then
                         curl -s -o acme/intermediate.pem.tmp ${acme_intermediate_uri}
+                        convert_der_to_pem acme/intermediate.pem.tmp
                         mv acme/intermediate.pem.tmp acme/intermediate.pem
                         if [ ! -r acme/intermediate_uri.txt ] ; then
                             echo "${acme_intermediate_uri}" > acme/intermediate_uri.txt
@@ -908,6 +921,7 @@ request_acme_tiny_certificate () {
                             curl -s -o acme/intermediate.pem.tmp ${acme_intermediate_uri}
                             if ! diff -q -N acme/intermediate.pem acme/intermediate.pem.tmp > /dev/null ; then
                                 rm -f acme/intermediate.pem acme/intermediate_uri.txt
+                                convert_der_to_pem acme/intermediate.pem.tmp
                                 mv acme/intermediate.pem.tmp acme/intermediate.pem
                                 if [ ! -r acme/intermediate_uri.txt ] ; then
                                     echo "${acme_intermediate_uri}" > acme/intermediate_uri.txt
