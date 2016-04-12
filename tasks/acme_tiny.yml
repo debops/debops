@@ -51,7 +51,8 @@
     group: 'root'
     mode: '0755'
   when: (ansible_local|d() and ansible_local.nginx|d() and
-         ansible_local.nginx.acme | bool)
+         ansible_local.nginx.acme|d() and
+         ansible_local.nginx.acme|bool)
 
 - name: Create ACME Challenge directory
   file:
@@ -61,5 +62,6 @@
     group: '{{ pki_acme_group }}'
     mode: '0755'
   when: (ansible_local|d() and ansible_local.nginx|d() and
-         ansible_local.nginx.acme | bool)
+         ansible_local.nginx.acme|d() and
+         ansible_local.nginx.acme|bool)
 

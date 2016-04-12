@@ -9,6 +9,9 @@ v0.2.6
 - Convert ACME intermediate certificate from DER to PEM format automatically.
   [drybjed]
 
+- Make sure that role works with older ``debops.nginx`` deployments, which
+  didn't support ACME integration. [drybjed]
+
 v0.2.5
 ------
 
