@@ -19,7 +19,7 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - dhcpd_base_packages_map[dhcpd_mode]
+    - '{{ dhcpd_base_packages_map[dhcpd_mode] }}'
     - [ '{{ "dhcp-probe" if (dhcpd_probe|d() and dhcpd_probe) else [] }}' ]
 
 - name: Reconfigure ISC DHCP relay
@@ -58,7 +58,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: dhcpd_includes
+  with_items: '{{ dhcpd_includes }}'
   notify: [ 'Restart isc-dhcp-server' ]
   when: ((item is defined and item) and dhcpd_mode == 'server' and
          (dhcpd_register_config is defined and dhcpd_register_config.changed))
