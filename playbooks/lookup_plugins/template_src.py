@@ -37,11 +37,16 @@ __author__ = "Robert Chady <rchady@sitepen.com>"
 __copyright__ = "Copyright 2015 by Robert Chady <rchady@sitepen.com>"
 __license__ = "GNU General Public LIcense version 3 (GPL v3) or later"
 
+try:
+    from ansible.plugins.lookup import LookupBase
+except ImportError:
+    LookupBase = object
+
 conf_template_paths = 'template-paths'
 
 from distutils.version import LooseVersion
 from ansible import __version__ as __ansible_version__
-class LookupModule(object):
+class LookupModule(LookupBase):
     def __new__(class_name, *args, **kwargs):
         if LooseVersion(__ansible_version__) < LooseVersion("2.0"):
             from ansible import utils, errors
