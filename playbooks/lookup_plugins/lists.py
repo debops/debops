@@ -39,7 +39,12 @@ Output (shortend):
 import ansible.utils as utils
 import ansible.errors as errors
 
-class LookupModule(object):
+try:
+    from ansible.plugins.lookup import LookupBase
+except ImportError:
+    LookupBase = object
+
+class LookupModule(LookupBase):
 
     def __init__(self, basedir=None, **kwargs):
         self.basedir = basedir

@@ -45,6 +45,8 @@ v0.2.9
 
 - Add ``debops.gitlab_runner`` role and playbook. [drybjed]
 
+- Fix compatibility issues of custom lookup plugins in Ansible v2.1+. [abadger]
+
 v0.2.8
 ------
 
