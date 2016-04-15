@@ -52,6 +52,9 @@ v0.2.9
   active by default, since GitLab CI has been merged into GitLab itself.
   [drybjed]
 
+- Add ``debops.logrotate`` role and playbook, available as a standalone service
+  as well as included in the ``common.yml`` playbook. [drybjed]
+
 v0.2.8
 ------
 
