@@ -47,6 +47,11 @@ v0.2.9
 
 - Fix compatibility issues of custom lookup plugins in Ansible v2.1+. [abadger]
 
+- Replace ``app/gitlab_ci*.yml`` playbooks with ``debops.gitlab_runner``
+  playbook. The old GitLab CI and GitLab CI Runner roles will no longer be
+  active by default, since GitLab CI has been merged into GitLab itself.
+  [drybjed]
+
 v0.2.8
 ------
 
