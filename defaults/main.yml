@@ -1,0 +1,140 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# ------------------------
+#   Global configuration
+# ------------------------
+
+# .. envvar:: logrotate__enabled
+#
+# Enable or disable management of ``logrotate`` configuration files.
+logrotate__enabled: True
+
+
+# .. envvar:: logrotate__base_packages
+#
+# List of base APT packages to install.
+logrotate__base_packages: [ 'logrotate', 'cron' ]
+
+
+# .. envvar:: logrotate__packages
+#
+# List of additional APT packages to install with ``logrotate``.
+logrotate__packages: []
+
+
+# .. envvar:: logrotate__cron_period
+#
+# Specify how often ``cron`` should execute log rotation. By default the
+# ``logrotate`` command will be executed daily. Available periods are:
+# ``hourly``, ``daily``, ``weekly``, ``monthly``.
+logrotate__cron_period: 'daily'
+
+
+# .. envvar:: logrotate__default_period
+#
+# Select the default log rotation period. Supported values are: ``daily``,
+# ``weekly``, ``monthly``, ``yearly``. The ``logrotate`` command is currently
+# run daily via a ``cron`` script.
+logrotate__default_period: 'weekly'
+
+
+# .. envvar:: logrotate__default_rotation
+#
+# Specify the number of old log files to keep before removing them.
+logrotate__default_rotation: '4'
+
+
+# .. envvar:: logrotate__options
+#
+# A YAML text block with ``logrotate`` options configured in the main
+# configuration file for all hosts in the inventory.
+logrotate__options: ''
+
+
+# .. envvar:: logrotate__group_options
+#
+# A YAML text block with ``logrotate`` options configured in the main
+# configuration file for hosts in specific groups.
+logrotate__group_options: ''
+
+
+# .. envvar:: logrotate__host_options
+#
+# A YAML text block with ``logrotate`` options configured in the main
+# configuration file for specific hosts in the inventory.
+logrotate__host_options: ''
+
+
+# .. envvar:: logrotate__default_options
+#
+# A YAML text block with ``logrotate`` configuration options applied to all
+# logs by default. These options will be applied last, the last line should
+# include other configuration files located in ``/etc/logrotate.d/`` directory.
+logrotate__default_options: |
+  create
+  {{ logrotate__default_period }}
+  rotate {{ logrotate__default_rotation }}
+  tabooext + .dpkg-divert
+  include /etc/logrotate.d
+
+
+# ------------------------------
+#   Log rotation configuration
+# ------------------------------
+
+# .. envvar:: logrotate__default_config
+#
+# Configuration of log rotation for logs that don't have their own packaged
+# configuration in ``/etc/logrotate.d/``. This configuration will be included
+# in the main ``logrotate`` configuration file. See :ref:`logrotate__config`
+# for more details about the syntax.
+logrotate__default_config:
+
+  - log: '/var/log/wtmp'
+    comment: 'No packages own wtmp or btmp, they will be managed directly'
+    options: |
+      missingok
+      monthly
+      create 0664 root utmp
+      rotate 1
+
+  - log: '/var/log/btmp'
+    options: |
+      missingok
+      monthly
+      create 0660 root utmp
+      rotate 1
+
+
+# .. envvar:: logrotate__config
+#
+# Log rotation configuration for all hosts in Ansible inventory. See
+# :ref:`logrotate__config` for more details.
+logrotate__config: []
+
+
+# .. envvar:: logrotate__group_config
+#
+# Log rotation configuration for hosts in a specific Ansible group. See
+# :ref:`logrotate__config` for more details.
+logrotate__group_config: []
+
+
+# .. envvar:: logrotate__host_config
+#
+# Log rotation configuration for specific hosts in Ansible inventory. See
+# :ref:`logrotate__config` for more details.
+logrotate__host_config: []
+
+
+# .. envvar:: logrotate__dependent_config
+#
+# Log rotation configuration defined by other Ansible roles through dependent
+# variables. See :ref:`logrotate__config` for more details.
+logrotate__dependent_config: []
+
