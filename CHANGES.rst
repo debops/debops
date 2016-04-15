@@ -16,6 +16,8 @@ v0.2.0
 
 - Fix deprecation warnings in Ansible 2.1.0. [ypid]
 
+- Fix issue with wrong variable type conversion. [drybjed]
+
 v0.1.2
 ------
 

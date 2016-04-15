@@ -64,7 +64,7 @@ libvirtd_packages: []
 #
 # List of administrator accounts which should have access to ``libvirtd``.
 libvirtd_admins: [ '{{ (ansible_ssh_user
-                        if (ansible_ssh_user | bool and
+                        if (ansible_ssh_user | d() and
                             ansible_ssh_user != "root")
                         else lookup("env", "USER")) }}' ]
 
