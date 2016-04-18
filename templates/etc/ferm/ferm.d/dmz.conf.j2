@@ -12,6 +12,7 @@ Required:
 Optional:
   item.protocol(s)         list of protocols to forward, by default (tcp)
   item.port(s)             list of ports to forward, if not specified, all traffic is forwarded
+  item.dport               destination port to forward to
 
 #}
 {# Domain, table, chain #}
@@ -123,7 +124,11 @@ Optional:
 {% else %}
                                 dport ({{ ferm_tpl_ports | join(" ") }}) {
 {% endif %}
+{% if item.dport | d() %}
+                                        destination $PUBLIC_IP DNAT to @cat($PRIVATE_IP, ":{{ item.dport }}");
+{% else %}
                                         destination $PUBLIC_IP DNAT to $PRIVATE_IP;
+{% endif %}
                                 }
                         }
 {% else %}
