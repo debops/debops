@@ -37,8 +37,8 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - postgresql_base_packages
-    - postgresql_packages
+    - '{{ postgresql_base_packages }}'
+    - '{{ postgresql_packages }}'
 
 - name: Check if database server is installed
   environment:
@@ -69,7 +69,7 @@
     expires: '{{ item.expires | d(omit) }}'
     role_attr_flags: '{{ (item.flags|d() | join(",")) | d(omit) }}'
     state: 'present'
-  with_items: postgresql_roles
+  with_items: '{{ postgresql_roles }}'
   sudo_user: '{{ postgresql_user }}'
   delegate_to: '{{ postgresql_delegate_to }}'
   when: (((item.name|d() and item.name) or (item.role|d() and item.role)) and
@@ -85,7 +85,7 @@
     lc_collate: '{{ item.lc_collate | d(omit) }}'
     lc_ctype: '{{ item.lc_ctype | d(omit) }}'
     state: 'present'
-  with_items: postgresql_databases
+  with_items: '{{ postgresql_databases }}'
   sudo_user: '{{ postgresql_user }}'
   delegate_to: '{{ postgresql_delegate_to }}'
   when: (((item.name|d() and item.name) or (item.database|d() and item.database)) and
@@ -101,7 +101,7 @@
     privs: 'ALL'
     grant_option: 'yes'
     state: 'present'
-  with_items: postgresql_databases
+  with_items: '{{ postgresql_databases }}'
   sudo_user: '{{ postgresql_user }}'
   delegate_to: '{{ postgresql_delegate_to }}'
   when: (((item.name|d() and item.name) or (item.database|d() and item.database)) and
@@ -117,7 +117,7 @@
     objs: '{{ item.groups | join(",") }}'
     grant_option: '{{ item.grant_option | d(omit) }}'
     state: 'present'
-  with_items: postgresql_groups
+  with_items: '{{ postgresql_groups }}'
   sudo_user: '{{ postgresql_user }}'
   delegate_to: '{{ postgresql_delegate_to }}'
   when: ((item.roles|d() and item.roles) and
@@ -132,7 +132,7 @@
     db: '{{ item.db }}'
     priv: '{{ item.priv | join("/") }}'
     state: 'present'
-  with_items: postgresql_roles
+  with_items: '{{ postgresql_roles }}'
   sudo_user: '{{ postgresql_user }}'
   delegate_to: '{{ postgresql_delegate_to }}'
   when: (((item.name|d() and item.name) or (item.role|d() and item.role)) and
@@ -145,7 +145,7 @@
     name: '{{ item.group | d(item.owner) }}'
     state: 'present'
     system: '{{ item.system | d(True) }}'
-  with_items: postgresql_pgpass
+  with_items: '{{ postgresql_pgpass }}'
   when: item.owner|d() and item.owner
 
 - name: Make sure required system accounts exist
@@ -155,7 +155,7 @@
     home: '{{ item.home | d(omit) }}'
     state: 'present'
     system: '{{ item.system | d(True) }}'
-  with_items: postgresql_pgpass
+  with_items: '{{ postgresql_pgpass }}'
   when: item.owner|d() and item.owner
 
 - name: Populate ~/.pgpass file
@@ -168,7 +168,7 @@
     owner: '{{ item.owner }}'
     group: '{{ item.owner }}'
     mode: '0600'
-  with_items: postgresql_pgpass
+  with_items: '{{ postgresql_pgpass }}'
   when: item.owner|d() and item.owner
 
 - name: Make sure that Ansible local fact directory exists
