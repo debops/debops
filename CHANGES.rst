@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Unreleased*
+
+- Allow to use a global set of username and password in smtp_sasl_password_map
+  instead of the per-host passwords. [drybjed]
+
 v0.1.2
 ------
 
