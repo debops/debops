@@ -2,187 +2,187 @@
 {% set ifupdown_tpl_ipv4_addresses = [] %}
 {% set ifupdown_tpl_ipv6_addresses = [] %}
 {% if ifupdown_map_interface_addresses|d() and ifupdown_map_interface_addresses[item.iface]|d() %}
-{% if ifupdown_map_interface_addresses[item.iface] is string and ifupdown_map_interface_addresses[item.iface] | ipaddr('host/prefix') %}
-{% set ifupdown_tpl_addresses = [ ifupdown_map_interface_addresses[item.iface] ] %}
-{% else %}
-{% set ifupdown_tpl_addresses = ifupdown_map_interface_addresses[item.iface] | unique | ipaddr('host/prefix') %}
-{% endif %}
+{%   if ifupdown_map_interface_addresses[item.iface] is string and ifupdown_map_interface_addresses[item.iface] | ipaddr('host/prefix') %}
+{%     set ifupdown_tpl_addresses = [ ifupdown_map_interface_addresses[item.iface] ] %}
+{%   else %}
+{%     set ifupdown_tpl_addresses = ifupdown_map_interface_addresses[item.iface] | unique | ipaddr('host/prefix') %}
+{%   endif %}
 {% endif %}
 {% if item.addresses|d() and item.addresses %}
-{% if item.addresses is string and item.addresses | ipaddr('host/prefix') %}
-{% set ifupdown_tpl_addresses = (ifupdown_tpl_addresses + [ item.addresses ]) %}
-{% else %}
-{% set ifupdown_tpl_addresses = (ifupdown_tpl_addresses + item.addresses) | unique | ipaddr('host/prefix') %}
-{% endif %}
+{%   if item.addresses is string and item.addresses | ipaddr('host/prefix') %}
+{%     set ifupdown_tpl_addresses = (ifupdown_tpl_addresses + [ item.addresses ]) %}
+{%   else %}
+{%     set ifupdown_tpl_addresses = (ifupdown_tpl_addresses + item.addresses) | unique | ipaddr('host/prefix') %}
+{%   endif %}
 {% endif %}
 {% set ifupdown_tpl_ipv4_addresses = ifupdown_tpl_addresses | ipv4('host/prefix') %}
 {% set ifupdown_tpl_ipv6_addresses = ifupdown_tpl_addresses | ipv6('host/prefix') %}
 {% set ifupdown_tpl_gateway = '' %}
 {# -------------------------------------------- #}
 {% if ifupdown_tpl_family is undefined and ifupdown_tpl_method is undefined %}
-{% if item.inet6 is defined and item.inet6 %}
-{% set ifupdown_tpl_family = 'inet6' %}
-{% if ifupdown_map_interface_method6|d() and ifupdown_map_interface_method6[item.iface]|d() %}
-{% set ifupdown_tpl_method = ifupdown_map_interface_method6[item.iface] %}
-{% else %}
-{% set ifupdown_tpl_method = item.inet6 %}
-{% endif %}
-{% if ifupdown_map_interface_gateway6|d() and ifupdown_map_interface_gateway6[item.iface]|d() %}
-{% set ifupdown_tpl_gateway = ifupdown_map_interface_gateway6[item.iface] %}
-{% elif item.gateway|d() %}
-{% set ifupdown_tpl_gateway = item.gateway %}
-{% endif %}
-{% else %}
-{% set ifupdown_tpl_family = 'inet' %}
-{% if ifupdown_map_interface_method|d() and ifupdown_map_interface_method[item.iface]|d() %}
-{% set ifupdown_tpl_method = ifupdown_map_interface_method[item.iface] %}
-{% else %}
-{% set ifupdown_tpl_method = item.inet|d('dhcp') %}
-{% endif %}
-{% if ifupdown_map_interface_gateway|d() and ifupdown_map_interface_gateway[item.iface]|d() %}
-{% set ifupdown_tpl_gateway = ifupdown_map_interface_gateway[item.iface] %}
-{% elif item.gateway|d() %}
-{% set ifupdown_tpl_gateway = item.gateway %}
-{% endif %}
-{% endif %}
+{%   if item.inet6 is defined and item.inet6 %}
+{%     set ifupdown_tpl_family = 'inet6' %}
+{%     if ifupdown_map_interface_method6|d() and ifupdown_map_interface_method6[item.iface]|d() %}
+{%       set ifupdown_tpl_method = ifupdown_map_interface_method6[item.iface] %}
+{%     else %}
+{%       set ifupdown_tpl_method = item.inet6 %}
+{%     endif %}
+{%     if ifupdown_map_interface_gateway6|d() and ifupdown_map_interface_gateway6[item.iface]|d() %}
+{%       set ifupdown_tpl_gateway = ifupdown_map_interface_gateway6[item.iface] %}
+{%     elif item.gateway|d() %}
+{%       set ifupdown_tpl_gateway = item.gateway %}
+{%     endif %}
+{%   else %}
+{%     set ifupdown_tpl_family = 'inet' %}
+{%     if ifupdown_map_interface_method|d() and ifupdown_map_interface_method[item.iface]|d() %}
+{%       set ifupdown_tpl_method = ifupdown_map_interface_method[item.iface] %}
+{%     else %}
+{%       set ifupdown_tpl_method = item.inet|d('dhcp') %}
+{%     endif %}
+{%     if ifupdown_map_interface_gateway|d() and ifupdown_map_interface_gateway[item.iface]|d() %}
+{%       set ifupdown_tpl_gateway = ifupdown_map_interface_gateway[item.iface] %}
+{%     elif item.gateway|d() %}
+{%       set ifupdown_tpl_gateway = item.gateway %}
+{%     endif %}
+{%   endif %}
 {% endif %}
 {# -------------------------------------------- #}
 {% set ifupdown_tpl_allow = [] %}
-{% if ((item.auto is undefined or item.auto) and ifupdown_tpl_method not in [ 'manual' ]) %}
-{% set _ = ifupdown_tpl_allow.append('auto') %}
+{% if ((item.auto|d(True) | bool) and ifupdown_tpl_method not in [ 'manual' ]) %}
+{%   set _ = ifupdown_tpl_allow.append('auto') %}
 {% endif %}
 {% if (item.allow is undefined and ifupdown_tpl_method not in [ 'manual' ]) %}
-{% set _ = ifupdown_tpl_allow.append('hotplug') %}
+{%   set _ = ifupdown_tpl_allow.append('hotplug') %}
 {% elif (item.allow is defined and item.allow) %}
-{% if item.allow is string %}
-{% set _ = ifupdown_tpl_allow.append(item.allow) %}
-{% else %}
-{% set ifupdown_tpl_allow = (ifupdown_tpl_allow + item.allow) | unique %}
-{% endif %}
+{%   if item.allow is string %}
+{%     set _ = ifupdown_tpl_allow.append(item.allow) %}
+{%   else %}
+{%     set ifupdown_tpl_allow = (ifupdown_tpl_allow + item.allow) | unique %}
+{%   endif %}
 {% endif %}
 {# -------------------------------------------- #}
-{% set ifupdown_tpl_config_type = ifupdown_tpl_config_type | default('interface') %}
-{% set ifupdown_tpl_config_alias = ifupdown_tpl_config_alias | default(item.alias | default(ifupdown_tpl_config_type)) %}
-{% set ifupdown_tpl_virtual_interface = ifupdown_tpl_virtual_interface | default(False) %}
-{% set ifupdown_tpl_generate_interface = ifupdown_tpl_generate_interface | default(False) %}
+{% set ifupdown_tpl_config_type                 = ifupdown_tpl_config_type | default('interface') %}
+{% set ifupdown_tpl_config_alias                = ifupdown_tpl_config_alias | default(item.alias | default(ifupdown_tpl_config_type)) %}
+{% set ifupdown_tpl_virtual_interface           = ifupdown_tpl_virtual_interface | default(False) %}
+{% set ifupdown_tpl_generate_interface          = ifupdown_tpl_generate_interface | default(False) %}
 {% set ifupdown_tpl_generate_interface_extended = ifupdown_tpl_generate_interface_extended | default(False) %}
-{% set ifupdown_tpl_generate_interface_failed = ifupdown_tpl_generate_interface_failed | default(False) %}
-{% set ifupdown_tpl_failure_reason = ifupdown_tpl_failure_reason | default('') %}
+{% set ifupdown_tpl_generate_interface_failed   = ifupdown_tpl_generate_interface_failed | default(False) %}
+{% set ifupdown_tpl_failure_reason              = ifupdown_tpl_failure_reason | default('') %}
 {# -------------------------------------------- #}
 {% if item.port_present is defined and not ifupdown_tpl_generate_interface_failed %}
-{% if item.port_present in ansible_interfaces or (item.force is defined and item.force) %}
-{% set ifupdown_tpl_generate_interface = True %}
-{% else %}
-{% set ifupdown_tpl_generate_interface = False %}
-{% set ifupdown_tpl_generate_interface_failed = True %}
-{% set ifupdown_tpl_failure_reason = 'Port ' + item.port_present + ' required by ' + ifupdown_tpl_config_alias + ' ' + item.iface + ' was not found in "ansible_interfaces"' %}
-{% endif %}
+{%   if item.port_present in ansible_interfaces or (item.force is defined and item.force) %}
+{%     set ifupdown_tpl_generate_interface = True %}
+{%   else %}
+{%     set ifupdown_tpl_generate_interface = False %}
+{%     set ifupdown_tpl_generate_interface_failed = True %}
+{%     set ifupdown_tpl_failure_reason = 'Port ' + item.port_present + ' required by ' + ifupdown_tpl_config_alias + ' ' + item.iface + ' was not found in "ansible_interfaces"' %}
+{%   endif %}
 {% endif %}
 {# -------------------------------------------- #}
 {% if item.port_active is defined and not ifupdown_tpl_generate_interface_failed %}
-{% if ((item.port_present|d() and hostvars[inventory_hostname]['ansible_' + item.port_present]|d() and item.port_active | bool == hostvars[inventory_hostname]["ansible_" + item.port_present|d()].active | bool) or (hostvars[inventory_hostname]['ansible_' + item.iface]|d() and item.port_active | bool == hostvars[inventory_hostname]["ansible_" + item.iface].active | bool)) %}
-{% set ifupdown_tpl_generate_interface = True %}
-{% set ifupdown_tpl_generate_interface_failed = True %}
-{% else %}
-{% set ifupdown_tpl_generate_interface = False %}
-{% set ifupdown_tpl_generate_interface_failed = True %}
-{% set ifupdown_tpl_failure_reason = ifupdown_tpl_config_alias | capitalize + ' ' + item.iface + ' wants port ' + item.port_present|d(item.iface) + ' active: ' + item.port_active | string + ', found: ' + (hostvars[inventory_hostname]['ansible_' + item.port_present|d(item.iface)].active if hostvars[inventory_hostname]['ansible_' + item.port_present|d(item.iface)]|d() else 'no port') | string %}
-{% endif %}
+{%   if ((item.port_present|d() and hostvars[inventory_hostname]['ansible_' + item.port_present]|d() and item.port_active | bool == hostvars[inventory_hostname]["ansible_" + item.port_present|d()].active | bool) or (hostvars[inventory_hostname]['ansible_' + item.iface]|d() and item.port_active | bool == hostvars[inventory_hostname]["ansible_" + item.iface].active | bool)) %}
+{%     set ifupdown_tpl_generate_interface = True %}
+{%     set ifupdown_tpl_generate_interface_failed = True %}
+{%   else %}
+{%     set ifupdown_tpl_generate_interface = False %}
+{%     set ifupdown_tpl_generate_interface_failed = True %}
+{%     set ifupdown_tpl_failure_reason = ifupdown_tpl_config_alias | capitalize + ' ' + item.iface + ' wants port ' + item.port_present|d(item.iface) + ' active: ' + item.port_active | string + ', found: ' + (hostvars[inventory_hostname]['ansible_' + item.port_present|d(item.iface)].active if hostvars[inventory_hostname]['ansible_' + item.port_present|d(item.iface)]|d() else 'no port') | string %}
+{%   endif %}
 {% endif %}
 {# -------------------------------------------- #}
 {% if not ifupdown_tpl_generate_interface and not ifupdown_tpl_generate_interface_extended and not ifupdown_tpl_generate_interface_failed and (item.type is undefined or (item.type is defined and item.type == ifupdown_tpl_config_type) and (not ifupdown_tpl_virtual_interface and item.iface in ansible_interfaces) or (item.force is defined and item.force)) %}
-{% set ifupdown_tpl_generate_interface = True %}
+{%   set ifupdown_tpl_generate_interface = True %}
 {% else %}
-{% if not ifupdown_tpl_failure_reason %}
-{% set ifupdown_tpl_failure_reason = ifupdown_tpl_config_alias | capitalize + ' ' + item.iface + ' not found' %}
-{% endif %}
+{%   if not ifupdown_tpl_failure_reason %}
+{%     set ifupdown_tpl_failure_reason = ifupdown_tpl_config_alias | capitalize + ' ' + item.iface + ' not found' %}
+{%   endif %}
 {% endif %}
 {# -------------------------------------------- #}
 {% if item.enabled is defined and not ifupdown_tpl_generate_interface_failed %}
-{% if not item.enabled | bool %}
-{% set ifupdown_tpl_generate_interface = False %}
-{% set ifupdown_tpl_generate_interface_failed = True %}
-{% set ifupdown_tpl_failure_reason = ifupdown_tpl_config_alias | capitalize + ' ' + item.iface + ' has been disabled by a variable' %}
-{% endif %}
+{%   if not item.enabled | bool %}
+{%     set ifupdown_tpl_generate_interface = False %}
+{%     set ifupdown_tpl_generate_interface_failed = True %}
+{%     set ifupdown_tpl_failure_reason = ifupdown_tpl_config_alias | capitalize + ' ' + item.iface + ' has been disabled by a variable' %}
+{%   endif %}
 {% endif %}
 {# -------------------------------------------- #}
 # {{ ansible_managed }}
 
 {% if ifupdown_tpl_generate_interface %}
-{% set ifupdown_tpl_comment = '' %}
-{% if ifupdown_map_interface_comment|d() and ifupdown_map_interface_comment[item.iface]|d() %}
-{% set ifupdown_tpl_comment = ifupdown_map_interface_comment[item.iface] %}
-{% elif item.comment|d() %}
-{% set ifupdown_tpl_comment = item.comment %}
-{% endif %}
-{% if ifupdown_tpl_comment %}
+{%   set ifupdown_tpl_comment = '' %}
+{%   if ifupdown_map_interface_comment|d() and ifupdown_map_interface_comment[item.iface]|d() %}
+{%     set ifupdown_tpl_comment = ifupdown_map_interface_comment[item.iface] %}
+{%   elif item.comment|d() %}
+{%     set ifupdown_tpl_comment = item.comment %}
+{%   endif %}
+{%   if ifupdown_tpl_comment %}
 # {{ ifupdown_tpl_comment }}
-{% else %}
+{%   else %}
 # Configuration for {{ item.iface }} {{ ifupdown_tpl_config_alias }}
-{% endif %}
-{% if ifupdown_tpl_allow %}
-{% for subsystem in ifupdown_tpl_allow | unique %}
+{%   endif %}
+{%   if ifupdown_tpl_allow %}
+{%     for subsystem in ifupdown_tpl_allow | unique %}
 allow-{{ subsystem }} {{ item.iface }}
-{% endfor %}
-{% endif %}
-iface {{ item.iface }}{% if item.label|d() and item.label %}:{{ item.label }}{% endif %} {{ ifupdown_tpl_family }} {{ ifupdown_tpl_method }}
-{% if ifupdown_tpl_addresses %}
-{% if ifupdown_tpl_family == 'inet6' and ifupdown_tpl_method == 'static' and ifupdown_tpl_ipv6_addresses %}
+{%     endfor %}
+{%   endif %}
+iface {{ item.iface }}{{ ":" + item.label if item.label|d() else "" }} {{ ifupdown_tpl_family }} {{ ifupdown_tpl_method }}
+{%   if ifupdown_tpl_addresses %}
+{%     if ifupdown_tpl_family == 'inet6' and ifupdown_tpl_method == 'static' and ifupdown_tpl_ipv6_addresses %}
         address {{ ifupdown_tpl_ipv6_addresses[0] }}
-{% if ifupdown_tpl_ipv6_addresses | length > 1 %}
-{% for address in ifupdown_tpl_ipv6_addresses[1:] %}
+{%       if ifupdown_tpl_ipv6_addresses | length > 1 %}
+{%         for address in ifupdown_tpl_ipv6_addresses[1:] %}
         up   ip addr add {{ address }} dev {{ item.iface }}
         down ip addr del {{ address }} dev {{ item.iface }}
-{% endfor %}
-{% endif %}
-{% elif ifupdown_tpl_family == 'inet6' and ifupdown_tpl_method != 'static' and ifupdown_tpl_ipv6_addresses %}
-{% for address in ifupdown_tpl_ipv6_addresses %}
+{%         endfor %}
+{%       endif %}
+{%     elif ifupdown_tpl_family == 'inet6' and ifupdown_tpl_method != 'static' and ifupdown_tpl_ipv6_addresses %}
+{%       for address in ifupdown_tpl_ipv6_addresses %}
         up   ip addr add {{ address }} dev {{ item.iface }}
         down ip addr del {{ address }} dev {{ item.iface }}
-{% endfor %}
-{% elif ifupdown_tpl_family == 'inet' and ifupdown_tpl_method == 'static' and ifupdown_tpl_ipv4_addresses %}
+{%       endfor %}
+{%     elif ifupdown_tpl_family == 'inet' and ifupdown_tpl_method == 'static' and ifupdown_tpl_ipv4_addresses %}
         address      {{ ifupdown_tpl_ipv4_addresses[0] | ipaddr('address') }}
         network      {{ ifupdown_tpl_ipv4_addresses[0] | ipaddr('network') }}
         netmask      {{ ifupdown_tpl_ipv4_addresses[0] | ipaddr('netmask') }}
         broadcast    {{ ifupdown_tpl_ipv4_addresses[0] | ipaddr('broadcast') }}
-{% if ifupdown_tpl_ipv4_addresses | length > 1 %}
-{% for address in ifupdown_tpl_ipv4_addresses[1:] %}
+{%       if ifupdown_tpl_ipv4_addresses | length > 1 %}
+{%         for address in ifupdown_tpl_ipv4_addresses[1:] %}
         up   ip addr add {{ address }} dev {{ item.iface }} label {{ item.iface }}:{{ loop.index0 }}
         down ip addr del {{ address }} dev {{ item.iface }} label {{ item.iface }}:{{ loop.index0 }}
-{% endfor %}
-{% endif %}
-{% elif ifupdown_tpl_family == 'inet' and ifupdown_tpl_method != 'static' and ifupdown_tpl_ipv4_addresses %}
-{% for address in ifupdown_tpl_ipv4_addresses %}
+{%         endfor %}
+{%       endif %}
+{%       elif ifupdown_tpl_family == 'inet' and ifupdown_tpl_method != 'static' and ifupdown_tpl_ipv4_addresses %}
+{%         for address in ifupdown_tpl_ipv4_addresses %}
         up   ip addr add {{ address }} dev {{ item.iface }} label {{ item.iface }}:{{ loop.index0 }}
         down ip addr del {{ address }} dev {{ item.iface }} label {{ item.iface }}:{{ loop.index0 }}
-{% endfor %}
-{% endif %}
-{% endif %}
-{% if ifupdown_tpl_gateway %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%     if ifupdown_tpl_gateway %}
         gateway      {{ ifupdown_tpl_gateway }}
-{% endif %}
-{% block ifupdown_block_options %}
-{% endblock %}
-{% if ifupdown_tpl_family == 'inet' %}
-{% block ifupdown_block_options4 %}
-{% endblock %}
-{% elif ifupdown_tpl_family == 'inet6' %}
-{% block ifupdown_block_options6 %}
-{% endblock %}
-{% endif %}
-{% if item.options is defined and item.options %}
-{{ item.options | indent(8, true) }}
-{% endif %}
-{% if ifupdown_tpl_family == 'inet6' %}
-{% if ifupdown_map_interface_options6|d() and ifupdown_map_interface_options6[item.iface]|d() %}
-{{ ifupdown_map_interface_options6[item.iface] | indent(8, true) }}
-{% endif %}
-{% elif ifupdown_tpl_family == 'inet' %}
-{% if ifupdown_map_interface_options|d() and ifupdown_map_interface_options[item.iface]|d() %}
-{{ ifupdown_map_interface_options[item.iface] | indent(8, true) }}
-{% endif %}
-{% endif %}
-{% else %}
+{%     endif %}
+{%     block ifupdown_block_options %}
+{%     endblock %}
+{%     if ifupdown_tpl_family == 'inet' %}
+{%       block ifupdown_block_options4 %}
+{%       endblock %}
+{%     elif ifupdown_tpl_family == 'inet6' %}
+{%       block ifupdown_block_options6 %}
+{%       endblock %}
+{%     endif %}
+{%     if item.options is defined and item.options %}
+{{       item.options | indent(8, true) }}
+{%     endif %}
+{%     if ifupdown_tpl_family == 'inet6' %}
+{%       if ifupdown_map_interface_options6|d() and ifupdown_map_interface_options6[item.iface]|d() %}
+{{         ifupdown_map_interface_options6[item.iface] | indent(8, true) }}
+{%       endif %}
+{%     elif ifupdown_tpl_family == 'inet' %}
+{%       if ifupdown_map_interface_options|d() and ifupdown_map_interface_options[item.iface]|d() %}
+{{         ifupdown_map_interface_options[item.iface] | indent(8, true) }}
+{%       endif %}
+{%     endif %}
+{%   else %}
 # {{ ifupdown_tpl_failure_reason }}
 {% endif %}
 
