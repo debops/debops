@@ -3,52 +3,52 @@
 {% set ifupdown_tpl_virtual_interface = True %}
 {% set ifupdown_tpl_bridge_ports = [] %}
 {% if ifupdown_map_bridge_ports|d() and ifupdown_map_bridge_ports[item.iface]|d() %}
-{% if ifupdown_map_bridge_ports[item.iface] is string %}
-{% set ifupdown_tpl_bridge_ports = ifupdown_map_bridge_ports[item.iface].split(" ") %}
+{%   if ifupdown_map_bridge_ports[item.iface] is string %}
+{%     set ifupdown_tpl_bridge_ports = ifupdown_map_bridge_ports[item.iface].split(" ") %}
+{%   else %}
+{%     set ifupdown_tpl_bridge_ports = ifupdown_map_bridge_ports[item.iface] %}
+{%   endif %}
 {% else %}
-{% set ifupdown_tpl_bridge_ports = ifupdown_map_bridge_ports[item.iface] %}
-{% endif %}
-{% else %}
-{% if item.port is defined and item.port %}
-{% if item.port is string %}
-{% set ifupdown_tpl_bridge_ports = item.port.split(" ") %}
-{% else %}
-{% set ifupdown_tpl_bridge_ports = item.port %}
-{% endif %}
-{% elif item.ports is defined and item.ports %}
-{% if item.ports is string %}
-{% set ifupdown_tpl_bridge_ports = item.ports.split(" ") %}
-{% else %}
-{% set ifupdown_tpl_bridge_ports = item.ports %}
-{% endif %}
-{% elif item.bridge_ports is defined and item.bridge_ports %}
-{% if item.bridge_ports is string %}
-{% set ifupdown_tpl_bridge_ports = item.bridge_ports.split(" ") %}
-{% else %}
-{% set ifupdown_tpl_bridge_ports = item.bridge_ports %}
-{% endif %}
-{% endif %}
+{%   if item.port is defined and item.port %}
+{%     if item.port is string %}
+{%       set ifupdown_tpl_bridge_ports = item.port.split(" ") %}
+{%     else %}
+{%       set ifupdown_tpl_bridge_ports = item.port %}
+{%     endif %}
+{%   elif item.ports is defined and item.ports %}
+{%     if item.ports is string %}
+{%       set ifupdown_tpl_bridge_ports = item.ports.split(" ") %}
+{%     else %}
+{%       set ifupdown_tpl_bridge_ports = item.ports %}
+{%     endif %}
+{%   elif item.bridge_ports is defined and item.bridge_ports %}
+{%     if item.bridge_ports is string %}
+{%       set ifupdown_tpl_bridge_ports = item.bridge_ports.split(" ") %}
+{%     else %}
+{%       set ifupdown_tpl_bridge_ports = item.bridge_ports %}
+{%     endif %}
+{%   endif %}
 {% endif %}
 {% if not ifupdown_tpl_bridge_ports and item.options is undefined %}
-{% set ifupdown_tpl_bridge_ports = [ 'none' ] %}
+{%   set ifupdown_tpl_bridge_ports = [ 'none' ] %}
 {% endif %}
 {% if not ifupdown_tpl_bridge_ports and (item.auto is defined and not item.auto) %}
-{% set ifupdown_tpl_generate_interface = False %}
-{% set ifupdown_tpl_generate_interface_extended = True %}
+{%   set ifupdown_tpl_generate_interface = False %}
+{%   set ifupdown_tpl_generate_interface_extended = True %}
 {% elif not ifupdown_tpl_bridge_ports and (item.options is undefined or not item.options) %}
-{% set ifupdown_tpl_generate_interface = False %}
-{% set ifupdown_tpl_generate_interface_extended = True %}
-{% set ifupdown_tpl_generate_interface_failed = True %}
-{% set ifupdown_tpl_failure_reason = 'Bridge ports for ' + item.iface + ' not specified. Specify an interface or "none"' %}
+{%   set ifupdown_tpl_generate_interface = False %}
+{%   set ifupdown_tpl_generate_interface_extended = True %}
+{%   set ifupdown_tpl_generate_interface_failed = True %}
+{%   set ifupdown_tpl_failure_reason = 'Bridge ports for ' + item.iface + ' not specified. Specify an interface or "none"' %}
 {% else %}
-{% set ifupdown_tpl_generate_interface = True %}
-{% set ifupdown_tpl_generate_interface_extended = True %}
+{%   set ifupdown_tpl_generate_interface = True %}
+{%   set ifupdown_tpl_generate_interface_extended = True %}
 {% endif %}
 {% block ifupdown_block_options4 %}
 {% if ifupdown_tpl_bridge_ports %}
         bridge_ports {{ ifupdown_tpl_bridge_ports | join(" ") }}
 {% endif %}
 {% if (ifupdown_default_bridge_options and item.options is undefined and ifupdown_map_interface_options[item.iface] is undefined) %}
-{{ ifupdown_default_bridge_options | indent(8, true) }}
+{{   ifupdown_default_bridge_options | indent(8, true) }}
 {% endif %}
 {% endblock %}
