@@ -15,7 +15,7 @@ ferm_input_list
 ---------------
 
 This is a set of legacy ``debops.ferm`` variables, kept to allow older roles to
-be usable with new variables. You should use the ``ferm_*_rules`` variables
+be usable with new variables. You should use the ``ferm__*_rules`` variables
 instead in new configuration, the legacy variables will be removed at some
 point.
 

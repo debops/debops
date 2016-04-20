@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v0.2.0
+------
+
+*Released: 2016-04-20*
+
+- Support ``item.state`` key in ``ferm_*_rules`` variables to add or remove
+  firewall rules. [drybjed]
+
+- Rename all role variables to put them in their own namespace. [drybjed]
+
 v0.1.6
 ------
 
