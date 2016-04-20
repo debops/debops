@@ -7,12 +7,17 @@ them.
 
 .. contents::
    :local:
-      :depth: 1
+   :depth: 1
 
-   .. _ferm_input_list:
+.. _ferm_input_list:
 
 ferm_input_list
 ---------------
+
+This is a set of legacy ``debops.ferm`` variables, kept to allow older roles to
+be usable with new variables. You should use the ``ferm_*_rules`` variables
+instead in new configuration, the legacy variables will be removed at some
+point.
 
 List of ferm INPUT rules that should be present or absent in the firewall rule
 set. The same format is also used for ``ferm_input_group_list``,

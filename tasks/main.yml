@@ -12,7 +12,9 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: 'no'
-  with_items: '{{ ferm_packages }}'
+  with_flattened:
+    - '{{ ferm_base_packages }}'
+    - '{{ ferm_packages }}'
   when: ferm_enabled | bool
 
 - name: Make sure required directories exist
