@@ -2,13 +2,13 @@
 
 # {{ ansible_managed }}
 
-{% if ferm_enabled | bool %}
+{% if ferm__enabled | bool %}
 {%   if (ferm__forward|d(ferm_forward) | bool) or
        (ansible_local|d() and ansible_local.ferm|d() and
         (ansible_local.ferm.forward|d() | bool)) %}
-{%     set ferm_tpl_interfaces = (ferm_external_interfaces|d([]) | list) +
-                                 (ferm_internal_interfaces|d([]) | list) %}
-{%     for interface in ferm_tpl_interfaces | unique %}
+{%     set ferm__tpl_interfaces = (ferm__external_interfaces|d([]) | list) +
+                                  (ferm__internal_interfaces|d([]) | list) %}
+{%     for interface in ferm__tpl_interfaces | unique %}
 {%       if interface and hostvars[inventory_hostname]["ansible_" + interface] | d() %}
 # Force Router Advertisement support on {{ interface }} interface
 if [ "$IFACE" = "{{ interface }}" ] ; then

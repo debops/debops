@@ -5,7 +5,7 @@
     name: 'ferm'
     question: 'ferm/enable'
     vtype: 'boolean'
-    value: '{{ "yes" if ferm_enabled|bool else "no" }}'
+    value: '{{ "yes" if ferm__enabled|bool else "no" }}'
 
 - name: Ensure ferm is installed
   apt:
@@ -13,9 +13,9 @@
     state: 'present'
     install_recommends: 'no'
   with_flattened:
-    - '{{ ferm_base_packages }}'
-    - '{{ ferm_packages }}'
-  when: ferm_enabled | bool
+    - '{{ ferm__base_packages }}'
+    - '{{ ferm__packages }}'
+  when: ferm__enabled | bool
 
 - name: Make sure required directories exist
   file:
@@ -43,12 +43,12 @@
     follow: '{{ item.follow | d(omit) }}'
     force:  '{{ item.force  | d(omit) }}'
   with_flattened:
-    - '{{ ferm_custom_files }}'
-    - '{{ ferm_group_custom_files }}'
-    - '{{ ferm_host_custom_files }}'
+    - '{{ ferm__custom_files }}'
+    - '{{ ferm__group_custom_files }}'
+    - '{{ ferm__host_custom_files }}'
   when: ((item.src is defined or item.content is defined) and
          item.dest is defined)
-  register: ferm_register_files
+  register: ferm__register_files
   tags: [ 'role::ferm:custom_files' ]
 
 - name: Configure ferm default variables
@@ -71,7 +71,7 @@
 
 - name: Remove ip(6)tables rules if requested
   file:
-    path: '/etc/ferm/ferm.d/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | d(((item.role + "_" + ((item.role_weight + "_") if item.role_weight|d() else "")) if item.role|d() else "") + item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    path: '/etc/ferm/ferm.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d(ferm__default_weight)) }}_{{ item.filename | d(((item.role + "_" + ((item.role_weight + "_") if item.role_weight|d() else "")) if item.role|d() else "") + item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
     - '{{ ferm_rules           | d([]) | list }}'
@@ -84,16 +84,16 @@
     - '{{ ferm__host_rules }}'
     - '{{ ferm__dependent_rules }}'
     - '{{ ferm__default_rules }}'
-  when: (ferm_enabled|bool and item.type|d() and
+  when: (ferm__enabled|bool and item.type|d() and
          ((item.state|d() and item.state == 'absent') or
           (item.delete|d() | bool)))
-  register: ferm_register_rules_del
+  register: ferm__register_rules_del
   tags: [ 'role::ferm:rules' ]
 
 - name: Configure ip(6)tables rules
   template:
     src: 'etc/ferm/ferm.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/ferm.d/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | d(((item.role + "_" + ((item.role_weight + "_") if item.role_weight|d() else "")) if item.role|d() else "") + item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    dest: '/etc/ferm/ferm.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d(ferm__default_weight)) }}_{{ item.filename | d(((item.role + "_" + ((item.role_weight + "_") if item.role_weight|d() else "")) if item.role|d() else "") + item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
@@ -108,29 +108,29 @@
     - '{{ ferm__host_rules }}'
     - '{{ ferm__dependent_rules }}'
     - '{{ ferm__default_rules }}'
-  when: (ferm_enabled|bool and item.type|d() and
+  when: (ferm__enabled|bool and item.type|d() and
          ((item.state is undefined or item.state != 'absent') and
           not (item.delete|d() | bool)))
-  register: ferm_register_rules_add
+  register: ferm__register_rules_add
   tags: [ 'role::ferm:rules' ]
 
 - name: Remove iptables INPUT rules if requested
   file:
-    path: '/etc/ferm/filter-input.d/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    path: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d(ferm__default_weight)) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
     - '{{ ferm_input_list }}'
     - '{{ ferm_input_group_list }}'
     - '{{ ferm_input_host_list }}'
     - '{{ ferm_input_dependent_list }}'
-  when: (ferm_enabled|bool and item.type|d() and (item.delete|d() | bool))
-  register: ferm_register_input_rules_del
+  when: (ferm__enabled|bool and item.type|d() and (item.delete|d() | bool))
+  register: ferm__register_input_rules_del
   tags: [ 'role::ferm:rules' ]
 
 - name: Configure iptables INPUT rules
   template:
     src: 'etc/ferm/filter-input.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/filter-input.d/{{ ferm_weight_map[item.weight_class|d()] | d(item.weight | d(ferm_default_weight)) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    dest: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d(ferm__default_weight)) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
@@ -139,23 +139,23 @@
     - '{{ ferm_input_group_list }}'
     - '{{ ferm_input_host_list }}'
     - '{{ ferm_input_dependent_list }}'
-  when: (ferm_enabled|bool and item.type|d() and not (item.delete|d() | bool))
-  register: ferm_register_input_rules_add
+  when: (ferm__enabled|bool and item.type|d() and not (item.delete|d() | bool))
+  register: ferm__register_input_rules_add
   tags: [ 'role::ferm:rules' ]
 
 - name: Restart ferm
   service:
     name: 'ferm'
     state: 'restarted'
-  when: (ferm_enabled | bool and (ferm_register_files.changed|bool or
-         ferm_register_rules_del.changed|bool or ferm_register_rules_add.changed|bool or
-         ferm_register_input_rules_del.changed|bool or ferm_register_input_rules_add.changed|bool))
+  when: (ferm__enabled | bool and (ferm__register_files.changed|bool or
+         ferm__register_rules_del.changed|bool or ferm__register_rules_add.changed|bool or
+         ferm__register_input_rules_del.changed|bool or ferm__register_input_rules_add.changed|bool))
 
 - name: Clear iptables rules if ferm is disabled
   service:
     name: 'ferm'
     state: 'stopped'
-  when: (not ferm_enabled | bool and ferm_flush | bool)
+  when: (not ferm__enabled | bool and ferm__flush | bool)
   tags: [ 'role::ferm:rules' ]
 
 - name: Configure sysctl
@@ -165,12 +165,12 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: ferm_register_sysctl
+  register: ferm__register_sysctl
   tags: [ 'role::ferm:rules' ]
 
 - name: Reload sysctl configuration if changed
   command: sysctl -p /etc/sysctl.d/30-ferm.conf
-  when: ferm_register_sysctl.changed | bool
+  when: ferm__register_sysctl.changed | bool
   tags: [ 'role::ferm:rules' ]
 
 - name: Ensure that /etc/network/if-pre-up.d exists
@@ -195,7 +195,7 @@
     dest: '/etc/default/ferm'
     regexp: '^ENABLED="'
     line: 'ENABLED="no"'
-  when: not ferm_enabled | bool
+  when: not ferm__enabled | bool
 
 - name: Ensure that Ansible local facts directory exists
   file:
