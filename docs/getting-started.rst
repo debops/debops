@@ -20,12 +20,12 @@ Example playbook
 
 Here's an example playbook which uses the ``debops.ferm`` role::
 
-
     ---
 
     - name: Manage iptables rules with ferm
-      hosts: debops_ferm
+      hosts: [ 'debops_service_ferm' ]
 
       roles:
         - role: debops.ferm
-          tags: ferm
+          tags: role::ferm
+

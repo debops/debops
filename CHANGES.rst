@@ -4,7 +4,7 @@ Changelog
 v0.1.6
 ------
 
-*Unreleased*
+*Released: 2016-04-20*
 
 - Remove ``ferm_local_tags`` variable and its use in ``ferm_enabled``. This
   solution was needed when the POSIX capability detection was located in the
@@ -19,6 +19,8 @@ v0.1.6
 - Renamed ``ferm_.*rules`` to ``ferm__.*rules`` and ``ferm_forward`` to ``ferm__forward``.
   Old names are currently still supported to not break stuff while updating the
   code which depends on the old names. [ypid]
+
+- Create base documentation files, clean up default variables. [ganto, drybjed]
 
 v0.1.5
 ------
