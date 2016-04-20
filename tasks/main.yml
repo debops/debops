@@ -17,8 +17,11 @@
     pkg: '{{ item }}'
     state: 'latest'
     install_recommends: no
-  with_items: '{{ php5_packages }}'
-  when: php5_packages is defined and php5_packages
+  with_flattened:
+    - '{{ php5_packages_default }}'
+    - '{{ php5_packages }}'
+    - '{{ php5_group_packages }}'
+    - '{{ php5_host_packages }}'
   notify: ['Restart php5-fpm']
 
 - name: Create directory for php5-fpm logs
