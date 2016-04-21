@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Released: 2016-04-21*
+
+- Rename ``item.state`` parameter to ``item.rule_state`` to avoid collision
+  with ``iptables state`` module support. [drybjed]
+
 v0.2.0
 ------
 
