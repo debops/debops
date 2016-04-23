@@ -104,6 +104,11 @@ gitlab_version_map:
     ce:    '8-6-stable'
     gitlab_workhorse: 'v0.7.1'
 
+  '8.7':
+    shell: 'v2.7.2'
+    ce:    '8-7-stable'
+    gitlab_workhorse: 'v0.7.1'
+
 # ---- GitLab CE installation ----
 
 # List of packages required by GitLab
@@ -156,6 +161,9 @@ gitlab_nginx_server:
   auth_basic_realm: '{{ gitlab_nginx_auth_realm }}'
 
   error_pages:
+    '404': '/404.html'
+    '422': '/422.html'
+    '500': '/500.html'
     '502': '/502.html'
 
   # Phusion Passenger options
