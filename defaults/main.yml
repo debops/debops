@@ -14,7 +14,7 @@ gitlab_dependencies: True
 # .. envvar:: gitlab_version
 #
 # What version of GitLab to install / manage
-gitlab_version: '8.6'
+gitlab_version: '8.7'
 
 
 # ---------------------------------
@@ -161,6 +161,11 @@ gitlab_database_password: "{{ lookup('password', gitlab_database_password_path +
 # FIXME: not supported yet
 gitlab_postgresql_database_connection: 'socket'
 
+# .. envvar:: gitlab_configure_postgres_extension
+#
+# Starting with 8.6 users using GitLab in combination with PostgreSQL are required to have the pg_trgm extension enabled for all GitLab databases.
+gitlab_configure_postgres_extension: '{{ gitlab_database == "postgresql" and gitlab_version | version_compare("8.6", operator="ge", strict=True) }}'
+
 
 # ------------------------
 #   Backup configuration 
@@ -273,7 +278,7 @@ gitlab_time_zone: 'UTC'
 # .. envvar:: gitlab_nginx_client_max_body_size
 #
 # nginx client_max_body_size value
-gitlab_nginx_client_max_body_size: '5m'
+gitlab_nginx_client_max_body_size: '{% if gitlab_enable_gitlab_workhorse %}0{% else %}5m{% endif %}'
 
 
 # .. envvar:: gitlab_nginx_proxy_timeout
