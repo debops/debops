@@ -20,13 +20,12 @@ Default rules
 By default ``debops.ferm`` configures a number of rules as soon as a
 host is part of the ``[debops_all_hosts]`` Ansible host group. In case
 a firewall is not required or preferred this behaviour can be disabled
-by setting ``ferm__enabled: no`` in the inventory. The rules created
+by setting ``ferm__enabled: False`` in the inventory. The rules created
 by default are defined in ``defaults/main.yml`` and activated by being
-listed in `ferm__default_rules`_. They consist of basic rules for
+listed in :ref:`ferm__default_rules`. They consist of basic rules for
 setting the ``iptables`` default policies, restricting extensive
 connection attempts, logging and more.
 
-.. _ferm__default_rules: defaults.html#envvar-ferm__default_rules
 
 .. _custom_rules:
 
@@ -34,14 +33,14 @@ Custom rules
 ------------
 
 A custom rule can be enabled by adding a rule definition to one of the
-pre-defined rule lists (`ferm__rules`_, `ferm__group_rules`_,
-`ferm__host_rules`_ or `ferm__dependent_rules`_) in the Ansible
+pre-defined rule lists (:ref:`ferm__rules`, :ref:`ferm__group_rules`,
+:ref:`ferm__host_rules` or :ref:`ferm__dependent_rules`) in the Ansible
 inventory. Each rule has to be defined as a YAML dict using some of
 the following keys:
 
 ``type``
   Type of the rule template used for creating the corresponding ferm
-  configuration, required. See `rule_templates`_ for a description of
+  configuration, required. See `Rule templates`_ for a description of
   the available rule templates.
 
 ``chain``
@@ -57,7 +56,7 @@ the following keys:
 
 ``domain``
   Optional. ``iptables`` domain used for the firewall rule. Possible values:
-  ``ip``, ``ip6``. Defaults to `ferm__domains`_.
+  ``ip``, ``ip6``. Defaults to :ref:`ferm__domains`.
 
 ``table``
   Optional. ``iptables`` table to which the rule is added or from which it
@@ -83,19 +82,13 @@ the following keys:
 
 ``weight_class``
   Optional. Helps to manage order of firewall rules. The ``item.weight_class``
-  will be checked in the `ferm__weight_map`_ dictionary. If a corresponding
+  will be checked in the :ref:`ferm__weight_map` dictionary. If a corresponding
   entry is found, its weight will be used for that rule, if not, the
   ``item.weight`` specified in the rule will be used instead.
 
 ``when``
   Optional. Define condition for the rule to be enabled.
 
-.. _ferm__rules: defaults.html#envvar-ferm__rules
-.. _ferm__group_rules: defaults.html#envvar-ferm__group_rules
-.. _ferm__host_rules: defaults.html#envvar-ferm__host_rules
-.. _ferm__dependent_rules: defaults.html#envvar-ferm__dependent-rules
-.. _ferm__domains: defaults.html#envvar-ferm__domains
-.. _ferm__weight_map: defaults.html#envvar-ferm__weight_map
 
 .. _rule_templates:
 
@@ -108,7 +101,7 @@ Rule templates
 
 There exist a number of predefined rule templates for generating firewall
 rules through ferm. Each rule definition is referencing the used template
-through its ``type`` key. The templates are located in the
+through its ``item.type`` key. The templates are located in the
 ``templates/etc/ferm/ferm.d/`` directory.
 
 Following a list of the available rule templates which can be used to
@@ -273,11 +266,10 @@ create custom rules:
       ``DROP``, ``REJECT``, ``RETURN``, ``NOP`` or a custom target. Defaults
       to ``ACCEPT``.
 
-  This template is used in the default rule `ferm__rules_filter_ansible_controller`_
+  This template is used in the default rule :ref:`ferm__rules_filter_ansible_controller`
   which enables SSH connections from the Ansible controller host.
 
 .. _iptables multiport: http://ipset.netfilter.org/iptables-extensions.man.html#lbBM
-.. _ferm__rules_filter_ansible_controller: defaults.html#envvar-ferm__rules_filter_ansible_controller
 
 * ``connection_tracking``: Template to enable connection tracking using the
   `iptables conntrack`_ or `iptables state`_ extension. The following
@@ -311,13 +303,12 @@ create custom rules:
       Optional. List of network interfaces for outgoing packets which are
       excluded from the rule.
 
-  This template is used in the default rule `ferm__rules_filter_conntrack`_
+  This template is used in the default rule :ref:`ferm__rules_filter_conntrack`
   which enables connection tracking in the ``INPUT``, ``OUTPUT`` and
   ``FORWARD`` chain.
 
 .. _iptables conntrack: http://ipset.netfilter.org/iptables-extensions.man.html#lbAO
 .. _iptables state: http://ipset.netfilter.org/iptables-extensions.man.html#lbCC
-.. _ferm__rules_filter_conntrack: defaults.html#envvar-ferm__rules_filter_conntrack
 
 * ``custom``: Template to define custom ferm rules. The following additional
   YAML keys are supported:
@@ -338,19 +329,14 @@ create custom rules:
     ``policy``
       ``iptables`` chain policy, required.
 
-  This template is used in the default rule `ferm__rules_default_policy`_
+  This template is used in the default rule :ref:`ferm__rules_default_policy`
   which sets the ``INPUT``, ``FORWARD`` and ``OUTPUT`` chain policies
-  according to `ferm__default_policy_input`_, `ferm__default_policy_forward`_
-  and `ferm__default_policy_output`_.
+  according to :ref:`ferm__default_policy_input`, :ref:`ferm__default_policy_forward`
+  and :ref:`ferm__default_policy_output`.
 
-.. _ferm__rules_default_policy: defaults.html#envvar-ferm__rules_default_policy
-.. _ferm__default_policy_input: defaults.html#envvar-ferm__default_policy_input
-.. _ferm__default_policy_forward: defaults.html#envvar-ferm__default_policy_forward
-.. _ferm__default_policy_output: defaults.html#envvar-ferm__default_policy_output
-
-* ``dmz``: Template to enable connection forwarding to another host. If ``port``
-  is not specified, all traffic is forwarded. The following template-specific
-  YAML keys are supported:
+* ``dmz``: Template to enable connection forwarding to another host. If
+  ``item.port`` is not specified, all traffic is forwarded. The following
+  template-specific YAML keys are supported:
 
     ``multiport``
       Optional. Use `iptables multiport`_ extension. Possible values:
@@ -377,9 +363,7 @@ create custom rules:
   service is defining its own ``iptables`` chains the template will make sure
   that they are properly refreshed if the ``ferm`` configuration changes.
 
-  This template is used in the default rule `ferm__rules_fail2ban`_.
-
-.. _ferm__rules_fail2ban: defaults.html#envvar-ferm__rules_fail2ban
+  This template is used in the default rule :ref:`ferm__rules_fail2ban`.
 
 * ``hashlimit``: Template to define rate limit rules using the
   `iptables hashlimit`_ extension. The following template-specific YAML
@@ -443,13 +427,11 @@ create custom rules:
       Optional. ``iptables`` jump target in case the rate limit is reached.
       Defaults to ``REJECT``.
 
-  This template is used in the default rules `ferm__rules_filter_icmp`_ and
-  `ferm__rules_filter_syn`_ which limits the packet rate for ICMP packets
+  This template is used in the default rules :ref:`ferm__rules_filter_icmp` and
+  :ref:`ferm__rules_filter_syn` which limits the packet rate for ICMP packets
   and new connection attempts.
 
 .. _iptables hashlimit: http://ipset.netfilter.org/iptables-extensions.man.html#lbAY
-.. _ferm__rules_filter_icmp: defaults.html#envvar-ferm__rules_filter_icmp
-.. _ferm__rules_filter_syn: defaults.html#envvar-ferm__rules_filter_syn
 
 * ``include``: Template to include custom ferm configuration files. The
   following template-specific YAML keys are supported:
@@ -465,7 +447,7 @@ create custom rules:
 
     ``log_burst``
       Optional. Burst limit of packets being logged. Defaults to
-      `ferm__log_burst`_.
+      :ref:`ferm__log_burst`.
 
     ``log_ip_options``
       Optional. Log IP options of packet. Possible values: ``True`` or
@@ -478,7 +460,7 @@ create custom rules:
 
     ``log_limit``
       Optional. Rate limit of packets being logged. Defaults to
-      `ferm__log_limit`_.
+      :ref:`ferm__log_limit`.
 
     ``log_prefix``
       Optional. Prefix (up to 29 characters) for firewall log messages.
@@ -507,8 +489,6 @@ create custom rules:
       Optional. ?
 
 .. _iptables log: http://ipset.netfilter.org/iptables-extensions.man.html#lbDD
-.. _ferm__log_burst: defaults.html#envvar-ferm__log_burst
-.. _ferm__log_limit: defaults.html#envvar-ferm__log_limit
 
 * ``recent``: Template to track connections and respond accordingly by using
   the `iptables recent`_ extension. The following template-specific YAML keys
@@ -589,11 +569,10 @@ create custom rules:
   the source address from the list again in case the connection restrictions
   are not met, add a second role using ``item.recent_remove``.
 
-  This template is used in the default role `ferm__rules_filter_recent_badguys`_
+  This template is used in the default role :ref:`ferm__rules_filter_recent_badguys`
   which will block IP addresses which are doing excessive connection attempts.
 
 .. _iptables recent: http://ipset.netfilter.org/iptables-extensions.man.html#lbBW
-.. _ferm__rules_filter_recent_badguys: defaults.html#envvar-ferm__rules_filter_recent_badguys
 
 * ``reject``: Template to reject all traffic.
 
@@ -616,7 +595,4 @@ which will avoid the additional chain from being created.
 
 If you're not sure if you still have legacy rules defined, look for
 variable names with only on '_' after the ``ferm`` prefix (e.g.
-`ferm_input_list`_ and `ferm_input_dependent_list`_.
-
-.. _ferm_input_list: defaults.html#envvar-ferm_input_list
-.. _ferm_input_dependent_list: defaults.html#envvar-ferm_input_dependent_list
+:ref:`ferm_input_list` and :ref:`ferm_input_dependent_list`.
