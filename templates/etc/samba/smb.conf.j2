@@ -11,18 +11,18 @@
 
 [global]
 	# Default options
-{{ print_hash(hash=samba_global) }}
-{% if samba_global_custom is defined and samba_global_custom %}
+{{ print_hash(hash=samba__global) }}
+{% if samba__global_custom is defined and samba__global_custom %}
 	# Custom options
-{{ print_hash(hash=samba_global_custom) }}
+{{ print_hash(hash=samba__global_custom) }}
 {% endif %}
-{% if samba_homes is defined and samba_homes %}
-{{ print_section(hash=samba_homes, section='homes') }}
+{% if samba__homes is defined and samba__homes %}
+{{ print_section(hash=samba__homes, section='homes') }}
 {% endif %}
-{% if samba_shares is defined and samba_shares %}
-{% for share in samba_shares.keys() %}
+{% if samba__shares is defined and samba__shares %}
+{% for share in samba__shares.keys() %}
 [{{ share }}]
-{{ print_hash(hash=samba_shares[share]) }}
+{{ print_hash(hash=samba__shares[share]) }}
 {% endfor %}
 {% endif %}
 

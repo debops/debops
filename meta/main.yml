@@ -10,18 +10,18 @@ dependencies:
       - type: 'dport_accept'
         protocol: [ 'udp' ]
         dport: [ 'netbios-ns', 'netbios-dgm' ]
-        saddr: '{{ samba_allow }}'
+        saddr: '{{ samba__allow }}'
         accept_any: True
-        filename: 'samba_dependency_accept_udp'
+        filename: 'samba__dependency_accept_udp'
         delete: '{{ "samba" not in samba__base_packages }}'
         weight: '50'
 
       - type: 'dport_accept'
         protocol: [ 'tcp' ]
         dport: [ 'netbios-ssn', 'microsoft-ds' ]
-        saddr: '{{ samba_allow }}'
+        saddr: '{{ samba__allow }}'
         accept_any: True
-        filename: 'samba_dependency_accept_tcp'
+        filename: 'samba__dependency_accept_tcp'
         delete: '{{ "samba" not in samba__base_packages }}'
         weight: '50'
 
