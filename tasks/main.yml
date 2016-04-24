@@ -27,6 +27,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  when: ('samba' in samba__base_packages)
 
 - name: Configure Samba
   template:
@@ -44,6 +45,7 @@
     name: '{{ item }}'
     state: 'present'
   with_flattened: '{{ samba__kernel_modules }}'
+  when: ('samba' in samba__base_packages)
 
 - name: Ensure kernel modules are loaded on system boot
   template:
@@ -52,6 +54,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  when: ('samba' in samba__base_packages)
 
 - name: Remove legacy entries from /etc/modules
   lineinfile:
