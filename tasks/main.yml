@@ -1,30 +1,62 @@
 ---
 
 - name: Install Samba packages
-  apt: pkg={{ item }} state=latest install_recommends=no
-  with_items: [ 'samba', 'samba-common', 'samba-common-bin' ]
+  apt:
+    pkg: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_flattened:
+    - '{{ samba__base_packages }}'
 
 - name: Create root Samba directories
-  file: path={{ item }} state=directory owner=root group=root mode=0751
-  with_items: [ '{{ samba_path }}', '{{ samba_homes_path }}', '{{ samba_shares_path }}' ]
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0751'
+  with_flattened:
+    - '{{ samba_path }}'
+    - '{{ samba_homes_path }}'
+    - '{{ samba_shares_path }}'
 
 - name: Setup samba-homedir.sh script
-  template: src=usr/local/sbin/samba-homedir.sh.j2
-            dest=/usr/local/sbin/samba-homedir.sh
-            owner=root group=root mode=0755
+  template:
+    src: 'usr/local/sbin/samba-homedir.sh.j2'
+    dest: '/usr/local/sbin/samba-homedir.sh'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
-- name: Configure Samba server
-  template: src=etc/samba/smb.conf.j2
-            dest=/etc/samba/smb.conf
-            owner=root group=root mode=0644
-  notify: Reload samba
+- name: Configure Samba
+  template:
+    src: 'etc/samba/smb.conf.j2'
+    dest: '/etc/samba/smb.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Reload samba' ]
 
-- name: Load iptables NetBIOS helper kernel module
-  modprobe: name=nf_conntrack_netbios_ns state=present
-  when: samba_iptables is defined and samba_iptables
+# .. Kernel modules (((
 
-- name: Add iptables NetBIOS helper module to /etc/modules
-  lineinfile: dest=/etc/modules regexp='^nf_conntrack_netbios_ns'
-              state=present line='nf_conntrack_netbios_ns'
-  when: samba_iptables is defined and samba_iptables
+- name: Load kernel module specified by samba__kernel_modules
+  modprobe:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened: '{{ samba__kernel_modules }}'
 
+- name: Ensure kernel modules are loaded on system boot
+  template:
+    src: 'etc/modules-load.d/ansible-samba.conf.j2'
+    dest: '/etc/modules-load.d/ansible-samba.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Remove legacy entries from /etc/modules
+  lineinfile:
+    dest: '/etc/modules'
+    regexp: '^nf_conntrack_netbios_ns'
+    state: 'absent'
+
+# .. )))
