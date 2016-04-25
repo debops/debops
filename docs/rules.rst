@@ -112,7 +112,11 @@ create custom rules:
   a different chain. The following template-specific YAML keys are supported:
 
     ``accept_any``
-      Optional. ?
+      Optional. Match all source addresses by default. Possible values:
+      ``True`` or ``False``. Defaults to ``True``. If this option is
+      disabled and ``item.target`` is set to ``REJECT`` all traffic is
+      blocked by default. As soon as ``item.saddr`` is not empty, this
+      configuration doesn't matter anymore.
 
     ``daddr``
       Optional. List of destination IP addresses or networks to which the
@@ -126,7 +130,8 @@ create custom rules:
       ``False``. Defaults to ``True``.
 
     ``include``
-      Optional. Custom ferm configuration file to include.
+      Optional. Custom ferm configuration file to include. See
+      `ferm include`_ for more details.
 
     ``interface``
       Optional. List of network interfaces for incoming packets to which
@@ -161,7 +166,8 @@ create custom rules:
       to unset.
 
     ``realgoto``
-      Optional. ?
+      Optional. After packet match jump to custom chain. See `ferm realgoto`_
+      for more details.
 
     ``reject_with``
       Optional. Define reject message being sent when the rule ``item.target``
@@ -172,7 +178,7 @@ create custom rules:
       applied.
 
     ``sport``
-      Optional. List fo source ports to which the rule is applied.
+      Optional. List of source ports to which the rule is applied.
 
     ``state``
       Optional. Connection state which should be matched. Possible values:
@@ -180,7 +186,9 @@ create custom rules:
       comma-separated combination thereof.
 
     ``subchain``
-      Optional. ?
+      Optional. Subchain name. If more than 3 addresses are listed in
+      ``target.saddr`` move resulting ``iptables`` rules into a separate
+      subchain with the given name. See `ferm subchain`_ for more details.
 
     ``target``
       Optional. ``iptables`` jump target. Possible values: ``ACCEPT``,
@@ -189,6 +197,10 @@ create custom rules:
 
     ``when``
       Optional. Define condition for the rule to be disabled.
+
+.. _ferm include: http://ferm.foo-projects.org/download/2.1/ferm.html#includes
+.. _ferm realgoto: http://ferm.foo-projects.org/download/2.1/ferm.html#realgoto_custom_chain_name
+.. _ferm subchain: http://ferm.foo-projects.org/download/2.1/ferm.html#_subchain
 
 * ``ansible_controller``: Similar to the ``accept`` template but defaults
   to the SSH target port and sets the source address to the host running
@@ -212,7 +224,8 @@ create custom rules:
       ``False``. Defaults to ``True``.
 
     ``include``
-      Optional. Custom ferm configuration file to include.
+      Optional. Custom ferm configuration file to include. See
+      `ferm include`_ for more details.
 
     ``interface``
       Optional. List of network interfaces for incoming packets to which
@@ -240,7 +253,8 @@ create custom rules:
       to unset.
 
     ``realgoto``
-      Optional. ?
+      Optional. After packet match jump to custom chain. See `ferm realgoto`_
+      for more details.
 
     ``reject_with``
       Optional. Define reject message being sent when the rule ``item.target``
@@ -251,7 +265,7 @@ create custom rules:
       applied.
 
     ``sport``
-      Optional. List fo source ports to which the rule is applied.
+      Optional. List of source ports to which the rule is applied.
 
     ``state``
       Optional. Connection state which should be matched. Possible values:
@@ -259,7 +273,9 @@ create custom rules:
       comma-separated combination thereof.
 
     ``subchain``
-      Optional. ?
+      Optional. Subchain name. If more than 3 addresses are listed in
+      ``target.saddr`` move resulting ``iptables`` rules into a separate
+      subchain with the given name. See `ferm subchain`_ for more details.
 
     ``target``
       Optional. ``iptables`` jump target. Possible values: ``ACCEPT``,
@@ -393,7 +409,8 @@ create custom rules:
       or a comma-separated list thereof. Defaults to ``srcip``.
 
     ``include``
-      Optional. Custom ferm configuration file to include.
+      Optional. Custom ferm configuration file to include. See
+      `ferm include`_ for more details.
 
     ``log``
       Optional. Write rate limit hits to syslog. Possible values: ``True``
@@ -421,7 +438,9 @@ create custom rules:
       comma-separated combination thereof.
 
     ``subchain``
-      Optional. ?
+      Optional. Subchain name. Move resulting ``iptables`` rules into a
+      separate subchain with the given name. See `ferm subchain`_ for more
+      details.
 
     ``target``
       Optional. ``iptables`` jump target in case the rate limit is reached.
@@ -437,13 +456,15 @@ create custom rules:
   following template-specific YAML keys are supported:
 
     ``include``
-      Required. Custom ferm configuration file to include.
+      Optional. Custom ferm configuration file to include. See
+      `ferm include`_ for more details.
 
 * ``log``: Template to specify logging rules using the `iptables log`_
   extension. The following template-specific YAML keys are supported:
 
     ``include``
-      Optional. Custom ferm configuration file to include.
+      Optional. Custom ferm configuration file to include. See
+      `ferm include`_ for more details.
 
     ``log_burst``
       Optional. Burst limit of packets being logged. Defaults to
@@ -479,14 +500,15 @@ create custom rules:
       ``False``. Defaults to ``False``.
 
     ``realgoto``
-      Optional. ?
+      Optional. After packet match jump to custom chain. See `ferm realgoto`_
+      for more details.
 
     ``reject_with``
       Optional. Define reject message being sent when the rule ``item.target``
       is set to ``REJECT``. Defaults to ``icmp-admin-prohibited``.
 
     ``target``
-      Optional. ?
+      Optional. ``iptables`` jump target for logged packets.
 
 .. _iptables log: http://ipset.netfilter.org/iptables-extensions.man.html#lbDD
 
@@ -498,7 +520,8 @@ create custom rules:
       Optional. List of destination ports to which the rule is applied.
 
     ``include``
-      Optional. Custom ferm configuration file to include.
+      Optional. Custom ferm configuration file to include. See
+      `ferm include`_ for more details.
 
     ``multiport``
       Optional. Use `iptables multiport`_ extension. Possible values:
@@ -560,7 +583,9 @@ create custom rules:
       comma-separated combination thereof.
 
     ``subchain``
-      Optional. ?
+      Optional. Subchain name. Move resulting ``iptables`` rules into a
+      separate subchain with the name given. See `ferm subchain`_ for more
+      details.
 
   When using the ``recent`` template make sure to always define two rules.
   One for matching the packet against the address list using the
