@@ -1,60 +1,136 @@
 ---
+# Default variables
+# =================
 
-# Location of Samba shares
-samba_path: '/srv/samba'
-samba_homes_path: '{{ samba_path }}/home'
-samba_shares_path: '{{ samba_path }}/shares'
+# .. contents:: Sections
+#    :local:
+#
+# .. Packages and installation (((
+#
+# -----------------------------
+#   Packages and installation
+# -----------------------------
 
-# Allow access to Samba through firewall for specified networks
-# If samba_allow is undefined or False, allow access from all
-samba_allow: []
+# .. envvar:: samba__base_packages
+#
+# List of base packages to install.
+# In case you only want to prepare the host for being a Samba client, remove
+# the ``samba`` package from the list. This might be required because
+# applications like ownCloud depend on the ``smbclient`` which gets things like
+# workgroup from the file :file:`/etc/samba/smb.conf`.
+samba__base_packages:
+  - 'samba'
+  - 'samba-common'
+  - 'samba-common-bin'
 
-samba_workgroup: 'WORKGROUP'
-samba_netbios_name: '{{ ansible_hostname }}'
-samba_server_string: '%h file server'
+# .. )))
 
+# .. Firewall configuration (((
+#
+# --------------------------
+#   Firewall configuration
+# --------------------------
+
+# .. envvar:: samba__allow
+#
+# Allow access to Samba through firewall for specified networks.
+# If this variable is undefined or ``False``, allow access from everywhere.
+samba__allow: []
+
+
+# .. envvar:: samba__kernel_modules
+#
+# Kernel modules to load for optimal operation of Samba.
+samba__kernel_modules:
+  - 'nf_conntrack_netbios_ns'
+
+
+# .. )))
+
+# .. Global Samba options (((
+#
+# ------------------------
+#   Global Samba options
+# ------------------------
+
+# .. envvar:: samba__workgroup
+#
+# This controls what workgroup your server will appear to be in when queried by
+# clients. Note that this parameter also controls the Domain name used with the::
+#
+#    samba__security: 'domain'
+#
+# setting.
+samba__workgroup: 'WORKGROUP'
+
+
+# .. envvar:: samba__security
+#
+# This option affects how clients respond to Samba and is one of the most
+# important settings in the :file:`/etc/samba/smb.conf` file.
+samba__security: 'user'
+
+
+# .. envvar:: samba__netbios_name
+#
+# This sets the NetBIOS name by which a Samba server is known. By default it is
+# the same as the first component of the host's DNS name. If a machine is a
+# browse server or logon server this name (or the first component of the hosts
+# DNS name) will be the name that these services are advertised under.
+samba__netbios_name: '{{ ansible_hostname }}'
+
+
+# .. envvar:: samba__server_string
+#
+# This controls what string will show up in the printer comment box in print
+# manager and next to the IPC connection in net view. It can be any string that
+# you wish to show to your users.
+# It also sets what will appear in browse lists next to the machine name.
+#
+# A ``%v`` will be replaced with the Samba version number.
+#
+# A ``%h`` will be replaced with the hostname.
+samba__server_string: '%h file server'
+
+
+# .. envvar:: samba__service_name
+#
 # Name of the /etc/init.d/ service script
-samba_service_name: 'samba'
+samba__service_name: 'samba'
 
-# Manage iptables modules automatically
-samba_iptables: True
 
-# Which hash variable is used to configure [global] section in smb.conf
-samba_global: '{{ samba_default_global }}'
+# .. envvar:: samba__path
+#
+# Base directory of home directories and shares.
+samba__path: '/srv/samba'
 
-# You can specify additional options in a separate hash
-samba_global_custom: False
 
-# Which hash variable is used to configure [homes] section in smb.conf
-samba_homes: '{{ samba_default_homes }}'
+# .. envvar:: samba__default_global
+#
+# Default ``[global]`` configuration.
+samba__default_global:
 
-# Which hash of hashes is used to configure shares in smb.conf
-samba_shares: '{{ samba_default_shares }}'
+  # Browsing / Identification.
+  workgroup: '{{ samba__workgroup }}'
+  netbios_name: '{{ samba__netbios_name }}'
+  server_string: '{{ samba__server_string }}'
 
-# Default [global] configuration
-samba_default_global:
-
-  # Browsing / Identification
-  workgroup: '{{ samba_workgroup | default("WORKGROUP") }}'
-  netbios_name: '{{ samba_netbios_name | default(ansible_hostname) }}'
-  server_string: '{{ samba_server_string | default("%h file server") }}'
-
-  # Logs / Accounting
+  # Logs / Accounting.
   log_file: '/var/log/samba/log.%m'
   max_log_size: '1000'
   syslog: '0'
 
-  # Authentication
-  security: 'user'
+  # Authentication.
+  security: '{{ samba__security }}'
   encrypt_passwords: 'yes'
   passdb_backend: 'tdbsam'
   unix_password_sync: 'no'
   obey_pam_restrictions: 'yes'
   invalid_users: 'root bin daemon adm sync shutdown halt mail news uucp proxy www-data backup sshd'
-  map_to_guest: 'Bad User'
+  map_to_guest: 'bad user'
   guest_account: 'nobody'
 
-  # File system / Directories
+  # File system / Directories.
   unix_charset: 'UTF8'
   locking: 'yes'
   wide_links: 'no'
@@ -66,14 +142,14 @@ samba_default_global:
   hide_unreadable: 'yes'
   hide_files: '/.*/lost+found/'
 
-  # Networking / Connections
+  # Networking / Connections.
   socket_options: 'TCP_NODELAY SO_RCVBUF=8192 SO_SNDBUF=8192'
   deadtime: '10'
   wins_support: 'no'
   dns_proxy: 'no'
   name_resolve_order: 'lmhosts host wins bcast'
 
-  # Disable printing by default
+  # Disable printing by default.
   printing: 'bsd'
   load_printers: 'no'
   printcap_name: '/dev/null'
@@ -81,9 +157,44 @@ samba_default_global:
   disable_spoolss: 'yes'
 
 
-# Default [homes] section
-samba_default_homes:
-  path: '{{ samba_homes_path }}/%S'
+# .. envvar:: samba__global
+#
+# Which hash variable is used to configure the ``[global]`` section in
+# :file:`/etc/samba/smb.conf`.
+samba__global: '{{ samba__default_global }}'
+
+
+# .. envvar:: samba__global_custom
+#
+# You can specify additional options in a separate hash.
+samba__global_custom: {}
+
+# .. )))
+
+# .. Home directories (((
+#
+# --------------------
+#   Home directories
+# --------------------
+
+# .. envvar:: samba__homes_path
+#
+# Location of home directories on the Samba server.
+samba__homes_path: '{{ samba__path }}/home'
+
+
+# .. envvar:: samba__homes
+#
+# Which hash variable is used to configure the ``[homes]`` section in
+# :file:`/etc/samba/smb.conf`.
+samba__homes: '{{ samba__default_homes }}'
+
+
+# .. envvar:: samba__default_homes
+#
+# Default ``[homes]`` section.
+samba__default_homes:
+  path: '{{ samba__homes_path }}/%S'
   comment: 'Home Directory'
   browseable: 'no'
   read_only: 'no'
@@ -93,13 +204,35 @@ samba_default_homes:
   guest_ok: 'no'
   root_preexec: '/usr/local/sbin/samba-homedir.sh %S'
 
+# .. )))
 
-# Hash of hashes of default shares
-samba_default_shares:
+# .. Network shares (((
+#
+# ------------------
+#   Network shares
+# ------------------
+
+# .. envvar:: samba__shares_path
+#
+# Base directory for shares.
+samba__shares_path: '{{ samba__path }}/shares'
+
+# .. envvar:: samba__shares
+#
+# Which hash of hashes is used to configure shares in
+# :file:`/etc/samba/smb.conf`.
+samba__shares: '{{ samba__default_shares }}'
+
+
+# .. envvar:: samba__default_shares
+#
+# Hash of hashes of default shares.
+samba__default_shares:
 
   'Public Files':
-    path: '{{ samba_shares_path }}/public'
+    path: '{{ samba__shares_path }}/public'
     comment: 'Public Files'
     read_only: 'yes'
     guest_ok: 'yes'
 
+# .. )))
