@@ -30,12 +30,13 @@ More information about `debops.slapd` can be found in the
 
 ### Are you using this as a standalone role without DebOps?
 
-You may need to include missing roles from the [DebOps common
+- You may need to include missing roles from the [DebOps common
 playbook](https://github.com/debops/debops-playbooks/blob/master/playbooks/service/slapd.yml)
 into your playbook.
 
-[Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
+- [Try DebOps now](https://github.com/debops/debops) for a complete solution to run your Debian-based infrastructure.
 
+- Copy the [folder](https://github.com/debops/debops-playbooks/tree/master/playbooks/library), and register variable in ansible.cfg `library = /etc/ansible/library`
 
 
 
