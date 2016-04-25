@@ -8,6 +8,8 @@ v0.3.0
 
 - Added ``delete`` boolean switch to allow to delete local services. [ypid]
 
+- Condense the ``dpkg-divert`` revert tasks into one. [drybjed]
+
 v0.2.0
 ------
 

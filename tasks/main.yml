@@ -64,16 +64,10 @@
     mode:  '0644'
   when: etc_services__enabled|bool
 
-- name: Remove current /etc/services before removing the diversion
-  command: rm -f /etc/services
+- name: Remove diversion of /etc/services
+  shell: rm -f /etc/services ; dpkg-divert --quiet --local --rename --remove /etc/services
   args:
     removes: '{{ etc_services__diversion }}'
     warn: False
-  when: not etc_services__enabled|bool
-
-- name: Remove diversion of /etc/services
-  command: dpkg-divert --quiet --local --rename --remove /etc/services
-  args:
-    removes: '{{ etc_services__diversion }}'
   when: not etc_services__enabled|bool
 
