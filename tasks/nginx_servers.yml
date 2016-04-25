@@ -107,6 +107,15 @@
   when: (((item.enabled is defined and not item.enabled) and (item.name is defined)) or
         (item.delete is defined and item.delete))
 
+  ## http://stackoverflow.com/a/28888474
+- name: Test if Ansible is running in check mode
+  command: /bin/true
+  changed_when: False
+  register: nginx__register_check_mode
+
+- name: Save fact if Ansible is running in check mode in variable
+  set_fact: check_mode={{ nginx__register_check_mode|skipped }}
+
 - name: Enable nginx server configuration
   file:
     path: '/etc/nginx/sites-enabled/{{ item.filename | default(item.name[0] | default("default")) }}.conf'
@@ -118,5 +127,6 @@
   with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
   notify: [ 'Test nginx and restart' ]
   when: ((item.enabled is undefined or (item.enabled is defined and item.enabled)) and
-         (item.name is defined) and (item.delete is undefined or (item.delete is defined and not item.delete)))
+         (item.name is defined) and (item.delete is undefined or (item.delete is defined and not item.delete)) and
+         (not check_mode))
 
