@@ -15,8 +15,8 @@ pki_private_groups_present
 
 This list can be used to create system groups that otherwise could be not
 present when the PKI realm is managed. For example another role creates custom
-user/group that maintains its own service certificates, but in order to do
-that, ``debops.pki`` is used to manage the PKI realm. but at the moment that
+user/group that maintains it's own service certificates, but in order to do
+that, ``debops.pki`` is used to manage the PKI realm but at the moment that
 the ``debops.pki`` role is run by Ansible, custom group does not exist, so the
 Ansible run stops. Therefore, you can create system groups beforehand using
 this list.
@@ -28,10 +28,10 @@ parameters:
   The name of the group to create.
 
 ``system``
-  Bool, by default ``True``. Specify if a given group is a system group.
+  Boolean, by default ``True``. Specify if a given group is a system group.
 
 ``when``
-  The value of this variable is checked as a bool (``True``/``False``) to
+  The value of this variable is checked as a boolean (``True``/``False``) to
   determine if a given system group should be created or not. You can use this
   as a condition to, for example, create groups only on specific hosts.
 
@@ -89,7 +89,7 @@ List of parameters related to the entire PKI realm:
   Specify name of the internal Certificate Authority to send the internal
   certificate requests to instead of the default one configured in
   ``pki_default_authority`` variable. This should be the "normal" name of the
-  authority, not its subdomain name.
+  authority, not it's subdomain name.
 
 ``acme``
   Optional, boolean. Enable or disable support for ACME Certificate Authority.
@@ -112,13 +112,13 @@ List of parameters related to the entire PKI realm:
   ``gnutls``.
 
 ``private_dir_group``
-  Optional. System group which will be set as the group of the ``private/``
+  Optional. System group which will be set as the group of the :file:`private/`
   directory of a given PKI realm. By default, ``ssl-cert``. It needs to exist,
   and can be created using ``pki_private_groups_resent`` list.
 
 ``private_file_group``
   Optional. System group which will be set as the group of the private keys
-  inside of the ``private/`` directory. It needs to exist, and can be created
+  inside of the :file:`private/` directory. It needs to exist, and can be created
   using ``pki_private_groups_present`` list.
 
 ``dhparam``
@@ -181,7 +181,7 @@ respectively:
 
 ``subject_alt_names``, ``acme_alt_names``
   Optional. Specify a custom set of SubjectAltNames included in a certificate,
-  as a list. Each element of a list needs to indicate its type in a special
+  as a list. Each element of a list needs to indicate it's type in a special
   format. Currently supported types:
 
   - a DNS record: ``[ 'dns:example.org', 'DNS:example.com' ]``
@@ -192,7 +192,7 @@ respectively:
 
   - an email address: ``[ 'email:root@example.org', 'EMAIL:staff@example.com' ]``
 
-  If an element of the list does not specify its type, it will not be included
+  If an element of the list does not specify it's type, it will not be included
   in the certificate request. Different element types can be used in the same
   list.
 

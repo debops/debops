@@ -21,7 +21,7 @@ variables:
 
 ``$PKI_SCRIPT_FQDN``
   Contains Fully Qualified Domain Name used as the default domain if the realm
-  does not specify one in its name.
+  does not specify one in it's name.
 
 ``$PKI_SCRIPT_SUBJECT``
   Contains the Distinguished Name, or subject of the certificate, each element
@@ -94,10 +94,10 @@ List of known states:
   A file has been deleted.
 
 ``changed-public-file``
-  Some of the files in ``public/`` directory have been changed/replaced.
+  Some of the files in :file:`public/` directory have been changed/replaced.
 
 ``changed-private-file``
-  Some of the files in ``private/`` directory have been changed/replaced.
+  Some of the files in :file:`private/` directory have been changed/replaced.
 
 Example nginx hook
 ------------------

@@ -7,11 +7,11 @@ Getting started
 Initial configuration
 ---------------------
 
-The default configuration of the ``debops.pki`` role and environment it creates
+The default configuration of the ``debops.pki`` role and the environment it creates
 is designed to automatically provide valid X.509 certificates within the DebOps
-cluster - a central Certificate Authority located on Ansible Controller
+cluster – a central Certificate Authority located on the Ansible Controller
 automatically signs certificate requests from remote hosts, which are uploaded
-by Ansible to the ``secret/`` directory. Signed certificates are downloaded to
+by Ansible to the :file:`secret/` directory. Signed certificates are downloaded to
 the remote hosts and automatically enabled, when necessary.
 
 All of the remote hosts managed by DebOps will have the internal Root
@@ -27,7 +27,7 @@ generated certificates are acceptable (correct Distinguished Name, certificate
 validity times, etc.). There are some important role variables which might need
 to be set in the inventory for best results.
 
-Maintaining a secure Certificate Authority is a complicated process, and to
+Maintaining a secure Certificate Authority is a complicated process and to
 ensure secure operation additional steps might be needed. You should read the
 rest of the ``debops.pki`` documentation to find out which parts of the created
 environment are sensitive and require additional steps to ensure secure
@@ -36,33 +36,33 @@ operation.
 Useful global parameters
 ------------------------
 
-The environment managed by the ``debops.pki`` role is distributed between
+The environment managed by the ``debops.pki`` role is distributed between the
 Ansible Controller and remote hosts. Due to how task delegation in Ansible is
-designed, some of the variables that are important for Ansible Controller
-operation, are "sourced" on remote hosts. Therefore it's a good practice to
-define them in the Ansible inventory ``all`` group (usually
-``ansible/inventory/group_vars/all/pki.yml`` for consistency between different
+designed, some of the variables that are important for the operation of the
+Ansible Controller are "sourced" on remote hosts. Therefore it's a good
+practice to define them in the Ansible inventory ``all`` group (usually
+:file:`ansible/inventory/group_vars/all/pki.yml` for consistency between different
 remote hosts.
 
 Most of these variables are related to Certificate Authority operation, the
-ones you are likely to change are:
+ones you will likely want to change are:
 
 ``pki_ca_domain``
   This is the DNS domain used as a base for the internal Certificate Authority
   Distinguished Names. If you use more than one domain in your environment, you
-  should set this variable as your preferred domain on all hosts, through
-  Ansible inventory.
+  should set this variable to your preferred domain on all hosts, through
+  Ansible's inventory.
 
   If you use VPS hosts provided by an external organization, they might be
   configured with no default domain, or the provider domain might be set up by
   default. Make sure that you check what domain is used by your remote hosts.
 
 ``pki_ca_organization``
-  This is the Organizations name used as a base for the internal
+  This is the organizations name used as a base for the internal
   Certificate Authority Distinguished Names.
 
 ``pki_ca_root_dn``, ``pki_ca_domain_dn``, ``pki_ca_service_dn``
-  These variables define the Distinguished Name, or Subject, of the Root
+  These variables define the Distinguished Name or Subject of the Root
   Certificate Authority and Domain Certificate Authority. The value is a list
   of DN entries which define the subject.
 
@@ -78,7 +78,7 @@ Example playbook
 
 The ``debops.pki`` role requires a specialized Ansible playbook for correct
 operation. Additional directories required by the role are created in the
-``secret/`` directory on Ansible Controller, and this requires use of the
+:file:`secret/` directory on Ansible Controller, and this requires use of the
 special ``debops.pki/env`` role provided within the main role.
 
 .. code-block:: yaml

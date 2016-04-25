@@ -25,8 +25,8 @@ requires human interaction. A proposed solution to this problem is an ACME
 protocol, used for example by the Let's Encrypt project, however this solution
 cannot be used with internal hosts, which still need to be protected.
 
-The ``debops.pki`` role solves this problem by creating its own set of internal
-Certificate Authorities, located on Ansible Controller in the ``secret/``
+The ``debops.pki`` role solves this problem by creating it's own set of internal
+Certificate Authorities, located on Ansible Controller in the :file:`secret/`
 directory (see ``debops.secret`` role for more details). These Certificate
 Authorities can be used to bootstrap a new PKI environment, which can then be
 passed over to a stand-alone CA server located on the network. Alternatively,
@@ -44,7 +44,7 @@ By default, the ``debops.pki`` role creates two Certificate Authorities:
 - a Domain Certificate Authority which signs the incoming server certificates;
 
 The directory structure of the Certificate Authorities stored in the
-``secret/`` directory on the Ansible Controller::
+:file:`secret/` directory on the Ansible Controller::
 
     secret/pki/
     ├── authorities/
@@ -128,7 +128,7 @@ Security of an internal CA
 
 The Certificate Authority is a very vulnerable element of the Private Key
 Infrastructure. Hosts that have a Root CA certificate in their system
-certificate store will trust any certificates signed by that CA and its
+certificate store will trust any certificates signed by that CA and it's
 intermediate Certificate Authorities, therefore protection of the Root CA
 private key should be taken care of as soon as possible.
 
@@ -148,9 +148,9 @@ Unfortunately, private keys of the Domain Certificate Authority, any other
 Intermediate Certificate Authority or a "Service CA", which is a Root CA used
 to sign service certificates cannot be protected by taking them offline - the
 private keys are required to sign certificates. Therefore, it is strongly
-recommended to store the ``secret/`` directory encrypted, and use it on an
+recommended to store the :file:`secret/` directory encrypted, and use it on an
 encrypted filesystem during use. In DebOps, you can use the EncFS filesystem
-together with ``debops-padlock`` script to keep the ``secret/`` directory
+together with ``debops-padlock`` script to keep the :file:`secret/` directory
 encrypted at rest. You should make sure that Ansible Controller uses encrypted
 filesystem during Ansible runs, if possible, to avoid leaks of private keys.
 

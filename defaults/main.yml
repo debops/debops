@@ -5,6 +5,8 @@
 # .. contents:: Sections
 #    :local:
 #
+# .. Global PKI configuration (((
+#
 # ----------------------------
 #   Global PKI configuration
 # ----------------------------
@@ -43,7 +45,10 @@ pki_fqdn: '{{ ansible_fqdn }}'
 # put there will be copied to remote hosts.
 pki_inventory_groups: [ 'debops_service_pki' ]
 
+# .. )))
 
+# .. Automatic Certificate Management Environment (((
+#
 # ------------------------------------------------
 #   Automatic Certificate Management Environment
 # ------------------------------------------------
@@ -160,10 +165,13 @@ pki_acme_challenge_dir: '{{ (ansible_local.nginx.acme_root
                              else "/srv/www/sites/acme/public") +
                              "/.well-known/acme-challenge" }}'
 
+# .. )))
 
-# ---------------------
-#   APT package lists
-# ---------------------
+# .. Required software packages (((
+#
+# ------------------------------
+#   Required software packages
+# ------------------------------
 
 # .. envvar:: pki_base_packages
 #
@@ -184,7 +192,10 @@ pki_acme_packages: [ 'curl', 'git' ]
 # List of additional APT packages to install.
 pki_packages: []
 
+# .. )))
 
+# .. Directory, file and user/group configuration (((
+#
 # ------------------------------------------------
 #   Directory, file and user/group configuration
 # ------------------------------------------------
@@ -239,7 +250,10 @@ pki_private_mode: '0640'
 # :ref:`pki_private_groups_present` for more details.
 pki_private_groups_present: []
 
+# .. )))
 
+# .. Certificate sign times (((
+#
 # --------------------------
 #   Certificate sign times
 # --------------------------
@@ -271,7 +285,10 @@ pki_default_ca_sign_multiplier: '10'
 # the base time amount.
 pki_default_cert_sign_multiplier: '3'
 
+# .. )))
 
+# .. Configuration of PKI Realms (((
+#
 # -------------------------------
 #   Configuration of PKI Realms
 # -------------------------------
@@ -387,7 +404,10 @@ pki_dhparam_file: '{{ ansible_local.dhparam.default
                           ansible_local.dhparam.default)
                       else "" }}'
 
+# .. )))
 
+# .. Configuration of PKI Certificate Authorities (((
+#
 # ------------------------------------------------
 #   Configuration of PKI Certificate Authorities
 # ------------------------------------------------
@@ -508,7 +528,10 @@ pki_dependent_authorities: []
 #
 pki_ca_certificates_path: 'by-group/all'
 
+# .. )))
 
+# .. Custom file management (((
+#
 # --------------------------
 #   Custom file management
 # --------------------------
@@ -552,7 +575,10 @@ pki_group_public_files: []
 # Copy public files to specific hosts in inventory.
 pki_host_public_files: []
 
+# .. )))
 
+# .. System-wide Root CA Certificates (((
+#
 # ------------------------------------
 #   System-wide Root CA Certificates
 # ------------------------------------
@@ -586,3 +612,4 @@ pki_system_ca_certificates_blacklist:
 # certificate files or use regular expressions.
 pki_system_ca_certificates_whitelist: []
 
+# .. )))

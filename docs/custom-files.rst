@@ -34,7 +34,7 @@ Each element of the file list is a dict with specific parameters:
   and private files will have ``640`` permissions.
 
 ``force``
-  Bool. If ``True`` (default), an existing file will be replaced with the
+  Boolean. If ``True`` (default), an existing file will be replaced with the
   specified file or contents.
 
 There are multiple list variables which can be used on multiple inventory

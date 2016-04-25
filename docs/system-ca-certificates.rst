@@ -3,7 +3,7 @@
 System CA certificates
 ======================
 
-On Debian GNU/Linux and its derivative distributions, management of Root
+On Debian GNU/Linux and it's derivative distributions, management of Root
 Certificate Authority certificates is performed by the ``ca-certificates``
 package. This package maintains a list of active Root CA certificates in
 ``/etc/ca-certificates.conf`` configuration file, and stores the certificates
