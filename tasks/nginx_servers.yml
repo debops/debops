@@ -114,7 +114,7 @@
   register: nginx__register_check_mode
 
 - name: Save fact if Ansible is running in check mode in variable
-  set_fact: check_mode={{ nginx__register_check_mode|skipped }}
+  set_fact: nginx__fact_check_mode={{ nginx__register_check_mode|skipped }}
 
 - name: Enable nginx server configuration
   file:
@@ -128,5 +128,5 @@
   notify: [ 'Test nginx and restart' ]
   when: ((item.enabled is undefined or (item.enabled is defined and item.enabled)) and
          (item.name is defined) and (item.delete is undefined or (item.delete is defined and not item.delete)) and
-         (not check_mode))
+         (not nginx__fact_check_mode))
 
