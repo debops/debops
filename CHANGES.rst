@@ -4,9 +4,13 @@ Changelog
 v0.3.0
 ------
 
-*Unreleased*
+*Released: 2016-04-25*
 
 - Added ``delete`` boolean switch to allow to delete local services. [ypid]
+
+- Condense the ``dpkg-divert`` revert tasks into one. [drybjed]
+
+- Add support for ``item.state`` parameter. [drybjed]
 
 v0.2.0
 ------
