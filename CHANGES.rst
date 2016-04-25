@@ -9,6 +9,9 @@ v0.1.7
 - Added ``nginx__deploy_state`` to allow to specify the desired state this role
   should achieve. State ``absent`` is not fully implemented yet. [ypid]
 
+- Fixed Ansible check mode. Check mode did fail when the role was trying to
+  symlink a non-existing file. [ypid]
+
 v0.1.6
 ------
 
