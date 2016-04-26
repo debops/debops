@@ -43,7 +43,7 @@ requirements enforced by this Ansible role:
 Due to above requirements, the default ``domain`` PKI realm configured by the
 role does not request ACME certificates automatically. Other realms created by
 the ``debops.pki`` role might have ACME support enabled, depending on presence
-of a public IP address and configured a ``nginx`` server.
+of a public IP address and configured a :program:`nginx` server.
 
 Let's Encrypt rate limits
 -------------------------
@@ -56,7 +56,7 @@ To avoid triggering the limits too quickly due to a mistake, ``debops.pki``
 disables the requests when the :file:`acme/error.log` file is present in the PKI
 realm directory. You can check contents of this file to find out what might be
 the issue, and after fixing it you need to remove the file to let the
-``pki-realm`` script make the request again.
+:program:`pki-realm` script make the request again.
 
 How ACME certificates are managed
 ---------------------------------
@@ -89,8 +89,8 @@ this:
         ├── CA.crt -> /etc/ssl/certs/ca-certificates.crt
         └── default.key -> private/key.pem
 
-When the ``pki-realm`` detects the :file:`acme/request.pem` file, it automatically
-calls the ``acme-tiny`` script using the ``pki-acme`` unprivileged account to request
+When the :program:`pki-realm` detects the :file:`acme/request.pem` file, it automatically
+calls the :program:`acme-tiny` script using the ``pki-acme`` unprivileged account to request
 the certificate. When the request is completed successfully and an
 :file:`external/cert.pem` certificate is not found, ACME certificate will be
 activated in the :file:`public/` directory. The script automatically downloads Let's
@@ -140,14 +140,14 @@ The realm directory after the process is complete:
         └── trusted.crt -> public/trusted.pem
 
 If the request is not successful, you will find a :file:`acme/error.log` file with
-log of the ``acme-tiny`` session. Check and fix the issue, and remove the log
-file to re-enable the process again. Otherwise, ``pki-realm`` will not request
+log of the :program:`acme-tiny` session. Check and fix the issue, and remove the log
+file to re-enable the process again. Otherwise, :program:`pki-realm` will not request
 the certificates to avoid rate limit issues explained above.
 
 Certificate renewal
 -------------------
 
-The ``debops.pki`` role creates a ``cron`` entry for the ``pki-realm`` script
+The ``debops.pki`` role creates a ``cron`` entry for the :program:`pki-realm` script
 to be executed periodically for all realms. When a realm has the ACME
 configuration active, it will check for validity of the signed certificate, and
 about a month before the expiration date it will try to renew the certificate
@@ -166,7 +166,7 @@ control ACME support. The most important are:
   configured, otherwise the support is disabled automatically.
 
 ``pki_acme_install``
-  Boolean. Enable or disable installation of ``acme-tiny`` and configuration of
+  Boolean. Enable or disable installation of :program:`acme-tiny` and configuration of
   ACME support without enabling it for all realms. When this variable is set to
   ``True`` and ``pki_acme`` is set to ``False``, ACME support can be enabled
   independently in each PKI realm. By default, it is set to the same value as

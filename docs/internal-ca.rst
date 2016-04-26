@@ -150,7 +150,7 @@ to sign service certificates cannot be protected by taking them offline - the
 private keys are required to sign certificates. Therefore, it is strongly
 recommended to store the :file:`secret/` directory encrypted, and use it on an
 encrypted filesystem during use. In DebOps, you can use the EncFS filesystem
-together with ``debops-padlock`` script to keep the :file:`secret/` directory
+together with :command:`debops-padlock` script to keep the :file:`secret/` directory
 encrypted at rest. You should make sure that Ansible Controller uses encrypted
 filesystem during Ansible runs, if possible, to avoid leaks of private keys.
 

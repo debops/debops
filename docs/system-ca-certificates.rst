@@ -6,8 +6,8 @@ System CA certificates
 On Debian GNU/Linux and it's derivative distributions, management of Root
 Certificate Authority certificates is performed by the ``ca-certificates``
 package. This package maintains a list of active Root CA certificates in
-``/etc/ca-certificates.conf`` configuration file, and stores the certificates
-themselves in ``/etc/ssl/certs/`` directory.
+:file:`/etc/ca-certificates.conf` configuration file, and stores the certificates
+themselves in :file:`/etc/ssl/certs/` directory.
 
 The ``debops.pki`` role has several variables which can be used to control what
 Root Certificate Authorities are trusted by the system, as well as supports
@@ -16,9 +16,9 @@ easy installation of local or custom Root Certificate Authorities.
 Configuration of system CA certificates
 ---------------------------------------
 
-The ``/etc/ca-certificates.conf`` configuration file specifies which
+The :file:`/etc/ca-certificates.conf` configuration file specifies which
 certificates will be trusted by the system. This is done by specifying names of
-certificate files located in ``/usr/share/ca-certificates/`` directory. The
+certificate files located in :file:`/usr/share/ca-certificates/` directory. The
 specified certificate files will be included in the system CA store. If a given
 filename is prefixed with ``!``, a given certificate will be excluded from the
 system CA store.
@@ -36,7 +36,7 @@ a regexp of the certificate file name. If a given file is found in both lists,
 it will be excluded from the certificate store.
 
 To find out the names of the certificate files you can use, check the contents
-of the ``/etc/ca-certificates.conf`` configuration file.
+of the :file:`/etc/ca-certificates.conf` configuration file.
 
 Examples
 ~~~~~~~~
@@ -67,7 +67,7 @@ Local Root CA certificates
 
 Contents of the ``secret/pki/ca-certificates/`` directory located on Ansible
 Controller will be copied to all of the remote hosts whch ``debops.pki`` role
-manages, to the ``/usr/local/share/ca-certificates/pki/`` directory. After
+manages, to the :file:`/usr/local/share/ca-certificates/pki/` directory. After
 that, they will be automatically added to the system Root CA store by
 ``update-ca-certificates`` script.
 

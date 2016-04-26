@@ -19,7 +19,7 @@ private keys. Some of them support keys and certificates in separate files,
 others require them combined in a single file. The PKI realm is designed to
 support both schemes at once.
 
-The realms are located in the ``/etc/pki/realms/`` directory. Each realm is
+The realms are located in the :file:`/etc/pki/realms/` directory. Each realm is
 contained in it's own subdirectory. By default a ``domain`` realm is configured
 by the role, and it's simplified directory structure looks like this:
 
@@ -74,7 +74,7 @@ to change to select a different PKI realm is the realm directory name.
 Example nginx configuration
 ---------------------------
 
-To use the ``domain`` realm in your ``nginx`` configuration, you can add
+To use the ``domain`` realm in your :program:`nginx` configuration, you can add
 something similar to this example in your configuration file:
 
 .. code-block:: nginx
@@ -98,7 +98,7 @@ something similar to this example in your configuration file:
    }
 
 This configuration explains where each certificate is used, but this is not
-sufficient to enable HTTPS for the webserver. Refer to the ``nginx``
+sufficient to enable HTTPS for the webserver. Refer to the :program:`nginx`
 documentation for the rest of the required configuration options.
 
 If you use the ``debops.nginx`` Ansible role provided with the project, it has
@@ -187,7 +187,7 @@ the ``alt_*.pem`` versions of intermediate and root CA certificates are only
 present if an alternative CA is configured.
 
 Both directories are maintained and kept in sync using two Bash scripts
-provided by the role, ``pki-realm`` and ``pki-authority``. Ansible tasks are
+provided by the role, :program:`pki-realm` and :program:`pki-authority`. Ansible tasks are
 used to copy files to and from Ansible Controller to remote hosts.
 
 How a PKI realm is created
@@ -245,7 +245,7 @@ detail in a separate document, here is a brief overview:
   This is directory used by the ACME Certificate Authority (currently only the
   `Let's Encrypt <https://www.letsencrypt.org/>`_ CA supports this protocol).
   It will be activated and used automatically when a host has a public IP address
-  and the ``nginx`` webserver is installed and configured to support ACME
+  and the :program:`nginx` webserver is installed and configured to support ACME
   Challenges (see the ``debops.nginx`` role for more details).
 
 :file:`external/`
@@ -262,14 +262,14 @@ detail in a separate document, here is a brief overview:
   This directory is used by the internal ``debops.pki`` Certificate Authority
   to transfer certificate requests as well as signed certificates.
 
-The ``pki-realm`` script checks which of these directories have signed and
+The :program:`pki-realm` script checks which of these directories have signed and
 valid certificates in order (``external``, ``acme``, ``internal``), and the
 first valid one is used as the "active" directory. Files from the active
 directory are symlinked to the :file:`public/` directory.
 
 The :file:`public/` directory holds currently active certificates which are
 symlinks to the real certificate files in one of the active directories above.
-Some additional files are also created here by the ``pki-realm`` script, namely
+Some additional files are also created here by the :program:`pki-realm` script, namely
 the certificate chain (server certificate + intermediate certificates) and the
 trusted chain (intermediate certificates + root certificate).
 
@@ -281,7 +281,7 @@ allowed to access the files inside.
 The next step is the creation of all necessary files, like private/public keys,
 certificate requests, etc. At this point, if Ansible was provided with a
 private RSA key to use, it will copy it to the :file:`private/` directory. After
-that, all necessary files are created by the ``pki-realm`` script on remote
+that, all necessary files are created by the :program:`pki-realm` script on remote
 host. The directory structure changes a bit:
 
 .. code-block:: none
@@ -340,7 +340,7 @@ points to the "domain" internal CA which is an intermediate CA located under
 ``hostname.example.com`` host.
 
 When all of the requests from the remote hosts are uploaded to the Ansible
-Controller, the ``pki-authority`` script inside the :file:`secret/` directory takes
+Controller, the :program:`pki-authority` script inside the :file:`secret/` directory takes
 over and performs certificate signing for all of the currently managed hosts.
 The signed certificate named ``cert.pem`` is placed in the :file:`internal/`
 directory of each host according to the realm the request came from.
@@ -411,7 +411,7 @@ directory structure might look similar to::
 Other authority directories (:file:`acme/` and :file:`external/`) might also contain
 various files.
 
-After certificates are copied from Ansible Controller, ``pki-realm`` script is
+After certificates are copied from Ansible Controller, :program:`pki-realm` script is
 executed again for each PKI realm configured on a given host. It checks which
 authority directories have signed and valid certificates, picks the first
 viable one according to the preference (``external``, ``acme``, ``internal``),
@@ -427,7 +427,7 @@ that the DHE parameters are present after the X.509 certificate chain. If the
 ``debops.dhparam`` role has been configured on a host and Diffie-Hellman
 parameter support is enabled in a given PKI realm, DHE parameters will be
 appended to the final certificate chains (both public and private). When the
-``debops.dhparam`` regenerates the parameters, ``pki-realm`` script will
+``debops.dhparam`` regenerates the parameters, :program:`pki-realm` script will
 automatically detect the new ones and update the certificate chains.
 
 The end result is fully configured PKI realm with a set of valid certificates

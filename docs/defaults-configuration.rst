@@ -59,7 +59,7 @@ realms located on remote hosts. Each realm keeps a set of private keys and
 certificates which are signed by the various Certificate Authorities.
 
 Each entry is a dictionary variable with specific parameters. Most of the
-parameters are optional, and if they are not specified, the ``pki-realm``
+parameters are optional, and if they are not specified, the :program:`pki-realm`
 script that manages the PKI realms should pick the correct options by itself.
 
 List of parameters related to the entire PKI realm:
@@ -67,7 +67,7 @@ List of parameters related to the entire PKI realm:
 ``name``
   Required. This is the name of the PKI realm, used as the name of the
   directory which contains the realm subdirectories, by default stored in
-  ``/etc/pki/realms/`` directory.
+  :file:`/etc/pki/realms/` directory.
 
   If the ``subject`` parameter is not specified, ``name`` parameter is checked
   to see if it might be a DNS domain (at least 1 dot present in the value). If

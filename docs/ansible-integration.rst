@@ -17,7 +17,7 @@ available facts:
 
 ``ansible_local.pki.acme``
   Boolean. Specifies if an ACME environment is enabled on a given host, which
-  means that ``acme-tiny`` script is installed and any PKI realm that is not
+  means that :program:`acme-tiny` script is installed and any PKI realm that is not
   configured otherwise will try to register an ACME certificate.
 
 ``ansible_local.pki.internal``
@@ -25,10 +25,10 @@ available facts:
   certificates in internal Certificate Authority.
 
 ``ansible_local.pki.path``
-  Directory where PKI realms are located, by default ``/etc/pki/realms/``.
+  Directory where PKI realms are located, by default :file:`/etc/pki/realms/`.
 
 ``ansible_local.pki.hooks``
-  Directory where PKI hooks are located, by default ``/etc/pki/hooks/``.
+  Directory where PKI hooks are located, by default :file:`/etc/pki/hooks/`.
 
 ``ansible_local.pki.realm``
   Default server realm name configured for this system, should be used as the

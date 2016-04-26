@@ -12,14 +12,14 @@ an external Certificate Authority.
 Required files
 --------------
 
-For the ``pki-realm`` script to correctly recognize and enable external
+For the :program:`pki-realm` script to correctly recognize and enable external
 certificates, you need to provide a set of specific files, either statically
 through the :file:`secret/` directory or by creating them using a script (see
 below). All paths are relative to the main PKI realm directory, for example
 :file:`/etc/pki/realms/example.com/`:
 
 :file:`private/key.pem`
-  Private key used by a specific PKI realm. If not present, the ``pki-realm``
+  Private key used by a specific PKI realm. If not present, the :program:`pki-realm`
   script will generate one automatically before executing the external script.
 
 :file:`external/cert.pem`
@@ -114,7 +114,7 @@ Certificates managed by a custom script
 
 You can create a custom script and store it in above directories as
 :file:`external/script` (permissions are not important). It will be copied to
-the remote host, made executable and run by the ``pki-realm`` script with the
+the remote host, made executable and run by the :program:`pki-realm` script with the
 :file:`external/` directory as the current working directory. You can use this
 to provide additional files needed by the Certificate Authority. The expected
 output of the script is a set of files mentioned above.

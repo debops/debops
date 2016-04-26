@@ -17,7 +17,7 @@ v0.2.5
 
 *Released: 2016-03-02*
 
-- Don't run ``pki-authority`` script on Ansible Controller if list of
+- Don't run :program:`pki-authority` script on Ansible Controller if list of
   ``pki_authorities`` is not defined. [drybjed]
 
 v0.2.4
@@ -61,10 +61,10 @@ v0.2.4
 - Change the way ACME intermediate CA certificate is downloaded.
 
   Instead of using a static URL to download an intermediate certificate,
-  ``pki-realm`` script will now check the signed certificate for the "CA
+  :program:`pki-realm` script will now check the signed certificate for the "CA
   Issuers" URI and download the certificate using it. The URI is stored and
   used later to check if the new certificate has the same or different URI, to
-  not download the intermediate certificate every time the ``pki-realm`` script
+  not download the intermediate certificate every time the :program:`pki-realm` script
   is run. [drybjed]
 
 - Slight changes in certificate chaining logic, to ensure that when
@@ -143,7 +143,7 @@ v0.1.0
 .. _Google decision to remove CNNIC: http://googleonlinesecurity.blogspot.com/2015/03/maintaining-digital-certificate-security.html
 
 - Add support for managing the list of active Root CA Certificates in
-  ``/etc/ca-certificates.conf``. Current set of active Root CA Certificates is
+  :file:`/etc/ca-certificates.conf`. Current set of active Root CA Certificates is
   preserved. [drybjed]
 
 - Reorder Changelog entries. [drybjed]
