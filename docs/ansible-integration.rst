@@ -1,24 +1,24 @@
 Ansible integration
 ===================
 
-The ``debops.pki`` role creates an Ansible local facts on each managed remote
+The ``debops.pki`` role creates Ansible local facts on each managed remote
 host. These local facts can be used by other Ansible roles as an idempotent
-source of PKI-related configuration - they should be accessible from any
-playbook executed on that host without the requirement of ``debops.pki`` role
-being a part of it or a role dependency.
+source of PKI-related configuration – they should be accessible from any
+playbook executed on that host without the requirement of the ``debops.pki``
+role being a part of it or a role dependency.
 
 The local facts are saved in ``ansible_local.pki.*`` namespace. List of
 available facts:
 
 ``ansible_local.pki.enabled``
   Boolean. Can be used to determine if PKI is enabled on a given host. This
-  doesn't mean that a particular PKI realm has correctly configured set of
+  doesn't mean that a particular PKI realm has a correctly configured set of
   private keys and certificates.
 
 ``ansible_local.pki.acme``
   Boolean. Specifies if an ACME environment is enabled on a given host, which
-  means that :program:`acme-tiny` script is installed and any PKI realm that is not
-  configured otherwise will try to register an ACME certificate.
+  means that the :program:`acme-tiny` script is installed and any PKI realm
+  that is not configured otherwise will try to register an ACME certificate.
 
 ``ansible_local.pki.internal``
   Boolean. Specifies that PKI realms configured on a given host will request
@@ -39,7 +39,7 @@ available facts:
   provider of the CA certificate for a given service.
 
 ``ansible_local.pki.known_realms``
-  List which contains names of all PKI realms that might be present of a given
+  List which contains names of all PKI realms that might be present on a given
   remote host. Contents of the list are never removed, only appended. This list
   can be used to check on the Ansible playbook/role level if a given PKI realm
   is available to be used.
