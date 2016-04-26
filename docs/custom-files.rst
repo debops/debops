@@ -6,7 +6,7 @@ Custom file management
 If you need to, you can copy custom files or even create files with content in
 YAML templates using a set of list variables. You can use this feature to
 install private keys and certificates stored as YAML text blocks in a file
-encrypted with ``ansible-vault`` which is unlocked during Ansible run.
+encrypted with :command:`ansible-vault` which is unlocked during Ansible run.
 
 Each element of the file list is a dict with specific parameters:
 

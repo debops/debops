@@ -69,7 +69,7 @@ Contents of the :file:`secret/pki/ca-certificates/` directory located on the
 Ansible Controller will be copied to all of the remote hosts by the
 ``debops.pki`` role, to the :file:`/usr/local/share/ca-certificates/pki/`
 directory. After that, they will be automatically added to the system Root CA
-store using the ``update-ca-certificates`` script.
+store using the :command:`update-ca-certificates` script.
 
 The internal Root Certificate Authorities created by the ``debops.pki`` role
 will have their certificates automatically symlinked in the
