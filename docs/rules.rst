@@ -1,5 +1,5 @@
-Firewall Rules Configuration
-============================
+Firewall Rule Definition
+========================
 
 Firewall configuration in ``debops.ferm`` is done through a flexible
 definition of rules. There are a number of variables which are used to
@@ -10,7 +10,7 @@ requirements.
 
 .. contents::
    :local:
-   :depth: 1
+   :depth: 2
 
 .. _default_rules:
 
@@ -18,13 +18,14 @@ Default rules
 -------------
 
 By default ``debops.ferm`` configures a number of rules as soon as a
-host is part of the ``[debops_all_hosts]`` Ansible host group. In case
-a firewall is not required or preferred this behaviour can be disabled
-by setting ``ferm__enabled: False`` in the inventory. The rules created
-by default are defined in ``defaults/main.yml`` and activated by being
-listed in :ref:`ferm__default_rules`. They consist of basic rules for
-setting the ``iptables`` default policies, restricting extensive
-connection attempts, logging and more.
+host is part of the ``[debops_all_hosts]`` Ansible host group. The rules
+created by default are defined in ``defaults/main.yml`` and activated by
+being listed in :ref:`ferm__default_rules`. They consist of basic rules for
+setting the ``iptables`` default policies, restricting extensive connection
+attempts, logging and more.
+
+In case a firewall is not required or preferred this behaviour can be
+disabled by setting ``ferm__enabled: False`` in the inventory.
 
 
 .. _custom_rules:
@@ -89,12 +90,11 @@ the following keys:
 ``when``
   Optional. Define condition for the rule to be enabled.
 
-
-.. _rule_templates:
-
 Depending on the choosen type, many additional variables are supported.
 Please check the individual template description below.
 
+
+.. _rule_templates:
 
 Rule templates
 --------------
@@ -102,504 +102,571 @@ Rule templates
 There exist a number of predefined rule templates for generating firewall
 rules through ferm. Each rule definition is referencing the used template
 through its ``item.type`` key. The templates are located in the
-``templates/etc/ferm/ferm.d/`` directory.
+:file:`templates/etc/ferm/ferm.d/` directory.
 
 Following a list of the available rule templates which can be used to
-create custom rules:
+create custom rules.
 
-* ``accept``: Template to create rules that match interfaces, ports, remote
-  IP addresses/subnets and can accept the packets, reject, or redirect to
-  a different chain. The following template-specific YAML keys are supported:
 
-    ``accept_any``
-      Optional. Match all source addresses by default. Possible values:
-      ``True`` or ``False``. Defaults to ``True``. If this option is
-      disabled and ``item.target`` is set to ``REJECT`` all traffic is
-      blocked by default. As soon as ``item.saddr`` is not empty, this
-      configuration doesn't matter anymore.
+.. _accept_template:
 
-    ``daddr``
-      Optional. List of destination IP addresses or networks to which the
-      rule is applied.
+accept
+^^^^^^
 
-    ``dport``
-      Optional. List of destination ports to which the rule is applied.
+Template to create rules that match interfaces, ports, remote IP
+addresses/subnets and can accept the packets, reject, or redirect to a
+different chain. The following template-specific YAML keys are supported:
 
-    ``enabled``
-      Optional. Enable rule definition. Possible values: ``True`` or
-      ``False``. Defaults to ``True``.
+``accept_any``
+  Optional. Match all source addresses by default. Possible values: ``True``
+  or ``False``. Defaults to ``True``. If this option is set to ``False`` and
+  ``item.target`` is set to ``REJECT`` all traffic is blocked by default.
+  As soon as ``item.saddr`` is not empty, this configuration doesn't matter
+  anymore.
 
-    ``include``
-      Optional. Custom ferm configuration file to include. See
-      `ferm include`_ for more details.
+``daddr``
+  Optional. List of destination IP addresses or networks to which the
+  rule is applied.
 
-    ``interface``
-      Optional. List of network interfaces for incoming packets to which
-      the rule is applied.
+``dport``
+  Optional. List of destination ports to which the rule is applied.
 
-    ``interface_present``
-      Optional. Same as ``item.interface`` but first check if specified
-      network interfaces exists before adding the firewall rules.
+``enabled``
+  Optional. Enable rule definition. Possible values: ``True`` or ``False``.
+  Defaults to ``True``.
 
-    ``multiport``
-      Optional. Use ``iptables multiport`` extension. Possible values:
-      ``True`` or ``False``. Defaults to ``False``.
+``include``
+  Optional. Custom ferm configuration file to include. See `ferm include`_
+  for more details.
 
-    ``name``
-      Optional. Set rule name in places where it is referenced.
+``interface``
+  Optional. List of network interfaces for incoming packets to which the
+  rule is applied.
 
-    ``outerface``
-      Optional. List of network interfaces for outgoing packets to which
-      the rule is applied.
+``interface_present``
+  Optional. Same as ``item.interface`` but first check if specified network
+  interfaces exists before adding the firewall rules.
 
-    ``outerface_present``
-      Optional. Same as ``item.outerface`` but first check if specified
-      network interface exists before adding the firewall rule.
+``multiport``
+  Optional. Use ``iptables multiport`` extension. Possible values: ``True``
+  or ``False``. Defaults to ``False``.
 
-    ``protocol``
-      Optional. Network protocol to which the rule is applied.
+``name``
+  Optional. Set rule name in places where it is referenced.
 
-    ``protocol_syn``
-      Optional. Match TCP packet with only the SYN flag set. Possible
-      values ``True`` or ``False``. If set to ``False`` it will match all
-      other packets except the ones with only the SYN flag set. Defaults
-      to unset.
+``outerface``
+  Optional. List of network interfaces for outgoing packets to which the
+  rule is applied.
 
-    ``realgoto``
-      Optional. After packet match jump to custom chain. See `ferm realgoto`_
-      for more details.
+``outerface_present``
+  Optional. Same as ``item.outerface`` but first check if specified network
+  interface exists before adding the firewall rule.
 
-    ``reject_with``
-      Optional. Define reject message being sent when the rule ``item.target``
-      is set to ``REJECT``. Defaults to ``icmp-admin-prohibited``.
+``protocol``
+  Optional. Network protocol to which the rule is applied.
 
-    ``saddr``
-      Optional. List of source IP addresses or networks to which this rule is
-      applied.
+``protocol_syn``
+  Optional. Match TCP packet with only the SYN flag set. Possible values
+  ``True`` or ``False``. If set to ``False`` it will match all other packets
+  except the ones with only the SYN flag set. Defaults to unset.
 
-    ``sport``
-      Optional. List of source ports to which the rule is applied.
+``realgoto``
+  Optional. After packet match jump to custom chain. See `ferm realgoto`_ for
+  more details.
 
-    ``state``
-      Optional. Connection state which should be matched. Possible values:
-      ``INVALID``, ``ESTABLISHED``, ``NEW``, ``RELATED``, ``UNTRACKED`` or
-      comma-separated combination thereof.
+``reject_with``
+  Optional. Define reject message being sent when the rule ``item.target``is
+  set to ``REJECT``. Defaults to ``icmp-admin-prohibited``.
 
-    ``subchain``
-      Optional. Subchain name. If more than 3 addresses are listed in
-      ``target.saddr`` move resulting ``iptables`` rules into a separate
-      subchain with the given name. See `ferm subchain`_ for more details.
+``saddr``
+  Optional. List of source IP addresses or networks to which this rule is
+  applied.
 
-    ``target``
-      Optional. ``iptables`` jump target. Possible values: ``ACCEPT``,
-      ``DROP``, ``REJECT``, ``RETURN``, ``NOP`` or a custom target. Defaults
-      to ``ACCEPT``.
+``sport``
+  Optional. List of source ports to which the rule is applied.
 
-    ``when``
-      Optional. Define condition for the rule to be disabled.
+``state``
+  Optional. Connection state which should be matched. Possible values:
+  ``INVALID``, ``ESTABLISHED``, ``NEW``, ``RELATED``, ``UNTRACKED`` or
+  comma-separated combination thereof.
+
+``subchain``
+  Optional. Subchain name. If more than 3 addresses are listed in
+  ``target.saddr`` move resulting ``iptables`` rules into a separate subchain
+  with the given name. See `ferm subchain`_ for more details.
+
+``target``
+  Optional. ``iptables`` jump target. Possible values: ``ACCEPT``, ``DROP``,
+  ``REJECT``, ``RETURN``, ``NOP`` or a custom target. Defaults to ``ACCEPT``.
+
+``when``
+  Optional. Define condition for the rule to be disabled.
 
 .. _ferm include: http://ferm.foo-projects.org/download/2.1/ferm.html#includes
 .. _ferm realgoto: http://ferm.foo-projects.org/download/2.1/ferm.html#realgoto_custom_chain_name
 .. _ferm subchain: http://ferm.foo-projects.org/download/2.1/ferm.html#_subchain
 
-* ``ansible_controller``: Similar to the ``accept`` template but defaults
-  to the SSH target port and sets the source address to the host running
-  Ansible if not overwritten through the ``ansible_controllers`` key.
-  The following template-specific YAML keys are supported:
 
-    ``ansible_controllers``
-      Optional. List of source IP address which are added to ``item.saddr``.
-      Overwrites auto-detection of the Ansible controller address.
+.. _ansible_controller_template:
 
-    ``daddr``
-      Optional. List of destination IP addresses or networks to which the
-      rule is applied.
+ansible_controller
+^^^^^^^^^^^^^^^^^^
 
-    ``dport``
-      Optional. List of destination ports to which the rule is applied.
-      Defaults to ``ssh``.
+Similar to the `accept_template`_ template but defaults to the SSH target
+port and sets the source address to the host running Ansible if not
+overwritten through the ``item.ansible_controllers`` key. The following
+template-specific YAML keys are supported:
 
-    ``enabled``
-      Optional. Enable rule definition. Possible values: ``True`` or
-      ``False``. Defaults to ``True``.
+``ansible_controllers``
+  Optional. List of source IP address which are added to ``item.saddr``.
+  Overwrites auto-detection of the Ansible controller address.
 
-    ``include``
-      Optional. Custom ferm configuration file to include. See
-      `ferm include`_ for more details.
+``daddr``
+  Optional. List of destination IP addresses or networks to which the rule
+  is applied.
 
-    ``interface``
-      Optional. List of network interfaces for incoming packets to which
-      the rule is applied.
+``dport``
+  Optional. List of destination ports to which the rule is applied. Defaults
+  to ``ssh``.
 
-    ``multiport``
-      Optional. Use `iptables multiport`_ extension. Possible values:
-      ``True`` or ``False``. Defaults to ``False``.
+``enabled``
+  Optional. Enable rule definition. Possible values: ``True`` or ``False``.
+  Defaults to ``True``.
 
-    ``name``
-      Optional. Set rule name in places where it is referenced.
+``include``
+  Optional. Custom ferm configuration file to include. See `ferm include`_
+  for more details.
 
-    ``outerface``
-      Optional. List of network interfaces for outgoing packets to which
-      the rule is applied.
+``interface``
+  Optional. List of network interfaces for incoming packets to which the
+  rule is applied.
 
-    ``protocol``
-      Optional. Network protocol to which the rule is applied. Defaults to
-      ``tcp``.
+``multiport``
+  Optional. Use `iptables multiport`_ extension. Possible values: ``True``
+  or ``False``. Defaults to ``False``.
 
-    ``protocol_syn``
-      Optional. Match TCP packet with only the SYN flag set. Possible
-      values ``True`` or ``False``. If set to ``False`` it will match all
-      other packets except the ones with only the SYN flag set. Defaults
-      to unset.
+``name``
+  Optional. Set rule name in places where it is referenced.
 
-    ``realgoto``
-      Optional. After packet match jump to custom chain. See `ferm realgoto`_
-      for more details.
+``outerface``
+  Optional. List of network interfaces for outgoing packets to which the
+  rule is applied.
 
-    ``reject_with``
-      Optional. Define reject message being sent when the rule ``item.target``
-      is set to ``REJECT``. Defaults to ``icmp-admin-prohibited``.
+``protocol``
+  Optional. Network protocol to which the rule is applied. Defaults to ``tcp``.
 
-    ``saddr``
-      Optional. List of source IP addresses or networks to which this rule is
-      applied.
+``protocol_syn``
+  Optional. Match TCP packet with only the SYN flag set. Possible values
+  ``True`` or ``False``. If set to ``False`` it will match all other packets
+  except the ones with only the SYN flag set. Defaults to unset.
 
-    ``sport``
-      Optional. List of source ports to which the rule is applied.
+``realgoto``
+  Optional. After packet match jump to custom chain. See `ferm realgoto`_ for
+  more details.
 
-    ``state``
-      Optional. Connection state which should be matched. Possible values:
-      ``INVALID``, ``ESTABLISHED``, ``NEW``, ``RELATED``, ``UNTRACKED`` or
-      comma-separated combination thereof.
+``reject_with``
+  Optional. Define reject message being sent when the rule ``item.target`` is
+  set to ``REJECT``. Defaults to ``icmp-admin-prohibited``.
 
-    ``subchain``
-      Optional. Subchain name. If more than 3 addresses are listed in
-      ``target.saddr`` move resulting ``iptables`` rules into a separate
-      subchain with the given name. See `ferm subchain`_ for more details.
+``saddr``
+  Optional. List of source IP addresses or networks to which this rule is
+  applied.
 
-    ``target``
-      Optional. ``iptables`` jump target. Possible values: ``ACCEPT``,
-      ``DROP``, ``REJECT``, ``RETURN``, ``NOP`` or a custom target. Defaults
-      to ``ACCEPT``.
+``sport``
+  Optional. List of source ports to which the rule is applied.
 
-  This template is used in the default rule :ref:`ferm__rules_filter_ansible_controller`
-  which enables SSH connections from the Ansible controller host.
+``state``
+  Optional. Connection state which should be matched. Possible values:
+  ``INVALID``, ``ESTABLISHED``, ``NEW``, ``RELATED``, ``UNTRACKED`` or
+  comma-separated combination thereof.
+
+``subchain``
+  Optional. Subchain name. If more than 3 addresses are listed in
+  ``target.saddr`` move resulting ``iptables`` rules into a separate subchain
+  with the given name. See `ferm subchain`_ for more details.
+
+``target``
+  Optional. ``iptables`` jump target. Possible values: ``ACCEPT``, ``DROP``,
+  ``REJECT``, ``RETURN``, ``NOP`` or a custom target. Defaults to ``ACCEPT``.
+
+This template is used in the default rule :ref:`ferm__rules_filter_ansible_controller`
+which enables SSH connections from the Ansible controller host.
 
 .. _iptables multiport: http://ipset.netfilter.org/iptables-extensions.man.html#lbBM
 
-* ``connection_tracking``: Template to enable connection tracking using the
-  `iptables conntrack`_ or `iptables state`_ extension. The following
-  template-specific YAML keys are supported:
 
-    ``active_target``
-      Optional. ``iptables`` jump target for valid connections. Defaults to
-      ``ACCEPT``.
+.. connection_tracking_template:
 
-    ``invalid_target``
-      Optional. ``iptables`` jump target for invalid connections. Defaults to
-      ``DROP``.
+connection_tracking
+^^^^^^^^^^^^^^^^^^^
 
-    ``module``
-      Optional. ``iptables`` module used for connection tracking. Possible
-      values: ``state`` or ``conntrack``. Defaults to ``conntrack``.
+Template to enable connection tracking using the `iptables conntrack`_ or
+`iptables state`_ extension. The following template-specific YAML keys are
+supported:
 
-    ``interface``
-      Optional. List of network interfaces for incoming packets to which
-      the rule is applied.
+``active_target``
+  Optional. ``iptables`` jump target for valid connections. Defaults to
+  ``ACCEPT``.
 
-    ``outerface``
-      Optional. List of network interfaces for outgoing packets to which
-      the rule is applied.
+``invalid_target``
+  Optional. ``iptables`` jump target for invalid connections. Defaults to
+  ``DROP``.
 
-    ``interface_not``
-      Optional. List of network interfaces for incoming packets which are
-      excluded from the rule.
+``module``
+  Optional. ``iptables`` module used for connection tracking. Possible values:
+  ``state`` or ``conntrack``. Defaults to ``conntrack``.
 
-    ``outerface_not``
-      Optional. List of network interfaces for outgoing packets which are
-      excluded from the rule.
+``interface``
+  Optional. List of network interfaces for incoming packets to which the rule
+  is applied.
 
-  This template is used in the default rule :ref:`ferm__rules_filter_conntrack`
-  which enables connection tracking in the ``INPUT``, ``OUTPUT`` and
-  ``FORWARD`` chain.
+``outerface``
+  Optional. List of network interfaces for outgoing packets to which the rule
+  is applied.
+
+``interface_not``
+  Optional. List of network interfaces for incoming packets which are excluded
+  from the rule.
+
+``outerface_not``
+  Optional. List of network interfaces for outgoing packets which are excluded
+  from the rule.
+
+This template is used in the default rule :ref:`ferm__rules_filter_conntrack`
+which enables connection tracking in the ``INPUT``, ``OUTPUT`` and ``FORWARD``
+chain.
 
 .. _iptables conntrack: http://ipset.netfilter.org/iptables-extensions.man.html#lbAO
 .. _iptables state: http://ipset.netfilter.org/iptables-extensions.man.html#lbCC
 
-* ``custom``: Template to define custom ferm rules. The following additional
-  YAML keys are supported:
 
-    ``rule``
-      ferm rule definition, required.
+.. _custom_template:
 
-    ``by_role``
-      Optional. Add comment to generated ferm rule definition file that
-      rule is defined in the given Ansible role.
+custom
+^^^^^^
 
-  This template is used among others in the ``debops.libvirtd`` ferm rule
-  `libvirtd__ferm__dependent_rules`_.
+Template to define custom ferm rules. The following additional YAML keys are
+supported:
 
-* ``default_policy``: Template to define ``iptables`` default policies. The
-  following template-specific YAML keys are supported:
+``rule``
+  ferm rule definition, required.
 
-    ``policy``
-      ``iptables`` chain policy, required.
+``by_role``
+  Optional. Add comment to generated ferm rule definition file that rule is
+  defined in the given Ansible role.
 
-  This template is used in the default rule :ref:`ferm__rules_default_policy`
-  which sets the ``INPUT``, ``FORWARD`` and ``OUTPUT`` chain policies
-  according to :ref:`ferm__default_policy_input`, :ref:`ferm__default_policy_forward`
-  and :ref:`ferm__default_policy_output`.
+This template is used among others in the ``debops.libvirtd`` ferm rule
+`libvirtd__ferm__dependent_rules`_.
 
-* ``dmz``: Template to enable connection forwarding to another host. If
-  ``item.port`` is not specified, all traffic is forwarded. The following
-  template-specific YAML keys are supported:
 
-    ``multiport``
-      Optional. Use `iptables multiport`_ extension. Possible values:
-      ``True`` or ``False``. Defaults to ``False``.
+.. _default_policy_template:
 
-    ``public_ip``
-      IPv4 address on the public network which accepts connections, required.
+default_policy
+^^^^^^^^^^^^^^
 
-    ``private_ip``
-      IPv4 address of the host on the internal network, required.
+Template to define ``iptables`` default policies. The following
+template-specific YAML keys are supported:
 
-    ``protocol(s)``
-      Optional. List of protocols to forward. Defaults to ``tcp``.
+``policy``
+  ``iptables`` chain policy, required.
 
-    ``port(s)``
-      Optional. List of ports to forward.
+This template is used in the default rule :ref:`ferm__rules_default_policy`
+which sets the ``INPUT``, ``FORWARD`` and ``OUTPUT`` chain policies according
+to :ref:`ferm__default_policy_input`, :ref:`ferm__default_policy_forward`
+and :ref:`ferm__default_policy_output`.
 
-    ``dport``
-      Optional. Destination port to forward to. Only needs to be specified
-      if internal destination port is different from the original destination
-      port.
 
-* ``fail2ban``: Template to integrate fail2ban with ``ferm``. As the fail2ban
-  service is defining its own ``iptables`` chains the template will make sure
-  that they are properly refreshed if the ``ferm`` configuration changes.
+.. _dmz_template:
 
-  This template is used in the default rule :ref:`ferm__rules_fail2ban`.
+dmz
+^^^
 
-* ``hashlimit``: Template to define rate limit rules using the
-  `iptables hashlimit`_ extension. The following template-specific YAML
-  keys are supported:
+Template to enable connection forwarding to another host. If ``item.port``
+is not specified, all traffic is forwarded. The following template-specific
+YAML keys are supported:
 
-    ``dport``
-      Optional. List of destination ports to which the rule is applied.
+``multiport``
+  Optional. Use `iptables multiport`_ extension. Possible values: ``True``
+  or ``False``. Defaults to ``False``.
 
-    ``enabled``
-      Optional. Enable rule definition. Possible values: ``True`` and
-      ``False``. Defaults to ``True``.
+``public_ip``
+  IPv4 address on the public network which accepts connections, required.
 
-    ``hashlimit_burst``
-      Optional. Number of packets to match within the expiration time.
-      Defaults to ``5``.
+``private_ip``
+  IPv4 address of the host on the internal network, required.
 
-    ``hashlimit_expire``
-      Optional. Expiration time of hash entries in seconds. Defaults to
-      ``1.8``.
+``protocol(s)``
+  Optional. List of protocols to forward. Defaults to ``tcp``.
 
-    ``hashlimit_target``
-      Optional. ? Defaults to ``RETURN``.
+``port(s)``
+  Optional. List of ports to forward.
 
-    ``hashlimit_mode``
-      Optional. Options to take into consideration when associating packet
-      streams. Possible values: ``srcip``, ``srcport``, ``dstip``, ``dstport``
-      or a comma-separated list thereof. Defaults to ``srcip``.
+``dport``
+  Optional. Destination port to forward to. Only needs to be specified if
+  internal destination port is different from the original destination port.
 
-    ``include``
-      Optional. Custom ferm configuration file to include. See
-      `ferm include`_ for more details.
 
-    ``log``
-      Optional. Write rate limit hits to syslog. Possible values: ``True``
-      and ``False``. Defaults to ``True``.
+.. _fail2ban_template:
 
-    ``name``
-      Optional. Set rule name in places where it is referenced.
+fail2ban
+^^^^^^^^
 
-    ``protocol``
-      Optional. Network protocol to which the rule is applied.
+Template to integrate fail2ban with ``ferm``. As the fail2ban service is
+defining its own ``iptables`` chains the template will make sure that they
+are properly refreshed if the ``ferm`` configuration changes.
 
-    ``protocol_syn``
-      Optional. Match TCP packet with only the SYN flag set. Possible
-      values ``True`` or ``False``. If set to ``False`` it will match all
-      other packets except the ones with only the SYN flag set. Defaults
-      to unset.
+This template is used in the default rule :ref:`ferm__rules_fail2ban`.
 
-    ``reject_with``
-      Optional. Define reject message being sent when the rule ``item.target``
-      is set to ``REJECT``. Defaults to ``icmp-admin-prohibited``.
 
-    ``state``
-      Optional. Connection state which should be matched. Possible values:
-      ``INVALID``, ``ESTABLISHED``, ``NEW``, ``RELATED``, ``UNTRACKED`` or
-      comma-separated combination thereof.
+.. _hashlimit_template:
 
-    ``subchain``
-      Optional. Subchain name. Move resulting ``iptables`` rules into a
-      separate subchain with the given name. See `ferm subchain`_ for more
-      details.
+hashlimit
+^^^^^^^^^
 
-    ``target``
-      Optional. ``iptables`` jump target in case the rate limit is reached.
-      Defaults to ``REJECT``.
+Template to define rate limit rules using the `iptables hashlimit`_ extension.
+The following template-specific YAML keys are supported:
 
-  This template is used in the default rules :ref:`ferm__rules_filter_icmp` and
-  :ref:`ferm__rules_filter_syn` which limits the packet rate for ICMP packets
-  and new connection attempts.
+``dport``
+  Optional. List of destination ports to which the rule is applied.
+
+``enabled``
+  Optional. Enable rule definition. Possible values: ``True`` and ``False``.
+  Defaults to ``True``.
+
+``hashlimit_burst``
+  Optional. Number of packets to match within the expiration time. Defaults
+  to ``5``.
+
+``hashlimit_expire``
+  Optional. Expiration time of hash entries in seconds. Defaults to ``1.8``.
+
+``hashlimit_target``
+  Optional. ? Defaults to ``RETURN``.
+
+``hashlimit_mode``
+  Optional. Options to take into consideration when associating packet
+  streams. Possible values: ``srcip``, ``srcport``, ``dstip``, ``dstport``
+  or a comma-separated list thereof. Defaults to ``srcip``.
+
+``include``
+  Optional. Custom ferm configuration file to include. See `ferm include`_ for
+  more details.
+
+``log``
+  Optional. Write rate limit hits to syslog. Possible values: ``True`` and
+  ``False``. Defaults to ``True``.
+
+``name``
+  Optional. Set rule name in places where it is referenced.
+
+``protocol``
+  Optional. Network protocol to which the rule is applied.
+
+``protocol_syn``
+  Optional. Match TCP packet with only the SYN flag set. Possible values
+  ``True`` or ``False``. If set to ``False`` it will match all other packets
+  except the ones with only the SYN flag set. Defaults to unset.
+
+``reject_with``
+  Optional. Define reject message being sent when the rule ``item.target`` is
+  set to ``REJECT``. Defaults to ``icmp-admin-prohibited``.
+
+``state``
+  Optional. Connection state which should be matched. Possible values:
+  ``INVALID``, ``ESTABLISHED``, ``NEW``, ``RELATED``, ``UNTRACKED`` or
+  comma-separated combination thereof.
+
+``subchain``
+  Optional. Subchain name. Move resulting ``iptables`` rules into a
+  separate subchain with the given name. See `ferm subchain`_ for more
+  details.
+
+``target``
+  Optional. ``iptables`` jump target in case the rate limit is reached.
+  Defaults to ``REJECT``.
+
+This template is used in the default rules :ref:`ferm__rules_filter_icmp` and
+:ref:`ferm__rules_filter_syn` which limits the packet rate for ICMP packets
+and new connection attempts.
 
 .. _iptables hashlimit: http://ipset.netfilter.org/iptables-extensions.man.html#lbAY
 
-* ``include``: Template to include custom ferm configuration files. The
-  following template-specific YAML keys are supported:
 
-    ``include``
-      Optional. Custom ferm configuration file to include. See
-      `ferm include`_ for more details.
+.. _include_template:
 
-* ``log``: Template to specify logging rules using the `iptables log`_
-  extension. The following template-specific YAML keys are supported:
+include
+^^^^^^^
 
-    ``include``
-      Optional. Custom ferm configuration file to include. See
-      `ferm include`_ for more details.
+Template to include custom ferm configuration files. The following
+template-specific YAML keys are supported:
 
-    ``log_burst``
-      Optional. Burst limit of packets being logged. Defaults to
-      :ref:`ferm__log_burst`.
+``include``
+  Optional. Custom ferm configuration file to include. See
+  `ferm include`_ for more details.
 
-    ``log_ip_options``
-      Optional. Log IP options of packet. Possible values: ``True`` or
-      ``False``. Defaults to ``True``.
 
-    ``log_level``
-      Optional. Log level for firewall messages. Possible values are:
-      ``emerg``, ``alert``, ``crit``, ``error``, ``warning``, ``notice``,
-      ``info`` or ``debug``. Defaults to ``warning``.
+.. _log_template:
 
-    ``log_limit``
-      Optional. Rate limit of packets being logged. Defaults to
-      :ref:`ferm__log_limit`.
+log
+^^^
 
-    ``log_prefix``
-      Optional. Prefix (up to 29 characters) for firewall log messages.
-      Defaults to ``iptables-log: ``
+Template to specify logging rules using the `iptables log`_ extension.
+The following template-specific YAML keys are supported:
 
-    ``log_target``
-      Optional. Select how ``iptables`` performs logging. Possible values:
-      ``LOG``, ``ULOG``, ``NFLOG``. Defaults to ``LOG``.
+``include``
+  Optional. Custom ferm configuration file to include. See
+  `ferm include`_ for more details.
 
-    ``log_tcp_options``
-      Optional. Log TCP options of packet. Possible values: ``True`` or
-      ``False``. Defaults to ``False``.
+``log_burst``
+  Optional. Burst limit of packets being logged. Defaults to
+  :ref:`ferm__log_burst`.
 
-    ``log_tcp_sequence``
-      Optional. Log TCP sequence of packet. Possible values: ``True`` or
-      ``False``. Defaults to ``False``.
+``log_ip_options``
+  Optional. Log IP options of packet. Possible values: ``True`` or ``False``.
+  Defaults to ``True``.
 
-    ``realgoto``
-      Optional. After packet match jump to custom chain. See `ferm realgoto`_
-      for more details.
+``log_level``
+  Optional. Log level for firewall messages. Possible values are: ``emerg``,
+  ``alert``, ``crit``, ``error``, ``warning``, ``notice``, ``info`` or
+  ``debug``. Defaults to ``warning``.
 
-    ``reject_with``
-      Optional. Define reject message being sent when the rule ``item.target``
-      is set to ``REJECT``. Defaults to ``icmp-admin-prohibited``.
+``log_limit``
+  Optional. Rate limit of packets being logged. Defaults to
+  :ref:`ferm__log_limit`.
 
-    ``target``
-      Optional. ``iptables`` jump target for logged packets.
+``log_prefix``
+  Optional. Prefix (up to 29 characters) for firewall log messages. Defaults
+  to ``iptables-log: ``
+
+``log_target``
+  Optional. Select how ``iptables`` performs logging. Possible values:
+  ``LOG``, ``ULOG``, ``NFLOG``. Defaults to ``LOG``.
+
+``log_tcp_options``
+  Optional. Log TCP options of packet. Possible values: ``True`` or ``False``.
+  Defaults to ``False``.
+
+``log_tcp_sequence``
+  Optional. Log TCP sequence of packet. Possible values: ``True`` or
+  ``False``. Defaults to ``False``.
+
+``realgoto``
+  Optional. After packet match jump to custom chain. See `ferm realgoto`_ for
+  more details.
+
+``reject_with``
+  Optional. Define reject message being sent when the rule ``item.target`` is
+  set to ``REJECT``. Defaults to ``icmp-admin-prohibited``.
+
+``target``
+  Optional. ``iptables`` jump target for logged packets.
 
 .. _iptables log: http://ipset.netfilter.org/iptables-extensions.man.html#lbDD
 
-* ``recent``: Template to track connections and respond accordingly by using
-  the `iptables recent`_ extension. The following template-specific YAML keys
-  are supported:
 
-    ``dport``
-      Optional. List of destination ports to which the rule is applied.
+.. _recent_template:
 
-    ``include``
-      Optional. Custom ferm configuration file to include. See
-      `ferm include`_ for more details.
+recent
+^^^^^^
 
-    ``multiport``
-      Optional. Use `iptables multiport`_ extension. Possible values:
-      ``True`` or ``False``. Defaults to ``False``.
+Template to track connections and respond accordingly by using the
+`iptables recent`_ extension. The following template-specific YAML keys are
+supported:
 
-    ``name``
-      Optional. Set rule name in places where it is referenced.
+``dport``
+  Optional. List of destination ports to which the rule is applied.
 
-    ``protocol``
-      Optional. Network protocol to which the rule is applied.
+``include``
+  Optional. Custom ferm configuration file to include. See
+  `ferm include`_ for more details.
 
-    ``protocol_syn``
-      Optional. Match TCP packet with only the SYN flag set. Possible
-      values ``True`` or ``False``. If set to ``False`` it will match all
-      other packets except the ones with only the SYN flag set. Defaults
-      to unset.
+``multiport``
+  Optional. Use `iptables multiport`_ extension. Possible values: ``True``
+  or ``False``. Defaults to ``False``.
 
-    ``recent_hitcount``
-      Optional. Must be used in combination with ``item.recent_update``.
-      Match if address is in the list and at least the given number of
-      packets were received so far.
+``name``
+  Optional. Set rule name in places where it is referenced.
 
-    ``recent_log``
-      Optional. Log packets hitting
+``protocol``
+  Optional. Network protocol to which the rule is applied.
 
-    ``recent_name``
-      Optional. Name of the list. Defaults to ``DEFAULT``.
+``protocol_syn``
+  Optional. Match TCP packet with only the SYN flag set. Possible values
+  ``True`` or ``False``. If set to ``False`` it will match all other packets
+  except the ones with only the SYN flag set. Defaults to unset.
 
-    ``recent_remove``
-      Optional. Remove address from the list. Possible values: ``True`` or
-      ``False``. Defaults to ``False``. Mutually exclusive with
-      ``item.recent_update``.
+``recent_hitcount``
+  Optional. Must be used in combination with ``item.recent_update``. Match
+  if address is in the list and at least the given number of packets were
+  received so far.
 
-    ``recent_seconds``
-      Optional. Must be used in combination with ``item.recent_update``.
-      Match if address is in the list and was last seen within the given
-      number of seconds.
+``recent_log``
+  Optional. Log packets hitting
 
-    ``recent_set_name``
-      Optional. ?
+``recent_name``
+  Optional. Name of the list. Defaults to ``DEFAULT``.
 
-    ``recent_target``
-      Optional. ``iptables`` jump target when packet has hit the recent list.
-      Possible values: ``ACCEPT``, ``DROP``, ``REJECT``, ``RETURN``, ``NOP``
-      or a custom target. Defaults to ``NOP``.
+``recent_remove``
+  Optional. Remove address from the list. Possible values: ``True`` or
+  ``False``. Defaults to ``False``. Mutually exclusive with
+  ``item.recent_update``.
 
-    ``recent_update``
-      Optional. Update "last-seen" timestamp.  Possible values: ``True`` or
-      ``False``. Defaults to ``False``. Mutually exclusive with
-      ``item.recent_remove``.
+``recent_seconds``
+  Optional. Must be used in combination with ``item.recent_update``. Match
+  if address is in the list and was last seen within the given number of
+  seconds.
 
-    ``reject_with``
-      Optional. Define reject message being sent when the rule ``item.target``
-      is set to ``REJECT``. Defaults to ``icmp-admin-prohibited``.
+``recent_set_name``
+  Optional. ?
 
-    ``state``
-      Optional. Connection state which should be matched. Possible values:
-      ``INVALID``, ``ESTABLISHED``, ``NEW``, ``RELATED``, ``UNTRACKED`` or
-      comma-separated combination thereof.
+``recent_target``
+  Optional. ``iptables`` jump target when packet has hit the recent list.
+  Possible values: ``ACCEPT``, ``DROP``, ``REJECT``, ``RETURN``, ``NOP`` or
+  a custom target. Defaults to ``NOP``.
 
-    ``subchain``
-      Optional. Subchain name. Move resulting ``iptables`` rules into a
-      separate subchain with the name given. See `ferm subchain`_ for more
-      details.
+``recent_update``
+  Optional. Update "last-seen" timestamp.  Possible values: ``True`` or
+  ``False``. Defaults to ``False``. Mutually exclusive with
+  ``item.recent_remove``.
 
-  When using the ``recent`` template make sure to always define two rules.
-  One for matching the packet against the address list using the
+``reject_with``
+  Optional. Define reject message being sent when the rule ``item.target`` is
+  set to ``REJECT``. Defaults to ``icmp-admin-prohibited``.
+
+``state``
+  Optional. Connection state which should be matched. Possible values:
+  ``INVALID``, ``ESTABLISHED``, ``NEW``, ``RELATED``, ``UNTRACKED`` or
+  comma-separated combination thereof.
+
+``subchain``
+  Optional. Subchain name. Move resulting ``iptables`` rules into a
+  separate subchain with the name given. See `ferm subchain`_ for more
+  details.
+
+When using the `recent_template`_ template make sure to always define two
+rules:
+
+* One for matching the packet against the address list using the
   ``item.recent_update`` feature. If this filter matches you likely want
-  to set the ``item.recent_target`` to ``DROP`` or ``REJECT``. To clear
-  the source address from the list again in case the connection restrictions
-  are not met, add a second role using ``item.recent_remove``.
+  to set the ``item.recent_target`` to ``DROP`` or ``REJECT``.
 
-  This template is used in the default role :ref:`ferm__rules_filter_recent_badguys`
-  which will block IP addresses which are doing excessive connection attempts.
+* To clear the source address from the list again in case the connection
+  restrictions are not met, add a second role using ``item.recent_remove``.
+
+This template is used in the default role :ref:`ferm__rules_filter_recent_badguys`
+which will block IP addresses which are doing excessive connection attempts.
 
 .. _iptables recent: http://ipset.netfilter.org/iptables-extensions.man.html#lbBW
 
-* ``reject``: Template to reject all traffic.
+
+.. _reject_template:
+
+reject
+^^^^^^
+
+Template to reject all traffic. It can be added for example as a final rule
+in a custom chain.
+ 
 
 .. _legacy_rules:
 
@@ -615,9 +682,9 @@ Support for legacy rules is still enabled by default. However, they are
 stored in a separate ``iptables`` INPUT chain called
 ``debops-legacy-input-rules``. In case you haven't defined any legacy
 rules and none of the DebOps roles you are using are still depending
-on it, disable support completely by setting ``ferm__include_legacy: False``
+on it, disable support completely by setting :envvar:`ferm__include_legacy: False`
 which will avoid the additional chain from being created.
 
 If you're not sure if you still have legacy rules defined, look for
 variable names with only on '_' after the ``ferm`` prefix (e.g.
-:ref:`ferm_input_list` and :ref:`ferm_input_dependent_list`.
+:ref:`ferm_input_list` and :ref:`ferm_input_dependent_list`).
