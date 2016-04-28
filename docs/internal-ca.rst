@@ -112,13 +112,13 @@ The directory structure of the Certificate Authorities stored in the
                     └── request.pem
 
 The incoming certificate requests are placed in subdirectories of the
-``secret/pki/requests/`` directory. Each subdirectory is related to
+:file:`secret/pki/requests/` directory. Each subdirectory is related to
 a Certificate Authority, on above directory tree you can see that a request has
 been uploaded from ``hostname.example.com`` host for the ``domain`` Certificate
 Authority.
 
 The signed certificates are placed in subdirectories of the
-``secret/pki/realms/`` directory. The intermediate CA certificate and root CA
+:file:`secret/pki/realms/` directory. The intermediate CA certificate and root CA
 certificate files are symlinked in the same subdirectory as the signed
 certificate, so that Ansible can copy their contents as regular files to remote
 host and correct certificate chains can be created in the PKI realm.
@@ -141,7 +141,7 @@ as revoke existing ones (although enforcement of the revocation in the form or
 distribution of Certificate Revocation Lists or an OCSP service is not
 currently implemented). You should protect access to it by moving the file to
 a secure location (preferably an encrypted, offline filesystem) and replacing
-it with an empty ``key.pem`` file (otherwise the ``debops.pki`` role will
+it with an empty :file:`key.pem` file (otherwise the ``debops.pki`` role will
 replace the private key and regenerate all of the CA certificates).
 
 Unfortunately, private keys of the Domain Certificate Authority, any other
@@ -162,6 +162,6 @@ Requests modified by a third party, unless the challenge password can be
 intercepted (it's currently passed using environment variables).
 
 If for any reason CSR signing cannot be completed, you will need to remove the
-``internal/gnutls.conf`` and ``internal/request.pem`` files to re-initialize
+:file:`internal/gnutls.conf` and :file:`internal/request.pem` files to re-initialize
 the certificate signing.
 

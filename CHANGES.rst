@@ -6,7 +6,7 @@ v0.2.7
 
 *Unreleased*
 
-- Documentation improvements. Fixed examples, spelling, grammar, Sphinx inline
+- Documentation improvements. Fixed examples, spelling, grammar and Sphinx inline
   syntax. [ypid]
 
 v0.2.6
@@ -38,14 +38,14 @@ v0.2.4
 - Provide a portable ``dnsdomainname`` alternative function which works on
   operating systems without the former command present. [drybjed]
 
-- Use short ``hostname -f`` argument for portability. [drybjed]
+- Use short :command:`hostname -f` argument for portability. [drybjed]
 
 - Update support for ``subjectAltName`` extension in certificates. Currently
   only IP addresses, DNS records, URI paths and emails are supported. [drybjed]
 
 - Document ``pki_realms`` lists. [drybjed]
 
-- Redesign the ``secret/pki/ca-certificates/`` directory. It's now based on
+- Redesign the :file:`secret/pki/ca-certificates/` directory. It's now based on
   Ansible inventory groups and allows distribution of CA certificates to all
   hosts, specific host groups, or specific hosts. [drybjed]
 
@@ -119,7 +119,7 @@ v0.2.2
   contain Root CA certificates and does not create idempotency issues.
   [drybjed]
 
-- Do not create a ``cron`` task when support for PKI is disabled on a host.
+- Do not create a :program:`cron` task when support for PKI is disabled on a host.
   [drybjed]
 
 v0.2.1

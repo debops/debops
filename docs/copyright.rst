@@ -3,8 +3,8 @@ Copyright
 
 ::
 
-    Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
-    Copyright (C) 2015-2016 DebOps Project http://debops.org/
+    Copyright (C) 2013-2016 Maciej Delmanowski <drybjed@gmail.com>
+    Copyright (C) 2014-2016 DebOps Project http://debops.org/
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 3, as
@@ -29,4 +29,4 @@ Credits
 
 * Robin Schneider <ypid_at_riseup.net>
 
-  * Quality assurance, documentation
+  * Quality assurance, review

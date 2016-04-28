@@ -36,34 +36,34 @@ by the role, and it's simplified directory structure looks like this:
 Each of these symlinks point to a file contained in another subdirectory (see
 the next section). The contents of these files are:
 
-``CA.crt``
+:file:`CA.crt`
   This is the "trust anchor" or Root Certificate Authority certificate used by
   the application to check the validity of client certificates. This file is
   publicly readable.
 
-  ``CA.crt`` may contain a CA certificate different than the one that issued
+  :file:`CA.crt` may contain a CA certificate different than the one that issued
   the server certificate. In this case, this can be used to have separate
   client and server Certificate Authorities.
 
-``default.crt``
+:file:`default.crt`
   This is the server certificate with optionally bundled Intermediate
   Certificate Authorities. It is sent to the clients during connection
   establishment by the application. This file is publicly readable.
 
-``default.key``
+:file:`default.key`
   This is the server private key. It's readable only by the ``root`` account
   and by selected UNIX group – this can be used to limit access to different
   private keys by different UNIX accounts.
   FIXME: selected UNIX group
 
-``default.pem``
+:file:`default.pem`
   This file contains the private key, server certificate and Intermediate
   CA certificate(s). It has the same restrictions as the private key – can be
   read only by the ``root`` account and selected UNIX group.
 
-``trusted.crt``
+:file:`trusted.crt`
   This is the complete trust chain of intermediate and root CA certificates,
-  without the server certificate, similar to ``CA.crt``. It is used for
+  without the server certificate, similar to :file:`CA.crt`. It is used for
   automatic OCSP stapling verification by the server, and works with the
   primary CA in case the alternative Certificate Authority is used for client
   certificates.
@@ -183,7 +183,7 @@ in the :file:`secret/` directory maintained by the ``debops.secret`` Ansible rol
                     └── request.pem
 
 Your version might not contain all of the shown files and symlinks, for example
-the ``alt_*.pem`` versions of intermediate and root CA certificates are only
+the :file:`alt_*.pem` versions of intermediate and root CA certificates are only
 present if an alternative CA is configured.
 
 Both directories are maintained and kept in sync using two Bash scripts
@@ -255,8 +255,8 @@ detail in a separate document, here is a brief overview:
   used to request a certificate in and external CA, like Active Directory or
   FreeIPA, or download a signed certificate from external location.
 
-  An alternative is to provide already signed ``cert.pem`` file with optional
-  ``intermediate.pem`` and ``root.pem`` certificates.
+  An alternative is to provide already signed :file:`cert.pem` file with optional
+  :file:`intermediate.pem` and :file:`root.pem` certificates.
 
 :file:`internal/`
   This directory is used by the internal ``debops.pki`` Certificate Authority
@@ -333,16 +333,16 @@ uploaded to the :file:`secret/` directory:
                 └── domain/
                     └── request.pem
 
-To avoid possible confusion, the ``secret/pki/requests/domain/`` directory
+To avoid possible confusion, the :file:`secret/pki/requests/domain/` directory
 points to the "domain" internal CA which is an intermediate CA located under
-"root" CA. The ``hostname.example.com/domain/`` directory inside the
-``domain/`` directory points to the "domain" realm on the
+"root" CA. The :file:`hostname.example.com/domain/` directory inside the
+:file:`domain/` directory points to the "domain" realm on the
 ``hostname.example.com`` host.
 
 When all of the requests from the remote hosts are uploaded to the Ansible
 Controller, the :program:`pki-authority` script inside the :file:`secret/` directory takes
 over and performs certificate signing for all of the currently managed hosts.
-The signed certificate named ``cert.pem`` is placed in the :file:`internal/`
+The signed certificate named :file:`cert.pem` is placed in the :file:`internal/`
 directory of each host according to the realm the request came from.
 
 In addition to the certificates, the CA intermediate and root certificates are
@@ -350,7 +350,9 @@ also symlinked to the :file:`internal/` directory, so that Ansible can
 automatically copy their contents to the remote hosts. If a particular
 Certificate Authority indicates that an alternative CA should be present, the
 ``alt_*.pem`` versions of intermediate and root certificates are also symlinked
-there::
+there:
+
+.. code-block:: none
 
     secret/pki/
     ├── realms/
@@ -377,15 +379,17 @@ there::
                     └── request.pem
 
 When all of the requests have been processed, Ansible copies contents of the
-directories to remote hosts. The ``by-host/`` directory contents are copied
+directories to remote hosts. The :file:`by-host/` directory contents are copied
 first and overwrite any files that are present on remote hosts, the
-``by-group/`` directory contents are copied only when the corresponding files
+:file:`by-group/` directory contents are copied only when the corresponding files
 are not present. This allows the administrator to provide the shared scripts or
 private keys/certificates as needed, per host, per group or for all managed
 hosts.
 
 After certificates signed by internal CA are downloaded to remote host, the
-directory structure might look similar to::
+directory structure might look similar to:
+
+.. code-block:: none
 
     /etc/pki/realms/
     └── domain/
@@ -422,7 +426,7 @@ root files to the :file:`public/` directory and generation of various chain file
 - certificate + intermediate, intermediate + root and key + certificate
 + intermediate (which is stored securely in the :file:`private/` directory).
 
-Some applications do not support separate ``dhparam`` file, and instead expect
+Some applications do not support separate :file:`dhparam` file, and instead expect
 that the DHE parameters are present after the X.509 certificate chain. If the
 ``debops.dhparam`` role has been configured on a host and Diffie-Hellman
 parameter support is enabled in a given PKI realm, DHE parameters will be
@@ -431,7 +435,9 @@ appended to the final certificate chains (both public and private). When the
 automatically detect the new ones and update the certificate chains.
 
 The end result is fully configured PKI realm with a set of valid certificates
-available for other applications and services::
+available for other applications and services:
+
+.. code-block:: none
 
     /etc/pki/realms/
     └── domain/
