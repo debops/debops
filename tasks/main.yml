@@ -56,13 +56,13 @@
     system: '{{ (item.system | d(True)) | bool }}'
     state: 'present'
   with_items: '{{ pki_private_groups_present }}'
-  when: ((pki_enabled | bool and pki_private_groups_present) and
-         (item.when is undefined or item.when|bool))
+  when: ((pki_enabled|bool and pki_private_groups_present) and
+         (item.when|d(True) | bool))
 
 - name: Configure acme-tiny support
   include: acme_tiny.yml
-  when: (pki_enabled | bool and
-         (pki_acme | bool or pki_acme_install | bool))
+  when: (pki_enabled|bool and
+         (pki_acme|bool or pki_acme_install|bool))
 
 - name: Initialize PKI realms
   environment:
@@ -71,6 +71,7 @@
     PKI_INTERNAL: '{{ (item.internal | d(pki_internal)) | bool | lower }}'
     PKI_LIBRARY: '{{ item.library | d(pki_library) }}'
     PKI_ACME_LIBRARY: '{{ item.acme_library | d(pki_acme_library) }}'
+  ## FIXME: In this command a hardcoded path is used but it might be changed by Ansible facts.
   command: /usr/local/lib/pki/pki-realm init -n "{{ item.name }}" --library "{{ item.library | d(pki_library) }}"
            --internal "{{ (item.internal | d(pki_internal)) | bool | lower }}" --private-dir-group "{{ item.private_dir_group | d(pki_private_group) }}"
            --private-file-group "{{ item.private_file_group | d(pki_private_group) }}"
@@ -88,9 +89,9 @@
     - '{{ pki_host_realms }}'
     - '{{ pki_default_realms }}'
     - '{{ pki_dependent_realms }}'
-  when: (pki_enabled | bool and item.name is defined and
-         (item.enabled is undefined or item.enabled|bool) and
-         (item.when is undefined or item.when|bool))
+  when: (pki_enabled|bool and item.name is defined and
+         (item.enabled|d(True) | bool) and
+         (item.when|d(True) | bool))
 
 - name: Download custom private files
   copy:
@@ -107,7 +108,7 @@
     - '{{ pki_private_files }}'
     - '{{ pki_group_private_files }}'
     - '{{ pki_host_private_files }}'
-  when: (pki_enabled | bool and (item.src is defined or item.content is defined) and
+  when: (pki_enabled|bool and (item.src is defined or item.content is defined) and
          item.dest is defined)
 
 - name: Download private realm contents by host
@@ -119,9 +120,9 @@
     mode: '0640'
   with_items:
     - '{{ pki_realms + pki_group_realms + pki_host_realms + pki_default_realms + pki_dependent_realms }}'
-  when: (pki_enabled | bool and item.name is defined and
-         (item.enabled is undefined or item.enabled|bool) and
-         (item.when is undefined or item.when|bool))
+  when: (pki_enabled|bool and item.name is defined and
+         (item.enabled|d(True) | bool) and
+         (item.when|d(True) | bool))
 
 - name: Download private realm contents by group
   copy:
@@ -134,9 +135,9 @@
   with_nested:
     - '{{ pki_group_realms }}'
     - '{{ pki_inventory_groups }}'
-  when: (pki_enabled | bool and (item.0.name is defined and
-         (item.0.enabled is undefined or item.0.enabled|bool) and
-         (item.0.when is undefined or item.0.when|bool)) and
+  when: (pki_enabled|bool and (item.0.name is defined and
+         (item.0.enabled|d(True) | bool) and
+         (item.0.when|d(True) | bool)) and
          (item.1 is defined and item.1 in group_names))
 
 - name: Download private realm contents for all hosts
@@ -149,9 +150,9 @@
     force: False
   with_items:
     - '{{ pki_realms + pki_default_realms }}'
-  when: (pki_enabled | bool and item.name is defined and
-         (item.enabled is undefined or item.enabled|bool) and
-         (item.when is undefined or item.when|bool))
+  when: (pki_enabled|bool and item.name is defined and
+         (item.enabled|d(True) | bool) and
+         (item.when|d(True) | bool))
 
 - name: Create PKI realms
   environment:
@@ -170,13 +171,15 @@
     - '{{ pki_host_realms }}'
     - '{{ pki_default_realms }}'
     - '{{ pki_dependent_realms }}'
-  when: (pki_enabled | bool and item.name is defined and
-         ((item.internal is undefined or item.internal|bool) and pki_internal|bool) and
-         (item.enabled is undefined or item.enabled|bool) and
-         (item.when is undefined or item.when|bool))
+  when: (pki_enabled|bool and item.name is defined and
+         ((item.internal|d(True) | bool) and pki_internal|bool) and
+         (item.enabled|d(True) | bool) and
+         (item.when|d(True) | bool))
 
 - name: Execute PKI realm commands
   environment:
+    ## FIXME: While I find the idea of using omit like this very creative it
+    ## makes to much assumptions on `omit` which might not be true in the future.
     PKI_SESSION_TOKEN: '{{ omit | md5 }}'
   command: /usr/local/lib/pki/pki-realm run -n {{ item.name }}
   with_flattened:
@@ -186,9 +189,9 @@
     - '{{ pki_default_realms }}'
     - '{{ pki_dependent_realms }}'
   changed_when: False
-  when: (pki_enabled | bool and item.name is defined and
-         (item.enabled is undefined or item.enabled|bool) and
-         (item.when is undefined or item.when|bool))
+  when: (pki_enabled|bool and item.name is defined and
+         (item.enabled|d(True) | bool) and
+         (item.when|d(True) | bool))
 
 - name: Upload internal certificate requests
   fetch:
@@ -201,10 +204,10 @@
     - '{{ pki_host_realms }}'
     - '{{ pki_default_realms }}'
     - '{{ pki_dependent_realms }}'
-  when: (pki_enabled | bool and item.name is defined and
-         ((item.internal is undefined or item.internal|bool) and pki_internal|bool) and
-         (item.enabled is undefined or item.enabled|bool) and
-         (item.when is undefined or item.when|bool))
+  when: (pki_enabled|bool and item.name is defined and
+         ((item.internal|d(True) | bool) and pki_internal|bool) and
+         (item.enabled|d(True) | bool) and
+         (item.when|d(True) | bool))
 
 - name: Initialize PKI authorities
   environment:
@@ -222,8 +225,7 @@
   run_once: True
   with_flattened:
     - '{{ pki_authorities + pki_dependent_authorities }}'
-  when: (item.name is defined and
-         (item.enabled is undefined or item.enabled|bool))
+  when: (item.name is defined and (item.enabled|d(True) | bool))
 
 - name: Create PKI authorities
   environment:
@@ -244,8 +246,7 @@
   run_once: True
   with_flattened:
     - '{{ pki_authorities + pki_dependent_authorities }}'
-  when: (item.name is defined and
-         (item.enabled is undefined or item.enabled|bool))
+  when: (item.name is defined and (item.enabled|d(True) | bool))
 
 - name: Sign certificate requests for current hosts
   environment:
@@ -269,9 +270,9 @@
   with_nested:
     - '{{ pki_realms + pki_group_realms + pki_host_realms + pki_default_realms + pki_dependent_realms }}'
     - [ 'external', 'internal' ]
-  when: (pki_enabled | bool and item.0.name is defined and
-         (item.0.enabled is undefined or item.0.enabled|bool) and
-         (item.0.when is undefined or item.0.when|bool))
+  when: (pki_enabled|bool and item.0.name is defined and
+         (item.0.enabled|d(True) | bool) and
+         (item.0.when|d(True) | bool))
 
 - name: Download custom public files
   copy:
@@ -288,7 +289,7 @@
     - '{{ pki_public_files }}'
     - '{{ pki_group_public_files }}'
     - '{{ pki_host_public_files }}'
-  when: (pki_enabled | bool and (item.src is defined or item.content is defined) and
+  when: (pki_enabled|bool and (item.src is defined or item.content is defined) and
          item.dest is defined)
 
 - name: Download external realm contents by group
@@ -301,9 +302,9 @@
   with_nested:
     - '{{ pki_group_realms }}'
     - '{{ pki_inventory_groups }}'
-  when: (pki_enabled | bool and (item.0.name is defined and
-          (item.0.enabled is undefined or item.0.enabled|bool) and
-          (item.0.when is undefined or item.0.when|bool)) and
+  when: (pki_enabled|bool and (item.0.name is defined and
+          (item.0.enabled|d(True) | bool) and
+          (item.0.when|d(True) | bool)) and
           (item.1 is defined and item.1 in group_names))
 
 - name: Download external realm contents for all hosts
@@ -315,9 +316,9 @@
     force: False
   with_items:
     - '{{ pki_realms + pki_default_realms }}'
-  when: (pki_enabled | bool and item.name is defined and
-         (item.enabled is undefined or item.enabled|bool) and
-         (item.when is undefined or item.when|bool))
+  when: (pki_enabled|bool and item.name is defined and
+         (item.enabled|d(True) | bool) and
+         (item.when|d(True) | bool))
 
 - name: Download custom CA certificates by host
   copy:
@@ -338,7 +339,7 @@
     force: False
   with_items: '{{ pki_inventory_groups }}'
   notify: [ 'Regenerate ca-certificates.crt' ]
-  when: (pki_enabled | bool and item in group_names)
+  when: (pki_enabled|bool and item in group_names)
 
 - name: Download custom CA certificates for all hosts
   copy:
@@ -361,9 +362,9 @@
     - '{{ pki_default_realms }}'
     - '{{ pki_dependent_realms }}'
   changed_when: False
-  when: (pki_enabled | bool and item.name is defined and
-         (item.enabled is undefined or item.enabled|bool) and
-         (item.when is undefined or item.when|bool))
+  when: (pki_enabled|bool and item.name is defined and
+         (item.enabled|d(True) | bool) and
+         (item.when|d(True) | bool))
 
 - name: Manage PKI scheduler
   cron:
@@ -372,7 +373,7 @@
     cron_file: 'pki-realm-scheduler'
     job: 'test -x /usr/local/lib/pki/pki-realm && /usr/local/lib/pki/pki-realm schedule'
     special_time: '{{ pki_scheduler_interval }}'
-    state: '{{ "present" if (pki_enabled | bool and pki_scheduler | bool) else "absent" }}'
+    state: '{{ "present" if (pki_enabled|bool and pki_scheduler | bool) else "absent" }}'
 
 - name: Manage system CA certificates
   include: ca_certificates.yml
