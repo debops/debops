@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.7
+------
+
+*Unreleased*
+
+- Documentation improvements. Fixed examples, spelling, grammar and Sphinx inline
+  syntax. [ypid]
+
 v0.2.6
 ------
 
@@ -17,7 +25,7 @@ v0.2.5
 
 *Released: 2016-03-02*
 
-- Don't run ``pki-authority`` script on Ansible Controller if list of
+- Don't run :program:`pki-authority` script on Ansible Controller if list of
   ``pki_authorities`` is not defined. [drybjed]
 
 v0.2.4
@@ -30,14 +38,14 @@ v0.2.4
 - Provide a portable ``dnsdomainname`` alternative function which works on
   operating systems without the former command present. [drybjed]
 
-- Use short ``hostname -f`` argument for portability. [drybjed]
+- Use short :command:`hostname -f` argument for portability. [drybjed]
 
 - Update support for ``subjectAltName`` extension in certificates. Currently
   only IP addresses, DNS records, URI paths and emails are supported. [drybjed]
 
 - Document ``pki_realms`` lists. [drybjed]
 
-- Redesign the ``secret/pki/ca-certificates/`` directory. It's now based on
+- Redesign the :file:`secret/pki/ca-certificates/` directory. It's now based on
   Ansible inventory groups and allows distribution of CA certificates to all
   hosts, specific host groups, or specific hosts. [drybjed]
 
@@ -61,10 +69,10 @@ v0.2.4
 - Change the way ACME intermediate CA certificate is downloaded.
 
   Instead of using a static URL to download an intermediate certificate,
-  ``pki-realm`` script will now check the signed certificate for the "CA
+  :program:`pki-realm` script will now check the signed certificate for the "CA
   Issuers" URI and download the certificate using it. The URI is stored and
   used later to check if the new certificate has the same or different URI, to
-  not download the intermediate certificate every time the ``pki-realm`` script
+  not download the intermediate certificate every time the :program:`pki-realm` script
   is run. [drybjed]
 
 - Slight changes in certificate chaining logic, to ensure that when
@@ -111,7 +119,7 @@ v0.2.2
   contain Root CA certificates and does not create idempotency issues.
   [drybjed]
 
-- Do not create a ``cron`` task when support for PKI is disabled on a host.
+- Do not create a :program:`cron` task when support for PKI is disabled on a host.
   [drybjed]
 
 v0.2.1
@@ -140,10 +148,10 @@ v0.1.0
 - Blacklist CNNIC Root CA following the `Google decision to remove CNNIC`_ from
   their Root CA store. [drybjed]
 
-.. _Google decision to remove CNNIC: http://googleonlinesecurity.blogspot.com/2015/03/maintaining-digital-certificate-security.html
+.. _Google decision to remove CNNIC: https://security.googleblog.com/2015/03/maintaining-digital-certificate-security.html
 
 - Add support for managing the list of active Root CA Certificates in
-  ``/etc/ca-certificates.conf``. Current set of active Root CA Certificates is
+  :file:`/etc/ca-certificates.conf`. Current set of active Root CA Certificates is
   preserved. [drybjed]
 
 - Reorder Changelog entries. [drybjed]
@@ -155,6 +163,6 @@ v0.1.0
   a separate ``debops.dhparam`` Ansible role. Existing hosts won't be affected.
   [drybjed]
 
-- Expose ``ansible_fqdn`` variable as ``pki_fqdn`` so that it can be overriden
+- Expose ``ansible_fqdn`` variable as ``pki_fqdn`` so that it can be overridden
   if necessary. [drybjed]
 

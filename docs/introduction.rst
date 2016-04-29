@@ -22,11 +22,11 @@ This role requires at least Ansible ``v2.0.0``. To install it, run::
 Ansible Controller requirements
 -------------------------------
 
-Some operations performed by the ``debops.pki`` role are done on Ansible
-Controller. However, DebOps roles are not designed to manage Ansible Controller
+Some operations performed by the ``debops.pki`` role are done on the Ansible
+Controller. However, DebOps roles are not designed to manage the Ansible Controller
 host directly, so they cannot automatically install the required software.
 
-Software packages required by the role on Ansible Controller::
+Software packages required by the role on the Ansible Controller::
 
     bash >= 4.3.0
     openssl >= 1.0.1

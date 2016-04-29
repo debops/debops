@@ -5,6 +5,8 @@
 # .. contents:: Sections
 #    :local:
 #
+# .. Global PKI configuration (((
+#
 # ----------------------------
 #   Global PKI configuration
 # ----------------------------
@@ -29,7 +31,7 @@ pki_internal: '{{ (True
 #
 # Fully Qualified Domain Name of the remote host that is managed by
 # the ``debops.pki`` role. This variable is important in Ansible tasks that
-# maintain files in the ``secret/`` directory, as well as correct
+# maintain files in the :file:`secret/` directory, as well as correct
 # identification of hosts which should have certificates signed by the internal
 # Certificate Authority.
 pki_fqdn: '{{ ansible_fqdn }}'
@@ -38,12 +40,15 @@ pki_fqdn: '{{ ansible_fqdn }}'
 # .. envvar:: pki_inventory_groups
 #
 # List of Ansible inventory group names which are taken into account while
-# managing the PKI realms. These inventory groups will have their own directories
-# in ``secret/pki/realms/by-group/`` directory on Ansible Controller, and files
-# put there will be copied to remote hosts.
+# managing the PKI realms. These inventory groups will have their own
+# directories inside the :file:`secret/pki/realms/by-group/` directory on the
+# Ansible Controller, and files put there will be copied to remote hosts.
 pki_inventory_groups: [ 'debops_service_pki' ]
 
+# .. )))
 
+# .. Automatic Certificate Management Environment (((
+#
 # ------------------------------------------------
 #   Automatic Certificate Management Environment
 # ------------------------------------------------
@@ -67,7 +72,7 @@ pki_acme_install: '{{ pki_acme | bool }}'
 # .. envvar:: pki_acme_library
 #
 # The crypto library used to generate Certificate Signing Requests for ACME
-# certificates, either ``openssl`` or ``gnutls``. Currently OpenSSL is
+# certificates, either :command:`openssl` or :command:`gnutls`. Currently OpenSSL is
 # recommended due to issues with GnuTLS generation.
 pki_acme_library: 'openssl'
 
@@ -88,7 +93,7 @@ pki_acme_group: 'pki-acme'
 
 # .. envvar:: pki_acme_home
 #
-# Home of the user account that interacts with ACME Certificate Authority.
+# Home of the user account that interacts with the ACME Certificate Authority.
 pki_acme_home: '/run/pki-acme'
 
 
@@ -102,26 +107,25 @@ pki_acme_default_subdomains: [ 'www' ]
 # .. envvar:: pki_acme_type
 #
 # ACME client to use to interact with the ACME Certificate Authority. At the
-# moment only ``acme-tiny`` is supported.
+# moment only :program:`acme-tiny` is supported.
 pki_acme_type: 'acme-tiny'
 
 
 # .. envvar:: pki_acme_tiny_repo
 #
-# URL of the ``acme-tiny`` ``git`` repository.
+# URL of the :program:`acme-tiny` :command:`git` repository.
 pki_acme_tiny_repo: 'https://github.com/diafygi/acme-tiny'
 
 
 # .. envvar:: pki_acme_tiny_version
 #
-# Branch of the ``acme-tiny`` source which should be checked out for
-# deployment.
+# Branch of the :program:`acme-tiny` source which should be checked.
 pki_acme_tiny_version: 'master'
 
 
 # .. envvar:: pki_acme_tiny_src
 #
-# Directory where ``acme-tiny`` source code will be cloned into for deployment.
+# Directory where :program:`acme-tiny` source code will be cloned into for deployment.
 pki_acme_tiny_src: '{{ (ansible_local.root.src
                         if (ansible_local|d() and ansible_local.root|d() and
                             ansible_local.root.src|d())
@@ -130,7 +134,7 @@ pki_acme_tiny_src: '{{ (ansible_local.root.src
 
 # .. envvar:: pki_acme_tiny_bin
 #
-# Path where ``acme-tiny`` script will be installed.
+# Path where the :program:`acme-tiny` script will be installed.
 pki_acme_tiny_bin: '/usr/local/lib/pki/acme-tiny'
 
 
@@ -152,18 +156,22 @@ pki_acme_ca_api_map:
 
 # .. envvar:: pki_acme_challenge
 #
-# Directory where ACME client should store responses to ACME CA challenges. By
-# default it's defined by the ``debops.nginx`` Ansible role using Ansible facts.
+# Directory where the ACME client should store responses to ACME CA challenges.
+# By default it's defined by the ``debops.nginx`` Ansible role using Ansible
+# facts.
 pki_acme_challenge_dir: '{{ (ansible_local.nginx.acme_root
                              if (ansible_local|d() and ansible_local.nginx|d() and
                                  ansible_local.nginx.acme_root|d())
                              else "/srv/www/sites/acme/public") +
                              "/.well-known/acme-challenge" }}'
 
+# .. )))
 
-# ---------------------
-#   APT package lists
-# ---------------------
+# .. Required software packages (((
+#
+# ------------------------------
+#   Required software packages
+# ------------------------------
 
 # .. envvar:: pki_base_packages
 #
@@ -184,7 +192,10 @@ pki_acme_packages: [ 'curl', 'git' ]
 # List of additional APT packages to install.
 pki_packages: []
 
+# .. )))
 
+# .. Directory, file and user/group configuration (((
+#
 # ------------------------------------------------
 #   Directory, file and user/group configuration
 # ------------------------------------------------
@@ -239,7 +250,10 @@ pki_private_mode: '0640'
 # :ref:`pki_private_groups_present` for more details.
 pki_private_groups_present: []
 
+# .. )))
 
+# .. Certificate sign times (((
+#
 # --------------------------
 #   Certificate sign times
 # --------------------------
@@ -271,7 +285,10 @@ pki_default_ca_sign_multiplier: '10'
 # the base time amount.
 pki_default_cert_sign_multiplier: '3'
 
+# .. )))
 
+# .. Configuration of PKI Realms (((
+#
 # -------------------------------
 #   Configuration of PKI Realms
 # -------------------------------
@@ -279,7 +296,7 @@ pki_default_cert_sign_multiplier: '3'
 # .. envvar:: pki_library
 #
 # The crypto library used to manage PKI realms on remote hosts, either
-# ``gnutls`` or ``openssl``. GnuTLS is preferred on Debian hosts.
+# :command:`gnutls` or :command:`openssl`. GnuTLS is preferred on Debian hosts.
 pki_library: 'gnutls'
 
 
@@ -354,7 +371,7 @@ pki_dependent_realms: []
 
 # .. envvar:: pki_scheduler
 #
-# Enable periodic runs of ``pki-realm`` script for all PKI realms. The script
+# Enable periodic runs of :program:`pki-realm` script for all PKI realms. The script
 # will check realm structure and renew certificates that are near their
 # expiration date.
 pki_scheduler: True
@@ -387,7 +404,10 @@ pki_dhparam_file: '{{ ansible_local.dhparam.default
                           ansible_local.dhparam.default)
                       else "" }}'
 
+# .. )))
 
+# .. Configuration of PKI Certificate Authorities (((
+#
 # ------------------------------------------------
 #   Configuration of PKI Certificate Authorities
 # ------------------------------------------------
@@ -395,7 +415,7 @@ pki_dhparam_file: '{{ ansible_local.dhparam.default
 # .. envvar:: pki_ca_library
 #
 # The crypto library used by the Certificate Authorities on the Ansible
-# Controller, either ``openssl`` or ``gnutls``. Currently OpenSSL library is
+# Controller, either :command:`openssl` or :command:`gnutls`. Currently OpenSSL library is
 # preferred due to rich functionality.
 pki_ca_library: 'openssl'
 
@@ -495,7 +515,7 @@ pki_dependent_authorities: []
 
 # .. envvar:: pki_ca_certificates_path
 #
-# The path inside ``secret/ca-certificates/`` directory located on Ansible
+# The path inside :file:`secret/ca-certificates/` directory located on Ansible
 # Controller where Root CA certificates will be symlinked by default. Can be
 # one of:
 #
@@ -508,7 +528,10 @@ pki_dependent_authorities: []
 #
 pki_ca_certificates_path: 'by-group/all'
 
+# .. )))
 
+# .. Custom file management (((
+#
 # --------------------------
 #   Custom file management
 # --------------------------
@@ -552,11 +575,14 @@ pki_group_public_files: []
 # Copy public files to specific hosts in inventory.
 pki_host_public_files: []
 
+# .. )))
 
+# .. System-wide Root CA Certificates (((
+#
 # ------------------------------------
 #   System-wide Root CA Certificates
 # ------------------------------------
-
+#
 # See :ref:`system_ca_certificates` for more details about management of
 # system-wide CA certificates.
 
@@ -575,7 +601,7 @@ pki_system_ca_certificates_trust_new: True
 pki_system_ca_certificates_blacklist:
 
   # Blacklist CNNIC Root Certificates
-  # http://googleonlinesecurity.blogspot.com/2015/03/maintaining-digital-certificate-security.html
+  # https://security.googleblog.com/2015/03/maintaining-digital-certificate-security.html
   - 'mozilla/CNNIC_ROOT.crt'
   - 'mozilla/China_Internet_Network_Information_Center_EV_Certificates_Root.crt'
 
@@ -586,3 +612,4 @@ pki_system_ca_certificates_blacklist:
 # certificate files or use regular expressions.
 pki_system_ca_certificates_whitelist: []
 
+# .. )))

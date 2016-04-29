@@ -9,27 +9,27 @@ certificates and certificate renewal. It was designed to enable easy deployment
 of TLS/SSL certificates by the `Let's Encrypt <https://letsencrypt.org/>`_
 project.
 
-The ``debops.pki`` Ansible role provides integrated support of the ACME
-protocol, used by default with Let's Encrypt service (there is a possibility to
+The ``debops.pki`` Ansible role provides support for the ACME protocol which is
+used by default with the Let's Encrypt service (there is a possibility to
 integrate other similar services in the future). Interaction with the ACME
-Certificate Authority is performed using the `acme-tiny <https://github.com/diafygi/acme-tiny>`_
-alternative client written in Python.
+Certificate Authority is performed using the `acme-tiny
+<https://github.com/diafygi/acme-tiny>`_ alternative client written in Python.
 
 Prerequisites
 -------------
 
 To request and renew ACME certificates, a host needs to meet several
-requirements enforced by the Ansible role:
+requirements enforced by this Ansible role:
 
 - A webserver configured to handle ACME challenges needs to be installed on the
-  host (currently role supports only "webroot" challenges). The
+  host (currently this role supports only "webroot" challenges). The
   ``debops.nginx`` role configures ACME support for all servers by default when
   other conditions are met.
 
 - A publicly routable IPv4 or IPv6 address is required, so that the Certificate
   Authority can contact the webserver and check the challenge responses. The
   ``debops.pki`` role detects if a suitable IP address is present, and disables
-  the ACME support otherwise. This can be overriden if necessary to for example
+  the ACME support otherwise. This can be overridden if necessary for example to
   allow ACME on an internal server which can handle challenges forwarded
   through the gateway.
 
@@ -43,30 +43,32 @@ requirements enforced by the Ansible role:
 Due to above requirements, the default ``domain`` PKI realm configured by the
 role does not request ACME certificates automatically. Other realms created by
 the ``debops.pki`` role might have ACME support enabled, depending on presence
-of a public IP address and configured ``nginx`` server.
+of a public IP address and configured a :program:`nginx` server.
 
 Let's Encrypt rate limits
 -------------------------
 
 The Let's Encrypt ACME Certificate Authority has `different rate limits <https://community.letsencrypt.org/t/rate-limits-for-lets-encrypt/6769>`_
-related to number of certificate requests and number of domains permitted per
+related to the number of certificate requests and the number of domains permitted per
 certificate.
 
 To avoid triggering the limits too quickly due to a mistake, ``debops.pki``
-disables the requests when the ``acme/error.log`` file is present in the PKI
+disables the requests when the :file:`acme/error.log` file is present in the PKI
 realm directory. You can check contents of this file to find out what might be
 the issue, and after fixing it you need to remove the file to let the
-``pki-realm`` script run the request again.
+:program:`pki-realm` script make the request again.
 
 How ACME certificates are managed
 ---------------------------------
 
 When a new PKI realm is created and support for ACME Certificate Authority is
 enabled, a separate configuration for a Certificate Request will be created in
-the ``acme/`` directory. This request does not use a wildcard certificate;
+the :file:`acme/` directory. This request does not use a wildcard certificate;
 instead the default domain and a set of subdomains will be requested (see below
 for configuration variables). The directory structure at this time looks like
-this::
+this:
+
+.. code-block:: none
 
     /etc/pki/realms/
     └── example.com/
@@ -87,15 +89,17 @@ this::
         ├── CA.crt -> /etc/ssl/certs/ca-certificates.crt
         └── default.key -> private/key.pem
 
-When the ``pki-realm`` detects the ``acme/request.pem`` file, it automatically
-calls ``acme-tiny`` script using ``pki-acme`` unprivileged account to request
+When the :program:`pki-realm` detects the :file:`acme/request.pem` file, it automatically
+calls the :program:`acme-tiny` script using the ``pki-acme`` unprivileged account to request
 the certificate. When the request is completed successfully and an
-``external/cert.pem`` certificate is not found, ACME certificate will be
-activated in the ``public/`` directory. Script automatically downloads Let's
+:file:`external/cert.pem` certificate is not found, ACME certificate will be
+activated in the :file:`public/` directory. The script automatically downloads Let's
 Encrypt intermediate certificate as well as links the Root CA certificate from
-the system certificate store provided by ``ca-certificates`` package.
+the system certificate store provided by the ``ca-certificates`` package.
 
-The realm directory after the process is complete::
+The realm directory after the process is complete:
+
+.. code-block:: none
 
     /etc/pki/realms/
     └── example.com/
@@ -135,18 +139,19 @@ The realm directory after the process is complete::
         ├── default.pem -> private/key_chain_dhparam.pem
         └── trusted.crt -> public/trusted.pem
 
-If the request is not successful, you will find a ``acme/error.log`` file with
-log of the ``acme-tiny`` session. Check and fix the issue, and remove the log
-file to re-enable the process again. Otherwise, ``pki-realm`` will not request
+If the request is not successful, you will find a :file:`acme/error.log` file with
+log of the :program:`acme-tiny` session. Check and fix the issue, and remove the log
+file to re-enable the process again. Otherwise, :program:`pki-realm` will not request
 the certificates to avoid rate limit issues explained above.
 
 Certificate renewal
 -------------------
 
-The ``debops.pki`` role creates a ``cron`` entry for ``pki-realm`` script to be
-executed periodically for all realms. When a realm has the ACME configuration
-active, it will check validity of the signed certificate, and about a month
-before the expiration date it will try to renew the certificate automatically.
+The ``debops.pki`` role creates a :program:`cron` entry for the :program:`pki-realm` script
+to be executed periodically for all realms. When a realm has the ACME
+configuration active, it will check for validity of the signed certificate, and
+about a month before the expiration date it will try to renew the certificate
+automatically.
 
 ACME configuration variables
 ----------------------------
@@ -155,16 +160,16 @@ The ``debops.pki`` role has several default variables which can be used to
 control ACME support. The most important are:
 
 ``pki_acme``
-  Bool. When ``True``, support for ACME Certificate Authority will be
+  Boolean. When ``True``, support for ACME Certificate Authority will be
   configured for all PKI realms unless disabled on the realm level. By default
-  role checks if a public IP address is available and a default domain is
+  the role checks if a public IP address is available and a default domain is
   configured, otherwise the support is disabled automatically.
 
 ``pki_acme_install``
-  Bool. Enable or disable installation of ``acme-tiny`` and configuration of
+  Boolean. Enable or disable installation of :program:`acme-tiny` and configuration of
   ACME support without enabling it for all realms. When this variable is set to
   ``True`` and ``pki_acme`` is set to ``False``, ACME support can be enabled
-  independently in each PKI realm. By default has the same value as
+  independently in each PKI realm. By default, it is set to the same value as
   ``pki_acme``.
 
 ``pki_acme_ca``
@@ -176,8 +181,8 @@ control ACME support. The most important are:
 
 ``pki_acme_default_subdomains``
   List of subdomains which will be added to the default ACME domain and all
-  other domains configured for ACME certificate by default, can be overriden by
-  ``item.acme_subdomains`` parameter. By default, ``www.`` subdomain will be
+  other domains configured for ACME certificate by default, can be overridden by
+  ``item.acme_subdomains`` parameter. By default, the ``www.`` subdomain will be
   added to each domain configured in the realm. Remember that all subdomains
   need to be correctly configured in the DNS for the Certificate Authority to
   sign the request.
@@ -190,7 +195,7 @@ can have several parameters related to the ACME certificates:
   treated as the apex (root) domain to configure for this realm.
 
 ``item.acme``
-  Bool. Enable or disable ACME support per realm.
+  Boolean. Enable or disable ACME support per realm.
 
 ``item.acme_domains``
   List of additional apex (root) domains to add in ACME Certificate Signing

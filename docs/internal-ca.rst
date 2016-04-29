@@ -25,8 +25,8 @@ requires human interaction. A proposed solution to this problem is an ACME
 protocol, used for example by the Let's Encrypt project, however this solution
 cannot be used with internal hosts, which still need to be protected.
 
-The ``debops.pki`` role solves this problem by creating its own set of internal
-Certificate Authorities, located on Ansible Controller in the ``secret/``
+The ``debops.pki`` role solves this problem by creating it's own set of internal
+Certificate Authorities, located on Ansible Controller in the :file:`secret/`
 directory (see ``debops.secret`` role for more details). These Certificate
 Authorities can be used to bootstrap a new PKI environment, which can then be
 passed over to a stand-alone CA server located on the network. Alternatively,
@@ -44,7 +44,7 @@ By default, the ``debops.pki`` role creates two Certificate Authorities:
 - a Domain Certificate Authority which signs the incoming server certificates;
 
 The directory structure of the Certificate Authorities stored in the
-``secret/`` directory on the Ansible Controller::
+:file:`secret/` directory on the Ansible Controller::
 
     secret/pki/
     ├── authorities/
@@ -112,13 +112,13 @@ The directory structure of the Certificate Authorities stored in the
                     └── request.pem
 
 The incoming certificate requests are placed in subdirectories of the
-``secret/pki/requests/`` directory. Each subdirectory is related to
+:file:`secret/pki/requests/` directory. Each subdirectory is related to
 a Certificate Authority, on above directory tree you can see that a request has
 been uploaded from ``hostname.example.com`` host for the ``domain`` Certificate
 Authority.
 
 The signed certificates are placed in subdirectories of the
-``secret/pki/realms/`` directory. The intermediate CA certificate and root CA
+:file:`secret/pki/realms/` directory. The intermediate CA certificate and root CA
 certificate files are symlinked in the same subdirectory as the signed
 certificate, so that Ansible can copy their contents as regular files to remote
 host and correct certificate chains can be created in the PKI realm.
@@ -128,7 +128,7 @@ Security of an internal CA
 
 The Certificate Authority is a very vulnerable element of the Private Key
 Infrastructure. Hosts that have a Root CA certificate in their system
-certificate store will trust any certificates signed by that CA and its
+certificate store will trust any certificates signed by that CA and it's
 intermediate Certificate Authorities, therefore protection of the Root CA
 private key should be taken care of as soon as possible.
 
@@ -141,16 +141,16 @@ as revoke existing ones (although enforcement of the revocation in the form or
 distribution of Certificate Revocation Lists or an OCSP service is not
 currently implemented). You should protect access to it by moving the file to
 a secure location (preferably an encrypted, offline filesystem) and replacing
-it with an empty ``key.pem`` file (otherwise the ``debops.pki`` role will
+it with an empty :file:`key.pem` file (otherwise the ``debops.pki`` role will
 replace the private key and regenerate all of the CA certificates).
 
 Unfortunately, private keys of the Domain Certificate Authority, any other
 Intermediate Certificate Authority or a "Service CA", which is a Root CA used
 to sign service certificates cannot be protected by taking them offline - the
 private keys are required to sign certificates. Therefore, it is strongly
-recommended to store the ``secret/`` directory encrypted, and use it on an
+recommended to store the :file:`secret/` directory encrypted, and use it on an
 encrypted filesystem during use. In DebOps, you can use the EncFS filesystem
-together with ``debops-padlock`` script to keep the ``secret/`` directory
+together with :command:`debops-padlock` script to keep the :file:`secret/` directory
 encrypted at rest. You should make sure that Ansible Controller uses encrypted
 filesystem during Ansible runs, if possible, to avoid leaks of private keys.
 
@@ -162,6 +162,6 @@ Requests modified by a third party, unless the challenge password can be
 intercepted (it's currently passed using environment variables).
 
 If for any reason CSR signing cannot be completed, you will need to remove the
-``internal/gnutls.conf`` and ``internal/request.pem`` files to re-initialize
+:file:`internal/gnutls.conf` and :file:`internal/request.pem` files to re-initialize
 the certificate signing.
 

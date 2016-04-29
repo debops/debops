@@ -3,9 +3,9 @@
 Custom hook scripts
 ===================
 
-The ``pki-realm`` script supports usage of a custom hook scripts located in
-``/etc/pki/hooks/`` directory. These scripts will be executed in alphabetical
-order (see ``run-parts(8)`` for more details) within a special environment. You
+The :program:`pki-realm` script supports usage of a custom hook scripts located in
+the :file:`/etc/pki/hooks/` directory. These scripts will be executed in alphabetical
+order (see :manpage:`run-parts(8)` for more details) within a special environment. You
 can use that to perform operations after certain actions like creation of a new
 PKI realm, or activation of a new certificate.
 
@@ -13,7 +13,7 @@ Execution environment
 ---------------------
 
 The hook scripts will be executed by the ``root`` account inside the PKI hook
-directory (``/etc/pki/hooks/``), with a set of ``$PKI_SCRIPT_*`` environment
+directory (:file:`/etc/pki/hooks/`), with a set of ``$PKI_SCRIPT_*`` environment
 variables:
 
 ``$PKI_SCRIPT_REALM``
@@ -21,7 +21,7 @@ variables:
 
 ``$PKI_SCRIPT_FQDN``
   Contains Fully Qualified Domain Name used as the default domain if the realm
-  does not specify one in its name.
+  does not specify one in it's name.
 
 ``$PKI_SCRIPT_SUBJECT``
   Contains the Distinguished Name, or subject of the certificate, each element
@@ -94,17 +94,17 @@ List of known states:
   A file has been deleted.
 
 ``changed-public-file``
-  Some of the files in ``public/`` directory have been changed/replaced.
+  Some of the files in :file:`public/` directory have been changed/replaced.
 
 ``changed-private-file``
-  Some of the files in ``private/`` directory have been changed/replaced.
+  Some of the files in :file:`private/` directory have been changed/replaced.
 
 Example nginx hook
 ------------------
 
 This is an example hook script which detects if a given PKI realm is currently
-used by the ``nginx`` server and if so, when a certificate change is detected
-it reloads the ``nginx`` daemon so that new certificate can be activated.
+used by the :program:`nginx` server and if so, when a certificate change is detected
+it reloads the :program:`nginx` daemon so that new certificate can be activated.
 
 .. code-block:: bash
 

@@ -4,22 +4,22 @@ Custom file management
 ======================
 
 If you need to, you can copy custom files or even create files with content in
-YAML templates using a set of list variables. You can use this feature to for
-example install private keys and certificates stored as YAML text blocks in
-a file encrypted with ``ansible-vault`` which is unlocked during Ansible run.
+YAML templates using a set of list variables. You can use this feature to
+install private keys and certificates stored as YAML text blocks in a file
+encrypted with :command:`ansible-vault` which is unlocked during Ansible run.
 
 Each element of the file list is a dict with specific parameters:
 
 ``src``
   Required, unless ``content`` is specified. Path to a file on the Ansible
-  Controller, which will be copied to remote host.
+  Controller, which will be copied to the remote host.
 
 ``content``
   Required, unless ``src`` is specified. A YAML text block or a Jinja variable,
-  contents of which will be copied to specified file on remote host.
+  contents of which will be copied to the specified file on the remote host.
 
 ``dest``
-  Required. Path to the destination file on remote host.
+  Required. Path to the destination file on the remote host.
 
 ``owner``
   Owner of the created file, by default ``root``.
@@ -34,7 +34,7 @@ Each element of the file list is a dict with specific parameters:
   and private files will have ``640`` permissions.
 
 ``force``
-  Bool. If ``True`` (default), an existing file will be replaced with the
+  Boolean. If ``True`` (default), an existing file will be replaced with the
   specified file or contents.
 
 There are multiple list variables which can be used on multiple inventory
@@ -57,7 +57,7 @@ realms are created, and internal certificates are signed.
 Examples
 ~~~~~~~~
 
-Instal custom private key from a Jinja variable on all hosts:
+Install a custom private key from a Jinja variable on all hosts:
 
 .. code-block:: yaml
 
