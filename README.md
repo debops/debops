@@ -19,7 +19,7 @@ set of certificates between internal and external Certificate Authorities, or
 use the ACME protocol to automatically obtain signed certificates from CA that
 support it (currently, [Let's Encrypt][lets-encrypt]).
 
-[lets-encrypt](https://letsencrypt.org/)
+[lets-encrypt]: https://letsencrypt.org/
 
 ### Installation
 
