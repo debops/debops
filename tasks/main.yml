@@ -157,7 +157,7 @@
   environment:
     PKI_SESSION_TOKEN: '{{ omit | md5 }}'
   command: |
-           "{{ pki_fact_lib_path }}/pki/pki-realm" new-realm -n "{{ item.name }}" --subject "{{ item.subject|d([]) | join('/') }}"
+           "{{ pki_fact_lib_path }}/pki-realm" new-realm -n "{{ item.name }}" --subject "{{ item.subject|d([]) | join('/') }}"
            --domains "{{ item.domains|d([]) | join('/') }}" --subdomains "{{ item.subdomains|d([]) | join('/') }}"
            --acme "{{ item.acme|d(pki_acme) | bool | lower }}" --acme-subject "{{ item.acme_subject|d([]) | join('/') }}"
            --acme-domains "{{ item.acme_domains|d([]) | join('/') }}" --acme-subdomains "{{ item.acme_subdomains|d([]) | join('/') }}"
@@ -369,7 +369,7 @@
     name: 'Process PKI system realms'
     user: 'root'
     cron_file: 'pki-realm-scheduler'
-    job: 'test -x "{{ pki_fact_lib_path }}/pki/pki-realm" && "{{ pki_fact_lib_path }}/pki/pki-realm" schedule'
+    job: 'test -x "{{ pki_fact_lib_path }}/pki-realm" && "{{ pki_fact_lib_path }}/pki-realm" schedule'
     special_time: '{{ pki_scheduler_interval }}'
     state: '{{ "present" if (pki_enabled|bool and pki_scheduler | bool) else "absent" }}'
 
