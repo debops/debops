@@ -71,15 +71,19 @@
     PKI_LIBRARY: '{{ item.library | d(pki_library) }}'
     PKI_ACME_LIBRARY: '{{ item.acme_library | d(pki_acme_library) }}'
   command: |
-           "{{ pki_fact_lib_path }}/pki-realm" init -n "{{ item.name }}" --library "{{ item.library | d(pki_library) }}"
-           --internal "{{ (item.internal | d(pki_internal)) | bool | lower }}" --private-dir-group "{{ item.private_dir_group | d(pki_private_group) }}"
+           "{{ pki_fact_lib_path }}/pki-realm" init -n "{{ item.name }}"
+           --library "{{ item.library | d(pki_library) }}"
+           --internal "{{ (item.internal | d(pki_internal)) | bool | lower }}"
+           --private-dir-group "{{ item.private_dir_group | d(pki_private_group) }}"
            --private-file-group "{{ item.private_file_group | d(pki_private_group) }}"
-           --acme-ca "{{ item.acme_ca | d(pki_acme_ca) }}" --acme-ca-api "{{ item.acme_ca_api | d(pki_acme_ca_api_map[item.acme_ca|d(pki_acme_ca)]) }}"
+           --acme-ca "{{ item.acme_ca | d(pki_acme_ca) }}"
+           --acme-ca-api "{{ item.acme_ca_api | d(pki_acme_ca_api_map[item.acme_ca|d(pki_acme_ca)]) }}"
            --acme-default-subdomains "{{ (item.acme_default_subdomains | d(pki_acme_default_subdomains)) | join('/') }}"
            --acme-challenge-dir "{{ item.acme_challenge_dir | d(pki_acme_challenge_dir) }}"
            --default-domain "{{ item.default_domain | d(pki_default_domain) }}"
            --default-subdomains "{{ (item.default_subdomains | d(pki_default_subdomains)) | join('/') }}"
-           --dhparam "{{ (item.dhparam | d(pki_dhparam)) | bool | lower }}" --dhparam-file "{{ item.dhparam_file | d(pki_dhparam_file) }}"
+           --dhparam "{{ (item.dhparam | d(pki_dhparam)) | bool | lower }}"
+           --dhparam-file "{{ item.dhparam_file | d(pki_dhparam_file) }}"
   args:
     creates: '{{ pki_root + "/realms/" + item.name + "/config/realm.conf" }}'
   with_flattened:
@@ -157,10 +161,14 @@
   environment:
     PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
   command: |
-           "{{ pki_fact_lib_path }}/pki-realm" new-realm -n "{{ item.name }}" --subject "{{ item.subject|d([]) | join('/') }}"
-           --domains "{{ item.domains|d([]) | join('/') }}" --subdomains "{{ item.subdomains|d([]) | join('/') }}"
-           --acme "{{ item.acme|d(pki_acme) | bool | lower }}" --acme-subject "{{ item.acme_subject|d([]) | join('/') }}"
-           --acme-domains "{{ item.acme_domains|d([]) | join('/') }}" --acme-subdomains "{{ item.acme_subdomains|d([]) | join('/') }}"
+           "{{ pki_fact_lib_path }}/pki-realm" new-realm -n "{{ item.name }}"
+           --subject "{{ item.subject|d([]) | join('/') }}"
+           --domains "{{ item.domains|d([]) | join('/') }}"
+           --subdomains "{{ item.subdomains|d([]) | join('/') }}"
+           --acme "{{ item.acme|d(pki_acme) | bool | lower }}"
+           --acme-subject "{{ item.acme_subject|d([]) | join('/') }}"
+           --acme-domains "{{ item.acme_domains|d([]) | join('/') }}"
+           --acme-subdomains "{{ item.acme_subdomains|d([]) | join('/') }}"
            --subject-alt-names "{{ item.subject_alt_names | d([]) | join('|') }}"
            --acme-alt-names "{{ item.acme_alt_names | d([]) | join('|') }}"
   args:
@@ -194,7 +202,8 @@
 - name: Upload internal certificate requests
   fetch:
     src: '/etc/pki/realms/{{ item.name }}/internal/request.pem'
-    dest: '{{ secret + "/pki/requests/" + (item.authority | d(pki_default_authority)) + "/" + pki_fqdn + "/" + item.name + "/request.pem" }}'
+    dest: '{{ secret + "/pki/requests/" + (item.authority | d(pki_default_authority)) +
+              "/" + pki_fqdn + "/" + item.name + "/request.pem" }}'
     flat: True
   with_flattened:
     - '{{ pki_realms }}'
@@ -211,9 +220,12 @@
   environment:
     PKI_ROOT: '{{ secret + "/pki" }}'
     PKI_LIBRARY: '{{ item.pki_ca_library | d(pki_ca_library) }}'
-    PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/" + (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
-  command: ./lib/pki-authority init --name "{{ item.name }}" --default-sign-base "{{ pki_default_sign_base }}"
-           --root-sign-multiplier "{{ pki_default_root_sign_multiplier }}" --ca-sign-multiplier "{{ pki_default_ca_sign_multiplier }}"
+    PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/" +
+                            (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
+  command: ./lib/pki-authority init --name "{{ item.name }}"
+           --default-sign-base "{{ pki_default_sign_base }}"
+           --root-sign-multiplier "{{ pki_default_root_sign_multiplier }}"
+           --ca-sign-multiplier "{{ pki_default_ca_sign_multiplier }}"
            --cert-sign-multiplier "{{ pki_default_cert_sign_multiplier }}"
   args:
     chdir: '{{ secret + "/pki" }}'
@@ -231,10 +243,16 @@
     PKI_ROOT: '{{ secret + "/pki" }}'
     PKI_LIBRARY: '{{ item.pki_ca_library | d(pki_ca_library) }}'
     PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/" + (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
-  command: ./lib/pki-authority new-ca --name "{{ item.name }}" --type "{{ item.type | d('') }}" --domain "{{ item.domain | d(pki_ca_domain) }}"
-           --subdomain "{{ item.subdomain }}" --subject "{{ item.subject | join('/') }}" --issuer-name "{{ item.issuer_name | d('') }}"
-           --root-sign-days "{{ item.root_sign_days | d('') }}" --ca-sign-days "{{ item.ca_sign_days | d('') }}"
-           --cert-sign-days "{{ item.cert_sign_days | d('') }}" --system-ca "{{ (item.system_ca | d(True)) | bool | lower }}"
+  command: ./lib/pki-authority new-ca --name "{{ item.name }}"
+           --type "{{ item.type | d('') }}"
+           --domain "{{ item.domain | d(pki_ca_domain) }}"
+           --subdomain "{{ item.subdomain }}"
+           --subject "{{ item.subject | join('/') }}"
+           --issuer-name "{{ item.issuer_name | d('') }}"
+           --root-sign-days "{{ item.root_sign_days | d('') }}"
+           --ca-sign-days "{{ item.ca_sign_days | d('') }}"
+           --cert-sign-days "{{ item.cert_sign_days | d('') }}"
+           --system-ca "{{ (item.system_ca | d(True)) | bool | lower }}"
            --alt-authority "{{ item.alt_authority | d('') }}"
   args:
     chdir: '{{ secret + "/pki" }}'
@@ -249,7 +267,8 @@
 - name: Sign certificate requests for current hosts
   environment:
     PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
-  command: ./lib/pki-authority sign-by-host {% for host in play_hosts %}{{ hostvars[host].pki_fact_fqdn }} {% endfor %}
+  command: ./lib/pki-authority sign-by-host
+           {% for host in play_hosts %}{{ hostvars[host].pki_fact_fqdn }} {% endfor %}
   args:
     chdir: '{{ secret + "/pki" }}'
   delegate_to: 'localhost'
