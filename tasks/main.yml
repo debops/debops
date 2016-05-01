@@ -155,7 +155,7 @@
 
 - name: Create PKI realms
   environment:
-    PKI_SESSION_TOKEN: '{{ omit | md5 }}'
+    PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
   command: |
            "{{ pki_fact_lib_path }}/pki-realm" new-realm -n "{{ item.name }}" --subject "{{ item.subject|d([]) | join('/') }}"
            --domains "{{ item.domains|d([]) | join('/') }}" --subdomains "{{ item.subdomains|d([]) | join('/') }}"
