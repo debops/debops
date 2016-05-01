@@ -1,8 +1,13 @@
 ---
 
-- name: Expose host FQDN in temporary variable
+- name: Expose host FQDN, session token and library path in temporary variables
   set_fact:
     pki_fact_fqdn: '{{ pki_fqdn }}'
+    pki_fact_lib_path: '{{ (ansible_local.root.lib
+                            if (ansible_local|d() and ansible_local.root|d() and
+                                ansible_local.root.lib|d())
+                            else "/usr/local/lib") + "/pki" }}'
+    pki_fact_session_token: '{{ 9999999999999999999999999999999999999 | random | md5 }}'
 
 - name: Install PKI packages
   apt:
@@ -19,10 +24,7 @@
 
 - name: Create library directory
   file:
-    path: '{{ (ansible_local.root.lib
-               if (ansible_local|d() and ansible_local.root|d() and
-                   ansible_local.root.lib|d())
-               else "/usr/local/lib") + "/pki" }}'
+    path: '{{ pki_fact_lib_path }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
@@ -41,10 +43,7 @@
 - name: Install remote PKI scripts
   copy:
     src: 'usr/local/lib/pki/'
-    dest: '{{ (ansible_local.root.lib
-               if (ansible_local|d() and ansible_local.root|d() and
-                   ansible_local.root.lib|d())
-               else "/usr/local/lib") + "/pki/" }}'
+    dest: '{{ pki_fact_lib_path }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
@@ -71,8 +70,8 @@
     PKI_INTERNAL: '{{ (item.internal | d(pki_internal)) | bool | lower }}'
     PKI_LIBRARY: '{{ item.library | d(pki_library) }}'
     PKI_ACME_LIBRARY: '{{ item.acme_library | d(pki_acme_library) }}'
-  ## FIXME: In this command a hardcoded path is used but it might be changed by Ansible facts.
-  command: /usr/local/lib/pki/pki-realm init -n "{{ item.name }}" --library "{{ item.library | d(pki_library) }}"
+  command: |
+           {{ pki_fact_lib_path }}/pki-realm init -n "{{ item.name }}" --library "{{ item.library | d(pki_library) }}"
            --internal "{{ (item.internal | d(pki_internal)) | bool | lower }}" --private-dir-group "{{ item.private_dir_group | d(pki_private_group) }}"
            --private-file-group "{{ item.private_file_group | d(pki_private_group) }}"
            --acme-ca "{{ item.acme_ca | d(pki_acme_ca) }}" --acme-ca-api "{{ item.acme_ca_api | d(pki_acme_ca_api_map[item.acme_ca|d(pki_acme_ca)]) }}"
@@ -157,7 +156,8 @@
 - name: Create PKI realms
   environment:
     PKI_SESSION_TOKEN: '{{ omit | md5 }}'
-  command: /usr/local/lib/pki/pki-realm new-realm -n "{{ item.name }}" --subject "{{ item.subject|d([]) | join('/') }}"
+  command: |
+           {{ pki_fact_lib_path }}/pki/pki-realm new-realm -n "{{ item.name }}" --subject "{{ item.subject|d([]) | join('/') }}"
            --domains "{{ item.domains|d([]) | join('/') }}" --subdomains "{{ item.subdomains|d([]) | join('/') }}"
            --acme "{{ item.acme|d(pki_acme) | bool | lower }}" --acme-subject "{{ item.acme_subject|d([]) | join('/') }}"
            --acme-domains "{{ item.acme_domains|d([]) | join('/') }}" --acme-subdomains "{{ item.acme_subdomains|d([]) | join('/') }}"
@@ -178,10 +178,8 @@
 
 - name: Execute PKI realm commands
   environment:
-    ## FIXME: While I find the idea of using omit like this very creative it
-    ## makes to much assumptions on `omit` which might not be true in the future.
-    PKI_SESSION_TOKEN: '{{ omit | md5 }}'
-  command: /usr/local/lib/pki/pki-realm run -n {{ item.name }}
+    PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
+  command: '{{ pki_fact_lib_path }}/pki-realm run -n "{{ item.name }}"'
   with_flattened:
     - '{{ pki_realms }}'
     - '{{ pki_group_realms }}'
@@ -229,7 +227,7 @@
 
 - name: Create PKI authorities
   environment:
-    PKI_SESSION_TOKEN: '{{ omit | md5 }}'
+    PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
     PKI_ROOT: '{{ secret + "/pki" }}'
     PKI_LIBRARY: '{{ item.pki_ca_library | d(pki_ca_library) }}'
     PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/" + (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
@@ -250,7 +248,7 @@
 
 - name: Sign certificate requests for current hosts
   environment:
-    PKI_SESSION_TOKEN: '{{ omit | md5 }}'
+    PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
   command: ./lib/pki-authority sign-by-host {% for host in play_hosts %}{{ hostvars[host].pki_fact_fqdn }} {% endfor %}
   args:
     chdir: '{{ secret + "/pki" }}'
@@ -353,8 +351,8 @@
 
 - name: Execute PKI realm commands
   environment:
-    PKI_SESSION_TOKEN: '{{ omit | md5 }}'
-  command: /usr/local/lib/pki/pki-realm run -n {{ item.name }}
+    PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
+  command: '{{ pki_fact_lib_path }}/pki-realm run -n "{{ item.name }}"'
   with_flattened:
     - '{{ pki_realms }}'
     - '{{ pki_group_realms }}'
@@ -371,7 +369,7 @@
     name: 'Process PKI system realms'
     user: 'root'
     cron_file: 'pki-realm-scheduler'
-    job: 'test -x /usr/local/lib/pki/pki-realm && /usr/local/lib/pki/pki-realm schedule'
+    job: 'test -x {{ pki_fact_lib_path }}/pki/pki-realm && {{ pki_fact_lib_path }}/pki/pki-realm schedule'
     special_time: '{{ pki_scheduler_interval }}'
     state: '{{ "present" if (pki_enabled|bool and pki_scheduler | bool) else "absent" }}'
 
