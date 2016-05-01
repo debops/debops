@@ -71,7 +71,7 @@
     PKI_LIBRARY: '{{ item.library | d(pki_library) }}'
     PKI_ACME_LIBRARY: '{{ item.acme_library | d(pki_acme_library) }}'
   command: |
-           {{ pki_fact_lib_path }}/pki-realm init -n "{{ item.name }}" --library "{{ item.library | d(pki_library) }}"
+           "{{ pki_fact_lib_path }}/pki-realm" init -n "{{ item.name }}" --library "{{ item.library | d(pki_library) }}"
            --internal "{{ (item.internal | d(pki_internal)) | bool | lower }}" --private-dir-group "{{ item.private_dir_group | d(pki_private_group) }}"
            --private-file-group "{{ item.private_file_group | d(pki_private_group) }}"
            --acme-ca "{{ item.acme_ca | d(pki_acme_ca) }}" --acme-ca-api "{{ item.acme_ca_api | d(pki_acme_ca_api_map[item.acme_ca|d(pki_acme_ca)]) }}"
@@ -157,7 +157,7 @@
   environment:
     PKI_SESSION_TOKEN: '{{ omit | md5 }}'
   command: |
-           {{ pki_fact_lib_path }}/pki/pki-realm new-realm -n "{{ item.name }}" --subject "{{ item.subject|d([]) | join('/') }}"
+           "{{ pki_fact_lib_path }}/pki/pki-realm" new-realm -n "{{ item.name }}" --subject "{{ item.subject|d([]) | join('/') }}"
            --domains "{{ item.domains|d([]) | join('/') }}" --subdomains "{{ item.subdomains|d([]) | join('/') }}"
            --acme "{{ item.acme|d(pki_acme) | bool | lower }}" --acme-subject "{{ item.acme_subject|d([]) | join('/') }}"
            --acme-domains "{{ item.acme_domains|d([]) | join('/') }}" --acme-subdomains "{{ item.acme_subdomains|d([]) | join('/') }}"
@@ -179,7 +179,7 @@
 - name: Execute PKI realm commands
   environment:
     PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
-  command: '{{ pki_fact_lib_path }}/pki-realm run -n "{{ item.name }}"'
+  command: '"{{ pki_fact_lib_path }}/pki-realm" run -n "{{ item.name }}"'
   with_flattened:
     - '{{ pki_realms }}'
     - '{{ pki_group_realms }}'
@@ -352,7 +352,7 @@
 - name: Execute PKI realm commands
   environment:
     PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
-  command: '{{ pki_fact_lib_path }}/pki-realm run -n "{{ item.name }}"'
+  command: '"{{ pki_fact_lib_path }}/pki-realm" run -n "{{ item.name }}"'
   with_flattened:
     - '{{ pki_realms }}'
     - '{{ pki_group_realms }}'
@@ -369,7 +369,7 @@
     name: 'Process PKI system realms'
     user: 'root'
     cron_file: 'pki-realm-scheduler'
-    job: 'test -x {{ pki_fact_lib_path }}/pki/pki-realm && {{ pki_fact_lib_path }}/pki/pki-realm schedule'
+    job: 'test -x "{{ pki_fact_lib_path }}/pki/pki-realm" && "{{ pki_fact_lib_path }}/pki/pki-realm" schedule'
     special_time: '{{ pki_scheduler_interval }}'
     state: '{{ "present" if (pki_enabled|bool and pki_scheduler | bool) else "absent" }}'
 
