@@ -9,6 +9,20 @@ v0.2.7
 - Documentation improvements. Fixed examples, spelling, grammar and Sphinx inline
   syntax. [ypid]
 
+- Don’t rely on the value of the special variable ``omit`` for having a high
+  enough entropy (or any entropy at all) to use it as PKI session token.
+  Although usage of the ``omit`` variable for this use case is quite creative
+  and has been suggested by one of the Ansible core developers, it is believed
+  that this does not meet the quality and maintainability standards of the
+  DebOps project. Now the ``random`` Jinja filter is used as random source
+  which is more explicit, has a proper entropy and is less hacky. [ypid]
+
+- Honor the value of ``ansible_local.root.lib``. Previously, using another
+  value than :file:`/usr/local/lib` would have broken the role. [ypid]
+
+- Only use ``pki_fact_lib_path`` inside of quotes as this value could contain
+  whitespace characters. [ypid]
+
 v0.2.6
 ------
 
