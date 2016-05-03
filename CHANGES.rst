@@ -4,7 +4,7 @@ Changelog
 v0.2.7
 ------
 
-*Unreleased*
+*Released: 2016-05-03*
 
 - Documentation improvements. Fixed examples, spelling, grammar and Sphinx inline
   syntax. [ypid]
