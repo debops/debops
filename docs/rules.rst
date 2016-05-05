@@ -1,5 +1,5 @@
-Firewall Rule Definition
-========================
+Firewall Rule Definitions
+=========================
 
 Firewall configuration in ``debops.ferm`` is done through a flexible
 definition of rules. There are a number of variables which are used to
@@ -66,6 +66,10 @@ the following keys:
 ``filename``
   Optional. Set custom filename for ferm rule definition instead of generated
   one.
+
+``name``
+  Optional. Set rule name in ferm configuration file when ``item.filename`` is
+  not set and other places where a custom rule name might be useful.
 
 ``role``
   Optional. Custom name used in the generated ferm rule definition file.
@@ -150,9 +154,6 @@ different chain. The following template-specific YAML keys are supported:
 ``multiport``
   Optional. Use ``iptables multiport`` extension. Possible values: ``True``
   or ``False``. Defaults to ``False``.
-
-``name``
-  Optional. Set rule name in places where it is referenced.
 
 ``outerface``
   Optional. List of network interfaces for outgoing packets to which the
@@ -244,9 +245,6 @@ template-specific YAML keys are supported:
 ``multiport``
   Optional. Use `iptables multiport`_ extension. Possible values: ``True``
   or ``False``. Defaults to ``False``.
-
-``name``
-  Optional. Set rule name in places where it is referenced.
 
 ``outerface``
   Optional. List of network interfaces for outgoing packets to which the
@@ -356,7 +354,7 @@ supported:
   defined in the given Ansible role.
 
 This template is used among others in the `debops.libvirtd`_ ferm rule
-:envvar:`libvirtd__ferm__dependent_rules`.
+:envvar:libvirtd__ferm__dependent_rules.
 
 .. _debops.libvirtd: http://docs.debops.org/en/latest/ansible/roles/ansible-libvirtd/docs/
 
@@ -443,7 +441,8 @@ The following template-specific YAML keys are supported:
   Optional. Expiration time of hash entries in seconds. Defaults to ``1.8``.
 
 ``hashlimit_target``
-  Optional. ? Defaults to ``RETURN``.
+  Optional. Jump target used when packet matches the ``hashlimit`` rule which
+  means that the rate limit is not reached yet. Defaults to ``RETURN``.
 
 ``hashlimit_mode``
   Optional. Options to take into consideration when associating packet
@@ -457,9 +456,6 @@ The following template-specific YAML keys are supported:
 ``log``
   Optional. Write rate limit hits to syslog. Possible values: ``True`` and
   ``False``. Defaults to ``True``.
-
-``name``
-  Optional. Set rule name in places where it is referenced.
 
 ``protocol``
   Optional. Network protocol to which the rule is applied.
@@ -586,9 +582,6 @@ supported:
   Optional. Use `iptables multiport`_ extension. Possible values: ``True``
   or ``False``. Defaults to ``False``.
 
-``name``
-  Optional. Set rule name in places where it is referenced.
-
 ``protocol``
   Optional. Network protocol to which the rule is applied.
 
@@ -603,7 +596,9 @@ supported:
   received so far.
 
 ``recent_log``
-  Optional. Log packets hitting
+  Optional. Log packets matching the rule. Possible values: ``True`` or
+  ``False``. Defaults to :envvar:`ferm__log`. If this is set to ``True``
+  :envvar:`ferm__log` must be enabled too for the packet to be logged.
 
 ``recent_name``
   Optional. Name of the list. Defaults to ``DEFAULT``.
@@ -619,7 +614,9 @@ supported:
   seconds.
 
 ``recent_set_name``
-  Optional. ?
+  Optional. Add the source address of a matching packet to the given list. This
+  must correspond with ``item.recent_name`` of a second rule which would
+  potentially act on the packet, e.g. reject it.
 
 ``recent_target``
   Optional. ``iptables`` jump target when packet has hit the recent list.
