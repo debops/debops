@@ -37,6 +37,8 @@ v0.3.0
 - Moved variables defined under :file:`vars/` to :file:`defaults/main.yml` to
   allow to change them. [ypid]
 
+- Fixed ``occ`` command wrapper to work with ownCloud 8.0. [ypid]
+
 v0.2.0
 ------
 
