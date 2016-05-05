@@ -138,7 +138,7 @@
     mode: '0640'
     force: False
   with_nested:
-    - '{{ pki_group_realms }}'
+    - '{{ pki_group_realms + pki_default_realms }}'
     - '{{ pki_inventory_groups }}'
   when: (pki_enabled|bool and (item.0.name is defined and
          (item.0.enabled|d(True) | bool) and
@@ -319,7 +319,7 @@
     group: 'root'
     force: False
   with_nested:
-    - '{{ pki_group_realms }}'
+    - '{{ pki_group_realms + pki_default_realms }}'
     - '{{ pki_inventory_groups }}'
   when: (pki_enabled|bool and (item.0.name is defined and
           (item.0.enabled|d(True) | bool) and
