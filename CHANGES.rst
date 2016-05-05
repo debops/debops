@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.2.8
+------
+
+*Released: 2016-05-05*
+
+- Add support for setting filesystem ACL entries for private directoires and
+  files. [drybjed]
+
+- Include realms defined in ``pki_default_realms`` in tasks that copy files
+  from Ansible Controller depending on an Ansible inventory group. [drybjed]
+
 v0.2.7
 ------
 

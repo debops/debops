@@ -121,6 +121,18 @@ List of parameters related to the entire PKI realm:
   inside of the :file:`private/` directory. It needs to exist, and can be created
   using ``pki_private_groups_present`` list.
 
+``private_dir_acl_groups``
+  Optional. List of groups which should be allowed execute (``X``) permission to
+  the ``private/`` realm directory. The access will be granted using filesystem
+  ACL table. If not specified, the list defined in
+  ``pki_private_dir_acl_groups`` will be applied.
+
+``private_file_acl_groups``
+  Optional. List of groups which should be allowed read (``r``) permission to
+  the files in the ``private/`` realm directory. The access will be granted
+  using filesystem ACL table. If not specified, the list defined in
+  ``pki_private_file_acl_groups`` will be applied.
+
 ``dhparam``
   Optional, boolean. Enable or disable support for adding the Diffie-Hellman
   parameters at the end of the certificate chain.

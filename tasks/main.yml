@@ -76,6 +76,8 @@
            --internal "{{ (item.internal | d(pki_internal)) | bool | lower }}"
            --private-dir-group "{{ item.private_dir_group | d(pki_private_group) }}"
            --private-file-group "{{ item.private_file_group | d(pki_private_group) }}"
+           --private-dir-acl-groups "{{ (item.private_dir_acl_groups | d(pki_private_dir_acl_groups)) | join('/') }}"
+           --private-file-acl-groups "{{ (item.private_file_acl_groups | d(pki_private_file_acl_groups)) | join('/') }}"
            --acme-ca "{{ item.acme_ca | d(pki_acme_ca) }}"
            --acme-ca-api "{{ item.acme_ca_api | d(pki_acme_ca_api_map[item.acme_ca|d(pki_acme_ca)]) }}"
            --acme-default-subdomains "{{ (item.acme_default_subdomains | d(pki_acme_default_subdomains)) | join('/') }}"
@@ -136,7 +138,7 @@
     mode: '0640'
     force: False
   with_nested:
-    - '{{ pki_group_realms }}'
+    - '{{ pki_group_realms + pki_default_realms }}'
     - '{{ pki_inventory_groups }}'
   when: (pki_enabled|bool and (item.0.name is defined and
          (item.0.enabled|d(True) | bool) and
@@ -317,7 +319,7 @@
     group: 'root'
     force: False
   with_nested:
-    - '{{ pki_group_realms }}'
+    - '{{ pki_group_realms + pki_default_realms }}'
     - '{{ pki_inventory_groups }}'
   when: (pki_enabled|bool and (item.0.name is defined and
           (item.0.enabled|d(True) | bool) and

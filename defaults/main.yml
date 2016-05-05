@@ -178,7 +178,7 @@ pki_acme_challenge_dir: '{{ (ansible_local.nginx.acme_root
 # List of APT packages to install by default on the remote host for
 # cryptographic support.
 pki_base_packages: [ 'ssl-cert', 'make', 'ca-certificates',
-                     'gnutls-bin', 'openssl' ]
+                     'gnutls-bin', 'openssl', 'acl' ]
 
 
 # .. envvar:: pki_acme_packages
@@ -249,6 +249,22 @@ pki_private_mode: '0640'
 # role that creates the group is run by Ansible. See
 # :ref:`pki_private_groups_present` for more details.
 pki_private_groups_present: []
+
+
+# .. envvar:: pki_private_dir_acl_groups
+#
+# List of system groups which should have access to the ``private`` directory
+# of each realm, unless specified otherwise. The execute access will be granted
+# using the filesystem ACL table.
+pki_private_dir_acl_groups: []
+
+
+# .. envvar:: pki_private_file_acl_groups
+#
+# List of system groups which should have read access to key files in
+# ``private/`` directory of each realm, unless specified otherwise. The read
+# access will be granted using the filesystem ACL table.
+pki_private_file_acl_groups: []
 
 # .. )))
 

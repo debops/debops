@@ -245,6 +245,9 @@ initialize_environment () {
 
     fi
 
+    config["private_dir_acl_groups_x"]=""
+    config["private_file_acl_groups_r"]=""
+
     test -d ${config['pki_root']} || mkdir -p -m ${config['public_dir_mode']} ${config['pki_root']}
 }
 
@@ -379,6 +382,16 @@ run_external_script () {
             generate_${config['pki_library']}_rsa_realm_key private/realm_key.pem
             if [ ! -r private/key.pem ] ; then
                 install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
+                if type setfacl > /dev/null 2>&1 ; then
+                    local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                    if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                        for acl_group in ${private_file_acl_groups_r[@]} ; do
+                            if $(getent group ${acl_group} > /dev/null) ; then
+                                setfacl -m "g:${acl_group}:r" private/key.pem.tmp
+                            fi
+                        done
+                    fi
+                fi
                 cat private/realm_key.pem >> private/key.pem.tmp
                 mv private/key.pem.tmp private/key.pem
             fi
@@ -740,12 +753,25 @@ generate_openssl_rsa_private_key () {
     local key_file="${1:-private/key.pem}"
     local key_size="${2:-2048}"
     local key_group="${3:-${config['private_file_group']}}"
+    local key_acl="${4:-true}"
 
     test -r ${key_file} || openssl genrsa -out ${key_file}.tmp ${key_size}
 
     if [ -r ${key_file}.tmp ] ; then
         chmod ${config['private_file_mode']} ${key_file}.tmp
         chgrp ${key_group} ${key_file}.tmp
+        if [ "${key_acl}" = "true" ] ; then
+            if type setfacl > /dev/null 2>&1 ; then
+                local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                    for acl_group in ${private_file_acl_groups_r[@]} ; do
+                        if $(getent group ${acl_group} > /dev/null) ; then
+                            setfacl -m "g:${acl_group}:r" ${key_file}.tmp
+                        fi
+                    done
+                fi
+            fi
+        fi
         mv ${key_file}.tmp ${key_file}
     fi
 
@@ -763,6 +789,7 @@ generate_gnutls_rsa_private_key () {
     local key_file="${1:-private/key.pem}"
     local key_size="${2:-2048}"
     local key_group="${3:-${config['private_file_group']}}"
+    local key_acl="${4:-true}"
 
     if ! [ -r ${key_file} ] ; then
         if ! awk -v ver="$(certtool --version | head -n 1 | awk '{print $NF}')" 'BEGIN { if (ver < 3.1.0) exit 1; }'; then
@@ -776,6 +803,18 @@ generate_gnutls_rsa_private_key () {
         sed -n -i '/-----BEGIN RSA PRIVATE KEY-----/,$ p' ${key_file}.tmp
         chmod ${config['private_file_mode']} ${key_file}.tmp
         chgrp ${key_group} ${key_file}.tmp
+        if [ "${key_acl}" = "true" ] ; then
+            if type setfacl > /dev/null 2>&1 ; then
+                local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                    for acl_group in ${private_file_acl_groups_r[@]} ; do
+                        if $(getent group ${acl_group} > /dev/null) ; then
+                            setfacl -m "g:${acl_group}:r" ${key_file}.tmp
+                        fi
+                    done
+                fi
+            fi
+        fi
         mv ${key_file}.tmp ${key_file}
     fi
 
@@ -812,6 +851,39 @@ create_public_directories () {
 }
 
 create_private_directories () {
+
+    local dir_group="${1}"
+    if [ -n "${dir_group}" ] ; then
+        shift
+    else
+        return 1
+    fi
+
+    local directories=( ${@} )
+
+    for directory in ${directories[@]} ; do
+        test -d ${directory} || mkdir -p -m ${config['private_dir_mode']} ${directory}
+        if [ "$(stat -c %a ${directory})" != "${config['private_dir_mode']}" ] ; then
+            chmod ${config['private_dir_mode']} ${directory}
+        fi
+        if [ "$(stat -c %G ${directory})" != "${dir_group}" ] ; then
+            chgrp ${dir_group} ${directory}
+        fi
+        if type setfacl > /dev/null 2>&1 ; then
+            local private_dir_acl_groups_x=( $(echo "${config['private_dir_acl_groups_x']}" | tr "/" " ") )
+            if [ ${#private_dir_acl_groups_x[@]} -ne 0 ] ; then
+                for acl_group in ${private_dir_acl_groups_x[@]} ; do
+                    if $(getent group ${acl_group} > /dev/null) ; then
+                        setfacl -m "g:${acl_group}:x" ${directory}
+                    fi
+                done
+            fi
+        fi
+    done
+
+}
+
+create_private_noacl_directories () {
 
     local dir_group="${1}"
     if [ -n "${dir_group}" ] ; then
@@ -982,9 +1054,34 @@ check_files () {
             generate_${library}_rsa_realm_key private/realm_key.pem
             if [ ! -r private/key.pem ] ; then
                 install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
+                if type setfacl > /dev/null 2>&1 ; then
+                    local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                    if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                        for acl_group in ${private_file_acl_groups_r[@]} ; do
+                            if $(getent group ${acl_group} > /dev/null) ; then
+                                setfacl -m "g:${acl_group}:r" private/key.pem.tmp
+                            fi
+                        done
+                    fi
+                fi
                 cat private/realm_key.pem >> private/key.pem.tmp
                 mv private/key.pem.tmp private/key.pem
                 state+=('new-private-key')
+            fi
+        fi
+
+        if [ -r private/key.pem ] ; then
+            if type setfacl > /dev/null 2>&1 ; then
+                local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                    if ! getfacl -sc private/key.pem | grep -Eq '^group' ; then
+                        for acl_group in ${private_file_acl_groups_r[@]} ; do
+                            if $(getent group ${acl_group} > /dev/null) ; then
+                                setfacl -m "g:${acl_group}:r" private/key.pem
+                            fi
+                        done
+                    fi
+                fi
             fi
         fi
 
@@ -1034,6 +1131,16 @@ check_files () {
             generate_${library}_rsa_realm_key private/realm_key.pem
             if [ ! -r private/key.pem ] ; then
                 install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
+                if type setfacl > /dev/null 2>&1 ; then
+                    local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                    if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                        for acl_group in ${private_file_acl_groups_r[@]} ; do
+                            if $(getent group ${acl_group} > /dev/null) ; then
+                                setfacl -m "g:${acl_group}:r" private/key.pem.tmp
+                            fi
+                        done
+                    fi
+                fi
                 cat private/realm_key.pem >> private/key.pem.tmp
                 mv private/key.pem.tmp private/key.pem
                 state+=('new-private-key')
@@ -1058,7 +1165,7 @@ check_files () {
 
             fi
 
-            generate_${library}_rsa_private_key acme/account_key.pem 4096 "${config['acme_file_group']}"
+            generate_${library}_rsa_private_key acme/account_key.pem 4096 "${config['acme_file_group']}" false
             generate_${acme_library}_request acme/${acme_library}.conf acme/request.pem
             chgrp "${config['acme_file_group']}" acme/request.pem
             chmod "${config['acme_file_mode']}" acme/request.pem
@@ -1250,6 +1357,16 @@ process_private_files () {
 
                     test -r private/key.pem.tmp && rm -f private/key.pem.tmp || true
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
+                    if type setfacl > /dev/null 2>&1 ; then
+                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                            for acl_group in ${private_file_acl_groups_r[@]} ; do
+                                if $(getent group ${acl_group} > /dev/null) ; then
+                                    setfacl -m "g:${acl_group}:r" private/key.pem.tmp
+                                fi
+                            done
+                        fi
+                    fi
                     cat private/realm_key.pem >> private/key.pem.tmp
 
                 fi
@@ -1263,6 +1380,16 @@ process_private_files () {
 
                         test -r private/key.pem.tmp && rm -f private/key.pem.tmp || true
                         install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
+                        if type setfacl > /dev/null 2>&1 ; then
+                            local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                            if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                                for acl_group in ${private_file_acl_groups_r[@]} ; do
+                                    if $(getent group ${acl_group} > /dev/null) ; then
+                                        setfacl -m "g:${acl_group}:r" private/key.pem.tmp
+                                    fi
+                                done
+                            fi
+                        fi
                         cat private/realm_key.pem >> private/key.pem.tmp
 
                     fi
@@ -1273,6 +1400,16 @@ process_private_files () {
 
                     test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain.pem.tmp
+                    if type setfacl > /dev/null 2>&1 ; then
+                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                            for acl_group in ${private_file_acl_groups_r[@]} ; do
+                                if $(getent group ${acl_group} > /dev/null) ; then
+                                    setfacl -m "g:${acl_group}:r" private/key_chain.pem.tmp
+                                fi
+                            done
+                        fi
+                    fi
                     if [ -r private/key.pem ] && check_openssl_key_crt_match private/key.pem public/cert_intermediate.pem.tmp ; then
                         cat private/key.pem public/cert_intermediate.pem.tmp >> private/key_chain.pem.tmp
                     elif [ -r private/realm_key.pem ] && check_openssl_key_crt_match private/realm_key.pem public/cert_intermediate.pem.tmp ; then
@@ -1283,6 +1420,16 @@ process_private_files () {
 
                     test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain.pem.tmp
+                    if type setfacl > /dev/null 2>&1 ; then
+                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                            for acl_group in ${private_file_acl_groups_r[@]} ; do
+                                if $(getent group ${acl_group} > /dev/null) ; then
+                                    setfacl -m "g:${acl_group}:r" private/key_chain.pem.tmp
+                                fi
+                            done
+                        fi
+                    fi
                     if [ -r private/key.pem ] ; then
                         cat private/key.pem public/cert.pem.tmp >> private/key_chain.pem.tmp
                     elif [ -r private/realm_key.pem ] ; then
@@ -1297,6 +1444,16 @@ process_private_files () {
                 if ! check_openssl_key_crt_match private/key.pem public/cert_intermediate.pem ; then
                     test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain.pem.tmp
+                    if type setfacl > /dev/null 2>&1 ; then
+                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                            for acl_group in ${private_file_acl_groups_r[@]} ; do
+                                if $(getent group ${acl_group} > /dev/null) ; then
+                                    setfacl -m "g:${acl_group}:r" private/key_chain.pem.tmp
+                                fi
+                            done
+                        fi
+                    fi
                     cat private/key.pem public/cert_intermediate.pem >> private/key_chain.pem.tmp
                 fi
 
@@ -1305,10 +1462,30 @@ process_private_files () {
                 if ! check_openssl_key_crt_match private/key.pem public/cert.pem ; then
                     test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain.pem.tmp
+                    if type setfacl > /dev/null 2>&1 ; then
+                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                            for acl_group in ${private_file_acl_groups_r[@]} ; do
+                                if $(getent group ${acl_group} > /dev/null) ; then
+                                    setfacl -m "g:${acl_group}:r" private/key_chain.pem.tmp
+                                fi
+                            done
+                        fi
+                    fi
                     cat private/key.pem public/cert.pem >> private/key_chain.pem.tmp
                 elif ! check_file_signature public/cert.pem ; then
                     test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain.pem.tmp
+                    if type setfacl > /dev/null 2>&1 ; then
+                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                            for acl_group in ${private_file_acl_groups_r[@]} ; do
+                                if $(getent group ${acl_group} > /dev/null) ; then
+                                    setfacl -m "g:${acl_group}:r" private/key_chain.pem.tmp
+                                fi
+                            done
+                        fi
+                    fi
                     cat private/key.pem public/cert.pem >> private/key_chain.pem.tmp
                 fi
 
@@ -1317,15 +1494,45 @@ process_private_files () {
             if [ "${config['pki_dhparam']}" = "true" -a -n "${config['dhparam_file']}" -a -r ${config['dhparam_file']} ] ; then
                 if [ -r private/key_chain.pem.tmp ] ; then
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain_dhparam.pem.tmp
+                    if type setfacl > /dev/null 2>&1 ; then
+                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                            for acl_group in ${private_file_acl_groups_r[@]} ; do
+                                if $(getent group ${acl_group} > /dev/null) ; then
+                                    setfacl -m "g:${acl_group}:r" private/key_chain_dhparam.pem.tmp
+                                fi
+                            done
+                        fi
+                    fi
                     cat private/key_chain.pem.tmp ${config['dhparam_file']} >> private/key_chain_dhparam.pem.tmp
                     state+=("changed-dhparam")
                 elif [ ! -r private/key_chain_dhparam.pem -a -r private/key_chain.pem ] ; then
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain_dhparam.pem.tmp
+                    if type setfacl > /dev/null 2>&1 ; then
+                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                            for acl_group in ${private_file_acl_groups_r[@]} ; do
+                                if $(getent group ${acl_group} > /dev/null) ; then
+                                    setfacl -m "g:${acl_group}:r" private/key_chain_dhparam.pem.tmp
+                                fi
+                            done
+                        fi
+                    fi
                     cat private/key_chain.pem ${config['dhparam_file']} >> private/key_chain_dhparam.pem.tmp
                     state+=("changed-dhparam")
                 elif [ -r private/key_chain_dhparam.pem ] ; then
                     if ! diff -q -N ${config['dhparam_file']} <( sed -n '/-----BEGIN DH PARAMETERS-----/,/-----END DH PARAMETERS-----/p' private/key_chain_dhparam.pem ) > /dev/null ; then
                         install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain_dhparam.pem.tmp
+                        if type setfacl > /dev/null 2>&1 ; then
+                            local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                            if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                                for acl_group in ${private_file_acl_groups_r[@]} ; do
+                                    if $(getent group ${acl_group} > /dev/null) ; then
+                                        setfacl -m "g:${acl_group}:r" private/key_chain_dhparam.pem.tmp
+                                    fi
+                                done
+                            fi
+                        fi
                         cat private/key_chain.pem ${config['dhparam_file']} >> private/key_chain_dhparam.pem.tmp
                         state+=("changed-dhparam")
                     fi
@@ -1562,7 +1769,7 @@ sub_new-realm () {
 
         create_public_directories ${config['public_dir_group']} config external internal public
         create_private_directories ${config['private_dir_group']} private
-        create_private_directories ${config['acme_dir_group']} acme
+        create_private_noacl_directories ${config['acme_dir_group']} acme
 
         if [ "${config_changed}" = "true" ] ; then
             save_realm_config config/realm.conf
@@ -1576,6 +1783,16 @@ sub_new-realm () {
             generate_${library}_rsa_realm_key private/realm_key.pem
             if [ ! -r private/key.pem ] ; then
                 install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
+                if type setfacl > /dev/null 2>&1 ; then
+                    local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                    if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                        for acl_group in ${private_file_acl_groups_r[@]} ; do
+                            if $(getent group ${acl_group} > /dev/null) ; then
+                                setfacl -m "g:${acl_group}:r" private/key.pem.tmp
+                            fi
+                        done
+                    fi
+                fi
                 cat private/realm_key.pem >> private/key.pem.tmp
                 mv private/key.pem.tmp private/key.pem
                 state+=("new-private-key")
@@ -1603,7 +1820,7 @@ sub_new-realm () {
         generate_${library}_request internal/${library}.conf internal/request.pem
         state+=("new-internal-request")
         if [ "${config['pki_acme']}" = "true" ] ; then
-            generate_${library}_rsa_private_key acme/account_key.pem 4096 "${config['acme_file_group']}"
+            generate_${library}_rsa_private_key acme/account_key.pem 4096 "${config['acme_file_group']}" false
             generate_${acme_library}_request acme/${acme_library}.conf acme/request.pem
             chgrp "${config['acme_file_group']}" acme/request.pem
             chmod "${config['acme_file_mode']}" acme/request.pem
@@ -1650,6 +1867,18 @@ sub_init () {
                         ;;
                     private-file-group=*)
                         args["private_file_group"]=${OPTARG#*=}
+                        ;;
+                    private-dir-acl-groups)
+                        args["private_dir_acl_groups_x"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    private-dir-acl-groups=*)
+                        args["private_dir_acl_groups_x"]=${OPTARG#*=}
+                        ;;
+                    private-file-acl-groups)
+                        args["private_file_acl_groups_r"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                        ;;
+                    private-file-acl-groups=*)
+                        args["private_file_acl_groups_r"]=${OPTARG#*=}
                         ;;
                     library)
                         args["pki_library"]="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
@@ -1814,7 +2043,7 @@ sub_init () {
 
         create_public_directories ${config['public_dir_group']} config external internal public
         create_private_directories ${config['private_dir_group']} private
-        create_private_directories ${config['acme_dir_group']} acme
+        create_private_noacl_directories ${config['acme_dir_group']} acme
 
         if [ "${config_changed}" = "true" ] ; then
             save_realm_config config/realm.conf
