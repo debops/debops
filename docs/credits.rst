@@ -6,3 +6,7 @@ Credits
   * creator of the DebOps Project
 
   * current project maintainer
+
+* Reto Gantenbein <reto.gantenbein_at_linuxmonk.ch>
+
+  * role documentation
