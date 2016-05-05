@@ -29,3 +29,22 @@ Here's an example playbook which uses the ``debops.ferm`` role::
         - role: debops.ferm
           tags: role::ferm
 
+Ansible tags
+------------
+
+You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
+tasks are performed during Ansible run. This can be used after host is first
+configured to speed up playbook execution, when you are sure that most of the
+configuration has not been changed.
+
+Available role tags:
+
+``role::ferm``
+  Main role tag, should be used in the playbook to execute all of the role
+  tasks as well as role dependencies.
+
+``role::ferm:custom_files``
+  Copy custom ferm configuration files to remote hosts.
+
+``role::ferm:rules``
+  Run tasks to add or remove ferm rules and configure IP packet forwarding.
