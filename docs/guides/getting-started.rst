@@ -366,7 +366,7 @@ hosts to it:
    [debops_service_dokuwiki]
    server
 
-As you can see, you don't need to copy the wohole host entry, only the short
+As you can see, you don't need to copy the whole host entry, only the short
 name is enough.
 
 The ``debops.dokuwiki`` has `many default variables
