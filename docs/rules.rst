@@ -353,8 +353,7 @@ supported:
   Optional. Add comment to generated ferm rule definition file that rule is
   defined in the given Ansible role.
 
-This template is used among others in the `debops.libvirtd`_ ferm rule
-:envvar:libvirtd__ferm__dependent_rules.
+This template is used among others in a `debops.libvirtd`_ custom ferm rule.
 
 .. _debops.libvirtd: http://docs.debops.org/en/latest/ansible/roles/ansible-libvirtd/docs/
 
