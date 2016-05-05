@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.8
+------
+
+*Released: 2016-05-05*
+
+- Add support for setting filesystem ACL entries for private directoires and
+  files. [drybjed]
+
 v0.2.7
 ------
 
