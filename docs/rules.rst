@@ -534,7 +534,7 @@ The following template-specific YAML keys are supported:
 
 ``log_prefix``
   Optional. Prefix (up to 29 characters) for firewall log messages. Defaults
-  to ``iptables-log: ``
+  to ``iptables-log:``
 
 ``log_target``
   Optional. Select how ``iptables`` performs logging. Possible values:
