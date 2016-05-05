@@ -1,105 +1,38 @@
----
+# ---
+
+# .. ownCloud ./config/ (((
 
 - name: Install ownCloud mail config file
   template:
-    src: srv/www/sites/config/mail.config.php.j2
+    src: 'srv/www/sites/config/mail.config.php.j2'
     dest: '{{ owncloud_deploy_path }}/config/mail.config.php'
     owner: '{{ owncloud_user }}'
     group: '{{ owncloud_group }}'
-    mode: 0640
+    mode: '0640'
   tags: [ 'role::owncloud:mail' ]
 
 - name: Install ownCloud custom config file
   template:
-    src: srv/www/sites/config/custom.config.php.j2
+    src: 'srv/www/sites/config/custom.config.php.j2'
     dest: '{{ owncloud_deploy_path }}/config/custom.config.php'
     owner: '{{ owncloud_user }}'
     group: '{{ owncloud_group }}'
-    mode: 0640
+    mode: '0640'
   when: (owncloud_custom_conf_map is defined and owncloud_custom_conf_map is mapping)
   tags: [ 'role::owncloud:custom_config' ]
 
-- name: Setup cron service
-  cron:
-    name: 'ownCloud Background Jobs'
-    minute: '{{ owncloud_cron_minute }}'
-    user: '{{ owncloud_user }}'
-    job: '/usr/bin/php -f {{ owncloud_deploy_path }}/cron.php'
-    cron_file: 'owncloud'
+# .. )))
 
+  ## FIXME(ypid): Does not ownCloud 9 already do log rotation?
 - name: Setup logrotate for owncloud
   template:
-    src: etc/logrotate.d/owncloud.j2
-    dest: /etc/logrotate.d/owncloud
-    owner: root
-    group: root
-    mode: 0644
+    src: 'etc/logrotate.d/owncloud.j2'
+    dest: '/etc/logrotate.d/owncloud'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
-- name: Lookup admin password if secrets/ directory is defined
-  set_fact:
-    owncloud_admin_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/owncloud/admin/' + owncloud_admin_username + '/password length=' + owncloud_password_length) }}"
-  when: secret is defined and owncloud_admin_username
-
-- name: Check if ownCloud is configured
-  stat:
-    path: '{{ owncloud_deploy_path }}/config/config.php'
-  register: owncloud_config_file
-
-- name: Install ownCloud autoconfig file
-  template:
-    src: srv/www/sites/config/autoconfig.php.j2
-    dest: '{{ owncloud_deploy_path }}/config/autoconfig.php'
-    owner: '{{ owncloud_user }}'
-    group: '{{ owncloud_group }}'
-    mode: 0660
-  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists
-
-- name: Install ownCloud default config file
-  template:
-    src: srv/www/sites/config/config.default.php.j2
-    dest: '{{ owncloud_deploy_path }}/config/config.php'
-    owner: '{{ owncloud_user }}'
-    group: '{{ owncloud_group }}'
-    mode: 0640
-  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists
-
-- name: Use cron for background jobs (lib/private/...)
-  lineinfile:
-    dest: '{{ owncloud_deploy_path }}/lib/private/backgroundjob.php'
-    state: present
-    regexp: "return OC_Appconfig::getValue"
-    line: "                return OC_Appconfig::getValue( 'core', 'backgroundjobs_mode', 'cron' );"
-  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists and owncloud_release == '8.0'
-
-- name: Use cron for background jobs (settings/admin.php)
-  lineinfile:
-     dest: '{{ owncloud_deploy_path }}/settings/admin.php'
-     state: present
-     regexp: "'backgroundjobs_mode', OC_Appconfig::getValue"
-     line: "$tmpl->assign('backgroundjobs_mode', OC_Appconfig::getValue('core', 'backgroundjobs_mode', 'cron'));"
-  when: not owncloud_config_file
-
-- name: Flush handlers if automatic setup is requested
-  meta: flush_handlers
-  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists and
-        owncloud_admin_username and owncloud_autosetup
-
-- name: Test availability of automatically finish setup
-  uri:
-    url: '{{ owncloud_autosetup_url }}'
-    status_code: '200,401'
-  register: owncloud_auto_finish_setup
-  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists and
-        owncloud_admin_username and owncloud_autosetup
-
-- name: Automatically finish setup if allowed
-  uri:
-    url: '{{ owncloud_autosetup_url }}'
-  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists and
-        owncloud_admin_username and owncloud_autosetup and
-        owncloud_auto_finish_setup is defined and
-        owncloud_auto_finish_setup.status is defined and
-        owncloud_auto_finish_setup.status|int != 200
+# .. Setup the occ command for easy access (((
 
 - name: Allow to use the PHP CLI even if OCMemcacheAPCu is used
   template:
@@ -118,28 +51,123 @@
     owner: 'root'
     group: '{{ owncloud_group }}'
     mode: 0755
-  when: owncloud_enable_occ_shortcut|d()
   tags: [ 'role::owncloud:occ' ]
 
-- name: Remove shortcut for the occ command
-  file:
-    path: '/usr/local/bin/occ'
-    state: 'absent'
-  when: not owncloud_enable_occ_shortcut|d()
-  tags: [ 'role::owncloud:occ' ]
+# .. )))
 
-- name: Run specified occ commands
-  command: php --file "{{ owncloud_home }}/occ" {{ item.command }}
-  environment: '{{ item.env|d({}) }}'
-  changed_when: ('No such app enabled:' not in owncloud_occ_run.stdout and
-                  ' already ' not in owncloud_occ_run.stdout)
-  failed_when: (owncloud_occ_run.rc != 0 and 'already exists' not in owncloud_occ_run.stdout)
-  no_log: True
-  register: owncloud_occ_run
-  sudo_user: '{{ owncloud_user }}'
-  when: item|d() and item.command|d()
+# .. Auto setup (((
+
+  ## Note that this file is being created on a HTTP request if it did not exist previously
+  ## which could result in not setting up the ownCloud instance.
+  ## (This will be possible via the web interface for the first user who gets the chance!
+- name: Get properties of the config/config.php configuration file
+  stat:
+    path: '{{ owncloud_deploy_path }}/config/config.php'
+  register: owncloud_config_file
+
+- name: Determine if ownCloud autosetup should be done
+  set_fact:
+    ## Size is set to 80 byte to also catch when only `instanceid`
+    ## is set but ownCloud has not been configured yet.
+    owncloud__permit_autosetup: '{{ (owncloud_autosetup and
+                                 owncloud_config_file is defined and
+                                 owncloud_config_file.stat.exists and
+                                 owncloud_config_file.stat.size <= 80 and
+                                 owncloud_admin_username != "") }}'
+
+- name: Install ownCloud default config file
+  template:
+    src: 'srv/www/sites/config/config.default.php.j2'
+    dest: '{{ owncloud_deploy_path }}/config/config.php'
+    owner: '{{ owncloud_user }}'
+    group: '{{ owncloud_group }}'
+    mode: '0640'
+  when: owncloud__permit_autosetup|bool
+  tags: [ 'role::owncloud:setup' ]
+
+- name: Automatically finish setup via the occ tool
+  command: occ maintenance:install
+           --data-dir '{{ owncloud_data_path }}'
+           --database '{{ owncloud_database_map[owncloud_database].dbtype }}'
+           --database-name '{{ owncloud_database_map[owncloud_database].dbname }}'
+           --database-host '{{ owncloud_database_map[owncloud_database].dbhost }}'
+           --database-user '{{ owncloud_database_map[owncloud_database].dbuser }}'
+           --database-pass '{{ owncloud_database_map[owncloud_database].dbpass }}'
+           {% if owncloud_admin_username != False %}
+           --admin-user '{{ owncloud_admin_username }}'
+           --admin-pass '{{ owncloud_admin_password }}'
+           {% endif %}
+  # no_log: True
+  register: owncloud_register_occ_install
+  tags: [ 'role::owncloud:setup' ]
+  when: owncloud__permit_autosetup|bool and owncloud_release not in [ '8.0' ]
+  ## Did not work with 8.1.6-2.1 because of https://github.com/owncloud/core/issues/17583
+  ## Falling back to URL auto install method.
+  ## FIXME: [Errno 2] No such file or directory
+
+- name: Install ownCloud autoconfig file
+  template:
+    src: 'srv/www/sites/config/autoconfig.php.j2'
+    dest: '{{ owncloud_deploy_path }}/config/autoconfig.php'
+    owner: '{{ owncloud_user }}'
+    group: '{{ owncloud_group }}'
+    mode: '0660'
+  register: owncloud__register_autoconfig
+  when: owncloud__permit_autosetup|bool and owncloud_release in [ '8.0' ]
+
+- name: Test availability of automatically finish setup
+  uri:
+    url: '{{ owncloud_autosetup_url }}'
+    status_code: '200,401'
+  register: owncloud_auto_finish_setup
+  when: not owncloud__register_autoconfig|skipped
+
+- name: Automatically finish setup via URL request
+  uri:
+    url: '{{ owncloud_autosetup_url }}'
+  when: owncloud_auto_finish_setup is defined and
+        owncloud_auto_finish_setup.status is defined and
+        owncloud_auto_finish_setup.status|int != 200
+
+# .. )))
+
+# .. Run occ commands as specified in the inventory (((
+- name: Run occ commands as specified in the inventory
+  include: run_occ.yml
+  tags: [ 'role::owncloud:occ' ]
   with_flattened:
     - '{{ owncloud_run_occ_global_commands }}'
     - '{{ owncloud_run_occ_group_commands }}'
     - '{{ owncloud_run_occ_host_commands }}'
-  tags: [ 'role::owncloud:occ' ]
+# .. )))
+
+# .. Configure cron job for background tasks (((
+
+- name: Use cron for background tasks (lib/private/...)
+  lineinfile:
+    dest: '{{ owncloud_deploy_path }}/lib/private/backgroundjob.php'
+    state: 'present'
+    regexp: 'return OC_Appconfig::getValue'
+    line: "                return OC_Appconfig::getValue( 'core', 'backgroundjobs_mode', 'cron' );"
+  when: owncloud_config_file is defined and not owncloud_config_file.stat.exists and owncloud_release in [ '7.0' ]
+  ## FIXME(ypid): Not sure if it was 7.0 or if it still works for 8.0. Anyway. Scheduled for removal on 2016-10
+  ## https://github.com/owncloud/core/wiki/Maintenance-and-Release-Schedule
+
+  ## Does not match/is not needed for ownCloud above 7.0
+- name: Use cron for background jobs (settings/admin.php)
+  lineinfile:
+     dest: '{{ owncloud_deploy_path }}/settings/admin.php'
+     state: 'present'
+     regexp: "'backgroundjobs_mode', OC_Appconfig::getValue"
+     line: "$tmpl->assign('backgroundjobs_mode', OC_Appconfig::getValue('core', 'backgroundjobs_mode', 'cron'));"
+  when: owncloud_release in [ '7.0' ] and not owncloud_config_file
+
+- name: Setup cron service
+  cron:
+    name: 'ownCloud Background Jobs'
+    minute: '{{ owncloud_cron_minute }}'
+    user: '{{ owncloud_user }}'
+    job: '/usr/bin/php -f {{ owncloud_deploy_path }}/cron.php'
+    cron_file: 'owncloud'
+
+# .. )))

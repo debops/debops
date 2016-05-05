@@ -73,24 +73,24 @@ Here's an example playbook that can be used to manage ownCloud::
         - role: debops.php5
           tags: [ 'role::php5' ]
           php5_pools:
-            - '{{ owncloud_php5_pool }}'
+            - '{{ owncloud__php5__pool }}'
 
         - role: debops.apt_preferences
           tags: [ 'role::apt_preferences' ]
-          apt_preferences_dependent_list:
+          apt_preferences__dependent_list:
             - '{{ nginx_apt_preferences_dependent_list }}'
 
         - role: debops.ferm
           tags: [ 'role::ferm' ]
-          ferm_dependent_rules:
+          ferm__dependent_rules:
             - '{{ nginx_ferm_dependent_rules }}'
 
         - role: debops.nginx
           tags: [ 'role::nginx' ]
           nginx_servers:
-            - '{{ owncloud_nginx_server }}'
+            - '{{ owncloud__nginx__servers }}'
           nginx_upstreams:
-            - '{{ owncloud_nginx_upstream_php5 }}'
+            - '{{ owncloud__nginx__upstream_php5 }}'
 
         - role: debops.owncloud
           tags: [ 'role::owncloud' ]
@@ -112,9 +112,11 @@ Available role tags:
 
 ``role::owncloud:base_install``
   Run tasks related to the installation the ownCloud packages.
+  FIXME: Rename to install
 
 ``role::owncloud:configure``
   Run tasks related to ownCloud configuration and setup.
+  FIXME: Rename to setup
 
 ``role::owncloud:mail``
   Run tasks related to the deployment of the mail configuration.

@@ -1,0 +1,18 @@
+---
+
+# TODO: Switch to scripting occ interface when available: https://github.com/owncloud/core/issues/16068
+
+- name: Run given occ commands
+  command: php --file "{{ owncloud_home }}/occ" {{ item.command }}
+  environment: '{{ item.env|d({}) }}'
+  changed_when: False
+  ## Has changed in ownCloud 9.0 and does not work anymore.
+  # changed_when: ('No such app enabled:' not in owncloud_occ_run.stdout and
+                  # ' already ' not in owncloud_occ_run.stdout)
+  failed_when: ((owncloud_occ_run.rc != 0 and 'already exists' not in owncloud_occ_run.stdout) or
+                ('An unhandled exception has been thrown:' in owncloud_occ_run.stdout))
+  ## ownCloud 8.0.11-1.1: An unhandled exception has been thrown
+  # no_log: True
+  register: owncloud_occ_run
+  sudo_user: '{{ owncloud_user }}'
+  when: item|d() and item.command|d("") != "" and (item.when|d(True) | bool)

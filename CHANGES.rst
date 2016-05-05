@@ -22,6 +22,23 @@ v0.3.0
 
 - Update ``owncloud_release`` to ``9.0``. [drybjed]
 
+- Installation of the wrapper script for the :command:`occ` command is no
+  longer optional as it is needed by the role internally.
+
+  ``owncloud_enable_occ_shortcut`` has no effect anymore. [ypid]
+
+- Added more LDAP settings. [ypid]
+
+- Reworked ownCloud autosetup tasks. [ypid]
+
+- Refactored ``occ`` usage in tasks into a separate task file which can be
+  included from other parts of the role. This requires Ansible 2.0 to work. [ypid]
+
+- Moved variables defined under :file:`vars/` to :file:`defaults/main.yml` to
+  allow to change them. [ypid]
+
+- Fixed ``occ`` command wrapper to work with ownCloud 8.0. [ypid]
+
 v0.2.0
 ------
 
@@ -33,9 +50,9 @@ v0.2.0
 
 - Updated to ownCloud 8.1. [ypid]
 
-- Allow to use ``ooc`` via Ansible’s inventory. Can be used to enable apps and create users. [ypid]
+- Allow to use ``occ`` via Ansible’s inventory. Can be used to enable apps and create users. [ypid]
 
-- Setup shortcut for the `occ` command when not logged in as ``owncloud_user`` user and sudo allows it.
+- Setup shortcut for the ``occ`` command when not logged in as ``owncloud_user`` user and sudo allows it.
   Disabled by default. Can be enabled via ``owncloud_enable_occ_shortcut``. [ypid]
 
 - Improved LDAP support. Now role will create service account (default: ``cn=owncloud,dc=ansible,dc=fqdn``)
