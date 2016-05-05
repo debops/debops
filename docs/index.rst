@@ -11,6 +11,7 @@ Ansible role: debops.ferm
    getting-started
    defaults
    defaults-configuration
+   rules
    copyright
    credits
    changelog
