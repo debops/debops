@@ -6,22 +6,16 @@
     state: 'present'
     install_recommends: False
 
-- name: Make sure user_ldap is enabled
-  command: php --file "{{ owncloud_home }}/occ" app:enable user_ldap
-  changed_when: ('is already enabled' not in owncloud_register_ldap_occ_enable.stdout)
-  failed_when: (owncloud_register_ldap_occ_enable.rc != 0) or ('not found' in owncloud_register_ldap_occ_enable.stdout)
-  register: owncloud_register_ldap_occ_enable
-  sudo_user: '{{ owncloud_user }}'
+- name: Make sure the user_ldap app is enabled
+  include: run_occ.yml
+  with_items:
+    - command: 'app:enable user_ldap'
 
 - name: Check default ldap config exists
-  command: php --file "{{ owncloud_home }}/occ" ldap:show-config ''
-  changed_when: false
+  command: php --file "{{ owncloud_home }}/occ" ldap:show-config ""
+  changed_when: False
   register: owncloud_register_ldap_default_config_exits
   sudo_user: '{{ owncloud_user }}'
-
-- name: Is the config fresh?
-  set_fact:
-    owncloud_register_ldap_fresh_config: "{{ 'Invalid configID' in owncloud_register_ldap_default_config_exits.stdout }}"
 
 - name: Create empty LDAP config
   command: php --file "{{ owncloud_home }}/occ" ldap:create-empty-config
@@ -29,16 +23,16 @@
   when: ('Invalid configID' in owncloud_register_ldap_default_config_exits.stdout)
 
 - name: Set LDAP password
-  command: php --file "{{ owncloud_home }}/occ" ldap:set-config '' ldapAgentPassword "{{ owncloud_ldap_password }}"
-  changed_when: false
+  command: php --file "{{ owncloud_home }}/occ" ldap:set-config "" ldapAgentPassword "{{ owncloud_ldap_password }}"
+  changed_when: False
   sudo_user: '{{ owncloud_user }}'
   no_log: True
 
 - name: Set LDAP parameters
-  command: php --file "{{ owncloud_home }}/occ" ldap:set-config '' "{{ item.key }}" "{{ item.value }}"
-  changed_when: false
+  command: php --file "{{ owncloud_home }}/occ" ldap:set-config "" "{{ item.key }}" "{{ item.value }}"
+  changed_when: False
   sudo_user: '{{ owncloud_user }}'
-  with_dict: "{{ owncloud_ldap_conf_map }}"
+  with_dict: '{{ owncloud_ldap_conf_map }}'
 
 - name: Make sure that services OU exists
   ldap_entry:
@@ -52,6 +46,7 @@
   sudo: '{{ secret_ldap_sudo }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
   no_log: True
+  when: (owncloud_ldap_create_user | bool)
 
 - name: Make sure that LDAP account exists
   ldap_entry:
@@ -67,6 +62,7 @@
   sudo: '{{ secret_ldap_sudo }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
   no_log: True
+  when: (owncloud_ldap_create_user | bool)
 
 - name: Set host bind password in LDAP
   ldap_attr:
@@ -83,4 +79,5 @@
   with_dict:
     userPassword: '{{ owncloud_ldap_password | ldappassword("SHA") }}'
   no_log: True
+  when: (owncloud_ldap_create_user | bool)
 

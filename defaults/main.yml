@@ -5,6 +5,8 @@
 # .. contents:: Sections
 #    :local:
 #
+# .. System packages (((
+#
 # -------------------
 #   System packages
 # -------------------
@@ -15,7 +17,10 @@
 owncloud_base_packages:
   - 'owncloud'
 
+# .. )))
 
+# .. Basic options (((
+#
 # -----------------
 #   Basic options
 # -----------------
@@ -25,13 +30,17 @@ owncloud_base_packages:
 # Domain that will be configured for the ownCloud instance.
 owncloud_domain: [ 'owncloud.{{ ansible_domain }}' ]
 
+# .. )))
 
+# .. ownCloud source and deployment (((
+#
 # ----------------------------------
 #   ownCloud source and deployment
 # ----------------------------------
 
 # .. envvar:: owncloud_edition
 #
+# FIXME
 # Refer to http://download.opensuse.org/repositories/isv:/ownCloud:/ to see
 # which are available.
 owncloud_edition: 'community'
@@ -41,7 +50,7 @@ owncloud_edition: 'community'
 #
 # ownCloud version in the format ``major_release.minor_release`` or ``testing``.
 # See http://download.opensuse.org/repositories/isv:/ownCloud:/community:/ for the full list.
-owncloud_release: 9.0
+owncloud_release: '9.0'
 
 
 # .. envvar:: owncloud_distribution
@@ -113,9 +122,7 @@ owncloud_home: '/var/www/owncloud'
 # .. envvar:: owncloud_data_path
 #
 # Path where ownCloud data directory and files are stored.
-# ``owncloud_domain`` is currently not used. See
-# https://github.com/debops/ansible-owncloud/commit/304a66007cb4e5cc8331f98f9c7057b723c5b7fd
-owncloud_data_path: '{{ owncloud_home }}/data' #{{ owncloud_domain[0] }}'
+owncloud_data_path: '{{ owncloud_home }}/data'
 
 
 # .. envvar:: owncloud_deploy_path
@@ -123,7 +130,10 @@ owncloud_data_path: '{{ owncloud_home }}/data' #{{ owncloud_domain[0] }}'
 # Where the ownCloud instance will be deployed (web root).
 owncloud_deploy_path: '{{ owncloud_home }}'
 
+# .. )))
 
+# .. Database configuration (((
+#
 # --------------------------
 #   Database configuration
 # --------------------------
@@ -174,7 +184,7 @@ owncloud_database_password_path: "{{ secret + '/' + owncloud_database + '/' +
 # .. envvar:: owncloud_database_password
 #
 # Database password for ownCloud.
-owncloud_database_password: "{{ lookup('password', owncloud_database_password_path + ' length=48') }}"
+owncloud_database_password: '{{ lookup("password", owncloud_database_password_path + " length=48") }}'
 
 
 # .. envvar:: owncloud_database_map
@@ -202,7 +212,10 @@ owncloud_database_map:
   sqlite:
     dbtype: 'sqlite'
 
+# .. )))
 
+# .. ownCloud admin login/password (((
+#
 # ---------------------------------
 #   ownCloud admin login/password
 # ---------------------------------
@@ -214,17 +227,26 @@ owncloud_database_map:
 owncloud_admin_username: 'admin-{{ lookup("env","USER") }}'
 
 
-# .. envvar:: owncloud_admin_password
+# .. envvar:: owncloud_admin_password_path
 #
-# Default admin password. If the ``debops.secret`` role is enabled, a randomly password will be
-# generated instead of this value.
-owncloud_admin_password: 'password'
+# Path to database password file.
+owncloud_admin_password_path: '{{ secret + "/credentials/" + ansible_fqdn +
+                                  "/owncloud/admin/" + owncloud_admin_username +
+                                  "/password" }}'
 
 
 # .. envvar:: owncloud_password_length
 #
 # Length of randomly generated admin password.
-owncloud_password_length: '20'
+owncloud_password_length: 20
+
+
+# .. envvar:: owncloud_admin_password
+#
+# Default admin password.
+# A random password will be generate by default as documented by the ``debops.secret`` role.
+owncloud_admin_password: '{{ lookup("password",
+                             owncloud_admin_password_path + " length=" + (owncloud_password_length|string)) }}'
 
 
 # .. envvar:: owncloud_autosetup
@@ -240,9 +262,13 @@ owncloud_autosetup: True
 # .. envvar:: owncloud_autosetup_url
 #
 # URL which will be called to finish autosetup.
+# FIXME
 owncloud_autosetup_url: 'http://{{ owncloud_domain[0] }}/index.php'
 
+# .. )))
 
+# .. ownCloud configuration (((
+#
 # --------------------------
 #   ownCloud configuration
 # --------------------------
@@ -283,8 +309,9 @@ owncloud_cron_minute: '*/15'
 
 # .. envvar:: owncloud_initial_config_global
 #
-# Initial configuration for ownCloud. Refer to the documentation for details:
-# https://doc.owncloud.org/server/8.1/admin_manual/configuration_server/config_sample_php_parameters.html
+# Initial configuration for ownCloud.
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html>`_ for details.
 owncloud_initial_config_global:
   logtimezone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
   loglevel: 2
@@ -308,18 +335,32 @@ owncloud_initial_config_group: {}
 owncloud_initial_config: {}
 
 
-# .. envvar:: owncloud_enable_occ_shortcut
+# .. envvar:: owncloud_timeout
 #
-# Make the `occ` command accessible in the ``PATH`` of all users.
-# Permissions are handled by ``sudo``.
-owncloud_enable_occ_shortcut: False
+# Timeouts in seconds used for the following settings:
+#
+# - ``fastcgi_read_timeout`` in the nginx configuration.
+# - ``max_input_time`` in php5-fpm.
+# - ``max_execution_time`` in php5-fpm.
+#
+# If you need to handle very large files you should increase this value.
+owncloud_timeout: 300
 
+# .. )))
+
+# .. ownCloud configuration via occ commands (((
+#
+# -------------------------------------------
+#   ownCloud configuration via occ commands
+# -------------------------------------------
 
 # .. envvar:: owncloud_run_occ_global_commands
 #
-# Run the list of occ commands. It can be used to enable apps, add users and
-# more which can be useful when deploying ownCloud.
-# See: https://doc.owncloud.org/server/8.1/admin_manual/configuration_server/occ_command.html
+# Global list of :command:`occ` commands to run.
+# It can be used to enable apps, add users and more which can be useful when
+# deploying ownCloud.
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html>`_ for details.
 #
 # Examples::
 #
@@ -335,22 +376,29 @@ owncloud_enable_occ_shortcut: False
 #
 #     ## Create an additional admin account.
 #     - command: 'user:add --password-from-env --display-name="Administrator" --group="admin" admin'
+#       ## Does not work with ownCloud 8.0 or below so don’t run it there.
+#       when: '{{ owncloud_release | version_compare("8.1", ">=") }}'
 #       env:
 #         OC_PASS: "{{ lookup('password', secret + '/credentials/' +
 #                      ansible_fqdn + '/owncloud/admin/' + 'admin' +
 #                      '/password length=' + owncloud_password_length) }}"
 #
 #     ## Create an regular user. Note that you probably want to use an existing
-#     ## user database like LDAP if that is setup in your environment.
+#     ## user database like LDAP.
 #     - command: 'user:add --password-from-env --display-name="Normal user" user'
+#       when: '{{ owncloud_release | version_compare("8.1", ">=") }}'
 #       env:
 #         OC_PASS: "{{ lookup('password', secret + '/credentials/' +
 #                      ansible_fqdn + '/owncloud/users/' + 'user' +
 #                      '/password length=' + owncloud_password_length) }}"
 #
 owncloud_run_occ_global_commands:
-  ## Disable the updater because it does not work anyway with the way ownCloud is setup by this role using packages.
+  ## Disable the updater because it does not work anyway with the way ownCloud
+  ## is setup by this role using packages.
+  ## Since ownCloud 9 it is called `updatenotification`.
+  ## FIXME: Validate.
   - command: 'app:disable updater'
+    when: '{{ owncloud_release | version_compare("8.2", "<=") }}'
 
 
 # .. envvar:: owncloud_run_occ_group_commands
@@ -364,20 +412,15 @@ owncloud_run_occ_group_commands: []
 # See ``owncloud_run_occ_global_commands``.
 owncloud_run_occ_host_commands: []
 
-# .. envvar:: owncloud_timeout
-#
-# Value of several timeouts in seconds:
-# - ``fastcgi_read_timeout`` in nginx configuration
-# - ``max_input_time`` in php5-fpm
-# - ``max_execution_time`` in php5-fpm
-#
-# If you need to handle very large files you should increase this value.
-owncloud_timeout: 300
+# .. )))
 
-
-# ----------------------------------------------
-#   ownCloud LDAP Authentication configuration
-# ----------------------------------------------
+# .. LDAP authentication (((
+#
+# -----------------------
+#   LDAP authentication
+# -----------------------
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/go.php?to=admin-ldap>`_ for details.
 
 # .. envvar:: owncloud_ldap_enable
 #
@@ -387,9 +430,15 @@ owncloud_timeout: 300
 owncloud_ldap_enable: False
 
 
+# .. envvar:: owncloud_ldap_create_user
+#
+# Should the ``owncloud_ldap_binddn`` LDAP user be created if it does not exist?
+owncloud_ldap_create_user: True
+
+
 # .. envvar:: owncloud_ldap_domain
 #
-# Domain name used to generate base DN
+# Domain name used to generate base DN.
 owncloud_ldap_domain: '{{ ansible_domain }}'
 
 
@@ -430,41 +479,179 @@ owncloud_ldap_port: '636'
 owncloud_ldap_method: 'ssl'
 
 
+# .. envvar:: owncloud_ldap_user_display_name
+#
+# The attribute that should be used as display name in ownCloud.
+owncloud_ldap_user_display_name: 'sAMAccountName'
+
+
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#directory-settings>`_ for details.
+owncloud_ldap_user_display_name: 'cn'
+
+
+# .. envvar:: owncloud_ldap_user_filter
+#
+# Use this to control which LDAP users are listed as ownCloud users on your ownCloud server.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#user-filter>`_ for details.
+owncloud_ldap_user_filter: '(|(objectclass=inetOrgPerson))'
+
+
+# .. envvar:: owncloud_ldap_user_filter_objectclass
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#user-filter>`_ for details.
+owncloud_ldap_user_filter_objectclass: 'inetOrgPerson'
+
+# .. envvar:: owncloud_ldap_group_filter
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#group-filter>`_ for details.
+# .. Vim folds workaround. Open fold which is closed by the following ldap group filter (((
+owncloud_ldap_group_filter: '(&(|(objectclass=posixGroup)))'
+
+
+# .. envvar:: owncloud_ldap_group_filter_groups
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#group-filter>`_ for details.
+owncloud_ldap_group_filter_groups: ''
+
+
+# .. envvar:: owncloud_ldap_group_filter_objectclass
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#group-filter>`_ for details.
+owncloud_ldap_group_filter_objectclass: 'posixGroup'
+
+
+# .. envvar:: owncloud_ldap_login_filter
+#
+# The settings in the Login Filter tab determine which LDAP users can log in to your ownCloud system.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#login-filter>`_ for details.
+owncloud_ldap_login_filter: '(&(|(objectclass=inetOrgPerson))(uid=%uid))'
+
+
+# .. envvar:: owncloud_ldap_login_filter_attributes
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#login-filter>`_ for details.
+owncloud_ldap_login_filter_attributes: ''
+
+
 # .. envvar:: owncloud_ldap_group_assoc_attribute
 #
-# Attribute which OwnCloud uses to match members of the group.
+# Attribute which ownCloud uses to match members of the group.
 #
 # Possible values:
-# - memberUid: Usefull for OpenLDAP with PosixGroups. Attibute contains only UID of the user.
-# - uniqueMember: Attribute contains full DN of the user.
-# - member: Attribute contains full DN of the user.
+#
+# ``memberUid``
+#   Useful for OpenLDAP with PosixGroups. Attribute contains only UID of the user.
+#
+# ``uniqueMember``
+#   Attribute contains full DN of the user.
+#
+# ``member``
+#   FIXME
+#   Attribute contains full DN of the user.
 #
 owncloud_ldap_group_assoc_attribute: 'memberUid'
 
 
+# .. envvar:: owncloud_home_folder_naming_rule
+#
+# By default, the ownCloud server creates the user directory in your ownCloud data directory and gives it the ownCloud username, .e.g :file:`/var/www/owncloud/data/alice`. You may want to override this setting and name it after an LDAP attribute value. The attribute can also return an absolute path, e.g. :file:`/mnt/storage43/alice`. Leave it empty for default behavior.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#special-attributes>`_ for details.
+owncloud_home_folder_naming_rule: 'attr:uid'
+
+# .. Advanced settings (((
+#
+# ~~~~~~~~~~~~~~~~~~~~~
+#   Advanced settings
+# ~~~~~~~~~~~~~~~~~~~~~
+
+# .. envvar:: owncloud_ldap_cache_ttl
+#
+# A cache is introduced to avoid unnecessary LDAP traffic, for example caching usernames so they don’t have to be looked up for every page, and speeding up loading of the Users page. Saving the configuration empties the cache. The time is given in seconds.
+#
+# Note that almost every PHP request requires a new connection to the LDAP server. If you require fresh PHP requests we recommend defining a minimum lifetime of 15s or so, rather than completely eliminating the cache.
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#caching>`_ for details.
+owncloud_ldap_cache_ttl: '600'
+
+# .. envvar:: owncloud_ldap_user_display_name
+#
+# The attribute that should be used as display name in ownCloud.
+owncloud_ldap_user_display_name: 'sAMAccountName'
+
+# .. )))
+
+# .. Expert settings (((
+#
+# ~~~~~~~~~~~~~~~~~~~
+#   Expert settings
+# ~~~~~~~~~~~~~~~~~~~
+
+# .. envvar:: owncloud_ldap_expert_username_attr
+#
+# The internal username is the identifier in ownCloud for LDAP users. By
+# default it will be created from the UUID attribute. The UUID attribute
+# ensures that the username is unique, and that characters do not need to be
+# converted. Only these characters are allowed: :regexp:`[a-zA-Z0-9_.@-]`.
+# Other characters are replaced with their ASCII equivalents, or are simply
+# omitted.
+#
+# The LDAP backend ensures that there are no duplicate internal usernames in
+# ownCloud, i.e. that it is checking all other activated user backends
+# (including local ownCloud users). On collisions a random number (between 1000
+# and 9999) will be attached to the retrieved value. For example, if ``alice``
+# exists, the next username may be ``alice_1337``.
+#
+# The internal username is the default name for the user home folder in
+# ownCloud. It is also a part of remote URLs, for instance for all *DAV
+# services.
+#
+# You can override all of this with the Internal Username setting. Leave it
+# empty for default behaviour. Changes will affect only newly mapped LDAP
+# users.
+#
+# You will need to add this variable yourself to ``owncloud_ldap_conf_map``
+# right now.
+#
+# Settings this to::
+#
+#    owncloud_ldap_expert_username_attr: 'sAMAccountName'
+#
+# FIXME: Needs testing.
+#
+owncloud_ldap_expert_username_attr: ''
+
+# .. )))
+
 # .. envvar:: owncloud_ldap_conf_map
 #
 owncloud_ldap_conf_map:
-  ldapAgentName: "{{ owncloud_ldap_binddn }}"
-  ldapBase: "{{ owncloud_ldap_basedn }}"
-  ldapEmailAttribute: "mail"
-  ldapConfigurationActive: "1"
-  ldapGroupFilter: "(&(|(objectclass=posixGroup)))"
-  ldapGroupFilterObjectclass: "posixGroup"
-  ldapHost: "{% if owncloud_ldap_method == 'ssl' %}ldaps://{% endif %}{{ owncloud_ldap_host }}"
-  ldapLoginFilter: "(&(|(objectclass=inetOrgPerson))(uid=%uid))"
-  ldapPort: "{{ owncloud_ldap_port }}"
-  ldapUserDisplayName: "cn"
-  ldapUserFilter: "(|(objectclass=inetOrgPerson))"
-  ldapUserFilterObjectclass: "inetOrgPerson"
-  ldapGroupMemberAssocAttr:  "{{ owncloud_ldap_group_assoc_attribute }}"
-  homeFolderNamingRule: 'attr:uid'
+  ldapHost: '{{ "ldaps://" if (owncloud_ldap_method == "ssl") else "" }}{{ owncloud_ldap_host }}'
+  ldapPort: '{{ owncloud_ldap_port }}'
+  ldapAgentName: '{{ owncloud_ldap_binddn }}'
+  ldapBase: '{{ owncloud_ldap_basedn }}'
+  ldapEmailAttribute: 'mail'
+  ldapConfigurationActive: '1'
+  ldapUserDisplayName: '{{ owncloud_ldap_user_display_name }}'
+  ldapUserFilter: '{{ owncloud_ldap_user_filter }}'
+  ldapUserFilterObjectclass: '{{ owncloud_ldap_user_filter_objectclass }}'
+  ldapLoginFilter: '{{ owncloud_ldap_login_filter }}'
+  ldapLoginFilterAttributes: '{{ owncloud_ldap_login_filter_attributes }}'
+  ldapGroupFilter: '{{ owncloud_ldap_group_filter }}'
+  ldapGroupFilterGroups: '{{ owncloud_ldap_group_filter_groups }}'
+  ldapGroupFilterObjectclass: '{{ owncloud_ldap_group_filter_objectclass }}'
+  ldapGroupMemberAssocAttr:  '{{ owncloud_ldap_group_assoc_attribute }}'
+  homeFolderNamingRule: '{{ owncloud_home_folder_naming_rule }}'
+  ldapCacheTTL: '{{ owncloud_ldap_cache_ttl }}'
 
+# .. )))
 
+# .. ownCloud Mail configuration (((
+#
 # -------------------------------
 #   ownCloud Mail configuration
 # -------------------------------
-
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html#mail-parameters>`_ for details.
 
 # .. envvar:: owncloud_mail_domain
 #
@@ -473,20 +660,49 @@ owncloud_mail_domain: '{{ ansible_domain }}'
 
 # .. envvar:: owncloud_mail_from_address
 #
+# From address that overrides the built-in ``sharing-noreply`` and
+# ``lostpassword-noreply`` from addresses.
 owncloud_mail_from_address: 'owncloud'
 
 
 # .. envvar:: owncloud_mail_smtpmode
 #
+# Which mode to use for sending mail.
+# Choices are: ``sendmail``, ``smtp``, ``qmail`` or ``php``.
 owncloud_mail_smtpmode: 'sendmail'
+
+
+# .. envvar:: owncloud_mail_smtphost
+#
+# Specify the IP address of your mail server host.
+# This may contain multiple
+# hosts separated by a semi-colon. If you need to specify the port number
+# append it to the IP address separated by a colon, like this: 127.0.0.1:24.
+# This depends on ``owncloud_mail_smtpmode``.
+owncloud_mail_smtphost: ''
+
+
+# .. envvar:: owncloud_mail_smtpport
+#
+# Port for sending mail. Can also be specified via ``owncloud_mail_smtphost``.
+# This depends on ``owncloud_mail_smtpmode``.
+owncloud_mail_smtpport: ''
 
 
 # .. envvar:: owncloud_mail_conf_map
 #
 owncloud_mail_conf_map:
-  mail_domain: "{{ owncloud_mail_domain }}"
-  mail_from_address: "{{ owncloud_mail_from_address  }}"
-  mail_smtpmode: "{{ owncloud_mail_smtpmode  }}"
+  mail_domain: '{{ owncloud_mail_domain }}'
+  mail_from_address: '{{ owncloud_mail_from_address  }}'
+  mail_smtpmode: '{{ owncloud_mail_smtpmode }}'
+
+## FIXME: Needs testing.
+  # mail_smtphost: '{{ owncloud_mail_smtphost }}'
+  # mail_smtpport: '{{ owncloud_mail_smtpport }}'
+
+# .. )))
+
+# .. ownCloud custom config.php configuration (((
 
 # --------------------------------------------
 #   ownCloud custom config.php configuration
@@ -494,9 +710,116 @@ owncloud_mail_conf_map:
 
 # .. envvar:: owncloud_custom_conf_map
 #
-# This parameters ends up in custom.config.php and override the values
-# from config.php. Refer to the documentation for details:
-# https://doc.owncloud.org/server/8.1/admin_manual/configuration_server/config_sample_php_parameters.html
-# Note: Parameters with \ (backslash) needs double escaping:
-# memcache.local: '\\OC\\Memcache\\APCu'
+# This parameters ends up in :file:`custom.config.php` and override the values
+# from :file:`config.php`.
+# This variable is intended to be used in Ansible's global inventory.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html>`_ for details.
+#
+# Note: Parameters with \ (backslash) needs double escaping::
+#
+#    owncloud_custom_conf_map:
+#      memcache.local: '\\OC\\Memcache\\APCu'
+#
 owncloud_custom_conf_map: {}
+
+
+# .. envvar:: owncloud_custom_group_conf_map
+#
+# This parameters ends up in :file:`custom.config.php` and override the values
+# from :file:`config.php`.
+# This variable is intended to be used in one Ansible host group inventory.
+# Refer to ``owncloud_custom_conf_map`` for details.
+owncloud_custom_group_conf_map: {}
+
+
+# .. envvar:: owncloud_custom_host_conf_map
+#
+# This parameters ends up in :file:`custom.config.php` and override the values
+# from :file:`config.php`.
+# This variable is intended to be used in Ansible host inventory.
+# Refer to ``owncloud_custom_conf_map`` for details.
+owncloud_custom_host_conf_map: {}
+
+# .. )))
+
+# .. Role-dependent configuration (((
+#
+# --------------------------------
+#   Role-dependent configuration
+# --------------------------------
+
+# .. envvar:: owncloud__nginx__servers
+#
+# List of :program:`nginx` server configurations managed by the
+# ``debops.nginx`` role.
+owncloud__nginx__servers:
+
+  - by_role: 'debops.owncloud'
+    enabled: True
+    default: False
+    type: 'php5'
+    name: '{{ owncloud_domain }}'
+    root: '{{ owncloud_deploy_path }}'
+
+    options: |
+      client_max_body_size  {{ owncloud_upload_size }};
+      fastcgi_buffers       64              4K;
+      rewrite               ^/caldav(.*)$   /remote.php/caldav$1   redirect;
+      rewrite               ^/carddav(.*)$  /remote.php/carddav$1  redirect;
+      rewrite               ^/webdav(.*)$   /remote.php/webdav$1   redirect;
+      error_page            403             /core/templates/403.php;
+      error_page            404             /core/templates/404.php;
+
+    location:
+
+      '~ ^/(data|config|\.ht|db_structure\.xml|README)': 'deny all;'
+
+      '= /data/htaccesstest.txt': |
+        return 204;
+        access_log off;
+        log_not_found off;
+
+      '/': |
+        rewrite   ^/.well-known/host-meta       /public.php?service=host-meta       last;
+        rewrite   ^/.well-known/host-meta.json  /public.php?service=host-meta-json  last;
+        rewrite   ^/.well-known/carddav         /remote.php/carddav/                redirect;
+        rewrite   ^/.well-known/caldav          /remote.php/caldav/                 redirect;
+        rewrite   ^(/core/doc/[^\/]+/)$         $1/index.html;
+        try_files $uri $uri/ index.php =404;
+
+    php5: 'php5_owncloud'
+    php5_limit_except: False
+    php5_options: |
+      fastcgi_read_timeout {{ owncloud_timeout }};
+
+
+owncloud_nginx_upstream_php5:
+  enabled: True
+  name: 'php5_owncloud'
+  type: 'php5'
+  php5: 'owncloud'
+
+owncloud_php5_pool:
+  enabled: True
+  name: 'owncloud'
+  user: '{{ owncloud_user }}'
+  group: '{{ owncloud_group }}'
+  pm_max_children: '{{ owncloud_php5_max_children }}'
+  php_value:
+    output_buffering: '{{ owncloud_php5_output_buffering }}'
+    post_max_size: '{{ owncloud_upload_size }}'
+    upload_max_filesize: '{{ owncloud_upload_size }}'
+    max_input_time: '{{ owncloud_timeout }}'
+    max_execution_time: '{{ owncloud_timeout }}'
+
+  ## https://doc.owncloud.org/server/8.1/admin_manual/installation/source_installation.html#using-php-fpm
+  environment:
+    # HOSTNAME: '$HOSTNAME'
+    # TMP: '/tmp'
+    # TMPDIR: '/tmp'
+    # TEMP: '/tmp'
+
+    ## Fixes warning (ownCloud 8.1): "The test with getenv('PATH') only returns an empty response"
+    PATH: '/usr/local/bin:/usr/bin:/bin'
+
+# .. )))

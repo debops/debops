@@ -112,9 +112,11 @@ Available role tags:
 
 ``role::owncloud:base_install``
   Run tasks related to the installation the ownCloud packages.
+  FIXME: Rename to install
 
 ``role::owncloud:configure``
   Run tasks related to ownCloud configuration and setup.
+  FIXME: Rename to setup
 
 ``role::owncloud:mail``
   Run tasks related to the deployment of the mail configuration.
