@@ -27,5 +27,8 @@ v0.1.0
 - Use the `loop control feature <https://docs.ansible.com/ansible/playbooks_loops.html>`_
   of Ansible 2.1 and thus require Ansible 2.1. [ypid]
 
+- Implemented automatic reinitialization of volume snapshots after a volume
+  has been reformatted. [ypid]
+
 .. _ypid.snapshot_snapper: https://galaxy.ansible.com/ypid/snapshot_snapper/
 .. _DebOps Contrib: https://github.com/debops-contrib/

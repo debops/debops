@@ -111,6 +111,20 @@ snapshot_snapper__host_group_volumes: []
 # "Host" list of volumes to snapshot.
 snapshot_snapper__host_volumes: []
 
+
+# .. envvar:: snapshot_snapper__auto_reinit
+#
+# Automatically reinitialize the snapshots for a volume if the directory
+# containing the actual snapshots has vanished.
+# This can be useful if the volume has been reformatted but the old snapper
+# configuration is still in place.
+# All what snapper does in such case is to return "IO Error." when trying to
+# work with this volume configuration.
+#
+# When this option is set to ``True``, the role will do some manually
+# intervention to automatically fix this if necessary.
+snapshot_snapper__auto_reinit: True
+
 # .. )))
 
 # .. Role internal configuration (((
@@ -121,7 +135,8 @@ snapshot_snapper__host_volumes: []
 
 # .. envvar:: snapshot_snapper__directory
 #
-# Name of the directory in the root of the volume containing the snapshots and metadata.
+# Name of the directory in the root of the volume containing the snapshots and
+# metadata.
 snapshot_snapper__directory: '.snapshots'
 
 
