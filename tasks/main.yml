@@ -70,4 +70,6 @@
 
 - name: Adjust configuration for volume
   include: configure_snapper_volume.yml
-  with_items: '{{ snapshot_snapper__volumes_combined|d([]) }}'
+  loop_control:
+    loop_var: 'snapshot_snapper__volume'
+  with_items: '{{ snapshot_snapper__volumes_combined }}'

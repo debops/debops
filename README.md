@@ -16,7 +16,7 @@ This role allows to setup and configure snapper with Ansible.
 
 ### Installation
 
-This role requires at least Ansible `v2.0.0`. To install it, run:
+This role requires at least Ansible `v2.1.0`. To install it, run:
 
 ```Shell
 ansible-galaxy install debops.contrib-snapshot_snapper
