@@ -1,9 +1,11 @@
 ---
 # Default variables
 # =================
-
+#
 # .. contents:: Sections
 #    :local:
+#
+# .. Hostname and domain (((
 #
 # -----------------------
 #   Hostname and domain
@@ -20,6 +22,7 @@ bootstrap_domain: '{{ ansible_domain }}'
 # Set custom DNS hostname on a given host.
 bootstrap_hostname: '{{ inventory_hostname_short | default(inventory_hostname) }}'
 
+
 # .. envvar:: bootstrap_hostname_v6_loopback
 #
 # Set custom DNS hostname on a given host also for IPv6.
@@ -28,22 +31,36 @@ bootstrap_hostname: '{{ inventory_hostname_short | default(inventory_hostname) }
 # Refer to https://github.com/debops/ansible-bootstrap/pull/9
 bootstrap_hostname_v6_loopback: False
 
+# .. )))
 
-
+# .. APT and packages (((
+#
 # --------------------
 #   APT and packages
 # --------------------
 
 # .. envvar:: bootstrap_raw
 #
-# Install minimal set of required packages using ``raw`` Ansible module.
+# Ensure ``bootstrap_mandatory_packages`` are installed using ``raw`` Ansible
+# module before proceeding.
 bootstrap_raw: True
+
+
+# .. envvar:: bootstrap_mandatory_packages
+#
+# Mandatory packages installed during bootstrap.
+bootstrap_mandatory_packages:
+  - 'python'
+  - 'python-apt'
 
 
 # .. envvar:: bootstrap_base_packages
 #
 # Base packages installed during bootstrap.
-bootstrap_base_packages: [ 'python', 'python-apt', 'python-pip', 'sudo', 'lsb-release' ]
+bootstrap_base_packages:
+  - 'python-pip'
+  - 'sudo'
+  - 'lsb-release'
 
 
 # .. envvar:: bootstrap_packages
@@ -51,9 +68,12 @@ bootstrap_base_packages: [ 'python', 'python-apt', 'python-pip', 'sudo', 'lsb-re
 # Install additional packages during bootstrap.
 bootstrap_packages: []
 
+# .. )))
 
+# .. System administrator account (((
+#
 # --------------------------------
-#   System Administrator account
+#   System administrator account
 # --------------------------------
 
 # .. envvar:: bootstrap_admin
@@ -64,7 +84,7 @@ bootstrap_admin: True
 
 # .. envvar:: bootstrap_admin_system
 #
-# Should the admin account be a system account (UID < 1000) ?
+# Should the admin account be a system account (UID < 1000)?
 bootstrap_admin_system: True
 
 
@@ -80,7 +100,7 @@ bootstrap_admin_name: '{{ (ansible_ssh_user
 # .. envvar:: bootstrap_admin_group
 #
 # List of local system groups which admin account will be added to.
-bootstrap_admin_groups:  [ "admins", "staff", "adm" ]
+bootstrap_admin_groups: [ 'admins', 'staff', 'adm' ]
 
 
 # .. envvar:: bootstrap_admin_home
@@ -132,7 +152,10 @@ bootstrap_admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.s
 # Use ``bootstrap_admin_sshkeys`` or ``bootstrap_sudo`` to change that behavior if needed.
 bootstrap_admin_manage_existing: False
 
+# .. )))
 
+# .. Access to sudo commands (((
+#
 # ---------------------------
 #   Access to sudo commands
 # ---------------------------
@@ -148,3 +171,4 @@ bootstrap_sudo: True
 # A group which grants passwordless ``sudo`` access.
 bootstrap_sudo_group: '{{ bootstrap_admin_groups[0] | default("") }}'
 
+# .. )))

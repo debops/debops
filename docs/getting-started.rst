@@ -7,19 +7,21 @@ Getting started
 Example inventory
 -----------------
 
-Host needs to be added to Ansible inventory to be able to be bootstrapped, but
-you don't need to specify a group for it::
+A host needs to be added to Ansible inventory to allow it to be bootstrapped,
+but you don't need to specify a group for it:
+
+.. code-block:: none
 
     hostname
 
 Example playbook
 ----------------
 
-Here's an example playbook which uses ``debops.bootstrap`` role::
+Here's an example playbook which uses the ``debops.bootstrap`` role::
 
     ---
     - name: Bootstrap hosts for Ansible management
-      hosts: all:!localhost
+      hosts: [ 'all:!localhost' ]
 
       roles:
 
@@ -30,13 +32,15 @@ How to bootstrap a host with DebOps
 
 Within main DebOps playbooks, ``bootstrap`` is a separate playbook which is not
 run by default by main playbook. To use it with a new host which has only
-a ``root`` account and requires password, you can run the playbook like this::
+a ``root`` account and requires a password, you can run the playbook like this::
 
-    debops bootstrap -l host -u root -k
+.. code-block:: shell
+
+    debops bootstrap --limit host --user root --ask-pass
 
 Bootstrap playbook does not have specific host restrictions, so it will be
 executed on all hosts (apart from ``localhost``) if not limited, which you
-should avoid.
+should avoid as done in the example using ``--limit host``.
 
 Ansible tags
 ------------
@@ -47,6 +51,12 @@ configured to speed up playbook execution, when you are sure that most of the
 configuration has not been changed.
 
 Available role tags:
+
+``role::bootstrap:packages``
+  Execute tasks related to package installation.
+
+``role::bootstrap:admin``
+  Execute tasks related to setting up the admin user.
 
 ``role::bootstrap:hostname``
   Execute tasks related to configuring the hostname.

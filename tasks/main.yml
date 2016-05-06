@@ -1,9 +1,26 @@
 ---
 
-- name: Update APT repositories, install base requirements
-  raw:  'apt-get update ; apt-get --no-install-recommends -yq install python python-apt libcap2-bin'
-  when: bootstrap_raw | bool
+- name: Raw update APT repositories and install mandatory packages
+  raw:  'apt-get update ; apt-get --no-install-recommends -yq install {{ bootstrap_mandatory_packages | join(" ") }}'
+  tags: [ 'role::bootstrap:packages' ]
+  when: bootstrap_raw|bool
 
+# .. Package install of essential software (((
+- name: Make sure essential software is installed
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    update_cache: True
+    cache_valid_time: '3600'
+    install_recommends: False
+  tags: [ 'role::bootstrap:packages' ]
+  with_flattened:
+    - '{{ bootstrap_mandatory_packages }}'
+    - '{{ bootstrap_base_packages }}'
+    - '{{ bootstrap_packages }}'
+# .. )))
+
+# .. Ansible facts (((
 - name: Install custom Ansible local facts
   copy:
     src: 'etc/ansible/facts.d/'
@@ -14,122 +31,95 @@
 
 - name: Gather host facts
   action: setup
+# .. )))
 
-- name: Make sure essential software is installed
-  apt:
-    name: '{{ item }}'
-    state: 'present'
-    update_cache: True
-    cache_valid_time: '3600'
-    install_recommends: False
-  with_flattened:
-    - '{{ bootstrap_base_packages }}'
-    - '{{ bootstrap_packages }}'
-
+# .. System administrator account (((
 - name: Create specified system groups
   group:
     name: '{{ item }}'
     state: 'present'
     system: True
+  tags: [ 'role::bootstrap:admin' ]
+  when: bootstrap_admin|bool
   with_items: '{{ bootstrap_admin_groups }}'
-  when: bootstrap_admin | bool
 
 - name: Check if potential administrator account exists
   shell: getent passwd {{ bootstrap_admin_name }} || true
   register: bootstrap_register_admin_account
-  when: not bootstrap_admin_manage_existing | bool
+  tags: [ 'role::bootstrap:admin' ]
+  when: not bootstrap_admin_manage_existing|bool
   changed_when: False
-  always_run: yes
+  always_run: True
 
 - name: Set admin manage existing to true
   set_fact:
     bootstrap_register_admin_account:
       stdout: False
-  when: bootstrap_admin_manage_existing | bool
+  tags: [ 'role::bootstrap:admin' ]
+  when: bootstrap_admin_manage_existing|bool
 
-- name: Create administrator group (system)
+- name: Create administrator group
   group:
     name: '{{ bootstrap_admin_name }}'
     state: 'present'
-    system: True
-  when: (bootstrap_admin | bool and
-         not bootstrap_register_admin_account.stdout and
-         bootstrap_admin_system | bool)
+    system: '{{ bootstrap_admin_system|bool }}'
+  tags: [ 'role::bootstrap:admin' ]
+  when: (bootstrap_admin|bool and not bootstrap_register_admin_account.stdout)
 
-- name: Create administrator group (normal)
-  group:
-    name: '{{ bootstrap_admin_name }}'
-    state: 'present'
-  when: (bootstrap_admin | bool and
-         not bootstrap_register_admin_account.stdout and
-         not bootstrap_admin_system | bool)
-
-- name: Create administrator account (system)
+- name: Create administrator account
   user:
     name: '{{ bootstrap_admin_name }}'
     state: 'present'
-    system: True
+    system: '{{ bootstrap_admin_system|bool }}'
     group: '{{ bootstrap_admin_name }}'
     groups: '{{ bootstrap_admin_groups | join(",") }}'
     append: True
-    home: '{{ bootstrap_admin_system_home }}'
+    home: '{{ bootstrap_admin_system_home
+              if (bootstrap_admin_system|bool)
+              else bootstrap_admin_home }}'
     shell: '{{ bootstrap_admin_shell }}'
     comment: '{{ bootstrap_admin_comment }}'
-  when: (bootstrap_admin | bool and
-         not bootstrap_register_admin_account.stdout and
-         bootstrap_admin_system | bool)
+  tags: [ 'role::bootstrap:admin' ]
+  when: (bootstrap_admin|bool and not bootstrap_register_admin_account.stdout)
 
-- name: Create administrator account (normal)
-  user:
-    name: '{{ bootstrap_admin_name }}'
-    state: 'present'
-    group: '{{ bootstrap_admin_name }}'
-    groups: '{{ bootstrap_admin_groups | join(",") }}'
-    append: True
-    home: '{{ bootstrap_admin_home }}'
-    shell: '{{ bootstrap_admin_shell }}'
-    comment: '{{ bootstrap_admin_comment }}'
-  when: (bootstrap_admin | bool and
-         not bootstrap_register_admin_account.stdout and
-         not bootstrap_admin_system | bool)
-
-- name: Set admin home directory group and permissions (system)
+- name: Set admin home directory group and permissions
   file:
-    path: '{{ bootstrap_admin_system_home }}'
+    path: '{{ bootstrap_admin_system_home
+              if (bootstrap_admin_system|bool)
+              else bootstrap_admin_home }}'
     group: '{{ bootstrap_admin_home_group }}'
-    mode: '{{ bootstrap_admin_home_mode }}'
-  when: (bootstrap_admin | bool and
-         not bootstrap_register_admin_account.stdout and
-         bootstrap_admin_system | bool)
+    mode:  '{{ bootstrap_admin_home_mode }}'
+  tags: [ 'role::bootstrap:admin' ]
+  when: (bootstrap_admin|bool and not bootstrap_register_admin_account.stdout)
+# .. )))
 
-- name: Set admin home directory group and permissions (normal)
-  file:
-    path: '{{ bootstrap_admin_home }}'
-    group: '{{ bootstrap_admin_home_group }}'
-    mode: '{{ bootstrap_admin_home_mode }}'
-  when: (bootstrap_admin | bool and
-         not bootstrap_register_admin_account.stdout and
-         not bootstrap_admin_system | bool)
-
+# .. SSH public key access (((
 - name: Install ssh public key on root account
   authorized_key:
     user: 'root'
-    key: '{{ "\n".join(bootstrap_admin_sshkeys) | string }}'
+    key: '{{ bootstrap_admin_sshkeys | join("\n") | string }}'
     state: 'present'
-  when: bootstrap_admin | bool
+  tags: [ 'role::bootstrap:admin' ]
+  when: bootstrap_admin|bool
   failed_when: (bootstrap_admin_sshkeys is undefined or
                 (bootstrap_admin_sshkeys is defined and not bootstrap_admin_sshkeys))
 
 - name: Install ssh public key on administrator account
   authorized_key:
     user: '{{ bootstrap_admin_name }}'
-    key: '{{ "\n".join(bootstrap_admin_sshkeys) | string }}'
+    key: '{{ bootstrap_admin_sshkeys | join("\n") | string }}'
     state: 'present'
-  when: bootstrap_admin | bool
+  tags: [ 'role::bootstrap:admin' ]
+  when: bootstrap_admin|bool
   failed_when: (bootstrap_admin_sshkeys is undefined or
                 (bootstrap_admin_sshkeys is defined and not bootstrap_admin_sshkeys))
+# .. )))
 
+# .. Access to sudo commands (((
 - name: Configure system group with passwordless access in sudo
+  ## `lineinfile` is used instead of `template` to allow other roles to take
+  ## over `sudo` management and prevent one role reverting the work of the
+  ## other role.
   lineinfile:
     dest: '/etc/sudoers.d/{{ bootstrap_sudo_group }}'
     regexp: '{{ item.regexp }}'
@@ -139,13 +129,14 @@
     owner: 'root'
     group: 'root'
     mode: '0440'
-    validate: 'visudo -cf %s'
+    validate: 'visudo --check --file "%s"'
+  tags: [ 'role::bootstrap:admin' ]
   with_items:
     - regexp: '^Defaults: %{{ bootstrap_sudo_group }} env_check\s'
       line:    'Defaults: %{{ bootstrap_sudo_group }} env_check += "SSH_CLIENT"'
     - regexp: '^%{{ bootstrap_sudo_group }}\s'
       line:    '%{{ bootstrap_sudo_group }} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL'
-  when: bootstrap_sudo | bool
+  when: bootstrap_sudo|bool
 
 - name: Ensure /etc/sudoers includes /etc/sudoers.d
   lineinfile:
@@ -153,7 +144,8 @@
     regexp: '^#includedir\s+/etc/sudoers.d$'
     line: '#includedir /etc/sudoers.d'
     state: 'present'
-    validate: 'visudo -cf %s'
+    validate: 'visudo --check --file "%s"'
+  tags: [ 'role::bootstrap:admin' ]
 
 - name: Make sure that administrator account is in passwordless sudo group
   user:
@@ -161,15 +153,19 @@
     state: 'present'
     groups: '{{ bootstrap_sudo_group }}'
     append: True
-  when: (bootstrap_admin | bool and bootstrap_sudo | bool)
+  tags: [ 'role::bootstrap:admin' ]
+  when: (bootstrap_admin|bool and bootstrap_sudo|bool)
+# .. )))
 
+# .. Hostname and domain (((
 - name: Enforce new hostname
   hostname:
     name: '{{ bootstrap_hostname }}'
   tags: [ 'role::bootstrap:hostname' ]
   when: (bootstrap_hostname != ansible_hostname and
-         ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-         (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
+         ansible_local|d() and ansible_local.cap12s|d() and
+         (not ansible_local.cap12s.enabled|bool or
+         'cap_sys_admin' in ansible_local.cap12s.list))
 
 - name: Save hostname in /etc/hostname
   copy:
@@ -180,8 +176,9 @@
     mode: '0644'
   tags: [ 'role::bootstrap:hostname' ]
   when: (bootstrap_hostname != ansible_hostname and
-         ansible_local|d() and ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-         (ansible_local.cap12s.enabled and 'cap_sys_admin' in ansible_local.cap12s.list)))
+         ansible_local|d() and ansible_local.cap12s|d() and
+         (not ansible_local.cap12s.enabled|bool or
+         'cap_sys_admin' in ansible_local.cap12s.list))
 
 - name: Save hostname and domain in /etc/hosts
   lineinfile:
@@ -189,15 +186,20 @@
     dest: '/etc/hosts'
     insertbefore: '{{ item.insertbefore | default(omit) }}'
     insertafter: '{{ item.insertafter | default(omit) }}'
-    regexp: '{{ "^" + item.ip_address | replace(".","\.") }}'
-    line: "{{ item.ip_address + '\t' + (((bootstrap_hostname | d(ansible_hostname)) + '.' + bootstrap_domain + '\t' + (bootstrap_hostname | d(ansible_hostname))) if bootstrap_domain|d() else (bootstrap_hostname | d(ansible_hostname))) }}"
+    regexp: '{{ "^" + (item.ip_address | replace(".","\.")) }}'
+    ## https://github.com/ansible/ansible-modules-core/issues/1892
+    line: "{{ item.ip_address + '\t' + (bootstrap_hostname | d(ansible_hostname)) +
+              (( '.' + bootstrap_domain + '\t' + (bootstrap_hostname | d(ansible_hostname)) )
+              if bootstrap_domain|d()
+              else '') }}"
   tags: [ 'role::bootstrap:hostname' ]
   when: ((item.type == 'inet6' and bootstrap_hostname_v6_loopback|d()) or item.type == 'inet4')
   with_items:
     - ip_address: '{{ bootstrap_ipv4 | default("127.0.1.1") }}'
-      insertafter: '{{ "^127.0.0.1" | replace(".","\.") }}'
+      insertafter: '{{ "^127.0.0.1" | replace(".", "\.") }}'
       type: 'inet4'
     - ip_address: '{{ bootstrap_ipv6 | default("0::1") }}'
       insertbefore: '^::1'
       type: 'inet6'
 
+# .. )))

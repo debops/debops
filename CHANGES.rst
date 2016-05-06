@@ -9,6 +9,10 @@ v0.1.3
 - Fixed incorrectly evaluated ``bootstrap_admin_system`` variable since "Clean
   up task logic" in v0.1.2. [ypid]
 
+- Reworked tasks and conditions. [ypid]
+
+- Added ``role::bootstrap:packages`` and ``role::bootstrap:admin`` tags. [ypid]
+
 v0.1.2
 ------
 
