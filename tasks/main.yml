@@ -62,7 +62,7 @@
     state: 'present'
   when: (bootstrap_admin | bool and
          not bootstrap_register_admin_account.stdout and
-         bootstrap_admin_system | bool)
+         not bootstrap_admin_system | bool)
 
 - name: Create administrator account (system)
   user:
@@ -91,7 +91,7 @@
     comment: '{{ bootstrap_admin_comment }}'
   when: (bootstrap_admin | bool and
          not bootstrap_register_admin_account.stdout and
-         bootstrap_admin_system | bool)
+         not bootstrap_admin_system | bool)
 
 - name: Set admin home directory group and permissions (system)
   file:
@@ -109,7 +109,7 @@
     mode: '{{ bootstrap_admin_home_mode }}'
   when: (bootstrap_admin | bool and
          not bootstrap_register_admin_account.stdout and
-         bootstrap_admin_system | bool)
+         not bootstrap_admin_system | bool)
 
 - name: Install ssh public key on root account
   authorized_key:

@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Unreleased*
+
+- Fixed incorrectly evaluated ``bootstrap_admin_system`` variable since "Clean
+  up task logic" in v0.1.2. [ypid]
+
 v0.1.2
 ------
 
