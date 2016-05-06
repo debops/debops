@@ -52,6 +52,10 @@ configuration has not been changed.
 
 Available role tags:
 
+``role::bootstrap``
+  Main role tag, should be used in the playbook to execute all of the role
+  tasks as well as role dependencies.
+
 ``role::bootstrap:packages``
   Execute tasks related to package installation.
 
