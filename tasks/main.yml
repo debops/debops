@@ -129,7 +129,7 @@
     owner: 'root'
     group: 'root'
     mode: '0440'
-    validate: 'visudo --check --file "%s"'
+    validate: 'visudo -cf "%s"'
   tags: [ 'role::bootstrap:admin' ]
   with_items:
     - regexp: '^Defaults: %{{ bootstrap__sudo_group }} env_check\s'
@@ -144,7 +144,7 @@
     regexp: '^#includedir\s+/etc/sudoers.d$'
     line: '#includedir /etc/sudoers.d'
     state: 'present'
-    validate: 'visudo --check --file "%s"'
+    validate: 'visudo -cf "%s"'
   tags: [ 'role::bootstrap:admin' ]
 
 - name: Make sure that administrator account is in passwordless sudo group
