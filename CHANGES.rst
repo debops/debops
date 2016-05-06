@@ -11,8 +11,7 @@ v0.1.0
 - Wrote initial documentation. [ypid]
 
 - Moved to `DebOps Contrib`_ (the role is still available under
-  `ypid.snapshot_snapper`_ until it has been fully renamed to something like
-  ``debops.cryptsetup``). [ypid]
+  `ypid.snapshot_snapper`_ until it has been fully renamed). [ypid]
 
 - Changed namespace from ``snapshot_snapper_`` to ``snapshot_snapper__``.
   ``snapshot_snapper_[^_]`` variables are hereby deprecated and you might need
