@@ -1,7 +1,7 @@
 Changelog
 =========
 
-v0.1.3
+v0.2.0
 ------
 
 *Unreleased*
@@ -12,6 +12,18 @@ v0.1.3
 - Reworked tasks and conditions. [ypid]
 
 - Added ``role::bootstrap:packages`` and ``role::bootstrap:admin`` tags. [ypid]
+
+- Changed variable namespace from ``bootstrap_`` to ``bootstrap__``.
+  ``bootstrap_[^_]`` variables are hereby deprecated.
+
+  You might need to update your inventory. This oneliner might come in handy to
+  do this:
+
+  .. code:: shell
+
+     git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(bootstrap)_([^_])/\1__\2/g;'
+
+  [ypid]
 
 v0.1.2
 ------
