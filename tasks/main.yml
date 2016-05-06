@@ -23,8 +23,8 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - nodejs_base_packages
-    - nodejs_packages
+    - '{{ nodejs_base_packages }}'
+    - '{{ nodejs_packages }}'
 
 - name: Install packages when not installing from upstream
   apt:
@@ -33,7 +33,7 @@
     install_recommends: False
   when: not nodejs_upstream|d()
   with_flattened:
-    - nodejs_distribution_packages
+    - '{{ nodejs_distribution_packages }}'
 
 - name: Install npm global packages
   npm:
@@ -42,5 +42,5 @@
     version: '{{ item.version | default(omit) }}'
     production: '{{ item.production | default(omit) }}'
     global: True
-  with_items: nodejs_npm_global_packages
+  with_items: '{{ nodejs_npm_global_packages }}'
 
