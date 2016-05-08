@@ -19,7 +19,7 @@ apt__enabled: True
 
 # .. envvar:: apt__remove_default_configuration
 #
-# Ensure that ``/etc/apt/apt.conf`` is absent.
+# Ensure that :file:`/etc/apt/apt.conf` is absent.
 # This file might contain APT proxy or other settings which overwrite options
 # set by ``debops.apt`` if present.
 # Thus the default is to ensure that this file is absent.
@@ -123,7 +123,7 @@ apt__proxy_url: ''
 # .. envvar:: apt__proxy_bypass_for_bugs_debian_org
 #
 # Bypass the configured proxy server for https://bugs.debian.org.
-# This might be necessary when you are using ``apt-listbugs``.
+# This might be necessary when you are using :command:`apt-listbugs`.
 # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=775126.
 apt__proxy_bypass_for_bugs_debian_org: False
 
@@ -484,6 +484,11 @@ apt__apt_preferences__dependent_list:
   - package: 'irqbalance'
     backports: [ 'wheezy' ]
     reason:  'Issues in wheezy package - http://debian.distrosfaqs.org/debian-user/wheezy-irqbalance/'
+    by_role: 'debops.apt'
+
+  - package: 'irqbalance'
+    backports: [ 'jessie' ]
+    reason:  'Bug fixes and memory leak fixes.'
     by_role: 'debops.apt'
 
     ## Remove configuration from ``debops.apt`` context which is now managed by
