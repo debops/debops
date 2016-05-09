@@ -14,7 +14,7 @@ v0.2.0
   hit a problem with a proxy server not allowing access to
   https://bugs.debian.org. [ypid]
 
-- Removed ``debops.apt_preferences`` as role hard dependency and added
+- Removed ``debops.apt_preferences`` as hard role dependency and added
   ``apt__apt_preferences__dependent_list`` which you can feed to
   ``debops.apt_preferences`` in your playbook. [ypid]
 
@@ -22,11 +22,11 @@ v0.2.0
 
 - Changed namespace from ``apt_`` to ``apt__``.
   ``apt_[^_]`` variables are hereby deprecated and you might need to
-  update your inventory. This oneliner might come in handy to do this.
+  update your inventory. This oneliner might come in handy to do this:
 
   .. code:: shell
 
-     git ls-files -z | find -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(apt)_([^_])/\1__\2/g;s/apt__(key|repository|preferences|cacher)/apt_\1/g;s/apt_keys_delayed/apt__keys_delayed/g;'
+     git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(apt)_([^_])/\1__\2/g;s/apt__(key|repository|preferences|cacher)/apt_\1/g;s/apt_keys_delayed/apt__keys_delayed/g;'
 
   [ypid]
 
