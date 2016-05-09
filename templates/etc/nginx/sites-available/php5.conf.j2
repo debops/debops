@@ -38,6 +38,22 @@
 #   - item.php5_options: |
 #       Additional options to append to php location, in text block format.
 #
+#
+#   - item.php5_status: []
+#       Optional. Enable php5 fpm server status page and allow access from list of
+#       IP addresses or CIDR ranges.
+#
+#
+#   - item.php5_status_name: ''
+#       Optional. Set the name of the location which should be used for php5 fpm
+#       status page
+#
+#
+#   - item.php5_ping_name: ''
+#       Optional. Set the name of the location which should be used for php5 fpm
+#       ping page
+#
+#
 #}
 {% block nginx_tpl_block_index %}
         index {{ item.index | default('index.html index.htm index.php') }};
@@ -47,6 +63,33 @@
                 try_files $uri $uri/ /index.php =404;
 {% endblock %}
 {% block nginx_tpl_block_custom_locations %}
+{% if item.php5_status|d(nginx_php5_status) and (nginx_status or nginx_status_localhost) %}
+	location ~ ^/({{ item.php5_status_name | default(nginx_php5_status_name) }}|{{ item.php5_ping_name | default(nginx_php5_ping_name) }})$ {
+		access_log off;
+{% if nginx_status_localhost %}
+{% for address in nginx_status_localhost | unique %}
+		allow {{ address }};
+{% endfor %}
+{% endif %}
+{% if nginx_status %}
+{% for address in nginx_status | unique %}
+		allow {{ address }};
+{% endfor %}
+{% endif %}
+{% if item.php5_status is defined and item.php5_status %}
+{% for address in item.php5_status | unique %}
+		allow {{ address }};
+{% endfor %}
+{% endif %}
+		deny all;
+		include fastcgi_params;
+		fastcgi_index index.php;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		fastcgi_pass {{ item.php5 }};
+	}
+
+{% endif %}
+
 {% if item.php5 is defined and item.php5 %}
         location ~ ^(?!.+\.php/)(?<script_name>.+\.php)$ {
 {% if (item.php5_limit_except is undefined or (item.php5_limit_except is defined and item.php5_limit_except)) %}
