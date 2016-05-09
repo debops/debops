@@ -129,6 +129,22 @@ mariadb_server_delegate_to: '{{ ansible_fqdn }}'
 mariadb_server_options: {}
 
 
+# .. envvar:: mariadb_server_options_default
+#
+# Dict with default MariaDB options, option names as keys and their values
+# as values, added to ``/etc/mysql/conf.d/mysqld.cnf``. Options without
+# specific values should be defined with empty values. Examples::
+#
+#     mariadb_server_options:
+#       'key_buffer': '16M'
+#       'skip-name-resolve':
+#
+mariadb_server_options_default:
+  'innodb_buffer_pool_instances': '{{ ansible_processor_vcpus | d(1) }}'
+  'innodb_buffer_pool_size': '{{ (ansible_memtotal_mb / 2) | int }}M'
+  'query_cache_type': '0'
+
+
 # .. envvar:: mariadb_erver_append_groups
 #
 # List of additional system groups to append to the MariaDB system user.

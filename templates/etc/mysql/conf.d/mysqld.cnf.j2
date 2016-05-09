@@ -18,8 +18,9 @@ ssl-key                 = {{ mariadb_server_pki_path + "/" + mariadb_server_pki_
 ssl-cipher              = {{ mariadb_server_pki_cipher | default('DHE-RSA-AES256-SHA') }}
 
 {% endif %}
-{% if mariadb_server_options|d(False) %}
-{% for key, value in mariadb_server_options.iteritems() %}
+{% set mariadb_server_tpl_options = mariadb_server_options_default | combine(mariadb_server_options) %}
+{% if mariadb_server_tpl_options %}
+{% for key, value in mariadb_server_tpl_options.iteritems() %}
 {% if value is not none %}
 {{ "%-23s = %s" | format(key, value) }}
 {% else %}
