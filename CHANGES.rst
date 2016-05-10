@@ -6,8 +6,8 @@ v0.2.0
 
 *Unreleased*
 
-- Remove support for ``apt-cacher-ng``. The new role ``debops.apt_cacher_ng``
-  handles this now. The overloaded ``apt`` variable as been split into
+- Remove support for :program:`apt-cacher-ng`. The new role ``debops.apt_cacher_ng``
+  handles this now. The overloaded :command:`apt` variable as been split into
   ``apt__enabled`` and ``apt__proxy``. [ypid]
 
 - Added ``apt__proxy_bypass_for_bugs_debian_org`` which you can enable if you
@@ -30,6 +30,8 @@ v0.2.0
 
   [ypid]
 
+- Use backported :program:`irqbalance` on Debian Jessie. [ypid]
+
 v0.1.0
 ------
 
@@ -44,9 +46,9 @@ v0.1.0
   http://httpredir.debian.org/. [drybjed]
 
 - Added ``apt__remove_default_configuration`` option which defaults to true.
-  This ensures that ``/etc/apt/apt.conf`` is absent. [ypid]
+  This ensures that :file:`/etc/apt/apt.conf` is absent. [ypid]
 
-- Use backported apt-cacher-ng on Debian Jessie. [ypid]
+- Use backported :program:`apt-cacher-ng` on Debian Jessie. [ypid]
 
 - Allow to modify APT sections without defining ``apt__default_sources`` by
   using the added ``apt__sources_sections`` variable. [ypid]
