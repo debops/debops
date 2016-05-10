@@ -86,7 +86,7 @@ variables.
                         not ansible_local.ferm.forward | bool)))) }}'
 
   If there are multiple internal interfaces additional rules permitting packet
-  forwarding between those might be necessary. Check the ``internal`` role of
+  forwarding between those might be necessary. Check the ``internal`` rule of
   the default :envvar:`ferm__rules_forward` for an example.
 
 * Once a packet was accepted by the firewall all related packets belonging to
@@ -137,7 +137,7 @@ INPUT Rules for Services running on the Gateway Host
 As an Internet gateway is usually a device which is running 24/7 and being a
 core part of the network infrastructure, people might want to run additional
 services on this host. In case these services are also managed by DebOps
-the respective Ansible roles will sure that the required firewall rules are
+the respective Ansible roles will ensure that the required firewall rules are
 added to the :envvar:`ferm__dependent_rules` rule list. By default access from
 all networks is allowed which is not always desired. Below it will be shown how
 this can be restricted to the internal network attached to ``eth0``.
