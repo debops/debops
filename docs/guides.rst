@@ -20,7 +20,7 @@ configuration is given.
 
 The gateway host should have at least two network interfaces connected to the
 respective networks. In this guide the interface named ``eth0`` will be used
-as internal trusted interface and ``eth1`` will be used as external untrusted
+as external untrusted interface and ``eth1`` will be used as internal trusted
 interface.
 
 To follow this guide you should be familiar with DebOps and the way to configure
@@ -41,8 +41,8 @@ variables.
 
 * Define internal (trusted) and external (untrusted) network interfaces::
 
-    ferm__internal_interfaces: [ 'eth0' ]
-    ferm__external_interfaces: [ 'eth1' ]
+    ferm__external_interfaces: [ 'eth0' ]
+    ferm__internal_interfaces: [ 'eth1' ]
 
 * Enable IP forwarding (default: ``False``)::
 
@@ -115,7 +115,7 @@ address of a network packet is rewritten to the internal host address.
       - type: 'dmz'
         name: 'http-forward'
         domain: [ 'ip' ]
-        public_ip: '{{ ansible_eth1.ipv4.address }}'
+        public_ip: '{{ ansible_eth0.ipv4.address }}'
         private_ip: '{{ lookup("dig", "web.internal.example.com") }}'
         protocol: 'tcp'
         ports: [ 80 ]
@@ -140,7 +140,7 @@ services on this host. In case these services are also managed by DebOps
 the respective Ansible roles will ensure that the required firewall rules are
 added to the :envvar:`ferm__dependent_rules` rule list. By default access from
 all networks is allowed which is not always desired. Below it will be shown how
-this can be restricted to the internal network attached to ``eth0``.
+this can be restricted to the internal network attached to ``eth1``.
 
 **Example: dnsmasq**
 
@@ -149,7 +149,7 @@ to these services should only be allowed from the internal network.
 
 * Define the upstream (external) interface where access should be blocked::
 
-    dnsmasq_upstream_interfaces: [ 'eth1' ]
+    dnsmasq_upstream_interfaces: [ 'eth0' ]
 
 * Define the internal interface where the DNS and DHCP services will be
   provided. This setting would automatically define the necessary iptables
@@ -157,7 +157,7 @@ to these services should only be allowed from the internal network.
   network::
 
     dnsmasq_interfaces:
-      - interface: 'eth0'
+      - interface: 'eth1'
         name: 'gateway'
         dhcp_range_start: '10'
         dhcp_range_end: '-10'
@@ -175,10 +175,10 @@ through the firewall based on source IP addresses and network ranges. This is
 typically done by defining a corresponding ``service_allow`` variable. In case
 of ``debops.nginx`` this configuration would look as following::
 
-    nginx_allow: [ '{{ ansible_eth0.ipv4.network }}/{{ ("0.0.0.0/" + ansible_eth0.ipv4.netmask) | ipaddr("prefix") }}' ]
+    nginx_allow: [ '{{ ansible_eth1.ipv4.network }}/{{ ("0.0.0.0/" + ansible_eth1.ipv4.netmask) | ipaddr("prefix") }}' ]
 
 This will restrict access to the HTTP service running on the gateway host to
-the internal IPv4 network which is automatically defined using the ``ansible_eth0``
+the internal IPv4 network which is automatically defined using the ``ansible_eth1``
 host fact.
 
 
@@ -222,7 +222,7 @@ any other purpose.
         weight-class: 'any-service'
         comment: 'Allow connections to internal network'
         name: 'internal_out'
-        outerface: 'eth0'
+        outerface: 'eth1'
         target: 'ACCEPT'
 
       - type: 'accept'
@@ -232,7 +232,7 @@ any other purpose.
         comment: 'Allow outgoing ICMP requests'
         name: 'icmp_out'
         protocol: 'icmp'
-        outerface: 'eth1'
+        outerface: 'eth0'
         target: 'ACCEPT'
 
       - type: 'accept'
@@ -242,7 +242,7 @@ any other purpose.
         name: 'dns_out'
         protocol: 'udp'
         dport: 53
-        outerface: 'eth1'
+        outerface: 'eth0'
         target: 'ACCEPT'
 
       - type: 'reject'
