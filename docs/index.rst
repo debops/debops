@@ -12,6 +12,7 @@ Ansible role: debops.ferm
    defaults
    defaults-configuration
    rules
+   guides
    copyright
    credits
    changelog
