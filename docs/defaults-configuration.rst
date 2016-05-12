@@ -10,8 +10,8 @@ simple strings or lists, here you can find documentation and examples for them.
 
 .. _lvm__volume_groups:
 
-lvm__vlume_groups
------------------
+lvm__volume_groups
+------------------
 
 This is a list of LVM Volume Groups, each one defined by a YAML dict. Volume
 Group is a set of Physical Volumes that create a single unit which can then be
