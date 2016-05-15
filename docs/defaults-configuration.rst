@@ -9,10 +9,10 @@ them.
    :local:
    :depth: 1
 
-.. _preseed_configs:
+.. _preseed__configs:
 
-preseed_configs
----------------
+preseed__configs
+----------------
 
 This is a list of Preseed configuration files offered by the webserver to the
 clients.
@@ -26,7 +26,7 @@ variables short.
 You can also configure the Preseed files using dict keys and values, the
 variable naming scheme is::
 
-    preseed_debian_<key> - item.<key>
+    preseed__debian_<key> - item.<key>
 
 Some more important keys:
 
@@ -49,7 +49,7 @@ Examples:
 Example Preseed configuration with custom mirror and list of additional
 packages to install::
 
-    preseed_configs:
+    preseed__configs:
 
       - name: 'debian-mail'
         release: 'wheezy'

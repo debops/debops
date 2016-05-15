@@ -1,6 +1,6 @@
 ---
 
-preseed_nginx_server_location:
+preseed__nginx_server_location:
     '/': |
       try_files $uri $uri/ $uri.html /index.html =404;
       autoindex on;
@@ -17,37 +17,37 @@ preseed_nginx_server_location:
       }
 
 # nginx configuration - HTTP server
-preseed_nginx_server_http:
+preseed__nginx_server_http:
   by_role: 'debops.preseed'
   enabled: True
   ssl: False
-  filename: '{{ preseed_domains[0] + "_http" }}'
-  name: '{{ preseed_domains }}'
-  root: '{{ preseed_www_webserver }}'
+  filename: '{{ preseed__domains[0] + "_http" }}'
+  name: '{{ preseed__domains }}'
+  root: '{{ preseed__www_webserver }}'
 
-  access_policy: '{{ preseed_nginx_access_policy }}'
-  auth_basic_realm: '{{ preseed_nginx_auth_realm }}'
+  access_policy: '{{ preseed__nginx_access_policy }}'
+  auth_basic_realm: '{{ preseed__nginx_auth_realm }}'
 
-  location: '{{ preseed_nginx_server_location }}'
+  location: '{{ preseed__nginx_server_location }}'
 
 # nginx configuration - HTTPS server
-preseed_nginx_server_https:
+preseed__nginx_server_https:
   by_role: 'debops.preseed'
   enabled: True
   listen: False
-  filename: '{{ preseed_domains[0] + "_https" }}'
-  name: '{{ preseed_domains }}'
-  root: '{{ preseed_www_webserver }}'
+  filename: '{{ preseed__domains[0] + "_https" }}'
+  name: '{{ preseed__domains }}'
+  root: '{{ preseed__www_webserver }}'
 
-  access_policy: '{{ preseed_nginx_access_policy }}'
-  auth_basic_realm: '{{ preseed_nginx_auth_realm }}'
+  access_policy: '{{ preseed__nginx_access_policy }}'
+  auth_basic_realm: '{{ preseed__nginx_auth_realm }}'
 
-  location: '{{ preseed_nginx_server_location }}'
+  location: '{{ preseed__nginx_server_location }}'
 
 
 # SaltStack Debian repository GPG key
-preseed_salt_apt_key_url: 'http://debian.saltstack.com/debian-salt-team-joehealy.gpg.key'
+preseed__salt_apt_key_url: 'http://debian.saltstack.com/debian-salt-team-joehealy.gpg.key'
 
 # SaltStack Debian APT repository
-preseed_salt_upstream_repository: 'deb http://debian.saltstack.com/debian {{ ansible_distribution_release.split("/")[0] }}-saltstack main'
+preseed__salt_upstream_repository: 'deb http://debian.saltstack.com/debian {{ ansible_distribution_release.split("/")[0] }}-saltstack main'
 

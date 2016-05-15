@@ -9,103 +9,103 @@
 #   Preseed server configuration
 # --------------------------------
 
-# .. envvar:: preseed_dependencies
+# .. envvar:: preseed__dependencies
 #
 # Should the ``debops.preseed`` role manage it's own dependencies (nginx)?
 # If you want to setup them yourself, you should change this to False.
-preseed_dependencies: True
+preseed__dependencies: True
 
-# .. envvar:: preseed_subdomain
+# .. envvar:: preseed__subdomain
 #
 # Name of the subdomain which will be used to serve Preseed files
-preseed_subdomain: 'seed'
+preseed__subdomain: 'seed'
 
 
-# .. envvar:: preseed_base_domain
+# .. envvar:: preseed__base_domain
 #
 # Full base domain on which Preseed files are located, required for download of
 # postinst scripts.
-preseed_base_domain: '{{ preseed_subdomain + "." + ansible_domain }}'
+preseed__base_domain: '{{ preseed__subdomain + "." + ansible_domain }}'
 
 
-# .. envvar:: preseed_domains
+# .. envvar:: preseed__domains
 #
 # A set of domains configured in nginx which server Preseed files. First
 # element of the list should be a "normal" domain, the rest are regex
 # expressions which look up correct subdirectories to serve files.
-preseed_domains:
-  - '{{ preseed_base_domain }}'
-  - '{{ preseed_base_domain | split(".") | first }}'
-  - '{{ "~^(?<preseed>.+)\." + preseed_base_domain | replace(".","\.") + "$" }}'
+preseed__domains:
+  - '{{ preseed__base_domain }}'
+  - '{{ preseed__base_domain | split(".") | first }}'
+  - '{{ "~^(?<preseed>.+)\." + preseed__base_domain | replace(".","\.") + "$" }}'
   - '{{ "~^(?<preseed>.+)\." + ansible_domain      | replace(".","\.") + "$" }}'
-  - '{{ "~^(?<preseed>.+)\." + preseed_subdomain   | replace(".","\.") + "$" }}'
+  - '{{ "~^(?<preseed>.+)\." + preseed__subdomain   | replace(".","\.") + "$" }}'
   - '{{ "~^(?<preseed>.+)$" }}'
 
 
-# .. envvar:: preseed_www
+# .. envvar:: preseed__www
 #
 # Path to main directory where Preseed files are served from
-preseed_www: '{{ ansible_local.nginx.www + "/preseed/configs" }}'
+preseed__www: '{{ ansible_local.nginx.www + "/preseed/configs" }}'
 
 
-# .. envvar:: preseed_www_webserver
+# .. envvar:: preseed__www_webserver
 #
 # Path to "current" Preseed root directory, configured in the webserver
-preseed_www_webserver: '{{ preseed_www + "/$preseed" }}'
+preseed__www_webserver: '{{ preseed__www + "/$preseed" }}'
 
 
-# .. envvar:: preseed_nginx_auth_realm
+# .. envvar:: preseed__nginx_auth_realm
 #
 # Text displayed in the web browser login dialog when ``debops.nginx`` access
 # policy is enabled.
-preseed_nginx_auth_realm: 'Preseed access is restricted'
+preseed__nginx_auth_realm: 'Preseed access is restricted'
 
 
-# .. envvar:: preseed_nginx_access_policy
+# .. envvar:: preseed__nginx_access_policy
 #
 # Name of the :program:`nginx` access policy to configure for Preseed server.
 # See ``debops.nginx`` role for more details.
-preseed_nginx_access_policy: ''
+preseed__nginx_access_policy: ''
 
 
-# .. envvar:: preseed_user
+# .. envvar:: preseed__user
 #
 # System user account which owns the Preseed files
-preseed_user: 'preseed'
+preseed__user: 'preseed'
 
 
-# .. envvar:: preseed_group
+# .. envvar:: preseed__group
 #
 # System group which owns the Preseed files
-preseed_group: 'preseed'
+preseed__group: 'preseed'
 
 
-# .. envvar:: preseed_home
+# .. envvar:: preseed__home
 #
 # Home directory of the Pressed user account
-preseed_home: '{{ ansible_local.root.home + "/" + preseed_user }}'
+preseed__home: '{{ ansible_local.root.home + "/" + preseed__user }}'
 
 
 # ------------------------
 #   Default Preseed list
 # ------------------------
 
-# .. envvar:: preseed_distribution
+# .. envvar:: preseed__distribution
 #
 # Linux distribution configured by default for preseeding
-preseed_distribution: '{{ ansible_distribution }}'
+preseed__distribution: '{{ ansible_distribution }}'
 
 
-# .. envvar:: preseed_release
+# .. envvar:: preseed__release
 #
 # Linux distribution release configured by default for preseeding
-preseed_release: '{{ ansible_distribution_release }}'
+preseed__release: '{{ ansible_distribution_release }}'
 
 
-# .. envvar:: preseed_configs
+# .. envvar:: preseed__configs
 #
-# List of Preseed definitions. See :ref:`preseed_configs` for more details.
-preseed_configs:
+# List of Preseed definitions. See :ref:`preseed__configs` for more details.
+preseed__configs:
 
   # Debian - default configuration which will ask the user for disk
   # configuration during installation.
@@ -133,91 +133,91 @@ preseed_configs:
 #   Administrator account options
 # ---------------------------------
 
-# .. envvar:: preseed_admin
+# .. envvar:: preseed__admin
 #
 # Enable or disable creation of an administrator account using a ``postinst``
 # script.
-preseed_admin: True
+preseed__admin: True
 
 
-# .. envvar:: preseed_admin_system
+# .. envvar:: preseed__admin_system
 #
 # If enabled, administrator account will be created as a "system" account (UID
 # < 1000, usually ~104). If disabled (default), administrator account will be
 # a regular user account (UID >= 1000).
-preseed_admin_system: True
+preseed__admin_system: True
 
 
-# .. envvar:: preseed_admin_name
+# .. envvar:: preseed__admin_name
 #
 # Name of the administrator account. By default the same as the
 # user that runs Ansible, taken from Ansible Controller.
-preseed_admin_name: '{{ ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER") }}'
+preseed__admin_name: '{{ ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER") }}'
 
 
-# .. envvar:: preseed_admin_groups
+# .. envvar:: preseed__admin_groups
 #
 # Default system groups to add the administrator account to. They will be
 # created if not present.
-preseed_admin_groups: [ 'admins', 'staff', 'adm' ]
+preseed__admin_groups: [ 'admins', 'staff', 'adm' ]
 
 
-# .. envvar:: preseed_admin_home
+# .. envvar:: preseed__admin_home
 #
 # Home directory of the administrator account, when it's a regular user
 # account.
-preseed_admin_home: '{{ "/home/" + preseed_admin_name }}'
+preseed__admin_home: '{{ "/home/" + preseed__admin_name }}'
 
 
-# .. envvar:: preseed_admin_system_home
+# .. envvar:: preseed__admin_system_home
 #
 # Home directory of the administrator account, when it's a system account.
-preseed_admin_system_home: '{{ ansible_local.root.home + "/" + preseed_admin_name }}'
+preseed__admin_system_home: '{{ ansible_local.root.home + "/" + preseed__admin_name }}'
 
 
-# .. envvar:: preseed_admin_home_group
+# .. envvar:: preseed__admin_home_group
 #
 # Specify administrator account home directory group
-preseed_admin_home_group: '{{ preseed_admin_groups[0] }}'
+preseed__admin_home_group: '{{ preseed__admin_groups[0] }}'
 
 
-# .. envvar:: preseed_admin_home_mode
+# .. envvar:: preseed__admin_home_mode
 #
 # Specify permissions for administrator account home directory
-preseed_admin_home_mode: '0750'
+preseed__admin_home_mode: '0750'
 
 
-# .. envvar:: preseed_admin_comment
+# .. envvar:: preseed__admin_comment
 #
 # A contents of the GECOS field of the administrator account.
-preseed_admin_comment: "System Administrator"
+preseed__admin_comment: "System Administrator"
 
 
-# .. envvar:: preseed_admin_shell
+# .. envvar:: preseed__admin_shell
 #
 # Shell set by default on administrator account.
-preseed_admin_shell: '/bin/bash'
+preseed__admin_shell: '/bin/bash'
 
 
-# .. envvar:: preseed_sudo
+# .. envvar:: preseed__sudo
 #
 # If enabled, specified admin group will be configured in ``sudo`` to allow
 # access to ``root`` account without password.
-preseed_sudo: True
+preseed__sudo: True
 
 
-# .. envvar:: preseed_sudo_group
+# .. envvar:: preseed__sudo_group
 #
 # Name of the system group which will be configured with passwordless ``sudo``
-# access. By default it's the first group set in ``preseed_admin_groups``.
-preseed_sudo_group: '{{ preseed_admin_groups[0] }}'
+# access. By default it's the first group set in ``preseed__admin_groups``.
+preseed__sudo_group: '{{ preseed__admin_groups[0] }}'
 
 
-# .. envvar:: preseed_admin_sshkeys
+# .. envvar:: preseed__admin_sshkeys
 #
 # List of SSH public keys installed on administrator account, as well as the
 # ``root`` account.
-preseed_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
+preseed__admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
 
 
@@ -229,61 +229,61 @@ preseed_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^ssh || cat ~/.ss
 # Debian Preseed provided with the role. More parameters can be found inside
 # the ``preseed.cfg`` as well as the ``postinst.sh`` script.
 
-# .. envvar:: preseed_debian_locale
+# .. envvar:: preseed__debian_locale
 #
 # Default locale configuration enabled during installation.
-preseed_debian_locale: 'en_US.UTF-8'
+preseed__debian_locale: 'en_US.UTF-8'
 
 
-# .. envvar:: preseed_debian_keyboard_keymap
+# .. envvar:: preseed__debian_keyboard_keymap
 #
 # Keyboard layout enabled during installation.
 # The current keymap layout can be looked up via ``setxkbmap -query``.
-preseed_debian_keyboard_keymap: 'en'
+preseed__debian_keyboard_keymap: 'en'
 
 
-# .. envvar:: preseed_debian_language
+# .. envvar:: preseed__debian_language
 #
 # Default interface language enabled during installation.
-preseed_debian_language: 'English'
+preseed__debian_language: 'English'
 
 
-# .. envvar:: preseed_debian_timezone
+# .. envvar:: preseed__debian_timezone
 #
 # Time zone configured on the host during installation.
-preseed_debian_timezone: 'Etc/UTC'
+preseed__debian_timezone: 'Etc/UTC'
 
 
-# .. envvar:: preseed_debian_ntp_server
+# .. envvar:: preseed__debian_ntp_server
 #
 # NTP server to get the time from when installing.
 # If False, the default will not be changed.
-preseed_debian_ntp_server: False
+preseed__debian_ntp_server: False
 
 
-# .. envvar:: preseed_debian_mirror_hostname
+# .. envvar:: preseed__debian_mirror_hostname
 #
 # Address of HTTP mirror used during installation.
-preseed_debian_mirror_hostname: 'http.debian.net'
+preseed__debian_mirror_hostname: 'http.debian.net'
 
 
-# .. envvar:: preseed_debian_mirror_directory
+# .. envvar:: preseed__debian_mirror_directory
 #
 # Subdirectory on the HTTP mirror which holds the Debian repository.
-preseed_debian_mirror_directory: '/debian'
+preseed__debian_mirror_directory: '/debian'
 
-# .. envvar:: preseed_debian_mirror_proxy
+# .. envvar:: preseed__debian_mirror_proxy
 #
 # Proxy server to use for APT. Be careful when you set because of a bug which
 # causes this proxy to be used for all programs and not just apt as one might
 # expect. The default scripts use a workaround to still allow the apt proxy preseeding.
-preseed_debian_mirror_proxy: ''
+preseed__debian_mirror_proxy: ''
 
 
-# .. envvar:: preseed_debian_packages
+# .. envvar:: preseed__debian_packages
 #
 # List of base Debian packages to install on the new host
-preseed_debian_packages: [ 'ed', 'python', 'python-apt', 'lsb-release',
+preseed__debian_packages: [ 'ed', 'python', 'python-apt', 'lsb-release',
                            'make', 'sudo', 'gnupg-curl', 'git', 'wget',
                            'curl', 'rsync', 'netcat-openbsd', 'vlan',
                            'bridge-utils', 'openssh-server', 'bsdutils',
@@ -291,41 +291,41 @@ preseed_debian_packages: [ 'ed', 'python', 'python-apt', 'lsb-release',
                            'apt-transport-https', 'python-pip', 'resolvconf' ]
 
 
-# .. envvar:: preseed_debian_root_password_length
+# .. envvar:: preseed__debian_root_password_length
 #
 # Length of the ``root`` account password generated by Ansible
-preseed_debian_root_password_length: '32'
+preseed__debian_root_password_length: '32'
 
 
-# .. envvar:: preseed_debian_root_password
+# .. envvar:: preseed__debian_root_password
 #
 # Encrypted random ``root`` password generated by Ansible and saved in
 # ``secret/`` directory. See ``debops.secret`` role for more details.
-preseed_debian_root_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn +
+preseed__debian_root_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn +
                                   '/preseed/debian/root/password encrypt=sha512_crypt length=' +
-                                  preseed_debian_root_password_length) }}"
+                                  preseed__debian_root_password_length) }}"
 
 
 # ---------------------
 #   SaltStack options
 # ---------------------
 
-# .. envvar:: preseed_salt
+# .. envvar:: preseed__salt
 #
 # Enable SaltStack support, ``salt-minion`` will be installed on the host and
 # started at boot.
-preseed_salt: False
+preseed__salt: False
 
 
-# .. envvar:: preseed_salt_packages
+# .. envvar:: preseed__salt_packages
 #
 # List of packages to install for Salt
-preseed_salt_packages: [ 'salt-minion' ]
+preseed__salt_packages: [ 'salt-minion' ]
 
 
-# .. envvar:: preseed_salt_options
+# .. envvar:: preseed__salt_options
 #
 # Additional options for Salt defined as a text block; they will be added to
 # :file:`/etc/salt/minion.d/ansible.conf` file.
-preseed_salt_options: ''
+preseed__salt_options: ''
 

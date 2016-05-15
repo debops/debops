@@ -4,17 +4,17 @@
 {% block warning %}
 {% endblock %}
 
-d-i debian-installer/locale string {{ item.locale | default(preseed_debian_locale | default('en_US.UTF-8')) }}
+d-i debian-installer/locale string {{ item.locale | default(preseed__debian_locale | default('en_US.UTF-8')) }}
 {#
 # Preseeding the country seems to be useless as it is not used for anything except the timezone (which is explicitly set later?
-# d-i debian-installer/country string {{ item.country | default(preseed_debian_country | default('US')) }}
+# d-i debian-installer/country string {{ item.country | default(preseed__debian_country | default('US')) }}
 # d-i debian-installer/language string en
 #}
 
-d-i keyboard-configuration/xkb-keymap select {{ item.keyboard_keymap | default(preseed_debian_keyboard_keymap | default('en')) }}
+d-i keyboard-configuration/xkb-keymap select {{ item.keyboard_keymap | default(preseed__debian_keyboard_keymap | default('en')) }}
 
 ## What does this do?
-d-i languagechooser/language-name-fb select {{ item.language | default(preseed_debian_language | default('English')) }}
+d-i languagechooser/language-name-fb select {{ item.language | default(preseed__debian_language | default('English')) }}
 
 d-i netcfg/choose_interface select auto
 d-i netcfg/get_hostname string unassigned-hostname
@@ -22,29 +22,29 @@ d-i netcfg/get_domain string unassigned-domain
 d-i netcfg/wireless_wep string
 
 d-i mirror/country string manual
-d-i mirror/http/hostname string {{ item.mirror_hostname | default(preseed_debian_mirror_hostname | default('http.debian.net')) }}
-d-i mirror/http/directory string {{ item.mirror_directory | default(preseed_debian_mirror_directory | default('/debian')) }}
-d-i mirror/http/proxy string {{ item.mirror_proxy | default(preseed_debian_mirror_proxy) }}
+d-i mirror/http/hostname string {{ item.mirror_hostname | default(preseed__debian_mirror_hostname | default('http.debian.net')) }}
+d-i mirror/http/directory string {{ item.mirror_directory | default(preseed__debian_mirror_directory | default('/debian')) }}
+d-i mirror/http/proxy string {{ item.mirror_proxy | default(preseed__debian_mirror_proxy) }}
 
 d-i passwd/make-user boolean false
-d-i passwd/root-password-crypted password {{ item.root_password | default(preseed_debian_root_password) }}
+d-i passwd/root-password-crypted password {{ item.root_password | default(preseed__debian_root_password) }}
 
 d-i clock-setup/utc boolean true
-d-i time/zone string {{ item.timezone | default(preseed_debian_timezone | default('Etc/UTC')) }}
-d-i clock-setup/ntp boolean {{ item.installer_sync_ntp | default(preseed_debian_installer_sync_ntp | default('true')) }}
-{% if preseed_debian_ntp_server is defined and preseed_debian_ntp_server %}
-d-i clock-setup/ntp-server string {{ preseed_debian_ntp_server }}
+d-i time/zone string {{ item.timezone | default(preseed__debian_timezone | default('Etc/UTC')) }}
+d-i clock-setup/ntp boolean {{ item.installer_sync_ntp | default(preseed__debian_installer_sync_ntp | default('true')) }}
+{% if preseed__debian_ntp_server is defined and preseed__debian_ntp_server %}
+d-i clock-setup/ntp-server string {{ preseed__debian_ntp_server }}
 {% endif %}
 
 {% block partman %}
 d-i partman/mount_style select uuid
 {% endblock %}
 
-d-i base-installer/install-recommends boolean {{ item.install_recommends | default(preseed_debian_install_recommends | default('false')) }}
-d-i base-installer/kernel/image string {{ item.kernel_image | default(preseed_debian_kernel_image | default('linux-image-amd64')) }}
+d-i base-installer/install-recommends boolean {{ item.install_recommends | default(preseed__debian_install_recommends | default('false')) }}
+d-i base-installer/kernel/image string {{ item.kernel_image | default(preseed__debian_kernel_image | default('linux-image-amd64')) }}
 
-d-i apt-setup/contrib boolean {{ item.apt_sources_contib | default(preseed_debian_apt_sources_contib | default('true')) }}
-d-i apt-setup/non-free boolean {{ item.apt_sources_non_free | default(preseed_debian_apt_sources_non_free | default('true')) }}
+d-i apt-setup/contrib boolean {{ item.apt_sources_contib | default(preseed__debian_apt_sources_contib | default('true')) }}
+d-i apt-setup/non-free boolean {{ item.apt_sources_non_free | default(preseed__debian_apt_sources_non_free | default('true')) }}
 d-i apt-setup/use_mirror boolean true
 
 {#
@@ -59,14 +59,14 @@ d-i apt-setup/services-select multiselect security
 d-i apt-setup/security_host string security.debian.org
 
 tasksel tasksel/first multiselect
-{% set preseed_tpl_include_packages = preseed_debian_packages|d([]) + item.packages|d([]) %}
-{% if preseed_tpl_include_packages %}
-d-i pkgsel/include string{% for package in preseed_tpl_include_packages %} {{ package }}{% endfor %}
+{% set preseed__tpl_include_packages = preseed__debian_packages|d([]) + item.packages|d([]) %}
+{% if preseed__tpl_include_packages %}
+d-i pkgsel/include string{% for package in preseed__tpl_include_packages %} {{ package }}{% endfor %}
 {% endif %}
 
 d-i pkgsel/upgrade select safe-upgrade
 
-d-i preseed/late_command string in-target wget --no-proxy -O /tmp/postinst.sh {{ item.postinst | default('http://' + preseed_base_domain + '/' + item.name + '/d-i/' + item.release | default(preseed_release | default(ansible_distribution_release)) + '/postinst.sh') }} ; in-target chmod +x /tmp/postinst.sh ; in-target /tmp/postinst.sh
+d-i preseed/late_command string in-target wget --no-proxy -O /tmp/postinst.sh {{ item.postinst | default('http://' + preseed__base_domain + '/' + item.name + '/d-i/' + item.release | default(preseed__release | default(ansible_distribution_release)) + '/postinst.sh') }} ; in-target chmod +x /tmp/postinst.sh ; in-target /tmp/postinst.sh
 
 popularity-contest popularity-contest/participate boolean false
 {% block grub_installer %}
@@ -74,13 +74,13 @@ popularity-contest popularity-contest/participate boolean false
 # This is fairly safe to set, it makes grub install automatically to the MBR
 # if no other operating system is detected on the machine.
 #}
-d-i grub-installer/only_debian boolean {{ item.grub_install_auto | default(preseed_debian_grub_install_auto | default('true')) }}
+d-i grub-installer/only_debian boolean {{ item.grub_install_auto | default(preseed__debian_grub_install_auto | default('true')) }}
 {#
 
 # This one makes grub-installer install to the MBR if it also finds some other
 # OS, which is less safe as it might not be able to boot that other OS.
 #}
-d-i grub-installer/with_other_os boolean {{ item.grub_install_with_other_os | default(preseed_debian_grub_install_with_other_os | default('false')) }}
+d-i grub-installer/with_other_os boolean {{ item.grub_install_with_other_os | default(preseed__debian_grub_install_with_other_os | default('false')) }}
 {% endblock %}
 
 {#

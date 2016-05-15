@@ -10,6 +10,18 @@ v0.2.1
 
 - Fix deprecation warnings in Ansible 2.1.0. [ypid]
 
+- Changed variable namespace from ``preseed_`` to ``preseed__``.
+  ``preseed_[^_]`` variables are hereby deprecated.
+
+  You might need to update your inventory. This oneliner might come in handy to
+  do this:
+
+  .. code:: shell
+
+     git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(preseed)_([^_])/\1__\2/g;'
+
+  [ypid]
+
 v0.2.0
 ------
 
