@@ -70,4 +70,3 @@ The ``debops`` command is a wrapper for ``ansible-playbook``, which means that y
 .. code:: shell
 
     debops --limit host1
-
