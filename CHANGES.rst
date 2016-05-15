@@ -18,7 +18,7 @@ v0.2.0
 - Add variables to set admin account home directory group and permissions.
   Admin account will be created and managed only if it doesn't exist. [drybjed]
 
-- Change the SSH public key lookup to not cause issues when ``ssh-add`` does
+- Change the SSH public key lookup to not cause issues when :command:`ssh-add` does
   not return any keys. Thanks, xorgic! [drybjed]
 
 - Reworked documentation. [ypid]
@@ -38,7 +38,7 @@ v0.1.1
 
 - Add ``resolvconf`` to list of packages installed by default. Debian Installer
   installs ``rdnssd`` if IPv6 network is detected which overrides
-  ``/etc/resolv.conf`` if the former package is not installed. Adding
+  :file:`/etc/resolv.conf` if the former package is not installed. Adding
   ``resolvconf`` prevents loss of configuration like IPv4 nameservers and
   domain/search options. [drybjed]
 
