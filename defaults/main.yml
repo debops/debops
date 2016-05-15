@@ -5,6 +5,8 @@
 # .. contents:: Sections
 #    :local:
 #
+# .. Preseed server configuration (((
+#
 # --------------------------------
 #   Preseed server configuration
 # --------------------------------
@@ -15,9 +17,10 @@
 # If you want to setup them yourself, you should change this to False.
 preseed__dependencies: True
 
+
 # .. envvar:: preseed__subdomain
 #
-# Name of the subdomain which will be used to serve Preseed files
+# Name of the subdomain which will be used to serve Preseed files.
 preseed__subdomain: 'seed'
 
 
@@ -31,7 +34,7 @@ preseed__base_domain: '{{ preseed__subdomain + "." + ansible_domain }}'
 # .. envvar:: preseed__domains
 #
 # A set of domains configured in nginx which server Preseed files. First
-# element of the list should be a "normal" domain, the rest are regex
+# element of the list should be a "normal" domain, the rest are regular
 # expressions which look up correct subdirectories to serve files.
 preseed__domains:
   - '{{ preseed__base_domain }}'
@@ -44,7 +47,7 @@ preseed__domains:
 
 # .. envvar:: preseed__www
 #
-# Path to main directory where Preseed files are served from
+# Path to main directory where Preseed files are served from.
 preseed__www: '{{ ansible_local.nginx.www + "/preseed/configs" }}'
 
 
@@ -70,22 +73,25 @@ preseed__nginx_access_policy: ''
 
 # .. envvar:: preseed__user
 #
-# System user account which owns the Preseed files
+# System user account which owns the Preseed files.
 preseed__user: 'preseed'
 
 
 # .. envvar:: preseed__group
 #
-# System group which owns the Preseed files
+# System group which owns the Preseed files.
 preseed__group: 'preseed'
 
 
 # .. envvar:: preseed__home
 #
-# Home directory of the Pressed user account
+# Home directory of the Pressed user account.
 preseed__home: '{{ ansible_local.root.home + "/" + preseed__user }}'
 
+# .. )))
 
+# .. Default Preseed list (((
+#
 # ------------------------
 #   Default Preseed list
 # ------------------------
@@ -128,15 +134,18 @@ preseed__configs:
     type: 'debian-destroy'
     release: 'jessie'
 
+# .. )))
 
+# .. Administrator account options (((
+#
 # ---------------------------------
 #   Administrator account options
 # ---------------------------------
 
 # .. envvar:: preseed__admin
 #
-# Enable or disable creation of an administrator account using a ``postinst``
-# script.
+# Enable or disable creation of an administrator account using a
+# :file:`postinst.sh` script.
 preseed__admin: True
 
 
@@ -219,15 +228,18 @@ preseed__sudo_group: '{{ preseed__admin_groups[0] }}'
 # ``root`` account.
 preseed__admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
+# .. )))
 
-
+# .. Debian Preseed configuration (((
+#
 # --------------------------------
 #   Debian Preseed configuration
 # --------------------------------
-
+#
 # This is a non-exhaustive list of parameters that can be used to configure
 # Debian Preseed provided with the role. More parameters can be found inside
-# the ``preseed.cfg`` as well as the ``postinst.sh`` script.
+# the :file:`preseed.cfg` as well as the :file:`postinst.sh` script.
+
 
 # .. envvar:: preseed__debian_locale
 #
@@ -305,7 +317,10 @@ preseed__debian_root_password: "{{ lookup('password', secret + '/credentials/' +
                                   '/preseed/debian/root/password encrypt=sha512_crypt length=' +
                                   preseed__debian_root_password_length) }}"
 
+# .. )))
 
+# .. SaltStack options (((
+#
 # ---------------------
 #   SaltStack options
 # ---------------------
@@ -319,13 +334,14 @@ preseed__salt: False
 
 # .. envvar:: preseed__salt_packages
 #
-# List of packages to install for Salt
+# List of packages to install for Salt.
 preseed__salt_packages: [ 'salt-minion' ]
 
 
 # .. envvar:: preseed__salt_options
 #
 # Additional options for Salt defined as a text block; they will be added to
-# :file:`/etc/salt/minion.d/ansible.conf` file.
+# the :file:`/etc/salt/minion.d/ansible.conf` file.
 preseed__salt_options: ''
 
+# .. )))
