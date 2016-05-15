@@ -12,7 +12,6 @@ Ansible role: debops.preseed
    defaults
    defaults-configuration
    copyright
-   credits
    changelog
 
 ..
