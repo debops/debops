@@ -107,10 +107,10 @@ if [ -n "${preseed__admin_sshkeys}" ] ; then
 
 {% if ((item.admin is undefined or item.admin) and (preseed__admin is defined and preseed__admin)) %}
     admin_home="$(getent passwd ${preseed__admin_name} | cut -d: -f6)"
-    mkdir -p -m 700 ${admin_home}/.ssh
-    touch ${admin_home}/.ssh/authorized_keys
-    echo "${preseed__admin_sshkeys}" >> ${admin_home}/.ssh/authorized_keys
-    chown -R ${preseed__admin_name}:${preseed__admin_name} ${admin_home}/.ssh
+    mkdir -p -m 700 "${admin_home}/.ssh"
+    touch "${admin_home}/.ssh/authorized_keys"
+    echo "${preseed__admin_sshkeys}" >> "${admin_home}/.ssh/authorized_keys"
+    chown -R "${preseed__admin_name}:${preseed__admin_name}" "${admin_home}/.ssh"
 
 {% endif %}
 fi
