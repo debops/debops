@@ -61,6 +61,11 @@ Python ``passlib`` library
   to share the encrypted ``secret/`` directory with other users without sharing
   the password, and using private GPG keys instead. ``debops`` script will
   automatically decrypt the keyfile and use it to open an EncFS volume.
-
+  
   GnuPG is usually installed on Linux or MacOSX operating systems.
+  
+``git``
+  Git is required to be installed for Debops to be used. Git is a version control
+  system. If it is not already install, it can be usually be installed using your
+  favourite package manager.
 
