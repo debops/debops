@@ -11,13 +11,6 @@
 #   Preseed server configuration
 # --------------------------------
 
-# .. envvar:: preseed__dependencies
-#
-# Should the ``debops.preseed`` role manage it's own dependencies (nginx)?
-# If you want to setup them yourself, you should change this to False.
-preseed__dependencies: True
-
-
 # .. envvar:: preseed__subdomain
 #
 # Name of the subdomain which will be used to serve Preseed files.
@@ -338,10 +331,94 @@ preseed__salt: False
 preseed__salt_packages: [ 'salt-minion' ]
 
 
+# .. envvar:: preseed__salt_apt_key_url
+#
+# SaltStack Debian repository GPG key.
+preseed__salt_apt_key_url: 'http://debian.saltstack.com/debian-salt-team-joehealy.gpg.key'
+
+
+# .. envvar:: preseed__salt_upstream_repository
+#
+# SaltStack Debian APT repository.
+preseed__salt_upstream_repository: 'deb http://debian.saltstack.com/debian {{ ansible_distribution_release.split("/")[0] }}-saltstack main'
+
+
 # .. envvar:: preseed__salt_options
 #
 # Additional options for Salt defined as a text block; they will be added to
 # the :file:`/etc/salt/minion.d/ansible.conf` file.
 preseed__salt_options: ''
+
+# .. )))
+
+# .. Role-dependent configuration (((
+#
+# --------------------------------
+#   Role-dependent configuration
+# --------------------------------
+
+# .. envvar:: preseed__nginx__server_location
+#
+# :program:`nginx` server locations managed by the ``debops.nginx`` role.
+preseed__nginx__server_location:
+  '/': |
+    try_files $uri $uri/ $uri.html /index.html =404;
+    autoindex on;
+    types {
+            text/plain cfg sh;
+    }
+
+  '~ /d-i/': |
+    index index.html index.htm preseed.cfg ;
+    try_files $uri $uri/ $uri.html /index.html =404;
+    autoindex on;
+    types {
+            text/plain cfg sh;
+    }
+
+
+# .. envvar:: preseed__nginx__server_http
+#
+# HTTP :program:`nginx` server configurations managed by the ``debops.nginx``
+# role.
+preseed__nginx__server_http:
+  by_role: 'debops.preseed'
+  enabled: True
+  ssl: False
+  filename: '{{ preseed__domains[0] + "_http" }}'
+  name: '{{ preseed__domains }}'
+  root: '{{ preseed__www_webserver }}'
+
+  access_policy: '{{ preseed__nginx_access_policy }}'
+  auth_basic_realm: '{{ preseed__nginx_auth_realm }}'
+
+  location: '{{ preseed__nginx__server_location }}'
+
+
+# .. envvar:: preseed__nginx__server_https
+#
+# HTTPS :program:`nginx` server configurations managed by the ``debops.nginx``
+# role.
+preseed__nginx__server_https:
+  by_role: 'debops.preseed'
+  enabled: True
+  listen: False
+  filename: '{{ preseed__domains[0] + "_https" }}'
+  name: '{{ preseed__domains }}'
+  root: '{{ preseed__www_webserver }}'
+
+  access_policy: '{{ preseed__nginx_access_policy }}'
+  auth_basic_realm: '{{ preseed__nginx_auth_realm }}'
+
+  location: '{{ preseed__nginx__server_location }}'
+
+
+# .. envvar:: preseed__nginx__servers
+#
+# List of :program:`nginx` server configurations managed by the
+# ``debops.nginx`` role.
+preseed__nginx__servers:
+  - '{{ preseed__nginx__server_http }}'
+  - '{{ preseed__nginx__server_https }}'
 
 # .. )))

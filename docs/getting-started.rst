@@ -7,10 +7,10 @@ Getting started
 Example inventory
 -----------------
 
-To configure the Preseed server, you can add a host to ``[debops_preseed]``
-group::
+To configure the Preseed server, you can add a host to
+``[debops_service_preseed]`` group::
 
-    [debops_preseed]
+    [debops_service_preseed]
     hostname
 
 Default configuration will prepare Preseed files for Debian Wheezy and Debian
@@ -24,12 +24,19 @@ Here's an example playbook which uses ``debops.preseed`` role::
 
     ---
 
-    - name: Install Debian Preseed server
-      hosts: debops_preseed
+    - name: Provide Debian Preseed configuration files over HTTP
+      hosts: [ 'debops_service_preseed' ]
+      become: True
 
       roles:
+
+        - role: debops.nginx
+          nginx_servers: '{{ preseed__nginx__servers }}'
+          tags: [ 'depend::nginx' ]
+
         - role: debops.preseed
-          tags: preseed
+          tags: [ 'role::preseed' ]
+
 
 How to use Debian Preseed configuration
 ---------------------------------------

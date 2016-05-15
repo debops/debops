@@ -22,6 +22,13 @@ v0.2.1
 
   [ypid]
 
+- Remove most of the Ansible role dependencies, leaving only those that are
+  required for the role to run correctly.
+
+  Configuration of dependent services like ``nginx`` is set in separate default
+  variables. These variables can be used by Ansible playbooks to configure
+  settings related to ``preseed`` in other services. [ypid]
+
 v0.2.0
 ------
 
