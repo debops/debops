@@ -448,6 +448,26 @@
 #       preloading for a given website.
 #
 #
+#   - item.csp: False
+#       Optional. If this is set to True and SSL is enabled for this item, the
+#       Content-Security-Policy header is set in the server's responses. If
+#       this is set to false, the Content-Security-Policy header will not
+#       be set in the server's responses.
+#
+#
+#   - item.csp_report: False
+#       Optional. If this is set to True and SSL is enabled for this item, the
+#       Content-Security-Policy-Report-Only header is set in the server's
+#       responses. If this is set to false, the Content-Security-Policy-Report-Only
+#       header will not be set in the server's responses.
+#
+#
+#   - item.csp_policy: 'default-src https:'
+#       Optional. If csp or csp_report option is True, this option determines
+#       the Content-Security-Policy header set in the server's responses. By
+#       default, it forces all assets to be loaded over https.
+#
+#
 #   - item.try_files: nginx_default_try_files
 #       Optional. Checks for the existence of files in order, and returns the
 #       first file that is found for location /.
@@ -966,6 +986,12 @@ server {
 {% if item.hsts_enabled is undefined or (item.hsts_enabled is defined and item.hsts_enabled) %}
         add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age | default('15768000') }}{% if nginx_hsts_subdomains|bool %}; includeSubDomains{% endif %}{% if (item.hsts_preload | d(nginx_hsts_preload)) | bool %}; preload{% endif %}";
 {% endif %}
+{% if item.csp | d() or item.csp_report | d() %}
+        add_header                Content-Security-Policy{% if item.csp_report | d() %}-Report-Only{% endif %} "{{ item.csp_policy | d('default-src https:') }}";
+{% endif %}
+        add_header                X-Content-Type-Options "{{ item.content_type_options | d('nosniff') }}"{% if nginx_version | version_compare('1.7.5','>=') %} always{% endif %};
+        add_header                X-Frame-Options "{{ item.frame_options | d('SAMEORIGIN') }}"{% if nginx_version | version_compare('1.7.5','>=') %} always{% endif %};
+        add_header                X-Xss-Protection "{{ item.xss_protection | d('1') }}";
 
 {% if item.name is defined and item.name %}
 {% if item.redirect_from is defined and item.redirect_from %}
