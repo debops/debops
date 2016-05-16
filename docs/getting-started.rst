@@ -59,15 +59,14 @@ with "local" connection type:
 
 When all hosts you want to use are written in inventory and you checked the
 connectivity, you can run main DebOps script to generate Ansible configuration
-and execute default DebOps playbooks::
+and execute default DebOps playbooks:
 
 .. code:: shell
 
     debops
 
-The ``debops`` command is a wrapper for ``ansible-playbook``, which means that you can pass any ``ansible-playbook`` parameters to it. For example, to limit the Ansible run to a specific host, you can execute command::
+The ``debops`` command is a wrapper for ``ansible-playbook``, which means that you can pass any ``ansible-playbook`` parameters to it. For example, to limit the Ansible run to a specific host, you can execute command:
 
 .. code:: shell
 
     debops --limit host1
-
