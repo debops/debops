@@ -217,7 +217,7 @@ any other purpose.
       - type: 'accept'
         chain: 'OUTPUT'
         weight: '50'
-        weight-class: 'any-service'
+        weight_class: 'any-service'
         comment: 'Allow connections to internal network'
         name: 'internal_out'
         outerface: 'eth1'
@@ -226,7 +226,7 @@ any other purpose.
       - type: 'accept'
         chain: 'OUTPUT'
         weight: '03'
-        weight-class: 'filter-icmp'
+        weight_class: 'filter-icmp'
         comment: 'Allow outgoing ICMP requests'
         name: 'icmp_out'
         protocol: 'icmp'
@@ -245,7 +245,7 @@ any other purpose.
 
       - type: 'reject'
         chain: 'OUTPUT'
-        weight-class: 'any-reject'
+        weight_class: 'any-reject'
         name: 'reject_out'
         comment: 'Reject remaining outgoing traffic'
 
