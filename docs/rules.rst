@@ -21,7 +21,7 @@ By default ``debops.ferm`` configures a number of rules as soon as a
 host is part of the ``[debops_all_hosts]`` Ansible host group. The rules
 created by default are defined in :file:`defaults/main.yml` and activated by
 being listed in :envvar:`ferm__default_rules`. They consist of basic rules for
-setting the ``iptables`` default policies, restricting extensive connection
+setting the :command:`iptables` default policies, restricting extensive connection
 attempts, logging and more.
 
 In case a firewall is not required or preferred this behaviour can be
@@ -45,7 +45,7 @@ the following keys:
   the available rule templates.
 
 ``chain``
-  Optional. ``iptables`` chain to which the rule is added or from which it
+  Optional. :command:`iptables` chain to which the rule is added or from which it
   is removed. Defaults to ``INPUT``.
 
 ``comment``
@@ -56,11 +56,11 @@ the following keys:
   or ``False``. Defaults to ``False``.
 
 ``domain``
-  Optional. ``iptables`` domain used for the firewall rule. Possible values:
-  ``ip``, ``ip6``. Defaults to :envvar:`ferm__domains`.
+  Optional. :command:`iptables` domain used for the firewall rule. Possible values:
+  :command:`ip`, ``ip6``. Defaults to :envvar:`ferm__domains`.
 
 ``table``
-  Optional. ``iptables`` table to which the rule is added or from which it
+  Optional. :command:`iptables` table to which the rule is added or from which it
   is removed. Defaults to ``filter``.
 
 ``filename``
@@ -193,11 +193,11 @@ different chain. The following template-specific YAML keys are supported:
 
 ``subchain``
   Optional. Subchain name. If more than 3 addresses are listed in
-  ``target.saddr`` move resulting ``iptables`` rules into a separate subchain
+  ``target.saddr`` move resulting :command:`iptables` rules into a separate subchain
   with the given name. See `ferm subchain`_ for more details.
 
 ``target``
-  Optional. ``iptables`` jump target. Possible values: ``ACCEPT``, ``DROP``,
+  Optional. :command:`iptables` jump target. Possible values: ``ACCEPT``, ``DROP``,
   ``REJECT``, ``RETURN``, ``NOP`` or a custom target. Defaults to ``ACCEPT``.
 
 ``when``
@@ -228,7 +228,7 @@ template-specific YAML keys are supported:
 
 ``dport``
   Optional. List of destination ports to which the rule is applied. Defaults
-  to ``ssh``.
+  to :command:`ssh`.
 
 ``enabled``
   Optional. Enable rule definition. Possible values: ``True`` or ``False``.
@@ -280,11 +280,11 @@ template-specific YAML keys are supported:
 
 ``subchain``
   Optional. Subchain name. If more than 3 addresses are listed in
-  ``target.saddr`` move resulting ``iptables`` rules into a separate subchain
+  ``target.saddr`` move resulting :command:`iptables` rules into a separate subchain
   with the given name. See `ferm subchain`_ for more details.
 
 ``target``
-  Optional. ``iptables`` jump target. Possible values: ``ACCEPT``, ``DROP``,
+  Optional. :command:`iptables` jump target. Possible values: ``ACCEPT``, ``DROP``,
   ``REJECT``, ``RETURN``, ``NOP`` or a custom target. Defaults to ``ACCEPT``.
 
 This template is used in the default rule :envvar:`ferm__rules_filter_ansible_controller`
@@ -303,15 +303,15 @@ Template to enable connection tracking using the `iptables conntrack`_ or
 supported:
 
 ``active_target``
-  Optional. ``iptables`` jump target for valid connections. Defaults to
+  Optional. :command:`iptables` jump target for valid connections. Defaults to
   ``ACCEPT``.
 
 ``invalid_target``
-  Optional. ``iptables`` jump target for invalid connections. Defaults to
+  Optional. :command:`iptables` jump target for invalid connections. Defaults to
   ``DROP``.
 
 ``module``
-  Optional. ``iptables`` module used for connection tracking. Possible values:
+  Optional. :command:`iptables` module used for connection tracking. Possible values:
   ``state`` or ``conntrack``. Defaults to ``conntrack``.
 
 ``interface``
@@ -363,11 +363,11 @@ This template is used among others in a `debops.libvirtd`_ custom ferm rule.
 default_policy
 ^^^^^^^^^^^^^^
 
-Template to define ``iptables`` default policies. The following
+Template to define :command:`iptables` default policies. The following
 template-specific YAML keys are supported:
 
 ``policy``
-  ``iptables`` chain policy, required.
+  :command:`iptables` chain policy, required.
 
 This template is used in the default rule :envvar:`ferm__rules_default_policy`
 which sets the ``INPUT``, ``FORWARD`` and ``OUTPUT`` chain policies according
@@ -410,9 +410,9 @@ YAML keys are supported:
 fail2ban
 ^^^^^^^^
 
-Template to integrate fail2ban with ``ferm``. As the fail2ban service is
-defining its own ``iptables`` chains the template will make sure that they
-are properly refreshed if the ``ferm`` configuration changes.
+Template to integrate fail2ban with :program:`ferm`. As the fail2ban service is
+defining its own :command:`iptables` chains the template will make sure that they
+are properly refreshed if the :program:`ferm` configuration changes.
 
 This template is used in the default rule :envvar:`ferm__rules_fail2ban`.
 
@@ -474,12 +474,12 @@ The following template-specific YAML keys are supported:
   comma-separated combination thereof.
 
 ``subchain``
-  Optional. Subchain name. Move resulting ``iptables`` rules into a
+  Optional. Subchain name. Move resulting :command:`iptables` rules into a
   separate subchain with the given name. See `ferm subchain`_ for more
   details.
 
 ``target``
-  Optional. ``iptables`` jump target in case the rate limit is reached.
+  Optional. :command:`iptables` jump target in case the rate limit is reached.
   Defaults to ``REJECT``.
 
 This template is used in the default rules :envvar:`ferm__rules_filter_icmp` and
@@ -533,10 +533,10 @@ The following template-specific YAML keys are supported:
 
 ``log_prefix``
   Optional. Prefix (up to 29 characters) for firewall log messages. Defaults
-  to ``iptables-log:``
+  to :command:`iptables-log:`
 
 ``log_target``
-  Optional. Select how ``iptables`` performs logging. Possible values:
+  Optional. Select how :command:`iptables` performs logging. Possible values:
   ``LOG``, ``ULOG``, ``NFLOG``. Defaults to ``LOG``.
 
 ``log_tcp_options``
@@ -556,7 +556,7 @@ The following template-specific YAML keys are supported:
   set to ``REJECT``. Defaults to ``icmp-admin-prohibited``.
 
 ``target``
-  Optional. ``iptables`` jump target for logged packets.
+  Optional. :command:`iptables` jump target for logged packets.
 
 .. _iptables log: http://ipset.netfilter.org/iptables-extensions.man.html#lbDD
 
@@ -615,10 +615,10 @@ supported:
 ``recent_set_name``
   Optional. Add the source address of a matching packet to the given list. This
   must correspond with ``item.recent_name`` of a second rule which would
-  potentially act on the packet, e.g. reject it.
+  potentially act on the packet, e. g. reject it.
 
 ``recent_target``
-  Optional. ``iptables`` jump target when packet has hit the recent list.
+  Optional. :command:`iptables` jump target when packet has hit the recent list.
   Possible values: ``ACCEPT``, ``DROP``, ``REJECT``, ``RETURN``, ``NOP`` or
   a custom target. Defaults to ``NOP``.
 
@@ -637,7 +637,7 @@ supported:
   comma-separated combination thereof.
 
 ``subchain``
-  Optional. Subchain name. Move resulting ``iptables`` rules into a
+  Optional. Subchain name. Move resulting :command:`iptables` rules into a
   separate subchain with the name given. See `ferm subchain`_ for more
   details.
 
@@ -677,12 +677,12 @@ for these is likely going to be removed in the future, they shouldn't be
 used anymore.
 
 Support for legacy rules is still enabled by default. However, they are
-stored in a separate ``iptables`` INPUT chain called
+stored in a separate :command:`iptables` INPUT chain called
 ``debops-legacy-input-rules``. In case you haven't defined any legacy
 rules and none of the DebOps roles you are using are still depending
 on it, disable support completely by setting :envvar:`ferm__include_legacy`
 to ``False`` which will avoid the additional chain from being created.
 
 If you're not sure if you still have legacy rules defined, look for
-variable names with only on '_' after the ``ferm`` prefix (e.g.
+variable names with only on '_' after the :program:`ferm` prefix (e. g.
 :envvar:`ferm_input_list` and :envvar:`ferm_input_dependent_list`).

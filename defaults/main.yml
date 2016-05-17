@@ -13,7 +13,7 @@
 
 # .. envvar:: ferm__enabled
 #
-# Enable or disable ``iptables`` management by checking if ``cap_sys_admin``
+# Enable or disable :command:`iptables` management by checking if ``cap_sys_admin``
 # POSIX capability is set on the host.
 ferm__enabled: '{{ True
                    if (ansible_local is undefined or
@@ -25,9 +25,9 @@ ferm__enabled: '{{ True
 
 # .. envvar:: ferm__flush
 #
-# Should ferm-rules be flushed when ``ferm`` is disabled? The default is true,
+# Should ferm-rules be flushed when :program:`ferm` is disabled? The default is true,
 # but you may need set both ``ferm__enabled`` and this to ``False`` if you are
-# running in some container and are not allowed to change ``iptables``.
+# running in some container and are not allowed to change :command:`iptables`.
 ferm__flush: '{{ ferm__enabled | bool }}'
 
 
@@ -45,12 +45,14 @@ ferm__packages: []
 
 # .. envvar:: ferm__domains
 #
-# List of iptables domains enabled in main ``ferm`` firewall.
+# List of iptables domains enabled in main :program:`ferm` firewall.
 # Currently supported domains:
 #
-# - ``ip``  - enables IPv4 support (``iptables``)
+# ``ip``
+#   Enables IPv4 support (:command:`iptables`).
 #
-# - ``ip6`` - enables IPv6 support (``ip6tables``)
+# ``ip6``
+#   Enables IPv6 support (:command:`ip6tables`).
 #
 ferm__domains: [ 'ip', 'ip6' ]
 
@@ -77,19 +79,19 @@ ferm__ansible_controllers_ports: [ 'ssh' ]
 
 # .. envvar:: ferm__default_policy_input
 #
-# Default ``iptables`` policy for ``INPUT`` chain.
+# Default :command:`iptables` policy for ``INPUT`` chain.
 ferm__default_policy_input: 'DROP'
 
 
 # .. envvar:: ferm__default_policy_output
 #
-# Default ``iptables`` policy for ``OUTPUT`` chain.
+# Default :command:`iptables` policy for ``OUTPUT`` chain.
 ferm__default_policy_output: 'ACCEPT'
 
 
 # .. envvar:: ferm__default_policy_forward
 #
-# Default ``iptables`` policy for ``FORWARD`` chain.
+# Default :command:`iptables` policy for ``FORWARD`` chain.
 ferm__default_policy_forward: 'DROP'
 
 # .. )))
@@ -245,7 +247,7 @@ ferm__include_legacy: True
 
 # .. envvar:: ferm__rules
 #
-# List of ``iptables`` rules to manage, templates used by these rules are included
+# List of :command:`iptables` rules to manage, templates used by these rules are included
 # in :file:`templates/etc/ferm/ferm.d/` directory.
 # Additional variables are described below.
 ferm__rules: []
@@ -253,19 +255,19 @@ ferm__rules: []
 
 # .. envvar:: ferm__group_rules
 #
-# List of ``iptables`` rules to manage for a host group.
+# List of :command:`iptables` rules to manage for a host group.
 ferm__group_rules: []
 
 
 # .. envvar:: ferm__host_rules
 #
-# List of ``iptables`` rules to manage for an individual host.
+# List of :command:`iptables` rules to manage for an individual host.
 ferm__host_rules: []
 
 
 # .. envvar:: ferm__dependent_rules
 #
-# List of ``iptables`` rules to manage depending on other rules.
+# List of :command:`iptables` rules to manage depending on other rules.
 ferm__dependent_rules: []
 
 
@@ -346,7 +348,7 @@ ferm__default_rules: '{{ ferm__rules_default_policy +
 
 # .. envvar:: ferm__rules_default_policy
 #
-# Configure default policies for built-in ``iptables`` chains.
+# Configure default policies for built-in :command:`iptables` chains.
 ferm__rules_default_policy:
 
   - type: 'default_policy'
@@ -657,7 +659,7 @@ ferm__host_custom_files: []
 
 # .. envvar:: ferm__fail2ban
 #
-# Enable or disable ``fail2ban`` integration. ``ferm`` will send ``fail2ban`` a reload
+# Enable or disable ``fail2ban`` integration. :program:`ferm` will send ``fail2ban`` a reload
 # command after its own configuration is reloaded. If ``fail2ban`` is not present
 # or turned off, nothing will happen.
 ferm__fail2ban: True
@@ -665,7 +667,7 @@ ferm__fail2ban: True
 
 # .. envvar:: ferm__forward
 #
-# Enable forwarding in ``ip(6)tables``. This option can be used by other roles and
+# Enable forwarding in :command:`ip(6)tables`. This option can be used by other roles and
 # it's status is saved in Ansible local facts, which will override variable
 # status from role defaults or inventory.
 ferm__forward: False

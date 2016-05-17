@@ -187,7 +187,7 @@ host fact.
 Restrict Outgoing Traffic
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Many ``iptables`` setups are rather lax when it's about restricting outgoing
+Many :command:`iptables` setups are rather lax when it's about restricting outgoing
 traffic. By default DebOps will set the iptables ``OUTPUT`` policy to ``ACCEPT``
 which will permit every outgoing connection attempt. However, it is always a
 good idea to also limit the connections which can be made from within a host,
