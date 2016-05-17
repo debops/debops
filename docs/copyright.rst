@@ -3,11 +3,11 @@ Copyright
 
 ::
 
-    Copyright (C) 2016 Maciej Delmanowski <drybjed@gmail.com>
-    Copyright (C) 2016 DebOps Project http://debops.org/
+    Copyright (C) 2013-2016 Maciej Delmanowski <drybjed@gmail.com>
+    Copyright (C) 2014-2016 DebOps Project http://debops.org/
     [see Credits for more details]
 
-    his program is free software; you can redistribute it and/or modify
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 3, as
     published by the Free Software Foundation.
 
@@ -17,4 +17,21 @@ Copyright
     General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program. If not, see http://www.gnu.org/licenses/
+    along with this program. If not, see https://www.gnu.org/licenses/
+
+Credits
+-------
+
+* Maciej Delmanowski <drybjed_at_gmail.com>
+
+  * creator of the DebOps Project
+
+  * current project maintainer
+
+* Reto Gantenbein <reto.gantenbein_at_linuxmonk.ch>
+
+  * role documentation
+
+* Robin `ypid` Schneider
+
+  * Quality assurance, review, documentation fixes
