@@ -42,6 +42,6 @@ defined as a YAML dict with the following keys:
 ``delete``
   Optional. Delete specified rule file. Possible values: ``False`` or ``True``
 
-Depending on the choosen type, many additional variables are supported. Please
+Depending on the chosen type, many additional variables are supported. Please
 check the template files located in the ``templates/etc/ferm/filter-input.d/``
 directory.

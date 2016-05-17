@@ -34,7 +34,7 @@ Custom rules
 ------------
 
 A custom rule can be enabled by adding a rule definition to one of the
-pre-defined rule lists (:envvar:`ferm__rules`, :envvar:`ferm__group_rules`,
+predefined rule lists (:envvar:`ferm__rules`, :envvar:`ferm__group_rules`,
 :envvar:`ferm__host_rules` or :envvar:`ferm__dependent_rules`) in the Ansible
 inventory. Each rule has to be defined as a YAML dict using some of
 the following keys:
@@ -663,7 +663,7 @@ reject
 
 Template to reject all traffic. It can be added for example as a final rule
 in a custom chain.
- 
+
 
 .. _legacy_rules:
 
