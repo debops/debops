@@ -7,7 +7,6 @@ Ansible role: debops.preseed
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    defaults-configuration
