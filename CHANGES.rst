@@ -13,7 +13,7 @@ v0.3.1
 * Remove header backups on remote system when ``cryptsetup_header_backup`` is set to ``False``. [ypid]
 
 * No need to have a default for ``cryptsetup_state`` in the tasks.
-  ``cryptsetup_state`` is expected to be a valid. [ypid]
+  ``cryptsetup_state`` is expected to be valid. [ypid]
 
 v0.3.0
 ------
