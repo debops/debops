@@ -81,7 +81,7 @@ the following keys:
 ``delete``
   This option is deprecated, see `discussion <https://github.com/debops/ansible-apt_preferences/issues/12>`_.
   Use ``rule_state`` instead.
-  Delete rule from ``ferm`` configuration. Possible values ``True``
+  Delete rule from :program:`ferm` configuration. Possible values ``True``
   or ``False``. Defaults to ``False``.
 
 ``weight``

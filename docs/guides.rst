@@ -150,7 +150,7 @@ to these services should only be allowed from the internal network.
     dnsmasq_upstream_interfaces: [ 'eth0' ]
 
 * Define the internal interface where the DNS and DHCP services will be
-  provided. This setting would automatically define the necessary ``iptables``
+  provided. This setting would automatically define the necessary :command:`iptables`
   ``INPUT`` rules for those services to be accessible from the internal
   network::
 
