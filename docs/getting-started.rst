@@ -43,8 +43,7 @@ How to use Debian Preseed configuration
 
 ``debops.preseed`` will use ``debops.nginx`` role to set up a webserver for the
 Preseed files. They will be served on a separate subdomain, by default
-``seed``. Full address of a set of Preseed files will be for example, with
-``example.org`` domain::
+``seed``. The FQDN given the ``example.org`` domain will be for example::
 
     debian.seed.example.org
     debian-vm.seed.example.org
@@ -53,13 +52,13 @@ You will need to define these subdomains in your DNS server, preferably as
 a ``CNAME`` records pointed to the Preseed server.
 
 If you have correctly configured DHCP server, which advertises your domain, you
-will be able to access Preseed configuration using a shorter form::
+will be able to access the Preseed configuration using a shorter form::
 
     debian.seed
     debian-vm.seed
 
 The Debian Installer will automatically add your domain to the specified URL to get
-Preseed files.
+the Preseed files.
 
 To enable Preseeded installation, after starting the Debian Installer (tested
 with Wheezy and Jessie),
@@ -70,7 +69,7 @@ you can specify the URL of the Preseed file.
 
 An example boot command line in Debian Installer::
 
-    auto url=debian.seed hostname=<host>
+    auto=true url=debian.seed hostname=<host>
 
 After you press ``<Enter>``, the Debian Installer should start the installation
 process. If you specified ``debian.seed`` as the Preseed file, the Debian Installer
