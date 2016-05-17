@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.2.2
+------
+
+*Unreleased*
+
+- Use ``item.rule_state`` in the role defaults instead of the hereby deprecated
+  ``item.when`` and ``item.delete``.
+  See `discussion <https://github.com/debops/ansible-apt_preferences/issues/12>`_.
+  ``item.delete`` and ``item.when`` are currently still supported for backwards
+  compatibility. [ypid]
+
 v0.2.1
 ------
 

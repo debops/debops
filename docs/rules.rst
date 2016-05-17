@@ -51,10 +51,6 @@ the following keys:
 ``comment``
   Optional. Comment which should be added to the generated rule configuration.
 
-``delete``
-  Optional. Delete rule from ferm configuration. Possible values ``True``
-  or ``False``. Defaults to ``False``.
-
 ``domain``
   Optional. :command:`iptables` domain used for the firewall rule. Possible values:
   :command:`ip`, ``ip6``. Defaults to :envvar:`ferm__domains`.
@@ -82,6 +78,12 @@ the following keys:
   Optional. Specify if rule is to be added or removed. Possible values:
   ``present`` or ``absent``. Defaults to ``present``.
 
+``delete``
+  This option is deprecated, see `discussion <https://github.com/debops/ansible-apt_preferences/issues/12>`_.
+  Use ``rule_state`` instead.
+  Delete rule from ``ferm`` configuration. Possible values ``True``
+  or ``False``. Defaults to ``False``.
+
 ``weight``
   Optional. Helps with file sorting in rule directory.
 
@@ -91,10 +93,7 @@ the following keys:
   entry is found, its weight will be used for that rule, if not, the
   ``item.weight`` specified in the rule will be used instead.
 
-``when``
-  Optional. Define condition for the rule to be enabled.
-
-Depending on the choosen type, many additional variables are supported.
+Depending on the chosen type, many additional variables are supported.
 Please check the individual template description below.
 
 
