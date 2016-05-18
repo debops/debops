@@ -5,9 +5,11 @@
 # .. contents:: Sections
 #    :local:
 #
-# ------------------------------------
+# .. Global options (((
+#
+# ------------------
 #   Global options
-# ------------------------------------
+# ------------------
 
 # .. envvar:: ntp_daemon
 #
@@ -71,10 +73,13 @@ ntp_root_flags:
   # install specified ntp daemon
   cap_sys_time: [ 'ignore-cap12s', 'ignore-cap_sys_time' ]
 
+# .. )))
 
-# ------------------------------------
+# .. Timezone configuration (((
+#
+# --------------------------
 #   Timezone configuration
-# ------------------------------------
+# --------------------------
 
 # .. envvar:: ntp_timezone
 #
@@ -84,10 +89,13 @@ ntp_root_flags:
 # If this variable is empty or set to ``False``, the timezone won't be changed.
 ntp_timezone: ''
 
+# .. )))
 
-# ------------------------------------
+# .. Network accessibility (((
+#
+# -------------------------
 #   Network accessibility
-# ------------------------------------
+# -------------------------
 
 # .. envvar:: ntp_listen
 #
@@ -218,4 +226,6 @@ ntp_ferm_dependent_rules:
                       ntp_daemon in [ "openntpd", "ntpd" ] and
                       ntp_firewall_access|bool)
                     else "absent" }}'
+
+# .. )))
 
