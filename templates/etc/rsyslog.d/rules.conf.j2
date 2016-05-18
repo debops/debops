@@ -1,0 +1,34 @@
+# {{ ansible_managed }}
+
+{% macro print_config(element) %}
+{%   if element is mapping %}
+{%     if element.state is undefined or element.state != 'absent' %}
+{%       if element.comment|d() %}
+{{ element.comment | comment }}
+{%       endif %}
+{%       if element.selector|d() and element.action|d() %}
+{%         set rsyslog__tpl_selector = element.selector | trim %}
+{{ "%-30s %s" | format(rsyslog__tpl_selector, element.action) }}
+
+{%       elif element.options|d() %}
+{{ element.options }}
+
+{%       endif %}
+{%     endif %}
+{%   elif element is string %}
+{{ element }}
+
+{%   else %}
+{%     for thing in element %}
+{{ print_config(thing) -}}
+{%     endfor %}
+{%   endif %}
+{% endmacro %}
+{% if item.sections|d() %}
+{%   for section in item.sections %}
+{{ print_config(section) -}}
+{%   endfor %}
+{% else %}
+{{ print_config(item) -}}
+{% endif %}
+

@@ -1,10 +1,20 @@
 Changelog
 =========
 
+v0.2.0
+------
+
+*Released: 2016-05-18*
+
+- Role has been redesigned from scratch. It now supports local as well as
+  remote logs, forwarding over UDP, TCP and TLS. Configuration is defined in
+  default variables which can be easily overriden if necessary. New
+  documentation has been written as well. [drybjed]
+
 v0.1.0
 ------
 
-*Unreleased*
+*Released: 2016-05-18*
 
 - Add Changelog. [drybjed]
 
