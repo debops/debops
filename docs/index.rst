@@ -7,14 +7,12 @@ Ansible role: debops.ferm
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    defaults-configuration
    rules
    guides
    copyright
-   credits
    changelog
 
 ..

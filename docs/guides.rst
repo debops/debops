@@ -14,9 +14,9 @@ An Internet gateway is a host which is managing the access of a private
 (internal) network to the (external) Internet. When running Linux as a gateway
 host the correct setup of the required iptables rules is crucial. While there
 exist dedicated Linux distributions for this task such as OpenWRT or IPFire,
-it's also possible to use a regular Debian system and configure it through
-DebOps. Here a short overview about the basic steps for a simple gateway
-configuration is given.
+it's also possible to use a regular Debian GNU/Linux system and configure it
+through DebOps. Here a short overview about the basic steps for a simple
+gateway configuration is given.
 
 The gateway host should have at least two network interfaces connected to the
 respective networks. In this guide the interface named ``eth0`` will be used
@@ -60,7 +60,7 @@ variables.
   virtual machine network. However, for a Internet gateway this is too generous
   and therefore should be redefined.
 
-  In case every connection traversing the network bounderies should be
+  In case every connection traversing the network boundaries should be
   explicitly defined, set an empty rule list here::
 
     ferm__rules_forward: []
@@ -77,13 +77,11 @@ variables.
         role_weight: '20'
         name: 'external_out'
         comment: 'Forward outgoing traffic to other hosts'
-        when: '{{ ((ferm__forward|d(ferm_forward) | bool) or
-                   (ansible_local|d() and ansible_local.ferm|d() and
-                    ansible_local.ferm.forward | bool)) }}'
-        delete: '{{ (not (ferm__forward|d(ferm_forward) | bool) and
-                     (ansible_local|d(True) and (ansible_local.ferm is undefined or
-                       (ansible_local.ferm.forward is undefined or
-                        not ansible_local.ferm.forward | bool)))) }}'
+        rule_state: '{{ "present" if (
+                          (ferm__forward|d(ferm_forward) | bool) or
+                          (ansible_local|d() and ansible_local.ferm|d() and
+                           ansible_local.ferm.forward | bool))
+                         else "absent" }}'
 
   If there are multiple internal interfaces additional rules permitting packet
   forwarding between those might be necessary. Check the ``internal`` rule of
@@ -152,7 +150,7 @@ to these services should only be allowed from the internal network.
     dnsmasq_upstream_interfaces: [ 'eth0' ]
 
 * Define the internal interface where the DNS and DHCP services will be
-  provided. This setting would automatically define the necessary iptables
+  provided. This setting would automatically define the necessary :command:`iptables`
   ``INPUT`` rules for those services to be accessible from the internal
   network::
 
@@ -187,7 +185,7 @@ host fact.
 Restrict Outgoing Traffic
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Many ``iptables`` setups are rather lax when it's about restricting outgoing
+Many :command:`iptables` setups are rather lax when it's about restricting outgoing
 traffic. By default DebOps will set the iptables ``OUTPUT`` policy to ``ACCEPT``
 which will permit every outgoing connection attempt. However, it is always a
 good idea to also limit the connections which can be made from within a host,
@@ -198,7 +196,7 @@ restrict outgoing traffic, therefore they need to be custom defined entirely.
 On the other hand this will be a good example for defining rule lists also for
 any other purpose.
 
-* First create an Ansible list with an individually choosen name which will
+* First create an Ansible list with an individually chosen name which will
   hold the custom output rules. For every outgoing connection which should be
   allowed to the internal or external network a rule needs to be added. Every
   template described in the :ref:`rule_templates` chapter can be used for the
@@ -219,7 +217,7 @@ any other purpose.
       - type: 'accept'
         chain: 'OUTPUT'
         weight: '50'
-        weight-class: 'any-service'
+        weight_class: 'any-service'
         comment: 'Allow connections to internal network'
         name: 'internal_out'
         outerface: 'eth1'
@@ -228,7 +226,7 @@ any other purpose.
       - type: 'accept'
         chain: 'OUTPUT'
         weight: '03'
-        weight-class: 'filter-icmp'
+        weight_class: 'filter-icmp'
         comment: 'Allow outgoing ICMP requests'
         name: 'icmp_out'
         protocol: 'icmp'
@@ -247,7 +245,7 @@ any other purpose.
 
       - type: 'reject'
         chain: 'OUTPUT'
-        weight-class: 'any-reject'
+        weight_class: 'any-reject'
         name: 'reject_out'
         comment: 'Reject remaining outgoing traffic'
 

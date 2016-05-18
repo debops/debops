@@ -22,12 +22,14 @@ Here's an example playbook which uses the ``debops.ferm`` role::
 
     ---
 
-    - name: Manage iptables rules with ferm
+    - name: Manage firewall using ferm
       hosts: [ 'debops_service_ferm' ]
+      become: True
 
       roles:
+
         - role: debops.ferm
-          tags: role::ferm
+          tags: [ 'role::ferm' ]
 
 Ansible tags
 ------------

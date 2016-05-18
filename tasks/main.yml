@@ -85,7 +85,7 @@
     - '{{ ferm__dependent_rules }}'
     - '{{ ferm__default_rules }}'
   when: (ferm__enabled|bool and item.type|d() and
-         ((item.rule_state|d() and item.rule_state == 'absent') or
+         ((item.rule_state|d("present") == "absent") or
           (item.delete|d() | bool)))
   register: ferm__register_rules_del
   tags: [ 'role::ferm:rules' ]
@@ -109,7 +109,7 @@
     - '{{ ferm__dependent_rules }}'
     - '{{ ferm__default_rules }}'
   when: (ferm__enabled|bool and item.type|d() and
-         ((item.rule_state is undefined or item.rule_state != 'absent') and
+         ((item.rule_state|d("present") == "present") and
           not (item.delete|d() | bool)))
   register: ferm__register_rules_add
   tags: [ 'role::ferm:rules' ]
