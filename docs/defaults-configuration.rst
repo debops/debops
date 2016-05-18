@@ -46,8 +46,9 @@ dictionary or in separate sections.
   sections when multiple sections are used in one configuration file.
 
 ``log`` or ``logs``
-  Required. String or a list of strings that define log filenames or shell glob
-  patterns which specify what logs should be rotated.
+  Optional. String or a list of strings that define log filenames or shell glob
+  patterns which specify what logs should be rotated. If it's not specified,
+  options will be added as common options for all subsequent entries.
 
 ``options``
   YAML text block with ``logrotate`` options to include in a particular
@@ -61,6 +62,17 @@ dictionary or in separate sections.
 
 Examples
 ~~~~~~~~
+
+Add custom common options for all logs:
+
+.. code-block:: yaml
+
+   logrotate__config:
+
+     - filename: '00archive-by-mail'
+       comment: 'Send deleted logs to archive'
+       options: |
+         mail log-archive@example.org
 
 Configure log rotation for a custom log file:
 
