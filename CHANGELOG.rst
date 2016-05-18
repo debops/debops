@@ -55,6 +55,9 @@ v0.2.9
 - Add ``debops.logrotate`` role and playbook, available as a standalone service
   as well as included in the ``common.yml`` playbook. [drybjed]
 
+- Update the ``debops.rsyslog`` playbook as well as the ``common.yml`` playbook
+  to support the rewritten ``debops.rsyslog`` role. [drybjed]
+
 v0.2.8
 ------
 
