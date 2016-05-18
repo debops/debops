@@ -22,9 +22,12 @@
       apt_preferences__dependent_list:
         - '{{ sshd__apt_preferences__dependent_list }}'
         - '{{ apt__apt_preferences__dependent_list }}'
+        - '{{ rsyslog__apt_preferences__dependent_list }}'
 
     - role: debops.etc_services
       tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ rsyslog__etc_services__dependent_list }}'
 
     - role: debops.atd
       tags: [ 'role::atd' ]
@@ -37,6 +40,8 @@
 
     - role: debops.logrotate
       tags: [ 'role::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ rsyslog__logrotate__dependent_config }}'
 
     - role: debops.auth
       tags: [ 'role::auth' ]
@@ -49,6 +54,7 @@
       ferm__dependent_rules:
         - '{{ ntp_ferm_dependent_rules }}'
         - '{{ postfix_ferm_dependent_rules }}'
+        - '{{ rsyslog__ferm__dependent_rules }}'
         - '{{ sshd__ferm__dependent_rules }}'
 
     - role: debops.tcpwrappers
