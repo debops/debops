@@ -58,6 +58,9 @@ v0.2.9
 - Update the ``debops.rsyslog`` playbook as well as the ``common.yml`` playbook
   to support the rewritten ``debops.rsyslog`` role. [drybjed]
 
+- Update the ``debops.ntp`` playbook and ``common.yml`` playbook to use the new
+  variable names. [drybjed]
+
 v0.2.8
 ------
 
