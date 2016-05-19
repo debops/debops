@@ -1,8 +1,8 @@
-{% set libvirt_tpl_dhcp_range_start = 10 %}
-{% set libvirt_tpl_dhcp_range_end   = 250 %}
+{% set libvirt__tpl_dhcp_range_start = 10 %}
+{% set libvirt__tpl_dhcp_range_end   = 250 %}
 {% if item.dhcp_range|d() %}
-{% set libvirt_tpl_dhcp_range_start = item.dhcp_range[0] | int %}
-{% set libvirt_tpl_dhcp_range_end   = item.dhcp_range[1] | int %}
+{% set libvirt__tpl_dhcp_range_start = item.dhcp_range[0] | int %}
+{% set libvirt__tpl_dhcp_range_end   = item.dhcp_range[1] | int %}
 {% endif %}
 <network>
   <name>{{ item.name }}</name>
@@ -16,7 +16,7 @@
   <forward mode="{{ item.forward_mode | d('nat') }}"/>
 {% endif %}
 {% if item.domain|d() %}
-  <domain name="{{ item.domain }}"{% if item.domain_local|d() %}{% if item.domain_local %} localOnly="yes"{% elif not item.domain_local %} localOnly="no"{% endif %}{% endif %}/>
+  <domain name="{{ item.domain }}" localOnly="{{ "yes" if item.domain_local|d() else "no" }}"/>
 {% endif %}
 {% if item.addresses|d() %}
 {% for subnet in item.addresses | ipv4('host/prefix') %}
@@ -26,7 +26,7 @@
 {% if item.bootp|d() %}
       <bootp file="{{ item.bootp_file | d('/undionly.kpxe') }}"{% if item.bootp_server|d() %} server="{{ item.bootp_server }}"{% endif %}/>
 {% endif %}
-      <range start="{{ subnet | ipaddr(libvirt_tpl_dhcp_range_start) | ipaddr('address') }}" end="{{ subnet | ipaddr(libvirt_tpl_dhcp_range_end) | ipaddr('address') }}"/>
+      <range start="{{ subnet | ipaddr(libvirt__tpl_dhcp_range_start) | ipaddr('address') }}" end="{{ subnet | ipaddr(libvirt__tpl_dhcp_range_end) | ipaddr('address') }}"/>
     </dhcp>
 {% endif %}
   </ip>
@@ -35,7 +35,7 @@
   <ip family="ipv6" address="{{ subnet | ipaddr('address') }}" prefix="{{ subnet | ipaddr('prefix') }}">
 {% if item.dhcp|d() and loop.first %}
     <dhcp>
-      <range start="{{ subnet | ipaddr(libvirt_tpl_dhcp_range_start) | ipaddr('address') }}" end="{{ subnet | ipaddr(libvirt_tpl_dhcp_range_end) | ipaddr('address') }}"/>
+      <range start="{{ subnet | ipaddr(libvirt__tpl_dhcp_range_start) | ipaddr('address') }}" end="{{ subnet | ipaddr(libvirt__tpl_dhcp_range_end) | ipaddr('address') }}"/>
     </dhcp>
 {% endif %}
   </ip>

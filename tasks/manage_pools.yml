@@ -3,59 +3,56 @@
 - name: Stop storage pools if requested
   virt_pool:
     name: '{{ item.name }}'
-    uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
+    uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
     state: 'inactive'
-  with_items: libvirt_pools
+  with_flattened: '{{ libvirt__pools }}'
   become: False
-  register: libvirt_register_stop
-  when: ((item.name|d() and item.name) and
-         (item.state is defined and item.state in [ 'inactive', 'undefined', 'absent' ]))
+  register: libvirt__register_stop
+  when: ((item.name|d()) and (item.state|d() in [ 'inactive', 'undefined', 'absent' ]))
 
 - name: Delete storage pools if requested
   virt_pool:
     name: '{{ item.item.name }}'
-    uri: '{{ libvirt_connections[item.item.uri | d(libvirt_uri)] }}'
+    uri: '{{ libvirt__connections[item.item.uri | d(libvirt__uri)] }}'
     command: 'delete'
     mode: '{{ item.item.mode | d(omit) }}'
-  with_items: libvirt_register_stop.results
+  with_flattened: '{{ libvirt__register_stop.results }}'
   become: False
   when: (item.changed|d() and item.item.name|d() and item.item.delete|d(False) and
-         item.item.state|d() and item.item.state in [ 'undefined' ] and
+         item.item.state|d() in [ 'undefined' ] and
          item.item.type in [ 'dir', 'nfs', 'logical' ])
 
 - name: Undefine storage pools if requested
   virt_pool:
     name: '{{ item.name }}'
-    uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
+    uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
     state: 'absent'
-  with_items: libvirt_pools
+  with_flattened: '{{ libvirt__pools }}'
   become: False
-  when: ((item.name|d() and item.name) and
-         (item.state is defined and item.state in [ 'undefined', 'absent' ]))
+  when: ((item.name|d()) and (item.state|d() in [ 'undefined', 'absent' ]))
 
 - name: Define storage pools
   virt_pool:
     name: '{{ item.name }}'
     xml: '{{ lookup("template", "lookup/pool/" + item.type + ".xml.j2") }}'
-    uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
+    uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
     state: 'present'
-  with_items: libvirt_pools
+  with_flattened: '{{ libvirt__pools }}'
   become: False
-  register: libvirt_register_define
-  when: ((item.name|d() and item.name) and
-         (item.state is undefined or item.state not in [ 'undefined', 'absent' ]))
+  register: libvirt__register_define
+  when: ((item.name|d()) and (item.state|d('active') not in [ 'undefined', 'absent' ]))
 
 - name: Build new storage pools
   virt_pool:
     name: '{{ item.item.name }}'
-    uri: '{{ libvirt_connections[item.item.uri | d(libvirt_uri)] }}'
+    uri: '{{ libvirt__connections[item.item.uri | d(libvirt__uri)] }}'
     command: 'build'
     mode: '{{ item.item.mode | d(omit) }}'
-  with_items: libvirt_register_define.results
+  with_flattened: '{{ libvirt__register_define.results }}'
   become: False
   when: (item.changed|d() and item.item.name|d() and
-         (item.item.state is undefined or item.item.state not in [ 'undefined', 'absent' ]) and
-         (item.item.build is undefined or item.item.build|d()) and
+         (item.item.state|d('active') not in [ 'undefined', 'absent' ]) and
+         (item.item.build|d(True)) and
          (item.item.type in [ 'dir', 'nfs' ] or
          (item.item.type == 'logical' and item.item.devices|d())))
 
@@ -63,19 +60,17 @@
   virt_pool:
     name: '{{ item.name }}'
     state: 'active'
-    uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
-  with_items: libvirt_pools
+    uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
+  with_flattened: '{{ libvirt__pools }}'
   become: False
-  when: ((item.name|d() and item.name) and
-         (item.state is undefined or item.state in [ 'active' ]))
+  when: (item.name|d() and item.state|d('active') in [ 'active' ])
 
 - name: Set autostart attribute on storage pools
   virt_pool:
     name: '{{ item.name }}'
-    autostart: '{{ "yes" if (item.autostart is undefined or item.autostart|d()) else "no" }}'
-    uri: '{{ libvirt_connections[item.uri | d(libvirt_uri)] }}'
-  with_items: libvirt_pools
+    autostart: '{{ "yes" if (item.autostart|d(True)) else "no" }}'
+    uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
+  with_flattened: '{{ libvirt__pools }}'
   become: False
-  when: ((item.name|d() and item.name) and
-         (item.state is undefined or item.state not in [ 'undefined', 'absent' ]))
+  when: (item.name|d() and item.state|d('active') not in [ 'undefined', 'absent' ])
 

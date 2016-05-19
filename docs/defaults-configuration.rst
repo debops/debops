@@ -9,10 +9,10 @@ them.
    :local:
    :depth: 1
 
-.. _libvirt_connections:
+.. _libvirt__connections:
 
-libvirt_connections
--------------------
+libvirt__connections
+--------------------
 
 This is a dictionary variable which defines ``libvirt`` connections and their
 aliases. Each key is an alias of a given connection. Currently only local and
@@ -23,16 +23,16 @@ Examples
 
 Define local and remote ``libvirt`` connections::
 
-    libvirt_connections:
+    libvirt__connections:
       'localhost':  'qemu:///system'
       'vm-host':    'qemu+ssh://vm.example.org/system'
       'local-lxc':  'lxc:///'
       'lxc-host':   'lxc+ssh://lxc.example.org/'
 
-.. _libvirt_networks:
+.. _libvirt__networks:
 
-libvirt_networks
-----------------
+libvirt__networks
+-----------------
 
 This is a list of network definitions specified as YAML dicts. Each dict
 defines separate network interface which then can be configured and enabled in
@@ -45,16 +45,16 @@ List of parameters supported by all network types:
   ``virt-manager``.
 
 ``type``
-  Required. Specifes what XML template will be used to configure the interface.
+  Required. Specifies what XML template will be used to configure the interface.
   Different templates might require different parameters.
 
   Currently supported templates are:
 
-  - ``bridge``: network will be configured as a simple host bridge, all
+  - ``bridge``: Network will be configured as a simple host bridge, all
     configuration is done on the host (outside of ``libvirt``). You need to
     specify ``item.bridge`` parameter as name of the host bridge to use.
 
-  - ``dnsmasq``: network will be configured as a bridge with ``dnsmasq`` used
+  - ``dnsmasq``: Network will be configured as a bridge with ``dnsmasq`` used
     as internal DNS and DHCP server.
 
 ``bridge``
@@ -64,23 +64,26 @@ List of parameters supported by all network types:
   Specify the state the network should be in. If not specified, interface will
   be defined and started automatically. Known states:
 
-  - ``undefined`` or ``absent``: network will be destroyed if active and
-    removed from ``libvirt`` configuration.
+  ``undefined`` or ``absent``:
+    Network will be destroyed if active and removed from ``libvirt``
+    configuration.
 
-  - ``present``: network will be defined in ``libvirt`` but will not actively
-    start at the creation time. It might or might not start on boot depending
-    on ``item.autostart`` parameter.
+  ``present``:
+    Network will be defined in ``libvirt`` but will not actively start at the
+    creation time. It might or might not start on boot depending on
+    ``item.autostart`` parameter.
 
-  - ``active``: network will be defined if not present and automatically
-    started at creation time, or if it's inactive.
+  ``active``:
+    Network will be defined if not present and automatically started at
+    creation time, or if it's inactive.
 
 ``autostart``
-  Bool. Specify if a network should start (``True``) or not (``False``) at boot
-  time.
+  Boolean, optional, defaults to ``True``. Specify if a network should start
+  (``True``) or not (``False``) at boot time.
 
 ``uri``
   Name of the ``libvirt`` connection configured in
-  ``~/.config/libvirt/libvirt.conf`` to use to configure this network. If not
+  :file:`~/.config/libvirt/libvirt.conf` to use to configure this network. If not
   specified, default connection (most likely ``localhost`` which is an alias
   configured to ``qemu:///system`` by default) is used.
 
@@ -98,7 +101,7 @@ List of parameters supported by ``dnsmasq`` network type:
   limitation).
 
 ``forward``
-  Bool. If specified, traffic to external networks will be forwarded to the
+  Boolean. If specified, traffic to external networks will be forwarded to the
   upstream interface.
 
 ``forward_mode``
@@ -107,7 +110,7 @@ List of parameters supported by ``dnsmasq`` network type:
   <http://wiki.libvirt.org/page/VirtualNetworking>`_ for more details.
 
 ``dhcp``
-  Bool. If present and ``True``, enable DHCP server for this network. Only
+  Boolean. If present and ``True``, enable DHCP server for this network. Only
   first subnet of each type (IPv4, IPv6) will have DHCP configured.
 
 ``dhcp_range``
@@ -119,15 +122,15 @@ List of parameters supported by ``dnsmasq`` network type:
   DNS domain to sent to hosts by DHCP server.
 
 ``domain_local``
-  Bool. Specify if requests that don't exist for local domain in ``dnsmasq``
+  Boolean. Specify if requests that don't exist for local domain in ``dnsmasq``
   should be forwarded to upstream DNS servers (they are forwarded by default).
 
 ``bootp``
-  Bool. Enable or disable support for BOOTP/PXE options in DHCP server.
+  Boolean. Enable or disable support for BOOTP/PXE options in DHCP server.
 
 ``bootp_file``
   File path sent to the host which instructs them to download a given file from
-  TFTP server. If none is specified, ``/undionly.kpxe`` is used, which is
+  TFTP server. If none is specified, :file:`/undionly.kpxe` is used, which is
   default for iPXE.
 
 ``bootp_server``
@@ -139,7 +142,7 @@ Examples
 
 Create host bridge network, only if a given bridge exists::
 
-    libvirt_networks:
+    libvirt__networks:
       - name: 'external'
         type: 'bridge'
         bridge: 'br0'
@@ -147,7 +150,7 @@ Create host bridge network, only if a given bridge exists::
 
 Create a NAT network on remote ``libvirt`` host::
 
-    libvirt_networks:
+    libvirt__networks:
       - name: 'nat'
         type: 'dnsmasq'
         bridge: 'virbr0'
@@ -156,10 +159,10 @@ Create a NAT network on remote ``libvirt`` host::
         dhcp: True
         uri: 'vm-host'
 
-.. _libvirt_pools:
+.. _libvirt__pools:
 
-libvirt_pools
--------------
+libvirt__pools
+--------------
 
 This is a list of storage pool definitions specified as YAML dicts. Each dict
 defines separate storage pool which then can be configured and enabled in
@@ -172,29 +175,33 @@ List of parameters supported by all storage pool types:
   ``virt-manager``.
 
 ``type``
-  Required. Specifes what XML template will be used to configure the pool.
+  Required. Specifies what XML template will be used to configure the pool.
   Different templates might require different parameters.
 
   Currently supported templates are:
 
-  - ``dir``: storage pool will be configured as a directory in existing
-    filesystem. You need to specify an absolute path to a directory using
-    ``item.path`` parameter.
+  ``dir``:
+    Storage pool will be configured as a directory in existing filesystem. You
+    need to specify an absolute path to a directory using ``item.path``
+    parameter.
 
     Directory should already exist before storage pool can be activated,
     otherwise you can create it using the ``build`` command.
 
-  - ``nfs``: storage pool is a directory exported from a NFS server, which will
-    be mounted on a given path. See below for supported parameters.
+  ``nfs``:
+    Storage pool is a directory exported from a NFS server, which will be
+    mounted on a given path. See below for supported parameters.
 
-  - ``logical``: storage pool is a LVM volume group which can be located on
-    local or remote block device(s). See below for supported parameters.
+  - ``logical``:
+    Storage pool is a LVM volume group which can be located on local or remote
+    block device(s). See below for supported parameters.
 
 ``state``
   Specify the state the storage pool should be in. If not specified, pool will
   be defined and started automatically. Known states:
 
-  - ``deleted``: storage pool contents will be erased (this is a destructive
+  ``deleted``:
+    Storage pool contents will be erased (this is a destructive
     operation), and it will be undefined afterwards.
 
   - ``undefined`` or ``absent``: storage pool will be destroyed if active and
@@ -212,8 +219,8 @@ List of parameters supported by all storage pool types:
     started at creation time, or if it's inactive.
 
 ``autostart``
-  Bool. Specify if a storage pool should start (``True``) or not (``False``) at
-  boot time.
+  Boolean, optional, defaults to ``True``. Specify if a storage pool should
+  start (``True``) or not (``False``) at boot time.
 
 ``uri``
   Name of the ``libvirt`` connection configured in
@@ -227,11 +234,11 @@ List of parameters supported by ``nfs`` storage pool type:
   IP address or hostname of NFS server which holds the exported filesystem.
 
 ``src``
-  Path on the NFS server with exported filesystem, for example ``/srv/nfs``.
+  Path on the NFS server with exported filesystem, for example :file:`/srv/nfs`.
 
 ``path``
   Path in the local filesystem where remote NFS share should be mounted, for
-  example ``/media/nfs/remote-vm``. If this directory does not exist, it will
+  example :file:`/media/nfs/remote-vm`. If this directory does not exist, it will
   be created by ``debops.libvirt`` role automatically.
 
 List of parameters supported by ``logical`` storage pool type:
@@ -251,14 +258,14 @@ Examples
 
 Create a directory storage pool on local machine (default ``libvirt`` storage pool::
 
-    libvirt_pools:
+    libvirt__pools:
       - name: 'default'
         type: 'dir'
         path: '/var/lib/libvirt/images'
 
 Create a NFS-based storage pool on remote ``libvirt`` host::
 
-    libvirt_pools:
+    libvirt__pools:
       - name: 'nfs-pool'
         type: 'nfs'
         host: 'nfs.exmmple.org'
@@ -268,7 +275,7 @@ Create a NFS-based storage pool on remote ``libvirt`` host::
 
 Create a LVM-based storage pool from existing Volume Group::
 
-    libvirt_pools:
+    libvirt__pools:
       - name: 'vg_kvm'
         type: 'logical'
 

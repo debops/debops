@@ -5,75 +5,92 @@
 # .. contents:: Sections
 #    :local:
 #
+# .. libvirt system configuration (((
+#
 # --------------------------------
 #   libvirt system configuration
 # --------------------------------
 
-# .. envvar:: libvirt_packages
+# .. envvar:: libvirt__base_packages
+#
+# List of base packages to install with Libvirt.
+libvirt__base_packages: [ 'gawk', 'netcat-openbsd', 'python-libvirt', 'python-lxml' ]
+
+
+# .. envvar:: libvirt__packages
 #
 # List of ``libvirt`` packages which will be installed on all distribution
 # releases, unless overridden.
-libvirt_packages: [ 'libvirt-clients' ]
+libvirt__packages: [ 'libvirt-clients' ]
 
 
-# .. envvar:: libvirt_packages_map
+# .. envvar:: libvirt__packages_map
 #
 # Override list of base packages for specific distribution releases.
-libvirt_packages_map:
+libvirt__packages_map:
   'wheezy':  [ 'libvirt-bin' ]
   'precise': [ 'libvirt-bin' ]
   'trusty':  [ 'libvirt-bin' ]
 
 
-# .. envvar:: libvirt_group_map
+# .. envvar:: libvirt__group_map
 #
 # Mapping of default UNIX access group on different distributions.
-libvirt_group_map:
+libvirt__group_map:
   'Debian': 'libvirt'
   'Ubuntu': 'libvirtd'
 
+# .. )))
 
+# .. libvirt connection URI (((
+#
 # --------------------------
 #   libvirt connection URI
 # --------------------------
 
-# .. envvar:: libvirt_default_uri
+# .. envvar:: libvirt__default_uri
 #
-# Default connection URI (connect to ``libvirtd`` instance on ``localhost``).
-libvirt_default_uri: 'qemu:///system'
+# Default connection URI (connect to :program:`libvirtd` instance on ``localhost``).
+libvirt__default_uri: 'qemu:///system'
 
-# .. envvar:: libvirt_connections
+
+# .. envvar:: libvirt__connections
 #
 # Dict with connections configured in ``~/.config/libvirt/libvirt.conf``. See
-# :ref:`libvirt_connections` for more details.
-libvirt_connections:
-  'localhost': '{{ libvirt_default_uri }}'
+# :ref:`libvirt__connections` for more details.
+libvirt__connections:
+  'localhost': '{{ libvirt__default_uri }}'
 
 
-# .. envvar:: libvirt_uri
+# .. envvar:: libvirt__uri
 #
-# Name of the connection from ``libvirt_connections`` dict used by default by
+# Name of the connection from ``libvirt__connections`` dict used by default by
 # ``libvirt`` clients on the admin account.
-libvirt_uri: 'localhost'
+libvirt__uri: 'localhost'
 
+# .. )))
 
+# .. libvirt network configuration (((
+#
 # ---------------------------------
 #   libvirt network configuration
 # ---------------------------------
 
-# .. envvar:: libvirt_networks
+# .. envvar:: libvirt__networks
 #
 # List of network definitions in ``libvirt``, specified as YAML dicts. See
-# :ref:`libvirt_networks` for more details.
-libvirt_networks: '{{ libvirt_networks_default + libvirt_networks_virt_nat }}'
+# :ref:`libvirt__networks` for more details.
+libvirt__networks:
+  - '{{ libvirt__networks_default }}'
+  - '{{ libvirt__networks_virt_nat }}'
 
 
-# .. envvar:: libvirt_networks_default
+# .. envvar:: libvirt__networks_default
 #
 # Default DebOps network configuration for ``libvirt``. NAT that comes with
 # ``libvirt`` by default is inactive, bridges configured by ``debops.ifupdown``
 # are automatically added to ``libvirt`` if they are present.
-libvirt_networks_default:
+libvirt__networks_default:
 
   # Internal network configured by ``libvirt`` by default.
   - name: 'default'
@@ -99,14 +116,14 @@ libvirt_networks_default:
     interface_present: 'br2'
 
 
-# .. envvar:: libvirt_networks_virt_nat:
+# .. envvar:: libvirt__networks_virt_nat:
 #
 # An internal network behind NAT. This is a replacement configuration for
 # ``default`` ``libvirt`` network, since you cannot redefine existing
 # configuration, only undefine the old one and define a new one. Using
 # different ``item.name`` avoids the issue of redefining the network all the
 # time.
-libvirt_networks_virt_nat:
+libvirt__networks_virt_nat:
 
   - name: 'virt-nat'
     type: 'dnsmasq'
@@ -117,24 +134,29 @@ libvirt_networks_virt_nat:
     forward: True
     dhcp: True
 
+# .. )))
 
+# .. libvirt storage pool configuration (((
+#
 # --------------------------------------
 #   libvirt storage pool configuration
 # --------------------------------------
 
-# .. envvar:: libvirt_pools
+# .. envvar:: libvirt__pools
 #
 # List of storage pool definitions in ``libvirt``, specified as YAML dicts. See
-# :ref:`libvirt_pools` for more details.
-libvirt_pools: '{{ libvirt_pools_default }}'
+# :ref:`libvirt__pools` for more details.
+libvirt__pools:
+  - '{{ libvirt__pools_default }}'
 
 
-# .. envvar:: libvirt_pools_default
+# .. envvar:: libvirt__pools_default
 #
 # List of default storage pools configured by ``debops.libvirt``.
-libvirt_pools_default:
+libvirt__pools_default:
 
   - name: 'default'
     type: 'dir'
     path: '/var/lib/libvirt/images'
 
+# .. )))
