@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+# Configuration for systemd-timesyncd
+
+[Time]
+{% if ansible_distribution_release in [ 'jessie', 'trusty' ] %}
+Servers={{ ntp__servers | join(' ') }}
+{% else %}
+NTP={{ ntp__servers | join(' ') }}
+{% endif %}

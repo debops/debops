@@ -1,10 +1,10 @@
 Changelog
 =========
 
-v0.1.1
+v0.2.0
 ------
 
-*Unreleased*
+*Released: 2016-05-19*
 
 - The ``tzdata`` package is frequently updated after the Debian Stable release
   and almost always newer version will be available from ``stable-updates``
@@ -22,6 +22,18 @@ v0.1.1
   with ``tzdata`` package configuration. [drybjed]
 
 - Check if NTP daemon can be installed in Ansible facts. [drybjed]
+
+- Support configuration of ``openntpd`` startup options. This is needed to add
+  the ``-s`` flag so that the daemon will synchronize time immediately on
+  startup if the difference is large enough. [drybjed]
+
+- Add support for ``system-timesyncd`` configuration. If other daemons are
+  enabled, role will automatically disable the ``system-timesyncd`` service so
+  that it won't interfere with normal operations. [drybjed]
+
+- Rename all variables to put them in separate ``ntp__`` namespace. [drybjed]
+
+- Update documentation. [drybjed]
 
 v0.1.0
 ------
