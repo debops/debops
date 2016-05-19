@@ -51,8 +51,8 @@
 
 - name: Combine lists of default and user APT mirrors and sources
   set_fact:
-    apt_keys_combined: '{{
-      (apt_keys               |d([]) | list) +
+    apt__keys_combined: '{{
+      (apt__keys               |d([]) | list) +
       (apt__group_keys         |d([]) | list) +
       (apt__host_keys          |d([]) | list) +
       (apt__keys_delayed_enabled|d([]) | list) }}'
@@ -82,7 +82,7 @@
     keyserver: '{{ item.keyserver | default(omit) }}'
     state: '{{ item.state | default("present") }}'
     url: '{{ item.url | default(omit) }}'
-  with_items: '{{ apt_keys_combined }}'
+  with_items: '{{ apt__keys_combined }}'
   when: (item.url is defined or item.data is defined or item.id is defined or item.file is defined and
          (item.state is undefined or item.state is defined))
 

@@ -32,6 +32,8 @@ v0.2.0
 
 - Use backported :program:`irqbalance` on Debian Jessie. [ypid]
 
+- Rename forgotten ``apt_keys`` variable. [drybjed]
+
 v0.1.0
 ------
 
