@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.1.1
+------
+
+*Released: 2016-05-19*
+
+- Make sure that role works in Ansible check mode. [drybjed]
+
 v0.1.0
 ------
 
