@@ -16,7 +16,7 @@
   <forward mode="{{ item.forward_mode | d('nat') }}"/>
 {% endif %}
 {% if item.domain|d() %}
-  <domain name="{{ item.domain }}"{% if item.domain_local|d() %}{% if item.domain_local %} localOnly="yes"{% elif not item.domain_local %} localOnly="no"{% endif %}{% endif %}/>
+  <domain name="{{ item.domain }}" localOnly="{{ "yes" if item.domain_local|d() else "no" }}"/>
 {% endif %}
 {% if item.addresses|d() %}
 {% for subnet in item.addresses | ipv4('host/prefix') %}

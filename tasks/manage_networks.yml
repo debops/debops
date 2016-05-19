@@ -27,7 +27,7 @@
   with_flattened: '{{ libvirt_networks }}'
   become: False
   when: ((item.name|d()) and
-         (item.state is undefined or item.state not in [ 'undefined', 'absent' ]) and
+         (item.state|d("active") not in [ 'undefined', 'absent' ]) and
          (item.interface_present is undefined or
           (item.interface_present in ansible_interfaces and not item.uri|d())))
 
