@@ -4,7 +4,7 @@ Changelog
 v0.2.1
 ------
 
-*Unreleased*
+*Released: 2016-05-19*
 
 - Completed namespace change to ``ntp__`` from v0.2.0. [ypid]
 
