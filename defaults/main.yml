@@ -5,9 +5,11 @@
 # .. contents:: Sections
 #    :local:
 #
-# ------------------------------------
+# .. Global options (((
+#
+# ------------------
 #   Global options
-# ------------------------------------
+# ------------------
 
 # .. envvar:: ntp_daemon
 #
@@ -71,10 +73,13 @@ ntp_root_flags:
   # install specified ntp daemon
   cap_sys_time: [ 'ignore-cap12s', 'ignore-cap_sys_time' ]
 
+# .. )))
 
-# ------------------------------------
+# .. Timezone configuration (((
+#
+# --------------------------
 #   Timezone configuration
-# ------------------------------------
+# --------------------------
 
 # .. envvar:: ntp_timezone
 #
@@ -84,10 +89,13 @@ ntp_root_flags:
 # If this variable is empty or set to ``False``, the timezone won't be changed.
 ntp_timezone: ''
 
+# .. )))
 
-# ------------------------------------
+# .. Network accessibility (((
+#
+# -------------------------
 #   Network accessibility
-# ------------------------------------
+# -------------------------
 
 # .. envvar:: ntp_listen
 #
@@ -163,10 +171,10 @@ ntp_ferm_dependent_rules:
     role_weight: '10'
     name: 'jump-filter-ntp'
     target: '{{ ntp_ferm_chain }}'
-    when: '{{ ntp_daemon in [ "openntpd", "ntpd" ] and
-              ntp_firewall_access | bool }}'
-    delete: '{{ ntp_daemon not in [ "openntpd", "ntp" ] or
-                not ntp_firewall_access | bool }}'
+    rule_state: '{{ "present" if (
+                      ntp_daemon in [ "openntpd", "ntpd" ] and
+                      ntp_firewall_access|bool)
+                    else "absent" }}'
 
   - chain: '{{ ntp_ferm_chain }}'
     type: 'recent'
@@ -180,10 +188,10 @@ ntp_ferm_dependent_rules:
     subchain: False
     recent_set_name: 'ntp-new'
     recent_log: False
-    when: '{{ ntp_daemon in [ "openntpd", "ntpd" ] and
-              ntp_firewall_access | bool }}'
-    delete: '{{ ntp_daemon not in [ "openntpd", "ntp" ] or
-                not ntp_firewall_access | bool }}'
+    rule_state: '{{ "present" if (
+                      ntp_daemon in [ "openntpd", "ntpd" ] and
+                      ntp_firewall_access|bool)
+                    else "absent" }}'
 
   - chain: '{{ ntp_ferm_chain }}'
     type: 'recent'
@@ -200,10 +208,10 @@ ntp_ferm_dependent_rules:
     recent_hitcount: '{{ ntp_ferm_recent_hitcount }}'
     recent_target: '{{ ntp_ferm_recent_target }}'
     recent_log_prefix: 'ipt-recent-ntp: '
-    when: '{{ ntp_daemon in [ "openntpd", "ntpd" ] and
-              ntp_firewall_access | bool }}'
-    delete: '{{ ntp_daemon not in [ "openntpd", "ntp" ] or
-                not ntp_firewall_access | bool }}'
+    rule_state: '{{ "present" if (
+                      ntp_daemon in [ "openntpd", "ntpd" ] and
+                      ntp_firewall_access|bool)
+                    else "absent" }}'
 
   - chain: '{{ ntp_ferm_chain }}'
     type: 'accept'
@@ -214,8 +222,10 @@ ntp_ferm_dependent_rules:
     weight: '{{ ntp_ferm_weight }}'
     role: 'ntp'
     role_weight: '40'
-    when: '{{ ntp_daemon in [ "openntpd", "ntpd" ] and
-              ntp_firewall_access | bool }}'
-    delete: '{{ ntp_daemon not in [ "openntpd", "ntp" ] or
-                not ntp_firewall_access | bool }}'
+    rule_state: '{{ "present" if (
+                      ntp_daemon in [ "openntpd", "ntpd" ] and
+                      ntp_firewall_access|bool)
+                    else "absent" }}'
+
+# .. )))
 
