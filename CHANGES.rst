@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v0.1.1
+------
+
+*Released: 2016-05-19*
+
+- Make sure that role works in Ansible check mode. [drybjed]
+
+- Change the ``systemd`` handler into a task, so that the ``systemd``
+  configuration is reloaded as soon as possible. [drybjed]
+
 v0.1.0
 ------
 
