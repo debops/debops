@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.1.4
+------
+
+*Released: 2016-05-19*
+
+- Update documentation. [ypid]
+
+- Compress Jinja statements. [ypid]
+
+- Fix error with too many brackets. [drybjed]
+
 v0.1.3
 ------
 
