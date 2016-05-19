@@ -18,6 +18,18 @@ v0.2.0
 
 - Fix issue with wrong variable type conversion. [drybjed]
 
+- Changed variable namespace from ``libvirtd_`` to ``libvirtd__``.
+  ``libvirtd_[^_]`` variables are hereby deprecated.
+
+  You might need to update your inventory. This oneliner might come in handy to
+  do this:
+
+  .. code:: shell
+
+     git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(libvirtd)_([^_])/\1__\2/g;'
+
+  [ypid]
+
 v0.1.2
 ------
 

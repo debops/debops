@@ -6,15 +6,15 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ libvirtd_network_packages }}'
-    - '{{ libvirtd_packages }}'
+    - '{{ libvirtd__network_packages }}'
+    - '{{ libvirtd__packages }}'
     - [ 'gawk', 'virt-top', 'netcat-openbsd', 'pm-utils' ]
-    - [ '{{ libvirtd_base_packages_map[ansible_distribution_release]
-            if (ansible_distribution_release in libvirtd_base_packages_map.keys())
-            else libvirtd_base_packages }}' ]
+    - [ '{{ libvirtd__base_packages_map[ansible_distribution_release]
+            if (ansible_distribution_release in libvirtd__base_packages_map.keys())
+            else libvirtd__base_packages }}' ]
     - [ '{{ [] if (ansible_virtualization_type in [ "kvm" ] and
                    ansible_virtualization_role in [ "guest" ])
-                   else libvirtd_kvm_packages }}' ]
+                   else libvirtd__kvm_packages }}' ]
 
 - name: Generate system-wide libvirt.conf configuration
   template:
@@ -27,8 +27,8 @@
 - name: Add administrators to libvirt system group
   user:
     name: '{{ item }}'
-    groups: '{{ libvirtd_group_map[ansible_distribution] }}'
+    groups: '{{ libvirtd__group_map[ansible_distribution] }}'
     append: True
-  with_items: '{{ libvirtd_admins }}'
-  when: libvirtd_admins|d()
+  with_items: '{{ libvirtd__admins }}'
+  when: libvirtd__admins|d()
 
