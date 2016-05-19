@@ -4,7 +4,7 @@ Changelog
 v0.2.0
 ------
 
-*Unreleased*
+*Released: 2016-05-19*
 
 - Remove most of the Ansible role dependencies, leaving only those that are
   required for the role to run correctly.
