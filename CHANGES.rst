@@ -27,6 +27,10 @@ v0.1.1
   the ``-s`` flag so that the daemon will synchronize time immediately on
   startup if the difference is large enough. [drybjed]
 
+- Add support for ``system-timesyncd`` configuration. If other daemons are
+  enabled, role will automatically disable the ``system-timesyncd`` service so
+  that it won't interfere with normal operations. [drybjed]
+
 v0.1.0
 ------
 
