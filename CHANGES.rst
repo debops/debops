@@ -1,10 +1,10 @@
 Changelog
 =========
 
-v0.1.1
+v0.2.0
 ------
 
-*Unreleased*
+*Released: 2016-05-19*
 
 - The ``tzdata`` package is frequently updated after the Debian Stable release
   and almost always newer version will be available from ``stable-updates``
@@ -32,6 +32,8 @@ v0.1.1
   that it won't interfere with normal operations. [drybjed]
 
 - Rename all variables to put them in separate ``ntp__`` namespace. [drybjed]
+
+- Update documentation. [drybjed]
 
 v0.1.0
 ------

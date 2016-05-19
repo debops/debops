@@ -1,9 +1,9 @@
 ---
 
 ansigenome_info:
+  galaxy_url: "https://galaxy.ansible.com/debops/ntp"
   github_url: "https://github.com/debops/ansible-ntp"
   git_branch: "master"
-  galaxy_id: "1582"
 
   travis: True
 
@@ -23,17 +23,11 @@ ansigenome_info:
       github: 'ypid'
 
   synopsis: |
-    The `debops.ntp` role can be used to install
-    [OpenNTPD](http://www.openntpd.org/) time server which will be used both to
-    synchronize time on a host and serve accurate time information for other
-    hosts (if enabled). This role can also manage timezone settings using
-    `tzdata` Debian package.
-
-    Alternatively to OpenNTPD, this role can be used to setup [NTPd](http://ntp.org/).
-
-    For for clients and workstations this role can be used to setup ntpdate to
-    synchronize the time when the host is connected to the network (without a running daemon).
-
-    Time server will not be installed in an LXC or OpenVZ container, because
-    time synchronization in this case is provided by the host operating system.
-
+    An NTP daemon is used for time synchronization, either on a local system as
+    a client, or on remote systems as a server.
+    
+    The `debops.ntp` Ansible role supports multiple NTP servers, and is
+    container-aware so that an NTP server won't be installed inside containers.
+    
+    The role is also used to configure the system timezone using the ``tzdata``
+    package.
