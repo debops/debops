@@ -36,7 +36,12 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  notify: [ 'Reload systemd daemon', 'Restart snmpd' ]
+  notify: [ 'Restart snmpd' ]
+
+- name: Reload systemd daemon and enable snmpd.service
+  shell: systemctl daemon-reload ; systemctl enable snmpd.service
+  when: ((ansible_local|d() and ansible_local.init|d() and
+          ansible_local.init == "systemd") and not ansible_local.snmpd|d())
 
 - name: Allow 'snmp' user access to /proc if needed
   user:
