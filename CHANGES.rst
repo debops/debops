@@ -23,6 +23,10 @@ v0.1.1
 
 - Check if NTP daemon can be installed in Ansible facts. [drybjed]
 
+- Support configuration of ``openntpd`` startup options. This is needed to add
+  the ``-s`` flag so that the daemon will synchronize time immediately on
+  startup if the difference is large enough. [drybjed]
+
 v0.1.0
 ------
 

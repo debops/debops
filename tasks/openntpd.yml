@@ -8,10 +8,11 @@
 
 - name: Configure OpenNTPd
   template:
-    src: 'etc/openntpd/ntpd.conf.j2'
-    dest: '/etc/openntpd/ntpd.conf'
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
+  with_items: [ 'etc/default/openntpd', 'etc/openntpd/ntpd.conf' ]
   notify: [ 'Restart openntpd' ]
 
