@@ -4,7 +4,7 @@ Changelog
 v0.2.0
 ------
 
-*Unreleased*
+*Released: 2016-05-19*
 
 - Fix deprecation warnings in Ansible 2.1.0. [ypid]
 
