@@ -11,27 +11,27 @@
 #   Global options
 # ------------------
 
-# .. envvar:: ntp_daemon
+# .. envvar:: ntp__daemon
 #
 # Which clock management daemon/program should be setup?
 #
 # Choices (string):
 #
-# * ntpdate
-# * ntpd
-# * openntpd
-# * systemd-timesyncd
+# - ntpdate
+# - ntpd
+# - openntpd
+# - systemd-timesyncd
 #
 # Set to ``False`` to disable clock management.
-ntp_daemon: 'openntpd'
+ntp__daemon: 'openntpd'
 
 
-# .. envvar:: ntp_servers
+# .. envvar:: ntp__servers
 #
 # List of NTP servers to synchronize with
 # If you use :program:`ntpd`, you can add server options in server strings, for example::
 #
-#     ntp_servers:
+#     ntp__servers:
 #       - '0.debian.pool.ntp.org iburst minpoll 6 maxpoll 10'
 #
 # If you're syncing against local servers, recommended options are:
@@ -51,24 +51,24 @@ ntp_daemon: 'openntpd'
 #
 #   and so on.
 #
-ntp_servers:
+ntp__servers:
   - '0.debian.pool.ntp.org'
   - '1.debian.pool.ntp.org'
   - '2.debian.pool.ntp.org'
   - '3.debian.pool.ntp.org'
 
 
-# .. envvar:: ntp_fudge
+# .. envvar:: ntp__fudge
 #
 # :program:`ntpd` specific.
 # Fudge local clock if time servers is not available.
-ntp_fudge: True
+ntp__fudge: True
 
 
-# .. envvar:: ntp_root_flags
+# .. envvar:: ntp__root_flags
 #
 # List of global root flags to check
-ntp_root_flags:
+ntp__root_flags:
 
   # If these flags are present, ignore status of "cap_sys_time" capability and
   # install specified ntp daemon
@@ -82,13 +82,13 @@ ntp_root_flags:
 #   Timezone configuration
 # --------------------------
 
-# .. envvar:: ntp_timezone
+# .. envvar:: ntp__timezone
 #
 # Specify timezone in the format of 'Area/Zone'. Use :command:`timedatectl
 # list-timezones` to see a list of possible values. To set the UTC timezone,
 # specify it as 'Etc/UTC'.
 # If this variable is empty or set to ``False``, the timezone won't be changed.
-ntp_timezone: ''
+ntp__timezone: ''
 
 # .. )))
 
@@ -99,10 +99,10 @@ ntp_timezone: ''
 #   OpenNTPd configuration
 # --------------------------
 
-# .. envvar:: ntp_openntpd_options
+# .. envvar:: ntp__openntpd_options
 #
 # Set the ``openntpd`` daemon options.
-ntp_openntpd_options: '-f /etc/openntpd/ntpd.conf -s'
+ntp__openntpd_options: '-f /etc/openntpd/ntpd.conf -s'
 
 # .. )))
 
@@ -112,91 +112,91 @@ ntp_openntpd_options: '-f /etc/openntpd/ntpd.conf -s'
 #   Network accessibility
 # -------------------------
 
-# .. envvar:: ntp_listen
+# .. envvar:: ntp__listen
 #
 # List of interfaces :program:`ntpd` should listen on.
 # Specify::
 #
-#     ntp_listen: '*'
+#     ntp__listen: '*'
 #
 # to listen on all interfaces.
-ntp_listen: []
+ntp__listen: []
 
 
-# .. envvar:: ntp_firewall_access
+# .. envvar:: ntp__firewall_access
 #
 # Enable or disable access to NTP through the firewall.
-ntp_firewall_access: False
+ntp__firewall_access: False
 
 
-# .. envvar:: ntp_allow
+# .. envvar:: ntp__allow
 #
 # List of hosts/networks in CIDR format to allow access to the NTP port by the
 # firewall. If this list is set to ``False``, access will be allowed from
 # anywhere. You should probably define a list of networks allowed access to
 # mitigate NTP amplification attacks.
-ntp_allow: []
+ntp__allow: []
 
 
-# .. envvar:: ntp_ferm_chain
+# .. envvar:: ntp__ferm_chain
 #
 # Name of the :command:`iptables` chain to use for filtering NTP connections.
-ntp_ferm_chain: 'filter-ntp'
+ntp__ferm_chain: 'filter-ntp'
 
 
-# .. envvar:: ntp_ferm_weight
+# .. envvar:: ntp__ferm_weight
 #
 # Weight of the ``debops.ntp`` firewall rules, determines the order of the
 # configuration files.
-ntp_ferm_weight: '40'
+ntp__ferm_weight: '40'
 
 
-# .. envvar:: ntp_ferm_recent_seconds
+# .. envvar:: ntp__ferm_recent_seconds
 #
 # Time window which firewall checks to filter too many connections, specified
 # in seconds.
-ntp_ferm_recent_seconds: '{{ (60 * 60) }}'
+ntp__ferm_recent_seconds: '{{ (60 * 60) }}'
 
 
-# .. envvar:: ntp_ferm_recent_hitcount
+# .. envvar:: ntp__ferm_recent_hitcount
 #
 # Maximum number of new connections from a host in the specified time window.
-ntp_ferm_recent_hitcount: 5
+ntp__ferm_recent_hitcount: 5
 
 
-# .. envvar:: ntp_ferm_recent_target
+# .. envvar:: ntp__ferm_recent_target
 #
 # Specify what the firewall should do with packets that exceed the allowed
 # limits. You can use ``DROP`` (recommended), ``REJECT`` (high risk of
 # reflection attacks) or specify name of an :command:`iptables` chain to
 # further process the packet(s).
-ntp_ferm_recent_target: 'DROP'
+ntp__ferm_recent_target: 'DROP'
 
 
-# .. envvar:: ntp_ferm_dependent_rules
+# .. envvar:: ntp__ferm_dependent_rules
 #
 # Configuration of the Linux firewall using ``debops.ferm``.
-ntp_ferm_dependent_rules:
+ntp__ferm__dependent_rules:
 
   - type: 'accept'
     dport: [ 'ntp' ]
     protocol: 'udp'
-    weight: '{{ ntp_ferm_weight }}'
+    weight: '{{ ntp__ferm_weight }}'
     role: 'ntp'
     role_weight: '10'
     name: 'jump-filter-ntp'
-    target: '{{ ntp_ferm_chain }}'
+    target: '{{ ntp__ferm_chain }}'
     rule_state: '{{ "present" if (
-                      ntp_daemon in [ "openntpd", "ntpd" ] and
-                      ntp_firewall_access|bool)
+                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__firewall_access|bool)
                     else "absent" }}'
 
-  - chain: '{{ ntp_ferm_chain }}'
+  - chain: '{{ ntp__ferm_chain }}'
     type: 'recent'
     dport: [ 'ntp' ]
     protocol: 'udp'
-    saddr: '{{ ntp_allow }}'
-    weight: '{{ ntp_ferm_weight }}'
+    saddr: '{{ ntp__allow }}'
+    weight: '{{ ntp__ferm_weight }}'
     role: 'ntp'
     role_weight: '20'
     name: 'mark'
@@ -204,42 +204,42 @@ ntp_ferm_dependent_rules:
     recent_set_name: 'ntp-new'
     recent_log: False
     rule_state: '{{ "present" if (
-                      ntp_daemon in [ "openntpd", "ntpd" ] and
-                      ntp_firewall_access|bool)
+                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__firewall_access|bool)
                     else "absent" }}'
 
-  - chain: '{{ ntp_ferm_chain }}'
+  - chain: '{{ ntp__ferm_chain }}'
     type: 'recent'
     dport: [ 'ntp' ]
     protocol: [ 'udp' ]
-    weight: '{{ ntp_ferm_weight }}'
+    weight: '{{ ntp__ferm_weight }}'
     role: 'ntp'
     role_weight: '30'
     name: 'filter'
     subchain: False
     recent_name: 'ntp-new'
     recent_update: True
-    recent_seconds: '{{ ntp_ferm_recent_seconds }}'
-    recent_hitcount: '{{ ntp_ferm_recent_hitcount }}'
-    recent_target: '{{ ntp_ferm_recent_target }}'
+    recent_seconds: '{{ ntp__ferm_recent_seconds }}'
+    recent_hitcount: '{{ ntp__ferm_recent_hitcount }}'
+    recent_target: '{{ ntp__ferm_recent_target }}'
     recent_log_prefix: 'ipt-recent-ntp: '
     rule_state: '{{ "present" if (
-                      ntp_daemon in [ "openntpd", "ntpd" ] and
-                      ntp_firewall_access|bool)
+                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__firewall_access|bool)
                     else "absent" }}'
 
-  - chain: '{{ ntp_ferm_chain }}'
+  - chain: '{{ ntp__ferm_chain }}'
     type: 'accept'
     dport: [ 'ntp' ]
     protocol: 'udp'
     state: 'NEW'
-    saddr: '{{ ntp_allow }}'
-    weight: '{{ ntp_ferm_weight }}'
+    saddr: '{{ ntp__allow }}'
+    weight: '{{ ntp__ferm_weight }}'
     role: 'ntp'
     role_weight: '40'
     rule_state: '{{ "present" if (
-                      ntp_daemon in [ "openntpd", "ntpd" ] and
-                      ntp_firewall_access|bool)
+                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__firewall_access|bool)
                     else "absent" }}'
 
 # .. )))

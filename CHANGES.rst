@@ -31,6 +31,8 @@ v0.1.1
   enabled, role will automatically disable the ``system-timesyncd`` service so
   that it won't interfere with normal operations. [drybjed]
 
+- Rename all variables to put them in separate ``ntp__`` namespace. [drybjed]
+
 v0.1.0
 ------
 

@@ -2,25 +2,25 @@
 
 - name: Ensure that configuration is supported
   assert:
-    that: not ntp_daemon or ntp_daemon in [ 'ntpd', 'ntpdate', 'openntpd', 'systemd-timesyncd' ]
+    that: not ntp__daemon or ntp__daemon in [ 'ntpd', 'ntpdate', 'openntpd', 'systemd-timesyncd' ]
 
 - name: Configure tzdata area in debconf
   debconf:
     name: 'tzdata'
     question: 'tzdata/Areas'
     vtype: 'select'
-    value: '{{ ntp_timezone.split("/")[0] }}'
-  register: ntp_debconf_set_area
-  when: ntp_timezone is defined and ntp_timezone
+    value: '{{ ntp__timezone.split("/")[0] }}'
+  register: ntp__register_debconf_set_area
+  when: ntp__timezone is defined and ntp__timezone
 
 - name: Configure tzdata zone in debconf
   debconf:
     name: 'tzdata'
-    question: 'tzdata/Zones/{{ ntp_timezone.split("/")[0] }}'
+    question: 'tzdata/Zones/{{ ntp__timezone.split("/")[0] }}'
     vtype: 'select'
-    value: '{{ ntp_timezone.split("/")[1] }}'
-  register: ntp_debconf_set_zone
-  when: ntp_timezone is defined and ntp_timezone
+    value: '{{ ntp__timezone.split("/")[1] }}'
+  register: ntp__register_debconf_set_zone
+  when: ntp__timezone is defined and ntp__timezone
 
   # tzdata ignores debconf answers when configured non-interactively
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=704089
@@ -31,8 +31,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: ntp_etc_timezone
-  when: ntp_timezone is defined and ntp_timezone
+  register: ntp__register_etc_timezone
+  when: ntp__timezone is defined and ntp__timezone
 
 - name: Install required packages
   apt:
@@ -43,15 +43,15 @@
 
 - name: Reconfigure tzdata
   shell: dpkg-reconfigure --frontend noninteractive tzdata
-  when: (ntp_timezone is defined and ntp_timezone) and
-        ((ntp_debconf_set_area is defined and ntp_debconf_set_area.changed) or
-         (ntp_debconf_set_zone is defined and ntp_debconf_set_zone.changed) or
-         (ntp_etc_timezone is defined and ntp_etc_timezone.changed))
+  when: (ntp__timezone is defined and ntp__timezone) and
+        ((ntp__register_debconf_set_area is defined and ntp__register_debconf_set_area.changed) or
+         (ntp__register_debconf_set_zone is defined and ntp__register_debconf_set_zone.changed) or
+         (ntp__register_etc_timezone is defined and ntp__register_etc_timezone.changed))
 
   # Installs either ntpdate, NTPd or OpenNTPd on all hosts except inside containers
 - include: install.yml
-  when: (ntp_daemon|d() and ansible_local|d() and
-         (ansible_local.root|d() and (ansible_local.root.flags | intersect(ntp_root_flags.cap_sys_time)) or
+  when: (ntp__daemon|d() and ansible_local|d() and
+         (ansible_local.root|d() and (ansible_local.root.flags | intersect(ntp__root_flags.cap_sys_time)) or
          (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
          (ansible_local.cap12s.enabled | bool and 'cap_sys_time' in ansible_local.cap12s.list)))))
 
