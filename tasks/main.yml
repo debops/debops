@@ -3,12 +3,9 @@
 
 # Package install of essential software [[[
 - name: Make sure essential software is installed
-  apt:
+  package:
     name: '{{ item }}'
     state: 'present'
-    update_cache: True
-    cache_valid_time: '3600'
-    install_recommends: False
   tags: [ 'role::bootstrap:packages' ]
   with_flattened:
     - '{{ bootstrap__mandatory_packages }}'
