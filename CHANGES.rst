@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Unreleased*
+
+- Completed namespace change to ``ntp__`` from v0.2.0. [ypid]
+
 v0.2.0
 ------
 
@@ -31,7 +38,17 @@ v0.2.0
   enabled, role will automatically disable the ``system-timesyncd`` service so
   that it won't interfere with normal operations. [drybjed]
 
-- Rename all variables to put them in separate ``ntp__`` namespace. [drybjed]
+- Changed variable namespace from ``ntp_`` to ``ntp__``.
+  ``ntp_[^_]`` variables are hereby deprecated.
+
+  You might need to update your inventory. This oneliner might come in handy to
+  do this:
+
+  .. code:: shell
+
+     git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(ntp)_([^_])/\1__\2/g;'
+
+  [drybjed]
 
 - Update documentation. [drybjed]
 
