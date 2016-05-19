@@ -145,8 +145,8 @@ completely separate Ansible accounts with administrative access. If you
 configure the ``ansible_ssh_user`` variable before bootstrapping the host, the
 specified username will be used to create an administrator account.
 
-bootstrap_domain
-~~~~~~~~~~~~~~~~
+bootstrap__domain
+~~~~~~~~~~~~~~~~~
 
 If hosts that you want to manage don't have a DNS domain set, or it's incorrect
 (for example your VPS provider's domain instead of your own), the
@@ -156,7 +156,7 @@ domain. By setting this variable to, for example:
 .. code-block:: yaml
 
    ---
-   bootstrap_domain: 'example.com'
+   bootstrap__domain: 'example.com'
 
 By running the ``debops bootstrap`` command (see further down), your domain
 will be configured in the remote hosts' ``/etc/hosts`` file. Additionally, the
@@ -196,25 +196,25 @@ to allow connections to the ``ssh`` service from specified networks.
 
 The ``debops.sshd`` role has `many more variables <http://docs.debops.org/en/latest/ansible/roles/ansible-sshd/docs/defaults.html>`_, you can checkout to see the default configuration used by DebOps and what can be changed as needed.
 
-ntp_timezone
-~~~~~~~~~~~~
+ntp__timezone
+~~~~~~~~~~~~~
 
 By default, DebOps does not try to change the remote host timezone and tries to
 use the detected one in roles that need that information for the configuration.
 If you need to change the timezone, you can do it by setting the
-``ntp_timezone`` variable like this:
+``ntp__timezone`` variable like this:
 
 .. code-block:: yaml
 
    ---
-   ntp_timezone: 'America/New_York'
+   ntp__timezone: 'America/New_York'
 
 For UTC timezone, use this format:
 
 .. code-block:: yaml
 
    ---
-   ntp_timezone: 'Etc/UTC'
+   ntp__timezone: 'Etc/UTC'
 
 postfix_relayhost
 ~~~~~~~~~~~~~~~~~
