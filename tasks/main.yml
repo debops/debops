@@ -7,7 +7,7 @@
     install_recommends: False
   with_flattened:
     - '{{ libvirt__base_packages }}'
-    - [ '{{ libvirt_packages_map[ansible_distribution_release]|d(libvirt_packages) }}' ]
+    - [ '{{ libvirt__packages_map[ansible_distribution_release]|d(libvirt__packages) }}' ]
 
 - name: Create configuration directory
   file:
@@ -23,7 +23,7 @@
 
 - name: Get list of groups admin account belongs to
   command: groups
-  register: libvirt_register_groups
+  register: libvirt__register_groups
   changed_when: False
   always_run: True
   become: False
@@ -31,11 +31,11 @@
 
 - name: Manage libvirt networks
   include: manage_networks.yml
-  when: libvirt_group_map[ansible_distribution] in libvirt_register_groups.stdout.split(" ")
+  when: libvirt__group_map[ansible_distribution] in libvirt__register_groups.stdout.split(" ")
   tags: [ 'role::libvirt:networks' ]
 
 - name: Manage libvirt pools
   include: manage_pools.yml
-  when: libvirt_group_map[ansible_distribution] in libvirt_register_groups.stdout.split(" ")
+  when: libvirt__group_map[ansible_distribution] in libvirt__register_groups.stdout.split(" ")
   tags: [ 'role::libvirt:pools' ]
 

@@ -28,7 +28,7 @@ to be able to do this. The ``debops.libvirtd`` role configures this automaticall
 Network and storage pool configuration without specified ``item.uri`` parameter
 applies to default connection. If your main :program:`libvirtd` daemon is on
 a different host, you can change the default connection using the
-``libvirt_default_uri`` variable.
+``libvirt__default_uri`` variable.
 
 Use via remote connections
 --------------------------
@@ -36,7 +36,7 @@ Use via remote connections
 You can use ``debops.libvirt`` from your Ansible Controller host to centrally
 configure :program:`libvirtd` instances on remote hosts.
 
-Use the ``libvirt_connections`` dict variable to specify libvirt URI connections
+Use the ``libvirt__connections`` dict variable to specify libvirt URI connections
 with aliases, they will be configured in ``~/.config/libvirt/libvirt.conf`` on
 the account you use to run Ansible. After that, in each network or storage pool
 definition add ``item.uri`` parameter with the name of the connection to use for

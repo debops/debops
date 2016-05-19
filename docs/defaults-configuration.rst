@@ -9,10 +9,10 @@ them.
    :local:
    :depth: 1
 
-.. _libvirt_connections:
+.. _libvirt__connections:
 
-libvirt_connections
--------------------
+libvirt__connections
+--------------------
 
 This is a dictionary variable which defines ``libvirt`` connections and their
 aliases. Each key is an alias of a given connection. Currently only local and
@@ -23,16 +23,16 @@ Examples
 
 Define local and remote ``libvirt`` connections::
 
-    libvirt_connections:
+    libvirt__connections:
       'localhost':  'qemu:///system'
       'vm-host':    'qemu+ssh://vm.example.org/system'
       'local-lxc':  'lxc:///'
       'lxc-host':   'lxc+ssh://lxc.example.org/'
 
-.. _libvirt_networks:
+.. _libvirt__networks:
 
-libvirt_networks
-----------------
+libvirt__networks
+-----------------
 
 This is a list of network definitions specified as YAML dicts. Each dict
 defines separate network interface which then can be configured and enabled in
@@ -142,7 +142,7 @@ Examples
 
 Create host bridge network, only if a given bridge exists::
 
-    libvirt_networks:
+    libvirt__networks:
       - name: 'external'
         type: 'bridge'
         bridge: 'br0'
@@ -150,7 +150,7 @@ Create host bridge network, only if a given bridge exists::
 
 Create a NAT network on remote ``libvirt`` host::
 
-    libvirt_networks:
+    libvirt__networks:
       - name: 'nat'
         type: 'dnsmasq'
         bridge: 'virbr0'
@@ -159,10 +159,10 @@ Create a NAT network on remote ``libvirt`` host::
         dhcp: True
         uri: 'vm-host'
 
-.. _libvirt_pools:
+.. _libvirt__pools:
 
-libvirt_pools
--------------
+libvirt__pools
+--------------
 
 This is a list of storage pool definitions specified as YAML dicts. Each dict
 defines separate storage pool which then can be configured and enabled in
@@ -258,14 +258,14 @@ Examples
 
 Create a directory storage pool on local machine (default ``libvirt`` storage pool::
 
-    libvirt_pools:
+    libvirt__pools:
       - name: 'default'
         type: 'dir'
         path: '/var/lib/libvirt/images'
 
 Create a NFS-based storage pool on remote ``libvirt`` host::
 
-    libvirt_pools:
+    libvirt__pools:
       - name: 'nfs-pool'
         type: 'nfs'
         host: 'nfs.exmmple.org'
@@ -275,7 +275,7 @@ Create a NFS-based storage pool on remote ``libvirt`` host::
 
 Create a LVM-based storage pool from existing Volume Group::
 
-    libvirt_pools:
+    libvirt__pools:
       - name: 'vg_kvm'
         type: 'logical'
 

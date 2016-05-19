@@ -1,7 +1,7 @@
 Changelog
 =========
 
-v0.1.1
+v0.2.0
 ------
 
 *Unreleased*
@@ -16,6 +16,18 @@ v0.1.1
 
 - Removed ``virt_net`` and ``virt_pool`` from the role and require Ansible 2.0
   which includes them. [ypid]
+
+- Changed variable namespace from ``libvirt_`` to ``libvirt__``.
+  ``libvirt_[^_]`` variables are hereby deprecated.
+
+  You might need to update your inventory. This oneliner might come in handy to
+  do this:
+
+  .. code:: shell
+
+     git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(libvirt)_([^_])/\1__\2/g;'
+
+  [ypid]
 
 v0.1.1
 ------
