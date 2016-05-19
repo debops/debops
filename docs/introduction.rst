@@ -14,7 +14,7 @@ To configure a host to provide the :program:`libvirtd` service you can use the
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v1.9.0``. To install it, run::
+This role requires at least Ansible ``v2.0.0``. To install it, run::
 
     ansible-galaxy install debops.libvirt
 
