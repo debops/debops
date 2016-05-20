@@ -29,6 +29,9 @@ v0.2.1
   variables. These variables can be used by Ansible playbooks to configure
   settings related to ``preseed`` in other services. [ypid]
 
+- Switched the default Debian mirror to the new official redirector at
+  http://httpredir.debian.org/. [ypid]
+
 v0.2.0
 ------
 
