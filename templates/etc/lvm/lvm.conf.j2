@@ -60,18 +60,18 @@
 }
 {% endmacro %}
 {% set seen_sections = [] %}
-{% for section, keys in lvm__tpl_base.iteritems() %}
+{% for section in lvm__tpl_base.keys() | sort %}
 {% if section in lvm__tpl_config.keys() %}
-{{ print_section (section, keys, lvm__tpl_config[section]) }}
+{{ print_section (section, lvm__tpl_base[section], lvm__tpl_config[section]) }}
 {% set _ = seen_sections.append(section) %}
 {% else %}
-{{ print_section (section, keys, {}) }}
+{{ print_section (section, lvm__tpl_base[section], {}) }}
 {% set _ = seen_sections.append(section) %}
 {% endif %}
 {% endfor %}
-{% for section, keys in lvm__tpl_config.iteritems() %}
+{% for section in lvm__tpl_config.keys() | sort %}
 {% if section not in seen_sections %}
-{{ print_section (section, keys, {}) }}
+{{ print_section (section, lvm__tpl_config[section], {}) }}
 {% endif %}
 {% endfor %}
 
