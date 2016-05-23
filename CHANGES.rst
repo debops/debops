@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v0.1.5
+------
+
+*Released: 2016-05-23*
+
+- Sort configuration file sections to generate stable order of sections each
+  time. This should fix an issue where consequent runs of ``debops.lvm`` role
+  in the same Ansible playbook run re-generated the configuration file with
+  different section order. [drybjed]
+
 v0.1.4
 ------
 
