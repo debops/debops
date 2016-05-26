@@ -11,8 +11,6 @@ This repository contains all the playbooks used by `DebOps <http://debops.org>`_
 Here are a few services that are available
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-|Gratipay|_
-
 **Fully loaded ready to go applications**
 
 +---------+-----------+-----------+-----------+-----------+----------+----------+
@@ -99,8 +97,6 @@ Status page
 If you want to keep tabs on each role's status then check out our
 `status page <http://debops.org/status.html>`_.
 
-.. |Gratipay| image:: https://img.shields.io/gratipay/drybjed.svg?style=flat
-.. _Gratipay: https://www.gratipay.com/drybjed/
 .. |debops_logo| image:: http://debops.org/images/debops-small.png
 
 .. _Gitlab: https://github.com/debops/ansible-gitlab
