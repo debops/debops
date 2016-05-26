@@ -7,11 +7,7 @@
     install_recommends: False
   with_flattened:
     - '{{ console_base_packages }}'
-    - '{{ console_extra_packages }}'
     - '{{ console_conditional_packages }}'
-    - '{{ console_packages }}'
-    - '{{ console_group_packages }}'
-    - '{{ console_host_packages }}'
   when: item is defined and item
 
 - name: Check if /etc/inittab exists
@@ -93,11 +89,16 @@
         console_register_default_locale.changed
   tags: [ 'role::console:locale' ]
 
+- name: Get list of available text editors
+  command: update-alternatives --list editor
+  register: console_register_installed_editors
+  changed_when: False
+  tags: [ 'role::console:editor' ]
+
 - name: Configure system-wide editor
   alternatives:
     name: 'editor'
-    path: '{{ console_editor }}'
-  when: console_editor|d()
+    path: '{{ (console_preferred_editors | intersect(console_register_installed_editors.stdout_lines)) | first }}'
   tags: [ 'role::console:editor' ]
 
   # Enable hidepid= only on specific hosts
