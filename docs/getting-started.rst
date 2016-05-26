@@ -1,0 +1,86 @@
+Getting started
+===============
+
+.. contents::
+   :local:
+
+Initial configuration
+---------------------
+
+The role comes with a small set of APT packages, useful on pretty much any
+Debian or Ubuntu host. Some of the packages are installed conditionally,
+depending on different Ansible facts - for example, firmware packages are
+installed on rack servers, which may contain network cards that require custom
+firmware loaded by the kernel for proper operation.
+
+Role is not meant to be used as a dependency of other roles, but you can use it
+like that if you want to take advantage of custom lookup template that uses
+conditional package installation depending on installed operating system, its
+release or available archive areas.
+
+The difference between ``debops.apt`` and ``debops.apt_install`` Ansible roles
+is that the former role is used to configure the APT package manager itself,
+and latter just installs packages using APT package manager, dependng on its
+configuration.
+
+Similar Ansible roles
+---------------------
+
+There are more comprehensive Ansible roles that install packages:
+
+- `ypid.packages <https://github.com/ypid/ansible-packages>`_ - provides
+  an advanced framework meant to allow installation of packages according to
+  different host classes, with a large selection of packages. Role is focused
+  on workstations, live systems and server environments.
+
+Example inventory
+-----------------
+
+The ``debops.apt_install`` role is included by default in the ``common.yml``
+DebOps playbook. You don't need to configure anything in the inventory to
+enable it.
+
+The role provides a set of default variables to specify what packages should be
+installed on hosts, depending on the inventory level:
+
+``apt_install__packages``
+  This variable should be used in
+  ``ansible/inventory/group_vars/all/apt_install.yml`` file and is meant to
+  specify packages present on all hosts in the inventory.
+
+``apt_install__group_packages``
+  This variable should be used in
+  ``ansible/inventory/group_vars/<group-name>/apt_install.yml`` files and is
+  meant to contain packages that should be installed on hosts in different
+  Ansible groups. Only one level of this variable is supported, so you should
+  be careful about your inventory design. Or, you can use it as a maser list
+  that contains different per-group variables.
+
+``apt_install__host_packages``
+  This variable should be used in
+  ``ansible/inventory/host_vars/<hostname>/apt_install.yml`` files and is meant
+  to contain list of packages that should be installed on specific hosts.
+
+Example playbook
+----------------
+
+``debops.apt_install`` is designed to be used from a playbook or a role as role
+dependency. Here's an example configuration:
+
+.. code-block:: yaml
+
+   ---
+   - name: Install APT packages
+     hosts: [ 'debops_all_hosts', 'debops_service_apt_install' ]
+     become: True
+
+     roles:
+
+       - role: debops.apt_preferences
+         tags: [ 'role::apt_preferences' ]
+         apt_preferences__dependent_list:
+           - '{{ apt_install__apt_preferences__dependent_list }}'
+
+       - role: debops.apt_install
+         tags: [ 'role::apt_install' ]
+
