@@ -34,6 +34,9 @@ v0.2.0
 
 - Rename forgotten ``apt_keys`` variable. [drybjed]
 
+- Delete previously created ``apt_preferences`` entries. They have been moved
+  to the ``debops.apt_install`` role instead. [drybjed]
+
 v0.1.0
 ------
 
