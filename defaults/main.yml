@@ -28,11 +28,6 @@ console_motd: |
 # List of required console packages
 console_base_packages: [ 'locales' ]
 
-# List of useful console packages to install
-console_extra_packages: [ 'ncurses-term', 'vim', 'mc', 'ranger', 'tmux', 'zsh', 'htop',
-                          'less', 'file', 'psmisc', 'iftop', 'nload', 'lsof', 'nmon',
-                          'mtr-tiny', 'tree' ]
-
 # List of packages to install depending on a condition
 console_conditional_packages:
 
@@ -43,22 +38,10 @@ console_conditional_packages:
               console_host_mounts_nfs|d())
           else [] }}' ]
 
-  # Install PAM systemd support, which is not included in standard Debian
-  # install, but it's recommended to separate user sessions in their own cgroups
-  - [ '{{ "libpam-systemd"
-          if (ansible_local|d() and ansible_local.init|d() and
-              ansible_local.init == "systemd")
-          else [] }}' ]
-
   # Install 'sysnews' when news support is enabled
   - [ '{{ "sysnews"
           if (console_sysnews|d() and console_sysnews|bool)
           else [] }}' ]
-
-# Custom lists of packages to install
-console_packages: []
-console_group_packages: []
-console_host_packages: []
 
 # Set default system-wide editor
 console_editor: '/usr/bin/vim.basic'

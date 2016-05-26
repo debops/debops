@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2016-05-26*
+
+- Remove list of additional APT packages to install. This functionality has
+  been moved to the ``debops.apt_install`` Ansible role. [drybjed]
+
 v0.1.1
 ------
 
