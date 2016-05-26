@@ -4,7 +4,7 @@ Changelog
 v0.2.0
 ------
 
-*Unreleased*
+*Released: 2016-05-26*
 
 - Remove support for :program:`apt-cacher-ng`. The new role ``debops.apt_cacher_ng``
   handles this now. The overloaded :command:`apt` variable as been split into
@@ -37,10 +37,13 @@ v0.2.0
 - Delete previously created ``apt_preferences`` entries. They have been moved
   to the ``debops.apt_install`` role instead. [drybjed]
 
+- Clean up package lists and remove unused tasks. The functionality has been
+  moved to the ``debops.apt_install`` role. [drybjed]
+
 v0.1.0
 ------
 
-*Unreleased*
+*Released: 2016-05-26*
 
 - Add Changelog. [drybjed]
 

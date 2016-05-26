@@ -6,7 +6,6 @@ other derivative distributions. Specifically, it will manage:
 
 * The APT sources
 * The use of a APT proxy server in the network
-* Installation of custom packages specified in Ansible inventory
 
 
 Installation

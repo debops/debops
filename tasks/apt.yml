@@ -1,5 +1,13 @@
 ---
 
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - '{{ apt__base_packages }}'
+
 - name: Configure APT
   template:
     src: '{{ item }}.j2'
