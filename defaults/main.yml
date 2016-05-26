@@ -46,11 +46,7 @@ apt__update_cache_early: '{{ ansible_local.core.cache_valid_time
 # .. envvar:: apt__base_packages
 #
 # Default base packages to install.
-# This list will be included in Debian Preseed configuration.
-apt__base_packages: [ 'ed', 'python', 'python-apt', 'lsb-release', 'make', 'sudo', 'gnupg-curl',
-                     'git', 'wget', 'curl', 'rsync', 'netcat-openbsd', 'bridge-utils', 'vlan',
-                     'openssh-server', 'bsdutils', 'python-pycurl', 'python-httplib2',
-                     'apt-transport-https', 'acl', 'python-pip' ]
+apt__base_packages: [ 'python-apt', 'apt-transport-https' ]
 
 
 # .. envvar:: apt__update_notification_packages
@@ -60,42 +56,6 @@ apt__base_packages: [ 'ed', 'python', 'python-apt', 'lsb-release', 'make', 'sudo
 apt__update_notification_packages:
   - 'apt-listchanges'
   - 'apticron'
-
-
-# .. envvar:: apt__packages
-#
-# List of additional "global" packages to install.
-apt__packages: []
-
-
-# .. envvar:: apt__group_packages
-#
-# List of packages for a group of hosts (only one group supported).
-apt__group_packages: []
-
-
-# .. envvar:: apt__host_packages
-#
-# List of packages to install on a given host.
-apt__host_packages: []
-
-
-# .. envvar:: apt__conditional_whitelist
-#
-# List of conditions that are checked to enable additional packages
-# automatically.
-# For more conditional package selection focused on workstations you can
-# checkout `ypid.packages <https://github.com/ypid/ansible-packages/>`_.
-apt__conditional_whitelist:
-
-  # Install firmware packages on selected systems (rack servers, etc.).
-  - 'firmware'
-
-  # Install `irqbalance` package on multi-core systems.
-  - 'irqbalance'
-
-  # Install `uptimed` on host systems, but not on virtualized guests.
-  - 'uptimed'
 
 # .. )))
 
@@ -180,7 +140,7 @@ apt__default_mirrors_lookup: '{{ ansible_distribution }}'
 #   APT repository keys
 # -----------------------
 
-# .. envvar:: apt_keys
+# .. envvar:: apt__keys
 #
 # Global list of additional repository keys enabled automatically by Ansible.
 # See documentation of the apt_key_ module for possible values.
@@ -189,13 +149,13 @@ apt__default_mirrors_lookup: '{{ ansible_distribution }}'
 #
 # Example::
 #
-#    apt_keys:
+#    apt__keys:
 #
 #        ## Example key definition from default 'debops.reprepro' configuration
 #      - url: '{{ "https://apt." + ansible_domain + "/" + ansible_distribution | lower + "/apt." + ansible_domain + ".asc" }}'
 #        state: 'present'
 #
-apt_keys: []
+apt__keys: []
 
 
 # .. envvar:: apt__group_keys
@@ -478,17 +438,26 @@ apt__update_notifications_diff: True
 # Configuration for the ``debops.apt_preferences`` role.
 apt__apt_preferences__dependent_list:
 
+    ## Remove configuration from ``debops.apt`` context which is now managed by
+    ## ``debops.apt_install``.
   - package: 'git git-*'
+    delete: True
     backports: [ 'wheezy' ]
     reason:  'Better support for git submodules - http://stackoverflow.com/a/7593496'
     by_role: 'debops.apt'
 
+    ## Remove configuration from ``debops.apt`` context which is now managed by
+    ## ``debops.apt_install``.
   - package: 'irqbalance'
+    delete: True
     backports: [ 'wheezy' ]
     reason:  'Issues in wheezy package - http://debian.distrosfaqs.org/debian-user/wheezy-irqbalance/'
     by_role: 'debops.apt'
 
+    ## Remove configuration from ``debops.apt`` context which is now managed by
+    ## ``debops.apt_install``.
   - package: 'irqbalance'
+    delete: True
     backports: [ 'jessie' ]
     reason:  'Bug fixes and memory leak fixes.'
     by_role: 'debops.apt'
