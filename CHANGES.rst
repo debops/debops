@@ -9,6 +9,11 @@ v0.1.2
 - Remove list of additional APT packages to install. This functionality has
   been moved to the ``debops.apt_install`` Ansible role. [drybjed]
 
+- Change how the preferred text editor is selected. Instead of specifying
+  a preferred editor, role contains a list of preferred editors and checks it
+  against a list of installed editors. The first found editor is selected as
+  the preferred one. [drybjed]
+
 v0.1.1
 ------
 

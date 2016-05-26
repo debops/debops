@@ -43,8 +43,14 @@ console_conditional_packages:
           if (console_sysnews|d() and console_sysnews|bool)
           else [] }}' ]
 
-# Set default system-wide editor
-console_editor: '/usr/bin/vim.basic'
+# List of preferred text editors. The first one found will be configured as the
+# default for the ``editor`` command.
+console_preferred_editors:
+  - '/usr/bin/vim.basic'
+  - '/usr/bin/emacs24'
+  - '/usr/bin/vim.tiny'
+  - '/bin/nano'
+  - '/bin/ed'
 
 # Enable or disable FSCKFIX option in /etc/default/rcS
 # This option controls the behaviour of fsck during boot time, if it's enabled,
