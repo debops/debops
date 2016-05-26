@@ -61,6 +61,9 @@ v0.2.9
 - Update the ``debops.ntp`` playbook and ``common.yml`` playbook to use the new
   variable names. [drybjed]
 
+- Add the ``debops.apt_install`` role with its own playbook as well as in the
+  ``common.yml`` playbook. [drybjed]
+
 v0.2.8
 ------
 
