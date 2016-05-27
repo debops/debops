@@ -7,36 +7,51 @@ Getting started
 Example inventory
 -----------------
 
-A host needs to be added to Ansible inventory to allow it to be bootstrapped,
-but you don't need to specify a group for it:
+A host needs to be added to Ansible inventory to allow it to be bootstrapped.
+The default DebOps ``bootstrap.yml`` playbook expects the hosts to be in the
+``[debops_all_hosts]`` Ansible group:
 
 .. code-block:: none
 
-    hostname
+   [debops_all_hosts]
+   hostname ansible_ssh_host=hostname.example.com
+
+You might want to set the default DNS domain used by your hosts. To do that,
+set the variable below in ``ansible/inventory/group_vars/all/bootstrsp.yml`` or
+in a similar place in inventory:
+
+.. code-block:: yaml
+
+   bootstrap__domain: 'example.com'
+
+In this case, ``debops.bootstrap`` will configure the hosts so that their Fully
+Qualified Domain Name will be, for example, ``hostname.example.com`` - each
+host will be placed on a subdomain inside the ``example.com`` domain.
 
 Example playbook
 ----------------
 
-Here's an example playbook which uses the ``debops.bootstrap`` role::
+Here's an example playbook which uses the ``debops.bootstrap`` role:
 
-    ---
-    - name: Bootstrap hosts for Ansible management
-      hosts: [ 'all:!localhost' ]
+.. code-block:: yaml
 
-      roles:
+   ---
+   - name: Bootstrap hosts for Ansible management
+     hosts: [ 'debops_all_hosts' ]
 
-        - role: debops.bootstrap
+     roles:
+       - role: debops.bootstrap
 
 How to bootstrap a host with DebOps
 -----------------------------------
 
 Within main DebOps playbooks, ``bootstrap`` is a separate playbook which is not
 run by default by main playbook. To use it with a new host which has only
-a ``root`` account and requires a password, you can run the playbook like this::
+a ``root`` account and requires a password, you can run the playbook like this:
 
-.. code-block:: shell
+.. code-block:: console
 
-    debops bootstrap --limit host --user root --ask-pass
+   user@host:~$ debops bootstrap --limit host --user root --ask-pass
 
 Bootstrap playbook does not have specific host restrictions, so it will be
 executed on all hosts (apart from ``localhost``) if not limited, which you
