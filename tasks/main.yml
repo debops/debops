@@ -4,13 +4,13 @@
 - name: Combine snapper inventory variables
   set_fact:
     snapshot_snapper__templates_combined: '{{
-      (         snapshot_snapper__templates            | d({}) )
-      | combine(snapshot_snapper__host_group_templates | d({}), recursive=True )
-      | combine(snapshot_snapper__host_templates       | d({}), recursive=True ) }}'
+                snapshot_snapper__templates
+      | combine(snapshot_snapper__host_group_templates, recursive=True )
+      | combine(snapshot_snapper__host_templates      , recursive=True ) }}'
     snapshot_snapper__volumes_combined: '{{
-      (snapshot_snapper__volumes            | d([]) | list) +
-      (snapshot_snapper__host_group_volumes | d([]) | list) +
-      (snapshot_snapper__host_volumes       | d([]) | list) }}'
+      (snapshot_snapper__volumes            | list) +
+      (snapshot_snapper__host_group_volumes | list) +
+      (snapshot_snapper__host_volumes       | list) }}'
   tags:
     - 'role::snapshot_snapper:reinit'
 # .. )))
