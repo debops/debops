@@ -1,24 +1,21 @@
 # Ansible Controllers
-{% set tcpwrappers_tpl_local_ansible_controllers = [] %}
+{% set tcpwrappers__tpl_local_ansible_controllers = [] %}
 {% if ansible_local|d() and ansible_local.core|d() and
       ansible_local.core.ansible_controllers|d() %}
 {%   for element in ansible_local.core.ansible_controllers %}
-{%     set _ = tcpwrappers_tpl_local_ansible_controllers.append(element | ipwrap) %}
+{%     set _ = tcpwrappers__tpl_local_ansible_controllers.append(element | ipwrap) %}
 {%   endfor %}
 {% endif %}
 {% if (ansible_local|d() and ansible_local.tcpwrappers|d() and
        ansible_local.tcpwrappers.ansible_controllers|d()) %}
 {%   for element in ansible_local.tcpwrappers.ansible_controllers %}
-{%     set _ = tcpwrappers_tpl_local_ansible_controllers.append(element | ipwrap) %}
+{%     set _ = tcpwrappers__tpl_local_ansible_controllers.append(element | ipwrap) %}
 {%   endfor %}
 {% endif %}
-{% for element in tcpwrappers_ansible_controllers or [] %}
-{%       set _ = tcpwrappers_tpl_local_ansible_controllers.append(element | ipwrap) %}
+{% for element in tcpwrappers__ansible_controllers or [] %}
+{%       set _ = tcpwrappers__tpl_local_ansible_controllers.append(element | ipwrap) %}
 {% endfor %}
-{% if ansible_controller is defined and ansible_controller %}
-{%     set _ = tcpwrappers_tpl_local_ansible_controllers.append(ansible_controller | ipwrap) %}
-{% endif %}
-{% for element in (tcpwrappers_tpl_local_ansible_controllers | unique | sort) %}
-sshd: {{ element }}
+{% for element in (tcpwrappers__tpl_local_ansible_controllers | unique | sort) %}
+sshd : {{ element }}
 {% endfor %}
 

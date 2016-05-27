@@ -1,25 +1,80 @@
 ---
+# Default variables
+# =================
 
-# Should Ansible manage tcpwrappers configuration?
-tcpwrappers_enabled: True
+# .. contents:: Sections
+#    :local:
+#
+# ----------------------
+#   Main configuration
+# ----------------------
 
-# Optional list of CIDR hosts which will be allowed to connect to sshd service.
-# Entries are saved in the local facts on remote hosts.
+# .. envvar:: tcpwrappers__enabled
+#
+# Enable or disable configuration of ``tcpwrappers``.
+tcpwrappers__enabled: True
+
+
+# .. envvar:: tcpwrappers__ansible_controllers
+#
+# Optional list of CIDR hosts which will be allowed to connect to ``sshd``
+# service. Entries are saved in the local facts on remote hosts.
+#
 # Remember to specify IP address from the remote host point of view.
-# Format: "IP address/netmask", for example: '192.168.1.1/32'
-# Note: If you are using debop.ferm, too (or the DebOps playbook),
-#       mind setting `ferm_ansible_controllers`. An easier way would
-#       be to use the `debops.sshd` role to configure ssh service.
-tcpwrappers_ansible_controllers: []
+# Format: "IP address/netmask", for example: ``192.168.1.1/32``.
+#
+# Note: If you are using ``debop.ferm`` role too (or the DebOps playbook),
+#       mind setting ``ferm__ansible_controllers``. An easier way would
+#       be to use the ``debops.sshd`` role to configure ``ssh`` service.
+tcpwrappers__ansible_controllers: []
 
-# Deny access from all hosts/networks by default?
-tcpwrappers_deny_all: True
 
-# Lists of /etc/hosts.allow entries. Example entry below
-tcpwrappers_allow: []
-tcpwrappers_group_allow: []
-tcpwrappers_host_allow: []
-tcpwrappers_dependent_allow: []
+# .. envvar:: tcpwrappers__deny_all
+#
+# By default ``debops.tcpwrappers`` will deny all connections using
+# ``/etc/hosts.deny`` file and only allow whitelisted connections in
+# ``/etc/hosts.allow``. Set this variable to ``False`` to disable that.
+tcpwrappers__deny_all: True
+
+
+# .. envvar:: tcpwrappers__divert_hosts_allow
+#
+# Path of the diverted ``/etc/hosts.allow`` file. It will be merged with the
+# rest of the generated configuration files using ``assemble`` ansible module.
+# Warning: do not change this variable while the role is enabled.
+tcpwrappers__divert_hosts_allow: '/etc/hosts.allow.d/05_debian_hosts.allow'
+
+
+# ----------------------------
+#   TCP Wrappers allow lists
+# ----------------------------
+
+# .. envvar:: tcpwrappers__allow
+#
+# List of allow rules for all hosts in the Ansible inventory. See
+# :ref:`tcpwrappers__alow` for more details.
+tcpwrappers__allow: []
+
+
+# .. envvar:: tcpwrappers__group_allow
+#
+# List of allow rules for hosts in a specific host group. See
+# :ref:`tcpwrappers__allow` for more details.
+tcpwrappers__group_allow: []
+
+
+# .. envvar:: tcpwrappers__host_allow
+#
+# List of allow rules for specific hosts in the inventory. See
+# :ref:`tcpwrappers__allow` for more details.
+tcpwrappers__host_allow: []
+
+
+# .. envvar:: tcpwrappers__dependent_allow
+#
+# List of allow rules specified by other Ansible roles as a dependency. See
+# :ref:`tcpwrappers__allow` for more details.
+tcpwrappers__dependent_allow: []
 
   #- daemon: 'ALL'            # daemon to configure (sshd, mysqld, etc.)
   #  client: []               # list of host or network addresses.
@@ -38,14 +93,14 @@ tcpwrappers_dependent_allow: []
   #    # Text block
   #  filename: 'custom_entry'
 
-# Access from localhost
-tcpwrappers_local_allow:
+
+# .. envvar:: tcpwrappers__localhost_allow
+#
+# By default allow unrestricted access from ``localhost``.
+tcpwrappers__localhost_allow:
   - daemon: 'ALL'
     client: [ '127.0.0.0/8', '::1/128' ]
     comment: 'Access from localhost'
     filename: 'allow_localhost'
     weight: '06'
-
-# Name of diverted /etc/hosts.allow
-tcpwrappers_divert_hosts_allow: '/etc/hosts.allow.d/05_debian_hosts.allow'
 

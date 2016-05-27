@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v0.2.0
+------
+
+*Released: 2016-05-27*
+
+- Role has been cleaned up and documented. The default variables have been
+  renamed from ``tcpwrappers_`` to ``tcpwrappers__`` to indicate the separate
+  namespace (some of the old variables are still supported). Some of the old
+  configuration parameters like ``item.enabled`` or ``item.disabled`` have been
+  removed and ``item.state`` is used to control the configuration state.
+  [drybjed]
+
 v0.1.0
 ------
 

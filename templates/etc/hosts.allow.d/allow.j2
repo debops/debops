@@ -1,51 +1,74 @@
-{% set tcpwrappers_tpl_state = item.default_state | default('enabled') %}
-{% if item.disabled is defined %}
-{%   set tcpwrappers_tpl_state = 'enabled' %}
-{%   if item.disabled is string %}
-{%     if item.disabled | bool %}
-{%       set tcpwrappers_tpl_state = 'disabled' %}
-{%     endif %}
-{%   else %}
-{%     if item.disabled %}
-{%       set tcpwrappers_tpl_state = 'disabled' %}
-{%     endif %}
-{%   endif %}
-{% elif item.enabled is defined %}
-{%   set tcpwrappers_tpl_state = 'disabled' %}
-{%   if item.enabled is string %}
-{%     if item.enabled | bool %}
-{%       set tcpwrappers_tpl_state = 'enabled' %}
-{%     endif %}
-{%   else %}
-{%     if item.enabled %}
-{%       set tcpwrappers_tpl_state = 'enabled' %}
-{%     endif %}
-{%   endif %}
-{% else %}
-{%   set tcpwrappers_tpl_state = 'enabled' %}
-{% endif %}
-{% if tcpwrappers_tpl_state == 'enabled' %}
-{% if item.comment is defined and item.comment %}
+{% if item.comment|d() %}
 # {{ item.comment }}
 {% endif %}
-{% if item.custom is defined and item.custom %}
+{% if item.custom|d() %}
 {{ item.custom }}
 {% else %}
-{% set tcpwrappers_tpl_client = [] %}
-{% if item.client is defined and item.client %}
-{% for element in item.client %}
-{% set _ = tcpwrappers_tpl_client.append(element | ipwrap) %}
-{% endfor %}
-{% endif %}
-{% if tcpwrappers_tpl_client %}
-{{ item.daemon }}: {{ tcpwrappers_tpl_client | unique | join(', ') }}
-{% elif item.accept_any is defined and item.accept_any | bool %}
-{{ item.daemon }}: {{ item.default | default('ALL') }}
-{% elif item.default is defined and item.default %}
-{{ item.daemon }}: {{ item.default }}
-{% endif %}
-{% endif %}
-{% else %}
-# TCP wrappers configuration for {{ item.daemon }} is disabled by a variable
+{%   set tcpwrappers__tpl_daemon = [] %}
+{%   set tcpwrappers__tpl_client = [] %}
+{%   set tcpwrappers__tpl_option = [] %}
+{%   if item.daemon|d() %}
+{%     if item.daemon is string %}
+{%       set _ = tcpwrappers__tpl_daemon.append(item.daemon) %}
+{%     else %}
+{%       for element in item.daemon %}
+{%         set _ = tcpwrappers__tpl_daemon.append(element) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{%   if item.daemons|d() %}
+{%     if item.daemons is string %}
+{%       set _ = tcpwrappers__tpl_daemon.append(item.daemons) %}
+{%     else %}
+{%       for element in item.daemons %}
+{%         set _ = tcpwrappers__tpl_daemon.append(element) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{%   if item.client|d() %}
+{%     if item.client is string %}
+{%       set _ = tcpwrappers__tpl_client.append(item.client | ipwrap) %}
+{%     else %}
+{%       for element in item.client %}
+{%         set _ = tcpwrappers__tpl_client.append(element | ipwrap) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{%   if item.clients|d() %}
+{%     if item.clients is string %}
+{%       set _ = tcpwrappers__tpl_client.append(item.clients | ipwrap) %}
+{%     else %}
+{%       for element in item.clients %}
+{%         set _ = tcpwrappers__tpl_client.append(element | ipwrap) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{%   if item.option|d() %}
+{%     if item.option is string %}
+{%       set _ = tcpwrappers__tpl_option.append(item.option | replace(':','\:')) %}
+{%     else %}
+{%       for element in item.option %}
+{%         set _ = tcpwrappers__tpl_option.append(element | replace(':','\:')) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{%   if item.options|d() %}
+{%     if item.options is string %}
+{%       set _ = tcpwrappers__tpl_option.append(item.options | replace(':','\:')) %}
+{%     else %}
+{%       for element in item.options %}
+{%         set _ = tcpwrappers__tpl_option.append(element | replace(':','\:')) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{%   if tcpwrappers__tpl_client %}
+{{ tcpwrappers__tpl_daemon | sort | unique | join(', ') }} : {{ tcpwrappers__tpl_client | unique | join(', ') }}{% if tcpwrappers__tpl_option %} : {{ tcpwrappers__tpl_option | join(' : ') }}{% endif %}
+{%   elif item.accept_any is undefined or item.accept_any | bool %}
+{{ tcpwrappers__tpl_daemon | sort | unique | join(', ') }} : {{ item.default | d('ALL') }}{% if tcpwrappers__tpl_option %} : {{ tcpwrappers__tpl_option | join(' : ') }}{% endif %}
+{%   elif item.default|d() %}
+{{ tcpwrappers__tpl_daemon | sort | unique | join(', ') }} : {{ item.default }}{% if tcpwrappers__tpl_option %} : {{ tcpwrappers__tpl_option | join(' : ') }}{% endif %}
+{%   else %}
+# Access to '{{ tcpwrappers__tpl_daemon | sort | unique | join(', ') }}' from any host is not allowed
+{%   endif %}
 {% endif %}
 
