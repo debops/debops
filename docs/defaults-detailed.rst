@@ -9,7 +9,7 @@ them.
    :local:
    :depth: 1
 
-.. _preseed__configs:
+.. _preseed__section_detailed_configs:
 
 preseed__configs
 ----------------
@@ -19,7 +19,7 @@ clients.
 
 To make custom changes easier, preseed configuration file as well as the
 post-install script have default stored in the templates themselves, a subset
-of the available default variables is exposed in the ``defaults/main.yml``
+of the available default variables is exposed in the :file:`defaults/main.yml`
 file, however more esoteric variables were left out to keep the list of
 variables short.
 
@@ -32,7 +32,7 @@ Some more important keys:
 
 ``name``
   Name of the Preseed configuration, should be limited to alphanumeric
-  characters and a hypen (``-``) character. Will be used in the DNS do export
+  characters and a hyphen (``-``) character. Will be used in the DNS do export
   the configuration to the clients
 
 ``type``
@@ -43,8 +43,8 @@ Some more important keys:
   Specify the distribution release to configure. By default the current host
   release is used if none is specified
 
-Examples:
-~~~~~~~~~
+Examples
+~~~~~~~~
 
 Example Preseed configuration with custom mirror and list of additional
 packages to install::
