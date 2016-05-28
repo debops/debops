@@ -56,7 +56,7 @@ v0.1.5
 
 *Released: 2016-02-20*
 
-- Restart ``fail2ban`` when firewall rules are flushed, in case it's set up on
+- Restart :program:`fail2ban` when firewall rules are flushed, in case it's set up on
   the host. [bleuchtang]
 
 - Restart :program:`ferm` only when the firewall rules have been modified, to not rest
@@ -303,8 +303,8 @@ v0.1.0
   only use the list variable without Jinja templating. This fixes the "It is
   unnecessary to use '{{' in loops" error. [drybjed]
 
-- Add support for ``fail2ban``. If ``fail2ban-server`` is installed and is
-  currently active, :program:`ferm` will reload ``fail2ban`` rules after firewall
+- Add support for :program:`fail2ban`. If :program:`fail2ban-server` is installed and is
+  currently active, :program:`ferm` will reload :program:`fail2ban` rules after firewall
   configuration is finished. [drybjed]
 
 - Add a workaround Ansible emitting ``true`` and ``false`` as boolean values.
