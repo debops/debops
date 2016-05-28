@@ -52,7 +52,7 @@ installation:
 ``whitelist``
   Optional. This variable should reference a list of package names. The lookup
   template that filters the list of packages for installation will compare the
-  names of sepected packages against this list, and only packages are are
+  names of sepected packages against this list, and only packages which are
   included will be installed. This is used to provide an alternative, easier
   way to select packages for installation without the need to modify a huge,
   conditional list.
