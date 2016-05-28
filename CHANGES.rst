@@ -39,6 +39,10 @@ v0.2.1
 - Don’t configure ``GRUB_DISABLE_RECOVERY="true"`` in ``/etc/default/grub`` anymore.
   This option should be handled by ``debops.grub``. [ypid]
 
+- Don’t ask for additional installation media when when configuring APT. Can be
+  configured via :any:`preseed__debian_ask_for_additional_install_media`.
+  [ypid]
+
 v0.2.0
 ------
 

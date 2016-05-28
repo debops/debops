@@ -47,6 +47,13 @@ d-i apt-setup/contrib boolean {{ item.apt_sources_contib | default(preseed__debi
 d-i apt-setup/non-free boolean {{ item.apt_sources_non_free | default(preseed__debian_apt_sources_non_free | default('true')) }}
 d-i apt-setup/use_mirror boolean true
 
+{% if not preseed__debian_ask_for_additional_install_media | bool %}
+## https://serverfault.com/questions/602218/how-can-i-answer-the-scan-another-cd-prompt-during-debian-install-with-preseed/622818#622818
+d-i apt-setup/cdrom/set-first boolean false
+d-i apt-setup/cdrom/set-next boolean false
+d-i apt-setup/cdrom/set-failed boolean false
+{% endif %}
+
 {#
 # The default is:
 # d-i apt-setup/services-select multiselect security, updates
