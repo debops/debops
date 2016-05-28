@@ -30,9 +30,19 @@ Here's an example playbook which uses ``debops.preseed`` role::
 
       roles:
 
+        - role: debops.apt_preferences
+          tags: [ 'role::apt_preferences' ]
+          apt_preferences__dependent_list:
+            - '{{ nginx_apt_preferences_dependent_list }}'
+
+        - role: debops.ferm
+          tags: [ 'role::ferm' ]
+          ferm__dependent_rules:
+            - '{{ nginx_ferm_dependent_rules }}'
+
         - role: debops.nginx
+          tags: [ 'role::nginx' ]
           nginx_servers: '{{ preseed__nginx__servers }}'
-          tags: [ 'depend::nginx' ]
 
         - role: debops.preseed
           tags: [ 'role::preseed' ]
