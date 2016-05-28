@@ -9,7 +9,7 @@
 {%     if element is string %}
 {%       set _ = apt_install__tpl_package_list.append(element) %}
 {%     elif element is mapping %}
-{%       if element.state|d('present') == 'present' and element.name|d(omit) in element.whitelist|d(element.name|d())  %}
+{%       if element.state|d('present') == 'present' and element.name|d(omit) in element.whitelist|d([element.name|d('name_not_defined')])  %}
 {%         set apt_install__tpl_to_meet_condition_list = apt_install__condition_map.keys() %}
 {%         set apt_install__tpl_met_condition_list = [] %}
 {%         for condition_name_to_meet in apt_install__tpl_to_meet_condition_list %}
