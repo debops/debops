@@ -24,6 +24,8 @@ v0.2.0
 
 - Switch ``vim`` fold markers to new style. [drybjed]
 
+- Update documentation. [drybjed]
+
 v0.1.3
 ------
 
