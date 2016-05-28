@@ -8,26 +8,26 @@
   environment:
     LC_MESSAGES: 'C'
   shell: dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server' 'percona-server-server' | grep -v '^$'
-  register: mariadb_server_register_version
+  register: mariadb_server__register_version
   changed_when: False
   failed_when: False
 
 - name: Add MariaDB APT GPG key
   apt_key:
     state: 'present'
-    id: '{{ mariadb_server_upstream_key }}'
+    id: '{{ mariadb_server__upstream_key }}'
     keyserver: '{{ ansible_local.core.keyserver
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver|d())
                    else "hkp://pool.sks-keyservers.net" }}'
-  when: mariadb_server_flavor in [ 'mariadb_upstream' ]
+  when: mariadb_server__flavor in [ 'mariadb_upstream' ]
 
 - name: Add MariaDB APT repository
   apt_repository:
-    repo: '{{ mariadb_server_upstream_repository }}'
+    repo: '{{ mariadb_server__upstream_repository }}'
     state: 'present'
     update_cache: True
-  when: mariadb_server_flavor in [ 'mariadb_upstream' ]
+  when: mariadb_server__flavor in [ 'mariadb_upstream' ]
 
 - name: Add Percona APT GPG key
   apt_key:
@@ -37,14 +37,14 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver|d())
                    else "hkp://pool.sks-keyservers.net" }}'
-  when: mariadb_server_flavor in [ 'percona' ]
+  when: mariadb_server__flavor in [ 'percona' ]
 
 - name: Add Percona APT repository
   apt_repository:
     repo: 'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
     state: 'present'
     update_cache: True
-  when: mariadb_server_flavor in [ 'percona' ]
+  when: mariadb_server__flavor in [ 'percona' ]
 
 - name: Install database server packages
   apt:
@@ -52,19 +52,19 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ mariadb_server_base_packages }}'
-    - '{{ mariadb_server_packages_map[mariadb_server_flavor] }}'
-    - '{{ mariadb_server_packages }}'
-    - [ '{{ "automysqlbackup" if mariadb_server_backup|d() else [] }}' ]
-  register: mariadb_server_register_install_status
+    - '{{ mariadb_server__base_packages }}'
+    - '{{ mariadb_server__packages_map[mariadb_server__flavor] }}'
+    - '{{ mariadb_server__packages }}'
+    - '{{ "automysqlbackup" if mariadb_server__backup|bool else [] }}'
+  register: mariadb_server__register_install_status
 
 - name: Add database server user to specified groups
   user:
     name: 'mysql'
-    groups: '{{ mariadb_server_append_groups | join(",") | default(omit) }}'
+    groups: '{{ mariadb_server__append_groups | join(",") | default(omit) }}'
     append: True
     createhome: False
-  when: mariadb_server_pki is defined and mariadb_server_pki
+  when: mariadb_server__pki|bool
   notify: [ 'Restart mysql' ]
 
 - name: Configure database client on first install
@@ -74,22 +74,22 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: (mariadb_server_register_version|d() and not mariadb_server_register_version.stdout)
+  when: (mariadb_server__register_version|d() and not mariadb_server__register_version.stdout)
 
 - name: Configure database server
   include: 'configure_server.yml'
-  tags: [ 'mariadb_server/configure' ]
+  tags: [ 'role::mariadb_server:configure' ]
 
 - name: Restart database server on first install
   service:
     name: 'mysql'
     state: 'restarted'
-  when: ((mariadb_server_register_version|d() and not mariadb_server_register_version.stdout) and
-         (mariadb_server_register_install_status|d() and mariadb_server_register_install_status.changed))
+  when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status.changed|bool))
 
 - name: Secure database server
   include: 'secure_installation.yml'
-  tags: [ 'mariadb_server/secure' ]
+  tags: [ 'role::mariadb_server:secure' ]
 
 - name: Make sure that local fact directory exists
   file:
@@ -106,10 +106,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: mariadb_server_register_local_facts
+  register: mariadb_server__register_local_facts
 
 - name: Re-read local facts if they have been changed
   action: setup
-  when: mariadb_server_register_local_facts|d() and
-        mariadb_server_register_local_facts.changed
+  when: mariadb_server__register_local_facts.changed|bool
 

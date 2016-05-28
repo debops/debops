@@ -14,7 +14,7 @@
   mysql_user:
     name: 'root'
     host: 'localhost'
-    password: '{{ mariadb_server_root_password }}'
+    password: '{{ mariadb_server__root_password }}'
 
 - name: Create /root/.my.cnf file with root credentials
   template:
@@ -35,6 +35,6 @@
   mysql_db:
     db: 'test'
     state: 'absent'
-  when: ((mariadb_server_register_version|d() and not mariadb_server_register_version.stdout) and
-         (mariadb_server_register_install_status|d() and mariadb_server_register_install_status.changed))
+  when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status.changed))
 

@@ -1,6 +1,31 @@
 Changelog
 =========
 
+v0.2.0
+------
+
+*Released: 2016-05-28*
+
+- Move configuration of dependent roles and variables from ``vars/main.yml`` to
+  ``defaults/main.yml``. The playbooks that use ``debops.mariadb_server`` role
+  need to be updated to include dependent roles. [drybjed]
+
+- Add ``vim`` folding in ``defaults/main.yml`` and rename task tags. [drybjed]
+
+- Rename all ``mariadb_server_`` variables to ``mariadb_server__`` to put the
+  role variables in their own namespace. The ``mariadb_server_options_default``
+  variable has been renamed to ``mariadb_server__default_options``. [drybjed]
+
+- Convert ``mysqld`` and ``client`` Ansible templates to use YAML structures
+  for server configuration, split into several default variables. [drybjed]
+
+- Enable the SSL support provided by ``debops.pki`` only if a corresponding PKI
+  realm used by the role is present in the list of known PKI realms. [drybjed]
+
+- Switch ``vim`` fold markers to new style. [drybjed]
+
+- Update documentation. [drybjed]
+
 v0.1.3
 ------
 
