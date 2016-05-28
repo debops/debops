@@ -39,8 +39,8 @@ need to change the bind address to listen on all network interfaces, and
 specify the list of IP addresses or CIDR networks which can connect to the
 daemon::
 
-  mariadb_server_bind_address: '::'
-  mariadb_server_allow: [ '192.0.2.0/24', '2001:db8:3232::/64' ]
+  mariadb_server__bind_address: '::'
+  mariadb_server__allow: [ '192.0.2.0/24', '2001:db8:3232::/64' ]
 
 Changing the bind address will require the MariaDB daemon to be restarted,
 however ``debops.mariadb_server`` does not do that automatically to avoid

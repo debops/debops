@@ -12,6 +12,10 @@ v0.2.0
 
 - Add ``vim`` folding in ``defaults/main.yml`` and rename task tags. [drybjed]
 
+- Rename all ``mariadb_server_`` variables to ``mariadb_server__`` to put the
+  role variables in their own namespace. The ``mariadb_server_options_default``
+  variable has been renamed to ``mariadb_server__default_options``. [drybjed]
+
 v0.1.3
 ------
 

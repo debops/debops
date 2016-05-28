@@ -30,7 +30,7 @@ DBNAMES=`mysql --defaults-file=/etc/mysql/debian.cnf --execute="SHOW DATABASES" 
 # Folders inside this one will be created (daily, weekly, etc.), and the
 # subfolders will be database names. Note that backups will be owned by
 # root, with Unix rights 0600.
-BACKUPDIR="{{ mariadb_server_backup_directory|d('/var/lib/automysqlbackup') }}"
+BACKUPDIR="{{ mariadb_server__backup_directory|d('/var/lib/automysqlbackup') }}"
 
 # Mail setup
 # What would you like to be mailed to you?
@@ -45,7 +45,7 @@ MAILCONTENT="quiet"
 MAXATTSIZE="4000"
 
 # Email Address to send mail to? (user@domain.com)
-MAILADDR="{{ mariadb_server_backup_mailaddr }}"
+MAILADDR="{{ mariadb_server__backup_mailaddr }}"
 
 # ============================================================
 # === ADVANCED OPTIONS ( Read the doc's below for details )===
@@ -64,7 +64,7 @@ CREATE_DATABASE=yes
 SEPDIR=yes
 
 # Which day do you want weekly backups? (1 to 7 where 1 is Monday)
-DOWEEKLY={{ mariadb_server_backup_doweekly }}
+DOWEEKLY={{ mariadb_server__backup_doweekly }}
 
 # Choose Compression type. (gzip or bzip2)
 COMP=gzip
@@ -74,7 +74,7 @@ COMMCOMP=no
 
 # Additionally keep a copy of the most recent backup in a seperate
 # directory.
-LATEST={{ mariadb_server_backup_latest }}
+LATEST={{ mariadb_server__backup_latest }}
 
 #  The maximum size of the buffer for client/server communication. e.g. 16MB
 #  (maximum is 1GB)

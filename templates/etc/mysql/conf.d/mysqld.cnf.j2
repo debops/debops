@@ -6,21 +6,21 @@ character-set-server    = utf8
 collation-server        = utf8_general_ci
 init-connect            = 'SET NAMES utf8'
 
-bind-address            = {{ mariadb_server_bind_address }}
-port                    = {{ mariadb_server_port }}
-max-connections         = {{ mariadb_server_max_connections }}
+bind-address            = {{ mariadb_server__bind_address }}
+port                    = {{ mariadb_server__port }}
+max-connections         = {{ mariadb_server__max_connections }}
 
-{% if mariadb_server_pki|d(False) %}
+{% if mariadb_server__pki|d(False) %}
 ssl
-ssl-ca                  = {{ mariadb_server_pki_path + "/" + mariadb_server_pki_realm + "/" + mariadb_server_pki_ca }}
-ssl-cert                = {{ mariadb_server_pki_path + "/" + mariadb_server_pki_realm + "/" + mariadb_server_pki_crt }}
-ssl-key                 = {{ mariadb_server_pki_path + "/" + mariadb_server_pki_realm + "/" + mariadb_server_pki_key }}
-ssl-cipher              = {{ mariadb_server_pki_cipher | default('DHE-RSA-AES256-SHA') }}
+ssl-ca                  = {{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_ca }}
+ssl-cert                = {{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_crt }}
+ssl-key                 = {{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_key }}
+ssl-cipher              = {{ mariadb_server__pki_cipher | default('DHE-RSA-AES256-SHA') }}
 
 {% endif %}
-{% set mariadb_server_tpl_options = mariadb_server_options_default | combine(mariadb_server_options) %}
-{% if mariadb_server_tpl_options %}
-{% for key, value in mariadb_server_tpl_options.iteritems() %}
+{% set mariadb_server__tpl_options = mariadb_server__default_options | combine(mariadb_server__options) %}
+{% if mariadb_server__tpl_options %}
+{% for key, value in mariadb_server__tpl_options.iteritems() %}
 {% if value is not none %}
 {{ "%-23s = %s" | format(key, value) }}
 {% else %}
