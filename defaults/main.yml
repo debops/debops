@@ -5,6 +5,8 @@
 # .. contents:: Sections
 #    :local:
 #
+# .. Role configuration (((1
+#
 # ----------------------
 #   Role configuration
 # ----------------------
@@ -49,15 +51,25 @@ apt_install__archive_areas: '{{ ansible_local.apt.archive_areas
                                 else (apt_install__archive_areas_map[apt_install__distribution] | d([])) }}'
 
 
+# .. envvar:: apt_install__condition_map
+#
+# Definition of the values to compare :ref:`apt_install__all_packages` against.
+apt_install__condition_map:
+  'distribution': '{{ apt_install__distribution }}'
+  'release': '{{ apt_install__distribution_release }}'
+  'areas': '{{ apt_install__archive_areas }}'
+
+
 # .. envvar:: apt_install__state
 #
 # How the ``apt`` Ansible module should install the selected packages:
 #
-# - ``present``: only make sure that the packages on the list are present on
-#                the host;
+# ``present``
+#   Only make sure that the packages on the list are present on the host.
 #
-# - ``latest``: install the latest version of available packages, according to
-#               APT preferences;
+# ``latest``
+#   Install the latest version of available packages, according to APT
+#   preferences.
 #
 # By default role will make sure to update the packages to their latest version
 # on first run, and just keep the current version on subsequent runs.
@@ -87,7 +99,8 @@ apt_install__cache_valid_time: '{{ ansible_local.core.cache_valid_time
                                        ansible_local.core.cache_valid_time)
                                    else (60 * 60 * 24 * 7) }}'
 
-
+# .. APT package lists (((1
+#
 # ---------------------
 #   APT package lists
 # ---------------------
@@ -178,23 +191,35 @@ apt_install__host_packages: []
 apt_install__dependent_packages: []
 
 
+# .. envvar:: apt_install__conditional_whitelist_packages
+#
+# List of APT packages which are whitelisted to be installed conditionally.
+apt_install__conditional_whitelist_packages:
+  - 'irqbalance'
+  - 'uptimed'
+  - 'libpam-systemd'
+
+
 # .. envvar:: apt_install__conditional_packages
 #
 # List of APT packages installed under certain conditions.
 apt_install__conditional_packages:
 
   - name: 'irqbalance'
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present" if (ansible_processor_cores >= 2 and
                              (ansible_virtualization_role is undefined or
                               ansible_virtualization_role not in [ "guest" ]))
                          else "absent" }}'
 
   - name: 'uptimed'
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present" if (ansible_virtualization_role is undefined or
                               ansible_virtualization_role not in [ "guest" ])
                          else "absent" }}'
 
   - name: 'libpam-systemd'
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present" if (ansible_service_mgr == "systemd") else "absent" }}'
 
 
@@ -244,7 +269,8 @@ apt_install__all_packages:
   - '{{ apt_install__conditional_packages }}'
   - '{{ apt_install__firmware_packages }}'
 
-
+# .. Configuration of other Ansible roles (((1
+#
 # ----------------------------------------
 #   Configuration of other Ansible roles
 # ----------------------------------------

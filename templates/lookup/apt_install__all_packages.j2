@@ -1,316 +1,42 @@
-{% macro process_packages(packages) %}
-{%   set apt_install__tpl_package_list = [] %}
+{% macro get_yaml_list_from_string_or_list(package_map, item) %}{# ((( #}
+{{ ([ package_map[item] ]
+   if (package_map[item] is string)
+   else (package_map[item]|list)) | to_nice_yaml }}
+{% endmacro %}{# ))) #}
+{% macro process_packages(packages, apt_install__tpl_package_list) %}{# ((( #}
 {%   for element in packages %}
 {%     if element is string %}
 {%       set _ = apt_install__tpl_package_list.append(element) %}
 {%     elif element is mapping %}
-{%       if element.name|d() %}
-{%         if element.name is string %}
-{%           if element.state is undefined or element.state != 'absent' %}
-{%             if element.distribution is undefined and element.release is undefined %}
-{%               set _ = apt_install__tpl_package_list.append(element.name) %}
-{%             elif element.distribution|d() %}
-{%               if element.distribution is string %}
-{%                 if element.distribution|lower == apt_install__distribution|lower %}
-{%                   if element.release is undefined and element.area is undefined %}
-{%                     set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                   elif element.release|d() %}
-{%                     if element.release is string and element.release|lower == apt_install__distribution_release|lower %}
-{%                       if element.area is undefined %}
-{%                         set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                       elif element.area|d() %}
-{%                         if element.area is string %}
-{%                           if element.area in apt_install__archive_areas %}
-{%                             set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                           endif %}
-{%                         else %}
-{%                           for area in element.area %}
-{%                             if area in apt_install__archive_areas %}
-{%                               set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                             endif %}
-{%                           endfor %}
-{%                         endif %}
-{%                       endif %}
-{%                     else %}
-{%                       for release in element.release %}
-{%                         if release|lower == apt_install__distribution_release|lower %}
-{%                           if element.area is undefined %}
-{%                             set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                           elif element.area|d() %}
-{%                             if element.area is string and element.area in apt_install__archive_areas %}
-{%                               set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                             else %}
-{%                               for area in element.area %}
-{%                                 if area in apt_install__archive_areas %}
-{%                                   set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                                 endif %}
-{%                               endfor %}
-{%                             endif %}
-{%                           endif %}
-{%                         endif %}
-{%                       endfor %}
-{%                     endif %}
-{%                   elif element.area|d() %}
-{%                     if element.area is string %}
-{%                       if element.area in apt_install__archive_areas %}
-{%                         set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                       endif %}
-{%                     else %}
-{%                       for area in element.area %}
-{%                         if area in apt_install__archive_areas %}
-{%                           set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                         endif %}
-{%                       endfor %}
-{%                     endif %}
-{%                   endif %}
-{%                 endif %}
-{%               else %}
-{%                 for distribution in element.distribution %}
-{%                   if distribution|lower == apt_install__distribution|lower %}
-{%                     if element.release is undefined and element.area is undefined %}
-{%                       set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                     elif element.release|d() %}
-{%                       if element.release is string and element.release|lower == apt_install__distribution_release|lower %}
-{%                         if element.area is undefined %}
-{%                           set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                         elif element.area|d() %}
-{%                           if element.area is string and element.area in apt_install__archive_areas %}
-{%                             set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                           else %}
-{%                             for area in element.area %}
-{%                               if area in apt_install__archive_areas %}
-{%                                 set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                               endif %}
-{%                             endfor %}
-{%                           endif %}
-{%                         endif %}
-{%                       else %}
-{%                         for release in element.release %}
-{%                           if release|lower == apt_install__distribution_release|lower %}
-{%                             if element.area is undefined %}
-{%                               set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                             elif element.area|d() %}
-{%                               if element.area is string and element.area in apt_install__archive_areas %}
-{%                                 set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                               else %}
-{%                                 for area in element.area %}
-{%                                   if area in apt_install__archive_areas %}
-{%                                     set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                                   endif %}
-{%                                 endfor %}
-{%                               endif %}
-{%                             endif %}
-{%                           endif %}
-{%                         endfor %}
-{%                       endif %}
-{%                     elif element.area|d() %}
-{%                       if element.area is string and element.area in apt_install__archive_areas %}
-{%                         set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                       else %}
-{%                         for area in element.area %}
-{%                           if area in apt_install__archive_areas %}
-{%                             set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                           endif %}
-{%                         endfor %}
-{%                       endif %}
-{%                     endif %}
-{%                   endif %}
-{%                 endfor %}
+{%       if element.state|d('present') == 'present' and element.name|d() %}
+{%         set apt_install__tpl_to_meet_condition_list = apt_install__condition_map.keys() %}
+{%         set apt_install__tpl_met_condition_list = [] %}
+{%         for condition_name_to_meet in apt_install__tpl_to_meet_condition_list %}
+{%           if element[condition_name_to_meet] is defined %}
+{%             for condition_item_to_meet in get_yaml_list_from_string_or_list(element, condition_name_to_meet) | from_yaml | map('lower') %}
+{%               if condition_item_to_meet in (get_yaml_list_from_string_or_list(apt_install__condition_map, condition_name_to_meet) | from_yaml | map('lower')) %}
+{%                 set _ = apt_install__tpl_met_condition_list.append(condition_name_to_meet) %}
 {%               endif %}
-{%             elif element.release|d() %}
-{%               if element.release is string and element.release|lower == apt_install__distribution_release|lower %}
-{%                 if element.area is undefined %}
-{%                   set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                 elif element.area|d() %}
-{%                   if element.area is string %}
-{%                     if element.area in apt_install__archive_areas %}
-{%                       set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                     endif %}
-{%                   else %}
-{%                     for area in element.area %}
-{%                       if area in apt_install__archive_areas %}
-{%                         set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                       endif %}
-{%                     endfor %}
-{%                   endif %}
-{%                 endif %}
-{%               else %}
-{%                 for release in element.release %}
-{%                   if release|lower == apt_install__distribution_release|lower %}
-{%                     if element.area is undefined %}
-{%                       set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                     elif element.area|d() %}
-{%                       if element.area is string and element.area in apt_install__archive_areas %}
-{%                         set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                       else %}
-{%                         for area in element.area %}
-{%                           if area in apt_install__archive_areas %}
-{%                             set _ = apt_install__tpl_package_list.append(element.name) %}
-{%                           endif %}
-{%                         endfor %}
-{%                       endif %}
-{%                     endif %}
-{%                   endif %}
-{%                 endfor %}
-{%               endif %}
-{%             endif %}
+{%             endfor %}
+{%           else %}
+{%             set _ = apt_install__tpl_met_condition_list.append(condition_name_to_meet) %}
 {%           endif %}
-{%         else %}
-{%           for package in element.name %}
-{%             if element.state is undefined or element.state != 'absent' %}
-{%               if element.distribution is undefined and element.release is undefined %}
-{%                 set _ = apt_install__tpl_package_list.append(package) %}
-{%               elif element.distribution|d() %}
-{%                 if element.distribution is string and element.distribution|lower == apt_install__distribution|lower %}
-{%                   if element.release is undefined and element.area is undefined %}
-{%                     set _ = apt_install__tpl_package_list.append(package) %}
-{%                   elif element.release|d() %}
-{%                     if element.release is string and element.release|lower == apt_install__distribution_release|lower %}
-{%                       if element.area is undefined %}
-{%                         set _ = apt_install__tpl_package_list.append(package) %}
-{%                       elif element.area|d() %}
-{%                         if element.area is string and element.area in apt_install__archive_areas %}
-{%                           set _ = apt_install__tpl_package_list.append(package) %}
-{%                         else %}
-{%                           for area in element.area %}
-{%                             if area in apt_install__archive_areas %}
-{%                               set _ = apt_install__tpl_package_list.append(package) %}
-{%                             endif %}
-{%                           endfor %}
-{%                         endif %}
-{%                       endif %}
-{%                     else %}
-{%                       for release in element.release %}
-{%                         if release|lower == apt_install__distribution_release|lower %}
-{%                           if element.area is undefined %}
-{%                             set _ = apt_install__tpl_package_list.append(package) %}
-{%                           elif element.area|d() %}
-{%                             if element.area is string and element.area in apt_install__archive_areas %}
-{%                               set _ = apt_install__tpl_package_list.append(package) %}
-{%                             else %}
-{%                               for area in element.area %}
-{%                                 if area in apt_install__archive_areas %}
-{%                                   set _ = apt_install__tpl_package_list.append(package) %}
-{%                                 endif %}
-{%                               endfor %}
-{%                             endif %}
-{%                           endif %}
-{%                         endif %}
-{%                       endfor %}
-{%                     endif %}
-{%                   elif element.area|d() %}
-{%                     if element.area is string and element.area in apt_install__archive_areas %}
-{%                       set _ = apt_install__tpl_package_list.append(package) %}
-{%                     else %}
-{%                       for area in element.area %}
-{%                         if area in apt_install__archive_areas %}
-{%                           set _ = apt_install__tpl_package_list.append(package) %}
-{%                         endif %}
-{%                       endfor %}
-{%                     endif %}
-{%                   endif %}
-{%                 else %}
-{%                   for distribution in element.distribution %}
-{%                     if distribution|lower == apt_install__distribution|lower %}
-{%                       if element.release is undefined and element.area is undefined %}
-{%                         set _ = apt_install__tpl_package_list.append(package) %}
-{%                       elif element.release|d() %}
-{%                         if element.release is string and element.release|lower == apt_install__distribution_release|lower %}
-{%                           if element.area is undefined %}
-{%                             set _ = apt_install__tpl_package_list.append(package) %}
-{%                           elif element.area|d() %}
-{%                             if element.area is string and element.area in apt_install__archive_areas %}
-{%                               set _ = apt_install__tpl_package_list.append(package) %}
-{%                             else %}
-{%                               for area in element.area %}
-{%                                 if area in apt_install__archive_areas %}
-{%                                   set _ = apt_install__tpl_package_list.append(package) %}
-{%                                 endif %}
-{%                               endfor %}
-{%                             endif %}
-{%                           endif %}
-{%                         else %}
-{%                           for release in element.release %}
-{%                             if release|lower == apt_install__distribution_release|lower %}
-{%                               if element.area is undefined %}
-{%                                 set _ = apt_install__tpl_package_list.append(package) %}
-{%                               elif element.area|d() %}
-{%                                 if element.area is string and element.area in apt_install__archive_areas %}
-{%                                   set _ = apt_install__tpl_package_list.append(package) %}
-{%                                 else %}
-{%                                   for area in element.area %}
-{%                                     if area in apt_install__archive_areas %}
-{%                                       set _ = apt_install__tpl_package_list.append(package) %}
-{%                                     endif %}
-{%                                   endfor %}
-{%                                 endif %}
-{%                               endif %}
-{%                             endif %}
-{%                           endfor %}
-{%                         endif %}
-{%                       elif element.area|d() %}
-{%                         if element.area is string and element.area in apt_install__archive_areas %}
-{%                           set _ = apt_install__tpl_package_list.append(package) %}
-{%                         else %}
-{%                           for area in element.area %}
-{%                             if area in apt_install__archive_areas %}
-{%                               set _ = apt_install__tpl_package_list.append(package) %}
-{%                             endif %}
-{%                           endfor %}
-{%                         endif %}
-{%                       endif %}
-{%                     endif %}
-{%                   endfor %}
-{%                 endif %}
-{%               elif element.release|d() %}
-{%                 if element.release is string and element.release|lower == apt_install__distribution_release|lower %}
-{%                   if element.area is undefined %}
-{%                     set _ = apt_install__tpl_package_list.append(package) %}
-{%                   elif element.area|d() %}
-{%                     if element.area is string and element.area in apt_install__archive_areas %}
-{%                       set _ = apt_install__tpl_package_list.append(package) %}
-{%                     else %}
-{%                       for area in element.area %}
-{%                         if area in apt_install__archive_areas %}
-{%                           set _ = apt_install__tpl_package_list.append(package) %}
-{%                         endif %}
-{%                       endfor %}
-{%                     endif %}
-{%                   endif %}
-{%                 else %}
-{%                   for release in element.release %}
-{%                     if release|lower == apt_install__distribution_release|lower %}
-{%                       if element.area is undefined %}
-{%                         set _ = apt_install__tpl_package_list.append(package) %}
-{%                       elif element.area|d() %}
-{%                         if element.area is string and element.area in apt_install__archive_areas %}
-{%                           set _ = apt_install__tpl_package_list.append(package) %}
-{%                         else %}
-{%                           for area in element.area %}
-{%                             if area in apt_install__archive_areas %}
-{%                               set _ = apt_install__tpl_package_list.append(package) %}
-{%                             endif %}
-{%                           endfor %}
-{%                         endif %}
-{%                       endif %}
-{%                     endif %}
-{%                   endfor %}
-{%                 endif %}
-{%               endif %}
-{%             endif %}
-{%           endfor %}
+{%         endfor %}
+{%         if (apt_install__tpl_met_condition_list|unique|length) == (apt_install__tpl_to_meet_condition_list|unique|length) %}
+{%           set _ = apt_install__tpl_package_list.append(get_yaml_list_from_string_or_list(element, 'name')|from_yaml
+                       | intersect(element.whitelist|d(get_yaml_list_from_string_or_list(element, 'name')|from_yaml)) | list) %}
 {%         endif %}
 {%       endif %}
 {%     else %}
 {%       for things in element %}
-{{ process_packages(things) }}
+{%         set _ = process_packages(things, apt_install__tpl_package_list) %}
 {%       endfor %}
 {%     endif %}
 {%   endfor %}
-{%   for element in apt_install__tpl_package_list %}
-- '{{ element }}'
-{%   endfor %}
-{% endmacro %}
+{% endmacro %}{# ))) #}
+
+{% set apt_install__tpl_package_list = [] %}
 {% for elements in apt_install__all_packages %}
-{{ process_packages(elements) }}
+{%   set _ = process_packages(elements, apt_install__tpl_package_list) %}
 {% endfor %}
+{{ [ apt_install__tpl_package_list ] | to_nice_yaml }}
