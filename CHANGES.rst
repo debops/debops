@@ -32,6 +32,13 @@ v0.2.1
 - Switched the default Debian mirror to the new official redirector at
   http://httpredir.debian.org/. [ypid]
 
+- Divert original ``/etc/default/grub`` away before making changes to it. [ypid]
+
+- Made GRUB settings configurable. [ypid]
+
+- Don’t configure ``GRUB_DISABLE_RECOVERY="true"`` in ``/etc/default/grub`` anymore.
+  This option should be handled by ``debops.grub``. [ypid]
+
 v0.2.0
 ------
 

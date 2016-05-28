@@ -312,6 +312,42 @@ preseed__debian_root_password: "{{ lookup('password', secret + '/credentials/' +
 
 # .. )))
 
+# .. Debian Preseed GRUB configuration (((
+#
+# -------------------------------------
+#   Debian Preseed GRUB configuration
+# -------------------------------------
+
+# .. envvar:: preseed__grub_preseed
+#
+# Should GRUB be configured by this role?
+# If set to ``False``, all following options in the ``preseed__grub_``
+# namespace will not have any effect.
+preseed__grub_preseed: True
+
+
+# .. envvar:: preseed__grub_timeout
+#
+# GRUB timeout for devices.
+# ``debops.grub`` can be used to set different
+# timeout values for phyisical and virtual machines.
+preseed__grub_timeout: 1
+
+
+# .. envvar:: preseed__grub_kernel_options
+#
+# Kernel options.
+preseed__grub_kernel_options:
+
+  ## Linux I/O Scheduler
+  - 'elevator=noop'
+
+  - 'cgroup_enable=memory'
+
+  - 'swapaccount=1'
+
+# .. )))
+
 # .. SaltStack options (((
 #
 # ---------------------

@@ -15,14 +15,19 @@ chmod +x /usr/sbin/policy-rc.d
 ## Move APT proxy configuration to the same location that debops.apt uses to configure APT proxy settings.
 mv /etc/apt/apt.conf /etc/apt/apt.conf.d/000apt-cacher-ng-proxy || true
 
+{% if preseed__grub_preseed | bool %}
 # Setup grub, cgroup, LXC
 
 if [ -r "/etc/default/grub" ]; then
-    perl -pi -e 's,^GRUB_TIMEOUT=5$,GRUB_TIMEOUT=1,' /etc/default/grub
-    perl -pi -e 's,GRUB_CMDLINE_LINUX="(.*)"$,GRUB_CMDLINE_LINUX="$1 elevator=noop cgroup_enable=memory swapaccount=1",' /etc/default/grub
-    perl -pi -e 's,^#GRUB_DISABLE_RECOVERY="true"$,GRUB_DISABLE_RECOVERY="true",' /etc/default/grub
+    dpkg-divert --quiet --local --divert /etc/default/grub.dpkg-divert --rename /etc/default/grub
+    cp /etc/default/grub.dpkg-divert /etc/default/grub
+    perl -pi -e 's,^GRUB_TIMEOUT=5$,GRUB_TIMEOUT={{ preseed__grub_timeout|string }},' /etc/default/grub
+{% if preseed__grub_kernel_options | length >= 1 %}
+    perl -pi -e 's,GRUB_CMDLINE_LINUX="(.*)"$,GRUB_CMDLINE_LINUX="$1 {{ preseed__grub_kernel_options | join(" ") }}",' /etc/default/grub
+{% endif %}
     update-grub
 fi
+{% endif %}
 
 {% if ((item.salt is defined and item.salt) or (preseed__salt is defined and preseed__salt)) %}
 # Configure Salt APT repository
