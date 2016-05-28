@@ -17,9 +17,12 @@ d-i keyboard-configuration/xkb-keymap select {{ item.keyboard_keymap | default(p
 d-i languagechooser/language-name-fb select {{ item.language | default(preseed__debian_language | default('English')) }}
 
 d-i netcfg/choose_interface select auto
+d-i netcfg/wireless_wep string
+
+## Does not work as the preseed file is downloaded after the question appears.
+## So this can only be used when the preseed file is contained on the installation medium.
 d-i netcfg/get_hostname string unassigned-hostname
 d-i netcfg/get_domain string unassigned-domain
-d-i netcfg/wireless_wep string
 
 d-i mirror/country string manual
 d-i mirror/http/hostname string {{ item.mirror_hostname | default(preseed__debian_mirror_hostname) }}
