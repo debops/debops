@@ -9,6 +9,7 @@ Ansible role: debops.mariadb_server
    introduction
    getting-started
    defaults
+   defaults-detailed
    copyright
    credits
    changelog

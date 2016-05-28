@@ -1,31 +1,63 @@
 # {{ ansible_managed }}
 
-[mysqld]
+{% macro print_config(config) %}
+{%   if config is mapping %}
+{%     if 'section' in config.keys() %}
+{%       if config.state|d('present') == 'present' %}
+{%         if config.comment|d() %}
+# aaaa
+{{ config.comment | comment(postfix='') -}}
+{%         endif %}
+[{{ config.section }}]
 
-character-set-server    = utf8
-collation-server        = utf8_general_ci
-init-connect            = 'SET NAMES utf8'
+{%         if config.options|d() %}
+{%           if config.options is mapping %}
+{{ print_config(config.options) -}}
+{%           else %}
+{%             for element in config.options %}
+{{ print_config(element) -}}
+{%             endfor %}
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     elif 'name' in config.keys() %}
+{%       if config.state|d('present') == 'present' %}
+{%         if config.comment|d() %}
+{{ config.comment | comment(postfix='') -}}
+{%         endif %}
+{%         if config.options|d() %}
+{%           if config.options is mapping %}
+{{ print_config(config.options) -}}
+{%           else %}
+{%             for element in config.options %}
+{{ print_config(element) -}}
+{%             endfor %}
+{%           endif %}
+{%         elif config.value|d() %}
+{{ "%-30s = %s" | format(config.name, config.value) }}
+{%         else %}
+{{ config.name }}
+{%         endif %}
+{%       endif %}
+{%     else %}
+{%       if config %}
+{%         for option in config.keys() | sort %}
+{%           if config[option] is not none %}
+{{ "%-30s = %s" | format(option, config[option]) }}
+{%           else %}
+{{ option }}
+{%           endif %}
+{%         endfor %}
 
-bind-address            = {{ mariadb_server__bind_address }}
-port                    = {{ mariadb_server__port }}
-max-connections         = {{ mariadb_server__max_connections }}
-
-{% if mariadb_server__pki|d(False) %}
-ssl
-ssl-ca                  = {{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_ca }}
-ssl-cert                = {{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_crt }}
-ssl-key                 = {{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_key }}
-ssl-cipher              = {{ mariadb_server__pki_cipher | default('DHE-RSA-AES256-SHA') }}
-
-{% endif %}
-{% set mariadb_server__tpl_options = mariadb_server__default_options | combine(mariadb_server__options) %}
-{% if mariadb_server__tpl_options %}
-{% for key, value in mariadb_server__tpl_options.iteritems() %}
-{% if value is not none %}
-{{ "%-23s = %s" | format(key, value) }}
-{% else %}
-{{ key }}
-{% endif %}
+{%       endif %}
+{%     endif %}
+{%   else %}
+{%     for element in config %}
+{{ print_config(element) -}}
+{%     endfor %}
+{%   endif %}
+{% endmacro %}
+{% for item in mariadb_server__mysqld_options %}
+{{ print_config(item) -}}
 {% endfor %}
 
-{% endif %}

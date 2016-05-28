@@ -16,6 +16,9 @@ v0.2.0
   role variables in their own namespace. The ``mariadb_server_options_default``
   variable has been renamed to ``mariadb_server__default_options``. [drybjed]
 
+- Convert ``mysqld`` and ``client`` Ansible templates to use YAML structures
+  for server configuration, split into several default variables. [drybjed]
+
 v0.1.3
 ------
 
