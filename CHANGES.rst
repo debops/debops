@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.1.3
+------
+
+*Unreleased*
+
+- Fixed Ansible check mode. [ypid]
+
 v0.1.2
 ------
 
