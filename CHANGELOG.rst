@@ -64,6 +64,12 @@ v0.2.9
 - Add the ``debops.apt_install`` role with its own playbook as well as in the
   ``common.yml`` playbook. [drybjed]
 
+- Add the "role dependency" ``debops.apt_preferences`` to ``service/apt.yml``.
+  Especially with Debian Stretch enabled in :manpage:`sources.list(5)`, not
+  running ``debops.apt_preferences`` together with ``debops.apt`` could risk
+  installing new packages from Stretch. Using ``apt_preferences__preset_list``
+  can avoid that. [ypid]
+
 v0.2.8
 ------
 
