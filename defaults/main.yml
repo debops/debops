@@ -154,7 +154,10 @@ preseed__admin_system: True
 #
 # Name of the administrator account. By default the same as the
 # user that runs Ansible, taken from Ansible Controller.
-preseed__admin_name: '{{ ansible_ssh_user if ansible_ssh_user != "root" else lookup("env","USER") }}'
+preseed__admin_name: '{{ (ansible_ssh_user
+                          if (ansible_ssh_user|d() and
+                              ansible_ssh_user != "root")
+                          else lookup("env","USER")) }}'
 
 
 # .. envvar:: preseed__admin_groups

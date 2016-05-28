@@ -48,6 +48,9 @@ v0.3.0
 
 - Reworked documentation. [ypid]
 
+- Removed deprecated hostgroup `debops_preseed`, your hosts will now need to be
+  in `debops_service_preseed`. [ypid]
+
 v0.2.0
 ------
 
