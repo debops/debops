@@ -4,7 +4,7 @@ Changelog
 v0.3.0
 ------
 
-*Unreleased*
+*Released: 2016-05-28*
 
 - Added ``preseed_dependencies`` to allow to disable role dependencies. [ypid]
 
