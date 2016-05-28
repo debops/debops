@@ -13,6 +13,8 @@ v0.1.1
 - Implemented :any:`apt_install__conditional_whitelist_packages` previously
   known as ``apt__conditional_whitelist`` in ``debops.apt``. [ypid]
 
+- Updated and fixed up metadata and copyright. [ypid]
+
 v0.1.0
 ------
 
