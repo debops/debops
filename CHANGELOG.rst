@@ -77,6 +77,9 @@ v0.2.9
 - Add ``debops.preseed`` role dependencies to ``service/preseed.yml`` playbook.
   [ypid]
 
+- Update ``debops.mariadb_server`` playbook to include its role dependencies.
+  [drybjed]
+
 v0.2.8
 ------
 
