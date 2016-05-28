@@ -4,6 +4,8 @@ Changelog
 v0.1.3
 ------
 
+- Add support for gitlab 8.8 [gomez]
+- Add support for gitlab 8.7 [benalbrecht]
 - Add support for GitLab 8.6 [gomez]
 
 v0.1.2
