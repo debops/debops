@@ -29,6 +29,15 @@ mariadb_server_flavor: '{{ (ansible_local.mariadb.flavor
                             else (mariadb_server_flavor_map[ansible_distribution_release] | default("mariadb"))) }}'
 
 
+# .. envvar:: mariadb_server_flavor_map
+#
+# List of Linux distributions where the default MariaDB packages are not
+# available, and MySQL should be used instead.
+mariadb_server_flavor_map:
+  'wheezy':  'mysql'
+  'precise': 'mysql'
+
+
 # .. envvar:: mariadb_server_upstream_key
 #
 # APT GPG key fingerprint used to sign the upstream MariaDB packages.
@@ -261,4 +270,34 @@ mariadb_server_root_password: '{{ lookup("password", secret +
                                   "/credentials/" + ansible_fqdn +
                                   "/mariadb/localhost/root/password " +
                                   "length=" + mariadb_server_password_length) }}'
+
+
+# ----------------------------------------
+#   Configuration of other Ansible roles
+# ----------------------------------------
+
+# .. envvar:: mariadb_server__ferm__dependent_rules
+#
+# Configuration for ``debops.ferm`` Ansible role.
+mariadb_server__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'mysql' ]
+    saddr: '{{ mariadb_server_allow }}'
+    accept_any: False
+    weight: '50'
+    role: 'mariadb_server'
+
+
+# .. envvar:: mariadb_server__tcpwrappers__dependent_allow
+#
+# Configuration for ``debops.tcpwrappers`` Ansible role.
+mariadb_server__tcpwrappers__dependent_allow:
+
+  - daemon: 'mysqld'
+    client: '{{ mariadb_server_allow }}'
+    accept_any: False
+    weight: '50'
+    filename: 'mariadb_server_allow'
+    comment: 'Allow remote connections to MariaDB / MySQL server'
 

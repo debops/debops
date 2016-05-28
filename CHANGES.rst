@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.2.0
+------
+
+*Unreleased*
+
+- Move configuration of dependent roles and variables from ``vars/main.yml`` to
+  ``defaults/main.yml``. The playbooks that use ``debops.mariadb_server`` role
+  need to be updated to include dependent roles. [drybjed]
+
 v0.1.3
 ------
 
