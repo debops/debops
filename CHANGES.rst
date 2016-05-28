@@ -1,7 +1,7 @@
 Changelog
 =========
 
-v0.2.1
+v0.3.0
 ------
 
 *Unreleased*
@@ -29,6 +29,9 @@ v0.2.1
   variables. These variables can be used by Ansible playbooks to configure
   settings related to ``preseed`` in other services. [ypid]
 
+- Removed ``preseed_dependencies`` variable. This can now be handled on the
+  playbook level. [ypid]
+
 - Switched the default Debian mirror to the new official redirector at
   http://httpredir.debian.org/. [ypid]
 
@@ -42,6 +45,8 @@ v0.2.1
 - Don’t ask for additional installation media when when configuring APT. Can be
   configured via :any:`preseed__debian_ask_for_additional_install_media`.
   [ypid]
+
+- Reworked documentation. [ypid]
 
 v0.2.0
 ------
