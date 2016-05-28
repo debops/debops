@@ -9,7 +9,7 @@ them.
    :local:
    :depth: 1
 
-.. _preseed__section_detailed_configs:
+.. _preseed__ref_configs:
 
 preseed__configs
 ----------------
