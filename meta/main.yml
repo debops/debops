@@ -5,17 +5,10 @@ dependencies:
   - role: debops.secret
     tags: [ 'depend::secret', 'depend::secret:preseed', 'depend-of::preseed', 'type::dependency:hard' ]
 
-  - role: debops.nginx
-    nginx_servers:
-      - '{{ preseed_nginx_server_http  }}'
-      - '{{ preseed_nginx_server_https }}'
-    tags: [ 'depend::nginx', 'depend::nginx:preseed', 'depend-of::preseed', 'type::dependency' ]
-    when: (preseed_dependencies|d() | bool)
-
 galaxy_info:
 
   company: 'DebOps'
-  author: 'Maciej Delmanowski'
+  author: 'Maciej Delmanowski, Robin Schneider'
   description: 'Provide Debian Preseed configuration files over HTTP'
   license: 'GNU General Public License v3'
   min_ansible_version: '1.7.0'
@@ -37,5 +30,7 @@ galaxy_info:
 
   galaxy_tags:
     - system
+    - bootstrap
+    - bootstrapping
     - installation
     - deployment

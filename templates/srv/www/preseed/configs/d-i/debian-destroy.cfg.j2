@@ -15,10 +15,10 @@ d-i partman-auto/expert_recipe string				\
 {{ item.partman_recipe }}
 {% else %}
 	boot-root ::						\
-		1000 10000 1000000000 {{ item.filesystem | default(preseed_debian_filesystem | default('ext4')) }}			\
+		1000 10000 1000000000 {{ item.filesystem | default(preseed__debian_filesystem | default('ext4')) }}			\
 			$primary{ } $bootable{ }		\
 			method{ format } format{ }		\
-			use_filesystem{ } filesystem{ {{ item.filesystem | default(preseed_debian_filesystem | default('ext4')) }} }	\
+			use_filesystem{ } filesystem{ {{ item.filesystem | default(preseed__debian_filesystem | default('ext4')) }} }	\
 			mountpoint{ / } label{ System }		\
 		.
 {% endif %}
