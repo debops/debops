@@ -1,4 +1,5 @@
 ---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
 
 - name: Assert etckeeper__vcs is valid
   assert:
@@ -81,7 +82,7 @@
     owner: 'root'
     group: '{{ etckeeper__repository_group|d("root") }}'
 
-## Set VCS user, email used for auto committing changes (((
+## Set VCS user, email used for auto committing changes [[[
 - name: Set user, email for the git repository
   ini_file:
     dest: '/etc/.git/config'
@@ -108,7 +109,7 @@
   command: "etckeeper vcs --config 'ui.username={{ etckeeper__vcs_user }} <{{ etckeeper__vcs_email }}>'"
   when: (etckeeper__vcs == 'hg' and etckeeper__vcs_user|d() and etckeeper__vcs_email|d())
   tags: [ 'role::etckeeper:vcs_config' ]
-## )))
+## ]]]
 
 - name: Create root commit
   command: etckeeper commit 'Initial commit created by Ansible.'
