@@ -9,7 +9,7 @@ them.
    :local:
    :depth: 1
 
-.. _ferm_input_list:
+.. _ferm__ref_input_list:
 
 ferm_input_list
 ---------------
@@ -20,8 +20,8 @@ instead in new configuration, the legacy variables will be removed at some
 point.
 
 List of ferm INPUT rules that should be present or absent in the firewall rule
-set. The same format is also used for ``ferm_input_group_list``,
-``ferm_input_host_list`` and ``ferm_input_dependent_list``. Each rule is
+set. The same format is also used for :any:`ferm_input_group_list`,
+:any:`ferm_input_host_list` and :any:`ferm_input_dependent_list`. Each rule is
 defined as a YAML dict with the following keys:
 
 ``type``
@@ -43,5 +43,5 @@ defined as a YAML dict with the following keys:
   Optional. Delete specified rule file. Possible values: ``False`` or ``True``
 
 Depending on the chosen type, many additional variables are supported. Please
-check the template files located in the ``templates/etc/ferm/filter-input.d/``
+check the template files located in the :file:`templates/etc/ferm/filter-input.d/`
 directory.
