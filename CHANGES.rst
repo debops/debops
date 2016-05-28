@@ -4,7 +4,7 @@ Changelog
 v0.2.0
 ------
 
-*Unreleased*
+*Released: 2016-05-28*
 
 - Move configuration of dependent roles and variables from ``vars/main.yml`` to
   ``defaults/main.yml``. The playbooks that use ``debops.mariadb_server`` role
@@ -21,6 +21,8 @@ v0.2.0
 
 - Enable the SSL support provided by ``debops.pki`` only if a corresponding PKI
   realm used by the role is present in the list of known PKI realms. [drybjed]
+
+- Switch ``vim`` fold markers to new style. [drybjed]
 
 v0.1.3
 ------
