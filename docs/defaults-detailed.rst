@@ -1,5 +1,5 @@
-Default variables: configuration
-================================
+Default variable details
+========================
 
 Some of ``debops.preseed`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
