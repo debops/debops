@@ -4,7 +4,7 @@ Changelog
 v0.1.3
 ------
 
-*Unreleased*
+*Released: 2016-05-28*
 
 - Add default options to the ``debops.mariadb_server`` role via the
   ``mariadb_server_options_default`` variable. [carlalexander]
