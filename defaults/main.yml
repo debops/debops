@@ -1,13 +1,17 @@
 ---
+# .. vim: foldmarker={{{,}}}:foldmethod=marker
+
 # Default variables
 # =================
 
 # .. contents:: Sections
 #    :local:
 #
-# --------------------------------
-#   MariaDB server configuration
-# --------------------------------
+# .. MariaDB Server APT packages {{{1
+#
+# -------------------------------
+#   MariaDB Server APT packages
+# -------------------------------
 
 # .. envvar:: mariadb_server_flavor
 #
@@ -86,6 +90,12 @@ mariadb_server_packages_map:
   'percona': [ 'percona-server-server' ]
 
 
+# .. Network configuration {{{1
+#
+# -------------------------
+#   Network configuration
+# -------------------------
+
 # .. envvar:: mariadb_server_bind_address
 #
 # IP address on which MariaDB server listens on for new connections. To allow
@@ -125,6 +135,12 @@ mariadb_server_max_connections: '100'
 mariadb_server_delegate_to: '{{ ansible_fqdn }}'
 
 
+# .. Server configuration options {{{1
+#
+# --------------------------------
+#   Server configuration options
+# --------------------------------
+
 # .. envvar:: mariadb_server_options
 #
 # Dict with additional MariaDB options, option names as keys and their values
@@ -154,16 +170,18 @@ mariadb_server_options_default:
   'query_cache_type': '0'
 
 
+# .. SSL configuration {{{1
+#
+# ---------------------
+#   SSL configuration
+# ---------------------
+
 # .. envvar:: mariadb_erver_append_groups
 #
 # List of additional system groups to append to the MariaDB system user.
 # ``ssl-cert`` group is required for access to certificate private keys.
 mariadb_server_append_groups: [ 'ssl-cert' ]
 
-
-# ---------------------
-#   SSL configuration
-# ---------------------
 
 # .. envvar:: mariadb_server_pki
 #
@@ -214,6 +232,8 @@ mariadb_server_pki_key: 'default.key'
 mariadb_server_pki_cipher: 'DHE-RSA-AES256-SHA'
 
 
+# .. AutoMySQLBackup configuration {{{1
+#
 # ---------------------------------
 #   AutoMySQLBackup configuration
 # ---------------------------------
@@ -253,6 +273,8 @@ mariadb_server_backup_latest: 'no'
 mariadb_server_backup_directory: '/var/lib/automysqlbackup'
 
 
+# .. MariaDB root account {{{1
+#
 # ------------------------
 #   MariaDB root account
 # ------------------------
@@ -272,6 +294,8 @@ mariadb_server_root_password: '{{ lookup("password", secret +
                                   "length=" + mariadb_server_password_length) }}'
 
 
+# .. Configuration of other Ansible roles {{{1
+#
 # ----------------------------------------
 #   Configuration of other Ansible roles
 # ----------------------------------------

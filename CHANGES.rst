@@ -10,6 +10,8 @@ v0.2.0
   ``defaults/main.yml``. The playbooks that use ``debops.mariadb_server`` role
   need to be updated to include dependent roles. [drybjed]
 
+- Add ``vim`` folding in ``defaults/main.yml`` and rename task tags. [drybjed]
+
 v0.1.3
 ------
 
