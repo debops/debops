@@ -70,6 +70,10 @@ v0.2.9
   installing new packages from Stretch. Using ``apt_preferences__preset_list``
   can avoid that. [ypid]
 
+- Ensure that the :file:`galaxy/requirements*` files are up-to-date by making
+  it easy to regenerate them and check if they are up-to-date via Travis CI.
+  [ypid]
+
 v0.2.8
 ------
 
