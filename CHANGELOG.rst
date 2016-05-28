@@ -74,6 +74,9 @@ v0.2.9
   it easy to regenerate them and check if they are up-to-date via Travis CI.
   [ypid]
 
+- Add ``debops.preseed`` role dependencies to ``service/preseed.yml`` playbook.
+  [ypid]
+
 v0.2.8
 ------
 
