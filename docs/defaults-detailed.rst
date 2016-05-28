@@ -19,7 +19,7 @@ template passed to the ``apt`` module. Each element of this list can specify
 a name of the APT package to install, or a list of packages, or a YAML
 dictionary which defines conditions for the installation of the package(s).
 
-The different dictionary keys the can be used to specify conditional
+The different dictionary keys that can be used to specify conditional
 installation:
 
 ``name``
