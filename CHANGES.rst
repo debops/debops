@@ -19,6 +19,9 @@ v0.2.0
 - Convert ``mysqld`` and ``client`` Ansible templates to use YAML structures
   for server configuration, split into several default variables. [drybjed]
 
+- Enable the SSL support provided by ``debops.pki`` only if a corresponding PKI
+  realm used by the role is present in the list of known PKI realms. [drybjed]
+
 v0.1.3
 ------
 
