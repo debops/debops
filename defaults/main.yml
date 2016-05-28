@@ -1,4 +1,6 @@
 ---
+# .. vim: foldmarker=(((,))):foldmethod=marker
+
 # Default variables
 # =================
 
@@ -54,6 +56,8 @@ apt_install__archive_areas: '{{ ansible_local.apt.archive_areas
 # .. envvar:: apt_install__condition_map
 #
 # Definition of the values to compare :ref:`apt_install__all_packages` against.
+# This map is used internally in the ``apt_install__all_packages`` lookup
+# template.
 apt_install__condition_map:
   'distribution': '{{ apt_install__distribution }}'
   'release': '{{ apt_install__distribution_release }}'
@@ -193,7 +197,10 @@ apt_install__dependent_packages: []
 
 # .. envvar:: apt_install__conditional_whitelist_packages
 #
-# List of APT packages which are whitelisted to be installed conditionally.
+# List of APT package names which will be used to compare against packages
+# requrested for installation. This list is exposed in the defaults so that you
+# don't need to modify the conditional list below to enable or disable
+# packages.
 apt_install__conditional_whitelist_packages:
   - 'irqbalance'
   - 'uptimed'
@@ -268,6 +275,7 @@ apt_install__all_packages:
   - '{{ apt_install__dependent_packages }}'
   - '{{ apt_install__conditional_packages }}'
   - '{{ apt_install__firmware_packages }}'
+
 
 # .. Configuration of other Ansible roles (((1
 #
