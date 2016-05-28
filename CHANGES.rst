@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.1.1
+------
+
+*Unreleased*
+
+- Rewrote the 316 line :file:`templates/lookup/apt_install__all_packages.j2`
+  template from scratch to make it maintainable and expendable in 42 lines of
+  straight Jinja2 ;-). [ypid]
+
 v0.1.0
 ------
 

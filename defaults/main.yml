@@ -5,7 +5,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. Role configuration (((
+# .. Role configuration (((1
 #
 # ----------------------
 #   Role configuration
@@ -51,6 +51,15 @@ apt_install__archive_areas: '{{ ansible_local.apt.archive_areas
                                 else (apt_install__archive_areas_map[apt_install__distribution] | d([])) }}'
 
 
+# .. envvar:: apt_install__condition_map
+#
+# Definition of the values to compare :ref:`apt_install__all_packages` against.
+apt_install__condition_map:
+  'distribution': '{{ apt_install__distribution }}'
+  'release': '{{ apt_install__distribution_release }}'
+  'areas': '{{ apt_install__archive_areas }}'
+
+
 # .. envvar:: apt_install__state
 #
 # How the ``apt`` Ansible module should install the selected packages:
@@ -90,9 +99,7 @@ apt_install__cache_valid_time: '{{ ansible_local.core.cache_valid_time
                                        ansible_local.core.cache_valid_time)
                                    else (60 * 60 * 24 * 7) }}'
 
-# .. )))
-
-# .. APT package lists (((
+# .. APT package lists (((1
 #
 # ---------------------
 #   APT package lists
@@ -250,9 +257,7 @@ apt_install__all_packages:
   - '{{ apt_install__conditional_packages }}'
   - '{{ apt_install__firmware_packages }}'
 
-# .. )))
-
-# .. Configuration of other Ansible roles (((
+# .. Configuration of other Ansible roles (((1
 #
 # ----------------------------------------
 #   Configuration of other Ansible roles
@@ -278,4 +283,3 @@ apt_install__apt_preferences__dependent_list:
     reason:  'Bug fixes and memory leak fixes.'
     by_role: 'debops.apt_install'
 
-# .. )))
