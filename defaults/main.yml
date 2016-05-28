@@ -1,11 +1,13 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+#
 # Default variables
 # =================
 
 # .. contents:: Sections
 #    :local:
 #
-# .. Preseed server configuration (((
+# .. Preseed server configuration [[[1
 #
 # --------------------------------
 #   Preseed server configuration
@@ -81,9 +83,8 @@ preseed__group: 'preseed'
 # Home directory of the Pressed user account.
 preseed__home: '{{ ansible_local.root.home + "/" + preseed__user }}'
 
-# .. )))
 
-# .. Default Preseed list (((
+# .. Default Preseed list [[[1
 #
 # ------------------------
 #   Default Preseed list
@@ -127,9 +128,8 @@ preseed__configs:
     type: 'debian-destroy'
     release: 'jessie'
 
-# .. )))
 
-# .. Administrator account options (((
+# .. Administrator account options [[[1
 #
 # ---------------------------------
 #   Administrator account options
@@ -221,9 +221,8 @@ preseed__sudo_group: '{{ preseed__admin_groups[0] }}'
 # ``root`` account.
 preseed__admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
-# .. )))
 
-# .. Debian Preseed configuration (((
+# .. Debian Preseed configuration [[[1
 #
 # --------------------------------
 #   Debian Preseed configuration
@@ -317,9 +316,8 @@ preseed__debian_root_password: "{{ lookup('password', secret + '/credentials/' +
 # This seems to be only relevant when not installing from network/PXE.
 preseed__debian_ask_for_additional_install_media: False
 
-# .. )))
 
-# .. Debian Preseed GRUB configuration (((
+# .. Debian Preseed GRUB configuration [[[[1
 #
 # -------------------------------------
 #   Debian Preseed GRUB configuration
@@ -353,9 +351,8 @@ preseed__grub_kernel_options:
 
   - 'swapaccount=1'
 
-# .. )))
 
-# .. SaltStack options (((
+# .. SaltStack options [[[1
 #
 # ---------------------
 #   SaltStack options
@@ -392,9 +389,8 @@ preseed__salt_upstream_repository: 'deb http://debian.saltstack.com/debian {{ an
 # the :file:`/etc/salt/minion.d/ansible.conf` file.
 preseed__salt_options: ''
 
-# .. )))
 
-# .. Role-dependent configuration (((
+# .. Role-dependent configuration [[[1
 #
 # --------------------------------
 #   Role-dependent configuration
@@ -464,4 +460,3 @@ preseed__nginx__servers:
   - '{{ preseed__nginx__server_http }}'
   - '{{ preseed__nginx__server_https }}'
 
-# .. )))
