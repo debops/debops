@@ -191,23 +191,35 @@ apt_install__host_packages: []
 apt_install__dependent_packages: []
 
 
+# .. envvar:: apt_install__conditional_whitelist_packages
+#
+# List of APT packages which are whitelisted to be installed conditionally.
+apt_install__conditional_whitelist_packages:
+  - 'irqbalance'
+  - 'uptimed'
+  - 'libpam-systemd'
+
+
 # .. envvar:: apt_install__conditional_packages
 #
 # List of APT packages installed under certain conditions.
 apt_install__conditional_packages:
 
   - name: 'irqbalance'
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present" if (ansible_processor_cores >= 2 and
                              (ansible_virtualization_role is undefined or
                               ansible_virtualization_role not in [ "guest" ]))
                          else "absent" }}'
 
   - name: 'uptimed'
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present" if (ansible_virtualization_role is undefined or
                               ansible_virtualization_role not in [ "guest" ])
                          else "absent" }}'
 
   - name: 'libpam-systemd'
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present" if (ansible_service_mgr == "systemd") else "absent" }}'
 
 
