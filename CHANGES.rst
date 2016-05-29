@@ -1,6 +1,28 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Released: 2016-05-29*
+
+- Reorganize APT key/repository tasks. Instead of separate tasks for each APT
+  key/repository combination use YAML dictionaries to select specific
+  repository key and configuration according to selected MariaDB flavor.
+  [drybjed]
+
+- Set ``default-character-set`` option instead of ``character-set-server`` in
+  ``/etc/mysql/conf.d/client.cnf``. The latter was causing an error when user
+  tried to connect to the database using ``mysql`` command line. [drybjed]
+
+- Enable use of the default ``domain`` PKI realm, current certificate
+  environment managed by ``debops.pki`` works with the MariaDB/MySQL/Percona
+  servers out of the box. [drybjed]
+
+- Remove all Ansible handlers, the database server is not restarted
+  automatically. This should resolve an issue where upstream MariaDB packages
+  don't support service reload. [drybjed]
+
 v0.2.0
 ------
 

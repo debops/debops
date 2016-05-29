@@ -42,10 +42,14 @@ mariadb_server__flavor_map:
   'precise': 'mysql'
 
 
-# .. envvar:: mariadb_server__upstream_key
+# .. envvar:: mariadb_server__apt_key_map
 #
-# APT GPG key fingerprint used to sign the upstream MariaDB packages.
-mariadb_server__upstream_key: '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB'
+# A YAML dictionary map which keeps GPG key ids for APT repository keys of
+# different MariaDB/MySQL/Percona APT repositories. These GPG keys will be
+# downloaded if any of the listed flavors is selected.
+mariadb_server__apt_key_map:
+  'mariadb_upstream': '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB'
+  'percona':          '430BDF5C56E7C94E848EE60C1C4CBDCDCD2EFD2A'
 
 
 # .. envvar:: mariadb_server__upstream_version
@@ -60,10 +64,14 @@ mariadb_server__upstream_version: '10.1'
 mariadb_server__upstream_mirror: 'http://nyc2.mirrors.digitalocean.com/mariadb/repo/{{ mariadb_server__upstream_version }}/{{ ansible_distribution | lower }}'
 
 
-# .. envvar:: mariadb_server__upstream_repository
+# .. envvar:: mariadb_server__apt_repository_map
 #
-# Address of the MariaDB upstream APT repository.
-mariadb_server__upstream_repository: 'deb {{ mariadb_server__upstream_mirror }} {{ ansible_distribution_release }} main'
+# A YAML dictionary map which keeps APT repository configuration of different
+# MariaDB/MySQL/Percona APT repositories. These repositories will be configured
+# if any of the listed flavors is selected.
+mariadb_server__apt_repository_map:
+  'mariadb_upstream': 'deb {{ mariadb_server__upstream_mirror }} {{ ansible_distribution_release }} main'
+  'percona':          'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
 
 
 # .. envvar:: mariadb_server__base_packages
@@ -210,7 +218,7 @@ mariadb_server__mysqld_options:
 mariadb_server__client_options:
   - section: 'client'
     options:
-      'character-set-server': 'utf8'
+      'default-character-set': 'utf8'
 
 
 # .. envvar:: mariadb_server__options
@@ -225,7 +233,7 @@ mariadb_server__options: {}
 #   SSL configuration
 # ---------------------
 
-# .. envvar:: mariadb_erver__append_groups
+# .. envvar:: mariadb_server__append_groups
 #
 # List of additional system groups to append to the MariaDB system user.
 # ``ssl-cert`` group is required for access to certificate private keys.
@@ -253,9 +261,11 @@ mariadb_server__pki_path: '{{ (ansible_local.pki.base_path
 
 # .. envvar:: mariadb_server__pki_realm
 #
-# Default PKI realm used by MariaDB (Debian MariaDB packages do not support chained
-# certificates, see https://bugs.debian.org/630625).
-mariadb_server__pki_realm: 'service'
+# Default PKI realm used by MariaDB server.
+mariadb_server__pki_realm: '{{ ansible_local.pki.realm
+                               if (ansible_local|d() and ansible_local.pki|d() and
+                                   ansible_local.pki.realm|d())
+                               else "domain" }}'
 
 
 # .. envvar:: mariadb_server__pki_ca

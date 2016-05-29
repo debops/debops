@@ -12,39 +12,22 @@
   changed_when: False
   failed_when: False
 
-- name: Add MariaDB APT GPG key
+- name: Add custom APT GPG key
   apt_key:
     state: 'present'
-    id: '{{ mariadb_server__upstream_key }}'
+    id: '{{ mariadb_server__apt_key_map[mariadb_server__flavor] }}'
     keyserver: '{{ ansible_local.core.keyserver
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver|d())
                    else "hkp://pool.sks-keyservers.net" }}'
-  when: mariadb_server__flavor in [ 'mariadb_upstream' ]
+  when: mariadb_server__flavor in [ 'mariadb_upstream', 'percona' ]
 
-- name: Add MariaDB APT repository
+- name: Add custom APT repository
   apt_repository:
-    repo: '{{ mariadb_server__upstream_repository }}'
+    repo: '{{ mariadb_server__apt_repository_map[mariadb_server__flavor] }}'
     state: 'present'
     update_cache: True
-  when: mariadb_server__flavor in [ 'mariadb_upstream' ]
-
-- name: Add Percona APT GPG key
-  apt_key:
-    state: 'present'
-    id: '1C4CBDCDCD2EFD2A'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
-  when: mariadb_server__flavor in [ 'percona' ]
-
-- name: Add Percona APT repository
-  apt_repository:
-    repo: 'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
-    state: 'present'
-    update_cache: True
-  when: mariadb_server__flavor in [ 'percona' ]
+  when: mariadb_server__flavor in [ 'mariadb_upstream', 'percona' ]
 
 - name: Install database server packages
   apt:
@@ -65,7 +48,6 @@
     append: True
     createhome: False
   when: mariadb_server__pki|bool
-  notify: [ 'Restart mysql' ]
 
 - name: Configure database client on first install
   template:
