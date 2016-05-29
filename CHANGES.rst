@@ -1,12 +1,15 @@
 Changelog
 =========
 
-v0.1.3
+v0.2.0
 ------
 
 *Unreleased*
 
 - Fixed Ansible check mode. [ypid]
+
+- Move variables from ``vars/main.yml`` to ``defaults/main.yml``. Add ``vim``
+  fold markers in ``defaults/main.yml``. [drybjed]
 
 v0.1.2
 ------

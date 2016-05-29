@@ -1,9 +1,13 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
 # Default variables
 # =================
 
 # .. contents:: Sections
 #    :local:
+
+# .. MariaDB server configuration [[[1
 #
 # --------------------------------
 #   MariaDB server configuration
@@ -24,9 +28,34 @@ mariadb_server: ''
 mariadb_port: '3306'
 
 
-# -------------------------------
-#   Global client configuration
-# -------------------------------
+# .. envvar:: mariadb_client
+#
+# When the database server is used remotely, this variable defines the "host"
+# part of the client username. If a local MariaDB server is detected, this
+# variable will be automatically changed to ``localhost``.
+mariadb_client: '{{ ansible_fqdn }}'
+
+
+# .. envvar:: mariadb_delegate_to
+#
+# When the MariaDB server is used remotely, Ansible needs to run tasks on the
+# correct host. This variable controls the task delegation to the correct
+# database server.
+#
+# If the MariaDB server is run locally, this should point to the FQDN hostname of
+# the current host, NOT ``localhost`` because that would delegate the tasks to
+# the Ansible Controller.
+mariadb_delegate_to: '{{ mariadb_server
+                         if (mariadb_server|d() and
+                             mariadb_server != "localhost")
+                         else ansible_fqdn }}'
+
+
+# .. MariaDB APT packages [[[1
+#
+# ------------------------
+#   MariaDB APT packages
+# ------------------------
 
 # .. envvar:: mariadb_flavor
 #
@@ -46,6 +75,15 @@ mariadb_flavor: '{{ (ansible_local.mariadb.flavor
                      if (ansible_local|d() and ansible_local.mariadb|d() and
                          ansible_local.mariadb.flavor|d())
                      else (mariadb_flavor_map[ansible_distribution_release] | default("mariadb"))) }}'
+
+
+# .. envvar:: mariadb_flavor_map
+#
+# List of Linux distributions where the default MariaDB packages are not
+# available and MySQL should be used instead.
+mariadb_flavor_map:
+  'wheezy': 'mysql'
+  'precise': 'mysql'
 
 
 # .. envvar:: mariadb_upstream_key
@@ -96,29 +134,12 @@ mariadb_packages_map:
   'percona': [ 'percona-server-client' ]
 
 
-# .. envvar:: mariadb_client
+# .. MariaDB client system-wide configuration [[[1
 #
-# When the database server is used remotely, this variable defines the "host"
-# part of the client username. If a local MariaDB server is detected, this
-# variable will be automatically changed to ``localhost``.
-mariadb_client: '{{ ansible_fqdn }}'
-
-
-# .. envvar:: mariadb_delegate_to
+# --------------------------------------------
+#   MariaDB client system-wide configuration
+# --------------------------------------------
 #
-# When the MariaDB server is used remotely, Ansible needs to run tasks on the
-# correct host. This variable controls the task delegation to the correct
-# database server.
-#
-# If the MariaDB server is run locally, this should point to the FQDN hostname of
-# the current host, NOT ``localhost`` because that would delegate the tasks to
-# the Ansible Controller.
-mariadb_delegate_to: '{{ mariadb_server
-                         if (mariadb_server|d() and
-                             mariadb_server != "localhost")
-                         else ansible_fqdn }}'
-
-
 # .. envvar:: mariadb_client_options
 #
 # Dict with additional MariaDB client options set system-wide, option names as
@@ -127,6 +148,8 @@ mariadb_delegate_to: '{{ mariadb_server
 mariadb_client_options: {}
 
 
+# .. User account privileges [[[1
+#
 # ---------------------------
 #   User account privileges
 # ---------------------------
@@ -160,6 +183,8 @@ mariadb_default_privileges_aux: True
 mariadb_default_privileges_grant: 'ALL'
 
 
+# .. Databases, user accounts [[[1
+#
 # ----------------------------
 #   Databases, user accounts
 # ----------------------------
