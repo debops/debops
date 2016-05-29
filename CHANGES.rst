@@ -20,6 +20,10 @@ v0.2.0
   located on a different host. The SSL support is enabled automatically when
   ``debops.pki`` environment is configured. [drybjed]
 
+- Add custom variables for users and databases defined by other Ansible roles
+  via dependent variables. Also, ensure that old legacy lists of databases and
+  users are still supported. [drybjed]
+
 v0.1.2
 ------
 
