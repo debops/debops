@@ -15,6 +15,10 @@ v0.2.1
   ``/etc/mysql/conf.d/client.cnf``. The latter was causing an error when user
   tried to connect to the database using ``mysql`` command line. [drybjed]
 
+- Enable use of the default ``domain`` PKI realm, current certificate
+  environment managed by ``debops.pki`` works with the MariaDB/MySQL/Percona
+  servers out of the box. [drybjed]
+
 v0.2.0
 ------
 

@@ -261,9 +261,11 @@ mariadb_server__pki_path: '{{ (ansible_local.pki.base_path
 
 # .. envvar:: mariadb_server__pki_realm
 #
-# Default PKI realm used by MariaDB (Debian MariaDB packages do not support chained
-# certificates, see https://bugs.debian.org/630625).
-mariadb_server__pki_realm: 'service'
+# Default PKI realm used by MariaDB server.
+mariadb_server__pki_realm: '{{ ansible_local.pki.realm
+                               if (ansible_local|d() and ansible_local.pki|d() and
+                                   ansible_local.pki.realm|d())
+                               else "domain" }}'
 
 
 # .. envvar:: mariadb_server__pki_ca
