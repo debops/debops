@@ -4,17 +4,17 @@
 
 default-character-set   = utf8
 
-{% if not mariadb_register_version.stdout|d(False) %}
-{% if mariadb_register_tunnel is undefined or mariadb_register_tunnel.rc|d() != 0 %}
-host                    = {{ mariadb_server }}
+{% if not mariadb__register_version.stdout|d(False) %}
+{% if mariadb__register_tunnel is undefined or mariadb__register_tunnel.rc|d() != 0 %}
+host                    = {{ mariadb__server }}
 {% else %}
 host                    = 127.0.0.1
 {% endif %}
-port                    = {{ mariadb_port }}
+port                    = {{ mariadb__port }}
 
 {% endif %}
-{% if mariadb_client_options|d(False) %}
-{% for key, value in mariadb_client_options.iteritems() %}
+{% if mariadb__client_options|d(False) %}
+{% for key, value in mariadb__client_options.iteritems() %}
 {{ key }}{% if value is not none %} = {{ value }}{% endif %}
 {% endfor %}
 

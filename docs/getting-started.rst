@@ -34,7 +34,7 @@ a local installation, ``debops.mariadb`` will detect that and won't manage the
 databases/user accounts without a server specified. To point it to a server,
 you need to set a variable in the inventory::
 
-    mariadb_server: 'db.example.org'
+    mariadb__server: 'db.example.org'
 
 This needs to be a FQDN address or an IP address of a host with MariaDB server
 installed. This host will be accessed by Ansible using task delegation, so it
@@ -55,7 +55,7 @@ awaiting connections, ``debops.mariadb`` role assumes that MariaDB server is
 accessible over a VPN connection. In this case you need to specify the remote
 host in inventory for Ansible to delegate its tasks::
 
-    mariadb_server: 'db.example.org'
+    mariadb__server: 'db.example.org'
 
 User accounts will automatically be configured with ``localhost`` as the "host"
 part of the account.
@@ -76,11 +76,11 @@ To enable MariaDB client support on a host, you need to add that host to
 When MariaDB server is properly configured, or installed locally, you can
 create user accounts and databases using inventory variables::
 
-    mariadb_databases:
+    mariadb__databases:
 
       - name: 'application_production'
 
-    mariadb_users:
+    mariadb__users:
 
       - name: 'application'
         owner: 'application'
@@ -122,7 +122,7 @@ Example usage as a role dependency::
     dependencies:
 
       - role: debops.mariadb
-        mariadb_users:
+        mariadb__users:
 
           - user: '{{ application_database_user }}'
             database: '{{ application_database_name }}'
@@ -136,7 +136,7 @@ Password to the database user account can either be retrieved directly from the
 ``secret/`` directory by the application role using ``debops.secret`` role, or
 set by the application role and provided as::
 
-    mariadb_users:
+    mariadb__users:
 
       - user: '{{ application_database_user }}'
         password: '{{ application_database_password }}'

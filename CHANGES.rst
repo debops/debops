@@ -11,6 +11,8 @@ v0.2.0
 - Move variables from ``vars/main.yml`` to ``defaults/main.yml``. Add ``vim``
   fold markers in ``defaults/main.yml``. [drybjed]
 
+- Rename all role variables to put them in their own namespace. [drybjed]
+
 v0.1.2
 ------
 

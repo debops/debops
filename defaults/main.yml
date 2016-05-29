@@ -13,30 +13,30 @@
 #   MariaDB server configuration
 # --------------------------------
 
-# .. envvar:: mariadb_server
+# .. envvar:: mariadb__server
 #
 # FQDN hostname of the MariaDB server. If a local MariaDB server is detected, it
 # will override this variable automatically. Only one server at a time is
 # currently supported per host.
-mariadb_server: ''
+mariadb__server: ''
 
 
-# .. envvar:: mariadb_port
+# .. envvar:: mariadb__port
 #
 # Port number on which to connect to the server. You usually don't need to
 # change this.
-mariadb_port: '3306'
+mariadb__port: '3306'
 
 
-# .. envvar:: mariadb_client
+# .. envvar:: mariadb__client
 #
 # When the database server is used remotely, this variable defines the "host"
 # part of the client username. If a local MariaDB server is detected, this
 # variable will be automatically changed to ``localhost``.
-mariadb_client: '{{ ansible_fqdn }}'
+mariadb__client: '{{ ansible_fqdn }}'
 
 
-# .. envvar:: mariadb_delegate_to
+# .. envvar:: mariadb__delegate_to
 #
 # When the MariaDB server is used remotely, Ansible needs to run tasks on the
 # correct host. This variable controls the task delegation to the correct
@@ -45,10 +45,10 @@ mariadb_client: '{{ ansible_fqdn }}'
 # If the MariaDB server is run locally, this should point to the FQDN hostname of
 # the current host, NOT ``localhost`` because that would delegate the tasks to
 # the Ansible Controller.
-mariadb_delegate_to: '{{ mariadb_server
-                         if (mariadb_server|d() and
-                             mariadb_server != "localhost")
-                         else ansible_fqdn }}'
+mariadb__delegate_to: '{{ mariadb__server
+                          if (mariadb__server|d() and
+                              mariadb__server != "localhost")
+                          else ansible_fqdn }}'
 
 
 # .. MariaDB APT packages [[[1
@@ -57,7 +57,7 @@ mariadb_delegate_to: '{{ mariadb_server
 #   MariaDB APT packages
 # ------------------------
 
-# .. envvar:: mariadb_flavor
+# .. envvar:: mariadb__flavor
 #
 # Variable which defines what database engine to use:
 #
@@ -71,63 +71,63 @@ mariadb_delegate_to: '{{ mariadb_server
 #
 # The choice depends on availability of MariaDB packages in a distribution.
 # Percona needs to be selected explicitly.
-mariadb_flavor: '{{ (ansible_local.mariadb.flavor
-                     if (ansible_local|d() and ansible_local.mariadb|d() and
-                         ansible_local.mariadb.flavor|d())
-                     else (mariadb_flavor_map[ansible_distribution_release] | default("mariadb"))) }}'
+mariadb__flavor: '{{ (ansible_local.mariadb.flavor
+                      if (ansible_local|d() and ansible_local.mariadb|d() and
+                          ansible_local.mariadb.flavor|d())
+                      else (mariadb__flavor_map[ansible_distribution_release] | default("mariadb"))) }}'
 
 
-# .. envvar:: mariadb_flavor_map
+# .. envvar:: mariadb__flavor_map
 #
 # List of Linux distributions where the default MariaDB packages are not
 # available and MySQL should be used instead.
-mariadb_flavor_map:
+mariadb__flavor_map:
   'wheezy': 'mysql'
   'precise': 'mysql'
 
 
-# .. envvar:: mariadb_upstream_key
+# .. envvar:: mariadb__upstream_key
 #
 # APT GPG key fingerprint used to sign the upstream MariaDB packages.
-mariadb_upstream_key: '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB'
+mariadb__upstream_key: '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB'
 
 
-# .. envvar:: mariadb_upstream_version
+# .. envvar:: mariadb__upstream_version
 #
 # Version of the MariaDB upstream.
-mariadb_upstream_version: '10.1'
+mariadb__upstream_version: '10.1'
 
 
-# .. envvar:: mariadb_upstream_mirror
+# .. envvar:: mariadb__upstream_mirror
 #
 # URL of the MariaDB upstream mirror.
-mariadb_upstream_mirror: 'http://nyc2.mirrors.digitalocean.com/mariadb/repo/{{ mariadb_upstream_version }}/{{ ansible_distribution | lower }}'
+mariadb__upstream_mirror: 'http://nyc2.mirrors.digitalocean.com/mariadb/repo/{{ mariadb__upstream_version }}/{{ ansible_distribution | lower }}'
 
 
-# .. envvar:: mariadb_upstream_repository
+# .. envvar:: mariadb__upstream_repository
 #
 # Address of the MariaDB upstream APT repository.
-mariadb_upstream_repository: 'deb {{ mariadb_upstream_mirror }} {{ ansible_distribution_release }} main'
+mariadb__upstream_repository: 'deb {{ mariadb__upstream_mirror }} {{ ansible_distribution_release }} main'
 
 
-# .. envvar:: mariadb_base_packages
+# .. envvar:: mariadb__base_packages
 #
 # List of APT packages that should be installed with any database engine
 # selected.
-mariadb_base_packages: [ 'python-mysqldb' ]
+mariadb__base_packages: [ 'python-mysqldb' ]
 
 
-# .. envvar:: mariadb_packages
+# .. envvar:: mariadb__packages
 #
 # List of additional packages to install with the database client.
-mariadb_packages: []
+mariadb__packages: []
 
 
-# .. envvar:: mariadb_packages_map
+# .. envvar:: mariadb__packages_map
 #
 # Dictionary with list of packages that will be installed with a particular
 # database engine.
-mariadb_packages_map:
+mariadb__packages_map:
   'mariadb': [ 'mariadb-client' ]
   'mariadb_upstream': [ 'mariadb-client' ]
   'mysql': [ 'mysql-client' ]
@@ -140,12 +140,12 @@ mariadb_packages_map:
 #   MariaDB client system-wide configuration
 # --------------------------------------------
 #
-# .. envvar:: mariadb_client_options
+# .. envvar:: mariadb__client_options
 #
 # Dict with additional MariaDB client options set system-wide, option names as
 # keys and their values as values, added to ``/etc/mysql/conf.d/client.cnf``.
 # Options without specific values should be defined with empty values.
-mariadb_client_options: {}
+mariadb__client_options: {}
 
 
 # .. User account privileges [[[1
@@ -154,7 +154,7 @@ mariadb_client_options: {}
 #   User account privileges
 # ---------------------------
 
-# .. envvar:: mariadb_default_privileges
+# .. envvar:: mariadb__default_privileges
 #
 # Should ``debops.mariadb`` automatically grant all privileges to a database
 # named the same as the username for a given user account? This is equivalent
@@ -162,10 +162,10 @@ mariadb_client_options: {}
 #
 #     GRANT ALL PRIVILEGES ON `<user>`.* TO `<user>`@`<host>`;
 #
-mariadb_default_privileges: True
+mariadb__default_privileges: True
 
 
-# .. envvar:: mariadb_default_privileges_aux
+# .. envvar:: mariadb__default_privileges_aux
 #
 # Should ``debops.mariadb`` automatically grant all privileges to databases
 # with the same prefix as the username for a given user account? This is
@@ -173,14 +173,14 @@ mariadb_default_privileges: True
 #
 #     GRANT ALL PRIVILEGES ON `<user>\_%`.* TO `<user>`@`<host>`;
 #
-mariadb_default_privileges_aux: True
+mariadb__default_privileges_aux: True
 
 
-# .. envvar:: mariadb_default_privileges_grant
+# .. envvar:: mariadb__default_privileges_grant
 #
 # Default privileges granted automatically. See Ansible ``mysql_user`` module
 # for list and format of privileges.
-mariadb_default_privileges_grant: 'ALL'
+mariadb__default_privileges_grant: 'ALL'
 
 
 # .. Databases, user accounts [[[1
@@ -189,23 +189,23 @@ mariadb_default_privileges_grant: 'ALL'
 #   Databases, user accounts
 # ----------------------------
 
-# .. envvar:: mariadb_password_length
+# .. envvar:: mariadb__password_length
 #
 # Length of automatically generated user accounts, saved in the ``secret/``
 # directory. See ``debops.secret`` role for more details about passwords.
-mariadb_password_length: '48'
+mariadb__password_length: '48'
 
 
-# .. envvar:: mariadb_databases
+# .. envvar:: mariadb__databases
 #
 # List of databases configured on the MariaDB server. See
-# :ref:`mariadb_databases` for more details.
-mariadb_databases: []
+# :ref:`mariadb__databases` for more details.
+mariadb__databases: []
 
 
-# .. envvar:: mariadb_users
+# .. envvar:: mariadb__users
 #
 # List of user accounts configured on the MariaDB server. See
-# :ref:`mariadb_users` for more details.
-mariadb_users: []
+# :ref:`mariadb__users` for more details.
+mariadb__users: []
 

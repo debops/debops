@@ -9,10 +9,10 @@ them.
    :local:
    :depth: 1
 
-.. _mariadb_databases:
+.. _mariadb__databases:
 
-mariadb_databases
------------------
+mariadb__databases
+------------------
 
 List of databases that should be present or absent on a given MariaDB server.
 Each database is defined as a YAML dict with the following keys:
@@ -49,7 +49,7 @@ Examples
 
 Create databases, remove some of the existing ones::
 
-    mariadb_databases:
+    mariadb__databases:
 
       - name: 'database1'
 
@@ -61,23 +61,23 @@ Create databases, remove some of the existing ones::
 Create a database and import its contents from a file already present on remote
 host::
 
-    mariadb_databases:
+    mariadb__databases:
 
       - name: 'fancy_db'
         target: '/tmp/dbcontents.sql.gz'
 
 Create a database and import its contents from a file on the Ansible Controller::
 
-    mariadb_databases:
+    mariadb__databases:
 
       - name: 'new_database'
         source: '/tmp/database-contents.sql.gz'
         target: '/tmp/dbcontents.sql.gz'
 
-.. _mariadb_users:
+.. _mariadb__users:
 
-mariadb_users
--------------
+mariadb__users
+--------------
 
 List of user accounts that should be present or absent on a given MariaDB
 server. Each user account is defined as a dict with a set of keys and values.
@@ -174,14 +174,14 @@ Examples
 Create a MariaDB user account with all privileges granted to the ``someuser.*`` and
 ``someuser\_%.*`` databases::
 
-    mariadb_users:
+    mariadb__users:
 
       - name: 'someuser'
 
 Create a MariaDB user account with all privileges to ``somedatabase.*``
 without auxiliary privileges::
 
-    mariadb_users:
+    mariadb__users:
 
       - name: 'someuser'
         database: 'somedatabase'
@@ -190,7 +190,7 @@ without auxiliary privileges::
 Create a MariaDB user account and set up a local system account configured to
 use MariaDB::
 
-    mariadb_users:
+    mariadb__users:
 
       - name: 'someuser'
         owner: 'system-user'
@@ -198,7 +198,7 @@ use MariaDB::
 
 Create a MariaDB user account without default privileges::
 
-    mariadb_users:
+    mariadb__users:
 
       - name: 'someuser'
         priv_default: False
@@ -206,7 +206,7 @@ Create a MariaDB user account without default privileges::
 
 Create a MariaDB user account with custom additional privileges::
 
-    mariadb_users:
+    mariadb__users:
 
       - name: 'someuser'
         priv: [ 'otherdb.*:ALL' ]
