@@ -16,6 +16,10 @@ v0.2.0
 - Move MariaDB client configuration from template into YAML structures.
   [drybjed]
 
+- Add support for client-side SSL configuration, enabled when the database is
+  located on a different host. The SSL support is enabled automatically when
+  ``debops.pki`` environment is configured. [drybjed]
+
 v0.1.2
 ------
 

@@ -41,8 +41,16 @@ installed. This host will be accessed by Ansible using task delegation, so it
 needs to be accessible and managed by Ansible. Currently only 1 server at
 a time is supported by the role.
 
-Connections to the database server are done in cleartext, so you might want to
-consider securing them by configuring server on a separate internal network, or
+If ``debops.pki`` role is used to configure a PKI environment, with default
+``domain`` PKI realm enabled, role will configure the provided private keys and
+X.509 certificates to enable SSL connections to the database by default.
+Support for client-side X.509 authentication will depend on a given user having
+access to the PKI private keys - see the documentation of ``debops.pki`` role
+for more details.
+
+If the PKI environment is not configured or disabled, connections to the
+database server will be performed in cleartext, so you might want to consider
+securing them by configuring server on a separate internal network, or
 accessing it over a VPN connection. You can use ``debops.subnetwork``,
 ``debops.tinc`` and ``debops.dnsmasq`` Ansible roles to set up a VPN internal
 network to secure communication between hosts.

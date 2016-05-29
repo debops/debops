@@ -180,6 +180,16 @@ mariadb__client_remote_host_options:
           'host': '127.0.0.1'
           'port': '{{ mariadb__port }}'
 
+      - name: 'pki-options'
+        comment: 'Support for SSL connections'
+        state: '{{ "present" if mariadb__pki|bool else "absent" }}'
+        options:
+          'ssl':
+          'ssl-ca':     '{{ mariadb__pki_path + "/" + mariadb__pki_realm + "/" + mariadb__pki_ca }}'
+          'ssl-cert':   '{{ mariadb__pki_path + "/" + mariadb__pki_realm + "/" + mariadb__pki_crt }}'
+          'ssl-key':    '{{ mariadb__pki_path + "/" + mariadb__pki_realm + "/" + mariadb__pki_key }}'
+          'ssl-cipher': '{{ mariadb__pki_cipher }}'
+
 
 # .. envvar:: mariadb__client_options
 #
@@ -197,6 +207,65 @@ mariadb__client_options:
 #
 # Dictionary or list with custom ``mysql`` client options.
 mariadb__options: {}
+
+
+# .. SSL configuration [[[1
+#
+# ---------------------
+#   SSL configuration
+# ---------------------
+
+# .. envvar:: mariadb__pki
+#
+# Enable or disable support for SSL in MariaDB (using ``debops.pki``).
+mariadb__pki: '{{ (True
+                   if (ansible_local|d() and ansible_local.pki|d() and
+                       ansible_local.pki.enabled|d() and
+                       mariadb__pki_realm in ansible_local.pki.known_realms)
+                   else False) | bool }}'
+
+
+# .. envvar:: mariadb__pki_path
+#
+# Base path for PKI directory.
+mariadb__pki_path: '{{ (ansible_local.pki.base_path
+                        if (ansible_local|d() and ansible_local.pki|d() and
+                            ansible_local.pki.base_path|d())
+                        else "/etc/pki") }}'
+
+
+# .. envvar:: mariadb__pki_realm
+#
+# Default PKI realm used by MariaDB (Debian MariaDB packages do not support chained
+# certificates, see https://bugs.debian.org/630625).
+mariadb__pki_realm: '{{ ansible_local.pki.realm
+                        if (ansible_local|d() and ansible_local.pki|d() and
+                            ansible_local.pki.realm|d())
+                        else "domain" }}'
+
+
+# .. envvar:: mariadb__pki_ca
+#
+# Root CA certificate used by MariaDB, relative to ``mariadb__pki_realm``.
+mariadb__pki_ca: 'CA.crt'
+
+
+# .. envvar:: mariadb__pki_crt
+#
+# Host certificate used by MariaDB, relative to ``mariadb__pki_realm``.
+mariadb__pki_crt: 'default.crt'
+
+
+# .. envvar:: mariadb__pki_key
+#
+# Host private key used by MariaDB, relative to ``mariadb__pki_realm``.
+mariadb__pki_key: 'default.key'
+
+
+# .. envvar:: mariadb__pki_cipher
+#
+# Cipher suite used for encrypted connections.
+mariadb__pki_cipher: 'DHE-RSA-AES256-SHA'
 
 
 # .. User account privileges [[[1
