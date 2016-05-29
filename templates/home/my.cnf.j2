@@ -3,15 +3,15 @@
 
 [client]
 
-{% if mariadb_server != "localhost" %}
-host                    = {{ item.server | d(mariadb_server) }}
-port                    = {{ item.server_port | d(mariadb_port) }}
+{% if mariadb__server != "localhost" %}
+host                    = {{ item.server | d(mariadb__server) }}
+port                    = {{ item.server_port | d(mariadb__port) }}
 {% else %}
-# host                    = {{ item.server | d(mariadb_server) }}
-# port                    = {{ item.server_port | d(mariadb_port) }}
+# host                    = {{ item.server | d(mariadb__server) }}
+# port                    = {{ item.server_port | d(mariadb__port) }}
 {% endif %}
 user                    = {{ item.user | d(item.name) }}
-password                = "{{ item.password | default(lookup('password', secret + '/mariadb/' + mariadb_delegate_to | d('undefined') + '/credentials/' + item.user | d(item.name) + '/password ' + 'length=' + mariadb_password_length)) }}"
+password                = "{{ item.password | default(lookup('password', secret + '/mariadb/' + mariadb__delegate_to | d('undefined') + '/credentials/' + item.user | d(item.name) + '/password ' + 'length=' + mariadb__password_length)) }}"
 {% if item.database|d(False) %}
 database                = {{ item.database }}
 {% endif %}

@@ -1,12 +1,33 @@
 Changelog
 =========
 
-v0.1.3
+v0.2.0
 ------
 
-*Unreleased*
+*Released: 2016-05-29*
 
 - Fixed Ansible check mode. [ypid]
+
+- Move variables from ``vars/main.yml`` to ``defaults/main.yml``. Add ``vim``
+  fold markers in ``defaults/main.yml``. [drybjed]
+
+- Rename all role variables to put them in their own namespace. [drybjed]
+
+- Move MariaDB client configuration from template into YAML structures.
+  [drybjed]
+
+- Add support for client-side SSL configuration, enabled when the database is
+  located on a different host. The SSL support is enabled automatically when
+  ``debops.pki`` environment is configured. [drybjed]
+
+- Add custom variables for users and databases defined by other Ansible roles
+  via dependent variables. Also, ensure that old legacy lists of databases and
+  users are still supported. [drybjed]
+
+- Update documentation. [drybjed]
+
+- Redesign the APT key/repository Ansible tasks to use YAML dictionaries with
+  data based on selected database flavor. [drybjed]
 
 v0.1.2
 ------

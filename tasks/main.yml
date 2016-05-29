@@ -7,64 +7,47 @@
   environment:
     LC_MESSAGES: 'C'
   shell: dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server' 'percona-server-server' | grep -v '^$'
-  register: mariadb_register_version
+  register: mariadb__register_version
   changed_when: False
   failed_when: False
   always_run: True
 
-- name: Add MariaDB APT GPG key
+- name: Add custom APT GPG key
   apt_key:
     state: 'present'
-    id: '{{ mariadb_upstream_key }}'
+    id: '{{ mariadb__apt_key_map[mariadb__flavor] }}'
     keyserver: '{{ ansible_local.core.keyserver
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver|d())
                    else "hkp://pool.sks-keyservers.net" }}'
-  when: mariadb_flavor in [ 'mariadb_upstream' ]
+  when: mariadb__flavor in [ 'mariadb_upstream', 'percona' ]
 
-- name: Add MariaDB APT repository
+- name: Add custom APT repository
   apt_repository:
-    repo: '{{ mariadb_upstream_repository }}'
+    repo: '{{ mariadb__apt_repository_map[mariadb__flavor] }}'
     state: 'present'
     update_cache: True
-  when: mariadb_flavor in [ 'mariadb_upstream' ]
-
-- name: Add Percona APT GPG key
-  apt_key:
-    state: 'present'
-    id: '1C4CBDCDCD2EFD2A'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
-  when: mariadb_flavor in [ 'percona' ]
-
-- name: Add Percona APT repository
-  apt_repository:
-    repo: 'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
-    state: 'present'
-    update_cache: True
-  when: mariadb_flavor in [ 'percona' ]
+  when: mariadb__flavor in [ 'mariadb_upstream', 'percona' ]
 
 - name: Check if local database port is open
-  command: nc -z localhost {{ mariadb_port }}
-  register: mariadb_register_tunnel
-  when: not mariadb_register_version.stdout
+  command: nc -z localhost {{ mariadb__port }}
+  register: mariadb__register_tunnel
+  when: not mariadb__register_version.stdout
   failed_when: False
   changed_when: False
 
 - name: Override delegation if tunnel is detected
   set_fact:
-    mariadb_delegate_to: '{{ mariadb_server|d("undefined") }}'
-  when: (not mariadb_register_version.stdout|d(False) and
-         (mariadb_register_tunnel|d() and mariadb_register_tunnel.rc == 0))
+    mariadb__delegate_to: '{{ mariadb__server|d("undefined") }}'
+  when: (not mariadb__register_version.stdout|d(False) and
+         (mariadb__register_tunnel|d() and mariadb__register_tunnel.rc == 0))
 
 - name: Override configuration if local server is detected
   set_fact:
-    mariadb_server: 'localhost'
-    mariadb_client: 'localhost'
-  when: (mariadb_register_version.stdout|d(False) or
-         (mariadb_register_tunnel|d() and mariadb_register_tunnel.rc == 0))
+    mariadb__server: 'localhost'
+    mariadb__client: 'localhost'
+  when: (mariadb__register_version.stdout|d(False) or
+         (mariadb__register_tunnel|d() and mariadb__register_tunnel.rc == 0))
 
 - name: Install database client packages
   apt:
@@ -72,9 +55,9 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ mariadb_base_packages }}'
-    - '{{ mariadb_packages_map[mariadb_flavor] }}'
-    - '{{ mariadb_packages }}'
+    - '{{ mariadb__base_packages }}'
+    - '{{ mariadb__packages_map[mariadb__flavor] }}'
+    - '{{ mariadb__packages }}'
 
 - name: Configure database client defaults
   template:
@@ -83,7 +66,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: mariadb_server|d(False)
+  when: mariadb__server|d(False)
 
 - name: Make sure that local fact directory exists
   file:
@@ -100,15 +83,14 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: mariadb_register_local_facts
+  register: mariadb__register_local_facts
 
 - name: Re-read local facts if they have been changed
   action: setup
-  when: mariadb_register_local_facts|d() and
-        mariadb_register_local_facts.changed
+  when: mariadb__register_local_facts.changed|bool
 
 - name: Manage database contents
   include: 'manage_contents.yml'
-  when: (mariadb_server|d(False) and mariadb_delegate_to)
+  when: (mariadb__server|d(False) and mariadb__delegate_to)
   tags: [ 'role::mariadb:contents' ]
 
