@@ -19,6 +19,10 @@ v0.2.1
   environment managed by ``debops.pki`` works with the MariaDB/MySQL/Percona
   servers out of the box. [drybjed]
 
+- Remove all Ansible handlers, the database server is not restarted
+  automatically. This should resolve an issue where upstream MariaDB packages
+  don't support service reload. [drybjed]
+
 v0.2.0
 ------
 
