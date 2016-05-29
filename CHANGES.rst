@@ -4,7 +4,7 @@ Changelog
 v0.2.0
 ------
 
-*Unreleased*
+*Released: 2016-05-29*
 
 - Fixed Ansible check mode. [ypid]
 
@@ -25,6 +25,9 @@ v0.2.0
   users are still supported. [drybjed]
 
 - Update documentation. [drybjed]
+
+- Redesign the APT key/repository Ansible tasks to use YAML dictionaries with
+  data based on selected database flavor. [drybjed]
 
 v0.1.2
 ------

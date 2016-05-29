@@ -12,39 +12,22 @@
   failed_when: False
   always_run: True
 
-- name: Add MariaDB APT GPG key
+- name: Add custom APT GPG key
   apt_key:
     state: 'present'
-    id: '{{ mariadb__upstream_key }}'
+    id: '{{ mariadb__apt_key_map[mariadb__flavor] }}'
     keyserver: '{{ ansible_local.core.keyserver
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver|d())
                    else "hkp://pool.sks-keyservers.net" }}'
-  when: mariadb__flavor in [ 'mariadb_upstream' ]
+  when: mariadb__flavor in [ 'mariadb_upstream', 'percona' ]
 
-- name: Add MariaDB APT repository
+- name: Add custom APT repository
   apt_repository:
-    repo: '{{ mariadb__upstream_repository }}'
+    repo: '{{ mariadb__apt_repository_map[mariadb__flavor] }}'
     state: 'present'
     update_cache: True
-  when: mariadb__flavor in [ 'mariadb_upstream' ]
-
-- name: Add Percona APT GPG key
-  apt_key:
-    state: 'present'
-    id: '1C4CBDCDCD2EFD2A'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
-  when: mariadb__flavor in [ 'percona' ]
-
-- name: Add Percona APT repository
-  apt_repository:
-    repo: 'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
-    state: 'present'
-    update_cache: True
-  when: mariadb__flavor in [ 'percona' ]
+  when: mariadb__flavor in [ 'mariadb_upstream', 'percona' ]
 
 - name: Check if local database port is open
   command: nc -z localhost {{ mariadb__port }}

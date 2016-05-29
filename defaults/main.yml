@@ -86,10 +86,14 @@ mariadb__flavor_map:
   'precise': 'mysql'
 
 
-# .. envvar:: mariadb__upstream_key
+# .. envvar:: mariadb__apt_key_map
 #
-# APT GPG key fingerprint used to sign the upstream MariaDB packages.
-mariadb__upstream_key: '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB'
+# A YAML dictionary map which keeps GPG key ids for APT repository keys of
+# different MariaDB/MySQL/Percona APT repositories. These GPG keys will be
+# downloaded if any of the listed flavors is selected.
+mariadb__apt_key_map:
+  'mariadb_upstream': '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB'
+  'percona':          '430BDF5C56E7C94E848EE60C1C4CBDCDCD2EFD2A'
 
 
 # .. envvar:: mariadb__upstream_version
@@ -104,10 +108,14 @@ mariadb__upstream_version: '10.1'
 mariadb__upstream_mirror: 'http://nyc2.mirrors.digitalocean.com/mariadb/repo/{{ mariadb__upstream_version }}/{{ ansible_distribution | lower }}'
 
 
-# .. envvar:: mariadb__upstream_repository
+# .. envvar:: mariadb__apt_repository_map
 #
-# Address of the MariaDB upstream APT repository.
-mariadb__upstream_repository: 'deb {{ mariadb__upstream_mirror }} {{ ansible_distribution_release }} main'
+# A YAML dictionary map which keeps APT repository configuration of different
+# MariaDB/MySQL/Percona APT repositories. These repositories will be configured
+# if any of the listed flavors is selected.
+mariadb__apt_repository_map:
+  'mariadb_upstream': 'deb {{ mariadb__upstream_mirror }} {{ ansible_distribution_release }} main'
+  'percona':          'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
 
 
 # .. envvar:: mariadb__base_packages
