@@ -24,6 +24,8 @@ v0.2.0
   via dependent variables. Also, ensure that old legacy lists of databases and
   users are still supported. [drybjed]
 
+- Update documentation. [drybjed]
+
 v0.1.2
 ------
 

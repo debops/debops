@@ -76,22 +76,24 @@ Example inventory
 -----------------
 
 To enable MariaDB client support on a host, you need to add that host to
-``[debops_mariadb]`` Ansible group::
+``[debops_service_mariadb]`` Ansible group::
 
-    [debops_mariadb]
+    [debops_service_mariadb]
     hostname
 
 When MariaDB server is properly configured, or installed locally, you can
-create user accounts and databases using inventory variables::
+create user accounts and databases using inventory variables:
 
-    mariadb__databases:
+.. code-block:: yaml
 
-      - name: 'application_production'
+   mariadb__databases:
 
-    mariadb__users:
+     - name: 'application_production'
 
-      - name: 'application'
-        owner: 'application'
+   mariadb__users:
+
+     - name: 'application'
+       owner: 'application'
 
 Above set of variables will create local system UNIX account ``application`` if
 it doesn't already exist, with a supplementary UNIX group of the same name,
@@ -102,15 +104,17 @@ finally, create a database ``application_production`` on the database server.
 Example playbook
 ----------------
 
-Here's an example Ansible playbook that uses the ``debops.mariadb`` role::
+Here's an example Ansible playbook that uses the ``debops.mariadb`` role:
 
-    ---
-    - hosts: debops_mariadb
-      sudo: True
+.. code-block:: yaml
 
-      roles:
-        - role: debops.mariadb
-          tags: mariadb
+   ---
+   - hosts: [ 'debops_service_mariadb' ]
+     become: True
+
+     roles:
+       - role: debops.mariadb
+         tags: [ 'role::mariadb' ]
 
 Usage as a role dependency
 --------------------------
@@ -125,29 +129,33 @@ Database creation is best left for the application role, since then you can use
 the state change to perform other actions, like importing or initializing the
 database. See the next section for details.
 
-Example usage as a role dependency::
+Example usage as a role dependency:
 
-    dependencies:
+.. code-block:: yaml
 
-      - role: debops.mariadb
-        mariadb__users:
+   dependencies:
 
-          - user: '{{ application_database_user }}'
-            database: '{{ application_database_name }}'
-            owner: '{{ application_user }}'
-            group: '{{ application_group }}'
-            home: '{{ application_home }}'
-            system: True
-            priv_aux: False
+     - role: debops.mariadb
+       mariadb__dependent_users:
+
+         - user: '{{ application_database_user }}'
+           database: '{{ application_database_name }}'
+           owner: '{{ application_user }}'
+           group: '{{ application_group }}'
+           home: '{{ application_home }}'
+           system: True
+           priv_aux: False
 
 Password to the database user account can either be retrieved directly from the
 ``secret/`` directory by the application role using ``debops.secret`` role, or
-set by the application role and provided as::
+set by the application role and provided as:
 
-    mariadb__users:
+.. code-block:: yaml
 
-      - user: '{{ application_database_user }}'
-        password: '{{ application_database_password }}'
+   mariadb__dependent_users:
+
+     - user: '{{ application_database_user }}'
+       password: '{{ application_database_password }}'
 
 In that case it's best to use ``debops.secret`` role to store the password
 securely in a separate directory.
@@ -171,21 +179,23 @@ servers. These facts are:
 
 These variables can be used in Ansible tasks to provide correct values pointing
 to the correct MariaDB server. An example set of tasks to create user account
-and database::
+and database:
 
-    - name: Create database user
-      mysql_user:
-        name: '{{ application_database_user }}'
-        host: '{{ ansible_local.mariadb.host }}'
-        password: '{{ application_database_password }}'
-        priv: '{{ application_database_name }}.*:ALL'
-        state: 'present'
-      delegate_to: '{{ ansible_local.mariadb.delegate_to }}'
+.. code-block:: yaml
 
-    - name: Create application database
-      mysql_db:
-        name: '{{ application_database_name }}'
-        state: 'present'
-      delegate_to: '{{ ansible_local.mariadb.delegate_to }}'
-      register: application_register_database
+   - name: Create database user
+     mysql_user:
+       name: '{{ application_database_user }}'
+       host: '{{ ansible_local.mariadb.host }}'
+       password: '{{ application_database_password }}'
+       priv: '{{ application_database_name }}.*:ALL'
+       state: 'present'
+     delegate_to: '{{ ansible_local.mariadb.delegate_to }}'
+
+   - name: Create application database
+     mysql_db:
+       name: '{{ application_database_name }}'
+       state: 'present'
+     delegate_to: '{{ ansible_local.mariadb.delegate_to }}'
+     register: application_register_database
 
