@@ -11,6 +11,10 @@ v0.2.1
   repository key and configuration according to selected MariaDB flavor.
   [drybjed]
 
+- Set ``default-character-set`` option instead of ``character-set-server`` in
+  ``/etc/mysql/conf.d/client.cnf``. The latter was causing an error when user
+  tried to connect to the database using ``mysql`` command line. [drybjed]
+
 v0.2.0
 ------
 
