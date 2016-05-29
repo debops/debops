@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Released: 2016-05-29*
+
+- Reorganize APT key/repository tasks. Instead of separate tasks for each APT
+  key/repository combination use YAML dictionaries to select specific
+  repository key and configuration according to selected MariaDB flavor.
+  [drybjed]
+
 v0.2.0
 ------
 
