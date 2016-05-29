@@ -13,6 +13,9 @@ v0.2.0
 
 - Rename all role variables to put them in their own namespace. [drybjed]
 
+- Move MariaDB client configuration from template into YAML structures.
+  [drybjed]
+
 v0.1.2
 ------
 
