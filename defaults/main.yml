@@ -141,6 +141,24 @@ apt_cacher_ng__fqdn: 'software-cache.{{ ansible_domain }}'
 apt_cacher_ng__proxy: ''
 
 
+# .. envvar:: apt_cacher_ng__connect_protocol
+#
+# Specifies the IP protocol families to use for remote connections. Order does
+# matter, first specified are considered first.
+#
+# Example::
+#
+#    apt_cacher_ng__connect_protocol:
+#      - 'v4'
+#      # - 'v6'
+#
+# Only use IPv4 connections for connecting to upstream mirrors.
+#
+# Defaults to using native order of the system's TCP/IP stack, influenced by
+# the :any:`apt_cacher_ng__bind_address` value.
+apt_cacher_ng__connect_protocol: []
+
+
 # .. envvar:: apt_cacher_ng__offline_mode
 #
 # Forbid outgoing connections and work without an internet connection or
@@ -257,7 +275,7 @@ apt_cacher_ng__file_perms: '00644'
 #
 # ``lazy``
 #   Check the :file:`_expending_damaged` file in the root of
-#   ``apt_cacher_ng__cache_dir`` and only enforce permissions on all other
+#   :any:`apt_cacher_ng__cache_dir` and only enforce permissions on all other
 #   files if this one file needed to be changed.
 #
 # ``disabled``
@@ -490,7 +508,7 @@ apt_cacher_ng__ferm__dependent_rules:
     weight: '40'
     role: 'apt_cacher_ng'
     name: 'http_proxy'
-    delete: '{{ apt_cacher_ng__deploy_state != "present" }}'
+    rule_state: '{{ apt_cacher_ng__deploy_state }}'
 
 
 # .. envvar:: apt_cacher_ng__apparmor__dependent_config
