@@ -80,6 +80,10 @@ v0.2.9
 - Update ``debops.mariadb_server`` playbook to include its role dependencies.
   [drybjed]
 
+- Add back some of the roles that were removed previously from Ansible Galaxy
+  requirements. They are still present in the playbook, and will be removed at
+  a later date. [drybjed]
+
 v0.2.8
 ------
 
