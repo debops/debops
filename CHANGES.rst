@@ -10,6 +10,9 @@ v0.2.0
 - | Renamed ``apt_cacher_ng__nginx_upstream`` to ``apt_cacher_ng__nginx__upstream``.
   | Renamed ``apt_cacher_ng__nginx_upstream_servers`` to ``apt_cacher_ng__upstream_servers``. [ypid]
 
+- Added :any:`apt_cacher_ng__connect_protocol` to allow to specify which IP
+  version to prefer when contacting upstream mirrors. [ypid]
+
 v0.1.0
 ------
 

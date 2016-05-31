@@ -141,6 +141,24 @@ apt_cacher_ng__fqdn: 'software-cache.{{ ansible_domain }}'
 apt_cacher_ng__proxy: ''
 
 
+# .. envvar:: apt_cacher_ng__connect_protocol
+#
+# Specifies the IP protocol families to use for remote connections. Order does
+# matter, first specified are considered first.
+#
+# Example::
+#
+#    apt_cacher_ng__connect_protocol:
+#      - 'v4'
+#      # - 'v6'
+#
+# Only use IPv4 connections for connecting to upstream mirrors.
+#
+# Defaults to using native order of the system's TCP/IP stack, influenced by
+# the :any:`apt_cacher_ng__bind_address` value.
+apt_cacher_ng__connect_protocol: []
+
+
 # .. envvar:: apt_cacher_ng__offline_mode
 #
 # Forbid outgoing connections and work without an internet connection or

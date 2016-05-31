@@ -356,6 +356,9 @@ LocalDirs: acng-doc /usr/share/doc/apt-cacher-ng
 # BindAddress value.
 #
 # ConnectProto: v6 v4
+{% if apt_cacher_ng__connect_protocol|length >= 1 %}
+ConnectProto: {{ apt_cacher_ng__connect_protocol | join(" ") }}
+{% endif %}
 
 # Regular expiration algorithm finds package files which are no longer listed
 # in any index file and removes them of them after a safety period.
