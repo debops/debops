@@ -449,7 +449,7 @@ apt_cacher_ng__apt_preferences__dependent_list:
 
   - package: 'apt-cacher-ng'
     backports: [ 'wheezy', 'jessie' ]
-    reason:  'http://httpredir.debian.org/debian is not included in the deb_mirrors.gz file of apt-cacher-ng as of 0.8.0-3 (latest in Debian Jessie). This can results in unnecessary resource (bandwidth, storage) usage. https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=782643'
+    reason: 'http://httpredir.debian.org/debian is not included in the deb_mirrors.gz file of apt-cacher-ng as of 0.8.0-3 (latest in Debian Jessie). This can result in unnecessary resource (bandwidth, storage) usage. https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=782643'
     by_role: 'debops.apt_cacher_ng'
     delete: '{{ apt_cacher_ng__deploy_state != "present" }}'
 
@@ -527,9 +527,10 @@ apt_cacher_ng__nginx__upstream:
 
 # .. envvar:: apt_cacher_ng__nginx__servers
 #
-# List of :program:`nginx` server configurations managed by ``debops.nginx`` role.
-# There is separate configuration for HTTP and HTTPS connections to allow access
-# for hosts without SSL support installed.
+# List of :program:`nginx` server configurations managed by the
+# ``debops.nginx`` role.
+# There is a separate configuration for HTTP and HTTPS
+# connections to allow access for hosts without SSL support installed.
 apt_cacher_ng__nginx__servers:
 
   - by_role: 'debops.apt_cacher_ng'
