@@ -101,6 +101,12 @@ List of parameters related to the entire PKI realm:
   Optional, boolean. Enable or disable support for internal CA certificates in
   a given realm.
 
+``authority_preference``
+  Optional. List of directory names (``external``, ``acme``, ``internal``)
+  which determines the order in which the PKI realm looks for valid
+  certificates. The first found valid certificate is enabled. If not specified,
+  the order configured in ``pki_authority_preference`` will be used.
+
 ``library``
   Optional. Specify name of the crypto library used to generate private key and
   internal certificate requests in a given PKI realm. Either :command:`gnutls`

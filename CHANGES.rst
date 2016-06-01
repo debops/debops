@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.9
+------
+
+*Released: 2016-06-01*
+
+- Expose the list with order of authority preference used by a PKI realm to
+  select active valid certificate in role default variables. [drybjed]
+
 v0.2.8
 ------
 
