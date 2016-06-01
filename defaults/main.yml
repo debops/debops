@@ -21,7 +21,9 @@ pki_enabled: '{{ (True
 
 # .. envvar:: pki_internal
 #
-# Enable or disable support for internal certificates.
+# Enable or disable support for internal certificates. If the support is
+# disabled, the PKI realm will generate its own set of self-signed
+# certificates.
 pki_internal: '{{ (True
                    if pki_default_domain
                    else False) | bool }}'
@@ -356,7 +358,7 @@ pki_default_subdomains: [ '_wildcard_' ]
 #
 # Order in which different certificate types are used. First cerificate type
 # found wins.
-pki_authority_preference: [ 'external', 'acme', 'internal' ]
+pki_authority_preference: [ 'external', 'acme', 'internal', 'selfsigned' ]
 
 
 # .. envvar:: pki_realms

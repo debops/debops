@@ -102,7 +102,7 @@ initialize_environment () {
 
     declare -gA config
 
-    config["pki_authority_preference"]="external/acme/internal"
+    config["pki_authority_preference"]="external/acme/internal/selfsigned"
 
     config["acme_user"]="${PKI_ACME_USER:-pki-acme}"
     config["acme_group"]="${PKI_ACME_GROUP:-pki-acme}"
@@ -148,6 +148,12 @@ initialize_environment () {
 
     config["internal_expiration_days"]="14"
     config["internal_expiration_seconds"]="$(( 60 * 60 * 24 * ${config['internal_expiration_days']} ))"
+
+    config["selfsigned_sign_days"]="365"
+    config["selfsigned_sign_seconds"]="$(( 60 * 60 * 24 * ${config['selfsigned_sign_days']} ))"
+
+    config["selfsigned_expiration_days"]="14"
+    config["selfsigned_expiration_seconds"]="$(( 60 * 60 * 24 * ${config['selfsigned_expiration_days']} ))"
 
     config["subject"]=""
     config["domains"]=""
@@ -580,6 +586,10 @@ EOF
 challenge_password  = ${PKI_SESSION_TOKEN:-}
 
 EOF
+        elif [ -n "${PKI_SESSION_TOKEN:-}" -a "${config_type}" = "selfsigned" ] ; then
+            cat << EOF >> "${config_file}"
+expiration_days = ${config['selfsigned_sign_days']}
+EOF
         fi
 
         echo "${req_dn}" | tr "/" "\n" | sed \
@@ -689,6 +699,53 @@ generate_gnutls_request () {
             # Remove text output from the request
             test -r "${req_out}.tmp" && sed -n -i '/-----BEGIN NEW CERTIFICATE REQUEST-----/,$ p' "${req_out}.tmp"
             test -r "${req_out}.tmp" && mv "${req_out}.tmp" "${req_out}"
+
+        fi
+    fi
+
+}
+
+selfsign_openssl_request () {
+
+    local sign_req="selfsigned/request.pem"
+    local sign_out="selfsigned/cert.pem"
+    local root_out="selfsigned/root.pem"
+
+    if [ -n "${sign_req}" -a -n "${sign_out}" ] ; then
+        if [ -r "${sign_req}" -a ! -r "${sign_out}" ] ; then
+
+            openssl x509 -in "${sign_req}" -out "${sign_out}.tmp" \
+                    -req -signkey private/key.pem -days "${config['selfsigned_sign_days']}"
+            test -r "${sign_out}.tmp" && mv "${sign_out}.tmp" "${sign_out}"
+            if [ -r "${sign_out}" -a ! -r "${root_out}" ] ; then
+                cd $(dirname "${root_out}")
+                ln -s "${sign_out}" "${root_out}"
+                cd - > /dev/null
+            fi
+
+        fi
+    fi
+
+}
+
+selfsign_gnutls_request () {
+
+    local sign_req="selfsigned/request.pem"
+    local sign_out="selfsigned/cert.pem"
+    local root_out="selfsigned/root.pem"
+
+    if [ -n "${sign_req}" -a -n "${sign_out}" ] ; then
+        if [ -r "${sign_req}" -a ! -r "${sign_out}" ] ; then
+
+            certtool --generate-self-signed --load-privkey private/key.pem \
+                     --load-request "${sign_req}" --outfile "${sign_out}.tmp" \
+                     --template selfsigned/gnutls.conf
+            test -r "${sign_out}.tmp" && mv "${sign_out}.tmp" "${sign_out}"
+            if [ -r "${sign_out}" -a ! -r "${root_out}" ] ; then
+                cd $(dirname "${root_out}")
+                ln -s "$(basename ${sign_out})" $(basename "${root_out}")
+                cd - > /dev/null
+            fi
 
         fi
     fi
@@ -1119,6 +1176,83 @@ check_files () {
                 rm -f internal/request.pem
                 generate_${library}_request "internal/${library}.conf" internal/request.pem
                 state+=('new-internal-request')
+
+            fi
+        fi
+
+    elif [ "${config['pki_internal']}" == "false" ] ; then
+
+        if [ ! -r private/realm_key.pem ] ; then
+            generate_${library}_rsa_realm_key private/realm_key.pem
+            if [ ! -r private/key.pem ] ; then
+                install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key.pem.tmp
+                if type setfacl > /dev/null 2>&1 ; then
+                    local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                    if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                        for acl_group in ${private_file_acl_groups_r[@]} ; do
+                            if $(getent group "${acl_group}" > /dev/null) ; then
+                                setfacl -m "g:${acl_group}:r" private/key.pem.tmp
+                            fi
+                        done
+                    fi
+                fi
+                cat private/realm_key.pem >> private/key.pem.tmp
+                mv private/key.pem.tmp private/key.pem
+                state+=('new-private-key')
+            fi
+        fi
+
+        if [ -r private/key.pem ] ; then
+            if type setfacl > /dev/null 2>&1 ; then
+                local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                    if ! getfacl -sc private/key.pem | grep -Eq '^group' ; then
+                        for acl_group in ${private_file_acl_groups_r[@]} ; do
+                            if $(getent group "${acl_group}" > /dev/null) ; then
+                                setfacl -m "g:${acl_group}:r" private/key.pem
+                            fi
+                        done
+                    fi
+                fi
+            fi
+        fi
+
+        if [ -n "${PKI_SESSION_TOKEN:-}" -a -r selfsigned/cert.pem ] ; then
+            if ! ( check_expiration_time selfsigned/cert.pem "${config['selfsigned_expiration_seconds']}" && check_openssl_key_crt_match private/key.pem selfsigned/cert.pem ) ; then
+                rm -f "selfsigned/${library}.conf" selfsigned/request.pem
+            fi
+        fi
+
+        if [ -n "${PKI_SESSION_TOKEN:-}" -a ! -r public/cert.pem ] ; then
+            if ! ( check_expiration_time selfsigned/cert.pem "${config['selfsigned_expiration_seconds']}" && check_openssl_key_crt_match private/key.pem selfsigned/cert.pem ) ; then
+                rm -f "selfsigned/${library}.conf" selfsigned/request.pem
+            fi
+        fi
+
+        if [ ! -r "selfsigned/${library}.conf" -a ! -r selfsigned/request.pem ] ; then
+
+            if [[ ${name} != *.* && ${name} != *@* ]] ; then
+
+                "create_${library}_config" "selfsigned/${library}.conf" selfsigned "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+
+            elif [[ ${name} == *.* && ${name} != *@* ]] ; then
+
+                "create_${library}_config" "selfsigned/${library}.conf" selfsigned "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+
+            fi
+
+            generate_${library}_request "selfsigned/${library}.conf" selfsigned/request.pem
+            selfsign_${library}_request
+            state+=('new-selfsigned-certificate')
+        fi
+
+        if [ -r "selfsigned/${library}.conf" -a -r selfsigned/request.pem ] ; then
+            if ! check_openssl_key_req_match private/key.pem selfsigned/request.pem ; then
+
+                rm -f selfsigned/request.pem
+                generate_${library}_request "selfsigned/${library}.conf" selfsigned/request.pem
+                selfsign_${library}_request
+                state+=('new-selfsigned-certificate')
 
             fi
         fi
@@ -1768,6 +1902,11 @@ sub_new-realm () {
         done
 
         create_public_directories ${config['public_dir_group']} config external internal public
+
+        if [ "${config['pki_internal']}" = "false" ] ; then
+            create_public_directories ${config['public_dir_group']} selfsigned
+        fi
+
         create_private_directories ${config['private_dir_group']} private
         create_private_noacl_directories ${config['acme_dir_group']} acme
 
@@ -1779,27 +1918,29 @@ sub_new-realm () {
         local library="${config['pki_library']}"
         local acme_library="${config['pki_acme_library']}"
 
-        if [ "${config['pki_internal']}" = "true" ] ; then
-            generate_${library}_rsa_realm_key private/realm_key.pem
-            if [ ! -r private/key.pem ] ; then
-                install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
-                if type setfacl > /dev/null 2>&1 ; then
-                    local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
-                    if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                        for acl_group in ${private_file_acl_groups_r[@]} ; do
-                            if $(getent group "${acl_group}" > /dev/null) ; then
-                                setfacl -m "g:${acl_group}:r" private/key.pem.tmp
-                            fi
-                        done
-                    fi
+        generate_${library}_rsa_realm_key private/realm_key.pem
+        if [ ! -r private/key.pem ] ; then
+            install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
+            if type setfacl > /dev/null 2>&1 ; then
+                local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
+                    for acl_group in ${private_file_acl_groups_r[@]} ; do
+                        if $(getent group "${acl_group}" > /dev/null) ; then
+                            setfacl -m "g:${acl_group}:r" private/key.pem.tmp
+                        fi
+                    done
                 fi
-                cat private/realm_key.pem >> private/key.pem.tmp
-                mv private/key.pem.tmp private/key.pem
-                state+=("new-private-key")
             fi
+            cat private/realm_key.pem >> private/key.pem.tmp
+            mv private/key.pem.tmp private/key.pem
+            state+=("new-private-key")
         fi
 
         if [[ ${name} != *.* && ${name} != *@* ]] ; then
+
+            if [ "${config['pki_internal']}" = "false" ] ; then
+                create_${library}_config selfsigned/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+            fi
 
             create_${library}_config internal/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
 
@@ -1809,12 +1950,22 @@ sub_new-realm () {
 
         elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
+            if [ "${config['pki_internal']}" = "false" ] ; then
+                create_${library}_config selfsigned/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+            fi
+
             create_${library}_config internal/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
 
             if [ "${config['pki_acme']}" = "true" ] ; then
                 create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-cn=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}" "${config['acme_alt_names']:-}"
             fi
 
+        fi
+
+        if [ "${config['pki_internal']}" = "false" ] ; then
+            generate_${library}_request selfsigned/${library}.conf selfsigned/request.pem
+            selfsign_${library}_request
+            state+=("new-selfsigned-certificate")
         fi
 
         generate_${library}_request internal/${library}.conf internal/request.pem
@@ -2050,6 +2201,10 @@ sub_init () {
         create_public_directories ${config['public_dir_group']} config external internal public
         create_private_directories ${config['private_dir_group']} private
         create_private_noacl_directories ${config['acme_dir_group']} acme
+
+        if [ "${config['pki_internal']}" = "false" ] ; then
+            create_public_directories ${config['public_dir_group']} selfsigned
+        fi
 
         if [ "${config_changed}" = "true" ] ; then
             save_realm_config config/realm.conf

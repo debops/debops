@@ -9,6 +9,11 @@ v0.2.9
 - Expose the list with order of authority preference used by a PKI realm to
   select active valid certificate in role default variables. [drybjed]
 
+- Add support for creation of self-signed certificates when internal CA is
+  disabled. This enables proper operation of other services like ``nginx``,
+  which can then be used to request and authenticate ACME certificates.
+  [drybjed]
+
 v0.2.8
 ------
 
