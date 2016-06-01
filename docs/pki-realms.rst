@@ -147,6 +147,11 @@ is provided by the internal ``debops.pki`` Certificate Authority:
        │   ├── intermediate_root.pem
        │   ├── root.pem -> ../internal/root.pem
        │   └── trusted.pem -> intermediate_root.pem
+       ├── selfsigned/ (optional)
+       │   ├── cert.pem
+       │   ├── gnutls.conf
+       │   ├── request.pem
+       │   └── root.pem -> cert.pem
        ├── CA.crt -> public/alt_trusted.pem
        ├── default.crt -> public/chain.pem
        ├── default.key -> private/key.pem
@@ -262,10 +267,17 @@ detail in a separate document, here is a brief overview:
   This directory is used by the internal ``debops.pki`` Certificate Authority
   to transfer certificate requests as well as signed certificates.
 
-The :program:`pki-realm` script checks which of these directories have signed and
-valid certificates in order (``external``, ``acme``, ``internal``), and the
-first valid one is used as the "active" directory. Files from the active
-directory are symlinked to the :file:`public/` directory.
+If the internal CA is disabled either globally for a host, or for a particular
+PKI realm, an alternative directory, :file:`selfsigned/` will be created. It
+will hold a self-signed certificate, not trusted by anything else (even the
+host that has created it). This is done, so that services depending on the
+existence of the private keys and certificates can function correctly at all
+times.
+
+The :program:`pki-realm` script checks which of these directories have signed
+and valid certificates in order (``external``, ``acme``, ``internal``,
+``selfsigned``), and the first valid one is used as the "active" directory.
+Files from the active directory are symlinked to the :file:`public/` directory.
 
 The :file:`public/` directory holds currently active certificates which are
 symlinks to the real certificate files in one of the active directories above.

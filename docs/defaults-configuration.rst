@@ -99,7 +99,14 @@ List of parameters related to the entire PKI realm:
 
 ``internal``
   Optional, boolean. Enable or disable support for internal CA certificates in
-  a given realm.
+  a given realm. If you disable internal CA support, an alternative,
+  self-signed certificate will be created and enabled automatically.
+
+``authority_preference``
+  Optional. List of directory names (``external``, ``acme``, ``internal``,
+  ``selfsigned``) which determines the order in which the PKI realm looks for
+  valid certificates. The first found valid certificate is enabled. If not
+  specified, the order configured in ``pki_authority_preference`` will be used.
 
 ``library``
   Optional. Specify name of the crypto library used to generate private key and

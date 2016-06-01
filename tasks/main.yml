@@ -72,6 +72,7 @@
     PKI_ACME_LIBRARY: '{{ item.acme_library | d(pki_acme_library) }}'
   command: |
            "{{ pki_fact_lib_path }}/pki-realm" init -n "{{ item.name }}"
+           --authority-preference "{{ (item.authority_preference | d(pki_authority_preference)) | join('/') }}"
            --library "{{ item.library | d(pki_library) }}"
            --internal "{{ (item.internal | d(pki_internal)) | bool | lower }}"
            --private-dir-group "{{ item.private_dir_group | d(pki_private_group) }}"
