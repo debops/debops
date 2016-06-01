@@ -1,71 +1,87 @@
 ---
+# PHP-FPM version. This is set automatically to 5 unless the distro is Ubuntu 16.04 Xenial, in which case it is set
+# to 7.0. However, you can override it to be 5.6 (5.6 only supported/tested in Xenial).
+php__version: "{{ php__version_default }}"
+
 # Settings for socket permissions
 # Sockets have to be accessible by a webserver
-php5_socket_listen_owner: 'www-data'
-php5_socket_listen_group: 'www-data'
-php5_socket_listen_mode: '0660'
+php__socket_listen_owner: 'www-data'
+php__socket_listen_group: 'www-data'
+php__socket_listen_mode: '0660'
 
 # Memory limit
-php5_memory_limit: '128M'
+php__memory_limit: '128M'
 
-# Install set of standard packages
-php5_base_packages: [ 'php5-curl', 'php5-gd', 'php5-mcrypt' ]
+# Install set of standard packages.
+#
+# Prefix is automatically added later to match php__version (php5- or php7.0-).
+# If you force a prefix it will be respected (ie. for php-pear or php-soap).
+php__base_packages: [ 'curl', 'gd', 'mcrypt' ]
 
-# .. envvar:: php5_packages
+# .. envvar:: php__packages
 #
 # List of additional "global" packages to install.
-php5_packages: []
+#
+# Prefix is automatically added later to match php__version (php5- or php7.0-).
+# If you force a prefix it will be respected (ie. for php-pear or php-soap).
+php__packages: []
 
-# .. envvar:: php5_group_packages
+# .. envvar:: php__group_packages
 #
 # List of packages for a group of hosts (only one group supported).
-php5_group_packages: []
+#
+# Prefix is automatically added later to match php__version (php5- or php7.0-).
+# If you force a prefix it will be respected (ie. for php-pear or php-soap).
+php__group_packages: []
 
-# .. envvar:: php5_host_packages
+# .. envvar:: php__host_packages
 #
 # List of packages to install on a given host.
-php5_host_packages: []
+#
+# Prefix is automatically added later to match php__version (php5- or php7.0-).
+# If you force a prefix it will be respected (ie. for php-pear or php-soap).
+php__host_packages: []
 
 # This variable determines what options will be used in php.ini for options
 # that can be useful either in production or development environment
-php5_production: True
+php__production: True
 
 # Default values for several global PHP5 options
-php5_max_execution_time: '30'
-php5_max_input_time: '60'
-php5_post_max_size: '8M'
-php5_default_charset: 'UTF-8'
-php5_file_uploads: 'On'
-php5_upload_max_filesize: '{{ php5_post_max_size }}'
-php5_max_file_uploads: 20
-php5_allow_url_fopen: 'On'
-php5_cgi_fix_pathinfo: '0'
+php__max_execution_time: '30'
+php__max_input_time: '60'
+php__post_max_size: '8M'
+php__default_charset: 'UTF-8'
+php__file_uploads: 'On'
+php__upload_max_filesize: '{{ php__post_max_size }}'
+php__max_file_uploads: 20
+php__allow_url_fopen: 'On'
+php__cgi_fix_pathinfo: '0'
 
 # Default values used in pools when pool has none set
-php5_default_pm: 'ondemand'
-php5_default_pm_max_children: 5
-php5_default_pm_min_spare_servers: 1
-php5_default_pm_max_spare_servers: 3
-php5_default_pm_start_servers: 2
-php5_default_pm_process_idle_timeout: '10s'
-php5_default_pm_max_requests: 500
-php5_default_pm_status: False
-php5_default_pm_status_path: '/php5_status'
-php5_default_ping_path: '/php5_ping'
-php5_default_ping_response: 'pong'
-php5_default_rlimit_files: 1024
-php5_default_rlimit_core: 0
+php__default_pm: 'ondemand'
+php__default_pm_max_children: 5
+php__default_pm_min_spare_servers: 1
+php__default_pm_max_spare_servers: 3
+php__default_pm_start_servers: 2
+php__default_pm_process_idle_timeout: '10s'
+php__default_pm_max_requests: 500
+php__default_pm_status: False
+php__default_pm_status_path: '/php_status'
+php__default_ping_path: '/php_ping'
+php__default_ping_response: 'pong'
+php__default_rlimit_files: 1024
+php__default_rlimit_core: 0
 
 # Should php5 role manage server pools?
-php5_manage_pools: True
+php__manage_pools: True
 
 # List of managed pools
-php5_pools: [ '{{ php5_pool_default }}' ]
+php__pools: [ '{{ php__pool_default }}' ]
 
-# Default PHP5-FPM pool for www-data, explanation of variables can be found
-# in templates/etc/php5/fpm/pool-available.d/pool.conf.j2
+# Default PHP-FPM pool for www-data, explanation of variables can be found
+# in templates/etc/php/fpm/pool-available.d/pool.conf.j2
 # Everything commented out is optional.
-php5_pool_default:
+php__pool_default:
   enabled: True
   name: 'www-data'
 
@@ -93,9 +109,9 @@ php5_pool_default:
   #pm_max_requests: 500
 
   #pm_status: True
-  #pm_status_path: '{{ php5_default_pm_status_path }}'
-  #ping_path: '{{ php5_default_ping_path }}'
-  #ping_response: '{{ php5_default_ping_response }}'
+  #pm_status_path: '{{ php__default_pm_status_path }}'
+  #ping_path: '{{ php__default_ping_path }}'
+  #ping_response: '{{ php__default_ping_response }}'
 
   #accesslog: True
 
