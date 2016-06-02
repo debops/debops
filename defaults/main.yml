@@ -164,22 +164,29 @@ mariadb_server__mysqld_performance_options:
   'query_cache_type':             '0'
 
 
+# .. envvar:: mariadb_server__mysqld_security_options
+#
+# Configuration options related to the server security.
+mariadb_server__mysqld_security_options:
+  'local_infile':         '0'
+
+
 # .. envvar:: mariadb_server__mysqld_charset_options
 #
 # Configuration options related to charset and string encoding on the server.
 mariadb_server__mysqld_charset_options:
-  'character-set-server': 'utf8'
-  'collation-server':     'utf8_general_ci'
-  'init-connect':         "'SET NAMES utf8'"
+  'character_set_server': 'utf8'
+  'collation_server':     'utf8_general_ci'
+  'init_connect':         'SET NAMES utf8'
 
 
 # .. envvar:: mariadb_server__mysqld_network_options
 #
 # Configuration options related to network access and network connections.
 mariadb_server__mysqld_network_options:
-  'bind-address':    '{{ mariadb_server__bind_address }}'
+  'bind_address':    '{{ mariadb_server__bind_address }}'
   'port':            '{{ mariadb_server__port }}'
-  'max-connections': '{{ mariadb_server__max_connections }}'
+  'max_connections': '{{ mariadb_server__max_connections }}'
 
 
 # .. envvar:: mariadb_server__mysqld_pki_options
@@ -191,10 +198,10 @@ mariadb_server__mysqld_pki_options:
   state: '{{ "present" if mariadb_server__pki|bool else "absent" }}'
   options:
     'ssl':
-    'ssl-ca':     '{{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_ca }}'
-    'ssl-cert':   '{{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_crt }}'
-    'ssl-key':    '{{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_key }}'
-    'ssl-cipher': '{{ mariadb_server__pki_cipher }}'
+    'ssl_ca':     '{{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_ca }}'
+    'ssl_cert':   '{{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_crt }}'
+    'ssl_key':    '{{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_key }}'
+    'ssl_cipher': '{{ mariadb_server__pki_cipher }}'
 
 
 # .. envvar:: mariadb_server__mysqld_options
@@ -206,6 +213,7 @@ mariadb_server__mysqld_options:
     options:
       - '{{ mariadb_server__mysqld_performance_options }}'
       - '{{ mariadb_server__mysqld_charset_options }}'
+      - '{{ mariadb_server__mysqld_security_options }}'
       - '{{ mariadb_server__mysqld_network_options }}'
       - '{{ mariadb_server__mysqld_pki_options }}'
       - '{{ mariadb_server__options }}'
@@ -218,7 +226,7 @@ mariadb_server__mysqld_options:
 mariadb_server__client_options:
   - section: 'client'
     options:
-      'default-character-set': 'utf8'
+      'default_character_set': 'utf8'
 
 
 # .. envvar:: mariadb_server__options
