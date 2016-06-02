@@ -22,6 +22,10 @@
 - include: check_networkmanager.yml
   when: ifupdown_enabled|bool and not ifupdown_ignore_networkmanager
 
+- name: Make 'network-online.target' usable on Debian
+  include: ifup_wait_all_auto.yml
+  when: ifupdown_enabled|bool and ansible_distribution == 'Debian'
+
 - include: generate_interfaces.yml
   when: ifupdown_enabled|bool and ifupdown_static_config != 'static'
 

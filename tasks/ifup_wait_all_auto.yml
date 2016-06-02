@@ -1,0 +1,21 @@
+---
+
+- name: Configure ifup-wait-all-auto.service
+  template:
+    src: 'etc/systemd/system/ifup-wait-all-auto.service.j2'
+    dest: '/etc/systemd/system/ifup-wait-all-auto.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: ifupdown__register_systemd_wait
+
+- name: Reload systemd services
+  command: systemctl daemon-reload
+  when: ansible_service_mgr == 'systemd' and ifupdown__register_systemd_wait|changed
+
+- name: Enable ifup-wait-all-auto service
+  service:
+    name: 'ifup-wait-all-auto'
+    enabled: True
+  when: ansible_service_mgr == 'systemd'
+
