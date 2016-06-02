@@ -9,6 +9,8 @@ v0.2.2
 - Normalize MariaDB configuration templates and variables with accordance to
   suggested format in official MariaDB documentation. [drybjed]
 
+- Disable ``LOAD DATA LOCAL INFILE`` function for improved security. [drybjed]
+
 v0.2.1
 ------
 
