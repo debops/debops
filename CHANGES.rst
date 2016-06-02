@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v0.2.5
+------
+
+*Unreleased*
+
+- Fix an issue with ``systemd`` ``network-online.target`` on Debian where it
+  starts at the same time as ``network.target``, and doesn't wait for
+  ``ifupdown`` scripts to finish network configuration. More details:
+  https://unix.stackexchange.com/q/209832 [drybjed]
+
 v0.2.4
 ------
 
