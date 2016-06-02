@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.2
+------
+
+*Released: 2016-06-02*
+
+- Normalize MariaDB configuration templates and variables with accordance to
+  suggested format in official MariaDB documentation. [drybjed]
+
 v0.2.1
 ------
 

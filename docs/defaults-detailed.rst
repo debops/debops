@@ -22,15 +22,17 @@ variables located in ``defaults/main.yml`` file.
 
 A minimal configuration is stored as a YAML dictionary. Keys of the dictionary
 as MariaDB configuration option names, and values of the dictionary are the
-configuration values. Values that contain spaces need to also contain quotation
-marks. For example:
+configuration values. All values are automatically quoted in the generated
+configuration file.
+
+Example configuration section:
 
 .. code-block:: yaml
 
    mariadb_server__options:
      'query_cache_type': '0'
      'key_buffer': '16M'
-     'skip-name-resolve':
+     'skip_name_resolve':
 
 The dictionary keys without values will be written in the configuration file
 with correct notation.
@@ -45,7 +47,7 @@ a list being a YAML dictionary in the above format. An example:
      - 'query_cache_type': '0'
        'key_buffer': '16M'
 
-     - 'skip-name-resolve':
+     - 'skip_name_resolve':
 
 Yet another alternative format can be used if you use certain keys in the YAML
 dictionary. The template checks for presence of the ``name`` or ``section``
@@ -85,7 +87,7 @@ Examples:
        comment: 'Global MariaDB server options'
        options:
 
-         - name: 'skip-name-resolve'
+         - name: 'skip_name_resolve'
 
          - name: 'key_buffer'
            value: '16M'
