@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v0.2.2
+------
+
+*Unreleased*
+
+- Explicitly set ``!requiretty`` for the :any:`bootstrap__sudo_group`
+  (:manpage:`sudoers(5)`). This ensures that ``sudo`` with ``rsync`` is allowed
+  for the :any:`bootstrap__sudo_group` even when ``requiretty`` has been
+  configured to be the default for users.
+
 v0.2.1
 ------
 
