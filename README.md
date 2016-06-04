@@ -7,7 +7,7 @@
 [![test-suite](http://img.shields.io/badge/test--suite-ansible--contrib--etckeeper-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-contrib-etckeeper/)
 
 
-`debops.contrib-etckeeper` will install [etckeeper][] which puts `/etc`
+`debops-contrib.etckeeper` will install [etckeeper][] which puts `/etc`
 under version control. To do this it hooks into the package management and
 from now on automatically commit changes to a local git repository under
 `/etc/.git`.

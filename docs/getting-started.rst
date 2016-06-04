@@ -37,7 +37,7 @@ control using :program:`etckeeper` on a set of hosts:
 
      roles:
 
-       - role: debops.contrib-etckeeper
+       - role: debops-contrib.etckeeper
          tags: [ 'role::etckeeper' ]
 
 Ansible tags

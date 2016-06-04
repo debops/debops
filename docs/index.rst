@@ -1,6 +1,6 @@
-.. _debops.contrib-etckeeper:
+.. _debops-contrib.etckeeper:
 
-Ansible role: debops.contrib-etckeeper
+Ansible role: debops-contrib.etckeeper
 ======================================
 
 .. toctree::
