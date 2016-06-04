@@ -7,7 +7,7 @@
 [![test-suite](http://img.shields.io/badge/test--suite-ansible--contrib--btrfs-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-contrib-btrfs/)
 
 
-The `debops.contrib-btrfs` Ansible role allows you manage your Btrfs.
+The `debops-contrib.btrfs` Ansible role allows you manage your Btrfs.
 Currently the role supports management of Btrfs subvolumes.
 More can be implemented as needed.
 

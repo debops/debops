@@ -28,7 +28,7 @@ Here's an example playbook that can be used to manage Btrfs::
 
       roles:
 
-        - role: debops.contrib-btrfs
+        - role: debops-contrib.btrfs
           tags: [ 'role::btrfs' ]
 
 Ansible tags
