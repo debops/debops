@@ -29,7 +29,7 @@ Here's an example playbook that can be used to manage cryptsetup::
 
      roles:
 
-       - role: debops.contrib-snapshot_snapper
+       - role: debops-contrib.snapshot_snapper
          tags: [ 'role::snapshot_snapper' ]
 
 

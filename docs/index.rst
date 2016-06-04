@@ -1,6 +1,6 @@
-.. _debops.contrib-snapshot_snapper:
+.. _debops-contrib.snapshot_snapper:
 
-Ansible role: debops.contrib-snapshot_snapper
+Ansible role: debops-contrib.snapshot_snapper
 =============================================
 
 .. toctree::
