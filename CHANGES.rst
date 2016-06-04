@@ -31,3 +31,10 @@ v0.1.0
 
 .. _ypid.snapshot_snapper: https://galaxy.ansible.com/ypid/snapshot_snapper/
 .. _DebOps Contrib: https://github.com/debops-contrib/
+
+- Fixed recognition of empty ``SNAPPER_CONFIGS`` set in
+  :file:`/etc/default/snapper` and don’t write a second ``SNAPPER_CONFIGS``
+  variable in this case.
+  Previous to this fix, snapshots where not automatically created because a
+  second ``SNAPPER_CONFIGS`` (empty) set was added to the file.
+  [ypid]
