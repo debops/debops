@@ -59,6 +59,9 @@
   changed_when: False
   always_run: True
 
+- name: Flush the handlers in case the next tasks fails
+  meta: flush_handlers
+
 - name: Send mail to administrator if reboot is required to enable AppArmor
   mail:
     from: 'root@{{ ansible_fqdn }}'
