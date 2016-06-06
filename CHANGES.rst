@@ -4,8 +4,12 @@ Changelog
 v0.2.3
 ------
 
+*Unreleased*
+
 - Use the ``ini_file`` Ansible module to change the
   :file:`/etc/mysql/debian.cnf` which uses the INI format. [ypid]
+
+- Don’t fail in Ansible check mode because of undefined variable. [ypid]
 
 v0.2.2
 ------
