@@ -17,18 +17,9 @@
     mode: '0644'
   when: mariadb_server_backup|d()
 
-- name: Create mysqldump section in /etc/mysql/debian.cnf
-  lineinfile:
-    regexp: '^\[mysqldump\]'
-    dest:   '/etc/mysql/debian.cnf'
-    line:   '[mysqldump]'
-    state:  'present'
-
 - name: Enable events table backup in mysqldump
-  lineinfile:
-    insertafter: '[mysqldump]'
-    regexp: '^events\s'
-    dest:   '/etc/mysql/debian.cnf'
-    line:   'events = true'
-    state:  'present'
-
+  ini_file:
+    dest:    '/etc/mysql/debian.cnf'
+    section: 'mysqldump'
+    option:  'events'
+    value:   'true'

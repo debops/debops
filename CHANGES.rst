@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v0.2.3
+------
+
+- Use the ``ini_file`` Ansible module to change the
+  :file:`/etc/mysql/debian.cnf` which uses the INI format. [ypid]
+
 v0.2.2
 ------
 
