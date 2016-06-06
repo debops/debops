@@ -22,8 +22,8 @@ v0.2.1
   [drybjed]
 
 - Set ``default-character-set`` option instead of ``character-set-server`` in
-  ``/etc/mysql/conf.d/client.cnf``. The latter was causing an error when user
-  tried to connect to the database using ``mysql`` command line. [drybjed]
+  ``/etc/mysql/conf.d/client.cnf``. The latter was causing an error when users
+  tried to connect to the database using the ``mysql`` command. [drybjed]
 
 - Enable use of the default ``domain`` PKI realm, current certificate
   environment managed by ``debops.pki`` works with the MariaDB/MySQL/Percona
@@ -39,8 +39,8 @@ v0.2.0
 *Released: 2016-05-28*
 
 - Move configuration of dependent roles and variables from ``vars/main.yml`` to
-  ``defaults/main.yml``. The playbooks that use ``debops.mariadb_server`` role
-  need to be updated to include dependent roles. [drybjed]
+  ``defaults/main.yml``. The playbooks that uses the ``debops.mariadb_server``
+  role needs to be updated to include dependent roles. [drybjed]
 
 - Add ``vim`` folding in ``defaults/main.yml`` and rename task tags. [drybjed]
 
@@ -57,6 +57,19 @@ v0.2.0
 - Switch ``vim`` fold markers to new style. [drybjed]
 
 - Update documentation. [drybjed]
+
+Migration notes
+^^^^^^^^^^^^^^^
+
+When updating from the previous version to this version, you might need to
+update your inventory. This oneliner might come in handy to do
+this:
+
+.. code:: shell
+
+   git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/mariadb_server__ferm__dependent_rules/mariadb_server__default_options/g;s/\<(mariadb_server)_([^_])/\1__\2/g;'
+
+[ypid]
 
 v0.1.3
 ------
