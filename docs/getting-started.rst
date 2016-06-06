@@ -17,7 +17,7 @@ The default DebOps ``bootstrap.yml`` playbook expects the hosts to be in the
    hostname ansible_ssh_host=hostname.example.com
 
 You might want to set the default DNS domain used by your hosts. To do that,
-set the variable below in ``ansible/inventory/group_vars/all/bootstrsp.yml`` or
+set the variable below in ``ansible/inventory/group_vars/all/bootstrap.yml`` or
 in a similar place in inventory:
 
 .. code-block:: yaml
