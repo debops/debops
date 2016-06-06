@@ -8,7 +8,7 @@ Example inventory
 -----------------
 
 A host needs to be added to Ansible inventory to allow it to be bootstrapped.
-The default DebOps ``bootstrap.yml`` playbook expects the hosts to be in the
+The default DebOps :file:`bootstrap.yml` playbook expects the hosts to be in the
 ``[debops_all_hosts]`` Ansible group:
 
 .. code-block:: none
@@ -17,7 +17,7 @@ The default DebOps ``bootstrap.yml`` playbook expects the hosts to be in the
    hostname ansible_ssh_host=hostname.example.com
 
 You might want to set the default DNS domain used by your hosts. To do that,
-set the variable below in ``ansible/inventory/group_vars/all/bootstrap.yml`` or
+set the variable below in :file:`ansible/inventory/group_vars/all/bootstrap.yml` or
 in a similar place in inventory:
 
 .. code-block:: yaml

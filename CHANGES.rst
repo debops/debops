@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v0.2.2
+------
+
+*Unreleased*
+
+- Explicitly set ``!requiretty`` for the :any:`bootstrap__sudo_group`
+  (:manpage:`sudoers(5)`). This ensures that :command:`sudo` with :command:`rsync` is allowed
+  for the :any:`bootstrap__sudo_group` even when ``requiretty`` has been
+  configured to be the default for users.
+
 v0.2.1
 ------
 
@@ -54,17 +64,17 @@ v0.1.1
 
 *Released: 2015-11-07*
 
-- Update the task list so that correct hostname is set in ``/etc/hosts`` even
+- Update the task list so that correct hostname is set in :file:`/etc/hosts` even
   when ``bootstrap_domain`` is not specified. [drybjed]
 
-- Added a IPv6 entry to ``/etc/hosts`` for the FQDN of the host pointing to the
+- Added a IPv6 entry to :file:`/etc/hosts` for the FQDN of the host pointing to the
   IPv6 loopback address "::1". Not enabled by default because it might break something.
   Can be enabled by setting ``bootstrap_hostname_v6_loopback`` to True. [ypid]
 
 - Don't try and set SSH public key on ``root`` account when admin account
   management is disabled. [drybjed]
 
-- Remove the "\n" from ``/etc/hostname`` content line to prevent issues on
+- Remove the "\n" from :file:`/etc/hostname` content line to prevent issues on
   Ansible v2. [drybjed]
 
 - Replace the quotes in ``lineinfile`` module to prevent issues with ``\t``
