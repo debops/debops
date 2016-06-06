@@ -1,4 +1,6 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
 # Default variables
 # =================
 
@@ -9,7 +11,7 @@
 # .. The official ownCloud documentation is also written is RST.
 # .. https://github.com/owncloud/documentation/tree/master/admin_manual
 #
-# .. System packages (((
+# .. System packages [[[
 #
 # -------------------
 #   System packages
@@ -21,9 +23,9 @@
 owncloud_base_packages:
   - 'owncloud'
 
-# .. )))
+# .. ]]]
 
-# .. Basic options (((
+# .. Basic options [[[
 #
 # -----------------
 #   Basic options
@@ -34,9 +36,9 @@ owncloud_base_packages:
 # Domain that will be configured for the ownCloud instance.
 owncloud_domain: [ 'owncloud.{{ ansible_domain }}' ]
 
-# .. )))
+# .. ]]]
 
-# .. ownCloud source and deployment (((
+# .. ownCloud source and deployment [[[
 #
 # ----------------------------------
 #   ownCloud source and deployment
@@ -134,9 +136,9 @@ owncloud_data_path: '{{ owncloud_home }}/data'
 # Where the ownCloud instance will be deployed (web root).
 owncloud_deploy_path: '{{ owncloud_home }}'
 
-# .. )))
+# .. ]]]
 
-# .. Database configuration (((
+# .. Database configuration [[[
 #
 # --------------------------
 #   Database configuration
@@ -216,9 +218,9 @@ owncloud_database_map:
   sqlite:
     dbtype: 'sqlite'
 
-# .. )))
+# .. ]]]
 
-# .. ownCloud admin login/password (((
+# .. ownCloud admin login/password [[[
 #
 # ---------------------------------
 #   ownCloud admin login/password
@@ -269,9 +271,9 @@ owncloud_autosetup: True
 # FIXME
 owncloud_autosetup_url: 'http://{{ owncloud_domain[0] }}/index.php'
 
-# .. )))
+# .. ]]]
 
-# .. ownCloud configuration (((
+# .. ownCloud configuration [[[
 #
 # --------------------------
 #   ownCloud configuration
@@ -350,9 +352,9 @@ owncloud_initial_config: {}
 # If you need to handle very large files you should increase this value.
 owncloud_timeout: 300
 
-# .. )))
+# .. ]]]
 
-# .. ownCloud configuration via occ commands (((
+# .. ownCloud configuration via occ commands [[[
 #
 # -------------------------------------------
 #   ownCloud configuration via occ commands
@@ -416,9 +418,9 @@ owncloud_run_occ_group_commands: []
 # See ``owncloud_run_occ_global_commands``.
 owncloud_run_occ_host_commands: []
 
-# .. )))
+# .. ]]]
 
-# .. LDAP authentication (((
+# .. LDAP authentication [[[
 #
 # -----------------------
 #   LDAP authentication
@@ -508,12 +510,10 @@ owncloud_ldap_user_filter: '(|(objectclass=inetOrgPerson))'
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#user-filter>`__ for details.
 owncloud_ldap_user_filter_objectclass: 'inetOrgPerson'
 
+
 # .. envvar:: owncloud_ldap_group_filter
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#group-filter>`__ for details.
-#
-# .. Vim folds workaround. Open fold which is closed by the following ldap group filter (((
-#
 owncloud_ldap_group_filter: '(&(|(objectclass=posixGroup)))'
 
 
@@ -567,7 +567,7 @@ owncloud_ldap_group_assoc_attribute: 'memberUid'
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#special-attributes>`__ for details.
 owncloud_home_folder_naming_rule: 'attr:uid'
 
-# .. Advanced settings (((
+# .. Advanced settings [[[
 #
 # ~~~~~~~~~~~~~~~~~~~~~
 #   Advanced settings
@@ -582,9 +582,9 @@ owncloud_home_folder_naming_rule: 'attr:uid'
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#caching>`__ for details.
 owncloud_ldap_cache_ttl: '600'
 
-# .. )))
+# .. ]]]
 
-# .. Expert settings (((
+# .. Expert settings [[[
 #
 # ~~~~~~~~~~~~~~~~~~~
 #   Expert settings
@@ -624,7 +624,7 @@ owncloud_ldap_cache_ttl: '600'
 #
 owncloud_ldap_expert_username_attr: ''
 
-# .. )))
+# .. ]]]
 
 # .. envvar:: owncloud_ldap_conf_map
 #
@@ -647,9 +647,9 @@ owncloud_ldap_conf_map:
   homeFolderNamingRule: '{{ owncloud_home_folder_naming_rule }}'
   ldapCacheTTL: '{{ owncloud_ldap_cache_ttl }}'
 
-# .. )))
+# .. ]]]
 
-# .. ownCloud Mail configuration (((
+# .. ownCloud Mail configuration [[[
 #
 # -------------------------------
 #   ownCloud Mail configuration
@@ -704,9 +704,9 @@ owncloud_mail_conf_map:
   # mail_smtphost: '{{ owncloud_mail_smtphost }}'
   # mail_smtpport: '{{ owncloud_mail_smtpport }}'
 
-# .. )))
+# .. ]]]
 
-# .. ownCloud custom config.php configuration (((
+# .. ownCloud custom config.php configuration [[[
 
 # --------------------------------------------
 #   ownCloud custom config.php configuration
@@ -744,9 +744,9 @@ owncloud_custom_group_conf_map: {}
 # Refer to ``owncloud_custom_conf_map`` for details.
 owncloud_custom_host_conf_map: {}
 
-# .. )))
+# .. ]]]
 
-# .. Role-dependent configuration (((
+# .. Role-dependent configuration [[[
 #
 # --------------------------------
 #   Role-dependent configuration
@@ -835,4 +835,4 @@ owncloud__php5__pool:
     ## Fixes warning (ownCloud 8.1): "The test with getenv('PATH') only returns an empty response"
     PATH: '/usr/local/bin:/usr/bin:/bin'
 
-# .. )))
+# .. ]]]
