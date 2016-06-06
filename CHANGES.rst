@@ -22,8 +22,8 @@ v0.2.1
   [drybjed]
 
 - Set ``default-character-set`` option instead of ``character-set-server`` in
-  ``/etc/mysql/conf.d/client.cnf``. The latter was causing an error when users
-  tried to connect to the database using the ``mysql`` command. [drybjed]
+  :file:`/etc/mysql/conf.d/client.cnf`. The latter was causing an error when users
+  tried to connect to the database using the :command:`mysql` command. [drybjed]
 
 - Enable use of the default ``domain`` PKI realm, current certificate
   environment managed by ``debops.pki`` works with the MariaDB/MySQL/Percona
@@ -38,11 +38,11 @@ v0.2.0
 
 *Released: 2016-05-28*
 
-- Move configuration of dependent roles and variables from ``vars/main.yml`` to
-  ``defaults/main.yml``. The playbooks that uses the ``debops.mariadb_server``
+- Move configuration of dependent roles and variables from :file:`vars/main.yml` to
+  :file:`defaults/main.yml`. The playbooks that uses the ``debops.mariadb_server``
   role needs to be updated to include dependent roles. [drybjed]
 
-- Add ``vim`` folding in ``defaults/main.yml`` and rename task tags. [drybjed]
+- Add ``vim`` folding in :file:`defaults/main.yml` and rename task tags. [drybjed]
 
 - Rename all ``mariadb_server_`` variables to ``mariadb_server__`` to put the
   role variables in their own namespace. The ``mariadb_server_options_default``
@@ -79,10 +79,10 @@ v0.1.3
 - Add default options to the ``debops.mariadb_server`` role via the
   ``mariadb_server_options_default`` variable. [carlalexander]
 
-- Allow to change the backup directory of ``automysqlbackup`` via
+- Allow to change the backup directory of :program:`automysqlbackup` via
   ``mariadb_server_backup_directory``. [ypid]
 
-- Fix the ``/etc/mysql/conf.d/mysql.cnf`` template writing multiple custom
+- Fix the :file:`/etc/mysql/conf.d/mysql.cnf` template writing multiple custom
   MariaDB options in one line. [drybjed]
 
 v0.1.2
@@ -103,7 +103,7 @@ v0.1.1
 
 *Released: 2015-08-21*
 
-- Add a way to disable ``automysqlbackup`` support. [drybjed]
+- Add a way to disable :program:`automysqlbackup` support. [drybjed]
 
 v0.1.0
 ------
