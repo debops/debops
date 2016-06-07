@@ -24,7 +24,9 @@
 
 # ]]]
 
-  ## FIXME(ypid): Does not ownCloud 9 already do log rotation?
+# Logging [[[
+  ## ownCloud as of Version 9.0 does not do log rotate by default. This could
+  ## be enabled by `log_rotate_size`. `logrotate` is used in DebOps.
 - name: Setup logrotate for owncloud
   template:
     src: 'etc/logrotate.d/owncloud.j2'
@@ -32,6 +34,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+# ]]]
 
 # Setup the occ command [[[
 
@@ -48,7 +51,7 @@
 - name: Setup shortcut for the occ command
   template:
     src: 'usr/local/bin/occ.j2'
-    dest: '/usr/local/bin/occ'
+    dest: '{{ owncloud_occ_bin_file_path }}'
     owner: 'root'
     group: '{{ owncloud_group }}'
     mode: 0755
@@ -58,22 +61,20 @@
 
 # Auto setup [[[
 
-  ## Note that this file is being created on a HTTP request if it did not exist previously.
-  ## In this unconfigured state it will be possible for a user to finish the setup via the web interface!
-- name: Get properties of the config/config.php configuration file
-  stat:
-    path: '{{ owncloud_deploy_path }}/config/config.php'
-  register: owncloud_config_file
+- name: Get ownCloud setup status
+  command: '{{ owncloud_occ_bin_file_path | quote }} check'
+  register: owncloud_register_occ_check
+  tags: [ 'role::owncloud:setup' ]
+  changed_when: False
+  tags: [ 'role::owncloud:setup' ]
 
 - name: Determine if ownCloud autosetup should be done
   set_fact:
-    ## If the file size of config.php is below 80 byte then it is expected that
-    ## only the `instanceid` is set but ownCloud has not been configured yet.
-    owncloud__permit_autosetup: '{{ (owncloud_autosetup and
-                                 owncloud_config_file is defined and
-                                 owncloud_config_file.stat.exists and
-                                 owncloud_config_file.stat.size <= 80 and
-                                 owncloud_admin_username != "") }}'
+    owncloud__do_autosetup: '{{ (owncloud_autosetup and
+                                 owncloud_admin_username != "" and
+                                 owncloud_register_occ_check is defined and
+                                 "ownCloud is not installed" in owncloud_register_occ_check.stdout) }}'
+  tags: [ 'role::owncloud:setup' ]
 
 - name: Install ownCloud default config file
   template:
@@ -82,11 +83,12 @@
     owner: '{{ owncloud_user }}'
     group: '{{ owncloud_group }}'
     mode: '0640'
-  when: owncloud__permit_autosetup|bool
+  when: owncloud__do_autosetup|bool
   tags: [ 'role::owncloud:setup' ]
 
 - name: Automatically finish setup via the occ tool
-  command: occ maintenance:install
+  command: |
+           {{ owncloud_occ_bin_file_path | quote }} maintenance:install
            --data-dir '{{ owncloud_data_path }}'
            --database '{{ owncloud_database_map[owncloud_database].dbtype }}'
            --database-name '{{ owncloud_database_map[owncloud_database].dbname }}'
@@ -100,7 +102,7 @@
   # no_log: True
   register: owncloud_register_occ_install
   tags: [ 'role::owncloud:setup' ]
-  when: owncloud__permit_autosetup|bool and owncloud_release not in [ '8.0' ]
+  when: owncloud__do_autosetup|bool and owncloud_release not in [ '8.0' ]
   ## Did not work with 8.1.6-2.1 because of https://github.com/owncloud/core/issues/17583
   ## Falling back to URL auto install method.
   ## FIXME: [Errno 2] No such file or directory
@@ -113,7 +115,7 @@
     group: '{{ owncloud_group }}'
     mode: '0660'
   register: owncloud__register_autoconfig
-  when: owncloud__permit_autosetup|bool and owncloud_release in [ '8.0' ]
+  when: owncloud__do_autosetup|bool and owncloud_release in [ '8.0' ]
 
 - name: Test availability of automatically finish setup
   uri:
@@ -153,7 +155,7 @@
   ## FIXME(ypid): Not sure if it was 7.0 or if it still works for 8.0. Anyway. Scheduled for removal on 2016-10
   ## https://github.com/owncloud/core/wiki/Maintenance-and-Release-Schedule
 
-  ## Does not match/is not needed for ownCloud above 7.0
+  ## Does not match/is not needed for ownCloud above version 7.0
 - name: Use cron for background jobs (settings/admin.php)
   lineinfile:
      dest: '{{ owncloud_deploy_path }}/settings/admin.php'

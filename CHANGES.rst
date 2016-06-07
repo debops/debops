@@ -44,6 +44,9 @@ v0.3.0
   <https://docs.ansible.com/ansible/become.html#for-those-from-pre-1-9-sudo-and-su-still-work>`_.
   [ypid]
 
+- Don’t rely on :file:`/usr/local/bin` being in the `PATH` environment variable
+  for this role to work. [ypid]
+
 v0.2.0
 ------
 
