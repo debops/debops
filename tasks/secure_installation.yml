@@ -8,7 +8,7 @@
   with_flattened:
     - [ '127.0.0.1', '::1' ]
     - [ '{{ ansible_hostname if (ansible_hostname != "localhost") else [] }}' ]
-  when: item|d() and item
+  when: item|d()
 
 - name: Update database root password
   mysql_user:
@@ -36,5 +36,5 @@
     db: 'test'
     state: 'absent'
   when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
-         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status.changed))
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status|changed))
 
