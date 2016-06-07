@@ -4,10 +4,9 @@
 Copyright 2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>
 Licence: GPLv3
 #}
-{%- set _cfg = dict() %}
-{%- set _ = _cfg.update(owncloud_initial_config_global) %}
-{%- set _ = _cfg.update(owncloud_initial_config_group) %}
-{%- set _ = _cfg.update(owncloud_initial_config) %}
-
-$CONFIG = json_decode('{{ _cfg | to_nice_json }}', true);
+$CONFIG = json_decode('{{
+            owncloud_initial_config_global
+  | combine(owncloud_initial_config_group)
+  | combine(owncloud_initial_config)
+  | to_nice_json }}', true);
 ?>
