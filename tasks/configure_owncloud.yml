@@ -1,6 +1,7 @@
-# ---
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# .. ownCloud ./config/ (((
+# ownCloud ./config/ [[[
 
 - name: Install ownCloud mail config file
   template:
@@ -21,7 +22,7 @@
   when: (owncloud_custom_conf_map is defined and owncloud_custom_conf_map is mapping)
   tags: [ 'role::owncloud:custom_config' ]
 
-# .. )))
+# ]]]
 
   ## FIXME(ypid): Does not ownCloud 9 already do log rotation?
 - name: Setup logrotate for owncloud
@@ -32,7 +33,7 @@
     group: 'root'
     mode: '0644'
 
-# .. Setup the occ command (((
+# Setup the occ command [[[
 
 - name: Allow to use the PHP CLI even if OCMemcacheAPCu is used
   template:
@@ -53,9 +54,9 @@
     mode: 0755
   tags: [ 'role::owncloud:occ' ]
 
-# .. )))
+# ]]]
 
-# .. Auto setup (((
+# Auto setup [[[
 
   ## Note that this file is being created on a HTTP request if it did not exist previously.
   ## In this unconfigured state it will be possible for a user to finish the setup via the web interface!
@@ -128,9 +129,9 @@
         owncloud_auto_finish_setup.status is defined and
         owncloud_auto_finish_setup.status|int != 200
 
-# .. )))
+# ]]]
 
-# .. Run occ commands as specified in the inventory (((
+# Run occ commands as specified in the inventory [[[
 - name: Run occ commands as specified in the inventory
   include: run_occ.yml
   tags: [ 'role::owncloud:occ' ]
@@ -138,9 +139,9 @@
     - '{{ owncloud_run_occ_global_commands }}'
     - '{{ owncloud_run_occ_group_commands }}'
     - '{{ owncloud_run_occ_host_commands }}'
-# .. )))
+# ]]]
 
-# .. Configure cron job for background tasks (((
+# Configure cron job for background tasks [[[
 
 - name: Use cron for background tasks (lib/private/...)
   lineinfile:
@@ -169,4 +170,4 @@
     job: '/usr/bin/php -f {{ owncloud_deploy_path }}/cron.php'
     cron_file: 'owncloud'
 
-# .. )))
+# ]]]
