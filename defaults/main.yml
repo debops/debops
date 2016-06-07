@@ -211,6 +211,27 @@ nginx_real_ip_recursive: False
 
 nginx_default_keepalive_timeout: 60
 
+
+# .. envvar:: nginx__http_xss_protection
+#
+# Default value of the ``X-XSS-Protection`` HTTP header field.
+#
+# ``1``
+#   Browsers should enable there build in cross-site scripting protection.
+#
+# ``mode=block``
+#   In case a cross-site scripting attack is detected, block the page from rendering.
+#
+#   Note that the this option might create
+#   `a vulnerability in old versions of Internet Explorer
+#   <https://github.com/helmetjs/helmet#xss-filter-xssfilter>`.
+#
+# For more details and discussion see `What is the http-header
+# “X-XSS-Protection”?
+# <https://stackoverflow.com/questions/9090577/what-is-the-http-header-x-xss-protection>`_.
+nginx__http_xss_protection: '1; mode=block'
+
+
 # Enable or disable support for PKI/SSL/TLS in nginx
 nginx_pki: '{{ (True
                 if (ansible_local|d() and ansible_local.pki|d() and
@@ -462,7 +483,7 @@ nginx_dependent_servers: []
 
 # Default nginx site
 # List and description of available parameters can be found in nginx server
-# templates: templates/etc/nginx/sites-available/*.conf.j2
+# templates :file:`templates/etc/nginx/sites-available/*.conf.j2`.
 nginx_server_welcome:
   enabled: True
   name: [ 'welcome' ]

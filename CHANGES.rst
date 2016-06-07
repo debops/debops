@@ -12,6 +12,15 @@ v0.1.7
 - Fixed Ansible check mode. Check mode did fail when the role was trying to
   symlink a non-existing file. [ypid]
 
+- Changed the default value of the ``X-XSS-Protection`` HTTP header field from
+  ``1`` (enabled), to ``1; mode=block`` (enabled and block rendering) for
+  increased security and made the global default configurable via
+  :any:`nginx__http_xss_protection`. Note that the ``mode=block`` might create
+  `a vulnerability in old versions of Internet Explorer
+  <https://github.com/helmetjs/helmet#xss-filter-xssfilter>`.
+  Additionally, changed the header field from ``X-Xss-Protection`` to the more
+  common one ``X-XSS-Protection`` (``XSS`` in all upper case). [ypid]
+
 v0.1.6
 ------
 
