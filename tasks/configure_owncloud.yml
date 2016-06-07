@@ -32,7 +32,7 @@
     group: 'root'
     mode: '0644'
 
-# .. Setup the occ command for easy access (((
+# .. Setup the occ command (((
 
 - name: Allow to use the PHP CLI even if OCMemcacheAPCu is used
   template:
@@ -57,9 +57,8 @@
 
 # .. Auto setup (((
 
-  ## Note that this file is being created on a HTTP request if it did not exist previously
-  ## which could result in not setting up the ownCloud instance.
-  ## (This will be possible via the web interface for the first user who gets the chance!
+  ## Note that this file is being created on a HTTP request if it did not exist previously.
+  ## In this unconfigured state it will be possible for a user to finish the setup via the web interface!
 - name: Get properties of the config/config.php configuration file
   stat:
     path: '{{ owncloud_deploy_path }}/config/config.php'
@@ -67,8 +66,8 @@
 
 - name: Determine if ownCloud autosetup should be done
   set_fact:
-    ## Size is set to 80 byte to also catch when only `instanceid`
-    ## is set but ownCloud has not been configured yet.
+    ## If the file size of config.php is below 80 byte then it is expected that
+    ## only the `instanceid` is set but ownCloud has not been configured yet.
     owncloud__permit_autosetup: '{{ (owncloud_autosetup and
                                  owncloud_config_file is defined and
                                  owncloud_config_file.stat.exists and

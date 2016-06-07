@@ -7,12 +7,15 @@
     state: present
   tags: [ 'role::owncloud:base_install' ]
 
-  ## TODO: Use filename when available (2.1.0) https://github.com/ansible/ansible-modules-core/pull/2696
+  ## Use filename when available (2.1.0) https://github.com/ansible/ansible-modules-core/pull/2696
   ## To avoid multiple of those source files.
+  ## ypid: Does not help much. When the URL changes, the old source entry will
+  ## need to be made absent so stay with the current way.
+  ## TODO: May introduce support for 8.x versions again for quick testing.
 - name: Configure ownCloud APT repository
   apt_repository:
     repo: '{{ owncloud_apt_repo_source }}'
-    state: present
+    state: 'present'
     update_cache: True
   tags: [ 'role::owncloud:base_install' ]
 
@@ -27,9 +30,9 @@
     - '{{ [ "php5-pgsql" ] if (owncloud_database in [ "postgresql" ]) else [] }}'
   tags: [ 'role::owncloud:base_install' ]
 
-- include: configure_owncloud.yml
+- include: 'configure_owncloud.yml'
   tags: [ 'role::owncloud:configure' ]
 
-- include: configure_ldap.yml
+- include: 'configure_ldap.yml'
   when: (owncloud_ldap_enable | bool)
   tags: [ 'role::owncloud:ldap' ]

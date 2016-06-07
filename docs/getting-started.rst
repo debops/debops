@@ -125,7 +125,7 @@ Available role tags:
   Run tasks related to the deployment of the custom configuration.
 
 ``role::owncloud:occ``
-  Run tasks related to the :command:`occ`.
+  Run tasks related to the :command:`occ` command.
 
 ``role::owncloud:ldap``
   Run tasks related to the LDAP configuration.
