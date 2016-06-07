@@ -40,6 +40,10 @@ v0.3.0
 
 - Fixed ``occ`` command wrapper to work with ownCloud 8.0. [ypid]
 
+- Switched to `become` for privilege escalation as `recommended by Ansible
+  <https://docs.ansible.com/ansible/become.html#for-those-from-pre-1-9-sudo-and-su-still-work>`_.
+  [ypid]
+
 v0.2.0
 ------
 
