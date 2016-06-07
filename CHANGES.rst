@@ -7,7 +7,7 @@ v0.3.0
 *Unreleased*
 
 - Remove most of the Ansible role dependencies.
-  Note that ``owncloud_autosetup`` requires that a webserver is installed to
+  Note that :any:`owncloud_autosetup` requires that a webserver is installed to
   initialize the ownCloud database.
   Further configuration will not be possible when the database has not been
   initialized.
@@ -20,12 +20,13 @@ v0.3.0
 - Remove the ``owncloud-server`` package from list of installed packages, it
   has been dropped as of ownCloud 9.0. [drybjed]
 
-- Update ``owncloud_release`` to ``9.0``. [drybjed]
+- Update :any:`owncloud_release` to ``9.0``. [drybjed]
 
 - Installation of the wrapper script for the :command:`occ` command is no
   longer optional as it is needed by the role internally.
 
-  ``owncloud_enable_occ_shortcut`` has no effect anymore. [ypid]
+  The ``owncloud_enable_occ_shortcut`` variable has no effect anymore and you
+  can remove it from your inventory. [ypid]
 
 - Added more LDAP settings. [ypid]
 
@@ -52,7 +53,7 @@ v0.2.0
 
 - Allow to use ``occ`` via Ansible’s inventory. Can be used to enable apps and create users. [ypid]
 
-- Setup shortcut for the ``occ`` command when not logged in as ``owncloud_user`` user and sudo allows it.
+- Setup shortcut for the ``occ`` command when not logged in as :any:`owncloud_user` user and sudo allows it.
   Disabled by default. Can be enabled via ``owncloud_enable_occ_shortcut``. [ypid]
 
 - Improved LDAP support. Now role will create service account (default: ``cn=owncloud,dc=ansible,dc=fqdn``)
@@ -60,7 +61,7 @@ v0.2.0
 
 - New PostgreSQL role support. Now PostgreSQL and MariaDB/MySQL support is unified. [scibi]
 
-- New variable: ``owncloud_timeout`` needed to handle very large files uploads. [scibi]
+- New variable: :any:`owncloud_timeout` needed to handle very large files uploads. [scibi]
 
 - Switch ownCloud APT repository to upstream repository, support different Linux
   distributions and releases out of the box. [drybjed]
