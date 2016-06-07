@@ -319,11 +319,20 @@ owncloud_cron_minute: '*/15'
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html>`__ for details.
 owncloud_initial_config_global:
+  ## The default timezone for logfiles is UTC.
   logtimezone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
+
+  ## Loglevel to start logging at. Valid values are: 0 = Debug, 1 = Info,
+  ##  2 = Warning, 3 = Error, and 4 = Fatal. The default value is Warning.
   loglevel: 2
-  logdateformat: Y-m-d H:i:s.u # ISO 8601 date: 2004-02-12T15:19:21+00:00
+
+  ## ISO 8601 datetime: 2004-02-12T15:19:21+00:00
+  logdateformat: 'Y-m-d H:i:s.u'
+
+  ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html#deleted-items-trash-bin
   trashbin_auto_expire: True
   trashbin_retention_obligation: 30
+
   remember_login_cookie_lifetime: '{{ 60*60*24*15 }}'
   session_lifetime: '{{ 60 * 60 * 24 }}'
   session_keepalive: True
