@@ -98,6 +98,7 @@
   apt_repository:
     repo: '{{ item.repo }}'
     state: '{{ item.state | default("present") }}'
+    mode: '{{ item.mode | default(omit) }}'
     update_cache: False
   with_items: '{{ apt__repositories_combined }}'
   when: ((item.repo is defined and item.repo) and
