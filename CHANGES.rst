@@ -4,7 +4,7 @@ Changelog
 v0.2.3
 ------
 
-*Unreleased*
+*Released: 2016-06-08*
 
 - Use the ``ini_file`` Ansible module to change the
   :file:`/etc/mysql/debian.cnf` which uses the INI format. [ypid]
@@ -59,7 +59,9 @@ v0.2.0
   variable has been renamed to ``mariadb_server__default_options``. [drybjed]
 
 - Convert ``mysqld`` and ``client`` Ansible templates to use YAML structures
-  for server configuration, split into several default variables. [drybjed]
+  for server configuration, split into several default variables. The
+  ``mariadb_server__default_options`` variable is renamed to
+  ``mariadb_server__mysqld_performance_options``. [drybjed]
 
 - Enable the SSL support provided by ``debops.pki`` only if a corresponding PKI
   realm used by the role is present in the list of known PKI realms. [drybjed]
