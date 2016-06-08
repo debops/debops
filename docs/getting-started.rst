@@ -14,7 +14,7 @@ To install MariaDB on a host, you need to add it to
     database-host
 
 This will install ``mariadb-server`` package, configure the server to listen on
-``localhost`` for new connections, and install ``automysqlbackup`` script to
+``localhost`` for new connections, and install :program:`automysqlbackup` script to
 automatically create daily, weekly and monthly backups of the database.
 
 Example playbook
@@ -66,7 +66,7 @@ this Ansible command:
 
    user@host:~$ ansible database-host -s -m service -a 'name=mysql state=restarted'
 
-Note the ``mysql`` service name - MariaDB still uses the old MySQL init files,
+Note the :command:`mysql` service name - MariaDB still uses the old MySQL init files,
 configuration and data paths to allow easy compatibility with old MySQL
 installations.
 

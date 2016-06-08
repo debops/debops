@@ -2,13 +2,14 @@
 
 # We want to have our configuration enabled as soon as possible for UTF-8
 # support, this check lets us know if MariaDB / MySQL server has just been
-# installed and we can quicky apply our own configuration and restart the
+# installed and we can quickly apply our own configuration and restart the
 # server before any more changes happen.
 - name: Check if database server is installed
   environment:
     LC_MESSAGES: 'C'
   shell: dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server' 'percona-server-server' | grep -v '^$'
   register: mariadb_server__register_version
+  always_run: True
   changed_when: False
   failed_when: False
 
@@ -67,7 +68,7 @@
     name: 'mysql'
     state: 'restarted'
   when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
-         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status.changed|bool))
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status|changed))
 
 - name: Secure database server
   include: 'secure_installation.yml'
@@ -92,5 +93,5 @@
 
 - name: Re-read local facts if they have been changed
   action: setup
-  when: mariadb_server__register_local_facts.changed|bool
+  when: mariadb_server__register_local_facts|changed
 
