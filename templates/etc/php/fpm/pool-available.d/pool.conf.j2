@@ -38,7 +38,7 @@ group = {{ item.group | default(item.name) }}
 ;                            specific port;
 ;   '/path/to/unix/socket' - to listen on a unix socket.
 ; Note: This value is mandatory. #}
-listen = {{ item.listen | default('/var/run/php5-fpm-' + item.name + '.sock') }}
+listen = {{ item.listen | default('/var/run/php' + php__version + '-fpm-' + item.name + '.sock') }}
 
 {#
 ; Set listen(2) backlog.
@@ -50,9 +50,9 @@ listen = {{ item.listen | default('/var/run/php5-fpm-' + item.name + '.sock') }}
 ; BSD-derived systems allow connections regardless of permissions.
 ; Default Values: user and group are set as the running user
 ;                 mode is set to 0666 #}
-listen.owner = {{ php5_socket_listen_owner | default('www-data') }}
-listen.group = {{ php5_socket_listen_group | default('www-data') }}
-listen.mode = {{ php5_socket_listen_mode | default('0660') }}
+listen.owner = {{ php__socket_listen_owner | default('www-data') }}
+listen.group = {{ php__socket_listen_group | default('www-data') }}
+listen.mode = {{ php__socket_listen_mode | default('0660') }}
 
 {#
 ; List of ipv4 addresses of FastCGI clients which are allowed to connect.
@@ -87,7 +87,7 @@ listen.mode = {{ php5_socket_listen_mode | default('0660') }}
 ;             pm.process_idle_timeout   - The number of seconds after which
 ;                                         an idle process will be killed.
 ; Note: This value is mandatory. #}
-pm = {{ item.pm | default(php5_default_pm) }}
+pm = {{ item.pm | default(php__default_pm) }}
 
 {#
 ; The number of child processes to be created when pm is set to 'static' and the
@@ -99,37 +99,37 @@ pm = {{ item.pm | default(php5_default_pm) }}
 ; forget to tweak pm.* to fit your needs.
 ; Note: Used when pm is set to 'static', 'dynamic' or 'ondemand'
 ; Note: This value is mandatory. #}
-pm.max_children = {{ item.pm_max_children | default(php5_default_pm_max_children) }}
+pm.max_children = {{ item.pm_max_children | default(php__default_pm_max_children) }}
 {% if item.pm is defined and 'dynamic' in item.pm %}
 {#
 ; The number of child processes created on startup.
 ; Note: Used only when pm is set to 'dynamic'
 ; Default Value: min_spare_servers + (max_spare_servers - min_spare_servers) / 2 #}
-pm.start_servers = {{ item.pm_start_servers | default(php5_default_pm_start_servers) }}
+pm.start_servers = {{ item.pm_start_servers | default(php__default_pm_start_servers) }}
 {#
 ; The desired minimum number of idle server processes.
 ; Note: Used only when pm is set to 'dynamic'
 ; Note: Mandatory when pm is set to 'dynamic' #}
-pm.min_spare_servers = {{ item.pm_min_spare_servers | default(php5_default_pm_min_spare_servers) }}
+pm.min_spare_servers = {{ item.pm_min_spare_servers | default(php__default_pm_min_spare_servers) }}
 {#
 ; The desired maximum number of idle server processes.
 ; Note: Used only when pm is set to 'dynamic'
 ; Note: Mandatory when pm is set to 'dynamic' #}
-pm.max_spare_servers = {{ item.pm_max_spare_servers | default(php5_default_pm_max_spare_servers) }}
+pm.max_spare_servers = {{ item.pm_max_spare_servers | default(php__default_pm_max_spare_servers) }}
 {% endif %}
 {% if item.pm is not defined or item.pm is defined and 'ondemand' in item.pm %}
 {#
 ; The number of seconds after which an idle process will be killed.
 ; Note: Used only when pm is set to 'ondemand'
 ; Default Value: 10s #}
-pm.process_idle_timeout = {{ item.pm_process_idle_timeout | default(php5_default_pm_process_idle_timeout) }};
+pm.process_idle_timeout = {{ item.pm_process_idle_timeout | default(php__default_pm_process_idle_timeout) }};
 {% endif %}
 {#
 ; The number of requests each child process should execute before respawning.
 ; This can be useful to work around memory leaks in 3rd party libraries. For
 ; endless request processing specify '0'. Equivalent to PHP_FCGI_MAX_REQUESTS.
 ; Default Value: 0 #}
-pm.max_requests = {{ item.pm_max_requests | default(php5_default_pm_max_requests) }}
+pm.max_requests = {{ item.pm_max_requests | default(php__default_pm_max_requests) }}
 
 {#
 ; The URI to view the FPM status page. If this value is not set, no URI will be
@@ -229,8 +229,8 @@ pm.max_requests = {{ item.pm_max_requests | default(php5_default_pm_max_requests
 ;       anything, but it may not be a good idea to use the .php extension or it
 ;       may conflict with a real PHP file.
 ; Default Value: not set #}
-{% if item.pm_status is defined and item.pm_status or php5_default_pm_status is defined and php5_default_pm_status %}
-pm.status_path = {{ item.pm_status_path | default(php5_default_pm_status_path) }}
+{% if item.pm_status is defined and item.pm_status or php__default_pm_status is defined and php__default_pm_status %}
+pm.status_path = {{ item.pm_status_path | default(php__default_pm_status_path) }}
 {#
 ; The ping URI to call the monitoring page of FPM. If this value is not set, no
 ; URI will be recognized as a ping page. This could be used to test from outside
@@ -242,19 +242,19 @@ pm.status_path = {{ item.pm_status_path | default(php5_default_pm_status_path) }
 ;       anything, but it may not be a good idea to use the .php extension or it
 ;       may conflict with a real PHP file.
 ; Default Value: not set #}
-ping.path = {{ item.ping_path | default(php5_default_ping_path) }}
+ping.path = {{ item.ping_path | default(php__default_ping_path) }}
 {#
 ; This directive may be used to customize the response of a ping request. The
 ; response is formatted as text/plain with a 200 response code.
 ; Default Value: pong #}
-ping.response = {{ item.ping_response | default(php5_default_ping_response) }}
+ping.response = {{ item.ping_response | default(php__default_ping_response) }}
 
 {% endif %}
 {% if item.accesslog is defined and item.accesslog|bool %}
 {#
 ; The access log file
 ; Default: not set #}
-access.log = /var/log/php5-fpm/$pool.access.log
+access.log = /var/log/php{{ php__version }}-fpm/$pool.access.log
 {#
 ; The access log format.
 ; The following syntax is allowed
@@ -317,7 +317,7 @@ access.format = "%R - %u %t \"%m %r%Q%q\" %s %f %{mili}d %{kilo}M %C%%"
 ; The log file for slow requests
 ; Default Value: not set
 ; Note: slowlog is mandatory if request_slowlog_timeout is set #}
-slowlog = var/log/php5-fpm/$pool.slow.log
+slowlog = var/log/php{{ php__version }}-fpm/$pool.slow.log
 {#
 ; The timeout for serving a single request after which a PHP backtrace will be
 ; dumped to the 'slowlog' file. A value of '0s' means 'off'.
@@ -332,18 +332,18 @@ request_slowlog_timeout = {{ item.request_slowlog_timeout }}
 ; does not stop script execution for some reason. A value of '0' means 'off'.
 ; Available units: s(econds)(default), m(inutes), h(ours), or d(ays)
 ; Default Value: 0 #}
-request_terminate_timeout = {{ item.request_terminate_timeout | default(php5_max_execution_time) }}
+request_terminate_timeout = {{ item.request_terminate_timeout | default(php__max_execution_time) }}
 
 {#
 ; Set open file descriptor rlimit.
 ; Default Value: system defined value #}
-rlimit_files = {{ item.rlimit_files | default(php5_default_rlimit_files) }}
+rlimit_files = {{ item.rlimit_files | default(php__default_rlimit_files) }}
 
 {#
 ; Set max core size rlimit.
 ; Possible Values: 'unlimited' or an integer greater or equal to 0
 ; Default Value: system defined value #}
-rlimit_core = {{ item.rlimit_core | default(php5_default_rlimit_core) }}
+rlimit_core = {{ item.rlimit_core | default(php__default_rlimit_core) }}
 
 {% if item.chroot is defined and item.chroot %}
 {#
@@ -423,20 +423,20 @@ env[{{ key }}] = {{ value }}
 ;php_admin_value[error_log] = /var/log/fpm-php.www.log
 ;php_admin_flag[log_errors] = on
 ;php_admin_value[memory_limit] = 32M#}
-{% if item.php_flag is defined and item.php_flag %}
-{% for key, value in item.php_flag.iteritems() %}
-php_flag[{{ key }}] = {{ value }}
+{% if item.php__flags is defined and item.php__flags %}
+{% for key, value in item.php__flags.iteritems() %}
+php_flags[{{ key }}] = {{ value }}
 {% endfor %}
 
 {% endif %}
-{% if item.php_value is defined and item.php_value %}
-{% for key, value in item.php_value.iteritems() %}
-php_value[{{ key }}] = {{ value }}
+{% if item.php__values is defined and item.php__values %}
+{% for key, value in item.php__values.iteritems() %}
+php_values[{{ key }}] = {{ value }}
 {% endfor %}
 
 {% endif %}
-{% if item.php_admin_flag is defined and item.php_admin_flag %}
-{% for key, value in item.php_admin_flag.iteritems() %}
+{% if item.php__admin_flags is defined and item.php__admin_flags %}
+{% for key, value in item.php__admin_flags.iteritems() %}
 php_admin_flag[{{ key }}] = {{ value }}
 {% endfor %}
 
@@ -444,10 +444,9 @@ php_admin_flag[{{ key }}] = {{ value }}
 {% if item.open_basedir is defined and item.open_basedir %}
 php_admin_value[open_basedir] = {{ item.open_basedir }}
 {% endif %}
-{% if item.php_admin_value is defined and item.php_admin_value %}
-{% for key, value in item.php_admin_value.iteritems() %}
+{% if item.php__admin_values is defined and item.php__admin_values %}
+{% for key, value in item.php__admin_values.iteritems() %}
 php_admin_value[{{ key }}] = {{ value }}
 {% endfor %}
 
 {% endif %}
-

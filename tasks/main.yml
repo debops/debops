@@ -3,85 +3,129 @@
 - name: Get current timezone from the host
   slurp:
     src: '/etc/timezone'
-  register: php5_etc_timezone
+  register: php__etc_timezone
 
-- name: Make sure PHP5-FPM support is installed
+- name: "Add Ondřej Surý PPA key"
+  apt_key:
+    keyserver: "keyserver.ubuntu.com"
+    id: 4F4EA0AAE5267A6C
+    state: present
+  when: ansible_distribution_release == 'xenial' and php__version == '5.6'
+
+- name: "Add Ondřej Surý PPA repository"
+  apt_repository:
+    repo: 'ppa:ondrej/php'
+    state: present
+    update_cache: yes
+  when: ansible_distribution_release == 'xenial' and php__version == '5.6'
+
+- name: Make sure PHP-FPM support is installed
   apt:
-    pkg: '{{ item }}'
+    pkg: 'php{{ php__version }}-{{ item }}'
     state: 'latest'
     install_recommends: no
-  with_items: [ 'php5-fpm', 'php5-cli' ]
+  with_items: [ 'fpm', 'cli' ]
 
-- name: Install PHP5 packages
+- name: Make sure that Ansible local facts directory is present
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save PHP-FPM local facts
+  template:
+    src: 'etc/ansible/facts.d/php.fact.j2'
+    dest: '/etc/ansible/facts.d/php.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: php_register_local_facts
+
+- name: Gather facts if they were modified
+  action: setup
+  when: php_register_local_facts.changed
+
+- name: Install PHP packages
   apt:
-    pkg: '{{ item }}'
+    pkg: "{{ item|search('php.*-')|ternary(item, 'php' + php__version + '-' + item) }}"
     state: 'latest'
     install_recommends: no
   with_flattened:
-    - '{{ php5_packages }}'
-    - '{{ php5_base_packages }}'
-    - '{{ php5_group_packages }}'
-    - '{{ php5_host_packages }}'
-  notify: ['Restart php5-fpm']
+    - '{{ php__packages }}'
+    - '{{ php__base_packages }}'
+    - '{{ php__group_packages }}'
+    - '{{ php__host_packages }}'
+  notify: ['Restart php-fpm']
 
-- name: Create directory for php5-fpm logs
+- name: "Create directory for php*-fpm logs"
   file:
-    path: '/var/log/php5-fpm'
+    path: '/var/log/php{{ php__version }}-fpm'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0700'
 
-- name: Check existence of php5-fpm-reopenlogs
+- name: "Check existence of php-fpm-reopenlogs"
   stat:
-    path: '/usr/lib/php5/php5-fpm-reopenlogs'
-  register: php5_register_reopenlogs
+    path: '{{ php__lib_base }}/php{{ php__version }}-fpm-reopenlogs'
+  register: php__register_reopenlogs
 
-- name: Configure logrotate for php5-fpm
+- name: "Configure logrotate for php-fpm"
   template:
-    src: 'etc/logrotate.d/php5-fpm.j2'
-    dest: '/etc/logrotate.d/php5-fpm'
+    src: 'etc/logrotate.d/php-fpm.j2'
+    dest: '/etc/logrotate.d/php{{ php__version }}-fpm'
     owner: 'root'
     group: 'root'
     mode: '0644'
 
-- name: Configure php.ini for php5-fpm
+- name: "Create directory for php/fpm under etc"
+  file:
+    path: '{{ php__etc_base }}/fpm'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: "Configure php.ini for php-fpm"
   template:
-    src: 'etc/php5/fpm/php.ini.j2'
-    dest: '/etc/php5/fpm/php.ini'
+    src: 'etc/php/fpm/php.ini.j2'
+    dest: '{{ php__etc_base }}/fpm/php.ini'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  notify: Restart php5-fpm
+  notify: "Restart php-fpm"
 
 - name: Check if pool-available.d/ directory exists
   stat:
-    path: '/etc/php5/fpm/pool-available.d'
+    path: '{{ php__etc_base }}/fpm/pool-available.d'
   register: pool_available_d
 
-- name: Remove default php5-fpm pool if exists
+- name: "Remove default php-fpm pool if exists"
   file:
-    path: '/etc/php5/fpm/pool.d/www.conf'
+    path: '{{ php__etc_base }}/fpm/pool.d/www.conf'
     state: absent
-  when: pool_available_d.stat.exists is defined and pool_available_d.stat.exists == False
+  when: not pool_available_d.stat.exists
 
-- name: Create pool-available.d/ directory for php5-fpm
+- name: "Create pool-available.d/ directory for php-fpm"
   file:
-    path: '/etc/php5/fpm/pool-available.d'
+    path: '{{ php__etc_base }}/fpm/pool-available.d'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
 
-- name: Ensure pool.d/ directory for php5-fpm exists
+- name: "Ensure pool.d/ directory for php*-fpm exists"
   # Just for the case it has been deleted manually
   file:
-    path: '/etc/php5/fpm/pool.d'
+    path: '{{ php__etc_base }}/fpm/pool.d'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
 
-- include: php5_pools.yml
-  when: php5_manage_pools is defined and php5_manage_pools == True
+- include: php_pools.yml
+  when: php__manage_pools|default(True)|bool
 
+- meta: flush_handlers

@@ -380,7 +380,7 @@ zend.enable_gc = On
 ; threat in any way, but it makes it possible to determine whether you use PHP
 ; on your server or not.
 ; http://php.net/expose-php #}
-expose_php = {% if php5_production is defined and php5_production|bool %}Off{% else %}On{% endif %}
+expose_php = {% if php__production is defined and php__production|bool %}Off{% else %}On{% endif %}
 
 {#
 ;;;;;;;;;;;;;;;;;;;
@@ -390,7 +390,7 @@ expose_php = {% if php5_production is defined and php5_production|bool %}Off{% e
 ; Maximum execution time of each script, in seconds
 ; http://php.net/max-execution-time
 ; Note: This directive is hardcoded to 0 for the CLI SAPI #}
-max_execution_time = {{ php5_max_execution_time | default('30') }}
+max_execution_time = {{ php__max_execution_time | default('30') }}
 
 {#
 ; Maximum amount of time each script may spend parsing request data. It's a good
@@ -401,7 +401,7 @@ max_execution_time = {{ php5_max_execution_time | default('30') }}
 ; Development Value: 60 (60 seconds)
 ; Production Value: 60 (60 seconds)
 ; http://php.net/max-input-time #}
-max_input_time = {{ php5_max_input_time | default('-1') }}
+max_input_time = {{ php__max_input_time | default('-1') }}
 {#
 ; Maximum input variable nesting level
 ; http://php.net/max-input-nesting-level
@@ -412,7 +412,7 @@ max_input_time = {{ php5_max_input_time | default('-1') }}
 
 ; Maximum amount of memory a script may consume (128MB)
 ; http://php.net/memory-limit #}
-memory_limit = {{ php5_memory_limit | default('128M') }}
+memory_limit = {{ php__memory_limit | default('128M') }}
 
 {#
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -469,7 +469,7 @@ memory_limit = {{ php5_memory_limit | default('128M') }}
 ; Development Value: E_ALL
 ; Production Value: E_ALL & ~E_DEPRECATED & ~E_STRICT
 ; http://php.net/error-reporting #}
-error_reporting = {% if php5_production is defined and php5_production %}E_ALL & ~E_DEPRECATED & ~E_STRICT{% else %}E_ALL{% endif %}
+error_reporting = {% if php__production is defined and php__production %}E_ALL & ~E_DEPRECATED & ~E_STRICT{% else %}E_ALL{% endif %}
 
 {#
 ; This directive controls whether or not and where PHP will output errors,
@@ -487,7 +487,7 @@ error_reporting = {% if php5_production is defined and php5_production %}E_ALL &
 ; Development Value: On
 ; Production Value: Off
 ; http://php.net/display-errors #}
-display_errors = {% if php5_production is defined and php5_production %}Off{% else %}On{% endif %}
+display_errors = {% if php__production is defined and php__production %}Off{% else %}On{% endif %}
 
 {#
 ; The display of errors which occur during PHP's startup sequence are handled
@@ -499,7 +499,7 @@ display_errors = {% if php5_production is defined and php5_production %}Off{% el
 ; Development Value: On
 ; Production Value: Off
 ; http://php.net/display-startup-errors #}
-display_startup_errors = {% if php5_production is defined and php5_production %}Off{% else %}On{% endif %}
+display_startup_errors = {% if php__production is defined and php__production %}Off{% else %}On{% endif %}
 
 {#
 ; Besides displaying errors, PHP can also log errors to locations such as a
@@ -544,7 +544,7 @@ report_zend_debug = 0
 ; Development Value: On
 ; Production Value: Off
 ; http://php.net/track-errors #}
-track_errors = {% if php5_production is defined and php5_production %}Off{% else %}On{% endif %}
+track_errors = {% if php__production is defined and php__production %}Off{% else %}On{% endif %}
 
 {#
 ; Turn off normal error reporting and emit XML-RPC error XML
@@ -685,7 +685,7 @@ auto_globals_jit = On
 ; Its value may be 0 to disable the limit. It is ignored if POST data reading
 ; is disabled through enable_post_data_reading.
 ; http://php.net/post-max-size #}
-post_max_size = {{ php5_post_max_size }}
+post_max_size = {{ php__post_max_size }}
 {#
 ; Automatically add files before PHP document.
 ; http://php.net/auto-prepend-file #}
@@ -705,7 +705,7 @@ default_mimetype = "text/html"
 {#
 ; PHP's default character set is set to empty.
 ; http://php.net/default-charset #}
-default_charset = "{{ php5_default_charset }}"
+default_charset = "{{ php__default_charset }}"
 {#
 ; Always populate the $HTTP_RAW_POST_DATA variable. PHP's default behavior is
 ; to disable this feature. If post reading is disabled through
@@ -782,7 +782,7 @@ enable_dl = Off
 ; of zero causes PHP to behave as before.  Default is 1.  You should fix your scripts
 ; to use SCRIPT_FILENAME rather than PATH_TRANSLATED.
 ; http://php.net/cgi.fix-pathinfo #}
-cgi.fix_pathinfo={{ php5_cgi_fix_pathinfo }}
+cgi.fix_pathinfo={{ php__cgi_fix_pathinfo }}
 {#
 ; FastCGI under IIS (on WINNT based OS) supports the ability to impersonate
 ; security tokens of the calling client.  This allows IIS to define the
@@ -812,7 +812,7 @@ cgi.fix_pathinfo={{ php5_cgi_fix_pathinfo }}
 
 ; Whether to allow HTTP file uploads.
 ; http://php.net/file-uploads #}
-file_uploads = {{ php5_file_uploads }}
+file_uploads = {{ php__file_uploads }}
 {#
 ; Temporary directory for HTTP uploaded files (will use system default if not
 ; specified).
@@ -821,10 +821,10 @@ file_uploads = {{ php5_file_uploads }}
 
 ; Maximum allowed size for uploaded files.
 ; http://php.net/upload-max-filesize #}
-upload_max_filesize = {{ php5_upload_max_filesize }}
+upload_max_filesize = {{ php__upload_max_filesize }}
 {#
 ; Maximum number of files that can be uploaded via a single request #}
-max_file_uploads = {{ php5_max_file_uploads }}
+max_file_uploads = {{ php__max_file_uploads }}
 
 {#
 ;;;;;;;;;;;;;;;;;;
@@ -833,7 +833,7 @@ max_file_uploads = {{ php5_max_file_uploads }}
 
 ; Whether to allow the treatment of URLs (like http:// or ftp://) as files.
 ; http://php.net/allow-url-fopen #}
-allow_url_fopen = {{ php5_allow_url_fopen }}
+allow_url_fopen = {{ php__allow_url_fopen }}
 {#
 ; Whether to allow include/require to open URLs (like http:// or ftp://) as files.
 ; http://php.net/allow-url-include #}
@@ -900,7 +900,7 @@ cli_server.color = On
 {#
 ; Defines the default timezone used by the date functions
 ; http://php.net/date.timezone #}
-date.timezone = {{ php5_etc_timezone.content | b64decode | trim }}
+date.timezone = {{ php__etc_timezone.content | b64decode | trim }}
 {#
 ; http://php.net/date.default-latitude
 ;date.default_latitude = 31.7667
@@ -1410,7 +1410,7 @@ session.save_handler = files
 ; where MODE is the octal representation of the mode. Note that this
 ; does not overwrite the process's umask.
 ; http://php.net/session.save-path #}
-;session.save_path = "/var/lib/php5"
+;session.save_path = "/var/lib/php{{ php__version }}"
 {#
 ; Whether to use cookies.
 ; http://php.net/session.use-cookies #}
