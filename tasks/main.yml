@@ -34,8 +34,8 @@
     state: 'present'
     install_recommends: False
   with_subelements:
-    - hwraid_device_database
-    - packages
+    - '{{ hwraid_device_database }}'
+    - 'packages'
   when: ((hwraid_register_release is defined and hwraid_register_release) and
          item.0.module not in hwraid_blacklist and
          item.0.module in hwraid_register_modules.stdout_lines)
@@ -43,11 +43,11 @@
 - name: Make sure service starts at boot
   service:
     name: '{{ item.1 }}'
-    state: started
+    state: 'started'
     enabled: yes
   with_subelements:
-    - hwraid_device_database
-    - daemons
+    - '{{ hwraid_device_database }}'
+    - 'daemons'
   when: ((hwraid_register_release is defined and hwraid_register_release) and
          item.0.module not in hwraid_blacklist and
          item.0.module in hwraid_register_modules.stdout_lines)
