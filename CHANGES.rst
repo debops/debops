@@ -8,3 +8,5 @@ v0.1.0
 
 - Add Changelog. [drybjed]
 
+- Remove redundant tags in tasks. [drybjed]
+
