@@ -32,7 +32,7 @@ docker_upstream_repository: 'deb https://apt.dockerproject.org/repo {{ ansible_d
 # .. envvar:: docker_base_packages
 #
 # List of base packages to install with Docker.
-docker_base_packages: [ 'aufs-tools', 'python-docker' ]
+docker_base_packages: [ 'aufs-tools', 'python-docker', 'python-setuptools' ]
 
 
 # .. envvar:: docker_packages
@@ -46,7 +46,7 @@ docker_packages: []
 # List of UNIX accounts which should be added to ``docker`` system group which
 # has access to the Docker UNIX socket.
 docker_admins: [ '{{ (ansible_ssh_user
-                      if (ansible_ssh_user | bool and
+                      if (ansible_ssh_user|d() | bool and
                           ansible_ssh_user != "root")
                       else lookup("env", "USER")) }}' ]
 

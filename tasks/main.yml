@@ -24,8 +24,8 @@
     install_recommends: False
   with_flattened:
     - '{{ "docker-engine" if docker_upstream|d() else "docker.io" }}'
-    - docker_base_packages
-    - docker_packages
+    - '{{ docker_base_packages }}'
+    - '{{ docker_packages }}'
 
 - name: Install ferment generator
   pip:
@@ -96,7 +96,7 @@
     name: '{{ item }}'
     groups: 'docker'
     append: True
-  with_items: docker_admins
+  with_items: '{{ docker_admins }}'
   when: item|d()
   tags: [ 'role::docker:config', 'role::docker:admins' ]
 
