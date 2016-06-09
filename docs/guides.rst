@@ -21,4 +21,4 @@ spell checking library:
 Of course, many more languages are supported. You can find more information
 about the required packages and configuration at the Roundcube `Aspell-Howto`_.
 
-:: _Aspell-Howto: http://trac.roundcube.net/wiki/Howto_Config/Aspell 
+.. _Aspell-Howto: http://trac.roundcube.net/wiki/Howto_Config/Aspell
