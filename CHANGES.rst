@@ -19,7 +19,7 @@ v0.2.8
 
 *Released: 2016-05-05*
 
-- Add support for setting filesystem ACL entries for private directoires and
+- Add support for setting filesystem ACL entries for private directories and
   files. [drybjed]
 
 - Include realms defined in ``pki_default_realms`` in tasks that copy files
