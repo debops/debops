@@ -69,7 +69,7 @@ ones you will likely want to change are:
 Example inventory
 -----------------
 
-In DebOps, the ``debops.pki`` role is included in the ``common.yml`` playbook
+In DebOps, the ``debops.pki`` role is included in the :file:`common.yml` playbook
 and is run automatically on all of the managed hosts. You don't need to
 specifically enable it in Ansible's inventory.
 

@@ -10,7 +10,7 @@ v0.2.9
   select active valid certificate in role default variables. [drybjed]
 
 - Add support for creation of self-signed certificates when internal CA is
-  disabled. This enables proper operation of other services like ``nginx``,
+  disabled. This enables proper operation of other services like :program:`nginx`,
   which can then be used to request and authenticate ACME certificates.
   [drybjed]
 
