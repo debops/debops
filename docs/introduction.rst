@@ -31,6 +31,10 @@ Software packages required by the role on the Ansible Controller::
     bash >= 4.3.0
     openssl >= 1.0.1
 
+.. Note that the role asserts that required dependencies are met. In case you
+   change the required versions here, remember to update them in
+   `../tasks/main.yml` as well.
+
 ..
  Local Variables:
  mode: rst
