@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.2.10
+-------
+
+*Unreleased*
+
+- Documentation fixes and improvements. Made variables hyperlinks using the
+  `any` role in Sphinx which also ensures that variables which the
+  documentation refers to actually exist. [ypid]
+
 v0.2.9
 ------
 
@@ -22,7 +31,7 @@ v0.2.8
 - Add support for setting filesystem ACL entries for private directories and
   files. [drybjed]
 
-- Include realms defined in ``pki_default_realms`` in tasks that copy files
+- Include realms defined in :any:`pki_default_realms` in tasks that copy files
   from Ansible Controller depending on an Ansible inventory group. [drybjed]
 
 v0.2.7
@@ -64,7 +73,7 @@ v0.2.5
 *Released: 2016-03-02*
 
 - Don't run :program:`pki-authority` script on Ansible Controller if list of
-  ``pki_authorities`` is not defined. [drybjed]
+  :any:`pki_authorities` is not defined. [drybjed]
 
 v0.2.4
 ------
@@ -201,6 +210,6 @@ v0.1.0
   a separate ``debops.dhparam`` Ansible role. Existing hosts won't be affected.
   [drybjed]
 
-- Expose ``ansible_fqdn`` variable as ``pki_fqdn`` so that it can be overridden
+- Expose ``ansible_fqdn`` variable as :any:`pki_fqdn` so that it can be overridden
   if necessary. [drybjed]
 

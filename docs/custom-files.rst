@@ -26,7 +26,7 @@ Each element of the file list is a dict with specific parameters:
 
 ``group``
   File group, depending on the file type it will be ``root`` (for public files)
-  or a group specified by the ``pki_private_group`` variable, usually
+  or a group specified by the :any:`pki_private_group` variable, usually
   ``ssl-cert`` (for private files).
 
 ``mode``
@@ -41,14 +41,14 @@ There are multiple list variables which can be used on multiple inventory
 levels:
 
 - all hosts in the inventory:
-  - ``pki_private_files``
-  - ``pki_public_files``
+  - :any:`pki_private_files`
+  - :any:`pki_public_files`
 - hosts in specific inventory group:
-  - ``pki_group_private_files``
-  - ``pki_group_public_files``
+  - :any:`pki_group_private_files`
+  - :any:`pki_group_public_files`
 - specific hosts:
-  - ``pki_host_private_files``
-  - ``pki_host_public_files``
+  - :any:`pki_host_private_files`
+  - :any:`pki_host_public_files`
 
 The private files will be copied before PKI realms are created, so that you can
 provide private keys if you want to. Public files will be copied after PKI

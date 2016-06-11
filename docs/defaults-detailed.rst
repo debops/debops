@@ -1,5 +1,5 @@
-Default variables: configuration
-================================
+Default variable details
+========================
 
 Some of ``debops.pki`` default variables have more extensive configuration than
 simple strings or lists, here you can find documentation and examples for them.
@@ -8,7 +8,7 @@ simple strings or lists, here you can find documentation and examples for them.
    :local:
    :depth: 1
 
-.. _pki_private_groups_present:
+.. _pki__ref_private_groups_present:
 
 pki_private_groups_present
 --------------------------
@@ -49,12 +49,12 @@ Ensure two system groups exist, one with a condition:
      - name: 'group2'
        when: '{{ inventory_hostname in specific_inventory_group }}'
 
-.. _pki_realms:
+.. _pki__ref_realms:
 
 pki_realms
 ----------
 
-The set of ``pki_realms`` lists can be used to define the configuration of PKI
+The set of :any:`pki_realms` lists can be used to define the configuration of PKI
 realms located on remote hosts. Each realm keeps a set of private keys and
 certificates which are signed by the various Certificate Authorities.
 
@@ -88,14 +88,14 @@ List of parameters related to the entire PKI realm:
 ``authority``
   Specify name of the internal Certificate Authority to send the internal
   certificate requests to instead of the default one configured in
-  ``pki_default_authority`` variable. This should be the "normal" name of the
+  :any:`pki_default_authority` variable. This should be the "normal" name of the
   authority, not it's subdomain name.
 
 ``acme``
   Optional, boolean. Enable or disable support for ACME Certificate Authority.
-  Can be used to invert the global ``pki_acme`` setting per PKI realm if
+  Can be used to invert the global :any:`pki_acme` setting per PKI realm if
   needed, but support for ACME needs to be present on the remote host for it to
-  work (see ``pki_acme_install`` variable).
+  work (see :any:`pki_acme_install` variable).
 
 ``internal``
   Optional, boolean. Enable or disable support for internal CA certificates in
@@ -106,7 +106,7 @@ List of parameters related to the entire PKI realm:
   Optional. List of directory names (``external``, ``acme``, ``internal``,
   ``selfsigned``) which determines the order in which the PKI realm looks for
   valid certificates. The first found valid certificate is enabled. If not
-  specified, the order configured in ``pki_authority_preference`` will be used.
+  specified, the order configured in :any:`pki_authority_preference` will be used.
 
 ``library``
   Optional. Specify name of the crypto library used to generate private key and
@@ -121,24 +121,24 @@ List of parameters related to the entire PKI realm:
 ``private_dir_group``
   Optional. System group which will be set as the group of the :file:`private/`
   directory of a given PKI realm. By default, ``ssl-cert``. It needs to exist,
-  and can be created using ``pki_private_groups_resent`` list.
+  and can be created using :any:`pki_private_groups_present` list.
 
 ``private_file_group``
   Optional. System group which will be set as the group of the private keys
   inside of the :file:`private/` directory. It needs to exist, and can be created
-  using ``pki_private_groups_present`` list.
+  using :any:`pki_private_groups_present` list.
 
 ``private_dir_acl_groups``
   Optional. List of groups which should be allowed execute (``X``) permission to
   the ``private/`` realm directory. The access will be granted using filesystem
   ACL table. If not specified, the list defined in
-  ``pki_private_dir_acl_groups`` will be applied.
+  :any:`pki_private_dir_acl_groups` will be applied.
 
 ``private_file_acl_groups``
   Optional. List of groups which should be allowed read (``r``) permission to
   the files in the ``private/`` realm directory. The access will be granted
   using filesystem ACL table. If not specified, the list defined in
-  ``pki_private_file_acl_groups`` will be applied.
+  :any:`pki_private_file_acl_groups` will be applied.
 
 ``dhparam``
   Optional, boolean. Enable or disable support for adding the Diffie-Hellman
@@ -161,7 +161,7 @@ respectively:
 ``default_domain``
   Optional. Change the default domain used by a given PKI realm. If not
   specified, default domain is based on the ``name`` parameter if it has at
-  least 1 dot, or it will be taken from ``pki_default_domain`` variable which
+  least 1 dot, or it will be taken from :any:`pki_default_domain` variable which
   is populated by the ``ansible_domain`` variable.
 
 ``default_subdomains``, ``acme_default_subdomains``
@@ -169,8 +169,8 @@ respectively:
   realm. A special value ``_wildcard_`` can be used to indicate that a wildcard
   domain should be present in the certificate.
 
-  If not specified, ``pki_default_subdomains`` (for internal CA) and
-  ``pki_acme_default_subdomains`` (for ACME CA) will be used. The PKI
+  If not specified, :any:`pki_default_subdomains` (for internal CA) and
+  :any:`pki_acme_default_subdomains` (for ACME CA) will be used. The PKI
   parameters can be set to empty to override the default variables.
 
 ``subject``, ``acme_subject``

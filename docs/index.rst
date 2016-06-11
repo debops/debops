@@ -13,7 +13,7 @@ Ansible role: debops.pki
    acme-integration
    external-certificates
    defaults
-   defaults-configuration
+   defaults-detailed
    system-ca-certificates
    custom-files
    custom-hooks
