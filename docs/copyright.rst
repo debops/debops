@@ -4,7 +4,9 @@ Copyright
 ::
 
     Copyright (C) 2013-2016 Maciej Delmanowski <drybjed@gmail.com>
+    Copyright (C) 2015-2016 Robin Schneider <ypid@riseup.net>
     Copyright (C) 2014-2016 DebOps Project http://debops.org/
+    [see Credits for more details]
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 3, as
