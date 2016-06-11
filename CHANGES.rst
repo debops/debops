@@ -21,6 +21,13 @@ v0.1.7
   Additionally, changed the header field from ``X-Xss-Protection`` to the more
   common one ``X-XSS-Protection`` (``XSS`` in all upper case). [ypid]
 
+- Make the ``X-Robots-Tag`` HTTP header field configurable via
+  ``item.robots_tag`` and :any:`nginx__http_robots_tag`. [ypid]
+
+- Make the ``X-Permitted-Cross-Domain-Policies`` HTTP header field configurable
+  via ``item.permitted_cross_domain_policies`` and
+  :any:`nginx__http_permitted_cross_domain_policies`. [ypid]
+
 v0.1.6
 ------
 

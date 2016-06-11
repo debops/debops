@@ -9,10 +9,10 @@
     path: '/usr/sbin/nginx'
   register: nginx_register_installed
 
-- include: passenger.yml
+- include: 'passenger.yml'
   when: (nginx_flavor == 'passenger' and nginx__deploy_state in [ 'present' ])
 
-- include: nginx_org_packages.yml
+- include: 'nginx_org_packages.yml'
   when: (nginx_flavor == 'nginx.org' and nginx__deploy_state in [ 'present' ])
 
 - name: Install nginx packages
@@ -47,7 +47,7 @@
     creates: '/etc/nginx/conf.d/default.conf.dpkg-divert'
   when: (nginx_flavor == 'nginx.org' and nginx__deploy_state in [ 'present' ])
 
-- include: passenger_config.yml
+- include: 'passenger_config.yml'
   when: (nginx_flavor == 'passenger' and nginx__deploy_state in [ 'present' ])
 
 - name: Restart nginx on first install to bypass missing pid bug
@@ -206,13 +206,13 @@
   action: setup
   when: (nginx_register_local_facts.changed and nginx__deploy_state in [ 'present' ])
 
-- include: nginx_htpasswd.yml
+- include: 'nginx_htpasswd.yml'
   when: (nginx__deploy_state in [ 'present' ])
 
-- include: nginx_configs.yml
+- include: 'nginx_configs.yml'
   when: (nginx__deploy_state in [ 'present' ])
 
-- include: nginx_servers.yml
+- include: 'nginx_servers.yml'
   tags: [ 'role::nginx:servers' ]
   when: (nginx__deploy_state in [ 'present' ])
 

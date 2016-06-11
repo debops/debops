@@ -4,6 +4,11 @@
 #
 # List of parameters supported by this template:
 #
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# This documentation format is deprecated. Add new options and migrate this
+# documentation to ../../../../docs/defaults-detailed.rst
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#
 #   - item.enabled: True/False
 #       Required. Determines if symlink to server configuration is present in
 #       /etc/nginx/sites-enabled/ directory.
@@ -989,9 +994,21 @@ server {
 {% if item.csp | d() or item.csp_report | d() %}
         add_header                Content-Security-Policy{% if item.csp_report | d() %}-Report-Only{% endif %} "{{ item.csp_policy | d('default-src https:') }}";
 {% endif %}
+{% if item.content_type_options|d(True) %}
         add_header                X-Content-Type-Options "{{ item.content_type_options | d('nosniff') }}"{% if nginx_version | version_compare('1.7.5','>=') %} always{% endif %};
+{% endif %}
+{% if item.frame_options|d(True) %}
         add_header                X-Frame-Options "{{ item.frame_options | d('SAMEORIGIN') }}"{% if nginx_version | version_compare('1.7.5','>=') %} always{% endif %};
+{% endif %}
+{% if item.xss_protection | d(nginx__http_xss_protection) %}
         add_header                X-XSS-Protection "{{ item.xss_protection | d(nginx__http_xss_protection) }}";
+{% endif %}
+{% if item.robots_tag | d(nginx__http_robots_tag) != omit %}
+        add_header                X-Robots-Tag "{{ item.robots_tag | d(nginx__http_robots_tag) }}";
+{% endif %}
+{% if item.permitted_cross_domain_policies | d(nginx__http_permitted_cross_domain_policies) != omit %}
+        add_header                X-Permitted-Cross-Domain-Policies "{{ item.permitted_cross_domain_policies | d(nginx__http_permitted_cross_domain_policies) }}";
+{% endif %}
 
 {% if item.name is defined and item.name %}
 {% if item.redirect_from is defined and item.redirect_from %}
