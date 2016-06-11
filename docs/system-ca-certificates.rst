@@ -25,12 +25,12 @@ from the system CA store.
 
 By default, Debian hosts automatically trust new Root Certificate Authorities
 added in the ``ca-certificates`` package. To control this, you can use
-``pki_system_ca_certificates_trust_new`` boolean variable. Setting this
+:any:`pki_system_ca_certificates_trust_new` boolean variable. Setting this
 variable to ``True`` will ensure that new Root CA certificates are trusted.
 Setting it to ``False`` will not enable new CA certificates automatically.
 
-You can use ``pki_system_ca_certificates_blacklist`` and
-``pki_system_ca_certificates_whitelist`` list variables to define which
+You can use :any:`pki_system_ca_certificates_blacklist` and
+:any:`pki_system_ca_certificates_whitelist` list variables to define which
 certificates will be excluded/included in the CA store. Each list element is
 a regexp of the certificate file name. If a given file is found in both lists,
 it will be excluded from the certificate store.

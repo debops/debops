@@ -151,8 +151,10 @@ private keys are required to sign certificates. Therefore, it is strongly
 recommended to store the :file:`secret/` directory encrypted, and use it on an
 encrypted filesystem during use. In DebOps, you can use the EncFS filesystem
 together with :command:`debops-padlock` script to keep the :file:`secret/` directory
-encrypted at rest. You should make sure that Ansible Controller uses encrypted
-filesystem during Ansible runs, if possible, to avoid leaks of private keys.
+encrypted at rest. You should make sure that access to the plaintext files in
+:file:`secret/` is only possible when it is really needed be unmounting the
+encrypted filesystem as soon as possible after usage, to avoid leaks of private
+keys.
 
 The Certificate Signing Requests created by ``debops.pki`` Ansible role contain
 a random challenge password (different on each run) which is then checked on
