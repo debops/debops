@@ -10,6 +10,8 @@ v0.2.10
   `any` role in Sphinx which also ensures that variables which the
   documentation refers to actually exist. [ypid]
 
+- Assert that required dependencies are met. [ypid]
+
 v0.2.9
 ------
 
