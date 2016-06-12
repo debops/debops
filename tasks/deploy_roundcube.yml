@@ -17,7 +17,7 @@
     bare: True
     update: True
     version: 'devel'
-  sudo_user: '{{ roundcube_user }}'
+  become_user: '{{ roundcube_user }}'
   register: roundcube_register_source
 
 - name: Create Roundcube checkout directory
@@ -27,6 +27,7 @@
     owner: '{{ roundcube_user }}'
     group: '{{ roundcube_webserver_user }}'
     mode: '0750'
+  register: roundcube_register_checkout_directory
   with_items: [ '{{ roundcube_www }}', '{{ roundcube_git_checkout }}' ]
 
 - name: Prepare Roundcube worktree
@@ -40,19 +41,20 @@
 - name: Get commit hash of target checkout
   shell: GIT_WORK_TREE={{ roundcube_git_checkout }} git rev-parse {{ roundcube_git_version }}
          chdir={{ roundcube_git_dest }}
-  sudo_user: '{{ roundcube_user }}'
+  become_user: '{{ roundcube_user }}'
   register: roundcube_register_target_branch
   changed_when: roundcube_register_target_branch.stdout != roundcube_register_source.before
 
 - name: Checkout Roundcube
   shell: GIT_WORK_TREE={{ roundcube_git_checkout }} git checkout -f {{ roundcube_git_version }}
          chdir={{ roundcube_git_dest }}
-  sudo_user: '{{ roundcube_user }}'
+  become_user: '{{ roundcube_user }}'
   register: roundcube_register_checkout
   when: (roundcube_register_source.before is undefined or
          (roundcube_register_source.before is defined and
           roundcube_register_target_branch.stdout is defined and
-          roundcube_register_source.before != roundcube_register_target_branch.stdout))
+          roundcube_register_source.before != roundcube_register_target_branch.stdout) or
+         roundcube_register_checkout_directory.changed|d(False))
 
 - name: Enable cleandb.sh Cron job
   cron:
