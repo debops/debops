@@ -24,17 +24,17 @@ env PATH;
 
 {% endif %}
 events {
-	worker_connections {{ nginx_worker_connections | default('1024') }};
+        worker_connections {{ nginx_worker_connections | default('1024') }};
 }
 
 http {
-	include /etc/nginx/mime.types;
-	default_type application/octet-stream;
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
 
-	server_tokens {{ nginx_http_server_tokens | default('off') }};
+        server_tokens {{ nginx_http_server_tokens | default('off') }};
 
-	server_names_hash_bucket_size {{ nginx_http_server_names_hash_bucket_size | default('64') }};
-	server_names_hash_max_size {{ nginx_http_server_names_hash_max_size | default('512') }};
+        server_names_hash_bucket_size {{ nginx_http_server_names_hash_bucket_size | default('64') }};
+        server_names_hash_max_size {{ nginx_http_server_names_hash_max_size | default('512') }};
 
         # Custom file paths
         client_body_temp_path {{ nginx_client_body_temp_path | d("/var/lib/nginx/body") }};
@@ -43,11 +43,11 @@ http {
         scgi_temp_path        {{ nginx_scgi_temp_path | d("/var/lib/nginx/scgi") }};
         uwsgi_temp_path       {{ nginx_uwsgi_temp_path | d("/var/lib/nginx/uwsgi") }};
 
-	# Logging
-	access_log {{ nginx_http_access_log | default(nginx_log_path + '/access.log') }};
-	error_log  {{ nginx_http_error_log  | default(nginx_log_path + '/error.log')  }};
+        # Logging
+        access_log {{ nginx_http_access_log | default(nginx_log_path + '/access.log') }};
+        error_log  {{ nginx_http_error_log  | default(nginx_log_path + '/error.log')  }};
 
-	add_header X-Clacks-Overhead "GNU Terry Pratchett";
+        add_header X-Clacks-Overhead "GNU Terry Pratchett";
 
 {% if nginx_http_options|d() and nginx_http_options %}
 {{ nginx_http_options | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
@@ -68,10 +68,10 @@ http {
         allow {{ nginx_http_allow }};
 {% else %}
 {% for address in nginx_http_allow %}
-	allow {{ address }};
+        allow {{ address }};
 {% endfor %}
 {% endif %}
-	deny all;
+        deny all;
 
 {% endif %}
 {% if nginx_http_auth_basic is defined and nginx_http_auth_basic %}
@@ -92,9 +92,9 @@ http {
 
 {% endif %}
 {% endif %}
-	# Virtual Hosts Configs
-	include {{ nginx_etc_path }}/conf.d/*.conf;
-	include {{ nginx_etc_path }}/sites-enabled/*.conf;
+        # Virtual Hosts Configs
+        include {{ nginx_etc_path }}/conf.d/*.conf;
+        include {{ nginx_etc_path }}/sites-enabled/*.conf;
 }
 
 # vim:ft=nginx
