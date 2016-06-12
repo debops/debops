@@ -1,17 +1,23 @@
+#!/bin/bash
+
+# Check nginx version
+nginx_version="$(/usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##')"
+
 {% set nginx_tpl_default_server = '' %}
 {% if (ansible_local is defined and ansible_local.nginx is defined and
        ansible_local.nginx.default_server is defined) %}
 {%   set nginx_tpl_default_server = ansible_local.nginx.default_server %}
-{% elif (nginx_register_default_server is defined and nginx_register_default_server) %}
+{% elif nginx_register_default_server|d() %}
 {%   set nginx_tpl_default_server = nginx_register_default_server %}
 {% endif %}
 {% set nginx_tpl_default_server_ssl = '' %}
 {% if (ansible_local is defined and ansible_local.nginx is defined and
        ansible_local.nginx.default_server_ssl is defined) %}
 {%   set nginx_tpl_default_server_ssl = ansible_local.nginx.default_server_ssl %}
-{% elif (nginx_register_default_server_ssl is defined and nginx_register_default_server_ssl) %}
+{% elif nginx_register_default_server_ssl|d() %}
 {%   set nginx_tpl_default_server_ssl = nginx_register_default_server_ssl %}
 {% endif %}
+cat << EOF
 {
 "acme": "{{ nginx_acme | bool | lower }}",
 "acme_domain": "{{ nginx_acme_domain }}",
@@ -26,5 +32,7 @@
 "manage_ipv6only": "{{ nginx_manage_ipv6only | bool | lower }}",
 "user": "{{ nginx_user }}",
 "www": "{{ nginx_www }}",
-"flavor": "{{ nginx_flavor }}"
+"flavor": "{{ nginx_flavor }}",
+"version": "$nginx_version"
 }
+EOF

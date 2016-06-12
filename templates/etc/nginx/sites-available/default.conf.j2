@@ -482,6 +482,7 @@
 
     ---- HTTPS, ports to listen on, default server, HTTPS redirect ----
 #}
+{% set nginx_version            = ansible_local.nginx.version if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.version|d()) else "0.0" %}
 {% set nginx_tpl_acme           = (item.acme      | default(nginx_acme)) | bool %}
 {% set nginx_tpl_ssl            = (item.ssl       | default(nginx_pki)) | bool %}
 {% set nginx_tpl_listen         = item.listen     | default(nginx_listen_port if nginx_listen_port else nginx_listen_socket) %}

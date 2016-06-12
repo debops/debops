@@ -28,6 +28,11 @@ v0.1.7
   via ``item.permitted_cross_domain_policies`` and
   :any:`nginx__http_permitted_cross_domain_policies`. [ypid]
 
+- Expose Nginx version via Ansible facts as ``ansible_local.nginx.version`` so
+  that it can be used outside of this role.
+  Check :file:`templates/etc/nginx/sites-available/default.conf.j2`
+  for an example usage. [ypid]
+
 v0.1.6
 ------
 
