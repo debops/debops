@@ -17,7 +17,7 @@
     bare: True
     update: True
     version: 'devel'
-  sudo_user: '{{ roundcube_user }}'
+  become_user: '{{ roundcube_user }}'
   register: roundcube_register_source
 
 - name: Create Roundcube checkout directory
@@ -41,14 +41,14 @@
 - name: Get commit hash of target checkout
   shell: GIT_WORK_TREE={{ roundcube_git_checkout }} git rev-parse {{ roundcube_git_version }}
          chdir={{ roundcube_git_dest }}
-  sudo_user: '{{ roundcube_user }}'
+  become_user: '{{ roundcube_user }}'
   register: roundcube_register_target_branch
   changed_when: roundcube_register_target_branch.stdout != roundcube_register_source.before
 
 - name: Checkout Roundcube
   shell: GIT_WORK_TREE={{ roundcube_git_checkout }} git checkout -f {{ roundcube_git_version }}
          chdir={{ roundcube_git_dest }}
-  sudo_user: '{{ roundcube_user }}'
+  become_user: '{{ roundcube_user }}'
   register: roundcube_register_checkout
   when: (roundcube_register_source.before is undefined or
          (roundcube_register_source.before is defined and
