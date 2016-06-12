@@ -41,7 +41,7 @@ $config['db_dsnw'] = 'mysql://{{ roundcube__database_map[roundcube__database].db
 // %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
 // %s - domain name after the '@' from e-mail address provided at login screen
 // For example %n = mail.domain.tld, %t = domain.tld #}
-{{ macros.roundcube__config('default_host', roundcube__default_host) }}
+{{ macros.roundcube_config('default_host', roundcube__default_host) }}
 
 // SMTP server host (for sending mails).
 {#// To use SSL/TLS connection, enter hostname with prefix ssl:// or tls://
@@ -96,15 +96,15 @@ $config['skin'] = 'larry';
 {% for key,value in roundcube__local_config_map.items()|default([]) %}
 {% if key not in roundcube__group_local_config_map.keys() %}
 {% if key not in roundcube__host_local_config_map.keys() %}
-{{ macros.roundcube__config(key, value) }}
+{{ macros.roundcube_config(key, value) }}
 {% endif %}
 {% endif %}
 {% endfor %}
 {% for key,value in roundcube__group_local_config_map.items()|default([]) %}
 {% if key not in roundcube__host_local_config_map.keys() %}
-{{ macros.roundcube__config(key, value) }}
+{{ macros.roundcube_config(key, value) }}
 {% endif %}
 {% endfor %}
 {% for key,value in roundcube__host_local_config_map.items()|default([]) %}
-{{ macros.roundcube__config(key, value) }}
+{{ macros.roundcube_config(key, value) }}
 {% endfor %}
