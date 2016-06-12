@@ -44,7 +44,7 @@ map {{ item.map }} {
 	default {{ item.default }};
 {%     endif                                                                      %}
 {%     if item.mapping is defined and item.mapping                                %}
-        {{ item.mapping | indent(8) }}
+        {{ item.mapping | indent(8) | regex_replace("(?m)^\s*$", "") }}
 {%     endif                                                                      %}
 {%     if item.include is defined and item.include                                %}
 {%         for file in item.include                                               %}

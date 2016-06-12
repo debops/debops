@@ -599,7 +599,7 @@
                 }
 {%                     endif                                                   %}
 {%                 endif                                                       %}
-                {{ item.location[path] | indent(16) }}
+                {{ item.location[path] | indent(16) | regex_replace("(?m)^\s*$", "") }}
 {%                 if location_allow is defined                                %}
 {%                     if location_allow[path] is defined and location_allow[path] %}
 {%                         for address in location_allow[path] | unique        %}
@@ -639,7 +639,7 @@
                 }
 {%                 endif                                                       %}
 {%                 if entry.options is defined and entry.options               %}
-                {{ entry.options | indent(16) }}
+                {{ entry.options | indent(16) | regex_replace("(?m)^\s*$", "") }}
 {%                 endif                                                       %}
 {%                 if entry.allow is defined and entry.allow                   %}
 {%                     for address in entry.allow | unique                     %}
@@ -654,7 +654,7 @@
 {%                     endif                                                   %}
 {%                 endif                                                       %}
 {%                 if entry.locations is defined and entry.locations           %}
-{{ print_location_list(entry.locations) | indent(8, true) }}
+{{ print_location_list(entry.locations) | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
 {%                 endif                                                       %}
         }
 {%             endif                                                           %}
@@ -725,7 +725,7 @@
         error_page {{ element.code if (element.code is string) else (element.code | join(" ")) }} {{ element.uri }};
 {% if element.location|d() or element.location_options|d() %}
         location {{ element.location | d(element.uri) }} {
-{{ element.location_options | indent(16, true) }}
+{{ element.location_options | indent(16, true) | regex_replace("(?m)^\s*$", "") }}
         }
 {% if not loop.last %}
 
@@ -735,7 +735,7 @@
 
 {% endif %}
 {% if item.options is defined and item.options %}
-        {{ item.options | indent(8) }}
+        {{ item.options | indent(8) | regex_replace("(?m)^\s*$", "") }}
 
 {% endif %}
 {% if ((item.access_policy is defined and item.access_policy) and
@@ -785,7 +785,7 @@
 		alias {{ item.userdir_alias | d(nginx_www + '/$1/userdir/public$2') }};
 		index {{ item.userdir_index | d(item.index | default('index.html index.htm')) }};
 {% if item.userdir_options|d() %}
-{{ item.userdir_options | indent(16, true) }}
+{{ item.userdir_options | indent(16, true) | regex_replace("(?m)^\s*$", "") }}
 {% else %}
 		autoindex on;
 		autoindex_exact_size off;

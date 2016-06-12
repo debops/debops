@@ -29,10 +29,10 @@
                 proxy_set_header X-Forwarded-Port  {{ "443" if (nginx_tpl_ssl|d() and nginx_tpl_ssl | bool) else "80" }};
 {%     endif %}
 {%   elif item.proxy_headers|d() %}
-{{ item.proxy_headers | indent(16, true) }}
+{{ item.proxy_headers | indent(16, true) | regex_replace("(?m)^\s*$", "") }}
 {%   endif %}
 {%   if item.proxy_options|d() and item.proxy_options %}
-{{ item.proxy_options | indent(16, true) }}
+{{ item.proxy_options | indent(16, true) | regex_replace("(?m)^\s*$", "") }}
 {%   endif %}
                 proxy_pass {{ item.proxy_pass }};
         }

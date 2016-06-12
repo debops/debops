@@ -50,7 +50,7 @@ http {
 	add_header X-Clacks-Overhead "GNU Terry Pratchett";
 
 {% if nginx_http_options|d() and nginx_http_options %}
-{{ nginx_http_options | indent(8, true) }}
+{{ nginx_http_options | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
 
 {% endif %}
 {% if nginx_http_client_max_body_size|d() and nginx_http_client_max_body_size %}
@@ -88,7 +88,7 @@ http {
         passenger_max_pool_size {{ nginx_passenger_max_pool_size }};
 
 {% if nginx_passenger_options %}
-{{ nginx_passenger_options | indent(8,true) }}
+{{ nginx_passenger_options | indent(8,true) | regex_replace("(?m)^\s*$", "") }}
 
 {% endif %}
 {% endif %}

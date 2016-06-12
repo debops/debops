@@ -92,7 +92,7 @@ upstream {{ item.name }} {
 {%         endfor                                                                 %}
 {%     endif                                                                      %}
 {%     if item.options|d()                                                        %}
-{{ item.options | indent(8, true) }}
+{{ item.options | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
 {%     endif                                                                      %}
 {%     block nginx_tpl_block_custom_upstreams                                     %}
 {%     endblock                                                                   %}
