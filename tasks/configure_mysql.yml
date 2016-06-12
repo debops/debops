@@ -2,19 +2,19 @@
 
 - name: Create Roundcube MySQL/MariaDB database
   mysql_db:
-    name: '{{ roundcube_database_map[roundcube_database].dbname }}'
+    name: '{{ roundcube__database_map[roundcube__database].dbname }}'
     state: 'present'
   delegate_to: '{{ ansible_local.mariadb.delegate_to }}'
-  register: roundcube_register_database_status
+  register: roundcube__register_database_status
   tags: [ 'role::roundcube:database' ]
 
 - name: Import initial database schema
   mysql_db:
-    name: '{{ roundcube_database_map[roundcube_database].dbname }}'
+    name: '{{ roundcube__database_map[roundcube__database].dbname }}'
     state: import
-    target: '{{ roundcube_database_schema }}'
-    login_user: '{{ roundcube_database_map[roundcube_database].dbuser }}'
-    login_password: '{{ roundcube_database_map[roundcube_database].dbpass }}'
+    target: '{{ roundcube__database_schema }}'
+    login_user: '{{ roundcube__database_map[roundcube__database].dbuser }}'
+    login_password: '{{ roundcube__database_map[roundcube__database].dbpass }}'
     login_host: '{{ ansible_local.mariadb.delegate_to }}'
-  when: (roundcube_register_database_status|d() is defined and roundcube_register_database_status.changed)
+  when: (roundcube__register_database_status|d() is defined and roundcube__register_database_status.changed)
   tags: [ 'role::roundcube:database' ]

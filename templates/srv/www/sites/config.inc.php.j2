@@ -24,11 +24,11 @@ $config = array();
 // Currently supported db_providers: mysql, pgsql, sqlite, mssql or sqlsrv
 // For examples see http://pear.php.net/manual/en/package.database.mdb2.intro-dsn.php
 // NOTE: for SQLite use absolute path: 'sqlite:////full/path/to/sqlite.db?mode=0646' #}
-{% if roundcube_database_map[roundcube_database].dbtype == 'sqlite' %}
-$config['db_dsnw'] = 'sqlite:///{{ roundcube_git_checkout }}/{{ roundcube_database_map[roundcube_database].dbname }}?mode=640';
+{% if roundcube__database_map[roundcube__database].dbtype == 'sqlite' %}
+$config['db_dsnw'] = 'sqlite:///{{ roundcube__git_checkout }}/{{ roundcube__database_map[roundcube__database].dbname }}?mode=640';
 {% endif %}
-{% if roundcube_database_map[roundcube_database].dbtype == 'mysql' %}
-$config['db_dsnw'] = 'mysql://{{ roundcube_database_map[roundcube_database].dbuser }}:{{ roundcube_database_map[roundcube_database].dbpass }}@{{ roundcube_database_map[roundcube_database].dbhost }}/{{ roundcube_database_map[roundcube_database].dbname }}';
+{% if roundcube__database_map[roundcube__database].dbtype == 'mysql' %}
+$config['db_dsnw'] = 'mysql://{{ roundcube__database_map[roundcube__database].dbuser }}:{{ roundcube__database_map[roundcube__database].dbpass }}@{{ roundcube__database_map[roundcube__database].dbhost }}/{{ roundcube__database_map[roundcube__database].dbname }}';
 {% endif %}
 
 // The mail host chosen to perform the log-in.
@@ -41,7 +41,7 @@ $config['db_dsnw'] = 'mysql://{{ roundcube_database_map[roundcube_database].dbus
 // %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
 // %s - domain name after the '@' from e-mail address provided at login screen
 // For example %n = mail.domain.tld, %t = domain.tld #}
-{{ macros.roundcube_config('default_host', roundcube_default_host) }}
+{{ macros.roundcube__config('default_host', roundcube__default_host) }}
 
 // SMTP server host (for sending mails).
 {#// To use SSL/TLS connection, enter hostname with prefix ssl:// or tls://
@@ -53,22 +53,22 @@ $config['db_dsnw'] = 'mysql://{{ roundcube_database_map[roundcube_database].dbus
 // %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
 // %z - IMAP domain (IMAP hostname without the first part)
 // For example %n = mail.domain.tld, %t = domain.tld #}
-$config['smtp_server'] = '{{ roundcube_smtp_server }}';
+$config['smtp_server'] = '{{ roundcube__smtp_server }}';
 
 // SMTP port (default is 25; use 587 for STARTTLS or 465 for the
 // deprecated SSL over SMTP (aka SMTPS))
-$config['smtp_port'] = {{ roundcube_smtp_port }};
+$config['smtp_port'] = {{ roundcube__smtp_port }};
 
 // SMTP username (if required) if you use %u as the username Roundcube
 // will use the current username for login
-$config['smtp_user'] = '{{ roundcube_smtp_user }}';
+$config['smtp_user'] = '{{ roundcube__smtp_user }}';
 
 // SMTP password (if required) if you use %p as the password Roundcube
 // will use the current user's password for login
-$config['smtp_pass'] = '{{ roundcube_smtp_pass }}';
+$config['smtp_pass'] = '{{ roundcube__smtp_pass }}';
 
-{% if (roundcube_local_config_map is defined and 'product_name' not in roundcube_local_config_map) or
-      (roundcube_local_config_map is not defined) %}
+{% if (roundcube__local_config_map is defined and 'product_name' not in roundcube__local_config_map) or
+      (roundcube__local_config_map is not defined) %}
 // Name your service. This is displayed on the login screen and in the window title
 $config['product_name'] = 'Roundcube Webmail';
 {% endif %}
@@ -77,34 +77,34 @@ $config['product_name'] = 'Roundcube Webmail';
 // in the session record (and the client cookie if remember password is enabled).
 {#// please provide a string of exactly 24 chars.
 // YOUR KEY MUST BE DIFFERENT THAN THE SAMPLE VALUE FOR SECURITY REASONS #}
-$config['des_key'] = '{{ roundcube_des_key }}';
+$config['des_key'] = '{{ roundcube__des_key }}';
 
 // List of active plugins (in plugins/ directory)
 $config['plugins'] = array(
-{% for plugin in roundcube_default_plugins + roundcube_plugins %}
+{% for plugin in roundcube__default_plugins + roundcube__plugins %}
     '{{ plugin }}',
 {% endfor %}
 );
 
-{% if (roundcube_local_config_map is defined and 'skin' not in roundcube_local_config_map) or
-      (roundcube_local_config_map is not defined) %}
+{% if (roundcube__local_config_map is defined and 'skin' not in roundcube__local_config_map) or
+      (roundcube__local_config_map is not defined) %}
 // skin name: folder from skins/
 $config['skin'] = 'larry';
 {% endif %}
 
 // custom configuration options
-{% for key,value in roundcube_local_config_map.items()|default([]) %}
-{% if key not in roundcube_group_local_config_map.keys() %}
-{% if key not in roundcube_host_local_config_map.keys() %}
-{{ macros.roundcube_config(key, value) }}
+{% for key,value in roundcube__local_config_map.items()|default([]) %}
+{% if key not in roundcube__group_local_config_map.keys() %}
+{% if key not in roundcube__host_local_config_map.keys() %}
+{{ macros.roundcube__config(key, value) }}
 {% endif %}
 {% endif %}
 {% endfor %}
-{% for key,value in roundcube_group_local_config_map.items()|default([]) %}
-{% if key not in roundcube_host_local_config_map.keys() %}
-{{ macros.roundcube_config(key, value) }}
+{% for key,value in roundcube__group_local_config_map.items()|default([]) %}
+{% if key not in roundcube__host_local_config_map.keys() %}
+{{ macros.roundcube__config(key, value) }}
 {% endif %}
 {% endfor %}
-{% for key,value in roundcube_host_local_config_map.items()|default([]) %}
-{{ macros.roundcube_config(key, value) }}
+{% for key,value in roundcube__host_local_config_map.items()|default([]) %}
+{{ macros.roundcube__config(key, value) }}
 {% endfor %}

@@ -8,15 +8,15 @@
 
 - name: Create Roundcube group
   group:
-    name: '{{ roundcube_group }}'
+    name: '{{ roundcube__group }}'
     system: True
     state: 'present'
 
 - name: Create Roundcube user
   user:
-    name: '{{ roundcube_user }}'
-    group: '{{ roundcube_group }}'
-    home: '{{ roundcube_home }}'
+    name: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
+    home: '{{ roundcube__home }}'
     shell: '/usr/sbin/nologin'
     comment: 'Roundcube'
     createhome: False
@@ -32,11 +32,11 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - [ '{{ roundcube_extra_packages }}' ]
-    - [ '{{ "php5-sqlite" if roundcube_database_map[roundcube_database].dbtype == "sqlite" else [] }}' ]
-    - [ '{{ "php5-mysql" if roundcube_database_map[roundcube_database].dbtype == "mysql" else [] }}' ]
-    - [ '{{ "php-net-sieve" if "managesieve" in roundcube_plugins else [] }}' ]
-    - [ '{{ "php-crypt-gpg" if "enigma" in roundcube_plugins else [] }}' ]
+    - [ '{{ roundcube__extra_packages }}' ]
+    - [ '{{ "php5-sqlite" if roundcube__database_map[roundcube__database].dbtype == "sqlite" else [] }}' ]
+    - [ '{{ "php5-mysql" if roundcube__database_map[roundcube__database].dbtype == "mysql" else [] }}' ]
+    - [ '{{ "php-net-sieve" if "managesieve" in roundcube__plugins else [] }}' ]
+    - [ '{{ "php-crypt-gpg" if "enigma" in roundcube__plugins else [] }}' ]
 
 - name: Install Roundcube packages
   apt:
@@ -56,22 +56,22 @@
 
 - name: Make sure database directory exists
   file:
-    path: '{{ roundcube_git_checkout }}/{{ roundcube_database_map[roundcube_database].dbname | dirname }}'
+    path: '{{ roundcube__git_checkout }}/{{ roundcube__database_map[roundcube__database].dbname | dirname }}'
     state: directory
-    owner: '{{ roundcube_user }}'
-    group: '{{ roundcube_group }}'
+    owner: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
     mode: '0750'
-  when: roundcube_database_map[roundcube_database].dbtype == 'sqlite'
+  when: roundcube__database_map[roundcube__database].dbtype == 'sqlite'
 
 - include: configure_mysql.yml
-  when: roundcube_database_map[roundcube_database].dbtype == 'mysql'
+  when: roundcube__database_map[roundcube__database].dbtype == 'mysql'
 
 - name: Configure Roundcube
   template:
     src: 'srv/www/sites/config.inc.php.j2'
-    dest: '{{ roundcube_git_checkout + "/config/config.inc.php" }}'
+    dest: '{{ roundcube__git_checkout + "/config/config.inc.php" }}'
     owner: 'root'
-    group: '{{ roundcube_group }}'
+    group: '{{ roundcube__group }}'
     mode: '0640'
 
 - name: Post hooks
