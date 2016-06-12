@@ -1,12 +1,9 @@
 Installation
 ============
 
-This role requires at least Ansible ``v1.7.0``. To install it, clone it
-to your `DebOps`_ project roles directory::
+This role requires at least Ansible ``v1.8.0``. To install it, run::
 
-    git clone http://github.com/ganto/ansible-roundcube.git
-
-.. _DebOps: http://debops.org/
+    ansible-galaxy install debops-contrib.roundcube
 
 
 Role dependencies
