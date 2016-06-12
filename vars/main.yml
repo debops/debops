@@ -1,24 +1,24 @@
 ---
 
 # Roundcube database schema loaded by Ansible
-roundcube_database_schema: '{{ roundcube_git_checkout + "/SQL/mysql.initial.sql" }}
-    if (roundcube_database_map[roundcube_database].dbtype == "mysql") else ""'
+roundcube__database_schema: '{{ roundcube__git_checkout + "/SQL/mysql.initial.sql" }}
+    if (roundcube__database_map[roundcube__database].dbtype == "mysql") else ""'
 
-#  roundcube_git_checkout + "/SQL/postgres.initial.sql" if (roundcube_database_map[roundcube_database].dbtype == "postgresql") }}'
+#  roundcube__git_checkout + "/SQL/postgres.initial.sql" if (roundcube__database_map[roundcube__database].dbtype == "postgresql") }}'
 
 # Configuration for php5-fpm pool
-roundcube_php5_pool:
+roundcube__php5_pool:
   enabled: True
   name: 'roundcube'
-  user: '{{ roundcube_user }}'
-  group: '{{ roundcube_group }}'
+  user: '{{ roundcube__user }}'
+  group: '{{ roundcube__group }}'
 
   php_admin_value:
     display_errors:             'off'
     log_errors:                 'on'
     error_log:                  'logs/errors'
-    upload_max_filesize:        '{{ roundcube_max_file_size }}M'
-    post_max_size:              '{{ roundcube_max_file_size }}M'
+    upload_max_filesize:        '{{ roundcube__max_file_size }}M'
+    post_max_size:              '{{ roundcube__max_file_size }}M'
     memory_limit:               '64M'
     register_globals:           'off'
     zlib.output_compression:    'off'
@@ -31,25 +31,25 @@ roundcube_php5_pool:
     session.gc_probability:     '1'
 
 # nginx configuration - PHP5 upstream
-roundcube_nginx_upstream_php5:
+roundcube__nginx_upstream_php5:
   enabled: True
   name: 'php5_roundcube'
   type: 'php5'
   php5: 'roundcube'
 
 # nginx configuration - Roundcube server
-roundcube_nginx_server:
+roundcube__nginx_server:
   by_role: 'ansible-roundcube'
   enabled: True
   type: 'php5'
-  name: '{{ roundcube_domain }}'
-  root: '{{ roundcube_git_checkout }}'
-  access_policy: '{{ roundcube_nginx_access_policy }}'
+  name: '{{ roundcube__domain }}'
+  root: '{{ roundcube__git_checkout }}'
+  access_policy: '{{ roundcube__nginx_access_policy }}'
   index: 'index.php'
 
   options: |
     autoindex off;
-    client_max_body_size {{ roundcube_max_file_size }}M;
+    client_max_body_size {{ roundcube__max_file_size }}M;
     client_body_buffer_size 128k;
 
   location:

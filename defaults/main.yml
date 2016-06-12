@@ -9,29 +9,29 @@
 #   Basic configuration options
 # -------------------------------
 
-# .. envvar:: roundcube_dependencies
+# .. envvar:: roundcube__dependencies
 #
 # Should roundcube role manage its own dependencies?
-roundcube_dependencies: True
+roundcube__dependencies: True
 
 
-# .. envvar:: roundcube_domain
+# .. envvar:: roundcube__domain
 #
 # List of domains which will be used to access the roundcube instance.
-roundcube_domain: [ 'roundcube.{{ ansible_domain }}' ]
+roundcube__domain: [ 'roundcube.{{ ansible_domain }}' ]
 
 
-# .. envvar:: roundcube_nginx_access_policy
+# .. envvar:: roundcube__nginx_access_policy
 #
 # Name of the "nginx access policy" for Roundcube webpage. See ``debops.nginx``
 # Ansible role for more details.
-roundcube_nginx_access_policy: ''
+roundcube__nginx_access_policy: ''
 
 
-# .. envvar:: roundcube_php5_packages
+# .. envvar:: roundcube__php5_packages
 #
 # List of PHP5 packages required by Roundcube.
-roundcube_php5_packages: [ 'php-auth-sasl', 'php5-gd', 'php5-intl', 'php5-json',
+roundcube__php5_packages: [ 'php-auth-sasl', 'php5-gd', 'php5-intl', 'php5-json',
                            'php5-mcrypt', 'php-mail-mime', 'php-mail-mimedecode',
                            'php-net-smtp', 'php-net-socket', 'php-pear' ]
 
@@ -40,46 +40,46 @@ roundcube_php5_packages: [ 'php-auth-sasl', 'php5-gd', 'php5-intl', 'php5-json',
 #   User, group, database configuration
 # ---------------------------------------
 
-# .. envvar:: roundcube_user
+# .. envvar:: roundcube__user
 #
 # Roundcube system user account
-roundcube_user: 'roundcube'
+roundcube__user: 'roundcube'
 
 
-# .. envvar:: roundcube_group
+# .. envvar:: roundcube__group
 #
 # Roundcube system user group
-roundcube_group: 'roundcube'
+roundcube__group: 'roundcube'
 
 
-# .. envvar:: roundcube_home
+# .. envvar:: roundcube__home
 #
 # Roundcube home directory
-roundcube_home: '{{ ansible_local.root.home + "/" + roundcube_user }}'
+roundcube__home: '{{ ansible_local.root.home + "/" + roundcube__user }}'
 
 
-# .. envvar:: roundcube_database_user
+# .. envvar:: roundcube__database_user
 #
 # Roundcube database user account
-roundcube_database_user: 'roundcube'
+roundcube__database_user: 'roundcube'
 
 
-# .. envvar:: roundcube_database_password
+# .. envvar:: roundcube__database_password
 #
 # Roundcube database password
-roundcube_database_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/roundcube/' + roundcube_database + '/' + roundcube_database_user + '/password length=30') }}"
+roundcube__database_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/roundcube/' + roundcube__database + '/' + roundcube__database_user + '/password length=30') }}"
 
 
-# .. envvar:: roundcube_database
+# .. envvar:: roundcube__database
 #
-# Database definition to use from the ``roundcube_database_map``
-roundcube_database: 'sqlite-default'
+# Database definition to use from the ``roundcube__database_map``
+roundcube__database: 'sqlite-default'
 
 
-# .. envvar:: roundcube_database_map
+# .. envvar:: roundcube__database_map
 #
 # Database connection definitions
-roundcube_database_map:
+roundcube__database_map:
 
   sqlite-default:
     dbtype: 'sqlite'
@@ -88,8 +88,8 @@ roundcube_database_map:
   mysql-default:
     dbtype: 'mysql'
     dbname: 'roundcubemail'
-    dbuser: '{{ roundcube_database_user }}'
-    dbpass: '{{ roundcube_database_password }}'
+    dbuser: '{{ roundcube__database_user }}'
+    dbpass: '{{ roundcube__database_password }}'
     dbhost: 'localhost'
     dbtableprefix: ''
 
@@ -98,25 +98,25 @@ roundcube_database_map:
 #   Base application directories
 # --------------------------------
 
-# .. envvar:: roundcube_src
+# .. envvar:: roundcube__src
 #
 # Base path for git bare repository with Roundcube source
-roundcube_src: '{{ ansible_local.root.src + "/" + roundcube_user }}'
+roundcube__src: '{{ ansible_local.root.src + "/" + roundcube__user }}'
 
 
-# .. envvar:: roundcube_www
+# .. envvar:: roundcube__www
 #
 # Base web root directory for Roundcube website
-roundcube_www: '{{ (ansible_local.nginx.www
+roundcube__www: '{{ (ansible_local.nginx.www
                     if (ansible_local|d() and
                         ansible_local.nginx|d())
-                    else "/srv/www" ) + "/" + roundcube_user }}'
+                    else "/srv/www" ) + "/" + roundcube__user }}'
 
 
-# .. envvar:: roundcube_webserver_user
+# .. envvar:: roundcube__webserver_user
 #
 # Roundcube webserver user (needs read-only access to the website code)
-roundcube_webserver_user: '{{ ansible_local.nginx.user
+roundcube__webserver_user: '{{ ansible_local.nginx.user
                               if (ansible_local|d() and
                                   ansible_local.nginx|d() and
                                   ansible_local.nginx.user|d())
@@ -127,118 +127,118 @@ roundcube_webserver_user: '{{ ansible_local.nginx.user
 #   Git repository and checkout
 # -------------------------------
 
-# .. envvar:: roundcube_git_repo
+# .. envvar:: roundcube__git_repo
 #
 # Roundcube source repository
-roundcube_git_repo: 'https://github.com/roundcube/roundcubemail.git'
+roundcube__git_repo: 'https://github.com/roundcube/roundcubemail.git'
 
 
-# .. envvar:: roundcube_git_dest
+# .. envvar:: roundcube__git_dest
 #
 # Roundcube source directory on the host
-roundcube_git_dest: '{{ roundcube_src + "/" + roundcube_git_repo.split("://")[1] }}'
+roundcube__git_dest: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")[1] }}'
 
 
-# .. envvar:: roundcube_git_tag
+# .. envvar:: roundcube__git_tag
 #
 # Roundcube release tag to deploy
-roundcube_git_version: '1.1.3'
+roundcube__git_version: '1.1.3'
 
 
-# .. envvar:: roundcube_git_checkout
+# .. envvar:: roundcube__git_checkout
 #
 # Default path where Roundcube source files will be deployed
-roundcube_git_checkout: '{{ roundcube_www + "/sites/" + roundcube_domain[0] + "/public" }}'
+roundcube__git_checkout: '{{ roundcube__www + "/sites/" + roundcube__domain[0] + "/public" }}'
 
 
 # ---------------------------------
 #   Roundcube application options
 # ---------------------------------
 
-# .. envvar:: roundcube_default_host
+# .. envvar:: roundcube__default_host
 #
 # Mail host chosen to perform the log-in
-roundcube_default_host: 'localhost'
+roundcube__default_host: 'localhost'
 
 
-# .. envvar:: roundcube_smtp_server
+# .. envvar:: roundcube__smtp_server
 #
 # SMTP server host (for sending mails)
-roundcube_smtp_server: ''
+roundcube__smtp_server: ''
 
 
-# .. envvar:: roundcube_smtp_port
+# .. envvar:: roundcube__smtp_port
 #
 # SMTP port
-roundcube_smtp_port: '25'
+roundcube__smtp_port: '25'
 
 
-# .. envvar:: roundcube_smtp_user
+# .. envvar:: roundcube__smtp_user
 #
 # SMTP username (if required) if you use %u as the username Roundcube will
 # use the current username for login
-roundcube_smtp_user: ''
+roundcube__smtp_user: ''
 
 
-# .. envvar:: roundcube_smtp_pass
+# .. envvar:: roundcube__smtp_pass
 #
 # SMTP password (if required) if you use %p as the password Roundcube will
 # use the current user's password for login
-roundcube_smtp_pass: ''
+roundcube__smtp_pass: ''
 
 
-# .. envvar:: roundcube_des_key
+# .. envvar:: roundcube__des_key
 #
 # Encryption key for the users imap password which is stored in the session
 # record (and the client cookie if remember password is enabled).
-roundcube_des_key: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/roundcube/des_key chars=hexdigits length=24") }}'
+roundcube__des_key: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/roundcube/des_key chars=hexdigits length=24") }}'
 
 
-# .. envvar:: roundcube_local_config_map
+# .. envvar:: roundcube__local_config_map
 #
 # Custom configuration values for the Roundcube config.inc.php
-roundcube_local_config_map: {}
+roundcube__local_config_map: {}
 
 
-# .. envvar:: roundcube_group_local_config_map
+# .. envvar:: roundcube__group_local_config_map
 #
 # Custom configuration values which can be defined on a group level and
-# eventually are merged with ``roundcube_local_config_map``
-roundcube_group_local_config_map: {}
+# eventually are merged with ``roundcube__local_config_map``
+roundcube__group_local_config_map: {}
 
 
-# .. envvar:: roundcube_host_local_config_map
+# .. envvar:: roundcube__host_local_config_map
 #
 # Custom configuration values which can be defined ona host level and
-# eventually are merged with ``roundcube_local_config_map``
-roundcube_host_local_config_map: {}
+# eventually are merged with ``roundcube__local_config_map``
+roundcube__host_local_config_map: {}
 
 
-# .. envvar:: roundcube_default_plugins
+# .. envvar:: roundcube__default_plugins
 #
 # List of plugins shipped and enabled by default with Roundcube
-roundcube_default_plugins: [ 'archive', 'filesystem_attachments', 'jqueryui', 'zipdownload' ]
+roundcube__default_plugins: [ 'archive', 'filesystem_attachments', 'jqueryui', 'zipdownload' ]
 
 
-# .. envvar:: roundcube_plugins
+# .. envvar:: roundcube__plugins
 #
 # Additional Roundcube plugins to enable. Check the ``plugins/`` folder for
 # the plugins shipped by default
-roundcube_plugins: []
+roundcube__plugins: []
 
 
 # -------------------
 #   Other variables
 # -------------------
 
-# .. envvar:: roundcube_max_file_size
+# .. envvar:: roundcube__max_file_size
 #
 # Maximum upload size, in MB
-roundcube_max_file_size: '30'
+roundcube__max_file_size: '30'
 
 
-# .. envvar:: roundcube_extra_packages
+# .. envvar:: roundcube__extra_packages
 #
 # List of additional Debian packages (e.g. language dictionaries) that should
 # be installed with Roundcube
-roundcube_extra_packages: []
+roundcube__extra_packages: []

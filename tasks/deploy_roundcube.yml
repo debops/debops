@@ -4,63 +4,63 @@
 
 - name: Create Roundcube source directory
   file:
-    path: '{{ roundcube_src }}'
+    path: '{{ roundcube__src }}'
     state: 'directory'
-    owner: '{{ roundcube_user }}'
-    group: '{{ roundcube_group }}'
+    owner: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
     mode: '0750'
 
 - name: Clone Roundcube source from upstream repository
   git:
-    repo: '{{ roundcube_git_repo }}'
-    dest: '{{ roundcube_git_dest }}'
+    repo: '{{ roundcube__git_repo }}'
+    dest: '{{ roundcube__git_dest }}'
     bare: True
     update: True
     version: 'devel'
-  become_user: '{{ roundcube_user }}'
-  register: roundcube_register_source
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_source
 
 - name: Create Roundcube checkout directory
   file:
     path: '{{ item }}'
     state: 'directory'
-    owner: '{{ roundcube_user }}'
-    group: '{{ roundcube_webserver_user }}'
+    owner: '{{ roundcube__user }}'
+    group: '{{ roundcube__webserver_user }}'
     mode: '0750'
-  register: roundcube_register_checkout_directory
-  with_items: [ '{{ roundcube_www }}', '{{ roundcube_git_checkout }}' ]
+  register: roundcube__register_checkout_directory
+  with_items: [ '{{ roundcube__www }}', '{{ roundcube__git_checkout }}' ]
 
 - name: Prepare Roundcube worktree
   copy:
-    content: 'gitdir: {{ roundcube_git_dest }}'
-    dest: '{{ roundcube_git_checkout + "/.git" }}'
-    owner: '{{ roundcube_user }}'
-    group: '{{ roundcube_group }}'
+    content: 'gitdir: {{ roundcube__git_dest }}'
+    dest: '{{ roundcube__git_checkout + "/.git" }}'
+    owner: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
     mode: '0644'    
 
 - name: Get commit hash of target checkout
-  shell: GIT_WORK_TREE={{ roundcube_git_checkout }} git rev-parse {{ roundcube_git_version }}
-         chdir={{ roundcube_git_dest }}
-  become_user: '{{ roundcube_user }}'
-  register: roundcube_register_target_branch
-  changed_when: roundcube_register_target_branch.stdout != roundcube_register_source.before
+  shell: GIT_WORK_TREE={{ roundcube__git_checkout }} git rev-parse {{ roundcube__git_version }}
+         chdir={{ roundcube__git_dest }}
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_target_branch
+  changed_when: roundcube__register_target_branch.stdout != roundcube__register_source.before
 
 - name: Checkout Roundcube
-  shell: GIT_WORK_TREE={{ roundcube_git_checkout }} git checkout -f {{ roundcube_git_version }}
-         chdir={{ roundcube_git_dest }}
-  become_user: '{{ roundcube_user }}'
-  register: roundcube_register_checkout
-  when: (roundcube_register_source.before is undefined or
-         (roundcube_register_source.before is defined and
-          roundcube_register_target_branch.stdout is defined and
-          roundcube_register_source.before != roundcube_register_target_branch.stdout) or
-         roundcube_register_checkout_directory.changed|d(False))
+  shell: GIT_WORK_TREE={{ roundcube__git_checkout }} git checkout -f {{ roundcube__git_version }}
+         chdir={{ roundcube__git_dest }}
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_checkout
+  when: (roundcube__register_source.before is undefined or
+         (roundcube__register_source.before is defined and
+          roundcube__register_target_branch.stdout is defined and
+          roundcube__register_source.before != roundcube__register_target_branch.stdout) or
+         roundcube__register_checkout_directory.changed|d(False))
 
 - name: Enable cleandb.sh Cron job
   cron:
     name: Roundcube daily database housekeeping
-    user: '{{ roundcube_user }}'
-    job: '{{ roundcube_git_checkout }}/bin/cleandb.sh'
+    user: '{{ roundcube__user }}'
+    job: '{{ roundcube__git_checkout }}/bin/cleandb.sh'
     cron_file: 'roundcube'
     hour: '22'
     minute: '0'
