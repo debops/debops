@@ -2,6 +2,7 @@
 
 [![Travis CI](http://img.shields.io/travis/debops-contrib/ansible-roundcube.svg?style=flat)](http://travis-ci.org/debops-contrib/ansible-roundcube)
 [![test-suite](http://img.shields.io/badge/test--suite-ansible--roundcube-blue.svg?style=flat)](https://github.com/ganto/test-suite/tree/master/ansible-roundcube/)
+[![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops--contrib.roundcube-660198.svg?style=flat)](https://galaxy.ansible.com/debops-contrib/roundcube/)
 [![Platforms](http://img.shields.io/badge/platforms-debian-lightgrey.svg?style=flat)](#)
 
 ### Warning, this is a Beta role
@@ -17,11 +18,10 @@ client written in PHP.
 
 ### Installation
 
-This role requires at least Ansible `v1.8.0`. To install it, clone it
-to your [DebOps](http://debops.org) project roles directory:
+This role requires at least Ansible `v1.8.0`. To install it, run:
 
 ```Shell
-git clone http://github.com/debops-contrib/ansible-roundcube.git
+ansible-galaxy install debops-contrib.roundcube
 ```
 
 ### Are you using this as a standalone role without DebOps?
