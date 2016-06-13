@@ -26,8 +26,9 @@ Credits
 
   * creator of the DebOps Project
 
-  * current project maintainer
-
 * Hartmut Goebel
 
 * Robin `ypid` Schneider
+
+  * Current maintainer of this role
+  * His work on this role is partly funded by `hamcos <http://www.hamcos.de/>`_
