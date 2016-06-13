@@ -51,6 +51,12 @@ v0.3.0
   Fixes security warnings which occurred with the latest version of
   ``debops.nginx`` about duplicated security headers. [ypid]
 
+- Use ownCloud APT repository of the latest stable release of ownCloud which is
+  supported by this role and not the latest stable release of ownCloud for
+  which the DebOps project might need adoption. This allows the role maintainers to
+  update the role to new releases, test it and then release a new version of
+  the role. [ypid]
+
 v0.2.0
 ------
 

@@ -46,14 +46,14 @@ owncloud_domain: [ 'owncloud.{{ ansible_domain }}' ]
 
 # .. envvar:: owncloud_edition
 #
-# Currently, only ``community`` is supported.
+# Only ``community`` is supported currently.
 owncloud_edition: 'community'
 
 
 # .. envvar:: owncloud_release
 #
-# ownCloud version in the format ``major_release.minor_release`` or ``testing``.
-# See http://download.opensuse.org/repositories/isv:/ownCloud:/community:/ for the full list.
+# See https://download.owncloud.org/download/repositories/ for the full list.
+# Defaults to the latest stable release supported by this role.
 owncloud_release: '9.0'
 
 
@@ -81,7 +81,7 @@ owncloud_distribution_version: '{{ ((ansible_distribution_major_version + ".0")
 # .. envvar:: owncloud_apt_repo_base
 #
 # Base APT repository URL.
-owncloud_apt_repo_base: 'http://download.owncloud.org/download/repositories/stable'
+owncloud_apt_repo_base: 'http://download.owncloud.org/download/repositories/{{ owncloud_release }}'
 
 
 # .. envvar:: owncloud_apt_repo_key_id
