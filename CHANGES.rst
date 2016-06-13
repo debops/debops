@@ -47,6 +47,10 @@ v0.3.0
 - Don’t rely on :file:`/usr/local/bin` being in the `PATH` environment variable
   for this role to work. [ypid]
 
+- Updated Nginx configuration to the example given in the official ownCloud documentation.
+  Fixes security warnings which occurred with the latest version of
+  ``debops.nginx`` about duplicated security headers. [ypid]
+
 v0.2.0
 ------
 
