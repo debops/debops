@@ -9,7 +9,10 @@ v0.2.2
 - Explicitly set ``!requiretty`` for the :any:`bootstrap__sudo_group`
   (:manpage:`sudoers(5)`). This ensures that :command:`sudo` with :command:`rsync` is allowed
   for the :any:`bootstrap__sudo_group` even when ``requiretty`` has been
-  configured to be the default for users.
+  configured to be the default for users. [ypid]
+
+- Allow to disable hostname and domain configuration via
+  :any:`bootstrap__hostname_domain_config_enabled`. [ypid]
 
 v0.2.1
 ------
