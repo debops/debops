@@ -1,6 +1,6 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) apt_preferences
 
-[![Travis CI](http://img.shields.io/travis/debops/ansible-apt_preferences.svg?style=flat)](http://travis-ci.org/debops/ansible-apt_preferences) [![test-suite](http://img.shields.io/badge/test--suite-ansible--apt__preferences-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-apt_preferences/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.apt__preferences-660198.svg?style=flat)](https://galaxy.ansible.com/list#/roles/1552)
+[![Travis CI](http://img.shields.io/travis/debops/ansible-apt_preferences.svg?style=flat)](http://travis-ci.org/debops/ansible-apt_preferences) [![test-suite](http://img.shields.io/badge/test--suite-ansible--apt__preferences-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-apt_preferences/)  [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops.apt__preferences-660198.svg?style=flat)](https://galaxy.ansible.com/debops/apt_preferences)
 
 [APT preferences](https://wiki.debian.org/AptPreferences)
 can be used to influence package selection performed by

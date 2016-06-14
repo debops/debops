@@ -1,10 +1,10 @@
 Changelog
 =========
 
-v0.1.4
+v0.2.0
 ------
 
-*Unreleased*
+*Released: 2016-06-14*
 
 - Changed variable namespace from ``apt_preferences_`` to ``apt_preferences__``.
   ``apt_preferences_[^_]`` variables are hereby deprecated but are currently
@@ -21,6 +21,8 @@ v0.1.4
 
 
 - Added :any:`apt_preferences__preset_list` for advanced users. [ypid]
+
+- Use marker levels in vim markers to eliminate empty spaces. [drybjed]
 
 v0.1.3
 ------
