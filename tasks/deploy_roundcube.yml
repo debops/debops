@@ -2,6 +2,32 @@
 
 # ---- Deployment ----
 
+# roundcube is checked out based on tags instead of branches, and since we
+# cannot work with tags from a bare repository, we need to work around it
+# a little.
+
+- name: Check if bare repository is cloned
+  stat:
+    path: '{{ roundcube__git_dest }}'
+  register: roundcube__register_cloned
+
+- name: Save current checkout hash for update
+  shell: git rev-parse HEAD
+  args:
+    chdir: '{{ roundcube__git_dest }}'
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_current_head
+  changed_when: False
+  when: roundcube__register_cloned.stat.exists
+
+- name: Change current HEAD to master in bare repository for update
+  shell: git symbolic-ref HEAD refs/heads/master
+  args:
+    chdir: '{{ roundcube__git_dest }}'
+  become_user: '{{ roundcube__user }}'
+  changed_when: False
+  when: roundcube__register_cloned.stat.exists
+
 - name: Create Roundcube source directory
   file:
     path: '{{ roundcube__src }}'
@@ -16,19 +42,25 @@
     dest: '{{ roundcube__git_dest }}'
     bare: True
     update: True
-    version: 'devel'
   become_user: '{{ roundcube__user }}'
-  register: roundcube__register_source
+
+- name: Restore HEAD to previous checkout
+  copy:
+    content: '{{ roundcube__register_current_head.stdout }}'
+    dest: '{{ roundcube__git_dest + "/HEAD" }}'
+    owner: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
+    mode: '0644'
+  changed_when: False
+  when: roundcube__register_cloned.stat.exists
 
 - name: Create Roundcube checkout directory
   file:
-    path: '{{ item }}'
+    path: '{{ roundcube__git_checkout }}'
     state: 'directory'
     owner: '{{ roundcube__user }}'
     group: '{{ roundcube__webserver_user }}'
     mode: '0750'
-  register: roundcube__register_checkout_directory
-  with_items: [ '{{ roundcube__www }}', '{{ roundcube__git_checkout }}' ]
 
 - name: Prepare Roundcube worktree
   copy:
@@ -38,23 +70,25 @@
     group: '{{ roundcube__group }}'
     mode: '0644'    
 
-- name: Get commit hash of target checkout
-  shell: GIT_WORK_TREE={{ roundcube__git_checkout }} git rev-parse {{ roundcube__git_version }}
-         chdir={{ roundcube__git_dest }}
+- name: Get currently checked out git tag
+  command: git describe --tags
+  environment:
+    GIT_WORK_TREE: '{{ roundcube__git_checkout }}'
+  args:
+    chdir: '{{ roundcube__git_dest }}'
   become_user: '{{ roundcube__user }}'
-  register: roundcube__register_target_branch
-  changed_when: roundcube__register_target_branch.stdout != roundcube__register_source.before
+  register: roundcube__register_target_tag
+  changed_when: roundcube__register_target_tag.stdout != roundcube__git_version
 
 - name: Checkout Roundcube
-  shell: GIT_WORK_TREE={{ roundcube__git_checkout }} git checkout -f {{ roundcube__git_version }}
-         chdir={{ roundcube__git_dest }}
+  command: git checkout --force {{ roundcube__git_version }}
+  environment:
+    GIT_WORK_TREE: '{{ roundcube__git_checkout }}'
+  args:
+    chdir: '{{ roundcube__git_dest }}'
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_checkout
-  when: (roundcube__register_source.before is undefined or
-         (roundcube__register_source.before is defined and
-          roundcube__register_target_branch.stdout is defined and
-          roundcube__register_source.before != roundcube__register_target_branch.stdout) or
-         roundcube__register_checkout_directory.changed|d(False))
+  changed_when: roundcube__register_target_tag.stdout != roundcube__git_version
 
 - name: Enable cleandb.sh Cron job
   cron:
