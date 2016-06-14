@@ -36,7 +36,7 @@ There are more comprehensive Ansible roles that install packages:
 Example inventory
 -----------------
 
-The ``debops.apt_install`` role is included by default in the ``common.yml``
+The ``debops.apt_install`` role is included by default in the :file:`common.yml`
 DebOps playbook. You don't need to configure anything in the inventory to
 enable it.
 
@@ -45,12 +45,12 @@ installed on hosts, depending on the inventory level:
 
 ``apt_install__packages``
   This variable should be used in
-  ``ansible/inventory/group_vars/all/apt_install.yml`` file and is meant to
+  :file:`ansible/inventory/group_vars/all/apt_install.yml` file and is meant to
   specify packages present on all hosts in the inventory.
 
 ``apt_install__group_packages``
   This variable should be used in
-  ``ansible/inventory/group_vars/<group-name>/apt_install.yml`` files and is
+  :file:`ansible/inventory/group_vars/<group-name>/apt_install.yml` files and is
   meant to contain packages that should be installed on hosts in different
   Ansible groups. Only one level of this variable is supported, so you should
   be careful about your inventory design. Or, you can use it as a maser list
@@ -58,7 +58,7 @@ installed on hosts, depending on the inventory level:
 
 ``apt_install__host_packages``
   This variable should be used in
-  ``ansible/inventory/host_vars/<hostname>/apt_install.yml`` files and is meant
+  :file:`ansible/inventory/host_vars/<hostname>/apt_install.yml` files and is meant
   to contain list of packages that should be installed on specific hosts.
 
 Example playbook
