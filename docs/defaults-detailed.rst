@@ -15,7 +15,7 @@ ifupdown_interfaces
 -------------------
 
 This is a list of dicts, each dict defines a network interface. The basic
-configuration is very similar to how ``/etc/network/interfaces`` is configured,
+configuration is very similar to how :file:`/etc/network/interfaces` is configured,
 you can read about it on the Debian Wiki `NetworkConfiguration`_ page.
 
 .. _NetworkConfiguration: https://wiki.debian.org/NetworkConfiguration
@@ -66,7 +66,7 @@ List of interface parameters
   The value of this parameter specifies what configuration method is used to
   configure given interface. It can be ``dhcp``, ``static``, ``manual`` or
   other methods, depending on what each interface type allows. See
-  ``interfaces(5)`` for a list of available methods. If parameter is not
+  :manpage:`interfaces(5)` for a list of available methods. If parameter is not
   specified, ``dhcp`` is used as default for IPv4 network.
 
 ``auto``
@@ -98,12 +98,12 @@ List of interface parameters
 ``label``
   Specify a string which will be added to the interface name as a label.
   Labeled interface configuration is stored in separate configuration files in
-  ``/etc/network/interfaces.d/``.
+  :file:`/etc/network/interfaces.d/`.
 
 ``options``
   YAML text block with additional options added to the interface configuration.
   You can specify here custom commands, nameservers, search domains, etc. See
-  ``interfaces(5)`` for more details about what can be configured.
+  :manpage:`interfaces(5)` for more details about what can be configured.
 
 ``port``
   Name of other network interface which this interface might depend on. Usage
@@ -149,7 +149,7 @@ List of interface parameters
 
 ``delete``
   If specified and ``True``, the configuration file for a given interface will
-  be deleted from ``/etc/network/interfaces.d/`` and won't be generated again.
+  be deleted from :file:`/etc/network/interfaces.d/` and won't be generated again.
 
 ``force``
   If specified and ``True`` force the role to generate a specified interface,
@@ -159,7 +159,7 @@ List of interface parameters
   By default when the interface configuration changes, the ``debops.ifupdown`` role
   will automatically stop that interface and start it again. If this parameter
   is present and ``True``, the role will stop the interface and generate a script
-  in ``/tmp`` directory which can be used to start it again from another
+  in :file:`/tmp` directory which can be used to start it again from another
   Ansible role or manually.
 
 Example interface configuration

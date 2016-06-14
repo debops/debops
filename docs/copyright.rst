@@ -19,3 +19,16 @@ Copyright
     You should have received a copy of the GNU General Public License
     along with this program. If not, see http://www.gnu.org/licenses/
 
+
+Credits
+-------
+
+* Maciej Delmanowski <drybjed_at_gmail.com>
+
+  * creator of the DebOps Project
+
+  * current project maintainer
+
+* Robin `ypid` Schneider
+
+  * Quality assurance, review, documentation fixes
