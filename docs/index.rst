@@ -9,7 +9,7 @@ Ansible role: debops.apt_preferences
    introduction
    getting-started
    defaults
-   defaults-configuration
+   defaults-detailed
    copyright
    changelog
 
