@@ -55,9 +55,9 @@ v0.2.3
   parameter, your configuration shouldn't be affected.
 
   This change will most likely generate new sets of interface configuration in
-  ``/etc/network/interfaces.d/`` on already configured hosts. To prevent
+  :file:`/etc/network/interfaces.d/` on already configured hosts. To prevent
   duplication of configuration, you can remove the configuration stored in
-  ``/etc/network/interfaces.config.d/`` before running the role.
+  :file:`/etc/network/interfaces.config.d/` before running the role.
 
   Because from the ``ifupdown`` perspective configuration of each interface
   changed, after new configuration is generated each interface will be brought
@@ -76,7 +76,7 @@ v0.2.3
 
   By setting ``ifupdown_reconfigure_auto`` variable to ``False`` you can
   prevent the role from messing with the live network configuration, but still
-  configure the interfaces in ``/etc/network/interfaces``. This is useful on
+  configure the interfaces in :file:`/etc/network/interfaces`. This is useful on
   a production server with virtual machines or containers running, since it
   prevents modification to network bridges which requires restart of the
   network interfaces and may drop the existing bridge layout. [drybjed]
@@ -115,7 +115,7 @@ v0.2.0
   configuration. [drybjed]
 
 - Add an option to ignore "static" configuration in
-  ``/etc/network/interfaces``. [drybjed]
+  :file:`/etc/network/interfaces`. [drybjed]
 
 - Change reconfiguration script ``logger`` command to not cut the emitted
   string after first variable. And it looks cleaner now. [drybjed]
@@ -154,7 +154,7 @@ v0.1.2
   interface won't be brought up at all. [drybjed]
 
 - Remove management if ``ifup@.service`` unit symlinks for configured
-  interfaces. ``ifupdown`` and ``/etc/init.d/networking`` scripts work just
+  interfaces. ``ifupdown`` and :file:`/etc/init.d/networking` scripts work just
   fine without them present. [drybjed]
 
 - Split ``interface_enabled`` list into two to better track what types of
@@ -168,7 +168,7 @@ v0.1.2
   bridge.
 
   This helps mitigate an issue where bridge with DHCP configuration is
-  constantly running ``dhclient`` when its main interface is not connected to
+  constantly running :program:`dhclient` when its main interface is not connected to
   the network. [drybjed]
 
 - Add a way to postpone interface configuration entirely using a separate
@@ -201,8 +201,8 @@ v0.1.1
 - Rewrite network interface configuration logic.
 
   Generate interface configuration in a separate
-  ``/etc/network/interfaces.config.d/`` directory instead of directly in
-  ``/etc/network/interfaces.d/`` directory. Provide original configuration at
+  :file:`/etc/network/interfaces.config.d/` directory instead of directly in
+  :file:`/etc/network/interfaces.d/` directory. Provide original configuration at
   first run of the role, which is required to properly shut down all network
   interfaces, when state of the networking configuration is undefined.
 
@@ -213,8 +213,8 @@ v0.1.1
 
   The ifupdown configuration script will shut down all network interfaces on
   the first run of the ``debops.ifupdown`` role, apply configuration changes
-  from the ``/etc/network/interfaces.config.d/`` directory to
-  ``/etc/network/interfaces.d/`` directory and then start only enabled
+  from the :file:`/etc/network/interfaces.config.d/` directory to
+  :file:`/etc/network/interfaces.d/` directory and then start only enabled
   interfaces using ``ifup`` command or ``ifup@.service`` systemd service. Only
   network interfaces which have been modified will be enabled/disabled on
   subsequent runs. [drybjed]

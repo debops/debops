@@ -21,7 +21,7 @@ taken into account are:
   enabled, network configuration is skipped;
 
 - if the network configuration is presumed to be "static" (``static`` anywhere in
-  ``/etc/network/interfaces``), the network configuration is not performed;
+  :file:`/etc/network/interfaces`), the network configuration is not performed;
 
 - if NetworkManager is detected, ``debops.ifupdown`` will not configure the default
   set of network interfaces, but will work as a role dependency if used in that
@@ -39,7 +39,7 @@ Example inventory
 -----------------
 
 If you are using the official DebOps playbooks, the ``debops.ifupdown`` role is part of
-the ``common.yml`` playbook, which means that it's run by default on all hosts,
+the :file:`common.yml` playbook, which means that it's run by default on all hosts,
 and there's no specific host group set to enable it.
 
 By default ``eth0`` and ``eth1`` network interfaces will be configured with
