@@ -1,16 +1,17 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 - name: Remove APT preferences
   file:
     dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin"))) + "_"  + item.package.split(" ")[0] + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
     state: 'absent'
   with_flattened:
-    ## Deprecated: (((
+    ## Deprecated: [[[
     - '{{ apt_preferences_list|d([]) }}'
     - '{{ apt_preferences_group_list|d([]) }}'
     - '{{ apt_preferences_host_list|d([]) }}'
     - '{{ apt_preferences_dependent_list|d([]) }}'
-    ## )))
+    ## ]]]
     - '{{ apt_preferences__list }}'
     - '{{ apt_preferences__group_list }}'
     - '{{ apt_preferences__host_list }}'
@@ -41,12 +42,12 @@
     group: 'root'
     mode: '0644'
   with_flattened:
-    ## Deprecated: (((
+    ## Deprecated: [[[
     - '{{ apt_preferences_list|d([]) }}'
     - '{{ apt_preferences_group_list|d([]) }}'
     - '{{ apt_preferences_host_list|d([]) }}'
     - '{{ apt_preferences_dependent_list|d([]) }}'
-    ## )))
+    ## ]]]
     - '{{ apt_preferences__list }}'
     - '{{ apt_preferences__group_list }}'
     - '{{ apt_preferences__host_list }}'
