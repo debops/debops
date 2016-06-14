@@ -57,6 +57,10 @@ v0.3.0
   update the role to new releases, test it and then release a new version of
   the role. [ypid]
 
+- Use :file:`fastcgi_params` instead of :file:`fastcgi.conf` as the FastCGI parameters
+  file when ``nginx.org`` flavor is installed, because it is not provided by
+  the non-Debian packages. [ypid]
+
 v0.2.0
 ------
 
