@@ -12,6 +12,9 @@ v0.2.10
 
 - Assert that required dependencies are met. [ypid]
 
+- Use ``pki_ca_library`` variable to select correct crypto library for
+  assertion. [drybjed]
+
 v0.2.9
 ------
 
