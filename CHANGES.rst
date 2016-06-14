@@ -6,12 +6,12 @@ v0.2.1
 
 *Released: 2016-02-29*
 
-- Use the same value type in ``tinc__host_addresses_fqdn`` and
-  ``tinc__host_addresses_ip`` for consistency. [drybjed]
+- Use the same value type in :any:`tinc__host_addresses_fqdn` and
+  :any:`tinc__host_addresses_ip` for consistency. [drybjed]
 
-- Support both strings and lists in ``tinc__host_addresses``. [drybjed]
+- Support both strings and lists in :any:`tinc__host_addresses`. [drybjed]
 
-- Use separate ``tinc__inventory_hostname`` variable synchronized with the
+- Use separate :any:`tinc__inventory_hostname` variable synchronized with the
   ``inventory_hostname`` variable to transfer files correctly between hosts.
   [drybjed]
 
