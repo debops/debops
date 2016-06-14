@@ -35,3 +35,21 @@ Here's an example playbook for using the role without the DebOps playbook::
 
         - role: debops.apt
           tags: [ 'role::apt' ]
+
+
+Ansible tags
+------------
+
+You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
+tasks are performed during Ansible run. This can be used after host is first
+configured to speed up playbook execution, when you are sure that most of the
+configuration has not been changed.
+
+Available role tags:
+
+``role::apt``
+  Main role tag, should be used in the playbook to execute all of the role
+  tasks as well as role dependencies.
+
+``role::apt:install``
+  Tasks related to package installation.
