@@ -483,6 +483,11 @@
     ---- HTTPS, ports to listen on, default server, HTTPS redirect ----
 #}
 {% set nginx_version            = ansible_local.nginx.version if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.version|d()) else "0.0" %}
+{% set nginx_tpl_robots_tag     = [] if (item.robots_tag|d(nginx__http_robots_tag) is string and item.robots_tag|d(nginx__http_robots_tag) == omit)
+    else (
+        [ item.robots_tag|d(nginx__http_robots_tag) ]
+        if (item.robots_tag|d(nginx__http_robots_tag) is string)
+        else (item.robots_tag|d(nginx__http_robots_tag))) %}
 {% set nginx_tpl_acme           = (item.acme      | default(nginx_acme)) | bool %}
 {% set nginx_tpl_ssl            = (item.ssl       | default(nginx_pki)) | bool %}
 {% set nginx_tpl_listen         = item.listen     | default(nginx_listen_port if nginx_listen_port else nginx_listen_socket) %}
@@ -1003,9 +1008,9 @@ server {
 {% endif %}
 {% if item.xss_protection | d(nginx__http_xss_protection) %}
         add_header                X-XSS-Protection "{{ item.xss_protection | d(nginx__http_xss_protection) }}";
-{% endif %}
-{% if item.robots_tag | d(nginx__http_robots_tag) != omit %}
-        add_header                X-Robots-Tag "{{ item.robots_tag | d(nginx__http_robots_tag) }}";
+{% for robots_tag in nginx_tpl_robots_tag %}
+        add_header                X-Robots-Tag "{{ robots_tag }}";
+{% endfor %}
 {% endif %}
 {% if item.permitted_cross_domain_policies | d(nginx__http_permitted_cross_domain_policies) != omit %}
         add_header                X-Permitted-Cross-Domain-Policies "{{ item.permitted_cross_domain_policies | d(nginx__http_permitted_cross_domain_policies) }}";

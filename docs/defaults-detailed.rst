@@ -52,7 +52,7 @@ Nginx servers
 .. _nginx__ref_http_robots_tag:
 
 ``robots_tag``
-  Optional, string. Value of the ``X-Robots-Tag`` HTTP header field. Set to
+  Optional, list of strings or string. Value of the ``X-Robots-Tag`` HTTP header field. Set to
   ``{{ omit }}`` to not send the header field. Defaults to
   :any:`nginx__http_robots_tag`.
 
