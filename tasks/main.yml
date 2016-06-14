@@ -55,6 +55,7 @@
   delegate_to: 'localhost'
   become: False
   run_once: True
+  when: pki_authorities|d() and pki_dependent_authorities|d()
 
 - name: Create library directory
   file:

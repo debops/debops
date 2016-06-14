@@ -4,7 +4,7 @@ Changelog
 v0.2.10
 -------
 
-*Unreleased*
+*Released: 2016-06-14*
 
 - Documentation fixes and improvements. Made variables hyperlinks using the
   `any` role in Sphinx which also ensures that variables which the
@@ -14,6 +14,10 @@ v0.2.10
 
 - Use ``pki_ca_library`` variable to select correct crypto library for
   assertion. [drybjed]
+
+- Don't assert crypto library version or ``bash`` version on Ansible Controller
+  if no internal Certificate Authority is enabled. In this case they are not
+  relevant for ``debops.pki`` operation. [drybjed]
 
 v0.2.9
 ------
