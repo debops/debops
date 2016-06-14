@@ -10,7 +10,7 @@ Ansible role: debops.ifupdown
    installation
    getting-started
    defaults
-   defaults-configuration
+   defaults-detailed
    copyright
    credits
    changelog
