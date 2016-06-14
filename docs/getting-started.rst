@@ -7,9 +7,9 @@ Getting started
 Initial configuration
 ---------------------
 
-``debops.atd`` will install the :command:`at` Debian package which provides the :program:`atd`
-service as well as commands that allow you to schedule jobs at a specific
-time or when the host CPU load average is below a specific threshold.
+``debops.atd`` will install the :command:`at` Debian package which provides the
+:program:`atd` service as well as commands that allow you to schedule jobs at a
+specific time or when the host CPU load average is below a specific threshold.
 
 By default the interval of the :command:`batch` command checking if jobs can be run, as
 well as the level of CPU utilization which halts job scheduling are somewhat
