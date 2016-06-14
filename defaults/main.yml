@@ -1,11 +1,13 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
 # Default variables
 # =================
 
 # .. contents:: Sections
 #    :local:
-#
-# .. APT preferences lists (((
+
+# .. APT preferences lists [[[
 #
 # -------------------------
 #   APT preferences lists
@@ -44,9 +46,9 @@ apt_preferences__host_list: []
 # role dependency in :file:`role/meta/main.yml` or in a playbook.
 apt_preferences__dependent_list: []
 
-# .. )))
+# .. ]]]
 
-# .. APT preferences presets (((
+# .. APT preferences presets [[[
 #
 # ---------------------------
 #   APT preferences presets
@@ -81,12 +83,12 @@ apt_preferences__debian_stable_default_preset_list:
     by_role: 'debops.apt_preferences'
     suffix: '_Debian'
     raw: |
-      Explanation: Configure the installed release higher explicitly to the default priority of 500 so that release packages are preferred.
+      Explanation: Configure the installed release explicitly to the default priority of 500 so that release packages are preferred.
       Package: *
       Pin: release o=Debian,n={{ ansible_distribution_release }}
       Pin-Priority: 500
 
-      Explanation: Configure the installed release higher explicitly to the default priority of 500 so that release packages are preferred.
+      Explanation: Configure the installed release explicitly to the default priority of 500 so that release packages are preferred.
       Package: *
       Pin: release o=Qubes Debian,n={{ ansible_distribution_release }}
       Pin-Priority: 500
@@ -127,9 +129,9 @@ apt_preferences__preset_list: '{{
     ( (apt_preferences__debian_stable_default_preset_list | list) if (ansible_distribution == "Debian") else [])
   }}'
 
-# .. )))
+# .. ]]]
 
-# .. Role pin defaults (((
+# .. Role pin defaults [[[
 #
 # ---------------------
 #   Role pin defaults
@@ -148,9 +150,9 @@ apt_preferences__priority_default: 500
 # pin definition.
 apt_preferences__priority_version: 1001
 
-# .. )))
+# .. ]]]
 
-# .. Role internals (((
+# .. Role internals [[[
 #
 # ------------------
 #   Role internals
@@ -177,6 +179,6 @@ apt_preferences__next_release:
   'saucy':    'trusty'
   'trusty':   'utopic'
 
-# .. )))
+# .. ]]]
 
 # .. _`defaults file of the ypid.packages`: https://github.com/ypid/ansible-packages/blob/master/defaults/main.yml
