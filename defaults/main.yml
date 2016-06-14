@@ -1,4 +1,12 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
 
 # List of IP addresses or CIDR networks allowed to connect to HTTP or HTTPS
 # service. It will be configured in iptables firewall via 'ferm' role. If there
@@ -210,6 +218,7 @@ nginx_real_ip_header: 'X-Forwarded-For'
 nginx_real_ip_recursive: False
 
 nginx_default_keepalive_timeout: 60
+
 
 # Enable or disable support for PKI/SSL/TLS in nginx
 nginx_pki: '{{ (True
@@ -446,7 +455,17 @@ nginx_upstream_php5_www_data:
   type: 'php5'
   php5: 'www-data'
 
+
+# .. Nginx servers [[[
+#
+# -----------------
+#   Nginx servers
+# -----------------
+
 # List of nginx server definitions
+#
+# Refer to the :ref:`documentation of all options <nginx__ref_servers>` for
+# more details.
 nginx_servers: []
 
 nginx_default_servers:
@@ -462,7 +481,7 @@ nginx_dependent_servers: []
 
 # Default nginx site
 # List and description of available parameters can be found in nginx server
-# templates: templates/etc/nginx/sites-available/*.conf.j2
+# templates :file:`templates/etc/nginx/sites-available/*.conf.j2`.
 nginx_server_welcome:
   enabled: True
   name: [ 'welcome' ]
@@ -505,6 +524,29 @@ nginx_custom_config: []
   #  custom: |
   #    text block {
   #    }
+
+
+# .. envvar:: nginx__http_xss_protection
+#
+# Default value for :any:`xss_protection
+# <nginx__ref_http_xss_protection>`.
+nginx__http_xss_protection: '1; mode=block'
+
+
+# .. envvar:: nginx__http_permitted_cross_domain_policies
+#
+# Default value for :any:`permitted_cross_domain_policies
+# <nginx__ref_permitted_cross_domain_policies>`.
+nginx__http_permitted_cross_domain_policies: '{{ omit }}'
+
+
+# .. envvar:: nginx__http_robots_tag
+#
+# Default value for :any:`robots_tag
+# <nginx__ref_http_robots_tag>`.
+nginx__http_robots_tag: '{{ omit }}'
+
+# .. ]]]
 
 # Enable execution of ``debops.nginx`` role dependencies. This variable can be
 # used in playbooks to disable hardcoded dependencies during transition to

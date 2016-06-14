@@ -4,6 +4,11 @@
 #
 # List of parameters supported by this template:
 #
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# This documentation format is deprecated. Add new options and migrate this
+# documentation to ../../../../docs/defaults-detailed.rst
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#
 #   - item.enabled: True/False
 #       Required. Determines if symlink to server configuration is present in
 #       /etc/nginx/sites-enabled/ directory.
@@ -127,7 +132,7 @@
 #       Optional. If True, redirect connection from HTTP to HTTPS version of
 #       the site. Site is expected to be configured in a separate configuration
 #       file. Set to False to allow to serve the website via HTTP and HTTPS and
-#       don’t redirect HTTP to HTTPS.
+#       don't redirect HTTP to HTTPS.
 #
 #
 #   - item.acme: True/False
@@ -477,6 +482,12 @@
 
     ---- HTTPS, ports to listen on, default server, HTTPS redirect ----
 #}
+{% set nginx_version            = ansible_local.nginx.version if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.version|d()) else "0.0" %}
+{% set nginx_tpl_robots_tag     = [] if (item.robots_tag|d(nginx__http_robots_tag) is string and item.robots_tag|d(nginx__http_robots_tag) == omit)
+    else (
+        [ item.robots_tag|d(nginx__http_robots_tag) ]
+        if (item.robots_tag|d(nginx__http_robots_tag) is string)
+        else (item.robots_tag|d(nginx__http_robots_tag))) %}
 {% set nginx_tpl_acme           = (item.acme      | default(nginx_acme)) | bool %}
 {% set nginx_tpl_ssl            = (item.ssl       | default(nginx_pki)) | bool %}
 {% set nginx_tpl_listen         = item.listen     | default(nginx_listen_port if nginx_listen_port else nginx_listen_socket) %}
@@ -593,7 +604,7 @@
                 }
 {%                     endif                                                   %}
 {%                 endif                                                       %}
-                {{ item.location[path] | indent(16) }}
+                {{ item.location[path] | indent(16) | regex_replace("(?m)^\s*$", "") }}
 {%                 if location_allow is defined                                %}
 {%                     if location_allow[path] is defined and location_allow[path] %}
 {%                         for address in location_allow[path] | unique        %}
@@ -633,7 +644,7 @@
                 }
 {%                 endif                                                       %}
 {%                 if entry.options is defined and entry.options               %}
-                {{ entry.options | indent(16) }}
+                {{ entry.options | indent(16) | regex_replace("(?m)^\s*$", "") }}
 {%                 endif                                                       %}
 {%                 if entry.allow is defined and entry.allow                   %}
 {%                     for address in entry.allow | unique                     %}
@@ -648,7 +659,7 @@
 {%                     endif                                                   %}
 {%                 endif                                                       %}
 {%                 if entry.locations is defined and entry.locations           %}
-{{ print_location_list(entry.locations) | indent(8, true) }}
+{{ print_location_list(entry.locations) | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
 {%                 endif                                                       %}
         }
 {%             endif                                                           %}
@@ -719,7 +730,7 @@
         error_page {{ element.code if (element.code is string) else (element.code | join(" ")) }} {{ element.uri }};
 {% if element.location|d() or element.location_options|d() %}
         location {{ element.location | d(element.uri) }} {
-{{ element.location_options | indent(16, true) }}
+{{ element.location_options | indent(16, true) | regex_replace("(?m)^\s*$", "") }}
         }
 {% if not loop.last %}
 
@@ -729,7 +740,7 @@
 
 {% endif %}
 {% if item.options is defined and item.options %}
-        {{ item.options | indent(8) }}
+        {{ item.options | indent(8) | regex_replace("(?m)^\s*$", "") }}
 
 {% endif %}
 {% if ((item.access_policy is defined and item.access_policy) and
@@ -751,17 +762,17 @@
         allow {{ item.allow }};
 {% else %}
 {% for address in item.allow | unique %}
-	allow {{ address }};
+        allow {{ address }};
 {% endfor %}
 {% endif %}
 {% endif %}
 {% if ((item.access_policy is defined and item.access_policy) and
        (item.access_policy in nginx_access_policy_allow_map.keys())) %}
 {% for address in nginx_access_policy_allow_map[item.access_policy] | unique %}
-	allow {{ address }};
+        allow {{ address }};
 {% endfor %}
 {% endif %}
-	deny all;
+        deny all;
 
 {% endif %}
 {% if ((item.access_policy is defined and item.access_policy) and
@@ -775,54 +786,54 @@
 
 {% endif %}
 {% if item.userdir is defined and item.userdir %}
-	location ~ {{ item.userdir_regexp | d('^/~(.+?)(/.*)?$') }} {
-		alias {{ item.userdir_alias | d(nginx_www + '/$1/userdir/public$2') }};
-		index {{ item.userdir_index | d(item.index | default('index.html index.htm')) }};
+        location ~ {{ item.userdir_regexp | d('^/~(.+?)(/.*)?$') }} {
+                alias {{ item.userdir_alias | d(nginx_www + '/$1/userdir/public$2') }};
+                index {{ item.userdir_index | d(item.index | default('index.html index.htm')) }};
 {% if item.userdir_options|d() %}
-{{ item.userdir_options | indent(16, true) }}
+{{ item.userdir_options | indent(16, true) | regex_replace("(?m)^\s*$", "") }}
 {% else %}
-		autoindex on;
-		autoindex_exact_size off;
+                autoindex on;
+                autoindex_exact_size off;
 {% endif %}
-	}
+        }
 
 {% endif %}
 {% if (item.deny_hidden is undefined or item.deny_hidden|d()) %}
-	# Disallow access to hidden files and directories
-	location ~ /\. {
-		return 404;
-	}
+        # Disallow access to hidden files and directories
+        location ~ /\. {
+                return 404;
+        }
 
 {% endif %}
 {% if (item.favicon is defined and item.favicon) or item.favicon is undefined %}
-	location = /favicon.ico {
-		try_files /favicon.ico =204;
-		access_log off;
-		log_not_found off;
-	}
+        location = /favicon.ico {
+                try_files /favicon.ico =204;
+                access_log off;
+                log_not_found off;
+        }
 
 {% endif %}
 {% if item.status|d(True) and (nginx_status or nginx_status_localhost) %}
-	location = {{ item.status_name | default(nginx_status_name) }} {
-		stub_status on;
-		access_log off;
+        location = {{ item.status_name | default(nginx_status_name) }} {
+                stub_status on;
+                access_log off;
 {% if nginx_status_localhost %}
 {% for address in nginx_status_localhost | unique %}
-		allow {{ address }};
+                allow {{ address }};
 {% endfor %}
 {% endif %}
 {% if nginx_status %}
 {% for address in nginx_status | unique %}
-		allow {{ address }};
+                allow {{ address }};
 {% endfor %}
 {% endif %}
 {% if item.status is defined and item.status %}
 {% for address in item.status | unique %}
-		allow {{ address }};
+                allow {{ address }};
 {% endfor %}
 {% endif %}
-		deny all;
-	}
+                deny all;
+        }
 
 {% endif %}
 {% block nginx_tpl_block_custom_status_locations %}
@@ -989,9 +1000,21 @@ server {
 {% if item.csp | d() or item.csp_report | d() %}
         add_header                Content-Security-Policy{% if item.csp_report | d() %}-Report-Only{% endif %} "{{ item.csp_policy | d('default-src https:') }}";
 {% endif %}
+{% if item.content_type_options|d(True) %}
         add_header                X-Content-Type-Options "{{ item.content_type_options | d('nosniff') }}"{% if nginx_version | version_compare('1.7.5','>=') %} always{% endif %};
+{% endif %}
+{% if item.frame_options|d(True) %}
         add_header                X-Frame-Options "{{ item.frame_options | d('SAMEORIGIN') }}"{% if nginx_version | version_compare('1.7.5','>=') %} always{% endif %};
-        add_header                X-Xss-Protection "{{ item.xss_protection | d('1') }}";
+{% endif %}
+{% if item.xss_protection | d(nginx__http_xss_protection) %}
+        add_header                X-XSS-Protection "{{ item.xss_protection | d(nginx__http_xss_protection) }}";
+{% for robots_tag in nginx_tpl_robots_tag %}
+        add_header                X-Robots-Tag "{{ robots_tag }}";
+{% endfor %}
+{% endif %}
+{% if item.permitted_cross_domain_policies | d(nginx__http_permitted_cross_domain_policies) != omit %}
+        add_header                X-Permitted-Cross-Domain-Policies "{{ item.permitted_cross_domain_policies | d(nginx__http_permitted_cross_domain_policies) }}";
+{% endif %}
 
 {% if item.name is defined and item.name %}
 {% if item.redirect_from is defined and item.redirect_from %}

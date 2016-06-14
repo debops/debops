@@ -38,13 +38,13 @@
 {% if item.name is defined and item.name                                          %}
 map {{ item.map }} {
 {%     if item.hostnames is defined and item.hostnames                            %}
-	hostnames;
+        hostnames;
 {%     endif                                                                      %}
 {%     if item.default is defined and item.default                                %}
-	default {{ item.default }};
+        default {{ item.default }};
 {%     endif                                                                      %}
 {%     if item.mapping is defined and item.mapping                                %}
-        {{ item.mapping | indent(8) }}
+        {{ item.mapping | indent(8) | regex_replace("(?m)^\s*$", "") }}
 {%     endif                                                                      %}
 {%     if item.include is defined and item.include                                %}
 {%         for file in item.include                                               %}

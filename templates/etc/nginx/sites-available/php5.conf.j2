@@ -64,29 +64,29 @@
 {% endblock %}
 {% block nginx_tpl_block_custom_status_locations %}
 {% if item.php5_status|d(nginx_php5_status) and (nginx_status or nginx_status_localhost) %}
-	location ~ ^/({{ item.php5_status_name | default(nginx_php5_status_name) }}|{{ item.php5_ping_name | default(nginx_php5_ping_name) }})$ {
-		access_log off;
+        location ~ ^/({{ item.php5_status_name | default(nginx_php5_status_name) }}|{{ item.php5_ping_name | default(nginx_php5_ping_name) }})$ {
+                access_log off;
 {% if nginx_status_localhost %}
 {% for address in nginx_status_localhost | unique %}
-		allow {{ address }};
+                allow {{ address }};
 {% endfor %}
 {% endif %}
 {% if nginx_status %}
 {% for address in nginx_status | unique %}
-		allow {{ address }};
+                allow {{ address }};
 {% endfor %}
 {% endif %}
 {% if item.php5_status is defined and item.php5_status %}
 {% for address in item.php5_status | unique %}
-		allow {{ address }};
+                allow {{ address }};
 {% endfor %}
 {% endif %}
-		deny all;
-		include fastcgi_params;
-		fastcgi_index index.php;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		fastcgi_pass {{ item.php5 }};
-	}
+                deny all;
+                include fastcgi_params;
+                fastcgi_index index.php;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                fastcgi_pass {{ item.php5 }};
+        }
 
 {% endif %}
 {% endblock %}
@@ -113,7 +113,7 @@
 
 {% endif %}
 {% if item.php5_options is defined and item.php5_options %}
-                {{ item.php5_options | indent(16) }}
+                {{ item.php5_options | indent(16) | regex_replace("(?m)^\s*$", "") }}
 
 {% endif %}
                 fastcgi_index index.php;
@@ -138,7 +138,7 @@
 {% endif %}
 {% endif %}
 {% if item.php5_options is defined and item.php5_options %}
-                {{ item.php5_options | indent(16) }}
+                {{ item.php5_options | indent(16) | regex_replace("(?m)^\s*$", "") }}
 
 {% endif %}
                 fastcgi_index index.php;
@@ -146,8 +146,8 @@
         }
 
 {% else %}
-	location ~ \.php$ {
-		return 403;
-	}
+        location ~ \.php$ {
+                return 403;
+        }
 {% endif %}
 {% endblock %}

@@ -9,10 +9,10 @@
     path: '/usr/sbin/nginx'
   register: nginx_register_installed
 
-- include: passenger.yml
+- include: 'passenger.yml'
   when: (nginx_flavor == 'passenger' and nginx__deploy_state in [ 'present' ])
 
-- include: nginx_org_packages.yml
+- include: 'nginx_org_packages.yml'
   when: (nginx_flavor == 'nginx.org' and nginx__deploy_state in [ 'present' ])
 
 - name: Install nginx packages
@@ -47,7 +47,7 @@
     creates: '/etc/nginx/conf.d/default.conf.dpkg-divert'
   when: (nginx_flavor == 'nginx.org' and nginx__deploy_state in [ 'present' ])
 
-- include: passenger_config.yml
+- include: 'passenger_config.yml'
   when: (nginx_flavor == 'passenger' and nginx__deploy_state in [ 'present' ])
 
 - name: Restart nginx on first install to bypass missing pid bug
@@ -55,19 +55,6 @@
     name: 'nginx'
     state: 'restarted'
   when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists and nginx__deploy_state in [ 'present' ])
-
-- name: Check nginx version
-  shell: /usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##'
-  register: nginx_register_version
-  changed_when: False
-  when: (nginx__deploy_state in [ 'present' ])
-  tags: [ 'role::nginx:servers' ]
-
-- name: Define nginx version
-  set_fact:
-    nginx_version: '{{ nginx_register_version.stdout | default("0.0") }}'
-  when: (nginx__deploy_state in [ 'present' ])
-  tags: [ 'role::nginx:servers' ]
 
 - name: Get list of nameservers configured in /etc/resolv.conf
   shell: "grep -E '^nameserver\\s' /etc/resolv.conf | awk '{print $2}'"
@@ -198,7 +185,7 @@
     dest: '/etc/ansible/facts.d/nginx.fact'
     owner: 'root'
     group: 'root'
-    mode: '0644'
+    mode: '0755'
   register: nginx_register_local_facts
   when: (nginx__deploy_state in [ 'present' ])
 
@@ -206,13 +193,13 @@
   action: setup
   when: (nginx_register_local_facts.changed and nginx__deploy_state in [ 'present' ])
 
-- include: nginx_htpasswd.yml
+- include: 'nginx_htpasswd.yml'
   when: (nginx__deploy_state in [ 'present' ])
 
-- include: nginx_configs.yml
+- include: 'nginx_configs.yml'
   when: (nginx__deploy_state in [ 'present' ])
 
-- include: nginx_servers.yml
+- include: 'nginx_servers.yml'
   tags: [ 'role::nginx:servers' ]
   when: (nginx__deploy_state in [ 'present' ])
 
@@ -240,7 +227,7 @@
     dest: '/etc/ansible/facts.d/nginx.fact'
     owner: 'root'
     group: 'root'
-    mode: '0644'
+    mode: '0755'
   register: nginx_register_local_facts
   when: (nginx__deploy_state in [ 'present' ])
 
