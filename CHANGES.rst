@@ -6,7 +6,7 @@ v0.1.4
 
 *Unreleased*
 
-- Changed namespace from ``apt_preferences_`` to ``apt_preferences__``.
+- Changed variable namespace from ``apt_preferences_`` to ``apt_preferences__``.
   ``apt_preferences_[^_]`` variables are hereby deprecated but are currently
   still supported to allow a soft migration.
 
