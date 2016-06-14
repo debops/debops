@@ -8,14 +8,14 @@ v0.2.0
 
 - Remove support for :program:`apt-cacher-ng`. The new role ``debops.apt_cacher_ng``
   handles this now. The overloaded :command:`apt` variable as been split into
-  ``apt__enabled`` and ``apt__proxy``. [ypid]
+  :any:`apt__enabled` and :any:`apt__proxy`. [ypid]
 
-- Added ``apt__proxy_bypass_for_bugs_debian_org`` which you can enable if you
+- Added :any:`apt__proxy_bypass_for_bugs_debian_org` which you can enable if you
   hit a problem with a proxy server not allowing access to
   https://bugs.debian.org. [ypid]
 
 - Removed ``debops.apt_preferences`` as hard role dependency and added
-  ``apt__apt_preferences__dependent_list`` which you can feed to
+  :any:`apt__apt_preferences__dependent_list` which you can feed to
   ``debops.apt_preferences`` in your playbook. [ypid]
 
 - Updated/Reworked documentation. [ypid]
@@ -53,7 +53,7 @@ v0.1.0
 - Switch the default Debian mirror to new official redirector at
   http://httpredir.debian.org/. [drybjed]
 
-- Added ``apt__remove_default_configuration`` option which defaults to true.
+- Added :any:`apt__remove_default_configuration` option which defaults to true.
   This ensures that :file:`/etc/apt/apt.conf` is absent. [ypid]
 
 - Use backported :program:`apt-cacher-ng` on Debian Jessie. [ypid]

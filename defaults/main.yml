@@ -1,12 +1,14 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
 # Default variables
 # =================
 
 # .. contents:: Sections
 #    :local:
 #
-# .. Basic options (((
-#
+# .. Basic options [[[
+
 # -----------------
 #   Basic options
 # -----------------
@@ -35,9 +37,9 @@ apt__update_cache_early: '{{ ansible_local.core.cache_valid_time
                                  ansible_local.core.cache_valid_time|d())
                              else (60 * 60 * 24) }}'
 
-# .. )))
+# .. ]]]
 
-# .. Packages to install (((
+# .. Packages to install [[[
 #
 # -----------------------
 #   Packages to install
@@ -51,15 +53,15 @@ apt__base_packages: [ 'python-apt', 'apt-transport-https' ]
 
 # .. envvar:: apt__update_notification_packages
 #
-# List of packages to install when ``apt__update_notifications`` is set to
+# List of packages to install when :any:`apt__update_notifications` is set to
 # ``True``.
 apt__update_notification_packages:
   - 'apt-listchanges'
   - 'apticron'
 
-# .. )))
+# .. ]]]
 
-# .. Proxy settings (((
+# .. Proxy settings [[[
 #
 # ------------------
 #   Proxy settings
@@ -89,9 +91,9 @@ apt__proxy_url: ''
 # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=775126.
 apt__proxy_bypass_for_bugs_debian_org: False
 
-# .. )))
+# .. ]]]
 
-# .. APT repository mirrors (((
+# .. APT repository mirrors [[[
 #
 # --------------------------
 #   APT repository mirrors
@@ -132,9 +134,9 @@ apt__host_mirrors: []
 # variable ``apt__default_mirrors: []`` in inventory.
 apt__default_mirrors_lookup: '{{ ansible_distribution }}'
 
-# .. )))
+# .. ]]]
 
-# .. APT repository keys (((
+# .. APT repository keys [[[
 #
 # -----------------------
 #   APT repository keys
@@ -195,9 +197,9 @@ apt__group_keys_delayed: []
 # available initially.
 apt__host_keys_delayed: []
 
-# .. )))
+# .. ]]]
 
-# .. APT repositories (((
+# .. APT repositories [[[
 #
 # --------------------
 #   APT repositories
@@ -262,9 +264,9 @@ apt__group_repositories_delayed: []
 # might not be available initially.
 apt__host_repositories_delayed: []
 
-# .. )))
+# .. ]]]
 
-# .. APT default repositories (((
+# .. APT default repositories [[[
 #
 # ----------------------------
 #   APT default repositories
@@ -385,9 +387,9 @@ apt__sources_release_list:
 # source repositories, add ``deb-src`` to the list.
 apt__sources_types: [ 'deb' ]
 
-# .. )))
+# .. ]]]
 
-# .. Update notifications (((
+# .. Update notifications [[[
 #
 # ------------------------
 #   Update notifications
@@ -402,7 +404,7 @@ apt__mail_notifications: [ 'root' ]
 # .. envvar:: apt__update_notifications
 #
 # Enable mail notifications about updates using the packages defined by
-# ``apt__update_notification_packages``.
+# :any:`apt__update_notification_packages`.
 apt__update_notifications: True
 
 
@@ -425,9 +427,9 @@ apt__update_notifications_type_apticron: 'both'
 # Send only information about changes from the last notification?
 apt__update_notifications_diff: True
 
-# .. )))
+# .. ]]]
 
-# .. Role-dependent configuration (((
+# .. Role-dependent configuration [[[
 #
 # --------------------------------
 #   Role-dependent configuration
@@ -469,4 +471,4 @@ apt__apt_preferences__dependent_list:
     by_role: 'debops.apt'
     backports: [ 'jessie' ]
 
-# .. )))
+# .. ]]]
