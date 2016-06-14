@@ -4,7 +4,6 @@ Changelog
 v0.1.0
 ------
 
-*Unreleased*
+*Released: 2016-06-14*
 
-- First release [ganto]
-
+- Initial release of Roundcube 1.1.5 with SQLite and MySQL support. [ganto]
