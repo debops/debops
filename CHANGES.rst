@@ -11,6 +11,9 @@ v0.2.5
   ``ifupdown`` scripts to finish network configuration. More details:
   https://unix.stackexchange.com/q/209832 [drybjed]
 
+- Fixed Ansible check mode related to the ``ifup-wait-all-auto`` ``systemd``
+  service might not being defined. [ypid]
+
 v0.2.4
 ------
 
