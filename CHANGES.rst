@@ -34,10 +34,10 @@ v0.2.0
 - Rewrite of the ``debops.tinc`` role.
 
   The role now supports management of multiple Tinc VPNs at the same time. By
-  default a ``mesh0`` network is estabilished, which uses the Switch mode and
+  default a ``mesh0`` network is established, which uses the Switch mode and
   DHCP to manage network configuration.
 
-  The new role ddoesn't use ``ifupdown`` configuration to manage the network
+  The new role doesn't use ``ifupdown`` configuration to manage the network
   interfaces, instead custom ``tinc-up`` and ``tinc-down`` scripts take care of
   setting up and tearing down the virtual Ethernet interface used by the VPN.
 
@@ -67,7 +67,7 @@ v0.1.1
 
 - Fix wrong name of the variable in host template. [drybjed]
 
-- Wrap the name of the VPN node and replace all hypens with underscores, which
+- Wrap the name of the VPN node and replace all hyphens with underscores, which
   is a ``tinc`` requirement. [drybjed]
 
 v0.1.0
