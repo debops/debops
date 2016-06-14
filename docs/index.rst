@@ -10,7 +10,7 @@ Ansible role: debops.tinc
    installation
    getting-started
    defaults
-   defaults-configuration
+   defaults-detailed
    copyright
    credits
    changelog
