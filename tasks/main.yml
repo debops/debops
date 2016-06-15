@@ -7,6 +7,12 @@
       (kernel_module_group_list | d([]) | list) +
       (kernel_module_host_list  | d([]) | list) }}'
 
+- name: Ensure that the required directories are present
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+  with_flattened: '{{ [ kernel_module_blacklist_file, kernel_module_options_file, kernel_module_load_file ] | map("dirname") | unique | list }}'
+
 - name: Blacklist kernel modules
   kernel_blacklist:
     name: '{{ item.name }}'
