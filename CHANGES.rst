@@ -61,6 +61,12 @@ v0.3.0
   file when ``nginx.org`` flavor is installed, because it is not provided by
   the non-Debian packages. [ypid]
 
+- Support for Debian 7, Ubuntu 12.04 and 14.10 have been dropped due to
+  additional work which would be required.
+  See https://doc.owncloud.org/server/9.0/admin_manual/installation/linux_installation.html for details.
+  If you need support for one of them and can get it to work we will be happy
+  about your contribution! [ypid]
+
 v0.2.0
 ------
 
