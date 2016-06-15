@@ -3,6 +3,15 @@
 
 # ownCloud ./config/ [[[
 
+- name: Install ownCloud config file
+  template:
+    src: 'srv/www/sites/config/debops.config.php.j2'
+    dest: '{{ owncloud_deploy_path }}/config/debops.config.php'
+    owner: '{{ owncloud_user }}'
+    group: '{{ owncloud_group }}'
+    mode: '0640'
+  tags: [ 'role::owncloud:setup' ]
+
 - name: Install ownCloud mail config file
   template:
     src: 'srv/www/sites/config/mail.config.php.j2'
@@ -12,15 +21,13 @@
     mode: '0640'
   tags: [ 'role::owncloud:mail' ]
 
-- name: Install ownCloud custom config file
-  template:
-    src: 'srv/www/sites/config/custom.config.php.j2'
-    dest: '{{ owncloud_deploy_path }}/config/custom.config.php'
-    owner: '{{ owncloud_user }}'
-    group: '{{ owncloud_group }}'
-    mode: '0640'
-  when: (owncloud_custom_conf_map is defined and owncloud_custom_conf_map is mapping)
-  tags: [ 'role::owncloud:custom_config' ]
+- name: Ensure deprecated configuration files are absent
+  file:
+    path: '{{ item }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ owncloud_deploy_path }}/config/custom.config.php'
+  tags: [ 'role::owncloud:setup' ]
 
 # ]]]
 
@@ -75,16 +82,6 @@
                                  "ownCloud is not installed" in owncloud_register_occ_check.stdout) }}'
   tags: [ 'role::owncloud:setup' ]
 
-- name: Install ownCloud default config file
-  template:
-    src: 'srv/www/sites/config/config.default.php.j2'
-    dest: '{{ owncloud_deploy_path }}/config/config.php'
-    owner: '{{ owncloud_user }}'
-    group: '{{ owncloud_group }}'
-    mode: '0640'
-  when: owncloud__do_autosetup|bool
-  tags: [ 'role::owncloud:setup' ]
-
 - name: Automatically finish setup via the occ tool
   command: |
            {{ owncloud_occ_bin_file_path | quote }} maintenance:install
@@ -98,6 +95,7 @@
            --admin-user '{{ owncloud_admin_username }}'
            --admin-pass '{{ owncloud_admin_password }}'
            {% endif %}
+  ## FIXME: Enable after testing!
   # no_log: True
   register: owncloud_register_occ_install
   tags: [ 'role::owncloud:setup' ]

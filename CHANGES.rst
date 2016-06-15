@@ -67,6 +67,10 @@ v0.3.0
   If you need support for one of them and can get it to work we will be happy
   about your contribution! [ypid]
 
+- Consolidated ``owncloud_initial_config_*`` and ``owncloud_custom_*conf_map``
+  into the ``owncloud_config_*`` namespace. The new variables allow to alter
+  settings after the initial setup. [ypid]
+
 v0.2.0
 ------
 

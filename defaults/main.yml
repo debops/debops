@@ -11,7 +11,7 @@
 # .. The official ownCloud documentation is also written is RST.
 # .. https://github.com/owncloud/documentation/tree/master/admin_manual
 #
-# .. System packages [[[
+# .. System packages [[[1
 #
 # -------------------
 #   System packages
@@ -23,9 +23,8 @@
 owncloud_base_packages:
   - 'owncloud'
 
-# .. ]]]
 
-# .. Basic options [[[
+# .. Basic options [[[1
 #
 # -----------------
 #   Basic options
@@ -36,9 +35,8 @@ owncloud_base_packages:
 # Domain that will be configured for the ownCloud instance.
 owncloud_domain: [ 'owncloud.{{ ansible_domain }}' ]
 
-# .. ]]]
 
-# .. ownCloud source and deployment [[[
+# .. ownCloud source and deployment [[[1
 #
 # ----------------------------------
 #   ownCloud source and deployment
@@ -134,9 +132,8 @@ owncloud_data_path: '{{ owncloud_home }}/data'
 # Where the ownCloud instance will be deployed (web root).
 owncloud_deploy_path: '{{ owncloud_home }}'
 
-# .. ]]]
 
-# .. Database configuration [[[
+# .. Database configuration [[[1
 #
 # --------------------------
 #   Database configuration
@@ -216,9 +213,8 @@ owncloud_database_map:
   sqlite:
     dbtype: 'sqlite'
 
-# .. ]]]
 
-# .. ownCloud admin login/password [[[
+# .. ownCloud admin login/password [[[1
 #
 # ---------------------------------
 #   ownCloud admin login/password
@@ -265,9 +261,8 @@ owncloud_autosetup: True
 # URL which will be called to finish autosetup.
 owncloud_autosetup_url: 'http://{{ owncloud_domain[0] }}/index.php'
 
-# .. ]]]
 
-# .. ownCloud configuration [[[
+# .. ownCloud configuration [[[1
 #
 # --------------------------
 #   ownCloud configuration
@@ -307,36 +302,6 @@ owncloud_php5_max_children: '50'
 owncloud_cron_minute: '*/15'
 
 
-# .. envvar:: owncloud_initial_config_global
-#
-# Initial configuration for ownCloud.
-#
-# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html>`__ for details.
-owncloud_initial_config_global:
-
-  ## The default timezone for logfiles is UTC.
-  logtimezone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
-
-  ## Loglevel to start logging at. Valid values are: 0 = Debug, 1 = Info,
-  ##  2 = Warning, 3 = Error, and 4 = Fatal. The default value is Warning.
-  loglevel: 2
-
-  ## ISO 8601 datetime: 2004-02-12T15:19:21+00:00
-  logdateformat: 'Y-m-d H:i:s.u'
-
-
-# .. envvar:: owncloud_initial_config_group
-#
-# See :any:`owncloud_initial_config_global`.
-owncloud_initial_config_group: {}
-
-
-# .. envvar:: owncloud_initial_config
-#
-# See :any:`owncloud_initial_config_global`.
-owncloud_initial_config: {}
-
-
 # .. envvar:: owncloud_timeout
 #
 # Timeouts in seconds used for the following settings:
@@ -355,9 +320,100 @@ owncloud_timeout: 300
 # Set this to ``True`` if you are planning to use this app.
 owncloud_app_user_webfinger_support: False
 
-# .. ]]]
 
-# .. ownCloud configuration via occ commands [[[
+# .. ownCloud config.php configuration [[[1
+#
+# .. _owncloud__ref_config:
+#
+# -------------------------------------
+#   ownCloud config.php configuration
+# -------------------------------------
+#
+# The dicts of this section ends up in :file:`debops.config.php` and override the values
+# from :file:`config.php`.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html>`__ for details.
+#
+# Note: Parameters with \ (backslash) needs double escaping::
+#
+#    owncloud_config:
+#      memcache.local: '\\OC\\Memcache\\APCu'
+#
+# Dict keys can be overridden when they are present in multiple dicts.
+# Order of priority from least specific to most specific:
+#
+# * :any:`owncloud_config_role_optional`
+# * :any:`owncloud_config_role_required`
+# * :any:`owncloud_config`
+# * :any:`owncloud_config_group`
+# * :any:`owncloud_config_host`
+#
+
+
+# .. envvar:: owncloud_config_role_required
+#
+# See :ref:`owncloud__ref_config`.
+# This variable is a set of required settings for ownCloud to be usable.
+# Set::
+#
+#    owncloud_config_role_required: {}
+#
+# in your inventory when you want to disable/change it anyway.
+owncloud_config_role_required:
+
+  trusted_domains: '{{ owncloud_domain }}'
+
+  ## https://github.com/owncloud/core/issues/22257
+  ## TODO: Temporary workaround until all package maintainers have caught up.
+  'updatechecker': false
+
+
+# .. envvar:: owncloud_config_role_optional
+#
+# See :ref:`owncloud__ref_config`.
+# This variable is a set of optional settings for ownCloud recommended by the
+# maintainers of this role.
+# Set::
+#
+#    owncloud_config_role_optional: {}
+#
+# in your inventory when you want to disable it.
+owncloud_config_role_optional:
+
+  ## The default timezone for logfiles is UTC.
+  logtimezone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
+
+  ## Loglevel to start logging at. Valid values are: 0 = Debug, 1 = Info,
+  ##  2 = Warning, 3 = Error, and 4 = Fatal. The default value is Warning.
+  loglevel: 2
+
+  ## ISO 8601 datetime: 2004-02-12T15:19:21+00:00
+  logdateformat: 'Y-m-d H:i:s.u'
+
+
+# .. envvar:: owncloud_config
+#
+# See :ref:`owncloud__ref_config`.
+# This variable is intended to be used in Ansible’s global inventory.
+# More specific variables can overrule less specific variables.
+owncloud_config: {}
+
+
+# .. envvar:: owncloud_config_group
+#
+# See :ref:`owncloud__ref_config`.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
+owncloud_config_group: {}
+
+
+# .. envvar:: owncloud_config_host
+#
+# See :ref:`owncloud__ref_config`.
+# This variable is intended to be used in the inventory of the host.
+owncloud_config_host: {}
+
+
+# .. ownCloud configuration via occ commands [[[1
 #
 # -------------------------------------------
 #   ownCloud configuration via occ commands
@@ -426,9 +482,8 @@ owncloud_run_occ_host_commands: []
 # Where the :command:`occ` wrapper script should be installed.
 owncloud_occ_bin_file_path: '/usr/local/bin/occ'
 
-# .. ]]]
 
-# .. LDAP authentication [[[
+# .. LDAP authentication [[[1
 #
 # -----------------------
 #   LDAP authentication
@@ -655,9 +710,8 @@ owncloud_ldap_conf_map:
   homeFolderNamingRule: '{{ owncloud_home_folder_naming_rule }}'
   ldapCacheTTL: '{{ owncloud_ldap_cache_ttl }}'
 
-# .. ]]]
 
-# .. ownCloud Mail configuration [[[
+# .. ownCloud Mail configuration [[[1
 #
 # -------------------------------
 #   ownCloud Mail configuration
@@ -712,49 +766,8 @@ owncloud_mail_conf_map:
   # mail_smtphost: '{{ owncloud_mail_smtphost }}'
   # mail_smtpport: '{{ owncloud_mail_smtpport }}'
 
-# .. ]]]
 
-# .. ownCloud custom config.php configuration [[[
-
-# --------------------------------------------
-#   ownCloud custom config.php configuration
-# --------------------------------------------
-
-# .. envvar:: owncloud_custom_conf_map
-#
-# This parameters ends up in :file:`custom.config.php` and override the values
-# from :file:`config.php`.
-# This variable is intended to be used in Ansible's global inventory.
-# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html>`__ for details.
-#
-# Note: Parameters with \ (backslash) needs double escaping::
-#
-#    owncloud_custom_conf_map:
-#      memcache.local: '\\OC\\Memcache\\APCu'
-#
-owncloud_custom_conf_map: {}
-
-
-# .. envvar:: owncloud_custom_group_conf_map
-#
-# This parameters ends up in :file:`custom.config.php` and override the values
-# from :file:`config.php`.
-# This variable is intended to be used in one Ansible host group inventory.
-# Refer to :any:`owncloud_custom_conf_map` for details.
-owncloud_custom_group_conf_map: {}
-
-
-# .. envvar:: owncloud_custom_host_conf_map
-#
-# This parameters ends up in :file:`custom.config.php` and override the values
-# from :file:`config.php`.
-# This variable is intended to be used in Ansible host inventory.
-# Refer to :any:`owncloud_custom_conf_map` for details.
-owncloud_custom_host_conf_map: {}
-
-# .. ]]]
-
-# .. Role-dependent configuration [[[
+# .. Role-dependent configuration [[[1
 #
 # --------------------------------
 #   Role-dependent configuration
@@ -938,4 +951,3 @@ owncloud__php5__pool:
     ## Fixes warning (ownCloud 8.1): "The test with getenv('PATH') only returns an empty response"
     PATH: '/usr/local/bin:/usr/bin:/bin'
 
-# .. ]]]
