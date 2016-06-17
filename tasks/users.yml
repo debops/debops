@@ -14,32 +14,32 @@
     - '{{ users_group_list }}'
     - '{{ users_host_list }}'
   when: ((item.name is defined and item.name and item.name != 'root') and
-         (item.state is undefined or (item.state is defined and item.state != 'absent')))
+         (item.state|d('present') != 'absent'))
 
 - name: Manage user accounts
   user:
-    name: '{{ item.name }}'
-    uid: '{{ item.uid | default(omit) }}'
-    group: '{{ item.group | default(item.name) }}'
-    state: '{{ item.state | default("present") }}'
-    comment: '{{ item.comment | default(omit) }}'
-    password: '{{ item.password | default("*") }}'
-    update_password: '{{ item.update_password | default("on_create") }}'
-    system: '{{ item.system | d(True if (users_default_system | bool) else omit) }}'
-    shell: '{{ item.shell | default(omit) }}'
-    home: '{{ item.home | default(omit) }}'
-    createhome: '{{ item.createhome | default(omit) }}'
-    move_home: '{{ item.move_home | default(omit) }}'
-    skeleton: '{{ item.skeleton | default(omit) }}'
-    expires: '{{ item.expires | default(omit) }}'
-    remove: '{{ item.remove | default(omit) }}'
-    force: '{{ item.force | default(omit) }}'
-    generate_ssh_key: '{{ item.generate_ssh_key | default(omit) }}'
-    ssh_key_bits: '{{ item.ssh_key_bits | default(omit) }}'
-    ssh_key_comment: '{{ item.ssh_key_comment | default(omit) }}'
-    ssh_key_file: '{{ item.ssh_key_file | default(omit) }}'
-    ssh_key_passphrase: '{{ item.ssh_key_passphrase | default(omit) }}'
-    ssh_key_type: '{{ item.ssh_key_type | default(omit) }}'
+    name:               '{{ item.name }}'
+    uid:                '{{ item.uid                | d(omit) }}'
+    group:              '{{ item.group              | d(item.name) }}'
+    state:              '{{ item.state              | d("present") }}'
+    comment:            '{{ item.comment            | d(omit) }}'
+    password:           '{{ item.password           | d("*") }}'
+    update_password:    '{{ item.update_password    | d("on_create") }}'
+    system:             '{{ item.system             | d(True if (users_default_system | bool) else omit) }}'
+    shell:              '{{ item.shell              | d(omit) }}'
+    home:               '{{ item.home               | d(omit) }}'
+    createhome:         '{{ item.createhome         | d(omit) }}'
+    move_home:          '{{ item.move_home          | d(omit) }}'
+    skeleton:           '{{ item.skeleton           | d(omit) }}'
+    expires:            '{{ item.expires            | d(omit) }}'
+    remove:             '{{ item.remove             | d(omit) }}'
+    force:              '{{ item.force              | d(omit) }}'
+    generate_ssh_key:   '{{ item.generate_ssh_key   | d(omit) }}'
+    ssh_key_bits:       '{{ item.ssh_key_bits       | d(omit) }}'
+    ssh_key_comment:    '{{ item.ssh_key_comment    | d(omit) }}'
+    ssh_key_file:       '{{ item.ssh_key_file       | d(omit) }}'
+    ssh_key_passphrase: '{{ item.ssh_key_passphrase | d(omit) }}'
+    ssh_key_type:       '{{ item.ssh_key_type       | d(omit) }}'
   with_flattened:
     - '{{ users_default }}'
     - '{{ users_admins }}'
@@ -47,7 +47,7 @@
     - '{{ users_group_list }}'
     - '{{ users_host_list }}'
   when: ((item.name is defined and item.name and item.name != 'root') and
-         (item.state is undefined or (item.state is defined and item.state)))
+         (item.state|d('present') != 'absent'))
 
 - name: Manage user home directories
   file:
@@ -63,11 +63,9 @@
     - '{{ users_group_list }}'
     - '{{ users_host_list }}'
   when: ((item.name is defined and item.name and item.name != 'root') and
-         (item.state is undefined or (item.state is defined and item.state)) and
-         (item.createhome is undefined or item.createhome) and
-         ((item.home_owner is defined and item.home_owner) or
-          (item.home_group is defined and item.home_group) or
-          (item.home_mode is defined and item.home_mode)))
+         (item.state|d('present') != 'absent') and
+         item.createhome|d(True) and
+         (item.home_owner|d() or item.home_group|d() or item.home_mode|d()))
 
 - name: Get list of available groups
   shell: 'getent group | cut -f1 -d:'
@@ -88,7 +86,7 @@
     - '{{ users_group_list }}'
     - '{{ users_host_list }}'
   when: ((item.name is defined and item.name and item.name != 'root') and
-         (item.state is undefined or (item.state is defined and item.state != 'absent')) and
+         (item.state|d('present') != 'absent') and
          (users_default_groups_list is defined and users_default_groups_list))
 
 - name: Manage user groups
@@ -104,7 +102,7 @@
     - '{{ users_group_list }}'
     - '{{ users_host_list }}'
   when: ((item.name is defined and item.name and item.name != 'root') and
-         (item.state is undefined or (item.state is defined and item.state != 'absent')) and
+         (item.state|d('present') != 'absent') and
          (item.groups is defined and item.groups))
 
 - name: Remove user groups if requested
@@ -119,5 +117,5 @@
     - '{{ users_group_list }}'
     - '{{ users_host_list }}'
   when: ((item.name is defined and item.name and item.name != 'root') and
-         (item.state is defined and item.state == 'absent'))
+         (item.state|d('present') == 'absent'))
 
