@@ -12,6 +12,10 @@ v0.4.4
 
 - Update Ansible Galaxy role links in ``ansigenome`` templates. [drybjed]
 
+- Update the Ansigenome ``README.md`` template used to generate role README
+  files to use ``galaxy_url`` instead of ``galaxy_id``. The new variable should
+  contain full URL of the role on Ansible Galaxy. [drybjed]
+
 v0.4.3
 ------
 
