@@ -14,7 +14,7 @@
       (snapshot_snapper__host_volumes       | list) }}'
   tags:
     - 'role::snapshot_snapper:reinit'
-# ]]]
+# .. ]]]
 
 # Installation [[[
 - name: Install snapper
@@ -23,7 +23,7 @@
     state: 'latest'
     install_recommends: False
   with_flattened: '{{ snapshot_snapper__base_packages }}'
-# ]]]
+# .. ]]]
 
 # Configure updatedb to exclude snapshots [[[
 - name: 'Divert original configuration under /etc'
@@ -56,7 +56,7 @@
     regexp: '^(# )?PRUNENAMES=(".*)"$'
     line: 'PRUNENAMES=\2 {{ snapshot_snapper__directory }}"'
   when: snapshot_snapper__register_updatedb_configured.rc != 0
-# ]]]
+# .. ]]]
 
 # Automatic snapper volume reinitialization [[[
 - name: Check which snapper /etc/snapper/configs/ exist
@@ -108,7 +108,7 @@
            | join(" ") }}"'
   when: (snapshot_snapper__auto_reinit|bool)
   tags: [ 'role::snapshot_snapper:reinit' ]
-# ]]]
+# .. ]]]
 
 # Configure snapper templates [[[
 - name: Configure snapper templates
@@ -119,7 +119,7 @@
     group: 'root'
     mode: '0644'
   with_dict: '{{ snapshot_snapper__templates_combined }}'
-# ]]]
+# .. ]]]
 
 # Create initial configuration per volume [[[
 - name: Create initial configuration per volume
@@ -131,7 +131,7 @@
     creates: '/etc/snapper/configs/{{ item.name }}'
   when: (item.path|d() and item.name|d() and (item.state|d("present") == "present"))
   with_items: '{{ snapshot_snapper__volumes_combined }}'
-# ]]]
+# .. ]]]
 
 - name: Adjust configuration per volume
   include: configure_snapper_volume.yml
