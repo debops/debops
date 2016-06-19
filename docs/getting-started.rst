@@ -19,28 +19,8 @@ Example playbook
 If you are using this role without Debops, here's an example Ansible playbook
 that uses the ``debops.slapd`` role:
 
-.. code-block:: yaml
-
-   ---
-   - name: Manage OpenLDAP service
-     hosts: [ 'debops_service_slapd' ]
-     become: True
-
-     roles:
-
-       - role: debops.ferm
-         tags: [ 'role::ferm' ]
-         ferm__dependent_rules:
-           - '{{ slapd_ferm_dependent_rules }}'
-
-       - role: debops.tcpwrappers
-         tags: [ 'role::tcpwrappers' ]
-         tcpwrappers_dependent_allow:
-           - '{{ slapd_tcpwrappers_dependent_allow }}'
-
-       - role: debops.slapd
-         tags: [ 'role::slapd' ]
-
+.. literalinclude:: playbooks/slapd.yml
+   :language: yaml
 
 The inclusion of the ``debops.ferm`` and ``debops.tcpwrappers`` roles are
 optional. They can be used for managing firewall and access rules to the
