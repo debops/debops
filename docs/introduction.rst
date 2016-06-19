@@ -9,7 +9,7 @@ accounts and install useful scripts.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v1.7``. To install it, run::
+This role requires at least Ansible ``v1.8``. To install it, run::
 
     ansible-galaxy install debops.slapd
 
