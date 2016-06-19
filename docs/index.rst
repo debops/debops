@@ -7,6 +7,9 @@ DebOps Policy and Guidelines
    :maxdepth: 2
 
    introduction
+   organizational-structure
+   distributed-development
+   code-signing
    references
    copyright
    changelog
