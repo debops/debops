@@ -4,7 +4,7 @@
      instead have a look at the files in the ./meta/ directory. -->
 
 [![Travis CI](http://img.shields.io/travis/ypid/ansible-cryptsetup_remote_unlock.svg?style=flat)](http://travis-ci.org/ypid/ansible-cryptsetup_remote_unlock)
-[![Ansible Galaxy](http://img.shields.io/badge/galaxy-ypid.cryptsetup_remote_unlock-660198.svg?style=flat)](https://galaxy.ansible.com/detail#/role/2980)
+[![Ansible Galaxy](http://img.shields.io/badge/galaxy-ypid.cryptsetup_remote_unlock-660198.svg?style=flat)](https://galaxy.ansible.com/ypid/cryptsetup_remote_unlock)
 [![Platforms](http://img.shields.io/badge/platforms-debian-lightgrey.svg?style=flat)](#)
 [![GitHub Tags](https://img.shields.io/github/tag/ypid/ansible-cryptsetup_remote_unlock.svg)](https://github.com/ypid/ansible-cryptsetup_remote_unlock)
 [![GitHub Stars](https://img.shields.io/github/stars/ypid/ansible-cryptsetup_remote_unlock.svg)](https://github.com/ypid/ansible-cryptsetup_remote_unlock)
@@ -19,9 +19,12 @@ Read more about this:
 If you want to show a message above the password promt, check out my
 related role: [initramfs_message](https://galaxy.ansible.com/ypid/initramfs_message/)
 
+To unlock the system, you can have a look at: https://github.com/sdrfnord/scripts/tree/master/scout
+
 ### Alternative roles
 
-[0x46616c6b.rootcrypto](https://github.com/systemli/ansible-rootcrypto) looks nice but I have not tested it yet.
+* [0x46616c6b.rootcrypto](https://github.com/systemli/ansible-rootcrypto) looks nice but I have not tested it yet.
+* [martin-v.sshpreluks](https://github.com/martin-v/ansible-sshpreluks) looks nice but I have not tested it yet.
 
 ### Installation
 
