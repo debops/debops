@@ -19,7 +19,7 @@ The UNIX group for DebOps Developers used on the project assets should be named
 Project Leader
 --------------
 
-The DebOps Project Leader is selected from the group of Deveopers. He has the
+The DebOps Project Leader is selected from the group of Developers. He/she has the
 last word in any issues that arise withing the project and his decisions are
 final. The Leader creates the version tags in the ``git`` repositories signed
 by his/her GPG key.
@@ -40,15 +40,9 @@ In context of Ansible roles, each role has a Maintainer. Maintainers decide
 what a given role does, develop it and can accept Pull/Merge Requests as
 needed. They have full write access to the role repositories. All of their
 commits need to be signed by their GPG key.
-
-Role Contributors
------------------
-
-In context of Ansible roles, each role not directly created by DebOps
-Developers needs a Contributor. The role Contributor signs the role using
-his/her GPG key (newest commit should suffice, usually it's a signed Pull/Merge
-Request). Their GPG keys are stored in the Project's Keyring repository for
-auditing.
+Only DebOps Developers can be Role Maintainers. If a role was created by a Role
+Authors who is not a DebOps Developers yet, a DebOps Developers needs to be the
+Role Maintainers.
 
 Bots
 ----
@@ -56,7 +50,9 @@ Bots
 Some functions are performed by software bots in an automated way. The bots
 should use their own GPG keys, stored in the Project's Keyring for auditing.
 The bots are not expected to introduce new unauthenticated code or
-documentation in different repositories.
+documentation in different repositories which is enforced by only giving the
+bots access to the repositories they are working with and checking that no
+commits are created by bots in unexpected repositories using the DebOps tools.
 
 ..
  Local Variables:
