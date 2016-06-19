@@ -27,6 +27,12 @@ by his/her GPG key.
 The UNIX group for DebOps Leader used on the project assets should be named
 ``debops-leader``.
 
+Contributors
+------------
+
+Every person who is contributing to the DebOps Project. The contributions need
+to be reviewed by one of the DebOps Developers.
+
 Role Authors
 ------------
 

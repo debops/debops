@@ -21,6 +21,7 @@ Additionally, it is recommended to take part in the Web Of Trust to make
 it harder for an adversary to fake signatures by pretending to be one of the
 DebOps Developers. In particular as the DebOps Project is related to the Debian
 project it is recommended to get your key signed by Debian Developers.
+A signature from another DebOps Developer is sufficient as well.
 
 This should allow for secure code authentication. That means that tampering
 with the code on the source code management platform can be reliable detected
