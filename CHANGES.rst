@@ -11,5 +11,5 @@ v0.1.0
 
 - Added a draft of the organizational structure and explanation of distributed
   development model, as well a draft of the code signing policy used by the
-  project. [drybjed]
+  project. [drybjed, ypid]
 
