@@ -7,7 +7,7 @@ valid PGP key of a DebOps Developer. This does not yet apply to contributors
 (but is highly encouraged).
 
 Patches from DebOps Contributors must be reviewed by one of the
-DebOps Developer and the merge commit must by signed by the DebOps Developer
+DebOps Developers and the merge commit must by signed by the DebOps Developer
 for this patch to enter the DebOps Project. This should ensure that the last
 commit of every repository of the DebOps Project has a valid signature by a
 DebOps Developer.
