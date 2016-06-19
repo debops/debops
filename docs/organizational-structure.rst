@@ -40,9 +40,13 @@ In context of Ansible roles, each role has a Maintainer. Maintainers decide
 what a given role does, develop it and can accept Pull/Merge Requests as
 needed. They have full write access to the role repositories. All of their
 commits need to be signed by their GPG key.
+
 Only DebOps Developers can be Role Maintainers. If a role was created by a Role
-Authors who is not a DebOps Developers yet, a DebOps Developers needs to be the
-Role Maintainers.
+Author who is not a DebOps Developer yet, a DebOps Developer needs to be the
+Role Maintainer.
+
+A role can have a team of Role Maintainers, in this case only one signature is
+required for a commit.
 
 Bots
 ----
