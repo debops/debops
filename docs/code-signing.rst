@@ -17,7 +17,7 @@ their account on the source code management platform used to work on the DebOps
 Project (currently GitHub) it is expected to provide a proof via the means of
 https://keybase.io/.
 
-Additionally, it is recommended to take part in the Web of Trust to make
+Additionally, it is recommended to take part in the Web Of Trust to make
 it harder for an adversary to fake signatures by pretending to be one of the
 DebOps Developers. In particular as the DebOps Project is related to the Debian
 project it is recommended to get your key signed by Debian Developers.
