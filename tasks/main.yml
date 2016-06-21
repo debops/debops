@@ -1,0 +1,117 @@
+---
+
+- name: Manage paths on remote hosts
+  file:
+    path:    '{{ (item.path   | d(item.dest | d(item.name))) | d(item) }}'
+    state:   '{{ item.state   | d("directory") }}'
+    owner:   '{{ item.owner   | d(omit) }}'
+    group:   '{{ item.group   | d(omit) }}'
+    mode:    '{{ item.mode    | d(omit) }}'
+    selevel: '{{ item.selevel | d(omit) }}'
+    serole:  '{{ item.serole  | d(omit) }}'
+    setype:  '{{ item.setype  | d(omit) }}'
+    seuser:  '{{ item.seuser  | d(omit) }}'
+    follow:  '{{ item.follow  | d(omit) }}'
+    force:   '{{ item.force   | d(omit) }}'
+    src:     '{{ item.src     | d(omit) }}'
+    recurse: '{{ item.recurse | d(omit) }}'
+  with_flattened:
+    - '{{ resources__paths }}'
+    - '{{ resources__group_paths }}'
+    - '{{ resources__host_paths }}'
+  when: (resources__enabled|bool and
+         ((item.path|d() or item.dest|d() or item.name|d()) or item))
+  tags: [ 'role::resources:paths' ]
+
+- name: Download online resources to remote hosts
+  get_url:
+    url:              '{{ item.url              | d(item.src) }}'
+    dest:             '{{ item.dest             | d(item.name | d(item.path)) }}'
+    owner:            '{{ item.owner            | d(omit) }}'
+    group:            '{{ item.group            | d(omit) }}'
+    mode:             '{{ item.mode             | d(omit) }}'
+    checksum:         '{{ item.checksum         | d(omit) }}'
+    force:            '{{ item.force            | d(omit) }}'
+    force_basic_auth: '{{ item.force_basic_auth | d(omit) }}'
+    headers:          '{{ item.headers          | d(omit) }}'
+    sha256sum:        '{{ item.sha256sum        | d(omit) }}'
+    timeout:          '{{ item.timeout          | d(omit) }}'
+    url_password:     '{{ item.url_password     | d(omit) }}'
+    url_username:     '{{ item.url_username     | d(omit) }}'
+    use_proxy:        '{{ item.use_proxy        | d(omit) }}'
+    validate_certs:   '{{ item.validate_certs   | d(omit) }}'
+  with_flattened:
+    - '{{ resources__urls }}'
+    - '{{ resources__group_urls }}'
+    - '{{ resources__host_urls }}'
+  when: (resources__enabled|bool and (item.url|d() or item.src|d()) and
+         (item.dest|d() or item.name|d() or item.path|d()))
+  tags: [ 'role::resources:urls' ]
+
+- name: Unpack archives to remote hosts
+  unarchive:
+    src:        '{{ item.src }}'
+    dest:       '{{ item.dest       | d(item.name | d(item.path)) }}'
+    owner:      '{{ item.owner      | d(omit) }}'
+    group:      '{{ item.group      | d(omit) }}'
+    mode:       '{{ item.mode       | d(omit) }}'
+    # FIXME: https://github.com/ansible/ansible-modules-core/issues/3996
+    #copy:      '{{ item.copy       | d(omit) }}'
+    selevel:    '{{ item.selevel    | d(omit) }}'
+    serole:     '{{ item.serole     | d(omit) }}'
+    setype:     '{{ item.setype     | d(omit) }}'
+    seuser:     '{{ item.seuser     | d(omit) }}'
+    creates:    '{{ item.creates    | d(omit) }}'
+    exclude:    '{{ item.exclude    | d(omit) }}'
+    keep_newer: '{{ item.keep_newer | d(omit) }}'
+    extra_opts: '{{ item.extra_opts | d(omit) }}'
+  with_flattened:
+    - '{{ resources__archives }}'
+    - '{{ resources__group_archives }}'
+    - '{{ resources__host_archives }}'
+  when: (resources__enabled|bool and item.src|d() and
+         (item.dest|d() or item.name|d() or item.path|d()))
+  tags: [ 'role::resources:archives' ]
+
+- name: Copy files to remote hosts
+  copy:
+    dest:     '{{ item.dest     | d(item.path | d(item.name)) }}'
+    src:      '{{ item.src      | d(omit) }}'
+    content:  '{{ item.content  | d(omit) }}'
+    owner:    '{{ item.owner    | d(omit) }}'
+    group:    '{{ item.group    | d(omit) }}'
+    mode:     '{{ item.mode     | d(omit) }}'
+    selevel:  '{{ item.selevel  | d(omit) }}'
+    serole:   '{{ item.serole   | d(omit) }}'
+    setype:   '{{ item.setype   | d(omit) }}'
+    seuser:   '{{ item.seuser   | d(omit) }}'
+    follow:   '{{ item.follow   | d(omit) }}'
+    force:    '{{ item.force    | d(omit) }}'
+    backup:   '{{ item.backup   | d(omit) }}'
+    validate: '{{ item.validate | d(omit) }}'
+    remote_src: '{{ item.remote_src | d(omit) }}'
+    directory_mode: '{{ item.directory_mode | d(omit) }}'
+  with_flattened:
+    - '{{ resources__files }}'
+    - '{{ resources__group_files }}'
+    - '{{ resources__host_files }}'
+  when: (resources__enabled|bool and
+         (item.src|d() or item.content|d()) and
+         (item.dest|d() or item.path|d() or item.name|d()) and
+         (item.state|d('present') != 'absent'))
+  tags: [ 'role::resources:files' ]
+
+- name: Delete files on remote hosts
+  file:
+    path:  '{{ item.dest | d(item.path | d(item.name)) }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ resources__files }}'
+    - '{{ resources__group_files }}'
+    - '{{ resources__host_files }}'
+  when: (resources__enabled|bool and
+         (item.src|d() or item.content|d()) and
+         (item.dest|d() or item.path|d() or item.name|d()) and
+         (item.state|d() == 'absent'))
+  tags: [ 'role::resources:files' ]
+
