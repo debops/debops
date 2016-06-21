@@ -84,6 +84,9 @@ v0.2.9
   requirements. They are still present in the playbook, and will be removed at
   a later date. [drybjed]
 
+- Remove ``debops.directories`` role and replace it with ``debops.resources``,
+  which is included in the ``common.yml`` playbook. [drybjed]
+
 v0.2.8
 ------
 
