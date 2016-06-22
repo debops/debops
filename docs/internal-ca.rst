@@ -39,7 +39,7 @@ Layout of Certificate Authorities
 
 By default, the ``debops.pki`` role creates two Certificate Authorities:
 
-- a Root Certiticate Authority which is used as the "trust anchor" by
+- a Root Certificate Authority which is used as the "trust anchor" by
   intermediate Certificate Authorities;
 - a Domain Certificate Authority which signs the incoming server certificates;
 
