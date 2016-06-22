@@ -18,18 +18,10 @@ host group (which most likely it is already)::
 Example playbook
 ----------------
 
-Here's an example playbook which uses the ``debops.ferm`` role::
+Here's an example playbook which uses the ``debops.ferm`` role:
 
-    ---
-
-    - name: Manage firewall using ferm
-      hosts: [ 'debops_service_ferm' ]
-      become: True
-
-      roles:
-
-        - role: debops.ferm
-          tags: [ 'role::ferm' ]
+.. literalinclude:: playbooks/ferm.yml
+   :language: yaml
 
 Ansible tags
 ------------
