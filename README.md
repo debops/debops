@@ -6,13 +6,13 @@
 [![Ansible Galaxy](http://img.shields.io/badge/galaxy-debops--contrib.apparmor-660198.svg?style=flat)](https://galaxy.ansible.com/debops-contrib/apparmor)
 
 
-Ansible role to install and manage AppArmor.
 AppArmor is able to restrict what programs can do and access based on policies for those programs.
 
 See [AppArmor in the Debian Wiki](https://wiki.debian.org/AppArmor/HowToUse).
 
-By default (e.g. no [auditd] installed) log messages are logged via syslog to
-the kernel facility which usually ends up under `/var/log/kern.log`.
+By default (e.g. no [auditd] installed) log messages from AppArmor are
+logged via syslog to the kernel facility which usually ends up under
+`/var/log/kern.log`.
 
 [auditd]: https://packages.debian.org/search?keywords=auditd
 
