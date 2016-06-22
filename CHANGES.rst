@@ -10,6 +10,13 @@ v0.2.4
   ``ansible_connection=local`` against a host which does not have ``sshd``
   installed yet. [ypid]
 
+- Added :envvar:`sshd__ciphers_additional`,
+  :envvar:`sshd__kex_algorithms_additional` and :envvar:`sshd__macs_additional`
+  to allow to specify additional cryptography related settings which are also
+  applied in :envvar:`sshd__paranoid` mode.
+  This is needed for the ``debops-contrib.x2go_server`` role.
+  [ypid]
+
 
 v0.2.3
 ------

@@ -334,7 +334,7 @@ sshd__known_hosts_command: 'ssh-keyscan -H -T 10'
 # .. envvar:: sshd__ciphers_map
 #
 # Dict with list of ciphers which should be used by the ``sshd`` server,
-# depending on available version, ordered from newest to oldest. Newer version
+# depending on available version, ordered from strongest to weakest. Newer version
 # supersedes older version.
 sshd__ciphers_map:
 
@@ -347,10 +347,19 @@ sshd__ciphers_map:
   '6.0': [ 'aes256-ctr', 'aes192-ctr', 'aes128-ctr' ]
 
 
+# .. envvar:: sshd__ciphers_additional
+#
+# List of additional key exchange algorithms which should be used by the
+# ``sshd`` server, depending on available version, depending on available
+# version, ordered from stronger to weaker. Newer version supersedes older
+# version.
+sshd__ciphers_additional: []
+
+
 # .. envvar:: sshd__kex_algorithms_map
 #
 # Dict with list of key exchange algorithms which should be used by the
-# ``sshd`` server, depending on available version, ordered from newest to
+# ``sshd`` server, depending on available version, ordered from strongest to
 # oldest. Newer version supersedes older version.
 sshd__kex_algorithms_map:
 
@@ -363,11 +372,20 @@ sshd__kex_algorithms_map:
   '6.0': [ 'diffie-hellman-group-exchange-sha256' ]
 
 
+# .. envvar:: sshd__kex_algorithms_additional
+#
+# List of additional key exchange algorithms which should be used by the
+# ``sshd`` server, depending on available version, depending on available
+# version, ordered from stronger to weaker. Newer version supersedes older
+# version.
+sshd__kex_algorithms_additional: []
+
+
 # .. envvar:: sshd__macs_map
 #
 # Dict with list of message authentication code algorithms which should be used
-# by the ``sshd`` server, depending on available version, ordered from newest
-# to oldest. Newer version supersedes older version.
+# by the ``sshd`` server, depending on available version, ordered from stronger
+# to weaker. Newer version supersedes older version.
 sshd__macs_map:
 
   # Source: https://wiki.mozilla.org/Security/Guidelines/OpenSSH
@@ -377,6 +395,14 @@ sshd__macs_map:
 
   # Source: https://xivilization.net/~marek/blog/2015/01/12/secure-secure-shell-on-debian-wheezy/
   '6.0': [ 'hmac-sha2-512', 'hmac-sha2-256' , 'hmac-ripemd160' ]
+
+
+# .. envvar:: sshd__macs_additional
+#
+# List of additional message authentication code algorithms to support
+# by the ``sshd`` server, depending on available version, ordered from stronger
+# to weaker. Newer version supersedes older version.
+sshd__macs_additional: []
 
 
 # .. envvar:: sshd__moduli_minimum
