@@ -87,6 +87,9 @@ v0.2.9
 - Remove ``debops.directories`` role and replace it with ``debops.resources``,
   which is included in the ``common.yml`` playbook. [drybjed]
 
+- Update the ``service/postgresql_server.yml`` playbook to use new namespaced
+  variables. [drybjed]
+
 v0.2.8
 ------
 
