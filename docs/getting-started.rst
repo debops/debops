@@ -4,6 +4,8 @@ Getting started
 .. contents::
    :local:
 
+.. include:: includes/all.rst
+
 
 Example inventory
 -----------------
@@ -19,17 +21,16 @@ group:
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to manage Btrfs::
+Here's an example playbook that can be used to manage Btrfs:
 
-    ---
-    - name: Manage Btrfs
-      hosts: [ 'debops_service_btrfs' ]
-      become: True
+.. literalinclude:: playbooks/btrfs.yml
+   :language: yaml
 
-      roles:
-
-        - role: debops-contrib.btrfs
-          tags: [ 'role::btrfs' ]
+This playbooks is shipped with this role under
+:file:`docs/playbooks/btrfs.yml` from which you can symlink it to your
+playbook directory.
+In case you use multiple `DebOps Contrib`_ roles, consider
+using the `DebOps Contrib playbooks`_.
 
 Ansible tags
 ------------
@@ -45,7 +46,7 @@ Available role tags:
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
 
-``role::btrfs:install``
+``role::btrfs:pkts``
   Tasks related to the installation of required packages.
 
 ``role::btrfs:subvolumes``
