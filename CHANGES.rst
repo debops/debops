@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.2.11
+-------
+
+*Unreleased*
+
+- Ensure that highly sensitive files are not checked into version control when
+  for example :program:`etckeeper` is used for tracking changes in :file:`/etc`.
+  Note that sensitive files which are already tracked by version control will
+  need to be manually deleted from version control history!
+  Refer to :envvar:`pki_vcs_ignore_patterns_role` for more details. [ypid]
+
 v0.2.10
 -------
 

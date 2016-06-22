@@ -47,6 +47,63 @@ pki_fqdn: '{{ ansible_fqdn }}'
 # Ansible Controller, and files put there will be copied to remote hosts.
 pki_inventory_groups: [ 'debops_service_pki' ]
 
+
+# .. envvar:: pki_vcs_ignore_patterns_role
+#
+# This list allows you to define ignore patterns for files below
+# :file:`/etc/pki` that version control systems should ignore.
+# :file:`/etc` is not tracked by default by a version control system so this
+# definition exists preliminary in case you decide to use :program:`etckeeper` for
+# example to track changes in :file:`/etc`. In case you want to track
+# sensitive files by version control system specific::
+#
+#    pki_vcs_ignore_patterns_role: []
+#
+# in your inventory and be sure that you know what you are doing!
+#
+# Note that currently, only :command:`git` as version control system is supported. If
+# you use another version control system, be sure to add support for it to
+# this role.
+# Ignore patterns are specified using the :file:`.gitignore` file format
+# documented in :manpage:`gitignore(5)`.
+# By default, any file path below :file:`/etc/pki` contained in a subdirectory
+# called :file:`private` will not be tracked.
+#
+# .. note:: When you started using this role before version 0.2.11 and
+#    sensitive files are already tracked by version control you will need to
+#    manually deleted them from version control history!
+#
+pki_vcs_ignore_patterns_role: [ '**/private/**' ]
+
+
+# .. envvar:: pki_vcs_ignore_patterns
+#
+# Refer to  :envvar:`pki_vcs_ignore_patterns_role` for details.
+# This variable is intended to be used in Ansible’s global inventory and allows
+# you to define additional file patterns without having to overwrite the
+# recommended ignore list maintained by this role.
+pki_vcs_ignore_patterns: []
+
+
+# .. envvar:: pki_vcs_ignore_patterns_group
+#
+# Refer to  :envvar:`pki_vcs_ignore_patterns_role` for details.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported) and allows you to define additional file
+# patterns without having to overwrite the recommended ignore list maintained by
+# this role.
+pki_vcs_ignore_patterns_group: []
+
+
+# .. envvar:: pki_vcs_ignore_patterns_host
+#
+# Refer to  :envvar:`pki_vcs_ignore_patterns_role` for details.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported) and allows you to define additional file
+# patterns without having to overwrite the recommended ignore list maintained by
+# this role.
+pki_vcs_ignore_patterns_host: []
+
 # .. )))
 
 # .. Automatic Certificate Management Environment (((
@@ -356,7 +413,7 @@ pki_default_subdomains: [ '_wildcard_' ]
 
 # .. envvar:: pki_authority_preference
 #
-# Order in which different certificate types are used. First cerificate type
+# Order in which different certificate types are used. First certificate type
 # found wins.
 pki_authority_preference: [ 'external', 'acme', 'internal', 'selfsigned' ]
 
