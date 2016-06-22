@@ -1,0 +1,16 @@
+---
+
+- name: Manage PostgreSQL client
+  hosts: [ 'debops_service_postgresql' ]
+  become: True
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ postgresql__apt_preferences__dependent_list }}'
+
+    - role: debops.postgresql
+      tags: [ 'role::postgresql' ]
+

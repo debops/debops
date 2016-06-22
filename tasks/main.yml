@@ -8,28 +8,28 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
-  when: postgresql_upstream|d() and postgresql_upstream
+  when: postgresql__upstream|d() and postgresql__upstream
 
 - name: Add upstream PostgreSQL APT repository
   apt_repository:
     repo: 'deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main'
     state: 'present'
     update_cache: True
-  when: postgresql_upstream|d() and postgresql_upstream
+  when: postgresql__upstream|d() and postgresql__upstream
 
 - name: Get default PostgreSQL version
   environment:
     LC_ALL: 'C'
   shell: "apt-cache policy postgresql-client | grep -E '^\\s+Candidate:\\s+' | awk '{print $2}' | cut -d+ -f1"
-  register: postgresql_register_version
+  register: postgresql__register_version
   changed_when: False
 
 - name: Set default PostgreSQL version variable
   set_fact:
-    postgresql_version: '{{ ansible_local.postgresql.version
-                                   if (ansible_local|d() and ansible_local.postgresql|d() and
-                                       ansible_local.postgresql.version|d())
-                                   else postgresql_register_version.stdout }}'
+    postgresql__version: '{{ ansible_local.postgresql.version
+                             if (ansible_local|d() and ansible_local.postgresql|d() and
+                                 ansible_local.postgresql.version|d())
+                                 else postgresql__register_version.stdout }}'
 
 - name: Install PostgreSQL packages
   apt:
@@ -37,14 +37,14 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ postgresql_base_packages }}'
-    - '{{ postgresql_packages }}'
+    - '{{ postgresql__base_packages }}'
+    - '{{ postgresql__packages }}'
 
 - name: Check if database server is installed
   environment:
     LC_MESSAGES: 'C'
   shell: dpkg-query -W -f='${Version}\n' 'postgresql' | grep -v '^$'
-  register: postgresql_register_server
+  register: postgresql__register_server
   changed_when: False
   failed_when: False
 
@@ -59,51 +59,60 @@
 - name: Create PostgreSQL roles
   postgresql_user:
     name: '{{ item.name | d(item.role) }}'
-    port: '{{ item.port | d(postgresql_port if postgresql_port else omit) }}'
+    port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
     password: '{{ item.password | d(lookup("password",
-                  secret + "/postgresql/" + postgresql_delegate_to +
-                  "/" + (item.port | d(postgresql_port)) +
+                  secret + "/postgresql/" + postgresql__delegate_to +
+                  "/" + (item.port | d(postgresql__port)) +
                   "/credentials/" + item.name | d(item.role) + "/password " +
-                  "length=" + postgresql_password_length)) }}'
+                  "length=" + postgresql__password_length)) }}'
     encrypted: '{{ item.encrypted | d(omit) }}'
     expires: '{{ item.expires | d(omit) }}'
     role_attr_flags: '{{ (item.flags|d() | join(",")) | d(omit) }}'
     state: 'present'
-  with_items: '{{ postgresql_roles }}'
-  sudo_user: '{{ postgresql_user }}'
-  delegate_to: '{{ postgresql_delegate_to }}'
+  with_flattened:
+    - '{{ postgresql__roles }}'
+    - '{{ postgresql_roles|d([]) }}'
+    - '{{ postgresql__dependent_roles }}'
+  become_user: '{{ postgresql__user }}'
+  delegate_to: '{{ postgresql__delegate_to }}'
   when: (((item.name|d() and item.name) or (item.role|d() and item.role)) and
          (item.state is undefined or item.state != 'absent'))
 
 - name: Create PostgreSQL databases
   postgresql_db:
     name: '{{ item.name | d(item.database) }}'
-    port: '{{ item.port | d(postgresql_port if postgresql_port else omit) }}'
+    port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
     owner: '{{ item.owner | d(omit) }}'
     template: '{{ item.template | d(omit) }}'
     encoding: '{{ item.encoding | d(omit) }}'
     lc_collate: '{{ item.lc_collate | d(omit) }}'
     lc_ctype: '{{ item.lc_ctype | d(omit) }}'
     state: 'present'
-  with_items: '{{ postgresql_databases }}'
-  sudo_user: '{{ postgresql_user }}'
-  delegate_to: '{{ postgresql_delegate_to }}'
+  with_flattened:
+    - '{{ postgresql__databases }}'
+    - '{{ postgresql_databases|d([]) }}'
+    - '{{ postgresql__dependent_databases }}'
+  become_user: '{{ postgresql__user }}'
+  delegate_to: '{{ postgresql__delegate_to }}'
   when: (((item.name|d() and item.name) or (item.database|d() and item.database)) and
          (item.state is undefined or item.state != 'absent'))
 
 - name: Grant public schema permissions
   postgresql_privs:
     roles: '{{ item.owner }}'
-    port: '{{ item.port | d(postgresql_port if postgresql_port else omit) }}'
+    port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
     type: 'schema'
     database: '{{ item.name | d(item.database) }}'
     objs: 'public'
     privs: 'ALL'
     grant_option: 'yes'
     state: 'present'
-  with_items: '{{ postgresql_databases }}'
-  sudo_user: '{{ postgresql_user }}'
-  delegate_to: '{{ postgresql_delegate_to }}'
+  with_flattened:
+    - '{{ postgresql__databases }}'
+    - '{{ postgresql_databases|d([]) }}'
+    - '{{ postgresql__dependent_databases }}'
+  become_user: '{{ postgresql__user }}'
+  delegate_to: '{{ postgresql__delegate_to }}'
   when: (((item.name|d() and item.name) or (item.database|d() and item.database)) and
          (item.state is undefined or item.state != 'absent') and
          (item.owner|d() and item.owner))
@@ -111,15 +120,18 @@
 - name: Grant PostgreSQL groups
   postgresql_privs:
     roles: '{{ item.roles | join(",") }}'
-    port: '{{ item.port | d(postgresql_port if postgresql_port else omit) }}'
+    port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
     type: 'group'
     database: '{{ item.database }}'
     objs: '{{ item.groups | join(",") }}'
     grant_option: '{{ item.grant_option | d(omit) }}'
     state: 'present'
-  with_items: '{{ postgresql_groups }}'
-  sudo_user: '{{ postgresql_user }}'
-  delegate_to: '{{ postgresql_delegate_to }}'
+  with_flattened:
+    - '{{ postgresql__groups }}'
+    - '{{ postgresql_groups|d([]) }}'
+    - '{{ postgresql__dependent_groups }}'
+  become_user: '{{ postgresql__user }}'
+  delegate_to: '{{ postgresql__delegate_to }}'
   when: ((item.roles|d() and item.roles) and
          (item.groups|d() and item.groups) and
          (item.database|d() and item.database) and
@@ -128,13 +140,16 @@
 - name: Grant database privileges to PostgreSQL roles
   postgresql_user:
     name: '{{ item.name | d(item.role) }}'
-    port: '{{ item.port | d(postgresql_port if postgresql_port else omit) }}'
+    port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
     db: '{{ item.db }}'
     priv: '{{ item.priv | join("/") }}'
     state: 'present'
-  with_items: '{{ postgresql_roles }}'
-  sudo_user: '{{ postgresql_user }}'
-  delegate_to: '{{ postgresql_delegate_to }}'
+  with_flattened:
+    - '{{ postgresql__roles }}'
+    - '{{ postgresql_roles|d([]) }}'
+    - '{{ postgresql__dependent_roles }}'
+  become_user: '{{ postgresql__user }}'
+  delegate_to: '{{ postgresql__delegate_to }}'
   when: (((item.name|d() and item.name) or (item.role|d() and item.role)) and
          (item.state is undefined or item.state != 'absent') and
          (item.db|d() and item.db) and
@@ -145,7 +160,10 @@
     name: '{{ item.group | d(item.owner) }}'
     state: 'present'
     system: '{{ item.system | d(True) }}'
-  with_items: '{{ postgresql_pgpass }}'
+  with_flattened:
+    - '{{ postgresql__pgpass }}'
+    - '{{ postgresql_pgpass|d([]) }}'
+    - '{{ postgresql__dependent_pgpass }}'
   when: item.owner|d() and item.owner
 
 - name: Make sure required system accounts exist
@@ -155,20 +173,26 @@
     home: '{{ item.home | d(omit) }}'
     state: 'present'
     system: '{{ item.system | d(True) }}'
-  with_items: '{{ postgresql_pgpass }}'
+  with_flattened:
+    - '{{ postgresql__pgpass }}'
+    - '{{ postgresql_pgpass|d([]) }}'
+    - '{{ postgresql__dependent_pgpass }}'
   when: item.owner|d() and item.owner
 
 - name: Populate ~/.pgpass file
   lineinfile:
     dest: '{{ "~" + item.owner }}/.pgpass'
-    regexp: '^{{ (item.server | d(postgresql_server if postgresql_server else "localhost")) | replace(".","\.") }}:{{ item.port | d(postgresql_port) }}:{{ item.database | d("*") }}:{{ item.role | d("*") }}:'
-    line: '{{ item.server | d(postgresql_server if postgresql_server else "localhost") }}:{{ item.port | d(postgresql_port) }}:{{ item.database | d("*") }}:{{ item.role | d(item.owner) }}:{{ item.password | d(lookup("password", secret + "/postgresql/" + (item.server | d(postgresql_server if postgresql_server else ansible_fqdn)) + "/" + (item.port | d(postgresql_port)) + "/credentials/" + item.name | d(item.role | d(item.owner)) + "/password length=" + postgresql_password_length)) }}'
+    regexp: '^{{ (item.server | d(postgresql__server if postgresql__server else "localhost")) | replace(".","\.") }}:{{ item.port | d(postgresql__port) }}:{{ item.database | d("*") }}:{{ item.role | d("*") }}:'
+    line: '{{ item.server | d(postgresql__server if postgresql__server else "localhost") }}:{{ item.port | d(postgresql__port) }}:{{ item.database | d("*") }}:{{ item.role | d(item.owner) }}:{{ item.password | d(lookup("password", secret + "/postgresql/" + (item.server | d(postgresql__server if postgresql__server else ansible_fqdn)) + "/" + (item.port | d(postgresql__port)) + "/credentials/" + item.name | d(item.role | d(item.owner)) + "/password length=" + postgresql__password_length)) }}'
     state: 'present'
     create: True
     owner: '{{ item.owner }}'
     group: '{{ item.owner }}'
     mode: '0600'
-  with_items: '{{ postgresql_pgpass }}'
+  with_flattened:
+    - '{{ postgresql__pgpass }}'
+    - '{{ postgresql_pgpass|d([]) }}'
+    - '{{ postgresql__dependent_pgpass }}'
   when: item.owner|d() and item.owner
 
 - name: Make sure that Ansible local fact directory exists
@@ -186,10 +210,10 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: postgresql_register_local_facts
+  register: postgresql__register_local_facts
 
-- name: Re-read local facts if they have been changed
+- name: Re-read local facts if they have been modified
   action: setup
-  when: postgresql_register_local_facts|d() and
-        postgresql_register_local_facts.changed
+  when: postgresql__register_local_facts|d() and
+        postgresql__register_local_facts.changed
 

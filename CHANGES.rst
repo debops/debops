@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v0.3.0
+------
+
+*Released: 2016-06-22*
+
+- Rename all role variables from ``postgresql_*`` to ``postgresql__*`` to move
+  them to a separate namespace. You might need to update your inventory.
+  [drybjed]
+
+- Add new ``postgresql__dependent_*`` variables for use by other roles.
+  [drybjed]
+
 v0.2.1
 ------
 

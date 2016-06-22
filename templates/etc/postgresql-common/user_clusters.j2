@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
-{% macro print_user_clusters(postgresql_tpl_user_clusters_list) %}
-{% if postgresql_tpl_user_clusters_list|d() and postgresql_tpl_user_clusters_list %}
-{%   for entry in postgresql_tpl_user_clusters_list %}
+{% macro print_user_clusters(postgresql__tpl_user_clusters_list) %}
+{% if postgresql__tpl_user_clusters_list|d() and postgresql__tpl_user_clusters_list %}
+{%   for entry in postgresql__tpl_user_clusters_list %}
 {%     set entry_tpl_user = [] %}
 {%     if entry.name|d() %}
 {%       if entry.name is string %}
@@ -49,10 +49,10 @@
 {%       for user_name in entry_tpl_user %}
 {%         if entry_tpl_group %}
 {%           for group_name in entry_tpl_group %}
-{{ "%-14s %-14s %-10s %-20s %s" | format(user_name, group_name, entry.version | d(postgresql_version), entry_tpl_cluster, entry_tpl_database) }}
+{{ "%-14s %-14s %-10s %-20s %s" | format(user_name, group_name, entry.version | d(postgresql__version), entry_tpl_cluster, entry_tpl_database) }}
 {%           endfor %}
 {%         else %}
-{{ "%-14s %-14s %-10s %-20s %s" | format(user_name, user_name, entry.version | d(postgresql_version), entry_tpl_cluster, entry_tpl_database) }}
+{{ "%-14s %-14s %-10s %-20s %s" | format(user_name, user_name, entry.version | d(postgresql__version), entry_tpl_cluster, entry_tpl_database) }}
 {%         endif %}
 {%       endfor %}
 {%     endif %}
@@ -63,7 +63,7 @@
 
 # USER         GROUP          VERSION    CLUSTER              DATABASE
 
-{% if postgresql_user_clusters|d() and postgresql_user_clusters %}
-{{ print_user_clusters(postgresql_user_clusters) }}{% endif %}
-{% if postgresql_default_user_clusters|d() and postgresql_default_user_clusters %}
-{{ print_user_clusters(postgresql_default_user_clusters) }}{% endif %}
+{% if postgresql__user_clusters|d() and postgresql__user_clusters %}
+{{ print_user_clusters(postgresql__user_clusters) }}{% endif %}
+{% if postgresql__default_user_clusters|d() and postgresql__default_user_clusters %}
+{{ print_user_clusters(postgresql__default_user_clusters) }}{% endif %}
