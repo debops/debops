@@ -364,7 +364,9 @@ owncloud_config_role_required:
 
   ## https://github.com/owncloud/core/issues/22257
   ## TODO: Temporary workaround until all package maintainers have caught up.
-  'updatechecker': false
+  ## Edit: Have caught up as of 9.0.2-1.1. Remove this config in a while when
+  ## it is expected that all users are running 9.0.2 or later.
+  'updatechecker': False
 
 
 # .. envvar:: owncloud_config_role_optional
@@ -858,7 +860,9 @@ owncloud__nginx__servers:
         options: |
           include fastcgi_params;
           fastcgi_split_path_info ^(.+\.php)(/.+)$;
+          fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
           fastcgi_param PATH_INFO $fastcgi_path_info;
+          fastcgi_param HTTPS on;
           fastcgi_param modHeadersAvailable true; #Avoid sending the security headers twice
           fastcgi_param front_controller_active true;
 
