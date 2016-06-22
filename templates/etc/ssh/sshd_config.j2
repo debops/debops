@@ -38,8 +38,9 @@ HostKey /etc/ssh/ssh_host_{{ hostkey }}_key
 {%     endfor %}
 {%   endif %}
 {% endfor %}
+{% set sshd__tpl_ciphers = (sshd__tpl_ciphers + sshd__ciphers_additional) | unique %}
 {% if sshd__tpl_ciphers and sshd__paranoid|bool %}
-Ciphers {{ sshd__tpl_ciphers[0] }}
+Ciphers {{ ([ sshd__tpl_ciphers|first ] + sshd__ciphers_additional) | unique | join(",") }}
 
 {% elif sshd__tpl_ciphers %}
 Ciphers {{ sshd__tpl_ciphers | join(",") }}
@@ -57,8 +58,9 @@ Ciphers {{ sshd__tpl_ciphers | join(",") }}
 {%     endfor %}
 {%   endif %}
 {% endfor %}
+{% set sshd__tpl_kex_algorithms = (sshd__tpl_kex_algorithms + sshd__kex_algorithms_additional) | unique %}
 {% if sshd__tpl_kex_algorithms and sshd__paranoid|bool %}
-KexAlgorithms {{ sshd__tpl_kex_algorithms[0] }}
+KexAlgorithms {{ ([ sshd__tpl_kex_algorithms|first ] + sshd__kex_algorithms_additional) | unique | join(",") }}
 
 {% elif sshd__tpl_kex_algorithms %}
 KexAlgorithms {{ sshd__tpl_kex_algorithms | join(",") }}
@@ -76,8 +78,9 @@ KexAlgorithms {{ sshd__tpl_kex_algorithms | join(",") }}
 {%     endfor %}
 {%   endif %}
 {% endfor %}
+{% set sshd__tpl_macs = (sshd__tpl_macs + sshd__macs_additional) | unique %}
 {% if sshd__tpl_macs and sshd__paranoid|bool %}
-MACs {{ sshd__tpl_macs[0] }}
+MACs {{ ([ sshd__tpl_macs|first ] + sshd__macs_additional) | unique | join(",") }}
 
 {% elif sshd__tpl_macs %}
 MACs {{ sshd__tpl_macs | join(",") }}
