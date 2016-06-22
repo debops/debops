@@ -21,7 +21,7 @@ To install and configure AppArmor, add the hosts to the
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to setup and manage X2go server:
+Here's an example playbook that can be used to install and configure AppArmor:
 
 .. literalinclude:: playbooks/apparmor.yml
    :language: yaml
