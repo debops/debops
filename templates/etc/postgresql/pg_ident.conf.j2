@@ -1,12 +1,12 @@
 # {{ ansible_managed }}
-{% macro print_ident(postgresql_server_tpl_ident_list) %}
-{% if postgresql_server_tpl_ident_list|d() and postgresql_server_tpl_ident_list %}
-{%   for entry in postgresql_server_tpl_ident_list %}
+{% macro print_ident(postgresql_server__tpl_ident_list) %}
+{% if postgresql_server__tpl_ident_list|d() and postgresql_server__tpl_ident_list %}
+{%   for entry in postgresql_server__tpl_ident_list %}
 {%     set entry_tpl_user = [] %}
 {%     if entry.user %}
 {%       if entry.user is string %}
 {%         if entry.user == '*postgres*' %}
-{%           set entry_tpl_user = [ item.user | d(postgresql_server_user) ] %}
+{%           set entry_tpl_user = [ item.user | d(postgresql_server__user) ] %}
 {%         else %}
 {%           set entry_tpl_user = [ entry.user ] %}
 {%         endif %}
@@ -14,7 +14,7 @@
 {%         for element in entry.user %}
 {%           if element %}
 {%             if element == '*postgres*' %}
-{%               set _ = entry_tpl_user.append(item.user | d(postgresql_server_user)) %}
+{%               set _ = entry_tpl_user.append(item.user | d(postgresql_server__user)) %}
 {%             else %}
 {%               set _ = entry_tpl_user.append(element) %}
 {%             endif %}
@@ -26,7 +26,7 @@
 {%     if entry.role|d() %}
 {%       if entry.role is string %}
 {%         if entry.role == '*postgres*' %}
-{%           set entry_tpl_role = [ item.user | d(postgresql_server_user) ] %}
+{%           set entry_tpl_role = [ item.user | d(postgresql_server__user) ] %}
 {%         else %}
 {%           set entry_tpl_role = [ entry.role ] %}
 {%         endif %}
@@ -34,7 +34,7 @@
 {%         for element in entry.role %}
 {%           if element %}
 {%             if element == '*postgres*' %}
-{%               set _ = entry_tpl_role.append(item.user | d(postgresql_server_user)) %}
+{%               set _ = entry_tpl_role.append(item.user | d(postgresql_server__user)) %}
 {%             else %}
 {%               set _ = entry_tpl_role.append(element) %}
 {%             endif %}
@@ -63,14 +63,14 @@
 
 # MAPNAME        SYSTEM-USERNAME          PG-USERNAME
 
-{% if postgresql_server_ident_system|d() and postgresql_server_ident_system %}
-{{ print_ident(postgresql_server_ident_system) }}{% endif %}
-{% if ((postgresql_server_ident_trusted|d() and postgresql_server_ident_trusted) and
+{% if postgresql_server__ident_system|d() and postgresql_server__ident_system %}
+{{ print_ident(postgresql_server__ident_system) }}{% endif %}
+{% if ((postgresql_server__ident_trusted|d() and postgresql_server__ident_trusted) and
        (item.ident_trusted is undefined or item.ident_trusted)) %}
-{{ print_ident(item.ident_trusted | d(postgresql_server_ident_trusted)) }}{% endif %}
-{% if ((postgresql_server_ident_local|d() and postgresql_server_ident_local) and
+{{ print_ident(item.ident_trusted | d(postgresql_server__ident_trusted)) }}{% endif %}
+{% if ((postgresql_server__ident_local|d() and postgresql_server__ident_local) and
        (item.ident_local is undefined or item.ident_local)) %}
-{{ print_ident(item.ident_local | d(postgresql_server_ident_local)) }}{% endif %}
+{{ print_ident(item.ident_local | d(postgresql_server__ident_local)) }}{% endif %}
 {% if (item.ident|d() and item.ident) %}
 {{ print_ident(item.ident) }}
 {% endif %}

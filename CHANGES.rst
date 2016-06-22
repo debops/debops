@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.3.0
+------
+
+*Released: 2016-06-22*
+
+- Rename all role variables from ``postgresql_server_*`` to
+  ``postgresql_server__*`` to put them in a separate namespace. You might need
+  to update your Ansible inventory. [drybjed]
+
 v0.2.3
 ------
 

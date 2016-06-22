@@ -2,14 +2,14 @@
 
 - name: Update default admin password
   postgresql_user:
-    name: '{{ item.user | d(postgresql_server_user) }}'
-    password: '{{ item.admin_password | d(postgresql_server_admin_password) }}'
+    name: '{{ item.user | d(postgresql_server__user) }}'
+    password: '{{ item.admin_password | d(postgresql_server__admin_password) }}'
     encrypted: False
     port: '{{ item.port }}'
     state: 'present'
   with_flattened:
-    - '{{ postgresql_server_clusters }}'
-  become_user: '{{ item.user | d(postgresql_server_user) }}'
+    - '{{ postgresql_server__clusters }}'
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
   when: item.name|d() and item.name
   no_log: True
 
@@ -22,8 +22,8 @@
     privs: 'ALL'
     state: 'absent'
   with_flattened:
-    - '{{ postgresql_server_clusters }}'
-  become_user: '{{ item.user | d(postgresql_server_user) }}'
+    - '{{ postgresql_server__clusters }}'
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
   when: item.name|d() and item.name
 
 - name: Revoke all privileges on schema public from PUBLIC
@@ -36,8 +36,8 @@
     privs: 'ALL'
     state: 'absent'
   with_flattened:
-    - '{{ postgresql_server_clusters }}'
-  become_user: '{{ item.user | d(postgresql_server_user) }}'
+    - '{{ postgresql_server__clusters }}'
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
   when: item.name|d() and item.name
 
 - name: Grant connect on postgres to PUBLIC
@@ -49,8 +49,8 @@
     privs: 'CONNECT'
     state: 'present'
   with_flattened:
-    - '{{ postgresql_server_clusters }}'
-  become_user: '{{ item.user | d(postgresql_server_user) }}'
+    - '{{ postgresql_server__clusters }}'
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
   when: item.name|d() and item.name
 
 - name: Revoke temporary on postgres from PUBLIC
@@ -62,7 +62,7 @@
     privs: 'TEMPORARY'
     state: 'absent'
   with_flattened:
-    - '{{ postgresql_server_clusters }}'
-  become_user: '{{ item.user | d(postgresql_server_user) }}'
+    - '{{ postgresql_server__clusters }}'
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
   when: item.name|d() and item.name
 

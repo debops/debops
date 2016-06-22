@@ -9,46 +9,48 @@ examples for them.
    :local:
    :depth: 1
 
-.. _postgresql_server_hba:
+.. _postgresql_server__ref_hba:
 
-postgresql_server_hba_*
------------------------
+postgresql_server__hba_*
+------------------------
 
 `Host-Based Authentication <http://www.postgresql.org/docs/9.4/static/auth-pg-hba-conf.html>`_
 configuration in ``debops.postgresql_server`` Ansible role is specified in
 a set of lists:
 
-- ``postgresql_server_hba_system``: controls the local and remote access to the
+- ``postgresql_server__hba_system``: controls the local and remote access to the
   database administrator role ``postgres``.
 
-- ``postgresql_server_hba_replication``: control access to ``replication`` role
+- ``postgresql_server__hba_replication``: control access to ``replication`` role
   and database.
 
-- ``postgresql_server_hba_public``: controls access for public connections to
+- ``postgresql_server__hba_public``: controls access for public connections to
   ``postgres`` database, to allow certain applications like ``phpPgAdmin`` to
   work correctly.
 
-- ``postgresql_server_hba_trusted``: control access by local UNIX accounts to
+- ``postgresql_server__hba_trusted``: control access by local UNIX accounts to
   certain roles/databases without the requirement to specify a password.
 
-- ``postgresql_server_hba_local``: controls access to the databases by local
+- ``postgresql_server__hba_local``: controls access to the databases by local
   UNIX accounts.
 
-- ``postgresql_server_hba_remote``: controls access to the database by remote
+- ``postgresql_server__hba_remote``: controls access to the database by remote
   clients.
 
 Each PostgreSQL cluster by default uses all of the above lists in its
 ``pg_hba.conf`` configuration file. A cluster can disable any list by
-specifying its abbrevated name as a parameter with ``False``. For example::
+specifying its abbrevated name as a parameter with ``False``. For example:
 
-    postgresql_server_cluster_main:
-      name: 'main'
-      port: '5432'
-      hba_replication: False
-      hba_public: False
-      hba_trusted: False
-      hba_local: False
-      hba_remote: False
+.. code-block:: yaml
+
+   postgresql_server__cluster_main:
+     name: 'main'
+     port: '5432'
+     hba_replication: False
+     hba_public: False
+     hba_trusted: False
+     hba_local: False
+     hba_remote: False
 
 Above configuration will disable connections by trusted users (all users will
 be required to specify a password) and from remote clients.
@@ -56,20 +58,22 @@ be required to specify a password) and from remote clients.
 Additionally, each cluster can specify its own HBA entries using ``item.hba``
 parameter which will be added at the end of the ``pg_hba.conf`` file. By
 disabling selected global lists and adding custom entries you can redefine the
-HBA configuration file as needed. Example::
+HBA configuration file as needed. Example:
 
-    postgresql_server_cluster_main:
-      name: 'main'
-      port: '5432'
-      hba_remote: False
+.. code-block:: yaml
 
-      hba:
-        - comment: 'Custom remote entries'
-          type: 'hostssl'
-          database: 'all'
-          user: 'all'
-          address: [ '192.0.2.0/24' ]
-          method: 'md5'
+   postgresql_server__cluster_main:
+     name: 'main'
+     port: '5432'
+     hba_remote: False
+
+     hba:
+       - comment: 'Custom remote entries'
+         type: 'hostssl'
+         database: 'all'
+         user: 'all'
+         address: [ '192.0.2.0/24' ]
+         method: 'md5'
 
 Each entry in a HBA list is a YAML dictionary with parameters:
 
@@ -137,10 +141,10 @@ Each entry in a HBA list is a YAML dictionary with parameters:
 You can find different examples of how to defined HBA lists in
 ``defaults/main.yml`` file of ``debops.postgresql_server`` role.
 
-.. _postgresql_server_ident:
+.. _postgresql_server__ref_ident:
 
-postgresql_server_ident_*
--------------------------
+postgresql_server__ident_*
+--------------------------
 
 `Ident maps
 <http://www.postgresql.org/docs/9.4/static/auth-username-maps.html>`_ stored in
@@ -156,37 +160,40 @@ authentication or authorization.
 By default, PostgreSQL clusters managed by the ``debops.postgresql_server``
 role use global lists of ident maps:
 
-- ``postgresql_server_ident_system``: a user mapping which specifies which
+- ``postgresql_server__ident_system``: a user mapping which specifies which
   system users can login as the ``postgres`` superuser role.
 
-- ``postgresql_server_ident_trusted``: this user mapping can be used with the
+- ``postgresql_server__ident_trusted``: this user mapping can be used with the
   "trusted" HBA list to specify which local UNIX accounts can login without
   specifying a password. It's not set by default.
 
-- ``postgresql_server_ident_local``: this user mapping can be used to define
+- ``postgresql_server__ident_local``: this user mapping can be used to define
   local UNIX accounts globally for all clusters. It's not set by default.
 
 Above ident maps can be disabled in a given cluster by specifying their
-abbvevated names in a parameter with ``False`` value. Example::
+abbvevated names in a parameter with ``False`` value. Example:
 
-    postgresql_server_cluster_main:
-      name: 'main'
-      port: '5432'
-      ident_trusted: False
-      ident_local: False
+.. code-block:: yaml
 
-You can specify custom lists of ident maps in a PostgreSQL cluster configuration::
+   postgresql_server__cluster_main:
+     name: 'main'
+     port: '5432'
+     ident_trusted: False
+     ident_local: False
 
+You can specify custom lists of ident maps in a PostgreSQL cluster configuration:
 
-    postgresql_server_cluster_main:
-      name: 'main'
-      port: '5432'
-      ident_local: False
+.. code-block:: yaml
 
-      ident:
-        - map: 'main_local'
-          user: [ 'user1', 'user2' ]
-          role: 'role1'
+   postgresql_server__cluster_main:
+     name: 'main'
+     port: '5432'
+     ident_local: False
+
+     ident:
+       - map: 'main_local'
+         user: [ 'user1', 'user2' ]
+         role: 'role1'
 
 Each ident map entry is a YAML dictionary with parameters:
 
@@ -215,20 +222,20 @@ Each ident map entry is a YAML dictionary with parameters:
 Examples can be found in the ``defaults/main.yml`` file of the
 ``debops.postgresql_server`` Ansible role.
 
-.. _postgresql_server_clusters:
+.. _postgresql_server__ref_clusters:
 
-postgresql_server_clusters
---------------------------
+postgresql_server__clusters
+---------------------------
 
 On Debian and its derivatives, `PostgreSQL installation <https://wiki.debian.org/PostgreSql>`_
 is based around "clusters", each cluster being run on a particular PostgreSQL
-version and on a specific TCP port.  ``debops.postgresql_server`` is designed
+version and on a specific TCP port. ``debops.postgresql_server`` is designed
 to be used within that system, and allows you to create separate PostgreSQL
 clusters. A default ``<version>/main`` cluster will be created, based on
 default PostgreSQL version installed on a given host.
 
 You can create and manage separate PostgreSQL clusters using
-``postgresql_server_clusters`` list. Each cluster is defined as a YAML dict
+``postgresql_server__clusters`` list. Each cluster is defined as a YAML dict
 with at least two parameters - ``name`` and ``port``. You should take care to
 always use separate port for each cluster you define. Role will create an entry
 for each cluster in ``/etc/services`` as well as maintain firewall
@@ -236,7 +243,7 @@ configuration as needed.
 
 Some of the global variables defined in ``debops.postgresql_server`` concerning
 clusters can be overriden on a cluster by cluster basis using their abbrevated
-names (without ``postgresql_server_`` prefix) as cluster parameters. In
+names (without ``postgresql_server__`` prefix) as cluster parameters. In
 addition, almost all of the PostgreSQL parameters found in the
 ``postgresql.conf`` configuration file can be specified as cluster parameters
 as well, to change the defaults.
@@ -261,7 +268,7 @@ entry:
   Optional. Dictionary which specifies environment variables and their values
   that should be set for a given PostgreSQL cluster. Example::
 
-      postgresql_server_cluster_main:
+      postgresql_server__cluster_main:
         name: 'main'
         port: '5432'
 
@@ -272,7 +279,7 @@ entry:
 ``listen_addresses``
   List of network interfaces specified by their addresses a given cluster
   should bind to. If not set, global value of
-  ``postgresql_server_listen_addresses`` will be used instead.
+  ``postgresql_server__listen_addresses`` will be used instead.
 
 ``allow``
   List of IP addresses or CIDR subnets which should be allowed to connect to
