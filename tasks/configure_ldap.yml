@@ -28,6 +28,7 @@
   changed_when: False
   become_user: '{{ owncloud_user }}'
   no_log: True
+  when: (owncloud_ldap_password is string and owncloud_ldap_password|length > 0)
 
 - name: Set LDAP parameters
   command: php --file "{{ owncloud_home }}/occ" ldap:set-config "" "{{ item.key }}" "{{ item.value }}"
@@ -82,3 +83,7 @@
   no_log: True
   when: (owncloud_ldap_create_user | bool)
 
+## FIXME: occ ldap:test-config ''
+## Returns 'The configuration is invalid. Please have a look at the logs for further details.' if invalid
+## Returns 'The configuration is valid and the connection could be established!' if valid
+## Note: Exit code is always 0!!
