@@ -1,4 +1,5 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 - name: Expose host FQDN, session token and library path in temporary variables
   set_fact:
@@ -9,6 +10,7 @@
                             else "/usr/local/lib") + "/pki" }}'
     pki_fact_session_token: '{{ 9999999999999999999999999999999999999 | random | md5 }}'
 
+# Install PKI packages [[[
 - name: Install PKI packages
   apt:
     name: '{{ item }}'
@@ -21,7 +23,9 @@
           else [] }}'
     - '{{ pki_packages }}'
   when: pki_enabled | bool
+# .. ]]]
 
+# Assert that required dependencies are met as documented [[[
 - name: Check Ansible Controller bash version
   shell: echo $BASH_VERSION
   args:
@@ -56,7 +60,9 @@
   become: False
   run_once: True
   when: pki_authorities|d() and pki_dependent_authorities|d()
+# .. ]]]
 
+# Create scripts and library/secrets directory [[[
 - name: Create library directory
   file:
     path: '{{ pki_fact_lib_path }}'
@@ -83,6 +89,7 @@
     group: 'root'
     mode: '0755'
   when: pki_enabled | bool
+# .. ]]]
 
 - name: Create private groups if requested
   group:
@@ -133,6 +140,14 @@
   when: (pki_enabled|bool and item.name is defined and
          (item.enabled|d(True) | bool) and
          (item.when|d(True) | bool))
+
+- name: Ensure that sensitive files are excluded from version control
+  template:
+    src: 'etc/pki/gitignore.j2'
+    dest: '/etc/pki/.gitignore'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 - name: Download custom private files
   copy:
