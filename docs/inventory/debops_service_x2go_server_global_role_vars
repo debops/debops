@@ -5,9 +5,9 @@
 
 # Require the following cryptography methods as X2go seems to only support a
 # subset of which OpenSSH does support.
-sshd__ciphers_additional: [ 'aes256-ctr' ]
-sshd__kex_algorithms_additional: [ 'curve25519-sha256@libssh.org' ]
-sshd__macs_additional: [ 'hmac-sha1' ]
+sshd__ciphers_additional: '{{ [ "aes256-ctr" ] if (x2go_server__deploy_state|d("present") == "present") else [] }}'
+sshd__kex_algorithms_additional: '{{ [ "curve25519-sha256@libssh.org" ] if (x2go_server__deploy_state|d("present") == "present") else [] }}'
+sshd__macs_additional: '{{ [ "hmac-sha1" ] if (x2go_server__deploy_state|d("present") == "present") else [] }}'
 
 # .. ]]]
 
