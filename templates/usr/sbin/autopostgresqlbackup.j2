@@ -28,7 +28,7 @@
 #
 
 # This gets appended to the BACKUPDIR to form a path for this cluster.
-DBCLUSTER="{{ item.version | d(postgresql_server_version) }}/{{ item.name }}"
+DBCLUSTER="{{ item.version | d(postgresql_server__version) }}/{{ item.name }}"
 
 # Add the port so it supports pg clusters.
 OPT="-p {{ item.port }}"
@@ -38,8 +38,8 @@ PSQLOPT="$OPT"
 # === Debian specific options ===
 #================================
 
-if [ -f /etc/default/autopostgresqlbackup-{{ item.version | d(postgresql_server_version) }}-{{ item.name }} ]; then
-  . /etc/default/autopostgresqlbackup-{{ item.version | d(postgresql_server_version) }}-{{ item.name }}
+if [ -f /etc/default/autopostgresqlbackup-{{ item.version | d(postgresql_server__version) }}-{{ item.name }} ]; then
+  . /etc/default/autopostgresqlbackup-{{ item.version | d(postgresql_server__version) }}-{{ item.name }}
 fi
 
 #=====================================================================
