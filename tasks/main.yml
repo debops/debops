@@ -97,6 +97,19 @@
   when: (((item.name|d() and item.name) or (item.database|d() and item.database)) and
          (item.state is undefined or item.state != 'absent'))
 
+- name: Enable specified database extensions
+  postgresql_ext:
+    db: '{{ item.database }}'
+    name: '{{ item.extension }}'
+    port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
+    state: '{{ item.state | d("present") }}'
+  with_flattened:
+    - '{{ postgresql__extensions }}'
+    - '{{ postgresql__dependent_extensions }}'
+  become_user: '{{ postgresql__user }}'
+  delegate_to: '{{ postgresql__delegate_to }}'
+  when: (item.extension|d() and item.database|d())
+
 - name: Grant public schema permissions
   postgresql_privs:
     roles: '{{ item.owner }}'

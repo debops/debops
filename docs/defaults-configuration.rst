@@ -197,6 +197,42 @@ Create database owned by a specified role:
      - name: 'gamma'
        owner: 'gamma'
 
+.. _postgresql__ref_extensions:
+
+postgresql__extensions
+----------------------
+
+List of YAML dictionaries that specify what extensions to enable or disable in
+a PostgreSQL database. Each dictionary can configure one extension at a time.
+Known parameters:
+
+``database``
+  Required. Name of the database to configure, it needs to be an existing
+  database.
+
+``extension``
+  Required. Name of the PostgreSQL extension to configure.
+
+``port``
+  Optional. The PostgreSQL cluster port number. If not specified, the default
+  ``postgresql__port`` will be used automatically.
+
+``state``
+  Optional. Either ``present`` or ``absent``. If not specified or ``present``,
+  the extension will be enabled for a given database; if ``absent``, the
+  extension will be disabled.
+
+Examples
+~~~~~~~~
+
+Add a custom extansion to a database:
+
+.. code-block:: yaml
+
+   postgresql__extensions:
+     - database: 'gamma'
+       extension: 'pg_trgm'
+
 .. _postgresql__ref_pgpass:
 
 postgresql__pgpass
