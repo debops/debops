@@ -9,10 +9,10 @@ examples for them.
    :local:
    :depth: 1
 
-.. _postgresql_user_clusters:
+.. _postgresql__ref_user_clusters:
 
-postgresql_user_clusters
-------------------------
+postgresql__user_clusters
+-------------------------
 
 This list defines what entries will be set in
 ``/etc/postgresql-common/user_clusters`` configuration file. It is used by
@@ -51,10 +51,10 @@ Each entry is defined by a YAML dict. Supported parameters:
   specified, users will connect to the database with the same name as their
   UNIX account.
 
-.. _postgresql_roles:
+.. _postgresql__ref_roles:
 
-postgresql_roles
-----------------
+postgresql__roles
+-----------------
 
 PostgreSQL uses "roles" as database accounts as well as groups. Roles can have
 certain permissions granted to them by the server which allow access to
@@ -100,28 +100,34 @@ parameters:
 Examples
 ~~~~~~~~
 
-Create a PostgreSQL role::
+Create a PostgreSQL role:
 
-    postgresql_roles:
-      - name: 'alpha'
+.. code-block:: yaml
 
-Create a role and grant specific attribute flags::
+   postgresql__roles:
+     - name: 'alpha'
 
-    postgresql_roles:
-      - name: 'beta'
-        flags: [ 'NOLOGIN' ]
+Create a role and grant specific attribute flags:
 
-Create a role and grant privileges to a particular database::
+.. code-block:: yaml
 
-    postgresql_roles:
-      - name: 'gamma'
-        db: 'gamma'
-        priv: [ 'CONNECT', 'table1:ALL' ]
+   postgresql__roles:
+     - name: 'beta'
+       flags: [ 'NOLOGIN' ]
 
-.. _postgresql_groups:
+Create a role and grant privileges to a particular database:
 
-postgresql_groups
------------------
+.. code-block:: yaml
+
+   postgresql__roles:
+     - name: 'gamma'
+       db: 'gamma'
+       priv: [ 'CONNECT', 'table1:ALL' ]
+
+.. _postgresql__ref_groups:
+
+postgresql__groups
+------------------
 
 Access to one or more PostgreSQL roles can be granted to other roles; that way
 an application role and database role can have different set of privileges.
@@ -145,17 +151,19 @@ parameters:
 Examples
 ~~~~~~~~
 
-Grant membership to other roles::
+Grant membership to other roles:
 
-    postgresql_groups:
-      - roles:  [ 'alpha', 'beta' ]
-        groups: [ 'gamma' ]
-        database: 'gamma'
+.. code-block:: yaml
 
-.. _postgresql_databases:
+   postgresql__groups:
+     - roles:  [ 'alpha', 'beta' ]
+       groups: [ 'gamma' ]
+       database: 'gamma'
 
-postgresql_databases
---------------------
+.. _postgresql__ref_databases:
+
+postgresql__databases
+---------------------
 
 List of PostgreSQL databases to create or manage on a PostgreSQL server. Known
 parameters:
@@ -181,16 +189,54 @@ parameters:
 Examples
 ~~~~~~~~
 
-Create database owned by a specified role::
+Create database owned by a specified role:
 
-    postgresql_databases:
-      - name: 'gamma'
-        owner: 'gamma'
+.. code-block:: yaml
 
-.. _postgresql_pgpass:
+   postgresql__databases:
+     - name: 'gamma'
+       owner: 'gamma'
 
-postgresql_pgpass
------------------
+.. _postgresql__ref_extensions:
+
+postgresql__extensions
+----------------------
+
+List of YAML dictionaries that specify what extensions to enable or disable in
+a PostgreSQL database. Each dictionary can configure one extension at a time.
+Known parameters:
+
+``database``
+  Required. Name of the database to configure, it needs to be an existing
+  database.
+
+``extension``
+  Required. Name of the PostgreSQL extension to configure.
+
+``port``
+  Optional. The PostgreSQL cluster port number. If not specified, the default
+  ``postgresql__port`` will be used automatically.
+
+``state``
+  Optional. Either ``present`` or ``absent``. If not specified or ``present``,
+  the extension will be enabled for a given database; if ``absent``, the
+  extension will be disabled.
+
+Examples
+~~~~~~~~
+
+Add a custom extansion to a database:
+
+.. code-block:: yaml
+
+   postgresql__extensions:
+     - database: 'gamma'
+       extension: 'pg_trgm'
+
+.. _postgresql__ref_pgpass:
+
+postgresql__pgpass
+------------------
 
 The ``~/.pgpass`` configuration file is used to store usernames and passwords
 used to login to local or remote PostgreSQL databases. Using this list you can
@@ -221,11 +267,11 @@ Each entry is defined by a YAML dictionary. Recognized parameters:
 ``server``
   Optional. Specify IP address or FQDN hostname of the server that you want to
   configure. If not specified, default server will be guessed automatically
-  from ``postgresql_server`` variable.
+  from ``postgresql__server`` variable.
 
 ``port``
   Optional. Specofy default TCP port to use for PostgreSQL server entry. If not
-  specified, ``postgresql_port`` value will be used instead.
+  specified, ``postgresql__port`` value will be used instead.
 
 ``database``
   Optional. Specify name of the database that should be covered by a given
@@ -243,14 +289,18 @@ Each entry is defined by a YAML dictionary. Recognized parameters:
 Examples
 ~~~~~~~~
 
-Create ``~/.pgpass`` entry for a role with any database::
+Create ``~/.pgpass`` entry for a role with any database:
 
-    postgresql_pgpass:
-      - owner: 'alpha'
+.. code-block:: yaml
 
-Create ``~/.pgpass`` entry for a specific database::
+   postgresql__pgpass:
+     - owner: 'alpha'
 
-    postgresql_pgpass:
-      - owner: 'gamma'
-        database: 'gamma'
+Create ``~/.pgpass`` entry for a specific database:
+
+.. code-block:: yaml
+
+   postgresql__pgpass:
+     - owner: 'gamma'
+       database: 'gamma'
 

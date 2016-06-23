@@ -9,143 +9,189 @@
 #   PostgreSQL installation, packages
 # -------------------------------------
 
-# .. envvar:: postgresql_upstream
+# .. envvar:: postgresql__upstream
 #
 # Enable PostgreSQL Global Developmet Group APT repository?
 # More information: https://wiki.postgresql.org/wiki/Apt
-postgresql_upstream: False
+postgresql__upstream: False
 
 
-# .. envvar:: postgresql_base_packages
+# .. envvar:: postgresql__base_packages
 #
 # List of base PostgreSQL packages to install.
-postgresql_base_packages: [ 'postgresql-client', 'python-psycopg2' ]
+postgresql__base_packages: [ 'postgresql-client', 'python-psycopg2' ]
 
 
-# .. envvar:: postgresql_packages
+# .. envvar:: postgresql__packages
 #
 # Install additional packages with PostgreSQL.
-postgresql_packages: []
+postgresql__packages: []
 
 
-# .. envvar:: postgresql_user
+# .. envvar:: postgresql__user
 #
 # PostgreSQL user account to which Ansible will switch to perform
 # database-related operations. Should be the same on local and remote database
 # servers.
-postgresql_user: 'postgres'
+postgresql__user: 'postgres'
 
 
-# .. envvar:: postgresql_server
+# .. envvar:: postgresql__server
 #
 # FQDN hostname of the remote PostgreSQL server to use. Role detects if a local
 # server is available and uses it automatically.
-postgresql_server: '{{ ansible_local.postgresql.server
-                       if (ansible_local|d() and ansible_local.postgresql|d() and
-                           ansible_local.postgresql.server|d() and
-                           ansible_local.postgresql.server != "localhost")
-                       else "" }}'
+postgresql__server: '{{ ansible_local.postgresql.server
+                        if (ansible_local|d() and ansible_local.postgresql|d() and
+                            ansible_local.postgresql.server|d() and
+                            ansible_local.postgresql.server != "localhost")
+                        else "" }}'
 
 
-# .. envvar:: postgresql_port
+# .. envvar:: postgresql__port
 #
 # Default port number of the PostgreSQL server to use (local or remote).
-postgresql_port: '5432'
+postgresql__port: '5432'
 
 
-# .. envvar:: postgresql_delegate_to
+# .. envvar:: postgresql__delegate_to
 #
 # FQDN hostname of the host that will execute Ansible tasks related to the
 # PostgreSQL database and role management. If PostgreSQL server is available
 # locally, host will delegate the tasks to itself automatically.
-postgresql_delegate_to: '{{ postgresql_server
-                            if (postgresql_server|d() and
-                                (postgresql_server != "localhost" or not postgresql_server))
-                            else ansible_fqdn }}'
+postgresql__delegate_to: '{{ postgresql__server
+                             if (postgresql__server|d() and
+                                 (postgresql__server != "localhost" or not postgresql__server))
+                             else ansible_fqdn }}'
 
 
-# .. envvar:: postgresql_password_length
+# .. envvar:: postgresql__password_length
 #
 # Length of the randomly generated passwords in PostgreSQL database.
-postgresql_password_length: '48'
+postgresql__password_length: '48'
 
 
 # --------------------------
 #   pg_wrapper integration
 # --------------------------
 
-# .. envvar:: postgresql_default_database
+# .. envvar:: postgresql__default_database
 #
 # Name of the database the users should connect to, set as default in
 # ``/etc/postgresql-common/user_clusters``. If the name is ``*``, users will
 # connect to the database with the same name as their login.
-postgresql_default_database: '*'
+postgresql__default_database: '*'
 
 
-# .. envvar:: postgresql_default_user_clusters
+# .. envvar:: postgresql__default_user_clusters
 #
 # Default entry specified in ``/etc/postgresql-common/user_clusters``, used by
 # ``pg_wrapper`` script to direct users to correct PostgreSQL server. See
-# :ref:`postgresql_user_clusters` for more details.
-postgresql_default_user_clusters:
+# :ref:`postgresql__ref_user_clusters` for more details.
+postgresql__default_user_clusters:
 
   - user: '*'
     group: '*'
-    cluster: '{{ (postgresql_server + ":" + postgresql_port)
-                 if (postgresql_server|d() and postgresql_server)
-                 else "main" }}'
-    database: '{{ postgresql_default_database }}'
+    cluster: '{{ (postgresql__server + ":" + postgresql__port)
+                  if (postgresql__server|d() and postgresql__server)
+                  else "main" }}'
+    database: '{{ postgresql__default_database }}'
 
 
-# .. envvar:: postgresql_user_clusters
+# .. envvar:: postgresql__user_clusters
 #
 # Custom user/cluster mappings stored in
-# ``/etc/postgresql-common/user_clusters``. See :ref:`postgresql_user_clusters`
+# ``/etc/postgresql-common/user_clusters``. See :ref:`postgresql__ref_user_clusters`
 # for more details.
-postgresql_user_clusters: []
+postgresql__user_clusters: []
 
 
 # ----------------------------------
 #   PostgreSQL roles and databases
 # ----------------------------------
 
-# .. envvar:: postgresql_roles
+# .. envvar:: postgresql__roles
 #
 # List of PostgresSQL roles, specified as YAML dicts. See
-# :ref:`postgresql_roles` for more details.
-postgresql_roles: []
+# :ref:`postgresql__ref_roles` for more details.
+postgresql__roles: []
 
 
-# .. envvar:: postgresql_groups
+# .. envvar:: postgresql__dependent_roles
+#
+# List of PostgreSQL roles, specified as YAML dicts by other Ansible roles via
+# dependency variables. See :ref:`postgresql__ref_roles` for more details.
+postgresql__dependent_roles: []
+
+
+# .. envvar:: postgresql__groups
 #
 # List of PostgreSQL role groups, specified as YAML dicts. See
-# :ref:`postgresql_groups` for more details.
-postgresql_groups: []
+# :ref:`postgresql__ref_groups` for more details.
+postgresql__groups: []
 
 
-# .. envvar:: postgresql_databases
+# .. envvar:: postgresql__dependent_groups
+#
+# List of PostgreSQL role groups, specified as YAML dicts by other roles via
+# dependency variables. See :ref:`postgresql__ref_groups` for more details.
+postgresql__dependent_groups: []
+
+
+# .. envvar:: postgresql__databases
 #
 # List of PostgreSQL databases, specified as YAML dicts. See
-# :ref:`postgresql_databases` for more details.
-postgresql_databases: []
+# :ref:`postgresql__ref_databases` for more details.
+postgresql__databases: []
 
 
-# .. envvar:: postgresql_pgpass
+# .. envvar:: postgresql__dependent_databases
+#
+# List of PostgreSQL databases, specified as a YAML dicts, defined by other
+# roles via dependency variables. See :ref:`postgresql__ref_databases` for more
+# details.
+postgresql__dependent_databases: []
+
+
+# .. envvar:: postgresql__extensions
+#
+# List of PostgreSQL extensions enabled in specific databases, each extension
+# specified as a YAML dict. See :ref:`postgresql__ref_extensions` for more
+# details.
+postgresql__extensions: []
+
+
+# .. envvar:: postgresql__dependent_extensions
+#
+# List of PostgreSQL extensions enabled in specific databases, each extension
+# specified as a YAML dict. This list can be used by other roles via dependency
+# variables. See :ref:`postgresql__ref_extensions` for more details.
+postgresql__dependent_extensions: []
+
+
+# .. envvar:: postgresql__pgpass
 #
 # List of role/password mappings stored in user directories in ``~/.pgpass``
-# configuration file. See :ref:`postgresql_pgpass` for more details.
-postgresql_pgpass: []
+# configuration file. See :ref:`postgresql__ref_pgpass` for more details.
+postgresql__pgpass: []
+
+
+# .. envvar:: postgresql__dependent_pgpass
+#
+# List of role/password mappings stored in user directories in ``~/.pgpass``
+# configuration file, defined by other roles via dependency variables. See
+# :ref:`postgresql__ref_pgpass` for more details.
+postgresql__dependent_pgpass: []
 
 
 # --------------------------------
 #   Role-dependent configuration
 # --------------------------------
 
-# .. envvar:: postgresql_apt_preferences_dependent_list
+# .. envvar:: postgresql__apt_preferences__dependent_list
 #
 # Configuration for ``debops.apt_preferences`` role. PostgreSQL from backports
 # will be preferred on specified Debian releases.
-postgresql_apt_preferences_dependent_list:
+postgresql__apt_preferences__dependent_list:
 
   - package: 'postgresql postgresql-* libpq5'
     backports: [ 'wheezy' ]

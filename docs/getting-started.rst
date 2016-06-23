@@ -33,7 +33,7 @@ a local installation, ``debops.postgresql`` will detect that and won't manage th
 databases/user accounts without a server specified. To point it to a server,
 you need to set a variable in the inventory::
 
-    postgresql_server: 'db.example.org'
+    postgresql__server: 'db.example.org'
 
 This needs to be a FQDN address or an IP address of a host with PostgreSQL
 server installed. This host will be accessed by Ansible using task delegation,
@@ -49,35 +49,37 @@ Example inventory
 -----------------
 
 To enable PostgreSQL client support on a host, you need to add that host to
-``[debops_postgresql]`` Ansible group::
+``[debops_service_postgresql]`` Ansible group::
 
-    [debops_postgresql]
+    [debops_service_postgresql]
     hostname
 
 When PostgreSQL server is properly configured, or installed locally, you can
-create user accounts and databases using inventory variables::
+create user accounts and databases using inventory variables:
 
-    postgresql_roles:
+.. code-block:: yaml
 
-      - name: 'application'
+   postgresql__roles:
 
-      - name: 'application_production'
-        flags: [ 'NOLOGIN' ]
+     - name: 'application'
 
-    postgresql_databases:
+     - name: 'application_production'
+       flags: [ 'NOLOGIN' ]
 
-      - database: 'application_production'
-        owner:    'application_production'
+   postgresql__databases:
 
-    postgresql_groups:
+     - database: 'application_production'
+       owner:    'application_production'
 
-      - roles:  [ 'application' ]
-        groups: [ 'application_production' ]
-        database: 'application_production'
+   postgresql__groups:
 
-    postgresql_pgpass:
+     - roles:  [ 'application' ]
+       groups: [ 'application_production' ]
+       database: 'application_production'
 
-      - owner: 'application'
+   postgresql__pgpass:
+
+     - owner: 'application'
 
 Above set of variables will create a PostgreSQL roles ``application`` and
 ``application_production`` which is meant to manage the database and cannot
@@ -93,21 +95,10 @@ password stored for easier access.
 Example playbook
 ----------------
 
-Here's an example Ansible playbook that uses the ``debops.postgresql`` role::
+Here's an example Ansible playbook that uses the ``debops.postgresql`` role:
 
-    ---
-    - hosts: debops_postgresql
-      sudo: True
-
-      roles:
-
-        - role: debops.apt_preferences
-          tags: [ 'role::apt_preferences' ]
-          apt_preferences_dependent_list:
-            - '{{ postgresql_apt_preferences_dependent_list }}'
-
-        - role: debops.postgresql
-          tags: [ 'role::postgresql' ]
+.. literalinclude:: playbooks/postgresql.yml
+   :language: yaml
 
 Local Ansible facts, custom tasks
 ---------------------------------
@@ -128,20 +119,22 @@ PostgreSQL servers. These facts are:
 
 These variables can be used in Ansible tasks to provide correct values pointing
 to the correct PostgreSQL server. An example set of tasks to create a role and
-database::
+database:
 
-    - name: Create database role
-      postgresql_user:
-        name: '{{ application_database_user }}'
-        password: '{{ application_database_password }}'
-        state: 'present'
-      delegate_to: '{{ ansible_local.postgresql.delegate_to }}'
+.. code-block:: yaml
 
-    - name: Create application database
-      postgresql_db:
-        name: '{{ application_database_name }}'
-        owner: '{{ application_database_user }}'
-        state: 'present'
-      delegate_to: '{{ ansible_local.postgresql.delegate_to }}'
-      register: application_register_database
+   - name: Create database role
+     postgresql_user:
+       name: '{{ application_database_user }}'
+       password: '{{ application_database_password }}'
+       state: 'present'
+     delegate_to: '{{ ansible_local.postgresql.delegate_to }}'
+
+   - name: Create application database
+     postgresql_db:
+       name: '{{ application_database_name }}'
+       owner: '{{ application_database_user }}'
+       state: 'present'
+     delegate_to: '{{ ansible_local.postgresql.delegate_to }}'
+     register: application_register_database
 
