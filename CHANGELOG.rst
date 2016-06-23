@@ -90,6 +90,9 @@ v0.2.9
 - Update the ``service/postgresql_server.yml`` playbook to use new namespaced
   variables. [drybjed]
 
+- Update the ``service/postgresql.yml`` playbook to use new namespaced
+  variables. [drybjed]
+
 v0.2.8
 ------
 
