@@ -90,12 +90,20 @@
 
 - name: "Configure php.ini for php-fpm"
   template:
-    src: 'etc/php/fpm/php.ini.j2'
+    src: 'etc/php/php.ini.j2'
     dest: '{{ php__etc_base }}/fpm/php.ini'
     owner: 'root'
     group: 'root'
     mode: '0644'
   notify: "Restart php-fpm"
+
+- name: "Configure php.ini for CLI"
+  template:
+    src: 'etc/php/php.ini.j2'
+    dest: '{{ php__etc_base }}/cli/php.ini'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 - name: Check if pool-available.d/ directory exists
   stat:
