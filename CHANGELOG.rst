@@ -93,6 +93,9 @@ v0.2.9
 - Update the ``service/postgresql.yml`` playbook to use new namespaced
   variables. [drybjed]
 
+- Run ``debops.apt`` earlier in the ``common.yml`` playbook to setup things
+  like APT proxy and :manpage:`sources.list(5)` for other roles. [ypid]
+
 v0.2.8
 ------
 
