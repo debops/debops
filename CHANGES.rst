@@ -71,6 +71,10 @@ v0.3.0
   into the ``owncloud_config_*`` namespace. The new variables allow to alter
   settings after the initial setup. [ypid]
 
+- Enabled in memory caching using `APCu <https://pecl.php.net/package/APCu>`_
+  by default according to the `official ownCloud Dokumentation
+  <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html>`_. [ypid]
+
 v0.2.0
 ------
 

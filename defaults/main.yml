@@ -22,6 +22,7 @@
 # List of base packages required by ownCloud.
 owncloud_base_packages:
   - 'owncloud'
+  - 'php5-apcu'
 
 
 # .. Basic options [[[1
@@ -273,7 +274,7 @@ owncloud_autosetup_url: 'http://{{ owncloud_domain[0] }}/index.php'
 # Enable APC in PHP CLI. Setting this to ``True`` is only needed when you want to
 # use the :command:`occ` command and use ``\OC\Memcache\APCu`` as memcache.
 # See https://github.com/owncloud/core/issues/17329
-owncloud_enable_apc_cli: False
+owncloud_enable_apc_cli: True
 
 
 # .. envvar:: owncloud_upload_size
@@ -339,6 +340,11 @@ owncloud_app_user_webfinger_support: False
 #    owncloud_config:
 #      memcache.local: '\\OC\\Memcache\\APCu'
 #
+# This is not confirmed by the `official ownCloud Dokumentation
+# <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html>`_
+# but is a result of how the configuration file is generated using JSON as data format.
+#
+#
 # Dict keys can be overridden when they are present in multiple dicts.
 # Order of priority from least specific to most specific:
 #
@@ -391,6 +397,9 @@ owncloud_config_role_optional:
 
   ## ISO 8601 datetime: 2004-02-12T15:19:21+00:00
   logdateformat: 'Y-m-d H:i:s.u'
+
+  ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html
+  'memcache.local': '\\OC\\Memcache\\APCu'
 
 
 # .. envvar:: owncloud_config
