@@ -30,70 +30,14 @@ server host as ``owncloud_database_server``.
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to manage ownCloud::
+Here's an example playbook that can be used to manage ownCloud:
 
-    ---
-    - name: Manage MariaDB server
-      hosts: debops_service_mariadb_server
-      become: True
+.. literalinclude:: playbooks/owncloud.yml
+   :language: yaml
 
-      roles:
-
-        - role: debops.mariadb_server
-          tags: [ 'role::mariadb_server' ]
-
-    - hosts: debops_service_owncloud
-      become: True
-
-      roles:
-
-        - role: debops.mariadb
-          tags: [ 'role::mariadb' ]
-          mariadb_users:
-            - database: '{{ owncloud_database_map[owncloud_database].dbname }}'
-              user: '{{ owncloud_database_map[owncloud_database].dbuser }}'
-              password: '{{ owncloud_database_map[owncloud_database].dbpass }}'
-          when: (owncloud_database == 'mariadb')
-
-        - role: debops.postgresql
-          postgresql_roles:
-            - name: '{{ owncloud_database_name }}' # Separate role is needed when owncloud_database_name != owncloud_database_user
-            - name: '{{ owncloud_database_user }}' # Password is not passed directly - it will be read for the file
-          postgresql_groups:
-            - roles: [ '{{ owncloud_database_user }}' ]
-              groups: [ '{{ owncloud_database_name }}' ]
-              database: '{{ owncloud_database_name }}'
-              enabled: '{{ owncloud_database_name != owncloud_database_user }}'
-          postgresql_databases:
-            - name: '{{ owncloud_database_name }}'
-              owner: '{{ owncloud_database_user }}'
-          when: (owncloud_database == 'postgresql')
-          tags: [ 'role::postgresql' ]
-
-        - role: debops.php5
-          tags: [ 'role::php5' ]
-          php5_pools:
-            - '{{ owncloud__php5__pool }}'
-
-        - role: debops.apt_preferences
-          tags: [ 'role::apt_preferences' ]
-          apt_preferences__dependent_list:
-            - '{{ nginx_apt_preferences_dependent_list }}'
-
-        - role: debops.ferm
-          tags: [ 'role::ferm' ]
-          ferm__dependent_rules:
-            - '{{ nginx_ferm_dependent_rules }}'
-
-        - role: debops.nginx
-          tags: [ 'role::nginx' ]
-          nginx_servers:
-            - '{{ owncloud__nginx__servers }}'
-          nginx_upstreams:
-            - '{{ owncloud__nginx__upstream_php5 }}'
-
-        - role: debops.owncloud
-          tags: [ 'role::owncloud' ]
+This playbooks is shipped with this role under
+:file:`docs/playbooks/owncloud.yml` from which you can symlink it to your
+playbook directory.
 
 
 Ansible tags

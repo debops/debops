@@ -11,11 +11,11 @@
 # .. The official ownCloud documentation is also written is RST.
 # .. https://github.com/owncloud/documentation/tree/master/admin_manual
 #
-# .. System packages [[[1
+# .. Packages and installation [[[1
 #
-# -------------------
-#   System packages
-# -------------------
+# -----------------------------
+#   Packages and installation
+# -----------------------------
 
 # .. envvar:: owncloud_base_packages
 #
@@ -23,6 +23,20 @@
 owncloud_base_packages:
   - 'owncloud'
   - 'php5-apcu'
+
+
+# .. envvar:: owncloud__deploy_state
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that ownCloud is installed and configured as requested.
+#
+# ``absent``
+#   Ensure that owncloud is uninstalled and it's configuration is removed.
+#   Not fully supported yet.
+#
+owncloud__deploy_state: 'present'
 
 
 # .. Basic options [[[1
@@ -788,6 +802,18 @@ owncloud_mail_conf_map:
 # --------------------------------
 #   Role-dependent configuration
 # --------------------------------
+
+
+# .. envvar:: owncloud__apt_preferences__dependent_list
+#
+# Configuration for the ``debops.apt_preferences`` role.
+owncloud__apt_preferences__dependent_list:
+
+  - package: 'php5-apcu'
+    backports: [ 'trusty' ]
+    reason: 'ownCloud requires at least APCu version 4.0.6.'
+    by_role: 'debops.owncloud'
+    delete: '{{ owncloud__deploy_state != "present" }}'
 
 # .. envvar:: owncloud__nginx_access_log_assets
 #
