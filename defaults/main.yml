@@ -299,6 +299,7 @@ owncloud_php5_max_children: '50'
 # .. envvar:: owncloud_cron_minute
 #
 # At what time cron should execute background jobs
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/developer_manual/app/backgroundjobs.html>`__ for details.
 owncloud_cron_minute: '*/15'
 
 
@@ -532,6 +533,9 @@ owncloud_ldap_host: 'ldap.{{ ansible_domain }}'
 
 # .. envvar:: owncloud_ldap_password_file
 #
+# .. Maintainer note: LDAP DNs can be set to case-sensitive which is not the default.
+# .. Otherwise, owncloud_ldap_* could be converted to lowercase for the file path.
+# .. https://stackoverflow.com/questions/29897684/is-ldap-dn-case-insensitive
 owncloud_ldap_password_file: '{{ secret + "/credentials/" + owncloud_ldap_host + "/slapd/" + owncloud_ldap_basedn + "/" + owncloud_ldap_binddn + ".password" }}'
 
 
