@@ -75,6 +75,9 @@ v0.3.0
   by default according to the `official ownCloud Dokumentation
   <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html>`_. [ypid]
 
+- Renamed ``owncloud_ldap_enable`` to :envvar:`owncloud__ldap_enabled` to match
+  the naming convention of the DebOps project. [ypid]
+
 v0.2.0
 ------
 
