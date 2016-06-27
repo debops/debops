@@ -1,33 +1,160 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Specify version of Ruby to install:
-# - 'apt':      (default) will install Ruby packages automatically depending on
-#               what's available in APT at the time
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
 #
-# - 'backport': will enable backporting of packages from the next distribution
-#               (currently on Debian Wheezy it's required to install Ruby 2.1
-#               packages)
+# .. Ruby APT packages [[[1
 #
-ruby_version: 'apt'
+# ---------------------
+#   Ruby APT packages
+# ---------------------
 
-# Install 'rubygems-integration' package (on older distributions it might not
-# exist)
-ruby_gems_integration: True
+# .. envvar:: ruby__base_packages
+#
+# List of base APT packages to install.
+ruby__base_packages: [ 'ruby', 'libruby', 'rubygems-integration',
+                       'ruby-bundler' ]
 
-# Lists of additional APT packages to install with Ruby packages (for all
-# hosts, group of hosts, specific host or role dependency). You can use these
-# lists to for example install packaged gems.
-ruby_packages: []
-ruby_group_packages: []
-ruby_host_packages: []
-ruby_dependent_packages: []
 
-# Lists of Ruby gems to install from RubyGems.org. Role will use conservative
-# approach and not install or update any gems, that are already installed, either
-# via gem or via APT.
-ruby_default_gems: [ 'bundler' ]
-ruby_gems: []
-ruby_group_gems: []
-ruby_host_gems: []
-ruby_dependent_gems: []
+# .. envvar:: ruby__dev_packages
+#
+# List of development packages to install, which are required to compile native
+# Ruby extensions. They will be installed if any Ruby gems are requested using
+# the default lists.
+ruby__dev_packages: '{{ ["ruby-dev","build-essential"]
+	                if (ruby__gems or ruby__group_gems or
+	                    ruby__host_gems or ruby__dependent_gems or
+	                    ruby__user_gems or ruby__group_user_gems or
+	                    ruby__host_user_gems or ruby__dependent_user_gems)
+	                else [] }}'
+
+
+# .. envvar:: ruby__packages
+#
+# List of APT packages to install for all hosts in the Ansible inventory.
+ruby__packages: []
+
+
+# .. envvar:: ruby__group_packages
+#
+# List of APT packages to install on a group of hosts in the Ansible inventory.
+ruby__group_packages: []
+
+
+# .. envvar:: ruby__host_packages
+#
+# List of APT packages to install on specific hosts in the Ansible inventory.
+ruby__host_packages: []
+
+
+# .. envvar:: ruby__dependent_packages
+#
+# List of APT packages to install specified by other roles via dependency
+# variables.
+ruby__dependent_packages: []
+
+
+# .. Ruby gems [[[1
+#
+# -------------
+#   Ruby gems
+# -------------
+
+# You can specify a list of Ruby gems to install on a host. Each entry in the
+# list is either a gem name, or a YAML dictionary with parameters known by the
+# ``gem`` Ansible module. All specified gems will be installed system-wide.
+#
+# If any gems are specified, role will install additional APT packages required
+# to build native extensions. List of these packages is specified in
+# ``ruby__dev_packages`` variable.
+#
+# See :ref:`ruby__ref_gems` for more details.
+
+# .. envvar:: ruby__gems
+#
+# List of gems that should be installed on all hosts in Ansible inventory.
+ruby__gems: []
+
+
+# .. envvar:: ruby__group_gems
+#
+# List of gems that should be installed on a group of hosts in Ansible
+# inventory.
+ruby__group_gems: []
+
+
+# .. envvar:: ruby__host_gems
+#
+# List of gems that should be installed on a specific host in Ansible
+# inventory.
+ruby__host_gems: []
+
+
+# .. envvar:: ruby__dependent_gems
+#
+# List of gems configured by other Ansible role via role dependency variables.
+ruby__dependent_gems: []
+
+
+# .. Ruby user gems [[[1
+#
+# ------------------
+#   Ruby user gems
+# ------------------
+
+# You can specify a list of Ruby gems to install on a host on an user account.
+# Each entry in the list a YAML dictionary with parameters known by the ``gem``
+# Ansible module. All gems will be installed on a specified user account.
+#
+# If any gems are specified, role will install additional APT packages required
+# to build native extensions. List of these packages is specified in
+# ``ruby__dev_packages`` variable.
+#
+# See :ref:`ruby__ref_user_gems` for more details.
+
+# .. envvar:: ruby__user_gems
+#
+# List of gems that should be installed on all hosts in Ansible inventory.
+ruby__user_gems: []
+
+
+# .. envvar:: ruby__group_user_gems
+#
+# List of gems that should be installed on a group of hosts in Ansible
+# inventory.
+ruby__group_user_gems: []
+
+
+# .. envvar:: ruby__host_user_gems
+#
+# List of gems that should be installed on a specific host in Ansible
+# inventory.
+ruby__host_user_gems: []
+
+
+# .. envvar:: ruby__dependent_user_gems
+#
+# List of gems configured by other Ansible role via role dependency variables.
+ruby__dependent_user_gems: []
+
+
+# .. Configuration of other roles [[[1
+#
+# --------------------------------
+#   Configuration of other roles
+# --------------------------------
+
+# .. envvar:: ruby__apt_preferences__dependent_list
+#
+# Configuration for the ``debops.apt_preferences`` role.
+ruby__apt_preferences__dependent_list:
+
+  - package: 'bundler ruby-bundler'
+    backports: [ 'jessie' ]
+    reason: 'Closer feature parity with upstream'
+    role: 'debops.ruby'
 
