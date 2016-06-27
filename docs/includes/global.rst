@@ -4,9 +4,15 @@
 .. All changes are intended to be made to the source file and then the source
 .. file should be copied to the downstream repositories as needed.
 
-.. Projects [[[
+.. Ansible core [[[
 
 .. _Ansible: https://www.ansible.com/
+.. _`Ansible copy module`: https://docs.ansible.com/ansible/copy_module.html
+
+.. ]]]
+
+.. Projects [[[
+
 .. _DebOps: http://debops.org/
 .. _Debian: https://en.wikipedia.org/wiki/Debian
 .. _GNU: https://en.wikipedia.org/wiki/GNU_Project
