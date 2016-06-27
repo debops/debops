@@ -1,89 +1,23 @@
 ---
 
-dependencies:
-
-  - role: debops.apt_preferences
-    tags: apt_preferences
-    apt_preferences_dependent_list:
-      - package: 'rubygems-integration'
-        pin: 'release n=jessie'
-        reason: 'Version backported manually should be upgraded to official version when available'
-        priority: '501'
-        by_role: 'debops.ruby'
-
-    # Backport 'rubygems-integration' package
-  - role: debops.backporter
-    backporter_package: 'rubygems-integration'
-    backporter_version: '1.6'
-    backporter_source_version: '1.7'
-    backporter_source_orig: '.tar.xz'
-    backporter_changelog_version: False
-    backporter_command_dget: 'dget --allow-unauthenticated'
-    backporter_install: True
-    backporter_cache: '{{ ruby_build_cache }}'
-    backporter_install_packages: [ 'rubygems-integration_*.deb' ]
-    when: (ruby_version is defined and ruby_version in [ 'backport' ])
-
-    # Backport 'ruby' package
-  - role: debops.backporter
-    backporter_package: 'ruby'
-    backporter_source_package: 'ruby-defaults'
-    backporter_version: '2.1'
-    backporter_source_version: '2.1.0.1'
-    backporter_source_orig: '.tar.xz'
-    backporter_command_dget: 'dget --allow-unauthenticated'
-    backporter_install: False
-    backporter_cache: '{{ ruby_build_cache }}'
-    backporter_upload_packages: [ 'libruby_*.deb', 'libtcltk-ruby_*.deb', 'ri_*.deb', 'ruby-all-dev_*.deb',
-                                  'ruby-dev_*.deb', 'ruby-full_*.deb', 'ruby_*.deb' ]
-    when: (ruby_version is defined and ruby_version in [ 'backport' ])
-
-    # Backport 'ruby2.1' package
-  - role: debops.backporter
-    backporter_package: 'ruby2.1'
-    backporter_version: '2.1'
-    backporter_fake_version: '1.0'
-    backporter_source_version: '2.1.2-2'
-    backporter_source_orig: '.orig.tar.xz'
-    backporter_command_dget: 'dget --allow-unauthenticated'
-    backporter_skip_builddep: True
-    backporter_install: False
-    backporter_cache: '{{ ruby_build_cache }}'
-    backporter_upload_packages: [ 'libruby2.1_*.deb', 'ruby2.1-dev_*.deb', 'ruby2.1_*.deb',
-                                  'ruby2.1-doc_*.deb', 'ruby2.1-tcltk_*.deb' ]
-    backporter_prerequisites: [ 'autotools-dev', 'bison', 'chrpath', 'debhelper', 'dh-autoreconf',
-                                'libffi-dev', 'libgdbm-dev', 'libgmp-dev', 'libncurses5-dev',
-                                'libncursesw5-dev', 'libreadline6-dev', 'libssl-dev', 'libyaml-dev',
-                                'ruby', 'systemtap-sdt-dev', 'tcl-dev', 'tk-dev', 'tcl8.5-dev',
-                                'tk8.5-dev', 'zlib1g-dev' ]
-    when: (ruby_version is defined and ruby_version in [ 'backport' ])
-
-    # Install backported packages
-  - role: debops.backporter
-    backporter_cache: '{{ ruby_build_cache }}'
-    backporter_prerequisites: [ 'libjs-jquery' ]
-    backporter_install_packages: [ 'libruby2.1_*.deb', 'libruby_*.deb',
-                                   'ruby2.1_*.deb', 'ruby_*.deb', 'ruby2.1-doc_*.deb',
-                                   'rubygems-integration_*.deb', 'ruby-dev_*.deb',
-                                   'ruby2.1-dev_*.deb', 'ruby-all-dev_*.deb' ]
-    when: (ruby_version is defined and ruby_version in [ 'backport' ])
+dependencies: []
 
 galaxy_info:
   author: 'Maciej Delmanowski'
-  description: 'Install Ruby from Debian packages'
+  description: 'Install Ruby packages and gems'
   company: 'DebOps'
   license: 'GNU General Public License v3'
-  min_ansible_version: '1.7.0'
+  min_ansible_version: '2.0.0'
   platforms:
   - name: Ubuntu
     versions:
-    - trusty
+    - all
   - name: Debian
     versions:
-    - wheezy
-    - jessie
-  categories:
+    - all
+  galaxy_tags:
   - development
-  - packaging
-  - system
+  - programming
+  - ruby
+  - gems
 

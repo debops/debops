@@ -1,0 +1,16 @@
+---
+
+- name: Manage Ruby environment
+  hosts: [ 'debops_service_ruby' ]
+  become: True
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ ruby__apt_preferences__dependent_list }}'
+
+    - role: debops.ruby
+      tags: [ 'role::ruby' ]
+
