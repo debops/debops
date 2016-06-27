@@ -12,6 +12,14 @@ ownCloud will be installed as package coming directly from upstream.
 
 .. _ownCloud: https://owncloud.org/
 
+
+Features
+~~~~~~~~
+
+FIXME: Sync with README and update.
+
+* ownCloud theming support.
+
 Installation
 ~~~~~~~~~~~~
 

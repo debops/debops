@@ -78,6 +78,8 @@ v0.3.0
 - Renamed ``owncloud_ldap_enable`` to :envvar:`owncloud__ldap_enabled` to match
   the naming convention of the DebOps project. [ypid]
 
+- Added ownCloud theming support. [ypid]
+
 v0.2.0
 ------
 
