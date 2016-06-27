@@ -1,4 +1,5 @@
 ---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
 
 - name: Ensure php5-ldap is installed
   apt:
@@ -15,23 +16,24 @@
   command: php --file "{{ owncloud_home }}/occ" ldap:show-config ""
   changed_when: False
   register: owncloud_register_ldap_default_config_exits
-  sudo_user: '{{ owncloud_user }}'
+  become_user: '{{ owncloud_user }}'
 
 - name: Create empty LDAP config
   command: php --file "{{ owncloud_home }}/occ" ldap:create-empty-config
-  sudo_user: '{{ owncloud_user }}'
+  become_user: '{{ owncloud_user }}'
   when: ('Invalid configID' in owncloud_register_ldap_default_config_exits.stdout)
 
 - name: Set LDAP password
   command: php --file "{{ owncloud_home }}/occ" ldap:set-config "" ldapAgentPassword "{{ owncloud_ldap_password }}"
   changed_when: False
-  sudo_user: '{{ owncloud_user }}'
+  become_user: '{{ owncloud_user }}'
   no_log: True
+  when: (owncloud_ldap_password is string and owncloud_ldap_password|length > 0)
 
 - name: Set LDAP parameters
   command: php --file "{{ owncloud_home }}/occ" ldap:set-config "" "{{ item.key }}" "{{ item.value }}"
   changed_when: False
-  sudo_user: '{{ owncloud_user }}'
+  become_user: '{{ owncloud_user }}'
   with_dict: '{{ owncloud_ldap_conf_map }}'
 
 - name: Make sure that services OU exists
@@ -43,7 +45,7 @@
     start_tls:  '{{ secret_ldap_start_tls }}'
     bind_dn: '{{ secret_ldap_admin_bind_dn }}'
     bind_pw: '{{ secret_ldap_admin_bind_pw }}'
-  sudo: '{{ secret_ldap_sudo }}'
+  become: '{{ secret_ldap_sudo | bool }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
   no_log: True
   when: (owncloud_ldap_create_user | bool)
@@ -59,7 +61,7 @@
     start_tls:  '{{ secret_ldap_start_tls }}'
     bind_dn: '{{ secret_ldap_admin_bind_dn }}'
     bind_pw: '{{ secret_ldap_admin_bind_pw }}'
-  sudo: '{{ secret_ldap_sudo }}'
+  become: '{{ secret_ldap_sudo | bool }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
   no_log: True
   when: (owncloud_ldap_create_user | bool)
@@ -74,10 +76,14 @@
     start_tls:  '{{ secret_ldap_start_tls }}'
     bind_dn: '{{ secret_ldap_admin_bind_dn }}'
     bind_pw: '{{ secret_ldap_admin_bind_pw }}'
-  sudo: '{{ secret_ldap_sudo }}'
+  become: '{{ secret_ldap_sudo | bool }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
   with_dict:
     userPassword: '{{ owncloud_ldap_password | ldappassword("SHA") }}'
   no_log: True
   when: (owncloud_ldap_create_user | bool)
 
+## FIXME: occ ldap:test-config ''
+## Returns 'The configuration is invalid. Please have a look at the logs for further details.' if invalid
+## Returns 'The configuration is valid and the connection could be established!' if valid
+## Note: Exit code is always 0!!

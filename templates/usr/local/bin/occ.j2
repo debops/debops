@@ -17,4 +17,7 @@
 # https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html?highlight=occ#using-the-occ-command
 cd '{{ owncloud_home }}'
 
-sudo --preserve-env --user '{{ owncloud_user }}' php --file '{{ owncloud_home }}/occ' "$@"
+# Long command line options seem to be not supported as of 1.8.3 in Ubuntu precise.
+# sudo --preserve-env --user '{{ owncloud_user }}' php --file '{{ owncloud_home }}/occ' "$@"
+
+sudo -E -u '{{ owncloud_user }}' php --file '{{ owncloud_home }}/occ' "$@"
