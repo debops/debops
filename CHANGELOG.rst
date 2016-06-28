@@ -96,6 +96,8 @@ v0.2.9
 - Run ``debops.apt`` earlier in the ``common.yml`` playbook to setup things
   like APT proxy and :manpage:`sources.list(5)` for other roles. [ypid]
 
+- Update ``service/ruby.yml`` playbook to use new role variables. [drybjed]
+
 v0.2.8
 ------
 
