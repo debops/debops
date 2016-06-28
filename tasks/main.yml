@@ -1,7 +1,12 @@
 ---
 
 - name: Install Redis server
-  apt: pkg=redis-server state=present install_recommends=False
+  apt:
+    pkg: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - 'redis-server'
 
 - name: Detect Redis version
   shell: redis-server -v | awk '{print $3}'
@@ -9,7 +14,12 @@
   register: register_redis_version
 
 - name: Create Redis paths
-  file: path={{ item }} state=directory owner=redis group=redis mode=0755
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'redis'
+    group: 'redis'
+    mode: '0755'
   with_items:
     - '{{ redis_dir }}'
     - '{{ redis_run_state }}'
@@ -25,11 +35,15 @@
 # Always install Redis server unless the host exists in the sentinel group
 # and it's not standalone.
 - include: server.yml
+# FIXME: Evaluates always to True!
   when: (not redis_sentinel_standalone and
         redis_sentinel_hosts_group in group_names) or True
 
 - name: Stop Redis Server
-  service: name=redis-server state=stopped enabled=no
+  service:
+    name: 'redis-server'
+    state: 'stopped'
+    enabled: 'no'
   when: redis_sentinel_standalone and
         redis_hosts_group in group_names and
         redis_sentinel_hosts_group in group_names

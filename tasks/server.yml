@@ -1,11 +1,15 @@
 ---
 
 - name: Change ownership to 'redis' for the main Redis server config
-  file: path=/etc/redis/redis.conf
-        owner=redis group=redis mode=0644
+  file:
+    path: '/etc/redis/redis.conf'
+    owner: 'redis'
+    group: 'redis'
+    mode: '0644'
 
 - name: Detect if this is the first time the role has been ran
-  stat: path={{ redis_custom_config }}
+  stat:
+    path: '{{ redis_custom_config }}'
   register: redis_register_custom_config
 
 - name: Detect if a slaveof line already exists in the main Redis config
@@ -100,27 +104,40 @@
   notify: ['Restart Redis Server']
 
 - name: Configure Redis Server
-  template: src=etc/redis/redis-ansible.conf.j2
-            dest=/etc/redis/redis-ansible.conf
-            owner=root group=root mode=0644
+  template:
+    src: 'etc/redis/redis-ansible.conf.j2'
+    dest: '/etc/redis/redis-ansible.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   notify: ['Restart Redis Server']
 
 - name: Configure Redis Server defaults
-  template: src=etc/default/redis-server.j2
-            dest=/etc/default/redis-server
-            owner=redis group=redis mode=0644
+  template:
+    src: 'etc/default/redis-server.j2'
+    dest: '/etc/default/redis-server'
+    owner: 'redis'
+    group: 'redis'
+    mode: '0644'
   notify: ['Restart Redis Server']
 
 - name: Configure Redis Server service
-  template: src=etc/init.d/service.j2
-            dest=/etc/init.d/redis-{{ item.name }}
-            owner=redis group=redis mode=0755
+  template:
+    src: 'etc/init.d/service.j2'
+    dest: '/etc/init.d/redis-{{ item.name }}'
+    owner: 'redis'
+    group: 'redis'
+    mode: '0755'
   with_items:
-    - { name: 'server', config: '{{ redis_config }}' }
+    - name: 'server'
+      config: '{{ redis_config }}'
   notify: ['Restart Redis Server']
 
 - name: Start Redis Server
-  service: name=redis-server state=started enabled=yes
+  service:
+    name: 'redis-server'
+    state: 'started'
+    enabled: 'yes'
   when: not redis_hosts_group in group_names or
         (redis_hosts_group in group_names and
         (not redis_sentinel_standalone and
