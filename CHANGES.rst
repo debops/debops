@@ -11,6 +11,9 @@ v0.2.1
 
 - Update list of Ubuntu releases. [drybjed]
 
+- Add support for ``item.state`` parameter and deprecate the alternatives.
+  [drybjed]
+
 v0.2.0
 ------
 

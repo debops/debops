@@ -18,7 +18,7 @@
     - '{{ apt_preferences__dependent_list }}'
   when: (
           (
-            (item.delete|d() | bool) and
+            ((item.state|d() and item.state == 'absent') or item.delete|d() | bool) and
             (item.package|d() or item.packages|d()) and
             (item.version is undefined or (item.version is defined and not item.version))
           ) or
@@ -54,7 +54,7 @@
     - '{{ apt_preferences__dependent_list }}'
   when: (
           (
-            (not (item.delete|d() | bool)) and
+            ((item.state|d('present')) != 'absent' and (not (item.delete|d() | bool))) and
             (item.package|d() or item.packages|d())
           ) and
           (
