@@ -1,12 +1,61 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Install either the 'apt' or 'backport' version of Golang
-#   'apt'      whatever version is available through apt on your OS/distro
-#   'backport' for when you're building the backport on your build server
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
 #
-# Versions for a few popular distros:
-#   Debian Wheezy: 1.0.2 -> backport version is 1.3.1
-#   Debian Jessie: 1.3.1
-#   Ubuntu Trusty: 1.2.1
-golang_version: 'apt'
+# .. Go APT packages [[[1
+#
+# -------------------
+#   Go APT packages
+# -------------------
+
+# .. envvar:: golang__base_packages
+#
+# List of base APT packages to install.
+golang__base_packages: [ 'golang-go' ]
+
+
+# .. envvar:: golang__packages
+#
+# List of APT packages to install on all hosts in Ansible inventory.
+golang__packages: []
+
+
+# .. envvar:: golang__group_packages
+#
+# List of APT packages to install on a group of hosts in Ansible inventory.
+golang__group_packages: []
+
+
+# .. envvar:: golang__host_packages
+#
+# List of APT packages to install on specific hosts in Ansible inventory.
+golang__host_packages: []
+
+
+# .. envvar:: golang__dependent_packages
+#
+# List of APT packages to install specified by other Ansible roles.
+golang__dependent_packages: []
+
+
+# .. Configuration of other roles [[[1
+#
+# --------------------------------
+#   Configuration of other roles
+# --------------------------------
+
+# .. envvar:: golang__apt_preferences__dependent_list
+#
+# Configuration for the ``debops.apt_preferences`` role.
+golang__apt_preferences__dependent_list:
+
+  - packages: [ 'golang', 'golang-*', 'dh-golang' ]
+    backports: [ 'wheezy', 'precise', 'trusty' ]
+    reason: 'Closer feature parity with upstream'
+    role: 'debops.golang'
 

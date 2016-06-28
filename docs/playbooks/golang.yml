@@ -1,0 +1,16 @@
+---
+
+- name: Manage Go environment
+  hosts: [ 'debops_service_golang' ]
+  become: True
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ golang__apt_preferences__dependent_list }}'
+
+    - role: debops.golang
+      tags: [ 'role::golang' ]
+
