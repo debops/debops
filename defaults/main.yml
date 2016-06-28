@@ -126,3 +126,50 @@ redis_latency_monitor_threshold: 0
 # ---- Event notification ----
 
 redis_notify_keyspace_events: False
+
+
+# .. Configuration of other Ansible roles [[[1
+#
+# ----------------------------------------
+#   Configuration of other Ansible roles
+# ----------------------------------------
+
+# .. envvar:: redis__apt_preferences__dependent_list
+#
+# Configuration for the ``debops.apt_preferences`` role.
+apt_install__apt_preferences__dependent_list:
+
+  - package: 'redis-server'
+    backports: [ 'wheezy' ]
+    reason: 'Critical bugs in older versions - http://download.redis.io/redis-stable/00-RELEASENOTES'
+    by_role: 'debops.redis'
+
+
+# .. envvar:: redis__etc_services__dependent_list
+#
+# Configuration for the ``debops.etc_services`` role.
+redis__etc_services__dependent_list:
+
+  - name: 'redis-server'
+    port: '{{ redis_port }}'
+
+  - name: 'redis-sentinel'
+    port: '{{ redis_sentinel_port }}'
+
+
+# .. envvar:: redis__ferm__dependent_rules
+#
+# Configuration for the ``debops.ferm`` role.
+redis__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: ['redis-server']
+    weight: '40'
+    saddr: '{{ redis_server_allow }}'
+    role: 'redis'
+
+  - type: 'accept'
+    dport: ['redis-sentinel']
+    weight: '40'
+    saddr: '{{ redis_sentinel_allow }}'
+    role: 'redis'
