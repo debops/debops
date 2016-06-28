@@ -1,8 +1,13 @@
 ---
 
-- name: Install Golang packages
-  apt:
-    name: 'golang'
-    state: 'latest'
-    install_recommends: False
+- name: Install Go packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ golang__base_packages }}'
+    - '{{ golang__packages }}'
+    - '{{ golang__group_packages }}'
+    - '{{ golang__host_packages }}'
+    - '{{ golang__dependent_packages }}'
 

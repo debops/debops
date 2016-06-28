@@ -1,25 +1,13 @@
 ---
 
-dependencies:
-
-  - role: debops.backporter
-    backporter_package: 'golang'
-    backporter_version: '1.3'
-    backporter_source_version: '1.3.1-1'
-    backporter_source_orig: '.orig.tar.gz'
-    backporter_command_dget: 'dget --allow-unauthenticated'
-    backporter_install: True
-    backporter_install_packages: [ 'golang-go-linux-{{ golang_backport_architecture_map[ansible_architecture] }}_*.deb',
-                                   'golang_*.deb', 'golang-go_*.deb', 'golang-src_*.deb', 'golang-doc_*.deb' ]
-    backporter_upload_packages: [ 'golang*.deb', 'vim-syntax-go_*.deb', 'kate-syntax-go_*.deb' ]
-    when: (golang_version is defined and golang_version in [ 'backport' ])
+dependencies: []
 
 galaxy_info:
   author: 'Nick Janetakis'
   description: 'Install Go language (golang) support using Debian packages'
   company: 'DebOps'
   license: 'GPLv3'
-  min_ansible_version: '1.7.1'
+  min_ansible_version: '2.0.0'
   platforms:
     - name: Ubuntu
       versions:
@@ -29,8 +17,9 @@ galaxy_info:
       versions:
         - wheezy
         - jessie
-  categories:
+  galaxy_tags:
     - development
-    - packaging
-    - system
+    - programming
+    - golang
+    - go
 
