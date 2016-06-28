@@ -9,6 +9,8 @@ v0.2.1
 - Support singular and plural versions of the ``item.package`` parameter, as
   well as both string an YAML list variants. [drybjed]
 
+- Update list of Ubuntu releases. [drybjed]
+
 v0.2.0
 ------
 
