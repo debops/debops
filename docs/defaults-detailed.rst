@@ -81,22 +81,28 @@ dictionary. Supported parameters:
 Examples
 ~~~~~~~~
 
-Ensure that Perl 5.10 is installed on the system::
+Ensure that Perl 5.10 is installed on the system:
 
-    apt_preferences__list:
-      - package: 'perl'
-        version: '5.10'
+.. code-block:: yaml
 
-Prefer packages from a specific site::
+   apt_preferences__list:
+     - package: 'perl'
+       version: '5.10'
 
-    apt_preferences__list:
-      - package: '*'
-        pin: 'origin "ftp.de.debian.org"
-        priority: '999'
+Prefer packages from a specific site:
 
-Install the ``nginx`` packages from backports on Debian Wheezy and Debian Jessie::
+.. code-block:: yaml
 
-    apt_preferences__list:
-      - package: 'nginx nginx-*'
-        backports: [ 'wheezy', 'jessie' ]
+   apt_preferences__list:
+     - package: '*'
+       pin: 'origin "ftp.de.debian.org"
+       priority: '999'
+
+Install the ``nginx`` packages from backports on Debian Wheezy and Debian Jessie:
+
+.. code-block:: yaml
+
+   apt_preferences__list:
+     - packages: [ 'nginx', 'nginx-*' ]
+       backports: [ 'wheezy', 'jessie' ]
 

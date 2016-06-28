@@ -22,20 +22,8 @@ automatically on the next playbook run.
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to manage APT preferences. Debian
-Wheezy systems will be configured to prefer ``nginx`` packages from
-the Wheezy Backports repository::
+Here's an example playbook that can be used to manage APT preferences:
 
-    ---
-    - hosts: debops_apt_preferences
-      become: True
-
-      roles:
-
-        - role: debops.apt_preferences
-          apt_preferences__dependent_list:
-
-            - package: 'nginx nginx-*'
-              backports: [ 'wheezy' ]
-              reason: 'Support for SPDY protocol'
+.. literalinclude:: playbooks/apt_preferences.yml
+   :language: yaml
 
