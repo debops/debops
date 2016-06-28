@@ -1,11 +1,15 @@
 ---
 
 - name: Change ownership to 'redis' for the main Sentinel config
-  file: path=/etc/redis/sentinel.conf
-        owner=redis group=redis mode=0644
+  file:
+    path: '/etc/redis/sentinel.conf'
+    owner: 'redis'
+    group: 'redis'
+    mode: '0644'
 
 - name: Detect if this is the first time the role has been ran
-  stat: path={{ redis_custom_sentinel_config }}
+  stat:
+    path: '{{ redis_custom_sentinel_config }}'
   register: redis_register_custom_sentinel_config
 
 - name: Detect if maxmemory is in the main Sentinel config
@@ -97,15 +101,21 @@
   changed_when: False
 
 - name: Configure Redis Sentinel
-  template: src=etc/redis/sentinel-ansible.conf.j2
-            dest={{ redis_custom_sentinel_config }}
-            owner=root group=root mode=0644
+  template:
+    src: 'etc/redis/sentinel-ansible.conf.j2'
+    dest: '{{ redis_custom_sentinel_config }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   notify: ['Restart Redis Sentinel']
 
 - name: Configure Redis Sentinel scripts
-  template: src=usr/local/lib/redis/trigger.sh.j2
-            dest={{ redis_dir }}/{{ item.1 }}.sh
-            owner=redis group=redis mode=0755
+  template:
+    src: 'usr/local/lib/redis/trigger.sh.j2'
+    dest: '{{ redis_dir }}/{{ item.1 }}.sh'
+    owner: 'redis'
+    group: 'redis'
+    mode: '0755'
   register: redis_register_trigger_scripts
   with_nested:
     - '{{ redis_sentinel_group_list }}'
@@ -113,12 +123,24 @@
   notify: ['Restart Redis Sentinel']
 
 - name: Configure Redis Sentinel service
-  template: src=etc/init.d/service.j2
-            dest=/etc/init.d/redis-{{ item.name }}
-            owner=redis group=redis mode=0755
+  template:
+    src: 'etc/init.d/service.j2'
+    dest: '/etc/init.d/redis-{{ item.name }}'
+    owner: 'redis'
+    group: 'redis'
+    mode: '0755'
+  register: redis__register_sentinel_init
   with_items:
-    - { name: 'sentinel', config: '{{ redis_sentinel_config }}' }
+    - name: 'sentinel'
+      config: '{{ redis_sentinel_config }}'
   notify: ['Restart Redis Sentinel']
 
+- name: Reload systemd daemons
+  command: systemctl daemon-reload
+  when: (ansible_service_mgr == 'systemd' and redis__register_sentinel_init|changed)
+
 - name: Start Redis Sentinel
-  service: name=redis-sentinel state=started enabled=yes
+  service:
+    name: 'redis-sentinel'
+    state: 'started'
+    enabled: 'yes'

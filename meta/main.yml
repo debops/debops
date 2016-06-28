@@ -4,31 +4,19 @@ dependencies:
   - role: debops.secret
 
   - role: debops.apt_preferences
-    tags: apt_preferences
-    apt_preferences_dependent_list:
-      - package: 'redis-server'
-        backports: [ 'wheezy' ]
-        reason: 'Critical bugs in older versions - http://download.redis.io/redis-stable/00-RELEASENOTES'
-        by_role: 'debops.redis'
+    apt_preferences__dependent_list:
+      - '{{ apt_install__apt_preferences__dependent_list }}'
 
   - role: debops.etc_services
-    etc_services_dependency_list:
-      - name: 'redis-server'
-        port: '{{ redis_port }}'
-      - name: 'redis-sentinel'
-        port: '{{ redis_sentinel_port }}'
+    etc_services__dependent_list:
+      - '{{ redis__etc_services__dependent_list }}'
 
   - role: debops.ferm
-    ferm_input_group_list:
-      - type: 'dport_accept'
-        dport: ['redis-server']
-        saddr: '{{ redis_server_allow }}'
-      - type: 'dport_accept'
-        dport: ['redis-sentinel']
-        saddr: '{{ redis_sentinel_allow }}'
+    ferm__dependent_rules:
+      - '{{ redis__ferm__dependent_rules }}'
 
 galaxy_info:
-  author: 'Nick Janetakis'
+  author: 'Nick Janetakis, Maciej Delmanowski'
   description: 'Install and manage Redis cluster'
   company: 'DebOps'
   license: 'GNU General Public License v3'
@@ -45,7 +33,8 @@ galaxy_info:
     versions:
     - wheezy
     - jessie
-  categories:
-  - 'database:nosql'
-  - 'system'
+  galaxy_tags:
+    - 'database'
+    - 'nosql'
+    - 'system'
 
