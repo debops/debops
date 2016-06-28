@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Released: 2016-06-28*
+
+- Support singular and plural versions of the ``item.package`` parameter, as
+  well as both string an YAML list variants. [drybjed]
+
+- Update list of Ubuntu releases. [drybjed]
+
+- Add support for ``item.state`` parameter and deprecate the alternatives.
+  [drybjed]
+
 v0.2.0
 ------
 

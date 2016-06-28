@@ -3,7 +3,19 @@
 Explanation: Pin added by role: {{ item.role | d(item.by_role) }}
 {%   endif %}
 Explanation: {{ item.reason | d('Reason not specified') }}
+{%   if item.package|d() %}
+{%     if item.package is string %}
 Package: {{ item.package }}
+{%     else %}
+Package: {{ item.package | join(" ") }}
+{%     endif %}
+{%   elif item.packages|d() %}
+{%     if item.packages is string %}
+Package: {{ item.packages }}
+{%     else %}
+Package: {{ item.packages | join(" ") }}
+{%     endif %}
+{%   endif %}
 {%   if item.when|d(True) | bool %}
 {%     if item.version|d() %}
 Pin: version {{ item.version + '*' }}

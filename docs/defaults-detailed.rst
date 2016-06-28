@@ -17,11 +17,11 @@ apt_preferences__list
 List of :manpage:`apt_preferences(5)` "pins", each pin is defined by a YAML
 dictionary. Supported parameters:
 
-``package``
-  Required. String of package names affected by this pin, each package
-  separated by space. You can use a ``package-*`` wildcard to specify multiple
-  packages. First package name will be included in the automatically generated
-  filename of the pin preferences file.
+``package`` or ``packages``
+  Required. String or YAML list of package names affected by this pin, each
+  package separated by space. You can use a ``package-*`` wildcard to specify
+  multiple packages. First package name will be included in the automatically
+  generated filename of the pin preferences file.
 
 ``backports``
   List of OS releases which should be considered when
@@ -70,33 +70,43 @@ dictionary. Supported parameters:
   block for pin configuration. Might be used to create several pins in one
   file.
 
+``state``
+  Optional. If not defined or ``present``, an APT pin will be created. If
+  ``absent``, pin will be deleted.
+
 ``when``
-  If this parameter is defined and ``True`` or ``False``, enable or disable
-  a particular pin conditionally.
+  Deprecated. If this parameter is defined and ``True`` or ``False``, enable or
+  disable a particular pin conditionally.
 
 ``delete``
-  If this parameter is defined and ``True``, the preferences file for this pin
-  will be deleted and a new one will not be created.
+  Deprecated. If this parameter is defined and ``True``, the preferences file
+  for this pin will be deleted and a new one will not be created.
 
 Examples
 ~~~~~~~~
 
-Ensure that Perl 5.10 is installed on the system::
+Ensure that Perl 5.10 is installed on the system:
 
-    apt_preferences__list:
-      - package: 'perl'
-        version: '5.10'
+.. code-block:: yaml
 
-Prefer packages from a specific site::
+   apt_preferences__list:
+     - package: 'perl'
+       version: '5.10'
 
-    apt_preferences__list:
-      - package: '*'
-        pin: 'origin "ftp.de.debian.org"
-        priority: '999'
+Prefer packages from a specific site:
 
-Install the ``nginx`` packages from backports on Debian Wheezy and Debian Jessie::
+.. code-block:: yaml
 
-    apt_preferences__list:
-      - package: 'nginx nginx-*'
-        backports: [ 'wheezy', 'jessie' ]
+   apt_preferences__list:
+     - package: '*'
+       pin: 'origin "ftp.de.debian.org"
+       priority: '999'
+
+Install the ``nginx`` packages from backports on Debian Wheezy and Debian Jessie:
+
+.. code-block:: yaml
+
+   apt_preferences__list:
+     - packages: [ 'nginx', 'nginx-*' ]
+       backports: [ 'wheezy', 'jessie' ]
 
