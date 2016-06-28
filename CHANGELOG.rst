@@ -98,6 +98,8 @@ v0.2.9
 
 - Update ``service/ruby.yml`` playbook to use new role variables. [drybjed]
 
+- Update ``service/goland.yml`` playbook to use new role variables. [drybjed]
+
 v0.2.8
 ------
 
