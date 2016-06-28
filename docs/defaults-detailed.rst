@@ -17,11 +17,11 @@ apt_preferences__list
 List of :manpage:`apt_preferences(5)` "pins", each pin is defined by a YAML
 dictionary. Supported parameters:
 
-``package``
-  Required. String of package names affected by this pin, each package
-  separated by space. You can use a ``package-*`` wildcard to specify multiple
-  packages. First package name will be included in the automatically generated
-  filename of the pin preferences file.
+``package`` or ``packages``
+  Required. String or YAML list of package names affected by this pin, each
+  package separated by space. You can use a ``package-*`` wildcard to specify
+  multiple packages. First package name will be included in the automatically
+  generated filename of the pin preferences file.
 
 ``backports``
   List of OS releases which should be considered when

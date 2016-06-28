@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Released: 2016-06-28*
+
+- Support singular and plural versions of the ``item.package`` parameter, as
+  well as both string an YAML list variants. [drybjed]
+
 v0.2.0
 ------
 
