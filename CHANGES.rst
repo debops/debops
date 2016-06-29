@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.3.1
+------
+
+*Released: 2016-06-29*
+
+- Expose upstream APT key fingerprint and repository URL in default variables.
+  [drybjed]
+
 v0.3.0
 ------
 
