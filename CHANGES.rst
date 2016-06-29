@@ -6,11 +6,18 @@ v0.4.4
 
 *Unreleased*
 
+- Document ``python-passlib`` dependency. [barraponto]
+
 - Fix issue with ``bootstrap-ansible.sh`` script not able to install latest
   Ansible stable version, make the process more verbose and don't remove the
   temporary directory by default. [drybjed]
 
 - Update Ansible Galaxy role links in ``ansigenome`` templates. [drybjed]
+
+- Fix Unicode support in ``debops-defaults``, it should now output readable
+  text in the editor. [ypid]
+
+- Document ``git`` dependency. [violuke]
 
 - Update the Ansigenome ``README.md`` template used to generate role README
   files to use ``galaxy_url`` instead of ``galaxy_id``. The new variable should
