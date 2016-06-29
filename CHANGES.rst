@@ -9,6 +9,8 @@ v0.3.1
 - Expose upstream APT key fingerprint and repository URL in default variables.
   [drybjed]
 
+- Don't log role tasks that might deal with PostgreSQL passwords. [drybjed]
+
 v0.3.0
 ------
 
