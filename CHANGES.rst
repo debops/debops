@@ -4,7 +4,9 @@ Changelog
 v0.4.4
 ------
 
-*Unreleased*
+*Released: 2016-06-29*
+
+- Document ``python-passlib`` dependency. [barraponto]
 
 - Fix issue with ``bootstrap-ansible.sh`` script not able to install latest
   Ansible stable version, make the process more verbose and don't remove the
@@ -12,9 +14,23 @@ v0.4.4
 
 - Update Ansible Galaxy role links in ``ansigenome`` templates. [drybjed]
 
+- Fix Unicode support in ``debops-defaults``, it should now output readable
+  text in the editor. [ypid]
+
+- Document ``git`` dependency. [violuke]
+
 - Update the Ansigenome ``README.md`` template used to generate role README
   files to use ``galaxy_url`` instead of ``galaxy_id``. The new variable should
   contain full URL of the role on Ansible Galaxy. [drybjed]
+
+- Add useful Ansible options to default ``ansible.cfg`` template.
+
+  By default Ansible will not display skipped hosts during the playbook run,
+  and "retry" files won't be generated. [drybjed]
+
+- Update generated inventory file with more relevant information. [drybjed]
+
+- Update documentation. [drybjed]
 
 v0.4.3
 ------

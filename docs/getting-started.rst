@@ -6,7 +6,7 @@ provided with the project. To do that, you need to run command:
 
 .. code:: shell
 
-    debops-update
+   debops-update
 
 This script will download playbooks and roles from their GitHub repositories
 into your user directory. Exact location is dependent upon your operating
@@ -25,7 +25,7 @@ from the base of that directory. You can create it by running command:
 
 .. code:: shell
 
-    debops-init ~/project-directory
+   debops-init ~/project-directory
 
 It can be anywhere in your filesystem. DebOps is designed to be used on an
 unprivileged user account on Ansible Controller, so you don't need to be
@@ -45,17 +45,18 @@ to keep many hosts under control. An example inventory file:
 
 .. code:: ini
 
-    [group-of-hosts]
-    host1
-    host2
+   [debops_all_hosts]
+   host1
+   host2
 
-If you want, and your Ansible Control is Debian/Ubuntu based, you can manage it
-using DebOps as well. You can do it by adding its hostname to Ansible inventory
-with "local" connection type:
+If you want, and your Ansible Controller host is Debian/Ubuntu based, you can
+manage it using DebOps as well. You can do it by adding its hostname to Ansible
+inventory with "local" connection type:
 
 .. code:: ini
 
-    myhostname ansible_connection=local
+   [debops_all_hosts]
+   myhostname ansible_connection=local
 
 When all hosts you want to use are written in inventory and you checked the
 connectivity, you can run main DebOps script to generate Ansible configuration
@@ -63,10 +64,13 @@ and execute default DebOps playbooks:
 
 .. code:: shell
 
-    debops
+   debops
 
-The ``debops`` command is a wrapper for ``ansible-playbook``, which means that you can pass any ``ansible-playbook`` parameters to it. For example, to limit the Ansible run to a specific host, you can execute command:
+The ``debops`` command is a wrapper for ``ansible-playbook``, which means that
+you can pass any ``ansible-playbook`` parameters to it. For example, to limit
+the Ansible run to a specific host, you can execute command:
 
 .. code:: shell
 
-    debops --limit host1
+   debops --limit host1
+

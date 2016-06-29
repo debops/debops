@@ -56,6 +56,8 @@ DEFAULT_DEBOPS_CONFIG = """
 ;data-home: /opt/debops
 
 [ansible defaults]
+display_skipped_hosts = False
+retry_files_enabled = False
 ;callback_plugins = /my/plugins/callback
 ;roles_path = /my/roles
 
@@ -110,22 +112,26 @@ HOSTS_FILE_HEADER = """\
 #
 # View the list here:
 # https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
+#
+# You should check Getting Started guide for useful suggestions:
+# http://docs.debops.org/en/latest/debops-playbooks/docs/guides/getting-started.html
 """
 
 HOSTS_FILE_CONTENT_CONTROLER = """
 # Your host is eligible to be managed by DebOps' common playbook. If you want
 # that functionality and more, then uncomment your hostname below.
+
 [debops_all_hosts]
 #%s ansible_connection=local
 """ % platform.node()
 
 HOSTS_FILE_CONTENT_NO_CONTROLER = """
-# Your host is not Debian-based so you will not be able to leverage
-# the above features on your current operating system. You can however
-# use Vagrant or something else to setup a VM and install DebOps there.
+# Your host was not detected as compatible with DebOps playbooks, so you will
+# not be able to leverage the above features on your current operating system.
+# You can however use a virtual machine as the Ansible Controller.
 
 [debops_all_hosts]
-#<VM host IP>
+
 """
 
 
