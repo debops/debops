@@ -28,6 +28,8 @@ v0.4.4
   By default Ansible will not display skipped hosts during the playbook run,
   and "retry" files won't be generated. [drybjed]
 
+- Update generated inventory file with more relevant information. [drybjed]
+
 v0.4.3
 ------
 
