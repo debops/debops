@@ -16,8 +16,6 @@ DebOps scripts
    scripts/debops-defaults
    scripts/debops-padlock
    scripts/debops-task
-   guides
-   troubleshooting
    contributing
    copyright
    credits

@@ -3,8 +3,6 @@
 Configuration
 =============
 
-**Note** You do not need to configure anything to run DebOps.
-
 DebOps reads configuration files at several places. All configurations
 files found are merged and the values read later take precedence.
 
@@ -89,8 +87,8 @@ use:
 
 .. code:: ini
 
-    [ansible defaults]
-    ansible_managed = Custom string
+   [ansible defaults]
+   ansible_managed = Custom string
 
 For the configuration entries representing paths (e.g. ``roles_path``,
 ``action_plugins`` and other ``.._plugins``), your value will be
@@ -104,20 +102,22 @@ This file is created by ``debops-init`` command in the specified project directo
 
 .. code:: ini
 
-    [paths]
-    ;data-home: /opt/debops
+   [paths]
+   ;data-home: /opt/debops
 
-    [ansible defaults]
-    ;callback_plugins = /my/plugins/callback
-    # Additional paths (will be prepended)
-    ;roles_path = /path/to/my/roles:/even/more/roles
-    ;callback_plugins = /path/to/more/plugins/actions
+   [ansible defaults]
+   display_skipped_hosts = False
+   retry_files_enabled = False
+   ;callback_plugins = /my/plugins/callback
+   # Additional paths (will be prepended)
+   ;roles_path = /path/to/my/roles:/even/more/roles
+   ;callback_plugins = /path/to/more/plugins/actions
 
-    [ansible paramiko]
-    ;record_host_keys=True
+   [ansible paramiko]
+   ;record_host_keys=True
 
-    [ansible ssh_connection]
-    ;ssh_args = -o ControlMaster=auto -o ControlPersist=60s
+   [ansible ssh_connection]
+   ;ssh_args = -o ControlMaster=auto -o ControlPersist=60s
 
 
 

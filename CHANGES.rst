@@ -30,6 +30,8 @@ v0.4.4
 
 - Update generated inventory file with more relevant information. [drybjed]
 
+- Update documentation. [drybjed]
+
 v0.4.3
 ------
 
