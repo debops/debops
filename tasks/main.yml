@@ -2,20 +2,20 @@
 
 - name: Add upstream PostgreSQL APT key
   apt_key:
-    id: '7FCC7D46ACCC4CF8'
+    id: '{{ postgresql__upstream_key_id }}'
     state: 'present'
     keyserver: '{{ ansible_local.core.keyserver
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
-  when: postgresql__upstream|d() and postgresql__upstream
+  when: postgresql__upstream|bool
 
 - name: Add upstream PostgreSQL APT repository
   apt_repository:
-    repo: 'deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main'
+    repo: '{{ postgresql__upstream_apt_repo }}'
     state: 'present'
     update_cache: True
-  when: postgresql__upstream|d() and postgresql__upstream
+  when: postgresql__upstream|bool
 
 - name: Get default PostgreSQL version
   environment:
@@ -77,6 +77,7 @@
   delegate_to: '{{ postgresql__delegate_to }}'
   when: (((item.name|d() and item.name) or (item.role|d() and item.role)) and
          (item.state is undefined or item.state != 'absent'))
+  no_log: True
 
 - name: Create PostgreSQL databases
   postgresql_db:
@@ -167,6 +168,7 @@
          (item.state is undefined or item.state != 'absent') and
          (item.db|d() and item.db) and
          (item.priv|d() and item.priv))
+  no_log: True
 
 - name: Make sure required system groups exist
   group:
@@ -178,6 +180,7 @@
     - '{{ postgresql_pgpass|d([]) }}'
     - '{{ postgresql__dependent_pgpass }}'
   when: item.owner|d() and item.owner
+  no_log: True
 
 - name: Make sure required system accounts exist
   user:
@@ -191,6 +194,7 @@
     - '{{ postgresql_pgpass|d([]) }}'
     - '{{ postgresql__dependent_pgpass }}'
   when: item.owner|d() and item.owner
+  no_log: True
 
 - name: Populate ~/.pgpass file
   lineinfile:
@@ -207,6 +211,7 @@
     - '{{ postgresql_pgpass|d([]) }}'
     - '{{ postgresql__dependent_pgpass }}'
   when: item.owner|d() and item.owner
+  no_log: True
 
 - name: Make sure that Ansible local fact directory exists
   file:
