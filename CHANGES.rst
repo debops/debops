@@ -23,6 +23,11 @@ v0.4.4
   files to use ``galaxy_url`` instead of ``galaxy_id``. The new variable should
   contain full URL of the role on Ansible Galaxy. [drybjed]
 
+- Add useful Ansible options to default ``ansible.cfg`` template.
+
+  By default Ansible will not display skipped hosts during the playbook run,
+  and "retry" files won't be generated. [drybjed]
+
 v0.4.3
 ------
 
