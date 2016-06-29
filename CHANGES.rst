@@ -3,8 +3,9 @@ Changelog
 =========
 
 v0.2.0
+------
 
-*Unreleased*
+*Released: 2016-06-29*
 
 - Rename ``nodejs_upstream_repo`` to ``nodejs_upstream_repository``
   for consistency with other ``debops`` roles. [patrickheeney]
