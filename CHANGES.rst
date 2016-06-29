@@ -4,7 +4,7 @@ Changelog
 v0.4.4
 ------
 
-*Unreleased*
+*Released: 2016-06-29*
 
 - Document ``python-passlib`` dependency. [barraponto]
 
