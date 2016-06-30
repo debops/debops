@@ -4,9 +4,11 @@ Changelog
 v0.1.4
 ------
 
-*Unreleased
+*Released: 2016-06-30*
 
 - Add support for GitLab 8.9. [gomez]
+
+- Set the default GitLab version to '8.9'. [drybjed]
 
 v0.1.3
 ------
