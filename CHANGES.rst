@@ -8,7 +8,7 @@ v0.1.4
 
 - Add support for GitLab 8.9. [gomez]
 
-- Set the default GitLab version to ``8.9``. [drybjed]
+- Set the default GitLab version to '8.9'. [drybjed]
 
 v0.1.3
 ------
