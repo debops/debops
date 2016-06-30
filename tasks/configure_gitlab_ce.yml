@@ -150,7 +150,12 @@
 
 - name: Install GitLab service script
   shell: cp -f {{ gitlab_ce_git_checkout + "/lib/support/init.d/gitlab" }} /etc/init.d/gitlab
+  register: gitlab__register_init_script
   when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed
+
+- name: Reload systemd daemons
+  command: systemctl daemon-reload
+  when: (ansible_service_mgr == "systemd" and gitlab__register_init_script|changed)
 
 - name: Enable GitLab service
   service:

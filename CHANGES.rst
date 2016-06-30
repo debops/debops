@@ -4,9 +4,15 @@ Changelog
 v0.1.3
 ------
 
-- Add support for gitlab 8.8 [gomez]
-- Add support for gitlab 8.7 [benalbrecht]
-- Add support for GitLab 8.6 [gomez]
+*Released: 2016-06-30*
+
+- Add support for GitLab 8.6. [gomez]
+
+- Add support for gitlab 8.7. [benalbrecht]
+
+- Add support for gitlab 8.8. [gomez]
+
+- Reload ``systemd`` daemons on init script change. [drybjed]
 
 v0.1.2
 ------
