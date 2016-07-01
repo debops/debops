@@ -9,10 +9,11 @@
     | combine(owncloud_config_host) %}
 {% set owncloud__tpl_active_config_dict = {} %}
 {% for config_key, config_item in owncloud__tpl_unchecked_config_dict.iteritems() %}
-{%   if config_item is string %}
-{%     set _ = owncloud__tpl_active_config_dict.update({config_key: config_item}) %}
-{%   elif config_item is mapping and config_item.state|d("present") == "present" and 'value' in config_item %}
+{%   if config_item is mapping and "state" in config_item and config_item.state == "present" and "value" in config_item %}
 {%     set _ = owncloud__tpl_active_config_dict.update({config_key: config_item.value}) %}
+{%   else %}
+{#     Assume it is not a control structur for Ansible but the raw value for ownCloud #}
+{%     set _ = owncloud__tpl_active_config_dict.update({config_key: config_item}) %}
 {%   endif %}
 {% endfor %}
 $CONFIG = json_decode('{{ owncloud__tpl_active_config_dict | to_nice_json }}', true);

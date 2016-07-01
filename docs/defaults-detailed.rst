@@ -27,16 +27,18 @@ Order of priority from least specific to most specific:
 * :envvar:`owncloud_config_host`
 
 Each dict can hold multiple keys and values. The dict value can either be a
-string (corresponding directly to the value in the :file:`config.php` file) or
-a dict itself in case more flexibility is required. Here are the available
-options of the inner dict:
+value directly intended for ownCloud (corresponding directly to the value in
+the :file:`config.php` file) or a dict itself in case more flexibility is
+required. A ownCloud value can also be a dict. The decision is made based on
+the presence of the ``value`` and the ``state`` keys. If both are present, the
+``state`` key will be evaluated by Ansible.
+Here are the available options of the inner dict:
 
 ``value``
-  Corresponding to the value in the :file:`config.php` file.
+  Required, string. Corresponding to the value in the :file:`config.php` file.
 
 ``state``
-  Optional, string. Allows to specify if the option should be ``present`` or ``absent`` in the configuration.
-  Defaults to ``present``.
+  Required, string. Allows to specify if the option should be ``present`` or ``absent`` in the configuration.
 
 .. note:: Parameters with \ (backslash) need to be double escaped:
 
