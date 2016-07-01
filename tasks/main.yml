@@ -2,45 +2,47 @@
 
 - name: Get upstream APT GPG key
   apt_key:
-    id: '9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280'
+    id: '{{ nodejs__upstream_key_id }}'
     keyserver: '{{ ansible_local.core.keyserver
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
-  when: nodejs_upstream|d() and nodejs_upstream
+  when: nodejs__upstream|bool
 
 - name: Configure upstream APT repository
   apt_repository:
-    repo: '{{ nodejs_upstream_repository }}'
+    repo: '{{ nodejs__upstream_repository }}'
     state: 'present'
     update_cache: True
-  when: nodejs_upstream|d() and nodejs_upstream
+  when: nodejs__upstream|bool
 
-- name: Install required packages
-  apt:
+- name: Install APT packages
+  package:
     name: '{{ item }}'
     state: 'present'
-    install_recommends: False
   with_flattened:
-    - '{{ nodejs_base_packages }}'
-    - '{{ nodejs_packages }}'
+    - '{{ nodejs__base_packages }}'
+    - '{{ nodejs__distribution_packages }}'
+    - '{{ nodejs__packages }}'
+    - '{{ nodejs__group_packages }}'
+    - '{{ nodejs__host_packages }}'
+    - '{{ nodejs__dependent_packages }}'
 
-- name: Install packages when not installing from upstream
-  apt:
-    name: '{{ item }}'
-    state: 'present'
-    install_recommends: False
-  when: not nodejs_upstream|d()
-  with_flattened:
-    - '{{ nodejs_distribution_packages }}'
-
-- name: Install npm global packages
+- name: Install NPM packages
   npm:
-    name: '{{ item.name | default(item) }}'
-    state: '{{ item.state | default("present") }}'
-    version: '{{ item.version | default(omit) }}'
-    production: '{{ item.production | default(omit) }}'
-    global: True
-  with_items: '{{ nodejs_npm_global_packages }}'
+    name:           '{{ item.name           | d(item) }}'
+    state:          '{{ item.state          | d("present") }}'
+    global:         '{{ (item.global        | d(True)) | bool }}'
+    production:     '{{ (item.production    | d(nodejs__npm_production_mode)) | bool }}'
+    version:        '{{ item.version        | d(omit) }}'
+    registry:       '{{ item.registry       | d(omit) }}'
+    executable:     '{{ item.executable     | d(omit) }}'
+    ignore_scripts: '{{ item.ignore_scripts | d(omit) }}'
+    path:           '{{ item.path           | d(omit) }}'
+  with_flattened:
+    - '{{ nodejs__npm_packages }}'
+    - '{{ nodejs__npm_group_packages }}'
+    - '{{ nodejs__npm_host_packages }}'
+    - '{{ nodejs__npm_dependent_packages }}'
 
