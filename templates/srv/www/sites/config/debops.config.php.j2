@@ -4,11 +4,20 @@
 Copyright 2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>
 Licence: GPLv3
 #}
-$CONFIG = json_decode('{{
-            owncloud_config_role_optional
-  | combine(owncloud_config_role_required)
-  | combine(owncloud_config)
-  | combine(owncloud_config_group)
-  | combine(owncloud_config_host)
-  | to_nice_json }}', true);
+
+{% set owncloud__tpl_unchecked_config_dict =
+  owncloud_config_role_required
+    | combine(owncloud_config_role_optional)
+    | combine(owncloud_config)
+    | combine(owncloud_config_group)
+    | combine(owncloud_config_host) %}
+{% set owncloud__tpl_active_config_dict = {} %}
+{% for config_key, config_item in owncloud__tpl_unchecked_config_dict.iteritems() %}
+{%   if config_item is string %}
+{%     set _ = owncloud__tpl_active_config_dict.update({config_key: config_item}) %}
+{%   elif config_item is mapping and config_item.state|d("present") == "present" and 'value' in config_item %}
+{%     set _ = owncloud__tpl_active_config_dict.update({config_key: config_item.value}) %}
+{%   endif %}
+{% endfor %}
+$CONFIG = json_decode('{{ owncloud__tpl_active_config_dict | to_nice_json }}', true);
 ?>

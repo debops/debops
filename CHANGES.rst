@@ -80,6 +80,8 @@ v0.3.0
 
 - Added ownCloud theming support. [ypid]
 
+- Support Redis for file locking. [ypid]
+
 v0.2.0
 ------
 

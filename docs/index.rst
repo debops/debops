@@ -9,6 +9,7 @@ Ansible role: debops.owncloud
    introduction
    getting-started
    defaults
+   defaults-detailed
    copyright
    changelog
 

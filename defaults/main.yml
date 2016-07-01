@@ -25,6 +25,7 @@
 owncloud_base_packages:
   - 'owncloud'
   - 'php5-apcu'
+  - '{{ "php5-redis" if (owncloud_redis_enabled|bool) else [] }}'
 
 
 # .. envvar:: owncloud__deploy_state
@@ -150,6 +151,55 @@ owncloud_data_path: '{{ owncloud_home }}/data'
 owncloud_deploy_path: '{{ owncloud_home }}'
 
 
+# .. In memory caching [[[1
+#
+# ---------------------
+#   In memory caching
+# ---------------------
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html>`__ for details.
+
+# .. envvar:: owncloud_apcu_enabled
+#
+# Whether ``APCu`` should be used for local caching.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html#id2>`__ for details.
+owncloud_apcu_enabled: True
+
+
+# .. envvar:: owncloud_enable_apc_cli
+#
+# Enable APC in PHP CLI. Setting this to ``True`` is only needed when you want to
+# use the :command:`occ` command and use ``\OC\Memcache\APCu`` as memcache.
+# See https://github.com/owncloud/core/issues/17329
+owncloud_enable_apc_cli: '{{ owncloud_apcu_enabled|bool }}'
+
+
+# .. envvar:: owncloud_redis_enabled
+#
+# Use Redis for file locking as recommended for small and large organization.
+# The default is to auto detect if Redis is selected for installation on the
+# remote server and in that case automatically use it for file locking.
+# Note that ownCloud requires version 2.2.5+ of ``php5-redis``. This
+# requirement is not meet for Ubuntu trusty (neither in the release repos nor
+# in backports) thus Redis will not be enabled automatically by the role.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html#id4>`__ for details.
+owncloud_redis_enabled: '{{ True if (
+    ("debops_service_redis" in hostvars[inventory_hostname]["group_names"]) and
+    (not (ansible_distribution == "Ubuntu" and ansible_distribution_release == "trusty"))
+  ) else False }}'
+
+
+# .. envvar:: owncloud_redis_host
+#
+# Redis server to use when :envvar:`owncloud_redis_enabled` is ``True``.
+owncloud_redis_host: 'localhost'
+
+
+# .. envvar:: owncloud_redis_port
+#
+# Network port on which the Redis server is listening on.
+owncloud_redis_port: 6379
+
 # .. Database configuration [[[1
 #
 # --------------------------
@@ -159,8 +209,8 @@ owncloud_deploy_path: '{{ owncloud_home }}'
 # .. envvar:: owncloud_database
 #
 # ownCloud recommends MySQL or MariaDB as database. Set to ``False`` to use SQLite.
-# https://doc.owncloud.org/server/8.1/admin_manual/configuration_database/linux_database_configuration.html#database-configuration
-# Choices see :envvar:`owncloud_database_map`.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_database/linux_database_configuration.html>`__ for details.
+# See the :envvar:`owncloud_database_map` for the databases support by this role.
 owncloud_database: 'mariadb'
 
 
@@ -275,7 +325,9 @@ owncloud_autosetup: True
 
 # .. envvar:: owncloud_autosetup_url
 #
-# URL which will be called to finish autosetup.
+# URL which will be called to finish autosetup of ownCloud 8.0. For newer
+# ownCloud versions :command:`occ` will be used which is more relyable because
+# it does not depend on the webserver nor network.
 owncloud_autosetup_url: 'http://{{ owncloud_domain[0] }}/index.php'
 
 
@@ -284,14 +336,6 @@ owncloud_autosetup_url: 'http://{{ owncloud_domain[0] }}/index.php'
 # --------------------------
 #   ownCloud configuration
 # --------------------------
-
-# .. envvar:: owncloud_enable_apc_cli
-#
-# Enable APC in PHP CLI. Setting this to ``True`` is only needed when you want to
-# use the :command:`occ` command and use ``\OC\Memcache\APCu`` as memcache.
-# See https://github.com/owncloud/core/issues/17329
-owncloud_enable_apc_cli: True
-
 
 # .. envvar:: owncloud_upload_size
 #
@@ -341,40 +385,17 @@ owncloud_app_user_webfinger_support: False
 
 # .. ownCloud config.php configuration [[[1
 #
-# .. _owncloud__ref_config:
-#
 # -------------------------------------
 #   ownCloud config.php configuration
 # -------------------------------------
 #
-# The dicts of this section ends up in :file:`debops.config.php` and override the values
-# from :file:`config.php`.
-# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html>`__ for details.
-#
-# Note: Parameters with \ (backslash) needs double escaping::
-#
-#    owncloud_config:
-#      memcache.local: '\\OC\\Memcache\\APCu'
-#
-# This is not confirmed by the `official ownCloud Dokumentation
-# <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html>`_
-# but is a result of how the configuration file is generated using JSON as data format.
-#
-#
-# Dict keys can be overridden when they are present in multiple dicts.
-# Order of priority from least specific to most specific:
-#
-# * :envvar:`owncloud_config_role_optional`
-# * :envvar:`owncloud_config_role_required`
-# * :envvar:`owncloud_config`
-# * :envvar:`owncloud_config_group`
-# * :envvar:`owncloud_config_host`
-#
+# The dicts of this section ends up in :file:`owncloud/config/debops.config.php` and override the values
+# from :file:`owncloud/config/config.php`. For more information refer to :ref:`owncloud__ref_config`.
 
 
 # .. envvar:: owncloud_config_role_required
 #
-# See :ref:`owncloud__ref_config`.
+# See `ownCloud config.php configuration`_.
 # This variable is a set of required settings for ownCloud to be usable.
 # Set::
 #
@@ -394,7 +415,7 @@ owncloud_config_role_required:
 
 # .. envvar:: owncloud_config_role_optional
 #
-# See :ref:`owncloud__ref_config`.
+# See `ownCloud config.php configuration`_.
 # This variable is a set of optional settings for ownCloud recommended by the
 # maintainers of this role.
 # Set::
@@ -414,13 +435,24 @@ owncloud_config_role_optional:
   ## ISO 8601 datetime: 2004-02-12T15:19:21+00:00
   logdateformat: 'Y-m-d H:i:s.u'
 
-  ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html
-  'memcache.local': '\\OC\\Memcache\\APCu'
+  'memcache.local':
+    state: '{{ "present" if (owncloud_apcu_enabled|bool) else "absent" }}'
+    value: '\\OC\\Memcache\\APCu'
+
+  'memcache.locking':
+    state: '{{ "present" if (owncloud_redis_enabled|bool) else "absent" }}'
+    value: '\\OC\\Memcache\\Redis'
+
+  'redis':
+    state: '{{ "present" if (owncloud_redis_enabled|bool) else "absent" }}'
+    value:
+      host: '{{ owncloud_redis_host }}'
+      port: '{{ owncloud_redis_port|int }}'
 
 
 # .. envvar:: owncloud_config
 #
-# See :ref:`owncloud__ref_config`.
+# See `ownCloud config.php configuration`_.
 # This variable is intended to be used in Ansible’s global inventory.
 # More specific variables can overrule less specific variables.
 owncloud_config: {}
@@ -428,7 +460,7 @@ owncloud_config: {}
 
 # .. envvar:: owncloud_config_group
 #
-# See :ref:`owncloud__ref_config`.
+# See `ownCloud config.php configuration`_.
 # This variable is intended to be used in a host inventory group of Ansible
 # (only one host group is supported).
 owncloud_config_group: {}
@@ -436,7 +468,7 @@ owncloud_config_group: {}
 
 # .. envvar:: owncloud_config_host
 #
-# See :ref:`owncloud__ref_config`.
+# See `ownCloud config.php configuration`_.
 # This variable is intended to be used in the inventory of the host.
 owncloud_config_host: {}
 
@@ -979,7 +1011,7 @@ owncloud__apt_preferences__dependent_list:
     backports: [ 'trusty' ]
     reason: 'ownCloud requires at least APCu version 4.0.6.'
     by_role: 'debops.owncloud'
-    delete: '{{ owncloud__deploy_state != "present" }}'
+    state: '{{ owncloud__deploy_state }}'
 
 # .. envvar:: owncloud__nginx_access_log_assets
 #
