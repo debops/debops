@@ -81,6 +81,9 @@ Removed
 - The ``item.enabled`` parameter in pool configuration has been replaced by
   ``item.state``. [drybjed]
 
+- The handler flush at the end of the role task list has been removed.
+  [drybjed]
+
 v0.1.0 - 2016-06-01
 -------------------
 
