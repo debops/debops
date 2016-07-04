@@ -3,9 +3,12 @@
 - name: "Restart php-fpm"
   service:
     name: "php{{ php__version }}-fpm"
-    state: restarted
+    state: 'restarted'
+  when: '"fpm" in php__server_api_packages'
 
 - name: "Reload php-fpm"
   service:
     name: "php{{ php__version }}-fpm"
-    state: reloaded
+    state: 'reloaded'
+  when: '"fpm" in php__server_api_packages'
+

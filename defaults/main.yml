@@ -92,16 +92,21 @@ php__default_ping_response: 'pong'
 php__default_rlimit_files: 1024
 php__default_rlimit_core: 0
 
-# Should php5 role manage server pools?
-php__manage_pools: True
-
 # List of managed pools
-php__pools: [ '{{ php__pool_default }}' ]
+php__default_pools: [ '{{ php__pool_www_data }}' ]
+
+php__pools: []
+
+php__group_pools: []
+
+php__host_pools: []
+
+php__dependent_pools: []
 
 # Default PHP-FPM pool for www-data, explanation of variables can be found
 # in templates/etc/php/fpm/pool-available.d/pool.conf.j2
 # Everything commented out is optional.
-php__pool_default:
+php__pool_www_data:
   enabled: True
   name: 'www-data'
 

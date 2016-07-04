@@ -67,6 +67,7 @@
     owner: 'root'
     group: 'root'
     mode: '0700'
+  when: '"fpm" in php__server_api_packages'
 
 - name: "Check existence of php-fpm-reopenlogs"
   stat:
@@ -80,14 +81,16 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  when: '"fpm" in php__server_api_packages'
 
-- name: "Create directory for php/fpm under etc"
+- name: Ensure that required directories exist
   file:
-    path: '{{ php__etc_base }}/fpm'
+    path: '{{ php__etc_base }}/fpm/pool.d'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
+  when: '"fpm" in php__server_api_packages'
 
 - name: "Configure php.ini for php-fpm"
   template:
@@ -97,6 +100,7 @@
     group: 'root'
     mode: '0644'
   notify: "Restart php-fpm"
+  when: '"fpm" in php__server_api_packages'
 
 - name: "Configure php.ini for CLI"
   template:
@@ -106,16 +110,42 @@
     group: 'root'
     mode: '0644'
 
-- name: Check if pool-available.d/ directory exists
-  stat:
-    path: '{{ php__etc_base }}/fpm/pool-available.d'
-  register: pool_available_d
+- name: Divert default PHP-FPM pool
+  command: dpkg-divert --quiet --local --divert {{ php__etc_base }}/fpm/pool.d/www.conf.dpkg-divert
+           --rename {{ php__etc_base }}/fpm/pool.d/www.conf
+  args:
+    creates: '{{ php__etc_base }}/fpm/pool.d/www.conf.dpkg-divert'
+  notify: [ 'Restart php-fpm' ]
+  when: '"fpm" in php__server_api_packages'
 
-- name: "Remove default php-fpm pool if exists"
+- name: Generate php-fpm pool configuration
+  template:
+    src: 'etc/php/fpm/pool.d/pool.conf.j2'
+    dest: '{{ php__etc_base }}/fpm/pool.d/{{ item.name }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ php__default_pools }}'
+    - '{{ php__pools }}'
+    - '{{ php__group_pools }}'
+    - '{{ php__host_pools }}'
+    - '{{ php__dependent_pools }}'
+  when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent"'
+  notify: [ 'Restart php-fpm' ]
+
+- name: Remove php-fpm pool configuration if requested
   file:
-    path: '{{ php__etc_base }}/fpm/pool.d/www.conf'
-    state: absent
-  when: not pool_available_d.stat.exists
+    dest: '{{ php__etc_base }}/fpm/pool.d/{{ item.name }}.conf'
+    state: 'absent'
+  with_flattened:
+    - '{{ php__default_pools }}'
+    - '{{ php__pools }}'
+    - '{{ php__group_pools }}'
+    - '{{ php__host_pools }}'
+    - '{{ php__dependent_pools }}'
+  when: '"fpm" in php__server_api_packages and item.state|d() and item.state == "absent"'
+  notify: [ 'Restart php-fpm' ]
 
 - name: Make sure that Ansible local facts directory is present
   file:
@@ -133,9 +163,6 @@
     group: 'root'
     mode: '0644'
   register: php__register_local_facts
-
-- include: php_pools.yml
-  when: php__manage_pools|default(True)|bool
 
 - name: Gather facts if they were modified
   action: setup

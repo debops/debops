@@ -32,6 +32,13 @@ Added
   without the need for the other roles to know what PHP version is installed.
   [drybjed]
 
+- The ``item.state`` parameter in PHP-FPM pool configuration can be used to
+  generate or remove pools conditionally. [drybjed]
+
+- Role now exposes more ``php__*_pools`` lists to allow for better pool
+  management from Ansible inventory as wall as creation of pools by other
+  Ansible roles. [drybjed]
+
 Changed
 ~~~~~~~
 
@@ -41,12 +48,22 @@ Changed
 
 - Converted Changelog to a new format. [drybjed]
 
-- Redesigned APT package support.
-
-  Role now detects what PHP package versions are available and installs the
+- Role now detects what PHP package versions are available and installs the
   highest one available. An optional Ondřej Surý APT/PPA repository can be
   enabled on Debian or Ubuntu distributions to provide newer version of
   packages if desired. [drybjed]
+
+- The ``php__pool_default`` variable which defines the default PHP-FPM pool has
+  been renamed to ``php__pool_www_data``. It is now included in the
+  ``php__default_pools`` list. [drybjed]
+
+- Some role tasks will only be activated by the presence of ``fpm`` package in
+  ``php__server_api_packages`` list. This allows for management of PHP
+  environment without PHP-FPM installed. [drybjed]
+
+- The default ``/etc/php{5,7.0}/fpm/pool.d/www.conf`` pool is now diverted to
+  a separate file instead of being removed, to allow unattended package
+  upgrades. [drybjed]
 
 Removed
 ~~~~~~~
@@ -55,6 +72,14 @@ Removed
   PHP version is detected at role execution and stored in Ansible local facts
   to ensure idempotency. The autodetected PHP version can be influenced by
   order of the package names in ``php__version_preference`` list. [drybjed]
+
+- The ``/etc/php{5,7.0}/fpm/pool-available.d/`` directory used to hold the
+  generated pool configuration files has been removed. The Debian PHP packages
+  don't support this approach, and switch to the ``item.state`` parameter makes
+  this method redundant. [drybjed]
+
+- The ``item.enabled`` parameter in pool configuration has been replaced by
+  ``item.state``. [drybjed]
 
 v0.1.0 - 2016-06-01
 -------------------
