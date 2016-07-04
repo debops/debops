@@ -36,7 +36,7 @@ Added
   generate or remove pools conditionally. [drybjed]
 
 - Role now exposes more ``php__*_pools`` lists to allow for better pool
-  management from Ansible inventory as wall as creation of pools by other
+  management from Ansible inventory as well as creation of pools by other
   Ansible roles. [drybjed]
 
 Changed
@@ -68,7 +68,7 @@ Changed
 Removed
 ~~~~~~~
 
-- The ``php__version`` variable cannot be set directly; istead the available
+- The ``php__version`` variable cannot be set directly; instead the available
   PHP version is detected at role execution and stored in Ansible local facts
   to ensure idempotency. The autodetected PHP version can be influenced by
   order of the package names in ``php__version_preference`` list. [drybjed]
