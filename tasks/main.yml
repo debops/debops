@@ -5,59 +5,60 @@
     src: '/etc/timezone'
   register: php__etc_timezone
 
-- name: "Add Ondřej Surý PPA key"
+- name: Add Ondrej Sury APT key
   apt_key:
-    keyserver: "keyserver.ubuntu.com"
-    id: 4F4EA0AAE5267A6C
-    state: present
-  when: ansible_distribution_release == 'xenial' and php__version == '5.6'
+    id: '{{ php__sury_apt_key_id }}'
+    state: 'present'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+  when: php__sury|bool
 
-- name: "Add Ondřej Surý PPA repository"
+- name: Add Ondrej Sury repository
   apt_repository:
-    repo: 'ppa:ondrej/php'
-    state: present
-    update_cache: yes
-  when: ansible_distribution_release == 'xenial' and php__version == '5.6'
+    repo: '{{ php__sury_apt_repo }}'
+    state: 'present'
+    update_cache: True
+  when: php__sury|bool
 
-- name: Make sure PHP-FPM support is installed
-  apt:
-    pkg: 'php{{ php__version }}-{{ item }}'
-    state: 'latest'
-    install_recommends: no
-  with_items: [ 'fpm', 'cli' ]
+- name: Detect PHP version from available packages
+  environment:
+    LANG: 'C'
+  shell: apt-cache show {{ php__version_preference | join(' ') }} | grep -E '^Package:\s+php' | head -n 1 | awk '{print $2}' | sed -e 's/^php//'
+  register: php__register_version
+  always_run: True
+  changed_when: False
 
-- name: Make sure that Ansible local facts directory is present
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
+- name: Set PHP version
+  set_fact:
+    php__version: '{{ ansible_local.php.version
+                      if (ansible_local|d() and ansible_local.php|d() and
+                          ansible_local.php.version|d())
+                      else php__register_version.stdout }}'
 
-- name: Save PHP-FPM local facts
-  template:
-    src: 'etc/ansible/facts.d/php.fact.j2'
-    dest: '/etc/ansible/facts.d/php.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  register: php_register_local_facts
-
-- name: Gather facts if they were modified
-  action: setup
-  when: php_register_local_facts.changed
+- name: Set PHP base paths
+  set_fact:
+    php__etc_base: '{{ ("/etc/php/" + php__version)
+                       if (php__version | version_compare("7.0", ">="))
+                       else "/etc/php5" }}'
+    php__lib_base: '{{ ("/usr/lib/php/" + php__version)
+                       if (php__version | version_compare("7.0", ">="))
+                       else "/usr/lib/php5" }}'
 
 - name: Install PHP packages
   apt:
-    pkg: "{{ item|search('php.*-')|ternary(item, 'php' + php__version + '-' + item) }}"
-    state: 'latest'
-    install_recommends: no
+    name: '{{ item|search("php.*-")|ternary(item, "php" + php__version + "-" + item) }}'
+    state: 'present'
+    install_recommends: False
   with_flattened:
-    - '{{ php__packages }}'
+    - '{{ php__server_api_packages }}'
     - '{{ php__base_packages }}'
+    - '{{ php__packages }}'
     - '{{ php__group_packages }}'
     - '{{ php__host_packages }}'
-  notify: ['Restart php-fpm']
+    - '{{ php__dependent_packages }}'
+  notify: [ 'Restart php-fpm' ]
 
 - name: "Create directory for php*-fpm logs"
   file:
@@ -116,24 +117,28 @@
     state: absent
   when: not pool_available_d.stat.exists
 
-- name: "Create pool-available.d/ directory for php-fpm"
+- name: Make sure that Ansible local facts directory is present
   file:
-    path: '{{ php__etc_base }}/fpm/pool-available.d'
+    path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
 
-- name: "Ensure pool.d/ directory for php*-fpm exists"
-  # Just for the case it has been deleted manually
-  file:
-    path: '{{ php__etc_base }}/fpm/pool.d'
-    state: 'directory'
+- name: Save PHP-FPM local facts
+  template:
+    src: 'etc/ansible/facts.d/php.fact.j2'
+    dest: '/etc/ansible/facts.d/php.fact'
     owner: 'root'
     group: 'root'
-    mode: '0755'
+    mode: '0644'
+  register: php__register_local_facts
 
 - include: php_pools.yml
   when: php__manage_pools|default(True)|bool
+
+- name: Gather facts if they were modified
+  action: setup
+  when: php__register_local_facts.changed
 
 - meta: flush_handlers
