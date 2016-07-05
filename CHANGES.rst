@@ -39,6 +39,14 @@ Changed
 
 - Convert Changelog to the new format. [drybjed]
 
+Fixed
+~~~~~
+
+- The PKI session token is now generated once for all hosts, by delegating the
+  task to Ansible Controller. This fixes a bug with Ansible Playbook runs on
+  multiple hosts at once, where only one host would receive the signed
+  certificates at a time. [drybjed]
+
 
 v0.2.10 - 2016-06-14
 --------------------
