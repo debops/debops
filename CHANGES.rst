@@ -1,10 +1,32 @@
 Changelog
 =========
 
-v0.2.11
--------
+**debops.pki**
 
-*Unreleased*
+Copyright (C) 2015-2016 `DebOps Project <http://debops.org/>`_
+
+License: `GNU General Public License v3 <https://www.tldrlegal.com/l/gpl-3.0>`_
+
+This project adheres to `Semantic Versioning <http://semver.org/>`_
+and `human-readable changelog <http://keepachangelog.com/>`_.
+
+
+Contributors
+------------
+
+- [drybjed] - `Maciej Delmanowski <https://github.com/drybjed/>`_  (role maintainer)
+- [ypid] - `Robin Schneider <https://github.com/ypid/>`_
+
+
+Unreleased
+----------
+
+
+v0.2.11 - 2016-07-05
+--------------------
+
+Added
+~~~~~
 
 - Ensure that highly sensitive files are not checked into version control when
   for example :program:`etckeeper` is used for tracking changes in :file:`/etc`.
@@ -12,10 +34,17 @@ v0.2.11
   need to be manually deleted from version control history!
   Refer to :envvar:`pki_vcs_ignore_patterns_role` for more details. [ypid]
 
-v0.2.10
--------
+Changed
+~~~~~~~
 
-*Released: 2016-06-14*
+- Convert Changelog to the new format. [drybjed]
+
+
+v0.2.10 - 2016-06-14
+--------------------
+
+Changed
+~~~~~~~
 
 - Documentation fixes and improvements. Made variables hyperlinks using the
   `any` role in Sphinx which also ensures that variables which the
@@ -30,10 +59,12 @@ v0.2.10
   if no internal Certificate Authority is enabled. In this case they are not
   relevant for ``debops.pki`` operation. [drybjed]
 
-v0.2.9
-------
 
-*Released: 2016-06-01*
+v0.2.9 - 2016-06-01
+-------------------
+
+Added
+~~~~~
 
 - Expose the list with order of authority preference used by a PKI realm to
   select active valid certificate in role default variables. [drybjed]
@@ -43,21 +74,28 @@ v0.2.9
   which can then be used to request and authenticate ACME certificates.
   [drybjed]
 
-v0.2.8
-------
 
-*Released: 2016-05-05*
+v0.2.8 - 2016-05-05
+-------------------
+
+Added
+~~~~~
 
 - Add support for setting filesystem ACL entries for private directories and
   files. [drybjed]
 
+Changed
+~~~~~~~
+
 - Include realms defined in :any:`pki_default_realms` in tasks that copy files
   from Ansible Controller depending on an Ansible inventory group. [drybjed]
 
-v0.2.7
-------
 
-*Released: 2016-05-03*
+v0.2.7 - 2016-05-03
+-------------------
+
+Changed
+~~~~~~~
 
 - Documentation improvements. Fixed examples, spelling, grammar and Sphinx inline
   syntax. [ypid]
@@ -76,10 +114,12 @@ v0.2.7
 - Only use ``pki_fact_lib_path`` inside of quotes as this value could contain
   whitespace characters. [ypid]
 
-v0.2.6
-------
 
-*Released: 2016-04-12*
+v0.2.6 - 2016-04-12
+-------------------
+
+Changed
+~~~~~~~
 
 - Convert ACME intermediate certificate from DER to PEM format automatically.
   [drybjed]
@@ -87,18 +127,22 @@ v0.2.6
 - Make sure that role works with older ``debops.nginx`` deployments, which
   didn't support ACME integration. [drybjed]
 
-v0.2.5
-------
 
-*Released: 2016-03-02*
+v0.2.5 - 2016-03-02
+-------------------
+
+Changed
+~~~~~~~
 
 - Don't run :program:`pki-authority` script on Ansible Controller if list of
   :any:`pki_authorities` is not defined. [drybjed]
 
-v0.2.4
-------
 
-*Released: 2016-02-21*
+v0.2.4 - 2016-02-21
+-------------------
+
+Changed
+~~~~~~~
 
 - Use a more portable "shebang" string in Bash scripts. [drybjed]
 
@@ -146,22 +190,29 @@ v0.2.4
   certificates are changed, all generated chained certificate files are
   correctly updated. [drybjed]
 
-v0.2.3
-------
 
-*Released: 2016-02-08*
+v0.2.3 - 2016-02-08
+-------------------
+
+Changed
+~~~~~~~
 
 - Replace the example hook script with something that actually works. [drybjed]
 
 - Fix deprecation warnings in Ansible 2.1.0. [drybjed]
 
-v0.2.2
-------
 
-*Released: 2016-02-03*
+v0.2.2 - 2016-02-03
+-------------------
+
+Added
+~~~~~
 
 - Add support for Diffie-Hellman parameters appended to certificate chains. DHE
   parameters are managed by ``debops.dhparam`` Ansible role. [drybjed]
+
+Changed
+~~~~~~~
 
 - When an active authority directory is changed, correctly clean up files not
   present in the new authority directory and symlinks without existing targets.
@@ -189,26 +240,32 @@ v0.2.2
 - Do not create a :program:`cron` task when support for PKI is disabled on a host.
   [drybjed]
 
-v0.2.1
-------
 
-*Released: 2016-02-01*
+v0.2.1 - 2016-02-01
+-------------------
+
+Changed
+~~~~~~~
 
 - Update old README with new documentation. [drybjed]
 
-v0.2.0
-------
 
-*Released: 2016-02-01*
+v0.2.0 - 2016-02-01
+-------------------
+
+Changed
+~~~~~~~
 
 - Replace old ``debops.pki`` role with a new, redesigned version. Some
   additional code, variable cleanup and documentation is still missing, but
   role is usable at this point. [drybjed]
 
-v0.1.0
-------
 
-*Released: 2016-01-04*
+v0.1.0 - 2016-01-04
+-------------------
+
+Added
+~~~~~
 
 - Add Changelog. [drybjed]
 
@@ -221,15 +278,21 @@ v0.1.0
   :file:`/etc/ca-certificates.conf`. Current set of active Root CA Certificates is
   preserved. [drybjed]
 
-- Reorder Changelog entries. [drybjed]
-
 - Add a way to copy arbitrary files from Ansible Controller to remote host PKI
   directories. [drybjed]
+
+- Expose ``ansible_fqdn`` variable as :any:`pki_fqdn` so that it can be overridden
+  if necessary. [drybjed]
+
+Changed
+~~~~~~~
+
+- Reorder Changelog entries. [drybjed]
+
+Removed
+~~~~~~~
 
 - Remove Diffie-Hellman parameter support from the role, it's now managed by
   a separate ``debops.dhparam`` Ansible role. Existing hosts won't be affected.
   [drybjed]
-
-- Expose ``ansible_fqdn`` variable as :any:`pki_fqdn` so that it can be overridden
-  if necessary. [drybjed]
 
