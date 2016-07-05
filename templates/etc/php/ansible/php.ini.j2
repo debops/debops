@@ -1,0 +1,21 @@
+; {{ ansible_managed }}
+
+{% macro print_config(config) -%}
+{%   if config.state|d('present') != 'absent' %}
+{%     if config.comment|d() %}
+; {{ config.comment }}
+{%     endif %}
+{%     if config.name|d() %}
+[{{ config.name }}]
+{%     endif %}
+{%     if config.options|d() %}
+{{ config.options }}
+{%     endif %}
+{%     if config.sections|d() %}
+{%       for element in config.sections %}
+{{ print_config(element) -}}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endmacro -%}
+{{ print_config(item) }}

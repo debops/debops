@@ -25,9 +25,6 @@ php__socket_listen_owner: 'www-data'
 php__socket_listen_group: 'www-data'
 php__socket_listen_mode: '0660'
 
-# Memory limit
-php__memory_limit: '128M'
-
 php__server_api_packages: [ 'cli', 'fpm' ]
 
 # Install set of standard packages.
@@ -67,15 +64,29 @@ php__dependent_packages: []
 php__production: True
 
 # Default values for several global PHP5 options
-php__max_execution_time: '30'
-php__max_input_time: '60'
-php__post_max_size: '8M'
-php__default_charset: 'UTF-8'
-php__file_uploads: 'On'
-php__upload_max_filesize: '{{ php__post_max_size }}'
-php__max_file_uploads: 20
-php__allow_url_fopen: 'On'
-php__cgi_fix_pathinfo: '0'
+php__ini_cgi_fix_pathinfo: False
+
+php__ini_max_execution_time: '30'
+
+php__ini_max_input_time: '60'
+
+php__ini_memory_limit: '128M'
+
+php__ini_post_max_size: '8M'
+
+php__ini_default_charset: 'UTF-8'
+
+php__ini_file_uploads: True
+
+php__ini_upload_max_filesize: '{{ php__ini_post_max_size }}'
+
+php__ini_max_file_uploads: '20'
+
+php__ini_allow_url_fopen: True
+
+php__ini_date_timezone: '{{ ansible_local.timezone
+                            if (ansible_local|d() and ansible_local.timezone|d())
+                            else "Etc/UTC" }}'
 
 # Default values used in pools when pool has none set
 php__default_pm: 'ondemand'
@@ -91,6 +102,43 @@ php__default_ping_path: '/php_ping'
 php__default_ping_response: 'pong'
 php__default_rlimit_files: 1024
 php__default_rlimit_core: 0
+
+# Custom ``php.ini`` configuration managed by Ansible. See
+# :ref:`php__ref_configuration` for more details.
+php__default_configuration:
+
+  - filename: '00-ansible'
+    name: 'PHP'
+    sections:
+
+      - options: |
+          max_execution_time =     {{  php__ini_max_execution_time }}
+          max_input_time =         {{  php__ini_max_input_time }}
+          memory_limit =           {{  php__ini_memory_limit }}
+          error_reporting =        {{ (php__production|bool)|ternary('E_ALL & ~E_DEPRECATED & ~E_STRICT', 'E_ALL') }}
+          display_errors =         {{ (php__production|bool)|ternary('Off', 'On') }}
+          display_startup_errors = {{ (php__production|bool)|ternary('Off', 'On') }}
+          track_errors =           {{ (php__production|bool)|ternary('Off', 'On') }}
+          post_max_size =          {{  php__ini_post_max_size }}
+          default_charset =        {{  php__ini_default_charset }}
+          file_uploads =           {{ (php__ini_file_uploads|bool)|ternary('On', 'Off') }}
+          upload_max_filesize =    {{  php__ini_upload_max_filesize }}
+          max_file_uploads =       {{  php__ini_max_file_uploads }}
+          allow_url_fopen =        {{ (php__ini_allow_url_fopen|bool)|ternary('On','Off') }}
+
+      - name: 'CGI'
+        options: |
+          cgi.fix_pathinfo =       {{ (php__ini_cgi_fix_pathinfo|bool)|ternary('1','0') }}
+
+      - name: 'Date'
+        options: |
+          date.timezone =          {{ php__ini_date_timezone }}
+
+php__configuration: []
+
+php__group_configuration: []
+
+php__host_configuration: []
 
 # List of managed pools
 php__default_pools: [ '{{ php__pool_www_data }}' ]

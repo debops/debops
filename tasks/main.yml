@@ -1,10 +1,5 @@
 ---
 
-- name: Get current timezone from the host
-  slurp:
-    src: '/etc/timezone'
-  register: php__etc_timezone
-
 - name: Install PHP packages
   apt:
     name: '{{ item|search("php.*-")|ternary(item, "php" + php__version + "-" + item) }}'
@@ -30,30 +25,47 @@
 
 - name: Ensure that required directories exist
   file:
-    path: '{{ php__etc_base }}/fpm/pool.d'
+    path: '{{ item }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: '"fpm" in php__server_api_packages'
+  with_items:
+    - '{{ php__etc_base }}/ansible'
+    - '{{ php__etc_base }}/fpm/pool.d'
 
-- name: "Configure php.ini for php-fpm"
+- name: Generate php.ini configuration
   template:
-    src: 'etc/php/php.ini.j2'
-    dest: '{{ php__etc_base }}/fpm/php.ini'
+    src: 'etc/php/ansible/php.ini.j2'
+    dest: '{{ php__etc_base + "/" + item.path | d("ansible/") + (item.filename | d("00-ansible")) + ".ini" }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  notify: "Restart php-fpm"
-  when: '"fpm" in php__server_api_packages'
+  with_flattened:
+    - '{{ php__default_configuration }}'
+    - '{{ php__configuration }}'
+    - '{{ php__group_configuration }}'
+    - '{{ php__host_configuration }}'
+  when: item.state|d('present') != 'absent'
+  notify: [ 'Restart php-fpm' ]
 
-- name: "Configure php.ini for CLI"
-  template:
-    src: 'etc/php/php.ini.j2'
-    dest: '{{ php__etc_base }}/cli/php.ini'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
+- name: Remove php.ini configuration if requested
+  file:
+    path: '{{ php__etc_base + "/" + item.path | d("ansible/") + (item.filename | d("00-ansible")) + ".ini" }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ php__default_configuration }}'
+    - '{{ php__configuration }}'
+    - '{{ php__group_configuration }}'
+    - '{{ php__host_configuration }}'
+  when: item.state|d() and item.state == 'absent'
+  notify: [ 'Restart php-fpm' ]
+
+- name: Synchronize Ansible and PHP SAPI configuration
+  script: script/php-synchronize-config.sh {{ php__version }}
+  register: php__register_synchronize_config
+  changed_when: php__register_synchronize_config.stdout != ''
+  notify: [ 'Restart php-fpm' ]
 
 - name: Divert default PHP-FPM pool
   command: dpkg-divert --quiet --local --divert {{ php__etc_base }}/fpm/pool.d/www.conf.dpkg-divert

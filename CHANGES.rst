@@ -50,6 +50,13 @@ Added
 - Add custom configuration for ``debops.logrotate`` Ansible role in default
   variables. [drybjed]
 
+- Add new ``php.ini`` configuration which uses a separate ``/etc/php/ansible/``
+  directory with generated configuration files, which are then symlinked to
+  different PHP Server API ``conf.d/`` directories, similar to how Debian
+  packages handle PHP extensions. The role allows easy creation of custom
+  configuration files using a separate YAML list. Configuration is applied to
+  all Server APIs at the same time. [drybjed]
+
 Changed
 ~~~~~~~
 
@@ -76,6 +83,14 @@ Changed
   a separate file instead of being removed, to allow unattended package
   upgrades. [drybjed]
 
+- Role variables related to ``php.ini`` configuration have been renamed from
+  ``php__*`` prefix to ``php__ini_*`` prefix to ensure better separation of
+  different configuration options. [drybjed]
+
+- The timezone configuration is now based on the ``ansible_local.timezone``
+  Ansible fact, managed by ``debops.core`` role, insead of reading the
+  ``/etc/timezone`` file directly. [drybjed]
+
 Removed
 ~~~~~~~
 
@@ -98,6 +113,12 @@ Removed
 - Role does not configure its own ``logrotate`` configuration anymore. The
   ``debops.logrotate`` role is used instead. An example usage can be found in
   the provided playbook. [drybjed]
+
+- The direct configuration of ``php.ini`` files in different PHP Server API
+  directories has been removed to avoid confict during package updates, because
+  these files are managed using ``ucf`` which does not support file diversion.
+  This also allows usage of default ``php.ini`` configuration options where
+  possible and only override the important ones in a different file. [drybjed]
 
 v0.1.0 - 2016-06-01
 -------------------
