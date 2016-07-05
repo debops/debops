@@ -1,14 +1,20 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-- name: Expose host FQDN, session token and library path in temporary variables
+- name: Generate random session token
+  set_fact:
+    pki_fact_session_token: '{{ 9999999999999999999999999999999999999 | random | md5 }}'
+  delegate_to: 'localhost'
+  become: False
+  run_once: True
+
+- name: Expose host FQDN and library path in temporary variables
   set_fact:
     pki_fact_fqdn: '{{ pki_fqdn }}'
     pki_fact_lib_path: '{{ (ansible_local.root.lib
                             if (ansible_local|d() and ansible_local.root|d() and
                                 ansible_local.root.lib|d())
                             else "/usr/local/lib") + "/pki" }}'
-    pki_fact_session_token: '{{ 9999999999999999999999999999999999999 | random | md5 }}'
 
 # Install PKI packages [[[
 - name: Install PKI packages
