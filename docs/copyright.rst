@@ -1,35 +1,5 @@
 Copyright
 =========
 
-::
+.. literalinclude:: ../COPYRIGHT
 
-    Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
-    Copyright (C) 2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
-    Copyright (C) 2015-2016 Robin Schneider <ypid@riseup.net>
-    Copyright (C) 2015-2016 DebOps Project http://debops.org/
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License version 3, as
-    published by the Free Software Foundation.
-
-    This program is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-    General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program. If not, see http://www.gnu.org/licenses/
-
-Credits
--------
-
-* Maciej Delmanowski <drybjed_at_gmail.com>
-
-  * creator of the DebOps Project
-
-* Hartmut Goebel
-
-* Robin `ypid` Schneider
-
-  * Current maintainer of this role
-  * His work on this role is partly funded by `hamcos <http://www.hamcos.de/>`_
