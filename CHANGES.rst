@@ -82,9 +82,12 @@ v0.3.0
 
 - Support Redis for file locking. [ypid]
 
-- Install LibreOffice, :command:`smbclient` and ImageMagick by default to make
-  ownCloud work with the documents app, SMB shares and thumbnails out of
+- Install :command:`smbclient` and ImageMagick by default to make
+  ownCloud work with SMB shares and thumbnails out of
   the box. [ypid]
+
+- Prepare to use the documents app when setting
+  :envvar:`owncloud_app_documents_enabled` to ``True``. [ypid]
 
 v0.2.0
 ------

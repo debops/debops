@@ -40,6 +40,7 @@ owncloud_packages_recommended:
   ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
   ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
   - '{{ [ "libreoffice" ] if (owncloud_app_documents_enabled|bool) else [] }}'
+  ## TODO: Is it necessary to install all LibreOffice packages? https://github.com/owncloud/documents#known-issues
 
 
 # .. envvar:: owncloud_packages_optional
@@ -574,6 +575,9 @@ owncloud_run_occ_global_commands:
   - command: 'app:disable updater'
     when: '{{ owncloud_release | version_compare("8.2", "<=") }}'
 
+  # - command: 'app:disable documents'
+  #   when: '{{ not owncloud_app_documents_enabled|bool }}'
+
 
 # .. envvar:: owncloud_run_occ_group_commands
 #
@@ -602,8 +606,13 @@ owncloud_occ_bin_file_path: '/usr/local/bin/occ'
 # .. envvar:: owncloud_app_documents_enabled
 #
 # Where the `Documents app <https://apps.owncloud.com/content/show.php/Documents?content=168711>`_ should be enabled.
+# Not enabled by default because as of ownCloud 9.0 the application is not shipped by default.
+#
 # FIXME: Automate app enabling with occ.
-owncloud_app_documents_enabled: True
+# https://github.com/owncloud/documents/issues/508 still present?
+# `occ app:enable documents` → "documents not found"
+# Only works when the documents app has been enabled via the web interface as of ownCloud 9.0.3.
+owncloud_app_documents_enabled: False
 
 
 # .. LDAP authentication [[[1
