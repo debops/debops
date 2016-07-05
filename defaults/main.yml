@@ -28,6 +28,20 @@ owncloud_base_packages:
   - '{{ "php5-redis" if (owncloud_redis_enabled|bool) else [] }}'
 
 
+# .. envvar:: owncloud_packages_recommended
+#
+# List of recommended packages for ownCloud.
+# If you don’t want to install them, set::
+#
+#    owncloud_packages_recommended: []
+#
+# in your inventory.
+owncloud_packages_recommended:
+  ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
+  ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
+  - '{{ [ "libreoffice" ] if (owncloud_app_documents_enabled|bool) else [] }}'
+
+
 # .. envvar:: owncloud_packages_optional
 #
 # List of optional packages for ownCloud.
@@ -40,10 +54,6 @@ owncloud_packages_optional:
   - 'php5-imagick'
   - 'smbclient'
   - 'libsmbclient'
-
-  ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
-  ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
-  - 'libreoffice'
 
 
 # .. envvar:: owncloud_packages
@@ -581,6 +591,19 @@ owncloud_run_occ_host_commands: []
 #
 # Where the :command:`occ` wrapper script should be installed.
 owncloud_occ_bin_file_path: '/usr/local/bin/occ'
+
+
+# .. ownCloud applications [[[1
+#
+# -------------------------
+#   ownCloud applications
+# -------------------------
+
+# .. envvar:: owncloud_app_documents_enabled
+#
+# Where the `Documents app <https://apps.owncloud.com/content/show.php/Documents?content=168711>`_ should be enabled.
+# FIXME: Automate app enabling with occ.
+owncloud_app_documents_enabled: True
 
 
 # .. LDAP authentication [[[1
