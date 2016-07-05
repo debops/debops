@@ -25,10 +25,9 @@ following keys:
   parameter is ignored in the main configuration file.
 
 ``divert``
-  Boolean, optional. Enable diversion of the original configuration file
-  located in ``/etc/logrotate.d/``. This option should be used only to change
-  the configuration included in Debian packages. Don't enable this option with
-  custom log rotation config files, results can be undefined.
+  Boolean, optional. When specified and ``True``, the original configuration
+  file will be diverted using ``dpkg-divert(8)``. If a configuration file is
+  due to be removed, the original file will be reverted back into place.
 
 ``sections``
   Optional. List of YAML dictionaries that define the multiple log
