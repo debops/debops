@@ -38,6 +38,8 @@ install a Redis server on the same host as ownCloud or choose a different host:
 In case you chose a different host, you will need to specify which of your
 Redis servers the ownCloud instance should use by specifying the Redis
 server host as ``owncloud_redis_host``.
+This role will use a locally setup Redis server automatically when it was setup
+by putting the host into the ``debops_service_redis`` host group.
 
 Example playbook
 ----------------
