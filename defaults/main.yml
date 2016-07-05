@@ -28,6 +28,46 @@ owncloud_base_packages:
   - '{{ "php5-redis" if (owncloud_redis_enabled|bool) else [] }}'
 
 
+# .. envvar:: owncloud_packages_optional
+#
+# List of optional packages for ownCloud.
+# If you don’t want to install them, set::
+#
+#    owncloud_packages_optional: []
+#
+# in your inventory.
+owncloud_packages_optional:
+  - 'php5-imagick'
+  - 'smbclient'
+  - 'libsmbclient'
+
+  ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
+  ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
+  - 'libreoffice'
+
+
+# .. envvar:: owncloud_packages
+#
+# List of optional packages for ownCloud.
+# This variable is intended to be used in Ansible’s global inventory.
+owncloud_packages: []
+
+
+# .. envvar:: owncloud_packages_group
+#
+# List of optional packages for ownCloud.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
+owncloud_packages_group: []
+
+
+# .. envvar:: owncloud_packages_host
+#
+# List of optional packages for ownCloud.
+# This variable is intended to be used in the inventory of the host.
+owncloud_packages_host: []
+
+
 # .. envvar:: owncloud__deploy_state
 #
 # What is the desired state which this role should achieve? Possible options:
