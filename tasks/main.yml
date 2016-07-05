@@ -5,47 +5,6 @@
     src: '/etc/timezone'
   register: php__etc_timezone
 
-- name: Add Ondrej Sury APT key
-  apt_key:
-    id: '{{ php__sury_apt_key_id }}'
-    state: 'present'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
-  when: php__sury|bool
-
-- name: Add Ondrej Sury repository
-  apt_repository:
-    repo: '{{ php__sury_apt_repo }}'
-    state: 'present'
-    update_cache: True
-  when: php__sury|bool
-
-- name: Detect PHP version from available packages
-  environment:
-    LANG: 'C'
-  shell: apt-cache show {{ php__version_preference | join(' ') }} | grep -E '^Package:\s+php' | head -n 1 | awk '{print $2}' | sed -e 's/^php//'
-  register: php__register_version
-  always_run: True
-  changed_when: False
-
-- name: Set PHP version
-  set_fact:
-    php__version: '{{ ansible_local.php.version
-                      if (ansible_local|d() and ansible_local.php|d() and
-                          ansible_local.php.version|d())
-                      else php__register_version.stdout }}'
-
-- name: Set PHP base paths
-  set_fact:
-    php__etc_base: '{{ ("/etc/php/" + php__version)
-                       if (php__version | version_compare("7.0", ">="))
-                       else "/etc/php5" }}'
-    php__lib_base: '{{ ("/usr/lib/php/" + php__version)
-                       if (php__version | version_compare("7.0", ">="))
-                       else "/usr/lib/php5" }}'
-
 - name: Install PHP packages
   apt:
     name: '{{ item|search("php.*-")|ternary(item, "php" + php__version + "-" + item) }}'
@@ -67,20 +26,6 @@
     owner: 'root'
     group: 'root'
     mode: '0700'
-  when: '"fpm" in php__server_api_packages'
-
-- name: "Check existence of php-fpm-reopenlogs"
-  stat:
-    path: '{{ php__lib_base }}/php{{ php__version }}-fpm-reopenlogs'
-  register: php__register_reopenlogs
-
-- name: "Configure logrotate for php-fpm"
-  template:
-    src: 'etc/logrotate.d/php-fpm.j2'
-    dest: '/etc/logrotate.d/php{{ php__version }}-fpm'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
   when: '"fpm" in php__server_api_packages'
 
 - name: Ensure that required directories exist

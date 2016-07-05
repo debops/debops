@@ -39,6 +39,17 @@ Added
   management from Ansible inventory as well as creation of pools by other
   Ansible roles. [drybjed]
 
+- Add new ``env/`` subdirectory for a custom ``debops.php/env`` Ansible role
+  which prepares environment usable by other Ansible roles before the main role
+  is executed. Some tasks from the main role have been moved there, thus
+  ``debops.php/env`` role is mandatory and needs to be added to all playbooks
+  that use ``debops.php`` role. [drybjed]
+
+- Add an example Ansible playbook in ``docs/playbooks/`` directory. [drybjed]
+
+- Add custom configuration for ``debops.logrotate`` Ansible role in default
+  variables. [drybjed]
+
 Changed
 ~~~~~~~
 
@@ -83,6 +94,10 @@ Removed
 
 - The handler flush at the end of the role task list has been removed.
   [drybjed]
+
+- Role does not configure its own ``logrotate`` configuration anymore. The
+  ``debops.logrotate`` role is used instead. An example usage can be found in
+  the provided playbook. [drybjed]
 
 v0.1.0 - 2016-06-01
 -------------------

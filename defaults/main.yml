@@ -175,3 +175,34 @@ php__pool_www_data:
 
   #open_basedir: '/usr/share/php5:/tmp'
 
+
+# .. Configuration of other Ansible roles [[[1
+#
+# ----------------------------------------
+#   Configuration of other Ansible roles
+# ----------------------------------------
+
+# .. envvar:: php__logrotate__dependent_config
+#
+# Configuration of the ``debops.logrotate`` role.
+php__logrotate__dependent_config:
+
+  - filename: 'php{{ php__version }}-fpm'
+    divert: True
+    logs:
+      - '/var/log/php{{ php__version }}-fpm.log'
+      - '/var/log/php{{ php__version }}-fpm/*.log'
+    options: |
+      rotate 12
+      missingok
+      weekly
+      notifempty
+      compress
+      delaycompress
+    postrotate: |
+      {% if php__long_version | version_compare("5.5","<") %}
+      invoke-rc.d php{{ php__version }}-fpm reopen-logs > /dev/null
+      {% else %}
+      {{ php__logrotate_lib_base }}/php{{ php__version }}-fpm-reopenlogs
+      {% endif %}
+
