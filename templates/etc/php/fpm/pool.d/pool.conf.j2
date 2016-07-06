@@ -9,6 +9,7 @@
 {#
 ; Per pool prefix
 ; It only applies on the following directives:
+; - 'access.log'
 ; - 'slowlog'
 ; - 'listen' (unixsocket)
 ; - 'chroot'
@@ -32,30 +33,40 @@ group = {{ item.group | default(item.name) }}
 {#
 ; The address on which to accept FastCGI requests.
 ; Valid syntaxes are:
-;   'ip.add.re.ss:port'    - to listen on a TCP socket to a specific address on
+;   'ip.add.re.ss:port'    - to listen on a TCP socket to a specific IPv4 address on
 ;                            a specific port;
-;   'port'                 - to listen on a TCP socket to all addresses on a
-;                            specific port;
+;   '[ip:6:addr:ess]:port' - to listen on a TCP socket to a specific IPv6 address on
+;                            a specific port;
+;   'port'                 - to listen on a TCP socket to all addresses
+;                            (IPv6 and IPv4-mapped) on a specific port;
 ;   '/path/to/unix/socket' - to listen on a unix socket.
 ; Note: This value is mandatory. #}
 listen = {{ item.listen | default('/var/run/php' + php__version + '-fpm-' + item.name + '.sock') }}
 
 {#
 ; Set listen(2) backlog.
-; Default Value: 128 (-1 on FreeBSD and OpenBSD)
-;listen.backlog = 128 #}
+; Default Value: 511 (-1 on FreeBSD and OpenBSD)
+;listen.backlog = 511 #}
 {#
 ; Set permissions for unix socket, if one is used. In Linux, read/write
 ; permissions must be set in order to allow connections from a web server. Many
 ; BSD-derived systems allow connections regardless of permissions.
 ; Default Values: user and group are set as the running user
-;                 mode is set to 0666 #}
+;                 mode is set to 0660 #}
 listen.owner = {{ php__socket_listen_owner | default('www-data') }}
 listen.group = {{ php__socket_listen_group | default('www-data') }}
 listen.mode = {{ php__socket_listen_mode | default('0660') }}
+{% if (php__version | version_compare('7.0', '>=') and (item.listen_acl_users|d() or item.listen_acl_groups|d())) %}
+{#
+; When POSIX Access Control Lists are supported you can set them using
+; these options, value is a comma separated list of user/group names.
+; When set, listen.owner and listen.group are ignored #}
+listen.acl_users =  {{ item.listen_acl_users  if item.listen_acl_users  is string else item.listen_acl_users  | join(',') }}
+listen.acl_groups = {{ item.listen_acl_groups if item.listen_acl_groups is string else item.listen_acl_groups | join(',') }}
+{% endif %}
 
 {#
-; List of ipv4 addresses of FastCGI clients which are allowed to connect.
+; List of addresses (IPv4/IPv6) of FastCGI clients which are allowed to connect.
 ; Equivalent to the FCGI_WEB_SERVER_ADDRS environment variable in the original
 ; PHP FCGI (5.2.2+). Makes sense only with a tcp listening socket. Each address
 ; must be separated by a comma. If this value is left blank, connections will be
@@ -63,6 +74,14 @@ listen.mode = {{ php__socket_listen_mode | default('0660') }}
 ; Default Value: any
 ;listen.allowed_clients = 127.0.0.1 #}
 {#
+; Specify the nice(2) priority to apply to the pool processes (only if set)
+; The value can vary from -19 (highest priority) to 20 (lower priority)
+; Note: - It will only work if the FPM master process is launched as root
+;       - The pool processes will inherit the master process priority
+;         unless it specified otherwise
+; Default Value: no set
+; process.priority = -19
+
 ; Choose how the process manager will control the number of child processes.
 ; Possible Values:
 ;   static  - a fixed number (pm.max_children) of child processes;
@@ -223,7 +242,7 @@ pm.max_requests = {{ item.pm_max_requests | default(php__default_pm_max_requests
 ;   last request memory:  0
 ;
 ; Note: There is a real-time FPM status monitoring sample web page available
-;       It's available in: ${prefix}/share/fpm/status.html
+;       It's available in: /usr/share/php/7.0/fpm/status.html
 ;
 ; Note: The value must start with a leading slash (/). The value can be
 ;       anything, but it may not be a good idea to use the .php extension or it
@@ -287,7 +306,7 @@ access.log = /var/log/php{{ php__version }}-fpm/$pool.access.log
 ;      - %{megabytes}M
 ;      - %{mega}M
 ;  %n: pool name
-;  %o: ouput header
+;  %o: output header
 ;      it must be associated with embraces to specify the name of the header:
 ;      - %{Content-Type}o
 ;      - %{X-Powered-By}o
@@ -303,9 +322,13 @@ access.log = /var/log/php{{ php__version }}-fpm/$pool.access.log
 ;  %t: server time the request was received
 ;      it can accept a strftime(3) format:
 ;      %d/%b/%Y:%H:%M:%S %z (default)
+;      The strftime(3) format must be encapsuled in a %{<strftime_format>}t tag
+;      e.g. for a ISO8601 formatted timestring, use: %{%Y-%m-%dT%H:%M:%S%z}t
 ;  %T: time the log has been written (the request has finished)
 ;      it can accept a strftime(3) format:
 ;      %d/%b/%Y:%H:%M:%S %z (default)
+;      The strftime(3) format must be encapsuled in a %{<strftime_format>}t tag
+;      e.g. for a ISO8601 formatted timestring, use: %{%Y-%m-%dT%H:%M:%S%z}t
 ;  %u: remote user
 ;
 ; Default: "%R - %u %t \"%m %r\" %s" #}
@@ -372,6 +395,15 @@ chdir = {{ item.chdir | default('/') }}
 ; process time (several ms).
 ; Default Value: no #}
 catch_workers_output = yes
+
+; Clear environment in FPM workers
+; Prevents arbitrary environment variables from reaching FPM worker processes
+; by clearing the environment in workers before env vars specified in this
+; pool configuration are added.
+; Setting to "no" will make all environment variables available to PHP code
+; via getenv(), $_ENV and $_SERVER.
+; Default Value: yes
+;clear_env = no
 
 {% endif %}
 {#
