@@ -164,11 +164,17 @@ mariadb_server__mysqld_performance_options:
   'query_cache_type':             '0'
 
 
+# .. envvar:: mariadb_server__local_infile
+#
+# Enable or disable LOCAL capability for LOAD DATA INFILE.
+mariadb_server__local_infile: False
+
+
 # .. envvar:: mariadb_server__mysqld_security_options
 #
 # Configuration options related to the server security.
 mariadb_server__mysqld_security_options:
-  'local_infile':         '0'
+  'local_infile':         '{{ "1" if mariadb_server__local_infile|bool else "0" }}'
 
 
 # .. envvar:: mariadb_server__mysqld_charset_options
