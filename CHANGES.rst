@@ -3,10 +3,6 @@ Changelog
 
 **debops.pki**
 
-Copyright (C) 2015-2016 `DebOps Project <http://debops.org/>`_
-
-License: `GNU General Public License v3 <https://www.tldrlegal.com/l/gpl-3.0>`_
-
 This project adheres to `Semantic Versioning <http://semver.org/>`_
 and `human-readable changelog <http://keepachangelog.com/>`_.
 
@@ -30,6 +26,9 @@ Changed
 
 - The session token is now generated using ``sha256`` hashing algorithm instead
   of ``MD5``. [drybjed]
+
+- Move the copyright information to a ``COPYRIGHT`` file in the main directory.
+  [drybjed]
 
 
 v0.2.11 - 2016-07-05
