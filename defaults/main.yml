@@ -118,6 +118,25 @@ php__group_configuration: []
 
 php__host_configuration: []
 
+php__fpm_syslog: False
+
+php__fpm_error_log: '{{ ("/var/log/php" + php__version + "-fpm.log")
+                        if not php__fpm_syslog|bool else "syslog" }}'
+
+php__fpm_syslog_facility: 'daemon'
+
+php__fpm_syslog_ident: 'php-fpm'
+
+php__fpm_log_level: 'notice'
+
+php__fpm_emergency_restart_threshold: '0'
+
+php__fpm_emergency_restart_interval: '0'
+
+php__fpm_process_control_timeout: '0'
+
+php__fpm_process_max: '128'
+
 # Default values used in pools when pool has none set
 php__fpm_listen_owner: 'www-data'
 

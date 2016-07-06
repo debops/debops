@@ -60,6 +60,9 @@ Added
 - Add tags to some tasks in the role to allow faster changes to PHP
   configuration or PHP-FPM pools. [drybjed]
 
+- Add configuration of ``/etc/php{5,/7.0}/fpm/php-fpm.conf`` configuration file
+  and its corresponding variables. [drybjed]
+
 Changed
 ~~~~~~~
 

@@ -70,13 +70,27 @@
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:config' ]
 
-- name: Divert default PHP-FPM pool
-  command: dpkg-divert --quiet --local --divert {{ php__etc_base }}/fpm/pool.d/www.conf.dpkg-divert
-           --rename {{ php__etc_base }}/fpm/pool.d/www.conf
+- name: Divert default PHP-FPM configuration and pool
+  command: dpkg-divert --quiet --local --divert {{ item + ".dpkg-divert" }}
+           --rename {{ item }}
   args:
-    creates: '{{ php__etc_base }}/fpm/pool.d/www.conf.dpkg-divert'
+    creates: '{{ item + ".dpkg-divert" }}'
   notify: [ 'Restart php-fpm' ]
+  with_items:
+    - '{{ php__etc_base + "/fpm/php-fpm.conf" }}'
+    - '{{ php__etc_base + "/fpm/pool.d/www.conf" }}'
   when: '"fpm" in php__server_api_packages'
+  tags: [ 'role::php:pools', 'role::php:config' ]
+
+- name: Generate php-fpm global configuration
+  template:
+    src: 'etc/php/fpm/php-fpm.conf.j2'
+    dest: '{{ php__etc_base }}/fpm/php-fpm.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: '"fpm" in php__server_api_packages'
+  notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Generate php-fpm pool configuration
