@@ -30,6 +30,8 @@ Changed
 - Move the copyright information to a ``COPYRIGHT`` file in the main directory.
   [drybjed]
 
+- Move the example playbook to an external, separate file. [drybjed]
+
 
 v0.2.11 - 2016-07-05
 --------------------
