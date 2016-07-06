@@ -57,6 +57,9 @@ Added
   configuration files using a separate YAML list. Configuration is applied to
   all Server APIs at the same time. [drybjed]
 
+- Add tags to some tasks in the role to allow faster changes to PHP
+  configuration or PHP-FPM pools. [drybjed]
+
 Changed
 ~~~~~~~
 

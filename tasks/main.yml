@@ -48,6 +48,7 @@
     - '{{ php__host_configuration }}'
   when: item.state|d('present') != 'absent'
   notify: [ 'Restart php-fpm' ]
+  tags: [ 'role::php:config' ]
 
 - name: Remove php.ini configuration if requested
   file:
@@ -60,12 +61,14 @@
     - '{{ php__host_configuration }}'
   when: item.state|d() and item.state == 'absent'
   notify: [ 'Restart php-fpm' ]
+  tags: [ 'role::php:config' ]
 
 - name: Synchronize Ansible and PHP SAPI configuration
   script: script/php-synchronize-config.sh {{ php__version }}
   register: php__register_synchronize_config
   changed_when: php__register_synchronize_config.stdout != ''
   notify: [ 'Restart php-fpm' ]
+  tags: [ 'role::php:config' ]
 
 - name: Divert default PHP-FPM pool
   command: dpkg-divert --quiet --local --divert {{ php__etc_base }}/fpm/pool.d/www.conf.dpkg-divert
@@ -74,6 +77,7 @@
     creates: '{{ php__etc_base }}/fpm/pool.d/www.conf.dpkg-divert'
   notify: [ 'Restart php-fpm' ]
   when: '"fpm" in php__server_api_packages'
+  tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Generate php-fpm pool configuration
   template:
@@ -90,6 +94,7 @@
     - '{{ php__dependent_pools }}'
   when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent"'
   notify: [ 'Restart php-fpm' ]
+  tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Remove php-fpm pool configuration if requested
   file:
@@ -103,6 +108,7 @@
     - '{{ php__dependent_pools }}'
   when: '"fpm" in php__server_api_packages and item.state|d() and item.state == "absent"'
   notify: [ 'Restart php-fpm' ]
+  tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Make sure that Ansible local facts directory is present
   file:

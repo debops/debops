@@ -24,6 +24,7 @@
   register: php__register_version
   always_run: True
   changed_when: False
+  tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Detect PHP long version from available packages
   environment:
@@ -32,6 +33,7 @@
   register: php__register_long_version
   always_run: True
   changed_when: False
+  tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Set PHP version
   set_fact:
@@ -43,6 +45,7 @@
                            if (ansible_local|d() and ansible_local.php|d() and
                                ansible_local.php.long_version|d())
                            else php__register_long_version.stdout }}'
+  tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Set PHP base paths
   set_fact:
@@ -55,4 +58,5 @@
     php__logrotate_lib_base: '{{ "/usr/lib/php"
                                  if (php__version | version_compare("7.0", ">="))
                                  else "/usr/lib/php5" }}'
+  tags: [ 'role::php:pools', 'role::php:config' ]
 
