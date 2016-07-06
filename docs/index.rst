@@ -18,7 +18,6 @@ Ansible role: debops.pki
    custom-files
    custom-hooks
    ansible-integration
-   copyright
    changelog
 
 ..

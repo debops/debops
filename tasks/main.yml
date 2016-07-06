@@ -3,7 +3,7 @@
 
 - name: Generate random session token
   set_fact:
-    pki_fact_session_token: '{{ 9999999999999999999999999999999999999 | random | md5 }}'
+    pki_fact_session_token: '{{ 9999999999999999999999999999999999999 | random | string | hash("sha256") }}'
   delegate_to: 'localhost'
   become: False
   run_once: True

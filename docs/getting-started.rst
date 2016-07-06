@@ -81,23 +81,6 @@ operation. Additional directories required by the role are created in the
 :file:`secret/` directory on Ansible Controller, and this requires use of the
 special ``debops.pki/env`` role provided within the main role.
 
-.. code-block:: yaml
-
-   ---
-   - name: Manage Public Key Infrastructure
-     hosts: [ 'debops_all_hosts', 'debops_service_pki' ]
-     become: True
-
-     roles:
-
-       - role: debops.pki/env
-         tags: [ 'role::pki', 'role::secret' ]
-
-       - role: debops.secret
-         secret_directories:
-           - '{{ pki_env_secret_directories }}'
-         tags: [ 'role::secret' ]
-
-       - role: debops.pki
-         tags: [ 'role::pki' ]
+.. literalinclude:: playbooks/pki.yml
+   :language: yaml
 
