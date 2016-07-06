@@ -22,6 +22,16 @@ Unreleased
 ----------
 
 
+v0.2.12 - 2016-07-06
+--------------------
+
+Changed
+~~~~~~~
+
+- The session token is now generated using ``sha256`` hashing algorithm instead
+  of ``MD5``. [drybjed]
+
+
 v0.2.11 - 2016-07-05
 --------------------
 
