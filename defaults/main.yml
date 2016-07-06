@@ -18,13 +18,6 @@ php__sury_apt_repo_map:
   'Debian': 'deb https://packages.sury.org/php/ {{ ansible_distribution_release }} main'
   'Ubuntu': 'ppa:ondrej/php'
 
-
-# Settings for socket permissions
-# Sockets have to be accessible by a webserver
-php__socket_listen_owner: 'www-data'
-php__socket_listen_group: 'www-data'
-php__socket_listen_mode: '0660'
-
 php__server_api_packages: [ 'cli', 'fpm' ]
 
 # Install set of standard packages.
@@ -88,21 +81,6 @@ php__ini_date_timezone: '{{ ansible_local.timezone
                             if (ansible_local|d() and ansible_local.timezone|d())
                             else "Etc/UTC" }}'
 
-# Default values used in pools when pool has none set
-php__default_pm: 'ondemand'
-php__default_pm_max_children: 5
-php__default_pm_min_spare_servers: 1
-php__default_pm_max_spare_servers: 3
-php__default_pm_start_servers: 2
-php__default_pm_process_idle_timeout: '10s'
-php__default_pm_max_requests: 500
-php__default_pm_status: False
-php__default_pm_status_path: '/php_status'
-php__default_ping_path: '/php_ping'
-php__default_ping_response: 'pong'
-php__default_rlimit_files: 1024
-php__default_rlimit_core: 0
-
 # Custom ``php.ini`` configuration managed by Ansible. See
 # :ref:`php__ref_configuration` for more details.
 php__default_configuration:
@@ -140,6 +118,40 @@ php__group_configuration: []
 
 php__host_configuration: []
 
+# Default values used in pools when pool has none set
+php__fpm_listen_owner: 'www-data'
+
+php__fpm_listen_group: 'www-data'
+
+php__fpm_listen_mode: '0660'
+
+php__fpm_pm: 'ondemand'
+
+php__fpm_pm_max_children: '{{ ansible_processor_vcpus }}'
+
+php__fpm_pm_start_servers: '{{ ansible_processor_cores }}'
+php__fpm_pm_min_spare_servers: '1'
+php__fpm_pm_max_spare_servers: '{{ php__fpm_pm_max_children }}'
+
+php__fpm_pm_process_idle_timeout: '10s'
+php__fpm_pm_max_requests: '500'
+
+php__fpm_pm_status: False
+php__fpm_pm_status_path: '/php_status'
+php__fpm_ping_path: '/php_ping'
+php__fpm_ping_response: 'pong'
+
+php__fpm_access_log: False
+
+php__fpm_request_terminate_timeout: '{{ php__ini_max_execution_time }}'
+
+php__fpm_rlimit_files: '1024'
+php__fpm_rlimit_core: '0'
+
+php__fpm_clear_env: False
+
+php__fpm_security_limit_extensions: '.php'
+
 # List of managed pools
 php__default_pools: [ '{{ php__pool_www_data }}' ]
 
@@ -155,7 +167,6 @@ php__dependent_pools: []
 # in templates/etc/php/fpm/pool-available.d/pool.conf.j2
 # Everything commented out is optional.
 php__pool_www_data:
-  enabled: True
   name: 'www-data'
 
   #prefix: ''

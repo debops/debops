@@ -94,6 +94,10 @@ Changed
   Ansible fact, managed by ``debops.core`` role, insead of reading the
   ``/etc/timezone`` file directly. [drybjed]
 
+- Role variables related to PHP-FPM pool configuration have been renamed from
+  ``php__*`` to ``php__fpm_*`` to better separate them from other variables.
+  [drybjed]
+
 Removed
 ~~~~~~~
 
