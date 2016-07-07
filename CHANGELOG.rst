@@ -7,21 +7,6 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_
 and `human-readable changelog <http://keepachangelog.com/>`_.
 
 
-Contributors
-------------
-
-- [drybjed] - `Maciej Delmanowski <https://github.com/drybjed/>`_  (playbook maintainer)
-- [nickjj] - `Nick Janetakis <https://github.com/nickjj/>`_
-- [htgoebel] - `Hartmut Goebel <https://github.com/htgoebel/>`_
-- [ypid] - `Robin Schneider <https://github.com/ypid/>`_
-- [psagers] - `Peter Sagerson <https://github.com/psagers/>`_
-- [rchady] - `Robert Chady <https://github.com/rchady/>`_
-- [ganto] - `Reto Gantenbein <https://github.com/ganto/>`_
-- [scibi] - `Patryk Ściborek <https://github.com/scibi/>`_
-- [le9i0nx] - https://github.com/le9i0nx/
-- [abadger] - `Toshio Kuratomi <https://github.com/abadger/>`_
-
-
 `debops-playbooks master`_ - unreleased
 ---------------------------------------
 
