@@ -11,7 +11,6 @@ DebOps playbooks
    custom-features
    guides/index
    copyright
-   credits
    changelog
 
 ..
