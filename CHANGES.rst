@@ -17,9 +17,28 @@ Contributors
 Unreleased
 ----------
 
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.13...master>`_
+
+
+v0.2.13 - 2016-07-07
+--------------------
+
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.12...v0.2.13>`_
+
+Changed
+~~~~~~~
+
+- Update the Changelog with links to change diffs on GitHub. [drybjed]
+
+- Include the ``COPYRIGHT`` file in the RST documentation. [drybjed]
+
+- Update the ``.travis.yml`` configuration file. [drybjed]
+
 
 v0.2.12 - 2016-07-06
 --------------------
+
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.11...v0.2.12>`_
 
 Changed
 ~~~~~~~
@@ -35,6 +54,8 @@ Changed
 
 v0.2.11 - 2016-07-05
 --------------------
+
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.10...v0.2.11>`_
 
 Added
 ~~~~~
@@ -62,6 +83,8 @@ Fixed
 v0.2.10 - 2016-06-14
 --------------------
 
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.9...v0.2.10>`_
+
 Changed
 ~~~~~~~
 
@@ -82,6 +105,8 @@ Changed
 v0.2.9 - 2016-06-01
 -------------------
 
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.8...v0.2.9>`_
+
 Added
 ~~~~~
 
@@ -96,6 +121,8 @@ Added
 
 v0.2.8 - 2016-05-05
 -------------------
+
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.7...v0.2.8>`_
 
 Added
 ~~~~~
@@ -112,6 +139,8 @@ Changed
 
 v0.2.7 - 2016-05-03
 -------------------
+
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.6...v0.2.7>`_
 
 Changed
 ~~~~~~~
@@ -137,6 +166,8 @@ Changed
 v0.2.6 - 2016-04-12
 -------------------
 
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.5...v0.2.6>`_
+
 Changed
 ~~~~~~~
 
@@ -150,6 +181,8 @@ Changed
 v0.2.5 - 2016-03-02
 -------------------
 
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.4...v0.2.5>`_
+
 Changed
 ~~~~~~~
 
@@ -159,6 +192,8 @@ Changed
 
 v0.2.4 - 2016-02-21
 -------------------
+
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.3...v0.2.4>`_
 
 Changed
 ~~~~~~~
@@ -213,6 +248,8 @@ Changed
 v0.2.3 - 2016-02-08
 -------------------
 
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.2...v0.2.3>`_
+
 Changed
 ~~~~~~~
 
@@ -223,6 +260,8 @@ Changed
 
 v0.2.2 - 2016-02-03
 -------------------
+
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.1...v0.2.2>`_
 
 Added
 ~~~~~
@@ -263,6 +302,8 @@ Changed
 v0.2.1 - 2016-02-01
 -------------------
 
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.2.0...v0.2.1>`_
+
 Changed
 ~~~~~~~
 
@@ -271,6 +312,8 @@ Changed
 
 v0.2.0 - 2016-02-01
 -------------------
+
+`Compare changes <https://github.com/debops/ansible-pki/compare/v0.1.0...v0.2.0>`_
 
 Changed
 ~~~~~~~
