@@ -3,7 +3,7 @@ Changelog
 
 **debops.pki**
 
-This project adheres to `Semantic Versioning <http://semver.org/>`_
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
 and `human-readable changelog <http://keepachangelog.com/>`_.
 
 
