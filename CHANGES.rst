@@ -14,12 +14,31 @@ Contributors
 - [ypid] - `Robin Schneider <https://github.com/ypid/>`_
 
 
-Unreleased
-----------
+`debops.pki master`_ - unreleased
+----------------------------------
+
+.. _debops.pki master: https://github.com/debops/ansible-pki/compare/v0.2.13...master
 
 
-v0.2.12 - 2016-07-06
---------------------
+`debops.pki v0.2.13`_ - 2016-07-07
+----------------------------------
+
+.. _debops.pki v0.2.13: https://github.com/debops/ansible-pki/compare/v0.2.12...v0.2.13
+
+Changed
+~~~~~~~
+
+- Update the Changelog with links to change diffs on GitHub. [drybjed]
+
+- Include the ``COPYRIGHT`` file in the RST documentation. [drybjed]
+
+- Update the ``.travis.yml`` configuration file. [drybjed]
+
+
+`debops.pki v0.2.12`_ - 2016-07-06
+----------------------------------
+
+.. _debops.pki v0.2.12: https://github.com/debops/ansible-pki/compare/v0.2.11...v0.2.12
 
 Changed
 ~~~~~~~
@@ -33,8 +52,10 @@ Changed
 - Move the example playbook to an external, separate file. [drybjed]
 
 
-v0.2.11 - 2016-07-05
---------------------
+`debops.pki v0.2.11`_ - 2016-07-05
+----------------------------------
+
+.. _debops.pki v0.2.11: https://github.com/debops/ansible-pki/compare/v0.2.10...v0.2.11
 
 Added
 ~~~~~
@@ -59,8 +80,10 @@ Fixed
   certificates at a time. [drybjed]
 
 
-v0.2.10 - 2016-06-14
---------------------
+`debops.pki v0.2.10`_ - 2016-06-14
+----------------------------------
+
+.. _debops.pki v0.2.10: https://github.com/debops/ansible-pki/compare/v0.2.9...v0.2.10
 
 Changed
 ~~~~~~~
@@ -79,8 +102,10 @@ Changed
   relevant for ``debops.pki`` operation. [drybjed]
 
 
-v0.2.9 - 2016-06-01
--------------------
+`debops.pki v0.2.9`_ - 2016-06-01
+---------------------------------
+
+.. _debops.pki v0.2.9: https://github.com/debops/ansible-pki/compare/v0.2.8...v0.2.9
 
 Added
 ~~~~~
@@ -94,8 +119,10 @@ Added
   [drybjed]
 
 
-v0.2.8 - 2016-05-05
--------------------
+`debops.pki v0.2.8`_ - 2016-05-05
+---------------------------------
+
+.. _debops.pki v0.2.8: https://github.com/debops/ansible-pki/compare/v0.2.7...v0.2.8
 
 Added
 ~~~~~
@@ -110,8 +137,10 @@ Changed
   from Ansible Controller depending on an Ansible inventory group. [drybjed]
 
 
-v0.2.7 - 2016-05-03
--------------------
+`debops.pki v0.2.7`_ - 2016-05-03
+---------------------------------
+
+.. _debops.pki v0.2.7: https://github.com/debops/ansible-pki/compare/v0.2.6...v0.2.7
 
 Changed
 ~~~~~~~
@@ -134,8 +163,10 @@ Changed
   whitespace characters. [ypid]
 
 
-v0.2.6 - 2016-04-12
--------------------
+`debops.pki v0.2.6`_ - 2016-04-12
+---------------------------------
+
+.. _debops.pki v0.2.6: https://github.com/debops/ansible-pki/compare/v0.2.5...v0.2.6
 
 Changed
 ~~~~~~~
@@ -147,8 +178,10 @@ Changed
   didn't support ACME integration. [drybjed]
 
 
-v0.2.5 - 2016-03-02
--------------------
+`debops.pki v0.2.5`_ - 2016-03-02
+---------------------------------
+
+.. _debops.pki v0.2.5: https://github.com/debops/ansible-pki/compare/v0.2.4...v0.2.5
 
 Changed
 ~~~~~~~
@@ -157,8 +190,10 @@ Changed
   :any:`pki_authorities` is not defined. [drybjed]
 
 
-v0.2.4 - 2016-02-21
--------------------
+`debops.pki v0.2.4`_ - 2016-02-21
+---------------------------------
+
+.. _debops.pki v0.2.4: https://github.com/debops/ansible-pki/compare/v0.2.3...v0.2.4
 
 Changed
 ~~~~~~~
@@ -210,8 +245,10 @@ Changed
   correctly updated. [drybjed]
 
 
-v0.2.3 - 2016-02-08
--------------------
+`debops.pki v0.2.3`_ - 2016-02-08
+---------------------------------
+
+.. _debops.pki v0.2.3: https://github.com/debops/ansible-pki/compare/v0.2.2...v0.2.3
 
 Changed
 ~~~~~~~
@@ -221,8 +258,10 @@ Changed
 - Fix deprecation warnings in Ansible 2.1.0. [drybjed]
 
 
-v0.2.2 - 2016-02-03
--------------------
+`debops.pki v0.2.2`_ - 2016-02-03
+---------------------------------
+
+.. _debops.pki v0.2.2: https://github.com/debops/ansible-pki/compare/v0.2.1...v0.2.2
 
 Added
 ~~~~~
@@ -260,8 +299,10 @@ Changed
   [drybjed]
 
 
-v0.2.1 - 2016-02-01
--------------------
+`debops.pki v0.2.1`_ - 2016-02-01
+---------------------------------
+
+.. _debops.pki v0.2.1: https://github.com/debops/ansible-pki/compare/v0.2.0...v0.2.1
 
 Changed
 ~~~~~~~
@@ -269,8 +310,10 @@ Changed
 - Update old README with new documentation. [drybjed]
 
 
-v0.2.0 - 2016-02-01
--------------------
+`debops.pki v0.2.0`_ - 2016-02-01
+---------------------------------
+
+.. _debops.pki v0.2.0: https://github.com/debops/ansible-pki/compare/v0.1.0...v0.2.0
 
 Changed
 ~~~~~~~
@@ -280,8 +323,8 @@ Changed
   role is usable at this point. [drybjed]
 
 
-v0.1.0 - 2016-01-04
--------------------
+debops.pki v0.1.0 - 2016-01-04
+------------------------------
 
 Added
 ~~~~~
