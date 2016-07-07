@@ -7,11 +7,10 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. Role configuration [[[1
-#
-# ----------------------
-#   Role configuration
-# ----------------------
+# .. include:: includes/all.rst
+
+# Role configuration [[[
+# ------------------
 
 # .. envvar:: resources__enabled
 #
@@ -27,17 +26,15 @@ resources__enabled: True
 # By default, path is relative to the Ansible inventory.
 resources__src: '{{ inventory_dir | realpath + "/../resources/" }}'
 
+# .. ]]]
 
-# .. Manage custom paths [[[1
-#
-# -----------------------
-#   Manage custom paths
-# -----------------------
+# Manage custom paths [[[
+# -------------------
 
 # These lists allow you to manage file and directory paths on remote hosts
-# using Ansible ``file`` module. By default role treats specified paths as
+# using `Ansible file module`_. By default role treats specified paths as
 # directory names which should be present on the remote host. You can use all
-# parameters supported by the ``file`` module.
+# parameters supported by the `Ansible file module`_.
 #
 # See :ref:`resources__ref_paths` for more details.
 
@@ -58,16 +55,14 @@ resources__group_paths: []
 # Paths managed on specific hosts in Ansible inventory.
 resources__host_paths: []
 
+# .. ]]]
 
-# .. Manage custom remote resources [[[1
-#
-# ----------------------------------
-#   Manage custom remote resources
-# ----------------------------------
+# Manage custom remote resources [[[
+# ------------------------------
 
 # These lists allow you to specify remote resources to download to the hosts
-# using ``get_url`` Ansible module. You can download files over HTTP, HTTPS,
-# FTP and use all options supported by the module.
+# using the `Ansible get_url module`. You can download files over HTTP, HTTPS,
+# FTP and use all options supported by this module.
 #
 # See :ref:`resources__ref_urls` for more details.
 
@@ -88,16 +83,14 @@ resources__group_urls: []
 # Manage online resources on specific hosts in Ansible inventory.
 resources__host_urls: []
 
+# .. ]]]
 
-# .. Manage custom archives [[[1
-#
-# --------------------------
-#   Manage custom archives
-# --------------------------
+# Manage custom archives [[[
+# ----------------------
 
 # These lists allow you to unpack archives stored on Ansible Controller to
-# remote hosts using ``unarchive`` Ansible module. You can use all of the
-# parameters supported by the ``unarchive`` module.
+# remote hosts using the `Ansible unarchive module`_. You can use all of the
+# parameters supported by this module.
 #
 # See :ref:`resources__ref_archives` for more details.
 
@@ -118,17 +111,15 @@ resources__group_archives: []
 # Manage archives on specific hosts in Ansible inventory.
 resources__host_archives: []
 
+# .. ]]]
 
-# .. Manage custom files [[[1
-#
-# -----------------------
-#   Manage custom files
-# -----------------------
+# Manage custom files [[[
+# -------------------
 
 # These lists allow you to manage file contents on remote hosts, either by
 # copying files from Ansible Controller, or providing the contents directly in
-# Ansible inventory. You can use all parameters supported by the ``copy``
-# Ansible module.
+# Ansible inventory. You can use all parameters supported by the `Ansible copy
+# module`_.
 #
 # See :ref:`resources__ref_files` for more details.
 
@@ -148,4 +139,38 @@ resources__group_files: []
 #
 # Manage file contents on specific hosts in Ansible inventory.
 resources__host_files: []
+
+
+# Manage custom delayed paths [[[
+# -------------------------------
+
+# These lists allow you to manage file and directory paths on remote hosts
+# using the `Ansible file module`_.
+# The lists can be used exactly the same as
+# :regexp:`resources__(?:group_|host_)?paths` from the `Manage custom paths`_ section.
+# The only difference is that the custom delayed paths are handled after all
+# non delayed resources.
+# This allows to create symbolic links to files provided by
+# :regexp:`resources__(?:group_|host_)?files` for example.
+#
+# See :ref:`resources__ref_paths` for more details.
+
+# .. envvar:: resources__delayed_paths
+#
+# Paths managed on all hosts in Ansible inventory.
+resources__delayed_paths: []
+
+
+# .. envvar:: resources__group_delayed_paths
+#
+# Paths managed on hosts in a specific group in Ansible inventory.
+resources__group_delayed_paths: []
+
+
+# .. envvar:: resources__host_delayed_paths
+#
+# Paths managed on specific hosts in Ansible inventory.
+resources__host_delayed_paths: []
+
+# .. ]]]
 

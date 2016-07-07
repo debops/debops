@@ -63,3 +63,6 @@ Available role tags:
 ``role::resources:files``
   Manage file contents on the remote hosts.
 
+``role::resources:delayed_paths``
+  Manage delayed paths on the remote hosts.
+
