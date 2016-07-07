@@ -40,3 +40,21 @@ add in the ``ansible/inventory/group_vars/all/inventory.yml`` file:
    inventory__environment:
      http_proxy: 'http://proxy.{{ ansible_domain }}:3128'
 
+To add support for these variables in your own playbooks, make sure that they
+contain the following code:
+
+.. code-block:: yaml
+
+   - name: Configure a custom service
+     hosts: [ 'debops_service_custom' ]
+     become: True
+
+     environment: '{{ (inventory__environment | d({}) |
+                       combine(inventory__group_environment | d({}) |
+                        combine(inventory__host_environment | d({})))) }}'
+
+     roles:
+
+       - role: custom-role
+         tags: [ 'role::custom' ]
+
