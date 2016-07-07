@@ -24,7 +24,7 @@ Added
 `debops-playbooks v0.2.9`_ - 2016-07-07
 ---------------------------------------
 
-.. _debops-playbooks v0.2.9: https://github.com/debops/debops-playbooks/compare/v0.2.8...0.2.9
+.. _debops-playbooks v0.2.9: https://github.com/debops/debops-playbooks/compare/v0.2.8...v0.2.9
 
 Added
 ~~~~~
@@ -134,7 +134,7 @@ Fixed
 `debops-playbooks v0.2.8`_ - 2016-02-07
 ---------------------------------------
 
-.. _debops-playbooks v0.2.8: https://github.com/debops/debops-playbooks/compare/v0.2.7...0.2.8
+.. _debops-playbooks v0.2.8: https://github.com/debops/debops-playbooks/compare/v0.2.7...v0.2.8
 
 Added
 ~~~~~
@@ -237,7 +237,7 @@ Fixed
 `debops-playbooks v0.2.7`_ - 2015-10-15
 ---------------------------------------
 
-.. _debops-playbooks v0.2.7: https://github.com/debops/debops-playbooks/compare/v0.2.6...0.2.7
+.. _debops-playbooks v0.2.7: https://github.com/debops/debops-playbooks/compare/v0.2.6...v0.2.7
 
 Added
 ~~~~~
@@ -314,7 +314,7 @@ Removed
 `debops-playbooks v0.2.6`_ - 2015-07-14
 ---------------------------------------
 
-.. _debops-playbooks v0.2.6: https://github.com/debops/debops-playbooks/compare/v0.2.5...0.2.6
+.. _debops-playbooks v0.2.6: https://github.com/debops/debops-playbooks/compare/v0.2.5...v0.2.6
 
 Added
 ~~~~~
@@ -395,7 +395,7 @@ Removed
 `debops-playbooks v0.2.5`_ - 2015-04-01
 ---------------------------------------
 
-.. _debops-playbooks v0.2.5: https://github.com/debops/debops-playbooks/compare/v0.2.4...0.2.5
+.. _debops-playbooks v0.2.5: https://github.com/debops/debops-playbooks/compare/v0.2.4...v0.2.5
 
 Added
 ~~~~~
@@ -414,7 +414,7 @@ Added
 `debops-playbooks v0.2.4`_ - 2015-03-26
 ---------------------------------------
 
-.. _debops-playbooks v0.2.4: https://github.com/debops/debops-playbooks/compare/v0.2.3...0.2.4
+.. _debops-playbooks v0.2.4: https://github.com/debops/debops-playbooks/compare/v0.2.3...v0.2.4
 
 Added
 ~~~~~
@@ -439,7 +439,7 @@ Changed
 `debops-playbooks v0.2.3`_ - 2015-03-05
 ---------------------------------------
 
-.. _debops-playbooks v0.2.3: https://github.com/debops/debops-playbooks/compare/v0.2.2...0.2.3
+.. _debops-playbooks v0.2.3: https://github.com/debops/debops-playbooks/compare/v0.2.2...v0.2.3
 
 Added
 ~~~~~
@@ -470,7 +470,7 @@ Changed
 `debops-playbooks v0.2.2`_ - 2015-02-25
 ---------------------------------------
 
-.. _debops-playbooks v0.2.2: https://github.com/debops/debops-playbooks/compare/v0.2.1...0.2.2
+.. _debops-playbooks v0.2.2: https://github.com/debops/debops-playbooks/compare/v0.2.1...v0.2.2
 
 Added
 ~~~~~
@@ -487,7 +487,7 @@ Changed
 `debops-playbooks v0.2.1`_ - 2015-02-24
 ---------------------------------------
 
-.. _debops-playbooks v0.2.1: https://github.com/debops/debops-playbooks/compare/v0.2.0...0.2.1
+.. _debops-playbooks v0.2.1: https://github.com/debops/debops-playbooks/compare/v0.2.0...v0.2.1
 
 Changed
 ~~~~~~~
@@ -498,7 +498,7 @@ Changed
 `debops-playbooks v0.2.0`_ - 2015-02-22
 ---------------------------------------
 
-.. _debops-playbooks v0.2.0: https://github.com/debops/debops-playbooks/compare/v0.1.0...0.2.0
+.. _debops-playbooks v0.2.0: https://github.com/debops/debops-playbooks/compare/v0.1.0...v0.2.0
 
 Added
 ~~~~~
