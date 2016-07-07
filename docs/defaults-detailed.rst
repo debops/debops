@@ -1,6 +1,8 @@
 Default variable details
 ========================
 
+.. include:: includes/all.rst
+
 Some of ``debops.resources`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
@@ -16,7 +18,7 @@ resources__paths
 
 These lists can be used to create directories, symlinks, set permissions and
 ownership, etc. Each element of the list is a YAML dictionary with a set of
-parameters. See the documentation of the ``file`` Ansible module for details
+parameters. See the documentation of the `Ansible file module`_ for details
 about what parameters can be used and their format. Here's are additional
 details for certain parameters:
 
@@ -106,11 +108,11 @@ resources__archives
 
 These lists can be used to unpack archives located on Ansible Controller to
 remote hosts. Each element of the list is a YAML dictionary with parameters
-recognized by the ``unarchive`` Ansible Module. For details about their use,
+recognized by the `Ansible unarchive module`_. For details about their use,
 see the module documentation.
 
 The ``resources__src`` variable can be used to point the role to a custom,
-cental location, by default located in the DebOps project directory.
+central location, by default located in the DebOps project directory.
 
 Here are some more important parameters:
 
@@ -142,11 +144,11 @@ resources__files
 
 These lists can be used to manage content or copy files from Ansible Controller
 to remote hosts. Each element of a list is a YAML dictionary with parameters
-used by the ``copy`` Ansible module. See its documentation for parameter usage
+used by the `Ansible copy module`_. See its documentation for parameter usage
 and syntax.
 
 The ``resources__src`` variable can be used to point the role to a custom,
-cental location, by default located in the DebOps project directory.
+central location, by default located in the DebOps project directory.
 
 Here are some more important parameters:
 

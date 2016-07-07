@@ -1,5 +1,7 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# Manage custom paths [[[
 - name: Manage paths on remote hosts
   file:
     path:    '{{ (item.path   | d(item.dest | d(item.name))) | d(item) }}'
@@ -22,7 +24,9 @@
   when: (resources__enabled|bool and
          ((item.path|d() or item.dest|d() or item.name|d()) or item))
   tags: [ 'role::resources:paths' ]
+# .. ]]]
 
+# Manage custom remote resources [[[
 - name: Download online resources to remote hosts
   get_url:
     url:              '{{ item.url              | d(item.src) }}'
@@ -47,7 +51,9 @@
   when: (resources__enabled|bool and (item.url|d() or item.src|d()) and
          (item.dest|d() or item.name|d() or item.path|d()))
   tags: [ 'role::resources:urls' ]
+# .. ]]]
 
+# Manage custom archives [[[
 - name: Unpack archives to remote hosts
   unarchive:
     src:        '{{ item.src }}'
@@ -72,7 +78,9 @@
   when: (resources__enabled|bool and item.src|d() and
          (item.dest|d() or item.name|d() or item.path|d()))
   tags: [ 'role::resources:archives' ]
+# .. ]]]
 
+# Manage custom files [[[
 - name: Copy files to remote hosts
   copy:
     dest:     '{{ item.dest     | d(item.path | d(item.name)) }}'
@@ -114,4 +122,31 @@
          (item.dest|d() or item.path|d() or item.name|d()) and
          (item.state|d() == 'absent'))
   tags: [ 'role::resources:files' ]
+
+# .. ]]]
+
+# Manage custom delayed paths [[[
+- name: Manage delayed paths on remote hosts
+  file:
+    path:    '{{ (item.path   | d(item.dest | d(item.name))) | d(item) }}'
+    state:   '{{ item.state   | d("directory") }}'
+    owner:   '{{ item.owner   | d(omit) }}'
+    group:   '{{ item.group   | d(omit) }}'
+    mode:    '{{ item.mode    | d(omit) }}'
+    selevel: '{{ item.selevel | d(omit) }}'
+    serole:  '{{ item.serole  | d(omit) }}'
+    setype:  '{{ item.setype  | d(omit) }}'
+    seuser:  '{{ item.seuser  | d(omit) }}'
+    follow:  '{{ item.follow  | d(omit) }}'
+    force:   '{{ item.force   | d(omit) }}'
+    src:     '{{ item.src     | d(omit) }}'
+    recurse: '{{ item.recurse | d(omit) }}'
+  with_flattened:
+    - '{{ resources__delayed_paths }}'
+    - '{{ resources__group_delayed_paths }}'
+    - '{{ resources__host_delayed_paths }}'
+  when: (resources__enabled|bool and
+         ((item.path|d() or item.dest|d() or item.name|d()) or item))
+  tags: [ 'role::resources:paths' ]
+# .. ]]]
 
