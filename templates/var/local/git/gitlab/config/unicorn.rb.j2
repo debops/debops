@@ -18,11 +18,8 @@
 # Read about unicorn workers here:
 # http://doc.gitlab.com/ee/install/requirements.html#unicorn-workers
 #
-{% if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.flavor == 'passenger') %}
-worker_processes 1
-{% else %}
-worker_processes {{ ansible_processor_cores }}
-{% endif %}
+# Always have at least two worker processes (https://gitlab.com/gitlab-org/gitlab-ce/issues/13947)
+worker_processes {{ ansible_processor_cores|int + 1 }}
 
 # Since Unicorn is never exposed to outside clients, it does not need to
 # run on the standard HTTP port (80), there is no reason to start Unicorn
