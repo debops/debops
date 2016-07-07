@@ -35,11 +35,6 @@ Software packages required by the role on the Ansible Controller::
    change the required versions here, remember to update them in
    `../tasks/main.yml` as well.
 
-Copyright
----------
-
-.. literalinclude:: ../COPYRIGHT
-
 ..
  Local Variables:
  mode: rst
