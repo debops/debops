@@ -14,6 +14,12 @@ The current playbook maintainer is **drybjed**.
 
 .. _debops-playbooks master: https://github.com/debops/debops-playbooks/compare/v0.2.9...master
 
+Added
+~~~~~
+
+- Add support for custom Ansible environment variables in all playbooks.
+  Environment can be configured using Ansible inventory variables. [drybjed]
+
 
 `debops-playbooks v0.2.9`_ - 2016-07-07
 ---------------------------------------

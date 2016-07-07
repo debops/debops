@@ -4,6 +4,10 @@
   hosts: [ 'debops_service_nginx', 'debops_nginx' ]
   become: True
 
+  environment: '{{ (inventory__environment | d({}) |
+                    combine(inventory__group_environment | d({}) |
+                     combine(inventory__host_environment | d({})))) }}'
+
   roles:
 
     - role: debops.apt_preferences

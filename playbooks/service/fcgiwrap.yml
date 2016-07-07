@@ -4,7 +4,12 @@
   hosts: [ 'debops_service_fcgiwrap', 'debops_fcgiwrap' ]
   become: True
 
+  environment: '{{ (inventory__environment | d({}) |
+                    combine(inventory__group_environment | d({}) |
+                     combine(inventory__host_environment | d({})))) }}'
+
   roles:
+
     - role: debops.fcgiwrap
       tags: [ 'role::fcgiwrap' ]
 
