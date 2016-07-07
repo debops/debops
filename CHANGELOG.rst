@@ -6,11 +6,19 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
 and `human-readable changelog <http://keepachangelog.com/>`_.
 
+The current playbook maintainer is **drybjed**.
+
 
 `debops-playbooks master`_ - unreleased
 ---------------------------------------
 
 .. _debops-playbooks master: https://github.com/debops/debops-playbooks/compare/v0.2.9...master
+
+Added
+~~~~~
+
+- Add support for custom Ansible environment variables in all playbooks.
+  Environment can be configured using Ansible inventory variables. [drybjed]
 
 
 `debops-playbooks v0.2.9`_ - 2016-07-07

@@ -9,6 +9,7 @@ DebOps playbooks
    introduction
    playbook-layout
    custom-features
+   custom-environment
    guides/index
    copyright
    changelog

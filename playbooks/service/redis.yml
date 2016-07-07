@@ -4,6 +4,10 @@
   hosts: [ 'debops_service_redis', 'debops_redis' ]
   become: True
 
+  environment: '{{ (inventory__environment | d({}) |
+                    combine(inventory__group_environment | d({}) |
+                     combine(inventory__host_environment | d({})))) }}'
+
   roles:
 
     - role: debops.redis
@@ -13,6 +17,10 @@
 - name: Manage Redis sentinel server
   hosts: [ 'debops_service_redis_sentinel', 'debops_redis_sentinel' ]
   become: True
+
+  environment: '{{ (inventory__environment | d({}) |
+                    combine(inventory__group_environment | d({}) |
+                     combine(inventory__host_environment | d({})))) }}'
 
   roles:
 
