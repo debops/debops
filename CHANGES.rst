@@ -1,24 +1,50 @@
 Changelog
 =========
 
-v0.1.4
-------
+**debops.unattended_upgrades**
 
-*Released: 2016-03-02*
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
+and `human-readable changelog <http://keepachangelog.com/>`_.
+
+The current role maintainer is drybjed.
+
+`debops.unattended_upgrades master`_ - unreleased
+-------------------------------------------------
+
+.. _debops.unattended_upgrades master: https://github.com/debops/ansible-unattended_upgrades/compare/v0.1.4...master
+
+Changed
+~~~~~~~
+
+- Reworked role to meet the latest DebOps standards. [ypid]
+
+`debops.unattended_upgrades v0.1.4`_ - 2016-03-02
+-------------------------------------------------
+
+.. _debops.unattended_upgrades v0.1.4: https://github.com/debops/ansible-unattended_upgrades/compare/v0.1.3...v0.1.4
+
+Fixed
+~~~~~
 
 - Fix issue with role import on Ansible Galaxy. [drybjed]
 
-v0.1.3
-------
+`debops.unattended_upgrades v0.1.3`_ - 2016-03-02
+-------------------------------------------------
 
-*Released: 2016-03-02*
+.. _debops.unattended_upgrades v0.1.3: https://github.com/debops/ansible-unattended_upgrades/compare/v0.1.2...v0.1.3
+
+Added
+~~~~~
 
 - Add support for conditional package blacklisting. [drybjed]
 
-v0.1.2
-------
+`debops.unattended_upgrades v0.1.2`_ - 2016-02-22
+-------------------------------------------------
 
-*Released: 2016-02-22*
+.. _debops.unattended_upgrades v0.1.2: https://github.com/debops/ansible-unattended_upgrades/compare/v0.1.1...v0.1.2
+
+Changed
+~~~~~~~
 
 - Use more granular lookup for security and release origins.
 
@@ -28,17 +54,21 @@ v0.1.2
   to select security and release origin patterns for current OS release.
   [drybjed]
 
-v0.1.1
-------
+`debops.unattended_upgrades v0.1.1`_ - 2016-02-10
+-------------------------------------------------
 
-*Released: 2016-02-10*
+.. _debops.unattended_upgrades v0.1.1: https://github.com/debops/ansible-unattended_upgrades/compare/v0.1.0...v0.1.1
+
+Removed
+~~~~~~~
 
 - Rename all variables to create a virtual namespace. [drybjed]
 
-v0.1.0
-------
+debops.unattended_upgrades v0.1.0 - 2016-02-09
+----------------------------------------------
 
-*Released: 2016-02-09*
+Added
+~~~~~
 
 - Initial release. [drybjed]
 
