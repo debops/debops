@@ -19,12 +19,12 @@ unattended_upgrades__enabled: True
 
 # .. envvar:: unattended_upgrades__release
 #
-# By default, ``unattended-upgrades`` performs only upgrades of packages from
+# By default, :program:`unattended-upgrades` performs only upgrades of packages from
 # security repositories. This variable allows you to enable upgrades from all
 # repositories (main, updates, backports).
 #
 # If a host does not have a domain set, it will be considered as a workstation
-# or a laptop and ``unattended-upgrades`` will perform upgrades of packages
+# or a laptop and :program:`unattended-upgrades` will perform upgrades of packages
 # from all repositories.
 unattended_upgrades__release: '{{ False if ansible_domain else True }}'
 
@@ -47,8 +47,8 @@ unattended_upgrades__packages: []
 
 # .. envvar:: unattended_upgrades__periodic
 #
-# Enable or disable daily execution of ``/etc/cron.daily/apt`` script. This
-# script runs ``unattended-upgrades``, but also performs some other actions
+# Enable or disable daily execution of :file:`/etc/cron.daily/apt` script. This
+# script runs :program:`unattended-upgrades`, but also performs some other actions
 # which can be useful on their own. Enabling periodic APT runs automatically
 # enables repository updates, but not upgrades.
 unattended_upgrades__periodic: '{{ unattended_upgrades__enabled }}'
@@ -68,9 +68,9 @@ unattended_upgrades__periodic_autoclean: '7'
 
 # .. envvar:: unattended_upgrades__periodic_verbosity
 #
-# Specify verbosity level of the ``/etc/cron.daily/apt`` script, supported
+# Specify verbosity level of the :file:`/etc/cron.daily/apt` script, supported
 # levels are 0-3, higher level means higher verbosity. Enabling this option will
-# result in mails from ``cron`` with the script output being sent to ``root``.
+# result in mails from :program:`cron` with the script output being sent to ``root``.
 unattended_upgrades__periodic_verbosity: '0'
 
 
@@ -82,7 +82,7 @@ unattended_upgrades__periodic_verbosity: '0'
 #
 # List of origin patterns which define repositories that will be considered for
 # unattended package upgrades. More information about possible values can be
-# found in the ``50unattended-upgrades.j2`` template.
+# found in the :file:`50unattended-upgrades.j2` template.
 unattended_upgrades__origins: []
 
 
@@ -191,8 +191,8 @@ unattended_upgrades__dependent_blacklist: []
 
 # .. envvar:: unattended_upgrades__auto_fix_interrupted_dpkg
 #
-# Automatically run ``dpkg --force-confold --configure -a`` before unattended
-# upgrades to fix any ``dpkg`` errors.
+# Automatically run :command:`dpkg --force-confold --configure -a` before unattended
+# upgrades to fix any :command:`dpkg` errors.
 unattended_upgrades__auto_fix_interrupted_dpkg: True
 
 
