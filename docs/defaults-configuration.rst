@@ -10,12 +10,12 @@ examples for them.
    :depth: 1
 
 
-.. _unattended_upgrades__blacklist:
+.. _unattended_upgrades__ref_blacklist:
 
 unattended_upgrades__blacklist
 ------------------------------
 
-The ``unattended_upgrades__blacklist`` and similar lists allow you to specify
+The :envvar:`unattended_upgrades__blacklist` and similar lists allow you to specify
 packages which shouldn't be upgraded automatically. You can specify them
 as simple package names or dictionaries with specific keys:
 
