@@ -56,6 +56,8 @@ v0.3.1
 
 - Fix support for Ansible ``--check`` mode. [drybjed]
 
+- Fix Ansible deprecation warning about undefined variable. [drybjed]
+
 v0.3.0
 ------
 
