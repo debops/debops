@@ -65,6 +65,8 @@ Changed
 
 - Update Changelog to latest DebOps role standards. [drybjed]
 
+- Switch ``sudo`` task parameter to ``become``. [drybjed]
+
 Removed
 ~~~~~~~
 
