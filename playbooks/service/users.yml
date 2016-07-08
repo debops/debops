@@ -4,9 +4,9 @@
   hosts: [ 'debops_all_hosts', 'debops_service_users' ]
   become: True
 
-  environment: '{{ (inventory__environment | d({}) |
-                    combine(inventory__group_environment | d({}) |
-                     combine(inventory__host_environment | d({})))) }}'
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
 
   roles:
 
