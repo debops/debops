@@ -48,17 +48,8 @@ Example playbook
 Here's an example playbook that can be used to enable and manage the
 ``unattended-upgrades`` service on a set of hosts:
 
-.. code:: YAML
-
-   ---
-   - name: Configure unattended APT upgrades
-     hosts: [ 'debops_all_hosts', 'debops_service_unattended_upgrades' ]
-     become: True
-
-     roles:
-
-       - role: debops.unattended_upgrades
-         tags: [ 'role::unattended_upgrades' ]
+.. literalinclude:: playbooks/unattended_upgrades.yml
+   :language: yaml
 
 Use as a role dependency
 ------------------------
