@@ -19,12 +19,12 @@ unattended_upgrades__enabled: True
 
 # .. envvar:: unattended_upgrades__release
 #
-# By default, :program:`unattended-upgrades` performs only upgrades of packages from
+# By default, :program:`unattended-upgrade` performs only upgrades of packages from
 # security repositories. This variable allows you to enable upgrades from all
 # repositories (main, updates, backports).
 #
 # If a host does not have a domain set, it will be considered as a workstation
-# or a laptop and :program:`unattended-upgrades` will perform upgrades of packages
+# or a laptop and :program:`unattended-upgrade` will perform upgrades of packages
 # from all repositories.
 unattended_upgrades__release: '{{ False if ansible_domain else True }}'
 
@@ -48,7 +48,7 @@ unattended_upgrades__packages: []
 # .. envvar:: unattended_upgrades__periodic
 #
 # Enable or disable daily execution of :file:`/etc/cron.daily/apt` script. This
-# script runs :program:`unattended-upgrades`, but also performs some other actions
+# script runs :program:`unattended-upgrade`, but also performs some other actions
 # which can be useful on their own. Enabling periodic APT runs automatically
 # enables repository updates, but not upgrades.
 unattended_upgrades__periodic: '{{ unattended_upgrades__enabled }}'
@@ -198,7 +198,7 @@ unattended_upgrades__auto_fix_interrupted_dpkg: True
 
 # .. envvar:: unattended_upgrades__ignore_app_require_restart
 #
-# The ``unattended-upgrade`` script will automatically upgrade packages that
+# The :program:`unattended-upgrade` script will automatically upgrade packages that
 # require a service restart. To disable this, set the option to ``False``.
 unattended_upgrades__ignore_app_require_restart: True
 
@@ -219,7 +219,7 @@ unattended_upgrades__install_on_shutdown: False
 
 # .. envvar:: unattended_upgrades__mail_to
 #
-# List of e-mail addresses to which the ``unattended-upgrade`` script will sent
+# List of e-mail addresses to which the :program:`unattended-upgrade` script will sent
 # the e-mails with upgrade results. Specify empty list to disable e-mails. By
 # default no mails are sent if the host does not have configured domain.
 unattended_upgrades__mail_to: [ '{{ (("root@" + ansible_domain)
