@@ -10,7 +10,6 @@
     owner: '{{ owncloud__user }}'
     group: '{{ owncloud__group }}'
     mode: '0640'
-  tags: [ 'role::owncloud:setup' ]
 
 - name: Install ownCloud mail config file
   template:
@@ -27,7 +26,6 @@
     state: 'absent'
   with_flattened:
     - '{{ owncloud__deploy_path }}/config/custom.config.php'
-  tags: [ 'role::owncloud:setup' ]
 
 # .. ]]]
 
@@ -72,7 +70,6 @@
   command: '{{ owncloud__occ_bin_file_path | quote }} check'
   register: owncloud__register_occ_check
   changed_when: False
-  tags: [ 'role::owncloud:setup' ]
 
 - name: Determine if ownCloud autosetup should be done
   set_fact:
@@ -80,7 +77,6 @@
                                  owncloud__admin_username != "" and
                                  owncloud__register_occ_check is defined and
                                  "ownCloud is not installed" in owncloud__register_occ_check.stdout) }}'
-  tags: [ 'role::owncloud:setup' ]
 
 - name: Automatically finish setup via the occ tool
   command: |
@@ -98,7 +94,6 @@
   ## FIXME: Enable after testing!
   # no_log: True
   register: owncloud__register_occ_install
-  tags: [ 'role::owncloud:setup' ]
   when: owncloud__do_autosetup|bool and owncloud__release not in [ '8.0' ]
   ## Did not work with 8.1.6-2.1 because of https://github.com/owncloud/core/issues/17583
   ## Falling back to URL auto install method.

@@ -68,22 +68,21 @@ Available role tags:
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
 
-``role::owncloud:base_install``
-  Run tasks related to the installation the ownCloud packages.
-  FIXME: Rename to install
+``role::owncloud:pkg``
+  Tasks related to system package management like installing, upgrading or
+  removing packages.
 
-``role::owncloud:configure``
+``role::owncloud:config``
   Run tasks related to ownCloud configuration and setup.
-  FIXME: Rename to setup
 
 ``role::owncloud:mail``
   Run tasks related to the deployment of the mail configuration.
-
-``role::owncloud:custom_config``
-  Run tasks related to the deployment of the custom configuration.
 
 ``role::owncloud:occ``
   Run tasks related to the :command:`occ` command.
 
 ``role::owncloud:ldap``
   Run tasks related to the LDAP configuration.
+
+``role::owncloud:theme``
+  Run tasks related to the configuring the ownCloud theme.

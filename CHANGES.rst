@@ -78,6 +78,9 @@ Changed
 
 - Switched the Changelog to `a new format <https://github.com/debops/docs/issues/154>`_. [ypid]
 
+- Renamed Ansible tags ``role::owncloud:mail`` to ``role::owncloud:config``
+  and ``role::owncloud:base_install`` to ``role::owncloud:pkg``. [ypid]
+
 Fixed
 ~~~~~
 

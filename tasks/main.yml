@@ -1,74 +1,15 @@
 ---
 # vim: foldmarker=[[[,]]]:foldmethod=marker
 
-- name: Get ownCloud APT GPG key
-  apt_key:
-    url: '{{ owncloud__apt_repo_key_url }}'
-    id: '{{ owncloud__apt_repo_key_id }}'
-    state: present
-  tags: [ 'role::owncloud:base_install' ]
+- include: 'system_package_management.yml'
+  tags: [ 'role::owncloud:pkg' ]
 
-- name: Ensure deprecated APT sources files are absent
-  file:
-    path: '/etc/apt/sources.list.d/{{ item }}'
-    state: 'absent'
-  with_items:
-    - 'download_opensuse_org_repositories_isv_ownCloud_community_8_1_Debian_8_0.list'
-    - 'download_owncloud_org_download_repositories_stable_Debian_8_0.list'
-  tags: [ 'role::owncloud:base_install' ]
+- include: 'setup_owncloud.yml'
+  tags: [ 'role::owncloud:config' ]
 
-- name: Configure ownCloud APT repository
-  template:
-    src: 'etc/apt/sources.list.d/debops_owncloud.list.j2'
-    dest: '/etc/apt/sources.list.d/debops_owncloud.list'
-    owner: 'root'
-    group: 'root'
-    mode: '0420'
-  register: owncloud__register_apt_repository
-  tags: [ 'role::owncloud:base_install' ]
-
-- name: Update APT repository cache
-  apt:
-    update_cache: True
-  when: owncloud__register_apt_repository|changed
-  tags: [ 'role::owncloud:base_install' ]
-
-  ## Use filename when available (2.1.0) https://github.com/ansible/ansible-modules-core/pull/2696
-  ## To avoid multiple of those source files.
-  ## ypid: Does not help much. When the URL changes, the old source entry will
-  ## need to be made absent so stay with the current way.
-  ## Disabled because each repository URLs would need to be made absent
-  ## manually with using `apt_repository`. If that is solved, then go with
-  ## `apt_repository` again.
-# - name: Configure ownCloud APT repository
-#   apt_repository:
-#     repo: '{{ owncloud__apt_repo_source }}'
-#     state: 'present'
-#     update_cache: True
-#   tags: [ 'role::owncloud:base_install' ]
-
-- name: Ensure owncloud packages are installed
-  apt:
-    name: '{{ item }}'
-    state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ owncloud__base_packages }}'
-    - '{{ owncloud__packages_recommended }}'
-    - '{{ owncloud__packages_optional }}'
-    - '{{ owncloud__packages }}'
-    - '{{ owncloud__packages_group }}'
-    - '{{ owncloud__packages_host }}'
-    - '{{ [ "php5-mysql" ] if (owncloud__database in [ "mariadb" ]) else [] }}'
-    - '{{ [ "php5-pgsql" ] if (owncloud__database in [ "postgresql" ]) else [] }}'
-  tags: [ 'role::owncloud:base_install' ]
-
-- include: 'configure_owncloud.yml'
-  tags: [ 'role::owncloud:configure' ]
-
-- include: 'configure_ldap.yml'
+- include: 'ldap.yml'
   when: (owncloud__ldap_enabled | bool)
   tags: [ 'role::owncloud:ldap' ]
 
-- include: 'configure_theme.yml'
+- include: 'theme.yml'
   tags: [ 'role::owncloud:theme' ]
