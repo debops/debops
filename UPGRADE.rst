@@ -16,7 +16,7 @@ This oneliner can come in handy to do this:
 
 .. code:: shell
 
-   git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/owncloud_ldap_enable/owncloud__ldap_enabled/g;s/\<(owncloud)_([^_])/\1__\2/g'
+   git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/owncloud_ldap_enable/owncloud__ldap_enabled/g;s/\<([^.]owncloud)_([^_])/\1__\2/g'
 
 From v0.1.0 to v0.2.0
 ---------------------
