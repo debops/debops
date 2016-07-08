@@ -49,9 +49,9 @@ contain the following code:
      hosts: [ 'debops_service_custom' ]
      become: True
 
-     environment: '{{ (inventory__environment | d({}) |
-                       combine(inventory__group_environment | d({}) |
-                        combine(inventory__host_environment | d({})))) }}'
+     environment: '{{ inventory__environment | d({})
+                      | combine(inventory__group_environment | d({}))
+                      | combine(inventory__host_environment  | d({})) }}'
 
      roles:
 

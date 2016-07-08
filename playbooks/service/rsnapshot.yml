@@ -6,9 +6,9 @@
            'debops_rsnapshot', 'debops_rsnapshot_rsync' ]
   become: True
 
-  environment: '{{ (inventory__environment | d({}) |
-                    combine(inventory__group_environment | d({}) |
-                     combine(inventory__host_environment | d({})))) }}'
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
 
   roles:
 
