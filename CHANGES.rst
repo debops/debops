@@ -1,25 +1,29 @@
 Changelog
 =========
 
-v0.3.1
-------
+**debops.auth**
 
-*Unreleased*
+This project adheres to `Semantic Versioning <http://semver.org/>`_
+and `human-readable changelog <http://keepachangelog.com/>`_.
+
+The current role maintainer is drybjed.
+
+
+`debops.auth master`_ - unreleased
+----------------------------------
+
+.. _debops.auth master: https://github.com/debops/ansible-auth/compare/v0.3.1...master
+
+
+`debops.auth v0.3.1`_ - 2016-07-08
+----------------------------------
+
+.. _debops.auth v0.3.1: https://github.com/debops/ansible-auth/compare/v0.3.0...v0.3.1
+
+Added
+~~~~~
 
 - Add DebOps pre/post task hooks. [drybjed]
-
-- Remove ``auth_admin_accounts`` list and related tasks. This list was used to
-  create admin accounts, which interfered when these accounts were supposed to
-  be system accounts instead of normal "user" accounts.
-
-  Use the ``debops.users`` role instead to create local administrator accounts
-  and add them to the ``admins`` group to grant them admin access.
-  Bootstrap playbooks / scripts should do that automatically for default admin
-  account. [drybjed]
-
-- Cease management of ``su`` PAM configuration. Only thing that was managed was
-  passwordless access given to specific system group; ``sudo`` is sufficient
-  for this functionality. Already existing systems are unchanged. [drybjed]
 
 - Add variable to specify umask for new home directories created by
   ``pam_mkhomedir`` PAM module. Default umask is set to ``0027``. [drybjed]
@@ -35,6 +39,11 @@ v0.3.1
 
 - Role will check if ``libnss-mdns`` package is present and enable/disable
   mDNS/Avahi support in ``/etc/nsswitch.conf`` accordingly. [drybjed]
+
+- Add the ``COPYRIGHT`` file. [drybjed]
+
+Changed
+~~~~~~~
 
 - Change location of machine password in ``secret/``.
 
@@ -54,19 +63,54 @@ v0.3.1
 - Change quotes in ``lineinfile`` task to correctly pass Tab characters through
   the template engine. [drybjed]
 
-v0.3.0
-------
+- Update Changelog to latest DebOps role standards. [drybjed]
 
-*Released: 2015-03-30*
+- Switch ``sudo`` task parameter to ``become``. [drybjed]
 
-- Move all ``auth_ldap_*`` variables to ``auth_ldap_conf_`` namespace. [drybjed]
+Removed
+~~~~~~~
 
-- ``auth_ldap`` variable is removed. Instead, ``/etc/ldap/ldap.conf`` is
-  configured either if ``/etc/ldap/`` directory exists, or ``ldap`` is
-  enabled in ``auth_nsswitch`` [drybjed]
+- Remove ``auth_admin_accounts`` list and related tasks. This list was used to
+  create admin accounts, which interfered when these accounts were supposed to
+  be system accounts instead of normal "user" accounts.
+
+  Use the ``debops.users`` role instead to create local administrator accounts
+  and add them to the ``admins`` group to grant them admin access.
+  Bootstrap playbooks / scripts should do that automatically for default admin
+  account. [drybjed]
+
+- Cease management of ``su`` PAM configuration. Only thing that was managed was
+  passwordless access given to specific system group; ``sudo`` is sufficient
+  for this functionality. Already existing systems are unchanged. [drybjed]
+
+Fixed
+~~~~~
+
+- Fix support for Ansible ``--check`` mode. [drybjed]
+
+- Fix Ansible deprecation warning about undefined variable. [drybjed]
+
+
+`debops.auth v0.3.0`_ - 2015-03-30
+----------------------------------
+
+.. _debops.auth v0.3.0: https://github.com/debops/ansible-auth/compare/v0.2.1...v0.3.0
+
+Added
+~~~~~
 
 - By a popular demand, ``auth_ldap_conf`` variable is brought back and can be
   used to disable configuration of ``/etc/ldap/ldap.conf``. [drybjed]
+
+- Add LDAP filtering in ``/etc/nslcd.conf``. By default ``nslcd`` will only
+  search LDAP accounts with ``uid`` greater than 1000. With additional
+  ``ldapns`` schema enabled in OpenLDAP server, only accounts with specific
+  attributes will be allowed to login. [drybjed]
+
+Changed
+~~~~~~~
+
+- Move all ``auth_ldap_*`` variables to ``auth_ldap_conf_`` namespace. [drybjed]
 
 - ``auth_ldap_tls`` variable has been converted from a text block into separate
   TLS variables. [drybjed]
@@ -75,15 +119,21 @@ v0.3.0
   ``auth_nsswitch`` variable controls presence and order of specific database
   entries in the configuration file. [drybjed]
 
-- Add LDAP filtering in ``/etc/nslcd.conf``. By default ``nslcd`` will only
-  search LDAP accounts with ``uid`` greater than 1000. With additional
-  ``ldapns`` schema enabled in OpenLDAP server, only accounts with specific
-  attributes will be allowed to login. [drybjed]
+Removed
+~~~~~~~
 
-v0.2.1
-------
+- ``auth_ldap`` variable is removed. Instead, ``/etc/ldap/ldap.conf`` is
+  configured either if ``/etc/ldap/`` directory exists, or ``ldap`` is
+  enabled in ``auth_nsswitch`` [drybjed]
 
-*Released: 2015-02-25*
+
+`debops.auth v0.2.1`_ - 2015-02-25
+----------------------------------
+
+.. _debops.auth v0.2.1: https://github.com/debops/ansible-auth/compare/v0.2.0...v0.2.1
+
+Changed
+~~~~~~~
 
 - ``debops.auth`` LDAP configuration tasks will now use new LDAP support in
   ``debops.secret``. [drybjed]
@@ -96,17 +146,23 @@ v0.2.1
 - You can now specify the scrutiny level which ``nslcd`` will use while
   verifying the certificate sent by the LDAP server. [drybjed]
 
-v0.2.0
-------
 
-*Released: 2015-02-24*
+`debops.auth v0.2.0`_ - 2015-02-24
+----------------------------------
 
-- Add NSS LDAP / PAM authentication support [drybjed]
+.. _debops.auth v0.2.0: https://github.com/debops/ansible-auth/compare/v0.1.0...v0.2.0
 
-v0.1.0
-------
+Added
+~~~~~
 
-*Released: 2015-02-20*
+- Add NSS LDAP / PAM authentication support. [drybjed]
 
-- First release [drybjed]
+
+debops.auth v0.1.0 - 2015-02-20
+-------------------------------
+
+Added
+~~~~~
+
+- First release. [drybjed]
 
