@@ -42,7 +42,7 @@ Include specified packages in the upgrade blacklist on all hosts:
      - name: 'postgresql'
        when: '{{ ansible_hostname in [ "database", "db" ] }}'
 
-     - name: [ '^linux-*', 'vim' ]
+     - name: [ '^linux-.*', 'vim' ]
        when: '{{ (ansible_local|d() and ansible_local.tags|d() and
                   "production" in ansible_local.tags) }}'
 

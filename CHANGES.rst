@@ -18,6 +18,15 @@ Changed
 
 - Reworked role to meet the latest DebOps standards. [ypid]
 
+Fixed
+~~~~~
+
+- Fixed example for :envvar:`unattended_upgrades__blacklist` which is expected
+  to be a regular expression and a mix between glob and regular expression.
+  The previous given example also works for some reason so this fix is merely
+  to follow the upstream documentation more strictly.
+  [ypid]
+
 `debops.unattended_upgrades v0.1.4`_ - 2016-03-02
 -------------------------------------------------
 
