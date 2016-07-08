@@ -54,6 +54,8 @@ v0.3.1
 - Change quotes in ``lineinfile`` task to correctly pass Tab characters through
   the template engine. [drybjed]
 
+- Fix support for Ansible ``--check`` mode. [drybjed]
+
 v0.3.0
 ------
 
