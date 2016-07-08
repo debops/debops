@@ -25,7 +25,7 @@ install one on the same host as ownCloud or choose a different host:
 
 In case you chose a different host, you will need to specify which of your
 database servers the ownCloud instance should use by specifying the database
-server host as ``owncloud_database_server``.
+server host as ``owncloud__database_server``.
 
 ownCloud also recommends to setup Redis for caching. You can
 install a Redis server on the same host as ownCloud or choose a different host:
@@ -37,7 +37,7 @@ install a Redis server on the same host as ownCloud or choose a different host:
 
 In case you chose a different host, you will need to specify which of your
 Redis servers the ownCloud instance should use by specifying the Redis
-server host as ``owncloud_redis_host``.
+server host as ``owncloud__redis_host``.
 This role will use a locally setup Redis server automatically when it was setup
 by putting the host into the ``debops_service_redis`` host group.
 

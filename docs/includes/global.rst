@@ -8,6 +8,9 @@
 
 .. _Ansible: https://www.ansible.com/
 .. _`Ansible copy module`: https://docs.ansible.com/ansible/copy_module.html
+.. _`Ansible file module`: https://docs.ansible.com/ansible/file_module.html
+.. _`Ansible get_url module`: https://docs.ansible.com/ansible/get_url_module.html
+.. _`Ansible unarchive module`: https://docs.ansible.com/ansible/unarchive_module.html
 
 .. ]]]
 

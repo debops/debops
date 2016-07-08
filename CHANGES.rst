@@ -1,3 +1,5 @@
+.. _owncloud__ref_changelog:
+
 Changelog
 =========
 
@@ -8,6 +10,8 @@ and `human-readable changelog <http://keepachangelog.com/>`_.
 
 The current role maintainer is ypid.
 
+Refer to the :ref:`owncloud__ref_upgrade_nodes` when you intend to upgrade to a
+new release.
 
 `debops.owncloud master`_ - unreleased
 --------------------------------------
@@ -30,7 +34,7 @@ Added
   the box. [ypid]
 
 - Prepare to use the documents app when setting
-  :envvar:`owncloud_app_documents_enabled` to ``True``. [ypid]
+  :envvar:`owncloud__app_documents_enabled` to ``True``. [ypid]
 
 - Enabled in memory caching using `APCu <https://pecl.php.net/package/APCu>`_
   by default according to the `official ownCloud Dokumentation
@@ -39,12 +43,12 @@ Added
 Changed
 ~~~~~~~
 
-- Update :envvar:`owncloud_release` to ``9.0``. [drybjed]
+- Update :envvar:`owncloud__release` to ``9.0``. [drybjed]
 
 - Installation of the wrapper script for the :command:`occ` command is no
   longer optional as it is needed by the role internally.
 
-  The ``owncloud_enable_occ_shortcut`` variable has no effect anymore and you
+  The ``owncloud__enable_occ_shortcut`` variable has no effect anymore and you
   can remove it from your inventory. [ypid]
 
 - Reworked ownCloud autosetup tasks. [ypid]
@@ -65,11 +69,11 @@ Changed
   update the role to new releases, test it and then release a new version of
   the role. [ypid]
 
-- Consolidated ``owncloud_initial_config_*`` and ``owncloud_custom_*conf_map``
-  into the ``owncloud_config_*`` namespace. The new variables allow to alter
+- Consolidated ``owncloud__initial_config_*`` and ``owncloud__custom_*conf_map``
+  into the ``owncloud__config_*`` namespace. The new variables allow to alter
   settings after the initial setup. [ypid]
 
-- Renamed ``owncloud_ldap_enable`` to :envvar:`owncloud__ldap_enabled` to match
+- Renamed ``owncloud__ldap_enabledd`` to :envvar:`owncloud__ldap_enabled` to match
   the naming convention of the DebOps project. [ypid]
 
 - Switched the Changelog to `a new format <https://github.com/debops/docs/issues/154>`_. [ypid]
@@ -79,7 +83,7 @@ Fixed
 
 - Fixed :command:`occ` command wrapper to work with ownCloud 8.0. [ypid]
 
-- Don’t rely on :file:`/usr/local/bin` being in the `PATH` environment variable
+- Don’t rely on :file:`/usr/local/bin` being in the ``PATH`` environment variable
   for this role to work. [ypid]
 
 - Updated Nginx configuration to the example given in the official ownCloud documentation.
@@ -89,8 +93,12 @@ Fixed
 Removed
 ~~~~~~~
 
+- Changed role namespace from ``owncloud__`` to ``owncloud__``.
+  ``owncloud__[^_]`` variables are dropped and don’t have any effect anymore.
+  [ypid]
+
 - Remove most of the Ansible role dependencies.
-  Note that :envvar:`owncloud_autosetup` requires that a webserver is installed to
+  Note that :envvar:`owncloud__autosetup` requires that a webserver is installed to
   initialize the ownCloud database.
   Further configuration will not be possible when the database has not been
   initialized.
@@ -122,7 +130,7 @@ Added
 - Allow to use :command:`occ` via Ansible’s inventory. Can be used to enable apps and create users. [ypid]
 
 - Setup shortcut for the :command:`occ` command when not logged in as
-  :envvar:`owncloud_user` user and sudo allows it.
+  ``owncloud_user`` user and sudo allows it.
   Disabled by default. Can be enabled via ``owncloud_enable_occ_shortcut``.
   [ypid]
 
@@ -147,7 +155,7 @@ Changed
 Fixed
 ~~~~~
 
-- New variable: :envvar:`owncloud_timeout` needed to handle very large files uploads. [scibi]
+- New variable: ``owncloud_timeout`` needed to handle very large files uploads. [scibi]
 
 - Disabled ``updater`` App as it does not work with this role anyway. [ypid]
 

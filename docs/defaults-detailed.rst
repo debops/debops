@@ -14,17 +14,17 @@ examples for them.
 
 .. _owncloud__ref_config:
 
-owncloud_config
----------------
+owncloud__config
+----------------
 
 Dict keys can be overridden when they are present in multiple dicts.
 Order of priority from least specific to most specific:
 
-* :envvar:`owncloud_config_role_required`
-* :envvar:`owncloud_config_role_optional`
-* :envvar:`owncloud_config`
-* :envvar:`owncloud_config_group`
-* :envvar:`owncloud_config_host`
+* :envvar:`owncloud__config_role_required`
+* :envvar:`owncloud__config_role_optional`
+* :envvar:`owncloud__config`
+* :envvar:`owncloud__config_group`
+* :envvar:`owncloud__config_host`
 
 Each dict can hold multiple keys and values. The dict value can either be a
 value directly intended for ownCloud (corresponding directly to the value in
@@ -44,7 +44,7 @@ Here are the available options of the inner dict:
 
    .. code:: yaml
 
-      owncloud_config:
+      owncloud__config:
         memcache.local: '\\OC\\Memcache\\APCu'
 
   This is not confirmed by the `official ownCloud Dokumentation

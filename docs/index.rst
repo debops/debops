@@ -12,6 +12,7 @@ Ansible role: debops.owncloud
    defaults-detailed
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:

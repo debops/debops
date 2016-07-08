@@ -3,8 +3,8 @@
 
 - name: Get ownCloud APT GPG key
   apt_key:
-    url: '{{ owncloud_apt_repo_key_url }}'
-    id: '{{ owncloud_apt_repo_key_id }}'
+    url: '{{ owncloud__apt_repo_key_url }}'
+    id: '{{ owncloud__apt_repo_key_id }}'
     state: present
   tags: [ 'role::owncloud:base_install' ]
 
@@ -42,7 +42,7 @@
   ## `apt_repository` again.
 # - name: Configure ownCloud APT repository
 #   apt_repository:
-#     repo: '{{ owncloud_apt_repo_source }}'
+#     repo: '{{ owncloud__apt_repo_source }}'
 #     state: 'present'
 #     update_cache: True
 #   tags: [ 'role::owncloud:base_install' ]
@@ -53,14 +53,14 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ owncloud_base_packages }}'
-    - '{{ owncloud_packages_recommended }}'
-    - '{{ owncloud_packages_optional }}'
-    - '{{ owncloud_packages }}'
-    - '{{ owncloud_packages_group }}'
-    - '{{ owncloud_packages_host }}'
-    - '{{ [ "php5-mysql" ] if (owncloud_database in [ "mariadb" ]) else [] }}'
-    - '{{ [ "php5-pgsql" ] if (owncloud_database in [ "postgresql" ]) else [] }}'
+    - '{{ owncloud__base_packages }}'
+    - '{{ owncloud__packages_recommended }}'
+    - '{{ owncloud__packages_optional }}'
+    - '{{ owncloud__packages }}'
+    - '{{ owncloud__packages_group }}'
+    - '{{ owncloud__packages_host }}'
+    - '{{ [ "php5-mysql" ] if (owncloud__database in [ "mariadb" ]) else [] }}'
+    - '{{ [ "php5-pgsql" ] if (owncloud__database in [ "postgresql" ]) else [] }}'
   tags: [ 'role::owncloud:base_install' ]
 
 - include: 'configure_owncloud.yml'

@@ -8,18 +8,18 @@ double-check first.
 #}
 
 $AUTOCONFIG = array(
-  "directory" => "{{ owncloud_data_path }}",
-{% for key, value in owncloud_database_map[owncloud_database].iteritems() %}
+  "directory" => "{{ owncloud__data_path }}",
+{% for key, value in owncloud__database_map[owncloud__database].iteritems() %}
 {% if key == 'dbpass' %}
-  "{{ key }}" => "{{ owncloud_database_password }}",
+  "{{ key }}" => "{{ owncloud__database_password }}",
 {% else %}
   "{{ key }}" => "{{ value }}",
 {% endif %}
 {% endfor %}
-{% if owncloud_admin_username != False %}
-  "adminlogin" => "{{ owncloud_admin_username }}",
-{% if owncloud_admin_password != False %}
-  "adminpass" => "{{ owncloud_admin_password }}",
+{% if owncloud__admin_username != False %}
+  "adminlogin" => "{{ owncloud__admin_username }}",
+{% if owncloud__admin_password != False %}
+  "adminpass" => "{{ owncloud__admin_password }}",
 {% endif %}
 {% endif %}
 );
