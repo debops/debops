@@ -524,7 +524,7 @@ owncloud__app_user_webfinger_support: False
 # .. envvar:: owncloud__role_config
 #
 # See `ownCloud config.php configuration`_.
-# This configuration is used to configure for ownCloud controlled by other
+# This variable is used by this role configure ownCloud controlled by other
 # variables of this role.
 owncloud__role_config:
 
@@ -649,7 +649,10 @@ owncloud__host_config: {}
 # Role dictionary of ownCloud application settings.
 # This variable is a set of optional settings for ownCloud recommended by the
 # maintainers of this role.
-owncloud__role_apps_config: {}
+owncloud__role_apps_config:
+  documents:
+    enabled: '{{ "yes" if (owncloud__app_documents_enabled | bool) else "no" }}'
+    converter: 'local'
 
 
 # .. envvar:: owncloud__apps_config
@@ -689,12 +692,7 @@ owncloud__dependent_apps_config: {}
 # .. envvar:: owncloud__app_documents_enabled
 #
 # Where the `Documents app <https://apps.owncloud.com/content/show.php/Documents?content=168711>`_ should be enabled.
-# Not enabled by default because as of ownCloud 9.0 the application is not shipped by default.
-#
-# FIXME: Automate app enabling with occ.
-# https://github.com/owncloud/documents/issues/508 still present?
-# `occ app:enable documents` → "documents not found"
-# Only works when the documents app has been enabled via the web interface as of ownCloud 9.0.3.
+# Not enabled by default because, as of ownCloud 9.0, the application is not shipped by default.
 owncloud__app_documents_enabled: False
 
 
