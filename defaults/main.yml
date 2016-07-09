@@ -25,7 +25,10 @@
 owncloud__base_packages:
   - 'owncloud'
   - 'php5-apcu'
-  - '{{ "php5-redis" if (owncloud__redis_enabled|bool) else [] }}'
+  - '{{ [ "php5-mysql" ] if (owncloud__database in [ "mariadb", "mysql" ]) else [] }}'
+  - '{{ [ "php5-pgsql" ] if (owncloud__database in [ "postgresql" ]) else [] }}'
+  - '{{ [ "php5-redis" ] if (owncloud__redis_enabled | bool) else [] }}'
+  - '{{ [ "php5-ldap" ] if (owncloud__ldap_enabled | bool) else [] }}'
 
 
 # .. envvar:: owncloud__packages_recommended
@@ -752,6 +755,9 @@ owncloud__default_occ_cmd_list:
   ## Since ownCloud 9 it is called `updatenotification`.
   - command: 'app:disable updater'
     when: '{{ owncloud__release | version_compare("8.2", "<=") }}'
+
+  - command: 'app:enable user_ldap'
+    when: '{{ owncloud__ldap_enabled | bool }}'
 
 
 # .. envvar:: owncloud__occ_cmd_list

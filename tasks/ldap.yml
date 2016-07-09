@@ -1,19 +1,6 @@
 ---
 # vim: foldmarker=[[[,]]]:foldmethod=marker
 
-- name: Ensure php5-ldap is installed
-  apt:
-    name: 'php5-ldap'
-    state: 'present'
-    install_recommends: False
-
-- name: Make sure the user_ldap app is enabled
-  include: 'run_occ.yml'
-  loop_control:
-    loop_var: 'owncloud__occ_item'
-  with_items:
-    - command: 'app:enable user_ldap'
-
 - name: Check default ldap config exists
   command: php --file "{{ owncloud__home }}/occ" ldap:show-config ""
   changed_when: False
