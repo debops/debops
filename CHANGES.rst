@@ -11,7 +11,13 @@ The current role maintainer is drybjed.
 `debops.unattended_upgrades master`_ - unreleased
 -------------------------------------------------
 
-.. _debops.unattended_upgrades master: https://github.com/debops/ansible-unattended_upgrades/compare/v0.1.4...master
+.. _debops.unattended_upgrades master: https://github.com/debops/ansible-unattended_upgrades/compare/v0.2.0...master
+
+
+`debops.unattended_upgrades v0.2.0`_ - 2016-07-09
+-------------------------------------------------
+
+.. _debops.unattended_upgrades v0.2.0: https://github.com/debops/ansible-unattended_upgrades/compare/v0.1.4...v0.2.0
 
 Added
 ~~~~~
@@ -25,6 +31,8 @@ Added
   :envvar:`unattended_upgrades__dependent_origins` lists. [ypid]
 
 - Documentation for :envvar:`unattended_upgrades__origins`.
+
+- Add ``vim`` fold markers in ``defaults/main.yml`` file. [drybjed]
 
 Changed
 ~~~~~~~
@@ -46,6 +54,10 @@ Removed
 - ``when`` option from :envvar:`unattended_upgrades__blacklist` and similar
   lists when using the dictionary notation. It has been superseded by the
   ``state`` option to allow to remove entries from the blacklist. [ypid]
+
+- Remove the automatic blacklisting of the ``vim`` and ``libc6`` packages.
+  Nothing is blacklisted by default. [ypid]
+
 
 `debops.unattended_upgrades v0.1.4`_ - 2016-03-02
 -------------------------------------------------
