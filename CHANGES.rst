@@ -26,6 +26,8 @@ Added
 
 - Documentation for :envvar:`unattended_upgrades__origins`.
 
+- Add ``vim`` fold markers in ``defaults/main.yml`` file. [drybjed]
+
 Changed
 ~~~~~~~
 
