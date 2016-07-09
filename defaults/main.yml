@@ -587,11 +587,78 @@ owncloud__config_group: {}
 owncloud__config_host: {}
 
 
-# .. ownCloud configuration via occ commands [[[1
+# .. Configure ownCloud applications [[[1
 #
-# -------------------------------------------
-#   ownCloud configuration via occ commands
-# -------------------------------------------
+# -----------------------------------
+#   Configure ownCloud applications
+# -----------------------------------
+
+# Dictionary of ownCloud application settings.
+# Check the output of :command:`occ config:list` to see how the settings are called.
+# You might need to change a particular setting via the web interface in order
+# for it to appear in the output.
+#
+# Note that the :command:`occ` can also change ownCloud system settings but this should
+# be done via `ownCloud config.php configuration`_.
+#
+# Examples:
+#
+# .. code-block:: yaml
+#   :linenos:
+#
+#    owncloud__run_occ_config:
+#
+#      ## Set the default quota for all users which don’t have more explicit
+#      ## quota settings to 100 MB.
+#      files:
+#        default_quota: '100 MB'
+#
+#      ## Disable Federated Cloud Sharing:
+#      ## * Allow users on this server to send shares to other servers
+#      ## * Allow users on this server to receive shares from other servers
+#      core:
+#        incoming_server2server_share_enabled: 'no'
+#        outgoing_server2server_share_enabled: 'no'
+#      files_sharing:
+#        incoming_server2server_share_enabled: 'no'
+#        outgoing_server2server_share_enabled: 'no'
+#
+#      ## Disable Federation:
+#      ## * Add server automatically once a federated share was created successfully
+#      federation:
+#        autoAddServers: '0'
+#
+
+# .. envvar:: owncloud__apps_config
+#
+# Dictionary of ownCloud application settings.
+# This variable is intended to be used in Ansible’s global inventory.
+# More specific variables can overrule less specific variables.
+owncloud__apps_config: {}
+
+
+# .. envvar:: owncloud__apps_config_group
+#
+# See `Configure ownCloud applications`_.
+# Dictionary of ownCloud application settings.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
+owncloud__apps_config_group: {}
+
+
+# .. envvar:: owncloud__apps_config_host
+#
+# See `Configure ownCloud applications`_.
+# Dictionary of ownCloud application settings.
+# This variable is intended to be used in the inventory of the host.
+owncloud__apps_config_host: {}
+
+
+# .. ownCloud raw occ commands [[[1
+#
+# -----------------------------
+#   ownCloud raw occ commands
+# -----------------------------
 
 # .. envvar:: owncloud__run_occ_global_commands
 #
@@ -604,33 +671,33 @@ owncloud__config_host: {}
 # .. code-block:: yaml
 #   :linenos:
 #
-#   owncloud__run_occ_global_commands
+#    owncloud__run_occ_global_commands
 #
-#     ## Requires: php5-ldap
-#     - command: 'app:enable user_ldap'
+#      ## Requires: php5-ldap
+#      - command: 'app:enable user_ldap'
 #
-#     - command: 'app:enable external'
+#      - command: 'app:enable external'
 #
-#     ## Requires: php5-libsmbclient
-#     - command: 'app:enable files_external'
+#      ## Requires: php5-libsmbclient
+#      - command: 'app:enable files_external'
 #
-#     ## Create an additional admin account.
-#     - command: 'user:add --password-from-env --display-name="Administrator" --group="admin" admin'
-#       ## Does not work with ownCloud 8.0 or below so don’t run it there.
-#       when: '{{ owncloud__release | version_compare("8.1", ">=") }}'
-#       env:
-#         OC_PASS: "{{ lookup('password', secret + '/credentials/' +
-#                      ansible_fqdn + '/owncloud/admin/' + 'admin' +
-#                      '/password length=' + owncloud__password_length) }}"
+#      ## Create an additional admin account.
+#      - command: 'user:add --password-from-env --display-name="Administrator" --group="admin" admin'
+#        ## Does not work with ownCloud 8.0 or below so don’t run it there.
+#        when: '{{ owncloud__release | version_compare("8.1", ">=") }}'
+#        env:
+#          OC_PASS: "{{ lookup('password', secret + '/credentials/' +
+#                       ansible_fqdn + '/owncloud/admin/' + 'admin' +
+#                       '/password length=' + owncloud__password_length) }}"
 #
-#     ## Create an regular user. Note that you probably want to use an existing
-#     ## user database like LDAP.
-#     - command: 'user:add --password-from-env --display-name="Normal user" user'
-#       when: '{{ owncloud__release | version_compare("8.1", ">=") }}'
-#       env:
-#         OC_PASS: "{{ lookup('password', secret + '/credentials/' +
-#                      ansible_fqdn + '/owncloud/users/' + 'user' +
-#                      '/password length=' + owncloud__password_length) }}"
+#      ## Create an regular user. Note that you probably want to use an existing
+#      ## user database like LDAP.
+#      - command: 'user:add --password-from-env --display-name="Normal user" user'
+#        when: '{{ owncloud__release | version_compare("8.1", ">=") }}'
+#        env:
+#          OC_PASS: "{{ lookup('password', secret + '/credentials/' +
+#                       ansible_fqdn + '/owncloud/users/' + 'user' +
+#                       '/password length=' + owncloud__password_length) }}"
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html>`__ for details.
 owncloud__run_occ_global_commands:
@@ -1341,4 +1408,3 @@ owncloud__php5__pool:
 owncloud__unattended_upgrades__dependent_origins:
   - origin: 'site=download.owncloud.org'
     state: '{{ "present" if (owncloud__auto_security_updates_enabled | bool) else "absent" }}'
-

@@ -42,6 +42,8 @@ Added
 
 - Configure fully automated ownCloud security updates by default. [ypid]
 
+- Support to configure ownCloud applications. [ypid]
+
 Changed
 ~~~~~~~
 

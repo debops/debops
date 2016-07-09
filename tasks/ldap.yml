@@ -8,7 +8,9 @@
     install_recommends: False
 
 - name: Make sure the user_ldap app is enabled
-  include: run_occ.yml
+  include: 'run_occ.yml'
+  loop_control:
+    loop_var: 'owncloud__occ_item'
   with_items:
     - command: 'app:enable user_ldap'
 

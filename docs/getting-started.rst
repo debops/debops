@@ -81,6 +81,10 @@ Available role tags:
 ``role::owncloud:occ``
   Run tasks related to the :command:`occ` command.
 
+``role::owncloud:occ_config``
+  Run tasks related to :command:`occ config:` commands generated from
+  :envvar:`owncloud__apps_config` variables.
+
 ``role::owncloud:auto_upgrade``
   Run tasks related preparing ownCloud auto upgrade.
 
