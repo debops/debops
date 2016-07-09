@@ -1,38 +1,7 @@
-{% set unattended_upgrades__tpl_origins = [] %}
-{% if (ansible_local|d() and ansible_local.unattended_upgrades|d() and
-       ansible_local.unattended_upgrades.origins|d()) %}
-{%   for item in ansible_local.unattended_upgrades.origins %}
-{%     set _ = unattended_upgrades__tpl_origins.append(item) %}
-{%   endfor %}
-{% endif %}
-{% for item in unattended_upgrades__dependent_origins %}
-{%   set _ = unattended_upgrades__tpl_origins.append(item) %}
-{% endfor %}
-{% set unattended_upgrades__tpl_blacklist = [] %}
-{% if (ansible_local|d() and ansible_local.unattended_upgrades|d() and
-       ansible_local.unattended_upgrades.blacklist|d()) %}
-{%   for item in ansible_local.unattended_upgrades.blacklist %}
-{%     set _ = unattended_upgrades__tpl_blacklist.append(item) %}
-{%   endfor %}
-{% endif %}
-{% for item in unattended_upgrades__dependent_blacklist %}
-{%   if item is mapping %}
-{%     if (item.name|d() and item.when|d() and item.when|bool) %}
-{%       if item.name is string %}
-{%         set _ = unattended_upgrades__tpl_blacklist.append(item.name) %}
-{%       else %}
-{%         for element in item.name %}
-{%           set _ = unattended_upgrades__tpl_blacklist.append(element) %}
-{%         endfor %}
-{%       endif %}
-{%     endif %}
-{%   else %}
-{%     set _ = unattended_upgrades__tpl_blacklist.append(item) %}
-{%   endif %}
-{% endfor %}
-{
-"blacklist": {{ unattended_upgrades__tpl_blacklist | sort | unique | to_nice_json }},
-"enabled": "{{  unattended_upgrades__enabled       | bool | lower }}",
-"origins": {{   unattended_upgrades__tpl_origins   | sort | unique | to_nice_json }},
-"periodic": "{{ unattended_upgrades__periodic      | bool | lower }}"
-}
+{% import 'unattended_upgrades__tpl_macros.j2' as unattended_upgrades__tpl_macros with context %}
+{{ ({
+	"enabled":   unattended_upgrades__enabled  | bool | lower,
+	"periodic":  unattended_upgrades__periodic | bool | lower,
+	"blacklist": unattended_upgrades__tpl_macros.get_blacklist_as_json() | from_json,
+	"origins":   unattended_upgrades__tpl_macros.get_origins_as_json()   | from_json,
+}) | to_nice_json }}
