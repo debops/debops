@@ -20,11 +20,11 @@ owncloud__config
 Dict keys can be overridden when they are present in multiple dicts.
 Order of priority from least specific to most specific:
 
-* :envvar:`owncloud__config_role_required`
-* :envvar:`owncloud__config_role_optional`
+* :envvar:`owncloud__required_config`
+* :envvar:`owncloud__optional_config`
 * :envvar:`owncloud__config`
-* :envvar:`owncloud__config_group`
-* :envvar:`owncloud__config_host`
+* :envvar:`owncloud__group_config`
+* :envvar:`owncloud__host_config`
 
 Each dict can hold multiple keys and values. The dict value can either be a
 value directly intended for ownCloud (corresponding directly to the value in

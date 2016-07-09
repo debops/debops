@@ -42,11 +42,12 @@ owncloud__base_packages:
 owncloud__packages_recommended:
   ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
   ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
+  ## Is it necessary to install all LibreOffice packages? https://github.com/owncloud/documents#known-issues
+  ## Upstream documentation does not specify it more clearly. Installing ``libreoffice`` just to be sure.
   - '{{ [ "libreoffice" ] if (owncloud__app_documents_enabled|bool) else [] }}'
-  ## TODO: Is it necessary to install all LibreOffice packages? https://github.com/owncloud/documents#known-issues
 
 
-# .. envvar:: owncloud__packages_optional
+# .. envvar:: owncloud__optional_packages
 #
 # List of optional packages for ownCloud.
 # If you don’t want to install them, set:
@@ -54,10 +55,10 @@ owncloud__packages_recommended:
 # .. code-block:: yaml
 #   :linenos:
 #
-#    owncloud__packages_optional: []
+#    owncloud__optional_packages: []
 #
 # in your inventory.
-owncloud__packages_optional:
+owncloud__optional_packages:
   - 'php5-imagick'
   - 'smbclient'
   - 'libsmbclient'
@@ -70,19 +71,19 @@ owncloud__packages_optional:
 owncloud__packages: []
 
 
-# .. envvar:: owncloud__packages_group
+# .. envvar:: owncloud__group_packages
 #
 # List of optional packages for ownCloud.
 # This variable is intended to be used in a host inventory group of Ansible
 # (only one host group is supported).
-owncloud__packages_group: []
+owncloud__group_packages: []
 
 
-# .. envvar:: owncloud__packages_host
+# .. envvar:: owncloud__host_packages
 #
 # List of optional packages for ownCloud.
 # This variable is intended to be used in the inventory of the host.
-owncloud__packages_host: []
+owncloud__host_packages: []
 
 
 # .. envvar:: owncloud__deploy_state
@@ -513,7 +514,7 @@ owncloud__app_user_webfinger_support: False
 # from :file:`owncloud/config/config.php`. For more information refer to :ref:`owncloud__ref_config`.
 
 
-# .. envvar:: owncloud__config_role_required
+# .. envvar:: owncloud__required_config
 #
 # See `ownCloud config.php configuration`_.
 # This variable is a set of required settings for ownCloud to be usable.
@@ -522,10 +523,10 @@ owncloud__app_user_webfinger_support: False
 # .. code-block:: yaml
 #   :linenos:
 #
-#    owncloud__config_role_required: {}
+#    owncloud__required_config: {}
 #
 # in your inventory when you want to disable/change it anyway.
-owncloud__config_role_required:
+owncloud__required_config:
 
   trusted_domains: '{{ owncloud__domain }}'
 
@@ -536,7 +537,7 @@ owncloud__config_role_required:
   'updatechecker': False
 
 
-# .. envvar:: owncloud__config_role_optional
+# .. envvar:: owncloud__optional_config
 #
 # See `ownCloud config.php configuration`_.
 # This variable is a set of optional settings for ownCloud recommended by the
@@ -546,10 +547,10 @@ owncloud__config_role_required:
 # .. code-block:: yaml
 #   :linenos:
 #
-#    owncloud__config_role_optional: {}
+#    owncloud__optional_config: {}
 #
 # in your inventory when you want to disable it.
-owncloud__config_role_optional:
+owncloud__optional_config:
 
   ## The default timezone for logfiles is UTC.
   logtimezone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
@@ -584,26 +585,26 @@ owncloud__config_role_optional:
 owncloud__config: {}
 
 
-# .. envvar:: owncloud__config_group
+# .. envvar:: owncloud__group_config
 #
 # See `ownCloud config.php configuration`_.
 # This variable is intended to be used in a host inventory group of Ansible
 # (only one host group is supported).
-owncloud__config_group: {}
+owncloud__group_config: {}
 
 
-# .. envvar:: owncloud__config_host
+# .. envvar:: owncloud__host_config
 #
 # See `ownCloud config.php configuration`_.
 # This variable is intended to be used in the inventory of the host.
-owncloud__config_host: {}
+owncloud__host_config: {}
 
 
-# .. Configure ownCloud applications [[[1
+# .. ownCloud applications configuration [[[1
 #
-# -----------------------------------
-#   Configure ownCloud applications
-# -----------------------------------
+# ---------------------------------------
+#   ownCloud applications configuration
+# ---------------------------------------
 
 # Dictionary of ownCloud application settings.
 # Check the output of :command:`occ config:list` to see how the settings are called.
@@ -618,7 +619,7 @@ owncloud__config_host: {}
 # .. code-block:: yaml
 #   :linenos:
 #
-#    owncloud__run_occ_config:
+#    owncloud__apps_config:
 #
 #      ## Set the default quota for all users which don’t have more explicit
 #      ## quota settings to 100 MB.
@@ -650,21 +651,33 @@ owncloud__config_host: {}
 owncloud__apps_config: {}
 
 
-# .. envvar:: owncloud__apps_config_group
+# .. envvar:: owncloud__group_apps_config
 #
-# See `Configure ownCloud applications`_.
+# See `ownCloud applications configuration`_.
 # Dictionary of ownCloud application settings.
 # This variable is intended to be used in a host inventory group of Ansible
 # (only one host group is supported).
-owncloud__apps_config_group: {}
+owncloud__group_apps_config: {}
 
 
-# .. envvar:: owncloud__apps_config_host
+# .. envvar:: owncloud__host_apps_config
 #
-# See `Configure ownCloud applications`_.
+# See `ownCloud applications configuration`_.
 # Dictionary of ownCloud application settings.
 # This variable is intended to be used in the inventory of the host.
-owncloud__apps_config_host: {}
+owncloud__host_apps_config: {}
+
+
+# .. envvar:: owncloud__app_documents_enabled
+#
+# Where the `Documents app <https://apps.owncloud.com/content/show.php/Documents?content=168711>`_ should be enabled.
+# Not enabled by default because as of ownCloud 9.0 the application is not shipped by default.
+#
+# FIXME: Automate app enabling with occ.
+# https://github.com/owncloud/documents/issues/508 still present?
+# `occ app:enable documents` → "documents not found"
+# Only works when the documents app has been enabled via the web interface as of ownCloud 9.0.3.
+owncloud__app_documents_enabled: False
 
 
 # .. ownCloud raw occ commands [[[1
@@ -673,9 +686,7 @@ owncloud__apps_config_host: {}
 #   ownCloud raw occ commands
 # -----------------------------
 
-# .. envvar:: owncloud__run_occ_global_commands
-#
-# Global list of :command:`occ` commands to run.
+# List of :command:`occ` commands to run.
 # It can be used to enable apps, add users and more which can be useful when
 # deploying ownCloud.
 #
@@ -684,7 +695,7 @@ owncloud__apps_config_host: {}
 # .. code-block:: yaml
 #   :linenos:
 #
-#    owncloud__run_occ_global_commands
+#    owncloud__occ_cmd_list
 #
 #      ## Requires: php5-ldap
 #      - command: 'app:enable user_ldap'
@@ -713,27 +724,48 @@ owncloud__apps_config_host: {}
 #                       '/password length=' + owncloud__password_length) }}"
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html>`__ for details.
-owncloud__run_occ_global_commands:
+
+# .. envvar:: owncloud__default_occ_cmd_list
+#
+# Default list of :command:`occ` commands to run.
+# Command present of role to automate certain tasks.
+# See `ownCloud raw occ commands`_.
+owncloud__default_occ_cmd_list:
   ## Disable the updater because it does not work anyway with the way ownCloud
   ## is setup by this role using packages.
   ## Since ownCloud 9 it is called `updatenotification`.
   - command: 'app:disable updater'
     when: '{{ owncloud__release | version_compare("8.2", "<=") }}'
 
-  # - command: 'app:disable documents'
-  #   when: '{{ not owncloud__app_documents_enabled|bool }}'
 
-
-# .. envvar:: owncloud__run_occ_group_commands
+# .. envvar:: owncloud__occ_cmd_list
 #
-# See :envvar:`owncloud__run_occ_global_commands`.
-owncloud__run_occ_group_commands: []
+# See `ownCloud raw occ commands`_.
+# This variable is intended to be used in Ansible’s global inventory.
+owncloud__occ_cmd_list:
 
 
-# .. envvar:: owncloud__run_occ_host_commands
+# .. envvar:: owncloud__group_occ_cmd_list
 #
-# See :envvar:`owncloud__run_occ_global_commands`.
-owncloud__run_occ_host_commands: []
+# See `ownCloud raw occ commands`_.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
+owncloud__group_occ_cmd_list: []
+
+
+# .. envvar:: owncloud__host_occ_cmd_list
+#
+# See `ownCloud raw occ commands`_.
+# This variable is intended to be used in the inventory of the host.
+owncloud__host_occ_cmd_list: []
+
+
+# .. envvar:: owncloud__dependent_occ_cmd_list
+#
+# See `ownCloud raw occ commands`_.
+# This variable is intended to be used from other Ansible roles, for usage as
+# a dependent role.
+owncloud__dependent_occ_cmd_list: []
 
 
 # .. envvar:: owncloud__occ_bin_file_path
@@ -745,22 +777,6 @@ owncloud__occ_bin_file_path: '{{ (ansible_local.root.bin
                                   else "/usr/local/bin") + "/occ" }}'
 
 
-# .. ownCloud applications [[[1
-#
-# -------------------------
-#   ownCloud applications
-# -------------------------
-
-# .. envvar:: owncloud__app_documents_enabled
-#
-# Where the `Documents app <https://apps.owncloud.com/content/show.php/Documents?content=168711>`_ should be enabled.
-# Not enabled by default because as of ownCloud 9.0 the application is not shipped by default.
-#
-# FIXME: Automate app enabling with occ.
-# https://github.com/owncloud/documents/issues/508 still present?
-# `occ app:enable documents` → "documents not found"
-# Only works when the documents app has been enabled via the web interface as of ownCloud 9.0.3.
-owncloud__app_documents_enabled: False
 
 
 # .. LDAP authentication [[[1
@@ -775,7 +791,7 @@ owncloud__app_documents_enabled: False
 #
 # Enable LDAP support. ownCloud support multiple LDAP servers but this role
 # configures only default one. If you need something more complex you can
-# use :envvar:`owncloud__run_occ_global_commands`.
+# use :envvar:`owncloud__occ_cmd_list`.
 owncloud__ldap_enabled: False
 
 

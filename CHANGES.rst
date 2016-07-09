@@ -77,13 +77,33 @@ Changed
   into the ``owncloud__config_*`` namespace. The new variables allow to alter
   settings after the initial setup. [ypid]
 
-- Renamed ``owncloud__ldap_enabledd`` to :envvar:`owncloud__ldap_enabled` to match
-  the naming convention of the DebOps project. [ypid]
-
 - Switched the Changelog to `a new format <https://github.com/debops/docs/issues/154>`_. [ypid]
 
-- Renamed Ansible tags ``role::owncloud:mail`` to ``role::owncloud:config``
-  and ``role::owncloud:base_install`` to ``role::owncloud:pkg``. [ypid]
+- Renamed Ansible tags
+
+  * ``role::owncloud:mail`` → ``role::owncloud:config``
+  * ``role::owncloud:base_install`` → ``role::owncloud:pkg``
+
+  [ypid]
+
+- Renamed variables to be consistent with the DebOps project:
+
+  * ``owncloud__?run_occ_global_commands`` → :envvar:`owncloud__occ_cmd_list`
+  * ``owncloud__?run_occ_group_commands`` → :envvar:`owncloud__group_occ_cmd_list`
+  * ``owncloud__?run_occ_host_commands`` → :envvar:`owncloud__host_occ_cmd_list`
+  * ``owncloud__?packages_recommended`` → :envvar:`owncloud__packages_recommended`
+  * ``owncloud__?packages_optional`` → :envvar:`owncloud__optional_packages`
+  * ``owncloud__?packages_group`` → :envvar:`owncloud__group_packages`
+  * ``owncloud__?packages_host`` → :envvar:`owncloud__host_packages`
+  * ``owncloud__?config_group`` → :envvar:`owncloud__group_config`
+  * ``owncloud__?config_host`` → :envvar:`owncloud__host_config`
+  * ``owncloud__?apps_config_group`` → :envvar:`owncloud__group_apps_config`
+  * ``owncloud__?apps_config_host`` → :envvar:`owncloud__host_apps_config`
+  * ``owncloud__?config_role_required`` → :envvar:`owncloud__required_config`
+  * ``owncloud__?config_role_optional`` → :envvar:`owncloud__optional_config`
+  * ``owncloud__?ldap_enable`` → :envvar:`owncloud__ldap_enabled`
+
+  [ypid]
 
 Fixed
 ~~~~~

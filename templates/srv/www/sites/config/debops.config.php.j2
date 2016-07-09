@@ -2,11 +2,11 @@
 /* {{ ansible_managed }} */
 
 {% set owncloud__tpl_unchecked_config_dict =
-  owncloud__config_role_required
-    | combine(owncloud__config_role_optional)
+  owncloud__required_config
+    | combine(owncloud__optional_config)
     | combine(owncloud__config)
-    | combine(owncloud__config_group)
-    | combine(owncloud__config_host) %}
+    | combine(owncloud__group_config)
+    | combine(owncloud__host_config) %}
 {% set owncloud__tpl_active_config_dict = {} %}
 {% for config_key, config_item in owncloud__tpl_unchecked_config_dict.iteritems() %}
 {%   if config_item is mapping and "state" in config_item and config_item.state and "value" in config_item %}

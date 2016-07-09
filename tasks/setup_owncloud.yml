@@ -131,8 +131,8 @@
   set_fact:
     owncloud__apps_config_combined: '{{
                 owncloud__apps_config
-      | combine(owncloud__apps_config_group)
-      | combine(owncloud__apps_config_host) }}'
+      | combine(owncloud__group_apps_config)
+      | combine(owncloud__host_apps_config) }}'
   tags: [ 'role::owncloud:occ_config' ]
 
 - name: Get current ownCloud configuration via occ config:list
@@ -167,9 +167,9 @@
     loop_var: 'owncloud__occ_item'
   tags: [ 'role::owncloud:occ' ]
   with_flattened:
-    - '{{ owncloud__run_occ_global_commands }}'
-    - '{{ owncloud__run_occ_group_commands }}'
-    - '{{ owncloud__run_occ_host_commands }}'
+    - '{{ owncloud__occ_cmd_list }}'
+    - '{{ owncloud__group_occ_cmd_list }}'
+    - '{{ owncloud__host_occ_cmd_list }}'
 # .. ]]]
 
 # Configure cron job for background tasks [[[
