@@ -40,6 +40,8 @@ Added
   by default according to the `official ownCloud Dokumentation
   <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html>`_. [ypid]
 
+- Configure fully automated ownCloud security updates by default. [ypid]
+
 Changed
 ~~~~~~~
 

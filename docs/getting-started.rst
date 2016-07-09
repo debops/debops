@@ -81,6 +81,9 @@ Available role tags:
 ``role::owncloud:occ``
   Run tasks related to the :command:`occ` command.
 
+``role::owncloud:auto_upgrade``
+  Run tasks related preparing ownCloud auto upgrade.
+
 ``role::owncloud:ldap``
   Run tasks related to the LDAP configuration.
 

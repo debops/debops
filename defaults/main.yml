@@ -93,6 +93,69 @@ owncloud__packages_host: []
 owncloud__deploy_state: 'present'
 
 
+# .. ownCloud upgrades [[[1
+#
+# ---------------------
+#   ownCloud upgrades
+# ---------------------
+
+# .. envvar:: owncloud__auto_database_upgrade_enabled
+#
+# On each update of ownCloud, a database update must be performed before
+# ownCloud can be used again.
+# The ownCloud package maintainers have not automated this setup so that even
+# security upgrades can not be installed unattended.
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/maintenance/package_upgrade.html#upgrade-quickstart>`__ for details.
+#
+# When this option is set to ``True``, the role enables a hook script for
+# ``dpkg`` so that when ``dpkg`` upgrades ownCloud, the database upgrade is
+# automatically performed.
+#
+# Change to ``False`` when you want to do database upgrades manually after upgrading the ownCloud packages.
+#
+# .. note:: :envvar:`owncloud__auto_database_upgrade_enabled` depends on
+#    automatic database upgrades to be enabled.
+#
+owncloud__auto_database_upgrade_enabled: True
+
+
+# .. envvar:: owncloud__auto_database_upgrade_hook_script
+#
+# File path where the package manager hook script is stored.
+owncloud__auto_database_upgrade_hook_script: '{{ (ansible_local.root.lib
+                                  if (ansible_local|d() and ansible_local.root|d() and
+                                      ansible_local.root.lib|d())
+                                  else "/usr/local/lib") + "/owncloud_db_upgrade_hook" }}'
+
+
+# .. envvar:: owncloud__auto_database_upgrade_migration_test
+#
+# Whether database schema migration should be simulated before upgrading the production database.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/maintenance/package_upgrade.html#migration-test>`__ for details.
+owncloud__auto_database_upgrade_migration_test: True
+
+
+# .. envvar:: owncloud__auto_database_upgrade_hook_script_packages_trigger
+#
+# List of packages for which the package manager hook script should attempt to
+# do a database upgrade when :envvar:`owncloud__auto_database_upgrade_enabled`
+# is ``True``.
+#
+# This variable is currently not being used.
+# The check if ownCloud needs an upgrade is performed for each
+# installed/upgraded package but in an very efficient way.
+owncloud__auto_database_upgrade_hook_script_packages_trigger:
+  - 'owncloud'
+
+
+# .. envvar:: owncloud__auto_security_updates_enabled
+#
+# Whether automatic ownCloud upgrades should be performed by
+# ``unattended_upgrades``.
+owncloud__auto_security_updates_enabled: True
+
+
 # .. Basic options [[[1
 #
 # -----------------
@@ -536,9 +599,10 @@ owncloud__config_host: {}
 # It can be used to enable apps, add users and more which can be useful when
 # deploying ownCloud.
 #
-# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html>`__ for details.
+# Examples:
 #
-# Examples::
+# .. code-block:: yaml
+#   :linenos:
 #
 #   owncloud__run_occ_global_commands
 #
@@ -568,6 +632,7 @@ owncloud__config_host: {}
 #                      ansible_fqdn + '/owncloud/users/' + 'user' +
 #                      '/password length=' + owncloud__password_length) }}"
 #
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html>`__ for details.
 owncloud__run_occ_global_commands:
   ## Disable the updater because it does not work anyway with the way ownCloud
   ## is setup by this role using packages.
@@ -594,7 +659,10 @@ owncloud__run_occ_host_commands: []
 # .. envvar:: owncloud__occ_bin_file_path
 #
 # Where the :command:`occ` wrapper script should be installed.
-owncloud__occ_bin_file_path: '/usr/local/bin/occ'
+owncloud__occ_bin_file_path: '{{ (ansible_local.root.bin
+                                  if (ansible_local|d() and ansible_local.root|d() and
+                                      ansible_local.root.bin|d())
+                                  else "/usr/local/bin") + "/occ" }}'
 
 
 # .. ownCloud applications [[[1
@@ -1264,4 +1332,13 @@ owncloud__php5__pool:
 
     ## Fixes warning (ownCloud 8.1): "The test with getenv('PATH') only returns an empty response"
     PATH: '/usr/local/bin:/usr/bin:/bin'
+
+
+# .. envvar:: owncloud__unattended_upgrades__dependent_origins
+#
+# List of List of origin patterns managed by the ``debops.unattended_upgrades``
+# role.
+owncloud__unattended_upgrades__dependent_origins:
+  - origin: 'site=download.owncloud.org'
+    state: '{{ "present" if (owncloud__auto_security_updates_enabled | bool) else "absent" }}'
 

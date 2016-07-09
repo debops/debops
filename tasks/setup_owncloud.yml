@@ -165,3 +165,32 @@
     cron_file: 'owncloud'
 
 # .. ]]]
+
+# ownCloud upgrades [[[
+
+- name: Install the package manager hook script for auto ownCloud DB upgrades
+  template:
+    src: 'usr/local/bin/owncloud_db_upgrade_hook.j2'
+    dest: '{{ owncloud__auto_database_upgrade_hook_script }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  tags: [ 'role::owncloud:auto_upgrade' ]
+
+- name: Enable the package manager hook for auto ownCloud DB upgrades
+  template:
+    src: 'etc/apt/apt.conf.d/db_upgrade.j2'
+    dest: '/etc/apt/apt.conf.d/80ownCloud-db-upgrade'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  tags: [ 'role::owncloud:auto_upgrade' ]
+  when: (owncloud__auto_database_upgrade_enabled | bool)
+
+- name: Disable the package manager hook for auto ownCloud DB upgrades
+  file:
+    path: '/etc/apt/apt.conf.d/80ownCloud-db-upgrade'
+    state: 'absent'
+  when: not (owncloud__auto_database_upgrade_enabled | bool)
+
+# .. ]]]
