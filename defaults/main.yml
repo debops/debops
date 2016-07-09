@@ -248,7 +248,7 @@ mailman__unattended_upgrades__dependent_blacklist:
 
   # Don't upgrade ``mailman`` package automatically if patches are enabled.
   - name: 'mailman'
-    when: '{{ mailman__patch | bool }}'
+    state: '{{ "present" if mailman__patch | bool else "absent" }}'
 
 
 # .. envvar:: mailman__fcgiwrap__instance

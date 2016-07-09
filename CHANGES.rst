@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2016-07-09*
+
+- Update the ``debops.unattended_upgrades`` configuration to latest changes.
+  [drybjed]
+
 v0.1.1
 ------
 
