@@ -15,9 +15,17 @@ as a backend and an nginx webserver as a frontend.
 Only ownCloud 8.0 and later are supported because for older
 versions there are no complete deb-packages available.
 
+### Features
+
+* LDAP setup.
+* In memory caching using Redis for file locking and APCu.
+* Fully automated ownCloud security updates.
+* ownCloud theming support.
+* Extensive configuration options via Ansible’s inventory.
+
 ### Installation
 
-This role requires at least Ansible `v2.0.0`. To install it, run:
+This role requires at least Ansible `v2.1.0`. To install it, run:
 
 ```Shell
 ansible-galaxy install debops.owncloud
