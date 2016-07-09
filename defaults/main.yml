@@ -66,14 +66,14 @@ owncloud__optional_packages:
 
 # .. envvar:: owncloud__packages
 #
-# List of optional packages for ownCloud.
+# List of global packages for ownCloud.
 # This variable is intended to be used in Ansible’s global inventory.
 owncloud__packages: []
 
 
 # .. envvar:: owncloud__group_packages
 #
-# List of optional packages for ownCloud.
+# List of group packages for ownCloud.
 # This variable is intended to be used in a host inventory group of Ansible
 # (only one host group is supported).
 owncloud__group_packages: []
@@ -81,7 +81,7 @@ owncloud__group_packages: []
 
 # .. envvar:: owncloud__host_packages
 #
-# List of optional packages for ownCloud.
+# List of host packages for ownCloud.
 # This variable is intended to be used in the inventory of the host.
 owncloud__host_packages: []
 
@@ -521,19 +521,12 @@ owncloud__app_user_webfinger_support: False
 # from :file:`owncloud/config/config.php`. For more information refer to :ref:`owncloud__ref_config`.
 
 
-# .. envvar:: owncloud__required_config
+# .. envvar:: owncloud__role_config
 #
 # See `ownCloud config.php configuration`_.
-# This variable is a set of required settings for ownCloud to be usable.
-# Set:
-#
-# .. code-block:: yaml
-#   :linenos:
-#
-#    owncloud__required_config: {}
-#
-# in your inventory when you want to disable/change it anyway.
-owncloud__required_config:
+# This configuration is used to configure for ownCloud controlled by other
+# variables of this role.
+owncloud__role_config:
 
   trusted_domains: '{{ owncloud__domain }}'
 
@@ -542,32 +535,6 @@ owncloud__required_config:
   ## Edit: Have caught up as of 9.0.2-1.1. Remove this config in a while when
   ## it is expected that all users are running 9.0.2 or later.
   'updatechecker': False
-
-
-# .. envvar:: owncloud__optional_config
-#
-# See `ownCloud config.php configuration`_.
-# This variable is a set of optional settings for ownCloud recommended by the
-# maintainers of this role.
-# Set:
-#
-# .. code-block:: yaml
-#   :linenos:
-#
-#    owncloud__optional_config: {}
-#
-# in your inventory when you want to disable it.
-owncloud__optional_config:
-
-  ## The default timezone for logfiles is UTC.
-  logtimezone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
-
-  ## Loglevel to start logging at. Valid values are: 0 = Debug, 1 = Info,
-  ##  2 = Warning, 3 = Error, and 4 = Fatal. The default value is Warning.
-  loglevel: 2
-
-  ## ISO 8601 datetime: 2004-02-12T15:19:21+00:00
-  logdateformat: 'Y-m-d H:i:s.u'
 
   'memcache.local':
     state: '{{ "present" if (owncloud__apcu_enabled|bool) else "absent" }}'
@@ -582,6 +549,32 @@ owncloud__optional_config:
     value:
       host: '{{ owncloud__redis_host }}'
       port: '{{ owncloud__redis_port|int }}'
+
+
+# .. envvar:: owncloud__role_recommended_config
+#
+# See `ownCloud config.php configuration`_.
+# This variable is a set of optional settings for ownCloud recommended by the
+# maintainers of this role.
+# Set:
+#
+# .. code-block:: yaml
+#   :linenos:
+#
+#    owncloud__role_recommended_config: {}
+#
+# in your inventory when you want to disable it.
+owncloud__role_recommended_config:
+
+  ## The default timezone for logfiles is UTC.
+  logtimezone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
+
+  ## Loglevel to start logging at. Valid values are: 0 = Debug, 1 = Info,
+  ##  2 = Warning, 3 = Error, and 4 = Fatal. The default value is Warning.
+  loglevel: 2
+
+  ## ISO 8601 datetime: 2004-02-12T15:19:21+00:00
+  logdateformat: 'Y-m-d H:i:s.u'
 
 
 # .. envvar:: owncloud__config
@@ -650,9 +643,19 @@ owncloud__host_config: {}
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html#config-commands-label>`__ for details.
 
+# .. envvar:: owncloud__optional_apps_config
+#
+# See `ownCloud applications configuration`_.
+# Role dictionary of ownCloud application settings.
+# This variable is a set of optional settings for ownCloud recommended by the
+# maintainers of this role.
+owncloud__role_apps_config: {}
+
+
 # .. envvar:: owncloud__apps_config
 #
-# Dictionary of ownCloud application settings.
+# See `ownCloud applications configuration`_.
+# Global dictionary of ownCloud application settings.
 # This variable is intended to be used in Ansible’s global inventory.
 # More specific variables can overrule less specific variables.
 owncloud__apps_config: {}
@@ -661,7 +664,7 @@ owncloud__apps_config: {}
 # .. envvar:: owncloud__group_apps_config
 #
 # See `ownCloud applications configuration`_.
-# Dictionary of ownCloud application settings.
+# Group dictionary of ownCloud application settings.
 # This variable is intended to be used in a host inventory group of Ansible
 # (only one host group is supported).
 owncloud__group_apps_config: {}
@@ -670,7 +673,7 @@ owncloud__group_apps_config: {}
 # .. envvar:: owncloud__host_apps_config
 #
 # See `ownCloud applications configuration`_.
-# Dictionary of ownCloud application settings.
+# Host dictionary of ownCloud application settings.
 # This variable is intended to be used in the inventory of the host.
 owncloud__host_apps_config: {}
 

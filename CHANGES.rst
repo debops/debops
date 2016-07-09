@@ -105,8 +105,8 @@ Changed
   * ``owncloud__?config_host`` → :envvar:`owncloud__host_config`
   * ``owncloud__?apps_config_group`` → :envvar:`owncloud__group_apps_config`
   * ``owncloud__?apps_config_host`` → :envvar:`owncloud__host_apps_config`
-  * ``owncloud__?config_role_required`` → :envvar:`owncloud__required_config`
-  * ``owncloud__?config_role_optional`` → :envvar:`owncloud__optional_config`
+  * ``owncloud__?config_role_required`` → :envvar:`owncloud__role_config`
+  * ``owncloud__?config_role_optional`` → :envvar:`owncloud__role_recommended_config`
   * ``owncloud__?ldap_enable`` → :envvar:`owncloud__ldap_enabled`
 
   [ypid]

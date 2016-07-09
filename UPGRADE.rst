@@ -29,8 +29,8 @@ This oneliner can come in handy to do this:
          s/owncloud__?config_host/owncloud__host_config/g;
          s/owncloud__?apps_config_group/owncloud__group_apps_config/g;
          s/owncloud__?apps_config_host/owncloud__host_apps_config/g;
-         s/owncloud__?config_role_required/owncloud__required_config/g;
-         s/owncloud__?config_role_optional/owncloud__optional_config/g;
+         s/owncloud__?config_role_required/owncloud__role_config/g;
+         s/owncloud__?config_role_optional/owncloud__role_recommended_config/g;
          s/owncloud__?ldap_enable([^d])/owncloud__ldap_enabled\1/g;
          s/\<([^.]owncloud)_([^_])/\1__\2/g;
        '
