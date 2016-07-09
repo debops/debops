@@ -130,7 +130,8 @@
 - name: Combine owncloud__apps_config variables
   set_fact:
     owncloud__apps_config_combined: '{{
-                owncloud__apps_config
+                owncloud__dependent_apps_config
+      | combine(owncloud__apps_config)
       | combine(owncloud__group_apps_config)
       | combine(owncloud__host_apps_config) }}'
   tags: [ 'role::owncloud:occ_config' ]
@@ -170,6 +171,7 @@
     - '{{ owncloud__occ_cmd_list }}'
     - '{{ owncloud__group_occ_cmd_list }}'
     - '{{ owncloud__host_occ_cmd_list }}'
+    - '{{ owncloud__dependent_occ_cmd_list }}'
 # .. ]]]
 
 # Configure cron job for background tasks [[[

@@ -44,6 +44,12 @@ Added
 
 - Support to configure ownCloud applications. [ypid]
 
+- Added :envvar:`owncloud__dependent_packages`,
+  :envvar:`owncloud__dependent_occ_cmd_list` and
+  :envvar:`owncloud__dependent_apps_config` in a idempotence save way even when
+  this role is run standalone without having the variables set.
+  This allows other roles to use functionality provided by this role. [ypid]
+
 Changed
 ~~~~~~~
 
