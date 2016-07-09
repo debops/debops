@@ -13,6 +13,19 @@ The current role maintainer is drybjed.
 
 .. _debops.unattended_upgrades master: https://github.com/debops/ansible-unattended_upgrades/compare/v0.1.4...master
 
+Added
+~~~~~
+
+- ``state`` option for :envvar:`unattended_upgrades__blacklist` and similar
+  lists when using the dictionary notation. This replaces the removed
+  ``when`` option. The ``state`` allows to remove entries from the blacklist
+  which ``when`` did not. [ypid]
+
+- Support dictionary notation for :envvar:`unattended_upgrades__origins` and
+  :envvar:`unattended_upgrades__dependent_origins` lists. [ypid]
+
+- Documentation for :envvar:`unattended_upgrades__origins`.
+
 Changed
 ~~~~~~~
 
@@ -26,6 +39,13 @@ Fixed
   The previous given example also works for some reason so this fix is merely
   to follow the upstream documentation more strictly.
   [ypid]
+
+Removed
+~~~~~~~
+
+- ``when`` option from :envvar:`unattended_upgrades__blacklist` and similar
+  lists when using the dictionary notation. It has been superseded by the
+  ``state`` option to allow to remove entries from the blacklist. [ypid]
 
 `debops.unattended_upgrades v0.1.4`_ - 2016-03-02
 -------------------------------------------------

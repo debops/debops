@@ -1,44 +1,8 @@
+{% import 'unattended_upgrades__tpl_macros.j2' as unattended_upgrades__tpl_macros with context %}
 // {{ ansible_managed }}
 
 // Unattended-Upgrade::Origins-Pattern controls which packages are
 // upgraded.
-{#//
-// Lines below have the format format is "keyword=value,...".  A
-// package will be upgraded only if the values in its metadata match
-// all the supplied keywords in a line.  (In other words, omitted
-// keywords are wild cards.) The keywords originate from the Release
-// file, but several aliases are accepted.  The accepted keywords are:
-//   a,archive,suite (eg, "stable")
-//   c,component     (eg, "main", "crontrib", "non-free")
-//   l,label         (eg, "Debian", "Debian-Security")
-//   o,origin        (eg, "Debian", "Unofficial Multimedia Packages")
-//   n,codename      (eg, "jessie", "jessie-updates")
-//     site          (eg, "http.debian.net")
-// The available values on the system are printed by the command
-// "apt-cache policy", and can be debugged by running
-// "unattended-upgrades -d" and looking at the log file.
-//
-// Within lines unattended-upgrades allows 2 macros whose values are
-// derived from /etc/debian_version:
-//   ${distro_id}            Installed origin.
-//   ${distro_codename}      Installed codename (eg, "jessie")
-//
-// Codename based matching:
-// This will follow the migration of a release through different
-// archives (e.g. from testing to stable and later oldstable).
-//      "o=Debian,n=jessie";
-//      "o=Debian,n=jessie-updates";
-//      "o=Debian,n=jessie-proposed-updates";
-//      "o=Debian,n=jessie,l=Debian-Security";
-//
-// Archive or Suite based matching:
-// Note that this will silently match a different release after
-// migration to the specified archive (e.g. testing becomes the
-// new stable).
-//      "o=Debian,a=stable";
-//      "o=Debian,a=stable-updates";
-//      "o=Debian,a=proposed-updates";
-//      "origin=Debian,codename=${distro_codename},label=Debian-Security";#}
 Unattended-Upgrade::Origins-Pattern {
 {% set unattended_upgrades__tpl_origins = [] %}
 {% set unattended_upgrades__tpl_security_origins_found = False %}
@@ -61,48 +25,19 @@ Unattended-Upgrade::Origins-Pattern {
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{% for item in (unattended_upgrades__origins + unattended_upgrades__dependent_origins) %}
-{%   set _ = unattended_upgrades__tpl_origins.append(item) %}
-{% endfor %}
-{% if (ansible_local|d() and ansible_local.unattended_upgrades|d() and
-       ansible_local.unattended_upgrades.origins|d()) %}
-{%   for item in ansible_local.unattended_upgrades.origins %}
-{%     set _ = unattended_upgrades__tpl_origins.append(item) %}
-{%   endfor %}
-{% endif %}
-{% for item in unattended_upgrades__tpl_origins | sort | unique %}
+{% set unattended_upgrades__tpl_origins = unattended_upgrades__tpl_macros.get_origins_as_json(unattended_upgrades__tpl_origins) | from_json %}
+{% for item in unattended_upgrades__tpl_origins %}
         "{{ item }}";
 {% endfor %}
 };
 
 // List of packages to not update (regexp are supported)
 Unattended-Upgrade::Package-Blacklist {
-{% set unattended_upgrades__tpl_blacklist = [] %}
-{% for item in (unattended_upgrades__default_blacklist +
-                unattended_upgrades__blacklist +
-                unattended_upgrades__group_blacklist +
-                unattended_upgrades__dependent_blacklist) %}
-{%   if item is mapping %}
-{%     if (item.name|d() and item.when|d() and item.when|bool) %}
-{%       if item.name is string %}
-{%         set _ = unattended_upgrades__tpl_blacklist.append(item.name) %}
-{%       else %}
-{%         for element in item.name %}
-{%           set _ = unattended_upgrades__tpl_blacklist.append(element) %}
-{%         endfor %}
-{%       endif %}
-{%     endif %}
-{%   else %}
-{%     set _ = unattended_upgrades__tpl_blacklist.append(item) %}
-{%   endif %}
-{% endfor %}
-{% if (ansible_local|d() and ansible_local.unattended_upgrades|d() and
-       ansible_local.unattended_upgrades.blacklist|d()) %}
-{%   for item in ansible_local.unattended_upgrades.blacklist %}
-{%     set _ = unattended_upgrades__tpl_blacklist.append(item) %}
-{%   endfor %}
-{% endif %}
-{% for item in unattended_upgrades__tpl_blacklist | sort | unique %}
+{% set unattended_upgrades__tpl_blacklist = unattended_upgrades__tpl_macros.get_blacklist_as_json(
+    unattended_upgrades__default_blacklist +
+    unattended_upgrades__blacklist +
+    unattended_upgrades__group_blacklist) | from_json %}
+{% for item in unattended_upgrades__tpl_blacklist %}
         "{{ item }}";
 {% endfor %}
 };
