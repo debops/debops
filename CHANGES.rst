@@ -17,6 +17,12 @@ Changed
 
 - Use RFC2119 and ISO 8601 for the code signing policy. [ypid]
 
+- Renamed "Role Authors" and "Role Maintainers" to "Authors" and "Maintainers"
+  to keep the roles in the organizational structure more generic. [ypid]
+
+- Clarified that DebOps Developer don’t automatically have more write
+  privileges. [ypid]
+
 Added
 ~~~~~
 
@@ -28,3 +34,5 @@ Added
   project. [drybjed, ypid]
 
 - Wrote initial security policy. [ypid]
+
+- Added "Project Admin" role to organizational structure. [ypid]

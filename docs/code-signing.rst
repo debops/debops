@@ -3,6 +3,8 @@ Code signing policy
 
 Code signing policy version: 0.1.0
 
+.. This version may not correspond directly to the debops-policy version.
+
 The configuration management code and other source code used by the DebOps
 Project and committed to its repositories [#debops-org]_ MUST be signed by a
 valid PGP key of a DebOps Developer. For contributors it is RECOMMENDED to do
@@ -51,9 +53,7 @@ Policy enforcement schedule
 | 0.2.0   | 2018-09-01      |
 +---------+-----------------+
 
-Planed changes
---------------
+Planed changes for v0.2.0
+-------------------------
 
-.. versionadded:: 0.2.0
-
-   * DebOps Contributors MUST sign their work.
+* DebOps Contributors MUST sign their work.
