@@ -6,11 +6,11 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
 and `human-readable changelog <http://keepachangelog.com/>`_.
 
-The current role maintainer is drybjed.
+The current repository maintainer is drybjed.
 
 
-debops.owncloud v0.1.0 - unreleased
------------------------------------
+debops-policy v0.1.0 - unreleased
+---------------------------------
 
 Changed
 ~~~~~~~
