@@ -24,7 +24,7 @@ last word in any issues that arise withing the project and his decisions are
 final. The Leader creates the version tags in the ``git`` repositories signed
 by his/her GPG key.
 
-The UNIX group for DebOps Leader used on the project assets should be named
+The UNIX group for the DebOps Leader used on the project assets should be named
 ``debops-leader``.
 
 Contributors

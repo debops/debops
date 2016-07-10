@@ -2,10 +2,10 @@ Introduction
 ============
 
 This document describes the computer systems, networks, services and other
-elements of the data cneter environment deployed and managed by the DebOps
+elements of the data center environment deployed and managed by the DebOps
 Project software.
 
-The software and applications written by the DebOps Project is used in many
+The software and applications written by the DebOps Project are used in many
 different environments and different contexts. Here you will find documentation
 which describes common elements of such environments. This document is written
 in hopes that it can be used to guide the development of the Project in the
