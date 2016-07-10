@@ -15,6 +15,14 @@ At the moment this document is only a draft and does not reflect the current
 state of the DebOps Project. You should read the list of references to get
 a better idea of what the Project might look like and behave in the future.
 
+Terminology
+-----------
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in BCP 14, [`RFC2119
+<https://tools.ietf.org/html/rfc2119>`_].
+
 ..
  Local Variables:
  mode: rst

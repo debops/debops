@@ -12,6 +12,11 @@ The current role maintainer is drybjed.
 debops.owncloud v0.1.0 - unreleased
 -----------------------------------
 
+Changed
+~~~~~~~
+
+- Use RFC2119 and ISO 8601 for the code signing policy. [ypid]
+
 Added
 ~~~~~
 
