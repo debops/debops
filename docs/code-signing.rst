@@ -1,37 +1,35 @@
 Code signing policy
 ===================
 
-The configuration management code and other source code used by the DebOps
-Project and committed to its repositories [#debops-org]_ must be signed by a
-valid PGP key of a DebOps Developer. This does not yet apply to contributors
-(but is highly encouraged).
+Code signing policy version: 0.1.0
 
-Patches from DebOps Contributors must be reviewed by one of the
-DebOps Developers and the merge commit must by signed by the DebOps Developer
+The configuration management code and other source code used by the DebOps
+Project and committed to its repositories [#debops-org]_ MUST be signed by a
+valid PGP key of a DebOps Developer. For contributors it is RECOMMENDED to do
+the same.
+
+Patches from DebOps Contributors MUST be reviewed by one of the
+DebOps Developers and the merge commit MUST by signed by the DebOps Developer
 for this patch to enter the DebOps Project. This should ensure that the last
 commit of every repository of the DebOps Project has a valid signature by a
 DebOps Developer.
 
 To proof that DebOps Developers and DebOps Contributors have full control over
 their account on the source code management platform used to work on the DebOps
-Project (currently GitHub) it is expected to provide a proof via the means of
+Project (currently GitHub) it RECOMMENDED to provide a proof via the means of
 https://keybase.io/.
 
-Additionally, it is recommended to take part in the Web Of Trust to make
+Additionally, it is RECOMMENDED to take part in the Web Of Trust to make
 it harder for an adversary to fake signatures by pretending to be one of the
-DebOps Developers. In particular as the DebOps Project is related to the Debian
-project it is recommended to get your key signed by Debian Developers.
+DebOps Contributors or Developers. In particular as the DebOps Project is related to the Debian
+Project it is RECOMMENDED to get your key signed by Debian Developers.
 A signature from another DebOps Developer is sufficient as well.
 
 This should allow for secure code authentication. That means that tampering
 with the code on the source code management platform can be reliable detected
-by DebOps tools, DebOps Developers and all of the users of the project and thus
-the integrity of the project does not rely on centralized parties anymore.
+by DebOps tools, DebOps Developers and all of the users of the Project and thus
+the integrity of the Project does not rely on centralized parties anymore.
 Additionally, this ensures a trusted audit trail.
-
-This rule takes effect for DebOps Developer on **1st September 2016**.
-
-DebOps Contributors are expected to sign their work after **1st September 2018**. Before this date, it is highly encouraged.
 
 For background about this refer to:
 
@@ -41,3 +39,21 @@ For background about this refer to:
 
 .. [#debops-org] All repositories in the DebOps core project currently hosted at: https://github.com/debops/.
    This does not apply for `DebOps Contrib <https://github.com/debops-contrib/>`_.
+
+Policy enforcement schedule
+---------------------------
+
++---------+-----------------+
+| Version | Takes effect on |
++=========+=================+
+| 0.1.0   | 2016-09-01      |
++---------+-----------------+
+| 0.2.0   | 2018-09-01      |
++---------+-----------------+
+
+Planed changes
+--------------
+
+.. versionadded:: 0.2.0
+
+   * DebOps Contributors MUST sign their work.
