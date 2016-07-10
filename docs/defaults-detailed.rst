@@ -16,8 +16,8 @@ unattended_upgrades__blacklist
 ------------------------------
 
 The :envvar:`unattended_upgrades__blacklist` and similar lists allow you to specify
-packages which shouldn't be upgraded automatically. You can specify them
-as simple package names or dictionaries with specific keys:
+packages which shouldn't be upgraded automatically. The lists can be nested. You
+can specify them as simple package names or dictionaries with specific keys:
 
 ``name``
   Required, string or list specifying a package name to include in the
@@ -61,6 +61,7 @@ unattended_upgrades__origins
 The :envvar:`unattended_upgrades__origins` and
 :envvar:`unattended_upgrades__dependent_origins` lists define origin patterns of
 repositories that will be considered for unattended package upgrades.
+The lists can be nested.
 You can specify them as simple origin patterns or dictionaries with specific
 keys:
 
@@ -139,4 +140,3 @@ Include specified origin patterns for all hosts:
 
      - origin: [ 'site=download.example.org', 'o=Example Testing Packages' ]
        state: '{{ "present" if (ansible_hostname in [ "testing", "staging" ]) else "absent" }}'
-
