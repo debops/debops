@@ -16,7 +16,7 @@ new release.
 `debops.owncloud master`_ - unreleased
 --------------------------------------
 
-.. _debops.owncloud master: https://github.com/debops/ansible-owncloud/compare/v0.3.0...master
+.. _debops.owncloud master: https://github.com/debops/ansible-owncloud/compare/v0.2.0...master
 
 Added
 ~~~~~
@@ -46,7 +46,7 @@ Added
 
 - Added :envvar:`owncloud__dependent_packages`,
   :envvar:`owncloud__dependent_occ_cmd_list` and
-  :envvar:`owncloud__dependent_apps_config` in a idempotence save way even when
+  :envvar:`owncloud__dependent_apps_config` in a idempotence safe way even when
   this role is run standalone without having the variables set.
   This allows other roles to use functionality provided by this role. [ypid]
 
@@ -87,8 +87,8 @@ Changed
 
 - Renamed Ansible tags
 
-  * ``role::owncloud:mail`` → ``role::owncloud:config``
   * ``role::owncloud:base_install`` → ``role::owncloud:pkg``
+  * ``role::owncloud:mail`` → ``role::owncloud:config``
 
   [ypid]
 
