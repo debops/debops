@@ -15,7 +15,7 @@ The current role maintainer is drybjed.
 .. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.0...master
 
 
-`debops.php v0.2.0`_ - unreleased
+`debops.php v0.2.0`_ - 2016-07-11
 ---------------------------------
 
 .. _debops.php v0.2.0: https://github.com/debops/ansible-php/compare/v0.1.0...v0.2.0
@@ -64,6 +64,8 @@ Added
 
 - Add tasks that create users and groups to allow creation of new PHP-FPM pools
   without errors. [drybjed]
+
+- Add upgrade notes. [drybjed]
 
 Changed
 ~~~~~~~

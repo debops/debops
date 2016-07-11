@@ -12,6 +12,7 @@ Ansible role: debops.php
    defaults-detailed
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:
