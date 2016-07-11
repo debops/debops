@@ -22,13 +22,14 @@
   environment: '{{ owncloud__occ_item.env|d({}) }}'
   ## TODO: Upstream needs to fix this. See above.
   changed_when: False
+  # changed_when: (owncloud__occ_item.command|d(omit) | match("config:app:set") and
   ## Has changed in ownCloud 9.0 and does not work anymore.
   # changed_when: ('No such app enabled:' not in owncloud__occ_run.stdout and
                   # ' already ' not in owncloud__occ_run.stdout)
   failed_when: ((owncloud__occ_run.rc != 0 and 'already exists' not in owncloud__occ_run.stdout) or
                 ('An unhandled exception has been thrown:' in owncloud__occ_run.stdout))
   ## ownCloud 8.0.11-1.1: An unhandled exception has been thrown
-  # no_log: True
+  no_log: True
   register: owncloud__occ_run
   become_user: '{{ owncloud__user }}'
   when: owncloud__occ_item|d() and owncloud__occ_item.command|d("") != "" and (owncloud__occ_item.when|d(True) | bool)
