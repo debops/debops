@@ -20,6 +20,8 @@ Added
 - Add support for custom Ansible environment variables in all playbooks.
   Environment can be configured using Ansible inventory variables. [drybjed]
 
+- Add ``debops.php`` role and its corresponding playbook. [drybjed]
+
 
 `debops-playbooks v0.2.9`_ - 2016-07-07
 ---------------------------------------
