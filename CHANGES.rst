@@ -105,6 +105,10 @@ Changed
 
 - Update documentation and Changelog. [drybjed]
 
+- Change the tasks that perform diversion to check the ``dpkg-divert`` list
+  instead of relying on the existence of diverted files. This helps with
+  upgrades from older ``debops.php5`` role. [drybjed]
+
 Removed
 ~~~~~~~
 
