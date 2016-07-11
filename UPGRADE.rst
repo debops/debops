@@ -28,15 +28,55 @@ From debops.php5 role to debops.php role
   Some variables have been further renamed, for example from ``php5_default_*``
   to ``php__fpm_*`` or various variables to ``php__ini_*``. You should check
   the variables used in inventory against the new default variables and update
-  accordingly.
+  accordingly. Some of the more elaborate variable renames:
+
+  +------------------------------+----------------------------------+---------------+
+  | Old variable name            | New variable name                | Changed value |
+  +==============================+==================================+===============+
+  | ``php5_cgi_fix_pathinfo``    | ``php__ini_cgi_fix_pathinfo``    | Yes, to bool  |
+  +------------------------------+----------------------------------+---------------+
+  | ``php5_file_uploads``        | ``php__ini_file_uploads``        | Yes, to bool  |
+  +------------------------------+----------------------------------+---------------+
+  | ``php5_allow_url_fopen``     | ``php__ini_allow_url_fopen``     | Yes, to bool  |
+  +------------------------------+----------------------------------+---------------+
+  | ``php5_memory_limit``        | ``php__ini_memory_limit``        | No            |
+  +------------------------------+----------------------------------+---------------+
+  | ``php5_max_execution_time``  | ``php__ini_max_execution_time``  | No            |
+  +------------------------------+----------------------------------+---------------+
+  | ``php5_max_input_time``      | ``php__ini_max_input_time``      | No            |
+  +------------------------------+----------------------------------+---------------+
+  | ``php5_post_max_size``       | ``php__ini_post_max_size``       | No            |
+  +------------------------------+----------------------------------+---------------+
+  | ``php5_default_charset``     | ``php__ini_default_charset``     | No            |
+  +------------------------------+----------------------------------+---------------+
+  | ``php5_upload_max_filesize`` | ``php__ini_upload_max_filesize`` | No            |
+  +------------------------------+----------------------------------+---------------+
+  | ``php5_max_file_uploads``    | ``php__ini_max_file_uploads``    | No            |
+  +------------------------------+----------------------------------+---------------+
+  | ``php5_socket_listen_owner`` | ``php__fpm_listen_owner``        | No            |
+  +------------------------------+----------------------------------+---------------+
+  | ``php5_socket_listen_group`` | ``php__fpm_listen_group``        | No            |
+  +------------------------------+----------------------------------+---------------+
+  | ``php5_socket_listen_mode``  | ``php__fpm_listen_mode``         | No            |
+  +------------------------------+----------------------------------+---------------+
 
 - Some of the parameter names in FPM pools were renamed:
 
-  - ``item.accesslog`` to ``item.access_log``
-  - ``item.php_flag`` to ``item.php_flags``
-  - ``item.php_value`` to ``item.php_values``
-  - ``item.php_admin_flag`` to ``item.php_admin_flags``
-  - ``item.php_admin_values`` to ``item.php_admin_values``
+  +--------------------------+---------------------------+-----------------------------+
+  |    Old variable name     |     New variable name     |    Changed value            |
+  +==========================+===========================+=============================+
+  | ``item.enabled``         | ``item.state``            | Yes, ``present``/``absent`` |
+  +--------------------------+---------------------------+-----------------------------+
+  | ``item.accesslog``       | ``item.access_log``       | Yes, to bool                |
+  +--------------------------+---------------------------+-----------------------------+
+  | ``item.php_flag``        | ``item.php_flags``        | No                          |
+  +--------------------------+---------------------------+-----------------------------+
+  | ``item.php_value``       | ``item.php_values``       | No                          |
+  +--------------------------+---------------------------+-----------------------------+
+  | ``item.php_admin_flag``  | ``item.php_admin_flags``  | No                          |
+  +--------------------------+---------------------------+-----------------------------+
+  | ``item.php_admin_value`` | ``item.php_admin_values`` | No                          |
+  +--------------------------+---------------------------+-----------------------------+
 
 - The package installation changed to not force PHP version in the package
   name. For example, role can now install MariaDB support by specifying
