@@ -1,30 +1,177 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-- name: Get current timezone from the host
-  slurp:
-    src: '/etc/timezone'
-  register: php__etc_timezone
+# APT packages, directories [[[
 
-- name: "Add Ondřej Surý PPA key"
-  apt_key:
-    keyserver: "keyserver.ubuntu.com"
-    id: 4F4EA0AAE5267A6C
-    state: present
-  when: ansible_distribution_release == 'xenial' and php__version == '5.6'
-
-- name: "Add Ondřej Surý PPA repository"
-  apt_repository:
-    repo: 'ppa:ondrej/php'
-    state: present
-    update_cache: yes
-  when: ansible_distribution_release == 'xenial' and php__version == '5.6'
-
-- name: Make sure PHP-FPM support is installed
+- name: Install PHP packages
   apt:
-    pkg: 'php{{ php__version }}-{{ item }}'
-    state: 'latest'
-    install_recommends: no
-  with_items: [ 'fpm', 'cli' ]
+    name: '{{ item|search("php.*-")|ternary(item, "php" + php__version + "-" + item) }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - '{{ php__server_api_packages }}'
+    - '{{ php__base_packages }}'
+    - '{{ php__packages }}'
+    - '{{ php__group_packages }}'
+    - '{{ php__host_packages }}'
+    - '{{ php__dependent_packages }}'
+  notify: [ 'Restart php-fpm' ]
+
+- name: "Create directory for php*-fpm logs"
+  file:
+    path: '/var/log/php{{ php__version }}-fpm'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+  when: '"fpm" in php__server_api_packages'
+
+- name: Ensure that required directories exist
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items:
+    - '{{ php__etc_base }}/ansible'
+    - '{{ php__etc_base }}/fpm/pool.d'
+
+                                                                   # ]]]
+# php.ini management [[[
+
+- name: Generate php.ini configuration
+  template:
+    src: 'etc/php/ansible/php.ini.j2'
+    dest: '{{ php__etc_base + "/" + item.path | d("ansible/") + (item.filename | d("00-ansible")) + ".ini" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ php__default_configuration }}'
+    - '{{ php__configuration }}'
+    - '{{ php__group_configuration }}'
+    - '{{ php__host_configuration }}'
+  when: item.state|d('present') != 'absent'
+  notify: [ 'Restart php-fpm' ]
+  tags: [ 'role::php:config' ]
+
+- name: Remove php.ini configuration if requested
+  file:
+    path: '{{ php__etc_base + "/" + item.path | d("ansible/") + (item.filename | d("00-ansible")) + ".ini" }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ php__default_configuration }}'
+    - '{{ php__configuration }}'
+    - '{{ php__group_configuration }}'
+    - '{{ php__host_configuration }}'
+  when: item.state|d() and item.state == 'absent'
+  notify: [ 'Restart php-fpm' ]
+  tags: [ 'role::php:config' ]
+
+- name: Synchronize Ansible and PHP SAPI configuration
+  script: script/php-synchronize-config.sh {{ php__version }}
+  register: php__register_synchronize_config
+  changed_when: php__register_synchronize_config.stdout != ''
+  notify: [ 'Restart php-fpm' ]
+  tags: [ 'role::php:config' ]
+
+                                                                   # ]]]
+# PHP-FPM management [[[
+
+- name: Check current PHP-FPM diversions
+  environment:
+    LC_ALL: 'C'
+  shell: dpkg-divert --list '{{ php__etc_base + "/fpm/*" }}' | awk '{print $NF}'
+  register: php__register_diversions
+  always_run: True
+  changed_when: False
+
+- name: Divert default PHP-FPM configuration and pool
+  command: dpkg-divert --quiet --local --divert {{ item + ".dpkg-divert" }}
+           --rename {{ item }}
+  notify: [ 'Restart php-fpm' ]
+  with_items:
+    - '{{ php__etc_base + "/fpm/php-fpm.conf" }}'
+    - '{{ php__etc_base + "/fpm/pool.d/www.conf" }}'
+  when: '"fpm" in php__server_api_packages and item + ".dpkg-divert" not in php__register_diversions.stdout_lines'
+  tags: [ 'role::php:pools', 'role::php:config' ]
+
+- name: Generate php-fpm global configuration
+  template:
+    src: 'etc/php/fpm/php-fpm.conf.j2'
+    dest: '{{ php__etc_base }}/fpm/php-fpm.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: '"fpm" in php__server_api_packages'
+  notify: [ 'Restart php-fpm' ]
+  tags: [ 'role::php:pools', 'role::php:config' ]
+
+- name: Generate php-fpm pool configuration
+  template:
+    src: 'etc/php/fpm/pool.d/pool.conf.j2'
+    dest: '{{ php__etc_base }}/fpm/pool.d/{{ item.name }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ php__default_pools }}'
+    - '{{ php__pools }}'
+    - '{{ php__group_pools }}'
+    - '{{ php__host_pools }}'
+    - '{{ php__dependent_pools }}'
+  when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent"'
+  notify: [ 'Restart php-fpm' ]
+  tags: [ 'role::php:pools', 'role::php:config' ]
+
+- name: Remove php-fpm pool configuration if requested
+  file:
+    dest: '{{ php__etc_base }}/fpm/pool.d/{{ item.name }}.conf'
+    state: 'absent'
+  with_flattened:
+    - '{{ php__default_pools }}'
+    - '{{ php__pools }}'
+    - '{{ php__group_pools }}'
+    - '{{ php__host_pools }}'
+    - '{{ php__dependent_pools }}'
+  when: '"fpm" in php__server_api_packages and item.state|d() and item.state == "absent"'
+  notify: [ 'Restart php-fpm' ]
+  tags: [ 'role::php:pools', 'role::php:config' ]
+
+                                                                   # ]]]
+# Manage groups and user accounts [[[
+
+- name: Make sure required system groups exist
+  group:
+    name: '{{ item.group | d(item.owner) }}'
+    system: '{{ (item.system | d(True)) | bool }}'
+    state: 'present'
+  with_flattened:
+    - '{{ php__default_pools }}'
+    - '{{ php__pools }}'
+    - '{{ php__group_pools }}'
+    - '{{ php__host_pools }}'
+    - '{{ php__dependent_pools }}'
+  when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent" and item.owner|d() and item.home|d()'
+
+- name: Make sure required system accounts exist
+  user:
+    name: '{{ item.owner }}'
+    group: '{{ item.group | d(item.owner) }}'
+    home: '{{ item.home }}'
+    system: '{{ (item.system | d(True)) | bool }}'
+    state: 'present'
+  with_flattened:
+    - '{{ php__default_pools }}'
+    - '{{ php__pools }}'
+    - '{{ php__group_pools }}'
+    - '{{ php__host_pools }}'
+    - '{{ php__dependent_pools }}'
+  when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent" and item.owner|d() and item.home|d()'
+
+                                                                   # ]]]
+# Ansible local facts [[[
 
 - name: Make sure that Ansible local facts directory is present
   file:
@@ -41,99 +188,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: php_register_local_facts
+  register: php__register_local_facts
 
 - name: Gather facts if they were modified
   action: setup
-  when: php_register_local_facts.changed
-
-- name: Install PHP packages
-  apt:
-    pkg: "{{ item|search('php.*-')|ternary(item, 'php' + php__version + '-' + item) }}"
-    state: 'latest'
-    install_recommends: no
-  with_flattened:
-    - '{{ php__packages }}'
-    - '{{ php__base_packages }}'
-    - '{{ php__group_packages }}'
-    - '{{ php__host_packages }}'
-  notify: ['Restart php-fpm']
-
-- name: "Create directory for php*-fpm logs"
-  file:
-    path: '/var/log/php{{ php__version }}-fpm'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0700'
-
-- name: "Check existence of php-fpm-reopenlogs"
-  stat:
-    path: '{{ php__lib_base }}/php{{ php__version }}-fpm-reopenlogs'
-  register: php__register_reopenlogs
-
-- name: "Configure logrotate for php-fpm"
-  template:
-    src: 'etc/logrotate.d/php-fpm.j2'
-    dest: '/etc/logrotate.d/php{{ php__version }}-fpm'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-
-- name: "Create directory for php/fpm under etc"
-  file:
-    path: '{{ php__etc_base }}/fpm'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: "Configure php.ini for php-fpm"
-  template:
-    src: 'etc/php/php.ini.j2'
-    dest: '{{ php__etc_base }}/fpm/php.ini'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  notify: "Restart php-fpm"
-
-- name: "Configure php.ini for CLI"
-  template:
-    src: 'etc/php/php.ini.j2'
-    dest: '{{ php__etc_base }}/cli/php.ini'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-
-- name: Check if pool-available.d/ directory exists
-  stat:
-    path: '{{ php__etc_base }}/fpm/pool-available.d'
-  register: pool_available_d
-
-- name: "Remove default php-fpm pool if exists"
-  file:
-    path: '{{ php__etc_base }}/fpm/pool.d/www.conf'
-    state: absent
-  when: not pool_available_d.stat.exists
-
-- name: "Create pool-available.d/ directory for php-fpm"
-  file:
-    path: '{{ php__etc_base }}/fpm/pool-available.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: "Ensure pool.d/ directory for php*-fpm exists"
-  # Just for the case it has been deleted manually
-  file:
-    path: '{{ php__etc_base }}/fpm/pool.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- include: php_pools.yml
-  when: php__manage_pools|default(True)|bool
-
-- meta: flush_handlers
+  when: php__register_local_facts|changed
+                                                                   # ]]]
