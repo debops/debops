@@ -198,22 +198,22 @@ otherwise different:
   specified in the PHP-FPM pool. Each dictionary key is a variable name and
   dictionary value is the variable value.
 
-``php_flag``
+``php_flags``
   Optional. A YAML dictionary with custom ``php.ini`` flags that should be
   defined in the PHP-FPM pool. Each dictionary key is the flag name, and each
   dictionary value is the flag value.
 
-``php_value``
+``php_values``
   Optional. A YAML dictionary with custom ``php.ini`` values that should be
   defined in the PHP-FPM pool. Each dictionary key is the value name, and each
   dictionary value is the value contents.
 
-``php_admin_flag``
+``php_admin_flags``
   Optional. A YAML dictionary with custom ``php.ini`` admin flags that should
   be defined in the PHP-FPM pool. Each dictionary key is the admin flag name,
   and each dictionary value is the admin flag value.
 
-``php_admin_value``
+``php_admin_values``
   Optional. A YAML dictionary with custom ``php.ini`` admin values that should
   be defined in the PHP-FPM pool. Each dictionary key is the admin value name,
   and each dictionary value is the admin value contents.

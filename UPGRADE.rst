@@ -30,10 +30,13 @@ From debops.php5 role to debops.php role
   the variables used in inventory against the new default variables and update
   accordingly.
 
-- Some of the parameter names in FPM pools were renamed (for example
-  ``item.accesslog`` became ``item.aceess_log``). Refer to the list of PHP-FPM
-  pool default variables for possible changes and update the pool configuration
-  accordingly.
+- Some of the parameter names in FPM pools were renamed:
+
+  - ``item.accesslog`` to ``item.access_log``
+  - ``item.php_flag`` to ``item.php_flags``
+  - ``item.php_value`` to ``item.php_values``
+  - ``item.php_admin_flag`` to ``item.php_admin_flags``
+  - ``item.php_admin_values`` to ``item.php_admin_values``
 
 - The package installation changed to not force PHP version in the package
   name. For example, role can now install MariaDB support by specifying

@@ -461,20 +461,20 @@ env[{{ key }}] = {{ value }}
 ;php_admin_value[error_log] = /var/log/fpm-php.www.log
 ;php_admin_flag[log_errors] = on
 ;php_admin_value[memory_limit] = 32M#}
-{% if item.php__flags|d() %}
-{% for key, value in item.php__flags.iteritems() %}
+{% if item.php_flags|d() %}
+{% for key, value in item.php_flags.iteritems() %}
 php_flags[{{ key }}] = {{ value }}
 {% endfor %}
 
 {% endif %}
-{% if item.php__values|d() %}
-{% for key, value in item.php__values.iteritems() %}
+{% if item.php_values|d() %}
+{% for key, value in item.php_values.iteritems() %}
 php_values[{{ key }}] = {{ value }}
 {% endfor %}
 
 {% endif %}
-{% if item.php__admin_flags|d() %}
-{% for key, value in item.php__admin_flags.iteritems() %}
+{% if item.php_admin_flags|d() %}
+{% for key, value in item.php_admin_flags.iteritems() %}
 php_admin_flag[{{ key }}] = {{ value }}
 {% endfor %}
 
@@ -483,8 +483,8 @@ php_admin_flag[{{ key }}] = {{ value }}
 php_admin_value[open_basedir] = {{ item.open_basedir if item.open_basedir is string else item.open_basedir | join(':') }}
 
 {% endif %}
-{% if item.php__admin_values|d() %}
-{% for key, value in item.php__admin_values.iteritems() %}
+{% if item.php_admin_values|d() %}
+{% for key, value in item.php_admin_values.iteritems() %}
 php_admin_value[{{ key }}] = {{ value }}
 {% endfor %}
 
