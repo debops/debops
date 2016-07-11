@@ -1,4 +1,7 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Ondřej Surý APT repositories [[[
 
 - name: Add Ondrej Sury APT key
   apt_key:
@@ -16,6 +19,9 @@
     state: 'present'
     update_cache: True
   when: php__sury|bool
+
+                                                                   # ]]]
+# PHP version and Ansible variables [[[
 
 - name: Detect PHP version from available packages
   environment:
@@ -63,3 +69,4 @@
                                  else "/usr/lib/php5" }}'
   tags: [ 'role::php:pools', 'role::php:config' ]
 
+                                                                   # ]]]

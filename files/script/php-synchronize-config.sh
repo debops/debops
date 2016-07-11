@@ -30,4 +30,3 @@ if [ -n "${php_etc_base}" ] ; then
         fi
     done
 fi
-

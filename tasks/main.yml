@@ -1,4 +1,7 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# APT packages, directories [[[
 
 - name: Install PHP packages
   apt:
@@ -33,6 +36,9 @@
   with_items:
     - '{{ php__etc_base }}/ansible'
     - '{{ php__etc_base }}/fpm/pool.d'
+
+                                                                   # ]]]
+# php.ini management [[[
 
 - name: Generate php.ini configuration
   template:
@@ -69,6 +75,9 @@
   changed_when: php__register_synchronize_config.stdout != ''
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:config' ]
+
+                                                                   # ]]]
+# PHP-FPM management [[[
 
 - name: Divert default PHP-FPM configuration and pool
   command: dpkg-divert --quiet --local --divert {{ item + ".dpkg-divert" }}
@@ -124,6 +133,9 @@
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:pools', 'role::php:config' ]
 
+                                                                   # ]]]
+# Ansible local facts [[[
+
 - name: Make sure that Ansible local facts directory is present
   file:
     path: '/etc/ansible/facts.d'
@@ -144,4 +156,4 @@
 - name: Gather facts if they were modified
   action: setup
   when: php__register_local_facts|changed
-
+                                                                   # ]]]
