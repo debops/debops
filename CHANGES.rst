@@ -20,6 +20,8 @@ Added
 - Added custom delayed paths to allow to create symlinks to files created by this
   role. [ypid]
 
+- Support to create parent directories. [ypid]
+
 debops.resources v0.1.0 - 2016-06-21
 ------------------------------------
 
@@ -27,4 +29,3 @@ Added
 ~~~~~
 
 - Initial release. [drybjed]
-
