@@ -75,7 +75,7 @@
   set_fact:
     owncloud__do_autosetup: '{{ (owncloud__autosetup and
                                  owncloud__admin_username != "" and
-                                 owncloud__register_occ_check is defined and
+                                 (not owncloud__register_occ_check|skipped) and
                                  "ownCloud is not installed" in owncloud__register_occ_check.stdout) }}'
 
 - name: Automatically finish setup via the occ tool
@@ -149,7 +149,7 @@
 - name: Capture occ output in variable
   set_fact:
     owncloud__occ_config_current: '{{ owncloud__occ_run_output }}'
-  when: (owncloud__apps_config_combined.keys() | length)
+  when: (owncloud__apps_config_combined.keys() | length and (not ansible_check_mode))
   tags: [ 'role::owncloud:occ_config' ]
 
 - name: Set ownCloud apps configuration for each app
@@ -157,6 +157,7 @@
   loop_control:
     loop_var: 'owncloud__apps_item'
   with_dict: '{{ owncloud__apps_config_combined }}'
+  when: (not ansible_check_mode)
   tags: [ 'role::owncloud:occ_config' ]
 
 # .. ]]]

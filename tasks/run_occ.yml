@@ -45,5 +45,5 @@
   set_fact:
     ## regex_replace: Relies on the fact that `json_pretty` indents the JSON encoded object.
     owncloud__occ_run_output: '{{ owncloud__occ_run.stdout_lines | map("regex_replace", "^[^{} ].*$", "") | join("") | from_json }}'
-  when: (owncloud__occ_item|d() and (owncloud__occ_item.get_output|d() | bool))
+  when: (owncloud__occ_item|d() and (owncloud__occ_item.get_output|d() | bool) and (not ansible_check_mode))
   tags: [ 'role::owncloud:occ_config' ]
