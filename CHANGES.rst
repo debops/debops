@@ -111,18 +111,6 @@ Changed
 
   [ypid]
 
-Fixed
-~~~~~
-
-- Fixed :command:`occ` command wrapper to work with ownCloud 8.0. [ypid]
-
-- Don’t rely on :file:`/usr/local/bin` being in the ``PATH`` environment variable
-  for this role to work. [ypid]
-
-- Updated Nginx configuration to the example given in the official ownCloud documentation.
-  Fixes security warnings which occurred with the latest version of
-  ``debops.nginx`` about duplicated security headers. [ypid]
-
 Removed
 ~~~~~~~
 
@@ -149,6 +137,19 @@ Removed
   See https://doc.owncloud.org/server/9.0/admin_manual/installation/linux_installation.html for details.
   If you need support for one of them and can get it to work we will be happy
   about your contribution! [ypid]
+
+Fixed
+~~~~~
+
+- Fixed :command:`occ` command wrapper to work with ownCloud 8.0. [ypid]
+
+- Don’t rely on :file:`/usr/local/bin` being in the ``PATH`` environment variable
+  for this role to work. [ypid]
+
+- Updated Nginx configuration to the example given in the official ownCloud documentation.
+  Fixes security warnings which occurred with the latest version of
+  ``debops.nginx`` about duplicated security headers. [ypid]
+
 
 `debops.owncloud v0.2.0`_ - 2015-11-12
 --------------------------------------
