@@ -388,7 +388,7 @@ chroot = {{ item.chroot }}
 ; Default Value: current directory or / when chroot #}
 chdir = {{ item.chdir | d('/') }}
 
-{% if item.catch_workers_output|d() and item.catch_workers_output|bool %}
+{% if ((item.catch_workers_output|d() and item.catch_workers_output|bool) or php__fpm_catch_workers_output|bool) %}
 {#
 ; Redirect worker stdout and stderr into main error log. If not set, stdout and
 ; stderr will be redirected to /dev/null according to FastCGI specs.
@@ -421,7 +421,7 @@ security.limit_extensions = {{ item.security_limit_extensions if item.security_l
 security.limit_extensions = {{ php__fpm_security_limit_extensions if php__fpm_security_limit_extensions is string else php__fpm_security_limit_extensions | join(',') }}
 {% endif %}
 
-{% if item.environment|d() %}
+{% if (php__fpm_environment or php__fpm_group_environment or php__fpm_host_environment or item.environment|d()) %}
 {#
 ; Pass environment variables like LD_LIBRARY_PATH. All $VARIABLEs are taken from
 ; the current environment.
@@ -431,7 +431,7 @@ security.limit_extensions = {{ php__fpm_security_limit_extensions if php__fpm_se
 ;env[TMP] = /tmp
 ;env[TMPDIR] = /tmp
 ;env[TEMP] = /tmp #}
-{% for key, value in item.environment.iteritems() %}
+{% for key, value in (php__fpm_environment | combine(php__fpm_group_environment | combine(php__fpm_host_environment | combine(item.environment|d({}))))).iteritems() %}
 env[{{ key }}] = {{ value }}
 {% endfor %}
 
