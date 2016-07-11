@@ -62,6 +62,9 @@ Added
 - Add configuration of ``/etc/php{5,/7.0}/fpm/php-fpm.conf`` configuration file
   and its corresponding variables. [drybjed]
 
+- Add tasks that create users and groups to allow creation of new PHP-FPM pools
+  without errors. [drybjed]
+
 Changed
 ~~~~~~~
 

@@ -134,6 +134,37 @@
   tags: [ 'role::php:pools', 'role::php:config' ]
 
                                                                    # ]]]
+# Manage groups and user accounts [[[
+
+- name: Make sure required system groups exist
+  group:
+    name: '{{ item.group | d(item.owner) }}'
+    system: '{{ (item.system | d(True)) | bool }}'
+    state: 'present'
+  with_flattened:
+    - '{{ php__default_pools }}'
+    - '{{ php__pools }}'
+    - '{{ php__group_pools }}'
+    - '{{ php__host_pools }}'
+    - '{{ php__dependent_pools }}'
+  when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent" and item.owner|d() and item.home|d()'
+
+- name: Make sure required system accounts exist
+  user:
+    name: '{{ item.owner }}'
+    group: '{{ item.group | d(item.owner) }}'
+    home: '{{ item.home }}'
+    system: '{{ (item.system | d(True)) | bool }}'
+    state: 'present'
+  with_flattened:
+    - '{{ php__default_pools }}'
+    - '{{ php__pools }}'
+    - '{{ php__group_pools }}'
+    - '{{ php__host_pools }}'
+    - '{{ php__dependent_pools }}'
+  when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent" and item.owner|d() and item.home|d()'
+
+                                                                   # ]]]
 # Ansible local facts [[[
 
 - name: Make sure that Ansible local facts directory is present
