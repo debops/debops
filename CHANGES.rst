@@ -20,6 +20,13 @@ Added
 - Added custom delayed paths to allow to create symlinks to files created by this
   role. [ypid]
 
+- Support to create parent directories. [ypid]
+
+Fixed
+~~~~~
+
+- Don’t require ``item.src`` or ``item.content`` to delete files. [ypid]
+
 debops.resources v0.1.0 - 2016-06-21
 ------------------------------------
 
@@ -27,4 +34,3 @@ Added
 ~~~~~
 
 - Initial release. [drybjed]
-

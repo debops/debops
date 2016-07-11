@@ -28,6 +28,65 @@ resources__src: '{{ inventory_dir | realpath + "/../resources/" }}'
 
 # .. ]]]
 
+# Manage parent directories [[[
+# -----------------------------
+
+# This section allows to configure the behavior for non existing parent
+# directories for destination file paths.
+#
+# This applies to the following sections:
+#
+# * `Manage custom remote resources`_
+# * `Manage custom archives`_
+# * `Manage custom files`_
+#
+
+# .. envvar:: resources__parent_dirs_create
+#
+# Should the parent directories be created by the role? Not creating it will
+# cause an Ansible run time error when the directory does not exist.
+# The global setting can be overwritten for individual items using
+# ``item.parent_dirs_create``.
+resources__parent_dirs_create: True
+
+
+# .. envvar:: resources__parent_dirs_recurse
+#
+# Recursively set the specified file attributes of parent directories when
+# creating them.
+# The global setting can be overwritten for individual items using
+# ``item.parent_dirs_recurse``.
+resources__parent_dirs_recurse: True
+
+
+# .. envvar:: resources__parent_dirs_owner
+#
+# Unix system user who owns the parent directory.
+# See also :envvar:`resources__parent_dirs_recurse`.
+# The global setting can be overwritten for individual items using
+# ``item.parent_dirs_owner``.
+resources__parent_dirs_owner: '{{ omit }}'
+
+
+# .. envvar:: resources__parent_dirs_group
+#
+# Unix system group of the parent directory.
+# See also :envvar:`resources__parent_dirs_recurse`.
+# The global setting can be overwritten for individual items using
+# ``item.parent_dirs_group``.
+resources__parent_dirs_group: '{{ omit }}'
+
+
+# .. envvar:: resources__parent_dirs_mode
+#
+# Unix permissions of the parent directory.
+# See also :envvar:`resources__parent_dirs_recurse`.
+# The global setting can be overwritten for individual items using
+# ``item.parent_dirs_mode``.
+resources__parent_dirs_mode: '{{ omit }}'
+
+# .. ]]]
+
 # Manage custom paths [[[
 # -------------------
 
@@ -173,4 +232,3 @@ resources__group_delayed_paths: []
 resources__host_delayed_paths: []
 
 # .. ]]]
-

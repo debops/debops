@@ -26,6 +26,32 @@
   tags: [ 'role::resources:paths' ]
 # .. ]]]
 
+# Create parent directories [[[
+
+- name: Ensure that parent directories exist
+  file:
+    path:    '{{ (item.dest | d(item.name | d(item.path))) | dirname }}'
+    state:   'directory'
+    recurse: '{{ item.parent_dirs_recurse | d(resources__parent_dirs_recurse) }}'
+    owner:   '{{ item.parent_dirs_owner   | d(resources__parent_dirs_owner) }}'
+    group:   '{{ item.parent_dirs_group   | d(resources__parent_dirs_group) }}'
+    mode:    '{{ item.parent_dirs_mode    | d(resources__parent_dirs_mode) }}'
+  when: (resources__enabled|bool and
+         (item.parent_dirs_create|d(resources__parent_dirs_create) | bool) and
+         item.state|d("present") != 'absent')
+  with_flattened:
+    - '{{ resources__urls }}'
+    - '{{ resources__group_urls }}'
+    - '{{ resources__host_urls }}'
+    - '{{ resources__archives }}'
+    - '{{ resources__group_archives }}'
+    - '{{ resources__host_archives }}'
+    - '{{ resources__files }}'
+    - '{{ resources__group_files }}'
+    - '{{ resources__host_files }}'
+
+# .. ]]]
+
 # Manage custom remote resources [[[
 - name: Download online resources to remote hosts
   get_url:
@@ -118,7 +144,6 @@
     - '{{ resources__group_files }}'
     - '{{ resources__host_files }}'
   when: (resources__enabled|bool and
-         (item.src|d() or item.content|d()) and
          (item.dest|d() or item.path|d() or item.name|d()) and
          (item.state|d() == 'absent'))
   tags: [ 'role::resources:files' ]
@@ -149,4 +174,3 @@
          ((item.path|d() or item.dest|d() or item.name|d()) or item))
   tags: [ 'role::resources:paths' ]
 # .. ]]]
-
