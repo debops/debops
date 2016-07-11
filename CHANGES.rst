@@ -50,6 +50,9 @@ Added
   this role is run standalone without having the variables set.
   This allows other roles to use functionality provided by this role. [ypid]
 
+- Added :envvar:`owncloud__apt_preferences__dependent_list_optional` variable
+  which might come in handy when APT preference presets are used. [ypid]
+
 Changed
 ~~~~~~~
 
