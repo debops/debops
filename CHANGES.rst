@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.1.8
+------
+
+*Unreleased*
+
+- Use the new ``debops.php`` fact to detect PHP version. [drybjed]
+
 v0.1.7
 ------
 
