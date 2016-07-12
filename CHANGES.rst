@@ -8,6 +8,12 @@ v0.2.0
 
 - Add support for Ansible installation from Debian Backports. [ganto]
 
+- Add support for cloning or initializing a new DebOps project. [ganto]
+
+- Fix DebOps installation for local user. [ganto]
+
+- Add update method 'sync' for roles and playbooks. [ganto]
+
 v0.1.0
 ------
 
