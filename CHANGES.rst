@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.2.0
+------
+
+*unreleased*
+
+- Add support for Ansible installation from Debian Backports. [ganto]
+
 v0.1.0
 ------
 

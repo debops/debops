@@ -1,0 +1,20 @@
+---
+
+- name: Manage DebOps
+  hosts: [ 'debops_service_debops', 'debops_master', 'debops_recursively' ]
+  become: True
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'depend-of::debops' ]
+      apt_preferences__dependent_list:
+        - package: 'ansible'
+          backports': [ '{{ ansible_distribution_release }}' ]
+          reason': 'Use Ansible from Debian Backports'
+      when: ('ansible' in debops_ansible_packages) and
+            (debops_ansible_backports|d(True)) and
+            (ansible_distribution_release == 'jessie') 
+
+    - role: debops.debops
+      tags: [ 'role::debops' ]

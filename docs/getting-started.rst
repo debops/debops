@@ -37,7 +37,9 @@ Example inventory
 -----------------
 
 To install DebOps on a remote host, you need to add it to
-``[debops_recursively]`` Ansible host group::
+``[debops_recursively]`` Ansible host group:
+
+.. code-block:: none
 
     [debops_recursively]
     hostname
@@ -45,15 +47,28 @@ To install DebOps on a remote host, you need to add it to
 Example playbook
 ----------------
 
-Here's an example playbook that installs DebOps support on a host::
+Here's an example playbook that installs DebOps support on a host:
 
-    ---
-    - name: Install DebOps recursively
-      hosts: 'debops_recursively'
-      become: True
+.. literalinclude:: playbooks/debops.yml
+   :language: yaml
 
-      roles:
+This playbooks is shipped with this role under
+:file:`docs/playbooks/debops.yml` from which you can symlink it to your
+playbook directory.
 
-        - role: debops.debops
-          tags: [ 'role::debops' ]
+Ansible tags
+------------
 
+You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
+tasks are performed during Ansible run. This can be used after host is first
+configured to speed up playbook execution, when you are sure that most of the
+configuration has not been changed.
+
+Available role tags:
+
+``role::debops``
+  Main role tag, should be used in the playbook to execute all of the role
+  tasks.
+
+``depend-of::debops``
+  Run the role dependencies.
