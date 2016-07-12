@@ -7,9 +7,16 @@
     owner: '{{ nginx_webroot_owner }}'
     group: '{{ nginx_webroot_group }}'
     mode: '{{ nginx_webroot_mode }}'
-  with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
-  when: ((nginx_webroot_create is defined and nginx_webroot_create) and
-         (item.name is defined) and
+  with_flattened:
+    - '{{ nginx__servers }}'
+    - '{{ nginx__default_servers }}'
+    - '{{ nginx__internal_servers }}'
+    - '{{ nginx__dependent_servers }}'
+    - '{{ nginx_servers | d([]) }}'
+    - '{{ nginx_default_servers | d([]) }}'
+    - '{{ nginx_internal_servers | d([]) }}'
+    - '{{ nginx_dependent_servers | d([]) }}'
+  when: (nginx_webroot_create|bool and item.name|d() and item.state|d('present') != 'absent' and
          (item.root is undefined and item.owner is undefined and item.group is undefined))
 
 - name: Create default welcome page if enabled
@@ -19,18 +26,35 @@
     owner: '{{ item.owner | default(nginx_webroot_owner) }}'
     group: '{{ item.owner | default(nginx_webroot_group) }}'
     force: False
-  with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
-  when: (nginx_webroot_create|bool and
-         (item.name is defined) and (item.delete is undefined or (item.delete is defined and not item.delete)) and
-         (item.welcome is defined and item.welcome | bool))
+  with_flattened:
+    - '{{ nginx__servers }}'
+    - '{{ nginx__default_servers }}'
+    - '{{ nginx__internal_servers }}'
+    - '{{ nginx__dependent_servers }}'
+    - '{{ nginx_servers | d([]) }}'
+    - '{{ nginx_default_servers | d([]) }}'
+    - '{{ nginx_internal_servers | d([]) }}'
+    - '{{ nginx_dependent_servers | d([]) }}'
+  when: (nginx_webroot_create|bool and item.name|d() and item.state|d('present') != 'absent' and
+         (item.delete is undefined or not item.delete|bool) and
+         (item.welcome|d() and item.welcome | bool))
 
 - name: Remove nginx server configuration if requested
   file:
     path: '/etc/nginx/sites-available/{{ item.filename | default(item.name[0] | default("default")) }}.conf'
     state: 'absent'
-  with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
+  with_flattened:
+    - '{{ nginx__servers }}'
+    - '{{ nginx__default_servers }}'
+    - '{{ nginx__internal_servers }}'
+    - '{{ nginx__dependent_servers }}'
+    - '{{ nginx_servers | d([]) }}'
+    - '{{ nginx_default_servers | d([]) }}'
+    - '{{ nginx_internal_servers | d([]) }}'
+    - '{{ nginx_dependent_servers | d([]) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name is defined and (item.delete is defined and item.delete))
+  when: (item.name|d() and
+         ((item.state|d() and item.state == 'absent') or (item.delete|d() and item.delete|bool)))
 
 - name: Get last used HTTP default_server for default_server roulette
   set_fact:
@@ -57,18 +81,20 @@
 - name: Get first server that listens on http port for default_server roulette
   set_fact:
     nginx_register_default_server_http: '{{ item.name[0] | default("default") }}'
-  with_items: '{{ (nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers)[::-1] }}'
-  when: ((item.enabled is defined and item.enabled) and
-         (item.listen is undefined or (item.listen is defined and item.listen)) and
+  with_items: '{{ (nginx__servers + nginx__default_servers + nginx__internal_servers + nginx__dependent_servers +
+                   nginx_servers|d([]) + nginx_default_servers|d([]) + nginx_internal_servers|d([]) + nginx_dependent_servers|d([]))[::-1] }}'
+  when: (item.name|d() and item.state|d('present') != 'absent' and (item.enabled is undefined or item.enabled|bool) and
+         (item.listen is undefined or item.listen|d()) and
          ((item.ssl is undefined or not item.ssl | bool) or not nginx_pki | bool))
 
 - name: Get first server that listens on https port for default_server roulette
   set_fact:
     nginx_register_default_server_https: '{{ item.name[0] | default("default") }}'
-  with_items: '{{ (nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers)[::-1] }}'
-  when: ((item.enabled is defined and item.enabled) and
-         (item.listen_ssl is undefined or (item.listen_ssl is defined and item.listen_ssl)) and
-         ((item.ssl is defined and item.ssl | bool) or
+  with_items: '{{ (nginx__servers + nginx__default_servers + nginx__internal_servers + nginx__dependent_servers +
+                   nginx_servers|d([]) + nginx_default_servers|d([]) + nginx_internal_servers|d([]) + nginx_dependent_servers|d([]))[::-1] }}'
+  when: (item.name|d() and item.state|d('present') != 'absent' and (item.enabled is undefined or item.enabled|bool) and
+         (item.listen_ssl is undefined or item.listen_ssl|d()) and
+         ((item.ssl|d() and item.ssl | bool) or
           (item.ssl is undefined and nginx_pki | bool)))
 
 - name: Spin the HTTP default_server roulette!
@@ -92,18 +118,37 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
+  with_flattened:
+    - '{{ nginx__servers }}'
+    - '{{ nginx__default_servers }}'
+    - '{{ nginx__internal_servers }}'
+    - '{{ nginx__dependent_servers }}'
+    - '{{ nginx_servers | d([]) }}'
+    - '{{ nginx_default_servers | d([]) }}'
+    - '{{ nginx_internal_servers | d([]) }}'
+    - '{{ nginx_dependent_servers | d([]) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name is defined and (item.delete is undefined or (item.delete is defined and not item.delete)))
+  when: (item.name|d() and item.state|d('present') != 'absent' and
+         (item.delete is undefined or not item.delete|bool))
 
 - name: Disable nginx server configuration
   file:
     path: '/etc/nginx/sites-enabled/{{ item.filename | default(item.name[0] | default("default")) }}.conf'
     state: 'absent'
-  with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
+  with_flattened:
+    - '{{ nginx__servers }}'
+    - '{{ nginx__default_servers }}'
+    - '{{ nginx__internal_servers }}'
+    - '{{ nginx__dependent_servers }}'
+    - '{{ nginx_servers | d([]) }}'
+    - '{{ nginx_default_servers | d([]) }}'
+    - '{{ nginx_internal_servers | d([]) }}'
+    - '{{ nginx_dependent_servers | d([]) }}'
   notify: [ 'Test nginx and restart' ]
-  when: (((item.enabled is defined and not item.enabled) and (item.name is defined)) or
-        (item.delete is defined and item.delete))
+  when: (item.name|d() and
+         ((item.state|d() and item.state == 'absent') or
+          (item.enabled|d() and not item.enabled|bool) or
+          (item.delete|d() and item.delete|bool)))
 
   ## http://stackoverflow.com/a/28888474
 - name: Test if Ansible is running in check mode
@@ -112,7 +157,8 @@
   register: nginx__register_check_mode
 
 - name: Save fact if Ansible is running in check mode in variable
-  set_fact: nginx__fact_check_mode={{ nginx__register_check_mode|skipped }}
+  set_fact:
+    nginx__fact_check_mode: '{{ nginx__register_check_mode|skipped }}'
 
 - name: Enable nginx server configuration
   file:
@@ -122,9 +168,17 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ nginx_servers + nginx_default_servers + nginx_internal_servers + nginx_dependent_servers }}'
+  with_flattened:
+    - '{{ nginx__servers }}'
+    - '{{ nginx__default_servers }}'
+    - '{{ nginx__internal_servers }}'
+    - '{{ nginx__dependent_servers }}'
+    - '{{ nginx_servers | d([]) }}'
+    - '{{ nginx_default_servers | d([]) }}'
+    - '{{ nginx_internal_servers | d([]) }}'
+    - '{{ nginx_dependent_servers | d([]) }}'
   notify: [ 'Test nginx and restart' ]
-  when: ((item.enabled is undefined or (item.enabled is defined and item.enabled)) and
-         (item.name is defined) and (item.delete is undefined or (item.delete is defined and not item.delete)) and
-         (not nginx__fact_check_mode))
-
+  when: (item.name|d() and item.state|d('present') != 'absent' and
+         (item.enabled is undefined or item.enabled|bool) and
+         (item.delete is undefined or not item.delete|bool) and
+         not nginx__fact_check_mode|bool)

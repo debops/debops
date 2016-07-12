@@ -33,9 +33,9 @@ Changed
   maps for APT key ids and APT repositories. Full GPG key ids are used to
   download APT repository keys. [drybjed]
 
-- Update tasks that manage ``nginx`` upstreams, maps and custom configuration.
-  These lists now support the ``item.state`` parameter to control when
-  configuration files should be present or absent. [drybjed]
+- Update tasks that manage ``nginx`` servers, upstreams, maps and custom
+  configuration. These lists now support the ``item.state`` parameter to
+  control when configuration files should be present or absent. [drybjed]
 
 Deprecated
 ~~~~~~~~~~
@@ -64,6 +64,14 @@ Deprecated
   | ``nginx_dependent_upstreams``            | ``nginx__dependent_upstreams``             |
   +------------------------------------------+--------------------------------------------+
   | ``nginx_custom_config``                  | ``nginx__custom_config``                   |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_servers``                        | ``nginx__servers``                         |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_default_servers``                | ``nginx__default_servers``                 |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_internal_servers``               | ``nginx__internal_servers``                |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_dependent_servers``              | ``nginx__dependent_servers``               |
   +------------------------------------------+--------------------------------------------+
 
 - The ``php5`` server and upstream templates are deprecated in favour of
