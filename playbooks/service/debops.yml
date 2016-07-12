@@ -11,6 +11,13 @@
 
   roles:
 
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - package: 'ansible'
+          backports': [ 'jessie' ]
+          reason': 'Use Ansible from Debian Backports'
+
     - role: debops.debops
       tags: [ 'role::debops' ]
 
