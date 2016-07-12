@@ -26,6 +26,21 @@ Changed
 
 - Update Changelog format, add more documentation. [drybjed]
 
+- Move the configuration of other roles to new namespaced variables, so
+  playbooks can begin the switch. Old-style variables still work. [drybjed]
+
+Deprecated
+~~~~~~~~~~
+
+- The ``nginx_apt_preferences_dependent_list`` variable is deprecated in favour
+  of ``nginx__apt_preferences__dependent_list`` variable. [drybjed]
+
+- The ``nginx_ferm_dependent_rules`` variable is deprecated in favour of
+  ``nginx__ferm__dependent_rules`` variable. [drybjed]
+
+- The ``php5`` server and upstream templates are deprecated in favour of
+  ``php`` server and upstream templates. [drybjed]
+
 
 `debops.nginx v0.1.7`_ - 2016-06-14
 -----------------------------------

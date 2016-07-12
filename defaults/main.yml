@@ -554,7 +554,9 @@ nginx__http_robots_tag: '{{ omit }}'
 nginx_dependencies: True
 
 # Configuration of custom APT preferences.
-nginx_apt_preferences_dependent_list:
+nginx_apt_preferences_dependent_list: '{{ nginx__apt_preferences__dependent_list }}'
+
+nginx__apt_preferences__dependent_list:
 
   - package: 'nginx nginx-*'
     backports: [ 'wheezy' ]
@@ -573,7 +575,9 @@ nginx_apt_preferences_dependent_list:
     delete: '{{ nginx__deploy_state != "present" or (not (nginx_flavor == "passenger") | bool) }}'
 
 # Configuration of the ``iptables`` firewall using ``ferm``.
-nginx_ferm_dependent_rules:
+nginx_ferm_dependent_rules: '{{ nginx__ferm__dependent_rules }}'
+
+nginx__ferm__dependent_rules:
 
   - type: 'accept'
     dport: [ 'http', 'https' ]
