@@ -11,21 +11,15 @@
 #       expected location.
 #
 #}
+{% set nginx__tpl_php_version = (ansible_local.php.version if (ansible_local|d() and ansible_local.php|d() and ansible_local.php.version|d()) else ('5' if (ansible_distribution_release in [ 'wheezy', 'jessie', 'precise', 'trusty', 'wily' ]) else '7.0')) %}
 {% block nginx_tpl_block_custom_upstreams %}
-{%   if item.php_pools|d() %}
-{%     if item.php_pools is string %}
-        server unix:{{ nginx_run_path }}/php{{ ansible_local.php.version if (ansible_local|d() and ansible_local.php|d() and ansible_local.php.version|d()) else '5' }}-fpm-{{ item.php_pools }}.sock{% if ((item.enabled|d() and not item.enabled|bool) or (item.down|d() and item.down|bool)) %} down{% endif %};
+{%   set nginx__tpl_php_pools = item.php_pools | d(item.php_pool | d([]) ) %}
+{%   if nginx__tpl_php_pools %}
+{%     if nginx__tpl_php_pools is string %}
+        server unix:{{ nginx_run_path }}/php{{ nginx__tpl_php_version }}-fpm-{{ nginx__tpl_php_pools }}.sock{% if ((item.enabled|d() and not item.enabled|bool) or (item.down|d() and item.down|bool)) %} down{% endif %};
 {%     else %}
-{%       for pool in item.php_pools %}
-        server unix:{{ nginx_run_path }}/php{{ ansible_local.php.version if (ansible_local|d() and ansible_local.php|d() and ansible_local.php.version|d()) else '5' }}-fpm-{{ pool }}.sock{% if ((item.enabled|d() and not item.enabled|bool) or (item.down|d() and item.down|bool)) %} down{% endif %};
-{%       endfor %}
-{%     endif %}
-{%   elif item.php_pool|d() %}
-{%     if item.php_pool is string %}
-        server unix:{{ nginx_run_path }}/php{{ ansible_local.php.version if (ansible_local|d() and ansible_local.php|d() and ansible_local.php.version|d()) else '5' }}-fpm-{{ item.php_pool }}.sock{% if ((item.enabled|d() and not item.enabled|bool) or (item.down|d() and item.down|bool)) %} down{% endif %};
-{%     else %}
-{%       for pool in item.php_pool %}
-        server unix:{{ nginx_run_path }}/php{{ ansible_local.php.version if (ansible_local|d() and ansible_local.php|d() and ansible_local.php.version|d()) else '5' }}-fpm-{{ pool }}.sock{% if ((item.enabled|d() and not item.enabled|bool) or (item.down|d() and item.down|bool)) %} down{% endif %};
+{%       for pool in nginx__tpl_php_pools %}
+        server unix:{{ nginx_run_path }}/php{{ nginx__tpl_php_version }}-fpm-{{ pool }}.sock{% if ((item.enabled|d() and not item.enabled|bool) or (item.down|d() and item.down|bool)) %} down{% endif %};
 {%       endfor %}
 {%     endif %}
 {%   endif %}
