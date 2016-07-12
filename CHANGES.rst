@@ -14,6 +14,11 @@ The current role maintainer is drybjed.
 
 .. _debops.nginx master: https://github.com/debops/ansible-nginx/compare/v0.1.7...master
 
+Added
+~~~~~
+
+- Add new PHP upstream and PHP server templates. [drybjed]
+
 Changed
 ~~~~~~~
 
