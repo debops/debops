@@ -69,6 +69,12 @@ Deprecated
 - The ``php5`` server and upstream templates are deprecated in favour of
   ``php`` server and upstream templates. [drybjed]
 
+Removed
+~~~~~~~
+
+- Remove the ``item.locked`` parameter from ``nginx`` server configuration
+  parameters. [drybjed]
+
 
 `debops.nginx v0.1.7`_ - 2016-06-14
 -----------------------------------
