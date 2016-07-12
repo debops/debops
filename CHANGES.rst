@@ -33,14 +33,38 @@ Changed
   maps for APT key ids and APT repositories. Full GPG key ids are used to
   download APT repository keys. [drybjed]
 
+- Update tasks that manage ``nginx`` upstreams, maps and custom configuration.
+  These lists now support the ``item.state`` parameter to control when
+  configuration files should be present or absent. [drybjed]
+
 Deprecated
 ~~~~~~~~~~
 
-- The ``nginx_apt_preferences_dependent_list`` variable is deprecated in favour
-  of ``nginx__apt_preferences__dependent_list`` variable. [drybjed]
+- Some of the default variables are deprecated in this version. Below you can
+  find a list with their replacements. The old variable names will still be
+  recognized for some time. [drybjed]
 
-- The ``nginx_ferm_dependent_rules`` variable is deprecated in favour of
-  ``nginx__ferm__dependent_rules`` variable. [drybjed]
+  +------------------------------------------+--------------------------------------------+
+  | Deprecated variable                      | New variable                               |
+  +==========================================+============================================+
+  | ``nginx_apt_preferences_dependent_list`` | ``nginx__apt_preferences__dependent_list`` |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_ferm_dependent_rules``           | ``nginx__ferm__dependent_rules``           |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_maps``                           | ``nginx__maps``                            |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_default_maps``                   | ``nginx__default_maps``                    |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_dependent_maps``                 | ``nginx__dependent_maps``                  |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_upstreams``                      | ``nginx__upstreams``                       |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_default_upstreams``              | ``nginx__default_upstreams``               |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_dependent_upstreams``            | ``nginx__dependent_upstreams``             |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_custom_config``                  | ``nginx__custom_config``                   |
+  +------------------------------------------+--------------------------------------------+
 
 - The ``php5`` server and upstream templates are deprecated in favour of
   ``php`` server and upstream templates. [drybjed]
