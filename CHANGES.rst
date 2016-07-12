@@ -29,6 +29,10 @@ Changed
 - Move the configuration of other roles to new namespaced variables, so
   playbooks can begin the switch. Old-style variables still work. [drybjed]
 
+- Reorganize support for different ``nginx`` flavors to use YAML dictionary
+  maps for APT key ids and APT repositories. Full GPG key ids are used to
+  download APT repository keys. [drybjed]
+
 Deprecated
 ~~~~~~~~~~
 

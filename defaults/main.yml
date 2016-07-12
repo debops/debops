@@ -41,6 +41,20 @@ nginx_base_packages: [ 'python-passlib' ]
 # What type of nginx server to install (see 'nginx_flavor_package_map')
 nginx_flavor: 'full'
 
+nginx__flavor_apt_key_id: '{{ nginx__flavor_apt_key_id_map[nginx_flavor]|d() }}'
+
+nginx__flavor_apt_repository: '{{ nginx__flavor_apt_repository_map[nginx_flavor]|d() }}'
+
+nginx__flavor_apt_key_id_map:
+  'nginx.org': '573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62'
+  'passenger': '16378A33A6EF16762922526E561F9B9CAC40B2F7'
+
+nginx__flavor_apt_repository_map:
+  'nginx.org': 'deb http://nginx.org/packages/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} nginx'
+  'passenger': 'deb https://oss-binaries.phusionpassenger.com/apt/passenger {{ ansible_distribution_release }} main'
+
+nginx__flavor_packages: '{{ nginx_flavor_package_map[nginx_flavor] }}'
+
 # There are many versions of nginx server to choose from, but only 1 can be
 # installed at a time. This is a list of APT packages which will be installed
 # for a specific flavor.
@@ -96,9 +110,6 @@ nginx_scgi_temp_path: '{{ nginx_temp_root_path }}/scgi'
 nginx_uwsgi_temp_path: '{{ nginx_temp_root_path }}/uwsgi'
 
 # ---- Phusion Passenger support ----
-
-# APT repository which will be added for Phusion Passenger support
-nginx_passenger_phusion_repo: 'deb https://oss-binaries.phusionpassenger.com/apt/passenger {{ ansible_distribution_release }} main'
 
 # Specify Phusion Passenger root paths manually (by default this variable is
 # detected automatically at Ansible run time)
