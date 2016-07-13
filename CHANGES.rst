@@ -6,6 +6,8 @@ v0.2.0
 
 *unreleased*
 
+- Change variable prefix from ``debops_`` to ``debops__``. [ganto]
+
 - Add support for Ansible installation from Debian Backports. [ganto]
 
 - Add support for cloning or initializing a new DebOps project. [ganto]
