@@ -56,6 +56,9 @@ Changed
   ``/dev/null``. This should stop annoying emails from ``cron`` each time
   ``nginx`` service is reloaded after certificate changes. [drybjed]
 
+- Move variables from ``vars/main.yml`` to ``defaults/main.yml`` to allow
+  modification. [drybjed]
+
 Deprecated
 ~~~~~~~~~~
 
