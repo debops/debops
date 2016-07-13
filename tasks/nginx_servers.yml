@@ -16,7 +16,7 @@
     - '{{ nginx_default_servers | d([]) }}'
     - '{{ nginx_internal_servers | d([]) }}'
     - '{{ nginx_dependent_servers | d([]) }}'
-  when: (nginx_webroot_create|bool and item.name|d() and item.state|d('present') != 'absent' and
+  when: (nginx_webroot_create|bool and item.name is defined and item.state|d('present') != 'absent' and
          (item.root is undefined and item.owner is undefined and item.group is undefined))
 
 - name: Create default welcome page if enabled
@@ -35,7 +35,7 @@
     - '{{ nginx_default_servers | d([]) }}'
     - '{{ nginx_internal_servers | d([]) }}'
     - '{{ nginx_dependent_servers | d([]) }}'
-  when: (nginx_webroot_create|bool and item.name|d() and item.state|d('present') != 'absent' and
+  when: (nginx_webroot_create|bool and item.name is defined and item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool) and
          (item.welcome|d() and item.welcome | bool))
 
@@ -53,7 +53,7 @@
     - '{{ nginx_internal_servers | d([]) }}'
     - '{{ nginx_dependent_servers | d([]) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name|d() and
+  when: (item.name is defined and
          ((item.state|d() and item.state == 'absent') or (item.delete|d() and item.delete|bool)))
 
 - name: Get last used HTTP default_server for default_server roulette
@@ -83,7 +83,7 @@
     nginx_register_default_server_http: '{{ item.name[0] | default("default") }}'
   with_items: '{{ (nginx__servers + nginx__default_servers + nginx__internal_servers + nginx__dependent_servers +
                    nginx_servers|d([]) + nginx_default_servers|d([]) + nginx_internal_servers|d([]) + nginx_dependent_servers|d([]))[::-1] }}'
-  when: (item.name|d() and item.state|d('present') != 'absent' and (item.enabled is undefined or item.enabled|bool) and
+  when: (item.name is defined and item.state|d('present') != 'absent' and (item.enabled is undefined or item.enabled|bool) and
          (item.listen is undefined or item.listen|d()) and
          ((item.ssl is undefined or not item.ssl | bool) or not nginx_pki | bool))
 
@@ -92,7 +92,7 @@
     nginx_register_default_server_https: '{{ item.name[0] | default("default") }}'
   with_items: '{{ (nginx__servers + nginx__default_servers + nginx__internal_servers + nginx__dependent_servers +
                    nginx_servers|d([]) + nginx_default_servers|d([]) + nginx_internal_servers|d([]) + nginx_dependent_servers|d([]))[::-1] }}'
-  when: (item.name|d() and item.state|d('present') != 'absent' and (item.enabled is undefined or item.enabled|bool) and
+  when: (item.name is defined and item.state|d('present') != 'absent' and (item.enabled is undefined or item.enabled|bool) and
          (item.listen_ssl is undefined or item.listen_ssl|d()) and
          ((item.ssl|d() and item.ssl | bool) or
           (item.ssl is undefined and nginx_pki | bool)))
@@ -128,7 +128,7 @@
     - '{{ nginx_internal_servers | d([]) }}'
     - '{{ nginx_dependent_servers | d([]) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name|d() and item.state|d('present') != 'absent' and
+  when: (item.name is defined and item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool))
 
 - name: Disable nginx server configuration
@@ -145,7 +145,7 @@
     - '{{ nginx_internal_servers | d([]) }}'
     - '{{ nginx_dependent_servers | d([]) }}'
   notify: [ 'Test nginx and restart' ]
-  when: (item.name|d() and
+  when: (item.name is defined and
          ((item.state|d() and item.state == 'absent') or
           (item.enabled|d() and not item.enabled|bool) or
           (item.delete|d() and item.delete|bool)))
@@ -178,7 +178,7 @@
     - '{{ nginx_internal_servers | d([]) }}'
     - '{{ nginx_dependent_servers | d([]) }}'
   notify: [ 'Test nginx and restart' ]
-  when: (item.name|d() and item.state|d('present') != 'absent' and
+  when: (item.name is defined and item.state|d('present') != 'absent' and
          (item.enabled is undefined or item.enabled|bool) and
          (item.delete is undefined or not item.delete|bool) and
          not nginx__fact_check_mode|bool)
