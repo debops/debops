@@ -1,27 +1,52 @@
 Changelog
 =========
 
-v0.2.0
-------
+**debops.debops**
 
-*unreleased*
+This project adheres to `Semantic Versioning <http://semver.org/>`_
+and `human-readable changelog <http://keepachangelog.com/>`_.
 
-- Change variable prefix from ``debops_`` to ``debops__``. [ganto]
+The current role maintainer is drybjed.
+
+
+`debops.debops master`_ - unreleased
+------------------------------------
+
+.. _debops.debops master: https://github.com/debops/ansible-debops/compare/v0.2.0...master
+
+
+`debops.debops v0.2.0`_ - 2016-07-13
+------------------------------------
+
+.. _debops.debops v0.2.0: https://github.com/debops/ansible-debops/compare/v0.1.0...v0.2.0
+
+Added
+~~~~~
 
 - Add support for Ansible installation from Debian Backports. [ganto]
 
 - Add support for cloning or initializing a new DebOps project. [ganto]
 
-- Fix DebOps installation for local user. [ganto]
-
 - Add update method 'sync' for roles and playbooks. [ganto]
 
-v0.1.0
-------
+Changed
+~~~~~~~
 
-*Released: 2015-10-28*
+- Change variable prefix from ``debops_`` to ``debops__``. [ganto]
+
+- Fix DebOps installation for local user. [ganto]
+
+
+debops.debops v0.1.0 - 2015-10-28
+---------------------------------
+
+Added
+~~~~~
 
 - Add Changelog. [drybjed]
+
+Changed
+~~~~~~~
 
 - Rewrite the role to install ``debops`` package from PyPI instead of cloned
   repository. [drybjed]
@@ -30,4 +55,3 @@ v0.1.0
   [drybjed]
 
 - Update documentation. [drybjed]
-
