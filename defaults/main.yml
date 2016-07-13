@@ -1,0 +1,103 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.environment default variables [[[
+# ========================================
+
+# .. contents:: Sections
+#    :local:
+
+
+# Role configuration [[[
+# ----------------------
+
+# .. envvar:: environment__enabled [[[
+#
+# Enable or disable configuration of environment variables. By default
+# configuration is automatically enabled if any variables are set and disabled
+# otherwise. Set to ``False`` to disable.
+environment__enabled: '{{ lookup("template", "lookup/environment__enabled.j2")
+                          | from_yaml | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: environment__file [[[
+#
+# Path to the file where environment variables are stored.
+environment__file: '/etc/environment'
+
+                                                                   # ]]]
+# .. envvar:: environment__case [[[
+#
+# Control how role should modify variable names:
+#
+# - ``preserve``: don't change the case
+#
+# - ``upper``: uppercase all variable names
+#
+# - ``lower``: lowercase all variable names
+#
+environment__case: 'preserve'
+
+                                                                   # ]]]
+# .. envvar:: environment__placement [[[
+#
+# Default placement of the Ansible block in the environment file:
+#
+# - ``before``: add the block at the start of the file
+#
+# - ``after``: add the block at the end of the file
+#
+# To reset the block location, either remove it from the file, or disable and
+# enable the role using ``environment__enabled`` variable.
+environment__placement: 'before'
+                                                                   # ]]]
+                                                                   # ]]]
+# Environment variable lists [[[
+# ------------------------------
+
+# These lists define what environment variables should be defined on a host.
+# See :ref:`environment__ref_variables` for details.
+
+# .. envvar:: environment__default_variables [[[
+#
+# List of default environment variables to set on all hosts. See
+# :ref:`environment__ref_inventory__environment` for the explanation of default
+# values set in this list.
+environment__default_variables:
+  - '{{ inventory__environment | d({}) }}'
+  - '{{ inventory__group_environment | d({}) }}'
+  - '{{ inventory__host_environment | d({}) }}'
+
+                                                                   # ]]]
+# .. envvar:: environment__variables [[[
+#
+# List of environment variables which should be defined on all hosts in Ansible
+# inventory.
+environment__variables: []
+
+                                                                   # ]]]
+# .. envvar:: environment__group_variables [[[
+#
+# List of environment variables which should be defined on a group of hosts in
+# Ansible inventory.
+environment__group_variables: []
+
+                                                                   # ]]]
+# .. envvar:: environment__host_variables [[[
+#
+# List of environment variables which should be defined on specific hosts in
+# Ansible inventory.
+environment__host_variables: []
+
+                                                                   # ]]]
+# .. envvar:: environment__dependent_variables [[[
+#
+# List of environment variables which are defined by other Ansible roles as
+# a dependency.
+environment__dependent_variables: '{{ [ ansible_local.environment.variables ]
+                                      if (ansible_local|d() and
+                                          ansible_local.environment|d() and
+                                          ansible_local.environment.variables|d())
+                                      else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]

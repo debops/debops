@@ -1,0 +1,7 @@
+{% set environment__tpl_enabled = [] %}
+{% for element in environment__default_variables + environment__variables + environment__group_variables + environment__host_variables + environment__dependent_variables %}
+{%   if element %}
+{%     set _ = environment__tpl_enabled.append(element) %}
+{%   endif %}
+{% endfor %}
+{{ True if environment__tpl_enabled else False -}}
