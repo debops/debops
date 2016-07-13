@@ -52,6 +52,10 @@ Changed
 - You can now specify single server name in ``item.name`` parameter as a string
   instead of using a list notation. Lists are still supported. [drybjed]
 
+- Direct output of ``service nginx reload`` in the ``nginx`` PKI hook script to
+  ``/dev/null``. This should stop annoying emails from ``cron`` each time
+  ``nginx`` service is reloaded after certificate changes. [drybjed]
+
 Deprecated
 ~~~~~~~~~~
 
