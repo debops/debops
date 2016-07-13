@@ -37,6 +37,9 @@ Changed
   configuration. These lists now support the ``item.state`` parameter to
   control when configuration files should be present or absent. [drybjed]
 
+- The ``item.enabled`` parameter in servers, maps, upstreams is now optional
+  and if not specified, results in ``True``. [drybjed]
+
 Deprecated
 ~~~~~~~~~~
 
