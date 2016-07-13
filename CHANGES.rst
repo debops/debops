@@ -19,6 +19,9 @@ Added
 
 - Add new PHP upstream and PHP server templates. [drybjed]
 
+- Support custom log directory path for nginx servers, specified by
+  ``item.log_path`` parameter. [drybjed]
+
 Changed
 ~~~~~~~
 

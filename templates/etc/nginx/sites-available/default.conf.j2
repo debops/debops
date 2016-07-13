@@ -262,6 +262,13 @@
 #       parameter.  If set to False, the nginx role won't add the directive.
 #
 #
+#   - item.log_path: ''
+#       Optional. Absolute path where log files should be stored. The If not
+#       specified, logs will be saved to '/var/log/nginx/' directory. You
+#       should take care of log rotation if you specify custom log path.
+#       The specified path needs to exist before nginx is reloaded/restarted.
+#
+#
 #   - item.access_log: ''
 #       Optional. Name of the access log file in the '/var/log/nginx/' directory.
 #       The suffix '.log' will be added automatically. If not specified, nginx
@@ -689,8 +696,8 @@
 
 {% block nginx_tpl_block_log %}
 {% if item.name is defined and item.name %}
-        access_log {{ nginx_log_path + '/' + item.access_log | d(item.filename | d(item.name if item.name is string else item.name[0]) + '_access') }}.log;
-        error_log {{ nginx_log_path + '/' + item.error_log | d(item.filename | d(item.name if item.name is string else item.name[0]) + '_error') }}.log;
+        access_log {{ (item.log_path | d(nginx_log_path)) + '/' + item.access_log | d(item.filename | d(item.name if item.name is string else item.name[0]) + '_access') }}.log;
+        error_log {{ (item.log_path | d(nginx_log_path)) + '/' + item.error_log | d(item.filename | d(item.name if item.name is string else item.name[0]) + '_error') }}.log;
 
 {% endif %}
 {% endblock %}
