@@ -9,11 +9,22 @@
     path: '/usr/sbin/nginx'
   register: nginx_register_installed
 
-- include: 'passenger.yml'
-  when: (nginx_flavor == 'passenger' and nginx__deploy_state in [ 'present' ])
+- name: Add flavor APT GPG key
+  apt_key:
+    id: '{{ nginx__flavor_apt_key_id }}'
+    state: 'present'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+  when: (nginx__deploy_state in [ 'present' ] and nginx_flavor in [ 'nginx.org', 'passenger' ])
 
-- include: 'nginx_org_packages.yml'
-  when: (nginx_flavor == 'nginx.org' and nginx__deploy_state in [ 'present' ])
+- name: Add flavor APT repository
+  apt_repository:
+    repo: '{{ nginx__flavor_apt_repository }}'
+    state: 'present'
+    update_cache: True
+  when: (nginx__deploy_state in [ 'present' ] and nginx_flavor in [ 'nginx.org', 'passenger' ])
 
 - name: Install nginx packages
   apt:
@@ -21,7 +32,7 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ nginx_flavor_package_map[nginx_flavor] }}'
+    - '{{ nginx__flavor_packages }}'
     - '{{ nginx_base_packages }}'
   when: (nginx__deploy_state in [ 'present' ])
 

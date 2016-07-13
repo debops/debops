@@ -1,16 +1,137 @@
 Changelog
 =========
 
-v0.1.7
-------
+**debops.nginx**
 
-*Released: 2016-06-14*
+This project adheres to `Semantic Versioning <http://semver.org/>`_
+and `human-readable changelog <http://keepachangelog.com/>`_.
+
+The current role maintainer is drybjed.
+
+
+`debops.nginx master`_ - unreleased
+-----------------------------------
+
+.. _debops.nginx master: https://github.com/debops/ansible-nginx/compare/v0.1.8...master
+
+
+`debops.nginx v0.1.8`_ - 2016-07-13
+-----------------------------------
+
+.. _debops.nginx v0.1.8: https://github.com/debops/ansible-nginx/compare/v0.1.7...v0.1.8
+
+Added
+~~~~~
+
+- Add new PHP upstream and PHP server templates. [drybjed]
+
+- Support custom log directory path for nginx servers, specified by
+  ``item.log_path`` parameter. [drybjed]
+
+Changed
+~~~~~~~
+
+- Use the new ``debops.php`` fact to detect PHP version. [drybjed]
+
+- Update Changelog format, add more documentation. [drybjed]
+
+- Move the configuration of other roles to new namespaced variables, so
+  playbooks can begin the switch. Old-style variables still work. [drybjed]
+
+- Reorganize support for different ``nginx`` flavors to use YAML dictionary
+  maps for APT key ids and APT repositories. Full GPG key ids are used to
+  download APT repository keys. [drybjed]
+
+- Update tasks that manage ``nginx`` servers, upstreams, maps and custom
+  configuration. These lists now support the ``item.state`` parameter to
+  control when configuration files should be present or absent. [drybjed]
+
+- The ``item.enabled`` parameter in servers, maps, upstreams is now optional
+  and if not specified, results in ``True``. [drybjed]
+
+- Passwords used by ``htpasswd`` will now be hashes using ``sha512_crypt``
+  scheme. The default HTTP Basic Auth configuration variable is renamed from
+  ``nginx_htpasswd_default`` to ``nginx__http_auth_htpasswd``.  New
+  ``nginx__dependent_htpasswd`` list can be used by other roles to create
+  ``htpasswd`` files as needed. [drybjed]
+
+- You can now specify single server name in ``item.name`` parameter as a string
+  instead of using a list notation. Lists are still supported. [drybjed]
+
+- Direct output of ``service nginx reload`` in the ``nginx`` PKI hook script to
+  ``/dev/null``. This should stop annoying emails from ``cron`` each time
+  ``nginx`` service is reloaded after certificate changes. [drybjed]
+
+- Move variables from ``vars/main.yml`` to ``defaults/main.yml`` to allow
+  modification. [drybjed]
+
+Deprecated
+~~~~~~~~~~
+
+- Some of the default variables are deprecated in this version. Below you can
+  find a list with their replacements. The old variable names will still be
+  recognized for some time. [drybjed]
+
+  +------------------------------------------+--------------------------------------------+
+  | Deprecated variable                      | New variable                               |
+  +==========================================+============================================+
+  | ``nginx_apt_preferences_dependent_list`` | ``nginx__apt_preferences__dependent_list`` |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_ferm_dependent_rules``           | ``nginx__ferm__dependent_rules``           |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_maps``                           | ``nginx__maps``                            |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_default_maps``                   | ``nginx__default_maps``                    |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_dependent_maps``                 | ``nginx__dependent_maps``                  |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_upstreams``                      | ``nginx__upstreams``                       |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_default_upstreams``              | ``nginx__default_upstreams``               |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_dependent_upstreams``            | ``nginx__dependent_upstreams``             |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_custom_config``                  | ``nginx__custom_config``                   |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_servers``                        | ``nginx__servers``                         |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_default_servers``                | ``nginx__default_servers``                 |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_internal_servers``               | ``nginx__internal_servers``                |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_dependent_servers``              | ``nginx__dependent_servers``               |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_htpasswd``                       | ``nginx__htpasswd``                        |
+  +------------------------------------------+--------------------------------------------+
+
+- The ``php5`` server and upstream templates are deprecated in favour of
+  ``php`` server and upstream templates. [drybjed]
+
+Removed
+~~~~~~~
+
+- Remove the ``item.locked`` parameter from ``nginx`` server configuration
+  parameters. [drybjed]
+
+
+`debops.nginx v0.1.7`_ - 2016-06-14
+-----------------------------------
+
+.. _debops.nginx v0.1.7: https://github.com/debops/ansible-nginx/compare/v0.1.6...v0.1.7
+
+Added
+~~~~~
 
 - Added ``nginx__deploy_state`` to allow to specify the desired state this role
   should achieve. State ``absent`` is not fully implemented yet. [ypid]
 
-- Fixed Ansible check mode. Check mode did fail when the role was trying to
-  symlink a non-existing file. [ypid]
+- Expose Nginx version via Ansible facts as ``ansible_local.nginx.version`` so
+  that it can be used outside of this role.
+  Check :file:`templates/etc/nginx/sites-available/default.conf.j2`
+  for an example usage. [ypid]
+
+Changed
+~~~~~~~
 
 - Changed the default value of the ``X-XSS-Protection`` HTTP header field from
   ``1`` (enabled), to ``1; mode=block`` (enabled and block rendering) for
@@ -28,18 +149,26 @@ v0.1.7
   via ``item.permitted_cross_domain_policies`` and
   :any:`nginx__http_permitted_cross_domain_policies`. [ypid]
 
-- Expose Nginx version via Ansible facts as ``ansible_local.nginx.version`` so
-  that it can be used outside of this role.
-  Check :file:`templates/etc/nginx/sites-available/default.conf.j2`
-  for an example usage. [ypid]
+Fixed
+~~~~~
 
-v0.1.6
-------
+- Fixed Ansible check mode. Check mode did fail when the role was trying to
+  symlink a non-existing file. [ypid]
 
-*Released: 2016-03-07*
+
+`debops.nginx v0.1.6`_ - 2016-03-07
+-----------------------------------
+
+.. _debops.nginx v0.1.6: https://github.com/debops/ansible-nginx/compare/v0.1.5...v0.1.6
+
+Added
+~~~~~
 
 - Add support for defining error pages in a list, with better control over
   their configuration. [drybjed]
+
+Changed
+~~~~~~~
 
 - Do not create welcome pages automatically if creation of webroot directories
   is disabled. [drybjed]
@@ -51,22 +180,44 @@ v0.1.6
 - Use an absolute path in the ``nginx`` PKI hook for ``service`` command, since
   it's outside of the default ``$PATH`` defined by ``cron``. [drybjed]
 
-v0.1.5
-------
 
-*Released: 2016-02-07*
+`debops.nginx v0.1.5`_ - 2016-02-07
+-----------------------------------
+
+.. _debops.nginx v0.1.5: https://github.com/debops/ansible-nginx/compare/v0.1.4...v0.1.5
+
+Added
+~~~~~
 
 - Create a proof-of-concept "solo" version of the role, that does not include
   additional Ansible role dependencies. [drybjed]
 
-- Fix https site detection when using debops.nginx as a dependency.
-  [patrickheeney]
+- Add default ``localhost`` nginx server. It has disabled HTTPS support and can
+  be used by other applications to get the nginx status page locally. [drybjed]
 
-- Remove ``item.pki`` in favor of ``item.ssl`` in the nginx site configuration.
-  [patrickheeney]
+- Add support for getting the client IP address from a custom header, when
+  ``nginx`` is used behind a proxy server. [drybjed]
 
-- Remove the "solo" version of the role, a different concept will be created in
-  its place. [drybjed]
+- Add a way to control if ``debops.nginx`` role automatically adds
+  ``ipv6only=false`` to the configuration to support dual-stack IPv4/IPv6
+  connections. This was the default, now it can be disabled so that users can
+  control the listening ports themselves. [drybjed]
+
+- Add support for ``HTTP/2`` deprecating ``SPDY`` in ``nginx`` 1.9.5.
+  [MatthewMi11er]
+
+- Add support for Automated Certificate Management Environment (ACME)
+  challenges. [drybjed]
+
+- Provide a clean and simple welcome page which is displayed by default if
+  specified server does not exist. The welcome page will be generated only if
+  ``index.html`` is not present in the webroot directory. [drybjed]
+
+- Add a hook script in ``/etc/pki/hooks/`` directory. When certificates used by
+  ``nginx`` are changed, it will reload the webserver to enable them. [drybjed]
+
+Changed
+~~~~~~~
 
 - Switch from using Diffie-Hellman parameters generated by ``debops.pki`` role
   to DH parameters managed by ``debops.dhparam`` role. [drybjed]
@@ -79,12 +230,6 @@ v0.1.5
 - Allow configuration of default ``listen`` and ``listen_ssl`` directives using
   default variables. [drybjed]
 
-- Add default ``localhost`` nginx server. It has disabled HTTPS support and can
-  be used by other applications to get the nginx status page locally. [drybjed]
-
-- Add support for getting the client IP address from a custom header, when
-  ``nginx`` is used behind a proxy server. [drybjed]
-
 - Move configuration of ``debops.nginx`` role dependencies to default
   variables. It can be used to configure firewall and APT preferences using
   Ansible playbooks instead of hardcoding the dependencies in the role itself.
@@ -93,16 +238,8 @@ v0.1.5
   involved application playbooks which depend on ``debops.nginx`` are updated.
   [drybjed]
 
-- Add a way to control if ``debops.nginx`` role automatically adds
-  ``ipv6only=false`` to the configuration to support dual-stack IPv4/IPv6
-  connections. This was the default, now it can be disabled so that users can
-  control the listening ports themselves. [drybjed]
-
 - Update ``localhost`` server to also accept connections on loopback IP
   addresses, so that check plugins like ``check_mk`` can work correctly. [ypid]
-
-- Add support for ``HTTP/2`` deprecating ``SPDY`` in ``nginx`` 1.9.5.
-  [MatthewMi11er]
 
 - Wrap the default HTTP redirect configuration in ``location / {}`` section.
   This allows addition of other location sections as necessary without breaking
@@ -113,9 +250,6 @@ v0.1.5
 - Move the ``root`` parameter to its own macro block and use it separately in
   HTTP and HTTPS server configuration section. This is needed for the HTTP
   configuration to serve files from a sane directory. [drybjed]
-
-- Add support for Automated Certificate Management Environment (ACME)
-  challenges. [drybjed]
 
 - Don't print ``root`` option in the ``nginx`` server configuration if it's set
   as ``False`` (shouldn't be used, but it is checked just in case). [drybjed]
@@ -174,11 +308,6 @@ v0.1.5
   for the default ``www-data`` PHP5 pool used by various services packaged in
   Debian. You might need to update the Ansible inventory. [drybjed]
 
-- Fix bare variables due to deprecation. [drybjed]
-
-- Remove ``nginx_default_root`` variable. A default root directory is managed
-  dynamically in the ``default.conf`` server template. [drybjed]
-
 - The default "welcome page" ``nginx`` server will use the ``welcome`` server
   name, so that role users can use empty name (``[]``) parameter in Ansible
   inventory without the configuration being constantly overwritten in an
@@ -193,23 +322,59 @@ v0.1.5
 - Create the specified ``nginx`` maps and upstreams even when ``nginx_maps``
   and ``nginx_upstreams`` lists are empty. [drybjed]
 
-- Provide a clean and simple welcome page which is displayed by default if
-  specified server does not exist. The welcome page will be generated only if
-  ``index.html`` is not present in the webroot directory. [drybjed]
+Removed
+~~~~~~~
 
-- Add a hook script in ``/etc/pki/hooks/`` directory. When certificates used by
-  ``nginx`` are changed, it will reload the webserver to enable them. [drybjed]
+- Remove the "solo" version of the role, a different concept will be created in
+  its place. [drybjed]
 
-v0.1.4
-------
+- Remove ``item.pki`` in favor of ``item.ssl`` in the nginx site configuration.
+  [patrickheeney]
 
-*Released: 2015-09-24*
+- Remove ``nginx_default_root`` variable. A default root directory is managed
+  dynamically in the ``default.conf`` server template. [drybjed]
+
+Fixed
+~~~~~
+
+- Fix https site detection when using debops.nginx as a dependency.
+  [patrickheeney]
+
+- Fix bare variables due to deprecation. [drybjed]
+
+
+`debops.nginx v0.1.4`_ - 2015-09-24
+-----------------------------------
+
+.. _debops.nginx v0.1.4: https://github.com/debops/ansible-nginx/compare/v0.1.3...v0.1.4
+
+Added
+~~~~~
 
 - Add an option to set ``client_max_body_size`` globally for entire nginx
   server, by setting ``nginx_http_client_max_body_size`` variable in Ansible
   inventory. [drybjed]
 
 - Add DebOps pre-tasks and post-tasks hooks. [drybjed]
+
+- Add an option to set custom index files in nginx configuration. [drybjed]
+
+- Add ``item.redirect_to`` key which lets you redirect connection from all
+  server names listed in ``item.name`` to a specific server name (inverse
+  ``item.redirect_from``). [drybjed]
+
+- Add support for ``nginx`` package from upstream (http://nginx.org/), thanks
+  to Pedro Luis López Sánchez. [drybjed]
+
+- Add ``proxy`` nginx server template. [drybjed]
+
+- Add ``item.ssl_crt``, ``item.ssl_key``, and ``item.ssl_dhparam`` to override
+  pki nginx configuration per site. [patrickheeney]
+
+- Added ``enabled`` to entries in ``item.location_list``. [scibi]
+
+Changed
+~~~~~~~
 
 - Allow to override ``nginx_passenger_root`` and ``nginx_passenger_ruby``
   variables using Ansible inventory variables. [drybjed]
@@ -218,18 +383,9 @@ v0.1.4
   is required to eliminate duplicate IPv6 addresses in case of VLAN use.
   [drybjed]
 
-- Add an option to set custom index files in nginx configuration. [drybjed]
-
-- Add ``item.redirect_to`` key which lets you redirect connection from all
-  server names listed in ``item.name`` to a specific server name (inverse
-  ``item.redirect_from``). [drybjed]
-
 - Move most of the http options from ``/etc/nginx/nginx.conf`` template to
   ``nginx_http_options`` YAML text block for easy modification if necessary.
   [drybjed]
-
-- Add support for ``nginx`` package from upstream (http://nginx.org/), thanks
-  to Pedro Luis López Sánchez. [drybjed]
 
 - By default access to hidden files is blocked in ``nginx`` servers,
   ``item.deny_hidden`` key allows you to disable that. [drybjed]
@@ -251,59 +407,77 @@ v0.1.4
 - Use all available nameservers as OCSP resolvers instead of just the first
   one. User can also override the list of OCSP resolvers if needed. [drybjed]
 
-- Fix an issue where ``nginx`` used SSL configuration when support for it was
-  disabled in ``debops.pki`` (or it was not present). [drybjed]
-
 - Rearrange parts of the configuration templates and add more Jinja blocks to
   be able to remove ``index`` and ``root`` directives programatically.
   [drybjed]
 
-- Add ``proxy`` nginx server template. [drybjed]
+Fixed
+~~~~~
 
-- Add ``item.ssl_crt``, ``item.ssl_key``, and ``item.ssl_dhparam`` to override
-  pki nginx configuration per site. [patrickheeney]
+- Fix an issue where ``nginx`` used SSL configuration when support for it was
+  disabled in ``debops.pki`` (or it was not present). [drybjed]
 
-- Added ``enabled`` to entries in ``item.location_list``. [scibi]
 
-v0.1.3
-------
+`debops.nginx v0.1.3`_ - 2015-03-27
+-----------------------------------
 
-*Released: 2015-03-27*
+.. _debops.nginx v0.1.3: https://github.com/debops/ansible-nginx/compare/v0.1.2...v0.1.3
+
+Added
+~~~~~
+
+- Add support for custom configuration templates using text blocks. [drybjed]
+
+Changed
+~~~~~~~
 
 - Be more explicit while getting the list of nameservers from
   ``/etc/resolv.conf`` [drybjed]
 
-- Add support for custom configuration templates using text blocks. [drybjed]
 
-v0.1.2
-------
+`debops.nginx v0.1.2`_ - 2015-03-13
+-----------------------------------
 
-*Released: 2015-03-13*
+.. _debops.nginx v0.1.2: https://github.com/debops/ansible-nginx/compare/v0.1.1...v0.1.2
+
+Added
+~~~~~
 
 - Add a way to redirect HTTP site to HTTPS conditionally, with configuration
   being set in a separate file. [drybjed]
+
+Changed
+~~~~~~~
 
 - Switch to older version of ``/etc/nginx/fastcgi_params`` when Phusion
   Passenger is enabled, because Passenger packages do not provide
   ``/etc/nginx/fastcgi.conf`` configuration file at the moment. [drybjed]
 
-v0.1.1
-------
 
-*Released: 2015-03-12*
+`debops.nginx v0.1.1`_ - 2015-03-12
+-----------------------------------
+
+.. _debops.nginx v0.1.1: https://github.com/debops/ansible-nginx/compare/v0.1.0...v0.1.1
+
+Added
+~~~~~
 
 - Add support for `Phusion Passenger`_ nginx flavor, using external APT
   packages. [rchady, drybjed]
+
+Changed
+~~~~~~~
 
 - Automatically enable or disable SSL support in ``nginx`` depending on the
   presence or absence of ``debops.pki`` local Ansible facts. [drybjed]
 
 .. _Phusion Passenger: https://www.phusionpassenger.com/
 
-v0.1.0
-------
 
-*Released: 2015-02-11*
+debops.nginx v0.1.0 - 2015-02-11
+--------------------------------
+
+Added
+~~~~~
 
 - First release, add CHANGES.rst [drybjed]
-
