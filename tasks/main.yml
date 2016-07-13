@@ -7,16 +7,16 @@
     install_recommends: False
   with_flattened:
     - [ 'git', 'python-pip' ]
-    - debops_base_packages
-    - debops_ansible_packages
-    - debops_packages
+    - '{{ debops_base_packages }}'
+    - '{{ debops_ansible_packages }}'
+    - '{{ debops_packages }}'
   when: item|d()
 
 - name: Install DebOps from PyPI
   pip:
     name: '{{ item }}'
     state: 'present'
-  with_items: debops_pip_packages
+  with_items: '{{ debops_pip_packages }}'
   notify: [ 'Update DebOps in the background with {{ debops_update_method }}' ]
   when: item|d()
 
