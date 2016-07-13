@@ -7,17 +7,17 @@
     install_recommends: False
   with_flattened:
     - [ 'git', 'python-pip' ]
-    - '{{ debops_base_packages }}'
-    - '{{ debops_ansible_packages }}'
-    - '{{ debops_packages }}'
+    - '{{ debops__base_packages }}'
+    - '{{ debops__ansible_packages }}'
+    - '{{ debops__packages }}'
   when: item|d()
 
 - name: Install DebOps from PyPI
   pip:
     name: '{{ item }}'
     state: 'present'
-  with_items: '{{ debops_pip_packages }}'
-  notify: [ 'Update DebOps in the background with {{ debops_update_method }}' ]
+  with_items: '{{ debops__pip_packages }}'
+  notify: [ 'Update DebOps in the background with {{ debops__update_method }}' ]
   when: item|d()
 
 - name: Configure system-wide DebOps scripts
@@ -29,22 +29,22 @@
     mode: '0644'
 
 - name: Update roles and playbooks
-  become: debops_install_systemwide|bool
+  become: debops__install_systemwide|bool
   command: debops-update
-  when: debops_update_method == 'sync'
+  when: debops__update_method == 'sync'
 
 - name: Clone project repository
-  become: debops_install_systemwide|bool
+  become: debops__install_systemwide|bool
   git:
-    repo: '{{ debops_project_git_repo }}'
-    dest: '{{ debops_project_name if debops_project_name else debops_project_git_repo | basename }}'
+    repo: '{{ debops__project_git_repo }}'
+    dest: '{{ debops__project_name if debops__project_name else debops__project_git_repo | basename }}'
     update: True
-  when: debops_project_git_repo
+  when: debops__project_git_repo
 
 - name: Initialize new project
-  become: debops_install_systemwide|bool
-  command: debops-init '{{ debops_project_name }}'
+  become: debops__install_systemwide|bool
+  command: debops-init '{{ debops__project_name }}'
   args:
-    creates: '{{ debops_project_name }}/.debops.cfg'
-  when: debops_project_name|d() and
-        not debops_project_git_repo
+    creates: '{{ debops__project_name }}/.debops.cfg'
+  when: debops__project_name|d() and
+        not debops__project_git_repo

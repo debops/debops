@@ -9,24 +9,24 @@
 #   DebOps packages
 # -------------------
 
-# .. envvar:: debops_base_packages
+# .. envvar:: debops__base_packages
 #
 # List of APT packages required by DebOps on Ansible Controller.
-debops_base_packages: [ 'python-netaddr', 'python-passlib', 'uuid-runtime' ]
+debops__base_packages: [ 'python-netaddr', 'python-passlib', 'uuid-runtime' ]
 
 
-# .. envvar:: debops_ansible_packages
+# .. envvar:: debops__ansible_packages
 #
 # Ansible should be installed using APT, but available packages might be too
 # old. If you want to install Ansible by other means, you can disable the APT
 # package installation here.
-debops_ansible_packages: [ 'ansible' ]
+debops__ansible_packages: [ 'ansible' ]
 
 
-# .. envvar:: debops_packages
+# .. envvar:: debops__packages
 #
 # List of additional APT packages to install with DebOps.
-debops_packages: []
+debops__packages: []
 
 
 # .. envvar:: debops__apt_preferences__dependent_list
@@ -38,25 +38,25 @@ debops__apt_preferences__dependent_list:
     reason': 'Use Ansible from Debian Backports'
 
 
-# .. envvar:: debops_pip_packages
+# .. envvar:: debops__pip_packages
 #
 # List of packages to install from PyPI using the ``pip`` command.
-debops_pip_packages: [ 'debops' ]
+debops__pip_packages: [ 'debops' ]
 
 
 # ----------------------------------
 #   Playbook and role installation
 # ----------------------------------
 
-# .. envvar:: debops_install_systemwide
+# .. envvar:: debops__install_systemwide
 #
 # Download playbooks and roles to a system-wide location, on installation. If
 # set to ``False`` the playbooks and roles will be installed locally for the
 # current Ansible user.
-debops_install_systemwide: True
+debops__install_systemwide: True
 
 
-# .. envvar:: debops_update_method
+# .. envvar:: debops__update_method
 #
 # Specify the method which should be used to download playbooks and roles:
 #
@@ -67,45 +67,45 @@ debops_install_systemwide: True
 #
 # - ``sync``: immediately sync and only continue after everything is in place
 #
-debops_update_method: '{{ ("batch"
-                           if (ansible_local|d() and ansible_local.atd|d() and
-                               ansible_local.atd.enabled|bool)
-                           else "async") }}'
+debops__update_method: '{{ ("batch"
+                            if (ansible_local|d() and ansible_local.atd|d() and
+                                ansible_local.atd.enabled|bool)
+                            else "async") }}'
 
 
-# .. envvar:: debops_async_timeout
+# .. envvar:: debops__async_timeout
 #
 # Specify timeout of the ``async`` Ansible command that downloads DebOps
 # playbooks and roles, in seconds.
-debops_async_timeout: '{{ (60 * 20) }}'
+debops__async_timeout: '{{ (60 * 20) }}'
 
 
 # ------------------------------------
 #   DebOps system-wide configuration
 # ------------------------------------
 
-# .. envvar:: debops_data_path
+# .. envvar:: debops__data_path
 #
 # Path where DebOps playbooks and roles will be installed system-wide.
-debops_data_path: '{{ (ansible_local.root.share
-                       if (ansible_local|d() and ansible_local.root|d() and
-                           ansible_local.root.share|d())
-                       else "/usr/local/share") + "/debops" }}'
+debops__data_path: '{{ (ansible_local.root.share
+                        if (ansible_local|d() and ansible_local.root|d() and
+                            ansible_local.root.share|d())
+                        else "/usr/local/share") + "/debops" }}'
 
 
 # --------------------------------
 #   DebOps project configuration
 # --------------------------------
 
-# .. envvar:: debops_project_git_repo
+# .. envvar:: debops__project_git_repo
 #
 # Git URL to a DebOps project repository which will be cloned after installing
 # DebOps.
-debops_project_git_repo: ''
+debops__project_git_repo: ''
 
 
-# .. envvar:: debops_project_name
+# .. envvar:: debops__project_name
 #
 # Name of a new DebOps project to initialize or name of the project download
-# directory in case ``debops_project_git_repo`` is defined.
-debops_project_name: ''
+# directory in case envvar:`debops__project_git_repo` is defined.
+debops__project_name: ''

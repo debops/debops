@@ -10,7 +10,7 @@ Initial configuration
 This role installs the ``ansible`` APT package for Ansible support. However, the
 package from official distribution repositories might be outdated or might not
 even exist (yet). Because of that, if you need to, you can disable ``ansible``
-package installation using the ``debops_ansible_packages`` variable.
+package installation using the ``debops__ansible_packages`` variable.
 
 An alternative is to build stable Ansible ``.deb`` package on a spare build
 host and provide it via a local APT repository. That way, the role will
@@ -26,7 +26,7 @@ package, or if the former is not available, ``async`` Ansible task. Keep in mind
 that downloading all of the repositories might take a while and the code won't be
 available for some time after initial Ansible playbook run.
 
-If you cannot accept this behaviour you can set ``debops_update_method`` to
+If you cannot accept this behaviour you can set ``debops__update_method`` to
 ``sync``. This will make the roles and playbooks immediately available after the
 task is run. However, this will introduce a significant delay in every playbook
 run even when no upstream changes will be found. You should only choose this if
