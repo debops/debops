@@ -22,6 +22,9 @@ Added
 
 - Add ``debops.php`` role and its corresponding playbook. [drybjed]
 
+- Add ``debops.environment`` role with it's own playbook, and include it in the
+  ``common.yml`` playbook. [drybjed]
+
 
 `debops-playbooks v0.2.9`_ - 2016-07-07
 ---------------------------------------
