@@ -12,7 +12,13 @@ The current role maintainer is drybjed.
 `debops.nginx master`_ - unreleased
 -----------------------------------
 
-.. _debops.nginx master: https://github.com/debops/ansible-nginx/compare/v0.1.7...master
+.. _debops.nginx master: https://github.com/debops/ansible-nginx/compare/v0.1.8...master
+
+
+`debops.nginx v0.1.8`_ - 2016-07-13
+-----------------------------------
+
+.. _debops.nginx v0.1.8: https://github.com/debops/ansible-nginx/compare/v0.1.7...v0.1.8
 
 Added
 ~~~~~
