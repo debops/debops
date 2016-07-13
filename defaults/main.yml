@@ -150,6 +150,11 @@ nginx_http_auth_basic_name: 'nginx_http'
 # restricted.
 nginx_http_auth_users: []
 
+# Default htpasswd file used for global HTTP Basic Auth accounts
+nginx__http_auth_htpasswd:
+  name: '{{ nginx_http_auth_basic_name }}'
+  users: '{{ nginx_http_auth_users }}'
+
 # Default http { } options
 nginx_http_options: |
   ssl_session_cache shared:SSL:10m;
@@ -386,9 +391,19 @@ nginx_default_auth_basic_realm: 'Access to this website is restricted'
 # passwords between different hosts in case you use nginx in a HA setup
 nginx_htpasswd_secret_path: '{{ secret + "/credentials/" + ansible_fqdn + "/nginx/htpasswd" }}'
 
+# The encryption scheme used by the ``htpasswd`` Ansible module to generate
+# password hashes. You should use schemes supported by ``passlib`` library.
+nginx__htpasswd_crypt_scheme: 'sha512_crypt'
+
 # List of htpasswd files with user accounts managed by 'debops.nginx'. Example
 # entries below
-nginx_htpasswd: [ '{{ nginx_htpasswd_default }}' ]
+nginx__htpasswd: []
+
+nginx__default_htpasswd:
+  - '{{ nginx__http_auth_htpasswd }}'
+
+nginx__dependent_htpasswd: []
+
 
   # Create specified user accounts
   #- name: 'server_domain'
@@ -396,18 +411,13 @@ nginx_htpasswd: [ '{{ nginx_htpasswd_default }}' ]
 
   # Delete specified user accounts
   #- name: 'server_domain'
-  #  users: []
-  #  state: 'absent'
+  #  users: [ 'username1', 'username2@domain' ]
+  #  delete: True
 
   # Delete htpasswd file
   #- name: 'server_domain'
   #  users: []
-  #  delete: True
-
-# Default htpasswd file used for global HTTP Basic Auth accounts
-nginx_htpasswd_default:
-  name: '{{ nginx_http_auth_basic_name }}'
-  users: '{{ nginx_http_auth_users }}'
+  #  state: 'absent'
 
 
 # ---- nginx server access policy ----

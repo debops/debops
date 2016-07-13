@@ -40,6 +40,12 @@ Changed
 - The ``item.enabled`` parameter in servers, maps, upstreams is now optional
   and if not specified, results in ``True``. [drybjed]
 
+- Passwords used by ``htpasswd`` will now be hashes using ``sha512_crypt``
+  scheme. The default HTTP Basic Auth configuration variable is renamed from
+  ``nginx_htpasswd_default`` to ``nginx__http_auth_htpasswd``.  New
+  ``nginx__dependent_htpasswd`` list can be used by other roles to create
+  ``htpasswd`` files as needed. [drybjed]
+
 Deprecated
 ~~~~~~~~~~
 
@@ -75,6 +81,8 @@ Deprecated
   | ``nginx_internal_servers``               | ``nginx__internal_servers``                |
   +------------------------------------------+--------------------------------------------+
   | ``nginx_dependent_servers``              | ``nginx__dependent_servers``               |
+  +------------------------------------------+--------------------------------------------+
+  | ``nginx_htpasswd``                       | ``nginx__htpasswd``                        |
   +------------------------------------------+--------------------------------------------+
 
 - The ``php5`` server and upstream templates are deprecated in favour of
