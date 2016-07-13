@@ -46,6 +46,9 @@ Changed
   ``nginx__dependent_htpasswd`` list can be used by other roles to create
   ``htpasswd`` files as needed. [drybjed]
 
+- You can now specify single server name in ``item.name`` parameter as a string
+  instead of using a list notation. Lists are still supported. [drybjed]
+
 Deprecated
 ~~~~~~~~~~
 

@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-{% set nginx_tpl_domain = item.welcome_domain | d(item.name[0] | d(ansible_domain)) %}
+{% set nginx_tpl_domain = item.welcome_domain | d(item.name if item.name is string else item.name[0] | d(ansible_domain)) %}
 {% if nginx_tpl_domain %}
 {%   set nginx_tpl_welcome_title = '<a href="http://' + nginx_tpl_domain + '/">' + nginx_tpl_domain + '</a>' %}
 {% elif not nginx_tpl_domain %}
