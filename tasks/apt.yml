@@ -30,15 +30,15 @@
 - name: Load default APT mirrors configuration
   include_vars: '{{ item }}'
   with_first_found:
-    - 'apt__default_mirrors_{{ apt__default_mirrors_lookup | lower }}.yml'
-    - 'apt__default_mirrors.yml'
+    - '../vars/apt__default_mirrors_{{ apt__default_mirrors_lookup | lower }}.yml'
+    - '../vars/apt__default_mirrors.yml'
   when: apt__default_mirrors is undefined
 
 - name: Load default APT sources configuration
   include_vars: '{{ item }}'
   with_first_found:
-    - 'apt__default_sources_{{ apt__default_sources_lookup | lower }}.yml'
-    - 'apt__default_sources.yml'
+    - '../vars/apt__default_sources_{{ apt__default_sources_lookup | lower }}.yml'
+    - '../vars/apt__default_sources.yml'
   when: apt__default_sources is undefined
 
 - name: Enable delayed APT configuration
