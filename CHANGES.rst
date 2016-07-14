@@ -1,23 +1,48 @@
 Changelog
 =========
 
-v0.2.1
-------
+**debops.dokuwiki**
 
-*Unreleased*
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
+and `human-readable changelog <http://keepachangelog.com/>`_.
+
+The current role maintainer is drybjed.
+
+
+`debops.dokuwiki master`_ - unreleased
+--------------------------------------
+
+.. _debops.dokuwiki master: https://github.com/debops/ansible-environment/compare/v0.2.1...master
+
+Added
+~~~~~
 
 - Add ``tag`` plugin with required ``pagelist`` plugin for page tagging
   support. [drybjed]
+
+Changed
+~~~~~~~
 
 - Remove hard role dependencies. Configuration of other roles is moved to
   ``defaults/main.yml`` and updated playbook is added in the
   ``debops.dokuwiki`` documentation. Role now uses ``debops.php`` role instead
   of ``debops.php5`` to configure PHP support. [drybjed]
 
-v0.2.0
-------
+- Update documentation and Changelog. [drybjed]
 
-*Released: 2015-09-03*
+
+`debops.dokuwiki v0.2.0`_ - 2015-09-03
+--------------------------------------
+
+.. _debops.dokuwiki v0.2.0: https://github.com/debops/ansible-environment/compare/v0.1.0...v0.2.0
+
+Added
+~~~~~
+
+- Add ``gallery`` DokuWiki plugin to list of default plugins. [drybjed]
+
+Changed
+~~~~~~~
 
 - Use a static, configurable filename for ``nginx`` configuration. This helps
   when wiki domain is changed on an existing installation.
@@ -33,14 +58,13 @@ v0.2.0
 - Add missing ``{% endif %}`` to the ``preload.php.j2`` template, required by
   Jinja engine to correctly generate the file. [drybjed]
 
-- Update the WikiMedia blacklist URL to use ``https://`` protocl. [drybjed]
+- Update the WikiMedia blacklist URL to use ``https://`` protocol. [drybjed]
 
-- Add ``gallery`` DokuWiki plugin to list of default plugins. [drybjed]
 
-v0.1.0
-------
+debops.dokuwiki v0.1.0 - 2015-03-26
+-----------------------------------
 
-*Released: 2015-03-26*
+Added
+~~~~~
 
 - Initial release [drybjed]
-

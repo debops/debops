@@ -7,11 +7,9 @@ Ansible role: debops.dokuwiki
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    copyright
-   credits
    changelog
 
 ..

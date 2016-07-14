@@ -6,16 +6,16 @@ Getting started
 
 By default DokuWiki is installed on a separate system account ``"dokuwiki"``,
 in ``/srv/www/dokuwiki/`` subdirectory and will be accessible on
-``https://wiki.<domain>/``. ``debops.nginx`` and ``debops.php5`` roles are used
+``https://wiki.<domain>/``. ``debops.nginx`` and ``debops.php`` roles are used
 to configure the required environment.
 
 Example inventory
 -----------------
 
-You can install DokuWiki on a host by adding it to ``[debops_dokuwiki]`` group
-in your Ansible inventory::
+You can install DokuWiki on a host by adding it to
+``[debops_service_dokuwiki]`` group in your Ansible inventory::
 
-    [debops_dokuwiki]
+    [debops_service_dokuwiki]
     hostname
 
 Example playbook
@@ -41,4 +41,3 @@ interface.
 Some of the provided plugins, for example ``CodeMirror``, might not be
 installed correctly. In that case, reinstalling them using the admin interface
 should be enough to correctly enable them in DokuWiki.
-
