@@ -12,7 +12,23 @@ The current role maintainer is drybjed.
 `debops.debops master`_ - unreleased
 ------------------------------------
 
-.. _debops.debops master: https://github.com/debops/ansible-debops/compare/v0.2.0...master
+.. _debops.debops master: https://github.com/debops/ansible-debops/compare/v0.2.1...master
+
+
+`debops.debops v0.2.1`_ - 2016-07-14
+------------------------------------
+
+.. _debops.debops v0.2.1: https://github.com/debops/ansible-debops/compare/v0.2.0...v0.2.1
+
+Added
+~~~~~
+
+- Add support for installing Ansible from ``git`` source using a bootstrap script. [drybjed]
+
+Fixed
+~~~~~
+
+- Rename forgotten variable names in handlers. [drybjed]
 
 
 `debops.debops v0.2.0`_ - 2016-07-13
