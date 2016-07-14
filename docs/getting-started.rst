@@ -21,16 +21,11 @@ in your Ansible inventory::
 Example playbook
 ----------------
 
-Here's an example playbook which uses ``debops.dokuwiki`` role to install DokuWiki::
+Here's an example playbook which uses ``debops.dokuwiki`` role to install
+DokuWiki:
 
-    ---
-
-    - name: Install DokuWiki
-      hosts: debops_dokuwiki
-
-      roles:
-        - role: debops.dokuwiki
-          tags: dokuwiki
+.. literalinclude:: playbooks/dokuwiki.yml
+   :language: yaml
 
 
 Post-install steps

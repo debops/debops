@@ -9,6 +9,11 @@ v0.2.1
 - Add ``tag`` plugin with required ``pagelist`` plugin for page tagging
   support. [drybjed]
 
+- Remove hard role dependencies. Configuration of other roles is moved to
+  ``defaults/main.yml`` and updated playbook is added in the
+  ``debops.dokuwiki`` documentation. Role now uses ``debops.php`` role instead
+  of ``debops.php5`` to configure PHP support. [drybjed]
+
 v0.2.0
 ------
 
