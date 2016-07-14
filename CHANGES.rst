@@ -14,6 +14,11 @@ The current role maintainer is drybjed.
 
 .. _debops.debops master: https://github.com/debops/ansible-debops/compare/v0.2.0...master
 
+Added
+~~~~~
+
+- Add support for installing Ansible from ``git`` source using a bootstrap script. [drybjed]
+
 
 `debops.debops v0.2.0`_ - 2016-07-13
 ------------------------------------
