@@ -5,7 +5,7 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_items: dokuwiki_packages
+  with_items: '{{ dokuwiki_packages }}'
 
 - name: Create DokuWiki group
   group:
@@ -41,7 +41,7 @@
     dest: '{{ dokuwiki_git_dest }}'
     bare: True
     update: True
-  sudo_user: '{{ dokuwiki_user }}'
+  become_user: '{{ dokuwiki_user }}'
   register: dokuwiki_register_source
   no_log: True
 
@@ -65,14 +65,14 @@
 - name: Get commit hash of target checkout
   shell: GIT_WORK_TREE={{ dokuwiki_git_checkout }} git rev-parse {{ dokuwiki_git_version }}
          chdir={{ dokuwiki_git_dest }}
-  sudo_user: '{{ dokuwiki_user }}'
+  become_user: '{{ dokuwiki_user }}'
   register: dokuwiki_register_target_branch
   changed_when: dokuwiki_register_target_branch.stdout != dokuwiki_register_source.before
 
 - name: Checkout DokuWiki
   shell: GIT_WORK_TREE={{ dokuwiki_git_checkout }} git checkout -f {{ dokuwiki_git_version }}
          chdir={{ dokuwiki_git_dest }}
-  sudo_user: '{{ dokuwiki_user }}'
+  become_user: '{{ dokuwiki_user }}'
   register: dokuwiki_register_checkout
   when: (dokuwiki_register_source.before is undefined or
          (dokuwiki_register_source.before is defined and
@@ -86,7 +86,7 @@
   file:
     path: '{{ dokuwiki_git_checkout + "/lib/plugins/" + item.dest }}'
     state: 'absent'
-  with_items: dokuwiki_plugins
+  with_items: '{{ dokuwiki_plugins }}'
   when: ((item.dest|d() and item.dest) and (item.state|d() and item.state == 'absent'))
 
 - name: Install specified plugins from git repositories
@@ -95,8 +95,8 @@
     dest: '{{ dokuwiki_git_checkout + "/lib/plugins/" + item.dest }}'
     version: '{{ item.version | default(omit) }}'
     update: True
-  sudo_user: '{{ dokuwiki_user }}'
-  with_items: dokuwiki_plugins
+  become_user: '{{ dokuwiki_user }}'
+  with_items: '{{ dokuwiki_plugins }}'
   when: ((item.repo|d() and item.repo) and (item.dest|d() and item.dest) and
          (item.state is undefined or (item.state|d() and item.state != 'absent')))
   no_log: True
@@ -105,7 +105,7 @@
   file:
     path: '{{ dokuwiki_git_checkout + "/lib/tpl/" + item.dest }}'
     state: 'absent'
-  with_items: dokuwiki_templates
+  with_items: '{{ dokuwiki_templates }}'
   when: ((item.dest|d() and item.dest) and (item.state|d() and item.state == 'absent'))
 
 - name: Install specified templates from git repositories
@@ -114,8 +114,8 @@
     dest: '{{ dokuwiki_git_checkout + "/lib/tpl/" + item.dest }}'
     version: '{{ item.version | default(omit) }}'
     update: True
-  sudo_user: '{{ dokuwiki_user }}'
-  with_items: dokuwiki_templates
+  become_user: '{{ dokuwiki_user }}'
+  with_items: '{{ dokuwiki_templates }}'
   when: ((item.repo|d() and item.repo) and (item.dest|d() and item.dest) and
          (item.state is undefined or (item.state|d() and item.state != 'absent')))
   no_log: True
@@ -153,4 +153,5 @@
 
 - name: Download initial anti-spam blacklist
   command: /etc/cron.weekly/dokuwiki-wikipedia-blacklist
-           creates={{ dokuwiki_git_checkout + "/conf/wordblock.local.conf" }}
+  args:
+    creates: '{{ dokuwiki_git_checkout + "/conf/wordblock.local.conf" }}'

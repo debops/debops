@@ -30,6 +30,11 @@ Changed
 
 - Update documentation and Changelog. [drybjed]
 
+Fixed
+~~~~~
+
+- Fix Ansible 2.1 deprecation warnings. [drybjed]
+
 
 `debops.dokuwiki v0.2.0`_ - 2015-09-03
 --------------------------------------
