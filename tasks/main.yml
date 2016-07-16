@@ -1,0 +1,85 @@
+---
+
+- name: Ensure that /etc/ssh/authorized_keys/ exists
+  file:
+    path: '{{ authorized_keys__path }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: authorized_keys__enabled|bool
+
+- name: Ensure the required groups exist
+  group:
+    name: '{{ item.group | d(item.name) }}'
+    gid: '{{ item.gid | d(omit) }}'
+    system: '{{ (True
+                 if (authorized_keys__system|bool and (item.system is undefined or item.system|bool))
+                 else False) | bool }}'
+    state: 'present'
+  with_flattened:
+    - '{{ authorized_keys__list }}'
+    - '{{ authorized_keys__group_list }}'
+    - '{{ authorized_keys__host_list }}'
+    - '{{ authorized_keys__dependent_list }}'
+    - '{{ sshkeys_list | d([]) }}'
+    - '{{ sshkeys_group_list | d([]) }}'
+    - '{{ sshkeys_host_list | d([]) }}'
+  when: authorized_keys__enabled|bool and item.group|d()
+
+- name: Get list of all groups
+  getent:
+    database: 'group'
+    split: ':'
+  when: authorized_keys__enabled|bool
+
+- name: Get list of all users
+  getent:
+    database: 'passwd'
+    split: ':'
+  when: authorized_keys__enabled|bool
+
+- name: Configure authorized keys for users
+  authorized_key:
+    key: "{{ ((item.sshkeys if item.sshkeys is string else (item.sshkeys | unique | join('\n') | string)) if item.sshkeys|d() else '') +
+             (('https://github.com/' + item.github + '.keys') if item.github|d() else '') }}"
+    key_options: '{{ ((item.options if item.options is string else item.options|join(",")) if item.options is defined else ((authorized_keys__default_options if authorized_keys__default_options is string else authorized_keys__default_options|join(",")) if authorized_keys__default_options != omit else "")) + ((("," + item.key_options) if item.key_options is string else ("," + item.key_options|join(","))) if item.key_options|d() else "") + (("," + authorized_keys__force_options) if authorized_keys__force_options is string else ("," + authorized_keys__force_options|join(","))) }}'
+    path: '{{ authorized_keys__path }}/{{ item.name }}'
+    user: '{{ item.name if item.name in getent_passwd.keys() else "root" }}'
+    state: '{{ item.state | d("present") }}'
+    exclusive: '{{ item.exclusive | d(omit) }}'
+    manage_dir: False
+  with_flattened:
+    - '{{ authorized_keys__list }}'
+    - '{{ authorized_keys__group_list }}'
+    - '{{ authorized_keys__host_list }}'
+    - '{{ authorized_keys__dependent_list }}'
+    - '{{ sshkeys_list | d([]) }}'
+    - '{{ sshkeys_group_list | d([]) }}'
+    - '{{ sshkeys_host_list | d([]) }}'
+  when: (authorized_keys__enabled|bool and
+         (item.name|d() and (item.sshkeys|d() or item.github|d()) and
+          item.file_state|d('present') != 'absent'))
+
+- name: Enforce state of authorized_keys user files
+  file:
+    path:  '{{ authorized_keys__path + "/" + item.name }}'
+    owner: '{{ item.owner if (item.owner|d() and item.owner in getent_passwd.keys()) else "root" }}'
+    group: '{{ (item.group if (item.group|d() and item.group in getent_group.keys()) else (item.name if item.name in getent_group.keys() else omit)) }}'
+    mode:  '{{ item.mode | d("640" if ((item.readonly|d() and item.readonly|bool) or (item.readonly is undefined and authorized_keys__readonly|bool)) else "600") }}'
+    state: '{{ "absent" if (item.file_state|d() and item.file_state == "absent") else omit }}'
+  with_flattened:
+    - '{{ authorized_keys__list }}'
+    - '{{ authorized_keys__group_list }}'
+    - '{{ authorized_keys__host_list }}'
+    - '{{ authorized_keys__dependent_list }}'
+    - '{{ sshkeys_list | d([]) }}'
+    - '{{ sshkeys_group_list | d([]) }}'
+    - '{{ sshkeys_host_list | d([]) }}'
+  when: (authorized_keys__enabled|bool and item.name|d() and
+         ((item.readonly|d() and item.readonly|bool) or item.mode|d() or
+          (item.file_state|d() and item.file_state == 'absent') or
+          (authorized_keys__readonly|bool and (item.sshkeys|d() or item.github|d()) and
+           (item.readonly is undefined or item.readonly|bool) and
+           (item.file_state is undefined or item.file_state != 'absent') and
+           (item.state is undefined or item.state != 'absent'))))

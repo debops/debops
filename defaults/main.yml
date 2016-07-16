@@ -1,0 +1,102 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.authorized_keys default variables [[[
+# ============================================
+
+# .. contents:: Sections
+#    :local:
+
+
+# Main configuration [[[
+# ----------------------
+
+# .. envvar:: authorized_keys__enabled [[[
+#
+# Enable or disable management of SSH public keys in a central location.
+authorized_keys__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: authorized_keys__path [[[
+#
+# Path to the directory where SSH public keys are stored.
+authorized_keys__path: '/etc/ssh/authorized_keys'
+
+                                                                   # ]]]
+# .. envvar:: authorized_keys__readonly [[[
+#
+# Enable or disable support for read-only SSH public keys, which cannot be
+# modified by their respective users.
+authorized_keys__readonly: True
+
+                                                                   # ]]]
+# .. envvar:: authorized_keys__system [[[
+#
+# If enabled, new groups created by the role will be "system" groups with
+# GID < 1000, otherwise new groups will be "normal" groups with GID > 1000.
+authorized_keys__system: True
+                                                                   # ]]]
+                                                                   # ]]]
+# SSH public key options [[[
+# --------------------------
+
+# .. envvar:: authorized_keys__options_map [[[
+#
+# This is a handy YAML dictionary with different sets of possible SSH options
+# that can be used in other variables to add common options to SSH keys.
+authorized_keys__options_map:
+
+  'no-forwarding': [ 'no-agent-forwarding', 'no-port-forwarding',
+                     'no-X11-forwarding' ]
+
+  'strict':        [ 'no-agent-forwarding', 'no-port-forwarding',
+                     'no-X11-forwarding', 'no-pty', 'no-user-rc' ]
+
+                                                                   # ]]]
+# .. envvar:: authorized_keys__default_options [[[
+#
+# List of default SSH options added to all public keys. If it's set to
+# ``{{ omit }}``, no options will be added automatically. The list of options can be
+# overrided by the ``item.options`` parameter.
+authorized_keys__default_options: '{{ omit }}'
+
+                                                                   # ]]]
+# .. envvar:: authorized_keys__force_options [[[
+#
+# This is an alternative list of SSH options which will always be added to all
+# SSH keys managed by the role.
+authorized_keys__force_options: []
+                                                                   # ]]]
+                                                                   # ]]]
+# SSH public key lists [[[
+# ------------------------
+
+# These lists configure SSH public keys in a central location.
+# See :ref:`authorized_keys__ref_list` for more details.
+
+# .. envvar:: authorized_keys__list [[[
+#
+# List of SSH public keys configured on all hosts in Ansible inventory.
+authorized_keys__list: []
+
+                                                                   # ]]]
+# .. envvar:: authorized_keys__group_list [[[
+#
+# List of SSH public keys configured on a group of hosts in Ansible inventory.
+authorized_keys__group_list: []
+
+                                                                   # ]]]
+# .. envvar:: authorized_keys__host_list [[[
+#
+# List of SSH public keys configured on specific hosts in Ansible inventory.
+authorized_keys__host_list: []
+
+                                                                   # ]]]
+# .. envvar:: authorized_keys__dependent_list [[[
+#
+# List of SSH public keys configured by other Ansible roles via depdendent
+# variables.
+authorized_keys__dependent_list: []
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
