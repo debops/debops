@@ -30,6 +30,9 @@ Changed
 
 - Update documentation and Changelog. [drybjed]
 
+- Remove ``no_log: True`` from tasks that clone different ``git`` repositories.
+  [drybjed]
+
 Fixed
 ~~~~~
 

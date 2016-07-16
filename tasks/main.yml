@@ -43,7 +43,6 @@
     update: True
   become_user: '{{ dokuwiki_user }}'
   register: dokuwiki_register_source
-  no_log: True
 
 - name: Create DokuWiki checkout directory
   file:
@@ -99,7 +98,6 @@
   with_items: '{{ dokuwiki_plugins }}'
   when: ((item.repo|d() and item.repo) and (item.dest|d() and item.dest) and
          (item.state is undefined or (item.state|d() and item.state != 'absent')))
-  no_log: True
 
 - name: Remove specified templates if requested
   file:
@@ -118,7 +116,6 @@
   with_items: '{{ dokuwiki_templates }}'
   when: ((item.repo|d() and item.repo) and (item.dest|d() and item.dest) and
          (item.state is undefined or (item.state|d() and item.state != 'absent')))
-  no_log: True
 
 - name: Install maintenance scripts
   template:
