@@ -25,6 +25,16 @@ Added
 - Add ``debops.environment`` role with it's own playbook, and include it in the
   ``common.yml`` playbook. [drybjed]
 
+- Add ``debops.authorized_keys`` role with its own playbook, and include it in
+  the ``common.yml`` playbook. This role replaces the ``debops.sshkeys`` role
+  and is backwards-compatible with it. [drybjed]
+
+Removed
+~~~~~~~
+
+- Remove the ``debops.sshkeys`` role, which is replaced by
+  ``debops.authorized_keys`` role. [drybjed]
+
 
 `debops-playbooks v0.2.9`_ - 2016-07-07
 ---------------------------------------
