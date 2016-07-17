@@ -5,7 +5,9 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_flattened: '{{ dokuwiki_packages }}'
+  with_flattened:
+    - '{{ dokuwiki_base_packages }}'
+    - '{{ dokuwiki_packages }}'
 
 - name: Create DokuWiki group
   group:

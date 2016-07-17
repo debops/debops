@@ -23,6 +23,8 @@ Added
 - ``dokuwiki_plugins_enabled`` variable can be used to enable or disable custom
   plugin and template installation globally. [drybjed]
 
+- Add the ``rst`` DokuWiki plugin. [drybjed]
+
 Changed
 ~~~~~~~
 
