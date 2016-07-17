@@ -134,21 +134,26 @@ class DebOpsAPI:
         """
 
         version_by_pattern_map = {
-            '0.1.0': re.compile(r'debops\.(?P<role_name>[a-z_-]+)\.rst$'),
+            '0.1.0': re.compile(r'^(?P<role_owner>[^.]+)\.(?P<role_name>[a-z_-]+)\.rst$'),
             '0.2.0': re.compile(r'^ansible-(?P<role_name>[a-z_-]+)$'),
         }
 
         for docs_format_version, pattern in version_by_pattern_map.items():
             _re = pattern.search(role_dir_name)
             if _re:
+                role_owner = None
+                if 'role_owner' in _re.groups():
+                    role_owner = _re.group('role_owner')
                 role_name = _re.group('role_name')
-                logger.debug('Detected docs format version {} for {} from {}'.format(
+                logger.debug('Detected docs format version {} for owner: {}, name: {} from {}'.format(
                     docs_format_version,
+                    role_owner,
                     role_name,
                     role_dir_name,
                 ))
                 return {
                     'docs_format_version': docs_format_version,
+                    'role_owner': role_owner,
                     'role_name': role_name,
                 }
 
@@ -303,7 +308,7 @@ class DebOpsAPI:
                 else:
                     # Legacy stuff.
                     role_name = role_dir_info['role_name']
-                    role_owner = self._role_owner
+                    role_owner = role_dir_info['role_owner'] if role_dir_info['role_owner'] else self._role_owner
                     if not role_owner:
                         raise Exception('Default role owner not given but required.')
 
@@ -385,7 +390,7 @@ class DebOpsAPI:
                 role_full_name + '.json'
             )
             with open(role_api_file, 'w') as outfile:
-                json.dump(metadata, outfile)
+                json.dump(metadata, outfile, sort_keys=True)
                 outfile.write('\n')
 
         # API: /roles/
@@ -403,7 +408,7 @@ class DebOpsAPI:
                 role_list = self.get_metadata(metadata).keys()
                 outfile.write('\n'.join(sorted(role_list)) + '\n')
             with open(os.path.join(api_work_dir, 'roles', role_owner + '.json'), 'w') as outfile:
-                json.dump(self.get_metadata(metadata), outfile)
+                json.dump(self.get_metadata(metadata), outfile, sort_keys=True)
             with open(os.path.join(api_work_dir, 'roles', 'count:' + role_owner), 'w') as outfile:
                 outfile.write('{}\n'.format(len(self.get_metadata(metadata).keys())))
 
