@@ -31,6 +31,11 @@ Added
   the :file:`common.yml` playbook. This role replaces the debops.sshkeys_ role
   and is backwards-compatible with it. [drybjed]
 
+Changed
+~~~~~~~
+
+- Update ``debops.dokuwiki`` playbook. [drybjed]
+
 Removed
 ~~~~~~~
 
