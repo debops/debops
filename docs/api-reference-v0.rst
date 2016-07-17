@@ -1,4 +1,4 @@
-API v0 Reference
+API reference v0
 ================
 
 .. contents::
@@ -132,7 +132,7 @@ full role name to meta data (described below) mapping.
   Date of last commit in VCS.
 
 ``vcs_url``
-  HTML URL to the VCS platform.
+  HTML URL to the VCS platform where the repository is hosted.
 
 ``version``
   Latest released version of the repository.
