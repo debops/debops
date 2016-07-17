@@ -36,6 +36,23 @@ from distutils.version import StrictVersion
 
 import git
 import shutil
+from docutils import core
+from docutils.writers.html4css1 import Writer, HTMLTranslator
+
+
+class NoHeaderHTMLTranslator(HTMLTranslator):
+    def __init__(self, document):
+        HTMLTranslator.__init__(self, document)
+        self.head_prefix = ['', '', '', '', '']
+        self.body_prefix = []
+        self.body_suffix = []
+        self.stylesheet = []
+
+
+def reSTify(string):
+    _w = Writer()
+    _w.translator_class = NoHeaderHTMLTranslator
+    return core.publish_string(string, writer=_w)
 
 
 class DebOpsAPI:
@@ -348,13 +365,17 @@ class DebOpsAPI:
         with open(os.path.join(api_work_dir, 'version'), 'w') as outfile:
             outfile.write('{}\n'.format(__version__))
 
+        debops_api_base_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
         with open(os.path.join(api_work_dir, 'license'), 'w') as outfile:
-            debops_api_base_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
             with open(os.path.join(debops_api_base_dir, 'COPYRIGHT'), 'r') as copyright:
                 outfile.write(copyright.read())
             outfile.write('\n\n\n')
             with open(os.path.join(debops_api_base_dir, 'LICENSE'), 'r') as license:
                 outfile.write(license.read())
+
+        with open(os.path.join(api_work_dir, 'README.html'), 'w') as outfile:
+            with open(os.path.join(debops_api_base_dir, 'README.rst'), 'r') as license:
+                outfile.write(reSTify(license.read()).decode('utf-8', 'strict'))
 
         # API: /role/
         for role_full_name, metadata in self.get_metadata().items():
