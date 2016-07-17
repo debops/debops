@@ -47,6 +47,9 @@ Changed
 - The ``dokuwiki_main_domain`` variable is now a string instead of a list.
   [drybjed]
 
+- Rename all role variables from ``dokuwiki_*`` to ``dokuwiki__*`` to move them
+  to their own namespace. [drybjed]
+
 Fixed
 ~~~~~
 

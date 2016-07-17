@@ -6,20 +6,20 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ dokuwiki_base_packages }}'
-    - '{{ dokuwiki_packages }}'
+    - '{{ dokuwiki__base_packages }}'
+    - '{{ dokuwiki__packages }}'
 
 - name: Create DokuWiki group
   group:
-    name: '{{ dokuwiki_group }}'
+    name: '{{ dokuwiki__group }}'
     system: True
     state: 'present'
 
 - name: Create DokuWiki user
   user:
-    name: '{{ dokuwiki_user }}'
-    group: '{{ dokuwiki_group }}'
-    home: '{{ dokuwiki_home }}'
+    name: '{{ dokuwiki__user }}'
+    group: '{{ dokuwiki__group }}'
+    home: '{{ dokuwiki__home }}'
     shell: '/bin/false'
     comment: 'DokuWiki'
     createhome: False
@@ -31,111 +31,111 @@
 
 - name: Create DokuWiki source directory
   file:
-    path: '{{ dokuwiki_src }}'
+    path: '{{ dokuwiki__src }}'
     state: 'directory'
-    owner: '{{ dokuwiki_user }}'
-    group: '{{ dokuwiki_group }}'
+    owner: '{{ dokuwiki__user }}'
+    group: '{{ dokuwiki__group }}'
     mode: '0750'
 
 - name: Clone DokuWiki source from deploy server
   git:
-    repo: '{{ dokuwiki_git_repo }}'
-    dest: '{{ dokuwiki_git_dest }}'
+    repo: '{{ dokuwiki__git_repo }}'
+    dest: '{{ dokuwiki__git_dest }}'
     bare: True
     update: True
-  become_user: '{{ dokuwiki_user }}'
-  register: dokuwiki_register_source
+  become_user: '{{ dokuwiki__user }}'
+  register: dokuwiki__register_source
 
 - name: Create DokuWiki checkout directory
   file:
     path: '{{ item }}'
     state: 'directory'
-    owner: '{{ dokuwiki_user }}'
-    group: '{{ dokuwiki_webserver_user }}'
+    owner: '{{ dokuwiki__user }}'
+    group: '{{ dokuwiki__webserver_user }}'
     mode: '0750'
-  with_items: [ '{{ dokuwiki_www }}', '{{ dokuwiki_git_checkout }}' ]
+  with_items: [ '{{ dokuwiki__www }}', '{{ dokuwiki__git_checkout }}' ]
 
 - name: Prepare DokuWiki worktree
   copy:
-    content: 'gitdir: {{ dokuwiki_git_dest }}'
-    dest: '{{ dokuwiki_git_checkout + "/.git" }}'
-    owner: '{{ dokuwiki_user }}'
-    group: '{{ dokuwiki_group }}'
+    content: 'gitdir: {{ dokuwiki__git_dest }}'
+    dest: '{{ dokuwiki__git_checkout + "/.git" }}'
+    owner: '{{ dokuwiki__user }}'
+    group: '{{ dokuwiki__group }}'
     mode: '0644'
 
 - name: Get commit hash of target checkout
   environment:
-    GIT_WORK_TREE: '{{ dokuwiki_git_checkout }}'
-  shell: git rev-parse {{ dokuwiki_git_version }}
+    GIT_WORK_TREE: '{{ dokuwiki__git_checkout }}'
+  shell: git rev-parse {{ dokuwiki__git_version }}
   args:
-    chdir: '{{ dokuwiki_git_dest }}'
+    chdir: '{{ dokuwiki__git_dest }}'
     warn: False
-  become_user: '{{ dokuwiki_user }}'
-  register: dokuwiki_register_target_branch
-  changed_when: dokuwiki_register_target_branch.stdout != dokuwiki_register_source.before
+  become_user: '{{ dokuwiki__user }}'
+  register: dokuwiki__register_target_branch
+  changed_when: dokuwiki__register_target_branch.stdout != dokuwiki__register_source.before
 
 - name: Checkout DokuWiki
   environment:
-    GIT_WORK_TREE: '{{ dokuwiki_git_checkout }}'
-  shell: git checkout -f {{ dokuwiki_git_version }}
+    GIT_WORK_TREE: '{{ dokuwiki__git_checkout }}'
+  shell: git checkout -f {{ dokuwiki__git_version }}
   args:
-    chdir: '{{ dokuwiki_git_dest }}'
+    chdir: '{{ dokuwiki__git_dest }}'
     warn: False
-  become_user: '{{ dokuwiki_user }}'
-  register: dokuwiki_register_checkout
-  when: (dokuwiki_register_source.before is undefined or
-         (dokuwiki_register_source.before is defined and
-          dokuwiki_register_target_branch.stdout is defined and
-          dokuwiki_register_source.before != dokuwiki_register_target_branch.stdout))
+  become_user: '{{ dokuwiki__user }}'
+  register: dokuwiki__register_checkout
+  when: (dokuwiki__register_source.before is undefined or
+         (dokuwiki__register_source.before is defined and
+          dokuwiki__register_target_branch.stdout is defined and
+          dokuwiki__register_source.before != dokuwiki__register_target_branch.stdout))
 
 
 # ---- Configuration ----
 
 - name: Remove specified plugins if requested
   file:
-    path: '{{ dokuwiki_git_checkout + "/lib/plugins/" + item.dest }}'
+    path: '{{ dokuwiki__git_checkout + "/lib/plugins/" + item.dest }}'
     state: 'absent'
   with_flattened:
-    - '{{ dokuwiki_default_plugins }}'
-    - '{{ dokuwiki_plugins }}'
-  when: (dokuwiki_plugins_enabled|bool and
+    - '{{ dokuwiki__default_plugins }}'
+    - '{{ dokuwiki__plugins }}'
+  when: (dokuwiki__plugins_enabled|bool and
          (item.dest|d() and item.dest) and (item.state|d() and item.state == 'absent'))
 
 - name: Install specified plugins from git repositories
   git:
     repo: '{{ item.repo }}'
-    dest: '{{ dokuwiki_git_checkout + "/lib/plugins/" + item.dest }}'
+    dest: '{{ dokuwiki__git_checkout + "/lib/plugins/" + item.dest }}'
     version: '{{ item.version | d(omit) }}'
     update: True
-  become_user: '{{ dokuwiki_user }}'
+  become_user: '{{ dokuwiki__user }}'
   with_flattened:
-    - '{{ dokuwiki_default_plugins }}'
-    - '{{ dokuwiki_plugins }}'
-  when: (dokuwiki_plugins_enabled|bool and
+    - '{{ dokuwiki__default_plugins }}'
+    - '{{ dokuwiki__plugins }}'
+  when: (dokuwiki__plugins_enabled|bool and
          (item.repo|d() and item.repo) and (item.dest|d() and item.dest) and
          (item.state is undefined or (item.state|d() and item.state != 'absent')))
 
 - name: Remove specified templates if requested
   file:
-    path: '{{ dokuwiki_git_checkout + "/lib/tpl/" + item.dest }}'
+    path: '{{ dokuwiki__git_checkout + "/lib/tpl/" + item.dest }}'
     state: 'absent'
   with_flattened:
-    - '{{ dokuwiki_default_templates }}'
-    - '{{ dokuwiki_templates }}'
-  when: (dokuwiki_plugins_enabled|bool and
+    - '{{ dokuwiki__default_templates }}'
+    - '{{ dokuwiki__templates }}'
+  when: (dokuwiki__plugins_enabled|bool and
          (item.dest|d() and item.dest) and (item.state|d() and item.state == 'absent'))
 
 - name: Install specified templates from git repositories
   git:
     repo: '{{ item.repo }}'
-    dest: '{{ dokuwiki_git_checkout + "/lib/tpl/" + item.dest }}'
+    dest: '{{ dokuwiki__git_checkout + "/lib/tpl/" + item.dest }}'
     version: '{{ item.version | d(omit) }}'
     update: True
-  become_user: '{{ dokuwiki_user }}'
+  become_user: '{{ dokuwiki__user }}'
   with_flattened:
-    - '{{ dokuwiki_default_templates }}'
-    - '{{ dokuwiki_templates }}'
-  when: (dokuwiki_plugins_enabled|bool and
+    - '{{ dokuwiki__default_templates }}'
+    - '{{ dokuwiki__templates }}'
+  when: (dokuwiki__plugins_enabled|bool and
          (item.repo|d() and item.repo) and (item.dest|d() and item.dest) and
          (item.state is undefined or (item.state|d() and item.state != 'absent')))
 
@@ -152,39 +152,39 @@
 
 - name: Create farm base directory
   file:
-    path: '{{ dokuwiki_farm_path }}'
+    path: '{{ dokuwiki__farm_path }}'
     state: 'directory'
-    owner: '{{ dokuwiki_user }}'
-    group: '{{ dokuwiki_webserver_user }}'
+    owner: '{{ dokuwiki__user }}'
+    group: '{{ dokuwiki__webserver_user }}'
     mode: '0750'
-  when: dokuwiki_farm|bool
+  when: dokuwiki__farm|bool
 
 - name: Create farm animal directories
   copy:
     src: 'srv/www/dokuwiki/farm/animal/'
-    dest: '{{ dokuwiki_farm_path + "/" + item + "/" }}'
-    owner: '{{ dokuwiki_user }}'
-    group: '{{ dokuwiki_webserver_user }}'
+    dest: '{{ dokuwiki__farm_path + "/" + item + "/" }}'
+    owner: '{{ dokuwiki__user }}'
+    group: '{{ dokuwiki__webserver_user }}'
     force: False
-  with_items: '{{ dokuwiki_farm_animals }}'
-  when: (dokuwiki_farm|bool and dokuwiki_farm_animals)
+  with_items: '{{ dokuwiki__farm_animals }}'
+  when: (dokuwiki__farm|bool and dokuwiki__farm_animals)
 
 - name: Disable DokuWiki farm if not enabled
   file:
-    path: '{{ dokuwiki_git_checkout + "/inc/preload.php" }}'
+    path: '{{ dokuwiki__git_checkout + "/inc/preload.php" }}'
     state: 'absent'
-  when: (not dokuwiki_farm|bool or not dokuwiki_farm_animals)
+  when: (not dokuwiki__farm|bool or not dokuwiki__farm_animals)
 
 - name: Configure DokuWiki farm preload script
   template:
     src: 'srv/www/dokuwiki/sites/public/inc/preload.php.j2'
-    dest: '{{ dokuwiki_git_checkout + "/inc/preload.php" }}'
-    owner: '{{ dokuwiki_user }}'
-    group: '{{ dokuwiki_group }}'
+    dest: '{{ dokuwiki__git_checkout + "/inc/preload.php" }}'
+    owner: '{{ dokuwiki__user }}'
+    group: '{{ dokuwiki__group }}'
     mode: '0644'
-  when: (dokuwiki_farm|bool and dokuwiki_farm_animals)
+  when: (dokuwiki__farm|bool and dokuwiki__farm_animals)
 
 - name: Download initial anti-spam blacklist
   command: /etc/cron.weekly/dokuwiki-wikipedia-blacklist
   args:
-    creates: '{{ dokuwiki_git_checkout + "/conf/wordblock.local.conf" }}'
+    creates: '{{ dokuwiki__git_checkout + "/conf/wordblock.local.conf" }}'

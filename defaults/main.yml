@@ -11,153 +11,153 @@
 # Basic configuration options [[[
 # -------------------------------
 
-# .. envvar:: dokuwiki_main_domain [[[
+# .. envvar:: dokuwiki__main_domain [[[
 #
 # Default domain which will be used to host the "main" wiki instance.
-dokuwiki_main_domain: 'wiki.{{ ansible_domain }}'
+dokuwiki__main_domain: 'wiki.{{ ansible_domain }}'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_domains [[[
+# .. envvar:: dokuwiki__domains [[[
 #
 # List of domains on which DokuWiki is configured in ``nginx``.
-dokuwiki_domains: '{{ [ dokuwiki_main_domain ] +
-                      dokuwiki_farm_animals|d([]) }}'
+dokuwiki__domains: '{{ [ dokuwiki__main_domain ] +
+                       dokuwiki__farm_animals|d([]) }}'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_nginx_auth_realm [[[
+# .. envvar:: dokuwiki__nginx_auth_realm [[[
 #
 # Basic Auth realm displayed in the login dialog.
-dokuwiki_nginx_auth_realm: 'Wiki access is restricted'
+dokuwiki__nginx_auth_realm: 'Wiki access is restricted'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_nginx_access_policy [[[
+# .. envvar:: dokuwiki__nginx_access_policy [[[
 #
-# Access policy defined using ``debops.nginx`` role, applied to this DokuWiki
-dokuwiki_nginx_access_policy: ''
+# Access policy defined using ``debops.nginx`` role, applied to this DokuWiki.
+dokuwiki__nginx_access_policy: ''
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_nginx_filename [[[
+# .. envvar:: dokuwiki__nginx_filename [[[
 #
 # Name of the ``nginx`` configuration file for DokuWiki website, without the
 # ``.conf`` extension.
-dokuwiki_nginx_filename: 'debops.dokuwiki'
+dokuwiki__nginx_filename: 'debops.dokuwiki'
                                                                    # ]]]
                                                                    # ]]]
 # User, group, app directories [[[
 # --------------------------------
 
-# .. envvar:: dokuwiki_user [[[
+# .. envvar:: dokuwiki__user [[[
 #
 # DokuWiki system user account.
-dokuwiki_user: 'dokuwiki'
+dokuwiki__user: 'dokuwiki'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_group [[[
+# .. envvar:: dokuwiki__group [[[
 #
 # DokuWiki system user group.
-dokuwiki_group: 'dokuwiki'
+dokuwiki__group: 'dokuwiki'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_home [[[
+# .. envvar:: dokuwiki__home [[[
 #
 # DokuWiki home directory.
-dokuwiki_home: '{{ (ansible_local.nginx.www
-                    if (ansible_local|d() and ansible_local.nginx|d() and
-                        ansible_local.nginx.www|d())
-                    else "/srv/www") + "/" + dokuwiki_user }}'
+dokuwiki__home: '{{ (ansible_local.nginx.www
+                     if (ansible_local|d() and ansible_local.nginx|d() and
+                         ansible_local.nginx.www|d())
+                     else "/srv/www") + "/" + dokuwiki__user }}'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_src [[[
+# .. envvar:: dokuwiki__src [[[
 #
 # Base path for git bare repository with DokuWiki source.
-dokuwiki_src: '{{ ansible_local.root.src + "/" + dokuwiki_user }}'
+dokuwiki__src: '{{ ansible_local.root.src + "/" + dokuwiki__user }}'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_www [[[
+# .. envvar:: dokuwiki__www [[[
 #
 # Base web root directory for DokuWiki website.
-dokuwiki_www: '{{ (ansible_local.nginx.www
-                   if (ansible_local|d() and ansible_local.nginx|d() and
-                       ansible_local.nginx.www|d())
-                   else "/srv/www") + "/" + dokuwiki_user }}'
+dokuwiki__www: '{{ (ansible_local.nginx.www
+                    if (ansible_local|d() and ansible_local.nginx|d() and
+                        ansible_local.nginx.www|d())
+                    else "/srv/www") + "/" + dokuwiki__user }}'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_webserver_user [[[
+# .. envvar:: dokuwiki__webserver_user [[[
 #
 # DokuWiki webserver user (needs read-only access to the website code).
-dokuwiki_webserver_user: '{{ ansible_local.nginx.user
-                             if (ansible_local|d() and
-                                 ansible_local.nginx|d() and
-                                 ansible_local.nginx.user|d())
-                             else "www-data" }}'
+dokuwiki__webserver_user: '{{ ansible_local.nginx.user
+                              if (ansible_local|d() and
+                                  ansible_local.nginx|d() and
+                                  ansible_local.nginx.user|d())
+                              else "www-data" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Application sources [[[
 # -----------------------
 
-# .. envvar:: dokuwiki_git_repo [[[
+# .. envvar:: dokuwiki__git_repo [[[
 #
 # DokuWiki source repository.
-dokuwiki_git_repo: 'https://github.com/splitbrain/dokuwiki.git'
+dokuwiki__git_repo: 'https://github.com/splitbrain/dokuwiki.git'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_git_dest [[[
+# .. envvar:: dokuwiki__git_dest [[[
 #
 # DokuWiki source directory on the host.
-dokuwiki_git_dest: '{{ dokuwiki_src + "/" + dokuwiki_git_repo.split("://")[1] }}'
+dokuwiki__git_dest: '{{ dokuwiki__src + "/" + dokuwiki__git_repo.split("://")[1] }}'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_git_version [[[
+# .. envvar:: dokuwiki__git_version [[[
 #
 # DokuWiki git branch to deploy.
-dokuwiki_git_version: 'stable'
+dokuwiki__git_version: 'stable'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_git_checkout [[[
+# .. envvar:: dokuwiki__git_checkout [[[
 #
 # Default path where DokuWiki source files will be deployed.
-dokuwiki_git_checkout: '{{ dokuwiki_www + "/sites/" + dokuwiki_domains[0] + "/public" }}'
+dokuwiki__git_checkout: '{{ dokuwiki__www + "/sites/" + dokuwiki__domains[0] + "/public" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Application plugins, themes, system packages [[[
 # ------------------------------------------------
 
-# .. envvar:: dokuwiki_base_packages [[[
+# .. envvar:: dokuwiki__base_packages [[[
 #
 # List of base APT packages to install for DokuWiki support.
-dokuwiki_base_packages: [ 'python-docutils' ]
+dokuwiki__base_packages: [ 'python-docutils' ]
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_packages [[[
+# .. envvar:: dokuwiki__packages [[[
 #
 # List of additional APT packages to install for DokuWiki support.
-dokuwiki_packages: []
+dokuwiki__packages: []
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_plugins_enabled [[[
+# .. envvar:: dokuwiki__plugins_enabled [[[
 #
 # Enable or disable installation of DokuWiki plugins and templates.
-dokuwiki_plugins_enabled: True
+dokuwiki__plugins_enabled: True
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_plugins [[[
+# .. envvar:: dokuwiki__plugins [[[
 #
 # List of custom DokuWiki plugins to install.
-dokuwiki_plugins: []
+dokuwiki__plugins: []
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_default_plugins [[[
+# .. envvar:: dokuwiki__default_plugins [[[
 #
 # List of default DokuWiki plugins to install.
-dokuwiki_default_plugins: '{{ dokuwiki_plugins_editor +
-                              dokuwiki_plugins_syntax +
-                              dokuwiki_plugins_git }}'
+dokuwiki__default_plugins: '{{ dokuwiki__plugins_editor +
+                               dokuwiki__plugins_syntax +
+                               dokuwiki__plugins_git }}'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_plugins_editor [[[
+# .. envvar:: dokuwiki__plugins_editor [[[
 #
 # DokuWiki plugins related to the text editor.
-dokuwiki_plugins_editor:
+dokuwiki__plugins_editor:
 
   - repo: 'https://github.com/cosmocode/edittable.git'
     dest: 'edittable'
@@ -166,10 +166,10 @@ dokuwiki_plugins_editor:
     dest: 'codemirror'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_plugins_syntax [[[
+# .. envvar:: dokuwiki__plugins_syntax [[[
 #
 # DokuWiki plugins that provide additional wiki syntax.
-dokuwiki_plugins_syntax:
+dokuwiki__plugins_syntax:
 
   - repo: 'https://github.com/cosmocode/dig.git'
     dest: 'dig'
@@ -205,10 +205,10 @@ dokuwiki_plugins_syntax:
     dest: 'rst'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_plugins_git [[[
+# .. envvar:: dokuwiki__plugins_git [[[
 #
 # DokuWiki plugins related to ``git`` support.
-dokuwiki_plugins_git:
+dokuwiki__plugins_git:
 
   - repo: 'https://github.com/kossmac/dokuwiki-plugin-gitlab'
     dest: 'gitlab'
@@ -220,22 +220,22 @@ dokuwiki_plugins_git:
     dest: 'gh'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_templates [[[
+# .. envvar:: dokuwiki__templates [[[
 #
 # List of DokuWiki templates.
-dokuwiki_templates: []
+dokuwiki__templates: []
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_default_templates [[[
+# .. envvar:: dokuwiki__default_templates [[[
 #
 # List of default DokuWiki templates.
-dokuwiki_default_templates: '{{ dokuwiki_templates_vector }}'
+dokuwiki__default_templates: '{{ dokuwiki__templates_vector }}'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_templates_vector [[[
+# .. envvar:: dokuwiki__templates_vector [[[
 #
 # The ``vector`` DokuWiki template.
-dokuwiki_templates_vector:
+dokuwiki__templates_vector:
 
   - repo: 'https://github.com/arsava/dokuwiki-template-vector'
     dest: 'vector'
@@ -244,32 +244,32 @@ dokuwiki_templates_vector:
 # DokuWiki farm [[[
 # -----------------
 
-# .. envvar:: dokuwiki_farm [[[
+# .. envvar:: dokuwiki__farm [[[
 #
 # Enable or disable `DokuWiki farms <https://www.dokuwiki.org/farms>`_
 # (the vhost variant).
-dokuwiki_farm: True
+dokuwiki__farm: True
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_farm_path [[[
+# .. envvar:: dokuwiki__farm_path [[[
 #
 # Path to animals on DokuWiki farm.
-dokuwiki_farm_path: '{{ dokuwiki_www + "/farm" }}'
+dokuwiki__farm_path: '{{ dokuwiki__www + "/farm" }}'
 
                                                                    # ]]]
-# .. envvar:: dokuwiki_farm_animals [[[
+# .. envvar:: dokuwiki__farm_animals [[[
 #
 # List of FQDN domains which will define "farm animals".
-dokuwiki_farm_animals: []
+dokuwiki__farm_animals: []
                                                                    # ]]]
                                                                    # ]]]
 # Other variables [[[
 # -------------------
 
-# .. envvar:: dokuwiki_max_file_size [[[
+# .. envvar:: dokuwiki__max_file_size [[[
 #
 # Maximum upload size, in MB.
-dokuwiki_max_file_size: '30'
+dokuwiki__max_file_size: '30'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration of other Ansible roles [[[
@@ -289,12 +289,12 @@ dokuwiki__php__dependent_packages:
 dokuwiki__php__dependent_pools:
 
   - name: 'dokuwiki'
-    user: '{{ dokuwiki_user }}'
-    group: '{{ dokuwiki_group }}'
+    user: '{{ dokuwiki__user }}'
+    group: '{{ dokuwiki__group }}'
 
     php_admin_values:
-      post_max_size:       '{{ dokuwiki_max_file_size }}M'
-      upload_max_filesize: '{{ dokuwiki_max_file_size }}M'
+      post_max_size:       '{{ dokuwiki__max_file_size }}M'
+      upload_max_filesize: '{{ dokuwiki__max_file_size }}M'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__nginx__dependent_upstreams [[[
@@ -314,18 +314,18 @@ dokuwiki__nginx__dependent_upstreams:
 # Ansible role.
 dokuwiki__nginx__dependent_servers:
 
-  - name: '{{ dokuwiki_domains }}'
-    filename: '{{ dokuwiki_nginx_filename }}'
+  - name: '{{ dokuwiki__domains }}'
+    filename: '{{ dokuwiki__nginx_filename }}'
     by_role: 'debops.dokuwiki'
     type: 'php'
-    root: '{{ dokuwiki_git_checkout }}'
-    access_policy: '{{ dokuwiki_nginx_access_policy }}'
-    auth_basic_realm: '{{ dokuwiki_nginx_auth_realm }}'
+    root: '{{ dokuwiki__git_checkout }}'
+    access_policy: '{{ dokuwiki__nginx_access_policy }}'
+    auth_basic_realm: '{{ dokuwiki__nginx_auth_realm }}'
     index: 'index.html index.htm index.php doku.php'
 
     options: |
       autoindex off;
-      client_max_body_size {{ dokuwiki_max_file_size }}M;
+      client_max_body_size {{ dokuwiki__max_file_size }}M;
       client_body_buffer_size 128k;
 
     location:
