@@ -34,6 +34,14 @@
     system: True
     state: 'present'
 
+- name: Ensure the webserver can access the public directory
+  file:
+    path: '{{ debops_api__home }}'
+    state: 'directory'
+    owner: '{{ debops_api__user }}'
+    group: '{{ debops_api__group }}'
+    mode: '0755'
+
 # ]]]
 
 # DebOps API input data [[[
@@ -113,5 +121,19 @@
     weekday:      '{{ item.weekday      | d(omit) }}'
   with_flattened: '{{ debops_api__cron_entries }}'
   tags: [ 'role::debops_api:cron' ]
+
+# ]]]
+
+# Run initial DebOps API data build [[[
+
+- name: Check if DebOps API data build has run before
+  stat:
+    path: '{{ debops_api__public_api_dir }}'
+  register: debops_api__register_public_api_dir
+
+- name: Run initial DebOps API data build
+  command: '{{ debops_api__cron_script }}'
+  when: not debops_api__register_public_api_dir.stat.exists
+  become_user: '{{ debops_api__user }}'
 
 # ]]]
