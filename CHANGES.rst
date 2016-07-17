@@ -4,7 +4,7 @@ Changelog
 v0.2.5
 ------
 
-*Unreleased*
+*Released: 2016-07-17*
 
 - Fix an issue with ``systemd`` ``network-online.target`` on Debian where it
   starts at the same time as ``network.target``, and doesn't wait for
@@ -13,6 +13,8 @@ v0.2.5
 
 - Fixed Ansible check mode related to the ``ifup-wait-all-auto`` ``systemd``
   service might not being defined. [ypid]
+
+- Use relative paths with ``with_first_found`` lookup. [drybjed]
 
 v0.2.4
 ------
