@@ -23,7 +23,7 @@ seconds once you setup your local APT server once.
 
 It also future proofs your role because you wouldn't have to change anything
 once the next Debian version is officially released. From the role's point of view it's just
-installing an apt package using Ansible's ``apt`` module. It does not care where
+installing an apt package using Ansible's :command:`apt` module. It does not care where
 the apt server is located.
 
 Pick a server

@@ -30,7 +30,7 @@ Configuring a host
 
 The paths are relative to where you ``debops-init`` a new project.
 
-``ansible/inventory/hosts``
+:command:`ansible/inventory/hosts`
 
 ::
 
@@ -45,7 +45,7 @@ dnsmasq.
 
 Basically this means you don't have to forward ports and DNS will work.
 
-``ansible/inventory/host_vars/yourhostname.yml``
+:file:`ansible/inventory/host_vars/yourhostname.yml`
 
 ::
 
@@ -100,14 +100,14 @@ this point you have a bare container ready to do whatever you want.
 If you plan to use containers for development then you'll probably want
 to group your containers together in your inventory.
 
-``ansible/inventory/hosts``
+:command:`ansible/inventory/hosts`
 
 ::
 
     [local_containers]
     mycontainer
 
-Now you could create ``ansible/inventory/group_vars/local_containers.yml`` and
+Now you could create :file:`ansible/inventory/group_vars/local_containers.yml` and
 start doing things that would apply to all local containers.
 
 Perhaps you want to install emacs or use your own dotfiles, etc..
@@ -129,6 +129,6 @@ To transfer files to/from the container you have 2 options.
 The second option requires knowing the dirty details about where the container
 has its configuration and file system stored.
 
-On the LXC host, navigate to ``/var/lib/lxc``, then go into your container's
+On the LXC host, navigate to :file:`/var/lib/lxc`, then go into your container's
 directory. You can find its file system there among other things. You can simply
 ``cp`` directly if your LXC host is local to your main OS.
