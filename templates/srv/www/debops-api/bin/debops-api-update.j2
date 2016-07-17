@@ -26,5 +26,5 @@ git -C {{ debops_api__input_data_repo_dest | quote }} submodule update
    [ '--role-path', debops_api__input_data_role_path, 'linebreak' ] +
    [ '--api-dir', debops_api__public_api_dir ]
 ) %}
-{{ (debops_api__app_repo_dest + "/bin/debops-api") | quote }} {{ debops_api__tpl_app_parameters_flattened
+python{{ debops_api__python_version|string }} {{ (debops_api__app_repo_dest + "/bin/debops-api") | quote }} {{ debops_api__tpl_app_parameters_flattened
       | map("quote") | map("regex_replace", "^linebreak$", "\\\n    ") | join(" ") }}

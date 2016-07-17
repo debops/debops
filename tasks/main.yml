@@ -9,7 +9,10 @@
     state: '{{ "present" if (debops_api__deploy_state == "present") else "absent" }}'
     install_recommends: False
     purge: True
-  with_flattened: '{{ debops_api__base_packages }}'
+  with_flattened:
+    - '{{ debops_api__python3_packages
+          if (debops_api__python_version|int == 3)
+          else debops_api__python2_packages }}'
   tags: [ 'role::debops_api:pkts' ]
 
 # ]]]

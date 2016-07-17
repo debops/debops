@@ -11,13 +11,31 @@
 # Packages and installation [[[
 # -----------------------------
 
-# .. envvar:: debops_api__base_packages [[[
+# .. envvar:: debops_api__python_version [[[
 #
-# List of base packages to install.
-debops_api__base_packages:
+# Python version to use. The required Python 3 modules are not available older
+# distribution releases, the Python 2 modules on the other hand are.
+debops_api__python_version: '{{
+    3 if (ansible_distribution == "Debian" and ansible_distribution_major_version >= 8)
+    else 2 }}'
+                                                                   # ]]]
+
+# .. envvar:: debops_api__python3_packages [[[
+#
+# List of Python 3 packaged modules to install.
+debops_api__python3_packages:
   - 'python3-yaml'
   - 'python3-git'
   - 'python3-docutils'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__python2_packages [[[
+#
+# List of Python 2 packaged modules to install.
+debops_api__python2_packages:
+  - 'python-yaml'
+  - 'python-git'
+  - 'python-docutils'
 
                                                                    # ]]]
 # .. envvar:: debops_api__deploy_state [[[
