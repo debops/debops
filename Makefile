@@ -12,5 +12,8 @@ check: tests/api_data
 	## Fail when git working directory for the Make prerequisites has changed.
 	git diff --quiet --exit-code HEAD -- $^
 
-tests/api_data: bin/debops-api FORCE_MAKE
-	"$<" -r tests/example_roles/ -D 'http://docs.debops.org/en/latest/ansible/roles/ansible-{name}/docs/index.html' -a "$@" -o debops
+tests/api_data: bin/debops-api tests/example_roles FORCE_MAKE
+	"$<" --test-mode --role-path tests/example_roles/ \
+		--docs-url-pattern 'http://docs.debops.org/en/latest/ansible/roles/ansible-{name}/docs/index.html' \
+		--role-owner debops \
+		--api-dir "$@"

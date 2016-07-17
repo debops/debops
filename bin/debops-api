@@ -26,6 +26,7 @@ debops-api - Machine readable metadata about the DebOps Project.
 """
 
 import os
+import sys
 import json
 import yaml
 import re
@@ -61,10 +62,12 @@ class DebOpsAPI:
         self,
         docs_url_pattern=None,
         role_owner=None,
+        test_mode=False,
     ):
 
         self._docs_url_pattern = docs_url_pattern
         self._role_owner = role_owner
+        self._test_mode = test_mode
 
         self._metadata = {}
         self._roles = {}
@@ -211,6 +214,10 @@ class DebOpsAPI:
 
         version = re.sub(r'^v', '', version)
         #  logger.debug(version)
+
+        if self._test_mode:
+            # Fake committer date in test mode
+            last_committer_date = '1970-01-01 00:00:00 +0000'
 
         return {
             'last_committer_date': last_committer_date,
@@ -469,7 +476,18 @@ if __name__ == '__main__':
         help="Documentation URL for each role.",
         default=None,
     )
+    args_parser.add_argument(
+        '-t', '--test-mode',
+        help="Make the output reproducible by normalizing changes peaces like"
+        "timestamps.",
+        action='store_true',
+        default=False,
+    )
     args = args_parser.parse_args()
+    if not args.github_api_response_file and not args.role_path:
+        args_parser.print_help()
+        sys.exit(1)
+
     logger = logging.getLogger(__file__)
     logging.basicConfig(
         format='%(levelname)s: %(message)s',
@@ -479,6 +497,7 @@ if __name__ == '__main__':
     debops_metadata = DebOpsAPI(
         docs_url_pattern=args.docs_url_pattern,
         role_owner=args.role_owner,
+        test_mode=args.test_mode,
     )
 
     if args.github_api_response_file:
