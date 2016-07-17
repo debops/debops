@@ -1,4 +1,4 @@
-.PHONY: check FORCE_MAKE
+.PHONY: check FORCE_MAKE pre-commit-hook
 
 ## help {{{
 .PHONY: list
@@ -17,3 +17,6 @@ tests/api_data: bin/debops-api tests/example_roles FORCE_MAKE
 		--docs-url-pattern 'http://docs.debops.org/en/latest/ansible/roles/ansible-{name}/docs/index.html' \
 		--role-owner debops \
 		--api-dir "$@"
+
+pre-commit-hook: hooks/pre-commit
+	ln -srf "$<" "$(shell git rev-parse --git-dir)/hooks"
