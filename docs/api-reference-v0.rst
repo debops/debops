@@ -120,11 +120,13 @@ full role name to meta data (described below) mapping.
 ``test_suite_url``
   HTML URL to test suite for this repository.
 
-``travis_badge``
-  Image URL the build badge of for Travis CI.
+``ci_badge_url``
+  Image URL the build badge of the continues integration system on which the
+  repository is tested.
 
-``travis_url``
-  HTML URL for Travis CI.
+``ci_url``
+  HTML URL for the continues integration system on which the repository is
+  tested.
 
 ``vcs_last_committer_date``
   Date of last commit in VCS.
