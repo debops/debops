@@ -45,12 +45,12 @@
     mode: '0644'
 
 - name: Update roles and playbooks
-  become: debops__install_systemwide|bool
+  become: '{{ debops__install_systemwide|bool }}'
   command: debops-update
   when: debops__update_method == 'sync'
 
 - name: Clone project repository
-  become: debops__install_systemwide|bool
+  become: '{{ debops__install_systemwide|bool }}'
   git:
     repo: '{{ debops__project_git_repo }}'
     dest: '{{ debops__project_name if debops__project_name else debops__project_git_repo | basename }}'
@@ -58,7 +58,7 @@
   when: debops__project_git_repo
 
 - name: Initialize new project
-  become: debops__install_systemwide|bool
+  become: '{{ debops__install_systemwide|bool }}'
   command: debops-init '{{ debops__project_name }}'
   args:
     creates: '{{ debops__project_name }}/.debops.cfg'
