@@ -1,7 +1,15 @@
-debops-api
-==========
+`DebOps API`_
+~~~~~~~~~~~~~
+
+|Travis CI|
+
+.. |Travis CI| image:: https://img.shields.io/travis/debops/debops-api.svg?style=flat
+   :target: https://travis-ci.org/debops/debops-api
 
 The public DebOps API is used internally by the DebOps Project but can also be
 used by third parties.
 
-Refer to the `DebOps API documentation for more details <http://docs.debops.org/en/latest/debops-api/docs/index.html>`_.
+Refer to the `DebOps API documentation`_ for more details.
+
+.. _DebOps API: https://api.debops.org/
+.. _DebOps API documentation: http://docs.debops.org/en/latest/debops-api/docs/index.html

@@ -9,8 +9,6 @@ DebOps API
    introduction
    getting-started
    api-reference-v0
-   setup
-   defaults
    copyright
    changelog
 
