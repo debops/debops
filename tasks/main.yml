@@ -1,0 +1,10 @@
+---
+
+- name: Ensure specified packages are in there desired state
+  apt:
+    name: '{{ item }}'
+    state: '{{ "latest" if (debops_api__deploy_state == "present") else "absent" }}'
+    install_recommends: False
+    purge: True
+  with_flattened: '{{ debops_api__base_packages }}'
+  tags: [ 'role::debops_api:pkts' ]
