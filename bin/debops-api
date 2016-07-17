@@ -209,7 +209,9 @@ class DebOpsAPI:
 
         try:
             version = g.describe('--abbrev=0', '--tags')
-        except git.exc.GitCommandError:
+        except:
+            # Did not work on Travis test.
+            # except git.exc.GitCommandError:
             version = '0.0.0'
 
         version = re.sub(r'^v', '', version)
