@@ -241,6 +241,58 @@ class DebOpsAPI:
 
         return role_metadata
 
+    def _get_normalized_meta_ansigenome(self, meta_ansigenome):
+        """
+        Returns normalized meta/ansigenome.yml data intended for inclusion in
+        self._metadata.
+        """
+
+        metadata = {}
+
+        if 'authors' in meta_ansigenome:
+            metadata.setdefault('authors', [])
+
+            for author_item in meta_ansigenome['authors']:
+                metadata['authors'].append({
+                    'name': author_item['name'],
+                    'nick': author_item['github'],
+                })
+
+        return metadata
+
+    def _get_normalized_meta_main(self, meta_main):
+        """
+        Returns normalized meta/main.yml data intended for inclusion in
+        self._metadata.
+        """
+
+        metadata = {}
+        if 'galaxy_info' not in meta_main:
+            return metadata
+
+        license_map = {
+            'GNU General Public License v3': 'GPL-3.0',
+        }
+        skip_keys = [
+            'company',
+            'author',
+        ]
+        rename_keys = {
+            'galaxy_tags': 'tags',
+        }
+
+        for k, v in meta_main['galaxy_info'].items():
+            if k == 'license':
+                if v in license_map:
+                    v = license_map[v]
+            if k in skip_keys:
+                continue
+            k = rename_keys.get(k, k)
+
+            metadata[k] = v
+
+        return metadata
+
     def gen_role_metadata(self):
         """
         Generate metadata based on already present metadata.
@@ -261,6 +313,10 @@ class DebOpsAPI:
                     role_name,
                 ),
                 'test_suite_url': 'https://github.com/debops/test-suite/tree/master/ansible-{}'.format(
+                    role_name,
+                ),
+                'galaxy_url': 'https://galaxy.ansible.com/{}/{}'.format(
+                    role_owner,
                     role_name,
                 ),
             }
@@ -311,6 +367,15 @@ class DebOpsAPI:
                         'role_owner': role_owner,
                         'role_name': role_name,
                     }
+
+                    if 'meta' in role_metadata:
+                        metadata.update(
+                            self._get_normalized_meta_main(role_metadata['meta'])
+                        )
+                    if 'ansigenome' in role_metadata:
+                        metadata.update(
+                            self._get_normalized_meta_ansigenome(role_metadata['ansigenome'])
+                        )
 
                 else:
                     # Legacy stuff.
