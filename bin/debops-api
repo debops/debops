@@ -102,7 +102,7 @@ class DebOpsAPI:
 
         api_response = json.load(api_res_encoded_json)
         for repo in api_response:
-            _re = re.match(r'ansible-(?P<role_name>[a-z_-]+)+$', repo['name'])
+            _re = re.match(r'ansible-(?P<role_name>[a-z0-9_-]+)+$', repo['name'])
             if not _re:
                 continue
 
@@ -137,8 +137,8 @@ class DebOpsAPI:
         """
 
         version_by_pattern_map = {
-            '0.1.0': re.compile(r'^(?P<role_owner>[^.]+)\.(?P<role_name>[a-z_-]+)\.rst$'),
-            '0.2.0': re.compile(r'^ansible-(?P<role_name>[a-z_-]+)$'),
+            '0.1.0': re.compile(r'^(?P<role_owner>[^.]+)\.(?P<role_name>[a-z0-9_-]+)\.rst$'),
+            '0.2.0': re.compile(r'^ansible-(?P<role_name>[a-z0-9_-]+)$'),
         }
 
         for docs_format_version, pattern in version_by_pattern_map.items():
