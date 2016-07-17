@@ -9,6 +9,10 @@ v0.1.3
 - Allow to use a global set of username and password in smtp_sasl_password_map
   instead of the per-host passwords. [drybjed]
 
+- Disable task that generates ``hash_aliases`` because they currently aren't
+  used by the role and Ansible 2.2 stops role execution on missing templates.
+  [drybjed]
+
 v0.1.2
 ------
 
