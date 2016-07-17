@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# {{ ansible_managed }}
+
 # Clean up DokuWiki installation
 
 function cleanup()
@@ -25,9 +27,9 @@ function cleanup()
 }
 
 # Cleanup DokuWiki installations (path to datadir, number of days)
-cleanup {{ dokuwiki_git_checkout + "/data" }} 180
-{% if dokuwiki_farm is defined and dokuwiki_farm %}
-{% for animal in dokuwiki_farm_animals %}
-cleanup {{ dokuwiki_farm_path + "/" + animal + "/data" }} 180
+cleanup {{ dokuwiki__git_checkout + "/data" }} 180
+{% if dokuwiki__farm|bool %}
+{% for animal in dokuwiki__farm_animals %}
+cleanup {{ dokuwiki__farm_path + "/" + animal + "/data" }} 180
 {% endfor %}
 {% endif %}

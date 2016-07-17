@@ -11,6 +11,15 @@ configure multiple DokuWiki instances with shared base installation using
 .. _debops.nginx: https://github.com/debops/ansible-nginx/
 .. _DokuWiki vhost farm: https://www.dokuwiki.org/farms
 
+Installation
+------------
+
+This role requires at least Ansible ``v2.0.0``. To install it, run:
+
+.. code-block:: console
+
+   user@host:~$ ansible-galaxy install debops.dokuwiki
+
 ..
  Local Variables:
  mode: rst
