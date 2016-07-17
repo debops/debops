@@ -8,8 +8,8 @@ list:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^(:?[^[:alnum:]]|FORCE_MAKE$$)' -e '^$@$$' | sed 's/^/    /'
 ## }}}
 
+## Fail when git working directory for the Make prerequisites has changed.
 check: tests/api_data
-	## Fail when git working directory for the Make prerequisites has changed.
 	git diff --quiet --exit-code HEAD -- $^
 
 tests/api_data: bin/debops-api tests/example_roles FORCE_MAKE
