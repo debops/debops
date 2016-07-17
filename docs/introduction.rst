@@ -3,13 +3,13 @@ Introduction
 
 .. include:: includes/all.rst
 
-The ``debops.debops_api`` role allows you to setup and mange
+``debops.debops_api`` can be used to setup the `DebOps API`_.
 
 
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v1.9.0``. To install it, run::
+This role requires at least Ansible ``v2.0.0``. To install it, run::
 
     ansible-galaxy install debops.debops_api
 
