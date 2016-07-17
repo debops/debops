@@ -68,7 +68,7 @@ Here are a few services that are available
 Overview of how playbooks work within DebOps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There's a ``common.yml`` playbook which gets ran on every host except localhost.
+There's a :file:`common.yml` playbook which gets ran on every host except localhost.
 This includes standard services like sshd and ferm. The full list can be
 found `here <https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml>`_.
 

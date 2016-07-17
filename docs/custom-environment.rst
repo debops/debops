@@ -1,6 +1,8 @@
 Playbook environment variables
 ==============================
 
+.. include:: includes/all.rst
+
 In certain situations, for example on a network where direct Internet access is
 not allowed and users are required to use a HTTP proxy, you might need to
 define a custom set of environment variables for Ansible to execute playbooks.
@@ -24,16 +26,16 @@ playbooks included in this repository. The more specific variables override the
 more general ones, just as normal Ansible variables.
 
 The environment variables defined using these YAML dictionaries have only
-effect during the ``ansible-playbook`` run. Normal ``ansible`` commands as well
+effect during the :command:`ansible-playbook` run. Normal :command:`ansible` commands as well
 as commands/services executed on remote hosts will not use them. To configure
 desired environment variables on remote hosts, you might wan to check the
-``debops.resources`` Ansible role.
+debops.resources_ Ansible role.
 
 Examples
 --------
 
 To configure a HTTP proxy which should be used by Ansible roles on all hosts,
-add in the ``ansible/inventory/group_vars/all/inventory.yml`` file:
+add in the :file:`ansible/inventory/group_vars/all/inventory.yml` file:
 
 .. code-block:: yaml
 
@@ -57,4 +59,3 @@ contain the following code:
 
        - role: custom-role
          tags: [ 'role::custom' ]
-
