@@ -1673,41 +1673,19 @@ Role updates
   backwards compatibility with `Ubuntu 12.04 LTS (Precise Pangolin)`_
   distribution).
 
-.. _6to4: https://en.wikipedia.org/wiki/6to4
-.. _6to4 tunnel: https://en.wikipedia.org/wiki/6to4
-.. _Ansible Galaxy: https://galaxy.ansible.com/
 .. _Ansible LDAP modules: https://bitbucket.org/psagers/ansible-ldap
 .. _commit message: https://github.com/debops/ansible-gitlab_ci/commit/64eb393569267f4eebd9264580d9c1fa22dc32e0
 .. _CVE-2013-4547: https://security-tracker.debian.org/tracker/CVE-2013-4547
 .. _Debian Bug #630625: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=630625
 .. _Debian bug #718639: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=718639
-.. _DebOps Galaxy page: https://galaxy.ansible.com/list#/users/6081
-.. _DebOps: http://debops.org/
-.. _DebOps mailing list: https://groups.io/org/groupsio/debops
-.. _Dovecot: http://dovecot.org/
-.. _Elasticsearch: http://elasticsearch.org/
-.. _Etherpad: http://etherpad.org/
-.. _ferm: http://ferm.foo-projects.org/
-.. _ginas: https://github.com/ginas/ginas/
-.. _GitLab CI: https://about.gitlab.com/gitlab-ci/
-.. _GitLab: https://about.gitlab.com/
-.. _Go language: http://golang.org/
-.. _groups.io: https://groups.io/
 .. _Hartmut Goebel: https://github.com/htgoebel
 .. _htgoebel's suggestion: https://github.com/debops/ansible-postfix/issues/11#issuecomment-64113942
-.. _HWRaid: http://hwraid.le-vert.net/
 .. _latest commit: https://github.com/debops/ansible-gitlab_ci_runner/commit/b46089356e48b4f6719fd9eb64a5684ed0d55ae3
 .. _lxc package changelog: http://metadata.ftp-master.debian.org/changelogs/main/l/lxc/testing_changelog
 .. _Maciej Delmanowski: https://github.com/drybjed/
-.. _nginx map module: http://nginx.org/en/docs/http/ngx_http_map_module.html
 .. _Nick Janetakis: https://github.com/nickjj
-.. _Postfix: http://www.postfix.org/
 .. _previous Changelog: https://github.com/ginas/ginas/blob/master/CHANGELOG.md
-.. _Raspbian: http://raspbian.org/
-.. _RedRampage: https://github.com/redrampage/
-.. _Salt: http://saltstack.com/
 .. _separate dist-upgrade label: https://github.com/debops/debops-playbooks/labels/dist-upgrade
 .. _SMTP client SASL authentication: http://www.postfix.org/SASL_README.html#client_sasl
 .. _Travis-CI: https://travis-ci.org/
-.. _Ubuntu 12.04 LTS (Precise Pangolin): http://releases.ubuntu.com/12.04/
 .. _with_lists plugin: https://github.com/debops/debops-playbooks/blob/master/playbooks/lookup_plugins/lists.py
