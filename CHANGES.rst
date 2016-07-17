@@ -12,7 +12,13 @@ The current role maintainer is drybjed.
 `debops.dokuwiki master`_ - unreleased
 --------------------------------------
 
-.. _debops.dokuwiki master: https://github.com/debops/ansible-environment/compare/v0.2.1...master
+.. _debops.dokuwiki master: https://github.com/debops/ansible-environment/compare/v0.3.0...master
+
+
+`debops.dokuwiki v0.3.0`_ - 2016-07-17
+--------------------------------------
+
+.. _debops.dokuwiki v0.3.0: https://github.com/debops/ansible-environment/compare/v0.2.0...v0.3.0
 
 Added
 ~~~~~
