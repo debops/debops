@@ -42,6 +42,9 @@ Changed
   variables, so that ``dokuwiki_plugins`` and ``dokuwki_templates`` can be used
   in inventory. [drybjed]
 
+- The ``dokuwiki_main_domain`` variable is now a string instead of a list.
+  [drybjed]
+
 Fixed
 ~~~~~
 

@@ -14,13 +14,13 @@
 # .. envvar:: dokuwiki_main_domain [[[
 #
 # Default domain which will be used to host the "main" wiki instance.
-dokuwiki_main_domain: [ 'wiki.{{ ansible_domain }}' ]
+dokuwiki_main_domain: 'wiki.{{ ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki_domains [[[
 #
 # List of domains on which DokuWiki is configured in ``nginx``.
-dokuwiki_domains: '{{ dokuwiki_main_domain +
+dokuwiki_domains: '{{ [ dokuwiki_main_domain ] +
                       dokuwiki_farm_animals|d([]) }}'
 
                                                                    # ]]]
