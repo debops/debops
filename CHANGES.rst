@@ -20,6 +20,9 @@ Added
 - Add ``tag`` plugin with required ``pagelist`` plugin for page tagging
   support. [drybjed]
 
+- ``dokuwiki_plugins_enabled`` variable can be used to enable or disable custom
+  plugin and template installation globally. [drybjed]
+
 Changed
 ~~~~~~~
 
@@ -32,6 +35,12 @@ Changed
 
 - Remove ``no_log: True`` from tasks that clone different ``git`` repositories.
   [drybjed]
+
+- List of tasks in the role is reorganized and cleaned up. [drybjed]
+
+- Default list of DokuWiki plugins and templates are moved to separate
+  variables, so that ``dokuwiki_plugins`` and ``dokuwki_templates`` can be used
+  in inventory. [drybjed]
 
 Fixed
 ~~~~~

@@ -128,12 +128,24 @@ dokuwiki_git_checkout: '{{ dokuwiki_www + "/sites/" + dokuwiki_domains[0] + "/pu
 dokuwiki_packages: []
 
                                                                    # ]]]
+# .. envvar:: dokuwiki_plugins_enabled
+#
+# Enable or disable installation of DokuWiki plugins and templates.
+dokuwiki_plugins_enabled: True
+
+                                                                   # ]]]
 # .. envvar:: dokuwiki_plugins [[[
 #
-# List of DokuWiki plugins to install.
-dokuwiki_plugins: '{{ dokuwiki_plugins_editor +
-                      dokuwiki_plugins_syntax +
-                      dokuwiki_plugins_git }}'
+# List of custom DokuWiki plugins to install.
+dokuwiki_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: dokuwiki_default_plugins [[[
+#
+# List of default DokuWiki plugins to install.
+dokuwiki_default_plugins: '{{ dokuwiki_plugins_editor +
+                              dokuwiki_plugins_syntax +
+                              dokuwiki_plugins_git }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki_plugins_editor [[[
@@ -202,9 +214,19 @@ dokuwiki_plugins_git:
 # .. envvar:: dokuwiki_templates [[[
 #
 # List of DokuWiki templates.
-dokuwiki_templates: '{{ dokuwiki_templates_default }}'
+dokuwiki_templates: []
 
-dokuwiki_templates_default:
+                                                                   # ]]]
+# .. envvar:: dokuwiki_default_templates [[[
+#
+# List of default DokuWiki templates.
+dokuwiki_default_templates: '{{ dokuwiki_templates_vector }}'
+
+                                                                   # ]]]
+# .. envvar:: dokuwiki_templates_vector [[[
+#
+# The ``vector`` DokuWiki template.
+dokuwiki_templates_vector:
 
   - repo: 'https://github.com/arsava/dokuwiki-template-vector'
     dest: 'vector'
@@ -327,6 +349,6 @@ dokuwiki__nginx__dependent_servers:
       fastcgi_buffers               4 256k;
       fastcgi_busy_buffers_size       256k;
       fastcgi_temp_file_write_size    256k;
-                                                                   # ]]]
-                                                                   # ]]]
-                                                                   # ]]]
+# ]]]
+# ]]]
+# ]]]
