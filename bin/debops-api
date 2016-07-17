@@ -428,6 +428,8 @@ class DebOpsAPI:
         a atomic operation and to ensure that the API returns consistent data.
         """
 
+        api_work_root_dir = api_dir
+        api_dir = os.path.join(api_dir, 'v0')
         api_work_dir = api_dir + '_new'
 
         try:
@@ -450,9 +452,12 @@ class DebOpsAPI:
             with open(os.path.join(debops_api_base_dir, 'LICENSE'), 'r') as license:
                 outfile.write(license.read())
 
-        with open(os.path.join(api_work_dir, 'README.html'), 'w') as outfile:
-            with open(os.path.join(debops_api_base_dir, 'README.rst'), 'r') as license:
-                outfile.write(reSTify(license.read()).decode('utf-8', 'strict'))
+        with open(os.path.join(debops_api_base_dir, 'README.rst'), 'r') as license:
+            readme_html_string = reSTify(license.read()).decode('utf-8', 'strict')
+            with open(os.path.join(api_work_root_dir, 'README.html'), 'w') as outfile:
+                outfile.write(readme_html_string)
+            with open(os.path.join(api_work_dir, 'README.html'), 'w') as outfile:
+                outfile.write(readme_html_string)
 
         # API: /role/
         for role_full_name, metadata in self.get_metadata().items():

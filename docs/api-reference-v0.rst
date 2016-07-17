@@ -1,8 +1,10 @@
-API Reference
-=============
+API v0 Reference
+================
 
 .. contents::
    :local:
+
+API base URL: https://api.debops.org/v0
 
 HTTP GET queries
 ----------------
@@ -10,37 +12,38 @@ HTTP GET queries
 /version
 ~~~~~~~~
 
-Returns the current version of the DebOps API as raw string.
+Returns the current version (including minor version and patch version) of the
+DebOps API as raw string.
 
-Example: https://api.debops.org/version
+Example: https://api.debops.org/v0/version
 
 /license
 ~~~~~~~~
 
 Returns license information about the API.
 
-Example: https://api.debops.org/license
+Example: https://api.debops.org/v0/license
 
 /role/<role_owner>.<role_name>.json
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Returns the metadata for the given Ansible role.
 
-Example: https://api.debops.org/role/debops.unattended_upgrades.json
+Example: https://api.debops.org/v0/role/debops.unattended_upgrades.json
 
 /roles/<role_owner>.json
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Returns the metadata for all Ansible role of the given role owner.
 
-Example: https://api.debops.org/roles/debops.json
+Example: https://api.debops.org/v0/roles/debops.json
 
 /roles/<role_owner>.list
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Returns a simple list for all Ansible roles of the given role owner.
 
-Example: https://api.debops.org/roles/debops.list
+Example: https://api.debops.org/v0/roles/debops.list
 
 /roles/count[:<owner>]
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -50,8 +53,8 @@ The ``[:<owner>]`` is optional and allows to limit the count to the role owner.
 
 Examples:
 
-* https://api.debops.org/roles/count
-* https://api.debops.org/roles/count:debops
+* https://api.debops.org/v0/roles/count
+* https://api.debops.org/v0/roles/count:debops
 
 Role metadata JSON format
 -------------------------
