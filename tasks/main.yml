@@ -1,5 +1,12 @@
 ---
 
-- name: Install Java Open JDK
-  apt: pkg=openjdk-{{ item }} state=present install_recommends=False
-  with_items: java_versions
+- name: Install Java packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ java__default_packages }}'
+    - '{{ java__packages }}'
+    - '{{ java__group_packages }}'
+    - '{{ java__host_packages }}'
+    - '{{ java__dependent_packages }}'
