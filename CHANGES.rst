@@ -1,18 +1,50 @@
 Changelog
 =========
 
-v0.1.2
-------
+**debops.mailman**
 
-*Released: 2016-07-09*
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
+and `human-readable changelog <http://keepachangelog.com/>`_.
+
+The current role maintainer is drybjed.
+
+
+`debops.mailman master`_ - unreleased
+-------------------------------------
+
+.. _debops.mailman master: https://github.com/debops/ansible-mailman/compare/v0.1.3...master
+
+
+`debops.mailman v0.1.3`_ - 2016-07-18
+-------------------------------------
+
+.. _debops.mailman v0.1.3: https://github.com/debops/ansible-mailman/compare/v0.1.2...v0.1.3
+
+Changed
+~~~~~~~
+
+- Update documentation and Changelog. [drybjed]
+
+
+`debops.mailman v0.1.2`_ - 2016-07-09
+-------------------------------------
+
+.. _debops.mailman v0.1.2: https://github.com/debops/ansible-mailman/compare/v0.1.1...v0.1.2
+
+Changed
+~~~~~~~
 
 - Update the ``debops.unattended_upgrades`` configuration to latest changes.
   [drybjed]
 
-v0.1.1
-------
 
-*Released: 2016-03-30*
+`debops.mailman v0.1.1`_ - 2016-03-30
+-------------------------------------
+
+.. _debops.mailman v0.1.1: https://github.com/debops/ansible-mailman/compare/v0.1.0...v0.1.1
+
+Changed
+~~~~~~~
 
 - Configure the site domain in Postfix using Ansible local facts.
 
@@ -21,19 +53,22 @@ v0.1.1
   not generate unnecessary virtual aliases, which break mail delivery.
   [drybjed]
 
-v0.1.0
-------
+debops.mailman v0.1.0 - 2016-03-07
+----------------------------------
 
-*Released: 2016-03-07*
+Added
+~~~~~
 
 - Add Changelog. [drybjed]
 
-- Remove hard role dependencies on ``debops.postfix`` and ``debops.nginx``.
-  Configuration for ``debops.postfix`` and ``debops.nginx`` roles is defined in
-  default variables, which can be passed to the roles through the playbook.
+- Add configuration for ``debops.apt_preferences`` and
+  ``debops.unattended_upgrades`` Ansible roles. [drybjed]
 
-  Remove direct configuration of ``fcgiwrap`` instance and use
-  ``debops.fcgiwrap`` role to configure a ``mailman`` instance. [drybjed]
+- Add a default variable with custom ``debops.nginx`` server options for
+  Mailman server. [drybjed]
+
+Changed
+~~~~~~~
 
 - Switch from patching the Mailman source code manually to using the ``patch``
   Ansible module. Patches are no longer copied to remote host and their state
@@ -60,8 +95,6 @@ v0.1.0
   it's not installed on the remote host, but executed by the ``script`` module
   if any changes are detected. [drybjed]
 
-- Drop Ansible local facts related to Mailman. [drybjed]
-
 - Redesign the configuration of Mailman domains. The default domain is now set
   in a separate ``mailman__site_domain`` variable, and additional virtual
   domains have their own list. [drybjed]
@@ -72,15 +105,19 @@ v0.1.0
 
 - Rename all variables to put them in a clear namespace. [drybjed]
 
-- Add configuration for ``debops.apt_preferences`` and
-  ``debops.unattended_upgrades`` Ansible roles. [drybjed]
-
 - Update documentation. [drybjed]
-
-- Add a default variable with custom ``debops.nginx`` server options for
-  Mailman server. [drybjed]
 
 - Reorder the fastcgi parameters in ``nginx`` configuration to fix issue with
   `fcgiwrap interpreting the first occurence <http://mailman.nginx.org/pipermail/nginx/2012-June/034224.html>`_
   of the variable instead of the last. [drybjed]
+Removed
+~~~~~~~
 
+- Remove hard role dependencies on ``debops.postfix`` and ``debops.nginx``.
+  Configuration for ``debops.postfix`` and ``debops.nginx`` roles is defined in
+  default variables, which can be passed to the roles through the playbook.
+
+  Remove direct configuration of ``fcgiwrap`` instance and use
+  ``debops.fcgiwrap`` role to configure a ``mailman`` instance. [drybjed]
+
+- Drop Ansible local facts related to Mailman. [drybjed]
