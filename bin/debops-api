@@ -503,6 +503,7 @@ class DebOpsAPI:
                 outfile.write('\n'.join(sorted(role_list)) + '\n')
             with open(os.path.join(api_work_dir, 'roles', role_owner + '.json'), 'w') as outfile:
                 json.dump(self.get_metadata(metadata), outfile, sort_keys=True)
+                outfile.write('\n')
             with open(os.path.join(api_work_dir, 'roles', 'count:' + role_owner), 'w') as outfile:
                 outfile.write('{}\n'.format(len(self.get_metadata(metadata).keys())))
 
