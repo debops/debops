@@ -15,6 +15,23 @@ The current role maintainer is drybjed.
 .. _debops.nginx master: https://github.com/debops/ansible-nginx/compare/v0.1.8...master
 
 
+`debops.nginx v0.1.9`_ - 2016-07-19
+-----------------------------------
+
+.. _debops.nginx v0.1.9: https://github.com/debops/ansible-nginx/compare/v0.1.8...v0.1.9
+
+Changed
+~~~~~~~
+
+- Make sure that lists of IP addresses are always defined. [thiagotalma]
+
+Security
+~~~~~~~~
+
+- Mitigate `HTTPOXY <https://httpoxy.org/>`_ attack on PHP applications
+  server-side. [drybjed]
+
+
 `debops.nginx v0.1.8`_ - 2016-07-13
 -----------------------------------
 
