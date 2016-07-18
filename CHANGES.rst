@@ -25,6 +25,8 @@ Changed
 
 - Update documentation and Changelog. [drybjed]
 
+- Add the apex ``mailman__domain`` to list of accepted referers. [drybjed]
+
 
 `debops.mailman v0.1.2`_ - 2016-07-09
 -------------------------------------
