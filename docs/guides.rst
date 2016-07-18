@@ -65,7 +65,9 @@ mailbox. There are various ways for mail delivery but only a few of them
 respect the sieve filters. By default DebOps would simply use Postfix to
 write the mail. However, Postfix doesn't know about sieve. Therefore you
 have to manually add the following configuration to each user's ``~/.forward``
-file, to hook-in the Dovecot LDA (local delivery agent)::
+file, to hook-in the Dovecot LDA (local delivery agent):
+
+.. code-block:: none
 
     | "/usr/lib/dovecot/dovecot-lda"
 
