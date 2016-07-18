@@ -38,6 +38,8 @@ Changed
 
 - Update ``debops.dokuwiki`` playbook. [drybjed]
 
+- Update ``debops.bootstrap`` playbook. [drybjed]
+
 Removed
 ~~~~~~~
 
