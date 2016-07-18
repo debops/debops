@@ -2,7 +2,7 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 # debops.debops_api default variables [[[
-# =========================================
+# =======================================
 #
 # .. contents:: Sections
 #    :local:
@@ -13,13 +13,15 @@
 
 # .. envvar:: debops_api__python_version [[[
 #
-# Python version to use. The required Python 3 modules are not available older
-# distribution releases, the Python 2 modules on the other hand are.
+# Python version to use. The Python 3 modules are not available in older
+# distribution releases. The Python 2 modules on the other hand are.
+# The primary testing and deployment environment is Python 3 but Python 2
+# should also work (at least to get the CI test passing).
 debops_api__python_version: '{{
     3 if (ansible_distribution == "Debian" and ansible_distribution_major_version >= 8)
     else 2 }}'
-                                                                   # ]]]
 
+                                                                   # ]]]
 # .. envvar:: debops_api__python3_packages [[[
 #
 # List of Python 3 packaged modules to install.
@@ -89,7 +91,6 @@ debops_api__public_api_dir: '{{ debops_api__home + "/public" }}'
 debops_api__app_repo_url: 'https://github.com/debops/debops-api.git'
 
                                                                    # ]]]
-
 # .. envvar:: debops_api__app_repo_path [[[
 #
 # Directory path where the DebOps API script repository will be installed.
@@ -105,7 +106,6 @@ debops_api__app_repo_dest: '{{ (ansible_local.root.src
 debops_api__input_data_repo_url: 'https://github.com/debops/docs.git'
 
                                                                    # ]]]
-
 # .. envvar:: debops_api__input_data_dir [[[
 #
 # Input data directory of the DebOps API.
@@ -115,19 +115,16 @@ debops_api__input_data_dir: '{{ (ansible_local.root.var
                                 else "/var/local") + "/debops-api" }}'
 
                                                                    # ]]]
-
 # .. envvar:: debops_api__input_data_repo_dest [[[
 #
 # Directory where :envvar:`debops_api__input_data_repo_url` gets cloned to.
 debops_api__input_data_repo_dest: '{{ debops_api__input_data_dir + "/docs" }}'
 
                                                                    # ]]]
-
 # .. envvar:: debops_api__input_data_role_path [[[
 #
 # Role directory used as input for the DebOps API script.
 debops_api__input_data_role_path: '{{ debops_api__input_data_repo_dest + "/docs/ansible/roles/" }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # DebOps API configuration [[[
@@ -141,12 +138,10 @@ debops_api__app_parameters:
   - [ '--role-owner', 'debops', 'linebreak' ]
 
                                                                    # ]]]
-
 # .. envvar:: debops_api__domain [[[
 #
 # Public domain of the DebOps API.
 debops_api__domain: [ 'api.{{ ansible_domain }}' ]
-
                                                                    # ]]]
                                                                    # ]]]
 # DebOps API update [[[
@@ -172,7 +167,6 @@ debops_api__cron_script: '{{ debops_api__home + "/bin/debops-api-update" }}'
 debops_api__cron_entries:
   - name: 'debops-api-update'
     minute: '23'
-
                                                                    # ]]]
                                                                    # ]]]
 # Role-dependent configuration [[[
@@ -200,7 +194,6 @@ debops_api__nginx__servers:
         options: |
           autoindex on;
           default_type text/plain;
-
 # ]]]
 # ]]]
 # ]]]
