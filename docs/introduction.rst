@@ -6,10 +6,11 @@ internally by the project but can also be used by third parties.
 
 API URL: https://api.debops.org/
 
-Used by
--------
+Example usages
+--------------
 
-* https://github.com/debops/debops.github.io/
+* https://github.com/debops/debops.github.io
+* https://github.com/debops/docs
 
 ..
  Local Variables:

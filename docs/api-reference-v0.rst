@@ -49,7 +49,8 @@ Example: https://api.debops.org/v0/roles/debops.list
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Returns the total number of roles in the given name space.
-The ``[:<owner>]`` is optional and allows to limit the count to the role owner.
+The ``[:<owner>]`` is optional and allows to limit the count to the given role
+owner.
 
 Examples:
 
@@ -65,9 +66,20 @@ described below.
 :regexp:`^/roles/.*\.json$` API calls return a JSON object. The outer dict is a
 full role name to meta data (described below) mapping.
 
-.. note:: ``docs_format_version`` below ``0.2.0`` are not fully supported by
+.. note:: ``role_format_version`` below ``0.2.0`` are not fully supported by
    this API. Keys might be missing for roles with this version.
    Do a version compare for ``0.2.0`` or higher of fixup the DebOps API.
+
+``role_owner``
+  Ansible Galaxy role owner.
+
+``role_name``
+  Ansible Galaxy role name.
+
+``normalized_role_name``
+  Ansible role name as used in URLs. Currently the only case where this is
+  different to ``role_name`` is when ``role_name`` is ``ansible`` (in this case
+  ``normalized_role_name`` will be ``role-ansible``).
 
 ``authors``
   List of dicts, one dict for each author.
@@ -84,8 +96,9 @@ full role name to meta data (described below) mapping.
 ``description``
   Description of the repository.
 
-``docs_format_version``
-  Version of the DebOps documentation format used for the repository.
+``role_format_version``
+  To which version of the DebOps role standard does the role comply to.
+  TODO: The versions are currently not documented elsewhere.
 
 ``docs_url``
   HTML URL of the rendered documentation of the repository
@@ -108,12 +121,6 @@ full role name to meta data (described below) mapping.
 ``pr_url``
   HTML URL on the VCS platform where Pull/Merge requests can be submitted to.
 
-``role_name``
-  Ansible Galaxy role name.
-
-``role_owner``
-  Ansible Galaxy role owner.
-
 ``tags``
   List of tags of the repository, currently equivalent with Ansible Galaxy role tags.
 
@@ -125,14 +132,19 @@ full role name to meta data (described below) mapping.
   repository is tested.
 
 ``ci_url``
-  HTML URL for the continues integration system on which the repository is
-  tested.
-
-``vcs_last_committer_date``
-  Date of last commit in VCS.
+  HTML URL for the test page of the continues integration system which is used
+  for the repository.
 
 ``vcs_url``
   HTML URL to the VCS platform where the repository is hosted.
 
 ``version``
   Latest released version of the repository.
+  Is ``0.0.0`` when no release has been made.
+
+``vcs_commits_since_last_release``
+  Number of commits since the last release.
+  Is missing when no release has been made.
+
+``vcs_last_committer_date``
+  Date of last commit in VCS.

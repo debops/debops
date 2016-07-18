@@ -85,7 +85,11 @@ class DebOpsAPI:
         """
 
         github_base_url = 'https://github.com'
-        return '/'.join(github_base_url, role_owner, role_name)
+        return '/'.join([
+            github_base_url,
+            role_owner,
+            'ansible-' + self._get_normalized_role_name(role_name),
+        ])
 
     def _read_github_repos_api_response(
         self,
@@ -113,7 +117,7 @@ class DebOpsAPI:
                 'role_owner': role_owner,
                 'role_name': role_name,
                 'vcs_url': repo['html_url'],
-                'docs_format_version': '0.1.0',
+                'role_format_version': '0.1.0',
             }
             self._metadata.setdefault(role_full_name, {})
             self._metadata[role_full_name].update(metadata_from_api)
@@ -140,7 +144,7 @@ class DebOpsAPI:
             '0.2.0': re.compile(r'^ansible-(?P<role_name>[a-z0-9_-]+)$'),
         }
 
-        for docs_format_version, pattern in version_by_pattern_map.items():
+        for role_format_version, pattern in version_by_pattern_map.items():
             _re = pattern.search(role_dir_name)
             if _re:
                 role_owner = None
@@ -148,13 +152,13 @@ class DebOpsAPI:
                     role_owner = _re.group('role_owner')
                 role_name = _re.group('role_name')
                 logger.debug('Detected docs format version {} for owner: {}, name: {} from {}'.format(
-                    docs_format_version,
+                    role_format_version,
                     role_owner,
                     role_name,
                     role_dir_name,
                 ))
                 return {
-                    'docs_format_version': docs_format_version,
+                    'role_format_version': role_format_version,
                     'role_owner': role_owner,
                     'role_name': role_name,
                 }
@@ -213,17 +217,29 @@ class DebOpsAPI:
             # except git.exc.GitCommandError:
             version = '0.0.0'
 
-        version = re.sub(r'^v', '', version)
-        #  logger.debug(version)
-
         if self._test_mode:
             # Fake committer date in test mode
             last_committer_date = '1970-01-01 00:00:00 +0000'
 
-        return {
-            'last_committer_date': last_committer_date,
-            'version': version,
+        metadata = {
+            'vcs_last_committer_date': last_committer_date,
+            'version': re.sub(r'^v', '', version),
         }
+
+        if not self._test_mode and version != '0.0.0':
+            try:
+                commits_since_last_release = len(
+                    g.log('{}...HEAD'.format(version), '--oneline').split('\n')
+                )
+            except:
+                commits_since_last_release = None
+
+            if commits_since_last_release is not None:
+                metadata.update({
+                    'vcs_commits_since_last_release': commits_since_last_release,
+                })
+
+        return metadata
 
     def _get_role_metadata(self, role_path):
         """
@@ -260,6 +276,16 @@ class DebOpsAPI:
                 })
 
         return metadata
+
+    def _get_normalized_role_name(self, role_name):
+        """
+        Returns normalized role name as used in URLs
+        Example role name: `ansible`, returns: `role-ansible`.
+        """
+
+        if role_name == 'ansible':
+            role_name = 'role-' + role_name
+        return role_name
 
     def _get_normalized_meta_main(self, meta_main):
         """
@@ -305,16 +331,17 @@ class DebOpsAPI:
             role_name = metadata['role_name']
 
             additonal_metadata = {
+                'normalized_role_name': self._get_normalized_role_name(role_name),
                 'ci_badge_url': 'https://api.travis-ci.org/{}/ansible-{}.png'.format(
                     role_owner,
-                    role_name,
+                    self._get_normalized_role_name(role_name),
                 ),
                 'ci_url': 'https://travis-ci.org/{}/ansible-{}'.format(
                     role_owner,
-                    role_name,
+                    self._get_normalized_role_name(role_name),
                 ),
                 'test_suite_url': 'https://github.com/debops/test-suite/tree/master/ansible-{}'.format(
-                    role_name,
+                    self._get_normalized_role_name(role_name),
                 ),
                 'galaxy_url': 'https://galaxy.ansible.com/{}/{}'.format(
                     role_owner,
@@ -330,11 +357,12 @@ class DebOpsAPI:
                 })
 
             if self._docs_url_pattern and StrictVersion('0.2.0') <= \
-                    StrictVersion(metadata['docs_format_version']):
+                    StrictVersion(metadata['role_format_version']):
 
                 additonal_metadata['docs_url'] = self._docs_url_pattern.format(
-                    owner=role_owner,
-                    name=role_name,
+                    role_owner=role_owner,
+                    role_name=role_name,
+                    normalized_role_name=self._get_normalized_role_name(role_name),
                 )
 
             self._metadata[role_full_name].update(additonal_metadata)
@@ -351,23 +379,23 @@ class DebOpsAPI:
             # required to get the meta data from external servers (and to
             # encourage conversion to the new docs format).
             if role_dir_info:
-                if StrictVersion('0.2.0') <= StrictVersion(role_dir_info['docs_format_version']):
+                if StrictVersion('0.2.0') <= StrictVersion(role_dir_info['role_format_version']):
                     role_name = role_dir_info['role_name']
                     role_metadata = self._get_role_metadata(os.path.join(role_path, role_dir_name))
                     role_vcs_url = role_metadata['ansigenome']['github_url']
                     role_owner = self._get_owner_from_vcs_url(role_vcs_url)
                     role_full_name = self._get_role_full_name(role_owner, role_name)
 
-                    vcs_info = self._get_vcs_info(os.path.join(role_path, role_dir_name))
-
                     metadata = {
                         'vcs_url': role_vcs_url,
-                        'vcs_last_committer_date': vcs_info['last_committer_date'],
-                        'version': vcs_info['version'],
-                        'docs_format_version': role_dir_info['docs_format_version'],
+                        'role_format_version': role_dir_info['role_format_version'],
                         'role_owner': role_owner,
                         'role_name': role_name,
                     }
+
+                    metadata.update(
+                        self._get_vcs_info(os.path.join(role_path, role_dir_name))
+                    )
 
                     if 'meta' in role_metadata:
                         metadata.update(
@@ -385,7 +413,7 @@ class DebOpsAPI:
                     if not role_owner:
                         raise Exception('Default role owner not given but required.')
 
-                    role_vcs_url = 'https://github.com/{}/ansible-{}'.format(
+                    role_vcs_url = self._get_repo_url(
                         role_owner,
                         role_name,
                     )
@@ -393,7 +421,7 @@ class DebOpsAPI:
 
                     metadata = {
                         'vcs_url': role_vcs_url,
-                        'docs_format_version': '0.1.0',
+                        'role_format_version': '0.1.0',
                         'role_owner': role_owner,
                         'role_name': role_name,
                     }
@@ -487,6 +515,7 @@ class DebOpsAPI:
                 outfile.write('\n'.join(sorted(role_list)) + '\n')
             with open(os.path.join(api_work_dir, 'roles', role_owner + '.json'), 'w') as outfile:
                 json.dump(self.get_metadata(metadata), outfile, sort_keys=True)
+                outfile.write('\n')
             with open(os.path.join(api_work_dir, 'roles', 'count:' + role_owner), 'w') as outfile:
                 outfile.write('{}\n'.format(len(self.get_metadata(metadata).keys())))
 
