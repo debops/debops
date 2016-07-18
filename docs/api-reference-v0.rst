@@ -49,7 +49,8 @@ Example: https://api.debops.org/v0/roles/debops.list
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Returns the total number of roles in the given name space.
-The ``[:<owner>]`` is optional and allows to limit the count to the role owner.
+The ``[:<owner>]`` is optional and allows to limit the count to the given role
+owner.
 
 Examples:
 
@@ -68,6 +69,12 @@ full role name to meta data (described below) mapping.
 .. note:: ``docs_format_version`` below ``0.2.0`` are not fully supported by
    this API. Keys might be missing for roles with this version.
    Do a version compare for ``0.2.0`` or higher of fixup the DebOps API.
+
+``role_name``
+  Ansible Galaxy role name.
+
+``role_owner``
+  Ansible Galaxy role owner.
 
 ``authors``
   List of dicts, one dict for each author.
@@ -108,12 +115,6 @@ full role name to meta data (described below) mapping.
 ``pr_url``
   HTML URL on the VCS platform where Pull/Merge requests can be submitted to.
 
-``role_name``
-  Ansible Galaxy role name.
-
-``role_owner``
-  Ansible Galaxy role owner.
-
 ``tags``
   List of tags of the repository, currently equivalent with Ansible Galaxy role tags.
 
@@ -125,8 +126,8 @@ full role name to meta data (described below) mapping.
   repository is tested.
 
 ``ci_url``
-  HTML URL for the continues integration system on which the repository is
-  tested.
+  HTML URL for the test page of the continues integration system which is used
+  for the repository.
 
 ``vcs_last_committer_date``
   Date of last commit in VCS.
