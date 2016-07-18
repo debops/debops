@@ -175,7 +175,7 @@ host {{ host.hostname }} {
 # {{ failover.comment }}
 {% endif %}
 failover peer "{{ failover.failover }}" {
-{% if failover.primary is defined and failover.primary in ansible_all_ipv4_addresses %}
+{% if failover.primary is defined and failover.primary in ansible_all_ipv4_addresses|d([]) %}
         primary;
         mclt {{ failover.mclt|default(3600) }};
 {% if failover.primary_fo_addr is defined and failover.primary_fo_addr %}
