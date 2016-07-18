@@ -66,7 +66,7 @@ described below.
 :regexp:`^/roles/.*\.json$` API calls return a JSON object. The outer dict is a
 full role name to meta data (described below) mapping.
 
-.. note:: ``docs_format_version`` below ``0.2.0`` are not fully supported by
+.. note:: ``role_format_version`` below ``0.2.0`` are not fully supported by
    this API. Keys might be missing for roles with this version.
    Do a version compare for ``0.2.0`` or higher of fixup the DebOps API.
 
@@ -96,8 +96,9 @@ full role name to meta data (described below) mapping.
 ``description``
   Description of the repository.
 
-``docs_format_version``
-  Version of the DebOps documentation format used for the repository.
+``role_format_version``
+  To which version of the DebOps role standard does the role comply to.
+  TODO: The versions are currently not documented elsewhere.
 
 ``docs_url``
   HTML URL of the rendered documentation of the repository

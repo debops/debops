@@ -117,7 +117,7 @@ class DebOpsAPI:
                 'role_owner': role_owner,
                 'role_name': role_name,
                 'vcs_url': repo['html_url'],
-                'docs_format_version': '0.1.0',
+                'role_format_version': '0.1.0',
             }
             self._metadata.setdefault(role_full_name, {})
             self._metadata[role_full_name].update(metadata_from_api)
@@ -144,7 +144,7 @@ class DebOpsAPI:
             '0.2.0': re.compile(r'^ansible-(?P<role_name>[a-z0-9_-]+)$'),
         }
 
-        for docs_format_version, pattern in version_by_pattern_map.items():
+        for role_format_version, pattern in version_by_pattern_map.items():
             _re = pattern.search(role_dir_name)
             if _re:
                 role_owner = None
@@ -152,13 +152,13 @@ class DebOpsAPI:
                     role_owner = _re.group('role_owner')
                 role_name = _re.group('role_name')
                 logger.debug('Detected docs format version {} for owner: {}, name: {} from {}'.format(
-                    docs_format_version,
+                    role_format_version,
                     role_owner,
                     role_name,
                     role_dir_name,
                 ))
                 return {
-                    'docs_format_version': docs_format_version,
+                    'role_format_version': role_format_version,
                     'role_owner': role_owner,
                     'role_name': role_name,
                 }
@@ -345,7 +345,7 @@ class DebOpsAPI:
                 })
 
             if self._docs_url_pattern and StrictVersion('0.2.0') <= \
-                    StrictVersion(metadata['docs_format_version']):
+                    StrictVersion(metadata['role_format_version']):
 
                 additonal_metadata['docs_url'] = self._docs_url_pattern.format(
                     role_owner=role_owner,
@@ -367,7 +367,7 @@ class DebOpsAPI:
             # required to get the meta data from external servers (and to
             # encourage conversion to the new docs format).
             if role_dir_info:
-                if StrictVersion('0.2.0') <= StrictVersion(role_dir_info['docs_format_version']):
+                if StrictVersion('0.2.0') <= StrictVersion(role_dir_info['role_format_version']):
                     role_name = role_dir_info['role_name']
                     role_metadata = self._get_role_metadata(os.path.join(role_path, role_dir_name))
                     role_vcs_url = role_metadata['ansigenome']['github_url']
@@ -380,7 +380,7 @@ class DebOpsAPI:
                         'vcs_url': role_vcs_url,
                         'vcs_last_committer_date': vcs_info['last_committer_date'],
                         'version': vcs_info['version'],
-                        'docs_format_version': role_dir_info['docs_format_version'],
+                        'role_format_version': role_dir_info['role_format_version'],
                         'role_owner': role_owner,
                         'role_name': role_name,
                     }
@@ -409,7 +409,7 @@ class DebOpsAPI:
 
                     metadata = {
                         'vcs_url': role_vcs_url,
-                        'docs_format_version': '0.1.0',
+                        'role_format_version': '0.1.0',
                         'role_owner': role_owner,
                         'role_name': role_name,
                     }
