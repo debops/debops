@@ -116,8 +116,8 @@ pki_vcs_ignore_patterns_host: []
 #
 # Enable or disable support for ACME certificates.
 pki_acme: '{{ (True
-               if ((ansible_all_ipv4_addresses +
-                    ansible_all_ipv6_addresses) | ipaddr("public") and
+               if ((ansible_all_ipv4_addresses|d([]) +
+                    ansible_all_ipv6_addresses|d([])) | ipaddr("public") and
                     pki_default_domain)
                else False) | bool }}'
 
