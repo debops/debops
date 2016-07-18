@@ -85,7 +85,11 @@ class DebOpsAPI:
         """
 
         github_base_url = 'https://github.com'
-        return '/'.join(github_base_url, role_owner, role_name)
+        return '/'.join([
+            github_base_url,
+            role_owner,
+            'ansible-' + self._get_normalized_role_name(role_name),
+        ])
 
     def _read_github_repos_api_response(
         self,
@@ -261,6 +265,16 @@ class DebOpsAPI:
 
         return metadata
 
+    def _get_normalized_role_name(self, role_name):
+        """
+        Returns normalized role name as used in URLs
+        Example role name: `ansible`, returns: `role-ansible`.
+        """
+
+        if role_name == 'ansible':
+            role_name = 'role-' + role_name
+        return role_name
+
     def _get_normalized_meta_main(self, meta_main):
         """
         Returns normalized meta/main.yml data intended for inclusion in
@@ -305,16 +319,17 @@ class DebOpsAPI:
             role_name = metadata['role_name']
 
             additonal_metadata = {
+                'normalized_role_name': self._get_normalized_role_name(role_name),
                 'ci_badge_url': 'https://api.travis-ci.org/{}/ansible-{}.png'.format(
                     role_owner,
-                    role_name,
+                    self._get_normalized_role_name(role_name),
                 ),
                 'ci_url': 'https://travis-ci.org/{}/ansible-{}'.format(
                     role_owner,
-                    role_name,
+                    self._get_normalized_role_name(role_name),
                 ),
                 'test_suite_url': 'https://github.com/debops/test-suite/tree/master/ansible-{}'.format(
-                    role_name,
+                    self._get_normalized_role_name(role_name),
                 ),
                 'galaxy_url': 'https://galaxy.ansible.com/{}/{}'.format(
                     role_owner,
@@ -333,8 +348,9 @@ class DebOpsAPI:
                     StrictVersion(metadata['docs_format_version']):
 
                 additonal_metadata['docs_url'] = self._docs_url_pattern.format(
-                    owner=role_owner,
-                    name=role_name,
+                    role_owner=role_owner,
+                    role_name=role_name,
+                    normalized_role_name=self._get_normalized_role_name(role_name),
                 )
 
             self._metadata[role_full_name].update(additonal_metadata)
@@ -385,7 +401,7 @@ class DebOpsAPI:
                     if not role_owner:
                         raise Exception('Default role owner not given but required.')
 
-                    role_vcs_url = 'https://github.com/{}/ansible-{}'.format(
+                    role_vcs_url = self._get_repo_url(
                         role_owner,
                         role_name,
                     )

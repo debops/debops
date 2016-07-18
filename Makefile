@@ -14,7 +14,7 @@ check: tests/api_data
 
 tests/api_data: bin/debops-api tests/example_roles FORCE_MAKE
 	"$<" --test-mode --role-path tests/example_roles/ \
-		--docs-url-pattern 'http://docs.debops.org/en/latest/ansible/roles/ansible-{name}/docs/index.html' \
+		--docs-url-pattern 'http://docs.debops.org/en/latest/ansible/roles/ansible-{role_name}/docs/index.html' \
 		--role-owner debops \
 		--api-dir "$@"
 

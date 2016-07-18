@@ -70,11 +70,16 @@ full role name to meta data (described below) mapping.
    this API. Keys might be missing for roles with this version.
    Do a version compare for ``0.2.0`` or higher of fixup the DebOps API.
 
+``role_owner``
+  Ansible Galaxy role owner.
+
 ``role_name``
   Ansible Galaxy role name.
 
-``role_owner``
-  Ansible Galaxy role owner.
+``normalized_role_name``
+  Ansible role name as used in URLs. Currently the only case where this is
+  different to ``role_name`` is when ``role_name`` is ``ansible`` (in this case
+  ``normalized_role_name`` will be ``role-ansible``).
 
 ``authors``
   List of dicts, one dict for each author.
