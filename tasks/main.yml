@@ -1,10 +1,5 @@
 ---
 
-- name: Raw update APT repositories and install mandatory packages
-  raw:  'apt-get update ; apt-get --no-install-recommends -yq install {{ bootstrap__mandatory_packages | join(" ") }}'
-  tags: [ 'role::bootstrap:packages' ]
-  when: bootstrap__raw|bool
-
 # .. Package install of essential software (((
 - name: Make sure essential software is installed
   apt:

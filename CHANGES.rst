@@ -14,6 +14,11 @@ v0.2.2
 - Allow to disable hostname and domain configuration via
   :any:`bootstrap__hostname_domain_config_enabled`. [ypid]
 
+- Split the role into two roles, ``debops.bootstrap/raw`` and
+  ``debops.bootstrap``. This allows use of separate plays for each role, the
+  first one without any ``environment`` variables, the second one that works
+  normally. [drybjed]
+
 v0.2.1
 ------
 
