@@ -42,7 +42,7 @@
 {%         for host in entry_tpl_hosts %}
 {%           if host != inventory_hostname and hostvars[host]|d() and hostvars[host].ansible_all_ipv4_addresses|d() %}
 {%             set element_tpl_address = [] %}
-{%             set element_tpl_address4 = hostvars[host].ansible_all_ipv4_addresses %}
+{%             set element_tpl_address4 = hostvars[host].ansible_all_ipv4_addresses|d([]) %}
 {%             if element_tpl_address4 %}
 {%               for part in element_tpl_address4 %}
 {%                 set _ = element_tpl_address.append(part | ipaddr('cidr')) %}
