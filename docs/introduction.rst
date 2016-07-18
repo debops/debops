@@ -9,7 +9,8 @@ API URL: https://api.debops.org/
 Example usages
 --------------
 
-* https://github.com/debops/debops.github.io/
+* https://github.com/debops/debops.github.io
+* https://github.com/debops/docs
 
 ..
  Local Variables:
