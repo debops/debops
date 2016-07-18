@@ -89,9 +89,9 @@ snmpd_host_allow: []
 #
 # List of IP addresses or CIDR networks which can connect to SNMP service
 # (from localhost). If not specified, remote connections are blocked.
-snmpd_local_allow: '{{ ansible_all_ipv4_addresses +
-                       (ansible_all_ipv6_addresses |
-                        difference(ansible_all_ipv6_addresses | ipaddr("link-local"))) }}'
+snmpd_local_allow: '{{ ansible_all_ipv4_addresses|d([]) +
+                       (ansible_all_ipv6_addresses|d([]) |
+                        difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local"))) }}'
 
 
 # .. envvar:: snmpd_agent_address
