@@ -26,6 +26,13 @@ To unlock the system, you can have a look at: https://github.com/sdrfnord/script
 * [0x46616c6b.rootcrypto](https://github.com/systemli/ansible-rootcrypto) looks nice but I have not tested it yet.
 * [martin-v.sshpreluks](https://github.com/martin-v/ansible-sshpreluks) looks nice but I have not tested it yet.
 
+### Other approaches
+
+* [Mandos](https://wiki.recompile.se/wiki/Mandos) is an interesting approach which I have not yet played in deep with.
+  I created ypid.cryptsetup_remote_unlock because I consider a different threat model for myself.
+  As far as I understand Mandos, it is more intended for data centers to allow to automatically (re)boot FDE systems without user interaction.
+  My thread model is to not allow an adversary to boot systems without me knowing (and authorizing) it. I guess this can be realized with Mandos too and if you create a nice Ansible role for it let me know. I just started out with SSH in the initramfs and sending the decryption password over SSH.
+
 ### Installation
 
 This role requires at least Ansible `v1.9.0`. To install it, run:
