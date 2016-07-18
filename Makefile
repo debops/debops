@@ -12,7 +12,7 @@ fail-when-git-dirty:
 	git diff --quiet && git diff --cached --quiet
 
 galaxy: galaxy/requirements galaxy/requirements-testing
-
+	@echo 'You need to `git add` all files in order for this script to pick up the changes!'
 
 galaxy/requirements: galaxy/requirements.txt galaxy/requirements.yml
 
