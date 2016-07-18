@@ -14,7 +14,12 @@
 # .. envvar:: bootstrap__hostname_domain_config_enabled [[[
 #
 # Should the hostname and domain be configured during bootstrap?
-bootstrap__hostname_domain_config_enabled: True
+bootstrap__hostname_domain_config_enabled: '{{ (True
+                                                if (ansible_local|d() and
+                                                    ansible_local.cap12s|d() and
+                                                    (not ansible_local.cap12s.enabled|bool or
+                                                     "cap_sys_admin" in ansible_local.cap12s.list))
+                                                else False) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: bootstrap__domain [[[

@@ -41,6 +41,9 @@ Changed
 
 - Update documentation and Changelog. [drybjed]
 
+- Move the conditional check for POSIX capabilities to default variables.
+  [drybjed]
+
 
 `debops.bootstrap v0.2.1`_ - 2016-05-28
 ---------------------------------------
