@@ -64,4 +64,3 @@ Create a new mailing lists:
      - name: 'project-devel'
        language: 'en'
        owner: 'project-devel@example.org'
-
