@@ -1,0 +1,5 @@
+---
+
+- name: Update APT repositories, install mandatory packages
+  raw:  'apt-get update ; apt-get --no-install-recommends -yq install {{ bootstrap__mandatory_packages | join(" ") }}'
+  when: bootstrap__raw|bool

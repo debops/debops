@@ -1,35 +1,40 @@
 ---
-# Default variables
-# =================
-#
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.bootstrap default variables [[[
+# ======================================
+
 # .. contents:: Sections
 #    :local:
-#
-# .. Hostname and domain (((
-#
-# -----------------------
-#   Hostname and domain
+
+
+# Hostname and domain [[[
 # -----------------------
 
-# .. envvar:: bootstrap__hostname_domain_config_enabled
+# .. envvar:: bootstrap__hostname_domain_config_enabled [[[
 #
 # Should the hostname and domain be configured during bootstrap?
-bootstrap__hostname_domain_config_enabled: True
+bootstrap__hostname_domain_config_enabled: '{{ (True
+                                                if (ansible_local|d() and
+                                                    ansible_local.cap12s|d() and
+                                                    (not ansible_local.cap12s.enabled|bool or
+                                                     "cap_sys_admin" in ansible_local.cap12s.list))
+                                                else False) | bool }}'
 
-
-# .. envvar:: bootstrap__domain
+                                                                   # ]]]
+# .. envvar:: bootstrap__domain [[[
 #
 # Set custom DNS domain on a given host.
 bootstrap__domain: '{{ ansible_domain }}'
 
-
-# .. envvar:: bootstrap__hostname
+                                                                   # ]]]
+# .. envvar:: bootstrap__hostname [[[
 #
 # Set custom DNS hostname on a given host.
-bootstrap__hostname: '{{ inventory_hostname_short | default(inventory_hostname) }}'
+bootstrap__hostname: '{{ inventory_hostname_short | d(inventory_hostname) }}'
 
-
-# .. envvar:: bootstrap__hostname_v6_loopback
+                                                                   # ]]]
+# .. envvar:: bootstrap__hostname_v6_loopback [[[
 #
 # Set custom DNS hostname on a given host also for IPv6.
 # This is only needed when you don't have properly working DNS and still need
@@ -37,30 +42,27 @@ bootstrap__hostname: '{{ inventory_hostname_short | default(inventory_hostname) 
 # Refer to https://github.com/debops/ansible-bootstrap/pull/9
 bootstrap__hostname_v6_loopback: False
 
-# .. )))
-
-# .. APT and packages (((
-#
-# --------------------
-#   APT and packages
+                                                                   # ]]]
+                                                                   # ]]]
+# APT and packages [[[
 # --------------------
 
-# .. envvar:: bootstrap__raw
+# .. envvar:: bootstrap__raw [[[
 #
 # Ensure ``bootstrap__mandatory_packages`` are installed using ``raw`` Ansible
 # module before proceeding.
 bootstrap__raw: True
 
-
-# .. envvar:: bootstrap__mandatory_packages
+                                                                   # ]]]
+# .. envvar:: bootstrap__mandatory_packages [[[
 #
 # Mandatory packages installed during bootstrap.
 bootstrap__mandatory_packages:
   - 'python'
   - 'python-apt'
 
-
-# .. envvar:: bootstrap__base_packages
+                                                                   # ]]]
+# .. envvar:: bootstrap__base_packages [[[
 #
 # Base packages installed during bootstrap.
 bootstrap__base_packages:
@@ -68,33 +70,29 @@ bootstrap__base_packages:
   - 'sudo'
   - 'lsb-release'
 
-
-# .. envvar:: bootstrap__packages
+                                                                   # ]]]
+# .. envvar:: bootstrap__packages [[[
 #
 # Install additional packages during bootstrap.
 bootstrap__packages: []
-
-# .. )))
-
-# .. System administrator account (((
-#
-# --------------------------------
-#   System administrator account
+                                                                   # ]]]
+                                                                   # ]]]
+# System administrator account [[[
 # --------------------------------
 
-# .. envvar:: bootstrap__admin
+# .. envvar:: bootstrap__admin [[[
 #
 # Enable configuration of administrator account.
 bootstrap__admin: True
 
-
-# .. envvar:: bootstrap__admin_system
+                                                                   # ]]]
+# .. envvar:: bootstrap__admin_system [[[
 #
 # Should the admin account be a system account (UID < 1000)?
 bootstrap__admin_system: True
 
-
-# .. envvar:: bootstrap__admin_name
+                                                                   # ]]]
+# .. envvar:: bootstrap__admin_name [[[
 #
 # Name of the admin account.
 bootstrap__admin_name: '{{ (ansible_ssh_user
@@ -102,80 +100,77 @@ bootstrap__admin_name: '{{ (ansible_ssh_user
                                ansible_ssh_user != "root")
                            else lookup("env","USER")) }}'
 
-
-# .. envvar:: bootstrap__admin_group
+                                                                   # ]]]
+# .. envvar:: bootstrap__admin_group [[[
 #
 # List of local system groups which admin account will be added to.
 bootstrap__admin_groups: [ 'admins', 'staff', 'adm' ]
 
-
-# .. envvar:: bootstrap__admin_home
+                                                                   # ]]]
+# .. envvar:: bootstrap__admin_home [[[
 #
 # Home directory of the administrator account, when it's a "normal" account.
 bootstrap__admin_home: '{{ "/home/" + bootstrap__admin_name }}'
 
-
-# .. envvar:: bootstrap__admin_system_home
+                                                                   # ]]]
+# .. envvar:: bootstrap__admin_system_home [[[
 #
 # Home directory of the administrator account, when it's a "system" account.
 bootstrap__admin_system_home: '{{ "/var/local/" + bootstrap__admin_name }}'
 
-
-# .. envvar:: bootstrap__admin_home_group
+                                                                   # ]]]
+# .. envvar:: bootstrap__admin_home_group [[[
 #
 # Specify administrator account home directory group.
 bootstrap__admin_home_group: '{{ bootstrap__admin_groups[0] }}'
 
-
-# .. envvar:: bootstrap__admin_home_mode
+                                                                   # ]]]
+# .. envvar:: bootstrap__admin_home_mode [[[
 #
 # Specify permissions for administrator account home directory.
 bootstrap__admin_home_mode: '0750'
 
-
-# .. envvar:: bootstrap__admin_comment
+                                                                   # ]]]
+# .. envvar:: bootstrap__admin_comment [[[
 #
 # Comment / GECOS field of the administrator account.
 bootstrap__admin_comment: 'System Administrator'
 
-
-# .. envvar:: bootstrap__admin_shell
+                                                                   # ]]]
+# .. envvar:: bootstrap__admin_shell [[[
 #
 # Default shell set on the admin account.
 bootstrap__admin_shell: '/bin/bash'
 
-
-# .. envvar:: bootstrap__admin_sshkeys
+                                                                   # ]]]
+# .. envvar:: bootstrap__admin_sshkeys [[[
 #
 # List of SSH keys configured on root and administrator accounts.
 bootstrap__admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
-
-# .. envvar:: bootstrap__admin_manage_existing
+                                                                   # ]]]
+# .. envvar:: bootstrap__admin_manage_existing [[[
 #
 # Manage the admin user even if it already exists on the system.
 # The default is to not create or modify the admin user if it already exists.
 # Note that SSH key and sudo configuration is still performed, regardless of this variable.
 # Use ``bootstrap__admin_sshkeys`` or ``bootstrap__sudo`` to change that behavior if needed.
 bootstrap__admin_manage_existing: False
-
-# .. )))
-
-# .. Access to sudo commands (((
-#
-# ---------------------------
-#   Access to sudo commands
+                                                                   # ]]]
+                                                                   # ]]]
+# Access to sudo commands [[[
 # ---------------------------
 
-# .. envvar:: bootstrap__sudo
+# .. envvar:: bootstrap__sudo [[[
 #
 # Configure passwordless :command:`sudo` access for selected accounts.
 bootstrap__sudo: True
 
-
-# .. envvar:: bootstrap__sudo_group
+                                                                   # ]]]
+# .. envvar:: bootstrap__sudo_group [[[
 #
 # A group which grants passwordless :command:`sudo` access.
 bootstrap__sudo_group: '{{ bootstrap__admin_groups[0] | default("") }}'
-
-# .. )))
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

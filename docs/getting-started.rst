@@ -33,14 +33,8 @@ Example playbook
 
 Here's an example playbook which uses the ``debops.bootstrap`` role:
 
-.. code-block:: yaml
-
-   ---
-   - name: Bootstrap hosts for Ansible management
-     hosts: [ 'debops_all_hosts' ]
-
-     roles:
-       - role: debops.bootstrap
+.. literalinclude:: playbooks/bootstrap.yml
+   :language: yaml
 
 How to bootstrap a host with DebOps
 -----------------------------------

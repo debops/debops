@@ -1,10 +1,5 @@
 ---
 
-- name: Raw update APT repositories and install mandatory packages
-  raw:  'apt-get update ; apt-get --no-install-recommends -yq install {{ bootstrap__mandatory_packages | join(" ") }}'
-  tags: [ 'role::bootstrap:packages' ]
-  when: bootstrap__raw|bool
-
 # .. Package install of essential software (((
 - name: Make sure essential software is installed
   apt:
@@ -166,10 +161,7 @@
     name: '{{ bootstrap__hostname }}'
   tags: [ 'role::bootstrap:hostname' ]
   when: (bootstrap__hostname_domain_config_enabled|bool and
-         bootstrap__hostname != ansible_hostname and
-         ansible_local|d() and ansible_local.cap12s|d() and
-         (not ansible_local.cap12s.enabled|bool or
-         'cap_sys_admin' in ansible_local.cap12s.list))
+         bootstrap__hostname != ansible_hostname)
 
 - name: Save hostname in /etc/hostname
   copy:
@@ -180,10 +172,7 @@
     mode: '0644'
   tags: [ 'role::bootstrap:hostname' ]
   when: (bootstrap__hostname_domain_config_enabled|bool and
-         bootstrap__hostname != ansible_hostname and
-         ansible_local|d() and ansible_local.cap12s|d() and
-         (not ansible_local.cap12s.enabled|bool or
-         'cap_sys_admin' in ansible_local.cap12s.list))
+         bootstrap__hostname != ansible_hostname)
 
 - name: Save hostname and domain in /etc/hosts
   lineinfile:
