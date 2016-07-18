@@ -334,16 +334,16 @@ tinc__host_addresses: '{{ tinc__host_addresses_fqdn }}'
 #
 # Include the host FQDN if public IP addresses are available.
 tinc__host_addresses_fqdn: '{{ [ ansible_fqdn ]
-                               if ((ansible_all_ipv4_addresses + (ansible_all_ipv6_addresses |
-                                   difference(ansible_all_ipv6_addresses | ipaddr("link-local")))
+                               if ((ansible_all_ipv4_addresses|d([]) + (ansible_all_ipv6_addresses|d([]) |
+                                   difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local")))
                                    ) | ipaddr("public")) else [] }}'
 
 
 # .. envvar:: tinc__host_addresses_ip
 #
 # Include all public and private IP addresses, without IPv6 link-local.
-tinc__host_addresses_ip: '{{ ansible_all_ipv4_addresses + (ansible_all_ipv6_addresses |
-                             difference(ansible_all_ipv6_addresses | ipaddr("link-local"))) }}'
+tinc__host_addresses_ip: '{{ ansible_all_ipv4_addresses|d([]) + (ansible_all_ipv6_addresses|d([]) |
+                             difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local"))) }}'
 
 
 # .. envvar:: tinc__exclude_host_addresses
