@@ -192,8 +192,17 @@ debops_api__nginx__servers:
 
       - pattern: '/'
         options: |
+          ## Allow directory listings for easy "browsing" of the API.
           autoindex on;
+
           default_type text/plain;
+
+          ## Allow browsers to use API responses regardless which website makes
+          ## use of the API.
+          ## Without this, browsers will not allow websites to use data
+          ## returned by this API for there own use.
+          ## Refer to: https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+          add_header 'Access-Control-Allow-Origin' '*';
 # ]]]
 # ]]]
 # ]]]
