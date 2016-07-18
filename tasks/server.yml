@@ -100,7 +100,7 @@
         redis_sentinel_hosts_group in group_names and
         redis_hosts_group in group_names and
         inventory_hostname != redis_register_real_master.stdout and
-        not redis_register_real_master.stdout in ansible_all_ipv4_addresses
+        not redis_register_real_master.stdout in ansible_all_ipv4_addresses|d([])
   notify: ['Restart Redis Server']
 
 - name: Configure Redis Server
