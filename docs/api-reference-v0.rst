@@ -135,11 +135,16 @@ full role name to meta data (described below) mapping.
   HTML URL for the test page of the continues integration system which is used
   for the repository.
 
-``vcs_last_committer_date``
-  Date of last commit in VCS.
-
 ``vcs_url``
   HTML URL to the VCS platform where the repository is hosted.
 
 ``version``
   Latest released version of the repository.
+  Is ``0.0.0`` when no release has been made.
+
+``vcs_commits_since_last_release``
+  Number of commits since the last release.
+  Is missing when no release has been made.
+
+``vcs_last_committer_date``
+  Date of last commit in VCS.

@@ -217,17 +217,29 @@ class DebOpsAPI:
             # except git.exc.GitCommandError:
             version = '0.0.0'
 
-        version = re.sub(r'^v', '', version)
-        #  logger.debug(version)
-
         if self._test_mode:
             # Fake committer date in test mode
             last_committer_date = '1970-01-01 00:00:00 +0000'
 
-        return {
-            'last_committer_date': last_committer_date,
-            'version': version,
+        metadata = {
+            'vcs_last_committer_date': last_committer_date,
+            'version': re.sub(r'^v', '', version),
         }
+
+        if not self._test_mode and version != '0.0.0':
+            try:
+                commits_since_last_release = len(
+                    g.log('{}...HEAD'.format(version), '--oneline').split('\n')
+                )
+            except:
+                commits_since_last_release = None
+
+            if commits_since_last_release is not None:
+                metadata.update({
+                    'vcs_commits_since_last_release': commits_since_last_release,
+                })
+
+        return metadata
 
     def _get_role_metadata(self, role_path):
         """
@@ -374,16 +386,16 @@ class DebOpsAPI:
                     role_owner = self._get_owner_from_vcs_url(role_vcs_url)
                     role_full_name = self._get_role_full_name(role_owner, role_name)
 
-                    vcs_info = self._get_vcs_info(os.path.join(role_path, role_dir_name))
-
                     metadata = {
                         'vcs_url': role_vcs_url,
-                        'vcs_last_committer_date': vcs_info['last_committer_date'],
-                        'version': vcs_info['version'],
                         'role_format_version': role_dir_info['role_format_version'],
                         'role_owner': role_owner,
                         'role_name': role_name,
                     }
+
+                    metadata.update(
+                        self._get_vcs_info(os.path.join(role_path, role_dir_name))
+                    )
 
                     if 'meta' in role_metadata:
                         metadata.update(
