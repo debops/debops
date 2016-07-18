@@ -131,6 +131,9 @@
                 {{ item.php_options | indent(16) | regex_replace("(?m)^\s*$", "") }}
 
 {%     endif %}
+                # Mitigate HTTPOXY attacks (https://httpoxy.org/)
+                fastcgi_param HTTP_PROXY "";
+
                 fastcgi_index index.php;
                 fastcgi_pass {{ item.php_upstream }};
         }
@@ -159,6 +162,9 @@
                 {{ item.php_options | indent(16) | regex_replace("(?m)^\s*$", "") }}
 
 {%     endif %}
+                # Mitigate HTTPOXY attacks (https://httpoxy.org/)
+                fastcgi_param HTTP_PROXY "";
+
                 fastcgi_index index.php;
                 fastcgi_pass {{ item.php_upstream }};
         }
