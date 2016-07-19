@@ -543,6 +543,28 @@ php__pool_www_data:
 # Configuration of other Ansible roles [[[
 # ----------------------------------------
 
+# .. envvar:: php__apt_preferences__dependent_list [[[
+#
+# Configuration of the ``debops.apt_preferences`` role.
+php__apt_preferences__dependent_list:
+
+  - package: '*'
+    pin: 'origin "packages.sury.org"'
+    priority: '100'
+    reason: "Don't upgrade software automatically using packages from external repository"
+    role: 'debops.php'
+    suffix: '_packages_sury_org'
+    state: '{{ "present" if php__sury|bool else "absent" }}'
+
+  - packages: [ 'php5', 'php5-*', 'php7.0', 'php7.0-*', 'dh-php', 'php-*' ]
+    pin: 'origin "packages.sury.org"'
+    priority: '500'
+    reason: 'Prefer PHP packages from the same repository for consistency'
+    role: 'debops.php'
+    suffix: '_packages_sury_org'
+    state: '{{ "present" if php__sury|bool else "absent" }}'
+
+                                                                   # ]]]
 # .. envvar:: php__logrotate__dependent_config [[[
 #
 # Configuration of the ``debops.logrotate`` role.

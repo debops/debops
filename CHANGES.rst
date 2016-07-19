@@ -12,7 +12,19 @@ The current role maintainer is drybjed.
 `debops.php master`_ - unreleased
 ---------------------------------
 
-.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.0...master
+.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.1...master
+
+
+`debops.php v0.2.1`_ - 2016-07-19
+---------------------------------
+
+.. _debops.php v0.2.1: https://github.com/debops/ansible-php/compare/v0.2.0...v0.2.1
+
+Added
+~~~~~
+
+- Add default variable with configuration for ``debops.apt_preferences`` role,
+  and update the playbook to include the new role dependency. [drybjed]
 
 
 `debops.php v0.2.0`_ - 2016-07-11
