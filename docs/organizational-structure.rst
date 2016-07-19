@@ -33,10 +33,10 @@ to all repositories and resources of the project.
 The UNIX group for the DebOps Leader used on the project assets should be named
 ``debops-leader``.
 
-Project Admin
--------------
+Project Admins
+--------------
 
-The DebOps Project Admin manages the Projects services such as websites and
+The DebOps Project Admins manage the Project’s services such as websites and
 mailing lists.
 
 Contributors

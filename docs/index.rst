@@ -1,7 +1,7 @@
 .. _debops_policy:
 
-DebOps Policy and Guidelines
-============================
+DebOps Policies and Guidelines
+==============================
 
 .. toctree::
    :maxdepth: 2

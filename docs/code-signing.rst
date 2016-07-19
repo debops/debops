@@ -38,6 +38,7 @@ For background about this refer to:
 * `A Git Horror Story: Repository Integrity With Signed Commits <https://mikegerwitz.com/papers/git-horror-story.html>`_
 * `What are the advantages and disadvantages of cryptographically signing commits and tags in Git? <https://programmers.stackexchange.com/a/212216>`_
 * `Discussion between drybjed and ypid <https://github.com/debops/ansible-ifupdown/pull/48>`_
+* `PR of the initial code signing policy <https://github.com/debops/debops-policy/pull/2>`_
 
 .. [#debops-org] All repositories in the DebOps core project currently hosted at: https://github.com/debops/.
    This does not apply for `DebOps Contrib <https://github.com/debops-contrib/>`_.
