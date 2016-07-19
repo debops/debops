@@ -1,9 +1,9 @@
-{% set core_tpl_uuid = '' %}
+{% set core__tpl_uuid = '' %}
 {% if ansible_local|d() and ansible_local.uuid|d() %}
-{%   set core_tpl_uuid = ansible_local.uuid %}
+{%   set core__tpl_uuid = ansible_local.uuid %}
 {% elif ansible_local|d() and ansible_local.root|d() and ansible_local.root.uuid|d() %}
-{%   set core_tpl_uuid = ansible_local.root.uuid %}
+{%   set core__tpl_uuid = ansible_local.root.uuid %}
 {% else %}
-{%   set core_tpl_uuid = (core_register_uuid.stdout if (core_register_uuid|d() and core_register_uuid.stdout) else core_uuid_random) | lower %}
+{%   set core__tpl_uuid = (core__register_uuid.stdout if (core__register_uuid|d() and core__register_uuid.stdout) else core__uuid_random) | lower %}
 {% endif %}
-{{ core_tpl_uuid | to_nice_json }}
+{{ core__tpl_uuid | to_nice_json }}

@@ -11,14 +11,16 @@ By default ``debops.core`` is run from its own ``core.yml`` DebOps playbook by
 the ``common.yml`` playbook, which means that it is run on all hosts in the
 inventory.
 
-If you want to modify the "root path" variables (``core_root_*``), it's best to
+If you want to modify the "root path" variables (``core__root_*``), it's best to
 prepare the new ones before initial configuration (for example in a test
 environment), so that you won't need to change them after everything is
 configured.
 
-To see what facts are configured on a host, run command::
+To see what facts are configured on a host, run command:
 
-    ansible <hostname> -s -m setup -a 'filter=ansible_local'
+.. code-block:: console
+
+   user@host:~$ ansible <hostname> -s -m setup -a 'filter=ansible_local'
 
 Ansible Controller IP addresses
 -------------------------------
@@ -50,42 +52,35 @@ get the IP address.
 
 Note: Hosts provisioned by the ``debops.bootstrap`` role have a workaround in
 place so that the playbook could be run in privileged mode but to avoid
-problems with `other provisioning methods <https://github.com/debops/ansible-core/issues/6#issuecomment-141923939>`
+problems with `other provisioning methods <https://github.com/debops/ansible-core/issues/6#issuecomment-141923939>`_
 the role should be run in unprivileged mode as mentioned.
 
-This is a playbook that is used to run the role::
+This is a playbook that is used to run the role:
 
-    ---
-    - name: Prepare core environment
-      hosts: 'all:!localhost'
-      become: False
-
-      roles:
-
-        - role: debops.core
-          tags: [ 'role::core' ]
-          become: True
+.. literalinclude:: playbooks/core.yml
+   :language: yaml
 
 If you use your own set of custom playbooks, you can either copy the above
 playbook, or, if you have the DebOps playbooks installed in the default location,
 include the ``core.yml`` playbook in your common playbook (it is sufficient to
-run it only once at the start of the playbook)::
+run it only once at the start of the playbook):
 
-    ---
+.. code-block:: yaml
 
-    - include: ~/.local/share/debops/debops-playbooks/playbooks/core.yml
+   ---
 
-    - name: Common playbook
-      hosts: all:!localhost
-      become: True
+   - include: ~/.local/share/debops/debops-playbooks/playbooks/core.yml
 
-      roles:
+   - name: Common playbook
+     hosts: 'debops_all_hosts'
+     become: True
 
-        - role: example-role
+     roles:
+
+       - role: example-role
 
 If you use the default DebOps playbooks alongside your own custom ones, you don't
 need to include the ``core.yml`` playbook at all.
 
 See the usage guide in the ``debops.core`` documentation for information about
 its use.
-
