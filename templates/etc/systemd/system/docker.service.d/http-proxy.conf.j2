@@ -1,0 +1,6 @@
+# {{ ansible_managed }}
+
+{% if inventory__environment.http_proxy %}
+[Service]
+Environment="HTTP_PROXY={{ inventory__environment.http_proxy }}" {% if inventory__environment.https_proxy %}"HTTPS_PROXY={{ inventory__environment.https_proxy }}"{% endif %} {% if inventory__environment.no_proxy %}"NO_PROXY={{ inventory__environment.no_proxy }}"{% endif %} 
+{% endif %}

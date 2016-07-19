@@ -71,6 +71,17 @@
   when: docker_upstream|d() | bool
   tags: [ 'role::docker:config' ]
 
+- name: Make sure that docker.service.d directory exists
+  file:
+    path: '/etc/systemd/system/docker.service.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (docker_upstream|d() | bool) and 
+      (inventory__environment is defined and inventory__environment.http_proxy is defined)
+  tags: [ 'role::docker:config' ]
+
 - name: Install Debian systemd service unit
   template:
     src: 'etc/systemd/system/docker.service.j2'
@@ -81,6 +92,25 @@
   notify: [ 'Restart docker' ]
   register: docker_register_systemd_service
   when: docker_upstream|d() | bool
+  tags: [ 'role::docker:config' ]
+
+- name: Configure Docker proxy
+  template:
+    src: 'etc/systemd/system/docker.service.d/http-proxy.conf.j2'
+    dest: '/etc/systemd/system/docker.service.d/http-proxy.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart docker' ]
+  register: docker_register_systemd_service
+  when: (docker_upstream|d() | bool) and 
+    (inventory__environment is defined and inventory__environment.http_proxy is defined)
+  tags: [ 'role::docker:config' ]
+
+- name: Remove Docker proxy configuration
+  file:  path='/etc/systemd/system/docker.service.d/http-proxy.conf' state=absent
+  when: (docker_upstream|d() | bool) and 
+    (inventory__environment is not defined or inventory__environment.http_proxy is not defined)
   tags: [ 'role::docker:config' ]
 
 - name: Reload systemd daemons
