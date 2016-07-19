@@ -1,91 +1,91 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.core default variables [[[
+# =================================
 
 # .. contents:: Sections
 #    :local:
-#
-# ----------------------
-#   Custom local facts
+
+
+# Custom local facts [[[
 # ----------------------
 
-# .. envvar:: core_facts
+# .. envvar:: core_facts [[[
 #
 # Dictionary of custom facts that are set globally on all hosts.
 core_facts: {}
 
-
-# .. envvar:: core_group_facts
+                                                                   # ]]]
+# .. envvar:: core_group_facts [[[
 #
 # Dictionary of custom facts that are set in a group of hosts.
 core_group_facts: {}
 
-
-# .. envvar:: core_host_facts
+                                                                   # ]]]
+# .. envvar:: core_host_facts [[[
 #
 # Dictionary of custom facts that are set on specific hosts.
 core_host_facts: {}
 
-
-# .. envvar:: core_remove_facts
+                                                                   # ]]]
+# .. envvar:: core_remove_facts [[[
 #
 # List of custom fact keys which will be removed if found.
 core_remove_facts: []
 
-
-# .. envvar:: core_reset_facts
+                                                                   # ]]]
+# .. envvar:: core_reset_facts [[[
 #
 # If ``True``, Ansible will not add facts that are already present on a host to
 # the dictionary, and only store those specified in inventory.
 core_reset_facts: False
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Tags stored as local facts [[[
 # ------------------------------
-#   Tags stored as local facts
-# ------------------------------
 
-# .. envvar:: core_tags
+# .. envvar:: core_tags [[[
 #
 # Global list of tags to set on all hosts.
 core_tags: []
 
-
-# .. envvar:: core_group_tags
+                                                                   # ]]]
+# .. envvar:: core_group_tags [[[
 #
 # List of tags to set for a group of hosts.
 core_group_tags: []
 
-
-# .. envvar:: core_host_tags
+                                                                   # ]]]
+# .. envvar:: core_host_tags [[[
 #
 # List of tags to set on a given host.
 core_host_tags: []
 
-
-# .. envvar:: core_static_tags
+                                                                   # ]]]
+# .. envvar:: core_static_tags [[[
 #
 # Override any combination of global, group or host tags with a static set.
 core_static_tags: []
 
-
-# .. envvar:: core_remove_tags
+                                                                   # ]]]
+# .. envvar:: core_remove_tags [[[
 #
 # Specify a list of tags to remove from a tag list, if they're present.
 core_remove_tags: []
 
-
-# .. envvar:: core_reset_tags
+                                                                   # ]]]
+# .. envvar:: core_reset_tags [[[
 #
 # If ``True``, Ansible will not merge current set of tags on a host and will
 # create a new list of tags from inventory variables.
 core_reset_tags: False
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Core facts [[[
 # --------------
-#   Core facts
-# --------------
 
-# .. envvar:: core_ansible_controllers
+# .. envvar:: core_ansible_controllers [[[
 #
 # List of IP addresses or CIDR subnets which contain hosts that are used to
 # execute Ansible playbooks. Other roles that maintain host security can source
@@ -93,8 +93,8 @@ core_reset_tags: False
 # there to IP address whitelist.
 core_ansible_controllers: []
 
-
-# .. envvar:: core_active_controller
+                                                                   # ]]]
+# .. envvar:: core_active_controller [[[
 #
 # IP address from which the SSH connection to a given host originates. It
 # usually is the external IP address of Ansible Controller host, but it might be
@@ -105,58 +105,58 @@ core_active_controller: '{{ ((ansible_env.SSH_CLIENT.split(" ") | first)
                              if (ansible_env|d() and ansible_env.SSH_CLIENT|d())
                              else "") }}'
 
-
-# .. envvar:: core_cache_valid_time
+                                                                   # ]]]
+# .. envvar:: core_cache_valid_time [[[
 #
 # Time in seconds which specifies how long APT cache should be considered
 # valid between updates.
 core_cache_valid_time: '{{ (60 * 60 * 24) }}'
 
-
-# .. envvar:: core_keyserver
+                                                                   # ]]]
+# .. envvar:: core_keyserver [[[
 #
 # URL for the GnuPG keyserver on which Ansible will search for encryption keys.
 core_keyserver: 'hkp://pool.sks-keyservers.net'
 
-
-# .. envvar:: core_uuid_random
+                                                                   # ]]]
+# .. envvar:: core_uuid_random [[[
 #
 # Ansible will try and read the UUID value from the host using ``dmidecode``.
 # If it's not available, this value will be used as the UUID source.
 core_uuid_random: '{{ ansible_fqdn | to_uuid }}'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Core packages [[[
 # -----------------
-#   Core packages
-# -----------------
 
-# .. envvar:: core_base_packages
+# .. envvar:: core_base_packages [[[
 #
 # List of packages required by Ansible local fact scripts.
 core_base_packages: [ 'libcap2-bin' ]
 
-
-# .. envvar:: core_packages
+                                                                   # ]]]
+# .. envvar:: core_packages [[[
 #
 # List of additional packages to install.
 core_packages: []
 
-# .. envvar:: core_host_packages
+                                                                   # ]]]
+# .. envvar:: core_host_packages [[[
 #
 # List of additional packages to install for a host.
 core_host_packages: []
 
-# .. envvar:: core_group_packages
+                                                                   # ]]]
+# .. envvar:: core_group_packages [[[
 #
 # List of additional packages to install for a group.
 core_group_packages: []
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Directory paths [[[
 # -------------------
-#   Directory paths
-# -------------------
 
-# .. envvar:: core_root_facts
+# .. envvar:: core_root_facts [[[
 #
 # Path where Ansible local facts are stored. This shouldn't really be changed
 # because many Ansible roles use this path explicitly. This variable is set here
@@ -164,21 +164,21 @@ core_group_packages: []
 # ``facts.d`` directory is present.
 core_root_facts: '/etc/ansible/facts.d'
 
-
-# .. envvar:: core_root_bin
+                                                                   # ]]]
+# .. envvar:: core_root_bin [[[
 #
 # Directory where user binaries accessible via ``$PATH`` should be stored.
 core_root_bin: '/usr/local/bin'
 
-
-# .. envvar:: core_root_etc
+                                                                   # ]]]
+# .. envvar:: core_root_etc [[[
 #
 # Directory where additional configuration files not related to existing
 # services will be stored. Very rarely used.
 core_root_etc: '/usr/local/etc'
 
-
-# .. envvar:: core_root_lib
+                                                                   # ]]]
+# .. envvar:: core_root_lib [[[
 #
 # Directory where various scripts which don't or shouldn't be directly
 # accessible from the interactive shell should be stored, so that they don't
@@ -186,80 +186,80 @@ core_root_etc: '/usr/local/etc'
 # more than a handful of scripts are used.
 core_root_lib: '/usr/local/lib'
 
-
-# .. envvar:: core_root_sbin
+                                                                   # ]]]
+# .. envvar:: core_root_sbin [[[
 #
 # Directory where administrator binaries accessible via ``$PATH`` should be
 # stored.
 core_root_sbin: '/usr/local/sbin'
 
-
-# .. envvar:: core_root_share
+                                                                   # ]]]
+# .. envvar:: core_root_share [[[
 #
 # Path where static data files should be stored, similar to ``/usr/share``.
 # Rarely used.
 core_root_share: '/usr/local/share'
 
-
-# .. envvar:: core_root_src
+                                                                   # ]]]
+# .. envvar:: core_root_src [[[
 #
 # Path where application sources (tarballs, ``git`` repositories) can be stored
 # and operated on, usually in a separate subdirectory for each role or user.
 core_root_src: '/usr/local/src'
 
-
-# .. envvar:: core_root_data
+                                                                   # ]]]
+# .. envvar:: core_root_data [[[
 #
 # Directory that stores application data, things served by a given host, for
 # example webpages. Web application system accounts may have their home
 # directories there, as well as ``sftpusers`` websites and home directories.
 core_root_data: '/srv'
 
-
-# .. envvar:: core_root_srv
+                                                                   # ]]]
+# .. envvar:: core_root_srv [[[
 #
 # Alternative directory for application data.
 core_root_srv: '/srv'
 
-
-# .. envvar:: core_root_backup
+                                                                   # ]]]
+# .. envvar:: core_root_backup [[[
 #
 # Path where local backups generated by automated scripts are stored, usually
 # in separate subdirectories for each user/role.
 core_root_backup: '/var/backups'
 
-
-# .. envvar:: core_root_var
+                                                                   # ]]]
+# .. envvar:: core_root_var [[[
 #
 # Path where variable internal data are stored. Examples include databases,
 # spools, transient files. Usually a separate subdirectory is used, especially
 # when the application has its own home directory.
 core_root_var: '/var/local'
 
-
-# .. envvar:: core_root_home
+                                                                   # ]]]
+# .. envvar:: core_root_home [[[
 #
 # Path where home directories of local system accounts are stored (``/home`` is
 # reserved for regular users and home directories of users stored in remote
 # databases like LDAP).
 core_root_home: '/var/local'
 
-
-# .. envvar:: core_root_app
+                                                                   # ]]]
+# .. envvar:: core_root_app [[[
 #
 # Directory where non-web applications are installed. By default it's in
 # a subdirectory, usually home directory of an application, but the root path
 # might be different.
 core_root_app: '/var/local'
 
-
-# .. envvar:: core_root_log
+                                                                   # ]]]
+# .. envvar:: core_root_log [[[
 #
 # Path where log files are stored, optionally with a separate subdirectory.
 core_root_log: '/var/log'
 
-
-# .. envvar:: core_root_directories
+                                                                   # ]]]
+# .. envvar:: core_root_directories [[[
 #
 # List of directories and their ``ansible_local.root.*`` variable names, passed
 # to a task that creates them in the filesystem and the template that generates
@@ -307,4 +307,6 @@ core_root_directories:
 
   - path: '{{ core_root_log }}'
     fact: 'log'
-
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

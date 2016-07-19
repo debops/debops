@@ -96,28 +96,34 @@ Additional variables can be used to manipulate facts defined on remote hosts:
 Examples
 ~~~~~~~~
 
-Create a set of custom facts::
+Create a set of custom facts:
 
-    core_facts:
-      'fact_name': 'fact_value'
-      'extra_list': [ 'list', 'of', 'values' ]
-      'nested_dict':
-        'some_key': 'some_value'
+.. code-block:: yaml
 
-When above variables are defined they can be accessed using Jinja variables::
+   core_facts:
+     'fact_name': 'fact_value'
+     'extra_list': [ 'list', 'of', 'values' ]
+     'nested_dict':
+       'some_key': 'some_value'
 
-    '{{ ansible_local.core.fact_name }}'
-    '{{ ansible_local.core.extra_list | join(" ") }}'
-    '{{ ansible_local.core.nested_dict.some_key }}'
+When above variables are defined they can be accessed using Jinja variables:
+
+.. code-block:: yaml
+
+   fact_name: '{{ ansible_local.core.fact_name }}'
+   extra_list: '{{ ansible_local.core.extra_list | join(" ") }}'
+   nested_dict: '{{ ansible_local.core.nested_dict.some_key }}'
 
 Above code will work correctly if ``debops.core`` has been executed previously
 on a host. If you want your role to be compatible with installations that don't
-use it, you need to write your variable like this::
+use it, you need to write your variable like this:
 
-    '{{ ansible_local.core.fact_name
-       if (ansible_local|d() and ansible_local.core|d() and
-           ansible_local.core.fact_name|d())
-       else "fact_value" }}'
+.. code-block:: yaml
+
+   var: '{{ ansible_local.core.fact_name
+            if (ansible_local|d() and ansible_local.core|d() and
+                ansible_local.core.fact_name|d())
+            else "fact_value" }}'
 
 That way Ansible won't emit an error about missing dictionary keys at each
 level of the ``ansible_local`` variable namespace.
@@ -150,17 +156,23 @@ actions depending on that state.
 Examples
 ~~~~~~~~
 
-Check if a given value is in the tag list::
+Check if a given value is in the tag list:
 
-    - debug: msg="Test"
-      when: ansible_local|d() and ansible_local.tags|d() and
-            'value' in ansible_local.tags
+.. code-block:: yaml
 
-Check if a given value is not in the tag list::
+   - name: Show debug output
+     debug: msg="Test"
+     when: ansible_local|d() and ansible_local.tags|d() and
+           'value' in ansible_local.tags
 
-    - debug: msg="Test"
-      when: ansible_local|d() and ansible_local.tags|d() and
-            'value' not in ansible_local.tags
+Check if a given value is not in the tag list:
+
+.. code-block:: yaml
+
+   - name: Show debug output
+     debug: msg="Test"
+     when: ansible_local|d() and ansible_local.tags|d() and
+           'value' not in ansible_local.tags
 
 You can find a list of host tags in the documentation of various roles which use
 them.
@@ -192,23 +204,29 @@ Examples
 ~~~~~~~~
 
 Create an user account with home directory using root paths assuming that the
-``debops.core`` role has been run on the host previously::
+``debops.core`` role has been run on the host previously:
 
-    - user:
-        name: '{{ username }}'
-        state: 'present'
-        home: '{{ ansible_local.root.home + "/" + username }}'
+.. code-block:: yaml
+
+   - name: Create new user
+     user:
+       name: '{{ username }}'
+       state: 'present'
+       home: '{{ ansible_local.root.home + "/" + username }}'
 
 If you want to support the case without the ``debops.core`` role present, you
-can do it like this::
+can do it like this:
 
-    - user:
-        name: '{{ username }}'
-        state: 'present'
-        home: '{{ (ansible_local.root.home
-                   if (ansible_local|d() and ansible_local.root|d() and
-                       ansible_local.root.home|d())
-                   else "/home") + "/" + username }}'
+.. code-block:: yaml
+
+   - name: Create new user
+     user:
+       name: '{{ username }}'
+       state: 'present'
+       home: '{{ (ansible_local.root.home
+                  if (ansible_local|d() and ansible_local.root|d() and
+                      ansible_local.root.home|d())
+                  else "/home") + "/" + username }}'
 
 This will allow you to set the path for common home directories in one location
 and reuse it through your infrastructure.
@@ -242,13 +260,15 @@ boolean variable.
 Examples
 ~~~~~~~~
 
-Reconfigure the firewall if the system capabilities allow it::
+Reconfigure the firewall if the system capabilities allow it:
 
-    - service:
-        name: 'ferm'
-        state: 'restarted'
-      when: (ansible_local|d() and ansible_local.cap12s|d() and
-             (not ansible_local.cap12s.enabled | bool or
-             (ansible_local.cap12s.enabled | bool and
-              'cap_net_admin' in ansible_local.cap12s.list)))
+.. code-block:: yaml
 
+   - name: Configure the firewall
+     service:
+       name: 'ferm'
+       state: 'restarted'
+     when: (ansible_local|d() and ansible_local.cap12s|d() and
+            (not ansible_local.cap12s.enabled | bool or
+            (ansible_local.cap12s.enabled | bool and
+             'cap_net_admin' in ansible_local.cap12s.list)))

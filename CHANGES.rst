@@ -1,44 +1,81 @@
 Changelog
 =========
 
-v0.1.4
-------
+**debops.core**
 
-*Released: 2016-02-08*
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
+and `human-readable changelog <http://keepachangelog.com/>`_.
 
-- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+The current role maintainer is drybjed.
+
+
+`debops.core master`_ - unreleased
+----------------------------------
+
+.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.0...master
+
+Changed
+~~~~~~~
+
+- Update documentation and Changelog. [drybjed]
+
+
+`debops.core v0.1.4`_ - 2016-02-08
+----------------------------------
+
+.. _debops.core v0.1.4: https://github.com/debops/ansible-core/compare/v0.1.3...v0.1.4
+
+Added
+~~~~~
 
 - Add a note about IP addresses of Ansible Controller and ``become`` setting in
   inventory. [drybjed]
 
-v0.1.3
-------
+Fixed
+~~~~~
 
-*Released: 2015-12-17*
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+
+
+`debops.core v0.1.3`_ - 2015-12-17
+----------------------------------
+
+.. _debops.core v0.1.3: https://github.com/debops/ansible-core/compare/v0.1.2...v0.1.3
+
+Changed
+~~~~~~~
 
 - Gather local facts if they changed, in case the role is used in a play with
   other roles. [drybjed]
 
-v0.1.2
-------
 
-*Released: 2015-10-19*
+`debops.core v0.1.2`_ - 2015-10-19
+----------------------------------
+
+.. _debops.core v0.1.2: https://github.com/debops/ansible-core/compare/v0.1.1...v0.1.2
+
+Added
+~~~~~
 
 - Add a ``core_active_controller`` variable which specifies IP address of
   active Ansible Controller. [drybjed]
 
-v0.1.1
-------
 
-*Released: 2015-08-22*
+`debops.core v0.1.1`_ - 2015-08-22
+----------------------------------
+
+.. _debops.core v0.1.1: https://github.com/debops/ansible-core/compare/v0.1.0...v0.1.1
+
+Added
+~~~~~
 
 - Add script to gather information from ``/etc/resolv.conf``, available in the
   Ansible Facts as ``ansible_local.resolver.*``. [drybjed]
 
-v0.1.0
-------
+debops.core v0.1.0 - 2015-08-22
+-------------------------------
 
-*Released: 2015-08-22*
+Added
+~~~~~
 
 - Initial release. [drybjed]
-

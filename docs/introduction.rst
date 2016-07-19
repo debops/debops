@@ -12,9 +12,11 @@ is run with or without different sets of role tags.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v1.9.0``. To install it, run::
+This role requires at least Ansible ``v1.9.0``. To install it, run:
 
-    ansible-galaxy install debops.core
+.. code-block:: console
+
+   user@host:~$ ansible-galaxy install debops.core
 
 ..
  Local Variables:
