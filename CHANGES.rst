@@ -26,6 +26,13 @@ Added
 - Add default variable with configuration for ``debops.apt_preferences`` role,
   and update the playbook to include the new role dependency. [drybjed]
 
+Changed
+~~~~~~~
+
+- Status of the ``php__sury`` variable is now preserved in Ansible local facts.
+  If the custom repository is enabled, it will stay enabled even when the user
+  removes the variable from inventory. [drybjed]
+
 
 `debops.php v0.2.0`_ - 2016-07-11
 ---------------------------------
