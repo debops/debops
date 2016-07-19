@@ -58,15 +58,14 @@ Maintainers
 
 Each repository has their has a Maintainer. Maintainers decide what a given
 repository does, develop it and can accept Pull/Merge Requests as needed. They
-have full write access to the repositories. All of their commits need to be
-signed by their GPG key.
+have full write access to the repositories.
 
 Only DebOps Developers can be Maintainers. If a role was created by a Author
 who is not a DebOps Developer yet, a DebOps Developer needs to be the
 Maintainer.
 
-A repository can have a team of Maintainers, in this case only one signature is
-required for a commit.
+A repository can have a team of Maintainers, in this case only one GPG
+signature is required for a commit to enter the main repository.
 
 Bots
 ----
