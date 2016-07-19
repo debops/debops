@@ -8,6 +8,10 @@
     - role: debops.php/env
       tags: [ 'role::php', 'role::logrotate' ]
 
+    - role: debops.apt_preferences
+      apt_preferences__dependent_list:
+        - '{{ php__apt_preferences__dependent_list }}'
+
     - role: debops.logrotate
       tags: [ 'role::logrotate' ]
       logrotate__dependent_config:

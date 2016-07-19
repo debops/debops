@@ -12,7 +12,29 @@ The current role maintainer is drybjed.
 `debops.php master`_ - unreleased
 ---------------------------------
 
-.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.0...master
+.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.1...master
+
+
+`debops.php v0.2.1`_ - 2016-07-19
+---------------------------------
+
+.. _debops.php v0.2.1: https://github.com/debops/ansible-php/compare/v0.2.0...v0.2.1
+
+Added
+~~~~~
+
+- Add default variable with configuration for ``debops.apt_preferences`` role,
+  and update the playbook to include the new role dependency. [drybjed]
+
+Changed
+~~~~~~~
+
+- Status of the ``php__sury`` variable is now preserved in Ansible local facts.
+  If the custom repository is enabled, it will stay enabled even when the user
+  removes the variable from inventory. [drybjed]
+
+- Update the PHP SAPI config synchronization script to support older PHP5
+  installations on Debian Wheezy. [drybjed]
 
 
 `debops.php v0.2.0`_ - 2016-07-11

@@ -5,6 +5,17 @@ The upgrade notes only describe necessary changes that you might need to make
 to your setup in order to use a new role release. Refer to the Changelog for
 more details about what has changed.
 
+
+From debops.php v0.2.0 to debops.php v0.2.1
+-------------------------------------------
+
+- You might want to update all of the playbooks that use ``debops.php`` role to
+  include ``debops.apt_preferences`` role dependency (see the example
+  playbook). This is not strictly necessary if you don't use the
+  ``packages.sury.org`` repository, but it's recommended for consistency and
+  portability.
+
+
 From debops.php5 role to debops.php role
 ----------------------------------------
 

@@ -23,7 +23,10 @@ php__version_preference: [ 'php7.0', 'php5' ]
 # Enable custom APT repositories of Ondřej Surý, Debian and Ubuntu PHP package
 # maintainer. You can enable these repositories to install PHP 7.0 on Debian
 # Jessie. See :ref:`php__ref_sury` for more details.
-php__sury: False
+php__sury: '{{ (ansible_local.php.sury
+                if (ansible_local|d() and ansible_local.php|d() and
+                    ansible_local.php.sury|d())
+                else False) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: php__sury_apt_key_id [[[
@@ -543,6 +546,28 @@ php__pool_www_data:
 # Configuration of other Ansible roles [[[
 # ----------------------------------------
 
+# .. envvar:: php__apt_preferences__dependent_list [[[
+#
+# Configuration of the ``debops.apt_preferences`` role.
+php__apt_preferences__dependent_list:
+
+  - package: '*'
+    pin: 'origin "packages.sury.org"'
+    priority: '100'
+    reason: "Don't upgrade software automatically using packages from external repository"
+    role: 'debops.php'
+    suffix: '_packages_sury_org'
+    state: '{{ "present" if php__sury|bool else "absent" }}'
+
+  - packages: [ 'php5', 'php5-*', 'php7.0', 'php7.0-*', 'dh-php', 'php-*' ]
+    pin: 'origin "packages.sury.org"'
+    priority: '500'
+    reason: 'Prefer PHP packages from the same repository for consistency'
+    role: 'debops.php'
+    suffix: '_packages_sury_org'
+    state: '{{ "present" if php__sury|bool else "absent" }}'
+
+                                                                   # ]]]
 # .. envvar:: php__logrotate__dependent_config [[[
 #
 # Configuration of the ``debops.logrotate`` role.
