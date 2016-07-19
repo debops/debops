@@ -89,7 +89,6 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  notify: [ 'Restart docker' ]
   register: docker_register_systemd_service
   when: docker_upstream|d() | bool
   tags: [ 'role::docker:config' ]
@@ -101,24 +100,29 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  notify: [ 'Restart docker' ]
-  register: docker_register_systemd_service
+  register: docker_register_systemd_proxy_present
   when: (docker_upstream|d() | bool) and 
     (inventory__environment is defined and inventory__environment.http_proxy is defined)
   tags: [ 'role::docker:config' ]
 
 - name: Remove Docker proxy configuration
   file:  path='/etc/systemd/system/docker.service.d/http-proxy.conf' state=absent
+  register: docker_register_systemd_proxy_absent
   when: (docker_upstream|d() | bool) and 
     (inventory__environment is not defined or inventory__environment.http_proxy is not defined)
   tags: [ 'role::docker:config' ]
 
 - name: Reload systemd daemons
   command: systemctl daemon-reload
+  notify: [ 'Restart docker']
   when: ((ansible_local|d() and ansible_local.init|d() and
           ansible_local.init == 'systemd') and
-         docker_register_systemd_service|d() and
-         docker_register_systemd_service.changed)
+         ((docker_register_systemd_service|d() and
+         docker_register_systemd_service.changed) or
+         (docker_register_systemd_proxy_present|d() and
+         docker_register_systemd_proxy_present.changed) or
+         (docker_register_systemd_proxy_absent|d() and
+         docker_register_systemd_proxy_absent.changed)))
   tags: [ 'role::docker:config' ]
 
 - name: Add specified users to 'docker' group
