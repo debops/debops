@@ -18,7 +18,7 @@
 # The primary testing and deployment environment is Python 3 but Python 2
 # should also work (at least to get the CI test passing).
 debops_api__python_version: '{{
-    3 if (ansible_distribution == "Debian" and ansible_distribution_major_version >= 8)
+    3 if (ansible_distribution == "Debian" and ansible_distribution_major_version|int >= 8)
     else 2 }}'
 
                                                                    # ]]]
@@ -81,7 +81,7 @@ debops_api__home: '{{ (ansible_local.nginx.www
 # .. envvar:: debops_api__public_api_dir [[[
 #
 # Public API data directory which is going to be served by ``nginx``.
-debops_api__public_api_dir: '{{ debops_api__home + "/public" }}'
+debops_api__public_api_dir: '{{ debops_api__home + "/sites/public" }}'
 
                                                                    # ]]]
 # .. envvar:: debops_api__app_repo_url [[[
@@ -98,6 +98,13 @@ debops_api__app_repo_dest: '{{ (ansible_local.root.src
                                   if (ansible_local|d() and ansible_local.root|d() and
                                       ansible_local.root.src|d())
                                   else "/usr/local/src") + "/debops-api" }}'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__input_data_repo_update [[[
+#
+# When enables, input data repository will be updated on each Ansible run
+# (might take some time).
+debops_api__input_data_repo_update: False
 
                                                                    # ]]]
 # .. envvar:: debops_api__input_data_repo_url [[[
@@ -141,7 +148,7 @@ debops_api__app_parameters:
 # .. envvar:: debops_api__domain [[[
 #
 # Public domain of the DebOps API.
-debops_api__domain: [ 'api.{{ ansible_domain }}' ]
+debops_api__domain: 'api.{{ ansible_domain }}'
                                                                    # ]]]
                                                                    # ]]]
 # DebOps API update [[[
@@ -166,6 +173,7 @@ debops_api__cron_script: '{{ debops_api__home + "/bin/debops-api-update" }}'
 # API script via ``git``.
 debops_api__cron_entries:
   - name: 'debops-api-update'
+    cron_file: 'debops-api-update'
     minute: '23'
                                                                    # ]]]
                                                                    # ]]]
@@ -179,7 +187,7 @@ debops_api__cron_entries:
 debops_api__nginx__servers:
 
   - by_role: 'debops.debops_api'
-    enabled: True
+    filename: 'debops.debops_api'
     state: '{{ debops_api__deploy_state }}'
     type: 'default'
     name: '{{ debops_api__domain }}'

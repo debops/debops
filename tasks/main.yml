@@ -30,6 +30,7 @@
     name: '{{ debops_api__user }}'
     group: '{{ debops_api__group }}'
     home: '{{ debops_api__home }}'
+    shell: '/sbin/nologin'
     comment: 'DebOps API'
     system: True
     state: 'present'
@@ -57,7 +58,7 @@
   git:
     repo: '{{ debops_api__input_data_repo_url }}'
     dest: '{{ debops_api__input_data_repo_dest }}'
-    update: True
+    update: '{{ debops_api__input_data_repo_update | bool }}'
     recursive: True
   become_user: '{{ debops_api__user }}'
   tags: [ 'role::debops_api:git' ]
