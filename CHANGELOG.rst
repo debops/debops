@@ -40,6 +40,9 @@ Changed
 
 - Update ``debops.bootstrap`` playbook. [drybjed]
 
+- Update playbooks which use ``debops.php`` role to include the
+  ``debops.apt_preferences`` role dependency. [drybjed]
+
 Removed
 ~~~~~~~
 

@@ -13,6 +13,12 @@
     - role: debops.php/env
       tags: [ 'role::php', 'role::logrotate' ]
 
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ php__apt_preferences__dependent_list }}'
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
     - role: debops.logrotate
       tags: [ 'role::logrotate' ]
       logrotate__dependent_config:
@@ -24,11 +30,6 @@
         - '{{ dokuwiki__php__dependent_packages }}'
       php__dependent_pools:
         - '{{ dokuwiki__php__dependent_pools }}'
-
-    - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
-      apt_preferences__dependent_list:
-        - '{{ nginx__apt_preferences__dependent_list }}'
 
     - role: debops.ferm
       tags: [ 'role::ferm' ]
