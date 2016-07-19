@@ -1,31 +1,31 @@
-{% set core_tpl_tags = [] %}
-{% if not core_reset_tags|d(False) %}
+{% set core__tpl_tags = [] %}
+{% if not core__reset_tags|d(False) %}
 {%   if ansible_local|d() and ansible_local.tags|d() %}
 {%     for element in ansible_local.tags %}
-{%       set _ = core_tpl_tags.append(element) %}
+{%       set _ = core__tpl_tags.append(element) %}
 {%     endfor %}
 {%   elif ansible_local|d() and ansible_local.root|d() and ansible_local.root.flags|d() %}
 {%     for element in ansible_local.root.flags %}
-{%       set _ = core_tpl_tags.append(element) %}
+{%       set _ = core__tpl_tags.append(element) %}
 {%     endfor %}
 {%   endif %}
 {% endif %}
-{% set core_tpl_tags_list = (core_tpl_tags + core_tags|d([]) + core_group_tags|d([]) + core_host_tags|d([])) | difference(core_remove_tags|d([])) %}
-{% if core_static_tags|d() %}
-{%   set core_tpl_tags_list = core_static_tags|d([]) | difference(core_remove_tags|d([])) %}
+{% set core__tpl_tags_list = (core__tpl_tags + core__tags|d([]) + core__group_tags|d([]) + core__host_tags|d([])) | difference(core__remove_tags|d([])) %}
+{% if core__static_tags|d() %}
+{%   set core__tpl_tags_list = core__static_tags|d([]) | difference(core__remove_tags|d([])) %}
 {% endif %}
 {
-"flags": {{ core_tpl_tags_list | sort | unique | to_nice_json }},
-{% set core_tpl_uuid = '' %}
+"flags": {{ core__tpl_tags_list | sort | unique | to_nice_json }},
+{% set core__tpl_uuid = '' %}
 {% if ansible_local|d() and ansible_local.uuid|d() %}
-{%   set core_tpl_uuid = ansible_local.uuid %}
+{%   set core__tpl_uuid = ansible_local.uuid %}
 {% elif ansible_local|d() and ansible_local.root|d() and ansible_local.root.uuid|d() %}
-{%   set core_tpl_uuid = ansible_local.root.uuid %}
+{%   set core__tpl_uuid = ansible_local.root.uuid %}
 {% else %}
-{%   set core_tpl_uuid = (core_register_uuid.stdout if (core_register_uuid|d() and core_register_uuid.stdout) else core_uuid_random) | lower %}
+{%   set core__tpl_uuid = (core__register_uuid.stdout if (core__register_uuid|d() and core__register_uuid.stdout) else core__uuid_random) | lower %}
 {% endif %}
-"uuid": "{{ core_tpl_uuid }}",
-{% for item in core_root_directories %}
+"uuid": "{{ core__tpl_uuid }}",
+{% for item in core__root_directories %}
 {% if hostvars[inventory_hostname]["ansible_local"]|d() and
       hostvars[inventory_hostname]["ansible_local"]["root"]|d() and
       hostvars[inventory_hostname]["ansible_local"]["root"][item.fact]|d() %}

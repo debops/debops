@@ -8,19 +8,19 @@
                   hostvars[inventory_hostname]["ansible_local"]["root"][item.fact]|d())
               else item.path }}'
     state: 'directory'
-  with_items: '{{ core_root_directories }}'
+  with_items: '{{ core__root_directories }}'
 
 - name: Check IP address of current Ansible Controller
   set_fact:
-    ansible_controller: '{{ core_active_controller }}'
-    core_fact_ansible_controller: '{{ core_active_controller }}'
-  when: core_fact_ansible_controller is undefined and ansible_connection != "local"
+    ansible_controller: '{{ core__active_controller }}'
+    core__fact_ansible_controller: '{{ core__active_controller }}'
+  when: core__fact_ansible_controller is undefined and ansible_connection != "local"
   tags: [ 'role::core', 'role::ferm', 'role::ferm:config', 'role::tcpwrappers' ]
   become: False
 
 - name: Read the host UUID
   shell: dmidecode --string system-uuid | tail -n 1 || true
-  register: core_register_uuid
+  register: core__register_uuid
   changed_when: False
 
 - name: Save local facts
@@ -30,7 +30,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: core_register_fact_files
+  register: core__register_fact_files
   with_items: [ 'core', 'root', 'tags', 'uuid' ]
 
 - name: Install local fact scripts
@@ -40,12 +40,12 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: core_register_fact_scripts
+  register: core__register_fact_scripts
 
 - name: Gather local facts if they changed
   action: setup
-  when: core_register_fact_files.changed | bool or
-        core_register_fact_scripts.changed | bool
+  when: core__register_fact_files|changed or
+        core__register_fact_scripts|changed
 
 - name: Update APT cache and install required packages
   apt:
@@ -53,10 +53,10 @@
     state: 'present'
     install_recommends: False
     update_cache: True
-    cache_valid_time: '{{ core_cache_valid_time }}'
+    cache_valid_time: '{{ core__cache_valid_time }}'
   with_flattened:
-    - '{{ core_base_packages }}'
-    - '{{ core_packages }}'
-    - '{{ core_host_packages }}'
-    - '{{ core_group_packages }}'
+    - '{{ core__base_packages }}'
+    - '{{ core__packages }}'
+    - '{{ core__group_packages }}'
+    - '{{ core__host_packages }}'
 

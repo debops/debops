@@ -14,10 +14,19 @@ The current role maintainer is drybjed.
 
 .. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.0...master
 
+
+`debops.core v0.2.0`_ - 2016-07-19
+----------------------------------
+
+.. _debops.core v0.2.0: https://github.com/debops/ansible-core/compare/v0.1.4...v0.2.0
+
 Changed
 ~~~~~~~
 
 - Update documentation and Changelog. [drybjed]
+
+- Rename all role variables from ``core_*`` to ``core__*`` to move them into
+  their own namespace. [drybjed]
 
 
 `debops.core v0.1.4`_ - 2016-02-08

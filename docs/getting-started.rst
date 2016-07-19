@@ -11,7 +11,7 @@ By default ``debops.core`` is run from its own ``core.yml`` DebOps playbook by
 the ``common.yml`` playbook, which means that it is run on all hosts in the
 inventory.
 
-If you want to modify the "root path" variables (``core_root_*``), it's best to
+If you want to modify the "root path" variables (``core__root_*``), it's best to
 prepare the new ones before initial configuration (for example in a test
 environment), so that you won't need to change them after everything is
 configured.
