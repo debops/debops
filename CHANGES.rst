@@ -33,6 +33,9 @@ Changed
   If the custom repository is enabled, it will stay enabled even when the user
   removes the variable from inventory. [drybjed]
 
+- Update the PHP SAPI config synchronization script to support older PHP5
+  installations on Debian Wheezy. [drybjed]
+
 
 `debops.php v0.2.0`_ - 2016-07-11
 ---------------------------------
