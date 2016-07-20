@@ -1,3 +1,5 @@
+.. _docker__ref_changelog:
+
 Changelog
 =========
 
