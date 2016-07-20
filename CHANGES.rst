@@ -3,7 +3,7 @@ Changelog
 
 **debops.docker**
 
-`debops.docker master`_ - unreleased
+debops.docker master - unreleased
 ------------------------------------
 
 Changed
