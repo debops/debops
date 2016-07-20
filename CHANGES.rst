@@ -15,6 +15,19 @@ Changed
 
 - ``*.changed`` is changed to ``*|changed`` to ensure correct variable type resolution by Ansible 
 
+Migration notes
+^^^^^^^^^^^^^^^
+
+When updating from the previous version to this version, you might need to
+update your inventory. This oneliner might come in handy to do
+this:
+
+.. code:: shell
+
+   git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/docker_etc_services_/docker_etc_services__/g;s/docker_ferm_/docker__ferm__/g;s/\<(docker)_([^_])/\1__\2/g;'
+
+[tallandtree]
+
 v0.1.2
 ------
 
@@ -45,4 +58,5 @@ v0.1.0
 *Released: 2015-09-06*
 
 - Initial release. [drybjed]
+
 
