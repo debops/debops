@@ -1,37 +1,60 @@
+.. _docker__ref_changelog:
+
 Changelog
 =========
 
 **debops.docker**
 
-debops.docker master - unreleased
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
+and `human-readable changelog <http://keepachangelog.com/>`_.
+
+The current role maintainer is drybjed.
+
+
+`debops.docker master`_ - unreleased
 ------------------------------------
+
+.. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.2.0...master
+
+
+`debops.docker v0.2.0`_ - 2016-07-20
+------------------------------------
+
+.. _debops.docker v0.2.0: https://github.com/debops/ansible-docker/compare/v0.1.2...v0.2.0
+
+Added
+~~~~~
+
+- Enable configuration of custom UDP ports in the firewall for additional
+  services like ``consul``. [ddpaul]
+
+- Install ``python-setuptools`` APT package. [antoineco]
+
+- Add support for Docker behind a HTTP proxy using ``systemd`` service files.
+  [tallandtree]
 
 Changed
 ~~~~~~~
-- Update documentation and Changelog. [tallandtree]
 
-- Rename all role variables from ``docker_*`` to ``docker__*`` to move them into
-  their own namespace. [tallandtree]
+- Fix deprecation warnings in Ansible 2.1.0 related to bare and undefined
+  variables. [antoineco]
 
-- ``*.changed`` is changed to ``*|changed`` to ensure correct variable type resolution by Ansible 
+- Update documentation and Changelog. [ypid, tallandtree, drybjed]
 
-Migration notes
-^^^^^^^^^^^^^^^
+- Rename all role variables from ``docker_*`` to ``docker__*`` to move them
+  into their own namespace. [tallandtree]
 
-When updating from the previous version to this version, you might need to
-update your inventory. This oneliner might come in handy to do
-this:
+- ``*.changed`` is changed to ``*|changed`` to ensure correct variable type
+  resolution by Ansible. [tallandtree]
 
-.. code:: shell
 
-   git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/docker_etc_services_/docker_etc_services__/g;s/docker_ferm_/docker__ferm__/g;s/\<(docker)_([^_])/\1__\2/g;'
+`debops.docker v0.1.2`_ - 2015-12-19
+------------------------------------
 
-[tallandtree]
+.. _debops.docker v0.1.2: https://github.com/debops/ansible-docker/compare/v0.1.1...v0.1.2
 
-v0.1.2
-------
-
-*Released: 2015-12-19*
+Added
+~~~~~
 
 - Add a default list variable which can be used to open additional ports in the
   firewall for Docker-related services. [drybjed]
@@ -39,10 +62,14 @@ v0.1.2
 - Create :file:`/etc/systemd/system` directory if not present for the Docker
   systemd unit file. [drybjed]
 
-v0.1.1
-------
 
-*Released: 2015-12-13*
+`debops.docker v0.1.1`_ - 2015-12-13
+------------------------------------
+
+.. _debops.docker v0.1.1: https://github.com/debops/ansible-docker/compare/v0.1.0...v0.1.1
+
+Changed
+~~~~~~~
 
 - Remove hard role dependencies and move additional role configuration to
   default variables. Ansible playbook can use this configuration to set up
@@ -52,11 +79,11 @@ v0.1.1
   to ``docker`` group, otherwise use name of the user account running the
   Ansible playbook. [drybjed]
 
-v0.1.0
-------
 
-*Released: 2015-09-06*
+debops.docker v0.1.0 - 2015-09-06
+---------------------------------
+
+Added
+~~~~~
 
 - Initial release. [drybjed]
-
-

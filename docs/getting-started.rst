@@ -43,24 +43,20 @@ Example inventory
 -----------------
 
 To configure Docker on a given remote host, it needs to be added to
-``[debops_service_docker]`` Ansible inventory group::
+``[debops_service_docker]`` Ansible inventory group:
 
-    [debops_service_docker]
-    hostname
+.. code-block:: none
+
+   [debops_service_docker]
+   hostname
 
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to manage Docker::
+Here's an example playbook that can be used to manage Docker:
 
-    ---
-    - hosts: debops_service_docker
-      become: True
-
-      roles:
-
-        - role: debops.docker
-          tags: [ 'role::docker' ]
+.. literalinclude:: playbooks/docker.yml
+   :language: yaml
 
 Ansible tags
 ------------
@@ -81,4 +77,3 @@ Available role tags:
 
 ``role::docker:admins``
   Manage access to Docker daemon by UNIX accounts.
-
