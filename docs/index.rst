@@ -11,6 +11,7 @@ Ansible role: debops.docker_gen
    defaults
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:
