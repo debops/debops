@@ -39,11 +39,11 @@ Useful variables
 This is a list of role variables which your most likely want to define in
 Ansible inventory to customize :command:`docker-gen`:
 
-``docker_gen_remote``
+``docker_gen__remote``
   Enable support for remote Docker containers, accessed through Docker API over
   TLS.
 
-``docker_gen_remote_host``
+``docker_gen__remote_host``
   Hostname or IP address of the remote Docker host. Without setting this remote
   connections are disabled.
 

@@ -25,11 +25,11 @@ BASE=$(basename $0)
 DOCKER_GEN=/usr/bin/$BASE
 
 # This is the pid file created/managed by start-stop-daemon
-DOCKER_GEN_SSD_PIDFILE=/var/run/$BASE.pid
-DOCKER_GEN_LOGFILE=/var/log/$BASE.log
-DOCKER_GEN_CONFIG=/etc/$BASE.conf
-DOCKER_GEN_OPTIONS=
-DOCKER_GEN_DESC="docker-gen"
+DOCKER_GEN__SSD_PIDFILE=/var/run/$BASE.pid
+DOCKER_GEN__LOGFILE=/var/log/$BASE.log
+DOCKER_GEN__CONFIG=/etc/$BASE.conf
+DOCKER_GEN__OPTIONS=
+DOCKER_GEN__DESC="docker-gen"
 
 # Get lsb functions
 . /lib/lsb/init-functions
@@ -46,7 +46,7 @@ fi
 
 fail_unless_root() {
 	if [ "$(id -u)" != '0' ]; then
-		log_failure_msg "$DOCKER_GEN_DESC must be run as root"
+		log_failure_msg "$DOCKER_GEN__DESC must be run as root"
 		exit 1
 	fi
 }
@@ -55,7 +55,7 @@ case "$1" in
 	start)
 		fail_unless_root
 
-		touch "$DOCKER_GEN_LOGFILE"
+		touch "$DOCKER_GEN__LOGFILE"
 
 		ulimit -n 1048576
 		if [ "$BASH" ]; then
@@ -64,30 +64,30 @@ case "$1" in
 			ulimit -p 1048576
 		fi
 
-		log_begin_msg "Starting $DOCKER_GEN_DESC: $BASE"
+		log_begin_msg "Starting $DOCKER_GEN__DESC: $BASE"
 		start-stop-daemon --start --background \
 			--no-close \
 			--exec "$DOCKER_GEN" \
-			--pidfile "$DOCKER_GEN_SSD_PIDFILE" \
+			--pidfile "$DOCKER_GEN__SSD_PIDFILE" \
 			--make-pidfile \
 			-- \
-				$DOCKER_GEN_OPTIONS -config=$DOCKER_GEN_CONFIG \
-					>> "$DOCKER_GEN_LOGFILE" 2>&1
+				$DOCKER_GEN__OPTIONS -config=$DOCKER_GEN__CONFIG \
+					>> "$DOCKER_GEN__LOGFILE" 2>&1
 		log_end_msg $?
 		;;
 
 	stop)
 		fail_unless_root
-		log_begin_msg "Stopping $DOCKER_GEN_DESC: $BASE"
-		start-stop-daemon --stop --pidfile "$DOCKER_GEN_SSD_PIDFILE"
+		log_begin_msg "Stopping $DOCKER_GEN__DESC: $BASE"
+		start-stop-daemon --stop --pidfile "$DOCKER_GEN__SSD_PIDFILE"
 		log_end_msg $?
 		;;
 
 	restart)
 		fail_unless_root
-		docker_gen_pid=`cat "$DOCKER_GEN_SSD_PIDFILE" 2>/dev/null`
-		[ -n "$docker_gen_pid" ] \
-			&& ps -p $docker_gen_pid > /dev/null 2>&1 \
+		docker_gen__pid=`cat "$DOCKER_GEN__SSD_PIDFILE" 2>/dev/null`
+		[ -n "$docker_gen__pid" ] \
+			&& ps -p $docker_gen__pid > /dev/null 2>&1 \
 			&& $0 stop
 		$0 start
 		;;
@@ -98,7 +98,7 @@ case "$1" in
 		;;
 
 	status)
-		status_of_proc -p "$DOCKER_GEN_SSD_PIDFILE" "$DOCKER_GEN" "$DOCKER_GEN_DESC"
+		status_of_proc -p "$DOCKER_GEN__SSD_PIDFILE" "$DOCKER_GEN" "$DOCKER_GEN__DESC"
 		;;
 
 	*)

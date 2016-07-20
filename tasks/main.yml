@@ -8,32 +8,32 @@
     group: 'root'
     mode: '0755'
   with_flattened:
-    - [ '{{ docker_gen_src }}', '{{ docker_gen_lib }}', '{{ docker_gen_templates }}' ]
-    - [ '{{ ((docker_gen_nginx_dest | dirname)
-             if (docker_gen_nginx|d() and docker_gen_nginx)
+    - [ '{{ docker_gen__src }}', '{{ docker_gen__lib }}', '{{ docker_gen__templates }}' ]
+    - [ '{{ ((docker_gen__nginx_dest | dirname)
+             if (docker_gen__nginx|d() and docker_gen__nginx)
              else []) }}' ]
 
 - name: Download docker-gen sources
   get_url:
-    url: '{{ docker_gen_release }}'
-    dest: '{{ docker_gen_src + "/" + docker_gen_release | basename }}'
+    url: '{{ docker_gen__release }}'
+    dest: '{{ docker_gen__src + "/" + docker_gen__release | basename }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
 
 - name: Unpack docker-gen
   unarchive:
-    src: '{{ docker_gen_src + "/" + docker_gen_release | basename }}'
-    dest: '{{ docker_gen_lib }}'
+    src: '{{ docker_gen__src + "/" + docker_gen__release | basename }}'
+    dest: '{{ docker_gen__lib }}'
     copy: False
     owner: 'root'
     group: 'root'
-  register: docker_gen_register_install
+  register: docker_gen__register_install
 
 - name: Copy docker-gen templates to remote host
   copy:
     src: 'usr/local/lib/templates/'
-    dest: '{{ docker_gen_templates + "/" }}'
+    dest: '{{ docker_gen__templates + "/" }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -75,19 +75,19 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: docker_gen_register_service
+  register: docker_gen__register_service
   notify: [ 'Restart docker-gen' ]
 
 - name: Reload systemd daemons
   command: systemctl daemon-reload
   when: ((ansible_local|d() and ansible_local.init|d() and ansible_local.init == 'systemd') and
-         (docker_gen_register_service|d() and docker_gen_register_service.changed))
+         (docker_gen__register_service|d() and docker_gen__register_service|changed))
 
 - name: Start docker-gen on install
   service:
     name: 'docker-gen'
     state: 'started'
     enabled: True
-  when: docker_gen_register_install|d() and
-        docker_gen_register_install.changed
+  when: docker_gen__register_install|d() and
+        docker_gen__register_install|changed
 
