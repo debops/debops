@@ -5,57 +5,54 @@
 # Customize location of Docker binary (especially for development testing).
 #DOCKER="/usr/local/bin/docker"
 
-{% set docker_tpl_options = [] %}
-{% if docker_bridge|d() %}
-{%   set _ = docker_tpl_options.append("--bridge " + docker_bridge) %}
+{% set docker__tpl_options = [] %}
+{% if docker__bridge|d() %}
+{%   set _ = docker__tpl_options.append("--bridge " + docker__bridge) %}
 {% endif %}
-{% if docker_fixed_cidr|d() %}
-{%   set _ = docker_tpl_options.append("--fixed-cidr " + docker_fixed_cidr) %}
+{% if docker__fixed_cidr|d() %}
+{%   set _ = docker__tpl_options.append("--fixed-cidr " + docker__fixed_cidr) %}
 {% endif %}
-{% if docker_dns_nameserver|d() %}
-{%   for nameserver in docker_dns_nameserver %}
-{%     set _ = docker_tpl_options.append("--dns " + nameserver) %}
+{% if docker__dns_nameserver|d() %}
+{%   for nameserver in docker__dns_nameserver %}
+{%     set _ = docker__tpl_options.append("--dns " + nameserver) %}
 {%   endfor %}
 {% endif %}
-{% if docker_dns_search|d() %}
-{%   for domain in docker_dns_search %}
-{%     set _ = docker_tpl_options.append("--dns-search " + domain) %}
+{% if docker__dns_search|d() %}
+{%   for domain in docker__dns_search %}
+{%     set _ = docker__tpl_options.append("--dns-search " + domain) %}
 {%   endfor %}
 {% endif %}
-{% if docker_listen|d() %}
-{%   for host in docker_listen %}
+{% if docker__listen|d() %}
+{%   for host in docker__listen %}
 {%     if host %}
-{%       set _ = docker_tpl_options.append("-H " + host) %}
+{%       set _ = docker__tpl_options.append("-H " + host) %}
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{% if docker_pki|d() | bool %}
-{%   set _ = docker_tpl_options.append("--tlsverify") %}
-{%   set _ = docker_tpl_options.append("--tlscacert " + docker_pki_path + "/" + docker_pki_realm + "/" + docker_pki_ca) %}
-{%   set _ = docker_tpl_options.append("--tlscert " + docker_pki_path + "/" + docker_pki_realm + "/" + docker_pki_crt) %}
-{%   set _ = docker_tpl_options.append("--tlskey " + docker_pki_path + "/" + docker_pki_realm + "/" + docker_pki_key) %}
+{% if docker__pki|d() | bool %}
+{%   set _ = docker__tpl_options.append("--tlsverify") %}
+{%   set _ = docker__tpl_options.append("--tlscacert " + docker__pki_path + "/" + docker__pki_realm + "/" + docker__pki_ca) %}
+{%   set _ = docker__tpl_options.append("--tlscert " + docker__pki_path + "/" + docker__pki_realm + "/" + docker__pki_crt) %}
+{%   set _ = docker__tpl_options.append("--tlskey " + docker__pki_path + "/" + docker__pki_realm + "/" + docker__pki_key) %}
 {% endif %}
-{% if docker_labels|d() %}
-{%   for key, value in docker_labels.iteritems() %}
-{%     set _ = docker_tpl_options.append("--label " + key + '="' + value + '"') %}
+{% if docker__labels|d() %}
+{%   for key, value in docker__labels.iteritems() %}
+{%     set _ = docker__tpl_options.append("--label " + key + '="' + value + '"') %}
 {%   endfor %}
 {% endif %}
-{% if docker_options|d() %}
-{%   for option in docker_options %}
+{% if docker__options|d() %}
+{%   for option in docker__options %}
 {%     if option %}
-{%       set _ = docker_tpl_options.append(option) %}
+{%       set _ = docker__tpl_options.append(option) %}
 {%     endif %}
 {%   endfor %}
 {% endif %}
 # Use DOCKER_OPTS to modify the daemon startup options.
-{% if docker_tpl_options %}
-DOCKER_OPTS='{{ docker_tpl_options | join(" ") }}'
+{% if docker__tpl_options %}
+DOCKER_OPTS='{{ docker__tpl_options | join(" ") }}'
 {% else %}
 #DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"
 {% endif %}
-
-# If you need Docker to use an HTTP proxy, it can also be specified here.
-#export http_proxy="http://127.0.0.1:3128/"
 
 # This is also a handy place to tweak where Docker's temporary files go.
 #export TMPDIR="/mnt/bigdrive/docker-tmp"
