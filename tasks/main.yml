@@ -2,20 +2,20 @@
 
 - name: Get upstream APT GPG key
   apt_key:
-    id: '{{ docker_upstream_key }}'
+    id: '{{ docker__upstream_key }}'
     keyserver: '{{ ansible_local.core.keyserver
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
-  when: docker_upstream|d() | bool
+  when: docker__upstream|d() | bool
 
 - name: Configure upstream APT repository
   apt_repository:
-    repo: '{{ docker_upstream_repository }}'
+    repo: '{{ docker__upstream_repository }}'
     state: 'present'
     update_cache: True
-  when: docker_upstream|d() | bool
+  when: docker__upstream|d() | bool
 
 - name: Install required packages
   apt:
@@ -23,30 +23,30 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ "docker-engine" if docker_upstream|d() else "docker.io" }}'
-    - '{{ docker_base_packages }}'
-    - '{{ docker_packages }}'
+    - '{{ "docker-engine" if docker__upstream|d() else "docker.io" }}'
+    - '{{ docker__base_packages }}'
+    - '{{ docker__packages }}'
 
 - name: Install ferment generator
   pip:
     name: 'ferment'
     state: 'present'
-  when: docker_ferment|d() | bool
+  when: docker__ferment|d() | bool
 
 - name: Install ferment wrapper script
   template:
     src: 'usr/local/lib/docker-ferment-wrapper.j2'
-    dest: '{{ docker_ferment_wrapper }}'
+    dest: '{{ docker__ferment_wrapper }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: docker_ferment|d() | bool
+  when: docker__ferment|d() | bool
 
 - name: Check Docker version
   environment:
     LC_MESSAGES: 'C'
-  shell: dpkg-query -W -f='${Version}\n' '{{ ("docker-engine" if docker_upstream|d() else "docker.io") }}' | cut -d- -f1
-  register: docker_register_version
+  shell: dpkg-query -W -f='${Version}\n' '{{ ("docker-engine" if docker__upstream|d() else "docker.io") }}' | cut -d- -f1
+  register: docker__register_version
   changed_when: False
   failed_when: False
   tags: [ 'role::docker:config' ]
@@ -68,7 +68,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: docker_upstream|d() | bool
+  when: docker__upstream|d() | bool
   tags: [ 'role::docker:config' ]
 
 - name: Make sure that docker.service.d directory exists
@@ -78,7 +78,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (docker_upstream|d() | bool) and 
+  when: (docker__upstream|d() | bool) and 
       (inventory__environment is defined and inventory__environment.http_proxy is defined)
   tags: [ 'role::docker:config' ]
 
@@ -89,8 +89,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: docker_register_systemd_service
-  when: docker_upstream|d() | bool
+  register: docker__register_systemd_service
+  when: docker__upstream|d() | bool
   tags: [ 'role::docker:config' ]
 
 - name: Configure Docker proxy
@@ -100,15 +100,15 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: docker_register_systemd_proxy_present
-  when: (docker_upstream|d() | bool) and 
+  register: docker__register_systemd_proxy_present
+  when: (docker__upstream|d() | bool) and 
     (inventory__environment is defined and inventory__environment.http_proxy is defined)
   tags: [ 'role::docker:config' ]
 
 - name: Remove Docker proxy configuration
   file:  path='/etc/systemd/system/docker.service.d/http-proxy.conf' state=absent
-  register: docker_register_systemd_proxy_absent
-  when: (docker_upstream|d() | bool) and 
+  register: docker__register_systemd_proxy_absent
+  when: (docker__upstream|d() | bool) and 
     (inventory__environment is not defined or inventory__environment.http_proxy is not defined)
   tags: [ 'role::docker:config' ]
 
@@ -117,12 +117,12 @@
   notify: [ 'Restart docker']
   when: ((ansible_local|d() and ansible_local.init|d() and
           ansible_local.init == 'systemd') and
-         ((docker_register_systemd_service|d() and
-         docker_register_systemd_service.changed) or
-         (docker_register_systemd_proxy_present|d() and
-         docker_register_systemd_proxy_present|changed) or
-         (docker_register_systemd_proxy_absent|d() and
-         docker_register_systemd_proxy_absent|changed)))
+         ((docker__register_systemd_service|d() and
+         docker__register_systemd_service|changed) or
+         (docker__register_systemd_proxy_present|d() and
+         docker__register_systemd_proxy_present|changed) or
+         (docker__register_systemd_proxy_absent|d() and
+         docker__register_systemd_proxy_absent|changed)))
   tags: [ 'role::docker:config' ]
 
 - name: Add specified users to 'docker' group
@@ -130,7 +130,7 @@
     name: '{{ item }}'
     groups: 'docker'
     append: True
-  with_items: '{{ docker_admins }}'
+  with_items: '{{ docker__admins }}'
   when: item|d()
   tags: [ 'role::docker:config', 'role::docker:admins' ]
 
