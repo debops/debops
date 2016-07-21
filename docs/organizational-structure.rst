@@ -79,7 +79,7 @@ Each repository has their has a Maintainer. Maintainers decide what a given
 repository does, develop it and can accept Pull/Merge Requests as needed. They
 have full write access to the repositories.
 
-Only DebOps Developers can be Maintainers. If a role was created by a Author
+Only DebOps Developers can be Maintainers. If a role was created by an Author
 who is not a DebOps Developer yet, a DebOps Developer needs to be the
 Maintainer.
 
