@@ -1,7 +1,7 @@
 Organizational structure
 ========================
 
-The Project is managed and developed by a decentralized group of people that
+The Project is managed and developed by a decentralized group of people who
 use it and contribute their time, skills and resources. To allow for a more
 organized work, various roles are defined within the Project.
 
@@ -14,23 +14,29 @@ the project. Their GPG keys are stored in
 `debops-keyring <https://github.com/debops/debops-keyring>`_
 which can be used for auditing.
 
-Being a DebOps Developer does not imply any additional write access to
+Being a DebOps Developer does not imply write access to critical parts of
 the Project. For now, giving Developers write access to a repository or
 resource is done when there are good reasons to do so.
+For example, when a DebOps Developer becomes a Maintainer of a repository.
 
-The UNIX group for DebOps Developers used on the project assets should be named
+Developers have write access to the following repositories:
+
+* https://github.com/debops/test-suite
+* https://github.com/debops/examples
+
+The UNIX group for DebOps Developers used on the Project assets should be named
 ``debops-developers``.
 
 Project Leader
 --------------
 
 The DebOps Project Leader is selected from the group of Developers. He/she has the
-last word in any issues that arise withing the project and his decisions are
+last word in any issue that arise within the Project and his decisions are
 final. The Leader creates the version tags in the ``git`` repositories signed
 by his/her GPG key. Also, the Leader is the only person with full write access
 to all repositories and resources of the project.
 
-The UNIX group for the DebOps Leader used on the project assets should be named
+The UNIX group for the DebOps Leader used on the Project assets should be named
 ``debops-leader``.
 
 Project Admins
