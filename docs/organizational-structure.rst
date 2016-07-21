@@ -24,7 +24,7 @@ Developers
 
 This is a core team of people that contribute to the Project and direct its
 evolution. They have the power to bring new Developers and Contributors into
-the project. Their GPG keys are stored in `debops-keyring`_ which can be used
+the project. Their OpenPGP keys are stored in `debops-keyring`_ which can be used
 for auditing.
 
 Being a DebOps Developer does not imply write access to critical parts of
@@ -46,7 +46,7 @@ Project Leader
 The DebOps Project Leader is selected from the group of Developers. He/she has the
 last word in any issue that arise within the Project and his decisions are
 final. The Leader creates the version tags in the :command:`git` repositories signed
-by his/her GPG key. Also, the Leader is the only person with full write access
+by his/her OpenPGP key. Also, the Leader is the only person with full write access
 to all repositories and resources of the project.
 
 The UNIX group for the DebOps Leader used on the Project assets should be named
@@ -83,14 +83,14 @@ Only DebOps Developers can be Maintainers. If a role was created by a Author
 who is not a DebOps Developer yet, a DebOps Developer needs to be the
 Maintainer.
 
-A repository can have a team of Maintainers, in this case only one GPG
+A repository can have a team of Maintainers, in this case only one OpenPGP
 signature is required for a commit to enter the main repository.
 
 Bots
 ----
 
 Some functions are performed by software bots in an automated way. The bots
-should use their own GPG keys, stored in `debops-keyring`_ for auditing.
+should use their own OpenPGP keys, stored in `debops-keyring`_ for auditing.
 The bots are not expected to introduce new unauthenticated code or
 documentation in different repositories which is enforced by only giving the
 bots access to the repositories they are working with and checking that no
