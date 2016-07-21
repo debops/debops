@@ -14,6 +14,11 @@ pid="$$"
 
 state=()
 
+# Normalize version numbers for comparsion
+version () {
+    echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'
+}
+
 # Display a message if script is used interactively, otherwise send it to syslog
 log_message () {
     local msg="${1:-}"
@@ -633,9 +638,11 @@ EOF
             printf 'ip_address = "%s"\n' "${san_ip[${i}]}" >> "${config_file}"
         done
 
-        for i in "${!san_uri[@]}" ; do
-            printf 'uri = "%s"\n' "${san_uri[${i}]}" >> "${config_file}"
-        done
+        if [ $(version $(certtool --version | head -n 1 | awk '{print $NF}')) -ge $(version 3.0.20) ] ; then
+            for i in "${!san_uri[@]}" ; do
+                printf 'uri = "%s"\n' "${san_uri[${i}]}" >> "${config_file}"
+            done
+        fi
 
         for i in "${!san_email[@]}" ; do
             printf 'email = "%s"\n' "${san_email[${i}]}" >> "${config_file}"
@@ -782,7 +789,7 @@ generate_gnutls_rsa_realm_key () {
     local key_group="${3:-${config['realm_file_group']}}"
 
     if ! [ -r "${key_file}" ] ; then
-        if ! awk -v ver="$(certtool --version | head -n 1 | awk '{print $NF}')" 'BEGIN { if (ver < 3.1.0) exit 1; }'; then
+        if [ $(version $(certtool --version | head -n 1 | awk '{print $NF}')) -lt $(version 3.1.0) ] ; then
             certtool --generate-privkey --outfile "${key_file}.tmp" --bits "${key_size}"
         else
             certtool --generate-privkey --rsa --outfile "${key_file}.tmp" --bits "${key_size}"
@@ -849,7 +856,7 @@ generate_gnutls_rsa_private_key () {
     local key_acl="${4:-true}"
 
     if ! [ -r "${key_file}" ] ; then
-        if ! awk -v ver="$(certtool --version | head -n 1 | awk '{print $NF}')" 'BEGIN { if (ver < 3.1.0) exit 1; }'; then
+        if [ $(version $(certtool --version | head -n 1 | awk '{print $NF}')) -lt $(version 3.1.0) ] ; then
             certtool --generate-privkey --outfile "${key_file}.tmp" --bits "${key_size}"
         else
             certtool --generate-privkey --rsa --outfile "${key_file}.tmp" --bits "${key_size}"

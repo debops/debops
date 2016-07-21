@@ -19,6 +19,20 @@ Contributors
 
 .. _debops.pki master: https://github.com/debops/ansible-pki/compare/v0.2.13...master
 
+Changed
+~~~~~~~
+
+- Change the method that Bash scripts use to compare the version numbers for
+  a more reliable one. [drybjed]
+
+Fixed
+~~~~~
+
+- Fix an error where certain versions of GnuTLS ``certtool`` did not support
+  the "URI" SubjectAltName which resulted in an abort and certificate requrests
+  not being generated correctly. The "URI" SANs will only be added when correct
+  version of the ``certtool`` is available. [drybjed]
+
 
 `debops.pki v0.2.13`_ - 2016-07-07
 ----------------------------------
