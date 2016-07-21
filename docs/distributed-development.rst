@@ -13,7 +13,7 @@ point of failure.
 
 The GnuPG software, along with it's Web Of Trust is used for user
 authentication and authorization. A special :command:`git` repository,
-`debops-keyring`_ contains the ``gpg`` keyrings with the set of current
+`debops-keyring`_ contains the :command:`gpg` keyrings with the set of current
 Developers, Project Leader and Contributors keys which can be used for code
 authentication.  SSH keys derived from these GPG keys allow access to the
 Project's assets as needed.
