@@ -8,4 +8,3 @@ git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 \
         s/\<(DOCKER_GEN)_([^_])/\1__\2/g;
         s/\<(docker_gen)_([^_])/\1__\2/g;
     '
-

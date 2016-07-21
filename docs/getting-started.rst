@@ -51,22 +51,17 @@ Example inventory
 -----------------
 
 To configure :command:`docker-gen` on a given remote host, it need to be added to
-``[debops_docker_gen]`` Ansible inventory group::
+``[debops_service_docker_gen]`` Ansible inventory group:
 
-    [debops_docker_gen]
-    hostname
+.. code-block:: none
+
+   [debops_service_docker_gen]
+   hostname
 
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to manage :command:`docker-gen`::
+Here's an example playbook that can be used to manage :command:`docker-gen`:
 
-    ---
-    - hosts: debops_docker_gen
-      become: True
-
-      roles:
-
-        - role: debops.docker_gen
-          tags: [ 'role::docker_gen' ]
-
+.. literalinclude:: playbooks/docker_gen.yml
+   :language: yaml
