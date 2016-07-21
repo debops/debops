@@ -255,13 +255,15 @@ owncloud__apt_repo_source: '{{ "deb " + owncloud__apt_repo_base + "/" +
 # .. envvar:: owncloud__user
 #
 # User that will be used for the ownCloud instance.
-owncloud__user: 'www-data'
+owncloud__user: '{{ if (ansible_local|d() and ansible_local.nginx|d() and
+                    ansible_local.nginx.user|d())
+                    else "www-data") }}'
 
 
 # .. envvar:: owncloud__group
 #
 # Group that will be used for the ownCloud instance.
-owncloud__group: 'www-data'
+owncloud__group: '{{ owncloud__user }}'
 
 
 # .. envvar:: owncloud__home
