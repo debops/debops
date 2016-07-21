@@ -9,7 +9,7 @@ DebOps Policies and Guidelines
    introduction
    organizational-structure
    distributed-development
-   code-signing
+   code-signing-policy
    security-policy
    references
    copyright
