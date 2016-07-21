@@ -16,6 +16,9 @@ The Project is managed and developed by a decentralized group of people who
 use it and contribute their time, skills and resources. To allow for a more
 organized work, various roles are defined within the Project.
 
+Refer to the `DebOps People`_ section in the debops-keyring_ documentation
+where the people and their current roles are listed.
+
 Developers
 ----------
 
