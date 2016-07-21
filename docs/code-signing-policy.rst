@@ -1,3 +1,5 @@
+.. _debops_policy__code_signing_policy:
+
 DebOps code signing policy
 ==========================
 
