@@ -1,12 +1,14 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 **debops-policy**
 
-This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/>`_.
 
-The current repository maintainer is drybjed.
+The current repository maintainer is drybjed_.
 
 
 debops-policy v0.1.0 - unreleased
@@ -15,24 +17,24 @@ debops-policy v0.1.0 - unreleased
 Changed
 ~~~~~~~
 
-- Use RFC2119 and ISO 8601 for the code signing policy. [ypid]
+- Use RFC2119 and ISO 8601 for the code signing policy. [ypid_]
 
 - Renamed "Role Authors" and "Role Maintainers" to "Authors" and "Maintainers"
-  to keep the roles in the organizational structure more generic. [ypid]
+  to keep the roles in the organizational structure more generic. [ypid_]
 
 - Clarified that DebOps Developer don’t automatically have more write
-  privileges. [ypid]
+  privileges. [ypid_]
 
 Added
 ~~~~~
 
 - Updated the repository layout to be compatible with the rest of the DebOps
-  documentation. [drybjed]
+  documentation. [drybjed_]
 
 - Added a draft of the organizational structure and explanation of distributed
   development model, as well a draft of the code signing policy used by the
-  project. [drybjed, ypid]
+  project. [drybjed_, ypid_]
 
-- Wrote initial security policy. [ypid]
+- Wrote initial security policy. [ypid_]
 
-- Added "Project Admin" role to organizational structure. [ypid]
+- Added "Project Admin" role to organizational structure. [ypid_]

@@ -42,7 +42,7 @@ Project Leader
 
 The DebOps Project Leader is selected from the group of Developers. He/she has the
 last word in any issue that arise within the Project and his decisions are
-final. The Leader creates the version tags in the ``git`` repositories signed
+final. The Leader creates the version tags in the :command:`git` repositories signed
 by his/her GPG key. Also, the Leader is the only person with full write access
 to all repositories and resources of the project.
 
