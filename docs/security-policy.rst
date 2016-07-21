@@ -1,5 +1,7 @@
-Security policy
-===============
+DebOps security policy
+======================
+
+.. include:: includes/all.rst
 
 .. Based on: https://www.openssl.org/docs/faq.html#BUILD19
    Based on: http://rubyonrails.org/security/
@@ -31,6 +33,14 @@ Security policy
    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
    IN THE SOFTWARE.
 
+:Date drafted: 2016-07-10
+:Date effective:  2016-07-10
+:Last changed: 2016-07-10
+:Version: 0.1.0
+:Authors: - ypid_
+
+.. This version may not correspond directly to the debops-policy version.
+
 Reporting a vulnerability
 -------------------------
 
@@ -41,7 +51,7 @@ If you can fix the vulnerability (or have already done so) please consider
 attaching a patch.
 If you wish to use PGP to send
 in a report please use one or more of the keys of the team members listed at
-`debops-keyring <https://github.com/debops/debops-keyring>`_.
+`debops-keyring`_.
 
 Disclosure process
 ------------------
@@ -74,8 +84,7 @@ Receiving disclosures
 ---------------------
 
 The best way to receive all the security announcements is to subscribe to the
-`DebOps security mailing list
-<https://lists.debops.org/mailman/listinfo/debops-security>`_. The mailing list
+`DebOps Security Announcements mailing list`_. The mailing list
 is very low traffic, and it receives the public notifications the moment the
 embargo is lifted. If you produce packages of DebOps and require prior
 notification of vulnerabilities, you should get in touch with the DebOps Project.

@@ -1,7 +1,14 @@
-Code signing policy
-===================
+DebOps code signing policy
+==========================
 
-Code signing policy version: 0.1.0
+.. include:: includes/all.rst
+
+:Date drafted: 2016-06-19
+:Date effective: 2016-09-01
+:Last changed: 2016-07-21
+:Version: 0.1.0
+:Authors: - drybjed_
+          - ypid_
 
 .. This version may not correspond directly to the debops-policy version.
 
@@ -41,18 +48,18 @@ For background about this refer to:
 * `PR of the initial code signing policy <https://github.com/debops/debops-policy/pull/2>`_
 
 .. [#debops-org] All repositories in the DebOps core project currently hosted at: https://github.com/debops/.
-   This does not apply for `DebOps Contrib <https://github.com/debops-contrib/>`_.
+   This does not apply for `DebOps Contrib`_.
 
 Policy enforcement schedule
 ---------------------------
 
-+---------+-----------------+
-| Version | Takes effect on |
-+=========+=================+
-| 0.1.0   | 2016-09-01      |
-+---------+-----------------+
-| 0.2.0   | 2018-09-01      |
-+---------+-----------------+
++---------+--------------------+
+| Version | Takes effect after |
++=========+====================+
+| 0.1.0   | 2016-09-01         |
++---------+--------------------+
+| 0.2.0   | 2018-09-01         |
++---------+--------------------+
 
 Planed changes for v0.2.0
 -------------------------

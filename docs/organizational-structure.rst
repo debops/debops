@@ -1,6 +1,17 @@
 Organizational structure
 ========================
 
+.. include:: includes/all.rst
+
+:Date drafted: 2016-06-19
+:Date effective: 2016-09-01
+:Last changed: 2016-07-21
+:Version: 0.1.0
+:Authors: - drybjed_
+          - ypid_
+
+.. This version may not correspond directly to the debops-policy version.
+
 The Project is managed and developed by a decentralized group of people who
 use it and contribute their time, skills and resources. To allow for a more
 organized work, various roles are defined within the Project.
@@ -10,9 +21,8 @@ Developers
 
 This is a core team of people that contribute to the Project and direct its
 evolution. They have the power to bring new Developers and Contributors into
-the project. Their GPG keys are stored in
-`debops-keyring <https://github.com/debops/debops-keyring>`_
-which can be used for auditing.
+the project. Their GPG keys are stored in `debops-keyring`_ which can be used
+for auditing.
 
 Being a DebOps Developer does not imply write access to critical parts of
 the Project. For now, giving Developers write access to a repository or
@@ -77,9 +87,7 @@ Bots
 ----
 
 Some functions are performed by software bots in an automated way. The bots
-should use their own GPG keys, stored in
-`debops-keyring <https://github.com/debops/debops-keyring>`_
-for auditing.
+should use their own GPG keys, stored in `debops-keyring`_ for auditing.
 The bots are not expected to introduce new unauthenticated code or
 documentation in different repositories which is enforced by only giving the
 bots access to the repositories they are working with and checking that no
