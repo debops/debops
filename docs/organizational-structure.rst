@@ -1,4 +1,4 @@
-Organizational structure
+Organizational Structure
 ========================
 
 .. include:: includes/all.rst

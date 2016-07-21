@@ -1,6 +1,6 @@
 .. _debops_policy__code_signing_policy:
 
-DebOps code signing policy
+DebOps Code Signing Policy
 ==========================
 
 .. include:: includes/all.rst

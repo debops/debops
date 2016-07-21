@@ -1,4 +1,4 @@
-DebOps security policy
+DebOps Security Policy
 ======================
 
 .. include:: includes/all.rst

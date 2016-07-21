@@ -1,4 +1,4 @@
-Distributed development model
+Distributed Development Model
 =============================
 
 .. include:: includes/all.rst
