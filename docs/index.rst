@@ -1,7 +1,7 @@
 .. _debops_policy:
 
-DebOps Policy and Guidelines
-============================
+DebOps Policies and Guidelines
+==============================
 
 .. toctree::
    :maxdepth: 2
@@ -9,7 +9,7 @@ DebOps Policy and Guidelines
    introduction
    organizational-structure
    distributed-development
-   code-signing
+   code-signing-policy
    security-policy
    references
    copyright

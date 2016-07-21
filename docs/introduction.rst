@@ -1,6 +1,8 @@
 Introduction
 ============
 
+.. include:: includes/all.rst
+
 This document describes the computer systems, networks, services and other
 elements of the data center environment deployed and managed by the DebOps
 Project software.
@@ -20,8 +22,7 @@ Terminology
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in BCP 14, [`RFC2119
-<https://tools.ietf.org/html/rfc2119>`_].
+document are to be interpreted as described in BCP 14, [`RFC2119`_].
 
 ..
  Local Variables:

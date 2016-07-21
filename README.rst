@@ -1,6 +1,5 @@
-DebOps Policy and Guidelines
-============================
+DebOps Policies and Guidelines
+==============================
 
-This repository will contain documents related to DebOps Policy and project
-guidelines.
-
+This repository contains documentation related to DebOps Policies and
+Guidelines.

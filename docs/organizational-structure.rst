@@ -1,42 +1,61 @@
-Organizational structure
+Organizational Structure
 ========================
 
-The Project is managed and developed by a decentralized group of people that
+.. include:: includes/all.rst
+
+:Date drafted: 2016-06-19
+:Date effective: 2016-09-01
+:Last changed: 2016-07-21
+:Version: 0.1.0
+:Authors: - drybjed_
+          - ypid_
+
+.. This version may not correspond directly to the debops-policy version.
+
+The Project is managed and developed by a decentralized group of people who
 use it and contribute their time, skills and resources. To allow for a more
 organized work, various roles are defined within the Project.
+
+Refer to the `DebOps People`_ section in the debops-keyring_ documentation
+where the people and their current roles are listed.
 
 Developers
 ----------
 
 This is a core team of people that contribute to the Project and direct its
 evolution. They have the power to bring new Developers and Contributors into
-the project. Their GPG keys are stored in
-`debops-keyring <https://github.com/debops/debops-keyring>`_
-which can be used for auditing.
+the project. Their OpenPGP keys are stored in `debops-keyring`_ which can be used
+for auditing.
 
-Being a DebOps Developer does not imply any additional write access to
+Being a DebOps Developer does not imply write access to critical parts of
 the Project. For now, giving Developers write access to a repository or
 resource is done when there are good reasons to do so.
+For example, when a DebOps Developer becomes a Maintainer of a repository.
 
-The UNIX group for DebOps Developers used on the project assets should be named
+Developers have write access to the following repositories:
+
+* https://github.com/debops/test-suite
+* https://github.com/debops/examples
+
+The UNIX group for DebOps Developers used on the Project assets should be named
 ``debops-developers``.
 
 Project Leader
 --------------
 
 The DebOps Project Leader is selected from the group of Developers. He/she has the
-last word in any issues that arise withing the project and his decisions are
-final. The Leader creates the version tags in the ``git`` repositories signed
-by his/her GPG key. Also, the Leader is the only person with full write access
+last word in any issue that arise within the Project and his decisions are
+final. The Leader creates the version tags in the :command:`git` repositories signed
+by his/her OpenPGP key. Also, the Leader is the only person with full write access
 to all repositories and resources of the project.
 
-The UNIX group for the DebOps Leader used on the project assets should be named
+The UNIX group for the DebOps Leader used on the Project assets should be named
 ``debops-leader``.
 
-Project Admin
--------------
+Project Admins
+--------------
 
-The DebOps Project Admin manages the Projects services such as websites and
+The DebOps Project Admins manage the Project’s services such as websites and
 mailing lists.
 
 Contributors
@@ -58,23 +77,20 @@ Maintainers
 
 Each repository has their has a Maintainer. Maintainers decide what a given
 repository does, develop it and can accept Pull/Merge Requests as needed. They
-have full write access to the repositories. All of their commits need to be
-signed by their GPG key.
+have full write access to the repositories.
 
-Only DebOps Developers can be Maintainers. If a role was created by a Author
+Only DebOps Developers can be Maintainers. If a role was created by an Author
 who is not a DebOps Developer yet, a DebOps Developer needs to be the
 Maintainer.
 
-A repository can have a team of Maintainers, in this case only one signature is
-required for a commit.
+A repository can have a team of Maintainers, in this case only one OpenPGP
+signature is required for a commit to enter the main repository.
 
 Bots
 ----
 
 Some functions are performed by software bots in an automated way. The bots
-should use their own GPG keys, stored in
-`debops-keyring <https://github.com/debops/debops-keyring>`_
-for auditing.
+should use their own OpenPGP keys, stored in `debops-keyring`_ for auditing.
 The bots are not expected to introduce new unauthenticated code or
 documentation in different repositories which is enforced by only giving the
 bots access to the repositories they are working with and checking that no
