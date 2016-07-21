@@ -4,7 +4,7 @@ Changelog
 **debops.docker_gen**
 
 debops.docker_gen master - unreleased
-------------------------------------
+-------------------------------------
 
 Changed
 ~~~~~~~
