@@ -19,6 +19,12 @@ Contributors
 
 .. _debops.pki master: https://github.com/debops/ansible-pki/compare/v0.2.13...master
 
+Changed
+~~~~~~~
+
+- Change the method that Bash scripts use to compare the version numbers for
+  a more reliable one. [drybjed]
+
 
 `debops.pki v0.2.13`_ - 2016-07-07
 ----------------------------------
