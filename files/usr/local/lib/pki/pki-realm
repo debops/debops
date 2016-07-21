@@ -638,9 +638,11 @@ EOF
             printf 'ip_address = "%s"\n' "${san_ip[${i}]}" >> "${config_file}"
         done
 
-        for i in "${!san_uri[@]}" ; do
-            printf 'uri = "%s"\n' "${san_uri[${i}]}" >> "${config_file}"
-        done
+        if [ $(version $(certtool --version | head -n 1 | awk '{print $NF}')) -ge $(version 3.0.20) ] ; then
+            for i in "${!san_uri[@]}" ; do
+                printf 'uri = "%s"\n' "${san_uri[${i}]}" >> "${config_file}"
+            done
+        fi
 
         for i in "${!san_email[@]}" ; do
             printf 'email = "%s"\n' "${san_email[${i}]}" >> "${config_file}"
