@@ -33,6 +33,8 @@ Added
 
 - Add debops.debops_api_ role and its corresponding playbook. [ypid]
 
+- Add ``debops.hashicorp`` role and its corresponding playbook. [drybjed]
+
 Changed
 ~~~~~~~
 
