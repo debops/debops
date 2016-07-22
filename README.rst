@@ -1,6 +1,11 @@
 |debops_logo| `DebOps <http://debops.org>`_
 ===========================================
 
+|CII Best Practices|
+
+.. |CII Best Practices| image:: https://bestpractices.coreinfrastructure.org/projects/237/badge
+   :target: https://bestpractices.coreinfrastructure.org/projects/237
+
 **Your Debian-based data center in a box**
 
 A collection of `Ansible <http://ansible.com/>`_ playbooks,
@@ -9,7 +14,7 @@ scalable from one container to an entire data center.
 DebOps is a framework
 ^^^^^^^^^^^^^^^^^^^^^
 
-- **60+ highly extensible roles** with sane defaults
+- **100+ highly extensible roles** with sane defaults
 - **Tuned for production** and works great for development
 - **Built for modularity** so extending it is simple
 - **Custom scripts** to tie everything together
