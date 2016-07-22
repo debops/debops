@@ -1,6 +1,11 @@
 |debops_logo| DebOps playbooks
 ==============================
 
+|CII Best Practices|
+
+.. |CII Best Practices| image:: https://bestpractices.coreinfrastructure.org/projects/237/badge
+   :target: https://bestpractices.coreinfrastructure.org/projects/237
+
 This repository contains all the playbooks used by `DebOps <http://debops.org>`_.
 
 - `Here are a few services that are available`_
