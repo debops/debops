@@ -38,9 +38,9 @@ Software sources
 ----------------
 
 The `HashiCorp <https://hashicorp.com/>`_ company publishes the source code of
-each application on GitHub, in the `hashicorp <https://github.com/hashicorp/>`_
-organization. Each release is tagged using ``git`` tags. Each tag is signed by
-the HashiCorp OpenPGP key.
+each application on GitHub, in the `hashicorp organization <https://github.com/hashicorp/>`_.
+Each release is tagged using ``git`` tags. Each tag is signed by the HashiCorp
+OpenPGP key.
 
 The process that HashiCorp uses to build binary Go packages from the sources on
 GitHub and deploy them on their release page is currently unpublished.
@@ -68,7 +68,7 @@ releases. The OpenPGP key fingerprint of the key used by HashiCorp is:
 
 The HashiCorp OpenPGP key is published on the
 `keybase.io <https://keybase.io>`_ website, on the
-`hashicorp <https://keybase.io/hashicorp>`_ user account. The key is tracked by
+`hashicorp account <https://keybase.io/hashicorp>`_. The key is tracked by
 several other users of the site.
 
 The HashiCorp OpenPGP key is published in the `SKS OpenPGP keyserver pool <https://sks-keyservers.net/>`_
