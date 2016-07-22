@@ -33,7 +33,10 @@ Added
 
 - Add debops.debops_api_ role and its corresponding playbook. [ypid_]
 
-- Add ``debops.hashicorp`` role and its corresponding playbook. [drybjed]
+- Add ``debops.hashicorp`` role and its corresponding playbook. [drybjed_]
+
+- Add Core Infrastructure Initiative (CII) Best Practices badge to the
+  repository README. [ypid_]
 
 Changed
 ~~~~~~~
