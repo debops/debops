@@ -57,9 +57,21 @@ If you use an agent then you won't have to enter your password.
 
 What if GPG fails to decrypt?
 -----------------------------
+
 If the configuration is not decrypted properly, EncFS discards the garbled data
 and tries to create a new encrypted directory. You can just ``CTRL+C`` to
 quit and fix your issues.
+
+What if you want to keep your encrypted secrets in a git repository?
+--------------------------------------------------------------------
+
+Debops by default creates an entry in ``.gitignore`` file to prevent commiting
+encrypted files to the git repository. If you are sure that you want to do it,
+just comment or remove the `.encfs.secret` line from ``.gitignore``.
+
+You can also use ``debops.secret`` role to keep content of the ``secret``
+directory in other sorts of storage - for details please consult the
+documentation of that role.
 
 
 ..
