@@ -8,7 +8,7 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/>`_.
 
-The current playbook maintainer is **drybjed**.
+The current playbook maintainer is drybjed_.
 
 
 `debops-playbooks master`_ - unreleased
@@ -20,36 +20,36 @@ Added
 ~~~~~
 
 - Add support for custom Ansible environment variables in all playbooks.
-  Environment can be configured using Ansible inventory variables. [drybjed]
+  Environment can be configured using Ansible inventory variables. [drybjed_]
 
-- Add debops.php_ role and its corresponding playbook. [drybjed]
+- Add debops.php_ role and its corresponding playbook. [drybjed_]
 
 - Add debops.environment_ role with it's own playbook, and include it in the
-  :file:`common.yml` playbook. [drybjed]
+  :file:`common.yml` playbook. [drybjed_]
 
 - Add debops.authorized_keys_ role with its own playbook, and include it in
   the :file:`common.yml` playbook. This role replaces the debops.sshkeys_ role
-  and is backwards-compatible with it. [drybjed]
+  and is backwards-compatible with it. [drybjed_]
 
-- Add debops.debops_api_ role and its corresponding playbook. [ypid]
+- Add debops.debops_api_ role and its corresponding playbook. [ypid_]
 
 - Add ``debops.hashicorp`` role and its corresponding playbook. [drybjed]
 
 Changed
 ~~~~~~~
 
-- Update ``debops.dokuwiki`` playbook. [drybjed]
+- Update debops.dokuwiki_ playbook. [drybjed_]
 
-- Update ``debops.bootstrap`` playbook. [drybjed]
+- Update debops.bootstrap_ playbook. [drybjed_]
 
-- Update playbooks which use ``debops.php`` role to include the
-  ``debops.apt_preferences`` role dependency. [drybjed]
+- Update playbooks which use debops.php_ role to include the
+  debops.apt_preferences_ role dependency. [drybjed_]
 
 Removed
 ~~~~~~~
 
 - Remove the debops.sshkeys_ role, which is replaced by
-  debops.authorized_keys_ role. [drybjed]
+  debops.authorized_keys_ role. [drybjed_]
 
 
 `debops-playbooks v0.2.9`_ - 2016-07-07
@@ -61,100 +61,100 @@ Added
 ~~~~~
 
 - Add debops.snmpd_ role dependencies to :file:`service/snmpd.yml` playbook.
-  [drybjed]
+  [drybjed_]
 
 - Add debops.unattended_upgrades_ role to the :file:`common.yml` playbook as
   well as its own :file:`service/unattended_upgrades.yml` playbook. The support for
   ``unattended-upgrades`` package in debops.apt_ role will be removed.
-  [drybjed]
+  [drybjed_]
 
 - Add debops.apt_cacher_ng_ role to it's own
   :file:`service/apt_cacher_ng.yml` playbook. The server-side support for the
   :program:`apt-cacher-ng` package in debops.apt_ role has be removed. Client-side
-  support is being reworked in debops.apt_. [ypid]
+  support is being reworked in debops.apt_. [ypid_]
 
-- Add debops.gitlab_runner_ role and playbook. [drybjed]
+- Add debops.gitlab_runner_ role and playbook. [drybjed_]
 
 - Add debops.logrotate_ role and playbook, available as a standalone service
-  as well as included in the :file:`common.yml` playbook. [drybjed]
+  as well as included in the :file:`common.yml` playbook. [drybjed_]
 
 - Add the debops.apt_install_ role with its own playbook as well as in the
-  :file:`common.yml` playbook. [drybjed]
+  :file:`common.yml` playbook. [drybjed_]
 
 - Add the "role dependency" debops.apt_preferences_ to :file:`service/apt.yml`.
   Especially with Debian Stretch enabled in :manpage:`sources.list(5)`, not
   running debops.apt_preferences_ together with debops.apt_ could risk
   installing new packages from Stretch. Using ``apt_preferences__preset_list``
-  can avoid that. [ypid]
+  can avoid that. [ypid_]
 
 - Ensure that the :file:`galaxy/requirements*` files are up-to-date by making
   it easy to regenerate them and check if they are up-to-date via Travis CI.
-  [ypid]
+  [ypid_]
 
 - Add debops.preseed_ role dependencies to :file:`service/preseed.yml` playbook.
-  [ypid]
+  [ypid_]
 
 - Add back some of the roles that were removed previously from Ansible Galaxy
   requirements. They are still present in the playbook, and will be removed at
-  a later date. [drybjed]
+  a later date. [drybjed_]
 
-- Add debops.resources_ role and its playbook. [drybjed]
+- Add debops.resources_ role and its playbook. [drybjed_]
 
 Changed
 ~~~~~~~
 
 - Update the :file:`service/iscsi.yml` playbook to use roles that were previously
-  hard dependencies of the debops.iscsi_ role. [drybjed]
+  hard dependencies of the debops.iscsi_ role. [drybjed_]
 
 - Update the variables related to debops.sshd_ due to change in the variable
-  naming scheme. You might need to update your Ansible inventory. [drybjed]
+  naming scheme. You might need to update your Ansible inventory. [drybjed_]
 
 - Update the :file:`service/tinc.yml` playbook with support for new debops.tinc_
-  release. [drybjed]
+  release. [drybjed_]
 
 - Update the :file:`service/mailman.yml` playbook with support for new
-  debops.mailman_ release. [drybjed]
+  debops.mailman_ release. [drybjed_]
 
-- Moved roles dependencies from debops.subnetwork_ to subnetwork playbook. [ypid]
+- Moved roles dependencies from debops.subnetwork_ to subnetwork playbook. [ypid_]
 
 - Update debops.apt_cacher_ng_ playbook and add support for :program:`nginx` proxy
-  for the cache. [drybjed]
+  for the cache. [drybjed_]
 
 - Replace ``app/gitlab_ci*.yml`` playbooks with debops.gitlab_runner_
   playbook. The old GitLab CI and GitLab CI Runner roles will no longer be
   active by default, since GitLab CI has been merged into GitLab itself.
-  [drybjed]
+  [drybjed_]
 
 - Update the debops.rsyslog_ playbook as well as the :file:`common.yml` playbook
-  to support the rewritten debops.rsyslog_ role. [drybjed]
+  to support the rewritten debops.rsyslog_ role. [drybjed_]
 
 - Update the debops.ntp_ playbook and :file:`common.yml` playbook to use the new
-  variable names. [drybjed]
+  variable names. [drybjed_]
 
 - Update debops.mariadb_server_ playbook to include its role dependencies.
-  [drybjed]
+  [drybjed_]
 
 - Update the :file:`service/postgresql_server.yml` playbook to use new namespaced
-  variables. [drybjed]
+  variables. [drybjed_]
 
 - Update the :file:`service/postgresql.yml` playbook to use new namespaced
-  variables. [drybjed]
+  variables. [drybjed_]
 
 - Run debops.apt_ earlier in the :file:`common.yml` playbook to setup things
-  like APT proxy and :manpage:`sources.list(5)` for other roles. [ypid]
+  like APT proxy and :manpage:`sources.list(5)` for other roles. [ypid_]
 
-- Update :file:`service/ruby.yml` playbook to use new role variables. [drybjed]
+- Update :file:`service/ruby.yml` playbook to use new role variables. [drybjed_]
 
-- Update :file:`service/goland.yml` playbook to use new role variables. [drybjed]
+- Update :file:`service/goland.yml` playbook to use new role variables. [drybjed_]
 
 - Update Changelog and other documentation to current project standards.
-  [drybjed]
+  [drybjed_]
 
 Removed
 ~~~~~~~
 
 - Remove debops.directories_ role and replace it with debops.resources_,
-  which is included in the :file:`common.yml` playbook. [drybjed]
+  which is included in the :file:`common.yml` playbook. [drybjed_]
 
 Fixed
 ~~~~~
@@ -170,99 +170,99 @@ Fixed
 Added
 ~~~~~
 
-- Add debops.swapfile_ role. [drybjed]
+- Add debops.swapfile_ role. [drybjed_]
 
 - Add debops.atd_ role, included in the :file:`common.yml` playbook by default.
 
   The ``at`` and ``batch`` commands can be used to schedule delayed jobs using
-  Ansible ``at`` module. [drybjed]
+  Ansible ``at`` module. [drybjed_]
 
 - Add debops.dhparam_ role, included in the :file:`common.yml` playbook by
-  default. [drybjed]
+  default. [drybjed_]
 
 - Add debops.sshd_ configuration variables to debops.apt_preferences_,
   debops.ferm_ and debops.tcpwrappers_ configuration in common playbook.
-  [drybjed]
+  [drybjed_]
 
 - Add set of common "service" playbooks that invoke Ansible roles that are used
-  on all hosts. [drybjed]
+  on all hosts. [drybjed_]
 
 - Add playbook for debops.ntp_ role and update :file:`common.yml` playbook with
-  debops.ntp_ firewall configuration. [drybjed]
+  debops.ntp_ firewall configuration. [drybjed_]
 
 - Add ``[debops_service_*]`` host groups to all relevant playbooks and clean up
   the ``hosts`` line in all playbooks to use YAML lists instead of Ansible
   patterns. This should ensure that during transition from colons to commas
-  there shouldn't be any issues. [drybjed]
+  there shouldn't be any issues. [drybjed_]
 
   You can use :command:`sed --regexp-extended --in-place '/\[debops_service_/! s/^\[debops_(.+)\]$/[debops_service_\1]/' hosts`
-  to update your inventory file. [ypid]
+  to update your inventory file. [ypid_]
 
 - Add debops.cryptsetup_ role, which can be used to manage filesystems
-  encrypted using LUKS. Role was created by Robin Schneider. Thanks! [drybjed]
+  encrypted using LUKS. Role was created by Robin Schneider. Thanks! [drybjed_]
 
 - Add debops.apt_preferences_ role to :file:`service/postgresql.yml` playbook.
-  [drybjed]
+  [drybjed_]
 
-- Add missing :program:`ferm` configuration for debops.postfix_ role. [drybjed]
+- Add missing :program:`ferm` configuration for debops.postfix_ role. [drybjed_]
 
 - Add missing playbooks for roles included in :file:`common.yml` playbook so that
-  they can be easily executed on their own. [drybjed]
+  they can be easily executed on their own. [drybjed_]
 
 Changed
 ~~~~~~~
 
 - All playbooks now use ``become: True`` instead of ``sudo: True`` to enable
-  privileged operation. [drybjed]
+  privileged operation. [drybjed_]
 
 - Redesign common playbooks to only work with hosts that are in
   ``[debops_all_hosts]`` inventory group. This should improve support for
   non-DebOps managed hosts in Ansible inventory, but it requires modification
-  of existing inventories. [drybjed]
+  of existing inventories. [drybjed_]
 
 - Update the Postfix, nginx and slapd playbooks to include the firewall and TCP
   Wrappers roles. OpenLDAP and nginx Ansible host groups have been renamed, you
   will need to update the inventory. Postfix playbook is prepared to manage
   Postfix as standalone service, not part of the :file:`common.yml` playbook.
-  [drybjed]
+  [drybjed_]
 
 - Move all role playbooks to ``service/`` subdirectory and create symlinks in
-  old locations. [drybjed]
+  old locations. [drybjed_]
 
 - Update :file:`service/docker.yml` playbook and include additional roles required
-  to configure the service properly. [drybjed]
+  to configure the service properly. [drybjed_]
 
-- Update "Getting Started Guide" and parts of other documentation. [drybjed]
+- Update "Getting Started Guide" and parts of other documentation. [drybjed_]
 
-- Moved roles dependencies from debops.owncloud_ to owncloud playbook. [ypid]
+- Moved roles dependencies from debops.owncloud_ to owncloud playbook. [ypid_]
 
 - Moved roles dependencies from debops.tinc_ to tinc playbook. [le9i0nx]
 
 - Moved roles dependencies from debops.postgresql_server_ to
-  postgresql_server playbook. [drybjed]
+  postgresql_server playbook. [drybjed_]
 
 - Update the :file:`common.yml` playbook and :file:`service/pki.yml` playbook with new
-  debops.pki_ role requirements. [drybjed]
+  debops.pki_ role requirements. [drybjed_]
 
 - Allow execution of debops.pki_ role with ``role::pki:secret`` tag so that
-  it will create secret directories but nothing else. [drybjed]
+  it will create secret directories but nothing else. [drybjed_]
 
 Removed
 ~~~~~~~
 
 - Remove the ``default([])`` alternatives from playbooks to make them work
-  correctly on Ansible v1. [drybjed]
+  correctly on Ansible v1. [drybjed_]
 
-- Remove legacy tags from role playbooks. [drybjed]
+- Remove legacy tags from role playbooks. [drybjed_]
 
 - Remove ``d([])`` from :file:`common.yml` playbook to pass the variables correctly
-  between roles. [drybjed]
+  between roles. [drybjed_]
 
 Fixed
 ~~~~~
 
 - Fix support for ``no_log: True`` parameter in ``ldap_entry`` Ansible module,
-  so that it works correctly on Ansible v2. [drybjed]
+  so that it works correctly on Ansible v2. [drybjed_]
 
 
 `debops-playbooks v0.2.7`_ - 2015-10-15
@@ -273,73 +273,73 @@ Fixed
 Added
 ~~~~~
 
-- Add debops.lvm_ role. [drybjed]
+- Add debops.lvm_ role. [drybjed_]
 
-- Add debops.iscsi_ role. [drybjed]
+- Add debops.iscsi_ role. [drybjed_]
 
 - Add debops.libvirt_ and debops.libvirtd_ roles. debops.kvm_ role is
   dropped, due to being replaced by debops.libvirtd_. Hosts in
   ``[debops_kvm]`` host group will need to be moved to ``[debops_libvirtd]``,
-  there might be some variable changes as well. [drybjed]
+  there might be some variable changes as well. [drybjed_]
 
 - Add a context-based tags to common playbook as an experiment (``libvirt(d)``
   roles already use them). Context tags are inspired by ``debtags`` and will
   allow more fine-grained control over playbook tasks, when roles start to use
   them internally. Old-style tags will be phased out after some time.
-  [drybjed]
+  [drybjed_]
 
-- Add debops.librenms_ role. [drybjed]
+- Add debops.librenms_ role. [drybjed_]
 
 - Add debops.core_ role as well as :file:`core.yml` playbook and replace the
   :file:`root.yml` playbook. This change may affect any ``root_*`` variables set in
   the inventory. Check debops.core_ role documentation for new variable
-  names. [drybjed]
+  names. [drybjed_]
 
-- Add debops.fcgiwrap_ role. [drybjed]
+- Add debops.fcgiwrap_ role. [drybjed_]
 
-- Add new role tags in all playbooks. [drybjed]
+- Add new role tags in all playbooks. [drybjed_]
 
 - Add debops.grub_ role, created by Patryk Ściborek (scibi). Thanks!
-  [drybjed]
+  [drybjed_]
 
-- Add debops.docker_ role. [drybjed]
+- Add debops.docker_ role. [drybjed_]
 
 - Add ``globmatch()`` Ansible filter plugin. Using this filter, you can match
   strings or lists of strings against a shell glob pattern (a string or a list
   of patterns). This can be used to easily match one or more strings in a list
-  using ``*`` and ``?`` characters. [drybjed]
+  using ``*`` and ``?`` characters. [drybjed_]
 
-- Add debops.docker_gen_ role. [drybjed]
+- Add debops.docker_gen_ role. [drybjed_]
 
 - Add ``ldappassword`` filter. [scibi]
 
-- Add debops.postgresql_server_ role. [drybjed]
+- Add debops.postgresql_server_ role. [drybjed_]
 
 Changed
 ~~~~~~~
 
 - Hosts in ``[debops_no_common]`` host group will no longer run a common
-  playbook. [drybjed]
+  playbook. [drybjed_]
 
 - Lookup plugins ``task_src``, ``template_src`` and ``file_src`` are updated
   using input from James Cammarata to work both in old Ansible 1.x series as
-  well as in the new 2.x series. Thanks! [drybjed]
+  well as in the new 2.x series. Thanks! [drybjed_]
 
 - Split the :file:`environments.yml` playbook into smaller plays included in the
   main playbook to see if this model has any issues. This change should make
   user of specific role plays easier on the command line and from other
-  playbooks. [drybjed]
+  playbooks. [drybjed_]
 
-- Split :file:`virtualization.yml` playbook into separate plays. [drybjed]
+- Split :file:`virtualization.yml` playbook into separate plays. [drybjed_]
 
 - All playbooks have been split into small plays. Playbook directories have
-  shorter names, which are easier to use from the command line. [drybjed]
+  shorter names, which are easier to use from the command line. [drybjed_]
 
 Removed
 ~~~~~~~
 
 - Remove :file:`root.yml` playbook and its additional files - its functionality has
-  been moved to debops.core_ Ansible role. [drybjed]
+  been moved to debops.core_ Ansible role. [drybjed_]
 
 
 `debops-playbooks v0.2.6`_ - 2015-07-14
@@ -350,77 +350,77 @@ Removed
 Added
 ~~~~~
 
-- Add debops.fail2ban_ role. [drybjed]
+- Add debops.fail2ban_ role. [drybjed_]
 
-- Add debops.preseed_ role. [drybjed]
+- Add debops.preseed_ role. [drybjed_]
 
-- Add debops.ipxe_ role. [drybjed]
+- Add debops.ipxe_ role. [drybjed_]
 
-- Add debops.tftpd_ role. [drybjed]
+- Add debops.tftpd_ role. [drybjed_]
 
-- Add debops.tgt_ role. [drybjed]
+- Add debops.tgt_ role. [drybjed_]
 
 - Add variables to set admin home directory group and permissions in
-  :file:`bootstrap.yml` playbook. [drybjed]
+  :file:`bootstrap.yml` playbook. [drybjed_]
 
-- Add debops.rstudio_server_ role. [drybjed]
+- Add debops.rstudio_server_ role. [drybjed_]
 
-- Add debops.tinc_ role. [drybjed]
+- Add debops.tinc_ role. [drybjed_]
 
 - Add ``ansible_local.timezone`` fact which returns currently set timezone in
   :file:`/etc/timezone`. Fact provided by Ansible itself in
   ``ansible_date_time.tz`` is not suitable to use in application configuration
-  files. [drybjed]
+  files. [drybjed_]
 
-- Add debops.snmpd_ role. [drybjed]
+- Add debops.snmpd_ role. [drybjed_]
 
-- Add debops.memcached_ role. [drybjed]
+- Add debops.memcached_ role. [drybjed_]
 
-- Add MariaDB server and client roles. [drybjed]
+- Add MariaDB server and client roles. [drybjed_]
 
 Changed
 ~~~~~~~
 
 - Ansible will now try and read the remote host UUID using ``dmidecode`` and
   prefer that over using a randomly generated UUID if possible. This works on
-  hardware hosts and virtual machines, but shouldn't in containers. [drybjed]
+  hardware hosts and virtual machines, but shouldn't in containers. [drybjed_]
 
 - During :file:`root.yml` playbook, grab only the last line of ``dmidecode`` output
   in case that it decides to emit comments about not supporting older releases
-  in ``STDOUT``. [drybjed]
+  in ``STDOUT``. [drybjed_]
 
 - Update of the :file:`bootstrap.yml` playbook; there are now more variables that
   define the administrator account, admin account will be now a "system"
   account by default (UID < 1000). Playbook checks if an account with a given
   name already exists and does not change its parameters if it does. Admin
   account will be in more groups by default (``admins`` (passwordless sudo
-  access), ``staff`` and ``adm``). [drybjed]
+  access), ``staff`` and ``adm``). [drybjed_]
 
 - Move the Changelog references to the end of the file and remove duplicates,
-  so that Sphinx does not complain about them. [drybjed]
+  so that Sphinx does not complain about them. [drybjed_]
 
-- Replace old headers in Changelog to use current header order. [drybjed]
+- Replace old headers in Changelog to use current header order. [drybjed_]
 
-- Move relevant documentation to ``debops-playbooks`` repository. [drybjed]
+- Move relevant documentation to ``debops-playbooks`` repository. [drybjed_]
 
 Removed
 ~~~~~~~
 
 - Remove debops.ansible_ role from requirements, you should switch to
   creating an :command:`ansible` Debian package and installing it on remote servers
-  using local APT repository. [drybjed]
+  using local APT repository. [drybjed_]
 
 - Remove debops.encfs_ role from requirements, it's not used anymore and is
-  ill designed to be used on servers at this point. [drybjed]
+  ill designed to be used on servers at this point. [drybjed_]
 
 - Remove debops.safekeep_ role from requirements, SafeKeep is not in
   official Debian repositories therefore installation requires manual steps,
-  debops.rsnapshot_ is a better alternative. [drybjed]
+  debops.rsnapshot_ is a better alternative. [drybjed_]
 
 - Remove debops.debug_ role from requirements, :file:`tools/debug.yml` playbook
-  should be a better alternative and it's easier to use. [drybjed]
+  should be a better alternative and it's easier to use. [drybjed_]
 
-- Convert :file:`bootstrap.yml` playbook to an Ansible role. [drybjed]
+- Convert :file:`bootstrap.yml` playbook to an Ansible role. [drybjed_]
 
 
 `debops-playbooks v0.2.5`_ - 2015-04-01
@@ -431,15 +431,15 @@ Removed
 Added
 ~~~~~
 
-- Add debops.dokuwiki_ role. [drybjed]
+- Add debops.dokuwiki_ role. [drybjed_]
 
 - Add a "testing channel" Galaxy requirements file, to be used to download
-  Ansible roles with "testing" branch instead of "master". [drybjed]
+  Ansible roles with "testing" branch instead of "master". [drybjed_]
 
 - Reto Gantenbein created a `Dovecot`_ role which has been added to the DebOps
   project. Thanks! debops.dovecot_ can be used to manage IMAP/POP3 service
   which will let you access your mail remotely over a secure connection.
-  [ganto, drybjed]
+  [ganto, drybjed_]
 
 
 `debops-playbooks v0.2.4`_ - 2015-03-26
@@ -451,20 +451,20 @@ Added
 ~~~~~
 
 - Add separate "root fact" directory where applications are installed, by
-  default the same as the path for service home directories. [drybjed]
+  default the same as the path for service home directories. [drybjed_]
 
 - Install ``python-pip`` during bootstrapping. [htgoebel]
 
-- Add a way to install custom packages during bootstrapping. [drybjed]
+- Add a way to install custom packages during bootstrapping. [drybjed_]
 
-- Add debops.stunnel_ role. [drybjed]
+- Add debops.stunnel_ role. [drybjed_]
 
 Changed
 ~~~~~~~
 
 - Reorder :file:`networking.yml` playbook to run network-related roles before main
   services and applications. This should make sure that networking is correctly
-  set up when it's needed. [drybjed]
+  set up when it's needed. [drybjed_]
 
 
 `debops-playbooks v0.2.3`_ - 2015-03-05
@@ -480,22 +480,22 @@ Added
 
 - You can set global "root flags" on hosts using :file:`root.yml` playbook.
   Ansible roles can check for their presence or absence and automatically
-  change their behavior. [drybjed]
+  change their behavior. [drybjed_]
 
 Changed
 ~~~~~~~
 
 - Roles in :file:`common.yml` playbook are rearranged to better support LDAP
   integration and avoid possible SSH lockdown if host was not prepared using
-  :file:`bootstrap.yml` playbook or preseeding. [drybjed]
+  :file:`bootstrap.yml` playbook or preseeding. [drybjed_]
 
 - Scripts which provide custom facts will be installed on the first run of
   the :file:`root.yml` playbook. First such script provides a list of currently
   enabled Linux capabilities, in ``ansible_local.cap12s`` fact tree.
-  [htgoebel, drybjed]
+  [htgoebel, drybjed_]
 
 - :file:`bootstrap.yml` playbook will check if it can change the hostname before
-  doing it using Linux capabilities. [htgoebel, drybjed]
+  doing it using Linux capabilities. [htgoebel, drybjed_]
 
 
 `debops-playbooks v0.2.2`_ - 2015-02-25
@@ -512,7 +512,7 @@ Changed
 ~~~~~~~
 
 - Fix issue with ``ldap_entry`` not handling ``no_log: True`` in argument list
-  properly [drybjed]
+  properly [drybjed_]
 
 
 `debops-playbooks v0.2.1`_ - 2015-02-24
@@ -524,7 +524,7 @@ Changed
 ~~~~~~~
 
 - Move ``library/`` directory into correct place and sort modules in
-  subdirectories mirroring the official layout. [drybjed]
+  subdirectories mirroring the official layout. [drybjed_]
 
 `debops-playbooks v0.2.0`_ - 2015-02-22
 ---------------------------------------
@@ -534,17 +534,17 @@ Changed
 Added
 ~~~~~
 
-- New role: `debops.rsnapshot`_ [drybjed]
+- New role: `debops.rsnapshot`_ [drybjed_]
 
 Changed
 ~~~~~~~
 
 - Variables from :file:`bootstrap.yml` playbook can now be customized using
-  inventory. [drybjed]
+  inventory. [drybjed_]
 
 - Bootstrap variable names have been changed to be similar to what is used in
   other DebOps roles. Variable that specifies SSH key to install is now
-  a normal Ansible list. [drybjed]
+  a normal Ansible list. [drybjed_]
 
 
 debops-playbooks v0.1.0 - 2015-02-16
@@ -553,21 +553,21 @@ debops-playbooks v0.1.0 - 2015-02-16
 Added
 ~~~~~
 
-- New paths have been added to :file:`root.yml` service paths. [drybjed]
+- New paths have been added to :file:`root.yml` service paths. [drybjed_]
 
 Changed
 ~~~~~~~
 
 - Format of the Changelog is modified to reflect new versioning. Old entries are
-  preserved. [drybjed]
+  preserved. [drybjed_]
 
 - ``ansible_local.root.home`` default path has been changed from :file:`/var/lib`
   to :file:`/var/local` to move home directories out of the way of the system
-  packages. [drybjed]
+  packages. [drybjed_]
 
 - :file:`root.yml` service paths that are already configured on remote host as facts will
   override playbook or inventory changes to protect already installed services
-  from future changes. [drybjed]
+  from future changes. [drybjed_]
 
 ****
 
