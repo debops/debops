@@ -1,6 +1,6 @@
 .. _debops_policy:
 
-DebOps Policies and Guidelines
+DebOps Guidelines and Policies
 ==============================
 
 .. toctree::
@@ -11,6 +11,7 @@ DebOps Policies and Guidelines
    distributed-development
    code-signing-policy
    security-policy
+   planned-policy-changes
    references
    copyright
    changelog

@@ -16,6 +16,10 @@ The Project is managed and developed by a decentralized group of people who
 use it and contribute their time, skills and resources. To allow for a more
 organized work, various roles are defined within the Project.
 
+In the industry the term "organizational structure" might also be known as
+"roles as missions" which is not used in this documentation to avoid confusion
+with Ansible roles.
+
 Refer to the `DebOps People`_ section in the debops-keyring_ documentation
 where the people and their current roles are listed.
 
@@ -94,7 +98,7 @@ should use their own OpenPGP keys, stored in `debops-keyring`_ for auditing.
 The bots are not expected to introduce new unauthenticated code or
 documentation in different repositories which is enforced by only giving the
 bots access to the repositories they are working with and checking that no
-commits are created by bots in unexpected repositories using the DebOps tools.
+commits are created by bots in unexpected repositories using the `DebOps Tools`_.
 
 ..
  Local Variables:
