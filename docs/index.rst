@@ -10,6 +10,7 @@ DebOps Guidelines and Policies
    organizational-structure
    distributed-development
    code-signing-policy
+   software-source-policy
    security-policy
    planned-policy-changes
    references
