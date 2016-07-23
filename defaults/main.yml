@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: includes/all.rst
 
 
 # APT package management [[[
@@ -41,13 +43,13 @@ hashicorp__user: 'hashicorp'
                                                                    # ]]]
 # .. envvar:: hashicorp__group [[[
 #
-# Name of the primary system group of the HashiCorp account.
+# Name of the primary system group of the HashiCorp_ account.
 hashicorp__group: 'hashicorp'
 
                                                                    # ]]]
 # .. envvar:: hashicorp__home [[[
 #
-# Path to the home directory of the HashiCorp account.
+# Path to the home directory of the HashiCorp_ account.
 hashicorp__home: '{{ (ansible_local.root.home
                       if (ansible_local|d() and ansible_local.root|d() and
                           ansible_local.root.home|d())
@@ -56,13 +58,13 @@ hashicorp__home: '{{ (ansible_local.root.home
                                                                    # ]]]
 # .. envvar:: hashicorp__comment [[[
 #
-# The GECOS string set for the HashiCorp account.
+# The GECOS string set for the HashiCorp_ account.
 hashicorp__comment: 'HashiCorp Application Manager'
 
                                                                    # ]]]
 # .. envvar:: hashicorp__shell [[[
 #
-# The default shell of the HashiCorp account.
+# The default shell of the HashiCorp_ account.
 hashicorp__shell: '/usr/sbin/nologin'
                                                                    # ]]]
                                                                    # ]]]
@@ -70,17 +72,17 @@ hashicorp__shell: '/usr/sbin/nologin'
 # -----------------------------
 
 # See :ref:`hashicorp__ref_security` for details about how the role uses the
-# HashiCorp company OpenPGP keys.
+# HashiCorp_ company OpenPGP keys.
 
 # .. envvar:: hashicorp__gpg_key_id [[[
 #
-# The OpenPGP key fingerprint of the HashiCorp company.
+# The OpenPGP key fingerprint of the HashiCorp_ company.
 hashicorp__gpg_key_id: '91A6E7F85D05C65630BEF18951852D87348FFC4C'
 
                                                                    # ]]]
 # .. envvar:: hashicorp__keyserver [[[
 #
-# URL of the OpenPGP keyserver used to obtain the HashiCorp OpenPGP key.
+# URL of the OpenPGP keyserver used to obtain the HashiCorp_ OpenPGP key.
 hashicorp__keyserver: '{{ ansible_local.core.keyserver
                           if (ansible_local|d() and ansible_local.core|d() and
                               ansible_local.core.keyserver|d())
@@ -92,15 +94,15 @@ hashicorp__keyserver: '{{ ansible_local.core.keyserver
 
 # .. envvar:: hashicorp__applications [[[
 #
-# List of HashiCorp applications that should be installd on a given host.
+# List of HashiCorp_ applications that should be installed on a given host.
 # To find out what applications are supported, check the names of the keys
-# in the ``hashicorp__default_version_map`` dictionary.
+# in the :envvar:`hashicorp__default_version_map` dictionary.
 hashicorp__applications: []
 
                                                                    # ]]]
 # .. envvar:: hashicorp__dependent_applications [[[
 #
-# List of HashiCorp applications that are requested by other Ansible roles
+# List of HashiCorp_ applications that are requested by other Ansible roles
 # using dependent variables.
 hashicorp__dependent_applications: []
                                                                    # ]]]
@@ -110,7 +112,7 @@ hashicorp__dependent_applications: []
 
 # .. envvar:: hashicorp__default_version_map [[[
 #
-# YAML dictionary which maps the HashiCorp application names to their versions.
+# YAML dictionary which maps the HashiCorp_ application names to their versions.
 # This is the main dictionary and shouldn't be modified by the user if
 # possible.
 hashicorp__default_version_map:
@@ -135,7 +137,7 @@ hashicorp__default_version_map:
                                                                    # ]]]
 # .. envvar:: hashicorp__version_map [[[
 #
-# An additional YAML dictionary which defines mapping between HashiCorp
+# An additional YAML dictionary which defines mapping between HashiCorp_
 # applications and their versions. This dictionary should be used to override
 # the default version if necessary.
 hashicorp__version_map: {}
@@ -143,7 +145,7 @@ hashicorp__version_map: {}
                                                                    # ]]]
 # .. envvar:: hashicorp__combined_version_map [[[
 #
-# The YAML dictionary used by the role to lookup specific versions of HashiCorp
+# The YAML dictionary used by the role to lookup specific versions of HashiCorp_
 # applications to install.
 hashicorp__combined_version_map: '{{ hashicorp__default_version_map
                                      | combine(hashicorp__version_map) }}'
@@ -153,7 +155,7 @@ hashicorp__combined_version_map: '{{ hashicorp__default_version_map
 # ----------------------------
 # .. envvar:: hashicorp__default_binary_map [[[
 #
-# Some of the HashiCorp applications use different location or name of binaries
+# Some of the HashiCorp_ applications use different location or name of binaries
 # in their archives. This YAML dictionary is used to override the default
 # binary name(s) to the correct ones when necessary. Paths are relative to the
 # specific archive directory.
@@ -182,7 +184,7 @@ hashicorp__combined_binary_map: '{{ hashicorp__default_binary_map
 
 # .. envvar:: hashicorp__src [[[
 #
-# Base path to the directory with HashiCorp binary archives, their hash
+# Base path to the directory with HashiCorp_ binary archives, their hash
 # signatures and OpenPGP signatures.
 hashicorp__src: '{{ (ansible_local.root.src
                      if (ansible_local|d() and ansible_local.root|d() and
@@ -193,7 +195,7 @@ hashicorp__src: '{{ (ansible_local.root.src
                                                                    # ]]]
 # .. envvar:: hashicorp__lib [[[
 #
-# Base path to the directory where HashiCorp archives are unpacked after
+# Base path to the directory where HashiCorp_ archives are unpacked after
 # verification.
 hashicorp__lib: '{{ (ansible_local.root.lib
                      if (ansible_local|d() and ansible_local.root|d() and
@@ -203,7 +205,7 @@ hashicorp__lib: '{{ (ansible_local.root.lib
                                                                    # ]]]
 # .. envvar:: hashicorp__bin [[[
 #
-# Base path to the directory where HashiCorp application binaries will be
+# Base path to the directory where HashiCorp_ application binaries will be
 # installed by the ``root`` account.
 hashicorp__bin: '{{ (ansible_local.root.bin
                      if (ansible_local|d() and ansible_local.root|d() and
@@ -216,13 +218,13 @@ hashicorp__bin: '{{ (ansible_local.root.bin
 
 # .. envvar:: hashicorp__base_url [[[
 #
-# The base URL of the HashiCorp webserver with application releases.
+# The base URL of the HashiCorp_ webserver with application releases.
 hashicorp__base_url: 'https://releases.hashicorp.com/'
 
                                                                    # ]]]
 # .. envvar:: hashicorp__platform [[[
 #
-# Name of the current OS platform in the format used by the HashiCorp
+# Name of the current OS platform in the format used by the HashiCorp_
 # application archive filenames.
 hashicorp__platform: '{{ ansible_system | lower }}'
 
@@ -236,7 +238,7 @@ hashicorp__architecture: '{{ ansible_architecture }}'
 # .. envvar:: hashicorp__architecture_map [[[
 #
 # YAML dictionary that maps the system architecture as used by Ansible to the
-# architecture names used in the HashiCorp archive filenames.
+# architecture names used in the HashiCorp_ archive filenames.
 hashicorp__architecture_map:
   'x86_64': 'amd64'
   'i386': '386'
@@ -245,7 +247,7 @@ hashicorp__architecture_map:
                                                                    # ]]]
 # .. envvar:: hashicorp__tar_suffix [[[
 #
-# The filename suffix of the HashiCorp application archive.
+# The filename suffix of the HashiCorp_ application archive.
 hashicorp__tar_suffix: '{{ hashicorp__platform + "_"
                            + hashicorp__architecture_map[hashicorp__architecture]
                            + ".zip" }}'
@@ -261,7 +263,7 @@ hashicorp__hash_suffix: 'SHA256SUMS'
 # .. envvar:: hashicorp__sig_suffix [[[
 #
 # The filename suffix of the file which contains OpenPGP signature of the file
-# with SHA256 hashes, signed by the HashiCorp OpenPGP key.
+# with SHA256 hashes, signed by the HashiCorp_ OpenPGP key.
 hashicorp__sig_suffix: '{{ hashicorp__hash_suffix + ".sig" }}'
                                                                    # ]]]
                                                                    # ]]]

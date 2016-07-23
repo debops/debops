@@ -1,13 +1,13 @@
 Introduction
 ============
 
-The ``debops.hashicorp`` Ansible role can be used to securely install
-`HashiCorp <https://hashicorp.com/>`_ applications, such as
-`Consul <https://consul.io/>`_, `Terraform <https://terraform.io/>`_,
-`Vault <https://vaultproject.io/>`_ and others.
+.. include:: includes/all.rst
 
-The selected applications are downloaded from the hashiCorp release repository,
-authenticated using the HashiCorp OpenPGP key and installed on the system.
+The debops.hashicorp_ Ansible role can be used to securely install HashiCorp_
+applications, such as `Consul`_, `Terraform`_, `Vault`_ and others.
+
+The selected applications are downloaded from the HashiCorp_ release repository,
+authenticated using the HashiCorp_ OpenPGP key and installed on the system.
 After that, other Ansible roles can be used to configure them as needed.
 
 

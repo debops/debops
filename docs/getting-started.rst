@@ -1,6 +1,8 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
 
@@ -8,9 +10,9 @@ Getting started
 Initial configuration
 ---------------------
 
-The ``debops.hashicorp`` role does not install any HashiCorp applications by
+The debops.hashicorp_ role does not install any HashiCorp_ applications by
 default, even if enabled in the Ansible inventory. You need to specify the
-application names you wish to install using the ``hashicorp__applications``
+application names you wish to install using the :envvar:`hashicorp__applications`
 list. For example, to install ``consul`` on all hosts that use the role, create
 a file in the Ansible inventory with contents:
 
@@ -19,11 +21,11 @@ a file in the Ansible inventory with contents:
    hashicorp__applications: [ 'consul' ]
 
 The role will install the ``consul`` binary, after verifying its authenticity,
-in the ``/usr/local/bin`` directory so that it will be automatically available
+in the :file:`/usr/local/bin` directory so that it will be automatically available
 for all users.
 
-List of HashiCorp applications supported by the role can be found in the
-``hashicorp__default_version_map`` default variable. You can also use it to
+List of HashiCorp_ applications supported by the role can be found in the
+:envvar:`hashicorp__default_version_map` default variable. You can also use it to
 easily install all supported applications at once:
 
 .. code-block:: yaml
@@ -38,7 +40,7 @@ more details.
 Example inventory
 -----------------
 
-The ``debops.hashicorp`` Ansible role is not enabled by default. To enable it
+The debops.hashicorp_ Ansible role is not enabled by default. To enable it
 on a host, you need to include that host in the ``[debops_service_hashicorp]``
 inventory group:
 
@@ -52,7 +54,7 @@ Example playbook
 ----------------
 
 If you are using this role without DebOps, here's an example Ansible playbook
-that uses the ``debops.hashicorp`` role:
+that uses the debops.hashicorp_ role:
 
 .. literalinclude:: playbooks/hashicorp.yml
    :language: yaml
