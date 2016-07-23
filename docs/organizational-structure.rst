@@ -98,7 +98,7 @@ should use their own OpenPGP keys, stored in `debops-keyring`_ for auditing.
 The bots are not expected to introduce new unauthenticated code or
 documentation in different repositories which is enforced by only giving the
 bots access to the repositories they are working with and checking that no
-commits are created by bots in unexpected repositories using the DebOps tools.
+commits are created by bots in unexpected repositories using the `DebOps Tools`_.
 
 ..
  Local Variables:

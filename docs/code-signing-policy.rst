@@ -48,7 +48,7 @@ A signature from another DebOps Developer is sufficient as well.
 
 This should allow for secure code authentication. That means that tampering
 with the code on the source code management platform can be reliable detected
-by DebOps Tools, DebOps Developers and all of the users of the Project and thus
+by `DebOps Tools`_, DebOps Developers and all of the users of the Project and thus
 the integrity of the Project does not rely on centralized parties anymore.
 Additionally, this ensures a trusted audit trail.
 
