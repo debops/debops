@@ -11,7 +11,7 @@ DebOps Guidelines and Policies
    distributed-development
    code-signing-policy
    security-policy
-   planed-policy-changes
+   planned-policy-changes
    references
    copyright
    changelog

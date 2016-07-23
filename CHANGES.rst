@@ -25,7 +25,7 @@ Changed
 - Clarified that DebOps Developer don’t automatically have more write
   privileges. [ypid_]
 
-- Reviewed and compared with other policies and adopted where useful. [AnBuKu_, ypid_]
+- Reviewed and compared with other policies and adapted where useful. [AnBuKu_, ypid_]
 
 Added
 ~~~~~

@@ -43,7 +43,7 @@ https://keybase.io/.
 Additionally, it is RECOMMENDED to take part in the Web Of Trust to make
 it harder for an adversary to fake signatures by pretending to be one of the
 DebOps Contributors or Developers. In particular as the DebOps Project is related to the Debian
-Project it is RECOMMENDED to get your key signed by at least one Debian Developers.
+Project it is RECOMMENDED to get your key signed by at least one Debian Developer.
 A signature from another DebOps Developer is sufficient as well.
 
 This should allow for secure code authentication. That means that tampering

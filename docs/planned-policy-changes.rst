@@ -1,5 +1,5 @@
-Planed Policy Changes
-=====================
+Planned Policy Changes
+======================
 
 .. include:: includes/all.rst
 
@@ -13,7 +13,7 @@ document are to be interpreted as described in BCP 14, [`RFC2119`_].
 DebOps Code Signing Policy
 --------------------------
 
-Planed changes for v0.2.0:
+Planned changes for v0.2.0:
 
 * DebOps Contributors MUST sign their work.
 
