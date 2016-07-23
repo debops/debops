@@ -16,6 +16,10 @@ The Project is managed and developed by a decentralized group of people who
 use it and contribute their time, skills and resources. To allow for a more
 organized work, various roles are defined within the Project.
 
+In the industry the term "organizational structure" might also be know as
+"roles as missions" which is not used in this documentation to avoid confusion
+with Ansible roles.
+
 Refer to the `DebOps People`_ section in the debops-keyring_ documentation
 where the people and their current roles are listed.
 
