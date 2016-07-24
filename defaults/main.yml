@@ -145,8 +145,13 @@ bootstrap__admin_shell: '/bin/bash'
                                                                    # ]]]
 # .. envvar:: bootstrap__admin_sshkeys [[[
 #
-# List of SSH keys configured on root and administrator accounts.
-bootstrap__admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
+# List of SSH keys configured on root and administrator accounts. It takes all
+# active keys from your current ssh agent session plus all public keys which you
+# keep in the ``~/.ssh/`` directory of the user which you are bootstraping Debops
+# from. If you are not happy with that scenario, for example you have some keys
+# which you don't like to be included, please modify the variable accordingly
+# to your requirements.
+bootstrap__admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.ssh/*.pub || true") }}' ]
 
                                                                    # ]]]
 # .. envvar:: bootstrap__admin_manage_existing [[[
