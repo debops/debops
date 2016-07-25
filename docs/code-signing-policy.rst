@@ -7,7 +7,7 @@ DebOps Code Signing Policy
 
 :Date drafted: 2016-06-19
 :Date effective: 2016-09-01
-:Last changed: 2016-07-21
+:Last changed: 2016-07-25
 :Version: 0.1.0
 :Authors: - drybjed_
           - ypid_

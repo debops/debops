@@ -20,25 +20,28 @@ Added
 - Updated the repository layout to be compatible with the rest of the DebOps
   documentation. [drybjed_]
 
-- Added a draft of the organizational structure and explanation of distributed
-  development model, as well a draft of the code signing policy used by the
-  project. [drybjed_, ypid_]
+- Added a draft of the :ref:`debops_policy__organizational_structure` and
+  explanation of :ref:`debops_policy__distributed_development_model`, as well a
+  draft of the :ref:`debops_policy__code_signing_policy` used by the project.
+  [drybjed_, ypid_]
 
-- Wrote initial security policy. [ypid_]
+- Wrote initial :ref:`debops_policy__security_policy`. [ypid_]
 
-- Added "Project Admin" role to organizational structure. [ypid_]
+- Added "Project Admin" role to :ref:`debops_policy__organizational_structure`. [ypid_]
 
-- Added first draft of the "Software Source Policy". [drybjed_]
+- Added first draft of the :ref:`debops_policy__software_source_policy`. [drybjed_]
 
 Changed
 ~~~~~~~
 
-- Use RFC2119 and ISO 8601 for the code signing policy. [ypid_]
+- Use `RFC2119`_ and `ISO 8601`_ for the :ref:`debops_policy__security_policy`. [ypid_]
 
 - Renamed "Role Authors" and "Role Maintainers" to "Authors" and "Maintainers"
-  to keep the roles in the organizational structure more generic. [ypid_]
+  to keep the roles in the :ref:`debops_policy__organizational_structure` more generic. [ypid_]
 
 - Clarified that DebOps Developer don’t automatically have more write
   privileges. [ypid_]
 
 - Reviewed and compared with other policies and adapted where useful. [AnBuKu_, ypid_]
+
+- Review and minor improvements for the :ref:`debops_policy__software_source_policy`. [ypid_]

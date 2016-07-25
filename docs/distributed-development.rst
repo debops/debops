@@ -1,3 +1,5 @@
+.. _debops_policy__distributed_development_model:
+
 Distributed Development Model
 =============================
 
