@@ -52,3 +52,24 @@ Here are the available options of the inner dict:
   but is a result of how the configuration file is generated using JSON as intermediate data format.
 
 Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html>`__ for details about the available configuration options.
+
+Change/Disable skeleton files for new users (example)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The skeleton files which new users get copied into there ownCloud profile on
+first login can be changed by the ``skeletondirectory`` setting which points to
+the skeleton directory to use.
+
+In case users should primarily stored their files on external storage, it can
+make sense to not provided any skeleton files at all. This can be archived by
+putting:
+
+.. code-block:: yaml
+
+   owncloud__config:
+
+     ## Points to the skeleton directory to use on first login of users.
+     ## If this setting is an empty string, no files will be provided by default.
+     skeletondirectory: ''
+
+into your Ansible inventory.
