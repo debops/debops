@@ -53,6 +53,9 @@ Added
 - Added :envvar:`owncloud__apt_preferences__dependent_list_optional` variable
   which might come in handy when APT preference presets are used. [ypid]
 
+- Added :envvar:`owncloud__temp_path` to allow to change the temp directory of
+  ownCloud. [ypid]
+
 Changed
 ~~~~~~~
 

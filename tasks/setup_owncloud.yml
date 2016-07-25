@@ -1,6 +1,19 @@
 ---
 # vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# ownCloud temp directory [[[
+
+- name: Ensure the custom temp directory is setup
+  file:
+    path: '{{ owncloud__temp_path }}'
+    state: 'directory'
+    owner: '{{ owncloud__user }}'
+    group: '{{ owncloud__group }}'
+    mode: '1750'
+  when: (owncloud__temp_path != "")
+
+# .. ]]]
+
 # ownCloud ./config/ [[[
 
 - name: Install ownCloud config file

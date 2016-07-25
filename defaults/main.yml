@@ -278,6 +278,20 @@ owncloud__home: '/var/www/owncloud'
 owncloud__data_path: '{{ owncloud__home }}/data'
 
 
+# .. envvar:: owncloud__temp_path
+#
+# Directory which ownCloud will use as temp directory.
+#
+# In case ``/tmp`` has limited space (for example is a ramdisk) or is otherwise
+# restricted then it is a good idea to change the temp directory that ownCloud
+# uses to a path with more space available.
+#
+# The default (empty string) is to let ownCloud figure out which temp directory
+# it should use which probably results in :file:`/tmp/owncloudtemp` unless
+# otherwise influenced by environment variables and such.
+owncloud__temp_path: ''
+
+
 # .. envvar:: owncloud__deploy_path
 #
 # Where the ownCloud instance will be deployed (web root).
@@ -523,7 +537,13 @@ owncloud__app_user_webfinger_support: False
 # -------------------------------------
 #
 # The dicts of this section ends up in :file:`owncloud/config/debops.config.php` and override the values
-# from :file:`owncloud/config/config.php`. For more information refer to :ref:`owncloud__ref_config`.
+# from :file:`owncloud/config/config.php`.
+#
+# TODO: Note that as of ownCloud 9.0, you can not unset a setting which was
+# once set in :file:`debops.config.php` because ownCloud might copies it to
+# :file:`config.php`. Possible fix: `occ config:system:set`
+#
+# For more information refer to :ref:`owncloud__ref_config`.
 
 
 # .. envvar:: owncloud__role_config
@@ -554,6 +574,10 @@ owncloud__role_config:
     value:
       host: '{{ owncloud__redis_host }}'
       port: '{{ owncloud__redis_port|int }}'
+
+  'tempdirectory':
+    state: '{{ "present" if (owncloud__temp_path != "") else "absent" }}'
+    value: '{{ owncloud__temp_path }}'
 
 
 # .. envvar:: owncloud__role_recommended_config
