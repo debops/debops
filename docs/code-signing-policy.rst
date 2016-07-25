@@ -61,6 +61,7 @@ can be used to verify the signatures.
 Additional References
 ---------------------
 
+* `Git Tools - Signing Your Work <https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work>`_
 * `A Git Horror Story: Repository Integrity With Signed Commits <https://mikegerwitz.com/papers/git-horror-story.html>`_
 * `What are the advantages and disadvantages of cryptographically signing commits and tags in Git? <https://programmers.stackexchange.com/a/212216>`_
 * `Discussion between drybjed and ypid <https://github.com/debops/ansible-ifupdown/pull/48>`_
