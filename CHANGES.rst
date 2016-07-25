@@ -14,6 +14,11 @@ The current role maintainer is drybjed.
 
 .. _debops.nginx master: https://github.com/debops/ansible-nginx/compare/v0.1.8...master
 
+Changed
+~~~~~~~
+
+- Standardize names of sites folders (`site-default` renamed to `sites-default`). [thiagotalma]
+
 
 `debops.nginx v0.1.9`_ - 2016-07-19
 -----------------------------------
