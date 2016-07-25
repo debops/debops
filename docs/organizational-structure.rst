@@ -1,3 +1,5 @@
+.. _debops_policy__organizational_structure:
+
 Organizational Structure
 ========================
 
@@ -59,7 +61,7 @@ The UNIX group for the DebOps Leader used on the Project assets should be named
 Project Admins
 --------------
 
-The DebOps Project Admins manage the Project’s services such as websites and
+The DebOps Project Admins manage the Project’s services such as web servers and
 mailing lists.
 
 Contributors

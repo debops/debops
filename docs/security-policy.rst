@@ -1,3 +1,5 @@
+.. _debops_policy__security_policy:
+
 DebOps Security Policy
 ======================
 
