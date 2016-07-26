@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+
+service sendmail
+{
+    disable        = {{ 'no' if nullmailer__smtpd|bool else 'yes' }}
+    bind           = {{ nullmailer__smtpd_bind }}
+    port           = {{ nullmailer__smtpd_port }}
+    socket_type    = stream
+    protocol       = tcp
+    wait           = no
+    user           = mail
+    server         = /usr/sbin/sendmail
+    server_args    = -bs
+    type           = unlisted
+    log_type       = SYSLOG mail info
+    log_on_failure = ATTEMPT
+}
