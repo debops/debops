@@ -532,11 +532,15 @@
 {%   if item.name is string %}
 {%     if item.name in ansible_local.pki.known_realms %}
 {%       set _ = nginx_tpl_pki_custom_realm_list.append(item.name) %}
+{%     elif (item.name.split('.')[1:] | join('.')) in ansible_local.pki.known_realms %}
+{%       set _ = nginx_tpl_pki_custom_realm_list.append(item.name.split('.')[1:] | join('.')) %}
 {%     endif %}
 {%   else %}
 {%     for name in item.name %}
 {%       if name in ansible_local.pki.known_realms %}
 {%         set _ = nginx_tpl_pki_custom_realm_list.append(name) %}
+{%       elif (name.split('.')[1:] | join('.')) in ansible_local.pki.known_realms %}
+{%         set _ = nginx_tpl_pki_custom_realm_list.append(name.split('.')[1:] | join('.')) %}
 {%       endif %}
 {%     endfor %}
 {%   endif %}

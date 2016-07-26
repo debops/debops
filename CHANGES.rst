@@ -19,6 +19,11 @@ Changed
 
 - Standardize names of sites folders (`site-default` renamed to `sites-default`). [thiagotalma]
 
+- During configuration, role will check the list of names of a given ``nginx``
+  server against the list of configured PKI realms to see if any name is
+  a subdomain of domain with an existing PKI realm. If such PKI realm is found,
+  it will be used for this server instead of the default one. [drybjed]
+
 
 `debops.nginx v0.1.9`_ - 2016-07-19
 -----------------------------------
