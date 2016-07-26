@@ -1,7 +1,7 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-- name: Get ownCloud APT GPG key
+- name: Get ownCloud APT OpenPGP key
   apt_key:
     url: '{{ owncloud__apt_repo_key_url }}'
     id: '{{ owncloud__apt_repo_key_id }}'
@@ -49,9 +49,14 @@
     install_recommends: False
   with_flattened:
     - '{{ owncloud__base_packages }}'
-    - '{{ owncloud__packages_recommended }}'
     - '{{ owncloud__optional_packages }}'
     - '{{ owncloud__packages }}'
     - '{{ owncloud__group_packages }}'
     - '{{ owncloud__host_packages }}'
     - '{{ owncloud__dependent_packages }}'
+
+    ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
+    ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
+    ## Is it necessary to install all LibreOffice packages? https://github.com/owncloud/documents#known-issues
+    ## Upstream documentation does not specify it more clearly. Installing ``libreoffice`` just to be sure.
+    - '{{ [ "libreoffice" ] if (owncloud__app_documents_enabled|bool) else [] }}'

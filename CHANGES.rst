@@ -105,7 +105,6 @@ Changed
   * ``owncloud__?run_occ_global_commands`` → :envvar:`owncloud__occ_cmd_list`
   * ``owncloud__?run_occ_group_commands`` → :envvar:`owncloud__group_occ_cmd_list`
   * ``owncloud__?run_occ_host_commands`` → :envvar:`owncloud__host_occ_cmd_list`
-  * ``owncloud__?packages_recommended`` → :envvar:`owncloud__packages_recommended`
   * ``owncloud__?packages_optional`` → :envvar:`owncloud__optional_packages`
   * ``owncloud__?packages_group`` → :envvar:`owncloud__group_packages`
   * ``owncloud__?packages_host`` → :envvar:`owncloud__host_packages`

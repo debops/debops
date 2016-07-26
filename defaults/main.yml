@@ -31,25 +31,6 @@ owncloud__base_packages:
   - '{{ [ "php5-ldap" ] if (owncloud__ldap_enabled | bool) else [] }}'
 
 
-# .. envvar:: owncloud__packages_recommended
-#
-# List of recommended packages for ownCloud.
-# If you don’t want to install them, set:
-#
-# .. code-block:: yaml
-#   :linenos:
-#
-#    owncloud__packages_recommended: []
-#
-# in your inventory.
-owncloud__packages_recommended:
-  ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
-  ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
-  ## Is it necessary to install all LibreOffice packages? https://github.com/owncloud/documents#known-issues
-  ## Upstream documentation does not specify it more clearly. Installing ``libreoffice`` just to be sure.
-  - '{{ [ "libreoffice" ] if (owncloud__app_documents_enabled|bool) else [] }}'
-
-
 # .. envvar:: owncloud__optional_packages
 #
 # List of optional packages for ownCloud.
@@ -271,13 +252,13 @@ owncloud__apt_repo_base: 'http://download.owncloud.org/download/repositories/{{ 
 
 # .. envvar:: owncloud__apt_repo_key_id
 #
-# GPG fingerprint for the public key used to sign the APT repository.
+# OpenPGP fingerprint for the public key used to sign the APT repository.
 owncloud__apt_repo_key_id: 'BCECA90325B072AB1245F739AB7C32C35180350A'
 
 
 # .. envvar:: owncloud__apt_repo_key_url
 #
-# URL of the GPG keys used by the ownCloud project.
+# URL of the OpenPGP keys used by the ownCloud project.
 owncloud__apt_repo_key_url: '{{ owncloud__apt_repo_base + "/" +
                                owncloud__distribution + "/"
                                "Release.key" }}'
@@ -760,6 +741,7 @@ owncloud__dependent_apps_config: {}
 #
 # Where the `Documents app <https://apps.owncloud.com/content/show.php/Documents?content=168711>`_ should be enabled.
 # Not enabled by default because, as of ownCloud 9.0, the application is not shipped by default.
+# Note that this will install LibreOffice plus dependencies on the server.
 owncloud__app_documents_enabled: False
 
 
