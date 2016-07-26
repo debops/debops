@@ -7,7 +7,7 @@
     purge: True
   with_flattened:
     - [ '{{ "ntpdate" if (ntp__daemon != "ntpdate") else [] }}' ]
-    - [ '{{ "ntp" if (ntp__daemon != "ntpd") else [] }}' ]
+    - [ '{{ "ntp" if (ntp__daemon not in [ "ntpd", "openntpd"]) else [] }}' ]
     - [ '{{ "openntpd" if (ntp__daemon != "openntpd") else [] }}' ]
 
 - name: Install required packages
