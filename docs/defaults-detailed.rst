@@ -18,7 +18,7 @@ owncloud__config
 ----------------
 
 Dict keys can be overridden when they are present in multiple dicts.
-Order of priority from least specific to most specific:
+Order of priority from least to most specific:
 
 * :envvar:`owncloud__role_config`
 * :envvar:`owncloud__role_recommended_config`
@@ -26,7 +26,7 @@ Order of priority from least specific to most specific:
 * :envvar:`owncloud__group_config`
 * :envvar:`owncloud__host_config`
 
-Each dict can hold multiple keys and values. The dict value can either be a
+Each variable can hold multiple keys and values. The dict value can either be a
 value directly intended for ownCloud (corresponding directly to the value in
 the :file:`config.php` file) or a dict itself in case more flexibility is
 required. A ownCloud value can also be a dict. The decision is made based on
@@ -73,3 +73,18 @@ putting:
      skeletondirectory: ''
 
 into your Ansible inventory.
+
+.. _owncloud__ref_updates_post_hook_scripts:
+
+updates_post_hook_scripts
+-------------------------
+
+Each element of the  :envvar:`owncloud__updates_post_hook_scripts` list either
+is a simple string of the script‘s file path or a dict with the following options:
+
+``path``
+  Optional, string. File path of the script.
+
+``state``
+  Required, string. Allows to specify if upgrade hook script should be invoked
+  (``present``) or ignored (``absent``) during after the upgrade.

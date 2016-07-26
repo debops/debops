@@ -24,7 +24,8 @@ set -e
 test -r '{{ owncloud__deploy_path }}/config/config.php' || exit 0
 grep -q 'installed.*true' '{{ owncloud__deploy_path }}/config/config.php' || exit 0
 
-## Performance optimization. Check if ownCloud is in maintenance mode (package upgrades put ownCloud in maintenance mode).
+## Performance optimization. Check if ownCloud is in maintenance mode.
+## The `postinst` script of the owncloud-deps-php5 package puts ownCloud in maintenance mode.
 grep -q 'maintenance.*true' '{{ owncloud__deploy_path }}/config/config.php' || exit 0
 
 ## Check if ownCloud requires an upgrade.
@@ -35,6 +36,20 @@ grep -q 'maintenance.*true' '{{ owncloud__deploy_path }}/config/config.php' || e
 
 ## Do the upgrade.
 '{{ owncloud__occ_bin_file_path }}' upgrade{{ "" if (owncloud__auto_database_upgrade_migration_test | bool) else " --skip-migration-test" }}
+
+## Run post update scripts when defined.
+{% for item in (owncloud__updates_post_hook_role_scripts +
+				owncloud__updates_post_hook_scripts +
+				owncloud__updates_post_hook_group_scripts +
+				owncloud__updates_post_hook_host_scripts) %}
+{%   if item is string %}
+{{     item | quote }}
+{%   elif item is mapping %}
+{%     if item.path|d() and item.state|d("present") == "present" %}
+{{       item.path | quote }}
+{%     endif %}
+{%   endif %}
+{% endfor %}
 
 ## Turn maintenance mode off.
 '{{ owncloud__occ_bin_file_path }}' maintenance:mode --off
