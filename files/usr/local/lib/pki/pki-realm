@@ -1017,7 +1017,7 @@ request_acme_tiny_certificate () {
             if [ "$EUID" -eq 0 ] ; then
 
                 set +e
-                su --shell /bin/sh -c "${config['acme_client_script']} --account-key acme/account_key.pem \
+                su --shell /bin/sh -c "umask 0022 ; ${config['acme_client_script']} --account-key acme/account_key.pem \
                     --ca "${config['acme_ca_api']}" --csr acme/request.pem \
                     --acme-dir "${config['acme_challenge_dir']}" > acme/cert.pem.tmp 2>acme/error.log" "${config['acme_user']}"
                 set -e
