@@ -33,6 +33,12 @@ Fixed
   not being generated correctly. The "URI" SANs will only be added when correct
   version of the ``certtool`` is available. [drybjed]
 
+- Fix an issue where ACME certificate requests were not performed correctly on
+  Ubuntu hosts due to the default ``umask`` setting of the user accounts being
+  ``0007``, which resulted in the web server not being able to serve ACME
+  challenge responses. Now, correct ``umask`` will be set for the ``acme-tiny``
+  script, so that ACME responses are world-readable. [drybjed]
+
 
 `debops.pki v0.2.13`_ - 2016-07-07
 ----------------------------------
