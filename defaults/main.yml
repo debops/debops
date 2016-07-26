@@ -12,6 +12,7 @@
 # .. Role maintainer note:
 # .. The official ownCloud documentation is also written is RST.
 # .. https://github.com/owncloud/documentation/tree/master/admin_manual
+# .. https://github.com/nextcloud/documentation/tree/master/admin_manual
 
 # .. Packages and installation [[[1
 #
@@ -29,6 +30,11 @@ owncloud__base_packages:
   - '{{ [ "php5-pgsql" ] if (owncloud__database in [ "postgresql" ]) else [] }}'
   - '{{ [ "php5-redis" ] if (owncloud__redis_enabled | bool) else [] }}'
   - '{{ [ "php5-ldap" ] if (owncloud__ldap_enabled | bool) else [] }}'
+  ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
+  ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
+  ## Is it necessary to install all LibreOffice packages? https://github.com/owncloud/documents#known-issues
+  ## Upstream documentation does not specify it more clearly. Installing ``libreoffice`` just to be sure.
+  - '{{ [ "libreoffice" ] if (owncloud__app_documents_enabled|bool) else [] }}'
 
 
 # .. envvar:: owncloud__optional_packages
@@ -121,10 +127,11 @@ owncloud__auto_database_upgrade_enabled: True
 # .. envvar:: owncloud__auto_database_upgrade_hook_script
 #
 # File path where the package manager hook script is stored.
-owncloud__auto_database_upgrade_hook_script: '{{ (ansible_local.root.lib
-                                  if (ansible_local|d() and ansible_local.root|d() and
-                                      ansible_local.root.lib|d())
-                                  else "/usr/local/lib") + "/owncloud_db_upgrade_hook" }}'
+owncloud__auto_database_upgrade_hook_script: '{{
+  (ansible_local.root.lib
+  if (ansible_local|d() and ansible_local.root|d() and
+      ansible_local.root.lib|d())
+  else "/usr/local/lib") + "/owncloud_db_upgrade_hook" }}'
 
 
 # .. envvar:: owncloud__auto_database_upgrade_migration_test
@@ -350,9 +357,9 @@ owncloud__enable_apc_cli: '{{ owncloud__apcu_enabled|bool }}'
 # in backports) thus Redis will not be enabled automatically by the role.
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html#id4>`__ for details.
 owncloud__redis_enabled: '{{ True if (
-    ("debops_service_redis" in hostvars[inventory_hostname]["group_names"]) and
-    (not (ansible_distribution == "Ubuntu" and ansible_distribution_release == "trusty"))
-  ) else False }}'
+                               ("debops_service_redis" in hostvars[inventory_hostname]["group_names"]) and
+                               (not (ansible_distribution == "Ubuntu" and ansible_distribution_release == "trusty"))
+                             ) else False }}'
 
 
 # .. envvar:: owncloud__redis_host
@@ -384,13 +391,13 @@ owncloud__database: 'mariadb'
 #
 # FQDN of the database server. It will be configured by
 # the debops.mariadb_ or debops.postgresql_ role.
-owncloud__database_server: "{{ ansible_local[owncloud__database].server }}"
+owncloud__database_server: '{{ ansible_local[owncloud__database].server }}'
 
 
 # .. envvar:: owncloud__database_port
 #
 # Port database is listening on.
-owncloud__database_port: "{{ ansible_local[owncloud__database].port }}"
+owncloud__database_port: '{{ ansible_local[owncloud__database].port }}'
 
 
 # .. envvar:: owncloud__database_user
@@ -408,11 +415,12 @@ owncloud__database_name: 'owncloud'
 # .. envvar:: owncloud__database_password_path
 #
 # Path to database password file.
-owncloud__database_password_path: "{{ secret + '/' + owncloud__database + '/' +
-                                     ansible_local[owncloud__database].delegate_to }}{%
-                                       if owncloud__database=='postgresql' %}/{{ ansible_local[owncloud__database].port }}{% endif
-                                     %}{{ '/credentials/' + owncloud__database_user +
-                                     '/password' }}"
+owncloud__database_password_path: '{{ secret + "/" + owncloud__database + "/"
+                                    + ansible_local[owncloud__database].delegate_to
+                                    + (("/" + ansible_local[owncloud__database].port)
+                                       if (owncloud__database == "postgresql")
+                                       else "")
+                                    + "/credentials/" + owncloud__database_user + "/password" }}'
 
 
 # .. envvar:: owncloud__database_password
@@ -492,7 +500,7 @@ owncloud__autosetup: True
 # .. envvar:: owncloud__autosetup_url
 #
 # URL which will be called to finish autosetup of ownCloud 8.0. For newer
-# ownCloud versions :command:`occ` will be used which is more relyable because
+# ownCloud versions :command:`occ` will be used which is more reliable because
 # it does not depend on the webserver nor network.
 owncloud__autosetup_url: 'http://{{ owncloud__domain[0] }}/index.php'
 
@@ -762,9 +770,6 @@ owncloud__app_documents_enabled: False
 #
 #    owncloud__occ_cmd_list
 #
-#      ## Requires: php5-ldap
-#      - command: 'app:enable user_ldap'
-#
 #      - command: 'app:enable external'
 #
 #      ## Requires: php5-libsmbclient
@@ -843,8 +848,6 @@ owncloud__occ_bin_file_path: '{{ (ansible_local.root.bin
                                   if (ansible_local|d() and ansible_local.root|d() and
                                       ansible_local.root.bin|d())
                                   else "/usr/local/bin") + "/occ" }}'
-
-
 
 
 # .. LDAP authentication [[[1
@@ -1304,7 +1307,6 @@ owncloud__theme_conf_map:
 #   Role-dependent configuration
 # --------------------------------
 
-
 # .. envvar:: owncloud__apt_preferences__dependent_list
 #
 # Configuration for the debops.apt_preferences_ role.
@@ -1331,6 +1333,7 @@ owncloud__apt_preferences__dependent_list_optional:
     priority: 995
     by_role: 'debops.owncloud'
     state: '{{ owncloud__deploy_state }}'
+
 
 # .. envvar:: owncloud__nginx_access_log_assets
 #
