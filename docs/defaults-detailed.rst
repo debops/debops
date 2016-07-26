@@ -79,7 +79,7 @@ into your Ansible inventory.
 updates_post_hook_scripts
 -------------------------
 
-Each element of the  :envvar:`owncloud__updates_post_hook_scripts` list either
+Each element of the  :envvar:`owncloud__upgrade_post_hook_scripts` list either
 is a simple string of the script‘s file path or a dict with the following options:
 
 ``path``
