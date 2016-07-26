@@ -245,8 +245,8 @@ The ``nullmailer`` service can be configured to a large extent using `the debops
 If you need a more powerful SMTP server, DebOps includes support for Postfix as
 well - check the debops.postfix_ Ansible role.
 
-apt_default_mirrors_lookup, apt_default_sources_lookup
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+apt__default_mirrors_lookup, apt__default_sources_lookup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DebOps tries to detect the operating system a given host is using and configure
 it accordingly. Currently selected Debian and Ubuntu releases are recognized
@@ -263,8 +263,8 @@ relevant inventory files:
 .. code-block:: yaml
 
    ---
-   apt_default_mirrors_lookup: 'raspbian'
-   apt_default_sources_lookup: 'raspbian'
+   apt__default_mirrors_lookup: 'raspbian'
+   apt__default_sources_lookup: 'raspbian'
 
 
 Bootstrap a new host
@@ -390,7 +390,7 @@ configuration file and specifying the subdomain(s) in it:
 .. code-block:: yaml
 
    ---
-   dokuwiki_main_domain: [ 'wiki.{{ ansible_domain }}' ]
+   dokuwiki__main_domain: 'wiki.{{ ansible_domain }}'
 
 Remember that the chosen subdomain (``wiki.`` or your own) needs to be
 configured in your DNS server to point to the specified remote host.
