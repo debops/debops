@@ -38,6 +38,8 @@ Added
 - Add Core Infrastructure Initiative (CII) Best Practices badge to the
   repository README. [ypid_]
 
+- Add ``debops.nullmailer`` role and and its playbook. [drybjed_]
+
 Changed
 ~~~~~~~
 
@@ -47,6 +49,15 @@ Changed
 
 - Update playbooks which use debops.php_ role to include the
   debops.apt_preferences_ role dependency. [drybjed_]
+
+- Remove the debops.postfix_ role from the ``common.yml`` playbook. The Postfix
+  server is replaced by ``nullmailer`` on new installations.
+
+  On existing installations, ``debops.nullmailer`` will detect Postfix and
+  disable itself automatically. This means that the DebOps playbook won't
+  manage the existing Postfix installations anymore using the ``common.yml``
+  playbook. To enable Postfix management, add the host to
+  ``[debops_service_postfix]`` inventory group. [drybjed]
 
 Removed
 ~~~~~~~

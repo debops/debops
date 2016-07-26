@@ -218,28 +218,35 @@ For UTC timezone, use this format:
    ---
    ntp__timezone: 'Etc/UTC'
 
-postfix_relayhost
-~~~~~~~~~~~~~~~~~
+nullmailer__relayhost
+~~~~~~~~~~~~~~~~~~~~~
 
-The default SMTP server used by DebOps is Postfix. It has a somewhat secure
-configuration by default, with all of the inbound mail being redirected to your
-domain's MX gateway (e-mail messages to other domains are sent to them
-directly). If you want to instead pass all e-mail messages to a different SMTP
-host for further processing, you can specify its FQDN hostname using this
-variable:
+The default SMTP server used by DebOps is ``nullmailer``. It's a simple,
+forward-only Mail Transport Agent which sends all mail to another SMTP server
+for processing. It does not provide support for local mail accounts.
+
+By default, ``nullmailer`` will send mail messages to the
+``smtp.<your-domain>`` host (it does not support MX record lookups). If this
+host doesn't exist, or your local SMTP server has a different address, you can
+change it by setting the variable:
 
 .. code-block:: yaml
 
    ---
-   postfix_relayhost: 'internal-mx.{{ ansible_domain }}'
+   nullmailer__relayhost: 'internal-mx.{{ ansible_domain }}'
 
 Only one relayhost is supported at a time. The specified host should accept
-messages from hosts controlled by Ansible for this to work correctly.
+messages from hosts controlled by Ansible for this to work correctly. The SMTP
+connections will be encrypted using ``STARTTLS`` command, therefore the SMTP
+should use a set of X.509 certificates which are trusted by the host.
 
-Postfix can be configured to a large extent using `the debops.postfix role variables <http://docs.debops.org/en/latest/ansible/roles/ansible-postfix/docs/defaults.html>`_ - you can use it to create an MX gateway for your network, setup a host with local mail, enable archiving, add support for sender authentication, and so on.
+The ``nullmailer`` service can be configured to a large extent using `the debops.nullmailer role variables <http://docs.debops.org/en/latest/ansible/roles/ansible-nullmailer/docs/defaults.html>`_ - you can use them to configure SMTP authentication, use multiple relay servers, and so on.
 
-apt_default_mirrors_lookup, apt_default_sources_lookup
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If you need a more powerful SMTP server, DebOps includes support for Postfix as
+well - check the debops.postfix_ Ansible role.
+
+apt__default_mirrors_lookup, apt__default_sources_lookup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DebOps tries to detect the operating system a given host is using and configure
 it accordingly. Currently selected Debian and Ubuntu releases are recognized
@@ -256,8 +263,8 @@ relevant inventory files:
 .. code-block:: yaml
 
    ---
-   apt_default_mirrors_lookup: 'raspbian'
-   apt_default_sources_lookup: 'raspbian'
+   apt__default_mirrors_lookup: 'raspbian'
+   apt__default_sources_lookup: 'raspbian'
 
 
 Bootstrap a new host
@@ -383,7 +390,7 @@ configuration file and specifying the subdomain(s) in it:
 .. code-block:: yaml
 
    ---
-   dokuwiki_main_domain: [ 'wiki.{{ ansible_domain }}' ]
+   dokuwiki__main_domain: 'wiki.{{ ansible_domain }}'
 
 Remember that the chosen subdomain (``wiki.`` or your own) needs to be
 configured in your DNS server to point to the specified remote host.
