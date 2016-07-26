@@ -154,7 +154,7 @@
   loop_control:
     loop_var: 'owncloud__occ_item'
   tags: [ 'role::owncloud:occ_config' ]
-  when: (owncloud__apps_config_combined.keys() | length)
+  when: (owncloud__apps_config_combined is mapping and owncloud__apps_config_combined.keys() | length)
   with_flattened:
     - command: 'config:list'
       get_output: True
@@ -162,14 +162,14 @@
 - name: Capture occ output in variable
   set_fact:
     owncloud__occ_config_current: '{{ owncloud__occ_run_output }}'
-  when: (owncloud__apps_config_combined.keys() | length and (not ansible_check_mode))
+  when: (owncloud__apps_config_combined is mapping and owncloud__apps_config_combined.keys() | length and (not ansible_check_mode))
   tags: [ 'role::owncloud:occ_config' ]
 
 - name: Set ownCloud apps configuration for each app
   include: 'run_occ_app_set.yml'
   loop_control:
     loop_var: 'owncloud__apps_item'
-  with_dict: '{{ owncloud__apps_config_combined }}'
+  with_dict: '{{ owncloud__apps_config_combined|d({}) }}'
   when: (not ansible_check_mode)
   tags: [ 'role::owncloud:occ_config' ]
 
