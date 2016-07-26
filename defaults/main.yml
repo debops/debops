@@ -126,7 +126,7 @@ owncloud__deploy_state: 'present'
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/maintenance/package_upgrade.html#upgrade-quickstart>`__ for details.
 #
 # When this option is set to ``True``, the role enables a hook script for
-# ``dpkg`` so that when ``dpkg`` upgrades ownCloud, the database upgrade is
+# :command:`dpkg` so that when :command:`dpkg` upgrades ownCloud, the database upgrade is
 # automatically performed.
 #
 # Change to ``False`` when you want to do database upgrades manually after upgrading the ownCloud packages.
@@ -282,7 +282,7 @@ owncloud__data_path: '{{ owncloud__home }}/data'
 #
 # Directory which ownCloud will use as temp directory.
 #
-# In case ``/tmp`` has limited space (for example is a ramdisk) or is otherwise
+# In case :file:`/tmp` has limited space (for example is a ramdisk) or is otherwise
 # restricted then it is a good idea to change the temp directory that ownCloud
 # uses to a path with more space available.
 #
@@ -364,7 +364,7 @@ owncloud__database: 'mariadb'
 # .. envvar:: owncloud__database_server
 #
 # FQDN of the database server. It will be configured by
-# the ``debops.mariadb`` or ``debops.postgresql`` role.
+# the debops.mariadb_ or debops.postgresql_ role.
 owncloud__database_server: "{{ ansible_local[owncloud__database].server }}"
 
 
@@ -458,7 +458,7 @@ owncloud__password_length: 20
 # .. envvar:: owncloud__admin_password
 #
 # Default admin password.
-# A random password will be generate by default as documented by the ``debops.secret`` role.
+# A random password will be generate by default as documented by the debops.secret_ role.
 owncloud__admin_password: '{{ lookup("password",
                              owncloud__admin_password_path + " length=" + (owncloud__password_length|string)) }}'
 
@@ -1287,7 +1287,7 @@ owncloud__theme_conf_map:
 
 # .. envvar:: owncloud__apt_preferences__dependent_list
 #
-# Configuration for the ``debops.apt_preferences`` role.
+# Configuration for the debops.apt_preferences_ role.
 owncloud__apt_preferences__dependent_list:
 
   - package: 'php5-apcu'
@@ -1299,10 +1299,10 @@ owncloud__apt_preferences__dependent_list:
 
 # .. envvar:: owncloud__apt_preferences__dependent_list_optional
 #
-# Optional configuration for the ``debops.apt_preferences`` role which is not
+# Optional configuration for the debops.apt_preferences_ role which is not
 # enabled by default.
 # Only required when APT preference presets from the
-# ``debops.apt_preferences`` role are used.
+# debops.apt_preferences_ role are used.
 owncloud__apt_preferences__dependent_list_optional:
 
   - package: 'owncloud owncloud*'
@@ -1320,7 +1320,7 @@ owncloud__nginx_access_log_assets: True
 
 # .. envvar:: owncloud__nginx__servers
 #
-# :program:`nginx` server configuration managed by the ``debops.nginx`` role.
+# :program:`nginx` server configuration managed by the debops.nginx_ role.
 owncloud__nginx__servers:
 
   ## https://github.com/owncloud/documentation/blob/master/admin_manual/installation/nginx_owncloud_9x.rst
@@ -1455,7 +1455,7 @@ owncloud__nginx__servers:
 
 # .. envvar:: owncloud__nginx__upstream_php5
 #
-# PHP upstream server configuration managed by the ``debops.nginx`` role.
+# PHP upstream server configuration managed by the debops.nginx_ role.
 owncloud__nginx__upstream_php5:
   enabled: True
   name: 'php5_owncloud'
@@ -1465,7 +1465,7 @@ owncloud__nginx__upstream_php5:
 
 # .. envvar:: owncloud__php5__pool
 #
-# PHP pools managed by the ``debops.php5`` role.
+# PHP pools managed by the debops.php5_ role.
 owncloud__php5__pool:
   enabled: True
   name: 'owncloud'
@@ -1492,7 +1492,7 @@ owncloud__php5__pool:
 
 # .. envvar:: owncloud__unattended_upgrades__dependent_origins
 #
-# List of origin patterns managed by the ``debops.unattended_upgrades`` role.
+# List of origin patterns managed by the debops.unattended_upgrades_ role.
 owncloud__unattended_upgrades__dependent_origins:
   - origin: 'site=download.owncloud.org'
     state: '{{ "present" if (owncloud__auto_security_updates_enabled | bool) else "absent" }}'
