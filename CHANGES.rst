@@ -3,7 +3,7 @@ Changelog
 
 **debops.php**
 
-This project adheres to `Semantic Versioning <http://semver.org/>`_
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
 and `human-readable changelog <http://keepachangelog.com/>`_.
 
 The current role maintainer is drybjed.
@@ -12,7 +12,20 @@ The current role maintainer is drybjed.
 `debops.php master`_ - unreleased
 ---------------------------------
 
-.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.1...master
+.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.2...master
+
+
+`debops.php v0.2.2`_ - 2016-07-27
+---------------------------------
+
+.. _debops.php v0.2.2: https://github.com/debops/ansible-php/compare/v0.2.1...v0.2.2
+
+Changed
+~~~~~~~
+
+- Allow creation of user accounts without creating their home directories. [drybjed]
+
+- Fix wrong ``php-fpm`` parameter names in pool templates. [drybjed]
 
 
 `debops.php v0.2.1`_ - 2016-07-19

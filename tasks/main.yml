@@ -161,6 +161,7 @@
     group: '{{ item.group | d(item.owner) }}'
     home: '{{ item.home }}'
     system: '{{ (item.system | d(True)) | bool }}'
+    createhome: '{{ item.createhome | d(omit) }}'
     state: 'present'
   with_flattened:
     - '{{ php__default_pools }}'
