@@ -2,7 +2,7 @@
 ## Upgrade inventory variables for migration from debops.owncloud v0.2.X to v0.3.X.
 ## The script is idempotent.
 
-git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 \
+git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '{}' -type f -print0 \
  | xargs --null sed --in-place --regexp-extended '
      s/owncloud__?run_occ_global_commands/owncloud__occ_cmd_list/g;
      s/owncloud__?run_occ_group_commands/owncloud__group_occ_cmd_list/g;
