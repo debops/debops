@@ -25,6 +25,8 @@ Changed
 
 - Allow creation of user accounts without creating their home directories. [drybjed]
 
+- Fix wrong ``php-fpm`` parameter names in pool templates. [drybjed]
+
 
 `debops.php v0.2.1`_ - 2016-07-19
 ---------------------------------
