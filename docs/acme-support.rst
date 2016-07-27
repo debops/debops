@@ -25,7 +25,7 @@ ACME support:
 ``nginx_acme``
   Bool. Enable or disable support for ACME on all ``nginx`` servers. This can
   be overriden using ``item.acme`` variable in the server configuration
-  dictionary.
+  dictionary. ``nginx_acme`` variable is enabled by default.
 
 ``nginx_acme_root``
   Path to global ``root`` directory on the host which will be used to serve
