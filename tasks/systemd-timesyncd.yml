@@ -1,5 +1,11 @@
 ---
 
+- name: Configure timezone with timedatectl
+  shell: 'timedatectl set-timezone {{ ntp__timezone }}'
+  when: (ansible_local is undefined or
+         (ansible_local|d() and ansible_local.timezone|d() and
+          ntp__timezone != ansible_local.timezone))
+
 - name: Make sure conf override dir exists
   file:
     path: '/etc/systemd/timesyncd.conf.d'
