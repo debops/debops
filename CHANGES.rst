@@ -33,6 +33,11 @@ Changed
 
 - Use different NTP server pools for Debian and ubuntu distributions. [drybjed]
 
+- By default, use ``systemd-timesyncd`` on Ubuntu with ``systemd`` installed,
+  to avoid issues with changing NTP servers. You can still select a different
+  NTP server as usual, by specifying it using ``ntp__daemon`` variable. The
+  current installations won't be changed. [drybjed]
+
 
 `debops.ntp v0.2.1`_ - 2016-05-19
 ---------------------------------

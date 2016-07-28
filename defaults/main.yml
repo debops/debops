@@ -23,7 +23,13 @@
 # - systemd-timesyncd
 #
 # Set to ``False`` to disable clock management.
-ntp__daemon: 'openntpd'
+ntp__daemon: '{{ (ansible_local.ntp.daemon
+                  if (ansible_local|d() and ansible_local.ntp|d() and
+                      ansible_local.ntp.daemon|d())
+                  else ("systemd-timesyncd"
+                        if (ansible_distribution == "Ubuntu" and
+                            ansible_service_mgr == "systemd")
+                        else "openntpd")) }}'
 
                                                                    # ]]]
 # .. envvar:: ntp__servers [[[
