@@ -11,7 +11,7 @@
     vtype: 'select'
     value: '{{ ntp__timezone.split("/")[0] }}'
   register: ntp__register_debconf_set_area
-  when: ntp__timezone is defined and ntp__timezone
+  when: ntp__timezone|d()
 
 - name: Configure tzdata zone in debconf
   debconf:
@@ -20,7 +20,7 @@
     vtype: 'select'
     value: '{{ ntp__timezone.split("/")[1] }}'
   register: ntp__register_debconf_set_zone
-  when: ntp__timezone is defined and ntp__timezone
+  when: ntp__timezone|d()
 
   # tzdata ignores debconf answers when configured non-interactively
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=704089
@@ -32,7 +32,7 @@
     group: 'root'
     mode: '0644'
   register: ntp__register_etc_timezone
-  when: ntp__timezone is defined and ntp__timezone
+  when: ntp__timezone|d()
 
 - name: Install required packages
   apt:
@@ -43,10 +43,10 @@
 
 - name: Reconfigure tzdata
   shell: dpkg-reconfigure --frontend noninteractive tzdata
-  when: (ntp__timezone is defined and ntp__timezone) and
-        ((ntp__register_debconf_set_area is defined and ntp__register_debconf_set_area.changed) or
-         (ntp__register_debconf_set_zone is defined and ntp__register_debconf_set_zone.changed) or
-         (ntp__register_etc_timezone is defined and ntp__register_etc_timezone.changed))
+  when: (ntp__timezone|d() and
+         ((ntp__register_debconf_set_area|d() and ntp__register_debconf_set_area|changed) or
+          (ntp__register_debconf_set_zone|d() and ntp__register_debconf_set_zone|changed) or
+          (ntp__register_etc_timezone|d() and ntp__register_etc_timezone|changed)))
 
   # Installs either ntpdate, NTPd or OpenNTPd on all hosts except inside containers
 - include: install.yml
