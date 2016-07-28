@@ -41,6 +41,10 @@ Changed
 - Move the ``dpkg-reconfigre`` task after the NTP installation and
   configuration tasks to avoid issues with idempotency on Ubuntu. [drybjed]
 
+- Move the NTP daemon installation condition to a new ``ntp__daemon_enabled``
+  variable and remove ``ntp__root_flags`` since they are not needed anymore.
+  [drybjed]
+
 
 `debops.ntp v0.2.1`_ - 2016-05-19
 ---------------------------------

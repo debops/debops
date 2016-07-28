@@ -11,6 +11,18 @@
 # Global options [[[
 # ------------------
 
+# .. envvar:: ntp__daemon_enabled [[[
+#
+# If ``True``, role will install and configure an NTP daemon. The daemon is not
+# required in containerized environments, where the host takes care for setting
+# time accurately.
+ntp__daemon_enabled: '{{ "True" if (ntp__daemon|d() and ansible_local|d() and
+                                    (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+                                     (ansible_local.cap12s.enabled | bool and
+                                      "cap_sys_time" in ansible_local.cap12s.list))))
+                                else "False" }}'
+
+                                                                   # ]]]
 # .. envvar:: ntp__daemon [[[
 #
 # Which clock management daemon/program should be setup?
@@ -79,15 +91,6 @@ ntp__servers_map:
 # Fudge local clock if time servers is not available.
 ntp__fudge: True
 
-                                                                   # ]]]
-# .. envvar:: ntp__root_flags [[[
-#
-# List of global root flags to check
-ntp__root_flags:
-
-  # If these flags are present, ignore status of "cap_sys_time" capability and
-  # install specified ntp daemon
-  cap_sys_time: [ 'ignore-cap12s', 'ignore-cap_sys_time' ]
                                                                    # ]]]
                                                                    # ]]]
 # Timezone configuration [[[
