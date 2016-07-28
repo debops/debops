@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.3.2
+------
+
+*Unreleased*
+
+- Add a way to install different PostgreSQL versions after enabling the
+  upstream APT repository. [drybjed]
+
 v0.3.1
 ------
 

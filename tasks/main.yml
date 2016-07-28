@@ -26,10 +26,12 @@
 
 - name: Set default PostgreSQL version variable
   set_fact:
-    postgresql__version: '{{ ansible_local.postgresql.version
-                             if (ansible_local|d() and ansible_local.postgresql|d() and
-                                 ansible_local.postgresql.version|d())
-                                 else postgresql__register_version.stdout }}'
+    postgresql__version: '{{ (ansible_local.postgresql.version
+                              if (ansible_local|d() and ansible_local.postgresql|d() and
+                                  ansible_local.postgresql.version|d())
+                                 else (postgresql__preferred_version
+                                       if postgresql__preferred_version|d()
+                                       else postgresql__register_version.stdout)) }}'
 
 - name: Install PostgreSQL packages
   apt:
@@ -38,6 +40,7 @@
     install_recommends: False
   with_flattened:
     - '{{ postgresql__base_packages }}'
+    - '{{ postgresql__python_packages }}'
     - '{{ postgresql__packages }}'
 
 - name: Check if database server is installed

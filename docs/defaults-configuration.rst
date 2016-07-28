@@ -9,6 +9,53 @@ examples for them.
    :local:
    :depth: 1
 
+.. _postgresql__ref_preferred_version:
+
+postgresql__preferred_version
+-----------------------------
+
+By default the role installs the PostgreSQL version preferred by the APT
+package manager. This behaviour is influenced by how the PostgreSQL is packaged
+in Debian - each version has its own set of packages with the version as
+a suffix, and there's a set of metapackages which depend on the version
+available in the distribution (by default only 1 version is available).
+
+Multiple PostgreSQL versions become available after enabling the upstream APT
+repository. To choose a different version than the default one, you need to set
+two variables in the inventory:
+
+``postgresql__preferred_version``
+  The value of this variable should be set as the version of the PostgreSQL you
+  wish the role to manage (it does not influence the APT packages the role
+  installs, but what version is used in different file/directory paths managed
+  by the role, what features are enabled/disabled in the configuration, etc.).
+
+``postgresql__base_packages``
+  This is a list of APT packages which will be used by the role to install
+  PostgreSQL. By default, it contains the metapackages which install the
+  highest available version of PostgreSQL packages. To select a different
+  version, you need to change the list of packages.
+
+For example, to install PostgreSQL 9.3 instead of the default available
+version, in inventory you need to define:
+
+.. code-block:: yaml
+
+   postgresql__upstream: True
+   postgresql__preferred_version: '9.3'
+   postgresql__base_packages: [ 'postgresql-client-9.3' ]
+
+Remember that role does not support management of multiple PostgreSQL versions
+at the same time. The above variables should be defined in the inventory at all
+times, otherwise role might revert to the default PostgreSQL packages and
+version, and break your installation. This also is true for server upgrades.
+The preferred way to make an upgrade is to configure a new database server with
+desired PostgreSQL version and move the database to it.
+
+You might also need to set similar set of variables for the
+``debops.postgresql_server`` role to keep both of the roles in sync. Refer to
+its documentation for details.
+
 .. _postgresql__ref_user_clusters:
 
 postgresql__user_clusters
