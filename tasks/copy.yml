@@ -34,7 +34,7 @@
     validate: '{{ item.validate | d(omit) }}'
     remote_src: '{{ item.remote_src | d(omit) }}'
     directory_mode: '{{ item.directory_mode | d(omit) }}'
-  register: owncloud__register_copy_to_user_profile
+  register: owncloud__register_create_user_files
   with_flattened:
     - '{{ owncloud__user_files }}'
     - '{{ owncloud__user_files_group }}'
@@ -46,7 +46,7 @@
   file:
     path:  '{{ owncloud__data_path + "/" + item.dest }}'
     state: 'absent'
-  register: owncloud__register_delete_from_user_profile
+  register: owncloud__register_delete_user_files
   with_flattened:
     - '{{ owncloud__user_files }}'
     - '{{ owncloud__user_files_group }}'
@@ -58,4 +58,4 @@
   loop_control:
     loop_var: 'owncloud__files_scan_item'
   when: owncloud__files_scan_item|changed
-  with_items: '{{ owncloud__register_copy_to_user_profile.results|d([]) + owncloud__register_delete_from_user_profile.results|d([]) }}'
+  with_items: '{{ owncloud__register_create_user_files.results|d([]) + owncloud__register_delete_user_files.results|d([]) }}'
