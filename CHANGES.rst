@@ -61,6 +61,8 @@ Added
 - Added :envvar:`owncloud__user_files` and similar lists to allow to allow you
   to manage files for ownCloud users. [ypid_]
 
+- Added :ref:`owncloud__ref_external_users` documentation. [ypid_]
+
 Changed
 ~~~~~~~
 

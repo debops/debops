@@ -10,6 +10,7 @@ Ansible role: debops.owncloud
    getting-started
    defaults
    defaults-detailed
+   external-users
    copyright
    changelog
    upgrade
