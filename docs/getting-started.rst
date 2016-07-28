@@ -25,6 +25,9 @@ adding in inventory:
 
    postgresql_server__upstream: True
 
+Check :ref:`postgresql_server__ref_preferred_version` to learn more about
+selecting custom PostgreSQL versions.
+
 After installation you can use ``debops.postgresql`` role to configure
 PostgreSQL roles and databases.
 
