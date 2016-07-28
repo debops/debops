@@ -13,9 +13,11 @@ package.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v2.0.0``. To install it, run::
+This role requires at least Ansible ``v2.0.0``. To install it, run:
 
-    ansible-galaxy install debops.ntp
+.. code-block:: console
+
+   user@host:~$ ansible-galaxy install debops.ntp
 
 ..
  Local Variables:
