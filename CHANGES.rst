@@ -10,7 +10,7 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/>`_.
 
-The current role maintainer is ypid_.
+The current role maintainer_ is ypid_.
 
 Refer to the :ref:`owncloud__ref_upgrade_nodes` when you intend to upgrade to a
 new release.
@@ -57,6 +57,9 @@ Added
 
 - Added :envvar:`owncloud__temp_path` to allow to change the temp directory of
   ownCloud. [ypid_]
+
+- Added :envvar:`owncloud__user_files` and similar lists to allow to allow you
+  to manage files for ownCloud users. [ypid_]
 
 Changed
 ~~~~~~~

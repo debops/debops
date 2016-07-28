@@ -95,3 +95,6 @@ Available role tags:
 
 ``role::owncloud:theme``
   Run tasks related to the configuring the ownCloud theme.
+
+``role::owncloud:copy``
+  Run tasks related to copying and deletion of files in user profiles.

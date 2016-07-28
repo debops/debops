@@ -74,6 +74,71 @@ putting:
 
 into your Ansible inventory.
 
+.. _owncloud__ref_owncloud__user_files:
+
+owncloud__user_files
+--------------------
+
+This section describes the options of :envvar:`owncloud__user_files` and
+similar lists.
+
+Each list item is a dict with the following keys:
+
+``src``
+  Path to the source file on the Ansible Controller. Alternatively you can use
+  ``content`` to provide the file contents directly in the inventory.
+
+``content``
+  String or YAML text block with the file contents to put in the destination
+  file. Alternatively you can use ``src`` to provide the path to the
+  source file on Ansible Controller.
+
+``dest``
+  Required, string. Path of the destination. The first directory is the user id.
+  Example: :file:`user_id/files/path`.
+  The destination on the remote host will be ``owncloud__data_path + "/" + item.dest``.
+
+``state``
+  Optional. If not specified, or if specified and ``present``, the file(s) will
+  be created. If specified and ``absent``, file will be removed.
+
+Additionally, all parameters of the `Ansible copy module`_ are supported.
+
+The reason why these lists exist (instead of using debops.resources_) is that
+ownCloud needs to be aware of any changes.
+
+Examples
+~~~~~~~~
+
+Provide an immutable :file:`README.md` file in the root directory of the ownCloud admin user:
+
+.. code-block:: yaml
+
+   owncloud__user_files_group:
+
+     - dest: '{{ owncloud__admin_username }}/files/README.md'
+       content: |
+         This ownCloud instance is managed by Ansible.
+         Changes done via the ownCloud web interface might be overwritten
+         by subsequent Ansible runs.
+         Refer to https://docs.debops.org/en/latest/ansible/roles/ansible-owncloud/docs/index.html for details.
+       owner: 'root'
+       group: 'root'
+
+
+Provide an :file:`README.md` file in the :file:`project_a` subdirectory of the ownCloud admin user.
+The :file:`project_a` directory will be created if it does not already exist.
+The ownCloud admin user can change/delete the file and directory:
+
+.. code-block:: yaml
+
+   owncloud__user_files_group:
+
+     - dest: '{{ owncloud__admin_username }}/files/project_a/README.md'
+       content: |
+         File template.
+         Changes done to this file will be overwritten by subsequent Ansible runs.
+
 .. _owncloud__ref_post_upgrade_hook:
 
 updates_post_hook_scripts

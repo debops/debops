@@ -17,6 +17,15 @@
       command: 'config:app:set {{ owncloud__apps_item.key | quote }} {{ owncloud__apps_setting_item.key | quote }} --value={{ owncloud__apps_setting_item.value | quote }}'
   when: (owncloud__apps_setting_item is defined)
 
+- name: 'Construct occ command for ownCloud files:scan configuration'
+  set_fact:
+    owncloud__occ_item:
+      ## Does not support JSON output although it is listed in the help as of ownCloud 9.0.4.
+      ## Refer to https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html#file-operations
+      ## for details.
+      command: 'files:scan --path {{ owncloud__files_scan_item.item.dest | quote }}'
+  when: (owncloud__files_scan_item is defined)
+
 - name: Run given occ commands
   command: php --file "{{ owncloud__home }}/occ" {{ owncloud__occ_item.command }} {{ "--output=json_pretty" if (owncloud__occ_item.get_output|d() | bool) else "" }}
   environment: '{{ owncloud__occ_item.env|d({}) }}'
@@ -34,6 +43,9 @@
   become_user: '{{ owncloud__user }}'
   when: owncloud__occ_item|d() and owncloud__occ_item.command|d("") != "" and (owncloud__occ_item.when|d(True) | bool)
 
+# - name: Debug occ command
+#   debug:
+#     var: 'owncloud__occ_run'
 
 # Note: --format=json does not ensure that a valid JSON is returned:
 #
