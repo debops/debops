@@ -15,19 +15,5 @@ Example playbook
 
 Here's an example playbook for using the role without the DebOps playbook:
 
-.. code-block:: yaml
-
-   - name: Manage Network Time Protocol service
-     hosts: [ 'debops_all_hosts', 'debops_service_ntp' ]
-     become: True
-
-     roles:
-
-       - role: debops.ferm
-         tags: [ 'role::ferm' ]
-         ferm__dependent_rules:
-           - '{{ ntp__ferm__dependent_rules }}'
-
-       - role: debops.ntp
-         tags: [ 'role::ntp' ]
-
+.. literalinclude:: playbooks/ntp.yml
+   :language: yaml
