@@ -41,19 +41,19 @@
     install_recommends: False
   with_items: [ 'tzdata' ]
 
-- name: Reconfigure tzdata
-  shell: dpkg-reconfigure --frontend noninteractive tzdata
-  when: (ntp__timezone|d() and
-         ((ntp__register_debconf_set_area|d() and ntp__register_debconf_set_area|changed) or
-          (ntp__register_debconf_set_zone|d() and ntp__register_debconf_set_zone|changed) or
-          (ntp__register_etc_timezone|d() and ntp__register_etc_timezone|changed)))
-
   # Installs either ntpdate, NTPd or OpenNTPd on all hosts except inside containers
 - include: install.yml
   when: (ntp__daemon|d() and ansible_local|d() and
          (ansible_local.root|d() and (ansible_local.root.flags | intersect(ntp__root_flags.cap_sys_time)) or
          (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
          (ansible_local.cap12s.enabled | bool and 'cap_sys_time' in ansible_local.cap12s.list)))))
+
+- name: Reconfigure tzdata
+  shell: dpkg-reconfigure --frontend noninteractive tzdata
+  when: (ntp__timezone|d() and
+         ((ntp__register_debconf_set_area|d() and ntp__register_debconf_set_area|changed) or
+          (ntp__register_debconf_set_zone|d() and ntp__register_debconf_set_zone|changed) or
+          (ntp__register_etc_timezone|d() and ntp__register_etc_timezone|changed)))
 
 - name: Make sure that Ansible local facts directory exists
   file:

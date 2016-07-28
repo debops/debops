@@ -38,6 +38,9 @@ Changed
   NTP server as usual, by specifying it using ``ntp__daemon`` variable. The
   current installations won't be changed. [drybjed]
 
+- Move the ``dpkg-reconfigre`` task after the NTP installation and
+  configuration tasks to avoid issues with idempotency on Ubuntu. [drybjed]
+
 
 `debops.ntp v0.2.1`_ - 2016-05-19
 ---------------------------------
