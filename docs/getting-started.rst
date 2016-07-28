@@ -10,6 +10,18 @@ role somewhere. It can be either on the same host, or on a separate host.  See
 the ``debops.postgresql_server`` documentation to learn how to install the
 database server itself.
 
+The PostgreSQL version installed by the role will be a default version offered
+by the distribution. If you want PostgreSQL 9.4 on Debian Wheezy, or an
+upstream version of the server, you can enable the upstream APT repository by
+adding in inventory:
+
+.. code-block:: yaml
+
+   postgresql__upstream: True
+
+Check :ref:`postgresql__ref_preferred_version` to learn more about
+selecting custom PostgreSQL versions.
+
 Server configuration
 --------------------
 
