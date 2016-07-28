@@ -31,6 +31,8 @@ Changed
 
 - Update documentation and Changelog. [drybjed]
 
+- Use different NTP server pools for Debian and ubuntu distributions. [drybjed]
+
 
 `debops.ntp v0.2.1`_ - 2016-05-19
 ---------------------------------

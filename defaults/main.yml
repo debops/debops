@@ -51,12 +51,20 @@ ntp__daemon: 'openntpd'
 #
 #   and so on.
 #
-ntp__servers:
-  - '0.debian.pool.ntp.org'
-  - '1.debian.pool.ntp.org'
-  - '2.debian.pool.ntp.org'
-  - '3.debian.pool.ntp.org'
+ntp__servers: '{{ ntp__servers_map[ansible_distribution]
+                  | d(ntp__servers_map["default"]) }}'
 
+                                                                   # ]]]
+# .. envvar:: ntp__servers_map [[[
+#
+# YAML dictionary with different NTP server lists depending on OS distribution.
+ntp__servers_map:
+  'Debian':  [ '0.debian.pool.ntp.org', '1.debian.pool.ntp.org',
+               '2.debian.pool.ntp.org', '3.debian.pool.ntp.org' ]
+  'Ubuntu':  [ '0.ubuntu.pool.ntp.org', '1.ubuntu.pool.ntp.org',
+               '2.ubuntu.pool.ntp.org', '3.ubuntu.pool.ntp.org' ]
+  'default': [ '0.pool.ntp.org', '1.pool.ntp.org',
+               '2.pool.ntp.org', '3.pool.ntp.org' ]
 
                                                                    # ]]]
 # .. envvar:: ntp__fudge [[[
