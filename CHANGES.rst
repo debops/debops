@@ -13,8 +13,17 @@ The current role maintainer is drybjed.
 
 .. _debops.unattended_upgrades master: https://github.com/debops/ansible-unattended_upgrades/compare/v0.2.0...master
 
+Added
+~~~~~
+
 - Support nested lists for :envvar:`unattended_upgrades__blacklist` and
   :envvar:`unattended_upgrades__origins`. [ypid]
+
+Fixed
+~~~~~
+
+- Fixed :envvar:`unattended_upgrades__release_origins` for Debian Jessie and
+  potentially newer versions. [ypid_]
 
 `debops.unattended_upgrades v0.2.0`_ - 2016-07-09
 -------------------------------------------------
