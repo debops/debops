@@ -147,6 +147,9 @@
          (item.enabled|d(True) | bool) and
          (item.when|d(True) | bool))
 
+- name: Ensure that /etc/pki directory exists
+  file: path=/etc/pki state=directory
+
 - name: Ensure that sensitive files are excluded from version control
   template:
     src: 'etc/pki/gitignore.j2'
