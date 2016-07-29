@@ -18,3 +18,8 @@ Added
 ~~~~~
 
 - Initial coding and design. [ypid_]
+
+Changed
+~~~~~~~
+
+- Switched `docs.debops.org` links to HTTPS. [ypid_]

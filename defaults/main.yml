@@ -95,9 +95,9 @@ debops_api__app_repo_url: 'https://github.com/debops/debops-api.git'
 #
 # Directory path where the DebOps API script repository will be installed.
 debops_api__app_repo_dest: '{{ (ansible_local.root.src
-                                  if (ansible_local|d() and ansible_local.root|d() and
-                                      ansible_local.root.src|d())
-                                  else "/usr/local/src") + "/debops-api" }}'
+                                if (ansible_local|d() and ansible_local.root|d() and
+                                    ansible_local.root.src|d())
+                                else "/usr/local/src") + "/debops-api" }}'
 
                                                                    # ]]]
 # .. envvar:: debops_api__input_data_repo_update [[[
@@ -141,7 +141,7 @@ debops_api__input_data_role_path: '{{ debops_api__input_data_repo_dest + "/docs/
 #
 # List of additional parameters passed to the DebOps API script.
 debops_api__app_parameters:
-  - [ '--docs-url-pattern', 'http://docs.debops.org/en/latest/ansible/roles/ansible-{role_name}/docs/index.html', 'linebreak' ]
+  - [ '--docs-url-pattern', 'https://docs.debops.org/en/latest/ansible/roles/ansible-{role_name}/docs/index.html', 'linebreak' ]
   - [ '--role-owner', 'debops', 'linebreak' ]
 
                                                                    # ]]]
@@ -208,7 +208,7 @@ debops_api__nginx__servers:
           ## Allow browsers to use API responses regardless which website makes
           ## use of the API.
           ## Without this, browsers will not allow websites to use data
-          ## returned by this API for there own use.
+          ## returned by this API for their own use.
           ## Refer to: https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
           add_header 'Access-Control-Allow-Origin' '*';
 # ]]]
