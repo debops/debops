@@ -91,6 +91,9 @@ from the full role name to the meta data (described below).
   ``nick``
     Nickname of the author.
 
+  ``maintainer``
+    Boolean value specifying if author is a maintainer.
+
 ``clone_url``
   Secure git URL where the repository can be cloned from.
 
