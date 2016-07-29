@@ -63,6 +63,10 @@ Added
 
 - Added :ref:`owncloud__ref_external_users` documentation. [ypid_]
 
+- Added :envvar:`owncloud_ldap_update_settings` which allows to that the
+  settings from :envvar:`owncloud__ldap_conf_map` are up-to-date on the remote
+  system. [ypid_]
+
 Changed
 ~~~~~~~
 
@@ -97,6 +101,10 @@ Changed
   settings after the initial setup. [ypid_]
 
 - Switched the Changelog to `a new format <https://github.com/debops/docs/issues/154>`_. [ypid_]
+
+- Introduced :envvar:`owncloud_ldap_update_settings` set to ``True``.
+  Previously, this was not configurable and the LDAP settings where not updated in
+  ownCloud after LDAP was configured. [ypid_]
 
 - Renamed Ansible tags
 
