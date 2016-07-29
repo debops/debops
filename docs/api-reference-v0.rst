@@ -1,5 +1,5 @@
-API reference v0
-================
+DebOps API reference v0
+=======================
 
 .. contents::
    :local:
@@ -63,12 +63,13 @@ Role metadata JSON format
 :regexp:`^/role/.*\.json$` API calls return a JSON object containing the keys
 described below.
 
-:regexp:`^/roles/.*\.json$` API calls return a JSON object. The outer dict is a
-full role name to meta data (described below) mapping.
+:regexp:`^/roles/.*\.json$` API calls return a JSON object. The outer dict maps
+from the full role name to the meta data (described below).
 
 .. note:: ``role_format_version`` below ``0.2.0`` are not fully supported by
-   this API. Keys might be missing for roles with this version.
-   Do a version compare for ``0.2.0`` or higher of fixup the DebOps API.
+   this API. Keys might be missing for roles below ``v0.2.0``.
+   Do a version compare for ``0.2.0`` or higher or update the roles (or fixup
+   the DebOps API).
 
 ``role_owner``
   Ansible Galaxy role owner.
@@ -101,7 +102,10 @@ full role name to meta data (described below) mapping.
   TODO: The versions are currently not documented elsewhere.
 
 ``docs_url``
-  HTML URL of the rendered documentation of the repository
+  HTML URL of the rendered documentation of the repository.
+
+``changelog_url``
+  HTML URL of the rendered changelog.
 
 ``galaxy_url``
   HTML URL of the role on Ansible Galaxy.

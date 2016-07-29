@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Copyright (C) 2016 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2016 DebOps Project http://debops.org/
 #
 # debops-api is part of DebOps.
 #
@@ -60,11 +61,13 @@ class DebOpsAPI:
     def __init__(
         self,
         docs_url_pattern=None,
+        changelog_url_pattern=None,
         role_owner=None,
         test_mode=False,
     ):
 
         self._docs_url_pattern = docs_url_pattern
+        self._changelog_url_pattern = changelog_url_pattern
         self._role_owner = role_owner
         self._test_mode = test_mode
 
@@ -136,7 +139,7 @@ class DebOpsAPI:
 
     def _interpret_role_dir_name(self, role_dir_name):
         """
-        Read metadata from each role available in role_path.
+        Extract and return information from the role directory name.
         """
 
         version_by_pattern_map = {
@@ -356,14 +359,22 @@ class DebOpsAPI:
                     'pr_url': metadata['vcs_url'] + '/pulls',
                 })
 
-            if self._docs_url_pattern and StrictVersion('0.2.0') <= \
+            if StrictVersion('0.2.0') <= \
                     StrictVersion(metadata['role_format_version']):
 
-                additonal_metadata['docs_url'] = self._docs_url_pattern.format(
-                    role_owner=role_owner,
-                    role_name=role_name,
-                    normalized_role_name=self._get_normalized_role_name(role_name),
-                )
+                if self._docs_url_pattern:
+                    additonal_metadata['docs_url'] = self._docs_url_pattern.format(
+                        role_owner=role_owner,
+                        role_name=role_name,
+                        normalized_role_name=self._get_normalized_role_name(role_name),
+                    )
+
+                if self._changelog_url_pattern:
+                    additonal_metadata['changelog_url'] = self._changelog_url_pattern.format(
+                        role_owner=role_owner,
+                        role_name=role_name,
+                        normalized_role_name=self._get_normalized_role_name(role_name),
+                    )
 
             self._metadata[role_full_name].update(additonal_metadata)
 
@@ -411,7 +422,7 @@ class DebOpsAPI:
                     role_name = role_dir_info['role_name']
                     role_owner = role_dir_info['role_owner'] if role_dir_info['role_owner'] else self._role_owner
                     if not role_owner:
-                        raise Exception('Default role owner not given but required.')
+                        raise Exception("Default role owner not given but required.")
 
                     role_vcs_url = self._get_repo_url(
                         role_owner,
@@ -564,6 +575,7 @@ if __name__ == '__main__':
     args_parser.add_argument(
         '-o', '--role-owner',
         help="Default role owner if not available from Ansible role metadata.",
+        default='debops',
     )
     args_parser.add_argument(
         '-a', '--api-dir',
@@ -574,7 +586,12 @@ if __name__ == '__main__':
     args_parser.add_argument(
         '-D', '--docs-url-pattern',
         help="Documentation URL for each role.",
-        default=None,
+        default='https://docs.debops.org/en/latest/ansible/roles/ansible-{role_name}/docs/index.html',
+    )
+    args_parser.add_argument(
+        '-C', '--changelog-url-pattern',
+        help="Changelog URL for each role.",
+        default='https://docs.debops.org/en/latest/ansible/roles/ansible-{role_name}/docs/changelog.html',
     )
     args_parser.add_argument(
         '-t', '--test-mode',
@@ -596,6 +613,7 @@ if __name__ == '__main__':
 
     debops_metadata = DebOpsAPI(
         docs_url_pattern=args.docs_url_pattern,
+        changelog_url_pattern=args.changelog_url_pattern,
         role_owner=args.role_owner,
         test_mode=args.test_mode,
     )
