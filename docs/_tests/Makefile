@@ -31,4 +31,8 @@ run-pre-commit-hook: docs/_tests/hooks/pre-commit
 
 .PHONY: install-pre-commit-hook
 install-pre-commit-hook: docs/_tests/hooks/pre-commit
-	cd $(PWD) && ln -srf "$<" "$(shell git rev-parse --git-dir)/hooks"
+	ln -srf "$<" "$(shell git rev-parse --git-dir)/hooks"
+
+.PHONY: install-pre-commit-hook
+remove-pre-commit-hook: docs/_tests/hooks/pre-commit
+	rm -f "$(shell git rev-parse --git-dir)/hooks/pre-commit"

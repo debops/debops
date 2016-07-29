@@ -10,13 +10,17 @@ This section gives more details on how to setup external users for ownCloud.
 Users from debops.slapd
 -----------------------
 
-Should work out of the box.
+Should work out of the box when enabled:
+
+.. code-block:: yaml
+
+   owncloud__ldap_enabled: True
 
 Users from MS Windows Active Directory
 --------------------------------------
 
 First, you will need an AD user with which ownCloud can do a LDAP bind in order
-to read information about other users and check passwords.
+to read information about the users and check passwords.
 This user should be unprivileged.
 
 Create the AD user and configure it like this:
@@ -34,10 +38,11 @@ FIXME: Figure out how that can be configured.
 
 .. code-block:: yaml
 
+   owncloud__ldap_enabled: True
+
    # ownCloud LDAP recommendations by the debops.owncloud maintainers for MS Windows AD [[[
    # Note that those recommendations might deviate from ownCloud
    # recommendations but those are the settings which are proven to work.
-   owncloud__ldap_enabled: True
    owncloud__ldap_create_user: False
    owncloud__ldap_port: '389'
    owncloud__ldap_expert_username_attr: 'sAMAccountName'
