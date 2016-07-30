@@ -148,8 +148,13 @@
          (item.when|d(True) | bool))
 
 - name: Ensure that /etc/pki directory exists
-  file: path=/etc/pki state=directory
-
+  file:
+    path: /etc/pki
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    
 - name: Ensure that sensitive files are excluded from version control
   template:
     src: 'etc/pki/gitignore.j2'
