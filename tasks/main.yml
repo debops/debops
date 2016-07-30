@@ -112,6 +112,12 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  register: sshd__register_fact_script
+
+- name: Reload Ansible local facts
+  setup:
+    filter: ansible_local
+  when: sshd__register_fact_script.changed
 
 - name: Post hooks
   include: '{{ lookup("task_src", "sshd/post_main.yml") }}'
