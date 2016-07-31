@@ -69,6 +69,3 @@ Available role tags:
 ``role::debops``
   Main role tag, should be used in the playbook to execute all of the role
   tasks.
-
-``depend-of::debops``
-  Run the role dependencies.

@@ -3,7 +3,7 @@ Changelog
 
 **debops.debops**
 
-This project adheres to `Semantic Versioning <http://semver.org/>`_
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
 and `human-readable changelog <http://keepachangelog.com/>`_.
 
 The current role maintainer is drybjed.
@@ -12,7 +12,13 @@ The current role maintainer is drybjed.
 `debops.debops master`_ - unreleased
 ------------------------------------
 
-.. _debops.debops master: https://github.com/debops/ansible-debops/compare/v0.2.1...master
+.. _debops.debops master: https://github.com/debops/ansible-debops/compare/v0.2.2...master
+
+
+`debops.debops v0.2.2`_ - 2016-07-31
+------------------------------------
+
+.. _debops.debops v0.2.2: https://github.com/debops/ansible-debops/compare/v0.2.1...v0.2.2
 
 Fixed
 ~~~~~
@@ -22,6 +28,8 @@ Fixed
 - Don't trigger role update handler when ``debops__update_method`` is sync. [ganto]
 
 - Only install system-wide ``debops.cfg`` if requested. [ganto]
+
+- Update documentation. [drybjed]
 
 
 `debops.debops v0.2.1`_ - 2016-07-14
