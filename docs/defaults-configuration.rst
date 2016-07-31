@@ -20,8 +20,8 @@ instead in new configuration, the legacy variables will be removed at some
 point.
 
 List of ferm INPUT rules that should be present or absent in the firewall rule
-set. The same format is also used for :any:`ferm_input_group_list`,
-:any:`ferm_input_host_list` and :any:`ferm_input_dependent_list`. Each rule is
+set. The same format is also used for :envvar:`ferm_input_group_list`,
+:envvar:`ferm_input_host_list` and :envvar:`ferm_input_dependent_list`. Each rule is
 defined as a YAML dict with the following keys:
 
 ``type``
