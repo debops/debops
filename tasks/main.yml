@@ -33,7 +33,7 @@
     name: '{{ item }}'
     state: 'present'
   with_items: '{{ debops__pip_packages }}'
-  notify: [ 'Update DebOps in the background with {{ debops__update_method }}' ]
+  notify: '{{ [ "Update DebOps in the background with " + debops__update_method ] if not debops__update_method == "sync" else omit }}'
   when: item|d()
 
 - name: Configure system-wide DebOps scripts
@@ -43,6 +43,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  when: debops__install_systemwide|bool
 
 - name: Update roles and playbooks
   become: '{{ debops__install_systemwide|bool }}'
