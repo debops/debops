@@ -41,6 +41,15 @@ Example inventory
 ``debops.sshd`` role is part of the ``common.yml`` DebOps playbook. It will be
 executed automatically on every host managed by DebOps.
 
+Example playbook
+----------------
+
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.sshd`` role:
+
+.. literalinclude:: playbooks/sshd.yml
+   :language: yaml
+
 Ansible tags
 ------------
 
@@ -60,4 +69,3 @@ Available role tags:
 
 ``role::sshd:known_hosts``
   Scan specified host fingerprints and add them to system-wide ``known_hosts``.
-
