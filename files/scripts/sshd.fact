@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from json import dumps
 from re import match, IGNORECASE
 from sys import exit
+
 
 sshd_facts = [
     { 'variable': 'AllowUsers',
@@ -30,23 +32,8 @@ try:
                     elif isinstance(item['default'], int):
                         output[item['fact']] = int(match_fact.groups()[0])
 
-
 except Exception as e:
     print("{}")
     exit()
 
-print("{")
-index = 1
-for key, value in sorted(output.items()):
-    if isinstance(value, list) and len(value) > 0:
-        print('  "%s": [ "%s" ]' % (key, '", "'.join(value)), end='')
-    elif isinstance(value, str):
-        print('  "%s": "%s"' % (key, value), end='')
-    else:
-        print('  "%s": %s' % (key, value), end='')
-    if index < len(output):
-        print(',')
-        index += 1
-    else:
-        print()
-print("}")
+print(dumps(output, sort_keys=True, indent=2))
