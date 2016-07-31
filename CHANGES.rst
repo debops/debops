@@ -1,14 +1,27 @@
 Changelog
 =========
 
-v0.2.4
-------
+**debops.sshd**
 
-*Unreleased*
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
+and `human-readable changelog <http://keepachangelog.com/>`_.
 
-- Fixed Ansible check mode support to not fail when running with
-  ``ansible_connection=local`` against a host which does not have ``sshd``
-  installed yet. [ypid]
+The current role maintainer is drybjed.
+
+
+`debops.sshd master`_ - unreleased
+----------------------------------
+
+.. _debops.sshd master: https://github.com/debops/ansible-sshd/compare/v0.2.4...master
+
+
+`debops.sshd v0.2.4`_ - 2016-07-31
+----------------------------------
+
+.. _debops.sshd v0.2.4: https://github.com/debops/ansible-sshd/compare/v0.2.3...v0.2.4
+
+Added
+~~~~~
 
 - Added :envvar:`sshd__ciphers_additional`,
   :envvar:`sshd__kex_algorithms_additional` and :envvar:`sshd__macs_additional`
@@ -17,25 +30,55 @@ v0.2.4
   This is needed for the ``debops-contrib.x2go_server`` role.
   [ypid]
 
+- Replace static Ansible fact file with a script that exposes some ``sshd``
+  configuration variables as Ansible facts. [ganto]
 
-v0.2.3
-------
+Changed
+~~~~~~~
 
-*Released: 2016-02-21*
+- Fixed Ansible check mode support to not fail when running with
+  ``ansible_connection=local`` against a host which does not have ``sshd``
+  installed yet. [ypid]
 
-- Fix deprecation warnings on Ansible 2.1.0. [drybjed]
+- Make sure that not registered conditional variable returns an empty list.
+  [cultcom]
+
+- Update documentation and Changelog. [drybjed]
+
+
+`debops.sshd v0.2.3`_ - 2016-02-21
+----------------------------------
+
+.. _debops.sshd v0.2.3: https://github.com/debops/ansible-sshd/compare/v0.2.2...v0.2.3
+
+Added
+~~~~~
 
 - Automatically remove Diffie-Hellman parameters from ``/etc/ssh/moduli`` which
   are smaller than the size specified in ``sshd_moduli_minimum`` variable (by
   default 2048 bits). [drybjed]
 
+Changed
+~~~~~~~
+
+- Fix deprecation warnings on Ansible 2.1.0. [drybjed]
+
 - Rename all role variables to put them in ``sshd__`` namespace. You might need
   to update your Ansible inventory. [drybjed]
 
-v0.2.2
-------
 
-*Released: 2015-11-13*
+`debops.sshd v0.2.2`_ - 2015-11-13
+----------------------------------
+
+.. _debops.sshd v0.2.2: https://github.com/debops/ansible-sshd/compare/v0.2.1...v0.2.2
+
+Changed
+~~~~~~~
+
+- Make sure that role works in Ansible check mode. [drybjed]
+
+Removed
+~~~~~~~
 
 - Removed ``debops.sshkeys`` from role dependencies as it is also run from the
   ``common.yml`` playbook. [ypid]
@@ -48,35 +91,33 @@ v0.2.2
   by Ansible playbooks to configure settings related to ``sshd`` in other
   services. [drybjed]
 
-- Make sure that role works in Ansible check mode. [drybjed]
 
-v0.2.1
-------
+`debops.sshd v0.2.1`_ - 2015-08-16
+----------------------------------
 
-*Released: 2015-08-16*
+.. _debops.sshd v0.2.1: https://github.com/debops/ansible-sshd/compare/v0.2.0...v0.2.1
+
+Added
+~~~~~
+
+- New variable ``sshd_paranoid``, allows to limit the use of various encryption
+  algorithms to only first (presumed safest) choice. [ypid]
+
+Changed
+~~~~~~~
 
 - ``sshd_custom_options`` variable has been moved to top of the ``sshd_config``
   file, that way it can be used to override any option if necessary, since
   ``sshd`` uses first instance of an option it finds in the config file. [ypid]
 
-- New variable ``sshd_paranoid``, allows to limit the use of various encryption
-  algorithms to only first (presumed safest) choice. [ypid]
 
-v0.2.0
-------
+`debops.sshd v0.2.0`_ - 2015-08-16
+----------------------------------
 
-*Released: 2015-08-16*
+.. _debops.sshd v0.2.0: https://github.com/debops/ansible-sshd/compare/v0.1.0...v0.2.0
 
-- Remove ``tasks/backup.yml`` and ``tasks/restore.yml``, they are not used in
-  main role task list. [drybjed]
-
-- Request ``sudo`` access on Travis-CI. [drybjed]
-
-- Update documentation. [drybjed]
-
-- Remove ``debops.auth`` role dependency. Configuration done by this role is
-  assumed to be present, since it's executed as part of the ``common.yml``
-  playbook. [drybjed]
+Added
+~~~~~
 
 - Add ``debops.secret`` role dependency, it's needed for access to LDAP
   secrets. [drybjed]
@@ -93,6 +134,41 @@ v0.2.0
 
 - Add tags for ``debops.tcpwrappers`` and ``debops.sshkeys`` role dependencies.
   [drybjed]
+
+- Add ``sshd_listen`` list which can be used to specify IP addresses of
+  interfaces on which ``sshd`` should listen for new connections. If list is
+  not specified, ``sshd`` will listen on all interfaces. [drybjed]
+
+- Add configuration variables for ``MaxAuthTries`` and ``LoginGraceTime``
+  options. [drybjed]
+
+- Create ``Ed25519`` host key if it's not present and OpenSSH version supports
+  it. [drybjed]
+
+- Add support for public key lookup in external sources.
+
+  Support for ``AuthorizedKeysCommand`` option will be disabled by default, and
+  can be enabled on Debian Jessie as well as on Debian Wheezy with backported
+  OpenSSH version using ``sshd_authorized_keys_lookup`` variable. Scripts that
+  perform the lookups will be executed on a separate system UNIX account to
+  provide privilege separation. [drybjed]
+
+- Add LDAP lookup script and configuration.
+
+  When a host is configured using ``debops.auth`` to access account information
+  from LDAP and system-wide configuration in ``/etc/ldap/ldap.conf`` is set
+  properly, OpenSSH can perform LDAP lookups using external script to retrieve
+  valid SSH public keys. LDAP lookup will be configured by default if
+  ``AuthorizedKeysCommand`` lookup is enabled on a host. [drybjed]
+
+- Add missing tags to Ansible tasks. [drybjed]
+
+Changed
+~~~~~~~
+
+- Request ``sudo`` access on Travis-CI. [drybjed]
+
+- Update documentation. [drybjed]
 
 - Change how OpenSSH packages are managed.
 
@@ -128,24 +204,11 @@ v0.2.0
   keys out of the box is dropped, might be re-added in the future if there is
   interest. [drybjed]
 
-- Add ``sshd_listen`` list which can be used to specify IP addresses of
-  interfaces on which ``sshd`` should listen for new connections. If list is
-  not specified, ``sshd`` will listen on all interfaces. [drybjed]
-
-- Remove ``sshd_HostKey`` list. Instead of a static list of host keys,
-  ``debops.sshd`` role will check what host keys are present in ``/etc/ssh/``
-  directory. Using ``sshd_host_keys`` list which provides types of keys and
-  their preferred order, host keys that are present will be added to ``sshd``
-  configuration file. [drybjed]
-
 - Make ``PrivilegeSeparation`` option configurable. [drybjed]
 
 - Make ``LogLevel`` configurable. [drybjed]
 
 - Make ``MaxStartups`` option configurable. [drybjed]
-
-- Add configuration variables for ``MaxAuthTries`` and ``LoginGraceTime``
-  options. [drybjed]
 
 - Make ``Banner`` option configurable. [drybjed]
 
@@ -161,10 +224,6 @@ v0.2.0
   OpenSSH available in Debian Jessie. There's a separate set of algorithms for
   Debian Wheezy without backported OpenSSH installed as well. [drybjed]
 
-- Remove ``sshd_config_options_begin`` and ``sshd_config_options_end``
-  variables and replace them with with ``sshd_custom_options`` YAML text block
-  variable. [drybjed]
-
 - Make ``Match`` options configurable.
 
   Static ``Match`` options defined previously are moved to
@@ -174,34 +233,34 @@ v0.2.0
   SFTPonly configuration will now use global ``PasswordAuthentication`` option
   instead of forcibly disabling password authentication. [drybjed]
 
-- Create ``Ed25519`` host key if it's not present and OpenSSH version supports
-  it. [drybjed]
-
-- Add support for public key lookup in external sources.
-
-  Support for ``AuthorizedKeysCommand`` option will be disabled by default, and
-  can be enabled on Debian Jessie as well as on Debian Wheezy with backported
-  OpenSSH version using ``sshd_authorized_keys_lookup`` variable. Scripts that
-  perform the lookups will be executed on a separate system UNIX account to
-  provide privilege separation. [drybjed]
-
-- Add LDAP lookup script and configuration.
-
-  When a host is configured using ``debops.auth`` to access account information
-  from LDAP and system-wide configuration in ``/etc/ldap/ldap.conf`` is set
-  properly, OpenSSH can perform LDAP lookups using external script to retrieve
-  valid SSH public keys. LDAP lookup will be configured by default if
-  ``AuthorizedKeysCommand`` lookup is enabled on a host. [drybjed]
-
-- Add missing tags to Ansible tasks. [drybjed]
-
 - Update ``defaults/main.yml`` file to support ``.rst`` documentation and add
   whitespace in various files for better readability. [drybjed]
 
-v0.1.0
-------
+Removed
+~~~~~~~
 
-*Released: 2015-08-10*
+- Remove ``tasks/backup.yml`` and ``tasks/restore.yml``, they are not used in
+  main role task list. [drybjed]
+
+- Remove ``debops.auth`` role dependency. Configuration done by this role is
+  assumed to be present, since it's executed as part of the ``common.yml``
+  playbook. [drybjed]
+
+- Remove ``sshd_HostKey`` list. Instead of a static list of host keys,
+  ``debops.sshd`` role will check what host keys are present in ``/etc/ssh/``
+  directory. Using ``sshd_host_keys`` list which provides types of keys and
+  their preferred order, host keys that are present will be added to ``sshd``
+  configuration file. [drybjed]
+
+- Remove ``sshd_config_options_begin`` and ``sshd_config_options_end``
+  variables and replace them with with ``sshd_custom_options`` YAML text block
+  variable. [drybjed]
+
+
+debops.sshd v0.1.0 - 2015-08-10
+-------------------------------
+
+Added
+~~~~~
 
 - Add Changelog. [drybjed]
-
