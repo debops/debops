@@ -280,10 +280,11 @@ be enabled by setting :envvar:`ferm__mark_portscan`::
     ferm__mark_portscan: True
 
 To make sure management access to the gateway is not suddenly blocked by the
-mentioned rule list make sure to whitelist trusted addresses. For example when
-trying out DebOps in a Vagrant environment the host running ``vagrant`` should
-be added to the :envvar:`ferm__ansible_controllers` variable. Otherwise
-``vagrant ssh`` might suddenly be blocked after trying to access a closed port::
+mentioned rule list, trusted addresses must be whitelisted. For example when
+trying out DebOps in a Vagrant environment the host running :command:`vagrant``
+should be added to the :envvar:`ferm__ansible_controllers` variable. Otherwise
+:command:`vagrant ssh` might suddenly be blocked by the portscan rule in case
+a machine port was mistakenly accessed where no service was running::
 
     ferm__ansible_controllers: [ '192.168.121.1' ]
 
