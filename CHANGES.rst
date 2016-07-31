@@ -21,6 +21,8 @@ Fixed
 
 - Don't trigger role update handler when ``debops__update_method`` is sync. [ganto]
 
+- Only install system-wide ``debops.cfg`` if requested. [ganto]
+
 
 `debops.debops v0.2.1`_ - 2016-07-14
 ------------------------------------
