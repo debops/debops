@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 from re import match, IGNORECASE
+from sys import exit
 
 sshd_facts = [
     { 'variable': 'AllowUsers',
@@ -27,13 +29,24 @@ try:
                         output[item['fact']] = match_fact.groups()[0]
                     elif isinstance(item['default'], int):
                         output[item['fact']] = int(match_fact.groups()[0])
-    print("{")
-    for key, value in sorted(output.items()):
-        if isinstance(value, str):
-            print('  "%s": "%s"' % (key, value))
-        else:
-            print('  "%s": %s' % (key, value))
-    print("}")
 
-except Exception:
+
+except Exception as e:
     print("{}")
+    exit()
+
+print("{")
+index = 1
+for key, value in sorted(output.items()):
+    if isinstance(value, list) and len(value) > 0:
+        print('  "%s": [ "%s" ]' % (key, '", "'.join(value)), end='')
+    elif isinstance(value, str):
+        print('  "%s": "%s"' % (key, value), end='')
+    else:
+        print('  "%s": %s' % (key, value), end='')
+    if index < len(output):
+        print(',')
+        index += 1
+    else:
+        print()
+print("}")
