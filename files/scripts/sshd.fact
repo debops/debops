@@ -7,12 +7,12 @@ from sys import exit
 
 
 sshd_facts = [
-    { 'variable': 'AllowUsers',
-      'fact': 'allow_users',
-      'default': [] },
-    { 'variable': 'AllowGroups',
-      'fact': 'allow_groups',
-      'default': [] }
+    {'variable': 'AllowUsers',
+     'fact': 'allow_users',
+     'default': []},
+    {'variable': 'AllowGroups',
+     'fact': 'allow_groups',
+     'default': []}
 ]
 
 output = {'configured': 'true'}
@@ -23,7 +23,8 @@ try:
     with open("/etc/ssh/sshd_config") as fd:
         for line in fd.readlines():
             for item in sshd_facts:
-                match_fact = match(r"^" + item['variable'] + " ([ \w]+)", line, flags=IGNORECASE)
+                match_fact = match(
+                    r"^" + item['variable'] + " ([ \w]+)", line, flags=IGNORECASE)
                 if match_fact:
                     if isinstance(item['default'], list):
                         output[item['fact']] = match_fact.groups()[0].split()
