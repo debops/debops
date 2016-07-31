@@ -14,6 +14,13 @@ The current role maintainer is drybjed.
 
 .. _debops.debops master: https://github.com/debops/ansible-debops/compare/v0.2.1...master
 
+Fixed
+~~~~~
+
+- Fix sudo behaviour when ``debops__install_systemwide`` is enabled. [ganto]
+
+- Don't trigger role update handler when ``debops__update_method`` is sync. [ganto]
+
 
 `debops.debops v0.2.1`_ - 2016-07-14
 ------------------------------------
