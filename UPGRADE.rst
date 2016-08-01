@@ -21,6 +21,8 @@ The script is bundled with this role under
 :file:`docs/scripts/upgrade-from-v0.2.X-to-v0.3.X` and can be invoked from
 their.
 
+For more details refer to `What’s New for Admins in ownCloud 9.0 <https://doc.owncloud.org/server/9.0/admin_manual/whats_new_admin.html>`__.
+
 From v0.1.0 to v0.2.0
 ---------------------
 

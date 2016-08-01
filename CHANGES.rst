@@ -204,7 +204,7 @@ Changed
 
 - Use debops.mariadb_ to allow to use MariaDB or MySQL on a remote server. [ypid_]
 
-- Updated to ownCloud 8.1. [ypid_]
+- Updated to ownCloud ``8.1``. [ypid_]
 
 - Improved LDAP support. Now role will create service account (default: ``cn=owncloud,dc=ansible,dc=fqdn``)
   in LDAP server. You still have to provide proper permission for this account. [scibi_]
