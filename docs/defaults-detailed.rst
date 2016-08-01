@@ -95,4 +95,3 @@ Examples:
          - name: 'query_cache_type'
            value: '0'
            state: 'present'
-

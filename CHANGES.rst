@@ -1,38 +1,69 @@
 Changelog
 =========
 
-v0.2.4
-------
+**debops.mariadb_server**
 
-*Unreleased*
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
+and `human-readable changelog <http://keepachangelog.com/>`_.
+
+The current role maintainer is drybjed.
+
+
+`debops.mariadb_server master`_ - unreleased
+--------------------------------------------
+
+.. _debops.mariadb_server master: https://github.com/debops/ansible-mariadb_server/compare/v0.2.4...master
+
+
+`debops.mariadb_server v0.2.4`_ - 2016-08-01
+--------------------------------------------
+
+.. _debops.mariadb_server v0.2.4: https://github.com/debops/ansible-mariadb_server/compare/v0.2.3...v0.2.4
+
+Changed
+~~~~~~~
 
 - The upstream MariaDB repositories use new GPG key to sign the package lists.
   [drybjed]
 
-v0.2.3
-------
+- Update documentation and Changelog. [drybjed]
 
-*Released: 2016-06-08*
+
+`debops.mariadb_server v0.2.3`_ - 2016-06-08
+--------------------------------------------
+
+.. _debops.mariadb_server v0.2.3: https://github.com/debops/ansible-mariadb_server/compare/v0.2.2...v0.2.3
+
+Changed
+~~~~~~~
 
 - Use the ``ini_file`` Ansible module to change the
   :file:`/etc/mysql/debian.cnf` which uses the INI format. [ypid]
 
 - Don’t fail in Ansible check mode because of undefined variables. [ypid]
 
-v0.2.2
-------
 
-*Released: 2016-06-02*
+`debops.mariadb_server v0.2.2`_ - 2016-06-02
+--------------------------------------------
+
+.. _debops.mariadb_server v0.2.2: https://github.com/debops/ansible-mariadb_server/compare/v0.2.1...v0.2.2
+
+Changed
+~~~~~~~
 
 - Normalize MariaDB configuration templates and variables with accordance to
   suggested format in official MariaDB documentation. [drybjed]
 
 - Disable ``LOAD DATA LOCAL INFILE`` function for improved security. [drybjed]
 
-v0.2.1
-------
 
-*Released: 2016-05-29*
+`debops.mariadb_server v0.2.1`_ - 2016-05-29
+--------------------------------------------
+
+.. _debops.mariadb_server v0.2.1: https://github.com/debops/ansible-mariadb_server/compare/v0.2.0...v0.2.1
+
+Changed
+~~~~~~~
 
 - Reorganize APT key/repository tasks. Instead of separate tasks for each APT
   key/repository combination use YAML dictionaries to select specific
@@ -47,20 +78,30 @@ v0.2.1
   environment managed by ``debops.pki`` works with the MariaDB/MySQL/Percona
   servers out of the box. [drybjed]
 
+Removed
+~~~~~~~
+
 - Remove all Ansible handlers, the database server is not restarted
   automatically. This should resolve an issue where upstream MariaDB packages
   don't support service reload. [drybjed]
 
-v0.2.0
-------
 
-*Released: 2016-05-28*
+`debops.mariadb_server v0.2.0`_ - 2016-05-28
+--------------------------------------------
+
+.. _debops.mariadb_server v0.2.0: https://github.com/debops/ansible-mariadb_server/compare/v0.1.3...v0.2.0
+
+Added
+~~~~~
+
+- Add ``vim`` folding in :file:`defaults/main.yml` and rename task tags. [drybjed]
+
+Changed
+~~~~~~~
 
 - Move configuration of dependent roles and variables from :file:`vars/main.yml` to
   :file:`defaults/main.yml`. The playbooks that uses the ``debops.mariadb_server``
   role needs to be updated to include dependent roles. [drybjed]
-
-- Add ``vim`` folding in :file:`defaults/main.yml` and rename task tags. [drybjed]
 
 - Rename all ``mariadb_server_`` variables to ``mariadb_server__`` to put the
   role variables in their own namespace. The ``mariadb_server_options_default``
@@ -79,7 +120,7 @@ v0.2.0
 - Update documentation. [drybjed]
 
 Migration notes
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
 When updating from the previous version to this version, you might need to
 update your inventory. This oneliner might come in handy to do
@@ -91,10 +132,14 @@ this:
 
 [ypid]
 
-v0.1.3
-------
 
-*Released: 2016-05-28*
+`debops.mariadb_server v0.1.3`_ - 2016-05-28
+--------------------------------------------
+
+.. _debops.mariadb_server v0.1.3: https://github.com/debops/ansible-mariadb_server/compare/v0.1.2...v0.1.3
+
+Added
+~~~~~
 
 - Add default options to the ``debops.mariadb_server`` role via the
   ``mariadb_server_options_default`` variable. [carlalexander]
@@ -102,33 +147,48 @@ v0.1.3
 - Allow to change the backup directory of :program:`automysqlbackup` via
   ``mariadb_server_backup_directory``. [ypid]
 
+Changed
+~~~~~~~
+
 - Fix the :file:`/etc/mysql/conf.d/mysql.cnf` template writing multiple custom
   MariaDB options in one line. [drybjed]
 
-v0.1.2
-------
 
-*Released: 2015-09-12*
+`debops.mariadb_server v0.1.2`_ - 2015-09-12
+--------------------------------------------
+
+.. _debops.mariadb_server v0.1.2: https://github.com/debops/ansible-mariadb_server/compare/v0.1.1...v0.1.2
+
+Added
+~~~~~
+
+- Add support for Percona Server as an alternative to MariaDB. [drybjed]
+
+Changed
+~~~~~~~
 
 - Do not delete ``'root'@'localhost'`` database account when hostname is
   ``localhost``. [drybjed]
 
-- Add support for Percona Server as an alternative to MariaDB. [drybjed]
-
 - Store the active database flavor in local fact so that other roles can use
   this information if necessary. [drybjed]
 
-v0.1.1
-------
 
-*Released: 2015-08-21*
+`debops.mariadb_server v0.1.1`_ - 2015-08-21
+--------------------------------------------
+
+.. _debops.mariadb_server v0.1.1: https://github.com/debops/ansible-mariadb_server/compare/v0.1.0...v0.1.1
+
+Added
+~~~~~
 
 - Add a way to disable :program:`automysqlbackup` support. [drybjed]
 
-v0.1.0
-------
 
-*Released: 2015-06-18*
+debops.mariadb_server v0.1.0 - 2015-06-18
+-----------------------------------------
+
+Added
+~~~~~
 
 - Initial release. [drybjed]
-
