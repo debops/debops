@@ -38,7 +38,11 @@ Added
 - Add Core Infrastructure Initiative (CII) Best Practices badge to the
   repository README. [ypid_]
 
-- Add ``debops.nullmailer`` role and and its playbook. [drybjed_]
+- Add ``debops.nullmailer`` role and its playbook. [drybjed_]
+
+- Add ``debops_service_bootstrap`` Ansible host group to allow to run
+  ``debops.bootstrap`` against hosts not in the ``debops_all_hosts`` host
+  group. [ypid_]
 
 Changed
 ~~~~~~~
