@@ -106,7 +106,11 @@ Changed
   Previously, this was not configurable and the LDAP settings where not updated in
   ownCloud after LDAP was configured. [ypid_]
 
-- Switched from the debops.php5 role to the new and unified debops.php_ role. [ypid_]
+- Switched from the ``debops.php5`` role to the new and unified debops.php_ role. [ypid_]
+
+- Support large file uploads by default by increasing the
+  :envvar:`owncloud__timeout` from ``300`` to ``3600`` and the
+  :envvar:`owncloud__upload_size` from ``128M`` to ``16G``. [ypid_]
 
 - Renamed Ansible tags
 

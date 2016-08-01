@@ -170,6 +170,7 @@ owncloud__auto_database_upgrade_hook_script_packages_trigger:
 #
 # Whether automatic ownCloud upgrades should be performed by
 # ``unattended_upgrades``.
+#
 # FIXME: Needs more testing before the role maintainers feel confident to enable this by default.
 # Refer to: https://github.com/debops/ansible-owncloud/issues/28
 owncloud__auto_security_updates_enabled: False
@@ -528,14 +529,13 @@ owncloud__autosetup_url: 'http://{{ owncloud__domain[0] }}/index.php'
 # .. envvar:: owncloud__upload_size
 #
 # Max upload size set in ``nginx`` and PHP, with amount as M or G.
-# FIXME: Increase
-owncloud__upload_size: '128M'
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html>`__ for details.
+owncloud__upload_size: '16G'
 
 
 # .. envvar:: owncloud__php_output_buffering
 #
 # Output buffering set in PHP, with amount set in megabytes
-# Setting according to:
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html#configuring-php>`__ for details.
 owncloud__php_output_buffering: '0'
 
@@ -562,8 +562,8 @@ owncloud__cron_minute: '*/15'
 # - ``max_input_time`` in php5-fpm.
 # - ``max_execution_time`` in php5-fpm.
 #
-# If you need to handle very large files you should increase this value.
-owncloud__timeout: 300
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html>`__ for details.
+owncloud__timeout: 3600
 
 
 # .. envvar:: owncloud__app_user_webfinger_support
@@ -1292,7 +1292,7 @@ owncloud__theme_footer_short: |
 # .. envvar:: owncloud__theme_footer_long
 #
 # Long version of the footer. See :envvar:`owncloud__theme_footer_short` for details.
-# FIXME: What exactly is the difference?
+# TODO: What exactly is the difference?
 owncloud__theme_footer_long: '{{ owncloud__theme_footer_short }}'
 
 
@@ -1576,8 +1576,8 @@ owncloud__php__dependent_pools:
   pm_max_children: '{{ owncloud__php_max_children }}'
   php_values:
     output_buffering: '{{ owncloud__php_output_buffering }}'
-    post_max_size: '{{ owncloud__upload_size }}'
     upload_max_filesize: '{{ owncloud__upload_size }}'
+    post_max_size: '{{ owncloud__upload_size }}'
     max_input_time: '{{ owncloud__timeout }}'
     max_execution_time: '{{ owncloud__timeout }}'
 
