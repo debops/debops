@@ -139,6 +139,9 @@ Changed
   * :regexp:`owncloud__?php5__pool` → :envvar:`owncloud__php__dependent_pools`
   * :regexp:`owncloud__?enable_apc_cli` → :envvar:`owncloud__apc_cli_enabled`
 
+  The role bundles a script which can do this transition for you.
+  Refer to :ref:`owncloud__ref_upgrade_nodes_v0.3.0` for details.
+
   [ypid_]
 
 Removed
