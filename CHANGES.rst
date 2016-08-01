@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.2.4
+------
+
+*Unreleased*
+
+- The upstream MariaDB repositories use new GPG key to sign the package lists.
+  [drybjed]
+
 v0.2.3
 ------
 

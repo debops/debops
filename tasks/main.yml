@@ -16,11 +16,14 @@
 - name: Add custom APT GPG key
   apt_key:
     state: 'present'
-    id: '{{ mariadb_server__apt_key_map[mariadb_server__flavor] }}'
+    id: '{{ item }}'
     keyserver: '{{ ansible_local.core.keyserver
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver|d())
                    else "hkp://pool.sks-keyservers.net" }}'
+  with_flattened: '{{ ([ mariadb_server__apt_key ]
+                       if mariadb_server__apt_key is string
+                       else mariadb_server__apt_key) }}'
   when: mariadb_server__flavor in [ 'mariadb_upstream', 'percona' ]
 
 - name: Add custom APT repository
