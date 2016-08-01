@@ -32,9 +32,11 @@ Remote database server
 If your MariaDB server is configured on a remote host and you don't have
 a local installation, ``debops.mariadb`` will detect that and won't manage the
 databases/user accounts without a server specified. To point it to a server,
-you need to set a variable in the inventory::
+you need to set a variable in the inventory:
 
-    mariadb__server: 'db.example.org'
+.. code-block:: yaml
+
+   mariadb__server: 'db.example.org'
 
 This needs to be a FQDN address or an IP address of a host with MariaDB server
 installed. This host will be accessed by Ansible using task delegation, so it
@@ -61,9 +63,11 @@ Remote database server over a SSL tunnel
 If local MariaDB installation is not detected, but port ``3306`` is active and
 awaiting connections, ``debops.mariadb`` role assumes that MariaDB server is
 accessible over a VPN connection. In this case you need to specify the remote
-host in inventory for Ansible to delegate its tasks::
+host in inventory for Ansible to delegate its tasks:
 
-    mariadb__server: 'db.example.org'
+.. code-block:: yaml
+
+   mariadb__server: 'db.example.org'
 
 User accounts will automatically be configured with ``localhost`` as the "host"
 part of the account.
@@ -76,10 +80,12 @@ Example inventory
 -----------------
 
 To enable MariaDB client support on a host, you need to add that host to
-``[debops_service_mariadb]`` Ansible group::
+``[debops_service_mariadb]`` Ansible group:
 
-    [debops_service_mariadb]
-    hostname
+.. code-block:: none
+
+   [debops_service_mariadb]
+   hostname
 
 When MariaDB server is properly configured, or installed locally, you can
 create user accounts and databases using inventory variables:
@@ -106,15 +112,8 @@ Example playbook
 
 Here's an example Ansible playbook that uses the ``debops.mariadb`` role:
 
-.. code-block:: yaml
-
-   ---
-   - hosts: [ 'debops_service_mariadb' ]
-     become: True
-
-     roles:
-       - role: debops.mariadb
-         tags: [ 'role::mariadb' ]
+.. literalinclude:: playbooks/mariadb.yml
+   :language: yaml
 
 Usage as a role dependency
 --------------------------
@@ -138,11 +137,11 @@ Example usage as a role dependency:
      - role: debops.mariadb
        mariadb__dependent_users:
 
-         - user: '{{ application_database_user }}'
-           database: '{{ application_database_name }}'
-           owner: '{{ application_user }}'
-           group: '{{ application_group }}'
-           home: '{{ application_home }}'
+         - user: '{{ application__database_user }}'
+           database: '{{ application__database_name }}'
+           owner: '{{ application__user }}'
+           group: '{{ application__group }}'
+           home: '{{ application__home }}'
            system: True
            priv_aux: False
 
@@ -154,8 +153,8 @@ set by the application role and provided as:
 
    mariadb__dependent_users:
 
-     - user: '{{ application_database_user }}'
-       password: '{{ application_database_password }}'
+     - user: '{{ application__database_user }}'
+       password: '{{ application__database_password }}'
 
 In that case it's best to use ``debops.secret`` role to store the password
 securely in a separate directory.
@@ -185,17 +184,16 @@ and database:
 
    - name: Create database user
      mysql_user:
-       name: '{{ application_database_user }}'
+       name: '{{ application__database_user }}'
        host: '{{ ansible_local.mariadb.host }}'
-       password: '{{ application_database_password }}'
-       priv: '{{ application_database_name }}.*:ALL'
+       password: '{{ application__database_password }}'
+       priv: '{{ application__database_name }}.*:ALL'
        state: 'present'
      delegate_to: '{{ ansible_local.mariadb.delegate_to }}'
 
    - name: Create application database
      mysql_db:
-       name: '{{ application_database_name }}'
+       name: '{{ application__database_name }}'
        state: 'present'
      delegate_to: '{{ ansible_local.mariadb.delegate_to }}'
-     register: application_register_database
-
+     register: application__register_database

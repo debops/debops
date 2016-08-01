@@ -47,32 +47,38 @@ Each database is defined as a YAML dict with the following keys:
 Examples
 ~~~~~~~~
 
-Create databases, remove some of the existing ones::
+Create databases, remove some of the existing ones:
 
-    mariadb__databases:
+.. code-block:: yaml
 
-      - name: 'database1'
+   mariadb__databases:
 
-      - name: 'database2'
+     - name: 'database1'
 
-      - name: 'old_database'
-        state: 'absent'
+     - name: 'database2'
+
+     - name: 'old_database'
+       state: 'absent'
 
 Create a database and import its contents from a file already present on remote
-host::
+host:
 
-    mariadb__databases:
+.. code-block:: yaml
 
-      - name: 'fancy_db'
-        target: '/tmp/dbcontents.sql.gz'
+   mariadb__databases:
 
-Create a database and import its contents from a file on the Ansible Controller::
+     - name: 'fancy_db'
+       target: '/tmp/dbcontents.sql.gz'
 
-    mariadb__databases:
+Create a database and import its contents from a file on the Ansible Controller:
 
-      - name: 'new_database'
-        source: '/tmp/database-contents.sql.gz'
-        target: '/tmp/dbcontents.sql.gz'
+.. code-block:: yaml
+
+   mariadb__databases:
+
+     - name: 'new_database'
+       source: '/tmp/database-contents.sql.gz'
+       target: '/tmp/dbcontents.sql.gz'
 
 .. _mariadb__users:
 
@@ -172,44 +178,54 @@ Examples
 ~~~~~~~~
 
 Create a MariaDB user account with all privileges granted to the ``someuser.*`` and
-``someuser\_%.*`` databases::
+``someuser\_%.*`` databases:
 
-    mariadb__users:
+.. code-block:: yaml
 
-      - name: 'someuser'
+   mariadb__users:
+
+     - name: 'someuser'
 
 Create a MariaDB user account with all privileges to ``somedatabase.*``
-without auxiliary privileges::
+without auxiliary privileges:
 
-    mariadb__users:
+.. code-block:: yaml
 
-      - name: 'someuser'
-        database: 'somedatabase'
-        priv_aux: False
+   mariadb__users:
+
+     - name: 'someuser'
+       database: 'somedatabase'
+       priv_aux: False
 
 Create a MariaDB user account and set up a local system account configured to
-use MariaDB::
+use MariaDB:
 
-    mariadb__users:
+.. code-block:: yaml
 
-      - name: 'someuser'
-        owner: 'system-user'
-        home: '/var/local/system-user'
+   mariadb__users:
 
-Create a MariaDB user account without default privileges::
+     - name: 'someuser'
+       owner: 'system-user'
+       home: '/var/local/system-user'
 
-    mariadb__users:
+Create a MariaDB user account without default privileges:
 
-      - name: 'someuser'
-        priv_default: False
-        priv_aux: False
+.. code-block:: yaml
 
-Create a MariaDB user account with custom additional privileges::
+   mariadb__users:
 
-    mariadb__users:
+     - name: 'someuser'
+       priv_default: False
+       priv_aux: False
 
-      - name: 'someuser'
-        priv: [ 'otherdb.*:ALL' ]
+Create a MariaDB user account with custom additional privileges:
+
+.. code-block:: yaml
+
+   mariadb__users:
+
+     - name: 'someuser'
+       priv: [ 'otherdb.*:ALL' ]
 
 .. _mariadb__ref_options:
 
@@ -297,4 +313,3 @@ Examples:
          - name: 'query_cache_type'
            value: '0'
            state: 'present'
-
