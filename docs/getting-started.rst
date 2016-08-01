@@ -4,6 +4,8 @@ Getting started
 .. contents:: Sections
    :local:
 
+.. include:: includes/all.rst
+
 Support for different PHP versions
 ----------------------------------
 
@@ -16,7 +18,7 @@ The role checks for existence of ``php7.0`` and ``php5`` APT packages
 ``php7.0-*`` or ``php5-*`` APT packages. If multiple versions of the PHP
 packages are available, the first found one wins. To force an older version in
 case the newer one is installed, you can change the order of the packages used
-for the version detection using the ``php__version_preference`` list.
+for the version detection using the :envvar:`php__version_preference` list.
 
 To learn how to specify different PHP packages for installation, refer to
 :ref:`php__ref_packages` documentation.
@@ -55,7 +57,7 @@ Custom environment role
 The ``debops.php`` provides a small, custom role ``debops.php/env`` which
 should be added to the playbook or role dependencies before the main role and
 other roles that use configuration from ``debops.php``, like
-``debops.logrotate``. The ``debops.php/env`` role configures custom APT
+debops.logrotate_. The ``debops.php/env`` role configures custom APT
 repositories if they are enabled and prepares the facts needed by other roles
 to function correctly. See the :ref:`provided playbook <php__ref_example_playbook>`
 to see an example usage.
@@ -94,7 +96,7 @@ through the Ansible local facts. The specific variables are:
 The Ansible local facts are used by the ``debops.php`` role to ensure
 idempotent operation. In case that you want to upgrade a host to a newer PHP
 release without uninstalling the older one, you will need to remove the stored
-``/etc/ansible/facts.d/php.fact`` file, so that the role can re-detect the
+:file:`/etc/ansible/facts.d/php.fact` file, so that the role can re-detect the
 available PHP versions and create a new fact file.
 
 
