@@ -15,9 +15,11 @@ manage the MariaDB server itself.
 Installation
 ~~~~~~~~~~~~
 
-You can install this role using Ansible Galaxy::
+You can install this role using Ansible Galaxy:
 
-    ansible-galaxy install debops.mariadb
+.. code-block:: console
+
+   user@host:~$ ansible-galaxy install debops.mariadb
 
 ..
  Local Variables:

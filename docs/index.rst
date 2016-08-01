@@ -11,7 +11,6 @@ Ansible role: debops.mariadb
    defaults
    defaults-configuration
    copyright
-   credits
    changelog
 
 ..
