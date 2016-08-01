@@ -8,10 +8,12 @@ Example inventory
 -----------------
 
 To install MariaDB on a host, you need to add it to
-``[debops_service_mariadb_server]`` Ansible group::
+``[debops_service_mariadb_server]`` Ansible group:
 
-    [debops_service_mariadb_server]
-    database-host
+.. code-block:: none
+
+   [debops_service_mariadb_server]
+   database-host
 
 This will install ``mariadb-server`` package, configure the server to listen on
 ``localhost`` for new connections, and install :program:`automysqlbackup` script to
@@ -23,26 +25,8 @@ Example playbook
 Here's an example Ansible playbook that uses the ``debops.mariadb_server``
 role:
 
-.. code-block:: yaml
-
-   ---
-   - hosts: [ 'debops_service_mariadb_server' ]
-     become: True
-
-     roles:
-
-       - role: debops.ferm
-         tags: [ 'role::ferm' ]
-         ferm__dependent_rules:
-           - '{{ mariadb_server__ferm__dependent_rules }}'
-
-       - role: debops.tcpwrappers
-         tags: [ 'role::tcpwrappers' ]
-         tcpwrappers__dependent_allow:
-           - '{{ mariadb_server__tcpwrappers__dependent_allow }}'
-
-       - role: debops.mariadb_server
-         tags: [ 'role::mariadb_server' ]
+.. literalinclude:: playbooks/java.yml
+   :language: yaml
 
 Remote access to the database
 -----------------------------
@@ -76,4 +60,3 @@ Database and user management
 ``debops.mariadb_server`` is not meant to be used to manage databases and user
 accounts. You should use ``debops.mariadb`` role instead, which was designed
 specifically for this purpose.
-

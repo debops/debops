@@ -1,19 +1,17 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Default variables
-# =================
+# Default variables [[[
+# =====================
 
 # .. contents:: Sections
 #    :local:
-#
-# .. MariaDB Server APT packages [[[1
-#
-# -------------------------------
-#   MariaDB Server APT packages
+
+
+# MariaDB Server APT packages [[[
 # -------------------------------
 
-# .. envvar:: mariadb_server__flavor
+# .. envvar:: mariadb_server__flavor [[[
 #
 # Variable which defines what database engine to use:
 #
@@ -30,10 +28,11 @@
 mariadb_server__flavor: '{{ (ansible_local.mariadb.flavor
                              if (ansible_local|d() and ansible_local.mariadb|d() and
                                  ansible_local.mariadb.flavor|d())
-                             else (mariadb_server__flavor_map[ansible_distribution_release] | default("mariadb"))) }}'
+                             else (mariadb_server__flavor_map[ansible_distribution_release]
+                                   | d("mariadb"))) }}'
 
-
-# .. envvar:: mariadb_server__flavor_map
+                                                                   # ]]]
+# .. envvar:: mariadb_server__flavor_map [[[
 #
 # List of Linux distributions where the default MariaDB packages are not
 # available, and MySQL should be used instead.
@@ -41,15 +40,15 @@ mariadb_server__flavor_map:
   'wheezy':  'mysql'
   'precise': 'mysql'
 
-
-# .. envvar:: mariadb_server__apt_key
+                                                                   # ]]]
+# .. envvar:: mariadb_server__apt_key [[[
 #
 # String or list of GPG keys which should be added to the APT key database to
 # authenticate the external repositories.
 mariadb_server__apt_key: '{{ mariadb_server__apt_key_map[mariadb_server__flavor] | d() }}'
 
-
-# .. envvar:: mariadb_server__apt_key_map
+                                                                   # ]]]
+# .. envvar:: mariadb_server__apt_key_map [[[
 #
 # A YAML dictionary map which keeps GPG key ids for APT repository keys of
 # different MariaDB/MySQL/Percona APT repositories. These GPG keys will be
@@ -58,20 +57,20 @@ mariadb_server__apt_key_map:
   'mariadb_upstream': [ '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB', '177F4010FE56CA3336300305F1656F24C74CD1D8' ]
   'percona':          '430BDF5C56E7C94E848EE60C1C4CBDCDCD2EFD2A'
 
-
-# .. envvar:: mariadb_server__upstream_version
+                                                                   # ]]]
+# .. envvar:: mariadb_server__upstream_version [[[
 #
 # Version of the MariaDB upstream.
 mariadb_server__upstream_version: '10.1'
 
-
-# .. envvar:: mariadb_server__upstream_mirror
+                                                                   # ]]]
+# .. envvar:: mariadb_server__upstream_mirror [[[
 #
 # URL of the MariaDB upstream mirror.
 mariadb_server__upstream_mirror: 'http://nyc2.mirrors.digitalocean.com/mariadb/repo/{{ mariadb_server__upstream_version }}/{{ ansible_distribution | lower }}'
 
-
-# .. envvar:: mariadb_server__apt_repository_map
+                                                                   # ]]]
+# .. envvar:: mariadb_server__apt_repository_map [[[
 #
 # A YAML dictionary map which keeps APT repository configuration of different
 # MariaDB/MySQL/Percona APT repositories. These repositories will be configured
@@ -80,21 +79,21 @@ mariadb_server__apt_repository_map:
   'mariadb_upstream': 'deb {{ mariadb_server__upstream_mirror }} {{ ansible_distribution_release }} main'
   'percona':          'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
 
-
-# .. envvar:: mariadb_server__base_packages
+                                                                   # ]]]
+# .. envvar:: mariadb_server__base_packages [[[
 #
 # List of APT packages that should be installed with any database engine
 # selected.
 mariadb_server__base_packages: [ 'python-mysqldb', 'ssl-cert' ]
 
-
-# .. envvar:: mariadb_server__packages
+                                                                   # ]]]
+# .. envvar:: mariadb_server__packages [[[
 #
 # List of additional packages to install with the database server.
 mariadb_server__packages: []
 
-
-# .. envvar:: mariadb_server__packages_map
+                                                                   # ]]]
+# .. envvar:: mariadb_server__packages_map [[[
 #
 # Dictionary with list of packages that will be installed with a particular
 # database engine.
@@ -103,15 +102,12 @@ mariadb_server__packages_map:
   'mariadb_upstream': [ 'mariadb-server' ]
   'mysql': [ 'mysql-server' ]
   'percona': [ 'percona-server-server' ]
-
-
-# .. Network configuration [[[1
-#
-# -------------------------
-#   Network configuration
+                                                                   # ]]]
+                                                                   # ]]]
+# Network configuration [[[
 # -------------------------
 
-# .. envvar:: mariadb_server__bind_address
+# .. envvar:: mariadb_server__bind_address [[[
 #
 # IP address on which MariaDB server listens on for new connections. To allow
 # connections from remote hosts, you need to change this to ``0.0.0.0`` for IPv4
@@ -122,38 +118,35 @@ mariadb_server__packages_map:
 # Ansible.
 mariadb_server__bind_address: 'localhost'
 
-
-# .. envvar:: mariadb_server__port
+                                                                   # ]]]
+# .. envvar:: mariadb_server__port [[[
 #
 # Port number on which this MariaDB server listens on.
 mariadb_server__port: '3306'
 
-
-# .. envvar:: mariadb_server__allow
+                                                                   # ]]]
+# .. envvar:: mariadb_server__allow [[[
 #
 # List of IP addresses or CIDR subnets which will be allowed to connect to the
 # MariaDB server in :command:`ip(6)tables` and TCP wrappers. If it's empty, remote
 # connections are not allowed.
 mariadb_server__allow: []
 
-
-# .. envvar:: mariadb_server__max_connections
+                                                                   # ]]]
+# .. envvar:: mariadb_server__max_connections [[[
 #
 # Maximum number of allowed connections.
 mariadb_server__max_connections: '100'
 
-
-# .. envvar:: mariadb_server__delegate_to
+                                                                   # ]]]
+# .. envvar:: mariadb_server__delegate_to [[[
 #
 # Hostname of the server to which Ansible roles will delegate tasks. It should
 # point to "this server", using a FQDN hostname known to Ansible.
 mariadb_server__delegate_to: '{{ ansible_fqdn }}'
-
-
-# .. Server configuration options [[[1
-#
-# --------------------------------
-#   Server configuration options
+                                                                   # ]]]
+                                                                   # ]]]
+# Server configuration options [[[
 # --------------------------------
 
 # The MariaDB/MySQL server configuration is managed in
@@ -161,7 +154,7 @@ mariadb_server__delegate_to: '{{ ansible_fqdn }}'
 # template. Check :ref:`mariadb_server__ref_options` for more details about the
 # syntax used to configure the server.
 
-# .. envvar:: mariadb_server__mysqld_performance_options
+# .. envvar:: mariadb_server__mysqld_performance_options [[[
 #
 # Configuration options related to database performance and resource
 # utilization.
@@ -170,21 +163,21 @@ mariadb_server__mysqld_performance_options:
   'innodb_buffer_pool_size':      '{{ (ansible_memtotal_mb / 2) | int }}M'
   'query_cache_type':             '0'
 
-
-# .. envvar:: mariadb_server__local_infile
+                                                                   # ]]]
+# .. envvar:: mariadb_server__local_infile [[[
 #
 # Enable or disable LOCAL capability for LOAD DATA INFILE.
 mariadb_server__local_infile: False
 
-
-# .. envvar:: mariadb_server__mysqld_security_options
+                                                                   # ]]]
+# .. envvar:: mariadb_server__mysqld_security_options [[[
 #
 # Configuration options related to the server security.
 mariadb_server__mysqld_security_options:
   'local_infile':         '{{ "1" if mariadb_server__local_infile|bool else "0" }}'
 
-
-# .. envvar:: mariadb_server__mysqld_charset_options
+                                                                   # ]]]
+# .. envvar:: mariadb_server__mysqld_charset_options [[[
 #
 # Configuration options related to charset and string encoding on the server.
 mariadb_server__mysqld_charset_options:
@@ -192,8 +185,8 @@ mariadb_server__mysqld_charset_options:
   'collation_server':     'utf8_general_ci'
   'init_connect':         'SET NAMES utf8'
 
-
-# .. envvar:: mariadb_server__mysqld_network_options
+                                                                   # ]]]
+# .. envvar:: mariadb_server__mysqld_network_options [[[
 #
 # Configuration options related to network access and network connections.
 mariadb_server__mysqld_network_options:
@@ -201,8 +194,8 @@ mariadb_server__mysqld_network_options:
   'port':            '{{ mariadb_server__port }}'
   'max_connections': '{{ mariadb_server__max_connections }}'
 
-
-# .. envvar:: mariadb_server__mysqld_pki_options
+                                                                   # ]]]
+# .. envvar:: mariadb_server__mysqld_pki_options [[[
 #
 # Configuration of SSL support in :program:`mysqld`, managed by ``debops.pki`` role.
 mariadb_server__mysqld_pki_options:
@@ -216,8 +209,8 @@ mariadb_server__mysqld_pki_options:
     'ssl_key':    '{{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_key }}'
     'ssl_cipher': '{{ mariadb_server__pki_cipher }}'
 
-
-# .. envvar:: mariadb_server__mysqld_options
+                                                                   # ]]]
+# .. envvar:: mariadb_server__mysqld_options [[[
 #
 # Configuration options set in :file:`/etc/mysql/conf.d/mysqld.cnf` file. This is
 # a "master variable" for the rest of the configuration variables.
@@ -231,8 +224,8 @@ mariadb_server__mysqld_options:
       - '{{ mariadb_server__mysqld_pki_options }}'
       - '{{ mariadb_server__options }}'
 
-
-# .. envvar:: mariadb_server__client_options.
+                                                                   # ]]]
+# .. envvar:: mariadb_server__client_options. [[[
 #
 # Configuration set in :file:`/etc/mysql/conf.d/client.cnf` at the installation
 # time. Afterwards you should use the ``debops.mariadb`` role to manage it.
@@ -241,27 +234,24 @@ mariadb_server__client_options:
     options:
       'default_character_set': 'utf8'
 
-
-# .. envvar:: mariadb_server__options
+                                                                   # ]]]
+# .. envvar:: mariadb_server__options [[[
 #
 # Dictionary or list with custom :program:`mysqld` options.
 mariadb_server__options: {}
-
-
-# .. SSL configuration [[[1
-#
-# ---------------------
-#   SSL configuration
+                                                                   # ]]]
+                                                                   # ]]]
+# SSL configuration [[[
 # ---------------------
 
-# .. envvar:: mariadb_server__append_groups
+# .. envvar:: mariadb_server__append_groups [[[
 #
 # List of additional system groups to append to the MariaDB system user.
 # ``ssl-cert`` group is required for access to certificate private keys.
 mariadb_server__append_groups: [ 'ssl-cert' ]
 
-
-# .. envvar:: mariadb_server__pki
+                                                                   # ]]]
+# .. envvar:: mariadb_server__pki [[[
 #
 # Enable or disable support for SSL in MariaDB (using ``debops.pki``).
 mariadb_server__pki: '{{ (True
@@ -270,8 +260,8 @@ mariadb_server__pki: '{{ (True
                           mariadb_server__pki_realm in ansible_local.pki.known_realms)
                       else False) | bool }}'
 
-
-# .. envvar:: mariadb_server__pki_path
+                                                                   # ]]]
+# .. envvar:: mariadb_server__pki_path [[[
 #
 # Base path for PKI directory.
 mariadb_server__pki_path: '{{ (ansible_local.pki.base_path
@@ -279,8 +269,8 @@ mariadb_server__pki_path: '{{ (ansible_local.pki.base_path
                                ansible_local.pki.base_path|d())
                            else "/etc/pki") }}'
 
-
-# .. envvar:: mariadb_server__pki_realm
+                                                                   # ]]]
+# .. envvar:: mariadb_server__pki_realm [[[
 #
 # Default PKI realm used by MariaDB server.
 mariadb_server__pki_realm: '{{ ansible_local.pki.realm
@@ -288,106 +278,97 @@ mariadb_server__pki_realm: '{{ ansible_local.pki.realm
                                    ansible_local.pki.realm|d())
                                else "domain" }}'
 
-
-# .. envvar:: mariadb_server__pki_ca
+                                                                   # ]]]
+# .. envvar:: mariadb_server__pki_ca [[[
 #
 # Root CA certificate used by MariaDB, relative to :any:`mariadb_server__pki_realm`.
 mariadb_server__pki_ca: 'CA.crt'
 
-
-# .. envvar:: mariadb_server__pki_crt
+                                                                   # ]]]
+# .. envvar:: mariadb_server__pki_crt [[[
 #
 # Host certificate used by MariaDB, relative to :any:`mariadb_server__pki_realm`.
 mariadb_server__pki_crt: 'default.crt'
 
-
-# .. envvar:: mariadb_server__pki_key
+                                                                   # ]]]
+# .. envvar:: mariadb_server__pki_key [[[
 #
 # Host private key used by MariaDB, relative to :any:`mariadb_server__pki_realm`.
 mariadb_server__pki_key: 'default.key'
 
-
-# .. envvar:: mariadb_server__pki_cipher
+                                                                   # ]]]
+# .. envvar:: mariadb_server__pki_cipher [[[
 #
 # Cipher suite used for encrypted connections.
 mariadb_server__pki_cipher: 'DHE-RSA-AES256-SHA'
-
-
-# .. AutoMySQLBackup configuration [[[1
-#
-# ---------------------------------
-#   AutoMySQLBackup configuration
+                                                                   # ]]]
+                                                                   # ]]]
+# AutoMySQLBackup configuration [[[
 # ---------------------------------
 
-# .. envvar:: mariadb_server__backup
+# .. envvar:: mariadb_server__backup [[[
 #
 # Enable or disable support for daily, weekly and monthly snapshots of the
 # database using :program:`automysqlbackup`.
 mariadb_server__backup: True
 
-
-# .. envvar:: mariadb_server__backup_mailaddr
+                                                                   # ]]]
+# .. envvar:: mariadb_server__backup_mailaddr [[[
 #
 # Mail address to send messages to (account or alias name will be properly
 # routed by the Postfix SMTP server).
 mariadb_server__backup_mailaddr: 'backup'
 
-
-# .. envvar:: mariadb_server__backup_create_database
+                                                                   # ]]]
+# .. envvar:: mariadb_server__backup_create_database [[[
 #
 # If the backup should contain a CREATE DATABASE statement or not.
 mariadb_server__backup_create_database: True
 
-
-# .. envvar:: mariadb_server__backup_doweekly
+                                                                   # ]]]
+# .. envvar:: mariadb_server__backup_doweekly [[[
 #
 # Specify the day of the week to create weekly backups
 # (1 - Monday, 7 - Sunday).
 mariadb_server__backup_doweekly: '6'
 
-
-# .. envvar:: mariadb_server__backup_latest
+                                                                   # ]]]
+# .. envvar:: mariadb_server__backup_latest [[[
 #
 # Don't keep copies of most recent backups by default.
 mariadb_server__backup_latest: 'no'
 
-
-# .. envvar:: mariadb_server__backup_directory
+                                                                   # ]]]
+# .. envvar:: mariadb_server__backup_directory [[[
 #
 # Base directory where :program:`automysqlbackup` stores the database backups.
 # The directory will be created automatically by :program:`automysqlbackup`, if it
 # does not exist.
 mariadb_server__backup_directory: '/var/lib/automysqlbackup'
-
-
-# .. MariaDB root account [[[1
-#
-# ------------------------
-#   MariaDB root account
+                                                                   # ]]]
+                                                                   # ]]]
+# MariaDB root account [[[
 # ------------------------
 
-# .. envvar:: mariadb_server__password_length
+# .. envvar:: mariadb_server__password_length [[[
 #
 # Length of randomly generated passwords.
 mariadb_server__password_length: '48'
 
-
-# .. envvar:: mariadb_server__root_password
+                                                                   # ]]]
+# .. envvar:: mariadb_server__root_password [[[
 #
 # Randomized password for MariaDB ``root`` account.
 mariadb_server__root_password: '{{ lookup("password", secret +
                                    "/credentials/" + ansible_fqdn +
                                    "/mariadb/localhost/root/password " +
                                    "length=" + mariadb_server__password_length) }}'
-
-
-# .. Configuration of other Ansible roles [[[1
-#
-# ----------------------------------------
-#   Configuration of other Ansible roles
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration of other Ansible roles [[[
 # ----------------------------------------
 
-# .. envvar:: mariadb_server__ferm__dependent_rules
+# .. envvar:: mariadb_server__ferm__dependent_rules [[[
 #
 # Configuration for ``debops.ferm`` Ansible role.
 mariadb_server__ferm__dependent_rules:
@@ -399,8 +380,8 @@ mariadb_server__ferm__dependent_rules:
     weight: '50'
     role: 'mariadb_server'
 
-
-# .. envvar:: mariadb_server__tcpwrappers__dependent_allow
+                                                                   # ]]]
+# .. envvar:: mariadb_server__tcpwrappers__dependent_allow [[[
 #
 # Configuration for ``debops.tcpwrappers`` Ansible role.
 mariadb_server__tcpwrappers__dependent_allow:
@@ -411,4 +392,6 @@ mariadb_server__tcpwrappers__dependent_allow:
     weight: '50'
     filename: 'mariadb_server_allow'
     comment: 'Allow remote connections to MariaDB / MySQL server'
-
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
