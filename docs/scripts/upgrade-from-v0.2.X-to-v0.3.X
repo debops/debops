@@ -17,5 +17,8 @@ git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '
      s/owncloud__?config_role_required/owncloud__role_config/g;
      s/owncloud__?config_role_optional/owncloud__role_recommended_config/g;
      s/owncloud__?ldap_enable([^d])/owncloud__ldap_enabled\1/g;
+     s/owncloud__?php5_max_children/owncloud__php_max_children/g;
+     s/owncloud__?php5_output_buffering/owncloud__php_output_buffering/g;
+     s/owncloud__?php5__pool/owncloud__php__dependent_pools/g;
      s/\<([^.]owncloud)_([^_])/\1__\2/g;
    '

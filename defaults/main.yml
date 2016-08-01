@@ -25,16 +25,22 @@
 # List of base packages required by ownCloud.
 owncloud__base_packages:
   - 'owncloud'
-  - 'php5-apcu'
-  - '{{ [ "php5-mysql" ] if (owncloud__database in [ "mariadb", "mysql" ]) else [] }}'
-  - '{{ [ "php5-pgsql" ] if (owncloud__database in [ "postgresql" ]) else [] }}'
-  - '{{ [ "php5-redis" ] if (owncloud__redis_enabled | bool) else [] }}'
-  - '{{ [ "php5-ldap" ] if (owncloud__ldap_enabled | bool) else [] }}'
   ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
   ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
   ## Is it necessary to install all LibreOffice packages? https://github.com/owncloud/documents#known-issues
   ## Upstream documentation does not specify it more clearly. Installing ``libreoffice`` just to be sure.
   - '{{ [ "libreoffice" ] if (owncloud__app_documents_enabled|bool) else [] }}'
+
+
+# .. envvar:: owncloud__base_php_packages
+#
+# List of base PHP packages required by ownCloud.
+owncloud__base_php_packages:
+  - 'apcu'
+  - '{{ [ "mysql" ] if (owncloud__database in [ "mariadb", "mysql" ]) else [] }}'
+  - '{{ [ "pgsql" ] if (owncloud__database in [ "postgresql" ]) else [] }}'
+  - '{{ [ "redis" ] if (owncloud__redis_enabled | bool) else [] }}'
+  - '{{ [ "ldap" ] if (owncloud__ldap_enabled | bool) else [] }}'
 
 
 # .. envvar:: owncloud__optional_packages
@@ -49,9 +55,15 @@ owncloud__base_packages:
 #
 # in your inventory.
 owncloud__optional_packages:
-  - 'php5-imagick'
   - 'smbclient'
   - 'libsmbclient'
+
+
+# .. envvar:: owncloud__optional_php_packages
+#
+# List of optional PHP packages for ownCloud.
+owncloud__optional_php_packages:
+  - 'imagick'
 
 
 # .. envvar:: owncloud__packages
@@ -354,7 +366,7 @@ owncloud__enable_apc_cli: '{{ owncloud__apcu_enabled|bool }}'
 # Use Redis for file locking as recommended for small and large organization.
 # The default is to auto detect if Redis is selected for installation on the
 # remote server and in that case automatically use it for file locking.
-# Note that ownCloud requires version 2.2.5+ of ``php5-redis``. This
+# Note that ownCloud requires version 2.2.5+ of the ``redis`` PHP package. This
 # requirement is not meet for Ubuntu trusty (neither in the release repos nor
 # in backports) thus Redis will not be enabled automatically by the role.
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html#id4>`__ for details.
@@ -515,22 +527,24 @@ owncloud__autosetup_url: 'http://{{ owncloud__domain[0] }}/index.php'
 
 # .. envvar:: owncloud__upload_size
 #
-# Max upload size set in nginx and php5, with amount as M or G
+# Max upload size set in ``nginx`` and PHP, with amount as M or G.
+# FIXME: Increase
 owncloud__upload_size: '128M'
 
 
-# .. envvar:: owncloud__php5_output_buffering
+# .. envvar:: owncloud__php_output_buffering
 #
-# Output buffering set in php5, with amount set in megabytes
+# Output buffering set in PHP, with amount set in megabytes
 # Setting according to:
-# https://doc.owncloud.org/server/8.0/admin_manual/configuration_files/big_file_upload_configuration.html#configuring-php
-owncloud__php5_output_buffering: '0'
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html#configuring-php>`__ for details.
+owncloud__php_output_buffering: '0'
 
 
-# .. envvar:: owncloud__php5_max_children
+# .. envvar:: owncloud__php_max_children
 #
-# Max children processes to run in php5-fpm
-owncloud__php5_max_children: '50'
+# Max children processes to run in php5-fpm.
+# FIXME: Check if default of debops.php might be sufficient.
+owncloud__php_max_children: '50'
 
 
 # .. envvar:: owncloud__cron_minute
@@ -1361,6 +1375,7 @@ owncloud__theme_conf_map:
 # .. envvar:: owncloud__apt_preferences__dependent_list
 #
 # Configuration for the debops.apt_preferences_ role.
+# FIXME: Move logic to the debops.php role.
 owncloud__apt_preferences__dependent_list:
 
   - package: 'php5-apcu'
@@ -1475,7 +1490,7 @@ owncloud__nginx__servers:
           fastcgi_param modHeadersAvailable true; #Avoid sending the security headers twice
           fastcgi_param front_controller_active true;
 
-          fastcgi_pass php5_owncloud;
+          fastcgi_pass php_owncloud;
 
           fastcgi_intercept_errors on;
 
@@ -1518,35 +1533,49 @@ owncloud__nginx__servers:
           {% endif %}
 
     ## Not used so that the exact order of locations from the upstream nginx example can be used.
-    # type: 'php5'
-    # php5: 'php5_owncloud'
-    # php5_limit_except: False
+    # type: 'php'
+    # php_upstream: 'php_owncloud'
+    # php_limit_except: False
     # php5_location: '^/(?:index|remote|public|cron|core/ajax/update|status|ocs/v[12]|updater/.+|ocs-provider/.+|core/templates/40[34])\.php(?:$|/)'
-    # php5_options: |
+    # php_options: |
     #   fastcgi_read_timeout {{ owncloud__timeout }};
 
 
-# .. envvar:: owncloud__nginx__upstream_php5
+# .. envvar:: owncloud__nginx__upstream_php
 #
 # PHP upstream server configuration managed by the debops.nginx_ role.
-owncloud__nginx__upstream_php5:
-  enabled: True
-  name: 'php5_owncloud'
-  type: 'php5'
-  php5: 'owncloud'
+owncloud__nginx__upstream_php:
+  - name: 'php_owncloud'
+    enabled: True
+    state: '{{ owncloud__deploy_state }}'
+    type: 'php'
+    php_pool: 'owncloud'
+
+  ## Ensure legacy configurations are absent.
+  - name: 'php5_owncloud'
+    state: 'absent'
+    type: 'php5'
+    php5: 'owncloud'
 
 
-# .. envvar:: owncloud__php5__pool
+# .. envvar:: owncloud__php__dependent_packages
 #
-# PHP pools managed by the debops.php5_ role.
-owncloud__php5__pool:
-  enabled: True
+# List of PHP packages to install using the ``debops.php`` role.
+owncloud__php__dependent_packages:
+  - '{{ owncloud__base_php_packages }}'
+  - '{{ owncloud__optional_php_packages }}'
+
+
+# .. envvar:: owncloud__php__dependent_pools
+#
+# PHP pools managed by the debops.php_ role.
+owncloud__php__dependent_pools:
   name: 'owncloud'
   user: '{{ owncloud__user }}'
   group: '{{ owncloud__group }}'
-  pm_max_children: '{{ owncloud__php5_max_children }}'
-  php_value:
-    output_buffering: '{{ owncloud__php5_output_buffering }}'
+  pm_max_children: '{{ owncloud__php_max_children }}'
+  php_values:
+    output_buffering: '{{ owncloud__php_output_buffering }}'
     post_max_size: '{{ owncloud__upload_size }}'
     upload_max_filesize: '{{ owncloud__upload_size }}'
     max_input_time: '{{ owncloud__timeout }}'

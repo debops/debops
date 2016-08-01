@@ -10,12 +10,15 @@
 
   roles:
 
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::apt_preferences', 'role::logrotate' ]
+
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ nginx_apt_preferences_dependent_list }}'
         - '{{ owncloud__apt_preferences__dependent_list }}'
-        - '{{ owncloud__apt_preferences__dependent_list_optional }}'
+        - '{{ php__apt_preferences__dependent_list }}'
 
     - role: debops.ferm
       tags: [ 'role::ferm' ]
@@ -49,17 +52,24 @@
       tags: [ 'role::unattended_upgrades' ]
       unattended_upgrades__dependent_origins: '{{ owncloud__unattended_upgrades__dependent_origins }}'
 
-    - role: debops.php5
-      tags: [ 'role::php5' ]
-      php5_pools:
-        - '{{ owncloud__php5__pool }}'
+    - role: debops.php
+      tags: [ 'role::php' ]
+      php__dependent_packages:
+        - '{{ owncloud__php__dependent_packages }}'
+      php__dependent_pools:
+        - '{{ owncloud__php__pool }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
 
     - role: debops.nginx
       tags: [ 'role::nginx' ]
-      nginx__dependent_servers:
+      nginx_dependent_servers:
         - '{{ owncloud__nginx__servers }}'
-      nginx__dependent_upstreams:
-        - '{{ owncloud__nginx__upstream_php5 }}'
+      nginx_dependent_upstreams:
+        - '{{ owncloud__nginx__upstream_php }}'
 
     - role: debops.owncloud
       tags: [ 'role::owncloud' ]

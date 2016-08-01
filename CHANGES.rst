@@ -106,6 +106,8 @@ Changed
   Previously, this was not configurable and the LDAP settings where not updated in
   ownCloud after LDAP was configured. [ypid_]
 
+- Switched from the debops.php5 role to the new and unified debops.php_ role. [ypid_]
+
 - Renamed Ansible tags
 
   * ``role::owncloud:base_install`` → ``role::owncloud:pkg``
@@ -115,19 +117,22 @@ Changed
 
 - Renamed variables to be consistent with the DebOps project:
 
-  * ``owncloud__?run_occ_global_commands`` → :envvar:`owncloud__occ_cmd_list`
-  * ``owncloud__?run_occ_group_commands`` → :envvar:`owncloud__group_occ_cmd_list`
-  * ``owncloud__?run_occ_host_commands`` → :envvar:`owncloud__host_occ_cmd_list`
-  * ``owncloud__?packages_optional`` → :envvar:`owncloud__optional_packages`
-  * ``owncloud__?packages_group`` → :envvar:`owncloud__group_packages`
-  * ``owncloud__?packages_host`` → :envvar:`owncloud__host_packages`
-  * ``owncloud__?config_group`` → :envvar:`owncloud__group_config`
-  * ``owncloud__?config_host`` → :envvar:`owncloud__host_config`
-  * ``owncloud__?apps_config_group`` → :envvar:`owncloud__group_apps_config`
-  * ``owncloud__?apps_config_host`` → :envvar:`owncloud__host_apps_config`
-  * ``owncloud__?config_role_required`` → :envvar:`owncloud__role_config`
-  * ``owncloud__?config_role_optional`` → :envvar:`owncloud__role_recommended_config`
-  * ``owncloud__?ldap_enable`` → :envvar:`owncloud__ldap_enabled`
+  * :regexp:`owncloud__?run_occ_global_commands` → :envvar:`owncloud__occ_cmd_list`
+  * :regexp:`owncloud__?run_occ_group_commands` → :envvar:`owncloud__group_occ_cmd_list`
+  * :regexp:`owncloud__?run_occ_host_commands` → :envvar:`owncloud__host_occ_cmd_list`
+  * :regexp:`owncloud__?packages_optional` → :envvar:`owncloud__optional_packages`
+  * :regexp:`owncloud__?packages_group` → :envvar:`owncloud__group_packages`
+  * :regexp:`owncloud__?packages_host` → :envvar:`owncloud__host_packages`
+  * :regexp:`owncloud__?config_group` → :envvar:`owncloud__group_config`
+  * :regexp:`owncloud__?config_host` → :envvar:`owncloud__host_config`
+  * :regexp:`owncloud__?apps_config_group` → :envvar:`owncloud__group_apps_config`
+  * :regexp:`owncloud__?apps_config_host` → :envvar:`owncloud__host_apps_config`
+  * :regexp:`owncloud__?config_role_required` → :envvar:`owncloud__role_config`
+  * :regexp:`owncloud__?config_role_optional` → :envvar:`owncloud__role_recommended_config`
+  * :regexp:`owncloud__?ldap_enable` → :envvar:`owncloud__ldap_enabled`
+  * :regexp:`owncloud__?php5_max_children` → :envvar:`owncloud__php_max_children`
+  * :regexp:`owncloud__?php5_output_buffering` → :envvar:`owncloud__php_output_buffering`
+  * :regexp:`owncloud__?php5__pool` → :envvar:`owncloud__php__dependent_pools`
 
   [ypid_]
 

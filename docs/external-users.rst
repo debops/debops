@@ -60,4 +60,9 @@ FIXME: Figure out how that can be configured.
    owncloud__ldap_basedn: 'DC=example,DC=org'
    owncloud__ldap_binddn: 'CN=owncloudbind,OU=service-users,{{ owncloud__ldap_basedn }}'
 
+Note that this leaves the LDAP configuration in ownCloud at an unfinished state.
+The role maintainers consider it to be easier to finish the LDAP configuration
+via the admin web interface.
+TODO: Add a backup option of all LDAP settings to the Ansible controller.
+
 Refer to debops.secret_ to learn how passwords are handled.
