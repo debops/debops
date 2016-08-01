@@ -40,7 +40,7 @@ Added
 
 - Add ``debops.nullmailer`` role and its playbook. [drybjed_]
 
-- Add ``debops_bootstrap`` Ansible host group to allow to run
+- Add ``debops_service_bootstrap`` Ansible host group to allow to run
   ``debops.bootstrap`` against hosts not in the ``debops_all_hosts`` host
   group. [ypid_]
 
