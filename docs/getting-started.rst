@@ -25,7 +25,7 @@ Example playbook
 Here's an example Ansible playbook that uses the ``debops.mariadb_server``
 role:
 
-.. literalinclude:: playbooks/java.yml
+.. literalinclude:: playbooks/mariadb_server.yml
    :language: yaml
 
 Remote access to the database
