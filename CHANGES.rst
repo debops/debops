@@ -1,9 +1,11 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 **debops.php**
 
-This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/>`_.
 
 The current role maintainer is drybjed.
@@ -84,12 +86,12 @@ Added
 - Add custom configuration for ``debops.logrotate`` Ansible role in default
   variables. [drybjed]
 
-- Add new ``php.ini`` configuration which uses a separate ``/etc/php/ansible/``
+- Add new :file:`php.ini` configuration which uses a separate ``/etc/php/ansible/``
   directory with generated configuration files, which are then symlinked to
-  different PHP Server API ``conf.d/`` directories, similar to how Debian
+  different PHP server API ``conf.d/`` directories, similar to how Debian
   packages handle PHP extensions. The role allows easy creation of custom
   configuration files using a separate YAML list. Configuration is applied to
-  all Server APIs at the same time. [drybjed]
+  all server APIs at the same time. [drybjed]
 
 - Add tags to some tasks in the role to allow faster changes to PHP
   configuration or PHP-FPM pools. [drybjed]
@@ -106,7 +108,7 @@ Changed
 ~~~~~~~
 
 - Renamed all role variables from ``php5_*`` to ``php__*`` to make role
-  unversal between major PHP versions and put its variables in a separate
+  universal between major PHP versions and put its variables in a separate
   namespace. [mbarcia]
 
 - Converted Changelog to a new format. [drybjed]
@@ -128,7 +130,7 @@ Changed
   a separate file instead of being removed, to allow unattended package
   upgrades. [drybjed]
 
-- Role variables related to ``php.ini`` configuration have been renamed from
+- Role variables related to :file:`php.ini` configuration have been renamed from
   ``php__*`` prefix to ``php__ini_*`` prefix to ensure better separation of
   different configuration options. [drybjed]
 
@@ -169,10 +171,10 @@ Removed
   ``debops.logrotate`` role is used instead. An example usage can be found in
   the provided playbook. [drybjed]
 
-- The direct configuration of ``php.ini`` files in different PHP Server API
+- The direct configuration of :file:`php.ini` files in different PHP Server API
   directories has been removed to avoid confict during package updates, because
   these files are managed using ``ucf`` which does not support file diversion.
-  This also allows usage of default ``php.ini`` configuration options where
+  This also allows usage of default :file:`php.ini` configuration options where
   possible and only override the important ones in a different file. [drybjed]
 
 

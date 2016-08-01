@@ -54,7 +54,7 @@ Install support for the PEAR repository:
 php__configuration
 ------------------
 
-The management of the ``php.ini`` configuration is done using a set of YAML
+The management of the :file:`php.ini` configuration is done using a set of YAML
 lists, named ``php__configuration``, ``php__group_configuration`` and
 ``php__host_configuration``. Each element of a list is a YAML dictionary with
 certain parameters.
@@ -90,7 +90,7 @@ one of the YAML dictionaries on the ``sections`` list:
   ``[PHP]`` in the configuration file.
 
 ``options``
-  A YAML text block with ``php.ini`` configuration options specified in the INI
+  A YAML text block with :file:`php.ini` configuration options specified in the INI
   configuration file format.
 
 ``comment``
@@ -199,22 +199,22 @@ otherwise different:
   dictionary value is the variable value.
 
 ``php_flags``
-  Optional. A YAML dictionary with custom ``php.ini`` flags that should be
+  Optional. A YAML dictionary with custom :file:`php.ini` flags that should be
   defined in the PHP-FPM pool. Each dictionary key is the flag name, and each
   dictionary value is the flag value.
 
 ``php_values``
-  Optional. A YAML dictionary with custom ``php.ini`` values that should be
+  Optional. A YAML dictionary with custom :file:`php.ini` values that should be
   defined in the PHP-FPM pool. Each dictionary key is the value name, and each
   dictionary value is the value contents.
 
 ``php_admin_flags``
-  Optional. A YAML dictionary with custom ``php.ini`` admin flags that should
+  Optional. A YAML dictionary with custom :file:`php.ini` admin flags that should
   be defined in the PHP-FPM pool. Each dictionary key is the admin flag name,
   and each dictionary value is the admin flag value.
 
 ``php_admin_values``
-  Optional. A YAML dictionary with custom ``php.ini`` admin values that should
+  Optional. A YAML dictionary with custom :file:`php.ini` admin values that should
   be defined in the PHP-FPM pool. Each dictionary key is the admin value name,
   and each dictionary value is the admin value contents.
 

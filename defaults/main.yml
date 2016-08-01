@@ -31,7 +31,7 @@ php__sury: '{{ (ansible_local.php.sury
                                                                    # ]]]
 # .. envvar:: php__sury_apt_key_id [[[
 #
-# The GPG key used to sign Ondřej Surý APT repository, dependent on the current
+# The OpenPGP key used to sign Ondřej Surý APT repository, dependent on the current
 # OS distribution.
 php__sury_apt_key_id: '{{ php__sury_apt_key_id_map[ansible_distribution] }}'
 
@@ -45,7 +45,7 @@ php__sury_apt_repo: '{{ php__sury_apt_repo_map[ansible_distribution] }}'
                                                                    # ]]]
 # .. envvar:: php__sury_apt_key_id_map [[[
 #
-# YAML dictionary map of GPG key ids used to sign APT repository information,
+# YAML dictionary map of OpenPGP key ids used to sign APT repository information,
 # dependent on the OS distribution.
 php__sury_apt_key_id_map:
   'Debian': 'DF3D585DB8F0EB658690A554AC0E47584A7A714D'
@@ -115,9 +115,9 @@ php__dependent_packages: []
 
 # .. envvar:: php__production [[[
 #
-# This variable determines if the ``php.ini`` configuration will be configured
-# towards "production" systems (don't display errors), or "development" systems
-# (display all errors).
+# This variable determines if the :file:`php.ini` configuration will be
+# configured towards "production" systems (don't display errors), or
+# "development" systems (display all errors).
 php__production: True
 
                                                                    # ]]]
@@ -195,12 +195,12 @@ php__ini_date_timezone: '{{ ansible_local.timezone
 # Configuration added to php.ini [[[
 # ----------------------------------
 
-# The role uses custom ``php.ini`` configuration files managed by Ansible. See
+# The role uses custom :file:`php.ini` configuration files managed by Ansible. See
 # :ref:`php__ref_configuration` for more details.
 
 # .. envvar:: php__default_configuration [[[
 #
-# Default configuration of the ``php.ini`` added by the role.
+# Default configuration of the :file:`php.ini` added by the role.
 php__default_configuration:
 
   - filename: '00-ansible'
@@ -233,20 +233,20 @@ php__default_configuration:
 # ]]]
 # .. envvar:: php__configuration [[[
 #
-# Custom ``php.ini`` configuration added on all hosts in Ansible inventory.
+# Custom :file:`php.ini` configuration added on all hosts in Ansible inventory.
 php__configuration: []
 
                                                                    # ]]]
 # .. envvar:: php__group_configuration [[[
 #
-# Custom ``php.ini`` configuration added on a group of hosts in Ansible
+# Custom :file:`php.ini` configuration added on a group of hosts in Ansible
 # inventory.
 php__group_configuration: []
 
                                                                    # ]]]
 # .. envvar:: php__host_configuration [[[
 #
-# Custom ``php.ini`` configuration added on specific hosts in Ansible
+# Custom :file:`php.ini` configuration added on specific hosts in Ansible
 # inventory.
 php__host_configuration: []
                                                                    # ]]]

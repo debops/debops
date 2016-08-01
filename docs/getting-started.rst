@@ -8,7 +8,7 @@ Support for different PHP versions
 ----------------------------------
 
 The ``debops.php`` role supports management of multiple PHP versions; only one
-PHP version can be managed at a time. By default role will install and
+PHP version can be managed at a time. By default the role will install and
 configure the PHP version provided with the current OS release.
 
 The role checks for existence of ``php7.0`` and ``php5`` APT packages
@@ -44,7 +44,7 @@ To enable the custom APT repository, add in the Ansible inventory:
 
    php__sury: True
 
-This will add the required GPG keys and APT repositories. The order of the
+This will add the required OpenPGP keys and APT repositories. The order of the
 package versions should ensure that the PHP7 packages will be installed on
 Debian Jessie.
 
@@ -57,18 +57,19 @@ should be added to the playbook or role dependencies before the main role and
 other roles that use configuration from ``debops.php``, like
 ``debops.logrotate``. The ``debops.php/env`` role configures custom APT
 repositories if they are enabled and prepares the facts needed by other roles
-to function correctly. See the provided playbook to see an example usage.
+to function correctly. See the :ref:`provided playbook <php__ref_example_playbook>`
+to see an example usage.
 
 
 Layout of the php.ini configuration
 -----------------------------------
 
-The main ``/etc/php{5,/7.0}/*/php.ini`` files maintained by the OS distribution
-are not modified by the ``debops.php`` role to allow for easy upgrade process.
-Instead, custom ``php.ini`` configuration is stored in
-``/etc/php{5,/7.0}/ansible/*.ini`` files generated using a simple template,
+The main :regexp:`/etc/php(?:5|/7\.0)/[^/]*/php\.ini` files maintained by the OS distribution
+are not modified by the ``debops.php`` role to allow an easy upgrade process.
+Instead, a custom :file:`php.ini` configuration is stored in
+:regexp:`/etc/php(?:5|/7\.0)/ansible/.*\.ini` files generated using a simple template,
 which are then linked to each of the PHP SAPI directories in
-``/etc/php{5,/7.0}/*/conf.d/`` which are read by the PHP interpreters. This
+:regexp:`/etc/php(?:5|/7\.0)/[^/]*/conf\.d/` which are read by the PHP interpreters. This
 allows for configuration synchronization between different PHP interpreters. To
 learn more about this process refer to :ref:`php__ref_configuration`
 documentation.
@@ -85,15 +86,16 @@ through the Ansible local facts. The specific variables are:
   Either ``5`` or ``7.0``.
 
 ``ansible_local.php.long_version``
-  Longer version of the PHP environment, used for version comparsion. For
+  Longer version of the PHP environment, used for version comparison. For
   example, ``5.6.22`` or ``7.0.8``. This variable might be inaccurate in case
   of the minor or major version upgrade.
+  FIXME: Check if it can/should be made accurate.
 
 The Ansible local facts are used by the ``debops.php`` role to ensure
 idempotent operation. In case that you want to upgrade a host to a newer PHP
 release without uninstalling the older one, you will need to remove the stored
-``/etc/ansible/facts.d/php.fact`` file, so that role can re-detect the
-available PHP versions and create new fact file.
+``/etc/ansible/facts.d/php.fact`` file, so that the role can re-detect the
+available PHP versions and create a new fact file.
 
 
 Example inventory
@@ -113,6 +115,8 @@ creating a custom system account and a corresponding PHP-FPM pool to securely
 separate it from other applications. To learn how to do that, refer to the
 :ref:`php__ref_pools` documentation.
 
+
+.. _php__ref_example_playbook:
 
 Example playbook
 ----------------
