@@ -20,5 +20,6 @@ git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '
      s/owncloud__?php5_max_children/owncloud__php_max_children/g;
      s/owncloud__?php5_output_buffering/owncloud__php_output_buffering/g;
      s/owncloud__?php5__pool/owncloud__php__dependent_pools/g;
+     s/owncloud__?enable_apc_cli/owncloud__apc_cli_enabled/g;
      s/\<([^.]owncloud)_([^_])/\1__\2/g;
    '

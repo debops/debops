@@ -63,6 +63,7 @@
 
 # Setup the occ command [[[
 
+  ## TODO: Move to debops.php
 - name: Allow to use the PHP CLI even if OCMemcacheAPCu is used
   template:
     src: 'etc/php5/cli/conf.d/enable_apc.ini.j2'
@@ -70,7 +71,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: owncloud__enable_apc_cli
+  when: owncloud__apc_cli_enabled|bool
   tags: [ 'role::owncloud:occ' ]
 
 - name: Setup shortcut for the occ command

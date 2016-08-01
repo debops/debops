@@ -137,6 +137,7 @@ Changed
   * :regexp:`owncloud__?php5_max_children` → :envvar:`owncloud__php_max_children`
   * :regexp:`owncloud__?php5_output_buffering` → :envvar:`owncloud__php_output_buffering`
   * :regexp:`owncloud__?php5__pool` → :envvar:`owncloud__php__dependent_pools`
+  * :regexp:`owncloud__?enable_apc_cli` → :envvar:`owncloud__apc_cli_enabled`
 
   [ypid_]
 
