@@ -542,7 +542,7 @@ owncloud__php_output_buffering: '0'
 
 # .. envvar:: owncloud__php_max_children
 #
-# Max children processes to run in php5-fpm.
+# Max children processes to run in php fpm.
 # FIXME: Check if default of debops.php might be sufficient.
 owncloud__php_max_children: '50'
 
@@ -559,8 +559,8 @@ owncloud__cron_minute: '*/15'
 # Timeouts in seconds used for the following settings:
 #
 # - ``fastcgi_read_timeout`` in the nginx configuration.
-# - ``max_input_time`` in php5-fpm.
-# - ``max_execution_time`` in php5-fpm.
+# - ``max_input_time`` in php fpm.
+# - ``max_execution_time`` in php fpm.
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html>`__ for details.
 owncloud__timeout: 3600
@@ -1375,7 +1375,9 @@ owncloud__theme_conf_map:
 # .. envvar:: owncloud__apt_preferences__dependent_list
 #
 # Configuration for the debops.apt_preferences_ role.
-# FIXME: Move logic to the debops.php role.
+#
+# .. TODO: Consider moving logic to the debops.php role.
+#
 owncloud__apt_preferences__dependent_list:
 
   - package: 'php5-apcu'
@@ -1581,7 +1583,7 @@ owncloud__php__dependent_pools:
     max_input_time: '{{ owncloud__timeout }}'
     max_execution_time: '{{ owncloud__timeout }}'
 
-  ## https://doc.owncloud.org/server/8.1/admin_manual/installation/source_installation.html#using-php-fpm
+  ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html#php-ini-tips-label
   environment:
     # HOSTNAME: '$HOSTNAME'
     # TMP: '/tmp'
