@@ -86,13 +86,20 @@ mariadb__flavor_map:
   'precise': 'mysql'
 
 
+# .. envvar:: mariadb__apt_key
+#
+# String or list of GPG keys which should be added to the APT key database to
+# authenticate the external repositories.
+mariadb__apt_key: '{{ mariadb__apt_key_map[mariadb__flavor] | d() }}'
+
+
 # .. envvar:: mariadb__apt_key_map
 #
 # A YAML dictionary map which keeps GPG key ids for APT repository keys of
 # different MariaDB/MySQL/Percona APT repositories. These GPG keys will be
 # downloaded if any of the listed flavors is selected.
 mariadb__apt_key_map:
-  'mariadb_upstream': '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB'
+  'mariadb_upstream': [ '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB', '177F4010FE56CA3336300305F1656F24C74CD1D8' ]
   'percona':          '430BDF5C56E7C94E848EE60C1C4CBDCDCD2EFD2A'
 
 
