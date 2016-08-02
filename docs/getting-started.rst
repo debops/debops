@@ -66,12 +66,12 @@ to see an example usage.
 Layout of the php.ini configuration
 -----------------------------------
 
-The main :regexp:`/etc/php(?:5|/7\.0)/[^/]*/php\.ini` files maintained by the OS distribution
+The main :file:`/etc/php{5,/7.0}/*/php.ini` files maintained by the OS distribution
 are not modified by the ``debops.php`` role to allow an easy upgrade process.
 Instead, a custom :file:`php.ini` configuration is stored in
-:regexp:`/etc/php(?:5|/7\.0)/ansible/.*\.ini` files generated using a simple template,
+:file:`/etc/php{5,/7.0}/ansible/*.ini` files generated using a simple template,
 which are then linked to each of the PHP SAPI directories in
-:regexp:`/etc/php(?:5|/7\.0)/[^/]*/conf\.d/` which are read by the PHP interpreters. This
+:file:`/etc/php{5,/7.0}/*/conf.d/` which are read by the PHP interpreters. This
 allows for configuration synchronization between different PHP interpreters. To
 learn more about this process refer to :ref:`php__ref_configuration`
 documentation.
