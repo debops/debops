@@ -42,14 +42,15 @@ v0.3.0
 - Don’t configure ``GRUB_DISABLE_RECOVERY="true"`` in :file:`/etc/default/grub` anymore.
   This option should be handled by ``debops.grub``. [ypid]
 
-- Don’t ask for additional installation media when when configuring APT. Can be
-  configured via :any:`preseed__debian_ask_for_additional_install_media`.
+- Don’t ask for additional installation media when the installer configures
+  APT. This behavior can be changed via
+  :any:`preseed__debian_ask_for_additional_install_media`.
   [ypid]
 
 - Reworked documentation. [ypid]
 
-- Removed deprecated hostgroup `debops_preseed`, your hosts will now need to be
-  in `debops_service_preseed`. [ypid]
+- Removed deprecated hostgroup ``debops_preseed``, your hosts will now need to be
+  in ``debops_service_preseed``. [ypid]
 
 v0.2.0
 ------
@@ -100,4 +101,3 @@ v0.1.0
 *Released: 2015-04-12*
 
 - Initial release [drybjed]
-
