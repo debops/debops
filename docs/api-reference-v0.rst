@@ -1,5 +1,5 @@
-API reference v0
-================
+DebOps API reference v0
+=======================
 
 .. contents::
    :local:
@@ -63,12 +63,13 @@ Role metadata JSON format
 :regexp:`^/role/.*\.json$` API calls return a JSON object containing the keys
 described below.
 
-:regexp:`^/roles/.*\.json$` API calls return a JSON object. The outer dict is a
-full role name to meta data (described below) mapping.
+:regexp:`^/roles/.*\.json$` API calls return a JSON object. The outer dict maps
+from the full role name to the meta data (described below).
 
 .. note:: ``role_format_version`` below ``0.2.0`` are not fully supported by
-   this API. Keys might be missing for roles with this version.
-   Do a version compare for ``0.2.0`` or higher of fixup the DebOps API.
+   this API. Keys might be missing for roles below ``v0.2.0``.
+   Do a version compare for ``0.2.0`` or higher or update the roles (or fixup
+   the DebOps API).
 
 ``role_owner``
   Ansible Galaxy role owner.
@@ -78,7 +79,7 @@ full role name to meta data (described below) mapping.
 
 ``normalized_role_name``
   Ansible role name as used in URLs. Currently the only case where this is
-  different to ``role_name`` is when ``role_name`` is ``ansible`` (in this case
+  different to ``role_name`` is when ``role_name`` is :command:`ansible` (in this case
   ``normalized_role_name`` will be ``role-ansible``).
 
 ``authors``
@@ -89,6 +90,10 @@ full role name to meta data (described below) mapping.
 
   ``nick``
     Nickname of the author.
+
+  ``maintainer``
+    Boolean value specifying if author is a maintainer.
+    Only available for ``role_format_version`` ``0.2.1`` or later.
 
 ``clone_url``
   Secure git URL where the repository can be cloned from.
@@ -101,7 +106,10 @@ full role name to meta data (described below) mapping.
   TODO: The versions are currently not documented elsewhere.
 
 ``docs_url``
-  HTML URL of the rendered documentation of the repository
+  HTML URL of the rendered documentation of the repository.
+
+``changelog_url``
+  HTML URL of the rendered changelog.
 
 ``galaxy_url``
   HTML URL of the role on Ansible Galaxy.
