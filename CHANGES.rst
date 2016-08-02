@@ -20,9 +20,9 @@ Fixed
 ~~~~~
 
 - Detection of ``ansible_local.php.long_version`` when the first entry for
-  ``php__version_preference`` is not available on the system. [ypid]
+  :envvar:`php__version_preference` is not available on the system. [ypid_]
 
-- Compatibility with PHP versions before 5.6.0. [ypid]
+- Compatibility with PHP versions before 5.6.0. [ypid_]
 
 `debops.php v0.2.2`_ - 2016-07-27
 ---------------------------------
@@ -153,7 +153,7 @@ Changed
 
 - Change the tasks that perform diversion to check the :command:`dpkg-divert` list
   instead of relying on the existence of diverted files. This helps with
-  upgrades from older debops.php5_ role. [drybjed_]
+  upgrades from older ``debops.php5`` role. [drybjed_]
 
 Removed
 ~~~~~~~

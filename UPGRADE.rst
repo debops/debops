@@ -21,7 +21,7 @@ From debops.php v0.2.0 to debops.php v0.2.1
 From debops.php5 role to debops.php role
 ----------------------------------------
 
-- The debops.php5_ role stored the PHP-FPM pool configuration in a custom
+- The ``debops.php5`` role stored the PHP-FPM pool configuration in a custom
   :file:`/etc/php5/fpm/pool-available.d/` directory and symlinked the files to the
   :file:`/etc/php5/fpm/pool.d/` directory used by PHP-FPM daemon. In ``debops.php``
   this mechanism was dropped and files are generated directly in
@@ -33,7 +33,7 @@ From debops.php5 role to debops.php role
   debops.logrotate_. Refer to the provided playbook for an example usage.
 
 - The different :file:`/etc/php5/*/php.ini` configuration files managed by
-  debops.php5_ role are not managed by ``debops.php`` role anymore and might
+  ``debops.php5`` role are not managed by ``debops.php`` role anymore and might
   be incomplete. You can replace them with the pristine versions located in:
   :file:`/usr/share/php5/php.ini-*` or :file:`/usr/lib/php/7.0/php.ini-*`.
 
