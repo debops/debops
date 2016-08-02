@@ -16,6 +16,13 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.sshd master: https://github.com/debops/ansible-sshd/compare/v0.2.4...master
 
+Changed
+~~~~~~~
+
+- Moved some packages from :envvar:`sshd__base_packages` to
+  :envvar:`sshd__recommended_packages` and :envvar:`sshd__optional_packages` to
+  allow to overwrite them. [ypid_]
+
 
 `debops.sshd v0.2.4`_ - 2016-07-31
 ----------------------------------
