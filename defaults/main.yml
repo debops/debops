@@ -140,9 +140,21 @@ debops_api__input_data_role_path: '{{ debops_api__input_data_repo_dest + "/docs/
 # .. envvar:: debops_api__app_parameters [[[
 #
 # List of additional parameters passed to the DebOps API script.
+#
+# Useful when the API should be setup for another project then DebOps.
+# In this case, you can put something like this:
+#
+# .. code-block:: yaml
+#   :linenos:
+#
+#   debops_api__app_parameters:
+#     - [ '--docs-url-pattern', 'https://docs.example.org/en/latest/ansible/roles/ansible-{role_name}/docs/index.html', 'linebreak' ]
+#     - [ '--changelog-url-pattern', 'https://docs.example.org/en/latest/ansible/roles/ansible-{role_name}/docs/changelog.html', 'linebreak' ]
+#     - [ '--role-owner', 'example', 'linebreak' ]
+#
+# in your inventory.
 debops_api__app_parameters:
-  - [ '--docs-url-pattern', 'https://docs.debops.org/en/latest/ansible/roles/ansible-{role_name}/docs/index.html', 'linebreak' ]
-  - [ '--role-owner', 'debops', 'linebreak' ]
+  - [ '--no-strict', 'linebreak' ]
 
                                                                    # ]]]
 # .. envvar:: debops_api__domain [[[
