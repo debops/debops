@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: includes/all.rst
 
 
 # OpenSSH packages [[[
@@ -14,9 +16,19 @@
 # .. envvar:: sshd__base_packages [[[
 #
 # List of base packages that should be installed for OpenSSH support.
-sshd__base_packages: [ 'openssh-server', 'openssh-client',
-                       'openssh-blacklist', 'openssh-blacklist-extra',
-                       'molly-guard' ]
+sshd__base_packages: [ 'openssh-server', 'openssh-client' ]
+
+                                                                   # ]]]
+# .. envvar:: sshd__recommended_packages [[[
+#
+# List of recommended packages that should be installed with OpenSSH.
+sshd__recommended_packages: [ 'openssh-blacklist', 'openssh-blacklist-extra' ]
+
+                                                                   # ]]]
+# .. envvar:: sshd__optional_packages [[[
+#
+# List of optional packages that should be installed with OpenSSH.
+sshd__optional_packages: [ 'molly-guard' ]
 
                                                                    # ]]]
 # .. envvar:: sshd__ldap_packages [[[
@@ -65,7 +77,7 @@ sshd__host_whitelist: []
 #
 # List of IP addresses or CIDR subnets that should be allowed to access SSH
 # service. If it's set, access from hosts and networks not specified here is
-# denied in TCP Wrappers and limited in ``iptables``. This is a global list.
+# denied in TCP Wrappers and limited in :command:`iptables`. This is a global list.
 sshd__allow: []
 
                                                                    # ]]]
@@ -73,7 +85,7 @@ sshd__allow: []
 #
 # List of IP addresses or CIDR subnets that should be allowed to access SSH
 # service. If it's set, access from hosts and networks not specified here is
-# denied in TCP Wrappers and limited in ``iptables``. This is a group list.
+# denied in TCP Wrappers and limited in :command:`iptables`. This is a group list.
 sshd__group_allow: []
 
                                                                    # ]]]
@@ -81,7 +93,7 @@ sshd__group_allow: []
 #
 # List of IP addresses or CIDR subnets that should be allowed to access SSH
 # service. If it's set, access from hosts and networks not specified here is
-# denied in TCP Wrappers and limited in ``iptables``. This is a host list.
+# denied in TCP Wrappers and limited in :command:`iptables`. This is a host list.
 sshd__host_allow: []
                                                                    # ]]]
                                                                    # ]]]
@@ -109,7 +121,7 @@ sshd__ferm_weight: '30'
                                                                    # ]]]
 # .. envvar:: sshd__ferm_limit [[[
 #
-# Enable or disable limited SSH access from all hosts in ``ip(6)tables``.
+# Enable or disable limited SSH access from all hosts in :command:`ip(6)tables`.
 # Recent new connections are filtered and when too many new connections are
 # created in specified time window, host is added to the recent blocklist.
 sshd__ferm_limit: True
@@ -137,7 +149,7 @@ sshd__ferm_limit_chain: 'filter-ssh'
 # .. envvar:: sshd__ferm_limit_target [[[
 #
 # Specify what happens with packets filtered by the firewall that are above the
-# specified limit. Either ``REJECT``, ``DROP`` or name of ``iptables`` chain
+# specified limit. Either ``REJECT``, ``DROP`` or name of :command:`iptables` chain
 # where packets will be sent through.
 sshd__ferm_limit_target: 'REJECT'
 
@@ -145,7 +157,7 @@ sshd__ferm_limit_target: 'REJECT'
 # .. envvar:: sshd__ferm_ports [[[
 #
 # List of TCP ports to open in the firewall for SSH connections. You can use
-# port numbers or service names from ``/etc/services``.
+# port numbers or service names from :file:`/etc/services`.
 sshd__ferm_ports: [ 'ssh' ]
                                                                    # ]]]
                                                                    # ]]]
@@ -232,7 +244,7 @@ sshd__privilege_separation: 'sandbox'
                                                                    # ]]]
 # .. envvar:: sshd__custom_options [[[
 #
-# Additional ``sshd_config(5)`` options specified in a YAML text block format.
+# Additional :manpage:`sshd_config(5)` options specified in a YAML text block format.
 sshd__custom_options: ''
                                                                    # ]]]
                                                                    # ]]]
@@ -403,15 +415,15 @@ sshd__macs_additional: []
 #
 # Specify minimum size of Diffie-Hellman parameters available to the SSH
 # server. Parameters smaller than the given amount will be removed from the
-# ``/etc/ssh/moduli`` file.
+# :file:`/etc/ssh/moduli` file.
 sshd__moduli_minimum: '2048'
 
                                                                    # ]]]
 # .. envvar:: sshd__paranoid [[[
 #
 # If set to True, only the first item (which is considered the strongest method
-# available) from the lists ``sshd__ciphers_map``,
-# ``sshd__kex_algorithms_map`` and ``sshd__macs_map`` will be configured for
+# available) from the lists :envvar:`sshd__ciphers_map`,
+# :envvar:`sshd__kex_algorithms_map` and :envvar:`sshd__macs_map` will be configured for
 # ``sshd``. Use this with care as it will deny access to anyone not able to use
 # the first cryptographic method.
 # See https://github.com/debops/ansible-sshd/issues/20
@@ -488,7 +500,7 @@ sshd__ldap_bind_dn: '{{ sshd__ldap_bind_cn + "," + sshd__ldap_bind_basedn }}'
 # .. envvar:: sshd__ldap_bind_basepw [[[
 #
 # Base path to file with host LDAP password in ``secret/`` directory. See
-# ``debops.secret`` Ansible role for more details.
+# debops.secret_ Ansible role for more details.
 sshd__ldap_bind_basepw: '{{ secret + "/credentials/" +
                             ansible_fqdn + "/ldap/host/binddn/" +
                             sshd__ldap_bind_dn + ".password" }}'
@@ -547,7 +559,7 @@ sshd__ldap_filter_map:
 # - ``match``: specify User, Group, or other Match arguments which should
 #   activate a given configuration block.
 #
-# - ``options``: YAML text block which contains ``sshd_config(5)`` options
+# - ``options``: YAML text block which contains :manpage:`sshd_config(5)` options
 #   active in a given Match block.
 #
 sshd__match_list: [ '{{ sshd__match_group_sftponly }}' ]
@@ -574,7 +586,7 @@ sshd__match_group_sftponly:
 
 # .. envvar:: sshd__apt_preferences__dependent_list [[[
 #
-# List of ``apt_preferences(5)`` rules. This is used to change what package
+# List of :manpage:`apt_preferences(5)` rules. This is used to change what package
 # versions are installed on a particular distribution.
 sshd__apt_preferences__dependent_list:
 
@@ -586,7 +598,7 @@ sshd__apt_preferences__dependent_list:
                                                                    # ]]]
 # .. envvar:: sshd__ferm__dependent_rules: [[[
 #
-# Configuration for ``iptables`` firewall managed by ``ferm``.
+# Configuration for :command:`iptables` firewall managed by :program:`ferm`.
 sshd__ferm__dependent_rules:
 
   - type: 'accept'
