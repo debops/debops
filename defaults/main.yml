@@ -1524,7 +1524,7 @@ owncloud__nginx__servers:
           add_header X-Download-Options noopen;
           add_header X-Permitted-Cross-Domain-Policies none;
 
-          {% if owncloud__nginx_access_log_assets|bool %}
+          {% if not (owncloud__nginx_access_log_assets|bool) %}
           access_log off;
           {% endif %}
 
@@ -1532,7 +1532,7 @@ owncloud__nginx__servers:
         options: |
           try_files $uri /index.php$uri$is_args$args;
 
-          {% if owncloud__nginx_access_log_assets|bool %}
+          {% if not (owncloud__nginx_access_log_assets|bool) %}
           access_log off;
           {% endif %}
 
