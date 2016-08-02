@@ -25,6 +25,11 @@
 # List of base packages required by ownCloud.
 owncloud__base_packages:
   - 'owncloud'
+  - '{{ [ ("owncloud-deps-php" + ansible_local.php.version) ]
+        if (ansible_local|d() and ansible_local.php|d() and
+            ansible_local.php.version|d())
+        else [] }}'
+
   ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
   ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
   ## Is it necessary to install all LibreOffice packages? https://github.com/owncloud/documents#known-issues
@@ -41,6 +46,11 @@ owncloud__base_php_packages:
   - '{{ [ "pgsql" ] if (owncloud__database in [ "postgresql" ]) else [] }}'
   - '{{ [ "redis" ] if (owncloud__redis_enabled | bool) else [] }}'
   - '{{ [ "ldap" ] if (owncloud__ldap_enabled | bool) else [] }}'
+
+  ## Seems to be required at least for PHP7.0 to fix:
+  ## PHP Warning: PHP Startup: Unable to load dynamic library '/usr/lib/php/20151012/redis.so'
+  ## - /usr/lib/php/20151012/redis.so: undefined symbol: igbinary_serialize in Unknown on line 0
+  - 'igbinary'
 
 
 # .. envvar:: owncloud__optional_packages
