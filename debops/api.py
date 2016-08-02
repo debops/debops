@@ -10,7 +10,7 @@
 # published by the Free Software Foundation, version 3 of the
 # License.
 #
-# This program is distributed in the hope that it will be useful,
+# debops-api is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
@@ -294,6 +294,7 @@ class DebOpsAPI:
         )
         if maintainer_nick is not None:
             role_metadata['maintainer_nick'] = maintainer_nick
+            role_metadata['role_format_version'] = '0.2.1'
 
         return role_metadata
 
@@ -436,7 +437,10 @@ class DebOpsAPI:
 
                     metadata = {
                         'vcs_url': role_vcs_url,
-                        'role_format_version': role_dir_info['role_format_version'],
+                        'role_format_version':
+                            role_metadata['role_format_version']
+                            if 'role_format_version' in role_metadata
+                            else role_dir_info['role_format_version'],
                         'role_owner': role_owner,
                         'role_name': role_name,
                     }
@@ -466,7 +470,7 @@ class DebOpsAPI:
                             if self._strict:
                                 raise Exception(
                                     "Nick {nick} is a maintainer but no other meta information for {nick} could be found in the repository."
-                                    "Affected role: {role_full_name}".format(
+                                    " Affected role: {role_full_name}".format(
                                         role_full_name=role_full_name,
                                         nick=nick,
                                     )
@@ -483,7 +487,10 @@ class DebOpsAPI:
                         role_owner,
                         role_name,
                     )
-                    role_full_name = self._get_role_full_name(role_owner, role_name)
+                    role_full_name = self._get_role_full_name(
+                        role_owner,
+                        role_name,
+                    )
 
                     metadata = {
                         'vcs_url': role_vcs_url,

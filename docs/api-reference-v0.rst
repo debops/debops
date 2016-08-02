@@ -93,6 +93,7 @@ from the full role name to the meta data (described below).
 
   ``maintainer``
     Boolean value specifying if author is a maintainer.
+    Only available for ``role_format_version`` ``0.2.1`` or later.
 
 ``clone_url``
   Secure git URL where the repository can be cloned from.
