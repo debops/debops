@@ -79,7 +79,7 @@ from the full role name to the meta data (described below).
 
 ``normalized_role_name``
   Ansible role name as used in URLs. Currently the only case where this is
-  different to ``role_name`` is when ``role_name`` is ``ansible`` (in this case
+  different to ``role_name`` is when ``role_name`` is :command:`ansible` (in this case
   ``normalized_role_name`` will be ``role-ansible``).
 
 ``authors``

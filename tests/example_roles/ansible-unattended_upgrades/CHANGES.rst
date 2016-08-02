@@ -104,7 +104,7 @@ Changed
 
   Due to the ``unattended-upgrades`` `Debian Bug #704087 <https://bugs.debian.org/704087>`_
   on Debian Wheezy which stops the upgrades from being performed,
-  ``debops.unattended_upgrades`` role will now use more granular lookup strings
+  debops.unattended_upgrades_ role will now use more granular lookup strings
   to select security and release origin patterns for current OS release.
   [drybjed_]
 
