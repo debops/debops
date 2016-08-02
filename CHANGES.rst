@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.2...master
 
+Fixed
+~~~~~
+
+- Detection of ``ansible_local.php.long_version`` when the first entry for
+  ``php__version_preference`` is not available on the system. [ypid]
 
 `debops.php v0.2.2`_ - 2016-07-27
 ---------------------------------
