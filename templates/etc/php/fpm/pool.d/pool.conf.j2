@@ -405,8 +405,12 @@ catch_workers_output = yes
 ; pool configuration are added.
 ; Setting to "no" will make all environment variables available to PHP code
 ; via getenv(), $_ENV and $_SERVER.
-; Default Value: yes #}
+; Default Value: yes
+; Feature was introduced in PHP 5.6.0: https://secure.php.net/ChangeLog-5.php
+#}
+{% if php__long_version | version_compare('5.6.0', '>=') %}
 clear_env = {{ 'yes' if ((item.clear_env|d() and item.clear_env|bool) or php__fpm_clear_env|bool) else 'no' }}
+{% endif %}
 
 {#
 ; Limits the extensions of the main script FPM will allow to parse. This can

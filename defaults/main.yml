@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: includes/all.rst
 
 
 # Custom APT package repositories [[[
@@ -31,7 +33,7 @@ php__sury: '{{ (ansible_local.php.sury
                                                                    # ]]]
 # .. envvar:: php__sury_apt_key_id [[[
 #
-# The GPG key used to sign Ondřej Surý APT repository, dependent on the current
+# The OpenPGP key used to sign Ondřej Surý APT repository, dependent on the current
 # OS distribution.
 php__sury_apt_key_id: '{{ php__sury_apt_key_id_map[ansible_distribution] }}'
 
@@ -45,7 +47,7 @@ php__sury_apt_repo: '{{ php__sury_apt_repo_map[ansible_distribution] }}'
                                                                    # ]]]
 # .. envvar:: php__sury_apt_key_id_map [[[
 #
-# YAML dictionary map of GPG key ids used to sign APT repository information,
+# YAML dictionary map of OpenPGP key ids used to sign APT repository information,
 # dependent on the OS distribution.
 php__sury_apt_key_id_map:
   'Debian': 'DF3D585DB8F0EB658690A554AC0E47584A7A714D'
@@ -115,16 +117,16 @@ php__dependent_packages: []
 
 # .. envvar:: php__production [[[
 #
-# This variable determines if the ``php.ini`` configuration will be configured
-# towards "production" systems (don't display errors), or "development" systems
-# (display all errors).
+# This variable determines if the :file:`php.ini` configuration will be
+# configured towards "production" systems (don't display errors), or
+# "development" systems (display all errors).
 php__production: True
 
                                                                    # ]]]
 # .. envvar:: php__ini_cgi_fix_pathinfo [[[
 #
 # Enable or disable ``cgi.fix_pathinfo`` option in PHP. This is highly
-# dependent on the used webserver (``nginx`` should have the option disabled,
+# dependent on the used webserver (:program:`nginx` should have the option disabled,
 # ``apache2`` needs it to be enabled).
 php__ini_cgi_fix_pathinfo: False
 
@@ -141,9 +143,9 @@ php__ini_max_execution_time: '30'
 php__ini_max_input_time: '60'
 
                                                                    # ]]]
-#.. envvar:: php__ini_memory_limit [[[
+# .. envvar:: php__ini_memory_limit [[[
 #
-# Specfy maximum memory limit for PHP processes, in megabytes.
+# Specify maximum memory limit for PHP processes, in megabytes.
 php__ini_memory_limit: '128M'
 
                                                                    # ]]]
@@ -186,7 +188,7 @@ php__ini_allow_url_fopen: True
 # .. envvar:: php__ini_date_timezone [[[
 #
 # Configure the PHP timezone. This variable uses configuration provided by the
-# ``debops.core`` Ansible role.
+# debops.core_ Ansible role.
 php__ini_date_timezone: '{{ ansible_local.timezone
                             if (ansible_local|d() and ansible_local.timezone|d())
                             else "Etc/UTC" }}'
@@ -195,12 +197,12 @@ php__ini_date_timezone: '{{ ansible_local.timezone
 # Configuration added to php.ini [[[
 # ----------------------------------
 
-# The role uses custom ``php.ini`` configuration files managed by Ansible. See
+# The role uses custom :file:`php.ini` configuration files managed by Ansible. See
 # :ref:`php__ref_configuration` for more details.
 
 # .. envvar:: php__default_configuration [[[
 #
-# Default configuration of the ``php.ini`` added by the role.
+# Default configuration of the :file:`php.ini` added by the role.
 php__default_configuration:
 
   - filename: '00-ansible'
@@ -233,20 +235,20 @@ php__default_configuration:
 # ]]]
 # .. envvar:: php__configuration [[[
 #
-# Custom ``php.ini`` configuration added on all hosts in Ansible inventory.
+# Custom :file:`php.ini` configuration added on all hosts in Ansible inventory.
 php__configuration: []
 
                                                                    # ]]]
 # .. envvar:: php__group_configuration [[[
 #
-# Custom ``php.ini`` configuration added on a group of hosts in Ansible
+# Custom :file:`php.ini` configuration added on a group of hosts in Ansible
 # inventory.
 php__group_configuration: []
 
                                                                    # ]]]
 # .. envvar:: php__host_configuration [[[
 #
-# Custom ``php.ini`` configuration added on specific hosts in Ansible
+# Custom :file:`php.ini` configuration added on specific hosts in Ansible
 # inventory.
 php__host_configuration: []
                                                                    # ]]]
@@ -430,7 +432,7 @@ php__fpm_ping_response: 'pong'
                                                                    # ]]]
 # .. envvar:: php__fpm_access_log [[[
 #
-# Enable or disable request log in ``/var/log/php{5,7.0}-fpm/$pool_access.log``
+# Enable or disable request log in :file:`/var/log/php{5,7.0}-fpm/$pool_access.log`
 # for all PHP-FPM pools.
 php__fpm_access_log: False
 
@@ -548,7 +550,7 @@ php__pool_www_data:
 
 # .. envvar:: php__apt_preferences__dependent_list [[[
 #
-# Configuration of the ``debops.apt_preferences`` role.
+# Configuration of the debops.apt_preferences_ role.
 php__apt_preferences__dependent_list:
 
   - package: '*'
@@ -570,7 +572,7 @@ php__apt_preferences__dependent_list:
                                                                    # ]]]
 # .. envvar:: php__logrotate__dependent_config [[[
 #
-# Configuration of the ``debops.logrotate`` role.
+# Configuration of the debops.logrotate_ role.
 php__logrotate__dependent_config:
 
   - filename: 'php{{ php__version }}-fpm'
