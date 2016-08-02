@@ -142,7 +142,7 @@ Changed
   different configuration options. [drybjed_]
 
 - The timezone configuration is now based on the ``ansible_local.timezone``
-  Ansible fact, managed by debops.core_ role, insead of reading the
+  Ansible fact, managed by debops.core_ role, instead of reading the
   :file:`/etc/timezone` file directly. [drybjed_]
 
 - Role variables related to PHP-FPM pool configuration have been renamed from
@@ -179,7 +179,7 @@ Removed
   the provided playbook. [drybjed_]
 
 - The direct configuration of :file:`php.ini` files in different PHP Server API
-  directories has been removed to avoid confict during package updates, because
+  directories has been removed to avoid conflicts during package updates, because
   these files are managed using ``ucf`` which does not support file diversion.
   This also allows usage of default :file:`php.ini` configuration options where
   possible and only override the important ones in a different file. [drybjed_]
