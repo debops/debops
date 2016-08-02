@@ -22,6 +22,8 @@ Fixed
 - Detection of ``ansible_local.php.long_version`` when the first entry for
   ``php__version_preference`` is not available on the system. [ypid]
 
+- Compatibility with PHP versions before 5.6.0. [ypid]
+
 `debops.php v0.2.2`_ - 2016-07-27
 ---------------------------------
 
