@@ -1,0 +1,41 @@
+---
+
+- name: Manage Roundcube Web mail
+  hosts: [ 'debops_service_roundcube' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.php5
+      tags: [ 'role::php5' ]
+      php5_packages:
+        - '{{ roundcube__php5_packages }}'
+      php5_pools:
+        - '{{ roundcube__php5_pool }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+      nginx_servers:
+        - '{{ roundcube__nginx_server }}'
+      nginx_upstreams:
+        - '{{ roundcube__nginx_upstream_php5 }}'
+
+    - role: debops.mariadb
+      tags: [ 'role::mariadb' ]
+      mariadb_users:
+        - database: '{{ roundcube__database_map[roundcube__database].dbname }}'
+          user: '{{ roundcube__database_map[roundcube__database].dbuser }}'
+          owner: '{{ roundcube__user }}'
+          group: '{{ roundcube__group }}'
+          home: '{{ roundcube__home }}'
+          system: True
+          priv_aux: False
+          mariadb_server: '{{ roundcube__database_map[roundcube__database].dbhost }}'
+      when: roundcube__database_map[roundcube__database].dbtype == 'mysql'
+
+    - role: debops-contrib.roundcube
+      tags: [ 'role::roundcube' ]
