@@ -1,4 +1,5 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 - name: Install Samba packages
   apt:
@@ -37,9 +38,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  notify: [ 'Check config samba' ]
+  notify: [ 'Check samba config' ]
 
-# .. Kernel modules (((
+# Kernel modules [[[
 
 - name: Load kernel module specified by samba__kernel_modules
   modprobe:
@@ -64,5 +65,4 @@
     dest: '/etc/modules'
     regexp: '^nf_conntrack_netbios_ns'
     state: 'absent'
-
-# .. )))
+                                                                   # ]]]
