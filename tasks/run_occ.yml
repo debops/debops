@@ -26,6 +26,8 @@
       command: 'files:scan --path {{ owncloud__files_scan_item.item.dest | quote }}'
   when: (owncloud__files_scan_item is defined)
 
+  # An alternative would be https://doc.owncloud.org/server/9.1/admin_manual/configuration_user/user_provisioning_api.html
+  # but `occ` is preferred in the case of Ansible.
 - name: Run given occ commands
   command: php --file "{{ owncloud__home }}/occ" {{ owncloud__occ_item.command }} {{ "--output=json_pretty" if (owncloud__occ_item.get_output|d() | bool) else "" }}
   environment: '{{ owncloud__occ_item.env|d({}) }}'

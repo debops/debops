@@ -25,15 +25,14 @@ Added
 
 - Wrote initial documentation. [ypid_]
 
-- Added more LDAP settings. [ypid_]
+- More LDAP settings. [ypid_]
 
-- Added ownCloud theming support. [ypid_]
+- ownCloud theming support. [ypid_]
 
 - Support Redis for file locking. [ypid_]
 
-- Install :command:`smbclient` and ImageMagick by default to make
-  ownCloud work with SMB shares and thumbnails out of
-  the box. [ypid_]
+- Install :command:`smbclient` and ImageMagick by default to make ownCloud work
+  with SMB shares and thumbnails out of the box. [ypid_]
 
 - Prepare to use the documents app when setting
   :envvar:`owncloud__app_documents_enabled` to ``True``. [ypid_]
@@ -46,26 +45,29 @@ Added
 
 - Support to configure ownCloud applications. [ypid_]
 
-- Added :envvar:`owncloud__dependent_packages`,
+- :envvar:`owncloud__dependent_packages`,
   :envvar:`owncloud__dependent_occ_cmd_list` and
   :envvar:`owncloud__dependent_apps_config` in a idempotence safe way even when
   this role is run standalone without having the variables set.
   This allows other roles to use functionality provided by this role. [ypid_]
 
-- Added :envvar:`owncloud__apt_preferences__dependent_list_optional` variable
-  which might come in handy when APT preference presets are used. [ypid_]
+- :envvar:`owncloud__apt_preferences__dependent_list_optional` variable which
+  might come in handy when APT preference presets are used. [ypid_]
 
-- Added :envvar:`owncloud__temp_path` to allow to change the temp directory of
+- :envvar:`owncloud__temp_path` to allow to change the temp directory of
   ownCloud. [ypid_]
 
-- Added :envvar:`owncloud__user_files` and similar lists to allow to allow you
-  to manage files for ownCloud users. [ypid_]
+- :envvar:`owncloud__user_files` and similar lists to allow to allow you to
+  manage files for ownCloud users. [ypid_]
 
-- Added :ref:`owncloud__ref_external_users` documentation. [ypid_]
+- :ref:`owncloud__ref_external_users` documentation. [ypid_]
 
-- Added :envvar:`owncloud_ldap_update_settings` which allows to that the
+- :envvar:`owncloud_ldap_update_settings` which allows to that the
   settings from :envvar:`owncloud__ldap_conf_map` are up-to-date on the remote
   system. [ypid_]
+
+- Tested ownCloud ``9.1`` support. Setup works fine but this release of the
+  role will mainly support ownCloud ``9.0``. [ypid_]
 
 Changed
 ~~~~~~~
