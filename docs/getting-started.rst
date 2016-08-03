@@ -94,9 +94,10 @@ through the Ansible local facts. The specific variables are:
 
 The Ansible local facts are used by the ``debops.php`` role to ensure
 idempotent operation. In case that you want to upgrade a host to a newer PHP
-release without uninstalling the older one, you :envvar:`php__reset`, so that
-the role can re-detect the available PHP versions.
-
+release without uninstalling the older one, you can set :envvar:`php__reset` to
+``True``, so that the role can re-detect the available PHP versions.
+After one role run, you should set :envvar:`php__reset` back to its default
+value.
 
 Example inventory
 -----------------
