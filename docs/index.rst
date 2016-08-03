@@ -1,13 +1,12 @@
 .. _debops.roundcube:
 
-Ansible role: debops.roundcube
-==============================
+Ansible role: debops-contrib.roundcube
+======================================
 
 .. toctree::
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    guides

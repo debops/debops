@@ -3,39 +3,13 @@
 dependencies:
 
   - role: debops.secret
-    tags: [ 'depend::secret', 'depend::secret:roundcube', 'depend-of::roundcube', 'type::dependency:hard' ]
-
-  - role: debops.php5
-    php5_packages: [ '{{ roundcube__php5_packages }}' ]
-    php5_pools: [ '{{ roundcube__php5_pool }}' ]
-    when: roundcube__dependencies is defined and roundcube__dependencies
-    tags: [ 'depend::php5', 'depend::php5:roundcube', 'depend-of::roundcube', 'type::dependency' ]
-
-  - role: debops.nginx
-    nginx_servers: [ '{{ roundcube__nginx_server }}' ]
-    nginx_upstreams: [ '{{ roundcube__nginx_upstream_php5 }}' ]
-    when: roundcube__dependencies is defined and roundcube__dependencies
-    tags: [ 'depend::nginx', 'depend::nginx:roundcube', 'depend-of::roundcube', 'type::dependency' ]
-
-  - role: debops.mariadb
-    mariadb_users:
-      - database: '{{ roundcube__database_map[roundcube__database].dbname }}'
-        user: '{{ roundcube__database_map[roundcube__database].dbuser }}'
-        owner: '{{ roundcube__user }}'
-        group: '{{ roundcube__group }}'
-        home: '{{ roundcube__home }}'
-        system: True
-        priv_aux: False
-    mariadb_server: '{{ roundcube__database_map[roundcube__database].dbhost }}'
-    when: roundcube__dependencies is defined and roundcube__database_map[roundcube__database].dbtype == 'mysql'
-    tags: [ 'depend::mariadb', 'depend::mariadb:roundcube', 'depend-of::roundcube', 'type::dependency' ]
 
 
 galaxy_info:
 
   company: 'DebOps'
   author: 'Reto Gantenbein'
-  description: 'Install Roundcube, a browser-based IMAP client written in PHP'
+  description: 'Manage Roundcube, a browser-based IMAP client written in PHP'
   license: 'GPLv3'
   min_ansible_version: '1.8.0'
 
@@ -47,5 +21,6 @@ galaxy_info:
         - jessie
 
   galaxy_tags:
+    - debops
     - mail
     - web
