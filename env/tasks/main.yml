@@ -23,6 +23,17 @@
                                                                    # ]]]
 # PHP version and Ansible variables [[[
 
+- name: Reset PHP Ansible local facts
+  file:
+    path: '/etc/ansible/facts.d/php.fact'
+    state: 'absent'
+  register: php__register_local_facts_reset
+  when: php__reset|bool
+
+- name: Gather facts on reset
+  action: setup
+  when: php__register_local_facts_reset|changed
+
 - name: Detect PHP version from available packages
   environment:
     LC_ALL: 'C'

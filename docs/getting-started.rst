@@ -91,14 +91,13 @@ through the Ansible local facts. The specific variables are:
   Longer version of the PHP environment, used for version comparison. For
   example, ``5.6.22`` or ``7.0.8``. This variable might be inaccurate in case
   of the minor or major version upgrade.
-  FIXME: Check if it can/should be made accurate.
 
 The Ansible local facts are used by the ``debops.php`` role to ensure
 idempotent operation. In case that you want to upgrade a host to a newer PHP
-release without uninstalling the older one, you will need to remove the stored
-:file:`/etc/ansible/facts.d/php.fact` file, so that the role can re-detect the
-available PHP versions and create a new fact file.
-
+release without uninstalling the older one, you can set :envvar:`php__reset` to
+``True``, so that the role can re-detect the available PHP versions.
+After one role run, you should set :envvar:`php__reset` back to its default
+value.
 
 Example inventory
 -----------------

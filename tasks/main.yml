@@ -17,6 +17,13 @@
     - '{{ php__dependent_packages }}'
   notify: [ 'Restart php-fpm' ]
 
+- name: Ensure older PHP packages are absent on reset
+  include: 'packages_absent_for_version.yml'
+  loop_control:
+    loop_var: 'php__version_absent'
+  when: (php__reset|bool)
+  with_items: '{{ php__version_preference | difference([ "php" + php__version ]) | list }}'
+
 - name: 'Create directory for php*-fpm logs'
   file:
     path: '/var/log/php{{ php__version }}-fpm'

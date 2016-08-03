@@ -16,6 +16,13 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.2...master
 
+Added
+~~~~~
+
+- :envvar:`php__reset` option which causes the role reevaluate the
+  preferred PHP version and remove older PHP versions on the next Ansible run
+  when set to ``True``. [ypid_]
+
 Fixed
 ~~~~~
 
