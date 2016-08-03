@@ -62,6 +62,8 @@ Added
 
 - :ref:`owncloud__ref_external_users` documentation. [ypid_]
 
+- :ref:`owncloud__ref_external_storage` documentation. [ypid_]
+
 - :envvar:`owncloud_ldap_update_settings` which allows to that the
   settings from :envvar:`owncloud__ldap_conf_map` are up-to-date on the remote
   system. [ypid_]

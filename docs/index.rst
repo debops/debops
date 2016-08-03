@@ -11,6 +11,7 @@ Ansible role: debops.owncloud
    defaults
    defaults-detailed
    external-users
+   external-storage
    copyright
    changelog
    upgrade
