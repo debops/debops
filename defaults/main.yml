@@ -16,7 +16,7 @@
 # List of base packages to install.
 # In case you only want to prepare the host for being a Samba client, remove
 # the ``samba`` package from the list. This might be required because
-# applications like ownCloud depend on the ``smbclient`` which gets things like
+# applications like ownCloud depend on the :command:`smbclient` which gets things like
 # workgroup from the file :file:`/etc/samba/smb.conf`.
 samba__base_packages:
   - 'samba'
@@ -103,6 +103,12 @@ samba__server_string: '%h file server'
 samba__service_name: 'samba'
 
 
+# .. envvar:: samba__name_resolve_order
+#
+# Resolve order of Samba.
+samba__name_resolve_order: 'lmhosts host wins bcast'
+
+
 # .. envvar:: samba__path
 #
 # Base directory of home directories and shares.
@@ -151,7 +157,7 @@ samba__default_global:
   deadtime: '10'
   wins_support: 'no'
   dns_proxy: 'no'
-  name_resolve_order: 'lmhosts host wins bcast'
+  name_resolve_order: '{{ samba__name_resolve_order }}'
 
   # Disable printing by default.
   printing: 'bsd'
