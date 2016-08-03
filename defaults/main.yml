@@ -103,6 +103,12 @@ samba__server_string: '%h file server'
 samba__service_name: 'samba'
 
 
+# .. envvar:: samba__name_resolve_order
+#
+# Resolve order of Samba.
+samba__name_resolve_order: 'lmhosts host wins bcast'
+
+
 # .. envvar:: samba__path
 #
 # Base directory of home directories and shares.
@@ -151,7 +157,7 @@ samba__default_global:
   deadtime: '10'
   wins_support: 'no'
   dns_proxy: 'no'
-  name_resolve_order: 'lmhosts host wins bcast'
+  name_resolve_order: '{{ samba__name_resolve_order }}'
 
   # Disable printing by default.
   printing: 'bsd'

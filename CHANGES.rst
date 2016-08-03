@@ -29,10 +29,12 @@ v0.2.0
 
   [ypid]
 
+- Allow to change "name resolve order" in the global section using
+  :envvar:`samba__name_resolve_order`. [ypid]
+
 v0.1.0
 ------
 
 *Unreleased*
 
 - First release. [drybjed]
-
