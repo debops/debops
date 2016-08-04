@@ -1599,6 +1599,11 @@ owncloud__php__dependent_pools:
   user: '{{ owncloud__user }}'
   group: '{{ owncloud__group }}'
   pm_max_children: '{{ owncloud__php_max_children }}'
+
+  ## Overwrite DebOps default to ensure that long running syncing jobs don’t
+  ## get killed.
+  request_terminate_timeout: '{{ owncloud__timeout }}'
+
   php_values:
     output_buffering: '{{ owncloud__php_output_buffering }}'
     upload_max_filesize: '{{ owncloud__upload_size }}'
