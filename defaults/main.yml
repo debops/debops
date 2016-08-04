@@ -551,13 +551,14 @@ owncloud__autosetup_url: 'http://{{ owncloud__domain[0] }}/index.php'
 # .. envvar:: owncloud__upload_size
 #
 # Max upload size set in :program:`nginx` and PHP, with amount as M or G.
-# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html>`__ for details.
-owncloud__upload_size: '16G'
+# Before you change this be sure to understand
+# `Uploading big files > 512MB of the official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html>`__.
+owncloud__upload_size: '2G'
 
 
 # .. envvar:: owncloud__php_output_buffering
 #
-# Output buffering set in PHP, with amount set in megabytes
+# Output buffering set in PHP, with amount set in megabytes.
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html#configuring-php>`__ for details.
 owncloud__php_output_buffering: '0'
 
@@ -1430,6 +1431,17 @@ owncloud__apt_preferences__dependent_list_optional:
 owncloud__nginx_access_log_assets: True
 
 
+# .. envvar:: owncloud__nginx_client_body_temp_path
+#
+# Defines the directory where Nginx will temporary store files holding client
+# request bodies.
+# Refer to the `the Nginx Dokumentation <http://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_temp_path>`__ for details.
+#
+# The default (empty string) is to not change the default of the webserver.
+# TODO: Confirm that this variable does what it says.
+owncloud__nginx_client_body_temp_path: ''
+
+
 # .. envvar:: owncloud__nginx__servers
 #
 # :program:`nginx` server configuration managed by the debops.nginx_ role.
@@ -1450,8 +1462,11 @@ owncloud__nginx__servers:
     options: |
       add_header X-Download-Options noopen;
 
-      # set max upload size
+      # Set max upload size.
       client_max_body_size {{ owncloud__upload_size }};
+      {% if owncloud__nginx_client_body_temp_path %}
+      client_body_temp_path '{{ owncloud__nginx_client_body_temp_path }}';
+      {% endif %}
       fastcgi_buffers 64 4K;
 
       {% if owncloud__app_user_webfinger_support | bool %}
@@ -1594,6 +1609,7 @@ owncloud__php__dependent_packages:
 # .. envvar:: owncloud__php__dependent_pools
 #
 # PHP pools managed by the debops.php_ role.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html#php-ini-configuration-notes>`__ for details.
 owncloud__php__dependent_pools:
   name: 'owncloud'
   user: '{{ owncloud__user }}'
@@ -1604,14 +1620,29 @@ owncloud__php__dependent_pools:
   ## get killed.
   request_terminate_timeout: '{{ owncloud__timeout }}'
 
+  ## This is sometimes seen in other peoples ownCloud configuration.
+  ## The role maintainers could not yet verify if it is really needed.
+  # rlimit_files: '131072'
+  # rlimit_core: 'unlimited'
+
+  ## https://github.com/owncloud/core/blob/master/.user.ini
+  ## https://github.com/nextcloud/server/blob/master/.user.ini
   php_values:
+    ## https://secure.php.net/manual/en/outcontrol.configuration.php#ini.output-buffering
     output_buffering: '{{ owncloud__php_output_buffering }}'
+
+    ## https://secure.php.net/manual/en/info.configuration.php#ini.upload-max-filesize
     upload_max_filesize: '{{ owncloud__upload_size }}'
+
+    ## https://secure.php.net/manual/en/ini.core.php#ini.post-max-size
     post_max_size: '{{ owncloud__upload_size }}'
+
+    ## https://secure.php.net/manual/en/info.configuration.php#ini.max-input-time
     max_input_time: '{{ owncloud__timeout }}'
+
+    ## Refer to: https://secure.php.net/manual/en/info.configuration.php#ini.max-execution-time
     max_execution_time: '{{ owncloud__timeout }}'
 
-  ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html#php-ini-tips-label
   environment:
     # HOSTNAME: '$HOSTNAME'
     # TMP: '/tmp'

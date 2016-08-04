@@ -113,9 +113,9 @@ Changed
 - Switched from the ``debops.php5`` role to the new and unified debops.php_
   role and tested PHP7.0 support. [ypid_]
 
-- Support large file uploads by default by increasing the
-  :envvar:`owncloud__timeout` from ``300`` to ``3600`` and the
-  :envvar:`owncloud__upload_size` from ``128M`` to ``16G``. [ypid_]
+- Support large file uploads by increasing the :envvar:`owncloud__timeout`
+  from ``300`` to ``3600`` and the :envvar:`owncloud__upload_size` from
+  ``128M`` to ``2G``. [ypid_]
 
 - Renamed Ansible tags
 
