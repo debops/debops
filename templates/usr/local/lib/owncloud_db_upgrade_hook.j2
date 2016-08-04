@@ -15,6 +15,9 @@
 
 set -e
 
+## Silently exit if PHP is not installed (invoked from {{ owncloud__occ_bin_file_path }}).
+command -v php >/dev/null 2>&1 || exit 0
+
 ## Check if one of the trigger packages was touched by `dpkg`.
 ## The script might not be executed as `dpkg` hook.
 ## Unfortunately, checking against `$SUDO_COMMAND` does not work when the upgrade is done by `unattended-upgrades`.
