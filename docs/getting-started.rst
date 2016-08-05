@@ -74,4 +74,3 @@ remote host in Ansible local facts. This prevents idempotency loops and allows
 users to use ``debops.unattended_upgrades`` in different playbooks without
 issues. This method works on the host with unattended upgrades disabled through
 Ansible inventory.
-

@@ -10,10 +10,17 @@ and `human-readable changelog <http://keepachangelog.com/>`_.
 
 The current role maintainer_ is drybjed_.
 
+
 `debops.unattended_upgrades master`_ - unreleased
 -------------------------------------------------
 
-.. _debops.unattended_upgrades master: https://github.com/debops/ansible-unattended_upgrades/compare/v0.2.0...master
+.. _debops.unattended_upgrades master: https://github.com/debops/ansible-unattended_upgrades/compare/v0.2.1...master
+
+
+`debops.unattended_upgrades v0.2.1`_ - 2016-08-05
+-------------------------------------------------
+
+.. _debops.unattended_upgrades v0.2.1: https://github.com/debops/ansible-unattended_upgrades/compare/v0.2.0...v0.2.1
 
 Added
 ~~~~~
@@ -21,11 +28,20 @@ Added
 - Support nested lists for :envvar:`unattended_upgrades__blacklist` and
   :envvar:`unattended_upgrades__origins`. [ypid_]
 
+Changed
+~~~~~~~
+
+- The ``unattended-upgrade`` script will send a mail message only in case of an
+  error during the upgrade process, instead of doing it every time an upgrade
+  happens. This should decrease the amount of mail sent to the system
+  administrator. [drybjed_]
+
 Fixed
 ~~~~~
 
 - Fixed :envvar:`unattended_upgrades__release_origins` for Debian Jessie and
   potentially newer versions. [ypid_]
+
 
 `debops.unattended_upgrades v0.2.0`_ - 2016-07-09
 -------------------------------------------------
