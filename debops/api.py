@@ -246,19 +246,21 @@ class DebOpsAPI:
 
         return metadata
 
-    def _get_maintainer_from_line(self, line):
+    def _get_maintainers_from_line(self, line):
         # Modeled with the natural language processing from AIML in mind.
+        # TODO: Remove redundancy. Duplicated into ansigenome source code. Origin: debops-api
         _re = re.match(
-            r'^[^.]*?.*?current[\W_]+(?:.*?[\W_]+)?maintainer[\W_]+is[\W_]+`?(?P<nick>[^\s]+?)[`_]?\.?$',
+            r'^[^.]*?maintainers?[\W_]+(:?is|are)[\W_]+`?(?P<nicks>.+?)\.?$',
             line,
             re.IGNORECASE
         )
         if _re:
-            return _re.group('nick')
+            return [x.rstrip('_') for x in re.split(r'[\s,]+', _re.group('nicks')) if x not in ['and', ',']]
         else:
             return None
 
-    def _get_maintainer_from_changelog(self, changes_file):
+    def _get_maintainers_from_changelog(self, changes_file):
+        # TODO: Remove redundancy. Duplicated into ansigenome source code. Origin: debops-api
         """
         Extract the maintainer from CHANGES.rst file and return the nickname of
         the maintainer.
@@ -267,7 +269,7 @@ class DebOpsAPI:
         try:
             with open(changes_file, 'r') as changes_fh:
                 for line in changes_fh:
-                    nick = self._get_maintainer_from_line(line)
+                    nick = self._get_maintainers_from_line(line)
                     if nick is not None:
                         return nick
         except FileNotFoundError:
@@ -289,11 +291,11 @@ class DebOpsAPI:
             os.path.join(role_path, 'meta', 'main.yml')
         )
 
-        maintainer_nick = self._get_maintainer_from_changelog(
+        maintainer_nicks = self._get_maintainers_from_changelog(
             os.path.join(role_path, 'CHANGES.rst')
         )
-        if maintainer_nick is not None:
-            role_metadata['maintainer_nick'] = maintainer_nick
+        if maintainer_nicks is not None:
+            role_metadata['maintainer_nicks'] = maintainer_nicks
             role_metadata['role_format_version'] = '0.2.1'
 
         return role_metadata
@@ -457,22 +459,22 @@ class DebOpsAPI:
                         metadata.update(
                             self._get_normalized_meta_ansigenome(role_metadata['ansigenome'])
                         )
-                    if 'maintainer_nick' in role_metadata:
-                        nick = role_metadata['maintainer_nick']
+                    if 'maintainer_nicks' in role_metadata:
+                        nicks = role_metadata['maintainer_nicks']
                         metadata.setdefault('authors', [])
 
-                        author_present = False
+                        author_present = set([])
                         for author_item in metadata['authors']:
-                            if author_item['nick'] == nick:
-                                author_present = True
+                            if author_item['nick'] in nicks:
+                                author_present.add(author_item['nick'])
                                 author_item['maintainer'] = True
                         if not author_present:
                             if self._strict:
                                 raise Exception(
-                                    "Nick {nick} is a maintainer but no other meta information for {nick} could be found in the repository."
+                                    "Nick(s) {nicks} are maintainers but no other meta information for them could be found in the repository."
                                     " Affected role: {role_full_name}".format(
                                         role_full_name=role_full_name,
-                                        nick=nick,
+                                        nicks=set(nicks).difference(author_present),
                                     )
                                 )
 
