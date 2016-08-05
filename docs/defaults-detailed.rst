@@ -103,14 +103,14 @@ The available values on the system are printed by the command
 "unattended-upgrades -d" and looking at the log file.
 
 Within lines unattended-upgrades allows 2 macros whose values are
-derived from ``/etc/debian_version``::
+derived from :file:`/etc/debian_version`::
 
   ${distro_id}            Installed origin.
   ${distro_codename}      Installed codename (eg, "jessie")
 
 Codename based matching:
 This will follow the migration of a release through different
-archives (e.g. from testing to stable and later oldstable)::
+archives (e. g. from testing to stable and later oldstable)::
 
      "o=Debian,n=jessie";
      "o=Debian,n=jessie-updates";
@@ -119,7 +119,7 @@ archives (e.g. from testing to stable and later oldstable)::
 
 Archive or Suite based matching:
 Note that this will silently match a different release after
-migration to the specified archive (e.g. testing becomes the
+migration to the specified archive (e. g. testing becomes the
 new stable)::
 
      "o=Debian,a=stable";
