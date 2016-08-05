@@ -13,7 +13,7 @@ You can also use ``pip`` to upgrade the scripts themselves::
 After the installation is finished, scripts will be available in
 ``/usr/local/bin/``, which should be in your shell's ``$PATH``.
 
-.. _PyPI: https://pypi.python.org/pypi/
+.. _PyPI: https://pypi.python.org/pypi/debops
 
 DebOps prerequisites
 --------------------
