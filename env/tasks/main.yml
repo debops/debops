@@ -1,0 +1,14 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Ensure the custom nginx client body temp directory does exist
+  file:
+    path: '{{ owncloud__nginx_client_body_temp_path }}'
+    state: 'directory'
+    owner: '{{ ansible_local.nginx.user
+              if (ansible_local|d() and ansible_local.nginx|d() and
+                  ansible_local.nginx.user|d())
+              else "www-data" }}'
+    group: 'root'
+    mode: '0700'
+  when: (owncloud__nginx_client_body_temp_path != "")
