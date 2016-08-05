@@ -1181,16 +1181,23 @@ owncloud__mail_from_address: 'owncloud'
 # .. envvar:: owncloud__mail_smtpmode
 #
 # Which mode to use for sending mail.
-# Choices are: ``sendmail``, ``smtp``, ``qmail`` or ``php``.
+# Choices are:
+#
+# * ``sendmail``
+# * ``smtp``
+# * ``qmail``
+# * ``php``
+#
 owncloud__mail_smtpmode: 'sendmail'
 
 
 # .. envvar:: owncloud__mail_smtphost
 #
 # Specify the IP address of your mail server host.
-# This may contain multiple
-# hosts separated by a semi-colon. If you need to specify the port number
-# append it to the IP address separated by a colon, like this: 127.0.0.1:24.
+# This may contain multiple hosts separated by a semi-colon. If you need to
+# specify the port number append it to the IP address separated by a colon,
+# like this: ``127.0.0.1:24``.
+#
 # This depends on :envvar:`owncloud__mail_smtpmode`.
 owncloud__mail_smtphost: ''
 
@@ -1636,6 +1643,13 @@ owncloud__php__dependent_pools:
 
     ## https://secure.php.net/manual/en/ini.core.php#ini.post-max-size
     post_max_size: '{{ owncloud__upload_size }}'
+
+    ## https://secure.php.net/manual/de/ini.core.php#ini.memory-limit
+    ## FIXME: ownCloud and the PHP manual suggest that it should be enabled.
+    ## Is that really needed because the process needs to hold the entire file
+    ## in memory or does it support "streaming" the file thought itself?
+    ## Currently disabled. Enable when required.
+    # memory_limit: '{{ owncloud__upload_size }}'
 
     ## https://secure.php.net/manual/en/info.configuration.php#ini.max-input-time
     max_input_time: '{{ owncloud__timeout }}'
