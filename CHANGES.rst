@@ -21,11 +21,20 @@ Added
 - Support nested lists for :envvar:`unattended_upgrades__blacklist` and
   :envvar:`unattended_upgrades__origins`. [ypid_]
 
+Changed
+~~~~~~~
+
+- The ``unattended-upgrade`` script will send a mail message only in case of an
+  error during the upgrade process, instead of doing it every time an upgrade
+  happens. This should decrease the amount of mail sent to the system
+  administrator. [drybjed_]
+
 Fixed
 ~~~~~
 
 - Fixed :envvar:`unattended_upgrades__release_origins` for Debian Jessie and
   potentially newer versions. [ypid_]
+
 
 `debops.unattended_upgrades v0.2.0`_ - 2016-07-09
 -------------------------------------------------
