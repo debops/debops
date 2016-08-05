@@ -10,10 +10,17 @@ and `human-readable changelog <http://keepachangelog.com/>`_.
 
 The current role maintainer_ is drybjed_.
 
+
 `debops.unattended_upgrades master`_ - unreleased
 -------------------------------------------------
 
-.. _debops.unattended_upgrades master: https://github.com/debops/ansible-unattended_upgrades/compare/v0.2.0...master
+.. _debops.unattended_upgrades master: https://github.com/debops/ansible-unattended_upgrades/compare/v0.2.1...master
+
+
+`debops.unattended_upgrades v0.2.1`_ - 2016-08-05
+-------------------------------------------------
+
+.. _debops.unattended_upgrades v0.2.1: https://github.com/debops/ansible-unattended_upgrades/compare/v0.2.0...v0.2.1
 
 Added
 ~~~~~
