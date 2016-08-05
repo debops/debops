@@ -232,8 +232,8 @@
 
 - name: Install the package manager hook script for auto ownCloud DB upgrades
   template:
-    src: 'usr/local/lib/owncloud_db_upgrade_hook.j2'
-    dest: '{{ owncloud__auto_database_upgrade_hook_script }}'
+    src: 'usr/local/lib/owncloud_dpkg_hook.j2'
+    dest: '{{ owncloud__dpkg_hook_script }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
@@ -241,8 +241,8 @@
 
 - name: Enable the package manager hook for auto ownCloud DB upgrades
   template:
-    src: 'etc/apt/apt.conf.d/db_upgrade.j2'
-    dest: '/etc/apt/apt.conf.d/80ownCloud-db-upgrade'
+    src: 'etc/apt/apt.conf.d/dpkg-hook.j2'
+    dest: '/etc/apt/apt.conf.d/80owncloud-dpkg-hook'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -251,7 +251,7 @@
 
 - name: Disable the package manager hook for auto ownCloud DB upgrades
   file:
-    path: '/etc/apt/apt.conf.d/80ownCloud-db-upgrade'
+    path: '/etc/apt/apt.conf.d/80owncloud-dpkg-hook'
     state: 'absent'
   when: not (owncloud__auto_database_upgrade_enabled | bool)
 
