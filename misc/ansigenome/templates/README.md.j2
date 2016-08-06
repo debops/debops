@@ -110,10 +110,8 @@ List of internal variables used by the role:
 {% block authors %}
 ### Authors and license
 
-`{{ role.name }}` role was written by:
-
 {% for credit in authors %}
-- {{ "[" if credit.url|d() else "" }}{{ credit.name }}{{ "](" + credit.url + ")" if credit.url|d() else "" }}{% if credit.email|d() %} | [e-mail](mailto:{{ credit.email }}){% endif %}{% if credit.twitter|d() %} | [Twitter](https://twitter.com/{{ credit.twitter }}){% endif %}{% if credit.github|d() %} | [GitHub](https://github.com/{{ credit.github }}){% endif %}
+- {{ "[" if credit.url|d() else "" }}{{ credit.name }}{{ "](" + credit.url + ")" if credit.url|d() else "" }}{{ " (maintainer)" if (credit.maintainer|d()) else "" }}{% if credit.email|d() %} | [e-mail](mailto:{{ credit.email }}){% endif %}{% if credit.twitter|d() %} | [Twitter](https://twitter.com/{{ credit.twitter }}){% endif %}{% if credit.github|d() %} | [GitHub](https://github.com/{{ credit.github }}){% endif %}
 
 {% endfor %}
 
