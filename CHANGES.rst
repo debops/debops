@@ -4,7 +4,7 @@ Changelog
 v0.1.3
 ------
 
-*Unreleased*
+*Released: 2016-08-06*
 
 - Move the following variables from ``vars/main.yml`` to ``defaults/main.yml``:
   - reprepro_nginx_server_http
@@ -25,6 +25,10 @@ v0.1.3
 - Fix deprecation warnings in Ansible 2.1.0. [drybjed]
 
 - Reload ``systemd`` daemons when ``inotincoming`` init script is installed. [drybjed]
+
+- Move the ``reprepro`` incoming directory to ``/var/spool/reprepro/incoming``
+  to fix the issue of the ``www-data`` user not able to move the files into
+  ``/var/lib/reprepro/`` subdirectory due to restricted permissions. [drybjed]
 
 v0.1.2
 ------

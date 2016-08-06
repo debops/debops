@@ -22,9 +22,17 @@
     home: '{{ reprepro_home }}'
     state: 'present'
 
+- name: Create reprepro spool directory
+  file:
+    path: '{{ reprepro_spool }}'
+    state: 'directory'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0755'
+
 - name: Create directory for reprepro uploads
   file:
-    path: '{{ reprepro_home + "/incoming" }}'
+    path: '{{ reprepro_upload }}'
     state: 'directory'
     owner: '{{ reprepro_user }}'
     group: 'www-data'
