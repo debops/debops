@@ -24,6 +24,8 @@ v0.1.3
 
 - Fix deprecation warnings in Ansible 2.1.0. [drybjed]
 
+- Reload ``systemd`` daemons when ``inotincoming`` init script is installed. [drybjed]
+
 v0.1.2
 ------
 
