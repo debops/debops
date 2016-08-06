@@ -65,8 +65,14 @@ reprepro_user: 'reprepro'
 # System group which manages reprepro repository and upload account
 reprepro_group: 'reprepro'
 
+# Directory for reprepro spool files
+reprepro_spool: '{{ (ansible_local.root.spool
+                      if (ansible_local|d() and ansible_local.root|d() and
+                          ansible_local.root.spool|d())
+                      else "/var/spool") + "/reprepro" }}'
+
 # Directory where uploaded packages are stored
-reprepro_upload: '{{ reprepro_home + "/incoming" }}'
+reprepro_upload: '{{ reprepro_spool + "/incoming" }}'
 
 # Directory where reprepro will create its repository structure.
 # It will be served publicly by a HTTP/HTTPS webserver.
