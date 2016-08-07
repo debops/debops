@@ -55,3 +55,4 @@ Additional References
 * `What are the advantages and disadvantages of cryptographically signing commits and tags in Git? <https://programmers.stackexchange.com/a/212216>`_
 * `Discussion between drybjed and ypid <https://github.com/debops/ansible-ifupdown/pull/48>`_
 * `PR of the initial code signing policy <https://github.com/debops/debops-policy/pull/2>`_
+* `Issue "sign all git commits" started by @adrelanos <https://github.com/micahflee/onionshare/issues/221>`_ (which also includes various pointers)
