@@ -7,7 +7,7 @@ DebOps Code Signing Policy
 
 :Date drafted: 2016-06-19
 :Date effective: 2016-09-01
-:Last changed: 2016-07-25
+:Last changed: 2016-08-07
 :Version: 0.1.0
 :Authors: - drybjed_
           - ypid_
@@ -34,17 +34,6 @@ DebOps Developers and the merge commit MUST by signed by the DebOps Developer
 for this patch to enter the DebOps Project. This should ensure that the last
 commit of every repository of the DebOps Project has a valid signature by a
 DebOps Developer.
-
-To proof that DebOps Developers and DebOps Contributors have full control over
-their account on the source code management platform used to work on the DebOps
-Project (currently GitHub) it is RECOMMENDED to provide a proof via the means of
-https://keybase.io/.
-
-Additionally, it is RECOMMENDED to take part in the Web Of Trust to make
-it harder for an adversary to fake signatures by pretending to be one of the
-DebOps Contributors or Developers. In particular as the DebOps Project is related to the Debian
-Project it is RECOMMENDED to get your key signed by at least one Debian Developer.
-A signature from another DebOps Developer is sufficient as well.
 
 This should allow for secure code authentication. That means that tampering
 with the code on the source code management platform can be reliable detected
