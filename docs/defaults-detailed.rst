@@ -85,4 +85,3 @@ addresses are wrapped in square brackets automatically):
      - daemon: [ 'vsftpd' ]
        client: [ '192.0.2.0/24', '2001:db8::/32' ]
        accept_any: False
-

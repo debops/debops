@@ -8,9 +8,11 @@ limit connections to daemons that utilize the ``libwrap`` library.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v2.0.0``. To install it, run::
+This role requires at least Ansible ``v2.0.0``. To install it, run:
 
-    ansible-galaxy install debops.tcpwrappers
+.. code-block:: console
+
+   user@host:~$ ansible-galaxy install debops.tcpwrappers
 
 ..
  Local Variables:
