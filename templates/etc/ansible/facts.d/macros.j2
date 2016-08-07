@@ -1,0 +1,97 @@
+{% macro the_facts(fact_map, variable_list) %}
+{%   for fact in (variable_list) %}
+{%     if fact.fact_state|d('present') != 'absent' %}
+{%       if fact.name|d() and fact.value|d() %}
+{%         if fact.value is string %}
+{%           if (fact_map[fact.name] is undefined or fact_map[fact.name] is string) %}
+{%             set _ = fact_map.update({ fact.name: fact.value }) %}
+{%           elif (fact_map[fact.name] is not string and fact_map[fact.name] is not mapping) %}
+{%             if fact.state|d('present') != 'absent' %}
+{%               set debops_fact__tpl_fact_list = ((fact_map[fact.name] | d([])) | union([ fact.value ])) %}
+{%               set _ = fact_map.update({ fact.name: (debops_fact__tpl_fact_list | unique | sort) }) %}
+{%             elif fact.state == 'absent' %}
+{%               set debops_fact__tpl_fact_list = ((fact_map[fact.name] | d([])) | difference([ fact.value ])) %}
+{%               set _ = fact_map.update({ fact.name: (debops_fact__tpl_fact_list | unique | sort) }) %}
+{%             endif %}
+{%           endif %}
+{%         elif (fact.value is not string and fact.value is not mapping) %}
+{%           if (fact_map[fact.name] is undefined or (fact_map[fact.name] is not string and fact_map[fact.name] is not mapping)) %}
+{%             if fact.state|d('present') != 'absent' %}
+{%               set debops_fact__tpl_fact_list = ((fact_map[fact.name] | d([])) | union(fact.value)) %}
+{%               set _ = fact_map.update({ fact.name: (debops_fact__tpl_fact_list | unique | sort) }) %}
+{%             elif fact.state == 'absent' %}
+{%               set debops_fact__tpl_fact_list = ((fact_map[fact.name] | d([])) | difference(fact.value)) %}
+{%               set _ = fact_map.update({ fact.name: (debops_fact__tpl_fact_list | unique | sort) }) %}
+{%             endif %}
+{%           endif %}
+{%         elif fact.value is mapping %}
+{%           if fact.state|d('present') != 'absent' %}
+{%             if fact_map[fact.name] is undefined %}
+{%               set _ = fact_map.update({ fact.name: fact.value }) %}
+{%             elif fact_map[fact.name] is mapping %}
+{%               set debops_fact__tpl_fact_map = fact_map[fact.name] %}
+{%               for fact_key in fact.value.keys() | sort %}
+{%                 if debops_fact__tpl_fact_map[fact_key] is undefined %}
+{%                   set _ = debops_fact__tpl_fact_map.update({ fact_key: fact.value[fact_key] }) %}
+{%                 else %}
+{%                   if (debops_fact__tpl_fact_map[fact_key] is string and fact.value[fact_key] is string) %}
+{%                     set _ = debops_fact__tpl_fact_map.update({ fact_key: fact.value[fact_key] }) %}
+{%                   elif ((debops_fact__tpl_fact_map[fact_key] is not string and debops_fact__tpl_fact_map[fact_key] is not mapping) and fact.value[fact_key] is string) %}
+{%                     set debops_fact__tpl_fact_list = (debops_fact__tpl_fact_map[fact_key] | union([ fact.value[fact_key] ])) %}
+{%                     set _ = debops_fact__tpl_fact_map.update({ fact_key: debops_fact__tpl_fact_list }) %}
+{%                   elif ((debops_fact__tpl_fact_map[fact_key] is not string and debops_fact__tpl_fact_map[fact_key] is not mapping) and (fact.value[fact_key] is not string and fact.value[fact_key] is not mapping)) %}
+{%                     set debops_fact__tpl_fact_list = (debops_fact__tpl_fact_map[fact_key] | union(fact.value[fact_key])) %}
+{%                     set _ = debops_fact__tpl_fact_map.update({ fact_key: debops_fact__tpl_fact_list }) %}
+{%                   elif (debops_fact__tpl_fact_map[fact_key] is mapping and fact.value[fact_key] is mapping) %}
+{%                     set debops_fact__tpl_new_map = (debops_fact__tpl_fact_map[fact_key] | combine(fact.value[fact_key])) %}
+{%                     set _ = debops_fact__tpl_fact_map.update({ fact_key: debops_fact__tpl_new_map }) %}
+{%                   endif %}
+{%                 endif %}
+{%               endfor %}
+{%               set _ = fact_map.update({ fact.name: debops_fact__tpl_fact_map }) %}
+{%             endif %}
+{%           elif fact.state == 'absent' %}
+{%             if fact_map[fact.name]|d() %}
+{%               if fact_map[fact.name] is mapping %}
+{%                 set debops_fact__tpl_fact_map = fact_map[fact.name] %}
+{%                 for fact_key in fact.value.keys() | sort %}
+{%                   if debops_fact__tpl_fact_map[fact_key]|d() %}
+{%                     if (debops_fact__tpl_fact_map[fact_key] is string and fact.value[fact_key] is string) %}
+{%                       set _ = debops_fact__tpl_fact_map.pop(fact_key, None) %}
+{%                     elif ((debops_fact__tpl_fact_map[fact_key] is not string and debops_fact__tpl_fact_map[fact_key] is not mapping) and fact.value[fact_key] is string) %}
+{%                       set debops_fact__tpl_fact_list = (debops_fact__tpl_fact_map[fact_key] | difference([ fact.value[fact_key] ])) %}
+{%                       if debops_fact__tpl_fact_list %}
+{%                         set _ = debops_fact__tpl_fact_map.update({ fact_key: debops_fact__tpl_fact_list }) %}
+{%                       else %}
+{%                         set _ = debops_fact__tpl_fact_map.pop(fact_key, None) %}
+{%                       endif %}
+{%                     elif ((debops_fact__tpl_fact_map[fact_key] is not string and debops_fact__tpl_fact_map[fact_key] is not mapping) and (fact.value[fact_key] is not string and fact.value[fact_key] is not mapping)) %}
+{%                       set debops_fact__tpl_fact_list = (debops_fact__tpl_fact_map[fact_key] | difference(fact.value[fact_key])) %}
+{%                       if debops_fact__tpl_fact_list %}
+{%                         set _ = debops_fact__tpl_fact_map.update({ fact_key: debops_fact__tpl_fact_list }) %}
+{%                       else %}
+{%                         set _ = debops_fact__tpl_fact_map.pop(fact_key, None) %}
+{%                       endif %}
+{%                     elif (debops_fact__tpl_fact_map[fact_key] is mapping and fact.value[fact_key] is mapping) %}
+{%                       set debops_fact__tpl_new_map = debops_fact__tpl_fact_map[fact_key] %}
+{%                       for entry in fact.value[fact_key].keys() | sort %}
+{%                         if entry in debops_fact__tpl_new_map.keys() %}
+{%                           set _ = debops_fact__tpl_new_map.pop(entry, None) %}
+{%                         endif %}
+{%                       endfor %}
+{%                       set _ = debops_fact__tpl_fact_map.update({ fact_key: debops_fact__tpl_new_map }) %}
+{%                     endif %}
+{%                   endif %}
+{%                 endfor %}
+{%                 set _ = fact_map.update({ fact.name: debops_fact__tpl_fact_map }) %}
+{%               endif %}
+{%             endif %}
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     elif fact.fact_state == 'absent' %}
+{%       set _ = fact_map.pop(fact.name, None) %}
+{%     endif %}
+{%   endfor %}
+{{ fact_map | to_nice_json }}
+{% endmacro %}
