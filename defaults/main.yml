@@ -1,21 +1,23 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.tcpwrappers default variables [[[
+# ========================================
 
 # .. contents:: Sections
 #    :local:
-#
-# ----------------------
-#   Main configuration
+
+
+# Main configuration [[[
 # ----------------------
 
-# .. envvar:: tcpwrappers__enabled
+# .. envvar:: tcpwrappers__enabled [[[
 #
 # Enable or disable configuration of ``tcpwrappers``.
 tcpwrappers__enabled: True
 
-
-# .. envvar:: tcpwrappers__ansible_controllers
+                                                                   # ]]]
+# .. envvar:: tcpwrappers__ansible_controllers [[[
 #
 # Optional list of CIDR hosts which will be allowed to connect to ``sshd``
 # service. Entries are saved in the local facts on remote hosts.
@@ -28,73 +30,55 @@ tcpwrappers__enabled: True
 #       be to use the ``debops.sshd`` role to configure ``ssh`` service.
 tcpwrappers__ansible_controllers: []
 
-
-# .. envvar:: tcpwrappers__deny_all
+                                                                   # ]]]
+# .. envvar:: tcpwrappers__deny_all [[[
 #
 # By default ``debops.tcpwrappers`` will deny all connections using
 # ``/etc/hosts.deny`` file and only allow whitelisted connections in
 # ``/etc/hosts.allow``. Set this variable to ``False`` to disable that.
 tcpwrappers__deny_all: True
 
-
-# .. envvar:: tcpwrappers__divert_hosts_allow
+                                                                   # ]]]
+# .. envvar:: tcpwrappers__divert_hosts_allow [[[
 #
 # Path of the diverted ``/etc/hosts.allow`` file. It will be merged with the
 # rest of the generated configuration files using ``assemble`` ansible module.
 # Warning: do not change this variable while the role is enabled.
 tcpwrappers__divert_hosts_allow: '/etc/hosts.allow.d/05_debian_hosts.allow'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# TCP Wrappers allow lists [[[
 # ----------------------------
-#   TCP Wrappers allow lists
-# ----------------------------
 
-# .. envvar:: tcpwrappers__allow
+# .. envvar:: tcpwrappers__allow [[[
 #
 # List of allow rules for all hosts in the Ansible inventory. See
 # :ref:`tcpwrappers__allow` for more details.
 tcpwrappers__allow: []
 
-
-# .. envvar:: tcpwrappers__group_allow
+                                                                   # ]]]
+# .. envvar:: tcpwrappers__group_allow [[[
 #
 # List of allow rules for hosts in a specific host group. See
 # :ref:`tcpwrappers__allow` for more details.
 tcpwrappers__group_allow: []
 
-
-# .. envvar:: tcpwrappers__host_allow
+                                                                   # ]]]
+# .. envvar:: tcpwrappers__host_allow [[[
 #
 # List of allow rules for specific hosts in the inventory. See
 # :ref:`tcpwrappers__allow` for more details.
 tcpwrappers__host_allow: []
 
-
-# .. envvar:: tcpwrappers__dependent_allow
+                                                                   # ]]]
+# .. envvar:: tcpwrappers__dependent_allow [[[
 #
 # List of allow rules specified by other Ansible roles as a dependency. See
 # :ref:`tcpwrappers__allow` for more details.
 tcpwrappers__dependent_allow: []
 
-  #- daemon: 'ALL'            # daemon to configure (sshd, mysqld, etc.)
-  #  client: []               # list of host or network addresses.
-                              # If empty, entry will be removed
-  #  default: ''              # alternative option to set if item.client is not
-                              # defined or is false. To accept connections from
-                              # anywhere, specify 'ALL'
-  #  accept_any: True/False   # Allow connections from any host (or item.default)
-                              # if no clients are specified
-  #  weight: '10'             # filename prefix, helps with sorting, optional
-  #  filename: ''             # custom filename, optional
-  #  comment: ''              # comment, optional
-
-  #- custom: |                  # custom, free-form text block (filename required)
-  #    # Custom entry
-  #    # Text block
-  #  filename: 'custom_entry'
-
-
-# .. envvar:: tcpwrappers__localhost_allow
+                                                                   # ]]]
+# .. envvar:: tcpwrappers__localhost_allow [[[
 #
 # By default allow unrestricted access from ``localhost``.
 tcpwrappers__localhost_allow:
@@ -103,4 +87,6 @@ tcpwrappers__localhost_allow:
     comment: 'Access from localhost'
     filename: 'allow_localhost'
     weight: '06'
-
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

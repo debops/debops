@@ -35,15 +35,5 @@ Example playbook
 ``debops.tcpwrappers`` is designed to be used from a playbook or a role as role
 dependency. Here's an example configuration:
 
-.. code-block:: yaml
-
-   ---
-   - name: Configure TCP Wrappers
-     hosts: [ 'debops_all_hosts', 'debops_service_tcpwrappers' ]
-     become: True
-
-     roles:
-
-       - role: debops.tcpwrappers
-         tags: [ 'role::tcpwrappers' ]
-
+.. literalinclude:: playbooks/tcpwrappers.yml
+   :language: yaml
