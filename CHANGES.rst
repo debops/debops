@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.2.1
+------
+
+*Released: 2016-08-07*
+
+- Make sure that ``/etc/hosts.deny`` file exists. [drybjed]
+
 v0.2.0
 ------
 

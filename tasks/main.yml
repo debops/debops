@@ -105,6 +105,10 @@
     dest: '/etc/hosts.deny'
     regexp: '^ALL: ALL'
     line: 'ALL: ALL'
+    create: True
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
     state: '{{ "present"
                if (tcpwrappers__enabled  | bool and
                    tcpwrappers__deny_all | bool)
