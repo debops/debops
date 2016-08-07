@@ -44,6 +44,9 @@ Added
   ``debops.bootstrap`` against hosts not in the ``debops_all_hosts`` host
   group. [ypid_]
 
+- Add ``debops.debops_fact`` role with corresponding playbook and include it in
+  the ``common.yml`` playbook. [drybjed]
+
 Changed
 ~~~~~~~
 
