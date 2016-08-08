@@ -36,6 +36,9 @@ and include this:
 
    # Set AD domain. It might be required to adjust in case `bootstrap__domain`
    # is not equal to the Samba domain/workgroup.
+   # ownCloud as of 9.0 provides a Domain field when setting up an external
+   # storage but configuring this here is still nice in case you need to debug
+   # a SMB/CIFS share using `smbclient`.
    samba__workgroup: '{{ bootstrap__domain }}'
 
    # https://community.netapp.com/t5/Network-Storage-Protocols-Discussions/samba-3-6-23-30-on-CentOS-gt-error-in-smbclient/m-p/118486#M8350

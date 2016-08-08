@@ -602,11 +602,7 @@ owncloud__cron_minute: '*/15'
 
 # .. envvar:: owncloud__timeout
 #
-# Timeouts in seconds used for the following settings:
-#
-# - ``fastcgi_read_timeout`` in the nginx configuration.
-# - ``max_input_time`` in php fpm.
-# - ``max_execution_time`` in php fpm.
+# Timeouts in seconds for application requests.
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html>`__ for details.
 owncloud__timeout: 3600
@@ -1653,6 +1649,7 @@ owncloud__php__dependent_pools:
 
   ## Overwrite DebOps default to ensure that long running syncing jobs don’t
   ## get killed.
+  ## https://secure.php.net/manual/en/install.fpm.configuration.php
   request_terminate_timeout: '{{ owncloud__timeout }}'
 
   ## This is sometimes seen in other peoples ownCloud configuration.
