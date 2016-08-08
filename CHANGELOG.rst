@@ -72,6 +72,10 @@ Removed
 - Remove the debops.sshkeys_ role, which is replaced by
   debops.authorized_keys_ role. [drybjed_]
 
+- Remove the debops.ifupdown_ role form the ``common.yml`` playbook and turn it
+  into a regular service. The debops.ifupdown_ role is activated when hosts are
+  placed in the ``[debops_service_ifupdown]`` Ansible host group. [drybjed_]
+
 
 `debops-playbooks v0.2.9`_ - 2016-07-07
 ---------------------------------------
