@@ -1456,12 +1456,17 @@ owncloud__nginx__servers:
 
   ## https://github.com/owncloud/documentation/blob/master/admin_manual/installation/nginx_owncloud_9x.rst
   ## https://github.com/owncloud/documentation/blob/master/admin_manual/installation/nginx_examples.rst
+  ## https://doc.owncloud.org/server/9.0/admin_manual/issues/general_troubleshooting.html
   - by_role: 'debops.owncloud'
     enabled: True
     default: False
     type: 'default'
     name: '{{ owncloud__domain }}'
     root: '{{ owncloud__deploy_path }}'
+
+    ## https://doc.owncloud.org/server/9.0/admin_manual/issues/general_troubleshooting.html#common-problems-error-messages
+    ## DebOps default should be fine.
+    # keepalive: '3600'
 
     robots_tag: [ 'none' ]
     permitted_cross_domain_policies: 'none'
