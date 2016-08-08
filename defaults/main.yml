@@ -319,6 +319,17 @@ owncloud__apt_repo_key_url: 'https://{{ owncloud__apt_repo_base + "/" +
                              "Release.key" }}'
 
 
+# .. envvar:: owncloud__src_remote_dir
+#
+# File path used to store application sources on the remote system.
+# This is currently only used to copy the OpenPGP public key to the remote.
+owncloud__src_remote_dir: '{{
+  (ansible_local.root.src
+  if (ansible_local|d() and ansible_local.root|d() and
+      ansible_local.root.src|d())
+  else "/usr/local/src") + "/owncloud" }}'
+
+
 # .. envvar:: owncloud__apt_repo_source
 #
 # APT ``sources.list`` URL of the ownCloud ``.deb`` repository.

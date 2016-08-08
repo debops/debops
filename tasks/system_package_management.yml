@@ -1,11 +1,25 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-  ## Currently not available from key servers.
-  ## https://github.com/debops/ansible-owncloud/pull/44#discussion_r73565798
-- name: Get ownCloud APT OpenPGP key
+- name: Ensure the application source directory exists
+  file:
+    dest: '{{ owncloud__src_remote_dir }}/keyring'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Copy the application keyring to the remote host
+  copy:
+    src: 'usr/local/src/owncloud/keyring/0xAB7C32C35180350A'
+    dest: '{{ owncloud__src_remote_dir }}/keyring/0xAB7C32C35180350A'
+
+- name: Add ownCloud APT OpenPGP public key
   apt_key:
-    url: '{{ owncloud__apt_repo_key_url }}'
+    file: '{{ owncloud__src_remote_dir }}/keyring/0xAB7C32C35180350A'
+    # url: '{{ owncloud__apt_repo_key_url }}'
+    ## Currently not available from key servers.
+    ## https://github.com/debops/ansible-owncloud/pull/44#discussion_r73565798
     id: '{{ owncloud__apt_repo_key_id }}'
     state: 'present'
 
