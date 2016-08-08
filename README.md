@@ -22,6 +22,7 @@ versions there are no complete deb-packages available.
 * ownCloud theming support.
 * Extensive configuration options via Ansible’s inventory.
 * Manage files for ownCloud users (copy files into their profile)
+* Uses Nginx as webserver. [Note that Nginx is not officially supported by ownCloud or NextCloud](https://github.com/debops/ansible-owncloud/issues/49>).
 
 <!-- * Fully automated ownCloud security updates. -->
 

@@ -21,6 +21,7 @@ Features
 * Fully automated ownCloud security updates.
 * ownCloud theming support.
 * Extensive configuration options via Ansible’s inventory.
+* Uses Nginx as webserver. `Note that Nginx is not officially supported by ownCloud or NextCloud <https://github.com/debops/ansible-owncloud/issues/49>`_.
 
 Installation
 ~~~~~~~~~~~~
