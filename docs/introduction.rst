@@ -1,6 +1,8 @@
 Introduction
 ============
 
+.. include:: includes/all.rst
+
 This role installs a ownCloud_ instance on a specified host, either with
 SQLite, MySQL, MariaDB or PostgreSQL database as a backend and an nginx
 webserver as a frontend.
@@ -10,8 +12,7 @@ versions there are no complete deb-packages available.
 
 ownCloud will be installed as package coming directly from upstream.
 
-.. _ownCloud: https://owncloud.org/
-
+Note that Nginx is `not officially supported by ownCloud nor NextCloud <https://github.com/debops/ansible-owncloud/issues/49>`_ but it is community supported and should work without problems.
 
 Features
 ~~~~~~~~
@@ -21,7 +22,6 @@ Features
 * Fully automated ownCloud security updates.
 * ownCloud theming support.
 * Extensive configuration options via Ansible’s inventory.
-* Uses Nginx as webserver. `Note that Nginx is not officially supported by ownCloud or NextCloud <https://github.com/debops/ansible-owncloud/issues/49>`_.
 
 Installation
 ~~~~~~~~~~~~

@@ -6,11 +6,19 @@ External storage
 .. include:: includes/all.rst
 
 This section gives some hints how to setup external storage for ownCloud.
-``debops.owncloud`` currently does not have a way to automate this. This might
-be added in a later version of the role.
+The automation support for this in ``debops.owncloud`` currently limited. This
+might be added in a later version of the role.
 
 SMB/CIFS
 --------
+
+To enable SMB/CIFS support in the role set:
+
+.. code-block:: none
+
+   owncloud__smb_support: True
+
+in your inventory.
 
 Setting up SMB/CIFS in different environment based on Debian Jessie required
 some debugging so if you have trouble with SMB and MS Windows or NetApp file
@@ -41,17 +49,17 @@ and include this:
    # a SMB/CIFS share using `smbclient`.
    samba__workgroup: '{{ bootstrap__domain }}'
 
-   # https://community.netapp.com/t5/Network-Storage-Protocols-Discussions/samba-3-6-23-30-on-CentOS-gt-error-in-smbclient/m-p/118486#M8350
    samba__global_custom:
      ## DFS workaround:
      'client ntlmv2 auth': 'no'
 
      ## Downgrade NetApp workaround:
+     ## https://community.netapp.com/t5/Network-Storage-Protocols-Discussions/samba-3-6-23-30-on-CentOS-gt-error-in-smbclient/m-p/118486#M8350
      'client use spnego': 'no'
 
 in your inventory to get started.
 
-The run the samba playbook.
+The run the ``service/samba`` playbook.
 
 When you have further suggestions, you are welcome to share them here to save
 us all some debugging time.

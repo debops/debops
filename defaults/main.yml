@@ -36,6 +36,9 @@ owncloud__base_packages:
   ## Upstream documentation does not specify it more clearly. Installing ``libreoffice`` just to be sure.
   - '{{ [ "libreoffice" ] if (owncloud__app_documents_enabled|bool) else [] }}'
 
+  - '{{ [ "smbclient" ] if (owncloud__smb_support|bool) else [] }}'
+  - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release | version_compare("9.0", ">=")) else [] }}'
+
 
 # .. envvar:: owncloud__base_php_packages
 #
@@ -54,25 +57,11 @@ owncloud__base_php_packages:
         if (not (ansible_distribution == "Ubuntu" and (ansible_distribution_version|version_compare("15.10", "<"))))
         else [] }}'
 
+  - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release | version_compare("8.9.9", "<=")) else [] }}'
+
   ## Included in normal PHP installations but require it here because it is
   ## used internally by the role:
   - 'json'
-
-
-# .. envvar:: owncloud__optional_packages
-#
-# List of optional packages for ownCloud.
-# If you don’t want to install them, set:
-#
-# .. code-block:: yaml
-#   :linenos:
-#
-#    owncloud__optional_packages: []
-#
-# in your inventory.
-owncloud__optional_packages:
-  - 'smbclient'
-  - 'libsmbclient'
 
 
 # .. envvar:: owncloud__optional_php_packages
@@ -811,6 +800,19 @@ owncloud__dependent_apps_config: {}
 owncloud__app_documents_enabled: False
 
 
+# .. External storage [[[1
+#
+# --------------------
+#   External storage
+# --------------------
+
+# .. envvar:: owncloud__smb_support
+#
+# SMB/CIFS be support by installing the required packages and enabling the
+# required app?
+owncloud__smb_support: False
+
+
 # .. ownCloud raw occ commands [[[1
 #
 # -----------------------------
@@ -829,9 +831,6 @@ owncloud__app_documents_enabled: False
 #    owncloud__occ_cmd_list
 #
 #      - command: 'app:enable external'
-#
-#      ## Requires: php5-libsmbclient
-#      - command: 'app:enable files_external'
 #
 #      ## Create an additional admin account.
 #      - command: 'user:add --password-from-env --display-name="Administrator" --group="admin" admin'
@@ -866,7 +865,10 @@ owncloud__default_occ_cmd_list:
     when: '{{ owncloud__release | version_compare("8.2", "<=") }}'
 
   - command: 'app:enable user_ldap'
-    when: '{{ owncloud__ldap_enabled | bool }}'
+    when: '{{ owncloud__ldap_enabled|bool }}'
+
+  - command: 'app:enable files_external'
+    when: '{{ owncloud__smb_support|bool }}'
 
 
 # .. envvar:: owncloud__occ_cmd_list

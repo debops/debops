@@ -7,7 +7,6 @@ git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '
      s/owncloud__?run_occ_global_commands/owncloud__occ_cmd_list/g;
      s/owncloud__?run_occ_group_commands/owncloud__group_occ_cmd_list/g;
      s/owncloud__?run_occ_host_commands/owncloud__host_occ_cmd_list/g;
-     s/owncloud__?packages_optional/owncloud__optional_packages/g;
      s/owncloud__?packages_group/owncloud__group_packages/g;
      s/owncloud__?packages_host/owncloud__host_packages/g;
      s/owncloud__?config_group/owncloud__group_config/g;

@@ -129,7 +129,7 @@ Changed
   * :regexp:`owncloud__?run_occ_global_commands` → :envvar:`owncloud__occ_cmd_list`
   * :regexp:`owncloud__?run_occ_group_commands` → :envvar:`owncloud__group_occ_cmd_list`
   * :regexp:`owncloud__?run_occ_host_commands` → :envvar:`owncloud__host_occ_cmd_list`
-  * :regexp:`owncloud__?packages_optional` → :envvar:`owncloud__optional_packages`
+  * :regexp:`owncloud__?packages_optional` → Removed, refer to :envvar:`owncloud__smb_support`
   * :regexp:`owncloud__?packages_group` → :envvar:`owncloud__group_packages`
   * :regexp:`owncloud__?packages_host` → :envvar:`owncloud__host_packages`
   * :regexp:`owncloud__?config_group` → :envvar:`owncloud__group_config`
