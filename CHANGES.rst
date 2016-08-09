@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.php master`_ - unreleased
 ---------------------------------
 
-.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.2...master
+.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.3...master
+
+
+`debops.php v0.2.3`_ - 2016-08-09
+---------------------------------
+
+.. _debops.php v0.2.3: https://github.com/debops/ansible-php/compare/v0.2.2...v0.2.3
 
 Added
 ~~~~~
@@ -32,6 +38,7 @@ Fixed
   :envvar:`php__version_preference` is not available on the system. [ypid_]
 
 - Compatibility with PHP versions before 5.6.0. [ypid_]
+
 
 `debops.php v0.2.2`_ - 2016-07-27
 ---------------------------------
