@@ -19,14 +19,14 @@
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences' ]
       apt_preferences__dependent_list:
-        - '{{ nginx_apt_preferences_dependent_list }}'
+        - '{{ nginx__apt_preferences__dependent_list }}'
         - '{{ owncloud__apt_preferences__dependent_list }}'
         - '{{ php__apt_preferences__dependent_list }}'
 
     - role: debops.ferm
       tags: [ 'role::ferm' ]
       ferm__dependent_rules:
-        - '{{ nginx_ferm_dependent_rules }}'
+        - '{{ nginx__ferm__dependent_rules }}'
 
     - role: debops.mariadb
       tags: [ 'role::mariadb' ]
@@ -69,9 +69,9 @@
 
     - role: debops.nginx
       tags: [ 'role::nginx' ]
-      nginx_dependent_servers:
+      nginx__dependent_servers:
         - '{{ owncloud__nginx__servers }}'
-      nginx_dependent_upstreams:
+      nginx__dependent_upstreams:
         - '{{ owncloud__nginx__upstream_php }}'
 
     - role: debops.owncloud
