@@ -10,51 +10,69 @@
 
   roles:
 
-    - role: debops.mariadb
-      tags: [ 'role::mariadb' ]
-      mariadb_users:
-        - database: '{{ owncloud_database_map[owncloud_database].dbname }}'
-          user: '{{ owncloud_database_map[owncloud_database].dbuser }}'
-          password: '{{ owncloud_database_map[owncloud_database].dbpass }}'
-      when: (owncloud_database == 'mariadb')
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::apt_preferences', 'role::logrotate' ]
 
-    - role: debops.postgresql
-      postgresql_roles:
-        - name: '{{ owncloud_database_name }}' # Separate role is needed when owncloud_database_name != owncloud_database_user
-        - name: '{{ owncloud_database_user }}' # Password is not passed directly - it will be read for the file
-      postgresql_groups:
-        - roles: [ '{{ owncloud_database_user }}' ]
-          groups: [ '{{ owncloud_database_name }}' ]
-          database: '{{ owncloud_database_name }}'
-          enabled: '{{ owncloud_database_name != owncloud_database_user }}'
-      postgresql_databases:
-        - name: '{{ owncloud_database_name }}'
-          owner: '{{ owncloud_database_user }}'
-      when: (owncloud_database == 'postgresql')
-      tags: [ 'role::postgresql' ]
-
-    - role: debops.php5
-      tags: [ 'role::php5' ]
-      php5_pools:
-        - '{{ owncloud__php5__pool }}'
+    - role: debops.owncloud/env
+      tags: [ 'role::owncloud', 'role::nginx' ]
 
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ nginx_apt_preferences_dependent_list }}'
+        - '{{ owncloud__apt_preferences__dependent_list }}'
+        - '{{ php__apt_preferences__dependent_list }}'
 
     - role: debops.ferm
       tags: [ 'role::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx_ferm_dependent_rules }}'
 
+    - role: debops.mariadb
+      tags: [ 'role::mariadb' ]
+      mariadb_users:
+        - database: '{{ owncloud__database_map[owncloud__database].dbname }}'
+          user: '{{ owncloud__database_map[owncloud__database].dbuser }}'
+          password: '{{ owncloud__database_map[owncloud__database].dbpass }}'
+      when: (owncloud__database == 'mariadb')
+
+    - role: debops.postgresql
+      postgresql_roles:
+        - name: '{{ owncloud__database_name }}' # Separate role is needed when owncloud__database_name != owncloud__database_user
+        - name: '{{ owncloud__database_user }}' # Password is not passed directly - it will be read for the file
+      postgresql_groups:
+        - roles: [ '{{ owncloud__database_user }}' ]
+          groups: [ '{{ owncloud__database_name }}' ]
+          database: '{{ owncloud__database_name }}'
+          enabled: '{{ owncloud__database_name != owncloud__database_user }}'
+      postgresql_databases:
+        - name: '{{ owncloud__database_name }}'
+          owner: '{{ owncloud__database_user }}'
+      when: (owncloud__database == 'postgresql')
+      tags: [ 'role::postgresql' ]
+
+    - role: debops.unattended_upgrades
+      tags: [ 'role::unattended_upgrades' ]
+      unattended_upgrades__dependent_origins: '{{ owncloud__unattended_upgrades__dependent_origins }}'
+
+    - role: debops.php
+      tags: [ 'role::php' ]
+      php__dependent_packages:
+        - '{{ owncloud__php__dependent_packages }}'
+      php__dependent_pools:
+        - '{{ owncloud__php__dependent_pools }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
+
     - role: debops.nginx
       tags: [ 'role::nginx' ]
-      nginx_servers:
+      nginx_dependent_servers:
         - '{{ owncloud__nginx__servers }}'
-      nginx_upstreams:
-        - '{{ owncloud__nginx__upstream_php5 }}'
+      nginx_dependent_upstreams:
+        - '{{ owncloud__nginx__upstream_php }}'
 
     - role: debops.owncloud
       tags: [ 'role::owncloud' ]
-

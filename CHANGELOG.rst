@@ -66,6 +66,8 @@ Changed
   playbook. To enable Postfix management, add the host to
   ``[debops_service_postfix]`` inventory group. [drybjed]
 
+- Update debops.owncloud_ playbook. [ypid_]
+
 Removed
 ~~~~~~~
 
