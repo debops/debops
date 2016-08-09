@@ -28,24 +28,24 @@ Added
   :file:`common.yml` playbook. [drybjed_]
 
 - Add debops.authorized_keys_ role with its own playbook, and include it in
-  the :file:`common.yml` playbook. This role replaces the debops.sshkeys_ role
+  the :file:`common.yml` playbook. This role replaces the ``debops.sshkeys`` role
   and is backwards-compatible with it. [drybjed_]
 
 - Add debops.debops_api_ role and its corresponding playbook. [ypid_]
 
-- Add ``debops.hashicorp`` role and its corresponding playbook. [drybjed_]
+- Add debops.hashicorp_ role and its corresponding playbook. [drybjed_]
 
 - Add Core Infrastructure Initiative (CII) Best Practices badge to the
   repository README. [ypid_]
 
-- Add ``debops.nullmailer`` role and its playbook. [drybjed_]
+- Add debops.nullmailer_ role and its playbook. [drybjed_]
 
 - Add ``debops_service_bootstrap`` Ansible host group to allow to run
-  ``debops.bootstrap`` against hosts not in the ``debops_all_hosts`` host
+  debops.bootstrap_ against hosts not in the ``debops_all_hosts`` host
   group. [ypid_]
 
-- Add ``debops.debops_fact`` role with corresponding playbook and include it in
-  the ``common.yml`` playbook. [drybjed]
+- Add debops.debops_fact_ role with corresponding playbook and include it in
+  the :file:`common.yml` playbook. [drybjed_]
 
 Changed
 ~~~~~~~
@@ -57,24 +57,24 @@ Changed
 - Update playbooks which use debops.php_ role to include the
   debops.apt_preferences_ role dependency. [drybjed_]
 
-- Remove the debops.postfix_ role from the ``common.yml`` playbook. The Postfix
+- Remove the debops.postfix_ role from the :file:`common.yml` playbook. The Postfix
   server is replaced by ``nullmailer`` on new installations.
 
-  On existing installations, ``debops.nullmailer`` will detect Postfix and
+  On existing installations, debops.nullmailer_ will detect Postfix and
   disable itself automatically. This means that the DebOps playbook won't
-  manage the existing Postfix installations anymore using the ``common.yml``
+  manage the existing Postfix installations anymore using the :file:`common.yml`
   playbook. To enable Postfix management, add the host to
-  ``[debops_service_postfix]`` inventory group. [drybjed]
+  ``[debops_service_postfix]`` inventory group. [drybjed_]
 
 - Update debops.owncloud_ playbook. [ypid_]
 
 Removed
 ~~~~~~~
 
-- Remove the debops.sshkeys_ role, which is replaced by
+- Remove the ``debops.sshkeys`` role, which is replaced by
   debops.authorized_keys_ role. [drybjed_]
 
-- Remove the debops.ifupdown_ role form the ``common.yml`` playbook and turn it
+- Remove the debops.ifupdown_ role form the :file:`common.yml` playbook and turn it
   into a regular service. The debops.ifupdown_ role is activated when hosts are
   placed in the ``[debops_service_ifupdown]`` Ansible host group. [drybjed_]
 
@@ -326,7 +326,7 @@ Added
 
 - Add new role tags in all playbooks. [drybjed_]
 
-- Add debops.grub_ role, created by Patryk Ściborek (scibi). Thanks!
+- Add debops.grub_ role, created by Patryk Ściborek (scibi_). Thanks!
   [drybjed_]
 
 - Add debops.docker_ role. [drybjed_]
@@ -338,7 +338,7 @@ Added
 
 - Add debops.docker_gen_ role. [drybjed_]
 
-- Add ``ldappassword`` filter. [scibi]
+- Add ``ldappassword`` filter. [scibi_]
 
 - Add debops.postgresql_server_ role. [drybjed_]
 
@@ -466,7 +466,7 @@ Added
 - Reto Gantenbein created a `Dovecot`_ role which has been added to the DebOps
   project. Thanks! debops.dovecot_ can be used to manage IMAP/POP3 service
   which will let you access your mail remotely over a secure connection.
-  [ganto, drybjed_]
+  [ganto_, drybjed_]
 
 
 `debops-playbooks v0.2.4`_ - 2015-03-26
@@ -480,7 +480,7 @@ Added
 - Add separate "root fact" directory where applications are installed, by
   default the same as the path for service home directories. [drybjed_]
 
-- Install ``python-pip`` during bootstrapping. [htgoebel]
+- Install ``python-pip`` during bootstrapping. [htgoebel_]
 
 - Add a way to install custom packages during bootstrapping. [drybjed_]
 
@@ -519,10 +519,10 @@ Changed
 - Scripts which provide custom facts will be installed on the first run of
   the :file:`root.yml` playbook. First such script provides a list of currently
   enabled Linux capabilities, in ``ansible_local.cap12s`` fact tree.
-  [htgoebel, drybjed_]
+  [htgoebel_, drybjed_]
 
 - :file:`bootstrap.yml` playbook will check if it can change the hostname before
-  doing it using Linux capabilities. [htgoebel, drybjed_]
+  doing it using Linux capabilities. [htgoebel_, drybjed_]
 
 
 `debops-playbooks v0.2.2`_ - 2015-02-25
