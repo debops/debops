@@ -259,7 +259,7 @@ owncloud__release: '9.0'
 #
 # Name and version of OS distribution to use for ownCloud packages.
 owncloud__distribution: '{{ owncloud__distribution_name + "_" +
-                           owncloud__distribution_version }}'
+                            owncloud__distribution_version }}'
 
 
 # .. envvar:: owncloud__distribution_name
@@ -271,9 +271,9 @@ owncloud__distribution_name: '{{ ansible_distribution }}'
 # .. envvar:: owncloud__distribution_version
 #
 # Version number of the OS distribution for ownCloud URLs.
-owncloud__distribution_version: '{{ ((ansible_distribution_major_version + ".0")
+owncloud__distribution_version: '{{ (ansible_distribution_major_version + ".0")
                                     if ansible_distribution in [ "Debian" ]
-                                    else ansible_distribution_version) }}'
+                                    else ansible_distribution_version }}'
 
 
 # .. envvar:: owncloud__apt_repo_base
@@ -286,14 +286,6 @@ owncloud__apt_repo_base: 'download.owncloud.org/download/repositories/{{ ownclou
 #
 # OpenPGP fingerprint for the public key used to sign the APT repository.
 owncloud__apt_repo_key_id: 'BCECA90325B072AB1245F739AB7C32C35180350A'
-
-
-# .. envvar:: owncloud__apt_repo_key_url
-#
-# URL of the OpenPGP keys used by the ownCloud project.
-owncloud__apt_repo_key_url: 'https://{{ owncloud__apt_repo_base + "/" +
-                             owncloud__distribution + "/"
-                             "Release.key" }}'
 
 
 # .. envvar:: owncloud__src_remote_dir
@@ -311,7 +303,7 @@ owncloud__src_remote_dir: '{{
 #
 # APT ``sources.list`` URL of the ownCloud ``.deb`` repository.
 owncloud__apt_repo_source: '{{ "deb http://" + owncloud__apt_repo_base + "/" +
-                              owncloud__distribution + "/ /" }}'
+                               owncloud__distribution + "/ /" }}'
 
 
 # .. envvar:: owncloud__user
@@ -453,11 +445,11 @@ owncloud__database_name: 'owncloud'
 #
 # Path to database password file.
 owncloud__database_password_path: '{{ secret + "/" + owncloud__database + "/"
-                                    + ansible_local[owncloud__database].delegate_to
-                                    + (("/" + ansible_local[owncloud__database].port)
-                                       if (owncloud__database == "postgresql")
-                                       else "")
-                                    + "/credentials/" + owncloud__database_user + "/password" }}'
+                                      + ansible_local[owncloud__database].delegate_to
+                                      + (("/" + ansible_local[owncloud__database].port)
+                                         if (owncloud__database == "postgresql")
+                                         else "")
+                                      + "/credentials/" + owncloud__database_user + "/password" }}'
 
 
 # .. envvar:: owncloud__database_password
@@ -523,8 +515,8 @@ owncloud__password_length: 20
 #
 # Default admin password.
 # A random password will be generate by default as documented by the debops.secret_ role.
-owncloud__admin_password: '{{ lookup("password",
-                             owncloud__admin_password_path + " length=" + (owncloud__password_length|string)) }}'
+owncloud__admin_password: '{{ lookup("password", owncloud__admin_password_path
+                              + " length=" + (owncloud__password_length|string)) }}'
 
 
 # .. envvar:: owncloud__autosetup
@@ -800,6 +792,8 @@ owncloud__app_documents_enabled: False
 #   External storage
 # --------------------
 
+# Refer to the :ref:`owncloud__ref_external_storage` section for more details.
+
 # .. envvar:: owncloud__smb_support
 #
 # SMB/CIFS be support by installing the required packages and enabling the
@@ -846,12 +840,12 @@ owncloud__smb_support: False
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html>`__ for details.
 
-# .. envvar:: owncloud__default_occ_cmd_list
+# .. envvar:: owncloud__role_occ_cmd_list
 #
 # Default list of :command:`occ` commands to run.
 # Command present of role to automate certain tasks.
 # See `ownCloud raw occ commands`_.
-owncloud__default_occ_cmd_list:
+owncloud__role_occ_cmd_list:
   ## Disable the updater because it does not work anyway with the way ownCloud
   ## is setup by this role using packages.
   ## Since ownCloud 9 it is called `updatenotification`.
@@ -942,7 +936,8 @@ owncloud__user_files_host: []
 #   LDAP authentication
 # -----------------------
 #
-# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/go.php?to=admin-ldap>`__ for details.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/go.php?to=admin-ldap>`__
+# and to the :ref:`owncloud__ref_external_users` section for more details.
 
 # .. envvar:: owncloud__ldap_enabled
 #
@@ -1301,7 +1296,7 @@ owncloud__theme_name_html: '{{ owncloud__theme_name }}'
 #
 # Entity string for your ownCloud. For example the name of your company. This
 # string is used for the footer and the copyright.
-owncloud__theme_entitiy_name: 'DebOps project'
+owncloud__theme_entitiy_name: 'DebOps Project'
 
 
 # .. envvar:: owncloud__theme_base_url
