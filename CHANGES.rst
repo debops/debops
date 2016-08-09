@@ -23,6 +23,8 @@ Added
   preferred PHP version and remove older PHP versions on the next Ansible run
   when set to ``True``. [ypid_]
 
+- Expose all base directory paths via Ansible facts. [ypid_]
+
 Fixed
 ~~~~~
 
