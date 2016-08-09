@@ -117,6 +117,12 @@ Changed
   from ``300`` to ``3600`` and the :envvar:`owncloud__upload_size` from
   ``128M`` to ``2G``. [ypid_]
 
+- Changed default ownCloud domain from ``owncloud.{{ ansible_domain }}`` to
+  ``cloud.{{ ansible_domain }}`` to generalize the role.
+  Note that this migration might leave some legacy files on the remote host in place.
+  Test this before or overwrite this change using :envvar:`owncloud__domain`.
+  [ypid_]
+
 - Renamed Ansible tags
 
   * ``role::owncloud:base_install`` → ``role::owncloud:pkg``
