@@ -115,12 +115,12 @@ options:
 EXAMPLES = """
 # Configure directory number 1 for example.com.
 - ldap_attr: dn='olcDatabase={1}hdb,cn=config' name=olcSuffix values='dc=example,dc=com' state=exact
-  sudo: true
+  become: true
 
 # Set up the ACL. The complex argument format is required here to pass a list
 # of ACL strings.
 - ldap_attr:
-  sudo: true
+  become: true
   args:
     dn: olcDatabase={1}hdb,cn=config
     name: olcAccess
@@ -137,14 +137,14 @@ EXAMPLES = """
 
 # Declare some indexes.
 - ldap_attr: dn='olcDatabase={1}hdb,cn=config' name=olcDbIndex values={{ item }}
-  sudo: true
+  become: true
   with_items:
     - objectClass eq
     - uid eq
 
 # Set up a root user, which we can use later to bootstrap the directory.
 - ldap_attr: dn='olcDatabase={1}hdb,cn=config' name={{ item.key }} values={{ item.value }} state=exact
-  sudo: true
+  become: true
   with_dict:
     olcRootDN: 'cn=root,dc=example,dc=com'
     olcRootPW: '{SSHA}mRskON0Stk+5wO5K+MMk2xmakKt8h7eJ'

@@ -104,7 +104,7 @@ options:
 EXAMPLES = """
 # Make sure we have a parent entry for users.
 - ldap_entry: dn='ou=users,dc=example,dc=com' objectClass=organizationalUnit
-  sudo: true
+  become: true
 
 # Make sure we have an admin user.
 - ldap_entry:
@@ -112,7 +112,7 @@ EXAMPLES = """
     objectClass: simpleSecurityObject,organizationalRole
     description: An LDAP administrator
     userPassword: '{SSHA}pedsA5Y9wHbZ5R90pRdxTEZmn6qvPdzm'
-  sudo: true
+  become: true
 
 # Get rid of an old entry.
 - ldap_entry: dn='ou=stuff,dc=example,dc=com' state=absent server_uri='ldap://localhost/' bind_dn='cn=admin,dc=example,dc=com' bind_pw=password
