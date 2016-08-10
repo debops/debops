@@ -59,6 +59,7 @@
     - '{{ php__configuration }}'
     - '{{ php__group_configuration }}'
     - '{{ php__host_configuration }}'
+    - '{{ php__dependent_configuration }}'
   when: item.state|d('present') != 'absent'
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:config' ]
@@ -72,6 +73,7 @@
     - '{{ php__configuration }}'
     - '{{ php__group_configuration }}'
     - '{{ php__host_configuration }}'
+    - '{{ php__dependent_configuration }}'
   when: item.state|d() and item.state == 'absent'
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:config' ]

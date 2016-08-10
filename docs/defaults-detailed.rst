@@ -63,7 +63,7 @@ The configuration is designed to allow easy creation of multiple configuration
 files located in :file:`/etc/php{5,/7.0}/` directories. By default, all files are
 created in the :file:`/etc/php{5,/7.0}/ansible/` directory with the ``.ini``
 extension, and symlinked to the respective PHP SAPI configuration directories.
-If you need, you can create the configuration files directly in the PHP SAPi
+If you need, you can create the configuration files directly in the PHP SAPI
 directories as well.
 
 Role recognizes the parameters below:
