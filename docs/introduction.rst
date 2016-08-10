@@ -12,9 +12,9 @@ Installation
 
 This role requires at least Ansible ``v2.0.0``. To install it, run:
 
-.. code-block:: yaml
+.. code-block:: console
 
-   user@host:~$ ansible-galaxy install debops.php
+   ansible-galaxy install debops.php
 
 ..
  Local Variables:
