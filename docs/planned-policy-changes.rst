@@ -17,4 +17,4 @@ Planned changes for v0.2.0:
 
 * DebOps Contributors MUST sign their work.
 
-These changes are expected to take in effect on 2018-09-01.
+These changes are expected to take effect on 2018-09-01.

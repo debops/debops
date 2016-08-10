@@ -7,7 +7,7 @@ Organizational Structure
 
 :Date drafted: 2016-06-19
 :Date effective: 2016-09-01
-:Last changed: 2016-07-21
+:Last changed: 2016-08-26
 :Version: 0.1.0
 :Authors: - drybjed_
           - ypid_
@@ -19,7 +19,7 @@ use it and contribute their time, skills and resources. To allow for a more
 organized work, various roles are defined within the Project.
 
 In the industry the term "organizational structure" might also be known as
-"roles as missions" which is not used in this documentation to avoid confusion
+"roles and missions" which is not used in this documentation to avoid confusion
 with Ansible roles.
 
 Refer to the `DebOps People`_ section in the debops-keyring_ documentation
@@ -74,16 +74,15 @@ Authors
 -------
 
 The DebOps Project is divided into multiple repositories.
-
 Each repository has their initial Author. They are mentioned as the first
 copyright holder in the COPYRIGHT file of the role.
 
 Maintainers
 -----------
 
-Each repository has their has a Maintainer. Maintainers decide what a given
+Each repository has a Maintainer. Maintainers decide what a given
 repository does, develop it and can accept Pull/Merge Requests as needed. They
-have full write access to the repositories.
+have full write access to the repository.
 
 Only DebOps Developers can be Maintainers. If a role was created by an Author
 who is not a DebOps Developer yet, a DebOps Developer needs to be the
@@ -100,7 +99,8 @@ should use their own OpenPGP keys, stored in `debops-keyring`_ for auditing.
 The bots are not expected to introduce new unauthenticated code or
 documentation in different repositories which is enforced by only giving the
 bots access to the repositories they are working with and checking that no
-commits are created by bots in unexpected repositories using the `DebOps Tools`_.
+commits are created by bots in unexpected repositories using the `DebOps
+Tools`_ (`not yet implemented <https://github.com/debops/debops-tools/issues/164>`__).
 
 ..
  Local Variables:
