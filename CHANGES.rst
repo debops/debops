@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.3...master
 
+Added
+~~~~~
+
+- :envvar:`php__dependent_configuration`. [ypid_]
+
 
 `debops.php v0.2.3`_ - 2016-08-09
 ---------------------------------
