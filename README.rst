@@ -1,5 +1,5 @@
 |debops_logo| `DebOps <https://debops.org>`_
-===========================================
+============================================
 
 |CII Best Practices|
 
@@ -115,14 +115,14 @@ Authors
 **Maciej Delmanowski**
 
 - Email: drybjed@gmail.com
-- Twitter: `@drybjed_ <https://twitter.com/drybjed_>`_
-- Github: `drybjed <https://github.com/drybjed_>`_
+- Twitter: `@drybjed <https://twitter.com/drybjed>`_
+- Github: `drybjed <https://github.com/drybjed>`_
 
 **Nick Janetakis**
 
 - Email: nick.janetakis@gmail.com
 - Twitter: `@nickjanetakis <https://twitter.com/nickjanetakis>`_
-- Github: `nickjj <https://github.com/nickjj_>`_
+- Github: `nickjj <https://github.com/nickjj>`_
 
 **Hartmut Goebel**
 
@@ -133,7 +133,7 @@ Authors
 
 - Email: ypid@riseup.net
 - Website: http://ypid.de/
-- GitHub: `ypid <https://github.com/ypid_>`_
+- GitHub: `ypid <https://github.com/ypid>`_
 
 .. |Gratipay| image:: https://img.shields.io/gratipay/drybjed.svg?style=flat
 .. _Gratipay: https://www.gratipay.com/drybjed/
