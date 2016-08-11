@@ -32,7 +32,7 @@ Here's an example playbook which uses ``debops.lvm`` role::
 
     - name: Configure Logical Volume Manager
       hosts: [ 'debops_service_lvm' ]
-      sudo: True
+      become: True
 
       roles:
         - role: debops.lvm
