@@ -3,7 +3,7 @@
 Support functions for command line utilities (scripts).
 """
 # Copyright (C) 2014-2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
-# Part of the DebOps project - http://debops.org/
+# Part of the DebOps - http://debops.org/
 
 # This program is free software; you can redistribute
 # it and/or modify it under the terms of the

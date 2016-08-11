@@ -28,7 +28,7 @@ setup(
         },
 
     # metadata for upload to PyPI
-    author = "DebOps Project",
+    author = "DebOps Developers",
     author_email = "debops@groups.io",
     description = "Your Debian-based data center in a box.",
     long_description = README,

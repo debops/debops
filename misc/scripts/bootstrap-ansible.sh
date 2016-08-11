@@ -2,7 +2,7 @@
 
 # bootstrap-ansible.sh: download and build Ansible on Debian/Ubuntu host
 # Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
-# Part of the DebOps project - http://debops.org/
+# Part of the DebOps - http://debops.org/
 
 
 # This program is free software; you can redistribute

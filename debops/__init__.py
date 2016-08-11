@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2014-2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
-# Part of the DebOps project - http://debops.org/
+# Part of the DebOps - http://debops.org/
 
 # This program is free software; you can redistribute
 # it and/or modify it under the terms of the
@@ -104,11 +104,11 @@ def _find_up(path, name):
 
 def find_debops_project(path=None):
     """
-    Searches the debops project, this workdir belongs to, if any.
+    Searches DebOps, this workdir belongs to, if any.
 
     `path` defaults to the current working directory.
 
-    Returns None if this path does not belong to a debops project. 
+    Returns None if this path does not belong to a DebOps project.
     """
     if path is None:
         path = os.getcwd()
@@ -195,7 +195,7 @@ def padlock_unlock(encrypted_path):
     # Start encfs. It will wait for input on the `configfile` named
     # pipe.
     encfs = subprocess.Popen([
-        'encfs', encrypted_path, decrypted_path, 
+        'encfs', encrypted_path, decrypted_path,
         '--extpass', 'gpg --no-mdc-warning --output - %s' % shquote(keyfile)])
     # now decrypt the config and write it into the named pipe
     with open(configfile, 'w') as fh:

@@ -173,7 +173,7 @@ Pre-release
   directory up). This allows to overwrite upstream DebOps roles with local
   modified ones, which enables easy development or customization when needed.
 
-- ``debops`` script gains even more integration with DebOps project directory.
+- ``debops`` script gains even more integration with a DebOps project directory.
   You can put your custom playbooks in ``playbooks/`` or ``ansible/playbooks/``
   directories and access them by specifying name of a playbook as first
   argument of ``debops`` script. Roles can be put in ``roles/`` and
@@ -266,7 +266,7 @@ Pre-release
 2014-09-10
 ~~~~~~~~~~
 
-- DebOps project repositories can now be easily backed up using a Bash script
+- DebOps project directories can now be easily backed up using a Bash script
 
 - New main scripts:
 

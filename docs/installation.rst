@@ -2,13 +2,17 @@ Installation
 ============
 
 DebOps scripts are distributed on `PyPI`_, Python Package Index. They can be
-installed using the ``pip`` command::
+installed using the ``pip`` command:
 
-    pip install debops
+.. code-block:: console
 
-You can also use ``pip`` to upgrade the scripts themselves::
+   pip install debops
 
-    pip install --upgrade debops
+You can also use ``pip`` to upgrade the scripts themselves:
+
+.. code-block:: console
+
+   pip install --upgrade debops
 
 After the installation is finished, scripts will be available in
 ``/usr/local/bin/``, which should be in your shell's ``$PATH``.
@@ -32,7 +36,7 @@ Python ``netaddr`` library
   and networks. DebOps provides an Ansible plugin (included in Ansible 1.9+)
   which uses this library to manipulate IP addresses.
 
-  You can install ``netaddr`` either using your favourite package manager, or
+  You can install ``netaddr`` either using your favorite package manager, or
   through ``pip``.
 
 Python ``ldap`` library
@@ -61,11 +65,10 @@ Python ``passlib`` library
   to share the encrypted ``secret/`` directory with other users without sharing
   the password, and using private GPG keys instead. ``debops`` script will
   automatically decrypt the keyfile and use it to open an EncFS volume.
-  
+
   GnuPG is usually installed on Linux or MacOSX operating systems.
-  
+
 ``git``
   Git is required to be installed for Debops to be used. Git is a version control
   system. If it is not already install, it can be usually be installed using your
   favourite package manager.
-
