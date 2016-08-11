@@ -58,7 +58,7 @@
     version: '{{ etherpad_version }}'
     bare: yes
     update: yes
-  sudo_user: '{{ etherpad_user }}'
+  become_user: '{{ etherpad_user }}'
   register: etherpad_register_source
   tags: [ 'role::etherpad:source' ]
 
@@ -96,7 +96,7 @@
     chdir: '{{ etherpad_src_dir + "/" + etherpad_repository }}'
   environment:
     GIT_WORK_TREE: '{{ etherpad_home + "/" + etherpad_repository }}'
-  sudo_user: '{{ etherpad_user }}'
+  become_user: '{{ etherpad_user }}'
   register: etherpad_register_checkout
   notify: [ 'Restart etherpad-lite' ]
   when: (etherpad_register_source is defined and etherpad_register_source.changed == True) or
@@ -166,7 +166,7 @@
   args:
     chdir: '{{ etherpad_home + "/" + etherpad_repository }}'
     creates: '{{ etherpad_home }}/.node-gyp'
-  sudo_user: '{{ etherpad_user }}'
+  become_user: '{{ etherpad_user }}'
 
 - name: Install sqlite3 NPM dependency for Etherpad
   npm:
@@ -174,7 +174,7 @@
     path: '{{ etherpad_home + "/" + etherpad_repository }}'
     state: 'present'
     production: yes
-  sudo_user: '{{ etherpad_user }}'
+  become_user: '{{ etherpad_user }}'
   notify: [ 'Restart etherpad-lite' ]
   when: etherpad_database == 'sqlite'
 
@@ -185,7 +185,7 @@
     state: 'present'
     production: yes
   with_flattened: etherpad_plugins
-  sudo_user: '{{ etherpad_user }}'
+  become_user: '{{ etherpad_user }}'
   notify: [ 'Restart etherpad-lite' ]
   when: etherpad_plugins is defined and etherpad_plugins
   tags: [ 'role::etherpad:plugins' ]
