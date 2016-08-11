@@ -96,7 +96,7 @@ Changed
 
 - Use ownCloud APT repository of the latest stable release of ownCloud which is
   supported by this role and not the latest stable release of ownCloud for
-  which the DebOps project might need adoption. This allows the role maintainers to
+  which DebOps might need adoption. This allows the role maintainers to
   update the role to new releases, test it and then release a new version of
   the role. [ypid_]
 
@@ -130,7 +130,7 @@ Changed
 
   [ypid_]
 
-- Renamed variables to be consistent with the DebOps project:
+- Renamed variables to be consistent with DebOps:
 
   * :regexp:`owncloud__?run_occ_global_commands` → :envvar:`owncloud__occ_cmd_list`
   * :regexp:`owncloud__?run_occ_group_commands` → :envvar:`owncloud__group_occ_cmd_list`
