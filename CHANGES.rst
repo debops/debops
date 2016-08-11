@@ -72,7 +72,83 @@ v0.4.1
 
 - Add :file:`library/` path to default Ansible plugin paths in generated ``ansible.cfg``. [drybjed_]
 
-DebOps mailing list`_ has been moved to `groups.io`_.
+- Define default ``ansible_managed`` variable in generated ``ansible.cfg``. [drybjed_]
+
+- Changelog is rewritten in reStructuredText. [drybjed_]
+
+v0.4.0
+------
+
+*Released: 2015-02-12*
+
+- DebOps can now use a system-wide configuration file `/etc/debops.cfg`. You
+  can also install DebOps playbooks and roles in a system-wide location. [htgoebel_]
+
+v0.3.0
+------
+
+*Released: 2015-01-27*
+
+- Small fixes for bugs in DebOps libraries which prevented corret script
+  execution on platforms other than Linux. [htgoebel_]
+
+v0.2.0
+------
+
+*Released: 2015-01-26*
+
+- :command:`debops-padlock` script has been modified to support "lock" and "unlock"
+  sub-commands and it is now used by the `padlock` wrapper script to lock and
+  unlock EncFS-encrypted secret directory. [htgoebel_]
+
+- ``debops`` script can now read configuration from several files::
+
+    /etc/debops.cfg
+    $XDG_CONFIG_DIRS/debops.cfg (defaults to ~/etc/xdg/debops.cfg)
+    $XDG_CONFIG_HOME/debops.cfg (defaults to ~/.config/debops.cfg)
+    ./.debops.cfg
+
+  Configuration options from different files are merged together. [htgoebel_]
+
+- Scripts are now tested on Travis-CI using `nosetests`. [drybjed_]
+
+
+v0.1.0
+------
+
+*Released: 2014-12-14*
+
+- Scripts are completely rewritten in Python by Hartmut Goebel. This saves
+  a lot of code allows for more fertile future changes.
+
+Notable changed related to the shell-version are:
+
+- Playbooks are no longer searched in :file:`/usr/local/share/debops` nor in
+  :file:`/usr/share/debops`. We assume DebOps is used from a user account,
+  so installing playbooks globally is not the common case.
+
+- Sourcing ``.debops.cfg`` is no longer supported, ``.debops.cfg`` now is
+  assumed to be an ini-file.
+
+- The ``ansible_config_hook`` (which was undocumented anyway) is gone.
+  Instead you can put sections ``[ansible ...]`` into ``.debops.cfg``
+  which will go into ``ansible.cfg``. This allows for easy adding e. g. a
+  ``[paramiko]`` section to `ansible.cfg`.
+
+- The padlock-script is no longer used to decide if secrets are
+  encrypted. This is now done by testing for the encrypted keyfile and
+  the encrypted encfs-config.
+
+- The padlock script still exists and has been simplified a lot. Most
+  functionality has been moved into the DebOps python library.
+
+Pre-release
+-----------
+
+2014-12-02
+~~~~~~~~~~
+
+- `DebOps mailing list`_ has been moved to `groups.io`_.
 
 .. _groups.io: https://groups.io/
 
