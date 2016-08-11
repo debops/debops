@@ -4,7 +4,7 @@
        remote={{ rails_deploy_git_remote }} accept_hostkey=yes
   register: rails_deploy_register_repo_status
   when: rails_deploy_git_location is defined and rails_deploy_git_location
-  sudo_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'
 
 - name: Detect a temporary public deploy page
   stat: path={{ rails_deploy_src }}/public/deploy.html
@@ -17,7 +17,7 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status | changed
   changed_when: False
-  sudo_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'
 
 - name: Update gems
   command: bundle install --deployment --without={{ rails_deploy_bundle_without | difference([rails_deploy_system_env]) | join(',') }}
@@ -25,7 +25,7 @@
   changed_when: False
   when: rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status | changed
-  sudo_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'
 
 - name: Restart the background worker asynchronously
   service: name={{ rails_deploy_worker }} state=restarted
@@ -43,7 +43,7 @@
         inventory_hostname == rails_deploy_hosts_master and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status | changed
-  sudo_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'
 
 - name: Store mtime of the config folder
   stat: path={{ rails_deploy_src }}/config
@@ -63,7 +63,7 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status | changed
   with_items: rails_deploy_pre_migrate_shell_commands
-  sudo_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'
 
 - name: Migrate the database
   shell: '{{ rails_deploy_env_source }} && bundle exec rake db:migrate chdir={{ rails_deploy_src }}'
@@ -74,7 +74,7 @@
         (rails_deploy_register_mtime_schema.stat.mtime != ansible_local.rails_deploy[rails_deploy_service].mtime.schema) or
         ansible_local.rails_deploy[rails_deploy_service].mtime.schema is undefined))
   register: rails_deploy_register_migration
-  sudo_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'
 
 - name: Execute shell commands after migration
   shell: '{{ rails_deploy_env_source }} && {{ item }} chdir={{ rails_deploy_src }}'
@@ -82,7 +82,7 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status | changed
   with_items: rails_deploy_post_migrate_shell_commands
-  sudo_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'
 
 - name: Reload the backend server
   service: name={{ rails_deploy_service }} state=reloaded
@@ -145,7 +145,7 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status | changed
   with_items: rails_deploy_post_restart_shell_commands
-  sudo_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'
 
 - name: Disable the temporary deploy page
   command: rm -f public/index.html chdir={{ rails_deploy_src }}
@@ -153,4 +153,4 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status | changed
   changed_when: False
-  sudo_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'
