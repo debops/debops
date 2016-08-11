@@ -5,7 +5,7 @@
 
 - name: Install PHP packages
   apt:
-    name: '{{ item|search("php.*-")|ternary(item, "php" + php__version + "-" + item) }}'
+    name: '{{ item|match("php")|ternary(item, "php" + php__version + "-" + item) }}'
     state: 'present'
     install_recommends: False
   with_flattened:
