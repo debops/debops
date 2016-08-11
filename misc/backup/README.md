@@ -1,7 +1,7 @@
 ## backup-debops.org.sh
 
 This script can be used to backup essential git repositories of the
-[DebOps](http://debops.org/) project.
+[DebOps](https://debops.org/) project.
 
 Current list of git repositories is stored in `backup-data.txt` file (it is
 a shell script with the list of repositories stored in arrays, sourced by the main

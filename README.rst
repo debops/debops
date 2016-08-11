@@ -1,4 +1,4 @@
-|debops_logo| `DebOps <http://debops.org>`_
+|debops_logo| `DebOps <https://debops.org>`_
 ===========================================
 
 |CII Best Practices|
@@ -56,7 +56,7 @@ use::
    $ debops-update
 
 Please see the `Installation Guide
-<http://docs.debops.org/en/latest/debops/docs/installation.html>`_ for more
+<https://docs.debops.org/en/latest/debops/docs/installation.html>`_ for more
 details.
 
 
@@ -65,7 +65,7 @@ Getting started
 
 Here is a short intro how to use DebOps. Please have a look at the
 `Getting Started Guide
-<http://docs.debops.org/en/latest/debops/docs/getting-started.html>`_ for more
+<https://docs.debops.org/en/latest/debops/docs/getting-started.html>`_ for more
 detailed information.
 
 **Make your first project**
@@ -97,16 +97,16 @@ What do you want to learn more about?
 |Gratipay|_
 
 - `Playbooks and roles <https://github.com/debops/debops-playbooks>`_
-- `Custom scripts <http://docs.debops.org/en/latest/debops-playbooks/docs/custom-features.html>`_
+- `Custom scripts <https://docs.debops.org/en/latest/debops-playbooks/docs/custom-features.html>`_
 - DebOps guides and troubleshooting
-    - `Using linux containers <http://docs.debops.org/en/latest/debops-playbooks/docs/guides/linux-containers.html>`_
-    - `Creating a local APT server to use backports <http://docs.debops.org/en/latest/debops-playbooks/docs/guides/local-apt-repository.html>`_
+    - `Using linux containers <https://docs.debops.org/en/latest/debops-playbooks/docs/guides/linux-containers.html>`_
+    - `Creating a local APT server to use backports <https://docs.debops.org/en/latest/debops-playbooks/docs/guides/local-apt-repository.html>`_
     - `Solving common problems <https://github.com/debops/debops/wiki/Solutions-to-problems-you-may-encounter>`_
 
 Do you want to contribute?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Sounds great, check out the `contributing guide <http://docs.debops.org/en/latest/debops/docs/contributing.html>`_
+Sounds great, check out the `contributing guide <https://docs.debops.org/en/latest/debops/docs/contributing.html>`_
 for the details.
 
 Authors
@@ -115,14 +115,14 @@ Authors
 **Maciej Delmanowski**
 
 - Email: drybjed@gmail.com
-- Twitter: `@drybjed <https://twitter.com/drybjed>`_
-- Github: `drybjed <https://github.com/drybjed>`_
+- Twitter: `@drybjed_ <https://twitter.com/drybjed_>`_
+- Github: `drybjed <https://github.com/drybjed_>`_
 
 **Nick Janetakis**
 
 - Email: nick.janetakis@gmail.com
 - Twitter: `@nickjanetakis <https://twitter.com/nickjanetakis>`_
-- Github: `nickjj <https://github.com/nickjj>`_
+- Github: `nickjj <https://github.com/nickjj_>`_
 
 **Hartmut Goebel**
 
@@ -133,11 +133,11 @@ Authors
 
 - Email: ypid@riseup.net
 - Website: http://ypid.de/
-- GitHub: `ypid <https://github.com/ypid>`_
+- GitHub: `ypid <https://github.com/ypid_>`_
 
 .. |Gratipay| image:: https://img.shields.io/gratipay/drybjed.svg?style=flat
 .. _Gratipay: https://www.gratipay.com/drybjed/
-.. |debops_logo| image:: http://debops.org/images/debops-small.png
+.. |debops_logo| image:: https://debops.org/images/debops-small.png
 
 
 

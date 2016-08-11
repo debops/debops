@@ -34,7 +34,7 @@ setup(
     long_description = README,
     license = "GPL 3.0",
     keywords = "ansible",
-    url          = "http://debops.org/",
+    url          = "https://debops.org/",
     download_url = "https://github.com/debops/debops/archive/v0.4.4.tar.gz",
     classifiers = [
     'Development Status :: 4 - Beta',
