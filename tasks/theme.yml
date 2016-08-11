@@ -15,7 +15,7 @@
 
 - name: Ensure the theme directory is present
   file:
-    path: '{{ owncloud_deploy_path + "/themes/" + owncloud__theme_directory_name }}'
+    path: '{{ owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name }}'
     state: 'directory'
   when: (owncloud__theme_directory_name != "")
   tags:
@@ -24,10 +24,10 @@
 - name: Apply common theming options using the defaults.php file
   template:
     src: 'srv/www/sites/themes/debops-template/defaults.php.j2'
-    dest: '{{ owncloud_deploy_path + "/themes/" + owncloud__theme_directory_name + "/defaults.php" }}'
+    dest: '{{ owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/defaults.php" }}'
     owner: 'root'
     ## ownCloud itself does not need to change this file and does not even allow to do so.
-    group: '{{ owncloud_group }}'
+    group: '{{ owncloud__group }}'
     mode: '0640'
     validate: 'php -f %s'
   when: (owncloud__theme_directory_name != "")
@@ -35,7 +35,7 @@
 
 - name: Ensure that parent directories exist
   file:
-    path: '{{ (owncloud_deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key) | dirname }}'
+    path: '{{ (owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key) | dirname }}'
     state: 'directory'
     owner: '{{ item.value.base_directory_owner | d(omit) }}'
     group: '{{ item.value.base_directory_group | d(omit) }}'
@@ -46,7 +46,7 @@
 
 - name: Copy additional theme files
   copy:
-    dest:           '{{ (owncloud_deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key) if (not item.key.startswith("/")) else item.key }}'
+    dest:           '{{ (owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key) if (not item.key.startswith("/")) else item.key }}'
     backup:         '{{ item.value.backup         | d(omit) }}'
     content:        '{{ item.value.content        | d(omit) }}'
     directory_mode: '{{ item.value.directory_mode | d(omit) }}'
@@ -68,9 +68,9 @@
 - name: Activate custom theme
   template:
     src: 'srv/www/sites/config/theme.config.php.j2'
-    dest: '{{ owncloud_deploy_path }}/config/theme.config.php'
+    dest: '{{ owncloud__deploy_path }}/config/theme.config.php'
     owner: 'root'
-    group: '{{ owncloud_group }}'
+    group: '{{ owncloud__group }}'
     mode: '0640'
   when: (owncloud__theme_active != "")
   tags: [ 'role::owncloud:theme:activate' ]
@@ -81,14 +81,14 @@
 
 - name: Deactivate custom theme
   file:
-    path: '{{ owncloud_deploy_path }}/config/theme.config.php'
+    path: '{{ owncloud__deploy_path }}/config/theme.config.php'
     state: 'absent'
   when: (owncloud__theme_active == "")
   tags: [ 'role::owncloud:theme:activate' ]
 
 - name: Delete additional theme files
   file:
-    path: '{{ owncloud_deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key }}'
+    path: '{{ owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key }}'
     state: 'absent'
   when: (owncloud__theme_directory_name != "" and item.value.state|d("present") == "absent")
   with_dict: '{{ owncloud__theme_copy_files_combined }}'

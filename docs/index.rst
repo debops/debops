@@ -9,8 +9,12 @@ Ansible role: debops.owncloud
    introduction
    getting-started
    defaults
+   defaults-detailed
+   external-users
+   external-storage
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:

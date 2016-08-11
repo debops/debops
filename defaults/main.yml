@@ -12,6 +12,7 @@
 # .. Role maintainer note:
 # .. The official ownCloud documentation is also written is RST.
 # .. https://github.com/owncloud/documentation/tree/master/admin_manual
+# .. https://github.com/nextcloud/documentation/tree/master/admin_manual
 
 # .. Packages and installation [[[1
 #
@@ -19,12 +20,84 @@
 #   Packages and installation
 # -----------------------------
 
-# .. envvar:: owncloud_base_packages
+# .. envvar:: owncloud__base_packages
 #
 # List of base packages required by ownCloud.
-owncloud_base_packages:
+owncloud__base_packages:
   - 'owncloud'
-  - 'php5-apcu'
+  - '{{ [ ("owncloud-deps-php" + ansible_local.php.version) ]
+        if (ansible_local|d() and ansible_local.php|d() and
+            ansible_local.php.version|d())
+        else [] }}'
+
+  ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
+  ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
+  ## Is it necessary to install all LibreOffice packages? https://github.com/owncloud/documents#known-issues
+  ## Upstream documentation does not specify it more clearly. Installing ``libreoffice`` just to be sure.
+  - '{{ [ "libreoffice" ] if (owncloud__app_documents_enabled|bool) else [] }}'
+
+  - '{{ [ "smbclient" ] if (owncloud__smb_support|bool) else [] }}'
+  - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release | version_compare("9.0", ">=")) else [] }}'
+
+
+# .. envvar:: owncloud__base_php_packages
+#
+# List of base PHP packages required by ownCloud.
+owncloud__base_php_packages:
+  - 'apcu'
+  - '{{ [ "mysql" ] if (owncloud__database in [ "mariadb", "mysql" ]) else [] }}'
+  - '{{ [ "pgsql" ] if (owncloud__database in [ "postgresql" ]) else [] }}'
+  - '{{ [ "redis" ] if (owncloud__redis_enabled | bool) else [] }}'
+  - '{{ [ "ldap" ] if (owncloud__ldap_enabled | bool) else [] }}'
+
+  ## Seems to be required at least for PHP7.0 to fix:
+  ## PHP Warning: PHP Startup: Unable to load dynamic library '/usr/lib/php/20151012/redis.so'
+  ## - /usr/lib/php/20151012/redis.so: undefined symbol: igbinary_serialize in Unknown on line 0
+  - '{{ [ "igbinary" ]
+        if (not (ansible_distribution == "Ubuntu" and (ansible_distribution_version|version_compare("15.10", "<"))))
+        else [] }}'
+
+  - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release | version_compare("8.9.9", "<=")) else [] }}'
+
+  ## Included in normal PHP installations but require it here because it is
+  ## used internally by the role:
+  - 'json'
+
+
+# .. envvar:: owncloud__optional_php_packages
+#
+# List of optional PHP packages for ownCloud.
+owncloud__optional_php_packages:
+  - 'imagick'
+
+
+# .. envvar:: owncloud__packages
+#
+# List of global packages for ownCloud.
+# This variable is intended to be used in Ansible’s global inventory.
+owncloud__packages: []
+
+
+# .. envvar:: owncloud__group_packages
+#
+# List of group packages for ownCloud.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
+owncloud__group_packages: []
+
+
+# .. envvar:: owncloud__host_packages
+#
+# List of host packages for ownCloud.
+# This variable is intended to be used in the inventory of the host.
+owncloud__host_packages: []
+
+
+# .. envvar:: owncloud__dependent_packages
+#
+# List of APT packages to install for other Ansible roles, for usage as
+# a dependent role.
+owncloud__dependent_packages: []
 
 
 # .. envvar:: owncloud__deploy_state
@@ -41,16 +114,109 @@ owncloud_base_packages:
 owncloud__deploy_state: 'present'
 
 
-# .. Basic options [[[1
+# .. ownCloud upgrades [[[1
 #
-# -----------------
-#   Basic options
-# -----------------
+# ---------------------
+#   ownCloud upgrades
+# ---------------------
 
-# .. envvar:: owncloud_domain
+# .. envvar:: owncloud__auto_database_upgrade_enabled
 #
-# Domain that will be configured for the ownCloud instance.
-owncloud_domain: [ 'owncloud.{{ ansible_domain }}' ]
+# On each update of ownCloud, a database update must be performed before
+# ownCloud can be used again.
+# The ownCloud package maintainers have not automated this setup so that even
+# security upgrades can not be installed unattended.
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/maintenance/package_upgrade.html#upgrade-quickstart>`__ for details.
+#
+# When this option is set to ``True``, the role enables a hook script for
+# :command:`dpkg` so that when :command:`dpkg` upgrades ownCloud, the database upgrade is
+# automatically performed.
+#
+# Change to ``False`` when you want to do database upgrades manually after upgrading the ownCloud packages.
+#
+# .. note:: :envvar:`owncloud__auto_database_upgrade_enabled` depends on
+#    automatic database upgrades to be enabled.
+#
+owncloud__auto_database_upgrade_enabled: True
+
+
+# .. envvar:: owncloud__dpkg_hook_script
+#
+# File path where the package manager hook script is stored.
+owncloud__dpkg_hook_script: '{{
+  (ansible_local.root.lib
+  if (ansible_local|d() and ansible_local.root|d() and
+      ansible_local.root.lib|d())
+  else "/usr/local/lib") + "/owncloud_dpkg_hook" }}'
+
+
+# .. envvar:: owncloud__auto_database_upgrade_migration_test
+#
+# Whether database schema migration should be simulated before upgrading the production database.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/maintenance/package_upgrade.html#migration-test>`__ for details.
+owncloud__auto_database_upgrade_migration_test: True
+
+
+# .. envvar:: owncloud__auto_database_upgrade_hook_script_packages_trigger
+#
+# List of packages for which the package manager hook script should attempt to
+# do a database upgrade when :envvar:`owncloud__auto_database_upgrade_enabled`
+# is ``True``.
+#
+# This variable is currently not being used.
+# The check if ownCloud needs an upgrade is performed for each
+# installed/upgraded package but in an very efficient way.
+owncloud__auto_database_upgrade_hook_script_packages_trigger:
+  - 'owncloud'
+
+
+# .. envvar:: owncloud__auto_security_updates_enabled
+#
+# Whether automatic ownCloud upgrades should be performed by
+# ``unattended_upgrades``.
+#
+# FIXME: Needs more testing before the role maintainers feel confident to enable this by default.
+# Refer to: https://github.com/debops/ansible-owncloud/issues/28
+owncloud__auto_security_updates_enabled: False
+
+
+# .. envvar:: owncloud__post_upgrade_hook_role_list
+#
+# List of script file paths which should be executed after every ownCloud
+# update.
+# For more information refer to :ref:`owncloud__ref_post_upgrade_hook`.
+# This variable is used by this role, controlled by other variables of this
+# role.
+owncloud__post_upgrade_hook_role_list: []
+
+
+# .. envvar:: owncloud__post_upgrade_hook_list
+#
+# List of script file paths which should be executed after every ownCloud
+# update.
+# For more information refer to :ref:`owncloud__ref_post_upgrade_hook`.
+# This variable is intended to be used in Ansible’s global inventory.
+owncloud__post_upgrade_hook_list: []
+
+
+# .. envvar:: owncloud__post_upgrade_hook_group_list
+#
+# List of script file paths which should be executed after every ownCloud
+# update.
+# For more information refer to :ref:`owncloud__ref_post_upgrade_hook`.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
+owncloud__post_upgrade_hook_group_list: []
+
+
+# .. envvar:: owncloud__post_upgrade_hook_host_list
+#
+# List of script file paths which should be executed after every ownCloud
+# update.
+# For more information refer to :ref:`owncloud__ref_post_upgrade_hook`.
+# This variable is intended to be used in the inventory of the host.
+owncloud__post_upgrade_hook_host_list: []
 
 
 # .. ownCloud source and deployment [[[1
@@ -59,96 +225,174 @@ owncloud_domain: [ 'owncloud.{{ ansible_domain }}' ]
 #   ownCloud source and deployment
 # ----------------------------------
 
-# .. envvar:: owncloud_edition
+# .. envvar:: owncloud__variant
 #
-# Only ``community`` is supported currently.
-owncloud_edition: 'community'
-
-
-# .. envvar:: owncloud_release
+# Which variant of the application should be used?
 #
-# See https://download.owncloud.org/download/repositories/ for the full list.
-# Defaults to the latest stable release supported by this role.
-owncloud_release: '9.0'
+# Supported variants:
+#
+# * ``owncloud`` (main supported variant and used in production by the role maintainers)
+#
+# `NextCloud is currently not supported <https://github.com/debops/ansible-owncloud/issues/45>`_.
+owncloud__variant: 'owncloud'
 
 
-# .. envvar:: owncloud_distribution
+# .. envvar:: owncloud__release
+#
+# Defaults to the latest stable release supported and tested with this role.
+# This may not always be the latest stable release.
+#
+# Supported releases:
+#
+# * ownCloud ``8.0``
+# * ownCloud ``8.1``
+# * ownCloud ``8.2``
+# * ownCloud ``9.0`` (main supported version and used in production by the role maintainers)
+# * ownCloud ``9.1`` (setup should work but not yet well tested nor used in production by the role maintainers)
+#
+# Refer to the `ownCloud Maintenance and Release Schedule <https://github.com/owncloud/core/wiki/Maintenance-and-Release-Schedule>`_
+# and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
+owncloud__release: '9.0'
+
+
+# .. envvar:: owncloud__distribution
 #
 # Name and version of OS distribution to use for ownCloud packages.
-owncloud_distribution: '{{ owncloud_distribution_name + "_" +
-                           owncloud_distribution_version }}'
+owncloud__distribution: '{{ owncloud__distribution_name + "_" +
+                            owncloud__distribution_version }}'
 
 
-# .. envvar:: owncloud_distribution_name
+# .. envvar:: owncloud__distribution_name
 #
 # Name of the OS distribution to use for ownCloud URLs.
-owncloud_distribution_name: '{{ ansible_distribution }}'
+owncloud__distribution_name: '{{ ansible_distribution }}'
 
 
-# .. envvar:: owncloud_distribution_version
+# .. envvar:: owncloud__distribution_version
 #
 # Version number of the OS distribution for ownCloud URLs.
-owncloud_distribution_version: '{{ ((ansible_distribution_major_version + ".0")
+owncloud__distribution_version: '{{ (ansible_distribution_major_version + ".0")
                                     if ansible_distribution in [ "Debian" ]
-                                    else ansible_distribution_version) }}'
+                                    else ansible_distribution_version }}'
 
 
-# .. envvar:: owncloud_apt_repo_base
+# .. envvar:: owncloud__apt_repo_base
 #
-# Base APT repository URL.
-owncloud_apt_repo_base: 'http://download.owncloud.org/download/repositories/{{ owncloud_release }}'
+# Base APT repository URL starting at the authority part.
+owncloud__apt_repo_base: 'download.owncloud.org/download/repositories/{{ owncloud__release }}'
 
 
-# .. envvar:: owncloud_apt_repo_key_id
+# .. envvar:: owncloud__apt_repo_key_id
 #
-# GPG fingerprint for the public key used to sign the APT repository.
-owncloud_apt_repo_key_id: 'BCECA90325B072AB1245F739AB7C32C35180350A'
+# OpenPGP fingerprint for the public key used to sign the APT repository.
+owncloud__apt_repo_key_id: 'BCECA90325B072AB1245F739AB7C32C35180350A'
 
 
-# .. envvar:: owncloud_apt_repo_key_url
+# .. envvar:: owncloud__src_remote_dir
 #
-# URL of the GPG keys used by the ownCloud project.
-owncloud_apt_repo_key_url: '{{ owncloud_apt_repo_base + "/" +
-                               owncloud_distribution + "/"
-                               "Release.key" }}'
+# File path used to store application sources on the remote system.
+# This is currently only used to copy the OpenPGP public key to the remote.
+owncloud__src_remote_dir: '{{
+  (ansible_local.root.src
+  if (ansible_local|d() and ansible_local.root|d() and
+      ansible_local.root.src|d())
+  else "/usr/local/src") + "/owncloud" }}'
 
 
-# .. envvar:: owncloud_apt_repo_source
+# .. envvar:: owncloud__apt_repo_source
 #
 # APT ``sources.list`` URL of the ownCloud ``.deb`` repository.
-owncloud_apt_repo_source: '{{ "deb " + owncloud_apt_repo_base + "/" +
-                              owncloud_distribution + "/ /" }}'
+owncloud__apt_repo_source: '{{ "deb http://" + owncloud__apt_repo_base + "/" +
+                               owncloud__distribution + "/ /" }}'
 
 
-# .. envvar:: owncloud_user
+# .. envvar:: owncloud__user
 #
 # User that will be used for the ownCloud instance.
-owncloud_user: 'www-data'
+owncloud__user: '{{ ansible_local.nginx.user
+                    if (ansible_local|d() and ansible_local.nginx|d() and
+                        ansible_local.nginx.user|d())
+                    else "www-data" }}'
 
 
-# .. envvar:: owncloud_group
+# .. envvar:: owncloud__group
 #
 # Group that will be used for the ownCloud instance.
-owncloud_group: 'www-data'
+owncloud__group: '{{ owncloud__user }}'
 
 
-# .. envvar:: owncloud_home
+# .. envvar:: owncloud__home
 #
 # Directory under which ownCloud will be installed.
-owncloud_home: '/var/www/owncloud'
+owncloud__home: '/var/www/owncloud'
 
 
-# .. envvar:: owncloud_data_path
+# .. envvar:: owncloud__data_path
 #
 # Path where ownCloud data directory and files are stored.
-owncloud_data_path: '{{ owncloud_home }}/data'
+owncloud__data_path: '{{ owncloud__home }}/data'
 
 
-# .. envvar:: owncloud_deploy_path
+# .. envvar:: owncloud__temp_path
+#
+# Directory which ownCloud will use as temp directory.
+#
+# In case :file:`/tmp` has limited space (for example is a ramdisk) or is otherwise
+# restricted then it is a good idea to change the temp directory that ownCloud
+# uses to a path with more space available.
+#
+# The default (empty string) is to let ownCloud figure out which temp directory
+# it should use which probably results in :file:`/tmp/owncloudtemp` unless
+# otherwise influenced by environment variables and such.
+owncloud__temp_path: ''
+
+
+# .. envvar:: owncloud__deploy_path
 #
 # Where the ownCloud instance will be deployed (web root).
-owncloud_deploy_path: '{{ owncloud_home }}'
+owncloud__deploy_path: '{{ owncloud__home }}'
 
+
+# .. In memory caching [[[1
+#
+# ---------------------
+#   In memory caching
+# ---------------------
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html>`__ for details.
+
+# .. envvar:: owncloud__apcu_enabled
+#
+# Whether ``APCu`` should be used for local caching.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html#id2>`__ for details.
+owncloud__apcu_enabled: True
+
+
+# .. envvar:: owncloud__redis_enabled
+#
+# Use Redis for file locking as recommended for small and large organization.
+# The default is to auto detect if Redis is selected for installation on the
+# remote server and in that case automatically use it for file locking.
+# Note that ownCloud requires version 2.2.5+ of the ``redis`` PHP package. This
+# requirement is not meet for Ubuntu trusty (neither in the release repos nor
+# in backports) thus Redis will not be enabled automatically by the role.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html#id4>`__ for details.
+owncloud__redis_enabled: '{{ True if (
+                               ("debops_service_redis" in hostvars[inventory_hostname]["group_names"]) and
+                               (not (ansible_distribution == "Ubuntu" and ansible_distribution_release == "trusty"))
+                             ) else False }}'
+
+
+# .. envvar:: owncloud__redis_host
+#
+# Redis server to use when :envvar:`owncloud__redis_enabled` is ``True``.
+owncloud__redis_host: 'localhost'
+
+
+# .. envvar:: owncloud__redis_port
+#
+# Network port on which the Redis server is listening on.
+owncloud__redis_port: 6379
 
 # .. Database configuration [[[1
 #
@@ -156,75 +400,76 @@ owncloud_deploy_path: '{{ owncloud_home }}'
 #   Database configuration
 # --------------------------
 
-# .. envvar:: owncloud_database
+# .. envvar:: owncloud__database
 #
 # ownCloud recommends MySQL or MariaDB as database. Set to ``False`` to use SQLite.
-# https://doc.owncloud.org/server/8.1/admin_manual/configuration_database/linux_database_configuration.html#database-configuration
-# Choices see :envvar:`owncloud_database_map`.
-owncloud_database: 'mariadb'
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_database/linux_database_configuration.html>`__ for details.
+# See the :envvar:`owncloud__database_map` for the databases support by this role.
+owncloud__database: 'mariadb'
 
 
-# .. envvar:: owncloud_database_server
+# .. envvar:: owncloud__database_server
 #
 # FQDN of the database server. It will be configured by
-# the ``debops.mariadb`` or ``debops.postgresql`` role.
-owncloud_database_server: "{{ ansible_local[owncloud_database].server }}"
+# the debops.mariadb_ or debops.postgresql_ role.
+owncloud__database_server: '{{ ansible_local[owncloud__database].server }}'
 
 
-# .. envvar:: owncloud_database_port
+# .. envvar:: owncloud__database_port
 #
 # Port database is listening on.
-owncloud_database_port: "{{ ansible_local[owncloud_database].port }}"
+owncloud__database_port: '{{ ansible_local[owncloud__database].port }}'
 
 
-# .. envvar:: owncloud_database_user
+# .. envvar:: owncloud__database_user
 #
 # Database user to use for ownCloud.
-owncloud_database_user: 'owncloud'
+owncloud__database_user: 'owncloud'
 
 
-# .. envvar:: owncloud_database_name
+# .. envvar:: owncloud__database_name
 #
 # Name of the database to use for ownCloud.
-owncloud_database_name: 'owncloud'
+owncloud__database_name: 'owncloud'
 
 
-# .. envvar:: owncloud_database_password_path
+# .. envvar:: owncloud__database_password_path
 #
 # Path to database password file.
-owncloud_database_password_path: "{{ secret + '/' + owncloud_database + '/' +
-                                     ansible_local[owncloud_database].delegate_to }}{%
-                                       if owncloud_database=='postgresql' %}/{{ ansible_local[owncloud_database].port }}{% endif
-                                     %}{{ '/credentials/' + owncloud_database_user +
-                                     '/password' }}"
+owncloud__database_password_path: '{{ secret + "/" + owncloud__database + "/"
+                                      + ansible_local[owncloud__database].delegate_to
+                                      + (("/" + ansible_local[owncloud__database].port)
+                                         if (owncloud__database == "postgresql")
+                                         else "")
+                                      + "/credentials/" + owncloud__database_user + "/password" }}'
 
 
-# .. envvar:: owncloud_database_password
+# .. envvar:: owncloud__database_password
 #
 # Database password for ownCloud.
-owncloud_database_password: '{{ lookup("password", owncloud_database_password_path + " length=48") }}'
+owncloud__database_password: '{{ lookup("password", owncloud__database_password_path + " length=48") }}'
 
 
-# .. envvar:: owncloud_database_map
+# .. envvar:: owncloud__database_map
 #
-owncloud_database_map:
+owncloud__database_map:
 
   # MySQL/MariaDB database.
   mariadb:
     dbtype: 'mysql'
-    dbname: '{{ owncloud_database_name|d(owncloud_user) }}'
-    dbuser: '{{ owncloud_database_user|d(owncloud_user) }}'
-    dbpass: '{{ owncloud_database_password }}'
-    dbhost: '{{ owncloud_database_server|d("localhost") }}'
+    dbname: '{{ owncloud__database_name|d(owncloud__user) }}'
+    dbuser: '{{ owncloud__database_user|d(owncloud__user) }}'
+    dbpass: '{{ owncloud__database_password }}'
+    dbhost: '{{ owncloud__database_server|d("localhost") }}'
     dbtableprefix: ''
 
   # PostgreSQL database on localhost, connection through Unix socket, no default password.
   postgresql:
     dbtype: 'pgsql'
-    dbname: '{{ owncloud_database_name|d(owncloud_user) }}'
-    dbuser: '{{ owncloud_database_user|d(owncloud_user) }}'
+    dbname: '{{ owncloud__database_name|d(owncloud__user) }}'
+    dbuser: '{{ owncloud__database_user|d(owncloud__user) }}'
     dbpass: ''
-    dbhost: '{{ owncloud_database_server|d("/var/run/postgresql") }}'
+    dbhost: '{{ owncloud__database_server|d("/var/run/postgresql") }}'
     dbtableprefix: ''
 
   sqlite:
@@ -237,46 +482,48 @@ owncloud_database_map:
 #   ownCloud admin login/password
 # ---------------------------------
 
-# .. envvar:: owncloud_admin_username
+# .. envvar:: owncloud__admin_username
 #
 # Default admin username, in the form 'admin-$USER'.
 # Set to ``False`` to disable automatic username and password.
-owncloud_admin_username: 'admin-{{ lookup("env","USER") }}'
+owncloud__admin_username: 'admin-{{ lookup("env","USER") }}'
 
 
-# .. envvar:: owncloud_admin_password_path
+# .. envvar:: owncloud__admin_password_path
 #
 # Path to database password file.
-owncloud_admin_password_path: '{{ secret + "/credentials/" + ansible_fqdn +
-                                  "/owncloud/admin/" + owncloud_admin_username +
+owncloud__admin_password_path: '{{ secret + "/credentials/" + ansible_fqdn +
+                                  "/owncloud/admin/" + owncloud__admin_username +
                                   "/password" }}'
 
 
-# .. envvar:: owncloud_password_length
+# .. envvar:: owncloud__password_length
 #
 # Length of randomly generated admin password.
-owncloud_password_length: 20
+owncloud__password_length: 20
 
 
-# .. envvar:: owncloud_admin_password
+# .. envvar:: owncloud__admin_password
 #
 # Default admin password.
-# A random password will be generate by default as documented by the ``debops.secret`` role.
-owncloud_admin_password: '{{ lookup("password",
-                             owncloud_admin_password_path + " length=" + (owncloud_password_length|string)) }}'
+# A random password will be generate by default as documented by the debops.secret_ role.
+owncloud__admin_password: '{{ lookup("password", owncloud__admin_password_path
+                              + " length=" + (owncloud__password_length|string)) }}'
 
 
-# .. envvar:: owncloud_autosetup
+# .. envvar:: owncloud__autosetup
 #
 # Should Ansible automatically finish the ownCloud setup on
 # it's own? Disabled if admin_username is set to ``False``.
-owncloud_autosetup: True
+owncloud__autosetup: True
 
 
-# .. envvar:: owncloud_autosetup_url
+# .. envvar:: owncloud__autosetup_url
 #
-# URL which will be called to finish autosetup.
-owncloud_autosetup_url: 'http://{{ owncloud_domain[0] }}/index.php'
+# URL which will be called to finish autosetup of ownCloud 8.0. For newer
+# ownCloud versions :command:`occ` will be used which is more reliable because
+# it does not depend on the webserver nor network.
+owncloud__autosetup_url: 'http://{{ owncloud__domain[0] }}/index.php'
 
 
 # .. ownCloud configuration [[[1
@@ -285,105 +532,80 @@ owncloud_autosetup_url: 'http://{{ owncloud_domain[0] }}/index.php'
 #   ownCloud configuration
 # --------------------------
 
-# .. envvar:: owncloud_enable_apc_cli
+# .. envvar:: owncloud__domain
 #
-# Enable APC in PHP CLI. Setting this to ``True`` is only needed when you want to
-# use the :command:`occ` command and use ``\OC\Memcache\APCu`` as memcache.
-# See https://github.com/owncloud/core/issues/17329
-owncloud_enable_apc_cli: True
+# Domain that will be configured for the ownCloud instance.
+owncloud__domain: [ 'cloud.{{ ansible_domain }}' ]
 
 
-# .. envvar:: owncloud_upload_size
+# .. envvar:: owncloud__upload_size
 #
-# Max upload size set in nginx and php5, with amount as M or G
-owncloud_upload_size: '128M'
+# Max upload size set in :program:`nginx` and PHP, with amount as M or G.
+# Before you change this be sure to understand
+# `Uploading big files > 512MB of the official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html>`__.
+owncloud__upload_size: '2G'
 
 
-# .. envvar:: owncloud_php5_output_buffering
+# .. envvar:: owncloud__php_output_buffering
 #
-# Output buffering set in php5, with amount set in megabytes
-# Setting according to:
-# https://doc.owncloud.org/server/8.0/admin_manual/configuration_files/big_file_upload_configuration.html#configuring-php
-owncloud_php5_output_buffering: '0'
+# Output buffering set in PHP, with amount set in megabytes.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html#configuring-php>`__ for details.
+owncloud__php_output_buffering: '0'
 
 
-# .. envvar:: owncloud_php5_max_children
+# .. envvar:: owncloud__php_max_children
 #
-# Max children processes to run in php5-fpm
-owncloud_php5_max_children: '50'
+# Max children processes to run in php fpm.
+# FIXME: Check if default of debops.php might be sufficient.
+owncloud__php_max_children: '50'
 
 
-# .. envvar:: owncloud_cron_minute
+# .. envvar:: owncloud__cron_minute
 #
 # At what time cron should execute background jobs
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/developer_manual/app/backgroundjobs.html>`__ for details.
-owncloud_cron_minute: '*/15'
+owncloud__cron_minute: '*/15'
 
 
-# .. envvar:: owncloud_timeout
+# .. envvar:: owncloud__timeout
 #
-# Timeouts in seconds used for the following settings:
+# Timeouts in seconds for application requests.
 #
-# - ``fastcgi_read_timeout`` in the nginx configuration.
-# - ``max_input_time`` in php5-fpm.
-# - ``max_execution_time`` in php5-fpm.
-#
-# If you need to handle very large files you should increase this value.
-owncloud_timeout: 300
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html>`__ for details.
+owncloud__timeout: 3600
 
 
-# .. envvar:: owncloud_app_user_webfinger_support
+# .. envvar:: owncloud__app_user_webfinger_support
 #
 # Should the ``Webfinger`` application be supported?
 # Set this to ``True`` if you are planning to use this app.
-owncloud_app_user_webfinger_support: False
+owncloud__app_user_webfinger_support: False
 
 
 # .. ownCloud config.php configuration [[[1
-#
-# .. _owncloud__ref_config:
 #
 # -------------------------------------
 #   ownCloud config.php configuration
 # -------------------------------------
 #
-# The dicts of this section ends up in :file:`debops.config.php` and override the values
-# from :file:`config.php`.
-# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html>`__ for details.
+# The dicts of this section ends up in :file:`owncloud/config/debops.config.php` and override the values
+# from :file:`owncloud/config/config.php`.
 #
-# Note: Parameters with \ (backslash) needs double escaping::
+# TODO: Note that as of ownCloud 9.0, you can not unset a setting which was
+# once set in :file:`debops.config.php` because ownCloud might copies it to
+# :file:`config.php`. Possible fix: `occ config:system:set`
 #
-#    owncloud_config:
-#      memcache.local: '\\OC\\Memcache\\APCu'
-#
-# This is not confirmed by the `official ownCloud Dokumentation
-# <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html>`_
-# but is a result of how the configuration file is generated using JSON as data format.
-#
-#
-# Dict keys can be overridden when they are present in multiple dicts.
-# Order of priority from least specific to most specific:
-#
-# * :envvar:`owncloud_config_role_optional`
-# * :envvar:`owncloud_config_role_required`
-# * :envvar:`owncloud_config`
-# * :envvar:`owncloud_config_group`
-# * :envvar:`owncloud_config_host`
-#
+# For more information refer to :ref:`owncloud__ref_config`.
 
 
-# .. envvar:: owncloud_config_role_required
+# .. envvar:: owncloud__role_config
 #
-# See :ref:`owncloud__ref_config`.
-# This variable is a set of required settings for ownCloud to be usable.
-# Set::
-#
-#    owncloud_config_role_required: {}
-#
-# in your inventory when you want to disable/change it anyway.
-owncloud_config_role_required:
+# See `ownCloud config.php configuration`_.
+# This variable is used by this role, controlled by other variables of this
+# role.
+owncloud__role_config:
 
-  trusted_domains: '{{ owncloud_domain }}'
+  trusted_domains: '{{ owncloud__domain }}'
 
   ## https://github.com/owncloud/core/issues/22257
   ## TODO: Temporary workaround until all package maintainers have caught up.
@@ -391,18 +613,39 @@ owncloud_config_role_required:
   ## it is expected that all users are running 9.0.2 or later.
   'updatechecker': False
 
+  'memcache.local':
+    state: '{{ "present" if (owncloud__apcu_enabled|bool) else "absent" }}'
+    value: '\\OC\\Memcache\\APCu'
 
-# .. envvar:: owncloud_config_role_optional
+  'memcache.locking':
+    state: '{{ "present" if (owncloud__redis_enabled|bool) else "absent" }}'
+    value: '\\OC\\Memcache\\Redis'
+
+  'redis':
+    state: '{{ "present" if (owncloud__redis_enabled|bool) else "absent" }}'
+    value:
+      host: '{{ owncloud__redis_host }}'
+      port: '{{ owncloud__redis_port|int }}'
+
+  'tempdirectory':
+    state: '{{ "present" if (owncloud__temp_path != "") else "absent" }}'
+    value: '{{ owncloud__temp_path }}'
+
+
+# .. envvar:: owncloud__role_recommended_config
 #
-# See :ref:`owncloud__ref_config`.
+# See `ownCloud config.php configuration`_.
 # This variable is a set of optional settings for ownCloud recommended by the
 # maintainers of this role.
-# Set::
+# Set:
 #
-#    owncloud_config_role_optional: {}
+# .. code-block:: yaml
+#   :linenos:
+#
+#    owncloud__role_recommended_config: {}
 #
 # in your inventory when you want to disable it.
-owncloud_config_role_optional:
+owncloud__role_recommended_config:
 
   ## The default timezone for logfiles is UTC.
   logtimezone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
@@ -414,101 +657,269 @@ owncloud_config_role_optional:
   ## ISO 8601 datetime: 2004-02-12T15:19:21+00:00
   logdateformat: 'Y-m-d H:i:s.u'
 
-  ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html
-  'memcache.local': '\\OC\\Memcache\\APCu'
 
-
-# .. envvar:: owncloud_config
+# .. envvar:: owncloud__config
 #
-# See :ref:`owncloud__ref_config`.
+# See `ownCloud config.php configuration`_.
 # This variable is intended to be used in Ansible’s global inventory.
 # More specific variables can overrule less specific variables.
-owncloud_config: {}
+owncloud__config: {}
 
 
-# .. envvar:: owncloud_config_group
+# .. envvar:: owncloud__group_config
 #
-# See :ref:`owncloud__ref_config`.
+# See `ownCloud config.php configuration`_.
 # This variable is intended to be used in a host inventory group of Ansible
 # (only one host group is supported).
-owncloud_config_group: {}
+owncloud__group_config: {}
 
 
-# .. envvar:: owncloud_config_host
+# .. envvar:: owncloud__host_config
 #
-# See :ref:`owncloud__ref_config`.
+# See `ownCloud config.php configuration`_.
 # This variable is intended to be used in the inventory of the host.
-owncloud_config_host: {}
+owncloud__host_config: {}
 
 
-# .. ownCloud configuration via occ commands [[[1
+# .. ownCloud applications configuration [[[1
 #
-# -------------------------------------------
-#   ownCloud configuration via occ commands
-# -------------------------------------------
+# ---------------------------------------
+#   ownCloud applications configuration
+# ---------------------------------------
 
-# .. envvar:: owncloud_run_occ_global_commands
+# Dictionary of ownCloud application settings.
+# Check the output of :command:`occ config:list` to see how the settings are called.
+# You might need to change a particular setting via the web interface in order
+# for it to appear in the output.
 #
-# Global list of :command:`occ` commands to run.
+# Note that the :command:`occ` can also change ownCloud system settings but this should
+# be done via `ownCloud config.php configuration`_.
+#
+# Examples:
+#
+# .. code-block:: yaml
+#   :linenos:
+#
+#    owncloud__apps_config:
+#
+#      ## Set the default quota for all users which don’t have more explicit
+#      ## quota settings to 100 MB.
+#      files:
+#        default_quota: '100 MB'
+#
+#      ## Disable Federated Cloud Sharing:
+#      ## * Allow users on this server to send shares to other servers
+#      ## * Allow users on this server to receive shares from other servers
+#      core:
+#        incoming_server2server_share_enabled: 'no'
+#        outgoing_server2server_share_enabled: 'no'
+#      files_sharing:
+#        incoming_server2server_share_enabled: 'no'
+#        outgoing_server2server_share_enabled: 'no'
+#
+#      ## Disable Federation:
+#      ## * Add server automatically once a federated share was created successfully
+#      federation:
+#        autoAddServers: '0'
+#
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html#config-commands-label>`__ for details.
+
+# .. envvar:: owncloud__optional_apps_config
+#
+# See `ownCloud applications configuration`_.
+# Role dictionary of ownCloud application settings.
+# This variable is a set of optional settings for ownCloud recommended by the
+# maintainers of this role.
+owncloud__role_apps_config:
+  documents:
+    enabled: '{{ "yes" if (owncloud__app_documents_enabled | bool) else "no" }}'
+    converter: 'local'
+
+
+# .. envvar:: owncloud__apps_config
+#
+# See `ownCloud applications configuration`_.
+# Global dictionary of ownCloud application settings.
+# This variable is intended to be used in Ansible’s global inventory.
+# More specific variables can overrule less specific variables.
+owncloud__apps_config: {}
+
+
+# .. envvar:: owncloud__group_apps_config
+#
+# See `ownCloud applications configuration`_.
+# Group dictionary of ownCloud application settings.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
+owncloud__group_apps_config: {}
+
+
+# .. envvar:: owncloud__host_apps_config
+#
+# See `ownCloud applications configuration`_.
+# Host dictionary of ownCloud application settings.
+# This variable is intended to be used in the inventory of the host.
+owncloud__host_apps_config: {}
+
+
+# .. envvar:: owncloud__dependent_apps_config
+#
+# See `ownCloud applications configuration`_.
+# This variable is intended to be used from other Ansible roles, for usage as
+# a dependent role.
+owncloud__dependent_apps_config: {}
+
+
+# .. envvar:: owncloud__app_documents_enabled
+#
+# Where the `Documents app <https://apps.owncloud.com/content/show.php/Documents?content=168711>`_ should be enabled.
+# Not enabled by default because, as of ownCloud 9.0, the application is not shipped by default.
+# Note that this will install LibreOffice plus dependencies on the server.
+owncloud__app_documents_enabled: False
+
+
+# .. External storage [[[1
+#
+# --------------------
+#   External storage
+# --------------------
+
+# Refer to the :ref:`owncloud__ref_external_storage` section for more details.
+
+# .. envvar:: owncloud__smb_support
+#
+# SMB/CIFS be support by installing the required packages and enabling the
+# required app?
+owncloud__smb_support: False
+
+
+# .. ownCloud raw occ commands [[[1
+#
+# -----------------------------
+#   ownCloud raw occ commands
+# -----------------------------
+
+# List of :command:`occ` commands to run.
 # It can be used to enable apps, add users and more which can be useful when
 # deploying ownCloud.
 #
+# Examples:
+#
+# .. code-block:: yaml
+#   :linenos:
+#
+#    owncloud__occ_cmd_list
+#
+#      - command: 'app:enable external'
+#
+#      ## Create an additional admin account.
+#      - command: 'user:add --password-from-env --display-name="Administrator" --group="admin" admin'
+#        ## Does not work with ownCloud 8.0 or below so don’t run it there.
+#        when: '{{ owncloud__release | version_compare("8.1", ">=") }}'
+#        env:
+#          OC_PASS: "{{ lookup('password', secret + '/credentials/' +
+#                       ansible_fqdn + '/owncloud/admin/' + 'admin' +
+#                       '/password length=' + owncloud__password_length) }}"
+#
+#      ## Create an regular user. Note that you probably want to use an existing
+#      ## user database like LDAP.
+#      - command: 'user:add --password-from-env --display-name="Normal user" user'
+#        when: '{{ owncloud__release | version_compare("8.1", ">=") }}'
+#        env:
+#          OC_PASS: "{{ lookup('password', secret + '/credentials/' +
+#                       ansible_fqdn + '/owncloud/users/' + 'user' +
+#                       '/password length=' + owncloud__password_length) }}"
+#
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html>`__ for details.
+
+# .. envvar:: owncloud__role_occ_cmd_list
 #
-# Examples::
-#
-#   owncloud_run_occ_global_commands
-#
-#     ## Requires: php5-ldap
-#     - command: 'app:enable user_ldap'
-#
-#     - command: 'app:enable external'
-#
-#     ## Requires: php5-libsmbclient
-#     - command: 'app:enable files_external'
-#
-#     ## Create an additional admin account.
-#     - command: 'user:add --password-from-env --display-name="Administrator" --group="admin" admin'
-#       ## Does not work with ownCloud 8.0 or below so don’t run it there.
-#       when: '{{ owncloud_release | version_compare("8.1", ">=") }}'
-#       env:
-#         OC_PASS: "{{ lookup('password', secret + '/credentials/' +
-#                      ansible_fqdn + '/owncloud/admin/' + 'admin' +
-#                      '/password length=' + owncloud_password_length) }}"
-#
-#     ## Create an regular user. Note that you probably want to use an existing
-#     ## user database like LDAP.
-#     - command: 'user:add --password-from-env --display-name="Normal user" user'
-#       when: '{{ owncloud_release | version_compare("8.1", ">=") }}'
-#       env:
-#         OC_PASS: "{{ lookup('password', secret + '/credentials/' +
-#                      ansible_fqdn + '/owncloud/users/' + 'user' +
-#                      '/password length=' + owncloud_password_length) }}"
-#
-owncloud_run_occ_global_commands:
+# Default list of :command:`occ` commands to run.
+# Command present of role to automate certain tasks.
+# See `ownCloud raw occ commands`_.
+owncloud__role_occ_cmd_list:
   ## Disable the updater because it does not work anyway with the way ownCloud
   ## is setup by this role using packages.
   ## Since ownCloud 9 it is called `updatenotification`.
   - command: 'app:disable updater'
-    when: '{{ owncloud_release | version_compare("8.2", "<=") }}'
+    when: '{{ owncloud__release | version_compare("8.2", "<=") }}'
+
+  - command: 'app:enable user_ldap'
+    when: '{{ owncloud__ldap_enabled|bool }}'
+
+  - command: 'app:enable files_external'
+    when: '{{ owncloud__smb_support|bool }}'
 
 
-# .. envvar:: owncloud_run_occ_group_commands
+# .. envvar:: owncloud__occ_cmd_list
 #
-# See :envvar:`owncloud_run_occ_global_commands`.
-owncloud_run_occ_group_commands: []
+# See `ownCloud raw occ commands`_.
+# This variable is intended to be used in Ansible’s global inventory.
+owncloud__occ_cmd_list: []
 
 
-# .. envvar:: owncloud_run_occ_host_commands
+# .. envvar:: owncloud__group_occ_cmd_list
 #
-# See :envvar:`owncloud_run_occ_global_commands`.
-owncloud_run_occ_host_commands: []
+# See `ownCloud raw occ commands`_.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
+owncloud__group_occ_cmd_list: []
 
 
-# .. envvar:: owncloud_occ_bin_file_path
+# .. envvar:: owncloud__host_occ_cmd_list
+#
+# See `ownCloud raw occ commands`_.
+# This variable is intended to be used in the inventory of the host.
+owncloud__host_occ_cmd_list: []
+
+
+# .. envvar:: owncloud__dependent_occ_cmd_list
+#
+# See `ownCloud raw occ commands`_.
+# This variable is intended to be used from other Ansible roles, for usage as
+# a dependent role.
+owncloud__dependent_occ_cmd_list: []
+
+
+# .. envvar:: owncloud__occ_bin_file_path
 #
 # Where the :command:`occ` wrapper script should be installed.
-owncloud_occ_bin_file_path: '/usr/local/bin/occ'
+owncloud__occ_bin_file_path: '{{ (ansible_local.root.bin
+                                  if (ansible_local|d() and ansible_local.root|d() and
+                                      ansible_local.root.bin|d())
+                                  else "/usr/local/bin") + "/occ" }}'
+
+
+# .. ownCloud user files [[[1
+#
+# -----------------------
+#   ownCloud user files
+# -----------------------
+
+# These lists allow you to manage files for ownCloud users, either by
+# copying files from the Ansible Controller or providing the contents directly
+# in Ansible inventory. You can use all parameters supported by the `Ansible
+# copy module`_.
+#
+# See :ref:`owncloud__ref_owncloud__user_files` for more details.
+
+# .. envvar:: owncloud__user_files
+#
+# Manage ownCloud user files on all hosts in Ansible’s inventory.
+owncloud__user_files: []
+
+
+# .. envvar:: owncloud__user_files_group
+#
+# Manage ownCloud user files on hosts in a specific Ansible inventory
+# group.
+owncloud__user_files_group: []
+
+
+# .. envvar:: owncloud__user_files_host
+#
+# Manage ownCloud user files on specific hosts in Ansible’s inventory.
+owncloud__user_files_host: []
 
 
 # .. LDAP authentication [[[1
@@ -517,127 +928,131 @@ owncloud_occ_bin_file_path: '/usr/local/bin/occ'
 #   LDAP authentication
 # -----------------------
 #
-# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/go.php?to=admin-ldap>`__ for details.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/go.php?to=admin-ldap>`__
+# and to the :ref:`owncloud__ref_external_users` section for more details.
 
 # .. envvar:: owncloud__ldap_enabled
 #
 # Enable LDAP support. ownCloud support multiple LDAP servers but this role
 # configures only default one. If you need something more complex you can
-# use :envvar:`owncloud_run_occ_global_commands`.
+# use :envvar:`owncloud__occ_cmd_list`.
 owncloud__ldap_enabled: False
 
 
-# .. envvar:: owncloud_ldap_create_user
+# .. envvar:: owncloud_ldap_update_settings
 #
-# Should the :envvar:`owncloud_ldap_binddn` LDAP user be created if it does not exist?
-owncloud_ldap_create_user: True
+# Ensure that the settings listed in :envvar:`owncloud__ldap_conf_map` are
+# up-to-date on the remote system.
+# Set to ``False`` to only configure LDAP settings in ownCloud when ownCloud
+# currently has no LDAP configuration.
+owncloud_ldap_update_settings: True
 
 
-# .. envvar:: owncloud_ldap_domain
+# .. envvar:: owncloud__ldap_create_user
+#
+# Should the :envvar:`owncloud__ldap_binddn` LDAP user be created if it does not exist?
+owncloud__ldap_create_user: True
+
+
+# .. envvar:: owncloud__ldap_domain
 #
 # Domain name used to generate base DN.
-owncloud_ldap_domain: '{{ ansible_domain }}'
+owncloud__ldap_domain: '{{ ansible_domain }}'
 
 
-# .. envvar:: owncloud_ldap_basedn
+# .. envvar:: owncloud__ldap_basedn
 #
 # Base DN
-owncloud_ldap_basedn: '{{ "dc=" + owncloud_ldap_domain.split(".") | join(",dc=") }}'
+owncloud__ldap_basedn: '{{ "dc=" + owncloud__ldap_domain.split(".") | join(",dc=") }}'
 
 
-# .. envvar:: owncloud_ldap_binddn
+# .. envvar:: owncloud__ldap_binddn
 #
 # DN to bind as
-owncloud_ldap_binddn: '{{ "cn=owncloud," + secret_ldap_services_dn }}'
+owncloud__ldap_binddn: '{{ "cn=owncloud," + secret_ldap_services_dn }}'
 
 
-# .. envvar:: owncloud_ldap_host
+# .. envvar:: owncloud__ldap_host
 #
-owncloud_ldap_host: 'ldap.{{ ansible_domain }}'
+owncloud__ldap_host: 'ldap.{{ ansible_domain }}'
 
 
-# .. envvar:: owncloud_ldap_password_file
+# .. envvar:: owncloud__ldap_password_file
 #
 # .. Maintainer note: LDAP DNs can be set to case-sensitive which is not the default.
-# .. Otherwise, owncloud_ldap_* could be converted to lowercase for the file path.
+# .. Otherwise, owncloud__ldap_* could be converted to lowercase for the file path.
 # .. https://stackoverflow.com/questions/29897684/is-ldap-dn-case-insensitive
 #
-owncloud_ldap_password_file: '{{ secret + "/credentials/" + owncloud_ldap_host + "/slapd/" + owncloud_ldap_basedn + "/" + owncloud_ldap_binddn + ".password" }}'
+owncloud__ldap_password_file: '{{ secret + "/credentials/" + owncloud__ldap_host + "/slapd/" + owncloud__ldap_basedn + "/" + owncloud__ldap_binddn + ".password" }}'
 
 
-# .. envvar:: owncloud_ldap_password
+# .. envvar:: owncloud__ldap_password
 #
-owncloud_ldap_password: '{{ lookup("password", owncloud_ldap_password_file) }}'
+owncloud__ldap_password: '{{ lookup("password", owncloud__ldap_password_file) }}'
 
 
-# .. envvar:: owncloud_ldap_port
+# .. envvar:: owncloud__ldap_port
 #
-owncloud_ldap_port: '636'
+owncloud__ldap_port: '636'
 
 
-# .. envvar:: owncloud_ldap_method
+# .. envvar:: owncloud__ldap_method
 #
-owncloud_ldap_method: 'ssl'
+owncloud__ldap_method: 'ssl'
 
 
-# .. envvar:: owncloud_ldap_user_display_name
+# .. envvar:: owncloud__ldap_user_display_name
 #
 # The attribute that should be used as display name in ownCloud.
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#directory-settings>`__ for details.
-#
-# Example for a Microsoft Windows environment::
-#
-#    owncloud_ldap_user_display_name: 'sAMAccountName'
-#
-# FIXME
-owncloud_ldap_user_display_name: 'cn'
+owncloud__ldap_user_display_name: 'cn'
 
 
-# .. envvar:: owncloud_ldap_user_filter
+# .. envvar:: owncloud__ldap_user_filter
 #
 # Use this to control which LDAP users are listed as ownCloud users on your ownCloud server.
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#user-filter>`__ for details.
-owncloud_ldap_user_filter: '(|(objectclass=inetOrgPerson))'
+owncloud__ldap_user_filter: '(|(objectclass=inetOrgPerson))'
 
 
-# .. envvar:: owncloud_ldap_user_filter_objectclass
+# .. envvar:: owncloud__ldap_user_filter_objectclass
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#user-filter>`__ for details.
-owncloud_ldap_user_filter_objectclass: 'inetOrgPerson'
+owncloud__ldap_user_filter_objectclass: 'inetOrgPerson'
 
 
-# .. envvar:: owncloud_ldap_group_filter
+# .. envvar:: owncloud__ldap_group_filter
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#group-filter>`__ for details.
-owncloud_ldap_group_filter: '(&(|(objectclass=posixGroup)))'
+owncloud__ldap_group_filter: '(&(|(objectclass=posixGroup)))'
 
 
-# .. envvar:: owncloud_ldap_group_filter_groups
+# .. envvar:: owncloud__ldap_group_filter_groups
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#group-filter>`__ for details.
-owncloud_ldap_group_filter_groups: ''
+owncloud__ldap_group_filter_groups: ''
 
 
-# .. envvar:: owncloud_ldap_group_filter_objectclass
+# .. envvar:: owncloud__ldap_group_filter_objectclass
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#group-filter>`__ for details.
-owncloud_ldap_group_filter_objectclass: 'posixGroup'
+owncloud__ldap_group_filter_objectclass: 'posixGroup'
 
 
-# .. envvar:: owncloud_ldap_login_filter
+# .. envvar:: owncloud__ldap_login_filter
 #
 # The settings in the Login Filter tab determine which LDAP users can log in to your ownCloud system.
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#login-filter>`__ for details.
-owncloud_ldap_login_filter: '(&(|(objectclass=inetOrgPerson))(uid=%uid))'
+owncloud__ldap_login_filter: '(&(|(objectclass=inetOrgPerson))(uid=%uid))'
 
 
-# .. envvar:: owncloud_ldap_login_filter_attributes
+# .. envvar:: owncloud__ldap_login_filter_attributes
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#login-filter>`__ for details.
-owncloud_ldap_login_filter_attributes: ''
+owncloud__ldap_login_filter_attributes: ''
 
 
-# .. envvar:: owncloud_ldap_group_assoc_attribute
+# .. envvar:: owncloud__ldap_group_assoc_attribute
 #
 # Attribute which ownCloud uses to match members of the group.
 #
@@ -653,14 +1068,14 @@ owncloud_ldap_login_filter_attributes: ''
 #   FIXME
 #   Attribute contains full DN of the user.
 #
-owncloud_ldap_group_assoc_attribute: 'memberUid'
+owncloud__ldap_group_assoc_attribute: 'memberUid'
 
 
-# .. envvar:: owncloud_home_folder_naming_rule
+# .. envvar:: owncloud__home_folder_naming_rule
 #
 # By default, the ownCloud server creates the user directory in your ownCloud data directory and gives it the ownCloud username, .e.g :file:`/var/www/owncloud/data/alice`. You may want to override this setting and name it after an LDAP attribute value. The attribute can also return an absolute path, e. g. :file:`/mnt/storage43/alice`. Leave it empty for default behavior.
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#special-attributes>`__ for details.
-owncloud_home_folder_naming_rule: 'attr:uid'
+owncloud__home_folder_naming_rule: 'attr:uid'
 
 # .. Advanced settings [[[
 #
@@ -668,14 +1083,14 @@ owncloud_home_folder_naming_rule: 'attr:uid'
 #   Advanced settings
 # ~~~~~~~~~~~~~~~~~~~~~
 
-# .. envvar:: owncloud_ldap_cache_ttl
+# .. envvar:: owncloud__ldap_cache_ttl
 #
 # A cache is introduced to avoid unnecessary LDAP traffic, for example caching usernames so they don’t have to be looked up for every page, and speeding up loading of the Users page. Saving the configuration empties the cache. The time is given in seconds.
 #
 # Note that almost every PHP request requires a new connection to the LDAP server. If you require fresh PHP requests we recommend defining a minimum lifetime of 15s or so, rather than completely eliminating the cache.
 #
 # Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#caching>`__ for details.
-owncloud_ldap_cache_ttl: '600'
+owncloud__ldap_cache_ttl: '600'
 
 # .. ]]]
 
@@ -685,7 +1100,7 @@ owncloud_ldap_cache_ttl: '600'
 #   Expert settings
 # ~~~~~~~~~~~~~~~~~~~
 
-# .. envvar:: owncloud_ldap_expert_username_attr
+# .. envvar:: owncloud__ldap_expert_username_attr
 #
 # The internal username is the identifier in ownCloud for LDAP users. By
 # default it will be created from the UUID attribute. The UUID attribute
@@ -708,39 +1123,41 @@ owncloud_ldap_cache_ttl: '600'
 # empty for default behaviour. Changes will affect only newly mapped LDAP
 # users.
 #
-# You will need to add this variable yourself to :envvar:`owncloud_ldap_conf_map`
+# You will need to add this variable yourself to :envvar:`owncloud__ldap_conf_map`
 # right now.
 #
-# Settings this to::
+# For a Microsoft Windows environment, putting this:
 #
-#    owncloud_ldap_expert_username_attr: 'sAMAccountName'
+# .. code-block:: yaml
+#   :linenos:
 #
-# FIXME: Needs testing.
+#    owncloud__ldap_expert_username_attr: 'sAMAccountName'
 #
-owncloud_ldap_expert_username_attr: ''
+# in your inventory might come in handy to use the user names from AD as user names in ownCloud.
+owncloud__ldap_expert_username_attr: ''
 
 # .. ]]]
 
-# .. envvar:: owncloud_ldap_conf_map
+# .. envvar:: owncloud__ldap_conf_map
 #
-owncloud_ldap_conf_map:
-  ldapHost: '{{ "ldaps://" if (owncloud_ldap_method == "ssl") else "" }}{{ owncloud_ldap_host }}'
-  ldapPort: '{{ owncloud_ldap_port }}'
-  ldapAgentName: '{{ owncloud_ldap_binddn }}'
-  ldapBase: '{{ owncloud_ldap_basedn }}'
+owncloud__ldap_conf_map:
+  ldapHost: '{{ "ldaps://" if (owncloud__ldap_method == "ssl") else "" }}{{ owncloud__ldap_host }}'
+  ldapPort: '{{ owncloud__ldap_port }}'
+  ldapAgentName: '{{ owncloud__ldap_binddn }}'
+  ldapBase: '{{ owncloud__ldap_basedn }}'
   ldapEmailAttribute: 'mail'
   ldapConfigurationActive: '1'
-  ldapUserDisplayName: '{{ owncloud_ldap_user_display_name }}'
-  ldapUserFilter: '{{ owncloud_ldap_user_filter }}'
-  ldapUserFilterObjectclass: '{{ owncloud_ldap_user_filter_objectclass }}'
-  ldapLoginFilter: '{{ owncloud_ldap_login_filter }}'
-  ldapLoginFilterAttributes: '{{ owncloud_ldap_login_filter_attributes }}'
-  ldapGroupFilter: '{{ owncloud_ldap_group_filter }}'
-  ldapGroupFilterGroups: '{{ owncloud_ldap_group_filter_groups }}'
-  ldapGroupFilterObjectclass: '{{ owncloud_ldap_group_filter_objectclass }}'
-  ldapGroupMemberAssocAttr:  '{{ owncloud_ldap_group_assoc_attribute }}'
-  homeFolderNamingRule: '{{ owncloud_home_folder_naming_rule }}'
-  ldapCacheTTL: '{{ owncloud_ldap_cache_ttl }}'
+  ldapUserDisplayName: '{{ owncloud__ldap_user_display_name }}'
+  ldapUserFilter: '{{ owncloud__ldap_user_filter }}'
+  ldapUserFilterObjectclass: '{{ owncloud__ldap_user_filter_objectclass }}'
+  ldapLoginFilter: '{{ owncloud__ldap_login_filter }}'
+  ldapLoginFilterAttributes: '{{ owncloud__ldap_login_filter_attributes }}'
+  ldapGroupFilter: '{{ owncloud__ldap_group_filter }}'
+  ldapGroupFilterGroups: '{{ owncloud__ldap_group_filter_groups }}'
+  ldapGroupFilterObjectclass: '{{ owncloud__ldap_group_filter_objectclass }}'
+  ldapGroupMemberAssocAttr:  '{{ owncloud__ldap_group_assoc_attribute }}'
+  homeFolderNamingRule: '{{ owncloud__home_folder_naming_rule }}'
+  ldapCacheTTL: '{{ owncloud__ldap_cache_ttl }}'
 
 
 # .. ownCloud Mail configuration [[[1
@@ -751,52 +1168,67 @@ owncloud_ldap_conf_map:
 #
 # Refer to the `official ownCloud Dokumentation about config.php <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html#mail-parameters>`__ and the `official ownCloud Dokumentation about email configuration <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/email_configuration.html>`__ for details.
 
-# .. envvar:: owncloud_mail_domain
+# .. envvar:: owncloud__mail_domain
 #
-owncloud_mail_domain: '{{ ansible_domain }}'
+owncloud__mail_domain: '{{ ansible_domain }}'
 
 
-# .. envvar:: owncloud_mail_from_address
+# .. envvar:: owncloud__mail_from_address
 #
 # From address that overrides the built-in ``sharing-noreply`` and
 # ``lostpassword-noreply`` from addresses.
-owncloud_mail_from_address: 'owncloud'
+owncloud__mail_from_address: 'owncloud'
 
 
-# .. envvar:: owncloud_mail_smtpmode
+# .. envvar:: owncloud__mail_smtpmode
 #
 # Which mode to use for sending mail.
-# Choices are: ``sendmail``, ``smtp``, ``qmail`` or ``php``.
-owncloud_mail_smtpmode: 'sendmail'
+# Choices are:
+#
+# * ``sendmail``
+# * ``smtp``
+# * ``qmail``
+# * ``php``
+#
+owncloud__mail_smtpmode: 'sendmail'
 
 
-# .. envvar:: owncloud_mail_smtphost
+# .. envvar:: owncloud__mail_smtphost
 #
 # Specify the IP address of your mail server host.
-# This may contain multiple
-# hosts separated by a semi-colon. If you need to specify the port number
-# append it to the IP address separated by a colon, like this: 127.0.0.1:24.
-# This depends on :envvar:`owncloud_mail_smtpmode`.
-owncloud_mail_smtphost: ''
-
-
-# .. envvar:: owncloud_mail_smtpport
+# This may contain multiple hosts separated by a semi-colon. If you need to
+# specify the port number append it to the IP address separated by a colon,
+# like this: ``127.0.0.1:24``.
 #
-# Port for sending mail. Can also be specified via :envvar:`owncloud_mail_smtphost`.
-# This depends on :envvar:`owncloud_mail_smtpmode`.
-owncloud_mail_smtpport: ''
+# This depends on :envvar:`owncloud__mail_smtpmode`.
+owncloud__mail_smtphost: ''
 
 
-# .. envvar:: owncloud_mail_conf_map
+# .. envvar:: owncloud__mail_smtpport
 #
-owncloud_mail_conf_map:
-  mail_domain: '{{ owncloud_mail_domain }}'
-  mail_from_address: '{{ owncloud_mail_from_address  }}'
-  mail_smtpmode: '{{ owncloud_mail_smtpmode }}'
+# Port for sending mail. Can also be specified via :envvar:`owncloud__mail_smtphost`.
+# This depends on :envvar:`owncloud__mail_smtpmode`.
+owncloud__mail_smtpport: ''
 
-## FIXME: Needs testing.
-  # mail_smtphost: '{{ owncloud_mail_smtphost }}'
-  # mail_smtpport: '{{ owncloud_mail_smtpport }}'
+
+# .. envvar:: owncloud__mail_conf_map
+#
+# This configuration ends up in :file:`mail.config.php` and override the
+# values from :file:`config.php`.
+# Set to:
+#
+# .. code-block:: yaml
+#   :linenos:
+#
+#    owncloud__mail_conf_map: {}
+#
+# if you want to be able to configure/change this via the admin web interface.
+owncloud__mail_conf_map:
+  mail_domain: '{{ owncloud__mail_domain }}'
+  mail_from_address: '{{ owncloud__mail_from_address  }}'
+  mail_smtpmode: '{{ owncloud__mail_smtpmode }}'
+  mail_smtphost: '{{ owncloud__mail_smtphost }}'
+  mail_smtpport: '{{ owncloud__mail_smtpport }}'
 
 
 # .. Theming ownCloud [[[1
@@ -856,7 +1288,7 @@ owncloud__theme_name_html: '{{ owncloud__theme_name }}'
 #
 # Entity string for your ownCloud. For example the name of your company. This
 # string is used for the footer and the copyright.
-owncloud__theme_entitiy_name: 'DebOps project'
+owncloud__theme_entitiy_name: 'DebOps'
 
 
 # .. envvar:: owncloud__theme_base_url
@@ -876,18 +1308,7 @@ owncloud__theme_base_url: 'https://github.com/debops/ansible-owncloud'
 #
 # See under `Apps, Product and Service Names, and Compatibility References <https://owncloud.org/trademarks/>`_
 # for more suggestions.
-# "Powered by ownCloud"
 owncloud__theme_slogan: 'Powered by <a href="https://owncloud.org/">ownCloud</a>'
-
-
-# .. envvar:: owncloud__theme_logo_claim
-#
-# The logo claim can be used to add a hidden claim about the logo.
-# This feature seems to be rarely used and it is not sure if that is the intention behind this variable.
-# Checkout `this comment about
-# <https://github.com/owncloud/core/issues/5676#issuecomment-27649493>`_ for a
-# for discussion.
-owncloud__theme_logo_claim: ''
 
 
 # .. envvar:: owncloud__theme_footer_short
@@ -896,14 +1317,14 @@ owncloud__theme_logo_claim: ''
 # The value can contain arbitrary PHP and HTML code.
 # You will need to take care of quotes yourself.
 owncloud__theme_footer_short: |
-  'Setup using the <a href="' . $this->getBaseUrl() . '" target="_blank\">' . $this->getEntity() . '</a><br/>' .
+  'Setup by <a href="' . $this->getBaseUrl() . '" target="_blank\">' . $this->getEntity() . '</a><br/>' .
   '{{ owncloud__theme_slogan }}'
 
 
 # .. envvar:: owncloud__theme_footer_long
 #
 # Long version of the footer. See :envvar:`owncloud__theme_footer_short` for details.
-# FIXME: What exactly is the difference?
+# TODO: What exactly is the difference?
 owncloud__theme_footer_long: '{{ owncloud__theme_footer_short }}'
 
 
@@ -915,7 +1336,7 @@ owncloud__theme_footer_long: '{{ owncloud__theme_footer_short }}'
 # You will need to take care of quotes yourself.
 # The reason for not going with the ownCloud default is that it seems to point
 # to ``8.0`` even for the ``9.0.2`` release. Seems to be a bug.
-owncloud__theme_doc_link_to_key: '$this->getDocBaseUrl() . ''/server/{{ owncloud_release }}/go.php?to='' . $key'
+owncloud__theme_doc_link_to_key: '$this->getDocBaseUrl() . ''/server/{{ owncloud__release }}/go.php?to='' . $key'
 
 
 # .. envvar:: owncloud__theme_copy_files
@@ -927,7 +1348,10 @@ owncloud__theme_doc_link_to_key: '$this->getDocBaseUrl() . ''/server/{{ owncloud
 # The ``state`` value allows to make files absent.
 # All other options correspond to the options of the `Ansible copy module`_.
 #
-# To change the logo on the login page you can use::
+# To change the logo on the login page you can use:
+#
+# .. code-block:: yaml
+#   :linenos:
 #
 #    owncloud__theme_copy_files:
 #
@@ -980,17 +1404,35 @@ owncloud__theme_conf_map:
 #   Role-dependent configuration
 # --------------------------------
 
-
 # .. envvar:: owncloud__apt_preferences__dependent_list
 #
-# Configuration for the ``debops.apt_preferences`` role.
+# Configuration for the debops.apt_preferences_ role.
+#
+# .. TODO: Consider moving logic to the debops.php role.
+#
 owncloud__apt_preferences__dependent_list:
 
   - package: 'php5-apcu'
     backports: [ 'trusty' ]
     reason: 'ownCloud requires at least APCu version 4.0.6.'
     by_role: 'debops.owncloud'
-    delete: '{{ owncloud__deploy_state != "present" }}'
+    state: '{{ owncloud__deploy_state }}'
+
+
+# .. envvar:: owncloud__apt_preferences__dependent_list_optional
+#
+# Optional configuration for the debops.apt_preferences_ role.
+# Only required when APT preference presets from the
+# debops.apt_preferences_ role are used.
+owncloud__apt_preferences__dependent_list_optional:
+
+  - package: 'owncloud owncloud*'
+    reason: 'Use download.owncloud.org even when foreign sources are disabled by global APT preferences.'
+    pin: 'origin "download.owncloud.org"'
+    priority: 995
+    by_role: 'debops.owncloud'
+    state: '{{ owncloud__deploy_state }}'
+
 
 # .. envvar:: owncloud__nginx_access_log_assets
 #
@@ -998,20 +1440,35 @@ owncloud__apt_preferences__dependent_list:
 owncloud__nginx_access_log_assets: True
 
 
+# .. envvar:: owncloud__nginx_client_body_temp_path
+#
+# Defines the directory where Nginx will temporary store files holding client
+# request bodies.
+# Refer to the `the Nginx Dokumentation <http://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_temp_path>`__ for details.
+#
+# The default (empty string) is to not change the default of the webserver.
+# TODO: Confirm that this variable does what it says.
+owncloud__nginx_client_body_temp_path: ''
+
+
 # .. envvar:: owncloud__nginx__servers
 #
-# List of :program:`nginx` server configurations managed by the
-# ``debops.nginx`` role.
+# :program:`nginx` server configuration managed by the debops.nginx_ role.
 owncloud__nginx__servers:
 
   ## https://github.com/owncloud/documentation/blob/master/admin_manual/installation/nginx_owncloud_9x.rst
   ## https://github.com/owncloud/documentation/blob/master/admin_manual/installation/nginx_examples.rst
+  ## https://doc.owncloud.org/server/9.0/admin_manual/issues/general_troubleshooting.html
   - by_role: 'debops.owncloud'
     enabled: True
     default: False
     type: 'default'
-    name: '{{ owncloud_domain }}'
-    root: '{{ owncloud_deploy_path }}'
+    name: '{{ owncloud__domain }}'
+    root: '{{ owncloud__deploy_path }}'
+
+    ## https://doc.owncloud.org/server/9.0/admin_manual/issues/general_troubleshooting.html#common-problems-error-messages
+    ## DebOps default should be fine.
+    # keepalive: '3600'
 
     robots_tag: [ 'none' ]
     permitted_cross_domain_policies: 'none'
@@ -1019,11 +1476,14 @@ owncloud__nginx__servers:
     options: |
       add_header X-Download-Options noopen;
 
-      # set max upload size
-      client_max_body_size {{ owncloud_upload_size }};
+      # Set max upload size.
+      client_max_body_size {{ owncloud__upload_size }};
+      {% if owncloud__nginx_client_body_temp_path %}
+      client_body_temp_path '{{ owncloud__nginx_client_body_temp_path }}';
+      {% endif %}
       fastcgi_buffers 64 4K;
 
-      {% if owncloud_app_user_webfinger_support | bool %}
+      {% if owncloud__app_user_webfinger_support | bool %}
       rewrite ^/.well-known/host-meta /public.php?service=host-meta last;
       rewrite ^/.well-known/host-meta.json /public.php?service=host-meta-json last;
       {% endif %}
@@ -1039,9 +1499,10 @@ owncloud__nginx__servers:
       error_page            404             /core/templates/404.php;
 
 
-      # Avoid sending the security headers twice as the ownCloud PHP app will
+      # Avoid sending the security headers twice as the ownCloud PHP app
       # would otherwise also add the X-* HTTP headers.
       fastcgi_param modHeadersAvailable true;
+
     location_list:
       - pattern: '= /robots.txt'
         options: |
@@ -1083,7 +1544,7 @@ owncloud__nginx__servers:
           fastcgi_param modHeadersAvailable true; #Avoid sending the security headers twice
           fastcgi_param front_controller_active true;
 
-          fastcgi_pass php5_owncloud;
+          fastcgi_pass php_owncloud;
 
           fastcgi_intercept_errors on;
 
@@ -1091,7 +1552,7 @@ owncloud__nginx__servers:
           fastcgi_request_buffering off;
           {% endif %}
 
-          fastcgi_read_timeout {{ owncloud_timeout }};
+          fastcgi_read_timeout {{ owncloud__timeout }};
 
       - pattern: '~ ^/(?:updater|ocs-provider)(?:$|/)'
         options: |
@@ -1113,7 +1574,7 @@ owncloud__nginx__servers:
           add_header X-Download-Options noopen;
           add_header X-Permitted-Cross-Domain-Policies none;
 
-          {% if owncloud__nginx_access_log_assets|bool %}
+          {% if not (owncloud__nginx_access_log_assets|bool) %}
           access_log off;
           {% endif %}
 
@@ -1121,48 +1582,102 @@ owncloud__nginx__servers:
         options: |
           try_files $uri /index.php$uri$is_args$args;
 
-          {% if owncloud__nginx_access_log_assets|bool %}
+          {% if not (owncloud__nginx_access_log_assets|bool) %}
           access_log off;
           {% endif %}
 
     ## Not used so that the exact order of locations from the upstream nginx example can be used.
-    # type: 'php5'
-    # php5: 'php5_owncloud'
-    # php5_limit_except: False
+    # type: 'php'
+    # php_upstream: 'php_owncloud'
+    # php_limit_except: False
     # php5_location: '^/(?:index|remote|public|cron|core/ajax/update|status|ocs/v[12]|updater/.+|ocs-provider/.+|core/templates/40[34])\.php(?:$|/)'
-    # php5_options: |
-    #   fastcgi_read_timeout {{ owncloud_timeout }};
+    # php_options: |
+    #   fastcgi_read_timeout {{ owncloud__timeout }};
 
 
-# .. envvar:: owncloud__nginx__upstream_php5
+# .. envvar:: owncloud__nginx__upstream_php
 #
-# List of PHP upstream server configurations managed by the ``debops.nginx``
-# role.
-owncloud__nginx__upstream_php5:
-  enabled: True
-  name: 'php5_owncloud'
-  type: 'php5'
-  php5: 'owncloud'
+# PHP upstream server configuration managed by the debops.nginx_ role.
+owncloud__nginx__upstream_php:
+  - name: 'php_owncloud'
+    enabled: True
+    state: '{{ owncloud__deploy_state }}'
+    type: 'php'
+    php_pool: 'owncloud'
+
+  ## Ensure legacy configurations are absent.
+  - name: 'php5_owncloud'
+    state: 'absent'
+    type: 'php5'
+    php5: 'owncloud'
 
 
-# .. envvar:: owncloud__php5__pool
+# .. envvar:: owncloud__php__dependent_packages
 #
-# List of PHP pools managed by the ``debops.php5``
-# role.
-owncloud__php5__pool:
-  enabled: True
+# List of PHP packages to install using the debops.php_ role.
+owncloud__php__dependent_packages:
+  - '{{ owncloud__base_php_packages }}'
+  - '{{ owncloud__optional_php_packages }}'
+
+
+# .. envvar:: owncloud__php__dependent_configuration
+#
+# :file:`php.ini` configuration managed by the debops.php_ role.
+owncloud__php__dependent_configuration:
+  - filename: '10-owncloud'
+    state: '{{ "present"
+               if ((owncloud__apcu_enabled|bool) and (owncloud__release | match("8\.1")))
+               else "absent" }}'
+    options: |
+      ; Workaround for: https://github.com/owncloud/core/issues/17329
+      apc.enable_cli = 1
+
+
+# .. envvar:: owncloud__php__dependent_pools
+#
+# PHP pools managed by the debops.php_ role.
+# Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html#php-ini-configuration-notes>`__ for details.
+owncloud__php__dependent_pools:
   name: 'owncloud'
-  user: '{{ owncloud_user }}'
-  group: '{{ owncloud_group }}'
-  pm_max_children: '{{ owncloud_php5_max_children }}'
-  php_value:
-    output_buffering: '{{ owncloud_php5_output_buffering }}'
-    post_max_size: '{{ owncloud_upload_size }}'
-    upload_max_filesize: '{{ owncloud_upload_size }}'
-    max_input_time: '{{ owncloud_timeout }}'
-    max_execution_time: '{{ owncloud_timeout }}'
+  user: '{{ owncloud__user }}'
+  group: '{{ owncloud__group }}'
+  pm_max_children: '{{ owncloud__php_max_children }}'
 
-  ## https://doc.owncloud.org/server/8.1/admin_manual/installation/source_installation.html#using-php-fpm
+  ## Overwrite DebOps default to ensure that long running syncing jobs don’t
+  ## get killed.
+  ## https://secure.php.net/manual/en/install.fpm.configuration.php
+  request_terminate_timeout: '{{ owncloud__timeout }}'
+
+  ## This is sometimes seen in other peoples ownCloud configuration.
+  ## The role maintainers could not yet verify if it is really needed.
+  # rlimit_files: '131072'
+  # rlimit_core: 'unlimited'
+
+  ## https://github.com/owncloud/core/blob/master/.user.ini
+  ## https://github.com/nextcloud/server/blob/master/.user.ini
+  php_values:
+    ## https://secure.php.net/manual/en/outcontrol.configuration.php#ini.output-buffering
+    output_buffering: '{{ owncloud__php_output_buffering }}'
+
+    ## https://secure.php.net/manual/en/info.configuration.php#ini.upload-max-filesize
+    upload_max_filesize: '{{ owncloud__upload_size }}'
+
+    ## https://secure.php.net/manual/en/ini.core.php#ini.post-max-size
+    post_max_size: '{{ owncloud__upload_size }}'
+
+    ## https://secure.php.net/manual/de/ini.core.php#ini.memory-limit
+    ## FIXME: ownCloud and the PHP manual suggest that it should be enabled.
+    ## Is that really needed because the process needs to hold the entire file
+    ## in memory or does it support "streaming" the file thought itself?
+    ## Currently disabled. Enable when required.
+    # memory_limit: '{{ owncloud__upload_size }}'
+
+    ## https://secure.php.net/manual/en/info.configuration.php#ini.max-input-time
+    max_input_time: '{{ owncloud__timeout }}'
+
+    ## Refer to: https://secure.php.net/manual/en/info.configuration.php#ini.max-execution-time
+    max_execution_time: '{{ owncloud__timeout }}'
+
   environment:
     # HOSTNAME: '$HOSTNAME'
     # TMP: '/tmp'
@@ -1172,3 +1687,10 @@ owncloud__php5__pool:
     ## Fixes warning (ownCloud 8.1): "The test with getenv('PATH') only returns an empty response"
     PATH: '/usr/local/bin:/usr/bin:/bin'
 
+
+# .. envvar:: owncloud__unattended_upgrades__dependent_origins
+#
+# List of origin patterns managed by the debops.unattended_upgrades_ role.
+owncloud__unattended_upgrades__dependent_origins:
+  - origin: 'site=download.owncloud.org'
+    state: '{{ "present" if (owncloud__auto_security_updates_enabled | bool) else "absent" }}'

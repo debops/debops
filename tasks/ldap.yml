@@ -1,40 +1,33 @@
 ---
 # vim: foldmarker=[[[,]]]:foldmethod=marker
 
-- name: Ensure php5-ldap is installed
-  apt:
-    name: 'php5-ldap'
-    state: 'present'
-    install_recommends: False
-
-- name: Make sure the user_ldap app is enabled
-  include: run_occ.yml
-  with_items:
-    - command: 'app:enable user_ldap'
-
 - name: Check default ldap config exists
-  command: php --file "{{ owncloud_home }}/occ" ldap:show-config ""
+  command: php --file "{{ owncloud__home }}/occ" ldap:show-config ""
   changed_when: False
-  register: owncloud_register_ldap_default_config_exits
-  become_user: '{{ owncloud_user }}'
+  when: (not ansible_check_mode)
+  register: owncloud__register_ldap_default_config_exits
+  become_user: '{{ owncloud__user }}'
 
 - name: Create empty LDAP config
-  command: php --file "{{ owncloud_home }}/occ" ldap:create-empty-config
-  become_user: '{{ owncloud_user }}'
-  when: ('Invalid configID' in owncloud_register_ldap_default_config_exits.stdout)
+  command: php --file "{{ owncloud__home }}/occ" ldap:create-empty-config
+  become_user: '{{ owncloud__user }}'
+  when: ((not ansible_check_mode) and 'Invalid configID' in owncloud__register_ldap_default_config_exits.stdout)
 
 - name: Set LDAP password
-  command: php --file "{{ owncloud_home }}/occ" ldap:set-config "" ldapAgentPassword "{{ owncloud_ldap_password }}"
+  command: php --file "{{ owncloud__home }}/occ" ldap:set-config "" ldapAgentPassword "{{ owncloud__ldap_password }}"
   changed_when: False
-  become_user: '{{ owncloud_user }}'
+  become_user: '{{ owncloud__user }}'
   no_log: True
-  when: (owncloud_ldap_password is string and owncloud_ldap_password|length > 0)
+  when: ((not ansible_check_mode) and owncloud__ldap_password is string and owncloud__ldap_password|length > 0)
 
 - name: Set LDAP parameters
-  command: php --file "{{ owncloud_home }}/occ" ldap:set-config "" "{{ item.key }}" "{{ item.value }}"
+  command: php --file "{{ owncloud__home }}/occ" ldap:set-config "" "{{ item.key }}" "{{ item.value }}"
   changed_when: False
-  become_user: '{{ owncloud_user }}'
-  with_dict: '{{ owncloud_ldap_conf_map }}'
+  become_user: '{{ owncloud__user }}'
+  when: ((not ansible_check_mode) and
+         ('Invalid configID' in owncloud__register_ldap_default_config_exits.stdout or
+         owncloud_ldap_update_settings|bool))
+  with_dict: '{{ owncloud__ldap_conf_map }}'
 
 - name: Make sure that services OU exists
   ldap_entry:
@@ -48,14 +41,14 @@
   become: '{{ secret_ldap_sudo | bool }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
   no_log: True
-  when: (owncloud_ldap_create_user | bool)
+  when: (owncloud__ldap_create_user | bool)
 
 - name: Make sure that LDAP account exists
   ldap_entry:
-    dn: '{{ owncloud_ldap_binddn }}'
+    dn: '{{ owncloud__ldap_binddn }}'
     objectClass: [ 'organizationalRole', 'simpleSecurityObject' ]
     cn: 'owncloud'
-    userPassword: '{{ owncloud_ldap_password | ldappassword("SHA") }}'
+    userPassword: '{{ owncloud__ldap_password | ldappassword("SHA") }}'
     state: 'present'
     server_uri: '{{ secret_ldap_server_uri }}'
     start_tls:  '{{ secret_ldap_start_tls }}'
@@ -64,11 +57,11 @@
   become: '{{ secret_ldap_sudo | bool }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
   no_log: True
-  when: (owncloud_ldap_create_user | bool)
+  when: (owncloud__ldap_create_user | bool)
 
 - name: Set host bind password in LDAP
   ldap_attr:
-    dn: '{{ owncloud_ldap_binddn }}'
+    dn: '{{ owncloud__ldap_binddn }}'
     name: '{{ item.key }}'
     values: '{{ item.value }}'
     state: 'exact'
@@ -79,9 +72,9 @@
   become: '{{ secret_ldap_sudo | bool }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
   with_dict:
-    userPassword: '{{ owncloud_ldap_password | ldappassword("SHA") }}'
+    userPassword: '{{ owncloud__ldap_password | ldappassword("SHA") }}'
   no_log: True
-  when: (owncloud_ldap_create_user | bool)
+  when: (owncloud__ldap_create_user | bool)
 
 ## FIXME: occ ldap:test-config ''
 ## Returns 'The configuration is invalid. Please have a look at the logs for further details.' if invalid

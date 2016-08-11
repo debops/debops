@@ -129,11 +129,29 @@ Fallback not possible as of 9.0.2.
 	/* Not otherwise defined. Falling back to ownCloud default value. */
 {% endif %}
 
+{#
+
+# .. envvar:: owncloud__theme_logo_claim
+#
+# The logo claim can be used to add a hidden claim about the logo.
+# This feature seems to be rarely used and it is not sure if that is the intention behind this variable.
+# Checkout `this comment about
+# <https://github.com/owncloud/core/issues/5676#issuecomment-27649493>`_ for a
+# for discussion.
+#
+# https://github.com/owncloud/core/issues/5676#issuecomment-228990394
+# > The use is simply for the ownCloud Enterprise Edition to display »Enterprise
+# > Edition« next to the logo/appname in the header when logged in. It’s used for
+# > nothing else. I would strongly advise against ever using it because it will
+# > just distract and clutter up the header (won’t work on mobile anyway).
+owncloud__theme_logo_claim: ''
+
+#}
 	/**
 	 * Returns logo claim
 	 * @return string logo claim
 	 */
-{% if owncloud__theme_logo_claim != '' %}
+{% if owncloud__theme_logo_claim|d('') != '' %}
 	public function getLogoClaim() {
 		return '{{ owncloud__theme_logo_claim }}';
 	}

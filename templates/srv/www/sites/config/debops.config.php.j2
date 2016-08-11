@@ -1,14 +1,22 @@
 <?php
 /* {{ ansible_managed }} */
-{#
-Copyright 2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>
-Licence: GPLv3
-#}
-$CONFIG = json_decode('{{
-            owncloud_config_role_optional
-  | combine(owncloud_config_role_required)
-  | combine(owncloud_config)
-  | combine(owncloud_config_group)
-  | combine(owncloud_config_host)
-  | to_nice_json }}', true);
+
+{% set owncloud__tpl_unchecked_config_dict =
+  owncloud__role_config
+    | combine(owncloud__role_recommended_config)
+    | combine(owncloud__config)
+    | combine(owncloud__group_config)
+    | combine(owncloud__host_config) %}
+{% set owncloud__tpl_active_config_dict = {} %}
+{% for config_key, config_item in owncloud__tpl_unchecked_config_dict.iteritems() %}
+{%   if config_item is mapping and "state" in config_item and config_item.state and "value" in config_item %}
+{%     if config_item.state == "present" %}
+{%       set _ = owncloud__tpl_active_config_dict.update({config_key: config_item.value}) %}
+{%     endif %}
+{%   else %}
+{#     Assume it is not a control structure for Ansible but the raw value for ownCloud #}
+{%     set _ = owncloud__tpl_active_config_dict.update({config_key: config_item}) %}
+{%   endif %}
+{% endfor %}
+$CONFIG = json_decode('{{ owncloud__tpl_active_config_dict | to_nice_json }}', true);
 ?>
