@@ -32,13 +32,13 @@ unprivileged user account on Ansible Controller, so you don't need to be
 ``root`` in order to use it - most of the time you can use your existing user
 account.
 
-After entering your new project directory, you can see an :command:`ansible/`
+After entering your new project directory, you can see an :file:`ansible/`
 directory which contains files related to Ansible, mostly inventory, secret
 directory, playbooks and roles. You can also notice ``.debops.cfg``
 configuration file which indicates to the DebOps script that this is indeed
 a project directory and contains configuration related to it.
 
-Main Ansible inventory file is :command:`ansible/inventory/hosts`. You should add
+Main Ansible inventory file is ``ansible/inventory/hosts``. You should add
 hosts that you want to manage to it, just make sure that you can access them
 through SSH without issues. It's a good idea to start using groups right away
 to keep many hosts under control. An example inventory file:
