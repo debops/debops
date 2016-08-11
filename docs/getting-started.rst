@@ -22,7 +22,7 @@ Here's an example playbook which uses ``debops.memcached`` role::
 
     - name: Install memcached service
       hosts: debops_memcached
-      sudo: True
+      become: True
 
       roles:
         - role: debops.memcached
