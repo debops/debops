@@ -33,7 +33,7 @@ example playbook::
 
     ---
     - hosts: nfs_clients
-      sudo: True
+      become: True
 
       tasks:
 
