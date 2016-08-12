@@ -109,5 +109,5 @@ Example playbook
 Here's an example playbook that can be used to enable and manage the GitLab
 Runner service on a set of hosts:
 
-.. literalinclude:: playbooks/java.yml
+.. literalinclude:: playbooks/gitlab_runner.yml
    :language: yaml
