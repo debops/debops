@@ -3,7 +3,7 @@
 Support functions for command line utilities (scripts).
 """
 # Copyright (C) 2014-2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
-# Part of the DebOps project - http://debops.org/
+# Part of the DebOps - https://debops.org/
 
 # This program is free software; you can redistribute
 # it and/or modify it under the terms of the
@@ -24,7 +24,7 @@ Support functions for command line utilities (scripts).
 #
 # An on-line copy of the GNU General Public License can
 # be downloaded from the FSF web page at:
-# http://www.gnu.org/copyleft/gpl.html
+# https://www.gnu.org/copyleft/gpl.html
 
 from __future__ import print_function
 

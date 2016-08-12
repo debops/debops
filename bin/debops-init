@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-debops-init: create a new DebOps project
+debops-init: create a new DebOps project directory
 """
 # Copyright (C) 2014-2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
-# Part of the DebOps project - http://debops.org/
+# Part of the DebOps - https://debops.org/
 
 # This program is free software; you can redistribute
 # it and/or modify it under the terms of the
@@ -25,7 +25,7 @@ debops-init: create a new DebOps project
 #
 # An on-line copy of the GNU General Public License can
 # be downloaded from the FSF web page at:
-# http://www.gnu.org/copyleft/gpl.html
+# https://www.gnu.org/copyleft/gpl.html
 
 from __future__ import print_function
 
@@ -114,7 +114,7 @@ HOSTS_FILE_HEADER = """\
 # https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
 #
 # You should check Getting Started guide for useful suggestions:
-# http://docs.debops.org/en/latest/debops-playbooks/docs/guides/getting-started.html
+# https://docs.debops.org/en/latest/debops-playbooks/docs/guides/getting-started.html
 """
 
 HOSTS_FILE_CONTENT_CONTROLER = """
@@ -171,12 +171,12 @@ def main(project_root):
     orig_project_root = project_root
     project_root = os.path.abspath(project_root)
 
-    #-- Check for existing debops project
+    #-- Check for existing debops project directory
     debops_project_root = find_debops_project(project_root, required=False)
 
     # Exit if DebOps configuration file has been found in project_dir
     if os.path.exists(os.path.join(project_root, DEBOPS_CONFIG)):
-        error_msg("%s is already a DebOps project" % project_root)
+        error_msg("%s is already a DebOps project directory" % project_root)
 
     # Exit if we are in a DebOps project dir and nested project would be created
     if debops_project_root:
@@ -184,7 +184,7 @@ def main(project_root):
 
     #-- Main script
 
-    print("Creating new DebOps project in", orig_project_root, "...")
+    print("Creating new DebOps project directory in", orig_project_root, "...")
 
     # Create base project directories
     for skel_dir in SKEL_DIRS:

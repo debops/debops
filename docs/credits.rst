@@ -3,7 +3,7 @@ Credits
 
 * Maciej Delmanowski <drybjed_at_gmail.com>
 
-  * creator of the DebOps Project
+  * creator of DebOps
 
   * current project maintainer
 
@@ -21,4 +21,3 @@ Credits
   * Keeping the documentation up-to-date :)
   * Security related work.
   * Author and maintainer of a few roles in DebOps.
-

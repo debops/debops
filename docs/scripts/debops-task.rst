@@ -1,10 +1,10 @@
 The ``debops-task`` command
 ===========================
 
-Wraps ``ansible``, it can accept anything ``ansible`` does.
+Wraps :command:`ansible`, it can accept anything :command:`ansible` does.
 
 **Note** After ``debops`` is run once and ``ansible.cfg`` is generated, you can
-use the ``ansible`` command directly.
+use the :command:`ansible` command directly.
 
 You could use it to run adhoc tasks against your hosts.
 

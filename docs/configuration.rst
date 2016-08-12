@@ -19,7 +19,7 @@ MacOS X:
 
 All others (including Linux):
 
-- ``/etc/debops.cfg``
+- :file:`/etc/debops.cfg`
 
 - in each directory of ``$XDG_CONFIG_DIRS``: ``dir/debops.cfg``
 
@@ -44,9 +44,9 @@ The ``[paths]`` section
 
   Default values:
 
-  - Linux: ``$XDG_DATA_HOME/debops/``
+  - Linux: :file:`$XDG_DATA_HOME/debops/`
 
-  - MacOS X: ``~/Library/Application Support/debops/``
+  - MacOS X: :file:`~/Library/Application Support/debops/`
 
   - MS Windows: ``%APPDTA%\debops``
 
@@ -63,14 +63,14 @@ The ``[paths]`` section
 
 ``template-paths``
   List of comma-separated paths where ``template_src`` lookup plugin will look
-  for custom templates (alternative ``templates/`` directories). You can use
+  for custom templates (alternative :file:`templates/` directories). You can use
   this to override templates provided with official roles (when supported).
 
   Default value: none
 
 ``file-paths``
   List of comma-separated paths where ``file_src`` lookup plugin will look for
-  custom files (alternative ``files/`` directories). You can use this to
+  custom files (alternative :file:`files/` directories). You can use this to
   override files provided with official roles (when supported).
 
   Default value: none
@@ -90,7 +90,7 @@ use:
    [ansible defaults]
    ansible_managed = Custom string
 
-For the configuration entries representing paths (e.g. ``roles_path``,
+For the configuration entries representing paths (e. g. ``roles_path``,
 ``action_plugins`` and other ``.._plugins``), your value will be
 prepended to the values set up by debops.
 

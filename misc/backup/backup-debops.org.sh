@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # backup-debops.org.sh: small shell script that clones all git
-# repositories of the DebOps project and additional tools
+# repositories of DebOps and additional tools
 #
 # Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
-# Part of the DebOps project - http://debops.org/
+# Part of the DebOps - https://debops.org/
 
 
 # This program is free software; you can redistribute
@@ -26,10 +26,10 @@
 #
 # An on-line copy of the GNU General Public License can
 # be downloaded from the FSF web page at:
-# http://www.gnu.org/copyleft/gpl.html
+# https://www.gnu.org/copyleft/gpl.html
 
 
-# This script clones all repositories of the DebOps project from GitHub plus
+# This script clones all repositories of DebOps from GitHub plus
 # some additional tools and preserves the '.git' directories.
 #
 # Various tools will be cloned into 'tools/' directory.

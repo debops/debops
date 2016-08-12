@@ -1,6 +1,8 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 v0.4.4
 ------
 
@@ -10,53 +12,53 @@ v0.4.4
 
 - Fix issue with ``bootstrap-ansible.sh`` script not able to install latest
   Ansible stable version, make the process more verbose and don't remove the
-  temporary directory by default. [drybjed]
+  temporary directory by default. [drybjed_]
 
-- Update Ansible Galaxy role links in ``ansigenome`` templates. [drybjed]
+- Update Ansible Galaxy role links in ``ansigenome`` templates. [drybjed_]
 
 - Fix Unicode support in ``debops-defaults``, it should now output readable
-  text in the editor. [ypid]
+  text in the editor. [ypid_]
 
-- Document ``git`` dependency. [violuke]
+- Document :command:`git` dependency. [violuke]
 
 - Update the Ansigenome ``README.md`` template used to generate role README
   files to use ``galaxy_url`` instead of ``galaxy_id``. The new variable should
-  contain full URL of the role on Ansible Galaxy. [drybjed]
+  contain full URL of the role on Ansible Galaxy. [drybjed_]
 
 - Add useful Ansible options to default ``ansible.cfg`` template.
 
   By default Ansible will not display skipped hosts during the playbook run,
-  and "retry" files won't be generated. [drybjed]
+  and "retry" files won't be generated. [drybjed_]
 
-- Update generated inventory file with more relevant information. [drybjed]
+- Update generated inventory file with more relevant information. [drybjed_]
 
-- Update documentation. [drybjed]
+- Update documentation. [drybjed_]
 
 v0.4.3
 ------
 
 *Released: 2015-05-25*
 
-- Rearranged documentation. [drybjed]
+- Rearranged documentation. [drybjed_]
 
-- Properly propagate exit code when running debops [do3cc]
+- Properly propagate exit code when running debops [do3cc_]
 
 - Clone and update roles exclusively over HTTPS to allow operation
-  over a proxy or in case the git protocol is blocked. [ganto]
+  over a proxy or in case the git protocol is blocked. [ganto_]
 
 v0.4.2
 ------
 
 *Released: 2015-03-04*
 
-- On OS X search config-file in ``/etc`` too (before searching in
-  ``~/Library/Application Support``). [htgoebel]
+- On OS X search config-file in :file:`/etc` too (before searching in
+  ``~/Library/Application Support``). [htgoebel_]
 
 - Make debops-init write some example values into .debops.cfg.
-  [htgoebel]
+  [htgoebel_]
 
 - Add a work-around for ansible's buggy handling of paths containing
-  spaces. [htgoebel]
+  spaces. [htgoebel_]
 
 
 v0.4.1
@@ -64,15 +66,15 @@ v0.4.1
 
 *Released: 2015-02-26*
 
-- Update role README template to point to new documentation. [drybjed]
+- Update role README template to point to new documentation. [drybjed_]
 
-- Make Travis mass test script less noisy. [drybjed]
+- Make Travis mass test script less noisy. [drybjed_]
 
-- Add ``library/`` path to default Ansible plugin paths in generated ``ansible.cfg``. [drybjed]
+- Add :file:`library/` path to default Ansible plugin paths in generated ``ansible.cfg``. [drybjed_]
 
-- Define default ``ansible_managed`` variable in generated ``ansible.cfg``. [drybjed]
+- Define default ``ansible_managed`` variable in generated ``ansible.cfg``. [drybjed_]
 
-- Changelog is rewritten in reStructuredText. [drybjed]
+- Changelog is rewritten in reStructuredText. [drybjed_]
 
 v0.4.0
 ------
@@ -80,7 +82,7 @@ v0.4.0
 *Released: 2015-02-12*
 
 - DebOps can now use a system-wide configuration file `/etc/debops.cfg`. You
-  can also install DebOps playbooks and roles in a system-wide location. [htgoebel]
+  can also install DebOps playbooks and roles in a system-wide location. [htgoebel_]
 
 v0.3.0
 ------
@@ -88,16 +90,16 @@ v0.3.0
 *Released: 2015-01-27*
 
 - Small fixes for bugs in DebOps libraries which prevented corret script
-  execution on platforms other than Linux. [htgoebel]
+  execution on platforms other than Linux. [htgoebel_]
 
 v0.2.0
 ------
 
 *Released: 2015-01-26*
 
-- ``debops-padlock`` script has been modified to support "lock" and "unlock"
+- :command:`debops-padlock` script has been modified to support "lock" and "unlock"
   sub-commands and it is now used by the `padlock` wrapper script to lock and
-  unlock EncFS-encrypted secret directory. [htgoebel]
+  unlock EncFS-encrypted secret directory. [htgoebel_]
 
 - ``debops`` script can now read configuration from several files::
 
@@ -106,9 +108,9 @@ v0.2.0
     $XDG_CONFIG_HOME/debops.cfg (defaults to ~/.config/debops.cfg)
     ./.debops.cfg
 
-  Configuration options from different files are merged together. [htgoebel]
+  Configuration options from different files are merged together. [htgoebel_]
 
-- Scripts are now tested on Travis-CI using `nosetests`. [drybjed]
+- Scripts are now tested on Travis-CI using `nosetests`. [drybjed_]
 
 
 v0.1.0
@@ -121,8 +123,8 @@ v0.1.0
 
 Notable changed related to the shell-version are:
 
-- Playbooks are no longer searched in ``/usr/local/share/debops`` nor in
-  ``/usr/share/debops``. We assume DebOps is used from a user account,
+- Playbooks are no longer searched in :file:`/usr/local/share/debops` nor in
+  :file:`/usr/share/debops`. We assume DebOps is used from a user account,
   so installing playbooks globally is not the common case.
 
 - Sourcing ``.debops.cfg`` is no longer supported, ``.debops.cfg`` now is
@@ -130,7 +132,7 @@ Notable changed related to the shell-version are:
 
 - The ``ansible_config_hook`` (which was undocumented anyway) is gone.
   Instead you can put sections ``[ansible ...]`` into ``.debops.cfg``
-  which will go into ``ansible.cfg``. This allows for easy adding e.g. a
+  which will go into ``ansible.cfg``. This allows for easy adding e. g. a
   ``[paramiko]`` section to `ansible.cfg`.
 
 - The padlock-script is no longer used to decide if secrets are
@@ -148,18 +150,15 @@ Pre-release
 
 - `DebOps mailing list`_ has been moved to `groups.io`_.
 
-.. _DebOps mailing list: https://groups.io/org/groupsio/debops
 .. _groups.io: https://groups.io/
 
 2014-10-24
 ~~~~~~~~~~
 
-- all role documentation from their readme files has been moved to `separate
-  documentation page`_, role README files will be converted to more
+- All role documentation from their README files has been moved to separate
+  documentation page, role README files will be converted to more
   standardized format, and will use Markdown again, since Ansible Galaxy does
   not support reStructuredText.
-
-.. _separate documentation page: http://docs.debops.org/
 
 - ``debops`` script will automatically generate custom ``ansible.cfg``
   configuration file in project main directory. This file will be used to
@@ -169,17 +168,17 @@ Pre-release
   playbooks and roles.
 
 - DebOps roles will be now cloned in different directory, they are moved from
-  ``debops-playbooks/playbooks/roles/`` to ``debops-playbooks/roles/`` (one
+  :file:`debops-playbooks/playbooks/roles/` to :file:`debops-playbooks/roles/` (one
   directory up). This allows to overwrite upstream DebOps roles with local
   modified ones, which enables easy development or customization when needed.
 
-- ``debops`` script gains even more integration with DebOps project directory.
-  You can put your custom playbooks in ``playbooks/`` or ``ansible/playbooks/``
+- ``debops`` script gains even more integration with a DebOps project directory.
+  You can put your custom playbooks in :file:`playbooks/` or :command:`ansible/playbooks/`
   directories and access them by specifying name of a playbook as first
-  argument of ``debops`` script. Roles can be put in ``roles/`` and
-  ``ansible/roles/`` directories and Ansible will automatically look for them
+  argument of ``debops`` script. Roles can be put in :file:`roles/` and
+  :command:`ansible/roles/` directories and Ansible will automatically look for them
   there. Various plugins can also be put in their respective
-  ``ansible/*_plugins/`` directories.
+  :command:`ansible/*_plugins/` directories.
 
 2014-10-21
 ~~~~~~~~~~
@@ -189,9 +188,6 @@ Pre-release
   already written has been moved from ``debops/debops`` repository to the new
   website, more to come.
 
-.. _DebOps documentation: http://docs.debops.org/
-.. _ReadTheDocs: http://readthedocs.org/
-
 2014-09-28
 ~~~~~~~~~~
 
@@ -200,18 +196,18 @@ Pre-release
   them into one stream and sends it to ``view`` command using ``STDOUT``. By
   specifying list of roles on the command line you can select which role
   defaults are aggregated, and by redirecting the script to a file or a command
-  you can manipulate it (for example grep for a string).
+  you can manipulate it (for example ``grep`` for a string).
 
 2014-09-22
 ~~~~~~~~~~
 
-- ``debops.secret`` main directory has been changed from ``inventory.secret``
+- debops.secret_ main directory has been changed from ``inventory.secret``
   to ``secret`` (the feature that used name of the Ansible inventory as the
   prefix for secret directory has been dropped, because secrets are stored
   inside project directory). Because of that, ``debops*`` scripts are updated
   to support new naming scheme.
 
-- If you use ``debops.secret`` role or DebOps playbooks in general, you will need
+- If you use debops.secret_ role or DebOps playbooks in general, you will need
   to rename your current plaintext and encrypted directories.
 
   - ``inventory.secret`` becomes ``secret``
@@ -226,7 +222,7 @@ Pre-release
   just at the root of the project directory.
 
 - ``debops`` script now recognizes encrypted secret directories created by
-  ``debops-padlock`` and automatically opens them before Ansible playbook run,
+  :command:`debops-padlock` and automatically opens them before Ansible playbook run,
   and closes them afterwards.
 
 - ``debops-init`` will check if you try to create project directory in another
@@ -235,20 +231,18 @@ Pre-release
 2014-09-16
 ~~~~~~~~~~
 
-- New ``debops-padlock`` script, which is a companion Bash script to
+- New :command:`debops-padlock` script, which is a companion Bash script to
   `debops.secret`_ role. It can be used to optionally encrypt secret directory
   using EncFS and GnuPG keys. Main ``debops`` script will be able to recognize
   these encrypted directories and properly open/close them for
-  ``ansible-playbook`` runs.
-
-.. _debops.secret: https://github.com/debops/ansible-secret/
+  :command:`ansible-playbook` runs.
 
 2014-09-12
 ~~~~~~~~~~
 
 - Makefile has been rewritten and streamlined. ``make install`` will install
   all scripts, inventory skeleton and playbooks + roles in a system-wide
-  location (by default, ``/usr/local``) and ``make clean`` will remove
+  location (by default, :file:`/usr/local`) and ``make clean`` will remove
   installed files.
 
 - Many different changes in the documentation in preparation of the release.
@@ -266,13 +260,13 @@ Pre-release
 2014-09-10
 ~~~~~~~~~~
 
-- DebOps project repositories can now be easily backed up using a Bash script
+- DebOps project directories can now be easily backed up using a Bash script
 
 - New main scripts:
 
-  - ``debops`` - run ``ansible-playbook`` with custom arguments
+  - ``debops`` - run :command:`ansible-playbook` with custom arguments
 
-  - ``debops-task`` - run ``ansible`` with custom arguments
+  - ``debops-task`` - run :command:`ansible` with custom arguments
 
 2014-09-07
 ~~~~~~~~~~
@@ -290,5 +284,3 @@ project gets up to speed. For now, if you want to play with DebOps, I suggest
 heading to `ginas`_ repository and cloning that
 instead. That should be fixed soon though, when new role cloning code takes
 shape.
-
-.. _ginas: https://github.com/ginas/ginas/

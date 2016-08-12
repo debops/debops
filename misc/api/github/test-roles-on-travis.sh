@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # (C) 2015 Maciej Delmanowski <drybjed@gmail.com>
-# Homepage: http://debops.org/
+# Homepage: https://debops.org/
 # License: GPLv3
 
 # Push GitHub test hooks to Travis-CI on all DebOps roles that have them

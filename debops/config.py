@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
-# Part of the DebOps project - http://debops.org/
+# Part of the DebOps - https://debops.org/
 
 # This program is free software; you can redistribute
 # it and/or modify it under the terms of the
@@ -22,7 +22,7 @@
 #
 # An on-line copy of the GNU General Public License can
 # be downloaded from the FSF web page at:
-# http://www.gnu.org/copyleft/gpl.html
+# https://www.gnu.org/copyleft/gpl.html
 
 import os
 import sys

@@ -12,8 +12,8 @@ This script will download playbooks and roles from their GitHub repositories
 into your user directory. Exact location is dependent upon your operating
 system:
 
-- on Linux systems, it will be ``$XDG_DATA_HOME/debops/`` which usually is
-  expanded to ``~/.local/share/debops/``;
+- on Linux systems, it will be :file:`$XDG_DATA_HOME/debops/` which usually is
+  expanded to :file:`~/.local/share/debops/`;
 
 - on MacOSX systems, it will be ``~/Library/Application Support/debops``;
 
@@ -32,7 +32,7 @@ unprivileged user account on Ansible Controller, so you don't need to be
 ``root`` in order to use it - most of the time you can use your existing user
 account.
 
-After entering your new project directory, you can see an ``ansible/``
+After entering your new project directory, you can see an :file:`ansible/`
 directory which contains files related to Ansible, mostly inventory, secret
 directory, playbooks and roles. You can also notice ``.debops.cfg``
 configuration file which indicates to the DebOps script that this is indeed
@@ -66,8 +66,8 @@ and execute default DebOps playbooks:
 
    debops
 
-The ``debops`` command is a wrapper for ``ansible-playbook``, which means that
-you can pass any ``ansible-playbook`` parameters to it. For example, to limit
+The ``debops`` command is a wrapper for :command:`ansible-playbook`, which means that
+you can pass any :command:`ansible-playbook` parameters to it. For example, to limit
 the Ansible run to a specific host, you can execute command:
 
 .. code:: shell
