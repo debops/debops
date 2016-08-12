@@ -15,9 +15,11 @@ registration token is supplied.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v2.0.0``. To install it, run::
+This role requires at least Ansible ``v2.0.0``. To install it, run:
 
-    ansible-galaxy install debops.gitlab_runner
+.. code-block:: console
+
+   ansible-galaxy install debops.gitlab_runner
 
 ..
  Local Variables:

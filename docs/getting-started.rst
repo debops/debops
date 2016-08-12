@@ -25,9 +25,11 @@ to manage the Runners on the host - the Runner tokens are saved in local
 Ansible facts and reused if necessary.
 
 An example way to run ``debops`` so that the role registers the Runners in
-GitLab CI::
+GitLab CI:
 
-    GITLAB_RUNNER_TOKEN=<random-token> debops service/gitlab_runner
+.. code-block:: console
+
+   GITLAB_RUNNER_TOKEN=<random-token> debops service/gitlab_runner
 
 To change the environment variable that holds the registration token, or save
 the token in Ansible inventory, you can use the ``gitlab_runner__token``
@@ -61,32 +63,45 @@ specifying it as ``item.environment`` variable.
 
 The environment variables can be specified in a different ways:
 
-- a single variable as a string::
+- a single variable as a string:
 
-      gitlab_runner__environment: 'VARIABLE=value'
+  .. code-block:: yaml
 
-- a list of environment variables::
+     gitlab_runner__environment: 'VARIABLE=value'
 
-      gitlab_runner__environment:
-        - 'VARIABLE1=value1'
-        - 'VARIABLE2=value2'
 
-- a YAML dictionary with variable names as keys and their values as values::
+- a list of environment variables:
 
-      gitlab_runner__environment:
-        VARIABLE1: 'value1'
-        VARIABLE2: 'value2'
+  .. code-block:: yaml
+
+     gitlab_runner__environment:
+       - 'VARIABLE1=value1'
+       - 'VARIABLE2=value2'
+
+
+- a YAML dictionary with variable names as keys and their values as values:
+
+  .. code-block:: yaml
+
+     gitlab_runner__environment:
+       VARIABLE1: 'value1'
+       VARIABLE2: 'value2'
+
 
 Different specifications cannot be mixed together.
+
 
 Example inventory
 -----------------
 
 To install GitLab Runner service on a host, it needs to be added to the
-``[debops_service_gitlab_runner]`` inventory host group::
+``[debops_service_gitlab_runner]`` inventory host group:
 
-    [debops_service_gitlab_runner]
-    hostname
+.. code-block:: none
+
+   [debops_service_gitlab_runner]
+   hostname
+
 
 Example playbook
 ----------------
@@ -94,15 +109,5 @@ Example playbook
 Here's an example playbook that can be used to enable and manage the GitLab
 Runner service on a set of hosts:
 
-.. code:: YAML
-
-   ---
-   - name: Configure GitLab Runner service
-     hosts: debops_service_gitlab_runner
-     become: True
-
-     roles:
-
-       - role: debops.gitlab_runner
-         tags: [ 'role::gitlab_runner' ]
-
+.. literalinclude:: playbooks/java.yml
+   :language: yaml
