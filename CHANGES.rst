@@ -12,7 +12,39 @@ The current role maintainer is drybjed.
 `debops.bootstrap master`_ - unreleased
 ---------------------------------------
 
-.. _debops.bootstrap master: https://github.com/debops/ansible-bootstrap/compare/v0.2.2...master
+.. _debops.bootstrap master: https://github.com/debops/ansible-bootstrap/compare/v0.3.0...master
+
+
+`debops.bootstrap v0.3.0`_ - 2016-08-13
+---------------------------------------
+
+.. _debops.bootstrap v0.3.0: https://github.com/debops/ansible-bootstrap/compare/v0.2.2...v0.3.0
+
+Changed
+~~~~~~~
+
+- Role now supports creation and management of multiple admin accounts. See
+  :ref:`bootstrap__ref_admin_users` for more details. [drybjed]
+
+- Role now requires Ansible v2.0.0 to work properly. [drybjed]
+
+- The ``bootstrap__admin_system_home`` variable has been renamed to
+  ``bootstrap__admin_home_path_system`` due to changes in admin account
+  support. [drybjed]
+
+- The admin accounts will be added to the ``sudo`` system group by default.
+  [drybjed]
+
+Removed
+~~~~~~~
+
+- The ``bootstrap__admin_name`` variable has been removed due to changes in
+  admin account support. [drybjed]
+
+- The ``bootstrap__admin_manage_existing`` variable has been removed due to
+  changes in admin account support. Role now detects existing account
+  parameters and preserves them unless configured specifically to change them.
+  [drybjed]
 
 
 `debops.bootstrap v0.2.2`_ - 2016-07-18
