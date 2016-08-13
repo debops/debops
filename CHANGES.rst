@@ -21,6 +21,10 @@ Added
   Ansible facts. This can be used by other roles to automatically create admin
   accounts in services. [drybjed]
 
+- Add ``cache`` and ``spool`` directories to list of common directories used by
+  roles. They point to ``/var/cache`` and ``/var/spool`` directories by
+  default. [drybjed]
+
 Changed
 ~~~~~~~
 
