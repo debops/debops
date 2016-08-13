@@ -12,7 +12,13 @@ The current role maintainer is drybjed.
 `debops.bootstrap master`_ - unreleased
 ---------------------------------------
 
-.. _debops.bootstrap master: https://github.com/debops/ansible-bootstrap/compare/v0.2.2...master
+.. _debops.bootstrap master: https://github.com/debops/ansible-bootstrap/compare/v0.3.0...master
+
+
+`debops.bootstrap v0.3.0`_ - 2016-08-13
+---------------------------------------
+
+.. _debops.bootstrap v0.3.0: https://github.com/debops/ansible-bootstrap/compare/v0.2.2...v0.3.0
 
 Changed
 ~~~~~~~
