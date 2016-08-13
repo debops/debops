@@ -31,7 +31,16 @@
     group: 'root'
     mode: '0644'
   register: core__register_fact_files
-  with_items: [ 'core', 'root', 'tags', 'uuid' ]
+  with_items: [ 'root', 'tags', 'uuid' ]
+
+- name: Install core fact script
+  template:
+    src: 'etc/ansible/facts.d/core.fact.j2'
+    dest: '/etc/ansible/facts.d/core.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: core__register_core_fact
 
 - name: Install local fact scripts
   copy:
@@ -45,6 +54,7 @@
 - name: Gather local facts if they changed
   action: setup
   when: core__register_fact_files|changed or
+        core__register_core_fact|changed or
         core__register_fact_scripts|changed
 
 - name: Update APT cache and install required packages

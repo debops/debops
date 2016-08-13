@@ -14,6 +14,19 @@ The current role maintainer is drybjed.
 
 .. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.0...master
 
+Added
+~~~~~
+
+- Add list of system administrator groups and user accounts exposed as local
+  Ansible facts. This can be used by other roles to automatically create admin
+  accounts in services. [drybjed]
+
+Changed
+~~~~~~~
+
+- The ``core.fact`` has been changed from a static file to a Python script to
+  make it more dynamic. [drybjed]
+
 
 `debops.core v0.2.0`_ - 2016-07-19
 ----------------------------------
