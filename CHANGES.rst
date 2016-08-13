@@ -28,6 +28,10 @@ Added
 - The ``debops_service_core`` inventory group can be used to enable the
   ``debops.core`` role without the rest of the playbook. [drybjed]
 
+- Add facts for the host domain and FQDN. This will allow for a centralized
+  configuration of these parameters in the future for roles that use them.
+  [drybjed]
+
 Changed
 ~~~~~~~
 
