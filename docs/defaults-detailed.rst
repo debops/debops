@@ -74,6 +74,7 @@ putting:
 
 into your Ansible inventory.
 
+
 .. _owncloud__ref_owncloud__user_files:
 
 owncloud__user_files
@@ -139,10 +140,11 @@ The ownCloud admin user can change/delete the file and directory:
          File template.
          Changes done to this file will be overwritten by subsequent Ansible runs.
 
+
 .. _owncloud__ref_post_upgrade_hook:
 
-updates_post_hook_scripts
--------------------------
+owncloud__post_upgrade_hook_list
+--------------------------------
 
 Each element of the  :envvar:`owncloud__post_upgrade_hook_list` list either
 is a simple string of the script‘s file path or a dict with the following options:

@@ -532,10 +532,16 @@ owncloud__autosetup_url: 'http://{{ owncloud__domain[0] }}/index.php'
 #   ownCloud configuration
 # --------------------------
 
+# .. envvar:: owncloud__subdomain
+#
+# The subdomain part to use for the ownCloud instance.
+owncloud__subdomain: 'cloud'
+
+
 # .. envvar:: owncloud__domain
 #
 # Domain that will be configured for the ownCloud instance.
-owncloud__domain: [ 'cloud.{{ ansible_domain }}' ]
+owncloud__domain: [ '{{ owncloud__subdomain }}.{{ ansible_domain }}' ]
 
 
 # .. envvar:: owncloud__upload_size
@@ -772,7 +778,7 @@ owncloud__dependent_apps_config: {}
 
 # .. envvar:: owncloud__app_documents_enabled
 #
-# Where the `Documents app <https://apps.owncloud.com/content/show.php/Documents?content=168711>`_ should be enabled.
+# Whether the `ownCloud documents application`_ should be enabled.
 # Not enabled by default because, as of ownCloud 9.0, the application is not shipped by default.
 # Note that this will install LibreOffice plus dependencies on the server.
 owncloud__app_documents_enabled: False
@@ -788,8 +794,8 @@ owncloud__app_documents_enabled: False
 
 # .. envvar:: owncloud__smb_support
 #
-# SMB/CIFS be support by installing the required packages and enabling the
-# required app?
+# Should SMB/CIFS be support by installing the required system packages and
+# enabling the required ownCloud application?
 owncloud__smb_support: False
 
 
@@ -1177,7 +1183,7 @@ owncloud__mail_domain: '{{ ansible_domain }}'
 #
 # From address that overrides the built-in ``sharing-noreply`` and
 # ``lostpassword-noreply`` from addresses.
-owncloud__mail_from_address: 'owncloud'
+owncloud__mail_from_address: '{{ owncloud__subdomain }}'
 
 
 # .. envvar:: owncloud__mail_smtpmode
@@ -1201,14 +1207,14 @@ owncloud__mail_smtpmode: 'sendmail'
 # like this: ``127.0.0.1:24``.
 #
 # This depends on :envvar:`owncloud__mail_smtpmode`.
-owncloud__mail_smtphost: ''
+owncloud__mail_smtphost: 'smtp.{{ ansible_domain }}'
 
 
 # .. envvar:: owncloud__mail_smtpport
 #
 # Port for sending mail. Can also be specified via :envvar:`owncloud__mail_smtphost`.
 # This depends on :envvar:`owncloud__mail_smtpmode`.
-owncloud__mail_smtpport: ''
+owncloud__mail_smtpport: '25'
 
 
 # .. envvar:: owncloud__mail_conf_map
@@ -1499,8 +1505,8 @@ owncloud__nginx__servers:
       error_page            404             /core/templates/404.php;
 
 
-      # Avoid sending the security headers twice as the ownCloud PHP app
-      # would otherwise also add the X-* HTTP headers.
+      # Avoid sending the security headers twice as ownCloud would otherwise
+      # also add the X-* HTTP headers.
       fastcgi_param modHeadersAvailable true;
 
     location_list:
