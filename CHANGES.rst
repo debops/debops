@@ -25,6 +25,9 @@ Added
   roles. They point to ``/var/cache`` and ``/var/spool`` directories by
   default. [drybjed]
 
+- The ``debops_service_core`` inventory group can be used to enable the
+  ``debops.core`` role without the rest of the playbook. [drybjed]
+
 Changed
 ~~~~~~~
 
