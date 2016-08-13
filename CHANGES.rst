@@ -8,6 +8,8 @@ v0.1.2
 
 - Fix empty default admin account on Ansible v2. [drybjed]
 
+- Switch to list of admin accounts from ``debops.core`` role. [drybjed]
+
 v0.1.1
 ------
 
