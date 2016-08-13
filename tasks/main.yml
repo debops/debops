@@ -7,9 +7,9 @@
     install_recommends: False
   with_flattened:
     - [ '{{ "php5-memcached" if librenms_memcached|d() else [] }}' ]
-    - librenms_base_packages
-    - librenms_monitoring_packages
-    - librenms_packages
+    - '{{ librenms_base_packages }}'
+    - '{{ librenms_monitoring_packages }}'
+    - '{{ librenms_packages }}'
 
 - name: Enable non-free MIBs support
   lineinfile:
@@ -46,7 +46,7 @@
     dest: '{{ librenms_install_path }}'
     version: '{{ librenms_install_version }}'
     update: False
-  sudo_user: '{{ librenms_user }}'
+  become_user: '{{ librenms_user }}'
   register: librenms_register_source
   no_log: True
   tags: [ 'role::librenms:source' ]
@@ -119,23 +119,23 @@
   command: php build-base.php
   args:
     chdir: '{{ librenms_install_path }}'
-  sudo_user: '{{ librenms_user }}'
+  become_user: '{{ librenms_user }}'
   when: (librenms_register_database_status|d() and librenms_register_database_status.changed)
   tags: [ 'role::librenms:database' ]
 
 - name: Get list of existing users from LibreNMS database
   command: mysql -ssNe "select username from users"
-  sudo_user: '{{ librenms_user }}'
+  become_user: '{{ librenms_user }}'
   register: librenms_register_users
   changed_when: False
   tags: [ 'role::librenms:config', 'role::librenms:admins' ]
 
 - name: Create admin accounts
-  command: php adduser.php {{ item }} {{ lookup('password', secret + "/credentials/" + ansible_fqdn + "/librenms/admin/" + item + "/password") }} 10
+  command: 'php adduser.php {{ item }} {{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/librenms/admin/" + item + "/password") }} 10'
   args:
     chdir: '{{ librenms_install_path }}'
-  sudo_user: '{{ librenms_user }}'
-  with_items: librenms_admin_accounts
+  become_user: '{{ librenms_user }}'
+  with_items: '{{ librenms_admin_accounts }}'
   when: (librenms_admin_accounts|d([]) and (item not in librenms_register_users.stdout_lines))
   no_log: True
   tags: [ 'role::librenms:config', 'role::librenms:admins' ]
@@ -163,7 +163,7 @@
     owner: '{{ item }}'
     group: '{{ item }}'
     mode: '0700'
-  with_items: librenms_home_snmp_conf
+  with_items: '{{ librenms_home_snmp_conf }}'
   when: ((librenms_home_snmp_conf|d() and librenms_home_snmp_conf) and
          (librenms_register_passwd|d() and item in librenms_register_passwd.stdout_lines))
   tags: [ 'role::librenms:config', 'role::librenms:snmp_conf' ]
@@ -175,14 +175,14 @@
     owner: '{{ item }}'
     group: '{{ item }}'
     mode: '0600'
-  with_items: librenms_home_snmp_conf
+  with_items: '{{ librenms_home_snmp_conf }}'
   when: ((librenms_home_snmp_conf|d() and librenms_home_snmp_conf) and
          (librenms_register_passwd|d() and item in librenms_register_passwd.stdout_lines))
   tags: [ 'role::librenms:config', 'role::librenms:snmp_conf' ]
 
 - name: Get list of known devices from LibreNMS database
   command: mysql -ssNe "select hostname from devices"
-  sudo_user: '{{ librenms_user }}'
+  become_user: '{{ librenms_user }}'
   register: librenms_register_devices
   changed_when: False
   tags: [ 'role::librenms:config', 'role::librenms:devices' ]
@@ -191,8 +191,7 @@
   command: php addhost.php {{ item }}
   args:
     chdir: '{{ librenms_install_path }}'
-  sudo_user: '{{ librenms_user }}'
-  with_items: librenms_devices
+  become_user: '{{ librenms_user }}'
+  with_items: '{{ librenms_devices }}'
   when: (librenms_devices|d([]) and (item not in librenms_register_devices.stdout_lines))
   tags: [ 'role::librenms:config', 'role::librenms:devices' ]
-

@@ -10,6 +10,8 @@ v0.1.2
 
 - Switch to list of admin accounts from ``debops.core`` role. [drybjed]
 
+- Fix Ansible deprecation warnings. [drybjed]
+
 v0.1.1
 ------
 
