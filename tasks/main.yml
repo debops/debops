@@ -29,87 +29,10 @@
   action: setup
 # .. )))
 
-# .. System administrator account (((
-- name: Create specified system groups
-  group:
-    name: '{{ item }}'
-    state: 'present'
-    system: True
-  tags: [ 'role::bootstrap:admin' ]
+- name: Manage System Administrator accounts
+  include: admin_accounts.yml
   when: bootstrap__admin|bool
-  with_items: '{{ bootstrap__admin_groups }}'
-
-- name: Check if potential administrator account exists
-  shell: getent passwd {{ bootstrap__admin_name }} || true
-  register: bootstrap__register_admin_account
   tags: [ 'role::bootstrap:admin' ]
-  when: not bootstrap__admin_manage_existing|bool
-  changed_when: False
-  always_run: True
-
-- name: Set admin manage existing to true
-  set_fact:
-    bootstrap__register_admin_account:
-      stdout: False
-  tags: [ 'role::bootstrap:admin' ]
-  when: bootstrap__admin_manage_existing|bool
-
-- name: Create administrator group
-  group:
-    name: '{{ bootstrap__admin_name }}'
-    state: 'present'
-    system: '{{ bootstrap__admin_system|bool }}'
-  tags: [ 'role::bootstrap:admin' ]
-  when: (bootstrap__admin|bool and not bootstrap__register_admin_account.stdout)
-
-- name: Create administrator account
-  user:
-    name: '{{ bootstrap__admin_name }}'
-    state: 'present'
-    system: '{{ bootstrap__admin_system|bool }}'
-    group: '{{ bootstrap__admin_name }}'
-    groups: '{{ bootstrap__admin_groups | join(",") }}'
-    append: True
-    home: '{{ bootstrap__admin_system_home
-              if (bootstrap__admin_system|bool)
-              else bootstrap__admin_home }}'
-    shell: '{{ bootstrap__admin_shell }}'
-    comment: '{{ bootstrap__admin_comment }}'
-  tags: [ 'role::bootstrap:admin' ]
-  when: (bootstrap__admin|bool and not bootstrap__register_admin_account.stdout)
-
-- name: Set admin home directory group and permissions
-  file:
-    path: '{{ bootstrap__admin_system_home
-              if (bootstrap__admin_system|bool)
-              else bootstrap__admin_home }}'
-    group: '{{ bootstrap__admin_home_group }}'
-    mode:  '{{ bootstrap__admin_home_mode }}'
-  tags: [ 'role::bootstrap:admin' ]
-  when: (bootstrap__admin|bool and not bootstrap__register_admin_account.stdout)
-# .. )))
-
-# .. SSH public key access (((
-- name: Install ssh public key on root account
-  authorized_key:
-    user: 'root'
-    key: '{{ bootstrap__admin_sshkeys | join("\n") | string }}'
-    state: 'present'
-  tags: [ 'role::bootstrap:admin' ]
-  when: bootstrap__admin|bool
-  failed_when: (bootstrap__admin_sshkeys is undefined or
-                (bootstrap__admin_sshkeys is defined and not bootstrap__admin_sshkeys))
-
-- name: Install ssh public key on administrator account
-  authorized_key:
-    user: '{{ bootstrap__admin_name }}'
-    key: '{{ bootstrap__admin_sshkeys | join("\n") | string }}'
-    state: 'present'
-  tags: [ 'role::bootstrap:admin' ]
-  when: bootstrap__admin|bool
-  failed_when: (bootstrap__admin_sshkeys is undefined or
-                (bootstrap__admin_sshkeys is defined and not bootstrap__admin_sshkeys))
-# .. )))
 
 # .. Access to sudo commands (((
 - name: Configure system group with passwordless access in sudo
@@ -144,16 +67,6 @@
     state: 'present'
     validate: 'visudo -cf "%s"'
   tags: [ 'role::bootstrap:admin' ]
-
-- name: Make sure that administrator account is in passwordless sudo group
-  user:
-    name: '{{ bootstrap__admin_name }}'
-    state: 'present'
-    groups: '{{ bootstrap__sudo_group }}'
-    append: True
-  tags: [ 'role::bootstrap:admin' ]
-  when: (bootstrap__admin|bool and bootstrap__sudo|bool)
-# .. )))
 
 # .. Hostname and domain (((
 - name: Enforce new hostname

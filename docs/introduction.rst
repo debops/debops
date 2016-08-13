@@ -9,9 +9,11 @@ public keys for passwordless SSH access.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v1.8.0``. To install it, run::
+This role requires at least Ansible ``v1.8.0``. To install it, run:
 
-    ansible-galaxy install debops.bootstrap
+.. code-block:: console
+
+   ansible-galaxy install debops.bootstrap
 
 ..
  Local Variables:
