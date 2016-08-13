@@ -1,5 +1,15 @@
 ---
 
+- name: Install required core packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ core__base_packages }}'
+    - '{{ core__packages }}'
+    - '{{ core__group_packages }}'
+    - '{{ core__host_packages }}'
+
 - name: Create root directories
   file:
     path: '{{ hostvars[inventory_hostname]["ansible_local"]["root"][item.fact]
@@ -56,17 +66,3 @@
   when: core__register_fact_files|changed or
         core__register_core_fact|changed or
         core__register_fact_scripts|changed
-
-- name: Update APT cache and install required packages
-  apt:
-    name: '{{ item }}'
-    state: 'present'
-    install_recommends: False
-    update_cache: True
-    cache_valid_time: '{{ core__cache_valid_time }}'
-  with_flattened:
-    - '{{ core__base_packages }}'
-    - '{{ core__packages }}'
-    - '{{ core__group_packages }}'
-    - '{{ core__host_packages }}'
-

@@ -34,6 +34,11 @@ Changed
 - The ``core.fact`` has been changed from a static file to a Python script to
   make it more dynamic. [drybjed]
 
+- Move the ``apt`` installation task to the top of the task list and change it
+  to the ``package`` module to make the role more portable. Role will not
+  update the package list anymore, but it's expected to be done by the
+  bootstrapping infrastructure before the first playbook execution. [drybjed]
+
 
 `debops.core v0.2.0`_ - 2016-07-19
 ----------------------------------
