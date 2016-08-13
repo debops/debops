@@ -12,7 +12,42 @@ The current role maintainer is drybjed.
 `debops.core master`_ - unreleased
 ----------------------------------
 
-.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.0...master
+.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.1...master
+
+
+`debops.core v0.2.1`_ - 2016-08-13
+----------------------------------
+
+.. _debops.core v0.2.1: https://github.com/debops/ansible-core/compare/v0.2.0...v0.2.1
+
+Added
+~~~~~
+
+- Add list of system administrator groups and user accounts exposed as local
+  Ansible facts. This can be used by other roles to automatically create admin
+  accounts in services. [drybjed]
+
+- Add ``cache`` and ``spool`` directories to list of common directories used by
+  roles. They point to ``/var/cache`` and ``/var/spool`` directories by
+  default. [drybjed]
+
+- The ``debops_service_core`` inventory group can be used to enable the
+  ``debops.core`` role without the rest of the playbook. [drybjed]
+
+- Add facts for the host domain and FQDN. This will allow for a centralized
+  configuration of these parameters in the future for roles that use them.
+  [drybjed]
+
+Changed
+~~~~~~~
+
+- The ``core.fact`` has been changed from a static file to a Python script to
+  make it more dynamic. [drybjed]
+
+- Move the ``apt`` installation task to the top of the task list and change it
+  to the ``package`` module to make the role more portable. Role will not
+  update the package list anymore, but it's expected to be done by the
+  bootstrapping infrastructure before the first playbook execution. [drybjed]
 
 
 `debops.core v0.2.0`_ - 2016-07-19

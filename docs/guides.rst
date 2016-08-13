@@ -177,6 +177,37 @@ Check if a given value is not in the tag list:
 You can find a list of host tags in the documentation of various roles which use
 them.
 
+System administrator accounts
+-----------------------------
+
+Common featue in various services is creation of an administrator account. The
+``debops.core`` role provides two Ansible local facts which can be used by
+other roles to make creation of these accounts easier.
+
+``ansible_local.core.admin_groups``
+  List of the UNIX system groups which contains system administrator accounts.
+
+``ansible_local.core.admin_users``
+  List of the UNIX user accounts which are members of the above UNIX groups.
+  These accounts should be used by the other Ansible roles to create
+  administrator accounts if none were set by the user through the Ansible
+  inventory.
+
+You can use the corresponding role default variables to control what admin
+accounts are available to other roles.
+
+Examples
+~~~~~~~~
+
+Define list of admin accounts to create in the application:
+
+.. code-block:: yaml
+
+   application__admins: '{{ ansible_local.core.admin_users
+                            if (ansible_local|d() and ansible_local.core|d() and
+                                ansible_local.core.admin_users|d())
+                            else [] }}'
+
 Root directory paths
 --------------------
 
