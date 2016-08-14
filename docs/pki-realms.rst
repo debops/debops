@@ -3,6 +3,8 @@
 PKI realms structure
 ====================
 
+.. include:: includes/all.rst
+
 The concept of PKI realms is designed to provide a standardized way for various
 applications to access X.509 certificates and private keys. The management of
 the keys and certificates is moved outside of the application into a fixed
@@ -247,21 +249,20 @@ data files for different Certificate Authorities. Each CA is described in more
 detail in a separate document, here is a brief overview:
 
 :file:`acme/`
-  This is directory used by the ACME Certificate Authority (currently only the
-  `Let's Encrypt <https://www.letsencrypt.org/>`_ CA supports this protocol).
+  This directory is for certificates issued using ACME support (for example `Let's Encrypt`_).
   It will be activated and used automatically when a host has a public IP address
   and the :program:`nginx` webserver is installed and configured to support ACME
   Challenges (see the ``debops.nginx`` role for more details).
 
 :file:`external/`
   This directory is used to manage certificates signed by an external
-  Certificate Authority. To do this, you need to provide a special ``script``
+  Certificate Authority. To do this, you need to provide a special :file:`script`
   file, which will be executed with a set of environment variables. This can be
-  used to request a certificate in and external CA, like Active Directory or
-  FreeIPA, or download a signed certificate from external location.
+  used to request a certificate from an external CA, like Active Directory or
+  FreeIPA, or download a signed certificate from an external location.
 
-  An alternative is to provide already signed :file:`cert.pem` file with optional
-  :file:`intermediate.pem` and :file:`root.pem` certificates.
+  An alternative is to provide an already signed :file:`cert.pem` file and
+  optionally the :file:`intermediate.pem` and :file:`root.pem` files.
 
 :file:`internal/`
   This directory is used by the internal ``debops.pki`` Certificate Authority
@@ -492,4 +493,3 @@ available for other applications and services:
 During this process, at various stages special "hook" scripts might be run,
 which can react to events like realm creation, activation of new certificates
 and so on.
-

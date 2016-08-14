@@ -3,11 +3,12 @@
 ACME Integration
 ================
 
-The `Automated Certificate Management Environment <https://en.wikipedia.org/wiki/Automated_Certificate_Management_Environment>`_
+.. include:: includes/all.rst
+
+`Automated Certificate Management Environment (ACME) <ACME>`_
 is a protocol that allows automated certificate requests, retrieval of signed
 certificates and certificate renewal. It was designed to enable easy deployment
-of TLS/SSL certificates by the `Let's Encrypt <https://letsencrypt.org/>`_
-project.
+of TLS/SSL certificates by the `Let's Encrypt`_ project.
 
 The ``debops.pki`` Ansible role provides support for the ACME protocol which is
 used by default with the Let's Encrypt service (there is a possibility to
@@ -239,4 +240,3 @@ can have several parameters related to the ACME certificates:
 
 ``item.acme_subject``
   List of Distinguished Name entries which define the ACME certificate Subject.
-
