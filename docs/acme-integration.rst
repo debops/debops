@@ -24,7 +24,7 @@ requirements enforced by this Ansible role:
 
 - A webserver configured to handle ACME challenges needs to be installed on the
   host (currently this role supports only "webroot" challenges). The
-  ``debops.nginx`` role configures ACME support for all servers by default when
+  debops.nginx_ role configures ACME support for all servers by default when
   other conditions are met.
 
 - A publicly routable IPv4 or IPv6 address is required, so that the Certificate

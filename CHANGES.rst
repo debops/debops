@@ -20,7 +20,7 @@ Changed
 ~~~~~~~
 
 - Change the method that Bash scripts use to compare the version numbers for
-  a more reliable one. [drybjed]
+  a more reliable one. [drybjed_]
 
 Fixed
 ~~~~~
@@ -28,13 +28,13 @@ Fixed
 - Fix an error where certain versions of GnuTLS ``certtool`` did not support
   the "URI" SubjectAltName which resulted in an abort and certificate requests
   not being generated correctly. The "URI" SANs will only be added when correct
-  version of the ``certtool`` is available. [drybjed]
+  version of the ``certtool`` is available. [drybjed_]
 
 - Fix an issue where ACME certificate requests were not performed correctly on
   Ubuntu hosts due to the default ``umask`` setting of the user accounts being
   ``0007``, which resulted in the web server not being able to serve ACME
-  challenge responses. Now, correct ``umask`` will be set for the ``acme-tiny``
-  script, so that ACME responses are world-readable. [drybjed]
+  challenge responses. Now, correct ``umask`` will be set for the :program:`acme-tiny`
+  script, so that ACME responses are world-readable. [drybjed_]
 
 - Fix an error in ``pki-authority`` script which invoked a Python print call
   that was unsupported in modern Python versions, the call is now supported
@@ -49,11 +49,11 @@ Fixed
 Changed
 ~~~~~~~
 
-- Update the Changelog with links to change diffs on GitHub. [drybjed]
+- Update the Changelog with links to change diffs on GitHub. [drybjed_]
 
-- Include the ``COPYRIGHT`` file in the RST documentation. [drybjed]
+- Include the ``COPYRIGHT`` file in the RST documentation. [drybjed_]
 
-- Update the ``.travis.yml`` configuration file. [drybjed]
+- Update the :file:`.travis.yml` configuration file. [drybjed_]
 
 
 `debops.pki v0.2.12`_ - 2016-07-06
@@ -65,12 +65,12 @@ Changed
 ~~~~~~~
 
 - The session token is now generated using ``sha256`` hashing algorithm instead
-  of ``MD5``. [drybjed]
+  of ``MD5``. [drybjed_]
 
 - Move the copyright information to a ``COPYRIGHT`` file in the main directory.
-  [drybjed]
+  [drybjed_]
 
-- Move the example playbook to an external, separate file. [drybjed]
+- Move the example playbook to an external, separate file. [drybjed_]
 
 
 `debops.pki v0.2.11`_ - 2016-07-05
@@ -85,12 +85,12 @@ Added
   for example :program:`etckeeper` is used for tracking changes in :file:`/etc`.
   Note that sensitive files which are already tracked by version control will
   need to be manually deleted from version control history!
-  Refer to :envvar:`pki_vcs_ignore_patterns_role` for more details. [ypid]
+  Refer to :envvar:`pki_vcs_ignore_patterns_role` for more details. [ypid_]
 
 Changed
 ~~~~~~~
 
-- Convert Changelog to the new format. [drybjed]
+- Convert Changelog to the new format. [drybjed_]
 
 Fixed
 ~~~~~
@@ -98,7 +98,7 @@ Fixed
 - The PKI session token is now generated once for all hosts, by delegating the
   task to Ansible Controller. This fixes a bug with Ansible Playbook runs on
   multiple hosts at once, where only one host would receive the signed
-  certificates at a time. [drybjed]
+  certificates at a time. [drybjed_]
 
 
 `debops.pki v0.2.10`_ - 2016-06-14
@@ -111,16 +111,16 @@ Changed
 
 - Documentation fixes and improvements. Made variables hyperlinks using the
   `any` role in Sphinx which also ensures that variables which the
-  documentation refers to actually exist. [ypid]
+  documentation refers to actually exist. [ypid_]
 
-- Assert that required dependencies are met. [ypid]
+- Assert that required dependencies are met. [ypid_]
 
 - Use ``pki_ca_library`` variable to select correct crypto library for
-  assertion. [drybjed]
+  assertion. [drybjed_]
 
 - Don't assert crypto library version or ``bash`` version on Ansible Controller
   if no internal Certificate Authority is enabled. In this case they are not
-  relevant for ``debops.pki`` operation. [drybjed]
+  relevant for ``debops.pki`` operation. [drybjed_]
 
 
 `debops.pki v0.2.9`_ - 2016-06-01
@@ -132,12 +132,12 @@ Added
 ~~~~~
 
 - Expose the list with order of authority preference used by a PKI realm to
-  select active valid certificate in role default variables. [drybjed]
+  select active valid certificate in role default variables. [drybjed_]
 
 - Add support for creation of self-signed certificates when internal CA is
   disabled. This enables proper operation of other services like :program:`nginx`,
   which can then be used to request and authenticate ACME certificates.
-  [drybjed]
+  [drybjed_]
 
 
 `debops.pki v0.2.8`_ - 2016-05-05
@@ -149,13 +149,13 @@ Added
 ~~~~~
 
 - Add support for setting filesystem ACL entries for private directories and
-  files. [drybjed]
+  files. [drybjed_]
 
 Changed
 ~~~~~~~
 
 - Include realms defined in :any:`pki_default_realms` in tasks that copy files
-  from Ansible Controller depending on an Ansible inventory group. [drybjed]
+  from Ansible Controller depending on an Ansible inventory group. [drybjed_]
 
 
 `debops.pki v0.2.7`_ - 2016-05-03
@@ -167,7 +167,7 @@ Changed
 ~~~~~~~
 
 - Documentation improvements. Fixed examples, spelling, grammar and Sphinx inline
-  syntax. [ypid]
+  syntax. [ypid_]
 
 - Don’t rely on the value of the special variable ``omit`` for having a high
   enough entropy (or any entropy at all) to use it as PKI session token.
@@ -175,13 +175,13 @@ Changed
   and has been suggested by one of the Ansible core developers, it is believed
   that this does not meet the quality and maintainability standards of the
   DebOps project. Now the ``random`` Jinja filter is used as random source
-  which is more explicit, has a proper entropy and is less hacky. [ypid]
+  which is more explicit, has a proper entropy and is less hacky. [ypid_]
 
 - Honor the value of ``ansible_local.root.lib``. Previously, using another
-  value than :file:`/usr/local/lib` would have broken the role. [ypid]
+  value than :file:`/usr/local/lib` would have broken the role. [ypid_]
 
 - Only use ``pki_fact_lib_path`` inside of quotes as this value could contain
-  whitespace characters. [ypid]
+  whitespace characters. [ypid_]
 
 
 `debops.pki v0.2.6`_ - 2016-04-12
@@ -193,10 +193,10 @@ Changed
 ~~~~~~~
 
 - Convert ACME intermediate certificate from DER to PEM format automatically.
-  [drybjed]
+  [drybjed_]
 
-- Make sure that role works with older ``debops.nginx`` deployments, which
-  didn't support ACME integration. [drybjed]
+- Make sure that role works with older debops.nginx_ deployments, which
+  didn't support ACME integration. [drybjed_]
 
 
 `debops.pki v0.2.5`_ - 2016-03-02
@@ -208,7 +208,7 @@ Changed
 ~~~~~~~
 
 - Don't run :program:`pki-authority` script on Ansible Controller if list of
-  :any:`pki_authorities` is not defined. [drybjed]
+  :any:`pki_authorities` is not defined. [drybjed_]
 
 
 `debops.pki v0.2.4`_ - 2016-02-21
@@ -219,30 +219,30 @@ Changed
 Changed
 ~~~~~~~
 
-- Use a more portable "shebang" string in Bash scripts. [drybjed]
+- Use a more portable "shebang" string in Bash scripts. [drybjed_]
 
 - Provide a portable ``dnsdomainname`` alternative function which works on
-  operating systems without the former command present. [drybjed]
+  operating systems without the former command present. [drybjed_]
 
-- Use short :command:`hostname -f` argument for portability. [drybjed]
+- Use short :command:`hostname -f` argument for portability. [drybjed_]
 
 - Update support for ``subjectAltName`` extension in certificates. Currently
-  only IP addresses, DNS records, URI paths and emails are supported. [drybjed]
+  only IP addresses, DNS records, URI paths and emails are supported. [drybjed_]
 
-- Document ``pki_realms`` lists. [drybjed]
+- Document ``pki_realms`` lists. [drybjed_]
 
 - Redesign the :file:`secret/pki/ca-certificates/` directory. It's now based on
   Ansible inventory groups and allows distribution of CA certificates to all
-  hosts, specific host groups, or specific hosts. [drybjed]
+  hosts, specific host groups, or specific hosts. [drybjed_]
 
-- Don't update symlinks if the target is correct. [drybjed]
+- Don't update symlinks if the target is correct. [drybjed_]
 
 - Split file signature creation and verification. This allows checking if the
   file signature is correct without updating it, so that it can be performed at
-  different stages of the script. [drybjed]
+  different stages of the script. [drybjed_]
 
 - Make sure that request generation works without subdomains and SANs present.
-  [drybjed]
+  [drybjed_]
 
 - Automatically reset incomplete internal certificate requests.
 
@@ -250,7 +250,7 @@ Changed
   are enabled, something must have gone wrong with the certificate signing. To
   make it easier, generated configuration file and CSR are removed so that they
   can be recreated further in the script with current session token and not
-  rejected by the internal CA. [drybjed]
+  rejected by the internal CA. [drybjed_]
 
 - Change the way ACME intermediate CA certificate is downloaded.
 
@@ -259,11 +259,11 @@ Changed
   Issuers" URI and download the certificate using it. The URI is stored and
   used later to check if the new certificate has the same or different URI, to
   not download the intermediate certificate every time the :program:`pki-realm` script
-  is run. [drybjed]
+  is run. [drybjed_]
 
 - Slight changes in certificate chaining logic, to ensure that when
   certificates are changed, all generated chained certificate files are
-  correctly updated. [drybjed]
+  correctly updated. [drybjed_]
 
 
 `debops.pki v0.2.3`_ - 2016-02-08
@@ -274,9 +274,9 @@ Changed
 Changed
 ~~~~~~~
 
-- Replace the example hook script with something that actually works. [drybjed]
+- Replace the example hook script with something that actually works. [drybjed_]
 
-- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed_]
 
 
 `debops.pki v0.2.2`_ - 2016-02-03
@@ -288,36 +288,36 @@ Added
 ~~~~~
 
 - Add support for Diffie-Hellman parameters appended to certificate chains. DHE
-  parameters are managed by ``debops.dhparam`` Ansible role. [drybjed]
+  parameters are managed by debops.dhparam_ Ansible role. [drybjed_]
 
 Changed
 ~~~~~~~
 
 - When an active authority directory is changed, correctly clean up files not
   present in the new authority directory and symlinks without existing targets.
-  [drybjed]
+  [drybjed_]
 
 - Do not enable PKI support on remote hosts without defined domain. Without
   this applications try to use non-existent X.509 certificates and fail.
-  [drybjed]
+  [drybjed_]
 
 - Make system PKI realm selection idempotent. Now, if another role changes the
   default system realm, running ``debops.pki`` role without that override will
-  keep the realm specified in Ansible local facts. [drybjed]
+  keep the realm specified in Ansible local facts. [drybjed_]
 
 - Make sure that CA organization is non-empty. If a host domain is not
   configured correctly, hostname will be used instead. This makes some of the
   URLs in created CA certificates incorrect, but the ``debops.pki`` role works
   fine otherwise, and internal Certificate Authorities are easy to recreate
-  with correct configuration. [drybjed]
+  with correct configuration. [drybjed_]
 
 - Change the file tracked by the PKI realm creation task to be the realm
   private key instead of the certificate. This allows for realms that only
   contain Root CA certificates and does not create idempotency issues.
-  [drybjed]
+  [drybjed_]
 
 - Do not create a :program:`cron` task when support for PKI is disabled on a host.
-  [drybjed]
+  [drybjed_]
 
 
 `debops.pki v0.2.1`_ - 2016-02-01
@@ -328,7 +328,7 @@ Changed
 Changed
 ~~~~~~~
 
-- Update old README with new documentation. [drybjed]
+- Update old README with new documentation. [drybjed_]
 
 
 `debops.pki v0.2.0`_ - 2016-02-01
@@ -341,7 +341,7 @@ Changed
 
 - Replace old ``debops.pki`` role with a new, redesigned version. Some
   additional code, variable cleanup and documentation is still missing, but
-  role is usable at this point. [drybjed]
+  role is usable at this point. [drybjed_]
 
 
 debops.pki v0.1.0 - 2016-01-04
@@ -350,31 +350,31 @@ debops.pki v0.1.0 - 2016-01-04
 Added
 ~~~~~
 
-- Add Changelog. [drybjed]
+- Add Changelog. [drybjed_]
 
 - Blacklist CNNIC Root CA following the `Google decision to remove CNNIC`_ from
-  their Root CA store. [drybjed]
+  their Root CA store. [drybjed_]
 
 .. _Google decision to remove CNNIC: https://security.googleblog.com/2015/03/maintaining-digital-certificate-security.html
 
 - Add support for managing the list of active Root CA Certificates in
   :file:`/etc/ca-certificates.conf`. Current set of active Root CA Certificates is
-  preserved. [drybjed]
+  preserved. [drybjed_]
 
 - Add a way to copy arbitrary files from Ansible Controller to remote host PKI
-  directories. [drybjed]
+  directories. [drybjed_]
 
 - Expose ``ansible_fqdn`` variable as :any:`pki_fqdn` so that it can be overridden
-  if necessary. [drybjed]
+  if necessary. [drybjed_]
 
 Changed
 ~~~~~~~
 
-- Reorder Changelog entries. [drybjed]
+- Reorder Changelog entries. [drybjed_]
 
 Removed
 ~~~~~~~
 
 - Remove Diffie-Hellman parameter support from the role, it's now managed by
-  a separate ``debops.dhparam`` Ansible role. Existing hosts won't be affected.
-  [drybjed]
+  a separate debops.dhparam_ Ansible role. Existing hosts won't be affected.
+  [drybjed_]

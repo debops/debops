@@ -1,6 +1,8 @@
 Default variable details
 ========================
 
+.. include:: includes/all.rst
+
 Some of ``debops.pki`` default variables have more extensive configuration than
 simple strings or lists, here you can find documentation and examples for them.
 
@@ -130,13 +132,13 @@ List of parameters related to the entire PKI realm:
 
 ``private_dir_acl_groups``
   Optional. List of groups which should be allowed execute (``X``) permission to
-  the ``private/`` realm directory. The access will be granted using filesystem
+  the :file:`private/` realm directory. The access will be granted using filesystem
   ACL table. If not specified, the list defined in
   :any:`pki_private_dir_acl_groups` will be applied.
 
 ``private_file_acl_groups``
   Optional. List of groups which should be allowed read (``r``) permission to
-  the files in the ``private/`` realm directory. The access will be granted
+  the files in the :file:`private/` realm directory. The access will be granted
   using filesystem ACL table. If not specified, the list defined in
   :any:`pki_private_file_acl_groups` will be applied.
 
@@ -146,7 +148,7 @@ List of parameters related to the entire PKI realm:
 
 ``dhparam_file``
   Optional. Path to the Diffie-Hellman parameters to include in the certificate
-  chain. If not specified, DHE parameters managed by the ``debops.dhparam``
+  chain. If not specified, DHE parameters managed by the debops.dhparam_
   role will be used automatically, if they're available.
 
 ``enabled``, ``when``
@@ -227,4 +229,3 @@ respectively:
            - 'uri:https://{{ ansible_domain }}/'
            - 'dns:*.{{ ansible_domain }}'
            - 'dns:{{ ansible_domain }}'
-

@@ -103,7 +103,7 @@ This configuration explains where each certificate is used, but this is not
 sufficient to enable HTTPS for the webserver. Refer to the :program:`nginx`
 documentation for the rest of the required configuration options.
 
-If you use the ``debops.nginx`` Ansible role provided with the project, it has
+If you use the debops.nginx_ Ansible role provided with the project, it has
 extensive integration with the ``debops.pki`` role and can configure the
 webserver automatically. Usually all you need to do is to make sure the default
 realm is matches with the one you would like to use for each server configuration.
@@ -161,7 +161,7 @@ is provided by the internal ``debops.pki`` Certificate Authority:
        └── trusted.crt -> public/trusted.pem
 
 On the Ansible Controller, there's a corresponding directory structure located
-in the :file:`secret/` directory maintained by the ``debops.secret`` Ansible role:
+in the :file:`secret/` directory maintained by the debops.secret_ Ansible role:
 
 .. code-block:: none
 
@@ -252,7 +252,7 @@ detail in a separate document, here is a brief overview:
   This directory is for certificates issued using ACME support (for example `Let's Encrypt`_).
   It will be activated and used automatically when a host has a public IP address
   and the :program:`nginx` webserver is installed and configured to support ACME
-  Challenges (see the ``debops.nginx`` role for more details).
+  Challenges (see the debops.nginx_ role for more details).
 
 :file:`external/`
   This directory is used to manage certificates signed by an external
@@ -441,10 +441,10 @@ root files to the :file:`public/` directory and generation of various chain file
 
 Some applications do not support separate :file:`dhparam` file, and instead expect
 that the DHE parameters are present after the X.509 certificate chain. If the
-``debops.dhparam`` role has been configured on a host and Diffie-Hellman
+debops.dhparam_ role has been configured on a host and Diffie-Hellman
 parameter support is enabled in a given PKI realm, DHE parameters will be
 appended to the final certificate chains (both public and private). When the
-``debops.dhparam`` regenerates the parameters, :program:`pki-realm` script will
+debops.dhparam_ regenerates the parameters, :program:`pki-realm` script will
 automatically detect the new ones and update the certificate chains.
 
 The end result is fully configured PKI realm with a set of valid certificates

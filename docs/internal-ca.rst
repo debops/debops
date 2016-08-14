@@ -3,6 +3,8 @@
 Internal Certificate Authorities
 ================================
 
+.. include:: includes/all.rst
+
 One of the problems in deployment of a Public Key Infrastructure is the need
 for the certificates in use to be signed by a third party, called a Certificate
 Authority. By using a trusted CA, different entities that communicate with each
@@ -27,7 +29,7 @@ cannot be used with internal hosts, which still need to be protected.
 
 The ``debops.pki`` role solves this problem by creating it's own set of internal
 Certificate Authorities, located on Ansible Controller in the :file:`secret/`
-directory (see ``debops.secret`` role for more details). These Certificate
+directory (see debops.secret_ role for more details). These Certificate
 Authorities can be used to bootstrap a new PKI environment, which can then be
 passed over to a stand-alone CA server located on the network. Alternatively,
 certificates signed by the internal CA can be used for internal communication
@@ -166,4 +168,3 @@ intercepted (it's currently passed using environment variables).
 If for any reason CSR signing cannot be completed, you will need to remove the
 :file:`internal/gnutls.conf` and :file:`internal/request.pem` files to re-initialize
 the certificate signing.
-
