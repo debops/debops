@@ -3,7 +3,7 @@
 # {{ ansible_managed }}
 
 from __future__ import print_function
-from json import dumps
+from json import loads, dumps
 from sys import exit
 from grp import getgrall
 
@@ -61,18 +61,11 @@ from grp import getgrall
 {%   set _ = core__tpl_facts.update({ "fqdn": core__fqdn }) %}
 {%   set _ = core__tpl_facts.update({ "keyserver": core__keyserver }) %}
 {%   set _ = core__tpl_facts.update({ "cache_valid_time": core__cache_valid_time }) %}
-{% if core__tpl_facts|d() %}
-output = {{ core__tpl_facts | to_nice_json }}
-{% else %}
-output = {}
-{% endif %}
+output = loads('''{{ core__tpl_facts | to_nice_json }}''')
+
+admin_blacklist_users = loads('''{{ (core__admin_blacklist_default_users + core__admin_blacklist_users) | unique | to_nice_json }}''')
 
 groups = getgrall()
-{% if (core__admin_blacklist_default_users + core__admin_blacklist_users) %}
-admin_blacklist_users = [ '{{ (core__admin_blacklist_default_users + core__admin_blacklist_users) | unique | join("', '") }}' ]
-{% else %}
-admin_blacklist_users = []
-{% endif %}
 admin_users = []
 
 if not output['admin_users'] and output['admin_groups']:

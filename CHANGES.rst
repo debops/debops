@@ -15,6 +15,18 @@ The current role maintainer is drybjed.
 .. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.1...master
 
 
+`debops.core v0.2.2`_ - 2016-08-14
+----------------------------------
+
+.. _debops.core v0.2.2: https://github.com/debops/ansible-core/compare/v0.2.1...v0.2.2
+
+Changed
+~~~~~~~
+
+- The ``core.fact`` Python script now parses JSON Ansible output instead of
+  setting it in a variable directly. [drybjed]
+
+
 `debops.core v0.2.1`_ - 2016-08-13
 ----------------------------------
 
