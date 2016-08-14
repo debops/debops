@@ -5,16 +5,16 @@ ACME Integration
 
 .. include:: includes/all.rst
 
-`Automated Certificate Management Environment (ACME) <ACME>`_
-is a protocol that allows automated certificate requests, retrieval of signed
-certificates and certificate renewal. It was designed to enable easy deployment
-of TLS/SSL certificates by the `Let's Encrypt`_ project.
+`Automated Certificate Management Environment` (ACME_) is a protocol that
+allows automated certificate requests, retrieval of signed certificates and
+certificate renewal. It was designed to enable easy deployment of TLS/SSL
+certificates by the `Let's Encrypt`_ project.
 
 The ``debops.pki`` Ansible role provides support for the ACME protocol which is
 used by default with the Let's Encrypt service (there is a possibility to
 integrate other similar services in the future). Interaction with the ACME
-Certificate Authority is performed using the `acme-tiny
-<https://github.com/diafygi/acme-tiny>`_ alternative client written in Python.
+Certificate Authority is performed using the acme-tiny_ alternative client
+written in Python.
 
 Prerequisites
 -------------
@@ -38,18 +38,19 @@ requirements enforced by this Ansible role:
   correctly configured in the DNS to point to the host that requests the
   certificate. This is currently not done automatically and requires
   intervention by the administrator. If any domain specified in the request is
-  not authorized by the correct ACME challenge, certificate request won't be
-  completed.
+  not authorized by the correct ACME challenge, the certificate request won't be
+  successful.
 
 Due to above requirements, the default ``domain`` PKI realm configured by the
 role does not request ACME certificates automatically. Other realms created by
 the ``debops.pki`` role might have ACME support enabled, depending on presence
-of a public IP address and configured a :program:`nginx` server.
+of a public IP address and a configured :program:`nginx` server.
 
 Let's Encrypt rate limits
 -------------------------
 
-The Let's Encrypt ACME Certificate Authority has `different rate limits <https://community.letsencrypt.org/t/rate-limits-for-lets-encrypt/6769>`_
+The Let's Encrypt ACME Certificate Authority has
+`different rate limits <https://letsencrypt.org/docs/rate-limits/>`_
 related to the number of certificate requests and the number of domains permitted per
 certificate.
 
@@ -93,7 +94,7 @@ this:
 When the :program:`pki-realm` detects the :file:`acme/request.pem` file, it automatically
 calls the :program:`acme-tiny` script using the ``pki-acme`` unprivileged account to request
 the certificate. When the request is completed successfully and an
-:file:`external/cert.pem` certificate is not found, ACME certificate will be
+:file:`external/cert.pem` certificate is found, the certificate will be
 activated in the :file:`public/` directory. The script automatically downloads Let's
 Encrypt intermediate certificate as well as links the Root CA certificate from
 the system certificate store provided by the ``ca-certificates`` package.

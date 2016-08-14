@@ -280,8 +280,8 @@ and valid certificates in order (``external``, ``acme``, ``internal``,
 ``selfsigned``), and the first valid one is used as the "active" directory.
 Files from the active directory are symlinked to the :file:`public/` directory.
 
-The :file:`public/` directory holds currently active certificates which are
-symlinks to the real certificate files in one of the active directories above.
+The :file:`public/` directory holds the currently active certificates which are
+symlinks to the real certificate files in one of the active directories mentioned above.
 Some additional files are also created here by the :program:`pki-realm` script, namely
 the certificate chain (server certificate + intermediate certificates) and the
 trusted chain (intermediate certificates + root certificate).
@@ -293,9 +293,9 @@ allowed to access the files inside.
 
 The next step is the creation of all necessary files, like private/public keys,
 certificate requests, etc. At this point, if Ansible was provided with a
-private RSA key to use, it will copy it to the :file:`private/` directory. After
-that, all necessary files are created by the :program:`pki-realm` script on remote
-host. The directory structure changes a bit:
+private RSA key to use, it will copy it to the :file:`private/` directory.
+After that, all necessary files are created by the :program:`pki-realm` script
+on the remote host. The directory structure changes a bit:
 
 .. code-block:: none
 
@@ -321,8 +321,8 @@ using the ``private/key.pem`` RSA key. By default, if no :file:`root.pem`
 certificate is provided, the system CA certificate store is symlinked as
 :file:`CA.crt`.
 
-Afterwards, Ansible uploads the generated Certificate Signing Request (CSR) to
-the Ansible Controller for the internal CA to sign (if it's enabled). CSR is
+Afterwards, Ansible uploads the generated `Certificate Signing Request`_ (CSR_) to
+the Ansible Controller for the internal CA to sign (if it's enabled). The CSR is
 uploaded to the :file:`secret/` directory:
 
 .. code-block:: none
@@ -348,7 +348,7 @@ uploaded to the :file:`secret/` directory:
 
 To avoid possible confusion, the :file:`secret/pki/requests/domain/` directory
 points to the "domain" internal CA which is an intermediate CA located under
-"root" CA. The :file:`hostname.example.com/domain/` directory inside the
+the "root" CA. The :file:`hostname.example.com/domain/` directory inside the
 :file:`domain/` directory points to the "domain" realm on the
 ``hostname.example.com`` host.
 
@@ -391,10 +391,10 @@ there:
                 └── domain/
                     └── request.pem
 
-When all of the requests have been processed, Ansible copies contents of the
-directories to remote hosts. The :file:`by-host/` directory contents are copied
-first and overwrite any files that are present on remote hosts, the
-:file:`by-group/` directory contents are copied only when the corresponding files
+When all of the requests have been processed, Ansible copies the content of the
+directories to remote hosts. The content of the :file:`by-host/` directory is copied
+first and overwrite all files that are present on remote hosts, the
+:file:`by-group/` directory content is copied only when the corresponding files
 are not present. This allows the administrator to provide the shared scripts or
 private keys/certificates as needed, per host, per group or for all managed
 hosts.
@@ -425,29 +425,29 @@ directory structure might look similar to:
         ├── CA.crt -> /etc/ssl/certs/ca-certificates.crt
         └── default.key -> private/key.pem
 
-Other authority directories (:file:`acme/` and :file:`external/`) might also contain
-various files.
+Other authority directories (:file:`acme/` and :file:`external/`) might also
+contain various files.
 
-After certificates are copied from Ansible Controller, :program:`pki-realm` script is
-executed again for each PKI realm configured on a given host. It checks which
-authority directories have signed and valid certificates, picks the first
-viable one according to the preference (``external``, ``acme``, ``internal``),
-and activates them.
+After certificates are copied from the Ansible Controller, the
+:program:`pki-realm` script is executed again for each PKI realm configured on
+a given host. It checks which authority directories have signed and valid
+certificates, picks the first viable one according to
+:envvar:`pki_authority_preference` and activates them.
 
 Certificate activation entails symlinking the certificate, intermediate and
-root files to the :file:`public/` directory and generation of various chain files
-- certificate + intermediate, intermediate + root and key + certificate
+root files to the :file:`public/` directory and generation of various chain files:
+certificate + intermediate, intermediate + root and key + certificate
 + intermediate (which is stored securely in the :file:`private/` directory).
 
-Some applications do not support separate :file:`dhparam` file, and instead expect
+Some applications do not support a separate :file:`dhparam` file, and instead expect
 that the DHE parameters are present after the X.509 certificate chain. If the
 debops.dhparam_ role has been configured on a host and Diffie-Hellman
 parameter support is enabled in a given PKI realm, DHE parameters will be
-appended to the final certificate chains (both public and private). When the
-debops.dhparam_ regenerates the parameters, :program:`pki-realm` script will
+appended to the final certificate chains (both public and private). When
+debops.dhparam_ regenerates the parameters, the :program:`pki-realm` script will
 automatically detect the new ones and update the certificate chains.
 
-The end result is fully configured PKI realm with a set of valid certificates
+The end result is a fully configured PKI realm with a set of valid certificates
 available for other applications and services:
 
 .. code-block:: none
