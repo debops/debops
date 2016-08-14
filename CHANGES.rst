@@ -68,6 +68,8 @@ Changed
 
 - Update debops.owncloud_ playbook. [ypid_]
 
+- Update debops.librenms_ playbook. [drybjed_]
+
 Removed
 ~~~~~~~
 
