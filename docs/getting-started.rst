@@ -54,24 +54,18 @@ Example inventory
 -----------------
 
 To install and configure LibreNMS on a host, you need to add the host to the
-``[debops_librenms]`` Ansible host group::
+``[debops_service_librenms]`` Ansible host group::
 
-    [debops_librenms]
+    [debops_service_librenms]
     hostname
 
 Example playbook
 ----------------
 
-Here's an example playbook which uses the ``debops.librenms`` role::
+Here's an example playbook which uses the ``debops.librenms`` role:
 
-    ---
-    - name: Configure LibreNMS
-      hosts: debops_librenms
-
-      roles:
-
-        - role: debops.librenms
-          tags: [ 'role::librenms' ]
+.. literalinclude:: playbooks/librenms.yml
+   :language: yaml
 
 Ansible tags
 ------------
@@ -86,22 +80,6 @@ Available role tags:
 ``role::librenms``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
-
-``type::dependency``
-  This tag specifies which tasks are defined in role dependencies. You can use
-  this to omit them using ``--skip-tags`` parameter.
-
-``depend-of::librenms``
-  Execute all ``debops.librenms`` role dependencies in its context.
-
-``depend::mariadb:librenms``
-  Run ``debops.mariadb`` dependent role in ``debops.librenms`` context.
-
-``depend::php5:librenms``
-  Run ``debops.php5`` dependent role in ``debops.librenms`` context.
-
-``depend::nginx:librenms``
-  Run ``debops.nginx`` dependent role in ``debops.librenms`` context.
 
 ``role::librenms:source``
   Clone or pull latest changes from LibreNMS repository.
@@ -121,4 +99,3 @@ Available role tags:
 
 ``role::librenms:devices``
   Add missing devices to LibreNMS database.
-
