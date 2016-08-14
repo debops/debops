@@ -12,7 +12,13 @@ The current role maintainer is drybjed.
 `debops.librenms master`_ - unreleased
 --------------------------------------
 
-.. _debops.librenms master: https://github.com/debops/ansible-librenms/compare/v0.1.1...master
+.. _debops.librenms master: https://github.com/debops/ansible-librenms/compare/v0.2.0...master
+
+
+`debops.librenms v0.2.0`_ - 2016-08-14
+--------------------------------------
+
+.. _debops.librenms v0.2.0: https://github.com/debops/ansible-librenms/compare/v0.1.1...v0.2.0
 
 Changed
 ~~~~~~~
