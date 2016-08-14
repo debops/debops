@@ -461,8 +461,8 @@ pki_dependent_realms: []
 
 # .. envvar:: pki_scheduler
 #
-# Enable periodic runs of :program:`pki-realm` script for all PKI realms. The script
-# will check realm structure and renew certificates that are near their
+# Enable periodic runs of :program:`pki-realm` script for all PKI realms. The
+# script will check realm structure and renew certificates that are near their
 # expiration date.
 pki_scheduler: True
 
@@ -477,8 +477,8 @@ pki_scheduler_interval: 'weekly'
 # .. envvar:: pki_dhparam
 #
 # Specify if Diffie-Hellman parameters should be appended to the certificate
-# chain, required by specific applications like HAproxy, ZNC or others that don't
-# support DHE parameters in a separate file.
+# chain. This is required by applications that don't support DHE parameters in
+# a separate file like HAproxy, ZNC.
 pki_dhparam: '{{ (True
                   if (ansible_local|d() and ansible_local.dhparam|d() and
                       ansible_local.dhparam.default|d())
@@ -522,16 +522,6 @@ pki_default_authority: 'domain'
 # The DNS domain used by default for an Certificate Authority configuration if
 # no specific ``item.domain`` is configured.
 pki_ca_domain: '{{ ansible_domain if ansible_domain else ansible_hostname }}'
-
-
-# .. envvar:: pki_authorities
-#
-# List of internal Certificate Authorities managed on an Ansible Controller.
-# Each CA is defined as a dictionary variable.
-pki_authorities:
-  - '{{ pki_authorities_ca_root }}'
-  - '{{ pki_authorities_ca_domain }}'
-  - '{{ pki_authorities_ca_service }}'
 
 
 # .. envvar:: pki_ca_organization
@@ -597,6 +587,16 @@ pki_authorities_ca_service:
   enabled: '{{ pki_ca_service_enabled | bool }}'
 
 
+# .. envvar:: pki_authorities
+#
+# List of internal Certificate Authorities managed on an Ansible Controller.
+# Each CA is defined as a dictionary variable.
+pki_authorities:
+  - '{{ pki_authorities_ca_root }}'
+  - '{{ pki_authorities_ca_domain }}'
+  - '{{ pki_authorities_ca_service }}'
+
+
 # .. envvar:: pki_dependent_authorities
 #
 # List of Certificate Authorities defined as a role dependency.
@@ -627,7 +627,7 @@ pki_ca_certificates_path: 'by-group/all'
 # --------------------------
 
 # You can use custom file lists to copy files to remote hosts or install
-# contents of Jinja variables. See :ref:`custom_file_management` for more
+# the content of Jinja variables. See :ref:`custom_file_management` for more
 # details.
 
 # .. envvar:: pki_private_files
