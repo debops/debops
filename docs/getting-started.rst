@@ -35,17 +35,17 @@ Useful variables
 This is a list of role variables which you are most likely want to define in
 Ansible’s inventory to customize LibreNMS:
 
-``librenms_snmp_communities``
+``librenms__snmp_communities``
   List of SNMP v1/v2c communities LibreNMS should use to authenticate to
   network devices. By default it contains the community ``public``.
 
-``librenms_admin_accounts``
+``librenms__admin_accounts``
   List of admin accounts created in the LibreNMS database. Passwords are stored
   automatically in the ``secret/`` directory, see the ``debops.secret`` role for more
   details. By default an admin account based on the ``ansible_ssh_user`` variable
   is created.
 
-``librenms_devices``
+``librenms__devices``
   List of devices to add to the LibreNMS database. Specify FQDN hostnames or IP
   addresses. By default LibreNMS will add its own host, based on
   the ``ansible_fqdn`` variable.

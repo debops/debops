@@ -9,15 +9,15 @@ them.
    :local:
    :depth: 1
 
-.. _librenms_snmp_credentials:
+.. _librenms__ref_snmp_credentials:
 
-librenms_snmp_credentials
--------------------------
+librenms__snmp_credentials
+--------------------------
 
 LibreNMS can use multiple SNMPv3 credentials at once, each one defined in
 a YAML dict. Default set of credentials managed by ``debops.snmpd`` which will
 use it for all DebOps-based hosts in the cluster will be used automatically by
-``debops.librenms``. You can add more entries in ``librenms_snmp_credentials``
+``debops.librenms``. You can add more entries in ``librenms__snmp_credentials``
 list as needed.
 
 Parameters which define SNMP credentials:
@@ -45,12 +45,12 @@ Parameters which define SNMP credentials:
   ``DES``.
 
 For an example of SNMP v3 credentials, check out
-``librenms_snmp_credentials_default`` variable in ``defaults/main.yml``.
+``librenms__snmp_credentials_default`` variable in ``defaults/main.yml``.
 
-.. _librenms_configuration_maps:
+.. _librenms__ref_configuration_maps:
 
-librenms_configuration_maps
----------------------------
+librenms__configuration_maps
+----------------------------
 
 LibreNMS configuration is stored as PHP ``$config`` dictionary in
 ``config.php`` in main project directory. To make it easier to manage using
@@ -64,10 +64,10 @@ configuration in a YAML dict like:
 
 .. code-block:: yaml
 
-   librenms_configuration_maps:
-     - '{{ librenms_configuration }}'
+   librenms__configuration_maps:
+     - '{{ librenms__configuration }}'
 
-   librenms_configuration:
+   librenms__configuration:
      comment: 'Example configuration'
      'dict_string': 'string'
      'dict_bool': True
@@ -88,10 +88,10 @@ You can use YAML lists as well:
 
 .. code-block:: yaml
 
-   librenms_configuration_maps:
-     - '{{ librenms_configuration }}'
+   librenms__configuration_maps:
+     - '{{ librenms__configuration }}'
 
-   librenms_configuration:
+   librenms__configuration:
      'dict_list': [ 'first', 'second', 'third' ]
 
 This will result in dict-like list which appends entries to already existing
@@ -108,10 +108,10 @@ You can also define a specific list without appending to existing list using
 
 .. code-block:: yaml
 
-   librenms_configuration_maps:
-     - '{{ librenms_configuration }}'
+   librenms__configuration_maps:
+     - '{{ librenms__configuration }}'
 
-   librenms_configuration:
+   librenms__configuration:
      'dict_array': { array: [ 'one', 'two', 'three' ] }
 
 This will result in PHP configuration:
@@ -124,10 +124,10 @@ Dictionaries and list can be nested as well:
 
 .. code-block:: yaml
 
-   librenms_configuration_maps:
-     - '{{ librenms_configuration }}'
+   librenms__configuration_maps:
+     - '{{ librenms__configuration }}'
 
-   librenms_configuration:
+   librenms__configuration:
      'dict_nested':
        'second_level':
          'third_list': [ 'abc', 'def' ]
@@ -146,10 +146,10 @@ enumerated at the correct level. This YAML configuration:
 
 .. code-block:: yaml
 
-   librenms_configuration_maps:
-     - '{{ librenms_configuration }}'
+   librenms__configuration_maps:
+     - '{{ librenms__configuration }}'
 
-   librenms_configuration:
+   librenms__configuration:
      'dicts':
 
        - key0: 'value0'

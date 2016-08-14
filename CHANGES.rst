@@ -23,6 +23,9 @@ Changed
   the role dependencies from ``meta/main.yml``. They are moved to the playbook
   instead. [drybjed]
 
+- Rename all variables from ``librenms_*`` to ``librenms__*`` to move them to
+  their own namespace. You will need to update your inventory. [drybjed]
+
 Fixed
 ~~~~~
 
