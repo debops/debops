@@ -9,15 +9,15 @@ them.
    :local:
    :depth: 1
 
-.. _librenms_snmp_credentials:
+.. _librenms__ref_snmp_credentials:
 
-librenms_snmp_credentials
--------------------------
+librenms__snmp_credentials
+--------------------------
 
 LibreNMS can use multiple SNMPv3 credentials at once, each one defined in
 a YAML dict. Default set of credentials managed by ``debops.snmpd`` which will
 use it for all DebOps-based hosts in the cluster will be used automatically by
-``debops.librenms``. You can add more entries in ``librenms_snmp_credentials``
+``debops.librenms``. You can add more entries in ``librenms__snmp_credentials``
 list as needed.
 
 Parameters which define SNMP credentials:
@@ -45,108 +45,127 @@ Parameters which define SNMP credentials:
   ``DES``.
 
 For an example of SNMP v3 credentials, check out
-``librenms_snmp_credentials_default`` variable in ``defaults/main.yml``.
+``librenms__snmp_credentials_default`` variable in ``defaults/main.yml``.
 
-.. _librenms_configuration_maps:
+.. _librenms__ref_configuration_maps:
 
-librenms_configuration_maps
----------------------------
+librenms__configuration_maps
+----------------------------
 
-LibreNMS configuration is stored as PHP5 ``$config`` dictionary in
+LibreNMS configuration is stored as PHP ``$config`` dictionary in
 ``config.php`` in main project directory. To make it easier to manage using
 Ansible, a Jinja template is used to recursively convert a list of dictionaries
-in YAML format to PHP5 format. Configuration is split into multiple
+in YAML format to PHP format. Configuration is split into multiple
 dictionaries, so that separate sections can be modified easier without the need
 to copy everything to Ansible inventory.
 
-Basic YAML syntax mirrors PHP5 syntax for dictionaries. Specifying your
-configuration in a YAML dict like::
+Basic YAML syntax mirrors PHP syntax for dictionaries. Specifying your
+configuration in a YAML dict like:
 
-    librenms_configuration_maps:
-      - '{{ librenms_configuration }}'
+.. code-block:: yaml
 
-    librenms_configuration:
-      comment: 'Example configuration'
-      'dict_string': 'string'
-      'dict_bool': True
-      'dict_int': 10
+   librenms__configuration_maps:
+     - '{{ librenms__configuration }}'
 
-Will result in PHP5 configuration::
+   librenms__configuration:
+     comment: 'Example configuration'
+     'dict_string': 'string'
+     'dict_bool': True
+     'dict_int': 10
 
-    ### Example configuration
-    $config['dict_string'] = "string";
-    $config['dict_bool'] = TRUE;
-    $config['dict_int'] = 10;
+Will result in PHP configuration:
+
+.. code-block:: php
+
+   ### Example configuration
+   $config['dict_string'] = "string";
+   $config['dict_bool'] = TRUE;
+   $config['dict_int'] = 10;
 
 Special key ``comment`` is reserved for comments in the configuration.
 
-You can use YAML lists as well::
+You can use YAML lists as well:
 
-    librenms_configuration_maps:
-      - '{{ librenms_configuration }}'
+.. code-block:: yaml
 
-    librenms_configuration:
-      'dict_list': [ 'first', 'second', 'third' ]
+   librenms__configuration_maps:
+     - '{{ librenms__configuration }}'
+
+   librenms__configuration:
+     'dict_list': [ 'first', 'second', 'third' ]
 
 This will result in dict-like list which appends entries to already existing
-ones from defaults::
+ones from defaults:
 
-    $config['dict_list'][] = "first";
-    $config['dict_list'][] = "second";
-    $config['dict_list'][] = "third";
+.. code-block:: php
+
+   $config['dict_list'][] = "first";
+   $config['dict_list'][] = "second";
+   $config['dict_list'][] = "third";
 
 You can also define a specific list without appending to existing list using
-``array`` dict key::
+``array`` dict key:
 
-    librenms_configuration_maps:
-      - '{{ librenms_configuration }}'
+.. code-block:: yaml
 
-    librenms_configuration:
-      'dict_array': { array: [ 'one', 'two', 'three' ] }
+   librenms__configuration_maps:
+     - '{{ librenms__configuration }}'
 
-This will result in PHP5 configuration::
+   librenms__configuration:
+     'dict_array': { array: [ 'one', 'two', 'three' ] }
 
-    $config['dict_array'] = array("one", "two", "three");
+This will result in PHP configuration:
 
-Dictionaries and list can be nested as well::
+.. code-block:: php
 
-    librenms_configuration_maps:
-      - '{{ librenms_configuration }}'
+   $config['dict_array'] = array("one", "two", "three");
 
-    librenms_configuration:
-      'dict_nested':
-        'second_level':
-          'third_list': [ 'abc', 'def' ]
-          'third_string': 'example string'
+Dictionaries and list can be nested as well:
 
-This will result in PHP5 configuration::
+.. code-block:: yaml
 
-    $config['dict_nested']['second_level']['third_list'][] = "abc";
-    $config['dict_nested']['second_level']['third_list'][] = "def";
-    $config['dict_nested']['second_level']['third_string'] = "example string";
+   librenms__configuration_maps:
+     - '{{ librenms__configuration }}'
+
+   librenms__configuration:
+     'dict_nested':
+       'second_level':
+         'third_list': [ 'abc', 'def' ]
+         'third_string': 'example string'
+
+This will result in PHP configuration:
+
+.. code-block:: php
+
+   $config['dict_nested']['second_level']['third_list'][] = "abc";
+   $config['dict_nested']['second_level']['third_list'][] = "def";
+   $config['dict_nested']['second_level']['third_string'] = "example string";
 
 You can use lists of dictionaries as well. They will be automatically
-enumerated at the correct level. This YAML configuration::
+enumerated at the correct level. This YAML configuration:
 
-    librenms_configuration_maps:
-      - '{{ librenms_configuration }}'
+.. code-block:: yaml
 
-    librenms_configuration:
-      'dicts':
+   librenms__configuration_maps:
+     - '{{ librenms__configuration }}'
 
-        - key0: 'value0'
-          key1: 'value1'
+   librenms__configuration:
+     'dicts':
 
-        - key0: 'value2'
-          key1: 'value3'
+       - key0: 'value0'
+         key1: 'value1'
 
-will result in PHP5 configuration::
+       - key0: 'value2'
+         key1: 'value3'
 
-    $config['dicts'][0]['key0'] = "value0";
-    $config['dicts'][0]['key1'] = "value1";
-    $config['dicts'][1]['key0'] = "value2";
-    $config['dicts'][1]['key1'] = "value3";
+will result in PHP configuration:
+
+.. code-block:: php
+
+   $config['dicts'][0]['key0'] = "value0";
+   $config['dicts'][0]['key1'] = "value1";
+   $config['dicts'][1]['key0'] = "value2";
+   $config['dicts'][1]['key1'] = "value3";
 
 Template conversion might be incomplete, however at the moment it's enough to
 generate correct ``config.php`` file for LibreNMS.
-

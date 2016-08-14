@@ -3,38 +3,13 @@
 dependencies:
 
   - role: debops.secret
-    tags: [ 'depend::secret', 'depend::secret:librenms', 'depend-of::librenms', 'type::dependency:hard' ]
-
-  - role: debops.php5
-    php5_packages:  '{{ librenms_php5_packages }}'
-    php5_pools: [ '{{ librenms_php5_pool }}' ]
-    when: (librenms_dependencies is defined and librenms_dependencies)
-    tags: [ 'depend::php5', 'depend::php5:librenms', 'depend-of::librenms', 'type::dependency' ]
-
-  - role: debops.nginx
-    nginx_servers: [ '{{ librenms_nginx_server }}' ]
-    nginx_upstreams: [ '{{ librenms_nginx_upstream_php5 }}' ]
-    when: (librenms_dependencies is defined and librenms_dependencies)
-    tags: [ 'depend::nginx', 'depend::nginx:librenms', 'depend-of::librenms', 'type::dependency' ]
-
-  - role: debops.mariadb
-    mariadb_users:
-      - database: '{{ librenms_database_name }}'
-        user: '{{ librenms_database_user }}'
-        owner: '{{ librenms_user }}'
-        group: '{{ librenms_group }}'
-        home: '{{ librenms_home }}'
-        system: True
-        priv_aux: False
-    when: (librenms_dependencies is defined and librenms_dependencies)
-    tags: [ 'depend::mariadb', 'depend::mariadb:librenms', 'depend-of::librenms', 'type::dependency' ]
 
 galaxy_info:
   author: 'Maciej Delmanowski'
   description: 'Install LibreNMS, an Open Source Network Monitoring System'
   company: 'DebOps'
-  license: 'GNU General Public License v3'
-  min_ansible_version: '1.8.0'
+  license: 'GPL-3.0'
+  min_ansible_version: '2.0.0'
   platforms:
   - name: Ubuntu
     versions:
@@ -47,8 +22,10 @@ galaxy_info:
     versions:
     - wheezy
     - jessie
-  categories:
+  galaxy_tags:
   - monitoring
-  - networking
-  - system
-
+  - network
+  - librenms
+  - nms
+  - snmp
+  - alerts

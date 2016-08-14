@@ -35,17 +35,17 @@ Useful variables
 This is a list of role variables which you are most likely want to define in
 Ansible’s inventory to customize LibreNMS:
 
-``librenms_snmp_communities``
+``librenms__snmp_communities``
   List of SNMP v1/v2c communities LibreNMS should use to authenticate to
   network devices. By default it contains the community ``public``.
 
-``librenms_admin_accounts``
+``librenms__admin_accounts``
   List of admin accounts created in the LibreNMS database. Passwords are stored
   automatically in the ``secret/`` directory, see the ``debops.secret`` role for more
   details. By default an admin account based on the ``ansible_ssh_user`` variable
   is created.
 
-``librenms_devices``
+``librenms__devices``
   List of devices to add to the LibreNMS database. Specify FQDN hostnames or IP
   addresses. By default LibreNMS will add its own host, based on
   the ``ansible_fqdn`` variable.
@@ -54,24 +54,18 @@ Example inventory
 -----------------
 
 To install and configure LibreNMS on a host, you need to add the host to the
-``[debops_librenms]`` Ansible host group::
+``[debops_service_librenms]`` Ansible host group::
 
-    [debops_librenms]
+    [debops_service_librenms]
     hostname
 
 Example playbook
 ----------------
 
-Here's an example playbook which uses the ``debops.librenms`` role::
+Here's an example playbook which uses the ``debops.librenms`` role:
 
-    ---
-    - name: Configure LibreNMS
-      hosts: debops_librenms
-
-      roles:
-
-        - role: debops.librenms
-          tags: [ 'role::librenms' ]
+.. literalinclude:: playbooks/librenms.yml
+   :language: yaml
 
 Ansible tags
 ------------
@@ -86,22 +80,6 @@ Available role tags:
 ``role::librenms``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
-
-``type::dependency``
-  This tag specifies which tasks are defined in role dependencies. You can use
-  this to omit them using ``--skip-tags`` parameter.
-
-``depend-of::librenms``
-  Execute all ``debops.librenms`` role dependencies in its context.
-
-``depend::mariadb:librenms``
-  Run ``debops.mariadb`` dependent role in ``debops.librenms`` context.
-
-``depend::php5:librenms``
-  Run ``debops.php5`` dependent role in ``debops.librenms`` context.
-
-``depend::nginx:librenms``
-  Run ``debops.nginx`` dependent role in ``debops.librenms`` context.
 
 ``role::librenms:source``
   Clone or pull latest changes from LibreNMS repository.
@@ -121,4 +99,3 @@ Available role tags:
 
 ``role::librenms:devices``
   Add missing devices to LibreNMS database.
-
