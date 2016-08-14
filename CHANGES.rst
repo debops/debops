@@ -1,18 +1,14 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 **debops.pki**
 
-This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
-and `human-readable changelog <http://keepachangelog.com/>`_.
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/>`__.
 
-
-Contributors
-------------
-
-- [drybjed] - `Maciej Delmanowski <https://github.com/drybjed/>`_  (role maintainer)
-- [ypid] - `Robin Schneider <https://github.com/ypid/>`_
-- [yuvadm] - `Yuval Adam <https://github.com/yuvadm/>`_
+The current role maintainer_ is drybjed_.
 
 
 `debops.pki master`_ - unreleased
@@ -30,7 +26,7 @@ Fixed
 ~~~~~
 
 - Fix an error where certain versions of GnuTLS ``certtool`` did not support
-  the "URI" SubjectAltName which resulted in an abort and certificate requrests
+  the "URI" SubjectAltName which resulted in an abort and certificate requests
   not being generated correctly. The "URI" SANs will only be added when correct
   version of the ``certtool`` is available. [drybjed]
 
@@ -39,7 +35,7 @@ Fixed
   ``0007``, which resulted in the web server not being able to serve ACME
   challenge responses. Now, correct ``umask`` will be set for the ``acme-tiny``
   script, so that ACME responses are world-readable. [drybjed]
-  
+
 - Fix an error in ``pki-authority`` script which invoked a Python print call
   that was unsupported in modern Python versions, the call is now supported
   on both 2.x and 3.x. [yuvadm]
@@ -382,4 +378,3 @@ Removed
 - Remove Diffie-Hellman parameter support from the role, it's now managed by
   a separate ``debops.dhparam`` Ansible role. Existing hosts won't be affected.
   [drybjed]
-
