@@ -459,6 +459,23 @@ librenms__config_custom: {}
 # Configuration of other Ansible roles [[[
 # ----------------------------------------
 
+# .. envvar:: librenms__logrotate__dependent_config [[[
+#
+# Configuration for ``debops.logrotate`` Ansible role.
+librenms__logrotate__dependent_config:
+
+  - filename: 'librenms'
+    logs: '{{ librenms__log_dir }}/*.log'
+    options: |
+      weekly
+      missingok
+      rotate 4
+      compress
+      notifempty
+      copytruncate
+      delaycompress
+
+#]]]
 # .. envvar:: librenms__php__dependent_packages [[[
 #
 # List of PHP packages to install by ``debops.php`` role.

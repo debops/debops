@@ -26,6 +26,9 @@ Changed
 - Rename all variables from ``librenms_*`` to ``librenms__*`` to move them to
   their own namespace. You will need to update your inventory. [drybjed]
 
+- Move the ``logrotate`` configuration to ``debops.logrotate`` role included in
+  the playbook. [drybjed]
+
 Fixed
 ~~~~~
 
