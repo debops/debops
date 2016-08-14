@@ -43,10 +43,19 @@ librenms__packages: []
 # Webserver configuration [[[
 # ---------------------------
 
-# .. envvar:: librenms__domain [[[
+# .. envvar:: librenms__fqdn [[[
 #
 # FQDN of the LibreNMS webpage, configured in ``nginx``.
-librenms__domain: [ 'nms.{{ ansible_domain }}' ]
+librenms__fqdn: 'nms.{{ librenms__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: librenms__domain [[[
+#
+# Default domain used by the LibreNMS service.
+librenms__domain: '{{ ansible_local.core.domain
+                      if (ansible_local|d() and ansible_local.core|d() and
+                          ansible_local.core.domain|d())
+                      else (ansible_domain if ansible_domain else ansible_hostname) }}'
 
                                                                    # ]]]
 # .. envvar:: librenms__nginx_auth_realm [[[
@@ -508,7 +517,7 @@ librenms__nginx__dependent_upstreams:
 librenms__nginx__dependent_servers:
  -  by_role: 'debops.librenms'
     type: 'php'
-    name: '{{ librenms__domain }}'
+    name: '{{ librenms__fqdn }}'
     root: '{{ librenms__install_path + "/html" }}'
     filename: 'debops.librenms'
     access_policy: '{{ librenms__nginx_access_policy }}'

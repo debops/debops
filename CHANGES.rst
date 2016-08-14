@@ -20,6 +20,13 @@ The current role maintainer is drybjed.
 
 .. _debops.librenms v0.2.0: https://github.com/debops/ansible-librenms/compare/v0.1.1...v0.2.0
 
+Added
+~~~~~
+
+- Add ``librenms__fqdn`` variable to better indicate the meaning of what should
+  be in it and use it in the ``nginx`` configuration to set the name of the
+  LibreNMS web page. [drybjed]
+
 Changed
 ~~~~~~~
 
