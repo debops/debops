@@ -105,7 +105,7 @@ Because files copied from :file:`by-group/all/` and :file:`by-group/inventory_gr
 directories are not overwritten automatically, you will need to remove the
 corresponding files on remote hosts yourself if you want to update them.
 
-The :any:`pki_inventory_groups` default variable is a list of Ansible inventory
+The :envvar:`pki_inventory_groups` default variable is a list of Ansible inventory
 groups that will have their corresponding directories. You need to specify your
 custom inventory groups in order to have them "active".
 

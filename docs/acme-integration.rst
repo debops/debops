@@ -187,27 +187,27 @@ ACME configuration variables
 The ``debops.pki`` role has several default variables which can be used to
 control ACME support. The most important are:
 
-:any:`pki_acme`
+:envvar:`pki_acme`
   Boolean. When ``True``, support for ACME Certificate Authority will be
   configured for all PKI realms unless disabled on the realm level. By default
   the role checks if a public IP address is available and a default domain is
   configured, otherwise the support is disabled automatically.
 
-:any:`pki_acme_install`
+:envvar:`pki_acme_install`
   Boolean. Enable or disable installation of :program:`acme-tiny` and configuration of
   ACME support without enabling it for all realms. When this variable is set to
-  ``True`` and :any:`pki_acme` is set to ``False``, ACME support can be enabled
+  ``True`` and :envvar:`pki_acme` is set to ``False``, ACME support can be enabled
   independently in each PKI realm. By default, it is set to the same value as
-  :any:`pki_acme`.
+  :envvar:`pki_acme`.
 
-:any:`pki_acme_ca`
+:envvar:`pki_acme_ca`
   Name of the ACME Certificate Authority API endpoint to use. Dictionary with
-  endpoints is defined in the :any:`pki_acme_ca_api_map` variable. By default,
+  endpoints is defined in the :envvar:`pki_acme_ca_api_map` variable. By default,
   ``le-live`` is used which points to the Let's Encrypt Live CA. For testing
   you can switch the default CA to ``le-staging`` which points to Let's Encrypt
   Staging CA.
 
-:any:`pki_acme_default_subdomains`
+:envvar:`pki_acme_default_subdomains`
   List of subdomains which will be added to the default ACME domain and all
   other domains configured for ACME certificate by default, can be overridden by
   ``item.acme_subdomains`` parameter. By default, the ``www.`` subdomain will be
@@ -215,7 +215,7 @@ control ACME support. The most important are:
   need to be correctly configured in the DNS for the Certificate Authority to
   sign the request.
 
-Each PKI realm configured in the :any:`pki_realms` or ``pki_*_realms`` variables
+Each PKI realm configured in the :envvar:`pki_realms` or ``pki_*_realms`` variables
 can have several parameters related to the ACME certificates:
 
 ``item.name``
@@ -233,7 +233,7 @@ can have several parameters related to the ACME certificates:
   List of subdomains that should be added to all of the ACME apex/root domains.
   If you want to create an ACME certificate only with the apex domain, you need
   to use this parameter with ``[]`` value to override
-  :any:`pki_acme_default_subdomains`.
+  :envvar:`pki_acme_default_subdomains`.
 
 ``item.acme_subdomains``
   List of subdomains added to each apex (root) domain configured in the ACME

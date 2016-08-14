@@ -317,7 +317,7 @@ on the remote host. The directory structure changes a bit:
 
 As you can see, the configuration of a Certificate Request for an internal CA
 has been created, and the :file:`internal/request.pem` file has been generated,
-using the ``private/key.pem`` RSA key. By default, if no :file:`root.pem`
+using the :file:`private/key.pem` RSA key. By default, if no :file:`root.pem`
 certificate is provided, the system CA certificate store is symlinked as
 :file:`CA.crt`.
 

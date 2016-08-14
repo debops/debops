@@ -154,7 +154,7 @@ Added
 Changed
 ~~~~~~~
 
-- Include realms defined in :any:`pki_default_realms` in tasks that copy files
+- Include realms defined in :envvar:`pki_default_realms` in tasks that copy files
   from Ansible Controller depending on an Ansible inventory group. [drybjed_]
 
 
@@ -208,7 +208,7 @@ Changed
 ~~~~~~~
 
 - Don't run :program:`pki-authority` script on Ansible Controller if list of
-  :any:`pki_authorities` is not defined. [drybjed_]
+  :envvar:`pki_authorities` is not defined. [drybjed_]
 
 
 `debops.pki v0.2.4`_ - 2016-02-21
@@ -364,7 +364,7 @@ Added
 - Add a way to copy arbitrary files from Ansible Controller to remote host PKI
   directories. [drybjed_]
 
-- Expose ``ansible_fqdn`` variable as :any:`pki_fqdn` so that it can be overridden
+- Expose ``ansible_fqdn`` variable as :envvar:`pki_fqdn` so that it can be overridden
   if necessary. [drybjed_]
 
 Changed
