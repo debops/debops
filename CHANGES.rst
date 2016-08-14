@@ -19,6 +19,10 @@ Changed
 
 - Updated documentation and Changelog. [drybjed]
 
+- Move the role dependent variables to ``defaults/main.yml`` file and remove
+  the role dependencies from ``meta/main.yml``. They are moved to the playbook
+  instead. [drybjed]
+
 Fixed
 ~~~~~
 
