@@ -26,6 +26,9 @@ Changed
 - The ``core.fact`` Python script now parses JSON Ansible output instead of
   setting it in a variable directly. [drybjed]
 
+- Refactor ``admin_users`` variable in the ``core.fact`` Python script.
+  [drybjed]
+
 
 `debops.core v0.2.1`_ - 2016-08-13
 ----------------------------------

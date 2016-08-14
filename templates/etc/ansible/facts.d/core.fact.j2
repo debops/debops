@@ -66,16 +66,16 @@ output = loads('''{{ core__tpl_facts | to_nice_json }}''')
 admin_blacklist_users = loads('''{{ (core__admin_blacklist_default_users + core__admin_blacklist_users) | unique | to_nice_json }}''')
 
 groups = getgrall()
-admin_users = []
+admin_users = set()
 
 if not output['admin_users'] and output['admin_groups']:
     for group in groups:
         if group.gr_name in output['admin_groups']:
             for name in group.gr_mem:
                 if name not in admin_blacklist_users:
-                    admin_users.append(name)
+                    admin_users.add(name)
 
             if admin_users:
-                output.update({ "admin_users": sorted(list(set(admin_users))) })
+                output.update({ "admin_users": sorted(list(admin_users)) })
 
 print(dumps(output, sort_keys=True, indent=2))
