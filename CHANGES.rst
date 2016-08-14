@@ -14,6 +14,12 @@ The current role maintainer is drybjed.
 
 .. _debops.bootstrap master: https://github.com/debops/ansible-bootstrap/compare/v0.3.0...master
 
+Fixed
+~~~~~
+
+- Potential issue when ``bootstrap__admin_default_users`` and
+  ``bootstrap__admin_users`` would both be empty. [ypid]
+
 
 `debops.bootstrap v0.3.0`_ - 2016-08-13
 ---------------------------------------
