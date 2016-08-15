@@ -8,7 +8,7 @@ Getting started
 Example inventory
 -----------------
 
-The ``debops.debops_fact`` role is included in the ``common.yml`` DebOps
+The ``debops.debops_fact`` role is included in the :file:`common.yml` DebOps
 playbook and doesn't need to be specifically enabled on a host.
 
 

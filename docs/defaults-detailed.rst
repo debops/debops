@@ -22,7 +22,7 @@ facts managed by the role. The facts are stored in two dictionary variables:
 
 ``ansible_local.debops_fact_priv.*``
   This dictionary variable contains "private" facts, readable only by ``root``
-  user. You can use ``debops_fact__private_group`` variable to allow access to
+  user. You can use :envvar:`debops_fact__private_group` variable to allow access to
   a different UNIX group if desired.
 
 Each entry on the list is a YAML dictionary with specific parameters:

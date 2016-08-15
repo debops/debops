@@ -1,12 +1,14 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 **debops.debops_fact**
 
-This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
-and `human-readable changelog <http://keepachangelog.com/>`_.
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer is drybjed.
+The current role maintainer_ is drybjed.
 
 
 `debops.debops_fact master`_ - unreleased
@@ -23,7 +25,7 @@ The current role maintainer is drybjed.
 Changed
 ~~~~~~~
 
-- Move redundant template code to a shared macro. [drybjed]
+- Move redundant template code to a shared macro. [drybjed_]
 
 
 debops.debops_fact v0.1.0 - 2016-08-07
@@ -32,4 +34,4 @@ debops.debops_fact v0.1.0 - 2016-08-07
 Added
 ~~~~~
 
-- Initial release. [drybjed]
+- Initial release. [drybjed_]
