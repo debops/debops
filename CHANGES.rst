@@ -19,8 +19,7 @@ Added
 ~~~~~
 
 - Added support for both http and https repositories in case of internet proxy.
-  Moved apt__proxy_url to :any:`apt__http_proxy_url` and 
-  :any:`added apt__https_proxy_url`.
+  Moved apt__proxy_url to :any:`apt__http_proxy_url` and added :any:`apt__https_proxy_url`.
 
 `debops.apt v0.2.0`_ - 2016-07-14
 ---------------------------------
