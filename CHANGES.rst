@@ -19,7 +19,8 @@ Added
 ~~~~~
 
 - Added support for both http and https repositories in case of internet proxy.
-  Moved apt__proxy_url to apt__http_proxy_url and added apt__https_proxy_url.
+  Moved apt__proxy_url to :any:`apt__http_proxy_url` and 
+  :any:`added apt__https_proxy_url`.
 
 `debops.apt v0.2.0`_ - 2016-07-14
 ---------------------------------
@@ -28,7 +29,7 @@ Added
 
 - Remove support for :program:`apt-cacher-ng`. The new role ``debops.apt_cacher_ng``
   handles this now. The overloaded :command:`apt` variable as been split into
-  :any:`apt__enabled` and :any:`apt__proxy`. [ypid]
+  :any:`apt__enabled` and apt__proxy. [ypid]
 
 - Added :any:`apt__proxy_bypass_for_bugs_debian_org` which you can enable if you
   hit a problem with a proxy server not allowing access to
