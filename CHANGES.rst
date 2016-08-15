@@ -24,7 +24,7 @@ Added
 `debops.apt v0.2.0`_ - 2016-07-14
 ---------------------------------
 
-.. _debops.apt v0.2.0 https://github.com/debops/ansible-apt/compare/v0.1.0...v0.2.0
+.. _debops.apt v0.2.0: https://github.com/debops/ansible-apt/compare/v0.1.0...v0.2.0
 
 - Remove support for :program:`apt-cacher-ng`. The new role ``debops.apt_cacher_ng``
   handles this now. The overloaded :command:`apt` variable as been split into
@@ -63,7 +63,7 @@ Added
 `debops.apt v0.1.0`_ - 2016-05-26
 ---------------------------------
 
-.. _debops.apt v0.1.0 https://github.com/debops/ansible-apt/compare/v0.1.0...v0.2.0
+.. _debops.apt v0.1.0: https://github.com/debops/ansible-apt/compare/v0.1.0...v0.2.0
 
 Added
 ~~~~~
