@@ -4,16 +4,16 @@ Getting started
 Example inventory
 -----------------
 
-The ``debops.resources`` role is included by default in the ``common.yml``
+The ``debops.resources`` role is included by default in the :file:`common.yml`
 DebOps playbook, you don't need to add hosts to any groups to enable it.
 
-Role provides a special variable, ``resources__src`` which points to
-``ansible/resources/`` directory located in the DebOps project directory,
+Role provides a special variable, :envvar:`resources__src` which points to
+:file:`ansible/resources/` directory located in the DebOps project directory,
 relative to the currently used Ansible inventory. This variable can be used in
 the ``item.src`` keys of the file/archive lists to use the files from a central
 location relative to the current DebOps project directory.
 
-The ``ansible/resources/`` directory is not created automatically, and role
+The :file:`ansible/resources/` directory is not created automatically, and role
 does not check the existence of the specified files before using them.
 
 An example usage:

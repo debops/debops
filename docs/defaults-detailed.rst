@@ -79,7 +79,7 @@ the parameter list and syntax.
 
 To download resources over HTTPS, the content must be served over a valid
 TLS/SSL certificate recognized by the remote host. If you use self-siged
-certificates, check the ``debops.pki`` role for how to add custom Root CA
+certificates, check the debops.pki_ role for how to add custom Root CA
 Certificates on your hosts.
 
 Here are some important parameters used by the role:
@@ -111,7 +111,7 @@ remote hosts. Each element of the list is a YAML dictionary with parameters
 recognized by the `Ansible unarchive module`_. For details about their use,
 see the module documentation.
 
-The ``resources__src`` variable can be used to point the role to a custom,
+The :envvar:`resources__src` variable can be used to point the role to a custom,
 central location, by default located in the DebOps project directory.
 
 Here are some more important parameters:
@@ -147,7 +147,7 @@ Controller to remote hosts. Each element of a list is a YAML dictionary with
 parameters used by the `Ansible copy module`_. See its documentation for
 parameter advanced usage and syntax.
 
-The ``resources__src`` variable can be used to point the role to a custom,
+The :envvar:`resources__src` variable can be used to point the role to a custom,
 central location, by default located in the DebOps project directory.
 
 Here are some more important parameters:
@@ -171,7 +171,7 @@ Here are some more important parameters:
 Examples
 ~~~~~~~~
 
-Copy file from the ``ansible/resources/`` directory to all remote hosts:
+Copy file from the :file:`ansible/resources/` directory to all remote hosts:
 
 .. code-block:: yaml
 
@@ -179,7 +179,7 @@ Copy file from the ``ansible/resources/`` directory to all remote hosts:
      - src: '{{ resources__src + "path/to/file" }}'
        dest: '/tmp/file'
 
-Create a custom ``cron`` task that restarts a service daily:
+Create a custom :program:`cron` task that restarts a service daily:
 
 .. code-block:: yaml
 
