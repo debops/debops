@@ -117,6 +117,9 @@ Changed
   from ``300`` to ``3600`` and the :envvar:`owncloud__upload_size` from
   ``128M`` to ``2G``. [ypid_]
 
+- Support to run the :command:`occ` wrapper script as :envvar:`owncloud__user`
+  which can be useful for scripting. [ypid_]
+
 - Changed default ownCloud domain from ``owncloud.{{ ansible_domain }}`` to
   ``cloud.{{ ansible_domain }}`` to generalize the role.
   Note that this migration might leave some legacy files on the remote host in place.
