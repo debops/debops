@@ -60,7 +60,7 @@
   notify: [ 'Restart nullmailer' ]
   when: (nullmailer__deploy_state|d('present') != 'absent' and
          (item.dest|d() and (item.src|d() or item.content is defined) and
-          item.state|d() and item.state == 'absent'))
+          item.state|d('present') == 'absent'))
 
 - name: Remove private configuration files if requested
   file:
@@ -71,7 +71,7 @@
   notify: [ 'Restart nullmailer' ]
   when: (nullmailer__deploy_state|d('present') != 'absent' and
          (item.dest|d() and (item.src|d() or item.content is defined) and
-          item.state|d() and item.state == 'absent'))
+          item.state|d('present') == 'absent'))
   no_log: True
 
 - name: Configure nullmailer-smtpd service in xinetd
