@@ -64,8 +64,6 @@ Added
 ---------------------------------
 
 .. _debops.apt v0.1.0 https://github.com/debops/ansible-apt/compare/v0.1.0...v0.2.0
-v0.1.0
-------
 
 Added
 ~~~~~
