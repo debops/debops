@@ -15,15 +15,15 @@ examples for them.
 authorized_keys__list
 ---------------------
 
-The ``authorized_keys__list``, ``authorized_keys__group_list``,
-``authorized_keys__host_list`` and ``authorized_keys__dependent_list``
+The :envvar:`authorized_keys__list`, :envvar:`authorized_keys__group_list`,
+:envvar:`authorized_keys__host_list` and :envvar:`authorized_keys__dependent_list`
 variables are used to define what SSH keys should be present in each user
-file located in ``/etc/ssh/authorized_keys/`` directory. Each list entry is
+file located in :file:`/etc/ssh/authorized_keys/` directory. Each list entry is
 a YAML dictionary with specific parameters:
 
 ``name``
   Required. Name of the user account to configure. This will be used as the
-  name of the file located in the ``/etc/ssh/authorized_keys/`` directory.
+  name of the file located in the :file:`/etc/ssh/authorized_keys/` directory.
 
 These parameters are related to SSH public key management:
 
@@ -41,10 +41,10 @@ These parameters are related to SSH public key management:
 ``options``
   Optional. String or list of SSH options which should be set for each key
   specified on the ``sshkeys`` list. You can find more about available options
-  in ``authorized_keys(5)``.
+  in :manpage:`authorized_keys(5)`.
 
   If this parameter is not specified, SSH public keys will use options set in
-  the ``authorized_keys__default_options`` variable. To override this variable
+  the :envvar:`authorized_keys__default_options` variable. To override this variable
   for a particular entry, set the ``item.options`` parameter as empty string or
   list.
 
@@ -78,18 +78,18 @@ These parameters are related to SSH public key management:
   user file.
 
 These parameters are related to the files located in the
-``/etc/ssh/authorized_keys/`` directory:
+:file:`/etc/ssh/authorized_keys/` directory:
 
 ``readonly``
   Optional, boolean. If defined and ``True``, or if the corresponding
-  ``authorized_keys__readonly`` variable is ``True``, the role will set the
+  :envvar:`authorized_keys__readonly` variable is ``True``, the role will set the
   owner and group of the user file as ``root:<item.group|item.name|root>`` and
   its permissions will be set to ``0640``, so that the respective users being
   in their own groups can still access the file and use it for authentication,
   but they cannot change it.
 
   If this parameter is set to ``False`` or the corresponding
-  ``authorized_keys__readonly`` variable is ``False``, to role will not modify
+  :envvar:`authorized_keys__readonly` variable is ``False``, to role will not modify
   the file ownership or permissions set by the ``authorized_key`` Ansible
   module.
 

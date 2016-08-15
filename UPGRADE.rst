@@ -14,12 +14,12 @@ From debops.sshkeys to debops.authorized_keys
 
 - You should update your inventory variables to use the new role variable names:
 
-  +------------------------+---------------------------------+
-  | Old variable name      | New variable name               |
-  +========================+=================================+
-  | ``sshkeys_list``       | ``authorized_keys__list``       |
-  +------------------------+---------------------------------+
-  | ``sshkeys_group_list`` | ``authorized_keys__group_list`` |
-  +------------------------+---------------------------------+
-  | ``sshkeys_host_list``  | ``authorized_keys__host_list``  |
-  +------------------------+---------------------------------+
+  +------------------------+---------------------------------------+
+  | Old variable name      | New variable name                     |
+  +========================+=======================================+
+  | ``sshkeys_list``       | :envvar:`authorized_keys__list`       |
+  +------------------------+---------------------------------------+
+  | ``sshkeys_group_list`` | :envvar:`authorized_keys__group_list` |
+  +------------------------+---------------------------------------+
+  | ``sshkeys_host_list``  | :envvar:`authorized_keys__host_list`  |
+  +------------------------+---------------------------------------+

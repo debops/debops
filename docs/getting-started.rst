@@ -4,11 +4,13 @@ Getting started
 .. contents:: Sections
    :local:
 
+.. include:: includes/all.rst
+
 Security considerations
 -----------------------
 
 The ``debops.authorized_keys`` role is designed to manage files in
-``/etc/ssh/authorized_keys/`` directory which contain SSH public keys for user
+:file:`/etc/ssh/authorized_keys/` directory which contain SSH public keys for user
 accounts.
 
 By default, role modifies the ownership and permissions of these files after
@@ -45,11 +47,11 @@ Ansible role.
 
 .. note::
 
-   The ``debops.sshd`` role enables use of the SSH public keys managed by the
+   The debops.sshd_ role enables use of the SSH public keys managed by the
    ``debops.authorized_keys`` automatically.
 
 To enable the ``sshd`` service to use the configured public keys, you should
-change the configuration in the ``/etc/ssh/sshd_config`` file to something like
+change the configuration in the :file:`/etc/ssh/sshd_config` file to something like
 this:
 
 .. code-block:: bash
@@ -86,7 +88,7 @@ authorized keys for authentication, you can do it like this:
 Example inventory
 -----------------
 
-This role is included by default in the ``common.yml`` DebOps playbook, so you
+This role is included by default in the :file:`common.yml` DebOps playbook, so you
 don't need to do anything to enable it.
 
 
