@@ -52,7 +52,7 @@ service to not interfere with existing Postfix configuration.
 Default SMTP relay
 ------------------
 
-The default upstream SMTP relay is configured in the ``nullmailer__relayhost``
+The default upstream SMTP relay is configured in the :envvar:`nullmailer__relayhost`
 default variable. If not configured otherwise, all mail will be forwarded to
 ``smtp.{{ ansible_domain }}``. However, this might not be the correct
 destination in your environment. The ``nullmailer`` SMTP server does not

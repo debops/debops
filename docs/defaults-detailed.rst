@@ -1,6 +1,8 @@
 Default variable details
 ========================
 
+.. include:: includes/all.rst
+
 Some of ``debops.nullmailer`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
@@ -15,10 +17,10 @@ examples for them.
 nullmailer__remotes
 -------------------
 
-This list, as well as ``nullmailer__default_remotes``, is used to configure
+This list, as well as :envvar:`nullmailer__default_remotes`, is used to configure
 where ``nullmailer`` should forward all mail messages. Each element of a list
 can be either a string that defines the exact line in the
-``/etc/nullmailer/remotes`` configuration file, or a YAML dictionary with
+:file:`/etc/nullmailer/remotes` configuration file, or a YAML dictionary with
 following parameters:
 
 ``host``
@@ -26,7 +28,7 @@ following parameters:
   forwarded.
 
 ``protocol``
-  Optional. Specify the daemon from ``/usr/lib/nullmailer/`` which should be
+  Optional. Specify the daemon from :file:`/usr/lib/nullmailer/` which should be
   used to send the mail messages. Either ``smtp`` (default) or ``qmtp``.
 
 ``port``
@@ -34,7 +36,7 @@ following parameters:
   as default.
 
 ``starttls``
-  Optional, boolean. If not specified and ``nullmailer__starttls`` is enabled,
+  Optional, boolean. If not specified and :envvar:`nullmailer__starttls` is enabled,
   each configured SMTP server will be asked to provide encrypted connection
   using ``STARTTLS`` command. If ``item.ssl`` or ``item.options`` parameters
   are specified, the ``STARTTLS`` support is not enabled by default.
@@ -80,7 +82,7 @@ following parameters:
 
 ``options``
   Optional. Custom list of options recognized by the ``nullmailer`` protocol
-  modules. Check the usage information in the ``/usr/lib/nullmailer/*``
+  modules. Check the usage information in the :file:`/usr/lib/nullmailer/*`
   commands to see possible options, and examples below to see how they can be
   used.
 
@@ -122,9 +124,9 @@ Configure GMail as remote SMTP server with options specified manually:
 nullmailer__configuration_files
 -------------------------------
 
-This list, as well as ``nullmailer__default_configuration_files``, manages
-configuration files used by ``nullmailer`` service. Each entry in the list is
-a YAML dictionary with parameters:
+This list, as well as :envvar:`nullmailer__private_configuration_files`,
+manages configuration files used by the ``nullmailer`` service. Each entry in
+the list is a YAML dictionary with parameters:
 
 ``dest``
   Required. Absolute path to the configuration file.
@@ -162,7 +164,7 @@ a YAML dictionary with parameters:
   configuration file.
 
 You can find the usage examples of these lists in the role
-``defaults/main.yml`` file.
+:file:`defaults/main.yml` file.
 
 
 .. _nullmailer__ref_purge_files:
@@ -171,14 +173,14 @@ nullmailer__purge_files
 -----------------------
 
 The ``debops.nullmailer`` role supports easy switch to a different SMTP server
-by creating a ``dpkg`` hook script that removes the additional files and custom
+by creating a :command:`dpkg` hook script that removes the additional files and custom
 services configured by the role when the ``nullmailer`` package is removed or
 purged.  This ensures that the new SMTP server can be correctly installed by
 the package manager without the need for the ``debops.nullmailer`` role to be
 involved in the process.
 
-The ``nullmailer__purge_files`` and ``nullmailer__default_purge_files`` lists
+The :envvar:`nullmailer__purge_files` and :envvar:`nullmailer__purge_default_files` lists
 specify which files should be purged by the hook script. In addition, all
-configuration files mentioned in ``nullmailer__configuration_files`` and
-``nullmailer__private_configuration_files`` will be purged as well, unless the
+configuration files mentioned in :envvar:`nullmailer__configuration_files` and
+:envvar:`nullmailer__private_configuration_files` will be purged as well, unless the
 ``item.purge`` parameter is present and set to ``False``.

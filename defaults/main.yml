@@ -73,7 +73,7 @@ nullmailer__packages: []
 
 # .. envvar:: nullmailer__mailname [[[
 #
-# The FQDN name of the host, stored in the ``/etc/mailname`` configuration
+# The FQDN name of the host, stored in the :file:`/etc/mailname` configuration
 # file. See https://wiki.debian.org/EtcMailName for more details.
 nullmailer__mailname: '{{ ansible_fqdn }}'
 
@@ -87,7 +87,7 @@ nullmailer__domain: '{{ ansible_domain if ansible_domain|d() else ansible_hostna
 # .. envvar:: nullmailer__adminaddr [[[
 #
 # If this list is not empty, all mail messages addressed to any user in the
-# default hostname from ``/etc/mailname`` or ``localhost`` will be redirected
+# default hostname from :file:`/etc/mailname` or ``localhost`` will be redirected
 # to the specified e-mail addresses (catch-all).
 nullmailer__adminaddr: [ 'root@{{ nullmailer__domain }}' ]
 
@@ -122,7 +122,7 @@ nullmailer__defaultdomain: '{{ nullmailer__domain }}'
 # .. envvar:: nullmailer__starttls [[[
 #
 # Boolean. If enabled, all remote SMTP servers configured in
-# ``/etc/nullmailer/remotes`` will request encrypted connections using the
+# :file:`/etc/nullmailer/remotes` will request encrypted connections using the
 # ``STARTTLS`` command. This can be overridden per remote, see
 # :ref:`nullmailer__ref_remotes` for more details.
 nullmailer__starttls: True
@@ -138,7 +138,7 @@ nullmailer__relayhost: 'smtp.{{ nullmailer__domain }}'
 # .. envvar:: nullmailer__relayhost_options [[[
 #
 # Additional options set for the default relayhost in the
-# ``/etc/nullmailer/remotes`` configuration file.
+# :file:`/etc/nullmailer/remotes` configuration file.
 # See :ref:`nullmailer__ref_remotes` for more details.
 nullmailer__relayhost_options: []
 
@@ -269,12 +269,12 @@ nullmailer__purge_files: []
 # ----------------------------
 
 # The ``debops.nullmailer`` role can configure a ``nullmailer-smtpd`` service
-# using ``nullmailer`` and ``xinetd`` packages. The ``xinetd`` service will
+# using ``nullmailer`` and :program:`xinetd` packages. The :program:`xinetd` service will
 # listen on port ``25`` (can be changed) and on incoming connection will start
 # a ``sendmail`` process which can be used to send an e-mail message.
 
 # This service does not perform any user authentication, therefore
-# ``debops.ferm`` and ``debops.tcpwrappers`` roles are used to limit the access
+# debops.ferm_ and debops.tcpwrappers_ roles are used to limit the access
 # from the network to specific IP addresses or CIDR subnets. By default, the
 # ``nullmailer-smtpd`` service listens for new TCP connections only on the
 # loopback interface, and firewall/TCP Wrappers do not accept any connections
@@ -282,14 +282,14 @@ nullmailer__purge_files: []
 
 # .. envvar:: nullmailer__smtpd [[[
 #
-# Enable or disable custom ``xinetd``-based SMTP service which allows access to
+# Enable or disable custom :program:`xinetd`-based SMTP service which allows access to
 # the ``sendmail`` program from other hosts over the network.
 nullmailer__smtpd: False
 
                                                                    # ]]]
 # .. envvar:: nullmailer__smtpd_bind [[[
 #
-# Specify the IP address on which the ``xinetd`` SMTP server should listen for
+# Specify the IP address on which the :program:`xinetd` SMTP server should listen for
 # new connections. By default it listens only on ``lo`` interface.
 nullmailer__smtpd_bind: 'localhost'
 
@@ -304,8 +304,8 @@ nullmailer__smtpd_port: '25'
 #
 # Specify list of IP addresses or CIDR subnets which are allowed to connect to
 # the ``nullmailer-smtpd`` service. These lists will be configured in the
-# ``iptables`` firewall using ``debops.ferm`` role and in the TCP Wrappers
-# using ``debops.tcpwrappers`` role.
+# :command:`iptables` firewall using debops.ferm_ role and in the TCP Wrappers
+# using debops.tcpwrappers_ role.
 #
 # If this list is empty, nobody is allowed to connect remotely.
 nullmailer__smtpd_allow: []
@@ -316,7 +316,7 @@ nullmailer__smtpd_allow: []
 
 # .. envvar:: nullmailer__ferm__dependent_rules [[[
 #
-# Configuration for the ``debops.ferm`` role.
+# Configuration for the debops.ferm_ role.
 nullmailer__ferm__dependent_rules:
 
   - type: 'accept'
@@ -332,7 +332,7 @@ nullmailer__ferm__dependent_rules:
                                                                    # ]]]
 # .. envvar:: nullmailer__tcpwrapper__dependent_allow [[[
 #
-# Configuration for the ``debops.tcpwrappers`` Ansible role.
+# Configuration for the debops.tcpwrappers_ Ansible role.
 nullmailer__tcpwrappers__dependent_allow:
 
   - daemon: 'sendmail'
