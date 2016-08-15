@@ -36,7 +36,7 @@ following parameters:
 ``starttls``
   Optional, boolean. If not specified and ``nullmailer__starttls`` is enabled,
   each configured SMTP server will be asked to provide encrypted connection
-  using ``STARTTLS`` command. if ``item.ssl`` or ``item.options`` parameters
+  using ``STARTTLS`` command. If ``item.ssl`` or ``item.options`` parameters
   are specified, the ``STARTTLS`` support is not enabled by default.
 
 ``ssl``
@@ -158,7 +158,7 @@ a YAML dictionary with parameters:
   must already exist.
 
 ``mode``
-  Optional. Speify the file attributes which should be set for the
+  Optional. Specify the file attributes which should be set for the
   configuration file.
 
 You can find the usage examples of these lists in the role
