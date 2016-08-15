@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Upgrade inventory variables for migration from debops.docker v0.1.x to v0.2.x.
+# Upgrade inventory variables for migration from debops.apt v0.1.x to v0.2.x.
 # The script is idempotent.
 
 git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 \
