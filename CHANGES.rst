@@ -1,10 +1,30 @@
+.. _apt__ref_changelog:
+
 Changelog
 =========
 
-v0.2.0
-------
+**debops.apt**
 
-*Released: 2016-05-26*
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
+and `human-readable changelog <http://keepachangelog.com/>`_.
+
+The current role maintainer is drybjed.
+
+`debops.apt master`_ - unreleased
+---------------------------------
+
+.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.2.0...master
+
+Added
+~~~~~
+
+- Added support for both http and https repositories in case of internet proxy.
+  Moved apt__proxy_url to apt__http_proxy_url and added apt__https_proxy_url.
+
+`debops.apt v0.2.0`_ - 2016-07-14
+---------------------------------
+
+.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.1.0...v0.2.0
 
 - Remove support for :program:`apt-cacher-ng`. The new role ``debops.apt_cacher_ng``
   handles this now. The overloaded :command:`apt` variable as been split into
@@ -40,18 +60,20 @@ v0.2.0
 - Clean up package lists and remove unused tasks. The functionality has been
   moved to the ``debops.apt_install`` role. [drybjed]
 
+`debops.apt v0.1.0`_ - 2016-05-26
+---------------------------------
+
+.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.1.0...v0.2.0
 v0.1.0
 ------
 
-*Released: 2016-05-26*
+Added
+~~~~~
 
 - Add Changelog. [drybjed]
 
 - Support "stacked inventory variables" for APT sources, repositories, keys and
   lists of mirrors. [drybjed]
-
-- Switch the default Debian mirror to new official redirector at
-  http://httpredir.debian.org/. [drybjed]
 
 - Added :any:`apt__remove_default_configuration` option which defaults to true.
   This ensures that :file:`/etc/apt/apt.conf` is absent. [ypid]
@@ -60,6 +82,12 @@ v0.1.0
 
 - Allow to modify APT sections without defining ``apt__default_sources`` by
   using the added ``apt__sources_sections`` variable. [ypid]
+
+Changed
+~~~~~~~
+
+- Switch the default Debian mirror to new official redirector at
+  http://httpredir.debian.org/. [drybjed]
 
 - Remove support for ``unattended-upgrades``. The new role
   ``debops.unattended_upgrades`` handles this now. The ``debops.apt`` role will
