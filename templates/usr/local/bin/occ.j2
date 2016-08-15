@@ -4,6 +4,8 @@
 
 # {{ ansible_managed }}
 
+set -o nounset -o pipefail -o errexit
+
 # Environment variable `OC_PASS` is striped normally by `sudo`.
 # `--preserve-env` would preserve all environment variables.
 # This should be OK for this command.
@@ -15,9 +17,24 @@
 # https://github.com/owncloud/core/issues/17583
 # It is fixed in 8.2 but lets call `occ` like the documentation suggests it:
 # https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html?highlight=occ#using-the-occ-command
-cd '{{ owncloud__home }}'
+cd '{{ owncloud__home }}' || exit 1
 
 # Long command line options seem to be not supported as of 1.8.3 in Ubuntu precise.
 # sudo --preserve-env --user '{{ owncloud__user }}' php --file '{{ owncloud__home }}/occ' "$@"
+# {#
+# Example cron entry:
+# - name: 'owncloud-some-job'
+#   cron_file: 'owncloud-something'
+#   minute: 23
+#   hour: 05
+#   job: 'USER={{ owncloud__user | quote }} {{ some_script | quote }}'
+#   user: '{{ owncloud__user }}'
+#
+#}
 
-sudo -E -u '{{ owncloud__user }}' php --file '{{ owncloud__home }}/occ' "$@"
+if [ "$USER" == '{{ owncloud__user }}' ]
+then
+	php --file '{{ owncloud__home }}/occ' "$@"
+else
+	sudo -E -u '{{ owncloud__user }}' php --file '{{ owncloud__home }}/occ' "$@"
+fi
