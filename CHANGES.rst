@@ -19,6 +19,9 @@ Changed
 
 - Update documentation and Changelog. [drybjed]
 
+- Move the role variables from ``vars/main.yml`` to ``defaults/main.yml``.
+  [drybjed]
+
 
 debops.redis v0.1.0 - 2016-06-28
 --------------------------------
