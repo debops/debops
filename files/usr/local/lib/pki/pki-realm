@@ -104,6 +104,32 @@ get_dnsdomainname () {
         fi
     fi
 }
+
+chmod_idempotent () {
+    # chmod does a `fchmodat` (after a `stat`) even if it does not need to
+    # change anything as of 8.23-4.
+    # This behavior is not ideal for this script as it would update the ctime.
+
+    local new_mode_in_octal="${1##0}"
+    local file_path="${2}"
+
+    if [ "$(stat -c %a "${file_path}")" != "${new_mode_in_octal}" ] ; then
+        chmod "${new_mode_in_octal}" "${file_path}"
+    fi
+}
+
+chgrp_idempotent () {
+    # chgrp does a `fchownat` (after a `newfstatat`) even if it does not need
+    # to change anything as of 8.23-4.
+    # This behavior is not ideal for this script as it would update the ctime.
+
+    local new_group_name="${1}"
+    local file_path="${2}"
+
+    if [ "$(stat -c %G "${file_path}")" != "${new_group_name}" ] ; then
+        chgrp "${new_group_name}" "${file_path}"
+    fi
+}
 # }}}
 
 initialize_environment () {
@@ -262,7 +288,10 @@ initialize_environment () {
     config["private_dir_acl_groups_x"]=""
     config["private_file_acl_groups_r"]=""
 
-    test -d "${config['pki_root']}" || mkdir -p -m "${config['public_dir_mode']}" "${config['pki_root']}"
+    if [ ! -d "${config['pki_root']}" ] ; then
+        mkdir -p -m "${config['public_dir_mode']}" "${config['pki_root']}"
+        chmod "${config['public_dir_mode']}" "${config['pki_root']}"
+    fi
 }
 
 check_openssl_key_req_match () {
@@ -776,12 +805,8 @@ generate_openssl_rsa_realm_key () {
         mv "${key_file}.tmp" "${key_file}"
     fi
 
-    if [ "$(stat -c %a "${key_file}")" != "${config['realm_file_mode']}" ] ; then
-        chmod "${config['realm_file_mode']}" "${key_file}"
-    fi
-    if [ "$(stat -c %G "${key_file}")" != "${key_group}" ] ; then
-        chgrp "${key_group}" "${key_file}"
-    fi
+    chmod_idempotent "${config['realm_file_mode']}" "${key_file}"
+    chgrp_idempotent "${key_group}" "${key_file}"
 
 }
 
@@ -806,12 +831,8 @@ generate_gnutls_rsa_realm_key () {
         mv "${key_file}.tmp" "${key_file}"
     fi
 
-    if [ "$(stat -c %a "${key_file}")" != "${config['realm_file_mode']}" ] ; then
-        chmod "${config['realm_file_mode']}" "${key_file}"
-    fi
-    if [ "$(stat -c %G "${key_file}")" != "${key_group}" ] ; then
-        chgrp "${key_group}" "${key_file}"
-    fi
+    chmod_idempotent "${config['realm_file_mode']}" "${key_file}"
+    chgrp_idempotent "${key_group}" "${key_file}"
 
 }
 
@@ -842,12 +863,8 @@ generate_openssl_rsa_private_key () {
         mv "${key_file}.tmp" "${key_file}"
     fi
 
-    if [ "$(stat -c %a "${key_file}")" != "${config['private_file_mode']}" ] ; then
-        chmod "${config['private_file_mode']}" "${key_file}"
-    fi
-    if [ "$(stat -c %G "${key_file}")" != "${key_group}" ] ; then
-        chgrp "${key_group}" "${key_file}"
-    fi
+    chmod_idempotent "${config['private_file_mode']}" "${key_file}"
+    chgrp_idempotent "${key_group}" "${key_file}"
 
 }
 
@@ -885,12 +902,8 @@ generate_gnutls_rsa_private_key () {
         mv "${key_file}.tmp" "${key_file}"
     fi
 
-    if [ "$(stat -c %a "${key_file}")" != "${config['private_file_mode']}" ] ; then
-        chmod "${config['private_file_mode']}" "${key_file}"
-    fi
-    if [ "$(stat -c %G "${key_file}")" != "${key_group}" ] ; then
-        chgrp "${key_group}" "${key_file}"
-    fi
+    chmod_idempotent "${config['private_file_mode']}" "${key_file}"
+    chgrp_idempotent "${key_group}" "${key_file}"
 
 }
 
@@ -906,13 +919,9 @@ create_public_directories () {
     local directories=( ${@} )
 
     for directory in ${directories[@]} ; do
-        test -d "${directory}" || mkdir -p -m "${config['public_dir_mode']}" "${directory}"
-        if [ "$(stat -c %a "${directory}")" != "${config['public_dir_mode']}" ] ; then
-            chmod "${config['public_dir_mode']}" "${directory}"
-        fi
-        if [ "$(stat -c %G "${directory}")" != "${dir_group}" ] ; then
-            chgrp "${dir_group}" "${directory}"
-        fi
+        mkdir -p "${directory}"
+        chmod_idempotent "${config['public_dir_mode']}" "${directory}"
+        chgrp_idempotent "${dir_group}" "${directory}"
     done
 
 }
@@ -929,13 +938,9 @@ create_private_directories () {
     local directories=( ${@} )
 
     for directory in ${directories[@]} ; do
-        test -d "${directory}" || mkdir -p -m "${config['private_dir_mode']}" "${directory}"
-        if [ "$(stat -c %a "${directory}")" != "${config['private_dir_mode']}" ] ; then
-            chmod "${config['private_dir_mode']}" "${directory}"
-        fi
-        if [ "$(stat -c %G "${directory}")" != "${dir_group}" ] ; then
-            chgrp "${dir_group}" "${directory}"
-        fi
+        mkdir -p "${directory}"
+        chmod_idempotent "${config['private_dir_mode']}" "${directory}"
+        chgrp_idempotent "${dir_group}" "${directory}"
         if type setfacl > /dev/null 2>&1 ; then
             local private_dir_acl_groups_x=( $(echo "${config['private_dir_acl_groups_x']}" | tr "/" " ") )
             if [ ${#private_dir_acl_groups_x[@]} -ne 0 ] ; then
@@ -962,13 +967,9 @@ create_private_noacl_directories () {
     local directories=( ${@} )
 
     for directory in ${directories[@]} ; do
-        test -d "${directory}" || mkdir -p -m ${config['private_dir_mode']} "${directory}"
-        if [ "$(stat -c %a "${directory}")" != "${config['private_dir_mode']}" ] ; then
-            chmod "${config['private_dir_mode']}" "${directory}"
-        fi
-        if [ "$(stat -c %G "${directory}")" != "${dir_group}" ] ; then
-            chgrp "${dir_group}" "${directory}"
-        fi
+        mkdir -p "${directory}"
+        chmod_idempotent "${config['private_dir_mode']}" "${directory}"
+        chgrp_idempotent "${dir_group}" "${directory}"
     done
 
 }
