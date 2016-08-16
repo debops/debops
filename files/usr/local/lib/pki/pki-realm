@@ -42,12 +42,15 @@ wait_for_pid () {
     local pidfile="${1}"
 
     if [ -n "${pidfile}" ] && [ -r "${pidfile}" ] ; then
-        local wait_pid="$(< "${pidfile}")"
+        local wait_pid
+        wait_pid="$(< "${pidfile}")"
         while kill -0 "${wait_pid}" > /dev/null 2>&1 ; do
             log_message "Waiting for PID ${wait_pid} to finish"
             sleep $(( ( RANDOM % 30 ) + 5 ))
         done
-        test -f "${pidfile}" && rm -f "${pidfile}" || true
+        if [ -f "${pidfile}" ] ; then
+            rm -f "${pidfile}"
+        fi
     fi
 }
 
