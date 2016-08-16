@@ -4,7 +4,7 @@
 # Copyright (C) 2016 Maciej Delmanowski <drybjed@gmail.com>
 # Homepage: https://debops.org/
 
-set -eu -o pipefail
+set -o nounset -o pipefail -o errexit
 
 umask 022
 
@@ -263,13 +263,6 @@ initialize_environment () {
     config["private_file_acl_groups_r"]=""
 
     test -d "${config['pki_root']}" || mkdir -p -m "${config['public_dir_mode']}" "${config['pki_root']}"
-}
-
-print_usage () {
-    cat << EOF
-Usage: ${script_name} <command> [parameters]
-EOF
-
 }
 
 check_openssl_key_req_match () {
@@ -1341,9 +1334,9 @@ check_files () {
 
 }
 
-# Select the preferred authority in a given PKI realm (external, acme,
-# internal) and check all of the files, make sure that everything is in order
 process_public_files () {
+    # Select the preferred authority in a given PKI realm (external, acme,
+    # internal) and check all of the files, make sure that everything is in order
 
     local authority_preference=( $(echo "${config['pki_authority_preference']}" | tr "/" " ") )
 
@@ -2381,7 +2374,12 @@ sub_schedule () {
     fi
 }
 
-subcommand=""
+print_usage () {
+    cat << EOF
+Usage: ${script_name} <command> [parameters]
+EOF
+
+}
 
 initialize_environment
 
