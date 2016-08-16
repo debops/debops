@@ -157,4 +157,3 @@ it reloads the :program:`nginx` daemon so that new certificate can be activated.
        done
 
    fi
-
