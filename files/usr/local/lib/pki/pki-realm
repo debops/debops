@@ -369,10 +369,12 @@ enter_realm () {
     local realm="${1}"
     local config_file="${2:-config/realm.conf}"
 
-    test -d "${config['pki_hooks']}" || mkdir -p -m "${config['public_dir_mode']}" "${config['pki_hooks']}"
+    mkdir -p "${config['pki_hooks']}"
+    chmod_idempotent "${config['public_dir_mode']}" "${config['pki_hooks']}"
 
     if [ ! -d "${config['pki_realms']}/${realm}" ] ; then
-        mkdir -p -m "${config['public_dir_mode']}" "${config['pki_realms']}/${realm}"
+        mkdir -p "${config['pki_realms']}/${realm}"
+        chmod "${config['public_dir_mode']}" "${config['pki_realms']}/${realm}"
         state+=('new-realm')
     fi
 
@@ -2399,7 +2401,7 @@ if [ $# -gt 0 ] ; then
         case "${subcommand}" in
             init|new-realm|run|schedule)
                 shift
-                sub_${subcommand} "${@}"
+                "sub_${subcommand}" "${@}"
                 ;;
 
             *)
