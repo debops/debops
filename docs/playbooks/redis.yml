@@ -1,0 +1,28 @@
+---
+
+- name: Manage Redis server
+  hosts: [ 'debops_service_redis' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.redis
+      tags: [ 'role::redis' ]
+
+
+- name: Manage Redis sentinel server
+  hosts: [ 'debops_service_redis_sentinel' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.redis
+      tags: [ 'role::redis' ]
