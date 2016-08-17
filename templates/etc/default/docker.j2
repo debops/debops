@@ -54,5 +54,10 @@ DOCKER_OPTS='{{ docker__tpl_options | join(" ") }}'
 #DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"
 {% endif %}
 
+{% if inventory__environment.http_proxy %}
+export http_proxy={{ inventory__environment.http_proxy }}
+export https_proxy={{ inventory__environment.https_proxy }}
+export no_proxy={{ inventory__environment.no_proxy }}
+{% endif %}
 # This is also a handy place to tweak where Docker's temporary files go.
 #export TMPDIR="/mnt/bigdrive/docker-tmp"

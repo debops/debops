@@ -16,6 +16,20 @@ The current role maintainer is drybjed.
 
 .. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.2.0...master
 
+Added
+~~~~~
+
+- Support for dockerd (docker-engine 1.12). [tallandtree]
+
+- Support for live restore (:any:`docker__live_restore`) of docker daemon and 
+  other options. [tallandtree]
+
+Changed
+~~~~~~~
+
+- Systemd configuration improved. [tallandtree]
+  
+- Support http_proxy, https_proxy and no_proxy for Upstart systems. [tallandtree]
 
 `debops.docker v0.2.0`_ - 2016-07-20
 ------------------------------------

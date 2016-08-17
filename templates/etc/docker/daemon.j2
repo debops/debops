@@ -1,0 +1,65 @@
+{# docker daemon options for systemd managed systems #}
+{
+{% set docker__tpl_options = [] %}
+{% if docker__bridge|d() -%}
+{%   set _ = docker__tpl_options.append("\"bridge\": " + "\""+ docker__bridge + "\"") %}
+{%- endif %}
+{% if docker__live_restore|d() -%}
+{%   set lv_value = 'true' if docker__live_restore else 'false' %}
+{%   set _  = docker__tpl_options.append("\"live-restore\": " + lv_value ) %}
+{% endif -%}
+{% if docker__graph|d() -%}
+{%   set _ = docker__tpl_options.append("\"graph\": " + "\""+ docker__graph + "\"") %}
+{%- endif %}
+{% if docker__fixed_cidr|d() -%}
+{%   set _ = docker__tpl_options.append("\"fixed-cidr\": " + "\"" + docker__fixed_cidr + "\"") %}
+{%- endif %}
+{% if docker__dns_nameserver|d() -%}
+{%     set _ = docker__tpl_options.append("\"dns\": [\"" + docker__dns_nameserver|join('\", \"') + "\"]") %} 
+{%- endif %}
+{% if docker__dns_search|d() -%}
+{%     set _ = docker__tpl_options.append("\"dns-search\": [\"" + docker__dns_search|join('\", \"') + "\"]") %} 
+{%- endif %}
+{#  Not sure if this is required. Needs more testing. #}
+{% if docker__listen|d() and docker__register_version | version_compare('1.12', '>=') -%}
+{%     set _ = docker__tpl_options.append("\"hosts\": [\"" + docker__listen|join('\", \"') + "\"]") %} 
+{%- endif %}
+{% if docker__pki|d() | bool -%}
+{%   set _ = docker__tpl_options.append("\"tlsverify\": true") %}
+{%   set _ = docker__tpl_options.append("\"tlscacert\": \"" + docker__pki_path + "/" + docker__pki_realm + "/" + docker__pki_ca + "\"") %}
+{%   set _ = docker__tpl_options.append("\"tlscert\": \"" + docker__pki_path + "/" + docker__pki_realm + "/" + docker__pki_crt + "\"") %}
+{%   set _ = docker__tpl_options.append("\"tlskey\": \"" + docker__pki_path + "/" + docker__pki_realm + "/" + docker__pki_key + "\"") %}
+{%- endif %}
+{% if docker__tpl_options -%}
+{%   for option in docker__tpl_options %}
+    {{ option }}
+{%-     if not loop.last %}
+, 
+{%      endif -%}
+{%   endfor %}
+{%- endif %}
+{% if docker__debug|d() %}
+{%    if docker__tpl_options -%}
+, 
+{%    endif %}
+    "runtimes": {
+		"custom": {
+			"runtimeArgs": [
+				        "--debug"
+			               ]
+		          }
+                }
+{%- endif %}
+{% if docker__labels|d() -%}
+{%   if docker__tpl_options or docker__debug %}
+, 
+{%  endif %}
+{%   set comma = joiner(", ") %}
+    "labels": [
+{%-   for key, value in docker__labels.iteritems() %}{{ comma() }}
+         "{{ key }}={{ value }}"
+{%-   endfor %}
+
+              ]
+{% endif %}
+}
