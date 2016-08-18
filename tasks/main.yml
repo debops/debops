@@ -71,7 +71,7 @@
 
 - name: Configure Docker systemd options
   template:
-    src: 'etc/docker/daemon.j2'
+    src: 'etc/docker/daemon.json.j2'
     dest: '/etc/docker/daemon.json'
     owner: 'root'
     group: 'root'
@@ -104,8 +104,8 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (ansible_service_mgr == 'systemd') and 
-      (inventory__environment is defined and inventory__environment.http_proxy is defined)
+  when: (ansible_service_mgr == 'systemd' and 
+        (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
   tags: [ 'role::docker:config' ]
 
 - name: Install Debian systemd service unit
@@ -127,15 +127,15 @@
     group: 'root'
     mode: '0644'
   register: docker__register_systemd_proxy_present
-  when: (ansible_service_mgr == 'systemd') and
-    (inventory__environment is defined and inventory__environment.http_proxy is defined)
+  when: (ansible_service_mgr == 'systemd' and 
+        (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
   tags: [ 'role::docker:config' ]
 
 - name: Remove Docker proxy configuration
   file:  path='/etc/systemd/system/docker.service.d/http-proxy.conf' state=absent
   register: docker__register_systemd_proxy_absent
-  when: (ansible_service_mgr == 'systemd') and
-    (inventory__environment is not defined or inventory__environment.http_proxy is not defined)
+  when: (ansible_service_mgr == 'systemd' and not
+        (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
   tags: [ 'role::docker:config' ]
 
 - name: Reload systemd daemons

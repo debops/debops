@@ -143,6 +143,24 @@ docker__custom_ports: []
 # Docker configuration options [[[
 # --------------------------------
 
+# .. envvar:: docker__env_http_proxy [[[
+#
+# Http Proxy settings for the docker daemon
+docker__env_http_proxy: '{{ ansible_env.http_proxy | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__env_https_proxy [[[
+#
+# Https Proxy settings for the docker daemon
+docker__env_https_proxy: '{{ ansible_env.https_proxy | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__env_no_proxy [[[
+#
+# No Proxy settings for the docker daemon
+docker__env_no_proxy: '{{ ansible_env.no_proxy | d() }}'
+
+                                                                   # ]]]
 # .. envvar:: docker__listen [[[
 #
 # List of host connections configured in the Docker daemon (``--host`` parameter).
@@ -200,7 +218,8 @@ docker__live_restore: False
 #    docker__graph: /data/docker
 #
 
-docker__graph: []
+docker__graph: "/var/lib/docker"
+
                                                                    # ]]]
 # .. envvar:: docker__options [[[
 #
