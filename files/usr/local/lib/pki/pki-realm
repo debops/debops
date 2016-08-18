@@ -68,7 +68,8 @@ create_lock () {
     fi
 
     # Exclusive lock succeeded
-    trap 'clean_up ${pidfile}' EXIT
+    # shellcheck disable=SC2064
+    trap "clean_up ${pidfile}" EXIT
 }
 
 # Inlined in the following scripts: pki-authority, pki-realm {{{
