@@ -40,6 +40,9 @@ Fixed
   that was unsupported in modern Python versions, the call is now supported
   on both 2.x and 3.x. [yuvadm]
 
+- Don’t use ``MD5`` or other hash functions to sanitize STDOUT of programs for later
+  comparison when a simple ``base64`` encoding is enough. [ypid_]
+
 
 `debops.pki v0.2.13`_ - 2016-07-07
 ----------------------------------
@@ -64,7 +67,7 @@ Changed
 Changed
 ~~~~~~~
 
-- The session token is now generated using ``sha256`` hashing algorithm instead
+- The session token is now generated using ``SHA-256`` hashing algorithm instead
   of ``MD5``. [drybjed_]
 
 - Move the copyright information to a ``COPYRIGHT`` file in the main directory.

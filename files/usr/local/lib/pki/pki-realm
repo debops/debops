@@ -299,13 +299,13 @@ check_openssl_key_req_match () {
     local check_key="${1}"
     local check_req="${2}"
 
-    local md5_key
-    local md5_req
+    local key_modulus
+    local req_modulus
 
-    md5_key="$(openssl rsa -noout -modulus -in "${check_key}" | md5sum | awk '{print $1}')"
-    md5_req="$(openssl req -noout -modulus -in "${check_req}" | md5sum | awk '{print $1}')"
+    key_modulus="$(openssl rsa -noout -modulus -in "${check_key}" | base64)"
+    req_modulus="$(openssl req -noout -modulus -in "${check_req}" | base64)"
 
-    if [ "${md5_key}" = "${md5_req}" ] ; then
+    if [ "${key_modulus}" = "${req_modulus}" ] ; then
         return 0
     else
         return 1
@@ -317,13 +317,13 @@ check_openssl_key_crt_match () {
     local check_crt="${2}"
 
     if [ -r "${check_key}" ] && [ -r "${check_crt}" ] ; then
-        local md5_key
-        local md5_crt
+        local key_modulus
+        local crt_modulus
 
-        md5_key="$(openssl rsa  -noout -modulus -in "${check_key}" | md5sum | awk '{print $1}')"
-        md5_crt="$(openssl x509 -noout -modulus -in "${check_crt}" | md5sum | awk '{print $1}')"
+        key_modulus="$(openssl rsa  -noout -modulus -in "${check_key}" | base64)"
+        crt_modulus="$(openssl x509 -noout -modulus -in "${check_crt}" | base64)"
 
-        if [ "${md5_key}" = "${md5_crt}" ] ; then
+        if [ "${key_modulus}" = "${crt_modulus}" ] ; then
             return 0
         else
             return 1
