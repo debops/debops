@@ -556,10 +556,10 @@ EOF
             local domains=( $(echo "${req_domains}" | tr "/" " ") )
             local subdomains=( $(echo "${req_subdomains}" | tr "/" " ") )
 
-            local san_ip=(    $( echo "${req_san}" | tr "|" "\n" | awk '/^[Ii][Pp]:/ {print;}' | sed -e 's/^[Ii][Pp]://' | xargs ) )
-            local san_dns=(   $( echo "${req_san}" | tr "|" "\n" | awk '/^[Dd][Nn][Ss]:/ {print;}' | sed -e 's/^[Dd][Nn][Ss]://' | xargs ) )
-            local san_uri=(   $( echo "${req_san}" | tr "|" "\n" | awk '/^[Uu][Rr][Ii]:/ {print;}' | sed -e 's/^[Uu][Rr][Ii]://' | xargs ) )
-            local san_email=( $( echo "${req_san}" | tr "|" "\n" | awk '/^[Ee][Mm][Aa][Ii][Ll]:/ {print;}' | sed -e 's/^[Ee][Mm][Aa][Ii][Ll]://' | xargs ) )
+            local san_ip=(    $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^ip://pi'    | xargs ) )
+            local san_dns=(   $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^dns://pi'   | xargs ) )
+            local san_uri=(   $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^uri://pi'   | xargs ) )
+            local san_email=( $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^email://pi' | xargs ) )
 
             local all_dns=( ${domains[@]:-} )
 
@@ -643,10 +643,10 @@ EOF
         local domains=( $(echo "${req_domains}" | tr "/" " ") )
         local subdomains=( $(echo "${req_subdomains}" | tr "/" " ") )
 
-        local san_ip=(    $( echo "${req_san}" | tr "|" "\n" | awk '/^[Ii][Pp]:/ {print;}' | sed -e 's/^[Ii][Pp]://' | xargs ) )
-        local san_dns=(   $( echo "${req_san}" | tr "|" "\n" | awk '/^[Dd][Nn][Ss]:/ {print;}' | sed -e 's/^[Dd][Nn][Ss]://' | xargs ) )
-        local san_uri=(   $( echo "${req_san}" | tr "|" "\n" | awk '/^[Uu][Rr][Ii]:/ {print;}' | sed -e 's/^[Uu][Rr][Ii]://' | xargs ) )
-        local san_email=( $( echo "${req_san}" | tr "|" "\n" | awk '/^[Ee][Mm][Aa][Ii][Ll]:/ {print;}' | sed -e 's/^[Ee][Mm][Aa][Ii][Ll]://' | xargs ) )
+        local san_ip=(    $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^ip://pi'    | xargs ) )
+        local san_dns=(   $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^dns://pi'   | xargs ) )
+        local san_uri=(   $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^uri://pi'   | xargs ) )
+        local san_email=( $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^email://pi' | xargs ) )
 
         local all_dns=( ${domains[@]:-} )
 
