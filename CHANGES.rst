@@ -21,8 +21,8 @@ Added
 
 - Support for dockerd (docker-engine 1.12). [tallandtree]
 
-- Support for live restore (:any:`docker__live_restore`) of docker daemon and 
-  other options. [tallandtree]
+- Support for live restore (:any:`docker__live_restore`) of docker daemon (docker-engine 1.12) 
+  and other options. [tallandtree]
 
 Changed
 ~~~~~~~

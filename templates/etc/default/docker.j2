@@ -40,6 +40,9 @@
 {%     set _ = docker__tpl_options.append("--label " + key + '="' + value + '"') %}
 {%   endfor %}
 {% endif %}
+{% if docker__debug|d() | bool %}
+{%   set _ = docker__tpl_options.append("--debug=true") %}
+{% endif %}
 {% if docker__options|d() %}
 {%   for option in docker__options %}
 {%     if option %}
