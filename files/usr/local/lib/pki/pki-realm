@@ -1249,11 +1249,19 @@ check_files () {
 
             if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
-                "create_${library}_config" "selfsigned/${library}.conf" selfsigned "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                "create_${library}_config" "selfsigned/${library}.conf" selfsigned \
+                    "${config['subject']:-${config['pki_default_subject']}}" \
+                    "${config['domains']:-${config['pki_default_domain']}}" \
+                    "${config['subdomains']:-${config['pki_default_subdomains']}}" \
+                    "${config['subject_alt_names']:-}"
 
             elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
-                "create_${library}_config" "selfsigned/${library}.conf" selfsigned "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                "create_${library}_config" "selfsigned/${library}.conf" selfsigned \
+                    "${config['subject']:-cn=${name}}" \
+                    "${config['domains']:-${name:-${config['pki_default_domain']}}}" \
+                    "${config['subdomains']:-${config['pki_default_subdomains']}}" \
+                    "${config['subject_alt_names']:-}"
 
             fi
 
