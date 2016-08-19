@@ -276,9 +276,9 @@ existence of the private keys and certificates can function correctly at all
 times.
 
 The :program:`pki-realm` script checks which of these directories have signed
-and valid certificates in order (``external``, ``acme``, ``internal``,
-``selfsigned``), and the first valid one is used as the "active" directory.
-Files from the active directory are symlinked to the :file:`public/` directory.
+and valid certificates in order of :envvar:`pki_authority_preference`, and the
+first valid one is used as the "active" directory.  Files from the active
+directory are symlinked to the :file:`public/` directory.
 
 The :file:`public/` directory holds the currently active certificates which are
 symlinks to the real certificate files in one of the active directories mentioned above.
@@ -393,7 +393,7 @@ there:
 
 When all of the requests have been processed, Ansible copies the content of the
 directories to remote hosts. The content of the :file:`by-host/` directory is copied
-first and overwrite all files that are present on remote hosts, the
+first and overwrites all files that are present on remote hosts, the
 :file:`by-group/` directory content is copied only when the corresponding files
 are not present. This allows the administrator to provide the shared scripts or
 private keys/certificates as needed, per host, per group or for all managed

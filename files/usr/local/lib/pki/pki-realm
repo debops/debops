@@ -427,6 +427,7 @@ run_external_script () {
 
         if [ ! -r private/realm_key.pem ] ; then
             generate_${config['pki_library']}_rsa_realm_key private/realm_key.pem
+# FIXME: Redundancy! Why?
             if [ ! -r private/key.pem ] ; then
                 install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key.pem.tmp
                 if type setfacl > /dev/null 2>&1 ; then
