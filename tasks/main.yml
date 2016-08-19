@@ -17,6 +17,23 @@
     update_cache: True
   when: docker__upstream|d() | bool
 
+- name: Remove other version if upstream is modified
+  apt:
+    name: '{{ item }}'
+    state: 'absent'
+    install_recommends: False
+  register: docker__register_other_version_removed
+  with_flattened:
+    - '{{ "docker.io" if docker__upstream|d() else "docker-engine" }}'
+
+- name: Remove custom systemd startup file if present
+  file:
+    path: '/etc/systemd/system/docker.service'
+    state: 'absent'
+  tags: [ 'role::docker:config' ]
+  when: (ansible_service_mgr == 'systemd' and 
+         docker__register_other_version_removed|changed)
+
 - name: Install required packages
   apt:
     name: '{{ item }}'
@@ -60,6 +77,32 @@
     mode: '0644'
   notify: [ 'Restart docker' ]
   tags: [ 'role::docker:config' ]
+  when: (ansible_service_mgr != 'systemd' or docker__register_version.stdout | version_compare('1.10', '<'))
+
+- name: Remove Upstart docker configuration file
+  file:
+    path: '/etc/default/docker'
+    state: 'absent'
+  tags: [ 'role::docker:config' ]
+  when: (ansible_service_mgr == 'systemd' and docker__register_version.stdout | version_compare('1.10', '>=')) 
+
+- name: Configure Docker systemd options
+  template:
+    src: 'etc/docker/daemon.json.j2'
+    dest: '/etc/docker/daemon.json'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart docker' ]
+  tags: [ 'role::docker:config' ]
+  when: (ansible_service_mgr == 'systemd' and docker__register_version.stdout | version_compare('1.10', '>='))
+
+- name: Remove systemd docker configuration file
+  file:
+    path: '/etc/docker/daemon.json'
+    state: 'absent'
+  tags: [ 'role::docker:config' ]
+  when: (ansible_service_mgr != 'systemd' or docker__register_version.stdout | version_compare('1.10', '<')) 
 
 - name: Make sure that systemd directory exists
   file:
@@ -68,7 +111,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: docker__upstream|d() | bool
+  when: ansible_service_mgr == 'systemd'
   tags: [ 'role::docker:config' ]
 
 - name: Make sure that docker.service.d directory exists
@@ -78,8 +121,8 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (docker__upstream|d() | bool) and 
-      (inventory__environment is defined and inventory__environment.http_proxy is defined)
+  when: (ansible_service_mgr == 'systemd' and 
+        (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
   tags: [ 'role::docker:config' ]
 
 - name: Install Debian systemd service unit
@@ -90,7 +133,7 @@
     group: 'root'
     mode: '0644'
   register: docker__register_systemd_service
-  when: docker__upstream|d() | bool
+  when: ansible_service_mgr == 'systemd'
   tags: [ 'role::docker:config' ]
 
 - name: Configure Docker proxy
@@ -101,15 +144,15 @@
     group: 'root'
     mode: '0644'
   register: docker__register_systemd_proxy_present
-  when: (docker__upstream|d() | bool) and 
-    (inventory__environment is defined and inventory__environment.http_proxy is defined)
+  when: (ansible_service_mgr == 'systemd' and 
+        (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
   tags: [ 'role::docker:config' ]
 
 - name: Remove Docker proxy configuration
   file:  path='/etc/systemd/system/docker.service.d/http-proxy.conf' state=absent
   register: docker__register_systemd_proxy_absent
-  when: (docker__upstream|d() | bool) and 
-    (inventory__environment is not defined or inventory__environment.http_proxy is not defined)
+  when: (ansible_service_mgr == 'systemd' and not
+        (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
   tags: [ 'role::docker:config' ]
 
 - name: Reload systemd daemons

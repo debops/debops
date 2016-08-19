@@ -40,6 +40,16 @@
 {%     set _ = docker__tpl_options.append("--label " + key + '="' + value + '"') %}
 {%   endfor %}
 {% endif %}
+{% if docker__debug|d() | bool %}
+{%   set _ = docker__tpl_options.append("--debug=true") %}
+{% endif %}
+{% if docker__registry_mirrors|d() %}
+{%   for registry_mirror in docker__registry_mirrors %}
+{%     if registry_mirror %}
+{%       set _ = docker__tpl_options.append("--registry-mirror" + " " + registry_mirror) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
 {% if docker__options|d() %}
 {%   for option in docker__options %}
 {%     if option %}
@@ -54,5 +64,14 @@ DOCKER_OPTS='{{ docker__tpl_options | join(" ") }}'
 #DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"
 {% endif %}
 
+{% if docker__env_http_proxy|d() %}
+export http_proxy={{ docker__env_http_proxy }}
+{% endif %}
+{% if docker__env_https_proxy|d() %}
+export https_proxy={{ docker__env_https_proxy }}
+{% endif %}
+{% if docker__env_no_proxy|d() %}
+export no_proxy={{ docker__env_no_proxy }}
+{% endif %}
 # This is also a handy place to tweak where Docker's temporary files go.
 #export TMPDIR="/mnt/bigdrive/docker-tmp"
