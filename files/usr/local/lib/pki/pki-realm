@@ -183,6 +183,7 @@ initialize_environment () {
 
     config["pki_dhparam"]="false"
     config["dhparam_file"]=""
+    config["realm_key_size"]="2048"
 
     config["internal_expiration_days"]="14"
     config["internal_expiration_seconds"]="$(( 60 * 60 * 24 * ${config['internal_expiration_days']} ))"
@@ -800,7 +801,7 @@ selfsign_gnutls_request () {
 generate_openssl_rsa_realm_key () {
 
     local key_file="${1:-private/realm_key.pem}"
-    local key_size="${2:-2048}"
+    local key_size="${2:-${config['realm_key_size']}}"
     local key_group="${3:-${config['realm_file_group']}}"
 
     test -r "${key_file}" || openssl genrsa -out "${key_file}.tmp" "${key_size}"
@@ -819,7 +820,7 @@ generate_openssl_rsa_realm_key () {
 generate_gnutls_rsa_realm_key () {
 
     local key_file="${1:-private/realm_key.pem}"
-    local key_size="${2:-2048}"
+    local key_size="${2:-${config['realm_key_size']}}"
     local key_group="${3:-${config['realm_file_group']}}"
 
     if ! [ -r "${key_file}" ] ; then
@@ -845,7 +846,7 @@ generate_gnutls_rsa_realm_key () {
 generate_openssl_rsa_private_key () {
 
     local key_file="${1:-private/key.pem}"
-    local key_size="${2:-2048}"
+    local key_size="${2:-${config['realm_key_size']}}"
     local key_group="${3:-${config['private_file_group']}}"
     local key_acl="${4:-true}"
 
@@ -877,7 +878,7 @@ generate_openssl_rsa_private_key () {
 generate_gnutls_rsa_private_key () {
 
     local key_file="${1:-private/key.pem}"
-    local key_size="${2:-2048}"
+    local key_size="${2:-${config['realm_key_size']}}"
     local key_group="${3:-${config['private_file_group']}}"
     local key_acl="${4:-true}"
 
@@ -2123,6 +2124,12 @@ sub_init () {
                         ;;
                     dhparam-file=*)
                         args["dhparam_file"]=${OPTARG#*=}
+                        ;;
+                    realm-key-size)
+                        args["realm_key_size"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
+                        ;;
+                    realm-key-size=*)
+                        args["realm_key_size"]=${OPTARG#*=}
                         ;;
                     acme)
                         args["pki_acme"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))

@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.pki master: https://github.com/debops/ansible-pki/compare/v0.2.13...master
 
+Added
+~~~~~
+
+- Reintroduce the possibility to configure RSA key sizes using
+  :envvar:`pki_realm_key_size` which was removed in v0.2.0. [ypid_]
+
 Changed
 ~~~~~~~
 
