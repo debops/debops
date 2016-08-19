@@ -43,6 +43,20 @@
 {% if docker__debug|d() | bool %}
 {%   set _ = docker__tpl_options.append("--debug=true") %}
 {% endif %}
+{% if docker__registry_mirrors|d() %}
+{%   for registry_mirror in docker__registry_mirrors %}
+{%     if registry_mirror %}
+{%       set _ = docker__tpl_options.append("--registry-mirror" + " " + registry_mirror) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if docker__insecure_registries|d() %}
+{%   for insecure_registry in docker__insecure_registries %}
+{%     if insecure_registry %}
+{%       set _ = docker__tpl_options.append("--insecure-registry" + " " + insecure_registry) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
 {% if docker__options|d() %}
 {%   for option in docker__options %}
 {%     if option %}

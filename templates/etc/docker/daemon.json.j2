@@ -43,12 +43,25 @@
 {%  if docker__debug|d() -%}
 {%    set _ = docker__tpl_options.update({"debug": docker__debug}) %}
 {%- endif %}
+{%  if docker__registry_mirrors|d() -%}
+{%    set docker__tpl_registry_mirrors = [] %}
+{%    for element in docker__registry_mirrors -%}
+{%      set _ = docker__tpl_registry_mirrors.append(element) %} 
+{%-   endfor %}
+{%    set _ = docker__tpl_options.update({"registry-mirrors": docker__tpl_registry_mirrors}) %} 
+{%- endif %}
+{%  if docker__insecure_registries|d() -%}
+{%    set docker__tpl_insecure_registries = [] %}
+{%    for element in docker__insecure_registries -%}
+{%      set _ = docker__tpl_insecure_registries.append(element) %} 
+{%-   endfor %}
+{%    set _ = docker__tpl_options.update({"insecure-registries": docker__tpl_insecure_registries}) %} 
+{%- endif %}
 {%  if docker__labels|d() -%}
 {%    set docker__tpl_labels = [] %}
 {%    for key, value in docker__labels.iteritems() -%}
 {%      set _ = docker__tpl_labels.append(key+"="+value) %}
 {%-   endfor %}
-{%    set _ = docker__tpl_labels.append("debops.ccv.version="+docker__register_version.stdout) %}
 {%    set _ = docker__tpl_options.update({"labels": docker__tpl_labels}) %}
 {%- endif %}
 {{ docker__tpl_options | to_nice_json }}
