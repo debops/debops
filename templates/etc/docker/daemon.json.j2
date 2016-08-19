@@ -50,13 +50,6 @@
 {%-   endfor %}
 {%    set _ = docker__tpl_options.update({"registry-mirrors": docker__tpl_registry_mirrors}) %} 
 {%- endif %}
-{%  if docker__insecure_registries|d() -%}
-{%    set docker__tpl_insecure_registries = [] %}
-{%    for element in docker__insecure_registries -%}
-{%      set _ = docker__tpl_insecure_registries.append(element) %} 
-{%-   endfor %}
-{%    set _ = docker__tpl_options.update({"insecure-registries": docker__tpl_insecure_registries}) %} 
-{%- endif %}
 {%  if docker__labels|d() -%}
 {%    set docker__tpl_labels = [] %}
 {%    for key, value in docker__labels.iteritems() -%}

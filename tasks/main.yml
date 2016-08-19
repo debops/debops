@@ -21,13 +21,10 @@
   apt:
     name: '{{ item }}'
     state: 'absent'
-    autoremove: True
-    force: True
     install_recommends: False
   register: docker__register_other_version_removed
   with_flattened:
     - '{{ "docker.io" if docker__upstream|d() else "docker-engine" }}'
-  ignore_errors: True
 
 - name: Remove custom systemd startup file if present
   file:
@@ -35,7 +32,7 @@
     state: 'absent'
   tags: [ 'role::docker:config' ]
   when: (ansible_service_mgr == 'systemd' and 
-         docker__register_other_version_removed.changed)
+         docker__register_other_version_removed|changed)
 
 - name: Install required packages
   apt:

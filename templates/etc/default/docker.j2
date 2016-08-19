@@ -50,13 +50,6 @@
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{% if docker__insecure_registries|d() %}
-{%   for insecure_registry in docker__insecure_registries %}
-{%     if insecure_registry %}
-{%       set _ = docker__tpl_options.append("--insecure-registry" + " " + insecure_registry) %}
-{%     endif %}
-{%   endfor %}
-{% endif %}
 {% if docker__options|d() %}
 {%   for option in docker__options %}
 {%     if option %}
