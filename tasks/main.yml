@@ -322,6 +322,7 @@
            --cert-sign-days "{{ item.cert_sign_days | d('') }}"
            --system-ca "{{ (item.system_ca | d(True)) | bool | lower }}"
            --alt-authority "{{ item.alt_authority | d('') }}"
+           --key-size "{{ item.key_size | d('') }}"
   args:
     chdir: '{{ secret + "/pki" }}'
     creates: '{{ secret + "/pki/authorities/" + item.name + "/subject/cert.pem" }}'

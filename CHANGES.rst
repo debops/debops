@@ -20,7 +20,8 @@ Added
 ~~~~~
 
 - Reintroduce the possibility to configure RSA key sizes using
-  :envvar:`pki_realm_key_size` which was removed in v0.2.0. [ypid_]
+  :envvar:`pki_realm_key_size` (realms) and ``pki_ca_*_key_size`` (CAs) which
+  was removed in v0.2.0. [ypid_]
 
 Changed
 ~~~~~~~
