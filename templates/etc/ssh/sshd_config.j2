@@ -109,6 +109,7 @@ RSAAuthentication yes
 PubkeyAuthentication yes
 
 {% if sshd__authorized_keys_lookup|d() and
+      sshd__authorized_keys_lookup|bool and
       sshd__register_version.stdout|d() and
       sshd__register_version.stdout | version_compare('6.2', '>=') %}
 AuthorizedKeysCommand /etc/ssh/authorized_keys_lookup
