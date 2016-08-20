@@ -23,7 +23,7 @@
     ANSIBLE_SSHD_LDAP_BINDPW: '{{ sshd__ldap_bind_pw }}'
   shell: echo -n ${ANSIBLE_SSHD_LDAP_BINDPW} > {{ sshd__ldap_bind_pw_file }} ;
          chmod 0640 {{ sshd__ldap_bind_pw_file }} ;
-         chown root.{{ sshd__authorized_keys_lookup_user }} {{ sshd__ldap_bind_pw_file }}
+         chown root.{{ sshd__authorized_keys_lookup_group }} {{ sshd__ldap_bind_pw_file }}
   args:
     creates: '{{ sshd__ldap_bind_pw_file }}'
   when: sshd__authorized_keys_lookup_type|d() and
