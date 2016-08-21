@@ -13,7 +13,7 @@ You can use `debops.lxc` role to create and manage Linux Containers with
 different configurations. These containers can be used on an external
 interface (DHCP server is recommended) or on an internal NAT interface
 (network will be configured by a specific play in DebOps, using
-`debops.dnsmasq` and `debops.nat` roles).
+`debops.dnsmasq` and `debops.subnetwork` roles).
 
 ### Installation
 

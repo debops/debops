@@ -52,7 +52,7 @@ lxc_interface_internal: 'br1'
 # .. envvar:: lxc_interface_nat
 #
 # Configuration of default network interface to use for "NATted" containers.
-# For setting up a NAT have a look at the ``debops.nat`` role.
+# For setting up a NAT have a look at the ``debops.subnetwork`` role.
 lxc_interface_nat: 'br2'
 
 
@@ -74,7 +74,7 @@ lxc_capabilities_drop: [ 'mknod', 'sys_admin', 'sys_rawio', 'syslog', 'wake_alar
 
 # .. envvar:: lxc_template_autostart
 #
-# Mark new containers to be started automatically after reboot.
+# Mark new containers start automatically after reboot.
 lxc_template_autostart: True
 
 
@@ -178,9 +178,10 @@ lxc_template_debootstrap_release: '{{ ansible_distribution_release }}'
 
 # .. envvar:: lxc_template_security_upgrade
 #
-# Automatically add ``security.debian.org`` repository and perform :command:`apt-get
-# upgrade` during container creation to get the latest security updates.
-# Container creation takes longer, but the resulting system is more secure.
+# Automatically add the ``security.debian.org`` repository and perform
+# :command:`apt-get upgrade` during container creation to get the latest
+# security updates.  Container creation takes longer, but the resulting system
+# is more up-to-date.
 lxc_template_security_upgrade: True
 
 
@@ -371,4 +372,3 @@ lxc_default_template: 'debops'
 #         template: 'debian'
 #
 lxc_containers: []
-
