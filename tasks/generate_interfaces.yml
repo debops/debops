@@ -53,8 +53,7 @@
     state: 'absent'
   with_items: '{{ ifupdown_interfaces }}'
   register: ifupdown_register_interfaces_removator
-  when: ((item.iface is defined and item.iface) and
-         (item.delete is defined and item.delete | bool))
+  when: ((item.iface is defined and item.iface) and (item.delete|d() | bool))
 
 - name: Generate interface configuration
   template:
@@ -65,15 +64,14 @@
     mode: '0644'
   with_items: '{{ ifupdown_interfaces }}'
   register: ifupdown_register_interfaces_generator
-  when: ((item.iface is defined and item.iface) and
-         (item.delete is undefined or not item.delete | bool))
+  when: ((item.iface is defined and item.iface) and not (item.delete|d() | bool))
 
 - name: Create random temporary directory for ifupdown data
   command: mktemp -d
   register: ifupdown_register_tempdir
-  when: (((ifupdown_register_interfaces_removator is defined and ifupdown_register_interfaces_removator.changed) or
-          (ifupdown_register_interfaces_generator is defined and ifupdown_register_interfaces_generator.changed)) and
-         (ifupdown_reconfigure is defined and ifupdown_reconfigure))
+  when: ((ifupdown_register_interfaces_removator|changed or
+          ifupdown_register_interfaces_generator|changed) and
+         ifupdown_reconfigure|bool)
 
 - name: Generate list of changed interfaces in temporary file
   template:
@@ -82,9 +80,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: (((ifupdown_register_interfaces_removator is defined and ifupdown_register_interfaces_removator.changed) or
-          (ifupdown_register_interfaces_generator is defined and ifupdown_register_interfaces_generator.changed)) and
-         (ifupdown_reconfigure is defined and ifupdown_reconfigure))
+  when: ((ifupdown_register_interfaces_removator|changed or
+          ifupdown_register_interfaces_generator|changed) and
+         ifupdown_reconfigure|bool)
 
 - name: Enable/disable automatic interface reconfiguration
   file:
@@ -103,13 +101,12 @@
     group: 'root'
     mode: '0700'
   notify: [ 'Apply ifupdown configuration' ]
-  when: (((ifupdown_register_interfaces_removator is defined and ifupdown_register_interfaces_removator.changed) or
-          (ifupdown_register_interfaces_generator is defined and ifupdown_register_interfaces_generator.changed)) and
-         ((ifupdown_reconfigure is defined and ifupdown_reconfigure) and (ifupdown_apply_config is defined and not ifupdown_apply_config | bool)))
+  when: ((ifupdown_register_interfaces_removator|changed or
+          ifupdown_register_interfaces_generator|changed) and
+         (ifupdown_reconfigure|bool and (ifupdown_apply_config is defined and not ifupdown_apply_config | bool)))
 
 - name: Reconfigure network interfaces
   command: '{{ ifupdown_reconfigure_script + " " + ifupdown_register_tempdir.stdout|d() + "/ifupdown-changed-interfaces" }}'
-  when: (((ifupdown_register_interfaces_removator is defined and ifupdown_register_interfaces_removator.changed) or
-          (ifupdown_register_interfaces_generator is defined and ifupdown_register_interfaces_generator.changed)) and
-         ((ifupdown_reconfigure is defined and ifupdown_reconfigure) and (ifupdown_apply_config is defined and ifupdown_apply_config | bool)))
-
+  when: ((ifupdown_register_interfaces_removator|changed or
+          ifupdown_register_interfaces_generator|changed) and
+         (ifupdown_reconfigure|bool and (ifupdown_apply_config|d() | bool)))
