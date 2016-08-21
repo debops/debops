@@ -21,11 +21,6 @@ This role requires at least Ansible `v1.7.0`. To install it, run:
 ansible-galaxy install debops.dnsmasq
 ```
 
-### Role dependencies
-
-- `debops.ferm`
-- `debops.tcpwrappers`
-
 ### Are you using this as a standalone role without DebOps?
 
 You may need to include missing roles from the [DebOps common
@@ -41,6 +36,7 @@ into your playbook.
 ### Authors and license
 
 - Maciej Delmanowski (maintainer) | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
+- [Robin Schneider](http://ypid.de/) | [e-mail](mailto:ypid@riseup.net) | [GitHub](https://github.com/ypid)
 
 License: [GPL-3.0](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
 
