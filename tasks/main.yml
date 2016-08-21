@@ -39,7 +39,7 @@
   include: authorized_keys_lookup.yml
   when: sshd__register_version.stdout|d() and
         sshd__register_version.stdout | version_compare('6.2', '>=') and
-        sshd__authorized_keys_lookup|d() and sshd__authorized_keys_lookup|bool
+        sshd__authorized_keys_lookup|bool
   tags: [ 'role::sshd:config' ]
 
 - name: Get list of available host keys
