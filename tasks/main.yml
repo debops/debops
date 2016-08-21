@@ -3,12 +3,12 @@
 - name: DebOps pre_tasks hook
   include: "{{ lookup('task_src', 'lxc/pre_main.yml') }}"
 
-- name: Install packages required for LXC
-  apt:
+- name: Install required packages
+  package:
     name: '{{ item }}'
     state: 'present'
-    install_recommends: False
-  with_items: lxc_distribution_packages[ansible_distribution]
+  with_flattened:
+    - '{{ lxc_distribution_packages[ansible_distribution] }}'
 
 - name: Check available LXC package version
   shell: lxc-create --version
@@ -23,7 +23,7 @@
 # Install backported Linux kernel on Debian Wheezy
 - include: install_kernel_from_backports.yml
   when: (ansible_distribution == 'Debian' and
-        ansible_distribution_release == 'wheezy')
+         ansible_distribution_release == 'wheezy')
 
 # Manage LXC containers via Ansible when correct kernel is installed
 - include: manage_containers.yml
@@ -32,4 +32,3 @@
 
 - name: DebOps post_tasks hook
   include: "{{ lookup('task_src', 'lxc/post_main.yml') }}"
-

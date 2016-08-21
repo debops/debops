@@ -1,0 +1,42 @@
+---
+
+- name: Manage LXC hosts
+  hosts: [ 'debops_service_lxc' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ lxc__apt_preferences__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__forward: '{{ lxc__ferm__forward|bool }}'
+      ferm__dependent_rules:
+        - '{{ lxc__ferm__dependent_rules }}'
+
+      ## FIXME: Remove
+      # Make sure that LXC 1.0 is available in Debian Wheezy
+    - role: debops.backporter
+      tags: [ 'depend::backporter', 'depend::backporter:lxc',
+              'depend-of::lxc', 'type::dependency' ]
+      backporter_package: 'lxc'
+      backporter_version: '1.0'
+      backporter_source_version: '1.0.5-3'
+      backporter_command_dget: 'dget --allow-unauthenticated'
+      backporter_install_prerequisites: [ 'init-system-helpers' ]
+      backporter_install_packages: [ 'lxc_*.deb' ]
+      backporter_upload_packages: [ 'lxc*.deb' ]
+      backporter_prerequisites: [ 'dh-autoreconf', 'doxygen', 'docbook2x',
+                                  'graphviz', 'libapparmor-dev', 'liblua5.2-dev',
+                                  'libseccomp-dev', 'libselinux1-dev',
+                                  'pkg-config', 'python3-dev', 'dh-systemd' ]
+
+    - role: debops.lxc
+      tags: [ 'role::lxc' ]

@@ -11,16 +11,16 @@ lxc_kernel_mail_subject: 'LXC kernel update on {{ ansible_fqdn }}'
 lxc_kernel_mail_body: |
   Ansible has updated Linux kernel with LXC support on host {{ ansible_fqdn }}
   You should check status of the host and reboot it when convenient.
-  
+
   Current kernel: {{ ansible_kernel }}
-  
+
   Output of install command:
   ---------------------------------------------------------------
   {% for line in lxc_register_kernel_upgrade.stdout_lines %}
   {{ line }}
   {% endfor %}
   ---------------------------------------------------------------
-  
+
   Output of lxc-ls -f:
   ---------------------------------------------------------------
   {% for line in lxc_list_status.stdout_lines %}
@@ -41,4 +41,3 @@ lxc_default_gpg_keyserver: '{{ ansible_local.core.keyserver
 
 # SaltStack Debian APT repository
 lxc_template_salt_upstream_repository: 'deb http://debian.saltstack.com/debian {{ ansible_distribution_release.split("/")[0] }}-saltstack main'
-

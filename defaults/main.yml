@@ -13,7 +13,7 @@
 #
 # Name of Linux kernel package to install from Debian Backports on Debian
 # Wheezy.
-lxc_kernel_package: 'linux-image-{{ (ansible_kernel.split("-")|last())|d("amd64") }}'
+lxc_kernel_package: 'linux-image-{{ (ansible_kernel | split("-") | last) | d("amd64") }}'
 
 
 # .. envvar:: lxc_kernel_mail_to
@@ -315,8 +315,9 @@ lxc_default_template: 'debops'
 #                              - started    (container should be running)
 #                              - stopped    (container should be stopped)
 #                              - absent     (container will be destroyed)
-#                            Without this parameter container will be created,
-#                            but not started automatically.
+#                              - present     (container will be created)
+#                            Without this parameter container will be created
+#                            ``present``, but not started automatically.
 #   - config: True or ''     enables usage of custom configuration instead of
 #                            default from ``/etc/lxc/default.conf``
 #                            If True, container will be created with configuration
@@ -353,22 +354,69 @@ lxc_default_template: 'debops'
 # .. envvar:: lxc_containers
 #
 # List of LXC containers managed by Ansible.
-# Examples::
+# Examples:
 #
-#     lxc_containers:
+# .. code-block:: yaml
+#   :linenos:
 #
-#       # Simple container, not started by default, autostart on boot enabled
-#       - name: 'example-container'
-
-#       # Simple container started automatically
-#       - name: 'container'
-#         state: 'started'
-
-#       # Debian container, started automatically, network behind NAT
-#       - name: 'natted-container'
-#         config: True
-#         network: 'nat'
-#         state: 'started'
-#         template: 'debian'
+#    lxc_containers:
+#
+#      # Simple container, not started by default, autostart on boot enabled
+#      - name: 'example-container'
+#
+#      # Simple container started automatically
+#      - name: 'container'
+#        state: 'started'
+#
+#      # Debian container, started automatically, network behind NAT
+#      - name: 'natted-container'
+#        config: True
+#        network: 'nat'
+#        state: 'started'
+#        template: 'debian'
 #
 lxc_containers: []
+
+
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: lxc__ferm__dependent_rules [[[
+#
+# Configuration for the debops.apt_preferences_ role.
+lxc__apt_preferences__dependent_list:
+
+  - package: '{{ lxc_kernel_package }}'
+    backports: [ 'wheezy' ]
+    reason: 'Bug in LXC + iptables recent module - https://bugzilla.netfilter.org/show_bug.cgi?id=759'
+    role: 'debops.lxc'
+
+  - package: 'initramfs-tools'
+    backports: [ 'wheezy' ]
+    reason: 'Requred by newer Linux kernel installed by debops.lxc'
+    role: 'debops.lxc'
+
+
+# .. envvar:: lxc_network_forward
+#
+# Configuration for the debops.ferm_ role.
+lxc__ferm__forward: True
+
+
+# .. envvar:: lxc__ferm__dependent_rules [[[
+#
+# Configuration for the debops.ferm_ role.
+lxc__ferm__dependent_rules:
+
+  - type: 'custom'
+    role: 'debops.lxc'
+    filename: 'lxc_bootp_checksum'
+    weight: '30'
+    rules: |
+      # Add checksums to BOOTP packets for LXC containers
+      # https://www.redhat.com/archives/libvir-list/2010-August/msg00035.html
+      @hook post "iptables -A POSTROUTING -t mangle -p udp --dport bootpc -j CHECKSUM --checksum-fill";
+
+# ]]]
+                                                                   # ]]]
+                                                                   # ]]]

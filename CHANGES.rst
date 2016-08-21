@@ -1,10 +1,21 @@
 Changelog
 =========
 
-v0.1.0
-------
+.. include:: includes/all.rst
 
-*Unreleased*
+**debops.lxc**
+
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
+
+The current role maintainer_ is drybjed_.
+
+
+debops.dnsmasq v0.1.0 - unreleased
+----------------------------------
+
+Added
+~~~~~
 
 - Add Changelog. [drybjed]
 
@@ -14,6 +25,13 @@ v0.1.0
 
 - Allow setting default OS release created by the ``lxc-debops`` template.
   By default the host release will be used as the container release. [drybjed]
+
+- Add variables to configure administrator account home directory group and
+  permissions. By default, home directory will be owned by ``admins`` group
+  with ``0750`` permissions. [drybjed]
+
+Changed
+~~~~~~~
 
 - Redesign admin account and SSH key configuration in new LXC containers.
 
@@ -30,10 +48,6 @@ v0.1.0
   configured to have passwordless access to all commands. By default first
   group specified in ``lxc_template_admin_groups`` will be granted full access.
   [drybjed]
-
-- Add variables to configure administrator account home directory group and
-  permissions. By default, home directory will be owned by ``admins`` group
-  with ``0750`` permissions. [drybjed]
 
 - Change the container bootstrap function to only create or modify admin
   account if it's not already present in container. [drybjed]
@@ -57,3 +71,15 @@ v0.1.0
 
 - Correctly detect the container admin account name on Ansible v2. [drybjed]
 
+Removed
+~~~~~~~
+
+- Remove the ``debops_lxc`` Ansible inventory group. Make sure you hosts
+  are in ``debops_service_lxc``. [ypid_]
+
+- Remove all of the Ansible role dependencies.
+
+  Configuration of dependent services like firewall, TCP Wrappers is set in
+  separate default variables. These variables can be used by the Ansible
+  playbooks to configure settings related to ``dnsmasq`` in other services.
+  [ypid_]
