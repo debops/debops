@@ -43,6 +43,9 @@ Changed
   this should fix an issue when changes in the network interface topology
   required ``dnsmasq`` to be restarted to listen on new interfaces. [drybjed]
 
+- Set ``dnsmasq_etc_hosts`` to ``False`` because the ``/etc/hosts.dnsmasq``
+  files does not exist by default. [ypid]
+
 Removed
 ~~~~~~~
 
