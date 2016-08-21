@@ -1,114 +1,104 @@
-{% if ((item.interface is defined and item.interface) and
-       ((hostvars[inventory_hostname]["ansible_" + item.interface] is defined and
-         hostvars[inventory_hostname]["ansible_" + item.interface]) and
-       ((hostvars[inventory_hostname]["ansible_" + item.interface].ipv4 is defined and
-         hostvars[inventory_hostname]["ansible_" + item.interface].ipv4) or
-        (hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 is defined and
-         hostvars[inventory_hostname]["ansible_" + item.interface].ipv6)))) %}
-{% set dnsmasq_tpl_ipv4 = '' %}
-{% set dnsmasq_tpl_ipv6 = [] %}
-{% if hostvars[inventory_hostname]["ansible_" + item.interface].ipv4 is defined and hostvars[inventory_hostname]["ansible_" + item.interface].ipv4 %}
-{% set dnsmasq_tpl_ipv4 = hostvars[inventory_hostname]["ansible_" + item.interface].ipv4.address + '/' + hostvars[inventory_hostname]["ansible_" + item.interface].ipv4.netmask %}
-{% endif %}
-{% if hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 is defined and hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 %}
-{% for element in hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 %}
-{% if not element.address | ipv6('link-local') %}
-{% set _ = dnsmasq_tpl_ipv6.append(element.address + '/' + element.prefix) %}
-{% endif %}
-{% endfor %}
-{% endif %}
-# This file is managed by Ansible, all changes will be lost
+# {{ ansible_managed }}
 
-
+{% if not (item.interface|d() and
+           hostvars[inventory_hostname]["ansible_" + item.interface]|d() and
+           hostvars[inventory_hostname]["ansible_" + item.interface].ipv4|d() or
+           hostvars[inventory_hostname]["ansible_" + item.interface].ipv6|d()) %}
+# Interface {{ item.interface }} does not have any IP addresses.
+{% else %}
+{%   set dnsmasq_tpl_ipv4 = '' %}
+{%   set dnsmasq_tpl_ipv6 = [] %}
+{%   if hostvars[inventory_hostname]["ansible_" + item.interface].ipv4|d() %}
+{%     set dnsmasq_tpl_ipv4 = hostvars[inventory_hostname]["ansible_" + item.interface].ipv4.address + '/' +
+                              hostvars[inventory_hostname]["ansible_" + item.interface].ipv4.netmask %}
+{%   endif %}
+{%   if hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 is defined and hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 %}
+{%     for element in hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 %}
+{%       if not element.address | ipv6('link-local') %}
+{%         set _ = dnsmasq_tpl_ipv6.append(element.address + '/' + element.prefix) %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
 # ---- Network interface options ----
 
-# Bind on specified interface
+# Bind on specified interface.
 interface = {{ item.interface }}
 
-
-{% if item.interface in dnsmasq_no_dhcp_interfaces %}
+{%   if item.interface in dnsmasq_no_dhcp_interfaces %}
 # This interface is only used for DNS
 no-dhcp-interface = {{ item.interface }}
-{% else %}
+{%   else %}
+
 # ---- DHCP options ----
 
-{% if dnsmasq_dhcpv4 is defined and dnsmasq_dhcpv4 %}
-{% if dnsmasq_tpl_ipv4 is defined and dnsmasq_tpl_ipv4 %}
-# Enable DHCPv4 server
-dhcp-range = set:{{ item.interface }},{{ dnsmasq_tpl_ipv4 | ipv4(item.dhcp_range_start | default("10")) | ipv4('address') }},{{ dnsmasq_tpl_ipv4 | ipv4(item.dhcp_range_end | default("-10")) | ipv4('address') }},{{ item.dhcp_lease | default('24h') }}
+{%     if dnsmasq_dhcpv4|bool and dnsmasq_tpl_ipv4|d() %}
+# Enable DHCPv4 server.
+dhcp-range = set:{{ item.interface }},{{ dnsmasq_tpl_ipv4 | ipv4(item.dhcp_range_start | d("10")) | ipv4('address') }},{{ dnsmasq_tpl_ipv4 | ipv4(item.dhcp_range_end | d("-10")) | ipv4('address') }},{{ item.dhcp_lease | d('24h') }}
+{%     endif %}
 
-{% endif %}
-{% endif %}
-{% if dnsmasq_dhcpv6 is defined and dnsmasq_dhcpv6 %}
-{% if dnsmasq_tpl_ipv6 is defined and dnsmasq_tpl_ipv6 %}
-# Enable DHCPv6 server
-{% for element in dnsmasq_tpl_ipv6 %}
-dhcp-range = set:{{ item.interface }},{{ element | ipv6(item.dhcp_range_start | default('10')) | ipv6('address') }},{{ element | ipv6(item.dhcp_range_end | default('-10')) | ipv6('address') }},{{ item.ipv6_mode | default('ra-names,ra-stateless,slaac') }},{{ element | ipv6('prefix') }},{{ item.dhcp_lease | default('24h') }}
-{% endfor %}
+{%     if dnsmasq_dhcpv6|bool and dnsmasq_tpl_ipv6|d() %}
+# Enable DHCPv6 server.
+{%       for element in dnsmasq_tpl_ipv6 %}
+dhcp-range = set:{{ item.interface }},{{ element | ipv6(item.dhcp_range_start | d('10')) | ipv6('address') }},{{ element | ipv6(item.dhcp_range_end | d('-10')) | ipv6('address') }},{{ item.ipv6_mode | d('ra-names,ra-stateless,slaac') }},{{ element | ipv6('prefix') }},{{ item.dhcp_lease | d('24h') }}
+{%       endfor %}
+{%     endif %}
 
-{% endif %}
-{% endif %}
-{% if dnsmasq_router is defined and dnsmasq_router and item.gateway is not string %}
-# IPv4 router advertisement
-dhcp-option = tag:{{ item.interface }},option:router,0.0.0.0
-
-{% elif dnsmasq_router is defined and dnsmasq_router and item.gateway is string %}
-# IPv4 router
+{%     if dnsmasq_router|bool %}
+{%       if item.gateway is string %}
+# IPv4 router address.
 dhcp-option = tag:{{ item.interface }},option:router,{{ item.gateway }}
-
-{% else %}
-# IPv4 router advertisements are disabled
+{%       else %}
+# IPv4 router address.
+dhcp-option = tag:{{ item.interface }},option:router,0.0.0.0
+{%       endif %}
+{%     else %}
+# IPv4 router is not advertised.
 dhcp-option = tag:{{ item.interface }},option:router
+{%     endif %}
 
-{% endif %}
-{% if dnsmasq_search is defined and dnsmasq_search %}
-{% set dnsmasq_tpl_search = [] %}
-{% for domain in dnsmasq_search %}
-{% set _ = dnsmasq_tpl_search.append(domain) %}
-{% endfor %}
-{% if dnsmasq_register_search is defined and dnsmasq_register_search %}
-{% for domain in dnsmasq_register_search.stdout_lines | difference(dnsmasq_search) %}
-{% set _ = dnsmasq_tpl_search.append(domain) %}
-{% endfor %}
-{% endif %}
-# Advertise list of search domains in DHCP
+{%     if dnsmasq_search|d() %}
+{%       set dnsmasq_tpl_search = [] %}
+{%       for domain in dnsmasq_search %}
+{%         set _ = dnsmasq_tpl_search.append(domain) %}
+{%       endfor %}
+{%       if dnsmasq_register_search is defined and dnsmasq_register_search %}
+{%         for domain in dnsmasq_register_search.stdout_lines | difference(dnsmasq_search) %}
+{%           set _ = dnsmasq_tpl_search.append(domain) %}
+{%         endfor %}
+{%       endif %}
+# Advertise list of search domains via DHCP.
 dhcp-option = tag:{{ item.interface }},option:domain-search,{{ dnsmasq_tpl_search | join(",") }}
 dhcp-option = tag:{{ item.interface }},option6:domain-search,{{ dnsmasq_tpl_search | join(",") }}
-{% endif %}
+{%     endif %}
 
-{% if dnsmasq_tpl_ipv6 %}
-# Advertise RDNSS servers for local IPv6 network
+{%     if dnsmasq_tpl_ipv6 %}
+# Advertise RDNSS servers for local IPv6 network.
 dhcp-option = tag:{{ item.interface }},option6:dns-server,{{ dnsmasq_tpl_ipv6 | ipv6('address') | ipwrap | join(",") }}
-{% endif %}
-{% endif %}
+{%     endif %}
+{%   endif %}
 
-{% if dnsmasq_tftp is defined and dnsmasq_tftp %}
+
+{%   if dnsmasq_tftp|bool %}
 # ---- TFTP options ----
 
-# Enable TFTP service on specified interface
+# Enable TFTP service on specified interface.
 enable-tftp = {{ item.interface }}
-tftp-root = {{ dnsmasq_tftp_root | default('/srv/tftp') }},{{ item.interface }}
-{% if dnsmasq_tftp_ipxe is undefined or not dnsmasq_tftp_ipxe %}
-dhcp-boot = tag:{{ item.interface }},{{ dnsmasq_tftp_boot | default('pxelinux.0') }}
-{% endif %}
+tftp-root = {{ dnsmasq_tftp_root | d('/srv/tftp') }},{{ item.interface }}
+{%     if not dnsmasq_tftp_ipxe|bool %}
+dhcp-boot = tag:{{ item.interface }},{{ dnsmasq_tftp_boot | d('pxelinux.0') }}
+{%     endif %}
+{%   endif %}
 
-{% endif %}
-{% if item.name is defined and item.name %}
-
+{%   if item.name|d() %}
 # ---- DNS options ----
 
-# A record of the {{ item.interface }} interface
+# DNS `A` record of the {{ item.interface }} interface.
 interface-name = {{ item.name + '.' + dnsmasq_domain }},{{ item.interface }}
 
-{% if item.aliases is defined and item.aliases %}
-{% for name in item.aliases %}
+{%     if item.aliases|d() %}
+{%       for name in item.aliases %}
 cname = {{ name + '.' + dnsmasq_domain }},{{ item.name + '.' + dnsmasq_domain }}
-{% endfor %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
 {% endif %}
-{% endif %}
-{% else %}
-# This file is managed by Ansible, all changes will be lost
-
-# Interface {{ item.interface }} does not have any IP addresses
-{% endif %}
-

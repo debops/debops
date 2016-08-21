@@ -1,18 +1,24 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.dnsmasq default variables [[[
+# ====================================
 
 # .. contents:: Sections
 #    :local:
 #
+# .. include:: includes/all.rst
+
+
 # ------------------------------------
 #   Global options
 # ------------------------------------
 
 # .. envvar:: dnsmasq_public_dns
 #
-# Enable or disable access to the local DNS from upstream networks. You can publish
-# your subdomain in the public DNS by delegating it in your zone configuration.
+# Enable or disable access to the local DNS from upstream networks. You can
+# publish your subdomain in the public DNS by delegating it in your zone
+# configuration.
 dnsmasq_public_dns: False
 
 
@@ -33,7 +39,7 @@ dnsmasq_dhcpv6: True
 # Enable or disable local router support (no routing information is sent to
 # hosts, DHCPv6 doesn't work).
 # True means to announce the machine where dnsmasq is running as default
-# gateway unless the gateway was explicitly given in :ref:`dnsmasq_interfaces`.
+# gateway unless the gateway was explicitly given in :envvar:`dnsmasq_interfaces`.
 # False means to not announce any default route.
 dnsmasq_router: True
 
@@ -119,7 +125,7 @@ dnsmasq_interfaces:
     ipv6_mode: 'ra-names,ra-stateless,slaac'
 
     # Address which dnsmasq will announce as default gateway via DHCPv4.
-    # The default, as defined by dnsmasq_router is to announce the machine
+    # The default, as defined by `dnsmasq_router` is to announce the machine
     # running dnsmasq as default gateway.
     # gateway: '{{ ansible_default_ipv4.gateway }}'
 
@@ -136,7 +142,7 @@ dnsmasq_domain: '{{ ansible_fqdn }}'
 
 # .. envvar:: dnsmasq_domain_mx
 #
-# Set DNS MX record of the main domain to dnsmasq host. Set to False to
+# Set DNS MX record of the main domain to dnsmasq host. Set to ``False`` to
 # disable.
 dnsmasq_domain_mx: '{{ ansible_fqdn }}'
 
@@ -152,7 +158,7 @@ dnsmasq_etc_hosts: '/etc/hosts.dnsmasq'
 #
 # List of additional search domains. Set ref:`dnsmasq_search` to False
 # to completely disable this functionality.
-dnsmasq_search: [ '{{ dnsmasq_domain }}', '{{ ansible_domain }}' ]
+dnsmasq_search: '{{ [ dnsmasq_domain, ansible_domain ] | unique }}'
 
 
 # .. envvar:: dnsmasq_cname
@@ -206,3 +212,54 @@ dnsmasq_tftp_ipxe: True
 #
 # Additional options passed as a YAML text block
 dnsmasq_options: ''
+
+
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: dnsmasq__ferm__dependent_rules [[[
+#
+# Configuration for the debops.ferm_ role.
+dnsmasq__ferm__dependent_rules:
+
+  - type: 'accept'
+    role: 'dnsmasq'
+    name: 'dns'
+    weight: '40'
+    dport: [ 'domain' ]
+    accept_any: True
+    interface: '{{ []
+                   if (dnsmasq_public_dns|bool)
+                   else (dnsmasq_interfaces | map(attribute="interface") | list) }}'
+
+  - type: 'accept'
+    role: 'dnsmasq'
+    name: 'dhcpv4'
+    weight: '40'
+    dport: [ 'bootps' ]
+    saddr: [ 'fe80::/16' ]
+    daddr: [ 'ff02::1:2' ]
+    rule_state: '{{ "present" if (dnsmasq_dhcpv4|bool) else "absent" }}'
+    interface: '{{ dnsmasq_interfaces | map(attribute="interface")
+                   | list | difference(dnsmasq_no_dhcp_interfaces) }}'
+
+  - type: 'accept'
+    role: 'dnsmasq'
+    name: 'dhcpv6'
+    weight: '40'
+    dport: [ 'dhcpv6-client', 'dhcpv6-server' ]
+    rule_state: '{{ "present" if (dnsmasq_dhcpv6|bool) else "absent" }}'
+    interface: '{{ dnsmasq_interfaces | map(attribute="interface")
+                   | list | difference(dnsmasq_no_dhcp_interfaces) }}'
+
+  - type: 'accept'
+    role: 'dnsmasq'
+    filename: 'tftp'
+    weight: '40'
+    dport: [ 'tftp' ]
+    interface: '{{ dnsmasq_interfaces | map(attribute="interface") | list }}'
+    rule_state: '{{ "present" if (dnsmasq_tftp|bool) else "absent" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

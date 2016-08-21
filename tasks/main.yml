@@ -1,11 +1,11 @@
 ---
 
-- name: Install dnsmasq package
-  apt:
+- name: Install required packages
+  package:
     name: '{{ item }}'
-    state: 'latest'
-    install_recommends: False
-  with_items: [ 'dnsmasq', 'resolvconf' ]
+    state: 'present'
+  with_flattened:
+    - [ 'dnsmasq', 'resolvconf' ]
 
 - name: Get list of local search domains
   shell: grep search /etc/resolv.conf | cut -d' ' -f2- | tr ' ' '\n'
@@ -52,29 +52,25 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: dnsmasq_interfaces
+  with_items: '{{ dnsmasq_interfaces }}'
   when: item.interface is defined and item.interface
   notify: [ 'Test and restart dnsmasq' ]
 
-- name: Configure firewall - general options
-  template:
-    src: 'etc/ferm/filter-input.d/dnsmasq.conf.j2'
-    dest: '/etc/ferm/filter-input.d/dnsmasq.conf'
-    owner: 'root'
-    group: 'adm'
-    mode: '0644'
+- name: Remove legacy configuration
+  file:
+    path: '{{ item }}'
+    state: 'absent'
   notify: [ 'Restart ferm' ]
+  with_flattened:
+    - '/etc/ferm/filter-input.d/dnsmasq.conf'
 
-- name: Configure firewall on managed interfaces
-  template:
-    src: 'etc/ferm/filter-input.d/dnsmasq_interface.conf.j2'
-    dest: '/etc/ferm/filter-input.d/dnsmasq_interface_{{ item.interface }}.conf'
-    owner: 'root'
-    group: 'adm'
-    mode: '0644'
-  with_items: dnsmasq_interfaces
-  when: item.interface is defined and item.interface
+- name: Remove legacy configuration
+  file:
+    path: '/etc/ferm/filter-input.d/dnsmasq_interface_{{ item.interface }}.conf'
+    state: 'absent'
   notify: [ 'Restart ferm' ]
+  when: item.interface|d()
+  with_items: '{{ dnsmasq_interfaces }}'
 
 - name: Allow access to TFTP in tcpwrappers
   template:
@@ -83,9 +79,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: dnsmasq_interfaces
-  when: ((dnsmasq_tftp is defined and dnsmasq_tftp) and
-         (item.interface is defined and item.interface))
+  with_items: '{{ dnsmasq_interfaces }}'
+  when: (dnsmasq_tftp|bool and item.interface|d())
   notify: [ 'Assemble hosts.allow.d' ]
 
 - name: Make sure TFTP root directory exists
@@ -95,7 +90,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: dnsmasq_tftp is defined and dnsmasq_tftp
+  when: dnsmasq_tftp|bool
 
 - name: Remove custom nameservers
   file:

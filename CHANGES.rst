@@ -53,3 +53,13 @@ Removed
 
 - Remove "short subdomain" ``CNAME`` entries from main ``dnsmasq``
   configuration file. [drybjed]
+
+- Remove the ``debops_dnsmasq`` Ansible inventory group. Make sure you hosts
+  are in ``debops_service_dnsmasq``. [ypid]
+
+- Remove all of the Ansible role dependencies.
+
+  Configuration of dependent services like firewall, TCP Wrappers is set in
+  separate default variables. These variables can be used by the Ansible
+  playbooks to configure settings related to ``dnsmasq`` in other services.
+  [ypid_]
