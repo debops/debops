@@ -90,7 +90,7 @@
 {%   endif %}
 {% endif %}
 {# -------------------------------------------- #}
-{% if not ifupdown_tpl_generate_interface and not ifupdown_tpl_generate_interface_extended and not ifupdown_tpl_generate_interface_failed and (item.type is undefined or (item.type is defined and item.type == ifupdown_tpl_config_type) and (not ifupdown_tpl_virtual_interface and item.iface in ansible_interfaces) or (item.force is defined and item.force)) %}
+{% if not ifupdown_tpl_generate_interface and not ifupdown_tpl_generate_interface_extended and not ifupdown_tpl_generate_interface_failed and (item.type is undefined or (item.type is defined and item.type == ifupdown_tpl_config_type) and (not ifupdown_tpl_virtual_interface and item.iface in ansible_interfaces) or (item.force|d() | bool)) %}
 {%   set ifupdown_tpl_generate_interface = True %}
 {% else %}
 {%   if not ifupdown_tpl_failure_reason %}
