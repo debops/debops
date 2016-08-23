@@ -592,7 +592,7 @@ ferm__rules_forward:
 
   - chain: 'FORWARD'
     type: 'accept'
-    interface_present: '{{ ferm__external_interfaces }}'
+    interface_present: '{{ ferm__external_interfaces | unique }}'
     weight: '10'
     role: 'forward'
     role_weight: '10'
@@ -606,7 +606,7 @@ ferm__rules_forward:
 
   - chain: 'FORWARD'
     type: 'accept'
-    outerface_present: '{{ ferm__external_interfaces }}'
+    outerface_present: '{{ ferm__external_interfaces | unique }}'
     weight: '10'
     role: 'forward'
     role_weight: '20'

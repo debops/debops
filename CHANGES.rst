@@ -12,6 +12,12 @@ v0.2.2
   ``item.delete`` and ``item.when`` are currently still supported for backwards
   compatibility. [ypid]
 
+Fixed
+~~~~~
+
+- Don’t create duplicate forward rules when an interface has both an IPv4 and
+  an IPv6 address. [ypid]
+
 v0.2.1
 ------
 
@@ -312,4 +318,3 @@ v0.1.0
 
 - Add Ansible tags to tasks that manage the firewall rules to make reloading of
   them faster. [drybjed]
-
