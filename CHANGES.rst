@@ -12,6 +12,12 @@ v0.2.2
   ``item.delete`` and ``item.when`` are currently still supported for backwards
   compatibility. [ypid]
 
+Added
+~~~~~
+
+- Allow to disable ``ferm__rules_forward`` using
+  ``ferm__forward_accept``. [ypid]
+
 Fixed
 ~~~~~
 

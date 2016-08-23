@@ -599,9 +599,10 @@ ferm__rules_forward:
     name: 'external_in'
     comment: 'Forward incoming traffic to other hosts'
     rule_state: '{{ "present" if (
-                      (ferm__forward|d(ferm_forward) | bool) or
-                      (ansible_local|d() and ansible_local.ferm|d() and
-                       ansible_local.ferm.forward | bool))
+                      ferm__forward_accept|bool and (
+                        (ferm__forward|d(ferm_forward) | bool) or
+                        (ansible_local|d() and ansible_local.ferm|d() and
+                         ansible_local.ferm.forward | bool)))
                      else "absent" }}'
 
   - chain: 'FORWARD'
@@ -613,9 +614,10 @@ ferm__rules_forward:
     name: 'external_out'
     comment: 'Forward outgoing traffic to other hosts'
     rule_state: '{{ "present" if (
-                      (ferm__forward|d(ferm_forward) | bool) or
-                      (ansible_local|d() and ansible_local.ferm|d() and
-                       ansible_local.ferm.forward | bool))
+                      ferm__forward_accept|bool and (
+                        (ferm__forward|d(ferm_forward) | bool) or
+                        (ansible_local|d() and ansible_local.ferm|d() and
+                         ansible_local.ferm.forward | bool)))
                      else "absent" }}'
 
   - chain: 'FORWARD'
@@ -628,9 +630,10 @@ ferm__rules_forward:
     name: 'internal'
     comment: 'Forward internal traffic between hosts'
     rule_state: '{{ "present" if (
-                      (ferm__forward|d(ferm_forward) | bool) or
-                      (ansible_local|d() and ansible_local.ferm|d() and
-                       ansible_local.ferm.forward | bool))
+                      ferm__forward_accept|bool and (
+                        (ferm__forward|d(ferm_forward) | bool) or
+                        (ansible_local|d() and ansible_local.ferm|d() and
+                         ansible_local.ferm.forward | bool)))
                      else "absent" }}'
 
 
@@ -664,10 +667,18 @@ ferm__fail2ban: True
 
 # .. envvar:: ferm__forward
 #
-# Enable forwarding in :command:`ip(6)tables`. This option can be used by other roles and
-# it's status is saved in Ansible local facts, which will override variable
-# status from role defaults or inventory.
+# Enable forwarding in :command:`ip(6)tables`. This option can be used by other
+# roles and it's status is saved in Ansible local facts, which will override
+# variable status from role defaults or inventory.
 ferm__forward: False
+
+
+# .. envvar:: ferm__forward_accept
+#
+# Should traffic be forwarded between the other hosts/containers if
+# :envvar:`ferm__forward` is ``True``?
+# Refer to :envvar:`ferm__rules_forward` for details.
+ferm__forward_accept: False
 
 
 # .. envvar:: ferm__external_interfaces
