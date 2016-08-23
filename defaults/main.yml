@@ -226,6 +226,7 @@ dnsmasq__ferm__dependent_rules:
     role: 'dnsmasq'
     name: 'dns'
     weight: '40'
+    protocol: [ 'udp', 'tcp' ]
     dport: [ 'domain' ]
     accept_any: True
     interface: '{{ []
@@ -236,9 +237,8 @@ dnsmasq__ferm__dependent_rules:
     role: 'dnsmasq'
     name: 'dhcpv4'
     weight: '40'
+    protocol: [ 'udp', 'tcp' ]
     dport: [ 'bootps' ]
-    saddr: [ 'fe80::/16' ]
-    daddr: [ 'ff02::1:2' ]
     rule_state: '{{ "present" if (dnsmasq_dhcpv4|bool) else "absent" }}'
     interface: '{{ dnsmasq_interfaces | map(attribute="interface")
                    | list | difference(dnsmasq_no_dhcp_interfaces) }}'
@@ -247,6 +247,9 @@ dnsmasq__ferm__dependent_rules:
     role: 'dnsmasq'
     name: 'dhcpv6'
     weight: '40'
+    saddr: [ 'fe80::/16' ]
+    daddr: [ 'ff02::1:2' ]
+    protocol: [ 'udp', 'tcp' ]
     dport: [ 'dhcpv6-client', 'dhcpv6-server' ]
     rule_state: '{{ "present" if (dnsmasq_dhcpv6|bool) else "absent" }}'
     interface: '{{ dnsmasq_interfaces | map(attribute="interface")
@@ -257,6 +260,7 @@ dnsmasq__ferm__dependent_rules:
     filename: 'tftp'
     weight: '40'
     dport: [ 'tftp' ]
+    protocol: [ 'udp' ]
     interface: '{{ dnsmasq_interfaces | map(attribute="interface") | list }}'
     rule_state: '{{ "present" if (dnsmasq_tftp|bool) else "absent" }}'
 
