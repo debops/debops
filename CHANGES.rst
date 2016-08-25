@@ -20,24 +20,24 @@ v0.2.2
   ``item.when`` and ``item.delete``.
   See `discussion <https://github.com/debops/ansible-apt_preferences/issues/12>`_.
   ``item.delete`` and ``item.when`` are currently still supported for backwards
-  compatibility. [ypid]
+  compatibility. [ypid_]
 
 Added
 ~~~~~
 
-- Allow to disable ``ferm__rules_forward`` using
-  ``ferm__forward_accept``. [ypid]
+- Allow to disable :envvar:`ferm__rules_forward` using
+  :envvar:`ferm__forward_accept`. [ypid_]
 
 Changed
 ~~~~~~~
 
-- Use the `Ansible package module`_ which requires Ansible v2.0. [ypid]
+- Use the `Ansible package module`_ which requires Ansible v2.0. [ypid_]
 
 Fixed
 ~~~~~
 
 - Don’t create duplicate forward rules when an interface has both an IPv4 and
-  an IPv6 address. [ypid]
+  an IPv6 address. [ypid_]
 
 v0.2.1
 ------
@@ -45,7 +45,7 @@ v0.2.1
 *Released: 2016-04-21*
 
 - Rename ``item.state`` parameter to ``item.rule_state`` to avoid collision
-  with ``iptables state`` module support. [drybjed]
+  with ``iptables state`` module support. [drybjed_]
 
 v0.2.0
 ------
@@ -53,9 +53,9 @@ v0.2.0
 *Released: 2016-04-20*
 
 - Support ``item.state`` key in ``ferm_*_rules`` variables to add or remove
-  firewall rules. [drybjed]
+  firewall rules. [drybjed_]
 
-- Rename all role variables to put them in their own namespace. [drybjed]
+- Rename all role variables to put them in their own namespace. [drybjed_]
 
 v0.1.6
 ------
@@ -70,13 +70,13 @@ v0.1.6
 
 - Enable the firewall if ``ansible_local`` and local Ansible facts are
   undefined. This will ensure that the role works on hosts which don't have it
-  applied yet. [drybjed]
+  applied yet. [drybjed_]
 
-- Renamed ``ferm_.*rules`` to ``ferm__.*rules`` and ``ferm_forward`` to ``ferm__forward``.
+- Renamed ``ferm_.*rules`` to ``ferm__.*rules`` and ``ferm_forward`` to :envvar:`ferm__forward`.
   Old names are currently still supported to not break stuff while updating the
-  code which depends on the old names. [ypid]
+  code which depends on the old names. [ypid_]
 
-- Create base documentation files, clean up default variables. [ganto, drybjed]
+- Create base documentation files, clean up default variables. [ganto_, drybjed_]
 
 v0.1.5
 ------
@@ -87,7 +87,7 @@ v0.1.5
   the host. [bleuchtang]
 
 - Restart :program:`ferm` only when the firewall rules have been modified, to not rest
-  the firewall counters on every Ansible run. [Logan2211, drybjed]
+  the firewall counters on every Ansible run. [Logan2211, drybjed_]
 
 v0.1.4
 ------
@@ -96,26 +96,26 @@ v0.1.4
 
 - Add a way to copy custom files to remote hosts before starting the firewall.
   This allows users to add custom scripts that generate firewall rules in case
-  of more esoteric environments. [drybjed]
+  of more esoteric environments. [drybjed_]
 
 - Change the sysctl configuration from a handler to a conditional task. This
-  should make sure ``debops.ferm`` works on older operating systems. [drybjed]
+  should make sure ``debops.ferm`` works on older operating systems. [drybjed_]
 
 - Move the logic that enables or disables :program:`ferm` to a default variable to
-  consolidate it in one place. [drybjed]
+  consolidate it in one place. [drybjed_]
 
-- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed_]
 
 - Change the way ``debops.ferm`` disables :program:`ferm` support to avoid idempotency
-  issues with ``ansible_managed`` variable. [drybjed]
+  issues with ``ansible_managed`` variable. [drybjed_]
 
 - Change what variable ``debops.ferm`` looks for when checking if :program:`ferm`
   should be enabled depending on current host capabilities. Now role will check
   the status in ``ansible_local.tags`` variable which is configured by the
-  ``debops.core`` role. [drybjed]
+  debops.core_ role. [drybjed_]
 
 - Do not remove or generate firewall rules when :program:`ferm` is disabled to improve
-  Ansible performance. [drybjed]
+  Ansible performance. [drybjed_]
 
 v0.1.3
 ------
@@ -124,9 +124,9 @@ v0.1.3
 
 - Redesign hook support. Instead of patching the :program:`ferm` init script, use
   internal ``@hook`` commands to run scripts in specific directories using
-  ``run-parts``. [drybjed]
+  ``run-parts``. [drybjed_]
 
-- Add set of predefined :program:`ferm` variables used by other Ansible roles. [drybjed]
+- Add set of predefined :program:`ferm` variables used by other Ansible roles. [drybjed_]
 
 v0.1.2
 ------
@@ -139,9 +139,9 @@ v0.1.2
   own weight class along with weight, the class will be checked in the
   ``ferm_weight_map`` dictionary, if a corresponding entry is found, its weight
   will be used for that rule, if not, the weight specified in the rule will be
-  used instead. [drybjed]
+  used instead. [drybjed_]
 
-- Move firewall rules into ``rules/`` subdirectory.
+- Move firewall rules into :file:`rules/` subdirectory.
 
   All directories in :file:`/etc/ferm/` that contain firewall rules in different
   chains have been moved to :file:`/etc/ferm/rules/` subdirectory for more
@@ -154,7 +154,7 @@ v0.1.2
   rules. If you added your own rules in Ansible inventory or other roles, make
   sure that you re-run these roles to recreate their rules as well. To not
   create duplicate firewall rules, :program:`ferm` will only include rules from the
-  new directories. [drybjed]
+  new directories. [drybjed_]
 
 - Add ``hashlimit`` filter, move filtering rules.
 
@@ -163,13 +163,13 @@ v0.1.2
 
   Existing firewall rules which filtered ICMP and TCP SYN packets, defined in
   :file:`/etc/ferm/ferm.conf`, have been moved to their own configuration files in
-  :file:`/etc/ferm/rules/filter/input/` directory. [drybjed]
+  :file:`/etc/ferm/rules/filter/input/` directory. [drybjed_]
 
 - Rename ``conntrack`` list, rebalance rule weight.
 
   This change will create new ``conntrack`` rules with different filenames due
   to changed weight of the rules and addition of "weight classes". Make sure to
-  remove the old rules manually to not create duplicates. [drybjed]
+  remove the old rules manually to not create duplicates. [drybjed_]
 
 - Rename :program:`ferm` variable to ``ferm_enabled``.
 
@@ -178,18 +178,18 @@ v0.1.2
 
   If you have :program:`ferm` disabled anywhere (set to ``False``), you will need to
   change the name of the variable in inventory to the new one before running
-  this role. Otherwise there should be no changes necessary. [drybjed]
+  this role. Otherwise there should be no changes necessary. [drybjed_]
 
 - Add ``accept`` filter template which can be used to create rules that match
   interfaces, ports, remote IP addresses/subnets and can accept the packets,
-  reject, or redirect to a different chain. [drybjed]
+  reject, or redirect to a different chain. [drybjed_]
 
 - Move the default loopback accept :command:`iptables` rule to the new directory-based
-  setup. [drybjed]
+  setup. [drybjed_]
 
 - Rename the ``ferm_filter_domains`` default variable to ``ferm_domains`` to
   indicate that it is used in all firewall contexts, not just the "filter"
-  table. [drybjed]
+  table. [drybjed_]
 
 - Redesign the directory structure of :program:`ferm` configuration.
 
@@ -201,11 +201,11 @@ v0.1.2
   Existing firewall configuration in :file:`/etc/ferm/filter-input.d/` will be
   included by default, so the already configured firewalls still work. This
   will change after roles are converted to the new firewall configuration
-  style. [drybjed]
+  style. [drybjed_]
 
-- Update configuration templates in ``templates/etc/ferm/ferm.d/`` role
+- Update configuration templates in :file:`templates/etc/ferm/ferm.d/` role
   directory. A few new templates have been added which will generate rules that
-  were defined in :file:`/etc/ferm/ferm.conf` configuration files. [drybjed]
+  were defined in :file:`/etc/ferm/ferm.conf` configuration files. [drybjed_]
 
 - Split :file:`/etc/ferm/ferm.conf` config into parts.
 
@@ -215,36 +215,36 @@ v0.1.2
   easier to change or redesign the firewall from scratch.
 
   Some default variables have been renamed to better indicate their use in the
-  firewall configuration. [drybjed]
+  firewall configuration. [drybjed_]
 
 - Switch Ansible Controller accept rules to new configuration structure.
-  [drybjed]
+  [drybjed_]
 
 - Rule definitions can now specify ``item.role_weight`` parameter which is
   added after ``item.role`` parameter. This allows to set the same
   ``item.weight`` for all rules of a particular Ansible role and still lets you
-  order rules within the role itself. [drybjed]
+  order rules within the role itself. [drybjed_]
 
 - Change default ``hashlimit`` rule target to ``RETURN``, this allows packets
   to be filtered further in the firewall instead of accepting them right away.
-  [drybjed]
+  [drybjed_]
 
 - Change default ``recent`` rule target to ``NOP``, this ensures that if no
   other target is specified, rule will still be added to the firewall.
-  [drybjed]
+  [drybjed_]
 
 - Add a separate ``&log()`` ferm function and use it for logging packets in
-  other :program:`ferm` rules. [drybjed]
+  other :program:`ferm` rules. [drybjed_]
 
 - Remove :program:`ferm.d/chain.conf.j2` Ansible template as well as other unused
   templates. Functionality of this template is replaced by
-  :program:`ferm.d/accept.conf.j2` template. [drybjed]
+  :program:`ferm.d/accept.conf.j2` template. [drybjed_]
 
 - Add ``item.interface_present`` and ``item.outerface_present`` parameters to
   ``active`` rule template. These parameters check if specified network
-  interfaces exist before adding the firewall rules. [drybjed]
+  interfaces exist before adding the firewall rules. [drybjed_]
 
-- Convert forward firewall rules to the new :program:`ferm` configuration. [drybjed]
+- Convert forward firewall rules to the new :program:`ferm` configuration. [drybjed_]
 
 v0.1.1
 ------
@@ -252,7 +252,7 @@ v0.1.1
 *Released: 2015-10-08*
 
 - Switch ``debops.ferm`` from using :program:`ferm` binary directly to restarting and
-  stopping :program:`ferm` system service. [drybjed]
+  stopping :program:`ferm` system service. [drybjed_]
 
 - Add support for ferm init script hooks.
 
@@ -277,13 +277,13 @@ v0.1.1
 
   This should provide sufficient methods to manipulate firewall dynamically
   outside of :program:`ferm` itself and allow to correctly preserve :command:`ip(6)tables`
-  rules when :program:`ferm` is restarted or reloaded. [drybjed]
+  rules when :program:`ferm` is restarted or reloaded. [drybjed_]
 
 - Due to the huge number of subdirectories in :file:`/etc/ferm/` that need to be
   created, their creation is moved to a separate shell script, which will be
   run once at the first install of the :program:`ferm` firewall.
 
-  Script creates new directory structure for firewall rules. [drybjed]
+  Script creates new directory structure for firewall rules. [drybjed_]
 
 - Enable support for the new, directory-based :command:`iptables` rules management
   system. New ``item.category`` and ``item.table`` rule arguments allow to
@@ -291,51 +291,51 @@ v0.1.1
   be generated. Rules are defined in existing ``ferm_*_rules`` list variables.
 
   Old rules are still supported to enable easy transition to the new system.
-  [drybjed]
+  [drybjed_]
 
 - Add a ``ferm_default_rules`` list variable with a set of default firewall
   rules for all hosts.
 
   Connection tracking rules from main :program:`ferm` configuration file are moved to
   the new directory-based rule structure. They are defined in a separate list
-  variable included in ``ferm_default_rules``. [drybjed]
+  variable included in ``ferm_default_rules``. [drybjed_]
 
-- Fix missing closing bracket. [drybjed]
+- Fix missing closing bracket. [drybjed_]
 
 - Add support for specifying incoming and outgoing network interfaces in
-  ``filter/conntrack.conf.j2`` template. [drybjed]
+  :file:`filter/conntrack.conf.j2` template. [drybjed_]
 
 - Copy ``init-hooks.patch`` file to remote host and patch it from there to fix
-  issues with ``patch`` module on older versions of Ansible. [drybjed]
+  issues with ``patch`` module on older versions of Ansible. [drybjed_]
 
 - Move tasks that patch :program:`ferm` init script to separate task list and add
-  a condition that only does the patching if :program:`ferm` is enabled. [drybjed]
+  a condition that only does the patching if :program:`ferm` is enabled. [drybjed_]
 
-- Add "custom" rule template. [drybjed]
+- Add "custom" rule template. [drybjed_]
 
 v0.1.0
 ------
 
 *Released: 2015-09-04*
 
-- Add Changelog [drybjed]
+- Add Changelog [drybjed_]
 
 - Add rule template for simple DMZ-like redirection from public to private IPv4
-  addresses. [drybjed]
+  addresses. [drybjed_]
 
 - Add ``item.name`` rule option to specify custom names in rule filenames.
-  [drybjed]
+  [drybjed_]
 
 - Move the :program:`ferm` package into ``ferm_packages`` list and rewrite the task to
   only use the list variable without Jinja templating. This fixes the "It is
-  unnecessary to use '{{' in loops" error. [drybjed]
+  unnecessary to use '{{' in loops" error. [drybjed_]
 
 - Add support for :program:`fail2ban`. If :program:`fail2ban-server` is installed and is
   currently active, :program:`ferm` will reload :program:`fail2ban` rules after firewall
-  configuration is finished. [drybjed]
+  configuration is finished. [drybjed_]
 
 - Add a workaround Ansible emitting ``true`` and ``false`` as boolean values.
-  [drybjed]
+  [drybjed_]
 
 - Add Ansible tags to tasks that manage the firewall rules to make reloading of
-  them faster. [drybjed]
+  them faster. [drybjed_]

@@ -1,6 +1,8 @@
 Guides and examples
 ===================
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
    :depth: 2
@@ -27,7 +29,7 @@ To follow this guide you should be familiar with DebOps and the way to configure
 related Ansible variables. If you're not, you may first want to read
 `Getting Started with DebOps`_.
 
-.. _Getting Started with DebOps: http://docs.debops.org/en/latest/debops-playbooks/docs/guides/getting-started.html
+.. _Getting Started with DebOps: https://docs.debops.org/en/latest/debops-playbooks/docs/guides/getting-started.html
 
 
 .. _guide_gateway_packet_forwarding:
@@ -142,7 +144,7 @@ this can be restricted to the internal network attached to ``eth1``.
 
 **Example: dnsmasq**
 
-The ``debops.dnsmasq`` role is providing DNS and DHCP services. Obviously access
+The debops.dnsmasq_ role is providing DNS and DHCP services. Obviously access
 to these services should only be allowed from the internal network.
 
 * Define the upstream (external) interface where access should be blocked::
@@ -161,17 +163,17 @@ to these services should only be allowed from the internal network.
         dhcp_range_end: '-10'
         dhcp_lease: '24h'
 
-Please check the ``debops.dnsmasq`` role `documentation`_ for more configuration
+Please check the debops.dnsmasq_ role `documentation`_ for more configuration
 options and a detailed description of those.
 
-.. _documentation: http://docs.debops.org/en/latest/ansible/roles/debops.dnsmasq.html
+.. _documentation: https://docs.debops.org/en/latest/ansible/roles/debops.dnsmasq.html
 
 **Example: nginx**
 
 Most other DebOps roles which manage applications are able to restrict access
 through the firewall based on source IP addresses and network ranges. This is
 typically done by defining a corresponding ``service_allow`` variable. In case
-of ``debops.nginx`` this configuration would look as following::
+of debops.nginx_ this configuration would look as following::
 
     nginx_allow: [ '{{ ansible_eth1.ipv4.network }}/{{ ("0.0.0.0/" + ansible_eth1.ipv4.netmask) | ipaddr("prefix") }}' ]
 

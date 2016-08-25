@@ -1,6 +1,8 @@
 Firewall Rule Definitions
 =========================
 
+.. include:: includes/all.rst
+
 Firewall configuration in ``debops.ferm`` is done through a flexible
 definition of rules. There are a number of variables which are used to
 reference a set of default rules and can be extended by user defined
@@ -354,9 +356,7 @@ supported:
   Optional. Add comment to generated ferm rule definition file that rule is
   defined in the given Ansible role.
 
-This template is used among others in a `debops.libvirtd`_ custom ferm rule.
-
-.. _debops.libvirtd: http://docs.debops.org/en/latest/ansible/roles/ansible-libvirtd/docs/
+This template is used among others in a debops.libvirtd_ custom ferm rule.
 
 
 .. _default_policy_template:
