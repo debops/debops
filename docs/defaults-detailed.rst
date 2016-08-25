@@ -1,5 +1,5 @@
-Default variables: configuration
-================================
+Default variable details
+========================
 
 Some of ``debops.tinc`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
@@ -14,8 +14,8 @@ them.
 tinc__networks
 --------------
 
-This is a list of mesh networks managed by ``debops.tinc`` role. Each network
-is described by a YAML dictionary which should have the following keys:
+This is a list of mesh networks managed by the ``debops.tinc`` role. Each
+network is described by a YAML dictionary which should have the following keys:
 
 ``name``
   Required. Name of the mesh network, used as the name of the directory in
@@ -25,7 +25,7 @@ is described by a YAML dictionary which should have the following keys:
   Required. Name of the virtual Ethernet device which will be managed by the
   Tinc VPN. Using names like ``tunX`` or ``tapX`` will ensure that DNS
   configuration received from the nameserver will be ordered correctly by
-  ``resolvconf`` package.
+  the ``resolvconf`` package.
 
 ``port``
   Required. TCP and UDP port used by this Tinc VPN.
@@ -100,4 +100,3 @@ Minimal configuration of a default Tinc ``mesh0`` VPN::
       tinc_options:
         Mode: 'switch'
         DeviceType: 'tap'
-

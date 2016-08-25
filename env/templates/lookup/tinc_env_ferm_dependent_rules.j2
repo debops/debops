@@ -1,14 +1,25 @@
 {% for network in (tinc__default_networks + tinc__networks) %}
-{% if network.name|d() and (network.tinc_options|d() or network.port|d()) %}
   - type: 'accept'
     protocol: [ 'tcp', 'udp' ]
     dport: [ '{{ network.tinc_options.Port if network.tinc_options.Port|d() else network.port }}' ]
-{% if network.allow|d() %}
+
+{%     if network.allow|d() %}
     saddr: {{ ("[ '" + network.allow + "' ]") if (network.allow is string) else ("[ '" + network.allow | join("', '") + "' ]") }}
-{% endif %}
+{%     endif %}
     role: 'tinc'
     name: '{{ network.name }}'
-    delete: '{{ (True if network.delete|d() else False) | bool }}'
+    rule_state: 'absent'
 
-{% endif %}
+{%   if network.name|d() and (network.tinc_options|d() or network.port|d()) %}
+  - type: 'accept'
+    protocol: [ 'tcp', 'udp' ]
+    dport: [ '{{ network.tinc_options.Port if network.tinc_options.Port|d() else network.port }}' ]
+{%     if network.allow|d() %}
+    saddr: {{ ("[ '" + network.allow + "' ]") if (network.allow is string) else ("[ '" + network.allow | join("', '") + "' ]") }}
+{%     endif %}
+    by_role: 'debops.tinc'
+    name: '{{ network.name }}'
+    rule_state: '{{ network.delete|d() | bool | ternary("absent", "present") }}'
+
+{%   endif %}
 {% endfor %}

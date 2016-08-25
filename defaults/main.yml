@@ -5,6 +5,9 @@
 # .. contents:: Sections
 #    :local:
 #
+# .. include:: includes/all.rst
+
+
 # -------------------------
 #   Network configuration
 # -------------------------
@@ -27,9 +30,9 @@ tinc__default_networks: [ '{{ tinc__network_mesh0 }}' ]
 # --------------------------------------
 
 # Default Tinc VPN created by the ``debops.tinc`` role. It will create a mesh
-# network between hosts in a switch mode. One of the hosts should provide
-# a bridge to which the ``tun0`` interface will be connected; on that bridge
-# you should configure DHCP and DNS server to provide interface configuration.
+# network between hosts in a switch mode. One of the hosts should provide a
+# bridge to which the ``tun0`` interface will be connected; on that bridge you
+# should configure DHCP or other means of interface auto configuration.
 
 # .. envvar:: tinc__network_mesh0
 #
@@ -53,6 +56,7 @@ tinc__network_mesh0:
   tinc_options:
     Mode: 'switch'
     DeviceType: 'tap'
+    # FIXME: Make default
     Cipher: 'aes-256-cbc'
     Digest: 'SHA512'
     Compression: '{{ tinc__compression }}'
@@ -90,9 +94,10 @@ tinc__exclude_interface_mesh0: '{{
 # defaults to a standalone network interface with ``dhclient`` requesting
 # network configuration using DHCP. Possible values are:
 #
-# - ``static``: set the Tinc interface in a "static" mode with an IP address,
-#   optionally attached to a network bridge. This should usually be done just
-#   on 1 host in the mesh to provide DHCP/DNS services.
+# ``static``
+#   Set the Tinc interface in a "static" mode with an IP address, optionally
+#   attached to a network bridge. This should usually be done just on one host
+#   in the mesh to provide DHCP/DNS services.
 #
 tinc__link_type_mesh0: ''
 
@@ -103,6 +108,7 @@ tinc__link_type_mesh0: ''
 # not specified, a randomized stable MAC address will be generated
 # automatically. Set the MAC address value to ``'*'`` to generate a random
 # hardware address.
+# FIXME
 tinc__hwaddr_mesh0: ''
 
 
@@ -152,6 +158,7 @@ tinc__allow_mesh0: []
 # This option sets the level of compression used for UDP packets.  Possible
 # values are 0 (off), 1 (fast zlib) and any integer up to 9 (best zlib), 10
 # (fast lzo) and 11 (best lzo).
+# FIXME: Rename to tinc__compression_mesh0
 tinc__compression: '0'
 
 
@@ -164,6 +171,7 @@ tinc__compression: '0'
 # This option affects the address family of listening and outgoing sockets. If
 # "any" is selected, then depending on the operating system both IPv4 and IPv6
 # or just IPv6 listening sockets will be created.
+# FIXME: Rename to tinc__address_family_mesh0
 tinc__address_family: 'any'
 
 
@@ -226,9 +234,9 @@ tinc__packages: []
 
 # .. envvar:: tinc__inventory_groups
 #
-# List of Ansible inventory groups which are used by ``debops.tinc`` role to
+# List of Ansible inventory groups which are used by the ``debops.tinc`` role to
 # manage separate ``tinc`` networks. Each group will have corresponding
-# directory in the ``secret/`` store on Ansible Controller.
+# a directory in the ``secret/`` store on the Ansible Controller.
 #
 # The default Ansible group ``debops_service_tinc_mesh0`` specifies hosts that
 # are participating in the ``mesh0`` VPN.
@@ -237,25 +245,23 @@ tinc__inventory_groups: [ 'debops_service_tinc_mesh0' ]
 
 # .. envvar:: tinc__inventory_hosts
 #
-# This list defines what hosts in Ansible inventory participate in a Tinc VPN.
-# They will have their own directories in ``secret/`` store on Ansible
+# This list defines which hosts in Ansible inventory participate in a Tinc VPN.
+# They will have their own directories in the ``secret/`` store on the Ansible
 # Controller used to distribute public host keys.
-tinc__inventory_hosts: '{{ groups.debops_service_tinc
-                           if groups.debops_service_tinc|d()
-                           else [] }}'
+tinc__inventory_hosts: '{{ groups.debops_service_tinc|d([]) }}'
 
 
 # .. envvar:: tinc__inventory_hostname
 #
-# Name of this node in Ansible inventory. This variable is used during the file
-# upload/download to have consistent mapping between directories and Ansible
-# inventory.
+# Name of this node in Ansible’s inventory. This variable is used during the
+# file upload/download to have consistent mapping between directories and
+# Ansible’s inventory.
 tinc__inventory_hostname: '{{ inventory_hostname }}'
 
 
 # .. envvar:: tinc__hostname
 #
-# Name of this node used in configuration files thruought the mesh. Don't
+# Name of this node used in configuration files of the mesh. Don't
 # change this unless you know what you are doing.
 tinc__hostname: '{{ inventory_hostname_short }}'
 
@@ -285,7 +291,7 @@ tinc__home: '/etc/tinc'
 # .. envvar:: tinc__ulimit_options
 #
 # List of options passed to ``ulimit`` command before starting ``tincd``
-# processs. Set maximum size of address space locked into memory, in KB.
+# processes. Set the maximum size of address space locked into memory, in KB.
 tinc__ulimit_options: '-l {{ (1024 * 64) }}'
 
 
@@ -298,10 +304,9 @@ tinc__extra_options: ''
 
 # .. envvar:: tinc__systemd
 #
-# Enable support for ``systemd`` if it's detected as the init system.
+# Enable support for ``systemd`` if it is detected as the init system.
 tinc__systemd: '{{ True
-                   if (ansible_service_mgr|d() and
-                       ansible_service_mgr == "systemd")
+                   if (ansible_service_mgr|d("unknown") == "systemd")
                    else False }}'
 
 
@@ -311,7 +316,7 @@ tinc__systemd: '{{ True
 
 # .. envvar:: tinc__rsa_key_length
 #
-# Length of the RSA private key generated on each node
+# Length of the RSA private key generated on each node.
 tinc__rsa_key_length: '4096'
 
 
@@ -383,4 +388,3 @@ tinc__apt_preferences__dependent_list:
     backports: [ 'wheezy' ]
     reason:  'Backport installed on Wheezy for version parity with Debian Jessie'
     by_role: 'debops.tinc'
-

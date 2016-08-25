@@ -1,10 +1,9 @@
 ---
 
 - name: Install required packages
-  apt:
+  package:
     name: '{{ item }}'
     state: 'present'
-    install_recommends: False
   with_flattened:
     - '{{ tinc__base_packages }}'
     - '{{ tinc__packages }}'
@@ -99,7 +98,7 @@
     mode: '0750'
   with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: (item.name|d() and item.tinc_options|d() and
-         (item.generate_tinc_down is undefined or item.generate_tinc_down|bool))
+         (item.generate_tinc_down|d(True)|bool))
 
 - name: Configure which networks are started at boot
   template:
@@ -110,7 +109,7 @@
     mode: '0644'
 
 - name: Initialize RSA key pairs
-  shell: yes | tincd -n {{ item.name }} -K{{ item.rsa_key_length | d(tinc__rsa_key_length) }}
+  shell: yes | tincd -n {{ item.name }} -K {{ item.rsa_key_length | d(tinc__rsa_key_length) }}
   args:
     creates: '/etc/tinc/{{ item.name }}/rsa_key.priv'
   with_items: '{{ tinc__default_networks + tinc__networks }}'
@@ -224,21 +223,18 @@
 
 - name: Reload systemd daemon configuration
   shell: systemctl daemon-reload ; systemctl enable tinc.service
-  when: tinc__register_systemd.changed | bool
+  when: tinc__register_systemd|changed
 
 - name: Start tinc VPN networks on first install
   service:
     name: 'tinc'
     state: 'restarted'
-  when: not tinc__systemd | bool and tinc__register_install.changed | bool
+  when: not tinc__systemd|bool and tinc__register_install|changed
 
 - name: Manage tinc network services in systemd
   service:
     name: 'tinc@{{ item.name }}'
-    enabled: '{{ (True if ((item.delete is undefined or not item.delete|bool) and
-                           (item.boot is undefined or item.boot|bool))
-                       else False) | bool }}'
-    state: '{{ ("stopped" if (item.delete|d() and item.delete|bool) else "started") }}'
+    enabled: '{{ not (item.delete|d()|bool) and (item.boot|d(True)|bool) }}'
+    state: '{{ item.delete|d()|bool | ternary("stopped", "started") }}'
   with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: tinc__systemd | bool and item.name|d() and item.tinc_options|d()
-

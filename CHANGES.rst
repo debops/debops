@@ -1,6 +1,8 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 v0.2.1
 ------
 
@@ -76,4 +78,3 @@ v0.1.0
 *Released: 2015-05-20*
 
 - Initial release. [drybjed]
-
