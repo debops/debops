@@ -39,9 +39,10 @@ defined as a YAML dict with the following keys:
 ``filename``
   Optional. Custom filename instead of a generated one
 
-``delete``
-  Optional. Delete specified rule file. Possible values: ``False`` or ``True``
+``rule_state``
+  Optional. State of the rule. Defaults to ``present``. Possible values:
+  ``present`` or ``absent``
 
 Depending on the chosen type, many additional variables are supported. Please
-check the template files located in the :file:`templates/etc/ferm/filter-input.d/`
+check the template files located in the :file:`templates/etc/ferm/ferm.d`
 directory.

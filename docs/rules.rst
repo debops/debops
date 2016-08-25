@@ -200,6 +200,8 @@ different chain. The following template-specific YAML keys are supported:
   ``REJECT``, ``RETURN``, ``NOP`` or a custom target. Defaults to ``ACCEPT``.
 
 ``when``
+  This option is deprecated, see `discussion <https://github.com/debops/ansible-apt_preferences/issues/12>`_.
+  Use ``rule_state`` instead.
   Optional. Define condition for the rule to be disabled.
 
 .. _ferm include: http://ferm.foo-projects.org/download/2.1/ferm.html#includes
