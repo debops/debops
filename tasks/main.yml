@@ -8,10 +8,9 @@
     value: '{{ "yes" if ferm__enabled|bool else "no" }}'
 
 - name: Ensure ferm is installed
-  apt:
+  package:
     name: '{{ item }}'
     state: 'present'
-    install_recommends: 'no'
   with_flattened:
     - '{{ ferm__base_packages }}'
     - '{{ ferm__packages }}'
@@ -213,4 +212,3 @@
     group: 'root'
     mode: '0644'
   tags: [ 'role::ferm:rules' ]
-
