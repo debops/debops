@@ -10,6 +10,18 @@ and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
 The current role maintainer_ is drybjed_
 
+
+`debops.apt_preferences master`_ - unreleased
+---------------------------------------------
+
+.. _debops.apt_preferences master: https://github.com/debops/ansible-apt_preferences/compare/v0.2.1...master
+
+Changed
+~~~~~~~
+
+- Sanitize file name generated from ``item.by_role`` by replacing dots with
+  underscores. [ypid_]
+
 v0.2.1
 ------
 
