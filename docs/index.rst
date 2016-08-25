@@ -11,7 +11,6 @@ Ansible role: debops.tinc
    defaults
    defaults-detailed
    copyright
-   credits
    changelog
 
 ..

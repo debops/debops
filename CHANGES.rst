@@ -13,6 +13,17 @@ and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 The current role maintainer_ is drybjed_
 
 
+`debops.tinc master`_ - unreleased
+----------------------------------
+
+.. _debops.tinc master: https://github.com/debops/ansible-tinc/compare/v0.2.1...master
+
+Changed
+~~~~~~~
+
+- Update to DebOps Standards v0.2.1. [ypid_]
+
+
 `debops.tinc v0.2.1`_ - 2016-02-29
 ----------------------------------
 
