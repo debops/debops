@@ -16,12 +16,6 @@ v0.2.2
 
 *Unreleased*
 
-- Use ``item.rule_state`` in the role defaults instead of the hereby deprecated
-  ``item.when`` and ``item.delete``.
-  See `discussion <https://github.com/debops/ansible-apt_preferences/issues/12>`_.
-  ``item.delete`` and ``item.when`` are currently still supported for backwards
-  compatibility. [ypid_]
-
 Added
 ~~~~~
 
@@ -33,11 +27,26 @@ Changed
 
 - Use the `Ansible package module`_ which requires Ansible v2.0. [ypid_]
 
+- Be more precise about the expected format of ``item.by_role`` in
+  :ref:`default_rules`. [ypid_]
+
 Fixed
 ~~~~~
 
 - Don’t create duplicate forward rules when an interface has both an IPv4 and
   an IPv6 address. [ypid_]
+
+Deprecated
+~~~~~~~~~~
+
+- Use ``item.rule_state`` in the role defaults instead of the hereby deprecated
+  ``item.when`` and ``item.delete``.
+  See `discussion <https://github.com/debops/ansible-apt_preferences/issues/12>`_.
+  ``item.delete`` and ``item.when`` are currently still supported for backwards
+  compatibility. [ypid_]
+
+- Deprecated ``item.role``, use ``item.by_role`` instead. Applies for:
+  :ref:`default_rules`. [ypid_]
 
 v0.2.1
 ------
