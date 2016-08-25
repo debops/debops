@@ -1,5 +1,5 @@
-Default variables: configuration
-================================
+Default variable details
+========================
 
 Some of ``debops.apt_preferences`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
@@ -102,11 +102,10 @@ Prefer packages from a specific site:
        pin: 'origin "ftp.de.debian.org"
        priority: '999'
 
-Install the ``nginx`` packages from backports on Debian Wheezy and Debian Jessie:
+Install the :program:`nginx` packages from backports on Debian Wheezy and Debian Jessie:
 
 .. code-block:: yaml
 
    apt_preferences__list:
      - packages: [ 'nginx', 'nginx-*' ]
        backports: [ 'wheezy', 'jessie' ]
-
