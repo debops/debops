@@ -23,6 +23,11 @@ Changed
 
 - Update to DebOps Standards v0.2.1. [ypid_]
 
+Fixed
+~~~~~
+
+- Redundancy and deviation in documentation. [ypid_]
+
 
 `debops.tinc v0.2.1`_ - 2016-02-29
 ----------------------------------

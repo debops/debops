@@ -14,7 +14,7 @@
 
 # .. envvar:: tinc__networks
 #
-# List of Tinc Virtual Private Networks to configure. See :ref:`tinc__networks`
+# List of Tinc Virtual Private Networks to configure. See :ref:`tinc__ref_networks`
 # for more details.
 tinc__networks: []
 
@@ -37,7 +37,7 @@ tinc__default_networks: [ '{{ tinc__network_mesh0 }}' ]
 # .. envvar:: tinc__network_mesh0
 #
 # The dictionary variable which defines the ``mesh0`` network. See
-# :ref:`tinc__networks` for more details about available options. Some of the
+# :ref:`tinc__ref_networks` for more details about available options. Some of the
 # configuration parameters are exposed in their own default variables to make
 # simple config changes easier.
 tinc__network_mesh0:
@@ -66,6 +66,7 @@ tinc__network_mesh0:
 # .. envvar:: tinc__interface_mesh0
 #
 # Name of the network interface to use for the Tinc ``mesh0`` VPN.
+# For more details refer to :ref:`item.interface <tinc__ref_networks_interface>`.
 tinc__interface_mesh0: 'tap-mesh0'
 
 
@@ -89,37 +90,29 @@ tinc__exclude_interface_mesh0: '{{
 
 # .. envvar:: tinc__link_type_mesh0
 #
-# Link type to set for the Tinc ``mesh0`` VPN. If empty, ``debops.tinc``
-# defaults to a standalone network interface with :program:`dhclient` requesting
-# network configuration using DHCP. Possible values are:
-#
-# ``static``
-#   Set the Tinc interface in a "static" mode with an IP address, optionally
-#   attached to a network bridge. This should usually be done just on one host
-#   in the mesh to provide DHCP/DNS services.
-#
+# Link type to set for the Tinc ``mesh0`` VPN.
+# For more details refer to :ref:`item.link_type <tinc__ref_networks_link_type>`.
 tinc__link_type_mesh0: ''
 
 
 # .. envvar:: tinc__hwaddr_mesh0
 #
-# Specify the Media Access Control address of the Tinc ``mesh0`` interface. If
-# not specified, a randomized stable MAC address will be generated
-# automatically. Set the MAC address value to ``'*'`` to let the system
-# generate a random hardware address.
+# Specify the Media Access Control address of the Tinc ``mesh0`` interface.
+# For more details refer to :ref:`item.hwaddr <tinc__ref_networks_hwaddr>`.
 tinc__hwaddr_mesh0: ''
 
 
 # .. envvar:: tinc__boot_mesh0
 #
 # Specify if the Tinc ``mesh0`` network should be started at boot.
+# For more details refer to :ref:`item.boot <tinc__ref_networks_boot>`.
 tinc__boot_mesh0: True
 
 
 # .. envvar:: tinc__bridge_mesh0
 #
-# Name of the bridge to connect the interface of the Tinc ``mesh0`` VPN. This
-# should be set on a host that provides the DHCP and DNS services for the mesh.
+# Name of the bridge to connect the interface of the Tinc ``mesh0`` VPN.
+# For more details refer to :ref:`item.bridge <tinc__ref_networks_bridge>`.
 tinc__bridge_mesh0: ''
 
 
@@ -144,8 +137,8 @@ tinc__exclude_bridge_mesh0: '{{
 # .. envvar:: tinc__allow_mesh0
 #
 # List of IP addresses or CIDR subnets which will be allowed to connect to the
-# Tinc ``mesh0`` VPN port (655) through the firewall. If this list is empty,
-# any IP address can connect.
+# Tinc ``mesh0`` VPN port (655).
+# For more details refer to :ref:`item.allow <tinc__ref_networks_allow>`.
 tinc__allow_mesh0: []
 
 
@@ -180,10 +173,9 @@ tinc__connect_to_mesh0: '{{ tinc__inventory_hosts_mesh0 + tinc__external_hosts_m
 
 # .. envvar:: tinc__exclude_addresses_mesh0
 #
-# List of FQDN or IP addresses which should be exluded from the public key file
-# of a given host. This list excludes the IP addresses of the mesh interface as
-# well as the bridge interface, so that Tinc doesn't try to connect to remote
-# hosts over the VPN connection.
+# List of FQDN or IP addresses which should be excluded from the public key
+# file of a given host.
+# For more details refer to :ref:`item.tinc_exclude_addresses <tinc__ref_networks_tinc_exclude_addresses>`.
 tinc__exclude_addresses_mesh0: '{{ tinc__exclude_interface_mesh0 + tinc__exclude_bridge_mesh0 }}'
 
 
@@ -269,6 +261,7 @@ tinc__hostname: '{{ inventory_hostname_short }}'
 # .. envvar:: tinc__user
 #
 # System user account which is used to run ``tincd``.
+# For more details refer to :ref:`item.user <tinc__ref_networks_user>`.
 tinc__user: 'tinc-vpn'
 
 
