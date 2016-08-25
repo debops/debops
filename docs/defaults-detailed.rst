@@ -104,7 +104,7 @@ network is described by a YAML dictionary which should have the following keys:
   the option name, values can be strings or lists of strings, in which case the
   option will be repeated as many times as there are elements in the list.
 
-  To see the list of available options, check the ``tinc.conf(5)`` manual page.
+  To see the list of available options, check the :manpage:`tinc.conf(5)` manual page.
 
 ``tinc_host_options``
   Optional. Dictionary variable which specifies options stored in the
@@ -113,7 +113,7 @@ network is described by a YAML dictionary which should have the following keys:
   case the option will be repeated as many times as there are elements in the
   list.
 
-  To see the list of available options, check the ``tinc.conf(5)`` manual page.
+  To see the list of available options, check the :manpage:`tinc.conf(5)` manual page.
 
 Examples
 ~~~~~~~~
