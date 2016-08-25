@@ -19,7 +19,7 @@ network is described by a YAML dictionary which should have the following keys:
 
 ``name``
   Required. Name of the mesh network, used as the name of the directory in
-  ``/etc/tinc/`` as well as the ``systemd`` instance argument.
+  :file:`/etc/tinc/` as well as the ``systemd`` instance argument.
 
 ``interface``
   Required. Name of the virtual Ethernet device which will be managed by the
@@ -71,7 +71,7 @@ network is described by a YAML dictionary which should have the following keys:
 
 ``tinc_options``
   Required. Dictionary variable which specifies options stored in the
-  ``/etc/tinc/<network>/tinc.conf`` configuration file. Each key of the dict is
+  :file:`/etc/tinc/<network>/tinc.conf` configuration file. Each key of the dict is
   the option name, values can be strings or lists of strings, in which case the
   option will be repeated as many times as there are elements in the list.
 
@@ -79,7 +79,7 @@ network is described by a YAML dictionary which should have the following keys:
 
 ``tinc_host_options``
   Optional. Dictionary variable which specifies options stored in the
-  ``/etc/tinc/<network>/hosts/<hostname>`` configuration file. Each key of the
+  :file:`/etc/tinc/<network>/hosts/<hostname>` configuration file. Each key of the
   dict is the option name, values can be strings or lists of strings, in which
   case the option will be repeated as many times as there are elements in the
   list.

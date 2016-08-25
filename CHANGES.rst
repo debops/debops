@@ -8,25 +8,25 @@ v0.2.1
 
 *Released: 2016-02-29*
 
-- Use the same value type in :any:`tinc__host_addresses_fqdn` and
-  :any:`tinc__host_addresses_ip` for consistency. [drybjed]
+- Use the same value type in :envvar:`tinc__host_addresses_fqdn` and
+  :envvar:`tinc__host_addresses_ip` for consistency. [drybjed_]
 
-- Support both strings and lists in :any:`tinc__host_addresses`. [drybjed]
+- Support both strings and lists in :envvar:`tinc__host_addresses`. [drybjed_]
 
-- Use separate :any:`tinc__inventory_hostname` variable synchronized with the
+- Use separate :envvar:`tinc__inventory_hostname` variable synchronized with the
   ``inventory_hostname`` variable to transfer files correctly between hosts.
-  [drybjed]
+  [drybjed_]
 
 - Add a way to exclude addresses from the public key host files. The default
   ``mesh0`` configuration will automatically gather all relevant IP addresses
-  and exclude them from the host files. [drybjed]
+  and exclude them from the host files. [drybjed_]
 
-- Switch init service detection from ``debops.core`` Ansible local fact to
+- Switch init service detection from debops.core_ Ansible local fact to
   internal ``ansible_service_mgr`` variable. This increases the role
-  requirements to Ansible v2.0. [drybjed]
+  requirements to Ansible v2.0. [drybjed_]
 
 - Use only the hostname in the ``ConnectTo`` list if a FQDN name is used in the
-  inventory. [drybjed]
+  inventory. [drybjed_]
 
 v0.2.0
 ------
@@ -47,13 +47,13 @@ v0.2.0
   allow to manage each Tinc VPN separately from the others. The role uses these
   units as needed to start/stop/restart the daemons.
 
-  Configuration for ``debops.etc_services``, ``debops.ferm`` and
-  ``debops.secret`` Ansible roles is generated dynamically by custom templates.
+  Configuration for debops.etc_services_, debops.ferm_ and
+  debops.secret_ Ansible roles is generated dynamically by custom templates.
   This requires a customized Ansible playbook (see the documentation).
 
   Public RSA host keys are not distributed using YAML text blocks. Instead,
-  ``debops.secret`` role manages as set of directories which can be used to
-  deploy public keys to the hosts in the mesh. [drybjed]
+  debops.secret_ role manages as set of directories which can be used to
+  deploy public keys to the hosts in the mesh. [drybjed_]
 
 v0.1.1
 ------
@@ -62,19 +62,19 @@ v0.1.1
 
 - New variable ``tinc_interface_auto`` wich controls if VPN interface will be
   started at boot time, and if Ansible will automatically manage it during
-  playbook runs if any changes occur. [drybjed]
+  playbook runs if any changes occur. [drybjed_]
 
 - Change the ``tinc_host_port`` type from Int to String, so that there are no
-  issues in ``debops.ferm`` role. [drybjed]
+  issues in debops.ferm_ role. [drybjed_]
 
-- Fix wrong name of the variable in host template. [drybjed]
+- Fix wrong name of the variable in host template. [drybjed_]
 
 - Wrap the name of the VPN node and replace all hyphens with underscores, which
-  is a ``tinc`` requirement. [drybjed]
+  is a ``tinc`` requirement. [drybjed_]
 
 v0.1.0
 ------
 
 *Released: 2015-05-20*
 
-- Initial release. [drybjed]
+- Initial release. [drybjed_]

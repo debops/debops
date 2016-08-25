@@ -9,8 +9,8 @@ Getting started
 The ``debops.tinc`` role by itself only defines the connections between hosts,
 posing as Ethernet tunnels. To make the proper network, you need a defined
 subnet and a way to assign IP addresses to hosts in the network. You can use
-the ``debops.subnetwork`` role to define an internal subnet for the hosts in
-the VPN, and ``debops.dnsmasq`` to provide DHCP and DNS services inside the
+the debops.subnetwork_ role to define an internal subnet for the hosts in
+the VPN, and debops.dnsmasq_ to provide DHCP and DNS services inside the
 network.
 
 Example inventory
@@ -93,17 +93,17 @@ a bridge which connects to a network with DHCP/DNS server:
 
 In this mode, hosts will be configured to start their VPN interface with a
 dummy ``0.0.0.0`` IP address and connect it to a bridge, by default ``br2``.
-This bridge can be created by the ``debops.subnetwork`` role, which defaults to
+This bridge can be created by the debops.subnetwork_ role, which defaults to
 ``br2`` as well.
 
 In "static" mode, the VPN interface will act as another layer 2 connection on
 the bridge and DHCP requests from the VPN will be passed along to a suitable
-server. You can configure a DHCP/DNS server using ``debops.dnsmasq`` role.
+server. You can configure a DHCP/DNS server using debops.dnsmasq_ role.
 
 RSA public key exchange
 -----------------------
 
-The ``debops.tinc`` role uses directories created in the ``secret/tinc/``
+The ``debops.tinc`` role uses directories created in the :file:`secret/tinc/`
 directory on the Ansible Controller to exchange RSA public keys between hosts
 in a given VPN. Each network has its own directory tree::
 
@@ -133,12 +133,12 @@ By default all public keys in a given mesh network will be stored in::
 
     secret/tinc/networks/<mesh>/by-network/<mesh>/hosts/
 
-The ``by-group/all/hosts/`` directory can be used to distribute public keys to
+The :file:`by-group/all/hosts/` directory can be used to distribute public keys to
 all hosts in a given mesh network. You can also distribute the keys only to
 hosts in a particular Ansible group, or even to a specific host.
 
-Only the hosts in the current ``ansible-playbook`` run will get the keys
-present in the ``hosts/`` directories. This means that when you add a new host
+Only the hosts in the current :command:`ansible-playbook` run will get the keys
+present in the :file:`hosts/` directories. This means that when you add a new host
 to the mesh, you will need to run the role against all of the hosts of the
 mesh, otherwise the new host won't be accepted by the mesh due to unknown
 public keys.
@@ -147,7 +147,7 @@ Support for systemd tinc@.service instances
 -------------------------------------------
 
 On a legacy systems without ``systemd``, you can manage Tinc VPN networks using
-the ``/etc/init.d/tinc`` init script.
+the :file:`/etc/init.d/tinc` init script.
 
 If ``systemd`` is detected as the current init process, ``debops.tinc`` will
 configure a set of ``systemd`` unit files:

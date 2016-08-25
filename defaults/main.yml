@@ -91,7 +91,7 @@ tinc__exclude_interface_mesh0: '{{
 # .. envvar:: tinc__link_type_mesh0
 #
 # Link type to set for the Tinc ``mesh0`` VPN. If empty, ``debops.tinc``
-# defaults to a standalone network interface with ``dhclient`` requesting
+# defaults to a standalone network interface with :program:`dhclient` requesting
 # network configuration using DHCP. Possible values are:
 #
 # ``static``
@@ -208,7 +208,7 @@ tinc__inventory_hosts_mesh0: '{{ (groups.debops_service_tinc_mesh0
 #
 # List of hosts to connect to which are not in the Ansible inventory. You
 # should provide the corresponding public key files through the directories in
-# ``secret/`` directory.
+# :file:`secret/` directory.
 tinc__external_hosts_mesh0: []
 
 
@@ -236,7 +236,7 @@ tinc__packages: []
 #
 # List of Ansible inventory groups which are used by the ``debops.tinc`` role to
 # manage separate ``tinc`` networks. Each group will have corresponding
-# a directory in the ``secret/`` store on the Ansible Controller.
+# a directory in the :file:`secret/` store on the Ansible Controller.
 #
 # The default Ansible group ``debops_service_tinc_mesh0`` specifies hosts that
 # are participating in the ``mesh0`` VPN.
@@ -246,7 +246,7 @@ tinc__inventory_groups: [ 'debops_service_tinc_mesh0' ]
 # .. envvar:: tinc__inventory_hosts
 #
 # This list defines which hosts in Ansible inventory participate in a Tinc VPN.
-# They will have their own directories in the ``secret/`` store on the Ansible
+# They will have their own directories in the :file:`secret/` store on the Ansible
 # Controller used to distribute public host keys.
 tinc__inventory_hosts: '{{ groups.debops_service_tinc|d([]) }}'
 
@@ -298,7 +298,7 @@ tinc__ulimit_options: '-l {{ (1024 * 64) }}'
 # .. envvar:: tinc__extra_options
 #
 # String with extra options to be passed to all ``tincd`` instances in the
-# ``/etc/default/tinc`` config file
+# :file:`/etc/default/tinc` config file
 tinc__extra_options: ''
 
 
@@ -376,12 +376,12 @@ tinc__modprobe_modules: [ 'tun' ]
 
 
 # ----------------------------------------
-#   Configuration of other Ansible roles
+#   Configuration for other Ansible roles
 # ----------------------------------------
 
 # .. envvar:: tinc__apt_preferences__dependent_list
 #
-# Configuration of ``debops.apt_preferences`` role.
+# Configuration of debops.apt_preferences_ role.
 tinc__apt_preferences__dependent_list:
 
   - package: 'tinc'
