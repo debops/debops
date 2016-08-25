@@ -29,8 +29,6 @@ To follow this guide you should be familiar with DebOps and the way to configure
 related Ansible variables. If you're not, you may first want to read
 `Getting Started with DebOps`_.
 
-.. _Getting Started with DebOps: https://docs.debops.org/en/latest/debops-playbooks/docs/guides/getting-started.html
-
 
 .. _guide_gateway_packet_forwarding:
 
@@ -163,10 +161,7 @@ to these services should only be allowed from the internal network.
         dhcp_range_end: '-10'
         dhcp_lease: '24h'
 
-Please check the debops.dnsmasq_ role `documentation`_ for more configuration
-options and a detailed description of those.
-
-.. _documentation: https://docs.debops.org/en/latest/ansible/roles/debops.dnsmasq.html
+Refer to the debops.dnsmasq_ role for details.
 
 **Example: nginx**
 
