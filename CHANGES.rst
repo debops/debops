@@ -70,6 +70,14 @@ Changed
 
 - Update debops.librenms_ playbook. [drybjed_]
 
+Deprecated
+~~~~~~~~~~
+
+- Support for Ansible 2.0 is deprecated due to the changes in ``ldap_attr`` and
+  ``ldap_entry`` Ansible modules which require Ansible 2.1. Roles that don't
+  use these Ansible modules should still work correctly on Ansible 2.0.
+  [drybjed_]
+
 Removed
 ~~~~~~~
 
@@ -79,6 +87,13 @@ Removed
 - Remove the debops.ifupdown_ role form the :file:`common.yml` playbook and turn it
   into a regular service. The debops.ifupdown_ role is activated when hosts are
   placed in the ``[debops_service_ifupdown]`` Ansible host group. [drybjed_]
+
+Fixed
+~~~~~
+
+- The ``ldap_attr`` and ``ldap_entry`` modules should now work correctly on
+  Ansible 2.1. This is a non-backwards compatible change and it breaks
+  compatibility with Ansible 2.0. [anzil]
 
 
 `debops-playbooks v0.2.9`_ - 2016-07-07
