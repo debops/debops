@@ -154,14 +154,14 @@ EXAMPLES = """
 def main():
     module = AnsibleModule(
         argument_spec={
-            'dn': dict(required=True),
-            'name': dict(required=True),
-            'values': dict(required=True),
-            'state': dict(default='present', choices=['present', 'absent', 'exact']),
-            'server_uri': dict(default='ldapi:///'),
-            'start_tls': dict(default='false', choices=BOOLEANS),
-            'bind_dn': dict(default=None),
-            'bind_pw': dict(default=''),
+            'dn': dict(required=True, type='str'),
+            'name': dict(required=True, type='str'),
+            'values': dict(required=True, type='raw'),
+            'state': dict(default='present', choices=['present', 'absent', 'exact'], type='str'),
+            'server_uri': dict(default='ldapi:///', type='str'),
+            'start_tls': dict(default='false', choices=BOOLEANS, type='bool'),
+            'bind_dn': dict(default=None, type='str'),
+            'bind_pw': dict(default='', type='str'),
         },
         supports_check_mode=True,
     )
