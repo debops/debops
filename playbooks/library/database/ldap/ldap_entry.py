@@ -122,12 +122,12 @@ EXAMPLES = """
 def main():
     module = AnsibleModule(
         argument_spec={
-            'dn': dict(required=True),
-            'state': dict(default='present', choices=['present', 'absent']),
-            'server_uri': dict(default='ldapi:///'),
-            'start_tls': dict(default='false', choices=BOOLEANS),
-            'bind_dn': dict(default=None),
-            'bind_pw': dict(default=''),
+            'dn': dict(required=True, type='str'),
+            'state': dict(default='present', choices=['present', 'absent'], type='str'),
+            'server_uri': dict(default='ldapi:///', type='str'),
+            'start_tls': dict(default='false', choices=BOOLEANS, type='bool'),
+            'bind_dn': dict(default=None, type='str'),
+            'bind_pw': dict(default='', type='str'),
         },
         check_invalid_arguments=False,
         supports_check_mode=True,
