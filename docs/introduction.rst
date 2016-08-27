@@ -8,7 +8,7 @@ for those programs.
 
 See `AppArmor in the Debian Wiki <https://wiki.debian.org/AppArmor/HowToUse>`_.
 
-By default (e.g. no auditd_ installed) log messages from AppArmor are logged
+By default (e. g. no auditd_ installed) log messages from AppArmor are logged
 via syslog to the kernel facility which usually ends up under
 :file:`/var/log/kern.log`.
 
