@@ -12,13 +12,13 @@ Ansible integration
 Support for other Ansible roles
 -------------------------------
 
-The debops.hashicorp_ Ansible role is designed to be used by other Ansible
+The ``debops.hashicorp`` Ansible role is designed to be used by other Ansible
 roles as role dependency. By design, the application binaries are installed in
 the specified path and the rest of the service configuration, including service
 process manager configuration, firewall, TCP/UDP port registration in
 :file:`/etc/services`, etc. is left to the user or other Ansible roles.
 
-To facilitate seamless role integration, debops.hashicorp_ role provides
+To facilitate seamless role integration, ``debops.hashicorp`` role provides
 a set of default variables and Ansible local facts that can be used by other
 Ansible roles idempotently. Thus, the modification of the role itself shouldn't
 be needed, and it can should be easily integrated in the different playbooks
@@ -29,15 +29,15 @@ Default variables available to other roles
 ------------------------------------------
 
 You can use these variables in the playbook to influence the operation of the
-debops.hashicorp_ role from another role:
+``debops.hashicorp`` role from another role:
 
 :envvar:`hashicorp__dependent_packages`
-  List of APT packages which should be installed when the debops.hashicorp_
+  List of APT packages which should be installed when the ``debops.hashicorp``
   role is executed.
 
 :envvar:`hashicorp__dependent_applications`
   List of HashiCorp_ applications which should be installed by the
-  debops.hashicorp_ role. For the list of available applications, refer to
+  ``debops.hashicorp`` role. For the list of available applications, refer to
   the :envvar:`hashicorp__default_version_map` variable.
 
 :envvar:`hashicorp__consul_webui`
@@ -54,7 +54,7 @@ In a hypothetical ``consul`` Ansible role create a default variable:
 
    consul__hashicorp_application: 'consul'
 
-Next, in the playbook that executes your role, include the debops.hashicorp_
+Next, in the playbook that executes your role, include the ``debops.hashicorp``
 role with your custom variable:
 
 .. code-block:: yaml
@@ -73,7 +73,7 @@ role with your custom variable:
 
 This playbook will then install the Consul_ application after verification,
 and configure it using your own Ansible role. Make sure that you use YAML list
-syntax correctly, otherwise the debops.hashicorp_ role will fail due to
+syntax correctly, otherwise the ``debops.hashicorp`` role will fail due to
 wrong variable type mismatch. To install multiple applications at once, you can
 use a different variant of the variables and playbook.
 
@@ -104,7 +104,7 @@ The playbook:
 Ansible local facts
 -------------------
 
-The debops.hashicorp_ role maintains a set of Ansible local facts with
+The ``debops.hashicorp`` role maintains a set of Ansible local facts with
 information about the installed applications. Other roles can use these facts
 in an idempotent way to prepare their own configuration. These facts are:
 

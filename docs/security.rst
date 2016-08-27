@@ -12,7 +12,7 @@ debops.hashicorp security considerations
 Role security guidelines
 ------------------------
 
-Because the debops.hashicorp_ role can be used to install binary Go
+Because the ``debops.hashicorp`` role can be used to install binary Go
 applications on production systems, it was designed to check and validate the
 archives used for application deployment against a known Trust Path. This
 document explains the steps taken by the role to authenticate and verify the
@@ -28,7 +28,7 @@ Debian Software Repository. The Debian packages for different applications
 should be the preferred installation method when they are readily available on
 the Debian Stable release.
 
-The debops.hashicorp_ role is written in the belief that the verified and
+The ``debops.hashicorp`` role is written in the belief that the verified and
 authenticated access to the upstream versions of HashiCorp_ applications, even
 though installed using binary packages, can still be useful, for example to
 provide secure installation path to the software not packaged in Debian.
@@ -66,7 +66,7 @@ key used by HashiCorp_ is:
 
    91A6 E7F8 5D05 C656 30BE F189 5185 2D87 348F FC4C
 
-The HashiCorp_ OpenPGP key is published on the `keybase.io`_ website, on the
+The HashiCorp_ OpenPGP key is published on the keybase.io_ website, on the
 `hashicorp account <https://keybase.io/hashicorp>`_. The key is tracked by
 several other users of the site.
 
@@ -82,11 +82,11 @@ and can be imported from there using the :command:`gpg` command:
 Software installation procedure
 -------------------------------
 
-The steps outlined below describe the method used by the debops.hashicorp_
+The steps outlined below describe the method used by the ``debops.hashicorp``
 role to verify and install the HashiCorp_ applications selected by the user or
 another Ansible role:
 
-- The debops.hashicorp_ Ansible role creates a separate, unprivileged system
+- The ``debops.hashicorp`` Ansible role creates a separate, unprivileged system
   group and UNIX user account, by default both named ``hashicorp``. The account
   does not provide shell access and uses :file:`/usr/sbin/nologin` shell by
   default.

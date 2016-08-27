@@ -10,7 +10,7 @@ Getting started
 Initial configuration
 ---------------------
 
-The debops.hashicorp_ role does not install any HashiCorp_ applications by
+The ``debops.hashicorp`` role does not install any HashiCorp_ applications by
 default, even if enabled in the Ansible inventory. You need to specify the
 application names you wish to install using the :envvar:`hashicorp__applications`
 list. For example, to install ``consul`` on all hosts that use the role, create
@@ -40,7 +40,7 @@ more details.
 Example inventory
 -----------------
 
-The debops.hashicorp_ Ansible role is not enabled by default. To enable it
+The ``debops.hashicorp`` Ansible role is not enabled by default. To enable it
 on a host, you need to include that host in the ``[debops_service_hashicorp]``
 inventory group:
 
@@ -54,7 +54,7 @@ Example playbook
 ----------------
 
 If you are using this role without DebOps, here's an example Ansible playbook
-that uses the debops.hashicorp_ role:
+that uses the ``debops.hashicorp`` role:
 
 .. literalinclude:: playbooks/hashicorp.yml
    :language: yaml
