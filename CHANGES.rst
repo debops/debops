@@ -28,6 +28,9 @@ Added
 - Add :envvar:`dnsmasq__group_options` and :envvar:`dnsmasq__host_options` with
   the same function as ``dnsmasq_options``. [ypid_]
 
+- Add :envvar:`dnsmasq__external_dns` which can be used to only provided DNS
+  for localhost. [ypid_]
+
 Changed
 ~~~~~~~
 

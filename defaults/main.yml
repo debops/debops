@@ -22,6 +22,13 @@
 dnsmasq_public_dns: False
 
 
+# .. envvar:: dnsmasq__external_dns
+#
+# Enable or disable external DNS support.
+# If set to ``False`` then only allow DNS queries from localhost.
+dnsmasq__external_dns: True
+
+
 # .. envvar:: dnsmasq_dhcpv4
 #
 # Enable or disable DHCPv4 support.
@@ -245,6 +252,7 @@ dnsmasq__ferm__dependent_rules:
     protocol: [ 'udp', 'tcp' ]
     dport: [ 'domain' ]
     accept_any: True
+    rule_state: '{{ dnsmasq__external_dns|bool | ternary("present", "absent") }}'
     interface: '{{ []
                    if (dnsmasq_public_dns|bool)
                    else (dnsmasq_interfaces | map(attribute="interface") | list) }}'
@@ -255,7 +263,7 @@ dnsmasq__ferm__dependent_rules:
     weight: '40'
     protocol: [ 'udp', 'tcp' ]
     dport: [ 'bootps' ]
-    rule_state: '{{ "present" if (dnsmasq_dhcpv4|bool) else "absent" }}'
+    rule_state: '{{ dnsmasq_dhcpv4|bool | ternary("present", "absent") }}'
     interface: '{{ dnsmasq_interfaces | map(attribute="interface")
                    | list | difference(dnsmasq_no_dhcp_interfaces) }}'
 
@@ -267,7 +275,7 @@ dnsmasq__ferm__dependent_rules:
     daddr: [ 'ff02::1:2' ]
     protocol: [ 'udp', 'tcp' ]
     dport: [ 'dhcpv6-client', 'dhcpv6-server' ]
-    rule_state: '{{ "present" if (dnsmasq_dhcpv6|bool) else "absent" }}'
+    rule_state: '{{ dnsmasq_dhcpv6|bool | ternary("present", "absent") }}'
     interface: '{{ dnsmasq_interfaces | map(attribute="interface")
                    | list | difference(dnsmasq_no_dhcp_interfaces) }}'
 
