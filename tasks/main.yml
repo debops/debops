@@ -234,7 +234,7 @@
 - name: Manage tinc network services in systemd
   service:
     name: 'tinc@{{ item.name }}'
-    enabled: '{{ not (item.delete|d()|bool) and (item.boot|d(True)|bool) }}'
-    state: '{{ item.delete|d()|bool | ternary("stopped", "started") }}'
+    enabled: '{{ (item.state|d("present") not in ["absent"]) and (item.boot|d(True)|bool) }}'
+    state: '{{ (item.state|d("present") in ["absent"]) | ternary("stopped", "started") }}'
   with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: tinc__systemd | bool and item.name|d() and item.tinc_options|d()

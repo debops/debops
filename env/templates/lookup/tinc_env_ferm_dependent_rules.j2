@@ -14,7 +14,7 @@
 {%     endif %}
     by_role: 'debops.tinc'
     name: '{{ network.name }}'
-    rule_state: '{{ network.delete|d() | bool | ternary("absent", "present") }}'
+    rule_state: '{{ (network.state|d("present") in ["absent"]) | ternary("absent", "present") }}'
 
 {%   endif %}
 {% endfor %}

@@ -90,6 +90,10 @@ network is described by a YAML dictionary which should have the following keys:
   Optional, boolean. If ``True``, the ``tincd`` daemon will be run chrooted to
   the directory with the VPN configuration files.
 
+``state``
+  Optional, string. Whether the  mesh should be ``present`` or ``absent``
+  absent. Defaults to ``present``.
+
 .. _tinc__ref_networks_tinc_exclude_addresses:
 
 ``tinc_exclude_addresses``

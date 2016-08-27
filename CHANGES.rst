@@ -23,6 +23,9 @@ Changed
 
 - Update to DebOps Standards v0.2.1. [ypid_]
 
+- Rename undocumented ``delete`` option for :ref:`tinc__ref_networks` to
+  ``state`` and document it. [ypid_]
+
 Fixed
 ~~~~~
 
