@@ -1,6 +1,8 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 
 v0.1.0
 ------

@@ -9,13 +9,13 @@
     apparmor__local_config: '{{
       apparmor__local_dependent_config            |d({})
       | combine(apparmor__local_config_global     |d({}))
-      | combine(apparmor__local_config_host_group |d({}))
-      | combine(apparmor__local_config_host       |d({})) }}'
+      | combine(apparmor__local_group_config |d({}))
+      | combine(apparmor__local_host_config       |d({})) }}'
     apparmor__tunables: '{{
       (apparmor__tunables_dependent  |d([]) | list) +
-      (apparmor__tunables_global     |d([]) | list) +
-      (apparmor__tunables_host_group |d([]) | list) +
-      (apparmor__tunables_host       |d([]) | list) }}'
+      (apparmor__global_tunables     |d([]) | list) +
+      (apparmor__group_tunables |d([]) | list) +
+      (apparmor__host_tunables       |d([]) | list) }}'
 
 - name: Install required packages
   apt:
