@@ -215,6 +215,31 @@ dnsmasq_tftp_ipxe: True
 #   Other options
 # ------------------------------------
 
+# .. envvar:: dnsmasq__dns_not_forward_reserved
+#
+# Don’t forward the following reserved top level DNS names to upstream DNS
+# servers.
+dnsmasq__dns_not_forward_reserved: |
+  ## Ref: https://tools.ietf.org/html/rfc2606
+  server = /test/example/invalid/
+
+  ## Ref: https://tools.ietf.org/html/rfc6762
+  server = /local/
+
+  ## Ref: https://tools.ietf.org/html/rfc7686
+  server = /onion/
+
+
+# .. envvar:: dnsmasq__dns_not_forward_private
+#
+# Don’t forward the following private top level DNS names to upstream DNS
+# servers because RFC 6762 recommends not to use unregistered top-level
+# domains.
+# Refer to `Appendix G in RFC 6762 <https://tools.ietf.org/html/rfc6762#appendix-G>`_.
+dnsmasq__dns_not_forward_private: |
+  server = /intranet/internal/private/corp/home/lan/
+
+
 # .. envvar:: dnsmasq_options
 #
 # Additional options passed as a YAML text block.

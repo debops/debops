@@ -35,6 +35,9 @@ Added
   playbook to configure AppArmor so that all features of this role work with
   AppArmor enforcing the dnsmasq profile. [ypid_]
 
+- Don’t forward reserved or private top level DNS names to upstream DNS
+  servers. [ypid_]
+
 Changed
 ~~~~~~~
 

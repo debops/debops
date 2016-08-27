@@ -159,6 +159,14 @@ cname = {{ element + '.' + dnsmasq_domain }},{{ host + '.' + dnsmasq_domain }}
 resolv-file = /etc/resolvconf/upstream.conf
 {% endif %}
 
+{% if dnsmasq__dns_not_forward_reserved|d() %}
+{{ dnsmasq__dns_not_forward_reserved }}
+{% endif %}
+
+{% if dnsmasq__dns_not_forward_private|d() %}
+{{ dnsmasq__dns_not_forward_private }}
+{% endif %}
+
 {% if dnsmasq_options|d() %}
 # ---- Global custom options ----
 
