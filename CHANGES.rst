@@ -71,6 +71,9 @@ Changed
 
   [ypid_]
 
+- Move condition for :envvar:`dnsmasq__bogus_priv` to the defaults file to make
+  transparent when this option is going to be applied. [ypid_]
+
 Removed
 ~~~~~~~
 

@@ -72,7 +72,10 @@ dnsmasq__stop_dns_rebind: True
 # .. envvar:: dnsmasq__bogus_priv
 #
 # Don't forward reverse DNS lookups for private IP addresses.
-dnsmasq__bogus_priv: True
+dnsmasq__bogus_priv: '{{ dnsmasq__ipv4_gateway|d() and
+                         hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway]|d() and
+                         hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway].ipv4|d() and
+                         hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway].ipv4.address | ipaddr("public") }}'
 
 
 # ------------------------------------

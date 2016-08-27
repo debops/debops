@@ -2,14 +2,9 @@
 
 # ---- General options ----
 
-{% if (dnsmasq__ipv4_gateway|d() and
-       hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway]|d() and
-       hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway].ipv4|d() and
-       hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway].ipv4.address | ipaddr('public')) %}
-{%   if dnsmasq__bogus_priv|bool %}
+{% if dnsmasq__bogus_priv|bool %}
 # Don't forward private IP address queries to external networks.
 bogus-priv
-{%   endif %}
 {% endif %}
 
 # Enable connection tracking support.
