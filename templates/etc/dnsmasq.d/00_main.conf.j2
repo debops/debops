@@ -160,7 +160,19 @@ resolv-file = /etc/resolvconf/upstream.conf
 {% endif %}
 
 {% if dnsmasq_options|d() %}
-# ---- Custom options ----
+# ---- Global custom options ----
 
 {{ dnsmasq_options }}
+{% endif %}
+
+{% if dnsmasq__group_options|d() %}
+# ---- Group custom options ----
+
+{{ dnsmasq__group_options }}
+{% endif %}
+
+{% if dnsmasq__host_options|d() %}
+# ---- Host custom options ----
+
+{{ dnsmasq__host_options }}
 {% endif %}

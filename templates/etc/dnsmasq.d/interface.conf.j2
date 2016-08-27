@@ -49,6 +49,7 @@ dhcp-range = set:{{ item.interface }},{{ element | ipv6(item.dhcp_range_start | 
 dhcp-option = tag:{{ item.interface }},option:router,{{ item.gateway }}
 {%       else %}
 # IPv4 router address.
+# The special address 0.0.0.0 is taken to mean "the address of the machine running dnsmasq"
 dhcp-option = tag:{{ item.interface }},option:router,0.0.0.0
 {%       endif %}
 {%     else %}

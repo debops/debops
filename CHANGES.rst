@@ -25,6 +25,9 @@ Added
 
 - Allow to use custom upstream nameservers. [ypid_]
 
+- Add :envvar:`dnsmasq__group_options` and :envvar:`dnsmasq__host_options` with
+  the same function as ``dnsmasq_options``. [ypid_]
+
 Changed
 ~~~~~~~
 
