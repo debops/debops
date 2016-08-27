@@ -289,5 +289,19 @@ dnsmasq__ferm__dependent_rules:
     rule_state: '{{ "present" if (dnsmasq_tftp|bool) else "absent" }}'
 
                                                                    # ]]]
+# .. envvar:: dnsmasq__apparmor__local_dependent_config [[[
+#
+# Configuration for the debops-contrib.apparmor role.
+dnsmasq__apparmor__local_dependent_config:
+
+  'usr.sbin.dnsmasq':
+    - comment: 'Allow dnsmasq to read upstream DNS servers'
+      rules:
+        - '/etc/resolvconf/upstream.conf r'
+        - '/etc/hosts.dnsmasq r'
+    - comment: 'Allow dnsmasq to read /usr/share/dnsmasq-base/trust-anchors.conf provided by dnsmasq-base'
+      rules:
+        - '/usr/share/dnsmasq-base/* r'
+                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]

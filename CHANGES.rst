@@ -31,6 +31,10 @@ Added
 - Add :envvar:`dnsmasq__external_dns` which can be used to only provided DNS
   for localhost. [ypid_]
 
+- Add :envvar:`dnsmasq__apparmor__local_dependent_config` and a example
+  playbook to configure AppArmor so that all features of this role work with
+  AppArmor enforcing the dnsmasq profile. [ypid_]
+
 Changed
 ~~~~~~~
 
