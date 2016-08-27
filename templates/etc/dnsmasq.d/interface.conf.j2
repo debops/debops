@@ -6,16 +6,16 @@
            hostvars[inventory_hostname]["ansible_" + item.interface].ipv6|d()) %}
 # Interface {{ item.interface }} does not have any IP addresses.
 {% else %}
-{%   set dnsmasq_tpl_ipv4 = '' %}
-{%   set dnsmasq_tpl_ipv6 = [] %}
+{%   set dnsmasq__tpl_ipv4 = '' %}
+{%   set dnsmasq__tpl_ipv6 = [] %}
 {%   if hostvars[inventory_hostname]["ansible_" + item.interface].ipv4|d() %}
-{%     set dnsmasq_tpl_ipv4 = hostvars[inventory_hostname]["ansible_" + item.interface].ipv4.address + '/' +
+{%     set dnsmasq__tpl_ipv4 = hostvars[inventory_hostname]["ansible_" + item.interface].ipv4.address + '/' +
                               hostvars[inventory_hostname]["ansible_" + item.interface].ipv4.netmask %}
 {%   endif %}
 {%   if hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 is defined and hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 %}
 {%     for element in hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 %}
 {%       if not element.address | ipv6('link-local') %}
-{%         set _ = dnsmasq_tpl_ipv6.append(element.address + '/' + element.prefix) %}
+{%         set _ = dnsmasq__tpl_ipv6.append(element.address + '/' + element.prefix) %}
 {%       endif %}
 {%     endfor %}
 {%   endif %}
@@ -24,26 +24,26 @@
 # Bind on specified interface.
 interface = {{ item.interface }}
 
-{%   if item.interface in dnsmasq_no_dhcp_interfaces %}
+{%   if item.interface in dnsmasq__no_dhcp_interfaces %}
 # This interface is only used for DNS
 no-dhcp-interface = {{ item.interface }}
 {%   else %}
 
 # ---- DHCP options ----
 
-{%     if dnsmasq_dhcpv4|bool and dnsmasq_tpl_ipv4|d() %}
+{%     if dnsmasq__dhcpv4|bool and dnsmasq__tpl_ipv4|d() %}
 # Enable DHCPv4 server.
-dhcp-range = set:{{ item.interface }},{{ dnsmasq_tpl_ipv4 | ipv4(item.dhcp_range_start | d("10")) | ipv4('address') }},{{ dnsmasq_tpl_ipv4 | ipv4(item.dhcp_range_end | d("-10")) | ipv4('address') }},{{ item.dhcp_lease | d('24h') }}
+dhcp-range = set:{{ item.interface }},{{ dnsmasq__tpl_ipv4 | ipv4(item.dhcp_range_start | d("10")) | ipv4('address') }},{{ dnsmasq__tpl_ipv4 | ipv4(item.dhcp_range_end | d("-10")) | ipv4('address') }},{{ item.dhcp_lease | d('24h') }}
 {%     endif %}
 
-{%     if dnsmasq_dhcpv6|bool and dnsmasq_tpl_ipv6|d() %}
+{%     if dnsmasq__dhcpv6|bool and dnsmasq__tpl_ipv6|d() %}
 # Enable DHCPv6 server.
-{%       for element in dnsmasq_tpl_ipv6 %}
+{%       for element in dnsmasq__tpl_ipv6 %}
 dhcp-range = set:{{ item.interface }},{{ element | ipv6(item.dhcp_range_start | d('10')) | ipv6('address') }},{{ element | ipv6(item.dhcp_range_end | d('-10')) | ipv6('address') }},{{ item.ipv6_mode | d('ra-names,ra-stateless,slaac') }},{{ element | ipv6('prefix') }},{{ item.dhcp_lease | d('24h') }}
 {%       endfor %}
 {%     endif %}
 
-{%     if dnsmasq_router|bool %}
+{%     if dnsmasq__router|bool %}
 {%       if item.gateway is string %}
 # IPv4 router address.
 dhcp-option = tag:{{ item.interface }},option:router,{{ item.gateway }}
@@ -57,36 +57,36 @@ dhcp-option = tag:{{ item.interface }},option:router,0.0.0.0
 dhcp-option = tag:{{ item.interface }},option:router
 {%     endif %}
 
-{%     if dnsmasq_search|d() %}
-{%       set dnsmasq_tpl_search = [] %}
-{%       for domain in dnsmasq_search %}
-{%         set _ = dnsmasq_tpl_search.append(domain) %}
+{%     if dnsmasq__search|d() %}
+{%       set dnsmasq__tpl_search = [] %}
+{%       for domain in dnsmasq__search %}
+{%         set _ = dnsmasq__tpl_search.append(domain) %}
 {%       endfor %}
-{%       if dnsmasq_register_search is defined and dnsmasq_register_search %}
-{%         for domain in dnsmasq_register_search.stdout_lines | difference(dnsmasq_search) %}
-{%           set _ = dnsmasq_tpl_search.append(domain) %}
+{%       if dnsmasq__register_search is defined and dnsmasq__register_search %}
+{%         for domain in dnsmasq__register_search.stdout_lines | difference(dnsmasq__search) %}
+{%           set _ = dnsmasq__tpl_search.append(domain) %}
 {%         endfor %}
 {%       endif %}
 # Advertise list of search domains via DHCP.
-dhcp-option = tag:{{ item.interface }},option:domain-search,{{ dnsmasq_tpl_search | join(",") }}
-dhcp-option = tag:{{ item.interface }},option6:domain-search,{{ dnsmasq_tpl_search | join(",") }}
+dhcp-option = tag:{{ item.interface }},option:domain-search,{{ dnsmasq__tpl_search | join(",") }}
+dhcp-option = tag:{{ item.interface }},option6:domain-search,{{ dnsmasq__tpl_search | join(",") }}
 {%     endif %}
 
-{%     if dnsmasq_tpl_ipv6 %}
+{%     if dnsmasq__tpl_ipv6 %}
 # Advertise RDNSS servers for local IPv6 network.
-dhcp-option = tag:{{ item.interface }},option6:dns-server,{{ dnsmasq_tpl_ipv6 | ipv6('address') | ipwrap | join(",") }}
+dhcp-option = tag:{{ item.interface }},option6:dns-server,{{ dnsmasq__tpl_ipv6 | ipv6('address') | ipwrap | join(",") }}
 {%     endif %}
 {%   endif %}
 
 
-{%   if dnsmasq_tftp|bool %}
+{%   if dnsmasq__tftp|bool %}
 # ---- TFTP options ----
 
 # Enable TFTP service on specified interface.
 enable-tftp = {{ item.interface }}
-tftp-root = {{ dnsmasq_tftp_root | d('/srv/tftp') }},{{ item.interface }}
-{%     if not dnsmasq_tftp_ipxe|bool %}
-dhcp-boot = tag:{{ item.interface }},{{ dnsmasq_tftp_boot | d('pxelinux.0') }}
+tftp-root = {{ dnsmasq__tftp_root | d('/srv/tftp') }},{{ item.interface }}
+{%     if not dnsmasq__tftp_ipxe|bool %}
+dhcp-boot = tag:{{ item.interface }},{{ dnsmasq__tftp_boot | d('pxelinux.0') }}
 {%     endif %}
 {%   endif %}
 
@@ -94,11 +94,11 @@ dhcp-boot = tag:{{ item.interface }},{{ dnsmasq_tftp_boot | d('pxelinux.0') }}
 # ---- DNS options ----
 
 # DNS `A` record of the {{ item.interface }} interface.
-interface-name = {{ item.name + '.' + dnsmasq_domain }},{{ item.interface }}
+interface-name = {{ item.name + '.' + dnsmasq__domain }},{{ item.interface }}
 
 {%     if item.aliases|d() %}
 {%       for name in item.aliases %}
-cname = {{ name + '.' + dnsmasq_domain }},{{ item.name + '.' + dnsmasq_domain }}
+cname = {{ name + '.' + dnsmasq__domain }},{{ item.name + '.' + dnsmasq__domain }}
 {%       endfor %}
 {%     endif %}
 {%   endif %}

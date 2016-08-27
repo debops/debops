@@ -14,12 +14,12 @@
 #   Global options
 # ------------------------------------
 
-# .. envvar:: dnsmasq_public_dns
+# .. envvar:: dnsmasq__public_dns
 #
 # Enable or disable access to the local DNS from upstream networks. You can
 # publish your subdomain in the public DNS by delegating it in your zone
 # configuration.
-dnsmasq_public_dns: False
+dnsmasq__public_dns: False
 
 
 # .. envvar:: dnsmasq__external_dns
@@ -29,86 +29,86 @@ dnsmasq_public_dns: False
 dnsmasq__external_dns: True
 
 
-# .. envvar:: dnsmasq_dhcpv4
+# .. envvar:: dnsmasq__dhcpv4
 #
 # Enable or disable DHCPv4 support.
-dnsmasq_dhcpv4: True
+dnsmasq__dhcpv4: True
 
 
-# .. envvar:: dnsmasq_dhcpv6
+# .. envvar:: dnsmasq__dhcpv6
 #
 # Enable or disable DHCPv6 support (router support is required).
-dnsmasq_dhcpv6: True
+dnsmasq__dhcpv6: True
 
 
-# .. envvar:: dnsmasq_router
+# .. envvar:: dnsmasq__router
 #
 # Enable or disable local router support (no routing information is sent to
 # hosts, DHCPv6 doesn't work).
 # ``True`` means to announce the machine where dnsmasq is running as default
-# gateway unless the gateway was explicitly given in :envvar:`dnsmasq_interfaces`.
+# gateway unless the gateway was explicitly given in :envvar:`dnsmasq__interfaces`.
 # ``False`` means to not announce any default route.
-dnsmasq_router: True
+dnsmasq__router: True
 
 
-# .. envvar:: dnsmasq_tftp
+# .. envvar:: dnsmasq__tftp
 #
 # Enable or disable TFTP server.
-dnsmasq_tftp: True
+dnsmasq__tftp: True
 
 
-# .. envvar:: dnsmasq_bind_interfaces
+# .. envvar:: dnsmasq__bind_interfaces
 #
 # Bind to and listen only on specified interfaces.
-dnsmasq_bind_interfaces: True
+dnsmasq__bind_interfaces: True
 
 
-# .. envvar:: dnsmasq_stop_dns_rebind
+# .. envvar:: dnsmasq__stop_dns_rebind
 #
 # Block private IP addresses coming from upstream nameservers.
-dnsmasq_stop_dns_rebind: True
+dnsmasq__stop_dns_rebind: True
 
 
-# .. envvar:: dnsmasq_bogus_priv
+# .. envvar:: dnsmasq__bogus_priv
 #
 # Don't forward reverse DNS lookups for private IP addresses.
-dnsmasq_bogus_priv: True
+dnsmasq__bogus_priv: True
 
 
 # ------------------------------------
 #   Network interface options
 # ------------------------------------
 
-# .. envvar:: dnsmasq_upstream_interfaces
+# .. envvar:: dnsmasq__upstream_interfaces
 #
 # List of network interfaces that are assumed to be upstream networks, if
 # present on the host.
-dnsmasq_upstream_interfaces: [ 'br0', 'br1', 'eth0', 'eth1' ]
+dnsmasq__upstream_interfaces: [ 'br0', 'br1', 'eth0', 'eth1' ]
 
 
-# .. envvar:: dnsmasq_no_dhcp_interfaces
+# .. envvar:: dnsmasq__no_dhcp_interfaces
 #
 # List of network interfaces where dnsmasq should not provide DHCP or RA.
 # See https://github.com/debops/ansible-dnsmasq/issues/13 for more information.
-dnsmasq_no_dhcp_interfaces: []
+dnsmasq__no_dhcp_interfaces: []
 
 
-# .. envvar:: dnsmasq_ipv4_gateway
+# .. envvar:: dnsmasq__ipv4_gateway
 #
 # Name of the IPv4 gateway interface.
-dnsmasq_ipv4_gateway: '{{ ansible_default_ipv4.interface | default("") }}'
+dnsmasq__ipv4_gateway: '{{ ansible_default_ipv4.interface | default("") }}'
 
 
-# .. envvar:: dnsmasq_ipv6_gateway
+# .. envvar:: dnsmasq__ipv6_gateway
 #
 # Name of the IPv6 gateway interface.
-dnsmasq_ipv6_gateway: '{{ ansible_default_ipv6.interface | default("") }}'
+dnsmasq__ipv6_gateway: '{{ ansible_default_ipv6.interface | default("") }}'
 
 
-# .. envvar:: dnsmasq_interfaces
+# .. envvar:: dnsmasq__interfaces
 #
 # List of internal interfaces on which dnsmasq will configure its services.
-dnsmasq_interfaces:
+dnsmasq__interfaces:
 
     # Name of the interface.
   - interface: 'br2'
@@ -132,7 +132,7 @@ dnsmasq_interfaces:
     ipv6_mode: 'ra-names,ra-stateless,slaac'
 
     # Address which dnsmasq will announce as default gateway via DHCPv4.
-    # The default, as defined by `dnsmasq_router` is to announce the machine
+    # The default, as defined by `dnsmasq__router` is to announce the machine
     # running dnsmasq as default gateway.
     # gateway: '{{ ansible_default_ipv4.gateway }}'
 
@@ -141,74 +141,74 @@ dnsmasq_interfaces:
 #   DNS options
 # ------------------------------------
 
-# .. envvar:: dnsmasq_domain
+# .. envvar:: dnsmasq__domain
 #
 # DNS domain configured by dnsmasq for all local networks.
-dnsmasq_domain: '{{ ansible_fqdn }}'
+dnsmasq__domain: '{{ ansible_fqdn }}'
 
 
-# .. envvar:: dnsmasq_domain_mx
+# .. envvar:: dnsmasq__domain_mx
 #
 # Set DNS MX record of the main domain to dnsmasq host. Set to ``False`` to
 # disable.
-dnsmasq_domain_mx: '{{ ansible_fqdn }}'
+dnsmasq__domain_mx: '{{ ansible_fqdn }}'
 
 
-# .. envvar:: dnsmasq_etc_hosts
+# .. envvar:: dnsmasq__etc_hosts
 #
 # File path to an alternative :file:`/etc/hosts` read by dnsmasq. The default
 # :file:`/etc/hosts` file will be used when set to ``False``.
-dnsmasq_etc_hosts: False
+dnsmasq__etc_hosts: False
 
 
-# .. envvar:: dnsmasq_search
+# .. envvar:: dnsmasq__search
 #
-# List of additional search domains. Set ref:`dnsmasq_search` to False
+# List of additional search domains. Set ref:`dnsmasq__search` to False
 # to completely disable this functionality.
-dnsmasq_search: '{{ [ dnsmasq_domain, ansible_domain ] | unique }}'
+dnsmasq__search: '{{ [ dnsmasq__domain, ansible_domain ] | unique }}'
 
 
-# .. envvar:: dnsmasq_cname
+# .. envvar:: dnsmasq__cname
 #
 # Hash of DNS CNAME records to configure for hosts found in local DNS.
 # Entries should be specified without the domain suffix.
 # Example::
 #
-#     dnsmasq_cname:
+#     dnsmasq__cname:
 #       'host1': 'cname1'
 #       'host2': [ 'list', 'of', 'aliases' ]
 #
-dnsmasq_cname: {}
+dnsmasq__cname: {}
 
 
-# .. envvar:: dnsmasq_nameservers
+# .. envvar:: dnsmasq__nameservers
 #
 # List of upstream DNS resolvers where dnsmasq should forward it's DNS queries
 # which it can not answer by itself to. If set to ``False`` it will use the
 # systems nameservers.
-dnsmasq_nameservers: []
+dnsmasq__nameservers: []
 
 
 # ------------------------------------
 #   TFTP options
 # ------------------------------------
 
-# .. envvar:: dnsmasq_tftp_root
+# .. envvar:: dnsmasq__tftp_root
 #
 # Path to TFTP root directory.
-dnsmasq_tftp_root: '/srv/tftp'
+dnsmasq__tftp_root: '/srv/tftp'
 
 
-# .. envvar:: dnsmasq_tftp_boot
+# .. envvar:: dnsmasq__tftp_boot
 #
 # BOOTP command passed to clients (see dhcp-boot in dnsmasq(8)).
-dnsmasq_tftp_boot: 'menu.ipxe'
+dnsmasq__tftp_boot: 'menu.ipxe'
 
 
-# .. envvar:: dnsmasq_tftp_ipxe
+# .. envvar:: dnsmasq__tftp_ipxe
 #
 # Enable iPXE support.
-dnsmasq_tftp_ipxe: True
+dnsmasq__tftp_ipxe: True
 
 
 # ------------------------------------
@@ -240,11 +240,11 @@ dnsmasq__dns_not_forward_private: |
   server = /intranet/internal/private/corp/home/lan/
 
 
-# .. envvar:: dnsmasq_options
+# .. envvar:: dnsmasq__options
 #
 # Additional options passed as a YAML text block.
 # This variable is intended to be used in Ansible’s global inventory.
-dnsmasq_options: ''
+dnsmasq__options: ''
 
 
 # .. envvar:: dnsmasq__group_options
@@ -279,8 +279,8 @@ dnsmasq__ferm__dependent_rules:
     accept_any: True
     rule_state: '{{ dnsmasq__external_dns|bool | ternary("present", "absent") }}'
     interface: '{{ []
-                   if (dnsmasq_public_dns|bool)
-                   else (dnsmasq_interfaces | map(attribute="interface") | list) }}'
+                   if (dnsmasq__public_dns|bool)
+                   else (dnsmasq__interfaces | map(attribute="interface") | list) }}'
 
   - type: 'accept'
     by_role: 'debops.dnsmasq'
@@ -288,9 +288,9 @@ dnsmasq__ferm__dependent_rules:
     weight: '40'
     protocol: [ 'udp', 'tcp' ]
     dport: [ 'bootps' ]
-    rule_state: '{{ dnsmasq_dhcpv4|bool | ternary("present", "absent") }}'
-    interface: '{{ dnsmasq_interfaces | map(attribute="interface")
-                   | list | difference(dnsmasq_no_dhcp_interfaces) }}'
+    rule_state: '{{ dnsmasq__dhcpv4|bool | ternary("present", "absent") }}'
+    interface: '{{ dnsmasq__interfaces | map(attribute="interface")
+                   | list | difference(dnsmasq__no_dhcp_interfaces) }}'
 
   - type: 'accept'
     by_role: 'debops.dnsmasq'
@@ -300,9 +300,9 @@ dnsmasq__ferm__dependent_rules:
     daddr: [ 'ff02::1:2' ]
     protocol: [ 'udp', 'tcp' ]
     dport: [ 'dhcpv6-client', 'dhcpv6-server' ]
-    rule_state: '{{ dnsmasq_dhcpv6|bool | ternary("present", "absent") }}'
-    interface: '{{ dnsmasq_interfaces | map(attribute="interface")
-                   | list | difference(dnsmasq_no_dhcp_interfaces) }}'
+    rule_state: '{{ dnsmasq__dhcpv6|bool | ternary("present", "absent") }}'
+    interface: '{{ dnsmasq__interfaces | map(attribute="interface")
+                   | list | difference(dnsmasq__no_dhcp_interfaces) }}'
 
   - type: 'accept'
     by_role: 'debops.dnsmasq'
@@ -310,8 +310,8 @@ dnsmasq__ferm__dependent_rules:
     weight: '40'
     dport: [ 'tftp' ]
     protocol: [ 'udp' ]
-    interface: '{{ dnsmasq_interfaces | map(attribute="interface") | list }}'
-    rule_state: '{{ "present" if (dnsmasq_tftp|bool) else "absent" }}'
+    interface: '{{ dnsmasq__interfaces | map(attribute="interface") | list }}'
+    rule_state: '{{ "present" if (dnsmasq__tftp|bool) else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: dnsmasq__apparmor__local_dependent_config [[[

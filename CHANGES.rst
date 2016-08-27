@@ -26,7 +26,7 @@ Added
 - Allow to use custom upstream nameservers. [ypid_]
 
 - Add :envvar:`dnsmasq__group_options` and :envvar:`dnsmasq__host_options` with
-  the same function as ``dnsmasq_options``. [ypid_]
+  the same function as :envvar:`dnsmasq__options`. [ypid_]
 
 - Add :envvar:`dnsmasq__external_dns` which can be used to only provided DNS
   for localhost. [ypid_]
@@ -56,8 +56,20 @@ Changed
   this should fix an issue when changes in the network interface topology
   required ``dnsmasq`` to be restarted to listen on new interfaces. [drybjed_]
 
-- Set ``dnsmasq_etc_hosts`` to ``False`` because the :file:`/etc/hosts.dnsmasq`
+- Set :envvar:`dnsmasq__etc_hosts` to ``False`` because the :file:`/etc/hosts.dnsmasq`
   files does not exist by default. [ypid_]
+
+- Changed variable namespace from ``dnsmasq_`` to ``dnsmasq__``.
+  ``dnsmasq_[^_]`` variables are hereby deprecated.
+
+  You might need to update your inventory. This oneliner might come in handy to
+  do this:
+
+  .. code:: shell
+
+     git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(dnsmasq)_([^_])/\1__\2/g;'
+
+  [ypid_]
 
 Removed
 ~~~~~~~

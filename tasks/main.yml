@@ -9,12 +9,12 @@
 
 - name: Get list of local search domains
   shell: grep search /etc/resolv.conf | cut -d' ' -f2- | tr ' ' '\n'
-  register: dnsmasq_register_search
+  register: dnsmasq__register_search
   changed_when: False
 
 - name: Get dnsmasq version
   shell: dnsmasq --version | head -n 1 | awk '{print $3}'
-  register: dnsmasq_version
+  register: dnsmasq__version
   changed_when: False
 
 - name: Create main dnsmasq configuration
@@ -43,7 +43,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Test and restart dnsmasq' ]
-  when: dnsmasq_nameservers|d()
+  when: dnsmasq__nameservers|d()
 
 - name: Create interface dnsmasq configuration
   template:
@@ -52,7 +52,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ dnsmasq_interfaces }}'
+  with_items: '{{ dnsmasq__interfaces }}'
   when: item.interface is defined and item.interface
   notify: [ 'Test and restart dnsmasq' ]
 
@@ -70,7 +70,7 @@
     state: 'absent'
   notify: [ 'Restart ferm' ]
   when: item.interface|d()
-  with_items: '{{ dnsmasq_interfaces }}'
+  with_items: '{{ dnsmasq__interfaces }}'
 
 - name: Allow access to TFTP in tcpwrappers
   template:
@@ -79,21 +79,21 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ dnsmasq_interfaces }}'
-  when: (dnsmasq_tftp|bool and item.interface|d())
+  with_items: '{{ dnsmasq__interfaces }}'
+  when: (dnsmasq__tftp|bool and item.interface|d())
   notify: [ 'Assemble hosts.allow.d' ]
 
 - name: Make sure TFTP root directory exists
   file:
-    path: '{{ dnsmasq_tftp_root }}'
+    path: '{{ dnsmasq__tftp_root }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: dnsmasq_tftp|bool
+  when: dnsmasq__tftp|bool
 
 - name: Remove custom nameservers
   file:
     path: '/etc/resolvconf/upstream.conf'
     state: 'absent'
-  when: not dnsmasq_nameservers|d()
+  when: not dnsmasq__nameservers|d()
