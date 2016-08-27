@@ -11,8 +11,9 @@ a centralized or a mesh one.
 using ``tinc``, including automatic public key exchange between all hosts in
 the Ansible inventory, connection to external hosts and secure configuration.
 
+
 Installation
-============
+------------
 
 This role requires at least Ansible ``v2.0.0``. To install it, run:
 

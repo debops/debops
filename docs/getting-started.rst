@@ -49,7 +49,7 @@ to get the current IP address.
 However, the FQDN will only be added, if a given host has a publicly routable
 IP address. This means that hosts without public IPs won't have their addresses
 mentioned in their public key files. This allows these hosts to still connect
-to public gateway with access to the Tinc network.
+to public a gateway with access to the Tinc network.
 
 If you want to test the Tinc VPN only on a private network, or allow VPN
 connections between hosts, you can tell the ``debops.tinc`` role to add the
