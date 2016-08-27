@@ -246,7 +246,7 @@ dnsmasq__host_options: ''
 dnsmasq__ferm__dependent_rules:
 
   - type: 'accept'
-    role: 'dnsmasq'
+    by_role: 'debops.dnsmasq'
     name: 'dns'
     weight: '40'
     protocol: [ 'udp', 'tcp' ]
@@ -258,7 +258,7 @@ dnsmasq__ferm__dependent_rules:
                    else (dnsmasq_interfaces | map(attribute="interface") | list) }}'
 
   - type: 'accept'
-    role: 'dnsmasq'
+    by_role: 'debops.dnsmasq'
     name: 'dhcpv4'
     weight: '40'
     protocol: [ 'udp', 'tcp' ]
@@ -268,7 +268,7 @@ dnsmasq__ferm__dependent_rules:
                    | list | difference(dnsmasq_no_dhcp_interfaces) }}'
 
   - type: 'accept'
-    role: 'dnsmasq'
+    by_role: 'debops.dnsmasq'
     name: 'dhcpv6'
     weight: '40'
     saddr: [ 'fe80::/16' ]
@@ -280,7 +280,7 @@ dnsmasq__ferm__dependent_rules:
                    | list | difference(dnsmasq_no_dhcp_interfaces) }}'
 
   - type: 'accept'
-    role: 'dnsmasq'
+    by_role: 'debops.dnsmasq'
     filename: 'tftp'
     weight: '40'
     dport: [ 'tftp' ]
