@@ -31,6 +31,8 @@ Fixed
 
 - Redundancy and deviation in documentation. [ypid_]
 
+- Don’t connect to the Tinc daemon node itself when working with FQDNs. [ypid_]
+
 
 `debops.tinc v0.2.1`_ - 2016-02-29
 ----------------------------------

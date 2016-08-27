@@ -189,14 +189,14 @@ tinc__exclude_addresses_mesh0: '{{ tinc__exclude_interface_mesh0 + tinc__exclude
 # the time.
 tinc__inventory_hosts_mesh0: '{{ (groups.debops_service_tinc_mesh0
                                   if groups.debops_service_tinc_mesh0|d()
-                                  else []) | difference([ tinc__hostname ]) }}'
+                                  else []) | difference([ tinc__hostname, tinc__inventory_hostname ]) }}'
 
 
 # .. envvar:: tinc__external_hosts_mesh0
 #
 # List of hosts to connect to which are not in the Ansible inventory. You
 # should provide the corresponding public key files through the directories in
-# :file:`secret/` directory.
+# the :file:`secret/` directory.
 tinc__external_hosts_mesh0: []
 
 
