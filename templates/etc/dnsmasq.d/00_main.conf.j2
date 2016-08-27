@@ -61,9 +61,9 @@ no-dhcp-interface = {{ dnsmasq_ipv6_gateway }}
 
 {% if dnsmasq_upstream_interfaces|d() %}
 {%   for interface in dnsmasq_upstream_interfaces %}
-{%     if (hostvars[inventory_hostname]["ansible_" + interface]|d() and
-           (dnsmasq_ipv4_gateway is defined and interface != dnsmasq_ipv4_gateway) and
+{%     if ((dnsmasq_ipv4_gateway is defined and interface != dnsmasq_ipv4_gateway) and
            (dnsmasq_ipv6_gateway is defined and interface != dnsmasq_ipv6_gateway) and
+           hostvars[inventory_hostname]["ansible_" + interface]|d() and
            ((hostvars[inventory_hostname]["ansible_" + interface].ipv4|d() or
             (hostvars[inventory_hostname]["ansible_" + interface].ipv6|d())))) %}
 # Don't respond to DHCP or TFTP queries on this interface.
