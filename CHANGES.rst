@@ -33,6 +33,9 @@ Fixed
 
 - Don’t connect to the Tinc daemon node itself when working with FQDNs. [ypid_]
 
+- Don’t rely on the legacy :command:`brctl` command to be installed (which was not ensured by
+  this role) and instead use tools from the ``iproute2`` package. [ypid_]
+
 
 `debops.tinc v0.2.1`_ - 2016-02-29
 ----------------------------------

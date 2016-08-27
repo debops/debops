@@ -20,7 +20,7 @@ ip addr add {{ item.interface_ipv4 | d('0.0.0.0') | quote }} dev "${INTERFACE}"
 {%       if item.bridge|d() %}
 tinc_bridge="{{ item.bridge }}"
 if [ -d "/sys/class/net/${tinc_bridge}/bridge" ] ; then
-    brctl addif "${tinc_bridge}" "${INTERFACE}"
+    ip link set "${INTERFACE}" master "${tinc_bridge}"
 fi
 
 {%       endif %}
