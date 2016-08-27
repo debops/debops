@@ -1,11 +1,15 @@
 ---
 
-## Basically the same playbook as in the DebOps playbooks with the difference,
+## Basically the same playbook as the one in DebOps core with the difference
 ## that this playbook also uses the debops-contrib.apparmor role to configure
 ## AppArmor.
 - name: Install and manage the caching HTTP proxy Apt-Cacher NG.
   hosts: [ 'debops_contrib_service_apt_cacher_ng' ]
   become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
 
   roles:
 
@@ -40,4 +44,3 @@
 
     - role: debops.apt_cacher_ng
       tags: [ 'role::apt_cacher_ng' ]
-
