@@ -29,7 +29,7 @@ cryptsetup_base_packages:
 #
 # Global definition list of encrypted filesystems.
 #
-# See :ref:`the documentation of all options <cryptsetup_devices>` for more details.
+# Refer to the :ref:`documentation of all options <cryptsetup_devices>` for more details.
 cryptsetup_devices: []
 
 
@@ -250,10 +250,12 @@ cryptsetup_cipher: 'default'
 #
 # Note that in XTS mode, only half of the key size specified here will be used
 # for the block cypher (512 will result in AES-256).
-# Using AES-128 is still considered secure and will probably be faster.
+# Using AES-128 is still considered secure and is faster in most cases.
 # The reason to go with a different default value then the compiled-in default
-# of :command:`cryptsetup` was to have long-term secure storage even with
-# quantum-computing available.
+# of :command:`cryptsetup` was to have long-term secure storage even when
+# quantum-computing become available to your adversary.
+# Plus, with hardware acceleration available in most x86 CPUs nowadays, it
+# really done not make much of a difference anymore (at least for AES).
 #
 # Refs: https://crypto.stackexchange.com/a/7869
 cryptsetup_key_size: 512
@@ -268,7 +270,7 @@ cryptsetup_key_size: 512
 # :command:`cryptsetup --help`) is :file:`/dev/urandom`.
 # Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
 #
-# Check :manpage:`random(4)` for details.
+# Check :manpage:`random(4)` and https://bettercrypto.org/ for details.
 cryptsetup_use_dev_random: True
 
 

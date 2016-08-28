@@ -1,8 +1,8 @@
-.. include:: global.rst.inc
-
-
-Default variables: configuration
+Default variable details
 ================================
+
+.. include:: includes/all.rst
+
 
 Some of ``debops.cryptsetup`` variables have more extensive configuration.
 Here you can find documentation and examples for them.

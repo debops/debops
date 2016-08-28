@@ -1,8 +1,7 @@
-.. include:: global.rst.inc
-
-
 Getting started
 ===============
+
+.. include:: includes/all.rst
 
 .. contents::
    :local:
