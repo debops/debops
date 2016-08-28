@@ -12,6 +12,7 @@ Ansible role: debops.tinc
    defaults-detailed
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:

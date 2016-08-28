@@ -48,6 +48,7 @@ tinc__network_mesh0:
   link_type: '{{ tinc__link_type_mesh0 }}'
   boot: '{{ tinc__boot_mesh0 }}'
   port: '655'
+  node_reachable: '{{ tinc__inventory_hostname not in tinc__client_hosts_mesh0 }}'
   mlock: True
   chroot: True
   allow: '{{ tinc__allow_mesh0 }}'
@@ -60,7 +61,7 @@ tinc__network_mesh0:
     Digest: 'SHA512'
     Compression: '{{ tinc__compression_mesh0 }}'
     AddressFamily: '{{ tinc__address_family_mesh0 }}'
-    ConnectTo: '{{ tinc__connect_to_mesh0 }}'
+    ConnectTo: '{{ tinc__reachable_peer_hosts_mesh0 }}'
 
 
 # .. envvar:: tinc__interface_mesh0
@@ -164,13 +165,6 @@ tinc__compression_mesh0: '0'
 tinc__address_family_mesh0: 'any'
 
 
-# .. envvar:: tinc__connect_to_mesh0
-#
-# List of hosts specified as the ``ConnectTo`` option in the Tinc configuration
-# file of the ``mesh0`` network.
-tinc__connect_to_mesh0: '{{ tinc__inventory_hosts_mesh0 + tinc__external_hosts_mesh0 }}'
-
-
 # .. envvar:: tinc__exclude_addresses_mesh0
 #
 # List of FQDN or IP addresses which should be excluded from the public key
@@ -181,15 +175,23 @@ tinc__exclude_addresses_mesh0: '{{ tinc__exclude_interface_mesh0 + tinc__exclude
 
 # .. envvar:: tinc__inventory_hosts_mesh0
 #
-# List of other hosts in the Ansible inventory that are participating in the
-# ``mesh0`` network besides the current one. They will be listed in the
-# ``ConnectTo`` option. This only makes sense if specified hosts have a public
-# IP address. If not, you might want to specify the list of hosts to connect to
-# manually, otherwise Tinc will try and connect to the unreachable hosts all
-# the time.
-tinc__inventory_hosts_mesh0: '{{ (groups.debops_service_tinc_mesh0
-                                  if groups.debops_service_tinc_mesh0|d()
-                                  else []) | difference([ tinc__hostname, tinc__inventory_hostname ]) }}'
+# List of all hosts in the Ansible inventory that are participating in the
+# ``mesh0`` network. They will be the base for the hosts listed in the
+# ``ConnectTo`` option. This only makes sense if the specified hosts have a
+# public IP address. If not, you might want to specify the list of hosts to
+# connect to manually, otherwise Tinc will try to connect to the unreachable
+# hosts all the time.
+tinc__inventory_hosts_mesh0: '{{ groups.debops_service_tinc_mesh0
+                                 if groups.debops_service_tinc_mesh0|d()
+                                 else [] }}'
+
+
+# .. envvar:: tinc__inventory_peer_hosts_mesh0
+#
+# List of hosts in the Ansible inventory that are participating in the
+# ``mesh0`` network except the :envvar:`tinc__inventory_hostname` or the
+# :envvar:`tinc__hostname`.
+tinc__inventory_peer_hosts_mesh0: '{{ tinc__inventory_hosts_mesh0 | difference([ tinc__hostname, tinc__inventory_hostname ]) }}'
 
 
 # .. envvar:: tinc__external_hosts_mesh0
@@ -198,6 +200,38 @@ tinc__inventory_hosts_mesh0: '{{ (groups.debops_service_tinc_mesh0
 # should provide the corresponding public key files through the directories in
 # the :file:`secret/` directory.
 tinc__external_hosts_mesh0: []
+
+
+# .. envvar:: tinc__client_hosts
+#
+# List of hosts which are considered to be clients. That means that other Tinc
+# nodes will not try to connect to the hosts in that list and that no ports
+# will be opened in the firewall of those hosts.
+# Note that Tinc does not have a concept of servers/clients, all nodes are
+# technically equal.
+tinc__client_hosts: []
+
+
+# .. envvar:: tinc__client_hosts_mesh0
+#
+# List of hosts which are considered to be clients in ``mesh0``.
+# In case have multiple Tinc networks and want different clients in the
+# ``mesh0`` network.
+tinc__client_hosts_mesh0: '{{ tinc__client_hosts }}'
+
+
+# .. envvar:: tinc__all_peer_hosts_mesh0
+#
+# List of peers that are participating in the ``mesh0`` network except the
+# :envvar:`tinc__inventory_hostname` or the :envvar:`tinc__hostname`.
+tinc__all_peer_hosts_mesh0: '{{ tinc__inventory_peer_hosts_mesh0 | union(tinc__external_hosts_mesh0) }}'
+
+
+# .. envvar:: tinc__reachable_peer_hosts_mesh0
+#
+# List of hosts specified as the ``ConnectTo`` option in the Tinc configuration
+# file of the ``mesh0`` network.
+tinc__reachable_peer_hosts_mesh0: '{{ tinc__all_peer_hosts_mesh0 | difference(tinc__client_hosts_mesh0) }}'
 
 
 # ----------------

@@ -12,11 +12,21 @@ and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
 The current role maintainer_ is drybjed_
 
+Refer to the :ref:`tinc__ref_upgrade_nodes` when you intend to upgrade to a
+new release.
+
 
 `debops.tinc master`_ - unreleased
 ----------------------------------
 
 .. _debops.tinc master: https://github.com/debops/ansible-tinc/compare/v0.2.1...master
+
+Added
+~~~~~
+
+- Add :envvar:`tinc__address_family_mesh0` and :envvar:`tinc__compression_mesh0`. [ser_]
+
+- Allow to configure nodes as clients using :envvar:`tinc__client_hosts`. [ypid_]
 
 Changed
 ~~~~~~~
@@ -25,6 +35,12 @@ Changed
 
 - Rename undocumented ``delete`` option for :ref:`tinc__ref_networks` to
   ``state`` and document it. [ypid_]
+
+- :envvar:`tinc__inventory_hosts_mesh0` now refers to all hosts in the Ansible
+  inventory that are participating in the ``mesh0`` network. [ypid_]
+
+- Rename ``tinc__connect_to_mesh0`` to :envvar:`tinc__reachable_peer_hosts_mesh0`.
+  [ypid_]
 
 Fixed
 ~~~~~
