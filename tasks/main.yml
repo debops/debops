@@ -1,5 +1,7 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# Package installation [[[1
 - name: Install required packages
   package:
     name: '{{ item }}'
@@ -9,6 +11,7 @@
     - '{{ tinc__packages }}'
   register: tinc__register_install
 
+# Create user [[[1
 - name: Create system group for VPN service
   group:
     name: '{{ tinc__group }}'
@@ -26,6 +29,7 @@
     shell: '/bin/false'
     createhome: False
 
+# Kernel modules [[[1
 - name: Load the required kernel modules
   modprobe:
     name: '{{ item }}'
@@ -48,6 +52,7 @@
           (ansible_local.cap12s.enabled | bool and
            'cap_sys_admin' in ansible_local.cap12s.list)))
 
+# Tinc configuration [[[1
 - name: Set tincd default environment
   template:
     src: 'etc/default/tinc.j2'
@@ -108,6 +113,7 @@
     group: 'root'
     mode: '0644'
 
+# RSA key management [[[1
 - name: Initialize RSA key pairs
   shell: yes | tincd -n {{ item.name }} -K {{ item.rsa_key_length | d(tinc__rsa_key_length) }}
   args:
@@ -123,6 +129,7 @@
   with_items: '{{ tinc__default_networks + tinc__networks }}'
   when: item.name is defined and item.tinc_options is defined
 
+# Tinc host configuration [[[1
 - name: Generate host configuration file
   template:
     src: 'etc/tinc/network/hosts/host-config.j2'
@@ -144,6 +151,7 @@
   when: item.name is defined and item.tinc_options is defined
   notify: [ 'Reload tinc' ]
 
+# Tinc host configuration distribution [[[1
 - name: Upload public keys from hosts
   fetch:
     src: '/etc/tinc/{{ item.name }}/hosts/{{ (item.hostname | d(tinc__hostname)) | replace("-","_") }}'
@@ -199,6 +207,7 @@
   when: item.name|d() and item.tinc_options|d()
   notify: [ 'Reload tinc' ]
 
+# systemd configuration [[[1
 - name: Configure systemd default variables
   template:
     src: 'etc/default/tinc-network.j2'
