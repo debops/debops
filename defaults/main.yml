@@ -71,6 +71,32 @@ tinc__network_mesh0:
 tinc__interface_mesh0: 'tap-mesh0'
 
 
+# .. envvar:: tinc__allow_default_route_from_interface
+#
+# List of interfaces for which routes offered via DHCPv4 are denied and not
+# applied to the systems routing table.
+tinc__deny_default_route_from_interface:
+  - '{{ tinc__interface_mesh0 }}'
+
+
+# .. envvar:: tinc__route_metric_from_interface
+#
+# List of dicts consisting of ``interface`` and ``metric``. The metric is
+# applied to IPv4 routing table entries generated from the routes offered via
+# DHCPv4.
+tinc__route_metric_from_interface: []
+
+
+# .. envvar:: tinc__interface_mesh0_allow_dns_server
+#
+# List of interfaces for which DNS servers offered via DHCPv4 are ignored and not
+# used by the system.
+# This might be useful when you want to operate with multiple VPN connections
+# simultaneously and use other means of "client-side split DNS" for example the
+# ``--server`` parameter from ``dnsmasq``.
+tinc__deny_dns_servers_from_interface: []
+
+
 # .. envvar:: tinc__exclude_interface_mesh0
 #
 # This is a list of all of the IPv4 and IPv6 addresses which are set on the VPN

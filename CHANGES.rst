@@ -28,6 +28,11 @@ Added
 
 - Allow to configure nodes as clients using :envvar:`tinc__client_hosts`. [ypid_]
 
+- Add support to block default route and DNS servers offered via DHCPv4 over a
+  Tinc network. Tinc nodes will not accept default routes thought the mesh
+  network anymore. Furthermore allow to adjust the metric of routes created
+  based on those offered via DHCPv4. [ypid_]
+
 Changed
 ~~~~~~~
 

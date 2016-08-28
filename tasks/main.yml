@@ -83,6 +83,14 @@
   when: item.name|d() and item.tinc_options|d()
   notify: [ 'Reload tinc' ]
 
+- name: Generate dhclient-enter-hook script
+  template:
+    src: 'etc/dhcp/dhclient-enter-hooks.d/tinc.j2'
+    dest: '/etc/dhcp/dhclient-enter-hooks.d/00debops-tinc'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
 - name: Generate tinc-up network scripts
   template:
     src: 'etc/tinc/network/tinc-up.j2'
