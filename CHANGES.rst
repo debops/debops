@@ -4,7 +4,7 @@ Changelog
 **debops.core**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
-and `human-readable changelog <http://keepachangelog.com/>`_.
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
 The current role maintainer is drybjed.
 
@@ -12,7 +12,18 @@ The current role maintainer is drybjed.
 `debops.core master`_ - unreleased
 ----------------------------------
 
-.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.1...master
+.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.3...master
+
+
+`debops.core v0.2.3`_ - 2016-08-29
+----------------------------------
+
+.. _debops.core v0.2.3: https://github.com/debops/ansible-core/compare/v0.2.2...v0.2.3
+
+Added
+~~~~~
+
+- Add custom local facts that define OS distribution and release. [drybjed]
 
 
 `debops.core v0.2.2`_ - 2016-08-14

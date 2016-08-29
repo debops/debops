@@ -153,6 +153,24 @@ core__admin_blacklist_users: []
 core__cache_valid_time: '{{ (60 * 60 * 24) }}'
 
                                                                    # ]]]
+# .. envvar:: core__distribution [[[
+#
+# Some of the OS distributions are not detected by Ansible correctly. This
+# variable can be used to fix that issue across all roles that use it.
+core__distribution: '{{ ansible_distribution
+                        if (ansible_distribution != "NA")
+                        else (ansible_lsb.id if ansible_lsb|d() else "NA") }}'
+
+                                                                   # ]]]
+# .. envvar:: core__distribution_release [[[
+#
+# Some of the OS releases are not detected by Ansible correctly. This variable
+# can be used to fix that issue across all roles that use it.
+core__distribution_release: '{{ ansible_distribution_release
+                                if (ansible_distribution_release != "NA")
+                                else (ansible_lsb.codename if ansible_lsb|d() else "NA") }}'
+
+                                                                   # ]]]
 # .. envvar:: core__domain [[[
 #
 # The default host domain which can be used by the other roles to configure
