@@ -94,3 +94,10 @@ Removed
   separate default variables. These variables can be used by the Ansible
   playbooks to configure settings related to ``dnsmasq`` in other services.
   [ypid_]
+
+Fixed
+~~~~~
+
+- Detection of ``dnsmasq__bogus_priv`` which did not work before because the
+  ``bool`` filter interprets defaults to ``False`` for input it does not know
+  about (like IP addresses). [ypid_]
