@@ -506,9 +506,16 @@ apt_cacher_ng__ferm__dependent_rules:
       (apt_cacher_ng__host_allow    |d([]) | list) }}'
     accept_any: True
     weight: '40'
-    role: 'apt_cacher_ng'
+    by_role: 'debops.apt_cacher_ng'
     name: 'http_proxy'
     rule_state: '{{ apt_cacher_ng__deploy_state }}'
+
+  - type: 'accept'
+    dport: [ 'acng' ]
+    weight: '40'
+    by_role: 'apt_cacher_ng'
+    name: 'http_proxy'
+    rule_state: 'absent'
 
 
 # .. envvar:: apt_cacher_ng__apparmor__dependent_config
