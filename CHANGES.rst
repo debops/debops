@@ -4,7 +4,7 @@ Changelog
 **debops.ntp**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
-and `human-readable changelog <http://keepachangelog.com/>`_.
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
 The current role maintainer is drybjed.
 
@@ -12,7 +12,19 @@ The current role maintainer is drybjed.
 `debops.ntp master`_ - unreleased
 ---------------------------------
 
-.. _debops.ntp master: https://github.com/debops/ansible-ntp/compare/v0.2.2...master
+.. _debops.ntp master: https://github.com/debops/ansible-ntp/compare/v0.2.3...master
+
+
+`debops.ntp v0.2.3`_ - 2016-08-29
+---------------------------------
+
+.. _debops.ntp v0.2.3: https://github.com/debops/ansible-ntp/compare/v0.2.2...v0.2.3
+
+Fixed
+~~~~~
+
+- Timezone should now be set correctly on hosts with ``systemd-timesyncd``
+  enabled. [drybjed]
 
 
 `debops.ntp v0.2.2`_ - 2016-07-28
