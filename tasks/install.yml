@@ -6,7 +6,7 @@
     state: 'absent'
     purge: True
   with_flattened:
-    - [ '{{ "ntpdate" if (ntp__daemon != "ntpdate") else [] }}' ]
+    - [ '{{ "ntpdate" if (ntp__daemon != "ntpdate" and not ntp__ignore_ntpdate|bool) else [] }}' ]
     - [ '{{ "ntp" if (ntp__daemon not in [ "ntpd", "openntpd"]) else [] }}' ]
     - [ '{{ "openntpd" if (ntp__daemon != "openntpd") else [] }}' ]
 

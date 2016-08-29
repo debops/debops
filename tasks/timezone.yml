@@ -27,6 +27,19 @@
     mode: '0644'
   register: ntp__register_etc_timezone
 
+- name: Check if /etc/localtime is a symlink
+  stat:
+    path: '/etc/localtime'
+  register: ntp__register_etc_localtime
+
+- name: Symlink correct timezone as /etc/localtime
+  file:
+    path: '/etc/localtime'
+    src: '/usr/share/zoneinfo/{{ ntp__timezone }}'
+    state: 'link'
+  when: (ntp__register_etc_timezone|changed and
+         ntp__register_etc_localtime.stat.islnk|bool)
+
 - name: Configure timezone with timedatectl
   shell: 'timedatectl set-timezone {{ ntp__timezone }}'
   when: ((ansible_local|d() and ansible_local.init|d() and
