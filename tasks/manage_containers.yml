@@ -13,7 +13,7 @@
     group: 'root'
     mode: '0600'
   with_items: '{{ lxc_containers }}'
-  when: ((item.name is defined and item.name) and
+  when: (item.name|d() and
          (item.name not in lxc_register_existing_containers.stdout_lines) and
          ((item.state|d("present") != 'absent')))
 
@@ -25,16 +25,16 @@
     group: 'root'
     mode: '0600'
   with_items: '{{ lxc_containers }}'
-  when: ((item.name is defined and item.name) and
+  when: (item.name|d() and
          (item.name not in lxc_register_existing_containers.stdout_lines) and
          ((item.state|d("present") != 'absent')))
 
 - name: Create LXC containers
   command: lxc-create -n {{ item.name }} -t {{ item.template | d(lxc_default_template) }}
            {% if item.config is undefined %}
-           {% if item.network|d() %}
+           {%   if item.network|d() %}
            -f /etc/lxc/{{ item.network }}.conf
-           {% endif %}
+           {%   endif %}
            {% elif item.config is defined and item.config == True %}
            -f /tmp/lxc_temp_{{ item.name }}.conf
            {% elif item.config is defined and item.config %}
@@ -46,10 +46,10 @@
            {% if item.template_options is defined and item.template_options %}
            -- {{ item.template_options }}
            {% endif %}
-           creates={{ lxc_root_path + '/' + item.name }}/config
+  args:
+    creates: '{{ lxc_root_path + "/" + item.name }}/config'
   with_items: '{{ lxc_containers }}'
-  when: ((item.name is defined and item.name) and
-         (item.state|d("present") != 'absent'))
+  when: (item.name|d() and (item.state|d("present") != 'absent'))
 
 - name: Remove temporary configuration files
   file:
@@ -68,7 +68,7 @@
   register: lxc_register_container_status
   changed_when: False
   with_items: '{{ lxc_containers }}'
-  when: (item.name is defined and item.name)
+  when: item.name|d()
 
 - name: Stop LXC containers when requested
   command: lxc-stop -n {{ item.0.name }}
@@ -85,8 +85,7 @@
   args:
     removes: '{{ lxc_root_path + "/" + item.name }}/config'
   with_items: '{{ lxc_containers }}'
-  when: ((item.name is defined and item.name) and
-         (item.state|d("present") == 'absent'))
+  when: (item.name|d() and (item.state|d("present") == 'absent'))
 
 - name: Start LXC containers when requested
   command: lxc-start -d -n {{ item.0.name }}
