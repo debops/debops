@@ -262,6 +262,41 @@ can do it like this:
 This will allow you to set the path for common home directories in one location
 and reuse it through your infrastructure.
 
+Custom distribution and release facts
+-------------------------------------
+
+Ansible sometimes detects the installed OS distribution and release
+incorrectly. For example, current Debian Testing release is not detected at
+all, and the ``ansible_distribution_release`` variable is set to ``NA`` which,
+if used in the roles, can break a lot of existing configuration.
+
+The ``debops.core`` role provides alrernative set of the
+``ansible_distribution`` and ``ansible_distribution_release`` variables through
+Ansible local facts, accessible as ``ansible_local.core.distribution`` and
+``ansible_local.core.distribution_release``. They use the original Ansible
+facts if they are not ``NA`` and refer to the ``ansible_lsb`` otherwise; they
+can also be overriden through Ansible inventory. By using these local facts in
+your roles, you can have a centralized place to control these facts if
+necessary.
+
+Examples
+~~~~~~~~
+
+In your role default variables, create separate variables that hold the
+information about current distribution and release:
+
+.. code-block:: yaml
+
+   application__distribution: '{{ ansible_local.core.distribution
+                                  if (ansible_local|d() and ansible_local.core|d() and
+                                      ansible_local.core.distribution|d())
+                                  else ansible_distribution }}'
+
+   application__distribution_release: '{{ ansible_local.core.distribution_release
+                                          if (ansible_local|d() and ansible_local.core|d() and
+                                              ansible_local.core.distribution_release|d())
+                                          else ansible_distribution_release }}'
+
 List of current POSIX capabilities
 ----------------------------------
 
