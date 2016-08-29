@@ -38,6 +38,9 @@ Fixed
 - Timezone should now be set correctly on hosts with ``systemd-timesyncd``
   enabled. [drybjed]
 
+- Fix the idempotency loop when the ``/etc/localtime`` file is a symlink to
+  a timezone file, and ``dpkg-reconfigure tzdata`` is executed. [drybjed]
+
 
 `debops.ntp v0.2.2`_ - 2016-07-28
 ---------------------------------
