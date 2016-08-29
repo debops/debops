@@ -67,10 +67,10 @@ docker__packages: []
 #
 # List of UNIX accounts which should be added to ``docker`` system group which
 # has access to the Docker UNIX socket.
-docker__admins: [ '{{ (ansible_ssh_user
-                       if (ansible_ssh_user | d() and
-                           ansible_ssh_user != "root")
-                       else lookup("env", "USER")) }}' ]
+docker__admins: '{{ ansible_local.core.admin_users
+                    if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.admin_users|d())
+                    else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 # Network configuration [[[

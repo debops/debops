@@ -35,6 +35,9 @@ Changed
 - Use custom distribution and release local facts for Docker upstream
   repository configuration. [drybjed]
 
+- Use list of administrator accounts provided by the ``debops.core`` role.
+  [drybjed]
+
 
 `debops.docker v0.2.0`_ - 2016-07-20
 ------------------------------------
