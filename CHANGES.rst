@@ -6,7 +6,7 @@ Changelog
 **debops.docker**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
-and `human-readable changelog <http://keepachangelog.com/>`_.
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
 The current role maintainer is drybjed.
 
@@ -14,7 +14,13 @@ The current role maintainer is drybjed.
 `debops.docker master`_ - unreleased
 ------------------------------------
 
-.. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.2.0...master
+.. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.2.1...master
+
+
+`debops.docker v0.2.1`_ - 2016-08-29
+------------------------------------
+
+.. _debops.docker v0.2.1: https://github.com/debops/ansible-docker/compare/v0.2.0...v0.2.1
 
 Added
 ~~~~~
