@@ -21,15 +21,20 @@ Added
 
 - Support for dockerd (docker-engine 1.12). [tallandtree]
 
-- Support for live restore (:any:`docker__live_restore`) of docker daemon (docker-engine 1.12) 
-  and other options. [tallandtree]
+- Support for live restore (:any:`docker__live_restore`) of docker daemon
+  (docker-engine 1.12) and other options. [tallandtree]
 
 Changed
 ~~~~~~~
 
 - Systemd configuration improved. [tallandtree]
-  
-- Support http_proxy, https_proxy and no_proxy for Upstart systems. [tallandtree]
+
+- Support ``http_proxy``, ``https_proxy`` and ``no_proxy`` variables for Upstart
+  systems. [tallandtree]
+
+- Use custom distribution and release local facts for Docker upstream
+  repository configuration. [drybjed]
+
 
 `debops.docker v0.2.0`_ - 2016-07-20
 ------------------------------------
