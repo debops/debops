@@ -20,6 +20,18 @@ The current role maintainer is drybjed.
 
 .. _debops.ntp v0.2.3: https://github.com/debops/ansible-ntp/compare/v0.2.2...v0.2.3
 
+Added
+~~~~~
+
+- Role will not uninstall the ``ntpdate`` package automatically if
+  ``ntp__ignore_ntpdate`` boolean variable is enabled. [drybjed]
+
+Changed
+~~~~~~~
+
+- The timezone configuration tasks are moved to a separate ``timezone.yml``
+  file for ease of use. [le9i0nx]
+
 Fixed
 ~~~~~
 

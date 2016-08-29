@@ -44,6 +44,14 @@ ntp__daemon: '{{ (ansible_local.ntp.daemon
                         else "openntpd")) }}'
 
                                                                    # ]]]
+# .. envvar:: ntp__ignore_ntpdate [[[
+#
+# Don't uninstall ``ntpdate`` package if it's installed. Be aware that
+# ``ntpdate-debian`` script is executed each time a network interface is
+# brought up, this might result in unexpected time jumps forward or backward.
+ntp__ignore_ntpdate: False
+
+                                                                   # ]]]
 # .. envvar:: ntp__servers [[[
 #
 # List of NTP servers to synchronize with
