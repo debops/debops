@@ -11,6 +11,24 @@
 # Docker packages and installation [[[
 # ------------------------------------
 
+# .. envvar:: docker__distribution [[[
+#
+# The OS distribution which is used to select upstream APT repository.
+docker__distribution: '{{ ansible_local.core.distribution
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.distribution|d())
+                          else ansible_distribution }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__distribution_release [[[
+#
+# The OS distribution relese which is used to select upstream APT repository.
+docker__distribution_release: '{{ ansible_local.core.distribution_release
+                                  if (ansible_local|d() and ansible_local.core|d() and
+                                      ansible_local.core.distribution_release|d())
+                                  else ansible_distribution_release }}'
+
+                                                                   # ]]]
 # .. envvar:: docker__upstream [[[
 #
 # By default ``debops.docker`` installs Docker from the system distribution
@@ -30,7 +48,7 @@ docker__upstream_key: '58118E89F3A912897C070ADBF76221572C52609D'
 # .. envvar:: docker__upstream_repository [[[
 #
 # Address of the Docker upstream APT repository.
-docker__upstream_repository: 'deb https://apt.dockerproject.org/repo {{ ansible_distribution | lower }}-{{ ansible_distribution_release }} main'
+docker__upstream_repository: 'deb https://apt.dockerproject.org/repo {{ docker__distribution | lower }}-{{ docker__distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: docker__base_packages [[[
@@ -49,10 +67,10 @@ docker__packages: []
 #
 # List of UNIX accounts which should be added to ``docker`` system group which
 # has access to the Docker UNIX socket.
-docker__admins: [ '{{ (ansible_ssh_user
-                       if (ansible_ssh_user | d() and
-                           ansible_ssh_user != "root")
-                       else lookup("env", "USER")) }}' ]
+docker__admins: '{{ ansible_local.core.admin_users
+                    if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.admin_users|d())
+                    else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 # Network configuration [[[
@@ -164,9 +182,9 @@ docker__env_no_proxy: '{{ ansible_env.no_proxy | d() }}'
 # .. envvar:: docker__listen [[[
 #
 # List of host connections configured in the Docker daemon (``--host`` parameter).
-docker__listen: 
+docker__listen:
   - '{{ "fd://" if ansible_service_mgr == "systemd" else "unix:///var/run/docker.sock" }}'
-  - '{{ docker__tcp_listen }}' 
+  - '{{ docker__tcp_listen }}'
 
                                                                    # ]]]
 # .. envvar:: docker__labels [[[
