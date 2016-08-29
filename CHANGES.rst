@@ -74,8 +74,8 @@ Changed
 - Move condition for :envvar:`dnsmasq__bogus_priv` to the defaults file to make
   transparent when this option is going to be applied. [ypid_]
 
-- Change ``dnsmasq__domain`` to point to ``ansible_domain`` instead of
-  ``ansible_fqdn`` by default. [ypid]
+- Change :envvar:`dnsmasq__domain` to point to ``ansible_domain`` instead of
+  ``ansible_fqdn`` by default. [ypid_]
 
 Removed
 ~~~~~~~
@@ -101,6 +101,6 @@ Removed
 Fixed
 ~~~~~
 
-- Detection of ``dnsmasq__bogus_priv`` which did not work before because the
+- Detection of :envvar:`dnsmasq__bogus_priv` which did not work before because the
   ``bool`` filter interprets defaults to ``False`` for input it does not know
   about (like IP addresses). [ypid_]

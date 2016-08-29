@@ -73,7 +73,7 @@ dnsmasq__stop_dns_rebind: True
 #
 # Don't forward reverse DNS queries for private IP addresses to upstream DNS servers.
 # The default is to not forward reverse DNS queries if the
-# ``dnsmasq__ipv4_gateway`` interfaces has a public IPv4 address.
+# :envvar:`dnsmasq__ipv4_gateway` interfaces has a public IPv4 address.
 dnsmasq__bogus_priv: '{{ dnsmasq__ipv4_gateway|d() and
                          hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway]|d() and
                          hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway].ipv4|d() and
