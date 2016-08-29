@@ -1,3 +1,5 @@
+.. _redis__ref_changelog:
+
 Changelog
 =========
 
@@ -21,6 +23,10 @@ Changed
 
 - Move the role variables from ``vars/main.yml`` to ``defaults/main.yml``.
   [drybjed]
+
+- The role has been redesigned from the ground up. Variables and service
+  parameters have been reorganized, role supports standalone as well as
+  clustered operation with Redis Sentinel. [drybjed]
 
 
 debops.redis v0.1.0 - 2016-06-28

@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+from sys import exit
+import os
+
+output = {}
+sentinel_monitors = []
+redis_auth_group = '{{ redis__auth_group }}'
+redis_server_conf = '/etc/redis/redis.conf'
+redis_server_bin = '/usr/bin/redis-server'
+redis_sentinel_conf = '/etc/redis/sentinel.conf'
+redis_sentinel_bin = '/usr/bin/redis-sentinel'
+redis_sentinel_notify_dir = '{{ redis__sentinel_notify_dir }}'
+redis_sentinel_trigger_dir = '{{ redis__sentinel_trigger_dir }}'
+
+def unwrap_quotes(input_line):
+    out = input_line.split(' ')[1].rstrip('\n')
+    if out.startswith('"') and out.endswith('"'):
+        out = out[1:-1]
+    return out
+
+
+if os.path.isfile(redis_server_conf) and os.path.isfile(redis_server_bin) and os.access(redis_server_bin, os.X_OK):
+
+    output.update({ "installed": True })
+    output.update({ "auth_group": redis_auth_group })
+
+    try:
+        fh = open(redis_server_conf)
+
+        for line in fh:
+            if line.startswith('requirepass'):
+                output.update({ "password": unwrap_quotes(line) })
+
+            elif line.startswith('port'):
+	        output.update({ "port": unwrap_quotes(line) })
+
+            elif line.startswith('unixsocket'):
+                output.update({ "socket": unwrap_quotes(line) })
+
+        fh.close()
+
+    except Exception:
+        pass
+
+if os.path.isfile(redis_sentinel_conf) and os.path.isfile(redis_sentinel_bin) and os.access(redis_sentinel_bin, os.X_OK):
+
+    try:
+        fh = open(redis_sentinel_conf)
+
+        for line in fh:
+            if line.startswith('sentinel monitor'):
+                sentinel_monitors.append(line.split(' ')[2])
+
+        fh.close()
+
+        if sentinel_monitors:
+            output.update({ "sentinel_enabled": True })
+            output.update({ "sentinel_monitors": sentinel_monitors })
+            output.update({ "sentinel_notify_dir": redis_sentinel_notify_dir })
+            output.update({ "sentinel_trigger_dir": redis_sentinel_trigger_dir })
+
+    except Exception:
+        pass
+
+print(dumps(output, sort_keys=True, indent=2))

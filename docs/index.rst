@@ -9,8 +9,11 @@ Ansible role: debops.redis
    introduction
    getting-started
    defaults
+   defaults-detailed
+   configuration-layout
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:

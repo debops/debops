@@ -1,49 +1,94 @@
 ---
 
-- name: Install Redis server
-  apt:
-    pkg: '{{ item }}'
+- name: Install required packages
+  package:
+    name: '{{ item }}'
     state: 'present'
-    install_recommends: False
   with_flattened:
-    - 'redis-server'
+    - '{{ redis__base_packages }}'
+    - '{{ redis__sentinel_packages }}'
+    - '{{ redis__packages }}'
 
 - name: Detect Redis version
-  shell: redis-server -v | awk '{print $3}'
+  shell: redis-server -v | awk '{print $3}' | sed -e 's/v=//'
   changed_when: False
-  register: register_redis_version
+  register: redis__register_version
 
-- name: Create Redis paths
+- name: Create Redis auth system group
+  group:
+    name: '{{ redis__auth_group }}'
+    state: 'present'
+    system: True
+
+- name: Divert the original Redis config files
+  command: 'dpkg-divert --quiet --local --divert /etc/redis/{{ item }}.dpkg-divert --rename /etc/redis/{{ item }}'
+  args:
+    creates: '/etc/redis/{{ item }}.dpkg-divert'
+  with_items: [ 'redis.conf', 'sentinel.conf' ]
+
+- name: Recreate the original Redis config file
+  command: 'install -o {{ redis__user }} -g {{ redis__auth_group }} -m 0640
+            /etc/redis/redis.conf.dpkg-divert /etc/redis/redis.conf'
+  args:
+    creates: '/etc/redis/redis.conf'
+
+- name: Create initial Sentinel config file
+  template:
+    src: 'etc/redis/sentinel.conf.j2'
+    dest: '/etc/redis/sentinel.conf'
+    owner: '{{ redis__user }}'
+    group: '{{ redis__auth_group }}'
+    mode: '0640'
+    force: False
+  notify: [ 'Restart redis-sentinel' ]
+
+- name: Create Sentinel hook script directories
   file:
-    path: '{{ item }}'
+    path: '/etc/redis/{{ item }}'
     state: 'directory'
-    owner: 'redis'
-    group: 'redis'
+    owner: 'root'
+    group: 'root'
     mode: '0755'
-  with_items:
-    - '{{ redis_dir }}'
-    - '{{ redis_run_state }}'
-    - '{{ redis_log }}'
-    - '{{ redis_script }}'
+  with_items: [ 'notify.d', 'trigger.d' ]
 
-- include: sentinel.yml
-  when: redis_sentinel_hosts_group in group_names
+- name: Install Redis custom scripts
+  copy:
+    src: 'usr/local/lib/'
+    dest: '/usr/local/lib/'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
-- name: Flush the handlers so Sentinel is up and running before the servers
-  meta: flush_handlers
+- name: Symlink redis-password in $PATH
+  file:
+    path: '/usr/local/bin/redis-password'
+    src: '/usr/local/lib/redis/redis-password'
+    state: 'link'
 
-# Always install Redis server unless the host exists in the sentinel group
-# and it's not standalone.
-- include: server.yml
-# FIXME: Evaluates always to True!
-  when: (not redis_sentinel_standalone and
-        redis_sentinel_hosts_group in group_names) or True
+- name: Configure redis-server service
+  include: redis-server.yml
 
-- name: Stop Redis Server
-  service:
-    name: 'redis-server'
-    state: 'stopped'
-    enabled: 'no'
-  when: redis_sentinel_standalone and
-        redis_hosts_group in group_names and
-        redis_sentinel_hosts_group in group_names
+- name: Configure redis-sentinel service
+  include: redis-sentinel.yml
+  when: redis__sentinel_enabled|bool
+
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Setup Redis local facts
+  template:
+    src: 'etc/ansible/facts.d/redis.fact.j2'
+    dest: '/etc/ansible/facts.d/redis.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: redis__register_facts
+
+- name: Reload facts if they were modified
+  action: setup
+  when: redis__register_facts|changed
