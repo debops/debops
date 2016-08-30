@@ -97,8 +97,8 @@ network is described by a YAML dictionary which should have the following keys:
 .. _tinc__ref_networks_tinc_exclude_addresses:
 
 ``tinc_exclude_addresses``
-  Optional. List of FQDN or IP addresses which should be excluded from the public key file
-  of a given host. This list excludes the IP addresses of the mesh interface as
+  Optional. List of FQDN or IP addresses which should be excluded from the host configuration.
+  This list excludes the IP addresses of the mesh interface as
   well as the bridge interface, so that Tinc doesn't try to connect to remote
   hosts over the VPN connection.
 

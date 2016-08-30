@@ -7,7 +7,7 @@ Getting started
 .. include:: includes/all.rst
 
 The ``debops.tinc`` role by itself only defines the connections between hosts,
-posing as Ethernet tunnels. To make the proper network, you need a defined
+posing as Ethernet tunnels. To make a proper network, you need a defined
 subnet and a way to assign IP addresses to hosts in the network. You can use
 the debops.subnetwork_ role to define an internal subnet for the hosts in
 the VPN, and debops.dnsmasq_ to provide DHCP and DNS services inside the
@@ -42,19 +42,21 @@ hosts acting as the DHCP/DNS server and optionally a gateway:
     hostname1
     hostname2
 
-By default Tinc configures host public keys to contain the primary FQDN address
+By default Tinc configures host configuration to contain the primary FQDN address
 of a given host, so that when its IP address changes, Tinc will query the DNS
 to get the current IP address.
 
 However, the FQDN will only be added, if a given host has a publicly routable
 IP address. This means that hosts without public IPs won't have their addresses
-mentioned in their public key files. This allows these hosts to still connect
+mentioned in their host configuration file. This allows these hosts to still connect
 to public a gateway with access to the Tinc network.
 
 If you want to test the Tinc VPN only on a private network, or allow VPN
 connections between hosts, you can tell the ``debops.tinc`` role to add the
-private IP addresses of the hosts to their public key files by adding in the
-Ansible inventory::
+private IP addresses of the hosts to their host configuration files by adding
+in the Ansible inventory:
+
+.. code-block:: yaml
 
     tinc__host_addresses: '{{ tinc__host_addresses_ip }}'
 
@@ -100,12 +102,15 @@ In "static" mode, the VPN interface will act as another layer 2 connection on
 the bridge and DHCP requests from the VPN will be passed along to a suitable
 server. You can configure a DHCP/DNS server using debops.dnsmasq_ role.
 
-RSA public key exchange
------------------------
+Host configuration exchange
+---------------------------
 
 The ``debops.tinc`` role uses directories created in the :file:`secret/tinc/`
-directory on the Ansible Controller to exchange RSA public keys between hosts
-in a given VPN. Each network has its own directory tree::
+directory on the Ansible Controller to exchange host configuration files which
+contain the RSA public keys between hosts in a given VPN. Each network has its
+own directory tree:
+
+.. code-block:: none
 
     secret/tinc/
     └── networks/
@@ -129,7 +134,7 @@ in a given VPN. Each network has its own directory tree::
                         ├── hostname1
                         └── hostname2
 
-By default all public keys in a given mesh network will be stored in::
+By default all host configuration files in a given mesh network will be stored in::
 
     secret/tinc/networks/<mesh>/by-network/<mesh>/hosts/
 
@@ -161,7 +166,9 @@ configure a set of ``systemd`` unit files:
   is the name of the VPN.
 
 With ``systemd``, you can manage each Tinc network separately by issuing
-commands::
+commands:
+
+.. code-block:: console
 
     systemctl status tinc@mesh0
     systemctl start tinc@mesh0
