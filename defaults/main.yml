@@ -568,6 +568,7 @@ redis__ferm__dependent_rules:
     saddr: '{{ redis__server_allow }}'
     accept_any: False
     by_role: 'debops.redis'
+    rule_state: '{{ "present" if (redis__server_bind not in ["localhost"]) else "absent" }}'
 
   - type: 'accept'
     dport: ['redis-sentinel']
@@ -575,6 +576,9 @@ redis__ferm__dependent_rules:
     saddr: '{{ redis__sentinel_allow }}'
     accept_any: False
     by_role: 'debops.redis'
+    rule_state: '{{ "present"
+                    if (redis__sentinel_enabled|bool and redis__sentinel_bind not in ["localhost"])
+                    else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
