@@ -540,7 +540,7 @@ redis__apt_preferences__dependent_list:
   - package: 'redis-server'
     backports: [ 'wheezy' ]
     reason: 'Critical bugs in older versions - http://download.redis.io/redis-stable/00-RELEASENOTES'
-    role: 'debops.redis'
+    by_role: 'debops.redis'
 
                                                                    # ]]]
 # .. envvar:: redis__etc_services__dependent_list [[[
@@ -567,14 +567,14 @@ redis__ferm__dependent_rules:
     weight: '40'
     saddr: '{{ redis__server_allow }}'
     accept_any: False
-    role: 'debops.redis'
+    by_role: 'debops.redis'
 
   - type: 'accept'
     dport: ['redis-sentinel']
     weight: '40'
     saddr: '{{ redis__sentinel_allow }}'
     accept_any: False
-    role: 'debops.redis'
+    by_role: 'debops.redis'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
