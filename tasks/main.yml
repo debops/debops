@@ -99,8 +99,7 @@
     group: '{{ tinc__group }}'
     mode: '0750'
   with_items: '{{ tinc__default_networks + tinc__networks }}'
-  when: (item.name|d() and item.tinc_options|d() and
-         (item.generate_tinc_up is undefined or item.generate_tinc_up|bool))
+  when: (item.name|d() and item.generate_tinc_up|d(True)|bool)
 
 - name: Generate tinc-down network scripts
   template:
@@ -110,8 +109,7 @@
     group: '{{ tinc__group }}'
     mode: '0750'
   with_items: '{{ tinc__default_networks + tinc__networks }}'
-  when: (item.name|d() and item.tinc_options|d() and
-         (item.generate_tinc_down|d(True)|bool))
+  when: (item.name|d() and item.generate_tinc_down|d(True)|bool)
 
 - name: Configure which networks are started at boot
   template:
