@@ -32,6 +32,13 @@ network is described by a YAML dictionary which should have the following keys:
 ``port``
   Required. TCP and UDP port used by this Tinc VPN.
 
+``node_reachable``
+  Optional, boolean. Defaults to ``True``. Whether a node should be reachable
+  for other nodes or if the node should act in "client mode".
+  If the node is in "client mode", the Firewall will not allow other nodes to
+  initiate a connection to the Tinc daemon. Furthermore, the Tinc daemon is
+  configured to only listen on the loopback interface.
+
 .. _tinc__ref_networks_allow:
 
 ``allow``
