@@ -56,8 +56,8 @@ Changed
   this should fix an issue when changes in the network interface topology
   required ``dnsmasq`` to be restarted to listen on new interfaces. [drybjed_]
 
-- Set :envvar:`dnsmasq__etc_hosts` to ``False`` because the :file:`/etc/hosts.dnsmasq`
-  files does not exist by default. [ypid_]
+- Support a list for :envvar:`dnsmasq__etc_hosts` and don’t read any hosts file
+  by default. [ypid_]
 
 - Changed variable namespace from ``dnsmasq_`` to ``dnsmasq__``.
   ``dnsmasq_[^_]`` variables are hereby deprecated.

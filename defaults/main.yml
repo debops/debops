@@ -162,9 +162,15 @@ dnsmasq__domain_mx: '{{ ansible_fqdn }}'
 
 # .. envvar:: dnsmasq__etc_hosts
 #
-# File path to an alternative :file:`/etc/hosts` read by dnsmasq. The default
-# :file:`/etc/hosts` file will be used when set to ``False``.
-dnsmasq__etc_hosts: False
+# List of file paths of ``hosts(5)`` files to read by dnsmasq. The default,
+# no hosts file is being read.
+# If you want to specify hosts entries they can be specified in
+# ``/etc/hosts.dnsmasq`` and then read by dnsmasq when you add
+# ``/etc/hosts.dnsmasq`` to this list. Note that letting dnsmasq read
+# ``/etc/hosts`` might have unintended consequences, for example dnsmasq might
+# respond with a loopback address when queried for the hostname of the server
+# itself.
+dnsmasq__etc_hosts: []
 
 
 # .. envvar:: dnsmasq__search

@@ -70,10 +70,13 @@ no-dhcp-interface = {{ interface }}
 
 # ---- DNS options ----
 
-{% if dnsmasq__etc_hosts|d() %}
-# Use alternative `/etc/hosts` file.
 no-hosts
-addn-hosts = {{ dnsmasq__etc_hosts }}
+{% if dnsmasq__etc_hosts is string %}
+addn-hosts = {{ dnsmasq__etc_hosts | quote }}
+{% else %}
+{%   for etc_hosts_file in dnsmasq__etc_hosts %}
+addn-hosts = {{ etc_hosts_file | quote }}
+{%   endfor %}
 {% endif %}
 
 # Return answers for DNS queries depending on the originating network interface.
