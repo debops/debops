@@ -123,7 +123,7 @@ If you want to keep tabs on each role's status then check out our
 .. _Golang: https://github.com/debops/ansible-golang
 .. _Java: https://github.com/debops/ansible-java
 .. _NodeJS: https://github.com/debops/ansible-nodejs
-.. _PHP: https://github.com/debops/ansible-php5
+.. _PHP: https://github.com/debops/ansible-php
 
 .. _nginx: https://github.com/debops/ansible-nginx
 .. _RubyOnRails: https://github.com/debops/ansible-rails_deploy
