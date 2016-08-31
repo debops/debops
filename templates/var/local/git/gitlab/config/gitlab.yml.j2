@@ -89,6 +89,12 @@ production: &base
     # The default is 'tmp/repositories' relative to the root of the Rails app.
     # repository_downloads_path: tmp/repositories
 
+  ## Git LFS
+  lfs:
+    enabled: true
+    # The location where LFS objects are stored (default: shared/lfs-objects).
+    storage_path: {{ gitlab_lfs_path }}
+
   ## Gravatar
   ## For Libravatar see: http://doc.gitlab.com/ce/customization/libravatar.html
   gravatar:
@@ -212,6 +218,9 @@ production: &base
       #     app_secret: 'YOUR_APP_SECRET'}
 
 
+  # Shared file storage settings
+  shared:
+    path: {{ gitlab_shared_path }} # Default: shared
 
   #
   # 3. Advanced settings
