@@ -13,8 +13,17 @@
 
 # .. envvar:: redis__base_packages [[[
 #
-# List of base APT packages to install for Redis service.
-redis__base_packages: [ 'redis-server', 'python-redis' ]
+# List of base APT packages to install for Redis support.
+redis__base_packages: [ 'redis-tools' ]
+
+                                                                   # ]]]
+# .. envvar:: redis__server_packages [[[
+#
+# List of APT packages to install for Redis Server support.
+redis__server_packages:
+  - '{{ [ "redis-server", "python-redis" ]
+        if (redis__server_enabled|bool or redis__sentinel_enabled|bool)
+        else [] }}'
 
                                                                    # ]]]
 # .. envvar:: redis__sentinel_packages [[[
@@ -158,6 +167,12 @@ redis__server_slave: False
 # Redis Server configuration options [[[
 # --------------------------------------
 
+# .. envvar:: redis__server_enabled [[[
+#
+# Enable or disable Redis Server instance.
+redis__server_enabled: True
+
+                                                                   # ]]]
 # .. envvar:: redis__server_save_enabled [[[
 #
 # Enable or disable database snapshots.

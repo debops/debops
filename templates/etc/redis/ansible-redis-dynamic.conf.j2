@@ -29,7 +29,7 @@ if [ -f "${redis_pidfile}" ] ; then
     if $(kill -0 $(<"${redis_pidfile}") > /dev/null 2>&1) ; then
 
         if [ "${subcommand}" = "config" ]  ; then
-{% set redis__tpl_version = (redis__register_version.stdout if redis__register_version|d() else '0.0.0') %}
+{% set redis__tpl_version = (redis__register_server_version.stdout if redis__register_server_version|d() else '0.0.0') %}
 {% macro print_config(configuration) %}
 {%   if configuration is mapping %}
 {%     for config_key in configuration.keys() %}
