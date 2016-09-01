@@ -70,6 +70,9 @@ Changed
 
 - Update debops.librenms_ playbook. [drybjed_]
 
+- Update the ``ipaddr()`` filter plugin with the version from Ansible ``devel``
+  branch. [drybjed]
+
 Deprecated
 ~~~~~~~~~~
 
