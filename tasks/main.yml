@@ -23,13 +23,21 @@
     mode: '0644'
   register: debops_fact__register_public_facts
 
-- name: Save local private facts
-  template:
-    src: 'etc/ansible/facts.d/debops_fact_priv.fact.j2'
-    dest: '/etc/ansible/facts.d/debops_fact_priv.fact'
-    owner: 'root'
-    group: '{{ debops_fact__private_group }}'
-    mode: '{{ debops_fact__private_mode }}'
+# Ansible has problems with facts not readable by unprivileged users,
+# a different solution is required.
+#- name: Save local private facts
+#  template:
+#    src: 'etc/ansible/facts.d/debops_fact_priv.fact.j2'
+#    dest: '/etc/ansible/facts.d/debops_fact_priv.fact'
+#    owner: 'root'
+#    group: '{{ debops_fact__private_group }}'
+#    mode: '{{ debops_fact__private_mode }}'
+#  register: debops_fact__register_private_facts
+
+- name: Remove local private facts file
+  file:
+    path: '/etc/ansible/facts.d/debops_fact_priv.fact'
+    state: 'absent'
   register: debops_fact__register_private_facts
 
 - name: Reload facts if they were modified

@@ -14,7 +14,20 @@ The current role maintainer_ is drybjed.
 `debops.debops_fact master`_ - unreleased
 -----------------------------------------
 
-.. _debops.debops_fact master: https://github.com/debops/ansible-debops_fact/compare/v0.1.1...master
+.. _debops.debops_fact master: https://github.com/debops/ansible-debops_fact/compare/v0.1.2...master
+
+
+`debops.debops_fact v0.1.2`_ - 2016-09-01
+-----------------------------------------
+
+.. _debops.debops_fact v0.1.2: https://github.com/debops/ansible-debops_fact/compare/v0.1.1...v0.1.2
+
+Removed
+~~~~~~~
+
+- Ansible does not work with local facts that are unreadable by unprivileged
+  users. A different solution for private local facts will be written later.
+  [drybjed]
 
 
 `debops.debops_fact v0.1.1`_ - 2016-08-07
