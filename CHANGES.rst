@@ -16,6 +16,10 @@ The current role maintainer is drybjed.
 
 .. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.2.1...master
 
+Changed
+~~~~~~~
+
+- Docker daemon listens on port 2376 when TLS is used. [tallandtree]
 
 `debops.docker v0.2.1`_ - 2016-08-29
 ------------------------------------

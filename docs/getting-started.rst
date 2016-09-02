@@ -23,6 +23,10 @@ firewall rules automatically, however it does not fully support Docker yet, so
 be aware of this when you modify the firewall configuration. You can restart
 ``docker`` daemon to make sure that all firewall rules are set up correctly.
 
+To let the docker daemon trust a private registry with self-signed certificates,
+add the root CA used to sign the registry's certificate through the ``debops.pki``
+role.
+
 ``debops.docker`` relies on configuration managed by ``debops.core``,
 ``debops.ferm``, and ``debops.pki`` Ansible roles.
 
