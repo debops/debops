@@ -308,10 +308,12 @@ dnsmasq__ferm__dependent_rules:
     by_role: 'debops.dnsmasq'
     name: 'dhcpv6'
     weight: '40'
-    saddr: [ 'fe80::/16' ]
+    saddr: [ 'fe80::/10' ]
     daddr: [ 'ff02::1:2' ]
+    # https://tools.ietf.org/html/rfc3315#section-13
     protocol: [ 'udp', 'tcp' ]
-    dport: [ 'dhcpv6-client', 'dhcpv6-server' ]
+    sport: [ 'dhcpv6-client' ]
+    dport: [ 'dhcpv6-server' ]
     rule_state: '{{ dnsmasq__dhcpv6|bool | ternary("present", "absent") }}'
     interface: '{{ dnsmasq__interfaces | map(attribute="interface")
                    | list | difference(dnsmasq__no_dhcp_interfaces) }}'
