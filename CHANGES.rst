@@ -36,6 +36,8 @@ Fixed
 - Don’t create duplicate forward rules when an interface has both an IPv4 and
   an IPv6 address. [ypid_]
 
+- Allow DHCPv6 responses for clients. [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 

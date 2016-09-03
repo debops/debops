@@ -349,6 +349,7 @@ ferm__default_rules: '{{ ferm__rules_default_policy +
                          ferm__rules_filter_conntrack +
                          ferm__rules_filter_syn +
                          ferm__rules_filter_recent_badguys +
+                         ferm__rules_accept_dhcpv6_client +
                          ferm__rules_filter_include_legacy +
                          ferm__rules_filter_recent_scanners +
                          ferm__rules_filter_reject_all +
@@ -529,6 +530,31 @@ ferm__rules_filter_recent_badguys:
     recent_name: '{{ ferm__filter_recent_name }}'
     recent_remove: True
     recent_log: False
+
+
+# .. envvar:: ferm__rules_accept_dhcpv6_client
+#
+# Allow DHCPv6 responses.
+#
+# Related to:
+#
+# * https://serverfault.com/questions/513772/getting-an-ip-from-an-ipv6-dhcp-server
+# * https://bugzilla.redhat.com/show_bug.cgi?id=656334
+# * https://bugzilla.redhat.com/show_bug.cgi?id=591630
+#
+ferm__rules_accept_dhcpv6_client:
+
+  - type: 'accept'
+    weight: '50'
+    weight_class: 'any-service'
+    filename: 'dhcpv6-client'
+    comment: 'DHCPv6 responses seem to be neither RELATED nor ESTABLISHED.'
+    domain: [ 'ip6' ]
+    saddr: [ 'fe80::/10' ]
+    daddr: [ 'fe80::/10' ]
+    protocol: [ 'udp' ]
+    sport: [ 'dhcpv6-server' ]
+    dport: [ 'dhcpv6-client' ]
 
 
 # .. envvar:: ferm__rules_filter_include_legacy
