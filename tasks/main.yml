@@ -1,0 +1,12 @@
+---
+
+- name: Manage kernel parameters
+  sysctl:
+    sysctl_file: '{{ sysctl__config_file }}'
+    name: '{{ item.key }}'
+    value: '{{ item.value if (item.value is string) else item.value.value }}'
+    state: '{{ item.value.state|d("present") }}'
+    reload: '{{ item.value.reload|d(sysctl__reload) | bool }}'
+    ignoreerrors: '{{ item.value.ignoreerrors|d(sysctl__ignoreerrors) | bool }}'
+    sysctl_set: '{{ item.value.sysctl_set|d(False) | bool }}'
+  with_dict: '{{ sysctl__parameters }}'
