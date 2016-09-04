@@ -105,7 +105,8 @@ redis__auth_password: '{{ ansible_local.redis.password
                               ansible_local.redis.password|d())
                           else (lookup("password", secret +
                                 "/redis/clusters/" + redis__domain +
-                                "/password length=" + redis__password_length)) }}'
+                                "/password length=" + redis__password_length +
+                                " chars=ascii_letters,digits,-_.")) }}'
 
                                                                    # ]]]
 # .. envvar:: redis__password_length [[[
