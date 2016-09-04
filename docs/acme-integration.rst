@@ -162,7 +162,7 @@ and ``mon.example.com`` subdoimains, without creating cert for ``example.com``
 domain itself. Please notice that PKI realm does not contain your full domain
 name, it's crucial.
 
-.. code-block:: yml
+.. code-block:: yaml
 
     pki_acme: True
     pki_realms:
