@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_
 `debops.apt_preferences master`_ - unreleased
 ---------------------------------------------
 
-.. _debops.apt_preferences master: https://github.com/debops/ansible-apt_preferences/compare/v0.2.1...master
+.. _debops.apt_preferences master: https://github.com/debops/ansible-apt_preferences/compare/v0.2.2...master
+
+
+`debops.apt_preferences v0.2.2`_ - 2016-09-04
+---------------------------------------------
+
+.. _debops.apt_preferences v0.2.2: https://github.com/debops/ansible-apt_preferences/compare/v0.2.1...v0.2.2
 
 Changed
 ~~~~~~~
@@ -22,23 +28,41 @@ Changed
 - Sanitize file name generated from ``item.by_role`` by replacing dots with
   underscores. [ypid_]
 
-v0.2.1
-------
+- Update documentation. [drybjed_]
 
-*Released: 2016-06-28*
+
+`debops.apt_preferences v0.2.1`_ - 2016-06-28
+---------------------------------------------
+
+.. _debops.apt_preferences v0.2.1: https://github.com/debops/ansible-apt_preferences/compare/v0.2.0...v0.2.1
+
+Added
+~~~~~
 
 - Support singular and plural versions of the ``item.package`` parameter, as
   well as both string an YAML list variants. [drybjed_]
 
-- Update list of Ubuntu releases. [drybjed_]
-
 - Add support for ``item.state`` parameter and deprecate the alternatives.
   [drybjed_]
 
-v0.2.0
-------
+Changed
+~~~~~~~
 
-*Released: 2016-06-14*
+- Update list of Ubuntu releases. [drybjed_]
+
+
+`debops.apt_preferences v0.2.0`_ - 2016-06-14
+---------------------------------------------
+
+.. _debops.apt_preferences v0.2.0: https://github.com/debops/ansible-apt_preferences/compare/v0.1.3...v0.2.0
+
+Added
+~~~~~
+
+- Added ``apt_preferences__preset_list`` for advanced users. [ypid_]
+
+Changed
+~~~~~~~
 
 - Changed variable namespace from ``apt_preferences_`` to ``apt_preferences__``.
   ``apt_preferences_[^_]`` variables are hereby deprecated but are currently
@@ -53,41 +77,54 @@ v0.2.0
 
   [ypid_]
 
-
-- Added ``apt_preferences__preset_list`` for advanced users. [ypid_]
-
 - Use marker levels in vim markers to eliminate empty spaces. [drybjed_]
 
-v0.1.3
-------
 
-*Released: 2016-02-07*
+`debops.apt_preferences v0.1.3`_ - 2016-02-07
+---------------------------------------------
+
+.. _debops.apt_preferences v0.1.3: https://github.com/debops/ansible-apt_preferences/compare/v0.1.2...v0.1.3
+
+Changed
+~~~~~~~
 
 - Fix deprecation warnings in Ansible 2.1.0. [drybjed_]
 
-v0.1.2
-------
 
-*Released: 2015-11-13*
+`debops.apt_preferences v0.1.2`_ - 2015-11-13
+---------------------------------------------
 
-- Support ``item.role`` as an alternative parameter. [drybjed_]
+.. _debops.apt_preferences v0.1.2: https://github.com/debops/ansible-apt_preferences/compare/v0.1.1...v0.1.2
+
+Added
+~~~~~
 
 - Add support for ``item.when`` parameter, which introduces a way to
   enable/disable a particular pin conditionally. [drybjed_]
 
+Changed
+~~~~~~~
+
+- Support ``item.role`` as an alternative parameter. [drybjed_]
+
 - Check ``item.delete`` explicitly as a boolean. [drybjed_]
 
-v0.1.1
-------
 
-*Released: 2015-10-15*
+`debops.apt_preferences v0.1.1`_ - 2015-10-15
+---------------------------------------------
+
+.. _debops.apt_preferences v0.1.1: https://github.com/debops/ansible-apt_preferences/compare/v0.1.0...v0.1.1
+
+Changed
+~~~~~~~
 
 - Fixed documentation spelling. [ypid_]
 
-v0.1.0
-------
+debops.apt_preferences v0.1.0 - 2015-10-15
+------------------------------------------
 
-*Released: 2015-10-15*
+Added
+~~~~~
 
 - Add Changelog. [drybjed_]
 
