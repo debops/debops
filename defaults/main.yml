@@ -93,43 +93,6 @@ console_proc_hidepid_level: '2'
 console_proc_hidepid_group: 'procadmins'
 
 
-# ---- Kernel runtime parameters ----
-
-# Configuration file which holds the kernel parameters managed by the role
-console_sysctl_file: '/etc/sysctl.d/10-debops.console.conf'
-
-# Base amount of memory used for shared memory calculations
-console_sysctl_shm_base: '{{ ((ansible_memtotal_mb | int * 1024 * 1024) - 8192) }}'
-
-# How much of the total memory is reserved for shared memory.
-console_sysctl_shmall_limiter: '{{ "0.8"
-                                   if (ansible_memtotal_mb | int >= 4096)
-                                   else "0.5" }}'
-
-# Number of memory pages that can be used for shared memory
-console_sysctl_kernel_shmall: '{{ ((console_sysctl_shm_base | int *
-                                    console_sysctl_shmall_limiter | float) / 4096)
-                                  | round | int }}'
-
-# Maximum size of shared memory segment as % of available memory
-console_sysctl_shmmax_limiter: '{{ "0.5"
-                                   if (ansible_memtotal_mb | int >= 4096)
-                                   else "0.2" }}'
-
-# Maximum amount of shared memory a process can reserve for itself
-console_sysctl_kernel_shmmax: '{{ (console_sysctl_shm_base | int *
-                                   console_sysctl_shmmax_limiter | float)
-                                   | round | int }}'
-
-# Shared memory parameters set using sysctl
-console_sysctl_kernel_shm_values:
-  'kernel.shmmax': '{{ console_sysctl_kernel_shmmax }}'
-  'kernel.shmall': '{{ console_sysctl_kernel_shmall }}'
-
-# Dict with kernel parameters that require 'cap_sys_admin' capability to be set
-console_sysctl_sys_admin_values: {}
-
-
 # ---- root account ----
 
 # Manage root account
@@ -241,4 +204,3 @@ console_sysnews_min_uid: '500'
 #       Welcome on the {{ ansible_fqdn }} server!
 #
 console_sysnews_entries: {}
-

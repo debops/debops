@@ -1,6 +1,28 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
+**debops.console**
+
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
+
+The current role maintainer_ is drybjed_.
+
+
+`debops.console master`_ - unreleased
+-------------------------------------
+
+.. _debops.console master: https://github.com/debops/ansible-console/compare/v0.1.2...master
+
+Changed
+~~~~~~~
+
+- Moved sysctl parts from debops.console_ to a separate ``debops.sysctl``
+  role. [ypid_]
+
+
 v0.1.2
 ------
 
@@ -80,4 +102,3 @@ v0.1.0
 
 - Add ``proc.fact`` fact script which contains information about ``hidepid``
   options for other Ansible roles to use. [drybjed]
-

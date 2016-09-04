@@ -123,8 +123,10 @@
     group: 'root'
     mode: '0755'
 
-- name: Configure kernel parameters in /proc
-  include: configure_sysctl.yml
+- name: Remove obsolet sysctl configuration file
+  file:
+    path: '/etc/sysctl.d/10-debops.console.conf'
+    state: 'absent'
 
 - include: root_account.yml
   when: console_root is defined and console_root
@@ -168,4 +170,3 @@
 
 - include: sysnews.yml
   when: console_sysnews is defined and console_sysnews
-
