@@ -33,6 +33,12 @@ Added
   network anymore. Furthermore allow to adjust the metric of routes created
   based on those offered via DHCPv4. [ypid_]
 
+- Ensure that highly sensitive files are not checked into version control when
+  for example :program:`etckeeper` is used for tracking changes in :file:`/etc`.
+  Note that sensitive files which are already tracked by version control will
+  need to be manually deleted from version control history!
+  Refer to :envvar:`tinc__vcs_ignore_patterns` for more details. [ypid_]
+
 Changed
 ~~~~~~~
 
