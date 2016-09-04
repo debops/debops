@@ -3,7 +3,7 @@
 {% for config_key in sysctl__combined_parameters.keys() | sort %}
 {%   if sysctl__combined_parameters[config_key].state|d('present') != 'absent' %}
 {%     if sysctl__combined_parameters[config_key].comment|d() %}
-{{ sysctl__combined_parameters[config_key].comment[:-1] | comment(prefix='', postfix='') -}}
+{{ sysctl__combined_parameters[config_key].comment | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
 {%     endif -%}
 {{ config_key }} = {{ sysctl__combined_parameters[config_key] if sysctl__combined_parameters[config_key] is string else sysctl__combined_parameters[config_key].value }}
 {%   endif %}
