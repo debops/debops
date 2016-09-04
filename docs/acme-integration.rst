@@ -153,6 +153,32 @@ configuration active, it will check for validity of the signed certificate, and
 about a month before the expiration date it will try to renew the certificate
 automatically.
 
+I want a certificate for subdomains but domain
+----------------------------------------------
+
+Yes, it's possible :-) Please consult the example and create your own similar
+configuration. In the example we create a certificate for ``logs.example.com``
+and ``mon.example.com`` subdoimains, without creating cert for ``example.com``
+domain itself. Please notice that PKI realm does not contain your full domain
+name, it's crucial.
+
+.. code-block:: yaml
+
+    pki_acme: True
+    pki_realms:
+      - name: 'example' # do not include full domain name here!
+        acme: True
+        acme_default_subdomains: []
+        acme_subject: [ 'cn=logs.example.com' ]
+        acme_domains: [ 'logs.example.com', 'mon.example.com' ]
+        domains: [ 'logs.example.com', 'mon.example.com' ]
+        #acme_ca: 'le-staging'
+
+For testing it's strongly advised to uncomment ``acme_ca`` with ``le-staging`` to 
+use testing ACME servers. It does not create a real cert, but allows you to avoid
+problems with usual ACME servers rate limits. When you are sure that everything works
+correctly, comment the staging environment back.
+
 ACME configuration variables
 ----------------------------
 
