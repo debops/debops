@@ -15,7 +15,7 @@ different versions.
 Example inventory
 -----------------
 
-The ``debops.apt_preferences`` role is included in the :file:`common.yml` playbook, you
+The debops.apt_preferences_ role is included in the :file:`common.yml` playbook, you
 can add your own entries to Ansible’s inventory and they should be picked up
 automatically on the next playbook run.
 
