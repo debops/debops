@@ -7,13 +7,12 @@ Ansible role: debops.tinc
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    defaults-detailed
    copyright
-   credits
    changelog
+   upgrade
 
 ..
  Local Variables:

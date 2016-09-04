@@ -6,20 +6,17 @@
 {%   if item.link_type|d() %}
 {%     if item.link_type == 'static' %}
 {%       if item.bridge|d() %}
-tinc_bridge="{{ item.bridge }}"
-if [ -d /sys/class/net/${tinc_bridge}/bridge ] ; then
-    brctl delif ${tinc_bridge} ${INTERFACE}
-fi
+ip link set "${INTERFACE}" nomaster
 
 {%       endif %}
-ip addr del {{ item.interface_ip | d('0.0.0.0') }} dev ${INTERFACE}
-ip link set ${INTERFACE} down
+ip addr del {{ item.interface_ip | d('0.0.0.0') | quote }} dev "${INTERFACE}"
+ip link set "${INTERFACE}" down
 {%     endif %}
 {%   else %}
 {%     if ((item.dhclient is undefined or item.dhclient|bool) and
            item.tinc_options|d() and item.tinc_options.Mode|d() and item.tinc_options.Mode == 'switch') %}
-dhclient -r -v -pf /run/dhclient.${INTERFACE}.pid \
-         -lf /var/lib/dhcp/dhclient.${INTERFACE}.leases
+dhclient -r -v -pf "/run/dhclient.${INTERFACE}.pid" \
+         -lf "/var/lib/dhcp/dhclient.${INTERFACE}.leases"
 {%     endif %}
 {%   endif %}
 {% else %}

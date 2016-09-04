@@ -2,13 +2,7 @@
 
 {% set tinc__tpl_seen_keys = [ 'name', 'tinc-up', 'tinc-down', 'host-up', 'host-down', 'subnet-up', 'subnet-down' ] %}
 {% if item.tinc_options|d() %}
-{%   if item.hostname|d() %}
-Name = {{ item.hostname | replace("-","_") }}
-{%   elif item.tinc_options.Name|d() %}
-Name = {{ item.tinc_options.Name | replace("-","_") }}
-{%   else %}
-Name = {{ tinc__hostname | replace("-","_") }}
-{%   endif %}
+Name = {{ item.hostname|d(item.tinc_options.Name|d(tinc__hostname )) | replace("-","_") }}
 {%   if item.port|d() %}
 Port = {{ item.port }}
 {%     set _ = tinc__tpl_seen_keys.append('port') %}
@@ -36,5 +30,8 @@ Interface = {{ item.interface }}
 {%       endif %}
 {%     endif %}
 {%   endfor %}
+{%   if not (item.node_reachable|d(True) | bool) and "BindToInterface"|lower not in tinc__tpl_seen_keys %}
+## Disabled because with this experimental feature enabled Tinc failed to connect to the VPN with "Error looking up [peer]: Name or service not known" as of 1.0.24-2.1+b1.
+# BindToInterface = lo
+{%   endif %}
 {% endif %}
-
