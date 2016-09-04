@@ -217,26 +217,6 @@ sysctl__host_parameters: {}
 # Role internals [[[
 # ------------------
 
-# .. envvar:: sysctl__ignoreerrors [[[
-#
-# Ignore errors about unknown keys if ``True``.
-# This might be needed because some kernel parameters are not accessible from
-# inside of a container.
-sysctl__ignoreerrors: '{{ ansible_local|d() and
-                          ansible_local.cap12s|d() and
-                          (not ansible_local.cap12s.enabled | bool or
-                            (ansible_local.cap12s.enabled | bool and
-                             "cap_sys_admin" not in ansible_local.cap12s.list)) }}'
-
-                                                                   # ]]]
-
-# .. envvar:: sysctl__reload [[[
-#
-# Apply changes if ``True`` else the changes will need to be applied manually
-# or during next reboot.
-sysctl__reload: True
-
-                                                                   # ]]]
 # .. envvar:: sysctl__combined_parameters [[[
 #
 # Sysctl configuration file path where all kernel parameters will be configured

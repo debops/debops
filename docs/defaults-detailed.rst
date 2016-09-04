@@ -26,21 +26,10 @@ value of the sysctl key or a dict itself with the following options:
   Required. Desired value of the sysctl key.
 
 ``comment``
-  Optional, string. Can be used for documentation. Currently not written
-  anywhere.
+  Optional. A string or YAML text block with comments about the given
+  parameter, will be included in the generated configuration file.
 
 ``state``
   Optional, string. Defaults to ``present``. ``present`` will cause the kernel
   parameter to be set.  If ``absent`` the kernel parameter will not be
   influenced.
-
-``reload``
-  Optional, boolean. Defaults to :envvar:`sysctl__reload`.
-
-``ignoreerrors``
-  Optional, boolean. Defaults to :envvar:`sysctl__ignoreerrors`.
-
-``sysctl_set``
-  Optional, boolean. Defaults to ``False``.
-  Verify token value with the :command:`sysctl` command and set with ``sysctl -w`` if
-  necessary.
