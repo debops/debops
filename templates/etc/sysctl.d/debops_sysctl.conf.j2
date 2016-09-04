@@ -1,10 +1,10 @@
 # {{ ansible_managed }}
 
-{% for config_key in sysctl__combined_parameters.keys() | sort %}
-{%   if sysctl__combined_parameters[config_key].state|d('present') != 'absent' %}
-{%     if sysctl__combined_parameters[config_key].comment|d() %}
-{{ sysctl__combined_parameters[config_key].comment | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{% for key, value in sysctl__combined_parameters | dictsort %}
+{%   if value.state|d('present') != 'absent' %}
+{%     if value.comment|d() %}
+{{ value.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
 {%     endif -%}
-{{ config_key }} = {{ sysctl__combined_parameters[config_key] if sysctl__combined_parameters[config_key] is string else sysctl__combined_parameters[config_key].value }}
+{{ key }} = {{ value if value is string else value.value }}
 {%   endif %}
 {% endfor %}
