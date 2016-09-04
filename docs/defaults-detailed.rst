@@ -1,7 +1,7 @@
 Default variable details
 ========================
 
-Some of ``debops.apt_preferences`` default variables have more extensive
+Some of debops.apt_preferences_ default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
 
@@ -25,7 +25,7 @@ dictionary. Supported parameters:
 
 ``backports``
   List of OS releases which should be considered when
-  the ``debops.apt_preferences`` role configures a pin for a backported package. If
+  the debops.apt_preferences_ role configures a pin for a backported package. If
   the current OS release is not on this list, the pin won't be created and a existing
   pin will be removed. This should allow for easy transition to the next OS
   release.
@@ -49,7 +49,7 @@ dictionary. Supported parameters:
 
 ``filename``
   Name of the generated file with pin preferences, saved in
-  :file:`/etc/apt/preferences.d/`. If undefined, the ``debops.apt_preferences`` role
+  :file:`/etc/apt/preferences.d/`. If undefined, the debops.apt_preferences_ role
   will automatically generate a filename.
 
 ``suffix``
@@ -66,7 +66,7 @@ dictionary. Supported parameters:
 
 ``pin``
   Custom pin definition. If this variable is undefined,
-  the ``debops.apt_preferences`` role will automatically configure selected
+  the debops.apt_preferences_ role will automatically configure selected
   packages with preference for a backported version.
 
 ``raw``
