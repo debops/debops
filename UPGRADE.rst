@@ -11,7 +11,7 @@ From v0.1.0 to v0.2.0
 ---------------------
 
 All inventory variables have been renamed so you will need to update your
-inventory. Check the variables in ``defaults/main.yml`` file to see the changed
+inventory. Check the variables in :file:`defaults/main.yml` file to see the changed
 names.
 
 The Redis Server and Sentinel parameters are not configured in separate default

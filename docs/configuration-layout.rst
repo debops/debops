@@ -19,8 +19,8 @@ afterwards to use the default Debian values where applicable.
 
 The role configuration is split into two files:
 
-- the ``/etc/redis/ansible-redis-static.conf`` is a normal Redis Server
-  configuration file which is included in the main ``/etc/redis/redis.conf``
+- the :file:`/etc/redis/ansible-redis-static.conf` is a normal Redis Server
+  configuration file which is included in the main :file:`/etc/redis/redis.conf`
   configuration to provide the desired values. It contains configuration
   parameters that are not supported by the Redis dynamic configuration options,
   or require a service restart to be effective, like interface/port
@@ -29,17 +29,17 @@ The role configuration is split into two files:
   possible - this way parameters added by Redis in the main configuration file
   should be automatically overriden by the role configuration file.
 
-- the ``/etc/redis/ansible-redis-dynamic.conf`` is a Bash script which
+- the :file:`/etc/redis/ansible-redis-dynamic.conf` is a Bash script which
   configures the Redis Server using ``redis-cli`` command, while the service is
   running. When all parameters are configured, the main Redis configuration
   file is rewritten to save the changes. Modifications to parameters stored in
   this file don't require a Redis Server restart.
 
 Configuration of both files is stored in
-``redis__server_combined_configuration`` YAML dictionary. Check the
+:envvar:`redis__server_combined_configuration` YAML dictionary. Check the
 :ref:`redis__ref_server_configuration` for more details.
 
-The ``redis__server_static_options`` list is used to determine which Redis
+The :envvar:`redis__server_static_options` list is used to determine which Redis
 Server parameters are static, and which are dynamic. This configuration layout
 might not be a 100% reliable solution. If you find any issues with it, please
 let us know.
@@ -55,13 +55,13 @@ configuration that might be false in the existing environment. Because a single
 Sentinel instance can manage multiple Redis master servers, use of the default
 configuration provided by the package is not considered.
 
-The role diverts the default ``/etc/redis/sentinel.conf`` configuration file so
+The role diverts the default :file:`/etc/redis/sentinel.conf` configuration file so
 that subsequent package updates won't modify it. Next, a new configuration file
 is generated from scratch, with parameters relevant to the configuration from
 the role variables. If the Redis instance is running in a standalone mode, no
 Redis master server will be included in the Sentinel configuration (the daemon
 works fine without one). If a clustered mode is enabled, by default the host
-indicated by the ``redis__server_master_host`` variable will be configured as
+indicated by the :envvar:`redis__server_master_host` variable will be configured as
 the Redis master server.
 
 After the initial configuration, if the ``sentinel.conf`` configuration file

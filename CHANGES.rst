@@ -5,10 +5,10 @@ Changelog
 
 **debops.redis**
 
-This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer is drybjed.
+The current role maintainer_ is drybjed.
 
 
 `debops.redis master`_ - unreleased
@@ -19,14 +19,14 @@ The current role maintainer is drybjed.
 Changed
 ~~~~~~~
 
-- Update documentation and Changelog. [drybjed]
+- Update documentation and Changelog. [drybjed_]
 
-- Move the role variables from ``vars/main.yml`` to ``defaults/main.yml``.
-  [drybjed]
+- Move the role variables from :file:`vars/main.yml` to :file:`defaults/main.yml`.
+  [drybjed_]
 
 - The role has been redesigned from the ground up. Variables and service
   parameters have been reorganized, role supports standalone as well as
-  clustered operation with Redis Sentinel. [drybjed]
+  clustered operation with Redis Sentinel. [drybjed_]
 
 
 debops.redis v0.1.0 - 2016-06-28
@@ -35,4 +35,4 @@ debops.redis v0.1.0 - 2016-06-28
 Added
 ~~~~~
 
-- First release. [drybjed]
+- First release. [drybjed_]

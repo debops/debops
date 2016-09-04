@@ -31,10 +31,10 @@ Clustered operation
 The role can configure Redis Server/Sentinel cluster on multiple hosts in the
 ``[debops_service_redis]`` inventory group. First host in this group will be
 the master server. The specific group of hosts is defined in the
-``redis__inventory_hosts`` variable.
+:envvar:`redis__inventory_hosts` variable.
 
 To enable the clustered operation, you can configure the relevant variables in
-the ``inventory/group_vars/debops_service_redis/redis.yml`` file:
+the :file:`inventory/group_vars/debops_service_redis/redis.yml` file:
 
 .. code-block:: yaml
 
@@ -75,7 +75,7 @@ this:
    redis-cli -a $(redis-password)
 
 You can disable the password authentication by setting the
-``redis__auth_password`` to an empty string.
+:envvar:`redis__auth_password` to an empty string.
 
 Use as a role dependency
 ------------------------

@@ -26,8 +26,8 @@ file.
 
 The role provides multiple variables which can be used on different inventory
 levels for better control over Redis parameters. The
-``redis__server_combined_configuration`` for Redis Server, and
-``redis__sentinel_combined_configuration`` for Redis Sentinel combine these
+:envvar:`redis__server_combined_configuration` for Redis Server, and
+:envvar:`redis__sentinel_combined_configuration` for Redis Sentinel combine these
 YAML dictionaries thgether and determine the order in which variables "mask"
 the previous parameters.
 
