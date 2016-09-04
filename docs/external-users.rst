@@ -16,6 +16,8 @@ Should work out of the box when enabled:
 
    owncloud__ldap_enabled: True
 
+Refer to :ref:`owncloud__ref_ldap_defaults` for details.
+
 Users from MS Windows Active Directory
 --------------------------------------
 

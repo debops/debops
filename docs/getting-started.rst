@@ -24,8 +24,8 @@ server host as :envvar:`owncloud__database_server`.
 In memory caching
 -----------------
 
-ownCloud recommends to setup Redis_ for caching. You can
-install a Redis server on the same host as ownCloud or choose a different host:
+ownCloud recommends to setup Redis_ for caching. You can install a Redis server
+on the same host as ownCloud or choose a different host:
 
 .. code-block:: none
 
@@ -33,8 +33,8 @@ install a Redis server on the same host as ownCloud or choose a different host:
     hostname
 
 In case you chose a different host, you will need to specify which of your
-Redis servers the ownCloud instance should use by specifying the Redis
-server host as :envvar:`owncloud__redis_host` and set
+Redis servers the ownCloud instance should use by setting the Redis
+server host as :envvar:`owncloud__redis_host` and setting
 :envvar:`owncloud__redis_enabled` to ``True``.
 
 This role will use a locally setup Redis server automatically when it was setup
@@ -54,14 +54,14 @@ To setup ownCloud on a given remote host, it needs to be added to
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to manage ownCloud:
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.owncloud`` role:
 
 .. literalinclude:: playbooks/owncloud.yml
    :language: yaml
 
-This playbooks is shipped with this role under
-:file:`docs/playbooks/owncloud.yml` from which you can symlink it to your
-playbook directory.
+This playbooks is shipped with DebOps and is also contained in this role under
+:file:`docs/playbooks/owncloud.yml`.
 
 
 Ansible tags
