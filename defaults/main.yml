@@ -359,6 +359,29 @@ tinc__systemd: '{{ True
                    else False }}'
 
 
+# .. envvar:: tinc__vcs_ignore_patterns
+#
+# This list of ignore patterns for files below :file:`/etc/tinc` that version
+# control systems should ignore.
+# :file:`/etc` is not tracked by default by a version control system.
+# This definition exists preliminary in case you decide to use :program:`etckeeper` for
+# example to track changes in :file:`/etc`.
+#
+# Note that currently, only :command:`git` as version control system is supported. If
+# you use another version control system, be sure to add support for it to
+# this role.
+# Ignore patterns are specified using the :file:`.gitignore` file format
+# documented in :manpage:`gitignore(5)`.
+# By default, any file below :file:`/etc/tinc/` called :file:`rsa_key.priv`
+# will not be tracked.
+#
+# .. note:: When you started using this role before version 0.3.0 and
+#    sensitive files are already tracked by version control you will need to
+#    manually deleted them from version control history!
+#
+tinc__vcs_ignore_patterns: [ 'rsa_key.priv' ]
+
+
 # -----------------------------
 #   tinc daemon configuration
 # -----------------------------

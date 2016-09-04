@@ -120,6 +120,15 @@
     mode: '0644'
 
 # RSA key management [[[1
+
+- name: Ensure that sensitive files are excluded from version control
+  template:
+    src: 'etc/tinc/gitignore.j2'
+    dest: '/etc/tinc/.gitignore'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
 - name: Initialize RSA key pairs
   shell: yes | tincd -n {{ item.name }} -K {{ item.rsa_key_length | d(tinc__rsa_key_length) }}
   args:
