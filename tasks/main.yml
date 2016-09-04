@@ -20,7 +20,7 @@
 
 - name: Remove APT preferences
   file:
-    dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin") | replace(".", "_"))) + "_" + ((item.package.split(" ")[0] if item.package is string else item.package[0]) if item.package|d() else (item.packages.split(" ")[0] if item.packages is string else item.packages[0])) + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
+    dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin"))) | replace(".", "_") + "_" + ((item.package.split(" ")[0] if item.package is string else item.package[0]) if item.package|d() else (item.packages.split(" ")[0] if item.packages is string else item.packages[0])) + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
     state: 'absent'
   with_flattened:
     ## Deprecated: [[[
@@ -54,7 +54,7 @@
 - name: Create APT preferences
   template:
     src: 'etc/apt/preferences.d/pin.pref.j2'
-    dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin") | replace(".", "_"))) + "_" + ((item.package.split(" ")[0] if item.package is string else item.package[0]) if item.package|d() else (item.packages.split(" ")[0] if item.packages is string else item.packages[0])) + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
+    dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin"))) | replace(".", "_") + "_" + ((item.package.split(" ")[0] if item.package is string else item.package[0]) if item.package|d() else (item.packages.split(" ")[0] if item.packages is string else item.packages[0])) + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
