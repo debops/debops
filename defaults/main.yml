@@ -195,23 +195,23 @@ sysctl__hardening_map:
 # Custom kernel parameters [[[
 # ----------------------------
 
-# .. envvar:: sysctl__map [[[
+# .. envvar:: sysctl__parameters [[[
 #
 # This variable is intended to be used in Ansible’s global inventory.
-sysctl__map: {}
+sysctl__parameters: {}
 
                                                                    # ]]]
-# .. envvar:: sysctl__group_map [[[
+# .. envvar:: sysctl__group_parameters [[[
 #
 # This variable is intended to be used in a host inventory group of Ansible
 # (only one host group is supported).
-sysctl__group_map: {}
+sysctl__group_parameters: {}
 
                                                                    # ]]]
-# .. envvar:: sysctl__host_map [[[
+# .. envvar:: sysctl__host_parameters [[[
 #
 # This variable is intended to be used in the inventory of hosts.
-sysctl__host_map: {}
+sysctl__host_parameters: {}
                                                                    # ]]]
                                                                    # ]]]
 # Role internals [[[
@@ -241,11 +241,11 @@ sysctl__reload: True
 #
 # Sysctl configuration file path where all kernel parameters will be configured
 # by ``debops.sysctl``.
-sysctl__parameters: '{{ sysctl__shared_memory_map
-                        | combine(sysctl__hardening_map)
-                        | combine(sysctl__map)
-                        | combine(sysctl__group_map)
-                        | combine(sysctl__host_map) }}'
+sysctl__combined_parameters: '{{ sysctl__shared_memory_map
+                                 | combine(sysctl__hardening_map)
+                                 | combine(sysctl__parameters)
+                                 | combine(sysctl__group_parameters)
+                                 | combine(sysctl__host_parameters) }}'
 
                                                                    # ]]]
 # .. envvar:: sysctl__config_file [[[
