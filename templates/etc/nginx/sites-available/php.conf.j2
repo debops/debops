@@ -44,7 +44,7 @@
 #
 #
 #   - item.php_status_name: ''
-#       Optional. Set the name of the location which should be used for php5 fpm
+#       Optional. Set the name of the location which should be used for php fpm
 #       status page
 #
 #
@@ -53,7 +53,7 @@
 #
 #
 #   - item.php_ping_name: ''
-#       Optional. Set the name of the location which should be used for php5 fpm
+#       Optional. Set the name of the location which should be used for php fpm
 #       ping page
 #
 #
@@ -66,7 +66,7 @@
                 try_files $uri $uri/ /index.php =404;
 {% endblock %}
 {% block nginx_tpl_block_custom_status_locations %}
-{%   if item.php_status|d() and item.php_status|bool %}
+{%   if item.php_status|d()|bool %}
         location ~ ^/({{ item.php_status_name | d('php_status') }}|{{ item.php_ping_name | d('php_ping') }})$ {
                 access_log off;
 {%     set nginx__tpl_status_allow = [] %}
