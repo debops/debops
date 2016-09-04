@@ -157,8 +157,8 @@ I want a certificate for subdomains but domain
 ----------------------------------------------
 
 Yes, it's possible :-) Please consult the example and create your own similar
-configuration. In the example we create a certificate for ``logs.it-zone.org``
-and ``mon.it-zone.org`` subdoimains, without creating cert for ``it-zone.org``
+configuration. In the example we create a certificate for ``logs.example.com``
+and ``mon.example.com`` subdoimains, without creating cert for ``example.com``
 domain itself. Please notice that PKI realm does not contain your full domain
 name, it's crucial.
 
@@ -166,12 +166,12 @@ name, it's crucial.
 
     pki_acme: True
     pki_realms:
-      - name: 'it-zone' # do not include full domain name here!
+      - name: 'example' # do not include full domain name here!
         acme: True
         acme_default_subdomains: []
-        acme_subject: [ 'cn=logs.it-zone.org' ]
-        acme_domains: [ 'logs.it-zone.org', 'mon.it-zone.org' ]
-        domains: [ 'logs.it-zone.org', 'mon.it-zone.org' ]
+        acme_subject: [ 'cn=logs.example.com' ]
+        acme_domains: [ 'logs.example.com', 'mon.example.com' ]
+        domains: [ 'logs.example.com', 'mon.example.com' ]
         #acme_ca: 'le-staging'
 
 For testing it's strongly advised to uncomment ``acme_ca`` with ``le-staging`` to 
