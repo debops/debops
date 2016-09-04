@@ -14,7 +14,19 @@ The current role maintainer_ is drybjed_
 `debops.apt_preferences master`_ - unreleased
 ---------------------------------------------
 
-.. _debops.apt_preferences master: https://github.com/debops/ansible-apt_preferences/compare/v0.2.2...master
+.. _debops.apt_preferences master: https://github.com/debops/ansible-apt_preferences/compare/v0.2.3...master
+
+
+`debops.apt_preferences v0.2.3`_ - 2016-09-04
+---------------------------------------------
+
+.. _debops.apt_preferences v0.2.3: https://github.com/debops/ansible-apt_preferences/compare/v0.2.2...v0.2.3
+
+Changed
+~~~~~~~
+
+- Fix the ``replace`` filter nesting in the automatically generated filenames
+  so that the correct variables are replaced. [drybjed_]
 
 
 `debops.apt_preferences v0.2.2`_ - 2016-09-04
