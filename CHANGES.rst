@@ -47,6 +47,9 @@ Added
 - Add debops.debops_fact_ role with corresponding playbook and include it in
   the :file:`common.yml` playbook. [drybjed_]
 
+- Add ``debops.sysctl`` role with corresponding playbook and include it in
+  the :file:`common.yml` playbook. [ypid_]
+
 Changed
 ~~~~~~~
 
