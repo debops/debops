@@ -48,7 +48,10 @@ redis__packages: []
 #
 # List of hosts in Ansible inventory that are configured in a Redis/Sentinel
 # cluster. This variable should be synchronized with the role inventory group.
-redis__inventory_hosts: '{{ groups.debops_service_redis }}'
+redis__inventory_hosts: '{{ groups.debops_service_redis
+                            if (groups.debops_service_redis|d() and
+                                inventory_hostname in groups.debops_service_redis)
+                            else [ inventory_hostname ] }}'
 
                                                                    # ]]]
 # .. envvar:: redis__inventory_master [[[
