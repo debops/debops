@@ -98,8 +98,8 @@ network is described by a YAML dictionary which should have the following keys:
   the directory with the VPN configuration files.
 
 ``state``
-  Optional, string. Whether the  mesh should be ``present`` or ``absent``
-  absent. Defaults to ``present``.
+  Optional, string. Whether the  mesh should be ``present`` or ``absent``.
+  Defaults to ``present``.
 
 .. _tinc__ref_networks_tinc_exclude_addresses:
 
@@ -129,14 +129,16 @@ network is described by a YAML dictionary which should have the following keys:
 Examples
 ~~~~~~~~
 
-Minimal configuration of a default Tinc ``mesh0`` VPN::
+Minimal configuration of a default Tinc ``mesh0`` VPN:
 
-    tinc__networks: [ '{{ tinc__network_mesh0 }}' ]
+.. code-block:: yaml
 
-    tinc__network_mesh0:
-      name: 'mesh0'
-      interface: 'tap0'
-      port: '655'
-      tinc_options:
-        Mode: 'switch'
-        DeviceType: 'tap'
+   tinc__networks: [ '{{ tinc__network_mesh0 }}' ]
+
+   tinc__network_mesh0:
+     name: 'mesh0'
+     interface: 'tap0'
+     port: '655'
+     tinc_options:
+       Mode: 'switch'
+       DeviceType: 'tap'
