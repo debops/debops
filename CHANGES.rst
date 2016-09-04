@@ -15,6 +15,7 @@ The current role maintainer_ is ypid_.
 Refer to the :ref:`owncloud__ref_upgrade_nodes` when you intend to upgrade to a
 new release.
 
+
 `debops.owncloud master`_ - unreleased
 --------------------------------------
 
