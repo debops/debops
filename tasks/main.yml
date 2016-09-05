@@ -16,7 +16,7 @@
     system: 'yes'
     state: 'present'
   with_items: '{{ auth_system_groups }}'
-  when: auth_system_groups is defined and auth_system_groups
+  when: auth_system_groups
 
 - name: Configure admin access in sudo
   template:
@@ -26,7 +26,7 @@
     group: 'root'
     mode: '0440'
     validate: 'visudo -cf %s'
-  when: auth_wheel_group is defined and auth_wheel_group
+  when: auth_wheel_group
 
 - name: Configure local account options
   include: login_passwd_shadow.yml
@@ -39,11 +39,11 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Update PAM common configuration' ]
-  when: auth_cracklib is defined and auth_cracklib
+  when: auth_cracklib|bool
 
 - name: Configure PAM password history module
   include: pam_pwhistory.yml
-  when: auth_pwhistory_remember is defined and auth_pwhistory_remember
+  when: auth_pwhistory_remember
 
 - name: Check if /etc/ldap exists
   stat:
@@ -51,12 +51,12 @@
   register: auth_register_etc_ldap
 
 - include: etc_ldap_conf.yml
-  when: ((auth_ldap_conf is defined and auth_ldap_conf) and
-         ((auth_register_etc_ldap is defined and auth_register_etc_ldap.stat.exists) or
-          (auth_nsswitch is defined and 'ldap' in auth_nsswitch)))
+  when: ((auth_ldap_conf|bool) and
+         ((auth_register_etc_ldap.stat.exists) or
+          ('ldap' in auth_nsswitch)))
 
 - include: nss_pam_ldap.yml
-  when: auth_nsswitch is defined and 'ldap' in auth_nsswitch
+  when: 'ldap' in auth_nsswitch
 
 - name: Check if libnss-mdns package is installed
   environment:
