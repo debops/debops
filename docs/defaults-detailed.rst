@@ -17,7 +17,7 @@ redis__server_configuration
 
 The Redis Server and Sentinel configuration is represented by a YAML
 dictionary. Each key of this dictionary is a parameter name, and each value is
-that parameter value. 
+that parameter value.
 
 The parameter values can be normal strings, integers, ``True`` and ``False``
 booleans, or lists which are joined together with a space separator. If a value
