@@ -11,6 +11,7 @@ Ansible role: debops.redis
    defaults
    defaults-detailed
    configuration-layout
+   ansible-integration
    copyright
    changelog
    upgrade
