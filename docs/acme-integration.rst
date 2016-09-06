@@ -1,4 +1,4 @@
-.. _acme_integration:
+.. _pki__ref_acme_integration:
 
 ACME Integration
 ================
@@ -91,13 +91,14 @@ this:
         ├── CA.crt -> /etc/ssl/certs/ca-certificates.crt
         └── default.key -> private/key.pem
 
-When the :program:`pki-realm` detects the :file:`acme/request.pem` file, it automatically
-calls the :program:`acme-tiny` script using the ``pki-acme`` unprivileged account to request
-the certificate. When the request is completed successfully and an
-:file:`external/cert.pem` certificate is found, the certificate will be
-activated in the :file:`public/` directory. The script automatically downloads Let's
-Encrypt intermediate certificate as well as links the Root CA certificate from
-the system certificate store provided by the ``ca-certificates`` package.
+When the :program:`pki-realm` detects the :file:`acme/request.pem` file, it
+automatically calls the :program:`acme-tiny` script using the ``pki-acme``
+unprivileged account to request the certificate. When the request has completed
+successfully and an :file:`external/cert.pem` certificate is found, the
+certificate will be activated in the :file:`public/` directory. The script
+automatically downloads Let's Encrypt intermediate certificate as well as links
+the Root CA certificate from the system certificate store provided by the
+``ca-certificates`` package.
 
 The realm directory after the process is complete:
 
@@ -155,8 +156,8 @@ configuration active, it will check for validity of the certificate, and
 about a month before the expiration date it will try to renew the certificate
 automatically.
 
-Certificate for subdomains excluding apex domain
-------------------------------------------------
+Certificate for subdomains excluding the apex domain
+----------------------------------------------------
 
 Yes, it's possible :-) Please consult the example and create your own similar
 configuration. In the example we create a certificate for the ``logs.example.com``
