@@ -12,9 +12,15 @@ install: True
 
 script:
   - 'git clone --depth 1 https://github.com/nickjj/rolespec'
-  - 'cd rolespec ; bin/rolespec -r https://github.com/debops/test-suite'
+  - 'cd rolespec ; bin/rolespec -r https://github.com/debops/test-suite ; cd -'
+
+  # We know the scripts are not perfect. Please don’t add more things that shellcheck v0.4.4 will complain about!
+  # The shellcheck and jq command does not return a non-zero exit code when the tested file does not exist.
+  - 'test -r ./files/secret/pki/lib/pki-authority'
+  - 'shellcheck --format=json ./files/secret/pki/lib/pki-authority | jq --exit-status "(. | length) <= 74"'
+  - 'test -r ./files/usr/local/lib/pki/pki-realm'
+  - 'shellcheck --format=json ./files/usr/local/lib/pki/pki-realm  | jq --exit-status "(. | length) <= 105"'
 
 notifications:
   webhooks:
     - 'https://galaxy.ansible.com/api/v1/notifications/'
-
