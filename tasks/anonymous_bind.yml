@@ -9,7 +9,7 @@
   with_dict:
     olcDisallows: 'bind_anon'
     olcRequires: 'authc'
-  when: slapd_anonymous_bind is defined and slapd_anonymous_bind
+  when: slapd_anonymous_bind|bool
 
 - name: Allow anonymous bind (frontend)
   ldap_attr:
@@ -19,7 +19,7 @@
     state: 'absent'
   with_dict:
     olcRequires: 'authc'
-  when: slapd_anonymous_bind is defined and slapd_anonymous_bind
+  when: slapd_anonymous_bind|bool
 
 - name: Deny anonymous bind, require authentication
   ldap_attr:
@@ -30,7 +30,7 @@
   with_dict:
     olcDisallows: 'bind_anon'
     olcRequires: 'authc'
-  when: slapd_anonymous_bind is defined and not slapd_anonymous_bind
+  when: not slapd_anonymous_bind|bool
 
 - name: Deny anonymous bind, require authentication (frontend)
   ldap_attr:
@@ -40,5 +40,5 @@
     state: 'exact'
   with_dict:
     olcRequires: 'authc'
-  when: slapd_anonymous_bind is defined and not slapd_anonymous_bind
+  when: not slapd_anonymous_bind|bool
 
