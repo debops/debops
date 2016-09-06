@@ -123,11 +123,11 @@ a Certificate Authority, on above directory tree you can see that a request has
 been uploaded from ``hostname.example.com`` host for the ``domain`` Certificate
 Authority.
 
-The signed certificates are placed in subdirectories of the
-:file:`secret/pki/realms/` directory. The intermediate CA certificate and root CA
-certificate files are symlinked in the same subdirectory as the signed
-certificate, so that Ansible can copy their contents as regular files to remote
-host and correct certificate chains can be created in the PKI realm.
+The certificates are placed in subdirectories of the :file:`secret/pki/realms/`
+directory. The intermediate CA certificate and root CA certificate files are
+symlinked in the same subdirectory as the leaf certificate, so that Ansible can copy
+their contents as regular files to remote host and correct certificate chains
+can be created in the PKI realm.
 
 Security of an internal CA
 --------------------------

@@ -6,7 +6,7 @@ ACME Integration
 .. include:: includes/all.rst
 
 `Automated Certificate Management Environment` (ACME_) is a protocol that
-allows automated certificate requests, retrieval of signed certificates and
+allows automated certificate requests, retrieval of certificates and
 certificate renewal. It was designed to enable easy deployment of TLS/SSL
 certificates by the `Let's Encrypt`_ project.
 
@@ -151,7 +151,7 @@ Certificate renewal
 
 The ``debops.pki`` role creates a :program:`cron` entry for the :program:`pki-realm` script
 to be executed periodically for all realms. When a realm has the ACME
-configuration active, it will check for validity of the signed certificate, and
+configuration active, it will check for validity of the certificate, and
 about a month before the expiration date it will try to renew the certificate
 automatically.
 

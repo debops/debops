@@ -5,7 +5,7 @@ External certificates
 
 The PKI realms managed by the ``debops.pki`` role support management of private
 keys and certificates from external Certificate Authorities. You can either
-provide a set of already signed certificates with corresponding private keys,
+provide a set of valid certificates with corresponding private keys,
 or use a script with a custom environment to request a certificate remotely in
 an external Certificate Authority.
 
@@ -87,7 +87,7 @@ hosts, in a specific order:
   copied to all currently managed remote hosts, but won't overwrite already
   present files;
 
-You can use this to distribute already signed certificates with their private
+You can use this to distribute already issued certificates with their private
 keys. Putting them in :file:`realms/by-group/all/` directory will ensure that all
 hosts will have the same set of keys and certificates. If you put them in
 a specific group directory, only hosts in that group will receive the files.
@@ -169,4 +169,3 @@ executed multiple times during ``debops.pki`` run. The state in which the realm
 is in will be present in the ``$PKI_SCRIPT_STATE`` variable and using that you can
 perform various operations, like issuing a new certificate request when the
 realm is created.
-

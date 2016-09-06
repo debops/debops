@@ -11,7 +11,7 @@ encrypted connections.
 Using this role, you can bootstrap a Public Key Infrastructure in your
 environment using an internal Certificate Authority, easily switch the active
 set of certificates between internal and external Certificate Authorities, or
-use the ACME protocol to automatically obtain signed certificates from CA that
+use the ACME protocol to automatically obtain certificates from CA that
 support it (for example `Let's Encrypt`_).
 
 Installation

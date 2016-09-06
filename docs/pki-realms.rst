@@ -259,14 +259,14 @@ detail in a separate document, here is a brief overview:
   Certificate Authority. To do this, you need to provide a special :file:`script`
   file, which will be executed with a set of environment variables. This can be
   used to request a certificate from an external CA, like Active Directory or
-  FreeIPA, or download a signed certificate from an external location.
+  FreeIPA, or download a certificate from an external location.
 
   An alternative is to provide an already signed :file:`cert.pem` file and
   optionally the :file:`intermediate.pem` and :file:`root.pem` files.
 
 :file:`internal/`
   This directory is used by the internal ``debops.pki`` Certificate Authority
-  to transfer certificate requests as well as signed certificates.
+  to transfer certificate requests as well as certificates.
 
 If the internal CA is disabled either globally for a host, or for a particular
 PKI realm, an alternative directory, :file:`selfsigned/` will be created. It
@@ -275,10 +275,10 @@ host that has created it). This is done, so that services depending on the
 existence of the private keys and certificates can function correctly at all
 times.
 
-The :program:`pki-realm` script checks which of these directories have signed
-and valid certificates in order of :envvar:`pki_authority_preference`, and the
-first valid one is used as the "active" directory.  Files from the active
-directory are symlinked to the :file:`public/` directory.
+The :program:`pki-realm` script checks which of these directories have valid
+certificates in order of :envvar:`pki_authority_preference`, and the first
+valid one is used as the "active" directory.  Files from the active directory
+are symlinked to the :file:`public/` directory.
 
 The :file:`public/` directory holds the currently active certificates which are
 symlinks to the real certificate files in one of the active directories mentioned above.
@@ -355,7 +355,7 @@ the "root" CA. The :file:`hostname.example.com/domain/` directory inside the
 When all of the requests from the remote hosts are uploaded to the Ansible
 Controller, the :program:`pki-authority` script inside the :file:`secret/` directory takes
 over and performs certificate signing for all of the currently managed hosts.
-The signed certificate named :file:`cert.pem` is placed in the :file:`internal/`
+The certificate named :file:`cert.pem` is placed in the :file:`internal/`
 directory of each host according to the realm the request came from.
 
 In addition to the certificates, the CA intermediate and root certificates are

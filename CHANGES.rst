@@ -107,8 +107,8 @@ Fixed
 
 - The PKI session token is now generated once for all hosts, by delegating the
   task to Ansible Controller. This fixes a bug with Ansible Playbook runs on
-  multiple hosts at once, where only one host would receive the signed
-  certificates at a time. [drybjed_]
+  multiple hosts at once, where only one host would receive the certificates at
+  a time. [drybjed_]
 
 
 `debops.pki v0.2.10`_ - 2016-06-14
@@ -256,7 +256,7 @@ Changed
 
 - Automatically reset incomplete internal certificate requests.
 
-  If a signed certificate does not exist in the realm and internal certificates
+  If a certificate does not exist in the realm and internal certificates
   are enabled, something must have gone wrong with the certificate signing. To
   make it easier, generated configuration file and CSR are removed so that they
   can be recreated further in the script with current session token and not
@@ -265,7 +265,7 @@ Changed
 - Change the way ACME intermediate CA certificate is downloaded.
 
   Instead of using a static URL to download an intermediate certificate,
-  :program:`pki-realm` script will now check the signed certificate for the "CA
+  :program:`pki-realm` script will now check the certificate for the "CA
   Issuers" URI and download the certificate using it. The URI is stored and
   used later to check if the new certificate has the same or different URI, to
   not download the intermediate certificate every time the :program:`pki-realm` script
