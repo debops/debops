@@ -71,7 +71,7 @@
   notify: [ 'Restart slapd' ]
 
 - include: ldapscripts.yml
-  when: slapd_ldapscripts is defined and slapd_ldapscripts
+  when: slapd_ldapscripts|bool
 
 - name: Create snapshot task in cron
   cron:
@@ -81,5 +81,5 @@
     user: 'root'
     state: 'present'
     job: '/usr/local/sbin/slapd-snapshot {{ slapd_snapshot_period }} 30'
-  when: slapd_snapshot is defined and slapd_snapshot
+  when: slapd_snapshot|bool
 
