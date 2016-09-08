@@ -1,12 +1,39 @@
+.. _ruby__ref_changelog:
+
 Changelog
 =========
 
-v0.1.0
-------
+.. include:: includes/all.rst
 
-*Released: 2016-06-27*
+**debops.ruby**
 
-- Add Changelog. [drybjed]
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
+
+The current role maintainer_ is drybjed.
+
+
+`debops.ruby master`_ - unreleased
+------------------------------------
+
+.. _debops.ruby master: https://github.com/debops/ansible-ruby/compare/v0.1.0...master
+
+Changed
+~~~~~~~
+
+- Update documentation and Changelog. [drybjed_]
+
+
+debops.ruby v0.1.0 - 2016-06-27
+-------------------------------
+
+Added
+~~~~~
+
+- Add Changelog. [drybjed_]
+
+Changed
+~~~~~~~
 
 - Role has been redesigned and cleaned up.
 
@@ -18,5 +45,4 @@ v0.1.0
   need to backport packages every time is obsolete.
 
   You can install Ruby gems system-wide, or on a specific user account using
-  custom list variables. User accounts will be created if necessary. [drybjed]
-
+  custom list variables. User accounts will be created if necessary. [drybjed_]
