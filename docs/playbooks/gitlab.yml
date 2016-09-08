@@ -1,0 +1,14 @@
+---
+
+- name: Manage GitLab service
+  hosts: [ 'debops_service_gitlab' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.gitlab
+      tags: [ 'role::gitlab' ]
