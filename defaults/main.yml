@@ -29,7 +29,7 @@ nginx_host_allow: []
 #   Ensure that Nginx is uninstalled and it's configuration is removed.
 #
 #   .. warning:: The roles is currently not able to dismantle from ``present``
-#      state. This needs to be implemented. This option can only be achieved
+#      state. This needs to be implemented. This state can only be achieved
 #      currently when ``present`` has never been set before on a host.
 #
 nginx__deploy_state: 'present'
@@ -91,48 +91,48 @@ nginx_run_path: '/run'
 # Directory where ``nginx`` log files are stored.
 nginx_log_path: '/var/log/nginx'
 
-# Root path of temporary files
+# Root path of temporary files.
 nginx_temp_root_path: '/var/lib/nginx'
 
-# Path of temporary client body files
+# Path of temporary client body files.
 nginx_client_body_temp_path: '{{ nginx_temp_root_path }}/body'
 
-# Path of temporary FastCGI files
+# Path of temporary FastCGI files.
 nginx_fastcgi_temp_path: '{{ nginx_temp_root_path }}/fastcgi'
 
-# Path of temporary proxy files
+# Path of temporary proxy files.
 nginx_proxy_temp_path: '{{ nginx_temp_root_path }}/proxy'
 
-# Path of temporary sCGI files
+# Path of temporary sCGI files.
 nginx_scgi_temp_path: '{{ nginx_temp_root_path }}/scgi'
 
-# Path of temporary iwsgi files
+# Path of temporary iwsgi files.
 nginx_uwsgi_temp_path: '{{ nginx_temp_root_path }}/uwsgi'
 
 # ---- Phusion Passenger support ----
 
 # Specify Phusion Passenger root paths manually (by default this variable is
-# detected automatically at Ansible run time)
+# detected automatically at Ansible run time).
 nginx_passenger_root: ''
 
 # Specify path to Ruby executable for Phusion Passenger manually (by default
-# this variable is detected automatically at Ansible run time)
+# this variable is detected automatically at Ansible run time).
 nginx_passenger_ruby: ''
 
-# Maximum number of Passenger processes
+# Maximum number of Passenger processes.
 nginx_passenger_max_pool_size: '{{ (ansible_processor_cores | int * 5) }}'
 
-# Additional Phusion Passenger global options
+# Additional Phusion Passenger global options.
 nginx_passenger_options: False
 
-# Minimum Passenger instances per nginx server
+# Minimum Passenger instances per nginx server.
 nginx_passenger_default_min_instances: '{{ ansible_processor_cores }}'
 
 
 # ---- Global server access and authentication ----
 
 # List of IP addresses or CIDR networks which can access this server. If the
-# list is empty, access is allowed from anywhere
+# list is empty, access is allowed from anywhere.
 nginx_http_allow: []
 
 # Enable or disable HTTP Basic Auth for all nginx servers on this host.
@@ -141,7 +141,7 @@ nginx_http_allow: []
 nginx_http_auth_basic: '{{ nginx_http_auth_users }}'
 
 # Name of the htpasswd file in '/etc/nginx/private/' with list of global
-# HTTP Basic Auth accounts
+# HTTP Basic Auth accounts.
 nginx_http_auth_basic_name: 'nginx_http'
 
 # List of HTTP Basic Auth accounts which need to login before accessing this
@@ -150,12 +150,12 @@ nginx_http_auth_basic_name: 'nginx_http'
 # restricted.
 nginx_http_auth_users: []
 
-# Default htpasswd file used for global HTTP Basic Auth accounts
+# Default htpasswd file used for global HTTP Basic Auth accounts.
 nginx__http_auth_htpasswd:
   name: '{{ nginx_http_auth_basic_name }}'
   users: '{{ nginx_http_auth_users }}'
 
-# Default http { } options
+# Default http { } options.
 nginx_http_options: |
   ssl_session_cache shared:SSL:10m;
   ssl_session_timeout 5m;
@@ -236,25 +236,25 @@ nginx_real_ip_recursive: False
 nginx_default_keepalive_timeout: 60
 
 
-# Enable or disable support for PKI/SSL/TLS in nginx
+# Enable or disable support for PKI/SSL/TLS in nginx.
 nginx_pki: '{{ (True
                 if (ansible_local|d() and ansible_local.pki|d() and
                     ansible_local.pki.enabled|d() | bool)
                 else False) | bool }}'
 
-# PKI base directory
+# PKI base directory.
 nginx_pki_path: '{{ ansible_local.pki.path
                     if (ansible_local|d() and ansible_local.pki|d() and
                         ansible_local.pki.path|d())
                     else "/etc/pki/realms" }}'
 
-# PKI realm to use for nginx server
+# PKI realm to use for nginx server.
 nginx_pki_realm: '{{ ansible_local.pki.realm
                      if (ansible_local|d() and ansible_local.pki|d() and
                          ansible_local.pki.realm|d())
                      else "domain" }}'
 
-# PKI realm to use for client CA
+# PKI realm to use for client CA.
 nginx_pki_ca_realm: '{{ ansible_local.pki.ca_realm
                         if (ansible_local|d() and ansible_local.pki|d() and
                             ansible_local.pki.ca_realm|d())
@@ -262,22 +262,22 @@ nginx_pki_ca_realm: '{{ ansible_local.pki.ca_realm
 
 # Path to default certificate, key and DH parameters file used by all nginx
 # servers if not specified otherwise in server configuration. Relative to
-# 'nginx_pki_realm' variable
+# 'nginx_pki_realm' variable.
 nginx_pki_crt: 'default.crt'
 nginx_pki_key: 'default.key'
 nginx_pki_ca:  'CA.crt'
 nginx_pki_trusted: 'trusted.crt'
 
-# Name of the hook script which will be stored in hook directory
+# Name of the hook script which will be stored in hook directory.
 nginx_pki_hook_name: 'nginx'
 
-# Directory with PKI hooks
+# Directory with PKI hooks.
 nginx_pki_hook_path: '{{ ansible_local.pki.hooks
                          if (ansible_local|d() and ansible_local.pki|d() and
                              ansible_local.pki.hooks|d())
                          else "/etc/pki/hooks" }}'
 
-# Specify how changes in PKI should affect nginx, either 'reload' or 'restart'
+# Specify how changes in PKI should affect nginx, either 'reload' or 'restart'.
 nginx_pki_hook_action: 'reload'
 
 # Path to the file with Diffie-Hellman parameters to use by the webserver.
