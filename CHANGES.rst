@@ -50,6 +50,9 @@ Fixed
 - Don’t use ``MD5`` or other hash functions to sanitize STDOUT of programs for later
   comparison when a simple ``base64`` encoding is enough. [ypid_]
 
+- Also run :program:`pki-realm new-realm` against realms with disabled internal
+  CA. [ypid_]
+
 
 `debops.pki v0.2.13`_ - 2016-07-07
 ----------------------------------
