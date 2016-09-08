@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed.
 `debops.redis master`_ - unreleased
 -----------------------------------
 
-.. _debops.redis master: https://github.com/debops/ansible-redis/compare/v0.1.0...master
+.. _debops.redis master: https://github.com/debops/ansible-redis/compare/v0.2.0...master
+
+
+`debops.redis v0.2.0`_ - 2016-09-08
+-----------------------------------
+
+.. _debops.redis v0.2.0: https://github.com/debops/ansible-redis/compare/v0.1.0...v0.2.0
 
 Changed
 ~~~~~~~
