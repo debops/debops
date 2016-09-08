@@ -35,6 +35,11 @@ Changed
 - Add path for GitLab build artifacts and ensure that all required directories
   exist. [drybjed_]
 
+Removed
+~~~~~~~
+
+- Remove an unused task with a variable register. [drybjed_]
+
 
 `debops.gitlab v0.1.4`_ - 2016-06-30
 ------------------------------------
