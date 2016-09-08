@@ -9,7 +9,7 @@
     start_tls:  '{{ secret_ldap_start_tls }}'
     bind_dn: '{{ secret_ldap_admin_bind_dn }}'
     bind_pw: '{{ secret_ldap_admin_bind_pw }}'
-  sudo: '{{ secret_ldap_sudo }}'
+  become: '{{ secret_ldap_sudo }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
   no_log: True
 
@@ -25,7 +25,7 @@
     start_tls:  '{{ secret_ldap_start_tls }}'
     bind_dn: '{{ secret_ldap_admin_bind_dn }}'
     bind_pw: '{{ secret_ldap_admin_bind_pw }}'
-  sudo: '{{ secret_ldap_sudo }}'
+  become: '{{ secret_ldap_sudo }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
   no_log: True
 
@@ -39,7 +39,7 @@
     start_tls:  '{{ secret_ldap_start_tls }}'
     bind_dn: '{{ secret_ldap_admin_bind_dn }}'
     bind_pw: '{{ secret_ldap_admin_bind_pw }}'
-  sudo: '{{ secret_ldap_sudo }}'
+  become: '{{ secret_ldap_sudo }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
   with_dict:
     userPassword: '{{ gitlab_ldap_password | ldappassword("SHA") }}'

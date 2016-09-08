@@ -38,6 +38,8 @@ Changed
 - Ensure that ``gitlab-shell`` is checked out on first install even when the
   latest tag and the main ``master`` branch are the same. [drybjed_]
 
+- Fix Ansible warnings about ``sudo`` and ``git`` modules. [drybjed_]
+
 Removed
 ~~~~~~~
 
