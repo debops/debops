@@ -15,36 +15,17 @@ The ``debops.nginx`` Ansible role includes support for the **http-01** challenge
 They are enabled by default for all server configurations and can be used to
 prove control over specified domains using a ACME client.
 
-Role default variables
-----------------------
+Ansible facts
+-------------
 
-This is a list of ``debops.nginx`` default variables that are used to control
-ACME support:
+The following ACME related Ansible facts are exposed by the role:
 
-``nginx_acme``
-  Bool. Enable or disable support for ACME on all ``nginx`` servers. This can
-  be overriden using ``item.acme`` variable in the server configuration
-  dictionary. ``nginx_acme`` variable is enabled by default.
+.. code-block:: none
 
-``nginx_acme_root``
-  Path to global ``root`` directory on the host which will be used to serve
-  ACME challenges. By default, ``/srv/www/sites/acme/public``.
-
-``nginx_acme_server``
-  Bool. Enable or disable configuration of ACME ``nginx`` server that will
-  respond to the challenges on the configured DNS domain.
-
-``nginx_acme_domain``
-  DNS domain which will be used to redirect ACME challenges from hosts to
-  a specific URL, by default ``acme.{{ ansible_domain }}``.
-
-The values of above variables are also stored in Ansible local ``nginx`` facts
-on the remote host and can be accessed by Ansible variables::
-
-    ansible_local.nginx.acme
-    ansible_local.nginx.acme_root
-    ansible_local.nginx.acme_server
-    ansible_local.nginx.acme_domain
+   ansible_local.nginx.acme
+   ansible_local.nginx.acme_root
+   ansible_local.nginx.acme_server
+   ansible_local.nginx.acme_domain
 
 How ACME support works
 ----------------------
