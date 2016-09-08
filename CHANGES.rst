@@ -1,19 +1,80 @@
+.. _gitlab__ref_changelog:
+
 Changelog
 =========
 
-v0.1.4
-------
+.. include:: includes/all.rst
 
-*Released: 2016-06-30*
+**debops.gitlab**
+
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
+
+The current role maintainer_ is drybjed.
+
+
+`debops.gitlab master`_ - unreleased
+------------------------------------
+
+.. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.1.5...master
+
+
+`debops.gitlab v0.1.5`_ - 2016-09-08
+------------------------------------
+
+.. _debops.gitlab v0.1.5: https://github.com/debops/ansible-gitlab/compare/v0.1.4...v0.1.5
+
+Changed
+~~~~~~~
+
+- Update documentation and Changelog. [drybjed_]
+
+- The ``debops.gitlab`` role now requies at least Ansible 2.1 due to the
+  requirements of the LDAP modules used by the role. [drybjed_]
+
+- Update the Redis support to automatically configure password authentication
+  used by the debops.redis_ Ansible role. [drybjed_]
+
+- Ensure that debops.ruby_ role installs packages required to build native gem
+  extensions. [drybjed_]
+
+- Add path for GitLab build artifacts and ensure that all required directories
+  exist. [drybjed_]
+
+- Ensure that ``gitlab-shell`` is checked out on first install even when the
+  latest tag and the main ``master`` branch are the same. [drybjed_]
+
+- Fix Ansible warnings about ``sudo`` and ``git`` modules. [drybjed_]
+
+Removed
+~~~~~~~
+
+- Remove an unused task with a variable register. [drybjed_]
+
+
+`debops.gitlab v0.1.4`_ - 2016-06-30
+------------------------------------
+
+.. _debops.gitlab v0.1.4: https://github.com/debops/ansible-gitlab/compare/v0.1.3...v0.1.4
+
+Added
+~~~~~
 
 - Add support for GitLab 8.9. [gomez]
 
-- Set the default GitLab version to '8.9'. [drybjed]
+Changed
+~~~~~~~
 
-v0.1.3
-------
+- Set the default GitLab version to ``8.9``. [drybjed_]
 
-*Released: 2016-06-30*
+
+`debops.gitlab v0.1.3`_ - 2016-06-30
+------------------------------------
+
+.. _debops.gitlab v0.1.3: https://github.com/debops/ansible-gitlab/compare/v0.1.2...v0.1.3
+
+Added
+~~~~~
 
 - Add support for GitLab 8.6. [gomez]
 
@@ -21,23 +82,34 @@ v0.1.3
 
 - Add support for gitlab 8.8. [gomez]
 
-- Reload ``systemd`` daemons on init script change. [drybjed]
+Changed
+~~~~~~~
 
-v0.1.2
-------
+- Reload ``systemd`` daemons on init script change. [drybjed_]
 
-*Released: 2016-03-02*
+
+`debops.gitlab v0.1.2`_ - 2016-03-02
+------------------------------------
+
+.. _debops.gitlab v0.1.2: https://github.com/debops/ansible-gitlab/compare/v0.1.1...v0.1.2
+
+Added
+~~~~~
 
 - Add support for GitLab 8.1 [gomez]
 
 - Add support for GitLab 8.5 [benalbrecht]
 
-v0.1.1
-------
 
-*Released: 2015-10-13*
+`debops.gitlab v0.1.1`_ - 2015-10-13
+------------------------------------
 
-- Migration to debops.mariadb role. [scibi]
+.. _debops.gitlab v0.1.1: https://github.com/debops/ansible-gitlab/compare/v0.1.0...v0.1.1
+
+Changed
+~~~~~~~
+
+- Migration to debops.mariadb_ role. [scibi]
   If you have exisitng setup you have to:
   - move some files in secrets directory:
     ``secret/credentials/[GitLab FQDN]/mysql/root/password`` to ``secret/credentials/[GitLab FQDN]/mariadb/localhost/root/password``
@@ -45,12 +117,13 @@ v0.1.1
   - set ``mariadb_server_flavor`` to ``mysql``
 
 
-v0.1.0
-------
+debops.gitlab v0.1.0 - 2015-09-29
+---------------------------------
 
-*Released: 2015-09-29*
+Added
+~~~~~
 
-- Add Changelog. [drybjed]
+- Add Changelog. [drybjed_]
 
 - Add support for GitLab 7.10.
 
@@ -64,9 +137,9 @@ v0.1.0
   Added ``gitlab_email_reply_to`` variable.
 
   Install ``libkrb5-dev`` package before GitLab CE installation (required on
-  Debian Jessie). [drybjed]
+  Debian Jessie). [drybjed_]
 
-- Add support for GitLab 7.11. [drybjed]
+- Add support for GitLab 7.11. [drybjed_]
 
 - Added support for Gitlab LDAP Authentication. [xorgic]
 
@@ -74,6 +147,9 @@ v0.1.0
 
 - Add support for GitLab 7.13 and 7.14. [scibi]
 
-- Create LDAP accout for gitlab user. [scibi]
-
 - Add support for GitLab 8.0. [scibi]
+
+Changed
+~~~~~~~
+
+- Create LDAP accout for gitlab user. [scibi]

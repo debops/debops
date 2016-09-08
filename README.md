@@ -14,7 +14,7 @@ to support new version shortly after that).
 
 ### Installation
 
-This role requires at least Ansible `v1.7.0`. To install it, run:
+This role requires at least Ansible `v2.1.0`. To install it, run:
 
     ansible-galaxy install debops.gitlab
 

@@ -9,6 +9,8 @@ dependencies:
         reason: 'Version parity with Debian Jessie'
         by_role: 'debops.gitlab'
 
+      - '{{ ruby__apt_preferences__dependent_list }}'
+
   - role: debops.secret
     tags: [ 'depend::secret', 'depend::secret:gitlab', 'depend-of::gitlab', 'type::dependency:hard' ]
 
@@ -20,7 +22,10 @@ dependencies:
         port: '{{ gitlab_unicorn_port }}'
         comment: 'GitLab'
 
+      - '{{ redis__etc_services__dependent_list }}'
+
   - role: debops.ruby
+    ruby__dev_support: True
     tags: [ 'depend::ruby', 'depend::ruby:gitlab', 'depend-of::gitlab', 'type::dependency' ]
 
   - role: debops.redis
@@ -62,8 +67,8 @@ galaxy_info:
   author: 'Maciej Delmanowski'
   description: 'Install, upgrade and manage GitLab instance'
   company: 'DebOps'
-  license: 'GNU General Public License v3'
-  min_ansible_version: '1.7.0'
+  license: 'GPL-3.0'
+  min_ansible_version: '2.1.0'
   platforms:
   - name: Ubuntu
     versions:
@@ -76,7 +81,12 @@ galaxy_info:
     versions:
     - wheezy
     - jessie
-  categories:
-  - development
-  - web
-
+  galaxy_tags:
+    - gitlab
+    - gitlabci
+    - git
+    - webapp
+    - rails
+    - development
+    - programming
+    - ci

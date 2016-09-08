@@ -32,7 +32,11 @@ redis:
   bin: /usr/bin/redis-cli
   host: {{ gitlab_redis_host | default('127.0.0.1') }}
   port: {{ gitlab_redis_port | default('6379') }}
-  # pass: redispass # Allows you to specify the password for Redis
+{% if gitlab_redis_password %}
+  pass: {{ gitlab_redis_password }}
+{% else %}
+  # pass: redispass
+{% endif %}
   database: 0
   # socket: /tmp/redis.socket # Only define this if you want to use sockets
   namespace: resque:gitlab

@@ -14,14 +14,14 @@
          chdir={{ gitlab_workhorse_dest }}
   register: gitlab_register_gitlab_workhorse_current_head
   changed_when: False
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
   when: gitlab_register_gitlab_workhorse_cloned.stat.exists
 
 - name: Change current HEAD to master in bare repository for update
   shell: git symbolic-ref HEAD refs/heads/master
          chdir={{ gitlab_workhorse_dest }}
   changed_when: False
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
   when: gitlab_register_gitlab_workhorse_cloned.stat.exists
 
 - name: Clone gitlab-workhorse source code
@@ -30,7 +30,7 @@
     dest: '{{ gitlab_workhorse_dest }}'
     bare: True
     update: True
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
 
 - name: Restore HEAD to previous checkout
   copy:
@@ -66,14 +66,14 @@
 - name: Get currently checked out git tag
   shell: GIT_WORK_TREE={{ gitlab_workhorse_checkout }} git describe --tags
          chdir={{ gitlab_workhorse_dest }}
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab_workhorse_target_tag
   changed_when: gitlab_register_gitlab_workhorse_target_tag.stdout != gitlab_version_map[gitlab_version].gitlab_workhorse
 
 - name: Checkout gitlab-workhorse
   shell: GIT_WORK_TREE={{ gitlab_workhorse_checkout }} git checkout -f {{ gitlab_version_map[gitlab_version].gitlab_workhorse }}
          chdir={{ gitlab_workhorse_dest }}
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab_workhorse_checkout
   when: (gitlab_version_map[gitlab_version].gitlab_workhorse != gitlab_register_gitlab_workhorse_target_tag.stdout) or not gitlab_register_gitlab_workhorse_cloned.stat.exists
 
@@ -85,6 +85,6 @@
 
 - name: Setup gitlab-workhorse
   shell: make chdir={{ gitlab_workhorse_checkout }}
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
   when: gitlab_register_gitlab_workhorse_checkout is defined and gitlab_register_gitlab_workhorse_checkout.changed
 

@@ -13,17 +13,19 @@
   shell: git rev-parse HEAD
   args:
     chdir: '{{ gitlab_shell_git_dest }}'
+    warn: False
   register: gitlab_register_shell_current_head
   changed_when: False
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
   when: gitlab_register_shell_cloned.stat.exists
 
 - name: Change current HEAD to master in bare repository for update
   shell: git symbolic-ref HEAD refs/heads/master
   args:
     chdir: '{{ gitlab_shell_git_dest }}'
+    warn: False
   changed_when: False
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
   when: gitlab_register_shell_cloned.stat.exists
 
 - name: Create GitLab source directory
@@ -40,7 +42,7 @@
     dest: '{{ gitlab_shell_git_dest }}'
     bare: True
     update: True
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
 
 - name: Restore HEAD to previous checkout
   copy:
@@ -51,11 +53,6 @@
     mode: '0644'
   changed_when: False
   when: gitlab_register_shell_cloned.stat.exists
-
-- name: Check if gitlab-shell is checked out
-  stat:
-    path: '{{ gitlab_shell_git_checkout }}'
-  register: gitlab_register_shell_directory
 
 - name: Create gitlab-shell checkout directory
   file:
@@ -77,7 +74,7 @@
   shell: GIT_WORK_TREE={{ gitlab_shell_git_checkout }} git describe --tags
   args:
     chdir: '{{ gitlab_shell_git_dest }}'
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
   register: gitlab_register_shell_target_tag
   changed_when: gitlab_register_shell_target_tag.stdout != gitlab_version_map[gitlab_version].shell
 
@@ -87,9 +84,10 @@
     GIT_WORK_TREE: '{{ gitlab_shell_git_checkout }}'
   args:
     chdir: '{{ gitlab_shell_git_dest }}'
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
   register: gitlab_register_shell_checkout
-  when: gitlab_version_map[gitlab_version].shell != gitlab_register_shell_target_tag.stdout
+  when: ((gitlab_version_map[gitlab_version].shell != gitlab_register_shell_target_tag.stdout) or
+         not gitlab_register_shell_cloned.stat.exists | bool)
 
 - name: Configure gitlab-shell
   template:
@@ -97,7 +95,7 @@
     dest: '{{ gitlab_shell_git_checkout + "/config.yml" }}'
     owner: '{{ gitlab_user }}'
     group: '{{ gitlab_group }}'
-    mode: '0644'
+    mode: '0640'
 
 - name: Create GitLab data root directories
   file:
@@ -112,6 +110,6 @@
   shell: ./bin/install
   args:
     chdir: '{{ gitlab_shell_git_checkout }}'
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
   when: gitlab_register_shell_checkout is defined and gitlab_register_shell_checkout.changed
 

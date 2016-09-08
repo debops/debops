@@ -6,11 +6,11 @@
 
 - name: Stop Sidekiq before upgrade
   shell: bundle exec rake sidekiq:stop RAILS_ENV=production chdir={{ gitlab_ce_git_checkout }}
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
 
 - name: Create backup of GitLab instance
   shell: bundle exec rake gitlab:backup:create RAILS_ENV=production chdir={{ gitlab_ce_git_checkout }}
-  sudo_user: '{{ gitlab_user }}'
+  become_user: '{{ gitlab_user }}'
 
 - name: Stop GitLab before upgrade
   shell: /etc/init.d/gitlab stop
