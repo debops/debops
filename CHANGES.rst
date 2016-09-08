@@ -32,6 +32,9 @@ Changed
 - Ensure that debops.ruby_ role installs packages required to build native gem
   extensions. [drybjed_]
 
+- Add path for GitLab build artifacts and ensure that all required directories
+  exist. [drybjed_]
+
 
 `debops.gitlab v0.1.4`_ - 2016-06-30
 ------------------------------------
