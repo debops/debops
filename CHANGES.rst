@@ -18,6 +18,12 @@ The current role maintainer_ is drybjed.
 
 .. _debops.ruby master: https://github.com/debops/ansible-ruby/compare/v0.1.0...master
 
+Added
+~~~~~
+
+- Add :envvar:`ruby__dev_support` boolean variable which can be used to install Ruby
+  build environment even when no gems are requested. [drybjed_]
+
 Changed
 ~~~~~~~
 

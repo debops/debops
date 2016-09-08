@@ -24,12 +24,21 @@ ruby__base_packages: [ 'ruby', 'libruby', 'rubygems-integration',
 # Ruby extensions. They will be installed if any Ruby gems are requested using
 # the default lists.
 ruby__dev_packages: '{{ ["ruby-dev","build-essential"]
-	                if (ruby__gems or ruby__group_gems or
+	                if (ruby__dev_support|bool or
+	                    ruby__gems or ruby__group_gems or
 	                    ruby__host_gems or ruby__dependent_gems or
 	                    ruby__user_gems or ruby__group_user_gems or
 	                    ruby__host_user_gems or ruby__dependent_user_gems)
 	                else [] }}'
 
+                                                                   # ]]]
+# .. envvar:: ruby__dev_support [[[
+#
+# By default ``debops.ruby`` installs only the base Ruby packages, unless any
+# Ruby gems are requested. If this variable is set to ``True``, the role will
+# install the build environment automatically without any gems set. This can be
+# used by other roles to request the development packages ahead of time.
+ruby__dev_support: False
 
                                                                    # ]]]
 # .. envvar:: ruby__packages [[[
