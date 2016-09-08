@@ -76,6 +76,8 @@ Changed
 - Update the ``ipaddr()`` filter plugin with the version from Ansible ``devel``
   branch. [drybjed]
 
+- Update the debops.redis_ playbook to the new version. [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
