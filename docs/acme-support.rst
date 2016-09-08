@@ -5,16 +5,15 @@ ACME is an initiative designed by Internet Security Research Group for the
 `Let's Encrypt <https://letsencrypt.org/>`_ service. It can be used to
 provision trusted X.509 certificates in a fully automated way.
 
-One of the methods to authenticate to an ACME CA server is so called "webroot"
-method, which uses a well-known path on the client web server to serve ACME
-challenges which can then be validated by the CA server. This should be
-sufficient to prove that a given subdomain is owned by the entity that requests
-the certificate.
+One of the challenges to prove control over a domain to an ACME CA server is
+called **http-01** , which uses a well-known path on the client web server to
+serve files which can then be validated by the CA server. This should be
+sufficient to prove that a given domain is controlled by the entity that
+requests the certificate.
 
-The ``debops.nginx`` Ansible role includes support for ACME challenge queries.
+The ``debops.nginx`` Ansible role includes support for the **http-01** challenge.
 They are enabled by default for all server configurations and can be used to
-automatically sign specified domains using the "webroot" method of official
-``letsencrypt`` client or other ACME clients.
+prove control over specified domains using a ACME client.
 
 Role default variables
 ----------------------
@@ -88,7 +87,7 @@ The above steps are configured in a separate file on the webserver host::
 
     /etc/nginx/snippets/acme-challenge.conf
 
-To enable a given ``nginx`` server to respond to the ACME challenges, all you
+To enable a given ``nginx`` server to respond to ACME challenges, all you
 need to do is to include that file in the ``server {}`` section, for example::
 
     server {
@@ -105,7 +104,6 @@ need to do is to include that file in the ``server {}`` section, for example::
             }
     }
 
-Above configuration should be sufficient to perform local or remote ACME
+Above configuration should be sufficient to satisfy local or remote ACME
 challenges. Similar configuration can be done on HTTPS server to achieve the
 same results.
-
