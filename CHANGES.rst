@@ -26,6 +26,9 @@ Changed
 - The ``debops.gitlab`` role now requies at least Ansible 2.1 due to the
   requirements of the LDAP modules used by the role. [drybjed_]
 
+- Update the Redis support to automatically configure password authentication
+  used by the debops.redis_ Ansible role. [drybjed_]
+
 
 `debops.gitlab v0.1.4`_ - 2016-06-30
 ------------------------------------

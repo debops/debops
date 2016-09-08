@@ -115,11 +115,15 @@
   lineinfile:
     dest: '{{ gitlab_ce_git_checkout + "/config/resque.yml" }}'
     regexp: '^production:'
-    line: 'production: {{ gitlab_redis }}'
+    line: 'production: {{ gitlab_redis_resque }}'
     state: 'present'
     create: True
     backup: False
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0640'
   notify: [ 'Restart gitlab' ]
+  no_log: True
 
 - name: Setup GitLab CE unicorn configuration
   template:

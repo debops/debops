@@ -187,22 +187,45 @@ gitlab_backup_keep_time: '{{ (60 * 60 * 24 * 7) }}'
 #   Custom redis configuration
 # ------------------------------
 
-# .. envvar:: gitlab_redis
+# .. envvar:: gitlab_redis_resque
 #
 # Connection string used in the configuration file
-gitlab_redis: 'redis://{{ gitlab_redis_host + ":" + gitlab_redis_port }}'
+gitlab_redis_resque: 'redis://{{ ((":" + gitlab_redis_password + "@")
+                      if gitlab_redis_password else "") +
+                      gitlab_redis_host + ":" + gitlab_redis_port }}'
 
 
 # .. envvar:: gitlab_redis_host
 #
 # Define hostname of redis server to use
-gitlab_redis_host: 'localhost'
+gitlab_redis_host: '{{ ansible_local.redis.host
+                       if (ansible_local|d() and ansible_local.redis|d() and
+                           ansible_local.redis.host|d())
+                       else "localhost" }}'
 
 
 # .. envvar:: gitlab_redis_port
 #
 # Define port of redis server to use
-gitlab_redis_port: '6379'
+gitlab_redis_port: '{{ ansible_local.redis.port
+                       if (ansible_local|d() and ansible_local.redis|d() and
+                           ansible_local.redis.port|d())
+                       else "6379" }}'
+
+
+# .. envvar:: gitlab_redis_password
+#
+# Define the Redis authentication password to use
+gitlab_redis_password: '{{ ansible_local.redis.password
+                           if (ansible_local|d() and ansible_local.redis|d() and
+                               ansible_local.redis.password|d())
+                           else "" }}'
+
+
+# .. envvar:: gitlab_redis_database
+#
+# Specify which Redis database to use for GitLab
+gitlab_redis_database: '0'
 
 
 # ---------------------------
