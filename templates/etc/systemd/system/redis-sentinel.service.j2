@@ -1,0 +1,41 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Advanced key-value store - Sentinel
+After=network.target
+Documentation=http://redis.io/documentation, man:redis-sentinel(1)
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/redis-sentinel /etc/redis/sentinel.conf
+PIDFile=/run/redis/redis-sentinel.pid
+TimeoutStopSec=0
+Restart=always
+User=redis
+Group=redis
+
+# The commented-out parameters don't work on Debian Jessie
+
+#ExecStartPre=-/bin/run-parts --verbose /etc/redis/redis-sentinel.pre-up.d
+#ExecStartPost=-/bin/run-parts --verbose /etc/redis/redis-sentinel.post-up.d
+#ExecStop=-/bin/run-parts --verbose /etc/redis/redis-sentinel.pre-down.d
+ExecStop=/bin/kill -s TERM $MAINPID
+#ExecStopPost=-/bin/run-parts --verbose /etc/redis/redis-sentinel.post-down.d
+
+#PrivateTmp=yes
+#LimitNOFILE=65535
+#PrivateDevices=yes
+#ProtectHome=yes
+#ReadOnlyDirectories=/
+#ReadWriteDirectories=-/var/lib/redis
+#ReadWriteDirectories=-/var/log/redis
+#ReadWriteDirectories=-/var/run/redis
+#CapabilityBoundingSet=~CAP_SYS_PTRACE
+
+# redis-sentinel writes its own config file so we allow writing there (NB.
+# ProtectSystem=true over ProtectSystem=full)
+#ProtectSystem=true
+#ReadWriteDirectories=-/etc/redis
+
+[Install]
+WantedBy=multi-user.target
