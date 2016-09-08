@@ -56,7 +56,7 @@
           ('ldap' in auth_nsswitch)))
 
 - include: nss_pam_ldap.yml
-  when: ('ldap' in auth_nsswitch)
+  when: (('ldap' in auth_nsswitch) and (auth_nslcd_conf|bool))
 
 - name: Check if libnss-mdns package is installed
   environment:
