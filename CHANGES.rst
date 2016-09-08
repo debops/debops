@@ -35,6 +35,9 @@ Changed
 - Add path for GitLab build artifacts and ensure that all required directories
   exist. [drybjed_]
 
+- Ensure that ``gitlab-shell`` is checked out on first install even when the
+  latest tag and the main ``master`` branch are the same. [drybjed_]
+
 Removed
 ~~~~~~~
 

@@ -84,7 +84,8 @@
     chdir: '{{ gitlab_shell_git_dest }}'
   sudo_user: '{{ gitlab_user }}'
   register: gitlab_register_shell_checkout
-  when: gitlab_version_map[gitlab_version].shell != gitlab_register_shell_target_tag.stdout
+  when: ((gitlab_version_map[gitlab_version].shell != gitlab_register_shell_target_tag.stdout) or
+         not gitlab_register_shell_cloned.stat.exists | bool)
 
 - name: Configure gitlab-shell
   template:
