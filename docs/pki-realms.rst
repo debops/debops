@@ -106,7 +106,7 @@ documentation for the rest of the required configuration options.
 If you use the debops.nginx_ Ansible role provided with the project, it has
 extensive integration with the ``debops.pki`` role and can configure the
 webserver automatically. Usually all you need to do is to make sure the default
-realm is matches with the one you would like to use for each server configuration.
+realm matches the one you would like to use for each server configuration.
 
 The PKI realm directory structure
 ---------------------------------
@@ -249,7 +249,7 @@ data files for different Certificate Authorities. Each CA is described in more
 detail in a separate document, here is a brief overview:
 
 :file:`acme/`
-  This directory is for certificates issued using ACME support (for example `Let's Encrypt`_).
+  This directory is for certificates issued using ACME_ (for example `Let's Encrypt`_).
   It will be activated and used automatically when a host has a public IP address
   and the :program:`nginx` webserver is installed and configured to support ACME
   Challenges (see the debops.nginx_ role for more details).
@@ -270,7 +270,7 @@ detail in a separate document, here is a brief overview:
 
 If the internal CA is disabled either globally for a host, or for a particular
 PKI realm, an alternative directory, :file:`selfsigned/` will be created. It
-will hold a self-signed certificate, not trusted by anything else (even the
+will hold a self-signed certificate, not trusted by anything else (not even the
 host that has created it). This is done, so that services depending on the
 existence of the private keys and certificates can function correctly at all
 times.
@@ -399,8 +399,8 @@ are not present. This allows the administrator to provide the shared scripts or
 private keys/certificates as needed, per host, per group or for all managed
 hosts.
 
-After certificates signed by internal CA are downloaded to remote host, the
-directory structure might look similar to:
+After certificates signed by the internal CA are downloaded to remote hosts,
+the directory structure might look similar to:
 
 .. code-block:: none
 
@@ -430,7 +430,7 @@ contain various files.
 
 After certificates are copied from the Ansible Controller, the
 :program:`pki-realm` script is executed again for each PKI realm configured on
-a given host. It checks which authority directories have signed and valid
+a given host. It checks which authority directories have valid
 certificates, picks the first viable one according to
 :envvar:`pki_authority_preference` and activates them.
 

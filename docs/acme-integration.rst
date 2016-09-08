@@ -7,11 +7,11 @@ ACME Integration
 
 `Automated Certificate Management Environment` (ACME_) is a protocol that
 allows automated certificate requests, retrieval of certificates and
-certificate renewal. It was designed to enable easy deployment of TLS/SSL
-certificates by the `Let's Encrypt`_ project.
+certificate renewal. It was designed to enable easy deployment of X.509
+certificates from `Let's Encrypt`_.
 
 The ``debops.pki`` Ansible role provides support for the ACME protocol which is
-used by default with the Let's Encrypt service (there is a possibility to
+used by default with the Let's Encrypt (there is a possibility to
 integrate other similar services in the future). Interaction with the ACME
 Certificate Authority is performed using the acme-tiny_ alternative client
 written in Python.
@@ -233,8 +233,8 @@ can have several parameters related to the ACME certificates:
 
 ``item.acme_default_subdomains``
   List of subdomains that should be added to all of the ACME apex/root domains.
-  If you want to create an ACME certificate only with the apex domain, you need
-  to use this parameter with ``[]`` value to override
+  If you want to create an ACME certificate only with the apex domain, you
+  might need to set this parameter to an empty list using ``[]`` to override
   :envvar:`pki_acme_default_subdomains`.
 
 ``item.acme_subdomains``

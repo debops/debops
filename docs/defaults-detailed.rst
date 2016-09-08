@@ -162,9 +162,9 @@ respectively:
 
 ``default_domain``
   Optional. Change the default domain used by a given PKI realm. If not
-  specified, default domain is based on the ``name`` parameter if it has at
-  least 1 dot, or it will be taken from :envvar:`pki_default_domain` variable which
-  is populated by the ``ansible_domain`` variable.
+  specified, the default domain is based on the ``name`` parameter if it has at
+  least 1 dot, or it will be taken from :envvar:`pki_default_domain` variable
+  which is populated by the ``ansible_domain`` variable.
 
 ``default_subdomains``, ``acme_default_subdomains``
   Optional. List of subdomains added to each domain configured in a given PKI
@@ -178,7 +178,7 @@ respectively:
 ``subject``, ``acme_subject``
   Optional. The Distinguished Name of the certificate, specified as a list of
   DN elements. If not specified, a CommonName based on the default domain of
-  the given PKI realm.
+  the given PKI realm will be used.
 
   Example:
 
