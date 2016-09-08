@@ -12,6 +12,7 @@ Contributors
 
 - [drybjed] - `Maciej Delmanowski <https://github.com/drybjed/>`_  (role maintainer)
 - [ypid] - `Robin Schneider <https://github.com/ypid/>`_
+- [yuvadm] - `Yuval Adam <https://github.com/yuvadm/>`_
 
 
 `debops.pki master`_ - unreleased
@@ -38,6 +39,10 @@ Fixed
   ``0007``, which resulted in the web server not being able to serve ACME
   challenge responses. Now, correct ``umask`` will be set for the ``acme-tiny``
   script, so that ACME responses are world-readable. [drybjed]
+  
+- Fix an error in ``pki-authority`` script which invoked a Python print call
+  that was unsupported in modern Python versions, the call is now supported
+  on both 2.x and 3.x. [yuvadm]
 
 
 `debops.pki v0.2.13`_ - 2016-07-07
