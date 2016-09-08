@@ -9,6 +9,8 @@ dependencies:
         reason: 'Version parity with Debian Jessie'
         by_role: 'debops.gitlab'
 
+      - '{{ ruby__apt_preferences__dependent_list }}'
+
   - role: debops.secret
     tags: [ 'depend::secret', 'depend::secret:gitlab', 'depend-of::gitlab', 'type::dependency:hard' ]
 
@@ -23,6 +25,7 @@ dependencies:
       - '{{ redis__etc_services__dependent_list }}'
 
   - role: debops.ruby
+    ruby__dev_support: True
     tags: [ 'depend::ruby', 'depend::ruby:gitlab', 'depend-of::gitlab', 'type::dependency' ]
 
   - role: debops.redis

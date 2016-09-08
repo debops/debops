@@ -29,6 +29,9 @@ Changed
 - Update the Redis support to automatically configure password authentication
   used by the debops.redis_ Ansible role. [drybjed_]
 
+- Ensure that debops.ruby_ role installs packages required to build native gem
+  extensions. [drybjed_]
+
 
 `debops.gitlab v0.1.4`_ - 2016-06-30
 ------------------------------------
