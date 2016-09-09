@@ -30,6 +30,10 @@ Changed
 - Be more precise about the expected format of ``item.by_role`` in
   :ref:`default_rules`. [ypid_]
 
+- Move kernel parameters to enable reverse path filtering to the
+  ``debops.sysctl`` role. [ypid_]
+
+
 Fixed
 ~~~~~
 
