@@ -192,6 +192,11 @@ rsyslog__default_netstream_driver: '{{ "gtls"
                                            "tls" in rsyslog__capabilities)
                                        else "ptcp" }}'
 
+# .. envvar:: rsyslog__default_driver_authmode
+#
+# Specify the default network driver authetication mode. Actualy only
+# `x509/name` or `anon` are available: 
+rsyslog__default_driver_authmode: "x509/name"
 
 # .. envvar:: rsyslog__send_over_tls
 #
@@ -199,13 +204,15 @@ rsyslog__default_netstream_driver: '{{ "gtls"
 # enabled. It's used to configure TLS options.
 rsyslog__send_over_tls: |-
   $ActionSendStreamDriver gtls
-  $ActionSendStreamDriverAuthMode x509/name
-  {% if rsyslog__send_permitted_peers is string %}
+  $ActionSendStreamDriverAuthMode {{ rsyslog__default_driver_authmode }}
+  {% if rsyslog__default_driver_authmode != "anon" %}
+  {%   if rsyslog__send_permitted_peers is string %}
   $ActionSendStreamDriverPermittedPeer {{ rsyslog__send_permitted_peers }}
-  {% else %}
-  {%   for peer in rsyslog__send_permitted_peers %}
+  {%   else %}
+  {%     for peer in rsyslog__send_permitted_peers %}
   $ActionSendStreamDriverPermittedPeer {{ peer }}
-  {%   endfor %}
+  {%     endfor %}
+  {%   endif %}
   {% endif %}
   $ActionSendStreamDriverMode 1
 
@@ -407,8 +414,10 @@ rsyslog__conf_global_options:
         defaultNetstreamDriver="{{ rsyslog__default_netstream_driver }}"
       {% if rsyslog__pki|bool and "tls" in rsyslog__capabilities %}
         defaultNetstreamDriverCAFile="{{ rsyslog__pki_path + '/' + rsyslog__pki_realm + '/' + rsyslog__pki_ca }}"
+      {%   if rsyslog__default_driver_authmode != "anon" or "network" in rsyslog__capabilities %}
         defaultNetstreamDriverCertFile="{{ rsyslog__pki_path + '/' + rsyslog__pki_realm + '/' + rsyslog__pki_crt }}"
         defaultNetstreamDriverKeyFile="{{ rsyslog__pki_path + '/' + rsyslog__pki_realm + '/' + rsyslog__pki_key }}"
+      {%   endif %}
       {% endif %}
       )
 
@@ -472,11 +481,13 @@ rsyslog__conf_network_modules:
             load="imtcp"
             streamDriver.name="gtls"
             streamDriver.mode="1"
-            streamDriver.authMode="x509/name"
-          {% if rsyslog__permitted_peers is string %}
-            permittedPeer="{{ rsyslog__permitted_peers }}"
-          {% else %}
-            permittedPeer=["{{ rsyslog__permitted_peers | join('","') }}"]
+            streamDriver.authMode="{{ rsyslog__default_driver_authmode }}"
+          {% if rsyslog__default_driver_authmode != "anon" %}
+            {% if rsyslog__permitted_peers is string %}
+              permittedPeer="{{ rsyslog__permitted_peers }}"
+            {% else %}
+              permittedPeer=["{{ rsyslog__permitted_peers | join('","') }}"]
+            {% endif %}
           {% endif %}
           )
         state: '{{ "present"
