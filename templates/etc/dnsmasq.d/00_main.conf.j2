@@ -108,8 +108,7 @@ rebind-domain-ok = {{ ansible_domain }}
 # Domain used by the DHCP server.
 domain = {{ dnsmasq__domain }}
 
-# Domain managed by the dnsmasq DNS server.
-local = /{{ dnsmasq__domain }}/
+{{ dnsmasq__dns_not_forward_managed }}
 
 {% if dnsmasq__domain_mx|d() %}
 # Point mails on main domain to a specific host.
