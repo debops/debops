@@ -216,6 +216,10 @@ rsyslog__send_over_tls: |-
   {% endif %}
   $ActionSendStreamDriverMode 1
 
+# .. envvar:: rsyslog__send_over_tls_only
+#
+# Specify if you want only tls communications 
+rsyslog__send_over_tls_only: False
 
 # .. envvar:: rsyslog__domain
 #
@@ -470,10 +474,16 @@ rsyslog__conf_network_modules:
       - comment: 'Enable UDP support'
         options: |-
           module(load="imudp")
+        state: '{{ "present"
+                  if (rsyslog__send_over_tls_only)
+                  else "absent" }}'
 
       - comment: 'Enable TCP support'
         options: |-
           module(load="imptcp")
+        state: '{{ "present"
+                  if (rsyslog__send_over_tls_only)
+                  else "absent" }}'
 
       - comment: 'Enable GnuTLS TCP support'
         options: |-
@@ -515,6 +525,9 @@ rsyslog__conf_network_input:
             port="{{ rsyslog__udp_port }}"
             ruleset="remote"
           )
+        state: '{{ "present"
+                  if (not rsyslog__send_over_tls_only)
+                  else "absent" }}'
 
       - comment: 'Log messages from remote hosts over TCP'
         options: |-
@@ -523,6 +536,9 @@ rsyslog__conf_network_input:
             port="{{ rsyslog__tcp_port }}"
             ruleset="remote"
           )
+        state: '{{ "present"
+                  if (not rsyslog__send_over_tls_only)
+                  else "absent" }}'
 
       - comment: 'Log messages from remote hosts over TLS'
         options: |-
@@ -532,6 +548,9 @@ rsyslog__conf_network_input:
             port="{{ rsyslog__tcp_tls_port }}"
             ruleset="remote"
           )
+        state: '{{ "present"
+                  if ("tls" in rsyslog__capabilities)
+                  else "absent" }}'
 
 
 # .. envvar:: rsyslog__conf_common_defaults
@@ -932,7 +951,7 @@ rsyslog__ferm__dependent_rules:
     role: 'rsyslog'
     accept_any: False
     rule_state: '{{ "present"
-                    if ("network" in rsyslog__capabilities)
+                    if ("network" in rsyslog__capabilities and not rsyslog__send_over_tls_only)
                     else "absent" }}'
 
   - type: 'accept'
