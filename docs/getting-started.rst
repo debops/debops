@@ -19,22 +19,11 @@ following setting in your inventory::
 Example playbook
 ----------------
 
-Here's an example playbook for using the role without the DebOps playbook::
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.apt`` role:
 
-    ---
-    - name: Configure and manage APT Package Manager
-      hosts: [ 'debops_all_hosts', '!debops_no_common' ]
-      become: True
-
-      roles:
-
-        - role: debops.apt_preferences
-          tags: [ 'role::apt_preferences' ]
-          apt_preferences__dependent_list:
-            - '{{ apt__apt_preferences__dependent_list }}'
-
-        - role: debops.apt
-          tags: [ 'role::apt' ]
+.. literalinclude:: playbooks/apt.yml
+   :language: yaml
 
 
 Ansible tags
