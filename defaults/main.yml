@@ -1,25 +1,25 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Default variables
-# =================
+# debops.apt default variables [[[
+# ================================
 
 # .. contents:: Sections
 #    :local:
 #
-# .. Basic options [[[
+# .. include:: includes/all.rst
 
-# -----------------
-#   Basic options
+
+# Basic options [[[
 # -----------------
 
-# .. envvar:: apt__enabled
+# .. envvar:: apt__enabled [[[
 #
 # Enable or disable this role.
 apt__enabled: True
 
-
-# .. envvar:: apt__remove_default_configuration
+                                                                   # ]]]
+# .. envvar:: apt__remove_default_configuration [[[
 #
 # Ensure that :file:`/etc/apt/apt.conf` is absent.
 # This file might contain APT proxy or other settings which overwrite options
@@ -27,8 +27,8 @@ apt__enabled: True
 # Thus the default is to ensure that this file is absent.
 apt__remove_default_configuration: True
 
-
-# .. envvar:: apt__update_cache_early
+                                                                   # ]]]
+# .. envvar:: apt__update_cache_early [[[
 #
 # Update APT cache early in the playbook if it's older than 24h
 # Set to False to disable update (useful when changing APT mirrors)
@@ -36,38 +36,30 @@ apt__update_cache_early: '{{ ansible_local.core.cache_valid_time
                              if (ansible_local|d() and ansible_local.core|d() and
                                  ansible_local.core.cache_valid_time|d())
                              else (60 * 60 * 24) }}'
-
-# .. ]]]
-
-# .. Packages to install [[[
-#
-# -----------------------
-#   Packages to install
+                                                                   # ]]]
+                                                                   # ]]]
+# Packages to install [[[
 # -----------------------
 
-# .. envvar:: apt__base_packages
+# .. envvar:: apt__base_packages [[[
 #
 # Default base packages to install.
 apt__base_packages: [ 'python-apt', 'apt-transport-https' ]
 
-
-# .. envvar:: apt__update_notification_packages
+                                                                   # ]]]
+# .. envvar:: apt__update_notification_packages [[[
 #
-# List of packages to install when :any:`apt__update_notifications` is set to
+# List of packages to install when :envvar:`apt__update_notifications` is set to
 # ``True``.
 apt__update_notification_packages:
   - 'apt-listchanges'
   - 'apticron'
-
-# .. ]]]
-
-# .. Proxy settings [[[
-#
-# ------------------
-#   Proxy settings
+                                                                   # ]]]
+                                                                   # ]]]
+# Proxy settings [[[
 # ------------------
 
-# .. envvar:: apt__http_proxy_url
+# .. envvar:: apt__http_proxy_url [[[
 #
 # This variable allows you to define a software repository proxy which should
 # be used by specifying the URL of the proxy server.
@@ -79,7 +71,8 @@ apt__update_notification_packages:
 # The default is to not use a proxy server and connect directly to the repository servers.
 apt__http_proxy_url: ''
 
-# .. envvar:: apt__https_proxy_url
+                                                                   # ]]]
+# .. envvar:: apt__https_proxy_url [[[
 #
 # This variable allows you to define a software repository proxy which should
 # be used by specifying the URL of the proxy server.
@@ -91,22 +84,19 @@ apt__http_proxy_url: ''
 # The default is to not use a proxy server and connect directly to the repository servers.
 apt__https_proxy_url: ''
 
-# .. envvar:: apt__proxy_bypass_for_bugs_debian_org
+                                                                   # ]]]
+# .. envvar:: apt__proxy_bypass_for_bugs_debian_org [[[
 #
 # Bypass the configured proxy server for https://bugs.debian.org.
 # This might be necessary when you are using :command:`apt-listbugs`.
 # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=775126.
 apt__proxy_bypass_for_bugs_debian_org: False
-
-# .. ]]]
-
-# .. APT repository mirrors [[[
-#
-# --------------------------
-#   APT repository mirrors
+                                                                   # ]]]
+                                                                   # ]]]
+# APT repository mirrors [[[
 # --------------------------
 
-# .. envvar:: apt__mirrors
+# .. envvar:: apt__mirrors [[[
 #
 # List of user-specified APT repository mirrors. These mirrors will be used for
 # all APT repositories that don't specify their own.
@@ -117,22 +107,22 @@ apt__proxy_bypass_for_bugs_debian_org: False
 #
 apt__mirrors: []
 
-
-# .. envvar:: apt__group_mirrors
+                                                                   # ]]]
+# .. envvar:: apt__group_mirrors [[[
 #
 # List of user-specified APT repository mirrors. These mirrors will be used for
 # all APT repositories that don't specify their own.
 apt__group_mirrors: []
 
-
-# .. envvar:: apt__host_mirrors
+                                                                   # ]]]
+# .. envvar:: apt__host_mirrors [[[
 #
 # List of user-specified APT repository mirrors. These mirrors will be used for
 # all APT repositories that don't specify their own.
 apt__host_mirrors: []
 
-
-# .. envvar:: apt__default_mirrors_lookup
+                                                                   # ]]]
+# .. envvar:: apt__default_mirrors_lookup [[[
 #
 # String used to select default mirrors based on Linux distribution used on
 # a specific host. Default mirrors are set using
@@ -140,16 +130,12 @@ apt__host_mirrors: []
 # files. To disable default mirrors, define
 # variable ``apt__default_mirrors: []`` in inventory.
 apt__default_mirrors_lookup: '{{ ansible_distribution }}'
-
-# .. ]]]
-
-# .. APT repository keys [[[
-#
-# -----------------------
-#   APT repository keys
+                                                                   # ]]]
+                                                                   # ]]]
+# APT repository keys [[[
 # -----------------------
 
-# .. envvar:: apt__keys
+# .. envvar:: apt__keys [[[
 #
 # Global list of additional repository keys enabled automatically by Ansible.
 # See documentation of the apt_key_ module for possible values.
@@ -166,53 +152,49 @@ apt__default_mirrors_lookup: '{{ ansible_distribution }}'
 #
 apt__keys: []
 
-
-# .. envvar:: apt__group_keys
+                                                                   # ]]]
+# .. envvar:: apt__group_keys [[[
 #
 # Host group list of additional repository keys enabled automatically by Ansible.
 # See documentation of the apt_key_ module for possible values.
 apt__group_keys: []
 
-
-# .. envvar:: apt__host_keys
+                                                                   # ]]]
+# .. envvar:: apt__host_keys [[[
 #
 # Host list of additional repository keys enabled automatically by Ansible.
 # See documentation of the apt_key_ module for possible values.
 apt__host_keys: []
 
-
-# .. envvar:: apt__keys_delayed
+                                                                   # ]]]
+# .. envvar:: apt__keys_delayed [[[
 #
 # Global delayed APT keys, not configured on the first Ansible run, but enabled
 # on subsequent runs. Can be used in cases where a APT repository might not be
 # available initially.
 apt__keys_delayed: []
 
-
-# .. envvar:: apt__group_keys_delayed
+                                                                   # ]]]
+# .. envvar:: apt__group_keys_delayed [[[
 #
 # Host group delayed APT keys, not configured on the first Ansible run, but enabled
 # on subsequent runs. Can be used in cases where a APT repository might not be
 # available initially.
 apt__group_keys_delayed: []
 
-
-# .. envvar:: apt__host_keys_delayed
+                                                                   # ]]]
+# .. envvar:: apt__host_keys_delayed [[[
 #
 # Host delayed APT keys, not configured on the first Ansible run, but enabled
 # on subsequent runs. Can be used in cases where a APT repository might not be
 # available initially.
 apt__host_keys_delayed: []
-
-# .. ]]]
-
-# .. APT repositories [[[
-#
-# --------------------
-#   APT repositories
+                                                                   # ]]]
+                                                                   # ]]]
+# APT repositories [[[
 # --------------------
 
-# .. envvar:: apt__repositories
+# .. envvar:: apt__repositories [[[
 #
 # Global of additional repositories enabled automatically by Ansible. See
 # documentation of apt_repository_ module for possible values.
@@ -233,53 +215,49 @@ apt__host_keys_delayed: []
 #
 apt__repositories: []
 
-
-# .. envvar:: apt__group_repositories
+                                                                   # ]]]
+# .. envvar:: apt__group_repositories [[[
 #
 # Host group of additional repositories enabled automatically by Ansible. See
 # documentation of apt_repository_ module for possible values.
 apt__group_repositories: []
 
-
-# .. envvar:: apt__host_repositories
+                                                                   # ]]]
+# .. envvar:: apt__host_repositories [[[
 #
 # Host of additional repositories enabled automatically by Ansible. See
 # documentation of apt_repository_ module for possible values.
 apt__host_repositories: []
 
-
-# .. envvar:: apt__repositories_delayed
+                                                                   # ]]]
+# .. envvar:: apt__repositories_delayed [[[
 #
 # Global delayed APT repositories, not configured on the first Ansible run,
 # but enabled on subsequent runs. Can be used in cases where APT repository
 # might not be available initially.
 apt__repositories_delayed: []
 
-
-# .. envvar:: apt__group_repositories_delayed
+                                                                   # ]]]
+# .. envvar:: apt__group_repositories_delayed [[[
 #
 # Host group delayed APT repositories, not configured on the first Ansible run,
 # but enabled on subsequent runs. Can be used in cases where APT repository
 # might not be available initially.
 apt__group_repositories_delayed: []
 
-
-# .. envvar:: apt__host_repositories_delayed
+                                                                   # ]]]
+# .. envvar:: apt__host_repositories_delayed [[[
 #
 # Host delayed APT repositories, not configured on the first Ansible run,
 # but enabled on subsequent runs. Can be used in cases where APT repository
 # might not be available initially.
 apt__host_repositories_delayed: []
-
-# .. ]]]
-
-# .. APT default repositories [[[
-#
-# ----------------------------
-#   APT default repositories
+                                                                   # ]]]
+                                                                   # ]]]
+# APT default repositories [[[
 # ----------------------------
 
-# .. envvar:: apt__sources
+# .. envvar:: apt__sources [[[
 #
 # Global list of user-specified APT repositories. More information and list of
 # parameters can be found in `templates/etc/apt/sources.list.j2`_.
@@ -297,7 +275,7 @@ apt__host_repositories_delayed: []
 #        sections:
 #          - 'main'
 #
-#      ## Example repository definition from default ``debops.reprepro`` configuration.
+#      ## Example repository definition from default debops.reprepro_ configuration.
 #      - comment:  'Local backports of Debian Testing packages'
 #        mirrors:  [ '{{ "http://apt." + ansible_domain + "/" + ansible_distribution | lower }}' ]
 #        releases: [ '{{ apt__sources_release_backports }}' ]
@@ -305,81 +283,81 @@ apt__host_repositories_delayed: []
 #
 apt__sources: []
 
-
-# .. envvar:: apt__group_sources
+                                                                   # ]]]
+# .. envvar:: apt__group_sources [[[
 #
 # Host group list of user-specified APT repositories. More information and list
 # of parameters can be found in `templates/etc/apt/sources.list.j2`_.
 apt__group_sources: []
 
-
-# .. envvar:: apt__host_sources
+                                                                   # ]]]
+# .. envvar:: apt__host_sources [[[
 #
 # Host list of user-specified APT repositories. More information and list of
 # parameters can be found in `templates/etc/apt/sources.list.j2`_.
 apt__host_sources: []
 
-
-# .. envvar:: apt__sources_delayed
+                                                                   # ]]]
+# .. envvar:: apt__sources_delayed [[[
 #
 # Global list of secondary APT repositories which are not enabled on the first Ansible
 # run, but are enabled automatically on subsequent runs. It can be used in
 # cases where APT repository might not be available initially.
 apt__sources_delayed: []
 
-
-# .. envvar:: apt__group_sources_delayed
+                                                                   # ]]]
+# .. envvar:: apt__group_sources_delayed [[[
 #
 # Host group list of secondary APT repositories which are not enabled on the first Ansible
 # run, but are enabled automatically on subsequent runs. It can be used in
 # cases where APT repository might not be available initially.
 apt__group_sources_delayed: []
 
-
-# .. envvar:: apt__host_sources_delayed
+                                                                   # ]]]
+# .. envvar:: apt__host_sources_delayed [[[
 #
 # Host group list of secondary APT repositories which are not enabled on the first Ansible
 # run, but are enabled automatically on subsequent runs. It can be used in
 # cases where APT repository might not be available initially.
 apt__host_sources_delayed: []
 
-
-# .. envvar:: apt__default_sources_lookup
+                                                                   # ]]]
+# .. envvar:: apt__default_sources_lookup [[[
 #
 # String used to select default repositories based on Linux distribution used
 # on a specific host. Default repositories are set using
 # :file:`vars/apt__default_sources_*.yml` files. To disable default repositories,
 # define ``apt__default_sources: []`` in inventory.
 # If you just need to modify the APT sections, you can define them as
-# ``apt__sources_sections``.
+# :envvar:`apt__sources_sections`.
 apt__default_sources_lookup: '{{ ansible_distribution }}'
 
-
-# .. envvar:: apt__sources_release
+                                                                   # ]]]
+# .. envvar:: apt__sources_release [[[
 #
 # Linux distribution release to use for default APT repositories.
 apt__sources_release: '{{ ansible_distribution_release.split("/")[0] }}'
 
-
-# .. envvar:: apt__sources_release_updates
+                                                                   # ]]]
+# .. envvar:: apt__sources_release_updates [[[
 #
 # Linux distribution updates release to use for default APT repositories.
 apt__sources_release_updates: '{{ apt__sources_release }}-updates'
 
-
-# .. envvar:: apt__sources_release_security
+                                                                   # ]]]
+# .. envvar:: apt__sources_release_security [[[
 #
 # Linux distribution security release to use for default APT repositories.
 apt__sources_release_security: '{{ apt__sources_release }}-security'
 
-
-# .. envvar:: apt__sources_release_backports
+                                                                   # ]]]
+# .. envvar:: apt__sources_release_backports [[[
 #
 # Linux distribution backports to use for default APT repositories.
 apt__sources_release_backports: '{{ apt__sources_release }}-backports'
 
-
-# .. envvar:: apt__sources_release_list
+                                                                   # ]]]
+# .. envvar:: apt__sources_release_list [[[
 #
 # List of releases to enable in default APT repositories.
 apt__sources_release_list:
@@ -387,76 +365,68 @@ apt__sources_release_list:
   - '{{ apt__sources_release_updates }}'
   - '{{ apt__sources_release_backports }}'
 
-
-# .. envvar:: apt__sources_types
+                                                                   # ]]]
+# .. envvar:: apt__sources_types [[[
 #
 # List of repository types to enable for default APT repositories. To enable
 # source repositories, add ``deb-src`` to the list.
 apt__sources_types: [ 'deb' ]
-
-# .. ]]]
-
-# .. Update notifications [[[
-#
-# ------------------------
-#   Update notifications
+                                                                   # ]]]
+                                                                   # ]]]
+# Update notifications [[[
 # ------------------------
 
-# .. envvar:: apt__mail_notifications
+# .. envvar:: apt__mail_notifications [[[
 #
 # Send mail notifications from APT to these email addresses.
 apt__mail_notifications: [ 'root' ]
 
-
-# .. envvar:: apt__update_notifications
+                                                                   # ]]]
+# .. envvar:: apt__update_notifications [[[
 #
 # Enable mail notifications about updates using the packages defined by
-# :any:`apt__update_notification_packages`.
+# :envvar:`apt__update_notification_packages`.
 apt__update_notifications: True
 
-
-# .. envvar:: apt__update_notifications_type_listchanges
+                                                                   # ]]]
+# .. envvar:: apt__update_notifications_type_listchanges [[[
 #
 # What type of notifications to send.
 # Choices: ``news``, ``changelogs``, ``both``.
 apt__update_notifications_type_listchanges: 'news'
 
-
-# .. envvar:: apt__update_notifications_type_apticron
+                                                                   # ]]]
+# .. envvar:: apt__update_notifications_type_apticron [[[
 #
 # What type of notifications to send.
 # Choices: ``news``, ``changelogs``, ``both``.
 apt__update_notifications_type_apticron: 'both'
 
-
-# .. envvar:: apt__update_notifications_diff
+                                                                   # ]]]
+# .. envvar:: apt__update_notifications_diff [[[
 #
 # Send only information about changes from the last notification?
 apt__update_notifications_diff: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
 
-# .. ]]]
-
-# .. Role-dependent configuration [[[
+# .. envvar:: apt__apt_preferences__dependent_list [[[
 #
-# --------------------------------
-#   Role-dependent configuration
-# --------------------------------
-
-# .. envvar:: apt__apt_preferences__dependent_list
-#
-# Configuration for the ``debops.apt_preferences`` role.
+# Configuration for the debops.apt_preferences_ role.
 apt__apt_preferences__dependent_list:
 
     ## Remove configuration from ``debops.apt`` context which is now managed by
-    ## ``debops.apt_install``.
+    ## debops.apt_install_.
   - package: 'git git-*'
     delete: True
     backports: [ 'wheezy' ]
-    reason:  'Better support for git submodules - http://stackoverflow.com/a/7593496'
+    reason:  'Better support for git submodules - https://stackoverflow.com/a/7593496'
     by_role: 'debops.apt'
 
     ## Remove configuration from ``debops.apt`` context which is now managed by
-    ## ``debops.apt_install``.
+    ## debops.apt_install_.
   - package: 'irqbalance'
     delete: True
     backports: [ 'wheezy' ]
@@ -464,7 +434,7 @@ apt__apt_preferences__dependent_list:
     by_role: 'debops.apt'
 
     ## Remove configuration from ``debops.apt`` context which is now managed by
-    ## ``debops.apt_install``.
+    ## debops.apt_install_.
   - package: 'irqbalance'
     delete: True
     backports: [ 'jessie' ]
@@ -472,10 +442,11 @@ apt__apt_preferences__dependent_list:
     by_role: 'debops.apt'
 
     ## Remove configuration from ``debops.apt`` context which is now managed by
-    ## ``debops.apt_cacher_ng``.
+    ## debops.apt_cacher_ng_.
   - package: 'apt-cacher-ng'
     delete: True
     by_role: 'debops.apt'
     backports: [ 'jessie' ]
-
-# .. ]]]
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
