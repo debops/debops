@@ -102,7 +102,7 @@ Added
 
 - Use backported :program:`apt-cacher-ng` on Debian Jessie. [ypid_]
 
-- Allow to modify APT sections without defining :envvar:`apt__default_sources` by
+- Allow to modify APT sections without defining ``apt__default_sources`` by
   using the added :envvar:`apt__sources_sections` variable. [ypid_]
 
 Changed
