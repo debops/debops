@@ -59,6 +59,15 @@
     mode: '0755'
   when: docker__ferment|d() | bool
 
+- name: Install ferm post hook
+  copy:
+    src: 'etc/ferm/hooks/post.d/restart-docker'
+    dest: '/etc/ferm/hooks/post.d/restart-docker'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: ((ferm__enabled|d() | bool) and (docker__ferment|d() | bool == False))
+
 - name: Check Docker version
   environment:
     LC_MESSAGES: 'C'

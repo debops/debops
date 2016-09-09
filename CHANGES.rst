@@ -16,6 +16,11 @@ The current role maintainer is drybjed.
 
 .. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.2.1...master
 
+Added
+~~~~~
+- Ferm hook to restart docker daemon after ferm is restarted if :any:`docker__ferment`
+  is set to False. [tallandtree]
+
 Changed
 ~~~~~~~
 
