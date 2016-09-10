@@ -10,6 +10,11 @@
 
   roles:
 
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ samba__ferm__dependent_rules }}'
+
     - role: debops.samba
       tags: [ 'role::samba' ]
 
