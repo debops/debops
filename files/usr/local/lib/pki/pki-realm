@@ -535,7 +535,7 @@ EOF
 [ req_dn ]
 EOF
 
-        echo "${req_dn}" | tr "/" "\n" | sed \
+        echo "${req_dn}" | tr "/" "\n" | grep --invert-match '^\s*$' | sed \
             -e 's/^[Cc]=/countryName=/' \
             -e 's/^[Ss][Tt]=/stateOrProvinceName=/' \
             -e 's/^[Ll]=/localityName=/' \
@@ -635,7 +635,7 @@ expiration_days = ${config['selfsigned_sign_days']}
 EOF
         fi
 
-        echo "${req_dn}" | tr "/" "\n" | sed \
+        echo "${req_dn}" | tr "/" "\n" | grep --invert-match '^\s*$' | sed \
             -e 's/^[Cc]=/country = "/' \
             -e 's/^[Ss][Tt]=/state = "/' \
             -e 's/^[Ll]=/locality = "/' \

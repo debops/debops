@@ -179,6 +179,7 @@ respectively:
   Optional. The Distinguished Name of the certificate, specified as a list of
   DN elements. If not specified, a CommonName based on the default domain of
   the given PKI realm will be used.
+  Empty string elements of the list will be ignored.
 
   Example:
 

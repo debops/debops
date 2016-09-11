@@ -23,6 +23,9 @@ Added
   :envvar:`pki_realm_key_size` (realms) and ``pki_ca_*_key_size`` (CAs) which
   was removed in v0.2.0. [ypid_]
 
+- Silently ignore empty elements in ``subject`` and ``acme_subject`` lists.
+  This can come in handy for generated certificate subjects. [ypid_]
+
 Changed
 ~~~~~~~
 
