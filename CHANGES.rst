@@ -46,9 +46,9 @@ Fixed
   challenge responses. Now, correct ``umask`` will be set for the :program:`acme-tiny`
   script, so that ACME responses are world-readable. [drybjed_]
 
-- Fix an error in ``pki-authority`` script which invoked a Python print call
+- Fix an error in :program:`pki-authority` script which invoked a Python print call
   that was unsupported in modern Python versions, the call is now supported
-  on both 2.x and 3.x. [yuvadm]
+  on both 2.x and 3.x. [yuvadm_]
 
 - Don’t use ``MD5`` or other hash functions to sanitize STDOUT of programs for later
   comparison when a simple ``base64`` encoding is enough. [ypid_]
