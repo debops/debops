@@ -405,14 +405,20 @@ run_pki_hooks () {
         export PKI_SCRIPT_SUBJECT="${config['subject']:-${config['pki_default_subject']}}"
         export PKI_SCRIPT_DOMAINS="${config['domains']:-${config['pki_default_domain']}}"
         export PKI_SCRIPT_SUBDOMAINS="${config['subdomains']:-${config['pki_default_subdomains']}}"
-        export PKI_SCRIPT_PRIVATE_KEY="$(get_absolute_path private/key.pem)"
+        export PKI_SCRIPT_PRIVATE_KEY
+        PKI_SCRIPT_PRIVATE_KEY="$(get_absolute_path private/key.pem)"
 
-        export PKI_SCRIPT_DEFAULT_CRT="$(get_absolute_path default.crt)"
-        export PKI_SCRIPT_DEFAULT_KEY="$(get_absolute_path default.key)"
-        export PKI_SCRIPT_DEFAULT_PEM="$(get_absolute_path default.pem)"
+        export PKI_SCRIPT_DEFAULT_CRT
+        export PKI_SCRIPT_DEFAULT_KEY
+        export PKI_SCRIPT_DEFAULT_PEM
 
-        local current_state=$(printf ",%s" "${state[@]:-}")
-        local current_state="${current_state:1}"
+        PKI_SCRIPT_DEFAULT_CRT="$(get_absolute_path default.crt)"
+        PKI_SCRIPT_DEFAULT_KEY="$(get_absolute_path default.key)"
+        PKI_SCRIPT_DEFAULT_PEM="$(get_absolute_path default.pem)"
+
+        local current_state
+        current_state=$(printf ",%s" "${state[@]:-}")
+        current_state="${current_state:1}"
         export PKI_SCRIPT_STATE="${current_state}"
 
         cd "${config['pki_hooks']}"
@@ -451,14 +457,22 @@ run_external_script () {
         export PKI_SCRIPT_SUBJECT="${config['subject']:-${config['pki_default_subject']}}"
         export PKI_SCRIPT_DOMAINS="${config['domains']:-${config['pki_default_domain']}}"
         export PKI_SCRIPT_SUBDOMAINS="${config['subdomains']:-${config['pki_default_subdomains']}}"
-        export PKI_SCRIPT_PRIVATE_KEY="$(get_absolute_path private/key.pem)"
 
-        export PKI_SCRIPT_DEFAULT_CRT="$(get_absolute_path default.crt)"
-        export PKI_SCRIPT_DEFAULT_KEY="$(get_absolute_path default.key)"
-        export PKI_SCRIPT_DEFAULT_PEM="$(get_absolute_path default.pem)"
+# FIXME: Redundancy! Why?
+        export PKI_SCRIPT_PRIVATE_KEY
+        PKI_SCRIPT_PRIVATE_KEY="$(get_absolute_path private/key.pem)"
 
-        local current_state=$(printf ",%s" "${state[@]:-}")
-        local current_state="${current_state:1}"
+        export PKI_SCRIPT_DEFAULT_CRT
+        export PKI_SCRIPT_DEFAULT_KEY
+        export PKI_SCRIPT_DEFAULT_PEM
+
+        PKI_SCRIPT_DEFAULT_CRT="$(get_absolute_path default.crt)"
+        PKI_SCRIPT_DEFAULT_KEY="$(get_absolute_path default.key)"
+        PKI_SCRIPT_DEFAULT_PEM="$(get_absolute_path default.pem)"
+
+        local current_state
+        current_state=$(printf ",%s" "${state[@]:-}")
+        current_state="${current_state:1}"
         export PKI_SCRIPT_STATE="${current_state}"
 
         test -x external/script || chmod ug+x external/script
@@ -477,7 +491,7 @@ update_symlink () {
 
         shift 1
 
-        for target in ${@} ; do
+        for target in "${@}" ; do
             if  [ -r "${target}" ] ; then
                 if [ -L "${symlink_target}" ] && [ "$(readlink "${symlink_target}")" == "${target}" ] ; then
                     break
@@ -530,6 +544,7 @@ challengePassword  = \${ENV::PKI_SESSION_TOKEN}
 EOF
         fi
 
+        # shellcheck disable=SC2129
         cat << EOF >> "${config_file}"
 
 [ req_dn ]
@@ -1741,31 +1756,35 @@ activate_new_files () {
         state+=("changed-certificate")
     fi
 
-    for rm_file in $(find public/ -maxdepth 1 -name '*.rm') ; do
+    while IFS= read -r -d '' rm_file
+    do
         rm -f "${rm_file/.rm/}" "${rm_file}"
         state+=("file-deletion")
-    done
+    done <   <(find public/ -maxdepth 1 -name '*.rm' -print0)
 
     if [ ! -r public/cert.pem ] && [ -e public/cert.pem.sig ] ; then
         rm -f public/cert.pem.sig
     fi
 
-    for new_file in $(find public/ -maxdepth 1 -name '*.tmp') ; do
+    while IFS= read -r -d '' new_file
+    do
         mv --force "${new_file}" "${new_file/.tmp/}"
         state+=("changed-public-file")
         state+=("file-change")
-    done
+    done <   <(find public/ -maxdepth 1 -name '*.tmp' -print0)
 
-    for rm_file in $(find private/ -maxdepth 1 -name '*.rm') ; do
+    while IFS= read -r -d '' rm_file
+    do
         rm -f "${rm_file/.rm/}" "${rm_file}"
         state+=("file-deletion")
-    done
+    done <   <(find private/ -maxdepth 1 -name '*.rm' -print0)
 
-    for new_file in $(find private/ -maxdepth 1 -name '*.tmp') ; do
+    while IFS= read -r -d '' new_file
+    do
         mv --force "${new_file}" "${new_file/.tmp/}"
         state+=("changed-private-file")
         state+=("file-change")
-    done
+    done <   <(find private/ -maxdepth 1 -name '*.tmp' -print0)
 
     update_file_signature public/cert.pem
     update_realm_symlinks
@@ -2319,12 +2338,12 @@ schedule_job () {
             echo "${script} run -n '${name}'" | batch > /dev/null 2>&1
         fi
     elif [ -n "${scheduler_type}" ] && [ "${scheduler_type}" = "sleep" ] ; then
-        ( sleep $(( ( $RANDOM % ${max_delay} ) + ${min_delay} )) ; ${script} run -n "${name}" ) &
+        ( sleep $(( ( RANDOM % max_delay ) + min_delay )) ; ${script} run -n "${name}" ) &
     else
         if type batch > /dev/null 2>&1 ; then
             echo "${script} run -n '${name}'" | batch > /dev/null 2>&1
         else
-            ( sleep $(( ( $RANDOM % ${max_delay} ) + ${min_delay} )) ; ${script} run -n "${name}" ) &
+            ( sleep $(( ( RANDOM % max_delay ) + min_delay )) ; ${script} run -n "${name}" ) &
         fi
     fi
 }
