@@ -389,12 +389,14 @@ lxc__apt_preferences__dependent_list:
   - package: '{{ lxc_kernel_package }}'
     backports: [ 'wheezy' ]
     reason: 'Bug in LXC + iptables recent module - https://bugzilla.netfilter.org/show_bug.cgi?id=759'
-    role: 'debops.lxc'
+    by_role: 'debops.lxc'
+    state: 'absent'
 
   - package: 'initramfs-tools'
     backports: [ 'wheezy' ]
     reason: 'Requred by newer Linux kernel installed by debops.lxc'
-    role: 'debops.lxc'
+    by_role: 'debops.lxc'
+    state: 'absent'
 
 
 # .. envvar:: lxc_network_forward
@@ -409,13 +411,13 @@ lxc__ferm__forward: True
 lxc__ferm__dependent_rules:
 
   - type: 'custom'
-    role: 'debops.lxc'
+    by_role: 'debops.lxc'
     filename: 'lxc_bootp_checksum'
     weight: '30'
     rule_state: 'absent'
 
   - type: 'custom'
-    role: 'debops.lxc'
+    by_role: 'debops.lxc'
     name: 'bootp_checksum'
     weight: '30'
     rules: |

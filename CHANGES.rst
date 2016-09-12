@@ -83,3 +83,5 @@ Removed
   separate default variables. These variables can be used by the Ansible
   playbooks to configure settings related to ``dnsmasq`` in other services.
   [ypid_]
+
+- Dropped ``debops.backporter`` usage and Debian Wheezy support. [ypid_]

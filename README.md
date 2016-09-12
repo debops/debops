@@ -8,13 +8,6 @@
 [![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops.lxc-660198.svg?style=flat)](https://galaxy.ansible.com/debops/lxc)
 
 
-The `debops.lxc` role can be used to configure and manage LXC environment on
-a host. Specifically, LXC 1.0 support will be installed on Ubuntu Trusty
-and Debian Jessie, for Debian Wheezy, LXC 1.0 package will be backported
-from Jessie using the `debops.backporter` role and Linux kernel from
-`wheezy-backports` will be installed for required kernel features (this
-will require a reboot of the host).
-
 You can use the `debops.lxc` role to create and manage Linux Containers with
 different configurations. These containers can be used on an external
 interface (DHCP server is recommended) or on an internal NAT interface
@@ -32,14 +25,9 @@ ansible-galaxy install debops.lxc
 ### Documentation
 
 More information about `debops.lxc` can be found in the
-[official debops.lxc documentation](https://docs.debops.org/en/latest/ansible/roles/debops.lxc.html).
+[official debops.lxc documentation](https://docs.debops.org/en/latest/ansible/roles/ansible-lxc/docs/).
 
 
-### Role dependencies
-
-- `debops.apt_preferences`
-- `debops.ferm`
-- `debops.backporter`
 
 ### Are you using this as a standalone role without DebOps?
 
@@ -55,7 +43,8 @@ into your playbook.
 
 ### Authors and license
 
-- Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
+- Maciej Delmanowski (maintainer) | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
+- [Robin Schneider](http://ypid.de/) | [e-mail](mailto:ypid@riseup.net) | [GitHub](https://github.com/ypid)
 
 License: [GPL-3.0](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
 
