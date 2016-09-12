@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: includes/all.rst
 
 
 # Custom local facts [[[
@@ -146,6 +148,32 @@ core__admin_blacklist_default_users:
 core__admin_blacklist_users: []
 
                                                                    # ]]]
+# .. envvar:: core__admin_public_email [[[
+#
+# List of public system administrator e-mail addresses. The addresses specified
+# here will be used as publicly visible admin contact information by the
+# Ansible roles that use them.
+#
+# This variable can be used as a final destination by the system MTA.
+core__admin_public_email: [ 'root@{{ core__domain }}' ]
+
+                                                                   # ]]]
+# .. envvar:: core__admin_private_email [[[
+#
+# List of private system administrator e-mail addresses. They will be used by
+# other Ansible roles to sent important system messages to the administrator.
+# These e-mail addresses are visible to all users on a given host, but should
+# not be visible from outside of a host.
+#
+# If none are specified, list of admin user accounts will be used instead. The
+# mail delivery to these accounts is left to the system MTA.
+#
+# This variable shouldn't be used as a final destination by the system MTA,
+# otherwise it might result in an undeliverable error. It can be used as an
+# alias.
+core__admin_private_email: []
+
+                                                                   # ]]]
 # .. envvar:: core__cache_valid_time [[[
 #
 # Time in seconds which specifies how long APT cache should be considered
@@ -268,14 +296,14 @@ core__root_sbin: '/usr/local/sbin'
                                                                    # ]]]
 # .. envvar:: core__root_share [[[
 #
-# Path where static data files should be stored, similar to ``/usr/share``.
+# Path where static data files should be stored, similar to :file:`/usr/share`.
 # Rarely used.
 core__root_share: '/usr/local/share'
 
                                                                    # ]]]
 # .. envvar:: core__root_src [[[
 #
-# Path where application sources (tarballs, ``git`` repositories) can be stored
+# Path where application sources (tarballs, :command:`git` repositories) can be stored
 # and operated on, usually in a separate subdirectory for each role or user.
 core__root_src: '/usr/local/src'
 
@@ -311,7 +339,7 @@ core__root_var: '/var/local'
                                                                    # ]]]
 # .. envvar:: core__root_home [[[
 #
-# Path where home directories of local system accounts are stored (``/home`` is
+# Path where home directories of local system accounts are stored (:file:`/home` is
 # reserved for regular users and home directories of users stored in remote
 # databases like LDAP).
 core__root_home: '/var/local'

@@ -1,18 +1,32 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 **debops.core**
 
-This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer is drybjed.
+The current role maintainer_ is drybjed.
 
 
 `debops.core master`_ - unreleased
 ----------------------------------
 
-.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.3...master
+.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.4...master
+
+
+`debops.core v0.2.4`_ - 2016-09-12
+----------------------------------
+
+.. _debops.core v0.2.4: https://github.com/debops/ansible-core/compare/v0.2.3...v0.2.4
+
+Added
+~~~~~
+
+- Add lists of public and private system administrator email addresses, usable
+  by other roles through Ansible local facts. [drybjed_]
 
 
 `debops.core v0.2.3`_ - 2016-08-29
@@ -23,7 +37,7 @@ The current role maintainer is drybjed.
 Added
 ~~~~~
 
-- Add custom local facts that define OS distribution and release. [drybjed]
+- Add custom local facts that define OS distribution and release. [drybjed_]
 
 
 `debops.core v0.2.2`_ - 2016-08-14
@@ -35,10 +49,10 @@ Changed
 ~~~~~~~
 
 - The ``core.fact`` Python script now parses JSON Ansible output instead of
-  setting it in a variable directly. [drybjed]
+  setting it in a variable directly. [drybjed_]
 
 - Refactor ``admin_users`` variable in the ``core.fact`` Python script.
-  [drybjed]
+  [drybjed_]
 
 
 `debops.core v0.2.1`_ - 2016-08-13
@@ -51,29 +65,29 @@ Added
 
 - Add list of system administrator groups and user accounts exposed as local
   Ansible facts. This can be used by other roles to automatically create admin
-  accounts in services. [drybjed]
+  accounts in services. [drybjed_]
 
 - Add ``cache`` and ``spool`` directories to list of common directories used by
-  roles. They point to ``/var/cache`` and ``/var/spool`` directories by
-  default. [drybjed]
+  roles. They point to :file:`/var/cache` and :file:`/var/spool` directories by
+  default. [drybjed_]
 
 - The ``debops_service_core`` inventory group can be used to enable the
-  ``debops.core`` role without the rest of the playbook. [drybjed]
+  ``debops.core`` role without the rest of the playbook. [drybjed_]
 
 - Add facts for the host domain and FQDN. This will allow for a centralized
   configuration of these parameters in the future for roles that use them.
-  [drybjed]
+  [drybjed_]
 
 Changed
 ~~~~~~~
 
 - The ``core.fact`` has been changed from a static file to a Python script to
-  make it more dynamic. [drybjed]
+  make it more dynamic. [drybjed_]
 
-- Move the ``apt`` installation task to the top of the task list and change it
+- Move the :command:`apt` installation task to the top of the task list and change it
   to the ``package`` module to make the role more portable. Role will not
   update the package list anymore, but it's expected to be done by the
-  bootstrapping infrastructure before the first playbook execution. [drybjed]
+  bootstrapping infrastructure before the first playbook execution. [drybjed_]
 
 
 `debops.core v0.2.0`_ - 2016-07-19
@@ -84,10 +98,10 @@ Changed
 Changed
 ~~~~~~~
 
-- Update documentation and Changelog. [drybjed]
+- Update documentation and Changelog. [drybjed_]
 
 - Rename all role variables from ``core_*`` to ``core__*`` to move them into
-  their own namespace. [drybjed]
+  their own namespace. [drybjed_]
 
 
 `debops.core v0.1.4`_ - 2016-02-08
@@ -99,12 +113,12 @@ Added
 ~~~~~
 
 - Add a note about IP addresses of Ansible Controller and ``become`` setting in
-  inventory. [drybjed]
+  inventory. [drybjed_]
 
 Fixed
 ~~~~~
 
-- Fix deprecation warnings in Ansible 2.1.0. [drybjed]
+- Fix deprecation warnings in Ansible 2.1.0. [drybjed_]
 
 
 `debops.core v0.1.3`_ - 2015-12-17
@@ -116,7 +130,7 @@ Changed
 ~~~~~~~
 
 - Gather local facts if they changed, in case the role is used in a play with
-  other roles. [drybjed]
+  other roles. [drybjed_]
 
 
 `debops.core v0.1.2`_ - 2015-10-19
@@ -128,7 +142,7 @@ Added
 ~~~~~
 
 - Add a ``core_active_controller`` variable which specifies IP address of
-  active Ansible Controller. [drybjed]
+  active Ansible Controller. [drybjed_]
 
 
 `debops.core v0.1.1`_ - 2015-08-22
@@ -139,8 +153,8 @@ Added
 Added
 ~~~~~
 
-- Add script to gather information from ``/etc/resolv.conf``, available in the
-  Ansible Facts as ``ansible_local.resolver.*``. [drybjed]
+- Add script to gather information from :file:`/etc/resolv.conf`, available in the
+  Ansible Facts as ``ansible_local.resolver.*``. [drybjed_]
 
 debops.core v0.1.0 - 2015-08-22
 -------------------------------
@@ -148,4 +162,4 @@ debops.core v0.1.0 - 2015-08-22
 Added
 ~~~~~
 
-- Initial release. [drybjed]
+- Initial release. [drybjed_]
