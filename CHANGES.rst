@@ -78,6 +78,8 @@ Changed
 
 - Update the debops.redis_ playbook to the new version. [drybjed_]
 
+- Update the debops.dnsmasq_ playbook to the new version. [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 
