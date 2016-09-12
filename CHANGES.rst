@@ -17,7 +17,7 @@ The current role maintainer_ is drybjed.
 .. _debops.apt_listchanges master: https://github.com/debops/ansible-apt_listchanges/compare/v0.1.0...master
 
 
-debops.apt_listchanges v0.1.0 - 2016-09-10
+debops.apt_listchanges v0.1.0 - 2016-09-12
 ------------------------------------------
 
 Added
