@@ -23,7 +23,7 @@ To request and renew ACME certificates, a host needs to meet several
 requirements enforced by this Ansible role:
 
 - A webserver configured to handle ACME challenges needs to be installed on the
-  host (currently this role supports only "webroot" challenges). The
+  host (currently this role supports only ``http-01`` challenges). The
   debops.nginx_ role configures ACME support for all servers by default when
   other conditions are met.
 
@@ -159,22 +159,18 @@ automatically.
 Certificate for subdomains excluding the apex domain
 ----------------------------------------------------
 
-Yes, it's possible :-) Please consult the example and create your own similar
-configuration. In the example we create a certificate for the ``logs.example.com``
-and ``mon.example.com`` subdomains, which does not include the ``example.com``
-apex domain. Please notice that the PKI realm does not contain your full domain
-name. This is crucial.
+Please consult the example and create your own similar configuration. In the
+example we create a certificate for the ``logs.example.com`` and
+``mon.example.com`` subdomains, which does not include the ``example.com`` apex
+domain.
 
 .. code-block:: yaml
 
     pki_realms:
-        # Do not include the full domain name here!
-      - name: 'example'
+      - name: 'logs.example.com'
         acme: True
         acme_default_subdomains: []
-        acme_subject: [ 'cn=logs.example.com' ]
         acme_domains: [ 'logs.example.com', 'mon.example.com' ]
-        domains: [ 'logs.example.com', 'mon.example.com' ]
         # acme_ca: 'le-staging'
 
 For testing it's strongly advised to uncomment ``acme_ca`` with ``le-staging``

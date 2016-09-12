@@ -83,4 +83,3 @@ special ``debops.pki/env`` role provided within the main role.
 
 .. literalinclude:: playbooks/pki.yml
    :language: yaml
-
