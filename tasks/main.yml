@@ -1,0 +1,34 @@
+---
+
+- name: Manage APT packages
+  package:
+    name: '{{ item }}'
+    state: '{{ apt_listchanges__deploy_state }}'
+    purge: True
+  with_flattened:
+    - '{{ apt_listchanges__base_packages }}'
+    - '{{ apt_listchanges__packages }}'
+
+- name: Configure apt-listchanges
+  template:
+    src: 'etc/apt/listchanges.conf.j2'
+    dest: '/etc/apt/listchanges.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: apt_listchanges__deploy_state == 'present'
+
+- name: Make sure that Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save apt-listchanges facts
+  template:
+    src: 'etc/ansible/facts.d/apt_listchanges.fact.j2'
+    dest: '/etc/ansible/facts.d/apt_listchanges.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
