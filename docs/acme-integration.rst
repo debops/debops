@@ -156,11 +156,33 @@ configuration active, it will check for validity of the certificate, and
 about a month before the expiration date it will try to renew the certificate
 automatically.
 
-Certificate for subdomains excluding the apex domain
-----------------------------------------------------
+Example: Certificate for apex domain and subdomains
+---------------------------------------------------
 
-Please consult the example and create your own similar configuration. In the
-example we create a certificate for the ``logs.example.com`` and
+In this example a X.509 certificate for the apex domain ``example.com`` is
+going to be issued. The certificate will also be valid for the subdomains
+``www.example.com``, ``blog.example.com`` and ``mail.example.com`` which are
+included into the certificate as `Subject Alternative Names`_.
+
+.. code-block:: yaml
+
+    pki_realms:
+      - name: 'example.com'
+        acme: True
+        acme_subdomains: [ 'www', 'blog', 'mail' ]
+        # acme_ca: 'le-staging'
+
+For testing it's strongly advised to uncomment ``acme_ca`` with ``le-staging``
+to use the staging environment of Let's Encrypt. It does not create a trusted
+certificate and allows you to avoid problems with the rate limits in the
+production environment. When you are sure that everything works correctly,
+comment the staging environment out again to get yourself a valid and trusted
+X.509 certificate.
+
+Example: Certificate for subdomains excluding the apex domain
+-------------------------------------------------------------
+
+In the example we create a certificate for the ``logs.example.com`` and
 ``mon.example.com`` subdomains, which does not include the ``example.com`` apex
 domain.
 
@@ -172,12 +194,6 @@ domain.
         acme_default_subdomains: []
         acme_domains: [ 'logs.example.com', 'mon.example.com' ]
         # acme_ca: 'le-staging'
-
-For testing it's strongly advised to uncomment ``acme_ca`` with ``le-staging``
-to use the staging environment of Let's Encrypt. It does not create a trusted
-certificate and allows you to avoid problems with the rate limits in the
-production environment. When you are sure that everything works correctly,
-comment the staging environment back.
 
 ACME configuration variables
 ----------------------------
