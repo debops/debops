@@ -1,6 +1,8 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
 
@@ -28,7 +30,7 @@ taken into account are:
   way;
 
 If the above conditions are not met, ``debops.ifupdown`` will select one of
-the available network configurations in the ``vars/`` directory based on the condition it
+the available network configurations in the :file:`vars/` directory based on the condition it
 detects. The basic network configuration is designed to configure one or two
 network interfaces (public network and private network), each one with their
 own bridge, getting the required configuration via DHCP requests. If an LXC
@@ -118,6 +120,5 @@ And then, in each host inventory, set its specific index::
 
 Above configuration can be seen as crude implementation of DHCP using
 semi-automatic incrementing IP addresses. Setting up proper DHCP server, for
-example with ``debops.dnsmasq`` or ``debops.dhcpd`` might be easier and more
+example with debops.dnsmasq_ or debops.dhcpd_ might be easier and more
 beneficial in the long run.
-

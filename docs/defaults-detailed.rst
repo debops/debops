@@ -1,5 +1,5 @@
-Default variables: configuration
-================================
+Default variable details
+========================
 
 Some of ``debops.ifupdown`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
@@ -23,7 +23,9 @@ you can read about it on the Debian Wiki `NetworkConfiguration`_ page.
 Each interface definition requires at least the ``iface`` parameter. Other
 parameters are (mostly) optional and usually change how the network interface
 is configured. For example, to specify that a given interface is a bridge, you
-need to select a specific type::
+need to select a specific type:
+
+.. code-block:: yaml
 
     - iface: 'br0'
       type: 'bridge'
@@ -50,6 +52,8 @@ List of interface parameters
 ``enabled``
   Boolean variable (``True``/``False``). If present, the interface configuration
   can be generated or not depending on a variable, for example::
+
+  .. code-block:: yaml
 
       - iface: 'br2'
         enabled: '{{ interface_active | bool }}'
@@ -165,10 +169,9 @@ List of interface parameters
 Example interface configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Configuration examples can be found in the ``var/`` directory of the
+Configuration examples can be found in the :file:`var/` directory of the
 ``debops.ifupdown`` role, or `on GitHub`_. If you want to use them as a base
 for your own configuration, add them to the ``ifupdown_interfaces`` list in Ansible’s
 inventory, so they can override the defaults.
 
 .. _on GitHub: https://github.com/debops/ansible-ifupdown/tree/master/vars
-

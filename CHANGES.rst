@@ -1,6 +1,8 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 v0.2.5
 ------
 
@@ -9,25 +11,25 @@ v0.2.5
 - Fix an issue with ``systemd`` ``network-online.target`` on Debian where it
   starts at the same time as ``network.target``, and doesn't wait for
   ``ifupdown`` scripts to finish network configuration. More details:
-  https://unix.stackexchange.com/q/209832 [drybjed]
+  https://unix.stackexchange.com/q/209832 [drybjed_]
 
 - Fixed Ansible check mode related to the ``ifup-wait-all-auto`` ``systemd``
-  service might not being defined. [ypid]
+  service might not being defined. [ypid_]
 
-- Use relative paths with ``with_first_found`` lookup. [drybjed]
+- Use relative paths with ``with_first_found`` lookup. [drybjed_]
 
 v0.2.4
 ------
 
 *Released: 2016-02-11*
 
-- Fix deprecation warnings on Ansible 2.1.0. [drybjed]
+- Fix deprecation warnings on Ansible 2.1.0. [drybjed_]
 
-- The ``item.delete`` parameter will be now tested as a boolean. [drybjed]
+- The ``item.delete`` parameter will be now tested as a boolean. [drybjed_]
 
 - Rename the ``ifupdown`` variable to ``ifupdown_enabled`` and move the POSIX
   capability detection to default variables. You might need to update inventory
-  if you disabled ``debops.ifupdown`` role. [drybjed]
+  if you disabled ``debops.ifupdown`` role. [drybjed_]
 
 v0.2.3
 ------
@@ -35,15 +37,15 @@ v0.2.3
 *Released: 2015-11-24*
 
 - Fix issues during Ansible ``--check`` mode, role should no longer stop due to
-  not existing dictionary keys. [drybjed]
+  not existing dictionary keys. [drybjed_]
 
 - Fix an issue where Jinja templating of the ``ifupdown`` variable resulted in
-  a new line character added in Ansible v2. [drybjed]
+  a new line character added in Ansible v2. [drybjed_]
 
 - Ignore comment lines while checking if static network configuration is
-  present. [drybjed]
+  present. [drybjed_]
 
-- Updated documentation and fixed spelling. [ypid]
+- Updated documentation and fixed spelling. [ypid_]
 
 - Add ``ifupdown_interface_weight_map`` variable.
 
@@ -69,10 +71,10 @@ v0.2.3
   Because bridges will be restarted, any external interfaces connected to them
   will be dropped. That means that virtual machines and containers will lose
   the network connection permanently. Restarting the afftected virtual machines
-  and containers should bring everything back to normal. [drybjed]
+  and containers should bring everything back to normal. [drybjed_]
 
 - Add a way to set custom comments for each interface using dictionary maps.
-  [drybjed]
+  [drybjed_]
 
 - Add a way to prevent modification of live interfaces.
 
@@ -81,7 +83,7 @@ v0.2.3
   configure the interfaces in :file:`/etc/network/interfaces`. This is useful on
   a production server with virtual machines or containers running, since it
   prevents modification to network bridges which requires restart of the
-  network interfaces and may drop the existing bridge layout. [drybjed]
+  network interfaces and may drop the existing bridge layout. [drybjed_]
 
 v0.2.2
 ------
@@ -92,7 +94,7 @@ v0.2.2
   installed. [le9i0nx]
 
 - Make sure that Ansible does not stop if a variable is undefined. This change
-  fixes issues with the missing variables in Ansible v2. [drybjed]
+  fixes issues with the missing variables in Ansible v2. [drybjed_]
 
 v0.2.1
 ------
@@ -102,7 +104,7 @@ v0.2.1
 - Add a text block variable with options for bridge interfaces which becomes
   active when user does not specify any options for that bridge. By default
   these options will set forward delay to ``0`` to make DHCP queries work
-  correctly on virtual machine boot. [drybjed]
+  correctly on virtual machine boot. [drybjed_]
 
 v0.2.0
 ------
@@ -110,23 +112,23 @@ v0.2.0
 *Released: 2015-05-30*
 
 - Expose path to reconfiguration script in a default variable, so that it can
-  be changed if needed. [drybjed]
+  be changed if needed. [drybjed_]
 
 - Add variable with list of APT packages to install and automatically install
   certain packages depending on what interface types are present in the
-  configuration. [drybjed]
+  configuration. [drybjed_]
 
 - Add an option to ignore "static" configuration in
-  :file:`/etc/network/interfaces`. [drybjed]
+  :file:`/etc/network/interfaces`. [drybjed_]
 
 - Change reconfiguration script ``logger`` command to not cut the emitted
-  string after first variable. And it looks cleaner now. [drybjed]
+  string after first variable. And it looks cleaner now. [drybjed_]
 
 - Interface configuration overhaul.
 
   Most changes are related to configuration templates. Instead of having
   duplicate configuration in each of the templates, most of the configuration
-  is now in ``interface.j2`` template; other templates extend this one.
+  is now in :file:`interface.j2` template; other templates extend this one.
 
   ``item.aliases`` list has been removed. Instead, there's now new parameter,
   ``item.addresses``. This is a list of IP addresses in the ``host/prefix``
@@ -145,7 +147,7 @@ v0.2.0
         'br0': [ '192.0.2.0/24', '2001:db8:dead:beef::1/64' ]
 
   List of possible dict variables will be added in the documentation in
-  a separate commit. [drybjed]
+  a separate commit. [drybjed_]
 
 v0.1.2
 ------
@@ -153,15 +155,15 @@ v0.1.2
 *Released: 2015-05-24*
 
 - Check first argument in the delayed ifup script, if it's ``false``, specified
-  interface won't be brought up at all. [drybjed]
+  interface won't be brought up at all. [drybjed_]
 
 - Remove management if ``ifup@.service`` unit symlinks for configured
   interfaces. ``ifupdown`` and :file:`/etc/init.d/networking` scripts work just
-  fine without them present. [drybjed]
+  fine without them present. [drybjed_]
 
 - Split ``interface_enabled`` list into two to better track what types of
   interfaces are enabled. Additionally, send list of configured interfaces to
-  the syslog for debugging purposes. [drybjed]
+  the syslog for debugging purposes. [drybjed_]
 
 - Add ``item.port_active`` parameter to bridge configuration.
 
@@ -171,12 +173,12 @@ v0.1.2
 
   This helps mitigate an issue where bridge with DHCP configuration is
   constantly running :program:`dhclient` when its main interface is not connected to
-  the network. [drybjed]
+  the network. [drybjed_]
 
 - Add a way to postpone interface configuration entirely using a separate
   temporary script, with optional pre- and post- commands. This script will be
   run at the end of the current play, or can be executed independently.
-  [drybjed]
+  [drybjed_]
 
 v0.1.1
 ------
@@ -186,7 +188,7 @@ v0.1.1
 - Add ``item.port_present`` parameter in bridge configuration. It can be used
   to enable or disable specific bridge interface depending on presence of
   a given network interface in ``ansible_interfaces`` list, but does not affect
-  the configuration of the bridge itself. [drybjed]
+  the configuration of the bridge itself. [drybjed_]
 
 - Clean up ``allow-auto`` and ``allow-hotplug`` options in interface
   configuration. By default both of these parameters will be added
@@ -195,10 +197,10 @@ v0.1.1
 
   This tells the system to start the interfaces at boot time, as well as allows
   to control specific interfaces by the hotplug events using ``ifup`` and
-  ``ifdown`` commands or ``ifup@.service`` under ``systemd``. [drybjed]
+  ``ifdown`` commands or ``ifup@.service`` under ``systemd``. [drybjed_]
 
 - Add IPv6 SLAAC configuration on all default interfaces; this is required on
-  Debian Jessie to enable IPv6 address autoconfiguration.  [drybjed]
+  Debian Jessie to enable IPv6 address autoconfiguration.  [drybjed_]
 
 - Rewrite network interface configuration logic.
 
@@ -219,7 +221,7 @@ v0.1.1
   :file:`/etc/network/interfaces.d/` directory and then start only enabled
   interfaces using ``ifup`` command or ``ifup@.service`` systemd service. Only
   network interfaces which have been modified will be enabled/disabled on
-  subsequent runs. [drybjed]
+  subsequent runs. [drybjed_]
 
 - Add a way to delay activation of specific network interface.
 
@@ -229,12 +231,12 @@ v0.1.1
   prepared by ``debops.ifupdown`` in a known location to start the interface.
 
   This option is enabled by adding ``item.auto_ifup: False`` to interface
-  configuration. [drybjed]
+  configuration. [drybjed_]
 
 v0.1.0
 ------
 
 *Released: 2015-04-20*
 
-- First release, add Changelog. [drybjed]
+- First release, add Changelog. [drybjed_]
 
