@@ -38,8 +38,8 @@ Added
 - Don’t forward reserved or private top level DNS names to upstream DNS
   servers. [ypid_]
 
-- Add ``dnsmasq__dns_not_forward_managed`` to allow to change how the
-  ``dnsmasq__domain`` is handled. [ypid_]
+- Add :envvar:`dnsmasq__dns_not_forward_managed` to allow to change how the
+  :envvar:`dnsmasq__domain` is handled. [ypid_]
 
 Changed
 ~~~~~~~
