@@ -4,6 +4,8 @@ Getting started
 .. contents::
    :local:
 
+.. include:: includes/all.rst
+
 Example inventory
 -----------------
 
@@ -51,7 +53,7 @@ Here's an example playbook which uses ``debops.preseed`` role::
 How to use Debian Preseed configuration
 ---------------------------------------
 
-``debops.preseed`` will use ``debops.nginx`` role to set up a webserver for the
+``debops.preseed`` will use debops.nginx_ role to set up a webserver for the
 Preseed files. They will be served on a separate subdomain, by default
 ``seed``. The FQDN given the ``example.org`` domain will be for example::
 
@@ -95,7 +97,7 @@ virtual machines, which usually have 1 partition stored in an image file or
 a block device.
 
 If you are not able to add `*.seed` to your DNS, you might use
-``preseed__base_domain`` to make the server listen on a hostname
+:envvar:`preseed__base_domain` to make the server listen on a hostname
 available via DNS. For this case the boot command line in Debian
 Installer would require a different URL, like in this example (for
 jessie)::
