@@ -8,10 +8,9 @@
     value: '{{ "yes" if ferm__enabled|bool else "no" }}'
 
 - name: Ensure ferm is installed
-  apt:
+  package:
     name: '{{ item }}'
     state: 'present'
-    install_recommends: 'no'
   with_flattened:
     - '{{ ferm__base_packages }}'
     - '{{ ferm__packages }}'
@@ -71,7 +70,7 @@
 
 - name: Remove ip(6)tables rules if requested
   file:
-    path: '/etc/ferm/ferm.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d(ferm__default_weight)) }}_{{ item.filename | d(((item.role + "_" + ((item.role_weight + "_") if item.role_weight|d() else "")) if item.role|d() else "") + item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    dest: '/etc/ferm/ferm.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d(ferm__default_weight)) }}_{{ item.filename | d((((item.by_role|d(item.role)| replace(".", "_"))  + "_" + ((item.role_weight + "_") if item.role_weight|d() else "")) if (item.by_role|d(item.role)|d()) else "") + item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
     - '{{ ferm_rules           | d([]) | list }}'
@@ -93,7 +92,7 @@
 - name: Configure ip(6)tables rules
   template:
     src: 'etc/ferm/ferm.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/ferm.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d(ferm__default_weight)) }}_{{ item.filename | d(((item.role + "_" + ((item.role_weight + "_") if item.role_weight|d() else "")) if item.role|d() else "") + item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    dest: '/etc/ferm/ferm.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d(ferm__default_weight)) }}_{{ item.filename | d((((item.by_role|d(item.role)| replace(".", "_"))  + "_" + ((item.role_weight + "_") if item.role_weight|d() else "")) if (item.by_role|d(item.role)|d()) else "") + item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
@@ -213,4 +212,3 @@
     group: 'root'
     mode: '0644'
   tags: [ 'role::ferm:rules' ]
-

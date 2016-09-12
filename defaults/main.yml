@@ -5,6 +5,9 @@
 # .. contents:: Sections
 #    :local:
 #
+# .. include:: includes/all.rst
+
+
 # .. ferm configuration (((
 #
 # ----------------------
@@ -69,9 +72,9 @@ ferm__domains: [ 'ip', 'ip6' ]
 # Remember to specify IP address from the remote host point of view.
 # Format: "IP address/netmask", for example: '192.168.1.1/32'.
 #
-# .. note:: If you are using ``debops.tcpwrappers`` too (or the DebOps playbook),
+# .. note:: If you are using debops.tcpwrappers_ too (or the DebOps playbook),
 #    mind setting its own Ansible Controllers variable as well. An easier
-#    way would be to use the ``debops.sshd`` role to configure ssh service.
+#    way would be to use the debops.sshd_ role to configure ssh service.
 #
 ferm__ansible_controllers: []
 
@@ -281,32 +284,31 @@ ferm__dependent_rules: []
 
 # .. envvar:: ferm_input_list
 #
-# List of iptables INPUT rules to manage. See :ref:`ferm__ref_input_list` for more
-# details. This is a legacy variable and shouldn't be used.
+# This is a legacy variable and shouldn't be used! List of iptables INPUT rules
+# to manage. See :ref:`ferm__ref_input_list` for more details.
 ferm_input_list: []
 
 
 # .. envvar:: ferm_input_group_list
 #
-# List of iptables INPUT rules to manage for a host group. See
-# :ref:`ferm__ref_input_list` for more details. This is a legacy variable and
-# shouldn't be used.
+# This is a legacy variable and shouldn't be used! List of iptables INPUT rules
+# to manage for a host group. See :ref:`ferm__ref_input_list` for more details.
 ferm_input_group_list: []
 
 
 # .. envvar:: ferm_input_host_list
 #
-# List of iptables INPUT rules to manage for an individual host. See
-# :ref:`ferm__ref_input_list` for more details. This is a legacy variable and
-# shouldn't be used.
+# This is a legacy variable and shouldn't be used! List of iptables INPUT rules
+# to manage for an individual host. See :ref:`ferm__ref_input_list` for more
+# details.
 ferm_input_host_list: []
 
 
 # .. envvar:: ferm_input_dependent_list
 #
-# List of iptables INPUT rules to manage in dependency to other rules. See
-# :ref:`ferm__ref_input_list` for more details. This is a legacy variable and
-# shouldn't be used.
+# This is a legacy variable and shouldn't be used! List of iptables INPUT rules
+# to manage in dependency to other rules. See :ref:`ferm__ref_input_list` for
+# more details.
 ferm_input_dependent_list: []
 
 
@@ -347,6 +349,7 @@ ferm__default_rules: '{{ ferm__rules_default_policy +
                          ferm__rules_filter_conntrack +
                          ferm__rules_filter_syn +
                          ferm__rules_filter_recent_badguys +
+                         ferm__rules_accept_dhcpv6_client +
                          ferm__rules_filter_include_legacy +
                          ferm__rules_filter_recent_scanners +
                          ferm__rules_filter_reject_all +
@@ -529,6 +532,31 @@ ferm__rules_filter_recent_badguys:
     recent_log: False
 
 
+# .. envvar:: ferm__rules_accept_dhcpv6_client
+#
+# Allow DHCPv6 responses.
+#
+# Related to:
+#
+# * https://serverfault.com/questions/513772/getting-an-ip-from-an-ipv6-dhcp-server
+# * https://bugzilla.redhat.com/show_bug.cgi?id=656334
+# * https://bugzilla.redhat.com/show_bug.cgi?id=591630
+#
+ferm__rules_accept_dhcpv6_client:
+
+  - type: 'accept'
+    weight: '50'
+    weight_class: 'any-service'
+    filename: 'dhcpv6-client'
+    comment: 'DHCPv6 responses seem to be neither RELATED nor ESTABLISHED.'
+    domain: [ 'ip6' ]
+    saddr: [ 'fe80::/10' ]
+    daddr: [ 'fe80::/10' ]
+    protocol: [ 'udp' ]
+    sport: [ 'dhcpv6-server' ]
+    dport: [ 'dhcpv6-client' ]
+
+
 # .. envvar:: ferm__rules_filter_include_legacy
 #
 # Include rules from legacy ferm directory.
@@ -592,30 +620,32 @@ ferm__rules_forward:
 
   - chain: 'FORWARD'
     type: 'accept'
-    interface_present: '{{ ferm__external_interfaces }}'
+    interface_present: '{{ ferm__external_interfaces | unique }}'
     weight: '10'
     role: 'forward'
     role_weight: '10'
     name: 'external_in'
     comment: 'Forward incoming traffic to other hosts'
     rule_state: '{{ "present" if (
-                      (ferm__forward|d(ferm_forward) | bool) or
-                      (ansible_local|d() and ansible_local.ferm|d() and
-                       ansible_local.ferm.forward | bool))
+                      ferm__forward_accept|bool and (
+                        (ferm__forward|d(ferm_forward) | bool) or
+                        (ansible_local|d() and ansible_local.ferm|d() and
+                         ansible_local.ferm.forward | bool)))
                      else "absent" }}'
 
   - chain: 'FORWARD'
     type: 'accept'
-    outerface_present: '{{ ferm__external_interfaces }}'
+    outerface_present: '{{ ferm__external_interfaces | unique }}'
     weight: '10'
     role: 'forward'
     role_weight: '20'
     name: 'external_out'
     comment: 'Forward outgoing traffic to other hosts'
     rule_state: '{{ "present" if (
-                      (ferm__forward|d(ferm_forward) | bool) or
-                      (ansible_local|d() and ansible_local.ferm|d() and
-                       ansible_local.ferm.forward | bool))
+                      ferm__forward_accept|bool and (
+                        (ferm__forward|d(ferm_forward) | bool) or
+                        (ansible_local|d() and ansible_local.ferm|d() and
+                         ansible_local.ferm.forward | bool)))
                      else "absent" }}'
 
   - chain: 'FORWARD'
@@ -628,9 +658,10 @@ ferm__rules_forward:
     name: 'internal'
     comment: 'Forward internal traffic between hosts'
     rule_state: '{{ "present" if (
-                      (ferm__forward|d(ferm_forward) | bool) or
-                      (ansible_local|d() and ansible_local.ferm|d() and
-                       ansible_local.ferm.forward | bool))
+                      ferm__forward_accept|bool and (
+                        (ferm__forward|d(ferm_forward) | bool) or
+                        (ansible_local|d() and ansible_local.ferm|d() and
+                         ansible_local.ferm.forward | bool)))
                      else "absent" }}'
 
 
@@ -664,10 +695,18 @@ ferm__fail2ban: True
 
 # .. envvar:: ferm__forward
 #
-# Enable forwarding in :command:`ip(6)tables`. This option can be used by other roles and
-# it's status is saved in Ansible local facts, which will override variable
-# status from role defaults or inventory.
+# Enable forwarding in :command:`ip(6)tables`. This option can be used by other
+# roles and it's status is saved in Ansible local facts, which will override
+# variable status from role defaults or inventory.
 ferm__forward: False
+
+
+# .. envvar:: ferm__forward_accept
+#
+# Should traffic be forwarded between the other hosts/containers if
+# :envvar:`ferm__forward` is ``True``?
+# Refer to :envvar:`ferm__rules_forward` for details.
+ferm__forward_accept: False
 
 
 # .. envvar:: ferm__external_interfaces

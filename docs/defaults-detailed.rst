@@ -1,5 +1,7 @@
-Default variables: configuration
-================================
+Default variable details
+========================
+
+.. include:: includes/all.rst
 
 Some of ``debops.ferm`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
@@ -25,7 +27,7 @@ set. The same format is also used for :envvar:`ferm_input_group_list`,
 defined as a YAML dict with the following keys:
 
 ``type``
-  Name of template file to use, required. Format: ``<type>.conf.j2``
+  Name of template file to use, required. Format: :file:`<type>.conf.j2`
 
 ``dport``
   List of destination ports to manage, required.
@@ -39,9 +41,10 @@ defined as a YAML dict with the following keys:
 ``filename``
   Optional. Custom filename instead of a generated one
 
-``delete``
-  Optional. Delete specified rule file. Possible values: ``False`` or ``True``
+``rule_state``
+  Optional. State of the rule. Defaults to ``present``. Possible values:
+  ``present`` or ``absent``
 
 Depending on the chosen type, many additional variables are supported. Please
-check the template files located in the :file:`templates/etc/ferm/filter-input.d/`
+check the template files located in the :file:`templates/etc/ferm/ferm.d`
 directory.

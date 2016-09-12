@@ -9,7 +9,7 @@ Ansible role: debops.ferm
    introduction
    getting-started
    defaults
-   defaults-configuration
+   defaults-detailed
    rules
    guides
    copyright
