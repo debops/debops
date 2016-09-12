@@ -12,7 +12,19 @@ The current role maintainer is drybjed.
 `debops.core master`_ - unreleased
 ----------------------------------
 
-.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.3...master
+.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.4...master
+
+
+`debops.core v0.2.4`_ - 2016-09-12
+----------------------------------
+
+.. _debops.core v0.2.4: https://github.com/debops/ansible-core/compare/v0.2.3...v0.2.4
+
+Added
+~~~~~
+
+- Add lists of public and private system administrator email addresses, usable
+  by other roles through Ansible local facts. [drybjed]
 
 
 `debops.core v0.2.3`_ - 2016-08-29
