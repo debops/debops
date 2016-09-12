@@ -252,7 +252,7 @@ samba__default_shares:
 # Configuration for :command:`iptables` firewall managed by :program:`ferm`.
 samba__ferm__dependent_rules:
 
-  - type: 'dport_accept'
+  - type: 'accept'
     protocol: [ 'udp' ]
     dport: [ 'netbios-ns', 'netbios-dgm' ]
     saddr: '{{ samba__allow }}'
@@ -261,7 +261,7 @@ samba__ferm__dependent_rules:
     delete: '{{ "samba" not in samba__base_packages }}'
     weight: '50'
 
-  - type: 'dport_accept'
+  - type: 'accept'
     protocol: [ 'tcp' ]
     dport: [ 'netbios-ssn', 'microsoft-ds' ]
     saddr: '{{ samba__allow }}'
