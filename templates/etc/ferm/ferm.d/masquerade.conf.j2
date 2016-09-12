@@ -1,0 +1,39 @@
+# {{ ansible_managed }}
+
+{#
+  marsquerade - add masquerading rules
+
+List of parameters:
+
+Required:
+  item.outerface          Public interface to Masquerade the forwarding network
+
+#}
+{# Rule arguments #}
+{# ============== #}
+{% set ferm_tpl_outerface = [] %}
+{% if item.outerface is defined and item.outerface %}
+{% if item.outerface is string %}
+{% set _ = ferm_tpl_outerface.append(item.outerface) %}
+{% else %}
+{% set ferm_tpl_outerface = item.outerface %}
+{% endif %}
+{% endif %}
+{# Main template #}
+{# ============= #}
+{% if item.comment|d() %}
+# {{ item.comment }}
+
+{% endif %}
+
+{% if ferm_tpl_outerface %}
+table nat {
+	chain POSTROUTING {
+		outerface {{ ferm_tpl_outerface | unique | join(" ") }} MASQUERADE;	
+	}
+}
+
+{% else %}
+# Cannot configure DMZ, public or private IP addresses not specified
+{% endif %}
+
