@@ -107,16 +107,18 @@ external interface to an internal host. Technically this is called DNAT
 address of a network packet is rewritten to the internal host address.
 
 * To forward the HTTP port from the gateway to the internal host, a rule such as
-  the following is required::
+  the following is required:
 
-    ferm__host_rules:
-      - type: 'dmz'
-        name: 'http-forward'
-        domain: [ 'ip' ]
-        public_ip: '{{ ansible_eth0.ipv4.address }}'
-        private_ip: '{{ lookup("dig", "web.internal.example.com") }}'
-        protocol: 'tcp'
-        ports: [ 80 ]
+.. code-block:: yaml
+
+   ferm__host_rules:
+     - type: 'dmz'
+       name: 'http-forward'
+       domain: [ 'ip' ]
+       public_ip: '{{ ansible_eth0.ipv4.address }}'
+       private_ip: '{{ lookup("dig", "web.internal.example.com") }}'
+       protocol: 'tcp'
+       ports: [ 80 ]
 
 .. topic:: Note
 
@@ -124,7 +126,7 @@ address of a network packet is rewritten to the internal host address.
     forwarded packet. This means that the original source address can still be
     identified at the internal receiver, however the route leading back to the
     source address must traverse the gateway again in order to successfully
-    establish the connection.
+    establish the connection (SNAT).
 
 
 .. _guide_gateway_services:
@@ -186,7 +188,7 @@ Many :command:`iptables` setups are rather lax when it's about restricting outgo
 traffic. By default DebOps will set the iptables ``OUTPUT`` policy to ``ACCEPT``
 which will permit every outgoing connection attempt. However, it is always a
 good idea to also limit the connections which can be made from within a host,
-especially if the host is directly attached to the Internet.
+especially if the host is directly connected to the Internet.
 
 Unfortunately ``debops.ferm`` doesn't provide any predefined rule lists to
 restrict outgoing traffic, therefore they need to be custom defined entirely.
