@@ -12,8 +12,8 @@
     group:  '{{ item.group | default("root") }}'
     mode:   '{{ item.mode | default("0755") }}'
   with_items:
-    - { path: '/etc/network/interfaces.d' }
-    - { path: '/etc/network/interfaces.config.d' }
+    - path: '/etc/network/interfaces.d'
+    - path: '/etc/network/interfaces.config.d'
   when: ifupdown_enabled|bool and ifupdown_static_config != 'static'
 
 - include: divert_interfaces.yml
@@ -31,4 +31,3 @@
 
 - include: revert_interfaces.yml
   when: not ifupdown_enabled|bool and ifupdown_static_config != 'static'
-

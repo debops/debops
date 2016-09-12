@@ -2,17 +2,16 @@
 
 # {{ ansible_managed }}
 
-{% if ifupdown_apply_config_pre_script|d() and ifupdown_apply_config_pre_script %}
+{% if ifupdown_apply_config_pre_script|d() %}
 {{ ifupdown_apply_config_pre_script }}
 {% endif %}
 
 # Reconfigure interfaces
 {{ ifupdown_reconfigure_script + " " + ifupdown_register_tempdir.stdout + "/ifupdown-changed-interfaces" }}
 
-{% if ifupdown_apply_config_post_script|d() and ifupdown_apply_config_post_script %}
+{% if ifupdown_apply_config_post_script|d() %}
 {{ ifupdown_apply_config_post_script }}
 {% endif %}
 
 # Remove thyself
-rm -f $(readlink -f ${0})
-
+rm -f "$(readlink -f ${0})"

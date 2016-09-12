@@ -12,7 +12,7 @@
 
 - name: Prepare interface configuration if not defined
   set_fact:
-    ifupdown_interfaces: '{{ ifupdown_default_interfaces }}'
+    ifupdown_interfaces: '{{ ifupdown_default_interfaces|d("") }}'
   when: ((ifupdown_interfaces is undefined or not ifupdown_interfaces) and
          ifupdown_dependent_interfaces is undefined and
          ifupdown_default_interfaces|d())
