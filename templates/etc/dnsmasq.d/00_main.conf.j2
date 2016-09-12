@@ -1,173 +1,183 @@
-# This file is managed by Ansible, all changes will be lost
-
+# {{ ansible_managed }}
 
 # ---- General options ----
 
-{% if ((dnsmasq_ipv4_gateway is defined and dnsmasq_ipv4_gateway) and
-       (hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway] is defined and
-        hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway]) and
-       (hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4 is defined and
-        hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4) and
-       (hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4.address | ipaddr('public'))) %}
-{% if dnsmasq_bogus_priv is defined and dnsmasq_bogus_priv %}
-# Don't forward private IP address queries to external networks
+{% if dnsmasq__bogus_priv|bool %}
+# Don't forward reverse DNS queries for private IP addresses to upstream DNS servers.
 bogus-priv
+{% endif %}
 
-{% endif %}
-{% endif %}
-# Enable connection tracking support
+# Enable connection tracking support.
 conntrack
 
-{% if dnsmasq_router is defined and dnsmasq_router %}
-# Enable IPv6 Router Advertisements
+{% if dnsmasq__router|bool %}
+# Enable IPv6 Router Advertisements.
 enable-ra
-
 {% endif %}
-{% if dnsmasq_tftp_ipxe is defined and dnsmasq_tftp_ipxe %}
-# Enable chain-loading of iPXE boot loader
+
+{% if dnsmasq__tftp_ipxe|bool %}
+# Enable chain-loading of iPXE boot loader.
 dhcp-match = set:ipxe,175
 dhcp-boot = tag:!ipxe,undionly.kpxe
-dhcp-boot = {{ dnsmasq_tftp_boot | default('menu.ipxe') }}
-
+dhcp-boot = {{ dnsmasq__tftp_boot | d('menu.ipxe') }}
 {% endif %}
+
 # ---- Network interfaces ----
 
-{% if dnsmasq_bind_interfaces is defined and dnsmasq_bind_interfaces %}
+{% if dnsmasq__bind_interfaces|bool %}
 # Bind only to specified interfaces (this will be set for example by libvirt
-# package, so we need to just go with it)
-{% if ansible_distribution_release in [ 'wheezy' ] %}
+# package, so we need to just go with it).
+{%   if ansible_distribution_release in [ 'wheezy' ] %}
 bind-interfaces
-{% else %}
+{%   else %}
 bind-dynamic
+{%   endif %}
 {% endif %}
 
-{% endif %}
-# Bind to loopback interface for local DNS queries
+# Bind to loopback interface for local DNS queries.
 interface = lo
 no-dhcp-interface = lo
 
-{% if dnsmasq_public_dns is defined and dnsmasq_public_dns %}
-{% if ((dnsmasq_ipv4_gateway is defined and dnsmasq_ipv4_gateway) and (hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4 is defined and hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4)) %}
-# Bind to local IPv4 gateway for remote DNS queries
-interface = {{ dnsmasq_ipv4_gateway }}
-no-dhcp-interface = {{ dnsmasq_ipv4_gateway }}
+{% if dnsmasq__public_dns|bool %}
+{%   if (dnsmasq__ipv4_gateway|d() and
+       hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway].ipv4|d()) %}
+# Bind to local IPv4 gateway for remote DNS queries.
+interface = {{ dnsmasq__ipv4_gateway }}
+no-dhcp-interface = {{ dnsmasq__ipv4_gateway }}
+{%   endif %}
+{%   if (dnsmasq__ipv6_gateway|d() and
+         dnsmasq__ipv6_gateway != dnsmasq__ipv4_gateway and
+         hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv6_gateway].ipv6|d()) %}
+# Bind to local IPv6 gateway for remote DNS queries.
+interface = {{ dnsmasq__ipv6_gateway }}
+no-dhcp-interface = {{ dnsmasq__ipv6_gateway }}
+{%   endif %}
+{% endif %}
 
-{% endif %}
-{% if (((dnsmasq_ipv6_gateway is defined and dnsmasq_ipv6_gateway) and (dnsmasq_ipv6_gateway != dnsmasq_ipv4_gateway)) and (hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv6_gateway].ipv6 is defined and hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv6_gateway].ipv6)) %}
-# Bind to local IPv6 gateway for remote DNS queries
-interface = {{ dnsmasq_ipv6_gateway }}
-no-dhcp-interface = {{ dnsmasq_ipv6_gateway }}
-
-{% endif %}
-{% endif %}
-{% if dnsmasq_upstream_interfaces is defined and dnsmasq_upstream_interfaces %}
-{% for interface in dnsmasq_upstream_interfaces %}
-{% if hostvars[inventory_hostname]["ansible_" + interface] is defined and hostvars[inventory_hostname]["ansible_" + interface] %}
-{% if ((dnsmasq_ipv4_gateway is defined and interface != dnsmasq_ipv4_gateway) and (dnsmasq_ipv6_gateway is defined and interface != dnsmasq_ipv6_gateway)) %}
-{% if ((hostvars[inventory_hostname]["ansible_" + interface].ipv4 is defined and hostvars[inventory_hostname]["ansible_" + interface].ipv4) or (hostvars[inventory_hostname]["ansible_" + interface].ipv6 is defined and hostvars[inventory_hostname]["ansible_" + interface].ipv6)) %}
-# Don't respond to DHCP or TFTP queries on this interface
+{% if dnsmasq__upstream_interfaces|d() %}
+{%   for interface in dnsmasq__upstream_interfaces %}
+{%     if ((dnsmasq__ipv4_gateway is defined and interface != dnsmasq__ipv4_gateway) and
+           (dnsmasq__ipv6_gateway is defined and interface != dnsmasq__ipv6_gateway) and
+           hostvars[inventory_hostname]["ansible_" + interface]|d() and
+           ((hostvars[inventory_hostname]["ansible_" + interface].ipv4|d() or
+            (hostvars[inventory_hostname]["ansible_" + interface].ipv6|d())))) %}
+# Don't respond to DHCP or TFTP queries on this interface.
 interface = {{ interface }}
 no-dhcp-interface = {{ interface }}
-
-{% endif %}
-{% endif %}
-{% endif %}
-{% endfor %}
+{%     endif %}
+{%   endfor %}
 {% endif %}
 
 # ---- DNS options ----
 
-{% if dnsmasq_etc_hosts is defined and dnsmasq_etc_hosts %}
-# Use alternative /etc/hosts file
 no-hosts
-addn-hosts = {{ dnsmasq_etc_hosts }}
-
+{% if dnsmasq__etc_hosts is string %}
+addn-hosts = {{ dnsmasq__etc_hosts | quote }}
+{% else %}
+{%   for etc_hosts_file in dnsmasq__etc_hosts %}
+addn-hosts = {{ etc_hosts_file | quote }}
+{%   endfor %}
 {% endif %}
-# Return answers for DNS queries depending on the originating network interface
+
+# Return answers for DNS queries depending on the originating network interface.
 localise-queries
 
-# Don't forward hostname queries to remote DNS servers
+# Don't forward hostname queries to remote DNS servers.
 domain-needed
 
-# Add domain to hostnames in hosts file
+# Add domain to hostnames in hosts file.
 expand-hosts
 
-{% if dnsmasq_stop_dns_rebind is defined and dnsmasq_stop_dns_rebind %}
+{% if dnsmasq__stop_dns_rebind|bool %}
 # Reject private IP addresses from upstream nameservers
 stop-dns-rebind
-
 {% endif %}
-# Allow rebinding of localhost IP address (for RBL support)
+
+# Allow rebinding of localhost IP address (for RBL support).
 rebind-localhost-ok
 
-{% if ((dnsmasq_ipv4_gateway is defined and dnsmasq_ipv4_gateway) and
-       (hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway] is defined and
-        hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway]) and
-       (hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4 is defined and
-        hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4) and
-       (not hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4.address | ipaddr('public'))) %}
+{% if (dnsmasq__ipv4_gateway|d() and
+       hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway]|d() and
+       hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway].ipv4|d() and
+       (not hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway].ipv4.address | ipaddr('public'))) %}
 # Allow rebinding of private IP addresses on server domain (for other servers
-# behind local NAT)
+# behind local NAT).
 rebind-domain-ok = {{ ansible_domain }}
-
 {% endif %}
-# Domain used by DHCP server
-domain = {{ dnsmasq_domain }}
 
-# Domain managed by the dnsmasq DNS server
-local = /{{ dnsmasq_domain }}/
+# Domain used by the DHCP server.
+domain = {{ dnsmasq__domain }}
 
-{% if dnsmasq_domain_mx is defined and dnsmasq_domain_mx %}
-# Point mails on main domain to a specific host
-mx-host = {{dnsmasq_domain }},{{ dnsmasq_domain_mx }},10
+{{ dnsmasq__dns_not_forward_managed }}
 
-# Each host by default maintains its own mail
+{% if dnsmasq__domain_mx|d() %}
+# Point mails on main domain to a specific host.
+mx-host = {{ dnsmasq__domain }},{{ dnsmasq__domain_mx }},10
+
+# Each host by default maintains its own mail.
 selfmx
+{% endif %}
 
+{% set dnsmasq__tpl_local_record = [] %}
+{% if hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway]|d() and
+      hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway].ipv4|d() %}
+{%   set dnsmasq__tpl_local_record = dnsmasq__tpl_local_record + [ hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway].ipv4.address ] %}
 {% endif %}
-{% set dnsmasq_tpl_local_record = [] %}
-{% if hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway] is defined and hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway] %}
-{% if hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4 is defined and hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4 %}
-{% set dnsmasq_tpl_local_record = dnsmasq_tpl_local_record + [ hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv4_gateway].ipv4.address ] %}
+{% if hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv6_gateway]|d() and
+      hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv6_gateway].ipv6|d() %}
+{%   for element in hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv6_gateway].ipv6 | map(attribute='address') | list %}
+{%     if not element | ipv6('link-local') %}
+{%       set _ = dnsmasq__tpl_local_record.append(element) %}
+{%     endif %}
+{%   endfor %}
 {% endif %}
-{% endif %}
-{% if hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv6_gateway] is defined and hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv6_gateway] %}
-{% if hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv6_gateway].ipv6 is defined and hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv6_gateway].ipv6 %}
-{% for element in hostvars[inventory_hostname]["ansible_" + dnsmasq_ipv6_gateway].ipv6 | map(attribute='address') | list %}
-{% if not element | ipv6('link-local') %}
-{% set _ = dnsmasq_tpl_local_record.append(element) %}
-{% endif %}
-{% endfor %}
-{% endif %}
-{% endif %}
-{% if dnsmasq_tpl_local_record is defined and dnsmasq_tpl_local_record %}
-# DNS records of the local server
-{% for element in dnsmasq_tpl_local_record %}
+{% if dnsmasq__tpl_local_record %}
+# DNS records of local server.
+{% for element in dnsmasq__tpl_local_record %}
 host-record = {{ ansible_fqdn }},{{ ansible_hostname }},{{ element }}
 {% endfor %}
+{% endif %}
 
+{% if dnsmasq__cname is defined and dnsmasq__cname %}
+# CNAME records.
+{%   for host, list in dnsmasq__cname.iteritems() %}
+{%     if list is string %}
+cname = {{ list + '.' + dnsmasq__domain }},{{ host + '.' + dnsmasq__domain }}
+{%     else %}
+{%       for element in list %}
+cname = {{ element + '.' + dnsmasq__domain }},{{ host + '.' + dnsmasq__domain }}
+{%       endfor %}
+{%     endif %}
+{%   endfor %}
 {% endif %}
-{% if dnsmasq_cname is defined and dnsmasq_cname %}
-# CNAME records
-{% for host, list in dnsmasq_cname.iteritems() %}
-{% if list is string %}
-cname = {{ list + '.' + dnsmasq_domain }},{{ host + '.' + dnsmasq_domain }}
-{% else %}
-{% for element in list %}
-cname = {{ element + '.' + dnsmasq_domain }},{{ host + '.' + dnsmasq_domain }}
-{% endfor %}
-{% endif %}
-{% endfor %}
-{% endif %}
-{% if dnsmasq_nameservers|d() %}
 
+{% if dnsmasq__nameservers|d() %}
 # Use the nameservers in this file instead of the system upstream nameservers.
 resolv-file = /etc/resolvconf/upstream.conf
 {% endif %}
-{% if dnsmasq_options is defined and dnsmasq_options %}
 
-# ---- Custom options ----
-
-{{ dnsmasq_options }}
+{% if dnsmasq__dns_not_forward_reserved|d() %}
+{{ dnsmasq__dns_not_forward_reserved }}
 {% endif %}
 
+{% if dnsmasq__dns_not_forward_private|d() %}
+{{ dnsmasq__dns_not_forward_private }}
+{% endif %}
+
+{% if dnsmasq__options|d() %}
+# ---- Global custom options ----
+
+{{ dnsmasq__options }}
+{% endif %}
+
+{% if dnsmasq__group_options|d() %}
+# ---- Group custom options ----
+
+{{ dnsmasq__group_options }}
+{% endif %}
+
+{% if dnsmasq__host_options|d() %}
+# ---- Host custom options ----
+
+{{ dnsmasq__host_options }}
+{% endif %}

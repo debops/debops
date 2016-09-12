@@ -1,0 +1,24 @@
+---
+
+- name: Configure dnsmasq
+  hosts: [ 'debops_service_dnsmasq' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ dnsmasq__ferm__dependent_rules }}'
+
+    ## Included in the `common.yml` playbook and currently configured via
+    ## legacy config files in the debops.dnsmasq role.
+    # - role: debops.tcpwrappers
+    #   tags: [ 'role::tcpwrappers' ]
+
+    - role: debops.dnsmasq
+      tags: [ 'role::dnsmasq' ]
