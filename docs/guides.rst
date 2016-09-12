@@ -67,7 +67,7 @@ variables that can be used:
   group to set variables on specific sets of hosts. Only one group level is
   supported.
 
-:envvar:`core__hosts_facts`
+:envvar:`core__host_facts`
   Dictionary which should be defined in ``inventory/host_vars/*/``
   for a particular host.
 
