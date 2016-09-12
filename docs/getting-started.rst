@@ -7,8 +7,8 @@ Getting started
 Initial configuration
 ---------------------
 
-By default ``debops.core`` is run from its own ``core.yml`` DebOps playbook by
-the ``common.yml`` playbook, which means that it is run on all hosts in the
+By default ``debops.core`` is run from its own :file:`core.yml` DebOps playbook by
+the :file:`common.yml` playbook, which means that it is run on all hosts in the
 inventory.
 
 If you want to modify the "root path" variables (``core__root_*``), it's best to
@@ -50,7 +50,7 @@ access to the environment variables of the unprivileged account Ansible is
 connecting through and can read the ``$SSH_CLIENT`` environment variable and
 get the IP address.
 
-Note: Hosts provisioned by the ``debops.bootstrap`` role have a workaround in
+Note: Hosts provisioned by the debops.bootstrap_ role have a workaround in
 place so that the playbook could be run in privileged mode but to avoid
 problems with `other provisioning methods <https://github.com/debops/ansible-core/issues/6#issuecomment-141923939>`_
 the role should be run in unprivileged mode as mentioned.
@@ -62,7 +62,7 @@ This is a playbook that is used to run the role:
 
 If you use your own set of custom playbooks, you can either copy the above
 playbook, or, if you have the DebOps playbooks installed in the default location,
-include the ``core.yml`` playbook in your common playbook (it is sufficient to
+include the :file:`core.yml` playbook in your common playbook (it is sufficient to
 run it only once at the start of the playbook):
 
 .. code-block:: yaml
@@ -80,7 +80,7 @@ run it only once at the start of the playbook):
        - role: example-role
 
 If you use the default DebOps playbooks alongside your own custom ones, you don't
-need to include the ``core.yml`` playbook at all.
+need to include the :file:`core.yml` playbook at all.
 
 See the usage guide in the ``debops.core`` documentation for information about
 its use.

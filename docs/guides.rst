@@ -14,11 +14,11 @@ the user starts to use ``--tags`` or ``--skip-tags`` parameters to selectively r
 parts of playbooks or roles – Ansible does not evaluate variables from roles that
 weren't included, which can change the environment and break the idempotency.
 
-The solution to use the ``group_vars/all/`` directory in the playbook directory
+The solution to use the :file:`group_vars/all/` directory in the playbook directory
 doesn't work, because variables defined there cannot be overwritten by Ansible
 inventory, thereby they cannot be changed as needed by the user. A separate
 Ansible role could be used with variables defined in it's
-``defaults/main.yml``, but it would need to be a dependency of all the roles
+:file:`defaults/main.yml`, but it would need to be a dependency of all the roles
 that used these variables, so virtually all roles would need to use it for
 consistency.
 
@@ -56,16 +56,16 @@ The ``debops.core`` role allows the user to specify custom variables which will 
 configured in the Ansible local facts on a given host. Three levels of
 variables that can be used:
 
-``core__facts``
-  Dictionary which should be defined in the ``inventory/group_vars/all/``
+:envvar:`core__facts`
+  Dictionary which should be defined in the :file:`inventory/group_vars/all/`
   group which applies to all hosts in the inventory.
 
-``core__group_facts``
+:envvar:`core__group_facts`
   Dictionary which should be defined in the ``inventory/group_vars/*/``
   group to set variables on specific sets of hosts. Only one group level is
   supported.
 
-``core__hosts_facts``
+:envvar:`core__hosts_facts`
   Dictionary which should be defined in ``inventory/host_vars/*/``
   for a particular host.
 
@@ -84,11 +84,11 @@ involved directories/files are not taken care of.
 
 Additional variables can be used to manipulate facts defined on remote hosts:
 
-``core__remove_facts``
+:envvar:`core__remove_facts`
   List of fact names in ``ansible_local.core.*`` which will be
   removed if found.
 
-``core__reset_facts``
+:envvar:`core__reset_facts`
   Boolean. If set to ``True``, ``debops.core`` role will ignore facts already
   defined on remote hosts and recreate the ``ansible_local.core.*`` namespace
   using only facts defined in Ansible inventory.
@@ -135,18 +135,18 @@ Custom host tags
 only a single list of items, merged from separate variables on all levels of
 the inventory. You can set host tags using the variables:
 
-``core__tags``
-  Global list of tags, should be defined in ``inventory/group_vars/all/``
+:envvar:`core__tags`
+  Global list of tags, should be defined in :file:`inventory/group_vars/all/`
 
-``core__group_tags``
+:envvar:`core__group_tags`
   List of tags for a specific group, should be defined in
   ``inventory/group_vars/*/``
 
-``core__host_tags``
+:envvar:`core__host_tags`
   List of tags for a specific host, should be defined in
   ``inventory/host_vars/*/``
 
-``core__static_tags``
+:envvar:`core__static_tags`
   Any list specified here will override already defined tags.
 
 Tags can be accessed using the ``ansible_local.tags`` list variable. Other roles
@@ -228,7 +228,7 @@ information, some files might need to be moved to the new location manually
 not find these files in the new location.
 
 You can specify various root paths using the ``core__root_*`` variables found in
-the ``defaults/main.yml``. They are accessible in the roles and playbooks in
+the :file:`defaults/main.yml`. They are accessible in the roles and playbooks in
 the ``ansible_local.root.*`` variable namespace.
 
 Examples
