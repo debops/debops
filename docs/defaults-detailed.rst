@@ -1,4 +1,4 @@
-Default variables: configuration
+Default variable details
 ================================
 
 Some of ``debops.ifupdown`` default variables have more extensive configuration
@@ -165,7 +165,7 @@ List of interface parameters
 Example interface configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Configuration examples can be found in the ``var/`` directory of the
+Configuration examples can be found in the :file:`var/` directory of the
 ``debops.ifupdown`` role, or `on GitHub`_. If you want to use them as a base
 for your own configuration, add them to the ``ifupdown_interfaces`` list in Ansible’s
 inventory, so they can override the defaults.
