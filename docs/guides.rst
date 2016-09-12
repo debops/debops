@@ -1,6 +1,8 @@
 Usage guides
 ============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
 
