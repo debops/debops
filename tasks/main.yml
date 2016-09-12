@@ -60,7 +60,6 @@
   file:
     path: '{{ item }}'
     state: 'absent'
-  notify: [ 'Restart ferm' ]
   with_flattened:
     - '/etc/ferm/filter-input.d/dnsmasq.conf'
 
@@ -68,7 +67,6 @@
   file:
     path: '/etc/ferm/filter-input.d/dnsmasq_interface_{{ item.interface }}.conf'
     state: 'absent'
-  notify: [ 'Restart ferm' ]
   when: item.interface|d()
   with_items: '{{ dnsmasq__interfaces }}'
 
