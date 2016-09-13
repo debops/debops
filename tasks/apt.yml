@@ -93,6 +93,7 @@
   with_items: '{{ apt__keys_combined }}'
   when: (item.url is defined or item.data is defined or item.id is defined or item.file is defined and
          (item.state is undefined or item.state is defined))
+  register: apt__register_custom_sources_list
 
 - name: Configure custom APT repositories
   apt_repository:
@@ -103,6 +104,7 @@
   with_items: '{{ apt__repositories_combined }}'
   when: ((item.repo is defined and item.repo) and
          (item.state is undefined or item.state is defined))
+  register: apt__register_custom_sources_list
 
 - name: Divert original /etc/apt/sources.list
   command: dpkg-divert --quiet --local --divert /etc/apt/sources.list.dpkg-divert --rename /etc/apt/sources.list
@@ -136,5 +138,11 @@
 - name: Update package lists
   apt:
     update_cache: True
-    cache_valid_time: '{{ omit if (apt__register_sources_list|changed) else apt__update_cache_early }}'
+    cache_valid_time: '{{ apt__update_cache_early }}'
+  when: not (apt__register_sources_list|changed or apt__register_custom_sources_list|changed)
+
+- name: Update package sources lists
+  apt:
+    update_cache: True
+  when: (apt__register_sources_list|changed or apt__register_custom_sources_list|changed)
 
