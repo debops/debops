@@ -8,9 +8,21 @@
 #    :local:
 
 
-# Configuration of private Ansible facts [[[
-# ------------------------------------------
+# DebOps fact storage configuration [[[
+# -------------------------------------
 
+# .. envvar:: debops_fact__public_path [[[
+#
+# Path to the file which holds the public parameters.
+debops_fact__public_path: '/etc/ansible/debops_fact.ini'
+
+                                                                   # ]]]
+# .. envvar:: debops_fact__private_path [[[
+#
+# Path to the file which holds the private parameters.
+debops_fact__private_path: '/etc/ansible/debops_fact_priv.ini'
+
+                                                                   # ]]]
 # .. envvar:: debops_fact__private_group [[[
 #
 # The system group which will be able to access the private facts file. It will
@@ -22,71 +34,37 @@ debops_fact__private_group: 'root'
 #
 # The file permissions of the private Ansible facts file.
 debops_fact__private_mode: '0640'
+
                                                                    # ]]]
-                                                                   # ]]]
-# Custom Ansible local fact lists [[[
-# -----------------------------------
-
-# These lists contain information about custom Ansible local facts maintained
-# by the role. Each entry is a YAML dictionary with specific parameters.
-# See :ref:`debops_fact__ref_facts` for more details.
-
-# The public and private fact lists are processed in the specified order.
-
-# .. envvar:: debops_fact__public_facts [[[
+# .. envvar:: debops_fact__config_files [[[
 #
-# List of public Ansible local facts which should be set on all hosts in the
-# Ansible inventory.
-debops_fact__public_facts: []
+# List of INI configuration files to read by the fact script.
+debops_fact__config_files:
+  - '{{ debops_fact__public_path }}'
+  - '{{ debops_fact__private_path }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DebOps fact sections [[[
+# ------------------------
+
+# .. envvar:: debops_fact__default_section [[[
+#
+# Name of the "default" INI section, not added in a subkey.
+debops_fact__default_section: 'default'
 
                                                                    # ]]]
-# .. envvar:: debops_fact__group_public_facts [[[
+# .. envvar:: debops_fact__public_section [[[
 #
-# List of public Ansible local facts which should be set on hosts in specific
-# group in the Ansible inventory.
-debops_fact__group_public_facts: []
+# Name of the "public" section available by default, stored in the public fact
+# file.
+debops_fact__public_section: 'global'
 
                                                                    # ]]]
-# .. envvar:: debops_fact__host_public_facts [[[
+# .. envvar:: debops_fact__private_section [[[
 #
-# List of public Ansible local facts which should be set on specific hosts in
-# Ansible inventory.
-debops_fact__host_public_facts: []
-
-                                                                   # ]]]
-# .. envvar:: debops_fact__dependent_public_facts [[[
-#
-# List of public Ansible local facts which are configured by other Ansible
-# roles.
-debops_fact__dependent_public_facts: []
-
-                                                                   # ]]]
-# .. envvar:: debops_fact__private_facts [[[
-#
-# List of private Ansible local facts which should be set on all hosts in the
-# Ansible inventory.
-debops_fact__private_facts: []
-
-                                                                   # ]]]
-# .. envvar:: debops_fact__group_private_facts [[[
-#
-# List of private Ansible local facts which should be set on hosts in specific
-# group in the Ansible inventory.
-debops_fact__group_private_facts: []
-
-                                                                   # ]]]
-# .. envvar:: debops_fact__host_private_facts [[[
-#
-# List of private Ansible local facts which should be set on specific hosts in
-# Ansible inventory.
-debops_fact__host_private_facts: []
-
-                                                                   # ]]]
-# .. envvar:: debops_fact__dependent_private_facts [[[
-#
-# List of private Ansible local facts which are configured by other Ansible
-# roles.
-debops_fact__dependent_private_facts: []
+# Name of the "private" section available by default, stored in the private
+# fact file.
+debops_fact__private_section: 'secret'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
