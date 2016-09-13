@@ -6,7 +6,7 @@ Changelog
 **debops.bootstrap**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
-and `human-readable changelog <http://keepachangelog.com/>`_.
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
 The current role maintainer_ is drybjed_.
 
@@ -14,7 +14,20 @@ The current role maintainer_ is drybjed_.
 `debops.bootstrap master`_ - unreleased
 ---------------------------------------
 
-.. _debops.bootstrap master: https://github.com/debops/ansible-bootstrap/compare/v0.3.1...master
+.. _debops.bootstrap master: https://github.com/debops/ansible-bootstrap/compare/v0.3.2...master
+
+
+`debops.bootstrap v0.3.2`_ - 2016-09-13
+---------------------------------------
+
+.. _debops.bootstrap v0.3.2: https://github.com/debops/ansible-bootstrap/compare/v0.3.1...v0.3.2
+
+Fixed
+~~~~~
+
+- Fix an issue where disabled admin account management resulted in an error.
+  Now, ``getent`` database is always checked, therefore other tasks can be
+  correctly skipped by Ansible. [drybjed_]
 
 
 `debops.bootstrap v0.3.1`_ - 2016-08-14
@@ -70,14 +83,14 @@ Added
 ~~~~~
 
 - Allow to disable hostname and domain configuration via
-  :any:`bootstrap__hostname_domain_config_enabled`. [ypid_]
+  :envvar:`bootstrap__hostname_domain_config_enabled`. [ypid_]
 
 Changed
 ~~~~~~~
 
-- Explicitly set ``!requiretty`` for the :any:`bootstrap__sudo_group`
+- Explicitly set ``!requiretty`` for the :envvar:`bootstrap__sudo_group`
   (:manpage:`sudoers(5)`). This ensures that :command:`sudo` with :command:`rsync` is allowed
-  for the :any:`bootstrap__sudo_group` even when ``requiretty`` has been
+  for the :envvar:`bootstrap__sudo_group` even when ``requiretty`` has been
   configured to be the default for users. [ypid_]
 
 - Split the role into two roles, ``debops.bootstrap/raw`` and
