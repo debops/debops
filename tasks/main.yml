@@ -14,33 +14,33 @@
     group: 'root'
     mode: '0755'
 
-- name: Save local public facts
+- name: Install local fact script
   template:
     src: 'etc/ansible/facts.d/debops_fact.fact.j2'
     dest: '/etc/ansible/facts.d/debops_fact.fact'
     owner: 'root'
     group: 'root'
+    mode: '0755'
+  register: debops_fact__register_facts
+
+- name: Initialize public DebOps fact file
+  template:
+    src: 'etc/ansible/debops_fact.ini.j2'
+    dest: '{{ debops_fact__public_path }}'
+    owner: 'root'
+    group: 'root'
     mode: '0644'
-  register: debops_fact__register_public_facts
+    force: False
 
-# Ansible has problems with facts not readable by unprivileged users,
-# a different solution is required.
-#- name: Save local private facts
-#  template:
-#    src: 'etc/ansible/facts.d/debops_fact_priv.fact.j2'
-#    dest: '/etc/ansible/facts.d/debops_fact_priv.fact'
-#    owner: 'root'
-#    group: '{{ debops_fact__private_group }}'
-#    mode: '{{ debops_fact__private_mode }}'
-#  register: debops_fact__register_private_facts
-
-- name: Remove local private facts file
-  file:
-    path: '/etc/ansible/facts.d/debops_fact_priv.fact'
-    state: 'absent'
-  register: debops_fact__register_private_facts
+- name: Initialize private DebOps fact file
+  template:
+    src: 'etc/ansible/debops_fact_priv.ini.j2'
+    dest: '{{ debops_fact__private_path }}'
+    owner: 'root'
+    group: '{{ debops_fact__private_group }}'
+    mode: '{{ debops_fact__private_mode }}'
+    force: False
 
 - name: Reload facts if they were modified
   action: setup
-  when: debops_fact__register_public_facts|changed or
-        debops_fact__register_private_facts|changed
+  when: debops_fact__register_facts|changed

@@ -9,7 +9,6 @@ Ansible role: debops.debops_fact
    introduction
    getting-started
    defaults
-   defaults-detailed
    copyright
    changelog
 

@@ -1,12 +1,11 @@
 Introduction
 ============
 
-The ``debops.debops_fact`` Ansible role maintains a persistent key/value JSON
-database using Ansible local facts. This mechanism can be used through the
-Ansible inventory or role dependent variables to pass data between Ansible
-roles. Using an intermediary role, separate Ansible roles don't need to know
-about the data structures used by each other, only a common interface defined
-by ``debops.debops_fact`` role.
+The ``debops.debops_fact`` Ansible role can be used to read JSON data from
+a set of INI configuration files and make them available as Ansible local
+facts. This mechanism can be used to maintain common facts between separate
+Ansible roles without the need for them to know about the specific file
+structures, using ``ini_file`` Ansible module.
 
 
 Installation
@@ -16,7 +15,7 @@ This role requires at least Ansible ``v2.0.0``. To install it, run:
 
 .. code-block:: console
 
-   user@host:~$ ansible-galaxy install debops.debops_fact
+   ansible-galaxy install debops.debops_fact
 
 ..
  Local Variables:

@@ -14,7 +14,29 @@ The current role maintainer_ is drybjed.
 `debops.debops_fact master`_ - unreleased
 -----------------------------------------
 
-.. _debops.debops_fact master: https://github.com/debops/ansible-debops_fact/compare/v0.1.2...master
+.. _debops.debops_fact master: https://github.com/debops/ansible-debops_fact/compare/v0.2.0...master
+
+
+`debops.debops_fact v0.2.0`_ - 2016-09-13
+-----------------------------------------
+
+.. _debops.debops_fact v0.2.0: https://github.com/debops/ansible-debops_fact/compare/v0.1.2...v0.2.0
+
+Changed
+~~~~~~~
+
+- Redesign the DebOps fact storage and switch from the JSON files stored
+  directly as Ansible local facts to separate INI files that hold the JSON data
+  in the variable values. This allows modification of the INI files directly by
+  other roles using ``ini_file`` Ansible module and the role itself doesn't
+  need to be involved in the process. [drybjed_]
+
+Removed
+~~~~~~~
+
+- The ``debops_fact__*_facts`` variables which allowed to set custom facts via
+  inventory or role dependent variables are removed; roles can modify the INI
+  files directly now. [drybjed_]
 
 
 `debops.debops_fact v0.1.2`_ - 2016-09-01
@@ -27,7 +49,7 @@ Removed
 
 - Ansible does not work with local facts that are unreadable by unprivileged
   users. A different solution for private local facts will be written later.
-  [drybjed]
+  [drybjed_]
 
 
 `debops.debops_fact v0.1.1`_ - 2016-08-07
