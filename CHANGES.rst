@@ -22,6 +22,11 @@ The current role maintainer_ is drybjed.
 
 .. _debops.debops_fact v0.2.0: https://github.com/debops/ansible-debops_fact/compare/v0.1.2...v0.2.0
 
+Added
+~~~~~
+
+- Add a way to disable support for DebOps facts if desired. [drybjed_]
+
 Changed
 ~~~~~~~
 
