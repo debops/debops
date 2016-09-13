@@ -29,6 +29,11 @@
   action: setup
 # .. )))
 
+- name: Gather information about existing users
+  getent:
+    database: 'passwd'
+    split: ':'
+
 - name: Manage System Administrator accounts
   include: admin_accounts.yml
   when: bootstrap__admin|bool
