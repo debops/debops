@@ -1,6 +1,8 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 **debops.nginx**
 
 This project adheres to `Semantic Versioning <http://semver.org/>`_
@@ -23,6 +25,13 @@ Changed
   server against the list of configured PKI realms to see if any name is
   a subdomain of domain with an existing PKI realm. If such PKI realm is found,
   it will be used for this server instead of the default one. [drybjed]
+
+Added
+~~~~~
+
+- ``item.welcome_force`` which when set to ``True`` will ensure that the
+  welcome page is up-to-date. Note that setting this to ``True`` will not allow
+  idempotent operation. [ypid]
 
 
 `debops.nginx v0.1.9`_ - 2016-07-19

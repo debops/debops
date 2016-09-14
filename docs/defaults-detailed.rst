@@ -71,3 +71,12 @@ Nginx servers
   Refer to `robots meta tag and X-Robots-Tag HTTP header specifications
   <https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag>`_
   for more details.
+
+``welcome``
+  Optional, boolean. Defaults to ``False``.
+  If ``True`` a welcome page is generated.
+
+``welcome_force``
+  Optional, boolean.
+  Ensure that the templated file is up-to-date if ``True``.
+  Set to ``False`` by default to ensure idempotent operation.

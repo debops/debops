@@ -25,7 +25,7 @@
     dest: '{{ nginx_www }}/sites/{{ item.name if item.name is string else item.name[0] | d("default") }}/public/index.html'
     owner: '{{ item.owner | d(nginx_webroot_owner) }}'
     group: '{{ item.owner | d(nginx_webroot_group) }}'
-    force: False
+    force: '{{ item.welcome_force|d() | bool }}'
   with_flattened:
     - '{{ nginx__servers }}'
     - '{{ nginx__default_servers }}'
@@ -37,7 +37,7 @@
     - '{{ nginx_dependent_servers | d([]) }}'
   when: (nginx_webroot_create|bool and item.name is defined and item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool) and
-         (item.welcome|d() and item.welcome | bool))
+         (item.welcome|d() | bool))
 
 - name: Remove nginx server configuration if requested
   file:
