@@ -8,7 +8,7 @@
 [![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops.nginx-660198.svg?style=flat)](https://galaxy.ansible.com/debops/nginx)
 
 
-The [nginx](http://nginx.org/) is a fast and light webserver with extensible
+The [nginx](https://nginx.org/) is a fast and light webserver with extensible
 configuration.
 
 The `debops.nginx` role can be used to install and manage `nginx` configuration
