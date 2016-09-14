@@ -24,7 +24,7 @@ Nginx servers
 
 ``xss_protection``
   Optional, string. Value of the ``X-XSS-Protection`` HTTP header field. Set to
-  ``{{ omit }}`` to not send the header field. Defaults to :any:`nginx__http_xss_protection`.
+  ``{{ omit }}`` to not send the header field. Defaults to :envvar:`nginx__http_xss_protection`.
 
   ``1``
     Browsers should enable there build in cross-site scripting protection.
@@ -45,7 +45,7 @@ Nginx servers
 ``permitted_cross_domain_policies``
   Optional, string. Value of the ``X-Permitted-Cross-Domain-Policies`` HTTP header field. Set to
   ``{{ omit }}`` to not send the header field. Defaults to
-  :any:`nginx__http_permitted_cross_domain_policies`.
+  :envvar:`nginx__http_permitted_cross_domain_policies`.
 
   Should cross domain policies be permitted?
 
@@ -54,7 +54,7 @@ Nginx servers
 ``robots_tag``
   Optional, list of strings or string. Value of the ``X-Robots-Tag`` HTTP header field. Set to
   ``{{ omit }}`` to not send the header field. Defaults to
-  :any:`nginx__http_robots_tag`.
+  :envvar:`nginx__http_robots_tag`.
 
   This allows you to give search engine bots hints how they should handle the
   website. For example, when you don’t want that search engines don’t "index"

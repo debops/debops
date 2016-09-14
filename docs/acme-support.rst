@@ -44,7 +44,7 @@ particular server ``root`` directory, for example:
 
    /srv/www/sites/<domain>/public/.well-known/acme-challenge/
 
-If the challenge file is not found at the server location, ``nginx`` will
+If the challenge file is not found at the server location, :program:`nginx` will
 switch the request to the "global" server ``root`` directory, by default:
 
 .. code-block:: none
@@ -66,7 +66,7 @@ a different host on configured domain, by default:
 The redirected host should provide a configured webserver to respond to the
 ACME challenges. A default server is provided in the ``debops.nginx``
 configuration and can be enabled on a given host (see below). The additional
-parameter ``redirect=yes`` is used by the ``nginx`` server to detect and
+parameter ``redirect=yes`` is used by the :program:`nginx` server to detect and
 terminate redirect loops.
 
 Manual nginx configuration
@@ -78,7 +78,7 @@ The above steps are configured in a separate file on the webserver host:
 
    /etc/nginx/snippets/acme-challenge.conf
 
-To enable a given ``nginx`` server to respond to ACME challenges, all you
+To enable a given :program:`nginx` server to respond to ACME challenges, all you
 need to do is to include that file in the ``server {}`` section, for example:
 
 .. code-block:: nginx

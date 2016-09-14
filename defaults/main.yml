@@ -78,17 +78,17 @@ nginx_user: 'www-data'
 # It is exposed using Ansible local facts as 'ansible_local.nginx.www'
 nginx_www: '/srv/www'
 
-# Directory where ``nginx`` configuration is stored.
+# Directory where :program:`nginx` configuration is stored.
 nginx_etc_path: '/etc/nginx'
 
-# Directory where private files used by ``nginx`` are stored (for example
+# Directory where private files used by :program:`nginx` are stored (for example
 # htpasswd files).
 nginx_private_path: '{{ nginx_etc_path + "/private" }}'
 
-# Directory where runtime ``nginx`` files are stored.
+# Directory where runtime :program:`nginx` files are stored.
 nginx_run_path: '/run'
 
-# Directory where ``nginx`` log files are stored.
+# Directory where :program:`nginx` log files are stored.
 nginx_log_path: '/var/log/nginx'
 
 # Root path of temporary files.
@@ -150,10 +150,14 @@ nginx_http_auth_basic_name: 'nginx_http'
 # restricted.
 nginx_http_auth_users: []
 
+
+# .. envvar:: nginx__http_auth_htpasswd [[[
+#
 # Default htpasswd file used for global HTTP Basic Auth accounts.
 nginx__http_auth_htpasswd:
   name: '{{ nginx_http_auth_basic_name }}'
   users: '{{ nginx_http_auth_users }}'
+                                                                   # ]]]
 
 # Default http { } options.
 nginx_http_options: |
@@ -219,8 +223,8 @@ nginx_listen_socket: []
 nginx_listen_ssl_socket: []
 
 # List of IP addresses or CIDR subnets that the server should trust about real
-# IP addresses of clients. If this list is specified, ``nginx`` will read the
-# client IP address from the specified header. This is useful when ``nginx``
+# IP addresses of clients. If this list is specified, :program:`nginx` will read the
+# client IP address from the specified header. This is useful when :program:`nginx`
 # server is used behind another proxy server (local or remote).
 nginx_real_ip_from: []
 
@@ -228,7 +232,7 @@ nginx_real_ip_from: []
 # server.
 nginx_real_ip_header: 'X-Forwarded-For'
 
-# If this variable is enabled, ``nginx`` will ignore client IP addresses that
+# If this variable is enabled, :program:`nginx` will ignore client IP addresses that
 # match the ones from list of trusted upstream servers. This is useful when the
 # upstream server is also a proxy.
 nginx_real_ip_recursive: False
@@ -415,8 +419,11 @@ nginx__htpasswd: []
 nginx__default_htpasswd:
   - '{{ nginx__http_auth_htpasswd }}'
 
+# .. envvar:: nginx__dependent_htpasswd [[[
+#
 nginx__dependent_htpasswd: []
 
+                                                                   # ]]]
 
   # Create specified user accounts
   #- name: 'server_domain'
@@ -522,7 +529,7 @@ nginx_server_welcome:
   welcome: True
   welcome_domain: '{{ nginx_welcome_domain }}'
 
-# Default nginx ``localhost`` server. It can be used to access ``nginx`` status
+# Default nginx ``localhost`` server. It can be used to access :program:`nginx` status
 # page by other services.
 nginx_server_localhost:
   enabled: True
@@ -562,21 +569,21 @@ nginx__custom_config: []
 
 # .. envvar:: nginx__http_xss_protection
 #
-# Default value for :any:`xss_protection
+# Default value for :ref:`xss_protection
 # <nginx__ref_http_xss_protection>`.
 nginx__http_xss_protection: '1; mode=block'
 
 
 # .. envvar:: nginx__http_permitted_cross_domain_policies
 #
-# Default value for :any:`permitted_cross_domain_policies
+# Default value for :ref:`permitted_cross_domain_policies
 # <nginx__ref_permitted_cross_domain_policies>`.
 nginx__http_permitted_cross_domain_policies: '{{ omit }}'
 
 
 # .. envvar:: nginx__http_robots_tag
 #
-# Default value for :any:`robots_tag
+# Default value for :ref:`robots_tag
 # <nginx__ref_http_robots_tag>`.
 nginx__http_robots_tag: '{{ omit }}'
 
@@ -608,7 +615,7 @@ nginx__apt_preferences__dependent_list:
     when: '{{ (nginx_flavor == "passenger") | bool }}'
     delete: '{{ nginx__deploy_state != "present" or (not (nginx_flavor == "passenger") | bool) }}'
 
-# Configuration of the ``iptables`` firewall using ``ferm``.
+# Configuration of the :command:`iptables` firewall using :program:`ferm`.
 nginx_ferm_dependent_rules: '{{ nginx__ferm__dependent_rules }}'
 
 nginx__ferm__dependent_rules:
@@ -628,7 +635,7 @@ nginx_php5_status: False
 nginx_php5_status_name: 'php5_status'
 nginx_php5_ping_name: 'php5_ping'
 
-# What system group has privileged access to ``nginx`` service.
+# What system group has privileged access to :program:`nginx` service.
 nginx_privileged_group: 'webadmins'
 
 # Hash of SSL ciphers available to use in nginx server definitions
