@@ -25,6 +25,9 @@ with Ansible roles.
 Refer to the `DebOps People`_ section in the debops-keyring_ documentation
 where the people and their current roles are listed.
 
+
+.. _debops_policy__structure_developers:
+
 Developers
 ----------
 
@@ -46,6 +49,9 @@ Developers have write access to the following repositories:
 The UNIX group for DebOps Developers used on the Project assets should be named
 ``debops-developers``.
 
+
+.. _debops_policy__structure_project_leader:
+
 Project Leader
 --------------
 
@@ -58,11 +64,17 @@ to all repositories and resources of the project.
 The UNIX group for the DebOps Leader used on the Project assets should be named
 ``debops-leader``.
 
+
+.. _debops_policy__structure_project_admins:
+
 Project Admins
 --------------
 
 The DebOps Project Admins manage the Project’s services such as web servers and
 mailing lists.
+
+
+.. _debops_policy__structure_contributors:
 
 Contributors
 ------------
@@ -70,12 +82,18 @@ Contributors
 Every person who is contributing to the DebOps Project. The contributions need
 to be reviewed by one of the DebOps Developers.
 
+
+.. _debops_policy__structure_authors:
+
 Authors
 -------
 
 The DebOps Project is divided into multiple repositories.
 Each repository has their initial Author. They are mentioned as the first
 copyright holder in the COPYRIGHT file of the role.
+
+
+.. _debops_policy__structure_maintainers:
 
 Maintainers
 -----------
@@ -90,6 +108,9 @@ Maintainer.
 
 A repository can have a team of Maintainers, in this case only one OpenPGP
 signature is required for a commit to enter the main repository.
+
+
+.. _debops_policy__structure_bots:
 
 Bots
 ----
