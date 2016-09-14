@@ -16,7 +16,22 @@ The current role maintainer_ is drybjed.
 `debops.apt master`_ - unreleased
 ---------------------------------
 
-.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.2.1...master
+.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.3.0...master
+
+
+`debops.apt v0.3.0`_ - 2016-09-14
+---------------------------------
+
+.. _debops.apt v0.3.0: https://github.com/debops/ansible-apt/compare/v0.2.1...v0.3.0
+
+Removed
+~~~~~~~
+
+- Remove support for ``apt-listchanges`` (moved to a separate role) and
+  ``apticron`` packages. [drybjed]
+
+- Remove support for APT proxy configuration, it is moved to a separate Ansible
+  role. [drybjed]
 
 
 `debops.apt v0.2.1`_ - 2016-09-09
@@ -28,8 +43,8 @@ Added
 ~~~~~
 
 - Added support for both http and https repositories in case of internet proxy.
-  Moved apt__proxy_url to :envvar:`apt__http_proxy_url` and added
-  :envvar:`apt__https_proxy_url`. [tallandtree]
+  Moved apt__proxy_url to ``apt__http_proxy_url`` and added
+  ``apt__https_proxy_url``. [tallandtree]
 
 Changed
 ~~~~~~~
@@ -45,7 +60,7 @@ Changed
 Added
 ~~~~~
 
-- Added :envvar:`apt__proxy_bypass_for_bugs_debian_org` which you can enable if you
+- Added ``apt__proxy_bypass_for_bugs_debian_org`` which you can enable if you
   hit a problem with a proxy server not allowing access to
   https://bugs.debian.org. [ypid_]
 

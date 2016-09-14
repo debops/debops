@@ -47,51 +47,6 @@ apt__update_cache_early: '{{ ansible_local.core.cache_valid_time
 apt__base_packages: [ 'python-apt', 'apt-transport-https' ]
 
                                                                    # ]]]
-# .. envvar:: apt__update_notification_packages [[[
-#
-# List of packages to install when :envvar:`apt__update_notifications` is set to
-# ``True``.
-apt__update_notification_packages:
-  - 'apt-listchanges'
-  - 'apticron'
-                                                                   # ]]]
-                                                                   # ]]]
-# Proxy settings [[[
-# ------------------
-
-# .. envvar:: apt__http_proxy_url [[[
-#
-# This variable allows you to define a software repository proxy which should
-# be used by specifying the URL of the proxy server.
-#
-# Examples::
-#
-#    apt__http_proxy_url: 'http://software-cache.example.org:3142/'
-#
-# The default is to not use a proxy server and connect directly to the repository servers.
-apt__http_proxy_url: ''
-
-                                                                   # ]]]
-# .. envvar:: apt__https_proxy_url [[[
-#
-# This variable allows you to define a software repository proxy which should
-# be used by specifying the URL of the proxy server.
-#
-# Examples::
-#
-#    apt__https_proxy_url: 'http://software-cache.example.org:3142/'
-#
-# The default is to not use a proxy server and connect directly to the repository servers.
-apt__https_proxy_url: ''
-
-                                                                   # ]]]
-# .. envvar:: apt__proxy_bypass_for_bugs_debian_org [[[
-#
-# Bypass the configured proxy server for https://bugs.debian.org.
-# This might be necessary when you are using :command:`apt-listbugs`.
-# See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=775126.
-apt__proxy_bypass_for_bugs_debian_org: False
-                                                                   # ]]]
                                                                    # ]]]
 # APT repository mirrors [[[
 # --------------------------
@@ -371,42 +326,6 @@ apt__sources_release_list:
 # List of repository types to enable for default APT repositories. To enable
 # source repositories, add ``deb-src`` to the list.
 apt__sources_types: [ 'deb' ]
-                                                                   # ]]]
-                                                                   # ]]]
-# Update notifications [[[
-# ------------------------
-
-# .. envvar:: apt__mail_notifications [[[
-#
-# Send mail notifications from APT to these email addresses.
-apt__mail_notifications: [ 'root' ]
-
-                                                                   # ]]]
-# .. envvar:: apt__update_notifications [[[
-#
-# Enable mail notifications about updates using the packages defined by
-# :envvar:`apt__update_notification_packages`.
-apt__update_notifications: True
-
-                                                                   # ]]]
-# .. envvar:: apt__update_notifications_type_listchanges [[[
-#
-# What type of notifications to send.
-# Choices: ``news``, ``changelogs``, ``both``.
-apt__update_notifications_type_listchanges: 'news'
-
-                                                                   # ]]]
-# .. envvar:: apt__update_notifications_type_apticron [[[
-#
-# What type of notifications to send.
-# Choices: ``news``, ``changelogs``, ``both``.
-apt__update_notifications_type_apticron: 'both'
-
-                                                                   # ]]]
-# .. envvar:: apt__update_notifications_diff [[[
-#
-# Send only information about changes from the last notification?
-apt__update_notifications_diff: True
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[

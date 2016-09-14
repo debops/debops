@@ -1,30 +1,6 @@
 ---
 
-- name: Configure APT to use a proxy server
-  template:
-    src: 'etc/apt/apt.conf.d/000apt-cacher-ng-proxy.j2'
-    dest: '/etc/apt/apt.conf.d/000apt-cacher-ng-proxy'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  when: ((apt__enabled|d() | bool) and
-        ((apt__http_proxy_url is defined and apt__http_proxy_url is string and apt__http_proxy_url) or
-        (apt__https_proxy_url is defined and apt__https_proxy_url is string and apt__https_proxy_url) or 
-        apt__proxy_bypass_for_bugs_debian_org))
-
-- name: Configure APT to not use a proxy server
-  file:
-    path: '/etc/apt/apt.conf.d/000apt-cacher-ng-proxy'
-    state: 'absent'
-  when: ((apt__enabled|d() | bool) and 
-        not ((apt__http_proxy_url is defined and apt__http_proxy_url is string and apt__http_proxy_url) or 
-        (apt__https_proxy_url is defined and apt__https_proxy_url is string and apt__https_proxy_url) or 
-        apt__proxy_bypass_for_bugs_debian_org))
-
 - include: apt.yml
-  when: (apt__enabled|d() | bool)
-
-- include: update_notifications.yml
   when: (apt__enabled|d() | bool)
 
 - name: Remove old unattended-upgrades configuration
