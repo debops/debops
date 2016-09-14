@@ -170,6 +170,10 @@ Changed
   "from" account is changed from ``owncloud__subdomain`` variable to
   ``noreply`` string. [drybjed_]
 
+- Use a static filename of the ``nginx`` server configuration file. This might
+  require manual removal of the old ``nginx`` server configuration file on
+  existing installations. [drybjed_]
+
 Removed
 ~~~~~~~
 
