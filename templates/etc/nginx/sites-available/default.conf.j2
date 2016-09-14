@@ -182,6 +182,21 @@
 #       Optional. ECC curve enabled for this server. By default, 'secp384r1'.
 #
 #
+#   - item.ssl_verify_client: True/False
+#      Optional. Requests the client certificate and verifies it if the
+#      certificate is present. 
+#
+#
+#   - item.ssl_client_certificate: ''
+#      Optional. Specifies a file with trusted CA certificates in the PEM
+#      format used to verify client certificates.
+#
+#
+#   - item.ssl_crl: ''
+#      Optional. Specifies a file with revoked certificates (CRL) in the PEM
+#      format used to verify client certificates.
+#
+#
 #   - item.pki_realm: ''
 #       Optional. Overwrite default PKI realm used by nginx for this server
 #       configuration. See 'debops.pki' role for more information, as well as
@@ -1029,6 +1044,15 @@ server {
 {% if (item.ocsp_verify | d(nginx_ocsp_verify)) | bool %}
         ssl_stapling_verify       on;
         ssl_trusted_certificate   {{ nginx_tpl_ssl_trusted_certificate }};
+{% endif %}
+{% if (item.ssl_verify_client | d(nginx_default_ssl_verify_client)) | bool %}
+{% if ((item.ssl_client_certificate is defined and item.ssl_client_certificate) or nginx_default_ssl_client_certificate) %}
+        ssl_verify_client         on;
+        ssl_client_certificate    {{ item.ssl_client_certificate | default(nginx_default_ssl_client_certificate) }};
+{% endif %}
+{% if ((item.ssl_crl is defined and item.ssl_crt) or nginx_default_ssl_crl) %}
+        ssl_crl                   {{ item.ssl_crl | default(nginx_default_ssl_crl) }};
+{% endif %}
 {% endif %}
         resolver                  {{ (item.ocsp_resolvers | d(nginx_ocsp_resolvers)) | ipwrap | join(" ") }} valid=300s;
         resolver_timeout          5s;
