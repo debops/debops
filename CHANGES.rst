@@ -26,6 +26,9 @@ Changed
   a subdomain of domain with an existing PKI realm. If such PKI realm is found,
   it will be used for this server instead of the default one. [drybjed]
 
+- The URL scheme for the welcome page now defaults to ``HTTPS``. It can be
+  configured as needed using the ``item.welcome_url_scheme`` option. [ypid]
+
 Added
 ~~~~~
 

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 {% set nginx_tpl_domain = item.welcome_domain | d(item.name if item.name is string else item.name[0] | d(ansible_domain)) %}
 {% if nginx_tpl_domain %}
-{%   set nginx_tpl_welcome_title = '<a href="http://' + nginx_tpl_domain + '/">' + nginx_tpl_domain + '</a>' %}
+{%   set nginx_tpl_welcome_title = '<a href="{{ item.welcome_url_scheme|d("https") }}://' + nginx_tpl_domain + '/">' + nginx_tpl_domain + '</a>' %}
 {% elif not nginx_tpl_domain %}
 {%   set nginx_tpl_welcome_title = '<a href="http://companyname.website/">CompanyName.website</a>' %}
 {% endif %}
@@ -12,11 +12,7 @@
     <meta http-equiv="Content-Language" content="en">
     <meta http-equiv="Content-Style-Type" content="text/css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-{% if nginx_tpl_domain %}
-    <title>{{ nginx_tpl_domain }}</title>
-{% elif not nginx_tpl_domain %}
-    <title>CompanyName.website</title>
-{% endif %}
+    <title>{{ nginx_tpl_domain|d("CompanyName.website") }}</title>
 {% if item.welcome_css is undefined or item.welcome_css | bool %}
     <style type="text/css" media="screen">
 {% include "normalize.css" %}
