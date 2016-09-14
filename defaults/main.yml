@@ -1,0 +1,145 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.apt_proxy default variables [[[
+# ======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Main configuration [[[
+# ----------------------
+
+# .. envvar:: apt_proxy__deploy_state [[[
+#
+# Specify if APT proxy configuration should be present or absent. Proxy will be
+# automatically enabled if ``http_proxy``, ``https_proxy`` or ``ftp_proxy``
+# variables are set in the host environment. See debops.environment_ role
+# for more details.
+apt_proxy__deploy_state: '{{ "present"
+                             if (ansible_env.http_proxy|d() or
+                                 ansible_env.https_proxy|d() or
+                                 ansible_env.ftp_proxy|d())
+                             else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__filename [[[
+#
+# Name of the configuration file used by the role in :file:`/etc/apt/apt.conf.d/`.
+# You shouldn't change this name when ``debops.apt_proxy`` is enabled.
+apt_proxy__filename: '00apt_proxy'
+                                                                   # ]]]
+                                                                   # ]]]
+# HTTP proxy configuration [[[
+# ----------------------------
+
+# .. envvar:: apt_proxy__http_url [[[
+#
+# The URL of the HTTP proxy used by APT. If empty, HTTP proxy won't be enabled.
+apt_proxy__http_url: '{{ ansible_env.http_proxy | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__http_direct [[[
+#
+# List of hostnames to which APT should connect directly instead of through
+# HTTP proxy.
+apt_proxy__http_direct: []
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__http_options [[[
+#
+# A YAML dictionary with key/value parameters for the HTTP proxy. Each key is
+# the name of the ``Acquire::HTTP::*`` APT configuration option, and value is
+# it's value. The keys containing ``::`` sequences need to be quoted.
+# See :manpage:`apt.conf(5)` for more information. Example:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    apt_proxy__http_options:
+#      User-Agent: 'Debian APT-HTTP/1.3'
+#
+apt_proxy__http_options: {}
+                                                                   # ]]]
+                                                                   # ]]]
+# HTTPS proxy configuration [[[
+# -----------------------------
+
+# .. envvar:: apt_proxy__https_url [[[
+#
+# The URL of the HTTPS proxy used by APT. If empty, HTTPS proxy won't be
+# enabled.
+apt_proxy__https_url: '{{ ansible_env.https_proxy | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__https_direct [[[
+#
+# List of hostnames to which APT should connect directly instead of through
+# HTTPS proxy.
+apt_proxy__https_direct: []
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__https_options [[[
+#
+# A YAML dictionary with key/value parameters for the HTTPS proxy. Each key is
+# the name of the ``Acquire::HTTPS::*`` APT configuration option, and value is
+# it's value. The keys containing ``::`` sequences need to be quoted.
+# See :manpage:`apt.conf(5)` for more information. Example:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    apt_proxy__https_options:
+#      User-Agent: 'Debian APT-HTTP/1.3'
+#
+apt_proxy__https_options: {}
+                                                                   # ]]]
+                                                                   # ]]]
+# FTP proxy configuration [[[
+# ---------------------------
+
+# .. envvar:: apt_proxy__ftp_url [[[
+#
+# The URL of the FTP proxy used by APT. If empty, FTP proxy won't be
+# enabled.
+apt_proxy__ftp_url: '{{ ansible_env.ftp_proxy | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__ftp_direct [[[
+#
+# List of hostnames to which APT should connect directly instead of through
+# FTP proxy.
+apt_proxy__ftp_direct: []
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__ftp_login [[[
+#
+# List of commands sent to the FTP proxy to login to it and specify what host
+# to connect to. See :manpage:`apt.conf(5)` for more details.
+apt_proxy__ftp_login:
+  - 'USER $(PROXY_USER)'
+  - 'PASS $(PROXY_PASS)'
+  - 'USER $(SITE_USER)@$(SITE):$(SITE_PORT)'
+  - 'PASS $(SITE_PASS)'
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__ftp_options [[[
+#
+# A YAML dictionary with key/value parameters for the FTP proxy. Each key is
+# the name of the ``Acquire::FTP::*`` APT configuration option, and value is
+# it's value. The keys containing ``::`` sequences need to be quoted.
+# See :manpage:`apt.conf(5)` for more information. Example:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    apt_proxy__ftp_options:
+#      'Proxy::Passive": 'true'
+#
+apt_proxy__ftp_options: {}
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

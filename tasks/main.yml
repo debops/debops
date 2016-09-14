@@ -1,0 +1,16 @@
+---
+
+- name: Remove APT proxy configuration
+  file:
+    path: '/etc/apt/apt.conf.d/{{ apt_proxy__filename }}'
+    state: 'absent'
+  when: apt_proxy__deploy_state == 'absent'
+
+- name: Generate APT proxy configuration
+  template:
+    src: 'etc/apt/apt.conf.d/apt_proxy.conf.j2'
+    dest: '/etc/apt/apt.conf.d/{{ apt_proxy__filename }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: apt_proxy__deploy_state == 'present'
