@@ -219,6 +219,9 @@ Fixed
   Fixes security warnings which occurred with the latest version of
   debops.nginx_ about duplicated security headers. [ypid_]
 
+- Fix error when strings handed over to :command:`occ maintenance:install` start with a hyphen.
+  This only affected the initial setup and the role would have failed previously. [ypid_]
+
 
 `debops.owncloud v0.2.0`_ - 2015-11-12
 --------------------------------------
