@@ -164,7 +164,7 @@ Changed
   [drybjed_]
 
 - Rename the ``owncloud__subdomain`` variable to :envvar:`owncloud__fqdn`, and
-  use it to set the FQDN of the OwnCloud service. [drybjed_]
+  use it to set the FQDN of the ownCloud service. [drybjed_]
 
 - The :envvar:`owncloud__fqdn` variable is used as the mail domain, the mail
   "from" account is changed from ``owncloud__subdomain`` variable to
