@@ -20,9 +20,9 @@
 # variables are set in the host environment. See debops.environment_ role
 # for more details.
 apt_proxy__deploy_state: '{{ "present"
-                             if (ansible_env.http_proxy|d() or
-                                 ansible_env.https_proxy|d() or
-                                 ansible_env.ftp_proxy|d())
+                             if (apt_proxy__http_url or
+                                 apt_proxy__https_url or
+                                 apt_proxy__ftp_url)
                              else "absent" }}'
 
                                                                    # ]]]
