@@ -26,7 +26,7 @@ Policy
 
 The configuration management code and other source code used by the DebOps
 Project and committed to its repositories [#debops-org]_ MUST be signed by a
-valid PGP key of a DebOps Developer. For contributors it is RECOMMENDED to do
+valid OpenPGP key of a DebOps Developer. For contributors it is RECOMMENDED to do
 the same.
 
 Patches from DebOps Contributors MUST be reviewed by one of the
@@ -38,11 +38,12 @@ DebOps Developer.
 This should allow for secure code authentication. That means that tampering
 with the code on the source code management platform can be reliable detected
 by `DebOps Tools`_, DebOps Developers and all of the users of the Project and thus
-the integrity of the Project does not rely on centralized parties anymore.
+the integrity of the Project does not rely on centralized parties anymore
+(`not yet implemented <https://github.com/debops/debops-tools/issues/164>`__).
 Additionally, this ensures a trusted audit trail.
 
-Refer to the debops-keyring_ where a copy of the OpenPGP keys is present which
-can be used to verify the signatures.
+Refer to the debops-keyring_ where a copies of the OpenPGP keys are present
+which can be used to verify the signatures.
 
 .. [#debops-org] All repositories in the DebOps core project currently hosted at: https://github.com/debops/.
    This does not apply for `DebOps Contrib`_.
