@@ -18,6 +18,12 @@ The current role maintainer_ is drybjed.
 
 .. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.2.1...master
 
+Removed
+~~~~~~~
+
+- Remove support for ``apt-listchanges`` (moved to a separate role) and
+  ``apticron`` packages. [drybjed]
+
 
 `debops.apt v0.2.1`_ - 2016-09-09
 ---------------------------------
