@@ -19,7 +19,13 @@ new release.
 `debops.owncloud master`_ - unreleased
 --------------------------------------
 
-.. _debops.owncloud master: https://github.com/debops/ansible-owncloud/compare/v0.2.0...master
+.. _debops.owncloud master: https://github.com/debops/ansible-owncloud/compare/v0.3.0...master
+
+
+`debops.owncloud v0.3.0`_ - 2016-09-14
+--------------------------------------
+
+.. _debops.owncloud v0.3.0: https://github.com/debops/ansible-owncloud/compare/v0.2.0...v0.3.0
 
 Added
 ~~~~~
