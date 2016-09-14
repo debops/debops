@@ -143,7 +143,7 @@ Deprecated
   | ``nginx_htpasswd``                       | ``nginx__htpasswd``                        |
   +------------------------------------------+--------------------------------------------+
 
-- The ``php5`` server and upstream templates are deprecated in favour of
+- The ``php5`` server and upstream templates are deprecated in favor of
   ``php`` server and upstream templates. [drybjed_]
 
 Removed
@@ -308,7 +308,7 @@ Changed
   is not provided in the debops.pki_ realm, :program:`nginx` configuration will be
   invalid and restarting the webserver will fail. Right now you can avoid this
   by setting ``nginx_ocsp_verify`` variable to ``False`` if needed, there's
-  also per-vhost ``item.ocsp_verify`` rquivalent.
+  also per-vhost ``item.ocsp_verify`` equivalent.
 
   The internal debops.pki_ certificates should work out of the box.
   [drybjed_]
@@ -317,7 +317,7 @@ Changed
 
   The ``debops.nginx`` role will check if any of the server names for a given
   vhost have corresponding PKI realms. If a corresponding realm is found, its
-  certificates will be used for that server, unless overriden by
+  certificates will be used for that server, unless overridden by
   ``item.pki_realm`` parameter. If a corresponding realm is not found, that
   vhost will use the default PKI realm. [drybjed_]
 
@@ -441,13 +441,13 @@ Changed
   ``SCRIPT_FILENAME`` parameter will be added directly in nginx server
   configuration. [drybjed_]
 
-- Update userdir support to be more configurable. [drybjed_]
+- Update ``userdir`` support to be more configurable. [drybjed_]
 
 - Use all available nameservers as OCSP resolvers instead of just the first
   one. User can also override the list of OCSP resolvers if needed. [drybjed_]
 
 - Rearrange parts of the configuration templates and add more Jinja blocks to
-  be able to remove ``index`` and ``root`` directives programatically.
+  be able to remove ``index`` and ``root`` directives programmatically.
   [drybjed_]
 
 Fixed
