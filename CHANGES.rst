@@ -43,8 +43,8 @@ Added
 ~~~~~
 
 - Added support for both http and https repositories in case of internet proxy.
-  Moved apt__proxy_url to :envvar:`apt__http_proxy_url` and added
-  :envvar:`apt__https_proxy_url`. [tallandtree]
+  Moved apt__proxy_url to ``apt__http_proxy_url`` and added
+  ``apt__https_proxy_url``. [tallandtree]
 
 Changed
 ~~~~~~~
