@@ -180,6 +180,11 @@ Changed
   require manual removal of the old ``nginx`` server configuration file on
   existing installations. [drybjed_]
 
+Deprecated
+~~~~~~~~~~
+
+- Deprecated ownCloud 8.0 support which is End of Life as of 8.0.15 (2016-09-20). [ypid_]
+
 Removed
 ~~~~~~~
 
