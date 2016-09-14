@@ -25,12 +25,12 @@ Reporting a vulnerability
 -------------------------
 
 If you think your bug has security implications then please send it to the
-Project Leader (Maciej Delmanowski <drybjed@drybjed.net>) and additionally to
+`Current DebOps project Leader`_ and additionally to
 the maintainers of the affected part of the project.
 If you can fix the vulnerability (or have already done so) please consider
 attaching a patch.
-Please consider using OpenPGP to send in reports.
-You can find the public keys of the team members in the `debops-keyring`_.
+Please consider using OpenPGP to encrypt reports before sending them.
+You can find the public keys of the team members in the debops-keyring_.
 
 Disclosure process
 ------------------
