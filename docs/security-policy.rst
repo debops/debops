@@ -29,9 +29,8 @@ Project Leader (Maciej Delmanowski <drybjed@drybjed.net>) and additionally to
 the maintainers of the affected part of the project.
 If you can fix the vulnerability (or have already done so) please consider
 attaching a patch.
-If you wish to use PGP to send
-in a report please use one or more of the keys of the team members listed at
-`debops-keyring`_.
+Please consider using OpenPGP to send in reports.
+You can find the public keys of the team members in the `debops-keyring`_.
 
 Disclosure process
 ------------------
@@ -67,7 +66,7 @@ The best way to receive all the security announcements is to subscribe to the
 `DebOps Security Announcements mailing list`_. The mailing list
 is very low traffic, and it receives the public notifications the moment the
 embargo is lifted. If you produce packages of DebOps and require prior
-notification of vulnerabilities, you should get in touch with the DebOps Project.
+notification of vulnerabilities, you should get in touch with the `DebOps project Leader`_.
 
 No one outside the core team, the initial reporter or downstream projects will be
 notified prior to the lifting of the embargo. We regret that we cannot make
