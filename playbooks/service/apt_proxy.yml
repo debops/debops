@@ -1,7 +1,7 @@
 ---
 
-- name: Manage SSH public keys
-  hosts: [ 'debops_all_hosts', 'debops_service_authorized_keys' ]
+- name: Configure APT proxy
+  hosts: [ 'debops_all_hosts', 'debops_service_apt_proxy' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,5 +10,5 @@
 
   roles:
 
-    - role: debops.authorized_keys
-      tags: [ 'role::authorized_keys' ]
+    - role: debops.apt_proxy
+      tags: [ 'role::apt_proxy' ]
