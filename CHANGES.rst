@@ -207,6 +207,8 @@ Removed
   If you need support for one of them and can get it to work we will be happy
   about your contribution! [ypid_]
 
+- Drop ownCloud 7.0 support which is End of Life as of 7.0.15 (2016-05-12). [ypid_]
+
 Fixed
 ~~~~~
 

@@ -195,25 +195,6 @@
 
 # Configure cron job for background tasks [[[
 
-- name: Use cron for background tasks (lib/private/...)
-  lineinfile:
-    dest: '{{ owncloud__deploy_path }}/lib/private/backgroundjob.php'
-    state: 'present'
-    regexp: 'return OC_Appconfig::getValue'
-    line: "                return OC_Appconfig::getValue( 'core', 'backgroundjobs_mode', 'cron' );"
-  when: owncloud__config_file is defined and not owncloud__config_file.stat.exists and owncloud__release in [ '7.0' ]
-  ## FIXME(ypid): Not sure if it was 7.0 or if it still works for 8.0. Anyway. Scheduled for removal on 2016-10
-  ## https://github.com/owncloud/core/wiki/Maintenance-and-Release-Schedule
-
-  ## Does not match/is not needed for ownCloud above version 7.0
-- name: Use cron for background jobs (settings/admin.php)
-  lineinfile:
-     dest: '{{ owncloud__deploy_path }}/settings/admin.php'
-     state: 'present'
-     regexp: "'backgroundjobs_mode', OC_Appconfig::getValue"
-     line: "$tmpl->assign('backgroundjobs_mode', OC_Appconfig::getValue('core', 'backgroundjobs_mode', 'cron'));"
-  when: owncloud__release in [ '7.0' ] and not owncloud__config_file
-
 - name: Setup cron service
   cron:
     name: 'ownCloud Background Jobs'
