@@ -10,17 +10,10 @@ to your setup in order to use a new role release. Refer to the
 From v0.2.0 to v0.3.0
 ---------------------
 
-The variable apt__proxy_url is split into two variables to support both http
-and https repositories when a proxy is used: apt__http_proxy_url and 
-apt__https_proxy_url.
-This script can come in handy to convert apt__proxy_url into the new variables:
-
-.. literalinclude:: scripts/upgrade-from-v0.2.x-to-v0.3.x
-   :language: shell
-
-The script is bundled with this role under
-:file:`docs/scripts/upgrade-from-v0.2.x-to-v0.3.x` and can be invoked from
-there.
+The APT proxy configuration is moved to a separate role, ``debops.apt_proxy``.
+Consult its documentation to see how to configure it. The current proxy
+configuration is left in place on existing systems, you might consider removing
+it when new role creates its own configuration file.
 
 The ``apt-listchanges`` package is managed using ``debops.apt_listchanges``
 role. The ``apticron`` package is currently not installed by default (it is not

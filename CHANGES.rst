@@ -16,13 +16,22 @@ The current role maintainer_ is drybjed.
 `debops.apt master`_ - unreleased
 ---------------------------------
 
-.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.2.1...master
+.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.3.0...master
+
+
+`debops.apt v0.3.0`_ - 2016-09-14
+---------------------------------
+
+.. _debops.apt v0.3.0: https://github.com/debops/ansible-apt/compare/v0.2.1...v0.3.0
 
 Removed
 ~~~~~~~
 
 - Remove support for ``apt-listchanges`` (moved to a separate role) and
   ``apticron`` packages. [drybjed]
+
+- Remove support for APT proxy configuration, it is moved to a separate Ansible
+  role. [drybjed]
 
 
 `debops.apt v0.2.1`_ - 2016-09-09
