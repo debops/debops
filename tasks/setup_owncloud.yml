@@ -110,13 +110,10 @@
            '--admin-user={{ owncloud__admin_username }}'
            '--admin-pass={{ owncloud__admin_password }}'
            {% endif %}
-  ## FIXME: Enable after testing!
-  # no_log: True
   register: owncloud__register_occ_install
   when: owncloud__do_autosetup|bool and owncloud__release not in [ '8.0' ]
   ## Did not work with 8.1.6-2.1 because of https://github.com/owncloud/core/issues/17583
   ## Falling back to URL auto install method.
-  ## FIXME: [Errno 2] No such file or directory
 
 - name: Install ownCloud autoconfig file
   template:
