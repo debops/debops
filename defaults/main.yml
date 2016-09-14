@@ -330,14 +330,14 @@ nginx_ocsp_resolvers: []
 nginx_hsts_age: '15768000'
 nginx_hsts_subdomains: True
 
-# Add preload parameter to HSTS header
+# Add preload parameter to HSTS header.
 # More information: https://hstspreload.appspot.com/
 nginx_hsts_preload: True
 
-# Specify HTTP server name which will be marked as default_server
+# Specify HTTP server name which will be marked as default_server.
 nginx_default_name: ''
 
-# Specify HTTPS server name which will be marked as default_server
+# Specify HTTPS server name which will be marked as default_server.
 nginx_default_ssl_name: ''
 
 # Default server template used if no type is selected
@@ -412,7 +412,7 @@ nginx_htpasswd_secret_path: '{{ secret + "/credentials/" + ansible_fqdn + "/ngin
 # password hashes. You should use schemes supported by ``passlib`` library.
 nginx__htpasswd_crypt_scheme: 'sha512_crypt'
 
-# List of htpasswd files with user accounts managed by 'debops.nginx'. Example
+# List of htpasswd files with user accounts managed by ``debops.nginx``. Example
 # entries below
 nginx__htpasswd: []
 
@@ -602,18 +602,16 @@ nginx__apt_preferences__dependent_list:
   - package: 'nginx nginx-*'
     backports: [ 'wheezy' ]
     reason: 'Support for SPDY, OCSP stapling'
-    role: 'debops.nginx'
-    when: '{{ (nginx_flavor == "full") | bool }}'
-    delete: '{{ nginx__deploy_state != "present" or (not (nginx_flavor == "full") | bool) }}'
+    by_role: 'debops.nginx'
+    state: '{{ ((nginx__deploy_state in [ "present" ]) and (nginx_flavor not in [ "passenger" ])) | ternary("present", "absent") }}'
 
   - package: 'nginx nginx-*'
     pin: 'release o=Phusion'
     reason: 'Support for Phusion Passenger'
     priority: '600'
     suffix: '_passenger'
-    role: 'debops.nginx'
-    when: '{{ (nginx_flavor == "passenger") | bool }}'
-    delete: '{{ nginx__deploy_state != "present" or (not (nginx_flavor == "passenger") | bool) }}'
+    by_role: 'debops.nginx'
+    state: '{{ ((nginx__deploy_state in [ "present" ]) and (nginx_flavor in [ "passenger" ])) | ternary("present", "absent") }}'
 
 # Configuration of the :command:`iptables` firewall using :program:`ferm`.
 nginx_ferm_dependent_rules: '{{ nginx__ferm__dependent_rules }}'
@@ -625,7 +623,7 @@ nginx__ferm__dependent_rules:
     saddr: '{{ nginx_allow + nginx_group_allow + nginx_host_allow }}'
     accept_any: True
     weight: '40'
-    role: 'nginx'
+    by_role: 'nginx'
     name: 'http_https'
     multiport: True
     delete: '{{ nginx__deploy_state != "present" }}'
