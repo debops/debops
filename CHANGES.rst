@@ -50,6 +50,10 @@ Added
 - Add ``debops.sysctl`` role with corresponding playbook and include it in
   the :file:`common.yml` playbook. [ypid_]
 
+- Add ``debops.apt_listchanges`` and ``debops.apt_proxy`` roles with their
+  corresponding playbooks. Both roles are included in the ``common.yml``
+  playbook. [drybjed_]
+
 Changed
 ~~~~~~~
 
