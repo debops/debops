@@ -54,7 +54,7 @@
     - '{{ nginx_dependent_servers | d([]) }}'
   notify: [ 'Test nginx and reload' ]
   when: (item.name is defined and
-         ((item.state|d() and item.state == 'absent') or (item.delete|d() and item.delete|bool)))
+         ((item.state|d("present") == 'absent') or (item.delete|d()|bool)))
 
 - name: Get last used HTTP default_server for default_server roulette
   set_fact:
@@ -83,8 +83,9 @@
     nginx_register_default_server_http: '{{ item.name if item.name is string else item.name[0] | d("default") }}'
   with_items: '{{ (nginx__servers + nginx__default_servers + nginx__internal_servers + nginx__dependent_servers +
                    nginx_servers|d([]) + nginx_default_servers|d([]) + nginx_internal_servers|d([]) + nginx_dependent_servers|d([]))[::-1] }}'
-  when: (item.name is defined and item.state|d('present') != 'absent' and (item.enabled is undefined or item.enabled|bool) and
-         (item.listen is undefined or item.listen|d()) and
+  when: (item.name is defined and item.state|d('present') != 'absent' and
+         (item.enabled|d(True)|bool) and
+         (item.listen|d()) and
          ((item.ssl is undefined or not item.ssl | bool) or not nginx_pki | bool))
 
 - name: Get first server that listens on https port for default_server roulette
@@ -146,9 +147,9 @@
     - '{{ nginx_dependent_servers | d([]) }}'
   notify: [ 'Test nginx and restart' ]
   when: (item.name is defined and
-         ((item.state|d() and item.state == 'absent') or
+         ((item.state|d("present") == 'absent') or
           (item.enabled|d() and not item.enabled|bool) or
-          (item.delete|d() and item.delete|bool)))
+          (item.delete|d()|bool)))
 
   ## https://stackoverflow.com/a/28888474
 - name: Test if Ansible is running in check mode
@@ -179,6 +180,6 @@
     - '{{ nginx_dependent_servers | d([]) }}'
   notify: [ 'Test nginx and restart' ]
   when: (item.name is defined and item.state|d('present') != 'absent' and
-         (item.enabled is undefined or item.enabled|bool) and
+         (item.enabled|d(True)|bool) and
          (item.delete is undefined or not item.delete|bool) and
          not nginx__fact_check_mode|bool)

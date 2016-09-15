@@ -9,496 +9,7 @@
 # documentation to ../../../../docs/defaults-detailed.rst
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #
-#   - item.enabled: True/False
-#       Required. Determines if symlink to server configuration is present in
-#       /etc/nginx/sites-enabled/ directory.
 #
-#
-#   - item.name: '' or []
-#       Required. String or list of domain names compatible with 'server_name'
-#       nginx configuration option.
-#
-#       First element is used to create the name of the nginx configuration
-#       file and must be a normal domain name, other elements can include
-#       wildcards and regexp matches.
-#
-#       List can also be empty (but needs to be defined) in which case the
-#       configuration its included in will be named 'default'.
-#
-#
-#   - item.filename: ''
-#       Optional. Alternative name of the nginx configuration file in
-#       '/etc/nginx/' directory. The suffix '.conf' will be added automatically.
-#       Can be used to distinguish between different versions of the same
-#       configuration - for example separate configuration for HTTP and HTTPS.
-#
-#
-#   - item.welcome: True/False
-#       Create an example 'index.html' file in website root directory using
-#       a template. If index.html is present, it won't be overwritten.
-#
-#
-#   - item.welcome_template: ''
-#       Optional. Specify absolute path to a Jinja2 template which should be
-#       used to generate a welcome page.
-#
-#
-#   - item.welcome_domain: ''
-#       Optional. Specify a DNS domain which should be used in the generated
-#       welcome page. By default, a domain is detected from 'item.name[0]', or
-#       if it's not specified, 'ansible_domain' variables.
-#
-#
-#   - item.welcome_css: True/False
-#       Optional. If specified and False, omit custom stylesheet in the
-#       generated 'index.html' file.
-#
-#
-#   - item.by_role: ''
-#       Optional. Add a comment indicating which role has created this specific
-#       server configuration. Specify just the name of the role, ie. "debops.nginx".
-#
-#
-#   - item.delete: True
-#       Optional. Mark this server configuration to be removed on the next
-#       Ansible run (symlink to that configuration will also be removed).
-#
-#
-#   - item.userdir: True/False
-#       Optional. Enable UserDir support on domains configured in this server.
-#       Web pages on https://host/~<user>/ will be read from
-#       /srv/www/<user>/userdir/public directories.
-#
-#
-#   - item.userdir_regexp: ''
-#       Optional. Specify location regexp pattern used by nginx to determine if
-#       a specified URL is an userdir URL.
-#
-#
-#   - item.userdir_alias: ''
-#       Optional. Specify the absolute path to user directories used as an
-#       alias pattern which uses the parameters from location regexp to select
-#       the correct user and file to display.
-#
-#
-#   - item.userdir_index: ''
-#       Optional. Specify list of index files which will be used by nginx
-#       automatically to display a HTML page, if found in current directory.
-#
-#
-#   - item.userdir_options: |
-#       Optional. Specify additional options added to the userdir location
-#       block as a YAML text block.
-#
-#
-#   - item.type: ''
-#       Optional. Specify name of the template to use to generate nginx server
-#       configuration. Templates can extend other templates.
-#
-#
-#   - item.redirect: ''
-#       Optional. Redirect incoming requests on HTTP port to different address.
-#
-#
-#   - item.redirect_ssl: ''
-#       Optional. Redirect incoming requests on HTTPS port to different address.
-#
-#
-#   - item.redirect_code: ''
-#       Optional. Specify HTTP code used in the redirect response, by default
-#       307 Temporary Redirect.
-#
-#
-#   - item.redirect_code_ssl: ''
-#       Optional. Specify HTTP code used in the redirect response from HTTP to
-#       HTTPS, by default 301 Moved Permanently.
-#
-#
-#   - item.redirect_from: True or []
-#       Optional. Create a separate server { } section which will automatically
-#       redirect requests from specified list of server names (or all but the
-#       first name in item.name list if option is set to True) to the first
-#       server name specified in item.name list.
-#
-#
-#   - item.redirect_to: ''
-#       Optional. Create separate server { } section which redirects all
-#       requests on servers specified in 'item.name' list to server specified
-#       in 'item.redirect_to'. Specified server name will be used as the only
-#       name in subsequent HTTP and HTTPS configuration.
-#
-#
-#   - item.redirect_to_ssl: True/False
-#       Optional. If True, redirect connection from HTTP to HTTPS version of
-#       the site. Site is expected to be configured in a separate configuration
-#       file. Set to False to allow to serve the website via HTTP and HTTPS and
-#       don't redirect HTTP to HTTPS.
-#
-#
-#   - item.acme: True/False
-#       Optional. Enable or disable support for Automated Certificate
-#       Management Environment challenge queries for this server.
-#
-#
-#   - item.ssl: True/False
-#       Optional. Enable or disable HTTPS for this server configuration (HTTPS
-#       is enabled by default for all servers when using debops.pki. You can
-#       disable it selectively using this option).
-#
-#
-#   - item.ssl_crt: ''
-#       Optional. Absolute path to custom SSL certificate to use, If not
-#       supplied pki_cert will be used instead.
-#
-#
-#   - item.ssl_key: ''
-#       Optional. Absolute path to custom SSL private key to use. If not
-#       supplied pki_key will be used instead.
-#
-#
-#   - item.ssl_ca: ''
-#       Optional. Specify absolute path to the client CA certificate used to
-#       authenticate clients. If not specified, pki_ca will be used instead.
-#
-#
-#   - item.ssl_trusted: ''
-#       Optional. Specify absolute path to the intermediate+root CA server
-#       certificate which will be used for OCSP stapling verification. If not
-#       specified, value of pki_trusted will be used instead.
-#
-#
-#   - item.ssl_dhparam: ''
-#       Optional. Absolute path to custom DHE parameters to use. If not
-#       supplied, nginx_ssl_dhparam will be used instead.
-#
-#
-#   - item.ssl_ciphers: ''
-#       Optional. Name of the list of preferred server ciphers to use. Server
-#       ciphers with corresponding names can be found in 'vars/main.yml' file
-#       in 'debops.nginx' role. 'pfs' ciphers are enabled by default.
-#
-#
-#   - item.ssl_curve: ''
-#       Optional. ECC curve enabled for this server. By default, 'secp384r1'.
-#
-#
-#   - item.ssl_verify_client: True/False
-#      Optional. Requests the client certificate and verifies it if the
-#      certificate is present. 
-#
-#
-#   - item.ssl_client_certificate: ''
-#      Optional. Specifies a file with trusted CA certificates in the PEM
-#      format used to verify client certificates.
-#
-#
-#   - item.ssl_crl: ''
-#      Optional. Specifies a file with revoked certificates (CRL) in the PEM
-#      format used to verify client certificates.
-#
-#
-#   - item.pki_realm: ''
-#       Optional. Overwrite default PKI realm used by nginx for this server
-#       configuration. See 'debops.pki' role for more information, as well as
-#       '/etc/pki/' directory for list of available realms.
-#
-#
-#   - item.pki_crt: ''
-#       Optional. Path to custom SSL certificate to use, relative to currently
-#       enabled PKI realm (either system-wide or for current server).
-#
-#
-#   - item.pki_key: ''
-#       Optional. Path to custom SSL private key to use, relative to currently
-#       enabled PKI realm (either system-wide or for current server).
-#
-#
-#   - item.pki_ca: ''
-#       Optional. Path to custom client CA certificate to use for client
-#       authentication, relative to currently enabled PKI realm.
-#
-#
-#   - item.pki_trusted: ''
-#       Optional. Path to custom intermediate+root CA certificate to use for
-#       OCSP stapling verification, relative to currently enabled PKI realm.
-#
-#
-#   - item.ocsp: True/False
-#       Optional. Enable or disable OCSP stapling for a given server.
-#
-#
-#   - item.ocsp_verify: True/False
-#       Optional. Enable or disable OCSP stapling verification for a given
-#       server. An intermediate+root CA certificate is required.
-#
-#
-#   - item.owner: ''
-#       Optional. If specified, nginx will configure server root to
-#       '/srv/www/<owner>/sites/<item.name[0]>/public/', if not specified,
-#       nginx will configure server root to
-#       '/srv/www/sites/<item.name[0]/public/'.
-#
-#
-#   - item.keepalive: ''
-#       Optional. Set custom KeepAlive timeout for this server, in seconds.
-#
-#
-#   - item.deny_hidden: True/False
-#       Optional. Allow or deny access to all hidden files (enabled by
-#       default).
-#
-#
-#   - item.favicon: True/False
-#       Optional. Enable or disable code that ignores '/favicon.ico' requests
-#       in server logs to reduce noise (enabled by default).
-#
-#
-#   - item.listen: []/False
-#       Optional. List of ports, IP addresses or sockets this server
-#       configuration should listen on for HTTP connections. By default set to
-#       '[::]:80' for all servers.
-#
-#
-#   - item.listen_ssl: []/False
-#       Optional. List of ports, IP addresses or socnets this server
-#       configuration should listen on for HTTPS connections. By default set to
-#       '[::]:443' for all servers.
-#
-#
-#   - item.index: ''
-#       Optional. String with custom index filenames. If set to False, the
-#       nginx role won't add the directive.
-#
-#
-#   - item.root: ''
-#       Optional. Absolute path to server root to use for this server
-#       configuration. If not specified, nginx role will use
-#       '/srv/www/<item.name[0]>/public/' by default; see also 'item.owner'
-#       parameter.  If set to False, the nginx role won't add the directive.
-#
-#
-#   - item.log_path: ''
-#       Optional. Absolute path where log files should be stored. The If not
-#       specified, logs will be saved to '/var/log/nginx/' directory. You
-#       should take care of log rotation if you specify custom log path.
-#       The specified path needs to exist before nginx is reloaded/restarted.
-#
-#
-#   - item.access_log: ''
-#       Optional. Name of the access log file in the '/var/log/nginx/' directory.
-#       The suffix '.log' will be added automatically. If not specified, nginx
-#       role will use '<item.name[0]>_access' by default.
-#
-#
-#   - item.error_log: ''
-#       Optional. Name of the error log file in the '/var/log/nginx/' directory.
-#       The suffix '.log' will be added automatically. If not specified, nginx
-#       role will use '<item.name[0]>_error' by default.
-#
-#
-#   - item.status: []
-#       Optional. Enable nginx server status page and allow access from list of
-#       IP addresses or CIDR ranges.
-#
-#
-#   - item.status_name: ''
-#       Optional. Set the name of the location which should be used for nginx
-#       status page
-#
-#
-#   - item.access_policy: ''
-#       Optional. Specify a named "access policy" to use for this server. See
-#       debops.nginx role defaults, 'nginx_access_policy_*' variables for more
-#       information.
-#
-#
-#   - item.satisfy: 'any/all'
-#       Optional. Set the server behaviour to either accept any of 'allow,
-#       auth' configuration restrictions, or require all of them to match.
-#       By default, any restriction by itself will match.
-#
-#
-#   - item.allow: []
-#       Optional. List of IP addresses or CIDR networks which can access given
-#       server. Automatically adds 'deny: all' at the end of the list.
-#
-#
-#   - item.auth_basic: True/False
-#       Optional. Enable HTTP Basic Authentication for this server. Instead of
-#       True/False, you can use a list of accounts which will automatically
-#       cast to True, if not empty. Example:
-#
-#           item.auth_basic: '{{ account_list }}'
-#
-#
-#   - item.auth_basic_realm: ''
-#       Optional. String which will be displayed to the user in the
-#       HTTP Basic Auth dialog box.
-#
-#
-#   - item.auth_basic_name: ''
-#       Optional. Required with 'item.auth_basic'. Specifies the name of the
-#       htpasswd file used for this server authentication. htpasswd files are
-#       stored in '/etc/nginx/private/' directory.
-#
-#       You can use 'item.auth_basic_filename' and specify full path to
-#       htpasswd file to use; file needs to be readable by nginx system user
-#       (by default, 'www-data').
-#
-#
-#   - item.options: |
-#       Optional. Add custom options to this server configuration using text
-#       block (semicolons at the end of each line are required).
-#
-#
-#   - item.error_pages: {}
-#       Optional. Dict of error codes in string format as keys and
-#       corresponding error pages to display. Example:
-#
-#         error_pages:
-#           '403 404': '/400.html'
-#           '502':     '/500.html'
-#
-#
-#   - item.error_pages_list: []
-#       Optional. List of dictionaries, each one describing an error page. List
-#       of known keys and their descriptions:
-#
-#       code: '' or []
-#         Required. String or list of error codes to include in this
-#         configuration section.
-#
-#       uri: ''
-#         Required. URI or location to redirect the request to.
-#
-#       location and location_options: ''
-#         Optional. if specified, an additional location section will be added
-#         with contents of 'location_options' parameter. If only
-#         'location_options' is present, the 'uri' parameter will be used as
-#         the location.
-#
-#       Examples:
-#
-#         error_pages_list:
-#           - code: [ '403', '404', '=500' ]
-#             uri: '/error.html'
-#             location: '= /error.html'
-#             location_options: |
-#               internal;
-#
-#
-#   - item.location: {}
-#       Optional. Dict of location sections to include in this server
-#       configuration, in text block format (semicolons at end of each
-#       configuration line required). Each key defines string accepted by
-#       "location" option, values are strings or text blocks to be included
-#       inside each location section. Examples:
-#
-#         location:
-#           '/': 'try_files $uri $uri/ /index.html =404;'
-#
-#           '~ ^/doc$': |
-#             alias /usr/share/doc;
-#             autoindex on;
-#
-#
-#   - item.location_allow: {}
-#       Optional. Dict which adds "allow" entries to each location section
-#       defined above from a list. Each location needs to have corresponding
-#       entry in "item.location" dict. If "item.location_deny" is not defined,
-#       'deny all;' is added at the end. Examples:
-#
-#         location_allow:
-#           '~ ^/doc$': [ '127.0.0.1', '::1' ]
-#
-#
-#   - item.location_deny: {}
-#       Optional. Dict which adds "deny" entries to each location section
-#       defined above from a list. Each location needs to have corresponding
-#       entry in "item.location" dict. Examples:
-#
-#         location_deny:
-#           '/': [ '192.168.0.1/24' ]
-#           '~ ^/doc$': [ 'all' ]
-#
-#
-#   - item.location_referers: {}
-#       Optional. Dict with lists of valid referers accepted for a given
-#       location, all other referers will be blocked by nginx. Each location
-#       needs to have corresponding entry in "item.location" dict. Examples:
-#
-#         location_referers:
-#           '/': [ '{{ ansible_fqdn }}', 'www.{{ ansible_fqdn }}', '*.{{ ansible_domain }}' ]
-#
-#
-#   - item.location_list: []
-#       Optional. This is an alternative syntax of item.location_* entries;
-#       instead of using text blocks directly, it uses dict keys and values to
-#       configure each location, which allows for greater control and nesting.
-#       List of known keys and their descriptions:
-#
-#       pattern: ''
-#         location pattern, for example: '/' or '~ ^/doc$' or 'gitlab'
-#
-#       pattern_prefix: ''
-#         string prepended to the location pattern, for example: '@' which will
-#         create named location '@gitlab'
-#
-#       enabled: True/False
-#         boolean value specyfing if location should be included in config,
-#         defaults to True
-#
-#       referers: []
-#         list of allowed valid referers, for example [ '{{ ansible_fqdn }}' ]
-#
-#       allow / deny: []
-#         lists of hosts or CIDR ranges to allow or deny, lack of deny implies
-#         'deny all;' at the end of the allow list
-#
-#       options: '' or |
-#         string or text block with options for this location block, semicolons
-#         at the end of each line are required
-#
-#       locations: []
-#         nested list of locations to create in this location section
-#
-#   - item.hsts_enabled: True
-#       Optional. If this is set to True and SSL is enabled for this item, the
-#       Strict-Transport-Security header is set in the server's responses. If
-#       this is set to false, the Strict-Transport-Security header will not
-#       be set in the server's responses.
-#
-#
-#   - item.hsts_preload: True/False
-#       Optional. Add a "preload" parameter to the HSTS header which can be
-#       used with https://hstspreload.appspot.com/ site to configure HSTS
-#       preloading for a given website.
-#
-#
-#   - item.csp: False
-#       Optional. If this is set to True and SSL is enabled for this item, the
-#       Content-Security-Policy header is set in the server's responses. If
-#       this is set to false, the Content-Security-Policy header will not
-#       be set in the server's responses.
-#
-#
-#   - item.csp_report: False
-#       Optional. If this is set to True and SSL is enabled for this item, the
-#       Content-Security-Policy-Report-Only header is set in the server's
-#       responses. If this is set to false, the Content-Security-Policy-Report-Only
-#       header will not be set in the server's responses.
-#
-#
-#   - item.csp_policy: 'default-src https:'
-#       Optional. If csp or csp_report option is True, this option determines
-#       the Content-Security-Policy header set in the server's responses. By
-#       default, it forces all assets to be loaded over https.
-#
-#
-#   - item.try_files: nginx_default_try_files
-#       Optional. Checks for the existence of files in order, and returns the
-#       first file that is found for location /.
-#       http://wiki.nginx.org/NginxHttpCoreModule#try_files
 #}
 {#
 
@@ -567,34 +78,22 @@
 
     ---- SSL certificate ----
 #}
-{% set nginx_tpl_ssl_certificate = nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + item.pki_crt | d(nginx_pki_crt) %}
-{% if (item.ssl_crt is defined and item.ssl_crt)  %}
-{%   set nginx_tpl_ssl_certificate = item.ssl_crt %}
-{% endif                                          %}
+{% set nginx_tpl_ssl_certificate = item.ssl_crt|d(nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + (item.pki_crt|d(nginx_pki_crt))) %}
 {#
 
     ---- SSL certificate key ----
 #}
-{% set nginx_tpl_ssl_certificate_key = nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + item.pki_key | d(nginx_pki_key) %}
-{% if (item.ssl_key is defined and item.ssl_key)      %}
-{%   set nginx_tpl_ssl_certificate_key = item.ssl_key %}
-{% endif                                              %}
+{% set nginx_tpl_ssl_certificate_key = item.ssl_key|d(nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + (item.pki_key|d(nginx_pki_key))) %}
 {#
 
     ---- SSL client CA certificate ----
 #}
-{% set nginx_tpl_ssl_client_certificate = nginx_pki_path + "/" + item.pki_ca_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_ca_realm) + "/" + item.pki_ca | d(nginx_pki_ca) %}
-{% if (item.ssl_ca is defined and item.ssl_ca)      %}
-{%   set nginx_tpl_ssl_client_certificate = item.ssl_ca %}
-{% endif                                              %}
+{% set nginx_tpl_ssl_client_certificate = item.ssl_ca|d(nginx_pki_path + "/" + item.pki_ca_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_ca_realm) + "/" + (item.pki_ca|d(nginx_pki_ca))) %}
 {#
 
     ---- SSL trusted CA certificate ----
 #}
-{% set nginx_tpl_ssl_trusted_certificate = nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + item.pki_trusted | d(nginx_pki_trusted) %}
-{% if (item.ssl_trusted is defined and item.ssl_trusted)      %}
-{%   set nginx_tpl_ssl_trusted_certificate = item.ssl_trusted %}
-{% endif                                              %}
+{% set nginx_tpl_ssl_trusted_certificate = item.ssl_trusted|d(nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + item.pki_trusted | d(nginx_pki_trusted)) %}
 {#
 
     ---- Diffie-Hellman Key Exchange parameters ----
@@ -675,7 +174,7 @@
                         return 403;
                 }
 {%                 endif                                                       %}
-{%                 if entry.options is defined and entry.options               %}
+{%                 if entry.options|d()                                        %}
                 {{ entry.options | indent(16) | regex_replace("(?m)^\s*$", "") }}
 {%                 endif                                                       %}
 {%                 if entry.allow is defined and entry.allow                   %}
@@ -706,12 +205,12 @@
     ---- macro which prints the nginx server block which is shared between HTTP and HTTPS
 #}
 {% macro print_shared_nginx_server_block() %}
-{% if (not nginx_tpl_ssl and ((item.redirect is defined and item.redirect) or (item.redirect_to_ssl is defined and item.redirect_to_ssl))) %}
+{% if (not nginx_tpl_ssl and ((item.redirect is defined and item.redirect) or (item.redirect_to_ssl|d(True) | bool))) %}
         return {{ item.redirect_code_ssl | default(nginx_tpl_default_redirect_code_ssl) }} {{ nginx_tpl_http_redirect }};
 {% elif (nginx_tpl_ssl and (item.redirect_ssl is defined and item.redirect_ssl)) %}
         return {{ item.redirect_code | default(nginx_tpl_default_redirect_code) }} {{ item.redirect_ssl }};
 {% else %}
-        keepalive_timeout {{ item.keepalive | default(nginx_default_keepalive_timeout) }};
+        keepalive_timeout {{ item.keepalive | default(nginx_default_keepalive_timeout) | string }};
 
 {% block nginx_tpl_block_log %}
 {% if item.name is defined and item.name %}
@@ -721,7 +220,7 @@
 {% endif %}
 {% endblock %}
 {% block nginx_tpl_block_index %}
-{% if item.index is undefined or item.index != False %}
+{% if item.index|d() %}
         index {{ item.index | default('index.html index.htm') }};
 
 {% endif %}
@@ -745,7 +244,7 @@
 {% endif %}
 
 {% endif %}
-{% if item.error_pages is defined and item.error_pages %}
+{% if item.error_pages|d() %}
 {% for code, location in item.error_pages.iteritems() %}
         error_page {{ code }} {{ location }};
         location {{ location }} {
@@ -771,7 +270,7 @@
 {% endfor %}
 
 {% endif %}
-{% if item.options is defined and item.options %}
+{% if item.options|d() %}
         {{ item.options | indent(8) | regex_replace("(?m)^\s*$", "") }}
 
 {% endif %}
@@ -780,7 +279,7 @@
         satisfy {{ nginx_access_policy_satisfy_map[item.access_policy] }};
 
 {% elif ((item.allow is defined and item.allow) or
-         (item.auth_basic is defined and item.auth_basic) or
+         (item.auth_basic|d() | bool) or
          (item.satisfy is defined and item.satisfy) or
          ((item.access_policy is defined and item.access_policy) and
           item.access_policy not in nginx_access_policy_satisfy_map.keys())) %}
@@ -809,15 +308,15 @@
 {% endif %}
 {% if ((item.access_policy is defined and item.access_policy) and
        (item.access_policy in nginx_access_policy_auth_basic_map.keys())) %}
-        auth_basic "{% if item.auth_basic_realm is defined and item.auth_basic_realm %}{{ item.auth_basic_realm }}{% else %}{{ nginx_default_auth_basic_realm }}{% endif %}";
+        auth_basic "{{ item.auth_basic_realm|d(nginx_default_auth_basic_realm) }}";
         auth_basic_user_file {{ nginx_private_path + "/" + nginx_access_policy_auth_basic_map[item.access_policy] }};
 
-{% elif item.auth_basic is defined and item.auth_basic %}
-        auth_basic "{% if item.auth_basic_realm is defined and item.auth_basic_realm %}{{ item.auth_basic_realm }}{% else %}{{ nginx_default_auth_basic_realm }}{% endif %}";
+{% elif item.auth_basic|d() | bool %}
+        auth_basic "{{ item.auth_basic_realm|d(nginx_default_auth_basic_realm) }}";
         auth_basic_user_file {{ item.auth_basic_filename | default(nginx_private_path + "/" + item.auth_basic_name) }};
 
 {% endif %}
-{% if item.userdir is defined and item.userdir %}
+{% if item.userdir|d()|bool %}
         location ~ {{ item.userdir_regexp | d('^/~(.+?)(/.*)?$') }} {
                 alias {{ item.userdir_alias | d(nginx_www + '/$1/userdir/public$2') }};
                 index {{ item.userdir_index | d(item.index | default('index.html index.htm')) }};
@@ -830,14 +329,14 @@
         }
 
 {% endif %}
-{% if (item.deny_hidden is undefined or item.deny_hidden|d()) %}
+{% if item.deny_hidden|d(True) | bool %}
         # Disallow access to hidden files and directories
         location ~ /\. {
                 return 404;
         }
 
 {% endif %}
-{% if (item.favicon is defined and item.favicon) or item.favicon is undefined %}
+{% if item.favicon|d(True) | bool %}
         location = /favicon.ico {
                 try_files /favicon.ico =204;
                 access_log off;
@@ -859,7 +358,7 @@
                 allow {{ address }};
 {% endfor %}
 {% endif %}
-{% if item.status is defined and item.status %}
+{% if item.status|d() %}
 {% for address in item.status | unique %}
                 allow {{ address }};
 {% endfor %}
@@ -932,9 +431,9 @@
 {% else %}
 server {
 
-{% if (item.listen is undefined or (item.listen is defined and item.listen)) %}
+{% if (item.listen|d(True) %}
 {% for port in nginx_tpl_listen %}
-        listen {{ port }};
+        listen {{ port|string }};
 {% endfor %}
 
 {% if item.redirect_from is iterable %}
@@ -1046,22 +545,22 @@ server {
         ssl_trusted_certificate   {{ nginx_tpl_ssl_trusted_certificate }};
 {% endif %}
 {% if (item.ssl_verify_client | d(nginx_default_ssl_verify_client)) | bool %}
-{% if ((item.ssl_client_certificate is defined and item.ssl_client_certificate) or nginx_default_ssl_client_certificate) %}
+{% if item.ssl_client_certificate | d(nginx_default_ssl_client_certificate) %}
         ssl_verify_client         on;
-        ssl_client_certificate    {{ item.ssl_client_certificate | default(nginx_default_ssl_client_certificate) }};
+        ssl_client_certificate    {{ item.ssl_client_certificate | d(nginx_default_ssl_client_certificate) }};
 {% endif %}
-{% if ((item.ssl_crl is defined and item.ssl_crt) or nginx_default_ssl_crl) %}
-        ssl_crl                   {{ item.ssl_crl | default(nginx_default_ssl_crl) }};
+{% if item.ssl_crl | d(nginx_default_ssl_crl) %}
+        ssl_crl                   {{ item.ssl_crl | d(nginx_default_ssl_crl) }};
 {% endif %}
 {% endif %}
         resolver                  {{ (item.ocsp_resolvers | d(nginx_ocsp_resolvers)) | ipwrap | join(" ") }} valid=300s;
         resolver_timeout          5s;
 {% endif %}
-{% if item.hsts_enabled is undefined or (item.hsts_enabled is defined and item.hsts_enabled) %}
+{% if item.hsts_enabled|d(True) | bool %}
         add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age | default('15768000') }}{% if nginx_hsts_subdomains|bool %}; includeSubDomains{% endif %}{% if (item.hsts_preload | d(nginx_hsts_preload)) | bool %}; preload{% endif %}";
 {% endif %}
-{% if item.csp | d() or item.csp_report | d() %}
-        add_header                Content-Security-Policy{% if item.csp_report | d() %}-Report-Only{% endif %} "{{ item.csp_policy | d('default-src https:') }}";
+{% if (item.csp|d() | bool) or item.csp_report | d() %}
+        add_header                Content-Security-Policy{% if item.csp_report|d() | bool %}-Report-Only{% endif %} "{{ item.csp_policy | d('default-src https:') }}";
 {% endif %}
 {% if item.content_type_options|d(True) %}
         add_header                X-Content-Type-Options "{{ item.content_type_options | d('nosniff') }}"{% if nginx_version | version_compare('1.7.5','>=') %} always{% endif %};
@@ -1108,4 +607,3 @@ server {
 {# ---- end of nginx_tpl_ssl ---- #}
 {{ print_shared_nginx_server_block() }}
 }
-

@@ -7,6 +7,8 @@
 # .. contents:: Sections
 #    :local:
 #
+# .. include:: includes/all.rst
+
 
 # List of IP addresses or CIDR networks allowed to connect to HTTP or HTTPS
 # service. It will be configured in iptables firewall via 'ferm' role. If there
@@ -146,7 +148,7 @@ nginx_http_auth_basic_name: 'nginx_http'
 
 # List of HTTP Basic Auth accounts which need to login before accessing this
 # server. Passwords are generated automatically and stored in 'secret/'
-# directory (see debops.secret role). If this list empty, access is not
+# directory (see debops.secret_ role). If this list empty, access is not
 # restricted.
 nginx_http_auth_users: []
 
@@ -241,6 +243,7 @@ nginx_default_keepalive_timeout: 60
 
 
 # Enable or disable support for PKI/SSL/TLS in nginx.
+# Defaults to ``True`` if debops.pki_ is enabled on the remote host.
 nginx_pki: '{{ (True
                 if (ansible_local|d() and ansible_local.pki|d() and
                     ansible_local.pki.enabled|d() | bool)
@@ -404,7 +407,7 @@ nginx_default_satisfy: 'any'
 nginx_default_auth_basic_realm: 'Access to this website is restricted'
 
 # Path on the Ansible Controller used to lookup htpasswd passwords (see
-# debops.secret role). You can change this to for example share a set of
+# debops.secret_ role). You can change this to for example share a set of
 # passwords between different hosts in case you use nginx in a HA setup
 nginx_htpasswd_secret_path: '{{ secret + "/credentials/" + ansible_fqdn + "/nginx/htpasswd" }}'
 

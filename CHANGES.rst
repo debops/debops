@@ -16,6 +16,13 @@ The current role maintainer_ is drybjed.
 
 .. _debops.nginx master: https://github.com/debops/ansible-nginx/compare/v0.1.8...master
 
+Added
+~~~~~
+
+- ``item.welcome_force`` which when set to ``True`` will ensure that the
+  welcome page is up-to-date. Note that setting this to ``True`` will not allow
+  idempotent operation. [ypid_]
+
 Changed
 ~~~~~~~
 
@@ -29,12 +36,12 @@ Changed
 - The URL scheme for the welcome page now defaults to ``HTTPS``. It can be
   configured as needed using the ``item.welcome_url_scheme`` option. [ypid_]
 
-Added
-~~~~~
+Deprecated
+~~~~~~~~~~
 
-- ``item.welcome_force`` which when set to ``True`` will ensure that the
-  welcome page is up-to-date. Note that setting this to ``True`` will not allow
-  idempotent operation. [ypid_]
+- Deprecated the ``item.when`` and ``item.delete`` options. Use ``item.state`` instead. [ypid_]
+
+- Deprecated the ``php5`` server type in favor to :ref:`nginx__ref_servers_php`. [ypid_]
 
 
 `debops.nginx v0.1.9`_ - 2016-07-19
