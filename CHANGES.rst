@@ -159,6 +159,21 @@ Changed
 
   [ypid_]
 
+- Use the debops.core_ local facts as a base for the :envvar:`owncloud__domain`
+  variable instead of using the ``ansible_domain`` variable directly.
+  [drybjed_]
+
+- Rename the ``owncloud__subdomain`` variable to :envvar:`owncloud__fqdn`, and
+  use it to set the FQDN of the ownCloud service. [drybjed_]
+
+- The :envvar:`owncloud__fqdn` variable is used as the mail domain, the mail
+  "from" account is changed from ``owncloud__subdomain`` variable to
+  ``noreply`` string. [drybjed_]
+
+- Use a static filename of the ``nginx`` server configuration file. This might
+  require manual removal of the old ``nginx`` server configuration file on
+  existing installations. [drybjed_]
+
 Removed
 ~~~~~~~
 

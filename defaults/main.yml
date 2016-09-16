@@ -523,7 +523,7 @@ owncloud__autosetup: True
 # URL which will be called to finish autosetup of ownCloud 8.0. For newer
 # ownCloud versions :command:`occ` will be used which is more reliable because
 # it does not depend on the webserver nor network.
-owncloud__autosetup_url: 'http://{{ owncloud__domain[0] }}/index.php'
+owncloud__autosetup_url: 'http://{{ owncloud__fqdn }}/index.php'
 
 
 # .. ownCloud configuration [[[1
@@ -532,16 +532,19 @@ owncloud__autosetup_url: 'http://{{ owncloud__domain[0] }}/index.php'
 #   ownCloud configuration
 # --------------------------
 
-# .. envvar:: owncloud__subdomain
+# .. envvar:: owncloud__fqdn
 #
-# The subdomain part to use for the ownCloud instance.
-owncloud__subdomain: 'cloud'
+# The Fully Qualified Domain Name to use for the ownCloud instance.
+owncloud__fqdn: 'cloud.{{ owncloud__domain }}'
 
 
 # .. envvar:: owncloud__domain
 #
 # Domain that will be configured for the ownCloud instance.
-owncloud__domain: [ '{{ owncloud__subdomain }}.{{ ansible_domain }}' ]
+owncloud__domain: '{{ ansible_local.core.domain
+                      if (ansible_local|d() and ansible_local.core|d() and
+                          ansible_local.core.domain|d())
+                      else (ansible_domain if ansible_domain else ansible_hostname) }}'
 
 
 # .. envvar:: owncloud__upload_size
@@ -611,7 +614,7 @@ owncloud__app_user_webfinger_support: False
 # role.
 owncloud__role_config:
 
-  trusted_domains: '{{ owncloud__domain }}'
+  trusted_domains: [ '{{ owncloud__fqdn }}' ]
 
   ## https://github.com/owncloud/core/issues/22257
   ## TODO: Temporary workaround until all package maintainers have caught up.
@@ -965,7 +968,7 @@ owncloud__ldap_create_user: True
 # .. envvar:: owncloud__ldap_domain
 #
 # Domain name used to generate base DN.
-owncloud__ldap_domain: '{{ ansible_domain }}'
+owncloud__ldap_domain: '{{ owncloud__domain }}'
 
 
 # .. envvar:: owncloud__ldap_basedn
@@ -982,7 +985,7 @@ owncloud__ldap_binddn: '{{ "cn=owncloud," + secret_ldap_services_dn }}'
 
 # .. envvar:: owncloud__ldap_host
 #
-owncloud__ldap_host: 'ldap.{{ ansible_domain }}'
+owncloud__ldap_host: 'ldap.{{ owncloud__domain }}'
 
 
 # .. envvar:: owncloud__ldap_password_file
@@ -1178,14 +1181,14 @@ owncloud__ldap_conf_map:
 
 # .. envvar:: owncloud__mail_domain
 #
-owncloud__mail_domain: '{{ ansible_domain }}'
+owncloud__mail_domain: '{{ owncloud__fqdn }}'
 
 
 # .. envvar:: owncloud__mail_from_address
 #
 # From address that overrides the built-in ``sharing-noreply`` and
 # ``lostpassword-noreply`` from addresses.
-owncloud__mail_from_address: '{{ owncloud__subdomain }}'
+owncloud__mail_from_address: 'noreply'
 
 
 # .. envvar:: owncloud__mail_smtpmode
@@ -1209,7 +1212,7 @@ owncloud__mail_smtpmode: 'sendmail'
 # like this: ``127.0.0.1:24``.
 #
 # This depends on :envvar:`owncloud__mail_smtpmode`.
-owncloud__mail_smtphost: 'smtp.{{ ansible_domain }}'
+owncloud__mail_smtphost: 'smtp.{{ owncloud__domain }}'
 
 
 # .. envvar:: owncloud__mail_smtpport
@@ -1478,7 +1481,8 @@ owncloud__nginx__servers:
     enabled: True
     default: False
     by_role: 'debops.owncloud'
-    name: '{{ owncloud__domain }}'
+    filename: 'debops.owncloud'
+    name: '{{ owncloud__fqdn }}'
     root: '{{ owncloud__deploy_path }}'
 
     ## https://doc.owncloud.org/server/9.0/admin_manual/issues/general_troubleshooting.html#common-problems-error-messages
