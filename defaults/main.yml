@@ -16,14 +16,14 @@
 # .. envvar:: redis__base_packages [[[
 #
 # List of base APT packages to install for Redis support.
-redis__base_packages: [ 'redis-tools' ]
+redis__base_packages: [ 'redis-tools', 'python-redis' ]
 
                                                                    # ]]]
 # .. envvar:: redis__server_packages [[[
 #
 # List of APT packages to install for Redis Server support.
 redis__server_packages:
-  - '{{ [ "redis-server", "python-redis" ]
+  - '{{ [ "redis-server" ]
         if (redis__server_enabled|bool or redis__sentinel_enabled|bool)
         else [] }}'
 

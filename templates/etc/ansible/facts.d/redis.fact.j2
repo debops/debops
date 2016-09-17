@@ -7,6 +7,8 @@ from json import dumps
 from sys import exit
 import os
 
+import redis
+
 output = {}
 sentinel_monitors = []
 sentinel_monitor_map = {}
@@ -163,5 +165,23 @@ if os.path.isfile(redis_sentinel_conf) and os.path.isfile(redis_sentinel_bin) an
 
 if 'port' not in output and 'socket' not in output:
     output.pop('host', None)
+
+{# --- Too slow. Took around 0.6 seconds on ypid’s dev system.
+# import re
+# import apt
+# apt_cache = apt.Cache()
+# apt_redis_server_pkg = apt_cache['redis-server']
+# apt_redis_server_pkg_version = apt_redis_server_pkg.installed.version
+# redis_server_pkg_version = re.sub(r'-.*$', '', apt_redis_server_pkg_version)
+# output.update({"version": redis_server_pkg_version})
+#}
+if 'password' in output:
+    r = redis.StrictRedis(
+        host=output.get('host'),
+        port=output.get('port'),
+        unix_socket_path=output.get('socket'),
+        password=output['password'],
+        )
+    output.update({"version": r.info()['redis_version']})
 
 print(dumps(output, sort_keys=True, indent=2))

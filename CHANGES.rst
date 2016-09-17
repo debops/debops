@@ -18,6 +18,11 @@ The current role maintainer_ is drybjed.
 
 .. _debops.redis master: https://github.com/debops/ansible-redis/compare/v0.2.0...master
 
+Added
+~~~~~
+
+- Expose current Redis version in Ansible facts. [ypid_]
+
 Fixed
 -----
 

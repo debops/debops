@@ -50,7 +50,8 @@ master instance:
      "host": "localhost",
      "installed": true,
      "password": "<random-long-password>",
-     "port": "6379"
+     "port": "6379",
+     "version": "2.8.17"
    }
 
 You can see here more information, like the host to which the Ansible role
@@ -76,6 +77,7 @@ disabled) provide even more useful information through Ansible facts:
      "monitor": "example-master",
      "password": "<random-long-password>",
      "port": "6379",
+     "version": "2.8.17",
      "sentinel_enabled": true,
      "sentinel_monitor_map": {
        "example-master": {
