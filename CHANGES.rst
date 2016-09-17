@@ -180,6 +180,9 @@ Changed
   require manual removal of the old :program:`nginx` server configuration file on
   existing installations. [drybjed_]
 
+- Support to use a Redis password as configured by debops.redis_
+  v0.2.0 automatically. [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 
