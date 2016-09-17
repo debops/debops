@@ -27,7 +27,7 @@ Fixed
 -----
 
 - Reviewed the role. Fixed potential shell script issues reported by
-  ``shellcheck`` and added CI tests using ``shellcheck``.
+  :command:`shellcheck` and added CI tests using :command:`shellcheck`.
   Note that the script is checked after being templated by Jinja which might
   not cover all code paths.  [ypid_]
 
