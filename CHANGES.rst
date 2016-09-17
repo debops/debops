@@ -27,6 +27,8 @@ Added
   This can come in handy to create the certificate subjects using Jinja in the
   Ansible inventory. [ypid_]
 
+- Allow to disable CA certificates download for the different levels. [ypid_]
+
 Changed
 ~~~~~~~
 

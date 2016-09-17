@@ -429,7 +429,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Regenerate ca-certificates.crt' ]
-  when: pki_enabled | bool
+  when: pki_system_ca_certificates_download_by_host|d(pki_enabled) | bool
 
 - name: Download custom CA certificates by group
   copy:
@@ -440,7 +440,7 @@
     force: False
   with_items: '{{ pki_inventory_groups }}'
   notify: [ 'Regenerate ca-certificates.crt' ]
-  when: (pki_enabled|bool and item in group_names)
+  when: ((pki_system_ca_certificates_download_by_group|d(pki_enabled) | bool) and item in group_names)
 
 - name: Download custom CA certificates for all hosts
   copy:
@@ -450,7 +450,7 @@
     group: 'root'
     force: False
   notify: [ 'Regenerate ca-certificates.crt' ]
-  when: pki_enabled | bool
+  when: pki_system_ca_certificates_download_all_hosts|d(pki_enabled) | bool
 # ]]]
 
 # Execute PKI realm commands [[[
