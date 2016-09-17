@@ -71,8 +71,11 @@ Ansible Controller will be copied to all of the remote hosts by the
 directory. After that, they will be automatically added to the system Root CA
 store using the :command:`update-ca-certificates` script.
 
+Note that already present CA certificates on remote hosts with the same name
+are not updated after the first download unless the CA certificates are by
+host.
+
 The internal Root Certificate Authorities created by the ``debops.pki`` role
 will have their certificates automatically symlinked in the
 :file:`secret/pki/ca-certificates/` directory. You can prevent that by adding an
 ``item.system_ca: False`` parameter in the CA configuration variable.
-
