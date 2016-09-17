@@ -29,6 +29,8 @@ Added
 
 - Allow to disable CA certificates download for the different levels. [ypid_]
 
+- Added :envvar:`pki_system_ca_certificates_download_all_hosts_force`. [ypid_]
+
 Changed
 ~~~~~~~
 

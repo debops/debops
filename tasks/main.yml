@@ -448,7 +448,7 @@
     dest: '/usr/local/share/ca-certificates/pki/'
     owner: 'root'
     group: 'root'
-    force: False
+    force: '{{ pki_system_ca_certificates_download_all_hosts_force|bool }}'
   notify: [ 'Regenerate ca-certificates.crt' ]
   when: pki_system_ca_certificates_download_all_hosts|d(pki_enabled) | bool
 # ]]]
