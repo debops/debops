@@ -13,10 +13,10 @@ its own Redis Server instance) or in a clustered mode (all hosts in the
 inventory group work together in a cluster). At the moment switching between
 these modes after Redis is configured is not supported, therefore the choice
 should be made before deployment. The separate Redis instances can be later
-reconfigured to join a cluster, but role does not provide any support for that
+reconfigured to join a cluster, but the role does not provide any support for that
 beyond the initial deployment.
 
-Role can be used to deploy multiple Redis clusters in the same environment,
+The role can be used to deploy multiple Redis clusters in the same environment,
 however this requires careful management of the Ansible inventory.
 
 Standalone operation
@@ -28,8 +28,8 @@ master server. Redis Sentinel is not enabled in this mode.
 Clustered operation
 ~~~~~~~~~~~~~~~~~~~
 
-The role can configure Redis Server/Sentinel cluster on multiple hosts in the
-``[debops_service_redis]`` inventory group. First host in this group will be
+The role can configure a Redis Server/Sentinel cluster on multiple hosts in the
+``[debops_service_redis]`` inventory group. The first host in this group will be
 the master server. The specific group of hosts is defined in the
 :envvar:`redis__inventory_hosts` variable.
 
@@ -45,9 +45,9 @@ the :file:`inventory/group_vars/debops_service_redis/redis.yml` file:
    redis__sentinel_bind: '0.0.0.0'
    redis__sentinel_allow: [ '192.0.2.0/24' ]
 
-This will configure Redis Server and Sentinel to listen on all available
+This will configure the Redis Server and Sentinel to listen on all available
 interfaces and accept connections from local network. Keep in mind that Redis
-communication is performed in plaintext, therefore you might want to create
+communication is performed in plaintext, therefore you might want to create a
 separate physical network for Redis communication, a VLAN, or use a VPN like
 Tinc to keep the traffic encrypted.
 
@@ -55,24 +55,26 @@ The specified Redis Server master host should be the same as the first included
 in the ``[debops_service_redis]`` group, otherwise deployment might not be
 completed successfully.
 
+.. FIXME: might not be completed successfully
+
 Password authentication
 -----------------------
 
-The access to the Redis server is controlled by a password, users in a specific
+The access to the Redis server is controlled by a password. Users in a specific
 UNIX system group (by default ``redis-auth``) have access to the Redis Server
 configuration files and can read the password or use the custom
 ``redis-password`` script to retrieve it in their own scripts.
 
 All hosts on a given DNS domain share the same Redis password for ease of use
 and easy failover. The Redis password is accessible through the Ansible local
-facts as ``ansible_local.redis.password`` variable.
+facts as ``ansible_local.redis.password``.
 
 To access the Redis instance via ``redis-cli`` command, you can invoke it like
 this:
 
 .. code-block:: console
 
-   redis-cli -a $(redis-password)
+   redis-cli -a "$(redis-password)"
 
 You can disable the password authentication by setting the
 :envvar:`redis__auth_password` to an empty string.

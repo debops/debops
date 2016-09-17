@@ -28,7 +28,7 @@ The role provides multiple variables which can be used on different inventory
 levels for better control over Redis parameters. The
 :envvar:`redis__server_combined_configuration` for Redis Server, and
 :envvar:`redis__sentinel_combined_configuration` for Redis Sentinel combine these
-YAML dictionaries thgether and determine the order in which variables "mask"
+YAML dictionaries together and determine the order in which variables "mask"
 the previous parameters.
 
 Consult the Redis example configuration files to see supported parameters and
@@ -47,7 +47,7 @@ configure a Sentinel monitor are:
 
 ``name``
   Required. Name of the Redis Sentinel monitor to use. It should be short and
-  it should only contain alphanumberic characters, as well as ``-_.``
+  it should only contain alphanumeric characters, as well as ``-_.``
   punctuation.
 
 ``host``

@@ -8,14 +8,14 @@ Configuration layout
 Redis Server configuration files
 --------------------------------
 
-The Redis Server is designed to be configured without the need for a restart,
-it can also rewrite its own configuration files. The ``debops.redis`` role is
+The Redis Server is designed to be configured without the need for a restart.
+It can also rewrite its own configuration files. The ``debops.redis`` role is
 designed with this in mind.
 
 The default configuration file included in the ``redis-server`` package is
 diverted after installation to preserve the default values and avoid rewriting
 issues on a package upgrade. The default configuration is copied back in place
-afterwards to use the default Debian values where applicable.
+afterwards to use the default Debian values.
 
 The role configuration is split into two files:
 
@@ -27,7 +27,7 @@ The role configuration is split into two files:
   configuration. When this file is changed, the role updates the ``include``
   line in the main Redis configuration file so that the inclusion is as late as
   possible - this way parameters added by Redis in the main configuration file
-  should be automatically overriden by the role configuration file.
+  should be automatically overridden by :file:`ansible-redis-static.conf`.
 
 - the :file:`/etc/redis/ansible-redis-dynamic.conf` is a Bash script which
   configures the Redis Server using ``redis-cli`` command, while the service is
@@ -64,7 +64,7 @@ works fine without one). If a clustered mode is enabled, by default the host
 indicated by the :envvar:`redis__server_master_host` variable will be configured as
 the Redis master server.
 
-After the initial configuration, if the ``sentinel.conf`` configuration file
+After the initial configuration, if the :file:`sentinel.conf` configuration file
 exists, it won't be modified again to not destroy the cluster information
 stored in it by the ``redis-sentinel`` daemon. Therefore, reconfiguration of
 the Redis Sentinel installation by ``debops.redis`` role is not supported

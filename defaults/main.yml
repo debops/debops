@@ -123,13 +123,14 @@ redis__password_length: '256'
 # .. envvar:: redis__server_allow [[[
 #
 # List of IP addresses or CIDR subnets which are allowed to connect to the
-# Redis server. If nothing is specified, nobody can connect.
+# Redis server. If nothing is specified, nobody can connect except localhost by
+# default.
 redis__server_allow: []
 
                                                                    # ]]]
 # .. envvar:: redis__server_bind [[[
 #
-# Specify the network address or multiple adresses as a YAML list, on which
+# Specify the network address or multiple addresses as a YAML list, on which
 # Redis server should listen for connections. This variable is used by the role
 # to select standalone or clustered Redis configuration.
 redis__server_bind: 'localhost'
@@ -325,9 +326,9 @@ redis__server_host_configuration: {}
 # from the above variables. This variable is used in the configuration file
 # templates.
 redis__server_combined_configuration: '{{ redis__server_default_configuration
-                                          | combine(redis__server_configuration
-                                            | combine(redis__server_group_configuration
-                                              | combine(redis__server_host_configuration))) }}'
+                                          | combine(redis__server_configuration)
+                                          | combine(redis__server_group_configuration)
+                                          | combine(redis__server_host_configuration) }}'
 
                                                                    # ]]]
 # .. envvar:: redis__server_version_config_map [[[
@@ -344,7 +345,7 @@ redis__server_version_config_map:
 # .. envvar:: redis__server_static_options [[[
 #
 # The Redis server configuration is split into a "static" configuration file
-# included from a main ``redis.conf`` config file, and a "dynamic" script which
+# included from a main :file:`redis.conf` config file, and a "dynamic" script which
 # uses the ``redis-cli`` command to configure Redis without restarting the
 # service.
 #
@@ -465,7 +466,7 @@ redis__sentinel_failover_timeout: '{{ (3 * 60 * 1000) }}'
 # --------------------------------------
 
 # The Redis Sentinel configuration is defined in multiple YAML dictionary
-# variables which are combined together. The synax of the Sentinel
+# variables which are combined together. The syntax of the Sentinel
 # configuration is the same as the Server.
 #
 # See :ref:`redis__ref_server_configuration` for more details.
