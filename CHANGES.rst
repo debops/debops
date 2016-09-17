@@ -24,13 +24,16 @@ Added
   was removed in v0.2.0. [ypid_]
 
 - Silently ignore empty elements in ``subject`` and ``acme_subject`` lists.
-  This can come in handy for generated certificate subjects. [ypid_]
+  This can come in handy to create the certificate subjects using Jinja in the
+  Ansible inventory. [ypid_]
 
 Changed
 ~~~~~~~
 
 - Change the method that Bash scripts use to compare the version numbers for
   a more reliable one. [drybjed_]
+
+- Documentation improvements. [ypid_]
 
 Fixed
 ~~~~~
@@ -55,6 +58,9 @@ Fixed
 
 - Also run :program:`pki-realm new-realm` against realms with disabled internal
   CA. [ypid_]
+
+- Reviewed the role. Fixed potential shell script issues reported by
+  :command:`shellcheck` and added CI tests using :command:`shellcheck`. [ypid_]
 
 
 `debops.pki v0.2.13`_ - 2016-07-07
