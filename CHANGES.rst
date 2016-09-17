@@ -18,6 +18,14 @@ The current role maintainer_ is drybjed.
 
 .. _debops.redis master: https://github.com/debops/ansible-redis/compare/v0.2.0...master
 
+Fixed
+-----
+
+- Reviewed the role. Fixed potential shell script issues reported by
+  ``shellcheck`` and added CI tests using ``shellcheck``.
+  Note that the script is checked after being templated by Jinja which might
+  not cover all code paths.  [ypid_]
+
 
 `debops.redis v0.2.0`_ - 2016-09-08
 -----------------------------------
