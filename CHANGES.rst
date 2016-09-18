@@ -43,6 +43,11 @@ Deprecated
 
 - Deprecated the ``php5`` server type in favor to :ref:`nginx__ref_servers_php`. [ypid_]
 
+Fixed
+~~~~~
+
+- Usage of an empty list for the ``name`` option of ``nginx__servers`` items as documented. [ypid_]
+
 
 `debops.nginx v0.1.9`_ - 2016-07-19
 -----------------------------------
