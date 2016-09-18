@@ -52,7 +52,6 @@
     - '{{ nginx_default_servers | d([]) }}'
     - '{{ nginx_internal_servers | d([]) }}'
     - '{{ nginx_dependent_servers | d([]) }}'
-  notify: [ 'Test nginx and reload' ]
   when: (item.name is defined and
          ((item.state|d("present") == 'absent') or (item.delete|d()|bool)))
 
