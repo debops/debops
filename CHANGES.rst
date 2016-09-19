@@ -19,7 +19,13 @@ new release.
 `debops.owncloud master`_ - unreleased
 --------------------------------------
 
-.. _debops.owncloud master: https://github.com/debops/ansible-owncloud/compare/v0.2.0...master
+.. _debops.owncloud master: https://github.com/debops/ansible-owncloud/compare/v0.3.0...master
+
+
+`debops.owncloud v0.3.0`_ - 2016-09-17
+--------------------------------------
+
+.. _debops.owncloud v0.3.0: https://github.com/debops/ansible-owncloud/compare/v0.2.0...v0.3.0
 
 Added
 ~~~~~
@@ -170,9 +176,17 @@ Changed
   "from" account is changed from ``owncloud__subdomain`` variable to
   ``noreply`` string. [drybjed_]
 
-- Use a static filename of the ``nginx`` server configuration file. This might
-  require manual removal of the old ``nginx`` server configuration file on
+- Use a static filename of the :program:`nginx` server configuration file. This might
+  require manual removal of the old :program:`nginx` server configuration file on
   existing installations. [drybjed_]
+
+- Support to use a Redis password as configured by debops.redis_
+  v0.2.0 automatically. [ypid_]
+
+Deprecated
+~~~~~~~~~~
+
+- Deprecated ownCloud 8.0 support which is End of Life as of 8.0.15 (2016-09-20). [ypid_]
 
 Removed
 ~~~~~~~
@@ -201,6 +215,8 @@ Removed
   If you need support for one of them and can get it to work we will be happy
   about your contribution! [ypid_]
 
+- Drop ownCloud 7.0 support which is End of Life as of 7.0.15 (2016-05-12). [ypid_]
+
 Fixed
 ~~~~~
 
@@ -212,6 +228,11 @@ Fixed
 - Updated Nginx configuration to the example given in the official ownCloud documentation.
   Fixes security warnings which occurred with the latest version of
   debops.nginx_ about duplicated security headers. [ypid_]
+
+- Fix error when strings handed over to :command:`occ maintenance:install` start with a hyphen.
+  This only affected the initial setup and the role would have failed previously.
+  If the role worked for you, then you where not affected by this bug
+  (occurrence of this bug was random based on the generated passwords). [ypid_]
 
 
 `debops.owncloud v0.2.0`_ - 2015-11-12

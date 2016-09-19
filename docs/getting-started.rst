@@ -32,13 +32,15 @@ on the same host as ownCloud or choose a different host:
     [debops_service_redis]
     hostname
 
+This role will use a Redis server automatically when it is managed by
+debops.redis_.
+
 In case you chose a different host, you will need to specify which of your
 Redis servers the ownCloud instance should use by setting the Redis
 server host as :envvar:`owncloud__redis_host` and setting
 :envvar:`owncloud__redis_enabled` to ``True``.
-
-This role will use a locally setup Redis server automatically when it was setup
-by putting the host into the ``debops_service_redis`` host group.
+Additionally, you will need to set the :envvar:`owncloud__redis_password`.
+Refer to debops.redis_ for details.
 
 Example inventory
 -----------------

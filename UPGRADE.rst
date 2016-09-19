@@ -9,8 +9,8 @@ to your setup in order to use a new role release. Refer to the
 
 .. _owncloud__ref_upgrade_nodes_v0.3.0:
 
-Upgrade from v0.2.0 to unreleased
----------------------------------
+Upgrade from v0.2.0 to v0.3.0
+-----------------------------
 
 All inventory variables have been renamed so you might need to update your
 inventory.
