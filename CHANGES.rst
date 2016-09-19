@@ -53,7 +53,7 @@ Changed
 - Rename ``tinc__connect_to_mesh0`` to :envvar:`tinc__reachable_peer_hosts_mesh0`.
   [ypid_]
 
-- Increased default RSA key size from ``4096`` to ``8196`` bits as suggested by
+- Increased default RSA key size from ``4096`` to ``8192`` bits as suggested by
   https://bettercrypto.org. Note that this increases the initial key generation
   from a few seconds to a few minutes which should be justifiable. [ypid_]
 
