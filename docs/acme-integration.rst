@@ -160,9 +160,11 @@ Example: Certificate for apex domain and subdomains
 ---------------------------------------------------
 
 In this example a X.509 certificate for the apex domain ``example.com`` is
-going to be issued. The certificate will also be valid for the subdomains
-``www.example.com``, ``blog.example.com`` and ``mail.example.com`` which are
-included into the certificate as `Subject Alternative Names`_.
+going to be issued. ``example.com`` will be listed in the certificate
+``Subject`` DN.
+The certificate will also be valid for the subdomains ``www.example.com``,
+``blog.example.com`` and ``mail.example.com`` which are included in the
+certificate as `Subject Alternative Names`_.
 
 .. code-block:: yaml
 
@@ -182,9 +184,9 @@ X.509 certificate.
 Example: Certificate for subdomains excluding the apex domain
 -------------------------------------------------------------
 
-In the example we create a certificate for the ``logs.example.com`` and
-``mon.example.com`` subdomains, which does not include the ``example.com`` apex
-domain.
+In the example we create a certificate for ``logs.example.com`` (certificate
+``Subject``) and for ``mon.example.com`` (certificate `Subject Alternative
+Names`_), which does not include the ``example.com`` apex domain.
 
 .. code-block:: yaml
 
@@ -192,6 +194,8 @@ domain.
       - name: 'logs.example.com'
         acme: True
         acme_default_subdomains: []
+        # Can also include different domains like 'mail.example.org'
+        # in the same realm.
         acme_domains: [ 'logs.example.com', 'mon.example.com' ]
         # acme_ca: 'le-staging'
 
