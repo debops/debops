@@ -16,8 +16,8 @@ them.
 
 .. _nginx__ref_servers:
 
-Nginx servers
--------------
+nginx__servers
+--------------
 
 Common role options
 ~~~~~~~~~~~~~~~~~~~
@@ -31,20 +31,20 @@ Common role options
   wildcards and regexp matches.
 
   The list can also be empty (but needs to be defined) in which case the
-  configuration it is included in will be named ``default``.
+  configuration it is included in will be named :file:`default`.
 
 ``filename``
   Optional, string.
-  Alternative name of the nginx configuration file in
-  :file:`/etc/nginx/sites-available/` directory. The suffix ``.conf`` will be
-  added automatically.  Can be used to distinguish between different versions
-  of the same configuration. For example separate configuration for HTTP and
-  HTTPS.
+  Alternative name of the nginx configuration file under the
+  :file:`/etc/nginx/sites-available/` directory. The suffix :file:`.conf` will be
+  added automatically. This can be used to distinguish different server
+  configurations for the same ``item.name``. For example separate
+  configuration for HTTP and HTTPS.
 
 ``enabled``
   Optional, boolean. Defaults to ``True``.
-  Determines if symlink to server configuration is present in
-  :file:`/etc/nginx/sites-enabled/` directory.
+  Specifies if the configuration should be enabled by creating a symlink in
+  :file:`/etc/nginx/sites-enabled/`.
 
 ``state``
   Optional, string. Defaults to ``present``.
@@ -109,13 +109,13 @@ Common webserver options
 
 ``listen``
   Optional, list of strings/integers or boolean (``False``).
-  Defaults to ``[::]:80`` for all servers.
+  Defaults to ``nginx_listen_port``.
   List of ports, IP addresses or sockets this server configuration should
   listen on for HTTP connections.
 
 ``listen_ssl``
   Optional, list of strings/integers or boolean (``False``).
-  Defaults to ``[::]:443`` for all servers.
+  Defaults to ``nginx_listen_ssl_port``.
   List of ports, IP addresses or sockets this server configuration should
   listen on for HTTPS connections.
 
