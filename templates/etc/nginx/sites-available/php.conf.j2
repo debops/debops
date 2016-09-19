@@ -3,59 +3,7 @@
 #
 #    ---- nginx server template for PHP websites ----
 #
-# List of parameters supported by this template:
-#
-#   - item.php_upstream: ''
-#       Name of nginx upstream to use.
-#
-#       If undefined, '.php' files will be protected by =403.
-#
-#
-#   - item.index: ''
-#       String of index files to enable.
-#
-#       If undefined, add 'index.php' at the end of list of index files.
-#
-#
-#   - item.php_limit_except: '' or False
-#       String of methods to allow for all hosts.
-#
-#       If undefined, default limits will be applied (block all requests execpt
-#       GET, HEAD and POST).
-#
-#       If set to False, limits are disabled.
-#
-#       More information:
-#       http://nginx.org/en/docs/http/ngx_http_core_module.html#limit_except
-#
-#
-#   - item.php_include: ''
-#       File to include instead of 'fastcgi_params', relative to /etc/nginx/
-#
-#       If set to False, nothing is included.
-#
-#
-#   - item.php_options: |
-#       Additional options to append to php location, in text block format.
-#
-#
-#   - item.php_status: True/False
-#       Optional, boolean. Enable php-fpm server status page.
-#
-#
-#   - item.php_status_name: ''
-#       Optional. Set the name of the location which should be used for php5 fpm
-#       status page
-#
-#
-#   - item.php_status_allow: []
-#       Optional. Allow access from list of IP addresses or CIDR ranges.
-#
-#
-#   - item.php_ping_name: ''
-#       Optional. Set the name of the location which should be used for php5 fpm
-#       ping page
-#
+# Refer to the documentation in /docs/defaults-detailed.rst
 #
 #}
 {% block nginx_tpl_block_index %}
@@ -66,7 +14,7 @@
                 try_files $uri $uri/ /index.php =404;
 {% endblock %}
 {% block nginx_tpl_block_custom_status_locations %}
-{%   if item.php_status|d() and item.php_status|bool %}
+{%   if item.php_status|d()|bool %}
         location ~ ^/({{ item.php_status_name | d('php_status') }}|{{ item.php_ping_name | d('php_ping') }})$ {
                 access_log off;
 {%     set nginx__tpl_status_allow = [] %}
@@ -114,7 +62,7 @@
 {%     endif %}
                 try_files $script_name =404;
 
-{%     if (item.php_include is undefined or item.php_include|d()) %}
+{%     if item.php_include|d(True) %}
 {%       if (nginx_version|d() and nginx_version | version_compare('1.6.1','<')) %}
                 include {{ item.php_include | d('fastcgi_params') }};
 {%       else %}

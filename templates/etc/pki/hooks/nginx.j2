@@ -4,7 +4,7 @@
 
 # Reload or restart nginx on a certificate state change
 
-set -eu -o pipefail
+set -o nounset -o pipefail -o errexit
 
 nginx_config="/etc/nginx/nginx.conf"
 nginx_sites="/etc/nginx/sites-enabled"
@@ -49,4 +49,3 @@ if [ -n "${certificate}" -a "${{ '{#' }}states[@]}" -gt 0 ] ; then
     done
 
 fi
-

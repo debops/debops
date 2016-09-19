@@ -7,6 +7,8 @@
 # .. contents:: Sections
 #    :local:
 #
+# .. include:: includes/all.rst
+
 
 # List of IP addresses or CIDR networks allowed to connect to HTTP or HTTPS
 # service. It will be configured in iptables firewall via 'ferm' role. If there
@@ -29,7 +31,7 @@ nginx_host_allow: []
 #   Ensure that Nginx is uninstalled and it's configuration is removed.
 #
 #   .. warning:: The roles is currently not able to dismantle from ``present``
-#      state. This needs to be implemented. This option can only be achieved
+#      state. This needs to be implemented. This state can only be achieved
 #      currently when ``present`` has never been set before on a host.
 #
 nginx__deploy_state: 'present'
@@ -67,7 +69,7 @@ nginx_flavor_package_map:
   # repository. See https://phusionpassenger.com/ for more details.
   'passenger': [ 'nginx-extras', 'passenger', 'ruby' ]
 
-  # Upstream version from http://nginx.org/ packaged for Debian
+  # Upstream version from https://nginx.org/ packaged for Debian
   'nginx.org': [ 'nginx' ]
 
 
@@ -78,61 +80,61 @@ nginx_user: 'www-data'
 # It is exposed using Ansible local facts as 'ansible_local.nginx.www'
 nginx_www: '/srv/www'
 
-# Directory where ``nginx`` configuration is stored.
+# Directory where :program:`nginx` configuration is stored.
 nginx_etc_path: '/etc/nginx'
 
-# Directory where private files used by ``nginx`` are stored (for example
+# Directory where private files used by :program:`nginx` are stored (for example
 # htpasswd files).
 nginx_private_path: '{{ nginx_etc_path + "/private" }}'
 
-# Directory where runtime ``nginx`` files are stored.
+# Directory where runtime :program:`nginx` files are stored.
 nginx_run_path: '/run'
 
-# Directory where ``nginx`` log files are stored.
+# Directory where :program:`nginx` log files are stored.
 nginx_log_path: '/var/log/nginx'
 
-# Root path of temporary files
+# Root path of temporary files.
 nginx_temp_root_path: '/var/lib/nginx'
 
-# Path of temporary client body files
+# Path of temporary client body files.
 nginx_client_body_temp_path: '{{ nginx_temp_root_path }}/body'
 
-# Path of temporary FastCGI files
+# Path of temporary FastCGI files.
 nginx_fastcgi_temp_path: '{{ nginx_temp_root_path }}/fastcgi'
 
-# Path of temporary proxy files
+# Path of temporary proxy files.
 nginx_proxy_temp_path: '{{ nginx_temp_root_path }}/proxy'
 
-# Path of temporary sCGI files
+# Path of temporary sCGI files.
 nginx_scgi_temp_path: '{{ nginx_temp_root_path }}/scgi'
 
-# Path of temporary iwsgi files
+# Path of temporary iwsgi files.
 nginx_uwsgi_temp_path: '{{ nginx_temp_root_path }}/uwsgi'
 
 # ---- Phusion Passenger support ----
 
 # Specify Phusion Passenger root paths manually (by default this variable is
-# detected automatically at Ansible run time)
+# detected automatically at Ansible run time).
 nginx_passenger_root: ''
 
 # Specify path to Ruby executable for Phusion Passenger manually (by default
-# this variable is detected automatically at Ansible run time)
+# this variable is detected automatically at Ansible run time).
 nginx_passenger_ruby: ''
 
-# Maximum number of Passenger processes
+# Maximum number of Passenger processes.
 nginx_passenger_max_pool_size: '{{ (ansible_processor_cores | int * 5) }}'
 
-# Additional Phusion Passenger global options
+# Additional Phusion Passenger global options.
 nginx_passenger_options: False
 
-# Minimum Passenger instances per nginx server
+# Minimum Passenger instances per nginx server.
 nginx_passenger_default_min_instances: '{{ ansible_processor_cores }}'
 
 
 # ---- Global server access and authentication ----
 
 # List of IP addresses or CIDR networks which can access this server. If the
-# list is empty, access is allowed from anywhere
+# list is empty, access is allowed from anywhere.
 nginx_http_allow: []
 
 # Enable or disable HTTP Basic Auth for all nginx servers on this host.
@@ -141,21 +143,25 @@ nginx_http_allow: []
 nginx_http_auth_basic: '{{ nginx_http_auth_users }}'
 
 # Name of the htpasswd file in '/etc/nginx/private/' with list of global
-# HTTP Basic Auth accounts
+# HTTP Basic Auth accounts.
 nginx_http_auth_basic_name: 'nginx_http'
 
 # List of HTTP Basic Auth accounts which need to login before accessing this
 # server. Passwords are generated automatically and stored in 'secret/'
-# directory (see debops.secret role). If this list empty, access is not
+# directory (see debops.secret_ role). If this list empty, access is not
 # restricted.
 nginx_http_auth_users: []
 
-# Default htpasswd file used for global HTTP Basic Auth accounts
+
+# .. envvar:: nginx__http_auth_htpasswd [[[
+#
+# Default htpasswd file used for global HTTP Basic Auth accounts.
 nginx__http_auth_htpasswd:
   name: '{{ nginx_http_auth_basic_name }}'
   users: '{{ nginx_http_auth_users }}'
+                                                                   # ]]]
 
-# Default http { } options
+# Default http { } options.
 nginx_http_options: |
   ssl_session_cache shared:SSL:10m;
   ssl_session_timeout 5m;
@@ -219,8 +225,8 @@ nginx_listen_socket: []
 nginx_listen_ssl_socket: []
 
 # List of IP addresses or CIDR subnets that the server should trust about real
-# IP addresses of clients. If this list is specified, ``nginx`` will read the
-# client IP address from the specified header. This is useful when ``nginx``
+# IP addresses of clients. If this list is specified, :program:`nginx` will read the
+# client IP address from the specified header. This is useful when :program:`nginx`
 # server is used behind another proxy server (local or remote).
 nginx_real_ip_from: []
 
@@ -228,7 +234,7 @@ nginx_real_ip_from: []
 # server.
 nginx_real_ip_header: 'X-Forwarded-For'
 
-# If this variable is enabled, ``nginx`` will ignore client IP addresses that
+# If this variable is enabled, :program:`nginx` will ignore client IP addresses that
 # match the ones from list of trusted upstream servers. This is useful when the
 # upstream server is also a proxy.
 nginx_real_ip_recursive: False
@@ -236,25 +242,26 @@ nginx_real_ip_recursive: False
 nginx_default_keepalive_timeout: 60
 
 
-# Enable or disable support for PKI/SSL/TLS in nginx
+# Enable or disable support for PKI/SSL/TLS in nginx.
+# Defaults to ``True`` if debops.pki_ is enabled on the remote host.
 nginx_pki: '{{ (True
                 if (ansible_local|d() and ansible_local.pki|d() and
                     ansible_local.pki.enabled|d() | bool)
                 else False) | bool }}'
 
-# PKI base directory
+# PKI base directory.
 nginx_pki_path: '{{ ansible_local.pki.path
                     if (ansible_local|d() and ansible_local.pki|d() and
                         ansible_local.pki.path|d())
                     else "/etc/pki/realms" }}'
 
-# PKI realm to use for nginx server
+# PKI realm to use for nginx server.
 nginx_pki_realm: '{{ ansible_local.pki.realm
                      if (ansible_local|d() and ansible_local.pki|d() and
                          ansible_local.pki.realm|d())
                      else "domain" }}'
 
-# PKI realm to use for client CA
+# PKI realm to use for client CA.
 nginx_pki_ca_realm: '{{ ansible_local.pki.ca_realm
                         if (ansible_local|d() and ansible_local.pki|d() and
                             ansible_local.pki.ca_realm|d())
@@ -262,22 +269,22 @@ nginx_pki_ca_realm: '{{ ansible_local.pki.ca_realm
 
 # Path to default certificate, key and DH parameters file used by all nginx
 # servers if not specified otherwise in server configuration. Relative to
-# 'nginx_pki_realm' variable
+# 'nginx_pki_realm' variable.
 nginx_pki_crt: 'default.crt'
 nginx_pki_key: 'default.key'
 nginx_pki_ca:  'CA.crt'
 nginx_pki_trusted: 'trusted.crt'
 
-# Name of the hook script which will be stored in hook directory
+# Name of the hook script which will be stored in hook directory.
 nginx_pki_hook_name: 'nginx'
 
-# Directory with PKI hooks
+# Directory with PKI hooks.
 nginx_pki_hook_path: '{{ ansible_local.pki.hooks
                          if (ansible_local|d() and ansible_local.pki|d() and
                              ansible_local.pki.hooks|d())
                          else "/etc/pki/hooks" }}'
 
-# Specify how changes in PKI should affect nginx, either 'reload' or 'restart'
+# Specify how changes in PKI should affect nginx, either 'reload' or 'restart'.
 nginx_pki_hook_action: 'reload'
 
 # Path to the file with Diffie-Hellman parameters to use by the webserver.
@@ -293,7 +300,11 @@ nginx_ssl_dhparam_set: 'default'
 nginx_default_ssl_ciphers: 'pfs'
 
 # Default SSL ECDH curve used on servers, to see a list of supported curves, run:
-#     openssl ecparam -list_curves
+#
+# .. code-block:: console
+#
+#    openssl ecparam -list_curves
+#
 # See also: https://security.stackexchange.com/questions/31772/
 nginx_default_ssl_curve: 'secp384r1'
 
@@ -322,21 +333,21 @@ nginx_ocsp_resolvers: []
 nginx_hsts_age: '15768000'
 nginx_hsts_subdomains: True
 
-# Add preload parameter to HSTS header
+# Add preload parameter to HSTS header.
 # More information: https://hstspreload.appspot.com/
 nginx_hsts_preload: True
 
-# Specify HTTP server name which will be marked as default_server
+# Specify HTTP server name which will be marked as default_server.
 nginx_default_name: ''
 
-# Specify HTTPS server name which will be marked as default_server
+# Specify HTTPS server name which will be marked as default_server.
 nginx_default_ssl_name: ''
 
 # Default server template used if no type is selected
 nginx_default_type: 'default'
 
 # Create global webroot directories?
-# Path: /srv/www/sites/*/public
+# Path: :file:`/srv/www/sites/*/public`.
 nginx_webroot_create: True
 nginx_webroot_owner: 'root'
 nginx_webroot_group: 'root'
@@ -349,7 +360,7 @@ nginx_welcome_template: 'srv/www/sites/welcome/public/index.html.j2'
 nginx_welcome_domain: '{{ ansible_domain }}'
 
 # Enable or disable support for Automated Certificate Management Environment
-# (ACME) on all servers. This can be overriden per server using ``item.acme``
+# (ACME) on all servers. This can be overridden per server using ``item.acme``
 # variable.
 nginx_acme: True
 
@@ -359,11 +370,11 @@ nginx_acme_root: '{{ nginx_www + "/sites/acme/public" }}'
 
 # Enable or disable custom ACME challenge server configuration. It will answer
 # queries on a specified domain, from ``nginx_acme_root`` directory. It can be
-# used for other things as well, for example to serve signed certificates to
+# used for other things as well, for example to serve certificates to
 # other hosts.
 nginx_acme_server: False
 
-# Specify the DNS domain to which ACME challenge queries will be redirected if
+# Specifies the DNS domain to which ACME challenge queries will be redirected if
 # they are not found on the host. The domain must exist in the DNS and a web
 # server needs to be configured to answer the queries.
 nginx_acme_domain: 'acme.{{ ansible_domain }}'
@@ -396,7 +407,7 @@ nginx_default_satisfy: 'any'
 nginx_default_auth_basic_realm: 'Access to this website is restricted'
 
 # Path on the Ansible Controller used to lookup htpasswd passwords (see
-# debops.secret role). You can change this to for example share a set of
+# debops.secret_ role). You can change this to for example share a set of
 # passwords between different hosts in case you use nginx in a HA setup
 nginx_htpasswd_secret_path: '{{ secret + "/credentials/" + ansible_fqdn + "/nginx/htpasswd" }}'
 
@@ -404,15 +415,18 @@ nginx_htpasswd_secret_path: '{{ secret + "/credentials/" + ansible_fqdn + "/ngin
 # password hashes. You should use schemes supported by ``passlib`` library.
 nginx__htpasswd_crypt_scheme: 'sha512_crypt'
 
-# List of htpasswd files with user accounts managed by 'debops.nginx'. Example
+# List of htpasswd files with user accounts managed by ``debops.nginx``. Example
 # entries below
 nginx__htpasswd: []
 
 nginx__default_htpasswd:
   - '{{ nginx__http_auth_htpasswd }}'
 
+# .. envvar:: nginx__dependent_htpasswd [[[
+#
 nginx__dependent_htpasswd: []
 
+                                                                   # ]]]
 
   # Create specified user accounts
   #- name: 'server_domain'
@@ -459,7 +473,7 @@ nginx_access_policy_satisfy_map: {}
 # List of nginx map definitions
 # Each map should be defined in it's own hash variable, similar to upstreams
 # and servers
-# http://nginx.org/en/docs/http/ngx_http_map_module.html
+# https://nginx.org/en/docs/http/ngx_http_map_module.html
 nginx__maps: []
 
 # List of default nginx map definitions
@@ -518,7 +532,7 @@ nginx_server_welcome:
   welcome: True
   welcome_domain: '{{ nginx_welcome_domain }}'
 
-# Default nginx ``localhost`` server. It can be used to access ``nginx`` status
+# Default nginx ``localhost`` server. It can be used to access :program:`nginx` status
 # page by other services.
 nginx_server_localhost:
   enabled: True
@@ -558,21 +572,21 @@ nginx__custom_config: []
 
 # .. envvar:: nginx__http_xss_protection
 #
-# Default value for :any:`xss_protection
+# Default value for :ref:`xss_protection
 # <nginx__ref_http_xss_protection>`.
 nginx__http_xss_protection: '1; mode=block'
 
 
 # .. envvar:: nginx__http_permitted_cross_domain_policies
 #
-# Default value for :any:`permitted_cross_domain_policies
+# Default value for :ref:`permitted_cross_domain_policies
 # <nginx__ref_permitted_cross_domain_policies>`.
 nginx__http_permitted_cross_domain_policies: '{{ omit }}'
 
 
 # .. envvar:: nginx__http_robots_tag
 #
-# Default value for :any:`robots_tag
+# Default value for :ref:`robots_tag
 # <nginx__ref_http_robots_tag>`.
 nginx__http_robots_tag: '{{ omit }}'
 
@@ -591,20 +605,18 @@ nginx__apt_preferences__dependent_list:
   - package: 'nginx nginx-*'
     backports: [ 'wheezy' ]
     reason: 'Support for SPDY, OCSP stapling'
-    role: 'debops.nginx'
-    when: '{{ (nginx_flavor == "full") | bool }}'
-    delete: '{{ nginx__deploy_state != "present" or (not (nginx_flavor == "full") | bool) }}'
+    by_role: 'debops.nginx'
+    state: '{{ ((nginx__deploy_state in [ "present" ]) and (nginx_flavor not in [ "passenger" ])) | ternary("present", "absent") }}'
 
   - package: 'nginx nginx-*'
     pin: 'release o=Phusion'
     reason: 'Support for Phusion Passenger'
     priority: '600'
     suffix: '_passenger'
-    role: 'debops.nginx'
-    when: '{{ (nginx_flavor == "passenger") | bool }}'
-    delete: '{{ nginx__deploy_state != "present" or (not (nginx_flavor == "passenger") | bool) }}'
+    by_role: 'debops.nginx'
+    state: '{{ ((nginx__deploy_state in [ "present" ]) and (nginx_flavor in [ "passenger" ])) | ternary("present", "absent") }}'
 
-# Configuration of the ``iptables`` firewall using ``ferm``.
+# Configuration of the :command:`iptables` firewall using :program:`ferm`.
 nginx_ferm_dependent_rules: '{{ nginx__ferm__dependent_rules }}'
 
 nginx__ferm__dependent_rules:
@@ -614,7 +626,7 @@ nginx__ferm__dependent_rules:
     saddr: '{{ nginx_allow + nginx_group_allow + nginx_host_allow }}'
     accept_any: True
     weight: '40'
-    role: 'nginx'
+    by_role: 'nginx'
     name: 'http_https'
     multiport: True
     delete: '{{ nginx__deploy_state != "present" }}'
@@ -624,7 +636,7 @@ nginx_php5_status: False
 nginx_php5_status_name: 'php5_status'
 nginx_php5_ping_name: 'php5_ping'
 
-# What system group has privileged access to ``nginx`` service.
+# What system group has privileged access to :program:`nginx` service.
 nginx_privileged_group: 'webadmins'
 
 # Hash of SSL ciphers available to use in nginx server definitions
