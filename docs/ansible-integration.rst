@@ -21,7 +21,7 @@ return just a basic set of data containing the status of Redis installation
 (installed or not installed, enabled if installed) and the name of the system
 group which is required to get the rest of the information.
 
-And example output:
+An example output:
 
 .. code-block:: json
 
@@ -50,11 +50,12 @@ master instance:
      "host": "localhost",
      "installed": true,
      "password": "<random-long-password>",
-     "port": "6379"
+     "port": "6379",
+     "version": "2.8.17"
    }
 
 You can see here more information, like the host to which the Ansible role
-should connect to access Redis service, the TCP port number the service listens
+should connect to access the Redis service, the TCP port number the service listens
 on, and the authentication password (long random string). If the ``host``
 parameter is a DNS hostname, it usually means that this information was taken
 from the Ansible inventory directly and was not changed further.
@@ -76,10 +77,11 @@ disabled) provide even more useful information through Ansible facts:
      "monitor": "example-master",
      "password": "<random-long-password>",
      "port": "6379",
+     "version": "2.8.17",
      "sentinel_enabled": true,
      "sentinel_monitor_map": {
        "example-master": {
-         "master_host": "102.0.2.12",
+         "master_host": "192.0.2.12",
          "master_port": "6379",
          "password": "<random-long-password>",
          "sentinels": [
@@ -113,4 +115,4 @@ configuration exposed in the default facts like ``host``, ``port``,
 ``password`` (notice the IP address of the host; this usually means that this
 value has been modified by the Sentinel dynamically). You can also see the
 paths to the ``notify.d`` and ``trigger.d`` directories where other roles can
-install hook scripts to be executed by Redis Sentinel during various events.
+install hook scripts to be executed by Redis Sentinel on various events.

@@ -20,16 +20,16 @@ to hold the configuration. Redis Server can be configured on all levels of the
 Ansible inventory (all, group, host), Redis Sentinel can only be configured
 globally.
 
-Redis requires an authentication by a password before applications can use it.
+Redis requires an authentication by a password before the applications can use it.
 The password is accessible either via Ansible local facts (usable by other
 Ansible roles), or using the ``redis-password`` command (usable by users
 included in the ``redis-auth`` UNIX group). If you store the password in
 a configuration file, make sure that only specific user or group can read it;
 otherwise it can be read by untrusted users and the security will be broken.
 
-Support for Debian Wheezy and SysVinit is removed, role relies on systemd units
+Support for Debian Wheezy and SysVinit is removed, the role relies on systemd units
 instead.
 
-The Redis Server and Sentinel configuration files have been reorganized, role
-most likely will not work with existing installations. Clean reinstall is
-strongly recommended.
+The Redis Server and Sentinel configuration files have been reorganized.
+The role most likely will not work with existing installations. Clean reinstall
+is strongly recommended.
