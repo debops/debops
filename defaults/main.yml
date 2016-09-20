@@ -296,8 +296,9 @@ nginx_ssl_dhparam: '{{ (ansible_local.dhparam[nginx_ssl_dhparam_set]
 # Name of the ``dhparam`` set to use.
 nginx_ssl_dhparam_set: 'default'
 
-# Default SSL cipher list. More information in vars/main.yml
-nginx_default_ssl_ciphers: 'pfs'
+# Default set of cipher suites to use.
+# Refer to ``nginx_ssl_ciphers`` for details.
+nginx_default_ssl_ciphers: 'bettercrypto_org_suite_b'
 
 # Default SSL ECDH curve used on servers, to see a list of supported curves, run:
 #
@@ -643,6 +644,18 @@ nginx_privileged_group: 'webadmins'
 # You can select a set of ciphers using 'ssl_ciphers' variable
 # Default set of ciphers is set in nginx_default_ssl_ciphers variable
 nginx_ssl_ciphers:
+
+  # https://bettercrypto.org/git/
+  # https://bettercrypto.org/static/applied-crypto-hardening.pdf
+  # This will come at a certain cost of excluding many clients!
+  # If you want even higher security then the default values of this role then
+  # consider to use a preset for this role maintained by ypid:
+  # https://github.com/ypid/ypid-ansible-inventory
+  bettercrypto_org_suite_a: 'EDH+aRSA+AES256:EECDH+aRSA+AES256:!SSLv3'
+
+  # https://bettercrypto.org/git/
+  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/configuration/Webservers/nginx/default-ec
+  bettercrypto_org_suite_b: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA'
 
   # Perfect Forward Secrecy (https://community.qualys.com/blogs/securitylabs/2013/08/05/configuring-apache-nginx-and-openssl-for-forward-secrecy)
   # String taken on 2014-04-11
