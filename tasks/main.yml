@@ -43,6 +43,8 @@
   run_once: True
   always_run: True
 
+  # TODO: When there is any need to change this task, consider refactoring and
+  # using the versions provided in local facts.
 - name: Check Ansible Controller crypto library version
   shell: |
     {% if pki_ca_library == 'gnutls' %}
@@ -500,7 +502,7 @@
     dest: '/etc/ansible/facts.d/pki.fact'
     owner: 'root'
     group: 'root'
-    mode: '0644'
+    mode: '0755'
   register: pki_register_facts
   notify: [ 'Gather PKI facts' ]
 
