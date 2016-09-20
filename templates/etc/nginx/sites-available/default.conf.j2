@@ -519,13 +519,15 @@ server {
 
         ssl_certificate           {{ nginx_tpl_ssl_certificate }};
         ssl_certificate_key       {{ nginx_tpl_ssl_certificate_key }};
-        ssl_protocols             TLSv1 TLSv1.1 TLSv1.2;
+        ssl_protocols             {{ (item.tls_protocols | d(nginx_default_tls_protocols)) | join(" ") }};
         ssl_prefer_server_ciphers on;
-        ssl_ciphers               "{{ nginx_ssl_ciphers[item.ssl_ciphers | default(nginx_default_ssl_ciphers)] }}"; # SSL cipher list: {{ item.ssl_ciphers | default(nginx_default_ssl_ciphers) }}
+        ssl_ciphers               "{{ nginx_ssl_ciphers[item.ssl_ciphers | default(nginx_default_ssl_ciphers)] }}"; # TLS ciphers suites set: {{ item.ssl_ciphers | default(nginx_default_ssl_ciphers) }}
 {% if nginx_tpl_ssl_dhparam %}
         ssl_dhparam               {{ nginx_tpl_ssl_dhparam }};
 {% endif %}
+{% if item.ssl_curve | default(nginx_default_ssl_curve) %}
         ssl_ecdh_curve            {{ item.ssl_curve | default(nginx_default_ssl_curve) }};
+{% endif %}
 {% if nginx_version | version_compare('1.4','>=') and (item.ocsp | d(nginx_ocsp)) | bool %}
         ssl_stapling              on;
 {% if (item.ocsp_verify | d(nginx_ocsp_verify)) | bool %}
