@@ -32,9 +32,9 @@ owncloud__base_packages:
 
   ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
   ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
-  ## Is it necessary to install all LibreOffice packages? https://github.com/owncloud/documents#known-issues
+  ## FIXME: Is it necessary to install all LibreOffice packages? https://github.com/owncloud/documents#known-issues
   ## Upstream documentation does not specify it more clearly. Installing ``libreoffice`` just to be sure.
-  - '{{ [ "libreoffice" ] if (owncloud__app_documents_enabled|bool) else [] }}'
+  - '{{ [ "libreoffice" ] if (owncloud__app_documents_libreoffice_enabled|bool) else [] }}'
 
   - '{{ [ "smbclient" ] if (owncloud__smb_support|bool) else [] }}'
   - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release | version_compare("9.0", ">=")) else [] }}'
@@ -799,6 +799,13 @@ owncloud__dependent_apps_config: {}
 # Not enabled by default because, as of ownCloud 9.0, the application is not shipped by default.
 # Note that this will install LibreOffice plus dependencies on the server.
 owncloud__app_documents_enabled: False
+
+
+# .. envvar:: owncloud__app_documents_libreoffice_enabled
+#
+# Should LibreOffice be installed on the server so that the documents app can
+# work with proprietary document formats such as Microsoft Office?
+owncloud__app_documents_libreoffice_enabled: False
 
 
 # .. External storage [[[1
