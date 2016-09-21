@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.unattended_upgrades master: https://github.com/debops/ansible-unattended_upgrades/compare/v0.2.1...master
 
+Changed
+~~~~~~~
+
+- Optimized auto reboot time by rebooting physical hosts before virtualized
+  guests to reboot guests in one go. [ypid_]
+
 
 `debops.unattended_upgrades v0.2.1`_ - 2016-08-05
 -------------------------------------------------
