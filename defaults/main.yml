@@ -237,6 +237,22 @@ owncloud__post_upgrade_hook_host_list: []
 owncloud__variant: 'owncloud'
 
 
+# .. envvar:: owncloud__variant_url_map
+#
+# URL map for :envvar:`owncloud__variant`.
+owncloud__variant_url_map:
+  owncloud: 'https://owncloud.org/'
+  nextcloud: 'https://nextcloud.com/'
+
+
+# .. envvar:: owncloud__variant_name_map
+#
+# Name map for :envvar:`owncloud__variant`.
+owncloud__variant_name_map:
+  owncloud: 'ownCloud'
+  nextcloud: 'NextCloud'
+
+
 # .. envvar:: owncloud__release
 #
 # Defaults to the latest stable release supported and tested with this role.
@@ -1341,7 +1357,7 @@ owncloud__theme_base_url: 'https://github.com/debops/ansible-owncloud'
 #
 # See under `Apps, Product and Service Names, and Compatibility References <https://owncloud.org/trademarks/>`_
 # for more suggestions.
-owncloud__theme_slogan: 'Powered by <a href="https://owncloud.org/">ownCloud</a>'
+owncloud__theme_slogan: 'Powered by <a href="{{ owncloud__variant_url_map[owncloud__variant] }}">{{ owncloud__variant_name_map[owncloud__variant] }}</a>'
 
 
 # .. envvar:: owncloud__theme_footer_short
