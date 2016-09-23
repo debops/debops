@@ -45,7 +45,7 @@ Refer to debops.redis_ for details.
 Example inventory
 -----------------
 
-To setup ownCloud on a given remote host, it needs to be added to
+To setup ownCloud on a given host it should be included in the
 ``[debops_service_owncloud]`` Ansible inventory group:
 
 .. code-block:: none
