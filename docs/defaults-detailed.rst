@@ -155,7 +155,7 @@ context the given host:
 .. code-block:: yaml
 
    apache__host_snippets:
-	   example:
+     example:
        type: 'raw'
        raw: |
          # Your raw Apache directives.
