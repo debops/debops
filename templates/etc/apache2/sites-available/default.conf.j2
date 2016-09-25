@@ -1,0 +1,45 @@
+# {{ ansible_managed }}
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+{% import 'debops__tpl_macros.j2' as debops__tpl_macros with context %}
+{% import 'apache__tpl_macros.j2' as apache__tpl_macros with context %}
+{{ apache__tpl_macros.get_header_comments(item) }}
+
+{% if apache__tpl_macros.get_listen_sockets(item.listen_http|d([]), apache__http_listen) %}
+# Virtual host handling HTTP [[[
+<VirtualHost {{ apache__tpl_macros.get_listen_sockets(item.listen_http|d([]), apache__http_listen) }}>
+
+    {{ apache__tpl_macros.get_server_directives(item) | indent(4) }}
+
+{% if item.redirect_http|d() %}
+    {{ apache__tpl_macros.get_redirect( item.redirect_http_code|d(307), "/", item.redirect_http) | indent(4) }}
+{% elif item.redirect_to_https|d(True) | bool %}
+    Redirect {{ item.redirect_to_https_with_code|d("301") }} "/" "https://{{ (debops__tpl_macros.get_yaml_list_for_elem(item.name) | from_yaml)[0] }}/"
+{% else %}
+    {{ apache__tpl_macros.get_content_directives(item) | indent(4) }}
+{% endif %}
+
+</VirtualHost>
+# ]]]
+{% endif %}
+
+{% if apache__https_enabled|bool and apache__tpl_macros.get_listen_sockets(item.listen_https|d([]), apache__https_listen) %}
+# Virtual host handling HTTPS  [[[
+<VirtualHost {{ apache__tpl_macros.get_listen_sockets(item.listen_https|d([]), apache__https_listen) }}>
+
+    {{ apache__tpl_macros.get_server_directives(item) | indent(4) }}
+
+
+    {{ apache__tpl_macros.get_https_directives(item) | indent(4) }}
+
+    {{ apache__tpl_macros.get_http_security_headers(item) | indent(4) }}
+    {{ apache__tpl_macros.get_common_headers(item) | indent(4) }}
+
+{% if item.redirect_https|d() %}
+    {{ apache__tpl_macros.get_redirect( item.redirect_https_code|d(307), "/", item.redirect_https) | indent(4) }}
+{% else %}
+    {{ apache__tpl_macros.get_content_directives(item) | indent(4) }}
+{% endif %}
+
+</VirtualHost>
+# ]]]
+{% endif %}

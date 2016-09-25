@@ -1,0 +1,19 @@
+---
+
+- name: Test apache and reload
+  command: apache2ctl configtest
+  notify: [ 'Reload apache' ]
+
+- name: Test apache and restart
+  command: apache2ctl configtest
+  notify: [ 'Restart apache' ]
+
+- name: Reload apache
+  service:
+    name: '{{ apache__service_name }}'
+    state: 'reloaded'
+
+- name: Restart apache
+  service:
+    name: '{{ apache__service_name }}'
+    state: 'restarted'

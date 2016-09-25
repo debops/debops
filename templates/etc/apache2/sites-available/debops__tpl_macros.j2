@@ -1,0 +1,68 @@
+{# vim: foldmarker=[[[,]]]:foldmethod=marker
+# Copyright [[[
+# Commonly used set of macros in DebOps.
+# It can be included in repositories as needed.
+# Changes to this file should go upstream: FIXME
+#
+# Copyright (C) 2014-2016 Maciej Delmanowski <drybjed@drybjed.net>
+# Copyright (C) 2015-2016 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2014-2016 DebOps https://debops.org/
+#
+# This file is part of DebOps.
+#
+# DebOps is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3, as
+# published by the Free Software Foundation.
+#
+# DebOps is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with DebOps. If not, see https://www.gnu.org/licenses/.
+# ]]] #}
+
+{% macro get_yaml_list_for_elem(list_or_elem) %}{# [[[ #}
+{{ ([ list_or_elem ]
+    if (list_or_elem is string or list_or_elem in [True, False])
+    else (list_or_elem|list)) | to_nice_yaml }}
+{% endmacro %}{# ]]] #}
+
+{% macro get_realm_yaml_list(domains, fallback_realm) %}{# [[[ #}
+{% set custom_realm_list = [] %}
+{% if domains and (ansible_local|d() and ansible_local.pki|d() and ansible_local.pki.known_realms|d()) %}
+{%   for domain in (get_yaml_list_for_elem(domains) | from_yaml) %}
+{%     if domain in ansible_local.pki.known_realms %}
+{%       set _ = custom_realm_list.append(domain) %}
+{%     elif (domain.split('.')[1:] | join('.')) in ansible_local.pki.known_realms %}
+{%       set _ = custom_realm_list.append(domain.split('.')[1:] | join('.')) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if custom_realm_list|length == 0 %}
+{%   set _ = custom_realm_list.append(fallback_realm) %}
+{% endif %}
+{{ custom_realm_list | to_nice_yaml }}
+{% endmacro %}{# ]]] #}
+
+{% macro get_apache_version() %}{# [[[ #}
+{{ ansible_local.apache.version
+   if (ansible_local|d() and ansible_local.apache|d() and
+       ansible_local.apache.version|d())
+   else "2.4.0" }}
+{% endmacro %}{# ]]] #}
+
+{% macro get_openssl_version() %}{# [[[ #}
+{{ ansible_local.pki.openssl_version
+   if (ansible_local|d() and ansible_local.pki|d() and
+       ansible_local.pki.openssl_version|d())
+   else "0.0.0" }}
+{% endmacro %}{# ]]] #}
+
+{% macro get_gnutls_version() %}{# [[[ #}
+{{ ansible_local.pki.gnutls_version
+   if (ansible_local|d() and ansible_local.pki|d() and
+       ansible_local.pki.gnutls_version|d())
+   else "0.0.0" }}
+{% endmacro %}{# ]]] #}
