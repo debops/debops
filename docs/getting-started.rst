@@ -1,6 +1,8 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
 
@@ -18,7 +20,7 @@ like that if you want to take advantage of custom lookup template that uses
 conditional package installation depending on installed operating system, its
 release or available archive areas.
 
-The difference between ``debops.apt`` and ``debops.apt_install`` Ansible roles
+The difference between debops.apt_ and ``debops.apt_install`` Ansible roles
 is that the former role is used to configure the APT package manager itself,
 and latter just installs packages using APT package manager, dependng on its
 configuration.
@@ -43,12 +45,12 @@ enable it.
 The role provides a set of default variables to specify what packages should be
 installed on hosts, depending on the inventory level:
 
-``apt_install__packages``
+:envvar:`apt_install__packages`
   This variable should be used in
   :file:`ansible/inventory/group_vars/all/apt_install.yml` file and is meant to
   specify packages present on all hosts in the inventory.
 
-``apt_install__group_packages``
+:envvar:`apt_install__group_packages`
   This variable should be used in
   :file:`ansible/inventory/group_vars/<group-name>/apt_install.yml` files and is
   meant to contain packages that should be installed on hosts in different
@@ -56,7 +58,7 @@ installed on hosts, depending on the inventory level:
   be careful about your inventory design. Or, you can use it as a maser list
   that contains different per-group variables.
 
-``apt_install__host_packages``
+:envvar:`apt_install__host_packages`
   This variable should be used in
   :file:`ansible/inventory/host_vars/<hostname>/apt_install.yml` files and is meant
   to contain list of packages that should be installed on specific hosts.
@@ -83,4 +85,3 @@ dependency. Here's an example configuration:
 
        - role: debops.apt_install
          tags: [ 'role::apt_install' ]
-
