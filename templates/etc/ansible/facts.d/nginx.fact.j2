@@ -29,6 +29,7 @@ cat << EOF
 {% if nginx_tpl_default_server_ssl %}
 "default_server_ssl": "{{ nginx_tpl_default_server_ssl }}",
 {% endif %}
+"enabled": {{ (nginx__deploy_state in [ 'present' ]) | lower }},
 "manage_ipv6only": "{{ nginx_manage_ipv6only | bool | lower }}",
 "user": "{{ nginx_user }}",
 "www": "{{ nginx_www }}",

@@ -1,3 +1,4 @@
+{% import 'debops__tpl_macros.j2' as debops__tpl_macros with context %}
 {#
 #
 #    ==== Default server template for debops.nginx role ====
@@ -49,6 +50,7 @@
 {% set nginx_tpl_pki_custom_realm = '' %}
 {% set nginx_tpl_pki_custom_realm_list = [] %}
 {% if (nginx_pki | bool and item.name | d() and (ansible_local|d() and ansible_local.pki|d() and ansible_local.pki.known_realms|d())) %}
+{# TODO: Legacy code. Use debops__tpl_macros.j2 #}
 {%   if item.name is string %}
 {%     if item.name in ansible_local.pki.known_realms %}
 {%       set _ = nginx_tpl_pki_custom_realm_list.append(item.name) %}
@@ -521,7 +523,7 @@ server {
         ssl_certificate_key       {{ nginx_tpl_ssl_certificate_key }};
         ssl_protocols             {{ (item.tls_protocols | d(nginx_default_tls_protocols)) | join(" ") }};
         ssl_prefer_server_ciphers on;
-        ssl_ciphers               "{{ nginx_ssl_ciphers[item.ssl_ciphers | default(nginx_default_ssl_ciphers)] }}"; # TLS ciphers suites set: {{ item.ssl_ciphers | default(nginx_default_ssl_ciphers) }}
+        ssl_ciphers               "{{ nginx_ssl_ciphers[item.ssl_ciphers | default(nginx_default_ssl_ciphers)] }}"; # TLS cipher suites set: {{ item.ssl_ciphers | default(nginx_default_ssl_ciphers) }}
 {% if nginx_tpl_ssl_dhparam %}
         ssl_dhparam               {{ nginx_tpl_ssl_dhparam }};
 {% endif %}
@@ -547,7 +549,7 @@ server {
         resolver_timeout          5s;
 {% endif %}
 {% if item.hsts_enabled|d(True) | bool %}
-        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age | default('15768000') }}{% if nginx_hsts_subdomains|bool %}; includeSubDomains{% endif %}{% if (item.hsts_preload | d(nginx_hsts_preload)) | bool %}; preload{% endif %}";
+        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age }}{{ "; includeSubDomains" if nginx_hsts_subdomains|bool else "" }}{{ "; preload" if ((item.hsts_preload | d(nginx_hsts_preload)) | bool) }}";
 {% endif %}
 {% if (item.csp|d() | bool) or item.csp_report | d() %}
         add_header                Content-Security-Policy{% if item.csp_report|d() | bool %}-Report-Only{% endif %} "{{ item.csp_policy | d('default-src https:') }}";
