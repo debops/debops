@@ -4,6 +4,8 @@
 # Default variables
 # =================
 
+# .. include:: includes/all.rst
+#
 # .. contents:: Sections
 #    :local:
 #
@@ -56,7 +58,7 @@ apt_install__archive_areas: '{{ ansible_local.apt.archive_areas
 # .. envvar:: apt_install__condition_map
 #
 # Definition of the values to compare :ref:`apt_install__all_packages` against.
-# This map is used internally in the ``apt_install__all_packages`` lookup
+# This map is used internally in the :envvar:`apt_install__all_packages` lookup
 # template.
 apt_install__condition_map:
   'distribution': '{{ apt_install__distribution }}'
@@ -66,7 +68,7 @@ apt_install__condition_map:
 
 # .. envvar:: apt_install__state
 #
-# How the ``apt`` Ansible module should install the selected packages:
+# How the :command:`apt` Ansible module should install the selected packages:
 #
 # ``present``
 #   Only make sure that the packages on the list are present on the host.
@@ -289,20 +291,20 @@ apt_install__all_packages:
   - '{{ apt_install__firmware_packages }}'
 
 
-# .. Configuration of other Ansible roles (((1
+# .. Configuration for other Ansible roles (((1
 #
-# ----------------------------------------
-#   Configuration of other Ansible roles
-# ----------------------------------------
+# -----------------------------------------
+#   Configuration for other Ansible roles
+# -----------------------------------------
 
 # .. envvar:: apt_install__apt_preferences__dependent_list
 #
-# Configuration for the ``debops.apt_preferences`` role.
+# Configuration for the debops.apt_preferences_ role.
 apt_install__apt_preferences__dependent_list:
 
   - package: 'git git-*'
     backports: [ 'wheezy' ]
-    reason:  'Better support for git submodules - http://stackoverflow.com/a/7593496'
+    reason:  'Better support for git submodules - https://stackoverflow.com/a/7593496'
     by_role: 'debops.apt_install'
 
   - package: 'irqbalance'
