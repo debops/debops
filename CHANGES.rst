@@ -54,6 +54,8 @@ Added
   corresponding playbooks. Both roles are included in the ``common.yml``
   playbook. [drybjed_]
 
+- Add ``debops.apache`` role and its corresponding playbook. [ypid_]
+
 Changed
 ~~~~~~~
 
