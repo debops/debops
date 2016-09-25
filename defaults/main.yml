@@ -198,13 +198,14 @@ apt_install__dependent_packages: []
 # .. envvar:: apt_install__conditional_whitelist_packages
 #
 # List of APT package names which will be used to compare against packages
-# requrested for installation. This list is exposed in the defaults so that you
+# requested for installation. This list is exposed in the defaults so that you
 # don't need to modify the conditional list below to enable or disable
 # packages.
 apt_install__conditional_whitelist_packages:
   - 'irqbalance'
   - 'uptimed'
   - 'libpam-systemd'
+  - 'haveged'
 
 
 # .. envvar:: apt_install__conditional_packages
@@ -228,6 +229,17 @@ apt_install__conditional_packages:
   - name: 'libpam-systemd'
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present" if (ansible_service_mgr == "systemd") else "absent" }}'
+
+    # KVM is capable of providing entropy to the guests needs to be configured
+    # on the hypervisor host and thus can not always be done if one only
+    # controls a guest.
+  - name: 'haveged'
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
+    state: '{{ "present"
+               if (ansible_virtualization_role|d("guest") in [ "guest" ] and
+                   ansible_virtualization_type|d("unknown") not in ["lxc"]
+               )
+               else "absent" }}'
 
 
 # .. envvar:: apt_install__firmware_packages
@@ -302,4 +314,3 @@ apt_install__apt_preferences__dependent_list:
     backports: [ 'jessie' ]
     reason:  'Bug fixes and memory leak fixes.'
     by_role: 'debops.apt_install'
-
