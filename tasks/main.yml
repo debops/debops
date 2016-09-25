@@ -50,7 +50,7 @@
 
 - name: Create conf-available snippets
   template:
-    src: 'etc/apache2/conf-available/{{ "raw" if (item.value.type|d("default") in ["divert"] and item.value.raw|d()) else item.key }}.conf.j2'
+    src: 'etc/apache2/conf-available/{{ "raw" if (item.value.type|d("default") in ["divert", "raw"] and item.value.raw|d()) else item.key }}.conf.j2'
     dest: '{{ apache__config_path + "/conf-available/" + item.key + ".conf" }}'
     owner: 'root'
     group: 'root'
