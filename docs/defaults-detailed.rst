@@ -9,6 +9,10 @@ Some of ``debops.nginx`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
 
+.. This section is intended to be similar to the docs in debops.apache. If you
+   modify this section, consider also checking debops.apache if the same also
+   applies there, please.
+
 .. contents::
    :local:
    :depth: 2
@@ -51,10 +55,10 @@ Common role options
   Whether the Nginx server should be ``present`` or ``absent``.
 
 ``when``
-  Deprecated, optional, boolean. Use ````state: 'present'`` instead.
+  Deprecated, optional, boolean. Use ``state: 'present'`` instead.
 
 ``delete``
-  Deprecated, optional, boolean. Use ````state: 'absent'`` instead.
+  Deprecated, optional, boolean. Use ``state: 'absent'`` instead.
 
 ``by_role``
   Optional, string. Name of a Ansible role in the format ``ROLE_OWNER.ROLE_NAME`` which is
@@ -85,7 +89,7 @@ Common webserver options
   Optional, string.
   Absolute path to server root to use for this server configuration.
   Defaults to :file:`/srv/www/<``name[0]>/public/`.
-  See also ````owner`` parameter.
+  See also ``owner`` parameter.
   The directive will be omitted if set to ``False``.
 
 ``try_files``
@@ -147,20 +151,20 @@ Redirects
   Optional, list of strings or boolean.
   Create a separate `Nginx server block documentation`_ which will automatically redirect
   requests from specified list of server names (or all but the first name in
-  the ````name`` list if ``redirect_from`` is set to ``True``) to the first
-  server name specified in the ````name`` list.
+  the ``name`` list if ``redirect_from`` is set to ``True``) to the first
+  server name specified in the ``name`` list.
 
 ``redirect_to``
   Optional, string. Create separate `Nginx server block documentation`_ which redirects all
-  requests on servers specified in the ````name`` list to the server
-  specified in ````redirect_to``. The specified server name will be used as
+  requests on servers specified in the ``name`` list to the server
+  specified in ``redirect_to``. The specified server name will be used as
   the only name in subsequent HTTP and HTTPS configuration.
 
 ``redirect_to_ssl``
   Optional, boolean. Defaults to ``True``
-  If ``True``, redirect connection from HTTP to the HTTPS version of
-  the site. Set to ``False`` to allow to serve the website via HTTP and HTTPS and
-  don't redirect HTTP to HTTPS.
+  If ``True``, redirect connection from HTTP to the HTTPS version of the site.
+  Set to ``False`` to allow to serve the website via HTTP and HTTPS and don't
+  redirect HTTP to HTTPS.
   FIXME: Rename to redirect_to_https
 
 
@@ -175,7 +179,7 @@ HTTPS and TLS
 ``ssl``
   Optional, boolean. Defaults to ``nginx_pki``.
   Enable or disable HTTPS for this server configuration.
-  FIXME: Rename to tls_enabled
+  FIXME: Rename to https_enabled
 
 ``ssl_crt``
   Optional, string. Absolute path to a custom X.509 certificate to use. If not
@@ -184,22 +188,23 @@ HTTPS and TLS
 
 ``ssl_key``
   Optional, string. Absolute path to custom private key to use. If not
-  supplied ````pki_key`` will be used instead.
+  supplied ``pki_key`` will be used instead.
   FIXME: Rename to tls_key
 
 ``ssl_ca``
   Optional, string. Specifies the absolute path to the client CA certificate
-  used to authenticate clients. If not specified, ````pki_ca`` will be used
+  used to authenticate clients. If not specified, ``pki_ca`` will be used
   instead.
 
 ``ssl_trusted``
   Optional, string. Specifies the absolute path to the intermediate+root CA server
   certificates which will be used for OCSP stapling verification. If not
-  specified, the value of ````pki_trusted`` will be used instead.
+  specified, the value of ``pki_trusted`` will be used instead.
 
 ``ssl_dhparam``
   Optional, string. Absolute path to custom DHE parameters to use. If not supplied,
   ``nginx_ssl_dhparam`` will be used instead.
+  FIXME: Rename to tls_dhparam_file
 
 ``ssl_ciphers``
   Optional, strings. Defaults to ``nginx_default_ssl_ciphers``.
@@ -246,21 +251,23 @@ HTTPS and TLS
 ``ocsp``
   Optional, boolean. Defaults to ``nginx_ocsp``.
   Enable or disable OCSP stapling for a given server.
+  FIXME: Rename to ocsp_stapling_enabled
 
 ``ocsp_verify``
   Optional, boolean. Defaults to ``nginx_ocsp_verify``
   Enable or disable OCSP stapling verification for a given server. An
   intermediate+root CA certificate is required for this.
+  FIXME: Rename to ocsp_stapling_verify
 
 ``hsts_enabled``
   Optional, boolean. Defaults to ``True``. If this is set to ``True`` and HTTPS
-  is enabled for this item, the Strict-Transport-Security header is set in the
-  server's responses.  If this is set to ``False``, the
-  Strict-Transport-Security header will not be set in the server's responses.
+  is enabled for this item, the `HTTP Strict Transport Security`_ header is set
+  in the server's responses.  If this is set to ``False``, the header will not
+  be set in the server's responses.
 
 ``hsts_preload``
   Optional, boolean. Defaults to ``nginx_hsts_preload``.
-  Add a "preload" parameter to the HSTS header which can be used with
+  Add a "preload" parameter to the HSTS header which can be used with the
   https://hstspreload.appspot.com/ site to configure HSTS preloading for a
   given website.
 
@@ -277,11 +284,11 @@ User authentication
   Defaults to ``nginx_default_auth_basic_realm``.
 
 ``auth_basic_name``
-  Optional, string. Required with ````auth_basic``. Specifies the name of the
+  Optional, string. Required with ``auth_basic``. Specifies the name of the
   htpasswd file used for this server authentication. htpasswd files are
   stored in :file:`/etc/nginx/private/` directory.
 
-  You can use ````auth_basic_filename`` and specify the full path to the
+  You can use ``auth_basic_filename`` and specify the full path to the
   htpasswd file to use; file needs to be readable by nginx system user.
 
 
@@ -308,7 +315,7 @@ Locations
 ``location_allow``
   Optional. Dict which adds "allow" entries to each location section defined
   above from a list. Each location needs to have corresponding entry in
-  ````location`` dict. If ``item.location_deny`` is not defined, 'deny all;' is
+  ``location`` dict. If ``item.location_deny`` is not defined, 'deny all;' is
   added at the end. Examples:
 
   .. code-block:: yaml
@@ -320,7 +327,7 @@ Locations
 ``location_deny``
   Optional. Dict which adds "deny" entries to each location section
   defined above from a list. Each location needs to have corresponding
-  entry in ````location`` dict. Examples:
+  entry in ``location`` dict. Examples:
 
   .. code-block:: yaml
     :linenos:
@@ -332,7 +339,7 @@ Locations
 ``location_referers``
   Optional. Dict with lists of valid referers accepted for a given
   location, all other referers will be blocked by nginx. Each location
-  needs to have corresponding entry in ````location`` dict. Examples:
+  needs to have corresponding entry in ``location`` dict. Examples:
 
   .. code-block:: yaml
     :linenos:
@@ -341,7 +348,7 @@ Locations
        '/': [ '{{ ansible_fqdn }}', 'www.{{ ansible_fqdn }}', '*.{{ ansible_domain }}' ]
 
 ``location_list``
-  Optional, list of dicts. This is an alternative syntax of ````location_*``
+  Optional, list of dicts. This is an alternative syntax of ``location_*``
   entries; instead of using text blocks directly, it uses dict keys and values
   to configure each location, which allows for greater control and nesting.
   List of known keys and their descriptions:
@@ -377,28 +384,29 @@ Locations
     Nested list of locations to create in this location section.
 
 
-Security headers
-~~~~~~~~~~~~~~~~
+.. _nginx__ref_servers_http_security_headers:
+
+HTTP security headers
+~~~~~~~~~~~~~~~~~~~~~
 
 ``csp``
   Optional, boolean. Defaults to ``False``.
   If set to ``True`` and HTTPS is enabled for this item, the
-  Content-Security-Policy header is set in the server's responses. If this is
-  set to ``False``, the Content-Security-Policy header will not be set in the
-  server's responses.
+  Content-Security-Policy header is set in server responses. If this is set to
+  ``False``, the Content-Security-Policy header will not be set.
 
 ``csp_report``
   Optional, boolean. Defaults to ``False``.
   If this is set to ``True`` and HTTPS is enabled for this item, the
-  Content-Security-Policy-Report-Only header is set in the server's responses.
+  Content-Security-Policy-Report-Only header is set in the server responses.
   If this is set to ``False``, the Content-Security-Policy-Report-Only header
   will not be set in the server's responses.
 
 ``csp_policy``
-  Optional, string. Defaults to: ``default-src https:``.
-  If ````csp`` or ``item.csp_report`` option is ``True``, this option
-  determines the Content-Security-Policy header set in the server's responses.
-  By default, it forces all assets to be loaded over HTTPS.
+  Optional, string. Defaults to: ``default-src https:`` (force all assets to be loaded over HTTPS).
+  If ``item.csp`` or ``item.csp_report`` option is ``True``, this option
+  determines the Content-Security-Policy header set in server responses.
+  Refer to the `Content Security Policy Reference`_.
 
 .. _nginx__ref_http_xss_protection:
 
@@ -573,7 +581,7 @@ Welcome page
 
 ``welcome_domain``
   Optional. Specify a DNS domain which should be used in the generated
-  welcome page. By default, a domain is detected from ````name[0]``, or
+  welcome page. By default, a domain is detected from ``name[0]``, or
   if it's not specified, ``ansible_domain`` variables.
 
 ``welcome_css``
@@ -612,7 +620,7 @@ User directories
 Type: php
 ~~~~~~~~~
 
-Available when ``type`` is set to ``php`` for a server.
+Available when ``item.type`` is set to ``php`` for a server.
 
 ``php_upstream``
   Required, string. Name of nginx upstream to use.
@@ -672,13 +680,13 @@ Deprecated, use :ref:`nginx__ref_servers_php`.
 Type: proxy
 ~~~~~~~~~~~
 
-Available when ``type`` is set to ``proxy`` for a server.
+Available when ``item.type`` is set to ``proxy`` for a server.
 
 FIXME: Documentation missing.
 
 Type: rails
 ~~~~~~~~~~~
 
-Available when ``type`` is set to ``rails`` for a server.
+Available when ``item.type`` is set to ``rails`` for a server.
 
 FIXME: Documentation missing.

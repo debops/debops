@@ -12,29 +12,34 @@
 - name: Add flavor APT GPG key
   apt_key:
     id: '{{ nginx__flavor_apt_key_id }}'
-    state: 'present'
+    state: '{{ "present" if (nginx__deploy_state == "present") else "absent" }}'
     keyserver: '{{ ansible_local.core.keyserver
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
-  when: (nginx__deploy_state in [ 'present' ] and nginx_flavor in [ 'nginx.org', 'passenger' ])
+  when: (nginx_flavor in [ 'nginx.org', 'passenger' ])
 
 - name: Add flavor APT repository
   apt_repository:
     repo: '{{ nginx__flavor_apt_repository }}'
-    state: 'present'
+    state: '{{ "present" if (nginx__deploy_state == "present") else "absent" }}'
     update_cache: True
-  when: (nginx__deploy_state in [ 'present' ] and nginx_flavor in [ 'nginx.org', 'passenger' ])
+  when: (nginx_flavor in [ 'nginx.org', 'passenger' ])
 
-- name: Install nginx packages
-  apt:
+- name: Ensure base packages are installed
+  package:
     name: '{{ item }}'
     state: 'present'
-    install_recommends: False
+  when: (nginx__deploy_state in [ 'present' ])
+  with_flattened:
+    - '{{ nginx_base_packages }}'
+
+- name: Ensure Nginx packages are in their desired state
+  package:
+    name: '{{ item }}'
+    state: '{{ "present" if (nginx__deploy_state == "present") else "absent" }}'
   with_flattened:
     - '{{ nginx__flavor_packages }}'
-    - '{{ nginx_base_packages }}'
-  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Create default nginx directories
   file:
@@ -232,6 +237,12 @@
     mode: '0755'
   when: (nginx_pki|bool and nginx__deploy_state in [ 'present' ])
 
+- name: Ensure the PKI nginx hook is absent
+  file:
+    path: '{{ nginx_pki_hook_path }}'
+    state: 'absent'
+  when: (nginx__deploy_state in [ 'absent' ])
+
 - name: Save nginx local facts
   template:
     src: 'etc/ansible/facts.d/nginx.fact.j2'
@@ -240,7 +251,6 @@
     group: 'root'
     mode: '0755'
   register: nginx_register_local_facts
-  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Gather facts if they were modified
   action: setup

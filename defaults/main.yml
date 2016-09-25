@@ -244,18 +244,16 @@ nginx_default_keepalive_timeout: 60
 
 # Enable or disable support for PKI/SSL/TLS in nginx.
 # Defaults to ``True`` if debops.pki_ is enabled on the remote host.
-nginx_pki: '{{ (True
-                if (ansible_local|d() and ansible_local.pki|d() and
-                    ansible_local.pki.enabled|d() | bool)
-                else False) | bool }}'
+nginx_pki: '{{ ansible_local|d() and ansible_local.pki|d() and
+               (ansible_local.pki.enabled|d() | bool) }}'
 
-# PKI base directory.
+# Directory path where PKI realm live.
 nginx_pki_path: '{{ ansible_local.pki.path
                     if (ansible_local|d() and ansible_local.pki|d() and
                         ansible_local.pki.path|d())
                     else "/etc/pki/realms" }}'
 
-# PKI realm to use for nginx server.
+# Default PKI realm to use.
 nginx_pki_realm: '{{ ansible_local.pki.realm
                      if (ansible_local|d() and ansible_local.pki|d() and
                          ansible_local.pki.realm|d())
@@ -296,8 +294,11 @@ nginx_ssl_dhparam: '{{ (ansible_local.dhparam[nginx_ssl_dhparam_set]
 # Name of the ``dhparam`` set to use.
 nginx_ssl_dhparam_set: 'default'
 
-# Default SSL cipher list. More information in vars/main.yml
-nginx_default_ssl_ciphers: 'pfs'
+# Default set of cipher suites to use.
+# Refer to ``nginx_ssl_ciphers`` for details.
+nginx_default_ssl_ciphers: 'bettercrypto_org__set_b_pfs'
+
+nginx_default_tls_protocols: [ 'TLSv1', 'TLSv1.1', 'TLSv1.2' ]
 
 # Default SSL ECDH curve used on servers, to see a list of supported curves, run:
 #
@@ -306,6 +307,7 @@ nginx_default_ssl_ciphers: 'pfs'
 #    openssl ecparam -list_curves
 #
 # See also: https://security.stackexchange.com/questions/31772/
+# Set to ``False`` to disable ECC.
 nginx_default_ssl_curve: 'secp384r1'
 
 # Default ssl verify client
@@ -317,10 +319,11 @@ nginx_default_ssl_client_certificate: ''
 # Default ssl revocation client certificate
 nginx_default_ssl_crl: ''
 
-# Enable or disable OCSP support
+# Enable or disable OCSP Stapling.
 nginx_ocsp: True
 
-# Verify OCSP by the server, requires chained intermediate and Root CA certificates
+# Verify OCSP responses from the server which requires chained intermediate and
+# Root CA certificates.
 nginx_ocsp_verify: '{{ nginx_ocsp | bool }}'
 
 # List of DNS servers used to resolve OCSP stapling. If it's empty, nginx role
@@ -330,11 +333,18 @@ nginx_ocsp_resolvers: []
 
 # HTTP Strict-Transport-Security
 # https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security
+# Maximum age in seconds for which clients should remember to only make secure
+# connections.
+# Defaults to six earth months.
 nginx_hsts_age: '15768000'
+
+# Should HSTS_ also include subdomains?
+# Note that all subdomains have to support HTTPS if you use this!
 nginx_hsts_subdomains: True
 
-# Add preload parameter to HSTS header.
-# More information: https://hstspreload.appspot.com/
+# Should the preload parameter be added to the HSTS header?
+# Refer to the `HSTS Preload List Submission`_ page to make use of this
+# feature.
 nginx_hsts_preload: True
 
 # Specify HTTP server name which will be marked as default_server.
@@ -643,6 +653,26 @@ nginx_privileged_group: 'webadmins'
 # You can select a set of ciphers using 'ssl_ciphers' variable
 # Default set of ciphers is set in nginx_default_ssl_ciphers variable
 nginx_ssl_ciphers:
+
+  # https://bettercrypto.org/
+  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/theory/cipher_suites/recommended.tex
+  # This will come at a certain cost of excluding many clients!
+  # If you want even higher security then the default values of this role then
+  # consider to use a preset for this role maintained by ypid:
+  # https://github.com/ypid/ypid-ansible-inventory
+  bettercrypto_org__set_a: 'EDH+aRSA+AES256:EECDH+aRSA+AES256:!SSLv3'
+
+  # https://bettercrypto.org/
+  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/configuration/Webservers/nginx/default-ec
+  bettercrypto_org__set_b: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA'
+
+  # https://bettercrypto.org/
+  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/configuration/Webservers/nginx/default-ec
+  # But only cipher suites which support PFS. Only drops support for Android 2.3.7 which is negligible.
+  bettercrypto_org__set_b_pfs: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH'
+
+  # https://cipherli.st/
+  cipherli_st: 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH'
 
   # Perfect Forward Secrecy (https://community.qualys.com/blogs/securitylabs/2013/08/05/configuring-apache-nginx-and-openssl-for-forward-secrecy)
   # String taken on 2014-04-11

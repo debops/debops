@@ -36,6 +36,9 @@ Changed
 - The URL scheme for the welcome page now defaults to ``HTTPS``. It can be
   configured as needed using the ``item.welcome_url_scheme`` option. [ypid_]
 
+- Update to the latest recommenced set of ciphers suites from
+  https://bettercrypto.org/. [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 
