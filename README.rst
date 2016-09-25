@@ -24,9 +24,9 @@ Here are a few services that are available
 
 **Databases**
 
-+-------------+----------+--------+--------+------------+----------------+
-| PostgreSQL_ | MariaDB_ | MySQL_ | Redis_ | Memcached_ | Elasticsearch_ |
-+-------------+----------+--------+--------+------------+----------------+
++-------------+----------+--------+------------+----------------+
+| PostgreSQL_ | MariaDB_ | Redis_ | Memcached_ | Elasticsearch_ |
++-------------+----------+--------+------------+----------------+
 
 **Programming languages**
 
@@ -36,9 +36,9 @@ Here are a few services that are available
 
 **Web application deployment**
 
-+--------+--------------+
-| nginx_ | RubyOnRails_ |
-+--------+--------------+
++--------+---------+--------------+
+| nginx_ | Apache_ | RubyOnRails_ |
++--------+---------+--------------+
 
 **Service monitoring and logging**
 
@@ -48,37 +48,37 @@ Here are a few services that are available
 
 **Networking**
 
-+----------+-------+--------+-------+----------+------+------+------+--------+
-| dnsmasq_ | DHCP_ | Radvd_ | ferm_ | postfix_ | SMS_ | SSH_ | NFS_ | Samba_ |
-+----------+-------+--------+-------+----------+------+------+------+--------+
++----------+-------+--------+-------+----------+------+------+------+--------+-------+
+| dnsmasq_ | DHCP_ | Radvd_ | ferm_ | postfix_ | SMS_ | SSH_ | NFS_ | Samba_ | Tinc_ |
++----------+-------+--------+-------+----------+------+------+------+--------+-------+
 
 **Virtualization**
 
-+------+---------+---------+------+
-| LXC_ | Docker_ | OpenVZ_ | KVM_ |
-+------+---------+---------+------+
++------+---------+---------+----------+
+| LXC_ | Docker_ | OpenVZ_ | libvirt_ |
++------+---------+---------+----------+
 
 **Backup and encryption**
 
-+-----------+------------+--------+------+---------------+
-| Safekeep_ | BoxBackup_ | encFS_ | SKS_ | Monkeysphere_ |
-+-----------+------------+--------+------+---------------+
++-----------+------------+--------+-------------+------+---------------+
+| Safekeep_ | BoxBackup_ | encFS_ | cryptsetup_ | SKS_ | Monkeysphere_ |
++-----------+------------+--------+-------------+------+---------------+
 
 **Security**
 
-+------+----------+--------+-------------+--------+
-| PKI_ | dhparam_ | slapd_ | cryptsetup_ | EncFS_ |
-+------+----------+--------+-------------+--------+
++------+----------+--------+
+| PKI_ | dhparam_ | slapd_ |
++------+----------+--------+
 
 Overview of how playbooks work within DebOps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There's a :file:`common.yml` playbook which gets ran on every host except localhost.
-This includes standard services like sshd and ferm. The full list can be
-found `here <https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml>`_.
+There's a ``common.yml`` playbook which gets ran on every host except localhost.
+This includes standard services like ``sshd`` and ferm. The full list can be
+found `here <https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml>`__.
 
 Additional plays are then ran based on what groups the host is in. For example if you wanted
-to setup a Gitlab instance you would add a host to the ``[debops_gitlab]`` group
+to setup a Gitlab instance you would add a host to the ``[debops_service_gitlab]`` group
 in your inventory.
 
 That carries over for things like postgresql, ruby or any service for the most
@@ -114,7 +114,6 @@ If you want to keep tabs on each role's status then check out our
 
 .. _PostgreSQL: https://github.com/debops/ansible-postgresql_server
 .. _MariaDB: https://github.com/debops/ansible-mariadb_server
-.. _MySQL: https://github.com/debops/ansible-mysql
 .. _Redis: https://github.com/debops/ansible-redis
 .. _Memcached: https://github.com/debops/ansible-memcached
 .. _Elasticsearch: https://github.com/debops/ansible-elasticsearch
@@ -126,6 +125,7 @@ If you want to keep tabs on each role's status then check out our
 .. _PHP: https://github.com/debops/ansible-php
 
 .. _nginx: https://github.com/debops/ansible-nginx
+.. _Apache: https://github.com/debops/ansible-apache
 .. _RubyOnRails: https://github.com/debops/ansible-rails_deploy
 
 .. _LibreNMS: https://github.com/debops/ansible-librenms
@@ -134,6 +134,7 @@ If you want to keep tabs on each role's status then check out our
 
 .. _dnsmasq: https://github.com/debops/ansible-dnsmasq
 .. _DHCP: https://github.com/debops/ansible-dhcpd
+.. _Tinc: https://github.com/debops/ansible-tinc
 .. _Radvd: https://github.com/debops/ansible-radvd
 .. _ferm: https://github.com/debops/ansible-ferm
 .. _postfix: https://github.com/debops/ansible-postfix
@@ -145,7 +146,7 @@ If you want to keep tabs on each role's status then check out our
 .. _LXC: https://github.com/debops/ansible-lxc
 .. _Docker: https://github.com/debops/ansible-docker
 .. _OpenVZ: https://github.com/debops/ansible-openvz
-.. _KVM: https://github.com/debops/ansible-kvm
+.. _libvirt: https://github.com/debops/ansible-libvirt
 
 .. _Safekeep: https://github.com/debops/ansible-safekeep
 .. _BoxBackup: https://github.com/debops/ansible-boxbackup
