@@ -6,7 +6,7 @@ Changelog
 **debops-playbooks**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
-and `human-readable changelog <http://keepachangelog.com/>`_.
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
 The current playbook maintainer is drybjed_.
 
@@ -47,14 +47,14 @@ Added
 - Add debops.debops_fact_ role with corresponding playbook and include it in
   the :file:`common.yml` playbook. [drybjed_]
 
-- Add ``debops.sysctl`` role with corresponding playbook and include it in
+- Add debops.sysctl_ role with corresponding playbook and include it in
   the :file:`common.yml` playbook. [ypid_]
 
-- Add ``debops.apt_listchanges`` and ``debops.apt_proxy`` roles with their
-  corresponding playbooks. Both roles are included in the ``common.yml``
+- Add debops.apt_listchanges_ and debops.apt_proxy_ roles with their
+  corresponding playbooks. Both roles are included in the :file:`common.yml`
   playbook. [drybjed_]
 
-- Add ``debops.apache`` role and its corresponding playbook. [ypid_]
+- Add debops.apache_ role and its corresponding playbook. [ypid_]
 
 Changed
 ~~~~~~~
@@ -80,7 +80,7 @@ Changed
 - Update debops.librenms_ playbook. [drybjed_]
 
 - Update the ``ipaddr()`` filter plugin with the version from Ansible ``devel``
-  branch. [drybjed]
+  branch. [drybjed_]
 
 - Update the debops.redis_ playbook to the new version. [drybjed_]
 
@@ -286,7 +286,7 @@ Changed
   Postfix as standalone service, not part of the :file:`common.yml` playbook.
   [drybjed_]
 
-- Move all role playbooks to ``service/`` subdirectory and create symlinks in
+- Move all role playbooks to :file:`service/` subdirectory and create symlinks in
   old locations. [drybjed_]
 
 - Update :file:`service/docker.yml` playbook and include additional roles required
@@ -296,7 +296,7 @@ Changed
 
 - Moved roles dependencies from debops.owncloud_ to owncloud playbook. [ypid_]
 
-- Moved roles dependencies from debops.tinc_ to tinc playbook. [le9i0nx]
+- Moved roles dependencies from debops.tinc_ to tinc playbook. [le9i0nx_]
 
 - Moved roles dependencies from debops.postgresql_server_ to
   postgresql_server playbook. [drybjed_]
@@ -583,7 +583,7 @@ Changed
 Changed
 ~~~~~~~
 
-- Move ``library/`` directory into correct place and sort modules in
+- Move :file:`library/` directory into correct place and sort modules in
   subdirectories mirroring the official layout. [drybjed_]
 
 `debops-playbooks v0.2.0`_ - 2015-02-22
@@ -594,7 +594,7 @@ Changed
 Added
 ~~~~~
 
-- New role: `debops.rsnapshot`_ [drybjed_]
+- New role: debops.rsnapshot_ [drybjed_]
 
 Changed
 ~~~~~~~
@@ -652,14 +652,14 @@ host.
 Role updates
 ~~~~~~~~~~~~
 
-OpenLDAP server managed by `debops.slapd`_ role has gained support for TLS out
-of the box, using certificates managed by `debops.pki`_ role. By default,
+OpenLDAP server managed by debops.slapd_ role has gained support for TLS out
+of the box, using certificates managed by debops.pki_ role. By default,
 ``slapd`` server listens for normal plain text connections, which can be
 protected by the client requesting a StartTLS session, as well as for encrypted
 SSL/TLS connections. This also marks the removal of Beta status from
-`debops.slapd`_ role.
+debops.slapd_ role.
 
-To stay on the safe side, `debops.auth`_ role, which configures
+To stay on the safe side, debops.auth_ role, which configures
 :file:`/etc/ldap/ldap.conf`, will automatically set encrypted connections to
 OpenLDAP server using ``ldaps://`` protocol. You can of course change that
 using role default variables.
@@ -669,7 +669,7 @@ Playbook updates
 
 To make LDAP use easier within Ansible playbooks, I've included two
 `Ansible LDAP modules`_ created by Peter Sagerson in the main DebOps playbook
-``library/`` directory, which makes them available anywhere within DebOps
+:file:`library/` directory, which makes them available anywhere within DebOps
 project directories (in playbooks and roles). You can use ``ldap_entry`` and
 ``ldap_attr`` modules to manipulate your LDAP database, look in each module
 source code for examples.
@@ -681,21 +681,21 @@ source code for examples.
 Role updates
 ~~~~~~~~~~~~
 
-`debops.mysql`_ role can now configure a MySQL server with SSL support enabled
-by default, using PKI infrastructure managed by `debops.pki`_ role.
+debops.mysql_ role can now configure a MySQL server with SSL support enabled
+by default, using PKI infrastructure managed by debops.pki_ role.
 
-`debops.nginx`_ role gained support for setting server-wide (as in, per domain)
+debops.nginx_ role gained support for setting server-wide (as in, per domain)
 ``allow/deny`` rules, which is more secure than just per-location (which was
 available previously). You can use Ansible lists to specify which hosts or
 networks have access to the server.
 
-You can now configure HTTP Basic Authentication in `debops.nginx`_ role. It
+You can now configure HTTP Basic Authentication in debops.nginx_ role. It
 works on a server level (restricted access to individual servers), as well as
 on the host level (restricted access to all nginx servers configured on this
-host). `debops.nginx`_ has a built-in support for ``htpasswd`` files - you
+host). debops.nginx_ has a built-in support for ``htpasswd`` files - you
 specify a list of user accounts to configure in Ansible inventory, and
-passwords themselves are stored in ``secret/`` directory, managed by
-`debops.secret`_ role.
+passwords themselves are stored in :file:`secret/` directory, managed by
+debops.secret_ role.
 
 
 2015-02-04
@@ -721,7 +721,7 @@ they will now use ``service`` PKI realm by default.
 Role updates
 ************
 
-`debops.nginx`_ role will now track HTTP and HTTPS ``default_server``
+debops.nginx_ role will now track HTTP and HTTPS ``default_server``
 configuration option separately, which should make it even more roboust and
 hard to break accidentally. Code which selected ``default_server`` was moved
 out of the server template and into separate Ansible tasks.
@@ -731,7 +731,7 @@ Nginx role has exposed two variables using local Ansible facts:
 - ``ansible_local.nginx.user`` is the default system user (``www-data``) which
   is used to run the webserver. Some of the roles need to give read-only or
   read-write access to his user for specific files. To have it work properly,
-  `debops.nginx`_ role needs to be run before your own role, or you need to
+  debops.nginx_ role needs to be run before your own role, or you need to
   have it in your role's dependencies.
 
 - ``ansible_local.nginx.www`` is the default directory for web-accessible files
@@ -777,13 +777,13 @@ regarding DebOps roles after performing an upgrade, please post them in
 Role updates
 ~~~~~~~~~~~~
 
-Small updates in `debops.pki`_ role:
+Small updates in debops.pki_ role:
 
 - previously Diffie-Hellman parameter regeneration meant that on each Ansible
   run contents of :file:`/etc/pki/` directory would change. Because role creates
   a snapshot of :file:`/etc/pki/` directory on any changes and sends it to Ansible
   Controller, if you keep your inventory and secrets in a :command:`git` repository,
-  it meant that your repository would constantly grow. Now `debops.pki`_ role
+  it meant that your repository would constantly grow. Now debops.pki_ role
   will archive DH parameter files only the first time the snapshot file is
   created; subsequent snapshots will ignore them, and thus no changes will be
   recorded and snapshot file will not need to be archived, unless something
@@ -837,12 +837,12 @@ change over time after a period of testing.
 Role updates
 ~~~~~~~~~~~~
 
-`debops.reprepro`_ role is no longer a dependency of `debops.apt`_. Instead
+debops.reprepro_ role is no longer a dependency of debops.apt_. Instead
 it's configured like any other service, by adding a host to
 ``[debops_reprepro]`` host group. This allows you to create separate hosts with
 different repositories if needed.
 
-Default configuration of `debops.reprepro`_ role has 3 repositories:
+Default configuration of debops.reprepro_ role has 3 repositories:
 
 - a backport repository configured for your installed release (for example on
   Debian Wheezy it will manage packages for ``wheezy-backports``). You can
@@ -861,26 +861,26 @@ you to use local APT mirror as a buffer between official repositories and your
 servers, if you need it. To upload packages to repositories you can use
 ``dput`` command to upload ``*.changes`` files over HTTPS.
 
-`debops.reprepro`_ role automatically manages its GnuPG repository keys and
+debops.reprepro_ role automatically manages its GnuPG repository keys and
 makes snapshots of current keyring state which are then uploaded to Ansible
-Controller's ``secret/`` directory. In case of a reinstall, role will reuse
+Controller's :file:`secret/` directory. In case of a reinstall, role will reuse
 already existing GnuPG keys if they are found on Ansible Controller.
 
-There are many more configuration options prepared in `debops.reprepro`_,
+There are many more configuration options prepared in debops.reprepro_,
 I suggest that you read its :file:`defaults/main.yml` file to see what's available.
 
 Because of above changes, you need to separately add your local repositories in
-`debops.apt`_ configuration variables. To make it easier, there is now
+debops.apt_ configuration variables. To make it easier, there is now
 a separate list variable for APT key definitions (``apt_keys``, as well as
 a way to add APT keys and repositories in a "delayed" way - instead of
 configuring your own repository immediately on first install, which could
 result in an error if repository is not yet set up, you can add configuration
 in separate set of ``apt_{keys,sources}_delayed`` variables which will be used
-only after `debops.apt`_ role had configured a host once.
+only after debops.apt_ role had configured a host once.
 
-Another small change in `debops.apt`_ is modification of conditional package
+Another small change in debops.apt_ is modification of conditional package
 installations - instead of separate :command:`apt` module calls, packages are enabled
-dynamically during Ansible run using ``set_fact`` module. `debops.apt`_ will
+dynamically during Ansible run using ``set_fact`` module. debops.apt_ will
 now also correctly distinguish Debian and Ubuntu firmware packages which are
 named differently between those two distributions.
 
@@ -891,7 +891,7 @@ named differently between those two distributions.
 Role updates
 ~~~~~~~~~~~~
 
-Webserver status page has been enabled by default in `debops.nginx`_, it's
+Webserver status page has been enabled by default in debops.nginx_, it's
 accessible on :file:`/nginx_status` location, initially only from localhost
 addresses (from the webserver itself). You can add additional IP addresses or
 CIDR ranges using separate list, ``nginx_status``.
@@ -906,13 +906,13 @@ issue has already been mitigated in Debian.
 Role updates
 ~~~~~~~~~~~~
 
-`debops.gitlab_ci`_ role has been updated to support `GitLab CI`_ 5.4, with
+debops.gitlab_ci_ role has been updated to support `GitLab CI`_ 5.4, with
 GitLab 7.7 providing authorization based on OAuth. Due to the changes in GitLab
 CI itself, some configuration variables have been changed - check the role
 defaults for new ones (mainly, you can define only 1 GitLab instance to connect
 to).
 
-`debops.users`_ role has been slightly cleaned up and ``root``-proofed - it
+debops.users_ role has been slightly cleaned up and ``root``-proofed - it
 shouldn't make an error if you are connecting to your hosts directly as
 ``root`` account anymore. Role uses ``default(omit)`` filter in its tasks,
 which means that DebOps now requires Ansible >= 1.8 for correct operation.
@@ -931,7 +931,7 @@ you to use lists of items as "items" themselves, see an example in the
 Role updates
 ~~~~~~~~~~~~
 
-`debops.gitlab`_ role has been finally rewritten. Lots of important changes:
+debops.gitlab_ role has been finally rewritten. Lots of important changes:
 
 - support for `GitLab`_ 7.7 out of the box, even before official release ;)
 
@@ -947,7 +947,7 @@ Role updates
   :file:`/var/backups/gitlab/`, backup files older than a week should be
   automatically cleaned up;
 
-- new GitLab install uses a random password stored in the DebOps ``secret/``
+- new GitLab install uses a random password stored in the DebOps :file:`secret/`
   directory instead of the official password. Default admin account will have
   an email address in your domain instead of ``admin@example.com``, so random
   bounced mails shouldn't be a problem anymore;
@@ -969,28 +969,28 @@ Happy New Year 2015!
 PKI rewrite
 ~~~~~~~~~~~
 
-I've worked on `debops.pki`_ role since December, holiday season delayed it
+I've worked on debops.pki_ role since December, holiday season delayed it
 slightly, but finally it is here. :-)
 
 New PKI infrastructure in DebOps is designed around creating and managing
-Certificate Authorities on the Ansible Controller, inside ``secret/`` directory
-managed by `debops.secret`_, signing Certificate Requests generated by remote
+Certificate Authorities on the Ansible Controller, inside :file:`secret/` directory
+managed by debops.secret_, signing Certificate Requests generated by remote
 hosts and sending back certificates. There's 1 Root CA certificate you need to
 import into your browser or host certificate store and after that, all other
 servers should show up in your browser as accepted automatically.
 
 You can also very easily copy your own certificates signed by an external CA,
 with private keys if needed, to your servers using a set of directories in the
-``secret/`` directory.
+:file:`secret/` directory.
 
-Several roles which depended on the old `debops.pki`_ role have been now
+Several roles which depended on the old debops.pki_ role have been now
 updated as well and take advantage of functionality present in the new PKI
 infrastructure. These roles are:
 
-- `debops.nginx`_
-- `debops.postfix`_
-- `debops.postgresql`_
-- `debops.boxbackup`_
+- debops.nginx_
+- debops.postfix_
+- debops.postgresql_
+- debops.boxbackup_
 
 If you use any of these roles in your infrastructure, take care to make sure
 that your certificates are moved into new directory structure and configuration
@@ -1006,10 +1006,10 @@ ask them on the IRC channel or on the mailing list.
 Role updates
 ~~~~~~~~~~~~
 
-`debops.users`_ role can now set or update user passwords (by default no
+debops.users_ role can now set or update user passwords (by default no
 passwords are set).
 
-`debops.ntp`_ role has gained support for :program:`ntpd` daemon, thanks to
+debops.ntp_ role has gained support for :program:`ntpd` daemon, thanks to
 `RedRampage`_. Because of the issues with role dependency variables and Jinja,
 access to NTP service through firewall is now controlled by a separate
 variable, ``ntp_firewall_access``. By default, remote access is disabled.
@@ -1021,7 +1021,7 @@ variable, ``ntp_firewall_access``. By default, remote access is disabled.
 New roles
 ~~~~~~~~~
 
-- `debops.salt`_ role allows you to install and configure `Salt`_ Master
+- debops.salt_ role allows you to install and configure `Salt`_ Master
   service. You can use this to create Salt control host to which other hosts
   (Salt Minions) can connect to. At the moment configuration is very basic,
   Salt master will automatically listen to IPv6 connections and firewall will
@@ -1030,9 +1030,9 @@ New roles
 Role updates
 ~~~~~~~~~~~~
 
-Salt Minion preseeding has been added in `debops.apt`_ (current Debian Preseed
+Salt Minion preseeding has been added in debops.apt_ (current Debian Preseed
 configuration is there, will be moved in the future to separate role),
-`debops.lxc`_ and `debops.openvz`_ roles. Automatic minion installation is
+debops.lxc_ and debops.openvz_ roles. Automatic minion installation is
 disabled by default and can be enabled separately for each "mode" - Debian
 Preseed postinst script in case of physical hosts or KVM virtual machines, LXC
 template script for LXC containers, OpenVZ bootstrap script for OpenVZ
@@ -1046,7 +1046,7 @@ results.
 Role updates
 ~~~~~~~~~~~~
 
-Continuing the `GitLab`_ revamp, `debops.gitlab_ci_runner`_ role has also been
+Continuing the `GitLab`_ revamp, debops.gitlab_ci_runner_ role has also been
 refactored and is unfortunately not compatible with the previous version,
 reinstall of the nost is recommended.
 
@@ -1057,12 +1057,12 @@ can read about changes in `latest commit`_.
 2014-12-02
 ----------
 
-`DebOps mailing list`_ has been moved to `groups.io`_.
+`DebOps mailing list`_ has been moved to groups.io_.
 
 Role updates
 ~~~~~~~~~~~~
 
-`debops.gitlab_ci`_ role has been significantly refactored. Due to bug in
+debops.gitlab_ci_ role has been significantly refactored. Due to bug in
 GitLab CI 5.0 at the moment this version cannot be installed, so I decided to
 use this opportunity to make some deep changes in the role. GitLab CI home has
 been moved to :file:`/var/local/gitlab-ci/` directory, and various tasks related to
@@ -1081,14 +1081,14 @@ Role updates
 
 All DebOps roles again use Ansible `devel` branch on Travis CI for tests.
 
-`debops.debops`_ role has been rewritten and updated to support current project
+debops.debops_ role has been rewritten and updated to support current project
 installation method. By default only DebOps scripts will be installed system
 wide, but you can also install playbooks and roles to `/usr/local` by setting
-a variable. Dependency on `debops.ansible`_ role has been dropped and that role
+a variable. Dependency on debops.ansible_ role has been dropped and that role
 will be removed in the future. You can install Ansible from a Debian repository
 or by providing your own ``.deb`` package.
 
-`RedRampage`_ has provided a failover code for `debops.dhcpd`_ role which
+`RedRampage`_ has provided a failover code for debops.dhcpd_ role which
 should help set up failover DHCP servers. Thanks!
 
 Several DebOps roles had a small fixes related to ``ansible-playbook --check``
@@ -1103,8 +1103,8 @@ Role updates
 ~~~~~~~~~~~~
 
 Support for management of SSH host fingerprints in :file:`/etc/ssh/ssh_known_hosts`
-(via `debops.sshd`_ role) and :file:`/root/.ssh/known_hosts` on OpenVZ hosts (via
-`debops.openvz`_ role) has been redesigned and no longer uses ``assemble``
+(via debops.sshd_ role) and :file:`/root/.ssh/known_hosts` on OpenVZ hosts (via
+debops.openvz_ role) has been redesigned and no longer uses ``assemble``
 Ansible module. Instead, Ansible checks already present fingerprints and adds
 new ones if they are not present in the files. This helps better obfuscate
 scanned hosts, which previously could be inferred from filenames of parts
@@ -1114,8 +1114,8 @@ Instances of ``with_items`` using multiple lists in a few roles have been
 replaced with ``with_flattened`` which works better in new release of Ansible,
 1.8+.
 
-`debops.openvz`_ role has been slightly updated and redundant configuration of
-:program:`ferm` and ``sysctl``, already configured by `debops.ferm`_ role, has been
+debops.openvz_ role has been slightly updated and redundant configuration of
+:program:`ferm` and :command:`sysctl`, already configured by debops.ferm_ role, has been
 dropped to prevent duplication.
 
 2014-11-26
@@ -1124,7 +1124,7 @@ dropped to prevent duplication.
 Role updates
 ~~~~~~~~~~~~
 
-`debops.nginx`_ role will now preserve the status for ``default_server`` of
+debops.nginx_ role will now preserve the status for ``default_server`` of
 a particular configuration file in case that another instance of the role is
 added in the Ansible run. Saved local fact about which server is the default
 one will take precedence over automatically calculated setting.
@@ -1142,7 +1142,7 @@ from some old, not regenerated configuration files.
 New roles
 ~~~~~~~~~
 
-- `debops.hwraid`_ is a role that configures access to `HWRaid`_ package
+- debops.hwraid_ is a role that configures access to `HWRaid`_ package
   repository and installs packages for recognized RAID storage arrays connected
   to your hosts. It can be used to quickly and easily setup basic monitoring
   for your storage - many packages contain automated scripts which send mail to
@@ -1151,7 +1151,7 @@ New roles
 Role updates
 ~~~~~~~~~~~~
 
-`debops.auth`_ role will now manage :file:`/etc/ldap/ldap.conf` configuration file.
+debops.auth_ role will now manage :file:`/etc/ldap/ldap.conf` configuration file.
 By default, LDAP server on local domain is set up (currently without any
 encryption, so treat this as experimental feature and don't use it in
 production) with local domain specified as BaseDN. you can change this in role
@@ -1159,7 +1159,7 @@ default variables.
 
 DebOps will automatically configure ``hidepid=2`` option in :file:`/proc`
 filesystem on selected hosts (hardware servers and fully virtualized VMs),
-using `debops.console`_ role. This functionality hides other users' process
+using debops.console_ role. This functionality hides other users' process
 information for unprivileged accounts. A separate system group, ``procadmins``
 has been reserved for monitoring services and users that need full access to
 the :file:`/proc` filesystem.
@@ -1170,7 +1170,7 @@ the :file:`/proc` filesystem.
 New roles
 ~~~~~~~~~
 
-- `debops.slapd`_ role manages OpenLDAP server, ``slapd``. At the moment role
+- debops.slapd_ role manages OpenLDAP server, ``slapd``. At the moment role
   is in beta stage - currently there is no SSL encryption available, no
   backup/restore scripts and no replication. But role installs a few useful
   scripts and ``slapd`` management is done using custom Ansible modules.
@@ -1180,20 +1180,20 @@ New roles
 Role updates
 ~~~~~~~~~~~~
 
-Because of recent changes in the `debops.tcpwrappers`_ role I decided to make the
+Because of recent changes in the debops.tcpwrappers_ role I decided to make the
 ferm rules for SSH access more strict. From now on, :command:`iptables` will
 check new SSH connections over period of 1 hour, if more than 3 new connections
 from 1 IP address are attempted during that time, and address is not in the
 whitelist, it will be blocked for 2 hours, with each new connection attempt
-resetting the timer. All this is now configurable in `debops.sshd`_  and
-`debops.ferm`_ roles.
+resetting the timer. All this is now configurable in debops.sshd_  and
+debops.ferm_ roles.
 
 Thanks to `htgoebel's suggestion`_ I was able to refactor Postfix hash tables
 management. They are now generated from all ``*.in`` files in current
 directory, which means that other Ansible roles or even other scripts can put
 their own files in :file:`/etc/postfix/hash_*/` directories and if they are named
 with ``*.in`` extension, their corresponding ``*.db`` files will be created
-automatically. Thanks to that, `debops.postfix`_ role now generates tables from
+automatically. Thanks to that, debops.postfix_ role now generates tables from
 templates using ``with_fileglob`` instead of static lists of templates, which
 makes the process of adding new tables if necessary much easier.
 
@@ -1203,12 +1203,12 @@ makes the process of adding new tables if necessary much easier.
 Role updates
 ~~~~~~~~~~~~
 
-You can now specify default value for entries in `debops.tcpwrappers`_ role,
+You can now specify default value for entries in debops.tcpwrappers_ role,
 using ``item.default`` key. If this key is specified, and ``item.clients`` is
 not present or is empty, default value will be used instead. Specify ``'ALL'``
 to allow connections from any host.
 
-Consequently, `debops.sshd`_ role now will allow connections from any host by
+Consequently, debops.sshd_ role now will allow connections from any host by
 default in :file:`/etc/hosts.allow`. If you previously used a list of hosts using
 ``sshd_*_allow``, your configuration shouldn't be affected.
 
@@ -1218,7 +1218,7 @@ default in :file:`/etc/hosts.allow`. If you previously used a list of hosts usin
 Role updates
 ~~~~~~~~~~~~
 
-`debops.ifupdown`_ will now check if previous network configuration in
+debops.ifupdown_ will now check if previous network configuration in
 :file:`/etc/network/interfaces` was using static IP addresses, which indicates that
 DHCP is not available on the network. In that case, a basic static IPv4
 interface configuration will be used with information gathered by Ansible to
@@ -1239,13 +1239,13 @@ Role updates
 ~~~~~~~~~~~~
 
 Network forwarding configuration in :command:`iptables` has been moved from
-`debops.kvm`_, `debops.lxc`_ and `debops.subnetwork`_ roles into `debops.ferm`_
+debops.kvm_, debops.lxc_ and debops.subnetwork_ roles into debops.ferm_
 to avoid duplication. This will also result in forwarded network interfaces
 being able to accept Router Advertisements and configure their IPv6 addresses
 using SLAAC. In short, easier network configuration.
 
 `Hartmut Goebel`_ has provided a set of `Raspbian`_ APT repositories for
-`debops.apt`_ role, thanks! Unfortunately, at the moment Ansible does not
+debops.apt_ role, thanks! Unfortunately, at the moment Ansible does not
 correctly recognize Raspian as a separate distribution which prevents automatic
 source selection, but there are workarounds.
 
@@ -1253,21 +1253,21 @@ Because of the recent Debian Jessie freeze, DebOps project is starting
 preparations for full Jessie support, both as a standalone install, as well as
 an upgrade from Wheezy.
 
-All `debops.ferm`_ configuration files had changed ownership from
+All debops.ferm_ configuration files had changed ownership from
 ``root:root`` to ``root:adm`` which is the default in Debian. This change
 should prevent back-and-forth changes of ownership after system has been
 upgraded, which forces :program:`ferm` files to change ownership to ``root:adm``.
 
-Some APT configuration files in `debops.apt`_ role have been renamed to avoid
+Some APT configuration files in debops.apt_ role have been renamed to avoid
 conflicts with existing files during the upgrade, this should prevent
 ``debconf`` questions about replacing modified configuration files.
 
-Both `debops.apt`_ and `debops.lxc`_ roles now support
+Both debops.apt_ and debops.lxc_ roles now support
 ``ansible_distribution_release`` in ``'release/sid`` format, which lets DebOps
 function correctly on Jessie during the freeze. There might be other roles
 which need to be updated to support this syntax, they will be fixed later.
 
-`debops.auth`_ role now uses full templates instead of ``lineinfile`` module to
+debops.auth_ role now uses full templates instead of ``lineinfile`` module to
 configure :command:`sudo` and ``su`` admin access. This should prevent ``debconf``
 asking about modifications in :file:`/etc/pam.d/su` (which is now diverted), and
 lets :command:`sudo` have more configuration options for ``admins`` group.
@@ -1289,7 +1289,7 @@ is correct.
 Role updates
 ~~~~~~~~~~~~
 
-`debops.postfix`_ role will now correctly work on hosts without FQDN
+debops.postfix_ role will now correctly work on hosts without FQDN
 configured. On these hosts, Postfix will automatically override its configured
 capabilities and enable local mail delivery, mail will be originating from the
 host instead of the domain. Postfix role will also no longer modify
@@ -1297,7 +1297,7 @@ host instead of the domain. Postfix role will also no longer modify
 annoying warning in the mail log about unknown connection source has been
 fixed.
 
-`debops.dnsmasq`_ role has been completely rewritten and now supports multiple
+debops.dnsmasq_ role has been completely rewritten and now supports multiple
 network interfaces and IPv6, among other things. It requires ``ipaddr()``
 filter plugin to work, but thanks to that it can automatically configure
 services based on IP addresses configured on specified interface - no more
@@ -1308,9 +1308,9 @@ And it's out of beta! :-)
 Playbook updates
 ~~~~~~~~~~~~~~~~
 
-Old 'debops.nat' role has been obsoleted by `debops.subnetwork`_ and removed
+Old 'debops.nat' role has been obsoleted by debops.subnetwork_ and removed
 from :command:`ansible-galaxy` requirements file. It will also be removed from GitHub
-and Ansible Galaxy in the future. Also, `debops.radvd`_ has been added to the
+and Ansible Galaxy in the future. Also, debops.radvd_ has been added to the
 requirements.
 
 Virtualization playbook has been modified and roles that previously
@@ -1326,21 +1326,21 @@ management (via debops.subnetwork_ and DHCP/DNS management.
 New roles
 ~~~~~~~~~
 
-`debops.subnetwork`_ is a replacement for old `debops.nat`_ role, with many
+debops.subnetwork_ is a replacement for old debops.nat_ role, with many
 improvements. You can create a bridge interface with local network behind it
 for virtual machines, or even switch to a real Ethernet interface for your
 physical hosts. You can create both an IPv4 network, which will be
 automatically configured behind NAT, and an IPv6 network (with multiple
-prefixes). `debops.subnetwork`_ is not yet part of the main playbook, it will
+prefixes). debops.subnetwork_ is not yet part of the main playbook, it will
 replace the old NAT role when ``dnsmasq`` role is updated to support it.
 
 Role updates
 ~~~~~~~~~~~~
 
-Because of the changes related to new networking, some code in `debops.lxc`_,
-`debops.kvm`_ and `debops.nat`_ had to be moved around. Specifically, parts of
+Because of the changes related to new networking, some code in debops.lxc_,
+debops.kvm_ and debops.nat_ had to be moved around. Specifically, parts of
 the firewall and sysctl settings related to the LAN interface were moved into
-`debops.subnetwork`_ role and parts of the forwarding configuration to external
+debops.subnetwork_ role and parts of the forwarding configuration to external
 and internal networks were added respectively to LXC and KVM roles.
 
 2014-11-05
@@ -1367,7 +1367,7 @@ Role updates
 ~~~~~~~~~~~~
 
 You can now configure custom `ferm`_ rules using a ``custom`` template in
-`debops.ferm`_. New ``ferm_*_rules`` variables allow you to create rules in
+debops.ferm_. New ``ferm_*_rules`` variables allow you to create rules in
 :file:`/etc/ferm/ferm.d/` directory which can configure tables and chains other
 than ``INPUT``.
 
@@ -1378,7 +1378,7 @@ New roles
 ~~~~~~~~~
 
 Finally, it's time to start bringing out new toys. :-) For starters,
-`debops.radvd`_ role, which installs and lets you configure ``radvd``, IPv6
+debops.radvd_ role, which installs and lets you configure ``radvd``, IPv6
 Router Advertisement daemon. It will be used in future IPv6 router roles.
 
 Playbook updates
@@ -1446,13 +1446,13 @@ new query type, ``'6to4'`` which lets you convert public IPv4 addresses into
 Role updates
 ~~~~~~~~~~~~
 
-APT repository management in `debops.apt`_ role has been rewritten. Now role
+APT repository management in debops.apt_ role has been rewritten. Now role
 supports multiple APT mirrors, as well as custom lists of repositories
 dependent on the current distribution (repository lists for Debian and Ubuntu
 are included). Configuration of default APT repositories has been moved from
 a separate config file in :file:`/etc/apt/sources.list.d/` directly to
 :file:`/etc/apt/sources.list`, original configuration file is preserved using
-:command:`dpkg-divert`. Additionally, if `debops.apt`_ cannot recognize current
+:command:`dpkg-divert`. Additionally, if debops.apt_ cannot recognize current
 distribution, it won't modify the default ``sources.list`` file, this can also
 be enforced manually if needed.
 
@@ -1464,12 +1464,12 @@ Role updates
 
 Many more roles have now partial or full tests on `Travis-CI`_, more to come.
 
-Default version of `Etherpad`_ installed by `debops.etherpad`_ role has been
+Default version of `Etherpad`_ installed by debops.etherpad_ role has been
 changed from ``1.4.0`` to ``develop``, because current stable release does not
 recognize new ``npm`` installed in Debian. It will be switched to the next
 stable release when it's available.
 
-Because of the recent IPv6 changes in `debops.nginx`_, management of :program:`nginx`
+Because of the recent IPv6 changes in debops.nginx_, management of :program:`nginx`
 configuration and daemon had to be changed slightly. Role will try to
 automatically pick a sane server as the "default server", if none are marked as
 one, due to ``ipv6only=off`` parameter tied to ``default_server`` parameter.
@@ -1477,8 +1477,8 @@ Another added functionality is full nginx server restart when configuration
 symlinks in :file:`/etc/nginx/sites-enabled/` directory are added or removed - this
 should help with requirement to restart the service on interface changes.
 
-Default admin username and SSH keys are now exposed as ``defaults/`` variables
-in `debops.openvz`_ role; SSH keys are also sourced from :command:`ssh-agent` instead
+Default admin username and SSH keys are now exposed as :file:`defaults/` variables
+in debops.openvz_ role; SSH keys are also sourced from :command:`ssh-agent` instead
 of directly from the ``~/.ssh/id_rsa.pub`` file.
 
 2014-10-10
@@ -1497,11 +1497,11 @@ IP address or convert them between various formats.
 Role updates
 ~~~~~~~~~~~~
 
-IPv6 firewall has been enabled by default in `debops.ferm`_ after all roles
+IPv6 firewall has been enabled by default in debops.ferm_ after all roles
 that configure :program:`ferm` directly had their configuration files fixed to support
 both :command:`iptables` and :command:`ip6tables` commands.
 
-`debops.boxbackup`_ has been finally converted from a "common" role (run from
+debops.boxbackup_ has been finally converted from a "common" role (run from
 :file:`common.yml` playbook) to a group-based role. First host in
 ``debops_boxbackup`` will be configured as the BoxBackup server and the rest
 will be set up as its clients.
@@ -1512,14 +1512,14 @@ will be set up as its clients.
 Role updates
 ~~~~~~~~~~~~
 
-`debops.ferm`_ role is now IPv6-aware and can generate rules for :command:`iptables`
+debops.ferm_ role is now IPv6-aware and can generate rules for :command:`iptables`
 and :command:`ip6tables` at the same time. The way you use the role as a dependency
 hasn't changed at all, so if you use dependent variables in your roles, you
 should be fine. However, because some roles are managing their firewall rules
 by themselves, IPv6 support is disabled by default - this will change when all
 roles are updated to be IPv6-aware.
 
-`debops.nginx`_ also gained support for IPv6 and will now listen for
+debops.nginx_ also gained support for IPv6 and will now listen for
 connections on both types of networks by default. If you have an already
 running nginx server, it will require manual restart for the new configuration
 to take effect.
@@ -1537,7 +1537,7 @@ time, so role information cannot be updated there.
 Role updates
 ~~~~~~~~~~~~
 
-`debops.nginx`_ role has been updated. Most changes are either cleanup (change
+debops.nginx_ role has been updated. Most changes are either cleanup (change
 names of some internal role files, remove unused redundant variables, etc.).
 
 :file:`/etc/nginx/http-default.d/` directory has been renamed to
@@ -1595,23 +1595,23 @@ inventory.secret is renamed to secret
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you use DebOps, or at least some roles from it, you probably are familiar
-with `debops.secret`_ role, which makes handling sensitive and confidential
+with debops.secret_ role, which makes handling sensitive and confidential
 data easier within Ansible playbooks and roles. I'm mentioning this because
 ``secret`` variable is used through the DebOps project and this change will
 be significant - that's why I want to do it right away instead of changing the
 role suddenly some time down the line.
 
-Previously `debops.secret`_ role created directory for secrets adjacent to the
+Previously debops.secret_ role created directory for secrets adjacent to the
 Ansible inventory directory. Because it was assumed that inventories are kept
-in the same directory, `debops.secret`_ automatically took the name of the
+in the same directory, debops.secret_ automatically took the name of the
 inventory directory and appended ``.secret`` suffix to it, making the resulting
-directory ``inventory.secret/``.
+directory :file:`inventory.secret/`.
 
 Now, because each DebOps project lives in its own directory, this feature is no
 longer needed. Additionally in the current state secret directory is kind of
 a show stopper, interfering for example with ``<Tab>``-completion. Because of
-that, I'm changing the "formula" to instead just use the ``secret/`` directory
-by default. It will be still created beside the ``inventory/`` directory.
+that, I'm changing the "formula" to instead just use the :file:`secret/` directory
+by default. It will be still created beside the :file:`inventory/` directory.
 
 All DebOps scripts will be updated at the same time, and should work with new
 directory name. However, existing directories will need to be renamed manually,
@@ -1628,7 +1628,7 @@ directory becomes ``.encfs.secret``.
 Role updates
 ~~~~~~~~~~~~
 
-* `debops.postfix`_ has been cleaned up, all Ansible tasks have been rewritten
+* debops.postfix_ has been cleaned up, all Ansible tasks have been rewritten
   from "inline" syntax to YAML syntax. Task conditions have been rearranged,
   now almost all of them can be found in :file:`tasks/main.yml` file instead of in
   the file that are included.
@@ -1653,13 +1653,13 @@ Role updates
 Role updates
 ~~~~~~~~~~~~
 
-* `debops.postfix`_ role has gained support for `SMTP client SASL authentication`_,
+* debops.postfix_ role has gained support for `SMTP client SASL authentication`_,
   in other words the ability to send mail through remote relay MX hosts with
   client authentication, like public or commercial SMTP servers. You can either
   configure one username/password pair for a specified relayhost, or enable
   sender dependent authentication and specify relayhost, user and password for
   each sender mail address separately. Passwords are never stored in the
-  inventory; instead Postfix role uses `debops.secret`_ role to store user
+  inventory; instead Postfix role uses debops.secret_ role to store user
   passwords securely.
 
 2014-09-18
@@ -1668,12 +1668,12 @@ Role updates
 Role updates
 ~~~~~~~~~~~~
 
-* `debops.kvm`_ role has been cleaned up from old and unused code, tasks were
+* debops.kvm_ role has been cleaned up from old and unused code, tasks were
   put in order and list of administrator accounts that should have access to
   ``libvirt`` group changed name from ``auth_admin_accounts`` to ``kvm_admins``
   (Ansible account is enabled automatically).
 
-* `debops.lxc`_ role has been updated with changes to the LXC 1.0.5 package
+* debops.lxc_ role has been updated with changes to the LXC 1.0.5 package
   from Debian Jessie (some package dependencies and build requirements were
   changed). You can read more in the `lxc package changelog`_.
 
@@ -1684,28 +1684,28 @@ Playbook updates
 ~~~~~~~~~~~~~~~~
 
 * You can now disable early APT cache update using ``apt_update_cache_early``
-  variable from `debops.apt`_ role. This is useful in rare case when your APT
+  variable from debops.apt_ role. This is useful in rare case when your APT
   mirror suddenly catches fire, and you need to switch to a different one using
   Ansible.
 
 Role updates
 ~~~~~~~~~~~~
 
-* `debops.ferm`_ role has gained new list variable,
+* debops.ferm_ role has gained new list variable,
   ``ferm_ansible_controllers``, which can be used to configure CIDR hostnames
   or networks that shouldn't be blocked by ssh recent filter in the firewall. This
   is useful in case you don't use DebOps playbook itself, which does that
-  automatically. In addition, `debops.ferm`_ saves list of known Ansible
+  automatically. In addition, debops.ferm_ saves list of known Ansible
   Controllers using local Ansible facts, and uses it to enforce current
   configuration.
 
-* similar changes as above are now included in `debops.tcpwrappers`_ role, you
+* similar changes as above are now included in debops.tcpwrappers_ role, you
   can specify a list of Ansible Controllers in
   ``tcpwrappers_ansible_controllers`` list variable.
 
 * `Debian bug #718639`_ has been fixed which results in changes to several
   configuration files, including :file:`/etc/nginx/fastcgi_params` and inclusion of
-  a new configuration file :file:`/etc/nginx/fastcgi.conf`. `debops.nginx`_ role
+  a new configuration file :file:`/etc/nginx/fastcgi.conf`. debops.nginx_ role
   will now check the version of installed :program:`nginx` server and select correct
   file to include in PHP5-based server configuration.
 
@@ -1722,11 +1722,11 @@ Role updates
 New roles
 ~~~~~~~~~
 
-* `debops.elasticsearch`_ is a role written to manage `Elasticsearch`_
+* debops.elasticsearch_ is a role written to manage `Elasticsearch`_
   clusters, either standalone or on multiple hosts separated and configured
   using Ansible groups. Author: `Nick Janetakis`_.
 
-* `debops.golang`_ role can be used to install and manage `Go language`_
+* debops.golang_ role can be used to install and manage `Go language`_
   environment. By default it will install packages present in the distribution,
   but on Debian Wheezy a backport of ``golang`` package from Debian Jessie can
   be automatically created and installed.
@@ -1734,14 +1734,14 @@ New roles
 Role updates
 ~~~~~~~~~~~~
 
-* `debops.ruby`_ role has changed the way how different Ruby versions can be
+* debops.ruby_ role has changed the way how different Ruby versions can be
   selected for installation. By default, ``ruby_version: 'apt'`` variable tells
   the role to install any Ruby packages available via APT (by default 1.9.3
   version will be installed on most distributions). If you change the value of
   ``ruby_version`` to ``'backport'``, a backported Ruby 2.1 packages will be
   created if not yet available, and installed.
 
-* Also in `debops.ruby`_, ``rubygems-integration`` package is installed
+* Also in debops.ruby_, ``rubygems-integration`` package is installed
   separately from other packages and can be disabled using
   ``ruby_gems_integration: False`` variable (this option was required for
   backwards compatibility with `Ubuntu 12.04 LTS (Precise Pangolin)`_

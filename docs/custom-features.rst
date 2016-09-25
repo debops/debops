@@ -20,13 +20,13 @@ a different directory - there's no need to use separate Ansible host groups,
 custom variables and so on.
 
 The official playbooks and roles are installed in central, fixed location
-(``~/.local/share/debops/debops-playbooks/`` on Linux systems), and the
+(:file:`~/.local/share/debops/debops-playbooks/` on Linux systems), and the
 ``debops`` script generates ``ansible.cfg`` configuration file to provide
 correct paths for :command:`ansible-playbook` command to use them indirectly from the
 project directory.
 
 You can store your custom playbooks and roles in the project directory, in
-``playbooks/`` and ``roles/`` subdirectories.
+:file:`playbooks/` and :file:`roles/` subdirectories.
 
 Common playbooks
 ----------------

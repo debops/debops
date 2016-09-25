@@ -6,7 +6,7 @@
 .. |CII Best Practices| image:: https://bestpractices.coreinfrastructure.org/projects/237/badge
    :target: https://bestpractices.coreinfrastructure.org/projects/237
 
-This repository contains all the playbooks used by `DebOps <http://debops.org>`_.
+This repository contains all the playbooks used by `DebOps <https://debops.org>`_.
 
 - `Here are a few services that are available`_
 - `Overview of how playbooks work within DebOps`_
@@ -93,16 +93,16 @@ You can view all of the services and plays
 View a dependency graph
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-.. image:: http://debops.org/images/dependency-graph.png
+.. image:: https://debops.org/images/dependency-graph.png
    :alt: Dependency graph
 
 Status page
 ^^^^^^^^^^^
 
 If you want to keep tabs on each role's status then check out our
-`status page <http://debops.org/status.html>`_.
+`status page <https://debops.org/status.html>`_.
 
-.. |debops_logo| image:: http://debops.org/images/debops-small.png
+.. |debops_logo| image:: https://debops.org/images/debops-small.png
 
 .. _Gitlab: https://github.com/debops/ansible-gitlab
 .. _GitlabCI: https://github.com/debops/ansible-gitlab_ci
