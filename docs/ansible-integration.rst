@@ -13,5 +13,5 @@ Ansible integration and role design
   role documentation this is expected to provide more transparency to the user
   and allow the role to be future proof when changes occurrence upstream.
 * For directives where ``off`` or ``False`` might be a valid option, the
-  special variable ``omit`` is intended to be used when the directive should be
-  omitted.
+  special variable ``omit`` (use in Jinja: ``{{ omit }}``) is intended to be
+  used when the directive should be omitted.

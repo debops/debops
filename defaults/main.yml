@@ -221,18 +221,6 @@ apache__host_allow: []
 #
 # See :ref:`apache__ref_modules` for more details.
 
-# .. envvar:: apache__role_modules [[[
-#
-# Apache modules managed by this Ansible role.
-apache__role_modules:
-  'headers': True
-  'alias': True
-  'ssl':
-    enabled: '{{ True if (apache__https_listen) else False }}'
-  'security2':
-    enabled: '{{ apache__security_module_enabled|bool }}'
-
-                                                                   # ]]]
 # .. envvar:: apache__modules [[[
 #
 # This variable is intended to be used in Ansible’s global inventory as needed.
@@ -250,6 +238,18 @@ apache__group_modules: {}
 #
 # This variable is intended to be used in the inventory of hosts as needed.
 apache__host_modules: {}
+
+                                                                   # ]]]
+# .. envvar:: apache__role_modules [[[
+#
+# Apache modules managed by this Ansible role.
+apache__role_modules:
+  'headers': True
+  'alias': True
+  'ssl':
+    enabled: '{{ True if (apache__https_listen) else False }}'
+  'security2':
+    enabled: '{{ apache__security_module_enabled|bool }}'
 
                                                                    # ]]]
 # .. envvar:: apache__combined_modules [[[
@@ -306,6 +306,13 @@ apache__group_snippets: {}
 apache__host_snippets: {}
 
                                                                    # ]]]
+# .. envvar:: apache__dependent_snippets [[[
+#
+# This variable is intended for other Ansible roles to be used when using
+# ``debops.apache`` as role dependency.
+apache__dependent_snippets: {}
+
+                                                                   # ]]]
 # .. envvar:: apache__role_snippets [[[
 #
 # Apache configuration used internally by this role.
@@ -328,13 +335,6 @@ apache__role_snippets:
 
   'local-debops_apache_security_module':
     state: '{{ apache__security_module_enabled|bool | ternary("present", "absent") }}'
-
-                                                                   # ]]]
-# .. envvar:: apache__dependent_snippets [[[
-#
-# This variable is intended for other Ansible roles to be used when using
-# ``debops.apache`` as role dependency.
-apache__dependent_snippets: {}
 
                                                                    # ]]]
 # .. envvar:: apache__combined_snippets [[[
@@ -461,7 +461,7 @@ apache__ocsp_stapling_force_url: False
 # Verify OCSP responses from the server which requires chained intermediate and
 # Root CA certificates.
 # Note: Currently not implemented.
-# Ref: https://github.com/ypid/ansible-apache/issues/2
+# Ref: https://github.com/debops/ansible-apache/issues/2
 apache__ocsp_stapling_verify: '{{ apache__ocsp_stapling_enabled | bool }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -479,7 +479,7 @@ apache__tls_protocols: [ 'All', '-SSLv2', '-SSLv3' ]
 #
 # Default set name of TLS cipher suites to use as defined in
 # :envvar:`apache__tls_cipher_suite_sets`.
-apache__tls_cipher_suite_set_name: 'bettercrypto_org__set_b'
+apache__tls_cipher_suite_set_name: 'bettercrypto_org__set_b_pfs'
 
                                                                    # ]]]
 
@@ -500,6 +500,14 @@ apache__tls_cipher_suite_sets:
   # https://bettercrypto.org/
   # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/configuration/Webservers/nginx/default-ec
   bettercrypto_org__set_b: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA'
+
+  # https://bettercrypto.org/
+  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/configuration/Webservers/nginx/default-ec
+  # But only cipher suites which support PFS. Only drops support for Android 2.3.7 which is negligible.
+  bettercrypto_org__set_b_pfs: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH'
+
+  # https://cipherli.st/
+  cipherli_st: 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH'
 
                                                                    # ]]]
 # .. envvar:: apache__tls_honor_cipher_order [[[
@@ -553,7 +561,7 @@ apache__hsts_enabled: True
 #
 # Maximum age in seconds for which clients should remember to only make secure
 # connections.
-# Defaults to six earth month.
+# Defaults to six earth months.
 apache__hsts_max_age: '15768000'
 
                                                                    # ]]]

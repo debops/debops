@@ -54,6 +54,16 @@ supported options:
   ``<IfModule>`` section which causes Apache to only enables this module
   configuration when the module is enabled.
 
+Examples
+~~~~~~~~
+
+Ensure the ``ldap`` module is enabled for the given host:
+
+.. code-block:: yaml
+
+   apache__host_modules:
+     ldap: True
+
 
 .. _apache__ref_snippets:
 
@@ -134,6 +144,21 @@ same filename as the configuration which is diverted away.
   Optional, string. Defaults to the file path determined for the virtual host configuration.
   Allows to specify a full file path where to divert the file to.
   Note that the ``item.divert_suffix`` is still in affect when using this option.
+
+Examples
+~~~~~~~~
+
+Ensure the given Apache directives are configured in
+:file:`/etc/apache2/conf-available/example.conf` and enabled in Apache server
+context the given host:
+
+.. code-block:: yaml
+
+   apache__host_snippets:
+     example:
+       type: 'raw'
+       raw: |
+         # Your raw Apache directives.
 
 
 .. _apache__ref_vhosts:
@@ -422,3 +447,21 @@ filename as the configuration which is diverted away.
   Optional, string. Defaults to the file path determined for the virtual host configuration.
   Allows to specify a full file path where to divert the file to.
   Note that the ``item.divert_suffix`` is still in affect when using this option.
+
+Examples
+~~~~~~~~
+
+Create a vhost for the domains ``www.example.org`` and ``example.org``:
+
+.. code-block:: yaml
+
+   apache__host_vhosts:
+
+     -  name: [ 'www.example.org', 'example.org' ]
+        root: '/srv/www/sites/www.example.org/public'
+
+The files under :file:`/srv/www/sites/www.example.org/public` are served for
+these domains.
+HTTPS is the default and legacy HTTP connection attempts are permanently
+redirected to HTTPS. HSTS_ tells clients to only connect to the site using
+HTTPS from now on.
