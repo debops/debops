@@ -296,7 +296,7 @@ nginx_ssl_dhparam_set: 'default'
 
 # Default set of cipher suites to use.
 # Refer to ``nginx_ssl_ciphers`` for details.
-nginx_default_ssl_ciphers: 'bettercrypto_org__set_b'
+nginx_default_ssl_ciphers: 'bettercrypto_org__set_b_1'
 
 nginx_default_tls_protocols: [ 'TLSv1', 'TLSv1.1', 'TLSv1.2' ]
 
@@ -665,6 +665,11 @@ nginx_ssl_ciphers:
   # https://bettercrypto.org/
   # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/configuration/Webservers/nginx/default-ec
   bettercrypto_org__set_b: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA'
+
+  # https://bettercrypto.org/
+  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/configuration/Webservers/nginx/default-ec
+  # But only cipher suites which support PFS. Only drops support for Android 2.3.7 which is negligible.
+  bettercrypto_org__set_b_1: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH'
 
   # Perfect Forward Secrecy (https://community.qualys.com/blogs/securitylabs/2013/08/05/configuring-apache-nginx-and-openssl-for-forward-secrecy)
   # String taken on 2014-04-11
