@@ -16,7 +16,7 @@ ldap_bindpw="{{ sshd__ldap_bind_pw_file }}"
 
 ldap_filter="{{ sshd__ldap_filter }}"
 
-KEY=$(ldapsearch -LLL -x -y ${ldap_bindpw} -D ${ldap_binddn} -o ldif-wrap=no -S sshPublicKey "${ldap_filter}" sshPublicKey | grep -v 'dn:' | perl -pe 's/sshPublicKey: //;')
+KEY=$(ldapsearch -LLL -x -y ${ldap_bindpw} -D ${ldap_binddn} -o ldif-wrap=no -S sshPublicKey "${ldap_filter}" sshPublicKey | grep -v 'dn:' | perl -pe 's/sshPublicKey:: //;' | base64 -d)
 
 [ -n "${KEY}" ] && echo "${KEY}" || true
 
