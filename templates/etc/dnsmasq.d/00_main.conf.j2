@@ -164,6 +164,13 @@ resolv-file = /etc/resolvconf/upstream.conf
 {{ dnsmasq__dns_not_forward_private }}
 {% endif %}
 
+{% if dnsmasq__dhcp_hosts is defined %}
+{% for host in dnsmasq__dhcp_hosts %}
+dhcp-host={{ host.mac }},{{ host.ip  }}{% if host.name is defined %},{{ host.name }}{% else %}{% if host.lease_time is defined %},{% endif %}{% endif %}{% if host.lease_time is defined %},{{ host.lease_time }}{% else %},1d{% endif %}
+
+{% endfor %}
+{% endif %}
+
 {% if dnsmasq__options|d() %}
 # ---- Global custom options ----
 
