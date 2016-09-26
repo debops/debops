@@ -7,6 +7,7 @@ Ansible role: debops.dnsmasq
    :maxdepth: 2
 
    defaults
+   defaults-detailed
    copyright
    changelog
 
