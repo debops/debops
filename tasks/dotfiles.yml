@@ -14,8 +14,8 @@
     - '{{ users_group_list }}'
     - '{{ users_host_list }}'
   when: ((item.name is defined and item.name) and
-         (item.state is undefined or (item.state is defined and item.state != 'absent')) and
-         (item.createhome is undefined or item.createhome) and
+         (item.state|d('present') != 'absent') and
+         item.createhome|d(True) and
          ((item.dotfiles is defined and item.dotfiles) or
           (users_default_dotfiles is defined and users_default_dotfiles)))
 
@@ -33,8 +33,8 @@
     - '{{ users_group_list }}'
     - '{{ users_host_list }}'
   when: ((item.name is defined and item.name) and
-         (item.state is undefined or (item.state is defined and item.state != 'absent')) and
-         (item.createhome is undefined or item.createhome) and
+         (item.state|d('present') != 'absent') and
+         item.createhome|d(True) and
          ((item.dotfiles is defined and item.dotfiles) or
           (users_default_dotfiles is defined and users_default_dotfiles)))
 
@@ -50,8 +50,8 @@
     - '{{ users_group_list }}'
     - '{{ users_host_list }}'
   when: ((item.name is defined and item.name) and
-         (item.state is undefined or (item.state is defined and item.state != 'absent')) and
-         (item.createhome is undefined or item.createhome) and
+         (item.state|d('present') != 'absent') and
+         item.createhome|d(True) and
          ((item.dotfiles is defined and item.dotfiles) or
           (users_default_dotfiles is defined and users_default_dotfiles)))
 

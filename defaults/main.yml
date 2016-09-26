@@ -1,16 +1,64 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Should Ansible manage user accounts? Set to False to disable
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+
+# .. Global defaults [[[1
+#
+# -------------------
+#   Global defaults
+# -------------------
+
+# .. envvar:: users_enabled
+#
+# Should Ansible manage user accounts? Set to False to disable.
 users_enabled: True
 
 
-# --- Lists of different accounts to create/manage ---
+# .. envvar:: users_default_system
+#
+# If enabled, user groups and accounts will be considered "system" accounts by
+# default (ie. local accounts vs. LDAP accounts) and will be created with UID
+# and GID < 1000.
+users_default_system: '{{ (True
+                           if (ansible_local|d() and ansible_local.ldap|d() and
+                               ansible_local.ldap.enabled | bool)
+                           else False) }}'
 
-# This is only used for dotfiles management on 'root' account
+
+# .. envvar:: users_default_groups_list
+#
+# List of default groups added to new accounts.
+users_default_groups_list: []
+
+
+# .. envvar:: users_default_groups_append
+#
+# Should default groups be added to existing groups, or replace existing
+# groups?
+users_default_groups_append: 'yes'
+
+
+# .. Managed accounts [[[1
+#
+# --------------------
+#   Managed accounts
+# --------------------
+
+# .. envvar:: users_root
+#
+# This is only used for dotfiles management on 'root' account.
 users_root:
   - name: 'root'
 
-# Default user created by Ansible
+
+# .. envvar:: users_default
+#
+# Default user created by Ansible.
 users_default:
   - name: '{{ (ansible_ssh_user
                if (ansible_ssh_user | d() and
@@ -18,19 +66,38 @@ users_default:
                else lookup("env","USER")) }}'
     groups: [ 'admins' ]
 
-# Administrators
+
+# .. envvar:: users_admins
+#
+# Administrators.
 users_admins: []
 
-# Groups (normal or system)
+
+# .. envvar:: users_groups
+#
+# Groups (normal or system).
 users_groups: []
 
-# "Global" users
+
+# .. envvar:: users_list
+#
+# "Global" users.
+# This variable is intended to be used in Ansible’s global inventory.
 users_list: []
 
-# "Host group" users
+
+# .. envvar:: users_group_list
+#
+# "Host group" users.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
 users_group_list: []
 
-# "Host" users
+
+# .. envvar:: users_group_list
+#
+# "Host" users.
+# This variable is intended to be used in the inventory of the host.
 users_host_list: []
 
 
@@ -74,22 +141,11 @@ users_host_list: []
 #  remove: False/True
 
 
-# --- Global defaults ---
-
-# If enabled, user groups and accounts will be considered "system" accounts by
-# default (ie. local accounts vs LDAP accounts) and will be created with UID
-# and GID < 1000.
-users_default_system: '{{ (True
-                           if (ansible_local|d() and ansible_local.ldap|d() and
-                               ansible_local.ldap.enabled | bool)
-                           else False) }}'
-
-# List of default groups added to new accounts
-users_default_groups_list: []
-
-# Should default groups be added to existing groups, or replace existing
-# groups?
-users_default_groups_append: 'yes'
+# .. Dotfiles [[[1
+#
+# ------------
+#   Dotfiles
+# ------------
 
 # Default state of dotfiles on all accounts managed by Ansible
 # False - dotfiles are not configured by default
