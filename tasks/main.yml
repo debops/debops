@@ -111,6 +111,24 @@
   when: (pki_enabled|bool and
          (pki_acme|bool or pki_acme_install|bool))
 
+# Initialize PKI realms [[[
+
+- name: Ensure that /etc/pki directory exists
+  file:
+    path: '/etc/pki'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Ensure that sensitive files are excluded from version control
+  template:
+    src: 'etc/pki/gitignore.j2'
+    dest: '/etc/pki/.gitignore'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
 - name: Initialize PKI realms
   environment:
     PKI_ROOT: '{{ pki_root }}'
@@ -122,6 +140,7 @@
            "{{ pki_fact_lib_path }}/pki-realm" init -n "{{ item.name }}"
            --authority-preference "{{ (item.authority_preference | d(pki_authority_preference)) | join('/') }}"
            --library "{{ item.library | d(pki_library) }}"
+           --realm-key-size "{{ item.realm_key_size | d(pki_realm_key_size) }}"
            --internal "{{ (item.internal | d(pki_internal)) | bool | lower }}"
            --private-dir-group "{{ item.private_dir_group | d(pki_private_group) }}"
            --private-file-group "{{ item.private_file_group | d(pki_private_group) }}"
@@ -146,23 +165,9 @@
   when: (pki_enabled|bool and item.name is defined and
          (item.enabled|d(True) | bool) and
          (item.when|d(True) | bool))
+# ]]]
 
-- name: Ensure that /etc/pki directory exists
-  file:
-    path: '/etc/pki'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-    
-- name: Ensure that sensitive files are excluded from version control
-  template:
-    src: 'etc/pki/gitignore.j2'
-    dest: '/etc/pki/.gitignore'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-
+# Download files [[[
 - name: Download custom private files
   copy:
     src: '{{ item.src | d(omit) }}'
@@ -223,8 +228,10 @@
   when: (pki_enabled|bool and item.name is defined and
          (item.enabled|d(True) | bool) and
          (item.when|d(True) | bool))
+# ]]]
 
-- name: Create PKI realms
+# Create new PKI realms [[[
+- name: Create new PKI realms
   environment:
     PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
   command: |
@@ -247,10 +254,11 @@
     - '{{ pki_default_realms }}'
     - '{{ pki_dependent_realms }}'
   when: (pki_enabled|bool and item.name is defined and
-         ((item.internal|d(True) | bool) and pki_internal|bool) and
          (item.enabled|d(True) | bool) and
          (item.when|d(True) | bool))
+# ]]]
 
+# Execute PKI realm commands [[[
 - name: Execute PKI realm commands
   environment:
     PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
@@ -265,7 +273,9 @@
   when: (pki_enabled|bool and item.name is defined and
          (item.enabled|d(True) | bool) and
          (item.when|d(True) | bool))
+# ]]]
 
+# Upload internal certificate requests [[[
 - name: Upload internal certificate requests
   fetch:
     src: '/etc/pki/realms/{{ item.name }}/internal/request.pem'
@@ -282,7 +292,9 @@
          ((item.internal|d(True) | bool) and pki_internal|bool) and
          (item.enabled|d(True) | bool) and
          (item.when|d(True) | bool))
+# ]]]
 
+# PKI authorities [[[
 - name: Initialize PKI authorities
   environment:
     PKI_ROOT: '{{ secret + "/pki" }}'
@@ -321,6 +333,7 @@
            --cert-sign-days "{{ item.cert_sign_days | d('') }}"
            --system-ca "{{ (item.system_ca | d(True)) | bool | lower }}"
            --alt-authority "{{ item.alt_authority | d('') }}"
+           --key-size "{{ item.key_size | d('') }}"
   args:
     chdir: '{{ secret + "/pki" }}'
     creates: '{{ secret + "/pki/authorities/" + item.name + "/subject/cert.pem" }}'
@@ -330,7 +343,9 @@
   with_flattened:
     - '{{ pki_authorities + pki_dependent_authorities }}'
   when: (item.name is defined and (item.enabled|d(True) | bool))
+# ]]]
 
+# Sign certificate requests [[[
 - name: Sign certificate requests for current hosts
   environment:
     PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
@@ -344,7 +359,9 @@
   run_once: True
   when: (pki_authorities or pki_dependent_authorities)
   changed_when: pki_register_sign_by_host.stdout != ""
+# ]]]
 
+# Download files [[[
 - name: Download public realm contents by host
   copy:
     src: '{{ secret + "/pki/realms/by-host/" + pki_fqdn + "/" + item.0.name + "/" + item.1 + "/" }}'
@@ -412,7 +429,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Regenerate ca-certificates.crt' ]
-  when: pki_enabled | bool
+  when: pki_system_ca_certificates_download_by_host|d(pki_enabled) | bool
 
 - name: Download custom CA certificates by group
   copy:
@@ -423,7 +440,7 @@
     force: False
   with_items: '{{ pki_inventory_groups }}'
   notify: [ 'Regenerate ca-certificates.crt' ]
-  when: (pki_enabled|bool and item in group_names)
+  when: ((pki_system_ca_certificates_download_by_group|d(pki_enabled) | bool) and item in group_names)
 
 - name: Download custom CA certificates for all hosts
   copy:
@@ -431,10 +448,12 @@
     dest: '/usr/local/share/ca-certificates/pki/'
     owner: 'root'
     group: 'root'
-    force: False
+    force: '{{ pki_system_ca_certificates_download_all_hosts_force|bool }}'
   notify: [ 'Regenerate ca-certificates.crt' ]
-  when: pki_enabled | bool
+  when: pki_system_ca_certificates_download_all_hosts|d(pki_enabled) | bool
+# ]]]
 
+# Execute PKI realm commands [[[
 - name: Execute PKI realm commands
   environment:
     PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
@@ -449,7 +468,9 @@
   when: (pki_enabled|bool and item.name is defined and
          (item.enabled|d(True) | bool) and
          (item.when|d(True) | bool))
+# ]]]
 
+# Manage PKI scheduler [[[
 - name: Manage PKI scheduler
   cron:
     name: 'Process PKI system realms'
@@ -458,11 +479,13 @@
     job: 'test -x "{{ pki_fact_lib_path }}/pki-realm" && "{{ pki_fact_lib_path }}/pki-realm" schedule'
     special_time: '{{ pki_scheduler_interval }}'
     state: '{{ "present" if (pki_enabled|bool and pki_scheduler | bool) else "absent" }}'
+# ]]]
 
 - name: Manage system CA certificates
   include: ca_certificates.yml
   when: pki_enabled | bool
 
+# Ansible local facts [[[
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
@@ -484,4 +507,4 @@
 - name: Flush handlers for PKI if needed
   meta: flush_handlers
   when: pki_register_facts|changed
-
+# ]]]

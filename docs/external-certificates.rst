@@ -5,8 +5,8 @@ External certificates
 
 The PKI realms managed by the ``debops.pki`` role support management of private
 keys and certificates from external Certificate Authorities. You can either
-provide a set of already signed certificates with corresponding private keys,
-or use a script with a custom environment to request a certificate remotely in
+provide a set of valid certificates with corresponding private keys,
+or use a script with a custom environment to request a certificate remotely from
 an external Certificate Authority.
 
 Required files
@@ -75,8 +75,8 @@ As you can see, the directory structure reflects the Ansible inventory model:
 Each of those directories has a set of subdirectories for configured PKI
 realms, with the :file:`external/`, :file:`internal/` and :file:`private/` directories
 corresponding to the same ones on the remote hosts. Ansible at different stages
-of the ``debops.pki`` role will copy contents of these directories to remote
-hosts, in a specific order:
+of the ``debops.pki`` role run will copy contents of these directories to
+remote hosts, in a specific order:
 
 - contents of the :file:`realms/by-host/<hostname>` directories for each host
   will be copied and overwrite already present files;
@@ -87,7 +87,7 @@ hosts, in a specific order:
   copied to all currently managed remote hosts, but won't overwrite already
   present files;
 
-You can use this to distribute already signed certificates with their private
+You can use this to distribute already issued certificates with their private
 keys. Putting them in :file:`realms/by-group/all/` directory will ensure that all
 hosts will have the same set of keys and certificates. If you put them in
 a specific group directory, only hosts in that group will receive the files.
@@ -105,7 +105,7 @@ Because files copied from :file:`by-group/all/` and :file:`by-group/inventory_gr
 directories are not overwritten automatically, you will need to remove the
 corresponding files on remote hosts yourself if you want to update them.
 
-The :any:`pki_inventory_groups` default variable is a list of Ansible inventory
+The :envvar:`pki_inventory_groups` default variable is a list of Ansible inventory
 groups that will have their corresponding directories. You need to specify your
 custom inventory groups in order to have them "active".
 
@@ -169,4 +169,3 @@ executed multiple times during ``debops.pki`` run. The state in which the realm
 is in will be present in the ``$PKI_SCRIPT_STATE`` variable and using that you can
 perform various operations, like issuing a new certificate request when the
 realm is created.
-

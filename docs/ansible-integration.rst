@@ -47,7 +47,7 @@ available facts:
 The facts listed below are currently static, but are planned to be used in the
 future for better control over PKI realm directory structure:
 
-``ansible_local.pki.crt``
+:file:`ansible_local.pki.crt`
   Name of the default certificate symlink located in the PKI realm main
   directory.
 
@@ -55,7 +55,7 @@ future for better control over PKI realm directory structure:
   Name of the default private key symlink located in the PKI realm main
   directory.
 
-``ansible_local.pki.pem``
+:file:`ansible_local.pki.pem`
   Name of the default private key and certificate bundle symlink located in the
   PKI realm main directory.
 

@@ -2,9 +2,9 @@
 
 # pki-realm: client-side PKI management
 # Copyright (C) 2016 Maciej Delmanowski <drybjed@gmail.com>
-# Homepage: http://debops.org/
+# Homepage: https://debops.org/
 
-set -eu -o pipefail
+set -o nounset -o pipefail -o errexit
 
 umask 022
 
@@ -14,13 +14,8 @@ pid="$$"
 
 state=()
 
-# Normalize version numbers for comparsion
-version () {
-    echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'
-}
-
-# Display a message if script is used interactively, otherwise send it to syslog
 log_message () {
+    # Display a message if script is used interactively, otherwise send it to syslog
     local msg="${1:-}"
 
     if [ -n "${msg}" ] ; then
@@ -32,27 +27,30 @@ log_message () {
     fi
 }
 
-# Clean up pidfile
 clean_up () {
+    # Clean up pidfile
     local pidfile="${1}"
 
-    if [ -n "${pidfile}" -a -r "${pidfile}" ] ; then
+    if [ -n "${pidfile}" ] && [ -r "${pidfile}" ] ; then
         rm -f "${pidfile}"
     fi
     exit 0
 }
 
-# Wait for the specified process to exit
 wait_for_pid () {
+    # Wait for the specified process to exit
     local pidfile="${1}"
 
-    if [ -n "${pidfile}" -a -r "${pidfile}" ] ; then
-        local wait_pid="$(< "${pidfile}")"
+    if [ -n "${pidfile}" ] && [ -r "${pidfile}" ] ; then
+        local wait_pid
+        wait_pid="$(< "${pidfile}")"
         while kill -0 "${wait_pid}" > /dev/null 2>&1 ; do
             log_message "Waiting for PID ${wait_pid} to finish"
             sleep $(( ( RANDOM % 30 ) + 5 ))
         done
-        test -f "${pidfile}" && rm -f "${pidfile}" || true
+        if [ -f "${pidfile}" ] ; then
+            rm -f "${pidfile}"
+        fi
     fi
 }
 
@@ -70,31 +68,39 @@ create_lock () {
     fi
 
     # Exclusive lock succeeded
+    # shellcheck disable=SC2064
     trap "clean_up ${pidfile}" EXIT
 }
 
-# Check if an associative array has a specified key present
-key_exists() {
+# Inlined in the following scripts: pki-authority, pki-realm {{{
+version () {
+    # Normalize version numbers for comparison.
+    echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'
+}
+
+key_exists () {
+    # Check if an associative array has a specified key present
     eval '[ ${'$1'[$2]+test_of_existence} ]'
 }
 
-# Get an absolute path to a file
 get_absolute_path () {
-    python -c 'import sys, os.path; print os.path.abspath(sys.argv[1])' "${1}"
+    # Get an absolute path to a file
+    python -c 'import sys, os.path; print(os.path.abspath(sys.argv[1]))' "${1}"
 }
 
-# Get a relative path to a file
 get_relative_path () {
-    python -c 'import sys, os.path; print os.path.relpath(sys.argv[1], sys.argv[2])' "${1}" "${2:-$PWD}"
+    # Get a relative path to a file
+    python -c 'import sys, os.path; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "${1}" "${2:-$PWD}"
 }
 
-# Wrap dnsdomainname if it's not present (on MacOS X)
 get_dnsdomainname () {
+    # Wrap dnsdomainname if it's not present (on MacOS X)
+
     if type dnsdomainname > /dev/null 2>&1 ; then
         dnsdomainname
     else
-
-        local fqdn="$(hostname -f)"
+        local fqdn
+        fqdn="$(hostname -f)"
         if [[ ${fqdn} == *.* ]] ; then
             echo "${fqdn#*.}"
         else
@@ -102,6 +108,33 @@ get_dnsdomainname () {
         fi
     fi
 }
+
+chmod_idempotent () {
+    # chmod does a `fchmodat` (after a `stat`) even if it does not need to
+    # change anything as of 8.23-4.
+    # This behavior is not ideal for this script as it would update the ctime.
+
+    local new_mode_in_octal="${1##0}"
+    local file_path="${2}"
+
+    if [ "$(stat -c %a "${file_path}")" != "${new_mode_in_octal}" ] ; then
+        chmod "${new_mode_in_octal}" "${file_path}"
+    fi
+}
+
+chgrp_idempotent () {
+    # chgrp does a `fchownat` (after a `newfstatat`) even if it does not need
+    # to change anything as of 8.23-4.
+    # This behavior is not ideal for this script as it would update the ctime.
+
+    local new_group_name="${1}"
+    local file_path="${2}"
+
+    if [ "$(stat -c %G "${file_path}")" != "${new_group_name}" ] ; then
+        chgrp "${new_group_name}" "${file_path}"
+    fi
+}
+# }}}
 
 initialize_environment () {
 
@@ -150,6 +183,7 @@ initialize_environment () {
 
     config["pki_dhparam"]="false"
     config["dhparam_file"]=""
+    config["realm_key_size"]="2048"
 
     config["internal_expiration_days"]="14"
     config["internal_expiration_seconds"]="$(( 60 * 60 * 24 * ${config['internal_expiration_days']} ))"
@@ -193,7 +227,7 @@ initialize_environment () {
         config["realm_dir_group"]="root"
         config["realm_file_group"]="root"
 
-        if $(getent group "${config['private_group']}" > /dev/null) ; then
+        if getent group "${config['private_group']}" > /dev/null ; then
             config["private_dir_group"]="${config['private_group']}"
             config["private_file_group"]="${config['private_group']}"
         else
@@ -201,7 +235,7 @@ initialize_environment () {
             config["private_file_group"]="root"
         fi
 
-        if $(getent group "${config['acme_group']}" > /dev/null) ; then
+        if getent group "${config['acme_group']}" > /dev/null ; then
             config["acme_dir_group"]="${config['acme_group']}"
             config["acme_file_group"]="${config['acme_group']}"
         else
@@ -259,24 +293,21 @@ initialize_environment () {
     config["private_dir_acl_groups_x"]=""
     config["private_file_acl_groups_r"]=""
 
-    test -d "${config['pki_root']}" || mkdir -p -m "${config['public_dir_mode']}" "${config['pki_root']}"
-}
-
-print_usage () {
-    cat << EOF
-Usage: ${script_name} <command> [parameters]
-EOF
-
+    mkdir -p "${config['pki_root']}"
+    chmod_idempotent "${config['public_dir_mode']}" "${config['pki_root']}"
 }
 
 check_openssl_key_req_match () {
     local check_key="${1}"
     local check_req="${2}"
 
-    local md5_key="$(openssl rsa -noout -modulus -in "${check_key}" | md5sum | awk '{print $1}')"
-    local md5_req="$(openssl req -noout -modulus -in "${check_req}" | md5sum | awk '{print $1}')"
+    local key_modulus
+    local req_modulus
 
-    if [ "${md5_key}" = "${md5_req}" ] ; then
+    key_modulus="$(openssl rsa -noout -modulus -in "${check_key}" | base64)"
+    req_modulus="$(openssl req -noout -modulus -in "${check_req}" | base64)"
+
+    if [ "${key_modulus}" = "${req_modulus}" ] ; then
         return 0
     else
         return 1
@@ -287,11 +318,14 @@ check_openssl_key_crt_match () {
     local check_key="${1}"
     local check_crt="${2}"
 
-    if [ -r "${check_key}" -a -r "${check_crt}" ] ; then
-        local md5_key="$(openssl rsa  -noout -modulus -in "${check_key}" | md5sum | awk '{print $1}')"
-        local md5_crt="$(openssl x509 -noout -modulus -in "${check_crt}" | md5sum | awk '{print $1}')"
+    if [ -r "${check_key}" ] && [ -r "${check_crt}" ] ; then
+        local key_modulus
+        local crt_modulus
 
-        if [ "${md5_key}" = "${md5_crt}" ] ; then
+        key_modulus="$(openssl rsa  -noout -modulus -in "${check_key}" | base64)"
+        crt_modulus="$(openssl x509 -noout -modulus -in "${check_crt}" | base64)"
+
+        if [ "${key_modulus}" = "${crt_modulus}" ] ; then
             return 0
         else
             return 1
@@ -304,7 +338,7 @@ check_openssl_key_crt_match () {
 update_file_signature () {
     local check_file="${1}"
 
-    if [ -n "${check_file}" -a -r "${check_file}" ] ; then
+    if [ -n "${check_file}" ] && [ -r "${check_file}" ] ; then
         if [ -r "${check_file}.sig" ] ; then
             set +e
             md5sum --quiet --status -c "${check_file}.sig"
@@ -323,7 +357,7 @@ update_file_signature () {
 check_file_signature () {
     local check_file="${1}"
 
-    if [ -n "${check_file}" -a -r "${check_file}" ] ; then
+    if [ -n "${check_file}" ] && [ -r "${check_file}" ] ; then
         if [ -r "${check_file}.sig" ] ; then
             set +e
             md5sum --quiet --status -c "${check_file}.sig"
@@ -340,10 +374,12 @@ enter_realm () {
     local realm="${1}"
     local config_file="${2:-config/realm.conf}"
 
-    test -d "${config['pki_hooks']}" || mkdir -p -m "${config['public_dir_mode']}" "${config['pki_hooks']}"
+    mkdir -p "${config['pki_hooks']}"
+    chmod_idempotent "${config['public_dir_mode']}" "${config['pki_hooks']}"
 
     if [ ! -d "${config['pki_realms']}/${realm}" ] ; then
-        mkdir -p -m "${config['public_dir_mode']}" "${config['pki_realms']}/${realm}"
+        mkdir -p "${config['pki_realms']}/${realm}"
+        chmod "${config['public_dir_mode']}" "${config['pki_realms']}/${realm}"
         state+=('new-realm')
     fi
 
@@ -353,6 +389,7 @@ enter_realm () {
     if [ -r "${config_file}" ] ; then
 
         # FIXME: Add a code that checks if the config file has no dangerous code inside
+        # shellcheck disable=SC1090
         . "${config_file}"
     fi
 
@@ -361,21 +398,27 @@ enter_realm () {
 
 run_pki_hooks () {
 
-    if [ -n "${state:-}" -a -d "${config['pki_hooks']}" ] ; then
+    if [ -n "${state:-}" ] && [ -d "${config['pki_hooks']}" ] ; then
 
         export PKI_SCRIPT_REALM="${config['name']}"
         export PKI_SCRIPT_FQDN="${config['pki_default_fqdn']}"
         export PKI_SCRIPT_SUBJECT="${config['subject']:-${config['pki_default_subject']}}"
         export PKI_SCRIPT_DOMAINS="${config['domains']:-${config['pki_default_domain']}}"
         export PKI_SCRIPT_SUBDOMAINS="${config['subdomains']:-${config['pki_default_subdomains']}}"
-        export PKI_SCRIPT_PRIVATE_KEY="$(get_absolute_path private/key.pem)"
+        export PKI_SCRIPT_PRIVATE_KEY
+        PKI_SCRIPT_PRIVATE_KEY="$(get_absolute_path private/key.pem)"
 
-        export PKI_SCRIPT_DEFAULT_CRT="$(get_absolute_path default.crt)"
-        export PKI_SCRIPT_DEFAULT_KEY="$(get_absolute_path default.key)"
-        export PKI_SCRIPT_DEFAULT_PEM="$(get_absolute_path default.pem)"
+        export PKI_SCRIPT_DEFAULT_CRT
+        export PKI_SCRIPT_DEFAULT_KEY
+        export PKI_SCRIPT_DEFAULT_PEM
 
-        local current_state=$(printf ",%s" "${state[@]:-}")
-        local current_state="${current_state:1}"
+        PKI_SCRIPT_DEFAULT_CRT="$(get_absolute_path default.crt)"
+        PKI_SCRIPT_DEFAULT_KEY="$(get_absolute_path default.key)"
+        PKI_SCRIPT_DEFAULT_PEM="$(get_absolute_path default.pem)"
+
+        local current_state
+        current_state=$(printf ",%s" "${state[@]:-}")
+        current_state="${current_state:1}"
         export PKI_SCRIPT_STATE="${current_state}"
 
         cd "${config['pki_hooks']}"
@@ -391,13 +434,14 @@ run_external_script () {
 
         if [ ! -r private/realm_key.pem ] ; then
             generate_${config['pki_library']}_rsa_realm_key private/realm_key.pem
+# FIXME: Redundancy! Why?
             if [ ! -r private/key.pem ] ; then
                 install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key.pem.tmp
                 if type setfacl > /dev/null 2>&1 ; then
                     local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                     if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                        for acl_group in ${private_file_acl_groups_r[@]} ; do
-                            if $(getent group ${acl_group} > /dev/null) ; then
+                        for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                            if getent group "${acl_group}" > /dev/null ; then
                                 setfacl -m "g:${acl_group}:r" private/key.pem.tmp
                             fi
                         done
@@ -413,14 +457,22 @@ run_external_script () {
         export PKI_SCRIPT_SUBJECT="${config['subject']:-${config['pki_default_subject']}}"
         export PKI_SCRIPT_DOMAINS="${config['domains']:-${config['pki_default_domain']}}"
         export PKI_SCRIPT_SUBDOMAINS="${config['subdomains']:-${config['pki_default_subdomains']}}"
-        export PKI_SCRIPT_PRIVATE_KEY="$(get_absolute_path private/key.pem)"
 
-        export PKI_SCRIPT_DEFAULT_CRT="$(get_absolute_path default.crt)"
-        export PKI_SCRIPT_DEFAULT_KEY="$(get_absolute_path default.key)"
-        export PKI_SCRIPT_DEFAULT_PEM="$(get_absolute_path default.pem)"
+# FIXME: Redundancy! Why?
+        export PKI_SCRIPT_PRIVATE_KEY
+        PKI_SCRIPT_PRIVATE_KEY="$(get_absolute_path private/key.pem)"
 
-        local current_state=$(printf ",%s" "${state[@]:-}")
-        local current_state="${current_state:1}"
+        export PKI_SCRIPT_DEFAULT_CRT
+        export PKI_SCRIPT_DEFAULT_KEY
+        export PKI_SCRIPT_DEFAULT_PEM
+
+        PKI_SCRIPT_DEFAULT_CRT="$(get_absolute_path default.crt)"
+        PKI_SCRIPT_DEFAULT_KEY="$(get_absolute_path default.key)"
+        PKI_SCRIPT_DEFAULT_PEM="$(get_absolute_path default.pem)"
+
+        local current_state
+        current_state=$(printf ",%s" "${state[@]:-}")
+        current_state="${current_state:1}"
         export PKI_SCRIPT_STATE="${current_state}"
 
         test -x external/script || chmod ug+x external/script
@@ -439,9 +491,9 @@ update_symlink () {
 
         shift 1
 
-        for target in ${@} ; do
+        for target in "${@}" ; do
             if  [ -r "${target}" ] ; then
-                if [ -L "${symlink_target}" -a "$(readlink "${symlink_target}")" == "${target}" ] ; then
+                if [ -L "${symlink_target}" ] && [ "$(readlink "${symlink_target}")" == "${target}" ] ; then
                     break
                 else
                     ln -sf "${target}" "${symlink_target}"
@@ -466,14 +518,14 @@ create_openssl_config () {
     local req_subdomains="${5:-}"
     local req_san="${6:-}"
 
-    if [ -n "${config_file}" -a -n "${req_dn}" ] ; then
+    if [ -n "${config_file}" ] && [ -n "${req_dn}" ] ; then
 
         cat << EOF > "${config_file}"
 # Configuration file generated by pki-realm
 
 [ req ]
 default_md         = sha256
-default_bits       = 2048
+default_bits       = ${config['realm_key_size']}
 default_keyfile    = private/key.pem
 prompt             = no
 encrypt_key        = no
@@ -483,7 +535,7 @@ utf8               = yes
 string_mask        = utf8only
 EOF
 
-        if [ -n "${PKI_SESSION_TOKEN:-}" -a "${config_type}" = "internal" ] ; then
+        if [ -n "${PKI_SESSION_TOKEN:-}" ] && [ "${config_type}" = "internal" ] ; then
             cat << EOF >> "${config_file}"
 attributes         = req_attributes
 
@@ -492,12 +544,13 @@ challengePassword  = \${ENV::PKI_SESSION_TOKEN}
 EOF
         fi
 
+        # shellcheck disable=SC2129
         cat << EOF >> "${config_file}"
 
 [ req_dn ]
 EOF
 
-        echo "${req_dn}" | tr "/" "\n" | sed \
+        echo "${req_dn}" | tr "/" "\n" | grep --invert-match '^\s*$' | sed \
             -e 's/^[Cc]=/countryName=/' \
             -e 's/^[Ss][Tt]=/stateOrProvinceName=/' \
             -e 's/^[Ll]=/localityName=/' \
@@ -512,7 +565,7 @@ basicConstraints   = CA:FALSE
 keyUsage           = digitalSignature, keyEncipherment
 extendedKeyUsage   = serverAuth, clientAuth
 EOF
-        if [ -n "${req_domains}" -o -n "${req_subdomains}" -o -n "${req_san}" ] ; then
+        if [ -n "${req_domains}" ] || [ -n "${req_subdomains}" ] || [ -n "${req_san}" ] ; then
             cat << EOF >> "${config_file}"
 subjectAltName     = @ext_req_san
 
@@ -522,10 +575,10 @@ EOF
             local domains=( $(echo "${req_domains}" | tr "/" " ") )
             local subdomains=( $(echo "${req_subdomains}" | tr "/" " ") )
 
-            local san_ip=(    $( echo "${req_san}" | tr "|" "\n" | awk '/^[Ii][Pp]:/ {print;}' | sed -e 's/^[Ii][Pp]://' | xargs ) )
-            local san_dns=(   $( echo "${req_san}" | tr "|" "\n" | awk '/^[Dd][Nn][Ss]:/ {print;}' | sed -e 's/^[Dd][Nn][Ss]://' | xargs ) )
-            local san_uri=(   $( echo "${req_san}" | tr "|" "\n" | awk '/^[Uu][Rr][Ii]:/ {print;}' | sed -e 's/^[Uu][Rr][Ii]://' | xargs ) )
-            local san_email=( $( echo "${req_san}" | tr "|" "\n" | awk '/^[Ee][Mm][Aa][Ii][Ll]:/ {print;}' | sed -e 's/^[Ee][Mm][Aa][Ii][Ll]://' | xargs ) )
+            local san_ip=(    $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^ip://pi'    | xargs ) )
+            local san_dns=(   $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^dns://pi'   | xargs ) )
+            local san_uri=(   $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^uri://pi'   | xargs ) )
+            local san_email=( $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^email://pi' | xargs ) )
 
             local all_dns=( ${domains[@]:-} )
 
@@ -573,7 +626,7 @@ create_gnutls_config () {
     local req_subdomains="${5:-}"
     local req_san="${6:-}"
 
-    if [ -n "${config_file}" -a -n "${req_dn}" ] ; then
+    if [ -n "${config_file}" ] && [ -n "${req_dn}" ] ; then
 
         cat << EOF > "${config_file}"
 # Configuration file generated by pki-realm
@@ -585,19 +638,19 @@ tls_www_server
 
 EOF
 
-        if [ -n "${PKI_SESSION_TOKEN:-}" -a "${config_type}" = "internal" ] ; then
+        if [ -n "${PKI_SESSION_TOKEN:-}" ] && [ "${config_type}" = "internal" ] ; then
             cat << EOF >> "${config_file}"
 # This password is meaningless outside of current session
 challenge_password  = ${PKI_SESSION_TOKEN:-}
 
 EOF
-        elif [ -n "${PKI_SESSION_TOKEN:-}" -a "${config_type}" = "selfsigned" ] ; then
+        elif [ -n "${PKI_SESSION_TOKEN:-}" ] && [ "${config_type}" = "selfsigned" ] ; then
             cat << EOF >> "${config_file}"
 expiration_days = ${config['selfsigned_sign_days']}
 EOF
         fi
 
-        echo "${req_dn}" | tr "/" "\n" | sed \
+        echo "${req_dn}" | tr "/" "\n" | grep --invert-match '^\s*$' | sed \
             -e 's/^[Cc]=/country = "/' \
             -e 's/^[Ss][Tt]=/state = "/' \
             -e 's/^[Ll]=/locality = "/' \
@@ -609,10 +662,10 @@ EOF
         local domains=( $(echo "${req_domains}" | tr "/" " ") )
         local subdomains=( $(echo "${req_subdomains}" | tr "/" " ") )
 
-        local san_ip=(    $( echo "${req_san}" | tr "|" "\n" | awk '/^[Ii][Pp]:/ {print;}' | sed -e 's/^[Ii][Pp]://' | xargs ) )
-        local san_dns=(   $( echo "${req_san}" | tr "|" "\n" | awk '/^[Dd][Nn][Ss]:/ {print;}' | sed -e 's/^[Dd][Nn][Ss]://' | xargs ) )
-        local san_uri=(   $( echo "${req_san}" | tr "|" "\n" | awk '/^[Uu][Rr][Ii]:/ {print;}' | sed -e 's/^[Uu][Rr][Ii]://' | xargs ) )
-        local san_email=( $( echo "${req_san}" | tr "|" "\n" | awk '/^[Ee][Mm][Aa][Ii][Ll]:/ {print;}' | sed -e 's/^[Ee][Mm][Aa][Ii][Ll]://' | xargs ) )
+        local san_ip=(    $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^ip://pi'    | xargs ) )
+        local san_dns=(   $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^dns://pi'   | xargs ) )
+        local san_uri=(   $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^uri://pi'   | xargs ) )
+        local san_email=( $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^email://pi' | xargs ) )
 
         local all_dns=( ${domains[@]:-} )
 
@@ -638,7 +691,7 @@ EOF
             printf 'ip_address = "%s"\n' "${san_ip[${i}]}" >> "${config_file}"
         done
 
-        if [ $(version $(certtool --version | head -n 1 | awk '{print $NF}')) -ge $(version 3.0.20) ] ; then
+        if [ "$(version "$(certtool --version | head -n 1 | awk '{print $NF}')")" -ge "$(version 3.0.20)" ] ; then
             for i in "${!san_uri[@]}" ; do
                 printf 'uri = "%s"\n' "${san_uri[${i}]}" >> "${config_file}"
             done
@@ -656,7 +709,7 @@ save_realm_config () {
     local config_file="${1:-config/realm.conf}"
 
     if [ -r "${config_file}" ] ; then
-        if $(grep -q -E "^#\s+Configuration\s+file\s+generated\s+by\s+pki-realm$" "${config_file}") ; then
+        if grep -q -E "^#\s+Configuration\s+file\s+generated\s+by\s+pki-realm$" "${config_file}" ; then
             rm -f "${config_file}"
         fi
     fi
@@ -677,10 +730,11 @@ generate_openssl_request () {
     local req_config="${1}"
     local req_out="${2}"
 
-    if [ -n "${req_config}" -a -n "${req_out}" ] ; then
-        if [ -r "${req_config}" -a ! -r "${req_out}" ] ; then
+    if [ -n "${req_config}" ] && [ -n "${req_out}" ] ; then
+        if [ -r "${req_config}" ] && [ ! -r "${req_out}" ] ; then
 
-            local req_keyfile=$(grep -E '^default_keyfile\s+=\s+' "${req_config}" | awk '{print $3}')
+            local req_keyfile
+            req_keyfile=$(grep -E '^default_keyfile\s+=\s+' "${req_config}" | awk '{print $3}')
             if [ -n "${req_keyfile}" ] ; then
                 openssl req -new -key "${req_keyfile}" -config "${req_config}" -out "${req_out}.tmp"
             else
@@ -698,8 +752,8 @@ generate_gnutls_request () {
     local req_config="${1}"
     local req_out="${2}"
 
-    if [ -n "${req_config}" -a -n "${req_out}" ] ; then
-        if [ -r "${req_config}" -a ! -r "${req_out}" ] ; then
+    if [ -n "${req_config}" ] && [ -n "${req_out}" ] ; then
+        if [ -r "${req_config}" ] && [ ! -r "${req_out}" ] ; then
 
             certtool --generate-request --template "${req_config}" \
                      --load-privkey private/key.pem --outfile "${req_out}.tmp"
@@ -718,14 +772,14 @@ selfsign_openssl_request () {
     local sign_out="selfsigned/cert.pem"
     local root_out="selfsigned/root.pem"
 
-    if [ -n "${sign_req}" -a -n "${sign_out}" ] ; then
-        if [ -r "${sign_req}" -a ! -r "${sign_out}" ] ; then
+    if [ -n "${sign_req}" ] && [ -n "${sign_out}" ] ; then
+        if [ -r "${sign_req}" ] && [ ! -r "${sign_out}" ] ; then
 
             openssl x509 -in "${sign_req}" -out "${sign_out}.tmp" \
                     -req -signkey private/key.pem -days "${config['selfsigned_sign_days']}"
             test -r "${sign_out}.tmp" && mv "${sign_out}.tmp" "${sign_out}"
-            if [ -r "${sign_out}" -a ! -r "${root_out}" ] ; then
-                cd $(dirname "${root_out}")
+            if [ -r "${sign_out}" ] && [ ! -r "${root_out}" ] ; then
+                cd "$(dirname "${root_out}")"
                 ln -s "${sign_out}" "${root_out}"
                 cd - > /dev/null
             fi
@@ -741,16 +795,16 @@ selfsign_gnutls_request () {
     local sign_out="selfsigned/cert.pem"
     local root_out="selfsigned/root.pem"
 
-    if [ -n "${sign_req}" -a -n "${sign_out}" ] ; then
-        if [ -r "${sign_req}" -a ! -r "${sign_out}" ] ; then
+    if [ -n "${sign_req}" ] && [ -n "${sign_out}" ] ; then
+        if [ -r "${sign_req}" ] && [ ! -r "${sign_out}" ] ; then
 
             certtool --generate-self-signed --load-privkey private/key.pem \
                      --load-request "${sign_req}" --outfile "${sign_out}.tmp" \
                      --template selfsigned/gnutls.conf
             test -r "${sign_out}.tmp" && mv "${sign_out}.tmp" "${sign_out}"
-            if [ -r "${sign_out}" -a ! -r "${root_out}" ] ; then
-                cd $(dirname "${root_out}")
-                ln -s "$(basename ${sign_out})" $(basename "${root_out}")
+            if [ -r "${sign_out}" ] && [ ! -r "${root_out}" ] ; then
+                cd "$(dirname "${root_out}")"
+                ln -s "$(basename ${sign_out})" "$(basename "${root_out}")"
                 cd - > /dev/null
             fi
 
@@ -762,7 +816,7 @@ selfsign_gnutls_request () {
 generate_openssl_rsa_realm_key () {
 
     local key_file="${1:-private/realm_key.pem}"
-    local key_size="${2:-2048}"
+    local key_size="${2:-${config['realm_key_size']}}"
     local key_group="${3:-${config['realm_file_group']}}"
 
     test -r "${key_file}" || openssl genrsa -out "${key_file}.tmp" "${key_size}"
@@ -773,23 +827,19 @@ generate_openssl_rsa_realm_key () {
         mv "${key_file}.tmp" "${key_file}"
     fi
 
-    if [ "$(stat -c %a "${key_file}")" != "${config['realm_file_mode']}" ] ; then
-        chmod "${config['realm_file_mode']}" "${key_file}"
-    fi
-    if [ "$(stat -c %G "${key_file}")" != "${key_group}" ] ; then
-        chgrp "${key_group}" "${key_file}"
-    fi
+    chmod_idempotent "${config['realm_file_mode']}" "${key_file}"
+    chgrp_idempotent "${key_group}" "${key_file}"
 
 }
 
 generate_gnutls_rsa_realm_key () {
 
     local key_file="${1:-private/realm_key.pem}"
-    local key_size="${2:-2048}"
+    local key_size="${2:-${config['realm_key_size']}}"
     local key_group="${3:-${config['realm_file_group']}}"
 
     if ! [ -r "${key_file}" ] ; then
-        if [ $(version $(certtool --version | head -n 1 | awk '{print $NF}')) -lt $(version 3.1.0) ] ; then
+        if [ "$(version "$(certtool --version | head -n 1 | awk '{print $NF}')")" -lt "$(version 3.1.0)" ] ; then
             certtool --generate-privkey --outfile "${key_file}.tmp" --bits "${key_size}"
         else
             certtool --generate-privkey --rsa --outfile "${key_file}.tmp" --bits "${key_size}"
@@ -803,19 +853,15 @@ generate_gnutls_rsa_realm_key () {
         mv "${key_file}.tmp" "${key_file}"
     fi
 
-    if [ "$(stat -c %a "${key_file}")" != "${config['realm_file_mode']}" ] ; then
-        chmod "${config['realm_file_mode']}" "${key_file}"
-    fi
-    if [ "$(stat -c %G "${key_file}")" != "${key_group}" ] ; then
-        chgrp "${key_group}" "${key_file}"
-    fi
+    chmod_idempotent "${config['realm_file_mode']}" "${key_file}"
+    chgrp_idempotent "${key_group}" "${key_file}"
 
 }
 
 generate_openssl_rsa_private_key () {
 
     local key_file="${1:-private/key.pem}"
-    local key_size="${2:-2048}"
+    local key_size="${2:-${config['realm_key_size']}}"
     local key_group="${3:-${config['private_file_group']}}"
     local key_acl="${4:-true}"
 
@@ -828,8 +874,8 @@ generate_openssl_rsa_private_key () {
             if type setfacl > /dev/null 2>&1 ; then
                 local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                 if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                    for acl_group in ${private_file_acl_groups_r[@]} ; do
-                        if $(getent group "${acl_group}" > /dev/null) ; then
+                    for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                        if getent group "${acl_group}" > /dev/null ; then
                             setfacl -m "g:${acl_group}:r" "${key_file}.tmp"
                         fi
                     done
@@ -839,24 +885,20 @@ generate_openssl_rsa_private_key () {
         mv "${key_file}.tmp" "${key_file}"
     fi
 
-    if [ "$(stat -c %a "${key_file}")" != "${config['private_file_mode']}" ] ; then
-        chmod "${config['private_file_mode']}" "${key_file}"
-    fi
-    if [ "$(stat -c %G "${key_file}")" != "${key_group}" ] ; then
-        chgrp "${key_group}" "${key_file}"
-    fi
+    chmod_idempotent "${config['private_file_mode']}" "${key_file}"
+    chgrp_idempotent "${key_group}" "${key_file}"
 
 }
 
 generate_gnutls_rsa_private_key () {
 
     local key_file="${1:-private/key.pem}"
-    local key_size="${2:-2048}"
+    local key_size="${2:-${config['realm_key_size']}}"
     local key_group="${3:-${config['private_file_group']}}"
     local key_acl="${4:-true}"
 
     if ! [ -r "${key_file}" ] ; then
-        if [ $(version $(certtool --version | head -n 1 | awk '{print $NF}')) -lt $(version 3.1.0) ] ; then
+        if [ "$(version "$(certtool --version | head -n 1 | awk '{print $NF}')")" -lt "$(version 3.1.0)" ] ; then
             certtool --generate-privkey --outfile "${key_file}.tmp" --bits "${key_size}"
         else
             certtool --generate-privkey --rsa --outfile "${key_file}.tmp" --bits "${key_size}"
@@ -871,8 +913,8 @@ generate_gnutls_rsa_private_key () {
             if type setfacl > /dev/null 2>&1 ; then
                 local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                 if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                    for acl_group in ${private_file_acl_groups_r[@]} ; do
-                        if $(getent group "${acl_group}" > /dev/null) ; then
+                    for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                        if getent group "${acl_group}" > /dev/null ; then
                             setfacl -m "g:${acl_group}:r" "${key_file}.tmp"
                         fi
                     done
@@ -882,12 +924,8 @@ generate_gnutls_rsa_private_key () {
         mv "${key_file}.tmp" "${key_file}"
     fi
 
-    if [ "$(stat -c %a "${key_file}")" != "${config['private_file_mode']}" ] ; then
-        chmod "${config['private_file_mode']}" "${key_file}"
-    fi
-    if [ "$(stat -c %G "${key_file}")" != "${key_group}" ] ; then
-        chgrp "${key_group}" "${key_file}"
-    fi
+    chmod_idempotent "${config['private_file_mode']}" "${key_file}"
+    chgrp_idempotent "${key_group}" "${key_file}"
 
 }
 
@@ -902,14 +940,10 @@ create_public_directories () {
 
     local directories=( ${@} )
 
-    for directory in ${directories[@]} ; do
-        test -d "${directory}" || mkdir -p -m "${config['public_dir_mode']}" "${directory}"
-        if [ "$(stat -c %a "${directory}")" != "${config['public_dir_mode']}" ] ; then
-            chmod "${config['public_dir_mode']}" "${directory}"
-        fi
-        if [ "$(stat -c %G "${directory}")" != "${dir_group}" ] ; then
-            chgrp "${dir_group}" "${directory}"
-        fi
+    for directory in "${directories[@]}" ; do
+        mkdir -p "${directory}"
+        chmod_idempotent "${config['public_dir_mode']}" "${directory}"
+        chgrp_idempotent "${dir_group}" "${directory}"
     done
 
 }
@@ -925,19 +959,15 @@ create_private_directories () {
 
     local directories=( ${@} )
 
-    for directory in ${directories[@]} ; do
-        test -d "${directory}" || mkdir -p -m "${config['private_dir_mode']}" "${directory}"
-        if [ "$(stat -c %a "${directory}")" != "${config['private_dir_mode']}" ] ; then
-            chmod "${config['private_dir_mode']}" "${directory}"
-        fi
-        if [ "$(stat -c %G "${directory}")" != "${dir_group}" ] ; then
-            chgrp "${dir_group}" "${directory}"
-        fi
+    for directory in "${directories[@]}" ; do
+        mkdir -p "${directory}"
+        chmod_idempotent "${config['private_dir_mode']}" "${directory}"
+        chgrp_idempotent "${dir_group}" "${directory}"
         if type setfacl > /dev/null 2>&1 ; then
             local private_dir_acl_groups_x=( $(echo "${config['private_dir_acl_groups_x']}" | tr "/" " ") )
             if [ ${#private_dir_acl_groups_x[@]} -ne 0 ] ; then
-                for acl_group in ${private_dir_acl_groups_x[@]} ; do
-                    if $(getent group "${acl_group}" > /dev/null) ; then
+                for acl_group in "${private_dir_acl_groups_x[@]}" ; do
+                    if getent group "${acl_group}" > /dev/null ; then
                         setfacl -m "g:${acl_group}:x" "${directory}"
                     fi
                 done
@@ -958,14 +988,10 @@ create_private_noacl_directories () {
 
     local directories=( ${@} )
 
-    for directory in ${directories[@]} ; do
-        test -d ${directory} || mkdir -p -m ${config['private_dir_mode']} ${directory}
-        if [ "$(stat -c %a ${directory})" != "${config['private_dir_mode']}" ] ; then
-            chmod ${config['private_dir_mode']} ${directory}
-        fi
-        if [ "$(stat -c %G ${directory})" != "${dir_group}" ] ; then
-            chgrp "${dir_group}" "${directory}"
-        fi
+    for directory in "${directories[@]}" ; do
+        mkdir -p "${directory}"
+        chmod_idempotent "${config['private_dir_mode']}" "${directory}"
+        chgrp_idempotent "${dir_group}" "${directory}"
     done
 
 }
@@ -975,17 +1001,17 @@ check_expiration_time () {
     local cert_file="${1}"
     local seconds="${2}"
 
-    if [ -n "${cert_file}" -a -r "${cert_file}" ] ; then
+    if [ -n "${cert_file}" ] && [ -r "${cert_file}" ] ; then
 
         current_time="$(date +%s)"
         cert_enddate="$(openssl x509 -in "${cert_file}" -noout -enddate | cut -d= -f2)"
         cert_expires=$(date --date="${cert_enddate}" +%s)
 
         if [ -n "${seconds}" ] ; then
-            cert_expires="$(( ${cert_expires} - ${seconds} ))"
+            cert_expires="$(( cert_expires - seconds ))"
         fi
 
-        if (( (${cert_expires} - ${current_time}) >= 0 )) ; then
+        if (( (cert_expires - current_time) >= 0 )) ; then
             return 0
         else
             return 1
@@ -1000,7 +1026,7 @@ convert_der_to_pem () {
 
     local input_file="${1}"
 
-    if [ -n "${input_file}" -a -r "${input_file}" ] ; then
+    if [ -n "${input_file}" ] && [ -r "${input_file}" ] ; then
         if ! openssl x509 -in "${input_file}" -noout 2>/dev/null ; then
             openssl x509 -inform DER -in "${input_file}" -out "${input_file}.tmp"
             mv "${input_file}.tmp" "${input_file}"
@@ -1010,7 +1036,7 @@ convert_der_to_pem () {
 
 request_acme_tiny_certificate () {
 
-    if [ "${config['pki_acme']}" = "true" -a -x "${config['acme_client_script']}" -a -d "${config['acme_challenge_dir']}" -a ! -r acme/error.log -a -r acme/request.pem ] ; then
+    if [ "${config['pki_acme']}" = "true" ] && [ -x "${config['acme_client_script']}" ] && [ -d "${config['acme_challenge_dir']}" ] && [ ! -e acme/error.log ] && [ -r acme/request.pem ] ; then
 
         if ! ( check_expiration_time acme/cert.pem "${config['acme_expiration_seconds']}" && check_openssl_key_crt_match private/key.pem acme/cert.pem ) ; then
 
@@ -1018,8 +1044,8 @@ request_acme_tiny_certificate () {
 
                 set +e
                 su --shell /bin/sh -c "umask 0022 ; ${config['acme_client_script']} --account-key acme/account_key.pem \
-                    --ca "${config['acme_ca_api']}" --csr acme/request.pem \
-                    --acme-dir "${config['acme_challenge_dir']}" > acme/cert.pem.tmp 2>acme/error.log" "${config['acme_user']}"
+                    --ca \"${config['acme_ca_api']}\" --csr acme/request.pem \
+                    --acme-dir \"${config['acme_challenge_dir']}\" > acme/cert.pem.tmp 2>acme/error.log" "${config['acme_user']}"
                 set -e
 
             else
@@ -1032,12 +1058,13 @@ request_acme_tiny_certificate () {
 
             fi
 
-            if [ -r acme/cert.pem.tmp -a -s acme/cert.pem.tmp ] ; then
+            if [ -r acme/cert.pem.tmp ] && [ -s acme/cert.pem.tmp ] ; then
 
                 test -r acme/cert.pem && mv acme/cert.pem acme/cert.pem.old || true
                 mv acme/cert.pem.tmp acme/cert.pem
 
-                local acme_intermediate_uri="$(openssl x509 -in acme/cert.pem -text -noout -certopt ca_default,no_validity,no_serial | grep -E '^\s+CA\s+Issuers\s+-\s+URI:' | awk '{print $4}' | sed -e 's/^URI://')"
+                local acme_intermediate_uri
+                acme_intermediate_uri="$(openssl x509 -in acme/cert.pem -text -noout -certopt ca_default,no_validity,no_serial | grep -E '^\s+CA\s+Issuers\s+-\s+URI:' | awk '{print $4}' | sed -e 's/^URI://')"
 
                 if [ ! -r acme/intermediate.pem ] ; then
 
@@ -1052,7 +1079,7 @@ request_acme_tiny_certificate () {
 
                 elif [ -r acme/intermediate.pem ] ; then
 
-                    if [ -n "${acme_intermediate_uri}" -a -r acme/intermediate_uri.txt ] ; then
+                    if [ -n "${acme_intermediate_uri}" ] && [ -r acme/intermediate_uri.txt ] ; then
                         if [ "${acme_intermediate_uri}" != "$(<acme/intermediate_uri.txt)" ] ; then
                             curl -s -o acme/intermediate.pem.tmp "${acme_intermediate_uri}"
                             if ! diff -q -N acme/intermediate.pem acme/intermediate.pem.tmp > /dev/null ; then
@@ -1074,7 +1101,7 @@ request_acme_tiny_certificate () {
                 fi
 
                 if [ ! -r acme/root.pem ] ; then
-                    if [ -n "${config['acme_root_ca_path']}" -a -n "${config['acme_root_ca_file']}" ] ; then
+                    if [ -n "${config['acme_root_ca_path']}" ] && [ -n "${config['acme_root_ca_file']}" ] ; then
                         if [ -r "${config['acme_root_ca_path']}/${config['acme_root_ca_file']}" ] && grep -q "${config['acme_root_ca_file']}" /etc/ca-certificates.conf ; then
                             ln -s "${config['acme_root_ca_path']}/${config['acme_root_ca_file']}" acme/root.pem
                         fi
@@ -1085,7 +1112,7 @@ request_acme_tiny_certificate () {
                     rm -f acme/error.log
                 fi
 
-            elif [ -r acme/cert.pem.tmp -a ! -s acme/cert.pem.tmp ] ; then
+            elif [ -r acme/cert.pem.tmp ] && [ ! -s acme/cert.pem.tmp ] ; then
                 rm -f acme/cert.pem.tmp
             fi
 
@@ -1098,7 +1125,7 @@ request_acme_tiny_certificate () {
 check_public_certificate () {
 
     if [ -r public/cert.pem ] ; then
-        if ! $(check_file_signature public/cert.pem) ; then
+        if ! check_file_signature public/cert.pem ; then
             state+=("changed-certificate")
             state+=("file-change")
         fi
@@ -1121,8 +1148,8 @@ check_files () {
                 if type setfacl > /dev/null 2>&1 ; then
                     local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                     if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                        for acl_group in ${private_file_acl_groups_r[@]} ; do
-                            if $(getent group "${acl_group}" > /dev/null) ; then
+                        for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                            if getent group "${acl_group}" > /dev/null ; then
                                 setfacl -m "g:${acl_group}:r" private/key.pem.tmp
                             fi
                         done
@@ -1139,8 +1166,8 @@ check_files () {
                 local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                 if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                     if ! getfacl -sc private/key.pem | grep -Eq '^group' ; then
-                        for acl_group in ${private_file_acl_groups_r[@]} ; do
-                            if $(getent group "${acl_group}" > /dev/null) ; then
+                        for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                            if getent group "${acl_group}" > /dev/null ; then
                                 setfacl -m "g:${acl_group}:r" private/key.pem
                             fi
                         done
@@ -1149,19 +1176,19 @@ check_files () {
             fi
         fi
 
-        if [ -n "${PKI_SESSION_TOKEN:-}" -a -r internal/cert.pem ] ; then
+        if [ -n "${PKI_SESSION_TOKEN:-}" ] && [ -r internal/cert.pem ] ; then
             if ! ( check_expiration_time internal/cert.pem "${config['internal_expiration_seconds']}" && check_openssl_key_crt_match private/key.pem internal/cert.pem ) ; then
                 rm -f "internal/${library}.conf" internal/request.pem
             fi
         fi
 
-        if [ -n "${PKI_SESSION_TOKEN:-}" -a ! -r public/cert.pem ] ; then
+        if [ -n "${PKI_SESSION_TOKEN:-}" ] && [ ! -r public/cert.pem ] ; then
             if ! ( check_expiration_time internal/cert.pem "${config['internal_expiration_seconds']}" && check_openssl_key_crt_match private/key.pem internal/cert.pem ) ; then
                 rm -f "internal/${library}.conf" internal/request.pem
             fi
         fi
 
-        if [ ! -r "internal/${library}.conf" -a ! -r internal/request.pem ] ; then
+        if [ ! -r "internal/${library}.conf" ] && [ ! -r internal/request.pem ] ; then
 
             if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
@@ -1177,7 +1204,7 @@ check_files () {
             state+=('new-internal-request')
         fi
 
-        if [ -r "internal/${library}.conf" -a -r internal/request.pem ] ; then
+        if [ -r "internal/${library}.conf" ] && [ -r internal/request.pem ] ; then
             if ! check_openssl_key_req_match private/key.pem internal/request.pem ; then
 
                 rm -f internal/request.pem
@@ -1196,8 +1223,8 @@ check_files () {
                 if type setfacl > /dev/null 2>&1 ; then
                     local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                     if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                        for acl_group in ${private_file_acl_groups_r[@]} ; do
-                            if $(getent group "${acl_group}" > /dev/null) ; then
+                        for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                            if getent group "${acl_group}" > /dev/null ; then
                                 setfacl -m "g:${acl_group}:r" private/key.pem.tmp
                             fi
                         done
@@ -1214,8 +1241,8 @@ check_files () {
                 local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                 if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                     if ! getfacl -sc private/key.pem | grep -Eq '^group' ; then
-                        for acl_group in ${private_file_acl_groups_r[@]} ; do
-                            if $(getent group "${acl_group}" > /dev/null) ; then
+                        for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                            if getent group "${acl_group}" > /dev/null ; then
                                 setfacl -m "g:${acl_group}:r" private/key.pem
                             fi
                         done
@@ -1224,27 +1251,35 @@ check_files () {
             fi
         fi
 
-        if [ -n "${PKI_SESSION_TOKEN:-}" -a -r selfsigned/cert.pem ] ; then
+        if [ -n "${PKI_SESSION_TOKEN:-}" ] && [ -r selfsigned/cert.pem ] ; then
             if ! ( check_expiration_time selfsigned/cert.pem "${config['selfsigned_expiration_seconds']}" && check_openssl_key_crt_match private/key.pem selfsigned/cert.pem ) ; then
                 rm -f "selfsigned/${library}.conf" selfsigned/request.pem
             fi
         fi
 
-        if [ -n "${PKI_SESSION_TOKEN:-}" -a ! -r public/cert.pem ] ; then
+        if [ -n "${PKI_SESSION_TOKEN:-}" ] && [ ! -r public/cert.pem ] ; then
             if ! ( check_expiration_time selfsigned/cert.pem "${config['selfsigned_expiration_seconds']}" && check_openssl_key_crt_match private/key.pem selfsigned/cert.pem ) ; then
                 rm -f "selfsigned/${library}.conf" selfsigned/request.pem
             fi
         fi
 
-        if [ ! -r "selfsigned/${library}.conf" -a ! -r selfsigned/request.pem ] ; then
+        if [ ! -r "selfsigned/${library}.conf" ] && [ ! -r selfsigned/request.pem ] ; then
 
             if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
-                "create_${library}_config" "selfsigned/${library}.conf" selfsigned "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                "create_${library}_config" "selfsigned/${library}.conf" selfsigned \
+                    "${config['subject']:-${config['pki_default_subject']}}" \
+                    "${config['domains']:-${config['pki_default_domain']}}" \
+                    "${config['subdomains']:-${config['pki_default_subdomains']}}" \
+                    "${config['subject_alt_names']:-}"
 
             elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
-                "create_${library}_config" "selfsigned/${library}.conf" selfsigned "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                "create_${library}_config" "selfsigned/${library}.conf" selfsigned \
+                    "${config['subject']:-cn=${name}}" \
+                    "${config['domains']:-${name:-${config['pki_default_domain']}}}" \
+                    "${config['subdomains']:-${config['pki_default_subdomains']}}" \
+                    "${config['subject_alt_names']:-}"
 
             fi
 
@@ -1253,7 +1288,7 @@ check_files () {
             state+=('new-selfsigned-certificate')
         fi
 
-        if [ -r "selfsigned/${library}.conf" -a -r selfsigned/request.pem ] ; then
+        if [ -r "selfsigned/${library}.conf" ] && [ -r selfsigned/request.pem ] ; then
             if ! check_openssl_key_req_match private/key.pem selfsigned/request.pem ; then
 
                 rm -f selfsigned/request.pem
@@ -1275,8 +1310,8 @@ check_files () {
                 if type setfacl > /dev/null 2>&1 ; then
                     local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                     if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                        for acl_group in ${private_file_acl_groups_r[@]} ; do
-                            if $(getent group "${acl_group}" > /dev/null) ; then
+                        for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                            if getent group "${acl_group}" > /dev/null ; then
                                 setfacl -m "g:${acl_group}:r" private/key.pem.tmp
                             fi
                         done
@@ -1288,13 +1323,13 @@ check_files () {
             fi
         fi
 
-        if [ -r acme/cert.pem -a -r "acme/${acme_library}.conf" -a -r acme/request.pem ] ; then
+        if [ -r acme/cert.pem ] && [ -r "acme/${acme_library}.conf" ] && [ -r acme/request.pem ] ; then
             if ! check_expiration_time acme/cert.pem "${config['acme_expiration_seconds']}" ; then
                 rm -f "acme/${acme_library}.conf" acme/request.pem
             fi
         fi
 
-        if [ ! -r "acme/${acme_library}.conf" -a ! -r acme/request.pem ] ; then
+        if [ ! -r "acme/${acme_library}.conf" ] && [ ! -r acme/request.pem ] ; then
 
             if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
@@ -1314,7 +1349,7 @@ check_files () {
             state+=('new-acme-request')
         fi
 
-        if [ -r "acme/${acme_library}.conf" -a -r acme/request.pem ] ; then
+        if [ -r "acme/${acme_library}.conf" ] && [ -r acme/request.pem ] ; then
             if ! check_openssl_key_req_match private/key.pem acme/request.pem ; then
 
                 rm -f acme/request.pem
@@ -1325,7 +1360,7 @@ check_files () {
 
             fi
 
-        elif [ -r "acme/${acme_library}.conf" -a ! -r acme/request.pem ] ; then
+        elif [ -r "acme/${acme_library}.conf" ] && [ ! -r acme/request.pem ] ; then
 
             generate_${acme_library}_request "acme/${acme_library}.conf" acme/request.pem
             chgrp "${config['acme_file_group']}" acme/request.pem
@@ -1338,13 +1373,13 @@ check_files () {
 
 }
 
-# Select the preferred authority in a given PKI realm (external, acme,
-# internal) and check all of the files, make sure that everything is in order
 process_public_files () {
+    # Select the preferred authority in a given PKI realm (external, acme,
+    # internal) and check all of the files, make sure that everything is in order
 
     local authority_preference=( $(echo "${config['pki_authority_preference']}" | tr "/" " ") )
 
-    for authority in ${authority_preference[@]} ; do
+    for authority in "${authority_preference[@]}" ; do
 
         if [ -r "${authority}/cert.pem" ] && ( check_expiration_time "${authority}/cert.pem" $(( 60 * 60 * 24 * 10 )) || [ "${authority}" = "${authority_preference[-1]}" ] ) ; then
 
@@ -1356,7 +1391,7 @@ process_public_files () {
                         if ! diff -q -N "${source_file}" "${source_file/${authority}/public}" > /dev/null ; then
                             ln -sf "$(get_relative_path "${source_file}" "public")" "${source_file/${authority}/public}.tmp"
                         fi
-                    elif [ ! -r "${source_file}" -a -r "${source_file/${authority}/public}" ] ; then
+                    elif [ ! -r "${source_file}" ] && [ -r "${source_file/${authority}/public}" ] ; then
                         rm -f "${source_file/${authority}/public}"
                     fi
 
@@ -1371,33 +1406,33 @@ process_public_files () {
                     fi
                 fi
 
-                if [ -r public/cert.pem.tmp -a -r public/intermediate.pem.tmp ] ; then
+                if [ -r public/cert.pem.tmp ] && [ -r public/intermediate.pem.tmp ] ; then
                         cat public/cert.pem.tmp public/intermediate.pem.tmp > public/cert_intermediate.pem.tmp
-                elif [ -r public/cert.pem.tmp -a -r public/intermediate.pem ] ; then
+                elif [ -r public/cert.pem.tmp ] && [ -r public/intermediate.pem ] ; then
                         cat public/cert.pem.tmp public/intermediate.pem > public/cert_intermediate.pem.tmp
                 fi
 
-                if [ -r public/intermediate.pem.tmp -a -r public/root.pem.tmp ] ; then
+                if [ -r public/intermediate.pem.tmp ] && [ -r public/root.pem.tmp ] ; then
                     cat public/intermediate.pem.tmp public/root.pem.tmp > public/intermediate_root.pem.tmp
-                elif [ -r public/intermediate.pem -a -r public/root.pem.tmp ] ; then
+                elif [ -r public/intermediate.pem ] && [ -r public/root.pem.tmp ] ; then
                     cat public/intermediate.pem public/root.pem.tmp > public/intermediate_root.pem.tmp
                 fi
 
-                if [ -r public/alt_intermediate.pem.tmp -a -r public/alt_root.pem.tmp ] ; then
+                if [ -r public/alt_intermediate.pem.tmp ] && [ -r public/alt_root.pem.tmp ] ; then
                     cat public/alt_intermediate.pem.tmp public/alt_root.pem.tmp > public/alt_intermediate_root.pem.tmp
-                elif [ -r public/alt_intermediate.pem -a -r public/alt_root.pem.tmp ] ; then
+                elif [ -r public/alt_intermediate.pem ] && [ -r public/alt_root.pem.tmp ] ; then
                     cat public/alt_intermediate.pem public/alt_root.pem.tmp > public/alt_intermediate_root.pem.tmp
                 fi
 
                 for public_file in public/*.pem ; do
-                    if [ ! -r "${public_file/public/${authority}}" -a ! -r "${public_file}.tmp" ] ; then
+                    if [ ! -r "${public_file/public/${authority}}" ] && [ ! -r "${public_file}.tmp" ] ; then
                         touch "${public_file}.rm"
                     fi
                 done
 
             fi
 
-            if [ -r private/key.pem -a -r public/cert.pem -a -r public/intermediate.pem -a -r public/cert_intermediate.pem ] ; then
+            if [ -r private/key.pem ] && [ -r public/cert.pem ] && [ -r public/intermediate.pem ] && [ -r public/cert_intermediate.pem ] ; then
 
                 if ! check_openssl_key_crt_match private/key.pem public/cert_intermediate.pem ; then
                     test -r public/cert_intermediate.pem.tmp && rm -f public/cert_intermediate.pem.tmp || true
@@ -1406,7 +1441,7 @@ process_public_files () {
 
             fi
 
-            if [ "${config['pki_dhparam']}" = "true" -a -n "${config['dhparam_file']}" -a -r "${config['dhparam_file']}" ] ; then
+            if [ "${config['pki_dhparam']}" = "true" ] && [ -n "${config['dhparam_file']}" ] && [ -r "${config['dhparam_file']}" ] ; then
 
                 if [ -r public/cert_intermediate.pem.tmp ] ; then
                     cat public/cert_intermediate.pem.tmp "${config['dhparam_file']}" > public/cert_intermediate_dhparam.pem.tmp
@@ -1414,10 +1449,10 @@ process_public_files () {
                 elif [ -r public/cert.pem.tmp ] ; then
                     cat public/cert.pem.tmp "${config['dhparam_file']}" > public/cert_dhparam.pem.tmp
                     state+=("changed-dhparam")
-                elif [ ! -r public/cert_intermediate_dhparam.pem -a -r public/cert_intermediate.pem ] ; then
+                elif [ ! -r public/cert_intermediate_dhparam.pem ] && [ -r public/cert_intermediate.pem ] ; then
                     cat public/cert_intermediate.pem "${config['dhparam_file']}" > public/cert_intermediate_dhparam.pem.tmp
                     state+=("changed-dhparam")
-                elif [ ! -r public/cert_dhparam.pem -a ! -r public/cert_intermediate.pem -a -r public/cert.pem ] ; then
+                elif [ ! -r public/cert_dhparam.pem ] && [ ! -r public/cert_intermediate.pem ] && [ -r public/cert.pem ] ; then
                     cat public/cert.pem "${config['dhparam_file']}" > public/cert_dhparam.pem.tmp
                     state+=("changed-dhparam")
                 elif [ -r public/cert_intermediate_dhparam.pem ] ; then
@@ -1439,7 +1474,7 @@ process_public_files () {
 
             break
 
-        elif [ ! -r "${authority}/cert.pem" -a -r "${authority}/root.pem" ] ; then
+        elif [ ! -r "${authority}/cert.pem" ] && [ -r "${authority}/root.pem" ] ; then
 
             if ! diff -q -N "${authority}/root.pem" public/root.pem > /dev/null ; then
 
@@ -1453,20 +1488,20 @@ process_public_files () {
 
                 done
 
-                if [ -r public/intermediate.pem.tmp -a -r public/root.pem.tmp ] ; then
+                if [ -r public/intermediate.pem.tmp ] && [ -r public/root.pem.tmp ] ; then
                     cat public/intermediate.pem.tmp public/root.pem.tmp > public/intermediate_root.pem.tmp
-                elif [ -r "${authority}/intermediate.pem" -a -r public/intermediate.pem -a -r public/root.pem.tmp ] ; then
+                elif [ -r "${authority}/intermediate.pem" ] && [ -r public/intermediate.pem ] && [ -r public/root.pem.tmp ] ; then
                     cat public/intermediate.pem public/root.pem.tmp > public/intermediate_root.pem.tmp
                 fi
 
-                if [ -r public/alt_intermediate.pem.tmp -a -r public/alt_root.pem.tmp ] ; then
+                if [ -r public/alt_intermediate.pem.tmp ] && [ -r public/alt_root.pem.tmp ] ; then
                     cat public/alt_intermediate.pem.tmp public/alt_root.pem.tmp > public/alt_intermediate_root.pem.tmp
-                elif [ -r "${authority}/alt_intermediate.pem" -a -r public/alt_intermediate.pem -a -r public/alt_root.pem.tmp ] ; then
+                elif [ -r "${authority}/alt_intermediate.pem" ] && [ -r public/alt_intermediate.pem ] && [ -r public/alt_root.pem.tmp ] ; then
                     cat public/alt_intermediate.pem public/alt_root.pem.tmp > public/alt_intermediate_root.pem.tmp
                 fi
 
                 for public_file in public/*.pem ; do
-                    if [ ! -r "${public_file/public/${authority}}" -a ! -r "${public_file}.tmp" ] ; then
+                    if [ ! -r "${public_file/public/${authority}}" ] && [ ! -r "${public_file}.tmp" ] ; then
                         touch "${public_file}.rm"
                     fi
                 done
@@ -1483,12 +1518,13 @@ process_public_files () {
 
 process_private_files () {
 
-    local current_umask="$(umask)"
+    local current_umask
+    current_umask="$(umask)"
     umask 027
 
     local authority_preference=( $(echo "${config['pki_authority_preference']}" | tr "/" " ") )
 
-    for authority in ${authority_preference[@]} ; do
+    for authority in "${authority_preference[@]}" ; do
 
         if [ -r "${authority}/cert.pem" ] && ( check_expiration_time "${authority}/cert.pem" $(( 60 * 60 * 24 * 10 )) || [ "${authority}" = "${authority_preference[-1]}" ] ) ; then
 
@@ -1501,8 +1537,8 @@ process_private_files () {
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                            for acl_group in ${private_file_acl_groups_r[@]} ; do
-                                if $(getent group "${acl_group}" > /dev/null) ; then
+                            for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                                if getent group "${acl_group}" > /dev/null ; then
                                     setfacl -m "g:${acl_group}:r" private/key.pem.tmp
                                 fi
                             done
@@ -1513,9 +1549,9 @@ process_private_files () {
                 fi
             fi
 
-            if [ -r public/cert.pem.tmp -o -r public/cert_intermediate.pem.tmp ] ; then
+            if [ -r public/cert.pem.tmp ] || [ -r public/cert_intermediate.pem.tmp ] ; then
 
-                if [ -r public/cert.pem.tmp -a -r private/realm_key.pem ] ; then
+                if [ -r public/cert.pem.tmp ] && [ -r private/realm_key.pem ] ; then
 
                     if ! check_openssl_key_crt_match private/key.pem public/cert.pem.tmp ; then
 
@@ -1524,8 +1560,8 @@ process_private_files () {
                         if type setfacl > /dev/null 2>&1 ; then
                             local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                             if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                                for acl_group in ${private_file_acl_groups_r[@]} ; do
-                                    if $(getent group "${acl_group}" > /dev/null) ; then
+                                for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                                    if getent group "${acl_group}" > /dev/null ; then
                                         setfacl -m "g:${acl_group}:r" private/key.pem.tmp
                                     fi
                                 done
@@ -1544,8 +1580,8 @@ process_private_files () {
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                            for acl_group in ${private_file_acl_groups_r[@]} ; do
-                                if $(getent group "${acl_group}" > /dev/null) ; then
+                            for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                                if getent group "${acl_group}" > /dev/null ; then
                                     setfacl -m "g:${acl_group}:r" private/key_chain.pem.tmp
                                 fi
                             done
@@ -1564,8 +1600,8 @@ process_private_files () {
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                            for acl_group in ${private_file_acl_groups_r[@]} ; do
-                                if $(getent group "${acl_group}" > /dev/null) ; then
+                            for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                                if getent group "${acl_group}" > /dev/null ; then
                                     setfacl -m "g:${acl_group}:r" private/key_chain.pem.tmp
                                 fi
                             done
@@ -1580,7 +1616,7 @@ process_private_files () {
                 fi
             fi
 
-            if [ -r private/key.pem -a -r public/cert_intermediate.pem ] ; then
+            if [ -r private/key.pem ] && [ -r public/cert_intermediate.pem ] ; then
 
                 if ! check_openssl_key_crt_match private/key.pem public/cert_intermediate.pem ; then
                     test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
@@ -1588,8 +1624,8 @@ process_private_files () {
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                            for acl_group in ${private_file_acl_groups_r[@]} ; do
-                                if $(getent group "${acl_group}" > /dev/null) ; then
+                            for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                                if getent group "${acl_group}" > /dev/null ; then
                                     setfacl -m "g:${acl_group}:r" private/key_chain.pem.tmp
                                 fi
                             done
@@ -1598,7 +1634,7 @@ process_private_files () {
                     cat private/key.pem public/cert_intermediate.pem >> private/key_chain.pem.tmp
                 fi
 
-            elif [ -r private/key.pem -a -r public/cert.pem ] ; then
+            elif [ -r private/key.pem ] && [ -r public/cert.pem ] ; then
 
                 if ! check_openssl_key_crt_match private/key.pem public/cert.pem ; then
                     test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
@@ -1606,8 +1642,8 @@ process_private_files () {
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                            for acl_group in ${private_file_acl_groups_r[@]} ; do
-                                if $(getent group "${acl_group}" > /dev/null) ; then
+                            for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                                if getent group "${acl_group}" > /dev/null ; then
                                     setfacl -m "g:${acl_group}:r" private/key_chain.pem.tmp
                                 fi
                             done
@@ -1620,8 +1656,8 @@ process_private_files () {
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                            for acl_group in ${private_file_acl_groups_r[@]} ; do
-                                if $(getent group "${acl_group}" > /dev/null) ; then
+                            for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                                if getent group "${acl_group}" > /dev/null ; then
                                     setfacl -m "g:${acl_group}:r" private/key_chain.pem.tmp
                                 fi
                             done
@@ -1632,14 +1668,14 @@ process_private_files () {
 
             fi
 
-            if [ "${config['pki_dhparam']}" = "true" -a -n "${config['dhparam_file']}" -a -r "${config['dhparam_file']}" ] ; then
+            if [ "${config['pki_dhparam']}" = "true" ] && [ -n "${config['dhparam_file']}" ] && [ -r "${config['dhparam_file']}" ] ; then
                 if [ -r private/key_chain.pem.tmp ] ; then
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain_dhparam.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                            for acl_group in ${private_file_acl_groups_r[@]} ; do
-                                if $(getent group "${acl_group}" > /dev/null) ; then
+                            for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                                if getent group "${acl_group}" > /dev/null ; then
                                     setfacl -m "g:${acl_group}:r" private/key_chain_dhparam.pem.tmp
                                 fi
                             done
@@ -1647,13 +1683,13 @@ process_private_files () {
                     fi
                     cat private/key_chain.pem.tmp ${config['dhparam_file']} >> private/key_chain_dhparam.pem.tmp
                     state+=("changed-dhparam")
-                elif [ ! -r private/key_chain_dhparam.pem -a -r private/key_chain.pem ] ; then
+                elif [ ! -r private/key_chain_dhparam.pem ] && [ -r private/key_chain.pem ] ; then
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain_dhparam.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                            for acl_group in ${private_file_acl_groups_r[@]} ; do
-                                if $(getent group "${acl_group}" > /dev/null) ; then
+                            for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                                if getent group "${acl_group}" > /dev/null ; then
                                     setfacl -m "g:${acl_group}:r" private/key_chain_dhparam.pem.tmp
                                 fi
                             done
@@ -1667,8 +1703,8 @@ process_private_files () {
                         if type setfacl > /dev/null 2>&1 ; then
                             local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                             if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                                for acl_group in ${private_file_acl_groups_r[@]} ; do
-                                    if $(getent group "${acl_group}" > /dev/null) ; then
+                                for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                                    if getent group "${acl_group}" > /dev/null ; then
                                         setfacl -m "g:${acl_group}:r" private/key_chain_dhparam.pem.tmp
                                     fi
                                 done
@@ -1682,7 +1718,7 @@ process_private_files () {
 
             break
 
-        elif [ ! -r "${authority}/cert.pem" -a -r "${authority}/root.pem" ] ; then
+        elif [ ! -r "${authority}/cert.pem" ] && [ -r "${authority}/root.pem" ] ; then
 
             if ! diff -q -N "${authority}/root.pem" public/root.pem > /dev/null ; then
 
@@ -1705,14 +1741,14 @@ process_private_files () {
 
 activate_new_files () {
 
-    if [ -r public/cert.pem.tmp -o -r public/root.pem.tmp ] ; then
+    if [ -r public/cert.pem.tmp ] || [ -r public/root.pem.tmp ] ; then
 
-        if [ ! -r public/intermediate.pem.tmp -a -r public/intermediate.pem ] ; then
+        if [ ! -r public/intermediate.pem.tmp ] && [ -r public/intermediate.pem ] ; then
             rm -f public/intermediate.pem public/cert_intermediate.pem public/cert_intermediate_dhparam.pem public/chain.pem public/intermediate_root.pem
             state+=("file-change")
         fi
 
-        if [ ! -r public/alt_intermediate.pem.tmp -a -r public/alt_intermediate.pem ] ; then
+        if [ ! -r public/alt_intermediate.pem.tmp ] && [ -r public/alt_intermediate.pem ] ; then
             rm -f public/alt_intermediate.pem public/alt_intermediate_root.pem public/alt_trusted.pem
             state+=("file-change")
         fi
@@ -1720,31 +1756,35 @@ activate_new_files () {
         state+=("changed-certificate")
     fi
 
-    for rm_file in $(find public/ -maxdepth 1 -name '*.rm') ; do
+    while IFS= read -r -d '' rm_file
+    do
         rm -f "${rm_file/.rm/}" "${rm_file}"
         state+=("file-deletion")
-    done
+    done <   <(find public/ -maxdepth 1 -name '*.rm' -print0)
 
-    if [ ! -r public/cert.pem -a public/cert.pem.sig ] ; then
+    if [ ! -r public/cert.pem ] && [ -e public/cert.pem.sig ] ; then
         rm -f public/cert.pem.sig
     fi
 
-    for new_file in $(find public/ -maxdepth 1 -name '*.tmp') ; do
+    while IFS= read -r -d '' new_file
+    do
         mv --force "${new_file}" "${new_file/.tmp/}"
         state+=("changed-public-file")
         state+=("file-change")
-    done
+    done <   <(find public/ -maxdepth 1 -name '*.tmp' -print0)
 
-    for rm_file in $(find private/ -maxdepth 1 -name '*.rm') ; do
+    while IFS= read -r -d '' rm_file
+    do
         rm -f "${rm_file/.rm/}" "${rm_file}"
         state+=("file-deletion")
-    done
+    done <   <(find private/ -maxdepth 1 -name '*.rm' -print0)
 
-    for new_file in $(find private/ -maxdepth 1 -name '*.tmp') ; do
+    while IFS= read -r -d '' new_file
+    do
         mv --force "${new_file}" "${new_file/.tmp/}"
         state+=("changed-private-file")
         state+=("file-change")
-    done
+    done <   <(find private/ -maxdepth 1 -name '*.tmp' -print0)
 
     update_file_signature public/cert.pem
     update_realm_symlinks
@@ -1931,8 +1971,8 @@ sub_new-realm () {
             if type setfacl > /dev/null 2>&1 ; then
                 local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
                 if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
-                    for acl_group in ${private_file_acl_groups_r[@]} ; do
-                        if $(getent group "${acl_group}" > /dev/null) ; then
+                    for acl_group in "${private_file_acl_groups_r[@]}" ; do
+                        if getent group "${acl_group}" > /dev/null ; then
                             setfacl -m "g:${acl_group}:r" private/key.pem.tmp
                         fi
                     done
@@ -2103,6 +2143,12 @@ sub_init () {
                         ;;
                     dhparam-file=*)
                         args["dhparam_file"]=${OPTARG#*=}
+                        ;;
+                    realm-key-size)
+                        args["realm_key_size"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
+                        ;;
+                    realm-key-size=*)
+                        args["realm_key_size"]=${OPTARG#*=}
                         ;;
                     acme)
                         args["pki_acme"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
@@ -2287,17 +2333,17 @@ schedule_job () {
     local min_delay="${3:-30}"
     local max_delay="${4:-300}"
 
-    if [ -n "${scheduler_type}" -a "${scheduler_type}" = "batch" ] ; then
+    if [ -n "${scheduler_type}" ] && [ "${scheduler_type}" = "batch" ] ; then
         if type batch > /dev/null 2>&1 ; then
             echo "${script} run -n '${name}'" | batch > /dev/null 2>&1
         fi
-    elif [ -n "${scheduler_type}" -a "${scheduler_type}" = "sleep" ] ; then
-        ( sleep $(( ( $RANDOM % ${max_delay} ) + ${min_delay} )) ; ${script} run -n "${name}" ) &
+    elif [ -n "${scheduler_type}" ] && [ "${scheduler_type}" = "sleep" ] ; then
+        ( sleep $(( ( RANDOM % max_delay ) + min_delay )) ; ${script} run -n "${name}" ) &
     else
         if type batch > /dev/null 2>&1 ; then
             echo "${script} run -n '${name}'" | batch > /dev/null 2>&1
         else
-            ( sleep $(( ( $RANDOM % ${max_delay} ) + ${min_delay} )) ; ${script} run -n "${name}" ) &
+            ( sleep $(( ( RANDOM % max_delay ) + min_delay )) ; ${script} run -n "${name}" ) &
         fi
     fi
 }
@@ -2378,7 +2424,12 @@ sub_schedule () {
     fi
 }
 
-subcommand=""
+print_usage () {
+    cat << EOF
+Usage: ${script_name} <command> [parameters]
+EOF
+
+}
 
 initialize_environment
 
@@ -2390,7 +2441,7 @@ if [ $# -gt 0 ] ; then
         case "${subcommand}" in
             init|new-realm|run|schedule)
                 shift
-                sub_${subcommand} "${@}"
+                "sub_${subcommand}" "${@}"
                 ;;
 
             *)
@@ -2405,4 +2456,3 @@ else
     print_usage
     exit 1
 fi
-

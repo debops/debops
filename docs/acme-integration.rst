@@ -1,19 +1,20 @@
-.. _acme_integration:
+.. _pki__ref_acme_integration:
 
 ACME Integration
 ================
 
-The `Automated Certificate Management Environment <https://en.wikipedia.org/wiki/Automated_Certificate_Management_Environment>`_
-is a protocol that allows automated certificate requests, retrieval of signed
-certificates and certificate renewal. It was designed to enable easy deployment
-of TLS/SSL certificates by the `Let's Encrypt <https://letsencrypt.org/>`_
-project.
+.. include:: includes/all.rst
+
+`Automated Certificate Management Environment` (ACME_) is a protocol that
+allows automated certificate requests, retrieval of certificates and
+certificate renewal. It was designed to enable easy deployment of X.509
+certificates from `Let's Encrypt`_.
 
 The ``debops.pki`` Ansible role provides support for the ACME protocol which is
-used by default with the Let's Encrypt service (there is a possibility to
+used by default with the Let's Encrypt (there is a possibility to
 integrate other similar services in the future). Interaction with the ACME
-Certificate Authority is performed using the `acme-tiny
-<https://github.com/diafygi/acme-tiny>`_ alternative client written in Python.
+Certificate Authority is performed using the acme-tiny_ alternative client
+written in Python.
 
 Prerequisites
 -------------
@@ -22,8 +23,8 @@ To request and renew ACME certificates, a host needs to meet several
 requirements enforced by this Ansible role:
 
 - A webserver configured to handle ACME challenges needs to be installed on the
-  host (currently this role supports only "webroot" challenges). The
-  ``debops.nginx`` role configures ACME support for all servers by default when
+  host (currently this role supports only ``http-01`` challenges). The
+  debops.nginx_ role configures ACME support for all servers by default when
   other conditions are met.
 
 - A publicly routable IPv4 or IPv6 address is required, so that the Certificate
@@ -37,18 +38,19 @@ requirements enforced by this Ansible role:
   correctly configured in the DNS to point to the host that requests the
   certificate. This is currently not done automatically and requires
   intervention by the administrator. If any domain specified in the request is
-  not authorized by the correct ACME challenge, certificate request won't be
-  completed.
+  not authorized by the correct ACME challenge, the certificate request won't be
+  successful.
 
 Due to above requirements, the default ``domain`` PKI realm configured by the
 role does not request ACME certificates automatically. Other realms created by
 the ``debops.pki`` role might have ACME support enabled, depending on presence
-of a public IP address and configured a :program:`nginx` server.
+of a public IP address and a configured :program:`nginx` server.
 
 Let's Encrypt rate limits
 -------------------------
 
-The Let's Encrypt ACME Certificate Authority has `different rate limits <https://community.letsencrypt.org/t/rate-limits-for-lets-encrypt/6769>`_
+The Let's Encrypt ACME Certificate Authority has
+`different rate limits <https://letsencrypt.org/docs/rate-limits/>`_
 related to the number of certificate requests and the number of domains permitted per
 certificate.
 
@@ -89,13 +91,14 @@ this:
         ├── CA.crt -> /etc/ssl/certs/ca-certificates.crt
         └── default.key -> private/key.pem
 
-When the :program:`pki-realm` detects the :file:`acme/request.pem` file, it automatically
-calls the :program:`acme-tiny` script using the ``pki-acme`` unprivileged account to request
-the certificate. When the request is completed successfully and an
-:file:`external/cert.pem` certificate is not found, ACME certificate will be
-activated in the :file:`public/` directory. The script automatically downloads Let's
-Encrypt intermediate certificate as well as links the Root CA certificate from
-the system certificate store provided by the ``ca-certificates`` package.
+When the :program:`pki-realm` detects the :file:`acme/request.pem` file, it
+automatically calls the :program:`acme-tiny` script using the ``pki-acme``
+unprivileged account to request the certificate. When the request has completed
+successfully and an :file:`external/cert.pem` certificate is found, the
+certificate will be activated in the :file:`public/` directory. The script
+automatically downloads Let's Encrypt intermediate certificate as well as links
+the Root CA certificate from the system certificate store provided by the
+``ca-certificates`` package.
 
 The realm directory after the process is complete:
 
@@ -149,35 +152,52 @@ Certificate renewal
 
 The ``debops.pki`` role creates a :program:`cron` entry for the :program:`pki-realm` script
 to be executed periodically for all realms. When a realm has the ACME
-configuration active, it will check for validity of the signed certificate, and
+configuration active, it will check for validity of the certificate, and
 about a month before the expiration date it will try to renew the certificate
 automatically.
 
-I want a certificate for subdomains but domain
-----------------------------------------------
+Example: Certificate for apex domain and subdomains
+---------------------------------------------------
 
-Yes, it's possible :-) Please consult the example and create your own similar
-configuration. In the example we create a certificate for ``logs.example.com``
-and ``mon.example.com`` subdoimains, without creating cert for ``example.com``
-domain itself. Please notice that PKI realm does not contain your full domain
-name, it's crucial.
+In this example a X.509 certificate for the apex domain ``example.com`` is
+going to be issued. ``example.com`` will be listed in the certificate
+``Subject`` DN.
+The certificate will also be valid for the subdomains ``www.example.com``,
+``blog.example.com`` and ``mail.example.com`` which are included in the
+certificate as `Subject Alternative Names`_.
 
 .. code-block:: yaml
 
-    pki_acme: True
     pki_realms:
-      - name: 'example' # do not include full domain name here!
+      - name: 'example.com'
+        acme: True
+        acme_subdomains: [ 'www', 'blog', 'mail' ]
+        # acme_ca: 'le-staging'
+
+For testing it's strongly advised to uncomment ``acme_ca`` with ``le-staging``
+to use the staging environment of Let's Encrypt. It does not create a trusted
+certificate and allows you to avoid problems with the rate limits in the
+production environment. When you are sure that everything works correctly,
+comment the staging environment out again to get yourself a valid and trusted
+X.509 certificate.
+
+Example: Certificate for subdomains excluding the apex domain
+-------------------------------------------------------------
+
+In the example we create a certificate for ``logs.example.com`` (certificate
+``Subject``) and for ``mon.example.com`` (certificate `Subject Alternative
+Names`_), which does not include the ``example.com`` apex domain.
+
+.. code-block:: yaml
+
+    pki_realms:
+      - name: 'logs.example.com'
         acme: True
         acme_default_subdomains: []
-        acme_subject: [ 'cn=logs.example.com' ]
+        # Can also include different domains like 'mail.example.org'
+        # in the same realm.
         acme_domains: [ 'logs.example.com', 'mon.example.com' ]
-        domains: [ 'logs.example.com', 'mon.example.com' ]
-        #acme_ca: 'le-staging'
-
-For testing it's strongly advised to uncomment ``acme_ca`` with ``le-staging`` to 
-use testing ACME servers. It does not create a real cert, but allows you to avoid
-problems with usual ACME servers rate limits. When you are sure that everything works
-correctly, comment the staging environment back.
+        # acme_ca: 'le-staging'
 
 ACME configuration variables
 ----------------------------
@@ -185,27 +205,27 @@ ACME configuration variables
 The ``debops.pki`` role has several default variables which can be used to
 control ACME support. The most important are:
 
-:any:`pki_acme`
+:envvar:`pki_acme`
   Boolean. When ``True``, support for ACME Certificate Authority will be
   configured for all PKI realms unless disabled on the realm level. By default
   the role checks if a public IP address is available and a default domain is
   configured, otherwise the support is disabled automatically.
 
-:any:`pki_acme_install`
+:envvar:`pki_acme_install`
   Boolean. Enable or disable installation of :program:`acme-tiny` and configuration of
   ACME support without enabling it for all realms. When this variable is set to
-  ``True`` and :any:`pki_acme` is set to ``False``, ACME support can be enabled
+  ``True`` and :envvar:`pki_acme` is set to ``False``, ACME support can be enabled
   independently in each PKI realm. By default, it is set to the same value as
-  :any:`pki_acme`.
+  :envvar:`pki_acme`.
 
-:any:`pki_acme_ca`
+:envvar:`pki_acme_ca`
   Name of the ACME Certificate Authority API endpoint to use. Dictionary with
-  endpoints is defined in the :any:`pki_acme_ca_api_map` variable. By default,
+  endpoints is defined in the :envvar:`pki_acme_ca_api_map` variable. By default,
   ``le-live`` is used which points to the Let's Encrypt Live CA. For testing
   you can switch the default CA to ``le-staging`` which points to Let's Encrypt
   Staging CA.
 
-:any:`pki_acme_default_subdomains`
+:envvar:`pki_acme_default_subdomains`
   List of subdomains which will be added to the default ACME domain and all
   other domains configured for ACME certificate by default, can be overridden by
   ``item.acme_subdomains`` parameter. By default, the ``www.`` subdomain will be
@@ -213,7 +233,7 @@ control ACME support. The most important are:
   need to be correctly configured in the DNS for the Certificate Authority to
   sign the request.
 
-Each PKI realm configured in the :any:`pki_realms` or ``pki_*_realms`` variables
+Each PKI realm configured in the :envvar:`pki_realms` or ``pki_*_realms`` variables
 can have several parameters related to the ACME certificates:
 
 ``item.name``
@@ -229,9 +249,9 @@ can have several parameters related to the ACME certificates:
 
 ``item.acme_default_subdomains``
   List of subdomains that should be added to all of the ACME apex/root domains.
-  If you want to create an ACME certificate only with the apex domain, you need
-  to use this parameter with ``[]`` value to override
-  :any:`pki_acme_default_subdomains`.
+  If you want to create an ACME certificate only with the apex domain, you
+  might need to set this parameter to an empty list using ``[]`` to override
+  :envvar:`pki_acme_default_subdomains`.
 
 ``item.acme_subdomains``
   List of subdomains added to each apex (root) domain configured in the ACME
@@ -239,4 +259,3 @@ can have several parameters related to the ACME certificates:
 
 ``item.acme_subject``
   List of Distinguished Name entries which define the ACME certificate Subject.
-

@@ -47,7 +47,7 @@ remote hosts.
 Most of these variables are related to Certificate Authority operation, the
 ones you will likely want to change are:
 
-:any:`pki_ca_domain`
+:envvar:`pki_ca_domain`
   This is the DNS domain used as a base for the internal Certificate Authority
   Distinguished Names. If you use more than one domain in your environment, you
   should set this variable to your preferred domain on all hosts, through
@@ -57,11 +57,11 @@ ones you will likely want to change are:
   configured with no default domain, or the provider domain might be set up by
   default. Make sure that you check what domain is used by your remote hosts.
 
-:any:`pki_ca_organization`
+:envvar:`pki_ca_organization`
   This is the organizations name used as a base for the internal
   Certificate Authority Distinguished Names.
 
-:any:`pki_ca_root_dn`, :any:`pki_ca_domain_dn`, :any:`pki_ca_service_dn`
+:envvar:`pki_ca_root_dn`, :envvar:`pki_ca_domain_dn`, :envvar:`pki_ca_service_dn`
   These variables define the Distinguished Name or Subject of the Root
   Certificate Authority and Domain Certificate Authority. The value is a list
   of DN entries which define the subject.
@@ -83,4 +83,3 @@ special ``debops.pki/env`` role provided within the main role.
 
 .. literalinclude:: playbooks/pki.yml
    :language: yaml
-

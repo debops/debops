@@ -25,12 +25,12 @@ from the system CA store.
 
 By default, Debian hosts automatically trust new Root Certificate Authorities
 added in the ``ca-certificates`` package. To control this, you can use
-:any:`pki_system_ca_certificates_trust_new` boolean variable. Setting this
+:envvar:`pki_system_ca_certificates_trust_new` boolean variable. Setting this
 variable to ``True`` will ensure that new Root CA certificates are trusted.
 Setting it to ``False`` will not enable new CA certificates automatically.
 
-You can use :any:`pki_system_ca_certificates_blacklist` and
-:any:`pki_system_ca_certificates_whitelist` list variables to define which
+You can use :envvar:`pki_system_ca_certificates_blacklist` and
+:envvar:`pki_system_ca_certificates_whitelist` list variables to define which
 certificates will be excluded/included in the CA store. Each list element is
 a regexp of the certificate file name. If a given file is found in both lists,
 it will be excluded from the certificate store.
@@ -71,8 +71,11 @@ Ansible Controller will be copied to all of the remote hosts by the
 directory. After that, they will be automatically added to the system Root CA
 store using the :command:`update-ca-certificates` script.
 
+Note that already present CA certificates on remote hosts with the same name
+are not updated after the first download unless the CA certificates are by
+host.
+
 The internal Root Certificate Authorities created by the ``debops.pki`` role
 will have their certificates automatically symlinked in the
 :file:`secret/pki/ca-certificates/` directory. You can prevent that by adding an
 ``item.system_ca: False`` parameter in the CA configuration variable.
-

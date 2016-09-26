@@ -43,7 +43,7 @@
     group: 'root'
     mode: '0755'
 
-- name: Create ACME Challenge path
+- name: Create ACME challenge path
   file:
     path: '{{ pki_acme_challenge_dir | dirname }}'
     state: 'directory'
@@ -54,7 +54,7 @@
          ansible_local.nginx.acme|d() and
          ansible_local.nginx.acme|bool)
 
-- name: Create ACME Challenge directory
+- name: Create ACME challenge directory
   file:
     path: '{{ pki_acme_challenge_dir }}'
     state: 'directory'
@@ -64,4 +64,3 @@
   when: (ansible_local|d() and ansible_local.nginx|d() and
          ansible_local.nginx.acme|d() and
          ansible_local.nginx.acme|bool)
-

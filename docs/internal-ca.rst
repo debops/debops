@@ -3,15 +3,18 @@
 Internal Certificate Authorities
 ================================
 
-One of the problems in deployment of a Public Key Infrastructure is the need
-for the certificates in use to be signed by a third party, called a Certificate
+.. include:: includes/all.rst
+
+One of the problems in the deployment of a Public Key Infrastructure is the need
+for the certificates to be signed by a third party, called a Certificate
 Authority. By using a trusted CA, different entities that communicate with each
 other can ensure that certificates in use are valid and genuine. A common
-solution to that problem is creation of a "self-signed certificate" which can
+solution to that problem is the creation of a "self-signed certificate" which can
 be used by various applications as any other certificate. Unfortunately, this
 is not a sufficient way to ensure validity of a given certificate in
 a distributed environment, where various services need to ensure trust without
-a human intervention, like acceptance of an untrusted certificate.
+a human intervention because other nodes in the cluster don’t trust the
+self-signed certificate.
 
 There are various solutions that let you set up a Certificate Authority which
 then can use an automated API to receive Certificate Signing Requests and issue
@@ -21,13 +24,13 @@ is confidential, you need to provide the service over HTTPS, which requires
 a set of certificates, which require a CA, and so on, and so forth. An
 alternative is to request a certificate in an already existing Certificate
 Authority and configure them manually on your own CA server, however this
-requires human interaction. A proposed solution to this problem is an ACME
-protocol, used for example by the Let's Encrypt project, however this solution
-cannot be used with internal hosts, which still need to be protected.
+requires human interaction. A proposed solution to this problem is ACME, used
+for example by the `Let's Encrypt`, however this solution cannot be used
+with internal hosts, which still need to be protected.
 
 The ``debops.pki`` role solves this problem by creating it's own set of internal
-Certificate Authorities, located on Ansible Controller in the :file:`secret/`
-directory (see ``debops.secret`` role for more details). These Certificate
+Certificate Authorities, located on the Ansible Controller in the :file:`secret/`
+directory (see debops.secret_ for more details). These Certificate
 Authorities can be used to bootstrap a new PKI environment, which can then be
 passed over to a stand-alone CA server located on the network. Alternatively,
 certificates signed by the internal CA can be used for internal communication
@@ -41,7 +44,8 @@ By default, the ``debops.pki`` role creates two Certificate Authorities:
 
 - a Root Certificate Authority which is used as the "trust anchor" by
   intermediate Certificate Authorities;
-- a Domain Certificate Authority which signs the incoming server certificates;
+- a Domain Certificate Authority which issues certificates based on incoming
+  CSRs from remote hosts;
 
 The directory structure of the Certificate Authorities stored in the
 :file:`secret/` directory on the Ansible Controller::
@@ -94,7 +98,9 @@ The directory structure of the Certificate Authorities stored in the
     │           ├── cert.pem
     │           └── request.pem
     ├── ca-certificates/
-    │   └── root-ca.example.com.crt -> ../authorities/root/subject/cert.pem
+    │   └── by-group/
+    │       └── all
+    │           └── root-ca.example.com.crt -> ../../../authorities/root/subject/cert.pem
     ├── realms/
     │   └── by-host/
     │       └── hostname.example.com/
@@ -117,11 +123,11 @@ a Certificate Authority, on above directory tree you can see that a request has
 been uploaded from ``hostname.example.com`` host for the ``domain`` Certificate
 Authority.
 
-The signed certificates are placed in subdirectories of the
-:file:`secret/pki/realms/` directory. The intermediate CA certificate and root CA
-certificate files are symlinked in the same subdirectory as the signed
-certificate, so that Ansible can copy their contents as regular files to remote
-host and correct certificate chains can be created in the PKI realm.
+The certificates are placed in subdirectories of the :file:`secret/pki/realms/`
+directory. The intermediate CA certificate and root CA certificate files are
+symlinked in the same subdirectory as the leaf certificate, so that Ansible can copy
+their contents as regular files to remote host and correct certificate chains
+can be created in the PKI realm.
 
 Security of an internal CA
 --------------------------
@@ -144,26 +150,27 @@ a secure location (preferably an encrypted, offline filesystem) and replacing
 it with an empty :file:`key.pem` file (otherwise the ``debops.pki`` role will
 replace the private key and regenerate all of the CA certificates).
 
-Unfortunately, private keys of the Domain Certificate Authority, any other
-Intermediate Certificate Authority or a "Service CA", which is a Root CA used
+Unfortunately, private keys of the Domain Certificate Authority and any other
+Intermediate Certificate Authority or "Service CA", which is a Root CA used
 to sign service certificates cannot be protected by taking them offline - the
 private keys are required to sign certificates. Therefore, it is strongly
 recommended to store the :file:`secret/` directory encrypted, and use it on an
 encrypted filesystem during use. In DebOps, you can use the EncFS filesystem
-together with :command:`debops-padlock` script to keep the :file:`secret/` directory
+together with the :command:`debops-padlock` script to keep the :file:`secret/` directory
 encrypted at rest. You should make sure that access to the plaintext files in
-:file:`secret/` is only possible when it is really needed be unmounting the
-encrypted filesystem as soon as possible after usage, to avoid leaks of private
-keys.
+:file:`secret/` is only possible when it is really needed by unmounting the
+encrypted filesystem as soon as possible after usage and that only programs
+which need access can read the files by setting up restrictions like `Mandatory
+Access Control`_ and compartmentalization/sandboxing, to avoid leakage of
+private keys.
 
 The Certificate Signing Requests created by ``debops.pki`` Ansible role contain
 a random challenge password (different on each run) which is then checked on
-Ansible Controller, and only the CSR with correct passwords are signed by the
+the Ansible Controller, and only the CSR with correct passwords are signed by the
 Certificate Authorities. This should prevent signing of Certificate Signing
 Requests modified by a third party, unless the challenge password can be
 intercepted (it's currently passed using environment variables).
 
 If for any reason CSR signing cannot be completed, you will need to remove the
-:file:`internal/gnutls.conf` and :file:`internal/request.pem` files to re-initialize
-the certificate signing.
-
+:file:`internal/gnutls.conf` and :file:`internal/request.pem` files to
+re-initialize the certificate signing.

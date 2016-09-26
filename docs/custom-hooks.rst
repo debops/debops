@@ -112,7 +112,7 @@ it reloads the :program:`nginx` daemon so that new certificate can be activated.
 
    # Reload or restart nginx on a certificate state change
 
-   set -eu -o pipefail
+   set -o nounset -o pipefail -o errexit
 
    nginx_config="/etc/nginx/nginx.conf"
    nginx_sites="/etc/nginx/sites-enabled"
@@ -157,4 +157,3 @@ it reloads the :program:`nginx` daemon so that new certificate can be activated.
        done
 
    fi
-
