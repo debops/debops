@@ -315,8 +315,7 @@
   run_once: True
   with_flattened:
     - '{{ pki_authorities + pki_dependent_authorities }}'
-  when: (pki_enabled|bool and item.name is defined and
-         (item.enabled|d(True) | bool))
+  when: (item.name is defined and (item.enabled|d(True) | bool))
 
 - name: Create PKI authorities
   environment:
