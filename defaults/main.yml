@@ -252,7 +252,9 @@ unattended_upgrades__auto_reboot: False
 # .. envvar:: unattended_upgrades__auto_reboot_time [[[
 #
 # Specify the time of the automatic reboot instead of ``now``.
-unattended_upgrades__auto_reboot_time: '02:30'
+unattended_upgrades__auto_reboot_time: '{{ "02:30"
+                                            if (ansible_virtualization_role in [ "host", "NA" ])
+                                            else "02:42" }}'
 
                                                                    # ]]]
 # .. envvar:: unattended_upgrades__bandwidth_limit [[[
