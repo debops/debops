@@ -171,7 +171,7 @@ are instead configured using Debian preseeding or LXC templates - these hosts
 will presumably get the needed information like hostname and domain from your
 own DHCP server.
 
-You can check `other debops.bootstrap variables <http://docs.debops.org/en/latest/ansible/roles/ansible-bootstrap/docs/defaults.html>`_ for some more useful configuration, like the name of the administrator account.
+You can check `other debops.bootstrap variables <https://docs.debops.org/en/latest/ansible/roles/ansible-bootstrap/docs/defaults.html>`_ for some more useful configuration, like the name of the administrator account.
 
 sshd__whitelist
 ~~~~~~~~~~~~~~~
@@ -196,7 +196,7 @@ To do that, in :file:`ansible/inventory/group_vars/all/sshd.yml` add:
 This will configure the debops.ferm_ and debops.tcpwrappers_ roles
 to allow connections to the :command:`ssh` service from specified networks.
 
-The debops.sshd_ role has `many more variables <http://docs.debops.org/en/latest/ansible/roles/ansible-sshd/docs/defaults.html>`_, you can checkout to see the default configuration used by DebOps and what can be changed as needed.
+The debops.sshd_ role has `many more variables <https://docs.debops.org/en/latest/ansible/roles/ansible-sshd/docs/defaults.html>`_, you can checkout to see the default configuration used by DebOps and what can be changed as needed.
 
 ntp__timezone
 ~~~~~~~~~~~~~
@@ -240,7 +240,7 @@ messages from hosts controlled by Ansible for this to work correctly. The SMTP
 connections will be encrypted using ``STARTTLS`` command, therefore the SMTP
 should use a set of X.509 certificates which are trusted by the host.
 
-The ``nullmailer`` service can be configured to a large extent using `the debops.nullmailer role variables <http://docs.debops.org/en/latest/ansible/roles/ansible-nullmailer/docs/defaults.html>`_ - you can use them to configure SMTP authentication, use multiple relay servers, and so on.
+The ``nullmailer`` service can be configured to a large extent using `the debops.nullmailer role variables <https://docs.debops.org/en/latest/ansible/roles/ansible-nullmailer/docs/defaults.html>`_ - you can use them to configure SMTP authentication, use multiple relay servers, and so on.
 
 If you need a more powerful SMTP server, DebOps includes support for Postfix as
 well - check the debops.postfix_ Ansible role.
@@ -378,7 +378,7 @@ As you can see, you don't need to copy the whole host entry, only the short
 name is enough.
 
 The debops.dokuwiki_ has `many default variables
-<http://docs.debops.org/en/latest/ansible/roles/ansible-dokuwiki/docs/defaults.html>`_
+<https://docs.debops.org/en/latest/ansible/roles/ansible-dokuwiki/docs/defaults.html>`_
 you can use to customize the installation. One of the more useful ones is
 ``dokuwiki_main_domain``; it's a list which specifies what DNS subdomains are
 used to access the wiki (each application in the DebOps set of roles is
@@ -413,17 +413,17 @@ as the first argument to the ``debops`` command:
 
 This will tell the script to look for the playbook in several places:
 
-- ``playbooks/`` and :command:`ansible/playbooks/` subdirectories in the project
+- :file:`playbooks/` and :command:`ansible/playbooks/` subdirectories in the project
   directory;
-- ``debops-playbooks/playbooks/`` subdirectory of the project directory, if
+- :file:`debops-playbooks/playbooks/` subdirectory of the project directory, if
   DebOps playbooks and roles are installed inside of it;
-- ``~/.local/share/debops/debops-playbooks/playbooks/`` directory (default
+- :file:`~/.local/share/debops/debops-playbooks/playbooks/` directory (default
   install location);
 
 The first one found will be executed. You can use this to your advantage by
-adding custom playbooks in ``playbooks/`` or :command:`ansible/playbooks/`
+adding custom playbooks in :file:`playbooks/` or :command:`ansible/playbooks/`
 directories, they need the be named with ``.yml`` extension. Custom roles can
-be placed in the ``roles/`` or :command:`ansible/roles/` subdirectories located in the
+be placed in the :file:`roles/` or :command:`ansible/roles/` subdirectories located in the
 project directory.
 
 After Ansible finishes the configuration, you will need to go to the
@@ -445,7 +445,7 @@ Authority, so encrypted connections between them should work out of the box.
 
 DebOps contains multiple Ansible roles that allow you to install and configure
 useful software, like GitLab, phpIPAM, ownCloud and others. You should check
-`the documentation <http://docs.debops.org/>`_ of the respective roles to see
+`the documentation <https://docs.debops.org/>`_ of the respective roles to see
 some example configurations and useful tips. Note that parts of the
 documentation are currently outdated - if a given role has only one page, you
 should check the role files directly.

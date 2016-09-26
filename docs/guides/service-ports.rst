@@ -2,7 +2,7 @@ Custom services and their default ports
 =======================================
 
 In various DebOps roles you can find named ports. They are defined in
-:file:`/etc/services` using `debops.etc_services`_ role which manages them using
+:file:`/etc/services` using debops.etc_services_ role which manages them using
 Ansible's ``assemble`` module. To avoid collisions between various services we
 list here custom ports that are set for applications and services that don't
 have specified system ports by default.

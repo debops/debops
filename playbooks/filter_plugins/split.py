@@ -1,7 +1,7 @@
 # (c) 2014 Tim Raasveld <info@webtrein.nl>
 # https://github.com/timraasveld/ansible-string-split-filter/
 # (c) 2014 Maciej Delmanowski <drybjed@gmail.com>
-# http://debops.org/
+# https://debops.org/
 
 
 # License: CC0 1.0 Universal
