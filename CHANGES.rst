@@ -31,6 +31,8 @@ Added
 
 - Added :envvar:`pki_system_ca_certificates_download_all_hosts_force`. [ypid_]
 
+- Gather and expose OpenSSL and GnuTLS versions in Ansible local facts. [ypid_]
+
 Changed
 ~~~~~~~
 
