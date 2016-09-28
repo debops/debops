@@ -88,7 +88,7 @@ GALAXY_ACCOUNT = "debops"
 
 # ---- Functions ----
 
-def fetch_or_clone_roles(roles_path, requirements_file):
+def fetch_or_clone_roles(roles_path, requirements_file, dry_run=False):
     """
     Efficiently fetch or clone a role
     """
@@ -118,18 +118,20 @@ def fetch_or_clone_roles(roles_path, requirements_file):
         # Either update or clone the role
         if os.path.exists(destination_dir):
             print("Updating", remote_uri, progress_label)
-            update_git_repository(destination_dir)
+            update_git_repository(destination_dir, dry_run)
         else:
             print("Installing", remote_uri, progress_label)
-            clone_git_repository(remote_uri, role_version, destination_dir)
+            clone_git_repository(remote_uri, role_version, destination_dir, dry_run)
 
 
-def clone_git_repository(repo_uri, branch, destination):
-    subprocess.call(['git', 'clone', '--quiet', '--branch', branch,
-                     repo_uri, destination])
+def clone_git_repository(repo_uri, branch, destination, dry_run=False):
+    if dry_run:
+        print("Cloning '%s' to %s..." % (repo_uri, destination))
+    else:
+        subprocess.call(['git', 'clone', '--quiet', '--branch', branch,
+                         repo_uri, destination])
 
-
-def update_git_repository(path):
+def update_git_repository(path, dry_run=False):
     """
     Update an exiting git repository.
 
@@ -139,15 +141,18 @@ def update_git_repository(path):
     old_pwd = os.getcwd()
     os.chdir(path)
 
-    # Get the current sha of the head branch
-    current_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip()
+    if dry_run:
+        subprocess.call(['git', 'diff', 'HEAD', 'origin', '--stat'])
+    else:
+        # Get the current sha of the head branch
+        current_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip()
 
-    # Fetch it silently and store the new sha
-    subprocess.call(['git', 'fetch', '--quiet'])
-    fetch_sha = subprocess.check_output(['git', 'rev-parse', 'FETCH_HEAD']).strip()
+        # Fetch it silently and store the new sha
+        subprocess.call(['git', 'fetch', '--quiet'])
+        fetch_sha = subprocess.check_output(['git', 'rev-parse', 'FETCH_HEAD']).strip()
 
-    if current_sha != fetch_sha:
-        subprocess.call(['git', 'merge', fetch_sha])
+        if current_sha != fetch_sha:
+            subprocess.call(['git', 'merge', fetch_sha])
 
     # Move back to the initial directory
     os.chdir(old_pwd)
@@ -155,7 +160,7 @@ def update_git_repository(path):
 
 # ---- Main script ----
 
-def main(project_dir=None):
+def main(project_dir=None, dry_run=False):
 
     # Check if user specified a directory as a parameter, if yes, use it as
     # a project directory and clone DebOps playbooks inside
@@ -163,7 +168,8 @@ def main(project_dir=None):
         # If it's a new project, create the directory for it
         if not os.path.exists(project_dir):
             print ("Creating project directory in", project_dir)
-            os.makedirs(project_dir)
+            if not dry_run:
+                os.makedirs(project_dir)
 
         # Make sure that playbooks and roles will be installed in project
         # directory if it's specified
@@ -198,25 +204,28 @@ def main(project_dir=None):
               install_path)
         print()
 
-        clone_git_repository(PLAYBOOKS_GIT_URI, 'master', install_path)
-        os.chdir(install_path)
-        os.makedirs(roles_path)
+        clone_git_repository(PLAYBOOKS_GIT_URI, 'master', install_path, dry_run)
+        if not dry_run:
+            os.chdir(install_path)
+            os.makedirs(roles_path)
     else:
         # Update found debops-playbooks repository
         print("DebOps playbooks have been found in", install_path)
-        update_git_repository(install_path)
+        update_git_repository(install_path, dry_run)
         print()
         os.chdir(install_path)
 
     # Now install or update the roles into roles_path
-    fetch_or_clone_roles(roles_path, GALAXY_REQUIREMENTS)
+    fetch_or_clone_roles(roles_path, GALAXY_REQUIREMENTS, dry_run)
 
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--dry-run', action='store_true',
+                    help='perform a trial run with no changes made')
 parser.add_argument('project_dir', nargs='?')
 args = parser.parse_args()
 
 try:
-    main(args.project_dir)
+    main(args.project_dir, args.dry_run)
 except KeyboardInterrupt:
     raise SystemExit('... aborted')
