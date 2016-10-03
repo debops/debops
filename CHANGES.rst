@@ -89,7 +89,7 @@ v0.3.0
 
 *Released: 2015-01-27*
 
-- Small fixes for bugs in DebOps libraries which prevented corret script
+- Small fixes for bugs in DebOps libraries which prevented correct script
   execution on platforms other than Linux. [htgoebel_]
 
 v0.2.0
@@ -148,7 +148,7 @@ Pre-release
 2014-12-02
 ~~~~~~~~~~
 
-- `DebOps mailing list`_ has been moved to `groups.io`_.
+- `DebOps mailing list`_ has been moved to groups.io_.
 
 .. _groups.io: https://groups.io/
 
@@ -232,7 +232,7 @@ Pre-release
 ~~~~~~~~~~
 
 - New :command:`debops-padlock` script, which is a companion Bash script to
-  `debops.secret`_ role. It can be used to optionally encrypt secret directory
+  debops.secret_ role. It can be used to optionally encrypt secret directory
   using EncFS and GnuPG keys. Main ``debops`` script will be able to recognize
   these encrypted directories and properly open/close them for
   :command:`ansible-playbook` runs.
