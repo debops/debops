@@ -8,7 +8,7 @@
 
 **Your Debian-based data center in a box**
 
-A collection of `Ansible <http://ansible.com/>`_ playbooks,
+A collection of `Ansible <https://ansible.com/>`_ playbooks,
 scalable from one container to an entire data center.
 
 DebOps is a framework
