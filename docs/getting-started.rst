@@ -5,6 +5,24 @@ Getting started
    :local:
 
 
+Default configuration
+---------------------
+
+Role tries to detect the original APT repositories configured on the system and
+use them in the generated :file:`/etc/apt/sources.list` configuration file. They
+will be placed before the default repositories, with assumption that the
+original repositories pointed to the closest mirror.
+
+The ``non-free`` repositories will be enabled automatically on hardware-based
+hosts in case any non-free firmware is required. Otherwise, only the ``main``
+and ``universe`` (on Ubuntu) repositories are enabled; you can control this
+using the :envvar:`apt__nonfree` variable.
+
+The ``debops.apt`` role can be used as a dependent role to configure APT keys
+and repositories, but it's not recommended. Instead, other roles should use the
+Ansible ``apt_key`` and ``apt_repository`` modules directly.
+
+
 Example inventory
 -----------------
 
@@ -12,9 +30,12 @@ Example inventory
 you don't need to do anything to have it executed.
 
 If you don’t want to let ``debops.apt`` manage APT, you can do this with the
-following setting in your inventory::
+following setting in your inventory:
+
+.. code-block:: yaml
 
    apt__enabled: False
+
 
 Example playbook
 ----------------
@@ -39,6 +60,3 @@ Available role tags:
 ``role::apt``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
-
-``role::apt:install``
-  Tasks related to package installation.

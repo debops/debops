@@ -16,7 +16,85 @@ The current role maintainer_ is drybjed.
 `debops.apt master`_ - unreleased
 ---------------------------------
 
-.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.3.0...master
+.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.0...master
+
+
+`debops.apt v0.4.0`_ - 2016-10-03
+---------------------------------
+
+.. _debops.apt v0.4.0: https://github.com/debops/ansible-apt/compare/v0.3.0...v0.4.0
+
+Added
+~~~~~
+
+- Role now knows about free vs non-free APT distribution repositories. The
+  non-free repositories are enabled on hardware-based hosts in case a non-free
+  firmware packages are required; otherwise only free repositories (``main``
+  and, on Ubuntu, ``universe``) are enabled. This can be controlled by the
+  :envvar:`apt__nonfree` default variable.
+
+  The role exposes an additional Ansible fact that detects availability of the
+  ``non-free`` distribution sources and can be used by other Ansible roles to
+  check if non-free packages can be installed. [drybjed_]
+
+- You can control when a particular APT key/repository is enabled by new
+  ``distribution`` and ``distribution_release`` parameters. This allows for
+  example to enable certain repository only when ``Debian`` is found as the
+  host's OS. [drybjed_]
+
+- Management of :file:`/etc/apt/sources.list` file is controlled by a separate
+  variable, :envvar:`apt__sources_deploy_state`. [drybjed_]
+
+- Lists of APT keys, APT repositories and distribution sources are now properly
+  documented. [drybjed_]
+
+- The OS distribution and release detection now uses Ansible facts managed by
+  the debops.core_ role. With these enabled, ``debops.apt`` role should
+  correctly detect the Debian Testing installation and configure it
+  accordingly. [drybjed_]
+
+- The role looks for original APT repositories configured on a host in the
+  diverted :file:`/etc/apt/sources.list` file and includes them in the generated
+  configuration file with higher precedence than the default mirrors, with
+  assumption that the original mirrors are closer than the defaults. This can
+  be controlled by the default variables. [drybjed_]
+
+Changed
+~~~~~~~
+
+- The ``apt__update_cache_early`` variable has been renamed to
+  :envvar:`apt__cache_valid_time`. [drybjed_]
+
+- The ``apt__sources_types`` variable has been renamed to
+  :envvar:`apt__source_types`. [drybjed_]
+
+- The OS distribution and release detection has been redesigned and should
+  allow for more flexibility between different operating systems. [drybjed_]
+
+- Some of the APT repository/source list parameters have been renamed. Check
+  the documentation for currently used parameters. [drybjed_]
+
+- The Ansible local fact file has been changed into a Python script and is now
+  more dynamic, and provides additional information about original APT sources,
+  used internally. [drybjed_]
+
+- The task list has been streamlined and merged into 1 file. The Ansible facts
+  are configured at the beginning to allow for the role to gather information
+  about original APT sources. [drybjed_]
+
+Removed
+~~~~~~~
+
+- The variables set in ``vars/*.yml`` variables as well as the file lookup
+  mechanism have been removed. Their configuration lives on in the improved
+  ``apt__*_sources`` lists. [drybjed_]
+
+- The ``apt__*_mirrors`` variables have been removed, the functionality is now
+  merged with ``apt__*_sources`` variables. [drybjed_]
+
+- The ``apt__*_delayed`` variables have been removed. You can use the ``state``
+  parameter with Ansible local facts to get an equivalent functionality. See
+  the documentation for more details. [drybjed_]
 
 
 `debops.apt v0.3.0`_ - 2016-09-14
@@ -27,11 +105,11 @@ The current role maintainer_ is drybjed.
 Removed
 ~~~~~~~
 
-- Remove support for ``apt-listchanges`` (moved to a separate role) and
-  ``apticron`` packages. [drybjed]
+- Remove support for :command:`apt-listchanges` (moved to a separate role) and
+  ``apticron`` packages. [drybjed_]
 
 - Remove support for APT proxy configuration, it is moved to a separate Ansible
-  role. [drybjed]
+  role. [drybjed_]
 
 
 `debops.apt v0.2.1`_ - 2016-09-09
@@ -43,8 +121,8 @@ Added
 ~~~~~
 
 - Added support for both http and https repositories in case of internet proxy.
-  Moved apt__proxy_url to ``apt__http_proxy_url`` and added
-  ``apt__https_proxy_url``. [tallandtree]
+  Moved apt__proxy_url to :envvar:`apt__http_proxy_url` and added
+  :envvar:`apt__https_proxy_url`. [tallandtree]
 
 Changed
 ~~~~~~~
@@ -60,7 +138,7 @@ Changed
 Added
 ~~~~~
 
-- Added ``apt__proxy_bypass_for_bugs_debian_org`` which you can enable if you
+- Added :envvar:`apt__proxy_bypass_for_bugs_debian_org` which you can enable if you
   hit a problem with a proxy server not allowing access to
   https://bugs.debian.org. [ypid_]
 
@@ -117,8 +195,8 @@ Added
 
 - Use backported :program:`apt-cacher-ng` on Debian Jessie. [ypid_]
 
-- Allow to modify APT sections without defining ``apt__default_sources`` by
-  using the added ``apt__sources_sections`` variable. [ypid_]
+- Allow to modify APT sections without defining :envvar:`apt__default_sources` by
+  using the added :envvar:`apt__sources_sections` variable. [ypid_]
 
 Changed
 ~~~~~~~
