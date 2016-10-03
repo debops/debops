@@ -14,6 +14,24 @@
 {%     endfor %}
 {%   endif %}
 {% endfor %}
+{% set apt__tpl_default_sources = [] %}
+{% for repo in apt__default_sources %}
+{%   if repo.uri|d() %}
+{%     for element in ([ repo.uri ] if repo.uri is string else repo.uri) %}
+{%       set _ = apt__tpl_default_sources.append(element) %}
+{%     endfor %}
+{%   endif %}
+{%   if repo.uris|d() %}
+{%     for element in ([ repo.uris ] if repo.uris is string else repo.uris) %}
+{%       set _ = apt__tpl_default_sources.append(element) %}
+{%     endfor %}
+{%   endif %}
+{%   if apt__distribution in repo.keys() %}
+{%     for element in ([ repo[apt__distribution] ] if repo[apt__distribution] is string else repo[apt__distribution]) %}
+{%       set _ = apt__tpl_default_sources.append(element) %}
+{%     endfor %}
+{%   endif %}
+{% endfor %}
 
 from __future__ import print_function
 from json import loads, dumps
@@ -21,6 +39,8 @@ from sys import exit
 import os
 
 security_sources = loads('''{{ apt__tpl_security_sources | to_nice_json }}''')
+
+default_sources = loads('''{{ apt__tpl_default_sources | to_nice_json }}''')
 
 output = loads('''{
     "configured": {{ (ansible_local.apt.configured if (ansible_local|d() and ansible_local.apt|d() and ansible_local.apt.configured|d()) else False) | bool | lower }},
@@ -84,6 +104,7 @@ except Exception:
     pass
 
 output.update({
+    "default_mirrors": default_sources,
     "nonfree": apt_nonfree,
     "original_mirrors_deb": source_deb,
     "original_mirrors_deb_src": source_deb_src
