@@ -147,7 +147,7 @@
     state: 'present'
   register: apt__register_facts_status
   when: (apt__enabled|bool and ansible_local|d() and ansible_local.apt|d() and
-         ansible_local.apt.configured|d())
+         not ansible_local.apt.configured|bool)
 
 - name: Update Ansible facts if they were modified
   action: setup
