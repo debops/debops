@@ -1,8 +1,9 @@
 // {{ ansible_managed }}
 
-// Do not install Recommended packages by default
-APT::Install-Recommends "false";
+// Should APT install recommended or suggested packages?
+APT::Install-Recommends "{{ apt__install_recommends | bool | lower }}";
+APT::Install-Suggests "{{ apt__install_suggests | bool | lower }}";
 
-// Allow 'apt-get autoremove' to remove recommended packages
-APT::AutoRemove::RecommendsImportant "false";
-
+// Should APT autoremove recommended or suggested packages?
+APT::AutoRemove::RecommendsImportant "{{ apt__autoremove_recommends | bool | lower }}";
+APT::AutoRemove::SuggestsImportant "{{ apt__autoremove_suggests | bool | lower }}";

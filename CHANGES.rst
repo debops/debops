@@ -82,6 +82,9 @@ Changed
   are configured at the beginning to allow for the role to gather information
   about original APT sources. [drybjed_]
 
+- Expose configuration of installation or removal of recommended or suggested
+  packages in default variables. [drybjed_]
+
 Removed
 ~~~~~~~
 
