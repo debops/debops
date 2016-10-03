@@ -22,7 +22,7 @@ the documentation for details.
 
 The order of the APT sources in the :file:`/etc/apt/sources.list` file is changed;
 first the sources from Ansible inventory (if any) are configured, then the
-original sources (if detected), then the default mirrrors, and security sources
+original sources (if detected), then the default mirrors, and security sources
 afterwards. This seems to be the preferred ordering of the entries, which
 allows downloading of the packages from the closes sources if available. The
 order can be configured using the :envvar:`apt__combined_sources` list.
