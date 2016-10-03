@@ -34,6 +34,7 @@ source_deb_src = []
 
 apt_nonfree = False
 apt_nonfree_components = [ 'non-free', 'restricted', 'multiverse' ]
+apt_uri_types = [ 'http://', 'https://', 'ftp://' ]
 
 try:
     # Load the first found sources.list file from a specified list
@@ -43,12 +44,16 @@ try:
         if line.startswith('deb'):
             source = line.split()
             if source[1] not in source_deb and source[1] not in security_sources:
-                source_deb.append(source[1])
+                for prefix in apt_uri_types:
+                    if source[1].startswith(prefix):
+                        source_deb.append(source[1])
 
         elif line.startswith('deb-src'):
             source = line.split()
             if source[1] not in source_deb_src and source[1] not in security_sources:
-                source_deb_src.append(source[1])
+                for prefix in apt_uri_types:
+                    if source[1].startswith(prefix):
+                        source_deb_src.append(source[1])
 
     fh.close()
 
