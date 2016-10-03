@@ -3,6 +3,8 @@
 Upgrade notes
 =============
 
+.. include:: includes/all.rst
+
 The upgrade notes only describe necessary changes that you might need to make
 to your setup in order to use a new role release. Refer to the
 :ref:`apt__ref_changelog` for more details about what has changed.
