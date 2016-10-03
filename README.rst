@@ -3,9 +3,6 @@
 
 |CII Best Practices|
 
-.. |CII Best Practices| image:: https://bestpractices.coreinfrastructure.org/projects/237/badge
-   :target: https://bestpractices.coreinfrastructure.org/projects/237
-
 **Your Debian-based data center in a box**
 
 A collection of `Ansible <https://ansible.com/>`_ playbooks,
@@ -132,14 +129,15 @@ Authors
 **Robin `ypid` Schneider**
 
 - Email: ypid@riseup.net
-- Website: http://ypid.de/
+- Website: https://me.ypid.de/
 - GitHub: `ypid <https://github.com/ypid>`_
 
 .. |Gratipay| image:: https://img.shields.io/gratipay/drybjed.svg?style=flat
 .. _Gratipay: https://www.gratipay.com/drybjed/
 .. |debops_logo| image:: https://debops.org/images/debops-small.png
 
-
+.. |CII Best Practices| image:: https://bestpractices.coreinfrastructure.org/projects/237/badge
+   :target: https://bestpractices.coreinfrastructure.org/projects/237
 
 ..
  Local Variables:
