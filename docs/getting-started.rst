@@ -10,7 +10,7 @@ The role will enable APT proxy support automatically if ``http_proxy``,
 ``https_proxy`` or ``ftp_proxy`` environment variables are set on a given host.
 They can be configured using the debops.environment_ Ansible role.
 
-Unfortunately using the above environment variables directly through ``sudo``
+Unfortunately using the above environment variables directly through :command:`sudo`
 is problematic. To mitigate that, you can use the ``inventory__*_environment``
 variables configured in the playbook to provide the correct variables to the
 role. See the ``debops-playbooks`` documentation for more details.
