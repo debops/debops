@@ -96,6 +96,8 @@
     - '{{ apt__keys }}'
     - '{{ apt__group_keys }}'
     - '{{ apt__host_keys }}'
+  # `item.state`, `item.distribution` and `item.distribution_release` need to be checked here.
+  # Ref: https://github.com/debops/ansible-apt/pull/76#pullrequestreview-2529842
   when: (apt__enabled|bool and (item.url|d() or item.data|d() or item.id|d() or item.file|d()) and
          (item.state|d("present") == 'present' and
           (item.distribution|d(apt__distribution) == apt__distribution and

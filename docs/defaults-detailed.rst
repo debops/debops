@@ -230,7 +230,7 @@ in one entry, they will be filtered according to the current OS. Example:
 
 The third version of an APT sources entry is similar to the ``apt_repository``
 Ansible module, and should be defined as an YAML dictionary with ``repo`` as
-the key and complete APT source spcification as the value. These entries are
+the key and complete APT source specification as the value. These entries are
 not filtered by the role, and they are not checked for duplicates. Example:
 
 .. code-block:: yaml
@@ -244,7 +244,7 @@ what source types are used, which components are enabled, etc. Known
 parameters:
 
 ``uri`` or ``uris``
-  Required. The URL or other method known by APT (see :manpage:`sources.list(5)`) for
+  Required. The URI or other method known by APT (see :manpage:`sources.list(5)`) for
   a given APT source. It is possible to specify multiple entries as a list,
   they will be treated as one.
 
