@@ -96,6 +96,9 @@ Removed
   parameter with Ansible local facts to get an equivalent functionality. See
   the documentation for more details. [drybjed_]
 
+- Remove the ``aptitude`` configuration using a static template file. Existing
+  configuration files are not changed. [drybjed_].
+
 
 `debops.apt v0.3.0`_ - 2016-09-14
 ---------------------------------
