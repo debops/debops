@@ -144,7 +144,7 @@ Changed
 Added
 ~~~~~
 
-- Added :envvar:`apt__proxy_bypass_for_bugs_debian_org` which you can enable if you
+- Added ``apt__proxy_bypass_for_bugs_debian_org`` which you can enable if you
   hit a problem with a proxy server not allowing access to
   https://bugs.debian.org. [ypid_]
 
