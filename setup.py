@@ -29,10 +29,10 @@ setup(
 
     # metadata for upload to PyPI
     author = "DebOps Developers",
-    author_email = "debops@groups.io",
+    author_email = "debops-users@lists.debops.org",
     description = "Your Debian-based data center in a box.",
     long_description = README,
-    license = "GPL 3.0",
+    license = "GPL-3.0",
     keywords = "ansible",
     url          = "https://debops.org/",
     download_url = "https://github.com/debops/debops/archive/v0.4.4.tar.gz",

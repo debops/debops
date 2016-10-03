@@ -4,7 +4,7 @@ Copyright
 ::
 
     Copyright (C) 2013 Maciej Delmanowski <drybjed@gmail.com>
-    Copyright (C) 2015 DebOps project https://debops.org/
+    Copyright (C) 2015 DebOps https://debops.org/
     [see Credits for more details]
 
     his program is free software; you can redistribute it and/or modify
