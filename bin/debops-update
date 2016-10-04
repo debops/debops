@@ -199,15 +199,18 @@ def main(project_dir=None, dry_run=False):
     # Playbooks have not been found, at this point assume playbooks are not
     # installed. Install them in user home directory
     if not playbooks_path:
+        if dry_run:
+            raise SystemExit("--dry-run requires DebOps playbooks.\n" \
+                             "Run debops-update without --dry-run first.")
+
         # Download/clone main debops-playbooks repository
         print("DebOps playbooks have not been found, installing into",
               install_path)
         print()
 
         clone_git_repository(PLAYBOOKS_GIT_URI, 'master', install_path, dry_run)
-        if not dry_run:
-            os.chdir(install_path)
-            os.makedirs(roles_path)
+        os.chdir(install_path)
+        os.makedirs(roles_path)
     else:
         # Update found debops-playbooks repository
         print("DebOps playbooks have been found in", install_path)
