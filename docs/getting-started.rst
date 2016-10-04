@@ -18,10 +18,6 @@ hosts in case any non-free firmware is required. Otherwise, only the ``main``
 and ``universe`` (on Ubuntu) repositories are enabled; you can control this
 using the :envvar:`apt__nonfree` variable.
 
-The ``debops.apt`` role can be used as a dependent role to configure APT keys
-and repositories, but it's not recommended. Instead, other roles should use the
-Ansible ``apt_key`` and ``apt_repository`` modules directly.
-
 
 Example inventory
 -----------------

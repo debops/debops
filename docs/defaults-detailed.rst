@@ -13,14 +13,10 @@ simple strings or lists, here you can find documentation and examples for them.
 apt__keys
 ---------
 
-This list, along with :envvar:`apt__group_keys`, :envvar:`apt__host_keys` and
-:envvar:`apt__dependent_keys` can be used to manage APT repository keys through
-Ansible inventory. It's possible to use this mechanism from other Ansible roles
-through dependent variables, however other roles should use the ``apt_key``
-Ansible module directly.
-
-Each entry is a YAML dictionary with parameters that correspond to the
-``apt_key`` module parameters:
+This list, along with :envvar:`apt__group_keys` and :envvar:`apt__host_keys`
+and can be used to manage APT repository keys through Ansible inventory.  Each
+entry is a YAML dictionary with parameters that correspond to the ``apt_key``
+module parameters:
 
 ``data``
   Optional. GPG key contents provided directly.
@@ -99,14 +95,10 @@ Add an APT GPG key only on Ubuntu hosts that have been already configured once
 apt__repositories
 -----------------
 
-This list, along with :envvar:`apt__group_repositories`, :envvar:`apt__host_repositories`
-and :envvar:`apt__dependent_repositories` can be used to manage APT repositories
-through Ansible inventory. It's possible to use this mechanism from other
-Ansible roles through dependent variables, however other roles should use the
-``apt_repository`` Ansible module directly.
-
-Each entry is a YAML dictionary with parameters that correspond to the
-``apt_repository`` module parameters:
+This list, along with :envvar:`apt__group_repositories` and
+:envvar:`apt__host_repositories` can be used to manage APT repositories through
+Ansible inventory. Each entry is a YAML dictionary with parameters that
+correspond to the ``apt_repository`` module parameters:
 
 ``repo``
   Required. The APT repository to configure, in the :manpage:`sources.list(5)` format.

@@ -96,7 +96,6 @@
     - '{{ apt__keys }}'
     - '{{ apt__group_keys }}'
     - '{{ apt__host_keys }}'
-    - '{{ apt__dependent_keys }}'
   when: (apt__enabled|bool and (item.url|d() or item.data|d() or item.id|d() or item.file|d()) and
          (item.state|d("present") == 'present' and
           (item.distribution|d(apt__distribution) == apt__distribution and
@@ -116,7 +115,6 @@
     - '{{ apt__repositories }}'
     - '{{ apt__group_repositories }}'
     - '{{ apt__host_repositories }}'
-    - '{{ apt__dependent_repositories }}'
   register: apt__register_repositories
   when: (apt__enabled|bool and item.repo|d())
 
