@@ -1,4 +1,4 @@
-.. _apt__ref_upgrade_nodes:
+.. _apt__ref_upgrade_notes:
 
 Upgrade notes
 =============
