@@ -10,7 +10,7 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer_ is drybjed.
+The current role maintainer_ is drybjed_.
 
 
 `debops.apt master`_ - unreleased
@@ -19,7 +19,7 @@ The current role maintainer_ is drybjed.
 .. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.0...master
 
 
-`debops.apt v0.4.0`_ - 2016-10-03
+`debops.apt v0.4.0`_ - 2016-10-04
 ---------------------------------
 
 .. _debops.apt v0.4.0: https://github.com/debops/ansible-apt/compare/v0.3.0...v0.4.0
@@ -27,11 +27,11 @@ The current role maintainer_ is drybjed.
 Added
 ~~~~~
 
-- Role now knows about free vs non-free APT distribution repositories. The
-  non-free repositories are enabled on hardware-based hosts in case non-free
-  firmware packages are required; otherwise only free repositories (``main``
-  and, on Ubuntu, ``universe``) are enabled. This can be controlled by the
-  :envvar:`apt__nonfree` variable.
+- The role now knows about free vs non-free APT distribution repositories. The
+  non-free repositories are enabled on hardware-based hosts to prepare for the
+  unfortunate case where non-free firmware packages are required; otherwise only
+  repositories containing Free Software (``main`` and, on Ubuntu, ``universe``)
+  are enabled. This can be controlled by the :envvar:`apt__nonfree` variable.
 
   The role exposes an additional Ansible fact that detects the availability of
   the ``non-free`` distribution sources and can be used by other Ansible roles
@@ -127,7 +127,7 @@ Added
 ~~~~~
 
 - Added support for both http and https repositories in case of internet proxy.
-  Moved apt__proxy_url to ``apt__http_proxy_url`` and added
+  Moved ``apt__proxy_url`` to ``apt__http_proxy_url`` and added
   ``apt__https_proxy_url``. [tallandtree]
 
 Changed
