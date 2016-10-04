@@ -27,7 +27,7 @@
 {%     endfor %}
 {%   else %}
 {%     for entry_uri in (entry.uri|d([]) + entry.uris|d([])) %}
-{%       if entry_uri in apt__tpl_seen_sources %}
+{%       if (entry_uri in apt__tpl_seen_sources and apt__sources_filter_duplicates|bool) %}
 {%         set entry_disabled = '# ' %}
 {%       elif entry_uri not in apt__tpl_seen_sources and entry.state != 'disabled' %}
 {%         set entry_disabled = '' %}
