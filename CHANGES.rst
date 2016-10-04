@@ -10,7 +10,7 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer_ is drybjed.
+The current role maintainer_ is drybjed_.
 
 
 `debops.apt master`_ - unreleased
@@ -19,7 +19,7 @@ The current role maintainer_ is drybjed.
 .. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.0...master
 
 
-`debops.apt v0.4.0`_ - 2016-10-03
+`debops.apt v0.4.0`_ - 2016-10-04
 ---------------------------------
 
 .. _debops.apt v0.4.0: https://github.com/debops/ansible-apt/compare/v0.3.0...v0.4.0
@@ -27,20 +27,20 @@ The current role maintainer_ is drybjed.
 Added
 ~~~~~
 
-- Role now knows about free vs non-free APT distribution repositories. The
-  non-free repositories are enabled on hardware-based hosts in case a non-free
-  firmware packages are required; otherwise only free repositories (``main``
-  and, on Ubuntu, ``universe``) are enabled. This can be controlled by the
-  :envvar:`apt__nonfree` default variable.
+- The role now knows about free vs non-free APT distribution repositories. The
+  non-free repositories are enabled on hardware-based hosts to prepare for the
+  unfortunate case where non-free firmware packages are required; otherwise only
+  repositories containing Free Software (``main`` and, on Ubuntu, ``universe``)
+  are enabled. This can be controlled by the :envvar:`apt__nonfree` variable.
 
-  The role exposes an additional Ansible fact that detects availability of the
-  ``non-free`` distribution sources and can be used by other Ansible roles to
-  check if non-free packages can be installed. [drybjed_]
+  The role exposes an additional Ansible fact that detects the availability of
+  the ``non-free`` distribution sources and can be used by other Ansible roles
+  to check if non-free packages can be installed. [drybjed_]
 
-- You can control when a particular APT key/repository is enabled by new
-  ``distribution`` and ``distribution_release`` parameters. This allows for
-  example to enable certain repository only when ``Debian`` is found as the
-  host's OS. [drybjed_]
+- The ``distribution`` and ``distribution_release`` parameters allow you to
+  conditionally enable APT keys/repositories.
+  This allows for example to enable certain repository only when ``Debian`` is
+  found as the host's OS. [drybjed_]
 
 - Management of :file:`/etc/apt/sources.list` file is controlled by a separate
   variable, :envvar:`apt__sources_deploy_state`. [drybjed_]
@@ -49,15 +49,15 @@ Added
   documented. [drybjed_]
 
 - The OS distribution and release detection now uses Ansible facts managed by
-  the debops.core_ role. With these enabled, ``debops.apt`` role should
-  correctly detect the Debian Testing installation and configure it
+  the debops.core_ role. With these enabled, ``debops.apt`` should
+  correctly detect a Debian Testing installation and configure it
   accordingly. [drybjed_]
 
 - The role looks for original APT repositories configured on a host in the
   diverted :file:`/etc/apt/sources.list` file and includes them in the generated
   configuration file with higher precedence than the default mirrors, with
-  assumption that the original mirrors are closer than the defaults. This can
-  be controlled by the default variables. [drybjed_]
+  the assumption that the original mirrors are closer than the role defaults.
+  This can be controlled by the default variables. [drybjed_]
 
 Changed
 ~~~~~~~
@@ -69,7 +69,7 @@ Changed
   :envvar:`apt__source_types`. [drybjed_]
 
 - The OS distribution and release detection has been redesigned and should
-  allow for more flexibility between different operating systems. [drybjed_]
+  allow for more flexibility in regards to different operating systems. [drybjed_]
 
 - Some of the APT repository/source list parameters have been renamed. Check
   the documentation for currently used parameters. [drybjed_]
@@ -78,9 +78,9 @@ Changed
   more dynamic, and provides additional information about original APT sources,
   used internally. [drybjed_]
 
-- The task list has been streamlined and merged into 1 file. The Ansible facts
-  are configured at the beginning to allow for the role to gather information
-  about original APT sources. [drybjed_]
+- The task list has been streamlined and merged into one file. The Ansible
+  facts are configured at the beginning to allow for the role to gather
+  information about original APT sources. [drybjed_]
 
 - Expose configuration of installation or removal of recommended or suggested
   packages in default variables. [drybjed_]
@@ -127,7 +127,7 @@ Added
 ~~~~~
 
 - Added support for both http and https repositories in case of internet proxy.
-  Moved apt__proxy_url to ``apt__http_proxy_url`` and added
+  Moved ``apt__proxy_url`` to ``apt__http_proxy_url`` and added
   ``apt__https_proxy_url``. [tallandtree]
 
 Changed
