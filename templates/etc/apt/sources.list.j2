@@ -1,86 +1,113 @@
-{#
-#    ==== Template for /etc/apt/sources.list ====
-#
-# To allow both default and user-supplied lists of APT mirrors and
-# repositories, this template reads the data from these lists:
-#
-#   apt__mirrors_combined       List of APT mirror URIs, for example:
-#                              [ 'http://cdn.debian.net/debian' ]
-#
-#   apt__sources_combined       List of dictionaries which define APT repositories.
-#
-#   apt__sources_types          List of repository types to enable by default
-#                              Possible values: [ 'deb', 'deb-src' ]
-#
-#
-# List of parameters which can be used to define an APT repository:
-#
-#    - releases: []
-#        Required. List of releases to define for this APT repository. Examples:
-#          [ 'wheezy', 'wheezy-updates' ]
-#
-#    - sections: []
-#        Required. List of sections to define for this APT repository. Examples:
-#          [ 'main', 'contrib', 'non-free' ]
-#
-#   - state: 'present'/'absent'
-#       Optional. If defined and 'absent', repository will not be included in
-#       the finished /etc/apt/sources.list.
-#
-#   - types: [ 'deb', 'deb-src' ]
-#       Optional. List of repository types (binary/source) to include in
-#       generated file for this repository.
-#
-#    - mirrors: []
-#        Optional. List of APT mirrors to define for this repository. If not
-#        defined, mirrors from 'apt__mirrors_combined' list will be used
-#        instead.
-#
-#    - comment: ''
-#        Optional. Add a comment before the specified APT repository section.
-#
-#    - options: []
-#        Optional. List of options to set for this APT repository. Examples:
-#          [ 'arch=amd64', 'trusted=yes' ]
-#
-#}
 # {{ ansible_managed }}
-
-{% if apt__sources_combined|d() %}
-{%   for element in apt__sources_combined %}
-{%     if element.state|d('present') != 'absent' %}
-{%       if element.types|d() %}
-{%         set apt__tpl_element_types = element.types %}
+{% macro print_entry(input_entry) %}
+{%   set entry = {} %}
+{%   for key, value in input_entry.iteritems() %}
+{%     if key not in [ 'comment', 'state' ] %}
+{%       if value is string %}
+{%         set _ = entry.update({ key: [ value ] }) %}
 {%       else %}
-{%         set apt__tpl_element_types = apt__sources_types | unique | default([ 'deb' ]) %}
+{%         set _ = entry.update({ key: value }) %}
 {%       endif %}
-{%       if element.mirrors|d() %}
-{%         set apt__tpl_element_mirrors = element.mirrors %}
-{%       else %}
-{%         set apt__tpl_element_mirrors = apt__mirrors_combined | unique | default([]) %}
-{%       endif %}
-{%       if element.comment|d() %}
-# {{ element.comment }}
-{%       endif %}
-{%       for source in apt__tpl_element_mirrors %}
-{%         for release in element.releases %}
-{%           for type in apt__tpl_element_types %}
-{%             if element.options|d() %}
-{{ "%s [%s] %s %s %s" | format(type, element.options | join(" "), source, release, element.sections | join(" ")) }}
-{%             else %}
-{{ "%s %s %s %s" | format(type, source, release, element.sections | join(" ")) }}
-{%             endif %}
-{%           endfor %}
-{%           if (apt__tpl_element_types | count > 1) %}
-
-{%           endif %}
-{%         endfor %}
-
-{%       endfor %}
-
+{%     else %}
+{%       set _ = entry.update({ key: value }) %}
 {%     endif %}
 {%   endfor %}
-{% else %}
-# Custom APT sources are disabled
-{% endif %}
+{%   set entry_disabled = '' %}
+{%   if entry.state == 'disabled' %}
+{%   set entry_disabled = '# ' %}
+{%   endif %}
+{%   if (entry.comment|d() and entry.comment) %}
+{{ (entry.comment if entry.comment is string else entry.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='\n', postfix='') -}}
+{%   elif (entry.comments|d() and entry.comments) %}
+{{ (entry.comments if entry.comments is string else entry.comments | join('\n')) | regex_replace('\n$', '') | comment(prefix='\n', postfix='') -}}
+{%   endif %}
+{%   if entry.repo|d() %}
+{%     for entry_repo in entry.repo %}
+{{ "%s%s" | format(entry_disabled, entry_repo) }}
+{%     endfor %}
+{%   else %}
+{%     for entry_uri in (entry.uri|d([]) + entry.uris|d([])) %}
+{%       if (entry_uri in apt__tpl_seen_sources and apt__sources_filter_duplicates|bool) %}
+{%         set entry_disabled = '# ' %}
+{%       elif entry_uri not in apt__tpl_seen_sources and entry.state != 'disabled' %}
+{%         set entry_disabled = '' %}
+{%       endif %}
+{%       for entry_suite in (entry.suite|d([]) + entry.suites|d([])) %}
+{%         for entry_type in (entry.type|d([]) + entry.types|d([])) %}
+{%           if entry.options|d() %}
+{{ "%s%s [%s] %s %s %s" | format(entry_disabled, entry_type, options | join(' '), entry_uri, entry_suite, (entry.component|d([]) + entry.components|d([])) | unique | join(' ')) }}
+{%           else %}
+{{ "%s%s %s %s %s" | format(entry_disabled, entry_type, entry_uri, entry_suite, (entry.component|d([]) + entry.components|d([])) | unique | join(' ')) }}
+{%           endif %}
+{%         endfor %}
+{%         if ((entry.type|d([]) + entry.types|d([])) | count > 1 and not loop.last) %}
 
+{%         endif %}
+{%       endfor %}
+{%       set _ = apt__tpl_seen_sources.append(entry_uri) %}
+{%     endfor %}
+{%   endif %}
+{% endmacro %}
+{% set apt__tpl_seen_sources = [] %}
+{% set apt__tpl_suites = [] %}
+{% for apt__tpl_suffix in ([ apt__distribution_suffixes ] if apt__distribution_suffixes is string else apt__distribution_suffixes) %}
+{%   set _ = apt__tpl_suites.append(apt__distribution_release + apt__tpl_suffix) %}
+{% endfor %}
+{% set apt__tpl_sources = [] %}
+{% for element in apt__combined_sources %}
+{%   set apt__tpl_source = {
+  "type": [],
+  "types": [],
+  "options": [],
+  "uri": [],
+  "uris": [],
+  "suite": [],
+  "suites": [],
+  "component": [],
+  "components": [],
+  "comment": '',
+  "state": "present",
+  "distribution": apt__distribution,
+  "distribution_release": apt__distribution_release
+} %}
+{%   if element is string %}
+{%     set _ = apt__tpl_source.update({ "uris": [ element ]}) %}
+{%   elif element is mapping %}
+{%     set _ = apt__tpl_source.update(element) %}
+{%   elif (element is not string and element is not mapping) %}
+{%     set _ = apt__tpl_source.update({ "uris": element }) %}
+{%   endif %}
+{%   if (not apt__tpl_source.type and not apt__tpl_source.types) %}
+{%     for thing in ([ apt__source_types ] if apt__source_types is string else apt__source_types) %}
+{%       set _ = apt__tpl_source.types.append(thing) %}
+{%     endfor %}
+{%   endif %}
+{%   if (not apt__tpl_source.uri and not apt__tpl_source.uris) %}
+{%     if element is mapping %}
+{%       if apt__distribution in element.keys() %}
+{%         for thing in ([ element[apt__distribution] ] if element[apt__distribution] is string else element[apt__distribution]) %}
+{%           set _ = apt__tpl_source.uris.append(thing) %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{%   if (not apt__tpl_source.suite and not apt__tpl_source.suites) %}
+{%     for thing in apt__tpl_suites %}
+{%       set _ = apt__tpl_source.suites.append(thing) %}
+{%     endfor %}
+{%   endif %}
+{%   if (not apt__tpl_source.component and not apt__tpl_source.components) %}
+{%     for thing in ([ apt__distribution_components ] if apt__distribution_components is string else apt__distribution_components) %}
+{%       set _ = apt__tpl_source.components.append(thing) %}
+{%     endfor %}
+{%   endif %}
+{%   set _ = apt__tpl_sources.append(apt__tpl_source) %}
+{% endfor %}
+{% for entry in apt__tpl_sources %}
+{%   if (entry.state|d("present") in [ "present", "disabled" ] and entry.distribution == apt__distribution and entry.distribution_release == apt__distribution_release) %}
+{%   if loop.first and not entry.comment|d() %}
+
+{%   endif %}
+{{ print_entry(entry) -}}
+{%   endif %}
+{% endfor %}

@@ -1,3 +1,113 @@
-{
-"configured": "true"
-}
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+{% set apt__tpl_security_sources = [] %}
+{% for repo in apt__security_sources %}
+{%   if repo.uri|d() %}
+{%     for element in ([ repo.uri ] if repo.uri is string else repo.uri) %}
+{%       set _ = apt__tpl_security_sources.append(element) %}
+{%     endfor %}
+{%   endif %}
+{%   if repo.uris|d() %}
+{%     for element in ([ repo.uris ] if repo.uris is string else repo.uris) %}
+{%       set _ = apt__tpl_security_sources.append(element) %}
+{%     endfor %}
+{%   endif %}
+{% endfor %}
+{% set apt__tpl_default_sources = [] %}
+{% for repo in apt__default_sources %}
+{%   if repo.uri|d() %}
+{%     for element in ([ repo.uri ] if repo.uri is string else repo.uri) %}
+{%       set _ = apt__tpl_default_sources.append(element) %}
+{%     endfor %}
+{%   endif %}
+{%   if repo.uris|d() %}
+{%     for element in ([ repo.uris ] if repo.uris is string else repo.uris) %}
+{%       set _ = apt__tpl_default_sources.append(element) %}
+{%     endfor %}
+{%   endif %}
+{%   if apt__distribution in repo.keys() %}
+{%     for element in ([ repo[apt__distribution] ] if repo[apt__distribution] is string else repo[apt__distribution]) %}
+{%       set _ = apt__tpl_default_sources.append(element) %}
+{%     endfor %}
+{%   endif %}
+{% endfor %}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import os
+
+security_sources = loads('''{{ apt__tpl_security_sources | to_nice_json }}''')
+
+default_sources = loads('''{{ apt__tpl_default_sources | to_nice_json }}''')
+
+output = loads('''{
+    "configured": {{ (ansible_local.apt.configured if (ansible_local|d() and ansible_local.apt|d() and ansible_local.apt.configured|d()) else False) | bool | lower }},
+    "enabled": {{ apt__enabled | bool | lower }}
+}''')
+
+apt_sources_list = [ '/etc/apt/sources.list.dpkg-divert', '/etc/apt/sources.list' ]
+
+source_deb = []
+source_deb_src = []
+
+apt_nonfree = False
+apt_nonfree_components = [ 'non-free', 'restricted', 'multiverse' ]
+apt_uri_types = [ 'http://', 'https://', 'ftp://' ]
+
+try:
+    # Load the first found sources.list file from a specified list
+    fh = open(next(filename for filename in apt_sources_list if (os.path.isfile(filename) and os.access(filename, os.R_OK))))
+
+    for line in fh:
+        if line.startswith('deb'):
+            source = line.split()
+            if source[1] not in source_deb and source[1] not in security_sources:
+                for prefix in apt_uri_types:
+                    if source[1].startswith(prefix):
+                        source_deb.append(source[1])
+
+        elif line.startswith('deb-src'):
+            source = line.split()
+            if source[1] not in source_deb_src and source[1] not in security_sources:
+                for prefix in apt_uri_types:
+                    if source[1].startswith(prefix):
+                        source_deb_src.append(source[1])
+
+    fh.close()
+
+except Exception:
+    pass
+
+try:
+
+    if (os.path.isfile(apt_sources_list[1]) and os.access(apt_sources_list[1], os.R_OK)):
+        fh = open(apt_sources_list[1])
+
+        for line in fh:
+            if line.startswith('deb'):
+                source = line.split()
+                for component in source[3:]:
+                    if component in apt_nonfree_components:
+                        apt_nonfree = True
+
+            elif line.startswith('deb-src'):
+                source = line.split()
+                for component in source[3:]:
+                    if component in apt_nonfree_components:
+                        apt_nonfree = True
+
+        fh.close()
+
+except Exception:
+    pass
+
+output.update({
+    "default_mirrors": default_sources,
+    "nonfree": apt_nonfree,
+    "original_mirrors_deb": source_deb,
+    "original_mirrors_deb_src": source_deb_src
+})
+
+print(dumps(output, sort_keys=True, indent=2))
