@@ -1,3 +1,5 @@
+.. _apt__ref_defaults_detailed:
+
 Default variable details
 ========================
 
