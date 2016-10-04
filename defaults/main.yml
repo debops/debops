@@ -228,6 +228,7 @@ apt__distribution_suite_map:
 apt__distribution_suffix_map:
   'Debian_stable':  [ '', '-updates', '-backports' ]
   'Debian_testing': [ '', '-updates' ]
+  'Raspbian':       [ '' ]
   'default':        [ '', '-updates', '-backports' ]
 
                                                                    # ]]]
@@ -237,7 +238,8 @@ apt__distribution_suffix_map:
 apt__distribution_suffixes: '{{ apt__distribution_suffix_map[apt__distribution + "_" +
                                 apt__distribution_suite_map[apt__distribution + "_" +
                                 apt__distribution_release]|d()] |
-                                d(apt__distribution_suffix_map["default"]) }}'
+                                d(apt__distribution_suffix_map[apt__distribution] |
+                                  d(apt__distribution_suffix_map["default"])) }}'
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_components_free [[[
