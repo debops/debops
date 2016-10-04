@@ -1,11 +1,8 @@
 Introduction
 ============
 
-``debops.apt`` configures and manages the APT package manager in Debian and
-other derivative distributions. Specifically, it will manage:
-
-* The APT sources
-* The use of a APT proxy server in the network
+``debops.apt`` configures and manages APT, the Advanced Package Tool in Debian and
+other derivative distributions.
 
 
 Installation

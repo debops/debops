@@ -1,6 +1,8 @@
 Default variable details
 ========================
 
+.. include:: includes/all.rst
+
 Some of ``debops.apt`` default variables have more extensive configuration than
 simple strings or lists, here you can find documentation and examples for them.
 
@@ -209,7 +211,7 @@ file:
 
 Each list entry that defines an APT source can have different forms.
 
-Simplest entry is a string. It does not have any conditions and it will be
+The simplest entry is a string. It does not have any conditions and it will be
 added to the :file:`/etc/apt/sources.list` file unless it is a duplicate. The
 string should only contain the URL of the APT mirror, the rest will be added
 automatically according to detected OS distribution and release. Example:
@@ -228,10 +230,11 @@ in one entry, they will be filtered according to the current OS. Example:
    apt__sources:
      - Debian: 'http://ftp.debian.org/debian'
 
-The third version of an APT sources entry is similar to the ``apt_repository``
-Ansible module, and should be defined as an YAML dictionary with ``repo`` as
-the key and complete APT source spcification as the value. These entries are
-not filtered by the role, and they are not checked for duplicates. Example:
+The third version of an APT sources entry is similar to the `Ansible
+apt_repository module`_, and should be defined as an YAML dictionary with
+``repo`` as the key and complete APT source specification as the value. These
+entries are not filtered by the role, and they are not checked for duplicates.
+Example:
 
 .. code-block:: yaml
 
@@ -244,7 +247,7 @@ what source types are used, which components are enabled, etc. Known
 parameters:
 
 ``uri`` or ``uris``
-  Required. The URL or other method known by APT (see :manpage:`sources.list(5)`) for
+  Required. The URI or other method known by APT (see :manpage:`sources.list(5)`) for
   a given APT source. It is possible to specify multiple entries as a list,
   they will be treated as one.
 
