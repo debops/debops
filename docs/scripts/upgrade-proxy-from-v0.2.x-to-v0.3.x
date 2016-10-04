@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Upgrade inventory variables for migration from debops.apt v0.2.x to v0.3.x.
+# Upgrade inventory variables related to APT proxy settings for migration from
+# debops.apt v0.2.x to v0.3.x.
 # The script is idempotent.
 
 git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 \

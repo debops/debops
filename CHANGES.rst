@@ -12,6 +12,9 @@ and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
 The current role maintainer_ is drybjed_.
 
+Refer to the :ref:`apt__ref_upgrade_nodes` when you intend to upgrade to a
+new release.
+
 
 `debops.apt master`_ - unreleased
 ---------------------------------
