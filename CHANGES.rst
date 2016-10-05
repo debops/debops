@@ -15,6 +15,17 @@ The current role maintainer is drybjed.
 .. _debops.gitlab_runner master: https://github.com/debops/ansible-gitlab_runner/compare/v0.1.1...master
 
 
+`debops.gitlab_runner v0.1.2`_ - 2016-09-23
+-------------------------------------------
+
+.. _debops.gitlab_runner v0.1.2: https://github.com/debops/ansible-gitlab_runner/compare/v0.1.0...v0.1.2
+
+Changed
+~~~~~~~
+
+- Added distributed cache bucket location configuration key. [sidewinder12s]
+
+
 `debops.gitlab_runner v0.1.1`_ - 2016-08-12
 -------------------------------------------
 
