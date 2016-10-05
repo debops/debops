@@ -31,6 +31,9 @@ Changed
 - Use the list of admin users maintained by the debops.core_ Ansible facts to
   manage the administrator accounts. [drybjed_]
 
+- Switch from using a template for :file:`~/.forward` file to the Ansible
+  ``lineinfile`` module. [drybjed_]
+
 
 `debops.users v0.1.6`_ - 2016-02-06
 -----------------------------------
