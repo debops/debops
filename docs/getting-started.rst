@@ -32,7 +32,7 @@ GitLab CI:
    GITLAB_RUNNER_TOKEN=<random-token> debops service/gitlab_runner
 
 To change the environment variable that holds the registration token, or save
-the token in Ansible inventory, you can use the ``gitlab_runner__token``
+the token in Ansible inventory, you can use the :envvar:`gitlab_runner__token`
 variable.
 
 Initial configuration
@@ -41,7 +41,7 @@ Initial configuration
 By default, ``debops.gitlab_runner`` will configure a single Runner instance
 which uses a shell executor. To use different executors like SSH or Docker, you
 need to provide additional configuration and ensure that required software
-(``ssh``, Docker, Docker Machine, etc.) is installed if required.
+(:command:`ssh`, Docker, Docker Machine, etc.) is installed if required.
 
 The Runner instances can be configured with variables specified as the keys of
 the dictionary that holds the specific Runner configuration. If any required
@@ -56,7 +56,7 @@ instances.
 Environment variables
 ---------------------
 
-You can use ``gitlab_runner__environment`` default variable to specify a custom
+You can use :envvar:`gitlab_runner__environment` default variable to specify a custom
 set of environment variables to configure in a GitLab Runner instance. You can
 use the global variable, or set the environment at the instance level by
 specifying it as ``item.environment`` variable.

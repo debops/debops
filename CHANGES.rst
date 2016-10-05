@@ -1,24 +1,26 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 **debops.gitlab_runner**
 
-This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
-and `human-readable changelog <http://keepachangelog.com/>`_.
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer is drybjed.
+The current role maintainer_ is drybjed.
 
 
 `debops.gitlab_runner master`_ - unreleased
 -------------------------------------------
 
-.. _debops.gitlab_runner master: https://github.com/debops/ansible-gitlab_runner/compare/v0.1.1...master
+.. _debops.gitlab_runner master: https://github.com/debops/ansible-gitlab_runner/compare/v0.1.2...master
 
 
-`debops.gitlab_runner v0.1.2`_ - 2016-09-23
+`debops.gitlab_runner v0.1.2`_ - 2016-10-05
 -------------------------------------------
 
-.. _debops.gitlab_runner v0.1.2: https://github.com/debops/ansible-gitlab_runner/compare/v0.1.0...v0.1.2
+.. _debops.gitlab_runner v0.1.2: https://github.com/debops/ansible-gitlab_runner/compare/v0.1.1...v0.1.2
 
 Changed
 ~~~~~~~
@@ -36,7 +38,7 @@ Changed
 
 - Add 201 as successful HTTP status on register. [bfabio]
 
-- Update documentation and Changelog. [drybjed]
+- Update documentation and Changelog. [drybjed_]
 
 
 debops.gitlab_runner v0.1.0 - 2016-04-11
@@ -45,4 +47,4 @@ debops.gitlab_runner v0.1.0 - 2016-04-11
 Added
 ~~~~~
 
-- Initial release. [drybjed]
+- Initial release. [drybjed_]
