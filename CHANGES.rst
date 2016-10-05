@@ -26,6 +26,8 @@ Changed
 - All variables are renamed from ``users_*`` to ``users__*`` to put them in
   a separate namespace. [drybjed_]
 
+- Rename user account and group lists to make them more organized. [drybjed_]
+
 
 `debops.users v0.1.6`_ - 2016-02-06
 -----------------------------------

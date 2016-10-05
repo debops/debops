@@ -18,3 +18,27 @@ them to a separate namespace. Old user account and group lists still are
 supported, however you might need to update some variables like
 ``users_enabled`` and ``users_default_*`` to the new names in the inventory to
 keep their functionality.
+
+List of renamed user list variables:
+
++----------------------+-----------------------------------+
+| Old variable name    | New variable name                 |
++======================+===================================+
+| ``users_list``       | :envvar:`users__accounts`         |
++----------------------+-----------------------------------+
+| ``users_group_list`` | :envvar:`users__group_accounts`   |
++----------------------+-----------------------------------+
+| ``users_host_list``  | :envvar:`users__host_accounts`    |
++----------------------+-----------------------------------+
+| ``users_root``       | :envvar:`users__root_accounts`    |
++----------------------+-----------------------------------+
+| ``users_admins``     | :envvar:`users__admin_accounts`   |
++----------------------+-----------------------------------+
+| ``users_default``    | :envvar:`users__default_accounts` |
++----------------------+-----------------------------------+
+| ``users_groups``     | :envvar:`users__groups`           |
++----------------------+-----------------------------------+
+|                      | :envvar:`users__group_groups`     |
++----------------------+-----------------------------------+
+|                      | :envvar:`users__host_groups`      |
++----------------------+-----------------------------------+

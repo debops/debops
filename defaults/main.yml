@@ -40,20 +40,42 @@ users__default_groups_list: []
 users__default_groups_append: 'yes'
                                                                    # ]]]
                                                                    # ]]]
-# Managed accounts [[[
-# --------------------
+# Lists of managed UNIX groups [[[
+# --------------------------------
 
-# .. envvar:: users__root [[[
+# .. envvar:: users__groups [[[
 #
-# This is only used for dotfiles management on 'root' account.
-users__root:
+# List of UNIX groups to manage on all hosts in Ansible inventory.
+users__groups: []
+
+                                                                   # ]]]
+# .. envvar:: users__group_groups [[[
+#
+# List of UNIX groups to manage on hosts in specific Ansible inventory group.
+users__group_groups: []
+
+                                                                   # ]]]
+# .. envvar:: users__host_groups [[[
+#
+# List of UNIX groups to manage on specific hosts in Ansible inventory.
+users__host_groups: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Lists of managed UNIX accounts [[[
+# ----------------------------------
+
+# .. envvar:: users__root_accounts [[[
+#
+# This is only used for configuration files and SSH keys management on the
+# UNIX ``root`` account.
+users__root_accounts:
   - name: 'root'
 
                                                                    # ]]]
-# .. envvar:: users__default [[[
+# .. envvar:: users__default_accounts [[[
 #
-# Default user created by Ansible.
-users__default:
+# List of default UNIX user accounts managed by Ansible.
+users__default_accounts:
   - name: '{{ (ansible_ssh_user
                if (ansible_ssh_user | d() and
                    ansible_ssh_user != "root")
@@ -61,42 +83,33 @@ users__default:
     groups: [ 'admins' ]
 
                                                                    # ]]]
-# .. envvar:: users__admins [[[
+# .. envvar:: users__admin_accounts [[[
 #
-# Administrators.
-users__admins: []
+# List of UNIX administrator accounts managed by Ansible.
+users__admin_accounts: []
 
                                                                    # ]]]
-# .. envvar:: users__groups [[[
+# .. envvar:: users__accounts [[[
 #
-# Groups (normal or system).
-users__groups: []
+# List of user accounts to manage on all hosts in Ansible inventory.
+users__accounts: []
 
                                                                    # ]]]
-# .. envvar:: users__list [[[
+# .. envvar:: users__group_accounts [[[
 #
-# "Global" users.
-# This variable is intended to be used in Ansible’s global inventory.
-users__list: []
+# List of UNIX user accounts to manage on hosts in specific Ansible inventory
+# group.
+users__group_accounts: []
 
                                                                    # ]]]
-# .. envvar:: users__group_list [[[
+# .. envvar:: users__host_accounts [[[
 #
-# "Host group" users.
-# This variable is intended to be used in a host inventory group of Ansible
-# (only one host group is supported).
-users__group_list: []
-
-                                                                   # ]]]
-# .. envvar:: users__group_list [[[
-#
-# "Host" users.
-# This variable is intended to be used in the inventory of the host.
-users__host_list: []
+# List of UNIX user accounts to manage on specific hosts in Ansible inventory.
+users__host_accounts: []
                                                                    # ]]]
                                                                    # ]]]
-# Dotfiles [[[
-# ------------
+# User configuration files (dotfiles) [[[
+# ---------------------------------------
 
 # .. envvar:: users__default_dotfiles [[[
 #
