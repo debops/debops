@@ -21,7 +21,7 @@ To enable SNMP service on a DebOps-managed host, you need to add that host to
     hostname
 
 If you use separate host groups, better idea might be to create a parent group
-and add your own host groups to id::
+and add your own host groups to it::
 
     [servers]
     host1
