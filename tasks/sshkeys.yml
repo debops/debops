@@ -6,12 +6,18 @@
     state: 'present'
     user: '{{ item.name }}'
   with_flattened:
-    - '{{ users_root }}'
-    - '{{ users_default }}'
-    - '{{ users_admins }}'
-    - '{{ users_list }}'
-    - '{{ users_group_list }}'
-    - '{{ users_host_list }}'
+    - '{{ users__root }}'
+    - '{{ users__default }}'
+    - '{{ users__admins }}'
+    - '{{ users__list }}'
+    - '{{ users__group_list }}'
+    - '{{ users__host_list }}'
+    - '{{ users_root       | d([]) }}'
+    - '{{ users_default    | d([]) }}'
+    - '{{ users_admins     | d([]) }}'
+    - '{{ users_list       | d([]) }}'
+    - '{{ users_group_list | d([]) }}'
+    - '{{ users_host_list  | d([]) }}'
   when: ((item.name is defined and item.name) and
          (item.state|d('present') != 'absent') and
          item.createhome|d(True) and
@@ -23,14 +29,19 @@
     state: 'absent'
   become_user: '{{ item.name }}'
   with_flattened:
-    - '{{ users_root }}'
-    - '{{ users_default }}'
-    - '{{ users_admins }}'
-    - '{{ users_list }}'
-    - '{{ users_group_list }}'
-    - '{{ users_host_list }}'
+    - '{{ users__root }}'
+    - '{{ users__default }}'
+    - '{{ users__admins }}'
+    - '{{ users__list }}'
+    - '{{ users__group_list }}'
+    - '{{ users__host_list }}'
+    - '{{ users_root       | d([]) }}'
+    - '{{ users_default    | d([]) }}'
+    - '{{ users_admins     | d([]) }}'
+    - '{{ users_list       | d([]) }}'
+    - '{{ users_group_list | d([]) }}'
+    - '{{ users_host_list  | d([]) }}'
   when: ((item.name is defined and item.name) and
          (item.state|d('present') != 'absent') and
          item.createhome|d(True) and
          (item.sshkeys is defined and not item.sshkeys))
-

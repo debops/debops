@@ -3,55 +3,72 @@
 - name: Get users dotfiles from git repository
   become_user: '{{ item.name }}'
   git:
-    repo: '{{ item.dotfiles_repo | default(users_dotfiles[users_default_dotfiles_key].repo) }}'
+    repo: '{{ item.dotfiles_repo | default(users__dotfiles[users__default_dotfiles_key].repo) }}'
     dest: '{{ item.dotfiles_dest | default("~/.config/dotfiles") }}'
     update: True
   with_flattened:
-    - '{{ users_root }}'
-    - '{{ users_default }}'
-    - '{{ users_admins }}'
-    - '{{ users_list }}'
-    - '{{ users_group_list }}'
-    - '{{ users_host_list }}'
+    - '{{ users__root }}'
+    - '{{ users__default }}'
+    - '{{ users__admins }}'
+    - '{{ users__list }}'
+    - '{{ users__group_list }}'
+    - '{{ users__host_list }}'
+    - '{{ users_root       | d([]) }}'
+    - '{{ users_default    | d([]) }}'
+    - '{{ users_admins     | d([]) }}'
+    - '{{ users_list       | d([]) }}'
+    - '{{ users_group_list | d([]) }}'
+    - '{{ users_host_list  | d([]) }}'
   when: ((item.name is defined and item.name) and
          (item.state|d('present') != 'absent') and
          item.createhome|d(True) and
          ((item.dotfiles is defined and item.dotfiles) or
-          (users_default_dotfiles is defined and users_default_dotfiles)))
+          (users__default_dotfiles is defined and users__default_dotfiles)))
 
 - name: Configure users dotfiles
   become_user: '{{ item.name }}'
-  command: '{{ item.dotfiles_command | default(users_dotfiles[users_default_dotfiles_key].command) }}'
+  command: '{{ item.dotfiles_command | default(users__dotfiles[users__default_dotfiles_key].command) }}'
   args:
     chdir: '{{ item.dotfiles_dest | default("~/.config/dotfiles") }}'
-    creates: '{{item.dotfiles_creates | default(users_dotfiles[users_default_dotfiles_key].creates)}}'
+    creates: '{{item.dotfiles_creates | default(users__dotfiles[users__default_dotfiles_key].creates)}}'
   with_flattened:
-    - '{{ users_root }}'
-    - '{{ users_default }}'
-    - '{{ users_admins }}'
-    - '{{ users_list }}'
-    - '{{ users_group_list }}'
-    - '{{ users_host_list }}'
+    - '{{ users__root }}'
+    - '{{ users__default }}'
+    - '{{ users__admins }}'
+    - '{{ users__list }}'
+    - '{{ users__group_list }}'
+    - '{{ users__host_list }}'
+    - '{{ users_root       | d([]) }}'
+    - '{{ users_default    | d([]) }}'
+    - '{{ users_admins     | d([]) }}'
+    - '{{ users_list       | d([]) }}'
+    - '{{ users_group_list | d([]) }}'
+    - '{{ users_host_list  | d([]) }}'
   when: ((item.name is defined and item.name) and
          (item.state|d('present') != 'absent') and
          item.createhome|d(True) and
          ((item.dotfiles is defined and item.dotfiles) or
-          (users_default_dotfiles is defined and users_default_dotfiles)))
+          (users__default_dotfiles is defined and users__default_dotfiles)))
 
 - name: Configure default shell if specified
   user:
     name: '{{ item.name }}'
-    shell: '{{ item.shell | default(users_dotfiles[users_default_dotfiles_key].shell | default(omit)) }}'
+    shell: '{{ item.shell | default(users__dotfiles[users__default_dotfiles_key].shell | default(omit)) }}'
   with_flattened:
-    - '{{ users_root }}'
-    - '{{ users_default }}'
-    - '{{ users_admins }}'
-    - '{{ users_list }}'
-    - '{{ users_group_list }}'
-    - '{{ users_host_list }}'
+    - '{{ users__root }}'
+    - '{{ users__default }}'
+    - '{{ users__admins }}'
+    - '{{ users__list }}'
+    - '{{ users__group_list }}'
+    - '{{ users__host_list }}'
+    - '{{ users_root       | d([]) }}'
+    - '{{ users_default    | d([]) }}'
+    - '{{ users_admins     | d([]) }}'
+    - '{{ users_list       | d([]) }}'
+    - '{{ users_group_list | d([]) }}'
+    - '{{ users_host_list  | d([]) }}'
   when: ((item.name is defined and item.name) and
          (item.state|d('present') != 'absent') and
          item.createhome|d(True) and
          ((item.dotfiles is defined and item.dotfiles) or
-          (users_default_dotfiles is defined and users_default_dotfiles)))
-
+          (users__default_dotfiles is defined and users__default_dotfiles)))

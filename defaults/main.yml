@@ -1,165 +1,126 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Default variables
-# =================
+# debops.users default variables [[[
+# ==================================
 
 # .. contents:: Sections
 #    :local:
 
-# .. Global defaults [[[1
-#
-# -------------------
-#   Global defaults
+# Global defaults [[[
 # -------------------
 
-# .. envvar:: users_enabled
+# .. envvar:: users__enabled [[[
 #
-# Should Ansible manage user accounts? Set to False to disable.
-users_enabled: True
+# Should Ansible manage local user accounts? Set to False to disable.
+users__enabled: True
 
-
-# .. envvar:: users_default_system
+                                                                   # ]]]
+# .. envvar:: users__default_system [[[
 #
 # If enabled, user groups and accounts will be considered "system" accounts by
 # default (ie. local accounts vs. LDAP accounts) and will be created with UID
 # and GID < 1000.
-users_default_system: '{{ (True
-                           if (ansible_local|d() and ansible_local.ldap|d() and
-                               ansible_local.ldap.enabled | bool)
-                           else False) }}'
+users__default_system: '{{ (True
+                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                ansible_local.ldap.enabled | bool)
+                            else False) }}'
 
-
-# .. envvar:: users_default_groups_list
+                                                                   # ]]]
+# .. envvar:: users__default_groups_list [[[
 #
 # List of default groups added to new accounts.
-users_default_groups_list: []
+users__default_groups_list: []
 
-
-# .. envvar:: users_default_groups_append
+                                                                   # ]]]
+# .. envvar:: users__default_groups_append [[[
 #
 # Should default groups be added to existing groups, or replace existing
 # groups?
-users_default_groups_append: 'yes'
-
-
-# .. Managed accounts [[[1
-#
-# --------------------
-#   Managed accounts
+users__default_groups_append: 'yes'
+                                                                   # ]]]
+                                                                   # ]]]
+# Managed accounts [[[
 # --------------------
 
-# .. envvar:: users_root
+# .. envvar:: users__root [[[
 #
 # This is only used for dotfiles management on 'root' account.
-users_root:
+users__root:
   - name: 'root'
 
-
-# .. envvar:: users_default
+                                                                   # ]]]
+# .. envvar:: users__default [[[
 #
 # Default user created by Ansible.
-users_default:
+users__default:
   - name: '{{ (ansible_ssh_user
                if (ansible_ssh_user | d() and
                    ansible_ssh_user != "root")
                else lookup("env","USER")) }}'
     groups: [ 'admins' ]
 
-
-# .. envvar:: users_admins
+                                                                   # ]]]
+# .. envvar:: users__admins [[[
 #
 # Administrators.
-users_admins: []
+users__admins: []
 
-
-# .. envvar:: users_groups
+                                                                   # ]]]
+# .. envvar:: users__groups [[[
 #
 # Groups (normal or system).
-users_groups: []
+users__groups: []
 
-
-# .. envvar:: users_list
+                                                                   # ]]]
+# .. envvar:: users__list [[[
 #
 # "Global" users.
 # This variable is intended to be used in Ansible’s global inventory.
-users_list: []
+users__list: []
 
-
-# .. envvar:: users_group_list
+                                                                   # ]]]
+# .. envvar:: users__group_list [[[
 #
 # "Host group" users.
 # This variable is intended to be used in a host inventory group of Ansible
 # (only one host group is supported).
-users_group_list: []
+users__group_list: []
 
-
-# .. envvar:: users_group_list
+                                                                   # ]]]
+# .. envvar:: users__group_list [[[
 #
 # "Host" users.
 # This variable is intended to be used in the inventory of the host.
-users_host_list: []
-
-
-# --- An example account entry, everything except 'name' is optional
-# List of all recognized values, default value listed first
-#users_admins:
-#  - '{{ users_username }}'
-#
-#users_username:
-#  name: 'username'               # mandatory, default group if not defined
-#  state: 'present,absent'
-#  group: 'name'                  # default group
-#  groups: []                     # list of groups to set
-#  append: yes/no                 # add to, or set groups
-#  gid: 1000
-#  uid: 1000
-#  shell: '/bin/sh'
-#  comment: 'GECOS entry'
-#  system: False/True             # create system user/group
-#
-#  home_owner: ''                 # change home directory owner
-#  home_group: ''                 # change home directory group
-#  home_mode: '0755'              # change home directory permissions
-#
-#  dotfiles: False/True           # download and configure dotfiles?
-#  dotfiles_repo: 'repository'
-#  dotfiles_command: 'make all'
-#  dotfiles_creates '~/.zshrc'
-#
-#  # Create ~/.forward file (set to False to remove ~/.forward)
-#  forward: [ 'user@domain', 'account' ]
-#
-#  # Add or disable ssh authorized keys (set to False to remove ~/.ssh/authorized_keys
-#  sshkeys: [ 'list', 'of', 'keys', "{{ lookup('file', '/home/myuser/.ssh/id_rsa.pub') }}" ]
-#
-#  password: 'krypt pass'         # mkpasswd --method=SHA-512 oder cat /etc/shadow
-#  update_password: 'on_create'   # always will update passwords if they differ.
-#                                 # on_create will only set the password for newly created users. (added in Ansible 1.3)
-#
-#  # If account is removed, remove user's home directory as well
-#  remove: False/True
-
-
-# .. Dotfiles [[[1
-#
-# ------------
-#   Dotfiles
+users__host_list: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Dotfiles [[[
 # ------------
 
+# .. envvar:: users__default_dotfiles [[[
+#
 # Default state of dotfiles on all accounts managed by Ansible
 # False - dotfiles are not configured by default
 # True - dotfiles will be configured by default
-users_default_dotfiles: False
+users__default_dotfiles: False
 
-# Default dotfile hash to use
-users_default_dotfiles_key: 'drybjed'
+                                                                   # ]]]
+# .. envvar:: users__default_dotfiles_key [[[
+#
+# Default dotfile hash to use.
+users__default_dotfiles_key: 'drybjed'
 
-# List of dotfile hashes
-users_dotfiles:
+                                                                   # ]]]
+# .. envvar:: users__dotfiles [[[
+#
+# List of dotfile hashes.
+users__dotfiles:
   drybjed:
     repo: 'https://github.com/drybjed/dotfiles.git'
     command: 'make install'
     creates: '~/.zshrc'
     shell: '/bin/zsh'
-
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

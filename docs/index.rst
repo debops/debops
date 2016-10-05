@@ -11,6 +11,7 @@ Ansible role: debops.users
    defaults
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:
