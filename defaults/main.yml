@@ -75,18 +75,13 @@ users__root_accounts:
 # .. envvar:: users__default_accounts [[[
 #
 # List of default UNIX user accounts managed by Ansible.
-users__default_accounts:
-  - name: '{{ (ansible_ssh_user
-               if (ansible_ssh_user | d() and
-                   ansible_ssh_user != "root")
-               else lookup("env","USER")) }}'
-    groups: [ 'admins' ]
+users__default_accounts: []
 
                                                                    # ]]]
 # .. envvar:: users__admin_accounts [[[
 #
 # List of UNIX administrator accounts managed by Ansible.
-users__admin_accounts: []
+users__admin_accounts: '{{ lookup("template", "lookup/users__admin_accounts.j2") | from_yaml }}'
 
                                                                    # ]]]
 # .. envvar:: users__accounts [[[

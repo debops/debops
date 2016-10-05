@@ -28,6 +28,9 @@ Changed
 
 - Rename user account and group lists to make them more organized. [drybjed_]
 
+- Use the list of admin users maintained by the debops.core_ Ansible facts to
+  manage the administrator accounts. [drybjed_]
+
 
 `debops.users v0.1.6`_ - 2016-02-06
 -----------------------------------
