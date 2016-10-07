@@ -27,6 +27,9 @@ Fixed
 - Ensure that the ``"php" + php__version`` package is installed so that
   packages with alternative package dependencies work correctly. [ypid_]
 
+- Fixed deprecation warning of Ansible 2 when all tasks of the role are
+  skipped. [ypid_]
+
 
 `debops.php v0.2.3`_ - 2016-08-09
 ---------------------------------
