@@ -10,5 +10,18 @@
 
   roles:
 
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ elasticsearch__etc_services__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ elasticsearch__ferm__dependent_rules }}'
+
+    - role: debops.java
+      tags: [ 'role::java' ]
+
     - role: debops.elasticsearch
       tags: [ 'role::elasticsearch' ]
