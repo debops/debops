@@ -439,8 +439,8 @@ elasticsearch_logger_appender:
       conversionPattern: '[%d{ISO8601}][%-5p][%-25c] %m%n'
 
                                                                    # ]]]
-# DebOps inventory configuration [[[
-# ----------------------------------
+# DebOps environment [[[
+# ----------------------
 
 # .. envvar:: elasticsearch_group_master
 #
@@ -470,5 +470,44 @@ elasticsearch_group_coordinator: 'debops_service_elasticsearch_coordinator'
 # traffic aggregators.
 elasticsearch_group_loadbalancer: 'debops_service_elasticsearch_loadbalancer'
 
+
+# .. envvar:: elasticsearch__ferm__dependent_rules
+#
+# Configuration for ``debops.ferm`` Ansible role.
+elasticsearch__ferm__dependent_rules: '{{ elasticsearch__ferm_cluster_rules +
+  (elasticsearch__ferm_http_rules if elasticsearch_http_enabled|d(False) else []) }}'
+
+
+# .. envvar:: elasticsearch__ferm_cluster_rules
+#
+# Configuration for ``debops.ferm`` Ansible rule relating to the regular
+# Elasticsearch cluster traffic.
+elasticsearch__ferm_cluster_rules:
+  - type: 'accept'
+    dport: [ '{{ elasticsearch_node_port | replace("-", ":") }}' ]
+    saddr: '{{ elasticsearch_node_allow }}'
+    accept_any: False
+    weight: '50'
+    role: 'elasticsearch_tcp'
+  - type: 'accept'
+    dport: [ 'elasticsearch-multicast' ]
+    saddr: '{{ elasticsearch_multicast_allow }}'
+    protocol: [ 'udp' ]
+    accept_any: False
+    weight: '50'
+    role: 'elasticsearch_multicast'
+
+
+# .. envvar:: elasticsearch__ferm_http_rules
+#
+# Configuration for ``debops.ferm`` Ansible rule relating to the Elasticsearch
+# HTTP traffic.
+elasticsearch__ferm_http_rules:
+  - type: 'accept'
+    dport: [ '{{ elasticsearch_http_port | replace("-", ":") }}' ]
+    saddr: '{{ elasticsearch_http_allow }}'
+    accept_any: False
+    weight: '50'
+    role: 'elasticsearch_http'
                                                                    # ]]]
                                                                    # ]]]

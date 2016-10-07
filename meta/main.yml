@@ -7,17 +7,8 @@ dependencies:
         port: '{{ elasticsearch_discovery_multicast_port }}'
 
   - role: debops.ferm
-    ferm_input_group_list:
-      - type: 'dport_accept'
-        dport: ['{{ elasticsearch_node_port | replace("-", ":") }}']
-        saddr: '{{ elasticsearch_node_allow }}'
-      - type: 'dport_accept'
-        dport: ['{{ elasticsearch_http_port | replace("-", ":") }}']
-        saddr: '{{ elasticsearch_http_allow }}'
-      - type: 'dport_accept'
-        protocol: [ 'udp' ]
-        dport: ['elasticsearch-multicast']
-        saddr: '{{ elasticsearch_multicast_allow }}'
+    ferm__dependent_rules:
+      - '{{ elasticsearch__ferm__dependent_rules }}'
 
   - role: debops.java
     tags: java
