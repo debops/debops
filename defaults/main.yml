@@ -1,238 +1,393 @@
 ---
-# role: elasticsearch
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.elasticsearch default variables [[[
+# ==========================================
+
+# .. contents:: Sections
+#    :local:
 
 
-# NOTE: For the details on what each variable does, please see comments in the
-# default Elasticsearch configuration file:
-# https://github.com/elasticsearch/elasticsearch/blob/master/config/elasticsearch.yml
+# Basic configuration [[[
+# -----------------------
 
-
-# ---- Inventory group names ----
-
-elasticsearch_group_master: 'debops_elasticsearch_master'
-elasticsearch_group_workhorse: 'debops_elasticsearch_workhorse'
-elasticsearch_group_coordinator: 'debops_elasticsearch_coordinator'
-elasticsearch_group_loadbalancer: 'debops_elasticsearch_loadbalancer'
-
-
-# ---- DebOps role dependencies ----
-
-# Automatically install Java 7 Open JDK JRE.
-elasticsearch_role_dependencies: ['java']
-
-
-# ---- Version ----
-
-# It will automatically install the latest minor release, only supply 1.x.
+# .. envvar:: elasticsearch_version
+#
+# Elasticsearch version. To install the latest minor release, only supply 1.x.
 elasticsearch_version: '1.7'
 
 
-# ---- Cluster ----
-
+# .. envvar:: elasticsearch_cluster_name
+#
+# Cluster name.
 elasticsearch_cluster_name: 'elasticsearch'
 
+                                                                   # ]]]
+# Node configuration [[[
+# ----------------------
 
-# ---- Node ----
-
-# An empty name will let elasticsearch randomly generate one for you.
+# .. envvar:: elasticsearch_node_name
+#
+# Node name. An empty string will let Elasticsearch randomly generate one.
 elasticsearch_node_name: ''
+
 
 elasticsearch_node_master: true
 elasticsearch_node_data: true
 elasticsearch_node_rack: 'nicerack'
 elasticsearch_node_max_local_storage_nodes: 50
 
+                                                                   # ]]]
+# Index configuration [[[
+# -----------------------
 
-# ---- Index ----
-
+# .. envvar:: elasticsearch_index_shards
+#
+# Number of shards to which an index is distributed.
 elasticsearch_index_shards: 5
+
+
+# .. envvar:: elasticsearch_index_replicas
+#
+# Number of replicas that an index must have.
 elasticsearch_index_replicas: 1
 
+                                                                   # ]]]
+# Plugins and libraries [[[
+# =========================
 
-# ---- Plugins ----
-
-# Examples:
+# .. envvar:: elasticsearch_plugins
 #
-# It follows the same syntax as using the ES plugin manager:
-# bin/plugin -i <name> -u <url>
-#
-# The url and config is optional.
-#
-#
-# Using only a name...
-#
-#elasticsearch_plugins:
-#  - name: 'com.sksamuel.elasticsearch/elasticsearch-river-redis/1.1.0'
-#
-#elasticsearch_plugins:
-#  - name: 'com.sksamuel.elasticsearch/elasticsearch-river-redis/1.1.0'
-#    delete: True
-#
-#
-# Using a name with url...
-#
-#elasticsearch_plugins:
-#  - name: 'facet-script'
-#    url: 'http://dl.bintray.com/content/imotov/elasticsearch-plugins/elasticsearch-facet-script-1.1.2.zip'
-#
-#
-# Using a name and custom configuration (in this case, cloud-aws)...
-# Just pass a string block to the config key, it works for any plugin.
-#
-#elasticsearch_plugins:
-#  - name: elasticsearch/elasticsearch-cloud-aws/2.3.0
-#    config: |
-#    # cloud-aws configuration
-#      cloud:
-#        aws:
-#          access_key: <your access key>
-#          secret_key: <your secret key>
-#      discovery:
-#        type: ec2
-#      repositories:
-#        bucket: <the bucket created in s3>
-
-# A list of plugins to install or delete.
+# A list of Elasticsearch plugins to install or delete. For more information
+# see :ref:`elasticsearch__ref_plugins`.
 elasticsearch_plugins: []
 
 
-# ---- Libraries ----
-
-# Examples:
+# .. envvar:: elasticsearch_libs
 #
-# The url is required, everything else is optional.
-#
-#
-#elasticsearch_libs:
-#  url: 'http://somewebsite.com/foo.jar'
-#
-#
-#elasticsearch_libs:
-#  url: 'http://somewebsite.com/foo.jar'
-#  file: 'differentfilename.jar'
-#  delete: True
-#
-#
-#elasticsearch_libs:
-#  url: 'http://somewebsite.com/foo.jar'
-#  user: 'basicauthuser'
-#  pass: 'basicauthpass'
-
-# A list of libraries to install or delete.
+# A list of Java libraries which will be loaded into the Elasticsearch
+# classpath. For more information see :ref:`elasticsearch__ref_libs`.
 elasticsearch_libs: []
 
+                                                                   # ]]]
+# Resource configuration [[[
+# --------------------------
 
-# ---- Memory and filesystem ----
-
+# .. envvar:: elasticsearch_memory_mlockall
+#
+# Lock the process address space into RAM, preventing any Elasticsearch memory
+# from being swapped out.
 elasticsearch_memory_mlockall: false
 
+
+# .. envvar:: elasticsearch_memory_heap_size_multiplier
+#
 # The heap size should be about 50% of your total RAM on a dedicated instance.
 # If you are running ES with a bunch of other services don't be afraid to
 # drastically lower this but be aware of performance issues if it's too low.
 elasticsearch_memory_heap_size_multiplier: 0.5
 
+
+# .. envvar:: elasticsearch_memory_heap_newsize
+#
+# The size of the new generation heap .
 elasticsearch_memory_heap_newsize: ''
+
+
+# .. envvar:: elasticsearch_memory_direct_size
+#
+# The maximum size of the direct memory.
 elasticsearch_memory_direct_size: ''
+
+
+# .. envvar:: elasticsearch_memory_locked_size
+#
+# Maximum locked memory size.
 elasticsearch_memory_locked_size: 'unlimited'
+
+
+# .. envvar:: elasticsearch_memory_vma_max_map_count
+#
+# Maximum locked memory size.
 elasticsearch_memory_vma_max_map_count: 262144
+
+
+# .. envvar:: elasticsearch_fs_max_open_files
+#
+# Maximum number of open files.
 elasticsearch_fs_max_open_files: 65535
 
+
+# .. envvar:: elasticsearch_fs_java_opts
+#
 # Force ES to use ipv4, set this to an empty string if you want to use ipv6.
 elasticsearch_fs_java_opts: '-Djava.net.preferIPv4Stack=true'
 
+                                                                   # ]]]
+# Network configuration [[[
+# -------------------------
 
-# ---- Network and HTTP ----
-
+# .. envvar:: elasticsearch_bind_host
+#
+# This specifies which network interface(s) a node should bind to in order to
+# listen for incoming requests.
 elasticsearch_bind_host: 'localhost'
-elasticsearch_publish_host: 'localhost'
-elasticsearch_node_port: '9300-9400'
-elasticsearch_http_port: '9200-9300'
 
+
+# .. envvar:: elasticsearch_publish_host
+#
+# The publish host is the single interface that the node advertises to other
+# nodes in the cluster, so that those nodes can connect to it.
+elasticsearch_publish_host: 'localhost'
+
+
+# .. envvar:: elasticsearch_node_port
+#
+# A bind port range for TCP protocol connections.
+elasticsearch_node_port: '9300-9400'
+
+
+# .. envvar:: elasticsearch_compress
+#
+# Enable TCP protocol compression (LZF) between all nodes.
 elasticsearch_compress: false
-elasticsearch_http_max_content_length: '100mb'
+
+
+# .. envvar:: elasticsearch_http_enabled
+#
+# Enable the HTTP module.
 elasticsearch_http_enabled: true
 
-# Which hosts are allowed to connect through the firewall?
 
-# This is used for inter-node communication and in multicast's case, discovery.
-elasticsearch_node_allow: []
-elasticsearch_multicast_allow: '{{ elasticsearch_node_allow }}'
-
-# This is used for accessing the http API, you may consider having your app
-# servers be able to access it, etc..
-elasticsearch_http_allow: []
-
-
-# ---- Security ----
-
-# Do not enable this unless you have a very good reason to do so.
+# .. envvar:: elasticsearch_jsonp_enabled
+#
+# Enable JSONP via HTTP. Do not enable this unless you have a very good reason
+# to do so. This feature is deprecated and won't be supported anymore with
+# Elasticsearch 2.x.
 elasticsearch_jsonp_enabled: false
 
 
-# ---- Gateway ----
+# .. envvar:: elasticsearch_http_port
+#
+# A bind port range for HTTP connections.
+elasticsearch_http_port: '9200-9300'
 
+
+# .. envvar:: elasticsearch_http_max_content_length
+#
+# The max content of an HTTP request.
+elasticsearch_http_max_content_length: '100mb'
+
+
+# .. envvar:: elasticsearch_node_allow
+#
+# List of IP addresses or CIDR subnets which will be allowed via
+# :command:`ip(6)tables` to connect to the Elasticsearch TCP service. If it's
+# empty, remote connections are not allowed.
+elasticsearch_node_allow: []
+
+
+# .. envvar:: elasticsearch_multicast_allow
+#
+# List of IP addresses or CIDR subnets which will be allowed via
+# :command:`ip(6)tables` to communicate via Elasticsearch multicast protocol
+# (inter-node communication). If it's empty, remote connections are not allowed.
+elasticsearch_multicast_allow: '{{ elasticsearch_node_allow }}'
+
+
+# .. envvar:: elasticsearch_http_allow
+#
+# List of IP addresses or CIDR subnets which will be allowed via
+# :command:`ip(6)tables` to access the Elasticsearch HTTP API. If it's empty,
+# remote connections are not allowed.
+elasticsearch_http_allow: []
+
+
+# .. envvar:: elasticsearch_gateway_type
+#
+# Gateway type for (re)storing the state of the cluster meta data across full
+# cluster restarts. For more information see `Gateway Module
+# <https://www.elastic.co/guide/en/elasticsearch/reference/1.7/modules-gateway.html>`.
 elasticsearch_gateway_type: 'local'
+
 
 # These get dynamically set by ES, make sure you know what you're doing.
 #elasticsearch_gateway_recover_after_time: ?
 #elasticsearch_gateway_recover_after_nodes: ?
 #elasticsearch_gateway_expected_nodes: ?
 
+                                                                   # ]]]
+# Index recovery policy [[[
+# -------------------------
 
-# ---- Recovery throttling ----
-
+# .. envvar:: elasticsearch_recovery_max_bytes_per_sec
+#
+# Max bytes per second for index recovery data transfer.
 elasticsearch_recovery_max_bytes_per_sec: '20mb'
+
 
 # These get dynamically set by ES, make sure you know what you're doing.
 #elasticsearch_recovery_node_initial_primaries_recoveries: ?
 #elasticsearch_recovery_node_concurrent_recoveries: ?
 #elasticsearch_recovery_concurrent_streams: ?
 
+                                                                   # ]]]
+# Cluster discovery [[[
+# ---------------------
 
-# ---- Discovery ----
-
-# Consider raising this once you have > 2 nodes.
+# .. envvar:: elasticsearch_discovery_minimum_master_nodes
+#
+# Sets the minimum number of master eligible nodes a node should "see" in order
+# to win a master election. It must be set to a quorum of your master eligible
+# nodes. Consider raising this once you have > 2 nodes.
 elasticsearch_discovery_minimum_master_nodes: 1
 
+
+# .. envvar:: elasticsearch_discovery_ping_timeout
+#
+# How long to wait for a ping response.
 elasticsearch_discovery_ping_timeout: '3s'
+
+
+# .. envvar:: elasticsearch_discovery_multicast_enabled
+#
+# Whether multicast ping discovery is enabled.
 elasticsearch_discovery_multicast_enabled: true
+
+
+# .. envvar:: elasticsearch_discovery_ping_unicast_hosts
+#
+# List of hosts in the cluster when using unicast cluster discovery.
 elasticsearch_discovery_ping_unicast_hosts: []
 
+                                                                   # ]]]
+# Logging configuration
+# =====================
 
-# ---- Slow log ----
-
+# .. envvar:: elasticsearch_slowlog_query_warn
+#
+# Shard level query time threshold for slow log warning level.
 elasticsearch_slowlog_query_warn: '10s'
+
+
+# .. envvar:: elasticsearch_slowlog_query_info
+#
+# Shard level query time threshold for slow log info level.
 elasticsearch_slowlog_query_info: '5s'
+
+
+# .. envvar:: elasticsearch_slowlog_query_debug
+#
+# Shard level query time threshold for slow log debug level.
 elasticsearch_slowlog_query_debug: '2s'
+
+
+# .. envvar:: elasticsearch_slowlog_query_trace
+#
+# Shard level query time threshold for slow log trace level.
 elasticsearch_slowlog_query_trace: '500ms'
 
+
+# .. envvar:: elasticsearch_slowlog_fetch_warn
+#
+# Shard level fetch time threshold for slow log warning level.
 elasticsearch_slowlog_fetch_warn: '1s'
+
+
+# .. envvar:: elasticsearch_slowlog_fetch_info
+#
+# Shard level fetch time threshold for slow log info level.
 elasticsearch_slowlog_fetch_info: '800ms'
+
+
+# .. envvar:: elasticsearch_slowlog_fetch_debug
+#
+# Shard level fetch time threshold for slow log debug level.
 elasticsearch_slowlog_fetch_debug: '500ms'
+
+
+# .. envvar:: elasticsearch_slowlog_fetch_trace
+#
+# Shard level fetch time threshold for slow log trace level.
 elasticsearch_slowlog_fetch_trace: '200ms'
 
+
+# .. envvar:: elasticsearch_slowlog_index_warn
+#
+# Shard level index time threshold for slow log warning level.
 elasticsearch_slowlog_index_warn: '10s'
+
+
+# .. envvar:: elasticsearch_slowlog_index_info
+#
+# Shard level index time threshold for slow log info level.
 elasticsearch_slowlog_index_info: '5s'
+
+
+# .. envvar:: elasticsearch_slowlog_index_debug
+#
+# Shard level index time threshold for slow log debug level.
 elasticsearch_slowlog_index_debug: '2s'
+
+
+# .. envvar:: elasticsearch_slowlog_index_trace
+#
+# Shard level index time threshold for slow log trace level.
 elasticsearch_slowlog_index_trace: '500ms'
 
 
-# ---- GC Logging ----
-
+# .. envvar:: elasticsearch_monitor_gc_young_warn
+#
+# Java VM young space garbage collection time threshold for warning log level.
 elasticsearch_monitor_gc_young_warn: '1000ms'
+
+
+# .. envvar:: elasticsearch_monitor_gc_young_info
+#
+# Java VM young space garbage collection time threshold for info log level.
 elasticsearch_monitor_gc_young_info: '700ms'
+
+
+# .. envvar:: elasticsearch_monitor_gc_young_debug
+#
+# Java VM young space garbage collection time threshold for debug log level.
 elasticsearch_monitor_gc_young_debug: '400ms'
 
+
+# .. envvar:: elasticsearch_monitor_gc_old_warn
+#
+# Java VM old space garbage collection time threshold for warning log level.
 elasticsearch_monitor_gc_old_warn: '10s'
+
+
+# .. envvar:: elasticsearch_monitor_gc_old_info
+#
+# Java VM old space garbage collection time threshold for info log level.
 elasticsearch_monitor_gc_old_info: '5s'
+
+
+# .. envvar:: elasticsearch_monitor_gc_old_debug
+#
+# Java VM old space garbage collection time threshold for debug log level.
 elasticsearch_monitor_gc_old_debug: '2s'
 
 
-# ---- Logging ----
-
+# .. envvar:: elasticsearch_logger_level
+#
+# Global Elasticsearch log level.
 elasticsearch_logger_level: 'INFO'
+
+
+# .. envvar:: elasticsearch_logger_output
+#
+# List of output log appenders. The individual appenders are defined in
+# :envvar:`elasticsearch_logger_appender`.
 elasticsearch_logger_output: '{{ elasticsearch_logger_level }}, console, file'
 
+
+# .. envvar:: elasticsearch_logger
+#
+# Log levels for individual Elasticsearch components.
 elasticsearch_logger:
   action: 'DEBUG'
   amazon_aws: 'WARN'
@@ -243,10 +398,18 @@ elasticsearch_logger:
   index_search_slowlog: 'TRACE, index_search_slow_log_file'
   index_indexing_slowlog: 'TRACE, index_indexing_slow_log_file'
 
+
+# .. envvar:: elasticsearch_logger_additivity
+#
+# Log levels for individual Elasticsearch components.
 elasticsearch_logger_additivity:
   index_search_slowlog: false
   index_indexing_slowlog: false
 
+
+# .. envvar:: elasticsearch_logger_appender
+#
+# Log appender definitions.
 elasticsearch_logger_appender:
   console:
     type: console
@@ -274,3 +437,37 @@ elasticsearch_logger_appender:
     layout:
       type: pattern
       conversionPattern: '[%d{ISO8601}][%-5p][%-25c] %m%n'
+
+                                                                   # ]]]
+# DebOps inventory configuration [[[
+# ----------------------------------
+
+# .. envvar:: elasticsearch_group_master
+#
+# Ansible inventory group name of the Elasticsearch master nodes.
+elasticsearch_group_master: 'debops_elasticsearch_master'
+
+
+# .. envvar:: elasticsearch_group_workhorse
+#
+# Ansible inventory group name of Elasticsearch worker nodes which shouldn't
+# become master nodes.
+elasticsearch_group_workhorse: 'debops_elasticsearch_workhorse'
+
+
+# .. envvar:: elasticsearch_group_coordinator
+#
+# Ansible inventory group name of Elasticsearch master nodes which shouldn't
+# store persistent data.
+elasticsearch_group_coordinator: 'debops_elasticsearch_coordinator'
+
+
+# .. envvar:: elasticsearch_group_loadbalancer
+#
+# Ansible inventory group name of Elasticsearch nodes which shouldn't become
+# master and shouldn't store persistent data but act as load balancer or
+# traffic aggregators.
+elasticsearch_group_loadbalancer: 'debops_elasticsearch_loadbalancer'
+
+                                                                   # ]]]
+                                                                   # ]]]
