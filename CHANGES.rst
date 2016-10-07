@@ -6,7 +6,7 @@ Changelog
 **debops.php**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
-and `human-readable changelog <http://keepachangelog.com/>`_.
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
 The current role maintainer_ is drybjed_.
 
@@ -26,6 +26,9 @@ Fixed
 
 - Ensure that the ``"php" + php__version`` package is installed so that
   packages with alternative package dependencies work correctly. [ypid_]
+
+- Fixed deprecation warning of Ansible 2 when all tasks of the role are
+  skipped. [ypid_]
 
 
 `debops.php v0.2.3`_ - 2016-08-09
@@ -109,20 +112,20 @@ Added
   management from Ansible inventory as well as creation of pools by other
   Ansible roles. [drybjed_]
 
-- Add new ``env/`` subdirectory for a custom ``debops.php/env`` Ansible role
+- Add new :file:`env/` subdirectory for a custom ``debops.php/env`` Ansible role
   which prepares environment usable by other Ansible roles before the main role
   is executed. Some tasks from the main role have been moved there, thus
   ``debops.php/env`` role is mandatory and needs to be added to all playbooks
   that use ``debops.php`` role. [drybjed_]
 
-- Add an example Ansible playbook in ``docs/playbooks/`` directory. [drybjed_]
+- Add an example Ansible playbook in :file:`docs/playbooks/` directory. [drybjed_]
 
 - Add custom configuration for debops.logrotate_ Ansible role in default
   variables. [drybjed_]
 
 - Add new :file:`php.ini` configuration which uses a separate :file:`/etc/php/ansible/`
   directory with generated configuration files, which are then symlinked to
-  different PHP server API ``conf.d/`` directories, similar to how Debian
+  different PHP server API :file:`conf.d/` directories, similar to how Debian
   packages handle PHP extensions. The role allows easy creation of custom
   configuration files using a separate YAML list. Configuration is applied to
   all server APIs at the same time. [drybjed_]
