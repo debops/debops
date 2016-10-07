@@ -10,7 +10,7 @@
         state=absent
   when: item.delete is defined and item.delete and
         item.file | default(item.url.split('/')[-1]) in elasticsearch_register_installed_libs.stdout
-  with_items: elasticsearch_libs
+  with_items: '{{ elasticsearch_libs }}'
   notify: [ 'Restart Elasticsearch' ]
 
 - name: Install custom libs
@@ -21,5 +21,5 @@
            owner=root group=root mode=0644
   when: (item.delete is undefined or not item.delete) and
         not item.file | default(item.url.split('/')[-1]) in elasticsearch_register_installed_libs.stdout
-  with_items: elasticsearch_libs
+  with_items: '{{ elasticsearch_libs }}'
   notify: [ 'Restart Elasticsearch' ]

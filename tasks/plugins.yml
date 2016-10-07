@@ -13,7 +13,7 @@
   when: item.delete is defined and item.delete and
         (item.name in elasticsearch_register_installed_plugins.stdout or
         item.name.split('/')[1] in elasticsearch_register_installed_plugins.stdout)
-  with_items: elasticsearch_plugins
+  with_items: '{{ elasticsearch_plugins }}'
   notify: [ 'Restart Elasticsearch' ]
 
 - name: Install plugins by name
@@ -21,7 +21,7 @@
   when: (item.url is undefined or not item.url) and
         (item.delete is undefined or not item.delete) and
         not item.name.split('/')[1] in elasticsearch_register_installed_plugins.stdout
-  with_items: elasticsearch_plugins
+  with_items: '{{ elasticsearch_plugins }}'
   notify: [ 'Restart Elasticsearch' ]
 
 - name: Install plugins by url
@@ -30,5 +30,5 @@
   when: item.url is defined and item.url and
         (item.delete is undefined or not item.delete) and
         not item.name in elasticsearch_register_installed_plugins.stdout
-  with_items: elasticsearch_plugins
+  with_items: '{{ elasticsearch_plugins }}'
   notify: [ 'Restart Elasticsearch' ]
