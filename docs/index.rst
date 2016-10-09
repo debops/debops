@@ -10,6 +10,7 @@ Ansible role: debops.nullmailer
    getting-started
    defaults
    defaults-detailed
+   guides
    copyright
    changelog
 
