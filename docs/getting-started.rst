@@ -10,13 +10,32 @@ Getting started
 Example inventory
 -----------------
 
-Elasticsearch consists of various components. 
-To setup Elasticsearch on a given remote host, it needs to be added to
-``[debops_service_elasticsearch]`` Ansible inventory group:
+An Elasticsearch cluster can be built from different nodes with different
+capabilities. The following Ansible inventory groups can be used:
+
+``debops_service_elasticsearch_master``
+  General purpose node which can act as master but also persistently stores
+  index data.
+
+``debops_service_elasticsearch_workhorse``
+  Elasticsearch worker nodes which persistenlty store index data but shouldn't
+  become master nodes.
+
+``debops_service_elasticsearch_coordinator``
+  Elasticsearch nodes which can act as master but shouldn't store persistent
+  index data.
+
+``debops_service_elasticsearch_loadbalancer``
+  Elasticsearch nodes which shouldn't become master and shouldn't store
+  persistent data but act as load balancer or traffic aggregators.
+
+If you only have one node or only start using Elasticsearch you should add
+your host to the ``[debops_service_elasticsearch_master]`` Ansible inventory
+group:
 
 .. code-block:: none
 
-    [debops_service_elasticsearch]
+    [debops_service_elasticsearch_master]
     hostname
 
 
