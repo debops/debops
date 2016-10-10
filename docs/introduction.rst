@@ -11,7 +11,7 @@ Installation
 
 This role requires at least Ansible ``v2.0.0``. To install it, run:
 
-.. code-block:: console
+.. code-block:: shell
 
    ansible-galaxy install debops.apache
 

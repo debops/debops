@@ -22,8 +22,8 @@ Added
 Fixed
 ~~~~~
 
-- Fixed usage of ``apache__dependent_packages`` for ``debops.apache``.
+- Fixed usage of :envvar:`apache__dependent_packages` for ``debops.apache``.
   Previously the variable was only considered when handed to the ``debops.apache/env`` role.
   Note that all dependency variables should be passed to the main
-  ``debops.apache`` role to avoid confusion. ``apache__dependent_packages`` now
+  ``debops.apache`` role to avoid confusion. :envvar:`apache__dependent_packages` now
   only works when passed to the main role.
