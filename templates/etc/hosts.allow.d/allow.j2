@@ -65,6 +65,8 @@
 {{ tcpwrappers__tpl_daemon | sort | unique | join(', ') }} : {{ tcpwrappers__tpl_client | unique | join(', ') }}{% if tcpwrappers__tpl_option %} : {{ tcpwrappers__tpl_option | join(' : ') }}{% endif %}
 {%   elif item.accept_any is undefined or item.accept_any | bool %}
 {{ tcpwrappers__tpl_daemon | sort | unique | join(', ') }} : {{ item.default | d('ALL') }}{% if tcpwrappers__tpl_option %} : {{ tcpwrappers__tpl_option | join(' : ') }}{% endif %}
+{%   elif not item.accept_any | bool %}
+# Access to '{{ tcpwrappers__tpl_daemon | sort | unique | join(', ') }}' from any host is not allowed
 {%   elif item.default|d() %}
 {{ tcpwrappers__tpl_daemon | sort | unique | join(', ') }} : {{ item.default }}{% if tcpwrappers__tpl_option %} : {{ tcpwrappers__tpl_option | join(' : ') }}{% endif %}
 {%   else %}
