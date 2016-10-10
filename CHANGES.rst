@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.sshd master`_ - unreleased
 ----------------------------------
 
-.. _debops.sshd master: https://github.com/debops/ansible-sshd/compare/v0.2.4...master
+.. _debops.sshd master: https://github.com/debops/ansible-sshd/compare/v0.2.5...master
+
+
+`debops.sshd v0.2.5`_ - 2016-10-10
+----------------------------------
+
+.. _debops.sshd v0.2.5: https://github.com/debops/ansible-sshd/compare/v0.2.4...v0.2.5
 
 Changed
 ~~~~~~~
@@ -22,6 +28,10 @@ Changed
 - Moved some packages from :envvar:`sshd__base_packages` to
   :envvar:`sshd__recommended_packages` and :envvar:`sshd__optional_packages` to
   allow to overwrite them. [ypid_]
+
+- Use the ``accept_any`` parameter in debops.tcpwrappers_ role configuration
+  to enable or disable entries depending on which lists of allowed hosts are
+  active. [drybjed_]
 
 
 `debops.sshd v0.2.4`_ - 2016-07-31
