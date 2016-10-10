@@ -17,11 +17,13 @@ debops.apache v0.1.0 - unreleased
 Added
 ~~~~~
 
-.. Added for new features.
-   Changed for changes in existing functionality.
-   Deprecated for once-stable features removed in upcoming releases.
-   Removed for deprecated features removed in this release.
-   Fixed for any bug fixes.
-   Security to invite users to upgrade in case of vulnerabilities.
-
 - Initial coding and design. [ypid_]
+
+Fixed
+~~~~~
+
+- Fixed usage of ``apache__dependent_packages`` for ``debops.apache``.
+  Previously the variable was only considered when handed to the ``debops.apache/env`` role.
+  Note that all dependency variables should be passed to the main
+  ``debops.apache`` role to avoid confusion. ``apache__dependent_packages`` now
+  only works when passed to the main role.
