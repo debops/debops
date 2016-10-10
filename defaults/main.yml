@@ -682,6 +682,7 @@ sshd__tcpwrappers__dependent_allow:
 
   - daemon: 'sshd'
     client: '{{ sshd__whitelist + sshd__group_whitelist + sshd__host_whitelist }}'
+    accept_any: '{{ False if (sshd__allow + sshd__group_allow + sshd__host_allow) else True }}'
     weight: '25'
     filename: 'sshd_dependent_whitelist'
     comment: 'Whitelist of hosts allowed to connect to ssh'
@@ -689,6 +690,7 @@ sshd__tcpwrappers__dependent_allow:
   - daemon: 'sshd'
     client: '{{ sshd__allow + sshd__group_allow + sshd__host_allow }}'
     default: '{{ sshd__tcpwrappers_default }}'
+    accept_any: '{{ True if (sshd__whitelist + sshd__group_whitelist + sshd__host_whitelist) else False }}'
     weight: '30'
     filename: 'sshd_dependent_allow'
     comment: 'List of hosts allowed to connect to ssh'
