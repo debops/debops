@@ -9,11 +9,11 @@ enable_long_queue_ids           = {{ postfix_long_queue_ids | default('yes') }}
 {% if 'local' in postfix %}
 myorigin                        = /etc/mailname
 {% else %}
-{% if ((postfix_mydomain is defined and postfix_mydomain) or (ansible_domain is defined and ansible_domain)) %}
+{%     if ((postfix_mydomain is defined and postfix_mydomain) or (ansible_domain is defined and ansible_domain)) %}
 myorigin                        = $mydomain
-{% else %}
+{%     else %}
 myorigin                        = $myhostname
-{% endif %}
+{%     endif %}
 local_recipient_maps            =
 local_transport                 = error:local mail delivery is disabled
 
@@ -28,7 +28,7 @@ alias_maps                      = {{ get.list('alias_maps', [ 'hash:/etc/aliases
 alias_database                  = hash:/etc/aliases
 {% set postfix_tpl_virtual_alias_maps = [] %}
 {% if ('mx' in postfix or 'submission' in postfix) and 'local' not in postfix %}
-{% set postfix_tpl_virtual_alias_maps = postfix_tpl_virtual_alias_maps + ['hash:${config_directory}/hash_tables/mx_relay_virtual_alias_maps'] %}
+{%     set postfix_tpl_virtual_alias_maps = postfix_tpl_virtual_alias_maps + ['hash:${config_directory}/hash_tables/mx_relay_virtual_alias_maps'] %}
 {% endif %}
 {% if get.list('virtual_alias_maps', postfix_tpl_virtual_alias_maps + postfix_virtual_alias_maps) %}
 virtual_alias_maps              = {{ get.list('virtual_alias_maps', postfix_tpl_virtual_alias_maps + postfix_virtual_alias_maps) }}
@@ -38,11 +38,11 @@ mailbox_size_limit              = {{ postfix_mailbox_size_limit | default('0') }
 message_size_limit              = {{ (postfix_message_size_limit | default(50) * 1024 * 1024|int)|round|int|string }}
 recipient_delimiter             = {{ postfix_recipient_delimiter | default('+') }}
 {% if 'network' in postfix %}
-{% if postfix_inet_interfaces is defined and postfix_inet_interfaces %}
+{%     if postfix_inet_interfaces is defined and postfix_inet_interfaces %}
 inet_interfaces                 = {{ postfix_inet_interfaces }}
-{% else %}
+{%     else %}
 inet_interfaces                 = all
-{% endif %}
+{%     endif %}
 {% else %}
 inet_interfaces                 = loopback-only
 {% endif %}
@@ -50,18 +50,18 @@ inet_interfaces                 = loopback-only
 {% set postfix_tpl_mydestination = [] %}
 {% set postfix_tpl_local_mydestination = [] %}
 {% if (ansible_local|d() and ansible_local.postfix|d() and ansible_local.postfix.lists|d() and ansible_local.postfix.lists.mydestination|d()) %}
-{% for element in ansible_local.postfix.lists.mydestination %}
-{% set _ = postfix_tpl_local_mydestination.append(element) %}
-{% endfor %}
+{%     for element in ansible_local.postfix.lists.mydestination %}
+{%         set _ = postfix_tpl_local_mydestination.append(element) %}
+{%     endfor %}
 {% endif %}
 {% if 'local' in postfix %}
-{% if ((postfix_mydomain is defined and postfix_mydomain) or (ansible_domain is defined and ansible_domain)) %}
-{% set postfix_tpl_mydestination = postfix_mydestination + postfix_tpl_local_mydestination + [postfix_myhostname | default(ansible_fqdn), ansible_hostname, 'localhost.' + postfix_mydomain | default(ansible_domain), 'localhost'] %}
+{%     if ((postfix_mydomain is defined and postfix_mydomain) or (ansible_domain is defined and ansible_domain)) %}
+{%         set postfix_tpl_mydestination = postfix_mydestination + postfix_tpl_local_mydestination + [postfix_myhostname | default(ansible_fqdn), ansible_hostname, 'localhost.' + postfix_mydomain | default(ansible_domain), 'localhost'] %}
+{%     else %}
+{%         set postfix_tpl_mydestination = postfix_mydestination + postfix_tpl_local_mydestination + [postfix_myhostname | default(ansible_fqdn), ansible_hostname, 'localhost'] %}
+{%     endif %}
 {% else %}
-{% set postfix_tpl_mydestination = postfix_mydestination + postfix_tpl_local_mydestination + [postfix_myhostname | default(ansible_fqdn), ansible_hostname, 'localhost'] %}
-{% endif %}
-{% else %}
-{% set postfix_tpl_mydestination = postfix_mydestination + postfix_tpl_local_mydestination %}
+{%     set postfix_tpl_mydestination = postfix_mydestination + postfix_tpl_local_mydestination %}
 {% endif %}
 {% if postfix_tpl_mydestination %}
 mydestination                   = {{ ', '.join(postfix_tpl_mydestination | unique) }}
@@ -76,7 +76,7 @@ virtual_alias_domains           = {{ get.list('virtual_alias_domains') }}
 {% endif %}
 {% set postfix_tpl_relay_domains = [] %}
 {% if 'mx' in postfix and postfix_relay_domains is defined and postfix_relay_domains %}
-{% set postfix_tpl_relay_domains = postfix_tpl_relay_domains + postfix_relay_domains %}
+{%     set postfix_tpl_relay_domains = postfix_tpl_relay_domains + postfix_relay_domains %}
 {% endif %}
 {% if get.list('relay_domains', postfix_tpl_relay_domains) %}
 relay_domains                   = {{ get.list('relay_domains', postfix_tpl_relay_domains) }}
@@ -84,37 +84,37 @@ relay_domains                   = {{ get.list('relay_domains', postfix_tpl_relay
 {% endif %}
 {% set postfix_tpl_relay_recipient_maps = [] %}
 {% if 'mx' in postfix and postfix_relay_recipient_maps is defined and postfix_relay_recipient_maps %}
-{% set postfix_tpl_relay_recipient_maps = postfix_tpl_relay_recipient_maps + postfix_relay_recipient_maps %}
+{%     set postfix_tpl_relay_recipient_maps = postfix_tpl_relay_recipient_maps + postfix_relay_recipient_maps %}
 {% endif %}
 {% if get.list('relay_recipient_maps', postfix_tpl_relay_recipient_maps) %}
 relay_recipient_maps            = {{ get.list('relay_recipient_maps', postfix_tpl_relay_recipient_maps) }}
 show_user_unknown_table_name    = no
 {% endif %}
 {% if postfix_relayhost is defined and postfix_relayhost %}
-{% if postfix_relayhost == True %}
+{%     if postfix_relayhost == True %}
 relayhost                       = {{ ansible_domain }}
 
-{% else %}
-{% if postfix_relayhost != ansible_fqdn %}
+{%     else %}
+{%         if postfix_relayhost != ansible_fqdn %}
 relayhost                       = {{ postfix_relayhost }}
 
-{% endif %}
-{% endif %}
+{%         endif %}
+{%     endif %}
 {% elif 'local' not in postfix and 'mx' not in postfix %}
-{% if ansible_domain is defined and ansible_domain %}
+{%     if ansible_domain is defined and ansible_domain %}
 relayhost                       = {{ ansible_domain }}
-{% endif %}
+{%     endif %}
 
 {% endif %}
 {% set postfix_tpl_transport_maps = [] %}
 {% if postfix_transport_maps is defined and postfix_transport_maps %}
-{% set postfix_tpl_transport_maps = postfix_tpl_transport_maps + postfix_transport_maps %}
+{%     set postfix_tpl_transport_maps = postfix_tpl_transport_maps + postfix_transport_maps %}
 {% endif %}
 {% if 'mx' in postfix %}
-{% set postfix_tpl_transport_maps = postfix_tpl_transport_maps + ['hash:${config_directory}/hash_tables/mx_relay_transport'] %}
+{%     set postfix_tpl_transport_maps = postfix_tpl_transport_maps + ['hash:${config_directory}/hash_tables/mx_relay_transport'] %}
 {% endif %}
 {% if 'archive' in postfix %}
-{% set postfix_tpl_transport_maps = postfix_tpl_transport_maps + ['hash:${config_directory}/hash_tables/archive_transport'] %}
+{%     set postfix_tpl_transport_maps = postfix_tpl_transport_maps + ['hash:${config_directory}/hash_tables/archive_transport'] %}
 {% endif %}
 {% if get.list('transport_maps', postfix_tpl_transport_maps) %}
 transport_maps                  = {{ get.list('transport_maps', postfix_tpl_transport_maps) }}
