@@ -3,7 +3,8 @@
 - include: install.yml
 
 - include: plugins.yml
-  when: elasticsearch_plugins|d([]) | length > 0
+  when: (elasticsearch_plugins|d([]) | length > 0) or
+        (elasticsearch__version_major | int == 2)
 
 - include: libs.yml
   when: elasticsearch_libs|d([]) | length > 0

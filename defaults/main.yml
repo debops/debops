@@ -13,7 +13,9 @@
 
 # .. envvar:: elasticsearch_version
 #
-# Elasticsearch version. To install the latest minor release, only supply 1.x.
+# Elasticsearch version. Supported are the 1.x.y and 2.x.y releases from
+# the upstream Apt repository. To install the latest minor release, set
+# this to e.g. ``2.x``.
 elasticsearch_version: '1.7'
 
 
@@ -162,8 +164,7 @@ elasticsearch_http_enabled: true
 # .. envvar:: elasticsearch_jsonp_enabled
 #
 # Enable JSONP via HTTP. Do not enable this unless you have a very good reason
-# to do so. This feature is deprecated and won't be supported anymore with
-# Elasticsearch 2.x.
+# to do so. This variable is only used with ES 1.x.
 elasticsearch_jsonp_enabled: false
 
 
@@ -206,7 +207,9 @@ elasticsearch_http_allow: []
 # .. envvar:: elasticsearch_gateway_type
 #
 # Gateway type for (re)storing the state of the cluster meta data across full
-# cluster restarts. For more information see `Gateway Module
+# cluster restarts. If an index should not persist its state, set this to
+# ``none``. This variable is only used with ES 1.x. For more information see
+# `Gateway Module
 # <https://www.elastic.co/guide/en/elasticsearch/reference/1.7/modules-gateway.html>`.
 elasticsearch_gateway_type: 'local'
 
@@ -251,7 +254,9 @@ elasticsearch_discovery_ping_timeout: '3s'
 
 # .. envvar:: elasticsearch_discovery_multicast_enabled
 #
-# Whether multicast ping discovery is enabled.
+# Whether multicast ping discovery is enabled. In ES 1.x this feature is
+# supported natively. In ES 2.x the ``discovery-multicast`` plugin will be
+# installed automatically if this feature is enabled.
 elasticsearch_discovery_multicast_enabled: true
 
 
@@ -394,6 +399,7 @@ elasticsearch_logger:
   gateway: 'DEBUG'
   index_gateway: 'DEBUG'
   indices_recovery: 'DEBUG'
+  deprecation: 'DEBUG, deprecation_log_file'
   discovery: 'TRACE'
   index_search_slowlog: 'TRACE, index_search_slow_log_file'
   index_indexing_slowlog: 'TRACE, index_indexing_slow_log_file'
