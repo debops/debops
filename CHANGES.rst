@@ -12,7 +12,19 @@ The current role maintainer is drybjed.
 `debops.tcpwrappers master`_ - unreleased
 -----------------------------------------
 
-.. _debops.tcpwrappers master: https://github.com/debops/ansible-tcpwrappers/compare/v0.2.1...master
+.. _debops.tcpwrappers master: https://github.com/debops/ansible-tcpwrappers/compare/v0.2.2...master
+
+
+`debops.tcpwrappers v0.2.2`_ - 2016-10-10
+-----------------------------------------
+
+.. _debops.tcpwrappers v0.2.2: https://github.com/debops/ansible-tcpwrappers/compare/v0.2.1...v0.2.2
+
+Fixed
+~~~~~
+
+- Make sure that the ``accept_any`` parameter correctly enables or disables
+  entries. [drybjed]
 
 
 `debops.tcpwrappers v0.2.1`_ - 2016-08-07
