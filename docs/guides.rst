@@ -72,11 +72,11 @@ all of your ES nodes. It does not control whether or not ES gets installed.
 
 .. code-block:: none
 
-    [debops_elasticsearch:children]
-    debops_elasticsearch_master
-    debops_elasticsearch_workhorse
-    debops_elasticsearch_coordinator
-    debops_elasticsearch_loadbalancer
+    [debops_service_elasticsearch:children]
+    debops_service_elasticsearch_master
+    debops_service_elasticsearch_workhorse
+    debops_service_elasticsearch_coordinator
+    debops_service_elasticsearch_loadbalancer
 
 They are just shortcuts to setting the two node settings for you. You don't
 have to use the extra groups. By all means create custom groups and set the
