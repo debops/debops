@@ -23,6 +23,7 @@
 .. _Apache Alias directive documentation: https://httpd.apache.org/docs/2.4/mod/mod_alias.html#alias
 .. _Alias directive: https://httpd.apache.org/docs/2.4/mod/mod_alias.html#alias
 .. _Header directive: https://httpd.apache.org/docs/current/mod/mod_headers.html#header
+.. _Header directives: https://httpd.apache.org/docs/current/mod/mod_headers.html#header
 .. _IncludeOptional directive: https://httpd.apache.org/docs/2.4/mod/core.html#includeoptional
 .. _Apache AllowOverride directive documentation: https://httpd.apache.org/docs/2.4/mod/core.html#allowoverride
 .. _Apache Options directive documentation: https://httpd.apache.org/docs/2.4/mod/core.html#options

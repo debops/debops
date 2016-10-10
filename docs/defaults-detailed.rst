@@ -17,7 +17,7 @@ them.
 
 .. contents::
    :local:
-   :depth: 1
+   :depth: 2
 
 
 .. _apache__ref_modules:
@@ -25,7 +25,7 @@ them.
 apache__modules
 ---------------
 
-The Apache modules configuration is represented YAML dictionaries. Each key of
+The Apache modules configuration is represented as YAML dictionaries. Each key of
 those dictionaries is a module name.
 The module names correspond to the file names under :file:`/etc/apache2/mods-available`
 Refer to the `Apache module index`_ for a full list of available modules upstream.
@@ -35,7 +35,7 @@ levels. The :envvar:`apache__combined_modules` variable combines these YAML
 dictionaries together and determines the order in which module configuration
 "mask" the previous onces.
 
-The dictionary values can be a simple boolean corresponding to the ``enabled``
+The dictionary value can be a simple boolean corresponding to the ``enabled``
 option (as described below) or a dictionary by itself with the following
 supported options:
 
@@ -70,7 +70,7 @@ Ensure the ``ldap`` module is enabled for the given host:
 apache__snippets
 ----------------
 
-Apache configuration snippets are represented YAML dictionaries. Each key of those
+Apache configuration snippets are represented as YAML dictionaries. Each key of those
 dictionaries corresponds to the filename prefix under :file:`conf-available`.
 The :file:`.conf` file extension is added by the role and must be omitted by
 the user.
@@ -84,7 +84,7 @@ levels. The :envvar:`apache__combined_snippets` variable combines these YAML
 dictionaries together and determine the order in which configuration
 "mask" the previous onces.
 
-The dictionary values can be a simple boolean corresponding to the ``enabled``
+The dictionary value can be a simple boolean corresponding to the ``enabled``
 option (as described below) or a dictionary by itself with the following
 supported options:
 
@@ -106,7 +106,7 @@ Type: raw
 ~~~~~~~~~
 
 Available when ``item.type`` is set to ``raw`` or ``divert``.
-This can be used to create a snippet based on the ``item.raw`` contents.
+This can be used to create a snippet based on the ``item.raw`` content.
 
 ``raw``
   Optional, string.
@@ -115,7 +115,7 @@ This can be used to create a snippet based on the ``item.raw`` contents.
   :file:`templates/etc/apache2/conf-available` for a template matching the item
   key.
   If ``raw`` is specified, a special template will be used which simply
-  writes the given content into the configuration.
+  writes the given content into the snippet.
   Refer to the `Apache configuration sections documentation`_ for details.
 
 
@@ -124,11 +124,11 @@ Type: divert
 
 Available when ``item.type`` is set to ``divert``.
 This special type does not create a snippet file, instead it uses
-:command:`dpkg-divert` to allow you to do a package management aware rename of a file.
+:command:`dpkg-divert` to allow you to do a package management aware rename of a snippet.
 
-Note that for this type no changes are done in they :file:`conf-enabled`
-directory to avoid idempotency issues with a potential configuration with the
-same filename as the configuration which is diverted away.
+Note that for this type no changes are done in the :file:`conf-enabled`
+directory to avoid idempotency issues with a potential snippet with the
+same filename as the snippet which is diverted away.
 
 ``divert_suffix``
   Optional, string. Defaults to ``.dpkg-divert``.
@@ -141,7 +141,8 @@ same filename as the configuration which is diverted away.
   Allows to change the divert filename.
 
 ``divert``
-  Optional, string. Defaults to the file path determined for the virtual host configuration.
+  Optional, string. Defaults to the file path determined for snippet in the
+  :file:`conf-available` directory.
   Allows to specify a full file path where to divert the file to.
   Note that the ``item.divert_suffix`` is still in affect when using this option.
 
@@ -150,7 +151,7 @@ Examples
 
 Ensure the given Apache directives are configured in
 :file:`/etc/apache2/conf-available/example.conf` and enabled in Apache server
-context the given host:
+context:
 
 .. code-block:: yaml
 
@@ -165,6 +166,13 @@ context the given host:
 
 apache__vhosts
 --------------
+
+The Apache virtual hosts can be defined as lists of YAML dictionaries. This
+allows the configuration of Apache virtual hosts on different inventory
+levels as needed.
+
+Note that one vhost item of this role usually results in two Apache virtual
+hosts, one for HTTP and one for HTTPS.
 
 Common role options
 ~~~~~~~~~~~~~~~~~~~
@@ -391,8 +399,6 @@ HTTP security headers
   determines the Content-Security-Policy header set in server responses.
   Refer to the `Content Security Policy Reference`_.
 
-.. _apache__ref_vhosts_http_xss_protection:
-
 ``http_xss_protection``
   Optional, string. Value of the ``X-XSS-Protection`` HTTP header field. Set to
   ``{{ omit }}`` to not send the header field. Defaults to :envvar:`apache__http_xss_protection`.
@@ -451,17 +457,26 @@ filename as the configuration which is diverted away.
 Examples
 ~~~~~~~~
 
-Create a vhost for the domains ``www.example.org`` and ``example.org``:
+Create virtual hosts for ``www.example.org`` and ``example.org``:
 
 .. code-block:: yaml
 
    apache__host_vhosts:
 
-     -  name: [ 'www.example.org', 'example.org' ]
-        root: '/srv/www/sites/www.example.org/public'
+     - name: [ 'www.example.org' ]
+       root: '/srv/www/sites/www.example.org/public'
+
+     - name: [ 'example.org' ]
+       redirect_http: 'https://www.example.org'
+       redirect_https: 'https://www.example.org'
+       redirect_http_code: '301'
+       redirect_https_code: '301'
 
 The files under :file:`/srv/www/sites/www.example.org/public` are served for
-these domains.
+requests against ``https://www.example.org``.
+Requests against ``example.org`` are permanently redirected to the canonical
+``www.example.org`` site.
 HTTPS is the default and legacy HTTP connection attempts are permanently
 redirected to HTTPS. HSTS_ tells clients to only connect to the site using
-HTTPS from now on.
+HTTPS from now on. Certificates managed by debops.pki_ are used according to
+the ``name`` of the virtual host which should match a PKI realm of debops.pki_.
