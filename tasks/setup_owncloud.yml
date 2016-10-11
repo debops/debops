@@ -1,16 +1,26 @@
 ---
 # vim: foldmarker=[[[,]]]:foldmethod=marker
 
+- name: Enable required Apache modules
+  apache2_module:
+    name: 'php5'
+    state: 'present'
+  when: owncloud__webserver == "apache"
+  with_flattened: '{{ owncloud__apache_modules }}'
+
 # ownCloud temp directory [[[
 
-- name: Ensure the custom temp directory is setup
+- name: Ensure the custom temp directories are setup
   file:
-    path: '{{ owncloud__temp_path }}'
+    path: '{{ item.path }}'
     state: 'directory'
     owner: '{{ owncloud__user }}'
     group: '{{ owncloud__group }}'
     mode: '1750'
-  when: (owncloud__temp_path != "")
+  when: (item.path != "")
+  with_items:
+    - path: '{{ owncloud__temp_path }}'
+    - path: '{{ owncloud__php_temp_path }}'
 
 # .. ]]]
 
@@ -23,6 +33,7 @@
     owner: '{{ owncloud__user }}'
     group: '{{ owncloud__group }}'
     mode: '0640'
+    validate: 'php -f %s'
 
 - name: Install ownCloud mail config file
   template:
@@ -31,6 +42,7 @@
     owner: '{{ owncloud__user }}'
     group: '{{ owncloud__group }}'
     mode: '0640'
+    validate: 'php -f %s'
   when: ((owncloud__mail_conf_map.keys() | length) >= 1)
   tags: [ 'role::owncloud:mail' ]
 
@@ -38,6 +50,7 @@
   file:
     path: '{{ owncloud__deploy_path }}/config/mail.config.php'
     state: 'absent'
+    validate: 'php -f %s'
   when: ((owncloud__mail_conf_map.keys() | length) == 0)
 
 - name: Ensure deprecated configuration files are absent
@@ -122,6 +135,7 @@
     owner: '{{ owncloud__user }}'
     group: '{{ owncloud__group }}'
     mode: '0660'
+    validate: 'php -f %s'
   register: owncloud__register_autoconfig
   when: owncloud__do_autosetup|bool and owncloud__release in [ '8.0' ]
 

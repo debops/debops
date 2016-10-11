@@ -21,6 +21,17 @@ new release.
 
 .. _debops.owncloud master: https://github.com/debops/ansible-owncloud/compare/v0.3.0...master
 
+Added
+~~~~~
+
+- Add support for the `Apache HTTP Server`_, founded by https://www.hamcos.de/. [ypid_]
+
+Removed
+~~~~~~~
+
+- Removed deprecated Ansible inventory group ``debops_owncloud``. Refer to the
+  :ref:`owncloud__ref_getting_started` guide. [ypid_]
+
 
 `debops.owncloud v0.3.0`_ - 2016-09-17
 --------------------------------------
