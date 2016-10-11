@@ -19,6 +19,10 @@ Added
 
 - Initial coding and design. [ypid_]
 
+- Add/Set the default `Referrer Policy`_ to ``no-referrer`` and made it
+  configurable via :ref:`item.http_referrer_policy <apache__ref_vhosts_http_referrer_policy>`.
+  [ypid_]
+
 Fixed
 ~~~~~
 
