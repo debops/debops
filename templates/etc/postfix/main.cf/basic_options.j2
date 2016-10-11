@@ -135,3 +135,9 @@ soft_bounce                     = {{ postfix_soft_bounce | default('yes') }}
 smtpd_authorized_xclient_hosts  = {{ ', '.join(postfix_smtpd_authorized_xclient_hosts) }}
 {% endif %}
 
+{% if postfix_virtual_mailbox_domains is defined and postfix_virtual_mailbox_domains %}
+virtual_mailbox_domains         = {{ ', '.join(postfix_virtual_mailbox_domains | unique) }}
+{% endif %}
+{% if postfix_virtual_transport is defined and postfix_virtual_transport %}
+virtual_transport               = {{ postfix_virtual_transport }}
+{% endif %}
