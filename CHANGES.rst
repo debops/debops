@@ -56,6 +56,13 @@ Changed
   parameter as a string or a list, set the specified keys as exclusive or
   entirely remove the ``~/.ssh/authorized_keys`` file. [drybjed_]
 
+Fixed
+~~~~~
+
+- Allow removal of user groups only if ``item.group`` parameter is the same as
+  ``item.name`` or is not specified. This fixes an issue where Ansible tried to
+  remove a group which was a primary group for multiple users. [drybjed_]
+
 
 `debops.users v0.1.6`_ - 2016-02-06
 -----------------------------------
