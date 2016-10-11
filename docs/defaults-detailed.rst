@@ -428,6 +428,15 @@ HTTP security headers
   “X-XSS-Protection”?
   <https://stackoverflow.com/questions/9090577/what-is-the-http-header-x-xss-protection>`_.
 
+.. _nginx__ref_http_referrer_policy:
+
+``http_referrer_policy``
+  Optional, string. Value of the ``Referrer-Policy`` HTTP header field. Set to
+  ``{{ omit }}`` to not send the header field. Defaults to :envvar:`nginx__http_referrer_policy`.
+  Refer to `Referrer Policy`_ for more details. Note that this header is a
+  draft as of 2016-10-11 but it is already supported by the majority of web
+  browsers.
+
 .. _nginx__ref_permitted_cross_domain_policies:
 
 ``permitted_cross_domain_policies``
@@ -595,7 +604,7 @@ User directories
 ``userdir``
   Optional, boolean. Enable UserDir support.
   Web pages on https://host/~<user>/ will be read from
-  ``/srv/www/<user>/userdir/public`` directories.
+  :file:`/srv/www/<user>/userdir/public` directories.
 
 ``userdir_regexp``
   Optional, string. Specify location regexp pattern used by nginx to determine if

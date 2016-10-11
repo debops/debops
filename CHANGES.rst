@@ -8,7 +8,7 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer_ is drybjed.
+The current role maintainer_ is drybjed_.
 
 
 `debops.nginx master`_ - unreleased
@@ -22,6 +22,13 @@ Added
 - ``item.welcome_force`` which when set to ``True`` will ensure that the
   welcome page is up-to-date. Note that setting this to ``True`` will not allow
   idempotent operation. [ypid_]
+
+- Add/Set the default `Referrer Policy`_ to ``no-referrer`` and made it
+  configurable via :ref:`http_referrer_policy <nginx__ref_http_referrer_policy>`.
+
+  Also set the `Referrer Policy`_ in the welcome page as HTML meta option as
+  some website checkers like https://webbkoll.dataskydd.net/en seem to not get
+  the HTTP header option yet. [ypid_]
 
 Changed
 ~~~~~~~
@@ -49,7 +56,12 @@ Deprecated
 Fixed
 ~~~~~
 
-- Usage of an empty list for the ``name`` option of ``nginx__servers`` items as documented. [ypid_]
+- Usage of an empty list for the ``name`` option of :envvar:`nginx__servers` items as documented. [ypid_]
+
+- Fixed :ref:`xss_protection <nginx__ref_http_xss_protection>` which
+  unintentionally determined if the
+  :ref:`robots_tag <nginx__ref_http_robots_tag>` header was set for a given
+  Nginx server. [ypid_]
 
 
 `debops.nginx v0.1.9`_ - 2016-07-19
@@ -227,7 +239,7 @@ Changed
 - Do not create welcome pages automatically if creation of webroot directories
   is disabled. [drybjed_]
 
-- Make sure that :file:`/var/lib/nginx/` directory exists. [pedroluislopez]
+- Make sure that :file:`/var/lib/nginx/` directory exists. [pedroluislopez_]
 
 - Ensure that list of site referers is unique. [drybjed_]
 
@@ -312,7 +324,7 @@ Changed
   HTTP listen configuration is disabled. [drybjed_]
 
 - Clean up default variables related to debops.pki_ role, add variables that
-  configure client CA and trusted CA for OCSP stapling in ``default.conf``
+  configure client CA and trusted CA for OCSP stapling in :file:`default.conf`
   template. [drybjed_]
 
 - Update OCSP stapling support. Two new default variables are added to better
@@ -383,16 +395,16 @@ Removed
   its place. [drybjed_]
 
 - Remove ``item.pki`` in favor of ``item.ssl`` in the nginx site configuration.
-  [patrickheeney]
+  [patrickheeney_]
 
 - Remove ``nginx_default_root`` variable. A default root directory is managed
-  dynamically in the ``default.conf`` server template. [drybjed_]
+  dynamically in the :file:`default.conf` server template. [drybjed_]
 
 Fixed
 ~~~~~
 
 - Fix https site detection when using debops.nginx as a dependency.
-  [patrickheeney]
+  [patrickheeney_]
 
 - Fix bare variables due to deprecation. [drybjed_]
 
@@ -417,13 +429,13 @@ Added
   server names listed in ``item.name`` to a specific server name (inverse
   ``item.redirect_from``). [drybjed_]
 
-- Add support for :program:`nginx` package from upstream (http://nginx.org/), thanks
+- Add support for :program:`nginx` package from upstream (https://nginx.org/), thanks
   to Pedro Luis López Sánchez. [drybjed_]
 
 - Add ``proxy`` nginx server template. [drybjed_]
 
 - Add ``item.ssl_crt``, ``item.ssl_key``, and ``item.ssl_dhparam`` to override
-  pki nginx configuration per site. [patrickheeney]
+  pki nginx configuration per site. [patrickheeney_]
 
 - Added ``enabled`` to entries in ``item.location_list``. [scibi_]
 
@@ -450,7 +462,7 @@ Changed
 - Change how list of nameservers is gathered from :file:`/etc/resolv.conf` to fix
   an issue with ``sed`` in shell command. [drybjed_]
 
-- Use ``fastcgi_params`` instead of ``fastcgi.conf`` as the FastCGI parameters
+- Use ``fastcgi_params`` instead of :file:`fastcgi.conf` as the FastCGI parameters
   file when ``nginx.org`` flavor is installed, because it is not provided by
   the non-Debian packages. On ``passenger`` and ``nginx.org`` flavors, missing
   ``SCRIPT_FILENAME`` parameter will be added directly in nginx server
