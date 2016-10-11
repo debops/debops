@@ -22,6 +22,7 @@
          (item.state|d('present') != 'absent') and
          item.createhome|d(True) and
          (item.sshkeys is defined and item.sshkeys))
+  no_log: '{{ users__no_log | bool }}'
 
 - name: Remove ~/.ssh/authorized_keys from user account if disabled
   file:
@@ -45,3 +46,4 @@
          (item.state|d('present') != 'absent') and
          item.createhome|d(True) and
          (item.sshkeys is defined and not item.sshkeys))
+  no_log: '{{ users__no_log | bool }}'

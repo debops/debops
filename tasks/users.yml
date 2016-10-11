@@ -23,6 +23,7 @@
     - '{{ users_host_list  | d([]) }}'
   when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state|d('present') != 'absent'))
+  no_log: '{{ users__no_log | bool }}'
 
 - name: Manage user accounts
   user:
@@ -62,6 +63,7 @@
     - '{{ users_host_list  | d([]) }}'
   when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state|d('present') != 'absent'))
+  no_log: '{{ users__no_log | bool }}'
 
 - name: Manage user home directories
   file:
@@ -86,6 +88,7 @@
          (item.state|d('present') != 'absent') and
          item.createhome|d(True) and
          (item.home_owner|d() or item.home_group|d() or item.home_mode|d()))
+  no_log: '{{ users__no_log | bool }}'
 
 - name: Get list of available groups
   shell: 'getent group | cut -f1 -d:'
@@ -114,6 +117,7 @@
   when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state|d('present') != 'absent') and
          (users__default_groups_list is defined and users__default_groups_list))
+  no_log: '{{ users__no_log | bool }}'
 
 - name: Manage user groups
   user:
@@ -136,6 +140,7 @@
   when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state|d('present') != 'absent') and
          (item.groups is defined and item.groups))
+  no_log: '{{ users__no_log | bool }}'
 
 - name: Remove user groups if requested
   group:
@@ -158,3 +163,4 @@
     - '{{ users_host_list  | d([]) }}'
   when: ((item.name is defined and item.name and item.name != 'root') and
          (item.state|d('present') == 'absent'))
+  no_log: '{{ users__no_log | bool }}'

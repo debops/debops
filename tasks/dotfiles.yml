@@ -21,6 +21,7 @@
     - '{{ users_host_list  | d([]) }}'
   when: (item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and
          item.dotfiles_enabled | d(users__dotfiles_enabled) | bool)
+  no_log: '{{ users__no_log | bool }}'
 
 - name: Configure users dotfiles
   become_user: '{{ item.name }}'
@@ -51,6 +52,7 @@
   when: (item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and
          item.dotfiles_enabled | d(users__dotfiles_enabled) | bool and
          item.dotfiles_command | d(users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].command|d()))
+  no_log: '{{ users__no_log | bool }}'
 
 - name: Configure users shell if specified
   user:
@@ -71,3 +73,4 @@
     - '{{ users_host_list  | d([]) }}'
   when: (item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and
          (item.dotfiles_enabled | d(users__dotfiles_enabled) | bool or item.shell|d() or users__default_shell))
+  no_log: '{{ users__no_log | bool }}'

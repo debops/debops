@@ -42,6 +42,10 @@ Changed
 - A default shell can now be set for all user accounts managed by this role, by
   setting it in the :envvar:`users__default_shell` variable. [drybjed_]
 
+- Disable Ansible logging for all tasks in the role that work with user account
+  lists to prevent accidental password leaks. This can be controlled by
+  a default variable to make debugging easier. [drybjed_]
+
 
 `debops.users v0.1.6`_ - 2016-02-06
 -----------------------------------
