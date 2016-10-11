@@ -560,7 +560,7 @@ server {
 {% if item.frame_options|d(True) %}
         add_header                X-Frame-Options "{{ item.frame_options | d('SAMEORIGIN') }}"{% if nginx_version | version_compare('1.7.5','>=') %} always{% endif %};
 {% endif %}
-{% if item.xss_protection | d(nginx__http_xss_protection) %}
+{% if item.xss_protection | d(nginx__http_xss_protection) != omit %}
         add_header                X-XSS-Protection "{{ item.xss_protection | d(nginx__http_xss_protection) }}";
 {% endif %}
 {% if item.http_referrer_policy | d(nginx__http_referrer_policy) != omit %}
