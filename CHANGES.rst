@@ -46,6 +46,10 @@ Changed
   lists to prevent accidental password leaks. This can be controlled by
   a default variable to make debugging easier. [drybjed_]
 
+- Update the tasks that manage SSH public keys. You can specify the ``sshkeys``
+  parameter as a string or a list, set the specified keys as exclusive or
+  entirely remove the ``~/.ssh/authorized_keys`` file. [drybjed_]
+
 
 `debops.users v0.1.6`_ - 2016-02-06
 -----------------------------------

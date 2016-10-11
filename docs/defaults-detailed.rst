@@ -191,8 +191,19 @@ Parameters related to public SSH keys
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``sshkeys``
-  Optional. YAML list of public SSH keys to configure for a given user account.
-  The keys will be stored in the ``~/.ssh/authorized_keys`` file.
+  Optional. String or a YAML list of public SSH keys to configure for a given
+  user account. The keys will be stored in the ``~/.ssh/authorized_keys``
+  file.
+
+``sshkeys_exclusive``
+  Optional, boolean. If ``True``, the role will remove all keys from the user's
+  ``~/.ssh/authorized_keys`` file that are not specified in the ``sshkeys``
+  parameter.
+
+``sshkeys_state``
+  Optional. If not specified or ``present``, the SSH keys will be set on the
+  user's account. If ``absent``, the ``~/.ssh/authorized_keys`` file will be
+  removed entirely.
 
 Parameters related to mail forwarding
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

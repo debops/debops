@@ -2,9 +2,10 @@
 
 - name: Configure ~/.ssh/authorized_keys for users
   authorized_key:
-    key: "{{ '\n'.join(item.sshkeys) | string }}"
+    key: "{{ (item.sshkeys if item.sshkeys is string else '\n'.join(item.sshkeys)) | string }}"
     state: 'present'
     user: '{{ item.name }}'
+    exclusive: '{{ item.sshkeys_exclusive | d(omit) }}'
   with_flattened:
     - '{{ users__root_accounts }}'
     - '{{ users__default_accounts }}'
@@ -18,7 +19,8 @@
     - '{{ users_list       | d([]) }}'
     - '{{ users_group_list | d([]) }}'
     - '{{ users_host_list  | d([]) }}'
-  when: (item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and item.sshkeys|d())
+  when: (item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and
+         item.sshkeys|d() and item.sshkeys_state|d('present') != 'absent')
   no_log: '{{ users__no_log | bool }}'
 
 - name: Remove ~/.ssh/authorized_keys from user account if disabled
@@ -39,5 +41,6 @@
     - '{{ users_list       | d([]) }}'
     - '{{ users_group_list | d([]) }}'
     - '{{ users_host_list  | d([]) }}'
-  when: (item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and item.sshkeys|d() and not item.sshkeys)
+  when: (item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and
+         item.sshkeys_state|d('present') == 'absent')
   no_log: '{{ users__no_log | bool }}'
