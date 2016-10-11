@@ -21,6 +21,41 @@ new release.
 
 .. _debops.owncloud master: https://github.com/debops/ansible-owncloud/compare/v0.3.0...master
 
+Added
+~~~~~
+
+- Add support for the `Apache HTTP Server`_, founded by https://www.hamcos.de/. [ypid_]
+
+Changed
+~~~~~~~
+
+- Renamed variables to be consistent with DebOps:
+
+  * ``owncloud__nginx__servers`` → :envvar:`owncloud__nginx__dependent_servers`
+  * ``owncloud__nginx__upstream_php`` → :envvar:`owncloud__nginx__dependent_upstreams`
+
+  The role bundles a script which can do this transition for you.
+  Refer to :ref:`owncloud__ref_upgrade_nodes_v0.4.0` for details.
+
+Removed
+~~~~~~~
+
+- Removed deprecated Ansible inventory group ``debops_owncloud``. Refer to the
+  :ref:`owncloud__ref_getting_started` guide. [ypid_]
+
+Security
+~~~~~~~~
+
+- Update to the new ``ownCloud build service`` OpenPGP key with fingerprint
+  ``DDA2 C105 C4B7 3A66 49AD  2BBD 47AE 7F72 479B C94B``.
+
+  Note that new releases are signed with that key. If the new key is not
+  present, no updates will be installed because they can not be verified.
+  Thus updates fixing potential security issues will not be installed!
+
+  Please run the updated role with the new key against your host(s) to fix
+  this.
+  [ypid_]
 
 `debops.owncloud v0.3.0`_ - 2016-09-17
 --------------------------------------
@@ -30,7 +65,7 @@ new release.
 Added
 ~~~~~
 
-- Wrote initial documentation. [ypid_]
+- Wrote documentation. [ypid_]
 
 - More LDAP settings. [ypid_]
 
@@ -38,8 +73,11 @@ Added
 
 - Support Redis for file locking. [ypid_]
 
-- Install :command:`smbclient` and ImageMagick by default to make ownCloud work
-  with SMB shares and thumbnails out of the box. [ypid_]
+- Install ImageMagick by default to make ownCloud work thumbnails out of the
+  box. [ypid_]
+
+- Added :envvar:`owncloud__smb_support` for easy enabling of SMB support
+  (disabled by default). [ypid_]
 
 - Prepare to use the documents app when setting
   :envvar:`owncloud__app_documents_enabled` to ``True``. [ypid_]
@@ -48,7 +86,7 @@ Added
   by default according to the `official ownCloud Dokumentation
   <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html>`_. [ypid_]
 
-- Configure fully automated ownCloud security updates by default. [ypid_]
+- Support fully automated ownCloud security updates (disabled by default). [ypid_]
 
 - Support to configure ownCloud applications. [ypid_]
 
@@ -196,12 +234,6 @@ Removed
   anymore. [ypid_]
 
 - Remove most of the Ansible role dependencies.
-  Note that :envvar:`owncloud__autosetup` requires that a webserver is installed to
-  initialize the ownCloud database.
-  Further configuration will not be possible when the database has not been
-  initialized.
-  This is only important for ownCloud 8.0, for other versions, :command:`occ` is used
-  to do the auto setup which is more robust.
 
   Please run the DebOps playbook to make sure that webserver and database are
   ready. [ypid_]
