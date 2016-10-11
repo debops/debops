@@ -604,7 +604,7 @@ User directories
 ``userdir``
   Optional, boolean. Enable UserDir support.
   Web pages on https://host/~<user>/ will be read from
-  ``/srv/www/<user>/userdir/public`` directories.
+  :file:`/srv/www/<user>/userdir/public` directories.
 
 ``userdir_regexp``
   Optional, string. Specify location regexp pattern used by nginx to determine if
