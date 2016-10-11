@@ -563,6 +563,9 @@ server {
 {% if item.xss_protection | d(nginx__http_xss_protection) %}
         add_header                X-XSS-Protection "{{ item.xss_protection | d(nginx__http_xss_protection) }}";
 {% endif %}
+{% if item.http_referrer_policy | d(nginx__http_referrer_policy) != omit %}
+        add_header                Referrer-Policy "{{ item.http_referrer_policy | d(nginx__http_referrer_policy) }}";
+{% endif %}
 {% for robots_tag in nginx_tpl_robots_tag %}
         add_header                X-Robots-Tag "{{ robots_tag }}";
 {% endfor %}

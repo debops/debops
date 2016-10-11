@@ -23,6 +23,13 @@ Added
   welcome page is up-to-date. Note that setting this to ``True`` will not allow
   idempotent operation. [ypid_]
 
+- Add/Set the default `Referrer Policy`_ to ``no-referrer`` and made it
+  configurable via :ref:`http_referrer_policy <nginx__ref_http_referrer_policy>`.
+
+  Also set the `Referrer Policy`_ in the welcome page as HTML meta option as
+  some website checkers like https://webbkoll.dataskydd.net/en seem to not get
+  the HTTP header option yet. [ypid_]
+
 Changed
 ~~~~~~~
 
