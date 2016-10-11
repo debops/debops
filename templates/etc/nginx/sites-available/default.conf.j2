@@ -562,10 +562,10 @@ server {
 {% endif %}
 {% if item.xss_protection | d(nginx__http_xss_protection) %}
         add_header                X-XSS-Protection "{{ item.xss_protection | d(nginx__http_xss_protection) }}";
+{% endif %}
 {% for robots_tag in nginx_tpl_robots_tag %}
         add_header                X-Robots-Tag "{{ robots_tag }}";
 {% endfor %}
-{% endif %}
 {% if item.permitted_cross_domain_policies | d(nginx__http_permitted_cross_domain_policies) != omit %}
         add_header                X-Permitted-Cross-Domain-Policies "{{ item.permitted_cross_domain_policies | d(nginx__http_permitted_cross_domain_policies) }}";
 {% endif %}

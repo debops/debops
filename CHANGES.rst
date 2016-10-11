@@ -51,6 +51,11 @@ Fixed
 
 - Usage of an empty list for the ``name`` option of ``nginx__servers`` items as documented. [ypid_]
 
+- Fixed :ref:`xss_protection <nginx__ref_http_xss_protection>` which
+  unintentionally determined if the
+  :ref:`robots_tag <nginx__ref_http_robots_tag>` header was set for a given
+  Nginx server. [ypid_]
+
 
 `debops.nginx v0.1.9`_ - 2016-07-19
 -----------------------------------
