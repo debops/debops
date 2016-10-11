@@ -18,6 +18,16 @@ The current role maintainer_ is drybjed.
 
 .. _debops.users master: https://github.com/debops/ansible-users/compare/v0.1.6...master
 
+Added
+~~~~~
+
+- Disable Ansible logging for all tasks in the role that work with user account
+  lists to prevent accidental password leaks. This can be controlled by
+  a default variable to make debugging easier. [drybjed_]
+
+- Add support for custom resource management in user directories (files,
+  directories, symlinks). [drybjed_]
+
 Changed
 ~~~~~~~
 
@@ -41,10 +51,6 @@ Changed
 
 - A default shell can now be set for all user accounts managed by this role, by
   setting it in the :envvar:`users__default_shell` variable. [drybjed_]
-
-- Disable Ansible logging for all tasks in the role that work with user account
-  lists to prevent accidental password leaks. This can be controlled by
-  a default variable to make debugging easier. [drybjed_]
 
 - Update the tasks that manage SSH public keys. You can specify the ``sshkeys``
   parameter as a string or a list, set the specified keys as exclusive or

@@ -1,6 +1,8 @@
 Default variable details
 ========================
 
+.. include:: includes/all.rst
+
 Some of ``debops.users`` default variables have more extensive configuration than
 simple strings or lists, here you can find documentation and examples for them.
 
@@ -268,6 +270,95 @@ Examples
 ~~~~~~~~
 
 .. literalinclude:: examples/manage-accounts.yml
+   :language: yaml
+
+
+.. _users__ref_resources:
+
+users__resources
+----------------
+
+The :envvar:`users__resources`, :envvar:`users__group_resources` and
+:envvar:`users__host_resources` lists can be used to manage directories, files
+and symlinks for specifc UNIX accounts using Ansible inventory. This
+functionality is meant to be used to manage small amounts of data, like custom
+configuration files, private SSH keys and so on. For more advanced management,
+you should consider using debops.resources_ Ansible role, or even writing
+a custom Ansible role from scratch.
+
+Tasks that manage the resources are executed with the privileges of a specific
+user account; this account should exist (presumably it was created by the role
+earlier). This allows the usage of ``~/`` in the paths to manage directories
+and files relative to the user's ``$HOME`` directory.
+
+Each entry on the list is a YAML dictionary with specific parameters:
+
+``name``
+  Required. Name of the user account which will be used to run the Ansible
+  tasks using the "become" method.
+
+``state``
+  Required. This variable defines the resource state and it's type:
+
+  - ``absent``: the resource will be removed
+  - ``directory``: the resource is a directory
+  - ``file``: the resource is a file
+  - ``link``: the resource is a symlink
+  - ``touch``: the resource will create an empty file, or "touch" an existing
+    file on each Ansible run
+
+  If this parameter is not specified, the resource will be treated as
+  a directory.
+
+``dest`` or ``path``
+  Required. Path to the resource managed by this entry. Usually you want to
+  specify it as relative to the user's ``$HOME`` directory.
+
+``src``
+  If the resource type is a ``link``, this parameter specifies the target of
+  the symlink.
+
+  If the resource type is a ``file``, this parameter can be used to specify the
+  source file on the Ansible Controller to copy to the remote host. It
+  shouldn't be specified together with the ``content`` parameter.
+
+``content``
+  If the resource type is a ``file``, this parameter can be used to specify the
+  contents of the file that is managed by this entry, usually in the form of
+  a YAML text block. It shouldn't be specified together with the ``src``
+  parameter.
+
+``force``
+  Optional, boolean. If ``True``, the files will be always overwritten, if
+  ``False``, files will be copied only if they don't exist. This parameter can
+  also be used to force creation of symlinks.
+
+``mode``
+  Optional. Set specific permissions for a given file/directory/symlink.
+
+``recurse``
+  Optional, boolean. Recursively set specified permission for all directories
+  in the directory tree that lead to a given directory/file, depending on user
+  privileges.
+
+``parent``
+  Optional, boolean. If ``True`` (default), the role will create the parent
+  directories of a given resource as needed, depending on the privileges of
+  a given user account. If ``False``, role will not try to create the missing
+  directories.
+
+``parent_mode``
+  Optional. Specify the permissions of the parent directory of a given
+  file resource.
+
+``parent_recurse``
+  Optional, bollean. If ``True``, parent permissions will be applied
+  recursively to all parent directories.
+
+Examples
+~~~~~~~~
+
+.. literalinclude:: examples/manage-resources.yml
    :language: yaml
 
 
