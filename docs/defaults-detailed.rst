@@ -399,6 +399,8 @@ HTTP security headers
   determines the Content-Security-Policy header set in server responses.
   Refer to the `Content Security Policy Reference`_.
 
+.. _apache__ref_vhosts_http_xss_protection:
+
 ``http_xss_protection``
   Optional, string. Value of the ``X-XSS-Protection`` HTTP header field. Set to
   ``{{ omit }}`` to not send the header field. Defaults to :envvar:`apache__http_xss_protection`.
@@ -416,6 +418,15 @@ HTTP security headers
   For more details and discussion see `What is the http-header
   “X-XSS-Protection”?
   <https://stackoverflow.com/questions/9090577/what-is-the-http-header-x-xss-protection>`_.
+
+.. _apache__ref_vhosts_http_referrer_policy:
+
+``http_referrer_policy``
+  Optional, string. Value of the ``Referrer-Policy`` HTTP header field. Set to
+  ``{{ omit }}`` to not send the header field. Defaults to :envvar:`apache__http_referrer_policy`.
+  Refer to `Referrer Policy`_ for more details. Note that this header is a
+  draft as of 2016-10-11 but it is already supported by the majority of web
+  browsers.
 
 Type: raw
 ~~~~~~~~~

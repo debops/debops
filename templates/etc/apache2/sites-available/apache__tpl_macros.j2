@@ -143,8 +143,11 @@ Header always set Strict-Transport-Security "max-age={{ item.hsts_max_age|d(apac
 {% if apache__http_frame_options|d(item.http_frame_options) %}
 Header {{ apache__tpl_directive_options }} X-Frame-Options "{{ apache__http_frame_options|d(item.http_frame_options) }}"
 {% endif %}
-{% if apache__http_frame_options|d(item.http_frame_options) %}
+{% if apache__http_frame_options|d(item.http_frame_options) != omit %}
 Header {{ apache__tpl_directive_options }} X-XSS-Protection "{{ item.http_xss_protection|d(apache__http_xss_protection) }}"
+{% endif %}
+{% if apache__http_referrer_policy|d(item.http_referrer_policy) != omit %}
+Header {{ apache__tpl_directive_options }} Referrer-Policy "{{ apache__http_referrer_policy|d(item.http_referrer_policy) }}"
 {% endif %}
 {% if apache__http_frame_options|d(item.http_frame_options) %}
 Header {{ apache__tpl_directive_options }} X-Content-Type-Options "{{ item.http_content_type_options|d(apache__http_content_type_options) }}"
