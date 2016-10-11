@@ -5,14 +5,13 @@
 
 
 {% if 'client' in postfix and 'sender_dependent' in postfix %}
-{% if postfix_sender_dependent_relayhost_map is defined and postfix_sender_dependent_relayhost_map %}
-{% for key, value in postfix_sender_dependent_relayhost_map.iteritems() %}
+{%     if postfix_sender_dependent_relayhost_map is defined and postfix_sender_dependent_relayhost_map %}
+{%         for key, value in postfix_sender_dependent_relayhost_map.iteritems() %}
 {{ "%-24s %s" | format(key, value) }}
-{% endfor %}
-{% else %}
+{%         endfor %}
+{%     else %}
 # postfix_sender_dependent_relayhost_map not defined
-{% endif %}
+{%     endif %}
 {% else %}
 #  required postfix capabilities: +client +sender_dependent
 {% endif %}
-
