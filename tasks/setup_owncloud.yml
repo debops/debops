@@ -200,7 +200,7 @@
     name: 'ownCloud Background Jobs'
     minute: '{{ owncloud__cron_minute }}'
     user: '{{ owncloud__user }}'
-    job: '/usr/bin/php -f {{ owncloud__deploy_path }}/cron.php'
+    job: 'test -x /usr/bin/php && test -e {{ (owncloud__deploy_path + "/cron.php") | quote }} && /usr/bin/php -f {{ (owncloud__deploy_path + "/cron.php") | quote }}'
     cron_file: 'owncloud'
 
 # .. ]]]
