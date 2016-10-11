@@ -34,6 +34,14 @@ Changed
 - Switch from using a template for :file:`~/.forward` file to the Ansible
   ``lineinfile`` module. [drybjed_]
 
+- Reorganize the user configuration file management, including better control
+  over where dotfiles are cloned, and easier way to add new dotfiles
+  definitions via a separate YAML dictionary. Some of the variables related to
+  dotfiles have been renamed. [drybjed_]
+
+- A default shell can now be set for all user accounts managed by this role, by
+  setting it in the ``users__default_shell`` variable. [drybjed_]
+
 
 `debops.users v0.1.6`_ - 2016-02-06
 -----------------------------------
