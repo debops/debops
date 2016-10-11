@@ -57,7 +57,7 @@ Supported webservers:
 This role started out using Nginx_ as Webserver. However, ownCloud_ and
 NextCloud_ don’t officially support Nginx_. As of ``debops.owncloud`` v0.4.0,
 support for the `Apache HTTP Server`_ has been added to the role using
-``debops.apache`` as role dependency.
+debops.apache_ as role dependency.
 
 The current default Webserver is Nginx_. Because despite the fact that only
 Apache_ is officially supported, Nginx_ has been successfully used with this
@@ -115,12 +115,12 @@ Example playbook
 The following playbooks are used in DebOps. If you are using these role without
 DebOps you might need to adapt them to make them work in your setup.
 
-Ansible playbook that uses the ``debops.owncloud`` role together with ``debops.nginx``:
+Ansible playbook that uses the ``debops.owncloud`` role together with debops.nginx_:
 
 .. literalinclude:: playbooks/owncloud-nginx.yml
    :language: yaml
 
-Ansible playbook that uses the ``debops.owncloud`` role together with ``debops.apache``:
+Ansible playbook that uses the ``debops.owncloud`` role together with debops.apache_:
 
 .. literalinclude:: playbooks/owncloud-apache.yml
    :language: yaml
@@ -132,9 +132,9 @@ Ansible tags
 ------------
 
 You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
-tasks are performed during Ansible run. This can be used after host is first
+tasks are performed during Ansible run. This can be used after a host was first
 configured to speed up playbook execution, when you are sure that most of the
-configuration has not been changed.
+configuration is already in the desired state.
 
 Available role tags:
 
