@@ -12,7 +12,7 @@ versions there are no complete deb-packages available.
 
 ownCloud will be installed as package coming directly from upstream.
 
-Note that Nginx is `not officially supported by ownCloud nor NextCloud <https://github.com/debops/ansible-owncloud/issues/49>`_ but it is community supported and should work without problems.
+Note that Nginx is `not officially supported by ownCloud nor NextCloud <https://github.com/debops/ansible-owncloud/issues/49>`_ but it is community supported and should work without problems. Apache is supported by the role but not yet used by default.
 
 Features
 ~~~~~~~~
