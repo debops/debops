@@ -53,6 +53,9 @@ users__default_groups_append: 'yes'
 # Lists of managed UNIX groups [[[
 # --------------------------------
 
+# These lists can be used to manage UNIX groups through Ansible inventory. See
+# :ref:`users__ref_groups` for more details.
+
 # .. envvar:: users__groups [[[
 #
 # List of UNIX groups to manage on all hosts in Ansible inventory.
@@ -74,6 +77,28 @@ users__host_groups: []
 # Lists of managed UNIX accounts [[[
 # ----------------------------------
 
+# These lists can be used to manage UNIX user accounts through Ansible
+# inventory. See :ref:`users__ref_accounts` for more details.
+
+# .. envvar:: users__accounts [[[
+#
+# List of user accounts to manage on all hosts in Ansible inventory.
+users__accounts: []
+
+                                                                   # ]]]
+# .. envvar:: users__group_accounts [[[
+#
+# List of UNIX user accounts to manage on hosts in specific Ansible inventory
+# group.
+users__group_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: users__host_accounts [[[
+#
+# List of UNIX user accounts to manage on specific hosts in Ansible inventory.
+users__host_accounts: []
+
+                                                                   # ]]]
 # .. envvar:: users__root_accounts [[[
 #
 # This is only used for configuration files and SSH keys management on the
@@ -92,25 +117,6 @@ users__default_accounts: []
 #
 # List of UNIX administrator accounts managed by Ansible.
 users__admin_accounts: '{{ lookup("template", "lookup/users__admin_accounts.j2") | from_yaml }}'
-
-                                                                   # ]]]
-# .. envvar:: users__accounts [[[
-#
-# List of user accounts to manage on all hosts in Ansible inventory.
-users__accounts: []
-
-                                                                   # ]]]
-# .. envvar:: users__group_accounts [[[
-#
-# List of UNIX user accounts to manage on hosts in specific Ansible inventory
-# group.
-users__group_accounts: []
-
-                                                                   # ]]]
-# .. envvar:: users__host_accounts [[[
-#
-# List of UNIX user accounts to manage on specific hosts in Ansible inventory.
-users__host_accounts: []
                                                                    # ]]]
                                                                    # ]]]
 # User configuration files (dotfiles) [[[

@@ -40,7 +40,7 @@ Changed
   dotfiles have been renamed. [drybjed_]
 
 - A default shell can now be set for all user accounts managed by this role, by
-  setting it in the ``users__default_shell`` variable. [drybjed_]
+  setting it in the :envvar:`users__default_shell` variable. [drybjed_]
 
 
 `debops.users v0.1.6`_ - 2016-02-06
