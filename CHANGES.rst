@@ -56,6 +56,8 @@ Added
 
 - Add debops.apache_ role and its corresponding playbook. [ypid_]
 
+- Update the debops.owncloud_ playbook to add support for debops.apache_. [ypid_]
+
 Changed
 ~~~~~~~
 
