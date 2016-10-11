@@ -19,12 +19,17 @@
 
 - name: Add ownCloud APT OpenPGP public key
   apt_key:
-    file: '{{ owncloud__src_remote_dir }}/keyring/0xAB7C32C35180350A'
-    # url: '{{ owncloud__apt_repo_key_url }}'
-    ## Currently not available from key servers.
+    ## OpenPGP keys are still tracked in this repository as fallback.
     ## https://github.com/debops/ansible-owncloud/pull/44#discussion_r73565798
+    # file: '{{ owncloud__src_remote_dir }}/keyring/0x47AE7F72479BC94B'
+    # url: '{{ owncloud__apt_repo_key_url }}'
     id: '{{ owncloud__apt_repo_key_id }}'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver|d())
+                   else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
+  register: owncloud__register_apt_key
 
 - name: Ensure deprecated APT sources files are absent
   file:
@@ -46,7 +51,7 @@
 - name: Update APT repository cache
   apt:
     update_cache: True
-  when: owncloud__register_apt_repository|changed
+  when: owncloud__register_apt_key|changed or owncloud__register_apt_repository|changed
 
   ## Use filename when available (2.1.0) https://github.com/ansible/ansible-modules-core/pull/2696
   ## To avoid multiple of those source files.

@@ -43,6 +43,19 @@ Removed
 - Removed deprecated Ansible inventory group ``debops_owncloud``. Refer to the
   :ref:`owncloud__ref_getting_started` guide. [ypid_]
 
+Security
+~~~~~~~~
+
+- Update to the new ``ownCloud build service`` OpenPGP key with fingerprint
+  ``DDA2 C105 C4B7 3A66 49AD  2BBD 47AE 7F72 479B C94B``.
+
+  Note that new releases are signed with that key. If the new key is not
+  present, no updates will be installed because they can not be verified.
+  Thus updates fixing potential security issues will not be installed!
+
+  Please run the updated role with the new key against your host(s) to fix
+  this.
+  [ypid_]
 
 `debops.owncloud v0.3.0`_ - 2016-09-17
 --------------------------------------
