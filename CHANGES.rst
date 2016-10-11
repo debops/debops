@@ -26,6 +26,17 @@ Added
 
 - Add support for the `Apache HTTP Server`_, founded by https://www.hamcos.de/. [ypid_]
 
+Changed
+~~~~~~~
+
+- Renamed variables to be consistent with DebOps:
+
+  * ``owncloud__nginx__servers`` → :envvar:`owncloud__nginx__dependent_servers`
+  * ``owncloud__nginx__upstream_php`` → :envvar:`owncloud__nginx__dependent_upstreams`
+
+  The role bundles a script which can do this transition for you.
+  Refer to :ref:`owncloud__ref_upgrade_nodes_v0.4.0` for details.
+
 Removed
 ~~~~~~~
 
