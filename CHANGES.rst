@@ -63,6 +63,10 @@ Fixed
   :ref:`robots_tag <nginx__ref_http_robots_tag>` header was set for a given
   Nginx server. [ypid_]
 
+- Make sure that the default HTTP server is selected even when ``item.listen``
+  parameter is not specified in any of the server configuration entries.
+  [drybjed_]
+
 
 `debops.nginx v0.1.9`_ - 2016-07-19
 -----------------------------------
