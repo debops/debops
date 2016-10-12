@@ -10,7 +10,7 @@ to your setup in order to use a new role release. Refer to the
 :ref:`users__ref_changelog` for more details about what has changed.
 
 
-From v0.1.6 to v0.2.0
+From v0.1.x to v0.2.x
 ---------------------
 
 All role variables have been renamed from ``users_*`` to ``users__*`` to move
@@ -54,3 +54,13 @@ List of other renamed variables:
 +--------------------------------+---------------------------------------+
 | ``users_dotfiles``             | :envvar:`users__dotfiles_default_map` |
 +--------------------------------+---------------------------------------+
+
+This script can come in handy to update the inventory variable names, assuming
+that your inventory is stored in a :command:`git` repository::
+
+.. literalinclude:: scripts/upgrade-from-v0.1.x-to-v0.2.x.sh
+   :language: shell
+
+The script is bundled with this role under
+:file:`docs/scripts/upgrade-from-v0.1.x-to-v0.2.x.sh` and can be invoked from
+there.
