@@ -84,7 +84,7 @@
                    nginx_servers|d([]) + nginx_default_servers|d([]) + nginx_internal_servers|d([]) + nginx_dependent_servers|d([]))[::-1] }}'
   when: (item.state|d('present') != 'absent' and
          (item.enabled|d(True)|bool) and
-         (item.listen|d()) and
+         (item.listen|d(True)) and
          ((item.ssl is undefined or not item.ssl | bool) or not nginx_pki | bool))
 
 - name: Get first server that listens on https port for default_server roulette
