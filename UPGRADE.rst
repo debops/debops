@@ -56,7 +56,7 @@ List of other renamed variables:
 +--------------------------------+---------------------------------------+
 
 This script can come in handy to update the inventory variable names, assuming
-that your inventory is stored in a :command:`git` repository::
+that your inventory is stored in a :command:`git` repository:
 
 .. literalinclude:: scripts/upgrade-from-v0.1.x-to-v0.2.x.sh
    :language: shell
