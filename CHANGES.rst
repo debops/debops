@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed.
 `debops.users master`_ - unreleased
 -----------------------------------
 
-.. _debops.users master: https://github.com/debops/ansible-users/compare/v0.1.6...master
+.. _debops.users master: https://github.com/debops/ansible-users/compare/v0.2.0...master
+
+
+`debops.users v0.2.0`_ - 2016-10-13
+-----------------------------------
+
+.. _debops.users v0.2.0: https://github.com/debops/ansible-users/compare/v0.1.6...v0.2.0
 
 Added
 ~~~~~
