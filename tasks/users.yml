@@ -24,11 +24,17 @@
   when: (item.name|d() and item.name != 'root' and item.state|d('present') != 'absent')
   no_log: '{{ users__no_log | bool }}'
 
+- name: Get list of available groups
+  getent:
+    database: 'group'
+
 - name: Manage user accounts
   user:
     name:               '{{ item.name }}'
     uid:                '{{ item.uid                | d(omit) }}'
     group:              '{{ item.group              | d(item.name) }}'
+    groups:             '{{ ( (([ item.groups ] if item.groups is string else item.groups) | intersect(getent_group.keys())) | join(",") ) if item.groups is defined else omit }}'
+    append:             '{{ item.append             | d(True) }}'
     state:              '{{ item.state              | d("present") }}'
     comment:            '{{ item.comment            | d(omit) }}'
     password:           '{{ item.password           | d("*") }}'
@@ -84,33 +90,6 @@
     - '{{ users_host_list  | d([]) }}'
   when: (item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and item.createhome|d(True) and
          (item.home_owner|d() or item.home_group|d() or item.home_mode|d()))
-  no_log: '{{ users__no_log | bool }}'
-
-- name: Get list of available groups
-  shell: 'getent group | cut -f1 -d:'
-  register: users__register_groups
-  changed_when: False
-  always_run: yes
-
-- name: Manage user groups
-  user:
-    name: '{{ item.name }}'
-    state: '{{ item.state    | d("present") }}'
-    groups: '{{ (item.groups | intersect(users__register_groups.stdout_lines)) | join(",") }}'
-    append: '{{ item.append  | d(True) }}'
-  with_flattened:
-    - '{{ users__default_accounts }}'
-    - '{{ users__admin_accounts }}'
-    - '{{ users__accounts }}'
-    - '{{ users__group_accounts }}'
-    - '{{ users__host_accounts }}'
-    - '{{ users_default    | d([]) }}'
-    - '{{ users_admins     | d([]) }}'
-    - '{{ users_groups     | d([]) }}'
-    - '{{ users_list       | d([]) }}'
-    - '{{ users_group_list | d([]) }}'
-    - '{{ users_host_list  | d([]) }}'
-  when: (item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and item.groups|d())
   no_log: '{{ users__no_log | bool }}'
 
 - name: Remove user groups if requested
