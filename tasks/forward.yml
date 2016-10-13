@@ -1,35 +1,19 @@
 ---
 
-- name: Configure ~/.forward for users
-  template:
-    src: 'home/user/forward.j2'
+- name: Configure user mail forwarding
+  lineinfile:
     dest: '~/.forward'
-    mode: '0644'
+    regexp: "{{ '^' + (item.forward if item.forward is string else item.forward[0]) }}"
+    line: '{{ item.forward if item.forward is string else item.forward | join(", ") }}'
+    state: '{{ item.forward_state | d("present") }}'
+    create: True
   become_user: '{{ item.name }}'
   with_flattened:
-    - '{{ users_default }}'
-    - '{{ users_admins }}'
-    - '{{ users_list }}'
-    - '{{ users_group_list }}'
-    - '{{ users_host_list }}'
-  when: ((item.name is defined and item.name and item.name != 'root') and
-         ((item.state|d('present') != 'absent')) and
-         item.createhome|d(True) and
-         (item.forward is defined and item.forward))
-
-- name: Remove ~/.forward from user account when disabled
-  file:
-    path: '~/.forward'
-    state: 'absent'
-  become_user: '{{ item.name }}'
-  with_flattened:
-    - '{{ users_default }}'
-    - '{{ users_admins }}'
-    - '{{ users_list }}'
-    - '{{ users_group_list }}'
-    - '{{ users_host_list }}'
-  when: ((item.name is defined and item.name and item.name != 'root') and
-         ((item.state|d('present') != 'absent')) and
-         item.createhome|d(True) and
-         (item.forward is defined and not item.forward))
-
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+  when: (item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and
+         item.createhome|d(True) and item.forward|d())
+  no_log: '{{ users__no_log | bool }}'

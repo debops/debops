@@ -2,30 +2,38 @@
 
 - name: Create user groups
   group:
-    name: '{{ item.group | default(item.name) }}'
-    system: '{{ item.system | d((True | bool) if (users_default_system | bool) else omit) }}'
-    gid: '{{ item.gid | default(omit) }}'
+    name:   '{{ item.group  | d(item.name) }}'
+    system: '{{ item.system | d(True if (users__default_system | bool) else omit) }}'
+    gid:    '{{ item.gid    | d(omit) }}'
     state: 'present'
   with_flattened:
-    - '{{ users_default }}'
-    - '{{ users_admins }}'
-    - '{{ users_groups }}'
-    - '{{ users_list }}'
-    - '{{ users_group_list }}'
-    - '{{ users_host_list }}'
-  when: ((item.name is defined and item.name and item.name != 'root') and
-         (item.state|d('present') != 'absent'))
+    - '{{ users__groups }}'
+    - '{{ users__group_groups }}'
+    - '{{ users__host_groups }}'
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+  when: (item.name|d() and item.name != 'root' and item.state|d('present') != 'absent')
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Get list of available groups
+  getent:
+    database: 'group'
 
 - name: Manage user accounts
   user:
     name:               '{{ item.name }}'
     uid:                '{{ item.uid                | d(omit) }}'
     group:              '{{ item.group              | d(item.name) }}'
+    groups:             '{{ ( (([ item.groups ] if item.groups is string else item.groups) | intersect(getent_group.keys())) | join(",") ) if item.groups is defined else omit }}'
+    append:             '{{ item.append             | d(True) }}'
     state:              '{{ item.state              | d("present") }}'
     comment:            '{{ item.comment            | d(omit) }}'
     password:           '{{ item.password           | d("*") }}'
     update_password:    '{{ item.update_password    | d("on_create") }}'
-    system:             '{{ item.system             | d(True if (users_default_system | bool) else omit) }}'
+    system:             '{{ item.system             | d(True if (users__default_system | bool) else omit) }}'
     shell:              '{{ item.shell              | d(omit) }}'
     home:               '{{ item.home               | d(omit) }}'
     createhome:         '{{ item.createhome         | d(omit) }}'
@@ -41,81 +49,44 @@
     ssh_key_passphrase: '{{ item.ssh_key_passphrase | d(omit) }}'
     ssh_key_type:       '{{ item.ssh_key_type       | d(omit) }}'
   with_flattened:
-    - '{{ users_default }}'
-    - '{{ users_admins }}'
-    - '{{ users_list }}'
-    - '{{ users_group_list }}'
-    - '{{ users_host_list }}'
-  when: ((item.name is defined and item.name and item.name != 'root') and
-         (item.state|d('present') != 'absent'))
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+  when: (item.name|d() and item.name != 'root')
+  no_log: '{{ users__no_log | bool }}'
 
 - name: Manage user home directories
   file:
-    path: '{{ item.home | default("~" + item.name) }}'
+    path:  '{{ item.home | d("~" + item.name) }}'
     state: 'directory'
-    owner: '{{ item.home_owner | default(omit) }}'
-    group: '{{ item.home_group | default(omit) }}'
-    mode: '{{ item.home_mode | default(omit) }}'
+    owner: '{{ item.home_owner | d(omit) }}'
+    group: '{{ item.home_group | d(omit) }}'
+    mode:  '{{ item.home_mode  | d(omit) }}'
   with_flattened:
-    - '{{ users_default }}'
-    - '{{ users_admins }}'
-    - '{{ users_list }}'
-    - '{{ users_group_list }}'
-    - '{{ users_host_list }}'
-  when: ((item.name is defined and item.name and item.name != 'root') and
-         (item.state|d('present') != 'absent') and
-         item.createhome|d(True) and
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+  when: (item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and item.createhome|d(True) and
          (item.home_owner|d() or item.home_group|d() or item.home_mode|d()))
-
-- name: Get list of available groups
-  shell: 'getent group | cut -f1 -d:'
-  register: users_register_groups
-  changed_when: False
-  always_run: yes
-
-- name: Manage user default groups
-  user:
-    name: '{{ item.name }}'
-    state: '{{ item.state | default("present") }}'
-    groups: '{{ (users_default_groups_list | intersect(users_register_groups.stdout_lines)) | join(",") }}'
-    append: '{{ users_default_groups_append }}'
-  with_flattened:
-    - '{{ users_default }}'
-    - '{{ users_admins }}'
-    - '{{ users_list }}'
-    - '{{ users_group_list }}'
-    - '{{ users_host_list }}'
-  when: ((item.name is defined and item.name and item.name != 'root') and
-         (item.state|d('present') != 'absent') and
-         (users_default_groups_list is defined and users_default_groups_list))
-
-- name: Manage user groups
-  user:
-    name: '{{ item.name }}'
-    state: '{{ item.state | default("present") }}'
-    groups: '{{ (item.groups | intersect(users_register_groups.stdout_lines)) | join(",") }}'
-    append: '{{ item.append | default("yes") }}'
-  with_flattened:
-    - '{{ users_default }}'
-    - '{{ users_admins }}'
-    - '{{ users_list }}'
-    - '{{ users_group_list }}'
-    - '{{ users_host_list }}'
-  when: ((item.name is defined and item.name and item.name != 'root') and
-         (item.state|d('present') != 'absent') and
-         (item.groups is defined and item.groups))
+  no_log: '{{ users__no_log | bool }}'
 
 - name: Remove user groups if requested
   group:
-    name: '{{ item.group | default(item.name) }}'
+    name: '{{ item.group | d(item.name) }}'
     state: 'absent'
   with_flattened:
-    - '{{ users_default }}'
-    - '{{ users_admins }}'
-    - '{{ users_groups }}'
-    - '{{ users_list }}'
-    - '{{ users_group_list }}'
-    - '{{ users_host_list }}'
-  when: ((item.name is defined and item.name and item.name != 'root') and
-         (item.state|d('present') == 'absent'))
-
+    - '{{ users__groups }}'
+    - '{{ users__group_groups }}'
+    - '{{ users__host_groups }}'
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+  when: (item.name|d() and item.name != 'root' and item.state|d('present') == 'absent' and
+         (item.group is undefined or item.group == item.name))
+  no_log: '{{ users__no_log | bool }}'
