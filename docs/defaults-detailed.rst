@@ -153,7 +153,7 @@ Parameters related to home directories
 ``createhome``
   Optional, boolean. If ``True``, the role will create the home directory for
   a given user account if it doesn't exist already. If not specified, home
-  directory is created by default by the ``user`` module.
+  directory is created by default by the `Ansible user module`_.
 
 ``move_home``
   Optional, boolean. If ``True`` and the managed user account already exists,
@@ -173,7 +173,7 @@ Parameters related to the account's private SSH key
 
 ``ssh_key_bits``
   Optional. Number of bits to use for the user's private SSH key. If not
-  specified, role will use the ``user`` module default value.
+  specified, role will use the `Ansible user module`_ default value.
 
 ``ssh_key_comment``
   Optional. Add a custom comment to the generated SSH key.
