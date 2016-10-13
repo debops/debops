@@ -14,11 +14,6 @@
     - '{{ users__accounts }}'
     - '{{ users__group_accounts }}'
     - '{{ users__host_accounts }}'
-    - '{{ users_default    | d([]) }}'
-    - '{{ users_admins     | d([]) }}'
-    - '{{ users_list       | d([]) }}'
-    - '{{ users_group_list | d([]) }}'
-    - '{{ users_host_list  | d([]) }}'
   when: (item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and
          item.createhome|d(True) and item.forward|d())
   no_log: '{{ users__no_log | bool }}'

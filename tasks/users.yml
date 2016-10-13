@@ -15,12 +15,6 @@
     - '{{ users__accounts }}'
     - '{{ users__group_accounts }}'
     - '{{ users__host_accounts }}'
-    - '{{ users_default    | d([]) }}'
-    - '{{ users_admins     | d([]) }}'
-    - '{{ users_groups     | d([]) }}'
-    - '{{ users_list       | d([]) }}'
-    - '{{ users_group_list | d([]) }}'
-    - '{{ users_host_list  | d([]) }}'
   when: (item.name|d() and item.name != 'root' and item.state|d('present') != 'absent')
   no_log: '{{ users__no_log | bool }}'
 
@@ -60,12 +54,6 @@
     - '{{ users__accounts }}'
     - '{{ users__group_accounts }}'
     - '{{ users__host_accounts }}'
-    - '{{ users_default    | d([]) }}'
-    - '{{ users_admins     | d([]) }}'
-    - '{{ users_groups     | d([]) }}'
-    - '{{ users_list       | d([]) }}'
-    - '{{ users_group_list | d([]) }}'
-    - '{{ users_host_list  | d([]) }}'
   when: (item.name|d() and item.name != 'root')
   no_log: '{{ users__no_log | bool }}'
 
@@ -82,12 +70,6 @@
     - '{{ users__accounts }}'
     - '{{ users__group_accounts }}'
     - '{{ users__host_accounts }}'
-    - '{{ users_default    | d([]) }}'
-    - '{{ users_admins     | d([]) }}'
-    - '{{ users_groups     | d([]) }}'
-    - '{{ users_list       | d([]) }}'
-    - '{{ users_group_list | d([]) }}'
-    - '{{ users_host_list  | d([]) }}'
   when: (item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and item.createhome|d(True) and
          (item.home_owner|d() or item.home_group|d() or item.home_mode|d()))
   no_log: '{{ users__no_log | bool }}'
@@ -105,12 +87,6 @@
     - '{{ users__accounts }}'
     - '{{ users__group_accounts }}'
     - '{{ users__host_accounts }}'
-    - '{{ users_default    | d([]) }}'
-    - '{{ users_admins     | d([]) }}'
-    - '{{ users_groups     | d([]) }}'
-    - '{{ users_list       | d([]) }}'
-    - '{{ users_group_list | d([]) }}'
-    - '{{ users_host_list  | d([]) }}'
   when: (item.name|d() and item.name != 'root' and item.state|d('present') == 'absent' and
          (item.group is undefined or item.group == item.name))
   no_log: '{{ users__no_log | bool }}'
