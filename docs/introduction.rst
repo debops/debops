@@ -20,7 +20,7 @@ This role requires at least Ansible ``v1.7.0``. To install it, run:
 
 .. code-block:: console
 
-   user@host:~$ ansible-galaxy install debops.elasticsearch
+   ansible-galaxy install debops.elasticsearch
 
 ..
  Local Variables:

@@ -1,7 +1,7 @@
-.. _debops.nullmailer:
+.. _debops.elasticsearch:
 
-Ansible role: debops.nullmailer
-===============================
+Ansible role: debops.elasticsearch
+==================================
 
 .. toctree::
    :maxdepth: 2

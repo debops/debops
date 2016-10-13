@@ -1,12 +1,16 @@
 ---
 
-- name: Manage Elasticsearch server
+- name: Manage Elasticsearch cluster
   hosts: [ 'debops_service_elasticsearch',
            'debops_service_elasticsearch_master',
            'debops_service_elasticsearch_workhorse',
            'debops_service_elasticsearch_coordinator',
            'debops_service_elasticsearch_loadbalancer' ]
   become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
 
   roles:
 

@@ -10,7 +10,13 @@ and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
 The current role maintainer_ is drybjed_.
 
-debops.elasticsearch master - unreleased
+`debops.elasticsearch master`_ - unreleased
+-------------------------------------------
+
+.. _debops.elasticsearch master: https://github.com/debops/ansible-elasticsearch/compare/v0.1.0...master
+
+
+debops.elasticsearch v0.1.0 - 2016-10-13
 ----------------------------------------
 
 Added
