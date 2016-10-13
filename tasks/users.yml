@@ -3,7 +3,7 @@
 - name: Create user groups
   group:
     name:   '{{ item.group  | d(item.name) }}'
-    system: '{{ item.system | d((True | bool) if (users__default_system | bool) else omit) }}'
+    system: '{{ item.system | d(True if users__default_system | bool else omit) }}'
     gid:    '{{ item.gid    | d(omit) }}'
     state: 'present'
   with_flattened:
@@ -39,7 +39,7 @@
     comment:            '{{ item.comment            | d(omit) }}'
     password:           '{{ item.password           | d("*") }}'
     update_password:    '{{ item.update_password    | d("on_create") }}'
-    system:             '{{ item.system             | d(True if (users__default_system | bool) else omit) }}'
+    system:             '{{ item.system             | d(True if users__default_system | bool else omit) }}'
     shell:              '{{ item.shell              | d(omit) }}'
     home:               '{{ item.home               | d(omit) }}'
     createhome:         '{{ item.createhome         | d(omit) }}'
