@@ -182,7 +182,7 @@ Parameters related to the account's private SSH key
   Optional. Path where the private SSH key will be stored.
 
 ``ssh_key_passphrase``
-  Optional. Set a passhprase which will be required to decrypt the private SSH
+  Optional. Set a passphrase which will be required to decrypt the private SSH
   key.
 
 ``ssh_key_type``
@@ -280,7 +280,7 @@ users__resources
 
 The :envvar:`users__resources`, :envvar:`users__group_resources` and
 :envvar:`users__host_resources` lists can be used to manage directories, files
-and symlinks for specifc UNIX accounts using Ansible inventory. This
+and symlinks for specific UNIX accounts using Ansible inventory. This
 functionality is meant to be used to manage small amounts of data, like custom
 configuration files, private SSH keys and so on. For more advanced management,
 you should consider using debops.resources_ Ansible role, or even writing
@@ -352,7 +352,7 @@ Each entry on the list is a YAML dictionary with specific parameters:
   file resource.
 
 ``parent_recurse``
-  Optional, bollean. If ``True``, parent permissions will be applied
+  Optional, boolean. If ``True``, parent permissions will be applied
   recursively to all parent directories.
 
 Examples

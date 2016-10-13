@@ -14,7 +14,7 @@ From v0.1.x to v0.2.x
 ---------------------
 
 All role variables have been renamed from ``users_*`` to ``users__*`` to move
-them to a separate namespace. Old user account and group lists still are
+them to a separate namespace. Old user account and group lists are still
 supported, however you might need to update some variables like
 ``users_enabled`` and ``users_default_*`` to the new names in the inventory to
 keep their functionality.
