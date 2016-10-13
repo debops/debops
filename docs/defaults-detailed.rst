@@ -173,7 +173,7 @@ Parameters related to the account's private SSH key
 
 ``ssh_key_bits``
   Optional. Number of bits to use for the user's private SSH key. If not
-  specified, role will use the ``user`` module default (2048).
+  specified, role will use the ``user`` module default value.
 
 ``ssh_key_comment``
   Optional. Add a custom comment to the generated SSH key.
