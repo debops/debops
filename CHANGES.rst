@@ -56,6 +56,13 @@ Changed
   parameter as a string or a list, set the specified keys as exclusive or
   entirely remove the ``~/.ssh/authorized_keys`` file. [drybjed_]
 
+Removed
+~~~~~~~
+
+- Remove the ``users__default_groups_list`` and
+  ``users__default_groups_append`` variables, as well as the task that utilized
+  these variables. [drybjed_]
+
 Fixed
 ~~~~~
 
