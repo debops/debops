@@ -1,6 +1,8 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
 
@@ -28,7 +30,7 @@ adding in inventory:
 Check :ref:`postgresql_server__ref_preferred_version` to learn more about
 selecting custom PostgreSQL versions.
 
-After installation you can use ``debops.postgresql`` role to configure
+After installation you can use debops.postgresql_ role to configure
 PostgreSQL roles and databases.
 
 Remote access to the database
@@ -36,7 +38,7 @@ Remote access to the database
 
 PostgreSQL server listens only for connections on ``localhost`` by default. To
 enable remote access, you need to change the
-``postgresql_server__listen_addresses`` list to specify either IP addresses of
+:envvar:`postgresql_server__listen_addresses` list to specify either IP addresses of
 the interfaces you want your host to listen on or ``*`` for all interfaces.
 Because firewall by default blocks all connections to PostgreSQL server, you
 will also need to specify IP addresses or CIDR subnets which should be able to
@@ -67,8 +69,8 @@ cluster:
          address: [ '192.0.2.0/24', '2001:db8::/32' ]
          method: 'md5'
 
-The ``debops.postgresql_server`` role is designed to use the PKI infrastructure
-managed by ``debops.pki`` role. See its documentation for more details.
+The debops.postgresql_server_ role is designed to use the PKI infrastructure
+managed by debops.pki_ role. See its documentation for more details.
 
 Example inventory
 -----------------
@@ -82,7 +84,7 @@ to the ``[debops_service_postgresql_server]`` Ansible host group::
 Example playbook
 ----------------
 
-Here's an example playbook which uses the ``debops.postgresql_server`` role:
+Here's an example playbook which uses the debops.postgresql_server_ role:
 
 .. literalinclude:: playbooks/postgresql_server.yml
    :language: yaml
@@ -109,4 +111,3 @@ Available role tags:
 
 ``role::postgresql_server:auto_backup``
   Run tasks that configure AutoPostgreSQLBackup scripts.
-
