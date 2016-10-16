@@ -9,7 +9,7 @@ Ansible role: debops.postgresql
    introduction
    getting-started
    defaults
-   defaults-configuration
+   defaults-detailed
    copyright
    changelog
 
