@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed_.
 `debops.postgresql_server master`_ - unreleased
 -----------------------------------------------
 
-.. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.1...master
+.. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.2...master
+
+
+`debops.postgresql_server v0.3.2`_ - 2016-10-16
+-----------------------------------------------
+
+.. _debops.postgresql_server v0.3.2: https://github.com/debops/ansible-postgresql_server/compare/v0.3.1...v0.3.2
 
 Added
 ~~~~~
