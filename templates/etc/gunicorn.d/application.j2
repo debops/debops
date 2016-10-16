@@ -1,0 +1,29 @@
+# {{ ansible_managed }}
+{% macro print_config(config) %}
+{%   for key, value in config.iteritems() %}
+{%     if key not in [ 'name', 'comment', 'state' ] %}
+{%       if value is string %}
+'{{ key }}': '{{ value }}',
+{%       elif value is mapping %}
+'{{ key }}': {
+{%         for v_key, v_value in value.iteritems() %}
+    '{{ v_key }}': '{{ v_value }}',
+{%         endfor %}
+},
+{%       elif value is not string and value is not mapping %}
+'{{ key }}': (
+{%       for element in value %}
+    '{{ element }}',
+{%       endfor %}
+),
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endmacro %}
+
+{% if item.comment|d() %}
+{{ (item.comment if item.comment is string else item.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{% endif %}
+CONFIG = {
+{{ print_config(item) | indent(4, true) }}
+}

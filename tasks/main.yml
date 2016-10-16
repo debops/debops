@@ -1,0 +1,61 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ gunicorn__base_packages }}'
+    - '{{ gunicorn__packages }}'
+
+- name: Make sure /etc/gunicorn.d/ directory exists
+  file:
+    path: '/etc/gunicorn.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Remove gunicorn configuration
+  file:
+    path: '/etc/gunicorn.d/{{ item.name }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  notify: [ 'Restart gunicorn' ]
+  when: item.name|d() and item.state|d('present') == 'absent'
+
+- name: Generate gunicorn configuration
+  template:
+    src: 'etc/gunicorn.d/application.j2'
+    dest: '/etc/gunicorn.d/{{ item.name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  notify: [ 'Restart gunicorn' ]
+  when: item.name|d() and item.state|d('present') != 'absent'
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save gunicorn local facts
+  template:
+    src: 'etc/ansible/facts.d/gunicorn.fact.j2'
+    dest: '/etc/ansible/facts.d/gunicorn.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: gunicorn__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: gunicorn__register_facts|changed
