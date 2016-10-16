@@ -16,7 +16,18 @@ The current role maintainer_ is drybjed.
 `debops.users master`_ - unreleased
 -----------------------------------
 
-.. _debops.users master: https://github.com/debops/ansible-users/compare/v0.2.0...master
+.. _debops.users master: https://github.com/debops/ansible-users/compare/v0.2.1...master
+
+
+`debops.users v0.2.1`_ - 2016-10-16
+-----------------------------------
+
+.. _debops.users v0.2.1: https://github.com/debops/ansible-users/compare/v0.2.0...v0.2.1
+
+Added
+~~~~~
+
+- Allow creation of user accounts with non-unique UID numbers. [kosma]
 
 
 `debops.users v0.2.0`_ - 2016-10-13
