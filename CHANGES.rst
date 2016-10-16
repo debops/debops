@@ -58,6 +58,8 @@ Added
 
 - Update the debops.owncloud_ playbook to add support for debops.apache_. [ypid_]
 
+- Add ``debops.gunicorn`` role and its corresponding playbook. [drybjed_]
+
 Changed
 ~~~~~~~
 
