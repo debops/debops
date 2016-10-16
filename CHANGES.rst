@@ -27,10 +27,13 @@ Added
 Changed
 ~~~~~~~
 
-- Updated documentation and Changelog. [drybjed_]
+- Update documentation and Changelog. [drybjed_]
 
 - Use the debops.core_ Ansible local variables to manage admin account
   configuration. [drybjed_]
+
+- Restrict the characters that can appear in the ``postgres`` user password and
+  make the randomly-generated passwords longer. [drybjed_]
 
 
 `debops.postgresql_server v0.3.1`_ - 2016-06-29
