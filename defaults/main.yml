@@ -110,11 +110,11 @@ postgresql_server__max_connections: '100'
 # List of local UNIX accounts which will be allowed to login to any database
 # as ``postgres`` role with peer authentication. The special ``*postgres*``
 # account name is replaced with username of the cluster system user.
-postgresql_server__admins: [ 'root', '*postgres*',
-                             '{{ (ansible_ssh_user
-                                  if (ansible_ssh_user | d() and
-                                      ansible_ssh_user != "root")
-                                  else lookup("env", "USER")) }}' ]
+postgresql_server__admins: '{{ [ "root", "*postgres*" ] +
+                               (ansible_local.core.admin_users
+                                if (ansible_local|d() and ansible_local.core|d() and
+                                    ansible_local.core.admin_users|d())
+                                else []) }}'
 
 
 # .. envvar:: postgresql_server__admin_password
@@ -130,10 +130,10 @@ postgresql_server__admin_password: "{{ lookup('password', secret + '/credentials
 #
 # List of local UNIX accounts that are implicitly trusted by PostgreSQL server
 # and can login to their own roles without password.
-postgresql_server__trusted: [ '{{ (ansible_ssh_user
-                                   if (ansible_ssh_user | d() and
-                                       ansible_ssh_user != "root")
-                                   else lookup("env", "USER")) }}' ]
+postgresql_server__trusted: '{{ ansible_local.core.admin_users
+                                if (ansible_local|d() and ansible_local.core|d() and
+                                    ansible_local.core.admin_users|d())
+                                else [] }}'
 
 
 # -------------------------

@@ -29,6 +29,9 @@ Changed
 
 - Updated documentation and Changelog. [drybjed_]
 
+- Use the debops.core_ Ansible local variables to manage admin account
+  configuration. [drybjed_]
+
 
 `debops.postgresql_server v0.3.1`_ - 2016-06-29
 -----------------------------------------------
