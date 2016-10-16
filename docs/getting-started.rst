@@ -1,13 +1,15 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
 
-``debops.postgresql`` role is only the "client" part. To have working
-a PostgreSQL installation, you also need to setup ``debops.postgresql_server``
+debops.postgresql_ role is only the "client" part. To have working
+a PostgreSQL installation, you also need to setup debops.postgresql_server_
 role somewhere. It can be either on the same host, or on a separate host.  See
-the ``debops.postgresql_server`` documentation to learn how to install the
+the debops.postgresql_server_ documentation to learn how to install the
 database server itself.
 
 The PostgreSQL version installed by the role will be a default version offered
@@ -32,7 +34,7 @@ Local database server
 ~~~~~~~~~~~~~~~~~~~~~
 
 If the database server is installed locally, it will be automatically detected
-and used by the ``debops.postgresql`` role without any additional
+and used by the debops.postgresql_ role without any additional
 configuration. Also, if a remote server was used previously, and a local one
 was installed, it will automatically override the remote configuration. You
 might need to recreate the databases and user accounts in that case.
@@ -41,7 +43,7 @@ Remote database server
 ~~~~~~~~~~~~~~~~~~~~~~
 
 If your PostgreSQL server is configured on a remote host and you don't have
-a local installation, ``debops.postgresql`` will detect that and won't manage the
+a local installation, debops.postgresql_ will detect that and won't manage the
 databases/user accounts without a server specified. To point it to a server,
 you need to set a variable in the inventory::
 
@@ -52,7 +54,7 @@ server installed. This host will be accessed by Ansible using task delegation,
 so it needs to be accessible and managed by Ansible. Currently only 1 server at
 a time is supported by the role.
 
-If you use ``debops.pki`` to manage SSL certificates and you configured
+If you use debops.pki_ to manage SSL certificates and you configured
 PostgreSQL server with them, remote connections to the database should be
 automatically encrypted. Default server configuration requires remote
 connections to be done over SSL, otherwise connecion is dropped.
@@ -107,7 +109,7 @@ password stored for easier access.
 Example playbook
 ----------------
 
-Here's an example Ansible playbook that uses the ``debops.postgresql`` role:
+Here's an example Ansible playbook that uses the debops.postgresql_ role:
 
 .. literalinclude:: playbooks/postgresql.yml
    :language: yaml

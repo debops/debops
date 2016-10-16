@@ -1,7 +1,9 @@
-Default variables: configuration
-================================
+Default variable details
+========================
 
-Some of ``debops.postgresql`` default variables have more extensive
+.. include:: includes/all.rst
+
+Some of debops.postgresql_ default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
 
@@ -24,13 +26,13 @@ Multiple PostgreSQL versions become available after enabling the upstream APT
 repository. To choose a different version than the default one, you need to set
 two variables in the inventory:
 
-``postgresql__preferred_version``
+:envvar:`postgresql__preferred_version`
   The value of this variable should be set as the version of the PostgreSQL you
   wish the role to manage (it does not influence the APT packages the role
   installs, but what version is used in different file/directory paths managed
   by the role, what features are enabled/disabled in the configuration, etc.).
 
-``postgresql__base_packages``
+:envvar:`postgresql__base_packages`
   This is a list of APT packages which will be used by the role to install
   PostgreSQL. By default, it contains the metapackages which install the
   highest available version of PostgreSQL packages. To select a different
@@ -53,7 +55,7 @@ The preferred way to make an upgrade is to configure a new database server with
 desired PostgreSQL version and move the database to it.
 
 You might also need to set similar set of variables for the
-``debops.postgresql_server`` role to keep both of the roles in sync. Refer to
+debops.postgresql_server_ role to keep both of the roles in sync. Refer to
 its documentation for details.
 
 .. _postgresql__ref_user_clusters:
@@ -62,7 +64,7 @@ postgresql__user_clusters
 -------------------------
 
 This list defines what entries will be set in
-``/etc/postgresql-common/user_clusters`` configuration file. It is used by
+:file:`/etc/postgresql-common/user_clusters` configuration file. It is used by
 ``pg_wrapper`` in Debian to direct PostgreSQL-related commands to correct
 clusters. DebOps uses the default entry to redirect PostgrSQL-related commands
 like ``psql`` to either local or remote PostgreSQL server.
@@ -118,8 +120,8 @@ each role is defined as a YAML dictionary.
 
 ``password``
   Optional. Specify password for a given PostgreSQL role. If not set, a random
-  password will be generated and stored in ``secret/`` directory. See
-  ``debops.secret`` role for more details.
+  password will be generated and stored in :file:`secret/` directory. See
+  debops.secret_ role for more details.
 
 ``encrypted``
   Optional, bool. Specify if a given password is already encrypted or not.
@@ -262,7 +264,7 @@ Known parameters:
 
 ``port``
   Optional. The PostgreSQL cluster port number. If not specified, the default
-  ``postgresql__port`` will be used automatically.
+  :envvar:`postgresql__port` will be used automatically.
 
 ``state``
   Optional. Either ``present`` or ``absent``. If not specified or ``present``,
@@ -314,11 +316,11 @@ Each entry is defined by a YAML dictionary. Recognized parameters:
 ``server``
   Optional. Specify IP address or FQDN hostname of the server that you want to
   configure. If not specified, default server will be guessed automatically
-  from ``postgresql__server`` variable.
+  from :envvar:`postgresql__server` variable.
 
 ``port``
   Optional. Specofy default TCP port to use for PostgreSQL server entry. If not
-  specified, ``postgresql__port`` value will be used instead.
+  specified, :envvar:`postgresql__port` value will be used instead.
 
 ``database``
   Optional. Specify name of the database that should be covered by a given
@@ -330,8 +332,8 @@ Each entry is defined by a YAML dictionary. Recognized parameters:
 
 ``password``
   Optional. Specify cleartext password which should be used with a given entry.
-  If not specified, password will be pulled from ``secret/`` directory managed
-  by ``debops.secret`` Ansible role.
+  If not specified, password will be pulled from :file:`secret/` directory managed
+  by debops.secret_ Ansible role.
 
 Examples
 ~~~~~~~~
