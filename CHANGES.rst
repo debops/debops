@@ -35,6 +35,12 @@ Changed
 - Restrict the characters that can appear in the ``postgres`` user password and
   make the randomly-generated passwords longer. [drybjed_]
 
+Security
+~~~~~~~~
+
+- Make sure that the PostgreSQL server stores the admin password encrypted in
+  the database. [drybjed_]
+
 
 `debops.postgresql_server v0.3.1`_ - 2016-06-29
 -----------------------------------------------
