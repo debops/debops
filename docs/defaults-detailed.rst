@@ -116,6 +116,9 @@ General account parameters
   The module default is to always update the password, the ``debops.users``
   default is to only update the password on initial user creation.
 
+``non_unique``
+  Optional, boolean. If ``True``, allows setting the UID to a non-unique value.
+
 Parameters related to account state
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
