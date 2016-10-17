@@ -11,8 +11,8 @@
 
 - name: Copy the application keyring to the remote host
   copy:
-    src: 'usr/local/src/owncloud/keyring/0xAB7C32C35180350A'
-    dest: '{{ owncloud__src_remote_dir }}/keyring/0xAB7C32C35180350A'
+    src: 'usr/local/src/owncloud/keyring/0x47AE7F72479BC94B'
+    dest: '{{ owncloud__src_remote_dir }}/keyring/0x47AE7F72479BC94B'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -21,13 +21,15 @@
   apt_key:
     ## OpenPGP keys are still tracked in this repository as fallback.
     ## https://github.com/debops/ansible-owncloud/pull/44#discussion_r73565798
-    # file: '{{ owncloud__src_remote_dir }}/keyring/0x47AE7F72479BC94B'
+    file: '{{ owncloud__src_remote_dir }}/keyring/0x47AE7F72479BC94B'
     # url: '{{ owncloud__apt_repo_key_url }}'
     id: '{{ owncloud__apt_repo_key_id }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
+    # Usage of keyserver vulnerable, use file for now.
+    # Refer to: https://github.com/ansible/ansible-modules-core/issues/5237
+    # keyserver: '{{ ansible_local.core.keyserver
+    #                if (ansible_local|d() and ansible_local.core|d() and
+    #                    ansible_local.core.keyserver|d())
+    #                else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
   register: owncloud__register_apt_key
 
