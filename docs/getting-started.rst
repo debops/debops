@@ -64,7 +64,7 @@ Apache_ is officially supported, Nginx_ has been successfully used with this
 role for some time now. If you have trouble with ownCloud then this would be a
 good time to try to run it with Apache.
 
-The `ownCloud System Requirements`_ don’t use PHP-FPM in there default
+The `ownCloud System Requirements`_ don’t use PHP-FPM in their default
 configuration. You can set the following in your inventory to not install FPM
 on the ownCloud host:
 
@@ -79,21 +79,22 @@ Switching Webservers
 
 Assuming you where using one Webserver before on a host but want to switch then
 follow the steps in `Choosing a Webserver`_ and additionally add the host to
-the ``debops_service_$webserver`` group of the opposite webserver you chose for
-ownCloud.
+the ``debops_service_${not_chosen_webserver}`` group of the opposite webserver
+you chose for ownCloud.
 Now add this:
 
 .. code-block:: yaml
 
-   $webserver__deploy_state: 'absent'
+   ${not_chosen_webserver}__deploy_state: 'absent'
 
-to your inventory and run the playbook of ``$webserver`` to remove the unwanted
-webserver.
+to your inventory.
 
-Note: Replace the ``$webserver`` placeholders.
+Note: Replace the ``${not_chosen_webserver}`` placeholders.
 
 Then run the site playbook or just the playbook of the unwanted webserver
-followed by the playbook.
+followed by the debops.owncloud playbook.
+This will render ``${not_chosen_webserver}`` the unwanted webserver harmless
+and setup the chosen webserver.
 
 Example inventory
 -----------------
