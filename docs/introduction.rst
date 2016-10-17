@@ -19,7 +19,6 @@ Features
 
 * LDAP setup.
 * In memory caching using Redis for file locking and APCu.
-* Fully automated ownCloud security updates.
 * ownCloud theming support.
 * Extensive configuration options via Ansible’s inventory.
 * Fully automated ownCloud security updates. `Not yet enabled by default <https://github.com/debops/ansible-owncloud/issues/28>`_.
