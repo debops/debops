@@ -16,10 +16,19 @@ done
 
 for element in ${search_packages[@]} ; do
 
+    # Support for 'php<version>-*' packages
     if [[ ${available_packages["php${php_version}-${element}"]} ]] ; then
         echo "php${php_version}-${element}"
+
+    # Support for 'php-*' packages
     elif [[ ${available_packages["php-${element}"]} ]] ; then
         echo "php-${element}"
+
+    # Support for 'libapache2-mod-php<version>' package
+    elif [[ ${available_packages["${element}${php_version}"]} ]] ; then
+        echo "${element}${php_version}"
+
+    # Support for other packages
     else
         echo "${element}"
     fi
