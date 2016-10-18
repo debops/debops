@@ -21,6 +21,13 @@ Added
 
 - :envvar:`php__dependent_configuration`. [ypid_]
 
+Changed
+~~~~~~~
+
+- Redesign the method of selecting the correct PHP package versions. Now role
+  checks what packages are available and picks the correct package name using
+  a script before requesting their installation. [drybjed_]
+
 Fixed
 ~~~~~
 
