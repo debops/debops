@@ -6,7 +6,7 @@ php_version="${PHP_VERSION:-5}"
 
 search_packages="${@:-}"
 
-package_list=( $(apt-cache --no-generate pkgnames php ) )
+package_list=( $(apt-cache --no-generate pkgnames php ; apt-cache --no-generate pkgnames libapache2-mod-php ) )
 
 declare -A available_packages
 
