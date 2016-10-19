@@ -9,6 +9,7 @@
   script: 'script/php-filter-packages.sh {{ lookup("flattened", php__server_api_packages + php__base_packages + php__packages + php__group_packages + php__host_packages + php__dependent_packages).split(",") | join(" ") }}'
   register: php__register_filtered_packages
   changed_when: False
+  always_run: True
 
 - name: Install PHP packages
   apt:
