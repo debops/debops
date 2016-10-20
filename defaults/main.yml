@@ -40,7 +40,6 @@ netbox__domain: '{{ ansible_local.core.domain
 netbox__base_packages:
   - 'git'
   - 'build-essential'
-  - 'virtualenv'
   - 'python-dev'
   - 'python-pip'
   - 'libxml2-dev'
@@ -49,6 +48,9 @@ netbox__base_packages:
   - 'graphviz'
   - 'libpq-dev'
   - 'libssl-dev'
+  - '{{ "python-virtualenv"
+        if (ansible_distribution_release in [ "wheezy", "precise" ])
+        else "virtualenv" }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__packages [[[
