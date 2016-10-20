@@ -18,6 +18,13 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.2...master
 
+Changed
+~~~~~~~
+
+- Don't set the ``client_encoding`` option if none is specified in the cluster
+  configuration; server will fall back to database encoding for client
+  connections. [drybjed_]
+
 
 `debops.postgresql_server v0.3.2`_ - 2016-10-16
 -----------------------------------------------

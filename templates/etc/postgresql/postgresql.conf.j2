@@ -423,7 +423,11 @@ intervalstyle = '{{ item.intervalstyle | d("postgres") }}'
 timezone = '{{ item.timezone | d(postgresql_server__timezone) }}'
 timezone_abbreviations = '{{ item.timezone_abbreviations | d("Default") }}'
 extra_float_digits = {{ item.extra_float_digits | d('0') }}
-client_encoding = {{ item.client_encoding | d('sql_ascii') }}
+{% if item.client_encoding|d() %}
+client_encoding = {{ item.client_encoding }}
+{% else %}
+#client_encoding = # based on the database encoding
+{% endif %}
 lc_messages = '{{ item.locale_messages | d(postgresql_server__locale_messages) }}'
 lc_monetary = '{{ item.locale | d(postgresql_server__locale) }}'
 lc_numeric = '{{ item.locale | d(postgresql_server__locale) }}'
