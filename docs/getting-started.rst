@@ -48,7 +48,7 @@ Internal application server
 The ``debops.netbox`` role can deploy NetBox with either a system-wide
 ``gunicorn`` service (default), or with an iternal ``gunicorn`` application
 sever using its own ``netbox`` ``systemd`` unit file. The role automatically
-detects if the debops.gunicorn_ role has been deployed on a host and
+detects if the ``debops.gunicorn`` role has been deployed on a host and
 switches between these modes as needed.
 
 
