@@ -34,10 +34,10 @@
   with_flattened:
     - '{{ ifupdown_packages }}'
     - [ 'bsdutils', 'rsync' ]
-    - [ '{{ "bridge-utils" if "bridge" in ifupdown_capabilities else [] }}' ]
-    - [ '{{ "vlan" if "vlan" in ifupdown_capabilities else [] }}' ]
-    - [ '{{ "ifenslave" if ("bond" in ifupdown_capabilities and ansible_distribution_release != "wheezy") else [] }}' ]
-    - [ '{{ "ifenslave-2.6" if ("bond" in ifupdown_capabilities and ansible_distribution_release == "wheezy") else [] }}' ]
+    - [ '{{ "bridge-utils" if "bridge" in ifupdown_capabilities|d() else [] }}' ]
+    - [ '{{ "vlan" if "vlan" in ifupdown_capabilities|d() else [] }}' ]
+    - [ '{{ "ifenslave" if ("bond" in ifupdown_capabilities|d() and ansible_distribution_release != "wheezy") else [] }}' ]
+    - [ '{{ "ifenslave-2.6" if ("bond" in ifupdown_capabilities|d() and ansible_distribution_release == "wheezy") else [] }}' ]
 
 - name: Install network reconfiguration script
   template:

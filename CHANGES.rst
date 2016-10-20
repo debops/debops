@@ -3,6 +3,14 @@ Changelog
 
 .. include:: includes/all.rst
 
+v0.2.6
+------
+
+*Released: 2016-10-20*
+
+- Make sure that role passes correctl even if ``ifupdown_capabilities`` was not
+  set. [drybjed_]
+
 v0.2.5
 ------
 
