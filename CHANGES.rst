@@ -14,12 +14,25 @@ The current role maintainer_ is drybjed_.
 `debops.php master`_ - unreleased
 ---------------------------------
 
-.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.3...master
+.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.4...master
+
+
+`debops.php v0.2.4`_ - 2016-10-19
+---------------------------------
+
+.. _debops.php v0.2.4: https://github.com/debops/ansible-php/compare/v0.2.3...v0.2.4
 
 Added
 ~~~~~
 
 - :envvar:`php__dependent_configuration`. [ypid_]
+
+Changed
+~~~~~~~
+
+- Redesign the method of selecting the correct PHP package versions. Now role
+  checks what packages are available and picks the correct package name using
+  a script before requesting their installation. [drybjed_]
 
 Fixed
 ~~~~~

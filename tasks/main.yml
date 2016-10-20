@@ -3,18 +3,22 @@
 
 # APT packages, directories [[[
 
+- name: Get available PHP packages for selected version
+  environment:
+    LC_ALL: 'C'
+    PHP_VERSION: '{{ php__version }}'
+  script: 'script/php-filter-packages.sh {{ lookup("flattened", php__server_api_packages + php__base_packages + php__packages + php__group_packages + php__host_packages + php__dependent_packages).split(",") | join(" ") }}'
+  register: php__register_filtered_packages
+  changed_when: False
+  always_run: True
+
 - name: Install PHP packages
   apt:
-    name: '{{ item|match("php")|ternary(item, "php" + php__version + "-" + item) }}'
+    name: '{{ item }}'
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ php__server_api_packages }}'
-    - '{{ php__base_packages }}'
-    - '{{ php__packages }}'
-    - '{{ php__group_packages }}'
-    - '{{ php__host_packages }}'
-    - '{{ php__dependent_packages }}'
+    - '{{ php__register_filtered_packages.stdout_lines }}'
   notify: [ 'Restart php-fpm' ]
 
 - name: Ensure older PHP packages are absent on reset
