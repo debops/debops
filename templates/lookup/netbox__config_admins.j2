@@ -1,0 +1,5 @@
+{% if (ansible_local|d() and ansible_local.core|d() and ansible_local.core.admin_private_email|d()) %}
+{%   for address in ansible_local.core.admin_private_email %}
+- [ '{{ address.split("@") | first }}', '{{ address }}' ]
+{%   endfor %}
+{% endif %}
