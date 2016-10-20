@@ -121,19 +121,19 @@ netbox__lib: '{{ (ansible_local.root.lib
 
 # .. envvar:: netbox__git_repo [[[
 #
-# The URI of the NetBox ``git`` source repository.
+# The URI of the NetBox :command:`git` source repository.
 netbox__git_repo: 'https://github.com/digitalocean/netbox.git'
 
                                                                    # ]]]
 # .. envvar:: netbox__git_version [[[
 #
-# The ``git`` branch or tag which will be installed.
+# The :command:`git` branch or tag which will be installed.
 netbox__git_version: 'master'
 
                                                                    # ]]]
 # .. envvar:: netbox__git_dest [[[
 #
-# Path where the ``git`` source bare repository will be stored.
+# Path where the :command:`git` source bare repository will be stored.
 netbox__git_dest: '{{ netbox__src + "/" + netbox__git_repo.split("://")[1] }}'
 
                                                                    # ]]]
@@ -176,7 +176,7 @@ netbox__virtualenv_pip_packages:
 # PostgreSQL database configuration [[[
 # -------------------------------------
 
-# The NetBox database configuration is managed by the ``debops.postgresql``
+# The NetBox database configuration is managed by the debops.postgresql_
 # Ansible role. See its documentation for details about the default variable
 # values used in the NetBox role.
 
@@ -259,7 +259,7 @@ netbox__config_secret_key: '{{ lookup("password", secret + "/netbox/" +
 # They will receive e-mail messages about NetBox application errors.
 #
 # By default the role uses the list of private admin e-mails from the
-# ``debops.core`` Ansible role.
+# debops.core_ Ansible role.
 netbox__config_admins: '{{ lookup("template", "lookup/netbox__config_admins.j2") | from_yaml }}'
 
                                                                    # ]]]
@@ -464,7 +464,7 @@ netbox__app_name: '{{ netbox__user }}'
                                                                    # ]]]
 # .. envvar:: netbox__app_runtime_dir [[[
 #
-# Name of the subdirectory in the ``/run/`` directory where the NetBox
+# Name of the subdirectory in the :file:`/run/` directory where the NetBox
 # application will bind its UNIX socket. The default is selected so that
 # configuration of the ``gunicorn`` service is idempotent.
 netbox__app_runtime_dir: 'gunicorn'
@@ -519,7 +519,7 @@ netbox__gunicorn__dependent_applications:
                                                                    # ]]]
 # .. envvar:: netbox__postgresql__dependent_roles [[[
 #
-# Role configuration for the ``debops.postgresql`` Ansible role.
+# Role configuration for the debops.postgresql_ Ansible role.
 netbox__postgresql__dependent_roles:
   - name: '{{ netbox__database_user }}'
   - name: '{{ netbox__database_name }}'
@@ -528,7 +528,7 @@ netbox__postgresql__dependent_roles:
                                                                    # ]]]
 # .. envvar:: netbox__postgresql__dependent_groups [[[
 #
-# Group configuration for the ``debops.postgresql`` Ansible role.
+# Group configuration for the debops.postgresql_ Ansible role.
 netbox__postgresql__dependent_groups:
   - roles: [ '{{ netbox__database_user }}' ]
     groups: [ '{{ netbox__database_name }}' ]
@@ -537,7 +537,7 @@ netbox__postgresql__dependent_groups:
                                                                    # ]]]
 # .. envvar:: netbox__postgresql__dependent_databases [[[
 #
-# Database configuration for the ``debops.postgresql`` Ansible role.
+# Database configuration for the debops.postgresql_ Ansible role.
 netbox__postgresql__dependent_databases:
   - name: '{{ netbox__database_name }}'
     owner: '{{ netbox__database_name }}'
@@ -545,7 +545,7 @@ netbox__postgresql__dependent_databases:
                                                                    # ]]]
 # .. envvar:: netbox__postgresql__dependent_pgpass [[[
 #
-# ``~/.pgpass`` configuration for the ``debops.postgresql`` Ansible role.
+# ``~/.pgpass`` configuration for the debops.postgresql_ Ansible role.
 netbox__postgresql__dependent_pgpass:
   - owner: '{{ netbox__user }}'
     group: '{{ netbox__group }}'
@@ -555,7 +555,7 @@ netbox__postgresql__dependent_pgpass:
                                                                    # ]]]
 # .. envvar:: netbox__nginx__dependent_upstreams [[[
 #
-# Upstream configuration for the ``debops.nginx`` Ansible role.
+# Upstream configuration for the debops.nginx_ Ansible role.
 netbox__nginx__dependent_upstreams:
   - name: 'netbox'
     server: '{{ netbox__app_bind }}'
@@ -563,7 +563,7 @@ netbox__nginx__dependent_upstreams:
                                                                    # ]]]
 # .. envvar:: netbox__nginx__dependent_servers [[[
 #
-# Server configuration for the ``debops.nginx`` Ansible role.
+# Server configuration for the debops.nginx_ Ansible role.
 netbox__nginx__dependent_servers:
   - name: '{{ netbox__fqdn }}'
     by_role: 'debops.netbox'

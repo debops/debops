@@ -1,6 +1,8 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
 
@@ -11,14 +13,14 @@ General deployment notes
 The application will be by default deployed both on ``ipam.{{ ansible_domain
 }}`` as well ass ``dcim.{{ ansible_domain }}`` DNS domains, for convenience.
 you should either point these domains to the deployment host via DNS, or change
-the ``netbox__fqdn`` to set a desired subdomain.
+the :envvar:`netbox__fqdn` to set a desired subdomain.
 
 By default NetBox will allow connections only to the specified DNS domains and
 deny any other domain that might point to the host it's deployed on.
 
 After the database initialization, the role will create an initial superuser
-account with random password stored in the DebOps ``secret/`` directory. The
-username will be the first admin user defined by the ``debops.core`` Ansible
+account with random password stored in the DebOps :file:`secret/` directory. The
+username will be the first admin user defined by the debops.core_ Ansible
 role.
 
 By default anonymous access to NetBox is disabled.
@@ -29,7 +31,7 @@ Python virtualenv support
 
 The NetBox application will be deployed in a Python `virtualenv <http://virtualenv.org/>`_
 environment to separate it from the system Python installation. By default the
-environment will be created and maintained in the ``/usr/local/lib/netbox/``
+environment will be created and maintained in the :file:`/usr/local/lib/netbox/`
 directory using an unprivileged ``netbox`` account.
 
 The NetBox Python requirements will be installed in the requested versions from
@@ -46,7 +48,7 @@ Internal application server
 The ``debops.netbox`` role can deploy NetBox with either a system-wide
 ``gunicorn`` service (default), or with an iternal ``gunicorn`` application
 sever using its own ``netbox`` ``systemd`` unit file. The role automatically
-detects if the ``debops.gunicorn`` role has been deployed on a host and
+detects if the debops.gunicorn_ role has been deployed on a host and
 switches between these modes as needed.
 
 
@@ -57,7 +59,7 @@ The NetBox application uses PostgreSQL database as its backend, therefore you
 need to setup a PostgreSQL server which the application can access. To
 configure one on the same host as NetBox, add that host to the
 ``[debops_service_postgresql_server]`` Ansible inventory group. See the
-``debops.postgresql_server`` role documentation to see how to use the database
+debops.postgresql_server_ role documentation to see how to use the database
 server remotely.
 
 To deploy NetBox on a given host, you need to add that host to the
