@@ -5,10 +5,13 @@ Example inventory
 -----------------
 
 To configure a Go environment on a given host or set of hosts, they need to
-be added to ``[debops_service_golang]`` Ansible group in the inventory::
+be added to ``[debops_service_golang]`` Ansible group in the inventory:
 
-    [debops_service_golang]
-    hostname
+.. code-block:: none
+
+   [debops_service_golang]
+   hostname
+
 
 Example playbook
 ----------------
@@ -18,4 +21,3 @@ that uses the ``debops.golang`` role:
 
 .. literalinclude:: playbooks/golang.yml
    :language: yaml
-
