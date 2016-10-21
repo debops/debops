@@ -67,6 +67,10 @@ Fixed
 
 - Reviewed the role. Fixed potential shell script issues reported by
   :command:`shellcheck` and added CI tests using :command:`shellcheck`. [ypid_]
+  
+- Use the group id instead of group names (`id -gn` -> `id -g`) in
+  :program:`pki-realm` and :program:`pki-authority` to cope with group names with
+  spaces which can happen when LDAP is used. [zpfvo_]
 
 
 `debops.pki v0.2.13`_ - 2016-07-07
