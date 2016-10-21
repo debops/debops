@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.sshd master: https://github.com/debops/ansible-sshd/compare/v0.2.5...master
 
+Changed
+~~~~~~~
+
+- LDAP lookup script now works with binary and text attributes. [pedroluislopez_]
+
 
 `debops.sshd v0.2.5`_ - 2016-10-10
 ----------------------------------
