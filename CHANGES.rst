@@ -16,6 +16,12 @@ The current role maintainer_ is ypid_.
 
 .. _debops.sysctl master: https://github.com/debops/ansible-sysctl/compare/v0.1.0...master
 
+Fixed
+~~~~~
+
+- Don't set ``net.ipv4.tcp_rfc1337`` and ``net.ipv4.tcp_timestamps`` keys in
+  OpenVZ containers, it isn't allowed. [pedroluislopez_]
+
 
 debops.sysctl v0.1.0 - 2016-09-04
 ---------------------------------

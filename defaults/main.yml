@@ -172,7 +172,9 @@ sysctl__hardening_map:
   'net.ipv4.tcp_timestamps':
     value: 0
     comment: 'Protect against wrapping sequence numbers at gigabit speeds.'
-    state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+    state: '{{ (sysctl__hardening_enabled|bool and
+                not (ansible_virtualization_role == "guest" and ansible_virtualization_type == "openvz"))
+               | ternary("present", "absent") }}'
 
   'net.ipv4.conf.all.arp_ignore':
     value: 1
@@ -189,7 +191,9 @@ sysctl__hardening_map:
   'net.ipv4.tcp_rfc1337':
     value: 1
     comment: 'RFC 1337 fix F1.'
-    state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+    state: '{{ (sysctl__hardening_enabled|bool and
+                not (ansible_virtualization_role == "guest" and ansible_virtualization_type == "openvz"))
+               | ternary("present", "absent") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Custom kernel parameters [[[
