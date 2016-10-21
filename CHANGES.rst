@@ -60,6 +60,8 @@ Added
 
 - Add ``debops.gunicorn`` role and its corresponding playbook. [drybjed_]
 
+- Add ``debops.netbox`` role and its corresponding playbook. [drybjed_]
+
 Changed
 ~~~~~~~
 
