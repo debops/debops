@@ -23,6 +23,9 @@ Changed
 
 - Update documentation and Changelog. [drybjed_]
 
+- Enable backported Go packages in Debian Jessie. The newer version of the Go
+  environment is required by some newer applications, like GitLab. [bfabio, drybjed_]
+
 
 debops.golang v0.1.0 - 2016-06-28
 ---------------------------------
