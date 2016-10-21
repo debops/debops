@@ -1,61 +1,60 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Default variables
-# =================
+# debops.golang default variables [[[
+# ===================================
 
 # .. contents:: Sections
 #    :local:
 #
-# .. Go APT packages [[[1
-#
-# -------------------
-#   Go APT packages
+# .. include:: includes/all.rst
+
+
+# Go APT packages [[[
 # -------------------
 
-# .. envvar:: golang__base_packages
+# .. envvar:: golang__base_packages [[[
 #
 # List of base APT packages to install.
 golang__base_packages: [ 'golang-go' ]
 
-
-# .. envvar:: golang__packages
+                                                                   # ]]]
+# .. envvar:: golang__packages [[[
 #
 # List of APT packages to install on all hosts in Ansible inventory.
 golang__packages: []
 
-
-# .. envvar:: golang__group_packages
+                                                                   # ]]]
+# .. envvar:: golang__group_packages [[[
 #
 # List of APT packages to install on a group of hosts in Ansible inventory.
 golang__group_packages: []
 
-
-# .. envvar:: golang__host_packages
+                                                                   # ]]]
+# .. envvar:: golang__host_packages [[[
 #
 # List of APT packages to install on specific hosts in Ansible inventory.
 golang__host_packages: []
 
-
-# .. envvar:: golang__dependent_packages
+                                                                   # ]]]
+# .. envvar:: golang__dependent_packages [[[
 #
 # List of APT packages to install specified by other Ansible roles.
 golang__dependent_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other roles [[[
+# ---------------------------------
 
-
-# .. Configuration of other roles [[[1
+# .. envvar:: golang__apt_preferences__dependent_list [[[
 #
-# --------------------------------
-#   Configuration of other roles
-# --------------------------------
-
-# .. envvar:: golang__apt_preferences__dependent_list
-#
-# Configuration for the ``debops.apt_preferences`` role.
+# Configuration for the debops.apt_preferences_ role.
 golang__apt_preferences__dependent_list:
 
   - packages: [ 'golang', 'golang-*', 'dh-golang' ]
     backports: [ 'wheezy', 'precise', 'trusty' ]
     reason: 'Closer feature parity with upstream'
     role: 'debops.golang'
-
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
