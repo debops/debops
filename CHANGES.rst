@@ -13,6 +13,9 @@ v0.2.0
 - Added :envvar:`apt_cacher_ng__connect_protocol` to allow to specify which IP
   version to prefer when contacting upstream mirrors. [ypid]
 
+* Added :envvar:`apt_cacher_ng__interfaces` for restricting access to
+  connections through that interface by the firewall. [ypid]
+
 v0.1.0
 ------
 
@@ -30,4 +33,3 @@ v0.1.0
   [drybjed]
 
 - Check boolean values in configuration template. [drybjed]
-

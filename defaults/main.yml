@@ -444,6 +444,36 @@ apt_cacher_ng__custom: ''
 
 # ]]]
 
+# Network accessibility [[[
+# -------------------------
+
+# .. envvar:: apt_cacher_ng__allow
+#
+# Allow access to Apt-Cacher NG from specified IP addresses or CIDR networks.
+# If not specified, allows access from all networks.
+apt_cacher_ng__allow: []
+
+
+# .. envvar:: apt_cacher_ng__group_allow
+#
+# Allow access to Apt-Cacher NG from specified IP addresses or CIDR networks.
+# If not specified, allows access from all networks.
+apt_cacher_ng__group_allow: []
+
+
+# .. envvar:: apt_cacher_ng__host_allow
+#
+# Allow access to Apt-Cacher NG from specified IP addresses or CIDR networks.
+# If not specified, allows access from all networks.
+apt_cacher_ng__host_allow: []
+
+# .. envvar:: apt_cacher_ng__interfaces [[[
+#
+# List of network interfaces from which to allow access to Apt-Cacher NG.
+# If not specified, allows access from all interfaces.
+apt_cacher_ng__interfaces: []
+                                                                   # ]]]
+                                                                   # ]]]
 # .. Role-dependent configuration [[[
 #
 # --------------------------------
@@ -474,27 +504,6 @@ apt_cacher_ng__apt_preferences__dependent_list:
     delete: '{{ apt_cacher_ng__deploy_state != "present" }}'
 
 
-# .. envvar:: apt_cacher_ng__allow
-#
-# Allow access to apt-cacher-ng service from specified IP addresses or CIDR networks.
-# If not specified, allows access from all networks.
-apt_cacher_ng__allow: []
-
-
-# .. envvar:: apt_cacher_ng__group_allow
-#
-# Allow access to apt-cacher-ng service from specified IP addresses or CIDR networks.
-# If not specified, allows access from all networks.
-apt_cacher_ng__group_allow: []
-
-
-# .. envvar:: apt_cacher_ng__host_allow
-#
-# Allow access to apt-cacher-ng service from specified IP addresses or CIDR networks.
-# If not specified, allows access from all networks.
-apt_cacher_ng__host_allow: []
-
-
 # .. envvar:: apt_cacher_ng__ferm__dependent_rules
 #
 # Configuration for ``debops.ferm`` firewall. It should be added when
@@ -507,6 +516,7 @@ apt_cacher_ng__ferm__dependent_rules:
       (apt_cacher_ng__group_allow   |d([]) | list) +
       (apt_cacher_ng__host_allow    |d([]) | list) }}'
     accept_any: True
+    interface: '{{ apt_cacher_ng__interfaces }}'
     weight: '40'
     by_role: 'debops.apt_cacher_ng'
     name: 'http_proxy'
