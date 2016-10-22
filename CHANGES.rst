@@ -1,6 +1,8 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 
 v0.2.0
 ------
@@ -15,6 +17,13 @@ v0.2.0
 
 * Added :envvar:`apt_cacher_ng__interfaces` for restricting access to
   connections through that interface by the firewall. [ypid]
+
+Changed
+~~~~~~~
+
+- Don’t update :envvar:`apt_cacher_ng__base_packages` on subsequent role runs. [ypid]
+
+
 
 v0.1.0
 ------
