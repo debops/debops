@@ -1,7 +1,10 @@
 ---
 
+## Basically the same playbook as the one in DebOps core with the difference
+## that this playbook also uses the debops-contrib.apparmor role to configure
+## AppArmor.
 - name: Install and manage the caching HTTP proxy Apt-Cacher NG.
-  hosts: [ 'debops_service_apt_cacher_ng' ]
+  hosts: [ 'debops_contrib_service_apt_cacher_ng' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -33,6 +36,11 @@
         - '{{ apt_cacher_ng__nginx__servers }}'
       nginx_upstreams:
         - '{{ apt_cacher_ng__nginx__upstream }}'
+
+    - role: debops-contrib.apparmor
+      tags: [ 'role::apparmor' ]
+      apparmor__local_dependent_config: '{{ apt_cacher_ng__apparmor__dependent_config }}'
+      apparmor__tunables_dependent: '{{ apt_cacher_ng__apparmor__tunables_dependent }}'
 
     - role: debops.apt_cacher_ng
       tags: [ 'role::apt_cacher_ng' ]

@@ -9,6 +9,13 @@ v0.2.0
 
 *Unreleased*
 
+Added
+~~~~~
+
+- Added support for AppArmor. Refer to :ref:`apt_cacher_ng__ref_getting_started`
+  for details. [ypid]
+
+
 - | Renamed ``apt_cacher_ng__nginx_upstream`` to :envvar:`apt_cacher_ng__nginx__upstream`.
   | Renamed ``apt_cacher_ng__nginx_upstream_servers`` to :envvar:`apt_cacher_ng__upstream_servers`. [ypid]
 
@@ -23,6 +30,7 @@ Changed
 
 - Don’t update :envvar:`apt_cacher_ng__base_packages` on subsequent role runs. [ypid]
 
+- Updated to latest DebOps role standards. [ypid]
 
 
 v0.1.0
