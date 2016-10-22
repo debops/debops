@@ -16,7 +16,26 @@ The current role maintainer_ is drybjed.
 `debops.gitlab master`_ - unreleased
 ------------------------------------
 
-.. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.1.5...master
+.. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.1.6...master
+
+
+`debops.gitlab v0.1.6`_ - 2016-10-22
+------------------------------------
+
+.. _debops.gitlab v0.1.6: https://github.com/debops/ansible-gitlab/compare/v0.1.5...v0.1.6
+
+Added
+~~~~~
+
+- Add support for GitLab 8.12. [bfabio]
+
+- Add support for GitLab 8.13. [drybjed_]
+
+Changed
+~~~~~~~
+
+- Switch from installing Go support in the role to using the debops.golang_
+  role which will provide support for Go 1.6. [bfabio]
 
 
 `debops.gitlab v0.1.5`_ - 2016-09-08
