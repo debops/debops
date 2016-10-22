@@ -15,7 +15,7 @@ the proxy.  Only the proxy server is setup by this role.
 
 ### Installation
 
-This role requires at least Ansible `v1.9.0`. To install it, run:
+This role requires at least Ansible `v2.0.0`. To install it, run:
 
 ```Shell
 ansible-galaxy install debops.apt_cacher_ng
@@ -45,7 +45,7 @@ into your playbook.
 
 ### Authors and license
 
-- Robin Schneider | [e-mail](mailto:ypid@riseup.net) | [GitHub](https://github.com/ypid)
+- [Robin Schneider](https://docs.debops.org/en/latest/debops-keyring/docs/entities.html#debops-keyring-entity-ypid) (maintainer) | [e-mail](mailto:ypid@riseup.net) | [GitHub](https://github.com/ypid)
 
 License: [GPL-3.0](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
 
