@@ -38,8 +38,13 @@ Changed
 
 - Renamed variables to be consistent with DebOps:
 
-  * ``apt_cacher_ng__nginx_upstream`` → :envvar:`apt_cacher_ng__nginx__upstream`
-  * ``apt_cacher_ng__nginx_upstream_servers`` → :envvar:`apt_cacher_ng__upstream_servers`
+  +-------------------------------------------+-------------------------------------------+
+  | Old variable                              | New variable                              |
+  +===========================================+===========================================+
+  | ``apt_cacher_ng__nginx_upstream``         | :envvar:`apt_cacher_ng__nginx__upstream`  |
+  +-------------------------------------------+-------------------------------------------+
+  | ``apt_cacher_ng__nginx_upstream_servers`` | :envvar:`apt_cacher_ng__upstream_servers` |
+  +-------------------------------------------+-------------------------------------------+
 
   The role bundles a script which can do this transition for you.
   Refer to :ref:`apt_cacher_ng__ref_upgrade_nodes_v0.2.0` for details. [ypid_]

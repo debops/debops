@@ -17,7 +17,7 @@ configure a proxied access to the cache over a custom subdomain, by default
 DNS and point to the server where the proxy is installed. You can open this
 address in a web browser to access the web interface of Apt-Cacher NG.
 
-To use the Apt-Cacher NG proxy, the host can either access the Apt-Cacher NG
+To use the Apt-Cacher NG proxy, hosts can either access Apt-Cacher NG
 directly or via the configured :program:`nginx` reverse proxy:
 
 #. To point hosts directly to the Apt-Cacher NG proxy server, include the
@@ -59,13 +59,13 @@ that uses the ``debops.apt_cacher_ng`` role:
    :language: yaml
 
 If you make extensive use of the flexibility of this role and are using
-AppArmor you might want to use the following playbook instead:
+AppArmor you might need to use the following playbook instead:
 
 .. literalinclude:: playbooks/apt_cacher_ng-apparmor.yml
    :language: yaml
 
 This playbooks is shipped with this role under
-:file:`playbooks/apt_cacher_ng-apparmor.yml` from which you can symlink it to your
+:file:`./docs/playbooks/apt_cacher_ng-apparmor.yml` from which you can symlink it to your
 playbook directory.
 In case you use multiple `DebOps Contrib`_ roles, consider
 using the `DebOps Contrib playbooks`_.
