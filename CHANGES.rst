@@ -16,7 +16,13 @@ The current role maintainer_ is ypid_.
 `debops.apt_cacher_ng master`_ - unreleased
 -------------------------------------------
 
-.. _debops.apt_cacher_ng master: https://github.com/debops/ansible-apt_cacher_ng/compare/v0.1.0...master
+.. _debops.apt_cacher_ng master: https://github.com/debops/ansible-apt_cacher_ng/compare/v0.2.0...master
+
+
+`debops.apt_cacher_ng v0.2.0`_ - 2016-10-23
+-------------------------------------------
+
+.. _debops.apt_cacher_ng v0.2.0: https://github.com/debops/ansible-apt_cacher_ng/compare/v0.1.0...v0.2.0
 
 Added
 ~~~~~
@@ -49,7 +55,7 @@ Changed
   The role bundles a script which can do this transition for you.
   Refer to :ref:`apt_cacher_ng__ref_upgrade_nodes_v0.2.0` for details. [ypid_]
 
-- Updated to latest DebOps role standards. [ypid_]
+- Updated to latest DebOps Standards. [ypid_]
 
 - Use the `Ansible package module`_ which requires Ansible v2.0. [ypid_]
 
