@@ -10,7 +10,7 @@ the proxy.  Only the proxy server is setup by this role.
 
 The following options are available to get clients to use the Apt-Cacher NG server:
 
-* Advanced Package Tool: `debops.apt_proxy`_
+* Advanced Package Tool: debops.apt_proxy_
 
 Installation
 ~~~~~~~~~~~~

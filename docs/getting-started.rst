@@ -11,7 +11,7 @@ Getting started
 Client configuration
 --------------------
 
-The ``debops.apt_cacher_ng`` role will use the ``debops.nginx`` role to
+The ``debops.apt_cacher_ng`` role will use the debops.nginx_ role to
 configure a proxied access to the cache over a custom subdomain, by default
 ``software-cache.{{ ansible_domain }}``. This subdomain should be configured in the
 DNS and point to the server where the proxy is installed. You can open this
@@ -30,7 +30,7 @@ directly or via the configured :program:`nginx` reverse proxy:
 
     apt_proxy__http_url: 'http://software-cache.<domain>/'
 
-The ``debops.apt_proxy`` role will ensure that the hosts use the given proxy server.
+The debops.apt_proxy_ role will ensure that the hosts use the given proxy server.
 
 .. note:: Currently, for HTTPS repositories a direct connection to the destination domain
    will be used and the proxy server will not be used at all.
