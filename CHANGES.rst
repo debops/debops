@@ -31,7 +31,7 @@ Changed
   :ref:`default_rules`. [ypid_]
 
 - Move kernel parameters to enable reverse path filtering to the
-  ``debops.sysctl`` role. [ypid_]
+  debops.sysctl_ role. [ypid_]
 
 
 Fixed

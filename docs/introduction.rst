@@ -11,9 +11,11 @@ as a dependency by other roles to setup firewall rules for other services.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v1.7.0``. To install it, run::
+This role requires at least Ansible ``v2.0.0``. To install it, run:
 
-    ansible-galaxy install debops.ferm
+.. code-block:: console
+
+   ansible-galaxy install debops.ferm
 
 ..
  Local Variables:
