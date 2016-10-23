@@ -1,3 +1,5 @@
+.. _cryptsetup__ref_getting_started:
+
 Getting started
 ===============
 
@@ -5,6 +7,8 @@ Getting started
 
 .. contents::
    :local:
+
+.. _cryptsetup__ref_overview_terminology:
 
 Overview and terminology
 ------------------------
@@ -21,6 +25,8 @@ block device encryption:
 
 #. Plaintext mount point of the filesystem: Where the plaintext files can be accessed.
    Opening this layer is called "mounting".
+
+.. _cryptsetup__ref_example_inventory:
 
 Example inventory
 -----------------

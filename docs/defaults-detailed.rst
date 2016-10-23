@@ -1,5 +1,7 @@
+.. _cryptsetup__ref_default_variable_details:
+
 Default variable details
-================================
+========================
 
 .. include:: includes/all.rst
 
@@ -68,6 +70,8 @@ you to use more specific parameters which are not documented below.
   .. code:: jinja
 
     {{ cryptsetup__mountpoint_parent_directory + "/" + item.name }}
+
+.. _cryptsetup__devices_mount_options:
 
 ``mount_options``
   Optional, list of strings. Mount options associated with the filesystem.

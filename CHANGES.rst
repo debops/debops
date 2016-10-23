@@ -18,6 +18,14 @@ The current role maintainer_ is ypid_.
 
 .. _debops.cryptsetup master: https://github.com/debops/ansible-owncloud/compare/v0.3.1...master
 
+Added
+~~~~~
+
+- Guides to :ref:`cryptsetup__ref_guide_setup_loop_device` and
+  :ref:`cryptsetup__ref_guide_teardown_device` to the documentation.
+  These guides and examples are intended for end users and should help to get
+  up and running with the role. [ypid_]
+
 Changed
 ~~~~~~~
 

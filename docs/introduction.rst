@@ -20,6 +20,7 @@ Features
   material on persistent storage on the target. (You might need to take
   care of your Swap space yourself for this!).
 
+.. _cryptsetup__ref_installation:
 
 Installation
 ~~~~~~~~~~~~
