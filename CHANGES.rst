@@ -34,6 +34,10 @@ Changed
   The minimum Ansible version without known vulnerabilities is Ansible 2.1.3.
   Refer to `Ansible Security`_ for details. [ypid_]
 
+- Allow to disable management of the filesystem layer for a given device using
+  :ref:`item.manage_filesystem <cryptsetup__devices_manage_filesystem>`.
+  [ypid_]
+
 
 `debops.cryptsetup v0.4.0`_ - 2016-10-23
 ----------------------------------------

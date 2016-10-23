@@ -235,7 +235,7 @@
   stat:
     path: '/dev/mapper/{{ item.name }}'
   register: cryptsetup__register_plaintext_device
-  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
+  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and (item.manage_filesystem|d(True) | bool))
   with_items: '{{ cryptsetup__devices_combined }}'
 
 - name: Create filesystem on plaintext device mapper target
@@ -244,7 +244,7 @@
     force:  '{{ item.0.format_force   | d(omit) }}'
     fstype: '{{ item.0.fstype         | d(cryptsetup__fstype) }}'
     opts:   '{{ item.0.format_options | d(omit) }}'
-  when: item.1|d() and item.1.stat|d() and item.1.stat.exists|d()
+  when: item.1|d() and item.1.stat|d() and item.1.stat.exists|d() and (item.0.manage_filesystem|d(True) | bool)
   with_together:
     - '{{ cryptsetup__devices_combined }}'
     - '{{ cryptsetup__register_plaintext_device.results|d([]) }}'
@@ -253,7 +253,7 @@
   file:
     path: '{{ item.mount | d(cryptsetup__mountpoint_parent_directory + "/" + item.name) }}'
     state: 'directory'
-  when: (item.state|d(cryptsetup__state) in [ 'present' ])
+  when: (item.state|d(cryptsetup__state) in [ 'present' ] and (item.manage_filesystem|d(True) | bool))
   with_items: '{{ cryptsetup__devices_combined }}'
 
 ## )))
@@ -311,6 +311,7 @@
     opts:   '{{ (item.mount_options | d(cryptsetup__mount_options | d([]))) | list | sort | unique | join(",") }}'
     passno: '{{ item.mount_passno   | d(omit) }}'
     state:  '{{ "mounted" if (item.state|d(cryptsetup__state) == "ansible_controller_mounted") else item.state|d(cryptsetup__state) }}'
+  when: item.manage_filesystem|d(True) | bool
   with_items: '{{ cryptsetup__devices_combined }}'
 
 ## Close crypto layer and remove (((

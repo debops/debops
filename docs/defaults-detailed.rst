@@ -70,6 +70,13 @@ you to use more specific parameters which are not documented below.
   header backup is absent on the remote system.
   Defaults to :envvar:`cryptsetup__header_backup`.
 
+.. _cryptsetup__devices_manage_filesystem:
+
+``manage_filesystem``
+  Optional, boolean. Should a filesystem be created on the plaintext device mapper
+  target and configured in :file:`/etc/fstab`?
+  Defaults ``True``.
+
 .. _cryptsetup__devices_fstype:
 
 ``fstype``
