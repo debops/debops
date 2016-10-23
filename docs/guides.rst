@@ -43,7 +43,7 @@ something like this:
 
    cryptsetup__devices:
 
-     - name: 'ciphertext_guide'
+     - name: 'example_plaintext_dm_target'
        ciphertext_block_device: '/dev/loop0'
 
 Then run the playbook of the role:
@@ -54,19 +54,19 @@ Then run the playbook of the role:
 
 which should have the following effects:
 
-* Create a random keyfile on the Ansible controller under :file:`./ansible/secret/cryptsetup/clouddrive.template/ciphertext_guide/keyfile.raw`
+* Create a random keyfile on the Ansible controller under :file:`./ansible/secret/cryptsetup/clouddrive.template/example_plaintext_dm_target/keyfile.raw`
 * Copy the keyfile to the remote host under :file:`/var/local/keyfiles/ciphertext_guide_keyfile.raw`
 * Initialize LUKS on the :file:`/dev/loop0` using the keyfile
 * Make a backup of the LUKS header on the remote host under :file:`/var/backups/luks_header_backup/ciphertext_guide_header_backup.raw`
-* Copy the LUKS header backup to the Ansible controller under :file:`./ansible/secret/cryptsetup/clouddrive.template/ciphertext_guide/header_backup.raw`
-* Open/map :file:`/dev/loop0` to :file:`/dev/mapper/ciphertext_guide` (`Plaintext device mapper target`)
+* Copy the LUKS header backup to the Ansible controller under :file:`./ansible/secret/cryptsetup/clouddrive.template/example_plaintext_dm_target/header_backup.raw`
+* Open/map :file:`/dev/loop0` to :file:`/dev/mapper/example_plaintext_dm_target` (`Plaintext device mapper target`)
 * Make the opening/mapping permanent in :file:`/etc/crypttab`
   (either for automatic opening on system start or manually using
   :command:`cryptdisks_start` which can be chosen by additional role
   configuration options)
-* Create a file system on :file:`/dev/mapper/ciphertext_guide`
-* Create the mount point for the file system under :file:`/media/ciphertext_guide`
-* Mount :file:`/dev/mapper/ciphertext_guide` under :file:`/media/ciphertext_guide` (`Plaintext mount point of the filesystem`)
+* Create a file system on :file:`/dev/mapper/example_plaintext_dm_target`
+* Create the mount point for the file system under :file:`/media/example_plaintext_dm_target`
+* Mount :file:`/dev/mapper/example_plaintext_dm_target` under :file:`/media/example_plaintext_dm_target` (`Plaintext mount point of the filesystem`)
 * Remember the file system information and mount point in :file:`/etc/fstab`
 
 All of those tasks are idempotent so you can run the role repetitively against
@@ -78,16 +78,16 @@ You can check that the `plaintext mount point of the filesystem` is mounted usin
 
 .. code-block:: shell
 
-   df -h | egrep '(^Filesystem|ciphertext_guide)'
+   df -h | egrep '(^Filesystem|example_plaintext_dm_target)'
 
 which should show something like:
 
 .. code-block:: none
 
-   Filesystem                    Size  Used Avail Use% Mounted on
-   /dev/mapper/ciphertext_guide   35M  491K   32M   2% /media/ciphertext_guide
+   Filesystem                               Size  Used Avail Use% Mounted on
+   /dev/mapper/example_plaintext_dm_target   35M  491K   32M   2% /media/example_plaintext_dm_target
 
-You can now use :file:`/dev/mapper/ciphertext_guide` to store files which are transparently encrypted and saved on :file:`/dev/loop0` (respectively :file:`/tmp/ciphertext_guide_loop_file.raw`).
+You can now use :file:`/dev/mapper/example_plaintext_dm_target` to store files which are transparently encrypted and saved on :file:`/dev/loop0` (respectively :file:`/tmp/ciphertext_guide_loop_file.raw`).
 
 .. _cryptsetup__ref_guide_teardown_device:
 
@@ -103,7 +103,7 @@ configuration of the device configured in
 
    cryptsetup__devices:
 
-     - name: 'ciphertext_guide'
+     - name: 'example_plaintext_dm_target'
        ciphertext_block_device: '/dev/loop0'
        state: 'absent'
 
@@ -115,10 +115,10 @@ Then run the playbook of the role:
 
 which should have the following effects:
 
-* Unmount :file:`/dev/mapper/ciphertext_guide`
+* Unmount :file:`/dev/mapper/example_plaintext_dm_target`
 * Remove the file system information and mount point from :file:`/etc/fstab`
-* Remove the mount point directory :file:`/media/ciphertext_guide`
-* Close/unmap :file:`/dev/mapper/ciphertext_guide`
+* Remove the mount point directory :file:`/media/example_plaintext_dm_target`
+* Close/unmap :file:`/dev/mapper/example_plaintext_dm_target`
 * Remove the `ciphertext block device` information from :file:`/etc/crypttab`
 * Shredder keyfile on the remote host under :file:`/var/local/keyfiles/ciphertext_guide_keyfile.raw`
 * Shredder the header backup on the remote host under :file:`/var/backups/luks_header_backup/ciphertext_guide_header_backup.raw`
