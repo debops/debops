@@ -1,5 +1,9 @@
+.. _apt_cacher_ng__ref_getting_started:
+
 Getting started
 ===============
+
+.. include:: includes/all.rst
 
 .. contents::
    :local:
@@ -7,26 +11,26 @@ Getting started
 Client configuration
 --------------------
 
-The ``debops.apt_cacher_ng`` role will use the ``debops.nginx`` role to
+The ``debops.apt_cacher_ng`` role will use the debops.nginx_ role to
 configure a proxied access to the cache over a custom subdomain, by default
 ``software-cache.{{ ansible_domain }}``. This subdomain should be configured in the
 DNS and point to the server where the proxy is installed. You can open this
 address in a web browser to access the web interface of Apt-Cacher NG.
 
-To use the Apt-Cacher NG proxy, the host can either access the Apt-Cacher NG
+To use the Apt-Cacher NG proxy, hosts can either access Apt-Cacher NG
 directly or via the configured :program:`nginx` reverse proxy:
 
 #. To point hosts directly to the Apt-Cacher NG proxy server, include the
    following line in your inventory::
 
-    apt__proxy_url: 'http://software-cache.<domain>:3142/'
+    apt_proxy__http_url: 'http://software-cache.<domain>:3142/'
 
 #. To point hosts to the :program:`nginx` reverse proxy include the following
    line in your inventory::
 
-    apt__proxy_url: 'http://software-cache.<domain>/'
+    apt_proxy__http_url: 'http://software-cache.<domain>/'
 
-The ``debops.apt`` role will ensure that the hosts use the given proxy server.
+The debops.apt_proxy_ role will ensure that the hosts use the given proxy server.
 
 .. note:: Currently, for HTTPS repositories a direct connection to the destination domain
    will be used and the proxy server will not be used at all.
@@ -48,45 +52,20 @@ To setup Apt-Cacher NG on host given in
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to install and manage Apt-Cacher NG::
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.apt_cacher_ng`` role:
 
-    ---
+.. literalinclude:: playbooks/apt_cacher_ng.yml
+   :language: yaml
 
-    - name: Install and manage the caching HTTP proxy Apt-Cacher NG.
-      hosts: [ 'debops_service_apt_cacher_ng' ]
-      become: True
+If you make extensive use of the flexibility of this role and are using
+AppArmor you might need to use the following playbook instead:
 
-      roles:
+.. literalinclude:: playbooks/apt_cacher_ng-apparmor.yml
+   :language: yaml
 
-        - role: debops.etc_services
-          tags: [ 'role::etc_services' ]
-          etc_services__dependent_list:
-            - '{{ apt_cacher_ng__etc_services__dependent_list }}'
-            - '{{ nginx_apt_preferences_dependent_list }}'
-
-        - role: debops.apt_preferences
-          tags: [ 'role::apt_preferences' ]
-          apt_preferences__dependent_list:
-            - '{{ apt_cacher_ng__apt_preferences__dependent_list }}'
-
-        - role: debops.ferm
-          tags: [ 'role::ferm' ]
-          ferm__dependent_rules:
-            - '{{ apt_cacher_ng__ferm__dependent_rules }}'
-            - '{{ nginx_ferm_dependent_rules }}'
-
-        - role: debops.nginx
-          tags: [ 'role::nginx' ]
-          nginx_servers:
-            - '{{ apt_cacher_ng__nginx__servers }}'
-          nginx_upstreams:
-            - '{{ apt_cacher_ng__nginx__upstream }}'
-
-        # - role: debops-contrib.apparmor
-        #   tags: [ 'role::apparmor' ]
-        #   apparmor__local_dependent_config: '{{ apt_cacher_ng__apparmor__dependent_config }}'
-        #   apparmor__tunables_dependent: '{{ apt_cacher_ng__apparmor__tunables_dependent }}'
-
-        - role: debops.apt_cacher_ng
-          tags: [ 'role::apt_cacher_ng' ]
-
+This playbooks is shipped with this role under
+:file:`./docs/playbooks/apt_cacher_ng-apparmor.yml` from which you can symlink it to your
+playbook directory.
+In case you use multiple `DebOps Contrib`_ roles, consider
+using the `DebOps Contrib playbooks`_.

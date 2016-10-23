@@ -11,6 +11,7 @@ Ansible role: debops.apt_cacher_ng
    defaults
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:

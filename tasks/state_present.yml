@@ -1,4 +1,5 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 - name: Divert Apt-Cacher NG configuration
   command: dpkg-divert --quiet --local --divert "/{{ item.path }}.dpkg-divert"
@@ -26,7 +27,7 @@
     group: '{{ apt_cacher_ng__cache_dir_group }}'
     mode:  '{{ apt_cacher_ng__dir_perms }}'
 
-## Permissions of the cache directory (((
+# Permissions of the cache directory [[[
 - name: Check if cache dir permissions need to be recursively changed
   file:
     state: 'file'
@@ -93,7 +94,7 @@
 #     mode:  '{{ apt_cacher_ng__dir_perms }}'
 #   with_items: '{{ apt_cacher_ng__register_cache_dir_directory_list.files|d([]) }}'
 
-## )))
+# ]]]
 
 - name: Remove obsolet debconf file from apt-cacher-ng package
   file:

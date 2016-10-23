@@ -1,4 +1,5 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 ## Was the default but did not prevent the creation of `zz_debconf.conf` either.
 - name: Configure Apt-Cacher NG in debconf to not do autoconfiguration
@@ -17,12 +18,10 @@
   when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ])
   with_items: '{{ apt_cacher_ng__configuration_files }}'
 
-- name: Ensure required packages are in there desired state
-  apt:
+- name: Ensure specified packages are in there desired state
+  package:
     name: '{{ item }}'
-    state: '{{ "latest" if (apt_cacher_ng__deploy_state == "present") else "absent" }}'
-    install_recommends: False
-    purge: True
+    state: '{{ "present" if (apt_cacher_ng__deploy_state == "present") else "absent" }}'
   with_flattened: '{{ apt_cacher_ng__base_packages }}'
 
 - name: Run tasks related to deploy state present

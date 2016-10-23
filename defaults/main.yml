@@ -1,30 +1,32 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.apt_cacher_ng default variables [[[
+# ==========================================
 
 # .. contents:: Sections
 #    :local:
 #
-# .. Packages and installation (((
-#
-# -----------------------------
-#   Packages and installation
+# .. include:: includes/all.rst
+
+
+# Packages and installation [[[
 # -----------------------------
 
-# .. envvar:: apt_cacher_ng__base_packages
+# .. envvar:: apt_cacher_ng__base_packages [[[
 #
 # List of base packages to install.
 apt_cacher_ng__base_packages:
   - 'apt-cacher-ng'
 
-
-# .. envvar:: apt_cacher_ng__enabled
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__enabled [[[
 #
 # Should the Apt-Cacher NG service be enabled?
 apt_cacher_ng__enabled: True
 
-
-# .. envvar:: apt_cacher_ng__deploy_state
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__deploy_state [[[
 #
 # What is the desired state which this role should achieve? Possible options:
 #
@@ -40,8 +42,8 @@ apt_cacher_ng__enabled: True
 #
 apt_cacher_ng__deploy_state: 'present'
 
-
-# .. envvar:: apt_cacher_ng__configuration_files
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__configuration_files [[[
 #
 # This variable allows you to change which configuration files this role is
 # going to create and which permissions to use for them.
@@ -86,31 +88,30 @@ apt_cacher_ng__configuration_files:
   - path: 'etc/apt-cacher-ng/userinfo.html'
     mode: '0644'
     divert: False
-
-# .. )))
-
-# .. Network related settings (((
-#
-# ----------------------------
-#   Network related settings
+                                                                   # ]]]
+                                                                   # ]]]
+# Network related settings [[[
 # ----------------------------
 
-# .. envvar:: apt_cacher_ng__port
+# .. envvar:: apt_cacher_ng__port [[[
 #
 # TCP server port for incoming http (or HTTP proxy) connections.
 # Can be set to ``9999`` to emulate :program:`apt-proxy`.
 apt_cacher_ng__port: 3142
 
-
-# .. envvar:: apt_cacher_ng__bind_address
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__bind_address [[[
 #
 # List of addresses or hostnames to listen on. Each entry must be an exact
 # local address which is associated with a local interface. DNS resolution is
 # performed using :manpage:`getaddrinfo(3)` for all available protocols (IPv4,
 # IPv6, ...). Using a protocol specific format will create binding(s) only on
-# protocol specific socket(s), e.g.  ``0.0.0.0`` will listen only to IPv4.
+# protocol specific socket(s), e. g.  ``0.0.0.0`` will listen only to IPv4.
 #
-# Example::
+# Examples:
+#
+# .. code-block:: yaml
+#    :linenos:
 #
 #    apt_cacher_ng__bind_address:
 #      - 'localhost'
@@ -120,33 +121,39 @@ apt_cacher_ng__port: 3142
 # Defaults to listening on all interfaces and protocols.
 apt_cacher_ng__bind_address: []
 
-
-# .. envvar:: apt_cacher_ng__fqdn
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__fqdn [[[
 #
 # The FQDN subdomain of the Apt-Cacher NG proxy which will be used by
 # :program:`nginx` webserver.
 apt_cacher_ng__fqdn: 'software-cache.{{ ansible_domain }}'
 
-
-# .. envvar:: apt_cacher_ng__proxy
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__proxy [[[
 #
 # The specification of another HTTP proxy which shall be used for downloads.
 # It can include user name and password but see the manual for limitations.
 #
-# Example::
+# Examples:
+#
+# .. code-block:: yaml
+#    :linenos:
 #
 #    apt_cacher_ng__proxy: 'https://username:proxypassword@proxy.example.net:3129'
 #
 # Defaults to using a direct connection.
 apt_cacher_ng__proxy: ''
 
-
-# .. envvar:: apt_cacher_ng__connect_protocol
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__connect_protocol [[[
 #
 # Specifies the IP protocol families to use for remote connections. Order does
 # matter, first specified are considered first.
 #
-# Example::
+# Examples:
+#
+# .. code-block:: yaml
+#    :linenos:
 #
 #    apt_cacher_ng__connect_protocol:
 #      - 'v4'
@@ -155,39 +162,34 @@ apt_cacher_ng__proxy: ''
 # Only use IPv4 connections for connecting to upstream mirrors.
 #
 # Defaults to using native order of the system's TCP/IP stack, influenced by
-# the :any:`apt_cacher_ng__bind_address` value.
+# the :envvar:`apt_cacher_ng__bind_address` value.
 apt_cacher_ng__connect_protocol: []
 
-
-# .. envvar:: apt_cacher_ng__offline_mode
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__offline_mode [[[
 #
 # Forbid outgoing connections and work without an internet connection or
 # respond with 503 error where it's not possible.
 apt_cacher_ng__offline_mode: False
 
-
-# .. envvar:: apt_cacher_ng__network_timeout
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__network_timeout [[[
 #
 # Network timeout for outgoing connections, in seconds.
 apt_cacher_ng__network_timeout: 60
 
-
-# .. envvar:: apt_cacher_ng__max_download_speed_kib
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__max_download_speed_kib [[[
 #
 # It's possible to limit the processing speed of download agents to set an
 # overall download speed limit. Unit: KiB/s, Default: unlimited.
 apt_cacher_ng__max_download_speed_kib: ''
-
-
-# .. )))
-
-# .. Upstream mirrors (((
-#
-# --------------------
-#   Upstream mirrors
+                                                                   # ]]]
+                                                                   # ]]]
+# Upstream mirrors [[[
 # --------------------
 
-# .. envvar:: apt_cacher_ng__upstream_mirror_debian
+# .. envvar:: apt_cacher_ng__upstream_mirror_debian [[[
 #
 # Which upstream mirror(s) should be used for Debian repositories?
 # One mirror per line.
@@ -195,8 +197,8 @@ apt_cacher_ng__max_download_speed_kib: ''
 # which upstream mirror to use.
 apt_cacher_ng__upstream_mirror_debian: 'http://httpredir.debian.org/debian/'
 
-
-# .. envvar:: apt_cacher_ng__upstream_mirror_ubuntu
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__upstream_mirror_ubuntu [[[
 #
 # Which upstream mirror(s) should be used for Ubuntu repositories?
 # One mirror per line.
@@ -204,62 +206,58 @@ apt_cacher_ng__upstream_mirror_debian: 'http://httpredir.debian.org/debian/'
 # which upstream mirror to use.
 apt_cacher_ng__upstream_mirror_ubuntu: ''
 
-
-# .. envvar:: apt_cacher_ng__upstream_mirror_gentoo
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__upstream_mirror_gentoo [[[
 #
 # Which upstream mirror(s) should be used for Gentoo repositories?
 # One mirror per line.
 # Set to an empty string to let the package scripts from Apt-Cacher NG decide
 # which upstream mirror to use.
 apt_cacher_ng__upstream_mirror_gentoo: ''
-
-# .. )))
-
-# .. Cache directory (((
-#
-# -------------------
-#   Cache directory
+                                                                   # ]]]
+                                                                   # ]]]
+# Cache directory [[[
 # -------------------
 
-# .. envvar:: apt_cacher_ng__cache_dir
+# .. envvar:: apt_cacher_ng__cache_dir [[[
 #
 # Storage directory for downloaded data and related maintenance activity.
 apt_cacher_ng__cache_dir: '/var/cache/apt-cacher-ng'
 
-
-# .. envvar:: apt_cacher_ng__cache_dir_owner
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__cache_dir_owner [[[
 #
 # Unix user which owns the cache directory and it's contents.
 apt_cacher_ng__cache_dir_owner: 'apt-cacher-ng'
 
-
-# .. envvar:: apt_cacher_ng__cache_dir_group
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__cache_dir_group [[[
 #
 # Unix group of the cache directory and it's contents..
 apt_cacher_ng__cache_dir_group: 'apt-cacher-ng'
 
-
-# .. envvar:: apt_cacher_ng__dir_perms
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__dir_perms [[[
 #
 # Default permission set of freshly created files and directories, as octal
 # numbers (see :manpage:`chmod(1)` for details).
 # Can by limited by the umask value (see :manpage:`umask(2)` for details) if it's set in
-# the environment of the starting shell, e.g. in apt-cacher-ng init script or
+# the environment of the starting shell, e. g. in apt-cacher-ng init script or
 # in its configuration file.
 apt_cacher_ng__dir_perms: '02755'
 
-
-# .. envvar:: apt_cacher_ng__file_perms
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__file_perms [[[
 #
 # Default permission set of freshly created files and directories, as octal
 # numbers (see :manpage:`chmod(1)` for details).
 # Can by limited by the umask value (see :manpage:`umask(2)` for details) if it's set in
-# the environment of the starting shell, e.g. in apt-cacher-ng init script or
+# the environment of the starting shell, e. g. in apt-cacher-ng init script or
 # in its configuration file.
 apt_cacher_ng__file_perms: '00644'
 
-
-# .. envvar:: apt_cacher_ng__cache_dir_enforce_permissions
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__cache_dir_enforce_permissions [[[
 #
 # Should the permissions of the cache directory and it's content be enforced
 # (changed to the specified owner, group and mode)?
@@ -275,59 +273,51 @@ apt_cacher_ng__file_perms: '00644'
 #
 # ``lazy``
 #   Check the :file:`_expending_damaged` file in the root of
-#   :any:`apt_cacher_ng__cache_dir` and only enforce permissions on all other
+#   :envvar:`apt_cacher_ng__cache_dir` and only enforce permissions on all other
 #   files if this one file needed to be changed.
 #
 # ``disabled``
 #   Don't enforce permissions.
 #
 apt_cacher_ng__cache_dir_enforce_permissions: 'lazy'
-
-# .. )))
-
-# .. Management credentials (((
-#
-# --------------------------
-#   Management credentials
+                                                                   # ]]]
+                                                                   # ]]]
+# Management credentials [[[
 # --------------------------
 
-# .. envvar:: apt_cacher_ng__user
+# .. envvar:: apt_cacher_ng__user [[[
 #
 # Username for basic authentication required to visit pages with administrative
 # functionality.
 apt_cacher_ng__user: 'admin'
 
-
-# .. envvar:: apt_cacher_ng__password
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__password [[[
 #
 # Password for basic authentication required to visit pages with administrative
 # functionality.
 apt_cacher_ng__password: '{{ lookup("password", secret + "/credentials/" +
                              ansible_fqdn + "/apt_cacher_ng/" +
                              apt_cacher_ng__user + "/password length=24") }}'
-
-# .. )))
-
-# .. Tuning, debugging and further options (((
-#
-# -----------------------------------------
-#   Tuning, debugging and further options
+                                                                   # ]]]
+                                                                   # ]]]
+# Tuning, debugging and further options [[[
 # -----------------------------------------
 
-# .. envvar:: apt_cacher_ng__log_dir
+# .. envvar:: apt_cacher_ng__log_dir [[[
 #
 # Log file directory, can be set empty to disable logging.
 apt_cacher_ng__log_dir: '/var/log/apt-cacher-ng'
 
-
-# .. envvar:: apt_cacher_ng__support_dir
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__support_dir [[[
 #
 # A place to look for additional configuration and resource files if they are not
 # found in the configuration directory.
 apt_cacher_ng__support_dir: '/usr/lib/apt-cacher-ng'
 
-
-# .. envvar:: apt_cacher_ng__debug
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__debug [[[
 #
 # A bitmask type value declaring the logging verbosity and behavior of the error
 # log writing. Non-zero value triggers at least faster log file flushing.
@@ -351,15 +341,15 @@ apt_cacher_ng__support_dir: '/usr/lib/apt-cacher-ng'
 #
 apt_cacher_ng__debug: 0
 
-
-# .. envvar:: apt_cacher_ng__verbose_log
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__verbose_log [[[
 #
 # Enables extended client information in log entries. When set to ``True``,
 # only activity type, time and transfer sizes are logged.
 apt_cacher_ng__verbose_log: True
 
-
-# .. envvar:: apt_cacher_ng__force_managed
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__force_managed [[[
 #
 # Forbid downloads from locations that are directly specified in the user
 # request, i.e. all downloads must be processed by the preconfigured remapping
@@ -368,8 +358,8 @@ apt_cacher_ng__verbose_log: True
 # `download.owncloud.org <http://download.owncloud.org/download/repositories/>`_.
 apt_cacher_ng__force_managed: False
 
-
-# .. envvar:: apt_cacher_ng__expiration_threshold
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__expiration_threshold [[[
 #
 # Days before considering an unreferenced file expired (to be deleted).
 #
@@ -379,8 +369,8 @@ apt_cacher_ng__force_managed: False
 #
 apt_cacher_ng__expiration_threshold: 4
 
-
-# .. envvar:: apt_cacher_ng__expiration_abort_on_problems
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__expiration_abort_on_problems [[[
 #
 # Stop expiration when a critical problem appears, issue like a failed update
 # of an index file in the preparation step.
@@ -390,23 +380,23 @@ apt_cacher_ng__expiration_threshold: 4
 #
 apt_cacher_ng__expiration_abort_on_problems: 'default'
 
-
-# .. envvar:: apt_cacher_ng__dns_cache_seconds
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__dns_cache_seconds [[[
 #
 # There is a small in-memory cache for DNS resolution data, expired by
 # this timeout (in seconds). Internal caching is disabled if set to a value
 # less than zero.
 apt_cacher_ng__dns_cache_seconds: 1800
 
-
-# .. envvar:: apt_cacher_ng__log_submitted_origin
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__log_submitted_origin [[[
 #
 # Trust the downstream HTTP proxy and log the X-Forwarded-For header as the
 # client IP address.
 apt_cacher_ng__log_submitted_origin: True
 
-
-# .. envvar:: apt_cacher_ng__user_agent
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__user_agent [[[
 #
 # The version string reported to the peer, to be displayed as HTTP client (and
 # version) in the logs of the mirror.
@@ -419,8 +409,8 @@ apt_cacher_ng__log_submitted_origin: True
 # Default is the compiled in UserAgent: Yet Another HTTP Client/1.2.3p4
 apt_cacher_ng__user_agent: 'default'
 
-
-# .. envvar:: apt_cacher_ng__recompress_bz2
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__recompress_bz2 [[[
 #
 # In some cases the Import and Expiration tasks might create fresh volatile
 # data for internal use by reconstructing them using patch files. This
@@ -433,24 +423,51 @@ apt_cacher_ng__user_agent: 'default'
 # don't need the full version of the index file.
 apt_cacher_ng__recompress_bz2: False
 
-
-# .. envvar:: apt_cacher_ng__custom
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__custom [[[
 #
 # Configuration block for Apt-Cacher NG for additional configuration for
 # example custom remap settings.
 apt_cacher_ng__custom: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Network accessibility [[[
+# -------------------------
 
-# .. )))
-
-# .. Role-dependent configuration (((
+# .. envvar:: apt_cacher_ng__allow [[[
 #
-# --------------------------------
-#   Role-dependent configuration
+# Allow access to Apt-Cacher NG from specified IP addresses or CIDR networks.
+# If not specified, allows access from all networks.
+apt_cacher_ng__allow: []
+
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__group_allow [[[
+#
+# Allow access to Apt-Cacher NG from specified IP addresses or CIDR networks.
+# If not specified, allows access from all networks.
+apt_cacher_ng__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__host_allow [[[
+#
+# Allow access to Apt-Cacher NG from specified IP addresses or CIDR networks.
+# If not specified, allows access from all networks.
+apt_cacher_ng__host_allow: []
+
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__interfaces [[[
+#
+# List of network interfaces from which to allow access to Apt-Cacher NG.
+# If not specified, allows access from all interfaces.
+apt_cacher_ng__interfaces: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Role-dependent configuration [[[
 # --------------------------------
 
-# .. envvar:: apt_cacher_ng__etc_services__dependent_list
+# .. envvar:: apt_cacher_ng__etc_services__dependent_list [[[
 #
-# Configuration for the ``debops.etc_services`` role which registers port
+# Configuration for the debops.etc_services_ role which registers port
 # numbers for Apt-Cacher NG.
 apt_cacher_ng__etc_services__dependent_list:
 
@@ -459,10 +476,10 @@ apt_cacher_ng__etc_services__dependent_list:
     comment: 'Apt-Cacher NG caching proxy server'
     delete: '{{ apt_cacher_ng__deploy_state != "present" }}'
 
-
-# .. envvar:: apt_cacher_ng__apt_preferences__dependent_list
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__apt_preferences__dependent_list [[[
 #
-# Configuration for the ``debops.apt_preferences`` role.
+# Configuration for the debops.apt_preferences_ role.
 apt_cacher_ng__apt_preferences__dependent_list:
 
   - package: 'apt-cacher-ng'
@@ -471,32 +488,11 @@ apt_cacher_ng__apt_preferences__dependent_list:
     by_role: 'debops.apt_cacher_ng'
     delete: '{{ apt_cacher_ng__deploy_state != "present" }}'
 
-
-# .. envvar:: apt_cacher_ng__allow
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__ferm__dependent_rules [[[
 #
-# Allow access to apt-cacher-ng service from specified IP addresses or CIDR networks.
-# If not specified, allows access from all networks.
-apt_cacher_ng__allow: []
-
-
-# .. envvar:: apt_cacher_ng__group_allow
-#
-# Allow access to apt-cacher-ng service from specified IP addresses or CIDR networks.
-# If not specified, allows access from all networks.
-apt_cacher_ng__group_allow: []
-
-
-# .. envvar:: apt_cacher_ng__host_allow
-#
-# Allow access to apt-cacher-ng service from specified IP addresses or CIDR networks.
-# If not specified, allows access from all networks.
-apt_cacher_ng__host_allow: []
-
-
-# .. envvar:: apt_cacher_ng__ferm__dependent_rules
-#
-# Configuration for ``debops.ferm`` firewall. It should be added when
-# ``debops.ferm`` role is used to configure Apt-Cacher NG firewall rules.
+# Configuration for debops.ferm_ firewall. It should be added when
+# debops.ferm_ role is used to configure Apt-Cacher NG firewall rules.
 apt_cacher_ng__ferm__dependent_rules:
 
   - type: 'accept'
@@ -505,13 +501,14 @@ apt_cacher_ng__ferm__dependent_rules:
       (apt_cacher_ng__group_allow   |d([]) | list) +
       (apt_cacher_ng__host_allow    |d([]) | list) }}'
     accept_any: True
+    interface: '{{ apt_cacher_ng__interfaces }}'
     weight: '40'
-    role: 'apt_cacher_ng'
+    by_role: 'debops.apt_cacher_ng'
     name: 'http_proxy'
     rule_state: '{{ apt_cacher_ng__deploy_state }}'
 
-
-# .. envvar:: apt_cacher_ng__apparmor__dependent_config
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__apparmor__dependent_config [[[
 #
 # Configuration for the ``debops-contrib.apparmor`` role.
 apt_cacher_ng__apparmor__dependent_config:
@@ -526,27 +523,27 @@ apt_cacher_ng__apparmor__dependent_config:
         - '{{ apt_cacher_ng__cache_dir }}/ r'
         - '{{ apt_cacher_ng__cache_dir }}/** rw'
 
-
-# .. envvar:: apt_cacher_ng__upstream_servers
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__upstream_servers [[[
 #
 # List of upstream :program:`nginx` proxy servers.
 apt_cacher_ng__upstream_servers:
   - 'localhost:{{ apt_cacher_ng__port }}'
 
-
-# .. envvar:: apt_cacher_ng__nginx__upstream
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__nginx__upstream [[[
 #
-# The :program:`nginx` upstream configuration, managed by ``debops.nginx`` role.
+# The :program:`nginx` upstream configuration, managed by debops.nginx_ role.
 apt_cacher_ng__nginx__upstream:
   enabled: True
   name: 'apt-cacher-ng'
   server: '{{ apt_cacher_ng__upstream_servers }}'
 
-
-# .. envvar:: apt_cacher_ng__nginx__servers
+                                                                   # ]]]
+# .. envvar:: apt_cacher_ng__nginx__servers [[[
 #
 # List of :program:`nginx` server configurations managed by the
-# ``debops.nginx`` role.
+# debops.nginx_ role.
 # There is a separate configuration for HTTP and HTTPS
 # connections to allow access for hosts without SSL support installed.
 apt_cacher_ng__nginx__servers:
@@ -584,5 +581,6 @@ apt_cacher_ng__nginx__servers:
       }
       proxy_redirect off;
       proxy_buffering off;
-
-# .. )))
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
