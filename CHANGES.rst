@@ -16,13 +16,19 @@ The current role maintainer_ is ypid_.
 `debops.cryptsetup master`_ - unreleased
 ----------------------------------------
 
-.. _debops.cryptsetup master: https://github.com/debops/ansible-owncloud/compare/v0.3.1...master
+.. _debops.cryptsetup master: https://github.com/debops/ansible-owncloud/compare/v0.4.0...master
+
+
+`debops.cryptsetup v0.4.0`_ - 2016-10-23
+----------------------------------------
+
+.. _debops.cryptsetup v0.4.0: https://github.com/debops/ansible-owncloud/compare/v0.3.1...v0.4.0
 
 Added
 ~~~~~
 
 - Guides to :ref:`cryptsetup__ref_guide_setup_loop_device` and
-  :ref:`cryptsetup__ref_guide_teardown_device` to the documentation.
+  :ref:`cryptsetup__ref_guide_teardown_device`.
   These guides and examples are intended for end users and should help to get
   up and running with the role. [ypid_]
 
@@ -36,7 +42,7 @@ Changed
 - Changed role namespace from ``cryptsetup_`` to ``cryptsetup__``.
   :regexp:`cryptsetup_[^_]` variables are dropped and don’t have any effect
   anymore.
-  Refer to :ref:`cryptsetup__ref_upgrade_nodes_v0.4.0` for how to upgrade. [ypid_]
+  Refer to :ref:`cryptsetup__ref_upgrade_nodes_v0.4.0`. [ypid_]
 
 
 `debops.cryptsetup v0.3.1`_ - 2016-04-04
