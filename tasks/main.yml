@@ -54,7 +54,7 @@
 
 - name: Calculate keyfile creation options
   set_fact:
-    cryptsetup__dd_bs: '{{ ((512/8) if (cryptsetup__key_size|d() == "default") else ((cryptsetup__key_size)/8)) | int }}'
+    cryptsetup__dd_bs: '{{ ((512/8) if (cryptsetup__key_size == "default") else ((cryptsetup__key_size)/8)) | int }}'
 
 - name: Generate keyfile on the Ansible controller
   command: dd if=/dev/random of='{{ item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}' bs={{ cryptsetup__dd_bs }} count=1 iflag=fullblock
@@ -179,7 +179,7 @@
          {{ "" if (item.0.key_size|d(cryptsetup__key_size) == "default") else ("--key-size=" + item.0.key_size|d(cryptsetup__key_size)|string) }}
          {{ "" if (item.0.iter_time|d(cryptsetup__iter_time) == "default") else ("--iter-time=" + item.0.iter_time|d(cryptsetup__iter_time)|string) }}
          {% if cryptsetup__use_dev_random|d("default") != "default" %}
-         {{ "--use-random" if cryptsetup__use_dev_random|d() else "--use-urandom" }}
+         {{ "--use-random" if cryptsetup__use_dev_random else "--use-urandom" }}
          {% endif %}
          --key-file '{{ ("/dev/shm"
                         if (item.0.state|d(cryptsetup__state) == "ansible_controller_mounted")
