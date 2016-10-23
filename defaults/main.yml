@@ -132,14 +132,7 @@ cryptsetup__header_backup_remote_location: '{{ (ansible_local.root.backup
 #
 # Should a header backup be created and stored on the remote system and the
 # Ansible controller?
-#
-# .. note:: The LUKS header is only stored once in the first few kilobytes of
-#    a given block device.
-#    When the header gets corrupted, the plaintext data might be inaccessible!
-#    Thus it is recommended to have a header backup on hand.
-#
-# Set to ``False`` to disable header backup creation and to ensure that the
-# header backup is absent on the remote system.
+# Refer to :ref:`item.backup_header <cryptsetup__devices_backup_header>` for details.
 cryptsetup__header_backup: True
                                                                    # ]]]
                                                                    # ]]]
@@ -159,12 +152,14 @@ cryptsetup__use_uuid: True
 # .. envvar:: cryptsetup__fstype [[[
 #
 # Default filesystem to create and configure in :file:`/etc/fstab`.
+# Refer to :ref:`item.fstype <cryptsetup__devices_fstype>` for details.
 cryptsetup__fstype: 'ext4'
 
                                                                    # ]]]
 # .. envvar:: cryptsetup__mount_options [[[
 #
 # List of default mount options.
+# Refer to :ref:`item.mount_options <cryptsetup__devices_mount_options>` for details.
 cryptsetup__mount_options:
   - 'noatime'
   - 'nodiratime'
@@ -172,8 +167,8 @@ cryptsetup__mount_options:
                                                                    # ]]]
 # .. envvar:: cryptsetup__state [[[
 #
-# Default ``state`` for all devices. Can be overwritten for each device using
-# ``item.state``.
+# Default ``state`` for all devices.
+# Refer to :ref:`item.state <cryptsetup__devices_state>` for details.
 cryptsetup__state: 'mounted'
 
                                                                    # ]]]
@@ -189,8 +184,8 @@ cryptsetup__mountpoint_parent_directory: '/media'
 # .. envvar:: cryptsetup__crypttab_options [[[
 #
 # Default list of options to configure for each device in
-# :file:`/etc/crypttab`. Can be overwritten by ``item.crypttab_options``.
-# See :manpage:`crypttab(5)` for details.
+# :file:`/etc/crypttab`.
+# Refer to :ref:`item.crypttab_options <cryptsetup__devices_crypttab_options>` for details.
 cryptsetup__crypttab_options:
   - 'luks'
 
