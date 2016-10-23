@@ -66,20 +66,20 @@ Fixed
 Changed
 ~~~~~~~
 
-* No need to have a default for ``cryptsetup_state`` in the tasks.
+- No need to have a default for ``cryptsetup_state`` in the tasks.
   ``cryptsetup_state`` is expected to be valid. [ypid_]
 
 Removed
 ~~~~~~~
 
-* Remove header backups on remote system when ``cryptsetup_header_backup`` is set to ``False``. [ypid_]
+- Remove header backups on remote system when ``cryptsetup_header_backup`` is set to ``False``. [ypid_]
 
 Fixed
 ~~~~~
 
-* Fixed usage of the ``role::cryptsetup:backup`` tag. [ypid_]
+- Fixed usage of the ``role::cryptsetup:backup`` tag. [ypid_]
 
-* Fixed permission enforcement of the header backup on the Ansible controller. [jacksingleton_]
+- Fixed permission enforcement of the header backup on the Ansible controller. [jacksingleton_]
 
 
 `debops.cryptsetup v0.3.0`_ - 2016-03-23
