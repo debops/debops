@@ -111,6 +111,18 @@ cryptsetup__keyfile_mode: '0600'
 #
 # The source device where the keyfile will be read from using :command:`dd`.
 cryptsetup__keyfile_source_dev: '/dev/random'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__keyfile_shred_command [[[
+#
+# Command plus options to use when shredding/deleting the keyfile on the remote
+# system. The file to delete will be passed as last argument.
+#
+# Depending on which filesystem and lower levels the keyfile is stored on, the
+# ``shred`` operation might be of limited use e. g. because of snapshots or
+# copy-on-write. Try it anyway.
+# Note that there is still at least one copy of the keyfile on the Ansible controller.
+cryptsetup__keyfile_shred_command: 'shred --remove --zero --iterations=42'
                                                                    # ]]]
                                                                    # ]]]
 # LUKS header backup [[[
@@ -140,6 +152,20 @@ cryptsetup__header_backup_remote_location: '{{ (ansible_local.root.backup
 # Ansible controller?
 # Refer to :ref:`item.backup_header <cryptsetup__devices_backup_header>` for details.
 cryptsetup__header_backup: True
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__header_backup_shred_command [[[
+#
+# Command plus options to use when shredding/deleting the header backup on the
+# remote system. The file to delete will be passed as last argument.
+#
+# This is technically not needed as the LUKS header is still present and
+# left intact on the `ciphertext block device`, but ``absent`` is designed to
+# remove all files/traces previously created by the role.
+#
+# Also note the comment about the effectiveness on
+# :envvar:`cryptsetup__keyfile_shred_command`.
+cryptsetup__header_backup_shred_command: 'shred --remove --zero --iterations=2'
                                                                    # ]]]
                                                                    # ]]]
 # Ciphertext block device options [[[

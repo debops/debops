@@ -123,10 +123,6 @@ which should have the following effects:
 * Remove the `ciphertext block device` information from :file:`/etc/crypttab`
 * Shredder the keyfile on the remote host under :file:`/var/local/keyfiles/example1_keyfile.raw`
 * Shredder the header backup on the remote host under :file:`/var/backups/luks_header_backup/example1_header_backup.raw`
-  (This is technically not needed as the LUKS header is still present and
-  left intact on the `ciphertext block device`, but ``absent`` is designed to
-  remove all files/traces previously created by the role. Note that one copy of
-  the LUKS header is still present on the Ansible controller)
 
 Note that shredder means that to overwrite the file 42 times before removing
 it. Depending on where those files where stored that might not have the desired

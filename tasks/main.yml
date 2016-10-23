@@ -348,15 +348,12 @@
   when: (item.state|d(cryptsetup__state) in [ 'absent' ])
   with_items: '{{ cryptsetup__devices_combined }}'
 
-## Depending on which filesystem and lower levels the keyfile is stored on, the
-## ``shred`` operation might be of limited use e.g. because of snapshots or copy-on-write. Try it anyway.
-## Note that there is still at least one copy of the keyfile on the Ansible controller.
 - name: Ensure keyfile is unaccessible on the remote system
-  command: shred --remove --zero --iterations=42
-           '{{ ("/dev/shm"
-              if (item.state|d(cryptsetup__state) == "ansible_controller_mounted")
-              else cryptsetup__keyfile_remote_location)
-              + "/" + item.name + "_keyfile.raw" }}'
+  command: '{{ cryptsetup__keyfile_shred_command }}
+            {{ (("/dev/shm"
+                 if (item.state|d(cryptsetup__state) == "ansible_controller_mounted")
+                 else cryptsetup__keyfile_remote_location)
+                + "/" + item.name + "_keyfile.raw") | quote }}'
   args:
     removes: '{{ ("/dev/shm"
                  if (item.state|d(cryptsetup__state) == "ansible_controller_mounted")
@@ -368,7 +365,7 @@
 ## Note that there are still two copies of the header on the ciphertext block device
 ## and on the Ansible controller.
 - name: Ensure header backup is unaccessible on the remote system
-  command: shred --remove --zero --iterations=42 "{{ cryptsetup__header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}"
+  command: '{{ cryptsetup__header_backup_shred_command }} {{ cryptsetup__header_backup_remote_location + "/" + item.name + "_header_backup.raw" | quote }}'
   args:
     removes: '{{ cryptsetup__header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}'
   when: (item.state|d(cryptsetup__state) == 'absent' or not (item.backup_header|d(cryptsetup__header_backup) | bool))

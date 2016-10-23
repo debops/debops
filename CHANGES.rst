@@ -18,6 +18,13 @@ The current role maintainer_ is ypid_.
 
 .. _debops.cryptsetup master: https://github.com/debops/ansible-owncloud/compare/v0.4.0...master
 
+Added
+~~~~~
+
+- Allow to configure the command to shredder/delete the keyfile and header
+  backup on remote systems using :envvar:`cryptsetup__keyfile_shred_command`
+  and :envvar:`cryptsetup__header_backup_shred_command`. [ypid_]
+
 Changed
 ~~~~~~~
 
