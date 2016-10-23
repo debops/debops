@@ -114,7 +114,8 @@ cryptsetup_keyfile_mode: '0600'
 #
 # The LUKS header backup will be stored in this file:
 #
-# .. code:: jinja
+# .. code-block:: jinja
+#    :linenos:
 #
 #    {{ cryptsetup_header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}
 #
@@ -131,12 +132,12 @@ cryptsetup_header_backup_remote_location: '{{ (ansible_local.root.backup
 # Ansible controller?
 #
 # .. note:: The LUKS header is only stored once in the first few kilobytes of
-#    your block device.
+#    a given block device.
 #    When the header gets corrupted, the plaintext data might be inaccessible!
 #    Thus it is recommended to have a header backup on hand.
 #
 # Set to ``False`` to disable header backup creation and to ensure that the
-# header backup on the remote system is absent.
+# header backup is absent on the remote system.
 cryptsetup_header_backup: True
                                                                    # ]]]
                                                                    # ]]]
