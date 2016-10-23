@@ -2,6 +2,15 @@
 
 ## Preparation and error checking (((
 
+  ## https://stackoverflow.com/a/28888474
+- name: Test if Ansible is running in check mode
+  command: /bin/true
+  changed_when: False
+  register: cryptsetup__register_check_mode
+
+- name: Save fact if Ansible is running in check mode in variable
+  set_fact: cryptsetup__check_mode={{ cryptsetup__register_check_mode|skipped }}
+
 - name: Combine cryptsetup device lists
   set_fact:
     cryptsetup__devices_combined: '{{
@@ -76,17 +85,8 @@
   become: False
   delegate_to: 'localhost'
   register: cryptsetup__register_keyfile_gen
-  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
+  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and not cryptsetup__check_mode)
   with_items: '{{ cryptsetup__devices_combined }}'
-
-  ## https://stackoverflow.com/a/28888474
-- name: Test if Ansible is running in check mode
-  command: /bin/true
-  changed_when: False
-  register: cryptsetup__register_check_mode
-
-- name: Save fact if Ansible is running in check mode in variable
-  set_fact: check_mode={{ cryptsetup__register_check_mode|skipped }}
 
 - name: Ensure that /dev/shm/ is stored in RAM (assumed to be non-persistent)
   ## Also assuming that the keyfile is not swapped out in the short time it is going to exist in tmpfs.
@@ -111,7 +111,7 @@
     seuser:   '{{ item.keyfile_seuser         | d(omit) }}'
     src:      '{{ item.keyfile                | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}'
     validate: '{{ item.keyfile_validate       | d(omit) }}'
-  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and not check_mode)
+  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and not cryptsetup__check_mode)
   with_items: '{{ cryptsetup__devices_combined }}'
 
 ## )))
@@ -293,7 +293,7 @@
     mode:  '{{ cryptsetup__secret_mode }}'
   become: False
   delegate_to: 'localhost'
-  when: ((item.backup_header|d(cryptsetup__header_backup) | bool) and item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
+  when: ((item.backup_header|d(cryptsetup__header_backup) | bool) and item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists and not cryptsetup__check_mode)
   with_together:
     - '{{ cryptsetup__devices_combined }}'
     - '{{ cryptsetup__register_ciphertext_device.results|d([]) }}'

@@ -44,6 +44,12 @@ Changed
   anymore.
   Refer to :ref:`cryptsetup__ref_upgrade_nodes_v0.4.0`. [ypid_]
 
+Fixed
+~~~~~
+
+* Don’t fail in check mode when the keyfile has not yet been generated.
+  This requires to limit the tasks even more which are run in check mode. [ypid_]
+
 
 `debops.cryptsetup v0.3.1`_ - 2016-04-04
 ----------------------------------------
