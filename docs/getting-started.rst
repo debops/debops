@@ -36,17 +36,11 @@ To configure encrypted filesystems on host given in
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to manage cryptsetup::
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.cryptsetup`` role:
 
-    ---
-    - name: Configure encrypted filesystems
-      hosts: [ 'debops_service_cryptsetup' ]
-      become: True
-
-      roles:
-
-        - role: debops.cryptsetup
-          tags: [ 'role::cryptsetup' ]
+.. literalinclude:: playbooks/cryptsetup.yml
+   :language: yaml
 
 Ansible tags
 ------------
