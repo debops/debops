@@ -27,7 +27,7 @@ cryptsetup__base_packages:
 
 # .. envvar:: cryptsetup__devices [[[
 #
-# Global definition list of encrypted filesystems.
+# Global definition list of encrypted devices.
 #
 # Refer to the :ref:`documentation of all options <cryptsetup__devices>` for more details.
 cryptsetup__devices: []
@@ -35,14 +35,50 @@ cryptsetup__devices: []
                                                                    # ]]]
 # .. envvar:: cryptsetup__group_devices [[[
 #
-# Host group definition list of encrypted filesystems.
+# Host group definition list of encrypted devices.
 cryptsetup__group_devices: []
 
                                                                    # ]]]
 # .. envvar:: cryptsetup__host_devices [[[
 #
-# Host definition list of encrypted filesystems.
+# Host definition list of encrypted devices.
 cryptsetup__host_devices: []
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__combined_devices [[[
+#
+# Combined list of encrypted devices in the order as they will be processed.
+cryptsetup__combined_devices: '{{
+  (cryptsetup__devices       | list) +
+  (cryptsetup__group_devices | list) +
+  (cryptsetup__host_devices  | list) }}'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__devices_execution_strategy [[[
+#
+# The execution strategy to use for processing the
+# :envvar:`cryptsetup__combined_devices` list.
+#
+# ``serial``
+#   Process one device at a time (from start to finish) before processing the
+#   next one in the list.
+#
+#   This is more verbose.
+#
+# ``parallel``
+#   Process all devices in parallel meaning that every task (like creating the
+#   keyfile or initializing LUKS) is done with all devices at a time before
+#   moving on to the next task. This means that all devices will be done at the
+#   same time.
+#
+#   This is more compact.
+#
+# You will only need to change this when you want to use the `Plaintext device
+# mapper target` of one item as the `Ciphertext block device` of another item.
+# Refer to :ref:`cryptsetup__ref_devices_chaining_multiple_ciphers` for
+# details.
+cryptsetup__devices_execution_strategy: 'parallel'
+
                                                                    # ]]]
                                                                    # ]]]
 # Keyfile settings [[[
@@ -174,7 +210,9 @@ cryptsetup__header_backup_shred_command: 'shred --remove --zero --iterations=2'
 # .. envvar:: cryptsetup__use_uuid [[[
 #
 # Use the UUID of the ciphertext block device in :file:`/etc/crypttab` instead
-# of the file path given by ``ciphertext_block_device``.
+# of the file path given by
+# :ref:`item.ciphertext_block_device <cryptsetup__devices_ciphertext_block_device>`.
+# Refer to :ref:`item.use_uuid <cryptsetup__devices_use_uuid>` for details.
 cryptsetup__use_uuid: True
                                                                    # ]]]
                                                                    # ]]]

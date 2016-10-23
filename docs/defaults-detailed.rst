@@ -5,6 +5,10 @@ Default variable details
 
 .. include:: includes/all.rst
 
+.. contents::
+   :local:
+   :depth: 2
+
 
 Some of ``debops.cryptsetup`` variables have more extensive configuration.
 Here you can find documentation and examples for them.
@@ -31,10 +35,28 @@ you to use more specific parameters which are not documented below.
   the secrets directory corresponding to the name name, adapt your inventory
   accordingly and run the role again to configure the item with the new name.
 
+.. _cryptsetup__devices_ciphertext_block_device:
+
 ``ciphertext_block_device``
   Required, string. File path to the ciphertext block device, either the block
-  device itself e. g. :file:`/dev/sdb` or a partition on the block device e. g.
-  :file:`/dev/sdb5`.
+  device itself e. g. :file:`/dev/sdb`, a partition on the block device e. g.
+  :file:`/dev/sdb5` or a regular file e. g. :file:`/tmp/ciphertext_file.raw`.
+
+  Refer to :ref:`item.use_uuid <cryptsetup__devices_use_uuid>` when you use a
+  regular file.
+
+.. _cryptsetup__devices_use_uuid:
+
+``use_uuid``
+  Optional, boolean.
+  Use the UUID of the ciphertext block device in :file:`/etc/crypttab` instead
+  of the file path given by
+  :ref:`item.ciphertext_block_device <cryptsetup__devices_ciphertext_block_device>`.
+
+  Note that this needs to be set to ``False`` if you are using a regular file
+  as :ref:`item.ciphertext_block_device <cryptsetup__devices_ciphertext_block_device>`.
+
+  Default to :envvar:`cryptsetup__use_uuid`.
 
 .. _cryptsetup__devices_crypttab_options:
 
@@ -197,8 +219,8 @@ you to use more specific parameters which are not documented below.
   Optional, int. The number of milliseconds to spend with PBKDF2 passphrase processing.
   Defaults to :envvar:`cryptsetup__iter_time`.
 
-Examples
-~~~~~~~~
+Example for encrypting a partition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Setup an encrypted filesystem on top of :file:`/dev/sdb5` which will be mounted
 after role execution under :file:`/media/sdb5_crypt` and will be automatically
@@ -210,3 +232,63 @@ mounted at boot:
 
      - name: 'sdb5_crypt'
        ciphertext_block_device: '/dev/sdb5'
+
+.. _cryptsetup__ref_devices_chaining_multiple_ciphers:
+
+Example for chaining multiple ciphers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Setup a vault using three different ciphers and three different keys.
+A similar feature is supported by TrueCrypt/VeraCrypt.
+
+Note that order is important here and that the ``serial``
+:envvar:`cryptsetup__devices_execution_strategy` has to be used when using
+such an example.
+
+.. code:: yaml
+
+   cryptsetup__devices_execution_strategy: 'serial'
+   cryptsetup__devices:
+
+     ## Use AES for the most outer layer to not rise suspicion just yet :)
+     - name: 'vault_ciphertext0'
+       ciphertext_block_device: '/tmp/ciphertext_vault_file.raw'
+       manage_filesystem: False
+       # Don’t try to use a UUID for a regular file.
+       use_uuid: False
+
+     - name: 'vault_ciphertext1'
+       ciphertext_block_device: '/dev/mapper/vault_ciphertext0'
+       manage_filesystem: False
+       cipher: 'twofish-cbc-plain'
+       key_size: 256
+
+     - name: 'vault'
+       ciphertext_block_device: '/dev/mapper/vault_ciphertext1'
+       cipher: 'serpent-cbc-plain'
+       key_size: 256
+
+This will encrypt :file:`/tmp/ciphertext_vault_file.raw` using the default cipher
+(:envvar:`cryptsetup__cipher` which defaults to AES) and make the "clear text" of
+that outer layer available under :file:`/dev/mapper/vault_ciphertext0`.
+:file:`/dev/mapper/vault_ciphertext0` is then en/decrypted using Twofish and the
+"clear text" of that is mapped to :file:`/dev/mapper/vault_ciphertext1`.
+:file:`/dev/mapper/vault_ciphertext1` is then en/decrypted using Serpent and
+mapped to the now clear text block device
+:file:`/dev/mapper/vault` on which a filesystem will be created
+and which will be mounted as usual.
+
+This is surely a more extrem example but it has been tested in a lab
+environment and the setup seems to work just fine. Also automatic
+mapping/mounting of all layers works seamlessly on system boot if configured to
+do so (which is the default).
+
+The list of cyphers and key sizes can be checked with :command:`cryptsetup benchmark`.
+You can check that the ciphers are chained as expected using :command:`cryptsetup status
+vault`, :command:`cryptsetup status vault_ciphertext1` and so on.
+
+If you intend to do this then note that in most scenarios the used cipher(s)
+will not be your weakest link. For example AES should be suitable on it’s own
+to provide reasonable `Information Security`_. You must also think about other
+areas of `Computer Security`_ and `Operations security`_ for this example to
+make sense.

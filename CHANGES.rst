@@ -38,6 +38,16 @@ Changed
   :ref:`item.manage_filesystem <cryptsetup__devices_manage_filesystem>`.
   [ypid_]
 
+- Support to use multiple ciphers and corresponding keys to encrypt one filesystem.
+  Refer to :ref:`cryptsetup__ref_devices_chaining_multiple_ciphers` for
+  details. [ypid_]
+
+Changed
+~~~~~~~
+
+- Require Ansible v2.1 for the role which was needed to implement support for
+  chaining multiple cyphers. [ypid_]
+
 
 `debops.cryptsetup v0.4.0`_ - 2016-10-23
 ----------------------------------------
