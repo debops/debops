@@ -1,6 +1,8 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.ferm default variables [[[
+# =================================
 
 # .. contents:: Sections
 #    :local:
@@ -8,13 +10,10 @@
 # .. include:: includes/all.rst
 
 
-# .. ferm configuration (((
-#
-# ----------------------
-#   ferm configuration
+# ferm configuration [[[
 # ----------------------
 
-# .. envvar:: ferm__enabled
+# .. envvar:: ferm__enabled [[[
 #
 # Enable or disable :command:`iptables` management by checking if ``cap_sys_admin``
 # POSIX capability is set on the host.
@@ -29,28 +28,28 @@ ferm__enabled: '{{ True
                       )
                    else False }}'
 
-
-# .. envvar:: ferm__flush
+                                                                   # ]]]
+# .. envvar:: ferm__flush [[[
 #
 # Should ferm-rules be flushed when :program:`ferm` is disabled? The default is true,
 # but you may need set both :envvar:`ferm__enabled` and this to ``False`` if you are
 # running in some container and are not allowed to change :command:`iptables`.
 ferm__flush: '{{ ferm__enabled | bool }}'
 
-
-# .. envvar:: ferm__base_packages
+                                                                   # ]]]
+# .. envvar:: ferm__base_packages [[[
 #
 # List of base APT packages to install.
 ferm__base_packages: [ 'ferm', 'patch' ]
 
-
-# .. envvar:: ferm__packages
+                                                                   # ]]]
+# .. envvar:: ferm__packages [[[
 #
 # List of additional APT packages to install.
 ferm__packages: []
 
-
-# .. envvar:: ferm__domains
+                                                                   # ]]]
+# .. envvar:: ferm__domains [[[
 #
 # List of iptables domains enabled in main :program:`ferm` firewall.
 # Currently supported domains:
@@ -63,8 +62,8 @@ ferm__packages: []
 #
 ferm__domains: [ 'ip', 'ip6' ]
 
-
-# .. envvar:: ferm__ansible_controllers
+                                                                   # ]]]
+# .. envvar:: ferm__ansible_controllers [[[
 #
 # Optional list of CIDR hosts which are not included in ssh port recent filter
 # and won't be blocked by the firewall in case of too many connections.
@@ -78,138 +77,130 @@ ferm__domains: [ 'ip', 'ip6' ]
 #
 ferm__ansible_controllers: []
 
-
-# .. envvar:: ferm__ansible_controllers_ports
+                                                                   # ]]]
+# .. envvar:: ferm__ansible_controllers_ports [[[
 #
 # List of ports which are opened for access from Ansible Controllers.
 ferm__ansible_controllers_ports: [ 'ssh' ]
 
-
-# .. envvar:: ferm__default_policy_input
+                                                                   # ]]]
+# .. envvar:: ferm__default_policy_input [[[
 #
 # Default :command:`iptables` policy for ``INPUT`` chain.
 ferm__default_policy_input: 'DROP'
 
-
-# .. envvar:: ferm__default_policy_output
+                                                                   # ]]]
+# .. envvar:: ferm__default_policy_output [[[
 #
 # Default :command:`iptables` policy for ``OUTPUT`` chain.
 ferm__default_policy_output: 'ACCEPT'
 
-
-# .. envvar:: ferm__default_policy_forward
+                                                                   # ]]]
+# .. envvar:: ferm__default_policy_forward [[[
 #
 # Default :command:`iptables` policy for ``FORWARD`` chain.
 ferm__default_policy_forward: 'DROP'
-
-# .. )))
-
-# .. Rate limit filter configuration (((
-#
-# -----------------------------------
-#   Rate limit filter configuration
+                                                                   # ]]]
+                                                                   # ]]]
+# Rate limit filter configuration [[[
 # -----------------------------------
 
-# .. envvar:: ferm__filter_icmp
+# .. envvar:: ferm__filter_icmp [[[
 #
 # Manage filtering of ICMP packets using the ``hashlimit`` module.
 ferm__filter_icmp: True
 
-
-# .. envvar:: ferm__filter_icmp_limit
+                                                                   # ]]]
+# .. envvar:: ferm__filter_icmp_limit [[[
 #
 # Rate limit when filtering ICMP packets.
 ferm__filter_icmp_limit: '10/second'
 
-
-# .. envvar:: ferm__filter_icmp_burst
+                                                                   # ]]]
+# .. envvar:: ferm__filter_icmp_burst [[[
 #
 # Burst limit when filtering ICMP packets.
 ferm__filter_icmp_burst: '10'
 
-
-# .. envvar:: ferm__filter_icmp_expire
+                                                                   # ]]]
+# .. envvar:: ferm__filter_icmp_expire [[[
 #
 # Expiration time when filtering ICMP packets in seconds.
 # Defaults to 1 hour.
 ferm__filter_icmp_expire: '{{ (60 * 60) }}'
 
-
-# .. envvar:: ferm__filter_syn
+                                                                   # ]]]
+# .. envvar:: ferm__filter_syn [[[
 #
 # Manage filtering of TCP SYN segments using the ``hashlimit`` module.
 ferm__filter_syn: True
 
-
-# .. envvar:: ferm__filter_syn_limit
+                                                                   # ]]]
+# .. envvar:: ferm__filter_syn_limit [[[
 #
 # Rate limit when filtering TCP SYN segments.
 ferm__filter_syn_limit: '40/second'
 
-
-# .. envvar:: ferm__filter_syn_burst
+                                                                   # ]]]
+# .. envvar:: ferm__filter_syn_burst [[[
 #
 # Burst limit when filtering TCP SYN segments.
 ferm__filter_syn_burst: '20'
 
-
-# .. envvar:: ferm__filter_syn_expire
+                                                                   # ]]]
+# .. envvar:: ferm__filter_syn_expire [[[
 #
 # Expiration time when filtering TCP SYN segments in seconds.
 # Defaults to 1 hour.
 ferm__filter_syn_expire: '{{ (60 * 60) }}'
 
-
-# .. envvar:: ferm__filter_recent
+                                                                   # ]]]
+# .. envvar:: ferm__filter_recent [[[
 #
 # Enable recent filter in respective rules. You might need to disable it on
 # certain hosts, like OpenVZ containers that don't have the ``recent`` module
 # available.
 ferm__filter_recent: True
 
-
-# .. envvar:: ferm__filter_recent_name
+                                                                   # ]]]
+# .. envvar:: ferm__filter_recent_name [[[
 #
 # Name of recent list to block early.
 ferm__filter_recent_name: 'badguys'
 
-
-# .. envvar:: ferm__filter_recent_time
+                                                                   # ]]]
+# .. envvar:: ferm__filter_recent_time [[[
 #
 # Length of time in seconds to block recent offenders; if they try connecting
 # before the time is up, timer is reset.
 ferm__filter_recent_time: '{{ (60 * 60 * 2) }}'
 
-
-# .. envvar:: ferm__mark_portscan
+                                                                   # ]]]
+# .. envvar:: ferm__mark_portscan [[[
 #
 # Mark packets on invalid ports as bad guys (block port scanning). For more
 # information check :ref:`ferm__ref_guide_gateway_hardening`.
 ferm__mark_portscan: False
-
-# .. )))
-
-# .. Logging configuration (((
-#
-# -------------------------
-#   Logging configuration
+                                                                   # ]]]
+                                                                   # ]]]
+# Logging configuration [[[
 # -------------------------
 
-# .. envvar:: ferm__log
+# .. envvar:: ferm__log [[[
 #
 # Enable/disable custom ``&log()`` ferm function used in different firewall
 # rules.
 ferm__log: True
 
-
-# .. envvar:: ferm__log_type
+                                                                   # ]]]
+# .. envvar:: ferm__log_type [[[
 #
 # Select how firewall performs logging. By default, it uses normal syslog
 # calls, there are other ways to log packets listed below.
 ferm__log_type: 'LOG'
 
-
-# .. envvar:: ferm__log_map
+                                                                   # ]]]
+# .. envvar:: ferm__log_map [[[
 #
 # Dictionary map with actual firewall rules mapped to different log types.
 ferm__log_map:
@@ -217,108 +208,104 @@ ferm__log_map:
   'ULOG':  'ULOG ulog-nlgroup {{ ferm__log_group }} ulog-prefix "$msg"'
   'NFLOG': 'NFLOG nflog-group {{ ferm__log_group }} nflog-prefix "$msg"'
 
-
-# .. envvar:: ferm__log_target
+                                                                   # ]]]
+# .. envvar:: ferm__log_target [[[
 #
 # Firewall log target used in the ``&log()`` ferm function.
 ferm__log_target: '{{ ferm__log_map[ferm__log_type] }}'
 
-
-# .. envvar:: ferm__log_limit
+                                                                   # ]]]
+# .. envvar:: ferm__log_limit [[[
 #
 # Limit the amount of packets logged by the firewall.
 ferm__log_limit: '2/min'
 
-
-# .. envvar:: ferm__log_burst
+                                                                   # ]]]
+# .. envvar:: ferm__log_burst [[[
 #
 # Set the burst limit for the logged packets.
 ferm__log_burst: '5'
 
-
-# .. envvar:: ferm__log_group
+                                                                   # ]]]
+# .. envvar:: ferm__log_group [[[
 #
 # ULOG/NFLOG group used by the firewall logs.
 ferm__log_group: '32'
-
-# .. )))
-
-# .. Rules configuration (((
-#
-# -----------------------
-#   Rules configuration
+                                                                   # ]]]
+                                                                   # ]]]
+# Rules configuration [[[
 # -----------------------
 
-# .. envvar:: ferm__include_legacy
+# .. envvar:: ferm__include_legacy [[[
 #
 # Include legacy firewall rules. This variable should allow for easier
 # transition to the new firewall rules in the future.
 ferm__include_legacy: True
 
-
-# .. envvar:: ferm__rules
+                                                                   # ]]]
+# .. envvar:: ferm__rules [[[
 #
 # List of :command:`iptables` rules to manage, templates used by these rules are included
 # in :file:`templates/etc/ferm/ferm.d/` directory.
 # Additional variables are described below.
 ferm__rules: []
 
-
-# .. envvar:: ferm__group_rules
+                                                                   # ]]]
+# .. envvar:: ferm__group_rules [[[
 #
 # List of :command:`iptables` rules to manage for a host group.
 ferm__group_rules: []
 
-
-# .. envvar:: ferm__host_rules
+                                                                   # ]]]
+# .. envvar:: ferm__host_rules [[[
 #
 # List of :command:`iptables` rules to manage for an individual host.
 ferm__host_rules: []
 
-
-# .. envvar:: ferm__dependent_rules
+                                                                   # ]]]
+# .. envvar:: ferm__dependent_rules [[[
 #
 # List of :command:`iptables` rules to manage depending on other rules.
 ferm__dependent_rules: []
 
-
-# .. envvar:: ferm_input_list
+                                                                   # ]]]
+# .. envvar:: ferm_input_list [[[
 #
 # This is a legacy variable and shouldn't be used! List of iptables INPUT rules
 # to manage. See :ref:`ferm__ref_input_list` for more details.
 ferm_input_list: []
 
-
-# .. envvar:: ferm_input_group_list
+                                                                   # ]]]
+# .. envvar:: ferm_input_group_list [[[
 #
 # This is a legacy variable and shouldn't be used! List of iptables INPUT rules
 # to manage for a host group. See :ref:`ferm__ref_input_list` for more details.
 ferm_input_group_list: []
 
-
-# .. envvar:: ferm_input_host_list
+                                                                   # ]]]
+# .. envvar:: ferm_input_host_list [[[
 #
 # This is a legacy variable and shouldn't be used! List of iptables INPUT rules
 # to manage for an individual host. See :ref:`ferm__ref_input_list` for more
 # details.
 ferm_input_host_list: []
 
-
-# .. envvar:: ferm_input_dependent_list
+                                                                   # ]]]
+# .. envvar:: ferm_input_dependent_list [[[
 #
 # This is a legacy variable and shouldn't be used! List of iptables INPUT rules
 # to manage in dependency to other rules. See :ref:`ferm__ref_input_list` for
 # more details.
 ferm_input_dependent_list: []
 
-
-# .. envvar:: ferm__default_weight
+                                                                   # ]]]
+# .. envvar:: ferm__default_weight [[[
 #
 # Set the default rule weight for rules that do not specify it.
 ferm__default_weight: '50'
 
-
-# .. envvar:: ferm__weight_map
+                                                                   # ]]]
+# .. envvar:: ferm__weight_map [[[
 #
 # Dictionary with mapping between "rule classes" and their desired weight.
 ferm__weight_map:
@@ -335,8 +322,8 @@ ferm__weight_map:
   'any-service': '50'
   'any-reject': '99'
 
-
-# .. envvar:: ferm__default_rules
+                                                                   # ]]]
+# .. envvar:: ferm__default_rules [[[
 #
 # List of default firewall rules defined on each host.
 ferm__default_rules: '{{ ferm__rules_default_policy +
@@ -356,8 +343,8 @@ ferm__default_rules: '{{ ferm__rules_default_policy +
                          ferm__rules_fail2ban +
                          ferm__rules_forward }}'
 
-
-# .. envvar:: ferm__rules_default_policy
+                                                                   # ]]]
+# .. envvar:: ferm__rules_default_policy [[[
 #
 # Configure default policies for built-in :command:`iptables` chains.
 ferm__rules_default_policy:
@@ -380,8 +367,8 @@ ferm__rules_default_policy:
     name: 'filter_output'
     policy: '{{ ferm__default_policy_output }}'
 
-
-# .. envvar:: ferm__rules_hooks
+                                                                   # ]]]
+# .. envvar:: ferm__rules_hooks [[[
 #
 # Implement custom firewall hooks.
 ferm__rules_hooks:
@@ -395,8 +382,8 @@ ferm__rules_hooks:
       @hook post  "run-parts /etc/ferm/hooks/post.d";
       @hook flush "run-parts /etc/ferm/hooks/flush.d";
 
-
-# .. envvar:: ferm__rules_variables
+# ]]]
+# .. envvar:: ferm__rules_variables [[[
 #
 # Provide custom variables in the firewall configuration.
 ferm__rules_variables:
@@ -410,8 +397,8 @@ ferm__rules_variables:
       @def $ipv4_enabled = {{ "1" if "ip"  in ferm__domains else "0" }};
       @def $ipv6_enabled = {{ "1" if "ip6" in ferm__domains else "0" }};
 
-
-# .. envvar:: ferm__rules_log
+# ]]]
+# .. envvar:: ferm__rules_log [[[
 #
 # Create custom log function which is used by other firewall rules to log
 # packets.
@@ -429,8 +416,8 @@ ferm__rules_log:
               {{ ferm__log_target }};
       }
 
-
-# .. envvar:: ferm__rules_filter_loopback
+                                                                   # ]]]
+# .. envvar:: ferm__rules_filter_loopback [[[
 #
 # Allow connections from ``localhost``.
 ferm__rules_filter_loopback:
@@ -441,8 +428,8 @@ ferm__rules_filter_loopback:
     name: 'loopback'
     interface: 'lo'
 
-
-# .. envvar:: ferm__rules_filter_ansible_controller
+                                                                   # ]]]
+# .. envvar:: ferm__rules_filter_ansible_controller [[[
 #
 # Allow connections from Ansible Controllers.
 ferm__rules_filter_ansible_controller:
@@ -456,8 +443,8 @@ ferm__rules_filter_ansible_controller:
     multiport: True
     accept_any: False
 
-
-# .. envvar:: ferm__rules_filter_icmp
+                                                                   # ]]]
+# .. envvar:: ferm__rules_filter_icmp [[[
 #
 # Filter ICMP packets.
 ferm__rules_filter_icmp:
@@ -474,8 +461,8 @@ ferm__rules_filter_icmp:
     hashlimit_target: 'ACCEPT'
     target: 'REJECT'
 
-
-# .. envvar:: ferm__rules_filter_conntrack
+                                                                   # ]]]
+# .. envvar:: ferm__rules_filter_conntrack [[[
 #
 # Enable connection tracking for incoming, forwarded and outgoing traffic.
 ferm__rules_filter_conntrack:
@@ -485,8 +472,8 @@ ferm__rules_filter_conntrack:
     weight_class: 'conntrack'
     chain: [ 'INPUT', 'OUTPUT', 'FORWARD' ]
 
-
-# .. envvar:: ferm__rules_filter_syn
+                                                                   # ]]]
+# .. envvar:: ferm__rules_filter_syn [[[
 #
 # Filter TCP SYN packets.
 ferm__rules_filter_syn:
@@ -504,8 +491,8 @@ ferm__rules_filter_syn:
     hashlimit_target: 'RETURN'
     target: 'REJECT'
 
-
-# .. envvar:: ferm__rules_filter_recent_badguys
+                                                                   # ]]]
+# .. envvar:: ferm__rules_filter_recent_badguys [[[
 #
 # Block all packets marked as "badguys" later in the firewall.
 ferm__rules_filter_recent_badguys:
@@ -531,8 +518,8 @@ ferm__rules_filter_recent_badguys:
     recent_remove: True
     recent_log: False
 
-
-# .. envvar:: ferm__rules_accept_dhcpv6_client
+                                                                   # ]]]
+# .. envvar:: ferm__rules_accept_dhcpv6_client [[[
 #
 # Allow DHCPv6 responses.
 #
@@ -556,8 +543,8 @@ ferm__rules_accept_dhcpv6_client:
     sport: [ 'dhcpv6-server' ]
     dport: [ 'dhcpv6-client' ]
 
-
-# .. envvar:: ferm__rules_filter_include_legacy
+                                                                   # ]]]
+# .. envvar:: ferm__rules_filter_include_legacy [[[
 #
 # Include rules from legacy ferm directory.
 ferm__rules_filter_include_legacy:
@@ -578,8 +565,8 @@ ferm__rules_filter_include_legacy:
     include: '/etc/ferm/filter-input.d/'
     rule_state: '{{ "present" if (ferm__include_legacy | bool) else "absent" }}'
 
-
-# .. envvar:: ferm__rules_filter_recent_scanners
+                                                                   # ]]]
+# .. envvar:: ferm__rules_filter_recent_scanners [[[
 #
 # Block potential port scanners that try to access closed ports.
 ferm__rules_filter_recent_scanners:
@@ -591,8 +578,8 @@ ferm__rules_filter_recent_scanners:
     recent_set_name: '{{ ferm__filter_recent_name }}'
     rule_state: '{{ "present" if (ferm__mark_portscan | bool) else "absent" }}'
 
-
-# .. envvar:: ferm__rules_filter_reject_all
+                                                                   # ]]]
+# .. envvar:: ferm__rules_filter_reject_all [[[
 #
 # Reject all incoming packets not handled by previous rules.
 ferm__rules_filter_reject_all:
@@ -601,8 +588,8 @@ ferm__rules_filter_reject_all:
     weight: '99'
     weight_class: 'any-reject'
 
-
-# .. envvar:: ferm__rules_fail2ban
+                                                                   # ]]]
+# .. envvar:: ferm__rules_fail2ban [[[
 #
 # :program:`fail2ban` support rules for ferm.
 ferm__rules_fail2ban:
@@ -612,8 +599,8 @@ ferm__rules_fail2ban:
     comment: 'Reload fail2ban rules'
     rule_state: '{{ "present" if (ferm__fail2ban  | bool) else "absent" }}'
 
-
-# .. envvar:: ferm__rules_forward
+                                                                   # ]]]
+# .. envvar:: ferm__rules_forward [[[
 #
 # Manage packet forwarding to other hosts/containers.
 ferm__rules_forward:
@@ -664,52 +651,52 @@ ferm__rules_forward:
                          ansible_local.ferm.forward | bool)))
                      else "absent" }}'
 
-
-# .. envvar:: ferm__custom_files
+                                                                   # ]]]
+# .. envvar:: ferm__custom_files [[[
 #
 # Copy or install custom files needed by the firewall, usually scripts. The
 # syntax is the same as used by the ``copy`` Ansible module.
 ferm__custom_files: []
 
-
-# .. envvar:: ferm__group_custom_files
+                                                                   # ]]]
+# .. envvar:: ferm__group_custom_files [[[
 #
 # Copy or install custom files needed by the firewall host group configuration.
 ferm__group_custom_files: []
 
-
-# .. envvar:: ferm__host_custom_files
+                                                                   # ]]]
+# .. envvar:: ferm__host_custom_files [[[
 #
 # Copy or install custom files needed by the firewall individual host
 # configuration.
 ferm__host_custom_files: []
 
-
-# .. envvar:: ferm__fail2ban
+                                                                   # ]]]
+# .. envvar:: ferm__fail2ban [[[
 #
 # Enable or disable :program:`fail2ban` integration. :program:`ferm` will send :program:`fail2ban` a reload
 # command after its own configuration is reloaded. If :program:`fail2ban` is not present
 # or turned off, nothing will happen.
 ferm__fail2ban: True
 
-
-# .. envvar:: ferm__forward
+                                                                   # ]]]
+# .. envvar:: ferm__forward [[[
 #
 # Enable forwarding in :command:`ip(6)tables`. This option can be used by other
 # roles and it's status is saved in Ansible local facts, which will override
 # variable status from role defaults or inventory.
 ferm__forward: False
 
-
-# .. envvar:: ferm__forward_accept
+                                                                   # ]]]
+# .. envvar:: ferm__forward_accept [[[
 #
 # Should traffic be forwarded between the other hosts/containers if
 # :envvar:`ferm__forward` is ``True``?
 # Refer to :envvar:`ferm__rules_forward` for details.
 ferm__forward_accept: False
 
-
-# .. envvar:: ferm__external_interfaces
+                                                                   # ]]]
+# .. envvar:: ferm__external_interfaces [[[
 #
 # List of interfaces that are connected to external network, traffic on these
 # interfaces will be forwarded to all hosts.
@@ -717,11 +704,12 @@ ferm__external_interfaces:
   - '{{ ansible_default_ipv4.interface | default("") }}'
   - '{{ ansible_default_ipv6.interface | default("") }}'
 
-
-# .. envvar:: ferm__internal_interfaces
+                                                                   # ]]]
+# .. envvar:: ferm__internal_interfaces [[[
 #
 # List of interfaces that are connected to internal network, traffic on these
 # interfaces will be forwarded only between hosts on that network.
 ferm__internal_interfaces: [ 'br1' ]
-
-# .. )))
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
