@@ -51,8 +51,11 @@ Changed
 Fixed
 ~~~~~
 
-* Don’t fail in check mode when the keyfile has not yet been generated.
+- Don’t fail in check mode when the keyfile has not yet been generated.
   This requires to limit the tasks even more which are run in check mode. [ypid_]
+
+- Don’t fail when a device was never in state present and is requested to be
+  absent. [ypid_]
 
 
 `debops.cryptsetup v0.3.1`_ - 2016-04-04

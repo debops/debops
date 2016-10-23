@@ -327,7 +327,10 @@
   changed_when: ("(stopping)" in cryptsetup__register_cryptdisks_stop.stdout)
   failed_when: (
                 cryptsetup__register_cryptdisks_stop.rc != 0 and not
-                ('Stopping crypto disk...' == cryptsetup__register_cryptdisks_stop.stdout and cryptsetup__register_cryptdisks_stop.rc == 1)
+                (
+                  ('Stopping crypto disk...' == cryptsetup__register_cryptdisks_stop.stdout or
+                   'failed, not found in crypttab' in cryptsetup__register_cryptdisks_stop.stdout)
+                   and cryptsetup__register_cryptdisks_stop.rc == 1)
                )
   when: (item.0.state|d(cryptsetup__state) in [ 'unmounted', 'absent' ] or
           (item.0.state|d(cryptsetup__state) in [ 'present' ] and item.1|changed)
