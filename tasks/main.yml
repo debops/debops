@@ -66,7 +66,7 @@
     cryptsetup__dd_bs: '{{ ((512/8) if (cryptsetup__key_size == "default") else ((cryptsetup__key_size)/8)) | int }}'
 
 - name: Generate keyfile on the Ansible controller
-  command: dd if=/dev/random of='{{ item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}' bs={{ cryptsetup__dd_bs }} count=1 iflag=fullblock
+  command: dd if={{ cryptsetup__keyfile_source_dev | quote }} of={{ (item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw")) | quote }} bs={{ cryptsetup__dd_bs }} count=1 iflag=fullblock
   args:
     creates: '{{ item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}'
   become: False

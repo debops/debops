@@ -34,6 +34,10 @@ Added
 
 - Allow to overwrite crypto defaults per device. [ypid_]
 
+- Allow to configure the source device where the keyfile will be read from
+  using :command:`dd` with :envvar:`cryptsetup__keyfile_source_dev`.
+  Intended for integration testing of the role. [ypid_]
+
 Changed
 ~~~~~~~
 
