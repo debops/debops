@@ -7,7 +7,7 @@ Guides and examples
    :local:
    :depth: 2
 
-.. _guide_gateway:
+.. _ferm__ref_guide_gateway:
 
 Configuring an Internet Gateway
 -------------------------------
@@ -30,7 +30,7 @@ related Ansible variables. If you're not, you may first want to read
 `Getting Started with DebOps`_.
 
 
-.. _guide_gateway_packet_forwarding:
+.. _ferm__ref_guide_gateway_packet_forwarding:
 
 Packet Forwarding
 ~~~~~~~~~~~~~~~~~
@@ -93,7 +93,7 @@ variables.
   :envvar:`ferm__default_rules` rule list.
 
 
-.. _guide_gateway_port_forwarding:
+.. _ferm__ref_guide_gateway_port_forwarding:
 
 Port Forwarding
 ~~~~~~~~~~~~~~~
@@ -129,7 +129,7 @@ address of a network packet is rewritten to the internal host address.
     establish the connection (SNAT).
 
 
-.. _guide_gateway_services:
+.. _ferm__ref_guide_gateway_services:
 
 INPUT Rules for Services running on the Gateway Host
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -179,7 +179,7 @@ the internal IPv4 network which is automatically defined using the ``ansible_eth
 host fact.
 
 
-.. _guide_gateway_output:
+.. _ferm__ref_guide_gateway_output:
 
 Restrict Outgoing Traffic
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -265,7 +265,7 @@ any other purpose.
     ferm__default_policy_output: 'DROP'
 
 
-.. _guide_gateway_hardening:
+.. _ferm__ref_guide_gateway_hardening:
 
 Block Port Scans
 ~~~~~~~~~~~~~~~~
