@@ -16,9 +16,9 @@ Features
 * Create a random keyfile or use an already existing keyfile.
 * Manage :file:`/etc/crypttab` and :file:`/etc/fstab` and mount point directories.
 * Create a LUKS header backup and store it on the Ansible controller.
-* Decrypt and mount a encrypted filesystem and never store any key
-  material on persistent storage on the target. (You might need to take
-  care of your Swap space yourself for this!).
+* Decrypt and mount a encrypted filesystem and never store any key material on
+  persistent storage on the remote system. You might need to take care of your
+  Swap space yourself for this!
 
 .. _cryptsetup__ref_installation:
 

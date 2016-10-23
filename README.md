@@ -5,6 +5,7 @@
 
 [![Travis CI](https://img.shields.io/travis/debops/ansible-cryptsetup.svg?style=flat)](https://travis-ci.org/debops/ansible-cryptsetup)
 [![test-suite](https://img.shields.io/badge/test--suite-ansible--cryptsetup-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-cryptsetup/)
+[![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops.cryptsetup-660198.svg?style=flat)](https://galaxy.ansible.com/debops/cryptsetup)
 
 
 `debops.cryptsetup` allows you to configure encrypted filesystems on top of
@@ -23,9 +24,22 @@ filesystem (both on the Ansible controller and the remote system).
 * Create a random keyfile or use an already existing keyfile.
 * Manage `/etc/crypttab` and `/etc/fstab` and mount point directories.
 * Create a LUKS header backup and store it on the Ansible controller.
-* Decrypt and mount a encrypted filesystem and never store any key
-  material on persistent storage on the target. (You might need to take
-  care of your Swap space yourself for this!).
+* Decrypt and mount a encrypted filesystem and never store any key material on
+  persistent storage on the remote system. You might need to take care of your
+  Swap space yourself for this!
+
+### Installation
+
+This role requires at least Ansible `v1.9.0`. To install it, run:
+
+```Shell
+ansible-galaxy install debops.cryptsetup
+```
+
+### Documentation
+
+More information about `debops.cryptsetup` can be found in the
+[official debops.cryptsetup documentation](https://docs.debops.org/en/latest/ansible/roles/ansible-cryptsetup/docs/).
 
 
 ### Role dependencies
@@ -46,7 +60,7 @@ into your playbook.
 
 ### Authors and license
 
-- [Robin Schneider](http://ypid.de/) (maintainer) | [e-mail](mailto:ypid@riseup.net) | [Twitter](https://twitter.com/ypid) | [GitHub](https://github.com/ypid)
+- [Robin Schneider](https://docs.debops.org/en/latest/debops-keyring/docs/entities.html#debops-keyring-entity-ypid) (maintainer) | [e-mail](mailto:ypid@riseup.net) | [GitHub](https://github.com/ypid)
 
 License: [GPL-3.0](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
 
