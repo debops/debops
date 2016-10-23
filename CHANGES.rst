@@ -26,6 +26,8 @@ Added
   These guides and examples are intended for end users and should help to get
   up and running with the role. [ypid_]
 
+- Allow to overwrite crypto defaults per device. [ypid_]
+
 Changed
 ~~~~~~~
 

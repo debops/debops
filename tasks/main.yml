@@ -174,10 +174,10 @@
 - name: Create encryption layer
   shell: cryptsetup isLuks "{{ item.0.ciphertext_block_device }}" || cryptsetup luksFormat
          --batch-mode --verbose
-         {{ "" if (cryptsetup__hash|d()      == "default") else ("--hash=" + cryptsetup__hash) }}
-         {{ "" if (cryptsetup__cipher|d()    == "default") else ("--cipher=" + cryptsetup__cipher) }}
-         {{ "" if (cryptsetup__key_size|d()  == "default") else ("--key-size=" + cryptsetup__key_size|string) }}
-         {{ "" if (cryptsetup__iter_time|d() == "default") else ("--iter-time=" + cryptsetup__iter_time|string) }}
+         {{ "" if (item.0.hash|d(cryptsetup__hash) == "default") else ("--hash=" + item.0.hash|d(cryptsetup__hash)) }}
+         {{ "" if (item.0.cipher|d(cryptsetup__cipher) == "default") else ("--cipher=" + item.0.cipher|d(cryptsetup__cipher)) }}
+         {{ "" if (item.0.key_size|d(cryptsetup__key_size) == "default") else ("--key-size=" + item.0.key_size|d(cryptsetup__key_size)|string) }}
+         {{ "" if (item.0.iter_time|d(cryptsetup__iter_time) == "default") else ("--iter-time=" + item.0.iter_time|d(cryptsetup__iter_time)|string) }}
          {% if cryptsetup__use_dev_random|d("default") != "default" %}
          {{ "--use-random" if cryptsetup__use_dev_random|d() else "--use-urandom" }}
          {% endif %}

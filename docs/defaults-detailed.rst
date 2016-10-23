@@ -165,6 +165,31 @@ you to use more specific parameters which are not documented below.
     additionally removes all configuration, the keyfile and the header backup
     from the remote system.
 
+.. _cryptsetup__devices_hash:
+
+``hash``
+  Optional, string. Specifies the hash used in the LUKS key setup scheme and
+  volume key digest for :command:`cryptsetup luksFormat`.
+  Defaults to :envvar:`cryptsetup__hash`.
+
+.. _cryptsetup__devices_cipher:
+
+``cipher``
+  Optional, string. Cipher specification.
+  Defaults to :envvar:`cryptsetup__cipher`.
+
+.. _cryptsetup__devices_key_size:
+
+``key_size``
+  Optional, int. Key size in bits.
+  Defaults to :envvar:`cryptsetup__key_size`.
+
+.. _cryptsetup__devices_iter_time:
+
+``iter_time``
+  Optional, int. The number of milliseconds to spend with PBKDF2 passphrase processing.
+  Defaults to :envvar:`cryptsetup__iter_time`.
+
 Examples
 ~~~~~~~~
 
