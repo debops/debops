@@ -8,10 +8,10 @@ Some of ``debops.cryptsetup`` variables have more extensive configuration.
 Here you can find documentation and examples for them.
 
 
-.. _cryptsetup_devices:
+.. _cryptsetup__devices:
 
-cryptsetup_devices
-------------------
+cryptsetup__devices
+-------------------
 
 Note the following list only documents the common parameters. The role allows
 you to use more specific parameters which are not documented below.
@@ -34,7 +34,7 @@ you to use more specific parameters which are not documented below.
 ``crypttab_options``
   Optional, list of strings. Each string represents an option to configure for
   each device in :file:`/etc/crypttab`.
-  Overwrites the default as configured by the ``cryptsetup_crypttab_options``
+  Overwrites the default as configured by the ``cryptsetup__crypttab_options``
   variable.
 
 ``keyfile``
@@ -47,19 +47,19 @@ you to use more specific parameters which are not documented below.
 
   .. code:: jinja
 
-     {{ cryptsetup_secret_path + "/" + item.name + "/keyfile.raw" }}
+     {{ cryptsetup__secret_path + "/" + item.name + "/keyfile.raw" }}
 
 ``backup_header``
   Optional, boolean. Should a header backup be created and stored
   on the remote system and the Ansible controller?
   Set to ``False`` to disable header backup creation and to ensure that the
   header backup on the remote system is absent.
-  Defaults to the ``cryptsetup_header_backup`` variable.
+  Defaults to the ``cryptsetup__header_backup`` variable.
 
 ``fstype``
   Optional, string. Filesystem type to create on the plaintext device mapper
   target.
-  Defaults to the ``cryptsetup_fstype`` variable.
+  Defaults to the ``cryptsetup__fstype`` variable.
 
 ``mount``
   Optional, string. Plaintext mount point of the filesystem.
@@ -67,7 +67,7 @@ you to use more specific parameters which are not documented below.
 
   .. code:: jinja
 
-    {{ cryptsetup_mountpoint_parent_directory + "/" + item.name }}
+    {{ cryptsetup__mountpoint_parent_directory + "/" + item.name }}
 
 ``mount_options``
   Optional, list of strings. Mount options associated with the filesystem.
@@ -76,7 +76,7 @@ you to use more specific parameters which are not documented below.
 ``state``
   Optional, string. There are four states which can be chosen for each
   encrypted filesystem.  If no state is given, the value of
-  ``cryptsetup_state`` will be used which defaults to ``mounted``.
+  ``cryptsetup__state`` will be used which defaults to ``mounted``.
 
   ``mounted``
     Ensure that the encryption and filesystem layer are in place on the block device and
@@ -94,8 +94,8 @@ you to use more specific parameters which are not documented below.
 
     To avoid this, you need to set the following options for the item::
 
-      crypttab_options: '{{ ["noauto"] + (cryptsetup_crypttab_options|d([]) | list) }}'
-      mount_options: '{{ ["noauto"] + (cryptsetup_mount_options|d([]) | list) }}'
+      crypttab_options: '{{ ["noauto"] + (cryptsetup__crypttab_options|d([]) | list) }}'
+      mount_options: '{{ ["noauto"] + (cryptsetup__mount_options|d([]) | list) }}'
 
     Note that this option is currently not idempotent because it copes the
     keyfile to the remote system and erases it again.
@@ -134,12 +134,12 @@ Examples
 
 Setup an encrypted filesystem on top of :file:`/dev/sdb5` which will be
 mounted after role execution under :file:`/media/sdb5_crypt` (assuming the
-value of ``cryptsetup_state`` is left unchanged) and will be automatically
+value of ``cryptsetup__state`` is left unchanged) and will be automatically
 mounted at boot:
 
 .. code:: yaml
 
-   cryptsetup_devices:
+   cryptsetup__devices:
 
      - name: 'sdb5_crypt'
        ciphertext_block_device: '/dev/sdb5'

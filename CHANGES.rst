@@ -18,6 +18,16 @@ The current role maintainer_ is ypid_.
 
 .. _debops.cryptsetup master: https://github.com/debops/ansible-owncloud/compare/v0.3.1...master
 
+Changed
+~~~~~~~
+
+- Updated to latest DebOps Standards. [ypid_]
+
+- Changed role namespace from ``cryptsetup_`` to ``cryptsetup__``.
+  :regexp:`cryptsetup_[^_]` variables are dropped and don’t have any effect
+  anymore.
+  Refer to :ref:`cryptsetup__ref_upgrade_nodes_v0.4.0` for how to upgrade. [ypid_]
+
 
 `debops.cryptsetup v0.3.1`_ - 2016-04-04
 ----------------------------------------

@@ -12,6 +12,7 @@ Ansible role: debops.cryptsetup
    defaults-detailed
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:
