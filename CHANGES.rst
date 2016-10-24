@@ -90,7 +90,7 @@ Fixed
 Added
 ~~~~~
 
-- Added support to setup and mount a encrypted filesystem without storing the
+- Added support to setup and mount an encrypted filesystem without storing the
   keyfile on persistent storage of the remote system. [ypid_]
 
 - Added ``cryptsetup_secret_owner``, ``cryptsetup_secret_group`` and
