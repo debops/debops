@@ -25,24 +25,28 @@
 {% set nginx_tpl_default_server = []                                           %}
 {% set nginx_tpl_ipv6only = []                                                 %}
 {% if nginx_register_default_server|d() %}
-{% if (nginx_register_default_server in item.name or
-       not item.name and nginx_register_default_server == "default")           %}
-{%   set _ = nginx_tpl_default_server.append('default_server')                 %}
-{%   if (nginx_manage_ipv6only | bool)                                         %}
-{%     set _ = nginx_tpl_ipv6only.append('ipv6only=off')                       %}
-{%  endif                                                                      %}
-{% endif                                                                       %}
+{%   for name in ([ item.name ] if item.name is string else item.name)         %}
+{%     if (name in nginx_register_default_server or
+          not name and nginx_register_default_server == "default")             %}
+{%       set _ = nginx_tpl_default_server.append('default_server')             %}
+{%       if (nginx_manage_ipv6only | bool)                                     %}
+{%         set _ = nginx_tpl_ipv6only.append('ipv6only=off')                   %}
+{%       endif                                                                 %}
+{%     endif                                                                   %}
+{%   endfor %}
 {% endif %}
 {% set nginx_tpl_default_server_ssl = []                                       %}
 {% set nginx_tpl_ipv6only_ssl = []                                             %}
 {% if nginx_register_default_server_ssl|d() %}
-{% if (nginx_register_default_server_ssl in item.name or
-       not item.name and nginx_register_default_server_ssl == "default")       %}
-{%   set _ = nginx_tpl_default_server_ssl.append('default_server')             %}
-{%   if (nginx_manage_ipv6only | bool)                                         %}
-{%     set _ = nginx_tpl_ipv6only_ssl.append('ipv6only=off')                   %}
-{%  endif                                                                      %}
-{% endif                                                                       %}
+{%   for name in ([ item.name ] if item.name is string else item.name)         %}
+{%     if (name in nginx_register_default_server_ssl or
+           not name and nginx_register_default_server_ssl == "default")        %}
+{%        set _ = nginx_tpl_default_server_ssl.append('default_server')        %}
+{%       if (nginx_manage_ipv6only | bool)                                     %}
+{%         set _ = nginx_tpl_ipv6only_ssl.append('ipv6only=off')               %}
+{%       endif                                                                 %}
+{%     endif                                                                   %}
+{%   endfor %}
 {% endif %}
 {% set nginx_tpl_default_redirect_code = '307'                                 %}
 {% set nginx_tpl_default_redirect_code_ssl = '301'                             %}
