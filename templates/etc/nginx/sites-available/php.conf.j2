@@ -29,13 +29,9 @@
 {%       endfor %}
 {%     endif %}
 {%     if item.php_status_allow|d() %}
-{%       if item.php_status_allow is string %}
-{%         set _ = nginx__tpl_status_allow.append(item.php_status_allow) %}
-{%       else %}
-{%         for address in item.php_status_allow %}
-{%           set _ = nginx__tpl_status_allow.append(address) %}
-{%         endfor %}
-{%       endif %}
+{%       for address in ([ item.php_status_allow ] if item.php_status_allow is string else item.php_status_allow) %}
+{%          set _ = nginx__tpl_status_allow.append(address) %}
+{%       endfor %}
 {%     endif %}
 {%     for address in nginx__tpl_status_allow | sort | unique %}
                 allow {{ address }};
