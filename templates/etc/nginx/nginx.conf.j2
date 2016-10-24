@@ -64,13 +64,9 @@ http {
 
 {% endif %}
 {% if nginx_http_allow is defined and nginx_http_allow %}
-{% if nginx_http_allow is string %}
-        allow {{ nginx_http_allow }};
-{% else %}
-{% for address in nginx_http_allow %}
+{% for address in ([ nginx_http_allow ] if nginx_http_allow is string else nginx_http_allow) %}
         allow {{ address }};
 {% endfor %}
-{% endif %}
         deny all;
 
 {% endif %}
