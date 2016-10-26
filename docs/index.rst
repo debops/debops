@@ -8,10 +8,12 @@ Ansible role: debops.cryptsetup
 
    introduction
    getting-started
+   guides
    defaults
-   defaults-configuration
+   defaults-detailed
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:

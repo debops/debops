@@ -1,11 +1,14 @@
-.. include:: global.rst.inc
-
+.. _cryptsetup__ref_getting_started:
 
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
+
+.. _cryptsetup__ref_overview_terminology:
 
 Overview and terminology
 ------------------------
@@ -23,6 +26,8 @@ block device encryption:
 #. Plaintext mount point of the filesystem: Where the plaintext files can be accessed.
    Opening this layer is called "mounting".
 
+.. _cryptsetup__ref_example_inventory:
+
 Example inventory
 -----------------
 
@@ -37,17 +42,11 @@ To configure encrypted filesystems on host given in
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to manage cryptsetup::
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.cryptsetup`` role:
 
-    ---
-    - name: Configure encrypted filesystems
-      hosts: [ 'debops_service_cryptsetup' ]
-      become: True
-
-      roles:
-
-        - role: debops.cryptsetup
-          tags: [ 'role::cryptsetup' ]
+.. literalinclude:: playbooks/cryptsetup.yml
+   :language: yaml
 
 Ansible tags
 ------------
@@ -55,7 +54,7 @@ Ansible tags
 You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
 tasks are performed during Ansible run. This can be used after a host is first
 configured to speed up playbook execution, when you are sure that most of the
-configuration has not been changed.
+configuration is already in the desired state.
 
 Available role tags:
 
