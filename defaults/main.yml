@@ -556,7 +556,7 @@ owncloud__autosetup: True
 # URL which will be called to finish autosetup of ownCloud 8.0. For newer
 # ownCloud versions :command:`occ` will be used which is more reliable because
 # it does not depend on the webserver nor network.
-owncloud__autosetup_url: 'http://{{ owncloud__fqdn }}/index.php'
+owncloud__autosetup_url: 'http://{{ owncloud__fqdn if owncloud__fqdn is string else owncloud__fqdn[0] }}/index.php'
 
 
 # .. ownCloud configuration [[[1
@@ -633,7 +633,7 @@ owncloud__app_user_webfinger_support: False
 # role.
 owncloud__role_config:
 
-  trusted_domains: [ '{{ owncloud__fqdn }}' ]
+  trusted_domains: '{{ [ owncloud__fqdn ] if owncloud__fqdn is string else owncloud__fqdn }}'
 
   ## https://github.com/owncloud/core/issues/22257
   ## TODO: Temporary workaround until all package maintainers have caught up.
@@ -1208,7 +1208,7 @@ owncloud__ldap_conf_map:
 
 # .. envvar:: owncloud__mail_domain
 #
-owncloud__mail_domain: '{{ owncloud__fqdn }}'
+owncloud__mail_domain: '{{ owncloud__fqdn if owncloud__fqdn is string else owncloud__fqdn[0] }}'
 
 
 # .. envvar:: owncloud__mail_from_address
