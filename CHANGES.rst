@@ -37,6 +37,9 @@ Changed
   The role bundles a script which can do this transition for you.
   Refer to :ref:`owncloud__ref_upgrade_nodes_v0.4.0` for details.
 
+- Allow use of multiple FQDN addresses in :envvar:`owncloud__fqdn` as a YAML
+  list. [drybjed_]
+
 Removed
 ~~~~~~~
 
