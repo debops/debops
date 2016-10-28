@@ -1,20 +1,53 @@
+.. _ifupdown__ref_changelog:
+
 Changelog
 =========
 
 .. include:: includes/all.rst
 
-v0.2.6
-------
+**debops.ifupdown**
 
-*Released: 2016-10-20*
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-- Make sure that role passes correctl even if ``ifupdown_capabilities`` was not
-  set. [drybjed_]
+The current role maintainer_ is drybjed_.
 
-v0.2.5
-------
 
-*Released: 2016-07-17*
+`debops.ifupdown master`_ - unreleased
+--------------------------------------
+
+.. _debops.ifupdown master: https://github.com/debops/ansible-ifupdown/compare/v0.2.6...master
+
+Changed
+~~~~~~~
+
+- Update documentation and Changelog. [drybjed_]
+
+
+`debops.ifupdown v0.2.6`_ - 2016-10-20
+--------------------------------------
+
+.. _debops.ifupdown v0.2.6: https://github.com/debops/ansible-ifupdown/compare/v0.2.5...v0.2.6
+
+Changed
+~~~~~~~
+
+- Make sure that role passes correctly even if ``ifupdown_capabilities`` was
+  not set. [drybjed_]
+
+
+`debops.ifupdown v0.2.5`_ - 2016-07-17
+--------------------------------------
+
+.. _debops.ifupdown v0.2.5: https://github.com/debops/ansible-ifupdown/compare/v0.2.4...v0.2.5
+
+Changed
+~~~~~~~
+
+- Use relative paths with ``with_first_found`` lookup. [drybjed_]
+
+Fixed
+~~~~~
 
 - Fix an issue with ``systemd`` ``network-online.target`` on Debian where it
   starts at the same time as ``network.target``, and doesn't wait for
@@ -24,14 +57,14 @@ v0.2.5
 - Fixed Ansible check mode related to the ``ifup-wait-all-auto`` ``systemd``
   service might not being defined. [ypid_]
 
-- Use relative paths with ``with_first_found`` lookup. [drybjed_]
 
-v0.2.4
-------
+`debops.ifupdown v0.2.4`_ - 2016-02-11
+--------------------------------------
 
-*Released: 2016-02-11*
+.. _debops.ifupdown v0.2.4: https://github.com/debops/ansible-ifupdown/compare/v0.2.3...v0.2.4
 
-- Fix deprecation warnings on Ansible 2.1.0. [drybjed_]
+Changed
+~~~~~~~
 
 - The ``item.delete`` parameter will be now tested as a boolean. [drybjed_]
 
@@ -39,21 +72,19 @@ v0.2.4
   capability detection to default variables. You might need to update inventory
   if you disabled ``debops.ifupdown`` role. [drybjed_]
 
-v0.2.3
-------
+Fixed
+~~~~~
 
-*Released: 2015-11-24*
+- Fix deprecation warnings on Ansible 2.1.0. [drybjed_]
 
-- Fix issues during Ansible ``--check`` mode, role should no longer stop due to
-  not existing dictionary keys. [drybjed_]
 
-- Fix an issue where Jinja templating of the ``ifupdown`` variable resulted in
-  a new line character added in Ansible v2. [drybjed_]
+`debops.ifupdown v0.2.3`_ - 2015-11-24
+--------------------------------------
 
-- Ignore comment lines while checking if static network configuration is
-  present. [drybjed_]
+.. _debops.ifupdown v0.2.3: https://github.com/debops/ansible-ifupdown/compare/v0.2.2...v0.2.3
 
-- Updated documentation and fixed spelling. [ypid_]
+Added
+~~~~~
 
 - Add ``ifupdown_interface_weight_map`` variable.
 
@@ -93,10 +124,31 @@ v0.2.3
   prevents modification to network bridges which requires restart of the
   network interfaces and may drop the existing bridge layout. [drybjed_]
 
-v0.2.2
-------
+Changed
+~~~~~~~
 
-*Released: 2015-08-08*
+- Ignore comment lines while checking if static network configuration is
+  present. [drybjed_]
+
+- Updated documentation and fixed spelling. [ypid_]
+
+Fixed
+~~~~~
+
+- Fix issues during Ansible ``--check`` mode, role should no longer stop due to
+  not existing dictionary keys. [drybjed_]
+
+- Fix an issue where Jinja templating of the ``ifupdown`` variable resulted in
+  a new line character added in Ansible v2. [drybjed_]
+
+
+`debops.ifupdown v0.2.2`_ - 2015-08-08
+--------------------------------------
+
+.. _debops.ifupdown v0.2.2: https://github.com/debops/ansible-ifupdown/compare/v0.2.1...v0.2.2
+
+Changed
+~~~~~~~
 
 - Streamline directory creation tasks and make sure required packages are
   installed. [le9i0nx]
@@ -104,20 +156,28 @@ v0.2.2
 - Make sure that Ansible does not stop if a variable is undefined. This change
   fixes issues with the missing variables in Ansible v2. [drybjed_]
 
-v0.2.1
-------
 
-*Released: 2015-06-01*
+`debops.ifupdown v0.2.1`_ - 2015-06-01
+--------------------------------------
+
+.. _debops.ifupdown v0.2.1: https://github.com/debops/ansible-ifupdown/compare/v0.2.0...v0.2.1
+
+Added
+~~~~~
 
 - Add a text block variable with options for bridge interfaces which becomes
   active when user does not specify any options for that bridge. By default
   these options will set forward delay to ``0`` to make DHCP queries work
   correctly on virtual machine boot. [drybjed_]
 
-v0.2.0
-------
 
-*Released: 2015-05-30*
+`debops.ifupdown v0.2.0`_ - 2015-05-30
+--------------------------------------
+
+.. _debops.ifupdown v0.2.0: https://github.com/debops/ansible-ifupdown/compare/v0.1.2...v0.2.0
+
+Added
+~~~~~
 
 - Expose path to reconfiguration script in a default variable, so that it can
   be changed if needed. [drybjed_]
@@ -128,6 +188,9 @@ v0.2.0
 
 - Add an option to ignore "static" configuration in
   :file:`/etc/network/interfaces`. [drybjed_]
+
+Changed
+~~~~~~~
 
 - Change reconfiguration script ``logger`` command to not cut the emitted
   string after first variable. And it looks cleaner now. [drybjed_]
@@ -157,21 +220,14 @@ v0.2.0
   List of possible dict variables will be added in the documentation in
   a separate commit. [drybjed_]
 
-v0.1.2
-------
 
-*Released: 2015-05-24*
+`debops.ifupdown v0.1.2`_ - 2015-05-24
+--------------------------------------
 
-- Check first argument in the delayed ifup script, if it's ``false``, specified
-  interface won't be brought up at all. [drybjed_]
+.. _debops.ifupdown v0.1.2: https://github.com/debops/ansible-ifupdown/compare/v0.1.1...v0.1.2
 
-- Remove management if ``ifup@.service`` unit symlinks for configured
-  interfaces. ``ifupdown`` and :file:`/etc/init.d/networking` scripts work just
-  fine without them present. [drybjed_]
-
-- Split ``interface_enabled`` list into two to better track what types of
-  interfaces are enabled. Additionally, send list of configured interfaces to
-  the syslog for debugging purposes. [drybjed_]
+Added
+~~~~~
 
 - Add ``item.port_active`` parameter to bridge configuration.
 
@@ -188,15 +244,52 @@ v0.1.2
   run at the end of the current play, or can be executed independently.
   [drybjed_]
 
-v0.1.1
-------
+Changed
+~~~~~~~
 
-*Released: 2015-05-12*
+- Check first argument in the delayed ifup script, if it's ``false``, specified
+  interface won't be brought up at all. [drybjed_]
+
+- Split ``interface_enabled`` list into two to better track what types of
+  interfaces are enabled. Additionally, send list of configured interfaces to
+  the syslog for debugging purposes. [drybjed_]
+
+Removed
+~~~~~~~
+
+- Remove management if ``ifup@.service`` unit symlinks for configured
+  interfaces. ``ifupdown`` and :file:`/etc/init.d/networking` scripts work just
+  fine without them present. [drybjed_]
+
+
+`debops.ifupdown v0.1.1`_ - 2015-05-12
+--------------------------------------
+
+.. _debops.ifupdown v0.1.1: https://github.com/debops/ansible-ifupdown/compare/v0.1.0...v0.1.1
+
+Added
+~~~~~
 
 - Add ``item.port_present`` parameter in bridge configuration. It can be used
   to enable or disable specific bridge interface depending on presence of
   a given network interface in ``ansible_interfaces`` list, but does not affect
   the configuration of the bridge itself. [drybjed_]
+
+- Add IPv6 SLAAC configuration on all default interfaces; this is required on
+  Debian Jessie to enable IPv6 address autoconfiguration.  [drybjed_]
+
+- Add a way to delay activation of specific network interface.
+
+  A network interface can be prepared beforehand by ``debops.ifupdown`` role,
+  then additional configuration can be performed (for example an OpenVPN/tinc
+  VPN, GRE tunnel, etc.) and after that the other role can run the script
+  prepared by ``debops.ifupdown`` in a known location to start the interface.
+
+  This option is enabled by adding ``item.auto_ifup: False`` to interface
+  configuration. [drybjed_]
+
+Changed
+~~~~~~~
 
 - Clean up ``allow-auto`` and ``allow-hotplug`` options in interface
   configuration. By default both of these parameters will be added
@@ -206,9 +299,6 @@ v0.1.1
   This tells the system to start the interfaces at boot time, as well as allows
   to control specific interfaces by the hotplug events using ``ifup`` and
   ``ifdown`` commands or ``ifup@.service`` under ``systemd``. [drybjed_]
-
-- Add IPv6 SLAAC configuration on all default interfaces; this is required on
-  Debian Jessie to enable IPv6 address autoconfiguration.  [drybjed_]
 
 - Rewrite network interface configuration logic.
 
@@ -231,20 +321,11 @@ v0.1.1
   network interfaces which have been modified will be enabled/disabled on
   subsequent runs. [drybjed_]
 
-- Add a way to delay activation of specific network interface.
 
-  A network interface can be prepared beforehand by ``debops.ifupdown`` role,
-  then additional configuration can be performed (for example an OpenVPN/tinc
-  VPN, GRE tunnel, etc.) and after that the other role can run the script
-  prepared by ``debops.ifupdown`` in a known location to start the interface.
+debops.ifupdown v0.1.0 - 2015-04-20
+-----------------------------------
 
-  This option is enabled by adding ``item.auto_ifup: False`` to interface
-  configuration. [drybjed_]
-
-v0.1.0
-------
-
-*Released: 2015-04-20*
+Added
+~~~~~
 
 - First release, add Changelog. [drybjed_]
-

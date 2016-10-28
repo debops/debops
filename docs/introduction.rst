@@ -14,6 +14,16 @@ as a dependency of another role, to provide network configuration as needed.
 
 .. _NetworkConfiguration: https://wiki.debian.org/NetworkConfiguration
 
+
+Installation
+~~~~~~~~~~~~
+
+This role requires at least Ansible ``v2.0.0``. To install it, run:
+
+.. code-block:: console
+
+   ansible-galaxy install debops.ifupdown
+
 ..
  Local Variables:
  mode: rst

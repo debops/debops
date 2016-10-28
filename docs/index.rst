@@ -7,12 +7,10 @@ Ansible role: debops.ifupdown
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    defaults-detailed
    copyright
-   credits
    changelog
 
 ..
