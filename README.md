@@ -13,6 +13,9 @@ manage kernel parameters related to how swap is used by the system.
 
 Note that this role can not setup a swap file on a BTRFS filesystem.
 
+Refer to [debops.sysctl] for paging and swapping related kernel settings.
+[debops.sysctl]: https://github.com/debops/ansible-sysctl
+
 ### Installation
 
 This role requires at least Ansible `v2.1.0`. To install it, run:
