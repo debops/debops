@@ -1,5 +1,7 @@
-Default variables: configuration
+Default variable details
 ================================
+
+.. include:: includes/all.rst
 
 Some of ``debops.swapfile`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
@@ -45,4 +47,3 @@ Manage two swap files at once::
 
       - path: /swapfile1'
         size: '1024'
-

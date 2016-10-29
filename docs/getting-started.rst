@@ -13,8 +13,8 @@ To enable swap files on a host, it needs to be added to the
     [debops_service_swapfile]
     hostname
 
-The default configuration will create a 512 MB ``/swapfile`` and will make sure
-that it's added in ``/etc/fstab``.
+The default configuration will create a 512 MB :file:`/swapfile` and will make sure
+that it's added in :file:`/etc/fstab`.
 
 Example playbook
 ----------------
