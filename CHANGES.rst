@@ -16,6 +16,13 @@ The current role maintainer_ is ypid_.
 
 .. _debops.sysctl master: https://github.com/debops/ansible-sysctl/compare/v0.1.0...master
 
+Added
+~~~~~
+
+- Add :envvar:`sysctl__swappiness` and :envvar:`sysctl__vfs_cache_pressure` which where
+  previously handled by debops.swapfile_ under similar names. [ypid_]
+
+
 Fixed
 ~~~~~
 
@@ -36,8 +43,8 @@ Added
   in the Linux capability list to allow to configure container with the role.
   [ypid_]
 
-- Instead of using the ``sysctl`` Ansible module directly for each parameter,
-  role will now generate the ``sysctl`` configuration file using a template and
+- Instead of using the :command:`sysctl` Ansible module directly for each parameter,
+  role will now generate the :command:`sysctl` configuration file using a template and
   apply all of the configuration at once, including the kernel parameters from
-  other ``sysctl`` configuration files (when supported). This makes the role
+  other :command:`sysctl` configuration files (when supported). This makes the role
   faster and less prone to issues with missing kernel parameters. [drybjed_]

@@ -17,7 +17,7 @@ them.
 sysctl__parameters
 ------------------
 
-The ``sysctl__parameters`` and included dictionaries allow to specify kernel parameters.
+The :envvar:`sysctl__parameters` and included dictionaries allow to specify kernel parameters.
 The key of the dictionary is the dot-separated path (aka `key`) specifying the
 sysctl variable. The value of the dict is either a string with the desired
 value of the sysctl key or a dict itself with the following options:

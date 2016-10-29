@@ -57,7 +57,7 @@ sysctl__shared_memory_shmmax: '{{ (sysctl__shared_memory_base|int *
                                    | round | int }}'
 
                                                                    # ]]]
-# .. envvar:: sysctl__role_map [[[
+# .. envvar:: sysctl__shared_memory_map [[[
 #
 # Sysctl configuration file path where all kernel parameters will be configured
 # by ``debops.sysctl``.
@@ -68,6 +68,47 @@ sysctl__shared_memory_map:
   'kernel.shmall':
     value: '{{ sysctl__shared_memory_shmall }}'
     state: '{{ sysctl__shared_memory_configure|bool | ternary("present", "absent") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Paging and swap control [[[
+# ---------------------------
+
+# .. envvar:: sysctl__paging_configure [[[
+#
+# Should the paging related parameters be configured by the ``debops.sysctl``
+# role?
+sysctl__paging_configure: True
+
+                                                                   # ]]]
+# .. envvar:: sysctl__swappiness [[[
+#
+# How aggressively the kernel swaps out anonymous memory relative to pagecache
+# and other caches. Increasing the value increases the amount of swapping.
+# Can be set to values between 0 and 100 inclusive.
+sysctl__swappiness: 60
+
+                                                                   # ]]]
+# .. envvar:: sysctl__vfs_cache_pressure [[[
+#
+# Tendency of the kernel to reclaim the memory which is used for caching of VFS
+# caches, versus pagecache and swap. Increasing this value increases the rate
+# at which VFS caches are reclaimed.
+sysctl__vfs_cache_pressure: 100
+
+                                                                   # ]]]
+# .. envvar:: sysctl__paging_map [[[
+#
+# Sysctl configuration file path where all kernel parameters will be configured
+# by ``debops.sysctl``.
+sysctl__paging_map:
+  'vm.swappiness':
+    value: '{{ sysctl__swappiness }}'
+    comment: 'How aggressively the kernel swaps out anonymous memory relative to pagecache and other caches.'
+    state: '{{ sysctl__paging_configure|bool | ternary("present", "absent") }}'
+  'vm.vfs_cache_pressure':
+    value: '{{ sysctl__vfs_cache_pressure }}'
+    comment: 'Tendency of the kernel to reclaim the memory which is used for caching of VFS caches, versus pagecache and swap.'
+    state: '{{ sysctl__paging_configure|bool | ternary("present", "absent") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Hardening [[[
@@ -88,7 +129,7 @@ sysctl__system_ip_forwarding_enabled: '{{ ansible_local.ferm.forward | bool
                                           else False }}'
 
                                                                    # ]]]
-# .. envvar:: sysctl__hardening_ipv6_enabled [[[
+# .. envvar:: sysctl__hardening_ipv6_disabled [[[
 #
 # Whether IPv6 should be disabled.
 sysctl__hardening_ipv6_disabled: False
@@ -226,6 +267,7 @@ sysctl__host_parameters: {}
 # Sysctl configuration file path where all kernel parameters will be configured
 # by ``debops.sysctl``.
 sysctl__combined_parameters: '{{ sysctl__shared_memory_map
+                                 | combine(sysctl__paging_map)
                                  | combine(sysctl__hardening_map)
                                  | combine(sysctl__parameters)
                                  | combine(sysctl__group_parameters)
