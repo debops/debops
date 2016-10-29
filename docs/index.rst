@@ -12,6 +12,7 @@ Ansible role: debops.swapfile
    defaults-detailed
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:

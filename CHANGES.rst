@@ -1,3 +1,5 @@
+.. _swapfile__ref_changelog:
+
 Changelog
 =========
 
@@ -8,13 +10,30 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer_ is drybjed_
+The current role maintainer_ is drybjed_.
 
 
 `debops.swapfile master`_ - unreleased
 ----------------------------------------
 
 .. _debops.swapfile master: https://github.com/debops/ansible-swapfile/compare/v0.2.0...master
+
+Added
+~~~~~
+
+- Add :ref:`swapfile__ref_upgrade_nodes`. [ypid_]
+
+Removed
+~~~~~~~
+
+- Management of kernel parameters is now handled by debops.sysctl_.
+  The related variables like ``swapfile__swappiness`` and
+  ``swapfile__cache_pressure`` have no effect anymore.
+  Refer to :ref:`swapfile__ref_upgrade_nodes_v0.4.0` for details.
+  [ypid_]
+
+- Remove deprecated Ansible inventory group ``debops_service_swapfile``. Refer
+  to the :ref:`swapfile__ref_getting_started` guide. [ypid_]
 
 
 `debops.swapfile v0.3.0`_ - 2016-10-29

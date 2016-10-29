@@ -1,14 +1,5 @@
 ---
 
-- name: Configure kernel parameters
-  sysctl:
-    sysctl_file: '{{ swapfile__sysctl_file }}'
-    name: '{{ item.key }}'
-    value: '{{ item.value }}'
-    state: 'present'
-    reload: True
-  with_dict: '{{ swapfile__sysctl_map }}'
-
 - name: Disable swap files when requested
   shell: test -f {{ item.path | d(item) }} && swapoff {{ item.path | d(item) }} || true
   changed_when: False
@@ -70,3 +61,8 @@
     state: 'absent'
   with_items: '{{ swapfile__files }}'
   when: (item.state|d("present") == 'absent')
+
+- name: Remove legacy kernel parameters file
+  file:
+    path: '{{ swapfile__sysctl_file|d("/etc/sysctl.d/30-debops.swapfile.conf") }}'
+    state: 'absent'
