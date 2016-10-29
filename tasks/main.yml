@@ -17,13 +17,6 @@
          (ansible_local|d() and (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
           (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
 
-- name: Remove swap files
-  file:
-    path: '{{ item.path | d(item) }}'
-    state: 'absent'
-  with_items: '{{ swapfile__files }}'
-  when: (item.state|d("present") == 'absent')
-
 - name: Create swap files
   command: |
     {% if swapfile__use_dd|bool %}
@@ -70,3 +63,10 @@
     passno: '0'
     state:  '{{ item.state | d("present") }}'
   with_items: '{{ swapfile__files }}'
+
+- name: Remove swap files
+  file:
+    path: '{{ item.path | d(item) }}'
+    state: 'absent'
+  with_items: '{{ swapfile__files }}'
+  when: (item.state|d("present") == 'absent')

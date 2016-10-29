@@ -27,6 +27,9 @@ Changed
 
 - Update the role to the latest DebOps Standards. [ypid_]
 
+- Remove the swap file after removing the entry from :file:`/etc/fstab` for the
+  case when the role run is aborted in the middle. [ypid_]
+
 
 `debops.swapfile v0.2.0`_ - 2016-04-04
 --------------------------------------
