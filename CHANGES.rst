@@ -16,10 +16,16 @@ The current role maintainer_ is drybjed_
 
 .. _debops.swapfile master: https://github.com/debops/ansible-swapfile/compare/v0.2.0...master
 
+
+`debops.swapfile v0.3.0`_ - 2016-10-29
+--------------------------------------
+
+.. _debops.swapfile v0.3.0: https://github.com/debops/ansible-swapfile/compare/v0.2.0...v0.3.0
+
 Added
 ~~~~~
 
-- Add support for Ansible check mode. This requires Ansible v2.1 which is thus
+- Add support for Ansible check mode. This requires Ansible v2.1 which thus
   became the minimum requirement to run the role. [ypid_]
 
 Changed
