@@ -16,6 +16,13 @@ The current role maintainer_ is ypid_.
 
 .. _debops.sysctl master: https://github.com/debops/ansible-sysctl/compare/v0.1.0...master
 
+Added
+~~~~~
+
+- Add :envvar:`sysctl__swappiness` and :envvar:`sysctl__vfs_cache_pressure` which where
+  previously handled by debops.swapfile_ under similar names. [ypid_]
+
+
 Fixed
 ~~~~~
 
