@@ -8,22 +8,14 @@
     state: 'present'
     reload: True
   with_dict: '{{ swapfile__sysctl_map }}'
-  when: swapfile__sysctl_map|d()
 
 - name: Disable swap files when requested
   shell: test -f {{ item.path | d(item) }} && swapoff {{ item.path | d(item) }} || true
   changed_when: False
   with_items: '{{ swapfile__files }}'
-  when: ((swapfile__files|d() and item.state|d() and item.state == 'absent') and
+  when: (item.state|d("present") == 'absent' and
          (ansible_local|d() and (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
           (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
-
-- name: Remove swap files
-  file:
-    path: '{{ item.path | d(item) }}'
-    state: 'absent'
-  with_items: '{{ swapfile__files }}'
-  when: swapfile__files|d() and item.state|d() and item.state == 'absent'
 
 - name: Create swap files
   command: |
@@ -36,8 +28,7 @@
     creates: '{{ item.path | d(item) }}'
   register: swapfile__register_allocation
   with_items: '{{ swapfile__files }}'
-  when: (swapfile__files|d() and
-         (item.state is undefined or item.state != 'absent'))
+  when: (item.state|d("present") != 'absent')
 
 - name: Enforce permissions
   file:
@@ -47,22 +38,18 @@
     group: 'root'
     mode: '0600'
   with_items: '{{ swapfile__files }}'
-  when: (swapfile__files|d() and
-         (item.state is undefined or item.state != 'absent'))
+  when: (item.state|d("present") != 'absent' and not ansible_check_mode)
 
 - name: Initialize swap files
   command: mkswap {{ item.item.path | d(item.item) }}
   register: swapfile__register_init
-  with_items: '{{ swapfile__register_allocation.results }}'
-  when: ((swapfile__files|d() and swapfile__register_allocation|d() and
-          item.changed | bool) and
-         (item.state is undefined or item.state != 'absent'))
+  with_items: '{{ swapfile__register_allocation.results|d([]) }}'
+  when: (item|changed and item.state|d("present") != 'absent')
 
 - name: Enable swap files
   command: swapon -p {{ item.item.priority | d(swapfile__priority) }} {{ item.item.path | d(item.item) }}
-  with_items: '{{ swapfile__register_allocation.results }}'
-  when: ((swapfile__files|d() and swapfile__register_allocation|d() and item.changed | bool) and
-         (item.state is undefined or item.state != 'absent') and
+  with_items: '{{ swapfile__register_allocation.results|d([]) }}'
+  when: (item|changed and item.state|d("present") != 'absent' and
           (ansible_local|d() and (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
            (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
 
@@ -76,5 +63,10 @@
     passno: '0'
     state:  '{{ item.state | d("present") }}'
   with_items: '{{ swapfile__files }}'
-  when: swapfile__files|d()
 
+- name: Remove swap files
+  file:
+    path: '{{ item.path | d(item) }}'
+    state: 'absent'
+  with_items: '{{ swapfile__files }}'
+  when: (item.state|d("present") == 'absent')
