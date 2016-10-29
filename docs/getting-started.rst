@@ -1,3 +1,5 @@
+.. _swapfile__ref_getting_started:
+
 Getting started
 ===============
 
@@ -13,20 +15,11 @@ To enable swap files on a host, it needs to be added to the
     [debops_service_swapfile]
     hostname
 
-The default configuration will create a 512 MB :file:`/swapfile` and will make sure
-that it's added in :file:`/etc/fstab`.
-
 Example playbook
 ----------------
 
-Here's an example playbook you can use to configure swap on a host::
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.swapfile`` role:
 
-    ---
-    - name: Manage swap
-      hosts: 'debops_service_swapfile'
-      become: True
-
-      roles:
-
-        - role: debops.swapfile
-
+.. literalinclude:: playbooks/swapfile.yml
+   :language: yaml
