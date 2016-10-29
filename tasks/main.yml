@@ -46,7 +46,7 @@
     group: 'root'
     mode: '0600'
   with_items: '{{ swapfile__files }}'
-  when: (swapfile__files|d() and item.state|d("present") != 'absent')
+  when: (swapfile__files|d() and item.state|d("present") != 'absent' and not ansible_check_mode)
 
 - name: Initialize swap files
   command: mkswap {{ item.item.path | d(item.item) }}

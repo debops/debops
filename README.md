@@ -15,7 +15,7 @@ Note that this role can not setup a swap file on a BTRFS filesystem.
 
 ### Installation
 
-This role requires at least Ansible `v1.9.0`. To install it, run:
+This role requires at least Ansible `v2.1.0`. To install it, run:
 
 ```Shell
 ansible-galaxy install debops.swapfile
@@ -42,7 +42,7 @@ into your playbook.
 
 ### Authors and license
 
-- Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
+- Maciej Delmanowski (maintainer) | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
 License: [GPL-3.0](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
 
