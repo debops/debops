@@ -39,11 +39,13 @@ file. List of recognized parameters:
 Examples
 ~~~~~~~~
 
-Manage two swap files at once::
+Manage two swap files at once:
 
-    swapfile__files:
+.. code-block:: yaml
 
-      - '/swapfile0'
+   swapfile__files:
 
-      - path: /swapfile1'
-        size: '1024'
+     - '/swapfile0'
+
+     - path: /swapfile1'
+       size: '1024'
