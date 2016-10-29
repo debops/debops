@@ -22,6 +22,11 @@ Added
 - Add support for Ansible check mode. This requires Ansible v2.1 which is thus
   became the minimum requirement to run the role. [ypid_]
 
+Changed
+~~~~~~~
+
+- Update the role to the latest DebOps Standards. [ypid_]
+
 
 `debops.swapfile v0.2.0`_ - 2016-04-04
 --------------------------------------
