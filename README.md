@@ -27,6 +27,10 @@ filesystem (both on the Ansible controller and the remote system).
 * Decrypt and mount an encrypted filesystem and never store any key material on
   persistent storage on the remote system. You might need to take care of your
   Swap space yourself for this!
+* Setup an encrypted swap space (with random key or with persistent key).
+* Setup filesystems using a random key on boot.
+* ``cryptsetup`` LUKS and plain mode.
+* Multiple ciphers and corresponding keys to encrypt one filesystem.
 
 ### Installation
 

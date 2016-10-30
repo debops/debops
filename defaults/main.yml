@@ -78,7 +78,6 @@ cryptsetup__combined_devices: '{{
 # Refer to :ref:`cryptsetup__ref_devices_chaining_multiple_ciphers` for
 # details.
 cryptsetup__devices_execution_strategy: 'parallel'
-
                                                                    # ]]]
                                                                    # ]]]
 # Keyfile settings [[[
@@ -216,6 +215,17 @@ cryptsetup__header_backup_shred_command: 'shred --remove --zero --iterations=2'
 cryptsetup__use_uuid: True
                                                                    # ]]]
                                                                    # ]]]
+# Swap options [[[
+# ----------------
+
+# .. envvar:: cryptsetup__swap_priority [[[
+#
+# Default swap device priority, from ``-1`` to ``32767``.
+# Higher numbers indicate higher priority.
+# Refer to :ref:`item.swap_priority <cryptsetup__devices_swap_priority>` for details.
+cryptsetup__swap_priority: -1
+                                                                   # ]]]
+                                                                   # ]]]
 # Filesystem options [[[
 # ----------------------
 
@@ -256,14 +266,15 @@ cryptsetup__mountpoint_parent_directory: '/media'
 # Default list of options to configure for each device in
 # :file:`/etc/crypttab`.
 # Refer to :ref:`item.crypttab_options <cryptsetup__devices_crypttab_options>` for details.
-cryptsetup__crypttab_options:
-  - 'luks'
+cryptsetup__crypttab_options: []
 
                                                                    # ]]]
 # .. envvar:: cryptsetup__hash [[[
 #
-# Specifies the hash used in the LUKS key setup scheme and volume key digest
-# for :command:`cryptsetup luksFormat`.
+# Specifies the passphrase hash.
+# For the ``luks`` :ref:`item.mode <cryptsetup__devices_mode>` it
+# specifies the hash used in the LUKS key setup scheme and
+# volume key digest for :command:`cryptsetup luksFormat`.
 # Corresponds with the ``--hash`` parameter.
 #
 # The current default of :command:`cryptsetup` (as shown by
@@ -286,13 +297,14 @@ cryptsetup__hash: 'sha512'
 # Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
 #
 # This is the default for :ref:`item.cipher <cryptsetup__devices_cipher>`.
-cryptsetup__cipher: 'default'
+cryptsetup__cipher: 'aes-xts-plain64'
 
                                                                    # ]]]
 # .. envvar:: cryptsetup__key_size [[[
 #
 # Key size in bits. The argument has to be a multiple of 8. The possible
-# key-sizes are limited by the cipher and mode used.
+# key-sizes are limited by the :envvar:`cipher <cryptsetup__cipher>`
+# and :ref:`mode <cryptsetup__devices_mode>` used.
 # Corresponds with the ``--key-size`` parameter.
 #
 # The current default of :command:`cryptsetup` (as shown by
@@ -306,7 +318,7 @@ cryptsetup__cipher: 'default'
 # of :command:`cryptsetup` was to have long-term secure storage even when
 # quantum-computing become available to your adversary.
 # Plus, with hardware acceleration available in most x86 CPUs nowadays, it
-# really done not make much of a difference anymore (at least for AES).
+# really does not make much of a difference anymore (at least for AES).
 #
 # Refs: https://crypto.stackexchange.com/a/7869
 #
