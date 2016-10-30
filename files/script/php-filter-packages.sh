@@ -30,7 +30,9 @@ for element in ${search_packages[@]} ; do
 
     # Support for other packages
     else
-        echo "${element}"
+        if [ -n "${element}" ] ; then
+            echo "${element}"
+        fi
     fi
 
 done

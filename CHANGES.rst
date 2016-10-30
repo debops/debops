@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.4...master
 
+Fixed
+~~~~~
+
+- Fix an issue with the package filter script returning an empty package name.
+  [drybjed_]
+
 
 `debops.php v0.2.4`_ - 2016-10-19
 ---------------------------------
