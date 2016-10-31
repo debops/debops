@@ -18,6 +18,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.postgresql master: https://github.com/debops/ansible-postgresql/compare/v0.3.2...master
 
+Changed
+~~~~~~~
+
+- Don't use the ``@`` character in passwords to avoid issues with Basic Auth
+  URL syntax. [drybjed_]
+
 
 `debops.postgresql v0.3.2`_ - 2016-10-16
 ----------------------------------------

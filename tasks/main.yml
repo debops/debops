@@ -67,7 +67,7 @@
                   secret + "/postgresql/" + postgresql__delegate_to +
                   "/" + (item.port | d(postgresql__port)) +
                   "/credentials/" + item.name | d(item.role) + "/password " +
-                  "length=" + postgresql__password_length + " chars=ascii,digits,.-_~^&#@")) }}'
+                  "length=" + postgresql__password_length + " chars=ascii,digits,.-_~^&#")) }}'
     encrypted: '{{ item.encrypted | d(True) }}'
     expires: '{{ item.expires | d(omit) }}'
     role_attr_flags: '{{ (item.flags|d() | join(",")) | d(omit) }}'
