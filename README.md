@@ -25,8 +25,9 @@ ansible-galaxy install debops-contrib.x2go_server
 
 ### Documentation
 
-More information about `debops-contrib.x2go_server` can be found in the
-[official debops-contrib.x2go_server documentation](http://docs.debops.org/en/latest/ansible/roles/ansible-x2go_server/docs/).
+Until the documentation is available in a rendered version you can refer to the
+reST documentation source files in the
+[/docs](https://github.com/debops-contrib/ansible-x2go_server/tree/master/docs) directory.
 
 
 
@@ -43,8 +44,6 @@ into your playbook.
 
 
 ### Authors and license
-
-`x2go_server` role was written by:
 
 - [Robin Schneider](http://ypid.de/) | [e-mail](mailto:ypid@riseup.net) | [Twitter](https://twitter.com/ypid) | [GitHub](https://github.com/ypid)
 
