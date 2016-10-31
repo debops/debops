@@ -25,6 +25,9 @@ Changed
   configuration; server will fall back to database encoding for client
   connections. [drybjed_]
 
+- Don't use the ``@`` character in a password to avoid issues with Basic Auth
+  URL syntax used for application access. [drybjed_]
+
 
 `debops.postgresql_server v0.3.2`_ - 2016-10-16
 -----------------------------------------------
