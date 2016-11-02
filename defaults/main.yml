@@ -36,6 +36,7 @@ owncloud__base_packages:
   ## Upstream documentation does not specify it more clearly. Installing ``libreoffice`` just to be sure.
   - '{{ [ "libreoffice" ] if (owncloud__app_documents_libreoffice_enabled|bool) else [] }}'
 
+  ## Useful for debugging. Refer to `owncloud__base_php_packages` for the PHP packages
   - '{{ [ "smbclient" ] if (owncloud__smb_support|bool) else [] }}'
   - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release | version_compare("9.0", ">=")) else [] }}'
 
