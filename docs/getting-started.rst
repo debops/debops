@@ -58,15 +58,12 @@ To configure `debops.etc_services`  on a given remote host, it needs to be added
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to manage Docker::
+Here's a minimal example playbook that can be used to manage the
+:file:`/etc/services` file:
 
-   ---
+.. literalinclude:: playbooks/etc_services.yml
+   :language: yaml
 
-   - name: Manage /etc/services database
-     hosts: [ 'debops_all_hosts', 'debops_service_etc_services' ]
-     become: True
-
-     roles:
-
-       - role: debops.etc_services
-         tags: [ 'role::etc_services' ]
+This playbooks is shipped with this role under
+:file:`docs/playbooks/etc_services.yml` from which you can symlink it to your
+playbook directory.
