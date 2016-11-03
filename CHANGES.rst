@@ -21,6 +21,13 @@ Changed
 
 - Updated documentation and changelog according to latest guidelines. [ganto_]
 
+Fixed
+~~~~~
+
+- Make sure playbook run doesn't fail because of undefined
+  ``etc_services_list_combined`` when role is included in playbook but skipped
+  via condition in Ansible >=2.2. [ganto_]
+
 
 
 `debops.etc_services v0.3.0`_ - 2016-04-25
