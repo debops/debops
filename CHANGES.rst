@@ -57,8 +57,13 @@ Security
   Thus updates fixing potential security issues will not be installed!
 
   Please run the updated role with the new key against your host(s) to fix
-  this.
-  [ypid_]
+  this. [ypid_]
+
+- Switch back to importing the OpenPGP key from a key file shipped with
+  this role to mitigate a vulnerability in the `Ansible apt_key module`_.
+
+  Refer to `apt_key module does not verify key fingerprints <https://github.com/ansible/ansible-modules-core/issues/5237>`_
+  for details. [ypid_]
 
 `debops.owncloud v0.3.0`_ - 2016-09-17
 --------------------------------------

@@ -12,9 +12,6 @@ This role installs a [ownCloud](https://owncloud.org/) instance on a
 specified host, either with SQLite, MySQL, MariaDB or PostgreSQL database
 as a backend and an nginx webserver as a frontend.
 
-Only ownCloud 8.0 and later are supported because for older
-versions there are no complete deb-packages available.
-
 Note that Nginx is
 [not officially supported by ownCloud nor NextCloud](https://github.com/debops/ansible-owncloud/issues/49)
 but it is community supported and should work without problems.
@@ -24,7 +21,6 @@ Apache is supported by the role but not yet used by default.
 
 * LDAP setup.
 * In memory caching using Redis for file locking and APCu.
-* Fully automated ownCloud security updates.
 * ownCloud theming support.
 * Extensive configuration options via Ansible’s inventory.
 * Fully automated ownCloud security updates. [Not yet enabled by default](https://github.com/debops/ansible-owncloud/issues/28).
