@@ -332,6 +332,16 @@ apt__security_sources:
     components: '{{ apt__distribution_components }}'
     distribution: 'Debian'
 
+    # This version shows up in Debian Stretch APT configuration.
+    # It's disabled by default to not create duplicate entries.
+  - uri:        'http://security.debian.org/debian-security'
+    comment:    'Debian Security repository'
+    type:       '{{ apt__source_types }}'
+    suite:      '{{ apt__distribution_release + "/updates" }}'
+    components: '{{ apt__distribution_components }}'
+    distribution: 'Debian'
+    state: 'absent'
+
   - uri:        'http://security.ubuntu.com/ubuntu'
     comment:    'Ubuntu Security repository'
     type:       '{{ apt__source_types }}'
