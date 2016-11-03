@@ -19,7 +19,22 @@ new release.
 `debops.apt master`_ - unreleased
 ---------------------------------
 
-.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.0...master
+.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.1...master
+
+
+`debops.apt v0.4.1`_ - 2016-11-03
+---------------------------------
+
+.. _debops.apt v0.4.1: https://github.com/debops/ansible-apt/compare/v0.4.0...v0.4.1
+
+Added
+~~~~~
+
+- Add an entry for an alternative Debian Security repository that's present in
+  the :file:`/etc/apt/sources.list` on Debian Stretch. This entry is disabled
+  by default to not include duplicates in the generated sources configuration,
+  but still needs to be present for ``debops.apt`` to recognize it correctly.
+  [drybjed_]
 
 
 `debops.apt v0.4.0`_ - 2016-10-04
