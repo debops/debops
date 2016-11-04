@@ -6,9 +6,9 @@ Changelog
 **debops.etc_services**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
-and `human-readable changelog <http://keepachangelog.com/>`_.
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer is drybjed_.
+The current role maintainer_ is drybjed_.
 
 
 `debops.etc_services master`_ - unreleased
@@ -65,7 +65,7 @@ Changed
 
 - Renamed ``etc_services`` to :envvar:`etc_services__enabled`. [ypid_]
 
-- Renamed ``etc_services_([^_].+)`` to ``etc_services__\1``.
+- Renamed ``etc_services_([^_].+)`` to :envvar:`etc_services__\1`.
   Old list variables are deprecated but still work for now. [ypid_]
 
 - Change the task conditions to test for boolean values instead of only
