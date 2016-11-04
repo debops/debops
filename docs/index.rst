@@ -1,7 +1,7 @@
-.. _debops-contrib.x2go:
+.. _debops-contrib.x2go_server:
 
-Ansible role: debops-contrib.x2go
-=================================
+Ansible role: debops-contrib.x2go_server
+========================================
 
 .. toctree::
    :maxdepth: 2
