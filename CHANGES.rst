@@ -30,6 +30,8 @@ Changed
 - Move the combined list of service entries to :file:`defaults/main.yml` and
   rename the variable to :envvar:`etc_services__combined_list`. [drybjed_]
 
+- Change minimal required Ansible version to v2.0.0. [drybjed_]
+
 Fixed
 ~~~~~
 
