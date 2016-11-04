@@ -44,7 +44,7 @@
     owner: 'root'
     group: 'root'
     mode:  '0644'
-  with_flattened: '{{ etc_services_list_combined }}'
+  with_flattened: '{{ etc_services_list_combined|d([]) }}'
   when: (etc_services__enabled|bool and
          ((item.name|d() and item.port|d()) or item.custom|d()) and
          (item.state is undefined or item.state != 'absent'))
@@ -53,7 +53,7 @@
   file:
     path: '/etc/services.d/{{ item.filename | default("20_local_service_" + item.name) }}'
     state: 'absent'
-  with_flattened: '{{ etc_services_list_combined }}'
+  with_flattened: '{{ etc_services_list_combined|d([]) }}'
   when: ((not etc_services__enabled|bool or item.delete|d() or
           (item.state|d() and item.state == 'absent')) and ((item.name|d() and item.port|d()) or item.custom|d()))
 
