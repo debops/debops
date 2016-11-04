@@ -4,7 +4,7 @@ Copyright
 ::
 
     Copyright (C) 2016 Robin Schneider <ypid@riseup.net>
-    Copyright (C) 2016 DebOps Project http://debops.org/
+    Copyright (C) 2016 DebOps https://debops.org/
     [see Credits for more details]
 
     This program is free software; you can redistribute it and/or modify

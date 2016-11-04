@@ -18,7 +18,7 @@ To setup and manage the X2go server, add the hosts to the
     [debops_service_x2go_server]
     hostname
 
-If you are using ``debops.sshd`` for configuring your OpenSSH server, you will
+If you are using debops.sshd_ for configuring your OpenSSH server, you will
 need to adopt some of the defaults of this role to allow X2go clients to
 connect to the X2go server via SSH.
 The recommended way to do those adoptions is to symlink the
@@ -56,9 +56,9 @@ Ansible tags
 ------------
 
 You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
-tasks are performed during Ansible run. This can be used after host is first
+tasks are performed during Ansible run. This can be used after a host was first
 configured to speed up playbook execution, when you are sure that most of the
-configuration has not been changed.
+configuration is already in the desired state.
 
 Available role tags:
 
