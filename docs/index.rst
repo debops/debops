@@ -9,6 +9,7 @@ Ansible role: debops.etc_services
    introduction
    getting-started
    defaults
+   defaults-detailed
    copyright
    changelog
 

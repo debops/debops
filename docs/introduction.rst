@@ -11,9 +11,11 @@ their names in firewall configuration files.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v1.7.0``. To install it, run::
+This role requires at least Ansible ``v1.7.0``. To install it, run:
 
-    ansible-galaxy install debops.etc_services
+.. code-block:: console
+
+   ansible-galaxy install debops.etc_services
 
 ..
  Local Variables:
