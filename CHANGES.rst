@@ -19,7 +19,7 @@ The current role maintainer_ is drybjed_.
 Changed
 ~~~~~~~
 
-- Updated documentation and changelog according to latest guidelines. [ganto_]
+- Updated documentation and changelog according to latest guidelines. [ganto_, drybjed_]
 
 Fixed
 ~~~~~
