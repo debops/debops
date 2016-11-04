@@ -21,6 +21,9 @@ Changed
 
 - Updated documentation and changelog according to latest guidelines. [ganto_, drybjed_]
 
+- Move the combined list of service entries to :file:`defaults/main.yml` and
+  rename the variable to :envvar:`etc_services__combined_list`. [drybjed_]
+
 Fixed
 ~~~~~
 

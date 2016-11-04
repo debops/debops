@@ -57,6 +57,23 @@ etc_services__host_list: []
 # List of local service entries configured by other Ansible roles using role
 # dependent variables.
 etc_services__dependent_list: []
+
+                                                                   # ]]]
+# .. envvar:: etc_services__combined_list [[[
+#
+# List of all of the service definitions combined into one, used in the tasks.
+# Some variables are deprecated but still present to allow for backwards
+# compatibility.
+etc_services__combined_list:
+  - '{{ etc_services__list }}'
+  - '{{ etc_services__group_list }}'
+  - '{{ etc_services__host_list }}'
+  - '{{ etc_services__dependent_list }}'
+  - '{{ etc_services_list            | d([]) }}'
+  - '{{ etc_services_group_list      | d([]) }}'
+  - '{{ etc_services_host_list       | d([]) }}'
+  - '{{ etc_services_dependent_list  | d([]) }}'
+  - '{{ etc_services_dependency_list | d([]) }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
