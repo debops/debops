@@ -9,11 +9,11 @@
 
 
 The `debops-contrib.x2go_server` role allows you to setup and mange
-[X2go][] on the server-side.
+[X2Go][] on the server-side.
 X2Go enables you to access a graphical desktop of a computer over a low
 bandwidth (or high bandwidth) connection.
 
-[X2go]: http://wiki.x2go.org/
+[X2Go]: http://wiki.x2go.org/
 
 ### Installation
 

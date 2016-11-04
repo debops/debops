@@ -10,7 +10,7 @@ Getting started
 Example inventory
 -----------------
 
-To setup and manage the X2go server, add the hosts to the
+To setup and manage the X2Go server, add the hosts to the
 ``debops_service_x2go_server`` Ansible inventory host group:
 
 .. code:: ini
@@ -19,8 +19,8 @@ To setup and manage the X2go server, add the hosts to the
     hostname
 
 If you are using debops.sshd_ for configuring your OpenSSH server, you will
-need to adopt some of the defaults of this role to allow X2go clients to
-connect to the X2go server via SSH.
+need to adopt some of the defaults of this role to allow X2Go clients to
+connect to the X2Go server via SSH.
 The recommended way to do those adoptions is to symlink the
 :file:`docs/inventory/debops_service_x2go_server_global_role_vars` file shipped
 with this role into your inventory under
@@ -42,7 +42,7 @@ variables of other roles:
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to setup and manage X2go server:
+Here's an example playbook that can be used to setup and manage X2Go server:
 
 .. literalinclude:: playbooks/x2go_server.yml
    :language: yaml

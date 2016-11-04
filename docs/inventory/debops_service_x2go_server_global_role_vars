@@ -3,7 +3,7 @@
 
 # Required configuration for debops.sshd [[[
 
-# Require the following cryptography methods as X2go seems to only support a
+# Require the following cryptography methods as X2Go seems to only support a
 # subset of which OpenSSH does support.
 sshd__ciphers_additional: '{{ [ "aes256-ctr" ] if (x2go_server__deploy_state|d("present") == "present") else [] }}'
 sshd__kex_algorithms_additional: '{{ [ "curve25519-sha256@libssh.org" ] if (x2go_server__deploy_state|d("present") == "present") else [] }}'
