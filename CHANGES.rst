@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.etc_services master`_ - unreleased
 ------------------------------------------
 
-.. _debops.etc_services master: https://github.com/debops/ansible-etc_services/compare/v0.3.0...master
+.. _debops.etc_services master: https://github.com/debops/ansible-etc_services/compare/v0.3.1...master
+
+
+`debops.etc_services v0.3.1`_ - 2016-11-04
+------------------------------------------
+
+.. _debops.etc_services v0.3.1: https://github.com/debops/ansible-etc_services/compare/v0.3.0...v0.3.1
 
 Changed
 ~~~~~~~
