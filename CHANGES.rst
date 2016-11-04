@@ -17,3 +17,12 @@ Added
 ~~~~~
 
 - Initial coding and design. [ypid_]
+
+Changed
+~~~~~~~
+
+- Rename ``x2go_server__apt_repo_key_fingerprint_override_map`` to ``x2go_server__apt_repo_key_fingerprint_map``
+
+  Rename ``x2go_server__upstream_repository_override_map`` to ``x2go_server__upstream_repository_map``.
+
+  And just use a default entry. [ypid_]
