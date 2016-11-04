@@ -30,7 +30,7 @@ And then in the playbook for this role, hand the
 :command:`apt_cacher_ng__etc_services__dependent_list` variable over to the
 ``debops.etc_services`` role:
 
-code-block:: yaml
+.. code-block:: yaml
 
    ---
 
