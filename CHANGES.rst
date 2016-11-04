@@ -74,7 +74,7 @@ Changed
 
 - Renamed ``etc_services`` to :envvar:`etc_services__enabled`. [ypid_]
 
-- Renamed ``etc_services_([^_].+)`` to :envvar:`etc_services__\1`.
+- Renamed ``etc_services_([^_].+)`` to ``etc_services__\1``.
   Old list variables are deprecated but still work for now. [ypid_]
 
 - Change the task conditions to test for boolean values instead of only
