@@ -3,9 +3,17 @@ Changelog
 
 .. include:: includes/all.rst
 
-v0.1.0
-------
+**debops-contrib.x2go_server**
 
-*Unreleased*
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-- Initial release. [ypid_]
+The current role maintainer_ is ypid_.
+
+debops-contrib.x2go_server v0.1.0 - unreleased
+----------------------------------------------
+
+Added
+~~~~~
+
+- Initial coding and design. [ypid_]
