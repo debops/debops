@@ -1,35 +1,37 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Default variables
-# =================
+# debops-contrib.snapshot_snapper default variables [[[
+# =====================================================
 
 # .. contents:: Sections
 #    :local:
 #
-# ---------------------
-#   Required packages [[[1
+# .. include:: includes/all.rst
+
+
+# Required packages [[[
 # ---------------------
 
-# .. envvar:: snapshot_snapper__base_packages
+# .. envvar:: snapshot_snapper__base_packages [[[
 #
 # List of base packages to install.
 snapshot_snapper__base_packages:
   - 'snapper'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Snapper templates [[[
 # ---------------------
-#   Snapper templates [[[1
-# ---------------------
 
-# .. envvar:: snapshot_snapper__templates
+# .. envvar:: snapshot_snapper__templates [[[
 #
 # Sets the global default settings for snapper. If empty, the default of snapper
 # will be left unchanged.
 #
 # Example:
 #
-# .. code::
+# .. code-block:: yaml
+#    :linenos:
 #
 #    snapshot_snapper__templates:
 #      default:
@@ -40,24 +42,23 @@ snapshot_snapper__base_packages:
 #
 snapshot_snapper__templates: {}
 
-
-# .. envvar:: snapshot_snapper__host_group_templates
+                                                                   # ]]]
+# .. envvar:: snapshot_snapper__host_group_templates [[[
 #
 # Sets the host group default settings for snapper.
 snapshot_snapper__host_group_templates: {}
 
-
-# .. envvar:: snapshot_snapper__host_templates
+                                                                   # ]]]
+# .. envvar:: snapshot_snapper__host_templates [[[
 #
 # Sets the host default settings for snapper.
 snapshot_snapper__host_templates: {}
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Volume configuration [[[
 # ------------------------
-#   Volume configuration [[[1
-# ------------------------
 
-# .. envvar:: snapshot_snapper__volumes
+# .. envvar:: snapshot_snapper__volumes [[[
 #
 # "Global" list of volumes to snapshot.
 #
@@ -81,7 +82,8 @@ snapshot_snapper__host_templates: {}
 #
 # Example:
 #
-# .. code::
+# .. code-block:: yaml
+#    :linenos:
 #
 #    snapshot_snapper__volumes:
 #      - path: '/'
@@ -93,20 +95,20 @@ snapshot_snapper__host_templates: {}
 #
 snapshot_snapper__volumes: []
 
-
-# .. envvar:: snapshot_snapper__host_group_volumes
+                                                                   # ]]]
+# .. envvar:: snapshot_snapper__host_group_volumes [[[
 #
 # "Host group" list of volumes to snapshot.
 snapshot_snapper__host_group_volumes: []
 
-
-# .. envvar:: snapshot_snapper__host_volumes
+                                                                   # ]]]
+# .. envvar:: snapshot_snapper__host_volumes [[[
 #
 # "Host" list of volumes to snapshot.
 snapshot_snapper__host_volumes: []
 
-
-# .. envvar:: snapshot_snapper__auto_reinit
+                                                                   # ]]]
+# .. envvar:: snapshot_snapper__auto_reinit [[[
 #
 # Automatically reinitialize the snapshots for a volume if the directory
 # containing the actual snapshots has vanished.
@@ -118,22 +120,24 @@ snapshot_snapper__host_volumes: []
 # When this option is set to ``True``, the role will do some manually
 # intervention to automatically fix this if necessary.
 snapshot_snapper__auto_reinit: True
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Role internal configuration [[[
 # -------------------------------
-#   Role internal configuration [[[1
-# -------------------------------
 
-# .. envvar:: snapshot_snapper__directory
+# .. envvar:: snapshot_snapper__directory [[[
 #
 # Name of the directory in the root of the volume containing the snapshots and
 # metadata.
 snapshot_snapper__directory: '.snapshots'
 
-
-# .. envvar:: snapshot_snapper__divert_files
+                                                                   # ]]]
+# .. envvar:: snapshot_snapper__divert_files [[[
 #
+# List of files which the role will divert.
 snapshot_snapper__divert_files:
   - '/etc/updatedb.conf'
   - '/etc/snapper/config-templates/default'
-
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
