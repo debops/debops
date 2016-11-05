@@ -16,6 +16,15 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.4...master
 
+Changed
+~~~~~~~
+
+- Move the list of all PHP packages requested for installation to a default
+  variable. [drybjed_]
+
+- Set the environment for the configuration synchronization script to avoid
+  idempotency issues. [drybjed_]
+
 Fixed
 ~~~~~
 

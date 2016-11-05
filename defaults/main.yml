@@ -112,6 +112,20 @@ php__host_packages: []
 php__dependent_packages: []
 
                                                                    # ]]]
+# .. envvar:: php__combined_packages [[[
+#
+# List of all PHP packages requested for installation passed to the filter
+# script as a string of arguments for further processing.
+php__combined_packages: '{{ lookup("flattened",
+                            php__server_api_packages
+                            + php__base_packages
+                            + php__packages
+                            + php__group_packages
+                            + php__host_packages
+                            + php__dependent_packages).split(",")
+                            | join(" ") }}'
+
+                                                                   # ]]]
 # .. envvar:: php__reset [[[
 #
 # Can be temporally set to ``True`` to reevaluate the preferred PHP version and

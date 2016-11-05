@@ -7,7 +7,7 @@
   environment:
     LC_ALL: 'C'
     PHP_VERSION: '{{ php__version }}'
-  script: 'script/php-filter-packages.sh {{ lookup("flattened", php__server_api_packages + php__base_packages + php__packages + php__group_packages + php__host_packages + php__dependent_packages).split(",") | join(" ") }}'
+  script: 'script/php-filter-packages.sh {{ php__combined_packages }}'
   register: php__register_filtered_packages
   changed_when: False
   always_run: True
@@ -83,6 +83,8 @@
   tags: [ 'role::php:config' ]
 
 - name: Synchronize Ansible and PHP SAPI configuration
+  environment:
+    LC_ALL: 'C'
   script: script/php-synchronize-config.sh {{ php__version }}
   register: php__register_synchronize_config
   changed_when: php__register_synchronize_config.stdout != ''
