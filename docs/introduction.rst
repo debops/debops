@@ -10,7 +10,7 @@ More can be implemented as needed.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v1.9.0``. To install it, run::
+This role requires at least Ansible ``v2.1.3``. To install it, run::
 
     ansible-galaxy install debops-contrib.btrfs
 
