@@ -35,10 +35,9 @@ ansible-galaxy install debops-contrib.firejail
 
 ### Documentation
 
-Until the documentation is available in a rendered version you can refer to the
-reST documentation source files in the
-[/docs](https://github.com/debops-contrib/ansible-firejail/tree/master/docs) directory.
-Refer to the [debops/docs#111 issue](https://github.com/debops/docs/issues/111) for details.
+<!-- FIXME: Change to the canonical URL when it has been setup. https://github.com/debops/docs/issues/111 -->
+More information about `debops-contrib.firejail` can be found in the
+[official debops-contrib.firejail documentation](https://debops-contrib.readthedocs.io/en/latest/ansible/roles/ansible-firejail/docs/).
 
 
 
