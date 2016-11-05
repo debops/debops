@@ -10,6 +10,7 @@ DebOps Code Standards Policy
 :Last changed: 2016-11-05
 :Version: 0.1.0
 :Authors: - drybjed_
+          - ypid_
 
 .. This version may not correspond directly to the debops-policy version.
 
@@ -23,7 +24,7 @@ document are to be interpreted as described in BCP 14, [`RFC2119`_].
 Goals of the Policy
 -------------------
 
-The DebOps code is comprised from Ansible roles which define data models and
+The DebOps code is comprised of Ansible roles which define data models and
 specific tasks that should be performed on hosts to achieve desired results
 (installation and configuration of a service or application, interaction with
 third-party software and services, etc.), Ansible playbooks which define what
@@ -52,71 +53,77 @@ Here's the basic set of principles to be aware while writing roles:
   operation without the need to modify the role's internal, private code.
 
 - try, if possible, to allow Ansible inventory structure to affect the role
-  operation. This means that the role should allow to use different inventory
+  operation. This means that the role SHOULD allow to use different inventory
   levels to control what data is being used to perform operations. For example,
   if a role manages user accounts, try to support list of accounts from
   ``[all]`` inventory group, from a specific inventory group, and list specific
   to a certain host. However this rule shouldn't be enforced all the time - try
-  to use your best judgement of what data should be composable from multiple
+  to use your best judgment of what data should be composable from multiple
   levels of the inventory and which data doesn't need to be.
 
-- each role should focus on a specific service or application. Roles can be
+- each role SHOULD focus on a specific service or application. Roles can be
   composed together inside playbooks if needed, so there's no need to put
   different services together in the same role.
+  A exception here are very similar services like the different NTP daemons.
+  This has the advantage to only having one set of default variables regardless
+  of the particular chosen service and it makes changing the particular service
+  every easy.
 
-- role should allow for use by other roles through dependent variable
+- a role SHOULD allow for use by other roles through a dependent variable
   mechanism. This way different roles can pass configuration data to other
   services if needed; for example a web server role can request the firewall
   management role to open specific ports when certain conditions are met.
 
 - avoid use of hard dependencies in roles (those defined in the
-  :file:`meta/main.yml` file). The roles should use other roles as dependencies
-  only through the playbook, unless data from a particular roles is used
-  internally by another role and without it the operations might result in
+  :file:`meta/main.yml` file). The roles MUST only use other roles as
+  dependencies through the playbook, unless data from a particular roles is
+  used internally by another role and without it the operations might result in
   a non-functional role.
 
-- roles should use Ansible local facts stored on the hosts to keep their
+- roles SHOULD use Ansible local facts stored on the hosts to keep their
   internal state consistent and idempotent at all times, no matter if the role
   is used standalone or a part of another role's playbook. The facts can be
   either static or dynamically generated, or a combination of the two.
 
-- don't use variables from other roles directly in your role. This impedes the
+- variables from other roles MUST NOT be used directly in your role. This impedes the
   portability of a role and effectively makes the other roles it uses its hard
-  dependencies. Instead, roles should expose the external data structures as
-  needed by other roles in Ansible local facts; this should ensure that the
+  dependencies. Instead, roles SHOULD expose the external data structures as
+  needed for other roles to use as Ansible local facts; this should ensure that the
   data used by other roles is available at all times, and therefore idempotent.
 
 - roles MUST NOT use Ansible debug mechanisms such as ``debug`` and
-  ``ignore_errors`` modules for normal operations. If during development or
-  normal operation a role consistently experiences issues, they should be fixed
-  or handled conditionally instead of being ignored.
+  ``ignore_errors`` modules/module parameters for normal operations. If
+  during development or normal operation a role consistently experiences
+  issues, they should be fixed or handled conditionally instead of being
+  ignored.
 
 
 Ansible role default variables
 ------------------------------
 
-DebOps roles should use a special variable naming scheme to indicate
-a "namespace" of a given role default variables. The variable should contain
+DebOps roles MUST use a special variable naming scheme to indicate
+a "namespace" of a given role default variables. The variable MUST contain
 the role name, followed by two underscore characters, followed by the rest of
 the variable name. For example, the variable which defines the name of the
-:command:`nginx` UNIX user account should be defined as:
+:command:`nginx` UNIX user account MUST be defined as (or similar):
 
 .. code-block:: yaml
 
    nginx__user: 'www-data'
 
-For another example, list of APT packages to install on a particular host with
-the debops.apt_install_ role should be defined as:
+For another example, the list of APT packages to install on a particular host
+using the debops.apt_install_ role MUST be defined as (or similar):
 
 .. code-block:: yaml
 
    apt_install__host_packages: [ 'bash' ]
 
-The namespace separator should be used in variables that define data for other
-Ansible roles which then can be used through role dependent variables. For
-example, if you want to ensure that a given package is installed from the
-Debian Backports repository, you can do so using the debops.apt_preferences_
-role. To do that, in your own role create the default variable:
+The namespace separator MUST be used in variables that directly define data
+passed to other Ansible roles through role dependent variables.
+For example, if
+you want to ensure that a given package is installed from the Debian Backports
+repository, you can do so using the debops.apt_preferences_ role. To do that,
+in your own role create the default variable:
 
 .. code-block:: yaml
 
@@ -141,6 +148,6 @@ a dependency and pass a specific configuration to it:
 
        - role: application
 
-By including the configuration for debops.apt_preferences_ role in your role's
+By including the configuration for the debops.apt_preferences_ role in your role's
 default variables you allow the user to change it through the Ansible inventory
-without the need to modify either any of the involved roles, or the playbook.
+without the need to modify any of the involved roles or the playbook.
