@@ -11,6 +11,7 @@ DebOps Guidelines and Policies
    distributed-development
    code-signing-policy
    software-source-policy
+   code-standards-policy
    security-policy
    planned-policy-changes
    references

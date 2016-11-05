@@ -16,6 +16,11 @@ The current repository maintainer is drybjed_.
 
 .. _debops-policy master: https://github.com/debops/debops-policy/compare/v0.1.0...master
 
+Added
+~~~~~
+
+- Add first draft of Code Standards Policy. [drybjed_]
+
 
 debops-policy v0.1.0 - 2016-09-04
 ---------------------------------
