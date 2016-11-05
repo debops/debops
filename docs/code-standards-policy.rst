@@ -25,7 +25,7 @@ Goals of the Policy
 
 The DebOps code is comprised from Ansible roles which define data models and
 specific tasks that should be performed on hosts to achieve desired results
-(installation and configuration of a service or application, ineraction with
+(installation and configuration of a service or application, interaction with
 third-party software and services, etc.), Ansible playbooks which define what
 roles should be executed on which hosts, and Ansible inventory which defines
 what hosts Ansible should interact with, what playbooks to apply to these hosts
@@ -66,7 +66,7 @@ Here's the basic set of principles to be aware while writing roles:
 
 - role should allow for use by other roles through dependent variable
   mechanism. This way different roles can pass configuration data to other
-  services if needed; for example a webserver role can request the firewall
+  services if needed; for example a web server role can request the firewall
   management role to open specific ports when certain conditions are met.
 
 - avoid use of hard dependencies in roles (those defined in the
