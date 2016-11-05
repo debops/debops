@@ -23,7 +23,7 @@ document are to be interpreted as described in BCP 14, [`RFC2119`_].
 Goals of the Policy
 -------------------
 
-The DebOps code is comprised from Ansible roles which define data models and
+The DebOps code is comprised of Ansible roles which define data models and
 specific tasks that should be performed on hosts to achieve desired results
 (installation and configuration of a service or application, interaction with
 third-party software and services, etc.), Ansible playbooks which define what
