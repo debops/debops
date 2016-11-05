@@ -1,21 +1,19 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Default variables
-# =================
+# debops-contrib.apparmor default variables [[[
+# =============================================
 
-# Default variables
-# =================
-#
 # .. contents:: Sections
 #    :local:
 #
 # .. include:: includes/all.rst
 
-# Packages and installation [[[
-# -------------------------
 
-# .. envvar:: apparmor__base_packages
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: apparmor__base_packages [[[
 #
 # List of base packages to install.
 apparmor__base_packages:
@@ -26,8 +24,8 @@ apparmor__base_packages:
         if (ansible_distribution == "Ubuntu" and not (ansible_distribution_version|version_compare("15.10", ">=")))
         else [ "apparmor-profiles-extra" ] }}'
 
-
-# .. envvar:: apparmor__packages
+                                                                   # ]]]
+# .. envvar:: apparmor__packages [[[
 #
 # List of additional packages to install with AppArmor.
 #
@@ -38,14 +36,14 @@ apparmor__base_packages:
 #
 apparmor__packages: []
 
-
-# .. envvar:: apparmor__enabled
+                                                                   # ]]]
+# .. envvar:: apparmor__enabled [[[
 #
 # Should AppArmor be enabled?
 apparmor__enabled: True
 
-
-# .. envvar:: apparmor__kernel_options
+                                                                   # ]]]
+# .. envvar:: apparmor__kernel_options [[[
 #
 # Default kernel options needed to enable AppArmor.
 # You probably don’t need to change this.
@@ -53,8 +51,8 @@ apparmor__kernel_options:
   - 'apparmor=1'
   - 'security=apparmor'
 
-
-# .. envvar:: apparmor__manage_grub
+                                                                   # ]]]
+# .. envvar:: apparmor__manage_grub [[[
 #
 # How should role write the required kernel options into the Grub configuration.
 # The default is delegate this to the debops.grub_ role.
@@ -62,28 +60,28 @@ apparmor__kernel_options:
 # Note that this role is not as flexible in configuring Grub as debops.grub_ is.
 apparmor__manage_grub: False
 
-
-# .. envvar:: apparmor__additional_kernel_parameters
+                                                                   # ]]]
+# .. envvar:: apparmor__additional_kernel_parameters [[[
 #
 # Legacy:
 # Only considered when `apparmor__manage_grub == True`.
 apparmor__additional_kernel_parameters: ''
 
-
-# .. envvar:: apparmor__mail_to
+                                                                   # ]]]
+# .. envvar:: apparmor__mail_to [[[
 #
 # List of recipients to which a mail will be send in case a reboot is required.
 apparmor__mail_to: [ 'root@{{ ansible_domain }}' ]
 
-
-# .. envvar:: apparmor__mail_subject
+                                                                   # ]]]
+# .. envvar:: apparmor__mail_subject [[[
 #
 # Subject of the Email to be send in case a reboot is required to boot into a
 # updated kernel version.
 apparmor__mail_subject: 'Reboot required by AppArmor on {{ ansible_fqdn }}'
 
-
-# .. envvar:: apparmor__mail_body
+                                                                   # ]]]
+# .. envvar:: apparmor__mail_body [[[
 #
 # Body of the Email to be send in case a reboot is required to boot into a
 # updated kernel version.
@@ -92,19 +90,19 @@ apparmor__mail_body: |
   Linux kernel parameters on host {{ ansible_fqdn }}.
   You should check the status of the host and reboot it when convenient.
 
-# .. ]]]
-
+# ]]]
+# ]]]
 # AppArmor profiles [[[
-# -----------------
+# ---------------------
 
-# .. envvar:: apparmor__enforce_all_profiles
+# .. envvar:: apparmor__enforce_all_profiles [[[
 #
 # Put all profiles into enforcement mode.
 # Use this only if you know what you are doing.
 apparmor__enforce_all_profiles: False
 
-
-# .. envvar:: apparmor__global_profile_status
+                                                                   # ]]]
+# .. envvar:: apparmor__global_profile_status [[[
 #
 # Global configuration of the status of individual profiles.
 # More specific matches overwrite more generic matches (example host overrules
@@ -129,20 +127,20 @@ apparmor__enforce_all_profiles: False
 #
 apparmor__global_profile_status: {}
 
-
-# .. envvar:: apparmor__host_group_profile_status
+                                                                   # ]]]
+# .. envvar:: apparmor__host_group_profile_status [[[
 #
 # Host group configuration of the status of individual profiles.
 apparmor__host_group_profile_status: {}
 
-
-# .. envvar:: apparmor__host_profile_status
+                                                                   # ]]]
+# .. envvar:: apparmor__host_profile_status [[[
 #
 # Host configuration of the status of individual profiles.
 apparmor__host_profile_status: {}
 
-
-# .. envvar:: apparmor__local_config_global
+                                                                   # ]]]
+# .. envvar:: apparmor__local_config_global [[[
 #
 # Global additions or overrides of system profiles.
 # Those changes will be configured in :file:`/etc/apparmor.d/local/`.
@@ -186,54 +184,58 @@ apparmor__host_profile_status: {}
 #
 apparmor__local_config_global: {}
 
-
-# .. envvar:: apparmor__local_group_config
+                                                                   # ]]]
+# .. envvar:: apparmor__local_group_config [[[
 #
 # Host group additions or overrides of system profiles.
 apparmor__local_group_config: {}
 
-
-# .. envvar:: apparmor__local_host_config
+                                                                   # ]]]
+# .. envvar:: apparmor__local_host_config [[[
 #
 # Host additions or overrides of system profiles.
 apparmor__local_host_config: {}
 
-
-# .. envvar:: apparmor__local_dependent_config
+                                                                   # ]]]
+# .. envvar:: apparmor__local_dependent_config [[[
 #
 # System profiles managed by other roles using this role as dependency.
 apparmor__local_dependent_config: {}
 
-
-# .. envvar:: apparmor__global_tunables
+                                                                   # ]]]
+# .. envvar:: apparmor__global_tunables [[[
 #
 # Allows you to define or append variables which will be included by most
 # profiles via the tunable concept of AppArmor.
 # See also: https://wiki.ubuntu.com/DebuggingApparmor#Adjusting_Tunables
 #
-# Example::
+# Examples:
+#
+# .. code-block:: yaml
+#    :linenos:
 #
 #    apparmor__global_tunables: |
 #      @{HOMEDIRS}+=/exports/home/
 #
 apparmor__global_tunables: ''
 
-
-# .. envvar:: apparmor__group_tunables
+                                                                   # ]]]
+# .. envvar:: apparmor__group_tunables [[[
 #
 # Host group definitions or additions to variables.
 apparmor__group_tunables: ''
 
-
-# .. envvar:: apparmor__host_tunables
+                                                                   # ]]]
+# .. envvar:: apparmor__host_tunables [[[
 #
 # Host definitions or additions to variables.
 apparmor__host_tunables: ''
 
-
-# .. envvar:: apparmor__tunables_dependent
+                                                                   # ]]]
+# .. envvar:: apparmor__tunables_dependent [[[
 #
 # Variable definitions managed by roles using this role as dependency.
 apparmor__tunables_dependent: ''
-
-# .. ]]]
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

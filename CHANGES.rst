@@ -3,13 +3,30 @@ Changelog
 
 .. include:: includes/all.rst
 
+**debops-contrib.apparmor**
 
-v0.1.0
-------
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-*Unreleased*
+The current role maintainer_ is ypid_.
 
-- Initial release. [ypid_]
+
+debops-contrib.apparmor v0.1.0 - unreleased
+-------------------------------------------
+
+Added
+~~~~~
+
+- Initial coding and design. [ypid_]
+
+- Added :envvar:`apparmor__local_dependent_config` and
+  :envvar:`apparmor__tunables_dependent` to use this role as dependency for other
+  roles.
+
+- Added ``delete`` and ``by_role`` options to :envvar:`apparmor__local_config_global`. [ypid_]
+
+Changed
+~~~~~~~
 
 - Renamed ``apparmor_enable`` to :envvar:`apparmor__enabled`. [ypid_]
 
@@ -22,9 +39,3 @@ v0.1.0
      git ls-files -z | find -type f -print0 | xargs --null sed --in-place --regexp-extended 's/(apparmor)_([^_])/\1__\2/g'
 
   [ypid_]
-
-- Added :envvar:`apparmor__local_dependent_config` and
-  :envvar:`apparmor__tunables_dependent` to use this role as dependency for other
-  roles.
-
-- Added ``delete`` and ``by_role`` options to :envvar:`apparmor__local_config_global`. [ypid_]
