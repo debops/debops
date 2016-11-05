@@ -1,6 +1,8 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
 
@@ -19,27 +21,24 @@ To configure volume snapshots on host given in
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to manage cryptsetup::
+Here's an example playbook that uses the ``debops-contrib.snapshot_snapper`` role:
 
-   ---
+.. literalinclude:: playbooks/snapshot_snapper.yml
+   :language: yaml
 
-   - name: Configure volume snapshots with snapper
-     hosts: 'debops_service_snapshot_snapper'
-     become: True
-
-     roles:
-
-       - role: debops-contrib.snapshot_snapper
-         tags: [ 'role::snapshot_snapper' ]
-
+This playbooks is shipped with this role under
+:file:`./docs/playbooks/snapshot_snapper.yml` from which you can symlink it to your
+playbook directory.
+In case you use multiple `DebOps Contrib`_ roles, consider using the
+`DebOps Contrib playbooks`_.
 
 Ansible tags
 ------------
 
 You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
-tasks are performed during Ansible run. This can be used after a host is first
+tasks are performed during Ansible run. This can be used after a host was first
 configured to speed up playbook execution, when you are sure that most of the
-configuration has not been changed.
+configuration is already in the desired state.
 
 Available role tags:
 

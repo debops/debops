@@ -1,6 +1,8 @@
 Introduction
 ============
 
+.. include:: includes/all.rst
+
 Snapper can manage snapshots for the following filesystems and volume managers:
 
 * btrfs
@@ -12,9 +14,11 @@ This role allows to setup and configure snapper with Ansible.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v2.0.0``. To install it, run::
+This role requires at least Ansible ``v2.1.3``. To install it, run:
 
-    ansible-galaxy install debops-contrib.snapshot_snapper
+.. code-block:: console
+
+   ansible-galaxy install debops-contrib.snapshot_snapper
 
 ..
  Local Variables:
