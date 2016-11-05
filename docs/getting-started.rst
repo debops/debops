@@ -1,6 +1,8 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
 
@@ -8,12 +10,12 @@ Initial configuration
 ---------------------
 
 By default :command:`git` is used as VCS. This can be changed by the inventory
-variables ``etckeeper__vcs``.
+variables :envvar:`etckeeper__vcs`.
 
 Example inventory
 -----------------
 
-.. code:: YAML
+.. code-block:: YAML
 
    ## If you don’t what to track hashed passwords.
    etckeeper__gitignore_group:
@@ -25,28 +27,24 @@ In Ansible's inventory.
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to put :file:`/etc` under version
-control using :program:`etckeeper` on a set of hosts:
+Here's an example playbook that uses the ``debops-contrib.etckeeper`` role:
 
-.. code:: YAML
+.. literalinclude:: playbooks/etckeeper.yml
+   :language: yaml
 
-   ---
-   - name: Put /etc under version control using etckeeper
-     hosts: 'debops_service_etckeeper'
-     become: True
-
-     roles:
-
-       - role: debops-contrib.etckeeper
-         tags: [ 'role::etckeeper' ]
+This playbooks is shipped with this role under
+:file:`./docs/playbooks/etckeeper.yml` from which you can symlink it to your
+playbook directory.
+In case you use multiple `DebOps Contrib`_ roles, consider using the
+`DebOps Contrib playbooks`_.
 
 Ansible tags
 ------------
 
 You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
-tasks are performed during Ansible run. This can be used after host is first
+tasks are performed during Ansible run. This can be used after a host was first
 configured to speed up playbook execution, when you are sure that most of the
-configuration has not been changed.
+configuration is already in the desired state.
 
 Available role tags:
 
