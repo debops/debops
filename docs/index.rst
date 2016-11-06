@@ -1,7 +1,7 @@
-.. _ypid.btrfs:
+.. _debops-contrib.btrfs:
 
-Ansible role: ypid.btrfs
-===============================
+Ansible role: debops-contrib.btrfs
+==================================
 
 .. toctree::
    :maxdepth: 2
