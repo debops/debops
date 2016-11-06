@@ -22,4 +22,22 @@ Added
 Changed
 ~~~~~~~
 
-- Migrate role to `DebOps Contrib`_ as ``debops-contrib.kernel_module``
+- Migrate role to `DebOps Contrib`_ as ``debops-contrib.kernel_module``.
+  You might need to update your inventory. This oneliner might come in handy to
+  do this.
+
+  .. code-block:: shell
+
+     git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/ypid_service_kernel_modules/debops_service_kernel_module/g;'
+
+  [ypid_]
+
+- Changed namespace from ``kernel_module_`` to ``kernel_module__``.
+  ``kernel_module_[^_]`` variables are hereby deprecated and you might need to
+  update your inventory. This oneliner might come in handy to do this.
+
+  .. code-block:: shell
+
+     git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(kernel_module)_([^_])/\1__\2/g;'
+
+  [ypid_]

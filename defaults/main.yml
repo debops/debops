@@ -13,11 +13,11 @@
 # Configuration presets [[[
 # -------------------------
 
-# .. envvar:: kernel_module_security_list [[[
+# .. envvar:: kernel_module__security_list [[[
 #
 # A preset of kernel module configuration intended to increase the security of
 # the system against known attacks.
-kernel_module_security_list:
+kernel_module__security_list:
 
   ## Protecting against Firewire DMA: https://security.stackexchange.com/a/49158/79474
   - name: 'firewire-sbp2'
@@ -33,10 +33,10 @@ kernel_module_security_list:
                else "absent" }}'
 
                                                                    # ]]]
-# .. envvar:: kernel_module_common_list [[[
+# .. envvar:: kernel_module__common_list [[[
 #
 # A preset of kernel module configuration which is often chosen.
-kernel_module_common_list:
+kernel_module__common_list:
   - name: 'pcspkr'
     blacklist: True
                                                                    # ]]]
@@ -44,60 +44,70 @@ kernel_module_common_list:
 # Lists of module definitions [[[
 # -------------------------------
 
-# .. envvar:: kernel_module_list [[[
+# .. envvar:: kernel_module__list [[[
 #
 # "Global" kernel module configuration.
 #
 # For more details refer to :ref:`kernel_module__ref_kernel_module_list`
 # in the :ref:`kernel_module__ref_default_variable_details` section.
-kernel_module_list: |
+kernel_module__list: |
   {{
-    kernel_module_security_list|list +
-    kernel_module_common_list|list
+    kernel_module__security_list|list +
+    kernel_module__common_list|list
   }}
 
                                                                    # ]]]
-# .. envvar:: kernel_module_group_list [[[
+# .. envvar:: kernel_module__group_list [[[
 #
 # "Host group" kernel module configuration.
-kernel_module_group_list: []
+kernel_module__group_list: []
 
                                                                    # ]]]
-# .. envvar:: kernel_module_host_list [[[
+# .. envvar:: kernel_module__host_list [[[
 #
 # "Host" kernel module configuration.
-kernel_module_host_list: []
+kernel_module__host_list: []
+
+                                                                   # ]]]
+# .. envvar:: kernel_module__combined_list [[[
+#
+# List of combined kernel module configuration as it is used by the role
+# internally.
+kernel_module__combined_list: '{{
+  (kernel_module__list       | list) +
+  (kernel_module__group_list | list) +
+  (kernel_module__host_list  | list) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Default options [[[
 # -------------------
 
-# .. envvar:: kernel_module_params_force [[[
+# .. envvar:: kernel_module__params_force [[[
 #
 # If ``True``, force that the module parameters are applied (via unloading and
 # loading of the module).
-kernel_module_params_force: False
+kernel_module__params_force: False
                                                                    # ]]]
                                                                    # ]]]
 # Configuration files used for configuring [[[
 # --------------------------------------------
 
-# .. envvar:: kernel_module_blacklist_file [[[
+# .. envvar:: kernel_module__blacklist_file [[[
 #
-# FIXME
-kernel_module_blacklist_file: '/etc/modprobe.d/blacklist-ansible-kernel_module-role.conf'
+# File path where the role writes blacklisted modules.
+kernel_module__blacklist_file: '/etc/modprobe.d/blacklist-ansible-kernel_module-role.conf'
 
                                                                    # ]]]
-# .. envvar:: kernel_module_options_file [[[
+# .. envvar:: kernel_module__options_file [[[
 #
-# FIXME
-kernel_module_options_file: '/etc/modprobe.d/options-ansible-kernel_module-role.conf'
+# File path where the role writes module options.
+kernel_module__options_file: '/etc/modprobe.d/options-ansible-kernel_module-role.conf'
 
                                                                    # ]]]
-# .. envvar:: kernel_module_load_file [[[
+# .. envvar:: kernel_module__load_file [[[
 #
-# FIXME
-kernel_module_load_file: '/etc/modules-load.d/ansible-kernel_module-role.conf'
+# File path where the role writes module to be loaded on system start.
+kernel_module__load_file: '/etc/modules-load.d/ansible-kernel_module-role.conf'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

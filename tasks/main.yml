@@ -1,35 +1,28 @@
 ---
 
-- name: Combine lists of kernel module
-  set_fact:
-    kernel_module_list_combined: '{{
-      (kernel_module_list       | d([]) | list) +
-      (kernel_module_group_list | d([]) | list) +
-      (kernel_module_host_list  | d([]) | list) }}'
-
 - name: Ensure that the required directories are present
   file:
     path: '{{ item }}'
     state: 'directory'
-  with_flattened: '{{ [ kernel_module_blacklist_file, kernel_module_options_file, kernel_module_load_file ] | map("dirname") | unique | list }}'
+  with_flattened: '{{ [ kernel_module__blacklist_file, kernel_module__options_file, kernel_module__load_file ] | map("dirname") | unique | list }}'
 
 - name: Blacklist kernel modules
   kernel_blacklist:
     name: '{{ item.name }}'
     state: '{{ "present" if (item.blacklist|d() | bool) else "absent" }}'
-    blacklist_file: '{{ kernel_module_blacklist_file }}'
-  with_items: '{{ kernel_module_list_combined }}'
+    blacklist_file: '{{ kernel_module__blacklist_file }}'
+  with_items: '{{ kernel_module__combined_list }}'
 
 - name: Save kernel modules which should be loaded on boot
   template:
     src: 'etc/modules-load.d/ansible-kernel_module-role.conf.j2'
-    dest: '{{ kernel_module_load_file }}'
+    dest: '{{ kernel_module__load_file }}'
 
 - name: Save kernel module parameters
   template:
     src: 'etc/modprobe.d/options-ansible-kernel_module-role.conf.j2'
-    dest: '{{ kernel_module_options_file }}'
-  register: kernel_module_options_template
+    dest: '{{ kernel_module__options_file }}'
+  register: kernel_module__options_template
 
 ## See http://unix.stackexchange.com/a/123050
 ## Could be handled by writing to '/sys/{{ item.name }}/parameters/{{ item.parm_name }}' but this should be handled by the modprobe module.
@@ -42,14 +35,14 @@
           (
             (
               not (item.persistent|d(True) | bool) or
-              kernel_module_options_template|changed
+              kernel_module__options_template|changed
             ) and
             item.state|d('present') == 'present' and
-            (item.params_force|d(kernel_module_params_force|d(False)) | bool) and
+            (item.params_force|d(kernel_module__params_force|d(False)) | bool) and
             not (item.blacklist|d(False) | bool)
           )
         )
-  with_items: '{{ kernel_module_list_combined }}'
+  with_items: '{{ kernel_module__combined_list }}'
 
 - name: Modprobe kernel modules
   modprobe:
@@ -57,4 +50,4 @@
     params: '{{ item.params | d(omit) }}'
     state: '{{ item.state | d("present") }}'
   when: (not (item.blacklist|d(False) | bool))
-  with_items: '{{ kernel_module_list_combined }}'
+  with_items: '{{ kernel_module__combined_list }}'

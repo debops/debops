@@ -8,8 +8,8 @@ Here you can find documentation and examples for them.
 
 .. _kernel_module__ref_kernel_module_list:
 
-kernel_module_list
-------------------
+kernel_module__list
+-------------------
 
 ``name``
   Required, string. Name of the kernel module.
@@ -41,7 +41,7 @@ kernel_module_list
 ``params_force``
   Optional, boolean. If ``True``, force that the module parameters are applied
   (via unloading and loading of the module).
-  Defaults to the value of ``kernel_module_params_force`` which defaults to
+  Defaults to the value of :envvar:`kernel_module__params_force` which defaults to
   ``False``.
 
 Examples
@@ -49,7 +49,7 @@ Examples
 
 .. code-block:: console
 
-   kernel_module_list:
+   kernel_module__list:
 
        ## Ensure that ``nf_conntrack_snmp`` is loaded and automatically during each boot.
      - name: 'nf_conntrack_snmp'
