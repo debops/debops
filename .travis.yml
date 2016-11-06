@@ -1,34 +1,19 @@
 ---
 
-language: python
-python: "2.7"
+sudo: required
+language: 'python'
+python: '2.7'
 
-env:
-  - SITE=test.yml
+virtualenv:
+  system_site_packages: true
 
-before_install:
-  - sudo apt-get update -qq
-
-install:
-  # Install Ansible.
-  - pip install ansible
-
-  # Add ansible.cfg to pick up roles path.
-  - "{ echo '[defaults]'; echo 'roles_path = ../'; } >> ansible.cfg"
-
-  # Get debug output
-  - "ansible localhost -m setup -u root -i tests/inventory --connection=local"
+before_install: True
+install: True
 
 script:
-  # Check the role/playbook's syntax.
-  - "ansible-playbook -i tests/inventory tests/$SITE --syntax-check"
+  - 'git clone --depth 1 https://github.com/nickjj/rolespec'
+  - 'cd rolespec ; bin/rolespec -r https://github.com/debops/test-suite'
 
-  # Run the role/playbook with ansible-playbook.
-  - "ansible-playbook -vvvv -i tests/inventory tests/$SITE --connection=local --sudo"
-
-  # Run the role/playbook again, checking to make sure it's idempotent.
-  - >
-    ansible-playbook -i tests/inventory tests/$SITE --connection=local --sudo
-    | grep -q 'changed=0.*failed=0'
-    && (echo 'Idempotence test: pass' && exit 0)
-    || (echo 'Idempotence test: fail' && exit 1)
+notifications:
+  webhooks:
+    - 'https://galaxy.ansible.com/api/v1/notifications/'
