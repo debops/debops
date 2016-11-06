@@ -45,7 +45,3 @@ Available role tags:
 ``role::kernel_module``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
-
-``role::kernel_module:pkgs``
-  Tasks related to system package management like installing or
-  removing packages.
