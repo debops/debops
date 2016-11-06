@@ -1,8 +1,12 @@
-Default variables: configuration
-================================
+.. _kernel_module__ref_default_variable_details:
 
-Some of ``ypid.kernel_module`` variables have more extensive configuration.
+Default variable details
+========================
+
+Some of ``debops-contrib.kernel_module`` variables have more extensive configuration.
 Here you can find documentation and examples for them.
+
+.. _kernel_module__ref_kernel_module_list:
 
 kernel_module_list
 ------------------
@@ -39,3 +43,23 @@ kernel_module_list
   (via unloading and loading of the module).
   Defaults to the value of ``kernel_module_params_force`` which defaults to
   ``False``.
+
+Examples
+~~~~~~~~
+
+.. code-block:: console
+
+   kernel_module_list:
+
+       ## Ensure that ``nf_conntrack_snmp`` is loaded and automatically during each boot.
+     - name: 'nf_conntrack_snmp'
+
+       ## Ensure that ``pcspkr`` is blacklisted.
+     - name: 'pcspkr'
+       blacklist: yes
+
+       ## Ensure that ``aacraid`` is loaded with the kernel module parameter
+       ## ``expose_physicals=1``.
+     - name: 'aacraid'
+       params: 'expose_physicals=1'
+       params_force: True
