@@ -1,7 +1,7 @@
 |debops_logo| DebOps Contrib playbooks
 ======================================
 
-Ansible playbooks to run `DebOps contrib <https://github.com/debops-contrib/debops-contrib>`_ roles.
+Ansible playbooks to run `DebOps Contrib <https://github.com/debops-contrib/debops-contrib>`_ roles.
 
 Here are a few services that are available
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -20,9 +20,9 @@ Here are a few services that are available
 
 **System**
 
-+------------+-------+--------+-------------------+
-| etckeeper_ | FUSE_ | BTRFS_ | snapshot_snapper_ |
-+------------+-------+--------+-------------------+
++------------+-------+--------+---------------------+-------------------+
+| etckeeper_ | FUSE_ | BTRFS_ | `snapshot snapper`_ | `kernel modules`_ |
++------------+-------+--------+---------------------+-------------------+
 
 **Security**
 
@@ -46,7 +46,8 @@ Here are a few services that are available
 .. _etckeeper: https://github.com/debops-contrib/ansible-etckeeper
 .. _FUSE: https://github.com/debops-contrib/ansible-fuse
 .. _BTRFS: https://github.com/debops-contrib/ansible-btrfs
-.. _snapshot_snapper: https://github.com/debops-contrib/ansible-snapshot_snapper
+.. _`snapshot snapper`: https://github.com/debops-contrib/ansible-snapshot_snapper
+.. _`kernel modules`: https://github.com/debops-contrib/ansible-kernel_module
 
 .. _AppArmor: https://github.com/debops-contrib/ansible-apparmor
 .. _Firejail: https://github.com/debops-contrib/ansible-firejail
