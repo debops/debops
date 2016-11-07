@@ -19,43 +19,57 @@ The current role maintainer_ is drybjed_.
 Changed
 ~~~~~~~
 
-- Moved sysctl parts from debops.console_ to a separate debops.sysctl_
+- Moved sysctl parts from ``debops.console`` to a separate debops.sysctl_
   role. [ypid_]
 
+- Update documentation and Changelog. [drybjed_]
 
-v0.1.2
-------
 
-*Released: 2016-05-26*
+`debops.console v0.1.2`_ - 2016-05-26
+-------------------------------------
 
-- Remove list of additional APT packages to install. This functionality has
-  been moved to the debops.apt_install_ Ansible role. [drybjed_]
+.. _debops.console v0.1.2: https://github.com/debops/ansible-console/compare/v0.1.1...v0.1.2
+
+Changed
+~~~~~~~
 
 - Change how the preferred text editor is selected. Instead of specifying
   a preferred editor, role contains a list of preferred editors and checks it
   against a list of installed editors. The first found editor is selected as
   the preferred one. [drybjed_]
 
-v0.1.1
-------
+Removed
+~~~~~~~
 
-*Released: 2016-02-18*
+- Remove list of additional APT packages to install. This functionality has
+  been moved to the debops.apt_install_ Ansible role. [drybjed_]
 
-- Fix a bug with wrong ``ansible_local.proc.hidepid_group`` value when hidepid
-  was not enabled in :file:`/proc`. [prahal]
+
+`debops.console v0.1.1`_ - 2016-02-18
+-------------------------------------
+
+.. _debops.console v0.1.1: https://github.com/debops/ansible-console/compare/v0.1.0...v0.1.1
+
+Changed
+~~~~~~~
 
 - Be more strict in parsing :file:`/proc/mounts` when looking for a :file:`/proc` entry
   with enabled ``hidepid=`` parameter. [drybjed_]
 
-v0.1.0
-------
+Fixed
+~~~~~
 
-*Released: 2016-02-07*
+- Fix a bug with wrong ``ansible_local.proc.hidepid_group`` value when hidepid
+  was not enabled in :file:`/proc`. [prahal]
+
+
+debops.console v0.1.0 - 2016-02-07
+----------------------------------
+
+Added
+~~~~~
 
 - Add Changelog. [drybjed_]
-
-- Change default NFS filesystem type from ``nfs4`` to ``nfs``, system
-  automatically picks the correct type. [drybjed_]
 
 - Add a way to manage entries in :file:`/etc/hosts`. [drybjed_]
 
@@ -65,10 +79,6 @@ v0.1.0
 - Add support for setting default system-wide locale. [drybjed_]
 
 - Add option to configure system-wide ``editor`` alternative. [drybjed_]
-
-- Tag various tasks for convenient use. [drybjed_]
-
-- Ensure mount directories exist when manually mounted. [ypid_]
 
 - Add kernel parameter configuration and shared memory configuration.
 
@@ -81,11 +91,6 @@ v0.1.0
 - Install additional packages by default: ``mtr-tiny``, ``tree``, ``at``.
   Install ``nfs-common`` if NFS mounts are configured.  [drybjed_]
 
-- Protect the Tab characters in ``lineinfile`` module. [drybjed_]
-
-- Remove the ``at`` package from list of installed packages, it's now managed
-  by separate debops.atd_ role. [drybjed_]
-
 - Create list of conditionally installed packages. [drybjed_]
 
 - Install ``libpam-systemd`` on hosts managed by ``systemd`` init. This
@@ -95,10 +100,28 @@ v0.1.0
 
 - Add support for ``sysnews`` package, useful on multiuser systems. [drybjed_]
 
+- Add ``proc.fact`` fact script which contains information about ``hidepid``
+  options for other Ansible roles to use. [drybjed_]
+
+Changed
+~~~~~~~
+
+- Change default NFS filesystem type from ``nfs4`` to ``nfs``, system
+  automatically picks the correct type. [drybjed_]
+
+- Tag various tasks for convenient use. [drybjed_]
+
+- Ensure mount directories exist when manually mounted. [ypid_]
+
+- Protect the Tab characters in ``lineinfile`` module. [drybjed_]
+
 - Fix deprecation warnings on Ansible 2.1.0. [drybjed_]
 
 - Make sure that ``systemd-logind`` service is included in the ``procadmins``
   system group when :file:`/proc` ``hidepid`` option is enabled. [drybjed_]
 
-- Add ``proc.fact`` fact script which contains information about ``hidepid``
-  options for other Ansible roles to use. [drybjed_]
+Removed
+~~~~~~~
+
+- Remove the ``at`` package from list of installed packages, it's now managed
+  by separate debops.atd_ role. [drybjed_]
