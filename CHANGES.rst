@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.console master`_ - unreleased
 -------------------------------------
 
-.. _debops.console master: https://github.com/debops/ansible-console/compare/v0.1.2...master
+.. _debops.console master: https://github.com/debops/ansible-console/compare/v0.1.3...master
+
+
+`debops.console v0.1.3`_ - 2016-11-07
+-------------------------------------
+
+.. _debops.console v0.1.3: https://github.com/debops/ansible-console/compare/v0.1.2...v0.1.3
 
 Changed
 ~~~~~~~
