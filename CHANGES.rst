@@ -92,6 +92,11 @@ Changed
 
 - Update the debops.dnsmasq_ playbook to the new version. [ypid_]
 
+- Update the ``ldap_addr`` and ``ldap_entry`` Ansible modules to versions
+  created by Jiri Tyr and proposed for inclusion in the Ansible modules
+  library. These versions should work better with the latest Ansible 2.x
+  releases. [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
