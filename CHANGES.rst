@@ -24,6 +24,12 @@ Changed
 
 - Update documentation and Changelog. [drybjed_]
 
+Fixed
+~~~~~
+
+- Fix the issue of the :command:`sysnews` task failing on Ansible v2.2 with
+  empty news variable. [drybjed_]
+
 
 `debops.console v0.1.2`_ - 2016-05-26
 -------------------------------------
