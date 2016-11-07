@@ -1,39 +1,35 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
-# ldap_attr Ansible module
-# Copyright (C) 2014 Peter Sagerson <psagers@ignorare.net>
-# Homepage: https://bitbucket.org/psagers/ansible-ldap
-
-
-# Copyright (c) 2014, Peter Sagerson
-# All rights reserved.
+# (c) 2016, Peter Sagerson <psagers@getcloak.com>
+# (c) 2016, Jiri Tyr <jiri.tyr@gmail.com>
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
+# This file is part of Ansible
 #
-# - Redistributions of source code must retain the above copyright notice, this
-#   list of conditions and the following disclaimer.
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# - Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from traceback import format_exc
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.pycompat24 import get_exception
 
-import ldap
-import ldap.sasl
+try:
+    import ldap
+    import ldap.sasl
+
+    HAS_LDAP = True
+except ImportError:
+    HAS_LDAP = False
 
 
 DOCUMENTATION = """
@@ -41,204 +37,187 @@ DOCUMENTATION = """
 module: ldap_attr
 short_description: Add or remove LDAP attribute values.
 description:
-    - Add or remove LDAP attribute values.
+  - Add or remove LDAP attribute values.
 notes:
-    - This only deals with attributes on existing entries. To add or remove
-      whole entries, see M(ldap_entry).
-    - The default authentication settings will attempt to use a SASL EXTERNAL
-      bind over a UNIX domain socket. This works well with the default Ubuntu
-      install for example, which includes a cn=peercred,cn=external,cn=auth ACL
-      rule allowing root to modify the server configuration. If you need to use
-      a simple bind to access your server, pass the credentials in C(bind_dn)
-      and C(bind_pw).
-    - For C(state=present) and C(state=absent), all value comparisons are
-      performed on the server for maximum accuracy. For C(state=exact), values
-      have to be compared in Python, which obviously ignores LDAP matching
-      rules. This should work out in most cases, but it is theoretically
-      possible to see spurious changes when target and actual values are
-      semantically identical but lexically distinct.
-version_added: null
-author: Peter Sagerson
+  - This only deals with attributes on existing entries. To add or remove
+    whole entries, see M(ldap_entry).
+  - The default authentication settings will attempt to use a SASL EXTERNAL
+    bind over a UNIX domain socket. This works well with the default Ubuntu
+    install for example, which includes a cn=peercred,cn=external,cn=auth ACL
+    rule allowing root to modify the server configuration. If you need to use
+    a simple bind to access your server, pass the credentials in I(bind_dn)
+    and I(bind_pw).
+  - For I(state=present) and I(state=absent), all value comparisons are
+    performed on the server for maximum accuracy. For I(state=exact), values
+    have to be compared in Python, which obviously ignores LDAP matching
+    rules. This should work out in most cases, but it is theoretically
+    possible to see spurious changes when target and actual values are
+    semantically identical but lexically distinct.
+version_added: '2.3'
+author:
+  - Jiri Tyr (@jtyr)
 requirements:
-    - python-ldap
+  - python-ldap
 options:
-    dn:
-        required: true
-        description:
-            - The DN of the entry to modify.
-    name:
-        required: true
-        description:
-            - The name of the attribute to modify.
-    values:
-        required: true
-        description:
-            - The value(s) to add or remove. This can be a string or a list of
-              strings. The complex argument format is required in order to pass
-              a list of strings (see examples).
-    state:
-        required: false
-        choices: [present, absent, exact]
-        default: present
-        description:
-            - The state of the attribute values. If C(present), all given
-              values will be added if they're missing. If C(absent), all given
-              values will be removed if present. If C(exact), the set of values
-              will be forced to exactly those provided and no others. If
-              C(state=exact) and C(values) is empty, all values for this
-              attribute will be removed.
-    server_uri:
-        required: false
-        default: ldapi:///
-        description:
-            - A URI to the LDAP server. The default value lets the underlying
-              LDAP client library look for a UNIX domain socket in its default
-              location.
-    start_tls:
-        required: false
-        default: false
-        description:
-            - If true, we'll use the START_TLS LDAP extension.
-    bind_dn:
-        required: false
-        description:
-            - A DN to bind with. If this is omitted, we'll try a SASL bind with
-              the EXTERNAL mechanism (see note). If this is blank, we'll use an
-              anonymous bind.
-    bind_pw:
-        required: false
-        description:
-            - The password to use with C(bind_dn).
+  bind_dn:
+    required: false
+    default: null
+    description:
+      - A DN to bind with. If this is omitted, we'll try a SASL bind with
+        the EXTERNAL mechanism. If this is blank, we'll use an anonymous
+        bind.
+  bind_pw:
+    required: false
+    default: null
+    description:
+      - The password to use with I(bind_dn).
+  dn:
+    required: true
+    description:
+      - The DN of the entry to modify.
+  name:
+    required: true
+    description:
+      - The name of the attribute to modify.
+  server_uri:
+    required: false
+    default: ldapi:///
+    description:
+      - A URI to the LDAP server. The default value lets the underlying
+        LDAP client library look for a UNIX domain socket in its default
+        location.
+  start_tls:
+    required: false
+    choices: ['yes', 'no']
+    default: 'no'
+    description:
+      - If true, we'll use the START_TLS LDAP extension.
+  state:
+    required: false
+    choices: [present, absent, exact]
+    default: present
+    description:
+      - The state of the attribute values. If C(present), all given
+        values will be added if they're missing. If C(absent), all given
+        values will be removed if present. If C(exact), the set of values
+        will be forced to exactly those provided and no others. If
+        I(state=exact) and I(value) is empty, all values for this
+        attribute will be removed.
+  values:
+    required: true
+    description:
+      - The value(s) to add or remove. This can be a string or a list of
+        strings. The complex argument format is required in order to pass
+        a list of strings (see examples).
 """
 
 
 EXAMPLES = """
-# Configure directory number 1 for example.com.
-- ldap_attr: dn='olcDatabase={1}hdb,cn=config' name=olcSuffix values='dc=example,dc=com' state=exact
-  become: true
+- name: Configure directory number 1 for example.com
+  ldap_attr:
+    dn: olcDatabase={1}hdb,cn=config
+    name: olcSuffix
+    values: dc=example,dc=com
+    state: exact
 
-# Set up the ACL. The complex argument format is required here to pass a list
-# of ACL strings.
-- ldap_attr:
-  become: true
-  args:
+# The complex argument format is required here to pass a list of ACL strings.
+- name: Set up the ACL
+  ldap_attr:
     dn: olcDatabase={1}hdb,cn=config
     name: olcAccess
     values:
-      - '{0}to attrs=userPassword,shadowLastChange
-         by self write
-         by anonymous auth
-         by dn="cn=admin,dc=example,dc=com" write
-         by * none'
-      - '{1}to dn.base="dc=example,dc=com"
-         by dn="cn=admin,dc=example,dc=com" write
-         by * read'
+      - >-
+        {0}to attrs=userPassword,shadowLastChange
+        by self write
+        by anonymous auth
+        by dn="cn=admin,dc=example,dc=com" write
+        by * none'
+      - >-
+        {1}to dn.base="dc=example,dc=com"
+        by dn="cn=admin,dc=example,dc=com" write
+        by * read
     state: exact
 
-# Declare some indexes.
-- ldap_attr: dn='olcDatabase={1}hdb,cn=config' name=olcDbIndex values={{ item }}
-  become: true
+- name: Declare some indexes
+  ldap_attr:
+    dn: olcDatabase={1}hdb,cn=config
+    name: olcDbIndex
+    values: "{{ item }}"
   with_items:
     - objectClass eq
     - uid eq
 
-# Set up a root user, which we can use later to bootstrap the directory.
-- ldap_attr: dn='olcDatabase={1}hdb,cn=config' name={{ item.key }} values={{ item.value }} state=exact
-  become: true
+- name: Set up a root user, which we can use later to bootstrap the directory
+  ldap_attr:
+    dn: olcDatabase={1}hdb,cn=config
+    name: "{{ item.key }}"
+    values: "{{ item.value }}"
+    state: exact
   with_dict:
-    olcRootDN: 'cn=root,dc=example,dc=com'
-    olcRootPW: '{SSHA}mRskON0Stk+5wO5K+MMk2xmakKt8h7eJ'
+    olcRootDN: cn=root,dc=example,dc=com
+    olcRootPW: "{SSHA}tabyipcHzhwESzRaGA7oQ/SDoBZQOGND"
+
+- name: Get rid of an unneeded attribute
+  ldap_entry:
+    dn: uid=jdoe,ou=people,dc=example,dc=com
+    name: shadowExpire
+    value: ""
+    state: exact
+    server_uri: ldap://localhost/
+    bind_dn: cn=admin,dc=example,dc=com
+    bind_pw: password
+
+#
+# The same as in the previous example but with the authentication details
+# stored in the ldap_auth variable:
+#
+# ldap_auth:
+#   server_uri: ldap://localhost/
+#   bind_dn: cn=admin,dc=example,dc=com
+#   bind_pw: password
+- name: Get rid of an unneeded attribute
+  ldap_entry:
+    dn: uid=jdoe,ou=people,dc=example,dc=com
+    name: shadowExpire
+    value: ""
+    state: exact
+    params: "{{ ldap_auth }}"
 """
 
 
-def main():
-    module = AnsibleModule(
-        argument_spec={
-            'dn': dict(required=True, type='str'),
-            'name': dict(required=True, type='str'),
-            'values': dict(required=True, type='raw'),
-            'state': dict(default='present', choices=['present', 'absent', 'exact'], type='str'),
-            'server_uri': dict(default='ldapi:///', type='str'),
-            'start_tls': dict(default='false', choices=BOOLEANS, type='bool'),
-            'bind_dn': dict(default=None, type='str'),
-            'bind_pw': dict(default='', type='str'),
-        },
-        supports_check_mode=True,
-    )
-
-    try:
-        LdapAttr(module).main()
-    except ldap.LDAPError, e:
-        module.fail_json(msg=str(e), exc=format_exc())
+RETURN = """
+modlist:
+  description: list of modified parameters
+  returned: success
+  type: list
+  sample: '[[2, "olcRootDN", ["cn=root,dc=example,dc=com"]]]'
+"""
 
 
 class LdapAttr(object):
     def __init__(self, module):
+        # Shortcuts
         self.module = module
-
-        # python-ldap doesn't understand unicode strings. Parameters that are
-        # just going to get passed to python-ldap APIs are stored as utf-8.
-        self.dn = self._utf8_param('dn')
-        self.name = self._utf8_param('name')
-        self.values = self._normalized_values()
-        self.state = self.module.params['state']
+        self.bind_dn = self.module.params['bind_dn']
+        self.bind_pw = self.module.params['bind_pw']
+        self.dn = self.module.params['dn']
+        self.name = self.module.params['name']
         self.server_uri = self.module.params['server_uri']
-        self.start_tls = self.module.boolean(self.module.params['start_tls'])
-        self.bind_dn = self._utf8_param('bind_dn')
-        self.bind_pw = self._utf8_param('bind_pw')
+        self.start_tls = self.module.params['start_tls']
+        self.state = self.module.params['state']
 
-        self._connection = None
-
-    def _utf8_param(self, name):
-        return self._force_utf8(self.module.params[name])
-
-    def _normalized_values(self):
-        """ Parses the value parameter into a list of utf-8 strings. """
-        values = self.module.params['values']
-
-        if isinstance(values, basestring):
-            if values == '':
-                values = []
-            else:
-                values = [values]
-
-        if not (isinstance(values, list) and all(isinstance(value, basestring) for value in values)):
-            self.module.fail_json(msg="values must be a string or list of strings.")
-
-        return map(self._force_utf8, values)
-
-    def _force_utf8(self, value):
-        """ If value is unicode, encode to utf-8. """
-        if isinstance(value, unicode):
-            value = value.encode('utf-8')
-
-        return value
-
-    def main(self):
-        if self.state == 'present':
-            modlist = self.handle_present()
-        elif self.state == 'absent':
-            modlist = self.handle_absent()
-        elif self.state == 'exact':
-            modlist = self.handle_exact()
+        # Normalize values
+        if isinstance(self.module.params['values'], list):
+            self.values = map(str, self.module.params['values'])
         else:
-            modlist = []
+            self.values = [str(self.module.params['values'])]
 
-        if len(modlist) > 0:
-            changed = True
-            if not self.module.check_mode:
-                self.connection.modify_s(self.dn, modlist)
-        else:
-            changed = False
+        # Establish connection
+        self.connection = self._connect_to_ldap()
 
-        self.module.exit_json(changed=changed, modlist=modlist)
+    def add(self):
+        values_to_add = filter(self._is_value_absent, self.values)
 
-    #
-    # State Implementations
-    #
-
-    def handle_present(self):
-        values_to_add = filter(self.is_value_absent, self.values)
         if len(values_to_add) > 0:
             modlist = [(ldap.MOD_ADD, self.name, values_to_add)]
         else:
@@ -246,8 +225,9 @@ class LdapAttr(object):
 
         return modlist
 
-    def handle_absent(self):
-        values_to_delete = filter(self.is_value_present, self.values)
+    def delete(self):
+        values_to_delete = filter(self._is_value_present, self.values)
+
         if len(values_to_delete) > 0:
             modlist = [(ldap.MOD_DELETE, self.name, values_to_delete)]
         else:
@@ -255,10 +235,19 @@ class LdapAttr(object):
 
         return modlist
 
-    def handle_exact(self):
+    def exact(self):
+        try:
+            results = self.connection.search_s(
+                self.dn, ldap.SCOPE_BASE, attrlist=[self.name])
+        except ldap.LDAPError:
+            e = get_exception()
+            self.module.fail_json(
+                msg="Cannot search for attribute %s" % self.name,
+                details=str(e))
+
+        current = results[0][1].get(self.name, [])
         modlist = []
 
-        current = self.current_values()
         if frozenset(self.values) != frozenset(current):
             if len(current) == 0:
                 modlist = [(ldap.MOD_ADD, self.name, self.values)]
@@ -269,55 +258,99 @@ class LdapAttr(object):
 
         return modlist
 
-    #
-    # Util
-    #
-
-    def is_value_present(self, value):
+    def _is_value_present(self, value):
         """ True if the target attribute has the given value. """
         try:
-            is_present = bool(self.connection.compare_s(self.dn, self.name, value))
+            is_present = bool(
+                self.connection.compare_s(self.dn, self.name, value))
         except ldap.NO_SUCH_ATTRIBUTE:
             is_present = False
 
         return is_present
 
-    def is_value_absent(self, value):
-        """ True if the target attribute does not have the given value. """
-        return (not self.is_value_present(value))
-
-    def current_values(self):
-        """ Returns the full list of values on the target attribute. """
-        results = self.connection.search_s(self.dn, ldap.SCOPE_BASE, attrlist=[self.name])
-        values = results[0][1].get(self.name, [])
-
-        return values
-
-    #
-    # LDAP Connection
-    #
-
-    @property
-    def connection(self):
-        """ An authenticated connection to the LDAP server (cached). """
-        if self._connection is None:
-            self._connection = self._connect_to_ldap()
-
-        return self._connection
+    def _is_value_absent(self, value):
+        """ True if the target attribute doesn't have the given value. """
+        return not self._is_value_present(value)
 
     def _connect_to_ldap(self):
         connection = ldap.initialize(self.server_uri)
 
         if self.start_tls:
-            connection.start_tls_s()
+            try:
+                connection.start_tls_s()
+            except ldap.LDAPError:
+                e = get_exception()
+                self.module.fail_json(msg="Cannot start TLS.", details=str(e))
 
-        if self.bind_dn is not None:
-            connection.simple_bind_s(self.bind_dn, self.bind_pw)
-        else:
-            connection.sasl_interactive_bind_s('', ldap.sasl.external())
+        try:
+            if self.bind_dn is not None:
+                connection.simple_bind_s(self.bind_dn, self.bind_pw)
+            else:
+                connection.sasl_interactive_bind_s('', ldap.sasl.external())
+        except ldap.LDAPError:
+            e = get_exception()
+            self.module.fail_json(
+                msg="Cannot bind to the server.", details=str(e))
 
         return connection
 
 
-from ansible.module_utils.basic import *  # noqa
-main()
+def main():
+    module = AnsibleModule(
+        argument_spec={
+            'bind_dn': dict(default=None),
+            'bind_pw': dict(default='', no_log=True),
+            'dn': dict(required=True),
+            'name': dict(required=True),
+            'params': dict(type='dict'),
+            'server_uri': dict(default='ldapi:///'),
+            'start_tls': dict(default=False, type='bool'),
+            'state': dict(
+                default='present',
+                choices=['present', 'absent', 'exact']),
+            'values': dict(required=True, type='raw'),
+        },
+        supports_check_mode=True,
+    )
+
+    if not HAS_LDAP:
+        module.fail_json(
+            msg="Missing requried 'ldap' module (pip install python-ldap)")
+
+    # Update module parameters with user's parameters if defined
+    if 'params' in module.params and isinstance(module.params['params'], dict):
+        module.params.update(module.params['params'])
+        # Remove the params
+        module.params.pop('params', None)
+
+    # Instantiate the LdapAttr object
+    ldap = LdapAttr(module)
+
+    state = module.params['state']
+
+    # Perform action
+    if state == 'present':
+        modlist = ldap.add()
+    elif state == 'absent':
+        modlist = ldap.delete()
+    elif state == 'exact':
+        modlist = ldap.exact()
+
+    changed = False
+
+    if len(modlist) > 0:
+        changed = True
+
+        if not module.check_mode:
+            try:
+                ldap.connection.modify_s(ldap.dn, modlist)
+            except Exception:
+                e = get_exception()
+                module.fail_json(
+                    msg="Attribute action failed.", details=str(e))
+
+    module.exit_json(changed=changed, modlist=modlist)
+
+
+if __name__ == '__main__':
+    main()
