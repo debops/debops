@@ -18,3 +18,17 @@ Added
 ~~~~~
 
 - Initial coding and design. [ypid_]
+
+Changed
+~~~~~~~
+
+- Optimized performance by only checking if programs are installed when this
+  actually matters (when :ref:`item.system_wide_sandboxed <firejail__ref_system_wide_sandboxed>`
+  is ``if_installed``). [ypid_]
+
+Fixed
+~~~~~
+
+- The role did not handle ``firejail__global_profiles_system_wide_sandboxed``
+  set to ``absent`` correctly and instead (was handled as it was set to
+  ``present``). [ypid_]

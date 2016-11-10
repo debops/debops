@@ -59,13 +59,23 @@
   changed_when: False
   failed_when: firejail__register_cmd_which_programs.rc not in [ 0, 1 ]
   register: firejail__register_cmd_which_programs
+  when: (item in (
+          firejail__combined_program_sandboxes.keys() + (
+            firejail__fact_system_wide_profiles
+            if (firejail__global_profiles_system_wide_sandboxed == "if_installed")
+            else []
+          )
+        ))
   with_items: '{{ firejail__combined_program_sandboxes.keys() | union(firejail__fact_system_wide_profiles) }}'
 
+# For optimized performance, firejail__fact_installed_programs only contains
+# programs for which the install state actually matters.
 - name: Set list of installed programs
   set_fact:
     firejail__fact_installed_programs: '{{
       firejail__register_cmd_which_programs.results
-      | selectattr("rc", "equalto", 0) | map(attribute="stdout_lines") | map("first") | map("basename") | list }}'
+      | selectattr("rc", "defined") | selectattr("rc", "equalto", 0) | map(attribute="stdout_lines") | map("first") | map("basename") | list }}'
+
 # ]]]
 
 # Create/remove symlinks for sandboxed programs [[[
@@ -84,19 +94,10 @@
                      )
                    )) or (item not in firejail__combined_program_sandboxes and (
                      (
-                       (
-                         firejail__global_profiles_system_wide_sandboxed in ["present", "if_installed"] and
-                         item in firejail__fact_system_wide_profiles
-                       ) or (
-                         firejail__global_profiles_system_wide_sandboxed not in ["present", "if_installed"]
-                       )
-                     ) and (
-                       (
-                         firejail__global_profiles_system_wide_sandboxed == "if_installed" and
-                         item in firejail__fact_installed_programs
-                       ) or (
-                           firejail__global_profiles_system_wide_sandboxed != "if_installed"
-                       )
+                       firejail__global_profiles_system_wide_sandboxed == "present"
+                     ) or (
+                       firejail__global_profiles_system_wide_sandboxed == "if_installed" and
+                       item in firejail__fact_installed_programs
                      )
                    ))
                  )
@@ -159,7 +160,8 @@
 # Needed because of a bug: https://github.com/ansible/ansible-modules-core/issues/3027
 # `realpath` filter (https://docs.ansible.com/ansible/playbooks_filters.html#other-useful-filters)
 # can not be used because filters are executed on the Ansible controller.
-- stat:
+- name: Workaround to get the realpath
+  stat:
     path: '{{ item.path }}'
   register: firejail__register_profile_program_symlinks_stat
   no_log: True
