@@ -14,6 +14,11 @@ The current role maintainer is drybjed.
 
 .. _debops.mariadb master: https://github.com/debops/ansible-mariadb/compare/v0.2.2...master
 
+Added
+~~~~~
+
+- Support MySQL-Galera flavor from Codership. [ganto]
+
 
 `debops.mariadb v0.2.2`_ - 2016-08-01
 -------------------------------------
