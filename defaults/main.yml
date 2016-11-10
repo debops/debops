@@ -19,7 +19,9 @@
 #
 # - ``mariadb_upstream``: use MariaDB engine from upstream repository
 #
-# - :command:`mysql`: use MySQL engine from Debian repository
+# - ``mysql``: use MySQL engine from Debian repository
+#
+# - ``mysql_galera``: use MySQL engine with Galera from Codership repository
 #
 # - ``percona``: use Percona XtraDB engine from upstream repository
 #
@@ -55,6 +57,7 @@ mariadb_server__apt_key: '{{ mariadb_server__apt_key_map[mariadb_server__flavor]
 # downloaded if any of the listed flavors is selected.
 mariadb_server__apt_key_map:
   'mariadb_upstream': [ '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB', '177F4010FE56CA3336300305F1656F24C74CD1D8' ]
+  'mysql_galera':     '44B7345738EBDE52594DAD80D669017EBC19DDBA'
   'percona':          '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
 
                                                                    # ]]]
@@ -77,6 +80,7 @@ mariadb_server__upstream_mirror: 'http://nyc2.mirrors.digitalocean.com/mariadb/r
 # if any of the listed flavors is selected.
 mariadb_server__apt_repository_map:
   'mariadb_upstream': 'deb {{ mariadb_server__upstream_mirror }} {{ ansible_distribution_release }} main'
+  'mysql_galera':     'deb http://releases.galeracluster.com/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
   'percona':          'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
@@ -101,6 +105,7 @@ mariadb_server__packages_map:
   'mariadb': [ 'mariadb-server' ]
   'mariadb_upstream': [ 'mariadb-server' ]
   'mysql': [ 'mysql-server' ]
+  'mysql_galera': [ 'galera-3', 'galera-arbitrator-3', 'mysql-wsrep-server-5.6' ]
   'percona': [ 'percona-server-server' ]
                                                                    # ]]]
                                                                    # ]]]
@@ -209,6 +214,20 @@ mariadb_server__mysqld_pki_options:
     'ssl_key':    '{{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_key }}'
     'ssl_cipher': '{{ mariadb_server__pki_cipher }}'
 
+                                                                    # ]]]
+# .. envvar:: mariadb_server__mysqld_cluster_options [[[
+#
+# Configuration options for :program:`mysqld` required to operate in a
+# MariaDB/MySQL cluster.
+mariadb_server__mysqld_cluster_options:
+  name: 'cluster-options'
+  comment: 'Required for cluster operation'
+  state: '{{ "present" if mariadb_server__flavor in [ "mysql_galera", "percona" ] else "absent" }}'
+  options:
+    'binlog_format': 'ROW'
+    'default_storage_engine': 'InnoDB'
+    'innodb_autoinc_lock_mode': '2'
+
                                                                    # ]]]
 # .. envvar:: mariadb_server__mysqld_options [[[
 #
@@ -222,6 +241,7 @@ mariadb_server__mysqld_options:
       - '{{ mariadb_server__mysqld_security_options }}'
       - '{{ mariadb_server__mysqld_network_options }}'
       - '{{ mariadb_server__mysqld_pki_options }}'
+      - '{{ mariadb_server__mysqld_cluster_options }}'
       - '{{ mariadb_server__options }}'
 
                                                                    # ]]]
