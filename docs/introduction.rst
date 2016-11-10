@@ -27,6 +27,13 @@ This role requires at least Ansible ``v2.1.3``. To install it, run::
 
     ansible-galaxy install debops-contrib.firejail
 
+
+Note that this role uses features recently introduced in Jinja2, namely
+the `equalto` filter which was released with
+`Jinja 2.8 <http://jinja.pocoo.org/docs/dev/changelog/#version-2-8>`_ and thus
+requires Jinja 2.8.
+If you use Debian Jessie, you can install it `from Debian Jessie Backports <https://packages.debian.org/search?keywords=python-jinja2>`_.
+
 ..
  Local Variables:
  mode: rst

@@ -32,3 +32,5 @@ Fixed
 - The role did not handle ``firejail__global_profiles_system_wide_sandboxed``
   set to ``absent`` correctly and instead (was handled as it was set to
   ``present``). [ypid_]
+
+- Note in the documentation that this role requires Jinja 2.8 or later. [ypid_]
