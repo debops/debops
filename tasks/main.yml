@@ -7,7 +7,7 @@
 - name: Check if database server is installed
   environment:
     LC_MESSAGES: 'C'
-  shell: dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server' 'percona-server-server' | grep -v '^$'
+  shell: dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server' 'percona-server-server' 'mysql-wsrep-server-5.6' | grep -v '^$'
   register: mariadb_server__register_version
   always_run: True
   changed_when: False
@@ -24,7 +24,7 @@
   with_flattened: '{{ ([ mariadb_server__apt_key ]
                        if mariadb_server__apt_key is string
                        else mariadb_server__apt_key) }}'
-  when: mariadb_server__flavor in [ 'mariadb_upstream', 'percona' ]
+  when: mariadb_server__flavor in mariadb_server__apt_key_map.keys()
 
 - name: Add custom APT repository
   apt_repository:
@@ -32,7 +32,7 @@
     state: 'present'
     update_cache: True
     mode: '0644'
-  when: mariadb_server__flavor in [ 'mariadb_upstream', 'percona' ]
+  when: mariadb_server__flavor in mariadb_server__apt_repository_map.keys()
 
 - name: Install database server packages
   apt:
