@@ -24,7 +24,7 @@
   with_flattened: '{{ ([ mariadb_server__apt_key ]
                        if mariadb_server__apt_key is string
                        else mariadb_server__apt_key) }}'
-  when: mariadb_server__flavor in mariadb_server__apt_key_map
+  when: mariadb_server__flavor in mariadb_server__apt_key_map.keys()
 
 - name: Add custom APT repository
   apt_repository:
@@ -32,7 +32,7 @@
     state: 'present'
     update_cache: True
     mode: '0644'
-  when: mariadb_server__flavor in mariadb_server__apt_repository_map
+  when: mariadb_server__flavor in mariadb_server__apt_repository_map.keys()
 
 - name: Install database server packages
   apt:
