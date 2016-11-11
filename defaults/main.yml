@@ -62,6 +62,9 @@ mariadb__delegate_to: '{{ mariadb__server
 #
 # - ``mysql``: use MySQL engine from Debian repository
 #
+# - ``mysql-5.6_galera-3``: use MySQL 5.6 engine with Galera from Codership
+#   repository
+#
 # - ``percona``: use Percona XtraDB engine from upstream repository
 #
 # The choice depends on availability of MariaDB packages in a distribution.
@@ -94,8 +97,9 @@ mariadb__apt_key: '{{ mariadb__apt_key_map[mariadb__flavor] | d() }}'
 # different MariaDB/MySQL/Percona APT repositories. These GPG keys will be
 # downloaded if any of the listed flavors is selected.
 mariadb__apt_key_map:
-  'mariadb_upstream': [ '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB', '177F4010FE56CA3336300305F1656F24C74CD1D8' ]
-  'percona':          '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+  'mariadb_upstream':   [ '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB', '177F4010FE56CA3336300305F1656F24C74CD1D8' ]
+  'mysql-5.6_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
+  'percona':            '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
 
                                                                    # ]]]
 # .. envvar:: mariadb__upstream_version [[[
@@ -116,8 +120,9 @@ mariadb__upstream_mirror: 'http://nyc2.mirrors.digitalocean.com/mariadb/repo/{{ 
 # MariaDB/MySQL/Percona APT repositories. These repositories will be configured
 # if any of the listed flavors is selected.
 mariadb__apt_repository_map:
-  'mariadb_upstream': 'deb {{ mariadb__upstream_mirror }} {{ ansible_distribution_release }} main'
-  'percona':          'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
+  'mariadb_upstream':   'deb {{ mariadb__upstream_mirror }} {{ ansible_distribution_release }} main'
+  'mysql-5.6_galera-3': 'deb http://releases.galeracluster.com/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+  'percona':            'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: mariadb__base_packages [[[
@@ -141,6 +146,7 @@ mariadb__packages_map:
   'mariadb': [ 'mariadb-client' ]
   'mariadb_upstream': [ 'mariadb-client' ]
   'mysql': [ 'mysql-client' ]
+  'mysql-5.6_galera-3': [ 'mysql-wsrep-client-5.6' ]
   'percona': [ 'percona-server-client' ]
                                                                    # ]]]
                                                                    # ]]]
