@@ -8,13 +8,32 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer_ is drybjed.
+The current role maintainer_ is drybjed_.
 
 
 `debops.debops_fact master`_ - unreleased
 -----------------------------------------
 
-.. _debops.debops_fact master: https://github.com/debops/ansible-debops_fact/compare/v0.2.0...master
+.. _debops.debops_fact master: https://github.com/debops/ansible-debops_fact/compare/v0.2.1...master
+
+
+`debops.debops_fact v0.2.1`_ - 2016-11-13
+-----------------------------------------
+
+.. _debops.debops_fact v0.2.1: https://github.com/debops/ansible-debops_fact/compare/v0.2.0...v0.2.1
+
+Changed
+~~~~~~~
+
+- The role now expects a valid INI file with section headers.
+  It does not patch in a ``[default]`` section when the file is missing one and
+  will instead raise an exception. [ypid_]
+
+Fixed
+~~~~~
+
+- Problem where the :file:`/etc/ansible/facts.d/debops_fact.fact` file would
+  fail to return facts and throw a Python exception instead. [ypid_]
 
 
 `debops.debops_fact v0.2.0`_ - 2016-09-13
