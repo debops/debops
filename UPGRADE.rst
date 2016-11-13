@@ -13,7 +13,7 @@ to your setup in order to use a new role release. Refer to the
 From v0.2.x to v0.3.x
 ---------------------
 
-Make sure to read the Changelog for for detailed list of changes.
+Make sure to read the :ref:`ifupdown__ref_changelog` for for detailed list of changes.
 
 All variables are renamed
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -55,15 +55,15 @@ All of the mechanisms that detected the static network interface configuration,
 presence of NetworkManager, POSIX capabilities and different host types were
 removed, because the role is no longer enabled by default on all hosts. Make
 sure that you use the role only on hosts that are expected to be configured by
-the :command:`ifupdown` package, role will make no attempts to accomodate other
+the :command:`ifupdown` package, role will make no attempts to accommodate other
 network configuration solutions at this time.
 
 Playbook changes
 ~~~~~~~~~~~~~~~~
 
 The role uses an internal ``debops.ifupdown/env`` role and debops.ferm_ role to
-configure the required firewall rules, make sure to update your custom
-playbooks; see the example playbook for details.
+configure the required firewall rules. Make sure to update your custom
+playbooks; see the :ref:`ifupdown__ref_example_playbook` for details.
 
 Compatibility with debops.subnetwork role
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

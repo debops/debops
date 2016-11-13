@@ -99,7 +99,7 @@ Changed
 - The interface reconfiguration script now sends information about different
   operations to :command:`syslog` for easier debugging. [drybjed_]
 
-- Network interfaces that require changes are deconfigured in reverse order to
+- Network interfaces that require changes are reconfigured in reverse order to
   behave the same as the :command:`ifupdown` commands. [drybjed_]
 
 Deprecated
@@ -112,7 +112,7 @@ Removed
 ~~~~~~~
 
 - Remove all files in :file:`var/` directory; the default interface
-  configuration is moved to the :envvar:ifupdown__default_interfaces` variable.
+  configuration is moved to the :envvar:`ifupdown__default_interfaces` variable.
   [drybjed_]
 
 - Drop usage of locally installed reconfiguration script, it's now used by the
