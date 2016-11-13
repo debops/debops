@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed_.
 `debops.secret master`_ - unreleased
 ------------------------------------
 
-.. _debops.secret master: https://github.com/debops/ansible-secret/compare/v0.2.3...master
+.. _debops.secret master: https://github.com/debops/ansible-secret/compare/v0.3.0...master
+
+
+`debops.secret v0.3.0`_ - 2016-11-13
+------------------------------------
+
+.. _debops.secret v0.3.0: https://github.com/debops/ansible-secret/compare/v0.2.3...v0.3.0
 
 Added
 ~~~~~
