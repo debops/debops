@@ -10,7 +10,7 @@ Quick start guide
 -----------------
 
 Here are some quick examples to get you started if you already know how to use
-DebOps roles. These examples are supposed to go into Ansible inventory,
+DebOps roles. These examples are supposed to go into your Ansible inventory,
 specifically to the host configuration, for example
 :file:`ansible/inventory/host_vars/<hostname>/ifupdown.yml`.
 
@@ -62,10 +62,12 @@ host to the ``[debops_service_ifupdown]`` Ansible inventory group:
    hostname
 
 The role does not check if the host can manage network interfaces, therefore
-you should only enable this role on that hosts that are allowed to do so. One
-of the limiting factors can be presence of the ``cap_net_admin`` POSIX
-capability, make sure that its present on the host so that it can manage its
+you should only enable this role on hosts that are allowed to do so. One
+of the limiting factors can be the presence of the ``cap_net_admin`` POSIX
+capability. Make sure that its present on the host so that it can manage its
 own networking.
+
+.. _ifupdown__ref_example_playbook:
 
 Example playbook
 ----------------

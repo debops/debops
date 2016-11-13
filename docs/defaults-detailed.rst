@@ -18,7 +18,7 @@ ifupdown__interfaces
 
 The ``ifupdown__*_interfaces`` variables are YAML dictionaries which define
 what network interfaces are configured on a host. All dictionaries are
-recursively combined together in the order they appeare in the
+recursively combined together in the order they appear in the
 :file:`defaults/main.yml` file.
 
 Each entry in the ``ifupdown__*_interfaces`` dictionaries is a YAML dictionary.
@@ -30,6 +30,8 @@ labeled sections will be merged with the real network interface preferences.
 Each network interface will have its configuration in a separate file in
 :file:`/etc/network/interfaces.d/` directory on the managed hosts (both IPv4
 and IPv6 configuration is in the same file).
+
+.. _ifupdown__ref_network_interface_types:
 
 Network interface types
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -78,9 +80,9 @@ name prefix:
   interface will be configured as ``6to4`` tunnel with local IPv6 address based
   on the default network interface IPv4 address.
 
-An interface can also be configured as a ``mapping`` type, which will indicate
-that the interface configuration is selected dynamically by a specified script.
-See :manpage:`interfaces(5)` for more details.
+``mapping``
+  The interface configuration is selected dynamically by a specified script.
+  See :manpage:`interfaces(5)` for more details.
 
 Each network interface can have multiple parameters. Some parameters are
 specific to a particular interface type.
@@ -93,7 +95,7 @@ General interface parameters
   interface will be taken from the YAML dictionary key which holds the
   parameters.
 
-  Example Ehternet interface configuration without and with ``iface``
+  Example Ethernet interface configuration without and with ``iface``
   parameter:
 
   .. code-block:: yaml
@@ -111,9 +113,10 @@ General interface parameters
 
 ``type``
   Optional. Specify the interface type. If this parameter is not defined, role
-  will try and guess the type based on the interface name (see above). The
-  interface type affects the order in which interfaces are brought up/down and
-  use/requirement of special parameters for certain types.
+  will try and guess the type based on the interface name (see
+  :ref:`ifupdown__ref_network_interface_types`). The interface type affects the
+  order in which interfaces are brought up/down and use/requirement of special
+  parameters for certain types.
 
   +-------------+--------------------------------------------------------------+
   |    Type     | Notes                                                        |
@@ -143,7 +146,7 @@ General interface parameters
   Optional. If not specified or ``present``, the given interface configuration
   file will be created. If ``absent``, the interface configuration will be
   removed. If ``ignore``, the interface configuration won't be modified in any
-  way - this is useful if you want to make sure that some network interfaces
+  way – this is useful if you want to make sure that some network interfaces
   are ignored by the role.
 
   If you use the ``dhcp`` interface layout, you might need to explicitly set
@@ -152,7 +155,7 @@ General interface parameters
 
 ``auto``
   Optional, boolean. If ``True``, the network interface will be brought up by
-  the ``networking`` service at boot time, which might be not want you actually
+  the ``networking`` service at boot time, which might be not what you actually
   want in the newer, :command:`systemd`-based hosts. By default it will be set
   to ``False``. See also ``allow`` parameter.
 
@@ -221,7 +224,7 @@ DNS nameserver and search parameters
   Optional. String or list of domains which should be searched in the DNS if
   a hostname without a domain is specified. They will be added to the
   :file:`/etc/resolv.conf`. This list will be added to the IPv4 section of the
-  network interface configuratio unless IPv4 is disabled, in which case they
+  network interface configuration unless IPv4 is disabled, in which case they
   will be configured in IPv6 section.
 
 ``dns_nameservers4``
@@ -234,7 +237,7 @@ DNS nameserver and search parameters
   Optional. String or list of domains which should be searched in the DNS if
   a hostname without a domain is specified. They will be added to the
   :file:`/etc/resolv.conf`. This list will be added to the IPv4 section of the
-  network interface configuratio.
+  network interface configuration.
 
 ``dns_nameservers6``
   Optional. String or list of IPv6 addresses of the nameservers to configure in
@@ -246,7 +249,7 @@ DNS nameserver and search parameters
   Optional. String or list of domains which should be searched in the DNS if
   a hostname without a domain is specified. They will be added to the
   :file:`/etc/resolv.conf`. This list will be added to the IPv6 section of the
-  network interface configuratio.
+  network interface configuration.
 
 Bonding parameters
 ~~~~~~~~~~~~~~~~~~
@@ -363,6 +366,7 @@ Firewall parameters
   ``MASQUERADE`` rule in the firewall configuration instead of the ``SNAT``
   rule. This is useful when the host has no fixed default IP address, for
   example on a laptop.
+  Defaults to :envvar:`ifupdown__default_nat_masquerade`.
 
 ``nat_snat_address``
   Optional. Specify the ``SNAT`` IPv4 address to use for the NAT on a given
@@ -378,7 +382,7 @@ Configuration examples
 
 The examples below are based on the `Debian Network Configuration <https://wiki.debian.org/NetworkConfiguration>`_
 and `Debian IPv6 configuration <https://wiki.debian.org/DebianIPv6>`_
-pages to make comparsion between :file:`/etc/network/interfaces` configuration
+pages to make comparison between :file:`/etc/network/interfaces` configuration
 and ``debops.ifupdown`` configuration easier. Examples are verbose to reflect
 the examples from the wiki page, but some of the parameters can be omitted to
 let the role autogenerate them.
@@ -388,7 +392,7 @@ completeness, usually should be avoided in the newer OS releases (Jessie+,
 Trusty+) on ``systemd``-based hosts. This is done so that the additional
 processes related to a given network interfaces are put in their own
 ``ifup@.service`` cgroup instead of being grouped together under
-``networking.service`` cgroup.
+the ``networking.service`` cgroup.
 
 Use DHCP and SLAAC to `automatically configure the network interface <https://wiki.debian.org/NetworkConfiguration#Using_DHCP_to_automatically_configure_the_interface>`_:
 
@@ -580,8 +584,11 @@ using the "manual approach" method:
    ifupdown__interfaces:
      'eth0':
        allow: [ 'auto', 'hotplug' ]
-       addresses: [ '192.168.1.42/24', '192.168.1.43/24',
-                    '192.168.1.44/24', '10.10.10.14/24' ]
+       addresses:
+         - '192.168.1.42/24'
+         - '192.168.1.43/24'
+         - '192.168.1.44/24'
+         - '10.10.10.14/24'
        gateway: '192.168.1.1'
 
 Configure `a 6to4 tunnel <https://wiki.debian.org/DebianIPv6#IPv6_6to4_Configuration>`_

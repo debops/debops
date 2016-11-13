@@ -13,7 +13,7 @@ This :command:`systemd` unit should make sure that all of the network interfaces
 are enabled by ``allow-auto`` parameter are up before the
 :file:`network-online.target` is reached. This makes that target usable on
 Debian/Ubuntu hosts; services that depend on that target should work properly
-with assumption that the host has network connectivity at that point.
+with the assumption that the host has network connectivity at that point.
 
 
 ifup-allow-boot.service

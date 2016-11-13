@@ -22,7 +22,7 @@ ifupdown__base_packages: [ 'resolvconf', 'rdnssd', 'bsdutils', 'rsync' ]
 # .. envvar:: ifupdown__dynamic_packages [[[
 #
 # List of APT packages to install based on the requirements of the interface
-# types that are configured by the role (support for bridges, bonding, vlans,
+# types that are configured by the role (support for bridges, bonding, VLANs,
 # depends on the presence of a given interface type).
 ifupdown__dynamic_packages: '{{ lookup("template", "lookup/ifupdown__dynamic_packages.j2") | from_yaml }}'
 
@@ -63,8 +63,7 @@ ifupdown__interface_weight_map:
 # .. envvar:: ifupdown__reconfigure_init_file [[[
 #
 # Path where the original :file:`/etc/network/interfaces` file will be copied
-# at the initial role run to allow for deconfiguration of existing interfaces.
-# The file will be removed afterwards.
+# to on the first role run to allow for reconfiguration of existing interfaces.
 ifupdown__reconfigure_init_file: '/etc/network/interfaces.d/old-interfaces'
 
                                                                    # ]]]
@@ -122,13 +121,16 @@ ifupdown__interface_layout: '{{ "dhcp"
 #
 # A YAML dictionary with different network interface configurations:
 #
-# - ``static``: one Ethernet primary interface with static configuration taken
-#               from Ansible facts
+# ``static``
+#   One Ethernet primary interface with static configuration taken from Ansible
+#   facts.
 #
-# - ``dhcp``: one or two Ethernet interfaces with DHCP configuration
+# ``dhcp``
+#   One or two Ethernet interfaces with DHCP configuration.
 #
-# - ``bridge``: one or two Ethernet interfaces with bridges attached to them,
-#               each bridge uses DHCP configuration
+# ``bridge``
+#   One or two Ethernet interfaces with bridges attached to them, each bridge
+#   uses DHCP configuration.
 #
 # The default interface configuration can be modified by other
 # ``ifupdown__*_interfaces`` variables if necessary.
