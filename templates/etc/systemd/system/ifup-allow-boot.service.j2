@@ -1,0 +1,26 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Bring up non-hotpluggable interfaces on boot
+Documentation=man:interfaces(5) man:ifup(8)
+Documentation=https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=765000
+DefaultDependencies=no
+Wants=network.target
+After=local-fs.target network-pre.target apparmor.service systemd-sysctl.service systemd-modules-load.service networking.service
+Before=network.target shutdown.target network-online.target
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=2min
+ExecStart=/bin/sh -ec '\
+  for i in $(ifquery --list --exclude lo --allow boot); do INTERFACES="$INTERFACES$i "; done; \
+  [ -n "$INTERFACES" ] || exit 0; \
+  for i in $INTERFACES; do \
+  if ! systemctl is-active ifup@$i > /dev/null 2>&1 ; then \
+  systemctl start ifup@$i ; fi ; done'
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=network-online.target

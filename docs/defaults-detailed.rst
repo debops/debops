@@ -9,169 +9,640 @@ them.
    :local:
    :depth: 1
 
-.. _ifupdown_interfaces:
+.. _ifupdown__ref_interfaces:
 
-ifupdown_interfaces
--------------------
+ifupdown__interfaces
+--------------------
 
-This is a list of dicts, each dict defines a network interface. The basic
-configuration is very similar to how :file:`/etc/network/interfaces` is configured,
-you can read about it on the Debian Wiki `NetworkConfiguration`_ page.
+The ``ifupdown__*_interfaces`` variables are YAML dictionaries which define
+what network interfaces are configured on a host. All dictionaries are
+recursively combined together in the order they appeare in the
+:file:`defaults/main.yml` file.
 
-.. _NetworkConfiguration: https://wiki.debian.org/NetworkConfiguration
+Each entry in the ``ifupdown__*_interfaces`` dictionaries is a YAML dictionary.
+The key of a given entry is either a network interface name (for example
+``eth0``, ``br0``, etc.) or a "label" that holds the preferences for a network
+interface denoted by the ``iface`` parameter. Configuration parameters in
+labeled sections will be merged with the real network interface preferences.
 
-Each interface definition requires at least the ``iface`` parameter. Other
-parameters are (mostly) optional and usually change how the network interface
-is configured. For example, to specify that a given interface is a bridge, you
-need to select a specific type:
+Each network interface will have its configuration in a separate file in
+:file:`/etc/network/interfaces.d/` directory on the managed hosts (both IPv4
+and IPv6 configuration is in the same file).
 
-.. code-block:: yaml
+Network interface types
+~~~~~~~~~~~~~~~~~~~~~~~
 
-    - iface: 'br0'
-      type: 'bridge'
+Each network interface has a particular type (ethernet, bridge, VLAN, etc.).
+The type can be specified by the ``type`` parameter. If this parameter is not
+defined, the role will try to select the correct type based on the interface
+name prefix:
 
-List of interface parameters
+``en*`` or ``eth*``
+  The Ethernet network interfaces, marked as the ``ether`` type. If not
+  configured specifically, this interface type will automatically enable an
+  IPv4 DHCP configuration and IPv6 SLAAC configuration. The network interface
+  will be configured to be brought up by the hotplug subsystem.
+
+``br*``
+  The network bridge interface, marked as the ``bridge`` type. If not
+  configured specifically, the role will configure an anonymous bridge without
+  any network interfaces connected, which will be started automatically at
+  boot. The firewall will be configured to allow network traffic through the
+  bridge, without IPv4 NAT.
+
+``vlan*`` or name with a dot (``.``)
+  The VLAN interface, marked as the ``vlan`` type.
+
+``bond*``
+  The bonding interface, marked as the ``bonding`` type.
+
+``sl*``
+  The `Serial Line Internet Protocol <https://en.wikipedia.org/wiki/Serial_Line_Internet_Protocol>`_
+  interface, marked as the ``slip`` type.
+
+``wl*``
+  The Wireless LAN interface, marked as the ``wlan`` type.
+
+``ww*``
+  The `Wireless WAN <https://en.wikipedia.org/wiki/Wireless_WAN>`_ interface,
+  marked as the ``wwan`` type.
+
+``tap*``, ``tun*``, ``mesh*``, ``sit*``
+  The network tunnel interface, marked as the ``tunnel`` type.
+
+``6to4``
+  The `IPv6 to IPv4 transition mechanism <https://en.wikipedia.org/wiki/6to4>`_
+  interface, marked as the ``6to4`` type. If not configured specifically, this
+  interface will be configured as ``6to4`` tunnel with local IPv6 address based
+  on the default network interface IPv4 address.
+
+An interface can also be configured as a ``mapping`` type, which will indicate
+that the interface configuration is selected dynamically by a specified script.
+See :manpage:`interfaces(5)` for more details.
+
+Each network interface can have multiple parameters. Some parameters are
+specific to a particular interface type.
+
+General interface parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``iface``
-  Name of the interface, required. Multiple interfaces with the same names can
-  be configured at the same time (IPv4 and IPv6 interface configuration is
-  defined separately).
+  Name of the network interface to configure. If not specified, the network
+  interface will be taken from the YAML dictionary key which holds the
+  parameters.
 
-  Examples: ``eth0``, ``br0``, ``vlan1000``, ``bond0``
-
-``type``
-  Interface type, either ``interface``, ``bridge``, ``vlan``, ``bond``, or
-  ``mapping``. Each interface type may have their own additional parameters,
-  which might be optional or required. If type is not specified, ``interface``
-  is used.
-
-``alias``
-  Alternative name of the interface type, used in the comments and filename.
-
-``enabled``
-  Boolean variable (``True``/``False``). If present, the interface configuration
-  can be generated or not depending on a variable, for example::
+  Example Ehternet interface configuration without and with ``iface``
+  parameter:
 
   .. code-block:: yaml
 
-      - iface: 'br2'
-        enabled: '{{ interface_active | bool }}'
+     ifupdown__interfaces:
+       'eth0':
+         type: 'ether'
 
-``inet`` | ``inet6``
-  This parameter determines the "family" of given interface configuration,
-  either IPv4 or IPv6 (in ``ifupdown`` each family on a given interface is
-  configured in a separate "stanza").
+     ifupdown__host_interfaces:
+       'external':
+         iface: 'eth0'
+         type: 'ether'
 
-  You should use only one of them for each interface definition. If none are
-  used, ``inet`` (IPv4) is assumed. If both are used, ``inet6`` (IPv6) takes
-  precedence.
+  The ``iface`` parameter can be templated by Jinja, unlike the dictionary key.
 
-  The value of this parameter specifies what configuration method is used to
-  configure given interface. It can be ``dhcp``, ``static``, ``manual`` or
-  other methods, depending on what each interface type allows. See
-  :manpage:`interfaces(5)` for a list of available methods. If parameter is not
-  specified, ``dhcp`` is used as default for IPv4 network.
+``type``
+  Optional. Specify the interface type. If this parameter is not defined, role
+  will try and guess the type based on the interface name (see above). The
+  interface type affects the order in which interfaces are brought up/down and
+  use/requirement of special parameters for certain types.
+
+  +-------------+--------------------------------------------------------------+
+  |    Type     | Notes                                                        |
+  +=============+==============================================================+
+  | ``mapping`` | interface configured dynamically via scripts                 |
+  +-------------+--------------------------------------------------------------+
+  | ``bonding`` | virtual bonded interface                                     |
+  +-------------+--------------------------------------------------------------+
+  | ``ether``   | Ethernet (physical or virtual) interface                     |
+  +-------------+--------------------------------------------------------------+
+  | ``slip``    | Serial Line Internet Protocol interface                      |
+  +-------------+--------------------------------------------------------------+
+  | ``wlan``    | Wireless Local Area Network interface (WiFi)                 |
+  +-------------+--------------------------------------------------------------+
+  | ``wwan``    | Wireless Wide Area Network interface (mobile networks, GSM)  |
+  +-------------+--------------------------------------------------------------+
+  | ``vlan``    | VLAN interface, requires another interface to be attached to |
+  +-------------+--------------------------------------------------------------+
+  | ``bridge``  | network bridge                                               |
+  +-------------+--------------------------------------------------------------+
+  | ``6to4``    | IPv6 in IPv4 tunnel                                          |
+  +-------------+--------------------------------------------------------------+
+  | ``tunnel``  | virtual network tunnel                                       |
+  +-------------+--------------------------------------------------------------+
+
+``state``
+  Optional. If not specified or ``present``, the given interface configuration
+  file will be created. If ``absent``, the interface configuration will be
+  removed. If ``ignore``, the interface configuration won't be modified in any
+  way - this is useful if you want to make sure that some network interfaces
+  are ignored by the role.
+
+  If you use the ``dhcp`` interface layout, you might need to explicitly set
+  the ``br0`` and ``br1`` bridge state to ``present`` because this interface
+  layout will try to remove them by default.
 
 ``auto``
-  Boolean variable (``True``/``False``) which determines if a given network
-  interface will be brought up automatically at system start. By default all
-  interfaces are configured to start automatically (``True``).
+  Optional, boolean. If ``True``, the network interface will be brought up by
+  the ``networking`` service at boot time, which might be not want you actually
+  want in the newer, :command:`systemd`-based hosts. By default it will be set
+  to ``False``. See also ``allow`` parameter.
 
 ``allow``
-  Name or list of names of "subsystems" which can enable the interface, for
-  example ``hotplug``. By default, if nothing is specified and interface is not
-  configured manually, ``allow-hotplug`` will be added automatically so that
-  the ``systemd`` ``ifup@.service`` unit can work correctly.
+  Optional, boolean, string or YAML list. If set to ``False``, this option is
+  disabled. If ``True``, the hotplug subsystem can bring this interface up or
+  down when the hotplug event is detected. You can also specify a list of
+  specific conditions at which the interface is brought up, currently
+  recognized conditions are:
 
-``addresses``
-  List of IPv4 or IPv6 addresses in the ``host/prefix`` format which should be
-  configured on this interface. You can specify multiple IPv4 or IPv6
-  addresses, they will be filtered according to the interface "family" - this
-  allows you to keep all of the host IP addresses in one list.
+  - ``auto``: bring the interface up at boot time by the ``networking``
+    service. This might not be what you want on newer systems.
 
-  The IP addresses will be configured in the order they are listed. If the interface is
-  configured as ``static``, the first IPv4 address will be the main one, the rest
-  will be added with numbered labels. When the interface is configured to get its
-  IP address via DHCP, all IPv4 addresses will be added with numbered labels.
+  - ``boot``: bring the interface up at boot time by ``ifup@.service``
+    :command:`systemd` unit. This will put any processes related to a given
+    interface in their separate cgroup, which allows for better control over
+    the network interface. This is a custom implementation of the ``auto``
+    mechanism managed by this Ansible role.
 
-``gateway``
-  IP address of the gateway configured for this interface; only one gateway can
-  be configured at the moment.
+  - ``hotplug``: bring the interface up/down at hotplug events. This condition
+    is required to be present for the ``ifup@.service`` :command:`systemd` unit
+    to work properly.
 
-``label``
-  Specify a string which will be added to the interface name as a label.
-  Labeled interface configuration is stored in separate configuration files in
-  :file:`/etc/network/interfaces.d/`.
+IPv4 and IPv6 configuration parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``inet``
+  Optional. IPv4 configuration method used by a given interface. There are many
+  configuration methods described in the :manpage:`interfaces(5)` manual page, most
+  commonly used are: ``manual``, ``dhcp``, ``static``. If you set this
+  parameter to ``False``, the IPv4 configuration will be disabled.
+
+``inet6``
+  Optional. IPv6 configuration method used by a given interface. There are many
+  configuration methods described in the :manpage:`interfaces(5)` manual page, most
+  commonly used are: ``auto``, ``manual``, ``dhcp``, ``static``, ``v4tunnel``,
+  ``6to4``. If you set this parameter to ``False``, the IPv4 configuration will
+  be disabled.
+
+``address`` or ``addresses``
+  Optional. A string or an YAML list of IPv4 and/or IPv6 addresses to set on
+  a given network interface, in the form of ``ipaddress/prefix`` or CIDR.
+  Remember that you need to specify the host IP address and not the network;
+  the ``192.0.2.1/24`` is the correct notation, and ``192.0.2.0/24`` is
+  incorrect.
+
+``gateway`` or ``gateway4``
+  Optional. Specify the IPv4 address of the network gateway to which outgoing
+  packets will be directed.
+
+``gateway6``
+  Optional. Specify the IPv6 address of the network gateway to which outgoing
+  packets will be directed.
+
+DNS nameserver and search parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``dns_nameservers``
+  Optional. String or list of IP addresses of the nameservers to configure in
+  :file:`/etc/resolv.conf`. Remember that only 3 nameservers are allowed at any
+  time. They will be added to the IPv4 section of the network interface
+  configuration unless IPv4 is disabled, in which case they will be configured
+  in IPv6 section.
+
+``dns_search``
+  Optional. String or list of domains which should be searched in the DNS if
+  a hostname without a domain is specified. They will be added to the
+  :file:`/etc/resolv.conf`. This list will be added to the IPv4 section of the
+  network interface configuratio unless IPv4 is disabled, in which case they
+  will be configured in IPv6 section.
+
+``dns_nameservers4``
+  Optional. String or list of IPv4 addresses of the nameservers to configure in
+  :file:`/etc/resolv.conf`. Remember that only 3 nameservers are allowed at any
+  time. They will be added to the IPv4 section of the network interface
+  configuration.
+
+``dns_search4``
+  Optional. String or list of domains which should be searched in the DNS if
+  a hostname without a domain is specified. They will be added to the
+  :file:`/etc/resolv.conf`. This list will be added to the IPv4 section of the
+  network interface configuratio.
+
+``dns_nameservers6``
+  Optional. String or list of IPv6 addresses of the nameservers to configure in
+  :file:`/etc/resolv.conf`. Remember that only 3 nameservers are allowed at any
+  time. They will be added to the IPv6 section of the network interface
+  configuration.
+
+``dns_search6``
+  Optional. String or list of domains which should be searched in the DNS if
+  a hostname without a domain is specified. They will be added to the
+  :file:`/etc/resolv.conf`. This list will be added to the IPv6 section of the
+  network interface configuratio.
+
+Bonding parameters
+~~~~~~~~~~~~~~~~~~
+
+``slaves``
+  Optional. String or YAML list of network interfaces to bond together.
+
+``bond-*``
+  Optional. If an interface is a bonding, any parameters that have ``bond-``
+  prefix will be added to that interface configuration. See the documentation
+  included in the ``ifenslave`` package for possible configuration options.
+
+Bridge parameters
+~~~~~~~~~~~~~~~~~
+
+``bridge_*``
+  Optional. If an interface is a bridge, any parameters that have ``bridge_``
+  prefix will be added to that interface configuration. See the
+  :manpage:`bridge-utils-interfaces(5)` manual for more details about possible bridge
+  configuration options.
+
+VLAN parameters
+~~~~~~~~~~~~~~~
+
+``vlan_device`` or ``vlan_raw_device``
+  Name of the network interface on which a VLAN will be configured.  If the
+  interface name contains a dot (for example ``eth0.10``), the role will try to
+  detect the network interface automatically.
+
+6to4 tunnel parameters
+~~~~~~~~~~~~~~~~~~~~~~
+
+``local``
+  Optional. Specify the public IPv4 address which will be used to create the
+  IPv6 6to4 tunnel.
+
+Mapping parameters
+~~~~~~~~~~~~~~~~~~
+
+``script``
+  Absolute path to a script which will be used to select a specific interface
+  configuration for a mapping dynamically. See :manpage:`interfaces(5)` manual for
+  more details.
+
+Custom interface options
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+``comment``
+  Optional. String or a YAML text block with a comment that will be added to
+  a given interface configuration file.
+
+``comment4``
+  Optional. String or a YAML text block with a comment that will be added to
+  a given interface configuration file near the IPv4 section.
+
+``comment6``
+  Optional. String or a YAML text block with a comment that will be added to
+  a given interface configuration file near the IPv6 section.
 
 ``options``
-  YAML text block with additional options added to the interface configuration.
-  You can specify here custom commands, nameservers, search domains, etc. See
-  :manpage:`interfaces(5)` for more details about what can be configured.
+  Optional. String or a YAML text block with custom options for the network
+  interface. It will be added after the IPv4 section, unless IPv4 support is
+  disabled in which case it will be added after IPv6 section. If this parameter
+  is specified, autogenerated configuration for specific interface types will
+  be disabled.
 
-``port``
-  Name of other network interface which this interface might depend on. Usage
-  depends on the interface type.
+``options4``
+  Optional. String or a YAML text block with custom options added to the IPv4
+  section of the network interface configuration. If this parameter is present,
+  autogenerated configuration for specific interface types will be disabled.
 
-  In ``bridge`` interfaces, you can specify the name or list of interfaces to add
-  to the bridge.
+``options6``
+  Optional. String or a YAML text block with custom options added to the IPv6
+  section of the network interface configuration. If this parameter is present,
+  autogenerated configuration for specific interface types will be disabled.
 
-  In ``vlan`` interfaces, you can define the name of the interface used as
-  ``vlan_raw_device``.
+``add_options``
+  Optional. String or a YAML text block with custom options for the network
+  interface. It will be added after the IPv4 section, unless IPv4 support is
+  disabled in which case it will be added after IPv6 section. You can use this
+  parameter to add options to the autogenerated configuration, which will be
+  still included.
 
-  In ``6to4`` interface, you can specify the name of the interface which will be
-  checked for IPv4 address to use to configure the IPv6 6to4 tunnel.
+``add_options4``
+  Optional. String or a YAML text block with custom options added to the IPv4
+  section of the network interface configuration. You can use this parameter to
+  add options to the autogenerated configuration, which will be still included.
 
-``ports`` | ``bridge_ports``
-  Alternative names for list of ports to add to a given bridge.
+``add_options6``
+  Optional. String or a YAML text block with custom options added to the IPv6
+  section of the network interface configuration. You can use this parameter to
+  add options to the autogenerated configuration, which will be still included.
 
-``device`` | ``vlan_device`` | ``vlan_raw_device``
-  Alternative names for the name of the interface to use as VLAN raw device.
+``debug``
+  Optional, boolean. If ``True``, the role will add commented out debug
+  information to the generated interface configuration file. It can be used to
+  check what the role thinks the interface configuration should be like.
 
-``port_present``
-  If you specify a name of an interface with this parameter,
-  ``debops.ifupdown`` will check if that interface exists (usually these are
-  physical interfaces like ``eth0``). If the interface exists, the role will
-  generate the configuration of an interface with this parameter. If it does
-  not, the configuration won't be generated.
+Firewall parameters
+~~~~~~~~~~~~~~~~~~~
 
-``port_active``
-  Boolean variable (``True``/``False``) which specifies the state of
-  the ``item.port_present`` interface that you want, either active (``True``, port
-  has a connection) or inactive (``False``, port does not have connection). If
-  the port is not in a given state, then the configuration won't be generated.
+``forward``
+  Optional, boolean. If absent and an interface is a bridge, or present and
+  ``True``, the role will generate configuration for the debops.ferm_ Ansible
+  role to enable packet forwarding for a given interface.
 
-``weight``
-  Numerical value added at the beginning of the interface configuration file.
-  If not specified, a value will be set from ``ifupdown_interface_weight_map``
-  variable depending on the type of the interface.
+``nat``
+  Optional, boolean. If present and ``True``, the firewall configuration for
+  a given interface (usually a bridge) will include the IPv4 NAT rules. The
+  default gateway IPv4 address will be used in the Source NAT configuration.
 
-``filename``
-  Name of the configuration file to generate. If not specified, an unique
-  configuration file name will created, based on the interface type, interface
-  name, label and interface family.
+``nat_masquerade``
+  Optional, boolean. If present and ``True``, the role will use the
+  ``MASQUERADE`` rule in the firewall configuration instead of the ``SNAT``
+  rule. This is useful when the host has no fixed default IP address, for
+  example on a laptop.
 
-``delete``
-  If specified and ``True``, the configuration file for a given interface will
-  be deleted from :file:`/etc/network/interfaces.d/` and won't be generated again.
+``nat_snat_address``
+  Optional. Specify the ``SNAT`` IPv4 address to use for the NAT on a given
+  bridge. If not specified, the role will use the host's default IPv4 address
+  as the ``SNAT`` IP address.
+
+``nat_snat_interface``
+  Optional. If specified, the IPv4 address on a given network interface will be
+  used to generate the ``SNAT`` firewall rules.
+
+Configuration examples
+~~~~~~~~~~~~~~~~~~~~~~
+
+The examples below are based on the `Debian Network Configuration <https://wiki.debian.org/NetworkConfiguration>`_
+and `Debian IPv6 configuration <https://wiki.debian.org/DebianIPv6>`_
+pages to make comparsion between :file:`/etc/network/interfaces` configuration
+and ``debops.ifupdown`` configuration easier. Examples are verbose to reflect
+the examples from the wiki page, but some of the parameters can be omitted to
+let the role autogenerate them.
+
+Keep in mind that the ``auto`` parameter, included in the examples for
+completeness, usually should be avoided in the newer OS releases (Jessie+,
+Trusty+) on ``systemd``-based hosts. This is done so that the additional
+processes related to a given network interfaces are put in their own
+``ifup@.service`` cgroup instead of being grouped together under
+``networking.service`` cgroup.
+
+Use DHCP and SLAAC to `automatically configure the network interface <https://wiki.debian.org/NetworkConfiguration#Using_DHCP_to_automatically_configure_the_interface>`_:
+
+.. code-block:: yaml
+
+   ifupdown__interfaces:
+     'eth0':
+       auto: True
+       allow: 'hotplug'
+       inet: 'dhcp'
+       inet6: 'auto'
+
+`Configure the network interface manually <https://wiki.debian.org/NetworkConfiguration#Configuring_the_interface_manually>`_
+using static IPv4 and IPv6 configuration:
+
+.. code-block:: yaml
+
+   ifupdown__interfaces:
+     'static-eth0':
+       iface: 'eth0'
+       auto: True
+       inet: 'static'
+       inet6: 'static'
+       addresses: [ '192.0.2.7/24', '2001:db8::c0ca:1eaf/64' ]
+       gateway4: '192.0.2.254'
+       gateway6: '2001:db8::1ead:ed:beef'
+
+Configure an interface `without an IP address <https://wiki.debian.org/NetworkConfiguration#Bringing_up_an_interface_without_an_IP_address>`_:
+
+.. code-block:: yaml
+
+   ifupdown__interfaces:
+
+     'eth0':
+       inet: 'manual'
+       options: |
+         pre-up ifconfig $IFACE up
+         post-down ifconfig $IFACE down
+
+    'eth0.99':
+      inet: 'manual'
+      options: |
+        post-up ifconfig $IFACE up
+        pre-down ifconfig $IFACE down
+
+Configure `DNS nameservers and search domains <https://wiki.debian.org/NetworkConfiguration#The_resolvconf_program>`_
+with an autogenerated default interface:
+
+.. code-block:: yaml
+
+   ifupdown__interfaces:
+     'external':
+       iface: '{{ ifupdown__external_interface }}'
+       inet: 'dhcp'
+       dns_nameservers: [ '12.34.56.78', '12.34.56.79' ]
+       dns_search: 'example.com'
+
+Configure `static bridge <https://wiki.debian.org/NetworkConfiguration#Bridging>`_
+between two Ethernet interfaces:
+
+.. code-block:: yaml
+
+   ifupdown__interfaces:
+
+     'eth0':
+       inet: 'manual'
+       inet6: False
+
+     'eth1':
+       inet: 'manual'
+       inet6: False
+
+     'br0':
+       inet: 'static'
+       address: '10.10.0.15/24'
+       gateway: '10.10.0.1'
+       bridge_ports: [ 'eth0', 'eth1' ]
+       bridge_stp: 'on'
+
+Create a `static VLAN interface on an Ethernet interface <https://wiki.debian.org/NetworkConfiguration#Network_init_script_config>`_:
+
+.. code-block:: yaml
+
+   ifupdown__interfaces:
+     'eth0.222':
+       auto: True
+       inet: 'static'
+       address: '10.10.10.1/24'
+       vlan_raw_device: 'eth0'
+
+Connect `a bridge to a VLAN on an Ethernet interface <https://wiki.debian.org/NetworkConfiguration#Caveats_when_using_bridging_and_vlan>`_:
+
+.. code-block:: yaml
+
+   ifupdown__interfaces:
+
+     'eth0':
+       auto: True
+       inet: 'static'
+       inet6: False
+       address: '192.168.1.1/24'
+
+     'eth0.110':
+       inet: 'manual'
+       vlan_device: 'eth0'
+
+     'br0':
+       auto: True
+       inet: 'static'
+       address: '192.168.110.1/24'
+       bridge_ports: 'eth0.110'
+       bridge_stp: 'on'
+       bridge_maxwait: '10'
+
+Create `a bonded interface <https://wiki.debian.org/NetworkConfiguration#A.2Fetc.2Fnetwork.2Finterfaces>`_
+using two Ethernet interfaces and attached VLANs:
+
+.. code-block:: yaml
+
+   ifupdown__interfaces:
+
+     'bond0':
+       auto: True
+       inet: 'manual'
+       slaves: [ 'eth1', 'eth0' ]
+       options: |
+         up ifconfig bond0 0.0.0.0 up
+
+     'vlan10':
+       auto: True
+       inet: 'static'
+       address: '10.10.10.12/16'
+       gateway: '10.10.0.1'
+       vlan_raw_device: 'bond0'
+       dns_nameservers: '10.10.0.2'
+       dns_search: 'hup.hu'
+
+     'vlan20':
+       auto: True
+       inet: 'static'
+       address: '10.20.10.12/16'
+       vlan_raw_device: 'bond0'
+
+     'vlan30':
+       auto: True
+       inet: 'static'
+       address: '10.30.10.12/16'
+       vlan_raw_device: 'bond0'
+
+Create `advanced bonding configuration <https://wiki.debian.org/NetworkConfiguration#How_to_set_the_MTU_.28Max_transfer_unit_.2F_packet_size.29_with_VLANS_over_a_bonded__interface>`_
+with MTU and other parameters:
+
+.. code-block:: yaml
+
+   ifupdown__interfaces:
+
+     'bond0':
+       auto: True
+       inet: 'manual'
+       bond-slaves: [ 'eth0', 'eth1' ]
+       bond-mode: '4'
+       bond-miimon: '100'
+       bond-downdelay: '200'
+       bond-updelay: '200'
+       bond-lacp-rate: '1'
+       bond-xmit-hash-policy: 'layer2+3'
+       options: |
+         up ifconfig lacptrunk0 0.0.0.0 up
+         post-up ifconfig eth0 mtu 9000 && ifconfig eth1 mtu 9000 && ifconfig bond0 mtu 9000
+
+     'vlan101':
+       auto: True
+       inet: 'static'
+       address: '10.101.60.123/24'
+       gateway: '10.155.60.1'
+       vlan_device: 'bond0'
+
+     'vlan151':
+       auto: True
+       inet: 'static'
+       address: '192.168.1.1/24'
+       vlan_device: 'bond0'
+
+Configure `multiple IP addresses on an interface <https://wiki.debian.org/NetworkConfiguration#iproute2_method>`_
+using the "manual approach" method:
+
+.. code-block:: yaml
+
+   ifupdown__interfaces:
+     'eth0':
+       allow: [ 'auto', 'hotplug' ]
+       addresses: [ '192.168.1.42/24', '192.168.1.43/24',
+                    '192.168.1.44/24', '10.10.10.14/24' ]
+       gateway: '192.168.1.1'
+
+Configure `a 6to4 tunnel <https://wiki.debian.org/DebianIPv6#IPv6_6to4_Configuration>`_
+using your public, default IPv4 address (role will autogenerate most of the
+required configuration):
+
+.. code-block:: yaml
+
+   ifupdown__interfaces:
+     '6to4': {}
+
+.. _ifupdown__ref_custom_files:
+
+ifupdown__custom_files
+----------------------
+
+The ``ifupdown__*_custom_files`` list variables can be used to place custom
+scripts or other configuration files on the remote hosts needed for network
+configuration (for example mapping scripts). Each list element is a YAML
+dictionary with specific parameters:
+
+``dest`` or ``path``
+  Required. Absolute path to the destination file on remote host.
+
+``src``
+  Optional. Path to the source file on the Ansible Controller which will be
+  copied to the remote host. Shouldn't be used with the ``content`` parameter.
+
+``content``
+  Optional. An YAML text block with the file contents which should be put in
+  the specified destination file on the remote host. Shouldn't be used with the
+  ``src`` parameter.
+
+``owner``
+  Optional. Specify the UNIX user account which will be an owner of the file.
+  If not specified, ``root`` will be the owner.
+
+``group``
+  Optional. Specify the UNIX group which will be the primary group of the file.
+  If not specified, ``root`` will be the primary group.
+
+``mode``
+  Optional. Specify the file mode which should be set for a given file. If not
+  specified, ``0644`` mode will be set.
 
 ``force``
-  If specified and ``True`` force the role to generate a specified interface,
-  even if various conditions say otherwise.
+  Optional, boolean. If not specified or ``True``, the role will ensure that
+  the file contents are up to date on each run. If ``False``, existing files
+  won't be changed if they are different.
 
-``auto_ifup``
-  By default when the interface configuration changes, the ``debops.ifupdown`` role
-  will automatically stop that interface and start it again. If this parameter
-  is present and ``True``, the role will stop the interface and generate a script
-  in :file:`/tmp` directory which can be used to start it again from another
-  Ansible role or manually.
+Examples
+~~~~~~~~
 
-Example interface configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Create an interface mapping script:
 
-Configuration examples can be found in the :file:`var/` directory of the
-``debops.ifupdown`` role, or `on GitHub`_. If you want to use them as a base
-for your own configuration, add them to the ``ifupdown_interfaces`` list in Ansible’s
-inventory, so they can override the defaults.
+.. code-block:: yaml
 
-.. _on GitHub: https://github.com/debops/ansible-ifupdown/tree/master/vars
+   ifupdown__custom_files:
+     - dest: '/usr/local/lib/ifupdown-map-wlan.sh'
+       owner: 'root'
+       group: 'root'
+       mode: '0755'
+       content: |
+         #!/bin/sh
+         # Script contents ...
+         exit 0

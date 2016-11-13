@@ -10,8 +10,10 @@ Ansible role: debops.ifupdown
    getting-started
    defaults
    defaults-detailed
+   ifupdown-systemd
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:

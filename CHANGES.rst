@@ -18,10 +18,105 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.ifupdown master: https://github.com/debops/ansible-ifupdown/compare/v0.2.6...master
 
+Added
+~~~~~
+
+- Add the :file:`ifup-allow-boot.service` :command:`systemd` unit file which
+  will bring up all network interfaces which have the ``allow-boot`` and
+  ``allow-hotplug`` parameters. This should fix a problem where network
+  interfaces that don't use hotplug events (like bridges, tunnels, etc.) are
+  not brought up by the :file:`networking.service` unit, or are brought up with
+  their processes put in the :file:`networking.service` cgroup and not able to
+  be managed separately. [drybjed_]
+
+- Role will now mark the network interfaces that need processing (new, removed,
+  or changed) using files in the :file:`/run/network/` directory. The network
+  reconfiguration script reads these files and performs network changes if
+  needed. [drybjed_]
+
+- The ``debops.ifupdown`` role now incorporates configuration done by the
+  debops.subnetwork_ role; it generates the forward and NAT rules for the
+  firewall managed by the debops.ferm_ Ansible role for each bridge it manages.
+  This is configurable per bridge if needed. [drybjed_]
+
+- Role now uses separate ``debops.ifupdown/env`` internal role to prepare
+  dynamic configuration for other roles, like debops.ferm_. You will need to
+  update your playbooks to reflect this. [drybjed_]
+
+- You can now install custom scripts or other files needed by the interface
+  configuration by using the new :envvar:`ifupdown__custom_files` variables.
+  [drybjed_]
+
+- Role now supports the stable network interface naming schemes introduced by
+  the :command:`systemd` init daemon. The network interfaces should be
+  correctly detected without the need for the user to configure them beforehand
+  using role variables. [drybjed_]
+
+- You can now use variables on different inventory levels to configure network
+  interfaces on all or specific groups of hosts. [drybjed_]
+
+- Role now uses Ansible local fact script to preserve some configuration like
+  information about external and internal network interfaces to make the role
+  operation idempotent. [drybjed_]
+
 Changed
 ~~~~~~~
 
 - Update documentation and Changelog. [drybjed_]
+
+- Rename all role variables from ``ifupdown_*`` to ``ifupdown__*`` to put them
+  in a separate namespace. You will need to update your Ansible inventory. Keep
+  in mind that the variable data model has also been changed, read the rest of
+  the documentation for details. [drybjed_]
+
+- Change the network interface configuration model from YAML list to a YAML
+  dict. This should make the role less prone to creating duplicate interface
+  configuration. [drybjed_]
+
+- Configuration file naming scheme in :file:`/etc/network/interfaces.d/` has
+  been simplified to eliminate issues with duplicating network interface
+  configuration. Now all files are named as ``<weight>_iface_<interface>``;
+  IPv4 and IPv6 interface configuration is stored in 1 file instead of 2.
+  [drybjed_]
+
+- The ``debops.ifupdown`` role will ensure that the :command:`rdnssd` package
+  is installed for better IPv6 DNS support. [drybjed_]
+
+- The default network configuration layouts have been moved to the default role
+  variables and can be easily changed or extended if necessary. [drybjed_]
+
+- All of the network interface configuration has been merged into 1 YAML
+  dictionary, there's no need to configure separate parameters in separate
+  "maps" anymore. [drybjed_]
+
+- The interface reconfiguration script now sends information about different
+  operations to :command:`syslog` for easier debugging. [drybjed_]
+
+- Network interfaces that require changes are deconfigured in reverse order to
+  behave the same as the :command:`ifupdown` commands. [drybjed_]
+
+Deprecated
+~~~~~~~~~~
+
+- The debops.subnetwork_ Ansible role has been deprecated by this role and
+  shouldn't be used anymore. [drybjed_]
+
+Removed
+~~~~~~~
+
+- Remove all files in :file:`var/` directory; the default interface
+  configuration is moved to the :envvar:ifupdown__default_interfaces` variable.
+  [drybjed_]
+
+- Drop usage of locally installed reconfiguration script, it's now used by the
+  :file:`script` Ansible module directly. [drybjed_]
+
+- Remove environment detection code, that is detection of POSIX capabilities,
+  detection of static network configuration in :file:`/etc/network/interfaces`
+  and detection of NetworkManager service. The role is no longer included in
+  the DebOps :file:`common.yml` playbook, therefore it assumes that it can
+  operate correctly on all hosts where it's enabled and those checks shouldn't
+  be needed. [drybjed_]
 
 
 `debops.ifupdown v0.2.6`_ - 2016-10-20
