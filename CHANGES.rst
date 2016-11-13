@@ -18,6 +18,16 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.secret master: https://github.com/debops/ansible-secret/compare/v0.2.3...master
 
+Added
+~~~~~
+
+- Add new ``secret__ldap_*`` variables as replacements to old ``secret_ldap_*``
+  variables. The old variables are preserved for backwards-compatibility.
+  [drybjed_]
+
+- Add new variables for common Organizational Units: Groups, Machines, People.
+  [drybjed_]
+
 Changed
 ~~~~~~~
 
@@ -26,6 +36,21 @@ Changed
 - Rename the variables related to password management and directories from
   ``secret_*`` to ``secret__*`` to put them in a separate namespace. You might
   need to update your inventory if you change any of them. [drybjed_]
+
+- The ``secret_ldap_server`` variable is named ``secret__ldap_fqdn`` in the new
+  LDAP variables. [drybjed_]
+
+- The ``secret_ldap_admin_bind_dn`` variable is named ``secret__ldap_bind_dn``
+  in the new LDAP variables. [drybjed_]
+
+- The ``secret_ldap_admin_bind_pw`` variable is named ``secret__ldap_bind_pw``
+  in the new LDAP variables. [drybjed_]
+
+- The ``secret_ldap_sudo`` variable is named ``secret__ldap_become`` in the new
+  LDAP variables. [drybjed_]
+
+- The ``secret_ldap_services_dn`` variable is named
+  ``secret__ldap_ou_services_dn`` in the new LDAP variables. [drybjed_]
 
 
 `debops.secret v0.2.3`_ - 2016-01-04

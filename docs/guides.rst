@@ -54,7 +54,7 @@ unlocks the encrypted directory and secrets are available again in the
 How to use LDAP variables
 -------------------------
 
-In the `main DebOps playbook repository`_ you can find the Ansible modules
+In the main DebOps playbook repository you can find the Ansible modules
 ``ldap_attr`` and ``ldap_entry``. They can be used to access and control LDAP
 servers. In various DebOps roles, they are used to perform certain tasks in
 a shared environment.
@@ -76,42 +76,39 @@ Example usage of LDAP secret variables:
 
    - name: Create an entry in LDAP database
      ldap_entry:
-       dn: 'ou=People,dc=example,dc=org'
+       dn:          '{{ secret__ldap_ou_people_dn }}'
        objectClass: [ 'organizationalUnit', 'top' ]
-       state: 'present'
-       server_uri: '{{ secret_ldap_server_uri }}'
-       start_tls:  '{{ secret_ldap_start_tls }}'
-       bind_dn: '{{ secret_ldap_admin_bind_dn }}'
-       bind_pw: '{{ secret_ldap_admin_bind_pw }}'
-     become: '{{ secret_ldap_sudo }}'
-     delegate_to: '{{ secret_ldap_delegate_to }}'
+       state:       'present'
+       server_uri:  '{{ secret__ldap_server_uri }}'
+       start_tls:   '{{ secret__ldap_start_tls }}'
+       bind_dn:     '{{ secret__ldap_bind_dn }}'
+       bind_pw:     '{{ secret__ldap_bind_pw }}'
+     become:        '{{ secret__ldap_become }}'
+     delegate_to:   '{{ secret__ldap_delegate_to }}'
      no_log: True
 
    - name: Add attribute to an LDAP entry
      ldap_attr:
-       dn: 'cn=user,ou=People,dc=example,dc=org'
-       name: '{{ item.key }}'
-       values: '{{ item.value }}'
-       state: 'exact'
-       server_uri: '{{ secret_ldap_server_uri }}'
-       start_tls:  '{{ secret_ldap_start_tls }}'
-       bind_dn: '{{ secret_ldap_admin_bind_dn }}'
-       bind_pw: '{{ secret_ldap_admin_bind_pw }}'
-     become: '{{ secret_ldap_sudo }}'
-     delegate_to: '{{ secret_ldap_delegate_to }}'
+       dn:         'uid=user,{{ secret__ldap_ou_people_dn }}'
+       name:       '{{ item.key }}'
+       values:     '{{ item.value }}'
+       state:      'exact'
+       server_uri: '{{ secret__ldap_server_uri }}'
+       start_tls:  '{{ secret__ldap_start_tls }}'
+       bind_dn:    '{{ secret__ldap_bind_dn }}'
+       bind_pw:    '{{ secret__ldap_bind_pw }}'
+     become:       '{{ secret__ldap_become }}'
+     delegate_to:  '{{ secret__ldap_delegate_to }}'
      with_dict:
-       uid: '{{ user_username }}'
+       uid:          '{{ user_username }}'
        userPassword: '{{ user_password }}'
      no_log: True
 
 Of course for this to work, ``debops.secret`` needs to be included in the
 playbook, either as a role, or a role dependency. You can change the values of
-``secret_ldap_*`` variables in inventory as you need.
+``secret__ldap_*`` variables in inventory as you need.
 
 If you use debops.slapd_ role to configure an LDAP server, it will
 automatically copy the admin account password to a location defined in
-``secret_ldap_admin_password`` variable to be accessed by the ``debops.secret``
+``secret__ldap_admin_password`` variable to be accessed by the ``debops.secret``
 role as needed.
-
-.. _main DebOps playbook repository: https://github.com/debops/debops-playbooks/
-.. _debops.slapd: https://github.com/debops/ansible-slapd/
