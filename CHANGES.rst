@@ -23,6 +23,10 @@ Changed
 
 - Update documentation and Changelog. [drybjed_]
 
+- Rename the variables related to password management and directories from
+  ``secret_*`` to ``secret__*`` to put them in a separate namespace. You might
+  need to update your inventory if you change any of them. [drybjed_]
+
 
 `debops.secret v0.2.3`_ - 2016-01-04
 ------------------------------------
