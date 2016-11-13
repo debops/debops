@@ -111,7 +111,7 @@ ifupdown__internal_interface: '{{ ansible_local.ifupdown.internal_interface
 # :envvar:`ifupdown__default_interfaces_map` which will be used to configure
 # initial state of the network interfaces. This name is used in the
 # :envvar:`ifupdown__default_interfaces` variable to select a network layout.
-ifupdown__interface_layout: '{{ "dhcp"
+ifupdown__interface_layout: '{{ "dynamic"
                                 if (ansible_virtualization_type in [ "lxc","openvz" ] and
                                     ansible_virtualization_role == "guest")
                                 else "bridge" }}'
@@ -125,7 +125,7 @@ ifupdown__interface_layout: '{{ "dhcp"
 #   One Ethernet primary interface with static configuration taken from Ansible
 #   facts.
 #
-# ``dhcp``
+# ``dynamic``
 #   One or two Ethernet interfaces with DHCP configuration.
 #
 # ``bridge``
@@ -149,7 +149,7 @@ ifupdown__default_interfaces_map:
       dns_nameservers: '{{ ansible_dns.nameservers }}'
       dns_search: '{{ ansible_dns.search }}'
 
-  'dhcp':
+  'dynamic':
 
     'external':
       iface: '{{ ifupdown__external_interface }}'

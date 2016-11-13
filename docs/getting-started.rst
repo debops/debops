@@ -39,7 +39,7 @@ Default network configuration
 Without any additional configuration, ``debops.ifupdown`` role will try to
 select one of two default interface layouts depending on whether the host is an
 OpenVZ/LXC container or not. If it's a container, the role will use the
-``dhcp`` interface layout which defines 1 or 2 network interfaces that are
+``dynamic`` interface layout which defines 1 or 2 network interfaces that are
 configured via DHCP (IPv4) and SLAAC (IPv6).
 
 If the host is not a container, the role will select the ``bridge`` layout,

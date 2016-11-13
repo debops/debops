@@ -102,6 +102,8 @@ Changed
 - Network interfaces that require changes are reconfigured in reverse order to
   behave the same as the :command:`ifupdown` commands. [drybjed_]
 
+- Rename the ``dhcp`` interface layout to ``dynamic``. [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
