@@ -227,30 +227,6 @@ DNS nameserver and search parameters
   network interface configuration unless IPv4 is disabled, in which case they
   will be configured in IPv6 section.
 
-``dns_nameservers4``
-  Optional. String or list of IPv4 addresses of the nameservers to configure in
-  :file:`/etc/resolv.conf`. Remember that only 3 nameservers are allowed at any
-  time. They will be added to the IPv4 section of the network interface
-  configuration.
-
-``dns_search4``
-  Optional. String or list of domains which should be searched in the DNS if
-  a hostname without a domain is specified. They will be added to the
-  :file:`/etc/resolv.conf`. This list will be added to the IPv4 section of the
-  network interface configuration.
-
-``dns_nameservers6``
-  Optional. String or list of IPv6 addresses of the nameservers to configure in
-  :file:`/etc/resolv.conf`. Remember that only 3 nameservers are allowed at any
-  time. They will be added to the IPv6 section of the network interface
-  configuration.
-
-``dns_search6``
-  Optional. String or list of domains which should be searched in the DNS if
-  a hostname without a domain is specified. They will be added to the
-  :file:`/etc/resolv.conf`. This list will be added to the IPv6 section of the
-  network interface configuration.
-
 Bonding parameters
 ~~~~~~~~~~~~~~~~~~
 

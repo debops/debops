@@ -80,17 +80,11 @@ iface {{ interface_name }} inet {{ interface.inet }}
 {%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
     gateway         {{ interface.gateway4 | d(interface.gateway) }}
 {%     endif %}
-{%     if interface.dns_nameservers4|d() %}
-{%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
-    dns-nameservers {{ (([ interface.dns_nameservers4 ]) if interface.dns_nameservers4 is string else interface.dns_nameservers4) | join(' ') }}
-{%     elif interface.dns_nameservers|d() %}
+{%     if interface.dns_nameservers|d() %}
 {%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
     dns-nameservers {{ (([ interface.dns_nameservers ]) if interface.dns_nameservers is string else interface.dns_nameservers) | join(' ') }}
 {%     endif %}
-{%     if interface.dns_search4|d() %}
-{%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
-    dns-search      {{ (([ interface.dns_search4 ]) if interface.dns_search4 is string else interface.dns_search4) | join(' ') }}
-{%     elif interface.dns_search|d() %}
+{%     if interface.dns_search|d() %}
 {%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
     dns-search      {{ (([ interface.dns_search ]) if interface.dns_search is string else interface.dns_search) | join(' ') }}
 {%     endif %}
@@ -160,14 +154,8 @@ iface {{ interface_name }} inet6 {{ interface.inet6 }}
 {%     if interface.type == '6to4' and interface.local|d() %}
     local           {{ interface.local }}
 {%     endif %}
-{%     if interface.dns_nameservers6|d() %}
-    dns-nameservers {{ (([ interface.dns_nameservers6 ]) if interface.dns_nameservers6 is string else interface.dns_nameservers6) | join(' ') }}
-{%     endif %}
-{%     if ((interface.int is undefined or not interface.inet) and interface.dns_nameservers|d()) %}
+{%     if ((interface.inet is undefined or not interface.inet) and interface.dns_nameservers|d()) %}
     dns-nameservers {{ (([ interface.dns_nameservers ]) if interface.dns_nameservers is string else interface.dns_nameservers) | join(' ') }}
-{%     endif %}
-{%     if interface.dns_search6|d() %}
-    dns-search      {{ (([ interface.dns_search6 ]) if interface.dns_search6 is string else interface.dns_search6) | join(' ') }}
 {%     endif %}
 {%     if ((interface.inet is undefined or not interface.inet) and interface.dns_search|d()) %}
     dns-search      {{ (([ interface.dns_search ]) if interface.dns_search is string else interface.dns_search) | join(' ') }}

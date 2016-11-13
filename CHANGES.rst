@@ -125,6 +125,10 @@ Removed
   operate correctly on all hosts where it's enabled and those checks shouldn't
   be needed. [drybjed_]
 
+- Remove support for ``dns_nameservers{4,6}`` and ``dns_search{4,6}`` from the
+  interface configuration, the normal parameters ``dns_nameservers`` and
+  ``dns_search`` are enough to support this functionality. [drybjed_]
+
 
 `debops.ifupdown v0.2.6`_ - 2016-10-20
 --------------------------------------
