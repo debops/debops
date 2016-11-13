@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.debops_fact master`_ - unreleased
 -----------------------------------------
 
-.. _debops.debops_fact master: https://github.com/debops/ansible-debops_fact/compare/v0.2.0...master
+.. _debops.debops_fact master: https://github.com/debops/ansible-debops_fact/compare/v0.2.1...master
+
+
+`debops.debops_fact v0.2.1`_ - 2016-11-13
+-----------------------------------------
+
+.. _debops.debops_fact v0.2.1: https://github.com/debops/ansible-debops_fact/compare/v0.2.0...v0.2.1
 
 Changed
 ~~~~~~~
