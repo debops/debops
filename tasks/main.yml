@@ -1,6 +1,7 @@
 ---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# .. Package install of essential software (((
+# Package install of essential software [[[
 - name: Make sure essential software is installed
   apt:
     name: '{{ item }}'
@@ -13,9 +14,9 @@
     - '{{ bootstrap__mandatory_packages }}'
     - '{{ bootstrap__base_packages }}'
     - '{{ bootstrap__packages }}'
-# .. )))
+# ]]]
 
-# .. Ansible facts (((
+# Ansible facts [[[
 - name: Install custom Ansible local facts
   copy:
     src: 'etc/ansible/facts.d/'
@@ -27,7 +28,7 @@
 
 - name: Gather host facts
   action: setup
-# .. )))
+# ]]]
 
 - name: Gather information about existing users
   getent:
@@ -39,7 +40,7 @@
   when: bootstrap__admin|bool
   tags: [ 'role::bootstrap:admin' ]
 
-# .. Access to sudo commands (((
+# Access to sudo commands [[[
 - name: Configure system group with passwordless access in sudo
   ## `lineinfile` is used instead of `template` to allow other roles to take
   ## over `sudo` management and prevent one role reverting the work of the
@@ -73,7 +74,7 @@
     validate: 'visudo -cf "%s"'
   tags: [ 'role::bootstrap:admin' ]
 
-# .. Hostname and domain (((
+# Hostname and domain [[[
 - name: Enforce new hostname
   hostname:
     name: '{{ bootstrap__hostname }}'
@@ -114,4 +115,4 @@
       insertbefore: '^::1'
       type: 'inet6'
 
-# .. )))
+# ]]]
