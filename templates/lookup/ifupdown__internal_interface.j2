@@ -1,8 +1,8 @@
 {% set ifupdown__tpl_external_interface = ifupdown__external_interface %}
 {% set ifupdown__tpl_internal_interface = [] %}
 {% for interface in (ansible_interfaces | sort) %}
-{%   if hostvars[inventory_hostname]["ansible_" + interface].type|d() %}
-{%     if (hostvars[inventory_hostname]["ansible_" + interface]["type"] == 'ether' and interface != ifupdown__tpl_external_interface) %}
+{%   if hostvars[inventory_hostname]["ansible_" + (interface|replace("-", "_"))].type|d() %}
+{%     if (hostvars[inventory_hostname]["ansible_" + (interface|replace("-", "_"))]["type"] == 'ether' and interface != ifupdown__tpl_external_interface) %}
 {%       set _ = ifupdown__tpl_internal_interface.append(interface) %}
 {%     endif %}
 {%   endif %}
