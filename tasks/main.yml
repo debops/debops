@@ -12,6 +12,17 @@
 - name: Create custom ifupdown systemd services
   include: ifup_systemd.yml
 
+- name: Reset network configuration on role upgrade
+  file:
+    path: '/etc/network/interfaces.config.d'
+    state: 'absent'
+  when: (ansible_local|d() and ansible_local.debops_fact|d() and
+         ansible_local.debops_fact.enabled|bool and
+         (ansible_local.debops_fact.version is undefined or
+          (ansible_local.debops_fact.version.ifupdown is undefined or
+           (ansible_local.debops_fact.version.ifupdown
+            | version_compare("0.3.0","<")))))
+
 - name: Create configuration directories
   file:
     path:   '{{ item }}'
@@ -117,3 +128,15 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+
+- name: Save role version information
+  ini_file:
+    dest: '{{ ansible_local.debops_fact.public_facts
+              if (ansible_local|d() and ansible_local.debops_fact|d() and
+                  ansible_local.debops_fact.public_facts|d())
+              else "/etc/ansible/debops_fact.ini" }}'
+    section: 'version'
+    option: 'ifupdown'
+    value: '{{ ifupdown__role_metadata.version }}'
+  when: ansible_local|d() and ansible_local.debops_fact|d() and
+        ansible_local.debops_fact.enabled|bool

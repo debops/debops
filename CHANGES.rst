@@ -59,6 +59,13 @@ Added
   information about external and internal network interfaces to make the role
   operation idempotent. [drybjed_]
 
+- Save information about role version in a central location managed by
+  debops.debops_fact_ Ansible role. [drybjed_]
+
+- Use information about deployed role version to reset the network
+  configuration if necessary to avoid issues with duplicated network
+  interfaces. [drybjed_]
+
 Changed
 ~~~~~~~
 
