@@ -7,12 +7,10 @@ Ansible role: debops.secret
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    guides
    copyright
-   credits
    changelog
 
 ..
