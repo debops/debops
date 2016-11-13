@@ -16,6 +16,19 @@ The current role maintainer_ is drybjed.
 
 .. _debops.debops_fact master: https://github.com/debops/ansible-debops_fact/compare/v0.2.0...master
 
+Changed
+~~~~~~~
+
+- The role now expects a valid INI file with section headers.
+  It does not patch in a ``[default]`` section when the file is missing one and
+  will instead raise an exception. [ypid_]
+
+Fixed
+~~~~~
+
+- Problem where the :file:`/etc/ansible/facts.d/debops_fact.fact` file would
+  fail to return facts and throw a Python exception instead. [ypid_]
+
 
 `debops.debops_fact v0.2.0`_ - 2016-09-13
 -----------------------------------------
