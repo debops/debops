@@ -25,16 +25,16 @@
 {%   set ifupdown__tpl_ipv6_addresses = ifupdown__tpl_addresses | ipv6('host/prefix') %}
 {%   if interface.gateway|d() and interface.gateway %}
 {%     if interface.gateway is string %}
-{%       set ifupdown__tpl_gateways = [ interface.gateway ] %}
+{%       set _ = ifupdown__tpl_gateways.append(interface.gateway) %}
 {%     else %}
-{%       set ifupdown__tpl_gateways = interface.gateway %}
+{%       set _ = ifupdown__tpl_gateways.extend(interface.gateway) %}
 {%     endif %}
 {%   endif %}
 {%   if interface.gateways|d() and interface.gateways %}
 {%     if interface.gateways is string %}
-{%       set ifupdown__tpl_gateways = (ifupdown__tpl_gateways + [ interface.gateways ]) %}
+{%       set _ = ifupdown__tpl_gateways.append(interface.gateways) %}
 {%     else %}
-{%       set ifupdown__tpl_gateways = (ifupdown__tpl_gateways + interface.gateways) %}
+{%       set _ = ifupdown__tpl_gateways.extend(interface.gateways) %}
 {%     endif %}
 {%   endif %}
 {% endif %}
