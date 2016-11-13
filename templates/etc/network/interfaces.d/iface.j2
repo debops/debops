@@ -5,6 +5,7 @@
 {% set ifupdown__tpl_addresses = [] %}
 {% set ifupdown__tpl_ipv4_addresses = [] %}
 {% set ifupdown__tpl_ipv6_addresses = [] %}
+{% set ifupdown__tpl_gateways = [] %}
 {% if interface.no_addresses is undefined or not interface.no_addresses|bool %}
 {%   if interface.address|d() and interface.address %}
 {%     if interface.address is string and interface.address | ipaddr('host/prefix') %}
@@ -22,6 +23,20 @@
 {%   endif %}
 {%   set ifupdown__tpl_ipv4_addresses = ifupdown__tpl_addresses | ipv4('host/prefix') %}
 {%   set ifupdown__tpl_ipv6_addresses = ifupdown__tpl_addresses | ipv6('host/prefix') %}
+{%   if interface.gateway|d() and interface.gateway %}
+{%     if interface.gateway is string %}
+{%       set ifupdown__tpl_gateways = [ interface.gateway ] %}
+{%     else %}
+{%       set ifupdown__tpl_gateways = interface.gateway %}
+{%     endif %}
+{%   endif %}
+{%   if interface.gateways|d() and interface.gateways %}
+{%     if interface.gateways is string %}
+{%       set ifupdown__tpl_gateways = (ifupdown__tpl_gateways + [ interface.gateways ]) %}
+{%     else %}
+{%       set ifupdown__tpl_gateways = (ifupdown__tpl_gateways + interface.gateways) %}
+{%     endif %}
+{%   endif %}
 {% endif %}
 {% if interface.comment|d() %}
 {{ (interface.comment if interface.comment is string else interface.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
@@ -76,9 +91,9 @@ iface {{ interface_name }} inet {{ interface.inet }}
     down            ip addr del {{ address }} dev {{ interface_name }} label {{ interface_name }}:{{ loop.index0 }}
 {%       endfor %}
 {%     endif %}
-{%     if interface.gateway4 | d(interface.gateway|d()) %}
+{%     if ifupdown__tpl_gateways and (ifupdown__tpl_gateways | unique | ipv4 | first) %}
 {%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
-    gateway         {{ interface.gateway4 | d(interface.gateway) }}
+    gateway         {{ ifupdown__tpl_gateways | unique | ipv4 | first }}
 {%     endif %}
 {%     if interface.dns_nameservers|d() %}
 {%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
@@ -148,8 +163,8 @@ iface {{ interface_name }} inet6 {{ interface.inet6 }}
     down            ip addr del {{ address }} dev {{ interface_name }}
 {%       endfor %}
 {%     endif %}
-{%     if interface.gateway6|d() %}
-    gateway         {{ interface.gateway6 }}
+{%     if (ifupdown__tpl_gateways and (ifupdown__tpl_gateways | unique | ipv6 | first)) %}
+    gateway         {{ ifupdown__tpl_gateways | unique | ipv6 | first }}
 {%     endif %}
 {%     if interface.type == '6to4' and interface.local|d() %}
     local           {{ interface.local }}

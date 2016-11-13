@@ -202,13 +202,10 @@ IPv4 and IPv6 configuration parameters
   the ``192.0.2.1/24`` is the correct notation, and ``192.0.2.0/24`` is
   incorrect.
 
-``gateway`` or ``gateway4``
-  Optional. Specify the IPv4 address of the network gateway to which outgoing
-  packets will be directed.
-
-``gateway6``
-  Optional. Specify the IPv6 address of the network gateway to which outgoing
-  packets will be directed.
+``gateway`` or ``gateways``
+  Optional. Specify the IPv4 or IPv6 address of the network gateway to which outgoing
+  packets will be directed. If it's a list of addresses, first valid address
+  for a network type will be used as the gateway.
 
 DNS nameserver and search parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -393,8 +390,7 @@ using static IPv4 and IPv6 configuration:
        inet: 'static'
        inet6: 'static'
        addresses: [ '192.0.2.7/24', '2001:db8::c0ca:1eaf/64' ]
-       gateway4: '192.0.2.254'
-       gateway6: '2001:db8::1ead:ed:beef'
+       gateways:  [ '192.0.2.254', '2001:db8::1ead:ed:beef' ]
 
 Configure an interface `without an IP address <https://wiki.debian.org/NetworkConfiguration#Bringing_up_an_interface_without_an_IP_address>`_:
 

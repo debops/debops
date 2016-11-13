@@ -104,6 +104,9 @@ Changed
 
 - Rename the ``dhcp`` interface layout to ``dynamic``. [drybjed_]
 
+- Redesign th ``gateway`` parameter to work similar to ``address`` parameter.
+  [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
