@@ -85,7 +85,7 @@ Example usage of LDAP secret variables:
        bind_pw:     '{{ secret__ldap_bind_pw }}'
      become:        '{{ secret__ldap_become }}'
      delegate_to:   '{{ secret__ldap_delegate_to }}'
-     no_log: True
+     no_log: '{{ secret__no_log | bool }}'
 
    - name: Add attribute to an LDAP entry
      ldap_attr:
@@ -102,7 +102,7 @@ Example usage of LDAP secret variables:
      with_dict:
        uid:          '{{ user_username }}'
        userPassword: '{{ user_password }}'
-     no_log: True
+     no_log: '{{ secret__no_log | bool }}'
 
 Of course for this to work, ``debops.secret`` needs to be included in the
 playbook, either as a role, or a role dependency. You can change the values of

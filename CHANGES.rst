@@ -28,6 +28,10 @@ Added
 - Add new variables for common Organizational Units: Groups, Machines, People.
   [drybjed_]
 
+- Add the ``secret__no_log`` boolean variable that can be used to allow for
+  centralized control over the ``no_log`` parameter in Ansible tasks.
+  [drybjed_]
+
 Changed
 ~~~~~~~
 
