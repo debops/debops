@@ -134,6 +134,12 @@ Removed
   interface configuration, the normal parameters ``dns_nameservers`` and
   ``dns_search`` are enough to support this functionality. [drybjed_]
 
+Fixed
+~~~~~
+
+- Fix bug that caused the role to abort when a host has interface names with a
+  hyphen configured. [ypid_]
+
 
 `debops.ifupdown v0.2.6`_ - 2016-10-20
 --------------------------------------
