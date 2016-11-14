@@ -155,6 +155,8 @@ Fixed
 - Fix bug that caused the role to abort when a host has interface names with a
   hyphen configured. [ypid_]
 
+- Don’t fail if ``ansible_default_ipv4`` is an empty dictionary. [ypid_]
+
 
 `debops.ifupdown v0.2.6`_ - 2016-10-20
 --------------------------------------

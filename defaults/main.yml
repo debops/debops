@@ -162,12 +162,12 @@ ifupdown__default_interfaces_map:
   'static':
 
     'external':
-      iface: '{{ ansible_default_ipv4.interface }}'
+      iface: '{{ ansible_default_ipv4.interface|d("") }}'
       inet: 'static'
       inet6: 'auto'
-      address: '{{ (ansible_default_ipv4.address + "/" +
-                    ansible_default_ipv4.netmask) }}'
-      gateway: '{{ ansible_default_ipv4.gateway }}'
+      address: '{{ (ansible_default_ipv4.address|d("") + "/" +
+                    ansible_default_ipv4.netmask|d("")) }}'
+      gateway: '{{ ansible_default_ipv4.gateway|d("") }}'
       dns_nameservers: '{{ ansible_dns.nameservers }}'
       dns_search: '{{ ansible_dns.search }}'
 
