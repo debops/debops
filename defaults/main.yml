@@ -60,6 +60,25 @@ ifupdown__interface_weight_map:
   'default':   '80'
 
                                                                    # ]]]
+# .. envvar:: ifupdown__reconfigure_auto [[[
+#
+# If ``True``, the role will reconfigure interfaces automatically after changes
+# are detected by Ansible. If ``False``, role will install the reconfiguration
+# script on the remote host so that the user can run it to apply the changes by
+# hand.
+ifupdown__reconfigure_auto: True
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__reconfigure_script_path [[[
+#
+# Path where the reconfiguration script will be installed if automatic
+# reconfiguration is disabled.
+ifupdown__reconfigure_script_path: '{{ (ansible_local.root.lib
+                                        if (ansible_local|d() and ansible_local.root|d() and
+                                            ansible_local.root.lib|d())
+                                        else "/usr/local/lib") + "/ifupdown-reconfigure-interfaces" }}'
+
+                                                                   # ]]]
 # .. envvar:: ifupdown__reconfigure_init_file [[[
 #
 # Path where the original :file:`/etc/network/interfaces` file will be copied

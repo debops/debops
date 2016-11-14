@@ -111,6 +111,15 @@
          (item.src|d() or item.content|d()) and
          item.state|d('present') != 'absent')
 
+- name: Install reconfiguration script if needed
+  copy:
+    src: 'script/ifupdown-reconfigure-interfaces'
+    dest: '{{ ifupdown__reconfigure_script_path }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: not ifupdown__reconfigure_auto | bool
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'

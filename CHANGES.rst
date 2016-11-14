@@ -66,6 +66,10 @@ Added
   configuration if necessary to avoid issues with duplicated network
   interfaces. [drybjed_]
 
+- Add an option to disable automatic reconfiguration of the network interfaces.
+  The reconfiguration script will be installed on the remote host and will
+  allow to control reconfiguration manually. [drybjed_]
+
 Changed
 ~~~~~~~
 
