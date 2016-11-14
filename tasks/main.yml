@@ -54,6 +54,15 @@
   register: ifupdown__register_interfaces_created
   when: item.value.state|d('present') not in [ 'absent', 'ignore' ]
 
+- name: Remove unknown interface configuration
+  shell: find /etc/network/interfaces.config.d -maxdepth 1 -type f
+         -name '*_iface_{{ item.item.value.iface | d(item.item.key) }}'
+         ! -name '{{ (ifupdown__interface_weight_map[item.item.value.type | d("default")] | d("90"))|int + (item.item.value.weight | d("0"))|int }}_iface_{{ item.item.value.iface | d(item.item.key) }}' -exec rm -vf {} +
+  with_items:
+    - '{{ ifupdown__register_interfaces_removed.results }}'
+    - '{{ ifupdown__register_interfaces_created.results }}'
+  when: (item.item.key|d() and item.changed|bool)
+
 - name: Mark modified interfaces for processing
   copy:
     content: |

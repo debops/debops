@@ -116,6 +116,9 @@ Changed
   This makes interface order easier to define without the need to look up the
   specific weight. [drybjed_]
 
+- Remove the interface configuration files that have wrong weight in their
+  filename to make interface reordering easier. [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
