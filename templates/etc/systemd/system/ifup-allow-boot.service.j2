@@ -18,8 +18,14 @@ ExecStart=/bin/sh -ec '\
   for i in $(ifquery --list --exclude lo --allow boot); do INTERFACES="$INTERFACES$i "; done; \
   [ -n "$INTERFACES" ] || exit 0; \
   for i in $INTERFACES; do \
-  if ! systemctl is-active ifup@$i > /dev/null 2>&1 ; then \
-  systemctl start ifup@$i ; fi ; done'
+  logger -t ifup-allow-boot "Checking state of the $i interface" ; \
+  if ! ifquery --state $i > /dev/null && ! systemctl is-active ifup@$i > /dev/null 2>&1 ; then \
+  logger -t ifup-allow-boot "Interface $i is down, bringing it up" ; \
+  systemctl start ifup@$i ; sleep 0.5 ; \
+  while [ -e /run/network/ifup-$i.pid ] ; do sleep 0.5 ; \
+  logger -t ifup-allow-boot "Waiting for $i interface" ; done ; \
+  logger -t ifup-allow-boot "Interface $i is up" ; \
+  fi ; done'
 
 [Install]
 WantedBy=multi-user.target
