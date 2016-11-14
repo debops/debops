@@ -65,6 +65,11 @@ Security
   Refer to `apt_key module does not verify key fingerprints <https://github.com/ansible/ansible-modules-core/issues/5237>`_
   for details. [ypid_]
 
+- Ensure that old or unused OpenPGP public keys which where previously used to
+  sign the APT repository are absent.
+  This is done to mitigate the possibility of one of the keys getting
+  compromised. [ypid_]
+
 `debops.owncloud v0.3.0`_ - 2016-09-17
 --------------------------------------
 

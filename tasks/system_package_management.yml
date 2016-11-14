@@ -33,6 +33,12 @@
     state: 'present'
   register: owncloud__register_apt_key
 
+- name: Ensure old APT OpenPGP public key are absent
+  apt_key:
+    id: '{{ item }}'
+    state: 'absent'
+  with_flattened: '{{ owncloud__old_apt_repo_keys }}'
+
 - name: Ensure deprecated APT sources files are absent
   file:
     path: '/etc/apt/sources.list.d/{{ item }}'
