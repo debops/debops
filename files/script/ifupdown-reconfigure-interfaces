@@ -205,7 +205,7 @@ if [ -d "${interface_request_path}" ] ; then
 
         # This will usually be used the first time the script tries to
         # reconfigure networks. At this time we don't really know what's set up
-        # where, so disble all networking.
+        # where, so disable all networking.
         if containsElement "${interface_reconfigure_all}" "${changed_interface_names[@]}" ; then
 
             log_message -m "Shutting down networking service in the unknown state"
@@ -244,7 +244,7 @@ if [ -d "${interface_request_path}" ] ; then
                     # back up to get back to the known state.
                     if ifquery --state "${iface_name}" > /dev/null 2>&1 ; then
 
-                        # The interface in question was definietely not set up by 'ifup@.service'
+                        # The interface in question was definitely not set up by 'ifup@.service'
                         if ! containsElement "${iface_name}" "${systemd_ifup_instances[@]:-}" ; then
 
                             log_message -m "The '${iface_name}' interface is still active, shutting down networking service"
@@ -262,7 +262,7 @@ if [ -d "${interface_request_path}" ] ; then
 
                         else
 
-                            # This proably shouldn't happen
+                            # This probably shouldn't happen
                             log_message -m "Error: Script was working on '${iface_name}' network interface when it lost knowledge about the network interface state. The '/etc/network/interfaces.d/' might be desynchronized. Exiting to avoid loss of connectivity, investigate the issue."
                             exit 1
 
@@ -299,7 +299,7 @@ if [ -d "${interface_request_path}" ] ; then
             fi
         fi
 
-        # Make ure that all relevant interface are up
+        # Make sure that all relevant interface are up
         for iface in "${changed_interfaces[@]}" ; do
             # shellcheck disable=SC2001
             iface_name=$(echo "${iface}" | sed -e s'/^.*\,//')
