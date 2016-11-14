@@ -245,7 +245,7 @@ if [ -d "${interface_request_path}" ] ; then
             # shellcheck disable=SC2001
             iface_name=$(echo "${iface}" | sed -e s'/^.*\,//')
             if [ "${iface}" != "${interface_reconfigure_all}" ] ; then
-                if [ "$(<${interface_request_path}/${interface_request_prefix}.${iface})" != "created" ] ; then
+                if [ "$(<${interface_request_path}/${interface_request_prefix},${iface})" != "created" ] ; then
 
                     if ifquery --state "${iface_name}" > /dev/null 2>&1 ; then
                         log_message -m "Bringing down '${iface_name}' interface"
@@ -320,7 +320,7 @@ if [ -d "${interface_request_path}" ] ; then
             # shellcheck disable=SC2001
             iface_name=$(echo "${iface}" | sed -e s'/^.*\,//')
             if [ "${iface}" != "${interface_reconfigure_all}" ] ; then
-                if [ "$(<${interface_request_path}/${interface_request_prefix}.${iface})" != "removed" ] ; then
+                if [ "$(<${interface_request_path}/${interface_request_prefix},${iface})" != "removed" ] ; then
 
                     if ! ifquery --state "${iface_name}" > /dev/null 2>&1 ; then
                         log_message -m "Bringing up '${iface_name}' interface"
