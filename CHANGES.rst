@@ -70,6 +70,9 @@ Security
   This is done to mitigate the possibility of one of the keys getting
   compromised. [ypid_]
 
+- Require Ansible 2.1.3 to run the role. Refer to `Ansible Security`_ for details.
+  Note that the requirement is currently not enforced by Ansible. [ypid_]
+
 `debops.owncloud v0.3.0`_ - 2016-09-17
 --------------------------------------
 
