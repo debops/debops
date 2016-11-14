@@ -118,29 +118,34 @@ General interface parameters
   order in which interfaces are brought up/down and use/requirement of special
   parameters for certain types.
 
-  +-------------+--------------------------------------------------------------+
-  |    Type     | Notes                                                        |
-  +=============+==============================================================+
-  | ``mapping`` | interface configured dynamically via scripts                 |
-  +-------------+--------------------------------------------------------------+
-  | ``bonding`` | virtual bonded interface                                     |
-  +-------------+--------------------------------------------------------------+
-  | ``ether``   | Ethernet (physical or virtual) interface                     |
-  +-------------+--------------------------------------------------------------+
-  | ``slip``    | Serial Line Internet Protocol interface                      |
-  +-------------+--------------------------------------------------------------+
-  | ``wlan``    | Wireless Local Area Network interface (WiFi)                 |
-  +-------------+--------------------------------------------------------------+
-  | ``wwan``    | Wireless Wide Area Network interface (mobile networks, GSM)  |
-  +-------------+--------------------------------------------------------------+
-  | ``vlan``    | VLAN interface, requires another interface to be attached to |
-  +-------------+--------------------------------------------------------------+
-  | ``bridge``  | network bridge                                               |
-  +-------------+--------------------------------------------------------------+
-  | ``6to4``    | IPv6 in IPv4 tunnel                                          |
-  +-------------+--------------------------------------------------------------+
-  | ``tunnel``  | virtual network tunnel                                       |
-  +-------------+--------------------------------------------------------------+
+  +-------------+--------+--------------------------------------------------------------+
+  |    Type     | Weight | Notes                                                        |
+  +=============+========+==============================================================+
+  | ``mapping`` | 00     | interface configured dynamically via scripts                 |
+  +-------------+--------+--------------------------------------------------------------+
+  | ``bonding`` | 10     | virtual bonded interface                                     |
+  +-------------+--------+--------------------------------------------------------------+
+  | ``ether``   | 20     | Ethernet (physical or virtual) interface                     |
+  +-------------+--------+--------------------------------------------------------------+
+  | ``slip``    | 30     | Serial Line Internet Protocol interface                      |
+  +-------------+--------+--------------------------------------------------------------+
+  | ``wlan``    | 30     | Wireless Local Area Network interface (WiFi)                 |
+  +-------------+--------+--------------------------------------------------------------+
+  | ``wwan``    | 30     | Wireless Wide Area Network interface (mobile networks, GSM)  |
+  +-------------+--------+--------------------------------------------------------------+
+  | ``vlan``    | 40     | VLAN interface, requires another interface to be attached to |
+  +-------------+--------+--------------------------------------------------------------+
+  | ``bridge``  | 60     | network bridge                                               |
+  +-------------+--------+--------------------------------------------------------------+
+  | ``6to4``    | 80     | IPv6 in IPv4 tunnel                                          |
+  +-------------+--------+--------------------------------------------------------------+
+  | ``tunnel``  | 80     | virtual network tunnel                                       |
+  +-------------+--------+--------------------------------------------------------------+
+
+``weight``
+  Optional. Positive or negative number (for example ``2`` or ``-2``) which
+  will be added to the base weight defined by the interface type. This can be
+  used to affect the network interface order.
 
 ``state``
   Optional. If not specified or ``present``, the given interface configuration

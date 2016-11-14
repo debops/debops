@@ -111,6 +111,11 @@ Changed
 - Redesign th ``gateway`` parameter to work similar to ``address`` parameter.
   [drybjed_]
 
+- Make the ``weight`` parameter a bit more useful by adding it to the base
+  weight defined by the interface type instead of setting the weight directly.
+  This makes interface order easier to define without the need to look up the
+  specific weight. [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
