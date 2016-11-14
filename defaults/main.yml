@@ -151,6 +151,9 @@ ifupdown__interface_layout: '{{ "dynamic"
 #   One or two Ethernet interfaces with bridges attached to them, each bridge
 #   uses DHCP configuration.
 #
+# ``manual``
+#   Do not use any network interface layout and do not configure any interface.
+#
 # The default interface configuration can be modified by other
 # ``ifupdown__*_interfaces`` variables if necessary.
 # See the :ref:`ifupdown__ref_interfaces` documentation for more details.
@@ -237,6 +240,8 @@ ifupdown__default_interfaces_map:
       state: '{{ "present"
                  if ifupdown__internal_interface in ansible_interfaces
                  else "ignore" }}'
+
+  'manual': {}
                                                                    # ]]]
                                                                    # ]]]
 # Network interface configuration [[[

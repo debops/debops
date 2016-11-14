@@ -70,6 +70,9 @@ Added
   The reconfiguration script will be installed on the remote host and will
   allow to control reconfiguration manually. [drybjed_]
 
+- Add interface layout ``manual`` to not use any network interface layout and
+  allow you to configure interfaces manually. [ypid_]
+
 Changed
 ~~~~~~~
 
