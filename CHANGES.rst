@@ -243,7 +243,7 @@ Added
 
   Because bridges will be restarted, any external interfaces connected to them
   will be dropped. That means that virtual machines and containers will lose
-  the network connection permanently. Restarting the afftected virtual machines
+  the network connection permanently. Restarting the affected virtual machines
   and containers should bring everything back to normal. [drybjed_]
 
 - Add a way to set custom comments for each interface using dictionary maps.
