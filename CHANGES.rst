@@ -46,6 +46,14 @@ Removed
 - Removed deprecated Ansible inventory group ``debops_owncloud``. Refer to the
   :ref:`owncloud__ref_getting_started` guide. [ypid_]
 
+Fixed
+~~~~~
+
+- Ansible 2.2 support for usage in integration testing.
+  Version 2.2 mentions a few deprecation warnings.
+  We are aware of this but there is not much we can do yet as Ansible 2.1
+  support should be retained for this release. [ypid_]
+
 Security
 ~~~~~~~~
 
@@ -64,6 +72,14 @@ Security
 
   Refer to `apt_key module does not verify key fingerprints <https://github.com/ansible/ansible-modules-core/issues/5237>`_
   for details. [ypid_]
+
+- Ensure that old or unused OpenPGP public keys which where previously used to
+  sign the APT repository are absent.
+  This is done to mitigate the possibility of one of the keys getting
+  compromised. [ypid_]
+
+- Require Ansible 2.1.3 to run the role. Refer to `Ansible Security`_ for details.
+  Note that the requirement is currently not enforced by Ansible. [ypid_]
 
 `debops.owncloud v0.3.0`_ - 2016-09-17
 --------------------------------------
