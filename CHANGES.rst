@@ -46,6 +46,14 @@ Removed
 - Removed deprecated Ansible inventory group ``debops_owncloud``. Refer to the
   :ref:`owncloud__ref_getting_started` guide. [ypid_]
 
+Fixed
+~~~~~
+
+- Ansible 2.2 support for usage in integration testing.
+  Version 2.2 mentions a few deprecation warnings.
+  We are aware of this but there is not much we can do yet as Ansible 2.1
+  support should be retained for this release. [ypid_]
+
 Security
 ~~~~~~~~
 
