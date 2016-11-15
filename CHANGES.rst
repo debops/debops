@@ -70,6 +70,9 @@ Added
   The reconfiguration script will be installed on the remote host and will
   allow to control reconfiguration manually. [drybjed_]
 
+- Add interface layout ``manual`` to not use any network interface layout and
+  allow you to configure interfaces manually. [ypid_]
+
 Changed
 ~~~~~~~
 
@@ -151,6 +154,8 @@ Fixed
 
 - Fix bug that caused the role to abort when a host has interface names with a
   hyphen configured. [ypid_]
+
+- Don’t fail if ``ansible_default_ipv4`` is an empty dictionary. [ypid_]
 
 
 `debops.ifupdown v0.2.6`_ - 2016-10-20
@@ -238,7 +243,7 @@ Added
 
   Because bridges will be restarted, any external interfaces connected to them
   will be dropped. That means that virtual machines and containers will lose
-  the network connection permanently. Restarting the afftected virtual machines
+  the network connection permanently. Restarting the affected virtual machines
   and containers should bring everything back to normal. [drybjed_]
 
 - Add a way to set custom comments for each interface using dictionary maps.

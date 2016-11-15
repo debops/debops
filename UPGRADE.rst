@@ -21,9 +21,19 @@ All variables are renamed
 All of the role variables were renamed from ``ifupdown_*`` to ``ifupdown__*``,
 and almost all of them have changed the data structures they use, therefore
 automatic conversion from the earlier configuration cannot be performed
-reliably. You should check the :ref:`ifupdown__ref_interfaces` documentation to
-learn the new network interface configuration format and modify your existing
-inventory to match the new variables.
+reliably for the most part. You should check the
+:ref:`ifupdown__ref_interfaces` documentation to learn the new network
+interface configuration format and modify your existing inventory to match the
+new variables.
+
+A few variable names can be updated using this script:
+
+.. literalinclude:: scripts/upgrade-from-v0.2.X-to-v0.3.X
+   :language: shell
+
+The script is bundled with this role under
+:file:`./docs/scripts/upgrade-from-v0.2.X-to-v0.3.X` and can be invoked from
+there.
 
 Changes on remote hosts
 ~~~~~~~~~~~~~~~~~~~~~~~
