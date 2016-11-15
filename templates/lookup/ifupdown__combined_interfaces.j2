@@ -46,7 +46,11 @@
 {%       set _ = params.update({"inet6":"auto"}) %}
 {%     endif %}
 {%     if params.auto is undefined %}
-{%       set _ = params.update({"auto":False}) %}
+{%       if ansible_service_mgr != 'systemd' %}
+{%         set _ = params.update({"auto":True}) %}
+{%       else %}
+{%         set _ = params.update({"auto":False}) %}
+{%       endif %}
 {%     endif %}
 {%     if params.allow is undefined %}
 {%       set _ = params.update({"allow":["hotplug"]}) %}
@@ -59,7 +63,11 @@
 {%       set _ = params.update({"vlan_raw_device": (interface_name.split('.') | first) }) %}
 {%     endif %}
 {%     if params.auto is undefined %}
-{%       set _ = params.update({"auto":False}) %}
+{%       if ansible_service_mgr != 'systemd' %}
+{%         set _ = params.update({"auto":True}) %}
+{%       else %}
+{%         set _ = params.update({"auto":False}) %}
+{%       endif %}
 {%     endif %}
 {%     if params.allow is undefined %}
 {%       set _ = params.update({"allow":["boot","hotplug"]}) %}
@@ -82,7 +90,11 @@
 {%         set _ = params.update({"forward":True}) %}
 {%       endif %}
 {%       if params.auto is undefined %}
-{%         set _ = params.update({"auto":False}) %}
+{%         if ansible_service_mgr != 'systemd' %}
+{%           set _ = params.update({"auto":True}) %}
+{%         else %}
+{%           set _ = params.update({"auto":False}) %}
+{%         endif %}
 {%       endif %}
 {%       if params.allow is undefined %}
 {%         set _ = params.update({"allow":["boot","hotplug"]}) %}
@@ -105,7 +117,11 @@
 {%     endif %}
 {%   endif %}
 {%   if params.auto is undefined and ((params.inet|d() and params.inet != 'manual') or (params.inet6|d() and params.inet6 != 'manual')) %}
-{%     set _ = params.update({"auto":False}) %}
+{%     if ansible_service_mgr != 'systemd' %}
+{%       set _ = params.update({"auto":True}) %}
+{%     else %}
+{%       set _ = params.update({"auto":False}) %}
+{%     endif %}
 {%   endif %}
 {%   if params.allow is undefined and ((params.inet|d() and params.inet != 'manual') or (params.inet6|d() and params.inet6 != 'manual')) %}
 {%     set _ = params.update({"allow":["boot","hotplug"]}) %}
