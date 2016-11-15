@@ -5,13 +5,18 @@
 {%     if params.state|d('present') in [ 'present', 'absent' ] %}
 {%       set ifupdown__tpl_forward_rules = '' %}
 {%       set ifupdown__tpl_nat_rules = [] %}
-{%       if params.forward|d() and params.forward|bool %}
-{%         set ifupdown__tpl_forward_rules = 'domain $domains table filter chain FORWARD {
-    interface ' + interface_name + ' ACCEPT;
-    outerface ' + interface_name + ' ACCEPT;
-}' %}
+{%       if params.forward|d()|bool %}
+{%         set ifupdown__tpl_forward_rules = (['domain $domains table filter chain FORWARD {']
+             + (['    interface ' + interface_name + ' ' + params.forward_interface_ferm_rule|d("ACCEPT") + ";"]
+                if params.forward_interface_ferm_rule|d() != omit
+                else [])
+             + (['    outerface ' + interface_name + ' ' + params.forward_outerface_ferm_rule|d("ACCEPT") + ";"]
+                if params.forward_outerface_ferm_rule_enabled|d(True)|bool
+                else [])
+             + ['}']) | join("\n")
+%}
 {%       endif %}
-{%       if params.inet|d() and params.nat|d() and params.nat|bool %}
+{%       if params.inet|d() and params.nat|d()|bool %}
 {%         set ifupdown__tpl_ipv4_addresses = [] %}
 {%         if params.address|d() %}
 {%           for element in ([ params.address ] if params.address is string else params.address) %}

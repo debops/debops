@@ -334,6 +334,26 @@ Firewall parameters
   ``True``, the role will generate configuration for the debops.ferm_ Ansible
   role to enable packet forwarding for a given interface.
 
+``forward_interface_ferm_rule_enabled``
+  Optional, boolean. Should a Firewall rule be configured which matches new
+  connection attempts entering the interface?
+  If disabled using ``False``, the default Firewall policy will apply.
+  Defaults to ``True``.
+
+``forward_interface_ferm_rule``
+  Optional, string. Default action or any custom ferm configuration.
+  Defaults to ``ACCEPT``.
+
+``forward_outerface_ferm_rule_enabled``
+  Optional, boolean. Should a Firewall rule be configured which matches new
+  connection attempts exiting the interface?
+  If disabled using ``False``, the default Firewall policy will apply.
+  Defaults to ``True``.
+
+``forward_outerface_ferm_rule``
+  Optional, string. Default action or any custom ferm configuration.
+  Defaults to ``ACCEPT``.
+
 ``nat``
   Optional, boolean. If present and ``True``, the firewall configuration for
   a given interface (usually a bridge) will include the IPv4 NAT rules. The
@@ -576,6 +596,28 @@ required configuration):
 
    ifupdown__interfaces:
      '6to4': {}
+
+Configure a restricted bridge network:
+
+.. code-block:: yaml
+
+   ifupdown__interfaces:
+     'br2':
+       type: 'bridge'
+       inet6: 'static'
+       inet: 'static'
+       nat: True
+       forward_interface_ferm_rule: 'outerface (br0 br2) ACCEPT'
+       forward_outerface_ferm_rule_enabled: False
+       addresses:
+         - '2001:DB8::23/64'
+         - '192.0.2.23/24'
+
+Hosts attached to the ``br2`` bridge are allowed to talk to each other.
+Additionally, the hosts can initiate connections to the outside world thought
+``br0``. No connections can be initiated from the outside world to the hosts
+behind ``br2``. SNAT is used for IPv4. For IPv6 it is expected that the prefix
+is routed to the host so that the host can forward packets to ``br2``.
 
 .. _ifupdown__ref_custom_files:
 

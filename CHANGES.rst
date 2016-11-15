@@ -73,6 +73,12 @@ Added
 - Add interface layout ``manual`` to not use any network interface layout and
   allow you to configure interfaces manually. [ypid_]
 
+- Allow flexible and advanced Firewall configuration using
+  ``forward_interface_ferm_rule`` and ``forward_outerface_ferm_rule`` and added
+  a example for it.
+  ``debops.subnetwork`` supported similar configuration using the
+  ``subnetwork__allow_*`` variables. [ypid_]
+
 Changed
 ~~~~~~~
 
