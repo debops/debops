@@ -35,7 +35,7 @@ Added
   needed. [drybjed_]
 
 - The ``debops.ifupdown`` role now incorporates configuration done by the
-  debops.subnetwork_ role; it generates the forward and NAT rules for the
+  ``debops.subnetwork`` role; it generates the forward and NAT rules for the
   firewall managed by the debops.ferm_ Ansible role for each bridge it manages.
   This is configurable per bridge if needed. [drybjed_]
 
@@ -131,7 +131,7 @@ Changed
 Deprecated
 ~~~~~~~~~~
 
-- The debops.subnetwork_ Ansible role has been deprecated by this role and
+- The ``debops.subnetwork`` Ansible role has been deprecated by this role and
   shouldn't be used anymore. [drybjed_]
 
 Removed
@@ -296,7 +296,7 @@ Changed
 ~~~~~~~
 
 - Streamline directory creation tasks and make sure required packages are
-  installed. [le9i0nx]
+  installed. [le9i0nx_]
 
 - Make sure that Ansible does not stop if a variable is undefined. This change
   fixes issues with the missing variables in Ansible v2. [drybjed_]
