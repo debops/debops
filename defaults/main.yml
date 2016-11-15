@@ -253,12 +253,8 @@ ifupdown__default_interfaces_map:
 # .. envvar:: ifupdown__ethernet_interfaces [[[
 #
 # YAML dictionary which holds the basic information about the Ethernet
-# interfaces detected by the role. The detection is performed only at the
-# initial role execution to not break the existing configuration applied by the
-# role.
-ifupdown__ethernet_interfaces: '{{ {} if (ansible_local|d() and ansible_local.ifupdown|d() and
-                                       ansible_local.ifupdown.configured|d())
-                                   else (lookup("template", "lookup/ifupdown__ethernet_interfaces.j2") | string | from_yaml) }}'
+# interfaces detected by the role.
+ifupdown__ethernet_interfaces: '{{ lookup("template", "lookup/ifupdown__ethernet_interfaces.j2") | string | from_yaml }}'
 
                                                                    # ]]]
 # .. envvar:: ifupdown__default_interfaces [[[
