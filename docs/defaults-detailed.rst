@@ -154,7 +154,7 @@ General interface parameters
   way – this is useful if you want to make sure that some network interfaces
   are ignored by the role.
 
-  If you use the ``dhcp`` interface layout, you might need to explicitly set
+  If you use the ``dynamic`` interface layout, you might need to explicitly set
   the ``br0`` and ``br1`` bridge state to ``present`` because this interface
   layout will try to remove them by default.
 
