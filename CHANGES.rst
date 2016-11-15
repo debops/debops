@@ -26,6 +26,8 @@ Added
 
 - Add :envvar:`tinc__address_family_mesh0` and :envvar:`tinc__compression_mesh0`. [ser_]
 
+- Add :envvar:`tinc__mlock_mesh0`. [ypid_]
+
 - Allow to configure nodes as clients using :envvar:`tinc__client_hosts`. [ypid_]
 
 - Add support to block default route and DNS servers offered via DHCPv4 over a

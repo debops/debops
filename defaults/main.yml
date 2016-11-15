@@ -49,7 +49,7 @@ tinc__network_mesh0:
   boot: '{{ tinc__boot_mesh0 }}'
   port: '655'
   node_reachable: '{{ tinc__inventory_hostname not in tinc__client_hosts_mesh0 }}'
-  mlock: True
+  mlock: '{{ tinc__mlock_mesh0 }}'
   chroot: True
   allow: '{{ tinc__allow_mesh0 }}'
   user: '{{ tinc__user }}'
@@ -159,6 +159,15 @@ tinc__exclude_bridge_mesh0: '{{
     if (tinc__bridge_mesh0 and (hostvars[inventory_hostname]["ansible_"+(tinc__bridge_mesh0|replace("-","_"))]|d() and
         hostvars[inventory_hostname]["ansible_"+(tinc__bridge_mesh0|replace("-","_"))]["ipv6"]|d())) else [])
   }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__mlock_mesh0 [[[
+#
+# If present and ``True``, ``tincd`` will be executed with the ``--mlock``
+# option which will lock the daemon's memory in RAM, preventing the system from
+# moving it to the swap space.
+# For more details refer to :ref:`item.mlock <tinc__ref_networks_mlock>`.
+tinc__mlock_mesh0: True
 
                                                                    # ]]]
 # .. envvar:: tinc__allow_mesh0 [[[
