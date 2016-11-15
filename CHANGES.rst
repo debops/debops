@@ -57,6 +57,9 @@ Changed
   https://bettercrypto.org. Note that this increases the initial key generation
   from a few seconds to a few minutes which should be justifiable. [ypid_]
 
+- Update documentation to use ``debops.ifupdown`` instead of the
+  deprecated ``debops.subnetwork`` role. [ypid_]
+
 Fixed
 ~~~~~
 
