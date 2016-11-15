@@ -50,6 +50,18 @@ in place you can connect the VMs or containers to your external or internal
 network with ease.
 
 
+Automatic upgrades from older version
+-------------------------------------
+
+The ``debops.ifupdown`` role tracks its own version used on a host using the
+debops.debops_fact_ Ansible role as an intermediary. If the currently applied
+version is older than ``0.3.0`` or the version cannot be found, role will
+remove the :file:`/etc/network/interfaces.config.d/` directory to make sure
+that the network configuration state is consistent. You might want to review
+and update your interface configuration in the Ansible inventory before
+applying new version of the role to ensure that it has accurate information
+about interfaces present on the host.
+
 Example inventory
 -----------------
 
