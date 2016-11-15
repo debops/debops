@@ -163,6 +163,11 @@ Fixed
 
 - Don’t fail if ``ansible_default_ipv4`` is an empty dictionary. [ypid_]
 
+- Don’t fail if a host does not have DNS nameservers defined
+  (``ansible_dns.nameservers`` is undefined). [ypid_]
+
+- Don’t fail if a host does not have a DNS search domain specified
+  (``ansible_dns.search`` is undefined). [ypid_]
 
 `debops.ifupdown v0.2.6`_ - 2016-10-20
 --------------------------------------

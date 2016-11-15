@@ -168,8 +168,8 @@ ifupdown__default_interfaces_map:
       address: '{{ (ansible_default_ipv4.address|d("") + "/" +
                     ansible_default_ipv4.netmask|d("")) }}'
       gateway: '{{ ansible_default_ipv4.gateway|d("") }}'
-      dns_nameservers: '{{ ansible_dns.nameservers }}'
-      dns_search: '{{ ansible_dns.search }}'
+      dns_nameservers: '{{ ansible_dns.nameservers|d(False) }}'
+      dns_search: '{{ ansible_dns.search|d(False) }}'
 
   'dynamic':
 
