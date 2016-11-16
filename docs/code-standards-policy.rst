@@ -7,10 +7,11 @@ DebOps Code Standards Policy
 
 :Date drafted: 2016-11-05
 :Date effective: 2017-01-01
-:Last changed: 2016-11-05
+:Last changed: 2016-11-17
 :Version: 0.1.0
 :Authors: - drybjed_
           - ypid_
+          - ganto_
 
 .. This version may not correspond directly to the debops-policy version.
 
@@ -35,6 +36,55 @@ and what parameters to use in the roles.
 This Policy describes how the Ansible roles and playbooks should be written,
 what ways can be used to combine two or more roles together and how the roles
 should be documented.
+
+Summary
+-------
+
+**Ansible role: defaults**
+
+- Follow the :ref:`variable naming conventions <policy__ref_default_variable_naming_convention>`.
+
+- Make conditional code configurable via default variables.
+
+- :ref:`Comment and structure <policy__ref_default_variable_documentation>`
+  default variables with reStructuredText.
+
+
+**Ansible role: tasks**
+
+- Make sure the task execution is idempotent.
+
+- :ref:`Describe each task and include <policy__ref_task_description>` with the
+  ``name`` option.
+
+- Use native YAML syntax for task definition.
+
+- If some tasks should only be executed under certain circumstances, group them
+  together and conditionally include the task list.
+
+- Set a minimal Ansible version in :file:`meta/main.yml` according to the
+  modules and task parameters used.
+
+
+**Ansible role: templates**
+
+- If possible follow the directory structure of the target file when storing
+  the Jinja2 template.
+
+- Properly indent Jinja2 loop constructs.
+
+
+**Ansible role: dependencies**
+
+- Try to avoid the use of hard dependencies specified in :file:`meta/main.yml`.
+
+- Don't directly include variables of other roles. Instead use Ansible facts
+  to pass configuration state from one role to another.
+
+- Provide dedicated inventory variables if the role configuration is meant to
+  be extended by dependent roles.
+
+
 
 Ansible role overview
 ---------------------
@@ -101,6 +151,11 @@ Here's the basic set of principles to be aware while writing roles:
 Ansible role default variables
 ------------------------------
 
+.. _policy__ref_default_variable_naming_convention:
+
+Naming convention
+~~~~~~~~~~~~~~~~~
+
 DebOps roles MUST use a special variable naming scheme to indicate
 a "namespace" of a given role default variables. The variable MUST contain
 the role name, followed by two underscore characters, followed by the rest of
@@ -151,3 +206,87 @@ a dependency and pass a specific configuration to it:
 By including the configuration for the debops.apt_preferences_ role in your role's
 default variables you allow the user to change it through the Ansible inventory
 without the need to modify any of the involved roles or the playbook.
+
+.. _policy__ref_default_variable_documentation:
+
+Variable documentation
+~~~~~~~~~~~~~~~~~~~~~~
+
+For each role the `DebOps Documentation`_ is will include a page which
+documents the default variables. This page is generated from the role's
+:file:`defaults/main.yml` file with help of yaml2rst_. The entire comment of
+the defauls file is thereby interpreted as reStructuredText_ and then rendered
+via Sphinx_.
+
+Each variable comment is started with a ``.. envvar::`` reference anchor
+followed by the name of the variable. This construct allows any documentation
+page to reference the variable via ``:envvar:`varname``` which :program:`Sphinx`
+will translate into a link pointing to the variable description. Below the
+anchor a comment should describe the purpose of the variable, accepted values,
+side effects and so on. Within the comment all reStructuredText constructs
+supported by :program:`Sphinx` can be used. An example variable definition would
+eventually look like this:
+
+.. code-block:: yaml
+
+    # .. envvar:: ferm__flush [[[
+    #
+    # Should ferm-rules be flushed when :program:`ferm` is disabled? The default is true,
+    # but you may need set both :envvar:`ferm__enabled` and this to ``False`` if you are
+    # running in some container and are not allowed to change :command:`iptables`.
+    ferm__flush: '{{ ferm__enabled | bool }}'
+                                                                   # ]]]
+
+Related default variables should be grouped to sections for a better overview
+and easier navigation. For example it makes sense to distinguish packaging and
+network related variables. Of course additional or different section titles
+might be meaningful for the individual role:
+
+.. code-block:: yaml
+
+    # APT packages [[[
+    # ----------------
+
+    [... packaging related variables ...]
+
+                                                                   # ]]]
+    # Network configuration [[[
+    # -------------------------
+
+    [... networking related variables ...]
+                                                                   # ]]]
+
+Ansible role tasks
+------------------
+
+Ansible tasks are doing the actual work namely querying and modifiying the
+target host. Each task defines a `Ansible Module <https://docs.ansible.com/ansible/modules.html>`_
+invocation with a number of general and module specific options.
+
+.. _policy__ref_task_description:
+
+Description
+~~~~~~~~~~~
+
+Each task MUST have the ``name`` option set with a meaningful description. This
+allows to quickly reason about the change impact when running a playbook and
+classify the progress in case of an abortion. Example:
+
+.. code-block:: yaml
+
+    - name: Check if password history database exists
+      stat:
+        path: '/etc/security/opasswd'
+      register: auth__register_opasswd
+
+The same is true for the ``include`` statement. Especially for conditional
+includes which may be skipped it's helpful for identifying which features of
+the role have been left out. Example:
+
+.. code-block:: yaml
+
+    - name: Configure acme-tiny support
+      include: acme_tiny.yml
+      when: (pki__enabled|bool and
+             (pki__acme|bool or pki__acme_install|bool))
+
