@@ -19,7 +19,7 @@ The current role maintainer_ is drybjed_.
 Fixed
 ~~~~~
 
-- Fix ``item.starttls`` for ``nullmailer__remotes`` which was ignored
+- Fix ``item.starttls`` for :envvar:`nullmailer__remotes` which was ignored
   previously when set to ``False``. [ypid_]
 
 

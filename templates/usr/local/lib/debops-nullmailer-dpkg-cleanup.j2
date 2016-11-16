@@ -4,7 +4,7 @@
 
 # Clean up 'debops.nullmailer' modifications on the 'nullmailer' package purge
 
-set -eu -o pipefail
+set -o nounset -o pipefail -o errexit
 
 purge_files=(
 {% for element in (nullmailer__configuration_files + nullmailer__private_configuration_files + nullmailer__purge_default_files + nullmailer__purge_files) %}
