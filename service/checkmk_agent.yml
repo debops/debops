@@ -1,7 +1,7 @@
 ---
 
-- name: Setup Check_MK monitoring agent
-  hosts: [ 'debops_service_checkmk_agent' ]
+- name: Manage Check_MK agent
+  hosts:  [ 'debops_service_checkmk_agent', 'debops_checkmk_agent' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -9,6 +9,47 @@
                    | combine(inventory__host_environment  | d({})) }}'
 
   roles:
+    - role: debops.apt_preferences
+      tags: [ 'depend::apt_preferences', 'depend::apt_preferences:checkmk_agent',
+              'depend-of::checkmk_agent', 'type::dependency' ]
+      apt_preferences__dependent_list:
+        - '{{ checkmk_agent__apt_preferences__dependent_list }}'
+
+    - role: debops.etc_services
+      tags: [ 'depend::etc_services', 'depend::etc_services:checkmk_agent',
+              'depend-of::checkmk_agent', 'type::dependency' ]
+      etc_services__dependent_list:
+        - '{{ checkmk_agent__etc_services__dependent_list }}'
+      when: ('xinetd' in checkmk_agent__type|d(['ssh']))
+
+    - role: debops.ferm
+      tags: [ 'depend::ferm', 'depend::ferm:checkmk_agent',
+              'depend-of::checkmk_agent', 'type::dependency' ]
+      ferm__dependent_rules:
+        - '{{ checkmk_agent__ferm__dependent_rules }}'
+
+    - role: debops.tcpwrappers
+      tags: [ 'role::tcpwrappers' ]
+      tcpwrappers__dependent_allow:
+        - '{{ checkmk_agent__tcpwrappers__dependent_allow }}'
+
+    - role: debops.authorized_keys
+      tags: [ 'depend::authorized_keys', 'depend::authorized_keys:checkmk_agent',
+              'depend-of::checkmk_agent', 'type::dependency' ]
+      authorized_keys__dependent_list:
+        - '{{ checkmk_agent__authorized_keys__dependent_list }}'
+      when: ('ssh' in checkmk_agent__type|d(['ssh']))
+
+    - role: debops.mariadb
+      tags: [ 'depend::mariadb', 'depend::mariadb:checkmk_agent',
+              'depend-of::checkmk_agent', 'type::dependency' ]
+      mariadb__users:
+        - '{{ checkmk_agent__mariadb__users }}'
+      when: (("mk_mysql" in checkmk_agent__plugin_list and
+              checkmk_agent__plugin_mysql|d("automatic") == "automatic") or
+             ((checkmk_agent__plugin_autodetect|d(True) | bool) and
+              "debops_mariadb_server" in hostvars[inventory_hostname]["group_names"])
+            )
 
     - role: debops-contrib.checkmk_agent
       tags: [ 'role::checkmk_agent' ]
