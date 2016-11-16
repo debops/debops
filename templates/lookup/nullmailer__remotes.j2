@@ -7,7 +7,7 @@
 {%     if entry.host|d() %}
 {%       set _ = nullmailer__tpl_entry.append(entry.host) %}
 {%       set _ = nullmailer__tpl_entry.append(entry.protocol|d('smtp')) %}
-{%       if (((entry.starttls|d() and entry.starttls|bool) or nullmailer__starttls|bool) and (entry.ssl is undefined or not entry.ssl|bool) and (entry.options is undefined or not entry.options)) %}
+{%       if ((entry.starttls|d(nullmailer__starttls)|bool) and (not entry.ssl|d()|bool) and (not entry.options|d())) %}
 {%         set _ = nullmailer__tpl_entry.append('--starttls') %}
 {%       endif %}
 {%       if entry.ssl|d() and entry.ssl|bool %}

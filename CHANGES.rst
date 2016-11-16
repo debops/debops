@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.nullmailer master: https://github.com/debops/ansible-nullmailer/compare/v0.1.0...master
 
+Fixed
+~~~~~
+
+- Fix ``item.starttls`` for ``nullmailer__remotes`` which was ignored
+  previously when set to ``False``. [ypid_]
+
 
 debops.nullmailer v0.1.0 - 2016-07-26
 -------------------------------------
