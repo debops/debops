@@ -101,6 +101,15 @@ Changed
   need to update your inventory, check the role documentation for more details.
   [drybjed_]
 
+- Make sure that debops.tcpwrappers_ role is included in the debops.dnsmasq_
+  playbook because the DNSmasq role notifies the debops.tcpwrappers_ handler in
+  case of any changes. [drybjed_]
+
+- Update the ``ldap_entry`` Ansible module to the new version. This is
+  a non-backwards compatible change, roles that use ``ldap_entry`` will need to
+  be updated to use the new module ``atributes`` parameter instead of
+  specifying LDAP entry parameters directly as module parameters. [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
