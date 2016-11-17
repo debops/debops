@@ -79,6 +79,10 @@ Summary
 - Set a minimal Ansible version in :file:`meta/main.yml` according to the
   modules and task parameters used.
 
+- :ref:`Disable debug mechanisms <debops_policy__ref_code_standards_task_disable_debug`
+  such as the ``debug`` or ``ignore_errors`` statements in the ``master``
+  branch.
+
 
 **Ansible role: templates**
 
@@ -144,11 +148,6 @@ Here's the basic set of principles to be aware while writing roles:
   needed for other roles to use as Ansible local facts; this should ensure that the
   data used by other roles is available at all times, and therefore idempotent.
 
-- roles MUST NOT use Ansible debug mechanisms such as ``debug`` and
-  ``ignore_errors`` modules/module parameters for normal operations. If
-  during development or normal operation a role consistently experiences
-  issues, they should be fixed or handled conditionally instead of being
-  ignored.
 
 
 .. _debops_policy__ref_code_standards_role_default_variables:
@@ -438,6 +437,29 @@ Instead of ...
      file:
        path: '{{ elasticsearch__path_plugins }}'
        state: directory
+
+.. _debops_policy__ref_code_standards_task_disable_debug:
+
+Disable debug statements
+------------------------
+
+Role authors MUST NOT unconditionally use Ansible debug mechanisms such as the
+``debug`` module or the ``ignore_errors`` task statement in code which is used
+for normal operations. Released code is expected to be functional under every
+possible circumstance otherwise it is considered to be a bug which must be
+fixed on a best effort basis.
+
+For fragile or complex code paths it might be acceptable to to use the
+``debug`` statement with an increased ``verbosity`` level. This will only show
+the message, if :program:`ansible-playbook` is executed with one or more
+``--verbose`` options. For example:
+
+.. code-block:: yaml
+
+   - name: Show intermediate value from a lookup query
+     debug:
+       var: '{{ lookup("template", "lookups/fancy_lookup.j2") }}'
+       verbosity: 1
 
 
 .. _debops_policy__ref_code_standards_role_dependencies:
