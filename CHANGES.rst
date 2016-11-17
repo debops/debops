@@ -15,6 +15,28 @@ The current role maintainer is drybjed.
 .. _debops.auth master: https://github.com/debops/ansible-auth/compare/v0.3.1...master
 
 
+`debops.auth v0.3.2`_ - 2016-11-17
+----------------------------------
+
+.. _debops.auth v0.3.2: https://github.com/debops/ansible-auth/compare/v0.3.1...v0.3.2
+
+Added
+~~~~~
+
+- Add ``!requiretty`` to :command:`sudo` default variables. [jstruebel]
+
+- Add a way to enable or disable :command:`nslcd` support via a boolean
+  variable. [le9i0nx]
+
+Changed
+~~~~~~~
+
+- Use ``{{ ansible_managed }}`` variable in templates. [jstruebel]
+
+- Update the task that uses ``ldap_entry`` module to the latest changes in the
+  module parameter syntax. [drybjed]
+
+
 `debops.auth v0.3.1`_ - 2016-07-08
 ----------------------------------
 

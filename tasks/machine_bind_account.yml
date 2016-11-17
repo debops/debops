@@ -49,7 +49,8 @@
   ldap_entry:
     dn: '{{ auth_nslcd_bind_host_dn }}'
     objectClass: [ 'device', 'simpleSecurityObject' ]
-    userPassword: '{{ auth_register_nslcd_bind_host_password.stdout | default(auth_register_nslcd_bind_host_hash) }}'
+    attributes:
+      userPassword: '{{ auth_register_nslcd_bind_host_password.stdout | default(auth_register_nslcd_bind_host_hash) }}'
     state: 'present'
     server_uri: '{{ secret_ldap_server_uri }}'
     start_tls:  '{{ secret_ldap_start_tls }}'
