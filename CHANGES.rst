@@ -19,6 +19,14 @@ Added
 
 - Support MySQL-Galera flavor from Codership. [ganto]
 
+Changed
+~~~~~~~
+
+- Use ``inventory_hostname`` as fallback for task delegation which should render
+  manual definition of ``mariadb__delegate_to`` unnecessary in case the client
+  and server are setup on the same host and the inventory name doesn't
+  correspond with the FQDN of the host. [ganto]
+
 
 `debops.mariadb v0.2.2`_ - 2016-08-01
 -------------------------------------
