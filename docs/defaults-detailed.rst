@@ -88,10 +88,16 @@ network is described by a YAML dictionary which should have the following keys:
   Optional. Name of the UNIX user account under which the ``tincd`` daemon will
   be running. If not specified, ``tincd`` will be run under ``root`` account.
 
+.. _tinc__ref_networks_mlock:
+
 ``mlock``
   Optional, boolean. If present and ``True``, ``tincd`` will be executed with
   the ``--mlock`` option which will lock the daemon's memory in RAM, preventing
   the system from moving it to the swap space.
+  When no connection can be established, it can be tried to set this to ``False``.
+  Apparently the "Error while processing METAKEY from" might not be fully
+  resolved in Debian Jessie (problem also occurred with 1.0.28 from
+  jessie-backports).
 
 ``chroot``
   Optional, boolean. If ``True``, the ``tincd`` daemon will be run chrooted to

@@ -10,7 +10,7 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer_ is drybjed_
+The current role maintainer_ is drybjed_.
 
 Refer to the :ref:`tinc__ref_upgrade_nodes` when you intend to upgrade to a
 new release.
@@ -25,6 +25,8 @@ Added
 ~~~~~
 
 - Add :envvar:`tinc__address_family_mesh0` and :envvar:`tinc__compression_mesh0`. [ser_]
+
+- Add :envvar:`tinc__mlock_mesh0`. [ypid_]
 
 - Allow to configure nodes as clients using :envvar:`tinc__client_hosts`. [ypid_]
 
@@ -56,6 +58,9 @@ Changed
 - Increased default RSA key size from ``4096`` to ``8192`` bits as suggested by
   https://bettercrypto.org. Note that this increases the initial key generation
   from a few seconds to a few minutes which should be justifiable. [ypid_]
+
+- Update documentation to use debops.ifupdown_ instead of the
+  deprecated ``debops.subnetwork`` role. [ypid_]
 
 Fixed
 ~~~~~

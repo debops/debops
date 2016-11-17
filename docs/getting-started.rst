@@ -9,7 +9,7 @@ Getting started
 The ``debops.tinc`` role by itself only defines the connections between hosts,
 posing as Ethernet tunnels. To make a proper network, you need a defined
 subnet and a way to assign IP addresses to hosts in the network. You can use
-the debops.subnetwork_ role to define an internal subnet for the hosts in
+the debops.ifupdown_ role to define an internal subnet for the hosts in
 the VPN, and debops.dnsmasq_ to provide DHCP and DNS services inside the
 network.
 
@@ -28,19 +28,38 @@ hosts acting as the DHCP/DNS server and optionally a gateway:
 
 .. code-block:: none
 
-    [debops_service_subnetwork]
-    gateway
+   [debops_service_ifupdown]
+   gateway
 
-    [debops_service_dnsmasq]
-    gateway
+   [debops_service_dnsmasq]
+   gateway
 
-    [debops_service_tinc:children]
-    debops_service_tinc_mesh0
+   [debops_service_tinc:children]
+   debops_service_tinc_mesh0
 
-    [debops_service_tinc_mesh0]
-    gateway   tinc__bridge_mesh0="br2" tinc__link_type_mesh0="static"
-    hostname1
-    hostname2
+   [debops_service_tinc_mesh0]
+   gateway
+   hostname1
+   hostname2
+
+The ``gateway`` needs some additional configuration which should be placed in
+the Ansible inventory of the host:
+
+.. code-block:: yaml
+
+   tinc__bridge_mesh0: 'br2'
+   tinc__link_type_mesh0: 'static'
+
+   ifupdown__host_interfaces:
+
+     'br2':
+       type: 'bridge'
+       inet: 'static'
+       inet6: 'static'
+       nat: True
+       addresses:
+         - '2001:DB8::23/64'
+         - '192.0.2.23/24'
 
 By default Tinc configures host configuration to contain the primary FQDN address
 of a given host, so that when its IP address changes, Tinc will query the DNS
@@ -49,7 +68,7 @@ to get the current IP address.
 However, the FQDN will only be added, if a given host has a publicly routable
 IP address. This means that hosts without public IPs won't have their addresses
 mentioned in their host configuration file. This allows these hosts to still connect
-to public a gateway with access to the Tinc network.
+to a public gateway with access to the Tinc network.
 
 If you want to test the Tinc VPN only on a private network, or allow VPN
 connections between hosts, you can tell the ``debops.tinc`` role to add the
@@ -58,7 +77,7 @@ in the Ansible inventory:
 
 .. code-block:: yaml
 
-    tinc__host_addresses: '{{ tinc__host_addresses_ip }}'
+   tinc__host_addresses: '{{ tinc__host_addresses_ip }}'
 
 Example playbook
 ----------------
@@ -95,7 +114,7 @@ a bridge which connects to a network with DHCP/DNS server:
 
 In this mode, hosts will be configured to start their VPN interface with a
 dummy ``0.0.0.0`` IP address and connect it to a bridge, by default ``br2``.
-This bridge can be created by the debops.subnetwork_ role, which defaults to
+This bridge can be created by the debops.ifupdown_ role, which defaults to
 ``br2`` as well.
 
 In "static" mode, the VPN interface will act as another layer 2 connection on
