@@ -59,6 +59,9 @@ Summary
 - :ref:`Comment and structure <debops_policy__ref_code_standards_default_variable_documentation>`
   default variables with reStructuredText.
 
+- Roles providing features for other roles to use MUST do so by offering
+  dedicated :ref:`dependent variables <debops_policy__ref_code_standards_dependent_variables>`.
+
 
 **Ansible role: tasks**
 
@@ -129,11 +132,6 @@ Here's the basic set of principles to be aware while writing roles:
   of the particular chosen service and it makes changing the particular service
   every easy.
 
-- a role SHOULD allow for use by other roles through a dependent variable
-  mechanism. This way different roles can pass configuration data to other
-  services if needed; for example a web server role can request the firewall
-  management role to open specific ports when certain conditions are met.
-
 - roles SHOULD use Ansible local facts stored on the hosts to keep their
   internal state consistent and idempotent at all times, no matter if the role
   is used standalone or a part of another role's playbook. The facts can be
@@ -179,39 +177,25 @@ using the debops.apt_install_ role MUST be defined as (or similar):
 
    apt_install__host_packages: [ 'bash' ]
 
-The namespace separator MUST be used in variables that directly define data
-passed to other Ansible roles through role dependent variables.
-For example, if
-you want to ensure that a given package is installed from the Debian Backports
-repository, you can do so using the debops.apt_preferences_ role. To do that,
-in your own role create the default variable:
+Variables which are meant to be
+:ref:`dependent variables <debops_policy__ref_code_standards_dependent_variables>`
+on a provider role, MUST additionally contain the word ``dependent`` in their
+variable name. E.g.:
 
 .. code-block:: yaml
 
-   application__apt_preferences__dependent_list:
+   apt_preferences__dependent_list: []
+
+Variables which are meant to define dependent variables in the consumer role
+are named after the dependent variable of the provider role prefixed with the
+consume role name. E.g.
+
+.. code-block:: yaml
+
+   nginx__apt_preferences__dependent_list:
      - package: 'nginx nginx-*'
        backports: [ 'wheezy', 'precise' ]
 
-Then, in your role's playbook, you can add the debops.apt_preferences_ role as
-a dependency and pass a specific configuration to it:
-
-.. code-block:: yaml
-
-   - name: Install the application
-     hosts: 'application_hosts'
-     become: True
-
-     roles:
-
-       - role: debops.apt_preferences
-         apt_preferences__dependent_list:
-           - '{{ application__apt_preferences__dependent_list }}'
-
-       - role: application
-
-By including the configuration for the debops.apt_preferences_ role in your role's
-default variables you allow the user to change it through the Ansible inventory
-without the need to modify any of the involved roles or the playbook.
 
 .. _debops_policy__ref_code_standards_default_variable_documentation:
 
@@ -261,6 +245,82 @@ might be meaningful for the individual role:
 
     [... networking related variables ...]
                                                                    # ]]]
+
+.. _debops_policy__ref_code_standards_dependent_variables:
+
+Dependent variables
+-------------------
+
+DebOps is designed in a way that there are divided responsibilities between the
+roles. Each role has its clear task to fulfill. For example an application role
+must never care about the firewall configuration by itself. There is a dedicated
+role for firewall configuration. And the application role needs a way to tell
+the firewall role which access rules to configure. This is done via dependent
+variables.
+
+Each role providing a feature which MAY be consumed by other roles MUST provide
+a dedicated dependent variable for the configuration of this feature. As that
+variable is always defined in the context of the consuming role, its value MUST
+NOT modify a shared configuration state (e.g. configuration template). The
+provider role might be executed multiple times depending on the role dependency
+configuration of the consuming roles.
+
+.. caution::
+
+   A role providing dependent variables MUST be able to handle multiple
+   role executions with different values of the dependent variables without
+   mutual interference.
+
+Ideally the dependent variable SHOULD accept a list of YAML dictionaries
+where one property MUST be the state (``present`` or ``absent``) of the
+configuration. The provider role SHOULD then manage an individual configuration
+file per list item which allows it to selectively add or remove configuration
+states.
+
+**Example:**
+
+The debops.apt_preferences_ role is implements a feature to set APT package
+pinning configurations. Each role requiring a specific version of a package
+to be available can as the ``apt_preferences`` to do the corresponding
+configuration. For this, ``apt_preferences`` provides the following dependent
+variable:
+
+.. code-block:: yaml
+
+   # List of :manpage:`apt_preferences(5)` pins to configure in
+   # :file:`/etc/apt/preferences.d/`.  This variable is meant to be used from a
+   # role dependency in :file:`role/meta/main.yml` or in a playbook.
+   apt_preferences__dependent_list: []
+
+The consumer role, in this case debops.nginx_ would then define an own variable
+which defines the necessary pinning information:
+
+.. code-block:: yaml
+
+   nginx__apt_preferences__dependent_list:
+     - package: 'nginx nginx-*'
+       backports: [ 'wheezy', 'precise' ]
+
+In the playbook a :ref:`soft dependency <debops_policy__ref_code_standards_soft_role_dependencies>`
+can be specified where the dependent variable is passed to the provider:
+
+.. code-block:: yaml
+
+   - name: Manage nginx webserver
+     hosts: 'debops_service_nginx'
+     become: True
+
+     roles:
+
+       - role: debops.apt_preferences
+         apt_preferences__dependent_list:
+           - '{{ nginx__apt_preferences__dependent_list }}'
+
+       - role: debops.nginx
+
+By including the configuration for the debops.apt_preferences_ role in the
+``nginx`` default variables the user to change it through the Ansible inventory
+without the need to modify any of the involved roles or the playbook.
 
 
 .. _debops_policy__ref_code_standards_role_tasks:
@@ -365,11 +425,11 @@ playbook instead of
 :ref:`"hard" dependencies <debops_policy__ref_code_standards_hard_role_dependencies>`
 in the :file:`meta/main.yml`.
 
-It's also possible to pass configuration values to a depenent role if the
-involved role is offering dedicated variables for this purpose (*TODO: Add
-reference to related subsection*). With soft dependencies custom playbook
-authors are therefore free to pass values from arbitrary sources according to
-their requirements.
+It's also possible to pass configuration values to a dependent role if the
+involved role is offering dedicated
+:ref:`dependent variables <debops_policy__ref_code_standards_dependent_variables>`
+for this purpose. With soft dependencies custom playbook authors are therefore
+free to pass values from arbitrary sources according to their requirements.
 
 **Example:**
 
