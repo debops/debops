@@ -7,14 +7,14 @@
 {% set ifupdown__tpl_ipv6_addresses = [] %}
 {% set ifupdown__tpl_gateways = [] %}
 {% if interface.no_addresses is undefined or not interface.no_addresses|bool %}
-{%   if interface.address|d() and interface.address %}
+{%   if interface.address|d() %}
 {%     if interface.address is string and interface.address | ipaddr('host/prefix') %}
 {%       set ifupdown__tpl_addresses = [ interface.address ] %}
 {%     else %}
 {%       set ifupdown__tpl_addresses = (interface.address | unique | ipaddr('host/prefix')) %}
 {%     endif %}
 {%   endif %}
-{%   if interface.addresses|d() and interface.addresses %}
+{%   if interface.addresses|d() %}
 {%     if interface.addresses is string and interface.addresses | ipaddr('host/prefix') %}
 {%       set ifupdown__tpl_addresses = (ifupdown__tpl_addresses + [ interface.addresses ]) %}
 {%     else %}
@@ -23,14 +23,14 @@
 {%   endif %}
 {%   set ifupdown__tpl_ipv4_addresses = ifupdown__tpl_addresses | ipv4('host/prefix') %}
 {%   set ifupdown__tpl_ipv6_addresses = ifupdown__tpl_addresses | ipv6('host/prefix') %}
-{%   if interface.gateway|d() and interface.gateway %}
+{%   if interface.gateway|d() %}
 {%     if interface.gateway is string %}
 {%       set _ = ifupdown__tpl_gateways.append(interface.gateway) %}
 {%     else %}
 {%       set _ = ifupdown__tpl_gateways.extend(interface.gateway) %}
 {%     endif %}
 {%   endif %}
-{%   if interface.gateways|d() and interface.gateways %}
+{%   if interface.gateways|d() %}
 {%     if interface.gateways is string %}
 {%       set _ = ifupdown__tpl_gateways.append(interface.gateways) %}
 {%     else %}
@@ -208,7 +208,7 @@ mapping {{ interface_name }}
 {{ interface.add_options | indent(4, true) }}
 {%   endif %}
 {% endif %}
-{% if interface.debug|d() and interface.debug|bool %}
+{% if interface.debug|d() | bool %}
 
 {{ ("interface_name: " + (interface_name | to_nice_json)) | replace('\n$','') | comment(prefix='',postfix='') -}}
 {{ ("interface: " + (interface | to_nice_json)) | replace('\n$','') | comment(prefix='',postfix='') -}}
