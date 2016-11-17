@@ -101,6 +101,10 @@ Changed
   need to update your inventory, check the role documentation for more details.
   [drybjed_]
 
+- Make sure that debops.tcpwrappers_ role is included in the debops.dnsmasq_
+  playbook because the DNSmasq role notifies the debops.tcpwrappers_ handler in
+  case of any changes. [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
