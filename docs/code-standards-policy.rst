@@ -44,7 +44,8 @@ Summary
 
 - Follow the :ref:`variable naming conventions <policy__ref_default_variable_naming_convention>`.
 
-- Make conditional code configurable via default variables.
+- Make :ref:`conditional code configurable <_policy__ref_task_conditions>` via
+  default variables.
 
 - :ref:`Comment and structure <policy__ref_default_variable_documentation>`
   default variables with reStructuredText.
@@ -97,10 +98,6 @@ most amount of reusability so that other Ansible roles can utilize them if
 necessary.
 
 Here's the basic set of principles to be aware while writing roles:
-
-- try, if possible, to move much of the conditional code to the role's default
-  variables (:file:`defaults/main.yml`). This way, the user can affect the role
-  operation without the need to modify the role's internal, private code.
 
 - try, if possible, to allow Ansible inventory structure to affect the role
   operation. This means that the role SHOULD allow to use different inventory
@@ -293,4 +290,46 @@ the role have been left out.
       include: acme_tiny.yml
       when: (pki__enabled|bool and
              (pki__acme|bool or pki__acme_install|bool))
+
+.. _policy__ref_task_conditions:
+
+Conditions
+~~~~~~~~~~
+
+It might be necessary often that task execution might depend on a certain
+condition using the ``when`` statement. In many cases the condition is simple
+and straight forward, for example when depending on the existance of a file.
+Other times the condition might be more complex, for example when depending
+on a state of other role configurations. In this case the expression SHOULD
+be defined in a default variable. This would give the user the ability to
+override the decision and have better control about the role's behavior.
+
+**Example:**
+
+.. code-block:: yaml
+
+    - name: Add database server user to specified groups
+      user:
+        name: 'mysql'
+        groups: '{{ mariadb_server__append_groups | join(",") | default(omit) }}'
+        append: True
+        createhome: False
+      when: mariadb_server__pki|bool
+
+Here the condition ``mariadb_server__pki`` is a extensive evaluation of the
+current state. The related default variable is defined in
+:file:`defaults/main.yml` as following:
+
+.. code-block:: yaml
+
+    # Enable or disable support for SSL in MariaDB (using ``debops.pki``).
+    mariadb_server__pki: '{{ (True
+                          if (ansible_local|d() and ansible_local.pki|d() and
+                              ansible_local.pki.enabled|d() and
+                              mariadb_server__pki_realm in ansible_local.pki.known_realms)
+                          else False) | bool }}'
+
+If the user doesn't agree with the defined condition, the variable can simply
+be redefined in the Ansible inventory without the need to modify the Ansible
+code of the role.
 
