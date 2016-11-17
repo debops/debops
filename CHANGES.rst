@@ -97,6 +97,10 @@ Changed
   library. These versions should work better with the latest Ansible 2.x
   releases. [drybjed_]
 
+- Update debops.ifupdown_ playbook to support new featurs in the role. You will
+  need to update your inventory, check the role documentation for more details.
+  [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
@@ -114,6 +118,9 @@ Removed
 - Remove the debops.ifupdown_ role form the :file:`common.yml` playbook and turn it
   into a regular service. The debops.ifupdown_ role is activated when hosts are
   placed in the ``[debops_service_ifupdown]`` Ansible host group. [drybjed_]
+
+- Remove the ``debops.subnetwork`` role, its functionality has been merged with
+  debops.ifupdown_ role. [drybjed_]
 
 Fixed
 ~~~~~
