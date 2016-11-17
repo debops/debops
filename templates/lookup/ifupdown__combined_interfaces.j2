@@ -37,6 +37,10 @@
 {%     elif interface_name.startswith('6to4') %}
 {%       set _ = params.update({"type":"6to4"}) %}
 {%     endif %}
+{%   elif params.type %}
+{%     if (interface_name.startswith('vlan') or '.' in interface_name) %}
+{%       set _ = params.update({"type":"vlan"}) %}
+{%     endif %}
 {%   endif %}
 {%   if params.type == 'ether' %}
 {%     if params.inet is undefined %}
