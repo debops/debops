@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import os
+
+{% set ifupdown__tpl_dependent_interfaces = [] %}
+{% set ifupdown__tpl_dependent_interfaces_absent = [] %}
+{% if ifupdown__dependent_interfaces %}
+{%   for interface, params in ifupdown__dependent_interfaces.iteritems() %}
+{%     set interface_name = (params.iface | d(interface)) %}
+{%     if params.state|d('present') in [ 'present', 'ignore' ] %}
+{%       set _ = ifupdown__tpl_dependent_interfaces.append(interface_name) %}
+{%     elif params.state|d('present') == 'absent' %}
+{%       set _ = ifupdown__tpl_dependent_interfaces_absent.append(interface_name) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if ansible_local|d() and ansible_local.ifupdown|d() and ansible_local.ifupdown.dependent_interfaces|d() %}
+{%   for element in ansible_local.ifupdown.dependent_interfaces %}
+{%     if element not in ifupdown__tpl_dependent_interfaces_absent and element not in ifupdown__tpl_dependent_interfaces %}
+{%       set _ = ifupdown__tpl_dependent_interfaces.append(element) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+
+output = loads('''{
+    "configured": true,
+    "dependent_interfaces": {{ ifupdown__tpl_dependent_interfaces | to_nice_json }},
+    "external_interface": "{{ ansible_local.ifupdown.external_interface if (ansible_local|d() and ansible_local.ifupdown|d() and ansible_local.ifupdown.external_interface|d()) else ifupdown__external_interface }}",
+    "interface_layout": "{{ ifupdown__interface_layout }}",
+    "internal_interface": "{{ ansible_local.ifupdown.internal_interface if (ansible_local|d() and ansible_local.ifupdown|d() and ansible_local.ifupdown.internal_interface|d()) else ifupdown__internal_interface }}"
+}''')
+
+print(dumps(output, sort_keys=True, indent=2))

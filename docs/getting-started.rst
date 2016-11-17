@@ -6,119 +6,86 @@ Getting started
 .. contents::
    :local:
 
-Because most of the time hosts that are configured by Ansible are remote, the
-highest priority for the ``debops.ifupdown`` role is to not lose the network
-connectivity. That does not mean that network connection can't ever be stopped
-(which it most certainly is), but that network configuration must be in
-a consistent, known state at all times.
+Quick start guide
+-----------------
+
+Here are some quick examples to get you started if you already know how to use
+DebOps roles. These examples are supposed to go into your Ansible inventory,
+specifically to the host configuration, for example
+:file:`ansible/inventory/host_vars/<hostname>/ifupdown.yml`.
+
+Create an anonymous bridge:
+
+.. code-block:: yaml
+
+   ifupdown__host_interfaces:
+     'br2': {}
+
+Create a bridge with static IP address and IPv4 NAT using SNAT translation:
+
+.. code-block:: yaml
+
+   ifupdown__host_interfaces:
+     'br2':
+       inet: 'static'
+       inet6: 'static'
+       addresses: [ '192.0.2.1/24', '2001:db8:feed:beef::1/64' ]
+       nat: True
+
 
 Default network configuration
 -----------------------------
 
-Without any additional configuration, ``debops.ifupdown`` tries to recognize
-several different environments and configure them as needed. The parameters
-taken into account are:
+Without any additional configuration, ``debops.ifupdown`` role will try to
+select one of two default interface layouts depending on whether the host is an
+OpenVZ/LXC container or not. If it's a container, the role will use the
+``dynamic`` interface layout which defines 1 or 2 network interfaces that are
+configured via DHCP (IPv4) and SLAAC (IPv6).
 
-- if the ``cap_net_admin`` POSIX capability is not present when capabilities are
-  enabled, network configuration is skipped;
+If the host is not a container, the role will select the ``bridge`` layout,
+which defines 1 or 2 network interfaces with attached bridges that are
+configured with DHCP (IPv4) and SLAAC (IPv6). This configuration is benefical
+when a machine is used as an KVM, LXC or even a Docker host. With the bridges
+in place you can connect the VMs or containers to your external or internal
+network with ease.
 
-- if the network configuration is presumed to be "static" (``static`` anywhere in
-  :file:`/etc/network/interfaces`), the network configuration is not performed;
 
-- if NetworkManager is detected, ``debops.ifupdown`` will not configure the default
-  set of network interfaces, but will work as a role dependency if used in that
-  way;
+Automatic upgrades from older version
+-------------------------------------
 
-If the above conditions are not met, ``debops.ifupdown`` will select one of
-the available network configurations in the :file:`vars/` directory based on the condition it
-detects. The basic network configuration is designed to configure one or two
-network interfaces (public network and private network), each one with their
-own bridge, getting the required configuration via DHCP requests. If an LXC
-guest is detected, normal network interfaces will be configured instead, also
-using DHCP.
+The ``debops.ifupdown`` role tracks its own version used on a host using the
+debops.debops_fact_ Ansible role as an intermediary. If the currently applied
+version is older than ``0.3.0`` or the version cannot be found, role will
+remove the :file:`/etc/network/interfaces.config.d/` directory to make sure
+that the network configuration state is consistent. You might want to review
+and update your interface configuration in the Ansible inventory before
+applying new version of the role to ensure that it has accurate information
+about interfaces present on the host.
 
 Example inventory
 -----------------
 
-If you are using the official DebOps playbooks, the ``debops.ifupdown`` role is part of
-the :file:`common.yml` playbook, which means that it's run by default on all hosts,
-and there's no specific host group set to enable it.
+To enable the :command:`ifupdown` interface management, you need to add the
+host to the ``[debops_service_ifupdown]`` Ansible inventory group:
 
-By default ``eth0`` and ``eth1`` network interfaces will be configured with
-``br0`` (public network) and ``br1`` (private network) bridges respectively. If
-on a given host these ports are reversed or different, you can specify the
-correct ones using two variables::
+.. code-block:: none
 
-    ifupdown_external_interface: 'eth0'
-    ifupdown_internal_interface: 'eth1'
+   [debops_service_ifupdown]
+   hostname
 
-The bridges will be configured to ask the DHCP server for their configuration. You can
-easily add static IP addresses to the selected interfaces if needed, for example
-for NAT or virtual IP addresses. To do that, you can use a separate dict variable
-with IP addresses specified in 'host/prefix' format::
+The role does not check if the host can manage network interfaces, therefore
+you should only enable this role on hosts that are allowed to do so. One
+of the limiting factors can be the presence of the ``cap_net_admin`` POSIX
+capability. Make sure that its present on the host so that it can manage its
+own networking.
 
-    ifupdown_map_interface_addresses:
-      'br0': [ '192.0.2.1/24', '2001:db8:feed:dd05::32/64' ]
-
-Unfortunately you cannot use variables as keys in above dict, only strings;
-because of that it's better to correctly specify external/internal interfaces
-(which can change) and then configure the IP addresses on their respective bridges
-(which should have static names).
-
-If you want to define your own interface layout, you can put it in
-the ``ifupdown_interfaces`` list. It will override the automatic selection by the
-role, which is very handy when role is used as a dependency::
-
-    ifupdown_interfaces:
-
-      - iface: '{{ ifupdown_external_interface }}'
-        type: 'interface'
-
-If, instead, you want to add more interfaces to the set configured
-automatically by ``debops.ifupdown``, you can put them in a separate list and
-combine two lists together::
-
-    ifupdown_interfaces: '{{ ifupdown_default_interfaces + ifupdown_custom_interfaces }}'
-
-    ifupdown_custom_interfaces:
-
-      - iface: 'tap0'
-        type: 'interface'
-        options: |
-          address 0.0.0.0
+.. _ifupdown__ref_example_playbook:
 
 Example playbook
 ----------------
 
-You can use ``debops.ifupdown`` in your own playbooks and roles, as
-a dependency. For example, below playbook will configure a new bridge without
-adding any network interfaces to it::
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.ifupdown`` role:
 
-    ---
-
-    - name: Configure network interfaces
-      hosts: all
-      sudo: True
-
-      roles:
-        - role: debops.ifupdown
-          ifupdown_interfaces:
-
-            - iface: 'br2'
-              type: 'bridge'
-              inet: 'static'
-              addresses: '{{ "10.10.1.0/24" | ipaddr(host_index | int) }}'
-              gateway: '10.10.1.1'
-              bridge_ports: [ 'eth0', 'eth1' ]
-              options: |
-                bridge_stp on
-                bridge_fd 0
-
-And then, in each host inventory, set its specific index::
-
-    host_index: 2
-
-Above configuration can be seen as crude implementation of DHCP using
-semi-automatic incrementing IP addresses. Setting up proper DHCP server, for
-example with debops.dnsmasq_ or debops.dhcpd_ might be easier and more
-beneficial in the long run.
+.. literalinclude:: playbooks/ifupdown.yml
+   :language: yaml

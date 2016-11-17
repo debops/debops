@@ -5,8 +5,10 @@ Description=Wait for all "auto" /etc/network/interfaces to be up for network-onl
 Documentation=man:interfaces(5) man:ifup(8)
 Documentation=https://unix.stackexchange.com/a/217768
 DefaultDependencies=no
-After=local-fs.target
-Before=network-online.target
+Wants=network.target
+After=local-fs.target network-pre.target apparmor.service systemd-sysctl.service systemd-modules-load.service networking.service
+Before=network.target shutdown.target network-online.target ifup-allow-boot.service
+Conflicts=shutdown.target
 
 [Service]
 Type=oneshot
@@ -19,5 +21,5 @@ ExecStart=/bin/sh -ec '\
   for i in $INTERFACES; do while [ -e /run/network/ifup-$i.pid ]; do sleep 0.2; done; done'
 
 [Install]
+WantedBy=multi-user.target
 WantedBy=network-online.target
-

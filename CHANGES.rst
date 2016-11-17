@@ -1,20 +1,204 @@
+.. _ifupdown__ref_changelog:
+
 Changelog
 =========
 
 .. include:: includes/all.rst
 
-v0.2.6
-------
+**debops.ifupdown**
 
-*Released: 2016-10-20*
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-- Make sure that role passes correctl even if ``ifupdown_capabilities`` was not
-  set. [drybjed_]
+The current role maintainer_ is drybjed_.
 
-v0.2.5
-------
 
-*Released: 2016-07-17*
+`debops.ifupdown master`_ - unreleased
+--------------------------------------
+
+.. _debops.ifupdown master: https://github.com/debops/ansible-ifupdown/compare/v0.3.0...master
+
+
+`debops.ifupdown v0.3.0`_ - 2016-11-17
+--------------------------------------
+
+.. _debops.ifupdown v0.3.0: https://github.com/debops/ansible-ifupdown/compare/v0.2.6...v0.3.0
+
+Added
+~~~~~
+
+- Add the :file:`ifup-allow-boot.service` :command:`systemd` unit file which
+  will bring up all network interfaces which have the ``allow-boot`` and
+  ``allow-hotplug`` parameters. This should fix a problem where network
+  interfaces that don't use hotplug events (like bridges, tunnels, etc.) are
+  not brought up by the :file:`networking.service` unit, or are brought up with
+  their processes put in the :file:`networking.service` cgroup and not able to
+  be managed separately. [drybjed_]
+
+- Role will now mark the network interfaces that need processing (new, removed,
+  or changed) using files in the :file:`/run/network/` directory. The network
+  reconfiguration script reads these files and performs network changes if
+  needed. [drybjed_]
+
+- The ``debops.ifupdown`` role now incorporates configuration done by the
+  ``debops.subnetwork`` role; it generates the forward and NAT rules for the
+  firewall managed by the debops.ferm_ Ansible role for each bridge it manages.
+  This is configurable per bridge if needed. [drybjed_]
+
+- Role now uses separate ``debops.ifupdown/env`` internal role to prepare
+  dynamic configuration for other roles, like debops.ferm_. You will need to
+  update your playbooks to reflect this. [drybjed_]
+
+- You can now install custom scripts or other files needed by the interface
+  configuration by using the new :envvar:`ifupdown__custom_files` variables.
+  [drybjed_]
+
+- Role now supports the stable network interface naming schemes introduced by
+  the :command:`systemd` init daemon. The network interfaces should be
+  correctly detected without the need for the user to configure them beforehand
+  using role variables. [drybjed_]
+
+- You can now use variables on different inventory levels to configure network
+  interfaces on all or specific groups of hosts. [drybjed_]
+
+- Role now uses Ansible local fact script to preserve some configuration like
+  information about external and internal network interfaces to make the role
+  operation idempotent. [drybjed_]
+
+- Save information about role version in a central location managed by
+  debops.debops_fact_ Ansible role. [drybjed_]
+
+- Use information about deployed role version to reset the network
+  configuration if necessary to avoid issues with duplicated network
+  interfaces. [drybjed_]
+
+- Add an option to disable automatic reconfiguration of the network interfaces.
+  The reconfiguration script will be installed on the remote host and will
+  allow to control reconfiguration manually. [drybjed_]
+
+- Add interface layout ``manual`` to not use any network interface layout and
+  allow you to configure interfaces manually. [ypid_]
+
+- Allow flexible and advanced Firewall configuration using
+  ``forward_interface_ferm_rule`` and ``forward_outerface_ferm_rule`` and added
+  a example for it.
+  ``debops.subnetwork`` supported similar configuration using the
+  ``subnetwork__allow_*`` variables. [ypid_]
+
+Changed
+~~~~~~~
+
+- Update documentation and Changelog. [drybjed_]
+
+- Rename all role variables from ``ifupdown_*`` to ``ifupdown__*`` to put them
+  in a separate namespace. You will need to update your Ansible inventory. Keep
+  in mind that the variable data model has also been changed, read the rest of
+  the documentation for details. [drybjed_]
+
+- Change the network interface configuration model from YAML list to a YAML
+  dict. This should make the role less prone to creating duplicate interface
+  configuration. [drybjed_]
+
+- Configuration file naming scheme in :file:`/etc/network/interfaces.d/` has
+  been simplified to eliminate issues with duplicating network interface
+  configuration. Now all files are named as ``<weight>_iface_<interface>``;
+  IPv4 and IPv6 interface configuration is stored in 1 file instead of 2.
+  [drybjed_]
+
+- The ``debops.ifupdown`` role will ensure that the :command:`rdnssd` package
+  is installed for better IPv6 DNS support. [drybjed_]
+
+- The default network configuration layouts have been moved to the default role
+  variables and can be easily changed or extended if necessary. [drybjed_]
+
+- All of the network interface configuration has been merged into 1 YAML
+  dictionary, there's no need to configure separate parameters in separate
+  "maps" anymore. [drybjed_]
+
+- The interface reconfiguration script now sends information about different
+  operations to :command:`syslog` for easier debugging. [drybjed_]
+
+- Network interfaces that require changes are reconfigured in reverse order to
+  behave the same as the :command:`ifupdown` commands. [drybjed_]
+
+- Rename the ``dhcp`` interface layout to ``dynamic``. [drybjed_]
+
+- Redesign th ``gateway`` parameter to work similar to ``address`` parameter.
+  [drybjed_]
+
+- Make the ``weight`` parameter a bit more useful by adding it to the base
+  weight defined by the interface type instead of setting the weight directly.
+  This makes interface order easier to define without the need to look up the
+  specific weight. [drybjed_]
+
+- Remove the interface configuration files that have wrong weight in their
+  filename to make interface reordering easier. [drybjed_]
+
+Deprecated
+~~~~~~~~~~
+
+- The ``debops.subnetwork`` Ansible role has been deprecated by this role and
+  shouldn't be used anymore. [drybjed_]
+
+Removed
+~~~~~~~
+
+- Remove all files in :file:`var/` directory; the default interface
+  configuration is moved to the :envvar:`ifupdown__default_interfaces` variable.
+  [drybjed_]
+
+- Drop usage of locally installed reconfiguration script, it's now used by the
+  :file:`script` Ansible module directly. [drybjed_]
+
+- Remove environment detection code, that is detection of POSIX capabilities,
+  detection of static network configuration in :file:`/etc/network/interfaces`
+  and detection of NetworkManager service. The role is no longer included in
+  the DebOps :file:`common.yml` playbook, therefore it assumes that it can
+  operate correctly on all hosts where it's enabled and those checks shouldn't
+  be needed. [drybjed_]
+
+- Remove support for ``dns_nameservers{4,6}`` and ``dns_search{4,6}`` from the
+  interface configuration, the normal parameters ``dns_nameservers`` and
+  ``dns_search`` are enough to support this functionality. [drybjed_]
+
+Fixed
+~~~~~
+
+- Fix bug that caused the role to abort when a host has interface names with a
+  hyphen configured. [ypid_]
+
+- Don’t fail if ``ansible_default_ipv4`` is an empty dictionary. [ypid_]
+
+- Don’t fail if a host does not have DNS nameservers defined
+  (``ansible_dns.nameservers`` is undefined). [ypid_]
+
+- Don’t fail if a host does not have a DNS search domain specified
+  (``ansible_dns.search`` is undefined). [ypid_]
+
+`debops.ifupdown v0.2.6`_ - 2016-10-20
+--------------------------------------
+
+.. _debops.ifupdown v0.2.6: https://github.com/debops/ansible-ifupdown/compare/v0.2.5...v0.2.6
+
+Changed
+~~~~~~~
+
+- Make sure that role passes correctly even if ``ifupdown_capabilities`` was
+  not set. [drybjed_]
+
+
+`debops.ifupdown v0.2.5`_ - 2016-07-17
+--------------------------------------
+
+.. _debops.ifupdown v0.2.5: https://github.com/debops/ansible-ifupdown/compare/v0.2.4...v0.2.5
+
+Changed
+~~~~~~~
+
+- Use relative paths with ``with_first_found`` lookup. [drybjed_]
+
+Fixed
+~~~~~
 
 - Fix an issue with ``systemd`` ``network-online.target`` on Debian where it
   starts at the same time as ``network.target``, and doesn't wait for
@@ -24,14 +208,14 @@ v0.2.5
 - Fixed Ansible check mode related to the ``ifup-wait-all-auto`` ``systemd``
   service might not being defined. [ypid_]
 
-- Use relative paths with ``with_first_found`` lookup. [drybjed_]
 
-v0.2.4
-------
+`debops.ifupdown v0.2.4`_ - 2016-02-11
+--------------------------------------
 
-*Released: 2016-02-11*
+.. _debops.ifupdown v0.2.4: https://github.com/debops/ansible-ifupdown/compare/v0.2.3...v0.2.4
 
-- Fix deprecation warnings on Ansible 2.1.0. [drybjed_]
+Changed
+~~~~~~~
 
 - The ``item.delete`` parameter will be now tested as a boolean. [drybjed_]
 
@@ -39,21 +223,19 @@ v0.2.4
   capability detection to default variables. You might need to update inventory
   if you disabled ``debops.ifupdown`` role. [drybjed_]
 
-v0.2.3
-------
+Fixed
+~~~~~
 
-*Released: 2015-11-24*
+- Fix deprecation warnings on Ansible 2.1.0. [drybjed_]
 
-- Fix issues during Ansible ``--check`` mode, role should no longer stop due to
-  not existing dictionary keys. [drybjed_]
 
-- Fix an issue where Jinja templating of the ``ifupdown`` variable resulted in
-  a new line character added in Ansible v2. [drybjed_]
+`debops.ifupdown v0.2.3`_ - 2015-11-24
+--------------------------------------
 
-- Ignore comment lines while checking if static network configuration is
-  present. [drybjed_]
+.. _debops.ifupdown v0.2.3: https://github.com/debops/ansible-ifupdown/compare/v0.2.2...v0.2.3
 
-- Updated documentation and fixed spelling. [ypid_]
+Added
+~~~~~
 
 - Add ``ifupdown_interface_weight_map`` variable.
 
@@ -78,7 +260,7 @@ v0.2.3
 
   Because bridges will be restarted, any external interfaces connected to them
   will be dropped. That means that virtual machines and containers will lose
-  the network connection permanently. Restarting the afftected virtual machines
+  the network connection permanently. Restarting the affected virtual machines
   and containers should bring everything back to normal. [drybjed_]
 
 - Add a way to set custom comments for each interface using dictionary maps.
@@ -93,31 +275,60 @@ v0.2.3
   prevents modification to network bridges which requires restart of the
   network interfaces and may drop the existing bridge layout. [drybjed_]
 
-v0.2.2
-------
+Changed
+~~~~~~~
 
-*Released: 2015-08-08*
+- Ignore comment lines while checking if static network configuration is
+  present. [drybjed_]
+
+- Updated documentation and fixed spelling. [ypid_]
+
+Fixed
+~~~~~
+
+- Fix issues during Ansible ``--check`` mode, role should no longer stop due to
+  not existing dictionary keys. [drybjed_]
+
+- Fix an issue where Jinja templating of the ``ifupdown`` variable resulted in
+  a new line character added in Ansible v2. [drybjed_]
+
+
+`debops.ifupdown v0.2.2`_ - 2015-08-08
+--------------------------------------
+
+.. _debops.ifupdown v0.2.2: https://github.com/debops/ansible-ifupdown/compare/v0.2.1...v0.2.2
+
+Changed
+~~~~~~~
 
 - Streamline directory creation tasks and make sure required packages are
-  installed. [le9i0nx]
+  installed. [le9i0nx_]
 
 - Make sure that Ansible does not stop if a variable is undefined. This change
   fixes issues with the missing variables in Ansible v2. [drybjed_]
 
-v0.2.1
-------
 
-*Released: 2015-06-01*
+`debops.ifupdown v0.2.1`_ - 2015-06-01
+--------------------------------------
+
+.. _debops.ifupdown v0.2.1: https://github.com/debops/ansible-ifupdown/compare/v0.2.0...v0.2.1
+
+Added
+~~~~~
 
 - Add a text block variable with options for bridge interfaces which becomes
   active when user does not specify any options for that bridge. By default
   these options will set forward delay to ``0`` to make DHCP queries work
   correctly on virtual machine boot. [drybjed_]
 
-v0.2.0
-------
 
-*Released: 2015-05-30*
+`debops.ifupdown v0.2.0`_ - 2015-05-30
+--------------------------------------
+
+.. _debops.ifupdown v0.2.0: https://github.com/debops/ansible-ifupdown/compare/v0.1.2...v0.2.0
+
+Added
+~~~~~
 
 - Expose path to reconfiguration script in a default variable, so that it can
   be changed if needed. [drybjed_]
@@ -128,6 +339,9 @@ v0.2.0
 
 - Add an option to ignore "static" configuration in
   :file:`/etc/network/interfaces`. [drybjed_]
+
+Changed
+~~~~~~~
 
 - Change reconfiguration script ``logger`` command to not cut the emitted
   string after first variable. And it looks cleaner now. [drybjed_]
@@ -157,21 +371,14 @@ v0.2.0
   List of possible dict variables will be added in the documentation in
   a separate commit. [drybjed_]
 
-v0.1.2
-------
 
-*Released: 2015-05-24*
+`debops.ifupdown v0.1.2`_ - 2015-05-24
+--------------------------------------
 
-- Check first argument in the delayed ifup script, if it's ``false``, specified
-  interface won't be brought up at all. [drybjed_]
+.. _debops.ifupdown v0.1.2: https://github.com/debops/ansible-ifupdown/compare/v0.1.1...v0.1.2
 
-- Remove management if ``ifup@.service`` unit symlinks for configured
-  interfaces. ``ifupdown`` and :file:`/etc/init.d/networking` scripts work just
-  fine without them present. [drybjed_]
-
-- Split ``interface_enabled`` list into two to better track what types of
-  interfaces are enabled. Additionally, send list of configured interfaces to
-  the syslog for debugging purposes. [drybjed_]
+Added
+~~~~~
 
 - Add ``item.port_active`` parameter to bridge configuration.
 
@@ -188,15 +395,52 @@ v0.1.2
   run at the end of the current play, or can be executed independently.
   [drybjed_]
 
-v0.1.1
-------
+Changed
+~~~~~~~
 
-*Released: 2015-05-12*
+- Check first argument in the delayed ifup script, if it's ``false``, specified
+  interface won't be brought up at all. [drybjed_]
+
+- Split ``interface_enabled`` list into two to better track what types of
+  interfaces are enabled. Additionally, send list of configured interfaces to
+  the syslog for debugging purposes. [drybjed_]
+
+Removed
+~~~~~~~
+
+- Remove management if ``ifup@.service`` unit symlinks for configured
+  interfaces. ``ifupdown`` and :file:`/etc/init.d/networking` scripts work just
+  fine without them present. [drybjed_]
+
+
+`debops.ifupdown v0.1.1`_ - 2015-05-12
+--------------------------------------
+
+.. _debops.ifupdown v0.1.1: https://github.com/debops/ansible-ifupdown/compare/v0.1.0...v0.1.1
+
+Added
+~~~~~
 
 - Add ``item.port_present`` parameter in bridge configuration. It can be used
   to enable or disable specific bridge interface depending on presence of
   a given network interface in ``ansible_interfaces`` list, but does not affect
   the configuration of the bridge itself. [drybjed_]
+
+- Add IPv6 SLAAC configuration on all default interfaces; this is required on
+  Debian Jessie to enable IPv6 address autoconfiguration.  [drybjed_]
+
+- Add a way to delay activation of specific network interface.
+
+  A network interface can be prepared beforehand by ``debops.ifupdown`` role,
+  then additional configuration can be performed (for example an OpenVPN/tinc
+  VPN, GRE tunnel, etc.) and after that the other role can run the script
+  prepared by ``debops.ifupdown`` in a known location to start the interface.
+
+  This option is enabled by adding ``item.auto_ifup: False`` to interface
+  configuration. [drybjed_]
+
+Changed
+~~~~~~~
 
 - Clean up ``allow-auto`` and ``allow-hotplug`` options in interface
   configuration. By default both of these parameters will be added
@@ -206,9 +450,6 @@ v0.1.1
   This tells the system to start the interfaces at boot time, as well as allows
   to control specific interfaces by the hotplug events using ``ifup`` and
   ``ifdown`` commands or ``ifup@.service`` under ``systemd``. [drybjed_]
-
-- Add IPv6 SLAAC configuration on all default interfaces; this is required on
-  Debian Jessie to enable IPv6 address autoconfiguration.  [drybjed_]
 
 - Rewrite network interface configuration logic.
 
@@ -231,20 +472,11 @@ v0.1.1
   network interfaces which have been modified will be enabled/disabled on
   subsequent runs. [drybjed_]
 
-- Add a way to delay activation of specific network interface.
 
-  A network interface can be prepared beforehand by ``debops.ifupdown`` role,
-  then additional configuration can be performed (for example an OpenVPN/tinc
-  VPN, GRE tunnel, etc.) and after that the other role can run the script
-  prepared by ``debops.ifupdown`` in a known location to start the interface.
+debops.ifupdown v0.1.0 - 2015-04-20
+-----------------------------------
 
-  This option is enabled by adding ``item.auto_ifup: False`` to interface
-  configuration. [drybjed_]
-
-v0.1.0
-------
-
-*Released: 2015-04-20*
+Added
+~~~~~
 
 - First release, add Changelog. [drybjed_]
-

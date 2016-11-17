@@ -4,22 +4,22 @@
   command: dpkg-divert --quiet --local --divert /etc/network/interfaces.dpkg-divert --rename /etc/network/interfaces
   args:
     creates: '/etc/network/interfaces.dpkg-divert'
-  register: ifupdown_register_divert
+  register: ifupdown__register_divert
 
-- name: Provide original interfaces temporarily
-  command: cp /etc/network/interfaces.dpkg-divert {{ ifupdown_reconfigure_init_file }}
-  when: ifupdown_register_divert is defined and ifupdown_register_divert.changed
+- name: Provide original interface configuration temporarily
+  command: cp /etc/network/interfaces.dpkg-divert {{ ifupdown__reconfigure_init_file }}
+  when: ifupdown__register_divert|changed
 
-- name: Remove redundant configuration from original interfaces
+- name: Remove redundant configuration
   lineinfile:
-    dest: '{{ ifupdown_reconfigure_init_file }}'
+    dest: '{{ ifupdown__reconfigure_init_file }}'
     regexp: '{{ item }}'
     state: 'absent'
   with_items:
     - '^source /etc/network/interfaces.d/*'
     - '^auto lo'
     - '^iface lo inet loopback'
-  when: ifupdown_register_divert is defined and ifupdown_register_divert.changed
+  when: ifupdown__register_divert|changed
 
 - name: Create /etc/network/interfaces
   template:
@@ -28,3 +28,15 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  register: ifupdown__register_main_config
+
+- name: Request entire network reconfiguration
+  copy:
+    content: 'init'
+    dest: '/run/network/debops-ifupdown-reconfigure.networking'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Apply ifupdown configuration' ]
+  when: (ifupdown__register_divert|changed or
+         ifupdown__register_main_config|changed)

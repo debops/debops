@@ -8,32 +8,24 @@
 [![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops.ifupdown-660198.svg?style=flat)](https://galaxy.ansible.com/debops/ifupdown)
 
 
-This role can be used to manage network interface configuration on Debian
-and derivative operating systems. It manages configuration in
-the `/etc/network/` directory and can be used to create different
-interface layouts across the cluster.
+`ifupdown` is a set of high-level scripts in Debian/Ubuntu Linux
+distributions which can be used to configure network interfaces, bridges,
+VLAN interfaces, bonding, and so on. You can find example configuration and
+usage guides guides on the [NetworkConfiguration] page of the [Debian Wiki].
 
-The `debops.ifupdown` role tries to recognize several environments (LXC
-container, OpenVZ container, system with installed NetworkManager) and can
-automatically select one of the suggested configurations. For most
-scenarios, `debops.ifupdown` will try to configure up to two network
-interfaces (non-existent interfaces are gracefully skipped) with network
-bridges attached to them, which allows to easily connect virtual machines
-or containers to the public or private network.
+`debops.ifupdown` is an Ansible role which wraps `ifupdown` in an easy to
+use, and Ansible-friendly interface. It aims to be a safe and reliable way
+to let you configure network interfaces on hosts managed using Ansible. It
+can be used either as a standalone role configured using role/inventory
+variables, or as a dependency of another role, to provide network
+configuration as needed.
 
-In case an advanced configuration is required (more than two network
-interfaces, bonding, modem connections, NAT, etc.), you can easily override
-the automatically selected configuration using Ansible inventory. This role can
-also be used as a dependency of another role which allows for example to
-easily manage NAT networks using the `debops.subnetwork` role.
-
-Some features of interface declarations require additional packages.
-One of those packages is `resolvconf` (as defined in `ifupdown_packages`)
-which will start to manage your `/etc/resolv.conf` file.
+[NetworkConfiguration]: https://wiki.debian.org/NetworkConfiguration
+[Debian Wiki]: https://wiki.debian.org/
 
 ### Installation
 
-This role requires at least Ansible `v1.8.0`. To install it, run:
+This role requires at least Ansible `v2.0.0`. To install it, run:
 
 ```Shell
 ansible-galaxy install debops.ifupdown
@@ -60,7 +52,8 @@ into your playbook.
 
 ### Authors and license
 
-- Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
+- [Maciej Delmanowski](https://docs.debops.org/en/latest/debops-keyring/docs/entities.html#debops-keyring-entity-drybjed) (maintainer) | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
+- [Robin Schneider](https://docs.debops.org/en/latest/debops-keyring/docs/entities.html#debops-keyring-entity-ypid) | [e-mail](mailto:ypid@riseup.net) | [GitHub](https://github.com/ypid)
 
 License: [GPL-3.0](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
 

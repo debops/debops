@@ -7,13 +7,13 @@ Ansible role: debops.ifupdown
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    defaults-detailed
+   ifupdown-systemd
    copyright
-   credits
    changelog
+   upgrade
 
 ..
  Local Variables:

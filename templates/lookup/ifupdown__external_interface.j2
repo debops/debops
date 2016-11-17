@@ -1,0 +1,7 @@
+{% set ifupdown__tpl_external_interface = '' %}
+{% if ansible_default_ipv4.type == 'bridge' %}
+{%   set ifupdown__tpl_external_interface = hostvars[inventory_hostname]["ansible_" + (ansible_default_ipv4.interface|replace("-", "_"))]["interfaces"][0] %}
+{% elif ansible_default_ipv4.type == 'ether' %}
+{%   set ifupdown__tpl_external_interface = ansible_default_ipv4.interface %}
+{% endif %}
+{{ ifupdown__tpl_external_interface | to_yaml }}
