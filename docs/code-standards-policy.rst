@@ -86,7 +86,11 @@ Summary
 
 **Ansible role: dependencies**
 
-- Try to avoid the use of hard dependencies specified in :file:`meta/main.yml`.
+- Define role dependencies as :ref:`"soft" dependencies <debops_policy__ref_code_standards_soft_dependencies>`
+  via playbook and make them conditional if possible.
+
+- Avoid the use of :ref:`"hard" role dependencies <debops_policy__ref_code_standards_hard_role_dependencies>`
+  specified in :file:`meta/main.yml`.
 
 - Don't directly include variables of other roles. Instead use Ansible facts
   to pass configuration state from one role to another.
@@ -129,12 +133,6 @@ Here's the basic set of principles to be aware while writing roles:
   mechanism. This way different roles can pass configuration data to other
   services if needed; for example a web server role can request the firewall
   management role to open specific ports when certain conditions are met.
-
-- avoid use of hard dependencies in roles (those defined in the
-  :file:`meta/main.yml` file). The roles MUST only use other roles as
-  dependencies through the playbook, unless data from a particular roles is
-  used internally by another role and without it the operations might result in
-  a non-functional role.
 
 - roles SHOULD use Ansible local facts stored on the hosts to keep their
   internal state consistent and idempotent at all times, no matter if the role
@@ -347,3 +345,80 @@ If the user doesn't agree with the defined condition, the variable can simply
 be redefined in the Ansible inventory without the need to modify the Ansible
 code of the role.
 
+
+.. _debops_policy__ref_code_standards_role_dependencies:
+
+Ansible role dependencies
+-------------------------
+
+.. _debops_policy__ref_code_standards_soft_role_dependencies:
+
+Soft role dependencies
+~~~~~~~~~~~~~~~~~~~~~~
+
+Role dependencies are considered "soft" if they are defined in the ``roles``
+list of a playbook. This approach offers a higher flexibility as the user can
+choose which playbooks to run and which features to include.
+
+Whenever possible DebOps role authors MUST specify role dependencies via
+playbook instead of
+:ref:`"hard" dependencies <debops_policy__ref_code_standards_hard_role_dependencies>`
+in the :file:`meta/main.yml`.
+
+It's also possible to pass configuration values to a depenent role if the
+involved role is offering dedicated variables for this purpose (*TODO: Add
+reference to related subsection*). With soft dependencies custom playbook
+authors are therefore free to pass values from arbitrary sources according to
+their requirements.
+
+**Example:**
+
+This is an example playbook for debops.slapd_ defining soft dependencies:
+
+.. code-block:: yaml
+
+    ---
+
+    - name: Manage OpenLDAP service
+      hosts: [ 'debops_service_slapd', 'debops_slapd' ]
+      become: True
+
+      roles:
+
+        - role: debops.ferm
+          tags: [ 'role::ferm' ]
+          ferm__dependent_rules:
+            - '{{ slapd_ferm_dependent_rules }}'
+
+        - role: debops.tcpwrappers
+          tags: [ 'role::tcpwrappers' ]
+          tcpwrappers_dependent_allow:
+            - '{{ slapd_tcpwrappers_dependent_allow }}'
+
+        - role: debops.slapd
+          tags: [ 'role::slapd' ]
+
+
+.. _debops_policy__ref_code_standards_hard_role_dependencies:
+
+Hard role dependencies
+~~~~~~~~~~~~~~~~~~~~~~
+
+Role dependencies are considered "hard" if they are defined in the
+``dependencies`` list in :file:`meta/main.yml`.  DebOps role authors MUST
+avoid the use of hard role dependencies for the follwing reasons:
+
+- Hard role dependencies must always be installed on the Ansible controller
+  even when their execution is conditionally triggered via ``when`` statement.
+
+- It hinders the independent use of the role in a custom playbook or outside
+  of DebOps where playbook authors might relay on a different role for a certain
+  feature or decide no to use a certain feature at all.
+
+- The playbook execution flow is more difficult to reason about as hard
+  dependencies are defined outside of the playbook.
+
+Generally role dependencies MUST be defined as
+:ref:`"soft" dependencies <debops_policy__ref_code_standards_soft_role_dependencies>`
+via playbook unless the tight coupling to another role is unavoidable for
+implementing the required functionality.
