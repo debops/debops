@@ -35,7 +35,7 @@ Added
   needed. [drybjed_]
 
 - The ``debops.ifupdown`` role now incorporates configuration done by the
-  debops.subnetwork_ role; it generates the forward and NAT rules for the
+  ``debops.subnetwork`` role; it generates the forward and NAT rules for the
   firewall managed by the debops.ferm_ Ansible role for each bridge it manages.
   This is configurable per bridge if needed. [drybjed_]
 
@@ -72,6 +72,12 @@ Added
 
 - Add interface layout ``manual`` to not use any network interface layout and
   allow you to configure interfaces manually. [ypid_]
+
+- Allow flexible and advanced Firewall configuration using
+  ``forward_interface_ferm_rule`` and ``forward_outerface_ferm_rule`` and added
+  a example for it.
+  ``debops.subnetwork`` supported similar configuration using the
+  ``subnetwork__allow_*`` variables. [ypid_]
 
 Changed
 ~~~~~~~
@@ -125,7 +131,7 @@ Changed
 Deprecated
 ~~~~~~~~~~
 
-- The debops.subnetwork_ Ansible role has been deprecated by this role and
+- The ``debops.subnetwork`` Ansible role has been deprecated by this role and
   shouldn't be used anymore. [drybjed_]
 
 Removed
@@ -157,6 +163,11 @@ Fixed
 
 - Don’t fail if ``ansible_default_ipv4`` is an empty dictionary. [ypid_]
 
+- Don’t fail if a host does not have DNS nameservers defined
+  (``ansible_dns.nameservers`` is undefined). [ypid_]
+
+- Don’t fail if a host does not have a DNS search domain specified
+  (``ansible_dns.search`` is undefined). [ypid_]
 
 `debops.ifupdown v0.2.6`_ - 2016-10-20
 --------------------------------------
@@ -285,7 +296,7 @@ Changed
 ~~~~~~~
 
 - Streamline directory creation tasks and make sure required packages are
-  installed. [le9i0nx]
+  installed. [le9i0nx_]
 
 - Make sure that Ansible does not stop if a variable is undefined. This change
   fixes issues with the missing variables in Ansible v2. [drybjed_]
