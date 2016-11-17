@@ -70,7 +70,8 @@ Summary
 - :ref:`Describe each task and include <debops_policy__ref_code_standards_task_description>`
   with the ``name`` option.
 
-- Use native YAML syntax for task definition.
+- Use native :ref:`YAML syntax <debops_policy__ref_code_standards_task_yaml_syntax`
+  for task definition formatting.
 
 - If some tasks should only be executed under certain circumstances, group them
   together and conditionally include the task list.
@@ -404,6 +405,39 @@ current state. The related default variable is defined in
 If the user doesn't agree with the defined condition, the variable can simply
 be redefined in the Ansible inventory without the need to modify the Ansible
 code of the role.
+
+.. _debops_policy__ref_code_standards_task_yaml_syntax:
+
+YAML syntax
+~~~~~~~~~~~
+
+Task definitions MUST use the native YAML syntax formatting. Ansible accepts
+various ways to define Ansible tasks. However, there are several advantages by
+agreening on the YAML syntax:
+
+- Unified coding style
+
+- Vertical formatting is easier to read
+
+- Supports complex parameter values (e.g. nested dictionaries)
+
+**Example:**
+
+Instead of ...
+
+.. code-block:: yaml
+
+   - name: Create plugin path
+     file: path={{ elasticsearch__path_plugins }} state=directory
+
+... use the correct YAML syntax:
+
+.. code-block:: yaml
+
+   - name: Create plugin path
+     file:
+       path: '{{ elasticsearch__path_plugins }}'
+       state: directory
 
 
 .. _debops_policy__ref_code_standards_role_dependencies:
