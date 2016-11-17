@@ -270,7 +270,9 @@ Description
 
 Each task MUST have the ``name`` option set with a meaningful description. This
 allows to quickly reason about the change impact when running a playbook and
-classify the progress in case of an abortion. Example:
+classify the progress in case of an abortion.
+
+**Example:**
 
 .. code-block:: yaml
 
@@ -281,7 +283,9 @@ classify the progress in case of an abortion. Example:
 
 The same is true for the ``include`` statement. Especially for conditional
 includes which may be skipped it's helpful for identifying which features of
-the role have been left out. Example:
+the role have been left out.
+
+**Example:**
 
 .. code-block:: yaml
 
