@@ -15,12 +15,18 @@ DebOps Code Standards Policy
 
 .. This version may not correspond directly to the debops-policy version.
 
+
+.. _debops_policy__ref_code_standards_terminology:
+
 Terminology
 -----------
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in BCP 14, [`RFC2119`_].
+
+
+.. _debops_policy__ref_code_standards_goals:
 
 Goals of the Policy
 -------------------
@@ -37,17 +43,20 @@ This Policy describes how the Ansible roles and playbooks should be written,
 what ways can be used to combine two or more roles together and how the roles
 should be documented.
 
+
+.. _debops_policy__ref_code_standards_summary:
+
 Summary
 -------
 
 **Ansible role: defaults**
 
-- Follow the :ref:`variable naming conventions <policy__ref_default_variable_naming_convention>`.
+- Follow the :ref:`variable naming conventions <debops_policy__ref_code_standards_default_variable_naming_convention>`.
 
-- Make :ref:`conditional code configurable <_policy__ref_task_conditions>` via
-  default variables.
+- Make :ref:`conditional code configurable <_debops_policy__ref_code_standards_task_conditions>`
+  via default variables.
 
-- :ref:`Comment and structure <policy__ref_default_variable_documentation>`
+- :ref:`Comment and structure <debops_policy__ref_code_standards_default_variable_documentation>`
   default variables with reStructuredText.
 
 
@@ -55,8 +64,8 @@ Summary
 
 - Make sure the task execution is idempotent.
 
-- :ref:`Describe each task and include <policy__ref_task_description>` with the
-  ``name`` option.
+- :ref:`Describe each task and include <debops_policy__ref_code_standards_task_description>`
+  with the ``name`` option.
 
 - Use native YAML syntax for task definition.
 
@@ -145,10 +154,12 @@ Here's the basic set of principles to be aware while writing roles:
   ignored.
 
 
+.. _debops_policy__ref_code_standards_role_default_variables:
+
 Ansible role default variables
 ------------------------------
 
-.. _policy__ref_default_variable_naming_convention:
+.. _debops_policy__ref_code_standards_default_variable_naming_convention:
 
 Naming convention
 ~~~~~~~~~~~~~~~~~
@@ -204,7 +215,7 @@ By including the configuration for the debops.apt_preferences_ role in your role
 default variables you allow the user to change it through the Ansible inventory
 without the need to modify any of the involved roles or the playbook.
 
-.. _policy__ref_default_variable_documentation:
+.. _debops_policy__ref_code_standards_default_variable_documentation:
 
 Variable documentation
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -253,6 +264,9 @@ might be meaningful for the individual role:
     [... networking related variables ...]
                                                                    # ]]]
 
+
+.. _debops_policy__ref_code_standards_role_tasks:
+
 Ansible role tasks
 ------------------
 
@@ -260,7 +274,7 @@ Ansible tasks are doing the actual work namely querying and modifiying the
 target host. Each task defines a `Ansible Module <https://docs.ansible.com/ansible/modules.html>`_
 invocation with a number of general and module specific options.
 
-.. _policy__ref_task_description:
+.. _debops_policy__ref_code_standards_task_description:
 
 Description
 ~~~~~~~~~~~
@@ -291,7 +305,7 @@ the role have been left out.
       when: (pki__enabled|bool and
              (pki__acme|bool or pki__acme_install|bool))
 
-.. _policy__ref_task_conditions:
+.. _debops_policy__ref_code_standards_task_conditions:
 
 Conditions
 ~~~~~~~~~~
