@@ -24,7 +24,7 @@ ifupdown__base_packages: [ 'resolvconf', 'rdnssd', 'bsdutils', 'rsync' ]
 # List of APT packages to install based on the requirements of the interface
 # types that are configured by the role (support for bridges, bonding, VLANs,
 # depends on the presence of a given interface type).
-ifupdown__dynamic_packages: '{{ lookup("template", "lookup/ifupdown__dynamic_packages.j2") | string | from_yaml }}'
+ifupdown__dynamic_packages: '{{ lookup("template", "lookup/ifupdown__dynamic_packages.j2", convert_data=False) | from_yaml }}'
 
                                                                    # ]]]
 # .. envvar:: ifupdown__packages [[[
@@ -110,7 +110,7 @@ ifupdown__default_nat_masquerade: False
 ifupdown__external_interface: '{{ ansible_local.ifupdown.external_interface
                                   if (ansible_local|d() and ansible_local.ifupdown|d() and
                                       ansible_local.ifupdown.external_interface|d())
-                                  else (lookup("template", "lookup/ifupdown__external_interface.j2") | string | from_yaml) }}'
+                                  else (lookup("template", "lookup/ifupdown__external_interface.j2", convert_data=False) | from_yaml) }}'
 
                                                                    # ]]]
 # .. envvar:: ifupdown__internal_interface [[[
@@ -121,7 +121,7 @@ ifupdown__external_interface: '{{ ansible_local.ifupdown.external_interface
 ifupdown__internal_interface: '{{ ansible_local.ifupdown.internal_interface
                                   if (ansible_local|d() and ansible_local.ifupdown|d() and
                                       ansible_local.ifupdown.internal_interface|d())
-                                  else (lookup("template", "lookup/ifupdown__internal_interface.j2") | string | from_yaml) }}'
+                                  else (lookup("template", "lookup/ifupdown__internal_interface.j2", convert_data=False) | from_yaml) }}'
 
                                                                    # ]]]
 # .. envvar:: ifupdown__interface_layout [[[
@@ -254,7 +254,7 @@ ifupdown__default_interfaces_map:
 #
 # YAML dictionary which holds the basic information about the Ethernet
 # interfaces detected by the role.
-ifupdown__ethernet_interfaces: '{{ lookup("template", "lookup/ifupdown__ethernet_interfaces.j2") | string | from_yaml }}'
+ifupdown__ethernet_interfaces: '{{ lookup("template", "lookup/ifupdown__ethernet_interfaces.j2", convert_data=False) | from_yaml }}'
 
                                                                    # ]]]
 # .. envvar:: ifupdown__default_interfaces [[[
@@ -297,7 +297,7 @@ ifupdown__dependent_interfaces: {}
 # YAML dictionary which combines all of the other network interface
 # configuration variables and is used in the role tasks and templates to
 # generate the configuration.
-ifupdown__combined_interfaces: '{{ lookup("template", "lookup/ifupdown__combined_interfaces.j2") | string | from_yaml }}'
+ifupdown__combined_interfaces: '{{ lookup("template", "lookup/ifupdown__combined_interfaces.j2", convert_data=False) | from_yaml }}'
                                                                    # ]]]
                                                                    # ]]]
 # Custom configuration files [[[
@@ -339,7 +339,7 @@ ifupdown__custom_dependent_files: []
 #
 # Configuration for debops.ferm_ Ansible role, generated dynamically from the
 # network interface configuration and passed to the role through a variable.
-ifupdown__ferm__dependent_rules: '{{ lookup("template", "lookup/ifupdown__ferm__dependent_rules.j2") | string | from_yaml }}'
+ifupdown__ferm__dependent_rules: '{{ lookup("template", "lookup/ifupdown__ferm__dependent_rules.j2", convert_data=False) | from_yaml }}'
                                                                    # ]]]
                                                                    # ]]]
 # Role metadata [[[
