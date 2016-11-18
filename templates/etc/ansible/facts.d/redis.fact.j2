@@ -176,12 +176,15 @@ if 'port' not in output and 'socket' not in output:
 # output.update({"version": redis_server_pkg_version})
 #}
 if 'password' in output:
-    r = redis.StrictRedis(
-        host=output.get('host'),
-        port=output.get('port'),
-        unix_socket_path=output.get('socket'),
-        password=output['password'],
-        )
-    output.update({"version": r.info()['redis_version']})
+    try:
+        r = redis.StrictRedis(
+            host=output.get('host'),
+            port=output.get('port'),
+            unix_socket_path=output.get('socket'),
+            password=output['password'],
+            )
+        output.update({"version": r.info()['redis_version']})
+    except Exception:
+        pass
 
 print(dumps(output, sort_keys=True, indent=2))

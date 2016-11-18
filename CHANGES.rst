@@ -34,6 +34,9 @@ Fixed
 - Fix an issue on Ansible 2.2 where some dictionary keys are undefined due to
   a legitimately skipped tasks. [drybjed_]
 
+- Make sure that the fact script does not fail when Redis service cannot be
+  reached. [drybjed_]
+
 
 `debops.redis v0.2.0`_ - 2016-09-08
 -----------------------------------
