@@ -25,7 +25,7 @@ role are impacted under the following conditions:
 
   **AND**
 
-- For thos hosts the :envvar:`mariadb__delegate_to` variable was not defined
+- For thos hosts the :envvar:`mariadb__delegate_to` variable is not defined
   in the Ansible inventory which means the default value is used during role
   execution.
 
@@ -33,8 +33,8 @@ The first time the new version of the role is run standalone and/or as a
 dependency of Ansible roles every user account defined through
 :envvar:`mariadb__users`, :envvar:`mariadb__dependent_users` or
 ``mariadb_users`` will change its secrets path which will regenerate
-the database user password. This may result in an inaccessible database in
-case those passwords are also used externally. Ansible roles which are
+the database user password. **This may result in an inaccessible database in
+case those passwords are also used externally.** Ansible roles which are
 accessing the ``delegate_to`` value through the local facts (usually to access
 the password via secrets lookup) will automatically learn the new path and don't
 need to be changed. Mechanisms which get the password via manually defined
