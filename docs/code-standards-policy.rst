@@ -62,6 +62,9 @@ Summary
 - Roles providing features for other roles to use MUST do so by offering
   dedicated :ref:`dependent variables <debops_policy__ref_code_standards_dependent_variables>`.
 
+- Use `inventory level scoped variables <debops_policy__ref_code_standards_inventory_level_scoped_variables>`
+  to offer mergable configuration keys in multiple inventory scopes.
+
 
 **Ansible role: tasks**
 
@@ -120,14 +123,6 @@ necessary.
 
 Here's the basic set of principles to be aware while writing roles:
 
-- try, if possible, to allow Ansible inventory structure to affect the role
-  operation. This means that the role SHOULD allow to use different inventory
-  levels to control what data is being used to perform operations. For example,
-  if a role manages user accounts, try to support list of accounts from
-  ``[all]`` inventory group, from a specific inventory group, and list specific
-  to a certain host. However this rule shouldn't be enforced all the time - try
-  to use your best judgment of what data should be composable from multiple
-  levels of the inventory and which data doesn't need to be.
 
 - each role SHOULD focus on a specific service or application. Roles can be
   composed together inside playbooks if needed, so there's no need to put
@@ -147,7 +142,6 @@ Here's the basic set of principles to be aware while writing roles:
   dependencies. Instead, roles SHOULD expose the external data structures as
   needed for other roles to use as Ansible local facts; this should ensure that the
   data used by other roles is available at all times, and therefore idempotent.
-
 
 
 .. _debops_policy__ref_code_standards_role_default_variables:
@@ -321,6 +315,60 @@ can be specified where the dependent variable is passed to the provider:
 By including the configuration for the debops.apt_preferences_ role in the
 ``nginx`` default variables the user to change it through the Ansible inventory
 without the need to modify any of the involved roles or the playbook.
+
+.. _debops_policy__ref_code_standards_inventory_level_scoped_variables:
+
+Inventory level scoped variables
+--------------------------------
+
+The Ansible inventory allows managing hosts, such as executing playbooks or
+scoping variables, in three different levels:
+
+- All hosts in the inventory
+
+- All hosts which are member of a common user defined group
+
+- One host individually
+
+When evaluating variable values Ansible would override variables when they are
+defined in a more specific level. This easily becomes an issue when dealing
+with lists as variable value.
+
+To mitigate this DebOps role authors SHOULD provide three different variables,
+let's call it inventory level scoped variables, for the same configuration
+property. They are meant to be defined by the user in the respective inventory
+level context. The role then has to make sure that they are merged appropriately
+so that the configuration values of all levels are respected.
+
+**Example:**
+
+The debops.users_ role allows to define user accounts which should be created
+on a machine. For accounts which should be created on every machine, the user
+can define the following variable in the global level of the inventory (e.g.
+:file:`inventory/groups_vars/all`):
+
+.. code-block:: yaml
+
+   # List of user accounts to manage on all hosts in Ansible inventory.
+   users__accounts: []
+
+Users which should only be created on a group of servers are defined in the
+related variable in group level inventory (e.g.
+:file:`inventory/group_vars/mygroup`):
+
+.. code-block:: yaml
+
+   # List of UNIX user accounts to manage on hosts in specific Ansible inventory
+   # group.
+   users__group_accounts: []
+
+And the same for host-specific users which are defined in the related host
+level inventory variable in (e.g. :file:`inventory/host_vars/hostname`):
+
+.. code-block:: yaml
+
+   # List of UNIX user accounts to manage on specific hosts in Ansible inventory.
+   users__host_accounts: []
 
 
 .. _debops_policy__ref_code_standards_role_tasks:
