@@ -32,7 +32,7 @@ role are impacted under the following conditions:
 The first time the new version of the role is run standalone and/or as a
 dependency of Ansible roles every user account defined through
 :envvar:`mariadb__users`, :envvar:`mariadb__dependent_users` or
-:envvar:`mariadb_users` will change its secrets path which will regenerate
+``mariadb_users`` will change its secrets path which will regenerate
 the database user password. This may result in an inaccessible database in
 case those passwords are also used externally. Ansible roles which are
 accessing the ``delegate_to`` value through the local facts (usually to access
