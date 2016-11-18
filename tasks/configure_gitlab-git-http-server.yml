@@ -15,14 +15,16 @@
   register: gitlab_register_git_http_server_current_head
   changed_when: False
   become_user: '{{ gitlab_user }}'
-  when: gitlab_register_git_http_server_cloned.stat.exists
+  when: gitlab_register_git_http_server_cloned.stat|d() and
+        gitlab_register_git_http_server_cloned.stat.exists
 
 - name: Change current HEAD to master in bare repository for update
   shell: git symbolic-ref HEAD refs/heads/master
          chdir={{ gitlab_git_http_server_dest }}
   changed_when: False
   become_user: '{{ gitlab_user }}'
-  when: gitlab_register_git_http_server_cloned.stat.exists
+  when: gitlab_register_git_http_server_cloned.stat|d() and
+        gitlab_register_git_http_server_cloned.stat.exists
 
 - name: Clone gitlab-git-http-server source code
   git:
@@ -40,7 +42,8 @@
     group: '{{ gitlab_group }}'
     mode: '0644'
   changed_when: False
-  when: gitlab_register_git_http_server_cloned.stat.exists
+  when: gitlab_register_git_http_server_cloned.stat|d() and
+        gitlab_register_git_http_server_cloned.stat.exists
 
 - name: Check if gitlab-git-http-server is checked out
   stat:
@@ -75,7 +78,7 @@
          chdir={{ gitlab_git_http_server_dest }}
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_git_http_server_checkout
-  when: (gitlab_version_map[gitlab_version].git_http_server != gitlab_register_git_http_server_target_tag.stdout) or not gitlab_register_git_http_server_cloned.stat.exists
+  when: (gitlab_version_map[gitlab_version].git_http_server|d() != gitlab_register_git_http_server_target_tag.stdout|d()) or (gitlab_register_git_http_server_cloned.stat|d() and not gitlab_register_git_http_server_cloned.stat.exists)
 
 - name: Install go packages
   apt:

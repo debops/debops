@@ -18,6 +18,12 @@ The current role maintainer_ is drybjed.
 
 .. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.1.6...master
 
+Fixed
+~~~~~
+
+- Fix an issue on Ansible v2.2 where dictionary keys in skipped tasks are
+  undefined. [drybjed_]
+
 
 `debops.gitlab v0.1.6`_ - 2016-10-22
 ------------------------------------
