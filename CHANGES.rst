@@ -31,6 +31,9 @@ Fixed
   Note that the script is checked after being templated by Jinja which might
   not cover all code paths.  [ypid_]
 
+- Fix an issue on Ansible 2.2 where some dictionary keys are undefined due to
+  a legitimately skipped tasks. [drybjed_]
+
 
 `debops.redis v0.2.0`_ - 2016-09-08
 -----------------------------------

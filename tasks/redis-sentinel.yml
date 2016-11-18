@@ -13,7 +13,7 @@
     group: 'root'
     mode: '0644'
   register: redis__register_sentinel_unit_install
-  when: (ansible_service_mgr == 'systemd' and
+  when: (ansible_service_mgr == 'systemd' and redis__register_sentinel_unit_file.stat|d() and
          not redis__register_sentinel_unit_file.stat.exists|bool)
 
 - name: Reload systemd daemons
