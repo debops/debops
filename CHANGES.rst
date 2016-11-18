@@ -18,6 +18,12 @@ The current role maintainer_ is drybjed.
 
 .. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.1.6...master
 
+Changed
+~~~~~~~
+
+- Update the ``ldap_entry`` task to use new ``attributes`` parameter added to
+  the newest module version. [drybjed_]
+
 Fixed
 ~~~~~
 
