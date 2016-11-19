@@ -16,7 +16,25 @@ The current role maintainer_ is drybjed.
 `debops.gitlab master`_ - unreleased
 ------------------------------------
 
-.. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.1.6...master
+.. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.1.7...master
+
+
+`debops.gitlab v0.1.7`_ - 2016-11-18
+------------------------------------
+
+.. _debops.gitlab v0.1.7: https://github.com/debops/ansible-gitlab/compare/v0.1.6...v0.1.7
+
+Changed
+~~~~~~~
+
+- Update the ``ldap_entry`` task to use new ``attributes`` parameter added to
+  the newest module version. [drybjed_]
+
+Fixed
+~~~~~
+
+- Fix an issue on Ansible v2.2 where dictionary keys in skipped tasks are
+  undefined. [drybjed_]
 
 
 `debops.gitlab v0.1.6`_ - 2016-10-22

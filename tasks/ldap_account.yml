@@ -18,8 +18,9 @@
   ldap_entry:
     dn: '{{ gitlab_ldap_binddn }}'
     objectClass: [ 'organizationalRole', 'simpleSecurityObject' ]
-    cn: 'gitlab'
-    userPassword: '{{ gitlab_ldap_password | ldappassword("SHA") }}'
+    attributes:
+      cn: 'gitlab'
+      userPassword: '{{ gitlab_ldap_password | ldappassword("SHA") }}'
     state: 'present'
     server_uri: '{{ secret_ldap_server_uri }}'
     start_tls:  '{{ secret_ldap_start_tls }}'
