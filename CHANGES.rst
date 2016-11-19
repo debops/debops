@@ -19,6 +19,9 @@ The current role maintainer_ is drybjed.
 Added
 ~~~~~
 
+- Added pre- and post- task hooks to role to allow custom tasks to be added.
+  [grantma_]
+
 - Added custom delayed paths to allow to create symlinks to files created by this
   role. [ypid_]
 
