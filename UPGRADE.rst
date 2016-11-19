@@ -21,7 +21,7 @@ This script can come in handy to do this:
 
 The script is bundled with this role under
 :file:`./docs/scripts/upgrade-from-v0.3.X-to-v0.4.X` and can be invoked from
-their.
+there.
 
 
 .. _owncloud__ref_upgrade_nodes_v0.3.0:
@@ -38,7 +38,7 @@ This script can come in handy to do this:
 
 The script is bundled with this role under
 :file:`./docs/scripts/upgrade-from-v0.2.X-to-v0.3.X` and can be invoked from
-their.
+there.
 
 For more details refer to `What’s New for Admins in ownCloud 9.0 <https://doc.owncloud.org/server/9.0/admin_manual/whats_new_admin.html>`__.
 
