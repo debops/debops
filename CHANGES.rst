@@ -40,6 +40,9 @@ Changed
 - Allow use of multiple FQDN addresses in :envvar:`owncloud__fqdn` as a YAML
   list. [drybjed_]
 
+- Update the ``ldap_entry`` task to use new ``attributes`` parameter with the
+  new Ansible module version. [drybjed_]
+
 Removed
 ~~~~~~~
 
