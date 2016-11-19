@@ -40,13 +40,13 @@ mariadb__client: '{{ ansible_fqdn }}'
 # correct host. This variable controls the task delegation to the correct
 # database server.
 #
-# If the MariaDB server is run locally, this should point to the FQDN hostname of
-# the current host, NOT ``localhost`` because that would delegate the tasks to
-# the Ansible Controller.
+# If the MariaDB server is run locally, this should point to the inventory name
+# of the current host, NOT ``localhost`` because that would delegate the tasks
+# to the Ansible Controller.
 mariadb__delegate_to: '{{ mariadb__server
                           if (mariadb__server|d() and
                               mariadb__server != "localhost")
-                          else ansible_fqdn }}'
+                          else inventory_hostname }}'
                                                                    # ]]]
                                                                    # ]]]
 # MariaDB APT packages [[[

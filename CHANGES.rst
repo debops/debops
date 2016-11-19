@@ -1,3 +1,5 @@
+.. _mariadb__ref_changelog:
+
 Changelog
 =========
 
@@ -7,6 +9,9 @@ This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html
 and `human-readable changelog <http://keepachangelog.com/>`_.
 
 The current role maintainer is drybjed.
+
+Refer to the :ref:`mariadb__ref_upgrade_notes` when you intend to upgrade to a
+new release.
 
 
 `debops.mariadb master`_ - unreleased
@@ -18,6 +23,14 @@ Added
 ~~~~~
 
 - Support MySQL-Galera flavor from Codership. [ganto]
+
+Changed
+~~~~~~~
+
+- Use ``inventory_hostname`` as fallback for task delegation which should render
+  manual definition of ``mariadb__delegate_to`` unnecessary in case the client
+  and server are setup on the same host and the inventory name doesn't
+  correspond with the FQDN of the host. [ganto]
 
 
 `debops.mariadb v0.2.2`_ - 2016-08-01
