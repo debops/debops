@@ -21,6 +21,9 @@ The current role maintainer_ is drybjed_
 Added
 ~~~~~
 
+- Added pre- and post- task hooks as per debopts standards. This will allow
+  custom stuff for update-alternaitves to be done. [grantma_]
+
 - Install ``haveged`` by default on virtual machines excluding containers like
   LXC as suggested in https://bettercrypto.org/. [ypid_]
 
