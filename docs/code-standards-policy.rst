@@ -184,7 +184,7 @@ consume role name. E.g.
 Variable documentation
 ~~~~~~~~~~~~~~~~~~~~~~
 
-For each role the `DebOps Documentation`_ is will include a page which
+For each role the `DebOps Documentation`_ will include a page which
 documents the default variables. This page is generated from the role's
 :file:`defaults/main.yml` file with help of yaml2rst_. The entire comment of
 the defauls file is thereby interpreted as reStructuredText_ and then rendered
@@ -261,9 +261,9 @@ states.
 
 **Example:**
 
-The debops.apt_preferences_ role is implements a feature to set APT package
+The debops.apt_preferences_ role implements a feature to set APT package
 pinning configurations. Each role requiring a specific version of a package
-to be available can as the ``apt_preferences`` to do the corresponding
+to be available can ask the ``apt_preferences`` to do the corresponding
 configuration. For this, ``apt_preferences`` provides the following dependent
 variable:
 
@@ -334,7 +334,7 @@ so that the configuration values of all levels are respected.
 The debops.users_ role allows to define user accounts which should be created
 on a machine. For accounts which should be created on every machine, the user
 can define the following variable in the global level of the inventory (e.g.
-:file:`inventory/groups_vars/all`):
+:file:`inventory/groups_vars/all/users.yml`):
 
 .. code-block:: yaml
 
@@ -343,7 +343,7 @@ can define the following variable in the global level of the inventory (e.g.
 
 Users which should only be created on a group of servers are defined in the
 related variable in group level inventory (e.g.
-:file:`inventory/group_vars/mygroup`):
+:file:`inventory/group_vars/group_name/users.yml`):
 
 .. code-block:: yaml
 
@@ -352,7 +352,8 @@ related variable in group level inventory (e.g.
    users__group_accounts: []
 
 And the same for host-specific users which are defined in the related host
-level inventory variable in (e.g. :file:`inventory/host_vars/hostname`):
+level inventory variable in (e.g.
+:file:`inventory/host_vars/hostname/users.yml`):
 
 .. code-block:: yaml
 
@@ -534,7 +535,7 @@ This is an example playbook for debops.slapd_ defining soft dependencies:
     ---
 
     - name: Manage OpenLDAP service
-      hosts: [ 'debops_service_slapd', 'debops_slapd' ]
+      hosts: [ 'debops_service_slapd' ]
       become: True
 
       roles:
@@ -542,12 +543,12 @@ This is an example playbook for debops.slapd_ defining soft dependencies:
         - role: debops.ferm
           tags: [ 'role::ferm' ]
           ferm__dependent_rules:
-            - '{{ slapd_ferm_dependent_rules }}'
+            - '{{ slapd__ferm__dependent_rules }}'
 
         - role: debops.tcpwrappers
           tags: [ 'role::tcpwrappers' ]
           tcpwrappers_dependent_allow:
-            - '{{ slapd_tcpwrappers_dependent_allow }}'
+            - '{{ slapd__tcpwrappers__dependent_allow }}'
 
         - role: debops.slapd
           tags: [ 'role::slapd' ]
@@ -575,7 +576,9 @@ avoid the use of hard role dependencies for the follwing reasons:
 Generally role dependencies MUST be defined as
 :ref:`"soft" dependencies <debops_policy__ref_code_standards_soft_role_dependencies>`
 via playbook unless the tight coupling to another role is unavoidable for
-implementing the required functionality.
+implementing the required functionality. A reasonable exception is for example
+the debops.secret_ role which defines a common path for the
+``lookup("password")`` module.
 
 
 .. _debops_policy__ref_code_standards_role_facts:
@@ -585,11 +588,12 @@ Ansible role facts
 
 Ansible facts are small things that are automatically discovered by the
 `Ansible setup module`_ on a target host when a playbook is executed. They can
-be used by Ansible role and playbook authors thorugh normal variables. The
+be used by Ansible role and playbook authors through normal variables. The
 default facts provided are indicated by the ``ansible_`` namespace. It's
-possible to define custom facts through YAML files or scripts in the
-:path:`/etc/ansible/facts.d` directory of a host. Those are then available
-as YAML dictionaries under the ``ansible_local`` variable.
+possible to define custom facts through JSON or INI files or scripts returning
+such output in the :path:`/etc/ansible/facts.d` directory of a host. These
+facts are then available as key/value pairs under the ``ansible_local``
+variable.
 
 .. _debops_policy__ref_code_standards_share_state_facts:
 
@@ -603,10 +607,8 @@ expose public data structures as needed for other roles to use as Ansible local
 facts. This ensures that the data used by other roles is available at all times,
 and therefore idempotent.
 
-To write a local fact the role must define a template task which writes a facts
-file :file:`/etc/ansible/facts.d/rolename.fact`. The content must be a valid
-YAML dictionary. Alternatively the facts file can also be a script returning
-a valid YAML dictionary.
+To set a local fact the role must define a template or copy task which writes
+a facts file :file:`/etc/ansible/facts.d/rolename.fact`.
 
 
 **Example:**
