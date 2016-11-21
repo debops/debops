@@ -104,7 +104,8 @@ Summary
   specified in :file:`meta/main.yml`.
 
 - Don't directly include variables of other roles. Instead use Ansible facts
-  to pass configuration state from one role to another.
+  to :ref:`share configuration state <debops_policy__ref_code_standards_share_state_facts>`
+  between roles.
 
 - Provide dedicated inventory variables if the role configuration is meant to
   be extended by dependent roles.
@@ -137,11 +138,6 @@ Here's the basic set of principles to be aware while writing roles:
   is used standalone or a part of another role's playbook. The facts can be
   either static or dynamically generated, or a combination of the two.
 
-- variables from other roles MUST NOT be used directly in your role. This impedes the
-  portability of a role and effectively makes the other roles it uses its hard
-  dependencies. Instead, roles SHOULD expose the external data structures as
-  needed for other roles to use as Ansible local facts; this should ensure that the
-  data used by other roles is available at all times, and therefore idempotent.
 
 
 .. _debops_policy__ref_code_standards_role_default_variables:
@@ -586,3 +582,64 @@ Generally role dependencies MUST be defined as
 :ref:`"soft" dependencies <debops_policy__ref_code_standards_soft_role_dependencies>`
 via playbook unless the tight coupling to another role is unavoidable for
 implementing the required functionality.
+
+
+.. _debops_policy__ref_code_standards_role_facts:
+
+Ansible role facts
+------------------
+
+Ansible facts are small things that are automatically discovered by the
+`Ansible setup module`_ on a target host when a playbook is executed. They can
+be used by Ansible role and playbook authors thorugh normal variables. The
+default facts provided are indicated by the ``ansible_`` namespace. It's
+possible to define custom facts through YAML files or scripts in the
+:path:`/etc/ansible/facts.d` directory of a host. Those are then available
+as YAML dictionaries under the ``ansible_local`` variable.
+
+.. _debops_policy__ref_code_standards_share_state_facts:
+
+Share configuration state with other roles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a role need to know a configuration state of another role it MUST NOT access
+inventory variables of the source role. This impedes the portability of a role
+and effectively makes the source role its hard dependency. Instead, roles SHOULD
+expose public data structures as needed for other roles to use as Ansible local
+facts. This ensures that the data used by other roles is available at all times,
+and therefore idempotent.
+
+To write a local fact the role must define a template task which writes a facts
+file :file:`/etc/ansible/facts.d/rolename.fact`. The content must be a valid
+YAML dictionary. Alternatively the facts file can also be a script returning
+a valid YAML dictionary.
+
+
+**Example:**
+
+If a role needs to make a decision based on the fact if the firewall managed by
+debops.ferm_ is enabled or not, it mustn't check the value of ``ferm__enabled``
+but query the local fact of the ferm role:
+
+.. code-block:: yaml
+
+   is_firewall_enabled: '{{ ansible_local.ferm.enabled
+                            if (ansible_local|d() and ansible_local.ferm|d and
+                                ansible_local.ferm.enabled|d())
+                            else "unknown" }}'
+
+To successfully read the local fact of another role the latter obviously must
+have run before. Always consider the case that the fact may be undefined and
+fallback to a meaningful default value.
+
+The debops.ferm_ role itself defines the facts via a Jinja2 template such as:
+
+.. code-block:: jinja
+
+   [...]
+   {
+   "enabled": "{{ ferm__enabled     | bool | lower }}",
+   "forward": "{{ ferm__tpl_forward | bool | lower }}",
+   "ansible_controllers": {{ ferm__tpl_ansible_controllers_result | to_nice_json }}
+   }
+
