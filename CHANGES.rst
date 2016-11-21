@@ -19,7 +19,13 @@ new release.
 `debops.tinc master`_ - unreleased
 ----------------------------------
 
-.. _debops.tinc master: https://github.com/debops/ansible-tinc/compare/v0.2.1...master
+.. _debops.tinc master: https://github.com/debops/ansible-tinc/compare/v0.3.0...master
+
+
+`debops.tinc v0.3.0`_ - 2016-11-21
+----------------------------------
+
+.. _debops.tinc v0.3.0: https://github.com/debops/ansible-tinc/compare/v0.2.1...v0.3.0
 
 Added
 ~~~~~
@@ -61,6 +67,9 @@ Changed
 
 - Update documentation to use debops.ifupdown_ instead of the
   deprecated ``debops.subnetwork`` role. [ypid_]
+
+- Set the correct version in the upgrade notes and update the upgrade script
+  name. [drybjed_]
 
 Fixed
 ~~~~~
