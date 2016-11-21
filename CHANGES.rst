@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.pki master`_ - unreleased
 ----------------------------------
 
-.. _debops.pki master: https://github.com/debops/ansible-pki/compare/v0.2.13...master
+.. _debops.pki master: https://github.com/debops/ansible-pki/compare/v0.2.14...master
+
+
+`debops.pki v0.2.14`_ - 2016-11-21
+----------------------------------
+
+.. _debops.pki v0.2.14: https://github.com/debops/ansible-pki/compare/v0.2.13...v0.2.14
 
 Added
 ~~~~~
