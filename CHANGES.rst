@@ -41,6 +41,9 @@ Changed
 
 - Documentation improvements. [ypid_]
 
+- Remove the ``www`` subdomain from list of default ACME subdomains. This
+  should make configuration of ACME certificates easier. [drybjed_]
+
 Fixed
 ~~~~~
 
