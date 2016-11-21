@@ -26,7 +26,7 @@ Here's an example playbook that can be used to install and configure AppArmor:
 .. literalinclude:: playbooks/apparmor.yml
    :language: yaml
 
-This playbooks is shipped with this role under
+The playbooks is shipped with this role under
 :file:`docs/playbooks/apparmor.yml` from which you can symlink it to your
 playbook directory.
 In case you use multiple `DebOps Contrib`_ roles, consider
