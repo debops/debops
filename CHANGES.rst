@@ -39,3 +39,8 @@ Changed
      git ls-files -z | find -type f -print0 | xargs --null sed --in-place --regexp-extended 's/(apparmor)_([^_])/\1__\2/g'
 
   [ypid_]
+
+Fixed
+~~~~~
+
+- Fix support for Ubuntu Trusty. [ypid_]

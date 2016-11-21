@@ -108,6 +108,11 @@
     enabled: True
   when: ((apparmor__enabled|d() | bool) and (apparmor__register_kernel_cmdline.rc == 0))
 
+- name: Ensure tunables directory exists
+  file:
+    path: '/etc/apparmor.d/tunables/home.d'
+    state: 'directory'
+
 - name: Configure tunables
   template:
     src: 'etc/apparmor.d/tunables/home.d/debops.j2'
