@@ -1,5 +1,5 @@
 #!/bin/bash
-## Upgrade inventory variables for migration from debops.owncloud v0.2.X to v0.3.X.
+## Upgrade inventory variables for migration from debops.tinc v0.2.X to v0.3.X.
 ## The script is idempotent.
 
 git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '{}' -type f -print0 \
