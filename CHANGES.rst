@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.pki master`_ - unreleased
 ----------------------------------
 
-.. _debops.pki master: https://github.com/debops/ansible-pki/compare/v0.2.13...master
+.. _debops.pki master: https://github.com/debops/ansible-pki/compare/v0.2.14...master
+
+
+`debops.pki v0.2.14`_ - 2016-11-21
+----------------------------------
+
+.. _debops.pki v0.2.14: https://github.com/debops/ansible-pki/compare/v0.2.13...v0.2.14
 
 Added
 ~~~~~
@@ -40,6 +46,13 @@ Changed
   a more reliable one. [drybjed_]
 
 - Documentation improvements. [ypid_]
+
+- Remove the ``www`` subdomain from list of default ACME subdomains. This
+  should make configuration of ACME certificates easier. [drybjed_]
+
+- Make sure that the ``domain`` PKI realm by default adds the host FQDN to the
+  list of Subject Alt Names of a certificate. This should solve an issue with
+  some software which cannot deal with wildcard hostnames properly. [drybjed_]
 
 Fixed
 ~~~~~
@@ -70,7 +83,7 @@ Fixed
 
 - Use the group id instead of group names (from :command:`id -gn` to
   :command:`id -g`) in :program:`pki-realm` and :program:`pki-authority` to
-  cope with group names with spaces which can happen when LDAP is used. [zpfvo]
+  cope with group names with spaces which can happen when LDAP is used. [zpfvo_]
 
 
 `debops.pki v0.2.13`_ - 2016-07-07

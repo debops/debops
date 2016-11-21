@@ -162,7 +162,7 @@ pki_acme_home: '/run/pki-acme'
 #
 # List of DNS subdomains that will be added by default to each apex (root)
 # domain configured in ACME Certificate Signing Requests.
-pki_acme_default_subdomains: [ 'www' ]
+pki_acme_default_subdomains: []
 
 
 # .. envvar:: pki_acme_type
@@ -433,6 +433,7 @@ pki_default_realms:
 
   - name: 'domain'
     acme: False
+    default_subdomains: [ '{{ ansible_hostname }}', '_wildcard_' ]
 
 
 # .. envvar:: pki_group_realms
