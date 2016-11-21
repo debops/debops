@@ -49,6 +49,8 @@ should be documented.
 Summary
 -------
 
+Here's a basic set of principles to be aware while writing roles:
+
 **Ansible role: defaults**
 
 - Follow the :ref:`variable naming conventions <debops_policy__ref_code_standards_default_variable_naming_convention>`.
@@ -111,7 +113,6 @@ Summary
   be extended by dependent roles.
 
 
-
 Ansible role overview
 ---------------------
 
@@ -122,22 +123,13 @@ inventory without a requirement to modify the role's code as well as offer the
 most amount of reusability so that other Ansible roles can utilize them if
 necessary.
 
-Here's the basic set of principles to be aware while writing roles:
-
-
-- each role SHOULD focus on a specific service or application. Roles can be
-  composed together inside playbooks if needed, so there's no need to put
-  different services together in the same role.
-  A exception here are very similar services like the different NTP daemons.
-  This has the advantage to only having one set of default variables regardless
-  of the particular chosen service and it makes changing the particular service
-  every easy.
-
-- roles SHOULD use Ansible local facts stored on the hosts to keep their
-  internal state consistent and idempotent at all times, no matter if the role
-  is used standalone or a part of another role's playbook. The facts can be
-  either static or dynamically generated, or a combination of the two.
-
+Each role SHOULD focus on a specific service or application. Roles can be
+composed together inside playbooks if needed, so there's no need to put
+different services together in the same role.
+An exception here are very similar services like the different NTP daemons.
+This has the advantage to only having one set of default variables regardless
+of the particular chosen service and it makes changing the particular service
+every easy.
 
 
 .. _debops_policy__ref_code_standards_role_default_variables:
@@ -239,7 +231,7 @@ might be meaningful for the individual role:
 .. _debops_policy__ref_code_standards_dependent_variables:
 
 Dependent variables
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 DebOps is designed in a way that there are divided responsibilities between the
 roles. Each role has its clear task to fulfill. For example an application role
@@ -312,10 +304,11 @@ By including the configuration for the debops.apt_preferences_ role in the
 ``nginx`` default variables the user to change it through the Ansible inventory
 without the need to modify any of the involved roles or the playbook.
 
+
 .. _debops_policy__ref_code_standards_inventory_level_scoped_variables:
 
 Inventory level scoped variables
---------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Ansible inventory allows managing hosts, such as executing playbooks or
 scoping variables, in three different levels:
@@ -485,7 +478,7 @@ Instead of ...
 .. _debops_policy__ref_code_standards_task_disable_debug:
 
 Disable debug statements
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Role authors MUST NOT unconditionally use Ansible debug mechanisms such as the
 ``debug`` module or the ``ignore_errors`` task statement in code which is used
@@ -507,6 +500,7 @@ the message, if :program:`ansible-playbook` is executed with one or more
 
 
 .. _debops_policy__ref_code_standards_role_dependencies:
+
 
 Ansible role dependencies
 -------------------------
