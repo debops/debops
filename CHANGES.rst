@@ -45,6 +45,10 @@ Changed
   repository suites for each URI. This should allow configuration of separate
   source entries from the same repository but with different suites. [drybjed_]
 
+- The Debian Security repository will be enabled only on official releases, on
+  hosts with Debian Unstable (Sid) it will be automatically disabled.
+  [drybjed_]
+
 
 `debops.apt v0.4.1`_ - 2016-11-03
 ---------------------------------

@@ -358,6 +358,11 @@ apt__security_sources:
     suite:      '{{ apt__distribution_release + "/updates" }}'
     components: '{{ apt__distribution_components }}'
     distribution: 'Debian'
+    state:      '{{ "present"
+                    if (apt__distribution_release|d("unknown")
+                        in apt__distribution_release_map[apt__distribution]|d([]))
+                    else "absent" }}'
+
 
     # This version shows up in Debian Stretch APT configuration.
     # It's disabled by default to not create duplicate entries.
