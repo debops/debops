@@ -88,6 +88,8 @@ Changed
 - Update the ``ipaddr()`` filter plugin with the version from Ansible ``devel``
   branch. [drybjed_]
 
+- Update the debops.lxc_ playbook to the new version. [ypid_]
+
 - Update the debops.redis_ playbook to the new version. [drybjed_]
 
 - Update the debops.dnsmasq_ playbook to the new version. [ypid_]
