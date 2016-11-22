@@ -615,7 +615,7 @@ variable.
 Share configuration state with other roles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If a role need to know a configuration state of another role it MUST NOT access
+If a role needs to know a configuration state of another role it MUST NOT access
 inventory variables of the source role. This impedes the portability of a role
 and effectively makes the source role its hard dependency. Instead, roles SHOULD
 expose public data structures as needed for other roles to use as Ansible local
