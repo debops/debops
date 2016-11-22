@@ -11,8 +11,11 @@
 You can use the `debops.lxc` role to create and manage Linux Containers with
 different configurations. These containers can be used on an external
 interface (DHCP server is recommended) or on an internal NAT interface
-(network will be configured by a specific play in DebOps, using
-the roles `debops.dnsmasq` and `debops.subnetwork`).
+(network can be configured by a specific play in DebOps, using
+the roles [debops.dnsmasq] and [debops.ifupdown]).
+
+[debops.dnsmasq]: https://github.com/debops/ansible-dnsmasq
+[debops.ifupdown]: https://github.com/debops/ansible-ifupdown
 
 ### Installation
 
@@ -43,8 +46,8 @@ into your playbook.
 
 ### Authors and license
 
-- Maciej Delmanowski (maintainer) | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
-- [Robin Schneider](http://ypid.de/) | [e-mail](mailto:ypid@riseup.net) | [GitHub](https://github.com/ypid)
+- [Maciej Delmanowski](https://docs.debops.org/en/latest/debops-keyring/docs/entities.html#debops-keyring-entity-drybjed) (maintainer) | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
+- [Robin Schneider](https://docs.debops.org/en/latest/debops-keyring/docs/entities.html#debops-keyring-entity-ypid) | [e-mail](mailto:ypid@riseup.net) | [GitHub](https://github.com/ypid)
 
 License: [GPL-3.0](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
 
