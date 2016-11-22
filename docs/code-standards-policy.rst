@@ -502,7 +502,7 @@ for normal operations. Released code is expected to be functional under every
 possible circumstance otherwise it is considered to be a bug which must be
 fixed on a best effort basis.
 
-For fragile or complex code paths it might be acceptable to to use the
+For fragile or complex code paths it might be acceptable to use the
 ``debug`` statement with an increased ``verbosity`` level. This will only show
 the message, if :program:`ansible-playbook` is executed with one or more
 ``--verbose`` options. For example:
