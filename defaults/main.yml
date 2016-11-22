@@ -30,14 +30,14 @@ lxc_kernel_mail_to: [ 'root@{{ ansible_domain }}' ]
 # Configure LXC environment [[[
 # -----------------------------
 
-# .. envvar:: lxc_kernel_mail_subject
+# .. envvar:: lxc_kernel_mail_subject [[[
 #
 # Subject of the Email to be send in case a reboot is required to boot into a
 # updated kernel version.
 lxc_kernel_mail_subject: 'Reboot required by LXC on {{ ansible_fqdn }}'
 
-
-# .. envvar:: lxc_kernel_mail_body
+                                                                   # ]]]
+# .. envvar:: lxc_kernel_mail_body [[[
 #
 # Body of the Email to be send in case a reboot is required to boot into a
 # updated kernel version.
@@ -61,6 +61,7 @@ lxc_kernel_mail_body: |
   {% endfor %}
   ---------------------------------------------------------------
 
+# ]]]
 # .. envvar:: lxc_root_path [[[
 #
 # Path where containers and their configuration is stored.
@@ -70,7 +71,7 @@ lxc_root_path: '/var/lib/lxc'
 # .. envvar:: lxc_interface_external [[[
 #
 # Configuration of the default network interface to use for "normal" containers
-# (in DebOps, it's configured by default through the ``debops.ifupdown`` role).
+# (in DebOps, it's configured by default through the debops.ifupdown_ role).
 # This is the external interface in a two-interface setup.
 lxc_interface_external: 'br0'
 
@@ -78,7 +79,7 @@ lxc_interface_external: 'br0'
 # .. envvar:: lxc_interface_internal [[[
 #
 # Configuration of default network interface to use for "normal" containers
-# (in DebOps, it's configured by default through the ``debops.ifupdown`` role).
+# (in DebOps, it's configured by default through the debops.ifupdown_ role).
 # This is the internal interface in two-interface setup.
 lxc_interface_internal: 'br1'
 
@@ -86,13 +87,13 @@ lxc_interface_internal: 'br1'
 # .. envvar:: lxc_interface_nat [[[
 #
 # Configuration of default network interface to use for "NATted" containers.
-# For setting up a NAT have a look at the ``debops.ifupdown`` role.
+# For setting up a NAT have a look at the debops.ifupdown_ role.
 lxc_interface_nat: 'br2'
 
                                                                    # ]]]
 # .. envvar:: lxc_configuration_default [[[
 #
-# ``/etc/lxc/`` configuration file which will be set as default.
+# :file:`/etc/lxc/` configuration file which will be set as default.
 lxc_configuration_default: 'external'
 
                                                                    # ]]]
@@ -195,7 +196,7 @@ lxc_template_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^ssh || cat 
                                                                    # ]]]
 # .. envvar:: lxc_template_debootstrap_mirror [[[
 #
-# Address of a Debian mirror to use in ``debootstrap``.
+# Address of a Debian mirror to use in :command:`debootstrap`.
 # Example usage with local apt-cacher-ng proxy::
 #
 #   lxc_template_debootstrap_mirror: 'http://cache.{{ ansible_domain }}:3142/debian'
@@ -205,7 +206,7 @@ lxc_template_debootstrap_mirror: 'http://httpredir.debian.org/debian'
                                                                    # ]]]
 # .. envvar:: lxc_template_debootstrap_release [[[
 #
-# Default release installed by ``debootstrap`` if no release was specified.
+# Default release installed by :command:`debootstrap` if no release was specified.
 lxc_template_debootstrap_release: '{{ ansible_distribution_release }}'
 
                                                                    # ]]]
@@ -232,7 +233,7 @@ lxc_template_security_mirror: ''
                                                                    # ]]]
 # .. envvar:: lxc_template_debootstrap_base_packages [[[
 #
-# Lists of packages downloaded and installed by ``debootstrap``.
+# Lists of packages downloaded and installed by :command:`debootstrap`.
 lxc_template_debootstrap_base_packages: [ 'ifupdown', 'locales', 'libui-dialog-perl', 'dialog',
                                           'isc-dhcp-client', 'netbase', 'net-tools', 'iproute',
                                           'openssh-server' ]
@@ -261,7 +262,7 @@ lxc_template_debootstrap_network_packages: [ 'iputils-ping', 'resolvconf', 'rdns
                                                                    # ]]]
 # .. envvar:: lxc_template_debootstrap_packages [[[
 #
-# Combined lists of packages downloaded and installed by ``debootstrap``.
+# Combined lists of packages downloaded and installed by :command:`debootstrap`.
 lxc_template_debootstrap_packages: '{{ lxc_template_debootstrap_base_packages +
                                        lxc_template_debootstrap_ansible_packages +
                                        lxc_template_debootstrap_system_packages +
@@ -320,7 +321,7 @@ lxc_template_salt_packages: [ 'salt-minion' ]
 #
 # Additional options to set for salt-minion, in YAML text block format.
 # Contents will be inserted into a Bash template script on the LXC host and
-# echoed to the ``/etc/salt/minion.d/ansible.conf`` file on container creation.
+# echoed to the :file:`/etc/salt/minion.d/ansible.conf` file on container creation.
 lxc_template_salt_options: False
                                                                    # ]]]
                                                                    # ]]]
@@ -329,7 +330,7 @@ lxc_template_salt_options: False
 
 # .. envvar:: lxc_default_template [[[
 #
-# Default template used by ``lxc-create``, from ``/usr/share/lxc/templates/``.
+# Default template used by :command:`lxc-create`, from :file:`/usr/share/lxc/templates/`.
 lxc_default_template: 'debops'
 
                                                                    # ]]]
@@ -352,22 +353,22 @@ lxc_default_template: 'debops'
 #                            Without this parameter container will be created
 #                            ``present``, but not started automatically.
 #   - config: True or ''     enables usage of custom configuration instead of
-#                            default from ``/etc/lxc/default.conf``
+#                            default from :file:`/etc/lxc/default.conf`
 #                            If True, container will be created with configuration
-#                            generated by Ansible from ``/tmp/lxc_temp_*.conf``
+#                            generated by Ansible from :file:`/tmp/lxc_temp_*.conf`
 #                            Otherwise specify absolute path to a configuration
-#                            file to use (for example ``/etc/lxc/nat.conf``).
-#   - template: ''           template from ``/usr/share/lxc/templates/`` to use for
+#                            file to use (for example :file:`/etc/lxc/nat.conf`).
+#   - template: ''           template from :file:`/usr/share/lxc/templates/` to use for
 #                            this container, instead of the default.
 #   - template_options: ''   string of freeform options added at the end of
 #                            lxc-create command, after "--".
-#   - storage: ''            string of freeform storage options added to ``lxc-create``
+#   - storage: ''            string of freeform storage options added to :command:`lxc-create`
 #                            command after -B (for example: ``lvm --fssize 10G``)
 #                            See ``man lxc-create`` for available options.
 #   - network: ''            if the 'config' option is not set, 'network' value becomes
-#                            a "shortcut" to select specific config file from ``/etc/lxc/*``
+#                            a "shortcut" to select specific config file from :file:`/etc/lxc/*`
 #                            (for example, you can specify 'network: "nat"' and host
-#                            will be configured with config file from ``/etc/lxc/nat.conf``).
+#                            will be configured with config file from :file:`/etc/lxc/nat.conf`).
 #   - capabilities_drop: []  POSIX capabilities which should be dropped in this container,
 #                            without the "cap_" prefix. See capabilities(7) for list of
 #                            available capabilities.
