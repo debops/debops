@@ -421,7 +421,7 @@ the role have been left out.
 Conditions
 ~~~~~~~~~~
 
-It might be necessary often that task execution might depend on a certain
+It might be often necessary that task execution depends on a certain
 condition using the ``when`` statement. In many cases the condition is simple
 and straight forward, for example when depending on the existence of a file.
 Other times the condition might be more complex, for example when depending
