@@ -12,10 +12,10 @@
     owner: 'root'
     group: 'root'
     mode: '0600'
-  with_items: lxc_containers
-  when: ((item.name is defined and item.name) and
+  with_items: '{{ lxc_containers }}'
+  when: (item.name|d() and
          (item.name not in lxc_register_existing_containers.stdout_lines) and
-         (item.state is undefined or (item.state is defined and item.state != 'absent')))
+         ((item.state|d("present") != 'absent')))
 
 - name: Generate temporary appended configuration for new containers
   template:
@@ -24,17 +24,17 @@
     owner: 'root'
     group: 'root'
     mode: '0600'
-  with_items: lxc_containers
-  when: ((item.name is defined and item.name) and
+  with_items: '{{ lxc_containers }}'
+  when: (item.name|d() and
          (item.name not in lxc_register_existing_containers.stdout_lines) and
-         (item.state is undefined or (item.state is defined and item.state != 'absent')))
+         ((item.state|d("present") != 'absent')))
 
 - name: Create LXC containers
-  command: lxc-create -n {{ item.name }} -t {{ item.template | default(lxc_default_template) }}
+  command: lxc-create -n {{ item.name }} -t {{ item.template | d(lxc_default_template) }}
            {% if item.config is undefined %}
-           {% if item.network is defined and item.network %}
+           {%   if item.network|d() %}
            -f /etc/lxc/{{ item.network }}.conf
-           {% endif %}
+           {%   endif %}
            {% elif item.config is defined and item.config == True %}
            -f /tmp/lxc_temp_{{ item.name }}.conf
            {% elif item.config is defined and item.config %}
@@ -46,53 +46,53 @@
            {% if item.template_options is defined and item.template_options %}
            -- {{ item.template_options }}
            {% endif %}
-           creates={{ lxc_root_path + '/' + item.name }}/config
-  with_items: lxc_containers
-  when: ((item.name is defined and item.name) and
-         (item.state is undefined or (item.state is defined and item.state != 'absent')))
+  args:
+    creates: '{{ lxc_root_path + "/" + item.name }}/config'
+  with_items: '{{ lxc_containers }}'
+  when: (item.name|d() and (item.state|d("present") != 'absent'))
 
 - name: Remove temporary configuration files
   file:
     dest: '/tmp/lxc_temp_{{ item.name }}.conf'
     state: 'absent'
-  with_items: lxc_containers
+  with_items: '{{ lxc_containers }}'
 
 - name: Remove temporary append configuration files
   file:
     dest: '/tmp/lxc_temp_{{ item.name }}_append.conf'
     state: 'absent'
-  with_items: lxc_containers
+  with_items: '{{ lxc_containers }}'
 
 - name: Check status of existing LXC containers
   shell: lxc-info -s -n {{ item.name }} | awk '{print $2}'
   register: lxc_register_container_status
   changed_when: False
-  with_items: lxc_containers
-  when: (item.name is defined and item.name)
+  with_items: '{{ lxc_containers }}'
+  when: item.name|d()
 
 - name: Stop LXC containers when requested
   command: lxc-stop -n {{ item.0.name }}
   with_together:
-    - lxc_containers
-    - lxc_register_container_status.results
+    - '{{ lxc_containers }}'
+    - '{{ lxc_register_container_status.results|d([]) }}'
   when: ((item.0.name is defined and item.0.name) and
          (item.1.item.name is defined and item.0.name == item.1.item.name) and
-         (item.0.state is defined and item.0.state in ['stopped','absent']) and
+         (item.0.state|d("present") in ['stopped', 'absent']) and
          (item.1.stdout_lines[0] == 'RUNNING'))
 
 - name: Destroy LXC containers when requested
-  command: lxc-destroy -n {{ item.name }} removes={{ lxc_root_path + '/' + item.name }}/config
-  with_items: lxc_containers
-  when: ((item.name is defined and item.name) and
-         (item.state is defined and item.state == 'absent'))
+  command: lxc-destroy -n {{ item.name }}
+  args:
+    removes: '{{ lxc_root_path + "/" + item.name }}/config'
+  with_items: '{{ lxc_containers }}'
+  when: (item.name|d() and (item.state|d("present") == 'absent'))
 
 - name: Start LXC containers when requested
   command: lxc-start -d -n {{ item.0.name }}
   with_together:
-    - lxc_containers
-    - lxc_register_container_status.results
+    - '{{ lxc_containers }}'
+    - '{{ lxc_register_container_status.results|d([]) }}'
   when: ((item.0.name is defined and item.0.name) and
          (item.1.item.name is defined and item.0.name == item.1.item.name) and
-         (item.0.state is defined and item.0.state in ['started']) and
+         (item.0.state|d("present") in ['started']) and
          (item.1.stdout_lines[0] == 'STOPPED'))
-
