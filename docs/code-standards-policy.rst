@@ -186,6 +186,7 @@ consume role name. E.g.
    nginx__apt_preferences__dependent_list:
      - package: 'nginx nginx-*'
        backports: [ 'wheezy', 'precise' ]
+       by_role: 'debops.nginx'
 
 
 .. _debops_policy__ref_code_standards_default_variable_documentation:
@@ -268,6 +269,10 @@ configuration. The provider role SHOULD then manage an individual configuration
 file per list item which allows it to selectively add or remove configuration
 states.
 
+Additionally, the ``by_role`` property (string) SHOULD be accepted which can be
+used to indicate the role responsible for a given item.
+``by_role`` MUST be given in the from of ``ROLE_OWNER.ROLE_NAME``.
+
 **Example:**
 
 The debops.apt_preferences_ role implements a feature to set APT package
@@ -291,6 +296,7 @@ which defines the necessary pinning information:
    nginx__apt_preferences__dependent_list:
      - package: 'nginx nginx-*'
        backports: [ 'wheezy', 'precise' ]
+       by_role: 'debops.nginx'
 
 In the playbook a :ref:`soft dependency <debops_policy__ref_code_standards_soft_role_dependencies>`
 can be specified where the dependent variable is passed to the provider:
