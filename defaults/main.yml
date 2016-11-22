@@ -172,6 +172,23 @@ apt__host_repositories: []
 # Distribution and release detection [[[
 # --------------------------------------
 
+# .. envvar:: apt__architecture [[[
+#
+# The system architecture present on the host.
+apt__architecture: '{{ apt__architecture_map[ansible_architecture]
+                       | d(ansible_architecture) }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__architecture_map [[[
+#
+# A YAML dictionary which defines a mapping between Ansible architectures and
+# Debian/Ubuntu ports. Only definitions that are different from the detected
+# ones are listed here, otherwise the value of ``ansible_architecture`` is
+# used.
+apt__architecture_map:
+  'x86_64': 'amd64'
+
+                                                                   # ]]]
 # .. envvar:: apt__distribution [[[
 #
 # The OS distribution present on the host.
@@ -188,6 +205,16 @@ apt__distribution_release: '{{ ansible_local.core.distribution_release
                                if (ansible_local|d() and ansible_local.core|d() and
                                    ansible_local.core.distribution_release|d())
                                else ansible_distribution_release }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__distribution_release_map [[[
+#
+# YAML dictionary which holds the information about official OS releases. This
+# map is used to configure security repositories only on the OS releases that
+# have them available.
+apt__distribution_release_map:
+  'Debian': [ 'wheezy', 'jessie', 'stretch' ]
+  'Ubuntu': [ 'precise', 'trusty', 'xenial' ]
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_suite_map [[[
@@ -331,6 +358,11 @@ apt__security_sources:
     suite:      '{{ apt__distribution_release + "/updates" }}'
     components: '{{ apt__distribution_components }}'
     distribution: 'Debian'
+    state:      '{{ "present"
+                    if (apt__distribution_release|d("unknown")
+                        in apt__distribution_release_map[apt__distribution]|d([]))
+                    else "absent" }}'
+
 
     # This version shows up in Debian Stretch APT configuration.
     # It's disabled by default to not create duplicate entries.
@@ -348,6 +380,19 @@ apt__security_sources:
     suite:      '{{ apt__distribution_release + "-security" }}'
     components: '{{ apt__distribution_components }}'
     distribution: 'Ubuntu'
+    state:      '{{ "present"
+                    if (apt__architecture in ["amd64", "i386"])
+                    else "absent" }}'
+
+  - uri:        'http://ports.ubuntu.com/ubuntu-ports'
+    comment:    'Ubuntu Ports Security repository'
+    type:       '{{ apt__source_types }}'
+    suite:      '{{ apt__distribution_release + "-security" }}'
+    components: '{{ apt__distribution_components }}'
+    distribution: 'Ubuntu'
+    state:      '{{ "present"
+                    if (apt__architecture not in ["amd64", "i386"])
+                    else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: apt__combined_sources [[[

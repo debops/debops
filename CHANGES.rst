@@ -19,7 +19,39 @@ new release.
 `debops.apt master`_ - unreleased
 ---------------------------------
 
-.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.1...master
+.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.2...master
+
+
+`debops.apt v0.4.2`_ - 2016-11-22
+---------------------------------
+
+.. _debops.apt v0.4.2: https://github.com/debops/ansible-apt/compare/v0.4.1...v0.4.2
+
+Added
+~~~~~
+
+- Add support for filtering APT distribution sources and repositories according
+  to the system architecture. Only one architecture can be specified at a time
+  for a given source entry. [drybjed_]
+
+- Add :envvar:`apt__distribution_release_map` YAML dictionary which keeps the
+  information about released OS distributions which have official security
+  repositories. [drybjed_]
+
+Changed
+~~~~~~~
+
+- Update the :file:`/etc/apt/sources.list` template so that it tracks
+  repository suites for each URI. This should allow configuration of separate
+  source entries from the same repository but with different suites. [drybjed_]
+
+- The Debian Security repository will be enabled only on official releases, on
+  hosts with Debian Unstable (Sid) it will be automatically disabled.
+  [drybjed_]
+
+- Ubuntu Security repository will be enabled only on supported architectures
+  (``amd64``, ``i386``). On other architectures, Ubuntu Ports Security
+  repository will be enabled instead. [drybjed_]
 
 
 `debops.apt v0.4.1`_ - 2016-11-03

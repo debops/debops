@@ -41,13 +41,20 @@ module parameters:
   Optional. Either ``present`` for the key to be present (default), or
   ``absent`` for the key to be removed. The ``absent`` state might be ignored
   due to the issues with not enough information provided about the key to
-  remove it. See also ``distribution`` and ``distribution_release`` parameters.
+  remove it. See also ``architecture``, ``distribution`` and
+  ``distribution_release`` parameters.
 
 ``url``
   Optional. The URL of the GPG key to download and install on the host.
 
 If you don't specify the ``state`` parameter directly, you can use additional
 parameters that control how the specified key is managed:
+
+``architecture``
+  Optional. Name of the system architecture, for example ``amd64`` or ``i386``.
+  If the current host has the specified architecture, the key will be
+  installed. Only one architecture can be specified at a time, use the
+  ``state`` parameter for more complex conditions.
 
 ``distribution``
   Optional. Name of the OS distribution. If the current host has the specified
@@ -117,11 +124,17 @@ correspond to the ``apt_repository`` module parameters:
 
 ``state``
   Optional. Either ``present`` for the repository to be present (default), or
-  ``absent`` for the repository to be removed. See also ``distribution`` and
-  ``release`` parameters.
+  ``absent`` for the repository to be removed. See also ``architecture``,
+  ``distribution`` and ``distribution_release`` parameters.
 
 If you don't specify the ``state`` parameter directly, you can use additional
 parameters that control how the specified repository is managed:
+
+``architecture``
+  Optional. Name of the system architecture, for example ``amd64`` or ``i386``.
+  If the current host has the specified architecture, the repository will be
+  configured. Only one architecture can be specified at a time, use the
+  ``state`` parameter for more complex conditions.
 
 ``distribution``
   Optional. Name of the OS distribution. If the current host has the specified
@@ -279,6 +292,12 @@ parameters:
 ``state``
   Optional. Either ``present`` if a given APT source should be present in the
   generated config file, or ``absent`` if not.
+
+``architecture``
+  Optional. If ``state`` is not specified, you can specify a system
+  architecture name on which a given APT source is active. Only one
+  architecture can be specified, use the ``state`` parameter for more complex
+  conditions.
 
 ``distribution``
   Optional. If ``state`` is not specified, you can specify an OS distribution
