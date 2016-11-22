@@ -186,6 +186,7 @@ consume role name. E.g.
    nginx__apt_preferences__dependent_list:
      - package: 'nginx nginx-*'
        backports: [ 'wheezy', 'precise' ]
+       by_role: 'debops.nginx'
 
 
 .. _debops_policy__ref_code_standards_default_variable_documentation:
@@ -196,7 +197,7 @@ Variable documentation
 For each role the `DebOps Documentation`_ will include a page which
 documents the default variables. This page is generated from the role's
 :file:`defaults/main.yml` file with help of yaml2rst_. The entire comment of
-the defauls file is thereby interpreted as reStructuredText_ and then rendered
+the defaults file is thereby interpreted as reStructuredText_ and then rendered
 via Sphinx_.
 
 Each variable comment is started with a ``.. envvar::`` reference anchor
@@ -268,6 +269,10 @@ configuration. The provider role SHOULD then manage an individual configuration
 file per list item which allows it to selectively add or remove configuration
 states.
 
+Additionally, the ``by_role`` property (string) SHOULD be accepted which can be
+used to indicate the role responsible for a given item.
+``by_role`` MUST be given in the from of ``ROLE_OWNER.ROLE_NAME``.
+
 **Example:**
 
 The debops.apt_preferences_ role implements a feature to set APT package
@@ -291,6 +296,7 @@ which defines the necessary pinning information:
    nginx__apt_preferences__dependent_list:
      - package: 'nginx nginx-*'
        backports: [ 'wheezy', 'precise' ]
+       by_role: 'debops.nginx'
 
 In the playbook a :ref:`soft dependency <debops_policy__ref_code_standards_soft_role_dependencies>`
 can be specified where the dependent variable is passed to the provider:
@@ -375,7 +381,7 @@ level inventory variable in (e.g.
 Ansible role tasks
 ------------------
 
-Ansible tasks are doing the actual work namely querying and modifiying the
+Ansible tasks are doing the actual work namely querying and modifying the
 target host. Each task defines a `Ansible Module <Ansible Modules>` invocation
 with a number of general and module specific options.
 
@@ -415,9 +421,9 @@ the role have been left out.
 Conditions
 ~~~~~~~~~~
 
-It might be necessary often that task execution might depend on a certain
+It might be often necessary that task execution depends on a certain
 condition using the ``when`` statement. In many cases the condition is simple
-and straight forward, for example when depending on the existance of a file.
+and straight forward, for example when depending on the existence of a file.
 Other times the condition might be more complex, for example when depending
 on a state of other role configurations. In this case the expression SHOULD
 be defined in a default variable. This would give the user the ability to
@@ -459,7 +465,7 @@ YAML syntax
 
 Task definitions MUST use the native YAML syntax formatting. Ansible accepts
 various ways to define Ansible tasks. However, there are several advantages by
-agreening on the YAML syntax:
+agreeing on the YAML syntax:
 
 - Unified coding style
 
@@ -483,7 +489,7 @@ Instead of ...
    - name: Create plugin path
      file:
        path: '{{ elasticsearch__path_plugins }}'
-       state: directory
+       state: 'directory'
 
 .. _debops_policy__ref_code_standards_task_disable_debug:
 
@@ -496,7 +502,7 @@ for normal operations. Released code is expected to be functional under every
 possible circumstance otherwise it is considered to be a bug which must be
 fixed on a best effort basis.
 
-For fragile or complex code paths it might be acceptable to to use the
+For fragile or complex code paths it might be acceptable to use the
 ``debug`` statement with an increased ``verbosity`` level. This will only show
 the message, if :program:`ansible-playbook` is executed with one or more
 ``--verbose`` options. For example:
@@ -522,7 +528,7 @@ Soft role dependencies
 
 Role dependencies are considered "soft" if they are defined in the ``roles``
 list of a playbook. This approach offers a higher flexibility as the user can
-choose which playbooks to run and which features to include.
+choose which roles to run and which features to include.
 
 Whenever possible DebOps role authors MUST specify role dependencies via
 playbook instead of
@@ -570,14 +576,14 @@ Hard role dependencies
 
 Role dependencies are considered "hard" if they are defined in the
 ``dependencies`` list in :file:`meta/main.yml`.  DebOps role authors MUST
-avoid the use of hard role dependencies for the follwing reasons:
+avoid the use of hard role dependencies for the following reasons:
 
 - Hard role dependencies must always be installed on the Ansible controller
   even when their execution is conditionally triggered via ``when`` statement.
 
 - It hinders the independent use of the role in a custom playbook or outside
   of DebOps where playbook authors might relay on a different role for a certain
-  feature or decide no to use a certain feature at all.
+  feature or decide not to use a certain feature at all.
 
 - The playbook execution flow is more difficult to reason about as hard
   dependencies are defined outside of the playbook.
@@ -587,7 +593,7 @@ Generally role dependencies MUST be defined as
 via playbook unless the tight coupling to another role is unavoidable for
 implementing the required functionality. A reasonable exception is for example
 the debops.secret_ role which defines a common path for the
-``lookup("password")`` module.
+``lookup("password")`` plugin.
 
 
 .. _debops_policy__ref_code_standards_role_facts:
@@ -609,7 +615,7 @@ variable.
 Share configuration state with other roles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If a role need to know a configuration state of another role it MUST NOT access
+If a role needs to know a configuration state of another role it MUST NOT access
 inventory variables of the source role. This impedes the portability of a role
 and effectively makes the source role its hard dependency. Instead, roles SHOULD
 expose public data structures as needed for other roles to use as Ansible local
@@ -647,4 +653,3 @@ The debops.ferm_ role itself defines the facts via a Jinja2 template such as:
    "forward": "{{ ferm__tpl_forward | bool | lower }}",
    "ansible_controllers": {{ ferm__tpl_ansible_controllers_result | to_nice_json }}
    }
-
