@@ -5,39 +5,15 @@ lxc_distribution_packages:
   Debian:  [ 'debootstrap', 'python3', 'lxc', 'init-system-helpers' ]
   Ubuntu:  [ 'debootstrap', 'python3', 'lxc', 'lxc-templates', 'libcgmanager0' ]
 
-# Notification message about new of updated LXC kernel
-lxc_kernel_mail_subject: 'LXC kernel update on {{ ansible_fqdn }}'
-
-lxc_kernel_mail_body: |
-  Ansible has updated Linux kernel with LXC support on host {{ ansible_fqdn }}
-  You should check status of the host and reboot it when convenient.
-
-  Current kernel: {{ ansible_kernel }}
-
-  Output of install command:
-  ---------------------------------------------------------------
-  {% for line in lxc_register_kernel_upgrade.stdout_lines %}
-  {{ line }}
-  {% endfor %}
-  ---------------------------------------------------------------
-
-  Output of lxc-ls -f:
-  ---------------------------------------------------------------
-  {% for line in lxc_list_status.stdout_lines %}
-  {{ line }}
-  {% endfor %}
-  ---------------------------------------------------------------
-
-
 # ---- Salt integration ----
 
 # SaltStack Debian repository GPG key
 lxc_template_salt_apt_key_fingerprint: '102E2FE7D5141DBD12B260FCB09E40B0F2AE6AB9'
 
 lxc_default_gpg_keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
+                               if (ansible_local|d() and ansible_local.core|d() and
+                                   ansible_local.core.keyserver|d())
+                               else "hkp://pool.sks-keyservers.net" }}'
 
 # SaltStack Debian APT repository
 lxc_template_salt_upstream_repository: 'deb http://debian.saltstack.com/debian {{ ansible_distribution_release.split("/")[0] }}-saltstack main'
