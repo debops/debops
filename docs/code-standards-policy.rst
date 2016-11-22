@@ -528,7 +528,7 @@ Soft role dependencies
 
 Role dependencies are considered "soft" if they are defined in the ``roles``
 list of a playbook. This approach offers a higher flexibility as the user can
-choose which playbooks to run and which features to include.
+choose which roles to run and which features to include.
 
 Whenever possible DebOps role authors MUST specify role dependencies via
 playbook instead of
@@ -583,7 +583,7 @@ avoid the use of hard role dependencies for the following reasons:
 
 - It hinders the independent use of the role in a custom playbook or outside
   of DebOps where playbook authors might relay on a different role for a certain
-  feature or decide no to use a certain feature at all.
+  feature or decide not to use a certain feature at all.
 
 - The playbook execution flow is more difficult to reason about as hard
   dependencies are defined outside of the playbook.
@@ -593,7 +593,7 @@ Generally role dependencies MUST be defined as
 via playbook unless the tight coupling to another role is unavoidable for
 implementing the required functionality. A reasonable exception is for example
 the debops.secret_ role which defines a common path for the
-``lookup("password")`` module.
+``lookup("password")`` plugin.
 
 
 .. _debops_policy__ref_code_standards_role_facts:
