@@ -196,7 +196,7 @@ Variable documentation
 For each role the `DebOps Documentation`_ will include a page which
 documents the default variables. This page is generated from the role's
 :file:`defaults/main.yml` file with help of yaml2rst_. The entire comment of
-the defauls file is thereby interpreted as reStructuredText_ and then rendered
+the defaults file is thereby interpreted as reStructuredText_ and then rendered
 via Sphinx_.
 
 Each variable comment is started with a ``.. envvar::`` reference anchor
@@ -375,7 +375,7 @@ level inventory variable in (e.g.
 Ansible role tasks
 ------------------
 
-Ansible tasks are doing the actual work namely querying and modifiying the
+Ansible tasks are doing the actual work namely querying and modifying the
 target host. Each task defines a `Ansible Module <Ansible Modules>` invocation
 with a number of general and module specific options.
 
@@ -417,7 +417,7 @@ Conditions
 
 It might be necessary often that task execution might depend on a certain
 condition using the ``when`` statement. In many cases the condition is simple
-and straight forward, for example when depending on the existance of a file.
+and straight forward, for example when depending on the existence of a file.
 Other times the condition might be more complex, for example when depending
 on a state of other role configurations. In this case the expression SHOULD
 be defined in a default variable. This would give the user the ability to
@@ -459,7 +459,7 @@ YAML syntax
 
 Task definitions MUST use the native YAML syntax formatting. Ansible accepts
 various ways to define Ansible tasks. However, there are several advantages by
-agreening on the YAML syntax:
+agreeing on the YAML syntax:
 
 - Unified coding style
 
@@ -570,7 +570,7 @@ Hard role dependencies
 
 Role dependencies are considered "hard" if they are defined in the
 ``dependencies`` list in :file:`meta/main.yml`.  DebOps role authors MUST
-avoid the use of hard role dependencies for the follwing reasons:
+avoid the use of hard role dependencies for the following reasons:
 
 - Hard role dependencies must always be installed on the Ansible controller
   even when their execution is conditionally triggered via ``when`` statement.
@@ -647,4 +647,3 @@ The debops.ferm_ role itself defines the facts via a Jinja2 template such as:
    "forward": "{{ ferm__tpl_forward | bool | lower }}",
    "ansible_controllers": {{ ferm__tpl_ansible_controllers_result | to_nice_json }}
    }
-
