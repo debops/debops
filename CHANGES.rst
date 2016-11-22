@@ -11,7 +11,13 @@ and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 The current role maintainer_ is drybjed_.
 
 
-debops.lxc v0.1.0 - unreleased
+`debops.lxc master`_ - unreleased
+---------------------------------
+
+.. _debops.lxc master: https://github.com/debops/ansible-lxc/compare/v0.1.0...master
+
+
+debops.lxc v0.1.0 - 2016-11-22
 ------------------------------
 
 Added
