@@ -89,18 +89,20 @@
     keyserver: '{{ item.keyserver | d(omit) }}'
     url:       '{{ item.url       | d(omit) }}'
     state:     '{{ item.state     | d("present"
-                                      if (item.distribution|d(apt__distribution) == apt__distribution and
+                                      if (item.architecture|d(apt__architecture) == apt__architecture and
+                                          item.distribution|d(apt__distribution) == apt__distribution and
                                           item.distribution_release|d(apt__distribution_release) == apt__distribution_release)
                                       else omit) }}'
   with_flattened:
     - '{{ apt__keys }}'
     - '{{ apt__group_keys }}'
     - '{{ apt__host_keys }}'
-  # `item.state`, `item.distribution` and `item.distribution_release` need to be checked here.
+  # `item.state`, `item.architecture`, `item.distribution` and `item.distribution_release` need to be checked here.
   # Ref: https://github.com/debops/ansible-apt/pull/76#pullrequestreview-2529842
   when: (apt__enabled|bool and (item.url|d() or item.data|d() or item.id|d() or item.file|d()) and
          (item.state|d("present") == 'present' and
-          (item.distribution|d(apt__distribution) == apt__distribution and
+          (item.architecture|d(apt__architecture) == apt__architecture and
+           item.distribution|d(apt__distribution) == apt__distribution and
            item.distribution_release|d(apt__distribution_release) == apt__distribution_release)))
 
 - name: Configure custom APT repositories
@@ -110,7 +112,8 @@
     mode:     '{{ item.mode     | d(omit) }}'
     filename: '{{ item.filename | d(omit) }}'
     state:    '{{ item.state    | d("present"
-                                    if (item.distribution|d(apt__distribution) == apt__distribution and
+                                    if (item.architecture|d(apt__architecture) == apt__architecture and
+                                        item.distribution|d(apt__distribution) == apt__distribution and
                                         item.distribution_release|d(apt__distribution_release) == apt__distribution_release)
                                     else "absent") }}'
   with_flattened:

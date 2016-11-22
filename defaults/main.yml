@@ -172,6 +172,23 @@ apt__host_repositories: []
 # Distribution and release detection [[[
 # --------------------------------------
 
+# .. envvar:: apt__architecture [[[
+#
+# The system architecture present on the host.
+apt__architecture: '{{ apt__architecture_map[ansible_architecture]
+                       | d(ansible_architecture) }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__architecture_map [[[
+#
+# A YAML dictionary which defines a mapping between Ansible architectures and
+# Debian/Ubuntu ports. Only definitions that are different from the detected
+# ones are listed here, otherwise the value of ``ansible_architecture`` is
+# used.
+apt__architecture_map:
+  'x86_64': 'amd64'
+
+                                                                   # ]]]
 # .. envvar:: apt__distribution [[[
 #
 # The OS distribution present on the host.

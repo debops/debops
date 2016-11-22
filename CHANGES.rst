@@ -27,6 +27,13 @@ new release.
 
 .. _debops.apt v0.4.2: https://github.com/debops/ansible-apt/compare/v0.4.1...v0.4.2
 
+Added
+~~~~~
+
+- Add support for filtering APT distribution sources and repositories according
+  to the system architecture. Only one architecture can be specified at a time
+  for a given source entry. [drybjed_]
+
 Changed
 ~~~~~~~
 

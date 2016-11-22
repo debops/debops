@@ -69,6 +69,7 @@
   "components": [],
   "comment": '',
   "state": "present",
+  "architecture": apt__architecture,
   "distribution": apt__distribution,
   "distribution_release": apt__distribution_release
 } %}
@@ -106,7 +107,7 @@
 {%   set _ = apt__tpl_sources.append(apt__tpl_source) %}
 {% endfor %}
 {% for entry in apt__tpl_sources %}
-{%   if (entry.state|d("present") in [ "present", "disabled" ] and entry.distribution == apt__distribution and entry.distribution_release == apt__distribution_release) %}
+{%   if (entry.state|d("present") in [ "present", "disabled" ] and entry.architecture == apt__architecture and entry.distribution == apt__distribution and entry.distribution_release == apt__distribution_release) %}
 {%   if loop.first and not entry.comment|d() %}
 
 {%   endif %}
