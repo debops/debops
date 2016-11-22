@@ -51,6 +51,13 @@ Summary
 
 Here's a basic set of principles to be aware while writing roles:
 
+- YAML files MUST use 2 space indents and end with ``.yml``.
+
+- Use spaces around Jinja variable syntax as in ``{{ var }}``.
+
+- When possible use 80 characters line width.
+
+
 **Ansible role: defaults**
 
 - Follow the :ref:`variable naming conventions <debops_policy__ref_code_standards_default_variable_naming_convention>`.
@@ -87,6 +94,8 @@ Here's a basic set of principles to be aware while writing roles:
 - :ref:`Disable debug mechanisms <debops_policy__ref_code_standards_task_disable_debug`
   such as the ``debug`` or ``ignore_errors`` statements in the ``master``
   branch.
+
+- Use tags to make individually usable tasks better accessible.
 
 
 **Ansible role: templates**
@@ -301,8 +310,8 @@ can be specified where the dependent variable is passed to the provider:
        - role: debops.nginx
 
 By including the configuration for the debops.apt_preferences_ role in the
-``nginx`` default variables the user to change it through the Ansible inventory
-without the need to modify any of the involved roles or the playbook.
+``nginx`` default variables the user is able to change it through the Ansible
+inventory without the need to modify any of the involved roles or the playbook.
 
 
 .. _debops_policy__ref_code_standards_inventory_level_scoped_variables:
@@ -367,8 +376,8 @@ Ansible role tasks
 ------------------
 
 Ansible tasks are doing the actual work namely querying and modifiying the
-target host. Each task defines a `Ansible Module <https://docs.ansible.com/ansible/modules.html>`_
-invocation with a number of general and module specific options.
+target host. Each task defines a `Ansible Module <Ansible Modules>` invocation
+with a number of general and module specific options.
 
 .. _debops_policy__ref_code_standards_task_description:
 
@@ -547,7 +556,7 @@ This is an example playbook for debops.slapd_ defining soft dependencies:
 
         - role: debops.tcpwrappers
           tags: [ 'role::tcpwrappers' ]
-          tcpwrappers_dependent_allow:
+          tcpwrappers__dependent_allow:
             - '{{ slapd__tcpwrappers__dependent_allow }}'
 
         - role: debops.slapd
