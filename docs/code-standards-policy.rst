@@ -62,7 +62,7 @@ Here's a basic set of principles to be aware while writing roles:
 
 - Follow the :ref:`variable naming conventions <debops_policy__ref_code_standards_default_variable_naming_convention>`.
 
-- Make :ref:`conditional code configurable <_debops_policy__ref_code_standards_task_conditions>`
+- Make :ref:`conditional code configurable <debops_policy__ref_code_standards_task_conditions>`
   via default variables.
 
 - :ref:`Comment and structure <debops_policy__ref_code_standards_default_variable_documentation>`
@@ -82,7 +82,7 @@ Here's a basic set of principles to be aware while writing roles:
 - :ref:`Describe each task and include <debops_policy__ref_code_standards_task_description>`
   with the ``name`` option.
 
-- Use native :ref:`YAML syntax <debops_policy__ref_code_standards_task_yaml_syntax`
+- Use native :ref:`YAML syntax <debops_policy__ref_code_standards_task_yaml_syntax>`
   for task definition formatting.
 
 - If some tasks should only be executed under certain circumstances, group them
@@ -91,7 +91,7 @@ Here's a basic set of principles to be aware while writing roles:
 - Set a minimal Ansible version in :file:`meta/main.yml` according to the
   modules and task parameters used.
 
-- :ref:`Disable debug mechanisms <debops_policy__ref_code_standards_task_disable_debug`
+- :ref:`Disable debug mechanisms <debops_policy__ref_code_standards_task_disable_debug>`
   such as the ``debug`` or ``ignore_errors`` statements in the ``master``
   branch.
 
@@ -108,7 +108,7 @@ Here's a basic set of principles to be aware while writing roles:
 
 **Ansible role: dependencies**
 
-- Define role dependencies as :ref:`"soft" dependencies <debops_policy__ref_code_standards_soft_dependencies>`
+- Define role dependencies as :ref:`"soft" dependencies <debops_policy__ref_code_standards_soft_role_dependencies>`
   via playbook and make them conditional if possible.
 
 - Avoid the use of :ref:`"hard" role dependencies <debops_policy__ref_code_standards_hard_role_dependencies>`
@@ -600,7 +600,7 @@ Ansible facts are small things that are automatically discovered by the
 be used by Ansible role and playbook authors through normal variables. The
 default facts provided are indicated by the ``ansible_`` namespace. It's
 possible to define custom facts through JSON or INI files or scripts returning
-such output in the :path:`/etc/ansible/facts.d` directory of a host. These
+such output in the :file:`/etc/ansible/facts.d` directory of a host. These
 facts are then available as key/value pairs under the ``ansible_local``
 variable.
 
