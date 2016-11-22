@@ -11,8 +11,8 @@ and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 The current role maintainer_ is drybjed_.
 
 
-debops.dnsmasq v0.1.0 - unreleased
-----------------------------------
+debops.lxc v0.1.0 - unreleased
+------------------------------
 
 Added
 ~~~~~
