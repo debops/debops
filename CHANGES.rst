@@ -49,6 +49,10 @@ Changed
   hosts with Debian Unstable (Sid) it will be automatically disabled.
   [drybjed_]
 
+- Ubuntu Security repository will be enabled only on supported architectures
+  (``amd64``, ``i386``). On other architectures, Ubuntu Ports Security
+  repository will be enabled instead. [drybjed_]
+
 
 `debops.apt v0.4.1`_ - 2016-11-03
 ---------------------------------
