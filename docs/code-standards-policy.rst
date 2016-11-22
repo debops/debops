@@ -489,7 +489,7 @@ Instead of ...
    - name: Create plugin path
      file:
        path: '{{ elasticsearch__path_plugins }}'
-       state: directory
+       state: 'directory'
 
 .. _debops_policy__ref_code_standards_task_disable_debug:
 
