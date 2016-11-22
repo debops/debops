@@ -19,7 +19,20 @@ new release.
 `debops.apt master`_ - unreleased
 ---------------------------------
 
-.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.1...master
+.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.2...master
+
+
+`debops.apt v0.4.2`_ - 2016-11-22
+---------------------------------
+
+.. _debops.apt v0.4.2: https://github.com/debops/ansible-apt/compare/v0.4.1...v0.4.2
+
+Changed
+~~~~~~~
+
+- Update the :file:`/etc/apt/sources.list` template so that it tracks
+  repository suites for each URI. This should allow configuration of separate
+  source entries from the same repository but with different suites. [drybjed_]
 
 
 `debops.apt v0.4.1`_ - 2016-11-03

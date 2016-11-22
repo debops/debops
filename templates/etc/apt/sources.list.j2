@@ -27,12 +27,13 @@
 {%     endfor %}
 {%   else %}
 {%     for entry_uri in (entry.uri|d([]) + entry.uris|d([])) %}
-{%       if (entry_uri in apt__tpl_seen_sources and apt__sources_filter_duplicates|bool) %}
-{%         set entry_disabled = '# ' %}
-{%       elif entry_uri not in apt__tpl_seen_sources and entry.state != 'disabled' %}
-{%         set entry_disabled = '' %}
-{%       endif %}
+{%       set apt__tpl_seen_suites = apt__tpl_seen_sources[entry_uri]|d([]) %}
 {%       for entry_suite in (entry.suite|d([]) + entry.suites|d([])) %}
+{%         if (entry_uri in apt__tpl_seen_sources.keys() and entry_suite in apt__tpl_seen_sources[entry_uri] and apt__sources_filter_duplicates|bool) %}
+{%           set entry_disabled = '# ' %}
+{%         elif entry_uri not in apt__tpl_seen_sources.keys() and entry.state != 'disabled' %}
+{%           set entry_disabled = '' %}
+{%         endif %}
 {%         for entry_type in (entry.type|d([]) + entry.types|d([])) %}
 {%           if entry.options|d() %}
 {{ "%s%s [%s] %s %s %s" | format(entry_disabled, entry_type, options | join(' '), entry_uri, entry_suite, (entry.component|d([]) + entry.components|d([])) | unique | join(' ')) }}
@@ -43,12 +44,13 @@
 {%         if ((entry.type|d([]) + entry.types|d([])) | count > 1 and not loop.last) %}
 
 {%         endif %}
+{%         set _ = apt__tpl_seen_suites.append(entry_suite) %}
 {%       endfor %}
-{%       set _ = apt__tpl_seen_sources.append(entry_uri) %}
+{%       set _ = apt__tpl_seen_sources.update({entry_uri: apt__tpl_seen_suites}) %}
 {%     endfor %}
 {%   endif %}
 {% endmacro %}
-{% set apt__tpl_seen_sources = [] %}
+{% set apt__tpl_seen_sources = {} %}
 {% set apt__tpl_suites = [] %}
 {% for apt__tpl_suffix in ([ apt__distribution_suffixes ] if apt__distribution_suffixes is string else apt__distribution_suffixes) %}
 {%   set _ = apt__tpl_suites.append(apt__distribution_release + apt__tpl_suffix) %}
