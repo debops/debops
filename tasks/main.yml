@@ -2,6 +2,11 @@
 
 ## Preparation and error checking (((
 
+- name: Check for Ansible version without known vulnerabilities
+  assert:
+    that: 'ansible_version.full | version_compare("2.1.3.0", ">=")'
+    msg: 'VULNERABLE Ansible version DETECTED, please update to Ansible v2.1.3 or newer! Exiting.'
+
   ## https://stackoverflow.com/a/28888474
 - name: Test if Ansible is running in check mode
   command: /bin/true

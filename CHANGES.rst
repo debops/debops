@@ -18,6 +18,15 @@ The current role maintainer_ is ypid_.
 
 .. _debops.cryptsetup master: https://github.com/debops/ansible-owncloud/compare/v0.4.0...master
 
+Changed
+~~~~~~~
+
+- Terminate role execution if a vulnerable Ansible version is used to run the
+  role as `CVE-2016-8628 <https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2016-8628>`_
+  violates one of the design goals of the role.
+  The minimum Ansible version without known vulnerabilities is Ansible 2.1.3.
+  Refer to `Ansible Security`_ for details. [ypid_]
+
 
 `debops.cryptsetup v0.4.0`_ - 2016-10-23
 ----------------------------------------
