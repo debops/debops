@@ -34,6 +34,10 @@ Added
   to the system architecture. Only one architecture can be specified at a time
   for a given source entry. [drybjed_]
 
+- Add :envvar:`apt__distribution_release_map` YAML dictionary which keeps the
+  information about released OS distributions which have official security
+  repositories. [drybjed_]
+
 Changed
 ~~~~~~~
 
