@@ -345,18 +345,22 @@ apt__original_sources:
 # source for use through the Ansible inventory. It's structure shouldn't be
 # changed.
 apt__default_sources:
+
   - uri:          'http://httpredir.debian.org/debian'
     comment:      '{{ "Official " + apt__distribution + " repositories" }}'
     distribution: 'Debian'
+
   - uri:          'http://mirrordirector.raspbian.org/raspbian/'
     comment:      '{{ "Official " + apt__distribution + " repositories" }}'
     distribution: 'Raspbian'
+
   - uri:          'http://archive.ubuntu.com/ubuntu'
     comment:      '{{ "Official " + apt__distribution + " repositories" }}'
     distribution: 'Ubuntu'
     state:       '{{ "present"
                      if (apt__architecture in ["amd64", "i386"])
                      else "absent" }}'
+
   - uri: 'http://ports.ubuntu.com/ubuntu-ports'
     comment: '{{ "Official " + apt__distribution + " Port repositories" }}'
     distribution: 'Ubuntu'
@@ -382,7 +386,6 @@ apt__security_sources:
                     if (apt__distribution_release|d("unknown")
                         in apt__distribution_release_map[apt__distribution]|d([]))
                     else "absent" }}'
-
 
     # This version shows up in Debian Stretch APT configuration.
     # It's disabled by default to not create duplicate entries.

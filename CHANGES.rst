@@ -19,7 +19,18 @@ new release.
 `debops.apt master`_ - unreleased
 ---------------------------------
 
-.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.2...master
+.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.3...master
+
+
+`debops.apt v0.4.3`_ - 2016-11-23
+---------------------------------
+
+.. _debops.apt v0.4.3: https://github.com/debops/ansible-apt/compare/v0.4.2...v0.4.3
+
+Added
+~~~~~
+
+- Improve autodetection of APT sources on Raspbian and Ubuntu. [grantma_]
 
 
 `debops.apt v0.4.2`_ - 2016-11-22
