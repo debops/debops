@@ -30,7 +30,8 @@ new release.
 Added
 ~~~~~
 
-- Improve autodetection of APT sources on Raspbian and Ubuntu. [grantma_]
+- Improve autodetection of APT sources on Raspbian and Ubuntu, as well as
+  Debian Testing/Unstable releases. [grantma_]
 
 
 `debops.apt v0.4.2`_ - 2016-11-22
