@@ -541,6 +541,11 @@ involved role is offering dedicated
 for this purpose. With soft dependencies custom playbook authors are therefore
 free to pass values from arbitrary sources according to their requirements.
 
+When a role that is used as a soft dependency already contains its own
+dependencies, all of them SHOULD be included in the playbook to ensure that the
+required functionality (firewall access, APT preferences, etc.) is provided and
+configured as needed by the dependent role.
+
 **Example:**
 
 This is an example playbook for debops.slapd_ defining soft dependencies:
@@ -582,7 +587,7 @@ avoid the use of hard role dependencies for the following reasons:
   even when their execution is conditionally triggered via ``when`` statement.
 
 - It hinders the independent use of the role in a custom playbook or outside
-  of DebOps where playbook authors might relay on a different role for a certain
+  of DebOps where playbook authors might rely on a different role for a certain
   feature or decide not to use a certain feature at all.
 
 - The playbook execution flow is more difficult to reason about as hard
