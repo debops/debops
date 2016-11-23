@@ -21,6 +21,11 @@ Added
 
 - Add first draft of Code Standards Policy. [drybjed_]
 
+Changed
+~~~~~~~
+
+- Major rework and enhancement of Code Standards Policy. [ganto_]
+
 
 debops-policy v0.1.0 - 2016-09-04
 ---------------------------------
