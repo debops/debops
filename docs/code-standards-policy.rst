@@ -7,7 +7,7 @@ DebOps Code Standards Policy
 
 :Date drafted: 2016-11-05
 :Date effective: 2017-01-01
-:Last changed: 2016-11-17
+:Last changed: 2016-11-23
 :Version: 0.1.0
 :Authors: - drybjed_
           - ypid_
