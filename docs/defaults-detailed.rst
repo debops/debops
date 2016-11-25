@@ -27,6 +27,11 @@ The key of a given entry is either a network interface name (for example
 interface denoted by the ``iface`` parameter. Configuration parameters in
 labeled sections will be merged with the real network interface preferences.
 
+You can also use YAML lists of dictionaries, however you cannot combine both
+dictionaries and lists in the same ``ifupdown__*_interfaces`` variable. YAML
+dictionaries specified in a list need to have the ``iface`` parameter that
+specifies the interface name, otherwise they will be skipped.
+
 Each network interface will have its configuration in a separate file in
 :file:`/etc/network/interfaces.d/` directory on the managed hosts (both IPv4
 and IPv6 configuration is in the same file).
@@ -96,7 +101,7 @@ General interface parameters
   parameters.
 
   Example Ethernet interface configuration without and with ``iface``
-  parameter:
+  parameter, and a version specified as a list:
 
   .. code-block:: yaml
 
@@ -104,9 +109,13 @@ General interface parameters
        'eth0':
          type: 'ether'
 
-     ifupdown__host_interfaces:
+     ifupdown__group_interfaces:
        'external':
          iface: 'eth0'
+         type: 'ether'
+
+     ifupdown__host_interfaces:
+       - iface: 'eth0'
          type: 'ether'
 
   The ``iface`` parameter can be templated by Jinja, unlike the dictionary key.

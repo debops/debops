@@ -1,19 +1,29 @@
-{% macro merge_interface(current_dict, to_merge_dict) %}
+{% macro merge_dict(current_dict, to_merge_dict, dict_key='name') %}
 {%   set merged_dict = current_dict %}
-{%   for name in to_merge_dict.keys() | sort %}
-{%     if to_merge_dict[name].iface|d() %}
-{%       set _ = merged_dict.update({to_merge_dict[name].iface:(current_dict[to_merge_dict[name].iface]|d({}) | combine(to_merge_dict[name], recursive=True))}) %}
-{%     elif to_merge_dict[name].iface is undefined %}
-{%       set _ = merged_dict.update({name:(current_dict[to_merge_dict[name]]|d({}) | combine(to_merge_dict[name], recursive=True))}) %}
+{%   if to_merge_dict %}
+{%     if to_merge_dict is mapping %}
+{%       for dict_name in to_merge_dict.keys() | sort %}
+{%         if to_merge_dict[dict_name][dict_key]|d() %}
+{%           set _ = merged_dict.update({to_merge_dict[dict_name][dict_key]:(current_dict[to_merge_dict[dict_name][dict_key]]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
+{%         elif to_merge_dict[dict_name][dict_key] is undefined %}
+{%           set _ = merged_dict.update({dict_name:(current_dict[dict_name]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
+{%         endif %}
+{%       endfor %}
+{%     elif to_merge_dict is not string and to_merge_dict is not mapping %}
+{%       for element in to_merge_dict %}
+{%         if element[dict_key]|d() %}
+{%           set _ = merged_dict.update({element[dict_key]:(current_dict[element[dict_key]]|d({}) | combine(element, recursive=True))}) %}
+{%         endif %}
+{%       endfor %}
 {%     endif %}
-{%   endfor %}
+{%   endif %}
 {{ merged_dict | to_json }}
 {% endmacro %}
-{% set ifupdown__tpl_merge_1 = (merge_interface(ifupdown__ethernet_interfaces, ifupdown__default_interfaces) | from_json) %}
-{% set ifupdown__tpl_merge_2 = (merge_interface(ifupdown__tpl_merge_1, ifupdown__interfaces)                 | from_json) %}
-{% set ifupdown__tpl_merge_3 = (merge_interface(ifupdown__tpl_merge_2, ifupdown__group_interfaces)           | from_json) %}
-{% set ifupdown__tpl_merge_4 = (merge_interface(ifupdown__tpl_merge_3, ifupdown__host_interfaces)            | from_json) %}
-{% set ifupdown__tpl_merge_5 = (merge_interface(ifupdown__tpl_merge_4, ifupdown__dependent_interfaces)       | from_json) %}
+{% set ifupdown__tpl_merge_1 = (merge_dict(ifupdown__ethernet_interfaces, ifupdown__default_interfaces, 'iface') | from_json) %}
+{% set ifupdown__tpl_merge_2 = (merge_dict(ifupdown__tpl_merge_1, ifupdown__interfaces, 'iface')                 | from_json) %}
+{% set ifupdown__tpl_merge_3 = (merge_dict(ifupdown__tpl_merge_2, ifupdown__group_interfaces, 'iface')           | from_json) %}
+{% set ifupdown__tpl_merge_4 = (merge_dict(ifupdown__tpl_merge_3, ifupdown__host_interfaces, 'iface')            | from_json) %}
+{% set ifupdown__tpl_merge_5 = (merge_dict(ifupdown__tpl_merge_4, ifupdown__dependent_interfaces, 'iface')       | from_json) %}
 {% set ifupdown__tpl_filtered_interfaces = {} %}
 {% for name, params in ifupdown__tpl_merge_5.iteritems() %}
 {%   set interface_name = (params.iface | d(name)) %}
