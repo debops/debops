@@ -30,6 +30,10 @@ Changed
 - Update the ``merge_dict`` Jinja macro to a more general version which
   supports both YAML dictionaries and YAML lists. [drybjed_]
 
+- Change the Ethernet interface detection so that Ansible checks if the
+  interface has an associated kernel module. This should prevent the role from
+  detecting VPN tunnels as Ethernet interfaces. [drybjed_]
+
 
 `debops.ifupdown v0.3.0`_ - 2016-11-17
 --------------------------------------
