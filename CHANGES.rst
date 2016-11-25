@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Released: 2016-11-25*
+
+- Various updates in the documentation [senk, le9i0nx]
+
+- Fix Ansible ``--check`` mode. [le9i0nx]
+
+- Fix Ansible 2.1 deprecation warnings. [le9i0nx]
+
+- Make sure that role works on hosts without IPv4 network. [thiagotalma]
+
 v0.1.1
 ------
 
