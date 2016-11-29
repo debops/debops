@@ -204,7 +204,8 @@ Each Tinc network is described by specific parameters:
   Optional. List of hosts which a given Tinc node should connect to, the host
   names are the names of the files in the :file`hosts/` Tinc directory. If not
   specified, and the host is not configured as "static", the global
-  :envvar:`tinc__connect_to` list is used to select which hosts to connect to.
+  :envvar:`tinc__inventory_hosts` list is used to select which hosts to connect
+  to.
 
 ``add_connect_to``
   Optional. Additional list of hosts to connect to. This can be used to add
