@@ -19,10 +19,6 @@ Example inventory
 Hosts added to the ``[debops_service_tinc]`` inventory group will have the
 ``tinc`` daemon installed and configured.
 
-Additionally, you need to add hosts to a separate inventory group defining
-which hosts belong to a particular VPN mesh. For the default ``mesh0`` VPN, you
-should use the ``[debops_service_tinc_mesh0]`` group.
-
 Here is a example inventory that defines a Tinc ``mesh0`` VPN with one of the
 hosts acting as the DHCP/DNS server and optionally a gateway:
 
@@ -34,36 +30,38 @@ hosts acting as the DHCP/DNS server and optionally a gateway:
    [debops_service_dnsmasq]
    gateway
 
-   [debops_service_tinc:children]
-   debops_service_tinc_mesh0
-
-   [debops_service_tinc_mesh0]
+   [debops_service_tinc]
    gateway
    hostname1
    hostname2
+
+If you don't want the hosts to be included by default in any Tinc mesh
+networks, you can put them in the ``[debops_service_tinc_aux]`` inventory group
+instead.
 
 The ``gateway`` needs some additional configuration which should be placed in
 the Ansible inventory of the host:
 
 .. code-block:: yaml
 
-   tinc__bridge_mesh0: 'br2'
-   tinc__link_type_mesh0: 'static'
+   tinc__host_networks:
+     'mesh0':
+       bridge: 'br2'
 
    ifupdown__host_interfaces:
-
      'br2':
        type: 'bridge'
        inet: 'static'
        inet6: 'static'
        nat: True
        addresses:
-         - '2001:DB8::23/64'
+         - '2001:db8::23/64'
          - '192.0.2.23/24'
 
 By default Tinc configures host configuration to contain the primary FQDN address
 of a given host, so that when its IP address changes, Tinc will query the DNS
-to get the current IP address.
+to get the current IP address. In addition, all publicly routable IP addresses
+will be added to the host configuration file as well.
 
 However, the FQDN will only be added, if a given host has a publicly routable
 IP address. This means that hosts without public IPs won't have their addresses
@@ -77,7 +75,9 @@ in the Ansible inventory:
 
 .. code-block:: yaml
 
-   tinc__host_addresses: '{{ tinc__host_addresses_ip }}'
+   tinc__host_addresses: '{{ tinc__host_addresses_fqdn +
+                             tinc__host_addresses_ip_public +
+                             tinc__host_addresses_ip_private }}'
 
 Example playbook
 ----------------
@@ -104,18 +104,22 @@ mesh network for an IP address.
 
 To have properly configured networking in the mesh, you need to configure at
 least one VPN host to work in a "static" mode and preferably connect it to
-a bridge which connects to a network with DHCP/DNS server:
+a bridge which connects to a network with DHCP/DNS server. If the ``bridge``
+parameter is specified without the ``link_type``, role will assume that the
+host should be configured as ``static`` and enable this automatically.
+
+Example network configuration:
 
 .. code-block:: yaml
 
-   tinc__network_dict:
-     link_type: 'static'
-     bridge: 'br2'
+   tinc__host_networks:
+     'mesh0':
+       link_type: 'static'
+       bridge: 'br2'
 
 In this mode, hosts will be configured to start their VPN interface with a
-dummy ``0.0.0.0`` IP address and connect it to a bridge, by default ``br2``.
-This bridge can be created by the debops.ifupdown_ role, which defaults to
-``br2`` as well.
+dummy ``0.0.0.0`` IP address and connect it to a specified bridge.
+This bridge can be created by the debops.ifupdown_ role.
 
 In "static" mode, the VPN interface will act as another layer 2 connection on
 the bridge and DHCP requests from the VPN will be passed along to a suitable

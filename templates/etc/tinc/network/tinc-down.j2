@@ -2,23 +2,39 @@
 
 # {{ ansible_managed }}
 
-{% if item.tinc_down is undefined %}
-{%   if item.link_type|d() %}
-{%     if item.link_type == 'static' %}
-{%       if item.bridge|d() %}
+{% set network = item.value %}
+{% set network_name = item.value.name | d(item.key) %}
+{% if network.tinc_down is undefined %}
+{%   if network.link_type|d() %}
+{%     if network.link_type == 'static' %}
+{%       if network.bridge|d() %}
 ip link set "${INTERFACE}" nomaster
 
 {%       endif %}
-ip addr del {{ item.interface_ip | d('0.0.0.0') | quote }} dev "${INTERFACE}"
+{%       set tinc__tpl_addresses = [] %}
+{%       if network.address|d() %}
+{%         set _ = tinc__tpl_addresses.extend(([ network.address ] if network.address is string else network.address) | ipaddr('host/prefix')) %}
+{%       endif %}
+{%       if network.addresses|d() %}
+{%         set _ = tinc__tpl_addresses.extend(([ network.addresses ] if network.addresses is string else network.addresses) | ipaddr('host/prefix')) %}
+{%       endif %}
+{%       if tinc__tpl_addresses %}
+{%         for entry in tinc__tpl_addresses %}
+ip addr del {{ entry | quote }} dev "${INTERFACE}"
+{%         endfor %}
+{%       else %}
+ip addr del '0.0.0.0' dev "${INTERFACE}"
+{%       endif %}
 ip link set "${INTERFACE}" down
 {%     endif %}
 {%   else %}
-{%     if ((item.dhclient is undefined or item.dhclient|bool) and
-           item.tinc_options|d() and item.tinc_options.Mode|d() and item.tinc_options.Mode == 'switch') %}
-dhclient -r -v -pf "/run/dhclient.${INTERFACE}.pid" \
+{%     if ((network.dhclient is undefined or network.dhclient|bool) and
+           network.tinc_options|d() and network.tinc_options.Mode|d() and network.tinc_options.Mode == 'switch') %}
+metric="{{ network.metric }}"
+dhclient -r -v -pf "/run/dhclient.${INTERFACE}.pid" -e IF_METRIC=${metric} \
          -lf "/var/lib/dhcp/dhclient.${INTERFACE}.leases"
 {%     endif %}
 {%   endif %}
 {% else %}
-{{ item.tinc_down }}
+{{ network.tinc_down }}
 {% endif %}

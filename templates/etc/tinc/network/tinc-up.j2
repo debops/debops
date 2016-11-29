@@ -2,37 +2,53 @@
 
 # {{ ansible_managed }}
 
-{% if item.tinc_up is undefined %}
-{%   if item.hwaddr is undefined or not item.hwaddr %}
+{% set network = item.value %}
+{% set network_name = item.value.name | d(item.key) %}
+{% if network.tinc_up is undefined %}
+{%   if network.hwaddr is undefined or not network.hwaddr %}
 # Create random but predictable MAC address
-hwaddr="$(echo "$(hostname -f)${INTERFACE}" | md5sum | sed 's/^\(..\)\(..\)\(..\)\(..\)\(..\).*$/{{ item.hwaddr_prefix|d(tinc__hwaddr_prefix) }}:\1:\2:\3:\4:\5/')"
+hwaddr="$(echo "$(hostname -f)${INTERFACE}" | md5sum | sed 's/^\(..\)\(..\)\(..\)\(..\)\(..\).*$/{{ network.hwaddr_prefix|d(tinc__hwaddr_prefix) }}:\1:\2:\3:\4:\5/')"
 {%   endif %}
-{%   if item.hwaddr|d() and item.hwaddr == "*" %}
+{%   if network.hwaddr|d() and network.hwaddr == "*" %}
 ip link set dev "${INTERFACE}"  up
 {%   else %}
-ip link set dev "${INTERFACE}" address {{ item.hwaddr if item.hwaddr|d() else '${hwaddr}' }} up
-{% endif %}
+ip link set dev "${INTERFACE}" address {{ network.hwaddr if network.hwaddr|d() else '${hwaddr}' }} up
+{%   endif %}
 
-{%   if item.link_type|d() %}
-{%     if item.link_type == 'static' %}
-ip addr add {{ item.interface_ipv4 | d('0.0.0.0') | quote }} dev "${INTERFACE}"
+{%   if network.link_type|d() %}
+{%     if network.link_type == 'static' %}
+{%       set tinc__tpl_addresses = [] %}
+{%       if network.address|d() %}
+{%         set _ = tinc__tpl_addresses.extend(([ network.address ] if network.address is string else network.address) | ipaddr('host/prefix')) %}
+{%       endif %}
+{%       if network.addresses|d() %}
+{%         set _ = tinc__tpl_addresses.extend(([ network.addresses ] if network.addresses is string else network.addresses) | ipaddr('host/prefix')) %}
+{%       endif %}
+{%       if tinc__tpl_addresses %}
+{%         for entry in tinc__tpl_addresses %}
+ip addr add {{ entry | quote }} dev "${INTERFACE}"
+{%         endfor %}
+{%       else %}
+ip addr add '0.0.0.0' dev "${INTERFACE}"
+{%       endif %}
 
-{%       if item.bridge|d() %}
-tinc_bridge="{{ item.bridge }}"
+{%       if network.bridge|d() %}
+tinc_bridge="{{ network.bridge }}"
 if [ -d "/sys/class/net/${tinc_bridge}/bridge" ] ; then
     ip link set "${INTERFACE}" master "${tinc_bridge}"
 fi
 
 {%       endif %}
-{%     endif %}
-{%   else %}
-{%     if ((item.dhclient is undefined or item.dhclient|bool) and
-           item.tinc_options|d() and item.tinc_options.Mode|d() and item.tinc_options.Mode == 'switch') %}
-dhclient -v -pf "/run/dhclient.${INTERFACE}.pid" \
+{%     elif network.link_type == 'dynamic' %}
+{%       if ((network.dhclient is undefined or network.dhclient|bool) and
+             network.tinc_options|d() and network.tinc_options.Mode|d() and network.tinc_options.Mode == 'switch') %}
+metric="{{ network.metric }}"
+dhclient -v -pf "/run/dhclient.${INTERFACE}.pid" -e IF_METRIC=${metric} \
          -lf "/var/lib/dhcp/dhclient.${INTERFACE}.leases" \
          "${INTERFACE}" &
+{%       endif %}
 {%     endif %}
 {%   endif %}
 {% else %}
-{{ item.tinc_up }}
+{{ network.tinc_up }}
 {% endif %}
