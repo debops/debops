@@ -98,11 +98,11 @@ Removed
 Added
 ~~~~~
 
-- Add :envvar:`tinc__address_family_mesh0` and :envvar:`tinc__compression_mesh0`. [ser_]
+- Add ``tinc__address_family_mesh0`` and ``tinc__compression_mesh0``. [ser_]
 
-- Add :envvar:`tinc__mlock_mesh0`. [ypid_]
+- Add ``tinc__mlock_mesh0``. [ypid_]
 
-- Allow to configure nodes as clients using :envvar:`tinc__client_hosts`. [ypid_]
+- Allow to configure nodes as clients using ``tinc__client_hosts``. [ypid_]
 
 - Add support to block default route and DNS servers offered via DHCPv4 over a
   Tinc network. Tinc nodes will not accept default routes thought the mesh
@@ -123,10 +123,10 @@ Changed
 - Rename undocumented ``delete`` option for :ref:`tinc__ref_networks` to
   ``state`` and document it. [ypid_]
 
-- :envvar:`tinc__inventory_hosts_mesh0` now refers to all hosts in the Ansible
+- ``tinc__inventory_hosts_mesh0`` now refers to all hosts in the Ansible
   inventory that are participating in the ``mesh0`` network. [ypid_]
 
-- Rename ``tinc__connect_to_mesh0`` to :envvar:`tinc__reachable_peer_hosts_mesh0`.
+- Rename ``tinc__connect_to_mesh0`` to ``tinc__reachable_peer_hosts_mesh0``.
   [ypid_]
 
 - Increased default RSA key size from ``4096`` to ``8192`` bits as suggested by
@@ -166,7 +166,7 @@ Changed
 ~~~~~~~
 
 - Use the same value type in :envvar:`tinc__host_addresses_fqdn` and
-  :envvar:`tinc__host_addresses_ip` for consistency. [drybjed_]
+  :envvar:`tinc__host_addresses_ip_public` for consistency. [drybjed_]
 
 - Support both strings and lists in :envvar:`tinc__host_addresses`. [drybjed_]
 
