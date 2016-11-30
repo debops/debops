@@ -68,6 +68,9 @@ Changed
   after normal network configuration is estabilished. This should ensure the
   correct interface order and bridge connection configuration. [drybjed_]
 
+- Make sure that the :command:`systemd` Tinc units correctly execute the
+  :command:`tinc-down` scripts on service shutdown. [drybjed_]
+
 Removed
 ~~~~~~~
 

@@ -247,6 +247,15 @@
   when: tinc__systemd|bool and item.value.state|d('present') != 'absent'
   notify: [ 'Reload tinc' ]
 
+- name: Configure tinc-down wrapper script
+  template:
+    src: 'usr/local/lib/tinc-down-wrapper.j2'
+    dest: '/usr/local/lib/tinc-down-wrapper'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: tinc__systemd | bool
+
 - name: Configure systemd unit files
   template:
     src: 'etc/systemd/system/{{ item }}.j2'
