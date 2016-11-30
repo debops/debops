@@ -26,13 +26,13 @@ ip addr del {{ entry | quote }} dev "${INTERFACE}"
 ip addr del '0.0.0.0' dev "${INTERFACE}"
 {%       endif %}
 ip link set "${INTERFACE}" down
-{%     endif %}
-{%   else %}
-{%     if ((network.dhclient is undefined or network.dhclient|bool) and
-           network.tinc_options|d() and network.tinc_options.Mode|d() and network.tinc_options.Mode == 'switch') %}
+{%     elif network.link_type == 'dynamic' %}
+{%       if ((network.dhclient is undefined or network.dhclient|bool) and
+             network.tinc_options|d() and network.tinc_options.Mode|d() and network.tinc_options.Mode == 'switch') %}
 metric="{{ network.metric }}"
 dhclient -r -v -pf "/run/dhclient.${INTERFACE}.pid" -e IF_METRIC=${metric} \
          -lf "/var/lib/dhcp/dhclient.${INTERFACE}.leases"
+{%       endif %}
 {%     endif %}
 {%   endif %}
 {% else %}
