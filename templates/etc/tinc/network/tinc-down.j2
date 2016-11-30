@@ -23,7 +23,7 @@ ip link set "${INTERFACE}" nomaster
 ip addr del {{ entry | quote }} dev "${INTERFACE}"
 {%         endfor %}
 {%       else %}
-ip addr del '0.0.0.0' dev "${INTERFACE}"
+ip addr del '0.0.0.0/32' dev "${INTERFACE}"
 {%       endif %}
 ip link set "${INTERFACE}" down
 {%     elif network.link_type == 'dynamic' %}

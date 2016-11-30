@@ -29,7 +29,7 @@ ip link set dev "${INTERFACE}" address {{ network.hwaddr if network.hwaddr|d() e
 ip addr add {{ entry | quote }} dev "${INTERFACE}"
 {%         endfor %}
 {%       else %}
-ip addr add '0.0.0.0' dev "${INTERFACE}"
+ip addr add '0.0.0.0/32' dev "${INTERFACE}"
 {%       endif %}
 
 {%       if network.bridge|d() %}
