@@ -25,11 +25,16 @@
     creates: '{{ ipxe_tftp_root + "/undionly.kpxe" }}'
   when: ipxe_tftp is defined and ipxe_tftp
 
+- name: Check if iPXE package contains EFI binary
+  stat:
+    path: '/usr/lib/ipxe/ipxe.efi'
+  register: ipxe_register_efi
+
 - name: Copy the iPXE efi boot binary to TFTP root directory
   command: cp /usr/lib/ipxe/ipxe.efi {{ ipxe_tftp_root + "/ipxe.efi" }}
   args:
     creates: '{{ ipxe_tftp_root + "/ipxe.efi" }}'
-  when: ipxe_tftp is defined and ipxe_tftp
+  when: ipxe_tftp is defined and ipxe_register_efi.stat.exists
 
 - name: Create iPXE configuration directory
   file:
