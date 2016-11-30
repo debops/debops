@@ -25,6 +25,12 @@
     creates: '{{ ipxe_tftp_root + "/undionly.kpxe" }}'
   when: ipxe_tftp is defined and ipxe_tftp
 
+- name: Copy the iPXE efi boot binary to TFTP root directory
+  command: cp /usr/lib/ipxe/ipxe.efi {{ ipxe_tftp_root + "/ipxe.efi" }}
+  args:
+    creates: '{{ ipxe_tftp_root + "/ipxe.efi" }}'
+  when: ipxe_tftp is defined and ipxe_tftp
+
 - name: Create iPXE configuration directory
   file:
     path: '{{ ipxe_config_root }}'
