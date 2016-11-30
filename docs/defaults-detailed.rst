@@ -240,6 +240,18 @@ Each Tinc network is described by specific parameters:
 
   To see the list of available options, check the :manpage:`tinc.conf(5)` manual page.
 
+``dns_nameservers``
+  Optional. Specify list of DNS nameservers to configure in
+  :file:`/etc/resolv.conf`. The configuration will be performed by the
+  :command:`resolvconf` command. This option is used only in the "static"
+  network interface configuration.
+
+``dns_search``
+  Optional. Specify list of DNS search domains to configure in
+  :file:`/etc/resolv.conf`. The configuration will be performed by the
+  :command:`resolvconf` command. This option is used only in the "static"
+  network interface configuration.
+
 Examples
 ~~~~~~~~
 

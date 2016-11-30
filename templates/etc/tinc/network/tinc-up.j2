@@ -39,6 +39,27 @@ if [ -d "/sys/class/net/${tinc_bridge}/bridge" ] ; then
 fi
 
 {%       endif %}
+{%     set tinc__tpl_resolvconf = [] %}
+{%     if network.dns_nameservers|d() %}
+{%       for dns_ns in ([ network.dns_nameservers ] if network.dns_nameservers is string else network.dns_nameservers) %}
+{%         set _ = tinc__tpl_resolvconf.append("nameserver " + dns_ns) %}
+{%       endfor %}
+{%     endif %}
+{%     if network.dns_search|d() %}
+{%       for dns_search in ([ network.dns_search ] if network.dns_search is string else network.dns_search) %}
+{%         set _ = tinc__tpl_resolvconf.append("search " + dns_search) %}
+{%       endfor %}
+{%     endif %}
+{%     if tinc__tpl_resolvconf %}
+read -r -d '' tinc_resolvconf <<'EOF'
+{%       for line in tinc__tpl_resolvconf %}
+{{ line }}
+{%       endfor %}
+EOF
+if type resolvconf > /dev/null 2>&1 ; then
+    echo "${tinc_resolvconf}" | resolvconf -a "${INTERFACE}.inet"
+fi
+{%     endif %}
 {%     elif network.link_type == 'dynamic' %}
 {%       if ((network.dhclient is undefined or network.dhclient|bool) and
              network.tinc_options|d() and network.tinc_options.Mode|d() and network.tinc_options.Mode == 'switch') %}

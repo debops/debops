@@ -41,6 +41,10 @@ Added
   network in :command:`systemd` and remove the network configuration files from
   :file:`/etc/tinc/` directory. [drybjed_]
 
+- Add support for configuration of DNS nameservers and search domains using
+  :command:`resolvconf` script when the network interfaces are configured
+  statically. [drybjed_]
+
 Changed
 ~~~~~~~
 
