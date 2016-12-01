@@ -32,7 +32,7 @@
     chdir: '{{ elasticsearch_path_home }}'
   when: (item.url is undefined or not item.url) and
         (item.delete is undefined or not item.delete) and
-        not item.name.split('/')[1] in elasticsearch_register_installed_plugins.stdout
+        not (item.name.split('/')[1] if '/' in item.name else item.name) in elasticsearch_register_installed_plugins.stdout
   with_flattened:
     - '{{ elasticsearch_plugins }}'
     - '{{ [ { "name": "discovery-multicast" } ]
