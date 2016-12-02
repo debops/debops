@@ -47,3 +47,5 @@ Changed
      git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(samba)_([^_])/\1__\2/g;'
 
   [ypid_]
+
+- Removed SO_RCVBUF and SO_SNDBUF legacy socket options. [bfabio_]
