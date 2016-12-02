@@ -58,6 +58,7 @@
     fstype: '{{ item.fs_type  | d(lvm__default_fs_type) }}'
     force:  '{{ item.fs_force | d(omit) }}'
     opts:   '{{ item.fs_opts  | d(omit) }}'
+    resizefs: '{{ item.fs_resizefs | d(omit) }}'
   with_items: '{{ lvm__logical_volumes }}'
   when: lvm__logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
