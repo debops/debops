@@ -22,7 +22,7 @@ List of required parameters:
 
 ``vg``
   Name of a Volume Group, should only have alphanumeric characters and
-  underscores. Do not use hyphens (``-``) in the name.
+  underscores.
 
 ``pvs``
   String (if single PV) or a list of Physical Volumes to use for a given Volume
@@ -116,6 +116,11 @@ List of optional filesystem parameters:
   Boolean. If present and ``True``, allows Ansible to reformat already existing
   filesystem. Use with caution.
 
+``fs_resizefs``
+  Boolean. If present and ``True``, and if the block device and filessytem size
+  differ, grow the filesystem into the space. Note, XFS Will only grow if mounted.
+  Use with caution especially if you shrink the volume.
+
 List of optional mount parameters:
 
 ``mount``
@@ -170,4 +175,17 @@ Remove a mounted Logical Volume (destroys the data)::
         mount: '/srv/trash'
         state: 'absent'
         force: True
+
+Resize a mounted Logical Volume::
+
+    lvm__logical_volumes:
+
+      - lv: 'data'
+        vg: 'vg_multi'
+        size: '15G'
+        mount: '/srv/data'
+        state: 'present'
+        force: True
+        fs_type: 'ext4'
+        fs_resizefs: True
 

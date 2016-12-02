@@ -1,6 +1,16 @@
 Changelog
 =========
 
+`debops.lvm master`_ - unreleased
+------------------------------------
+
+.. _debops.lvm master: https://github.com/debops/ansible-lvm/compare/v0.1.5...master
+
+- Added filesystem resize if logical volume is resized. [tallandtree]
+
+- Updated documentation (hyphens supported in volume group name and resize
+  filesystem). [tallandtree]
+
 v0.1.5
 ------
 
