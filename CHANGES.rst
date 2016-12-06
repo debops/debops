@@ -14,6 +14,13 @@ The current role maintainer is drybjed.
 
 .. _debops.auth master: https://github.com/debops/ansible-auth/compare/v0.3.1...master
 
+Removed
+~~~~~~~
+
+- Remove ``auth_shadow_umask`` variable. It set the umask for a lot more cases than
+  just the home directories. You can now set the umask for home directories with the
+  ``debops.users`` role.
+
 
 `debops.auth v0.3.2`_ - 2016-11-17
 ----------------------------------
