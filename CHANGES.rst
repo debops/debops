@@ -69,7 +69,7 @@ Changed
   allows easier changes in the configuration if necessary. [drybjed_]
 
 - The :command:`systemd` Tinc units have been updated to start the Tinc tunnels
-  after normal network configuration is estabilished. This should ensure the
+  after normal network configuration is established. This should ensure the
   correct interface order and bridge connection configuration. [drybjed_]
 
 - Make sure that the :command:`systemd` Tinc units correctly execute the
@@ -93,7 +93,7 @@ Removed
 - The :command:`dhclient` hook configuration has been removed, role should
   remove the hook automatically if it's installed on the host. The
   functionality will be reimplemented in another role. Changed network route
-  metric should fix the issues with the default route configued by
+  metric should fix the issues with the default route configured by
   :command:`dhclient`. [drybjed_]
 
 

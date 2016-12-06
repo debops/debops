@@ -171,11 +171,11 @@ Each Tinc network is described by specific parameters:
   ``tap`` is used by default. See the :manpage:`tinc.conf(5)` for more details.
 
 ``cipher``
-  Optional. The cipher used to encrypt the connections. If not specifed, the
+  Optional. The cipher used to encrypt the connections. If not specified, the
   role will use the AES-256-CBC algorithm.
 
 ``digest``
-  Optional. The digest algorthm used to authenticate the connections. If not
+  Optional. The digest algorithm used to authenticate the connections. If not
   specified, the role will use the SHA512 algorithm.
 
 ``compression``
