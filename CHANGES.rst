@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed.
 
 .. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.4...master
 
+Added
+~~~~~
+
+- Add the ``core__homedir_umask`` variable which sets the ``ansible_local.core.homedir_umask``
+  fact. [bfabio_]
 
 `debops.core v0.2.4`_ - 2016-09-12
 ----------------------------------
