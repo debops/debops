@@ -139,7 +139,11 @@ auth_nslcd_options: False
 auth_nslcd_nss_min_uid: '1000'
 
 # Default umask for new home directories created by pam_mkhomedir module
-auth_pam_mkhomedir_umask: '0027'
+auth_pam_mkhomedir_umask: '{{ ansible_local.core.homedir_umask
+                              if (ansible_local|d() and
+                                  ansible_local.core|d() and
+                                  ansible_local.core.homedir_umask|d())
+                              else "0027" }}'
 
 # LDAP search filters which are used to limit access to the host or services.
 # At least one search needs to return a valid entry, otherwise access is
