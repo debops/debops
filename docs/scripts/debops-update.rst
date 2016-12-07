@@ -17,4 +17,4 @@ Example commands:
 
     debops-update ~/my-debops-roles-dir
 
-    debobs-update --dry-run
+    debops-update --dry-run
