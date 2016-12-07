@@ -10,7 +10,8 @@
 {%         endif %}
 {%       endfor %}
 {%     elif to_merge_dict is not string and to_merge_dict is not mapping %}
-{%       for element in to_merge_dict %}
+{%       set flattened_dict = lookup("flattened", to_merge_dict) %}
+{%       for element in ([ flattened_dict ] if flattened_dict is mapping else flattened_dict) %}
 {%         if element[dict_key]|d() %}
 {%           set _ = merged_dict.update({element[dict_key]:(current_dict[element[dict_key]]|d({}) | combine(element, recursive=True))}) %}
 {%         endif %}
