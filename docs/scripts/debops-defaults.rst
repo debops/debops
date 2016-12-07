@@ -12,9 +12,9 @@ Example commands:
 
     debops-defaults
 
-    debobs-defaults | less
+    debops-defaults | less
 
-    debobs-defaults > defaults.txt
+    debops-defaults > defaults.txt
 
     debops-defaults mysql postgresql nginx
 
