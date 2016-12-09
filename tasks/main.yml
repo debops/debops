@@ -256,6 +256,11 @@
     mode: '0755'
   when: tinc__systemd | bool
 
+- name: Clean up old systemd configuration
+  file:
+    path: '/etc/systemd/system/network.target.wants/tinc.service'
+    state: 'absent'
+
 - name: Configure systemd unit files
   template:
     src: 'etc/systemd/system/{{ item }}.j2'
