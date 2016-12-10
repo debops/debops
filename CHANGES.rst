@@ -62,6 +62,9 @@ Added
 
 - Add ``debops.netbox`` role and its corresponding playbook. [drybjed_]
 
+- Add ``debops.cron`` role and its playbook, and include it in the
+  ``common.yml`` playbook. [drybjed_]
+
 Changed
 ~~~~~~~
 
