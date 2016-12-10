@@ -1,7 +1,20 @@
 Getting started
 ===============
 
-An example playbook which uses ``debops.postfix`` role::
+Example inventory
+-----------------
+
+To run this role on servers, they should be included
+in the ``[debops_service_postfix]`` Ansible group::
+
+    [debops_service_postfix]
+    hostname
+
+
+Example playbook
+----------------
+
+Here's an example playbook which uses ``debops.postfix`` role::
 
     ---
 
