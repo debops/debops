@@ -18,15 +18,15 @@ them.
 cron__jobs
 ----------
 
-The ``cron__*_jobs`` variables can be used to define what :command:`cron` jobs
+The ``cron__*_jobs`` variables can be used to define what :program:`cron` jobs
 should be present on the remote hosts.
 
 The variables are YAML dictionaries or YAML lists (the data type can't be mixed
 in the same variable). YAML dictionary keys define the name of the
-:command:`cron` configuration file in :file:`/etc/cron.d/` directory.
+:program:`cron` configuration file in :file:`/etc/cron.d/` directory.
 
 Each entry is a YAML dictionary that defines a set of one or more
-:command:`cron` jobs using specific parameters:
+:program:`cron` jobs using specific parameters:
 
 ``file`` or ``cron_file``
   Name of the configuration file in :file:`/etc/cron.d/` directory. Required
@@ -35,7 +35,7 @@ Each entry is a YAML dictionary that defines a set of one or more
 
 ``environment``
   Optional. A YAML dictionary which defines what variables should be present in
-  a given :command:`cron` job environment. Each dictionary key is the variable
+  a given :program:`cron` job environment. Each dictionary key is the variable
   name, and its value will be set as that variable value.
 
 ``backup``
@@ -44,10 +44,10 @@ Each entry is a YAML dictionary that defines a set of one or more
 
 ``job``
   A string that specifies the command that should be executed by the
-  :command:`cron` to perform a given task.
+  :program:`cron` to perform a given task.
 
 ``jobs``
-  List of :command:`cron` jobs which should be defined on the remote host. Each
+  List of :program:`cron` jobs which should be defined on the remote host. Each
   list entry is either a string which specifies the command, or a YAML
   dictionary with more specific parameters. Missing parameters that are
   required to define a complete entry will be copied from the main YAML
@@ -55,7 +55,7 @@ Each entry is a YAML dictionary that defines a set of one or more
 
 ``custom_files``
   Optional. List of custom files which should be present on the remote host;
-  this list can be used to install bigger scripts executed by :command:`cron`
+  this list can be used to install bigger scripts executed by :program:`cron`
   jobs. Each list entry is a YAML dictionary with specific parameters.
   See below for the description of the parameters.
 
@@ -63,19 +63,19 @@ The parameters below can be specified both in main YAML dictionary, as well as
 in a dictionary entry on the ``jobs`` list:
 
 ``disabled``
-  Optional, boolean. If ``True``, the :command:`cron` entry in the
+  Optional, boolean. If ``True``, the :program:`cron` entry in the
   configuration file will be commented out, rendering it disabled.
 
 ``state``
-  Optional. If not specified or ``present``, the :command:`cron` entry will be
-  created. If ``absent``, the :command:`cron` entry will be removed. If
+  Optional. If not specified or ``present``, the :program:`cron` entry will be
+  created. If ``absent``, the :program:`cron` entry will be removed. If
   ``ignore``, the existing entries won't be changed and missing entries will
   not be created. If the ``state`` parameter is defined in the main YAML
   dictionary, when it's ``absent`` the entire configuration file will be
   removed.
 
 ``special_time``
-  Optional. Specify when a given :command:`cron` job should be executed:
+  Optional. Specify when a given :program:`cron` job should be executed:
   ``hourly``, ``daily``, ``weekly``, ``monthly``, ``annually``, ``yearly``, or
   at the ``reboot``. This parameter cannot be used with other parameters that
   define the execution time.
@@ -85,29 +85,29 @@ in a dictionary entry on the ``jobs`` list:
   specified, the job will be executed as the ``root`` account.
 
 ``name``
-  Optional. Description of a given :command:`cron` job, used as a marker by
-  Ansible to correctly manipulate the :command:`cron` entries. if not
+  Optional. Description of a given :program:`cron` job, used as a marker by
+  Ansible to correctly manipulate the :program:`cron` entries. if not
   specified, it will be generated automatically to ensure that the
-  :command:`cron` jobs are idempotent.
+  :program:`cron` jobs are idempotent.
 
-The next set of parameters define when a given :command:`cron` job should be
+The next set of parameters define when a given :program:`cron` job should be
 executed, in the :program:`cron` Ansible module specification format. See its
 documentation for more details:
 
 ``minute``
-  Specify the minute when the job should be run, in the :command:`cron` format.
+  Specify the minute when the job should be run, in the :program:`cron` format.
 
 ``hour``
-  Specify the hour when the job should be run, in the :command:`cron` format.
+  Specify the hour when the job should be run, in the :program:`cron` format.
 
 ``day``
-  Specify the day when the job should be run, in the :command:`cron` format.
+  Specify the day when the job should be run, in the :program:`cron` format.
 
 ``month``
-  Specify the month when the job should be run, in the :command:`cron` format.
+  Specify the month when the job should be run, in the :program:`cron` format.
 
 ``weekday``
-  Specify what weekdays the job shoulbe be run, in the :command:`cron` format.
+  Specify what weekdays the job shoulbe be run, in the :program:`cron` format.
 
 The parameters below are used in the ``custom_files`` list as the dictionary
 keys:

@@ -11,7 +11,7 @@ Example inventory
 ``debops.cron`` is included by default in the :file:`common.yml` DebOps playbook;
 you don't need to do anything to have it executed.
 
-If you don’t want to let ``debops.cron`` manage the :command:`cron` jobs, you
+If you don’t want to let ``debops.cron`` manage the :program:`cron` jobs, you
 can do this with the following setting in your inventory:
 
 .. code-block:: yaml
