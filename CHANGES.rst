@@ -75,6 +75,10 @@ Changed
 - Make sure that the :command:`systemd` Tinc units correctly execute the
   :command:`tinc-down` scripts on service shutdown. [drybjed_]
 
+- Change the naming scheme of the debops.ferm_ configuration files in
+  anticipation of the upcoming changes. You might need to remove the old
+  firewall configuration files to avoid duplicate rule entries. [drybjed_]
+
 Removed
 ~~~~~~~
 
