@@ -517,6 +517,10 @@ Logging and monitoring
   Name of the error log file.
   The suffix ``.log`` will be added automatically.
 
+``access_log_format``
+  Optional. Name of the access log format.
+  Custom log formats can be defined using ``nginx_http_options`` variable.
+
 ``status``
   Optional, list of strings.
   Enable nginx server status page and allow access from the given list of IP
