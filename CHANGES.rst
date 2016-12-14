@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed_.
 `debops.postgresql_server master`_ - unreleased
 -----------------------------------------------
 
-.. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.2...master
+.. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.3...master
+
+
+`debops.postgresql_server v0.3.3`_ - 2016-12-14
+-----------------------------------------------
+
+.. _debops.postgresql_server v0.3.3: https://github.com/debops/ansible-postgresql_server/compare/v0.3.2...v0.3.3
 
 Changed
 ~~~~~~~
@@ -27,6 +33,16 @@ Changed
 
 - Don't use the ``@`` character in a password to avoid issues with Basic Auth
   URL syntax used for application access. [drybjed_]
+
+- Update the debops.ferm_ configuration in anticipation of the changes in the
+  next role release. You might need to remove the existing PostgreSQL firewall
+  rule file to avoid duplicating firewall rules. [drybjed_]
+
+Fixed
+~~~~~
+
+- Fix the wrong variable name used by the role to decide if the default
+  PostgreSQL cluster should be removed on first install. [drybjed_]
 
 
 `debops.postgresql_server v0.3.2`_ - 2016-10-16
