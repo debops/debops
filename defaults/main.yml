@@ -580,32 +580,34 @@ postgresql_server__etc_services__dependent_list:
 # debops.ferm_ role is used to configure PostgreSQL firewall rules.
 postgresql_server__ferm__dependent_rules:
   type: 'custom'
-  domains: '$domains'
-  table: 'filter'
-  chain: 'INPUT'
   by_role: 'debops.postgresql_server'
-  filename: 'postgresql_dependent_rules'
+  name: 'postgresql_custom_rules'
+  weight_class: 'default'
   rules: |
     {% set postgresql_server__tpl_ports = [] %}
     {% for cluster in postgresql_server__clusters %}
     {% set _ = postgresql_server__tpl_ports.append(cluster.port) %}
     {% endfor %}
     {% if postgresql_server__tpl_ports|d() and postgresql_server__allow|d() %}
-    protocol tcp dport ({{ postgresql_server__tpl_ports | unique | join(" ") }}) {
+    domain $domains table filter chain INPUT {
+        protocol tcp dport ({{ postgresql_server__tpl_ports | unique | join(" ") }}) {
             @def $ITEMS = ( @ipfilter( ({{ postgresql_server__allow | unique | join(" ") }}) ) );
             @if @ne($ITEMS,"") {
                     saddr $ITEMS ACCEPT;
             }
+        }
     }
     
     {% endif %}
     {% for cluster in postgresql_server__clusters %}
     {% if cluster.name|d() and cluster.port|d() and cluster.allow|d() %}
-    protocol tcp dport ({{ cluster.port }}) {
+    domain $domains table filter chain INPUT {
+        protocol tcp dport ({{ cluster.port }}) {
             @def $ITEMS = ( @ipfilter( ({{ cluster.allow | unique | join(" ") }}) ) );
             @if @ne($ITEMS,"") {
                     saddr $ITEMS ACCEPT;
             }
+        }
     }
     {% endif %}
     {% endfor %}

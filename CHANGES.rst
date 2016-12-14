@@ -28,6 +28,10 @@ Changed
 - Don't use the ``@`` character in a password to avoid issues with Basic Auth
   URL syntax used for application access. [drybjed_]
 
+- Update the debops.ferm_ configuration in anticipation of the changes in the
+  next role release. You might need to remove the existing PostgreSQL firewall
+  rule file to avoid duplicating firewall rules. [drybjed_]
+
 Fixed
 ~~~~~
 
