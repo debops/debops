@@ -28,6 +28,12 @@ Changed
 - Don't use the ``@`` character in a password to avoid issues with Basic Auth
   URL syntax used for application access. [drybjed_]
 
+Fixed
+~~~~~
+
+- Fix the wrong variable name used by the role to decide if the default
+  PostgreSQL cluster should be removed on first install. [drybjed_]
+
 
 `debops.postgresql_server v0.3.2`_ - 2016-10-16
 -----------------------------------------------
