@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.sshd master: https://github.com/debops/ansible-sshd/compare/v0.2.5...master
 
+Added
+~~~~~
+
+- When OpenSSH server is installed for the first time, make sure that the
+  service is not started before being properly secured. [sourcejedi]
+
 Changed
 ~~~~~~~
 

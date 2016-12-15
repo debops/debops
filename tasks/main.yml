@@ -3,6 +3,60 @@
 - name: Pre hooks
   include: '{{ lookup("task_src", "sshd/pre_main.yml") }}'
 
+- name: Check if OpenSSH is installed (or half-installed)
+  script: scripts/dpkg-state openssh-server
+  register: sshd__register_prev_pkg_state
+  changed_when: False
+  failed_when: sshd__register_prev_pkg_state.rc != 0 or
+               sshd__register_prev_pkg_state.stdout|trim not in
+                 ["not-installed", "config-files",
+                  "unpacked", "half-installed", "half-configured",
+                  "triggers-pending", "triggers-awaited", "installed"]
+  always_run: True
+
+- name: Make sure that OpenSSH configuration directory exists
+  file:
+    path: '/etc/ssh'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Block OpenSSH server from starting immediately when installed
+  #
+  # SSH server must not start, until security options are configured!
+  # http://unix.stackexchange.com/questions/321621/configuring-my-sshd-securely-with-automation
+  #
+  # However, SSH might already be configured, started, and in use.
+  # In this case we should not block it.  Something could try to restart
+  # SSH e.g. unattended-upgrades.  We would end up locking ourselves out.
+  #
+  # In-between states could result from an failed upgrade.  The upgrade is
+  # retried when we demand a package be installed.  The service would be
+  # restarted, so once again we must not block it.
+  #
+  # In-between states could also result from a failed install.  We can't
+  # tell the difference.  (Note if the failed install was from this role,
+  # then we blocked the SSH server already).
+  #
+  # Users are responsible for avoiding situations, where a retried install
+  # starts an SSH server which does not meet their current security
+  # requirements.  Again, the trigger for the retry would be an install
+  # of _any_ package.  This may be considered further illustration of the
+  # problem with how Debian packages work.  It can be prevented by
+  # remembering to remove the failed package first.  Fortunately, it is not
+  # common for a package to fail to install.
+  #
+  # The state "config-files" is the result of `apt-get remove` without
+  # `--purge`; the SSH server will not be running in this state.
+  copy:
+    dest: /etc/ssh/sshd_not_to_be_run
+    content: |
+      This file disables the ssh server.  It was created by debops.sshd.
+      This file will be removed when configuration is successfully completed.
+  when: sshd__register_prev_pkg_state.stdout|trim in
+          ["not-installed", "config-files"]
+
 - name: Ensure OpenSSH support is installed
   apt:
     name: '{{ item }}'
@@ -98,6 +152,12 @@
          [ -r /etc/ssh/moduli.new -a -s /etc/ssh/moduli.new ] && mv /etc/ssh/moduli.new /etc/ssh/moduli || true
   notify: [ 'Test sshd configuration and restart' ]
   when: sshd__register_moduli.stdout
+
+- name: Remove block on OpenSSH server startup
+  file:
+    name: '/etc/ssh/sshd_not_to_be_run'
+    state: 'absent'
+  notify: [ 'Test sshd configuration and restart' ]
 
 - name: Make sure that Ansible local fact directory exists
   file:
