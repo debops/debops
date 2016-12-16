@@ -16,7 +16,19 @@ The current role maintainer_ is drybjed_.
 `debops.ifupdown master`_ - unreleased
 --------------------------------------
 
-.. _debops.ifupdown master: https://github.com/debops/ansible-ifupdown/compare/v0.3.1...master
+.. _debops.ifupdown master: https://github.com/debops/ansible-ifupdown/compare/v0.3.2...master
+
+
+`debops.ifupdown v0.3.2`_ - 2016-12-16
+--------------------------------------
+
+.. _debops.ifupdown v0.3.2: https://github.com/debops/ansible-ifupdown/compare/v0.3.1...v0.3.2
+
+Fixed
+~~~~~
+
+- Fix an "unbound variable" issue in the ``ifupdown-reconfigure-interfaces``
+  script on Debian Jessie systems without :command:`systemd` init. [drybjed_]
 
 
 `debops.ifupdown v0.3.1`_ - 2016-11-25

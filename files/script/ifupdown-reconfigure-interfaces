@@ -201,6 +201,9 @@ if [ -d "${interface_request_path}" ] ; then
             if [ ${#systemd_ifup_instances[@]} -gt 0 ]; then
                 log_message -m "Found active systemd ifup@ instances: $(join_by ',' "${systemd_ifup_instances[@]}")"
             fi
+        else
+            # Prevent issues with unbound variable
+            systemd_ifup_instances=()
         fi
 
         # This will usually be used the first time the script tries to
