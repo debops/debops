@@ -33,6 +33,45 @@ Changed
 - Packets blocked due to rate limits will be now dropped instead of being
   rejected by default. [gaudenz]
 
+- The data format of the firewall rules has been redesigned. Rules can now be
+  defined as nested YAML dictionaries, existing default or dependent rules can
+  be easily modified through the Ansible inventory, multiple firewall rules can
+  be included in one configuration file. The role is compatible with the old,
+  list-based data format, however dictionary-based format should be preferred.
+  [drybjed_]
+
+- The firewall rules are now read from the :file:`/etc/ferm/rules.d/` directory
+  to help with transition to the new data format and avoid tab-completion
+  collision with the :file:`/etc/ferm/ferm.conf` file. [drybjed_]
+
+- Use of multiple rule parameters that define the final filename of the
+  configuration files has been dropped, now only the ``item.name`` parameter is
+  used to define the filename. [drybjed_]
+
+- The role automatically removes duplicate configuration files (based on the
+  ``name`` parameter) when the weight of a given rule is changed to make
+  modifications easier. [drybjed_]
+
+- The scale of the "weight" used to sort the rules in the directory has been
+  changed from 00-99 to 000-999. [drybjed_]
+
+- The ``item.weight`` parameter is now relative to the "weight class" or rule
+  type defined for a given firewall rule. You can use negative weight values
+  for better control over rule order. [drybjed_]
+
+Removed
+~~~~~~~
+
+- The ``ferm__default_weight`` variable has been removed. The default rule
+  weight is defined in the weight map directly. [drybjed_]
+
+- The role will no longer create the :file:`/etc/ferm/ferm.d/` directory by
+  default. Existing directories are not removed. [drybjed_]
+
+- The ``item.when`` and ``item.delete`` parameters are no longer supported. You
+  can control rule presence conditionally using ``item.rule_state`` or
+  ``item.state`` parameters. [drybjed_]
+
 
 `debops.ferm v0.2.2`_ - 2016-12-01
 ----------------------------------

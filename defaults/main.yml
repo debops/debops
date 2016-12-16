@@ -240,8 +240,13 @@ ferm__log_burst: '5'
 ferm__log_group: '32'
                                                                    # ]]]
                                                                    # ]]]
-# Rules configuration [[[
-# -----------------------
+# Firewall rules configuration [[[
+# --------------------------------
+
+# The variables below define what rules should be present in the firewall. Each
+# variable is a YAML dictionary with nested dictionaries. They are combined in
+# the :envvar:`ferm__combined_rules` variable. See :ref:`ferm__ref_rules` for
+# more details.
 
 # .. envvar:: ferm__include_legacy [[[
 #
@@ -250,30 +255,53 @@ ferm__log_group: '32'
 ferm__include_legacy: True
 
                                                                    # ]]]
+# .. envvar:: ferm__dependent_rules [[[
+#
+# YAML dictionary which contains :command:`ferm` rules to manage defined by
+# other Ansible roles using dependent variables.
+ferm__dependent_rules: {}
+
+                                                                   # ]]]
+# .. envvar:: ferm__fix_dependent_rules [[[
+#
+# For now, some rules defined by other Ansible roles are incomplete. This
+# template makes sure that all required information is added if missing. This
+# variable will be removed at some point in the future, therefore you should
+# not rely on it.
+ferm__fix_dependent_rules: '{{ lookup("template",
+                               "lookup/ferm__fix_dependent_rules.j2",
+                               convert_data=False) | from_json }}'
+
+                                                                   # ]]]
 # .. envvar:: ferm__rules [[[
 #
-# List of :command:`iptables` rules to manage, templates used by these rules are included
-# in :file:`templates/etc/ferm/ferm.d/` directory.
-# Additional variables are described below.
-ferm__rules: []
+# YAML dictionary which contains :command:`ferm` rules which should be defined
+# on all hosts in the Ansible inventory.
+ferm__rules: {}
 
                                                                    # ]]]
 # .. envvar:: ferm__group_rules [[[
 #
-# List of :command:`iptables` rules to manage for a host group.
-ferm__group_rules: []
+# YAML dictionary which contains :command:`ferm` rules which should be defined
+# on a group of hosts in the Ansible inventory.
+ferm__group_rules: {}
 
                                                                    # ]]]
 # .. envvar:: ferm__host_rules [[[
 #
-# List of :command:`iptables` rules to manage for an individual host.
-ferm__host_rules: []
+# YAML dictionary which contains :command:`ferm` rules which should be defined
+# on specific hosts in the Ansible inventory.
+ferm__host_rules: {}
 
                                                                    # ]]]
-# .. envvar:: ferm__dependent_rules [[[
+# .. envvar:: ferm__combined_rules [[[
 #
-# List of :command:`iptables` rules to manage depending on other rules.
-ferm__dependent_rules: []
+# YAML dictionary which contains all of the defined :command:`ferm` rules
+# combined together. This variable is used in the Ansible tasks that manage the
+# rules on remote hosts.
+ferm__combined_rules: '{{ lookup("template",
+                          "lookup/ferm__combined_rules.j2",
+                          convert_data=False) | from_yaml }}'
 
                                                                    # ]]]
 # .. envvar:: ferm_input_list [[[
@@ -306,28 +334,44 @@ ferm_input_host_list: []
 ferm_input_dependent_list: []
 
                                                                    # ]]]
-# .. envvar:: ferm__default_weight [[[
+# .. envvar:: ferm__default_weight_map [[[
 #
-# Set the default rule weight for rules that do not specify it.
-ferm__default_weight: '50'
+# Dictionary with mapping between "rule classes" and their desired weight.
+ferm__default_weight_map:
+  'pre-hook':            '00'
+  'function':            '00'
+  'custom':              '00'
+  'loopback':            '01'
+  'default_policy':      '05'
+  'policy':              '05'
+  'ansible-controller':  '05'
+  'any-whitelist':       '10'
+  'filter-icmp':         '15'
+  'connection-tracking': '20'
+  'filter-syn':          '25'
+  'any-blacklist':       '30'
+  'sshd-chain':          '40'
+  'accept':              '50'
+  'default':             '100'
+  'reject':              '900'
+  'any-reject':          '900'
+  'post-hook':           '950'
 
                                                                    # ]]]
 # .. envvar:: ferm__weight_map [[[
 #
-# Dictionary with mapping between "rule classes" and their desired weight.
-ferm__weight_map:
-  'loopback': '00'
-  'ansible-controller': '01'
-  'any-whitelist': '02'
-  'filter-icmp': '03'
-  'conntrack': '05'
-  'filter-syn': '07'
-  'any-blacklist': '09'
-  'any-ssh-whitelist': '25'
-  'any-ssh-accept': '30'
-  'any-ssh-filter': '31'
-  'any-service': '50'
-  'any-reject': '99'
+# Dictionary with additional mapping between "rule classes" and their desired
+# weight. This variable can be used to override weight for specific weight
+# classes.
+ferm__weight_map: {}
+
+                                                                   # ]]]
+# .. envvar:: ferm__combined_weight_map [[[
+#
+# YAML dictionary with the combined default and custom weight maps, used by the
+# Ansible tasks.
+ferm__combined_weight_map: '{{ ferm__default_weight_map
+                               | combine(ferm__weight_map) }}'
 
                                                                    # ]]]
 # .. envvar:: ferm__default_rules [[[

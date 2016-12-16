@@ -24,7 +24,7 @@
     group: 'adm'
     mode: '2750'
   with_items:
-    - '/etc/ferm/ferm.d'
+    - '/etc/ferm/rules.d'
     - '/etc/ferm/filter-input.d'
     - '/etc/ferm/hooks/pre.d'
     - '/etc/ferm/hooks/post.d'
@@ -68,49 +68,35 @@
     mode: '0644'
   notify: [ 'Restart ferm' ]
 
-- name: Remove ip(6)tables rules if requested
+- name: Remove firewall rules
   file:
-    dest: '/etc/ferm/ferm.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d(ferm__default_weight)) }}_{{ item.filename | d((((item.by_role|d(item.role)| replace(".", "_"))  + "_" + ((item.role_weight + "_") if item.role_weight|d() else "")) if (item.by_role|d(item.role)|d()) else "") + item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class | d(item.value.type | d("default"))] | d("80"))|int + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
     state: 'absent'
-  with_flattened:
-    - '{{ ferm_rules           | d([]) | list }}'
-    - '{{ ferm_group_rules     | d([]) | list }}'
-    - '{{ ferm_host_rules      | d([]) | list }}'
-    - '{{ ferm_dependent_rules | d([]) | list }}'
-    - '{{ ferm_default_rules   | d([]) | list }}'
-    - '{{ ferm__rules }}'
-    - '{{ ferm__group_rules }}'
-    - '{{ ferm__host_rules }}'
-    - '{{ ferm__dependent_rules }}'
-    - '{{ ferm__default_rules }}'
-  when: (ferm__enabled|bool and item.type|d() and
-         ((item.rule_state|d("present") == "absent") or
-          (item.delete|d() | bool)))
-  register: ferm__register_rules_del
+  with_dict: '{{ ferm__combined_rules }}'
+  register: ferm__register_rules_removed
+  when: (item.value.rule_state|d(item.value.state|d('present')) == 'absent')
   tags: [ 'role::ferm:rules' ]
 
-- name: Configure ip(6)tables rules
+- name: Generate firewall rules
   template:
-    src: 'etc/ferm/ferm.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/ferm.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d(ferm__default_weight)) }}_{{ item.filename | d((((item.by_role|d(item.role)| replace(".", "_"))  + "_" + ((item.role_weight + "_") if item.role_weight|d() else "")) if (item.by_role|d(item.role)|d()) else "") + item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    src: 'etc/ferm/rules.d/{{ item.value.template | d("rule") }}.conf.j2'
+    dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class | d(item.value.type | d("default"))] | d("80"))|int + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
-  with_flattened:
-    - '{{ ferm_rules           | d([]) | list }}'
-    - '{{ ferm_group_rules     | d([]) | list }}'
-    - '{{ ferm_host_rules      | d([]) | list }}'
-    - '{{ ferm_dependent_rules | d([]) | list }}'
-    - '{{ ferm_default_rules   | d([]) | list }}'
-    - '{{ ferm__rules }}'
-    - '{{ ferm__group_rules }}'
-    - '{{ ferm__host_rules }}'
-    - '{{ ferm__dependent_rules }}'
-    - '{{ ferm__default_rules }}'
-  when: (ferm__enabled|bool and item.type|d() and
-         ((item.rule_state|d("present") == "present") and
-          not (item.delete|d() | bool)))
-  register: ferm__register_rules_add
+  with_dict: '{{ ferm__combined_rules }}'
+  register: ferm__register_rules_created
+  when: (item.value.rule_state|d(item.value.state|d('present')) not in [ 'absent', 'ignore' ])
+  tags: [ 'role::ferm:rules' ]
+
+- name: Remove unknown firewall rules
+  shell: find /etc/ferm/rules.d -maxdepth 1 -type f
+         -name '*_rule_{{ item.item.value.name | d(item.item.key) }}.conf'
+         ! -name '{{ "%03d" | format((ferm__combined_weight_map[item.item.value.weight_class | d(item.item.value.type | d("default"))] | d("80"))|int + (item.item.value.weight | d("0"))|int) }}_rule_{{ item.item.value.name | d(item.item.key) }}.conf' -exec rm -vf {} +
+  with_items:
+    - '{{ ferm__register_rules_removed.results }}'
+    - '{{ ferm__register_rules_created.results }}'
+  when: (item.item.key|d() and item.changed|bool)
   tags: [ 'role::ferm:rules' ]
 
 - name: Remove iptables INPUT rules if requested
@@ -147,7 +133,7 @@
     name: 'ferm'
     state: 'restarted'
   when: (ferm__enabled | bool and (ferm__register_files.changed|bool or
-         ferm__register_rules_del.changed|bool or ferm__register_rules_add.changed|bool or
+         ferm__register_rules_created|changed or ferm__register_rules_removed|changed or
          ferm__register_input_rules_del.changed|bool or ferm__register_input_rules_add.changed|bool))
 
 - name: Clear iptables rules if ferm is disabled
