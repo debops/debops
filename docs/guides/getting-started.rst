@@ -115,7 +115,7 @@ debops.postfix_ role are written in
 :file:`ansible/inventory/group_vars/all/postfix.yml`, and so on. The same scheme
 can be used in other inventory groups or for separate hosts.
 
-ansible_ssh_user
+ansible_user
 ~~~~~~~~~~~~~~~~
 
 This is an internal Ansible variable which is used to determine what remote
@@ -127,7 +127,7 @@ directly in the ``hosts`` file, that way it can be unique for each host:
 .. code-block:: none
 
    [debops_all_hosts]
-   server    ansible_ssh_host=server.example.com ansible_ssh_user=ansible-admin
+   server    ansible_ssh_host=server.example.com ansible_user=ansible-admin
 
 In DebOps this variable can be used to change the name of the default
 administrator account, it's also used as a primary user account for various
@@ -144,7 +144,7 @@ username to make the remote host administration easier:
 However, it is advisable to not use the default user accounts, and instead
 either create ones based on your own username (the default behavior) or create
 completely separate Ansible accounts with administrative access. If you
-configure the ``ansible_ssh_user`` variable before bootstrapping the host, the
+configure the ``ansible_user`` variable before bootstrapping the host, the
 specified username will be used to create an administrator account.
 
 bootstrap__domain
