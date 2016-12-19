@@ -102,6 +102,9 @@ bootstrap__admin_default_users:
   - name: '{{ ansible_ssh_user
               if (ansible_ssh_user | d() and
                   ansible_ssh_user != "root")
+              else ansible_user
+                   if (ansible_user | d() and
+                   ansible_user != "root")
               else lookup("env", "USER") }}'
 
                                                                    # ]]]
