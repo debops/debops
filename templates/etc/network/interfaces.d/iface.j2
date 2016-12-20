@@ -8,21 +8,21 @@
 {% set ifupdown__tpl_gateways = [] %}
 {% if interface.no_addresses is undefined or not interface.no_addresses|bool %}
 {%   if interface.address|d() %}
-{%     if interface.address is string and interface.address | ipaddr('host/prefix') %}
+{%     if interface.address is string %}
 {%       set ifupdown__tpl_addresses = [ interface.address ] %}
 {%     else %}
-{%       set ifupdown__tpl_addresses = (interface.address | unique | ipaddr('host/prefix')) %}
+{%       set ifupdown__tpl_addresses = (interface.address | unique ) %}
 {%     endif %}
 {%   endif %}
 {%   if interface.addresses|d() %}
-{%     if interface.addresses is string and interface.addresses | ipaddr('host/prefix') %}
+{%     if interface.addresses is string %}
 {%       set ifupdown__tpl_addresses = (ifupdown__tpl_addresses + [ interface.addresses ]) %}
 {%     else %}
-{%       set ifupdown__tpl_addresses = (ifupdown__tpl_addresses + (interface.addresses | unique | ipaddr('host/prefix'))) %}
+{%       set ifupdown__tpl_addresses = (ifupdown__tpl_addresses + (interface.addresses | unique )) %}
 {%     endif %}
 {%   endif %}
-{%   set ifupdown__tpl_ipv4_addresses = ifupdown__tpl_addresses | ipv4('host/prefix') %}
-{%   set ifupdown__tpl_ipv6_addresses = ifupdown__tpl_addresses | ipv6('host/prefix') %}
+{%   set ifupdown__tpl_ipv4_addresses = ifupdown__tpl_addresses | ipv4 %}
+{%   set ifupdown__tpl_ipv6_addresses = ifupdown__tpl_addresses | ipv6 %}
 {%   if interface.gateway|d() %}
 {%     if interface.gateway is string %}
 {%       set _ = ifupdown__tpl_gateways.append(interface.gateway) %}
