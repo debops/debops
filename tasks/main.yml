@@ -101,7 +101,7 @@
 
 - name: Remove iptables INPUT rules if requested
   file:
-    path: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d(ferm__default_weight)) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    path: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d("50")) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
     - '{{ ferm_input_list }}'
@@ -115,7 +115,7 @@
 - name: Configure iptables INPUT rules
   template:
     src: 'etc/ferm/filter-input.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d(ferm__default_weight)) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    dest: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d("50")) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
