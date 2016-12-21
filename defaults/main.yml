@@ -606,7 +606,10 @@ ferm__fail2ban: True
 # Enable forwarding in :command:`ip(6)tables`. This option can be used by other
 # roles and it's status is saved in Ansible local facts, which will override
 # variable status from role defaults or inventory.
-ferm__forward: False
+ferm__forward: '{{ ansible_local.ferm.forward
+                   if (ansible_local|d() and ansible_local.ferm|d() and
+                       ansible_local.ferm.forward|d())
+                   else "False" }}'
 
                                                                    # ]]]
 # .. envvar:: ferm__forward_accept [[[
@@ -614,7 +617,10 @@ ferm__forward: False
 # Should traffic be forwarded between the other hosts/containers if
 # :envvar:`ferm__forward` is ``True``?
 # Refer to :envvar:`ferm__rules_forward` for details.
-ferm__forward_accept: False
+ferm__forward_accept: '{{ ansible_local.ferm.forward
+                          if (ansible_local|d() and ansible_local.ferm|d() and
+                              ansible_local.ferm.forward|d())
+                          else "False" }}'
 
                                                                    # ]]]
 # .. envvar:: ferm__external_interfaces [[[
