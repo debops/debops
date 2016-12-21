@@ -83,7 +83,7 @@ Added
 
 - Write missing role documentation. [ganto_, ypid_, drybjed_]
 
-- Allow to disable :envvar:`ferm__rules_forward` using
+- Allow to disable ``ferm__rules_forward`` using
   :envvar:`ferm__forward_accept`. [ypid_]
 
 Changed
