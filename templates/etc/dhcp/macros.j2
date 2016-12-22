@@ -44,7 +44,13 @@ group {
 {{ group.options | indent(8,true) }}
 {% endif %}
 {% if group.include is defined and group.include %}
+{% if group.include is string %}
         include "{{ group.include }}";
+{% else %}
+{% for filename in group.include %}
+        include "{{ filename }}";
+{% endfor %}
+{% endif %}
 {% endif %}
 {% if group.groups is defined and group.groups %}
 {% for group in group.groups %}
