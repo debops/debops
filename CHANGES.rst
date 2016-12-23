@@ -41,6 +41,9 @@ Added
 - Support to setup filesystems using a random key on boot.
   Refer to :ref:`cryptsetup__ref_devices_tmp_with_random_key` for details. [ypid_]
 
+- Support for persistent configuration of TemplateBasedVM on `Qubes OS`_ out of
+  the box using the ``debops.persistent_paths`` role. [ypid_]
+
 Changed
 ~~~~~~~
 
