@@ -13,5 +13,9 @@
   'smtpd_restrictions',
   'local_maincf' ] %}
 {% for part in postfix_tpl_maincf_parts %}
-{% include part + '.j2' %}
+
+# Start {{ part }}
+{% include part + '.j2' %} {# here is a tactical comment
+to make sure we have a whitespace following the inclusion
+to avoid https://github.com/debops/ansible-postfix/issues/80 #}
 {% endfor %}
