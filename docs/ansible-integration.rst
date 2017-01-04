@@ -12,14 +12,15 @@ Design goals
   as minimum as possible. Instead the configuration is generated for the
   currently detected Apache version.
 * Most variables which directly correspond to a Apache directive are not masked
-  or otherwise changed (for example allowing ``True``, ``False`` for directives
-  which expect ``on``, ``off``).
+  or otherwise changed (for example using ``True``, ``False`` for directives
+  which expect ``on``, ``off`` is *not* supported).
   Together with the direct reference to upstream documentation provided in the
   role documentation this is expected to provide more transparency to the user
-  and allow the role to be future proof when changes occurrence upstream.
+  and allow the role to be future proof when changes occur upstream.
 * For directives where ``off`` or ``False`` might be a valid option, the
   special variable ``omit`` (use in Jinja: ``{{ omit }}``) is intended to be
-  used when the directive should be omitted.
+  used when the directive should be omitted (not written to the Apache
+  configuration at all).
 
 
 Alternative roles
