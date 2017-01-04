@@ -41,6 +41,7 @@ supported options:
 
 ``enabled``
   Required, boolean. Defaults to ``True``.
+  Set to ``{{ omit }}`` not change the state of a module.
   Whether the module should be enabled or disabled in Apache.
 
 ``force``

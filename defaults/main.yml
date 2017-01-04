@@ -253,6 +253,11 @@ apache__role_modules:
     enabled: '{{ True if (apache__https_listen) else False }}'
   'security2':
     enabled: '{{ apache__security_module_enabled|bool }}'
+  'socache_shmcb':
+    enabled: '{{ True
+                 if (apache__ocsp_stapling_enabled|bool
+                     and "shmcb" in apache__ocsp_stapling_cache)
+                 else omit }}'
 
                                                                    # ]]]
 # .. envvar:: apache__combined_modules [[[

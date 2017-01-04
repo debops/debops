@@ -35,3 +35,7 @@ Fixed
   Note that all dependency variables should be passed to the main
   ``debops.apache`` role to avoid confusion. :envvar:`apache__dependent_packages` now
   only works when passed to the main role.
+
+- Ensure that the shared object cache provider module is loaded when required
+  for :envvar:`apache__ocsp_stapling_cache`. Before, the ``socache_shmcb``
+  module was implicitly loaded by the ``ssl`` module. [ypid_]

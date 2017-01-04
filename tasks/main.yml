@@ -33,7 +33,7 @@
                 else item.value) | bool | ternary("present", "absent") }}'
     force: '{{ item.value.force|d(False) | bool }}'
   notify: [ 'Test apache and reload' ]
-  when: (item.key in apache__tpl_available_modules)
+  when: (item.key in apache__tpl_available_modules and item.value.enabled|d(True) != omit)
   with_dict: '{{ apache__combined_modules }}'
   tags: [ 'role::apache:modules' ]
 
