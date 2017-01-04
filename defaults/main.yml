@@ -438,53 +438,6 @@ apache__pki_trusted_filename: '{{ ansible_local.pki.trusted
                                   else "trusted.crt" }}'
                                                                    # ]]]
                                                                    # ]]]
-# OCSP Stapling [[[
-# ~~~~~~~~~~~~~~~~~
-
-# .. envvar:: apache__ocsp_stapling_enabled [[[
-#
-# Enable or disable OCSP Stapling.
-# Refer to the `Apache SSLUseStapling directive documentation`_ for details.
-apache__ocsp_stapling_enabled: True
-
-                                                                   # ]]]
-# .. envvar:: apache__ocsp_stapling_cache [[[
-#
-# Cache used to store OCSP responses which get included in the TLS handshake.
-# Refer to the `Apache SSLStaplingCache directive documentation`_ for details.
-apache__ocsp_stapling_cache: 'shmcb:${APACHE_RUN_DIR}/ocsp_scache(512000)'
-
-                                                                   # ]]]
-# .. envvar:: apache__ocsp_stapling_response_max_age [[[
-#
-# This option sets the maximum allowable age ("freshness") when considering
-# OCSP responses, in seconds.
-# Refer to the `Apache SSLStaplingResponseMaxAge directive documentation`_ for details.
-# The default update interval of `Let's Encrypt`_ is 7 days.
-# Ref: `Is there a rate limit on OCSP requests? <https://community.letsencrypt.org/t/is-there-a-rate-limit-on-ocsp-requests/7747/5>`_
-# Enforcing 30 days as default should be a good start compared to the
-# Apache default which imposes no limit.
-apache__ocsp_stapling_response_max_age: '{{ 30 * 24 * 3600 }}'
-
-                                                                   # ]]]
-# .. envvar:: apache__ocsp_stapling_force_url [[[
-#
-# This directive overrides the URI of an OCSP responder as obtained from the
-# authorityInfoAccess (AIA) extension of the certificate. One potential use is
-# when a proxy is used for retrieving OCSP queries.
-# Refer to the `Apache SSLStaplingForceURL directive documentation`_ for details.
-apache__ocsp_stapling_force_url: False
-
-                                                                   # ]]]
-# .. envvar:: apache__ocsp_stapling_verify [[[
-#
-# Verify OCSP responses from the server which requires chained intermediate and
-# Root CA certificates.
-# Note: Currently not implemented.
-# Ref: https://github.com/debops/ansible-apache/issues/2
-apache__ocsp_stapling_verify: '{{ apache__ocsp_stapling_enabled | bool }}'
-                                                                   # ]]]
-                                                                   # ]]]
 # TLS ciphers and protocol versions [[[
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -566,6 +519,53 @@ apache__tls_dhparam_file: '{{ ansible_local.dhparam[apache__tls_dhparam_set_name
                               if (ansible_local|d() and ansible_local.dhparam|d() and
                                   ansible_local.dhparam[apache__tls_dhparam_set_name]|d())
                               else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# OCSP Stapling [[[
+# ~~~~~~~~~~~~~~~~~
+
+# .. envvar:: apache__ocsp_stapling_enabled [[[
+#
+# Enable or disable OCSP Stapling.
+# Refer to the `Apache SSLUseStapling directive documentation`_ for details.
+apache__ocsp_stapling_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: apache__ocsp_stapling_cache [[[
+#
+# Cache used to store OCSP responses which get included in the TLS handshake.
+# Refer to the `Apache SSLStaplingCache directive documentation`_ for details.
+apache__ocsp_stapling_cache: 'shmcb:${APACHE_RUN_DIR}/ocsp_scache(512000)'
+
+                                                                   # ]]]
+# .. envvar:: apache__ocsp_stapling_response_max_age [[[
+#
+# This option sets the maximum allowable age ("freshness") when considering
+# OCSP responses, in seconds.
+# Refer to the `Apache SSLStaplingResponseMaxAge directive documentation`_ for details.
+# The default update interval of `Let's Encrypt`_ is 7 days.
+# Ref: `Is there a rate limit on OCSP requests? <https://community.letsencrypt.org/t/is-there-a-rate-limit-on-ocsp-requests/7747/5>`_
+# Enforcing 30 days as default should be a good start compared to the
+# Apache default which imposes no limit.
+apache__ocsp_stapling_response_max_age: '{{ 30 * 24 * 3600 }}'
+
+                                                                   # ]]]
+# .. envvar:: apache__ocsp_stapling_force_url [[[
+#
+# This directive overrides the URI of an OCSP responder as obtained from the
+# authorityInfoAccess (AIA) extension of the certificate. One potential use is
+# when a proxy is used for retrieving OCSP queries.
+# Refer to the `Apache SSLStaplingForceURL directive documentation`_ for details.
+apache__ocsp_stapling_force_url: False
+
+                                                                   # ]]]
+# .. envvar:: apache__ocsp_stapling_verify [[[
+#
+# Verify OCSP responses from the server which requires chained intermediate and
+# Root CA certificates.
+# Note: Currently not implemented.
+# Ref: https://github.com/debops/ansible-apache/issues/2
+apache__ocsp_stapling_verify: '{{ apache__ocsp_stapling_enabled | bool }}'
                                                                    # ]]]
                                                                    # ]]]
 # HTTPS related security headers [[[
