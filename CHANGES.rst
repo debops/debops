@@ -23,6 +23,10 @@ Added
   configurable via :ref:`item.http_referrer_policy <apache__ref_vhosts_http_referrer_policy>`.
   [ypid_]
 
+- Add the :envvar:`apache__mpm_max_connections_per_child` variable to allow to
+  configure the number of requests a child process should handle before
+  terminating. [ypid_]
+
 Fixed
 ~~~~~
 

@@ -28,3 +28,5 @@
 .. _Apache AllowOverride directive documentation: https://httpd.apache.org/docs/2.4/mod/core.html#allowoverride
 .. _Apache Options directive documentation: https://httpd.apache.org/docs/2.4/mod/core.html#options
 .. _ModSecurity SecServerSignature directive documentation: https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#secserversignature
+.. _Apache MaxConnectionsPerChild directive documentation: https://httpd.apache.org/docs/current/mod/mpm_common.html#maxconnectionsperchild
+.. _Apache MaxRequestWorkers directive documentation: https://httpd.apache.org/docs/current/mod/mpm_common.html#maxrequestworkers

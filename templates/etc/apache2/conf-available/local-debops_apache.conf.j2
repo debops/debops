@@ -9,6 +9,8 @@
 # It is probably not good practice to change that in server context anyway.
 #}
 
+MaxConnectionsPerChild {{ apache__mpm_max_connections_per_child | quote }}
+
 {% for module_name, value in apache__combined_modules|dictsort %}
 {%   if value is mapping and 'config' in value %}
 

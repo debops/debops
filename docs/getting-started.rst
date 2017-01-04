@@ -1,10 +1,10 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
-
-.. include:: includes/all.rst
 
 
 Example inventory
