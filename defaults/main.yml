@@ -1563,6 +1563,18 @@ owncloud__apt_preferences__dependent_list_optional:
 owncloud__apache__dependent_packages:
   - 'libapache2-mod-php5'
 
+
+# .. envvar:: owncloud__apache__dependent_snippets
+#
+# Apache configuration snippets managed by the debops.apache_ role.
+# Disable the :file:`/etc/apache2/conf-enabled/owncloud.conf` which configures
+# ownCloud below ``/owncloud``.
+owncloud__apache__dependent_snippets:
+  'owncloud':
+    enabled: False
+    type: 'dont-create'
+
+
 # .. envvar:: owncloud__apache__dependent_vhosts
 #
 # Apache virtual host managed by the debops.apache_ role.
