@@ -148,8 +148,8 @@ same filename as the snippet which is diverted away.
   Note that the ``item.divert_suffix`` is still in affect when using this option.
 
 
-Type: dont-created
-~~~~~~~~~~~~~~~~~~
+Type: dont-create
+~~~~~~~~~~~~~~~~~
 
 This special type assumes the snippet file is already present and does not try
 to create it.
