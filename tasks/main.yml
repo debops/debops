@@ -65,7 +65,7 @@
     group: 'root'
     mode: '0644'
   when: (item.value.state|d("present") != "absent" and
-         (item.value.type|d("default") not in ["divert"] or item.value.raw|d()))
+         (item.value.type|d("default") not in ["divert", "dont-created"] or item.value.raw|d()))
   with_dict: '{{ apache__combined_snippets }}'
   notify: [ 'Test apache and reload' ]
 

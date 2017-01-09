@@ -10,7 +10,7 @@ Design goals
   In particular the :file:`/etc/apache2/apache2.conf` is not altered.
 * The ``IfVersion`` directive is not used to keep the number of enabled modules
   as minimum as possible. Instead the configuration is generated for the
-  currently detected Apache version.
+  currently detected Apache version. FIXME, version_module is compiled in :)
 * Most variables which directly correspond to a Apache directive are not masked
   or otherwise changed (for example using ``True``, ``False`` for directives
   which expect ``on``, ``off`` is *not* supported).
@@ -21,6 +21,12 @@ Design goals
   special variable ``omit`` (use in Jinja: ``{{ omit }}``) is intended to be
   used when the directive should be omitted (not written to the Apache
   configuration at all).
+* Apache is not restarted by the role because that would require to close
+  established connections. Some configuration options require a restart to take
+  effect. The documentation for those options should give a hint about it. You
+  should test your settings with a test system and do a restart in production
+  manually when required.
+  Optionally, it should be possible to allow restarts using inventory variables.
 
 
 Alternative roles

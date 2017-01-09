@@ -47,6 +47,45 @@ CustomLog ${APACHE_LOG_DIR}/{{ sanitized_name }}_access.log {{ apache__access_lo
 ErrorLog ${APACHE_LOG_DIR}/{{ sanitized_name }}_error.log
 {% endmacro %}{# ]]] #}
 
+{% macro get_server_status_directives(item, enabled) %}{# [[[ #}
+{% if enabled|bool %}
+<Location {{ item.status_location|d(apache__status_location) | quote }}>
+    SetHandler server-status
+{%   if item.status_allow_localhost|d(apache__status_allow_localhost) | bool %}
+    Require local
+{%   endif %}
+{%   if item.status_directives|d(apache__status_directives) %}
+    {{ item.status_directives|d(apache__status_directives) }}
+{%   elif not (item.status_allow_localhost|d(apache__status_allow_localhost) | bool) %}
+    Require all denied
+{%   endif %}
+</Location>
+{% endif %}
+{% endmacro %}{# ]]] #}
+
+{% macro get_vhost_content_directives(item, mode='https', https_enabled=True) %}{# [[[ #}
+{% set apache__tpl_use_redirect_module = 'alias' %}
+{% set apache__tpl_status_enabled = item.status_enabled|d(apache__status_for_vhost_enabled) | bool %}
+{{ get_server_status_directives(item, apache__tpl_status_enabled) -}}
+{% if apache__tpl_status_enabled|bool and (
+        (mode == 'http' and (item.redirect_http|d() or item.redirect_to_https|d(https_enabled) | bool)) or
+        (mode == 'https' and item.redirect_https|d())
+    ) %}
+RewriteEngine On
+RewriteRule "^{{ item.status_location|d(apache__status_location) }}" "-" [L]
+{%   set apache__tpl_use_redirect_module = 'rewrite' %}
+{% endif %}
+{% if mode == 'http' and item.redirect_http|d() %}
+{{ get_redirect(item.redirect_http_code|d(307), "/", item.redirect_http, apache__tpl_use_redirect_module) }}
+{% elif mode == 'http' and item.redirect_to_https|d(https_enabled) | bool %}
+{{ get_redirect(item.redirect_to_https_with_code|d("301"), "/", "https://" + (debops__tpl_macros.get_yaml_list_for_elem(item.name) | from_yaml)[0], apache__tpl_use_redirect_module) }}
+{% elif mode == 'https' and item.redirect_https|d() %}
+{{ get_redirect(item.redirect_https_code|d(307), "/", item.redirect_https, apache__tpl_use_redirect_module) }}
+{% else %}
+{{ get_content_directives(item) }}
+{% endif %}
+{% endmacro %}{# ]]] #}
+
 {% macro get_content_directives(item) %}{# [[[ #}
 {% if item.include|d() %}
 {% for include_file in debops__tpl_macros.get_yaml_list_for_elem(item.include)|from_yaml %}
@@ -65,18 +104,18 @@ DocumentRoot {{ item.root|d(item.document_root) | quote }}
 {{ get_alias(item.alias, item.root|d(item.document_root)) }}
 {%- endif %}
 <Directory {{ item.root|d(item.document_root) | quote }}>
-    Options {{ debops__tpl_macros.get_yaml_list_for_elem(item.options|d(apache__vhost_options))|from_yaml | join(" ") }}
-    AllowOverride {{ debops__tpl_macros.get_yaml_list_for_elem(item.allow_override|d(apache__vhost_allow_override))|from_yaml | join(" ") }}
+Options {{ debops__tpl_macros.get_yaml_list_for_elem(item.options|d(apache__vhost_options))|from_yaml | join(" ") }}
+AllowOverride {{ debops__tpl_macros.get_yaml_list_for_elem(item.allow_override|d(apache__vhost_allow_override))|from_yaml | join(" ") }}
 
 {% if debops__tpl_macros.get_apache_version() | version_compare("2.4", ">=") %}
-    Require all granted
+Require all granted
 {% else %}
-    Order allow,deny
-    Allow from all
+Order allow,deny
+Allow from all
 {% endif %}
 {% if item.root_directives|d() %}
 
-    {{ item.root_directives | indent(4) }}
+{{ item.root_directives }}
 {% endif %}
 
 </Directory>
@@ -89,7 +128,7 @@ DocumentRoot {{ item.root|d(item.document_root) | quote }}
 
 {% macro get_default_tls_directives(item) %}{# [[[ #}
 {# Included in server context to provide sane defaults (there might be vhosts
-# not controled by this template) and virtual host context to ensure those
+# not controled by this template) and in virtual host context to ensure those
 # settings are appliend and to allow per-vhost changes.
 # Refer to Applied-Crypto-Hardening_bettercrypto/src/configuration/Webservers/Apache/default-ssl for details.
 #}
@@ -164,8 +203,17 @@ Header always set X-Clacks-Overhead "GNU Terry Pratchett"
 {% endif %}
 {% endmacro %}{# ]]] #}
 
-{% macro get_redirect(code, from, to) %}{# [[[ #}
-Redirect {{ code|string }} "{{ from }}" "{{ to + ("/" if (to[-1] != "/") else "") }}"
+{% macro get_redirect(code, from, to, module) %}{# [[[ #}
+{# Prefer the alias module but support the use of the rewrite module in case
+other rewrite rules are used in the same context because the rewrite rules are
+handled before all the directives from the alias module.
+#}
+{% set to = to + ("/" if (to[-1] != "/") else "") %}
+{% if module == 'alias' %}
+Redirect {{ code|string }} "{{ from }}" "{{ to }}"
+{% elif module == 'rewrite' %}
+RewriteRule "^{{ from }}?(.*)" "{{ to }}$1" [L,R={{ code }},NE]
+{% endif %}
 {% endmacro %}{# ]]] #}
 
 {% macro get_alias(url_path, fs_directory) %}{# [[[ #}

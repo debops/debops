@@ -30,3 +30,10 @@
 .. _ModSecurity SecServerSignature directive documentation: https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#secserversignature
 .. _Apache MaxConnectionsPerChild directive documentation: https://httpd.apache.org/docs/current/mod/mpm_common.html#maxconnectionsperchild
 .. _Apache MaxRequestWorkers directive documentation: https://httpd.apache.org/docs/current/mod/mpm_common.html#maxrequestworkers
+.. _Apache mod_status documentation: https://httpd.apache.org/docs/current/mod/mod_status.html
+.. _Apache mod_status: https://httpd.apache.org/docs/current/mod/mod_status.html
+.. _Apache Location directive: https://httpd.apache.org/docs/current/mod/core.html#location
+.. _Apache Location directives: https://httpd.apache.org/docs/current/mod/core.html#location
+.. _Apache ExtendedStatus directive documentation: https://httpd.apache.org/docs/current/mod/core.html#extendedstatus
+.. _Apache host Require directive documentation: https://httpd.apache.org/docs/current/mod/mod_authz_host.html#requiredirectives
+.. _Apache SetHandler directive: https://httpd.apache.org/docs/current/mod/core.html#sethandler

@@ -27,6 +27,10 @@ Added
   configure the number of requests a child process should handle before
   terminating. [ypid_]
 
+- Add support to enable and configure `Apache mod_status`_. You can set
+  :envvar:`apache__status_enabled` to ``True`` to enable it and make the status
+  page accessible from localhost. [ypid_]
+
 Changed
 ~~~~~~~
 
@@ -47,3 +51,6 @@ Fixed
 - Ensure that the shared object cache provider module is loaded when required
   for :envvar:`apache__ocsp_stapling_cache`. Before, the ``socache_shmcb``
   module was implicitly loaded by the ``ssl`` module. [ypid_]
+
+- Fix ``item.https_enabled`` support for virtual hosts. This variable was
+  ignored previously using the global default (``True``) directly. [ypid_]

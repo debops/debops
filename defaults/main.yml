@@ -102,7 +102,8 @@ apache__server_name: '{{ apache__fqdn }}'
 #
 # Default server admin contact information. Either a Email address or a URL
 # (preferable on another webserver if this one fails).
-# Can be overwritten for virtual hosts.
+# Refer to :ref:`item.server_admin <apache__ref_vhost_server_admin>` for
+# how to overwrite this for a virtual host.
 apache__server_admin: '{{ ansible_local.core.admin_public_email[0]
                           if (ansible_local|d() and ansible_local.core|d() and
                               ansible_local.core.admin_public_email|d())
@@ -160,7 +161,7 @@ apache__https_listen: [ 443 ]
 #
 # Refer to `Apache DirectoryMatch directive documentation`_ for details.
 
-# .. envvar:: apache__role_directory_match [[[
+# .. envvar:: apache__default_directory_match [[[
 #
 # Default ``DirectoryMatch`` directives maintained by this Ansible role.
 apache__default_directory_match:
@@ -262,10 +263,22 @@ apache__role_modules:
     enabled: '{{ True if (apache__https_listen) else False }}'
   'security2':
     enabled: '{{ apache__security_module_enabled|bool }}'
+  'status':
+    enabled: '{{ apache__status_enabled|bool }}'
+    config: |
+      <Location /server-status>
+          # Revoke default permissions granted in `/etc/apache2/mods-available/status.conf`.
+          Require all denied
+      </Location>
   'socache_shmcb':
     enabled: '{{ True
                  if (apache__ocsp_stapling_enabled|bool
                      and "shmcb" in apache__ocsp_stapling_cache)
+                 else omit }}'
+  'authz_host':
+    enabled: '{{ True
+                 if (apache__status_enabled|bool
+                     and apache__status_allow_localhost)
                  else omit }}'
 
                                                                    # ]]]
@@ -309,7 +322,6 @@ apache__security_module_server_signature: '{{ omit }}'
 # Number of requests a child process will handle before terminating.
 # Refer to the `Apache MaxConnectionsPerChild directive documentation`_ for details.
 apache__mpm_max_connections_per_child: '0'
-
                                                                    # ]]]
                                                                    # ]]]
 # Configuration snippets [[[
@@ -469,7 +481,6 @@ apache__tls_protocols: [ 'All', '-SSLv2', '-SSLv3' ]
 apache__tls_cipher_suite_set_name: 'bettercrypto_org__set_b_pfs'
 
                                                                    # ]]]
-
 # .. envvar:: apache__tls_cipher_suite_sets [[[
 #
 # Dictionary of TLS cipher suites which can be selected from
@@ -509,7 +520,6 @@ apache__tls_honor_cipher_order: 'on'
 # Whether compression is enabled or disabled on the TLS level.
 # Refer to the `Apache SSLCompression directive documentation`_ for details.
 apache__tls_compression: 'off'
-
                                                                    # ]]]
                                                                    # ]]]
 # Key exchange (Diffie–Hellman) [[[
@@ -612,7 +622,6 @@ apache__hsts_subdomains: True
 # Refer to the `HSTS Preload List Submission`_ page to make use of this
 # feature.
 apache__hsts_preload: True
-
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
@@ -729,6 +738,7 @@ apache__role_vhosts:
       Divert the package provided `default-ssl` site file away, we will not need it :)
 
   - '{{ apache__default_vhost }}'
+  - '{{ apache__status_vhost }}'
 
                                                                    # ]]]
 # .. envvar:: apache__dependent_vhosts [[[
@@ -768,7 +778,6 @@ apache__vhost_allow_override: 'None'
 # The default ``Options`` to use for virtual hosts.
 # Refer to the `Apache Options directive documentation`_ for details.
 apache__vhost_options: [ '+FollowSymLinks' ]
-
                                                                    # ]]]
                                                                    # ]]]
 # Logging [[[
@@ -779,12 +788,109 @@ apache__vhost_options: [ '+FollowSymLinks' ]
 # The default log level to use.
 # Refer to the `Apache LogLevel directive documentation`_ for details.
 apache__log_level: 'warn'
+
                                                                    # ]]]
 # .. envvar:: apache__access_log_format [[[
 #
 # Default log format as defined in :file:`/etc/apache2/apache2.conf`.
 # Refer to the `Apache LogFormat directive documentation`_ for details.
 apache__access_log_format: 'combined'
+                                                                   # ]]]
+                                                                   # ]]]
+# Apache Status [[[
+# -----------------
+
+# Refer to the `Apache mod_status documentation`_ for details.
+
+# .. envvar:: apache__status_enabled [[[
+#
+# Should the Apache server status be enabled by loading the required modules?
+apache__status_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: apache__status_vhost_enabled [[[
+#
+# Should the Apache server status page be accessible using a independent
+# virtual host bound to localhost?
+apache__status_vhost_enabled: '{{ apache__status_enabled }}'
+
+                                                                   # ]]]
+# .. envvar:: apache__status_for_vhost_enabled [[[
+#
+# Should the Apache server status page be enabled in all virtual hosts?
+#
+# Note that even when this option evaluates to ``False``, the hardcoded
+# ``/server-status`` URL path is not fully neutralized. That is because the `Apache
+# SetHandler directive`_ is set by the Apache Debian package in server config
+# context.  All access granted by package defaults is of course revoked by this
+# Ansible role, again in server config context. But this means that for any
+# virtual host, a request against ``/server-status`` (regardless of the value
+# of :envvar:`apache__status_location`) will be answered with a 403 Forbidden.
+# If that causes a problem, the role could be changed to not enable the default
+# module configuration and load the module directly from server config context.
+# Or maybe someone has a workaround which does not involve changing the package
+# module defaults.
+#
+# Refer to :ref:`item.status_enabled <apache__ref_vhosts_status_enabled>` for
+# how to overwrite this for a virtual host.
+apache__status_for_vhost_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: apache__status_location [[[
+#
+# The ``Location`` or URL path by which the Apache server status should be
+# accessible.
+# Refer to :ref:`item.status_location <apache__ref_vhosts_status_location>` for
+# how to overwrite this for a virtual host.
+apache__status_location: '/server-status'
+
+                                                                   # ]]]
+# .. envvar:: apache__status_allow_localhost [[[
+#
+# Allow access to the Apache server status using the ``Require local``
+# directive (refer to the `Apache host Require directive documentation`_).
+# Refer to :ref:`item.status_allow_localhost <apache__ref_vhosts_status_allow_localhost>` for
+# how to overwrite this for a virtual host.
+apache__status_allow_localhost: False
+
+                                                                   # ]]]
+# .. envvar:: apache__status_directives [[[
+#
+# Additional directives included into the ``Location`` sections for the Apache
+# server status configuration. Can be used to customize access for example.
+# Refer to :ref:`item.status_directives <apache__ref_vhosts_status_directives>` for
+# how to overwrite this for a virtual host.
+apache__status_directives: ''
+
+                                                                   # ]]]
+# .. envvar:: apache__status_extended_enabled [[[
+#
+# This option tracks additional data per worker about the currently executing
+# request and creates a utilization summary.
+# Refer to the `Apache ExtendedStatus directive documentation`_ for details.
+# Note that this setting cannot be changed during a graceful restart. You will
+# need to restart Apache yourself for a change to take effect!
+apache__status_extended_enabled: '{{ apache__status_enabled|bool }}'
+
+                                                                   # ]]]
+# .. envvar:: apache__status_vhost_name [[[
+#
+# Virtual host name for providing the Apache server status.
+apache__status_vhost_name:
+  - 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: apache__status_vhost [[[
+#
+# Optional virtual host for providing the Apache server status.
+apache__status_vhost:
+  name: '{{ apache__status_vhost_name }}'
+  filename: 'debops.apache-status'
+  status_enabled: True
+  status_allow_localhost: True
+  listen_http: [ 'localhost:80' ]
+  https_enabled: False
+  enabled: '{{ apache__status_vhost_enabled|bool }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
@@ -803,7 +909,6 @@ apache__ferm__dependent_rules:
     by_role: 'debops.apache'
     name: 'http_https'
     multiport: True
-
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
