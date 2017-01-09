@@ -43,6 +43,13 @@ Changed
   available for this virtual host (either wildcard or SAN) in order to avoid
   the warning of Apache that the certificate is not valid for the server name. [ypid_]
 
+- Change :envvar:`apache__hsts_preload` from ``True`` to ``False`` by default.
+  Setting this value to ``True`` alone does not achieve anything and can
+  actually cause problems if you are not prepared.
+  Thus it is disabled by default.
+  If you are ready for the future of HTTPS and TLS only, you are encouraged to
+  enable it! [ypid_]
+
 Fixed
 ~~~~~
 
