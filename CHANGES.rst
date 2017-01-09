@@ -27,6 +27,14 @@ Added
   configure the number of requests a child process should handle before
   terminating. [ypid_]
 
+Changed
+~~~~~~~
+
+- Change default virtual host server name from ``000-default`` to ``default.{{
+  apache__domain }}`` to increase the changes that a valid certificate is
+  available for this virtual host (either wildcard or SAN) in order to avoid
+  the warning of Apache that the certificate is not valid for the server name. [ypid_]
+
 Fixed
 ~~~~~
 

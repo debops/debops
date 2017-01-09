@@ -64,6 +64,15 @@ apache__fqdn: '{{ ansible_local.core.fqdn
                   else ansible_fqdn }}'
 
                                                                    # ]]]
+# .. envvar:: apache__domain [[[
+#
+# The domain name of the host running Apache.
+apache__domain: '{{ ansible_local.core.domain
+                  if (ansible_local|d() and ansible_local.core|d() and
+                      ansible_local.core.domain|d())
+                  else ansible_domain }}'
+
+                                                                   # ]]]
 # .. envvar:: apache__config_path [[[
 #
 # Base path where the Apache configuration is stored.
@@ -672,8 +681,17 @@ apache__vhosts: []
 # Default virtual host which will receive all requests which don’t match other virtual hosts.
 # Refer to the `Apache virtual host matching documentation`_ for details.
 apache__default_vhost:
-  name: '000-default'
+  name: '{{ apache__default_vhost_name }}'
+  filename: '000-default'
   root: '/var/www/html'
+
+                                                                   # ]]]
+# .. envvar:: apache__default_vhost_name [[[
+#
+# Default virtual host name.
+# Ideally, this a FQDN for which a valid certificate is present so that Apache
+# does not complain about a certificate subject mismatch.
+apache__default_vhost_name: 'default.{{ apache__domain }}'
 
                                                                    # ]]]
 # .. envvar:: apache__group_vhosts [[[
