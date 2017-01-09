@@ -423,6 +423,14 @@ server {
 {%             for port in nginx_tpl_listen              %}
         listen {{ port|string }};
 {%             endfor                                    %}
+{%             if nginx_tpl_ssl | bool                   %}
+{%                 for port in nginx_tpl_listen_ssl      %}
+        listen {{ port|string }} ssl;
+{%                 endfor                                %}
+
+        ssl_certificate {{ nginx_tpl_ssl_certificate }};
+        ssl_certificate_key {{ nginx_tpl_ssl_certificate_key }};
+{%              endif                                    %}
 
 {%             if item.redirect_from is iterable         %}
 {%                 for name in item.redirect_from        %}
