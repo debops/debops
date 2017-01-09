@@ -18,7 +18,7 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ php__register_filtered_packages.stdout_lines }}'
+    - '{{ php__register_filtered_packages.stdout.strip().splitlines() }}'
   notify: [ 'Restart php-fpm' ]
 
 - name: Ensure older PHP packages are absent on reset
