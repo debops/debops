@@ -227,7 +227,7 @@ Common role options
   host configuration. Templates can extend other templates.
 
 
-.. _apache__ref_vhosts_common_webserver_options:
+.. _apache__ref_vhost_common_webserver_options:
 
 Common webserver options
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -412,7 +412,7 @@ HTTP security headers
   determines the Content-Security-Policy header set in server responses.
   Refer to the `Content Security Policy Reference`_.
 
-.. _apache__ref_vhosts_http_xss_protection:
+.. _apache__ref_vhost_http_xss_protection:
 
 ``http_xss_protection``
   Optional, string. Value of the ``X-XSS-Protection`` HTTP header field. Set to
@@ -432,7 +432,7 @@ HTTP security headers
   “X-XSS-Protection”?
   <https://stackoverflow.com/questions/9090577/what-is-the-http-header-x-xss-protection>`_.
 
-.. _apache__ref_vhosts_http_referrer_policy:
+.. _apache__ref_vhost_http_referrer_policy:
 
 ``http_referrer_policy``
   Optional, string. Value of the ``Referrer-Policy`` HTTP header field. Set to
@@ -442,18 +442,18 @@ HTTP security headers
   browsers.
 
 
-.. _apache__ref_vhosts_apache_status:
+.. _apache__ref_vhost_apache_status:
 
 Apache status
 ~~~~~~~~~~~~~
 
-.. _apache__ref_vhosts_status_enabled:
+.. _apache__ref_vhost_status_enabled:
 
 ``status_enabled``
   Optional, boolean. Should the Apache server status be enabled?
   Defaults to :envvar:`apache__status_enabled`.
 
-.. _apache__ref_vhosts_status_location:
+.. _apache__ref_vhost_status_location:
 
 ``status_location``
   Optional, string.
@@ -461,7 +461,7 @@ Apache status
   accessible.
   Defaults to :envvar:`apache__status_location`.
 
-.. _apache__ref_vhosts_status_allow_localhost:
+.. _apache__ref_vhost_status_allow_localhost:
 
 ``status_allow_localhost``
   Optional, boolean.
@@ -469,7 +469,7 @@ Apache status
   directive.
   Defaults to :envvar:`apache__status_allow_localhost`.
 
-.. _apache__ref_vhosts_status_directives:
+.. _apache__ref_vhost_status_directives:
 
 ``status_directives``
   Optional, string.
