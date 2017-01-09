@@ -13,7 +13,8 @@ def dpkg_state(package):
 	           '--showformat=${Package} ${Status}\n']
 
 	proc = subprocess.Popen(command, stdout=subprocess.PIPE)
-	for line in proc.stdout:
+	(stdoutdata, _) = proc.communicate()
+	for line in filter(bool, stdoutdata.split('\n')):
 		line = line.decode('ASCII')
 		line = line.rstrip()
 		# "package desired-action error-flags state"
@@ -23,13 +24,9 @@ def dpkg_state(package):
 			break
 	else:
 		state = 'not-installed'
-	proc.stdout.close()
 
-	# Process should either have returned 0,
-	# or been killed because we closed the pipe (stdout).
-	# Otherwise, we had an error.
-	proc.wait()
-	if proc.returncode not in [0, -signal.SIGPIPE]:
+	# dpkg-query returns 0 on success.
+	if proc.returncode != 0:
 		return None
 
 	return state
