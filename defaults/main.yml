@@ -47,7 +47,11 @@ apache__dependent_packages: []
 #
 #   .. code-block:: shell
 #
-#      for file in /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf /etc/apache2/conf-available/security.conf; do dpkg-divert --remove $file; done && rm /etc/apache2 -rf
+#      for file in /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf /etc/apache2/conf-available/security.conf
+#      do
+#          dpkg-divert --remove $file
+#      done
+#      rm /etc/apache2 -rf
 #
 apache__deploy_state: 'present'
                                                                    # ]]]
@@ -168,7 +172,7 @@ apache__https_listen: [ 443 ]
 #
 #   Note however that it is still recommended to rerun this role against your
 #   host after version upgrades because if certain features are enabled might
-#   not depend on the Apache version alone. For example the version of the used
+#   not only depend on the Apache version. For example the version of the used
 #   cryptography library (OpenSSL) is also relevant and checked by this role at
 #   Ansible role execution.
 #
@@ -186,9 +190,12 @@ apache__config_use_if_version: True
 #
 # Specifies the minimum Apache version to support when
 # :envvar:`apache__config_use_if_version` is set to ``True``.
-# By default, this defaults to the current Apache major and minor version
+# By default, this defaults to the current Apache major and minor version detected
 # because ``major.minor`` version downgrades are considered uncommon and to
 # avoid too much legacy directives.
+# (You can still do such downgrades if the role supports the Apache version
+# you are downgrading to but then you might need to rerun the role so that a
+# suitable configuration can be generated.)
 #
 # Supported special strings:
 #

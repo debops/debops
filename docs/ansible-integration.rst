@@ -29,7 +29,7 @@ Design goals
 Alternative roles
 -----------------
 
-Has `Ansible Galaxy`_ an impressive number of Ansible roles for Apache to your
+`Ansible Galaxy`_ has an impressive number of Ansible roles for Apache at your
 disposal. A few of them have been checked out before/while writing this role:
 
 * `geerlingguy.apache <https://github.com/geerlingguy/ansible-role-apache>`_
@@ -37,5 +37,5 @@ disposal. A few of them have been checked out before/while writing this role:
 * And peeked at a few more.
 
 However, none of the already existing roles where found to be a suitable start for
-Apache support in Debops so this role has been designed and written from scratch.
+Apache support in DebOps so this role has been designed and written from scratch.
 Unfortunately, that workflow is not uncommon considering the quality requirements and standards of DebOps.
