@@ -8,9 +8,6 @@ Design goals
 
 * Try not to modify/replace configuration files which are maintained by Debian.
   In particular the :file:`/etc/apache2/apache2.conf` is not altered.
-* The ``IfVersion`` directive is not used to keep the number of enabled modules
-  as minimum as possible. Instead the configuration is generated for the
-  currently detected Apache version. FIXME, version_module is compiled in :)
 * Most variables which directly correspond to a Apache directive are not masked
   or otherwise changed (for example using ``True``, ``False`` for directives
   which expect ``on``, ``off`` is *not* supported).

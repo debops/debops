@@ -32,6 +32,8 @@
 .. _Apache MaxRequestWorkers directive documentation: https://httpd.apache.org/docs/current/mod/mpm_common.html#maxrequestworkers
 .. _Apache mod_status documentation: https://httpd.apache.org/docs/current/mod/mod_status.html
 .. _Apache mod_status: https://httpd.apache.org/docs/current/mod/mod_status.html
+.. _Apache mod_version: https://httpd.apache.org/docs/current/mod/mod_version.html
+.. _Apache IfVersion directive: https://httpd.apache.org/docs/current/mod/mod_version.html#ifversion
 .. _Apache Location directive: https://httpd.apache.org/docs/current/mod/core.html#location
 .. _Apache Location directives: https://httpd.apache.org/docs/current/mod/core.html#location
 .. _Apache ExtendedStatus directive documentation: https://httpd.apache.org/docs/current/mod/core.html#extendedstatus

@@ -2,6 +2,65 @@
 #}
 {% import 'debops__tpl_macros.j2' as debops__tpl_macros with context %}
 
+{% macro get_min_version_wrapped(content, version, compare_operator) %}{# [[[ #}
+{# Examples:
+
+{{ get_min_version_wrapped('# 2.3.0 directive', "2.3", ">=") }}
+{{ get_min_version_wrapped('# 2.4.0 directive', "2.4", ">=") }}
+{{ get_min_version_wrapped('# 2.4.1 directive', "2.4.1", ">=") }}
+{{ get_min_version_wrapped('# 2.5.0 directive', "2.5", ">=") }}
+
+#}
+{% set version = '==' if (version == '=') else version %}
+{% set apache__tpl_compare_operator_includes_equal = True if (compare_operator in ['>=', '<=', '==']) else False %}
+{% if (version | version_compare(debops__tpl_macros.get_apache_min_version(), compare_operator))
+    or (version | version_compare(debops__tpl_macros.get_apache_min_version(), ">")) %}
+{%   if apache__tpl_compare_operator_includes_equal and (version | version_compare(debops__tpl_macros.get_apache_min_version(), "==")) %}
+{{     content -}}
+{%   else %}
+<IfVersion {{ compare_operator }} {{ version }}>
+    {{ debops__tpl_macros.indent(content, 4) }}
+</IfVersion>
+{%   endif %}
+{% endif %}
+{% endmacro %}{# ]]] #}
+
+{% macro get_version_wrapped(content, version, compare_operator, fallback_content=False) %}{# [[[ #}
+{# This macro has not been extensivly tested yet. If it contains bugs please try to debug it if you need it.
+
+Examples:
+
+{{ get_version_wrapped('# 2.3.0 directive', "2.3", ">=", '# Prior to 2.3 directive') }}
+{{ get_version_wrapped('# 2.4.0 directive', "2.4", ">=", '# Prior to 2.4 directive') }}
+{{ get_version_wrapped('# 2.4.1 directive', "2.4.1", ">=", '# Prior to 2.4.1 directive') }}
+{{ get_version_wrapped('# 2.5.0 directive', "2.5", ">=", '# Prior to 2.5 directive') }}
+
+#}
+{% set version = '==' if (version == '=') else version %}
+{% set apache__tpl_xor_compare_operator_map = {} %}
+{% set apache__tpl_xor_compare_operator_list = [
+    ('==', '!='),
+    ('>=', '<'),
+    ('<=', '>'),
+] %}
+{% for compare_operator, xor_compare_operator in apache__tpl_xor_compare_operator_list %}
+{%   set _ = apache__tpl_xor_compare_operator_map.update({ compare_operator: xor_compare_operator }) %}
+{%   set _ = apache__tpl_xor_compare_operator_map.update({ xor_compare_operator: compare_operator }) %}
+{% endfor %}
+{% if apache__config_use_if_version|bool %}
+{{   get_min_version_wrapped(content, version, compare_operator) -}}
+{%   if fallback_content != False %}
+{{     get_min_version_wrapped(fallback_content, version, apache__tpl_xor_compare_operator_map[compare_operator]) -}}
+{%   endif %}
+{% else %}
+{%   if debops__tpl_macros.get_apache_version() | version_compare(version, compare_operator) %}
+{{     content -}}
+{%   elif fallback_content != False %}
+{{     fallback_content -}}
+{%   endif %}
+{% endif %}
+{% endmacro %}{# ]]] #}
+
 {% macro get_server_name_aliases(name_item) %}{# [[[ #}
 {% set apache__tpl_names = debops__tpl_macros.get_yaml_list_for_elem(name_item) | from_yaml %}
 {% if not apache__tpl_names %}
@@ -107,12 +166,9 @@ DocumentRoot {{ item.root|d(item.document_root) | quote }}
 Options {{ debops__tpl_macros.get_yaml_list_for_elem(item.options|d(apache__vhost_options))|from_yaml | join(" ") }}
 AllowOverride {{ debops__tpl_macros.get_yaml_list_for_elem(item.allow_override|d(apache__vhost_allow_override))|from_yaml | join(" ") }}
 
-{% if debops__tpl_macros.get_apache_version() | version_compare("2.4", ">=") %}
-Require all granted
-{% else %}
-Order allow,deny
-Allow from all
-{% endif %}
+{{ get_version_wrapped('Require all granted', "2.4", ">=",
+'Order allow,deny
+Allow from all') }}
 {% if item.root_directives|d() %}
 
 {{ item.root_directives }}

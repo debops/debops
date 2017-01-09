@@ -11,6 +11,7 @@
 <VirtualHost {{ apache__tpl_macros.get_listen_sockets(item.listen_http|d([]), apache__http_listen) }}>
 
     {{ debops__tpl_macros.indent(apache__tpl_macros.get_server_directives(item), 4) }}
+
     {{ debops__tpl_macros.indent(apache__tpl_macros.get_vhost_content_directives(item, mode='http', https_enabled=apache__tpl_vhost_https_enabled), 4) }}
 
 </VirtualHost>

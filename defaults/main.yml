@@ -149,6 +149,53 @@ apache__http_listen: [ 80 ]
 # List of transport layer ports to listen on for HTTPS connections.
 # Note that changing this variable is currently not supported.
 apache__https_listen: [ 443 ]
+
+                                                                   # ]]]
+# .. envvar:: apache__config_use_if_version [[[
+#
+# Should the `Apache IfVersion directive` be used to generate a generic form
+# of the Apache configuration?
+#
+# ``True``
+#   Default.
+#   Use the `Apache IfVersion directive` to generate a configuration which is
+#   intended to work with as many Apache versions as this role supports.
+#
+#   This has the advantage that if your Apache version does not already support
+#   all features which this role is able to configure then you can upgrade
+#   Apache independently of this role and the new features will be used in
+#   Apache as soon as a recent enough version of Apache starts up.
+#
+#   Note however that it is still recommended to rerun this role against your
+#   host after version upgrades because if certain features are enabled might
+#   not depend on the Apache version alone. For example the version of the used
+#   cryptography library (OpenSSL) is also relevant and checked by this role at
+#   Ansible role execution.
+#
+# ``False``
+#   The configuration is specifically generated for the Apache version which
+#   is detected at Ansible role execution time.
+#
+#   This has the advantage that the generated configuration is potentially
+#   smaller and easier to read.
+#
+apache__config_use_if_version: True
+
+                                                                   # ]]]
+# .. envvar:: apache__config_min_version [[[
+#
+# Specifies the minimum Apache version to support when
+# :envvar:`apache__config_use_if_version` is set to ``True``.
+# By default, this defaults to the current Apache major and minor version
+# because ``major.minor`` version downgrades are considered uncommon and to
+# avoid too much legacy directives.
+#
+# Supported special strings:
+#
+# ``current_major_minor``
+#   Gets replaced by the currently detected ``major.minor`` version.
+#
+apache__config_min_version: 'current_major_minor'
                                                                    # ]]]
                                                                    # ]]]
 # Filesystem access [[[

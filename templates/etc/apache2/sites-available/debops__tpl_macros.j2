@@ -50,7 +50,14 @@
 {{ ansible_local.apache.version
    if (ansible_local|d() and ansible_local.apache|d() and
        ansible_local.apache.version|d())
-   else "2.4.0" }}
+   else "2.4.0" -}}
+{% endmacro %}{# ]]] #}
+
+{% macro get_apache_min_version() %}{# [[[ #}
+{{ ansible_local.apache.min_version
+   if (ansible_local|d() and ansible_local.apache|d() and
+       ansible_local.apache.min_version|d())
+   else "2.4.0" -}}
 {% endmacro %}{# ]]] #}
 
 {% macro get_openssl_version() %}{# [[[ #}
@@ -74,5 +81,5 @@
 ##
 ## Python re.sub seems to default to re.MULTILINE in Ansible.
 #}
-{{ content | indent(width, indentfirst) | regex_replace("[ \\t\\r\\f\\v]+(\\n|$)", "\\1") }}
+{{ content | indent(width, indentfirst) | regex_replace("[ \\t\\r\\f\\v]+(\\n|$)", "\\1") -}}
 {% endmacro %}{# ]]] #}

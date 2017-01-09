@@ -31,6 +31,10 @@ Added
   :envvar:`apache__status_enabled` to ``True`` to enable it and make the status
   page accessible from localhost. [ypid_]
 
+- Add support for generic Apache template generation using the `Apache IfVersion directive`_.
+  This feature can be configured by :envvar:`apache__config_use_if_version` and
+  :envvar:`apache__config_min_version`. [ypid_]
+
 Changed
 ~~~~~~~
 
