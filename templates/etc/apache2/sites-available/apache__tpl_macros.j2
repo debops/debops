@@ -145,6 +145,19 @@ RewriteRule "^{{ item.status_location|d(apache__status_location) }}" "-" [L]
 {% endif %}
 {% endmacro %}{# ]]] #}
 
+{% macro get_document_root_directives(item) %}{# [[[ #}
+Options {{ debops__tpl_macros.get_yaml_list_for_elem(item.options|d(apache__vhost_options))|from_yaml | join(" ") }}
+AllowOverride {{ debops__tpl_macros.get_yaml_list_for_elem(item.allow_override|d(apache__vhost_allow_override))|from_yaml | join(" ") }}
+
+{{ get_version_wrapped('Require all granted', "2.4", ">=",
+'Order allow,deny
+Allow from all') -}}
+{% if item.root_directives|d() %}
+
+{{ item.root_directives }}
+{% endif %}
+{% endmacro %}{# ]]] #}
+
 {% macro get_content_directives(item) %}{# [[[ #}
 {% if item.include|d() %}
 {% for include_file in debops__tpl_macros.get_yaml_list_for_elem(item.include)|from_yaml %}
@@ -163,17 +176,7 @@ DocumentRoot {{ item.root|d(item.document_root) | quote }}
 {{ get_alias(item.alias, item.root|d(item.document_root)) }}
 {%- endif %}
 <Directory {{ item.root|d(item.document_root) | quote }}>
-Options {{ debops__tpl_macros.get_yaml_list_for_elem(item.options|d(apache__vhost_options))|from_yaml | join(" ") }}
-AllowOverride {{ debops__tpl_macros.get_yaml_list_for_elem(item.allow_override|d(apache__vhost_allow_override))|from_yaml | join(" ") }}
-
-{{ get_version_wrapped('Require all granted', "2.4", ">=",
-'Order allow,deny
-Allow from all') }}
-{% if item.root_directives|d() %}
-
-{{ item.root_directives }}
-{% endif %}
-
+    {{ debops__tpl_macros.indent(get_document_root_directives(item), 4) -}}
 </Directory>
 {% endif %}
 {% if item.raw_content|d() %}
