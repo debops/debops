@@ -77,7 +77,7 @@ sysctl__shared_memory_map:
 #
 # Should the paging related parameters be configured by the ``debops.sysctl``
 # role?
-sysctl__paging_configure: not (ansible_virtualization_type == "openvz")
+sysctl__paging_configure: '{{ True if (ansible_virtualization_type != "openvz") else False }}'
 
                                                                    # ]]]
 # .. envvar:: sysctl__swappiness [[[
