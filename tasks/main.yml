@@ -1,6 +1,9 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+- name: DebOps pre_tasks hook
+  include: "{{ lookup('task_src', 'pki/pre_main.yml') }}"
+
 - name: Generate random session token
   set_fact:
     pki_fact_session_token: '{{ 9999999999999999999999999999999999999 | random | string | hash("sha256") }}'
@@ -508,4 +511,8 @@
 - name: Flush handlers for PKI if needed
   meta: flush_handlers
   when: pki_register_facts|changed
+
+- name: DebOps post_tasks hook
+  include: "{{ lookup('task_src', 'pki/post_main.yml') }}"
+
 # ]]]
