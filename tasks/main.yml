@@ -15,8 +15,17 @@
     name: '{{ item }}'
     system: 'yes'
     state: 'present'
-  with_items: '{{ auth_system_groups }}'
+  with_items: '{{ (auth_system_groups + auth_admin_groups) | unique }}'
   when: auth_system_groups
+
+- name: Include system administrator accounts in admin groups
+  user:
+    name: '{{ item }}'
+    state: 'present'
+    groups: '{{ ([ auth_admin_groups ] if auth_admin_groups is string else auth_admin_groups) | join(",") }}'
+    append: True
+  with_flattened: '{{ auth_admin_users }}'
+  when: auth_admin_users
 
 - name: Configure admin access in sudo
   template:
