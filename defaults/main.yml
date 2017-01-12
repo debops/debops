@@ -117,14 +117,18 @@ core__admin_groups: [ 'admins' ]
                                                                    # ]]]
 # .. envvar:: core__admin_users [[[
 #
-# List of system administrator accounts. If it's empty, Ansible will check what
-# accounts are in the group specified above and include them in this list
-# automatically. These accounts are used in different roles to automatically
-# create administrative accounts in different services.
+# List of system administrator accounts. Ansible will check what accounts are
+# in the groups specified above and include them in this list automatically.
+# These accounts are used in different roles to automatically create
+# administrative accounts in different services.
 #
 # To override the admin accounts autodetected by Ansible, specify them in this
 # list.
-core__admin_users: []
+core__admin_users: '{{ (ansible_user
+                        if ansible_user|d()
+                        else (ansible_ssh_user
+                              if ansible_ssh_user|d()
+                              else lookup("env", "USER"))) }}'
 
                                                                    # ]]]
 # .. envvar:: core__admin_blacklist_default_users [[[
