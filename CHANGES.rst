@@ -65,3 +65,6 @@ Fixed
 
 - Fix ``item.https_enabled`` support for virtual hosts. This variable was
   ignored previously using the global default (``True``) directly. [ypid_]
+
+- Fix role run with ``apache__deploy_state == "absent"`` after the role has
+  been run with ``present`` before. [ypid_]
