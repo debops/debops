@@ -25,7 +25,7 @@
     groups: '{{ ([ auth_admin_groups ] if auth_admin_groups is string else auth_admin_groups) | join(",") }}'
     append: True
   with_flattened: '{{ auth_admin_users }}'
-  when: auth_admin_users
+  when: auth_admin_users|d()
 
 - name: Configure admin access in sudo
   template:
