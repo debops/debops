@@ -12,7 +12,18 @@ The current role maintainer is drybjed.
 `debops.auth master`_ - unreleased
 ----------------------------------
 
-.. _debops.auth master: https://github.com/debops/ansible-auth/compare/v0.3.3...master
+.. _debops.auth master: https://github.com/debops/ansible-auth/compare/v0.3.4...master
+
+
+`debops.auth v0.3.4`_ - 2017-01-13
+----------------------------------
+
+.. _debops.auth v0.3.4: https://github.com/debops/ansible-auth/compare/v0.3.3...v0.3.4
+
+Fixed
+~~~~~
+
+- Fix wrong condition syntax in admin users task. [drybjed_]
 
 
 `debops.auth v0.3.3`_ - 2017-01-11
