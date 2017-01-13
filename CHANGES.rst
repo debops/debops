@@ -27,7 +27,7 @@ Changed
 
 - Use the ``inventory_hostname`` instead of the host's FQDN for the Ansible
   ``delegate_to`` option. This ensures that configuration applied by both
-  MariaDB roles is idempotent. [drybjed_]
+  MariaDB roles is idempotent. [drybjed]
 
 
 `debops.mariadb_server v0.2.4`_ - 2016-08-01
