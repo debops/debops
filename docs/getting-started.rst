@@ -34,7 +34,7 @@ filename extensions at certain parts of the configuration:
   ``rsyslog`` in different parts of the configuration.
 
 ``/etc/rsyslog.d/*.system``
-  These configuration files are meant to be used to define log meatching rules
+  These configuration files are meant to be used to define log matching rules
   specific to a given system, to store logs in different files.
 
 ``/etc/rsyslog.d/*.remote``
