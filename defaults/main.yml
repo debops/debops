@@ -138,6 +138,16 @@ firejail__role_program_sandboxes:
     # Might conflict with other programs using it. For example, Ansible and
     # BorgBackup did not work with this enabled system wide.
     system_wide_sandboxed: 'absent'
+  tar:
+    # Causes dpkg install tasks to fail.
+    system_wide_sandboxed: 'absent'
+  unrar:
+    # Did not extract when run in sandbox.
+    # `unp` seems unable to detect that `unrar` is installed when with the symlink.
+    system_wide_sandboxed: 'absent'
+  git:
+    # Needed everywhere. Did not work well with zsh and does not work for root because the profile uses --noroot.
+    system_wide_sandboxed: 'absent'
 
                                                                    # ]]]
 # .. envvar:: firejail__combined_program_sandboxes [[[

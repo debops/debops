@@ -34,3 +34,5 @@ Fixed
   ``present``). [ypid_]
 
 - Note in the documentation that this role requires Jinja 2.8 or later. [ypid_]
+
+- Don’t sandbox ``tar``, ``unrar`` and ``git`` by default. [ypid_]
