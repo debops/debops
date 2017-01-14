@@ -123,6 +123,8 @@ Changed
   might only want to run a minimum set of roles.
   [ypid_]
 
+- Update the debops.owncloud_ with Apache playbook to the new version. [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 
