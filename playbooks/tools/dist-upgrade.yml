@@ -41,42 +41,42 @@
     # Mail contents
     dist_upgrade_mail_body: |
       Ansible performed an unattended 'apt-get dist-upgrade' on host
-      
+
           {{ ansible_fqdn }}
-      
+
       Upgrade has been orchestrated by {{ ansible_env.SUDO_USER }}.
       You should reboot {{ ansible_fqdn }} as soon
       as possible to complete the upgrade process and boot
       with new kernel.
-      
+
       Log from the upgrade is included below:
-      
+
       ============================
           apt-get dist-upgrade
       ============================
-      
+
       {% for line in dist_upgrade_register_upgrade.stdout_lines %}
       {% if not line | match('^\(Reading\s+database.*%') and
             not line | match('^\(Reading\s+database\s+\.\.\.\s+$') %}
       {{ line }}
       {% endif %}
       {% endfor %}
-      
+
       ==========================
           apt-get autoremove
       ==========================
-      
+
       {% for line in dist_upgrade_register_autoremove.stdout_lines %}
       {% if not line | match('^\(Reading\s+database.*%') and
             not line | match('^\(Reading\s+database\s+\.\.\.\s+$') %}
       {{ line }}
       {% endif %}
       {% endfor %}
-      
+
       =========================
           apt-get autoclean
       =========================
-      
+
       {% for line in dist_upgrade_register_autoclean.stdout_lines %}
       {% if not line | match('^\(Reading\s+database.*%') and
             not line | match('^\(Reading\s+database\s+\.\.\.\s+$') %}
@@ -180,4 +180,3 @@
       file:
         path: '{{ dist_upgrade_lockfile }}'
         state: 'absent'
-
