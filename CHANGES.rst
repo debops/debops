@@ -16,7 +16,7 @@ The current role maintainer_ is ypid_.
 `debops.cryptsetup master`_ - unreleased
 ----------------------------------------
 
-.. _debops.cryptsetup master: https://github.com/debops/ansible-owncloud/compare/v0.4.0...master
+.. _debops.cryptsetup master: https://github.com/debops/ansible-cryptsetup/compare/v0.4.0...master
 
 Added
 ~~~~~
@@ -24,6 +24,22 @@ Added
 - Allow to configure the command to shredder/delete the keyfile and header
   backup on remote systems using :envvar:`cryptsetup__keyfile_shred_command`
   and :envvar:`cryptsetup__header_backup_shred_command`. [ypid_]
+
+- Allow to disable management of the filesystem layer for a given device using
+  :ref:`item.manage_filesystem <cryptsetup__devices_manage_filesystem>` and
+  :ref:`item.create_filesystem <cryptsetup__devices_create_filesystem>`. [ypid_]
+
+- Support to use multiple ciphers and corresponding keys to encrypt one filesystem.
+  Refer to :ref:`cryptsetup__ref_devices_chaining_multiple_ciphers` for
+  details. [ypid_]
+
+- Support :command:`cryptsetup` plain mode. [ypid_]
+
+- Support to setup an encrypted swap space (with random key or with persistent key).
+  Refer to :ref:`cryptsetup__ref_devices_swap_with_random_key` for details. [ypid_]
+
+- Support to setup filesystems using a random key on boot.
+  Refer to :ref:`cryptsetup__ref_devices_tmp_with_random_key` for details. [ypid_]
 
 Changed
 ~~~~~~~
@@ -34,25 +50,28 @@ Changed
   The minimum Ansible version without known vulnerabilities is Ansible 2.1.3.
   Refer to `Ansible Security`_ for details. [ypid_]
 
+- Require Ansible v2.1 for the role which was needed to implement support for
+  chaining multiple cyphers. [ypid_]
+
 - Allow to disable management of the filesystem layer for a given device using
   :ref:`item.manage_filesystem <cryptsetup__devices_manage_filesystem>`.
   [ypid_]
 
-- Support to use multiple ciphers and corresponding keys to encrypt one filesystem.
-  Refer to :ref:`cryptsetup__ref_devices_chaining_multiple_ciphers` for
-  details. [ypid_]
+- Remove the :command:`cryptsetup` device mode ``luks`` from the
+  :envvar:`cryptsetup__crypttab_options` default variable.
+  Note that the device mode MUST NOT be specified using
+  :envvar:`cryptsetup__crypttab_options` or
+  :ref:`item.crypttab_options <cryptsetup__devices_crypttab_options>` from now on!
+  The :ref:`item.mode <cryptsetup__devices_mode>` option can be used to change
+  the mode. [ypid_]
 
-Changed
-~~~~~~~
-
-- Require Ansible v2.1 for the role which was needed to implement support for
-  chaining multiple cyphers. [ypid_]
-
+- Set :envvar:`cryptsetup__cipher` explicitly to ``aes-xts-plain64`` and use it also
+  in plain mode which has a different complied-in default than LUKS mode. [ypid_]
 
 `debops.cryptsetup v0.4.0`_ - 2016-10-23
 ----------------------------------------
 
-.. _debops.cryptsetup v0.4.0: https://github.com/debops/ansible-owncloud/compare/v0.3.1...v0.4.0
+.. _debops.cryptsetup v0.4.0: https://github.com/debops/ansible-cryptsetup/compare/v0.3.1...v0.4.0
 
 Added
 ~~~~~

@@ -20,19 +20,24 @@ cryptsetup__devices
 -------------------
 
 The :envvar:`cryptsetup__devices` and similar lists allow you to specify
-device configuration. Each item of those lists is a dictionary with the following keys:
+device configuration. The order can be important because
+:ref:`devices depend on each other <cryptsetup__ref_devices_chaining_multiple_ciphers>`
+and this will determine the order in which the devices appear in :file:`/etc/crypttab`.
 
 Note the following list only documents the common parameters. The role allows
 you to use more specific parameters which are not documented below.
 
+Each item of those lists is a dictionary with the following documented keys:
+
 ``name``
-  Required, string. Name of the plaintext device mapper target and the mount point.
+  Required, string. Name of the `plaintext device mapper target` and the mount point
+  (unless overwritten by :ref:`item.mount <cryptsetup__devices_mount>`).
   Must be unique among all device mapper targets and should not be changed once
   it was used.
 
   If you want to change it, you can set :ref:`state <cryptsetup__devices_state>`
   to :ref:`absent <cryptsetup__devices_state_absent>`, execute the role, rename
-  the secrets directory corresponding to the name name, adapt your inventory
+  the secrets directory corresponding to the name, adapt your inventory
   accordingly and run the role again to configure the item with the new name.
 
 .. _cryptsetup__devices_ciphertext_block_device:
@@ -58,12 +63,41 @@ you to use more specific parameters which are not documented below.
 
   Default to :envvar:`cryptsetup__use_uuid`.
 
+.. _cryptsetup__devices_mode:
+
+``mode``
+  Optional, string. The mode in which :command:`cryptsetup` should operate.
+  Supported modes/extensions:
+
+  * ``plain``
+  * ``luks``
+
+  Defaults to ``luks``. There is no global variable to change this default.
+  Refer to :manpage:`cryptsetup(8)` for more details.
+
+.. _cryptsetup__devices_offset:
+
+``offset``
+  Optional, integer Start offset of the `Ciphertext block device` which will be
+  mapped to block 0 of the `Plaintext device mapper target`.
+  This option only has an effect in ``plain`` :ref:`item.mode <cryptsetup__devices_mode>`.
+  Defaults to ``2048`` for the reasons mentioned in `Swap encryption: UUID and LABEL`_.
+
 .. _cryptsetup__devices_crypttab_options:
 
 ``crypttab_options``
   Optional, list of strings. Each string represents an option to configure for
-  each device in :file:`/etc/crypttab`. See :manpage:`crypttab(5)` for details.
+  the device in :file:`/etc/crypttab`. See :manpage:`crypttab(5)` for details.
   Default to :envvar:`cryptsetup__crypttab_options`.
+
+  Note that :command:`cryptsetup` options need to be specified using there corresponding
+  parameters as documented in this section. If an option is not documented
+  here, that is where you can use ``crypttab_options`` for.
+  For example :ref:`item.hash <cryptsetup__devices_hash>` could also be
+  specified using ``hash=sha256`` as value for ``crypttab_options`` but
+  this is not supported.
+
+.. _cryptsetup__devices_keyfile:
 
 ``keyfile``
   Optional, string. File path for the keyfile on the Ansible controller. Will
@@ -76,6 +110,25 @@ you to use more specific parameters which are not documented below.
   .. code:: jinja
 
      {{ cryptsetup__secret_path + "/" + item.name + "/keyfile.raw" }}
+
+.. _cryptsetup__devices_remote_keyfile:
+
+``remote_keyfile``
+  Optional, string. File path for the keyfile on the remote system.
+  If this option is given it will be used directly and the
+  :ref:`keyfile <cryptsetup__devices_state_unmounted>` will have no effect.
+  It is expected that this file is already present on the remote system.
+  Also note that the remote keyfile is not copied or backed up anywhere. The
+  given file path is just used for opening/mapping the device.
+  This option can also be a device path which will be used by dm-crypt to read
+  the key like :file:`/dev/urandom`, note however that LUKS requires a
+  persistent key and therefore does not support random data keys.
+  If a :ref:`state <cryptsetup__devices_state>` is set which causes the device
+  to become absent, the given remote keyfile will be made absent as well (but
+  only if it is a regular file)!
+  This option does not work with the
+  :ref:`ansible_controller_mounted state <cryptsetup__devices_state_ansible_controller_mounted>`
+  and the role will abort immediately if that combination is used.
 
 .. _cryptsetup__devices_backup_header:
 
@@ -90,7 +143,33 @@ you to use more specific parameters which are not documented below.
 
   Set to ``False`` to disable header backup creation and to ensure that the
   header backup is absent on the remote system.
+  This option only has an effect in ``luks`` :ref:`item.mode <cryptsetup__devices_mode>`.
   Defaults to :envvar:`cryptsetup__header_backup`.
+
+.. _cryptsetup__devices_swap:
+
+``swap``
+  Optional, boolean. Should the device be used as encrypted swap space?
+  When set to ``True``, the option
+  :ref:`item.manage_filesystem <cryptsetup__devices_manage_filesystem>`
+  is ignored.
+  Refer to debops.sysctl_ for paging and swapping related kernel settings.
+  Defaults ``False``.
+
+.. _cryptsetup__devices_swap_priority:
+
+``swap_priority``
+  Optional, integer. Default swap device priority, from ``-1`` to ``32767``.
+  Higher numbers indicate higher priority.
+  Refer to :manpage:`swapon(8)` for details.
+  Defaults to :envvar:`cryptsetup__swap_priority`.
+
+.. _cryptsetup__devices_swap_options:
+
+``swap_options``
+  Optional, list of strings. Additional swap "mount" options.
+  Not :ref:`item.mount_options <cryptsetup__devices_mount_options>` nor any
+  other global default value is being used for swap options.
 
 .. _cryptsetup__devices_manage_filesystem:
 
@@ -98,6 +177,15 @@ you to use more specific parameters which are not documented below.
   Optional, boolean. Should a filesystem be created on the plaintext device mapper
   target and configured in :file:`/etc/fstab`?
   Defaults ``True``.
+
+.. _cryptsetup__devices_create_filesystem:
+
+``create_filesystem``
+  Optional, boolean. Should a filesystem be created on the plaintext device mapper
+  target? Allows to only disable the creation of the filesystems but still
+  manage an existing filesystem in :file:`/etc/fstab` when
+  :ref:`item.manage_filesystem <cryptsetup__devices_manage_filesystem>` is ``True``.
+  Defaults :ref:`item.manage_filesystem <cryptsetup__devices_manage_filesystem>`.
 
 .. _cryptsetup__devices_fstype:
 
@@ -169,12 +257,12 @@ you to use more specific parameters which are not documented below.
 
   ``present``
     Ensure that the encryption and filesystem layer are in place on the block device.
-    The plaintext device mapper target will be created as needed during the
-    Ansible run to ensure the filesystem on it is present. When it was not
-    available prior to this Ansible run, it will be stopped at the end of the
-    role run again.
+    The `plaintext device mapper target` will be created and opened as needed during the
+    Ansible run to ensure the filesystem on it is present. When the `plaintext
+    device mapper target` was not opened prior to the Ansible run, then it will
+    be stopped at the end of the role run again.
     So basically, this option never changes the mounted/unmounted state of the
-    plaintext device mapper target or the plaintext mount point of the
+    `plaintext device mapper target` or the plaintext mount point of the
     filesystem.
     Note that this option will not fail when the ciphertext block device is not
     available during the Ansible run and the keyfile has not been generated by Ansible.
@@ -197,7 +285,10 @@ you to use more specific parameters which are not documented below.
 .. _cryptsetup__devices_hash:
 
 ``hash``
-  Optional, string. Specifies the hash used in the LUKS key setup scheme and
+  Optional, string.
+  Specifies the passphrase hash.
+  For the ``luks`` :ref:`item.mode <cryptsetup__devices_mode>` it
+  specifies the hash used in the LUKS key setup scheme and
   volume key digest for :command:`cryptsetup luksFormat`.
   Defaults to :envvar:`cryptsetup__hash`.
 
@@ -210,13 +301,14 @@ you to use more specific parameters which are not documented below.
 .. _cryptsetup__devices_key_size:
 
 ``key_size``
-  Optional, int. Key size in bits.
+  Optional, integer. Key size in bits.
   Defaults to :envvar:`cryptsetup__key_size`.
 
 .. _cryptsetup__devices_iter_time:
 
 ``iter_time``
   Optional, int. The number of milliseconds to spend with PBKDF2 passphrase processing.
+  This option only has an effect in ``luks`` :ref:`item.mode <cryptsetup__devices_mode>`.
   Defaults to :envvar:`cryptsetup__iter_time`.
 
 Example for encrypting a partition
@@ -232,6 +324,49 @@ mounted at boot:
 
      - name: 'sdb5_crypt'
        ciphertext_block_device: '/dev/sdb5'
+
+.. _cryptsetup__ref_devices_swap_with_random_key:
+
+Example for an encrypted swap partition using a random key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Setup an encrypted swap partition which uses a new random key picked at each boot.
+Hibernation won’t work with that as the system won’t have access to the
+cleartext swap data the next time it starts as a new random key is being used
+to decrypt/encrypt the device on each boot.
+
+.. code:: yaml
+
+   cryptsetup__devices:
+
+     - name: 'rand_key_swap0'
+       mode: 'plain'
+       swap: True
+       remote_keyfile: '/dev/urandom'
+       ciphertext_block_device: '/dev/disk/by-partuuid/a7a12244-a4aa-42b7-b605-997165b3fbac'
+
+.. _cryptsetup__ref_devices_tmp_with_random_key:
+
+Example for an encrypted /tmp using a random key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Setup an encrypted :file:`/tmp` which uses a new random key picked at each boot.
+A new filesystem will be created on each boot. By default ``ext4`` will be used.
+
+.. code:: yaml
+
+   cryptsetup__devices:
+
+     - name: 'rand_key_tmp'
+       mode: 'plain'
+       mount: '/tmp'
+       remote_keyfile: '/dev/urandom'
+       ciphertext_block_device: '/dev/disk/by-partuuid/a7a12244-a4aa-42b7-b605-997165b3fbac'
+       create_filesystem: False
+       crypttab_options: '{{ ["tmp"] + (cryptsetup__crypttab_options|d([]) | list) }}'
+       # crypttab_options: '{{ ["tmp=" + cryptsetup__fstype] + (cryptsetup__crypttab_options|d([]) | list) }}'
+       ## This seems to not work with Debian jessie (results in systemd waiting forever for the cleartext target).
+       ## Using "tmp" instead worked.
 
 .. _cryptsetup__ref_devices_chaining_multiple_ciphers:
 
