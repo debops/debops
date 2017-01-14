@@ -115,6 +115,8 @@ Changed
   be updated to use the new module ``atributes`` parameter instead of
   specifying LDAP entry parameters directly as module parameters. [drybjed_]
 
+- Update the debops.swapfile_ playbook to the new version. [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 
