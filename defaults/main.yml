@@ -19,8 +19,14 @@
 # the system against known attacks.
 kernel_module__security_list:
 
-  ## Protecting against Firewire DMA: https://security.stackexchange.com/a/49158/79474
+  ## Protecting against Firewire DMA:
+  ## * https://security.stackexchange.com/a/49158/79474
+  ## * https://github.com/lfit/itpol/blob/master/linux-workstation-security.md#blacklisting-modules
   - name: 'firewire-sbp2'
+    blacklist: True
+  - name: 'firewire-core'
+    blacklist: True
+  - name: 'thunderbolt'
     blacklist: True
 
   ## http://wiki.qemu.org/Features-Done/VirtIORNG

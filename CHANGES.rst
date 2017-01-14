@@ -41,3 +41,6 @@ Changed
      git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(kernel_module)_([^_])/\1__\2/g;'
 
   [ypid_]
+
+- Blacklist ``firewire-core`` and ``thunderbolt`` by default using the
+  :envvar:`kernel_module__security_list` variable. [ypid_]
