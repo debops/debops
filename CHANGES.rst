@@ -117,6 +117,12 @@ Changed
 
 - Update the debops.swapfile_ playbook to the new version. [ypid_]
 
+- Treat the ``debops.core`` role like a normal service role by moving it to
+  :file:`playbooks/service/core.yml`.
+  This change is part of my effort to make DebOps usable on Qubes OS where you
+  might only want to run a minimum set of roles.
+  [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 
