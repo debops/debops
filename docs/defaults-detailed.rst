@@ -11,7 +11,7 @@ Here you can find documentation and examples for them.
 kernel_module__list
 -------------------
 
-``kernel_module__list`` and similar lists consist of dictionaries with the
+:envvar:`kernel_module__list` and similar lists consist of dictionaries with the
 following supported keys:
 
 ``name``

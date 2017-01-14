@@ -26,7 +26,7 @@ Here's an example playbook that uses the ``debops-contrib.kernel_module`` role:
 .. literalinclude:: playbooks/kernel_module.yml
    :language: yaml
 
-This playbooks is shipped with this role under
+The playbooks is shipped with this role under
 :file:`./docs/playbooks/kernel_module.yml` from which you can symlink it to your
 playbook directory.
 In case you use multiple `DebOps Contrib`_ roles, consider using the
