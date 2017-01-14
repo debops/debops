@@ -116,7 +116,7 @@ debops.postfix_ role are written in
 can be used in other inventory groups or for separate hosts.
 
 ansible_user
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
 
 This is an internal Ansible variable which is used to determine what remote
 user account will be used to login to the server. If it's not explicitly set,
