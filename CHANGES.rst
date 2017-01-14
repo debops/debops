@@ -18,6 +18,13 @@ The current role maintainer_ is ypid_.
 
 .. _debops.cryptsetup master: https://github.com/debops/ansible-owncloud/compare/v0.4.0...master
 
+Added
+~~~~~
+
+- Allow to configure the command to shredder/delete the keyfile and header
+  backup on remote systems using :envvar:`cryptsetup__keyfile_shred_command`
+  and :envvar:`cryptsetup__header_backup_shred_command`. [ypid_]
+
 Changed
 ~~~~~~~
 
@@ -26,6 +33,20 @@ Changed
   violates one of the design goals of the role.
   The minimum Ansible version without known vulnerabilities is Ansible 2.1.3.
   Refer to `Ansible Security`_ for details. [ypid_]
+
+- Allow to disable management of the filesystem layer for a given device using
+  :ref:`item.manage_filesystem <cryptsetup__devices_manage_filesystem>`.
+  [ypid_]
+
+- Support to use multiple ciphers and corresponding keys to encrypt one filesystem.
+  Refer to :ref:`cryptsetup__ref_devices_chaining_multiple_ciphers` for
+  details. [ypid_]
+
+Changed
+~~~~~~~
+
+- Require Ansible v2.1 for the role which was needed to implement support for
+  chaining multiple cyphers. [ypid_]
 
 
 `debops.cryptsetup v0.4.0`_ - 2016-10-23
