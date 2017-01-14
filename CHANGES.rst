@@ -59,6 +59,10 @@ Fixed
   We are aware of this but there is not much we can do yet as Ansible 2.1
   support should be retained for this release. [ypid_]
 
+- Fix :envvar:`owncloud__webserver` and ``owncloud.webserver`` Ansible fact
+  generation. ``groups`` is not a list of the groups of the current host but a
+  dictionary of all groups. Use ``group_names``. [ypid_]
+
 Security
 ~~~~~~~~
 

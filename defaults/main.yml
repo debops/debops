@@ -1461,8 +1461,8 @@ owncloud__theme_conf_map:
 # Variable containing the used webserver which can be used.
 # Refer to :ref:`owncloud__ref_getting_started` for how to switch webservers.
 owncloud__webserver: '{{
-    ("nginx" if ((["debops_service_owncloud", "debops_service_owncloud_nginx"] | intersect(groups) | length) > 0) else "") +
-    ("apache" if ((["debops_service_owncloud_apache"] | intersect(groups) | length) > 0) else "")
+    ("nginx" if ((["debops_service_owncloud", "debops_service_owncloud_nginx"] | intersect(group_names) | length) > 0) else "") +
+    ("apache" if ((["debops_service_owncloud_apache"] | intersect(group_names) | length) > 0) else "")
   }}'
 
                                                                    # ]]]
@@ -1563,6 +1563,18 @@ owncloud__apt_preferences__dependent_list_optional:
 owncloud__apache__dependent_packages:
   - 'libapache2-mod-php5'
 
+
+# .. envvar:: owncloud__apache__dependent_snippets
+#
+# Apache configuration snippets managed by the debops.apache_ role.
+# Disable the :file:`/etc/apache2/conf-enabled/owncloud.conf` which configures
+# ownCloud below ``/owncloud``.
+owncloud__apache__dependent_snippets:
+  'owncloud':
+    enabled: False
+    type: 'dont-create'
+
+
 # .. envvar:: owncloud__apache__dependent_vhosts
 #
 # Apache virtual host managed by the debops.apache_ role.
@@ -1573,7 +1585,6 @@ owncloud__apache__dependent_vhosts:
     by_role: 'debops.owncloud'
     filename: 'debops.owncloud'
     root: '{{ owncloud__home }}'
-    alias: '/'
     options: '+FollowSymLinks'
     allow_override: 'All'
     root_directives: |
