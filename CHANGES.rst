@@ -29,6 +29,9 @@ Added
 - Add Ansible tags for env roles. To only prepare the ownCloud role
   environment, you can use the ``role::owncloud:env`` tag. [ypid_]
 
+- Provide various configuration options from the :file:`config.php` file using
+  Ansible facts. [ypid_]
+
 Changed
 ~~~~~~~
 
