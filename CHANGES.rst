@@ -69,6 +69,13 @@ Fixed
   generation. ``groups`` is not a list of the groups of the current host but a
   dictionary of all groups. Use ``group_names``. [ypid_]
 
+- Don’t attempt to run certain :command:`occ` subcommands when ownCloud is in
+  maintenance mode as some subcommands are not available in maintenance mode.
+  This kind of restricts the use of the maintenance mode for this role when you
+  want to use those :command:`occ` subcommands.
+  As a result, this role does not enable or disable maintenance mode and
+  the role maintainers recommend to leave maintainers mode disabled. [ypid_]
+
 Security
 ~~~~~~~~
 
