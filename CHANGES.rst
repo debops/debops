@@ -35,6 +35,9 @@ Added
   This feature can be configured by :envvar:`apache__config_use_if_version` and
   :envvar:`apache__config_min_version`. [ypid_]
 
+- Add Ansible tags for env roles. To only prepare the Apache role
+  environment, you can use the ``role::apache:env`` tag. [ypid_]
+
 Changed
 ~~~~~~~
 
