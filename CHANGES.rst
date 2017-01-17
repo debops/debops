@@ -26,6 +26,9 @@ Added
 
 - Add support for the `Apache HTTP Server`_, founded by https://www.hamcos.de/. [ypid_]
 
+- Add Ansible tags for env roles. To only prepare the ownCloud role
+  environment, you can use the ``role::owncloud:env`` tag. [ypid_]
+
 Changed
 ~~~~~~~
 
