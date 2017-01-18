@@ -6,4 +6,5 @@ git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '
  | xargs --null sed --in-place --regexp-extended '
      s/owncloud__nginx__servers/owncloud__nginx__dependent_servers/g;
      s/owncloud__nginx__upstream_php/owncloud__nginx__dependent_upstreams/g;
+     s/owncloud__theme_entitiy_name/owncloud__theme_entity_name/g;
    '
