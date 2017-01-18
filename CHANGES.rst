@@ -51,6 +51,9 @@ Changed
   and has already been updated in the `debops-playbooks repository <https://github.com/debops/debops-playbooks>`_
   for feature parity with Ansible version in the future. [drybjed_]
 
+- Fix typo in variable name by renaming ``owncloud__theme_entitiy_name`` to
+  :envvar:`owncloud__theme_entity_name`. [jbicha]
+
 Removed
 ~~~~~~~
 
