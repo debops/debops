@@ -14,12 +14,25 @@ The current role maintainer_ is drybjed_.
 `debops.bootstrap master`_ - unreleased
 ---------------------------------------
 
-.. _debops.bootstrap master: https://github.com/debops/ansible-bootstrap/compare/v0.3.2...master
+.. _debops.bootstrap master: https://github.com/debops/ansible-bootstrap/compare/v0.3.3...master
+
+
+`debops.bootstrap v0.3.3`_ - 2017-01-19
+---------------------------------------
+
+.. _debops.bootstrap v0.3.3: https://github.com/debops/ansible-bootstrap/compare/v0.3.2...v0.3.3
 
 Added
 ~~~~~
+
 - Added support for Ansible 2.0 and higher where `ansible_ssh_user` is deprecated
   and replaced by `ansible_user`. [tallandtree_]
+
+- Change the ``apt`` module to ``package`` to make the role more generic.
+  [JeanVEGA]
+
+- Use the ``inventory_hostname`` variable as a default source of the host's
+  domain instead of ``ansible_domain`` variable. [drybjed_]
 
 
 `debops.bootstrap v0.3.2`_ - 2016-09-13

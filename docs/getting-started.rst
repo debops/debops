@@ -28,6 +28,14 @@ In this case, ``debops.bootstrap`` will configure the hosts so that their Fully
 Qualified Domain Name will be, for example, ``hostname.example.com`` - each
 host will be placed on a subdomain inside the ``example.com`` domain.
 
+You can also set the domain through the inventory directly, by setting it in
+the host's label in the inventory:
+
+.. code-block:: none
+
+   [debops_all_hosts]
+   hostname.example.com
+
 Example playbook
 ----------------
 
