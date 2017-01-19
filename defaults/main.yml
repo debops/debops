@@ -27,13 +27,13 @@ bootstrap__hostname_domain_config_enabled: '{{ (True
 # .. envvar:: bootstrap__domain [[[
 #
 # Set custom DNS domain on a given host.
-bootstrap__domain: '{{ ansible_domain }}'
+bootstrap__domain: '{{ inventory_hostname.split(".")[1:] | join(".") }}'
 
                                                                    # ]]]
 # .. envvar:: bootstrap__hostname [[[
 #
 # Set custom DNS hostname on a given host.
-bootstrap__hostname: '{{ inventory_hostname_short | d(inventory_hostname) }}'
+bootstrap__hostname: '{{ inventory_hostname_short | d(inventory_hostname.split(".")[0]) }}'
 
                                                                    # ]]]
 # .. envvar:: bootstrap__hostname_v6_loopback [[[
