@@ -29,6 +29,8 @@ Changed
   ``delegate_to`` option. This ensures that configuration applied by both
   MariaDB roles is idempotent. [drybjed]
 
+- Fix typo in variable name ``mariadb_server_backup``. [ganto]
+
 
 `debops.mariadb_server v0.2.4`_ - 2016-08-01
 --------------------------------------------
