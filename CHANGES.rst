@@ -18,6 +18,16 @@ The current role maintainer_ is drybjed.
 
 .. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.1.7...master
 
+Added
+~~~~~
+
+- Add support for GitLab 8.15. [Oldkarkass]
+
+Changed
+~~~~~~~
+
+- Update ``gitlab.yml`` configuration file template. [Oldkarkass]
+
 
 `debops.gitlab v0.1.7`_ - 2016-11-18
 ------------------------------------
