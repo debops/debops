@@ -18,6 +18,12 @@ The current role maintainer_ is drybjed_
 
 .. _debops.ferm master: https://github.com/debops/ansible-ferm/compare/v0.2.2...master
 
+Added
+~~~~~
+
+- Add a variable which can be used to restrict what network interfaces can be
+  used for connections from Ansible Controller. [gaudenz]
+
 Changed
 ~~~~~~~
 

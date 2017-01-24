@@ -84,6 +84,13 @@ ferm__ansible_controllers: []
 ferm__ansible_controllers_ports: [ 'ssh' ]
 
                                                                    # ]]]
+# .. envvar:: ferm__ansible_controllers_interfaces [[[
+#
+# List of interfaces for the default Ansible Controllers rule. An empty list
+# means all interfaces.
+ferm__ansible_controllers_interfaces: [ ]
+
+                                                                   # ]]]
 # .. envvar:: ferm__default_policy_input [[[
 #
 # Default :command:`iptables` policy for ``INPUT`` chain.
@@ -440,6 +447,7 @@ ferm__rules_filter_ansible_controller:
     comment: 'Accept SSH connections from Ansible Controllers'
     name: 'rules'
     dport: '{{ ferm__ansible_controllers_ports }}'
+    interface: '{{ ferm__ansible_controllers_interfaces }}'
     multiport: True
     accept_any: False
 
