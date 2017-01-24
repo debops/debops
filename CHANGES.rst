@@ -18,6 +18,12 @@ The current role maintainer_ is drybjed_
 
 .. _debops.ferm master: https://github.com/debops/ansible-ferm/compare/v0.2.2...master
 
+Changed
+~~~~~~~
+
+- Reject other protocols besides TCP and UDP on IPv6 networks at the end of the
+  chain. [gaudenz]
+
 
 `debops.ferm v0.2.2`_ - 2016-12-01
 ----------------------------------
