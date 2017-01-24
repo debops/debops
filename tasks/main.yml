@@ -75,7 +75,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  with_items: rsnapshot_servers
+  with_items: '{{ rsnapshot_servers }}'
   when: (inventory_hostname in rsnapshot_clients and
          ((item is defined and item) and item != inventory_hostname and
           item not in rsnapshot_clients and hostvars[item].ansible_fqdn is defined))
@@ -91,7 +91,7 @@
     group: 'root'
     mode: '0644'
   with_nested:
-    - rsnapshot_servers
+    - '{{ rsnapshot_servers }}'
     - [ 'include.txt', 'exclude.txt', 'rsnapshot.conf' ]
   when: (inventory_hostname in rsnapshot_clients and
          ((item.0 is defined and item.0) and item.0 != inventory_hostname and
