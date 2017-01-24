@@ -31,8 +31,8 @@ Example inventory
 ``debops.unattended_upgrades`` is included by default in the :file:`common.yml`
 DebOps playbook; you don't need to do anything to have it installed.
 
-If you want to disable the :program:`atd` service on a host or set of hosts, you can do
-this by the setting variable:
+If you want to disable the :program:`unattended-upgrades` service on a host or
+set of hosts, you can do this by the setting variable:
 
 .. code:: YAML
 
