@@ -30,6 +30,9 @@ Changed
 - Reject other protocols besides TCP and UDP on IPv6 networks at the end of the
   chain. [gaudenz]
 
+- Packets blocked due to rate limits will be now dropped instead of being
+  rejected by default. [gaudenz]
+
 
 `debops.ferm v0.2.2`_ - 2016-12-01
 ----------------------------------
