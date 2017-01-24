@@ -120,6 +120,11 @@ def main(cmd_args):
             (project_root, "ansible", "playbooks", playbook),
             (playbooks_path, playbook),
             ]
+
+        if 'playbooks_path' in config['paths']:
+            tries += [(custom_path, playbook) for custom_path in
+                      config['paths']['playbooks_path'].split(PATHSEP)]
+
         for parts in tries:
             play = os.path.join(*parts)
             if os.path.isfile(play):
