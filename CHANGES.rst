@@ -12,7 +12,19 @@ The current role maintainer is drybjed.
 `debops.java master`_ - unreleased
 ----------------------------------
 
-.. _debops.java master: https://github.com/debops/ansible-java/compare/v0.1.0...master
+.. _debops.java master: https://github.com/debops/ansible-java/compare/v0.1.1...master
+
+
+`debops.java v0.1.1`_ - 2017-01-25
+----------------------------------
+
+.. _debops.java v0.1.1: https://github.com/debops/ansible-java/compare/v0.1.0...v0.1.1
+
+Added
+~~~~~
+
+- Install ``ca-certificates-java`` package to keep system CA certificate store
+  and Java CA certificate store synchronized. [drybjed_]
 
 
 debops.java v0.1.0 - 2016-07-18
