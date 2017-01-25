@@ -24,7 +24,7 @@ Added
 ~~~~~
 
 - Install ``ca-certificates-java`` package to keep system CA certificate store
-  and Java CA certificate store synchronized. [drybjed_]
+  and Java CA certificate store synchronized. [drybjed]
 
 
 debops.java v0.1.0 - 2016-07-18
