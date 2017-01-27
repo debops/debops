@@ -40,6 +40,9 @@ Changed
 
   [ypid_]
 
+- Use Ansible local fact ``ansible_cmdline`` to detect if kernel has been
+  started with AppArmor enabled. [ypid_]
+
 Fixed
 ~~~~~
 
