@@ -3,19 +3,19 @@
 - name: Combine variables
   set_fact:
     apparmor__profile_status: '{{
-      apparmor__global_profile_status               |d({})
-      | combine(apparmor__host_group_profile_status |d({}))
-      | combine(apparmor__host_profile_status       |d({})) }}'
+      apparmor__global_profile_status               | d({})
+      | combine(apparmor__host_group_profile_status | d({}))
+      | combine(apparmor__host_profile_status       | d({})) }}'
     apparmor__local_config: '{{
-      apparmor__local_dependent_config            |d({})
-      | combine(apparmor__local_config_global     |d({}))
-      | combine(apparmor__local_group_config |d({}))
-      | combine(apparmor__local_host_config       |d({})) }}'
+      apparmor__local_dependent_config            | d({})
+      | combine(apparmor__local_config_global     | d({}))
+      | combine(apparmor__local_group_config      | d({}))
+      | combine(apparmor__local_host_config       | d({})) }}'
     apparmor__tunables: '{{
-      (apparmor__tunables_dependent  |d([]) | list) +
-      (apparmor__global_tunables     |d([]) | list) +
-      (apparmor__group_tunables |d([]) | list) +
-      (apparmor__host_tunables       |d([]) | list) }}'
+      (apparmor__tunables_dependent | d([]) | list) +
+      (apparmor__global_tunables    | d([]) | list) +
+      (apparmor__group_tunables     | d([]) | list) +
+      (apparmor__host_tunables      | d([]) | list) }}'
 
 - name: Install required packages
   apt:
@@ -52,11 +52,11 @@
   notify: [ 'Update grub' ]
 
 - name: Check if the running kernel has been started with AppArmor enabled
-  shell: grep --quiet 'apparmor=1' /proc/cmdline && grep --quiet 'security=apparmor' /proc/cmdline
-  register: apparmor__register_kernel_cmdline
-  when: (apparmor__enabled|d() | bool)
-  failed_when: False
-  changed_when: False
+  set_fact:
+    apparmor__fact_apparmor_enabled_and_loaded: '{{
+      (apparmor__enabled|d() | bool) and
+      (ansible_cmdline.apparmor|d(0)|string == "1") and
+      (ansible_cmdline.security|d("none") == "apparmor") }}'
   always_run: True
 
 - name: Flush the handlers in case the next tasks fails
@@ -69,7 +69,7 @@
     to: '{{ apparmor__mail_to|d([]) | list | join(",") }}'
     charset: 'utf8'
     body: '{{ apparmor__mail_body }}'
-  when: (apparmor__register_kernel_cmdline.rc != 0 and apparmor__mail_to|d())
+  when: (apparmor__fact_apparmor_enabled_and_loaded|bool and apparmor__mail_to|d())
 
 ## Seems that there is currently a bug in the version include in Debian Jessie
 ## which throws an exception when AppArmor has not been enabled yet.
@@ -94,7 +94,7 @@
   failed_when: |
     apparmor__register_profile_status.rc != 0 and (
       "Warning: unable to find a suitable fs in /proc/mounts, is it mounted?" not in apparmor__register_profile_status.stderr and
-      apparmor__register_kernel_cmdline.rc != 0
+      apparmor__fact_apparmor_enabled_and_loaded|bool
     )
   ## AppArmor tries to load the profile with the new status into the Kernel after changing it.
   ## This does not work if the Kernel has not been started with AppArmor support.
@@ -106,7 +106,7 @@
     name: 'apparmor'
     state: 'started'
     enabled: True
-  when: ((apparmor__enabled|d() | bool) and (apparmor__register_kernel_cmdline.rc == 0))
+  when: apparmor__fact_apparmor_enabled_and_loaded|bool
 
 - name: Ensure tunables directory exists
   file:
@@ -141,7 +141,7 @@
   service:
     name: 'apparmor'
     state: 'reloaded'
-  when: ((apparmor__enabled|d() | bool) and (apparmor__register_kernel_cmdline.rc == 0) and apparmor__register_tunables|changed)
+  when: apparmor__fact_apparmor_enabled_and_loaded|bool and apparmor__register_tunables|changed
 
 - name: Unload AppArmor profiles
   command: service apparmor teardown
