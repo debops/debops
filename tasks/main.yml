@@ -3,19 +3,19 @@
 - name: Combine variables
   set_fact:
     apparmor__profile_status: '{{
-      apparmor__global_profile_status               |d({})
-      | combine(apparmor__host_group_profile_status |d({}))
-      | combine(apparmor__host_profile_status       |d({})) }}'
+      apparmor__global_profile_status               | d({})
+      | combine(apparmor__host_group_profile_status | d({}))
+      | combine(apparmor__host_profile_status       | d({})) }}'
     apparmor__local_config: '{{
-      apparmor__local_dependent_config            |d({})
-      | combine(apparmor__local_config_global     |d({}))
-      | combine(apparmor__local_group_config |d({}))
-      | combine(apparmor__local_host_config       |d({})) }}'
+      apparmor__local_dependent_config            | d({})
+      | combine(apparmor__local_config_global     | d({}))
+      | combine(apparmor__local_group_config      | d({}))
+      | combine(apparmor__local_host_config       | d({})) }}'
     apparmor__tunables: '{{
-      (apparmor__tunables_dependent  |d([]) | list) +
-      (apparmor__global_tunables     |d([]) | list) +
-      (apparmor__group_tunables |d([]) | list) +
-      (apparmor__host_tunables       |d([]) | list) }}'
+      (apparmor__tunables_dependent | d([]) | list) +
+      (apparmor__global_tunables    | d([]) | list) +
+      (apparmor__group_tunables     | d([]) | list) +
+      (apparmor__host_tunables      | d([]) | list) }}'
 
 - name: Install required packages
   apt:
