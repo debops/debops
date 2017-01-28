@@ -38,13 +38,15 @@ sets, to use different DH parameters in different applications – each one will
 be automatically preseeded by the pre-generated parameters, and managed by
 regeneration script.
 
-An example usage in a :program:`nginx` configuration file::
+An example usage in a :program:`nginx` configuration file:
 
-    # Configuration in nginx server using a symlink
-    ssl_dhparam /etc/pki/dhparam/set0
+.. code-block:: yaml
 
-    # Configuration in nginx using the DH parameters directly
-    ssl_dhparam /etc/pki/dhparam/params/set0/dh3072.pem
+   # Configuration in nginx server using a symlink
+   ssl_dhparam /etc/pki/dhparam/set0
+
+   # Configuration in nginx using the DH parameters directly
+   ssl_dhparam /etc/pki/dhparam/params/set0/dh3072.pem
 
 Use of DH parameters in Ansible roles
 -------------------------------------
@@ -52,16 +54,18 @@ Use of DH parameters in Ansible roles
 To make the Ansible configuration portable, ``debops.dhparam`` creates a set of
 Ansible local facts which can be used by other roles to get the path to DH
 parameters correctly using Ansible variables. These facts can be found in
-``ansible_local.dhparam.*`` dictionary and can be used by other roles as::
+``ansible_local.dhparam.*`` dictionary and can be used by other roles as:
 
-    # Specify the absolute path to the DH parameters
-    role__dhparam: '{{ (ansible_local.dhparam[role__dhparam_set]
-                        if (ansible_local|d() and ansible_local.dhparam|d() and
-                            ansible_local.dhparam[role__dhparam_set]|d())
-                       else "") }}'
+.. code-block:: yaml
 
-    # Specify default parameter set to use
-    role__dhparam_set: 'default'
+   # Specify the absolute path to the DH parameters
+   role__dhparam: '{{ (ansible_local.dhparam[role__dhparam_set]
+                       if (ansible_local|d() and ansible_local.dhparam|d() and
+                           ansible_local.dhparam[role__dhparam_set]|d())
+                      else "") }}'
+
+   # Specify default parameter set to use
+   role__dhparam_set: 'default'
 
 Those two variables allow to easily change the default set of DH parameters to
 a different one, or specify the path to DH parameters file directly. The
@@ -88,14 +92,8 @@ specifically enable it in Ansible's inventory.
 Example playbook
 ----------------
 
-Here's an example Ansible playbook that can be used to run this role::
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.dhparam`` role:
 
-    ---
-    - name: Manage Diffie-Hellman ephemeral parameters
-      hosts: 'debops_dhparam'
-      become: True
-
-      roles:
-
-        - role: debops.dhparam
-          tags: [ 'role::dhparam' ]
+.. literalinclude:: playbooks/dhparam.yml
+   :language: yaml

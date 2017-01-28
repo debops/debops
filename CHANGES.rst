@@ -24,6 +24,11 @@ Added
 - Add  :envvar:`dhparam__deploy_state` to allow to specify the desired state this
   role should achieve. State ``absent`` is not fully implemented yet. [ypid_]
 
+Changed
+~~~~~~~
+
+- Update the role to DebOps Standards v0.2.1. [ypid_]
+
 
 `debops.dhparam v0.1.2`_ - 2016-02-23
 -------------------------------------
