@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
+v0.1.3
+------
+
+- Add  ``dhparam__deploy_state`` to allow to specify the desired state this
+  role should achieve. State ``absent`` is not fully implemented yet. [ypid]
+
 v0.1.2
 ------
 

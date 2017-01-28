@@ -9,6 +9,22 @@
 #   Installation
 # ----------------
 
+# .. envvar:: dhparam__deploy_state
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. DH parameters will be present as configured.
+#
+# ``absent``
+#   DH parameters will be absent.
+#
+#   .. warning:: The roles is currently not able to dismantle from ``present``
+#      state. This needs to be implemented. This state can only be achieved
+#      currently when ``present`` has never been set before on a host.
+#
+dhparam__deploy_state: 'present'
+
 # .. envvar:: dhparam__base_packages
 #
 # List of APT packages which will be installed to support Diffie-Hellman
@@ -181,4 +197,3 @@ dhparam__generate_cron: True
 # units recognized by ``cron`` Ansible module ``special_time`` parameter:
 # ``daily``, ``weekly``, ``monthly``, ``annually``, ``yearly``, ``reboot``.
 dhparam__generate_cron_period: 'monthly'
-
