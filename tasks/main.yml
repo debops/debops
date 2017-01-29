@@ -189,6 +189,29 @@
 
 # ]]]
 
+# Workaround for desktop files [[[
+
+  ## Firejail 0.9.44.4 does not ensure that the directory exists?
+- name: Ensure ~/.local/share/applications exists
+  file:
+    path: '~/.local/share/applications'
+    state: 'directory'
+  become_user: '{{ item.name }}'
+  no_log: '{{ not (firejail__ansible_log | bool) }}'
+  when: firejail__deploy_state in ["present"] and item.name != "root"
+  with_flattened: '{{ firejail__combined_fix_for_users }}'
+
+- name: Apply workaround for desktop files
+  command: firecfg --fix
+  register: firejail__register_cmd_firecfg_fix
+  changed_when: ("created" in firejail__register_cmd_firecfg_fix.stdout)
+  become_user: '{{ item.name }}'
+  no_log: '{{ not (firejail__ansible_log | bool) }}'
+  when: firejail__deploy_state in ["present"] and item.name != "root"
+  with_flattened: '{{ firejail__combined_fix_for_users }}'
+
+# ]]]
+
 # Ensure specified packages are absent [[[
 - name: Ensure specified packages are absent
   package:

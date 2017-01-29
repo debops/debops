@@ -19,6 +19,9 @@ Added
 
 - Initial coding and design. [ypid_]
 
+- Support to fix desktop files using :command:`firecfg --fix`. Please use this
+  to make sure that programs are actually sandboxed! [ypid_]
+
 Changed
 ~~~~~~~
 
@@ -29,10 +32,10 @@ Changed
 Fixed
 ~~~~~
 
-- The role did not handle ``firejail__global_profiles_system_wide_sandboxed``
+- The role did not handle :envvar:`firejail__global_profiles_system_wide_sandboxed`
   set to ``absent`` correctly and instead (was handled as it was set to
   ``present``). [ypid_]
 
 - Note in the documentation that this role requires Jinja 2.8 or later. [ypid_]
 
-- Don’t sandbox ``tar``, ``unrar`` and ``git`` by default. [ypid_]
+- Don’t sandbox ``tar``, ``unrar`` and :command:`git` by default. [ypid_]

@@ -169,7 +169,7 @@ firejail__combined_program_sandboxes: '{{
 # :ref:`item.system_wide_sandboxed <firejail__ref_system_wide_sandboxed>`.
 # This variable only applies when the program was not configured using
 # :ref:`firejail__ref_program_sandboxes`. For that case refer to
-# ``firejail__program_sandboxes_system_wide_sandboxed``.
+# :envvar:`firejail__program_sandboxes_system_wide_sandboxed`.
 firejail__global_profiles_system_wide_sandboxed: 'if_installed'
 
                                                                    # ]]]
@@ -177,6 +177,67 @@ firejail__global_profiles_system_wide_sandboxed: 'if_installed'
 #
 # Default value for :ref:`item.system_wide_sandboxed <firejail__ref_system_wide_sandboxed>`.
 firejail__program_sandboxes_system_wide_sandboxed: 'if_installed'
+                                                                   # ]]]
+                                                                   # ]]]
+# Workaround for desktop files [[[
+# --------------------------------
+
+# Some desktop files include a full path to the executable which would
+# result in the program being executed without Firejail sandboxing it.
+# For this, Firejail provides the :command:`firecfg --fix` command which fixes
+# those desktop files and saves them under :file:`~/.local/share/applications/`.
+#
+# This section provides variables which you should use to do this for the
+# users.
+#
+# Those variables have the same structure as the ``users__accounts`` onces from
+# the debops.users_ role. This allows you to include all users you
+# configured using the debops.users_ by putting this:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    firejail__fix_for_users: '{{ users__accounts|d([]) }}'
+#    firejail__group_fix_for_users: '{{ users__group_accounts|d([]) }}'
+#    firejail__host_fix_for_users: '{{ users__host_accounts|d([]) }}'
+#
+# into your global inventory.
+
+# .. envvar:: firejail__fix_for_users [[[
+#
+# Global list of users for which the desktop files workaround should be applied.
+# The list should contain a dictionary for each user with the username in the
+# ``name`` key of the dictionary.
+firejail__fix_for_users: []
+
+                                                                   # ]]]
+# .. envvar:: firejail__group_fix_for_users [[[
+#
+# Host group list of users for which the desktop files workaround should be applied.
+firejail__group_fix_for_users: []
+
+                                                                   # ]]]
+# .. envvar:: firejail__host_fix_for_users [[[
+#
+# Host list of users for which the desktop files workaround should be applied.
+firejail__host_fix_for_users: []
+
+                                                                   # ]]]
+# .. envvar:: firejail__combined_fix_for_users [[[
+#
+# Combined list of users as it is used by the role.
+firejail__combined_fix_for_users: '{{
+  (firejail__fix_for_users       | list ) +
+  (firejail__group_fix_for_users | list ) +
+  (firejail__host_fix_for_users  | list ) }}'
+
+                                                                   # ]]]
+# .. envvar:: firejail__ansible_log [[[
+#
+# Enable or disable Ansible task logging for
+# :envvar:`firejail__combined_fix_for_users` which might contains sensitive
+# information.  This variable should not be changed other than for debugging.
+firejail__ansible_log: False
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
