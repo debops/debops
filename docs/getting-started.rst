@@ -26,7 +26,7 @@ Here's an example playbook that uses the ``debops-contrib.snapshot_snapper`` rol
 .. literalinclude:: playbooks/snapshot_snapper.yml
    :language: yaml
 
-This playbooks is shipped with this role under
+The playbooks is shipped with this role under
 :file:`./docs/playbooks/snapshot_snapper.yml` from which you can symlink it to your
 playbook directory.
 In case you use multiple `DebOps Contrib`_ roles, consider using the
