@@ -43,6 +43,9 @@ Changed
 - Use the `loop control feature <https://docs.ansible.com/ansible/playbooks_loops.html>`_
   of Ansible 2.1 and thus require Ansible 2.1. [ypid_]
 
+- Include the ``mlocate`` package in the default package list as the role
+  requires it currently. More rework is needed. [ypid_]
+
 Fixed
 ~~~~~
 
