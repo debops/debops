@@ -12,17 +12,21 @@
       (snapshot_snapper__volumes            | list) +
       (snapshot_snapper__host_group_volumes | list) +
       (snapshot_snapper__host_volumes       | list) }}'
+    snapshot_snapper__combined_packages: '{{
+      (snapshot_snapper__base_packages | list) +
+      (snapshot_snapper__packages      | list) }}'
   tags:
     - 'role::snapshot_snapper:reinit'
 # .. ]]]
 
 # Installation [[[
-- name: Install snapper
-  apt:
+
+- name: Ensure specified packages are in there desired state
+  package:
     name: '{{ item }}'
-    state: 'latest'
-    install_recommends: False
-  with_flattened: '{{ snapshot_snapper__base_packages }}'
+    state: 'present'
+  with_flattened: '{{ snapshot_snapper__combined_packages }}'
+
 # .. ]]]
 
 # Configure updatedb to exclude snapshots [[[
@@ -31,7 +35,7 @@
   args:
     creates: '{{ item }}.dpkg-divert'
   register: snapshot_snapper__updatedb_diverted_register
-  when: ansible_distribution in [ 'Debian', 'Ubuntu' ]
+  when: ansible_os_family in [ "Debian" ]
   with_flattened: '{{ snapshot_snapper__divert_files }}'
 
 - name: Copy diverted configuration file to original location
@@ -46,7 +50,7 @@
   failed_when: False
   changed_when: False
   always_run: True
-  when: snapshot_snapper__directory != ""
+  when: snapshot_snapper__directory != "" and "mlocate" in snapshot_snapper__combined_packages
   register: snapshot_snapper__register_updatedb_configured
 
 - name: Configure updatedb to exclude snapshots
