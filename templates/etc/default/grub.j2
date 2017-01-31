@@ -29,9 +29,9 @@
 {%   set _ = grub_tpl_kernel_params.append('console=ttyS{},{}n8'.format(grub_serial_console_unit,grub_serial_console_speed)) %}
 {% endif %}
 GRUB_DEFAULT={{ grub_tpl_default }}
-{% if ansible_distribution in [ 'Ubuntu' ] %}
-GRUB_HIDDEN_TIMEOUT=0
-GRUB_HIDDEN_TIMEOUT_QUIET=true
+{% if grub_hidden_timeout %}
+GRUB_HIDDEN_TIMEOUT={{ grub_hidden_timeout }}
+GRUB_HIDDEN_TIMEOUT_QUIET={{ grub_hidden_timeout_quiet }}
 {% endif %}
 {% if ansible_virtualization_role is undefined or ansible_virtualization_role not in [ 'guest' ] %}
 GRUB_TIMEOUT={{ grub_timeout_hardware }}
