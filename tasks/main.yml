@@ -49,6 +49,7 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
+  when: dhparam__deploy_state in ['present']
   with_flattened:
     - '{{ dhparam__base_packages }}'
     - '{{ dhparam__packages }}'
@@ -60,6 +61,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  when: dhparam__deploy_state in ['present']
   notify: [ 'Regenerate DH parameters on first install' ]
 
 - name: Preseed Diffie-Hellman parameters
@@ -69,6 +71,7 @@
     owner: 'root'
     group: 'root'
     force: False
+  when: dhparam__deploy_state in ['present']
   with_sequence: 'start=0 count={{ dhparam__sets }}'
   notify: [ 'Execute DH parameter hooks' ]
 
@@ -77,6 +80,7 @@
     src: '{{ "params/" + dhparam__set_prefix + item + "/" + dhparam__prefix + dhparam__default_length + dhparam__suffix }}'
     path: '{{ dhparam__path + "/" + dhparam__set_prefix + item }}'
     state: 'link'
+  when: dhparam__deploy_state in ['present']
   with_sequence: 'start=0 count={{ dhparam__sets }}'
 
 - name: Install DHE generation script
@@ -86,6 +90,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  when: dhparam__deploy_state in ['present']
 
 - name: Enable periodic DH parameters generation
   cron:
@@ -94,7 +99,7 @@
     cron_file: 'dhparam-generate-params'
     user: 'root'
     special_time: '{{ dhparam__generate_cron_period }}'
-    state: '{{ "present" if dhparam__generate_cron|bool else "absent" }}'
+    state: '{{ "present" if (dhparam__generate_cron|bool and dhparam__deploy_state in ["present"]) else "absent" }}'
 
 - name: Make sure the Ansible local facts directory exists
   file:
@@ -103,6 +108,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  when: dhparam__deploy_state in ['present']
 
 - name: Save dhparam local facts
   template:
@@ -115,5 +121,4 @@
 
 - name: Gather facts if they changed
   action: setup
-  when: dhparam_register_facts.changed
-
+  when: dhparam_register_facts|changed

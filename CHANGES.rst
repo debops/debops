@@ -1,31 +1,75 @@
+.. _dhparam__ref_changelog:
+
 Changelog
 =========
 
-v0.1.2
-------
+.. include:: includes/all.rst
 
-*Released: 2016-02-23*
+**debops.dhparam**
 
-- Move the list of APT packages to a default variable, install ``cron`` package
-  when necessary. [drybjed]
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-- Fix deprecation warnings on Ansible 2.1.0. [drybjed]
+The current role maintainer_ is drybjed_.
+
+
+`debops.dhparam master`_ - unreleased
+-------------------------------------
+
+.. _debops.dhparam master: https://github.com/debops/ansible-dhparam/compare/v0.1.2...master
+
+Added
+~~~~~
+
+- Add  :envvar:`dhparam__deploy_state` to allow to specify the desired state this
+  role should achieve. State ``absent`` is not fully implemented yet. [ypid_]
+
+Changed
+~~~~~~~
+
+- Update the role to DebOps Standards v0.2.1. [ypid_]
+
+
+`debops.dhparam v0.1.2`_ - 2016-02-23
+-------------------------------------
+
+.. _debops.dhparam v0.1.2: https://github.com/debops/ansible-dhparam/compare/v0.1.1...v0.1.2
+
+Changed
+~~~~~~~
+
+- Move the list of APT packages to a default variable, install :program:`cron` package
+  when necessary. [drybjed_]
 
 - Rename all role variables from ``dhparam_*`` to ``dhparam__*`` to move them
-  to their own namespace. [drybjed]
+  to their own namespace. [drybjed_]
 
-v0.1.1
-------
+Fixed
+~~~~~
 
-*Released: 2015-11-24*
+- Fix deprecation warnings on Ansible 2.1.0. [drybjed_]
 
-- Support Ansible check mode. [drybjed]
 
-v0.1.0
-------
+`debops.dhparam v0.1.1`_ - 2015-11-24
+-------------------------------------
 
-*Released: 2015-10-22*
+.. _debops.dhparam v0.1.1: https://github.com/debops/ansible-dhparam/compare/v0.1.0...v0.1.1
 
-- Initial release. [drybjed]
+Added
+~~~~~
 
-- Reviewed and fixed spelling. [ypid]
+- Support Ansible check mode. [drybjed_]
+
+
+debops.dhparam v0.1.0 - 2015-10-22
+----------------------------------
+
+Added
+~~~~~
+
+- Initial release. [drybjed_]
+
+Changed
+~~~~~~~
+
+- Reviewed and fixed spelling. [ypid_]
