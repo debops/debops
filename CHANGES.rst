@@ -30,7 +30,7 @@ Added
   environment, you can use the ``role::owncloud:env`` tag. [ypid_]
 
 - Provide various configuration options from the :file:`config.php` file using
-  Ansible facts. [ypid_]
+  Ansible facts. Refer to :ref:`owncloud__ref_ansible_facts` for details. [ypid_]
 
 Changed
 ~~~~~~~

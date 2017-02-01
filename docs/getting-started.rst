@@ -110,6 +110,69 @@ To setup ownCloud on a given host it should be included in the
 Note that the ``debops_service_owncloud`` group uses the default webserver,
 refer to :ref:`owncloud__ref_choosing_a_webserver`.
 
+.. _owncloud__ref_ansible_facts:
+
+Ansible facts
+-------------
+
+The role gathers various Ansible facts about ownCloud for internal use or use
+by other roles or playbooks.
+
+One of the sources for the facts is the :file:`/var/www/owncloud/config/config.php`
+file which has ``0640`` as default permissions.
+The remote user who gathers the facts should be able to read this file.
+Note that facts gathering does not happen with elevated privileges by default.
+One way to achieve this is by making your configuration management user member
+of the ``www-data`` group by including the following in your inventory:
+
+.. code-block:: yaml
+
+   bootstrap__admin_groups: [ 'admins', 'staff', 'adm', 'sudo', 'www-data' ]
+
+The following Ansible facts are available:
+
+.. code-block:: json
+
+   {
+       "auto_security_updates_enabled": false,
+       "datadirectory": "/var/www/owncloud/data",
+       "enabled": true,
+       "instanceid": "xxxxxxxxxxxx",
+       "maintenance": false,
+       "release": "9.0",
+       "theme": "debops",
+       "trusted_domains": [
+           "cloud.example.org"
+       ],
+       "updatechecker": false,
+       "variant": "owncloud",
+       "version": "9.0.7.1",
+       "webserver": "nginx"
+   }
+
+Note that the role uses Ansible facts gathered from the :file:`config.php`
+file internally and might not work as expected when those facts can not be gathered.
+
+The following can happen when the configuration management user has no access
+to the :file:`config.php` file:
+
+* Certain :command:`occ` commands are not available in maintenance mode. The
+  role normally filters those commands out if it detects that ownCloud is in
+  maintenance mode. Maintenance mode is assumed to be off if it can not be
+  detected. If it is on, role execution will stop when one of those
+  :command:`occ` commands is encountered.
+
+and only the following facts will be available in this case:
+
+.. code-block:: json
+
+   {
+       "auto_security_updates_enabled": true,
+       "enabled": true,
+       "variant": "owncloud",
+       "webserver": "nginx"
+   }
+
 Example playbook
 ----------------
 
