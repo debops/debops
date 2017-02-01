@@ -27,7 +27,7 @@ Apache is supported by the role but not yet used by default.
 
 ### Installation
 
-This role requires at least Ansible `v2.1.3`. To install it, run:
+This role requires at least Ansible `v2.1.4`. To install it, run:
 
 ```Shell
 ansible-galaxy install debops.owncloud
