@@ -23,6 +23,9 @@ The script is bundled with this role under
 :file:`./docs/scripts/upgrade-from-v0.3.X-to-v0.4.X` and can be invoked from
 there.
 
+Furthermore, some adjustments should be made according to
+:ref:`owncloud__ref_getting_started`.
+
 
 .. _owncloud__ref_upgrade_nodes_v0.3.0:
 

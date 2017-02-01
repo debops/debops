@@ -1470,8 +1470,10 @@ owncloud__webserver: '{{
 #
 # Variable containing the used webserver which can be used.
 # Refer to :ref:`owncloud__ref_getting_started` for how to switch webservers.
-owncloud__apache_modules:
-  - 'php5'
+# TODO: Enable on Debian package scripts to ensure that the PHP module is
+# enabled as the name of the module is not deterministic with ``php5`` and
+# ``php7.0``.
+owncloud__apache_modules: []
                                                                    # ]]]
 # .. envvar:: owncloud__nginx_client_body_temp_path [[[
 #
@@ -1554,14 +1556,6 @@ owncloud__apt_preferences__dependent_list_optional:
     priority: 995
     by_role: 'debops.owncloud'
     state: '{{ owncloud__deploy_state }}'
-
-
-# .. envvar:: owncloud__apache__dependent_packages
-#
-# Apache packages and modules to install from debops.apache_ role context.
-# TODO: PHP7 support.
-owncloud__apache__dependent_packages:
-  - 'libapache2-mod-php5'
 
 
 # .. envvar:: owncloud__apache__dependent_snippets
@@ -1795,6 +1789,7 @@ owncloud__php__dependent_packages:
 
   - '{{ owncloud__base_php_packages }}'
   - '{{ owncloud__optional_php_packages }}'
+  - '{{ ["libapache2-mod-php"] if (owncloud__webserver == "apache") else [] }}'
 
 
 # .. envvar:: owncloud__php__dependent_configuration

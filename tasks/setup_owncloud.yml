@@ -221,15 +221,6 @@
 
 # ownCloud upgrades [[[
 
-- name: Install the package manager hook script for ownCloud
-  template:
-    src: 'usr/local/lib/owncloud_dpkg_hook.j2'
-    dest: '{{ owncloud__dpkg_hook_script }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  tags: [ 'role::owncloud:auto_upgrade' ]
-
 - name: Enable the package manager hook script for ownCloud
   template:
     src: 'etc/apt/apt.conf.d/dpkg-hook.j2'

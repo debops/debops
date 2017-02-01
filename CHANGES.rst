@@ -30,7 +30,7 @@ Added
   environment, you can use the ``role::owncloud:env`` tag. [ypid_]
 
 - Provide various configuration options from the :file:`config.php` file using
-  Ansible facts. [ypid_]
+  Ansible facts. Refer to :ref:`owncloud__ref_ansible_facts` for details. [ypid_]
 
 Changed
 ~~~~~~~
@@ -103,8 +103,10 @@ Security
   This is done to mitigate the possibility of one of the keys getting
   compromised. [ypid_]
 
-- Require Ansible 2.1.3 to run the role. Refer to `Ansible Security`_ for details.
-  Note that the requirement is currently not enforced by Ansible. [ypid_]
+- Require at least Ansible 2.1.4 to run the role. Refer to `Ansible Security`_ for details.
+  Note that the requirement is currently not enforced by Ansible so you could
+  run the role with older Ansible versions but you really should not! [ypid_]
+
 
 `debops.owncloud v0.3.0`_ - 2016-09-17
 --------------------------------------
