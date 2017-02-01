@@ -10,7 +10,7 @@ PHP management for their own use.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v2.0.0``. To install it, run:
+This role requires at least Ansible ``v2.1.4``. To install it, run:
 
 .. code-block:: console
 
