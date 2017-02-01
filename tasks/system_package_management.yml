@@ -92,6 +92,15 @@
     - '{{ owncloud__host_packages }}'
     - '{{ owncloud__dependent_packages }}'
 
+- name: Install the package manager hook script for ownCloud
+  template:
+    src: 'usr/local/lib/owncloud_dpkg_hook.j2'
+    dest: '{{ owncloud__dpkg_hook_script }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  tags: [ 'role::owncloud:auto_upgrade' ]
+
   ## FIXME: Remove when the DPKG hook is 100 % reliable and/or
   ## ownCloud/NextCloud provide a native hook/support.
 - name: Ensure that the ownCloud upgrade has completed
