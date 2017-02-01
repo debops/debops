@@ -18,7 +18,7 @@ set -o pipefail -o errexit
 php_version="${PHP_VERSION:-5}"
 
 # List of packages to filter
-search_packages="${@:-}"
+search_packages=( "$@" )
 
 # List of available PHP packages in APT repositories
 package_list=( $(apt-cache --no-generate pkgnames php ; apt-cache --no-generate pkgnames libapache2-mod-php ) )
@@ -28,12 +28,12 @@ package_list=( $(apt-cache --no-generate pkgnames php ; apt-cache --no-generate 
 # array. First, create the array with all available package names as keys
 declare -A available_packages
 
-for name in ${package_list[@]} ; do
+for name in "${package_list[@]}" ; do
     available_packages["${name}"]=1
 done
 
 # Then, check if a specific key exists in the array
-for element in ${search_packages[@]} ; do
+for element in "${search_packages[@]}" ; do
 
     # Support for 'php<version>-*' packages
     if [[ ${available_packages["php${php_version}-${element}"]} ]] ; then
