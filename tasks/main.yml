@@ -20,7 +20,7 @@
       group: 'root'
       mode: '0644'
     when: (item.value.state|d("present") == "present")
-    with_dict: '{{ persistent_paths__combined_persistent_paths }}'
+    with_dict: '{{ persistent_paths__combined_paths }}'
     notify: [ 'Run bind-dirs' ]
 
   - name: Remove configuration of persistent paths on Qubes OS
@@ -28,5 +28,5 @@
       path: '{{ persistent_paths__qubes_os_config_dir + "/" + item.key + ".conf" }}'
       state: 'absent'
     when: (item.value.state|d("present") == "absent")
-    with_dict: '{{ persistent_paths__combined_persistent_paths }}'
+    with_dict: '{{ persistent_paths__combined_paths }}'
     notify: [ 'Run bind-dirs' ]

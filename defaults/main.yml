@@ -14,46 +14,46 @@
 # --------------------
 
 # The following dictionary variables can be used to manage the persistence of paths.
-# See :ref:`persistent_paths__ref_persistent_paths` for more details.
+# See :ref:`persistent_paths__ref_paths` for more details.
 
-# .. envvar:: persistent_paths__persistent_paths [[[
+# .. envvar:: persistent_paths__paths [[[
 #
 # Dict for specifying persistent paths.
 # This variable is intended to be used in Ansible’s global inventory.
-persistent_paths__persistent_paths: {}
+persistent_paths__paths: {}
 
                                                                    # ]]]
-# .. envvar:: persistent_paths__group_persistent_paths [[[
+# .. envvar:: persistent_paths__group_paths [[[
 #
 # Dict for specifying persistent paths.
 # This variable is intended to be used in a host inventory group of Ansible
 # (only one host group is supported).
-persistent_paths__group_persistent_paths: {}
+persistent_paths__group_paths: {}
 
                                                                    # ]]]
-# .. envvar:: persistent_paths__host_persistent_paths [[[
+# .. envvar:: persistent_paths__host_paths [[[
 #
 # Dict for specifying persistent paths.
 # This variable is intended to be used in the inventory of hosts.
-persistent_paths__host_persistent_paths: {}
+persistent_paths__host_paths: {}
 
                                                                    # ]]]
-# .. envvar:: persistent_paths__dependent_persistent_paths [[[
+# .. envvar:: persistent_paths__dependent_paths [[[
 #
 # Dict for specifying persistent paths. This variable is intended for other Ansible
 # roles to be used when using ``debops.persistent_paths`` as role dependency.
-persistent_paths__dependent_persistent_paths: {}
+persistent_paths__dependent_paths: {}
 
                                                                    # ]]]
-# .. envvar:: persistent_paths__combined_persistent_paths [[[
+# .. envvar:: persistent_paths__combined_paths [[[
 #
 # Combined dictionary of persistent paths as it is used by the role.
 # This defines the order in which dictionary keys might "mask" previous once.
-persistent_paths__combined_persistent_paths: '{{
-  persistent_paths__dependent_persistent_paths
-  | combine(persistent_paths__persistent_paths)
-  | combine(persistent_paths__group_persistent_paths)
-  | combine(persistent_paths__host_persistent_paths) }}'
+persistent_paths__combined_paths: '{{
+  persistent_paths__dependent_paths
+  | combine(persistent_paths__paths)
+  | combine(persistent_paths__group_paths)
+  | combine(persistent_paths__host_paths) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Qubes OS [[[
@@ -82,11 +82,11 @@ persistent_paths__qubes_os_config_dir: '/rw/config/qubes-bind-dirs.d'
 persistent_paths__qubes_os_bind_dirs: '/usr/lib/qubes/bind-dirs.sh'
 
                                                                    # ]]]
-# .. envvar:: persistent_paths__qubes_os_persistent_paths [[[
+# .. envvar:: persistent_paths__qubes_os_paths [[[
 #
 # Paths which are persistent by default and should be filtered out/not handled
 # by bind-dirs.sh_.
-persistent_paths__qubes_os_persistent_paths:
+persistent_paths__qubes_os_paths:
   - '/home'
   - '/usr/local'
   - '/var/spool/cron'

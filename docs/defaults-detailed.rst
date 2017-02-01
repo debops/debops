@@ -11,16 +11,16 @@ examples for them.
    :local:
    :depth: 1
 
-.. _persistent_paths__ref_persistent_paths:
+.. _persistent_paths__ref_paths:
 
-persistent_paths__persistent_paths
-----------------------------------
+persistent_paths__paths
+-----------------------
 
-:envvar:`persistent_paths__persistent_paths` and similar dictionary variables
+:envvar:`persistent_paths__paths` and similar dictionary variables
 can be used to manage the persistence of paths.
 
 The dictionary key should be used to bundle different paths together which are needed to achieve one goal.
-This allows to mask/overwrite them later in the hierarchy as defined by :envvar:`persistent_paths__combined_persistent_paths`.
+This allows to mask/overwrite them later in the hierarchy as defined by :envvar:`persistent_paths__combined_paths`.
 For use as dependency role, the key should be ``{{ weight }}_{{ role_owner }}_{{ role_name }}{{ optional_tags }}``
 where ``weight`` should be a two-digit number. For DebOps roles, the weight ``50`` should be used.
 For direct use, the key could be ``70_local_mlocate`` for example.
