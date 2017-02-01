@@ -10,7 +10,7 @@
   script: 'script/php-filter-packages.sh {{ php__combined_packages }}'
   register: php__register_filtered_packages
   changed_when: False
-  check_mode: no
+  always_run: True
 
 - name: Install PHP packages
   apt:
@@ -99,7 +99,7 @@
     LC_ALL: 'C'
   shell: dpkg-divert --list '{{ php__etc_base + "/fpm/*" }}' | awk '{print $NF}'
   register: php__register_diversions
-  check_mode: no
+  always_run: True
   changed_when: False
 
 - name: Divert default PHP-FPM configuration and pool
