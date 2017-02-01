@@ -30,7 +30,8 @@ if os.path.isfile('/var/www/owncloud/config/config.php'):
         if config_cmd.returncode == 0 and len(std_err) == 0:
             config = loads(std_out)
             for key in ['instanceid', 'version', 'updatechecker', 'theme', 'maintenance', 'datadirectory', 'trusted_domains']:
-                output[key] = config[key]
+                if key in config:
+                    output[key] = config[key]
 
 if 'version' in output:
     output['release'] = '.'.join(output['version'].split('.')[:2])
