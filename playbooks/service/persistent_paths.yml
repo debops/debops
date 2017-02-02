@@ -1,0 +1,14 @@
+---
+
+- name: Ensure paths are stored on persistent storage
+  hosts: [ 'debops_service_persistent_paths' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.persistent_paths
+      tags: [ 'role::persistent_paths' ]

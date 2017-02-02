@@ -65,6 +65,8 @@ Added
 - Add ``debops.cron`` role and its playbook, and include it in the
   ``common.yml`` playbook. [drybjed_]
 
+- Add ``debops.persistent_paths`` role and its corresponding playbook. [ypid_]
+
 Changed
 ~~~~~~~
 
