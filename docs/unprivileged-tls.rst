@@ -12,7 +12,7 @@ required files, sockets, etc. In the unprivileged mode, ``rsyslog`` daemon is
 started in a privileged mode first, opens required sockets/ports and then drops
 all of its privileges and supplementary UNIX groups.
 
-The debops.rsyslog_ role allows you to select which mode is used by
+The ``debops.rsyslog`` role allows you to select which mode is used by
 configuring the :envvar:`rsyslog__unprivileged` boolean variable. By default, to
 preserve original configuration, the role enables unprivileged mode on Ubuntu
 hosts, leaving the configuration privileged on Debian hosts.
@@ -138,7 +138,7 @@ have access to them. The certificates should be signed by existing
 debops.pki_ Certificate Authority, so they should be trusted by all hosts in
 the cluster.
 
-When the new PKI realm is ready, you can tell debops.rsyslog_ role to use it:
+When the new PKI realm is ready, you can tell ``debops.rsyslog`` role to use it:
 
 .. code-block:: yaml
 

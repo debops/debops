@@ -3,7 +3,7 @@ Default variable details
 
 .. include:: includes/all.rst
 
-some of debops.rsyslog_ default variables have more extensive configuration
+some of ``debops.rsyslog`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
 
@@ -16,13 +16,13 @@ them.
 rsyslog__capabilities
 ---------------------
 
-The default configuration provided in the debops.rsyslog_ role supports
+The default configuration provided in the ``debops.rsyslog`` role supports
 a few different usage scenarios. To make it easier to enable them as needed,
 a separate list of "capabilities" is checked by Ansible to see if specific
 keywords are present; this allows for easy selection of different operation
 modes.
 
-With the empty list of capabilities, the debops.rsyslog_ role should
+With the empty list of capabilities, the ``debops.rsyslog`` role should
 configure a local syslog server which stores the logs in a standard set of
 files located in :file:`/var/log/` directory.
 
@@ -109,7 +109,7 @@ defined in a separate file located in :file:`/etc/rsyslog.d/` directory. List of
 known parameters:
 
 ``divert``
-  Optional, boolean. If specified and ``True``, debops.rsyslog_ will use the
+  Optional, boolean. If specified and ``True``, ``debops.rsyslog`` will use the
   :command:`dpkg-divert` command to move specified originaL configuration file out of
   the way before generating the configuration from a template. This parameter
   can be used to modify the ``rsyslogd`` configuration provided by the system
@@ -124,7 +124,7 @@ known parameters:
 
 ``filename``
   Optional. Full name of the file in which to store the given configuration. If
-  not specified, debops.rsyslog_ will generate a filename based on a set of
+  not specified, ``debops.rsyslog`` will generate a filename based on a set of
   alternative parameters.
 
 ``type``
@@ -164,4 +164,4 @@ The parameters below can be used in the main list or in the ``sections`` list:
   configuration.
 
 You can see many examples of the rules in :file:`defaults/main.yml` file of the
-debops.rsyslog_ role.
+``debops.rsyslog`` role.

@@ -7,7 +7,7 @@ Getting started
 Initial configuration
 ---------------------
 
-The debops.rsyslog_ default configuration is designed to closely resemble
+The ``debops.rsyslog`` default configuration is designed to closely resemble
 the Debian ``rsyslog`` package defaults. The same system logs will be
 generated, although with slightly longer log rotation. If the operating system
 is Debian, ``rsyslog`` will be run on a privileged ``root`` account; if the
@@ -21,7 +21,7 @@ Configuration filename extensions
 ---------------------------------
 
 The configuration order is important, and to aid support of configuration from
-other roles, debops.rsyslog_ includes configuration files with different
+other roles, ``debops.rsyslog`` includes configuration files with different
 filename extensions at certain parts of the configuration:
 
 :file:`/etc/rsyslog.d/*.conf`
@@ -87,24 +87,24 @@ Now, you can enable log forwarding for all hosts in your inventory (in
 This will forward logs on all hosts in the inventory over unencrypted UDP to
 a specified host. Due to above "masking" of the variables on the host inventory
 level, the log server should not create an infinite loop which forwards logs to
-itself. The debops.rsyslog_ role does not handle such case automatically, so
+itself. The ``debops.rsyslog`` role does not handle such case automatically, so
 you need to make sure this doesn't happen by accident.
 
 The role by default supports more advanced setups like forwarding logs over TCP
 using encrypted TLS connections, but these require more extensive configuration
 from different Ansible roles. You should read the rest of the
-debops.rsyslog_ documentation to see how you can enable these features.
+``debops.rsyslog`` documentation to see how you can enable these features.
 
 Example inventory
 -----------------
 
-The debops.rsyslog_ role is included in the :file:`common.yml` DebOps
+The ``debops.rsyslog`` role is included in the :file:`common.yml` DebOps
 playbook, so you don't need to enable it separately.
 
 Example playbook
 ----------------
 
-Here's an example playbook which uses debops.rsyslog_ role:
+Here's an example playbook which uses ``debops.rsyslog`` role:
 
 .. code-block:: yaml
 
