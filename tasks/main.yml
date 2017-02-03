@@ -126,8 +126,8 @@
   when: (not rsyslog__enabled|bool or
          ((item.filename|d() or item.name|d()) and
           (item.state|d() and item.state == 'absent')) and
-          (item.options|d() or item.sections|d()) and
-         item.divert is undefined)
+         (item.options|d() or item.sections|d())) and
+        (item.divert is undefined or not item.divert|bool)
   notify: [ 'Restart rsyslogd' ]
 
 - name: Revert original rsyslog config rules

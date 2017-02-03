@@ -1,5 +1,7 @@
-Default variables: configuration
-================================
+Default variable details
+========================
+
+.. include:: includes/all.rst
 
 some of ``debops.rsyslog`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
@@ -22,30 +24,30 @@ modes.
 
 With the empty list of capabilities, the ``debops.rsyslog`` role should
 configure a local syslog server which stores the logs in a standard set of
-files located in ``/var/log/`` directory.
+files located in :file:`/var/log/` directory.
 
 The different capabilities that can be enabled in the list:
 
 ``network``
   Enable support for receiving the logs over the network, via UDP or TCP
   connections. By default you also need to specify the CIDR subnets or IP
-  addresses which are allowed through the firewall using ``rsyslog__allow``,
-  ``rsyslog__group_allow`` and/or ``rsyslog__host_allow`` variables.
+  addresses which are allowed through the firewall using :envvar:`rsyslog__allow`,
+  :envvar:`rsyslog__group_allow` and/or :envvar:`rsyslog__host_allow` variables.
 
 ``remote-files``
-  Enable storage of remote logs as files in ``/var/log/remote/`` directory. If
+  Enable storage of remote logs as files in :file:`/var/log/remote/` directory. If
   this is not enabled, by default remote logs will be discarded due to being
   directed to a separate ``remote`` ruleset.
 
 ``tls``
   Enable support for TLS connections to the ``rsyslog`` server, both as
   a forwarder and as a receiver. This option depends on availability of X.509
-  certificates managed by ``debops.pki`` role.
+  certificates managed by debops.pki_ role.
 
 ``xconsole``
-  Enable log output to ``/dev/xconsole``. The ``rsyslogd`` daemon needs to run
+  Enable log output to :file:`/dev/xconsole`. The ``rsyslogd`` daemon needs to run
   in privileged mode, or additional steps need to be taken to allow access to
-  the ``/dev/xconsole`` by the ``rsyslogd`` unprivileged user.
+  the :file:`/dev/xconsole` by the ``rsyslogd`` unprivileged user.
 
 ``!mark``
   Disable the periodic ``-- MARK --`` messages in the logs, by default they
@@ -59,8 +61,8 @@ The different capabilities that can be enabled in the list:
 rsyslog__forward
 ----------------
 
-The ``rsyslog__forward``, ``rsyslog__group_forward`` and
-``rsyslog__host_forward`` variables are lists used to define forwarding rules
+The :envvar:`rsyslog__forward`, :envvar:`rsyslog__group_forward` and
+:envvar:`rsyslog__host_forward` variables are lists used to define forwarding rules
 for ``rsyslog``. Because the daemon configuration is ordered, the forward
 statements should be set in a specific place in the configuration. You can of
 course define your own forwarding rules instead of using these specific
@@ -103,12 +105,12 @@ rsyslog__rules
 The ``rsyslog`` configuration is defined in YAML dictionaries. The role uses
 a simple set of keys and values to allow conditional activation or deactivation
 of parts of the ``rsyslogd`` configuration. Each configuration section will be
-defined in a separate file located in ``/etc/rsyslog.d/`` directory. List of
+defined in a separate file located in :file:`/etc/rsyslog.d/` directory. List of
 known parameters:
 
 ``divert``
   Optional, boolean. If specified and ``True``, ``debops.rsyslog`` will use the
-  ``dpkg-divert`` command to move specified originaL configuration file out of
+  :command:`dpkg-divert` command to move specified originaL configuration file out of
   the way before generating the configuration from a template. This parameter
   can be used to modify the ``rsyslogd`` configuration provided by the system
   packages. It should only be used with the ``filename`` parameter, otherwise
@@ -117,7 +119,7 @@ known parameters:
 ``divert_to``
   Optional. If the ``divert`` paremter is enabled, using this parameter you can
   specify the filename to divert the file to. The diversion will be confined to
-  ``/etc/rsyslog.d/`` directory. This can be used to change the order of the
+  :file:`/etc/rsyslog.d/` directory. This can be used to change the order of the
   configuration files if needed.
 
 ``filename``
@@ -127,9 +129,9 @@ known parameters:
 
 ``type``
   Optional. Specify the type of the configuration a given entry defines. This
-  will be mapped to ``rsyslogd__weight_map`` variable to a "weight" number
+  will be mapped to :envvar:`rsyslog__weight_map` variable to a "weight" number
   which will determine ordering of the configuration files in
-  ``/etc/rsyslog.d/``.
+  :file:`/etc/rsyslog.d/`.
 
 ``name``
   Optional. Specify custom name of the configuration file, appended to the
@@ -161,6 +163,5 @@ The parameters below can be used in the main list or in the ``sections`` list:
   parameter can be used to conditionally enable or disable parts of the
   configuration.
 
-You can see many examples of the rules in ``defaults/main.yml`` file of the
+You can see many examples of the rules in :file:`defaults/main.yml` file of the
 ``debops.rsyslog`` role.
-

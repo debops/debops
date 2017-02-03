@@ -13,8 +13,8 @@ generated, although with slightly longer log rotation. If the operating system
 is Debian, ``rsyslog`` will be run on a privileged ``root`` account; if the
 system is Ubuntu, an unprivileged ``syslog`` account will be used by default.
 
-The ``rsyslog`` configuration is stored in ``/etc/rsyslog.d/``, most of the
-configuration located in ``/etc/rsyslog.conf`` has been moved to the directory
+The ``rsyslog`` configuration is stored in :file:`/etc/rsyslog.d/`, most of the
+configuration located in :file:`/etc/rsyslog.conf` has been moved to the directory
 and put in separate files (old configuration is preserved in a diverted file).
 
 Configuration filename extensions
@@ -24,20 +24,20 @@ The configuration order is important, and to aid support of configuration from
 other roles, ``debops.rsyslog`` includes configuration files with different
 filename extensions at certain parts of the configuration:
 
-``/etc/rsyslog.d/*.conf``
+:file:`/etc/rsyslog.d/*.conf`
   These files are included by default. They are meant to be used for
   configuration of the local system logs, the extension is used to preserve
   compatibility with Debian package conventions.
 
-``/etc/rsyslog.d/*.template``
+:file:`/etc/rsyslog.d/*.template`
   These configuration files can be used to create custom templates used by
   ``rsyslog`` in different parts of the configuration.
 
-``/etc/rsyslog.d/*.system``
+:file:`/etc/rsyslog.d/*.system`
   These configuration files are meant to be used to define log matching rules
   specific to a given system, to store logs in different files.
 
-``/etc/rsyslog.d/*.remote``
+:file:`/etc/rsyslog.d/*.remote`
   These configuration files are meant to store configuration for logs coming
   from other systems over the network. These rules will be defined in
   a separate "ruleset" called ``remote`` which is used by the UDP and TCP input
@@ -54,7 +54,7 @@ only be used for testing if remote logs work. For more advanced configuration
 check the :ref:`rsyslog__forward` documentation.
 
 First, on the host that should receive the remote logs, for example in
-``ansible/inventory/host_vars/logs.example.org/rsyslog.yml``, configure
+:file:`ansible/inventory/host_vars/logs.example.org/rsyslog.yml`, configure
 variables:
 
 .. code-block:: yaml
@@ -74,11 +74,11 @@ variables:
    rsyslog__host_forward: [ '*.* @other.{{ ansible_domain }}' ]
 
 This will prepare a given central log storage host to receive logs from other
-systems on specified subnets, and store them in ``/var/log/remote/`` directory.
+systems on specified subnets, and store them in :file:`/var/log/remote/` directory.
 
 Now, you can enable log forwarding for all hosts in your inventory (in
-``ansible/inventory/group_vars/all/rsyslog.yml``) or only for a specific group
-(in ``ansible/inventory/group_vars/logged/rsyslog.yml``), using:
+:file:`ansible/inventory/group_vars/all/rsyslog.yml`) or only for a specific group
+(in :file:`ansible/inventory/group_vars/logged/rsyslog.yml`), using:
 
 .. code-block:: yaml
 
@@ -98,44 +98,19 @@ from different Ansible roles. You should read the rest of the
 Example inventory
 -----------------
 
-The ``debops.rsyslog`` role is included in the ``common.yml`` DebOps
-playbook, so you don't need to enable it separately.
+To enable the ``debops.rsyslog`` role on a given host or group of hosts, you
+need to add that host to the ``[debops_service_rsyslog]`` Ansible inventory
+group:
+
+.. code-block:: none
+
+   [debops_service_rsyslog]
+   hostname
 
 Example playbook
 ----------------
 
 Here's an example playbook which uses ``debops.rsyslog`` role:
 
-.. code-block:: yaml
-
-   ---
-
-   - name: Configure rsyslog
-     hosts: [ 'debops_all_hosts', 'debops_service_rsyslog' ]
-     become: True
-
-     roles:
-
-       - role: debops.etc_services
-         tags: [ 'role::etc_services' ]
-         etc_services__dependent_list:
-           - '{{ rsyslog__etc_services__dependent_list }}'
-
-       - role: debops.apt_preferences
-         tags: [ 'role::apt_preferences' ]
-         apt_preferences__dependent_list:
-           - '{{ rsyslog__apt_preferences__dependent_list }}'
-
-       - role: debops.ferm
-         tags: [ 'role::ferm' ]
-         ferm__dependent_rules:
-           - '{{ rsyslog__ferm__dependent_rules }}'
-
-       - role: debops.logrotate
-         tags: [ 'role::logrotate' ]
-         logrotate__dependent_config:
-           - '{{ rsyslog__logrotate__dependent_config }}'
-
-       - role: debops.rsyslog
-         tags: [ 'role::rsyslog' ]
-
+.. literalinclude:: playbooks/rsyslog.yml
+   :language: yaml
