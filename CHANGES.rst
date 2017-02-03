@@ -11,7 +11,13 @@ and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 The current role maintainer_ is ypid_.
 
 
-debops.persistent_paths v0.1.0 - unreleased
+`debops.persistent_paths master`_ - unreleased
+----------------------------------------------
+
+.. _debops.persistent_paths master: https://github.com/debops/ansible-persistent_paths/compare/v0.1.0...master
+
+
+debops.persistent_paths v0.1.0 - 2017-02-03
 -------------------------------------------
 
 Added
