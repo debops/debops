@@ -19,7 +19,7 @@ The current role maintainer_ is drybjed_.
 .. _debops.rsyslog master: https://github.com/debops/ansible-rsyslog/compare/v0.2.1...master
 
 
-`debops.rsyslog v0.2.1`_ - unreleased
+`debops.rsyslog v0.2.1`_ - 2017-02-03
 -------------------------------------
 
 .. _debops.rsyslog v0.2.1: https://github.com/debops/ansible-rsyslog/compare/v0.2.1...v0.2.0
