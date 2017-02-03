@@ -23,6 +23,12 @@ Changed
 
 - Update role documentation and Changelog. [drybjed_]
 
+Fixed
+~~~~~
+
+- Make sure that the original files that are diverted when the role is enabled
+  are not removed when the role is executed multiple times. [drybjed_]
+
 
 `debops.rsyslog v0.2.0`_ - 2016-05-18
 -------------------------------------
