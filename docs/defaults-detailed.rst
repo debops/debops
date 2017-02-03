@@ -129,7 +129,7 @@ known parameters:
 
 ``type``
   Optional. Specify the type of the configuration a given entry defines. This
-  will be mapped to :envvar:`rsyslogd__weight_map` variable to a "weight" number
+  will be mapped to :envvar:`rsyslog__weight_map` variable to a "weight" number
   which will determine ordering of the configuration files in
   :file:`/etc/rsyslog.d/`.
 
