@@ -98,44 +98,19 @@ from different Ansible roles. You should read the rest of the
 Example inventory
 -----------------
 
-The ``debops.rsyslog`` role is included in the :file:`common.yml` DebOps
-playbook, so you don't need to enable it separately.
+To enable the ``debops.rsyslog`` role on a given host or group of hosts, you
+need to add that host to the ``[debops_service_rsyslog]`` Ansible inventory
+group:
+
+.. code-block:: none
+
+   [debops_service_rsyslog]
+   hostname
 
 Example playbook
 ----------------
 
 Here's an example playbook which uses ``debops.rsyslog`` role:
 
-.. code-block:: yaml
-
-   ---
-
-   - name: Configure rsyslog
-     hosts: [ 'debops_all_hosts', 'debops_service_rsyslog' ]
-     become: True
-
-     roles:
-
-       - role: debops.etc_services
-         tags: [ 'role::etc_services' ]
-         etc_services__dependent_list:
-           - '{{ rsyslog__etc_services__dependent_list }}'
-
-       - role: debops.apt_preferences
-         tags: [ 'role::apt_preferences' ]
-         apt_preferences__dependent_list:
-           - '{{ rsyslog__apt_preferences__dependent_list }}'
-
-       - role: debops.ferm
-         tags: [ 'role::ferm' ]
-         ferm__dependent_rules:
-           - '{{ rsyslog__ferm__dependent_rules }}'
-
-       - role: debops.logrotate
-         tags: [ 'role::logrotate' ]
-         logrotate__dependent_config:
-           - '{{ rsyslog__logrotate__dependent_config }}'
-
-       - role: debops.rsyslog
-         tags: [ 'role::rsyslog' ]
-
+.. literalinclude:: playbooks/rsyslog.yml
+   :language: yaml

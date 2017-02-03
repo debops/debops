@@ -3,6 +3,8 @@
 Unprivileged syslog and encrypted connections
 =============================================
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
 
