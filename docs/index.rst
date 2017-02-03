@@ -9,7 +9,7 @@ Ansible role: debops.rsyslog
    introduction
    getting-started
    defaults
-   defaults-configuration
+   defaults-detailed
    unprivileged-tls
    copyright
    changelog
