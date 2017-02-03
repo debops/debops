@@ -18,6 +18,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.rsyslog master: https://github.com/debops/ansible-rsyslog/compare/v0.2.0...master
 
+Added
+~~~~~
+
+- Add support for anonymous TLS connections, as well as a way to allow only TLS
+  connections. [bleuchtang]
+
 Changed
 ~~~~~~~
 
