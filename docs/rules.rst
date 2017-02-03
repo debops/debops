@@ -354,7 +354,7 @@ custom
 Template to define custom ferm rules. The following additional YAML keys are
 supported:
 
-``rule``
+``rules``
   ferm rule definition, required.
 
 ``by_role``
