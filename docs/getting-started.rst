@@ -17,6 +17,7 @@ The following layers are involved in configuring an encrypted filesystem using
 block device encryption:
 
 #. Ciphertext block device: This can be any block device or partition on a block device.
+   It can also be a regular file which will be mapped to a block device using ``loop`` by cryptsetup.
 
 #. Plaintext device mapper target: Created by `dm-crypt`_ under :file:`/dev/mapper/`.
    Opening this layer is called "mapping" or "decrypting" which means making

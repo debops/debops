@@ -31,12 +31,13 @@ So lets create a loop device:
 That loop device will be our `ciphertext block device`
 (:ref:`cryptsetup__ref_overview_terminology`).
 :file:`/dev/loop0` is assumed from now on.
+Note that the role and cryptsetup can also use a regular file as `ciphertext block device`
+directly.
 
 Now you can use one of the :ref:`cryptsetup__devices` variables as listed in
 the :ref:`cryptsetup__ref_default_variables` documentation.
 We are going to use :envvar:`cryptsetup__host_devices` which is intended to go
-into the Ansible inventory file. The role should be "enabled" for this host as
-shown in :ref:`cryptsetup__ref_example_inventory`.
+into the Ansible inventory file of a host (:file:`./ansible/inventory/host_vars/$hostname`).
 You can use an entry like this:
 
 .. code-block:: jinja
@@ -46,26 +47,28 @@ You can use an entry like this:
      - name: 'example1'
        ciphertext_block_device: '/dev/loop0'
 
+The role should be "enabled" for this host as
+shown in :ref:`cryptsetup__ref_example_inventory`.
 Then run the playbook of the role:
 
 .. code-block:: shell
 
-   debops service/cryptsetup -l hostname
+   debops service/cryptsetup -l "$hostname"
 
 which should have the following effects:
 
-* Create a random keyfile on the Ansible controller under :file:`./ansible/secret/cryptsetup/hostname/example1/keyfile.raw`
+* Create a random keyfile on the Ansible controller under :file:`./ansible/secret/cryptsetup/$hostname/example1/keyfile.raw`
 * Copy the keyfile to the remote host under :file:`/var/local/keyfiles/example1_keyfile.raw`
-* Initialize LUKS on the :file:`/dev/loop0` using the keyfile
+* Initialize LUKS by creating a LUKS header on the :file:`/dev/loop0` using the keyfile
 * Make a backup of the LUKS header on the remote host under :file:`/var/backups/luks_header_backup/example1_header_backup.raw`
-* Copy the LUKS header backup to the Ansible controller under :file:`./ansible/secret/cryptsetup/hostname/example1/header_backup.raw`
+* Copy the LUKS header backup to the Ansible controller under :file:`./ansible/secret/cryptsetup/$hostname/example1/header_backup.raw`
 * Open/map :file:`/dev/loop0` to :file:`/dev/mapper/example1` (`Plaintext device mapper target`)
 * Make the opening/mapping persistent in :file:`/etc/crypttab`
   (either for automatic opening on system start or manually using
   :command:`cryptdisks_start` which can be chosen by additional role
   configuration options)
 * Create a filesystem on :file:`/dev/mapper/example1`
-* Create the mount point for the filesystem under :file:`/media/example1`
+* Create the mount point directory for the filesystem under :file:`/media/example1`
 * Mount :file:`/dev/mapper/example1` under :file:`/media/example1` (`Plaintext mount point of the filesystem`)
 * Remember the filesystem information and mount point in :file:`/etc/fstab`
 
@@ -94,9 +97,9 @@ You can now use :file:`/media/example1` to store files which are transparently e
 Teardown an encrypted device
 ----------------------------
 
-One nice part of using an encrypted filesystem is that access to the plaintext files can quickly be denied.
-This is supported by the role. You just need to change the inventory
-configuration of the device configured.
+One nice part of using an encrypted filesystem is that access to the plaintext
+files can quickly be denied.  This is supported by the role. You just need to
+change the inventory configuration of a configured device.
 Using the example from :ref:`cryptsetup__ref_guide_setup_loop_device` this
 could look like the following:
 
@@ -112,7 +115,7 @@ Then run the playbook of the role:
 
 .. code-block:: shell
 
-   debops service/cryptsetup -l hostname
+   debops service/cryptsetup -l "$hostname"
 
 which should have the following effects:
 
@@ -124,10 +127,10 @@ which should have the following effects:
 * Shredder the keyfile on the remote host under :file:`/var/local/keyfiles/example1_keyfile.raw`
 * Shredder the header backup on the remote host under :file:`/var/backups/luks_header_backup/example1_header_backup.raw`
 
-Note that shredder means that to overwrite the file 42 times before removing
+Note that shredder means to overwrite the file 42 times before removing
 it. Depending on where those files where stored that might not have the desired
 effect.
 
 After the role run terminated, no access to plaintext files should be possible.
 If you want to access the plaintext files again, just change the ``state`` and
-rerun the role.
+rerun the role as all required information is still stored on the Ansible controller.
