@@ -29,7 +29,7 @@ Features
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v2.1.3``. To install it, run::
+This role requires at least Ansible ``v2.1.4``. To install it, run::
 
     ansible-galaxy install debops.cryptsetup
 
