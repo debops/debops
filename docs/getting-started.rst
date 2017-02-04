@@ -55,7 +55,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.cryptsetup`` role:
 
-.. literalinclude:: playbooks/cryptsetup.yml
+.. literalinclude:: playbooks/cryptsetup-plain.yml
    :language: yaml
 
 If you are using this role without DebOps, here's an example Ansible playbook
