@@ -29,7 +29,7 @@ Each dictionary value is a dictionary by itself with the following supported opt
 
 ``paths``
   Required, list of strings. Paths to make persistent.
-  The same path can be required to be persistent by multiple dictionaries.
+  The same path can be required to be persistent by multiple parties.
 
 ``state``
   Optional, string. Defaults to ``present``.
@@ -40,7 +40,7 @@ Each dictionary value is a dictionary by itself with the following supported opt
 
   ``absent``
     The paths are not required to be persistent. A possibly existing persistent
-    state is not removed by this. Note that other entries might still require
+    state is not removed by this. Note that other parties might still require
     paths to be persistent which is not effected by setting one entry to ``absent``.
 
 ``by_role``

@@ -7,12 +7,12 @@ This role provides a generic mechanism to declare which files/directories
 are required to be persistent. How this information is used can then be defined in
 this role.
 
-On `Qubes OS`_, all work gets done in AppVMs which are mostly based on
+On `Qubes OS`_, all work gets done in AppVMs which are typically based on
 TemplateVMs.  Only a few paths in such TemplateBasedVM will persist a reboot,
 mainly :file:`/home` and :file:`/rw`. Package installation and the like is
 supposed to happen in TemplateVMs only but configuration can happen in either
-VM type as desired. If changes should be made in an TemplateBasedVM however it
-needs to be made sure that they will be persistent.
+VM type as desired. If changes should be made in a TemplateBasedVM however it
+needs to be made sure that they are persistent.
 
 Since Qubes OS R3.2 the bind-dirs_ script and related configuration can be used
 to easily make additional paths persistent by bind mounting them from
