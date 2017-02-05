@@ -60,3 +60,6 @@ Available role tags:
 ``role::persistent_paths``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
+
+``role::persistent_paths:qubes_os``
+  Tasks related to Qubes OS.
