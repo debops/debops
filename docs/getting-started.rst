@@ -18,6 +18,9 @@ To manage persistence of paths on a TemplateBasedVM it should be included in the
    [debops_service_persistent_paths]
    hostname
 
+The role can also run against a TemplateVM to prepare paths which will then be
+persistent in AppVMs based on the TemplateVM.
+
 If the role is used as a dependency role, you as a user of the main role do not
 need to do anything with this role except from having it installed.
 
@@ -30,12 +33,16 @@ that uses the ``debops.persistent_paths`` role:
 .. literalinclude:: playbooks/persistent_paths.yml
    :language: yaml
 
-The playbooks is shipped with this role under
+The playbook is shipped with this role under
 :file:`./docs/playbooks/persistent_paths.yml` from which you can symlink it to your
 playbook directory.
 
 Requirements
 ------------
+
+
+Qubes OS
+~~~~~~~~
 
 The ``qubes-core-agent`` package needs to be installed in the TemplateVM which
 is the default for the `official Debian templates <https://www.qubes-os.org/doc/templates/debian/>`_.
@@ -53,3 +60,6 @@ Available role tags:
 ``role::persistent_paths``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
+
+``role::persistent_paths:qubes_os``
+  Tasks related to Qubes OS.

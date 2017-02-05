@@ -16,6 +16,11 @@ The current role maintainer_ is ypid_.
 
 .. _debops.persistent_paths master: https://github.com/debops/ansible-persistent_paths/compare/v0.1.0...master
 
+Added
+~~~~~
+
+- Add ``role::persistent_paths:qubes_os`` Ansible tag for Qubes OS related tasks. [ypid_]
+
 
 debops.persistent_paths v0.1.0 - 2017-02-03
 -------------------------------------------
