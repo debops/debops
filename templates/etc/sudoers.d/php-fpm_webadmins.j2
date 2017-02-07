@@ -1,0 +1,6 @@
+# {{ ansible_managed }}
+
+Cmnd_Alias PHP_FPM_RELOAD = /etc/init.d/php{{ php__version }}-fpm reload, \
+                            /bin/systemctl reload php{{ php__version }}-fpm.service
+
+%{{ php__fpm_privileged_group }} ALL = (root) NOPASSWD: PHP_FPM_RELOAD
