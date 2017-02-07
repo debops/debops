@@ -127,6 +127,8 @@ Changed
 
 - Update the debops.owncloud_ with Apache playbook to the new version. [ypid_]
 
+- Update the debops.cryptsetup_ playbook to the new version. [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 
