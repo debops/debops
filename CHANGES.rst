@@ -42,7 +42,7 @@ Changed
 ~~~~~~~
 
 - Change default virtual host server name from ``000-default`` to ``default.{{
-  apache__domain }}`` to increase the changes that a valid certificate is
+  apache__domain }}`` to increase the chances that a valid certificate is
   available for this virtual host (either wildcard or SAN) in order to avoid
   the warning of Apache that the certificate is not valid for the server name. [ypid_]
 
