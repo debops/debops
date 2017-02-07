@@ -3,7 +3,7 @@ Introduction
 
 .. include:: includes/all.rst
 
-The ``debops.apache`` role allows you to setup and mange the `Apache HTTP Server`_
+The ``debops.apache`` role allows you to setup and manage the `Apache HTTP Server`_
 with version 2.4 and above.
 
 

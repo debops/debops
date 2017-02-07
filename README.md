@@ -8,7 +8,7 @@
 [![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops.apache-660198.svg?style=flat)](https://galaxy.ansible.com/debops/apache)
 
 
-The ``debops.apache`` role allows you to setup and mange the [Apache HTTP Server]
+The ``debops.apache`` role allows you to setup and manage the [Apache HTTP Server]
 with version 2.4 and above.
 
 [Apache HTTP Server]: https://en.wikipedia.org/wiki/Apache_HTTP_Server
