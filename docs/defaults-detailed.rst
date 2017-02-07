@@ -180,6 +180,19 @@ Create two tasks that execute a command every minute, in one configuration file:
 
          - 'touch /tmp/file2'
 
+Create a task that executes a command every minute, in the crontab of the user
+``jessie``:
+
+.. code-block:: yaml
+
+   cron__jobs:
+     'user_cron':
+       cron_file: '{{ omit }}'
+       user: 'jessie'
+       jobs:
+
+         - 'touch /tmp/file1'
+
 Create two tasks in the same file with custom descriptions:
 
 .. code-block:: yaml
