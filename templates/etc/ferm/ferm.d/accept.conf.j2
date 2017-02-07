@@ -280,6 +280,9 @@
 {%     endif %}
 {%   endif %}
 {% endif %}
+{% if ferm__tpl_daddr %}
+{%   set _= ferm__tpl_arguments.append("daddr (" + ferm__tpl_daddr | join(" ") +")") %}
+{% endif %}
 {% if ferm__tpl_state %}
 {%   if ferm__tpl_state | length == 1 %}
 {%     set _ = ferm__tpl_arguments.append("mod state state " +  ferm__tpl_state | join(" ")) %}
