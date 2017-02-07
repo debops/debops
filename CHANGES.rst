@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.4...master
 
+Added
+~~~~~
+
+- Allow the ``webadmins`` UNIX system group to reload the ``php-fpm`` service
+  if needed using ``sudo``. [carlalexander, drybjed_]
+
 Changed
 ~~~~~~~
 
