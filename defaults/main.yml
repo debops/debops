@@ -334,6 +334,11 @@ apache__role_modules:
                  if (apache__status_enabled|bool
                      and apache__status_allow_localhost)
                  else omit }}'
+  'rewrite':
+    enabled: '{{ True
+                 if (apache__register_mod_rewrite_used is defined and
+                     apache__register_mod_rewrite_used.rc|d(1) == 0)
+                 else omit }}'
 
                                                                    # ]]]
 # .. envvar:: apache__combined_modules [[[

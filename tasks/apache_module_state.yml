@@ -1,0 +1,16 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Enable/disable Apache modules
+  apache2_module:
+    name: '{{ item.key }}'
+    state: '{{ (item.value.enabled
+                if (item.value is mapping)
+                else item.value) | bool | ternary("present", "absent") }}'
+    force: '{{ item.value.force|d(False) | bool }}'
+  notify: [ 'Test apache and reload' ]
+  when: (item.key in apache__tpl_available_modules
+         and item.value.enabled|d(True) != omit
+         and apache__deploy_state == "present")
+  with_dict: '{{ apache__combined_modules }}'
+  tags: [ 'role::apache:modules' ]
