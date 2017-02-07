@@ -291,7 +291,7 @@
     opts:   '{{ (item.mount_options | d(cryptsetup__mount_options | d([]))) | list | sort | unique | join(",") }}'
     dump:   '{{ item.mount_dump     | d(omit) }}'
     passno: '{{ item.mount_passno   | d(omit) }}'
-    fstab:  '{{ item.fstab_path     | d(omit) }}'
+    fstab:  '{{ item.fstab_path | d(cryptsetup__fstab_file) }}'
     state:  '{{ "mounted" if (item.state|d(cryptsetup__state) == "ansible_controller_mounted") else item.state|d(cryptsetup__state) }}'
   when: ((item.manage_filesystem|d(True) | bool) and not (item.swap|d(False) | bool))
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
@@ -316,7 +316,7 @@
                 | list | sort | unique | join(",") }}'
     dump:   '0'
     passno: '0'
-    fstab:  '{{ item.fstab_path | d(omit) }}'
+    fstab:  '{{ item.fstab_path | d(cryptsetup__fstab_file) }}'
     state:  '{{ (item.state|d(cryptsetup__state) == "absent")|ternary("absent", "present") }}'
   register: cryptsetup__register_swap_fstab
   when: item.swap|d(False) | bool

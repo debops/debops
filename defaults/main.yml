@@ -236,6 +236,13 @@ cryptsetup__swap_priority: -1
 cryptsetup__fstype: 'ext4'
 
                                                                    # ]]]
+# .. envvar:: cryptsetup__fstab_file [[[
+#
+# File path to the :manpage:`fstab(5)` file where file systems should be
+# configured.
+cryptsetup__fstab_file: '/etc/fstab'
+
+                                                                   # ]]]
 # .. envvar:: cryptsetup__mount_options [[[
 #
 # List of default mount options.
@@ -267,6 +274,13 @@ cryptsetup__mountpoint_parent_directory: '/media'
 # :file:`/etc/crypttab`.
 # Refer to :ref:`item.crypttab_options <cryptsetup__devices_crypttab_options>` for details.
 cryptsetup__crypttab_options: []
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__crypttab_file [[[
+#
+# File path to the :manpage:`crypttab(5)` file where encrypted file systems
+# should be configured.
+cryptsetup__crypttab_file: '/etc/crypttab'
 
                                                                    # ]]]
 # .. envvar:: cryptsetup__hash [[[
@@ -350,6 +364,24 @@ cryptsetup__use_dev_random: True
 #
 # This is the default for :ref:`item.iter_time <cryptsetup__devices_iter_time>`.
 cryptsetup__iter_time: 'default'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: cryptsetup__persistent_paths__dependent_paths [[[
+#
+# Configuration for the ``debops.persistent_paths`` Ansible role.
+cryptsetup__persistent_paths__dependent_paths:
+
+  '50_debops_cryptsetup':
+    by_role: 'debops.cryptsetup'
+    paths:
+      - '{{ cryptsetup__fstab_file }}'
+      - '{{ cryptsetup__crypttab_file }}'
+      - '{{ cryptsetup__keyfile_remote_location }}'
+      - '{{ cryptsetup__header_backup_remote_location }}'
+      - '{{ cryptsetup__mountpoint_parent_directory }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

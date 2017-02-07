@@ -1,14 +1,5 @@
 ---
 
-- name: Setup and manage encrypted filesystems
-  hosts: [ 'debops_service_cryptsetup' ]
-  become: True
+- include: cryptsetup-plain.yml
 
-  environment: '{{ inventory__environment | d({})
-                   | combine(inventory__group_environment | d({}))
-                   | combine(inventory__host_environment  | d({})) }}'
-
-  roles:
-
-    - role: debops.cryptsetup
-      tags: [ 'role::cryptsetup' ]
+- include: cryptsetup-persistent_paths.yml

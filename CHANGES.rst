@@ -41,14 +41,11 @@ Added
 - Support to setup filesystems using a random key on boot.
   Refer to :ref:`cryptsetup__ref_devices_tmp_with_random_key` for details. [ypid_]
 
+- Support for persistent configuration of TemplateBasedVM on `Qubes OS`_ out of
+  the box using the ``debops.persistent_paths`` role. [ypid_]
+
 Changed
 ~~~~~~~
-
-- Terminate role execution if a vulnerable Ansible version is used to run the
-  role as `CVE-2016-8628 <https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2016-8628>`_
-  violates one of the design goals of the role.
-  The minimum Ansible version without known vulnerabilities is Ansible 2.1.3.
-  Refer to `Ansible Security`_ for details. [ypid_]
 
 - Require Ansible v2.1 for the role which was needed to implement support for
   chaining multiple cyphers. [ypid_]
@@ -67,6 +64,15 @@ Changed
 
 - Set :envvar:`cryptsetup__cipher` explicitly to ``aes-xts-plain64`` and use it also
   in plain mode which has a different complied-in default than LUKS mode. [ypid_]
+
+Security
+~~~~~~~~
+
+- Terminate role execution if a vulnerable Ansible version is used.
+  Running the role by a vulnerable Ansible would violate one of the design goals of the role.
+  The minimum Ansible version without known vulnerabilities is Ansible 2.1.4.
+  Refer to `Ansible Security`_ for details. [ypid_]
+
 
 `debops.cryptsetup v0.4.0`_ - 2016-10-23
 ----------------------------------------

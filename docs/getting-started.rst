@@ -17,6 +17,7 @@ The following layers are involved in configuring an encrypted filesystem using
 block device encryption:
 
 #. Ciphertext block device: This can be any block device or partition on a block device.
+   It can also be a regular file which will be mapped to a block device using ``loop`` by cryptsetup.
 
 #. Plaintext device mapper target: Created by `dm-crypt`_ under :file:`/dev/mapper/`.
    Opening this layer is called "mapping" or "decrypting" which means making
@@ -36,8 +37,17 @@ To configure encrypted filesystems on host given in
 
 .. code:: ini
 
-    [debops_service_cryptsetup]
-    hostname
+   [debops_service_cryptsetup]
+   hostname
+
+In case the host in question happens to be a TemplateBasedVM on `Qubes OS`_, it
+should instead be added to ``debops_service_cryptsetup_persistent_paths`` so
+that the changes can be made persistent:
+
+.. code:: ini
+
+   [debops_service_cryptsetup_persistent_paths]
+   hostname
 
 Example playbook
 ----------------
@@ -45,7 +55,13 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.cryptsetup`` role:
 
-.. literalinclude:: playbooks/cryptsetup.yml
+.. literalinclude:: playbooks/cryptsetup-plain.yml
+   :language: yaml
+
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses ``debops.cryptsetup`` together with the ``debops.persistent_paths`` role:
+
+.. literalinclude:: playbooks/cryptsetup-persistent_paths.yml
    :language: yaml
 
 Ansible tags
