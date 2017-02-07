@@ -104,7 +104,7 @@ Changed
   library. These versions should work better with the latest Ansible 2.x
   releases. [drybjed_]
 
-- Update debops.ifupdown_ playbook to support new featurs in the role. You will
+- Update debops.ifupdown_ playbook to support new features in the role. You will
   need to update your inventory, check the role documentation for more details.
   [drybjed_]
 
