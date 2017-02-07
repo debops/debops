@@ -127,7 +127,7 @@ ErrorLog ${APACHE_LOG_DIR}/{{ sanitized_name }}_error.log
 {% set apache__tpl_status_enabled = item.status_enabled|d(apache__status_for_vhost_enabled) | bool %}
 {{ get_server_status_directives(item, apache__tpl_status_enabled) -}}
 {% if apache__tpl_status_enabled|bool and (
-        (mode == 'http' and (item.redirect_http|d() or item.redirect_to_https|d(https_enabled) | bool)) or
+        (mode == 'http' and (item.redirect_http|d() or item.redirect_to_https|d(apache__redirect_to_https) | bool)) or
         (mode == 'https' and item.redirect_https|d())
     ) %}
 RewriteEngine On
@@ -136,7 +136,7 @@ RewriteRule "^{{ item.status_location|d(apache__status_location) }}" "-" [L]
 {% endif %}
 {% if mode == 'http' and item.redirect_http|d() %}
 {{ get_redirect(item.redirect_http_code|d(307), "/", item.redirect_http, apache__tpl_use_redirect_module) }}
-{% elif mode == 'http' and item.redirect_to_https|d(https_enabled) | bool %}
+{% elif mode == 'http' and item.redirect_to_https|d(apache__redirect_to_https) | bool %}
 {{ get_redirect(item.redirect_to_https_with_code|d("301"), "/", "https://" + (debops__tpl_macros.get_yaml_list_for_elem(item.name) | from_yaml)[0], apache__tpl_use_redirect_module) }}
 {% elif mode == 'https' and item.redirect_https|d() %}
 {{ get_redirect(item.redirect_https_code|d(307), "/", item.redirect_https, apache__tpl_use_redirect_module) }}

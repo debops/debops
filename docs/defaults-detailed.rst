@@ -328,7 +328,7 @@ Refer to the `Apache Redirect directive documentation`_ for details.
   HTTPS, by default 301 Moved Permanently.
 
 ``redirect_to_https``
-  Optional, boolean. Defaults to ``True``
+  Optional, boolean. Defaults to ``apache__redirect_to_https``
   If ``True``, redirect connection from HTTP to the HTTPS version of the site.
   Set to ``False`` to allow to serve the website via HTTP and HTTPS and don't
   redirect HTTP to HTTPS.
