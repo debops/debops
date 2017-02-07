@@ -206,7 +206,7 @@ Common role options
 
 ``by_role``
   Optional, string. Name of a Ansible role in the format ``ROLE_OWNER.ROLE_NAME`` which is
-  responsable for the server configuration.
+  responsible for the server configuration.
 
 ``comment``
   Optional, string. Comment for the intended purpose of the virtual host.
