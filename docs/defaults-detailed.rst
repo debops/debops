@@ -29,7 +29,7 @@ Each entry is a YAML dictionary that defines a set of one or more
 :program:`cron` jobs using specific parameters:
 
 ``file`` or ``cron_file``
-  Name of the configuration file in :file:`/etc/cron.d/` directory. Required
+  Name of the configuration file in the :file:`/etc/cron.d/` directory. Required
   when the YAML list format is used. If not specified, the dictionary key will
   be used as the name.
 
@@ -40,10 +40,10 @@ Each entry is a YAML dictionary that defines a set of one or more
 
 ``backup``
   Optional, boolean. If ``True``, the :program:`cron` Ansible module will create
-  a backup of existing configuration file before modifying it.
+  a backup of an existing configuration file before modifying it.
 
 ``job``
-  A string that specifies the command that should be executed by the
+  A string that specifies the command that should be executed by
   :program:`cron` to perform a given task.
 
 ``jobs``
@@ -74,12 +74,6 @@ in a dictionary entry on the ``jobs`` list:
   dictionary, when it's ``absent`` the entire configuration file will be
   removed.
 
-``special_time``
-  Optional. Specify when a given :program:`cron` job should be executed:
-  ``hourly``, ``daily``, ``weekly``, ``monthly``, ``annually``, ``yearly``, or
-  at the ``reboot``. This parameter cannot be used with other parameters that
-  define the execution time.
-
 ``user``
   Optional. Specify the UNIX user account which will execute the job. If not
   specified, the job will be executed as the ``root`` account.
@@ -94,6 +88,12 @@ The next set of parameters define when a given :program:`cron` job should be
 executed, in the :program:`cron` Ansible module specification format. See its
 documentation for more details:
 
+``special_time``
+  Specify the special time when the job should be run, in the :program:`cron` format:
+  ``hourly``, ``daily``, ``weekly``, ``monthly``, ``annually``, ``yearly``, or
+  at the ``reboot``. This parameter cannot be used with other parameters that
+  define the execution time.
+
 ``minute``
   Specify the minute when the job should be run, in the :program:`cron` format.
 
@@ -107,7 +107,7 @@ documentation for more details:
   Specify the month when the job should be run, in the :program:`cron` format.
 
 ``weekday``
-  Specify what weekdays the job shoulbe be run, in the :program:`cron` format.
+  Specify what weekdays the job should be run, in the :program:`cron` format.
 
 The parameters below are used in the ``custom_files`` list as the dictionary
 keys:
@@ -168,7 +168,7 @@ files, as a list:
      - file: 'simple_job_2'
        job: 'touch /tmp/file2'
 
-Create two tasks that execute a command every minute, in 1 configuration file:
+Create two tasks that execute a command every minute, in one configuration file:
 
 .. code-block:: yaml
 
@@ -179,6 +179,19 @@ Create two tasks that execute a command every minute, in 1 configuration file:
          - 'touch /tmp/file1'
 
          - 'touch /tmp/file2'
+
+Create a task that executes a command every minute, in the crontab of the user
+``jessie``:
+
+.. code-block:: yaml
+
+   cron__jobs:
+     'user_cron':
+       cron_file: '{{ omit }}'
+       user: 'jessie'
+       jobs:
+
+         - 'touch /tmp/file1'
 
 Create two tasks in the same file with custom descriptions:
 
