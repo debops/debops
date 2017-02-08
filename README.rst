@@ -54,9 +54,9 @@ Here are a few services that are available
 
 **Virtualization**
 
-+------+---------+---------+----------+
-| LXC_ | Docker_ | OpenVZ_ | libvirt_ |
-+------+---------+---------+----------+
++------+---------+----------+
+| LXC_ | Docker_ | libvirt_ |
++------+---------+----------+
 
 **Backup and encryption**
 
@@ -145,7 +145,6 @@ If you want to keep tabs on each role's status then check out our
 
 .. _LXC: https://github.com/debops/ansible-lxc
 .. _Docker: https://github.com/debops/ansible-docker
-.. _OpenVZ: https://github.com/debops/ansible-openvz
 .. _libvirt: https://github.com/debops/ansible-libvirt
 
 .. _Safekeep: https://github.com/debops/ansible-safekeep

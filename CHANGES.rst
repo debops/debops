@@ -67,6 +67,11 @@ Added
 
 - Add ``debops.persistent_paths`` role and its corresponding playbook. [ypid_]
 
+- Add commonly used set of Jinja2 macros to the repository under
+  `./templates/debops__tpl_macros.j2 <https://github.com/debops/debops-playbooks/blob/master/templates/debops__tpl_macros.j2>`_
+  to have a central place where the file can be maintained and from where the
+  latest version can be acquired. [ypid_]
+
 Changed
 ~~~~~~~
 
@@ -104,7 +109,7 @@ Changed
   library. These versions should work better with the latest Ansible 2.x
   releases. [drybjed_]
 
-- Update debops.ifupdown_ playbook to support new featurs in the role. You will
+- Update debops.ifupdown_ playbook to support new features in the role. You will
   need to update your inventory, check the role documentation for more details.
   [drybjed_]
 
