@@ -167,8 +167,7 @@
 - name: Reload systemd daemons
   command: systemctl daemon-reload
   notify: [ 'Restart docker']
-  when: ((ansible_local|d() and ansible_local.init|d() and
-          ansible_local.init == 'systemd') and
+  when: (ansible_service_mgr == 'systemd' and
          ((docker__register_systemd_service|d() and
          docker__register_systemd_service|changed) or
          (docker__register_systemd_proxy_present|d() and
