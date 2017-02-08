@@ -155,20 +155,46 @@
     mode: '0644'
   notify: [ 'Restart gitlab' ]
 
-- name: Install GitLab service script
+- name: Install GitLab SysVinit script
   shell: cp -f {{ gitlab_ce_git_checkout + "/lib/support/init.d/gitlab" }} /etc/init.d/gitlab
   register: gitlab__register_init_script
-  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed
+  when: ((gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+         (gitlab_use_systemd is defined and not gitlab_use_systemd))
+
+- name: Install GitLab systemd service files
+  template:
+    src: 'etc/systemd/system/{{ item }}.j2'
+    dest: '/etc/systemd/system/{{ item }}'
+  with_items:
+    - 'gitlab-mailroom.service'
+    - 'gitlab-sidekiq.service'
+    - 'gitlab-unicorn.service'
+    - 'gitlab-workhorse.service'
+  register: gitlab__register_init_script
+  when: (( gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+         (gitlab_use_systemd is defined and gitlab_use_systemd))
 
 - name: Reload systemd daemons
   command: systemctl daemon-reload
   when: (ansible_service_mgr == "systemd" and gitlab__register_init_script|changed)
 
-- name: Enable GitLab service
+- name: Enable GitLab SysVinit service
   service:
     name: 'gitlab'
     enabled: True
-  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed
+  when: ((gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+         (gitlab_use_systemd is defined and not gitlab_use_systemd))
+
+- name: Enable GitLab systemd services
+  service:
+    name: '{{ item }}'
+    enabled: True
+  with_items:
+    - 'gitlab-sidekiq.service'
+    - 'gitlab-unicorn.service'
+    - 'gitlab-workhorse.service'
+  when: ((gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+         (gitlab_use_systemd is defined and gitlab_use_systemd))
 
 - name: Setup GitLab CE logrotate configuration
   template:
@@ -260,15 +286,31 @@
           ansible_local.gitlab.installed) and
          gitlab_register_bundle_migrate is defined and gitlab_register_bundle_migrate.changed)
 
-- name: Start GitLab instance
+- name: Start GitLab instance (SysVinit)
   service:
     name: 'gitlab'
     state: 'started'
   notify: [ 'Deactivate GitLab deploy.html page' ]
-  when: (ansible_local is undefined or (ansible_local is defined and
+  when: ((ansible_local is undefined or (ansible_local is defined and
          (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
           (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
-           not ansible_local.gitlab.installed))))))
+           not ansible_local.gitlab.installed)))))) and
+          (gitlab_use_systemd is defined and not gitlab_use_systemd))
+
+- name: Start GitLab instance (systemd)
+  service:
+    name: '{{ item }}'
+    state: 'started'
+  with_items:
+    - 'gitlab-sidekiq'
+    - 'gitlab-unicorn'
+    - 'gitlab-workhorse'
+  notify: [ 'Deactivate GitLab deploy.html page' ]
+  when: ((ansible_local is undefined or (ansible_local is defined and
+         (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
+          (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
+           not ansible_local.gitlab.installed)))))) and
+          (gitlab_use_systemd is defined and gitlab_use_systemd))
 
 - name: Configure periodical GitLab backups
   cron:
