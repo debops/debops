@@ -162,6 +162,26 @@ Fixed
   Ansible 2.1. This is a non-backwards compatible change and it breaks
   compatibility with Ansible 2.0. [anzil]
 
+Security
+~~~~~~~~
+
+- Terminate playbook execution as soon as possible if a vulnerable Ansible version is used.
+  The minimum Ansible version without known vulnerabilities is Ansible 2.1.4.
+  The check is run as part of the :file:`common.yml` playbook file in a
+  separate playbook which has ``gather_facts`` explicitly turned of and the
+  task being delegated to the Ansible controller to avoid possible connection
+  attempts to remote hosts before the check had the opportunity to terminate
+  a vulnerable Ansible instance.
+  This playbook is run with no limitation on remote hosts meaning it will also
+  run the check even if the current Ansible run is limited to a host which is
+  not even managed by DebOps.
+  This check became necessary because some distributions only provide Ansible
+  versions with known vulnerabilities and some users are unaware.
+  Note that you will need `stable-2.1 <https://github.com/ansible/ansible/tree/stable-2.1>`_
+  because some required fixes for advanced templating features which DebOps
+  uses have not made it into v2.1.4 (broke while fixing the CVEs).
+  Refer to `Ansible Security`_ for details. [ypid_]
+
 
 `debops-playbooks v0.2.9`_ - 2016-07-07
 ---------------------------------------
