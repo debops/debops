@@ -67,6 +67,9 @@ Fixed
   parameter is not specified in any of the server configuration entries.
   [drybjed_]
 
+- Make sure that the configuration is generated correctly when HSTS preload is
+  disabled. [drybjed_]
+
 
 `debops.nginx v0.1.9`_ - 2016-07-19
 -----------------------------------

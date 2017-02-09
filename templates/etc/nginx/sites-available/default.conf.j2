@@ -544,7 +544,7 @@ server {
         resolver_timeout          5s;
 {%     endif                                                        %}
 {%     if item.hsts_enabled|d(True) | bool                      %}
-        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age }}{{ "; includeSubDomains" if nginx_hsts_subdomains|bool else "" }}{{ "; preload" if ((item.hsts_preload | d(nginx_hsts_preload)) | bool) }}";
+        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age }}{{ "; includeSubDomains" if nginx_hsts_subdomains|bool else "" }}{{ "; preload" if ((item.hsts_preload | d(nginx_hsts_preload)) | bool) else "" }}";
 {% endif                                                    %}
 {%     if (item.csp|d() | bool) or item.csp_report | d()        %}
         add_header                Content-Security-Policy{% if item.csp_report|d() | bool %}-Report-Only{% endif %} "{{ item.csp_policy | d('default-src https:') }}";
