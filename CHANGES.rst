@@ -17,6 +17,9 @@ debops.apache v0.1.0 - unreleased
 Added
 ~~~~~
 
+- Add :envvar:`apache__redirect_to_https` to control the role's default behaviour for
+  redirecting to https. [muelli_]
+
 - Initial coding and design. [ypid_]
 
 - Add/Set the default `Referrer Policy`_ to ``no-referrer`` and made it
