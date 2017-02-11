@@ -41,6 +41,7 @@ supported options:
 
 ``enabled``
   Required, boolean. Defaults to ``True``.
+  Set to ``{{ omit }}`` not change the state of a module.
   Whether the module should be enabled or disabled in Apache.
 
 ``force``
@@ -98,8 +99,8 @@ supported options:
   Whether the module should be ``present`` or ``absent`` in the :file:`conf-available` directory.
 
 ``type``
-  Optional, string. Specify name of the template to use to generate the virtual
-  host configuration. Templates can extend other templates.
+  Optional, string.
+  Refer to the following subsections for the supported type.
 
 
 Type: raw
@@ -145,6 +146,16 @@ same filename as the snippet which is diverted away.
   :file:`conf-available` directory.
   Allows to specify a full file path where to divert the file to.
   Note that the ``item.divert_suffix`` is still in affect when using this option.
+
+
+Type: dont-create
+~~~~~~~~~~~~~~~~~
+
+This special type assumes the snippet file is already present and does not try
+to create it.
+This can be used to enable or disable snippet files managed by system packages
+for example.
+
 
 Examples
 ~~~~~~~~
@@ -216,10 +227,12 @@ Common role options
   host configuration. Templates can extend other templates.
 
 
-.. _apache__ref_vhosts_common_webserver_options:
+.. _apache__ref_vhost_common_webserver_options:
 
 Common webserver options
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _apache__ref_vhost_server_admin:
 
 ``server_admin``
   Optional, string.
@@ -399,7 +412,7 @@ HTTP security headers
   determines the Content-Security-Policy header set in server responses.
   Refer to the `Content Security Policy Reference`_.
 
-.. _apache__ref_vhosts_http_xss_protection:
+.. _apache__ref_vhost_http_xss_protection:
 
 ``http_xss_protection``
   Optional, string. Value of the ``X-XSS-Protection`` HTTP header field. Set to
@@ -419,7 +432,7 @@ HTTP security headers
   “X-XSS-Protection”?
   <https://stackoverflow.com/questions/9090577/what-is-the-http-header-x-xss-protection>`_.
 
-.. _apache__ref_vhosts_http_referrer_policy:
+.. _apache__ref_vhost_http_referrer_policy:
 
 ``http_referrer_policy``
   Optional, string. Value of the ``Referrer-Policy`` HTTP header field. Set to
@@ -427,6 +440,42 @@ HTTP security headers
   Refer to `Referrer Policy`_ for more details. Note that this header is a
   draft as of 2016-10-11 but it is already supported by the majority of web
   browsers.
+
+
+.. _apache__ref_vhost_apache_status:
+
+Apache status
+~~~~~~~~~~~~~
+
+.. _apache__ref_vhost_status_enabled:
+
+``status_enabled``
+  Optional, boolean. Should the Apache server status be enabled?
+  Defaults to :envvar:`apache__status_enabled`.
+
+.. _apache__ref_vhost_status_location:
+
+``status_location``
+  Optional, string.
+  The ``Location`` or URL path by which the Apache server status should be
+  accessible.
+  Defaults to :envvar:`apache__status_location`.
+
+.. _apache__ref_vhost_status_allow_localhost:
+
+``status_allow_localhost``
+  Optional, boolean.
+  Allow access to the Apache server status using the ``Require local``
+  directive.
+  Defaults to :envvar:`apache__status_allow_localhost`.
+
+.. _apache__ref_vhost_status_directives:
+
+``status_directives``
+  Optional, string.
+  Additional directives included into the ``Location`` sections for the Apache
+  server status configuration. Can be used to customize access for example.
+  Defaults to :envvar:`apache__status_directives`.
 
 Type: raw
 ~~~~~~~~~

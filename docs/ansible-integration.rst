@@ -8,9 +8,6 @@ Design goals
 
 * Try not to modify/replace configuration files which are maintained by Debian.
   In particular the :file:`/etc/apache2/apache2.conf` is not altered.
-* The ``IfVersion`` directive is not used to keep the number of enabled modules
-  as minimum as possible. Instead the configuration is generated for the
-  currently detected Apache version.
 * Most variables which directly correspond to a Apache directive are not masked
   or otherwise changed (for example using ``True``, ``False`` for directives
   which expect ``on``, ``off`` is *not* supported).
@@ -21,12 +18,18 @@ Design goals
   special variable ``omit`` (use in Jinja: ``{{ omit }}``) is intended to be
   used when the directive should be omitted (not written to the Apache
   configuration at all).
+* Apache is not restarted by the role because that would require to close
+  established connections. Some configuration options require a restart to take
+  effect. The documentation for those options should give a hint about it. You
+  should test your settings with a test system and do a restart in production
+  manually when required.
+  Optionally, it should be possible to allow restarts using inventory variables.
 
 
 Alternative roles
 -----------------
 
-Has `Ansible Galaxy`_ an impressive number of Ansible roles for Apache to your
+`Ansible Galaxy`_ has an impressive number of Ansible roles for Apache at your
 disposal. A few of them have been checked out before/while writing this role:
 
 * `geerlingguy.apache <https://github.com/geerlingguy/ansible-role-apache>`_
@@ -34,5 +37,5 @@ disposal. A few of them have been checked out before/while writing this role:
 * And peeked at a few more.
 
 However, none of the already existing roles where found to be a suitable start for
-Apache support in Debops so this role has been designed and written from scratch.
+Apache support in DebOps so this role has been designed and written from scratch.
 Unfortunately, that workflow is not uncommon considering the quality requirements and standards of DebOps.

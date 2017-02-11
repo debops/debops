@@ -11,7 +11,6 @@
     - '{{ apache__dependent_packages }}'
 
 # Manage Apache modules [[[1
-
 - name: Get list of available modules
   find:
     file_type: 'file'
@@ -25,17 +24,7 @@
     apache__tpl_available_modules: '{{ apache__register_mods_available.files|d({}) | map(attribute="path") | map("replace", apache__config_path + "/mods-available/", "") | map("regex_replace", "\.load$", "") | list }}'
   tags: [ 'role::apache:modules' ]
 
-- name: Enable/disable Apache modules
-  apache2_module:
-    name: '{{ item.key }}'
-    state: '{{ (item.value.enabled
-                if (item.value is mapping)
-                else item.value) | bool | ternary("present", "absent") }}'
-    force: '{{ item.value.force|d(False) | bool }}'
-  notify: [ 'Test apache and reload' ]
-  when: (item.key in apache__tpl_available_modules)
-  with_dict: '{{ apache__combined_modules }}'
-  tags: [ 'role::apache:modules' ]
+- include: apache_module_state.yml
 
 # Manage Apache configuration snippets [[[1
 - name: Divert conf-available configuration
@@ -65,7 +54,7 @@
     group: 'root'
     mode: '0644'
   when: (item.value.state|d("present") != "absent" and
-         (item.value.type|d("default") not in ["divert"] or item.value.raw|d()))
+         (item.value.type|d("default") not in ["divert", "dont-create"] or item.value.raw|d()))
   with_dict: '{{ apache__combined_snippets }}'
   notify: [ 'Test apache and reload' ]
 
@@ -135,3 +124,15 @@
   when: (item.type|d(apache__vhost_type) not in ["divert"])
   with_flattened: '{{ apache__combined_vhosts }}'
   tags: [ 'role::apache:vhosts' ]
+
+
+# Manage Apache modules, part 2 [[[1
+- name: Detect if the rewrite module has been used in the active configuration
+  shell: grep --ignore-case '^\s*RewriteEngine On' {{ apache__config_path | quote }}/sites-enabled/* {{ apache__config_path | quote }}/conf-enabled/*
+  register: apache__register_mod_rewrite_used
+  always_run: True
+  failed_when: apache__register_mod_rewrite_used.rc not in [ 0, 1 ]
+  changed_when: False
+  when: apache__register_mod_rewrite_used is undefined
+
+- include: apache_module_state.yml

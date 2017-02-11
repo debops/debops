@@ -10,6 +10,8 @@ import re
 output = loads('''{{ ({
     "enabled": (apache__deploy_state == "present"),
     "user": apache__user,
+    "use_if_version": apache__config_use_if_version,
+    "min_version": apache__config_min_version,
     }) | to_nice_json }}''')
 
 try:
@@ -19,5 +21,9 @@ try:
             output['version'] = _re.group('version')
 except:
     pass
+
+if output['use_if_version']:
+    if output['min_version'] == 'current_major_minor':
+        output['min_version'] = '.'.join(output['version'].split('.')[:2])
 
 print(dumps(output, sort_keys=True, indent=2))

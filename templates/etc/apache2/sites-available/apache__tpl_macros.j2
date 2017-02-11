@@ -2,6 +2,65 @@
 #}
 {% import 'debops__tpl_macros.j2' as debops__tpl_macros with context %}
 
+{% macro get_min_version_wrapped(content, version, compare_operator) %}{# [[[ #}
+{# Examples:
+
+{{ get_min_version_wrapped('# 2.3.0 directive', "2.3", ">=") }}
+{{ get_min_version_wrapped('# 2.4.0 directive', "2.4", ">=") }}
+{{ get_min_version_wrapped('# 2.4.1 directive', "2.4.1", ">=") }}
+{{ get_min_version_wrapped('# 2.5.0 directive', "2.5", ">=") }}
+
+#}
+{% set version = '==' if (version == '=') else version %}
+{% set apache__tpl_compare_operator_includes_equal = True if (compare_operator in ['>=', '<=', '==']) else False %}
+{% if (version | version_compare(debops__tpl_macros.get_apache_min_version(), compare_operator))
+    or (version | version_compare(debops__tpl_macros.get_apache_min_version(), ">")) %}
+{%   if apache__tpl_compare_operator_includes_equal and (version | version_compare(debops__tpl_macros.get_apache_min_version(), "==")) %}
+{{     content -}}
+{%   else %}
+<IfVersion {{ compare_operator }} {{ version }}>
+    {{ debops__tpl_macros.indent(content, 4) }}
+</IfVersion>
+{%   endif %}
+{% endif %}
+{% endmacro %}{# ]]] #}
+
+{% macro get_version_wrapped(content, version, compare_operator, fallback_content=False) %}{# [[[ #}
+{# This macro has not been extensivly tested yet. If it contains bugs please try to debug it if you need it.
+
+Examples:
+
+{{ get_version_wrapped('# 2.3.0 directive', "2.3", ">=", '# Prior to 2.3 directive') }}
+{{ get_version_wrapped('# 2.4.0 directive', "2.4", ">=", '# Prior to 2.4 directive') }}
+{{ get_version_wrapped('# 2.4.1 directive', "2.4.1", ">=", '# Prior to 2.4.1 directive') }}
+{{ get_version_wrapped('# 2.5.0 directive', "2.5", ">=", '# Prior to 2.5 directive') }}
+
+#}
+{% set version = '==' if (version == '=') else version %}
+{% set apache__tpl_xor_compare_operator_map = {} %}
+{% set apache__tpl_xor_compare_operator_list = [
+    ('==', '!='),
+    ('>=', '<'),
+    ('<=', '>'),
+] %}
+{% for compare_operator, xor_compare_operator in apache__tpl_xor_compare_operator_list %}
+{%   set _ = apache__tpl_xor_compare_operator_map.update({ compare_operator: xor_compare_operator }) %}
+{%   set _ = apache__tpl_xor_compare_operator_map.update({ xor_compare_operator: compare_operator }) %}
+{% endfor %}
+{% if apache__config_use_if_version|bool %}
+{{   get_min_version_wrapped(content, version, compare_operator) -}}
+{%   if fallback_content != False %}
+{{     get_min_version_wrapped(fallback_content, version, apache__tpl_xor_compare_operator_map[compare_operator]) -}}
+{%   endif %}
+{% else %}
+{%   if debops__tpl_macros.get_apache_version() | version_compare(version, compare_operator) %}
+{{     content -}}
+{%   elif fallback_content != False %}
+{{     fallback_content -}}
+{%   endif %}
+{% endif %}
+{% endmacro %}{# ]]] #}
+
 {% macro get_server_name_aliases(name_item) %}{# [[[ #}
 {% set apache__tpl_names = debops__tpl_macros.get_yaml_list_for_elem(name_item) | from_yaml %}
 {% if not apache__tpl_names %}
@@ -47,6 +106,58 @@ CustomLog ${APACHE_LOG_DIR}/{{ sanitized_name }}_access.log {{ apache__access_lo
 ErrorLog ${APACHE_LOG_DIR}/{{ sanitized_name }}_error.log
 {% endmacro %}{# ]]] #}
 
+{% macro get_server_status_directives(item, enabled) %}{# [[[ #}
+{% if enabled|bool %}
+<Location {{ item.status_location|d(apache__status_location) | quote }}>
+    SetHandler server-status
+{%   if item.status_allow_localhost|d(apache__status_allow_localhost) | bool %}
+    Require local
+{%   endif %}
+{%   if item.status_directives|d(apache__status_directives) %}
+    {{ item.status_directives|d(apache__status_directives) }}
+{%   elif not (item.status_allow_localhost|d(apache__status_allow_localhost) | bool) %}
+    Require all denied
+{%   endif %}
+</Location>
+{% endif %}
+{% endmacro %}{# ]]] #}
+
+{% macro get_vhost_content_directives(item, mode='https', https_enabled=True) %}{# [[[ #}
+{% set apache__tpl_use_redirect_module = 'alias' %}
+{% set apache__tpl_status_enabled = item.status_enabled|d(apache__status_for_vhost_enabled) | bool %}
+{{ get_server_status_directives(item, apache__tpl_status_enabled) -}}
+{% if apache__tpl_status_enabled|bool and (
+        (mode == 'http' and (item.redirect_http|d() or item.redirect_to_https|d(https_enabled) | bool)) or
+        (mode == 'https' and item.redirect_https|d())
+    ) %}
+RewriteEngine On
+RewriteRule "^{{ item.status_location|d(apache__status_location) }}" "-" [L]
+{%   set apache__tpl_use_redirect_module = 'rewrite' %}
+{% endif %}
+{% if mode == 'http' and item.redirect_http|d() %}
+{{ get_redirect(item.redirect_http_code|d(307), "/", item.redirect_http, apache__tpl_use_redirect_module) }}
+{% elif mode == 'http' and item.redirect_to_https|d(https_enabled) | bool %}
+{{ get_redirect(item.redirect_to_https_with_code|d("301"), "/", "https://" + (debops__tpl_macros.get_yaml_list_for_elem(item.name) | from_yaml)[0], apache__tpl_use_redirect_module) }}
+{% elif mode == 'https' and item.redirect_https|d() %}
+{{ get_redirect(item.redirect_https_code|d(307), "/", item.redirect_https, apache__tpl_use_redirect_module) }}
+{% else %}
+{{ get_content_directives(item) }}
+{% endif %}
+{% endmacro %}{# ]]] #}
+
+{% macro get_document_root_directives(item) %}{# [[[ #}
+Options {{ debops__tpl_macros.get_yaml_list_for_elem(item.options|d(apache__vhost_options))|from_yaml | join(" ") }}
+AllowOverride {{ debops__tpl_macros.get_yaml_list_for_elem(item.allow_override|d(apache__vhost_allow_override))|from_yaml | join(" ") }}
+
+{{ get_version_wrapped('Require all granted', "2.4", ">=",
+'Order allow,deny
+Allow from all') -}}
+{% if item.root_directives|d() %}
+
+{{ item.root_directives }}
+{% endif %}
+{% endmacro %}{# ]]] #}
+
 {% macro get_content_directives(item) %}{# [[[ #}
 {% if item.include|d() %}
 {% for include_file in debops__tpl_macros.get_yaml_list_for_elem(item.include)|from_yaml %}
@@ -65,20 +176,7 @@ DocumentRoot {{ item.root|d(item.document_root) | quote }}
 {{ get_alias(item.alias, item.root|d(item.document_root)) }}
 {%- endif %}
 <Directory {{ item.root|d(item.document_root) | quote }}>
-    Options {{ debops__tpl_macros.get_yaml_list_for_elem(item.options|d(apache__vhost_options))|from_yaml | join(" ") }}
-    AllowOverride {{ debops__tpl_macros.get_yaml_list_for_elem(item.allow_override|d(apache__vhost_allow_override))|from_yaml | join(" ") }}
-
-{% if debops__tpl_macros.get_apache_version() | version_compare("2.4", ">=") %}
-    Require all granted
-{% else %}
-    Order allow,deny
-    Allow from all
-{% endif %}
-{% if item.root_directives|d() %}
-
-    {{ item.root_directives | indent(4) }}
-{% endif %}
-
+    {{ debops__tpl_macros.indent(get_document_root_directives(item), 4) }}
 </Directory>
 {% endif %}
 {% if item.raw_content|d() %}
@@ -89,7 +187,7 @@ DocumentRoot {{ item.root|d(item.document_root) | quote }}
 
 {% macro get_default_tls_directives(item) %}{# [[[ #}
 {# Included in server context to provide sane defaults (there might be vhosts
-# not controled by this template) and virtual host context to ensure those
+# not controled by this template) and in virtual host context to ensure those
 # settings are appliend and to allow per-vhost changes.
 # Refer to Applied-Crypto-Hardening_bettercrypto/src/configuration/Webservers/Apache/default-ssl for details.
 #}
@@ -164,8 +262,17 @@ Header always set X-Clacks-Overhead "GNU Terry Pratchett"
 {% endif %}
 {% endmacro %}{# ]]] #}
 
-{% macro get_redirect(code, from, to) %}{# [[[ #}
-Redirect {{ code|string }} "{{ from }}" "{{ to + ("/" if (to[-1] != "/") else "") }}"
+{% macro get_redirect(code, from, to, module) %}{# [[[ #}
+{# Prefer the alias module but support the use of the rewrite module in case
+other rewrite rules are used in the same context because the rewrite rules are
+handled before all the directives from the alias module.
+#}
+{% set to = to + ("/" if (to[-1] != "/") else "") %}
+{% if module == 'alias' %}
+Redirect {{ code|string }} "{{ from }}" "{{ to }}"
+{% elif module == 'rewrite' %}
+RewriteRule "^{{ from }}?(.*)" "{{ to }}$1" [L,R={{ code }},NE]
+{% endif %}
 {% endmacro %}{# ]]] #}
 
 {% macro get_alias(url_path, fs_directory) %}{# [[[ #}

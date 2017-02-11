@@ -47,7 +47,11 @@ apache__dependent_packages: []
 #
 #   .. code-block:: shell
 #
-#      for file in /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf /etc/apache2/conf-available/security.conf; do dpkg-divert --remove $file; done && rm /etc/apache2 -rf
+#      for file in /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf /etc/apache2/conf-available/security.conf
+#      do
+#          dpkg-divert --remove $file
+#      done
+#      rm /etc/apache2 -rf
 #
 apache__deploy_state: 'present'
                                                                    # ]]]
@@ -62,6 +66,15 @@ apache__fqdn: '{{ ansible_local.core.fqdn
                   if (ansible_local|d() and ansible_local.core|d() and
                       ansible_local.core.fqdn|d())
                   else ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: apache__domain [[[
+#
+# The domain name of the host running Apache.
+apache__domain: '{{ ansible_local.core.domain
+                    if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.domain|d())
+                    else (ansible_domain if ansible_domain else ansible_hostname) }}'
 
                                                                    # ]]]
 # .. envvar:: apache__config_path [[[
@@ -93,7 +106,8 @@ apache__server_name: '{{ apache__fqdn }}'
 #
 # Default server admin contact information. Either a Email address or a URL
 # (preferable on another webserver if this one fails).
-# Can be overwritten for virtual hosts.
+# Refer to :ref:`item.server_admin <apache__ref_vhost_server_admin>` for
+# how to overwrite this for a virtual host.
 apache__server_admin: '{{ ansible_local.core.admin_public_email[0]
                           if (ansible_local|d() and ansible_local.core|d() and
                               ansible_local.core.admin_public_email|d())
@@ -139,6 +153,56 @@ apache__http_listen: [ 80 ]
 # List of transport layer ports to listen on for HTTPS connections.
 # Note that changing this variable is currently not supported.
 apache__https_listen: [ 443 ]
+
+                                                                   # ]]]
+# .. envvar:: apache__config_use_if_version [[[
+#
+# Should the `Apache IfVersion directive` be used to generate a generic form
+# of the Apache configuration?
+#
+# ``True``
+#   Default.
+#   Use the `Apache IfVersion directive` to generate a configuration which is
+#   intended to work with as many Apache versions as this role supports.
+#
+#   This has the advantage that if your Apache version does not already support
+#   all features which this role is able to configure then you can upgrade
+#   Apache independently of this role and the new features will be used in
+#   Apache as soon as a recent enough version of Apache starts up.
+#
+#   Note however that it is still recommended to rerun this role against your
+#   host after version upgrades because if certain features are enabled might
+#   not only depend on the Apache version. For example the version of the used
+#   cryptography library (OpenSSL) is also relevant and checked by this role at
+#   Ansible role execution time.
+#
+# ``False``
+#   The configuration is specifically generated for the Apache version which
+#   is detected at Ansible role execution time.
+#
+#   This has the advantage that the generated configuration is potentially
+#   smaller and easier to read.
+#
+apache__config_use_if_version: True
+
+                                                                   # ]]]
+# .. envvar:: apache__config_min_version [[[
+#
+# Specifies the minimum Apache version to support when
+# :envvar:`apache__config_use_if_version` is set to ``True``.
+# By default, this defaults to the current Apache major and minor version detected
+# because ``major.minor`` version downgrades are considered uncommon and to
+# avoid too much legacy directives.
+# (You can still do such downgrades if the role supports the Apache version
+# you are downgrading to but then you might need to rerun the role so that a
+# suitable configuration can be generated.)
+#
+# Supported special strings:
+#
+# ``current_major_minor``
+#   Gets replaced by the currently detected ``major.minor`` version.
+#
+apache__config_min_version: 'current_major_minor'
                                                                    # ]]]
                                                                    # ]]]
 # Filesystem access [[[
@@ -151,7 +215,7 @@ apache__https_listen: [ 443 ]
 #
 # Refer to `Apache DirectoryMatch directive documentation`_ for details.
 
-# .. envvar:: apache__role_directory_match [[[
+# .. envvar:: apache__default_directory_match [[[
 #
 # Default ``DirectoryMatch`` directives maintained by this Ansible role.
 apache__default_directory_match:
@@ -253,6 +317,28 @@ apache__role_modules:
     enabled: '{{ True if (apache__https_listen) else False }}'
   'security2':
     enabled: '{{ apache__security_module_enabled|bool }}'
+  'status':
+    enabled: '{{ apache__status_enabled|bool }}'
+    config: |
+      <Location /server-status>
+          # Revoke default permissions granted in `/etc/apache2/mods-available/status.conf`.
+          Require all denied
+      </Location>
+  'socache_shmcb':
+    enabled: '{{ True
+                 if (apache__ocsp_stapling_enabled|bool
+                     and "shmcb" in apache__ocsp_stapling_cache)
+                 else omit }}'
+  'authz_host':
+    enabled: '{{ True
+                 if (apache__status_enabled|bool
+                     and apache__status_allow_localhost)
+                 else omit }}'
+  'rewrite':
+    enabled: '{{ True
+                 if (apache__register_mod_rewrite_used is defined and
+                     apache__register_mod_rewrite_used.rc|d(1) == 0)
+                 else omit }}'
 
                                                                    # ]]]
 # .. envvar:: apache__combined_modules [[[
@@ -279,6 +365,22 @@ apache__security_module_enabled: False
 # Refer to the `ModSecurity SecServerSignature directive documentation`_.
 # This directive is not set if the special value ``omit`` is set.
 apache__security_module_server_signature: '{{ omit }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Multi-processing module [[[
+# ---------------------------
+
+# Selection of the MPM to use is leaved to Debian package maintainer scripts
+# which will select a suitable MPM.
+# Note that some Apache modules can depend on certain MPMs being used which
+# will be configured in the package maintainer scripts of those modules.
+#
+
+# .. envvar:: apache__mpm_max_connections_per_child [[[
+#
+# Number of requests a child process will handle before terminating.
+# Refer to the `Apache MaxConnectionsPerChild directive documentation`_ for details.
+apache__mpm_max_connections_per_child: '0'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration snippets [[[
@@ -327,12 +429,13 @@ apache__role_snippets:
     raw: |
       # This file exists here to make Debian package scripts happy.
       # For the actual security directives enabled in server context refer to
-      # the `local-debops_apache` file.
+      # the `local-debops_apache.conf` file.
       #
       # `postinst` of the `apache2` package normally tries to enable the
       # `security` snippet in server context without checking if it is actually
-      # there. The package provided `security` snippet has been diverted to
-      # `package-security`.
+      # there. The package provided `security.conf` snippet has been diverted
+      # to `package-security.conf` and is not enabled to allow `debops.apache`
+      # to configure and change security related settings.
     divert_filename: 'package-security'
     divert_suffix: ''
 
@@ -421,6 +524,87 @@ apache__pki_trusted_filename: '{{ ansible_local.pki.trusted
                                   else "trusted.crt" }}'
                                                                    # ]]]
                                                                    # ]]]
+# TLS ciphers and protocol versions [[[
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# .. envvar:: apache__tls_protocols [[[
+#
+# Default list of TLS protocols to support, in ``SSLProtocol`` syntax.
+# Refer to the `Apache SSLProtocol directive documentation`_ for details.
+apache__tls_protocols: [ 'All', '-SSLv2', '-SSLv3' ]
+
+                                                                   # ]]]
+# .. envvar:: apache__tls_cipher_suite_set_name [[[
+#
+# Default set name of TLS cipher suites to use as defined in
+# :envvar:`apache__tls_cipher_suite_sets`.
+apache__tls_cipher_suite_set_name: 'bettercrypto_org__set_b_pfs'
+
+                                                                   # ]]]
+# .. envvar:: apache__tls_cipher_suite_sets [[[
+#
+# Dictionary of TLS cipher suites which can be selected from
+# :envvar:`apache__tls_cipher_suite_set_name` using the set name (key).
+apache__tls_cipher_suite_sets:
+
+  # https://bettercrypto.org/
+  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/theory/cipher_suites/recommended.tex
+  # This will come at a certain cost of excluding many clients!
+  # If you want even higher security then the default values of this role then
+  # consider to use a preset for this role maintained by ypid:
+  # https://github.com/ypid/ypid-ansible-inventory
+  bettercrypto_org__set_a: 'EDH+aRSA+AES256:EECDH+aRSA+AES256:!SSLv3'
+
+  # https://bettercrypto.org/
+  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/configuration/Webservers/nginx/default-ec
+  bettercrypto_org__set_b: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA'
+
+  # https://bettercrypto.org/
+  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/configuration/Webservers/nginx/default-ec
+  # But only cipher suites which support PFS. Only drops support for Android 2.3.7 which is negligible.
+  bettercrypto_org__set_b_pfs: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH'
+
+  # https://cipherli.st/
+  cipherli_st: 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH'
+
+                                                                   # ]]]
+# .. envvar:: apache__tls_honor_cipher_order [[[
+#
+# Whether to prefer cipher preference order of the server.
+# Refer to the `Apache SSLHonorCipherOrder directive documentation`_ for details.
+apache__tls_honor_cipher_order: 'on'
+
+                                                                   # ]]]
+# .. envvar:: apache__tls_compression [[[
+#
+# Whether compression is enabled or disabled on the TLS level.
+# Refer to the `Apache SSLCompression directive documentation`_ for details.
+apache__tls_compression: 'off'
+                                                                   # ]]]
+                                                                   # ]]]
+# Key exchange (Diffie–Hellman) [[[
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# .. envvar:: apache__tls_dhparam_set_name [[[
+#
+# Name of the ``dhparam`` set to use.
+# Note that this setting is only honored if you are running Apache 2.4.8 and
+# newer and OpenSSL 1.0.2 or later. Before that the ``dhparam`` set configured
+# by debops.pki_ will be used.
+# Refer to debops.dhparam_ for more details.
+apache__tls_dhparam_set_name: 'default'
+
+                                                                   # ]]]
+# .. envvar:: apache__tls_dhparam_file [[[
+#
+# File path for the custom set of Diffie-Hellman parameters to use by the webserver.
+# Refer to debops.dhparam_ for more details.
+apache__tls_dhparam_file: '{{ ansible_local.dhparam[apache__tls_dhparam_set_name]
+                              if (ansible_local|d() and ansible_local.dhparam|d() and
+                                  ansible_local.dhparam[apache__tls_dhparam_set_name]|d())
+                              else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # OCSP Stapling [[[
 # ~~~~~~~~~~~~~~~~~
 
@@ -468,89 +652,6 @@ apache__ocsp_stapling_force_url: False
 apache__ocsp_stapling_verify: '{{ apache__ocsp_stapling_enabled | bool }}'
                                                                    # ]]]
                                                                    # ]]]
-# TLS ciphers and protocol versions [[[
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# .. envvar:: apache__tls_protocols [[[
-#
-# Default list of TLS protocols to support, in ``SSLProtocol`` syntax.
-# Refer to the `Apache SSLProtocol directive documentation`_ for details.
-apache__tls_protocols: [ 'All', '-SSLv2', '-SSLv3' ]
-
-                                                                   # ]]]
-# .. envvar:: apache__tls_cipher_suite_set_name [[[
-#
-# Default set name of TLS cipher suites to use as defined in
-# :envvar:`apache__tls_cipher_suite_sets`.
-apache__tls_cipher_suite_set_name: 'bettercrypto_org__set_b_pfs'
-
-                                                                   # ]]]
-
-# .. envvar:: apache__tls_cipher_suite_sets [[[
-#
-# Dictionary of TLS cipher suites which can be selected from
-# :envvar:`apache__tls_cipher_suite_set_name` using the set name (key).
-apache__tls_cipher_suite_sets:
-
-  # https://bettercrypto.org/
-  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/theory/cipher_suites/recommended.tex
-  # This will come at a certain cost of excluding many clients!
-  # If you want even higher security then the default values of this role then
-  # consider to use a preset for this role maintained by ypid:
-  # https://github.com/ypid/ypid-ansible-inventory
-  bettercrypto_org__set_a: 'EDH+aRSA+AES256:EECDH+aRSA+AES256:!SSLv3'
-
-  # https://bettercrypto.org/
-  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/configuration/Webservers/nginx/default-ec
-  bettercrypto_org__set_b: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA'
-
-  # https://bettercrypto.org/
-  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/configuration/Webservers/nginx/default-ec
-  # But only cipher suites which support PFS. Only drops support for Android 2.3.7 which is negligible.
-  bettercrypto_org__set_b_pfs: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH'
-
-  # https://cipherli.st/
-  cipherli_st: 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH'
-
-                                                                   # ]]]
-# .. envvar:: apache__tls_honor_cipher_order [[[
-#
-# Whether to prefer cipher preference order of the server.
-# Refer to the `Apache SSLHonorCipherOrder directive documentation`_ for details.
-apache__tls_honor_cipher_order: 'on'
-
-                                                                   # ]]]
-# .. envvar:: apache__tls_compression [[[
-#
-# Whether compression is enabled or disabled on the TLS level.
-# Refer to the `Apache SSLCompression directive documentation`_ for details.
-apache__tls_compression: 'off'
-
-                                                                   # ]]]
-                                                                   # ]]]
-# Key exchange (Diffie–Hellman) [[[
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# .. envvar:: apache__tls_dhparam_set_name [[[
-#
-# Name of the ``dhparam`` set to use.
-# Note that this setting is only honored if you are running Apache 2.4.8 and
-# newer and OpenSSL 1.0.2 or later. Before that the ``dhparam`` set configured
-# by debops.pki_ will be used.
-# Refer to debops.dhparam_ for more details.
-apache__tls_dhparam_set_name: 'default'
-
-                                                                   # ]]]
-# .. envvar:: apache__tls_dhparam_file [[[
-#
-# File path for the custom set of Diffie-Hellman parameters to use by the webserver.
-# Refer to debops.dhparam_ for more details.
-apache__tls_dhparam_file: '{{ ansible_local.dhparam[apache__tls_dhparam_set_name]
-                              if (ansible_local|d() and ansible_local.dhparam|d() and
-                                  ansible_local.dhparam[apache__tls_dhparam_set_name]|d())
-                              else "" }}'
-                                                                   # ]]]
-                                                                   # ]]]
 # HTTPS related security headers [[[
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -577,11 +678,14 @@ apache__hsts_subdomains: True
                                                                    # ]]]
 # .. envvar:: apache__hsts_preload [[[
 #
-# Should the preload parameter be added to the HSTS header?
+# Should the ``preload`` parameter be added to the HSTS header?
 # Refer to the `HSTS Preload List Submission`_ page to make use of this
 # feature.
-apache__hsts_preload: True
-
+# It is disabled by default because setting this to ``True`` alone does
+# nothing, it is just one requirement to get included in the preloading list.
+# Please feel encouraged to get to know HSTS preloading and enable it when you
+# are ready!
+apache__hsts_preload: False
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
@@ -603,13 +707,13 @@ apache__http_frame_options: 'SAMEORIGIN'
                                                                    # ]]]
 # .. envvar:: apache__http_xss_protection [[[
 #
-# Refer to :ref:`item.http_xss_protection <apache__ref_vhosts_http_xss_protection>` for details.
+# Refer to :ref:`item.http_xss_protection <apache__ref_vhost_http_xss_protection>` for details.
 apache__http_xss_protection: '1; mode=block'
 
                                                                    # ]]]
 # .. envvar:: apache__http_referrer_policy [[[
 #
-# Refer to :ref:`item.http_referrer_policy <apache__ref_vhosts_http_referrer_policy>` for details.
+# Refer to :ref:`item.http_referrer_policy <apache__ref_vhost_http_referrer_policy>` for details.
 apache__http_referrer_policy: 'no-referrer'
 
                                                                    # ]]]
@@ -650,8 +754,17 @@ apache__vhosts: []
 # Default virtual host which will receive all requests which don’t match other virtual hosts.
 # Refer to the `Apache virtual host matching documentation`_ for details.
 apache__default_vhost:
-  name: '000-default'
+  name: '{{ apache__default_vhost_name }}'
+  filename: '000-default'
   root: '/var/www/html'
+
+                                                                   # ]]]
+# .. envvar:: apache__default_vhost_name [[[
+#
+# Default virtual host name.
+# Ideally, this a FQDN for which a valid certificate is present so that Apache
+# does not complain about a certificate subject mismatch.
+apache__default_vhost_name: 'default.{{ apache__domain }}'
 
                                                                    # ]]]
 # .. envvar:: apache__group_vhosts [[[
@@ -689,6 +802,7 @@ apache__role_vhosts:
       Divert the package provided `default-ssl` site file away, we will not need it :)
 
   - '{{ apache__default_vhost }}'
+  - '{{ apache__status_vhost }}'
 
                                                                    # ]]]
 # .. envvar:: apache__dependent_vhosts [[[
@@ -728,7 +842,6 @@ apache__vhost_allow_override: 'None'
 # The default ``Options`` to use for virtual hosts.
 # Refer to the `Apache Options directive documentation`_ for details.
 apache__vhost_options: [ '+FollowSymLinks' ]
-
                                                                    # ]]]
                                                                    # ]]]
 # Logging [[[
@@ -739,12 +852,109 @@ apache__vhost_options: [ '+FollowSymLinks' ]
 # The default log level to use.
 # Refer to the `Apache LogLevel directive documentation`_ for details.
 apache__log_level: 'warn'
+
                                                                    # ]]]
 # .. envvar:: apache__access_log_format [[[
 #
 # Default log format as defined in :file:`/etc/apache2/apache2.conf`.
 # Refer to the `Apache LogFormat directive documentation`_ for details.
 apache__access_log_format: 'combined'
+                                                                   # ]]]
+                                                                   # ]]]
+# Apache Status [[[
+# -----------------
+
+# Refer to the `Apache mod_status documentation`_ for details.
+
+# .. envvar:: apache__status_enabled [[[
+#
+# Should the Apache server status be enabled by loading the required modules?
+apache__status_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: apache__status_vhost_enabled [[[
+#
+# Should the Apache server status page be accessible using a independent
+# virtual host bound to localhost?
+apache__status_vhost_enabled: '{{ apache__status_enabled }}'
+
+                                                                   # ]]]
+# .. envvar:: apache__status_for_vhost_enabled [[[
+#
+# Should the Apache server status page be enabled in all virtual hosts?
+#
+# Note that even when this option evaluates to ``False``, the hardcoded
+# ``/server-status`` URL path is not fully neutralized. That is because the `Apache
+# SetHandler directive`_ is set by the Apache Debian package in server config
+# context.  All access granted by package defaults is of course revoked by this
+# Ansible role, again in server config context. But this means that for any
+# virtual host, a request against ``/server-status`` (regardless of the value
+# of :envvar:`apache__status_location`) will be answered with a 403 Forbidden.
+# If that causes a problem, the role could be changed to not enable the default
+# module configuration and load the module directly from server config context.
+# Or maybe someone has a workaround which does not involve changing the package
+# module defaults.
+#
+# Refer to :ref:`item.status_enabled <apache__ref_vhost_status_enabled>` for
+# how to overwrite this for a virtual host.
+apache__status_for_vhost_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: apache__status_location [[[
+#
+# The ``Location`` or URL path by which the Apache server status should be
+# accessible.
+# Refer to :ref:`item.status_location <apache__ref_vhost_status_location>` for
+# how to overwrite this for a virtual host.
+apache__status_location: '/server-status'
+
+                                                                   # ]]]
+# .. envvar:: apache__status_allow_localhost [[[
+#
+# Allow access to the Apache server status using the ``Require local``
+# directive (refer to the `Apache host Require directive documentation`_).
+# Refer to :ref:`item.status_allow_localhost <apache__ref_vhost_status_allow_localhost>` for
+# how to overwrite this for a virtual host.
+apache__status_allow_localhost: False
+
+                                                                   # ]]]
+# .. envvar:: apache__status_directives [[[
+#
+# Additional directives included into the ``Location`` sections for the Apache
+# server status configuration. Can be used to customize access for example.
+# Refer to :ref:`item.status_directives <apache__ref_vhost_status_directives>` for
+# how to overwrite this for a virtual host.
+apache__status_directives: ''
+
+                                                                   # ]]]
+# .. envvar:: apache__status_extended_enabled [[[
+#
+# This option tracks additional data per worker about the currently executing
+# request and creates a utilization summary.
+# Refer to the `Apache ExtendedStatus directive documentation`_ for details.
+# Note that this setting cannot be changed during a graceful restart. You will
+# need to restart Apache yourself for a change to take effect!
+apache__status_extended_enabled: '{{ apache__status_enabled|bool }}'
+
+                                                                   # ]]]
+# .. envvar:: apache__status_vhost_name [[[
+#
+# Virtual host name for providing the Apache server status.
+apache__status_vhost_name:
+  - 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: apache__status_vhost [[[
+#
+# Optional virtual host for providing the Apache server status.
+apache__status_vhost:
+  name: '{{ apache__status_vhost_name }}'
+  filename: 'debops.apache-status'
+  status_enabled: True
+  status_allow_localhost: True
+  listen_http: [ 'localhost:80' ]
+  https_enabled: False
+  enabled: '{{ apache__status_vhost_enabled|bool }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
@@ -763,7 +973,7 @@ apache__ferm__dependent_rules:
     by_role: 'debops.apache'
     name: 'http_https'
     multiport: True
-
+    rule_state: '{{ apache__deploy_state }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
