@@ -15,13 +15,13 @@ Discussion
 ----------
 
 Join us in `#debops <http://webchat.freenode.net/?channels=debops>`_ on Freenode
-or post on the `debops <https://groups.io/org/groupsio/debops>`_
+or post on the `debops <https://lists.debops.org/mailman/listinfo/>`_
 mailing list.
 
 Issue reporting
 ---------------
 
-DebOps is officially hosted on Github at https://github.com/debops/debops.
+DebOps is officially hosted on Github at https://github.com/debops.
 
 Scripts and documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -78,7 +78,7 @@ You should do this before making any commits and after your PR has been accepted
 
 ::
 
-    git checkout master # or whatever the main PR branch is for that repo
+    git checkout master
     git fetch upstream
     git rebase upstream/master
     git push origin master
@@ -86,16 +86,7 @@ You should do this before making any commits and after your PR has been accepted
 Code style
 ----------
 
-For everything:
-
-- Try your best to stay under 80 characters but don't go crazy trying
-- 2 space indentation for everything unless noted otherwise
-- Comments and output start with a capital letter and end with a period
-
-For just yaml:
-
-- Prefer ``role_foo`` and ``role_bar`` to using a ``role`` dictionary
-- Use the multi-line style whenever possible (we're working on migrating to that)
+Refer to the `DebOps Code Standards Policy <https://docs.debops.org/en/latest/debops-policy/docs/code-standards-policy.html>`_.
 
 License agreement
 -----------------
