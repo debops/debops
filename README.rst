@@ -42,13 +42,13 @@ DebOps scripts
 
 The easiest way to install DebOps is::
 
-   $ sudo pip install https://github.com/debops/debops/archive/master.zip
+   $ sudo pip install https://github.com/debops/debops-tools/archive/master.zip
    $ debops-update
 
 If you want to have more control on the installation process, you can
 use::
 
-   $ git clone https://github.com/debops/debops
+   $ git clone https://github.com/debops/debops-tools
    $ sudo pip install ./debops
    $ debops-update
 
@@ -98,7 +98,7 @@ What do you want to learn more about?
 - DebOps guides and troubleshooting
     - `Using linux containers <https://docs.debops.org/en/latest/debops-playbooks/docs/guides/linux-containers.html>`_
     - `Creating a local APT server to use backports <https://docs.debops.org/en/latest/debops-playbooks/docs/guides/local-apt-repository.html>`_
-    - `Solving common problems <https://github.com/debops/debops/wiki/Solutions-to-problems-you-may-encounter>`_
+    - `Solving common problems <https://github.com/debops/debops-tools/wiki/Solutions-to-problems-you-may-encounter>`_
 
 Do you want to contribute?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
