@@ -2,8 +2,8 @@
 
 # bootstrap-ansible.sh: download and build Ansible on Debian/Ubuntu host
 
-# Copyright (C) 2014-2016 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2014-2016 DebOps Project http://debops.org/
+# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014-2017 DebOps Project http://debops.org/
 
 
 # This program is free software; you can redistribute
@@ -38,14 +38,18 @@ install_ansible_requirements () {
     sudo apt-get --no-install-recommends -qq -y install git devscripts \
         python-paramiko python-yaml python-jinja2 python-httplib2 \
         cdbs debhelper dpkg-dev fakeroot sshpass python-nose python-passlib \
-        python-setuptools asciidoc xmlto build-essential
+        python-setuptools asciidoc xmlto build-essential python-sphinx
 
 }
 
 build_ansible_deb () {
 
     # Build Debian package
-    LANG=C make deb
+    if [ -n "$(grep 'local_deb' Makefile || true)" ] ; then
+        LANG=C make local_deb
+    else
+        LANG=C make deb
+    fi
 
     # Check if .deb package with new method is present
     if [ -n "$(find deb-build/unstable/ -name ansible_*_all.deb 2>/dev/null)" ]; then

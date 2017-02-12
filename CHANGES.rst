@@ -12,7 +12,23 @@ The current role maintainer is drybjed.
 `debops.debops master`_ - unreleased
 ------------------------------------
 
-.. _debops.debops master: https://github.com/debops/ansible-debops/compare/v0.2.2...master
+.. _debops.debops master: https://github.com/debops/ansible-debops/compare/v0.2.3...master
+
+
+`debops.debops v0.2.3`_ - 2017-02-12
+------------------------------------
+
+.. _debops.debops v0.2.3: https://github.com/debops/ansible-debops/compare/v0.2.2...v0.2.3
+
+Added
+~~~~~
+
+- Add ``python-sphinx`` package to requirements for Ansible from source. [drybjed]
+
+Changed
+~~~~~~~
+
+- Support newer Ansible local build methos using ``local_deb``. [drybjed]
 
 
 `debops.debops v0.2.2`_ - 2016-07-31
