@@ -120,7 +120,6 @@ apt_install__base_packages:
   - 'lsb-release'
   - 'make'
   - 'sudo'
-  - 'gnupg-curl'
   - 'git'
   - 'curl'
   - 'rsync'
@@ -204,6 +203,7 @@ apt_install__conditional_whitelist_packages:
   - 'uptimed'
   - 'libpam-systemd'
   - 'haveged'
+  - "gnupg-curl"
 
                                                                    # ]]]
 # .. envvar:: apt_install__conditional_packages [[[
@@ -237,6 +237,13 @@ apt_install__conditional_packages:
                if (ansible_virtualization_role|d("guest") in [ "guest" ] and
                    ansible_virtualization_type|d("unknown") not in ["lxc", "openvz"]
                )
+               else "absent" }}'
+
+  - name: 'gnupg-curl'
+    # This package is needed when you want to access HKPS keyservers.
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
+    state: '{{ "present" if ansible_distribution_release in
+               [ "wheezy", "jessie", "precise", "trusty", "xenial" ]
                else "absent" }}'
 
                                                                    # ]]]

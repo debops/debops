@@ -33,6 +33,9 @@ Changed
 - Change the data transport method in template lookups from YAML to JSON to
   avoid issues with Jinja YAML parser. [drybjed_]
 
+- Install the ``gnupg-curl`` package conditionally on older OS releases.
+  [drybjed_]
+
 
 v0.1.1
 ------
