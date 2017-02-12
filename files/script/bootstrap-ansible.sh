@@ -3,7 +3,7 @@
 # bootstrap-ansible.sh: download and build Ansible on Debian/Ubuntu host
 
 # Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2014-2017 DebOps Project http://debops.org/
+# Copyright (C) 2014-2017 DebOps https://debops.org/
 
 
 # This program is free software; you can redistribute
@@ -25,7 +25,7 @@
 #
 # An on-line copy of the GNU General Public License can
 # be downloaded from the FSF web page at:
-# http://www.gnu.org/copyleft/gpl.html
+# https://www.gnu.org/copyleft/gpl.html
 
 
 # Usage: ./bootstrap-ansible.sh [branch] [build_directory]

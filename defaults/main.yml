@@ -44,20 +44,20 @@ debops__pip_packages: [ 'debops' ]
 #
 # If enabled and ``True``, role will clone the Ansible source from GitHub,
 # build the Ansible Debian package and install it. On repeated runs, Ansible
-# will be automatically updated on the selected ``git`` branch.
+# will be automatically updated on the selected :command:`git` branch.
 debops__ansible_git: False
 
                                                                    # ]]]
 # .. envvar:: debops__ansible_git_branch [[[
 #
-# Specify the ``git`` branch to use for installing Ansible from source. By
+# Specify the :command:`git` branch to use for installing Ansible from source. By
 # default, current development branch is used.
 debops__ansible_git_branch: 'devel'
 
                                                                    # ]]]
 # .. envvar:: debops__ansible_git_build_dir [[[
 #
-# Path where Ansible ``git`` source is stored and where builds happen.
+# Path where Ansible :command:`git` source is stored and where builds happen.
 debops__ansible_git_build_dir: '{{ (ansible_local.root.src
                                     if (ansible_local|d() and ansible_local.root|d() and
                                         ansible_local.root.src|d())
@@ -67,7 +67,7 @@ debops__ansible_git_build_dir: '{{ (ansible_local.root.src
 # .. envvar:: debops__ansible_git_become_user [[[
 #
 # The role will switch to the admin user account to perform the build. The
-# build script needs ``sudo`` access to install the built ``*.deb`` package,
+# build script needs :command:`sudo` access to install the built ``*.deb`` package,
 # which the admin account should have.
 debops__ansible_git_become_user: '{{ ansible_ssh_user
                                      if ansible_ssh_user|d()
@@ -138,12 +138,12 @@ debops__project_git_repo: ''
 debops__project_name: ''
                                                                    # ]]]
                                                                    # ]]]
-# Configuration of other Ansible roles [[[
-# ----------------------------------------
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
 
 # .. envvar:: debops__apt_preferences__dependent_list [[[
 #
-# Configuration for the ``debops.apt_preferences`` role.
+# Configuration for the debops.apt_preferences_ role.
 debops__apt_preferences__dependent_list:
   - package: 'ansible'
     backports: [ 'jessie' ]
