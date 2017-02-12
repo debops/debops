@@ -27,6 +27,9 @@ Added
 - Install ``haveged`` by default on virtual machines excluding containers like
   LXC as suggested in https://bettercrypto.org/. [ypid_]
 
+- Add support for the configuration of the alternative application symlinks.
+  [drybjed_]
+
 Changed
 ~~~~~~~
 
