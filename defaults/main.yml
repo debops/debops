@@ -125,7 +125,6 @@ apt_install__base_packages:
   - 'rsync'
   - 'bsdutils'
   - 'acl'
-  - 'needrestart'
 
                                                                    # ]]]
 # .. envvar:: apt_install__python_packages [[[
@@ -204,7 +203,8 @@ apt_install__conditional_whitelist_packages:
   - 'uptimed'
   - 'libpam-systemd'
   - 'haveged'
-  - "gnupg-curl"
+  - 'gnupg-curl'
+  - 'needrestart'
 
                                                                    # ]]]
 # .. envvar:: apt_install__conditional_packages [[[
@@ -246,6 +246,12 @@ apt_install__conditional_packages:
     state: '{{ "present" if ansible_distribution_release in
                [ "wheezy", "jessie", "precise", "trusty", "xenial" ]
                else "absent" }}'
+
+  - name: 'needrestart'
+    # Install the package on newer OS releases.
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
+    state: '{{ "present" if ansible_distribution_release not in
+               [ "precise" ] else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: apt_install__firmware_packages [[[
