@@ -27,6 +27,12 @@ Added
 - Install ``haveged`` by default on virtual machines excluding containers like
   LXC as suggested in https://bettercrypto.org/. [ypid_]
 
+Changed
+~~~~~~~
+
+- Change the data transport method in template lookups from YAML to JSON to
+  avoid issues with Jinja YAML parser. [drybjed_]
+
 
 v0.1.1
 ------
