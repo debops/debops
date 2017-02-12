@@ -36,6 +36,9 @@ Added
 - Add support for the configuration of the alternative application symlinks.
   [drybjed_]
 
+- Install the ``needrestart`` package to automatically restart services after
+  upgrades. [drybjed_]
+
 Changed
 ~~~~~~~
 

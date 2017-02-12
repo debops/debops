@@ -125,6 +125,7 @@ apt_install__base_packages:
   - 'rsync'
   - 'bsdutils'
   - 'acl'
+  - 'needrestart'
 
                                                                    # ]]]
 # .. envvar:: apt_install__python_packages [[[
@@ -343,6 +344,11 @@ apt_install__apt_preferences__dependent_list:
   - package: 'irqbalance'
     backports: [ 'jessie' ]
     reason:  'Bug fixes and memory leak fixes.'
+    by_role: 'debops.apt_install'
+
+  - package: 'needrestart needrestart-*'
+    backports: [ 'wheezy', 'jessie', 'precise', 'trusty' ]
+    reason: 'Better support for container technologies'
     by_role: 'debops.apt_install'
                                                                    # ]]]
                                                                    # ]]]
