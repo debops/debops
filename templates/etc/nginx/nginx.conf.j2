@@ -13,7 +13,7 @@ error_log {{ nginx_http_error_log | default(nginx_log_path + '/error.log') }};
 worker_priority {{ nginx_worker_priority | default('0') }};
 
 # Number of workers to run, usually equals number of CPU cores
-worker_processes {{ nginx_worker_processes | default(ansible_processor_cores) }};
+worker_processes {{ nginx_worker_processes | default(ansible_processor_vcpus) }};
 
 # Maximum number of opened files per process, must be higher than worker_connections
 worker_rlimit_nofile {{ nginx_worker_rlimit_nofile | default('4096') }};
