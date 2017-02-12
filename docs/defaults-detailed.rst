@@ -94,3 +94,54 @@ Install packages using Ansible fact condition:
                   if (ansible_virtualization_role == "guest")
                   else "absent" }}'
 
+
+.. _apt_install__ref_alternatives:
+
+apt_install__alternatives
+-------------------------
+
+These YAML lists can be used to configure special symlinks (for example,
+``editor``, ``x-terminal-emulator``, ``pager``) which can point to different
+applications that provide similar functionality using the
+``update-alternatives`` command. Each list element is a YAML dictionary with
+specific parameters:
+
+``name``
+  Required. Name of the symlink which should be configured.
+
+``path``
+  Optional. Absolute path to the application which should be symlinked. To see
+  available alternatives, you can run the command:
+
+  .. code-block:: console
+
+     update-alternatives --display <name>
+
+  If the ``path`` parameter is not specified, the role will configure a given
+  symlink to select an application automatically.
+
+``link``
+  Optional. Absolute path to the file which should be symlinked. This is rarely
+  needed.
+
+``priority``
+  Optional. Set a priority for a given application package. This is rarely
+  needed.
+
+Examples
+~~~~~~~~
+
+Configure Emacs to be the default system editor:
+
+.. code-block:: yaml
+
+   apt_install__alternatives:
+     - name: 'editor'
+       path: '/usr/bin/emacs24'
+
+Let the system decide automatically what editor to use as default:
+
+.. code-block:: yaml
+
+   apt_install__alternatives:
+     - name: 'editor'

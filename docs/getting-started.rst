@@ -69,19 +69,5 @@ Example playbook
 ``debops.apt_install`` is designed to be used from a playbook or a role as role
 dependency. Here's an example configuration:
 
-.. code-block:: yaml
-
-   ---
-   - name: Install APT packages
-     hosts: [ 'debops_all_hosts', 'debops_service_apt_install' ]
-     become: True
-
-     roles:
-
-       - role: debops.apt_preferences
-         tags: [ 'role::apt_preferences' ]
-         apt_preferences__dependent_list:
-           - '{{ apt_install__apt_preferences__dependent_list }}'
-
-       - role: debops.apt_install
-         tags: [ 'role::apt_install' ]
+.. literalinclude:: playbooks/apt_install.yml
+   :language: yaml

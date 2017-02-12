@@ -120,7 +120,6 @@ apt_install__base_packages:
   - 'lsb-release'
   - 'make'
   - 'sudo'
-  - 'gnupg-curl'
   - 'git'
   - 'curl'
   - 'rsync'
@@ -204,6 +203,8 @@ apt_install__conditional_whitelist_packages:
   - 'uptimed'
   - 'libpam-systemd'
   - 'haveged'
+  - 'gnupg-curl'
+  - 'needrestart'
 
                                                                    # ]]]
 # .. envvar:: apt_install__conditional_packages [[[
@@ -238,6 +239,19 @@ apt_install__conditional_packages:
                    ansible_virtualization_type|d("unknown") not in ["lxc", "openvz"]
                )
                else "absent" }}'
+
+  - name: 'gnupg-curl'
+    # This package is needed when you want to access HKPS keyservers.
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
+    state: '{{ "present" if ansible_distribution_release in
+               [ "wheezy", "jessie", "precise", "trusty", "xenial" ]
+               else "absent" }}'
+
+  - name: 'needrestart'
+    # Install the package on newer OS releases.
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
+    state: '{{ "present" if ansible_distribution_release not in
+               [ "precise" ] else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: apt_install__firmware_packages [[[
@@ -287,6 +301,34 @@ apt_install__all_packages:
   - '{{ apt_install__firmware_packages }}'
                                                                    # ]]]
                                                                    # ]]]
+# Alternative package symlinks [[[
+# --------------------------------
+
+# These lists can be used to define alternative symlinks for certain packages
+# which provide similar functionality, using ``update-alternatives`` package.
+# See :ref:`apt_install__ref_alternatives` for more details.
+
+# .. envvar:: apt_install__alternatives [[[
+#
+# List of alternative symlinks configured for all packages in the Ansible
+# inventory.
+apt_install__alternatives: []
+
+                                                                   # ]]]
+# .. envvar:: apt_install__group_alternatives [[[
+#
+# List of alternative symlinks configured for hosts in specific Ansible
+# inventory group.
+apt_install__group_alternatives: []
+
+                                                                   # ]]]
+# .. envvar:: apt_install__host_alternatives [[[
+#
+# List of alternative symlinks configured for specific hosts in the Ansible
+# inventory.
+apt_install__host_alternatives: []
+                                                                   # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
@@ -308,6 +350,11 @@ apt_install__apt_preferences__dependent_list:
   - package: 'irqbalance'
     backports: [ 'jessie' ]
     reason:  'Bug fixes and memory leak fixes.'
+    by_role: 'debops.apt_install'
+
+  - package: 'needrestart needrestart-*'
+    backports: [ 'wheezy', 'jessie', 'trusty' ]
+    reason: 'Better support for container technologies'
     by_role: 'debops.apt_install'
                                                                    # ]]]
                                                                    # ]]]
