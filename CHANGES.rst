@@ -10,19 +10,25 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer_ is drybjed_
+The current role maintainer_ is drybjed_.
 
 
 `debops.apt_install master`_ - unreleased
 -----------------------------------------
 
-.. _debops.apt_install master: https://github.com/debops/ansible-apt_install/compare/v0.1.1...master
+.. _debops.apt_install master: https://github.com/debops/ansible-apt_install/compare/v0.1.2...master
+
+
+`debops.apt_install v0.1.2`_ - 2017-02-12
+-----------------------------------------
+
+.. _debops.apt_install v0.1.2: https://github.com/debops/ansible-apt_install/compare/v0.1.1...v0.1.2
 
 Added
 ~~~~~
 
-- Added pre- and post- task hooks as per debopts standards. This will allow
-  custom stuff for update-alternaitves to be done. [grantma_]
+- Add ``pre-`` and ``post-`` task hooks as per DebOps standards. This will
+  allow custom stuff for ``update-alternatives`` to be done. [grantma_]
 
 - Install ``haveged`` by default on virtual machines excluding containers like
   LXC as suggested in https://bettercrypto.org/. [ypid_]
