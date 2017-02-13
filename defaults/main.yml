@@ -233,6 +233,15 @@ pki_acme_challenge_dir: '{{ (ansible_local.nginx.acme_root
                              else "/srv/www/sites/acme/public") +
                              "/.well-known/acme-challenge" }}'
 
+
+
+# .. envvar:: pki_create_acme_challenge
+#
+# Whether the directory where the ACME client should store responses
+# should be created.
+pki_create_acme_challenge_dir: '{{ True if (ansible_local|d() and ansible_local.nginx|d() and
+                                            ansible_local.nginx.acme|d() and
+                                            ansible_local.nginx.acme|bool) else False }}'
 # ]]]
 
 # Required software packages [[[

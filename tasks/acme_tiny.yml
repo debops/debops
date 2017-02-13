@@ -50,9 +50,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (ansible_local|d() and ansible_local.nginx|d() and
-         ansible_local.nginx.acme|d() and
-         ansible_local.nginx.acme|bool)
+  when: pki_create_acme_challenge_dir
 
 - name: Create ACME challenge directory
   file:
@@ -61,6 +59,4 @@
     owner: '{{ pki_acme_user }}'
     group: '{{ pki_acme_group }}'
     mode: '0755'
-  when: (ansible_local|d() and ansible_local.nginx|d() and
-         ansible_local.nginx.acme|d() and
-         ansible_local.nginx.acme|bool)
+  when: pki_create_acme_challenge_dir
