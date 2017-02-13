@@ -74,3 +74,6 @@ Fixed
 
 - Fix role run with ``apache__deploy_state == "absent"`` after the role has
   been run with ``present`` before. [ypid_]
+
+- Fix missing closing ``</IfModule>`` directive in case an old OpenSSL version
+  is used. [ypid_]
