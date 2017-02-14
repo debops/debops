@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed.
 `debops.netbox master`_ - unreleased
 ------------------------------------
 
-.. _debops.netbox master: https://github.com/debops/ansible-netbox/compare/v0.1.0...master
+.. _debops.netbox master: https://github.com/debops/ansible-netbox/compare/v0.1.1...master
+
+
+`debops.netbox v0.1.1`_ - 2017-02-14
+------------------------------------
+
+.. _debops.netbox v0.1.1: https://github.com/debops/ansible-netbox/compare/v0.1.0...v0.1.1
 
 Fixed
 ~~~~~
