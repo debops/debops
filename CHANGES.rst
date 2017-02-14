@@ -18,6 +18,13 @@ The current role maintainer_ is drybjed.
 
 .. _debops.netbox master: https://github.com/debops/ansible-netbox/compare/v0.1.0...master
 
+Fixed
+~~~~~
+
+- Make sure that the ``pip`` and ``setuptools`` modules are upgraded in the
+  NetBox ``virtualenv`` environment to avoid an issue with missing
+  ``packaging.version`` Python module. [drybjed_]
+
 
 debops.netbox v0.1.0 - 2016-10-20
 ---------------------------------
