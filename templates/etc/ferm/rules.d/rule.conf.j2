@@ -333,6 +333,9 @@
     @if @eq($DOMAIN, ip) {
         REJECT reject-with icmp-proto-unreachable;
     }
+    @if @eq($DOMAIN, ip6) {
+        REJECT;
+    }
 {%   elif ferm__tpl_config['type'] in [ 'custom', 'raw' ] %}
 {%     if ferm__tpl_config['domain_args'] %}{{ ferm__tpl_config['domain_args'] | join(" ") + " {" }}
 {%     endif %}
