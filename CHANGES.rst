@@ -59,6 +59,9 @@ Changed
   type defined for a given firewall rule. You can use negative weight values
   for better control over rule order. [drybjed_]
 
+- Run the ``debconf`` task only when APT is the package manager. This should
+  allow the role to be used on OSes other than Debian/Ubuntu. [drybjed_]
+
 Removed
 ~~~~~~~
 

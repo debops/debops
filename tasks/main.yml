@@ -6,6 +6,7 @@
     question: 'ferm/enable'
     vtype: 'boolean'
     value: '{{ "yes" if ferm__enabled|bool else "no" }}'
+  when: ansible_pkg_mgr == 'apt'
 
 - name: Ensure ferm is installed
   package:
