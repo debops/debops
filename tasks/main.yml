@@ -99,6 +99,18 @@
           netbox__register_source.before != netbox__register_target_branch.stdout) or
           not netbox__register_installed.stat.exists|bool)
 
+# This is required due to an issue with setuptools
+# https://github.com/digitalocean/netbox/issues/864
+- name: Upgrade pip and setuptools in the virtualenv
+  environment:
+    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
+    PATH: '{{ netbox__virtualenv_env_path }}'
+  shell: pip install --upgrade --force-reinstall pip setuptools
+  args:
+    chdir: '{{ netbox__git_checkout + "/netbox" }}'
+  become_user: '{{ netbox__user }}'
+  when: netbox__register_checkout|changed
+
 - name: Install NetBox requirements in virtualenv
   pip:
     virtualenv: '{{ netbox__virtualenv }}'
