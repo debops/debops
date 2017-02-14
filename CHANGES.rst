@@ -25,6 +25,8 @@ The current role maintainer_ is drybjed_.
 Added
 ~~~~~
 
+- Added :envvar:`pki_create_acme_challenge_dir`. [muelli_]
+
 - Reintroduce the possibility to configure RSA key sizes using
   :envvar:`pki_realm_key_size` (realms) and ``pki_ca_*_key_size`` (CAs) which
   was removed in v0.2.0. [ypid_]
