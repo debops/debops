@@ -13,6 +13,7 @@
   become: False
   run_once: True
   always_run: True
+  tags: [ 'meta::provision' ]
 
 - name: Assert that required software is installed
   assert:
@@ -21,6 +22,7 @@
   delegate_to: 'localhost'
   become: False
   run_once: True
+  tags: [ 'meta::provision' ]
 
 - name: Create required directories on Ansible Controller
   file:
@@ -29,6 +31,7 @@
   delegate_to: 'localhost'
   become: False
   run_once: True
+  tags: [ 'meta::provision' ]
 
 - name: Generate Diffie-Hellman params on Ansible Controller
   command: |
@@ -43,6 +46,7 @@
   delegate_to: 'localhost'
   become: False
   run_once: True
+  tags: [ 'meta::provision' ]
 
 - name: Install encryption software
   apt:
@@ -53,6 +57,7 @@
   with_flattened:
     - '{{ dhparam__base_packages }}'
     - '{{ dhparam__packages }}'
+  tags: [ 'meta::provision' ]
 
 - name: Create required directories
   file:
