@@ -142,6 +142,7 @@ def update_git_repository(path, dry_run=False):
     os.chdir(path)
 
     if dry_run:
+        subprocess.call(['git', 'fetch'])
         subprocess.call(['git', 'diff', 'HEAD', 'origin', '--stat'])
     else:
         # Get the current sha of the head branch
