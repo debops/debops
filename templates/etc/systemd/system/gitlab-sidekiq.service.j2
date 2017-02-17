@@ -23,8 +23,8 @@ Environment=RAILS_ENV=production
 SyslogIdentifier=gitlab-sidekiq
 PIDFile={{ gitlab_app_root_path }}/gitlab/tmp/pids/sidekiq.pid
 
-ExecStart=/usr/bin/bundle exec "sidekiq -d -q archive_repo -q post_receive -q mailers -q system_hook -q incoming_email -q project_web_hook -q gitlab_shell -q common -q default -e production -P tmp/pids/sidekiq.pid -d -L log/sidekiq.log >> log/sidekiq.log 2>&1"
-ExecStop=/usr/bin/bundle exec "sidekiqctl stop {{ gitlab_app_root_path }}/gitlab/tmp/pids/sidekiq.pid >> {{ gitlab_app_root_path }}/gitlab/log/sidekiq.log 2>&1"
+ExecStart=/usr/bin/bundle exec "sidekiq -d -C config/sidekiq_queues.yml -e production -P tmp/pids/sidekiq.pid -d -L log/sidekiq.log >> log/sidekiq.log 2>&1"
+ExecStop=/usr/bin/bundle exec "sidekiqctl stop tmp/pids/sidekiq.pid >> log/sidekiq.log 2>&1"
 
 [Install]
 WantedBy=multi-user.target
