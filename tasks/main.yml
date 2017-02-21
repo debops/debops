@@ -1,5 +1,11 @@
 ---
 
+- name: Check available SSH key types
+  command: ssh -Q key
+  register: root_account__register_key_types
+  changed_when: False
+  always_run: True
+
 - name: Enforce root system group
   group:
     name: 'root'
@@ -18,8 +24,11 @@
     groups: ''
     append: False
     system: True
-    generate_ssh_key: '{{ root_account__generate_ssh_key }}'
-    ssh_key_bits: '{{ root_account__ssh_keysize | d(omit) }}'
+    generate_ssh_key: '{{ root_account__generate_ssh_key | bool }}'
+    ssh_key_bits:     '{{ root_account__ssh_key_bits }}'
+    ssh_key_type:     '{{ root_account__ssh_key_type }}'
+    ssh_key_file:     '{{ root_account__ssh_key_file }}'
+    ssh_key_comment:  '{{ root_account__ssh_key_comment }}'
     password:         '{{ root_account__password if root_account__password else omit }}'
     shell:            '{{ root_account__shell if root_account__shell else omit }}'
   when: root_account__enabled|bool
