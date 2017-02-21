@@ -1,7 +1,7 @@
 ---
 
 - name: Check available SSH key types
-  command: ssh -Q key
+  shell: ssh -Q key 2>/dev/null || echo "ssh-rsa"
   register: root_account__register_key_types
   changed_when: False
   always_run: True
