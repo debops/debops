@@ -14,13 +14,22 @@ The current role maintainer_ is drybjed_.
 `debops.php master`_ - unreleased
 ---------------------------------
 
-.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.4...master
+.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.5...master
+
+
+`debops.php v0.2.5`_ - 2017-02-21
+---------------------------------
+
+.. _debops.php v0.2.5: https://github.com/debops/ansible-php/compare/v0.2.4...v0.2.5
 
 Added
 ~~~~~
 
 - Allow the ``webadmins`` UNIX system group to reload the ``php-fpm`` service
   if needed using ``sudo``. [carlalexander, drybjed_]
+
+- The ``php-cli`` command will not set any hard memory limits during execution
+  of PHP scripts. [carlalexander]
 
 Changed
 ~~~~~~~
