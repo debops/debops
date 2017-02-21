@@ -177,7 +177,7 @@ class DebOpsAPI:
 
         try:
             with open(yaml_file_path) as ansigenome_fh:
-                return yaml.load(ansigenome_fh)
+                return yaml.safe_load(ansigenome_fh)
         except OSError:
             return {}
 
