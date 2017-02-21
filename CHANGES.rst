@@ -14,7 +14,20 @@ The current role maintainer_ is drybjed_.
 `debops.php master`_ - unreleased
 ---------------------------------
 
-.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.5...master
+.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.6...master
+
+
+`debops.php v0.2.6`_ - 2017-02-21
+---------------------------------
+
+.. _debops.php v0.2.6: https://github.com/debops/ansible-php/compare/v0.2.5...v0.2.6
+
+Changed
+~~~~~~~
+
+- The ``php-filter-packages.sh`` script will update APT package cache before
+  listing the PHP-related packages. This should fix issues with the PHP
+  installation when the APT cache has not been properly updated. [drybjed_]
 
 
 `debops.php v0.2.5`_ - 2017-02-21
