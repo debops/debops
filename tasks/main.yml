@@ -29,6 +29,7 @@
     ssh_key_type:     '{{ root_account__ssh_key_type }}'
     ssh_key_file:     '{{ root_account__ssh_key_file }}'
     ssh_key_comment:  '{{ root_account__ssh_key_comment }}'
+    update_password:  '{{ "always" if root_account__password_update | bool else "on_create" }}'
     password:         '{{ root_account__password if root_account__password else omit }}'
     shell:            '{{ root_account__shell if root_account__shell else omit }}'
   when: root_account__enabled|bool

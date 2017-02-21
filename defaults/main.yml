@@ -34,6 +34,18 @@ root_account__password: '{{ lookup("password", secret
 root_account__password_length: '32'
 
                                                                    # ]]]
+# .. envvar:: root_account__password_update [[[
+#
+# This variable controls if the role should update the ``root`` account
+# password on each run. By default it will be updated only the first time the
+# role is executed. If you want to update the password on each run, set this
+# variable to ``True``.
+root_account__password_update: '{{ False
+                                   if (ansible_local|d() and ansible_local.root_account|d() and
+                                       ansible_local.root_account.configured|d())
+                                   else True }}'
+
+                                                                   # ]]]
 # .. envvar:: root_account__generate_ssh_key [[[
 #
 # Whether to generate a SSH key pair for root.
