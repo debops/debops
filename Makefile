@@ -17,6 +17,7 @@ list:
 ## Fail when git working directory for the Make prerequisites has changed.
 .PHONY: check
 check: tests/api_data check-nose2
+	find tests/api_data -type f -print0 | xargs --null sed --in-place --regexp-extended '/meta name="generator"/d'
 	git diff --exit-code HEAD -- "$<"
 
 tests/api_data: bin/debops-api tests/example_roles FORCE_MAKE
