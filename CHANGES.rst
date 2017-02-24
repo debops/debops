@@ -16,6 +16,11 @@ The current role maintainer_ is ganto_.
 
 .. _debops-contrib.roundcube master: https://github.com/debops-contrib/ansible-roundcube/compare/v0.1.1...master
 
+Changed
+~~~~~~~
+
+- Set default version to 1.1.7. [ganto_]
+
 Fixed
 ~~~~~
 
