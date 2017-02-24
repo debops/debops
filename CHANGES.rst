@@ -21,6 +21,9 @@ Changed
 
 - Set default version to 1.1.7. [ganto_]
 
+- Moved all variable definitions to :file:`defaults/main.yml` for better
+  configurability. Restructured defaults configuration file. [ganto_]
+
 Fixed
 ~~~~~
 
@@ -28,7 +31,7 @@ Fixed
 
 - Fix ``login_host`` definition in database schema import. [cultcom]
 
-- Fix syntax error in ``roundcube__database_schema`` variable definition. [cultcom]
+- Fix syntax error in :envvar:`roundcube__database_schema` variable definition. [cultcom]
 
 
 `debops-contrib.roundcube v0.1.1_` - 2016-08-03
