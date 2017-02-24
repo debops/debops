@@ -28,7 +28,7 @@ Fixed
 
 - Fix ``login_host`` definition in database schema import. [cultcom]
 
-- Fix syntax error in ``roundcube__database_schema`` variable definition. [cultcom]
+- Fix syntax error in :envvar:`roundcube__database_schema` variable definition. [cultcom]
 
 
 `debops-contrib.roundcube v0.1.1_` - 2016-08-03
@@ -40,7 +40,7 @@ Changed
 ~~~~~~~
 
 - Introduced playbook-based role dependencies and removed hard-dependencies on
-  optional roles. For this reason the role variable ``roundcube__dependencies``
+  optional roles. For this reason the role variable :envvar:`roundcube__dependencies`
   was removed too. If no or only individual dependencies are required simply
   adjust the playbook accordingly. [ganto_]
 

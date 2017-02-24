@@ -4,7 +4,7 @@ Introduction
 This `Ansible`_ role allows you to install and manage `Roundcube`_, a
 IMAP Web client written in PHP.
 
-.. _Ansible: http://ansible.com/
+.. _Ansible: https://ansible.com/
 .. _Roundcube: http://roundcube.net/
 
 Installation

@@ -1,38 +1,19 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
 # Default variables
 # =================
 
 # .. contents:: Sections
 #    :local:
 #
-# -------------------------------
-#   Basic configuration options
-# -------------------------------
+# .. include:: includes/all.rst
 
-# .. envvar:: roundcube__domain
+# .. Roundcube source and deployment [[[1
 #
-# List of domains which will be used to access the roundcube instance.
-roundcube__domain: [ 'roundcube.{{ ansible_domain }}' ]
-
-
-# .. envvar:: roundcube__nginx_access_policy
-#
-# Name of the "nginx access policy" for Roundcube webpage. See ``debops.nginx``
-# Ansible role for more details.
-roundcube__nginx_access_policy: ''
-
-
-# .. envvar:: roundcube__php5_packages
-#
-# List of PHP5 packages required by Roundcube.
-roundcube__php5_packages: [ 'php-auth-sasl', 'php5-gd', 'php5-intl', 'php5-json',
-                           'php5-mcrypt', 'php-mail-mime', 'php-mail-mimedecode',
-                           'php-net-smtp', 'php-net-socket', 'php-pear' ]
-
-
-# ---------------------------------------
-#   User, group, database configuration
-# ---------------------------------------
+# -----------------------------------
+#   Roundcube source and deployment
+# -----------------------------------
 
 # .. envvar:: roundcube__user
 #
@@ -51,46 +32,6 @@ roundcube__group: 'roundcube'
 # Roundcube home directory
 roundcube__home: '{{ ansible_local.root.home + "/" + roundcube__user }}'
 
-
-# .. envvar:: roundcube__database_user
-#
-# Roundcube database user account
-roundcube__database_user: 'roundcube'
-
-
-# .. envvar:: roundcube__database_password
-#
-# Roundcube database password
-roundcube__database_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/roundcube/' + roundcube__database + '/' + roundcube__database_user + '/password length=30') }}"
-
-
-# .. envvar:: roundcube__database
-#
-# Database definition to use from the ``roundcube__database_map``
-roundcube__database: 'sqlite-default'
-
-
-# .. envvar:: roundcube__database_map
-#
-# Database connection definitions
-roundcube__database_map:
-
-  sqlite-default:
-    dbtype: 'sqlite'
-    dbname: 'db/roundcube.db'
-
-  mysql-default:
-    dbtype: 'mysql'
-    dbname: 'roundcubemail'
-    dbuser: '{{ roundcube__database_user }}'
-    dbpass: '{{ roundcube__database_password }}'
-    dbhost: 'localhost'
-    dbtableprefix: ''
-
-
-# --------------------------------
-#   Base application directories
-# --------------------------------
 
 # .. envvar:: roundcube__src
 #
@@ -117,10 +58,6 @@ roundcube__webserver_user: '{{ ansible_local.nginx.user
                               else "www-data" }}'
 
 
-# -------------------------------
-#   Git repository and checkout
-# -------------------------------
-
 # .. envvar:: roundcube__git_repo
 #
 # Roundcube source repository
@@ -145,9 +82,59 @@ roundcube__git_version: '1.1.7'
 roundcube__git_checkout: '{{ roundcube__www + "/sites/" + roundcube__domain[0] + "/public" }}'
 
 
+# .. Database configuration [[[1
+#
+# --------------------------
+#   Database configuration
+# --------------------------
+
+# .. envvar:: roundcube__database_user
+#
+# Roundcube database user account
+roundcube__database_user: 'roundcube'
+
+
+# .. envvar:: roundcube__database_password
+#
+# Roundcube database password
+roundcube__database_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/roundcube/' + roundcube__database + '/' + roundcube__database_user + '/password length=30') }}"
+
+
+# .. envvar:: roundcube__database
+#
+# Database definition to use from the :envvar:`roundcube__database_map`
+roundcube__database: 'sqlite-default'
+
+
+# .. envvar:: roundcube__database_map
+#
+# Database connection definitions
+roundcube__database_map:
+
+  sqlite-default:
+    dbtype: 'sqlite'
+    dbname: 'db/roundcube.db'
+
+  mysql-default:
+    dbtype: 'mysql'
+    dbname: 'roundcubemail'
+    dbuser: '{{ roundcube__database_user }}'
+    dbpass: '{{ roundcube__database_password }}'
+    dbhost: 'localhost'
+    dbtableprefix: ''
+
+
+# .. Roundcube application options [[[1
+#
 # ---------------------------------
 #   Roundcube application options
 # ---------------------------------
+
+# .. envvar:: roundcube__domain
+#
+# List of domains which will be used to access the roundcube instance.
+roundcube__domain: [ 'roundcube.{{ ansible_domain }}' ]
+
 
 # .. envvar:: roundcube__default_host
 #
@@ -197,14 +184,14 @@ roundcube__local_config_map: {}
 # .. envvar:: roundcube__group_local_config_map
 #
 # Custom configuration values which can be defined on a group level and
-# eventually are merged with ``roundcube__local_config_map``
+# eventually are merged with :envvar:`roundcube__local_config_map`
 roundcube__group_local_config_map: {}
 
 
 # .. envvar:: roundcube__host_local_config_map
 #
 # Custom configuration values which can be defined ona host level and
-# eventually are merged with ``roundcube__local_config_map``
+# eventually are merged with :envvar:`roundcube__local_config_map`
 roundcube__host_local_config_map: {}
 
 
@@ -216,7 +203,7 @@ roundcube__default_plugins: [ 'archive', 'filesystem_attachments', 'jqueryui', '
 
 # .. envvar:: roundcube__plugins
 #
-# Additional Roundcube plugins to enable. Check the ``plugins/`` folder for
+# Additional Roundcube plugins to enable. Check the :file:`plugins/` folder for
 # the plugins shipped by default
 roundcube__plugins: []
 
@@ -233,6 +220,27 @@ roundcube__max_file_size: '30'
 
 # .. envvar:: roundcube__extra_packages
 #
-# List of additional Debian packages (e.g. language dictionaries) that should
+# List of additional Debian packages (e. g. language dictionaries) that should
 # be installed with Roundcube
 roundcube__extra_packages: []
+
+
+# .. Role-dependent configuration [[[1
+#
+# --------------------------------
+#   Role-dependent configuration
+# --------------------------------
+
+# .. envvar:: roundcube__nginx_access_policy
+#
+# Name of the "nginx access policy" for Roundcube webpage. See debops.nginx_
+# Ansible role for more details.
+roundcube__nginx_access_policy: ''
+
+
+# .. envvar:: roundcube__php5_packages
+#
+# List of PHP5 packages required by Roundcube.
+roundcube__php5_packages: [ 'php-auth-sasl', 'php5-gd', 'php5-intl', 'php5-json',
+                           'php5-mcrypt', 'php-mail-mime', 'php-mail-mimedecode',
+                           'php-net-smtp', 'php-net-socket', 'php-pear' ]
