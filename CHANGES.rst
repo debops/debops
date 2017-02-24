@@ -21,6 +21,9 @@ Changed
 
 - Set default version to 1.1.7. [ganto_]
 
+- Moved all variable definitions to :file:`defaults/main.yml` for better
+  configurability. Restructured defaults configuration file. [ganto_]
+
 Fixed
 ~~~~~
 
@@ -40,7 +43,7 @@ Changed
 ~~~~~~~
 
 - Introduced playbook-based role dependencies and removed hard-dependencies on
-  optional roles. For this reason the role variable :envvar:`roundcube__dependencies`
+  optional roles. For this reason the role variable ``roundcube__dependencies``
   was removed too. If no or only individual dependencies are required simply
   adjust the playbook accordingly. [ganto_]
 
