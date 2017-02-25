@@ -44,3 +44,6 @@ Changed
 
 - Blacklist ``firewire-core`` and ``thunderbolt`` by default using the
   :envvar:`kernel_module__security_list` variable. [ypid_]
+
+- Blacklist also ``firewire-ohci`` to allow successful unloading of
+  ``firewire-core`` if the modules are already loaded. [ypid_]
