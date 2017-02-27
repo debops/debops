@@ -64,7 +64,7 @@
     regexp: 'FSCKFIX='
     state: 'present'
     line: 'FSCKFIX={{ console_fsckfix }}'
-  when: (console_fsckfix is defined and console_fsckfix)
+  when: ansible_distribution_release in console_fsckfix_releases
 
 - name: Ensure that specified locales exist
   locale_gen:
