@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.console master: https://github.com/debops/ansible-console/compare/v0.1.3...master
 
+Removed
+~~~~~~~
+
+- Remove support for ``root`` system account management. This functionality has
+  been moved to a separate ``debops.root_account`` Ansible role. [drybjed_]
+
 
 `debops.console v0.1.3`_ - 2016-11-07
 -------------------------------------
