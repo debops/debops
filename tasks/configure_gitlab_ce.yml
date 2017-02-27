@@ -175,11 +175,21 @@
   when: (( gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
          (gitlab_use_systemd is defined and gitlab_use_systemd))
 
+- name: Install GitLab Pages' systemd service file
+  template:
+    src: 'etc/systemd/system/gitlab-pages.service.j2'
+    dest: '/etc/systemd/system/gitlab-pages.service'
+  register: gitlab__register_pages_systemd_services
+  when: (gitlab_enable_pages and
+         (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+         (gitlab_use_systemd is defined and gitlab_use_systemd))
+
 - name: Reload systemd daemons
   command: systemctl daemon-reload
   when: (ansible_service_mgr == "systemd" and
          (gitlab__register_sysvinit_script|changed or
-          gitlab__register_systemd_services|changed))
+          gitlab__register_systemd_services|changed or
+          gitlab__register_pages_systemd_services|changed))
 
 - name: Enable GitLab SysVinit service
   service:
@@ -206,6 +216,14 @@
   when: ((gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
          gitlab_use_systemd|bool)
 
+- name: Enable GitLab Pages' systemd service
+  service:
+    name: 'gitlab-pages.service'
+    enabled: True
+  when: (gitlab_enable_pages and
+         (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+         gitlab_use_systemd|bool)
+
 - name: Setup GitLab CE logrotate configuration
   template:
     src: 'etc/logrotate.d/gitlab.j2'
@@ -216,6 +234,23 @@
 
 
 # ---- GitLab installation / upgrade ----
+
+- name: NPM install
+  shell: npm install --production
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_version | version_compare("8.17", operator="lt", strict=True)
+        and gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed
+
+- name: Yarn install
+  shell: yarn install --production
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
+        and gitlab_register_ce_checkout is defined
+        and gitlab_register_ce_checkout.changed
 
 - name: Update Ruby gems
   shell: bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab_database] }}
@@ -273,7 +308,7 @@
          gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed)
 
 - name: Clean GitLab assets
-  shell: bundle exec rake assets:clean RAILS_ENV=production
+  shell: bundle exec rake {{ gitlab_assets_clean }} RAILS_ENV=production
          chdir={{ gitlab_ce_git_checkout }}
   become_user: '{{ gitlab_user }}'
   when: ((ansible_local is defined and ansible_local.gitlab is defined and
@@ -281,7 +316,7 @@
          gitlab_register_bundle_migrate is defined and gitlab_register_bundle_migrate.changed)
 
 - name: Precompile GitLab assets
-  shell: bundle exec rake assets:precompile RAILS_ENV=production
+  shell: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production
          chdir={{ gitlab_ce_git_checkout }}
   become_user: '{{ gitlab_user }}'
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]

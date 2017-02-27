@@ -10,6 +10,12 @@ dependencies:
   - role: debops.golang
     tags: [ 'depend::golang', 'depend::golang:gitlab', 'depend-of::gitlab', 'type::dependency:hard' ]
 
+  - role: debops.nodejs
+    tags: [ 'role::nodejs' ]
+    nodejs__upstream: True
+    nodejs__npm_dependent_packages:
+        - 'yarn'
+
   - role: debops.secret
     tags: [ 'depend::secret', 'depend::secret:gitlab', 'depend-of::gitlab', 'type::dependency:hard' ]
 
@@ -58,7 +64,9 @@ dependencies:
 
   - role: debops.nginx
     tags: [ 'depend::nginx', 'depend::nginx:gitlab', 'depend-of::gitlab', 'type::dependency' ]
-    nginx_servers: [ '{{ gitlab_nginx_server }}' ]
+    nginx_servers:
+      - '{{ gitlab_nginx_server }}'
+      - '{{ gitlab_nginx_pages_server }}'
     nginx_upstreams: '{{ gitlab_nginx_upstreams }}'
     when: (gitlab_dependencies is defined and gitlab_dependencies)
 

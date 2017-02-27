@@ -22,6 +22,11 @@ gitlab_workhorse_repo: 'https://gitlab.com/gitlab-org/gitlab-workhorse.git'
 gitlab_workhorse_dest: '{{ gitlab_src_path + "/" + gitlab_workhorse_repo.split("://")[1] }}'
 gitlab_workhorse_checkout: '{{ gitlab_app_root_path + "/gitlab-workhorse" }}'
 
+# gitlab-pages source and install path
+gitlab_pages_repo: 'https://gitlab.com/gitlab-org/gitlab-pages.git'
+gitlab_pages_dest: '{{ gitlab_src_path + "/" + gitlab_pages_repo.split("://")[1] }}'
+gitlab_pages_checkout: '{{ gitlab_app_root_path + "/gitlab-pages" }}'
+
 # ---- GitLab version map ----
 
 # This dict is used to map 'gitlab_version' to correct GitLab branch and
@@ -154,13 +159,28 @@ gitlab_version_map:
     ce:    '8-16-stable'
     gitlab_workhorse: 'v1.3.0'
 
+  '8.17':
+    shell: 'v4.1.1'
+    ce:    '8-17-stable'
+    gitlab_workhorse: 'v1.3.0'
+    pages: 'v0.3.2'
+
+# ---- Version specific rake tasks ----
+
+gitlab_assets_clean: '{{ "gitlab:assets:clean"
+                         if (gitlab_version | version_compare("8.17", operator="ge", strict=True))
+                         else "assets:clean" }}'
+gitlab_assets_compile: '{{ "gitlab:assets:compile"
+                           if (gitlab_version | version_compare("8.17", operator="ge", strict=True))
+                           else "assets:precompile" }}'
+
 # ---- GitLab CE installation ----
 
 # List of packages required by GitLab
 gitlab_packages: [ 'build-essential', 'zlib1g-dev', 'libyaml-dev', 'libssl-dev',
                    'libgdbm-dev', 'libreadline-dev', 'libncurses5-dev', 'libffi-dev',
                    'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev', 'libkrb5-dev',
-                   'libicu-dev', 'python-docutils', 'cmake', 'pkg-config', 'nodejs' ]
+                   'libicu-dev', 'python-docutils', 'cmake', 'pkg-config', 'unzip' ]
 
 # List of packages required to specified database
 gitlab_database_packages:
@@ -308,3 +328,11 @@ gitlab_nginx_server:
         expires max;
         add_header Cache-Control public;
 
+# nginx server configuration for GitLab
+gitlab_nginx_pages_server:
+  by_role: 'debops.gitlab'
+  enabled: '{{ gitlab_enable_pages }}'
+  type: 'proxy'
+  name: '*.{{ gitlab_pages_domain }}'
+  pki_realm: '{{ gitlab_pages_domain }}'
+  proxy_pass: 'http://localhost:{{ gitlab_pages_port }}'
