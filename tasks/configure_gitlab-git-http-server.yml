@@ -80,12 +80,6 @@
   register: gitlab_register_git_http_server_checkout
   when: (gitlab_version_map[gitlab_version].git_http_server|d() != gitlab_register_git_http_server_target_tag.stdout|d()) or (gitlab_register_git_http_server_cloned.stat|d() and not gitlab_register_git_http_server_cloned.stat.exists)
 
-- name: Install go packages
-  apt:
-    name: 'golang-go'
-    state: 'latest'
-    install_recommends: False
-
 - name: Setup gitlab-git-http-server
   shell: make chdir={{ gitlab_git_http_server_checkout }}
   become_user: '{{ gitlab_user }}'
