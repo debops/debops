@@ -59,9 +59,11 @@ console_preferred_editors:
 # Enable or disable FSCKFIX option in /etc/default/rcS
 # This option controls the behaviour of fsck during boot time, if it's enabled,
 # fsck will automatically repair filesystems without stopping the boot
-# process.
-# Choices: yes, no. Set to False to disable this feature.
+# process. Choices: yes, no.
 console_fsckfix: 'yes'
+
+# List of OS distribution releases which use the FSCKFIX option in a configuration file.
+console_fsckfix_releases: [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ]
 
 # List of locales to enable on the host
 console_locales: [ 'en_US.UTF-8' ]
@@ -91,21 +93,6 @@ console_proc_hidepid_level: '2'
 # System group to set for /proc so that selected users can access it without
 # restrictions; this is meant for monitoring services, etc.
 console_proc_hidepid_group: 'procadmins'
-
-
-# ---- root account ----
-
-# Manage root account
-console_root: True
-
-# Password set on root account, saved in secrets
-console_root_password: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/console/root/password encrypt=sha512_crypt length=" + console_root_password_length) }}'
-
-# Length of the root password
-console_root_password_length: '32'
-
-# Default root shell, set to False to not change the shell
-console_root_shell: False
 
 
 # ---- /etc/hosts ----

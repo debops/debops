@@ -64,7 +64,7 @@
     regexp: 'FSCKFIX='
     state: 'present'
     line: 'FSCKFIX={{ console_fsckfix }}'
-  when: (console_fsckfix is defined and console_fsckfix)
+  when: ansible_distribution_release in console_fsckfix_releases
 
 - name: Ensure that specified locales exist
   locale_gen:
@@ -129,9 +129,6 @@
   file:
     path: '/etc/sysctl.d/10-debops.console.conf'
     state: 'absent'
-
-- include: root_account.yml
-  when: console_root is defined and console_root
 
 - name: Manage entries in /etc/hosts
   lineinfile:
