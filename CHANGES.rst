@@ -72,6 +72,12 @@ Added
   to have a central place where the file can be maintained and from where the
   latest version can be acquired. [ypid_]
 
+- Add the ``debops.root_account`` role, included in the ``common.yml``
+  playbook. This role contains functionality previously present in the
+  debops.console_ role. This change will result in updated ``root`` account
+  passwords, due to the changed location of the password files in the
+  ``secret/`` directory. [drybjed_]
+
 Changed
 ~~~~~~~
 
