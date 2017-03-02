@@ -78,6 +78,9 @@ if output['admin_users']:
         admin_users.add(output['admin_users'])
     elif isinstance(output['admin_users'], list):
         admin_users.extend(output['admin_users'])
+    else:
+        raise RuntimeError("Expected basestring or list, but got %r" % (
+            output['admin_users']))
 
 if output['admin_groups']:
     for group in groups:
