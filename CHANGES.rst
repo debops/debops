@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed.
 
 .. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.5...master
 
+Changed
+~~~~~~~
+
+- The fact script ensures that ``admin_users`` is a list. [muelli_]
+
 
 `debops.core v0.2.5`_ - 2017-01-12
 ----------------------------------
