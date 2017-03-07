@@ -9,6 +9,7 @@ Ansible role: debops.nodejs
    introduction
    getting-started
    defaults
+   copyright
    changelog
 
 ..
