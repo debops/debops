@@ -5,7 +5,15 @@
     name: 'gitlab'
     state: 'restarted'
   notify: [ 'Tell Phusion Passenger to restart', 'Deactivate GitLab deploy.html page' ]
-  when: (ansible_local is defined and ansible_local.gitlab is defined and
+  when: (not gitlab_use_systemd|bool and ansible_local is defined and ansible_local.gitlab is defined and
+         ansible_local.gitlab.installed)
+
+- name: Restart gitlab.slice
+  service:
+    name: 'gitlab.slice'
+    state: 'restarted'
+  notify: [ 'Tell Phusion Passenger to restart', 'Deactivate GitLab deploy.html page' ]
+  when: (gitlab_use_systemd|bool and ansible_local is defined and ansible_local.gitlab is defined and
          ansible_local.gitlab.installed)
 
 - name: Tell Phusion Passenger to restart
