@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed_.
 `debops.nodejs master`_ - unreleased
 ------------------------------------
 
-.. _debops.nodejs master: https://github.com/debops/ansible-nodejs/compare/v0.3.0...master
+.. _debops.nodejs master: https://github.com/debops/ansible-nodejs/compare/v0.3.1...master
+
+
+`debops.nodejs v0.3.1`_ - 2017-03-08
+------------------------------------
+
+.. _debops.nodejs v0.3.1: https://github.com/debops/ansible-nodejs/compare/v0.3.0...v0.3.1
 
 Changed
 ~~~~~~~
