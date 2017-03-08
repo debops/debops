@@ -9,9 +9,11 @@ It can be used to install system-wide NPM packages as well.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v2.0.0``. To install it, run::
+This role requires at least Ansible ``v2.0.0``. To install it, run:
 
-    ansible-galaxy install debops.nodejs
+.. code-block:: console
+
+   ansible-galaxy install debops.nodejs
 
 ..
  Local Variables:
