@@ -20,7 +20,18 @@
 - name: Install APT packages
   package:
     name: '{{ item }}'
-    state: 'present'
+    state: '{{ "latest"
+               if (nodejs__upstream | bool and
+                   (ansible_local|d() and ansible_local.nodejs|d() and
+                    ansible_local.nodejs.upstream is defined and
+                    not ansible_local.nodejs.upstream|bool))
+               else "present" }}'
+    autoremove: '{{ True
+                    if (nodejs__upstream | bool and
+                        (ansible_local|d() and ansible_local.nodejs|d() and
+                         ansible_local.nodejs.upstream is defined and
+                         not ansible_local.nodejs.upstream|bool))
+                    else omit }}'
   with_flattened:
     - '{{ nodejs__base_packages }}'
     - '{{ nodejs__distribution_packages }}'
@@ -46,3 +57,18 @@
     - '{{ nodejs__npm_host_packages }}'
     - '{{ nodejs__npm_dependent_packages }}'
 
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save NodeJS local facts
+  template:
+    src: 'etc/ansible/facts.d/nodejs.fact.j2'
+    dest: '/etc/ansible/facts.d/nodejs.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'

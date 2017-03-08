@@ -26,6 +26,17 @@ Changed
 
 - Update documentation and Changelog. [drybjed_]
 
+- The role now tracks the status of :envvar:`nodejs__upstream` variable and can
+  automatically upgrade the NodeJS packages from the OS-distributed version to
+  an upstream version. You can use this to request NodeSource packages from
+  a different Ansible role if needed.
+
+  To do this effectively, role will automatically remove APT packages that were
+  installed automatically and are no longer needed. This might impact other
+  packages than just the ones related to NodeJS, but it's a one time operation;
+  when upstream NodeJS packages are installed, they are not upgraded
+  automatically by the role. [drybjed_]
+
 
 `debops.nodejs v0.3.0`_ - 2016-07-01
 ------------------------------------
