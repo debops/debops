@@ -33,6 +33,9 @@ Fixed
 
 - Fix syntax error in :envvar:`roundcube__database_schema` variable definition. [cultcom]
 
+- Fix MySQL database schema setup when using remote database by adjusting
+  indentation of example playbook. [ganto_]
+
 
 `debops-contrib.roundcube v0.1.1_` - 2016-08-03
 -----------------------------------------------
