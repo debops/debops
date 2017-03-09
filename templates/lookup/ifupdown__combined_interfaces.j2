@@ -67,7 +67,11 @@
 {%       endif %}
 {%     endif %}
 {%     if params.allow is undefined %}
-{%       set _ = params.update({"allow":["hotplug"]}) %}
+{%       if (ansible_virtualization_role == 'guest' and ansible_virtualization_type in [ 'lxc', 'openvz' ]) %}
+{%         set _ = params.update({"allow":["boot"]}) %}
+{%       else %}
+{%         set _ = params.update({"allow":["hotplug"]}) %}
+{%       endif %}
 {%     endif %}
 {%   elif params.type == 'vlan' %}
 {%     if params.inet is undefined %}
@@ -84,7 +88,7 @@
 {%       endif %}
 {%     endif %}
 {%     if params.allow is undefined %}
-{%       set _ = params.update({"allow":["boot","hotplug"]}) %}
+{%       set _ = params.update({"allow":["boot"]}) %}
 {%     endif %}
 {%   elif params.type == 'bridge' %}
 {%     if params.inet is undefined %}
@@ -111,7 +115,7 @@
 {%         endif %}
 {%       endif %}
 {%       if params.allow is undefined %}
-{%         set _ = params.update({"allow":["boot","hotplug"]}) %}
+{%         set _ = params.update({"allow":["boot"]}) %}
 {%       endif %}
 {%     endif %}
 {%   elif params.type == 'bonding' %}
@@ -138,7 +142,7 @@
 {%     endif %}
 {%   endif %}
 {%   if params.allow is undefined and ((params.inet|d() and params.inet != 'manual') or (params.inet6|d() and params.inet6 != 'manual')) %}
-{%     set _ = params.update({"allow":["boot","hotplug"]}) %}
+{%     set _ = params.update({"allow":["boot"]}) %}
 {%   endif %}
 {%   set _ = ifupdown__tpl_filtered_interfaces.update({interface_name:params}) %}
 {% endfor %}

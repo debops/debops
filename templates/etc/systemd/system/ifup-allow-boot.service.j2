@@ -3,7 +3,8 @@
 [Unit]
 Description=Bring up non-hotpluggable interfaces on boot
 Documentation=man:interfaces(5) man:ifup(8)
-Documentation=https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=765000
+Documentation=https://bugs.debian.org/765000
+Documentation=https://bugs.debian.org/819314
 DefaultDependencies=no
 Wants=network.target
 After=local-fs.target network-pre.target apparmor.service systemd-sysctl.service systemd-modules-load.service networking.service
@@ -19,9 +20,9 @@ ExecStart=/bin/sh -ec '\
   [ -n "$INTERFACES" ] || exit 0; \
   for i in $INTERFACES; do \
   logger -t ifup-allow-boot "Checking state of the $i interface" ; \
-  if ! ifquery --state $i > /dev/null && ! systemctl is-active ifup@$i > /dev/null 2>&1 ; then \
+  if ! ifquery --state $i > /dev/null && ! systemctl is-active iface@$i > /dev/null 2>&1 ; then \
   logger -t ifup-allow-boot "Interface $i is down, bringing it up" ; \
-  systemctl start ifup@$i ; sleep 0.5 ; \
+  systemctl start iface@$i ; sleep 0.5 ; \
   while [ -e /run/network/ifup-$i.pid ] ; do sleep 0.5 ; \
   logger -t ifup-allow-boot "Waiting for $i interface" ; done ; \
   logger -t ifup-allow-boot "Interface $i is up" ; \

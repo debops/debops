@@ -18,6 +18,23 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.ifupdown master: https://github.com/debops/ansible-ifupdown/compare/v0.3.2...master
 
+Added
+~~~~~
+
+- Add a separate ``iface@.service`` :command:`systemd` unit file which is used
+  to setup network interfaces that don't have an explicit device related to
+  them (bridges, VLAN interfaces, bonding interfaces).
+
+  This is required because of the recent changes in the ``ifupdown`` package in
+  Debian Jessie/Stretch which change the ``ifup@.service`` unit file to have
+  the related device of a given interface as a dependency. As a result, the
+  ``ifup@.service`` instances that don't have an explicit device associated
+  with them (anything other than a physical Ethernet network interface) wait
+  endlessly for a device that it's not present. This doesn't happen if the
+  network interfaces are configured using :command:`systemd-networkd`
+  facilities, but because this role provides a pure ``ifupdown``
+  implementation, this was the easiest way to solve that issue. [drybjed_]
+
 
 `debops.ifupdown v0.3.2`_ - 2016-12-16
 --------------------------------------

@@ -183,7 +183,7 @@ General interface parameters
   - ``auto``: bring the interface up at boot time by the ``networking``
     service. This might not be what you want on newer systems.
 
-  - ``boot``: bring the interface up at boot time by ``ifup@.service``
+  - ``boot``: bring the interface up at boot time by ``iface@.service``
     :command:`systemd` unit. This will put any processes related to a given
     interface in their separate cgroup, which allows for better control over
     the network interface. This is a custom implementation of the ``auto``
