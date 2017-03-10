@@ -14,12 +14,23 @@ The current role maintainer_ is drybjed.
 `debops.core master`_ - unreleased
 ----------------------------------
 
-.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.5...master
+.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.6...master
+
+
+`debops.core v0.2.6`_ - 2017-03-10
+----------------------------------
+
+.. _debops.core v0.2.6: https://github.com/debops/ansible-core/compare/v0.2.5...v0.2.6
 
 Changed
 ~~~~~~~
 
 - The fact script ensures that ``admin_users`` is a list. [muelli_]
+
+- Use the facts from the ``ansible_lsb`` facts to define the host's OS
+  distribution and release, if they are present. If they're not present,
+  fallback to default Ansible facts. This should mitigate an issue where
+  ``Raspbian`` is wrongly identified by Ansible as ``Debian``. [drybjed_]
 
 
 `debops.core v0.2.5`_ - 2017-01-12
