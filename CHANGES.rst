@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed.
 `debops.core master`_ - unreleased
 ----------------------------------
 
-.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.5...master
+.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.6...master
+
+
+`debops.core v0.2.6`_ - 2017-03-10
+----------------------------------
+
+.. _debops.core v0.2.6: https://github.com/debops/ansible-core/compare/v0.2.5...v0.2.6
 
 Changed
 ~~~~~~~
