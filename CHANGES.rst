@@ -23,6 +23,13 @@ Added
 
 - Add support for GitLab 8.15. [Oldkarkass]
 
+- Add support for GitLab services managed by :command:`systemd` units in
+  a separate slice instead of the upstream SysVinit script. The role should
+  preserve the current service management method on already installed
+  instances; new :command:`systemd` support will be enabled only on new
+  installs on hosts that use :command:`systemd` as the service manager.
+  [cultcom, drybjed_]
+
 Changed
 ~~~~~~~
 
