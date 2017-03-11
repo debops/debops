@@ -79,6 +79,11 @@
 # ]]]
 
 # Create/remove symlinks for sandboxed programs [[[
+- name: Ensure that the local bin path exists
+  file:
+    path: '{{ firejail__system_local_bin_path }}'
+    state: 'directory'
+
 - name: Create/remove symlinks for sandboxed programs
   file:
     path: '{{ firejail__system_local_bin_path + "/" + item }}'
