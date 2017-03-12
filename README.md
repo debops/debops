@@ -5,7 +5,7 @@
 
 [![Travis CI](https://img.shields.io/travis/debops/ansible-persistent_paths.svg?style=flat)](https://travis-ci.org/debops/ansible-persistent_paths)
 [![test-suite](https://img.shields.io/badge/test--suite-ansible--persistent__paths-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-persistent_paths/)
-[![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops.persistent_paths-660198.svg?style=flat)](https://galaxy.ansible.com/ypid/persistent_paths)
+[![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops.persistent_paths-660198.svg?style=flat)](https://galaxy.ansible.com/debops/persistent_paths)
 
 
 This role provides a generic mechanism to declare which files/directories
