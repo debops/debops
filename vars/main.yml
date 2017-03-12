@@ -327,12 +327,3 @@ gitlab_nginx_server:
         gzip_static on;
         expires max;
         add_header Cache-Control public;
-
-# nginx server configuration for GitLab
-gitlab_nginx_pages_server:
-  by_role: 'debops.gitlab'
-  enabled: '{{ gitlab_enable_pages }}'
-  type: 'proxy'
-  name: '*.{{ gitlab_pages_domain }}'
-  pki_realm: '{{ gitlab_pages_domain }}'
-  proxy_pass: 'http://localhost:{{ gitlab_pages_port }}'

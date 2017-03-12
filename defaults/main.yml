@@ -473,3 +473,15 @@ gitlab_ldap_method: 'tls'
 # .. envvar:: gitlab_ldap_activedirectory
 #
 gitlab_ldap_activedirectory: false
+
+
+# .. envvar:: gitlab_nginx_pages_server
+#
+# Configuration of the GitLab Pages nginx proxy for the ``debops.nginx`` role.
+gitlab_nginx_pages_server:
+  by_role: 'debops.gitlab'
+  enabled: '{{ gitlab_enable_pages }}'
+  type: 'proxy'
+  name: [ '{{ gitlab_pages_domain }}', '*.{{ gitlab_pages_domain }}' ]
+  filename: 'gitlab-pages'
+  proxy_pass: 'http://localhost:{{ gitlab_pages_port }}'
