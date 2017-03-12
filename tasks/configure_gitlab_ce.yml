@@ -175,7 +175,7 @@
   when: (( gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
          (gitlab_use_systemd is defined and gitlab_use_systemd))
 
-- name: Install GitLab Pages' systemd service file
+- name: Install GitLab Pages systemd service file
   template:
     src: 'etc/systemd/system/gitlab-pages.service.j2'
     dest: '/etc/systemd/system/gitlab-pages.service'
@@ -216,7 +216,7 @@
   when: ((gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
          gitlab_use_systemd|bool)
 
-- name: Enable GitLab Pages' systemd service
+- name: Enable GitLab Pages systemd service
   service:
     name: 'gitlab-pages.service'
     enabled: True
