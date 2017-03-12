@@ -16,12 +16,22 @@ The current role maintainer_ is drybjed.
 `debops.gitlab master`_ - unreleased
 ------------------------------------
 
-.. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.1.7...master
+.. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.1.8...master
+
+
+`debops.gitlab v0.1.8`_ - 2017-03-12
+------------------------------------
+
+.. _debops.gitlab v0.1.8: https://github.com/debops/ansible-gitlab/compare/v0.1.7...v0.1.8
 
 Added
 ~~~~~
 
 - Add support for GitLab 8.15. [Oldkarkass]
+
+- Add support for GitLab 8.16. [cultcom]
+
+- Add support for GitLab 8.17. [bfabio]
 
 - Add support for GitLab services managed by :command:`systemd` units in
   a separate slice instead of the upstream SysVinit script. The role should
@@ -29,6 +39,10 @@ Added
   instances; new :command:`systemd` support will be enabled only on new
   installs on hosts that use :command:`systemd` as the service manager.
   [cultcom, drybjed_]
+
+- Add support for GitLab Pages. It will be enabled on GitLab 8.17+, as long as
+  a suitable domain is configured in the ``gitlab_pages_domain`` variable.
+  [bfabio]
 
 Changed
 ~~~~~~~
