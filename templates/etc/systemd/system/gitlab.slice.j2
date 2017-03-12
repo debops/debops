@@ -4,6 +4,9 @@
 Description=GitLab Slice
 Requires=redis-server.service
 Wants=mysqld.service postgresql.service gitlab-unicorn.service gitlab-sidekiq.service gitlab-workhorse.service gitlab-mailroom.service
+{% if gitlab_enable_pages|bool %}
+Wants=gitlab-pages.service
+{% endif %}
 Before=slices.target
 After=redis-server.service mysqld.service postgresql.service
 

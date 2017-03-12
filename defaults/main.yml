@@ -26,7 +26,7 @@ gitlab_use_systemd: '{{ (ansible_local.gitlab.systemd_services
 # .. envvar:: gitlab_version
 #
 # What version of GitLab to install / manage
-gitlab_version: '8.16'
+gitlab_version: '8.17'
 
 
 # ---------------------------------
@@ -38,6 +38,25 @@ gitlab_version: '8.16'
 # Domain which will be used for nginx server and gitlab-shell access
 # GitLab will be configured with HTTPS enabled by default
 gitlab_domain: [ 'code.{{ ansible_domain }}' ]
+
+# .. envvar:: gitlab_pages_domain
+#
+# The main domain served by Gitlab Pages. Set this to your domain to enable Gitlab Pages.
+#
+# This should be a different one than ``gitlab_domain`` to prevent cross domain cookie attacks.
+gitlab_pages_domain: ''
+
+
+# .. envvar:: gitlab_pages_port
+#
+# Port the gitlab-pages HTTP server listens to.
+gitlab_pages_port: '8090'
+
+
+# .. envvar:: gitlab_pages_path
+#
+#
+gitlab_pages_path: '{{ ansible_local.root.data + "/gitlab/shared/pages" }}'
 
 
 # .. envvar:: gitlab_nginx_auth_realm
@@ -92,6 +111,12 @@ gitlab_enable_git_http_server: '{{ gitlab_version | version_compare("8.0", opera
 #
 # In GitLab 8.2 and newer, gitlab-workhorse replaces gitlab-git-http-server
 gitlab_enable_gitlab_workhorse: '{{ gitlab_version | version_compare("8.2", operator="ge", strict=True) }}'
+
+# .. envvar:: gitlab_enable_pages
+#
+# Whether to enable gitlab-pages. Available in Gitlab 8.17 and newer.
+gitlab_enable_pages: '{{ gitlab_version | version_compare("8.17", operator="ge", strict=True)
+                         and gitlab_pages_domain != "" }}'
 
 
 # --------------------------
@@ -449,3 +474,14 @@ gitlab_ldap_method: 'tls'
 #
 gitlab_ldap_activedirectory: false
 
+
+# .. envvar:: gitlab_nginx_pages_server
+#
+# Configuration of the GitLab Pages nginx proxy for the ``debops.nginx`` role.
+gitlab_nginx_pages_server:
+  by_role: 'debops.gitlab'
+  enabled: '{{ gitlab_enable_pages }}'
+  type: 'proxy'
+  name: [ '{{ gitlab_pages_domain }}', '*.{{ gitlab_pages_domain }}' ]
+  filename: 'gitlab-pages'
+  proxy_pass: 'http://localhost:{{ gitlab_pages_port }}'
