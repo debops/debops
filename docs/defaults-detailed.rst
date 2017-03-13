@@ -151,6 +151,10 @@ General interface parameters
   | ``tunnel``  | 80     | virtual network tunnel                                       |
   +-------------+--------+--------------------------------------------------------------+
 
+``weight_class``
+  Optional. Override the specified ``type`` for a given interface so that the
+  weight of another type will be used instead.
+
 ``weight``
   Optional. Positive or negative number (for example ``2`` or ``-2``) which
   will be added to the base weight defined by the interface type. This can be

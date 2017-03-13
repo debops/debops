@@ -35,6 +35,17 @@ Added
   facilities, but because this role provides a pure ``ifupdown``
   implementation, this was the easiest way to solve that issue. [drybjed_]
 
+- Add support for the ``weight_class`` interface parameter which allows to
+  affect filename sorting. [drybjed_]
+
+Changed
+~~~~~~~
+
+- Change the weight numbers from 2 to 3 digits. This might affect network
+  configuration during the transition phase if the network interfaces are
+  configured by other roles than just internally by the ``debops.ifupdown``
+  role. [drybjed_]
+
 
 `debops.ifupdown v0.3.2`_ - 2016-12-16
 --------------------------------------
