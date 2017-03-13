@@ -7,6 +7,14 @@
     install_recommends: False
   with_items: [ 'fail2ban', 'whois' ]
 
+- name: Disable default upstream jail
+  lineinfile:
+    dest: '/etc/fail2ban/jail.conf'
+    regexp: '^(enabled  = )true'
+    line: '\1false'
+    backrefs: yes
+  notify: [ 'Reload fail2ban jails' ]
+
 - name: Install custom fail2ban rule files
   copy:
     src: 'etc/fail2ban/'
