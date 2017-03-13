@@ -146,4 +146,50 @@
 {%   endif %}
 {%   set _ = ifupdown__tpl_filtered_interfaces.update({interface_name:params}) %}
 {% endfor %}
-{{ ifupdown__tpl_filtered_interfaces | to_yaml }}
+{% set ifupdown__tpl_vlan_filtered_interfaces = {} %}
+{% for name, params in ifupdown__tpl_filtered_interfaces.iteritems() %}
+{%   set interface_name = (params.iface | d(name)) %}
+{%   if params.type == 'vlan' and params.weight_class is undefined %}
+{%     if params.vlan_raw_device|d() %}
+{%       if params.vlan_raw_device.startswith(('en','eth')) %}
+{%         set _ = params.update({"weight_class":"ether"}) %}
+{%       elif params.vlan_raw_device.startswith('sl') %}
+{%         set _ = params.update({"weight_class":"slip"}) %}
+{%       elif params.vlan_raw_device.startswith('wl') %}
+{%         set _ = params.update({"weight_class":"wlan"}) %}
+{%       elif params.vlan_raw_device.startswith('ww') %}
+{%         set _ = params.update({"weight_class":"wwan"}) %}
+{%       elif params.vlan_raw_device.startswith('br') %}
+{%         set _ = params.update({"weight_class":"bridge"}) %}
+{%       elif params.vlan_raw_device.startswith(('tap','tun','mesh','sit')) %}
+{%         set _ = params.update({"weight_class":"tunnel"}) %}
+{%       elif params.vlan_raw_device.startswith('bond') %}
+{%         set _ = params.update({"weight_class":"bonding"}) %}
+{%       elif params.vlan_raw_device.startswith('6to4') %}
+{%         set _ = params.update({"weight_class":"6to4"}) %}
+{%       endif %}
+{%       set _ = params.update({"weight": "5"}) %}
+{%     elif params.vlan_device|d() %}
+{%       if params.vlan_device.startswith(('en','eth')) %}
+{%         set _ = params.update({"weight_class":"ether"}) %}
+{%       elif params.vlan_device.startswith('sl') %}
+{%         set _ = params.update({"weight_class":"slip"}) %}
+{%       elif params.vlan_device.startswith('wl') %}
+{%         set _ = params.update({"weight_class":"wlan"}) %}
+{%       elif params.vlan_device.startswith('ww') %}
+{%         set _ = params.update({"weight_class":"wwan"}) %}
+{%       elif params.vlan_device.startswith('br') %}
+{%         set _ = params.update({"weight_class":"bridge"}) %}
+{%       elif params.vlan_device.startswith(('tap','tun','mesh','sit')) %}
+{%         set _ = params.update({"weight_class":"tunnel"}) %}
+{%       elif params.vlan_device.startswith('bond') %}
+{%         set _ = params.update({"weight_class":"bonding"}) %}
+{%       elif params.vlan_device.startswith('6to4') %}
+{%         set _ = params.update({"weight_class":"6to4"}) %}
+{%       endif %}
+{%       set _ = params.update({"weight": "5"}) %}
+{%     endif %}
+{%   endif %}
+{%   set _ = ifupdown__tpl_vlan_filtered_interfaces.update({interface_name:params}) %}
+{% endfor %}
+{{ ifupdown__tpl_vlan_filtered_interfaces | to_yaml }}

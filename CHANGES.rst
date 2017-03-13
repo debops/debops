@@ -46,6 +46,12 @@ Changed
   configured by other roles than just internally by the ``debops.ifupdown``
   role. [drybjed_]
 
+- The autoconfiguration of the VLAN network interfaces is changed to create
+  better interface order. The role will check what interface type the VLAN
+  interface is attached to and the VLAN interface will use the weight of the
+  parent interface to ensure that the VLAN interface is configured after the
+  parent interface. [drybjed_]
+
 
 `debops.ifupdown v0.3.2`_ - 2016-12-16
 --------------------------------------

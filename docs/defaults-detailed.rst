@@ -151,6 +151,14 @@ General interface parameters
   | ``tunnel``  | 80     | virtual network tunnel                                       |
   +-------------+--------+--------------------------------------------------------------+
 
+  If the detected interface type is ``vlan``, the role will check what parent
+  interface is a given VLAN attached to and change the configuration to reorder
+  the ``vlan`` interface after all of the parent interfaces, so that network
+  interfaces are processed in the working order. This will only happen if
+  ``weight_class`` parameter is not specified. If the interface is overriden,
+  the ``weight`` parameter will be set to ``5`` to ensure proper interface
+  order.
+
 ``weight_class``
   Optional. Override the specified ``type`` for a given interface so that the
   weight of another type will be used instead.
