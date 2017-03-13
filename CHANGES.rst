@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.fail2ban master: https://github.com/debops/ansible-fail2ban/compare/v0.1.1...master
 
+Changed
+~~~~~~~
+
+- Disable default `ssh` jail defined in upstream :file:`jail.conf` and enable
+  it via :envvar:`fail2ban_jails` instead. [ganto_]
+
 
 `debops.fail2ban v0.1.1`_ - 2016-12-01
 --------------------------------------
