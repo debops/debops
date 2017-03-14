@@ -19,8 +19,11 @@ The current role maintainer_ is drybjed_.
 Changed
 ~~~~~~~
 
-- Disable default `ssh` jail defined in upstream :file:`jail.conf` and enable
-  it via :envvar:`fail2ban_jails` instead. [ganto_]
+- Harmonize role behaviour on Debian and Ubuntu. Disable the default `ssh` jail
+  defined in the upstream :file:`jail.conf` on Debian. Rename the disabled
+  `ssh-iptables` jail on Ubuntu to `ssh`. [ganto_]
+
+- Enable SSH jail via default configuration of :envvar:`fail2ban_jails`. [ganto_]
 
 
 `debops.fail2ban v0.1.1`_ - 2016-12-01
