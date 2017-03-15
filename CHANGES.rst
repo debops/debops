@@ -46,6 +46,10 @@ Changed
 - Update to the latest recommenced set of ciphers suites from
   https://bettercrypto.org/. [ypid_]
 
+- Rework the welcome page. Update to HTML5, make status configurable, define
+  `Content Security Policy`, fix warnings and one templating error for
+  ``nginx_tpl_welcome_title``. [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 
