@@ -21,7 +21,9 @@ Changed
 
 - Harmonize role behaviour on Debian and Ubuntu. Disable the default `ssh` jail
   defined in the upstream :file:`jail.conf` on Debian. Rename the disabled
-  `ssh-iptables` jail on Ubuntu to `ssh`. [ganto_]
+  `ssh-iptables` jail on Ubuntu to `ssh`. Ubuntu users which depend on the
+  definition of the `ssh-iptables` jail in :file:`jail.conf` must adjust their
+  configuration. [ganto_]
 
 - Enable SSH jail via default configuration of :envvar:`fail2ban_jails`. [ganto_]
 
