@@ -7,6 +7,17 @@
     install_recommends: False
   with_items: [ 'fail2ban', 'whois' ]
 
+- name: Divert original fail2ban configuration
+  command: dpkg-divert --quiet --local --divert /etc/fail2ban/jail.conf.dpkg-divert --rename /etc/fail2ban/jail.conf
+  args:
+    creates: /etc/fail2ban/jail.conf.dpkg-divert
+
+- name: Copy upstream jail configuration
+  command: cp /etc/fail2ban/jail.conf.dpkg-divert /etc/fail2ban/jail.conf
+  args:
+    creates: '/etc/fail2ban/jail.conf'
+  notify: [ 'Restart fail2ban' ]
+
 - name: Adjust upstream ssh jail configuration
   lineinfile:
     dest: '/etc/fail2ban/jail.conf'
