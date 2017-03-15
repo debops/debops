@@ -45,6 +45,9 @@ Added
   :command:`resolvconf` script when the network interfaces are configured
   statically. [drybjed_]
 
+- Support for persistent configuration of TemplateBasedVM on `Qubes OS`_ out of
+  the box using the debops.persistent_paths_ role. [ypid_]
+
 Changed
 ~~~~~~~
 

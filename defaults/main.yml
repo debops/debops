@@ -160,6 +160,20 @@ tinc__systemd: '{{ True
                    else False }}'
 
                                                                    # ]]]
+# .. envvar:: tinc__persistent_prefix_path [[[
+#
+# Directory path prefix which should be used for writing/updating of files made
+# persistent by :envvar:`tinc__persistent_paths__dependent_paths`.
+tinc__persistent_prefix_path: '{{ ansible_local.persistent_paths.storage_path|d("")
+                                  if (ansible_local|d() and
+                                      ansible_local.tinc|d() and
+                                      ansible_local.tinc.enabled|d() | bool and
+                                      ansible_local.persistent_paths|d() and
+                                      ansible_local.persistent_paths.enabled|d() | bool and
+                                      ansible_local.persistent_paths.write_to_storage_path|d() | bool)
+                                  else "" }}'
+
+                                                                   # ]]]
 # .. envvar:: tinc__vcs_ignore_patterns [[[
 #
 # This list of ignore patterns for files below :file:`/etc/tinc` that version
@@ -301,6 +315,35 @@ tinc__etc_services__dependent_list: '{{ lookup("template",
 tinc__ferm__dependent_rules: '{{ lookup("template",
                                  "lookup/tinc__ferm__dependent_rules.j2",
                                  convert_data=False) | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__persistent_paths__dependent_paths [[[
+#
+# Configuration for the debops.persistent_paths_ Ansible role.
+tinc__persistent_paths__dependent_paths:
+
+  '50_debops_tinc':
+    by_role: 'debops.tinc'
+    paths: |
+      {{ [
+        '/etc/tinc',
+        '/etc/systemd/system/tinc.service',
+        '/etc/systemd/system/tinc@.service',
+        '/etc/systemd/system/multi-user.target.wants/tinc.service',
+      ] + ((ansible_local.tinc.networks.keys() | map("regex_replace", "^", "/etc/default/tinc-") | list)
+           if (ansible_local|d() and ansible_local.tinc|d() and
+               ansible_local.tinc.networks|d())
+           else [])
+      }}
+
+      ## Note that when the same network gets deleted and then added again to
+      ## `tinc__combined_networks`, the role might need two runs to also update
+      ## the defaults file in the persistent location.
+
+      ## '/etc/systemd/system/multi-user.target.wants/tinc.service':
+      ## Note that bind-dirs in Qubes OS currently does not restore symlinks (only their destination).
+      ## This works for ypid_ as he does not want auto start on Qubes OS AppVMs anyway.
+      ## If you need it on Qubes OS, feel free to discuss and patch bind-dirs.
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

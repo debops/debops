@@ -132,7 +132,7 @@
     group: 'root'
     mode: '0644'
 
-## RSA key management [[[1
+# RSA key management [[[1
 
 - name: Ensure that sensitive files are excluded from version control
   template:
@@ -157,7 +157,7 @@
   with_dict: '{{ tinc__combined_networks }}'
   when: item.value.state|d('present') != 'absent'
 
-## Tinc host configuration [[[1
+# Tinc host configuration [[[1
 - name: Generate host configuration file
   template:
     src: 'etc/tinc/network/hosts/host-config.j2'
@@ -179,7 +179,7 @@
   when: item.value.state|d('present') != 'absent'
   notify: [ 'Reload tinc' ]
 
-## Tinc host configuration distribution [[[1
+# Tinc host configuration distribution [[[1
 - name: Upload public keys from hosts to Ansible Controller
   fetch:
     src: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname)) | replace("-","_") }}'
@@ -235,7 +235,7 @@
   when: item.value.state|d('present') != 'absent'
   notify: [ 'Reload tinc' ]
 
-## systemd configuration [[[1
+# systemd configuration [[[1
 - name: Configure systemd default variables
   template:
     src: 'etc/default/tinc-network.j2'
@@ -264,7 +264,7 @@
 - name: Configure systemd unit files
   template:
     src: 'etc/systemd/system/{{ item }}.j2'
-    dest: '/etc/systemd/system/{{ item }}'
+    dest: '{{ tinc__persistent_prefix_path + "/" + item }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -290,3 +290,31 @@
   with_dict: '{{ tinc__combined_networks }}'
   when: tinc__systemd|bool and item.value.state|d('present') != 'absent' and
         item.value.port|d()
+
+# Ansible facts [[[1
+
+# Note that for ``debops.persistent_paths`` on Qubes OS to work correctly, the
+# facts need to be generated at the end of the (first) role playbook run. Note
+# this if it might be necessary to move this to a separate env role. Not sure
+# yet how this could be handled to cover both cases.
+
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Create local facts of tinc
+  template:
+    src: 'etc/ansible/facts.d/tinc.fact.j2'
+    dest: '/etc/ansible/facts.d/tinc.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: tinc__register_facts
+
+- name: Reload facts if they were modified
+  action: setup
+  when: tinc__register_facts|changed

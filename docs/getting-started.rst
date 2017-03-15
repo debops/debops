@@ -92,7 +92,13 @@ generated from templates to other roles.
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.tinc`` role:
 
-.. literalinclude:: playbooks/tinc.yml
+.. literalinclude:: playbooks/tinc-plain.yml
+   :language: yaml
+
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses ``debops.tinc`` together with the debops.persistent_paths_ role:
+
+.. literalinclude:: playbooks/tinc-persistent_paths.yml
    :language: yaml
 
 Static vs DHCP connection type
@@ -196,3 +202,30 @@ commands:
     systemctl status tinc@mesh0
     systemctl start tinc@mesh0
     systemctl stop tinc@mesh0
+
+debops.persistent_paths_ support
+--------------------------------
+
+In case the host in question happens to be a TemplateBasedVM on `Qubes OS`_ or
+another system where persistence is not the default, it should absent in
+``debops_service_tinc`` and instead be added to
+``debops_service_tinc_persistent_paths`` so that the changes can be made
+persistently:
+
+.. code:: ini
+
+   [debops_service_tinc_persistent_paths]
+   hostname
+
+Note that the :envvar:`tinc__user` (``tinc-vpn`` by default) created by the role is not made persistent because making
+:file:`/etc/passwd` and related files persistent might interfere with template
+changes.
+
+You will need to ensure that the user exists by one of the following ways:
+
+* Create the user in the template using :command:`useradd --system tinc-vpn --comment 'tinc VPN service' --home-dir '/etc/tinc' --shell '/bin/false'`
+* Running the above command on start in the TemplateBasedVM
+* Run the role against your template with the role configured in such a way that it only
+  creates the user. Note that this is normally `discouraged <https://www.qubes-os.org/doc/software-update-vm/#notes-on-trusting-your-templatevms>`_.
+
+Besides that, the :envvar:`tinc__base_packages` are expected to be present (typically installed in the TemplateVM).
