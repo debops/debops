@@ -10,38 +10,37 @@
 # .. include:: includes/all.rst
 
 
-# ------------------------------------
-#   Global options
-# ------------------------------------
+# Global options [[[
+# ------------------
 
-# .. envvar:: dnsmasq__public_dns
+# .. envvar:: dnsmasq__public_dns [[[
 #
 # Enable or disable access to the local DNS from upstream networks. You can
 # publish your subdomain in the public DNS by delegating it in your zone
 # configuration.
 dnsmasq__public_dns: False
 
-
-# .. envvar:: dnsmasq__external_dns
+                                                                   # ]]]
+# .. envvar:: dnsmasq__external_dns [[[
 #
 # Enable or disable external DNS support.
 # If set to ``False`` then only allow DNS queries from localhost.
 dnsmasq__external_dns: True
 
-
-# .. envvar:: dnsmasq__dhcpv4
+                                                                   # ]]]
+# .. envvar:: dnsmasq__dhcpv4 [[[
 #
 # Enable or disable DHCPv4 support.
 dnsmasq__dhcpv4: True
 
-
-# .. envvar:: dnsmasq__dhcpv6
+                                                                   # ]]]
+# .. envvar:: dnsmasq__dhcpv6 [[[
 #
 # Enable or disable DHCPv6 support (router support is required).
 dnsmasq__dhcpv6: True
 
-
-# .. envvar:: dnsmasq__router
+                                                                   # ]]]
+# .. envvar:: dnsmasq__router [[[
 #
 # Enable or disable local router support (no routing information is sent to
 # hosts, DHCPv6 doesn't work).
@@ -50,26 +49,26 @@ dnsmasq__dhcpv6: True
 # ``False`` means to not announce any default route.
 dnsmasq__router: True
 
-
-# .. envvar:: dnsmasq__tftp
+                                                                   # ]]]
+# .. envvar:: dnsmasq__tftp [[[
 #
 # Enable or disable TFTP server.
 dnsmasq__tftp: True
 
-
-# .. envvar:: dnsmasq__bind_interfaces
+                                                                   # ]]]
+# .. envvar:: dnsmasq__bind_interfaces [[[
 #
 # Bind to and listen only on specified interfaces.
 dnsmasq__bind_interfaces: True
 
-
-# .. envvar:: dnsmasq__stop_dns_rebind
+                                                                   # ]]]
+# .. envvar:: dnsmasq__stop_dns_rebind [[[
 #
 # Block private IP addresses coming from upstream nameservers.
 dnsmasq__stop_dns_rebind: True
 
-
-# .. envvar:: dnsmasq__bogus_priv
+                                                                   # ]]]
+# .. envvar:: dnsmasq__bogus_priv [[[
 #
 # Don't forward reverse DNS queries for private IP addresses to upstream DNS servers.
 # The default is to not forward reverse DNS queries if the
@@ -79,39 +78,38 @@ dnsmasq__bogus_priv: '{{ dnsmasq__ipv4_gateway|d() and
                          hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway].ipv4|d() and
                          ([ hostvars[inventory_hostname]["ansible_" + dnsmasq__ipv4_gateway].ipv4.address ]
                            | ipaddr("public") | d([]) | length) >= 1 }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Network interface options [[[
+# -----------------------------
 
-
-# ------------------------------------
-#   Network interface options
-# ------------------------------------
-
-# .. envvar:: dnsmasq__upstream_interfaces
+# .. envvar:: dnsmasq__upstream_interfaces [[[
 #
 # List of network interfaces that are assumed to be upstream networks, if
 # present on the host.
 dnsmasq__upstream_interfaces: [ 'br0', 'br1', 'eth0', 'eth1' ]
 
-
-# .. envvar:: dnsmasq__no_dhcp_interfaces
+                                                                   # ]]]
+# .. envvar:: dnsmasq__no_dhcp_interfaces [[[
 #
 # List of network interfaces where dnsmasq should not provide DHCP or RA.
 # See https://github.com/debops/ansible-dnsmasq/issues/13 for more information.
 dnsmasq__no_dhcp_interfaces: []
 
-
-# .. envvar:: dnsmasq__ipv4_gateway
+                                                                   # ]]]
+# .. envvar:: dnsmasq__ipv4_gateway [[[
 #
 # Name of the IPv4 gateway interface.
 dnsmasq__ipv4_gateway: '{{ ansible_default_ipv4.interface | default("") }}'
 
-
-# .. envvar:: dnsmasq__ipv6_gateway
+                                                                   # ]]]
+# .. envvar:: dnsmasq__ipv6_gateway [[[
 #
 # Name of the IPv6 gateway interface.
 dnsmasq__ipv6_gateway: '{{ ansible_default_ipv6.interface | default("") }}'
 
-
-# .. envvar:: dnsmasq__interfaces
+                                                                   # ]]]
+# .. envvar:: dnsmasq__interfaces [[[
 #
 # List of internal interfaces on which dnsmasq will configure its services.
 dnsmasq__interfaces:
@@ -141,26 +139,25 @@ dnsmasq__interfaces:
     # The default, as defined by `dnsmasq__router` is to announce the machine
     # running dnsmasq as default gateway.
     # gateway: '{{ ansible_default_ipv4.gateway }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DNS options [[[
+# ---------------
 
-
-# ------------------------------------
-#   DNS options
-# ------------------------------------
-
-# .. envvar:: dnsmasq__domain
+# .. envvar:: dnsmasq__domain [[[
 #
 # DNS domain configured by dnsmasq for all local networks.
 dnsmasq__domain: '{{ ansible_domain }}'
 
-
-# .. envvar:: dnsmasq__domain_mx
+                                                                   # ]]]
+# .. envvar:: dnsmasq__domain_mx [[[
 #
 # Set DNS MX record of the main domain to dnsmasq host. Set to ``False`` to
 # disable.
 dnsmasq__domain_mx: '{{ ansible_fqdn }}'
 
-
-# .. envvar:: dnsmasq__etc_hosts
+                                                                   # ]]]
+# .. envvar:: dnsmasq__etc_hosts [[[
 #
 # List of file paths of :manpage:`hosts(5)` files to read by dnsmasq. The default,
 # no hosts file is being read.
@@ -172,15 +169,15 @@ dnsmasq__domain_mx: '{{ ansible_fqdn }}'
 # itself.
 dnsmasq__etc_hosts: []
 
-
-# .. envvar:: dnsmasq__search
+                                                                   # ]]]
+# .. envvar:: dnsmasq__search [[[
 #
 # List of additional search domains. Set ref:`dnsmasq__search` to False
 # to completely disable this functionality.
 dnsmasq__search: '{{ [ dnsmasq__domain, ansible_domain ] | unique }}'
 
-
-# .. envvar:: dnsmasq__cname
+                                                                   # ]]]
+# .. envvar:: dnsmasq__cname [[[
 #
 # Hash of DNS CNAME records to configure for hosts found in local DNS.
 # Entries should be specified without the domain suffix.
@@ -192,42 +189,40 @@ dnsmasq__search: '{{ [ dnsmasq__domain, ansible_domain ] | unique }}'
 #
 dnsmasq__cname: {}
 
-
-# .. envvar:: dnsmasq__nameservers
+                                                                   # ]]]
+# .. envvar:: dnsmasq__nameservers [[[
 #
 # List of upstream DNS resolvers where dnsmasq should forward it's DNS queries
 # which it can not answer by itself to. If set to ``False`` it will use the
 # systems nameservers.
 dnsmasq__nameservers: []
+                                                                   # ]]]
+                                                                   # ]]]
+# TFTP options [[[
+# ----------------
 
-
-# ------------------------------------
-#   TFTP options
-# ------------------------------------
-
-# .. envvar:: dnsmasq__tftp_root
+# .. envvar:: dnsmasq__tftp_root [[[
 #
 # Path to TFTP root directory.
 dnsmasq__tftp_root: '/srv/tftp'
 
-
-# .. envvar:: dnsmasq__tftp_boot
+                                                                   # ]]]
+# .. envvar:: dnsmasq__tftp_boot [[[
 #
 # BOOTP command passed to clients (see dhcp-boot in dnsmasq(8)).
 dnsmasq__tftp_boot: 'menu.ipxe'
 
-
-# .. envvar:: dnsmasq__tftp_ipxe
+                                                                   # ]]]
+# .. envvar:: dnsmasq__tftp_ipxe [[[
 #
 # Enable iPXE support.
 dnsmasq__tftp_ipxe: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Other options [[[
+# -----------------
 
-
-# ------------------------------------
-#   Other options
-# ------------------------------------
-
-# .. envvar:: dnsmasq__dns_not_forward_reserved
+# .. envvar:: dnsmasq__dns_not_forward_reserved [[[
 #
 # Don’t forward the following reserved top level DNS names to upstream DNS
 # servers.
@@ -241,8 +236,8 @@ dnsmasq__dns_not_forward_reserved: |
   ## Ref: https://tools.ietf.org/html/rfc7686
   local = /onion/
 
-
-# .. envvar:: dnsmasq__dns_not_forward_private
+# ]]]
+# .. envvar:: dnsmasq__dns_not_forward_private [[[
 #
 # Don’t forward the following private top level DNS names to upstream DNS
 # servers because RFC 6762 recommends not to use unregistered top-level
@@ -251,8 +246,8 @@ dnsmasq__dns_not_forward_reserved: |
 dnsmasq__dns_not_forward_private: |
   local = /intranet/internal/private/corp/home/lan/
 
-
-# .. envvar:: dnsmasq__dns_not_forward_managed
+# ]]]
+# .. envvar:: dnsmasq__dns_not_forward_managed [[[
 #
 # Don’t forward queries for :envvar:`dnsmasq__domain` to upstream DNS
 # servers.
@@ -260,34 +255,35 @@ dnsmasq__dns_not_forward_managed: |
   # Domain managed by the dnsmasq DNS server.
   local = /{{ dnsmasq__domain }}/
 
-
-# .. envvar:: dnsmasq__dhcp_hosts
+# ]]]
+# .. envvar:: dnsmasq__dhcp_hosts [[[
 #
 # List of hosts that are assigned fixed IPs and names in DNS based on their MAC addr.
 dnsmasq__dhcp_hosts: []
 
-# .. envvar:: dnsmasq__options
+                                                                   # ]]]
+# .. envvar:: dnsmasq__options [[[
 #
 # Additional options passed as a YAML text block.
 # This variable is intended to be used in Ansible’s global inventory.
 dnsmasq__options: ''
 
-
-# .. envvar:: dnsmasq__group_options
+                                                                   # ]]]
+# .. envvar:: dnsmasq__group_options [[[
 #
 # Additional options passed as a YAML text block.
 # This variable is intended to be used in a host inventory group of Ansible
 # (only one host group is supported).
 dnsmasq__group_options: ''
 
-
-# .. envvar:: dnsmasq__host_options
+                                                                   # ]]]
+# .. envvar:: dnsmasq__host_options [[[
 #
 # Additional options passed as a YAML text block.
 # This variable is intended to be used in the inventory of hosts.
 dnsmasq__host_options: ''
-
-
+                                                                   # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
