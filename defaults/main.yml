@@ -10,6 +10,21 @@
 # .. include:: includes/all.rst
 
 
+# APT packages [[[
+# ----------------
+
+# .. envvar:: dnsmasq__base_packages [[[
+#
+# List of APT packages to install for ``dnsmasq`` support.
+dnsmasq__base_packages: [ 'dnsmasq', 'resolvconf' ]
+
+                                                                   # ]]]
+# .. envvar:: dnsmasq__packages [[[
+#
+# List of additional APT packages to install during ``dnsmasq`` configuration.
+dnsmasq__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
 # Global options [[[
 # ------------------
 
@@ -147,7 +162,10 @@ dnsmasq__interfaces:
 # .. envvar:: dnsmasq__domain [[[
 #
 # DNS domain configured by dnsmasq for all local networks.
-dnsmasq__domain: '{{ ansible_domain }}'
+dnsmasq__domain: '{{ ansible_local.core.domain
+                     if (ansible_local|d() and ansible_local.core|d() and
+                         ansible_local.core.domain|d())
+                     else (ansible_domain if ansible_domain else ansible_hostname) }}'
 
                                                                    # ]]]
 # .. envvar:: dnsmasq__domain_mx [[[
@@ -282,6 +300,20 @@ dnsmasq__group_options: ''
 # Additional options passed as a YAML text block.
 # This variable is intended to be used in the inventory of hosts.
 dnsmasq__host_options: ''
+
+                                                                   # ]]]
+# .. envvar:: dnsmasq__persistent_prefix_path [[[
+#
+# Directory path prefix which should be used for writing/updating of files made
+# persistent by :envvar:`dnsmasq__persistent_paths__dependent_paths`.
+dnsmasq__persistent_prefix_path: '{{ ansible_local.persistent_paths.storage_path|d("")
+                                     if (ansible_local|d() and
+                                         ansible_local.dnsmasq|d() and
+                                         ansible_local.dnsmasq.enabled|d() | bool and
+                                         ansible_local.persistent_paths|d() and
+                                         ansible_local.persistent_paths.enabled|d() | bool and
+                                         ansible_local.persistent_paths.write_to_storage_path|d() | bool)
+                                     else "" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
@@ -351,6 +383,21 @@ dnsmasq__apparmor__local_dependent_config:
     - comment: 'Allow dnsmasq to read /usr/share/dnsmasq-base/trust-anchors.conf provided by dnsmasq-base'
       rules:
         - '/usr/share/dnsmasq-base/* r'
+
+                                                                   # ]]]
+# .. envvar:: dnsmasq__persistent_paths__dependent_paths [[[
+#
+# Configuration for the debops.persistent_paths_ Ansible role.
+dnsmasq__persistent_paths__dependent_paths:
+
+  '50_debops_dnsmasq':
+    by_role: 'debops.dnsmasq'
+    paths:
+      - '/etc/ansible'
+      - '/etc/dnsmasq.d'
+      - '/etc/default/dnsmasq'
+      - '/etc/resolvconf/upstream.conf'
+      - '/etc/hosts.dnsmasq'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

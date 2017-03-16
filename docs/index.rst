@@ -6,6 +6,7 @@ Ansible role: debops.dnsmasq
 .. toctree::
    :maxdepth: 2
 
+   getting-started
    defaults
    defaults-detailed
    copyright

@@ -1,0 +1,23 @@
+---
+
+- name: Configure dnsmasq and ensure persistence
+  hosts: [ 'debops_service_dnsmasq' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ dnsmasq__ferm__dependent_rules }}'
+
+    - role: debops.dnsmasq
+      tags: [ 'role::dnsmasq' ]
+
+    - role: debops.persistent_paths
+      tags: [ 'role::persistent_paths' ]
+      persistent_paths__dependent_paths: '{{ dnsmasq__persistent_paths__dependent_paths }}'
