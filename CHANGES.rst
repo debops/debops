@@ -21,6 +21,20 @@ Added
 
 - Add ``role::persistent_paths:qubes_os`` Ansible tag for Qubes OS related tasks. [ypid_]
 
+- Add Ansible facts. [ypid_]
+
+- Document procedure needed to update/change persistent files on Qubes OS in
+  :ref:`persistent_paths__ref_guide_updateing_persistant_files`. [ypid_]
+
+Changed
+~~~~~~~
+
+- Rename ``persistent_paths__qubes_os_paths`` to
+  :envvar:`persistent_paths__qubes_os_default_persistent_paths`. [ypid_]
+
+- Rename ``persistent_paths__qubes_os_bind_dirs`` to
+  :envvar:`persistent_paths__qubes_os_handler`. [ypid_]
+
 
 debops.persistent_paths v0.1.0 - 2017-02-03
 -------------------------------------------

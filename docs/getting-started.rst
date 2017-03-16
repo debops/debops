@@ -37,15 +37,14 @@ The playbook is shipped with this role under
 :file:`./docs/playbooks/persistent_paths.yml` from which you can symlink it to your
 playbook directory.
 
-Requirements
-------------
-
 
 Qubes OS
-~~~~~~~~
+--------
 
 The ``qubes-core-agent`` package needs to be installed in the TemplateVM which
 is the default for the `official Debian templates <https://www.qubes-os.org/doc/templates/debian/>`_.
+
+Refer to bind-dirs_ for more details and limitations.
 
 Ansible tags
 ------------
