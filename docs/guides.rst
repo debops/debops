@@ -23,7 +23,7 @@ This can be achieved by:
    persistent location and providing them at the none persistent path.
 
 #. If the service role is now run again, the problematic file operations need
-   to be done against the persistent location where they are actually stored.
+   to be done against the ``storage_path``.
 
 To do this, you can introduce a new default role variable like this one:
 
