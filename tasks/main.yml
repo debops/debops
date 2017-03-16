@@ -46,14 +46,6 @@
   notify: [ 'Test and restart dnsmasq' ]
   when: dnsmasq__nameservers|d()
 
-## Don’t remove the file and instead template an empty file if `dnsmasq__nameservers` is empty.
-## Ref: https://github.com/QubesOS/qubes-doc/pull/299#discussion_r106387538
-# - name: Remove custom nameservers
-#   file:
-#     path: '/etc/resolvconf/upstream.conf'
-#     state: 'absent'
-#   when: not dnsmasq__nameservers|d()
-
 - name: Create interface dnsmasq configuration
   template:
     src: 'etc/dnsmasq.d/interface.conf.j2'
