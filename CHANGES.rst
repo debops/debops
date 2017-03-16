@@ -30,6 +30,10 @@ Changed
   ``debops.gitlab`` role to dependent variables of the debops.postgresql_ role.
   [drybjed_]
 
+- Variables in the ``vars/main.yml`` file have been moved to the
+  ``defaults/main.yml`` file to allow their modification via Ansible inventory.
+  [drybjed_]
+
 
 `debops.gitlab v0.1.8`_ - 2017-03-12
 ------------------------------------

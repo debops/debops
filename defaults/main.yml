@@ -97,6 +97,27 @@ gitlab__fqdn: 'code.{{ gitlab_domain }}'
 gitlab_domain: [ 'code.{{ ansible_domain }}' ]
                                                                    # ]]]
                                                                    # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: gitlab_packages [[[
+#
+# List of base APT packages required by GitLab.
+gitlab_packages: [ 'build-essential', 'zlib1g-dev', 'libyaml-dev', 'libssl-dev',
+                   'libgdbm-dev', 'libreadline-dev', 'libncurses5-dev', 'libffi-dev',
+                   'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev', 'libkrb5-dev',
+                   'libicu-dev', 'python-docutils', 'cmake', 'pkg-config', 'unzip' ]
+
+                                                                   # ]]]
+# .. envvar:: gitlab_database_packages [[[
+#
+# YAML dictionary which contains list of APT packages required by a particular
+# database server.
+gitlab_database_packages:
+  mariadb:    [ 'libmysqlclient-dev', 'ruby-mysql' ]
+  postgresql: [ 'libpq-dev', 'ruby-pg' ]
+                                                                   # ]]]
+                                                                   # ]]]
 # GitLab Pages configuration [[[
 # ------------------------------
 
@@ -453,6 +474,290 @@ gitlab_shell_ssh_port: '22'
 gitlab_support_filesystem_acl: True
                                                                    # ]]]
                                                                    # ]]]
+# GitLab source code version [[[
+# ------------------------------
+
+# .. envvar:: gitlab_version_map [[[
+#
+# This YAML dictionary is used to map the selected GitLab version to the
+# respecive branches and/or tags in the :command:`git` repositories of various
+# GitLab components.
+gitlab_version_map:
+
+  '6.7':
+    shell: 'v1.9.1'
+    ce:    '6-7-stable'
+
+  '6.8':
+    shell: 'v1.9.3'
+    ce:    '6-8-stable'
+
+  '6.9':
+    shell: 'v1.9.4'
+    ce:    '6-9-stable'
+
+  '7.0':
+    shell: 'v1.9.6'
+    ce:    '7-0-stable'
+
+  '7.1':
+    shell: 'v1.9.6'
+    ce:    '7-1-stable'
+
+  '7.6':
+    shell: 'v2.4.0'
+    ce:    '7-6-stable'
+
+  '7.7':
+    shell: 'v2.4.1'
+    ce:    '7-7-stable'
+
+  '7.8':
+    shell: 'v2.5.4'
+    ce:    '7-8-stable'
+
+  '7.9':
+    shell: 'v2.6.0'
+    ce:    '7-9-stable'
+
+  '7.10':
+    shell: 'v2.6.2'
+    ce:    '7-10-stable'
+
+  '7.11':
+    shell: 'v2.6.3'
+    ce:    '7-11-stable'
+
+  '7.12':
+    shell: 'v2.6.3'
+    ce:    '7-12-stable'
+
+  '7.13':
+    shell: 'v2.6.5'
+    ce:    '7-13-stable'
+
+  '7.14':
+    shell: 'v2.6.5'
+    ce:    '7-14-stable'
+
+  '8.0':
+    shell: 'v2.6.5'
+    ce:    '8-0-stable'
+    git_http_server: '0.2.10'
+
+  '8.1':
+    shell: 'v2.6.5'
+    ce:    '8-1-stable'
+    git_http_server: '0.3.0'
+
+  '8.5':
+    shell: 'v2.6.10'
+    ce:    '8-5-stable'
+    gitlab_workhorse: '0.6.4'
+
+  '8.6':
+    shell: 'v2.6.12'
+    ce:    '8-6-stable'
+    gitlab_workhorse: 'v0.7.1'
+
+  '8.7':
+    shell: 'v2.7.2'
+    ce:    '8-7-stable'
+    gitlab_workhorse: 'v0.7.1'
+
+  '8.8':
+    shell: 'v2.7.2'
+    ce:    '8-8-stable'
+    gitlab_workhorse: 'v0.7.1'
+
+  '8.9':
+    shell: 'v3.0.0'
+    ce:    '8-9-stable'
+    gitlab_workhorse: 'v0.7.5'
+
+  '8.10':
+    shell: 'v3.3.2'
+    ce:    '8-10-stable'
+    gitlab_workhorse: 'v0.7.8'
+
+  '8.11':
+    shell: 'v3.4.0'
+    ce:    '8-11-stable'
+    gitlab_workhorse: 'v0.7.11'
+
+  '8.12':
+    shell: 'v3.6.3'
+    ce:    '8-12-stable'
+    gitlab_workhorse: 'v0.8.5'
+
+  '8.13':
+    shell: 'v3.6.6'
+    ce:    '8-13-stable'
+    gitlab_workhorse: 'v0.8.5'
+
+  '8.14':
+    shell: 'v4.0.3'
+    ce:    '8-14-stable'
+    gitlab_workhorse: 'v1.0.1'
+
+  '8.15':
+    shell: 'v4.1.1'
+    ce:    '8-15-stable'
+    gitlab_workhorse: 'v1.3.0'
+
+  '8.16':
+    shell: 'v4.1.1'
+    ce:    '8-16-stable'
+    gitlab_workhorse: 'v1.3.0'
+
+  '8.17':
+    shell: 'v4.1.1'
+    ce:    '8-17-stable'
+    gitlab_workhorse: 'v1.3.0'
+    pages: 'v0.3.2'
+                                                                   # ]]]
+                                                                   # ]]]
+# gitlab-shell source code [[[
+# ----------------------------
+
+# .. envvar:: gitlab_shell_git_repo [[[
+#
+# URL of the ``gitlab-shell`` repository.
+gitlab_shell_git_repo: 'https://gitlab.com/gitlab-org/gitlab-shell.git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_shell_git_dest [[[
+#
+# Path where the ``gitlab-shell`` source code will be cloned into a bare
+# repository.
+gitlab_shell_git_dest: '{{ gitlab_src_path + "/" + gitlab_shell_git_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_shell_git_checkout [[[
+#
+# Path where the ``gitlab-shell`` source code will be checked out.
+gitlab_shell_git_checkout: '{{ gitlab_app_root_path + "/gitlab-shell" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab CE source code [[[
+# -------------------------
+
+# .. envvar:: gitlab_ce_git_repo [[[
+#
+# URL of the GitLab CE repository.
+gitlab_ce_git_repo: 'https://gitlab.com/gitlab-org/gitlab-ce.git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_ce_git_dest [[[
+#
+# Path where the GitLab CE source code will be cloned into a bare repository.
+gitlab_ce_git_dest: '{{ gitlab_src_path + "/" + gitlab_ce_git_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_ce_git_checkout [[[
+#
+# Path where the GitLab CE source code will be checked out.
+gitlab_ce_git_checkout: '{{ gitlab_app_root_path + "/gitlab" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab git HTTP server source code [[[
+# --------------------------------------
+
+# .. envvar:: gitlab_git_http_server_repo [[[
+#
+# URL of the git HTTP server repository.
+gitlab_git_http_server_repo: 'https://gitlab.com/gitlab-org/gitlab-git-http-server.git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_git_http_server_dest [[[
+#
+# Path where the git HTTP server source code will be cloned into a bare
+# repository.
+gitlab_git_http_server_dest: '{{ gitlab_src_path + "/" + gitlab_git_http_server_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_git_http_server_checkout [[[
+#
+# Path where the git HTTP server source code will be checked out.
+gitlab_git_http_server_checkout: '{{ gitlab_app_root_path + "/gitlab-git-http-server" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab Workhorse source code [[[
+# --------------------------------
+
+# .. envvar:: gitlab_workhorse_repo [[[
+#
+# URL of the GitLab Workhorse repository.
+gitlab_workhorse_repo: 'https://gitlab.com/gitlab-org/gitlab-workhorse.git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_workhorse_dest [[[
+#
+# Path where the GitLab Workhorse source code will be cloned into a bare
+# repository.
+gitlab_workhorse_dest: '{{ gitlab_src_path + "/" + gitlab_workhorse_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_workhorse_checkout [[[
+#
+# Path where the GitLab Workhorse source code will be checked out.
+gitlab_workhorse_checkout: '{{ gitlab_app_root_path + "/gitlab-workhorse" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab Pages source code [[[
+# ----------------------------
+
+# .. envvar:: gitlab_pages_repo [[[
+#
+# URL of the GitLab Pages repository.
+gitlab_pages_repo: 'https://gitlab.com/gitlab-org/gitlab-pages.git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_pages_dest [[[
+#
+# Path where the GitLab Pages source code will be cloned into a bare
+# repository.
+gitlab_pages_dest: '{{ gitlab_src_path + "/" + gitlab_pages_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_pages_checkout [[[
+#
+# Path where the GitLab Pages source code will be checked out.
+gitlab_pages_checkout: '{{ gitlab_app_root_path + "/gitlab-pages" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Build and deployment commands [[[
+
+# Different versions of GitLab might require different command parameters to
+# build and deploy the service. The variables below define the commands
+# according to the selected version or feature.
+
+# .. envvar:: gitlab_assets_clean [[[
+#
+# Rake task which cleans GitLab static assets during upgrades.
+gitlab_assets_clean: '{{ "gitlab:assets:clean"
+                         if (gitlab_version | version_compare("8.17", operator="ge", strict=True))
+                         else "assets:clean" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_assets_compile [[[
+#
+# Rake task which builds or rebuilds GitLab assets during installation or
+# upgrades.
+gitlab_assets_compile: '{{ "gitlab:assets:compile"
+                           if (gitlab_version | version_compare("8.17", operator="ge", strict=True))
+                           else "assets:precompile" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_ce_bundle_install_without [[[
+#
+# YAML dictionary which maps Bundler parameters to the selected database
+# backend.
+gitlab_ce_bundle_install_without:
+  'mariadb':    'development test aws postgres'
+  'postgresql': 'development test aws mysql'
+                                                                   # ]]]
+                                                                   # ]]]
 # LDAP Authentication configuration [[[
 # -------------------------------------
 
@@ -540,6 +845,148 @@ gitlab_ldap_uid: 'uid'
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: gitlab_nginx_upstreams [[[
+#
+# List of :command:`nginx` upstreams for the debops.nginx_ Ansible role.
+gitlab_nginx_upstreams:
+
+  # Upstream configuration for the ``gitlab-unicorn`` service
+  - name: 'gitlab'
+    type: 'rails'
+    server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab.socket'
+    enabled: '{{ not gitlab_enable_gitlab_workhorse | bool }}'
+
+  # Upstream configuration for the ``gitlab-git-http-server`` used in GitLab 8+
+  - name: 'gitlab-git-http-server'
+    server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab-git-http-server.socket'
+    enabled: '{{ gitlab_enable_git_http_server }}'
+
+  # Upstream configuration for the ``gitlab-workhorse`` used in GitLab 8.2+
+  - name: 'gitlab-workhorse'
+    server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab-workhorse.socket'
+    enabled: '{{ gitlab_enable_gitlab_workhorse }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_nginx_server [[[
+#
+# Configuration of the GitLab :command:`nginx` proxy for the debops.nginx_
+# Ansible role.
+gitlab_nginx_server:
+  by_role: 'debops.gitlab'
+  enabled: True
+  type: 'rails'
+  name: '{{ gitlab_domain }}'
+  root: '{{ gitlab_ce_git_checkout }}/public'
+
+  deny_hidden: False
+
+  access_policy: '{{ gitlab_nginx_access_policy }}'
+  auth_basic_realm: '{{ gitlab_nginx_auth_realm }}'
+
+  error_pages:
+    '404': '/404.html'
+    '422': '/422.html'
+    '500': '/500.html'
+    '502': '/502.html'
+
+  # Phusion Passenger options
+  passenger_user: '{{ gitlab_user }}'
+  passenger_group: '{{ gitlab_group }}'
+  passenger_options: '{{ gitlab_passenger_options }}'
+
+  options: |
+    client_max_body_size {{ gitlab_nginx_client_max_body_size }};
+
+  location_list:
+    - pattern: '/'
+      enabled: '{{ not gitlab_enable_gitlab_workhorse | bool }}'
+      options: |
+        try_files $uri $uri/index.html $uri.html @gitlab;
+
+    - pattern: '/uploads/'
+      enabled: '{{ not gitlab_enable_gitlab_workhorse | bool }}'
+      options: |
+        gzip off;
+        proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
+        proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
+        proxy_redirect     off;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Host              $http_host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Frame-Options   SAMEORIGIN;
+        proxy_pass         http://gitlab;
+
+    - pattern: '@gitlab'
+      enabled: '{{ not gitlab_enable_gitlab_workhorse | bool }}'
+      options: |
+        gzip off;
+        proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
+        proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
+        proxy_redirect     off;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Host              $http_host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_pass         http://gitlab;
+
+    - pattern: '~ [-\/\w\.]+\.git\/'
+      enabled: '{{ gitlab_enable_git_http_server }}'
+      options: |
+        gzip off;
+
+        ## https://github.com/gitlabhq/gitlabhq/issues/694
+        ## Some requests take more than 30 seconds.
+        proxy_read_timeout      300;
+        proxy_connect_timeout   300;
+        proxy_redirect          off;
+
+        # Do not buffer Git HTTP responses
+        proxy_buffering off;
+
+        # The following settings only work with NGINX 1.7.11 or newer
+        #
+        # # Pass chunked request bodies to gitlab-git-http-server as-is
+        # proxy_request_buffering off;
+        # proxy_http_version 1.1;
+
+        proxy_set_header    Host                $http_host;
+        proxy_set_header    X-Real-IP           $remote_addr;
+        proxy_set_header    X-Forwarded-For     $proxy_add_x_forwarded_for;
+        proxy_set_header    X-Forwarded-Proto   $scheme;
+
+        proxy_pass http://gitlab-git-http-server;
+
+    - pattern: '/'
+      enabled: '{{ gitlab_enable_gitlab_workhorse }}'
+      options: |
+        client_max_body_size 0;
+        gzip off;
+
+        ## https://github.com/gitlabhq/gitlabhq/issues/694
+        ## Some requests take more than 30 seconds.
+        proxy_read_timeout      300;
+        proxy_connect_timeout   300;
+        proxy_redirect          off;
+
+        proxy_http_version 1.1;
+
+        proxy_set_header    Host                $http_host;
+        proxy_set_header    X-Real-IP           $remote_addr;
+        proxy_set_header    X-Forwarded-For     $proxy_add_x_forwarded_for;
+        proxy_set_header    X-Forwarded-Proto   $scheme;
+
+        proxy_pass http://gitlab-workhorse;
+
+    - pattern: '~ ^/(assets)/'
+      enabled: '{{ not gitlab_enable_gitlab_workhorse | bool }}'
+      options: |
+        root {{ gitlab_ce_git_checkout }}/public;
+        gzip_static on;
+        expires max;
+        add_header Cache-Control public;
+
+# ]]]
 # .. envvar:: gitlab_nginx_pages_server [[[
 #
 # Configuration of the GitLab Pages :command:`nginx` proxy for the
