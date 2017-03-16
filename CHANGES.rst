@@ -58,21 +58,21 @@ Added
 
 - Update the debops.owncloud_ playbook to add support for debops.apache_. [ypid_]
 
-- Add ``debops.gunicorn`` role and its corresponding playbook. [drybjed_]
+- Add debops.gunicorn_ role and its corresponding playbook. [drybjed_]
 
-- Add ``debops.netbox`` role and its corresponding playbook. [drybjed_]
+- Add debops.netbox_ role and its corresponding playbook. [drybjed_]
 
-- Add ``debops.cron`` role and its playbook, and include it in the
-  ``common.yml`` playbook. [drybjed_]
+- Add debops.cron_ role and its playbook, and include it in the
+  :file:`common.yml` playbook. [drybjed_]
 
-- Add ``debops.persistent_paths`` role and its corresponding playbook. [ypid_]
+- Add debops.persistent_paths_ role and its corresponding playbook. [ypid_]
 
 - Add commonly used set of Jinja2 macros to the repository under
   `./templates/debops__tpl_macros.j2 <https://github.com/debops/debops-playbooks/blob/master/templates/debops__tpl_macros.j2>`_
   to have a central place where the file can be maintained and from where the
   latest version can be acquired. [ypid_]
 
-- Add the ``debops.root_account`` role, included in the ``common.yml``
+- Add the debops.root_account_ role, included in the :file:`common.yml`
   playbook. This role contains functionality previously present in the
   debops.console_ role. This change will result in updated ``root`` account
   passwords, due to the changed location of the password files in the
@@ -130,7 +130,7 @@ Changed
 
 - Update the debops.swapfile_ playbook to the new version. [ypid_]
 
-- Treat the ``debops.core`` role like a normal service role by moving it to
+- Treat the debops.core_ role like a normal service role by moving it to
   :file:`playbooks/service/core.yml`.
   This change is part of my effort to make DebOps usable on Qubes OS where you
   might only want to run a minimum set of roles.
@@ -252,7 +252,7 @@ Changed
 - Update the :file:`service/mailman.yml` playbook with support for new
   debops.mailman_ release. [drybjed_]
 
-- Moved roles dependencies from debops.subnetwork_ to subnetwork playbook. [ypid_]
+- Moved roles dependencies from ``debops.subnetwork`` to subnetwork playbook. [ypid_]
 
 - Update debops.apt_cacher_ng_ playbook and add support for :program:`nginx` proxy
   for the cache. [drybjed_]
@@ -1316,7 +1316,7 @@ Role updates
 ~~~~~~~~~~~~
 
 Network forwarding configuration in :command:`iptables` has been moved from
-debops.kvm_, debops.lxc_ and debops.subnetwork_ roles into debops.ferm_
+debops.kvm_, debops.lxc_ and ``debops.subnetwork`` roles into debops.ferm_
 to avoid duplication. This will also result in forwarded network interfaces
 being able to accept Router Advertisements and configure their IPv6 addresses
 using SLAAC. In short, easier network configuration.
@@ -1385,7 +1385,7 @@ And it's out of beta! :-)
 Playbook updates
 ~~~~~~~~~~~~~~~~
 
-Old 'debops.nat' role has been obsoleted by debops.subnetwork_ and removed
+Old 'debops.nat' role has been obsoleted by ``debops.subnetwork`` and removed
 from :command:`ansible-galaxy` requirements file. It will also be removed from GitHub
 and Ansible Galaxy in the future. Also, debops.radvd_ has been added to the
 requirements.
@@ -1395,7 +1395,7 @@ automatically configured internal network and DNS services have been removed
 from KVM and LXC plays (yes, this will change installation procedures in the
 docs, which are not yet updated). New playbook, 'networking.yml' has been added
 where you will find all network-related plays, like subnet creation and
-management (via debops.subnetwork_ and DHCP/DNS management.
+management (via ``debops.subnetwork`` and DHCP/DNS management.
 
 2014-11-07
 ----------
@@ -1403,12 +1403,12 @@ management (via debops.subnetwork_ and DHCP/DNS management.
 New roles
 ~~~~~~~~~
 
-debops.subnetwork_ is a replacement for old debops.nat_ role, with many
+``debops.subnetwork`` is a replacement for old debops.nat_ role, with many
 improvements. You can create a bridge interface with local network behind it
 for virtual machines, or even switch to a real Ethernet interface for your
 physical hosts. You can create both an IPv4 network, which will be
 automatically configured behind NAT, and an IPv6 network (with multiple
-prefixes). debops.subnetwork_ is not yet part of the main playbook, it will
+prefixes). ``debops.subnetwork`` is not yet part of the main playbook, it will
 replace the old NAT role when ``dnsmasq`` role is updated to support it.
 
 Role updates
@@ -1417,7 +1417,7 @@ Role updates
 Because of the changes related to new networking, some code in debops.lxc_,
 debops.kvm_ and debops.nat_ had to be moved around. Specifically, parts of
 the firewall and sysctl settings related to the LAN interface were moved into
-debops.subnetwork_ role and parts of the forwarding configuration to external
+``debops.subnetwork`` role and parts of the forwarding configuration to external
 and internal networks were added respectively to LXC and KVM roles.
 
 2014-11-05
@@ -1705,19 +1705,19 @@ directory becomes ``.encfs.secret``.
 Role updates
 ~~~~~~~~~~~~
 
-* debops.postfix_ has been cleaned up, all Ansible tasks have been rewritten
+- debops.postfix_ has been cleaned up, all Ansible tasks have been rewritten
   from "inline" syntax to YAML syntax. Task conditions have been rearranged,
   now almost all of them can be found in :file:`tasks/main.yml` file instead of in
   the file that are included.
 
-* The way that `Postfix`_ configuration files (``main.cf`` and ``master.cf``)
+- The way that `Postfix`_ configuration files (``main.cf`` and ``master.cf``)
   are created by Ansible has been changed - instead of templating individual
   pieces on the remote servers and assembling them to finished files,
   configuration file templates are generated on Ansible Controller from parts
   included by Jinja and then templated on the servers as a whole. This makes
   the process much faster and easier to manage.
 
-* Postfix role has gained a new capability, ``archive``. If it's enabled, each
+- Postfix role has gained a new capability, ``archive``. If it's enabled, each
   mail that passes through the SMTP server is blind carbon-copied to a separate
   archive mail account on local or remote SMTP server. This function is
   configured automatically by the role, but can be modified using inventory
@@ -1730,7 +1730,7 @@ Role updates
 Role updates
 ~~~~~~~~~~~~
 
-* debops.postfix_ role has gained support for `SMTP client SASL authentication`_,
+- debops.postfix_ role has gained support for `SMTP client SASL authentication`_,
   in other words the ability to send mail through remote relay MX hosts with
   client authentication, like public or commercial SMTP servers. You can either
   configure one username/password pair for a specified relayhost, or enable
@@ -1745,12 +1745,12 @@ Role updates
 Role updates
 ~~~~~~~~~~~~
 
-* debops.kvm_ role has been cleaned up from old and unused code, tasks were
+- debops.kvm_ role has been cleaned up from old and unused code, tasks were
   put in order and list of administrator accounts that should have access to
   ``libvirt`` group changed name from ``auth_admin_accounts`` to ``kvm_admins``
   (Ansible account is enabled automatically).
 
-* debops.lxc_ role has been updated with changes to the LXC 1.0.5 package
+- debops.lxc_ role has been updated with changes to the LXC 1.0.5 package
   from Debian Jessie (some package dependencies and build requirements were
   changed). You can read more in the `lxc package changelog`_.
 
@@ -1760,7 +1760,7 @@ Role updates
 Playbook updates
 ~~~~~~~~~~~~~~~~
 
-* You can now disable early APT cache update using ``apt_update_cache_early``
+- You can now disable early APT cache update using ``apt_update_cache_early``
   variable from debops.apt_ role. This is useful in rare case when your APT
   mirror suddenly catches fire, and you need to switch to a different one using
   Ansible.
@@ -1768,7 +1768,7 @@ Playbook updates
 Role updates
 ~~~~~~~~~~~~
 
-* debops.ferm_ role has gained new list variable,
+- debops.ferm_ role has gained new list variable,
   ``ferm_ansible_controllers``, which can be used to configure CIDR hostnames
   or networks that shouldn't be blocked by ssh recent filter in the firewall. This
   is useful in case you don't use DebOps playbook itself, which does that
@@ -1776,11 +1776,11 @@ Role updates
   Controllers using local Ansible facts, and uses it to enforce current
   configuration.
 
-* similar changes as above are now included in debops.tcpwrappers_ role, you
+- similar changes as above are now included in debops.tcpwrappers_ role, you
   can specify a list of Ansible Controllers in
   ``tcpwrappers_ansible_controllers`` list variable.
 
-* `Debian bug #718639`_ has been fixed which results in changes to several
+- `Debian bug #718639`_ has been fixed which results in changes to several
   configuration files, including :file:`/etc/nginx/fastcgi_params` and inclusion of
   a new configuration file :file:`/etc/nginx/fastcgi.conf`. debops.nginx_ role
   will now check the version of installed :program:`nginx` server and select correct
@@ -1789,21 +1789,21 @@ Role updates
 2014-09-14
 ----------
 
-* Start of a new, separate changelog for DebOps_ playbooks and roles. This is
+- Start of a new, separate changelog for DebOps_ playbooks and roles. This is
   a continuation of `previous Changelog`_ from `ginas`_ project.
 
-* all DebOps roles have been moved to `Ansible Galaxy`_ and are now available
+- all DebOps roles have been moved to `Ansible Galaxy`_ and are now available
   via :command:`ansible-galaxy` utility directly. You can also browse them on the
   `DebOps Galaxy page`_
 
 New roles
 ~~~~~~~~~
 
-* debops.elasticsearch_ is a role written to manage `Elasticsearch`_
+- debops.elasticsearch_ is a role written to manage `Elasticsearch`_
   clusters, either standalone or on multiple hosts separated and configured
   using Ansible groups. Author: `Nick Janetakis`_.
 
-* debops.golang_ role can be used to install and manage `Go language`_
+- debops.golang_ role can be used to install and manage `Go language`_
   environment. By default it will install packages present in the distribution,
   but on Debian Wheezy a backport of ``golang`` package from Debian Jessie can
   be automatically created and installed.
@@ -1811,14 +1811,14 @@ New roles
 Role updates
 ~~~~~~~~~~~~
 
-* debops.ruby_ role has changed the way how different Ruby versions can be
+- debops.ruby_ role has changed the way how different Ruby versions can be
   selected for installation. By default, ``ruby_version: 'apt'`` variable tells
   the role to install any Ruby packages available via APT (by default 1.9.3
   version will be installed on most distributions). If you change the value of
   ``ruby_version`` to ``'backport'``, a backported Ruby 2.1 packages will be
   created if not yet available, and installed.
 
-* Also in debops.ruby_, ``rubygems-integration`` package is installed
+- Also in debops.ruby_, ``rubygems-integration`` package is installed
   separately from other packages and can be disabled using
   ``ruby_gems_integration: False`` variable (this option was required for
   backwards compatibility with `Ubuntu 12.04 LTS (Precise Pangolin)`_
