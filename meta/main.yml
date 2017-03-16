@@ -58,6 +58,14 @@ dependencies:
     postgresql_databases:
       - name: '{{ gitlab_database_name }}'
         owner: '{{ gitlab_database_user }}'
+    postgresql__dependent_extensions:
+      - database: '{{ gitlab_database_name }}'
+        extension: 'pg_trgm'
+    postgresql__dependent_pgpass:
+      - owner: '{{ gitlab_user }}'
+        home: '{{ gitlab_home }}'
+        database: '{{ gitlab_database_name }}'
+        role: '{{ gitlab_database_user }}'
     tags: [ 'depend::postgresql', 'depend::postgresql:gitlab', 'depend-of::gitlab', 'type::dependency' ]
     when: (gitlab_dependencies is defined and gitlab_dependencies) and
           (gitlab_database is defined and gitlab_database and gitlab_database == 'postgresql')

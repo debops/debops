@@ -18,6 +18,18 @@ The current role maintainer_ is drybjed.
 
 .. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.1.8...master
 
+Changed
+~~~~~~~
+
+- Change the installation procedure with a PostgreSQL database. The
+  ``gitlab:setup`` Rake task drops the database, so instead the role runs the
+  specific Rake tasks that install the schema and configure PostgreSQL database
+  directly. This change should not affect existing instalations. [drybjed_]
+
+- Configuration of the ``pg_trgm`` PostgreSQL extension has been moved from the
+  ``debops.gitlab`` role to dependent variables of the debops.postgresql_ role.
+  [drybjed_]
+
 
 `debops.gitlab v0.1.8`_ - 2017-03-12
 ------------------------------------

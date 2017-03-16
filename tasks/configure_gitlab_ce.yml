@@ -272,7 +272,7 @@
           (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
            not ansible_local.gitlab.installed))))))
 
-- name: Initialize GitLab database
+- name: Initialize GitLab database (MariaDB)
   shell: yes 'yes' | bundle exec rake gitlab:setup RAILS_ENV=production
          chdir={{ gitlab_ce_git_checkout }}
   become_user: '{{ gitlab_user }}'
@@ -281,7 +281,23 @@
           (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
            (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
             not ansible_local.gitlab.installed)))))) and
-         gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed)
+         gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed and
+         gitlab_database == 'mariadb')
+
+- name: Initialize GitLab database (PostgreSQL)
+  environment:
+    RAILS_ENV: 'production'
+  command: 'bundle exec rake db:schema:load setup_postgresql db:seed_fu'
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_bundle_setup
+  when: ((ansible_local is undefined or (ansible_local is defined and
+          (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
+           (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
+            not ansible_local.gitlab.installed)))))) and
+         gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed and
+         gitlab_database == 'postgresql')
 
 - name: Reset default administrator email address and password
   replace:
