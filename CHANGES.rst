@@ -67,6 +67,9 @@ Added
 
 - Add ``debops.persistent_paths`` role and its corresponding playbook. [ypid_]
 
+- Add alternative debops.dnsmasq_ playbook for use together with the
+  debops.persistent_paths_ role. [ypid_]
+
 - Add commonly used set of Jinja2 macros to the repository under
   `./templates/debops__tpl_macros.j2 <https://github.com/debops/debops-playbooks/blob/master/templates/debops__tpl_macros.j2>`_
   to have a central place where the file can be maintained and from where the
