@@ -845,10 +845,102 @@ gitlab_ldap_uid: 'uid'
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
-# .. envvar:: gitlab_nginx_upstreams [[[
+# .. envvar:: gitlab__etc_services__dependent_list [[[
+#
+# List of custom ``/etc/services`` to configure for the debops.etc_services_
+# Ansible role.
+gitlab__etc_services__dependent_list:
+
+  - name: 'gitlab'
+    port: '{{ gitlab_unicorn_port }}'
+    comment: 'GitLab'
+
+  - name: 'gitlab-pages'
+    port: '{{ gitlab_pages_port }}'
+    comment: 'GitLab Pages'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__nodejs__npm_dependent_packages [[[
+#
+# List of NPM packages to install by the debops.nodejs_ Ansible role.
+gitlab__nodejs__npm_dependent_packages: [ 'yarn' ]
+
+                                                                   # ]]]
+# .. envvar:: gitlab__mariadb__dependent_databases [[[
+#
+# Database configuration for debops.mariadb_ Ansible role.
+gitlab__mariadb__dependent_databases:
+
+  - database: '{{ gitlab_database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__mariadb__dependent_users [[[
+#
+# User configuration for debops.mariadb_ Ansible role.
+gitlab__mariadb__dependent_users:
+
+  - database: '{{ gitlab_database_name }}'
+    user: '{{ gitlab_database_user }}'
+    password: '{{ gitlab_database_password }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__postgresql__dependent_roles [[[
+#
+# Configuration of PostgreSQL roles for debops.postgresql_ Ansible role.
+gitlab__postgresql__dependent_roles:
+
+  # Owner of the ``gitlabhq_production`` database
+  - name: '{{ gitlab_database_name }}'
+
+  # GitLab user account role
+  - name: '{{ gitlab_database_user }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__postgresql__dependent_databases [[[
+#
+# Configuration of PostgreSQL databases for the debops.postgresql_ Ansible
+# role.
+gitlab__postgresql__dependent_databases:
+
+  - name:  '{{ gitlab_database_name }}'
+    owner: '{{ gitlab_database_user }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__postgresql__dependent_groups [[[
+#
+# Configuration of PostgreSQL groups for the debops.postgresql_ Ansible role.
+gitlab__postgresql__dependent_groups:
+
+  - roles:  [ '{{ gitlab_database_user }}' ]
+    groups: [ '{{ gitlab_database_name }}' ]
+    database: '{{ gitlab_database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__postgresql__dependent_extensions [[[
+#
+# Configuration of PostgreSQL extensions for the debops.postgresql_ Ansible
+# role.
+gitlab__postgresql__dependent_extensions:
+
+  - database: '{{ gitlab_database_name }}'
+    extension: 'pg_trgm'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__postgresql__dependent_pgpass [[[
+#
+# The ``~/.pgpass`` configuration for debops.postgresql_ Ansible role.
+gitlab__postgresql__dependent_pgpass:
+
+  - owner: '{{ gitlab_user }}'
+    home: '{{ gitlab_home }}'
+    database: '{{ gitlab_database_name }}'
+    role: '{{ gitlab_database_user }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__nginx__dependent_upstreams [[[
 #
 # List of :command:`nginx` upstreams for the debops.nginx_ Ansible role.
-gitlab_nginx_upstreams:
+gitlab__nginx__dependent_upstreams:
 
   # Upstream configuration for the ``gitlab-unicorn`` service
   - name: 'gitlab'
@@ -867,11 +959,20 @@ gitlab_nginx_upstreams:
     enabled: '{{ gitlab_enable_gitlab_workhorse }}'
 
                                                                    # ]]]
-# .. envvar:: gitlab_nginx_server [[[
+# .. envvar:: gitlab__nginx__dependent_servers [[[
+#
+# List of :command:`nginx` servers for the debops.nginx_ Ansible role.
+gitlab__nginx__dependent_servers:
+
+  - '{{ gitlab__nginx_server }}'
+  - '{{ gitlab__nginx_pages_server }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__nginx_server [[[
 #
 # Configuration of the GitLab :command:`nginx` proxy for the debops.nginx_
 # Ansible role.
-gitlab_nginx_server:
+gitlab__nginx_server:
   by_role: 'debops.gitlab'
   enabled: True
   type: 'rails'
@@ -991,7 +1092,7 @@ gitlab_nginx_server:
 #
 # Configuration of the GitLab Pages :command:`nginx` proxy for the
 # debops.nginx_ role.
-gitlab_nginx_pages_server:
+gitlab__nginx_pages_server:
   by_role: 'debops.gitlab'
   enabled: '{{ gitlab_enable_pages }}'
   type: 'proxy'

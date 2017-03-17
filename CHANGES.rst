@@ -34,6 +34,9 @@ Changed
   ``defaults/main.yml`` file to allow their modification via Ansible inventory.
   [drybjed_]
 
+- Configuration of other Ansible roles passed as role dependent variables has
+  been moved to the ``defaults/main.yml`` for easier management. [drybjed_]
+
 
 `debops.gitlab v0.1.8`_ - 2017-03-12
 ------------------------------------
