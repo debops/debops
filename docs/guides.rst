@@ -10,7 +10,7 @@ Usage guides
 Templating or updating persistent files
 ---------------------------------------
 
-Qubes OS supports persistent files or directories in TemplateVMs using bind
+Qubes OS supports persistent files or directories in TemplateBasedVM using bind
 mounts. The files and directories marked for persistent storage are copied to
 a separate directory and mounted over the original files.
 
@@ -25,7 +25,7 @@ This can be achieved by:
 
 #. Letting the service role create an Ansible local fact at the end of the role
    run. This fact, combined with the ``debops.persistent_paths`` facts will be
-   used to determine when Ansible should be redirected.
+   used to determine when file operations by Ansible should be redirected.
 
 #. Running the ``debops.persistent_paths`` role to copy the changes made to a
    persistent location and providing them at the non-persistent path.
