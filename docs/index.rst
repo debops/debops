@@ -10,6 +10,7 @@ Ansible role: debops.persistent_paths
    getting-started
    defaults
    defaults-detailed
+   guides
    copyright
    changelog
 
