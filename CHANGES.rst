@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.pki master: https://github.com/debops/ansible-pki/compare/v0.2.14...master
 
+Added
+~~~~~
+
+- Add custom pre and post task hooks to allow more flexibility with PKI
+  management. [muelli_]
+
 
 `debops.pki v0.2.14`_ - 2016-11-21
 ----------------------------------
