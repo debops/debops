@@ -18,6 +18,9 @@ Note that bind mounted files (and directories) don’t allow `rename` nor
 `unlinkat` sys calls. This means that once a file has been made persistent by
 bind mounting it, updates to the file should be redirected to the actual
 location (called ``storage_path`` by this role).
+Unfortunately, when files/directories in ``storage_path`` get updated/replaced,
+a remount is required for the new version to become available at the original
+location. This is currently not done automatically.
 
 This can be achieved by:
 
