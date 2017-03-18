@@ -30,7 +30,7 @@ gitlab_version: '8.17'
 gitlab_dependencies: True
 
                                                                    # ]]]
-# .. envvar:: gitlab_database [[[
+# .. envvar:: gitlab__database [[[
 #
 # What database to use for GitLab instance? Supported options:
 #
@@ -41,7 +41,7 @@ gitlab_dependencies: True
 # The role expects the selected database server to be configured. See the
 # documentation of the debops.mariadb_server_ or debops.postgresql_server_
 # roles for information about their features.
-gitlab_database: 'mariadb'
+gitlab__database: 'mariadb'
 
                                                                    # ]]]
 # .. envvar:: gitlab_use_systemd [[[
@@ -228,13 +228,13 @@ gitlab_default_theme: '2'
 #
 # FQDN of the database server. It will be configured by
 # the debops.mariadb_ or debops.postgresql_ role.
-gitlab_database_server: "{{ ansible_local[gitlab_database].server }}"
+gitlab_database_server: "{{ ansible_local[gitlab__database].server }}"
 
                                                                    # ]]]
 # .. envvar:: gitlab_database_port [[[
 #
 # Port the database is listening on.
-gitlab_database_port: "{{ ansible_local[gitlab_database].port }}"
+gitlab_database_port: "{{ ansible_local[gitlab__database].port }}"
 
                                                                    # ]]]
 # .. envvar:: gitlab_database_user [[[
@@ -253,9 +253,9 @@ gitlab_database_name: 'gitlabhq_production'
 #
 # Path to database password file located on the Ansible Controller. See the
 # debops.secret_ role for more details.
-gitlab_database_password_path: "{{ secret + '/' + gitlab_database + '/' +
-                                   ansible_local[gitlab_database].delegate_to }}{%
-                                     if gitlab_database=='postgresql' %}/{{ ansible_local[gitlab_database].port }}{% endif
+gitlab_database_password_path: "{{ secret + '/' + gitlab__database + '/' +
+                                   ansible_local[gitlab__database].delegate_to }}{%
+                                     if gitlab__database=='postgresql' %}/{{ ansible_local[gitlab__database].port }}{% endif
                                    %}{{ '/credentials/' + gitlab_database_user +
                                    '/password' }}"
 

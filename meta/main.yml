@@ -39,7 +39,7 @@ dependencies:
     mariadb__dependent_users:
       - '{{ gitlab__mariadb__dependent_users }}'
     when: (gitlab_dependencies is defined and gitlab_dependencies) and
-          (gitlab_database is defined and gitlab_database and gitlab_database == 'mariadb')
+          (gitlab__database is defined and gitlab__database and gitlab__database == 'mariadb')
     tags: [ 'depend::mariadb', 'depend::mariadb:gitlab', 'depend-of::gitlab', 'type::dependency' ]
 
   - role: debops.postgresql
@@ -55,7 +55,7 @@ dependencies:
       - '{{ gitlab__postgresql__dependent_pgpass }}'
     tags: [ 'depend::postgresql', 'depend::postgresql:gitlab', 'depend-of::gitlab', 'type::dependency' ]
     when: (gitlab_dependencies is defined and gitlab_dependencies) and
-          (gitlab_database is defined and gitlab_database and gitlab_database == 'postgresql')
+          (gitlab__database is defined and gitlab__database and gitlab__database == 'postgresql')
 
   - role: debops.nginx
     tags: [ 'depend::nginx', 'depend::nginx:gitlab', 'depend-of::gitlab', 'type::dependency' ]

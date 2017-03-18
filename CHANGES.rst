@@ -46,6 +46,12 @@ Changed
   This change will be applied in the existing installations, but it shouldn't
   impact the service. [drybjed_]
 
+- Rename the ``gitlab_database`` variable to :envvar:`gitlab__database` to
+  allow switch to the Ansible playbook-based role dependencies. **If you
+  configured the GitLab database in the inventory, you will need to update the
+  inventory before applying the new role; otherwise the application will
+  break.** [drybjed_]
+
 
 `debops.gitlab v0.1.8`_ - 2017-03-12
 ------------------------------------

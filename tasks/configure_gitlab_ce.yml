@@ -95,7 +95,7 @@
 
 - name: Configure GitLab CE database
   template:
-    src: 'var/local/git/gitlab/config/database.{{ gitlab_database }}.yml.j2'
+    src: 'var/local/git/gitlab/config/database.{{ gitlab__database }}.yml.j2'
     dest: '{{ gitlab_ce_git_checkout + "/config/database.yml" }}'
     owner: '{{ gitlab_user }}'
     group: '{{ gitlab_group }}'
@@ -253,7 +253,7 @@
         and gitlab_register_ce_checkout.changed
 
 - name: Update Ruby gems
-  shell: bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab_database] }}
+  shell: bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab__database] }}
          chdir={{ gitlab_ce_git_checkout }}
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed
@@ -282,7 +282,7 @@
            (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
             not ansible_local.gitlab.installed)))))) and
          gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed and
-         gitlab_database == 'mariadb')
+         gitlab__database == 'mariadb')
 
 - name: Initialize GitLab database (PostgreSQL)
   environment:
@@ -297,7 +297,7 @@
            (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
             not ansible_local.gitlab.installed)))))) and
          gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed and
-         gitlab_database == 'postgresql')
+         gitlab__database == 'postgresql')
 
 - name: Reset default administrator email address and password
   replace:
