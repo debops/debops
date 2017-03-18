@@ -37,6 +37,15 @@ Changed
 - Configuration of other Ansible roles passed as role dependent variables has
   been moved to the ``defaults/main.yml`` for easier management. [drybjed_]
 
+- The configuration of the PostgreSQL database and roles has changed. The
+  database will now be owned by a role of the same name (by default
+  ``gitlabhq_production``) which cannot login to the server directly. The
+  ``gitlab`` PostgreSQL role will belong to the ``gitlabhq_production``
+  PostgreSQL group and should have access to the database.
+
+  This change will be applied in the existing installations, but it shouldn't
+  impact the service. [drybjed_]
+
 
 `debops.gitlab v0.1.8`_ - 2017-03-12
 ------------------------------------

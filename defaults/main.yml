@@ -891,6 +891,7 @@ gitlab__postgresql__dependent_roles:
 
   # Owner of the ``gitlabhq_production`` database
   - name: '{{ gitlab_database_name }}'
+    flags: [ 'NOLOGIN' ]
 
   # GitLab user account role
   - name: '{{ gitlab_database_user }}'
@@ -903,7 +904,7 @@ gitlab__postgresql__dependent_roles:
 gitlab__postgresql__dependent_databases:
 
   - name:  '{{ gitlab_database_name }}'
-    owner: '{{ gitlab_database_user }}'
+    owner: '{{ gitlab_database_name }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__postgresql__dependent_groups [[[
