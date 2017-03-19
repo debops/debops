@@ -52,6 +52,12 @@ Changed
   inventory before applying the new role; otherwise the application will
   break.** [drybjed_]
 
+- The role dependencies have been moved to the playbook. The ``debops.gitlab``
+  role will now check if a suitable SQL database is available on the host
+  before installing GitLab. If you are using a remote SQL database, you should
+  check it's corresponding client role to prepare correct Ansible local facts.
+  [drybjed_]
+
 
 `debops.gitlab v0.1.8`_ - 2017-03-12
 ------------------------------------
