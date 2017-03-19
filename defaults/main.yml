@@ -28,14 +28,21 @@ gitlab_version: '8.17'
 #
 # What database to use for GitLab instance? Supported options:
 #
-# - ``mariadb``: use MariaDB database
+# - ``postgresql``: use PostgreSQL database (preferred)
 #
-# - ``postgresql``: use PostgreSQL database
+# - ``mariadb``: use MariaDB database
 #
 # The role expects the selected database server to be configured. See the
 # documentation of the debops.mariadb_server_ or debops.postgresql_server_
 # roles for information about their features.
-gitlab__database: 'mariadb'
+gitlab__database: '{{ ansible_local.gitlab.database
+                      if (ansible_local|d() and ansible_local.gitlab|d() and
+                          ansible_local.gitlab.database|d())
+                      else ("postgresql"
+                            if (ansible_local|d() and ansible_local.postgresql is defined)
+                            else ("mariadb"
+                                  if (ansible_local|d() and ansible_local.mariadb is defined)
+                                  else "no-database-detected")) }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_use_systemd [[[

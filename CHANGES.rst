@@ -58,6 +58,16 @@ Changed
   check it's corresponding client role to prepare correct Ansible local facts.
   [drybjed_]
 
+- The ``debops.gitlab`` role will check if PostgreSQL or MariaDB role facts are
+  present on a host and will choose the installed database automatically. The
+  PostgreSQL database is preferred to keep upstream preference.
+
+  The selected SQL database is remembered in Ansible local facts. On existing
+  installations this might result in a broken installation where a PostgreSQL
+  database is detected without a corresponding fact pointing to a MariaDB
+  database. In this case users should enforce the GitLab database choice
+  through Ansible inventory. [drybjed_]
+
 
 `debops.gitlab v0.1.8`_ - 2017-03-12
 ------------------------------------
