@@ -276,7 +276,7 @@
   shell: yes 'yes' | bundle exec rake gitlab:setup RAILS_ENV=production
          chdir={{ gitlab_ce_git_checkout }}
   become_user: '{{ gitlab_user }}'
-  register: gitlab_register_bundle_setup
+  register: gitlab_register_bundle_setup_mariadb
   when: ((ansible_local is undefined or (ansible_local is defined and
           (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
            (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
@@ -291,7 +291,7 @@
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
-  register: gitlab_register_bundle_setup
+  register: gitlab_register_bundle_setup_postgresql
   when: ((ansible_local is undefined or (ansible_local is defined and
           (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
            (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
@@ -336,7 +336,8 @@
          chdir={{ gitlab_ce_git_checkout }}
   become_user: '{{ gitlab_user }}'
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
-  when: (gitlab_register_bundle_setup is defined and gitlab_register_bundle_setup.changed) or
+  when: (gitlab_register_bundle_setup_mariadb is defined and gitlab_register_bundle_setup_mariadb.changed) or
+        (gitlab_register_bundle_setup_postgresql is defined and gitlab_register_bundle_setup_postgresql.changed) or
         (gitlab_register_bundle_migrate is defined and gitlab_register_bundle_migrate.changed)
 
 - name: Clear GitLab cache
