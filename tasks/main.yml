@@ -10,6 +10,14 @@
   run_once: True
   delegate_to: 'localhost'
 
+- name: Assert that combined device configuration is valid
+  assert:
+    that:
+      - '(cryptsetup__combined_devices | map(attribute="ciphertext_block_device") | unique | length) == (cryptsetup__combined_devices | length)'
+      - '(cryptsetup__combined_devices | map(attribute="name") | unique | length) == (cryptsetup__combined_devices | length)'
+  run_once: True
+  delegate_to: 'localhost'
+
 - name: Assert that /dev/shm/ is stored in RAM (assumed to be non-persistent)
   ## Also assuming that the keyfile is not swapped out in the short time it is
   ## going to exist in tmpfs.

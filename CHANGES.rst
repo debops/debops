@@ -44,6 +44,10 @@ Added
 - Support for persistent configuration of TemplateBasedVM on `Qubes OS`_ out of
   the box using the debops.persistent_paths_ role. [ypid_]
 
+- Add assertion to ensure that options :ref:`item.name <cryptsetup__devices_name>`
+  and :ref:`item.ciphertext_block_device <cryptsetup__devices_ciphertext_block_device>`
+  of :ref:`cryptsetup__devices` are unique to catch configuration problems early. [ypid_]
+
 Changed
 ~~~~~~~
 
