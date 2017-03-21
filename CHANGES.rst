@@ -14,7 +14,24 @@ The current role maintainer_ is drybjed.
 `debops.core master`_ - unreleased
 ----------------------------------
 
-.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.6...master
+.. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.7...master
+
+
+`debops.core v0.2.7`_ - 2017-03-21
+----------------------------------
+
+.. _debops.core v0.2.7: https://github.com/debops/ansible-core/compare/v0.2.6...v0.2.7
+
+Added
+~~~~~
+
+- Add support for global ``unsafe_writes`` parameter. [drybjed_]
+
+Fixed
+~~~~~
+
+- Fix an issue with the :file:`core.fact` Ansible facts breaking with multiple
+  admin accounts. [drybjed_]
 
 
 `debops.core v0.2.6`_ - 2017-03-10

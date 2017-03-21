@@ -299,6 +299,33 @@ information about current distribution and release:
                                               ansible_local.core.distribution_release|d())
                                           else ansible_distribution_release }}'
 
+.. _core__ref_unsafe_writes:
+
+Global unsafe writes
+--------------------
+
+Many Ansible modules related to file operations support the ``unsafe_writes``
+parameter to allow operations that might be dangerous or destructive in certain
+conditions, but allow Ansible to work in specific environments, like
+bind-mounted files or directories. The :envvar:`core__unsafe_writes` default
+variable allows to activate this mode per-host using Ansible inventory, for all
+roles that implement it.
+
+To have an effect, roles that depend on the unsafe writes to function, should
+use the parameter in relevant tasks, like this:
+
+.. code-block:: yaml
+
+   - name: Generate configuration file
+     template:
+       src: 'etc/application.conf.j2'
+       dest: '/etc/application.conf'
+       owner: 'root'
+       group: 'root'
+       mode: '0644'
+       unsafe_writes: '{{ True if (ansible_local|d() and ansible_local.core|d() and
+                          ansible_local.core.unsafe_writes|d()|bool) else omit }}'
+
 List of current POSIX capabilities
 ----------------------------------
 

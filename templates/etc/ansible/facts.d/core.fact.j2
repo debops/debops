@@ -66,6 +66,7 @@ from grp import getgrall
 {%   set _ = core__tpl_facts.update({ "homedir_umask": core__homedir_umask }) %}
 {%   set _ = core__tpl_facts.update({ "keyserver": core__keyserver }) %}
 {%   set _ = core__tpl_facts.update({ "cache_valid_time": core__cache_valid_time }) %}
+{%   set _ = core__tpl_facts.update({ "unsafe_writes": core__unsafe_writes | bool }) %}
 output = loads('''{{ core__tpl_facts | to_nice_json }}''')
 
 admin_blacklist_users = loads('''{{ (core__admin_blacklist_default_users + core__admin_blacklist_users) | unique | to_nice_json }}''')
@@ -77,7 +78,7 @@ if output['admin_users']:
     if isinstance(output['admin_users'], basestring):
         admin_users.add(output['admin_users'])
     elif isinstance(output['admin_users'], list):
-        admin_users.extend(output['admin_users'])
+        admin_users.update(set(output['admin_users']))
     else:
         raise RuntimeError("Expected basestring or list, but got %r" % (
             output['admin_users']))
