@@ -29,6 +29,8 @@ Fixed
 - Don't set ``net.ipv4.tcp_rfc1337`` and ``net.ipv4.tcp_timestamps`` keys in
   OpenVZ containers, it isn't allowed. [pedroluislopez_]
 
+- Make sure that role works in Ansible ``--check`` mode. [drybjed_]
+
 
 debops.sysctl v0.1.0 - 2016-09-04
 ---------------------------------

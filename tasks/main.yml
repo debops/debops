@@ -19,6 +19,7 @@
   shell: sysctl --help | grep -E '^\s+\-\-system\s+' || true
   register: sysctl__register_system
   when: sysctl__register_config|changed
+  always_run: True
 
 - name: Apply kernel parameters if they were modified
   command: '{{ "sysctl --system"
