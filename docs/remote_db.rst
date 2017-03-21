@@ -1,6 +1,8 @@
 How to use remote SQL database
 ==============================
 
+.. include:: includes/all.rst
+
 PostgreSQL
 ----------
 
