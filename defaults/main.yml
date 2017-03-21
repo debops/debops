@@ -19,10 +19,8 @@ snmpd_packages: []
 #
 # The user account used by the :command:`snmpd` daemon.
 snmpd_user: '{{ "snmp"
-                if (ansible_local|d() and ansible_local.core|d() and
-                    (ansible_local.core.distribution == "Ubuntu" or
-                     (ansible_local.core.distribution == "Debian" and
-                      ansible_local.core.distribution_release in [ "wheezy", "jessie" ])))
+                if (ansible_distribution == "Ubuntu" or
+                    ansible_distribution_release in [ "wheezy", "jessie" ])
                 else "Debian-snmp" }}'
 
 
