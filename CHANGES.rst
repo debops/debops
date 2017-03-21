@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed.
 
 .. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.6...master
 
+Added
+~~~~~
+
+- Add support for global ``unsafe_writes`` parameter. [drybjed_]
+
 Fixed
 ~~~~~
 
