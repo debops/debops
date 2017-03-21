@@ -59,7 +59,7 @@ that uses the ``debops.cryptsetup`` role:
    :language: yaml
 
 If you are using this role without DebOps, here's an example Ansible playbook
-that uses ``debops.cryptsetup`` together with the ``debops.persistent_paths`` role:
+that uses ``debops.cryptsetup`` together with the debops.persistent_paths_ role:
 
 .. literalinclude:: playbooks/cryptsetup-persistent_paths.yml
    :language: yaml
