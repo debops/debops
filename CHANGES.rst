@@ -234,13 +234,14 @@ Changed
 ~~~~~~~
 
 - Migration to debops.mariadb_ role. [scibi_]
-  If you have exisitng setup you have to:
+  If you have exisitng setup you have to move some files in secrets directory:
 
-  #. move some files in secrets directory:
-    ``secret/credentials/[GitLab FQDN]/mysql/root/password`` to ``secret/credentials/[GitLab FQDN]/mariadb/localhost/root/password``
-    ``secret/credentials/[GitLab FQDN]/mysql/git/password`` to ``secret/mariadb/[GitLab FQDN]/credentials/gitlab/password``
+  .. code-block:: none
 
-  #. set ``mariadb_server_flavor`` to :command:`mysql`
+     secret/credentials/[GitLab FQDN]/mysql/root/password -> secret/credentials/[GitLab FQDN]/mariadb/localhost/root/password
+     secret/credentials/[GitLab FQDN]/mysql/git/password -> secret/mariadb/[GitLab FQDN]/credentials/gitlab/password
+
+  And set ``mariadb_server_flavor`` to :command:`mysql`.
 
 
 debops.gitlab v0.1.0 - 2015-09-29
