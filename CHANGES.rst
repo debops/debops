@@ -1,6 +1,20 @@
 Changelog
 =========
 
+v0.1.2
+------
+
+*Unreleased*
+
+Fixed
+~~~~~
+
+- The ownership of the net-snmp snmpd daemon changed from user snmp to Debian-snmp
+  on Debian stretch and later. This transtition helps with conflicting users
+  on LDAP systems. Fixes `Debian Bug #794647`_. [prahal]
+
+.. _Debian Bug #794647: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=794647
+
 v0.1.1
 ------
 

@@ -45,7 +45,11 @@
 
 - name: Allow 'snmp' user access to /proc if needed
   user:
-    name: 'snmp'
+    name: '{{ "snmp"
+              if (ansible_local|d() and ansible_local.core|d() and
+                  (ansible_local.core.distribution in [ "Ubuntu" ] or
+                   ansible_local.core.distribution_release in [ "wheezy", "jessie" ]))
+              else "Debian-snmp" }}'
     groups: '{{ snmpd_proc_hidepid_group }}'
     append: True
   when: snmpd_proc_hidepid | bool
