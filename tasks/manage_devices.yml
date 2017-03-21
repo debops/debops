@@ -322,7 +322,7 @@
   when: item.swap|d(False) | bool
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
-- name: Enable swap files
+- name: Enable swap devices
   command: swapon --priority {{ (item.item.priority | d(cryptsetup__swap_priority) | string) | quote }}
            {{ ("/dev/mapper/" + item.item.name) | quote }}
   when: (item|changed and (item.item.swap|d(False) | bool) and

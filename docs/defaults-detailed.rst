@@ -78,7 +78,7 @@ Each item of those lists is a dictionary with the following documented keys:
 .. _cryptsetup__devices_offset:
 
 ``offset``
-  Optional, integer Start offset of the `Ciphertext block device` which will be
+  Optional, integer start offset of the `Ciphertext block device` which will be
   mapped to block 0 of the `Plaintext device mapper target`.
   This option only has an effect in ``plain`` :ref:`item.mode <cryptsetup__devices_mode>`.
   Defaults to ``2048`` for the reasons mentioned in `Swap encryption: UUID and LABEL`_.
