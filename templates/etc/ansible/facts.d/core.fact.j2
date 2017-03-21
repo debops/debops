@@ -78,8 +78,7 @@ if output['admin_users']:
     if isinstance(output['admin_users'], basestring):
         admin_users.add(output['admin_users'])
     elif isinstance(output['admin_users'], list):
-        for element in output['admin_users']:
-            admin_users.add(element)
+        admin_users.update(set(output['admin_users']))
     else:
         raise RuntimeError("Expected basestring or list, but got %r" % (
             output['admin_users']))
