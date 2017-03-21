@@ -75,7 +75,7 @@
     snmpd_account_local_username: '{{ ansible_local.snmpd.username
                                       if (ansible_local|d() and ansible_local.snmpd|d() and
                                           ansible_local.snmpd.username)
-                                      else lookup("pipe", "openssl rand -hex " + ((snmpd_account_username_length | int) / 2) | string) }}'
+                                      else lookup("pipe", "openssl rand -hex " + (((snmpd_account_username_length | int) / 2) | int) | string) }}'
     snmpd_account_local_password: '{{ ansible_local.snmpd.password
                                       if (ansible_local|d() and ansible_local.snmpd|d() and
                                           ansible_local.snmpd.password)
