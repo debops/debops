@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed.
 
 .. _debops.core master: https://github.com/debops/ansible-core/compare/v0.2.6...master
 
+Fixed
+~~~~~
+
+- Fix an issue with the :file:`core.fact` Ansible facts breaking with multiple
+  admin accounts. [drybjed_]
+
 
 `debops.core v0.2.6`_ - 2017-03-10
 ----------------------------------
