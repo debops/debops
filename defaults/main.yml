@@ -15,6 +15,17 @@
 snmpd_packages: []
 
 
+# .. envvar:: snmpd_user
+#
+# The user account used by the :command:`snmpd` daemon.
+snmpd_user: '{{ "snmp"
+                if (ansible_local|d() and ansible_local.core|d() and
+                    (ansible_local.core.distribution == "Ubuntu" or
+                     (ansible_local.core.distribution == "Debian" and
+                      ansible_local.core.distribution_release in [ "wheezy", "jessie" ])))
+                else "Debian-snmp" }}'
+
+
 # .. envvar:: snmpd_logging_options
 #
 # String with ``snmpd`` log-related options, can be used to change log
