@@ -7,6 +7,8 @@
   assert:
     that: 'ansible_version.full | version_compare("2.1.4.0", ">=")'
     msg: 'VULNERABLE Ansible version DETECTED, please update to Ansible v2.1.4 or newer! Exiting.'
+  run_once: True
+  delegate_to: 'localhost'
 
 - name: Assert that /dev/shm/ is stored in RAM (assumed to be non-persistent)
   ## Also assuming that the keyfile is not swapped out in the short time it is
