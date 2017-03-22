@@ -431,6 +431,10 @@ hashlimit
 Template to define rate limit rules using the `iptables hashlimit`_ extension.
 The following template-specific YAML keys are supported:
 
+``daddr``
+  Optional. List of destination IP addresses or networks to which the
+  rule is applied.
+
 ``dport``
   Optional. List of destination ports to which the rule is applied.
 
