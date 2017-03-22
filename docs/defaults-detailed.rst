@@ -60,11 +60,11 @@ These parameters are related to SSH public key management:
 
   .. code-block:: yaml
 
-  authorized_keys__list:
-    - name: 'user'
-      github: 'user'
-      options: '{{ authorized_keys__options_map.strict }}'
-      key_options: 'command="ls -l /home/user"'
+     authorized_keys__list:
+       - name: 'user'
+         github: 'user'
+         options: '{{ authorized_keys__options_map.strict }}'
+         key_options: 'command="ls -l /home/user"'
 
 ``exclusive``
   Optional, boolean. If defined and ``True``, role will remove all other SSH
