@@ -161,5 +161,5 @@ account:
 
    authorized_keys__list:
      - name: 'user3'
-       sshkeys: '{{ lookup("file", "/path/to/user3.pub" }}'
+       sshkeys: '{{ lookup("file", "/path/to/user3.pub") }}'
        exclusive: True
