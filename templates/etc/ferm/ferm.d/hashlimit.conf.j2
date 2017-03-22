@@ -77,6 +77,7 @@
 {% set ferm__tpl_outerface_present = [] %}
 {% set ferm__tpl_protocol = [] %}
 {% set ferm__tpl_protocol_syn = [] %}
+{% set ferm__tpl_daddr = [] %}
 {% set ferm__tpl_dport = [] %}
 {% set ferm__tpl_state = [] %}
 {% set ferm__tpl_subchain = (item.type + "-" + item.name | d(item.hashlimit_name)) %}
@@ -176,6 +177,13 @@
 {%     set ferm__tpl_protocol_syn = [ '! syn' ] %}
 {%   endif %}
 {% endif %}
+{% if item.daddr|d() %}
+{%   if item.daddr is string %}
+{%     set ferm__tpl_daddr = [ item.daddr ] %}
+{%   else %}
+{%     set ferm__tpl_daddr = item.daddr | unique %}
+{%   endif %}
+{% endif %}
 {% if item.dport|d() %}
 {%   if item.dport is string %}
 {%     set ferm__tpl_dport = [ item.dport ] %}
@@ -238,6 +246,9 @@
 {% endif %}
 {% if ferm__tpl_protocol_syn %}
 {%   set _ = ferm__tpl_arguments.append(ferm__tpl_protocol_syn | join(" ")) %}
+{% endif %}
+{% if ferm__tpl_daddr %}
+{%   set _= ferm__tpl_arguments.append("daddr (" + ferm__tpl_daddr | join(" ") +")") %}
 {% endif %}
 {% if ferm__tpl_dport %}
 {%   set _ = ferm__tpl_arguments.append("dport (" + ferm__tpl_dport | join(" ") + ")") %}
