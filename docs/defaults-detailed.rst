@@ -103,7 +103,7 @@ These parameters are related to the files located in the
 
   If the ``item.group`` parameter is not specified, the role will try to set
   the group of the file the same as the specified user in ``item.name``
-  parameter with the assumtion that the corresponding primary group exists. If
+  parameter with the assumption that the corresponding primary group exists. If
   it does not exist, the primary group of the user file will be ``root``.
 
 ``system``
