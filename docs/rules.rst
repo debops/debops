@@ -454,6 +454,22 @@ The following template-specific YAML keys are supported:
   streams. Possible values: ``srcip``, ``srcport``, ``dstip``, ``dstport``
   or a comma-separated list thereof. Defaults to ``srcip``.
 
+``interface``
+  Optional. List of network interfaces for incoming packets to which the
+  rule is applied.
+
+``interface_present``
+  Optional. Same as ``item.interface`` but first check if specified network
+  interfaces exists before adding the firewall rules.
+
+``outerface``
+  Optional. List of network interfaces for outgoing packets to which the
+  rule is applied.
+
+``outerface_present``
+  Optional. Same as ``item.outerface`` but first check if specified network
+  interface exists before adding the firewall rule.
+
 ``include``
   Optional. Custom ferm configuration file to include. See `ferm include`_ for
   more details.
