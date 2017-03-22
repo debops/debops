@@ -71,11 +71,92 @@
 {% set ferm__tpl_hashlimit_target = 'RETURN' %}
 {% set ferm__tpl_target = 'REJECT' %}
 {% set ferm__tpl_reject_with = 'icmp-admin-prohibited' %}
+{% set ferm__tpl_interface = [] %}
+{% set ferm__tpl_interface_present = [] %}
+{% set ferm__tpl_outerface = [] %}
+{% set ferm__tpl_outerface_present = [] %}
 {% set ferm__tpl_protocol = [] %}
 {% set ferm__tpl_protocol_syn = [] %}
+{% set ferm__tpl_daddr = [] %}
 {% set ferm__tpl_dport = [] %}
 {% set ferm__tpl_state = [] %}
 {% set ferm__tpl_subchain = (item.type + "-" + item.name | d(item.hashlimit_name)) %}
+{% if item.interface|d() %}
+{%   if item.interface is string %}
+{%     set ferm__tpl_interface = [ item.interface ] %}
+{%   else %}
+{%     set ferm__tpl_interface = item.interface | unique %}
+{%   endif %}
+{% elif item.interfaces|d() %}
+{%   if item.interfaces is string %}
+{%     set ferm__tpl_interface = [ item.interfaces ] %}
+{%   else %}
+{%     set ferm__tpl_interface = item.interfaces | unique %}
+{%   endif %}
+{% endif %}
+{% if item.interface_present|d() %}
+{%   if item.interface_present is string %}
+{%     if hostvars[inventory_hostname]["ansible_" + item.interface_present]|d() %}
+{%       set ferm__tpl_interface_present = [ item.interface_present ] %}
+{%     endif %}
+{%   else %}
+{%     for interface in item.interface_present %}
+{%       if hostvars[inventory_hostname]["ansible_" + interface]|d() %}
+{%         set _ = ferm__tpl_interface_present.append(interface) %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% elif item.interfaces_present|d() %}
+{%   if item.interfaces_present is string %}
+{%     if hostvars[inventory_hostname]["ansible_" + item.interfaces_present]|d() %}
+{%       set ferm__tpl_interface_present = [ item.interfaces_present ] %}
+{%     endif %}
+{%   else %}
+{%     for interface in item.interfaces_present %}
+{%       if hostvars[inventory_hostname]["ansible_" + interface]|d() %}
+{%         set _ = ferm__tpl_interface_present.append(interface) %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endif %}
+{% if item.outerface|d() %}
+{%   if item.outerface is string %}
+{%     set ferm__tpl_outerface = [ item.outerface ] %}
+{%   else %}
+{%     set ferm__tpl_outerface = item.outerface | unique %}
+{%   endif %}
+{% elif item.outerfaces|d() %}
+{%   if item.outerfaces is string %}
+{%     set ferm__tpl_outerface = [ item.outerfaces ] %}
+{%   else %}
+{%     set ferm__tpl_outerface = item.outerfaces | unique %}
+{%   endif %}
+{% endif %}
+{% if item.outerface_present|d() %}
+{%   if item.outerface_present is string %}
+{%     if hostvars[inventory_hostname]["ansible_" + item.outerface_present]|d() %}
+{%       set ferm__tpl_outerface_present = [ item.outerface_present ] %}
+{%     endif %}
+{%   else %}
+{%     for outerface in item.outerface_present %}
+{%       if hostvars[inventory_hostname]["ansible_" + outerface]|d() %}
+{%         set _ = ferm__tpl_outerface_present.append(outerface) %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% elif item.outerfaces_present|d() %}
+{%   if item.outerfaces_present is string %}
+{%     if hostvars[inventory_hostname]["ansible_" + item.outerfaces_present]|d() %}
+{%       set ferm__tpl_outerface_present = [ item.outerfaces_present ] %}
+{%     endif %}
+{%   else %}
+{%     for outerface in item.outerfaces_present %}
+{%       if hostvars[inventory_hostname]["ansible_" + outerface]|d() %}
+{%         set _ = ferm__tpl_outerface_present.append(outerface) %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endif %}
 {% if item.protocol|d() %}
 {%   if item.protocol is string %}
 {%     set ferm__tpl_protocol = [ item.protocol ] %}
@@ -94,6 +175,13 @@
 {%     set ferm__tpl_protocol_syn = [ 'syn' ] %}
 {%   elif not item.protocol_syn | bool %}
 {%     set ferm__tpl_protocol_syn = [ '! syn' ] %}
+{%   endif %}
+{% endif %}
+{% if item.daddr|d() %}
+{%   if item.daddr is string %}
+{%     set ferm__tpl_daddr = [ item.daddr ] %}
+{%   else %}
+{%     set ferm__tpl_daddr = item.daddr | unique %}
 {%   endif %}
 {% endif %}
 {% if item.dport|d() %}
@@ -127,11 +215,40 @@
 {%   endif %}
 {% endif %}
 {% set ferm__tpl_arguments = [] %}
+{% if ferm__tpl_interface %}
+{%   if ferm__tpl_interface | length == 1 %}
+{%     set _ = ferm__tpl_arguments.append("interface " +  ferm__tpl_interface | join(" ")) %}
+{%   else %}
+{%     set _ = ferm__tpl_arguments.append("interface (" + ferm__tpl_interface | join(" ") + ")") %}
+{%   endif %}
+{% elif ferm__tpl_interface_present %}
+{%   if ferm__tpl_interface_present | length == 1 %}
+{%     set _ = ferm__tpl_arguments.append("interface " +  ferm__tpl_interface_present | join(" ")) %}
+{%   else %}
+{%     set _ = ferm__tpl_arguments.append("interface (" + ferm__tpl_interface_present | join(" ") + ")") %}
+{%   endif %}
+{% endif %}
+{% if ferm__tpl_outerface %}
+{%   if ferm__tpl_outerface | length == 1 %}
+{%     set _ = ferm__tpl_arguments.append("outerface " +  ferm__tpl_outerface | join(" ")) %}
+{%   else %}
+{%     set _ = ferm__tpl_arguments.append("outerface (" + ferm__tpl_outerface | join(" ") + ")") %}
+{%   endif %}
+{% elif ferm__tpl_outerface_present %}
+{%   if ferm__tpl_outerface_present | length == 1 %}
+{%     set _ = ferm__tpl_arguments.append("outerface " +  ferm__tpl_outerface_present | join(" ")) %}
+{%   else %}
+{%     set _ = ferm__tpl_arguments.append("outerface (" + ferm__tpl_outerface_present | join(" ") + ")") %}
+{%   endif %}
+{% endif %}
 {% if ferm__tpl_protocol %}
 {%   set _ = ferm__tpl_arguments.append("protocol (" + ferm__tpl_protocol | join(" ") + ")") %}
 {% endif %}
 {% if ferm__tpl_protocol_syn %}
 {%   set _ = ferm__tpl_arguments.append(ferm__tpl_protocol_syn | join(" ")) %}
+{% endif %}
+{% if ferm__tpl_daddr %}
+{%   set _= ferm__tpl_arguments.append("daddr (" + ferm__tpl_daddr | join(" ") +")") %}
 {% endif %}
 {% if ferm__tpl_dport %}
 {%   set _ = ferm__tpl_arguments.append("dport (" + ferm__tpl_dport | join(" ") + ")") %}
