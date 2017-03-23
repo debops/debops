@@ -32,6 +32,10 @@ Added
 - Provide various configuration options from the :file:`config.php` file using
   Ansible facts. Refer to :ref:`owncloud__ref_ansible_facts` for details. [ypid_]
 
+- Allow to leave third party apps enabled during/after upgrades via
+  :envvar:`owncloud__auto_database_upgrade_3party_app_disable`.
+  Defaults to upstream default. [ypid_]
+
 Changed
 ~~~~~~~
 

@@ -39,7 +39,7 @@ grep -q 'maintenance.*true' '{{ owncloud__deploy_path }}/config/config.php' || e
 '{{ owncloud__occ_bin_file_path }}' maintenance:mode --on
 
 ## Do the upgrade.
-'{{ owncloud__occ_bin_file_path }}' upgrade{{ "" if (owncloud__auto_database_upgrade_migration_test | bool) else " --skip-migration-test" }}
+'{{ owncloud__occ_bin_file_path }}' upgrade{{ "" if (owncloud__auto_database_upgrade_migration_test | bool) else " --skip-migration-test" }}{{ "" if (owncloud__auto_database_upgrade_3party_app_disable | bool) else " --no-app-disable" }}
 
 ## Run post update scripts when defined.
 {% for item in (owncloud__post_upgrade_hook_role_list +
