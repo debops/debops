@@ -1049,14 +1049,14 @@ owncloud__ldap_password_file: '{{ secret + "/credentials/" + owncloud__ldap_host
 owncloud__ldap_password: '{{ lookup("password", owncloud__ldap_password_file) }}'
 
 
-# .. envvar:: owncloud__ldap_port
-#
-owncloud__ldap_port: '636'
-
-
 # .. envvar:: owncloud__ldap_method
 #
 owncloud__ldap_method: 'ssl'
+
+
+# .. envvar:: owncloud__ldap_port
+#
+owncloud__ldap_port: '{{ 636 if (owncloud__ldap_method in ["ssl", "tls"]) else 389 }}'
 
 
 # .. envvar:: owncloud__ldap_user_display_name
@@ -1199,7 +1199,7 @@ owncloud__ldap_expert_username_attr: ''
 # .. envvar:: owncloud__ldap_conf_map
 #
 owncloud__ldap_conf_map:
-  ldapHost: '{{ "ldaps://" if (owncloud__ldap_method == "ssl") else "" }}{{ owncloud__ldap_host }}'
+  ldapHost: '{{ "ldaps://" if (owncloud__ldap_method in ["ssl", "tls"]) else "" }}{{ owncloud__ldap_host }}'
   ldapPort: '{{ owncloud__ldap_port }}'
   ldapAgentName: '{{ owncloud__ldap_binddn }}'
   ldapBase: '{{ owncloud__ldap_basedn }}'

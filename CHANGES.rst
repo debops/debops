@@ -58,6 +58,8 @@ Changed
 - Fix typo in variable name by renaming ``owncloud__theme_entitiy_name`` to
   :envvar:`owncloud__theme_entity_name`. [jbicha]
 
+- Derive LDAP port from :envvar:`owncloud__ldap_port`. [ypid_]
+
 Removed
 ~~~~~~~
 
