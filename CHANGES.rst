@@ -19,7 +19,20 @@ new release.
 `debops.apt master`_ - unreleased
 ---------------------------------
 
-.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.3...master
+.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.4...master
+
+
+`debops.apt v0.4.4`_ - 2017-03-24
+---------------------------------
+
+.. _debops.apt v0.4.4: https://github.com/debops/ansible-apt/compare/v0.4.3...v0.4.4
+
+Changed
+~~~~~~~
+
+- Switch the official Debian repository source to ``http://deb.debian.org/debian``
+  due to `the deprecation of the httpredir service <https://lists.debian.org/debian-mirrors/2017/02/msg00000.html>`_.
+  [drybjed_]
 
 
 `debops.apt v0.4.3`_ - 2016-11-23
