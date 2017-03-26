@@ -631,7 +631,7 @@ Configure a restricted bridge network:
        forward_interface_ferm_rule: 'outerface (br0 br2) ACCEPT'
        forward_outerface_ferm_rule_enabled: False
        addresses:
-         - '2001:DB8::23/64'
+         - '2001:db8::23/64'
          - '192.0.2.23/24'
 
 Hosts attached to the ``br2`` bridge are allowed to talk to each other.
