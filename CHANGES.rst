@@ -52,6 +52,8 @@ Changed
   parent interface to ensure that the VLAN interface is configured after the
   parent interface. [drybjed_]
 
+- Improve Jinja templates by removing redundancy. [ypid_]
+
 
 `debops.ifupdown v0.3.2`_ - 2016-12-16
 --------------------------------------

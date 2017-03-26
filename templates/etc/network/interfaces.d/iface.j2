@@ -2,43 +2,19 @@
 
 {% set interface_name = (item.value.iface | d(item.key)) %}
 {% set interface = item.value %}
-{% set ifupdown__tpl_addresses = [] %}
 {% set ifupdown__tpl_ipv4_addresses = [] %}
 {% set ifupdown__tpl_ipv6_addresses = [] %}
-{% set ifupdown__tpl_gateways = [] %}
-{% if interface.no_addresses is undefined or not interface.no_addresses|bool %}
-{%   if interface.address|d() %}
-{%     if interface.address is string %}
-{%       set ifupdown__tpl_addresses = [ interface.address ] %}
-{%     else %}
-{%       set ifupdown__tpl_addresses = (interface.address | unique ) %}
-{%     endif %}
-{%   endif %}
-{%   if interface.addresses|d() %}
-{%     if interface.addresses is string %}
-{%       set ifupdown__tpl_addresses = (ifupdown__tpl_addresses + [ interface.addresses ]) %}
-{%     else %}
-{%       set ifupdown__tpl_addresses = (ifupdown__tpl_addresses + (interface.addresses | unique )) %}
-{%     endif %}
-{%   endif %}
+{% if interface.no_addresses|d(True) | bool %}
+{%   set ifupdown__tpl_addresses = [interface.address|d([]), interface.addresses|d([])] %}
+{%   set ifupdown__tpl_addresses = lookup("flattened", ifupdown__tpl_addresses) %}
+{%   set ifupdown__tpl_addresses = (ifupdown__tpl_addresses.split(',') if (ifupdown__tpl_addresses is string) else ifupdown__tpl_addresses) | unique | sort %}
 {%   set ifupdown__tpl_ipv4_addresses = ifupdown__tpl_addresses | ipv4 %}
 {%   set ifupdown__tpl_ipv6_addresses = ifupdown__tpl_addresses | ipv6 %}
-{%   if interface.gateway|d() %}
-{%     if interface.gateway is string %}
-{%       set _ = ifupdown__tpl_gateways.append(interface.gateway) %}
-{%     else %}
-{%       set _ = ifupdown__tpl_gateways.extend(interface.gateway) %}
-{%     endif %}
-{%   endif %}
-{%   if interface.gateways|d() %}
-{%     if interface.gateways is string %}
-{%       set _ = ifupdown__tpl_gateways.append(interface.gateways) %}
-{%     else %}
-{%       set _ = ifupdown__tpl_gateways.extend(interface.gateways) %}
-{%     endif %}
-{%   endif %}
-{%   set ifupdown__tpl_ipv4_gateways = ifupdown__tpl_gateways | unique | ipv4 %}
-{%   set ifupdown__tpl_ipv6_gateways = ifupdown__tpl_gateways | unique | ipv6 %}
+{%   set ifupdown__tpl_gateways = [interface.gateway|d([]), interface.gateways|d([])] %}
+{%   set ifupdown__tpl_gateways = lookup("flattened", ifupdown__tpl_gateways) %}
+{%   set ifupdown__tpl_gateways = (ifupdown__tpl_gateways.split(',') if (ifupdown__tpl_gateways is string) else ifupdown__tpl_gateways) | unique | sort %}
+{%   set ifupdown__tpl_ipv4_gateways = ifupdown__tpl_gateways | ipv4 %}
+{%   set ifupdown__tpl_ipv6_gateways = ifupdown__tpl_gateways | ipv6 %}
 {% endif %}
 {% if interface.inet|d() and interface.inet in [ 'static', 'tunnel' ] and not ifupdown__tpl_ipv4_addresses %}
 {%   set _ = interface.update({"inet":"manual"}) %}
