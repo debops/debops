@@ -3,36 +3,62 @@ Changelog
 
 .. include:: includes/all.rst
 
-v0.1.3
-------
+**debops.grub**
 
-*Unreleased*
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-- Fix deprecation warnings in Ansible 2.1.0. [ypid_]
+The current role maintainer_ is drybjed_.
+
+
+`debops.grub master`_ - unreleased
+----------------------------------
+
+.. _debops.grub master: https://github.com/debops/ansible-grub/compare/v0.1.2...master
+
+Changed
+~~~~~~~
 
 - Updated example playbook and inventory in the documentation. [ypid_]
 
-v0.1.2
-------
+Fixed
+~~~~~
 
-*Released: 2015-10-23*
+- Fix deprecation warnings in Ansible 2.1.0. [ypid_]
+
+
+`debops.grub v0.1.2`_ - 2015-10-23
+----------------------------------
+
+.. _debops.grub v0.1.2: https://github.com/debops/ansible-grub/compare/v0.1.1...v0.1.2
+
+Changed
+~~~~~~~
+
+- Make sure that role works in Ansible check mode. [drybjed_]
+
+Fixed
+~~~~~
 
 - Change the way role gathers default and old kernel parameters to avoid issues
   with ``sed`` in Ansible v2. [drybjed_]
 
-- Make sure that role works in Ansible check mode. [drybjed_]
 
-v0.1.1
-------
+`debops.grub v0.1.1`_ - 2015-09-02
+----------------------------------
 
-*Released: 2015-09-02*
+.. _debops.grub v0.1.1: https://github.com/debops/ansible-grub/compare/v0.1.0...v0.1.1
+
+Fixed
+~~~~~
 
 - Fix an issue with undefined variable. [scibi_]
 
-v0.1.0
-------
 
-*Released: 2015-09-01*
+debops.grub v0.1.0 - 2015-09-01
+-------------------------------
+
+Added
+~~~~~
 
 - First release. [scibi_, drybjed_]
-
