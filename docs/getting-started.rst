@@ -64,7 +64,7 @@ AppArmor you might need to use the following playbook instead:
 .. literalinclude:: playbooks/apt_cacher_ng-apparmor.yml
    :language: yaml
 
-This playbooks is shipped with this role under
+The playbook is shipped with this role under
 :file:`./docs/playbooks/apt_cacher_ng-apparmor.yml` from which you can symlink it to your
 playbook directory.
 In case you use multiple `DebOps Contrib`_ roles, consider

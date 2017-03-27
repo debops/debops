@@ -33,7 +33,7 @@ Added
 - Added :envvar:`apt_cacher_ng__connect_protocol` to allow to specify which IP
   version to prefer when contacting upstream mirrors. [ypid_]
 
-* Added :envvar:`apt_cacher_ng__interfaces` for restricting access to
+- Added :envvar:`apt_cacher_ng__interfaces` for restricting access to
   connections through that interface by the firewall. [ypid_]
 
 Changed
