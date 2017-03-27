@@ -1,31 +1,25 @@
 ---
 
 ansigenome_info:
-  galaxy_url: 'https://galaxy.ansible.com/ypid/cryptsetup_remote_unlock'
-  github_url: 'https://github.com/ypid/ansible-cryptsetup_remote_unlock'
+  galaxy_url: 'https://galaxy.ansible.com/debops-contrib/dropbear_initramfs'
+  github_url: 'https://github.com/debops-contrib/ansible-dropbear_initramfs'
   git_branch: 'master'
 
   travis: True
 
+  license_url: 'https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3)'
+
+  authors:
+
+    - name: 'Robin Schneider'
+      email: 'ypid@riseup.net'
+      github: 'ypid'
+
   synopsis: |
-    Read more about this:
+    The `debops-contrib.dropbear_initramfs` role allows you to setup SSH access
+    to the initramfs prior to the root filesystem being mounted using [Dropbear] as
+    SSH server.
 
-    * /usr/share/doc/cryptsetup/README.remote.gz
-    * [SSH to decrypt encrypted LVM during headless server boot?](http://unix.stackexchange.com/a/79203)
+    This can be used to unlock a full disk encrypted host remotely via SSH.
 
-    If you want to show a message above the password promt, check out my
-    related role: [initramfs_message](https://galaxy.ansible.com/ypid/initramfs_message/)
-
-    To unlock the system, you can have a look at: https://github.com/sdrfnord/scripts/tree/master/scout
-
-    ### Alternative roles
-
-    * [0x46616c6b.rootcrypto](https://github.com/systemli/ansible-rootcrypto) looks nice but I have not tested it yet.
-    * [martin-v.sshpreluks](https://github.com/martin-v/ansible-sshpreluks) looks nice but I have not tested it yet.
-
-    ### Other approaches
-
-    * [Mandos](https://wiki.recompile.se/wiki/Mandos) is an interesting approach which I have not yet played in deep with.
-      I created ypid.cryptsetup_remote_unlock because I consider a different threat model for myself.
-      As far as I understand Mandos, it is more intended for data centers to allow to automatically (re)boot FDE systems without user interaction.
-      My thread model is to not allow an adversary to boot systems without me knowing (and authorizing) it. I guess this can be realized with Mandos too and if you create a nice Ansible role for it let me know. I just started out with SSH in the initramfs and sending the decryption password over SSH.
+    [Dropbear]: https://en.wikipedia.org/wiki/Dropbear_%28software%29
