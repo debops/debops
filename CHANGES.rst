@@ -21,6 +21,13 @@ new release.
 
 .. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.4...master
 
+Changed
+~~~~~~~
+
+- Filter the Ansible local facts to only provide the default APT mirrors that
+  are relevant to the current OS distribution. This way the list can be used by
+  other Ansible roles for APT mirror information. [drybjed_]
+
 
 `debops.apt v0.4.4`_ - 2017-03-24
 ---------------------------------
