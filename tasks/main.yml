@@ -1,92 +1,73 @@
 ---
 
-- name: Install dropbear
-  apt:
+- name: Ensure specified packages are in there desired state
+  package:
     name: '{{ item }}'
-    state: 'latest'
-  with_items:
-    - 'dropbear'
-    - 'busybox'
-    - 'initramfs-tools'
+    state: '{{ "present" if (dropbear_initramfs__deploy_state == "present") else "absent" }}'
+  with_flattened:
+    - '{{ dropbear_initramfs__base_packages }}'
+    - '{{ dropbear_initramfs__packages }}'
+  tags: [ 'role::dropbear_initramfs:pkgs' ]
 
-- name: Set GRUB_TIMEOUT
-  lineinfile:
-    dest: '/etc/default/grub'
-    regexp: '^GRUB_TIMEOUT='
-    line: 'GRUB_TIMEOUT={{ cryptsetup_remote_unlock_grub_timeout }}'
-  when: cryptsetup_remote_unlock_grub_timeout is defined and cryptsetup_remote_unlock_grub_timeout >= 0
-  notify: [ 'Update grub' ]
+- name: Configure network in initramfs using kernel command line
+  template:
+    src: 'etc/initramfs-tools/conf.d/role.conf.j2'
+    dest: '/etc/initramfs-tools/conf.d/50_debops.dropbear_initramfs.conf'
+    mode: '0644'
+  when: (dropbear_initramfs__deploy_state == "present")
+  notify: [ 'Update initramfs' ]
 
-- name: Make sure that BUSYBOX=y exists
-  lineinfile:
-    dest: '/etc/initramfs-tools/initramfs.conf'
-    regexp: '^BUSYBOX='
-    line: 'BUSYBOX=y'
-  notify: [ 'Recreate initramfs' ]
+- name: Configure to bring up additional interfaces/addresses in initramfs
+  template:
+    src: 'etc/initramfs-tools/scripts/local-top/debops_dropbear_initramfs.j2'
+    dest: '/etc/initramfs-tools/scripts/local-top/debops_dropbear_initramfs'
+    mode: '0755'
+  when: (dropbear_initramfs__deploy_state == "present")
+  notify: [ 'Update initramfs' ]
 
-- name: Set IP configuration
-  lineinfile:
-    dest: '/etc/initramfs-tools/initramfs.conf'
-    regexp: '^IP='
-    line: 'IP={{ cryptsetup_remote_unlock_network_ip_line }}'
-  notify: [ 'Recreate initramfs' ]
+- name: Configure to bring down additional interfaces/addresses in initramfs
+  template:
+    src: 'etc/initramfs-tools/scripts/local-bottom/debops_dropbear_initramfs.j2'
+    dest: '/etc/initramfs-tools/scripts/local-bottom/debops_dropbear_initramfs'
+    mode: '0755'
+  when: (dropbear_initramfs__deploy_state == "present")
+  notify: [ 'Update initramfs' ]
 
-- name: Set network device
-  lineinfile:
-    dest: '/etc/initramfs-tools/initramfs.conf'
-    regexp: '^DEVICE='
-    line: "DEVICE={{ cryptsetup_remote_unlock_network_interface }}"
-  when: cryptsetup_remote_unlock_network_interface is defined and cryptsetup_remote_unlock_network_interface
-  notify: [ 'Recreate initramfs' ]
+- name: Configure authorized ssh keys
+  authorized_key:
+    key: "{{ (item.sshkeys if item.sshkeys is string else (item.sshkeys | unique | join('\n') | string)) if item.sshkeys|d() else '' }}"
+    user: '{{ item.user | d("root") }}'
+    path: '{{ "/etc/initramfs-tools/root/.ssh/authorized_keys"
+              if ("dropbear" in dropbear_initramfs__base_packages)
+              else "/etc/dropbear-initramfs/authorized_keys" }}'
+    ## Ref: debops.authorized_keys ;-)
+    key_options: '{{ ((item.options if item.options is string else item.options|join(","))
+                       if item.options is defined
+                       else (
+                         (dropbear_initramfs__authorized_keys_options if dropbear_initramfs__authorized_keys_options is string else dropbear_initramfs__authorized_keys_options|join(","))
+                         if dropbear_initramfs__authorized_keys_options != omit else ""
+                       )
+                     ) + (
+                       (("," + item.key_options) if item.key_options is string else ("," + item.key_options|join(",")))
+                       if item.key_options|d()
+                       else ""
+                     ) }}'
+    state: '{{ (item.state | d("present")) if (dropbear_initramfs__deploy_state == "present") else "absent" }}'
+    exclusive: '{{ item.exclusive | d(omit) }}'
+    manage_dir: False
+  notify: [ 'Update initramfs' ]
+  with_flattened:
+    - '{{ dropbear_initramfs__authorized_keys_list }}'
+    - '{{ dropbear_initramfs__authorized_keys_group_list }}'
+    - '{{ dropbear_initramfs__authorized_keys_host_list }}'
 
-- name: Delete network device
-  lineinfile:
-    dest: '/etc/initramfs-tools/initramfs.conf'
-    regexp: '^DEVICE='
-    state: 'absent'
-  when: cryptsetup_remote_unlock_network_interface is undefined or not cryptsetup_remote_unlock_network_interface
-  notify: [ 'Recreate initramfs' ]
-
-- name: Copy the private ssh key to the local machine
-  fetch:
-    src: '{{ cryptsetup_remote_unlock_remote_ssh_dir }}/{{ item }}'
-    flat: True
-    mode: '0600'
-    dest: '{{ cryptsetup_remote_unlock_local_ssh_dir }}/dropbear@{{ ansible_hostname }}_{{ item }}'
-  register: cryptsetup_remote_unlock_fetched_ssh_keys
-  with_items:
-    - 'id_rsa'
-    - 'id_rsa.pub'
-
-- name: Change mode of ssh key files to 600 on the local machine
+- name: Remove files in deploy state absent
   file:
-    state: 'file'
-    path: '{{ cryptsetup_remote_unlock_local_ssh_dir }}/dropbear@{{ ansible_hostname }}_{{ item }}'
-    mode: '0600'
-  become: False
-  delegate_to: 'localhost'
-  when: cryptsetup_remote_unlock_fetched_ssh_keys|changed
-  with_items:
-    - 'id_rsa'
-    - 'id_rsa.pub'
-
-- name: Delete private ssh keys on remote
-  file:
-    dest: '{{ cryptsetup_remote_unlock_remote_ssh_dir }}/{{ item }}'
+    path: '{{ item }}'
     state: 'absent'
+  when: (dropbear_initramfs__deploy_state == 'absent')
+  notify: [ 'Update initramfs' ]
   with_items:
-    - 'id_rsa'
-    - 'id_rsa.pub'
-    - 'id_rsa.dropbear'
-  when: cryptsetup_remote_unlock_remote_ssh_remove_after_copy
-  notify: [ 'Recreate initramfs' ]
-
-# - name: Append ssh key to authorized_keys
-  # lineinfile:
-    # dest: "{{ cryptsetup_remote_unlock_remote_ssh_dir }}/authorized_keys"
-    # line: "{{ item }}"
-    # insertafter: EOF
-  # when: cryptsetup_remote_unlock_public_key is defined and cryptsetup_remote_unlock_public_key
-  # with_file:
-    # - "{{ cryptsetup_remote_unlock_local_ssh_dir }}/{{ cryptsetup_remote_unlock_public_key }}.pub"
-  # notify: [ 'Recreate initramfs' ]
+    - '/etc/initramfs-tools/conf.d/50_debops.dropbear_initramfs.conf'
+    - '/etc/initramfs-tools/scripts/local-top/debops_dropbear_initramfs'
+    - '/etc/initramfs-tools/scripts/local-bottom/debops_dropbear_initramfs'
