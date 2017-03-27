@@ -16,12 +16,12 @@
 {% endfor %}
 {% set apt__tpl_default_sources = [] %}
 {% for repo in apt__default_sources %}
-{%   if repo.uri|d() %}
+{%   if repo.uri|d() and repo.state|d('present') != 'absent' and (repo.distribution|d() and repo.distribution == apt__distribution) %}
 {%     for element in ([ repo.uri ] if repo.uri is string else repo.uri) %}
 {%       set _ = apt__tpl_default_sources.append(element) %}
 {%     endfor %}
 {%   endif %}
-{%   if repo.uris|d() %}
+{%   if repo.uris|d() and repo.state|d('present') != 'absent' and (repo.distribution|d() and repo.distribution == apt__distribution) %}
 {%     for element in ([ repo.uris ] if repo.uris is string else repo.uris) %}
 {%       set _ = apt__tpl_default_sources.append(element) %}
 {%     endfor %}
