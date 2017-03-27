@@ -16,7 +16,21 @@ The current role maintainer_ is ypid_.
 `debops.apt_cacher_ng master`_ - unreleased
 -------------------------------------------
 
-.. _debops.apt_cacher_ng master: https://github.com/debops/ansible-apt_cacher_ng/compare/v0.2.0...master
+.. _debops.apt_cacher_ng master: https://github.com/debops/ansible-apt_cacher_ng/compare/v0.2.1...master
+
+
+`debops.apt_cacher_ng v0.2.1`_ - 2017-03-27
+-------------------------------------------
+
+.. _debops.apt_cacher_ng v0.2.1: https://github.com/debops/ansible-apt_cacher_ng/compare/v0.2.0...v0.2.1
+
+Changed
+~~~~~~~
+
+- Use the default APT mirror set by debops.apt_ or fallback to the official Debian
+  repository source at ``http://deb.debian.org/debian`` due to `the deprecation
+  of the httpredir service <https://lists.debian.org/debian-mirrors/2017/02/msg00000.html>`_.
+  [ypid_]
 
 
 `debops.apt_cacher_ng v0.2.0`_ - 2016-10-23

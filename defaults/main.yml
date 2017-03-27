@@ -195,7 +195,10 @@ apt_cacher_ng__max_download_speed_kib: ''
 # One mirror per line.
 # Set to an empty string to let the package scripts from Apt-Cacher NG decide
 # which upstream mirror to use.
-apt_cacher_ng__upstream_mirror_debian: 'http://httpredir.debian.org/debian/'
+apt_cacher_ng__upstream_mirror_debian: '{{ ansible_local.apt.default_mirrors[0]
+                                           if (ansible_local|d() and ansible_local.apt|d() and
+                                             ansible_local.apt.default_mirrors|d())
+                                           else "http://deb.debian.org/debian" }}'
 
                                                                    # ]]]
 # .. envvar:: apt_cacher_ng__upstream_mirror_ubuntu [[[
