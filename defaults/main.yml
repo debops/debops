@@ -116,23 +116,28 @@ grub_serial_console_speed: 115200
 
 # .. envvar:: grub_users [[[
 #
-# Global list of GRUB user. Defaults to an empty list which results in no users
-# being created and thus leaving GRUB without password protection.
+# Global list of GRUB users.
 grub_users: []
 
                                                                    # ]]]
 # .. envvar:: grub_group_users [[[
 #
-# Host group list of GRUB user. Defaults to an empty list which results in no
-# users being created and thus leaving GRUB without password protection.
+# Host group list of GRUB users.
 grub_group_users: []
 
                                                                    # ]]]
 # .. envvar:: grub_host_users [[[
 #
-# Host list of GRUB user. Defaults to an empty list which results in no users
-# being created and thus leaving GRUB without password protection.
+# Host list of GRUB users.
 grub_host_users: []
+
+                                                                   # ]]]
+# .. envvar:: grub_combined_users [[[
+#
+# Combined list as it is used internally by the role list of GRUB users.
+# If this list is empty no users will created and thus leaving GRUB without
+# password protection.
+grub_combined_users: '{{ grub_users + grub_group_users + grub_host_users }}'
 
                                                                    # ]]]
 # .. envvar:: grub_menuentry_access [[[

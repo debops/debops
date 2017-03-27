@@ -19,7 +19,7 @@ Additionally, this role allows you to configure password protection for GRUB.
 
 ### Installation
 
-This role requires at least Ansible `v1.7.1`. To install it, run:
+This role requires at least Ansible `v2.1.4`. To install it, run:
 
 ```Shell
 ansible-galaxy install debops.grub

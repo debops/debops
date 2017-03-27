@@ -16,15 +16,25 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.grub master: https://github.com/debops/ansible-grub/compare/v0.1.2...master
 
+Added
+~~~~~
+
+- Remove password protection if no users are defined. [ypid_]
+
 Changed
 ~~~~~~~
 
 - Updated example playbook and inventory in the documentation. [ypid_]
 
+- Update to min Ansible version to 2.1.4'. [ypid_]
+
 Fixed
 ~~~~~
 
 - Fix deprecation warnings in Ansible 2.1.0. [ypid_]
+
+- Fix password protection feature which was broken with Ansible 2.1 and above
+  because of changes how ``\n`` is handled by Jinja. [Polichronucci, ypid_]
 
 
 `debops.grub v0.1.2`_ - 2015-10-23
