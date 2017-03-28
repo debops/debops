@@ -43,14 +43,6 @@ predefined rule lists (:envvar:`ferm__rules`, :envvar:`ferm__group_rules`,
 inventory. Each rule has to be defined as a YAML dict using some of
 the following keys:
 
-``type``
-  Type of the rule template used for creating the corresponding ferm
-  configuration, required. See `Rule templates`_ for a description of
-  the available rule templates.
-
-``comment``
-  Optional. Comment which should be added to the generated rule configuration.
-
 ``domain``
   Optional. :command:`iptables` domain used for the firewall rule. Possible values:
   :command:`ip`, ``ip6``. Defaults to :envvar:`ferm__domains`.
