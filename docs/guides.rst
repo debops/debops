@@ -84,8 +84,8 @@ variables.
                          else "absent" }}'
 
   If there are multiple internal interfaces additional rules permitting packet
-  forwarding between those might be necessary. Check the ``internal`` rule of
-  the default :envvar:`ferm__rules_forward` for an example.
+  forwarding between those might be necessary. Check the ``forward_internal`` rule of
+  the default :envvar:`ferm__default_rules` for an example.
 
 * Once a packet was accepted by the firewall all related packets belonging to
   the same connection are accepted too. This is defined in the
