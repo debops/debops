@@ -53,7 +53,7 @@ variables.
 
     ferm__default_policy_forward: DROP
 
-* As soon as :envvar:`ferm__forward` is enabled, :envvar:`ferm__rules_forward`
+* As soon as :envvar:`ferm__forward` is enabled, the default role configuration
   will create a default rule list which will accept every incoming or outgoing
   packet with a valid forward target. This can make sense if forwarding should
   be enabled on a virtualization host to allow packets in and out a separate
@@ -89,7 +89,7 @@ variables.
 
 * Once a packet was accepted by the firewall all related packets belonging to
   the same connection are accepted too. This is defined in the
-  :envvar:`ferm__rules_filter_conntrack` rule which is loaded as part of the
+  ``connection_tracking`` rule which is loaded as part of the
   :envvar:`ferm__default_rules` rule list.
 
 
@@ -122,7 +122,7 @@ address of a network packet is rewritten to the internal host address.
 
 .. topic:: Note
 
-    The :ref:`dmz_template` rule template won't modify the source address of a
+    The :ref:`ferm__ref_type_dmz` rule template won't modify the source address of a
     forwarded packet. This means that the original source address can still be
     identified at the internal receiver, however the route leading back to the
     source address must traverse the gateway again in order to successfully
@@ -198,7 +198,7 @@ any other purpose.
 * First create an Ansible list with an individually chosen name which will
   hold the custom output rules. For every outgoing connection which should be
   allowed to the internal or external network a rule needs to be added. Every
-  template described in the :ref:`rule_templates` chapter can be used for the
+  template described in the :ref:`ferm__ref_rule_types` chapter can be used for the
   custom rules. The definition below is just a minimal example to show the
   procedure::
 
@@ -248,7 +248,7 @@ any other purpose.
         name: 'reject_out'
         comment: 'Reject remaining outgoing traffic'
 
-  The last rule is using the :ref:`reject_template` template which will reject
+  The last rule is using the :ref:`ferm__ref_type_reject` which will reject
   every packet not explicitly allowed. This will make it easier to figure out
   missing rules than if the packets would simply be dropped.
 
@@ -270,8 +270,8 @@ any other purpose.
 Block Port Scans
 ~~~~~~~~~~~~~~~~
 
-To block port scans there is a predefined rule list
-:envvar:`ferm__rules_filter_recent_scanners` which is not enabled by default.
+To block port scans there is a predefined rule ``block_portscans`` which is not
+enabled by default.
 It will remember source addresses which try to reach closed ports and
 completely blocks access from those addresses for a while. This behaviour can
 be enabled by setting :envvar:`ferm__mark_portscan`::
