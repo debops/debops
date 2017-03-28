@@ -95,7 +95,7 @@ Changed
 - Use the `Ansible package module`_ which requires Ansible v2.0. [ypid_]
 
 - Be more precise about the expected format of ``item.by_role`` in
-  :ref:`default_rules`. [ypid_]
+  :ref:`ferm__ref_default_rules`. [ypid_]
 
 - Move kernel parameters to enable reverse path filtering to the
   debops.sysctl_ role. [ypid_]
@@ -118,7 +118,7 @@ Deprecated
   compatibility. [ypid_]
 
 - Deprecated ``item.role``, use ``item.by_role`` instead. Applies for:
-  :ref:`default_rules`. [ypid_]
+  :ref:`ferm__ref_default_rules`. [ypid_]
 
 
 `debops.ferm v0.2.1`_ - 2016-04-21
