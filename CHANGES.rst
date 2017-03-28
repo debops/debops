@@ -62,6 +62,9 @@ Changed
 - Run the ``debconf`` task only when APT is the package manager. This should
   allow the role to be used on OSes other than Debian/Ubuntu. [drybjed_]
 
+- The :file:`/etc/ferm/ferm.conf` configuration file will be now properly
+  diverted to preserve the original. [drybjed_]
+
 Removed
 ~~~~~~~
 
