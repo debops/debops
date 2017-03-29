@@ -69,6 +69,8 @@ Changed
 - Set :envvar:`cryptsetup__cipher` explicitly to ``aes-xts-plain64`` and use it also
   in plain mode which has a different complied-in default than LUKS mode. [ypid_]
 
+- Update documentation. [ypid_]
+
 Security
 ~~~~~~~~
 

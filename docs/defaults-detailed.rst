@@ -29,6 +29,8 @@ you to use more specific parameters which are not documented below.
 
 Each item of those lists is a dictionary with the following documented keys:
 
+.. _cryptsetup__devices_name:
+
 ``name``
   Required, string. Name of the `plaintext device mapper target` and the mount point
   (unless overwritten by :ref:`item.mount <cryptsetup__devices_mount>`).
@@ -345,6 +347,7 @@ to decrypt/encrypt the device on each boot.
        remote_keyfile: '/dev/urandom'
        ciphertext_block_device: '/dev/disk/by-partuuid/a7a12244-a4aa-42b7-b605-997165b3fbac'
 
+
 .. _cryptsetup__ref_devices_tmp_with_random_key:
 
 Example for an encrypted /tmp using a random key
@@ -367,6 +370,30 @@ A new filesystem will be created on each boot. By default ``ext4`` will be used.
        # crypttab_options: '{{ ["tmp=" + cryptsetup__fstype] + (cryptsetup__crypttab_options|d([]) | list) }}'
        ## This seems to not work with Debian jessie (results in systemd waiting forever for the cleartext target).
        ## Using "tmp" instead worked.
+
+
+.. _cryptsetup__ref_devices_header_backup_of_fde_system:
+
+Example for making a header backup of an existing FDE system
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you installed the OS using FDE and thus the encrypted filesystem was created
+by the installer you might still want to make a header backup.
+This can be done by setting ``remote_keyfile`` to ``none`` so that you will
+still be asked for the password at boot and to avoid keyfile generation.
+Additionally :ref:`manage_filesystem <cryptsetup__devices_manage_filesystem>`
+should be set to ``False`` so that an existing filesystem is not checked
+against :ref:`fstype <cryptsetup__devices_fstype>`.
+
+.. code:: yaml
+
+   cryptsetup__devices:
+
+     - name: 'vdb3_crypt'
+       ciphertext_block_device: '/dev/disk/by-partuuid/55d1da1d-e1b0-4022-b17a-3b73cdc89286'
+       manage_filesystem: False
+       remote_keyfile: 'none'
+
 
 .. _cryptsetup__ref_devices_chaining_multiple_ciphers:
 
