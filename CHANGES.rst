@@ -46,4 +46,4 @@ ypid.cryptsetup_remote_unlock v0.1.0 - 2016-07-18
 Added
 ~~~~~
 
-- Initial coding and design. [ypid_]
+- Initial coding and design. Dates back to 2015-03-01. [ypid_]

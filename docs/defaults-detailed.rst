@@ -15,27 +15,25 @@ dropbear_initramfs__interfaces
 ------------------------------
 
 The :envvar:`dropbear_initramfs__interfaces` and similar dictionaries behave
-similar to ``ifupdown__*_interfaces`` dictionaries of the debops.ifupdown_
-role. Refer to the roles documentation for details.
+similar to the ``ifupdown__*_interfaces`` dictionaries of the debops.ifupdown_
+role. Refer to the documentation of debops.ifupdown_ for details.
 
 Compared to the debops.ifupdown_, only a limited subset of parameters is
-currently supported.
-
-The following parameters are supported:
+currently supported:
 
 ``type``
   Optional. Anything other than ``ether`` will be ignored.
 
 ``inet``
   Optional. IPv4 configuration method used by a given interface.
-  If you set this parameter to ``False``, the IPv4 configuration will be
-  disabled.
+  If you set this parameter to ``False``, no IPv4 configuration will be
+  applied.
   Currently only ``static`` (default) and ``False`` is supported.
 
 ``inet6``
   Optional. IPv6 configuration method used by a given interface.
-  If you set this parameter to ``False``, the IPv6 configuration will be
-  disabled.
+  If you set this parameter to ``False``, no IPv6 configuration will be
+  applied.
   Currently only ``static`` (default) and ``False`` is supported.
 
 ``address`` or ``addresses``
@@ -64,11 +62,8 @@ Configure ``eth0`` with a global IPv6 address.
 dropbear_initramfs__authorized_keys
 ----------------------------------------
 
-The :envvar:`dropbear_initramfs__authorized_keys`,
-:envvar:`dropbear_initramfs__group_authorized_keys` and
-:envvar:`dropbear_initramfs__host_authorized_keys`
-variables are used to define what SSH keys should be allowed for remote
-initramfs login.
+The :envvar:`dropbear_initramfs__authorized_keys` and similar variables are
+used to define what SSH keys should be allowed for remote initramfs login.
 Each list item is a dictionary with the following supported options:
 
 ``sshkeys``
@@ -93,7 +88,7 @@ Each list item is a dictionary with the following supported options:
 ``key_options``
   Optional. Additional set of options to add to the SSH public keys. This can
   be used with ``item.options`` parameter to easily combine a list of options
-  from another variable with a custom additional options. For example:
+  from another variable with a custom additional options.
 
 ``exclusive``
   Optional, boolean. If defined and ``True``, the role will remove all other
