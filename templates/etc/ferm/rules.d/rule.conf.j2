@@ -230,6 +230,59 @@
 {%   if config.hashlimit|d() %}
 {%     set _ = ferm__tpl_config.update({'subchain': (ferm__tpl_config['type'] + "-" + config.hashlimit_name | d(config.name | d(rule_name)))}) %}
 {%   endif %}
+{%   if config.limit|d() %}
+{%     set _ = ferm__tpl_config.update({'limit': config.limit}) %}
+{%     if config.limit_burst|d() %}
+{%       set _ = ferm__tpl_config.update({'limit_burst': config.limit_burst}) %}
+{%     endif %}
+{%   endif %}
+{%   if ferm__tpl_config['type'] == 'log' %}
+{%     set _ = ferm__tpl_config.update({'log_target': 'LOG'}) %}
+{%   endif %}
+{%   if config.log_target|d() %}
+{%     set _ = ferm__tpl_config.update({'log_target': config.log_target}) %}
+{%   endif %}
+{%   if config.log_limit|d() %}
+{%     set _ = ferm__tpl_config.update({'limit': config.log_limit}) %}
+{%   endif %}
+{%   if config.log_burst|d() %}
+{%     set _ = ferm__tpl_config.update({'limit_burst': config.log_burst}) %}
+{%   endif %}
+{%   if config.log_ip_options|d() %}
+{%     set _ = ferm__tpl_config.update({'log_ip_options': config.log_ip_options | bool}) %}
+{%   endif %}
+{%   if config.log_tcp_options|d() %}
+{%     set _ = ferm__tpl_config.update({'log_tcp_options': config.log_tcp_options | bool}) %}
+{%   endif %}
+{%   if config.log_tcp_sequence|d() %}
+{%     set _ = ferm__tpl_config.update({'log_tcp_sequence': config.log_tcp_sequence | bool}) %}
+{%   endif %}
+{%   if config.log_prefix|d() %}
+{%     set _ = ferm__tpl_config.update({'log_prefix': config.log_prefix}) %}
+{%   endif %}
+{%   if config.log_level|d() %}
+{%     set _ = ferm__tpl_config.update({'log_level': config.log_level}) %}
+{%   endif %}
+{%   set ferm__tpl_log_args = [] %}
+{%   if ferm__tpl_config['type'] == 'log' %}
+{%     if ferm__tpl_config['log_target'] == 'LOG' %}
+{%       if ferm__tpl_config['log_ip_options']|d() and ferm__tpl_config['log_ip_options']|bool %}
+{%         set _ = ferm__tpl_log_args.append('log-ip-options') %}
+{%       endif %}
+{%       if ferm__tpl_config['log_tcp_options']|d() and ferm__tpl_config['log_tcp_options']|bool %}
+{%         set _ = ferm__tpl_log_args.append('log-tcp-options') %}
+{%       endif %}
+{%       if ferm__tpl_config['log_tcp_sequence']|d() and ferm__tpl_config['log_tcp_sequence']|bool %}
+{%         set _ = ferm__tpl_log_args.append('log-tcp-sequence') %}
+{%       endif %}
+{%       if ferm__tpl_config['log_level']|d() %}
+{%         set _ = ferm__tpl_log_args.append('log-level ' + ferm__tpl_config['log_level']) %}
+{%       endif %}
+{%       if ferm__tpl_config['log_prefix']|d() %}
+{%         set _ = ferm__tpl_log_args.append('log-prefix "' + ferm__tpl_config['log_prefix'] + '"') %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
 {%   set ferm__tpl_recent_args = [] %}
 {%   if ferm__tpl_config['recent_name']|d() %}
 {%     set _ = ferm__tpl_recent_args.append('name "' + ferm__tpl_config['recent_name'] + '"') %}
@@ -286,6 +339,12 @@
 {%       set _ = ferm__tpl_arguments.append('@subchain "' + ferm__tpl_config['subchain'] + '"') %}
 {%     endif %}
 {%   endif %}
+{%   if ferm__tpl_config['limit']|d() %}
+{%     set _ = ferm__tpl_arguments.append("mod limit limit " + ferm__tpl_config['limit']) %}
+{%     if ferm__tpl_config['limit_burst']|d() %}
+{%       set _ = ferm__tpl_arguments.append("limit-burst " + ferm__tpl_config['limit_burst']) %}
+{%     endif %}
+{%   endif %}
 {# This is where the configuration begins
    ====================================== #}
 {%   if ferm__tpl_config['comment']|d() %}
@@ -302,6 +361,14 @@
     {% if ferm__tpl_arguments %}{{ ferm__tpl_arguments | join(" ") }} {% endif %}{
         {{ ferm__tpl_config['tracking_module_command'] }} INVALID {{ ferm__tpl_config['tracking_invalid_target'] }};
         {{ ferm__tpl_config['tracking_module_command'] }} (ESTABLISHED RELATED) {{ ferm__tpl_config['tracking_active_target'] }};
+    }
+{%   elif ferm__tpl_config['type'] == 'log' %}
+    {% if ferm__tpl_arguments %}{{ ferm__tpl_arguments | join(" ") }} {% endif %}{
+{% if ferm__tpl_log_args %}
+        {{ ferm__tpl_config['log_target'] }} {{ ferm__tpl_log_args | join(' ') }};
+{% else %}
+        {{ ferm__tpl_config['log_target'] }};
+{% endif %}
     }
 {%   elif ferm__tpl_config['type'] == 'recent' %}
     {% if ferm__tpl_arguments %}{{ ferm__tpl_arguments | join(" ") }} {% endif %}{
