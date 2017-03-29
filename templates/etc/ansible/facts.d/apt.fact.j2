@@ -33,7 +33,8 @@ output = loads('''{{ ({
                    else False),
     "default_mirrors": apt__tpl_default_sources,
     "default_sources_map": apt__tpl_default_sources_map,
-    }) | to_nice_json }}''')
+    }) | to_nice_json | regex_replace("[ \\t\\r\\f\\v]+(\\n|$)", "\\1") }}''')
+{# regex_replace is a workaround for https://github.com/ansible/ansible/issues/23078 #}
 
 apt_sources_list = [ '/etc/apt/sources.list.dpkg-divert', '/etc/apt/sources.list' ]
 
