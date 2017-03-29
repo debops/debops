@@ -19,6 +19,19 @@ The current role maintainer_ is ypid_.
 .. _debops.apt_cacher_ng master: https://github.com/debops/ansible-apt_cacher_ng/compare/v0.2.1...master
 
 
+`debops.apt_cacher_ng v0.2.2`_ - 2017-03-29
+-------------------------------------------
+
+.. _debops.apt_cacher_ng v0.2.2: https://github.com/debops/ansible-apt_cacher_ng/compare/v0.2.1...v0.2.2
+
+Fixed
+~~~~~
+
+- Fix regression in the Debian upstream mirror selection introduced in v0.2.1.
+  When the role was run against a non-Debian host then a mirror for another distribution
+  might have been selected as Debian mirror. [ypid_]
+
+
 `debops.apt_cacher_ng v0.2.1`_ - 2017-03-27
 -------------------------------------------
 

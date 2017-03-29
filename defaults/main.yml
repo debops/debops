@@ -195,9 +195,11 @@ apt_cacher_ng__max_download_speed_kib: ''
 # One mirror per line.
 # Set to an empty string to let the package scripts from Apt-Cacher NG decide
 # which upstream mirror to use.
-apt_cacher_ng__upstream_mirror_debian: '{{ ansible_local.apt.default_mirrors[0]
+apt_cacher_ng__upstream_mirror_debian: '{{ ansible_local.apt.default_sources_map.Debian[0]
                                            if (ansible_local|d() and ansible_local.apt|d() and
-                                             ansible_local.apt.default_mirrors|d())
+                                               ansible_local.apt.default_sources_map|d() and
+                                               ansible_local.apt.default_sources_map.Debian|d() and
+                                               ansible_local.apt.default_sources_map.Debian[0]|d())
                                            else "http://deb.debian.org/debian" }}'
 
                                                                    # ]]]
@@ -207,7 +209,12 @@ apt_cacher_ng__upstream_mirror_debian: '{{ ansible_local.apt.default_mirrors[0]
 # One mirror per line.
 # Set to an empty string to let the package scripts from Apt-Cacher NG decide
 # which upstream mirror to use.
-apt_cacher_ng__upstream_mirror_ubuntu: ''
+apt_cacher_ng__upstream_mirror_ubuntu: '{{ ansible_local.apt.default_sources_map.Ubuntu[0]
+                                           if (ansible_local|d() and ansible_local.apt|d() and
+                                               ansible_local.apt.default_sources_map|d() and
+                                               ansible_local.apt.default_sources_map.Ubuntu|d() and
+                                               ansible_local.apt.default_sources_map.Ubuntu[0]|d())
+                                           else "http://archive.ubuntu.com/ubuntu" }}'
 
                                                                    # ]]]
 # .. envvar:: apt_cacher_ng__upstream_mirror_gentoo [[[
@@ -216,7 +223,12 @@ apt_cacher_ng__upstream_mirror_ubuntu: ''
 # One mirror per line.
 # Set to an empty string to let the package scripts from Apt-Cacher NG decide
 # which upstream mirror to use.
-apt_cacher_ng__upstream_mirror_gentoo: ''
+apt_cacher_ng__upstream_mirror_gentoo: '{{ ansible_local.apt.default_sources_map.Gentoo[0]
+                                           if (ansible_local|d() and ansible_local.apt|d() and
+                                               ansible_local.apt.default_sources_map|d() and
+                                               ansible_local.apt.default_sources_map.Gentoo|d() and
+                                               ansible_local.apt.default_sources_map.Gentoo[0]|d())
+                                           else "" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Cache directory [[[
