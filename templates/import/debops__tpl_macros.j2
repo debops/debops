@@ -29,16 +29,16 @@
 # Usage [[[
 # =========
 #
-# Copy the template file into your ./templates/ path of a role where it fits
-# best. You can/might need to use symlinks to make the macros available from
-# different paths in your ./templates/ hierarchy.
+# Copy the template file to `./templates/import/debops__tpl_macros.j2` of your
+# role and import it from there into various other templates or even use it
+# in {{ lookup("template", ...) }}.
 #
 # Make sure to retain the filename of this file so that automatic updates of
 # this file can be implemented.
 #
 # To use the macros in your own template, this file needs to be included like so:
 #
-# {% import 'debops__tpl_macros.j2' as debops__tpl_macros with context %}
+# {% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
 #
 # Then you can start using the macros like this:
 #
@@ -128,4 +128,65 @@
 {%     endif %}
 {%   endif %}
 {{ merged_dict | to_json }}
+{% endmacro %}{# ]]] #}
+
+{% macro flattened() %}{# [[[ #}
+{# This macro does what the flattened lookup from Ansible fails to do in Jinja templates as of Ansible 2.2.
+## All macro arguments are flattened into one "flat" list.
+## Uses a less known feature of Jinja for using the *args and *kwargs syntax as known from
+## Python. Even if the macro does not declare any arguments, it will happyily
+## flatten any non-key-value arguments you provide.
+## Additional key-value arguments can be used to influence the behavoir of the macro.
+## The macro uses recursion to flatten nested lists.
+## Ref: https://stackoverflow.com/questions/13944751/args-kwargs-in-jinja2-macros
+## Usage:
+##
+## {{ debops__tpl_macros.flattened(['list1', 55, ["deeplist1", "deeplist elem", True, False, undefined], {'mapping': True}], 'raw1', 22, True, False) }}
+## → ["list1", 55, "deeplist1", "deeplist elem", true, false, "raw1", 22, true, false]
+##
+## {{ debops__tpl_macros.flattened(['list1', 55, ["deeplist1", "deeplist elem", True, False, undefined], {'mapping': True}], 'raw1', 22, True, False, filter_undef=False) }}
+## → ["list1", 55, "deeplist1", "deeplist elem", true, false, null, "raw1", 22, true, false]
+##
+## {{ debops__tpl_macros.flattened(['list1', 55, ["deeplist1", "deeplist elem", True, False, undefined], {'mapping': True}], 'raw1', 22, True, False, filter_mapping=False) }}
+## → ["list1", 55, "deeplist1", "deeplist elem", true, false, {"mapping": true}, "raw1", 22, true, false]
+##
+## Ansible versions tested with: 2.1, 2.2
+## Jinja versions tested with: 2.8.1
+#}
+{% set filter_undef = kwargs.filter_undef|d(True) | bool %}
+{% set filter_mapping = kwargs.filter_mapping|d(True) | bool %}
+{# The following options are planned but currently don’t work: #}
+{% set append_mapping_keys = kwargs.append_mapping_keys|d(False) | bool %}
+{% set append_mapping_values = kwargs.append_mapping_values|d(False) | bool %}
+{#
+{{ "filter_undef:" + (filter_undef | string) }}
+{{ "filter_mapping:" + (filter_mapping | string) }}
+{{ "varargs:" + (varargs | string) }}
+#}
+{% set elem_flattened = [] %}
+{% for arg in varargs %}
+{#
+{{ "arg: " + (arg | string) }}
+#}
+{%   if filter_undef and (arg is undefined) %}
+{#     Filter out. #}
+{%   elif append_mapping_keys and (arg is mapping) %}
+{#     Does not work as of Jinja 2.8? #}
+{%     set _ = elem_flattened.extend(flattened(arg.keys(), filter_undef=filter_undef, filter_mapping=filter_mapping) | from_json) %}
+{%   elif append_mapping_values and (arg is mapping) %}
+{#     Does not work as of Jinja 2.8? #}
+{%     set _ = elem_flattened.extend(flattened(arg.values(), filter_undef=filter_undef, filter_mapping=filter_mapping) | from_json) %}
+{%   elif filter_mapping and (arg is mapping) %}
+{#     Filter out. #}
+{%   elif (arg is undefined) %}
+{%     set _ = elem_flattened.append(None) %}
+{%   elif (arg is string) or (arg is number) or (arg is sameas True) or (arg is sameas False) or (arg is mapping) %}
+{%     set _ = elem_flattened.append(arg) %}
+{%   elif (arg is iterable) %}
+{%     for element in arg %}
+{%       set _ = elem_flattened.extend(flattened(element, filter_undef=filter_undef, filter_mapping=filter_mapping) | from_json) %}
+{%     endfor %}
+{%   endif %}
+{% endfor %}
+{{ elem_flattened | to_json }}
 {% endmacro %}{# ]]] #}
