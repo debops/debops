@@ -183,6 +183,14 @@ dropbear_initramfs__group_authorized_keys: []
 dropbear_initramfs__host_authorized_keys: []
 
                                                                    # ]]]
+# .. envvar:: dropbear_initramfs__combined_authorized_keys [[[
+#
+# Combines list of authorized ssh keys as used in the role tasks.
+dropbear_initramfs__combined_authorized_keys: '{{ dropbear_initramfs__authorized_keys +
+                                                  dropbear_initramfs__group_authorized_keys +
+                                                  dropbear_initramfs__host_authorized_keys }}'
+
+                                                                   # ]]]
 # .. envvar:: dropbear_initramfs__authorized_keys_options [[[
 #
 # List of default SSH options added to all public keys. If it's set to
