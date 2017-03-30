@@ -521,7 +521,7 @@ passphrase is asked for on boot:
        ciphertext_block_device: '/dev/disk/by-partuuid/3b014afe-1581-11e7-b65d-00163e5e6c0f'
        keyfile_gen_type: 'text'
        manage_filesystem: False
-       keyfile: '/home/user/.config/fdeunlock/keys/{{ inventory_hostname }}-initramfs_sdb4_crypt.key'
+       keyfile: '/home/user/.config/fdeunlock/keys/{{ inventory_hostname }}-initramfs_dev_disk_by-partuuid_3b014afe-1581-11e7-b65d-00163e5e6c0f.key'
 
        ## Disable for initial setup else enable it:
        remote_keyfile: 'none'
