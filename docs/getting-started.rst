@@ -40,15 +40,6 @@ To configure encrypted filesystems on host given in
    [debops_service_cryptsetup]
    hostname
 
-In case the host in question happens to be a TemplateBasedVM on `Qubes OS`_, it
-should instead be added to ``debops_service_cryptsetup_persistent_paths`` so
-that the changes can be made persistent:
-
-.. code:: ini
-
-   [debops_service_cryptsetup_persistent_paths]
-   hostname
-
 Example playbook
 ----------------
 
@@ -80,3 +71,26 @@ Available role tags:
 
 ``role::cryptsetup:backup``
   LUKS header backup related tasks.
+
+debops.persistent_paths_ support
+--------------------------------
+
+In case the host in question happens to be a TemplateBasedVM on `Qubes OS`_ or
+another system where persistence is not the default, it should instead be added
+to ``debops_service_cryptsetup_persistent_paths`` so that the changes can be made
+persistent:
+
+.. code:: ini
+
+   [debops_service_cryptsetup_persistent_paths]
+   hostname
+
+Besides that, the :envvar:`cryptsetup__base_packages` are expected to be
+present (typically installed in the TemplateVM).
+
+Note that even if the same filesystem is bind mounted to different locations
+they are considered different file systems by :command:`mv` which would case
+it fall back to content copying instead of just metadata updating.
+Be sure to always access the plaintext mount point by one path if you care about this.
+So either :envvar:`cryptsetup__mountpoint_parent_directory` or
+`/rw/bind-dirs/media/` on Qubes OS.
