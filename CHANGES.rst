@@ -16,7 +16,13 @@ The current role maintainer_ is ypid_.
 `debops.cryptsetup master`_ - unreleased
 ----------------------------------------
 
-.. _debops.cryptsetup master: https://github.com/debops/ansible-cryptsetup/compare/v0.4.0...master
+.. _debops.cryptsetup master: https://github.com/debops/ansible-cryptsetup/compare/v0.5.0...master
+
+
+`debops.cryptsetup v0.5.0`_ - 2017-04-02
+----------------------------------------
+
+.. _debops.cryptsetup v0.5.0: https://github.com/debops/ansible-cryptsetup/compare/v0.4.0...v0.5.0
 
 Added
 ~~~~~
