@@ -45,7 +45,7 @@ Each item of those lists is a dictionary with the following documented keys:
 .. _cryptsetup__devices_ciphertext_block_device:
 
 ``ciphertext_block_device``
-  Required, string. File path to the ciphertext block device, either the block
+  Required, string. File path to the `ciphertext block device`, either the block
   device itself e. g. :file:`/dev/sdb`, a partition on the block device e. g.
   :file:`/dev/sdb5` or a regular file e. g. :file:`/tmp/ciphertext_file.raw`.
 
@@ -56,7 +56,7 @@ Each item of those lists is a dictionary with the following documented keys:
 
 ``use_uuid``
   Optional, boolean.
-  Use the UUID of the ciphertext block device in :file:`/etc/crypttab` instead
+  Use the UUID of the `ciphertext block device` in :file:`/etc/crypttab` instead
   of the file path given by
   :ref:`item.ciphertext_block_device <cryptsetup__devices_ciphertext_block_device>`.
 
@@ -80,8 +80,8 @@ Each item of those lists is a dictionary with the following documented keys:
 .. _cryptsetup__devices_offset:
 
 ``offset``
-  Optional, integer start offset of the `Ciphertext block device` which will be
-  mapped to block 0 of the `Plaintext device mapper target`.
+  Optional, integer start offset of the `ciphertext block device` which will be
+  mapped to block 0 of the `plaintext device mapper target`.
   This option only has an effect in ``plain`` :ref:`item.mode <cryptsetup__devices_mode>`.
   There is no offset by default.
 
@@ -132,6 +132,48 @@ Each item of those lists is a dictionary with the following documented keys:
   :ref:`ansible_controller_mounted state <cryptsetup__devices_state_ansible_controller_mounted>`
   and the role will abort immediately if that combination is used.
 
+.. _cryptsetup__devices_keyfile_gen_type:
+
+``keyfile_gen_type``
+  Optional, string. Type of keyfile to generate. This does not effect already
+  generated keyfiles.
+  Defaults to :envvar:`cryptsetup__keyfile_gen_type`.
+
+  ``binary``
+    A binary keyfile will be generated using :command:`dd` from the random
+    source specified by :envvar:`cryptsetup__keyfile_source_dev`.
+    This should ensure the maximum amount of entropy for keyfiles.
+
+  ``text``
+    The keyfile will be a random passphrase only consisting of printable
+    characters suitable for automated or by-hand input.
+    :ref:`item.keyfile_gen_command <cryptsetup__devices_keyfile_gen_command>`
+    will be used to output the passphrase.
+
+    Refer to the :ref:`example for adding another boot disk to a FDE system
+    <cryptsetup__ref_devices_add_boot_disk_to_fde_system>` for how this can be
+    used.
+
+.. _cryptsetup__devices_keyfile_gen_command:
+
+``keyfile_gen_command``
+  Optional, string. The command which should be used to generate the keyfile
+  when :ref:`item.keyfile_gen_type <cryptsetup__devices_keyfile_gen_type>` is set to
+  ``text``. The command is expected to output one line to STDOUT.
+
+  Note that all newline characters (``\n``) are removed using :command:`tr -d
+  '\\n'` internally so that the generated text key can be entered as regular
+  passphrase.
+  This is required because most CLI programs properly end their output with a newline.
+  But when :command:`cryptsetup` reads the key from a keyfile (which is what
+  this role always uses internally), it does not terminate input when reading a
+  newline. When reading from STDIN or from a terminal, it does however
+  terminate on the first newline and uses the passphrase with the trailing
+  newline stripped.  Refer to :manpage:`cryptsetup(8)` under :regexp:`Notes on
+  passphrase processing for (plain mode|LUKS)`.
+
+  Defaults to :envvar:`cryptsetup__keyfile_gen_command`.
+
 .. _cryptsetup__devices_backup_header:
 
 ``backup_header``
@@ -156,7 +198,11 @@ Each item of those lists is a dictionary with the following documented keys:
   :ref:`item.manage_filesystem <cryptsetup__devices_manage_filesystem>`
   is ignored.
   Refer to debops.sysctl_ for paging and swapping related kernel settings.
-  Defaults ``False``.
+  Defaults to ``False``.
+
+  Refer to the :ref:`example for an encrypted swap partition using a random key
+  <cryptsetup__ref_devices_swap_with_random_key>` for how this can be
+  used.
 
 .. _cryptsetup__devices_swap_priority:
 
@@ -178,7 +224,7 @@ Each item of those lists is a dictionary with the following documented keys:
 ``manage_filesystem``
   Optional, boolean. Should a filesystem be created on the plaintext device mapper
   target and configured in :file:`/etc/fstab`?
-  Defaults ``True``.
+  Defaults to ``True``.
 
 .. _cryptsetup__devices_create_filesystem:
 
@@ -187,7 +233,7 @@ Each item of those lists is a dictionary with the following documented keys:
   target? Allows to only disable the creation of the filesystems but still
   manage an existing filesystem in :file:`/etc/fstab` when
   :ref:`item.manage_filesystem <cryptsetup__devices_manage_filesystem>` is ``True``.
-  Defaults :ref:`item.manage_filesystem <cryptsetup__devices_manage_filesystem>`.
+  Defaults to :ref:`item.manage_filesystem <cryptsetup__devices_manage_filesystem>`.
 
 .. _cryptsetup__devices_fstype:
 
@@ -199,7 +245,7 @@ Each item of those lists is a dictionary with the following documented keys:
 .. _cryptsetup__devices_mount:
 
 ``mount``
-  Optional, string. Plaintext mount point of the filesystem.
+  Optional, string. `Plaintext mount point of the filesystem`.
   Defaults to:
 
   .. code:: jinja
@@ -246,7 +292,8 @@ Each item of those lists is a dictionary with the following documented keys:
       mount_options: '{{ ["noauto"] + (cryptsetup__mount_options|d([]) | list) }}'
 
     Note that this option is currently not idempotent because it copes the
-    keyfile to the remote system and erases it again.
+    keyfile to the remote system and erases it again without checking before
+    hand if the `plaintext device mapper target` is already present.
 
   .. _cryptsetup__devices_state_unmounted:
 
@@ -264,9 +311,9 @@ Each item of those lists is a dictionary with the following documented keys:
     device mapper target` was not opened prior to the Ansible run, then it will
     be stopped at the end of the role run again.
     So basically, this option never changes the mounted/unmounted state of the
-    `plaintext device mapper target` or the plaintext mount point of the
-    filesystem.
-    Note that this option will not fail when the ciphertext block device is not
+    `plaintext device mapper target` or the `plaintext mount point of the
+    filesystem`.
+    Note that this option will not fail when the `ciphertext block device` is not
     available during the Ansible run and the keyfile has not been generated by Ansible.
     This was done to allow to provision remote systems with keys for ciphertext block
     devices which have been setup previously and are not available during
@@ -379,8 +426,9 @@ Example for making a header backup of an existing FDE system
 
 If you installed the OS using FDE and thus the encrypted filesystem was created
 by the installer you might still want to make a header backup.
-This can be done by setting ``remote_keyfile`` to ``none`` so that you will
-still be asked for the password at boot and to avoid keyfile generation.
+This can be done by setting :ref:`remote_keyfile <cryptsetup__devices_remote_keyfile>`
+to ``none`` so that you will
+still be asked for the passphrase at boot and to avoid keyfile generation.
 Additionally :ref:`manage_filesystem <cryptsetup__devices_manage_filesystem>`
 should be set to ``False`` so that an existing filesystem is not checked
 against :ref:`fstype <cryptsetup__devices_fstype>`.
@@ -395,6 +443,96 @@ against :ref:`fstype <cryptsetup__devices_fstype>`.
        remote_keyfile: 'none'
 
 
+.. _cryptsetup__ref_devices_add_boot_disk_to_fde_system:
+
+Example for adding another boot disk to a FDE system
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In case you installed a FDE system on one disk and want to create a redundant
+setup afterwards by adding another disk, encrypting it and re-balancing a SOTA_
+filesystem (Btrfs or ZFS) or growing a legacy raid setup to it you can follow
+this example.
+
+For this setup it is required that the added disk can be decrypted in the
+initramfs to assemble the root filesystem. To make this easier a passphrase
+will be used as keyfile instead of the default binary keyfile.
+
+Using a passphrase also allows/makes it easier automated the key input at boot
+using FDEunlock_ which is also described in this example. You can ignore/remove
+the custom :ref:`keyfile <cryptsetup__devices_keyfile>` setting if you don’t
+use FDEunlock_.
+
+The :ref:`keyfile <cryptsetup__devices_keyfile>` is generated/place in the
+:file:`keys` directory of the default ``FileVault`` implementation of FDEunlock_.
+Refer to FDEunlock_ for details.
+
+``inventory_hostname`` can be used to make the configuration of the ``keyfile``
+option easier to copy/paste.
+Note that ``inventory_hostname`` is used here because we don’t want to "to rely
+on the discovered hostname ``ansible_hostname`` or for other mysterious reasons"
+which the (ref: `Magic Variables, and How To Access Information About Other
+Hosts`_). Seems we just found such a "mysterious reason".
+It is hoped that ``inventory_hostname`` is not spoofable because if it where,
+the role might hand out keys for others hosts to a host exploiting this
+potential vulnerability. You can set the keyfile manually if you want.
+
+However, there is one issue to note here. The role normally configures devices
+to unlock them by keyfile or disable keyfile handling completely (when using
+:ref:`remote_keyfile <cryptsetup__devices_remote_keyfile>`). In this example, a
+combination of both would be nice so that the role creates the crypto layer
+with the provided keyfile but does not configure it in :file:`/etc/crypttab`.
+This is not directly supported and the role can not be extended easily to fully
+support this because of the internal role design. Changing that is not intended
+only to support this use case is not intended.
+
+Also, this use case requires that the passphrase is never saved anywhere on
+persistent storage on the remote host.
+
+There is workaround which meats these requirements by making use of the
+:ref:`ansible_controller_mounted state <cryptsetup__devices_state_ansible_controller_mounted>`.
+
+You will need two role runs with slightly changed configuration for this. For
+the first run, use something like this to ensure that the crypto layer is present and opened:
+
+.. code:: yaml
+
+   cryptsetup__devices:
+
+     - name: 'sdb4_crypt'
+       ciphertext_block_device: '/dev/disk/by-partuuid/3b014afe-1581-11e7-b65d-00163e5e6c0f'
+       keyfile_gen_type: 'text'
+       manage_filesystem: False
+       keyfile: '/home/user/.config/fdeunlock/keys/{{ inventory_hostname }}-initramfs_sdb4_crypt.key'
+
+       ## Disable for initial setup else enable it:
+       # remote_keyfile: 'none'
+
+       ## Enable for initial setup else disable it:
+       state: 'ansible_controller_mounted'
+
+Now we will need the role to fix the entry in :file:`/etc/crypttab` so that the
+passphrase is asked for on boot:
+
+.. code:: yaml
+
+   cryptsetup__devices:
+
+     - name: 'sdb4_crypt'
+       ciphertext_block_device: '/dev/disk/by-partuuid/3b014afe-1581-11e7-b65d-00163e5e6c0f'
+       keyfile_gen_type: 'text'
+       manage_filesystem: False
+       keyfile: '/home/user/.config/fdeunlock/keys/{{ inventory_hostname }}-initramfs_sdb4_crypt.key'
+
+       ## Disable for initial setup else enable it:
+       remote_keyfile: 'none'
+
+       ## Enable for initial setup else disable it:
+       # state: 'ansible_controller_mounted'
+
+You should now be left with a decrypted ``sdb4_crypt`` `plaintext device mapper target` for which the key only exists in
+:file:`/home/user/.config/fdeunlock/keys/{{ inventory_hostname }}-initramfs_sdb4_crypt.key` on the Ansible controller.
+
+
 .. _cryptsetup__ref_devices_chaining_multiple_ciphers:
 
 Example for chaining multiple ciphers
@@ -403,9 +541,9 @@ Example for chaining multiple ciphers
 Setup a vault using three different ciphers and three different keys.
 A similar feature is supported by TrueCrypt/VeraCrypt.
 
-Note that order is important here and that the ``serial``
-:envvar:`cryptsetup__devices_execution_strategy` has to be used when using
-such an example.
+Note that order is important here and that the
+:envvar:`cryptsetup__devices_execution_strategy` option has to be set to ``serial``
+when using such an example.
 
 .. code:: yaml
 
@@ -436,7 +574,7 @@ that outer layer available under :file:`/dev/mapper/vault_ciphertext0`.
 :file:`/dev/mapper/vault_ciphertext0` is then en/decrypted using Twofish and the
 "clear text" of that is mapped to :file:`/dev/mapper/vault_ciphertext1`.
 :file:`/dev/mapper/vault_ciphertext1` is then en/decrypted using Serpent and
-mapped to the now clear text block device
+mapped to the real clear text block device
 :file:`/dev/mapper/vault` on which a filesystem will be created
 and which will be mounted as usual.
 

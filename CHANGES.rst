@@ -48,6 +48,9 @@ Added
   and :ref:`item.ciphertext_block_device <cryptsetup__devices_ciphertext_block_device>`
   of :ref:`cryptsetup__devices` are unique to catch configuration problems early. [ypid_]
 
+- Support the generation of a passphrase instead of binary random data as keyfile
+  using :ref:`item.keyfile_gen_type <cryptsetup__devices_keyfile_gen_type>`. [ypid_]
+
 Changed
 ~~~~~~~
 

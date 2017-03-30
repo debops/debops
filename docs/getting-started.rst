@@ -13,6 +13,9 @@ Getting started
 Overview and terminology
 ------------------------
 
+.. When using terminology as defined here in the docs, they should be referred
+   to like `plaintext device mapper target`.
+
 The following layers are involved in configuring an encrypted filesystem using
 block device encryption:
 
@@ -76,9 +79,10 @@ debops.persistent_paths_ support
 --------------------------------
 
 In case the host in question happens to be a TemplateBasedVM on `Qubes OS`_ or
-another system where persistence is not the default, it should instead be added
-to ``debops_service_cryptsetup_persistent_paths`` so that the changes can be made
-persistent:
+another system where persistence is not the default, it should be absent in
+``debops_service_cryptsetup`` and instead be added to the
+``debops_service_cryptsetup_persistent_paths`` Ansible inventory group
+so that the changes can be made persistent:
 
 .. code:: ini
 
