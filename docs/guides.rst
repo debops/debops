@@ -71,8 +71,12 @@ which should have the following effects:
 
 All of those tasks are idempotent so you can run the role repetitively against
 the host and the role will not reformat the filesystem nor reinitialize LUKS
-on the device. If the LUKS header has been changed between role runs, the role
-should pick up the changed header and update the two backups of it.
+on the device.
+
+If the LUKS header has been changed between role runs, the role
+picks up the changed header and updates the two backups of it.
+The task "Store the header backup in secret directory on to the Ansible
+controller" will signal a changed header with the task state "changed".
 
 You can check that the `plaintext mount point of the filesystem` is mounted using:
 
