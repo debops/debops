@@ -5,6 +5,59 @@ Usage guides
 
 .. include:: includes/all.rst
 
+Role authors who want to support platforms like `Qubes OS`_ and other
+environments where persistence is not the default can do so by using this role
+as a dependency role, either has hard or soft dependency (DebOps default).
+
+The general mode of operation looks like this:
+
+#. Your service role is run as usual writing to non-persistent paths.
+
+#. ``debops.persistent_paths`` is run to ensure that paths specified by the
+   service role are persistent.
+
+
+To make this happen, you would typically include a default variable like
+``role_name__persistent_paths__dependent_paths`` in your service role like this
+one:
+
+.. code-block:: yaml
+
+   # .. envvar:: role_name__persistent_paths__dependent_paths [[[
+   #
+   # Configuration for the debops.persistent_paths_ Ansible role.
+   role_name__persistent_paths__dependent_paths:
+
+     '50_role_owner_role_name':
+       by_role: 'role_owner.role_name'
+       paths:
+         - '/etc/example1'
+         - '/etc/example2'
+                                                                      # ]]]
+
+And then pass this to ``debops.persistent_paths`` when calling the role:
+
+.. code-block:: yaml
+
+   - role: role_owner.role_name
+     tags: [ 'role::role_name' ]
+
+   - role: debops.persistent_paths
+     tags: [ 'role::persistent_paths' ]
+     persistent_paths__dependent_paths: '{{ role_name__persistent_paths__dependent_paths }}'
+
+Note that as `Qubes OS`_ and similar platforms are not the main target
+platforms of DebOps, an additional playbook which features
+``debops.persistent_paths`` support should be included in roles instead of extending the default role playbook.
+User can then select the role playbook they want to run using Ansible groups as needed.
+
+Examples of roles which use/support ``debops.persistent_paths``:
+
+* debops.cryptsetup_
+* debops.dnsmasq_
+* debops.tinc_
+
+
 .. _persistent_paths__ref_guide_updating_persistent_files:
 
 Templating or updating persistent files
@@ -16,55 +69,8 @@ a separate directory and mounted over the original files.
 
 Note that bind mounted files (and directories) don’t allow `rename` nor
 `unlinkat` sys calls. This means that once a file has been made persistent by
-bind mounting it, updates to the file should be redirected to the actual
-location (called ``storage_path`` by this role).
-Unfortunately, when files/directories in ``storage_path`` get updated/replaced,
-a remount is required for the new version to become available at the original
-location. This is currently not done automatically.
+bind mounting it, updates to the file needs to be done using the
+``unsafe_writes`` parameter which many file related Ansible modules support.
 
-This can be achieved by:
-
-#. Running the service role the first time as usual writing to non-persistent paths.
-
-#. Letting the service role create an Ansible local fact at the end of the role
-   run. This fact, combined with the ``debops.persistent_paths`` facts will be
-   used to determine when file operations by Ansible should be redirected.
-
-#. Running the ``debops.persistent_paths`` role to copy the changes made to a
-   persistent location and providing them at the non-persistent path.
-
-#. If the service role is now run again, the problematic file operations need
-   to be done against the ``storage_path``.
-
-To do this, you can introduce a new default role variable like this one:
-
-.. code-block:: yaml
-
-   # .. envvar:: role_name__persistent_prefix_path [[[
-   #
-   # Directory path prefix which should be used for writing/updating of files made
-   # persistent by :envvar:`role_name__persistent_paths__dependent_paths`.
-   role_name__persistent_prefix_path: '{{ ansible_local.persistent_paths.storage_path|d("")
-                                          if (ansible_local|d() and
-                                              ansible_local.role_name|d() and
-                                              ansible_local.role_name.enabled|d() | bool and
-                                              ansible_local.persistent_paths|d() and
-                                              ansible_local.persistent_paths.enabled|d() | bool and
-                                              ansible_local.persistent_paths.write_to_storage_path|d() | bool)
-                                          else "" }}'
-                                                                      # ]]]
-
-And use ``role_name__persistent_prefix_path`` as prefix in tasks:
-
-.. code-block:: yaml
-
-   - name: Template the configuration file
-     template:
-       src: 'etc/role_name/config.ini'
-       dest: '{{ role_name__persistent_prefix_path }}/etc/role_name/config.ini'
-
-This way, when Ansible detects that the role has been configured and persistent
-paths are enabled, all involved tasks should be redirected to the correct
-location automatically.
-
-Refer to `Clarify some issues regarding bind-dirs <https://github.com/QubesOS/qubes-doc/pull/299#discussion_r106387538>`_ for more details.
+Refer to the `debops.core usage guide <https://docs.debops.org/en/latest/ansible/roles/ansible-core/docs/guides.html#global-unsafe-writes>`_
+for details.

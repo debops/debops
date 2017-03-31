@@ -21,8 +21,9 @@ To manage persistence of paths on a TemplateBasedVM it should be included in the
 The role can also run against a TemplateVM to prepare paths which will then be
 persistent in AppVMs based on the TemplateVM.
 
-If the role is used as a dependency role, you as a user of the main role do not
-need to do anything with this role except from having it installed.
+If the role is used as a dependency role, you as user of the main role do not
+need to do anything with this role except from having it installed and using
+the appropriate playbook provided by the main role.
 
 Example playbook
 ----------------
@@ -43,6 +44,10 @@ Qubes OS
 
 The ``qubes-core-agent`` package needs to be installed in the TemplateVM which
 is the default for the `official Debian templates <https://www.qubes-os.org/doc/templates/debian/>`_.
+
+Note that currently you will need an unreleased version of bind-dirs.sh_ in place for
+some roles which use ``debops.persistent_paths`` to work correctly (ref:
+`bind-dirs: Create ro if bind target exists <https://github.com/QubesOS/qubes-core-agent-linux/pull/42>`_).
 
 Refer to bind-dirs_ for more details and limitations.
 
