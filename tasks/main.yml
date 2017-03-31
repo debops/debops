@@ -60,6 +60,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   notify: [ 'Reload tinc' ]
 
 - name: Disable tinc networks in systemd if requested
@@ -95,6 +97,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
   when: item.value.state|d('present') != 'absent' and item.value.tinc_options|d()
   notify: [ 'Reload tinc' ]
@@ -111,6 +115,8 @@
     owner: 'root'
     group: '{{ tinc__group }}'
     mode: '0750'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
   when: (item.value.state|d('present') != 'absent' and item.value.generate_tinc_up|d(True)|bool)
 
@@ -121,6 +127,8 @@
     owner: 'root'
     group: '{{ tinc__group }}'
     mode: '0750'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
   when: (item.value.state|d('present') != 'absent' and item.value.generate_tinc_up|d(True)|bool)
 
@@ -131,8 +139,10 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
 
-## RSA key management [[[1
+# RSA key management [[[1
 
 - name: Ensure that sensitive files are excluded from version control
   template:
@@ -141,6 +151,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
 
 - name: Initialize RSA key pairs
   shell: yes | tincd -n {{ item.value.name | d(item.key) }} -K {{ item.value.rsa_key_length | d(tinc__rsa_key_length) }}
@@ -157,7 +169,7 @@
   with_dict: '{{ tinc__combined_networks }}'
   when: item.value.state|d('present') != 'absent'
 
-## Tinc host configuration [[[1
+# Tinc host configuration [[[1
 - name: Generate host configuration file
   template:
     src: 'etc/tinc/network/hosts/host-config.j2'
@@ -165,6 +177,8 @@
     owner: 'root'
     group: 'root'
     mode: '0640'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
   when: item.value.state|d('present') != 'absent'
 
@@ -179,7 +193,7 @@
   when: item.value.state|d('present') != 'absent'
   notify: [ 'Reload tinc' ]
 
-## Tinc host configuration distribution [[[1
+# Tinc host configuration distribution [[[1
 - name: Upload public keys from hosts to Ansible Controller
   fetch:
     src: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname)) | replace("-","_") }}'
@@ -235,7 +249,7 @@
   when: item.value.state|d('present') != 'absent'
   notify: [ 'Reload tinc' ]
 
-## systemd configuration [[[1
+# systemd configuration [[[1
 - name: Configure systemd default variables
   template:
     src: 'etc/default/tinc-network.j2'
@@ -243,6 +257,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
   when: tinc__systemd|bool and item.value.state|d('present') != 'absent'
   notify: [ 'Reload tinc' ]
@@ -254,6 +270,8 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   when: tinc__systemd | bool
 
 - name: Clean up old systemd configuration
@@ -268,6 +286,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   with_items: [ 'tinc.service', 'tinc@.service' ]
   register: tinc__register_systemd
   when: tinc__systemd | bool
@@ -290,3 +310,28 @@
   with_dict: '{{ tinc__combined_networks }}'
   when: tinc__systemd|bool and item.value.state|d('present') != 'absent' and
         item.value.port|d()
+
+# Ansible facts [[[1
+
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Create local facts of tinc
+  template:
+    src: 'etc/ansible/facts.d/tinc.fact.j2'
+    dest: '/etc/ansible/facts.d/tinc.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+  register: tinc__register_facts
+
+- name: Reload facts if they were modified
+  action: setup
+  when: tinc__register_facts|changed
