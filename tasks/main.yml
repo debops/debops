@@ -56,10 +56,7 @@
     exclusive: '{{ item.exclusive | d(omit) }}'
     manage_dir: False
   notify: [ 'Update initramfs' ]
-  with_flattened:
-    - '{{ dropbear_initramfs__authorized_keys_list }}'
-    - '{{ dropbear_initramfs__authorized_keys_group_list }}'
-    - '{{ dropbear_initramfs__authorized_keys_host_list }}'
+  with_flattened: '{{ dropbear_initramfs__combined_authorized_keys }}'
 
 - name: Remove files in deploy state absent
   file:

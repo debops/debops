@@ -3,10 +3,11 @@ Related projects
 
 .. include:: includes/all.rst
 
-* FDEunlock – Check and unlock full disk encrypted systems via ssh
+* FDEunlock_ – Check and unlock full disk encrypted systems via ssh
 
-* Mandos_ - FIXME add ref to fdeunlock
+* Mandos_ – System for allowing servers with encrypted root file systems to reboot unattended and/or remotely
 
+* `Comparison of Mandos and FDEunlock <https://fdeunlock.readthedocs.io/en/latest/related_projects.html>`_
 
 The following Ansible roles do the same thing as this role and have been
 deprecated by this role:

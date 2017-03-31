@@ -13,5 +13,5 @@ Design goals
   functionally should be added to the debops-contrib.kernel_module_ role.
   Note that all modules listed in :file:`/etc/initramfs-tools/modules` are
   force loaded as can be read in :file:`/usr/sbin/mkinitramfs`.
-  A initramfs hook should be used instead of touching the
+  An initramfs hook should be used instead of touching the
   :file:`/etc/initramfs-tools/modules` file.

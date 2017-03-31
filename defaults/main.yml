@@ -58,7 +58,7 @@ dropbear_initramfs__deploy_state: 'present'
 # Refer to https://www.kernel.org/doc/Documentation/filesystems/nfs/nfsroot.txt
 # for support configuration options.
 #
-# Note that the `IP` kernel parameter as of Debian jessie only supports legacy
+# Note that the ``IP`` kernel parameter as of Debian jessie only supports legacy
 # IPv4. But don’t worry, the role has you covered. Refer to
 # :envvar:`dropbear_initramfs__interfaces`.
 
@@ -95,8 +95,8 @@ dropbear_initramfs__network_gateway: '{{ ansible_default_ipv4.gateway }}'
                                                                    # ]]]
 # .. envvar:: dropbear_initramfs__network_manual [[[
 #
-# What is the desired state which this role should achieve? Possible options:
-# Refer to: https://www.kernel.org/doc/Documentation/filesystems/nfs/nfsroot.txt
+# The ``IP`` kernel parameter used when
+# :envvar:`dropbear_initramfs__network_autoconf` is disabled.
 #
 # The `ipwrap` filter causes IPv6 address to work on some platforms.
 # Refer to: https://serverfault.com/questions/445296/is-there-a-linux-kernel-boot-parameter-to-configure-an-ipv6-address/701451#701451
@@ -109,9 +109,7 @@ dropbear_initramfs__network_manual: '{{
                                                                    # ]]]
 # .. envvar:: dropbear_initramfs__network [[[
 #
-# What is the desired state which this role should achieve? Possible options:
-# Note that if you set this to ``off`` or ``none`` dropbear will also not start
-# because it checks for this.
+# The ``IP`` kernel parameter as it is configured by the role.
 dropbear_initramfs__network: '{{ dropbear_initramfs__network_manual
                                  if (dropbear_initramfs__network_autoconf in ["off", "none"])
                                  else dropbear_initramfs__network_autoconf }}'
@@ -165,24 +163,32 @@ dropbear_initramfs__update_options: '-k all'
 # Authorized ssh keys [[[
 # -----------------------
 
-# See :ref:`dropbear_initramfs__ref_authorized_keys_list` for more details.
+# See :ref:`dropbear_initramfs__ref_authorized_keys` for more details.
 
-# .. envvar:: dropbear_initramfs__authorized_keys_list [[[
+# .. envvar:: dropbear_initramfs__authorized_keys [[[
 #
 # List of authorized ssh keys configured on all hosts in the Ansible inventory.
-dropbear_initramfs__authorized_keys_list: []
+dropbear_initramfs__authorized_keys: []
 
                                                                    # ]]]
-# .. envvar:: dropbear_initramfs__authorized_keys_group_list [[[
+# .. envvar:: dropbear_initramfs__group_authorized_keys [[[
 #
 # List of authorized ssh keys configured on a group of hosts in the Ansible inventory.
-dropbear_initramfs__authorized_keys_group_list: []
+dropbear_initramfs__group_authorized_keys: []
 
                                                                    # ]]]
-# .. envvar:: dropbear_initramfs__authorized_keys_host_list [[[
+# .. envvar:: dropbear_initramfs__host_authorized_keys [[[
 #
 # List of authorized ssh keys configured on specific hosts in the Ansible inventory.
-dropbear_initramfs__authorized_keys_host_list: []
+dropbear_initramfs__host_authorized_keys: []
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__combined_authorized_keys [[[
+#
+# Combines list of authorized ssh keys as used in the role tasks.
+dropbear_initramfs__combined_authorized_keys: '{{ dropbear_initramfs__authorized_keys +
+                                                  dropbear_initramfs__group_authorized_keys +
+                                                  dropbear_initramfs__host_authorized_keys }}'
 
                                                                    # ]]]
 # .. envvar:: dropbear_initramfs__authorized_keys_options [[[

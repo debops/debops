@@ -19,7 +19,13 @@ upgrade to a new release.
 `debops-contrib.dropbear_initramfs master`_ - unreleased
 --------------------------------------------------------
 
-.. _debops-contrib.dropbear_initramfs master: https://github.com/debops-contrib/ansible-dropbear_initramfs/compare/v0.1.0...master
+.. _debops-contrib.dropbear_initramfs master: https://github.com/debops-contrib/ansible-dropbear_initramfs/compare/v0.2.0...master
+
+
+`debops-contrib.dropbear_initramfs v0.2.0`_ - 2017-03-31
+--------------------------------------------------------
+
+.. _debops-contrib.dropbear_initramfs v0.2.0: https://github.com/debops-contrib/ansible-dropbear_initramfs/compare/v0.1.0...v0.2.0
 
 Added
 ~~~~~
@@ -46,4 +52,4 @@ ypid.cryptsetup_remote_unlock v0.1.0 - 2016-07-18
 Added
 ~~~~~
 
-- Initial coding and design. [ypid_]
+- Initial coding and design. Dates back to 2015-03-01. [ypid_]
