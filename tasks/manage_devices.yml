@@ -14,6 +14,7 @@
       - item.name is defined and item.name is string
       - (item.state|d(cryptsetup__state) == 'ansible_controller_mounted' and 'remote_keyfile' not in item) or
         item.state|d(cryptsetup__state) != 'ansible_controller_mounted'
+      - item.keyfile_gen_type|d(cryptsetup__keyfile_gen_type) in [ 'binary', 'text' ]
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Create secrets directory on Ansible controller
