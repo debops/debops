@@ -24,7 +24,7 @@ Added
 - Add Ansible facts. [ypid_]
 
 - Document procedure needed to update/change persistent files on Qubes OS in
-  :ref:`persistent_paths__ref_guide_updating_persistent_files`. [ypid_]
+  :ref:`persistent_paths__ref_guide_updating_persistent_files`. [ypid_, drybjed_]
 
 Changed
 ~~~~~~~
