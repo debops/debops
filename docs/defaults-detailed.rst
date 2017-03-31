@@ -60,11 +60,11 @@ These parameters are related to SSH public key management:
 
   .. code-block:: yaml
 
-  authorized_keys__list:
-    - name: 'user'
-      github: 'user'
-      options: '{{ authorized_keys__options_map.strict }}'
-      key_options: 'command="ls -l /home/user"'
+     authorized_keys__list:
+       - name: 'user'
+         github: 'user'
+         options: '{{ authorized_keys__options_map.strict }}'
+         key_options: 'command="ls -l /home/user"'
 
 ``exclusive``
   Optional, boolean. If defined and ``True``, role will remove all other SSH
@@ -103,7 +103,7 @@ These parameters are related to the files located in the
 
   If the ``item.group`` parameter is not specified, the role will try to set
   the group of the file the same as the specified user in ``item.name``
-  parameter with the assumtion that the corresponding primary group exists. If
+  parameter with the assumption that the corresponding primary group exists. If
   it does not exist, the primary group of the user file will be ``root``.
 
 ``system``
@@ -161,5 +161,5 @@ account:
 
    authorized_keys__list:
      - name: 'user3'
-       sshkeys: '{{ lookup("file", "/path/to/user3.pub" }}'
+       sshkeys: '{{ lookup("file", "/path/to/user3.pub") }}'
        exclusive: True
