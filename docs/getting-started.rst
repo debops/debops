@@ -52,4 +52,11 @@ so that the changes can be made persistent:
    [debops_service_dnsmasq_persistent_paths]
    hostname
 
-The :envvar:`dnsmasq__base_packages` are expected to be present (typically installed in the TemplateVM).
+The :envvar:`dnsmasq__base_packages` are expected to be present (typically
+installed in the TemplateVM).
+
+Note that you will need to set ``core__unsafe_writes`` to ``True`` when you
+attempt to update the configuration on a system that uses bind mounts for
+persistence. You can set ``core__unsafe_writes`` directly in your inventory
+without the need to run the ``debops.core`` role for this special case.
+Refer to `Templating or updating persistent files`_ for details.

@@ -25,24 +25,30 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   notify: [ 'Test and restart dnsmasq' ]
 
 - name: Configure defaults for dnsmasq service
   template:
     src: 'etc/default/dnsmasq.j2'
-    dest: '{{ dnsmasq__persistent_prefix_path + "/etc/default/dnsmasq" }}'
+    dest: '/etc/default/dnsmasq'
     owner: 'root'
     group: 'root'
     mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   notify: [ 'Test and restart dnsmasq' ]
 
 - name: Configure custom nameservers
   template:
     src: 'etc/resolvconf/upstream.conf.j2'
-    dest: '{{ dnsmasq__persistent_prefix_path + "/etc/resolvconf/upstream.conf" }}'
+    dest: '/etc/resolvconf/upstream.conf'
     owner: 'root'
     group: 'root'
     mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   notify: [ 'Test and restart dnsmasq' ]
   when: dnsmasq__nameservers|d()
 
@@ -53,6 +59,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   with_items: '{{ dnsmasq__interfaces }}'
   when: item.interface is defined and item.interface
   notify: [ 'Test and restart dnsmasq' ]
@@ -78,6 +86,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   with_items: '{{ dnsmasq__interfaces }}'
   when: (dnsmasq__tftp|bool and item.interface|d())
   notify: [ 'Assemble hosts.allow.d' ]
@@ -107,6 +117,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   register: dnsmasq__register_facts
 
 - name: Reload facts if they were modified
