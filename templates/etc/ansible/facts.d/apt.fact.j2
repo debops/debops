@@ -1,35 +1,21 @@
+{% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
 #!/usr/bin/env python
 
 # {{ ansible_managed }}
 {% set apt__tpl_security_sources = [] %}
-{% for repo in apt__security_sources %}
-{%   if repo.uri|d() %}
-{%     for element in ([ repo.uri ] if repo.uri is string else repo.uri) %}
-{%       set _ = apt__tpl_security_sources.append(element) %}
-{%     endfor %}
-{%   endif %}
-{%   if repo.uris|d() %}
-{%     for element in ([ repo.uris ] if repo.uris is string else repo.uris) %}
-{%       set _ = apt__tpl_security_sources.append(element) %}
-{%     endfor %}
-{%   endif %}
-{% endfor %}
 {% set apt__tpl_default_sources = [] %}
+{% set apt__tpl_default_sources_map = {} %}
+{% set apt__tpl_source_distributions = {} %}
+{% for repo in apt__security_sources %}
+{%   set _ = apt__tpl_security_sources.extend(debops__tpl_macros.flattened(repo.uri, repo.uris) | from_json) %}
+{% endfor %}
 {% for repo in apt__default_sources %}
-{%   if repo.uri|d() and repo.state|d('present') != 'absent' and (repo.distribution|d() and repo.distribution == apt__distribution) %}
-{%     for element in ([ repo.uri ] if repo.uri is string else repo.uri) %}
-{%       set _ = apt__tpl_default_sources.append(element) %}
-{%     endfor %}
+{%   set repo_uris = (debops__tpl_macros.flattened(repo.uri, repo.uris) | from_json) %}
+{%   if repo.distribution|d() == apt__distribution %}
+{%     set _ = apt__tpl_default_sources.extend(repo_uris) %}
 {%   endif %}
-{%   if repo.uris|d() and repo.state|d('present') != 'absent' and (repo.distribution|d() and repo.distribution == apt__distribution) %}
-{%     for element in ([ repo.uris ] if repo.uris is string else repo.uris) %}
-{%       set _ = apt__tpl_default_sources.append(element) %}
-{%     endfor %}
-{%   endif %}
-{%   if apt__distribution in repo.keys() %}
-{%     for element in ([ repo[apt__distribution] ] if repo[apt__distribution] is string else repo[apt__distribution]) %}
-{%       set _ = apt__tpl_default_sources.append(element) %}
-{%     endfor %}
+{%   if repo.distribution|d() and (repo.state|d("present") == "present") %}
+{%     set _ = apt__tpl_default_sources_map.update({ repo.distribution: ((apt__tpl_default_sources_map[repo.distribution]|d([])) + repo_uris) }) %}
 {%   endif %}
 {% endfor %}
 
@@ -40,12 +26,15 @@ import os
 
 security_sources = loads('''{{ apt__tpl_security_sources | to_nice_json }}''')
 
-default_sources = loads('''{{ apt__tpl_default_sources | to_nice_json }}''')
-
-output = loads('''{
-    "configured": {{ (ansible_local.apt.configured if (ansible_local|d() and ansible_local.apt|d() and ansible_local.apt.configured|d()) else False) | bool | lower }},
-    "enabled": {{ apt__enabled | bool | lower }}
-}''')
+output = loads('''{{ ({
+    "enabled": apt__enabled,
+    "configured": (ansible_local.apt.configured
+                   if (ansible_local|d() and ansible_local.apt|d() and ansible_local.apt.configured|d())
+                   else False),
+    "default_mirrors": apt__tpl_default_sources,
+    "default_sources_map": apt__tpl_default_sources_map,
+    }) | to_nice_json | regex_replace("[ \\t\\r\\f\\v]+(\\n|$)", "\\1") }}''')
+{# regex_replace is a workaround for https://github.com/ansible/ansible/issues/23078 #}
 
 apt_sources_list = [ '/etc/apt/sources.list.dpkg-divert', '/etc/apt/sources.list' ]
 
@@ -104,10 +93,9 @@ except Exception:
     pass
 
 output.update({
-    "default_mirrors": default_sources,
     "nonfree": apt_nonfree,
     "original_mirrors_deb": source_deb,
-    "original_mirrors_deb_src": source_deb_src
+    "original_mirrors_deb_src": source_deb_src,
 })
 
 print(dumps(output, sort_keys=True, indent=2))
