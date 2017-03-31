@@ -483,12 +483,12 @@ combination of both would be nice so that the role creates the crypto layer
 with the provided keyfile but does not configure it in :file:`/etc/crypttab`.
 This is not directly supported and the role can not be extended easily to fully
 support this because of the internal role design. Changing that is not intended
-only to support this use case is not intended.
+only to support this use case.
 
 Also, this use case requires that the passphrase is never saved anywhere on
 persistent storage on the remote host.
 
-There is workaround which meats these requirements by making use of the
+There is a workaround which meets these requirements by making use of the
 :ref:`ansible_controller_mounted state <cryptsetup__devices_state_ansible_controller_mounted>`.
 
 You will need two role runs with slightly changed configuration for this. For
@@ -502,7 +502,7 @@ the first run, use something like this to ensure that the crypto layer is presen
        ciphertext_block_device: '/dev/disk/by-partuuid/3b014afe-1581-11e7-b65d-00163e5e6c0f'
        keyfile_gen_type: 'text'
        manage_filesystem: False
-       keyfile: '/home/user/.config/fdeunlock/keys/{{ inventory_hostname }}-initramfs_sdb4_crypt.key'
+       keyfile: '/home/user/.config/fdeunlock/keys/{{ inventory_hostname }}-initramfs_dev_disk_by-partuuid_3b014afe-1581-11e7-b65d-00163e5e6c0f.key'
 
        ## Disable for initial setup else enable it:
        # remote_keyfile: 'none'
@@ -529,8 +529,10 @@ passphrase is asked for on boot:
        ## Enable for initial setup else disable it:
        # state: 'ansible_controller_mounted'
 
-You should now be left with a decrypted ``sdb4_crypt`` `plaintext device mapper target` for which the key only exists in
-:file:`/home/user/.config/fdeunlock/keys/{{ inventory_hostname }}-initramfs_sdb4_crypt.key` on the Ansible controller.
+You should now be left with a decrypted ``sdb4_crypt`` `plaintext device mapper
+target` for which the key only exists in
+:file:`/home/user/.config/fdeunlock/keys/{{ inventory_hostname }}-initramfs_dev_disk_by-partuuid_3b014afe-1581-11e7-b65d-00163e5e6c0f.key`
+on the Ansible controller.
 
 
 .. _cryptsetup__ref_devices_chaining_multiple_ciphers:
