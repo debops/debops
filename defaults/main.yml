@@ -160,20 +160,6 @@ tinc__systemd: '{{ True
                    else False }}'
 
                                                                    # ]]]
-# .. envvar:: tinc__persistent_prefix_path [[[
-#
-# Directory path prefix which should be used for writing/updating of files made
-# persistent by :envvar:`tinc__persistent_paths__dependent_paths`.
-tinc__persistent_prefix_path: '{{ ansible_local.persistent_paths.storage_path|d("")
-                                  if (ansible_local|d() and
-                                      ansible_local.tinc|d() and
-                                      ansible_local.tinc.enabled|d() | bool and
-                                      ansible_local.persistent_paths|d() and
-                                      ansible_local.persistent_paths.enabled|d() | bool and
-                                      ansible_local.persistent_paths.write_to_storage_path|d() | bool)
-                                  else "" }}'
-
-                                                                   # ]]]
 # .. envvar:: tinc__vcs_ignore_patterns [[[
 #
 # This list of ignore patterns for files below :file:`/etc/tinc` that version
