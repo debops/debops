@@ -323,8 +323,14 @@ use the parameter in relevant tasks, like this:
        owner: 'root'
        group: 'root'
        mode: '0644'
-       unsafe_writes: '{{ True if (ansible_local|d() and ansible_local.core|d() and
-                          ansible_local.core.unsafe_writes|d()|bool) else omit }}'
+       unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                          and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+
+Note that the way :envvar:`core__unsafe_writes` is checked and takes precedence
+even from the context of another role is not otherwise done in DebOps.
+This was done in this case to allow to only enable
+:envvar:`core__unsafe_writes` when necessary without the need to run the
+``debops.core`` role first and ensuring that it’s facts are made persistent as well.
 
 List of current POSIX capabilities
 ----------------------------------
