@@ -42,14 +42,14 @@ debops.persistent_paths_ support
 --------------------------------
 
 In case the host in question happens to be a TemplateBasedVM on `Qubes OS`_ or
-another system where persistence is not the default, it should absent in
-``debops_service_dnsmasq`` and instead be added to
-``debops_service_tinc_persistent_paths`` so that the changes can be made
-persistently:
+another system where persistence is not the default, it should be absent in
+``debops_service_dnsmasq`` and instead be added to the
+``debops_service_dnsmasq_persistent_paths`` Ansible inventory group
+so that the changes can be made persistent:
 
 .. code:: ini
 
-   [debops_service_tinc_persistent_paths]
+   [debops_service_dnsmasq_persistent_paths]
    hostname
 
 The :envvar:`dnsmasq__base_packages` are expected to be present (typically installed in the TemplateVM).
