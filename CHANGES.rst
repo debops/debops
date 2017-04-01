@@ -85,7 +85,7 @@ Security
 
 - Terminate role execution if a vulnerable Ansible version is used.
   Running the role by a vulnerable Ansible would violate one of the design goals of the role.
-  The minimum Ansible version without known vulnerabilities is Ansible 2.1.4.
+  The minimum Ansible version without known vulnerabilities is Ansible 2.1.5.
   Refer to `Ansible Security`_ for details. [ypid_]
 
 
