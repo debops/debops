@@ -8,7 +8,7 @@ Example inventory
 -----------------
 
 To manage GRUB on a given host or a set of hosts, they need to be added to the
-``[debops_service_dropbear_initramfs]`` Ansible group in the inventory:
+``[debops_service_grub]`` Ansible group in the inventory:
 
 .. code:: ini
 
