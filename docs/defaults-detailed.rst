@@ -206,7 +206,7 @@ IPv4 and IPv6 configuration parameters
   Optional. IPv6 configuration method used by a given interface. There are many
   configuration methods described in the :manpage:`interfaces(5)` manual page, most
   commonly used are: ``auto``, ``manual``, ``dhcp``, ``static``, ``v4tunnel``,
-  ``6to4``. If you set this parameter to ``False``, the IPv4 configuration will
+  ``6to4``. If you set this parameter to ``False``, the IPv6 configuration will
   be disabled.
 
 ``address`` or ``addresses``
