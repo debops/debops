@@ -159,7 +159,7 @@ interface_down () {
         if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_hotplug_interfaces[@]}" ; then
             systemctl stop "ifup@${1}.service"
         elif [ ${#if_boot_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_boot_interfaces[@]}" ; then
-            if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && containsElement "${1}" "${systemd_ifup_instances[@]}" ; then
+            if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && [ ${#systemd_ifup_instances[@]} -gt 0 ] && containsElement "${1}" "${systemd_ifup_instances[@]}" ; then
                 systemctl stop "ifup@${1}.service"
             else
                 systemctl stop "iface@${1}.service"
