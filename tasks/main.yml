@@ -132,6 +132,18 @@
 ## Currently unlikely because the patch was not accepted upstream.
 ## It has been decided to not divert this script because there is a chance that
 ## security fixes could affect this file.
+- name: Divert original /etc/grub.d/10_linux
+  command: dpkg-divert --quiet --local --divert /etc/grub.d/10_linux.dpkg-divert
+           --rename /etc/grub.d/10_linux
+  args:
+    creates: '/etc/grub.d/10_linux.dpkg-divert'
+  when: (grub_combined_users|length > 0)
+  register: grub__register_linux_divert
+
+- name: Copy /etc/grub.d/10_linux.dpkg-divert to its original location
+  command: cp /etc/grub.d/10_linux.dpkg-divert /etc/grub.d/10_linux
+  when: grub__register_linux_divert|changed
+
 - name: Apply patch to allow to configure the default menu entry parameters
   replace:
     dest: '/etc/grub.d/10_linux'
