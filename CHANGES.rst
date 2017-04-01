@@ -81,6 +81,8 @@ Added
   passwords, due to the changed location of the password files in the
   ``secret/`` directory. [drybjed_]
 
+- Add ``flattened`` Jinja filter to debops__tpl_macros.js_. [ypid_]
+
 Changed
 ~~~~~~~
 
