@@ -7,39 +7,36 @@ Getting started
 Example inventory
 -----------------
 
-To manage GRUB configuration on a given host with DebOps you should add it to the
-``[debops_service_grub]`` Ansible host group::
+To manage GRUB on a given host or a set of hosts, they need to be added to the
+``[debops_service_grub]`` Ansible group in the inventory:
 
-    [debops_service_grub]
-    hostname
+.. code:: ini
+
+   [debops_service_grub]
+   hostname
 
 
 Example playbook
 ----------------
 
-Here's an example playbook which uses ``debops.grub`` role::
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.grub`` role:
 
-    ---
-
-    - name: Configure GRUB
-      hosts: [ 'debops_service_grub' ]
-      become: True
-
-      roles:
-
-        - role: debops.grub
-          tags: [ 'role::grub' ]
+.. literalinclude:: playbooks/grub.yml
+   :language: yaml
 
 
 Password protection
 -------------------
 
-To enable password protection, simply define a superuser like this::
+To enable password protection, simply define a superuser like this:
 
-    grub_users:
-      - name: 'su'
-        password: 'NBLWAThUq5'
-        superuser: True
+.. code:: yaml
+
+   grub_users:
+     - name: 'su'
+       password: 'NBLWAThUq5'
+       superuser: True
 
 The password will be hashed and salted on the Ansible controller and only the
 salted hash will be configured in the GRUB configuration.
