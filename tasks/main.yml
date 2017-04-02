@@ -61,7 +61,7 @@
   with_items:
     - '{{ ifupdown__register_interfaces_removed.results }}'
     - '{{ ifupdown__register_interfaces_created.results }}'
-  when: (item.item.key|d() and item.changed|bool)
+  when: (item.item.key|d() and item|changed)
 
 - name: Mark modified interfaces for processing
   copy:
@@ -89,7 +89,7 @@
     - '{{ ifupdown__register_interfaces_removed.results }}'
     - '{{ ifupdown__register_interfaces_created.results }}'
   notify: [ 'Apply ifupdown configuration' ]
-  when: (item.item.key|d() and item.changed|bool)
+  when: (item.item.key|d() and item|changed)
 
 - name: Remove custom configuration files
   file:
