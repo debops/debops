@@ -15,10 +15,12 @@ Example inventory
 -----------------
 
 This role should be enabled on virtualization hosts, you can do this by adding
-a host to ``[debops_libvirtd]`` group.
+a host to ``[debops_libvirtd]`` group:
 
-    [debops_service_libvirtd]
-    hostname
+.. code:: ini
+
+   [debops_service_libvirtd]
+   hostname
 
 Example playbook
 ----------------
@@ -65,4 +67,3 @@ Available role tags:
 ``type::dependency``
   This tag specifies which tasks are defined in role dependencies. You can use
   this to omit them using ``--skip-tags`` parameter.
-
