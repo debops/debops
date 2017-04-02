@@ -1,17 +1,19 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.libvirtd default variables [[[
+# =====================================
 
 # .. contents:: Sections
 #    :local:
 #
-# .. libvirtd packages (((
-#
-# ---------------------
-#   libvirtd packages
+# .. include:: includes/all.rst
+
+
+# libvirtd packages [[[
 # ---------------------
 
-# .. envvar:: libvirtd__base_packages
+# .. envvar:: libvirtd__base_packages [[[
 #
 # List of :program:`libvirtd` packages which will be installed on all distribution
 # releases, unless overridden.
@@ -19,8 +21,8 @@ libvirtd__base_packages:
   - 'libvirt-daemon-system'
   - 'libvirt-clients'
 
-
-# .. envvar:: libvirtd__base_packages_map
+                                                                   # ]]]
+# .. envvar:: libvirtd__base_packages_map [[[
 #
 # Override list of base packages for specific distribution releases.
 libvirtd__base_packages_map:
@@ -28,8 +30,8 @@ libvirtd__base_packages_map:
   'precise': [ 'libvirt-bin' ]
   'trusty':  [ 'libvirt-bin' ]
 
-
-# .. envvar:: libvirtd__kvm_packages
+                                                                   # ]]]
+# .. envvar:: libvirtd__kvm_packages [[[
 #
 # List of QEMU KVM packages to install. They will be installed on all hosts
 # apart from KVM guests, to not create redundant support.
@@ -38,8 +40,8 @@ libvirtd__kvm_packages:
   - 'qemu-kvm'
   - 'qemu-utils'
 
-
-# .. envvar:: libvirtd__network_packages
+                                                                   # ]]]
+# .. envvar:: libvirtd__network_packages [[[
 #
 # List of network-related packages to install with :program:`libvirtd`.
 libvirtd__network_packages:
@@ -47,21 +49,17 @@ libvirtd__network_packages:
   - 'bridge-utils'
   - 'ebtables'
 
-
-# .. envvar:: libvirtd__packages
+                                                                   # ]]]
+# .. envvar:: libvirtd__packages [[[
 #
 # List of custom packages to install.
 libvirtd__packages: []
-
-# .. )))
-
-# .. Access control (((
-#
-# ------------------
-#   Access control
+                                                                   # ]]]
+                                                                   # ]]]
+# Access control [[[
 # ------------------
 
-# .. envvar:: libvirtd__admins
+# .. envvar:: libvirtd__admins [[[
 #
 # List of administrator accounts which should have access to :program:`libvirtd`.
 libvirtd__admins: [ '{{ (ansible_ssh_user
@@ -69,29 +67,25 @@ libvirtd__admins: [ '{{ (ansible_ssh_user
                             ansible_ssh_user != "root")
                         else lookup("env", "USER")) }}' ]
 
-
-# .. envvar:: libvirtd__group_map
+                                                                   # ]]]
+# .. envvar:: libvirtd__group_map [[[
 #
 # Mapping of default UNIX access group on different distributions.
 libvirtd__group_map:
   'Debian': 'libvirt'
   'Ubuntu': 'libvirtd'
-
-# .. )))
-
-# libvirtd connection URI (((
-#
-# ---------------------------
-#   libvirtd connection URI
+                                                                   # ]]]
+                                                                   # ]]]
+# libvirtd connection URI [[[
 # ---------------------------
 
-# .. envvar:: libvirtd__system_uri
+# .. envvar:: libvirtd__system_uri [[[
 #
 # Connection URI for the local :program:`libvirtd` instance.
 libvirtd__system_uri: 'qemu:///system'
 
-
-# .. envvar:: libvirtd__connections
+                                                                   # ]]]
+# .. envvar:: libvirtd__connections [[[
 #
 # Dict with connections configured in :file:`/etc/libvirt/libvirt.conf`.
 #
@@ -102,22 +96,18 @@ libvirtd__system_uri: 'qemu:///system'
 libvirtd__connections:
   'localhost': '{{ libvirtd__system_uri }}'
 
-
-# .. envvar:: libvirtd__uri
+                                                                   # ]]]
+# .. envvar:: libvirtd__uri [[[
 #
 # Name of the connection from ``libvirtd__connections`` configured as default
 # system-wide.
 libvirtd__uri: 'localhost'
-
-# .. )))
-
-# .. Role-dependent configuration (((
-#
-# --------------------------------
-#   Role-dependent configuration
+                                                                   # ]]]
+                                                                   # ]]]
+# Role-dependent configuration [[[
 # --------------------------------
 
-# .. envvar:: libvirtd__apt_preferences__dependent_list
+# .. envvar:: libvirtd__apt_preferences__dependent_list [[[
 #
 # Configuration for the ``debops.apt_preferences`` role.
 libvirtd__apt_preferences__dependent_list:
@@ -127,8 +117,8 @@ libvirtd__apt_preferences__dependent_list:
     reason: 'Version parity with Debian Jessie'
     by_role: 'debops.libvirtd'
 
-
-# .. envvar:: libvirtd__ferm__dependent_rules
+                                                                   # ]]]
+# .. envvar:: libvirtd__ferm__dependent_rules [[[
 #
 # Configuration for ``debops.ferm`` firewall.
 libvirtd__ferm__dependent_rules:
@@ -146,10 +136,11 @@ libvirtd__ferm__dependent_rules:
     weight: 'zz'
     rules: '@hook post "type libvirtd > /dev/null && (systemctl reload libvirtd || true)";'
 
-
-# .. envvar:: libvirtd__ferm__forward
+                                                                   # ]]]
+# .. envvar:: libvirtd__ferm__forward [[[
 #
 # Enable/disable IP forwarding on the host.
 libvirtd__ferm__forward: True
-
-# .. )))
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
