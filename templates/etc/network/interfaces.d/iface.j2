@@ -1,20 +1,18 @@
+{% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
 # {{ ansible_managed }}
 
 {% set interface_name = (item.value.iface | d(item.key)) %}
 {% set interface = item.value %}
+{% set ifupdown__tpl_addresses = [] %}
 {% set ifupdown__tpl_ipv4_addresses = [] %}
 {% set ifupdown__tpl_ipv6_addresses = [] %}
-{% if interface.no_addresses|d(True) | bool %}
-{%   set ifupdown__tpl_addresses = [interface.address|d([]), interface.addresses|d([])] %}
-{%   set ifupdown__tpl_addresses = lookup("flattened", ifupdown__tpl_addresses) %}
-{%   set ifupdown__tpl_addresses = (ifupdown__tpl_addresses.split(',') if (ifupdown__tpl_addresses is string) else ifupdown__tpl_addresses) | unique | sort %}
+{% if interface.no_addresses is undefined or not interface.no_addresses|bool %}
+{%   set ifupdown__tpl_addresses = (debops__tpl_macros.flattened(interface.address, interface.addresses) | from_json) | unique %}
 {%   set ifupdown__tpl_ipv4_addresses = ifupdown__tpl_addresses | ipv4 %}
 {%   set ifupdown__tpl_ipv6_addresses = ifupdown__tpl_addresses | ipv6 %}
-{%   set ifupdown__tpl_gateways = [interface.gateway|d([]), interface.gateways|d([])] %}
-{%   set ifupdown__tpl_gateways = lookup("flattened", ifupdown__tpl_gateways) %}
-{%   set ifupdown__tpl_gateways = (ifupdown__tpl_gateways.split(',') if (ifupdown__tpl_gateways is string) else ifupdown__tpl_gateways) | unique | sort %}
-{%   set ifupdown__tpl_ipv4_gateways = ifupdown__tpl_gateways | ipv4 %}
-{%   set ifupdown__tpl_ipv6_gateways = ifupdown__tpl_gateways | ipv6 %}
+{%   set ifupdown__tpl_gateways = (debops__tpl_macros.flattened(interface.gateway, interface.gateways) | from_json) | unique %}
+{%   set ifupdown__tpl_ipv4_gateways = ifupdown__tpl_gateways | unique | ipv4 %}
+{%   set ifupdown__tpl_ipv6_gateways = ifupdown__tpl_gateways | unique | ipv6 %}
 {% endif %}
 {% if interface.inet|d() and interface.inet in [ 'static', 'tunnel' ] and not ifupdown__tpl_ipv4_addresses %}
 {%   set _ = interface.update({"inet":"manual"}) %}
