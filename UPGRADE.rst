@@ -22,4 +22,4 @@ This script can come in handy to do this:
 
 The script is bundled with this role under
 :file:`./docs/scripts/upgrade-from-v0.3.X-to-v0.4.X` and can be invoked from
-their.
+there.

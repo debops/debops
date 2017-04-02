@@ -16,7 +16,13 @@ The current role maintainer_ is ypid_.
 `debops.cryptsetup master`_ - unreleased
 ----------------------------------------
 
-.. _debops.cryptsetup master: https://github.com/debops/ansible-cryptsetup/compare/v0.4.0...master
+.. _debops.cryptsetup master: https://github.com/debops/ansible-cryptsetup/compare/v0.5.0...master
+
+
+`debops.cryptsetup v0.5.0`_ - 2017-04-02
+----------------------------------------
+
+.. _debops.cryptsetup v0.5.0: https://github.com/debops/ansible-cryptsetup/compare/v0.4.0...v0.5.0
 
 Added
 ~~~~~
@@ -42,7 +48,14 @@ Added
   Refer to :ref:`cryptsetup__ref_devices_tmp_with_random_key` for details. [ypid_]
 
 - Support for persistent configuration of TemplateBasedVM on `Qubes OS`_ out of
-  the box using the ``debops.persistent_paths`` role. [ypid_]
+  the box using the debops.persistent_paths_ role. [ypid_]
+
+- Add assertion to ensure that options :ref:`item.name <cryptsetup__devices_name>`
+  and :ref:`item.ciphertext_block_device <cryptsetup__devices_ciphertext_block_device>`
+  of :ref:`cryptsetup__devices` are unique to catch configuration problems early. [ypid_]
+
+- Support the generation of a passphrase instead of binary random data as keyfile
+  using :ref:`item.keyfile_gen_type <cryptsetup__devices_keyfile_gen_type>`. [ypid_]
 
 Changed
 ~~~~~~~
@@ -65,12 +78,14 @@ Changed
 - Set :envvar:`cryptsetup__cipher` explicitly to ``aes-xts-plain64`` and use it also
   in plain mode which has a different complied-in default than LUKS mode. [ypid_]
 
+- Update documentation. [ypid_]
+
 Security
 ~~~~~~~~
 
 - Terminate role execution if a vulnerable Ansible version is used.
   Running the role by a vulnerable Ansible would violate one of the design goals of the role.
-  The minimum Ansible version without known vulnerabilities is Ansible 2.1.4.
+  The minimum Ansible version without known vulnerabilities is Ansible 2.1.5.
   Refer to `Ansible Security`_ for details. [ypid_]
 
 

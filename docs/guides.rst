@@ -23,12 +23,9 @@ So lets create a loop device:
 .. code-block:: shell
 
    truncate --size=42M /tmp/example1_loop_file.raw
-   losetup "$(losetup --find)" /tmp/example1_loop_file.raw
-   losetup --all
+   losetup --show --find /tmp/example1_loop_file.raw
 
-:command:`losetup --all` tells you which loop device the empty
-:file:`/tmp/example1_loop_file.raw` file is mapped to.
-That loop device will be our `ciphertext block device`
+The printed loop device will be our `ciphertext block device`
 (:ref:`cryptsetup__ref_overview_terminology`).
 :file:`/dev/loop0` is assumed from now on.
 Note that the role and cryptsetup can also use a regular file as `ciphertext block device`
@@ -59,7 +56,7 @@ which should have the following effects:
 
 * Create a random keyfile on the Ansible controller under :file:`./ansible/secret/cryptsetup/$hostname/example1/keyfile.raw`
 * Copy the keyfile to the remote host under :file:`/var/local/keyfiles/example1_keyfile.raw`
-* Initialize LUKS by creating a LUKS header on the :file:`/dev/loop0` using the keyfile
+* Initialize LUKS by creating a LUKS header on :file:`/dev/loop0` using the keyfile
 * Make a backup of the LUKS header on the remote host under :file:`/var/backups/luks_header_backup/example1_header_backup.raw`
 * Copy the LUKS header backup to the Ansible controller under :file:`./ansible/secret/cryptsetup/$hostname/example1/header_backup.raw`
 * Open/map :file:`/dev/loop0` to :file:`/dev/mapper/example1` (`Plaintext device mapper target`)
@@ -74,8 +71,12 @@ which should have the following effects:
 
 All of those tasks are idempotent so you can run the role repetitively against
 the host and the role will not reformat the filesystem nor reinitialize LUKS
-on the device. If the LUKS header has been changed between role runs, the role
-should pick up the changed header and update the two backups of it.
+on the device.
+
+If the LUKS header has been changed between role runs, the role
+picks up the changed header and updates the two backups of it.
+The task "Store the header backup in secret directory on to the Ansible
+controller" will signal a changed header with the task state "changed".
 
 You can check that the `plaintext mount point of the filesystem` is mounted using:
 
@@ -133,4 +134,4 @@ effect.
 
 After the role run terminated, no access to plaintext files should be possible.
 If you want to access the plaintext files again, just change the ``state`` and
-rerun the role as all required information is still stored on the Ansible controller.
+rerun the role as all required information are still stored on the Ansible controller.

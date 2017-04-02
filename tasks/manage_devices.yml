@@ -14,6 +14,7 @@
       - item.name is defined and item.name is string
       - (item.state|d(cryptsetup__state) == 'ansible_controller_mounted' and 'remote_keyfile' not in item) or
         item.state|d(cryptsetup__state) != 'ansible_controller_mounted'
+      - item.keyfile_gen_type|d(cryptsetup__keyfile_gen_type) in [ 'binary', 'text' ]
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Create secrets directory on Ansible controller
@@ -32,15 +33,26 @@
 
 ## Generate keyfile and copy it to the remote system [[[
 
-- name: Generate keyfile on the Ansible controller
+- name: Generate binary keyfile on the Ansible controller
   command: dd if={{ cryptsetup__keyfile_source_dev | quote }} of={{ (item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw")) | quote }} bs={{ ((512/8) if (item.key_size|d(cryptsetup__key_size) == "default") else ((item.key_size|d(cryptsetup__key_size))/8)) | int }} count=1 iflag=fullblock
   args:
     creates: '{{ item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}'
   become: False
   delegate_to: 'localhost'
   register: cryptsetup__register_keyfile_gen
-  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ]
-         and 'remote_keyfile' not in item)
+  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and
+         ('remote_keyfile' not in item) and (item.keyfile_gen_type|d(cryptsetup__keyfile_gen_type) == 'binary'))
+  with_items: '{{ cryptsetup__process_devices|d([]) }}'
+
+- name: Generate text/passphrase keyfile on the Ansible controller
+  shell: '{{ item.keyfile_gen_command|d(cryptsetup__keyfile_gen_command)}} | tr -d "\n" > {{ (item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw")) | quote }}'
+  args:
+    creates: '{{ item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}'
+  become: False
+  delegate_to: 'localhost'
+  register: cryptsetup__register_keyfile_gen
+  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and
+         ('remote_keyfile' not in item) and (item.keyfile_gen_type|d(cryptsetup__keyfile_gen_type) == 'text'))
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Enforce permissions of the keyfile on the Ansible controller
@@ -263,7 +275,7 @@
     - '{{ cryptsetup__process_devices|d([]) }}'
     - '{{ cryptsetup__register_ciphertext_device.results|d([]) }}'
 
-- name: Enforce permissions of the header backup in secret directory on the Ansible controller
+- name: Enforce permissions of the header backup on the Ansible controller
   tags: [ 'role::cryptsetup:backup' ]
   file:
     path:  '{{ cryptsetup__secret_path + "/" + item.0.name + "/header_backup.raw" }}'
@@ -322,7 +334,7 @@
   when: item.swap|d(False) | bool
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
-- name: Enable swap files
+- name: Enable swap devices
   command: swapon --priority {{ (item.item.priority | d(cryptsetup__swap_priority) | string) | quote }}
            {{ ("/dev/mapper/" + item.item.name) | quote }}
   when: (item|changed and (item.item.swap|d(False) | bool) and

@@ -5,7 +5,6 @@
 {% for device in cryptsetup__process_devices|d([]) %}
 {%   set _ = cryptsetup__tpl_devices.append({
        'crypttab_options': (
-         (["offset=" + (device.offset|d("2048") | int | string)] if (device.mode|d("luks") == "plain") else []) +
          (["swap"] if (device.swap|d(False) | bool) else []) +
          ([device.mode|d("luks")] | difference(["plain"])) +
          (device.crypttab_options | d(cryptsetup__crypttab_options) | list) +

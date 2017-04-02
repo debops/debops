@@ -148,6 +148,22 @@ cryptsetup__keyfile_mode: '0600'
 cryptsetup__keyfile_source_dev: '/dev/random'
 
                                                                    # ]]]
+# .. envvar:: cryptsetup__keyfile_gen_type [[[
+#
+# Type of keyfile to generate. Supported choices: ``binary``, ``text``.
+# Refer to :ref:`item.keyfile_gen_type <cryptsetup__devices_keyfile_gen_type>` for details.
+cryptsetup__keyfile_gen_type: 'binary'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__keyfile_gen_command [[[
+#
+# The command which should be used to generate the keyfile when
+# :ref:`item.keyfile_gen_type <cryptsetup__devices_keyfile_gen_type>` is set to
+# ``text``.
+# Refer to :ref:`item.keyfile_gen_command <cryptsetup__devices_keyfile_gen_command>` for details.
+cryptsetup__keyfile_gen_command: 'pwgen --secure 123 1'
+
+                                                                   # ]]]
 # .. envvar:: cryptsetup__keyfile_shred_command [[[
 #
 # Command plus options to use when shredding/deleting the keyfile on the remote
@@ -371,7 +387,7 @@ cryptsetup__iter_time: 'default'
 
 # .. envvar:: cryptsetup__persistent_paths__dependent_paths [[[
 #
-# Configuration for the ``debops.persistent_paths`` Ansible role.
+# Configuration for the debops.persistent_paths_ Ansible role.
 cryptsetup__persistent_paths__dependent_paths:
 
   '50_debops_cryptsetup':
