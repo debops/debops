@@ -41,6 +41,9 @@ Changed
 - Don't include deprecated configuration options in the
   :file:`/etc/ssh/sshd_config` configuration file. [drybjed_]
 
+- Increase the default ``LoginGraceTime`` value from 20 to 30 seconds to help
+  solve issues with unresponsive DNS servers. [drybjed_]
+
 Removed
 ~~~~~~~
 
