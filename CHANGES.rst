@@ -38,6 +38,9 @@ Changed
   service, therefore check first if your configuration is applied properly.
   Ansible inventory modification shouldn't be necessary. [drybjed_]
 
+- Don't include deprecated configuration options in the
+  :file:`/etc/ssh/sshd_config` configuration file. [drybjed_]
+
 Removed
 ~~~~~~~
 
