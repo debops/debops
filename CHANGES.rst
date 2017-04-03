@@ -33,6 +33,11 @@ Changed
 - Update the :file:`sshd.fact` script to fix communication problems with an
   external :command:`dpkg-query` command. [bfabio_]
 
+- Update the parameters of the debops.ferm_ configuration to use new features
+  introduced in the role. This might affect the firewall rules of the SSH
+  service, therefore check first if your configuration is applied properly.
+  Ansible inventory modification shouldn't be necessary. [drybjed_]
+
 Removed
 ~~~~~~~
 
