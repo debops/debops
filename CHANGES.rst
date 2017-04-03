@@ -30,6 +30,9 @@ Changed
 - Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
   Support for older Ansible versions is dropped. [brzhk]
 
+- Update the :file:`sshd.fact` script to fix communication problems with an
+  external :command:`dpkg-query` command. [bfabio_]
+
 Removed
 ~~~~~~~
 
