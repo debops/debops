@@ -34,7 +34,7 @@ directory. You should define additional exports, for example:
        acl: '192.0.2.0/24'
        options: 'rw,no_subtree_check,no_root_squash'
 
-check the :ref:`nfs_server__exports` documentation for more details.
+check the :ref:`nfs_server__ref_exports` documentation for more details.
 
 You can mount the above NFS share on other hosts by using the commands:
 
