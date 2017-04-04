@@ -7,13 +7,10 @@ Ansible role: debops.nfs
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
-   guides
-   troubleshooting
+   defaults-detailed
    copyright
-   credits
    changelog
 
 ..

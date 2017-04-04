@@ -1,15 +1,18 @@
 Introduction
 ============
 
-This `Ansible`_ role manages a NFS server. It can automatically configure
-``iptables`` firewall using `debops.ferm`_ role and reserve ports for services
-required by NFS using `debops.etc_services`_ role. You can also modify default
-list of exported directories and use host Access Control Lists using Ansible
-inventory. Clients which connect to NFS are configured separately.
+The ``debops.nfs`` Ansible role can be used to configure NFS shares on
+Debian/Ubuntu hosts.
 
-.. _Ansible: http://ansible.com/
-.. _debops.ferm: https://github.com/debops/ansible-ferm/
-.. _debops.etc_services: https://github.com/debops/ansible-etc_services/
+
+Installation
+~~~~~~~~~~~~
+
+This role requires at least Ansible ``v2.2.0``. To install it, run:
+
+.. code-block:: console
+
+   ansible-galaxy install debops.nfs
 
 ..
  Local Variables:

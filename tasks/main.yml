@@ -1,13 +1,14 @@
 ---
 
-- name: Install NFS server
-  apt:
+- name: Install required packages
+  package:
     name: '{{ item }}'
     state: 'present'
-    install_recommends: False
-  with_items: [ 'nfs-common', 'nfs-kernel-server' ]
+  with_flattened:
+    - '{{ nfs__base_packages }}'
+    - '{{ nfs__packages }}'
 
-- name: Configure NFS server
+- name: Configure NFS client
   template:
     src: '{{ item }}.j2'
     dest: '/{{ item }}'
@@ -16,27 +17,41 @@
     mode: '0644'
   with_items:
     - 'etc/default/nfs-common'
-    - 'etc/default/nfs-kernel-server'
-    - 'etc/modprobe.d/nfs-server.conf'
-  notify:
-    - 'Restart nfs-common'
-    - 'Restart nfs-kernel-server'
+  register: nfs__register_config
 
-- name: Create required directories
+- name: Restart nfs-common service
+  service:
+    name: 'nfs-common'
+    state: 'restarted'
+  when: nfs__register_config|changed and
+        ansible_distribution == 'Debian' and
+        ansible_distribution_release in [ 'wheezy', 'jessie' ]
+
+- name: Manage NFS mount points
+  mount:
+    name:   '{{ item.path }}'
+    src:    '{{ item.src }}'
+    fstype: '{{ item.fstype | d(nfs__default_mount_type) }}'
+    opts:   '{{ lookup("template", "lookup/mount_options.j2") | from_yaml }}'
+    state:  '{{ item.state  | d("mounted") }}'
+    passno: '{{ item.passno | d(omit) }}'
+    dump:   '{{ item.dump   | d(omit) }}'
+    fstab:  '{{ item.fstab  | d(omit) }}'
+  with_flattened:
+    - '{{ nfs__shares }}'
+    - '{{ nfs__group_shares }}'
+    - '{{ nfs__host_shares }}'
+  when: item.path|d() and item.src|d()
+
+- name: Ensure that the NFS mount points exist
   file:
-    path: '{{ item }}'
+    path: '{{ item.path }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  with_items: [ '{{ nfs_default_path }}', '/etc/exports.d' ]
-
-- name: Configure Ansible exports
-  template:
-    src: 'etc/exports.d/ansible.exports.j2'
-    dest: '/etc/exports.d/ansible.exports'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  notify: [ 'Reload NFS exports' ]
-
+  with_flattened:
+    - '{{ nfs__shares }}'
+    - '{{ nfs__group_shares }}'
+    - '{{ nfs__host_shares }}'
+  when: item.path|d() and item.src|d() and item.state == 'present'

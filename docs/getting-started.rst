@@ -1,51 +1,34 @@
 Getting started
 ===============
 
-Example Ansible inventory::
+Default configuration
+---------------------
 
-    [debops_nfs]
-    data.example.org
+The role does not specify any NFS shares by default, you need to configure them
+using the provided variables (see :ref:`nfs__ref_shares` for more details).
 
-Example playbook::
+The configured NFS shares should exist and be available prior to the role
+execution, otherwise Ansible will hang waiting for the finished
+:command:`mount` command. You can use the ``debops.nfs_server`` role to
+configure NFS4 shares.
 
-    ---
+Example inventory
+-----------------
 
-    - name: Manage NFS server
-      hosts: debops_nfs
+To enable NFS support on a host it needs to be included in the specific Ansible
+inventory group:
 
-      roles:
-        - role: debops.nfs
-          tags: nfs
+.. code-block:: none
 
-By default, role configures a NFS share located in ``/srv/nfs/`` directory,
-however it won't be enabled automatically. To enable it, you need to specify
-a list of IP addresses or CIDR networks which should have access to the share::
+   [debops_service_nfs]
+   hostname
 
-    nfs_allow: [ '192.0.2.0/24', '2002:db8::/64' ]
 
-After that, you should be able to mount it on the client hosts in specified
-network::
+Example playbook
+----------------
 
-    mount -t nfs4 -o proto=tcp,port=2049,_netdev data.example.org:/srv/nfs /media/nfs
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.nfs`` role:
 
-To configure the share in ``/etc/fstab`` using Ansible, you can use this
-example playbook::
-
-    ---
-    - hosts: nfs_clients
-      become: True
-
-      tasks:
-
-        - name: Mount NFS share
-          mount:
-            name: '/media/nfs'
-            src: 'data.example.org:/srv/nfs'
-            fstype: 'nfs4'
-            opts: 'proto=tcp,port=2049,_netdev'
-            state: 'mounted'
-
-Currently in DebOps there's no support for Kerberos authentication, so by
-default NFS role allows connections without authentication. When Kerberos
-support is added, it will be required by default.
-
+.. literalinclude:: playbooks/nfs.yml
+   :language: yaml
