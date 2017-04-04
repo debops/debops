@@ -136,7 +136,7 @@
     regexp: '^{{ item.key | replace(".","\.") }}\s+'
     line: "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value | join(' ')) }}"
     state: '{{ "present" if item.value|d() else "absent" }}'
-  with_dict: '{{ console_hosts }}'
+  with_dict: '{{ console_hosts|combine(console_group_hosts)|combine(console_host_hosts) }}'
   when: console_hosts|d()
   tags: [ 'role::console:hosts' ]
 
