@@ -41,7 +41,7 @@
   with_flattened:
     - '{{ postgresql__base_packages }}'
     - '{{ postgresql__python_packages }}'
-    - '{{ postgresql__packages }}'
+    - '{{ postgresql__packages }}'
 
 - name: Check if database server is installed
   environment:
@@ -73,7 +73,7 @@
     role_attr_flags: '{{ (item.flags|d() | join(",")) | d(omit) }}'
     state: 'present'
   with_flattened:
-    - '{{ postgresql__roles }}'
+    - '{{ postgresql__roles }}'
     - '{{ postgresql_roles|d([]) }}'
     - '{{ postgresql__dependent_roles }}'
   become_user: '{{ postgresql__user }}'
@@ -125,7 +125,7 @@
     grant_option: 'yes'
     state: 'present'
   with_flattened:
-    - '{{ postgresql__databases }}'
+    - '{{ postgresql__databases }}'
     - '{{ postgresql_databases|d([]) }}'
     - '{{ postgresql__dependent_databases }}'
   become_user: '{{ postgresql__user }}'
@@ -162,7 +162,7 @@
     priv: '{{ item.priv | join("/") }}'
     state: 'present'
   with_flattened:
-    - '{{ postgresql__roles }}'
+    - '{{ postgresql__roles }}'
     - '{{ postgresql_roles|d([]) }}'
     - '{{ postgresql__dependent_roles }}'
   become_user: '{{ postgresql__user }}'
