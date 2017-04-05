@@ -4,10 +4,12 @@ Getting started
 .. contents::
    :local:
 
-``debops.mariadb`` role is only the "client" part. To have working a
-MariaDB/MySQL installation, you also need to setup ``debops.mariadb_server``
+.. include:: includes/all.rst
+
+debops.mariadb_ role is only the "client" part. To have working a
+MariaDB/MySQL installation, you also need to setup debops.mariadb_server_
 role somewhere. It can be either on the same host, or on a separate host.
-See the ``debops.mariadb_server`` documentation to learn how to install the
+See the debops.mariadb_server_ documentation to learn how to install the
 database server itself.
 
 Server configuration
@@ -21,7 +23,7 @@ Local database server
 ~~~~~~~~~~~~~~~~~~~~~
 
 If the database server is installed locally, it will be automatically detected
-and used by the ``debops.mariadb`` role without any additional configuration. Also,
+and used by the debops.mariadb_ role without any additional configuration. Also,
 if a remote server was used previously, and a local one was installed, it will
 automatically override the remote configuration. You might need to recreate the
 databases and user accounts in that case.
@@ -30,7 +32,7 @@ Remote database server
 ~~~~~~~~~~~~~~~~~~~~~~
 
 If your MariaDB server is configured on a remote host and you don't have
-a local installation, ``debops.mariadb`` will detect that and won't manage the
+a local installation, debops.mariadb_ will detect that and won't manage the
 databases/user accounts without a server specified. To point it to a server,
 you need to set a variable in the inventory:
 
@@ -43,25 +45,25 @@ installed. This host will be accessed by Ansible using task delegation, so it
 needs to be accessible and managed by Ansible. Currently only 1 server at
 a time is supported by the role.
 
-If ``debops.pki`` role is used to configure a PKI environment, with default
+If debops.pki_ role is used to configure a PKI environment, with default
 ``domain`` PKI realm enabled, role will configure the provided private keys and
 X.509 certificates to enable SSL connections to the database by default.
 Support for client-side X.509 authentication will depend on a given user having
-access to the PKI private keys - see the documentation of ``debops.pki`` role
+access to the PKI private keys - see the documentation of debops.pki_ role
 for more details.
 
 If the PKI environment is not configured or disabled, connections to the
 database server will be performed in cleartext, so you might want to consider
 securing them by configuring server on a separate internal network, or
-accessing it over a VPN connection. You can use ``debops.subnetwork``,
-``debops.tinc`` and ``debops.dnsmasq`` Ansible roles to set up a VPN internal
+accessing it over a VPN connection. You can use debops.subnetwork_,
+debops.tinc_ and debops.dnsmasq_ Ansible roles to set up a VPN internal
 network to secure communication between hosts.
 
 Remote database server over a SSL tunnel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If local MariaDB installation is not detected, but port ``3306`` is active and
-awaiting connections, ``debops.mariadb`` role assumes that MariaDB server is
+awaiting connections, debops.mariadb_ role assumes that MariaDB server is
 accessible over a VPN connection. In this case you need to specify the remote
 host in inventory for Ansible to delegate its tasks:
 
@@ -73,7 +75,7 @@ User accounts will automatically be configured with ``localhost`` as the "host"
 part of the account.
 
 If you want to use tunneled connection to a MariaDB server, you can use
-``debops.stunnel`` Ansible role to configure a SSL tunnel, although it might be
+debops.stunnel_ Ansible role to configure a SSL tunnel, although it might be
 more complex than using a VPN network.
 
 Example inventory
@@ -110,7 +112,7 @@ finally, create a database ``application_production`` on the database server.
 Example playbook
 ----------------
 
-Here's an example Ansible playbook that uses the ``debops.mariadb`` role:
+Here's an example Ansible playbook that uses the debops.mariadb_ role:
 
 .. literalinclude:: playbooks/mariadb.yml
    :language: yaml
@@ -118,9 +120,9 @@ Here's an example Ansible playbook that uses the ``debops.mariadb`` role:
 Usage as a role dependency
 --------------------------
 
-``debops.mariadb`` role can be used by another Ansible role as a dependency.
+debops.mariadb_ role can be used by another Ansible role as a dependency.
 The easiest way to do so is to have a separate set of variables for an user
-account, group, home directory, and MariaDB user. ``debops.mariadb`` will the
+account, group, home directory, and MariaDB user. debops.mariadb_ will the
 create MariaDB user account, as wall as local UNIX account with
 a ``~/.my.cnf`` configuration file as needed.
 
@@ -146,7 +148,7 @@ Example usage as a role dependency:
            priv_aux: False
 
 Password to the database user account can either be retrieved directly from the
-``secret/`` directory by the application role using ``debops.secret`` role, or
+``secret/`` directory by the application role using debops.secret_ role, or
 set by the application role and provided as:
 
 .. code-block:: yaml
@@ -156,7 +158,7 @@ set by the application role and provided as:
      - user: '{{ application__database_user }}'
        password: '{{ application__database_password }}'
 
-In that case it's best to use ``debops.secret`` role to store the password
+In that case it's best to use debops.secret_ role to store the password
 securely in a separate directory.
 
 Local Ansible facts, custom tasks
