@@ -69,6 +69,15 @@ users__group_groups: []
 #
 # List of UNIX groups to manage on specific hosts in Ansible inventory.
 users__host_groups: []
+
+                                                                   # ]]]
+# .. envvar:: users__dependent_groups [[[
+#
+# List of UNIX groups to manage on the current playbook host. This variable is
+# meant to be used from a role dependency in :file:`role/meta/main.yml` or in
+# a playbook.
+users__dependent_groups: []
+
                                                                    # ]]]
                                                                    # ]]]
 # Lists of managed UNIX accounts [[[
@@ -115,6 +124,14 @@ users__default_accounts: []
 # List of UNIX administrator accounts managed by Ansible.
 users__admin_accounts: '{{ lookup("template", "lookup/users__admin_accounts.j2") | from_yaml }}'
                                                                    # ]]]
+                                                                   # ]]]
+# .. envvar:: users__dependent_accounts [[[
+#
+# List of user accounts to manage on the current playbook host. This variable
+# is meant to be used from a role dependency in :file:`role/meta/main.yml` or
+# in a playbook.
+users__dependent_accounts: []
+
                                                                    # ]]]
 # Management of user resources [[[
 # --------------------------------
