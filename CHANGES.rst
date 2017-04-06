@@ -18,6 +18,16 @@ The current role maintainer_ is ypid_.
 
 .. _debops.apt_cacher_ng master: https://github.com/debops/ansible-apt_cacher_ng/compare/v0.2.1...master
 
+Fixed
+~~~~~
+
+- In Jessie, the backported ``apt-cacher-ng`` package now also requires a
+  backported ``libssl1.0.0`` package (and ``libssl-dev``, in case that is
+  installed). Update the APT pinning accordingly so that it is ensured that the
+  package is upgraded correctly and not kept back.
+  It might depend on your global APT pinning configuration if the package would
+  have been kept back without this or not. [ypid_]
+
 
 `debops.apt_cacher_ng v0.2.2`_ - 2017-03-29
 -------------------------------------------
