@@ -27,6 +27,7 @@ Fixed
 
 - Fix documentation build error due to deleted link definition to deprecated
   `debops.php5` role repository. [ganto_]
+- Probe if `roundcube__domain` is a string and construct `roundcube__git_checkout` accordingly.  [cultcom]
 
 
 `debops-contrib.roundcube v0.1.2_` - 2017-03-09
