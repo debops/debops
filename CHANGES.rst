@@ -145,6 +145,8 @@ Changed
 
 - Update the debops.cryptsetup_ playbook to the new version. [ypid_]
 
+- Update the debops.gitlab_ playbook to use role dependencies. [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
