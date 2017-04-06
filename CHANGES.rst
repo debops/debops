@@ -83,6 +83,9 @@ Added
 
 - Add ``flattened`` Jinja filter to debops__tpl_macros.js_. [ypid_]
 
+- Add the ``debops.nfs_server`` Ansible role with a corresponding playbook.
+  [drybjed_]
+
 Changed
 ~~~~~~~
 
@@ -146,6 +149,9 @@ Changed
 - Update the debops.cryptsetup_ playbook to the new version. [ypid_]
 
 - Update the debops.gitlab_ playbook to use role dependencies. [drybjed_]
+
+- The order of the NFS server/client roles has been moved to be earlier in the
+  main playbook to allow for mounting of the NFS shares early. [drybjed_]
 
 Deprecated
 ~~~~~~~~~~
