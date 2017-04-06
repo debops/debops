@@ -19,7 +19,7 @@ The current role maintainer_ is drybjed_.
 .. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.2.0...master
 
 
-`debops.gitlab v0.2.0`_ - 2017-03-21
+`debops.gitlab v0.2.0`_ - 2017-04-06
 ------------------------------------
 
 .. _debops.gitlab v0.2.0: https://github.com/debops/ansible-gitlab/compare/v0.1.8...v0.2.0
