@@ -1,74 +1,9 @@
 ---
 
 dependencies:
-  - role: debops.apt_preferences
-    tags: [ 'depend::apt_preferences', 'type::dependency', 'depend-of::gitlab', 'type::dependency' ]
-    apt_preferences_dependent_list:
-      - '{{ golang__apt_preferences__dependent_list }}'
-      - '{{ ruby__apt_preferences__dependent_list }}'
-
-  - role: debops.golang
-    tags: [ 'depend::golang', 'depend::golang:gitlab', 'depend-of::gitlab', 'type::dependency:hard' ]
-
-  - role: debops.nodejs
-    tags: [ 'role::nodejs' ]
-    nodejs__upstream: True
-    nodejs__npm_dependent_packages:
-        - 'yarn'
 
   - role: debops.secret
-    tags: [ 'depend::secret', 'depend::secret:gitlab', 'depend-of::gitlab', 'type::dependency:hard' ]
-
-  - role: debops.etc_services
-    tags: [ 'depend::etc_services', 'depend::etc_services:gitlab', 'depend-of::gitlab', 'type::dependency' ]
-    etc_services_dependent_list:
-
-      - name: 'gitlab'
-        port: '{{ gitlab_unicorn_port }}'
-        comment: 'GitLab'
-
-      - '{{ redis__etc_services__dependent_list }}'
-
-  - role: debops.ruby
-    ruby__dev_support: True
-    tags: [ 'depend::ruby', 'depend::ruby:gitlab', 'depend-of::gitlab', 'type::dependency' ]
-
-  - role: debops.redis
-    tags: [ 'depend::redis', 'depend::redis:gitlab', 'depend-of::gitlab', 'type::dependency' ]
-
-  - role: debops.mariadb
-    mariadb_databases:
-      - database: '{{ gitlab_database_name }}'
-    mariadb_users:
-      - database: '{{ gitlab_database_name }}'
-        user: '{{ gitlab_database_user }}'
-        password: '{{ gitlab_database_password }}'
-    when: (gitlab_dependencies is defined and gitlab_dependencies) and
-          (gitlab_database is defined and gitlab_database and gitlab_database == 'mariadb')
-    tags: [ 'depend::mariadb', 'depend::mariadb:gitlab', 'depend-of::gitlab', 'type::dependency' ]
-
-  - role: debops.postgresql
-    postgresql_roles:
-      - name: '{{ gitlab_database_name }}'
-      - name: '{{ gitlab_database_user }}' # Password is not passed directly - it will be read for the file
-    postgresql_groups:
-      - roles: [ '{{ gitlab_database_user }}' ]
-        groups: [ '{{ gitlab_database_name }}' ]
-        database: '{{ gitlab_database_name }}'
-    postgresql_databases:
-      - name: '{{ gitlab_database_name }}'
-        owner: '{{ gitlab_database_user }}'
-    tags: [ 'depend::postgresql', 'depend::postgresql:gitlab', 'depend-of::gitlab', 'type::dependency' ]
-    when: (gitlab_dependencies is defined and gitlab_dependencies) and
-          (gitlab_database is defined and gitlab_database and gitlab_database == 'postgresql')
-
-  - role: debops.nginx
-    tags: [ 'depend::nginx', 'depend::nginx:gitlab', 'depend-of::gitlab', 'type::dependency' ]
-    nginx_servers:
-      - '{{ gitlab_nginx_server }}'
-      - '{{ gitlab_nginx_pages_server }}'
-    nginx_upstreams: '{{ gitlab_nginx_upstreams }}'
-    when: (gitlab_dependencies is defined and gitlab_dependencies)
+    tags: [ 'role::secret' ]
 
 galaxy_info:
   author: 'Maciej Delmanowski'

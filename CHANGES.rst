@@ -10,13 +10,69 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer_ is drybjed.
+The current role maintainer_ is drybjed_.
 
 
 `debops.gitlab master`_ - unreleased
 ------------------------------------
 
-.. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.1.8...master
+.. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.2.0...master
+
+
+`debops.gitlab v0.2.0`_ - 2017-04-06
+------------------------------------
+
+.. _debops.gitlab v0.2.0: https://github.com/debops/ansible-gitlab/compare/v0.1.8...v0.2.0
+
+Changed
+~~~~~~~
+
+- Change the installation procedure with a PostgreSQL database. The
+  ``gitlab:setup`` Rake task drops the database, so instead the role runs the
+  specific Rake tasks that install the schema and configure PostgreSQL database
+  directly. This change should not affect existing instalations. [drybjed_]
+
+- Configuration of the ``pg_trgm`` PostgreSQL extension has been moved from the
+  ``debops.gitlab`` role to dependent variables of the debops.postgresql_ role.
+  [drybjed_]
+
+- Variables in the :file:`vars/main.yml` file have been moved to the
+  :file:`defaults/main.yml` file to allow their modification via Ansible inventory.
+  [drybjed_]
+
+- Configuration for other Ansible roles passed as role dependent variables has
+  been moved to the :file:`defaults/main.yml` for easier management. [drybjed_]
+
+- The configuration of the PostgreSQL database and roles has changed. The
+  database will now be owned by a role of the same name (by default
+  ``gitlabhq_production``) which cannot login to the server directly. The
+  ``gitlab`` PostgreSQL role will belong to the ``gitlabhq_production``
+  PostgreSQL group and should have access to the database.
+
+  This change will be applied in the existing installations, but it shouldn't
+  impact the service. [drybjed_]
+
+- Rename the ``gitlab_database`` variable to :envvar:`gitlab__database` to
+  allow switch to the Ansible playbook-based role dependencies. **If you
+  configured the GitLab database in the inventory, you will need to update the
+  inventory before applying the new role; otherwise the application will
+  break.** [drybjed_]
+
+- The role dependencies have been moved to the playbook. The ``debops.gitlab``
+  role will now check if a suitable SQL database is available on the host
+  before installing GitLab. If you are using a remote SQL database, you should
+  check it's corresponding client role to prepare correct Ansible local facts.
+  [drybjed_]
+
+- The ``debops.gitlab`` role will check if PostgreSQL or MariaDB role facts are
+  present on a host and will choose the installed database automatically. The
+  PostgreSQL database is preferred to keep upstream preference.
+
+  The selected SQL database is remembered in Ansible local facts. On existing
+  installations this might result in a broken installation where a PostgreSQL
+  database is detected without a corresponding fact pointing to a MariaDB
+  database. In this case users should enforce the GitLab database choice
+  through Ansible inventory. [drybjed_]
 
 
 `debops.gitlab v0.1.8`_ - 2017-03-12
@@ -47,7 +103,7 @@ Added
 Changed
 ~~~~~~~
 
-- Update ``gitlab.yml`` configuration file template. [Oldkarkass]
+- Update :file:`gitlab.yml` configuration file template. [Oldkarkass]
 
 
 `debops.gitlab v0.1.7`_ - 2016-11-18
@@ -112,7 +168,7 @@ Changed
 - Ensure that ``gitlab-shell`` is checked out on first install even when the
   latest tag and the main ``master`` branch are the same. [drybjed_]
 
-- Fix Ansible warnings about ``sudo`` and ``git`` modules. [drybjed_]
+- Fix Ansible warnings about :command:`sudo` and :command:`git` modules. [drybjed_]
 
 Removed
 ~~~~~~~
@@ -177,12 +233,15 @@ Added
 Changed
 ~~~~~~~
 
-- Migration to debops.mariadb_ role. [scibi]
-  If you have exisitng setup you have to:
-  - move some files in secrets directory:
-    ``secret/credentials/[GitLab FQDN]/mysql/root/password`` to ``secret/credentials/[GitLab FQDN]/mariadb/localhost/root/password``
-    ``secret/credentials/[GitLab FQDN]/mysql/git/password`` to ``secret/mariadb/[GitLab FQDN]/credentials/gitlab/password``
-  - set ``mariadb_server_flavor`` to ``mysql``
+- Migration to debops.mariadb_ role. [scibi_]
+  If you have exisitng setup you have to move some files in secrets directory:
+
+  .. code-block:: none
+
+     secret/credentials/[GitLab FQDN]/mysql/root/password -> secret/credentials/[GitLab FQDN]/mariadb/localhost/root/password
+     secret/credentials/[GitLab FQDN]/mysql/git/password -> secret/mariadb/[GitLab FQDN]/credentials/gitlab/password
+
+  And set ``mariadb_server_flavor`` to :command:`mysql`.
 
 
 debops.gitlab v0.1.0 - 2015-09-29
@@ -195,7 +254,7 @@ Added
 
 - Add support for GitLab 7.10.
 
-  Template of ``gitlab.yml`` configuration file is updated to GitLab 7.10.
+  Template of :file:`gitlab.yml` configuration file is updated to GitLab 7.10.
 
   Variable ``gitlab_email_name`` is renamed to ``gitlab_email_display_name``.
 
@@ -213,11 +272,11 @@ Added
 
 - Add support for GitLab 7.12. [gomez]
 
-- Add support for GitLab 7.13 and 7.14. [scibi]
+- Add support for GitLab 7.13 and 7.14. [scibi_]
 
-- Add support for GitLab 8.0. [scibi]
+- Add support for GitLab 8.0. [scibi_]
 
 Changed
 ~~~~~~~
 
-- Create LDAP accout for gitlab user. [scibi]
+- Create LDAP accout for gitlab user. [scibi_]

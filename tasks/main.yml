@@ -7,7 +7,7 @@
     install_recommends: False
   with_flattened:
     - '{{ gitlab_packages }}'
-    - '{{ gitlab_database_packages[gitlab_database] }}'
+    - '{{ gitlab_database_packages[gitlab__database] }}'
 
 - name: Create GitLab system group
   group:
@@ -54,16 +54,13 @@
 - include: configure_gitlab-shell.yml
 
 - include: configure_gitlab-pages.yml
-  when: gitlab_enable_pages
+  when: gitlab_enable_pages | bool
 
 - include: configure_gitlab-git-http-server.yml
-  when: gitlab_enable_git_http_server
+  when: gitlab_enable_git_http_server | bool
 
 - include: configure_gitlab-workhorse.yml
-  when: gitlab_enable_gitlab_workhorse
-
-- include: configure_postgres-extension.yml
-  when: gitlab_configure_postgres_extension
+  when: gitlab_enable_gitlab_workhorse | bool
 
 - include: configure_gitlab_ce.yml
 
