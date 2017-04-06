@@ -1,47 +1,13 @@
 ---
 
-dependencies:
-
-  - role: debops.etc_services
-    etc_services_dependent_list:
-
-      - name: 'nfs-callback'
-        port: '{{ nfs_service_ports["nfs-callback"] }}'
-        comment: 'NFS callback'
-
-      - name: 'nfs-lockd'
-        port: '{{ nfs_service_ports["nfs-lockd"] }}'
-        comment: 'NFS lockd'
-
-      - name: 'nfs-mountd'
-        port: '{{ nfs_service_ports["nfs-mountd"] }}'
-        comment: 'RPC mountd'
-
-      - name: 'nfs-statd'
-        port: '{{ nfs_service_ports["nfs-statd"] }}'
-        comment: 'RPC statd'
-
-      - name: 'nfs-statd-bc'
-        port: '{{ nfs_service_ports["nfs-statd-bc"] }}'
-        comment: 'RPC statd broadcast'
-
-  - role: debops.ferm
-    ferm_input_dependent_list:
-
-      - type: 'dport_accept'
-        dport: '{{ [ "sunrpc", "nfs" ] + nfs_service_ports.keys() | list }}'
-        protocol: '{{ nfs_protocols }}'
-        saddr: '{{ nfs_allow }}'
-        weight: '50'
-        accept_any: '{{ nfs_accept_any }}'
-        filename: 'nfs_dependency_accept'
+dependencies: []
 
 galaxy_info:
   author: 'Maciej Delmanowski'
-  description: 'Configure NFS server'
+  description: 'Configure NFS4 client'
   company: 'DebOps'
-  license: 'GNU General Public License v3'
-  min_ansible_version: '1.8.0'
+  license: 'GPL-3.0'
+  min_ansible_version: '2.2.0'
   platforms:
   - name: Ubuntu
     versions:
@@ -50,10 +16,13 @@ galaxy_info:
     - raring
     - saucy
     - trusty
+    - xenial
   - name: Debian
     versions:
     - wheezy
     - jessie
-  categories:
-  - system
-
+    - stretch
+  galaxy_tags:
+    - nfs
+    - filesystem
+    - networking

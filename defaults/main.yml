@@ -1,156 +1,92 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# debops.nfs default variables [[[
+# ================================
 
-# -------------------
-#   Basic NFS share
-# -------------------
-
-# .. envvar:: nfs_default_path
+# .. contents:: Sections
+#    :local:
 #
-# Export this directory as an NFS share (it will be created automatically)
-nfs_default_path: '{{ ansible_local.root.data + "/nfs" }}'
+# .. include:: includes/all.rst
 
 
-# .. envvar:: nfs_default_options
+# APT packages [[[
+# ----------------
+
+# .. envvar:: nfs__base_packages [[[
 #
-# Default options for above NFS share, see ``exports(5)`` for more details
-nfs_default_options: 'rw,sync,subtree_check,root_squash,sec={{ nfs_security }}'
+# List of APT packages that are required for NFS support.
+nfs__base_packages: [ 'nfs-common' ]
 
-
-# .. envvar:: nfs_default_clients
+                                                                   # ]]]
+# .. envvar:: nfs__packages [[[
 #
-# Default NFS share will be exported to specified list of IP addresses or CIDR
-# networks, by default the same that are allowed access to NFS service by the
-# firewall
-nfs_default_clients: '{{ nfs_allow }}'
+# List of additional APT packages to install with NFS support.
+nfs__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# NFS mount configuration [[[
+# ---------------------------
 
-
-# ----------------------------
-#   Firewall and host access
-# ----------------------------
-
-# Allow these networks and hosts to connect to NFS server
-nfs_allow: []
-
-
-# .. envvar:: nfs_accept_any
+# .. envvar:: nfs__kerberos [[[
 #
-# Allow connections from any hosts, enable only if you have authorization in
-# place (for example Kerberos).
-nfs_accept_any: False
+# Enable Kerberos support. Currently doesn't do much.
+nfs__kerberos: False
 
-
-# .. envvar:: nfs_protocols
+                                                                   # ]]]
+# .. envvar:: nfs__default_mount_type [[[
 #
-# List of protocols to open in the firewall
-nfs_protocols: [ 'tcp' ]
+# The default filesystem type used for NFS mount points, if a custom type is
+# not specified in the NFS share configuration.
+nfs__default_mount_type: 'nfs4'
 
-
-# .. envvar:: nfs_security
+                                                                   # ]]]
+# .. envvar:: nfs__base_mount_options [[[
 #
-# List of NFS security flavors enforced on this server.
-nfs_security: 'krb5p:krb5i:krb5:sys'
+# List of :command:`mount` options that are added to all mount points
+# configured by this role. These should ensure correct operation for a network
+# mount point.
+nfs__base_mount_options: [ 'proto=tcp', 'port=2049', '_netdev' ]
 
-
-# --------------------------
-#   NFS server performance
-# --------------------------
-
-# .. envvar:: nfs_threads
+                                                                   # ]]]
+# .. envvar:: nfs__security_mount_options [[[
 #
-# Number of ``nfsd`` threads to run
-nfs_threads: '8'
+# List of :command:`mount` options related to Kerberos security, added to all
+# mount points configured by this role.
+nfs__security_mount_options: '{{ [ "sec=krb5p" ] if nfs__kerberos|bool else [] }}'
 
-
-# .. envvar:: nfs_priority
+                                                                   # ]]]
+# .. envvar:: nfs__default_mount_options [[[
 #
-# Server thread priority, see ``nice(1)`` for more details
-nfs_priority: '0'
-
-
-# ---------------
-#   NFS Exports
-# ---------------
-
-# .. envvar:: nfs_exports
-#
-# List of NFS exports defined as dicts
-nfs_exports: [ '{{ nfs_exports_default }}' ]
-
-
-# .. envvar:: nfs_exports_default
-#
-# Default export directory configured in "Basic NFS share" section
-nfs_exports_default:
-  name: 'default'
-  path: '{{ nfs_default_path }}'
-  options: '{{ nfs_default_options }}'
-
-
-# .. envvar:: nfs_exports_home
-#
-# Example export of a ``/home`` directory. You need to add it to
-# ``nfs_exports`` list to enable it.
-nfs_exports_home:
-  name: 'home'
-  path: '/home'
-  options: '{{ nfs_export_options }}'
-  state: 'present'
-
-
-# .. envvar:: nfs_export_options
-#
-# You can specfy options for each exported directory, or use a variable with
-# defaults, shown here. If ``item.options`` are not specified, no options will
-# be added.
-nfs_export_options: 'rw,sync,subtree_check,root_squash,sec={{ nfs_security }}'
-
-
-# ----------------------
-#   NFS Access Control
-# ----------------------
-
-# .. envvar:: nfs_access_control_lists
-#
-# List of ACL dicts which define what hosts/networks/client can connect to
-# exports. See ``exports(5)`` for more details.
-nfs_access_control_lists: [ '{{ nfs_acl_default_clients }}' ]
-
-
-# .. envvar:: nfs_acl_default_clients
-#
-# An access control list for default clients allowed to connect to the server.
-# They will have access to all exported shares, with options defined in each
+# List of default :command:`mount` options added to all mount point configured
+# by this role if no options are specified in the configuration of a given NFS
 # share.
-nfs_acl_default_clients:
-  exports: '{{ nfs_exports | map(attribute="name") | list }}'
-  clients: '{{ nfs_default_clients }}'
+nfs__default_mount_options: [ 'noatime', 'nosuid', 'nodev', 'hard', 'intr' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# NFS shares [[[
+# --------------
 
+# The lists of NFS shares configured on the hosts. Each list element is
+# a dictionary which describes an NFS share. See :ref:`nfs__ref_shares` for
+# more details.
 
-# ---------------------
-#   NFS service ports
-# ---------------------
-
-# NFS by default uses random ports for its services. To make it work with
-# ``ip(6)tables`` firewall, NFS services will be listed in ``/etc/services``
-# and then configured using port numbers specified in sequence. ``debops.ferm``
-# uses service names to configure correct firewall rules.
-
-# .. envvar:: nfs_service_port
+# .. envvar:: nfs__shares [[[
 #
-# First port number for the NFS services
-nfs_service_port: '3550'
+# List of NFS shares configured on all hosts in the Ansible inventory.
+nfs__shares: []
 
-
-# .. envvar:: nfs_service_ports
+                                                                   # ]]]
+# .. envvar:: nfs__group_shares [[[
 #
-# Dict with service names mapped to ports
-nfs_service_ports:
-  'nfs-callback': '{{ (nfs_service_port | int + 0) }}'
-  'nfs-lockd':    '{{ (nfs_service_port | int + 1) }}'
-  'nfs-mountd':   '{{ (nfs_service_port | int + 2) }}'
-  'nfs-statd':    '{{ (nfs_service_port | int + 3) }}'
-  'nfs-statd-bc': '{{ (nfs_service_port | int + 4) }}'
+# List of NFS shares configured on hosts in specific Ansible inventory group.
+nfs__group_shares: []
 
+                                                                   # ]]]
+# .. envvar:: nfs__host_shares [[[
+#
+# List of NFS shares configured on specific hosts in the Ansible inventory.
+nfs__host_shares: []
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
