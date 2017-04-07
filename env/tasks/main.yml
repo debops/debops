@@ -1,0 +1,11 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Ensure the parent directory for volkszaehler home exists
+  file:
+    path: '{{ volkszaehler__home_path|dirname }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (volkszaehler__deploy_state == "present")
