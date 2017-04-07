@@ -12,7 +12,20 @@ The current role maintainer is drybjed.
 `debops.auth master`_ - unreleased
 ----------------------------------
 
-.. _debops.auth master: https://github.com/debops/ansible-auth/compare/v0.3.4...master
+.. _debops.auth master: https://github.com/debops/ansible-auth/compare/v0.3.5...master
+
+
+`debops.auth v0.3.5`_ - 2017-04-07
+----------------------------------
+
+.. _debops.auth v0.3.5: https://github.com/debops/ansible-auth/compare/v0.3.4...v0.3.5
+
+Removed
+~~~~~~~
+
+- Remove management of the :file:`/etc/nsswitch.conf` configuration file. This
+  functionality has been moved to the new ``debops.nsswitch`` Ansible role.
+  [drybjed_]
 
 
 `debops.auth v0.3.4`_ - 2017-01-13
