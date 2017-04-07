@@ -86,6 +86,9 @@ Added
 - Add the ``debops.nfs_server`` Ansible role with a corresponding playbook.
   [drybjed_]
 
+- Add the ``debops.nsswitch`` Ansible role with its corresponding playbook. The
+  role is included in the :file:`common.yml` playbook. [drybjed_]
+
 Changed
 ~~~~~~~
 
