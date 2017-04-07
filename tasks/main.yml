@@ -54,4 +54,4 @@
     - '{{ nfs__shares }}'
     - '{{ nfs__group_shares }}'
     - '{{ nfs__host_shares }}'
-  when: item.path|d() and item.src|d() and item.state == 'present'
+  when: item.path|d() and item.src|d() and item.state|d('mounted') == 'present'

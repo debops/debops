@@ -16,7 +16,19 @@ The current role maintainer_ is drybjed_.
 `debops.nfs master`_ - unreleased
 ---------------------------------
 
-.. _debops.nfs master: https://github.com/debops/ansible-nfs/compare/v0.2.0...master
+.. _debops.nfs master: https://github.com/debops/ansible-nfs/compare/v0.2.1...master
+
+
+`debops.nfs v0.2.1`_ - 2017-04-07
+---------------------------------
+
+.. _debops.nfs v0.2.1: https://github.com/debops/ansible-nfs/compare/v0.2.0...v0.2.1
+
+Fixed
+~~~~~
+
+- Ensure that the ``item.state`` parameter has a default state in condition.
+  [drybjed_]
 
 
 `debops.nfs v0.2.0`_ - 2017-04-05
