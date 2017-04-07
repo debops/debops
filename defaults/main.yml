@@ -24,11 +24,11 @@
 #
 # List of base packages required by ownCloud.
 owncloud__base_packages:
-  - 'owncloud'
   - '{{ [ ("owncloud-deps-php" + ansible_local.php.version) ]
         if (ansible_local|d() and ansible_local.php|d() and
             ansible_local.php.version|d())
         else [] }}'
+  - 'owncloud'
 
   ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
   ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
@@ -161,6 +161,13 @@ owncloud__dpkg_hook_script: '{{
 owncloud__auto_database_upgrade_migration_test: True
 
 
+# .. envvar:: owncloud__auto_database_upgrade_3party_app_disable
+#
+# Should third party apps by disabled during/after upgrades? The upstream default as of ownCloud 9.0
+# is ``True``.
+owncloud__auto_database_upgrade_3party_app_disable: True
+
+
 # .. envvar:: owncloud__auto_database_upgrade_hook_script_packages_trigger
 #
 # List of packages for which the package manager hook script should attempt to
@@ -189,8 +196,7 @@ owncloud__auto_security_updates_enabled: False
 # List of script file paths which should be executed after every ownCloud
 # update.
 # For more information refer to :ref:`owncloud__ref_post_upgrade_hook`.
-# This variable is used by this role, controlled by other variables of this
-# role.
+# This variable is used internally, controlled by other variables of this role.
 owncloud__post_upgrade_hook_role_list: []
 
 
@@ -642,8 +648,7 @@ owncloud__app_user_webfinger_support: False
 # .. envvar:: owncloud__role_config
 #
 # See `ownCloud config.php configuration`_.
-# This variable is used by this role, controlled by other variables of this
-# role.
+# This variable is used internally, controlled by other variables of this role.
 owncloud__role_config:
 
   trusted_domains: '{{ [ owncloud__fqdn ] if owncloud__fqdn is string else owncloud__fqdn }}'
@@ -1042,14 +1047,14 @@ owncloud__ldap_password_file: '{{ secret + "/credentials/" + owncloud__ldap_host
 owncloud__ldap_password: '{{ lookup("password", owncloud__ldap_password_file) }}'
 
 
-# .. envvar:: owncloud__ldap_port
-#
-owncloud__ldap_port: '636'
-
-
 # .. envvar:: owncloud__ldap_method
 #
 owncloud__ldap_method: 'ssl'
+
+
+# .. envvar:: owncloud__ldap_port
+#
+owncloud__ldap_port: '{{ 636 if (owncloud__ldap_method in ["ssl", "tls"]) else 389 }}'
 
 
 # .. envvar:: owncloud__ldap_user_display_name
@@ -1192,7 +1197,7 @@ owncloud__ldap_expert_username_attr: ''
 # .. envvar:: owncloud__ldap_conf_map
 #
 owncloud__ldap_conf_map:
-  ldapHost: '{{ "ldaps://" if (owncloud__ldap_method == "ssl") else "" }}{{ owncloud__ldap_host }}'
+  ldapHost: '{{ "ldaps://" if (owncloud__ldap_method in ["ssl", "tls"]) else "" }}{{ owncloud__ldap_host }}'
   ldapPort: '{{ owncloud__ldap_port }}'
   ldapAgentName: '{{ owncloud__ldap_binddn }}'
   ldapBase: '{{ owncloud__ldap_basedn }}'

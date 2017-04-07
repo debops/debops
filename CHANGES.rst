@@ -32,6 +32,10 @@ Added
 - Provide various configuration options from the :file:`config.php` file using
   Ansible facts. Refer to :ref:`owncloud__ref_ansible_facts` for details. [ypid_]
 
+- Allow to leave third party apps enabled during/after upgrades via
+  :envvar:`owncloud__auto_database_upgrade_3party_app_disable`.
+  Defaults to upstream default. [ypid_]
+
 Changed
 ~~~~~~~
 
@@ -53,6 +57,8 @@ Changed
 
 - Fix typo in variable name by renaming ``owncloud__theme_entitiy_name`` to
   :envvar:`owncloud__theme_entity_name`. [jbicha]
+
+- Derive LDAP port from :envvar:`owncloud__ldap_port`. [ypid_]
 
 Removed
 ~~~~~~~

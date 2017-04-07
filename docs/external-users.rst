@@ -46,11 +46,11 @@ FIXME: Figure out how that can be configured.
    # Note that those recommendations might deviate from ownCloud
    # recommendations but those are the settings which are proven to work.
    owncloud__ldap_create_user: False
-   owncloud__ldap_port: '389'
+   owncloud__ldap_method: 'plain'
    owncloud__ldap_expert_username_attr: 'sAMAccountName'
 
    owncloud__ldap_conf_map:
-     ldapHost: '{{ "ldaps://" if (owncloud__ldap_method == "ssl") else "" }}{{ owncloud__ldap_host }}'
+     ldapHost: '{{ "ldaps://" if (owncloud__ldap_method in ["ssl", "tls"]) else "" }}{{ owncloud__ldap_host }}'
      ldapPort: '{{ owncloud__ldap_port }}'
      ldapAgentName: '{{ owncloud__ldap_binddn }}'
      ldapBase: '{{ owncloud__ldap_basedn }}'

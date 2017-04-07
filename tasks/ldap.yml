@@ -6,16 +6,19 @@
   changed_when: False
   when: (not ansible_check_mode)
   register: owncloud__register_ldap_default_config_exits
+  become: True
   become_user: '{{ owncloud__user }}'
 
 - name: Create empty LDAP config
   command: php --file "{{ owncloud__home }}/occ" ldap:create-empty-config
+  become: True
   become_user: '{{ owncloud__user }}'
   when: ((not ansible_check_mode) and 'Invalid configID' in owncloud__register_ldap_default_config_exits.stdout|d(""))
 
 - name: Set LDAP password
   command: php --file "{{ owncloud__home }}/occ" ldap:set-config "" ldapAgentPassword "{{ owncloud__ldap_password }}"
   changed_when: False
+  become: True
   become_user: '{{ owncloud__user }}'
   no_log: True
   when: ((not ansible_check_mode) and owncloud__ldap_password is string and owncloud__ldap_password|length > 0)
@@ -23,6 +26,7 @@
 - name: Set LDAP parameters
   command: php --file "{{ owncloud__home }}/occ" ldap:set-config "" "{{ item.key }}" "{{ item.value }}"
   changed_when: False
+  become: True
   become_user: '{{ owncloud__user }}'
   when: ((not ansible_check_mode) and
          ('Invalid configID' in owncloud__register_ldap_default_config_exits.stdout|d("") or
