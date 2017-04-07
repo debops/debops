@@ -100,7 +100,7 @@ NSS services defined as strings
 Each element of a YAML service list can be a string, which is a name of the NSS
 service which should be enabled for a given databse. This service will be
 enabled when a corresponding string is found in the
-:envvar:`nsswitch__cobmined_services` variable. For example, the configuration
+:envvar:`nsswitch__combined_services` variable. For example, the configuration
 below will only enable file-based user and group lookups:
 
 .. code-block:: yaml
