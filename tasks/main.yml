@@ -64,23 +64,6 @@
 - include: nss_pam_ldap.yml
   when: (('ldap' in auth_nsswitch) and (auth_nslcd_conf|bool))
 
-- name: Check if libnss-mdns package is installed
-  environment:
-    LC_MESSAGES: 'C'
-  shell: dpkg-query -W -f='${Version}\n' 'libnss-mdns' | grep -v '^$'
-  register: auth_register_mdns
-  changed_when: False
-  failed_when: False
-  always_run: True
-
-- name: Configure nsswitch.conf
-  template:
-    src: '{{ lookup("template_src", "etc/nsswitch.conf.j2") }}'
-    dest: '/etc/nsswitch.conf'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-
 - name: DebOps post_tasks hook
   include: "{{ lookup('task_src', 'auth/post_main.yml') }}"
 
