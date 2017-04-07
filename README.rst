@@ -95,6 +95,9 @@ View a dependency graph
 
 .. image:: https://debops.org/images/dependency-graph.png
    :alt: Dependency graph
+   
+The dependency graph was generated using: `ansigenome <https://github.com/nickjj/ansigenome>`__.
+
 
 Status page
 ^^^^^^^^^^^
