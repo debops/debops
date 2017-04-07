@@ -18,6 +18,11 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.2.0...master
 
+Changed
+~~~~~~~
+
+- Role documentation improvements. [ypid_]
+
 
 `debops.gitlab v0.2.0`_ - 2017-04-06
 ------------------------------------
@@ -30,7 +35,7 @@ Changed
 - Change the installation procedure with a PostgreSQL database. The
   ``gitlab:setup`` Rake task drops the database, so instead the role runs the
   specific Rake tasks that install the schema and configure PostgreSQL database
-  directly. This change should not affect existing instalations. [drybjed_]
+  directly. This change should not affect existing installations. [drybjed_]
 
 - Configuration of the ``pg_trgm`` PostgreSQL extension has been moved from the
   ``debops.gitlab`` role to dependent variables of the debops.postgresql_ role.
@@ -279,4 +284,4 @@ Added
 Changed
 ~~~~~~~
 
-- Create LDAP accout for gitlab user. [scibi_]
+- Create LDAP account for gitlab user. [scibi_]
