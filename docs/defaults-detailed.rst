@@ -52,14 +52,6 @@ list element is a YAML dictionary with specific parameters:
   full control over the configuration. The ``_netdev`` option is always added
   to ensure that the :file:`/etc/fstab` configuration file remains valid.
 
-``kerberos``
-  Optional, boolean. If ``True``, the role will add the security options
-  specified in the :envvar:`nfs__security_mount_options` variable which by
-  default enables Kerberos integrity and privacy mode.
-
-  You can also use this variable to override the value of the global
-  :envvar:`nfs__kerberos` variable, by using the ``False`` value.
-
 ``fstype``
   Optional. Specify the filesystem type to use for the mount point. By default
   it's ``nfs4``.

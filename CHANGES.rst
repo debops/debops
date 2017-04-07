@@ -24,6 +24,13 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.nfs v0.2.1: https://github.com/debops/ansible-nfs/compare/v0.2.0...v0.2.1
 
+Changed
+~~~~~~~
+
+- If the Kerberos is not enabled, role will now default to the ``sec=sys``
+  mount option. This is done to ensure that even on Kerberos-enabled systems
+  mount points which shouldn't use Kerberos behave correctly. [drybjed_]
+
 Fixed
 ~~~~~
 
