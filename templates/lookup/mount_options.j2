@@ -7,11 +7,7 @@
 {%   set _ = nfs__tpl_mount_options.extend((nfs__default_mount_options.split(',') if nfs__default_mount_options is string else nfs__default_mount_options)) %}
 {% endif %}
 {% if (item.default_options | d(True)) | bool %}
-{%   if (item.kerberos | d(nfs__kerberos)) | bool %}
 {{ (nfs__security_mount_options + nfs__tpl_mount_options + nfs__base_mount_options) | unique | join(',') | to_yaml }}
-{%   else %}
-{{ (nfs__tpl_mount_options + nfs__base_mount_options) | unique | join(',') | to_yaml }}
-{%   endif %}
 {% else %}
 {{ '_netdev' | to_yaml }}
 {% endif %}
