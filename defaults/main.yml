@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: includes/all.rst
 
 
 # Basic configuration options [[[
@@ -19,7 +21,7 @@ dokuwiki__main_domain: 'wiki.{{ ansible_domain }}'
                                                                    # ]]]
 # .. envvar:: dokuwiki__domains [[[
 #
-# List of domains on which DokuWiki is configured in ``nginx``.
+# List of domains on which DokuWiki is configured in nginx.
 dokuwiki__domains: '{{ [ dokuwiki__main_domain ] +
                        dokuwiki__farm_animals|d([]) }}'
 
@@ -32,13 +34,13 @@ dokuwiki__nginx_auth_realm: 'Wiki access is restricted'
                                                                    # ]]]
 # .. envvar:: dokuwiki__nginx_access_policy [[[
 #
-# Access policy defined using ``debops.nginx`` role, applied to this DokuWiki.
+# Access policy defined using debops.nginx_ role, applied to this DokuWiki.
 dokuwiki__nginx_access_policy: ''
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__nginx_filename [[[
 #
-# Name of the ``nginx`` configuration file for DokuWiki website, without the
+# Name of the nginx configuration file for DokuWiki website, without the
 # ``.conf`` extension.
 dokuwiki__nginx_filename: 'debops.dokuwiki'
                                                                    # ]]]
@@ -207,7 +209,7 @@ dokuwiki__plugins_syntax:
                                                                    # ]]]
 # .. envvar:: dokuwiki__plugins_git [[[
 #
-# DokuWiki plugins related to ``git`` support.
+# DokuWiki plugins related to :command:`git` support.
 dokuwiki__plugins_git:
 
   - repo: 'https://github.com/kossmac/dokuwiki-plugin-gitlab'
@@ -272,12 +274,12 @@ dokuwiki__farm_animals: []
 dokuwiki__max_file_size: '30'
                                                                    # ]]]
                                                                    # ]]]
-# Configuration of other Ansible roles [[[
+# Configuration for other Ansible roles [[[
 # ----------------------------------------
 
 # .. envvar:: dokuwiki__php__dependent_packages [[[
 #
-# List of PHP packages to install using ``debops.php`` role.
+# List of PHP packages to install using debops.php_ role.
 dokuwiki__php__dependent_packages:
 
   - [ 'gmp', 'curl', 'mcrypt', 'php-net-ipv4', 'ldap' ]
@@ -285,7 +287,7 @@ dokuwiki__php__dependent_packages:
                                                                    # ]]]
 # .. envvar:: dokuwiki__php__dependent_pools [[[
 #
-# Configuration of the DokuWiki PHP-FPM pool managed by the ``debops.php`` role.
+# Configuration of the DokuWiki PHP-FPM pool managed by the debops.php_ role.
 dokuwiki__php__dependent_pools:
 
   - name: 'dokuwiki'
@@ -299,7 +301,7 @@ dokuwiki__php__dependent_pools:
                                                                    # ]]]
 # .. envvar:: dokuwiki__nginx__dependent_upstreams [[[
 #
-# Configuration of the DokuWiki nginx upstream, used by ``debops.nginx``
+# Configuration of the DokuWiki nginx upstream, used by debops.nginx_
 # Ansible role.
 dokuwiki__nginx__dependent_upstreams:
 
@@ -310,7 +312,7 @@ dokuwiki__nginx__dependent_upstreams:
                                                                    # ]]]
 # .. envvar:: dokuwiki__nginx__dependent_servers [[[
 #
-# Configuration of the DokuWiki nginx server, used by ``debops.nginx``
+# Configuration of the DokuWiki nginx server, used by debops.nginx_
 # Ansible role.
 dokuwiki__nginx__dependent_servers:
 
@@ -358,6 +360,7 @@ dokuwiki__nginx__dependent_servers:
       fastcgi_buffers               4 256k;
       fastcgi_busy_buffers_size       256k;
       fastcgi_temp_file_write_size    256k;
+
 # ]]]
 # ]]]
 # ]]]

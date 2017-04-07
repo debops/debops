@@ -5,8 +5,8 @@ Getting started
    :local:
 
 By default DokuWiki is installed on a separate system account ``"dokuwiki"``,
-in ``/srv/www/dokuwiki/`` subdirectory and will be accessible on
-``https://wiki.<domain>/``. ``debops.nginx`` and ``debops.php`` roles are used
+in :file:`/srv/www/dokuwiki/` subdirectory and will be accessible on
+``https://wiki.<domain>/``. debops.nginx_ and debops.php_ roles are used
 to configure the required environment.
 
 Example inventory
