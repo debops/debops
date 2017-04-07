@@ -79,7 +79,9 @@ roundcube__git_version: '1.1.8'
 # .. envvar:: roundcube__git_checkout
 #
 # Default path where Roundcube source files will be deployed
-roundcube__git_checkout: '{{ roundcube__www + "/sites/" + roundcube__domain[0] + "/public" }}'
+roundcube__git_checkout: '{{ roundcube__www + "/sites/" +
+                             (roundcube__domain if roundcube__domain is string else roundcube__domain[0]) +
+                             "/public" }}'
 
 
 # .. Database configuration [[[1
@@ -139,7 +141,7 @@ roundcube__database_schema: '{{ roundcube__git_checkout + "/SQL/mysql.initial.sq
 
 # .. envvar:: roundcube__domain
 #
-# List of domains which will be used to access the roundcube instance.
+# String or List of domains which will be used to access the roundcube instance.
 roundcube__domain: [ 'roundcube.{{ ansible_domain }}' ]
 
 
