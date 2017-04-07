@@ -3,7 +3,7 @@ Default variable details
 
 .. include:: includes/all.rst
 
-Some of debops.postgresql_ default variables have more extensive
+Some of ``debops.postgresql`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
 

@@ -6,7 +6,7 @@ Getting started
 .. contents::
    :local:
 
-debops.postgresql_ role is only the "client" part. To have working
+``debops.postgresql`` role is only the "client" part. To have working
 a PostgreSQL installation, you also need to setup debops.postgresql_server_
 role somewhere. It can be either on the same host, or on a separate host.  See
 the debops.postgresql_server_ documentation to learn how to install the
@@ -34,7 +34,7 @@ Local database server
 ~~~~~~~~~~~~~~~~~~~~~
 
 If the database server is installed locally, it will be automatically detected
-and used by the debops.postgresql_ role without any additional
+and used by the ``debops.postgresql`` role without any additional
 configuration. Also, if a remote server was used previously, and a local one
 was installed, it will automatically override the remote configuration. You
 might need to recreate the databases and user accounts in that case.
@@ -43,7 +43,7 @@ Remote database server
 ~~~~~~~~~~~~~~~~~~~~~~
 
 If your PostgreSQL server is configured on a remote host and you don't have
-a local installation, debops.postgresql_ will detect that and won't manage the
+a local installation, ``debops.postgresql`` will detect that and won't manage the
 databases/user accounts without a server specified. To point it to a server,
 you need to set a variable in the inventory::
 
@@ -109,7 +109,7 @@ password stored for easier access.
 Example playbook
 ----------------
 
-Here's an example Ansible playbook that uses the debops.postgresql_ role:
+Here's an example Ansible playbook that uses the ``debops.postgresql`` role:
 
 .. literalinclude:: playbooks/postgresql.yml
    :language: yaml
