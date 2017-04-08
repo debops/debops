@@ -67,4 +67,7 @@
 {%-   endfor %}
 {%    set _ = docker__tpl_options.update({"storage-opts": docker__tpl_storage_options}) %}
 {%- endif %}
+{%  if docker__arb_daemon_opts|d() -%}
+{%    set _ = docker__tpl_options.update(docker__arb_daemon_opts|from_yaml) %}
+{%- endif %}
 {{ docker__tpl_options | to_nice_json }}
