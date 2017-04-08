@@ -397,6 +397,7 @@ HTTP security headers
   Optional, string. Defaults to: ``default-src https: ;`` (force all assets to be loaded over HTTPS).
   Sets the first part of the ``Content-Security-Policy`` header.
   The string MUST end with a semicolon but MUST NOT begin with one.
+  Make sure that you only use single quotes and no double quotes in the string.
   If no ``item.csp_report`` is given, it also determines the first part of the
   ``Content-Security-Policy-Report-Only`` header.
   Which headers are actually enabled is defined by ``item.csp_enabled``
