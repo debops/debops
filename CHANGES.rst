@@ -17,10 +17,10 @@ debops.apache v0.1.0 - unreleased
 Added
 ~~~~~
 
+- Initial coding and design. [ypid_]
+
 - Add :envvar:`apache__redirect_to_https` to control the role's default behaviour for
   redirecting to https. [muelli_]
-
-- Initial coding and design. [ypid_]
 
 - Add/Set the default `Referrer Policy`_ to ``no-referrer`` and made it
   configurable via :ref:`item.http_referrer_policy <apache__ref_vhost_http_referrer_policy>`.
@@ -40,6 +40,10 @@ Added
 
 - Add Ansible tags for env roles. To only prepare the Apache role
   environment, you can use the ``role::apache:env`` tag. [ypid_]
+
+- Support to set the HTTP headers ``Content-Security-Policy`` and
+  ``Content-Security-Policy-Report-Only``.
+  Refer to :ref:`apache__ref_servers_http_security_headers` for details. [ypid_]
 
 Changed
 ~~~~~~~

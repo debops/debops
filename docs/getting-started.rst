@@ -37,6 +37,11 @@ configuration is already in the desired state.
 
 Available role tags:
 
+``role::apache:env``
+  Environment role tag, should be used in the playbook to execute a special
+  environment role contained in the main role. The environment role prepares
+  the environment for other dependency roles to work correctly.
+
 ``role::apache``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
