@@ -38,6 +38,10 @@ Added
 - Add support for the ``weight_class`` interface parameter which allows to
   affect filename sorting. [drybjed_]
 
+- Add proper :command:`iptables` firewall rules to handle broadcast and
+  multicast traffic on local IPv4 network behind NAT and not masquerade or
+  forward it. This is needed for mDNS/Avahi support. [drybjed_]
+
 Changed
 ~~~~~~~
 

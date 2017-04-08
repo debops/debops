@@ -43,6 +43,8 @@
 
 @if $ipv4_enabled {
     domain ip table nat chain POSTROUTING {
+        source ' + (network | ipaddr('network')) + '/' + (network | ipaddr('netmask')) + ' destination 224.0.0.0/255.255.255.0 RETURN;
+        source ' + (network | ipaddr('network')) + '/' + (network | ipaddr('netmask')) + ' destination 255.255.255.255 RETURN;
         destination ' + (network | ipaddr('network')) + '/' + (network | ipaddr('netmask')) + ' RETURN;
         source ' + (network | ipaddr('network')) + '/' + (network | ipaddr('netmask')) + (' MASQUERADE' if ((params.nat_masquerade|d(ifupdown__default_nat_masquerade))|bool) else ' SNAT to ' + (params.nat_snat_address if (params.nat_snat_address|d() and params.nat_snat_address | ipv4('address')) else (hostvars[inventory_hostname]["ansible_" + params.nat_snat_interface]["ipv4"].address if params.nat_snat_interface|d() else ansible_default_ipv4.address))) + ';
     }
