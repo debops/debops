@@ -24,6 +24,12 @@ This role requires at least Ansible `v2.1.5`. To install it, run:
 ansible-galaxy install debops.nginx
 ```
 
+### Documentation
+
+More information about `debops.nginx` can be found in the
+[official debops.nginx documentation](https://docs.debops.org/en/latest/ansible/roles/ansible-nginx/docs/).
+
+
 ### Role dependencies
 
 - `debops.secret`

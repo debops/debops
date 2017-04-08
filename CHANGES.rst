@@ -60,6 +60,12 @@ Deprecated
 
 - Deprecated the ``php5`` server type in favor to :ref:`nginx__ref_servers_php`. [ypid_]
 
+Removed
+~~~~~~~
+
+- Remove the ``debops_nginx`` Ansible inventory group. Make sure you hosts
+  are in ``debops_service_nginx``. [ypid_]
+
 Fixed
 ~~~~~
 
