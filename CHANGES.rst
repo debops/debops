@@ -66,6 +66,11 @@ Removed
 - Remove the ``debops_nginx`` Ansible inventory group. Make sure you hosts
   are in ``debops_service_nginx``. [ypid_]
 
+- Remove the Ansible role dependencies. Make sure that role dependencies get
+  executed in the playbook and get the depend variables of the role passed.
+  ``nginx_dependencies`` has no effect anymore and can be removed from your
+  inventory if you used it. [ypid_]
+
 Fixed
 ~~~~~
 
