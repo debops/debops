@@ -10,8 +10,8 @@ Getting started
 Example inventory
 -----------------
 
-To manage Apache on a given host it should be included in the
-``debops_service_apache`` Ansible inventory group:
+To manage Apache on a given host or set of hosts, they need to be added
+to the ``[debops_service_apache]`` Ansible group in the inventory:
 
 .. code:: ini
 
