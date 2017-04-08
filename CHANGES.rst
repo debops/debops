@@ -23,12 +23,17 @@ Added
   welcome page is up-to-date. Note that setting this to ``True`` will not allow
   idempotent operation. [ypid_]
 
-- Add/Set the default `Referrer Policy`_ to ``no-referrer`` and made it
+- Add/Set the default `Referrer Policy`_ to ``same-origin`` and made it
   configurable via :ref:`http_referrer_policy <nginx__ref_http_referrer_policy>`.
 
   Also set the `Referrer Policy`_ in the welcome page as HTML meta option as
   some website checkers like https://webbkoll.dataskydd.net/en seem to not get
-  the HTTP header option yet. [ypid_]
+  the HTTP header option yet.
+
+  Note that ``no-referrer`` was originally used in an unreleased version of the
+  role but this seemed to cause issues with certain applications so it was
+  changed to ``same-origin`` by default. ``no-referrer`` can still be used when
+  you know it does not break anything. [ypid_, drybjed_, scibi_]
 
 Changed
 ~~~~~~~
