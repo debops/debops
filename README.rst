@@ -8,9 +8,9 @@ Here are a few services that are available
 
 **Fully loaded ready to go applications**
 
-+-----------+
-| foodsoft_ |
-+-----------+
++-----------+---------------+
+| foodsoft_ | volkszaehler_ |
++-----------+---------------+
 
 **Service monitoring and logging**
 
@@ -26,9 +26,9 @@ Here are a few services that are available
 
 **Security**
 
-+-----------+-----------+
-| AppArmor_ | Firejail_ |
-+-----------+-----------+
++-----------+-----------+---------------------+
+| AppArmor_ | Firejail_ | dropbear-initramfs_ |
++-----------+-----------+---------------------+
 
 **Workstations and clients**
 
@@ -39,6 +39,7 @@ Here are a few services that are available
 .. |debops_logo| image:: http://debops.org/images/debops-small.png
 
 .. _foodsoft: https://github.com/debops-contrib/ansible-foodsoft
+.. _volkszaehler: https://github.com/debops-contrib/ansible-volkszaehler
 
 .. _`Check_MK server`: https://github.com/debops-contrib/ansible-checkmk_server
 .. _`Check_MK agent`: https://github.com/debops-contrib/ansible-checkmk_agent
@@ -51,5 +52,6 @@ Here are a few services that are available
 
 .. _AppArmor: https://github.com/debops-contrib/ansible-apparmor
 .. _Firejail: https://github.com/debops-contrib/ansible-firejail
+.. _dropbear-initramfs: https://github.com/debops-contrib/ansible-dropbear_initramfs
 
 .. _X2Go Server: https://github.com/debops-contrib/ansible-x2go_server
