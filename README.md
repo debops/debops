@@ -18,7 +18,7 @@ to configure a webserver for that role using dependency variables.
 
 ### Installation
 
-This role requires at least Ansible `v2.0.0`. To install it, run:
+This role requires at least Ansible `v2.1.5`. To install it, run:
 
 ```Shell
 ansible-galaxy install debops.nginx

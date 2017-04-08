@@ -50,6 +50,9 @@ Changed
   `Content Security Policy`, fix warnings and one templating error for
   ``nginx_tpl_welcome_title``. [ypid_]
 
+- Increase Ansible min version to ``2.1.5``. Everything below is deprecated
+  anyway and has vulnerabilities and you don’t want to use that anymore. [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 
