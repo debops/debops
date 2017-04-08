@@ -552,6 +552,15 @@ nginx_hsts_subdomains: True
 nginx_hsts_preload: False
 
                                                                    # ]]]
+# .. envvar:: nginx__http_csp_append [[[
+#
+# CSP directives to append to all policies. This can be used to set the
+# ``report-uri`` globally.
+# The string MUST end with a semicolon but MUST NOT begin with one.
+# Refer :ref:`nginx__ref_servers_http_security_headers` for details.
+nginx__http_csp_append: ''
+
+                                                                   # ]]]
 # .. envvar:: nginx_default_name [[[
 #
 # Specify HTTP server name which will be marked as default_server.
@@ -856,8 +865,8 @@ nginx_server_welcome:
   name: [ 'welcome' ]
   welcome: True
   welcome_domain: '{{ nginx_welcome_domain }}'
-  csp: True
-  csp_policy: "default-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self'"
+  csp: "default-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self'"
+  csp_enabled: True
 
                                                                    # ]]]
 # .. envvar:: nginx_server_localhost [[[

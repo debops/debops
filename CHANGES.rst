@@ -65,6 +65,14 @@ Changed
   If you are ready for the future of HTTPS and TLS only, you are encouraged to
   enable it! [ypid_]
 
+- Redesign Content Security Policy support of the role.
+  ``item.csp_policy`` has been renamed to ``item.csp`` and the original
+  ``item.csp`` is now called ``item.csp_enabled``.
+  It is now also possible to set a global ``report-uri`` for all CSPs.
+  The role will assert that it is being used with the redesigned interface and
+  will fail if it is not. You will need to update your role/playbook/inventory.
+  Refer to :ref:`nginx__ref_servers_http_security_headers`. [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 
