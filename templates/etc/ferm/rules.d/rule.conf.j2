@@ -320,6 +320,17 @@
 {%   if ferm__tpl_config['protocol_syn']|d() %}
 {%     set _ = ferm__tpl_arguments.extend(ferm__tpl_config['protocol_syn']) %}
 {%   endif %}
+{%   if ferm__tpl_config['sport']|d() %}
+{%     if config.multiport|d() and config.multiport | bool %}
+{%       if ferm__tpl_config['sport'] | length == 1 %}
+{%         set _ = ferm__tpl_arguments.append("sport " +  ferm__tpl_config['sport'] | join(" ")) %}
+{%       else %}
+{%         set _ = ferm__tpl_arguments.append("mod multiport source-ports (" + ferm__tpl_config['sport'] | join(" ") + ")") %}
+{%       endif %}
+{%     else %}
+{%       set _ = ferm__tpl_arguments.append(print_list(ferm__tpl_config['sport'], prefix='sport')) %}
+{%     endif %}
+{%   endif %}
 {%   if ferm__tpl_config['dport']|d() %}
 {%     if config.multiport|d() and config.multiport | bool %}
 {%       if ferm__tpl_config['dport'] | length == 1 %}
