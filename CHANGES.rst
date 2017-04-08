@@ -58,6 +58,13 @@ Changed
 - Increase Ansible min version to ``2.1.5``. Everything below is deprecated
   anyway and has vulnerabilities and you don’t want to use that anymore. [ypid_]
 
+- Change :envvar:`nginx_hsts_preload` from ``True`` to ``False`` by default.
+  Setting this value to ``True`` alone does not achieve anything and can
+  actually cause problems if you are not prepared.
+  Thus it is disabled by default.
+  If you are ready for the future of HTTPS and TLS only, you are encouraged to
+  enable it! [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 
