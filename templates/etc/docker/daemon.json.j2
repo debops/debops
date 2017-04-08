@@ -57,4 +57,14 @@
 {%-   endfor %}
 {%    set _ = docker__tpl_options.update({"labels": docker__tpl_labels}) %}
 {%- endif %}
+{%  if docker__storage_driver|d() -%}
+{%    set _ = docker__tpl_options.update({"storage-driver": docker__storage_driver}) %}
+{%- endif %}
+{%  if docker__storage_options|d() -%}
+{%    set docker__tpl_storage_options = [] %}
+{%    for key, value in docker__storage_options.iteritems() -%}
+{%      set _ = docker__tpl_storage_options.append(key+"="+value) %}
+{%-   endfor %}
+{%    set _ = docker__tpl_options.update({"storage-opts": docker__tpl_storage_options}) %}
+{%- endif %}
 {{ docker__tpl_options | to_nice_json }}
