@@ -394,23 +394,35 @@ HTTP security headers
 ~~~~~~~~~~~~~~~~~~~~~
 
 ``csp``
-  Optional, boolean. Defaults to ``False``.
-  If set to ``True`` and HTTPS is enabled for this item, the
-  Content-Security-Policy header is set in server responses. If this is set to
-  ``False``, the Content-Security-Policy header will not be set.
+  Optional, string. Defaults to: ``default-src https: ;`` (force all assets to be loaded over HTTPS).
+  Sets the first part of the ``Content-Security-Policy`` header.
+  The string MUST end with a semicolon but MUST NOT begin with one.
+  Make sure that you only use single quotes and no double quotes in the string.
+  If no ``item.csp_report`` is given, it also determines the first part of the
+  ``Content-Security-Policy-Report-Only`` header.
+  Which headers are actually enabled is defined by ``item.csp_enabled``
+  and ``item.csp_report_enabled``.
+  Refer to the `Content Security Policy Reference`_.
 
 ``csp_report``
+  Optional, string. This allows to set a different/potentially experimental
+  ``Content-Security-Policy-Report-Only`` header than defined by ``item.csp``.
+
+``csp_append``
+  Optional, string. Defaults to: :envvar:`apache__http_csp_append`.
+  CSP directives to append to all policies (``item.csp`` and ``item.csp_report``).
+  This can be used to overwrite the default :envvar:`apache__http_csp_append` as needed.
+  The string MUST end with a semicolon but MUST NOT begin with one.
+
+``csp_enabled``
+  Optional, boolean. Defaults to ``False``.
+  If set to ``True`` and HTTPS is enabled for this item, the
+  ``Content-Security-Policy`` header is set in server responses.
+
+``csp_report_enabled``
   Optional, boolean. Defaults to ``False``.
   If this is set to ``True`` and HTTPS is enabled for this item, the
-  Content-Security-Policy-Report-Only header is set in the server responses.
-  If this is set to ``False``, the Content-Security-Policy-Report-Only header
-  will not be set in the server's responses.
-
-``csp_policy``
-  Optional, string. Defaults to: ``default-src https:`` (force all assets to be loaded over HTTPS).
-  If ``item.csp`` or ``item.csp_report`` option is ``True``, this option
-  determines the Content-Security-Policy header set in server responses.
-  Refer to the `Content Security Policy Reference`_.
+  ``Content-Security-Policy-Report-Only`` header is set in the server responses.
 
 .. _apache__ref_vhost_http_xss_protection:
 

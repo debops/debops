@@ -10,8 +10,8 @@ Getting started
 Example inventory
 -----------------
 
-To manage Apache on a given host it should be included in the
-``debops_service_apache`` Ansible inventory group:
+To manage Apache on a given host or set of hosts, they need to be added
+to the ``[debops_service_apache]`` Ansible group in the inventory:
 
 .. code:: ini
 
@@ -36,6 +36,11 @@ configured to speed up playbook execution, when you are sure that most of the
 configuration is already in the desired state.
 
 Available role tags:
+
+``role::apache:env``
+  Environment role tag, should be used in the playbook to execute a special
+  environment role contained in the main role. The environment role prepares
+  the environment for other dependency roles to work correctly.
 
 ``role::apache``
   Main role tag, should be used in the playbook to execute all of the role

@@ -238,6 +238,12 @@ Header always set Strict-Transport-Security "max-age={{ item.hsts_max_age|d(apac
 
 {% macro get_http_security_headers(item) %}{# [[[ #}
 {% set apache__tpl_directive_options = debops__tpl_macros.get_yaml_list_for_elem(item.http_sec_headers_directive_options|d(apache__http_sec_headers_directive_options)) | from_yaml | map("quote") | join(" ") %}
+{% if item.csp_enabled|d(False) | bool %}
+Header {{ apache__tpl_directive_options }} Content-Security-Policy "{{ item.csp|d("default-src https: ;") + (" " + item.csp_append|d(apache__http_csp_append) if (item.csp_append|d(apache__http_csp_append)) else "") }}"
+{% endif %}
+{% if item.csp_report_enabled|d(False) | bool %}
+Header {{ apache__tpl_directive_options }} Content-Security-Policy-Report-Only "{{ item.csp_report|d(item.csp|d("default-src https: ;")) + (" " + item.csp_append|d(apache__http_csp_append) if (item.csp_append|d(apache__http_csp_append)) else "") }}"
+{% endif %}
 {% if apache__http_frame_options|d(item.http_frame_options) %}
 Header {{ apache__tpl_directive_options }} X-Frame-Options "{{ apache__http_frame_options|d(item.http_frame_options) }}"
 {% endif %}
