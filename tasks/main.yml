@@ -6,7 +6,7 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - foodsoft_base_packages
+    - '{{ foodsoft_base_packages }}'
 
 - name: Create Foodsoft system group
   group:
@@ -20,7 +20,6 @@
     group: '{{ foodsoft_group }}'
     home: '{{ foodsoft_home }}'
     comment: 'Foodsoft'
-    groups: '{{ foodsoft_user_append_groups | join(",") | default(omit) }}'
     append: True
     system: True
     state: 'present'
@@ -31,6 +30,7 @@
     dest: '{{ foodsoft_install_path }}'
     version: '{{ foodsoft_install_version }}'
     update: True
+  become: True
   become_user: '{{ foodsoft_user }}'
   tags: [ 'role::foodsoft:source' ]
 
