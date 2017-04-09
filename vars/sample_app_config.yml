@@ -1,0 +1,160 @@
+# Foodsoft configuration
+
+default: &defaults
+  # If you wanna serve more than one foodcoop with one installation
+  # Don't forget to setup databases for each foodcoop. See also MULTI_COOP_INSTALL
+  multi_coop_install: false
+
+  # If multi_coop_install you have to use a coop name, which you wanna be selected by default
+  default_scope: 'f'
+
+  # name of this foodcoop
+  name: FC Test
+  # foodcoop contact information (used for FAX messages)
+  contact:
+    street: Grüne Straße 103
+    zip_code: "10997"
+    city: Berlin
+    country: Deutschland
+    email: foodsoft@foodcoop.test
+    phone: "030 323 23249"
+
+  # Homepage
+  homepage: http://www.foodcoop.test
+
+  # foodsoft documentation URL
+  help_url: https://github.com/foodcoops/foodsoft/wiki/Doku
+
+  # documentation URL for the apples&pears work system
+  applepear_url: https://github.com/foodcoops/foodsoft/wiki/%C3%84pfel-u.-Birnen
+
+  # custom foodsoft software URL (used in footer)
+  #foodsoft_url: https://github.com/foodcoops/foodsoft
+
+  # Default language
+  #default_locale: en
+  # By default, foodsoft takes the language from the webbrowser/operating system.
+  # In case you really want foodsoft in a certain language by default, set this to true.
+  # When members are logged in, the language from their profile settings is still used.
+  #ignore_browser_locale: false
+  # Default timezone, e.g. UTC, Amsterdam, Berlin, etc.
+  #time_zone: Berlin
+  # Currency symbol, and whether to add a whitespace after the unit.
+  #currency_unit: €
+  #currency_space: true
+
+  # price markup in percent
+  price_markup: 2.0
+
+  # default vat percentage for new articles
+  tax_default: 7.0
+
+  # tolerance order option: If set to false, article tolerance values do not count
+  # for total article price as long as the order is not finished.
+  tolerance_is_costly: false
+
+  # Ordergroups, which have less than 75 apples should not be allowed to make new orders
+  # Comment out this option to activate this restriction
+  #stop_ordering_under: 75
+
+  # Comment out to completely hide apple points (be sure to comment stop_ordering_under)
+  #use_apple_points: false
+
+  # ordergroups can only order when their balance is higher than or equal to this
+  # not fully enforced right now, since the check is only client-side
+  #minimum_balance: 0
+
+  # how many days there are between two periodic tasks
+  #tasks_period_days: 7
+  # how many days upfront periodic tasks are created
+  #tasks_upfront_days: 49
+
+  # default order schedule, used to provide initial dates for new orders
+  # (recurring dates in ical format; no spaces!)
+  #order_schedule:
+  #  ends:
+  #    recurr: FREQ=WEEKLY;INTERVAL=2;BYDAY=MO
+  #    time: '9:00'
+  #  # reference point, this is generally the first pickup day; empty is often ok
+  #  #initial:
+
+  # When use_nick is enabled, there will be a nickname field in the user form,
+  # and the option to show a nickname instead of full name to foodcoop members.
+  # Members of a user's groups and administrators can still see full names.
+  use_nick: false
+
+  # Most plugins can be enabled/disabled here as well. Messages and wiki are enabled
+  # by default and need to be set to false to disable. Most other plugins needs to
+  # be enabled before they do anything.
+  #use_wiki: true
+  #use_messages: true
+
+  # Base font size for generated PDF documents
+  #pdf_font_size: 12
+  # Page size for generated PDF documents
+  #pdf_page_size: A4
+  # Some documents (like group and article PDFs) can include page breaks
+  # after each sublist.
+  #pdf_add_page_breaks: true
+  # Alternatively, this can be set for each document.
+  #pdf_add_page_breaks:
+  #  order_by_groups: true
+  #  order_by_articles: true
+
+
+  # Page footer (html allowed). Default is a Foodsoft footer. Set to `blank` for no footer.
+  #page_footer: <a href="http://www.foodcoop.test/">FC Test</a> is supported by <a href="http://www.hoster.test/">Hoster</a>.
+
+  # Custom CSS for the foodcoop
+  #custom_css: 'body { background-color: #fcffba; }'
+
+  # Uncomment to add tracking code for web statistics, e.g. for Piwik. (Added to bottom of page)
+  #webstats_tracking_code: |
+  #  <!-- Piwik -->
+  #  ......
+
+  # email address to be used as sender
+  email_sender: foodsoft@foodcoop.test
+
+  # domain to be used for reply emails
+  #reply_email_domain: reply.foodcoop.test
+
+  # If your foodcoop uses a mailing list instead of internal messaging system
+  #mailing_list: list@example.org
+  #mailing_list_subscribe: list-subscribe@example.org
+
+  # Config for the exception_notification plugin
+  notification:
+    error_recipients:
+      - admin@foodcoop.test
+    sender_address: "\"Foodsoft Error\" <foodsoft@foodcoop.test>"
+    email_prefix: "[Foodsoft]"
+
+  # http config for this host to generate links in emails (uses environment config when not set)
+  #protocol: http
+  #host: localhost
+  #port: 3000
+
+  # Access to sharedlists, the external article-database.
+  # This allows a foodcoop to subscribe to a selection of a supplier's full assortment,
+  # and makes it possible to share data with several foodcoops. Using this requires installing
+  # an additional application with a separate database.
+  #shared_lists:
+  #  adapter: mysql2
+  #  host: localhost
+  #  database: sharedlists_development
+  #  username: root
+  #  password:
+  #  encoding: utf8
+  #  socket: /opt/lampp/var/mysql/mysql.sock
+  # Instead of defining all details here, you can also point to an entry in database.yml.
+  #shared_lists: shared_lists
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults
