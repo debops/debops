@@ -3,49 +3,14 @@
 dependencies:
 
   - role: debops.secret
-    tags: [ 'depend::secret', 'depend::secret:foodsoft', 'depend-of::foodsoft', 'type::dependency:hard' ]
-
-  - role: debops.ruby
-    tags: [ 'depend::ruby', 'depend::ruby:foodsoft', 'depend-of::foodsoft', 'type::dependency' ]
-
-  - role: debops.nginx
-    tags: [ 'depend::nginx', 'depend::nginx:foodsoft', 'depend-of::foodsoft', 'type::dependency' ]
-    nginx_servers: [ '{{ foodsoft_nginx_server }}' ]
-    nginx_upstreams: [ '{{ foodsoft_nginx_upstream }}' ]
-    when: foodsoft_dependencies|d()
-
-  # - role: debops.redis
-  #   tags: [ 'depend::redis', 'depend::redis:foodsoft', 'depend-of::foodsoft', 'type::dependency' ]
-  #   when: foodsoft_dependencies|d()
-
-  - role: debops.mariadb
-    tags: [ 'depend::mariadb', 'depend::mariadb:foodsoft', 'depend-of::foodsoft', 'type::dependency' ]
-    mariadb_users:
-      - database: '{{ foodsoft_database_name }}'
-        user: '{{ foodsoft_database_user }}'
-        password: '{{ foodsoft_database_password }}'
-    when: (
-            foodsoft_dependencies|d() and (
-              foodsoft_database_configuration|d() and (
-                foodsoft_database_configuration.production|d() and foodsoft_database_configuration.production.adapter|d() and
-                  foodsoft_database_configuration.production.adapter in ['mysql2'] or
-                foodsoft_database_configuration.development|d() and foodsoft_database_configuration.development.adapter|d() and
-                  foodsoft_database_configuration.development.adapter in ['mysql2'] or
-                foodsoft_database_configuration.test|d() and foodsoft_database_configuration.test.adapter|d() and
-                  foodsoft_database_configuration.test.adapter in ['mysql2']
-              )
-            )
-          )
-    ## Try to be smart when the dependency is really needed.
-
 
 galaxy_info:
 
   company: 'DebOps'
-  author: Robin Schneider
-  description: 'Setup and configure Foodsoft, a web-based software to manage a non-profit food coop (product catalog, ordering, accounting, job scheduling).'
+  author: 'Robin Schneider'
+  description: 'Setup and manage Foodsoft'
   license: 'GPL-3.0'
-  min_ansible_version: '1.8.4'
+  min_ansible_version: '2.1.5'
 
   platforms:
 

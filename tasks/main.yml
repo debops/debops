@@ -1,73 +1,74 @@
 ---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
 
-- name: Install required packages
-  apt:
+# System packages [[[
+- name: Ensure specified packages are in there desired state
+  package:
     name: '{{ item }}'
-    state: 'present'
-    install_recommends: False
+    state: '{{ "present" if (foodsoft__deploy_state == "present") else "absent" }}'
   with_flattened:
-    - foodsoft_base_packages
+    - '{{ foodsoft__base_packages }}'
+  tags: [ 'role::foodsoft:pkgs' ]
+# ]]]
 
+# System user and group [[[
 - name: Create Foodsoft system group
   group:
-    name: '{{ foodsoft_group }}'
+    name: '{{ foodsoft__group }}'
+    state: '{{ "present" if (foodsoft__deploy_state == "present") else "absent" }}'
     system: True
-    state: 'present'
 
-- name: Create Foodsoft user
+- name: Create Foodsoft system user
   user:
-    name: '{{ foodsoft_user }}'
-    group: '{{ foodsoft_group }}'
-    home: '{{ foodsoft_home }}'
-    comment: 'Foodsoft'
-    groups: '{{ foodsoft_user_append_groups | join(",") | default(omit) }}'
-    append: True
+    name: '{{ foodsoft__user }}'
+    group: '{{ foodsoft__group }}'
+    home: '{{ foodsoft__home_path }}'
+    comment: '{{ foodsoft__gecos }}'
+    shell: '{{ foodsoft__shell }}'
+    state: '{{ "present" if (foodsoft__deploy_state == "present") else "absent" }}'
     system: True
-    state: 'present'
+# ]]]
 
-- name: Clone Foodsoft source code from VCS
+- name: Clone Foodsoft git repository
   git:
-    repo: '{{ foodsoft_install_repo }}'
-    dest: '{{ foodsoft_install_path }}'
-    version: '{{ foodsoft_install_version }}'
-    update: True
-  become_user: '{{ foodsoft_user }}'
-  tags: [ 'role::foodsoft:source' ]
+    repo: '{{ foodsoft__git_repo }}'
+    dest: '{{ foodsoft__git_dest }}'
+    version: '{{ foodsoft__git_version }}'
+    update: '{{ foodsoft__git_update|bool }}'
+  become: True
+  become_user: '{{ foodsoft__user }}'
+  register: foodsoft__register_git
+  when: (foodsoft__deploy_state == "present")
 
 - name: Update Foodsoft directory permissions
   file:
     path: '{{ item }}'
     state: 'directory'
-    owner: '{{ foodsoft_user }}'
-    group: '{{ foodsoft_webserver_user }}'
+    owner: '{{ foodsoft__user }}'
+    group: '{{ foodsoft__webserver_user }}'
     mode: '0750'
   with_items:
-    - '{{ foodsoft_home }}'
-    - '{{ foodsoft_home }}/sites'
-    - '{{ foodsoft_install_path }}'
-
-## Todo install as user: https://stackoverflow.com/questions/16031061/force-bundler-to-install-gems-in-user-s-home-directory
+    - '{{ foodsoft__home_path }}'
+    - '{{ foodsoft__git_dest }}'
 
 - name: Install Foodsoft dependencies via bundler
-  ## Ansible 2.0
-  # bundler:
-    # chdir: '{{ foodsoft_install_path }}'
-    # exclude_groups: '{{ foodsoft_bundler_exclude_groups }}'
-    # # gem_path: ''
-  command: bundler install --without {{ foodsoft_bundler_exclude_groups | join(" ") }}
-  # command: bundler install --without '{{ foodsoft_bundler_exclude_groups | join(" ") }}' --with 'test development'
-  args:
-    chdir: '{{ foodsoft_install_path }}'
+  bundler:
+    chdir: '{{ foodsoft__git_dest }}'
+    exclude_groups: '{{ foodsoft__bundler_exclude_groups }}'
+    extra_args: '--without development --deployment'
+    # user_install: True
   tags: [ 'role::foodsoft:gems' ]
-  when: foodsoft_bundler_exclude_groups|d()
+  # become: True
+  # become_user: '{{ foodsoft__user }}'
+  when: foodsoft__bundler_exclude_groups|d()
 
 ## https://github.com/foodcoops/foodsoft/blob/master/doc/SETUP_DEVELOPMENT.md#manual-configuration
 - name: Configure Foodsoft
   template:
-    src: 'srv/www/foodsoft/sites/public/config/{{ item }}.j2'
-    dest: '{{ foodsoft_install_path }}/config/{{ item }}'
-    owner: '{{ foodsoft_user }}'
-    group: '{{ foodsoft_group }}'
+    src: 'srv/www/foodsoft/app/config/{{ item }}.j2'
+    dest: '{{ foodsoft__git_dest }}/config/{{ item }}'
+    owner: '{{ foodsoft__user }}'
+    group: '{{ foodsoft__group }}'
     mode: '0640'
   tags: [ 'role::foodsoft:config' ]
   with_items:
@@ -76,47 +77,77 @@
 
 ## Workaround because there is not a single command for this: https://github.com/foodcoops/foodsoft/issues/385
 - name: Generate secret token
-  command: 'bundler exec rake secret'
+  command: 'bundle exec rake secret'
   args:
-    chdir: '{{ foodsoft_install_path }}'
-    creates: '{{ foodsoft_install_path }}/config/initializers/secret_token.rb'
-  register: foodsoft_secret_token
-  become_user: '{{ foodsoft_user }}'
+    chdir: '{{ foodsoft__git_dest }}'
+    creates: '{{ foodsoft__git_dest }}/config/initializers/secret_token.rb'
+  register: foodsoft__register_secret_token
+  # become: True
+  # become_user: '{{ foodsoft__user }}'
   tags: [ 'role::foodsoft:gen_token' ]
 
 - name: Check secret token
   ## Default is 128
   assert:
     that:
-      - 'foodsoft_secret_token.stdout|length > 120'
-      - 'foodsoft_secret_token.stdout|length < 500'
-  when: foodsoft_secret_token|changed
+      - 'foodsoft__register_secret_token.stdout|length > 120'
+      - 'foodsoft__register_secret_token.stdout|length < 500'
+  when: foodsoft__register_secret_token|changed
   tags: [ 'role::foodsoft:gen_token' ]
 
 - name: Configure secret token for Foodsoft
   template:
-    src: 'srv/www/foodsoft/sites/public/config/{{ item }}.j2'
-    dest: '{{ foodsoft_install_path }}/config/{{ item }}'
-    owner: '{{ foodsoft_user }}'
-    group: '{{ foodsoft_group }}'
+    src: 'srv/www/foodsoft/app/config/initializers/secret_token.rb.j2'
+    dest: '{{ foodsoft__git_dest }}/config/initializers/secret_token.rb'
+    owner: '{{ foodsoft__user }}'
+    group: '{{ foodsoft__group }}'
     mode: '0640'
   tags: [ 'role::foodsoft:gen_token' ]
-  when: foodsoft_secret_token|changed
-  with_items:
-    - 'initializers/secret_token.rb'
+  when: foodsoft__register_secret_token|changed
 
 - name: Create database schema and load defaults
-  command: 'bundler exec rake db:setup'
+  command: 'bundle exec rake db:setup'
   args:
-    chdir: '{{ foodsoft_install_path }}'
-  become_user: '{{ foodsoft_user }}'
+    chdir: '{{ foodsoft__git_dest }}'
+  # become: True
+  # become_user: '{{ foodsoft__user }}'
+  when: (not (ansible_local.foodsoft[foodsoft__database + "_initialized"]|bool
+              if (ansible_local|d() and ansible_local.foodsoft|d() and
+                  ansible_local.foodsoft[foodsoft__database + "_initialized"]|d())
+              else False))
 
 ## Maybe only needed for https://github.com/foodcoop-adam/foodsoft
 # - name: Setup admin user
   # command: 'rake db:seed'
   # args:
-    # chdir: '{{ foodsoft_install_path }}'
-  # become_user: '{{ foodsoft_user }}'
+    # chdir: '{{ foodsoft__git_dest }}'
+  # become: True
+  # become_user: '{{ foodsoft__user }}'
 
 
-## Todo: (optional) Get background jobs done
+## TODO: (optional) Get background jobs done
+
+# Ansible local facts [[[
+- name: Make sure that Ansible local facts directory is present
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (foodsoft__deploy_state == "present")
+
+- name: Save Foodsoft local facts
+  template:
+    src: 'etc/ansible/facts.d/foodsoft.fact.j2'
+    dest: '/etc/ansible/facts.d/foodsoft.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: foodsoft__register_local_facts
+  when: (foodsoft__deploy_state == "present")
+
+- name: Gather facts if they were modified
+  action: setup
+  when: foodsoft__register_local_facts|changed
+# ]]]
