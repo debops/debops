@@ -62,7 +62,7 @@ Changed
   ``nginx_tpl_welcome_title``. [ypid_]
 
 - Increase Ansible min version to ``2.1.5``. Everything below is deprecated
-  anyway and has vulnerabilities and you don’t want to use that anymore. [ypid_]
+  anyway and has vulnerabilities so you don’t want to use that anymore. [ypid_]
 
 - Change :envvar:`nginx_hsts_preload` from ``True`` to ``False`` by default.
   Setting this value to ``True`` alone does not achieve anything and can
