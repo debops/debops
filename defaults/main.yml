@@ -1,15 +1,19 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops-contrib.foodsoft default variables [[[
+# =============================================
 
 # .. contents:: Sections
 #    :local:
 #
-# -------------------
-#   System packages
+# .. include:: includes/all.rst
+
+
+# System packages [[[
 # -------------------
 
-# .. envvar:: foodsoft_base_packages
+# .. envvar:: foodsoft_base_packages [[[
 #
 # List of base packages required by foodsoft.
 foodsoft_base_packages:
@@ -33,18 +37,18 @@ foodsoft_base_packages:
   ## Install via gem
   # - 'ruby-charlock-holmes'
   # - 'ruby-rmagick'
+                                                                   # ]]]
+                                                                   # ]]]
+# Basic options [[[
+# -----------------
 
-# --------------------
-#   Basic options
-# --------------------
-
-# .. envvar:: foodsoft_dependencies
+# .. envvar:: foodsoft_dependencies [[[
 #
-# Should the ``ypid.foodsoft`` role manage it's own dependencies (database, web server)?
+# Should the ypid.foodsoft_ role manage it's own dependencies (database, web server)?
 foodsoft_dependencies: True
 
-
-# .. envvar:: foodsoft_bundler_exclude_groups
+                                                                   # ]]]
+# .. envvar:: foodsoft_bundler_exclude_groups [[[
 #
 # Don’t install the Gems in the listed groups.
 foodsoft_bundler_exclude_groups:
@@ -52,13 +56,12 @@ foodsoft_bundler_exclude_groups:
 
   ## Contains SQLite gem.
   - 'development'
+                                                                   # ]]]
+                                                                   # ]]]
+# Web server [[[
+# --------------
 
-
-# -------------------
-#   Web server
-# -------------------
-
-# .. envvar:: foodsoft_nginx_server
+# .. envvar:: foodsoft_nginx_server [[[
 #
 # nginx server configuration for Foodsoft.
 foodsoft_nginx_server:
@@ -74,25 +77,24 @@ foodsoft_nginx_server:
   passenger_user: '{{ foodsoft_user }}'
   passenger_group: '{{ foodsoft_group }}'
   passenger_options: '{{ foodsoft_passenger_options }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Database setup [[[
+# ------------------
 
-
-# --------------------
-#   Database setup
-# --------------------
-
-# .. envvar:: foodsoft_database_name
+# .. envvar:: foodsoft_database_name [[[
 #
 # Name of the database to use for Foodsoft.
 foodsoft_database_name: 'foodsoft'
 
-
-# .. envvar:: foodsoft_database_user
+                                                                   # ]]]
+# .. envvar:: foodsoft_database_user [[[
 #
 # Database user for Foodsoft.
 foodsoft_database_user: '{{ foodsoft_user }}'
 
-
-# .. envvar:: foodsoft_database_user
+                                                                   # ]]]
+# .. envvar:: foodsoft_database_password [[[
 #
 # Database user password for Foodsoft.
 foodsoft_database_password: "{{ lookup('password', secret + '/mariadb/' +
@@ -100,10 +102,10 @@ foodsoft_database_password: "{{ lookup('password', secret + '/mariadb/' +
                                 '/credentials/' + foodsoft_database_user +
                                 '/password length=48') }}"
 
-
-# .. envvar:: foodsoft_database_configuration
+                                                                   # ]]]
+# .. envvar:: foodsoft_database_configuration [[[
 #
-# Database configuration. Written to ``sites/public/config/database.yml``.
+# Database configuration. Written to :file:`sites/public/config/database.yml`.
 foodsoft_database_configuration:
   production: &foodsoft_database_configuration_defaults
     adapter: 'mysql2'
@@ -131,13 +133,12 @@ foodsoft_database_configuration:
     host: '{{ ansible_local.mariadb.server }}'
     username: '{{ foodsoft_database_user }}'
     password: '{{ foodsoft_database_password }}'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Webserver configuration [[[
 # ---------------------------
-#   Webserver configuration
-# ---------------------------
 
-# .. envvar:: foodsoft_webserver_user
+# .. envvar:: foodsoft_webserver_user [[[
 #
 # Name of the webserver user account which will be granted read only access to
 # the Foodsoft application directory.
@@ -145,95 +146,98 @@ foodsoft_webserver_user: '{{ ansible_local.nginx.user
                              if (ansible_local|d() and ansible_local.nginx|d() and
                                  ansible_local.nginx.user|d())
                               else "www-data" }}'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Foodsoft sources [[[
 # --------------------
-#   Foodsoft sources
-# --------------------
 
-# .. envvar:: foodsoft_install_repo
+# .. envvar:: foodsoft_install_repo [[[
 #
 # URL of the Foodsoft git repository.
 foodsoft_install_repo: 'https://github.com/foodcoops/foodsoft.git'
+
+                                                                   # ]]]
 # foodsoft_install_repo: 'https://github.com/foodcoop-adam/foodsoft.git'
 
-
-# .. envvar:: foodsoft_install_version
+# .. envvar:: foodsoft_install_version [[[
 #
 # Name of the git tag to install. If "HEAD" is chosen then the current
 # development checkout will be deployed.
 # foodsoft_install_version: 'HEAD'
+# 4.4.1
 foodsoft_install_version: '7801b364c9bce770a1321eb58d5f0486dc67cb24'
-## 4.4.1
 
+                                                                   # ]]]
+                                                                   # ]]]
+# Foodsoft directory layout [[[
+# -----------------------------
 
-# --------------------
-#   Foodsoft directory layout
-# --------------------
-
-# .. envvar:: foodsoft_home
+# .. envvar:: foodsoft_home [[[
 #
 # Application installation directory.
 foodsoft_home: '{{ (ansible_local.nginx.www
+
+                                                                   # ]]]
 	            if (ansible_local|d() and ansible_local.nginx|d() and
 	                ansible_local.nginx.www|d())
 	            else "/srv/www") + "/" + foodsoft_user }}'
 
-
-# .. envvar:: foodsoft_install_path
+# .. envvar:: foodsoft_install_path [[[
 #
 # Path where Foodsoft application source will be installed, this directory
 # should be readable by the webserver.
 foodsoft_install_path: '{{ foodsoft_home + "/sites/public" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Internal application settings ---- [[[
+# --------------------------------------
 
-
-# --------------------
-#   Internal application settings ----
-# --------------------
-
-# .. envvar:: foodsoft_user
+# .. envvar:: foodsoft_user [[[
 #
 # Name of the system user account for Foodsoft.
 foodsoft_user: 'foodsoft'
 
-# .. envvar:: foodsoft_user
+                                                                   # ]]]
+# .. envvar:: foodsoft_group [[[
 #
 # Name of the system group account for Foodsoft.
 foodsoft_group: 'foodsoft'
 
-
-# .. envvar:: foodsoft_user_append_groups
+                                                                   # ]]]
+# .. envvar:: foodsoft_user_append_groups [[[
 #
 # List of additional system groups to add to the foodsoft user account.
 foodsoft_user_append_groups: []
 
-
-# .. envvar:: foodsoft_user_append_groups
+                                                                   # ]]]
+# .. envvar:: foodsoft_domain [[[
 #
+# FIXME(yaml4rst): Describe what this variable is doing.
 foodsoft_domain: [ 'foodsoft.{{ ansible_domain }}' ]
 
-
-# .. envvar:: foodsoft_nginx_access_policy
+                                                                   # ]]]
+# .. envvar:: foodsoft_nginx_access_policy [[[
 #
-# Name of webserver access policy to enable. Refer to ``debops.nginx`` for
+# Name of webserver access policy to enable. Refer to debops.nginx_ for
 # details.
 foodsoft_nginx_access_policy: ''
 
-
-# .. envvar:: foodsoft_passenger_options
+                                                                   # ]]]
+# .. envvar:: foodsoft_passenger_options [[[
 #
 # Additional options for Phusion Passenger as text block
 foodsoft_passenger_options: ''
+
+                                                                   # ]]]
 # foodsoft_passenger_options: 'passenger_friendly_error_pages on;'
 
-
-# .. envvar:: foodsoft_name
+# .. envvar:: foodsoft_name [[[
 #
 # Name of this Foodcoop.
 foodsoft_name: 'FC Test'
 
-
-# .. envvar:: foodsoft_contact
+                                                                   # ]]]
+# .. envvar:: foodsoft_contact [[[
 #
 # Foodcoop contact information (used for FAX messages).
 foodsoft_contact:
@@ -244,92 +248,92 @@ foodsoft_contact:
   email: 'foodsoft@foodcoop.test'
   phone: '030 323 23249'
 
-
-# .. envvar:: foodsoft_homepage
+                                                                   # ]]]
+# .. envvar:: foodsoft_homepage [[[
 #
 # Homepage.
 foodsoft_homepage: 'https://{{ foodsoft_domain[0] }}/{{ foodsoft_default_scope }}'
 
-
-# .. envvar:: foodsoft_custom_url
+                                                                   # ]]]
+# .. envvar:: foodsoft_custom_url [[[
 #
 # Custom foodsoft software URL (used in footer).
 foodsoft_custom_url: ''
 
-
-# .. envvar:: foodsoft_email_sender
+                                                                   # ]]]
+# .. envvar:: foodsoft_email_sender [[[
 #
 # Email address to be used as sender.
 foodsoft_email_sender: 'foodsoft@foodcoop.test'
 
-
-# .. envvar:: foodsoft_error_recipients
+                                                                   # ]]]
+# .. envvar:: foodsoft_error_recipients [[[
 #
 # Email address to be used as sender.
 foodsoft_error_recipients:
   - 'admin@foodcoop.test'
 
-
-# .. envvar:: foodsoft_multi_coop_install
+                                                                   # ]]]
+# .. envvar:: foodsoft_multi_coop_install [[[
 #
 # If you wanna serve more than one Foodcoop with one installation.
 # Don't forget to setup databases for each Foodcoop. See also MULTI_COOP_INSTALL.
 foodsoft_multi_coop_install: 'false'
 
-
-# .. envvar:: foodsoft_multi_coop_install
+                                                                   # ]]]
+# .. envvar:: foodsoft_default_scope [[[
 #
 # If ``foodsoft_multi_coop_install`` is true you have to use a coop name, which
 # you you wanna be selected by default.
 foodsoft_default_scope: 'f'
 
-
-# .. envvar:: foodsoft_use_nick
+                                                                   # ]]]
+# .. envvar:: foodsoft_use_nick [[[
 #
 # When use_nick is enabled, there will be a nickname field in the user form,
 # and the option to show a nickname instead of full name to foodcoop members.
 # Members of a user's groups and administrators can still see full names.
 foodsoft_use_nick: false
 
-
-# .. envvar:: foodsoft_use_wiki
+                                                                   # ]]]
+# .. envvar:: foodsoft_use_wiki [[[
 #
 # Most plugins can be enabled/disabled here as well. Messages and wiki are enabled
 # by default and need to be set to false to disable. Most other plugins needs to
 # be enabled before they do anything.
 foodsoft_use_wiki: true
 
-
-# .. envvar:: foodsoft_use_messages
+                                                                   # ]]]
+# .. envvar:: foodsoft_use_messages [[[
 #
 # Most plugins can be enabled/disabled here as well. Messages and wiki are enabled
 # by default and need to be set to false to disable. Most other plugins needs to
 # be enabled before they do anything.
 foodsoft_use_messages: true
 
-
-# .. envvar:: foodsoft_page_footer
+                                                                   # ]]]
+# .. envvar:: foodsoft_page_footer [[[
 #
 # Page footer (html allowed). Default is a Foodsoft footer. Set to the word
 # "blank" for no footer. If unchanged, the default footer of Foodsoft will be used.
 foodsoft_page_footer: ''
 
-
-# .. envvar:: foodsoft_price_markup
+                                                                   # ]]]
+# .. envvar:: foodsoft_price_markup [[[
 #
 # Price markup in percent.
 foodsoft_price_markup: 2.0
 
-
-# .. envvar:: foodsoft_tax_default
+                                                                   # ]]]
+# .. envvar:: foodsoft_tax_default [[[
 #
 # Default vat percentage for new articles.
 foodsoft_tax_default: 7.0
 
-
-# .. envvar:: foodsoft_app_configuration
+                                                                   # ]]]
+# .. envvar:: foodsoft_app_configuration [[[
 #
-# Foodsoft configuration. Written to ``sites/public/config/app_config.yml``.
+# Foodsoft configuration. Written to :file:`sites/public/config/app_config.yml`.
 foodsoft_app_configuration:
   default: &defaults
     # If you wanna serve more than one foodcoop with one installation
@@ -363,7 +367,7 @@ foodsoft_app_configuration:
     # In case you really want foodsoft in a certain language by default, set this to true.
     # When members are logged in, the language from their profile settings is still used.
     #ignore_browser_locale: false
-    # Default timezone, e.g. UTC, Amsterdam, Berlin, etc.
+    # Default timezone, e. g. UTC, Amsterdam, Berlin, etc.
     #time_zone: Berlin
     # Currency symbol, and whether to add a whitespace after the unit.
     #currency_unit: €
@@ -434,7 +438,7 @@ foodsoft_app_configuration:
     # Custom CSS for the foodcoop
     # custom_css: 'body { background-color: #fcffba; }'
 
-    # Uncomment to add tracking code for web statistics, e.g. for Piwik. (Added to bottom of page)
+    # Uncomment to add tracking code for web statistics, e. g. for Piwik. (Added to bottom of page)
     #webstats_tracking_code: |
     #  <!-- Piwik -->
     #  ......
@@ -478,3 +482,6 @@ foodsoft_app_configuration:
 
   production:
     <<: *defaults
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
