@@ -169,7 +169,7 @@ def padlock_unlock(encrypted_path):
     crypted_configfile = configfile+'.asc'
 
     if (not os.path.exists(keyfile) or
-        not os.path.exists(os.path.join(encrypted_path, crypted_configfile))):
+            not os.path.exists(crypted_configfile)):
         return False
 
     # Cut the EncFS directory prefix to get the decrypted directory name
