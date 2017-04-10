@@ -186,7 +186,7 @@ def padlock_unlock(encrypted_path):
     if not os.path.isdir(decrypted_path):
         os.makedirs(decrypted_path)
 
-    # MAke sure the named pipe for the configfile exists
+    # Make sure the named pipe for the configfile exists
     if not os.path.exists(configfile):
         os.mkfifo(configfile)
     elif not stat.S_ISFIFO(os.stat(configfile).st_mode):
