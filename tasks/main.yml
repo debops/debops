@@ -45,11 +45,11 @@
 
 - name: Ensure that the NFS mount points exist
   file:
-    path: '{{ item.path }}'
+    path:  '{{ item.path }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d("root") }}'
+    mode:  '{{ item.mode  | d("0755") }}'
     state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
   with_flattened:
     - '{{ nfs__shares }}'
     - '{{ nfs__group_shares }}'
