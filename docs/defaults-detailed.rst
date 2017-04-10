@@ -61,6 +61,11 @@ list element is a YAML dictionary with specific parameters:
   default omitted since they are not useful for NFS shares. See the module
   documentation page for more details.
 
+``owner``, ``group``, ``mode``
+  Optional. Specify UNIX account, group and directory permissions for the mount
+  point of a given NFS share. They will be applied to the directories created
+  by the role when the NFS share is not mounted immediately.
+
 Examples
 ~~~~~~~~
 

@@ -16,7 +16,19 @@ The current role maintainer_ is drybjed_.
 `debops.nfs master`_ - unreleased
 ---------------------------------
 
-.. _debops.nfs master: https://github.com/debops/ansible-nfs/compare/v0.2.1...master
+.. _debops.nfs master: https://github.com/debops/ansible-nfs/compare/v0.2.2...master
+
+
+`debops.nfs v0.2.2`_ - 2017-04-10
+---------------------------------
+
+.. _debops.nfs v0.2.2: https://github.com/debops/ansible-nfs/compare/v0.2.1...v0.2.2
+
+Added
+~~~~~
+
+- Allow configuration of directory owner, group and permissions for NFS shares
+  that are not mounted immediately by the role. [drybjed_]
 
 
 `debops.nfs v0.2.1`_ - 2017-04-07
