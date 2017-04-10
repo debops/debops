@@ -159,7 +159,7 @@ def padlock_lock(encrypted_path):
 
 def padlock_unlock(encrypted_path):
     """
-    Lock the padlock (this is: unmount the directory).
+    Unlock the padlock (this is: mount the directory).
 
     Returns True if the padlock originally was locked, otherwise False.
     """
