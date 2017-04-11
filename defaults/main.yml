@@ -369,7 +369,11 @@ foodsoft__role_config:
   homepage: '{{ foodsoft__homepage }}'
 
   # Default timezone, e. g. UTC, Amsterdam, Berlin, etc.
-  time_zone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
+  # FIXME: Foodsoft/Ruby seem to expect a different format than what debops.core returns.
+  # Potentially splitting at "/" and returning the second half of the string
+  # would do the job but that would need testing.
+  # Change manually if needed.
+  # time_zone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
 
   # Page footer (html allowed). Default is a Foodsoft footer. Set to `blank` for no footer.
   page_footer: '{{ foodsoft__page_footer }}'
