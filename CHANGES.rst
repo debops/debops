@@ -44,12 +44,12 @@ Changed
 - Increase the default ``LoginGraceTime`` value from 20 to 30 seconds to help
   solve issues with unresponsive DNS servers. [drybjed_]
 
-Removed
-~~~~~~~
+Deprecated
+~~~~~~~~~~
 
-- Remove the packages ``openssh-blacklist`` and ``openssh-blacklist-extra`` from
-  the list of recommended packages as they are now obsolete. This fixes Debian Stretch support.
-  Refer to https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=859682 for details. [ypid_]
+- The ``openssh-blacklist*`` Debian packages have been removed from Debian
+  Archive and won't be available in Debian Stretch onwards.
+  Ref: https://bugs.debian.org/859682 [ypid_, drybjed_]
 
 
 `debops.sshd v0.2.5`_ - 2016-10-10
