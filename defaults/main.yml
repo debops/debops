@@ -329,7 +329,9 @@ docker__pki_key: 'default.key'
 #
 # Enable or disable installation for the ``ferm`` post hook when :program:`ferment`
 # is disabled.
-docker__ferm_post_hook: '{{ ((ferm__enabled|d() | bool) and (docker__ferment|d() | bool == False)) }}'
+docker__ferm_post_hook: '{{ True
+                            if (ansible_local|d() and ansible_local.ferm|d() and
+                                docker__ferment|bool) else False }}'
 
                                                                    # ]]]
 # .. envvar:: docker__ferment [[[
