@@ -159,7 +159,7 @@ def padlock_lock(encrypted_path):
 
 def padlock_unlock(encrypted_path):
     """
-    Lock the padlock (this is: unmount the directory).
+    Unlock the padlock (this is: mount the directory).
 
     Returns True if the padlock originally was locked, otherwise False.
     """
@@ -169,7 +169,7 @@ def padlock_unlock(encrypted_path):
     crypted_configfile = configfile+'.asc'
 
     if (not os.path.exists(keyfile) or
-        not os.path.exists(os.path.join(encrypted_path, crypted_configfile))):
+            not os.path.exists(crypted_configfile)):
         return False
 
     # Cut the EncFS directory prefix to get the decrypted directory name
@@ -186,7 +186,7 @@ def padlock_unlock(encrypted_path):
     if not os.path.isdir(decrypted_path):
         os.makedirs(decrypted_path)
 
-    # MAke sure the named pipe for the configfile exists
+    # Make sure the named pipe for the configfile exists
     if not os.path.exists(configfile):
         os.mkfifo(configfile)
     elif not stat.S_ISFIFO(os.stat(configfile).st_mode):
