@@ -325,6 +325,15 @@ docker__pki_key: 'default.key'
 # Firewall and ferment support [[[
 # --------------------------------
 
+# .. envvar:: docker__ferm_post_hook [[[
+#
+# Enable or disable installation for the ``ferm`` post hook when :program:`ferment`
+# is disabled.
+docker__ferm_post_hook: '{{ True
+                            if (ansible_local|d() and ansible_local.ferm|d() and
+                                docker__ferment|bool) else False }}'
+
+                                                                   # ]]]
 # .. envvar:: docker__ferment [[[
 #
 # Enable or disable support for :program:`ferment` script, which can generate ``ferm``
