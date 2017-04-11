@@ -92,6 +92,13 @@
     src: '/usr/local/lib/redis/redis-password'
     state: 'link'
 
+- name: Set vm.overcommit
+  sysctl:
+    name: 'vm.overcommit_memory'
+    value: 1
+    sysctl_file: '/etc/sysctl.d/30-redis.conf'
+  when: redis__overcommit_memory_enable|bool
+
 - name: Configure redis-server service
   include: redis-server.yml
   when: redis__server_enabled|bool
