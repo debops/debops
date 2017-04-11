@@ -18,6 +18,13 @@ The current role maintainer_ is drybjed.
 
 .. _debops.redis master: https://github.com/debops/ansible-redis/compare/v0.2.1...master
 
+Added
+~~~~~
+
+- Enable memory overcommit by default. Redis is not able to fork to make
+  a background save if it uses more than half of the available memory with
+  overcommit disabled. [scibi_]
+
 
 `debops.redis v0.2.1`_ - 2016-11-18
 -----------------------------------
