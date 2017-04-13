@@ -89,6 +89,9 @@ Added
 - Add the ``debops.nsswitch`` Ansible role with its corresponding playbook. The
   role is included in the :file:`common.yml` playbook. [drybjed_]
 
+- Add the ``debops.avahi`` Ansible role with its corresponding playbook.
+  [drybjed_]
+
 Changed
 ~~~~~~~
 
