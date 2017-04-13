@@ -25,7 +25,7 @@ Avahi CNAME (alias) support
 Avahi by default does not support ``CNAME`` records, i.e. alternative
 subdomains that point to a given host. To support these records,
 ``debops.avahi`` can install and configure a custom third party script,
-`avahi-alias <https://github.com/george-hawkins/avahi-aliases-notes`_
+`avahi-alias <https://github.com/george-hawkins/avahi-aliases-notes>`_
 maintained by `George Hawkins <https://github.com/george-hawkins>`_.
 
 To enable this functionality, set in the Ansible inventory:
