@@ -1,0 +1,55 @@
+# {{ ansible_managed }}
+
+# This file is part of avahi.
+#
+# avahi is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# avahi is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with avahi; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA.
+
+# See avahi-daemon.conf(5) for more information on this configuration
+# file!
+
+{% macro print_config(section, data) %}
+[{{ section }}]
+{%   for key in data.keys() %}
+{%     if data[key] is iterable and data[key] is not string and data[key] is not mapping %}
+{%       if data[key] %}
+{{ key }}={{ data[key] | join(', ') }}
+{%       else %}
+#{{ key }}={{ data[key] | join(', ') }}
+{%       endif %}
+{%     elif data[key] | bool and data[key] is not iterable %}
+{{ key }}=yes
+{%     elif not data[key] | bool and data[key] is not iterable %}
+{%       if data[key] is not none %}
+{%         if data[key] | int or data[key] | string == '0' %}
+{{ key }}={{ data[key] }}
+{%         else %}
+{{ key }}=no
+{%         endif %}
+{%       endif %}
+{%     else %}
+{%       if data[key] %}
+{{ key }}={{ data[key] }}
+{%       else %}
+#{{ key }}={{ data[key] }}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endmacro %}
+{{ print_config('server',    avahi__daemon_conf_default_server    | combine(avahi__daemon_conf_server)) }}
+{{ print_config('wide-area', avahi__daemon_conf_default_wide_area | combine(avahi__daemon_conf_wide_area)) }}
+{{ print_config('publish',   avahi__daemon_conf_default_publish   | combine(avahi__daemon_conf_publish)) }}
+{{ print_config('reflector', avahi__daemon_conf_default_reflector | combine(avahi__daemon_conf_reflector)) }}
+{{ print_config('rlimits',   avahi__daemon_conf_default_rlimits   | combine(avahi__daemon_conf_rlimits)) }}

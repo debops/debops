@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+# avahi-alias.service unit file
+# Copyright (C) Maciej Delmanowski <drybjed@gmail.com>
+# Homepage: https://debops.org/
+
+[Unit]
+Description=Avahi CNAME support
+After=avahi-daemon.service
+
+[Service]
+User=nobody
+ExecStart=/bin/bash -c '{{ avahi__alias_install_path }}/avahi-alias $(<"{{ avahi__alias_config_file }}")'
+
+[Install]
+WantedBy=multi-user.target

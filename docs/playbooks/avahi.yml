@@ -1,0 +1,22 @@
+---
+
+- name: Manage Avahi service
+  hosts: [ 'debops_service_avahi' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ avahi__ferm__dependent_rules }}'
+
+    - role: debops.avahi
+      tags: [ 'role::avahi' ]
+
+    - role: debops.nsswitch
+      tags: [ 'role::nsswitch' ]

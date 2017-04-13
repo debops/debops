@@ -1,0 +1,106 @@
+---
+
+# The tasks below are a fix for an issue where Avahi service cannot start in an
+# LXC container. Without this, installation of the 'avahi-daemon' package will
+# result in a dpkg error. More information:
+# https://lists.linuxcontainers.org/pipermail/lxc-devel/2012-April/002395.html
+
+- name: Make sure that Avahi config directory exists
+  file:
+    path: '/etc/avahi'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Divert the avahi-daemon configuration
+  command: dpkg-divert --quiet --local --divert /etc/avahi/{{ item }}.dpkg-divert --rename /etc/avahi/{{ item }}
+  args:
+    creates: '/etc/avahi/{{ item }}.dpkg-divert'
+  with_items: [ 'avahi-daemon.conf', 'hosts' ]
+  register: avahi__register_divert
+  notify: [ 'Restart avahi-daemon' ]
+
+- name: Configure avahi-daemon
+  template:
+    src: 'etc/avahi/avahi-daemon.conf.j2'
+    dest: '/etc/avahi/avahi-daemon.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart avahi-daemon' ]
+
+- name: Create a stub mDNS hosts configuration file
+  file:
+    state: 'touch'
+    src: 'etc/avahi/hosts'
+    dest: '/etc/avahi/hosts'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: avahi__register_divert|changed
+
+# The rest of the role continues as normal.
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ avahi__base_packages }}'
+    - '{{ avahi__packages }}'
+
+- name: Manage advertisement of additional hosts over Avahi
+  lineinfile:
+    dest: '/etc/avahi/hosts'
+    regexp: '{{ "^" + item.key + "\s+" }}'
+    line: '{{ item.key }} {{ (item.value if item.value.endswith("." + avahi__domain) else (item.value + "." + avahi__domain)) }}'
+    state: 'present'
+  with_dict: '{{ avahi__hosts | combine(avahi__group_hosts) | combine(avahi__host_hosts) }}'
+  when: item.key|d() and item.value|d()
+
+- name: Configure Avahi CNAME aliases
+  include: avahi_alias.yml
+  when: avahi__alias_enabled|bool
+  tags: [ 'role::avahi:alias' ]
+
+- name: Remove Avahi services if requested
+  file:
+    path: '/etc/avahi/services/{{ item.value.filename | d(item.key) }}.service'
+    state: 'absent'
+  with_dict: '{{ avahi__combined_services }}'
+  when: item.value.filename|d(item.key) and item.value.state|d('present') == 'absent'
+  tags: [ 'role::avahi:alias', 'role::avahi:services' ]
+
+- name: Configure Avahi services
+  template:
+    src: 'etc/avahi/services/avahi.service.j2'
+    dest: '/etc/avahi/services/{{ item.value.filename | d(item.key) }}.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_dict: '{{ avahi__combined_services }}'
+  when: (item.value.filename|d(item.key) and item.value.state|d('present') != 'absent' and
+         (item.value.services|d() or item.value.type|d()))
+  tags: [ 'role::avahi:alias', 'role::avahi:services' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Avahi local facts
+  template:
+    src: 'etc/ansible/facts.d/avahi.fact.j2'
+    dest: '/etc/ansible/facts.d/avahi.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: avahi__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: avahi__register_facts|changed
