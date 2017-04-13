@@ -35,7 +35,7 @@ To enable this functionality, set in the Ansible inventory:
    avahi__alias_enabled: True
 
 The role will download the script source code, install it in the
-:path:`/usr/local/sbin/` directory and prepare a :command:`systemd` service
+:file:`/usr/local/sbin/` directory and prepare a :command:`systemd` service
 (SysVinit is not supported at this time). The script needs to be restarted to
 register any changed CNAME records and this is not automatic unlike Avahi
 daemon itself (role restarts the service on any changes).
