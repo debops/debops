@@ -3,24 +3,13 @@
 dependencies:
 
   - role: debops.secret
-    tags: [ 'depend::secret', 'depend::secret:nginx', 'depend-of::nginx', 'type::dependency:hard' ]
-
-  - role: debops.apt_preferences
-    tags: [ 'depend::apt_preferences', 'depend::apt_preferences:nginx', 'depend-of::nginx', 'type::dependency' ]
-    apt_preferences_dependent_list: '{{ nginx_apt_preferences_dependent_list }}'
-    when: nginx_dependencies | bool
-
-  - role: debops.ferm
-    tags: [ 'depend::ferm', 'depend::ferm:nginx', 'depend-of::nginx', 'type::dependency' ]
-    ferm_dependent_rules: '{{ nginx_ferm_dependent_rules }}'
-    when: nginx_dependencies | bool
 
 galaxy_info:
   author: 'Maciej Delmanowski, Robin Schneider'
   description: 'Install and manage nginx webserver'
   company: 'DebOps'
   license: 'GPL-3.0'
-  min_ansible_version: '2.0.0'
+  min_ansible_version: '2.1.5'
   platforms:
   - name: Ubuntu
     versions:

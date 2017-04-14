@@ -6,6 +6,27 @@ Getting started
 .. contents::
    :local:
 
+
+Example inventory
+-----------------
+
+To manage Nginx on a given host or set of hosts, they need to be added
+to the ``[debops_service_nginx]`` Ansible group in the inventory:
+
+.. code:: ini
+
+   [debops_service_nginx]
+   hostname
+
+Example playbook
+----------------
+
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.nginx`` role:
+
+.. literalinclude:: playbooks/nginx.yml
+   :language: yaml
+
 Ansible tags
 ------------
 
