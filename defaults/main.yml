@@ -171,7 +171,7 @@ volkszaehler__database_user_priv: |
     )
   }}
 
-                                                                   # ]]]
+# ]]]
 # .. envvar:: volkszaehler__database_demo_insert [[[
 #
 # Insert demo data in to database?
@@ -257,7 +257,7 @@ volkszaehler__webserver_http_methods: |
           else [])
   }}
 
-                                                                   # ]]]
+# ]]]
 # .. envvar:: volkszaehler__apache_modules [[[
 #
 # Dict of required Apache modules.
@@ -311,8 +311,8 @@ volkszaehler__gecos: 'volkszaehler.org'
 volkszaehler__shell: '/usr/sbin/nologin'
                                                                    # ]]]
                                                                    # ]]]
-# Application sources and deployment [[[
-# --------------------------------------
+# Volkszaehler sources and deployment [[[
+# ---------------------------------------
 
 # .. envvar:: volkszaehler__git_repo [[[
 #
@@ -323,8 +323,8 @@ volkszaehler__git_repo: 'https://github.com/volkszaehler/volkszaehler.org.git'
 # .. envvar:: volkszaehler__git_version [[[
 #
 # The git branch or tag which will be installed.
-# Defaults to the latest master as the role was written.
-# This is done because volkszaehler.org development is not cryptographically
+# Defaults to the commit hash of latest master as the role was written.
+# This is done because volkszaehler development is not cryptographically
 # signed and this role wants to comply with the
 # `DebOps Software Source Policy <https://docs.debops.org/en/latest/debops-policy/docs/software-source-policy.html#software-installed-from-git-repositories>`__.
 volkszaehler__git_version: 'fadb821555527d0fb4d729a3f62e238cde10f168'
@@ -332,7 +332,7 @@ volkszaehler__git_version: 'fadb821555527d0fb4d729a3f62e238cde10f168'
                                                                    # ]]]
 # .. envvar:: volkszaehler__git_dest [[[
 #
-# Path where volkszaehler sources will be checked out (installation path).
+# Path where the volkszaehler sources will be checked out (installation path).
 volkszaehler__git_dest: '{{ volkszaehler__home_path + "/volkszaehler.org" }}'
 
                                                                    # ]]]
@@ -348,7 +348,7 @@ volkszaehler__git_recursive: False
 volkszaehler__git_update: True
                                                                    # ]]]
                                                                    # ]]]
-# volkszaehler configuration [[[
+# Volkszaehler configuration [[[
 # ------------------------------
 
 # .. envvar:: volkszaehler__config_user [[[
@@ -470,10 +470,11 @@ volkszaehler__host_config: {}
 #
 # The configuration written to :file:`etc/volkszaehler.conf.php`.
 volkszaehler__combined_config: '{{ volkszaehler__upstream_config
-                                  | combine(volkszaehler__role_config)
-                                  | combine(volkszaehler__config)
-                                  | combine(volkszaehler__group_config)
-                                  | combine(volkszaehler__host_config) }}'
+                                   | combine(
+                                       volkszaehler__role_config,
+                                       volkszaehler__config,
+                                       volkszaehler__group_config,
+                                       volkszaehler__host_config) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
@@ -505,7 +506,7 @@ volkszaehler__mariadb__dependent_users:
     priv_aux: False
     priv: '{{ volkszaehler__database_user_priv }}'
 
-# ]]]
+                                                                   # ]]]
 # .. envvar:: volkszaehler__php__dependent_packages [[[
 #
 # List of PHP packages to install using the debops.php_ role.
