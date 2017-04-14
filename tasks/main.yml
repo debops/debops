@@ -1,5 +1,22 @@
 ---
 
+- name: Assert that no legacy options are used
+  assert:
+    that:
+      - '((item.csp is defined and item.csp is string) or item.csp is undefined)'
+      - '(item.csp_policy is undefined)'
+  run_once: True
+  delegate_to: 'localhost'
+  with_flattened:
+    - '{{ nginx__servers }}'
+    - '{{ nginx__default_servers }}'
+    - '{{ nginx__internal_servers }}'
+    - '{{ nginx__dependent_servers }}'
+    - '{{ nginx_servers | d([]) }}'
+    - '{{ nginx_default_servers | d([]) }}'
+    - '{{ nginx_internal_servers | d([]) }}'
+    - '{{ nginx_dependent_servers | d([]) }}'
+
 - name: DebOps pre_tasks hook
   include: '{{ lookup("task_src", "nginx/pre_main.yml") }}'
   when: (nginx__deploy_state in [ 'present' ])

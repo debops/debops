@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.nginx master`_ - unreleased
 -----------------------------------
 
-.. _debops.nginx master: https://github.com/debops/ansible-nginx/compare/v0.1.8...master
+.. _debops.nginx master: https://github.com/debops/ansible-nginx/compare/v0.2.0...master
+
+
+`debops.nginx v0.2.0`_ - 2017-04-15
+-----------------------------------
+
+.. _debops.nginx v0.2.0: https://github.com/debops/ansible-nginx/compare/v0.1.9...v0.2.0
 
 Added
 ~~~~~
@@ -23,12 +29,17 @@ Added
   welcome page is up-to-date. Note that setting this to ``True`` will not allow
   idempotent operation. [ypid_]
 
-- Add/Set the default `Referrer Policy`_ to ``no-referrer`` and made it
+- Add/Set the default `Referrer Policy`_ to ``same-origin`` and made it
   configurable via :ref:`http_referrer_policy <nginx__ref_http_referrer_policy>`.
 
   Also set the `Referrer Policy`_ in the welcome page as HTML meta option as
   some website checkers like https://webbkoll.dataskydd.net/en seem to not get
-  the HTTP header option yet. [ypid_]
+  the HTTP header option yet.
+
+  Note that ``no-referrer`` was originally used in an unreleased version of the
+  role but this seemed to cause issues with certain applications so it was
+  changed to ``same-origin`` by default. ``no-referrer`` can still be used when
+  you know it does not break anything. [ypid_, drybjed_, scibi_]
 
 Changed
 ~~~~~~~
@@ -50,12 +61,41 @@ Changed
   `Content Security Policy`, fix warnings and one templating error for
   ``nginx_tpl_welcome_title``. [ypid_]
 
+- Increase Ansible min version to ``2.1.5``. Everything below is deprecated
+  anyway and has vulnerabilities so you don’t want to use that anymore. [ypid_]
+
+- Change :envvar:`nginx_hsts_preload` from ``True`` to ``False`` by default.
+  Setting this value to ``True`` alone does not achieve anything and can
+  actually cause problems if you are not prepared.
+  Thus it is disabled by default.
+  If you are ready for the future of HTTPS and TLS only, you are encouraged to
+  enable it! [ypid_]
+
+- Redesign Content Security Policy support of the role.
+  ``item.csp_policy`` has been renamed to ``item.csp`` and the original
+  ``item.csp`` is now called ``item.csp_enabled``.
+  It is now also possible to set a global ``report-uri`` for all CSPs.
+  The role will assert that it is being used with the redesigned interface and
+  will fail if it is not. You will need to update your role/playbook/inventory.
+  Refer to :ref:`nginx__ref_servers_http_security_headers`. [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 
 - Deprecated the ``item.when`` and ``item.delete`` options. Use ``item.state`` instead. [ypid_]
 
 - Deprecated the ``php5`` server type in favor to :ref:`nginx__ref_servers_php`. [ypid_]
+
+Removed
+~~~~~~~
+
+- Remove the ``debops_nginx`` Ansible inventory group. Make sure you hosts
+  are in ``debops_service_nginx``. [ypid_]
+
+- Remove the Ansible role dependencies. Make sure that role dependencies get
+  executed in the playbook and get the depend variables of the role passed.
+  ``nginx_dependencies`` has no effect anymore and can be removed from your
+  inventory if you used it. [ypid_]
 
 Fixed
 ~~~~~
