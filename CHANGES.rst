@@ -22,6 +22,8 @@ Changed
 
 - Rewrite Changelog in the new format. [drybjed_]
 
+- Clean up ``COPYRIGHT`` file. [drybjed_]
+
 
 `debops-tools v0.4.4`_ - 2016-06-29
 -----------------------------------

@@ -18,7 +18,6 @@ DebOps scripts
    scripts/debops-task
    contributing
    copyright
-   credits
    changelog
 
 ..
