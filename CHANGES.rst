@@ -28,6 +28,9 @@ Fixed
   :envvar:`nginx_ocsp` is set to ``False``.
   :envvar:`nginx_default_ssl_verify_client` does not depend on :envvar:`nginx_ocsp`. [ypid_]
 
+- CSP for welcome server did not end with a semicolon resulting in an invalid CSP with
+  :envvar:`nginx__http_csp_append` set. [ypid_]
+
 
 `debops.nginx v0.2.0`_ - 2017-04-15
 -----------------------------------
