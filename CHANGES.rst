@@ -21,6 +21,13 @@ Added
 
 - Support to disable :envvar:`nginx_acme_domain`. [ypid_]
 
+Fixed
+~~~~~
+
+- Fixed the usage of :envvar:`nginx_default_ssl_verify_client` when
+  :envvar:`nginx_ocsp` is set to ``False``.
+  :envvar:`nginx_default_ssl_verify_client` does not depend on :envvar:`nginx_ocsp`. [ypid_]
+
 
 `debops.nginx v0.2.0`_ - 2017-04-15
 -----------------------------------

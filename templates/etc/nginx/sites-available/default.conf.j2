@@ -543,18 +543,18 @@ server {
         ssl_stapling_verify       on;
         ssl_trusted_certificate   {{ nginx_tpl_ssl_trusted_certificate }};
 {%         endif                                                %}
-{%         if (item.ssl_verify_client | d(nginx_default_ssl_verify_client)) | bool      %}
-{%             if item.ssl_client_certificate | d(nginx_default_ssl_client_certificate) %}
-        ssl_verify_client         on;
-        ssl_client_certificate    {{ item.ssl_client_certificate | d(nginx_default_ssl_client_certificate) }};
-{%             endif                                                                    %}
-{%             if item.ssl_crl | d(nginx_default_ssl_crl)           %}
-        ssl_crl                   {{ item.ssl_crl | d(nginx_default_ssl_crl) }};
-{%             endif                                                %}
-{%         endif                                                    %}
         resolver                  {{ (item.ocsp_resolvers | d(nginx_ocsp_resolvers)) | ipwrap | join(" ") }} valid=300s;
         resolver_timeout          5s;
 {%     endif                                                        %}
+{%     if (item.ssl_verify_client | d(nginx_default_ssl_verify_client)) | bool      %}
+{%         if item.ssl_client_certificate | d(nginx_default_ssl_client_certificate) %}
+        ssl_verify_client         on;
+        ssl_client_certificate    {{ item.ssl_client_certificate | d(nginx_default_ssl_client_certificate) }};
+{%         endif                                                                    %}
+{%         if item.ssl_crl | d(nginx_default_ssl_crl)           %}
+        ssl_crl                   {{ item.ssl_crl | d(nginx_default_ssl_crl) }};
+{%         endif                                                %}
+{%     endif                                                    %}
 {%     if item.hsts_enabled|d(True) | bool                      %}
         add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age }}{{ "; includeSubDomains" if nginx_hsts_subdomains|bool else "" }}{{ "; preload" if ((item.hsts_preload | d(nginx_hsts_preload)) | bool) else "" }}";
 {% endif                                                    %}
