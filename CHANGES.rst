@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.nginx master: https://github.com/debops/ansible-nginx/compare/v0.2.0...master
 
+Added
+~~~~~
+
+- Support to disable :envvar:`nginx_acme_domain`. [ypid_]
+
 
 `debops.nginx v0.2.0`_ - 2017-04-15
 -----------------------------------
