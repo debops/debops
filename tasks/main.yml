@@ -6,6 +6,9 @@
 #
 # Check the role commit history for details.
 
+- name: Pre hooks
+  include: '{{ lookup("task_src", "sysctl/pre_main.yml") }}'
+
 - name: Generate kernel parameters config file
   template:
     src: 'etc/sysctl.d/debops_sysctl.conf.j2'
@@ -26,3 +29,6 @@
                if (sysctl__register_system.stdout != "")
                else ("sysctl --ignore --load " + sysctl__config_file) }}'
   when: sysctl__register_config|changed
+
+- name: Post hooks
+  include: '{{ lookup("task_src", "sysctl/post_main.yml") }}'
