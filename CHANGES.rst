@@ -22,15 +22,17 @@ Added
 - Add custom pre and post task hooks to allow more flexibility with PKI
   management. [muelli_]
 
-- Support to change or disable OCSP in PKI authorities using ``item.ocsp``. [ypid_]
+- Support to change or disable CRL and OCSP for PKI authorities using
+  ``item.crl`` and ``item.ocsp``. [ypid_]
 
 - Use X509v3 name constraints to limit PKI authorities to ``item.domain``.
   This greatly reduces the damage that a compromised PKI authorities could do
   (which is trusted by the cluster by default).
   Previously, any CA managed by ``debops.pki`` could happily issue certificates
   for any domain and clients would accept them which is probably not what you want.
-  Use ``item.name_constraints`` to change the default.
-  Refer to `A Web PKI x509 certificate primer <https://developer.mozilla.org/en-US/docs/Mozilla/Security/x509_Certificates>`_. [ypid_]
+  Use ``item.name_constraints`` if you want to change the default.
+  Refer to `A Web PKI x509 certificate primer <https://developer.mozilla.org/en-US/docs/Mozilla/Security/x509_Certificates>`_
+  for details. [ypid_]
 
 
 `debops.pki v0.2.14`_ - 2016-11-21
