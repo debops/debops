@@ -305,8 +305,7 @@
   environment:
     PKI_ROOT: '{{ secret + "/pki" }}'
     PKI_LIBRARY: '{{ item.pki_ca_library | d(pki_ca_library) }}'
-    PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/" +
-                            (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
+    PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/" + (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
   command: ./lib/pki-authority init --name "{{ item.name }}"
            --default-sign-base "{{ pki_default_sign_base }}"
            --root-sign-multiplier "{{ pki_default_root_sign_multiplier }}"
@@ -340,6 +339,7 @@
            --system-ca "{{ (item.system_ca | d(True)) | bool | lower }}"
            --alt-authority "{{ item.alt_authority | d('') }}"
            --key-size "{{ item.key_size | d('') }}"
+           --ocsp "{{ item.ocsp | d(True) | bool | lower }}"
   args:
     chdir: '{{ secret + "/pki" }}'
     creates: '{{ secret + "/pki/authorities/" + item.name + "/subject/cert.pem" }}'

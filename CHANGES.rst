@@ -22,6 +22,8 @@ Added
 - Add custom pre and post task hooks to allow more flexibility with PKI
   management. [muelli_]
 
+- Support to change or disable OCSP in PKI authorities using ``item.ocsp``. [ypid_]
+
 
 `debops.pki v0.2.14`_ - 2016-11-21
 ----------------------------------
