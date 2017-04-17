@@ -340,6 +340,7 @@
            --alt-authority "{{ item.alt_authority | d('') }}"
            --key-size "{{ item.key_size | d('') }}"
            --ocsp "{{ item.ocsp | d(True) | bool | lower }}"
+           --name-constraints "{{ item.name_constraints | d('') }}"
   args:
     chdir: '{{ secret + "/pki" }}'
     creates: '{{ secret + "/pki/authorities/" + item.name + "/subject/cert.pem" }}'
