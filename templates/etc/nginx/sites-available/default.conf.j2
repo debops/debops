@@ -251,6 +251,12 @@
 
 {%         endfor                                                                   %}
 {%     endif                                                                        %}
+{%     if item.include_files_begin|d()                                 %}
+{%         for file in item.include_files_begin                        %}
+        include {{ file }};
+{%         endfor                                                      %}
+
+{%     endif                                                           %}
 {%     if item.error_pages_list|d()                                    %}
 {%         for element in item.error_pages_list                        %}
 {%             if element.location|d() or element.location_options|d() %}
@@ -385,6 +391,12 @@
 {%     endblock %}
 {%     block nginx_tpl_block_custom_locations %}
 {%     endblock %}
+{%     if item.include_files_end|d()                       %}
+
+{%         for file in item.include_files_end              %}
+        include {{ file }};
+{%         endfor                                          %}
+{%     endif                                               %}
 {% endif %}
 {% endmacro %}
 {#
