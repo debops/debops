@@ -57,6 +57,9 @@ to the ``[debops_service_volkszaehler_${webserver}]`` Ansible group in the inven
    [debops_service_volkszaehler_apache]
    hostname
 
+   [debops_service_mariadb_server]
+   hostname
+
    [debops_service_volkszaehler_nginx]
    hostname2
 

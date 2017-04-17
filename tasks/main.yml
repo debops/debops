@@ -4,7 +4,7 @@
 - name: Ensure specified packages are in there desired state
   package:
     name: '{{ item }}'
-    state: '{{ "present" if (volkszaehler__deploy_state == "present") else "absent" }}'
+    state: '{{ "present" if (volkszaehler__deploy_state in ["present"]) else "absent" }}'
   with_flattened:
     - '{{ volkszaehler__base_packages }}'
     - '{{ volkszaehler__optional_packages }}'
