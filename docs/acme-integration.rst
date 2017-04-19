@@ -196,7 +196,7 @@ Names`_), which does not include the ``example.com`` apex domain.
         acme_default_subdomains: []
         # Can also include different domains like 'mail.example.org'
         # in the same realm.
-        acme_domains: [ 'logs.example.com', 'mon.example.com' ]
+        acme_domains: [ 'mon.example.com' ]
         # acme_ca: 'le-staging'
 
 ACME configuration variables
