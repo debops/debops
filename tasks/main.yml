@@ -97,7 +97,8 @@
          (item.state is undefined or item.state != 'absent') and
          (ansible_local|d(True) and
           (ansible_local.gitlab_runner is undefined or
-           item.name not in ansible_local.gitlab_runner.instances)))
+           item.name not in ansible_local.gitlab_runner.instances)) and
+        (gitlab_runner__run_untagged|d()))
 
 - name: Generate gitlab-runner configuration file
   template:
