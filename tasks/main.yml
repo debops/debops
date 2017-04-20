@@ -24,10 +24,14 @@
     group: 'root'
     mode: '0644'
 
+- name: Get list of groups
+  command: cut -d ":" -f 1 /etc/group
+  register: libvirt__register_groups
+
 - name: Add administrators to libvirt system group
   user:
     name: '{{ item }}'
-    groups: '{{ libvirtd__group_map[ansible_distribution] }}'
+    groups: "{{ libvirt__register_groups.stdout.split('\n') | intersect(libvirtd__group_map) | join(',') }}"
     append: True
   with_items: '{{ libvirtd__admins }}'
   when: libvirtd__admins|d()
