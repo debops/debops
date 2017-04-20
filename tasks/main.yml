@@ -27,7 +27,9 @@
 - name: Get list of groups
   command: cut -d ":" -f 1 /etc/group
   register: libvirt__register_groups
-
+  changed_when: False
+  always_run: True
+  
 - name: Add administrators to libvirt system group
   user:
     name: '{{ item }}'
