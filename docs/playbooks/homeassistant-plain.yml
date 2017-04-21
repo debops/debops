@@ -1,0 +1,14 @@
+---
+
+- name: Setup and manage Home Assistant
+  hosts: [ 'debops_service_homeassistant' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops-contrib.homeassistant
+      tags: [ 'role::homeassistant' ]
