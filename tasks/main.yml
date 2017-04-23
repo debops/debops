@@ -1,4 +1,5 @@
 ---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
 
 - name: Ensure specified packages are in there desired state
   package:
@@ -44,20 +45,23 @@
     name: '.'
     chdir: '{{ homeassistant__git_dest }}'
     executable: 'pip3'
-    extra_args: '--user'
+    extra_args: '--user --upgrade'
   become: True
   become_user: '{{ homeassistant__user }}'
   when: homeassistant__virtualenv == False and homeassistant__register_git|changed
+  notify: [ 'Restart Home Assistant' ]
 
 - name: Install hass in virtualenv
   pip:
     name: '.'
+    chdir: '{{ homeassistant__git_dest }}'
+    extra_args: '--upgrade'
     virtualenv: '{{ homeassistant__virtualenv_path }}'
     virtualenv_python: 'python3'
-    chdir: '{{ homeassistant__git_dest }}'
   become: True
   become_user: '{{ homeassistant__user }}'
   when: homeassistant__virtualenv == True
+  notify: [ 'Restart Home Assistant' ]
 
 - name: Ensure Home Assistant config dir exists
   file:
