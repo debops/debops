@@ -5,7 +5,7 @@
 
 [![Travis CI](https://img.shields.io/travis/debops-contrib/ansible-volkszaehler.svg?style=flat)](https://travis-ci.org/debops-contrib/ansible-volkszaehler)
 [![test-suite](https://img.shields.io/badge/test--suite-ansible--volkszaehler-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-volkszaehler/)
-[![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops--contrib.volkszaehler-660198.svg?style=flat)](https://galaxy.ansible.com/ypid/volkszaehler)
+[![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops--contrib.volkszaehler-660198.svg?style=flat)](https://galaxy.ansible.com/debops-contrib/volkszaehler)
 
 
 The `debops-contrib.volkszaehler` role allows to setup your own [volkszaehler.org] instance.
@@ -28,6 +28,9 @@ More information about `debops-contrib.volkszaehler` can be found in the
 [official debops-contrib.volkszaehler documentation](https://debops-contrib.readthedocs.io/en/latest/ansible/roles/ansible-volkszaehler/docs/).
 
 
+### Role dependencies
+
+- `debops.secret`
 
 ### Are you using this as a standalone role without DebOps?
 
