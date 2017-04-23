@@ -60,7 +60,7 @@
     virtualenv_python: 'python3'
   become: True
   become_user: '{{ homeassistant__user }}'
-  when: homeassistant__virtualenv == True
+  when: homeassistant__virtualenv == True and homeassistant__register_git|changed
   notify: [ 'Restart Home Assistant' ]
 
 - name: Ensure Home Assistant config dir exists
