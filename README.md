@@ -5,7 +5,7 @@
 
 [![Travis CI](https://img.shields.io/travis/debops-contrib/ansible-homeassistant.svg?style=flat)](https://travis-ci.org/debops-contrib/ansible-homeassistant)
 [![test-suite](https://img.shields.io/badge/test--suite-ansible--homeassistant-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-homeassistant/)
-[![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops--contrib.homeassistant-660198.svg?style=flat)](https://galaxy.ansible.com/ypid/homeassistant)
+[![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops--contrib.homeassistant-660198.svg?style=flat)](https://galaxy.ansible.com/debops-contrib/homeassistant)
 
 
 The `debops-contrib.homeassistant` role allows you to setup and manage
