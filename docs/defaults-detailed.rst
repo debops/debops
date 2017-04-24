@@ -230,3 +230,34 @@ respectively:
            - 'uri:https://{{ ansible_domain }}/'
            - 'dns:*.{{ ansible_domain }}'
            - 'dns:{{ ansible_domain }}'
+
+pki_authorities
+---------------
+
+The set of :envvar:`pki_authorities` lists can be used to define internal
+Certificate Authorities managed on an Ansible Controller.
+
+List of supported parameters (incomplete):
+
+``crl``
+  The CRL URL to include in certificates which can be used for certificate
+  status checking. The default is ``True`` which will result in ``http://\$name.\$domain_suffix/crl/``.
+  It can be set to ``False`` to not include a CRL URL in certificates.
+  Any other value (not matching :regexp:`^(?:[Tt]rue|[Ff]alse)$`) will be included as is as CRL URL.
+
+``ocsp``
+  The OCSP URL to include in certificates which can be used for certificate
+  status checking. The default is ``True`` which will result in ``http://\$name.\$domain_suffix/ocsp/``.
+  It can be set to ``False`` to not include a OCSP URL in certificates.
+  Any other value (not matching :regexp:`^(?:[Tt]rue|[Ff]alse)$`) will be included as is as OCSP URL.
+
+``name_constraints``
+  The X.509 Name Constraints certificate extension to include in certificates
+  which will be used during certificate verification to ensure that the CA is
+  authorized to issue a certificate for the name in question.
+  The extension is set to critical which REQUIRES X.509 libraries to support it or to return an error.
+  This is done following common recommendations
+  (ref: `Which properties of a X.509 certificate should be critical and which not? <https://security.stackexchange.com/questions/30974/which-properties-of-a-x-509-certificate-should-be-critical-and-which-not>`_).
+  The default is ``True`` which will result in ``critical, permitted;DNS:${config_domain}``.
+  It can be set to ``False`` to not include X.509 Name Constraints in certificates.
+  Any other value (not matching :regexp:`^(?:[Tt]rue|[Ff]alse)$`) will be included as is as X.509 Name Constraint.
