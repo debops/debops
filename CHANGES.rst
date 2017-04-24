@@ -25,12 +25,13 @@ Added
 - Support to change or disable CRL and OCSP for PKI authorities using
   ``item.crl`` and ``item.ocsp``. [ypid_]
 
-- Use X509v3 name constraints to limit PKI authorities to ``item.domain``.
-  This greatly reduces the damage that a compromised PKI authorities could do
+- Use X509v3 name constraints to limit PKI authorities to ``item.domain`` by default.
+  This greatly reduces the damage that a compromised PKI authority could do
   (which is trusted by the cluster by default).
   Previously, any CA managed by ``debops.pki`` could happily issue certificates
   for any domain and clients would accept them which is probably not what you want.
   Use ``item.name_constraints`` if you want to change the default.
+  Note that this new default is only effective for newly created root CAs.
   Refer to `A Web PKI x509 certificate primer <https://developer.mozilla.org/en-US/docs/Mozilla/Security/x509_Certificates>`_
   for details. [ypid_]
 
