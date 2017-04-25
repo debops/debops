@@ -23,3 +23,7 @@ mail_location = {{ dovecot_mail_location }}
 namespace inbox {
   inbox = yes
 }
+{% if dovecot_mail_dotlock is defined and not dovecot_mail_dotlock %}
+dotlock_use_excl = no
+mbox_write_locks = fcntl
+{% endif %}
