@@ -31,7 +31,7 @@ Added
   Previously, any CA managed by ``debops.pki`` could happily issue certificates
   for any domain and clients would accept them which is probably not what you want.
   Use ``item.name_constraints`` if you want to change the default.
-  Note that this new default is only effective for newly created root CAs.
+  Note that this new default is only effective for newly created CAs.
   Refer to `A Web PKI x509 certificate primer <https://developer.mozilla.org/en-US/docs/Mozilla/Security/x509_Certificates>`_
   for details. [ypid_]
 
