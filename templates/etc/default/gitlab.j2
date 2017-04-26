@@ -32,13 +32,6 @@ web_server_pid_path="$pid_path/unicorn.pid"
 # The default is "$pid_path/sidekiq.pid"
 sidekiq_pid_path="$pid_path/sidekiq.pid"
 
-# Used in GitLab 8+
-gitlab_git_http_server_pid_path="$pid_path/gitlab-git-http-server.pid"
-gitlab_git_http_server_options="-listenUmask 0 -listenNetwork unix -listenAddr $socket_path/gitlab-git-http-server.socket -authBackend http://127.0.0.1:{{ gitlab_unicorn_port | default('8080') }}"
-gitlab_git_http_server_repo_root="{{ gitlab_repositories_path }}"
-gitlab_git_http_server_log="$app_root/log/gitlab-git-http-server.log"
-
-# Used in GitLab 8.2+
 gitlab_workhorse_dir=$(cd $app_root/../gitlab-workhorse && pwd)
 gitlab_workhorse_pid_path="$pid_path/gitlab-workhorse.pid"
 gitlab_workhorse_options="-listenUmask 0 -listenNetwork unix -listenAddr $socket_path/gitlab-workhorse.socket -authBackend http://127.0.0.1:{{ gitlab_unicorn_port | default('8080') }} -authSocket $socket_path/gitlab.socket -documentRoot $app_root/public"
