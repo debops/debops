@@ -59,21 +59,6 @@ gitlab_use_systemd: '{{ (ansible_local.gitlab.systemd_services
                                else (True if ansible_service_mgr == "systemd" else False))) }}'
 
                                                                    # ]]]
-# .. envvar:: gitlab_enable_git_http_server [[[
-#
-# In GitLab 8.0 and newer there is separate server for :command:`git`.
-gitlab_enable_git_http_server: '{{ gitlab_version | version_compare("8.0",
-                                   operator="ge", strict=True) and
-                                   not gitlab_enable_gitlab_workhorse | bool }}'
-
-                                                                   # ]]]
-# .. envvar:: gitlab_enable_gitlab_workhorse [[[
-#
-# In GitLab 8.2 and newer, ``gitlab-workhorse`` replaces ``gitlab-git-http-server``
-gitlab_enable_gitlab_workhorse: '{{ gitlab_version | version_compare("8.2",
-                                    operator="ge", strict=True) }}'
-
-                                                                   # ]]]
 # .. envvar:: gitlab_enable_pages [[[
 #
 # Whether to enable ``gitlab-pages``. Available in Gitlab 8.17 and newer.
@@ -157,7 +142,7 @@ gitlab_nginx_access_policy: ''
 # .. envvar:: gitlab_nginx_client_max_body_size [[[
 #
 # nginx client_max_body_size value.
-gitlab_nginx_client_max_body_size: '{% if gitlab_enable_gitlab_workhorse %}0{% else %}5m{% endif %}'
+gitlab_nginx_client_max_body_size: '0'
 
                                                                    # ]]]
 # .. envvar:: gitlab_nginx_proxy_timeout [[[
@@ -484,72 +469,6 @@ gitlab_support_filesystem_acl: True
 # respecive branches and/or tags in the :command:`git` repositories of various
 # GitLab components.
 gitlab_version_map:
-
-  '6.7':
-    shell: 'v1.9.1'
-    ce:    '6-7-stable'
-
-  '6.8':
-    shell: 'v1.9.3'
-    ce:    '6-8-stable'
-
-  '6.9':
-    shell: 'v1.9.4'
-    ce:    '6-9-stable'
-
-  '7.0':
-    shell: 'v1.9.6'
-    ce:    '7-0-stable'
-
-  '7.1':
-    shell: 'v1.9.6'
-    ce:    '7-1-stable'
-
-  '7.6':
-    shell: 'v2.4.0'
-    ce:    '7-6-stable'
-
-  '7.7':
-    shell: 'v2.4.1'
-    ce:    '7-7-stable'
-
-  '7.8':
-    shell: 'v2.5.4'
-    ce:    '7-8-stable'
-
-  '7.9':
-    shell: 'v2.6.0'
-    ce:    '7-9-stable'
-
-  '7.10':
-    shell: 'v2.6.2'
-    ce:    '7-10-stable'
-
-  '7.11':
-    shell: 'v2.6.3'
-    ce:    '7-11-stable'
-
-  '7.12':
-    shell: 'v2.6.3'
-    ce:    '7-12-stable'
-
-  '7.13':
-    shell: 'v2.6.5'
-    ce:    '7-13-stable'
-
-  '7.14':
-    shell: 'v2.6.5'
-    ce:    '7-14-stable'
-
-  '8.0':
-    shell: 'v2.6.5'
-    ce:    '8-0-stable'
-    git_http_server: '0.2.10'
-
-  '8.1':
-    shell: 'v2.6.5'
-    ce:    '8-1-stable'
-    git_http_server: '0.3.0'
 
   '8.5':
     shell: 'v2.6.10'
@@ -943,21 +862,9 @@ gitlab__postgresql__dependent_pgpass:
 # List of :command:`nginx` upstreams for the debops.nginx_ Ansible role.
 gitlab__nginx__dependent_upstreams:
 
-  # Upstream configuration for the ``gitlab-unicorn`` service
-  - name: 'gitlab'
-    type: 'rails'
-    server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab.socket'
-    enabled: '{{ not gitlab_enable_gitlab_workhorse | bool }}'
-
-  # Upstream configuration for the ``gitlab-git-http-server`` used in GitLab 8+
-  - name: 'gitlab-git-http-server'
-    server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab-git-http-server.socket'
-    enabled: '{{ gitlab_enable_git_http_server }}'
-
   # Upstream configuration for the ``gitlab-workhorse`` used in GitLab 8.2+
   - name: 'gitlab-workhorse'
     server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab-workhorse.socket'
-    enabled: '{{ gitlab_enable_gitlab_workhorse }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__nginx__dependent_servers [[[
@@ -1001,66 +908,6 @@ gitlab__nginx_server:
 
   location_list:
     - pattern: '/'
-      enabled: '{{ not gitlab_enable_gitlab_workhorse | bool }}'
-      options: |
-        try_files $uri $uri/index.html $uri.html @gitlab;
-
-    - pattern: '/uploads/'
-      enabled: '{{ not gitlab_enable_gitlab_workhorse | bool }}'
-      options: |
-        gzip off;
-        proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
-        proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
-        proxy_redirect     off;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-        proxy_set_header   Host              $http_host;
-        proxy_set_header   X-Real-IP         $remote_addr;
-        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Frame-Options   SAMEORIGIN;
-        proxy_pass         http://gitlab;
-
-    - pattern: '@gitlab'
-      enabled: '{{ not gitlab_enable_gitlab_workhorse | bool }}'
-      options: |
-        gzip off;
-        proxy_read_timeout {{ gitlab_nginx_proxy_timeout }};
-        proxy_connect_timeout {{ gitlab_nginx_proxy_timeout }};
-        proxy_redirect     off;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-        proxy_set_header   Host              $http_host;
-        proxy_set_header   X-Real-IP         $remote_addr;
-        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_pass         http://gitlab;
-
-    - pattern: '~ [-\/\w\.]+\.git\/'
-      enabled: '{{ gitlab_enable_git_http_server }}'
-      options: |
-        gzip off;
-
-        ## https://github.com/gitlabhq/gitlabhq/issues/694
-        ## Some requests take more than 30 seconds.
-        proxy_read_timeout      300;
-        proxy_connect_timeout   300;
-        proxy_redirect          off;
-
-        # Do not buffer Git HTTP responses
-        proxy_buffering off;
-
-        # The following settings only work with NGINX 1.7.11 or newer
-        #
-        # # Pass chunked request bodies to gitlab-git-http-server as-is
-        # proxy_request_buffering off;
-        # proxy_http_version 1.1;
-
-        proxy_set_header    Host                $http_host;
-        proxy_set_header    X-Real-IP           $remote_addr;
-        proxy_set_header    X-Forwarded-For     $proxy_add_x_forwarded_for;
-        proxy_set_header    X-Forwarded-Proto   $scheme;
-
-        proxy_pass http://gitlab-git-http-server;
-
-    - pattern: '/'
-      enabled: '{{ gitlab_enable_gitlab_workhorse }}'
       options: |
         client_max_body_size 0;
         gzip off;
@@ -1079,14 +926,6 @@ gitlab__nginx_server:
         proxy_set_header    X-Forwarded-Proto   $scheme;
 
         proxy_pass http://gitlab-workhorse;
-
-    - pattern: '~ ^/(assets)/'
-      enabled: '{{ not gitlab_enable_gitlab_workhorse | bool }}'
-      options: |
-        root {{ gitlab_ce_git_checkout }}/public;
-        gzip_static on;
-        expires max;
-        add_header Cache-Control public;
 
 # ]]]
 # .. envvar:: gitlab__nginx_pages_server [[[
