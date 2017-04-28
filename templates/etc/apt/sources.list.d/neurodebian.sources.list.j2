@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+{#
+# http://neuro.debian.net/ would normally autogenerate this file based on the
+# webconfigurator and a deterministic URL. But as this resource is not available
+# over HTTPS and to allow more flexiblity, the file is templated using Ansible and Jinja2.
+#}
+
+{% for source_type in neurodebian__apt_source_types %}
+{{ source_type }} {{ neurodebian__apt_mirror_uri }} data {{ neurodebian__apt_components | join(" ") }}
+{{ source_type }} {{ neurodebian__apt_mirror_uri }} {{ ansible_distribution_release | lower }} {{ neurodebian__apt_components | join(" ") }}
+{% endfor %}
