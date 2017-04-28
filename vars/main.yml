@@ -1,11 +1,15 @@
 ---
 
-# SaltStack Debian repository GPG key
-salt_debian_apt_key_url: 'http://debian.saltstack.com/debian-salt-team-joehealy.gpg.key'
-salt_debian_apt_key_id: 'B09E40B0F2AE6AB9'
+# SaltStack repository GPG key
+salt_apt_key_url:
+  Debian:  'http://debian.saltstack.com/debian-salt-team-joehealy.gpg.key'
+  Ubuntu: 'https://repo.saltstack.com/apt/ubuntu/{{ansible_distribution_version}}/amd64/latest/SALTSTACK-GPG-KEY.pub'
+salt_apt_key_id:
+  Debian: 'B09E40B0F2AE6AB9'
+  Ubuntu: '0E08A149DE57BFBE'
 
 # Salt upstream repositories to configure
 salt_upstream_repository:
   Debian: 'deb http://debian.saltstack.com/debian {{ ansible_distribution_release.split("/")[0] + "-saltstack" }} main'
-  Ubuntu: 'ppa:saltstack/salt'
+  Ubuntu: 'deb http://repo.saltstack.com/apt/ubuntu/{{ansible_distribution_version}}/amd64/latest {{ansible_distribution_release}} main'
 

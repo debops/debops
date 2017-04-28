@@ -2,10 +2,9 @@
 
 - name: Add SaltStack repository key
   apt_key:
-    url: '{{ salt_debian_apt_key_url }}'
-    id: '{{ salt_debian_apt_key_id }}'
+    url: '{{ salt_apt_key_url[ansible_distribution] }}'
+    id: '{{ salt_apt_key_id[ansible_distribution] }}'
     state: 'present'
-  when: ansible_distribution in [ 'Debian' ]
 
 - name: Configure SaltStack repository
   apt_repository:
@@ -18,7 +17,7 @@
     name: '{{ item }}'
     state: 'latest'
     install_recommends: False
-  with_items: salt_packages
+  with_items: '{{ salt_packages }}'
 
 - name: Configure Salt master using Ansible
   template:
