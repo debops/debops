@@ -86,7 +86,7 @@ key can be anything, but it's best to specify the TCP port the listener will be
 configured on, for consistency. The value of the dictionary is another YAML
 dictionary, with keys being the :command:`mosquitto` configuration options, and
 values being the option values; the format is similar to the one used in the
-:ref:`mosquitto__options` configuration. You can find the possible
+:ref:`mosquitto__ref_options` configuration. You can find the possible
 configuration options and their meaning in the ``LISTENERS`` section of the
 :manpage:`mosquitto.conf(5)` manual page.
 
@@ -142,7 +142,7 @@ should be a short name of the bridge; it can also be specified as the
 ``connection`` parameter. The value of the dictionary is another YAML
 dictionary, with keys being the :command:`mosquitto` configuration options, and
 values being the option values; the format is similar to the one used in the
-:ref:`mosquitto__options` configuration. You can find the possible
+:ref:`mosquitto__ref_options` configuration. You can find the possible
 configuration options and their meaning in the ``CONFIGURING BRIDGES`` section
 of the :manpage:`mosquitto.conf(5)` manual page.
 
