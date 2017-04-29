@@ -108,7 +108,7 @@ by Mosquitto, but are used to configure Avahi services (see
 
 ``avahi_type``
   Required for Avahi support. The string that specifies the service type, for
-  example ``_mqtt._tcp`.
+  example ``_mqtt._tcp``.
 
 ``avahi_port``
   Required for Avahi support. The port number the service is listening for
