@@ -92,6 +92,9 @@ Added
 - Add the ``debops.avahi`` Ansible role with its corresponding playbook.
   [drybjed_]
 
+- Add the ``debops.mosquitto`` Ansible role and its corresponding playbooks.
+  [drybjed_]
+
 Changed
 ~~~~~~~
 
