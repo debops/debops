@@ -64,7 +64,7 @@ If the Avahi support managed by the ``debops.avahi`` Ansible role is detected,
 the ``debops.mosquitto`` role will automatically create Avahi service entries
 for the configured listeners. The Avahi configuration is managed by the
 ``avahi_*`` parameters in the listener configuration, see
-:ref:`mosquitto__ref_listeneres` for more details.
+:ref:`mosquitto__ref_listeners` for more details.
 
 
 Example inventory
