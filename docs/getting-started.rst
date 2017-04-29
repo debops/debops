@@ -60,7 +60,7 @@ supports batch password creation.
 Avahi CNAME (alias) support
 ---------------------------
 
-If the Avahi support managed by the debops.avahi_ Ansible role is detected,
+If the Avahi support managed by the ``debops.avahi`` Ansible role is detected,
 the ``debops.mosquitto`` role will automatically create Avahi service entries
 for the configured listeners. The Avahi configuration is managed by the
 ``avahi_*`` parameters in the listener configuration, see
