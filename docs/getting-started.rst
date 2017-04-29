@@ -44,7 +44,7 @@ User accounts, ACL, password creation
 -------------------------------------
 
 For better security, you should configure some user accounts (see
-:ref:`mosquitto__auth_users`) and ACL entries for the broker. When user
+:ref:`mosquitto__ref_auth_users`) and ACL entries for the broker. When user
 accounts are defined, the role will automatically block the anonymous access;
 this can be controlled using the :envvar:`mosquitto__allow_anonymous` variable.
 
