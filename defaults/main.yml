@@ -17,8 +17,10 @@
 #
 # If enabled, the role will install Mosquitto APT packages from the upstream
 # repository. On older OS releases, using the upstream package might enable
-# websocket support.
-mosquitto__upstream: False
+# websocket support. The upstream repository is enabled automatically on OS
+# releases with unsuitable Mosquitto version.
+mosquitto__upstream: '{{ True if ansible_distribution_release in
+                         [ "wheezy", "precise", "trusty" ] else False }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__upstream_key_id [[[
