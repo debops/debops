@@ -4,6 +4,20 @@ Getting started
 .. contents:: Sections
    :local:
 
+.. include:: includes/all.rst
+
+Support for backported Java versions
+------------------------------------
+
+The role will install OpenJDK 8 environment on Debian Jessie by default, using
+the backported packages from the ``jessie-backports`` repository. Backports are
+configured using debops.apt_ Ansible role; if the ``debops.java`` does not
+detect the debops.apt_ configuration, it will switch to the default JRE
+packages available for a given release. Remember to use the provided example
+playbook, which will configure APT preferences for the ``ca-certificates-java``
+package.
+
+
 Support for Oracle Java packages
 --------------------------------
 

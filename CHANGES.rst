@@ -25,6 +25,9 @@ Added
 
 - Allow configuration of Java alternatives. [pedroluislopez_]
 
+- Install OpenJDK 8 on Debian Jessie by default using packages provided via
+  Backports, if the Backports repository is configured. [drybjed_]
+
 Fixed
 ~~~~~
 

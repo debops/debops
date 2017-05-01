@@ -6,15 +6,42 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: includes/all.rst
 
 
+# Support for backported OpenJDK 8 environment [[[
+# ------------------------------------------------
+
+# .. envvar:: java__install_v8 [[[
+#
+# The role will install OpenJDK 8 on older OS releases that provide backported
+# packages. For this to work correctly, the host needs to have enabled
+# Backports repositories. See debops.apt_ role for more details.
+#
+# If the APT configuration is not detected, the role will install the default
+# Java packages for a given OS release.
+java__install_v8: '{{ True
+                      if ((ansible_local|d() and ansible_local.apt|d() and
+                           ansible_local.apt.configured|d()) and
+                          (ansible_distribution_release in java__v8_backported_releases))
+                      else False }}'
+
+                                                                   # ]]]
+# .. envvar:: java__v8_backported_releases [[[
+#
+# List of OS releases which provide OpenJDK 8 packages through Backports.
+java__v8_backported_releases: [ 'jessie' ]
+                                                                   # ]]]
+                                                                   # ]]]
 # Java APT packages [[[
 # ---------------------
 
 # .. envvar:: java__base_packages [[[
 #
 # List of default APT packages which should be installed for Java environment.
-java__base_packages: [ 'default-jre-headless', 'ca-certificates-java' ]
+java__base_packages: '{{ ([ "openjdk-8-jre-headless" ] if java__install_v8|bool else [ "default-jre-headless" ])
+                        + [ "ca-certificates-java" ] }}'
 
                                                                    # ]]]
 # .. envvar:: java__packages [[[
@@ -48,6 +75,21 @@ java__dependent_packages: []
 #
 # Set java alternatives.
 java__alternatives: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: java__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ Ansible role.
+java__apt_preferences__dependent_list:
+
+  - package: 'ca-certificates-java'
+    backports: [ 'jessie' ]
+    reason:  'Requied by OpenJDK 8 from Backports'
+    by_role: 'debops.java'
+    state:   '{{ "present" if java__install_v8|bool else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
