@@ -24,7 +24,7 @@ Support for Oracle Java packages
 To use the non-free Oracle Java packages, check the `JavaPackage <https://wiki.debian.org/JavaPackage>`_
 page on Debian Wiki to see how to build the proper APT packages with non-free
 Java. You will need to publish them in a local APT repository. After that, you
-can change the default Java package in ``java__base_packages`` list to your
+can change the default Java package in :envvar:`java__base_packages` list to your
 preferred version.
 
 

@@ -1,12 +1,14 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 **debops.java**
 
-This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
-and `human-readable changelog <http://keepachangelog.com/>`_.
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer is drybjed.
+The current role maintainer_ is drybjed_.
 
 
 `debops.java master`_ - unreleased
@@ -44,7 +46,7 @@ Added
 ~~~~~
 
 - Install ``ca-certificates-java`` package to keep system CA certificate store
-  and Java CA certificate store synchronized. [drybjed]
+  and Java CA certificate store synchronized. [drybjed_]
 
 
 debops.java v0.1.0 - 2016-07-18
@@ -53,11 +55,11 @@ debops.java v0.1.0 - 2016-07-18
 Added
 ~~~~~
 
-- Add documentation and Changelog. [drybjed]
+- Add documentation and Changelog. [drybjed_]
 
 Changed
 ~~~~~~~
 
 - Switch from installing specific version of OpenJDK to a Debian OpenJDK
   metapackage which installs the default headless version of OpenJRE for
-  current OS release. [drybjed]
+  current OS release. [drybjed_]
