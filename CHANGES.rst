@@ -162,6 +162,9 @@ Changed
 - The order of the NFS server/client roles has been moved to be earlier in the
   main playbook to allow for mounting of the NFS shares early. [drybjed_]
 
+- Update all playbooks that use the debops.java_ role with new
+  debops.apt_preferences_ role dependency. [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
