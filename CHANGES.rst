@@ -12,7 +12,24 @@ The current role maintainer is drybjed.
 `debops.java master`_ - unreleased
 ----------------------------------
 
-.. _debops.java master: https://github.com/debops/ansible-java/compare/v0.1.1...master
+.. _debops.java master: https://github.com/debops/ansible-java/compare/v0.2.0...master
+
+
+`debops.java v0.2.0`_ - 2017-05-01
+----------------------------------
+
+.. _debops.java v0.2.0: https://github.com/debops/ansible-java/compare/v0.1.1...v0.2.0
+
+Added
+~~~~~
+
+- Allow configuration of Java alternatives. [pedroluislopez_]
+
+Fixed
+~~~~~
+
+- Fix warning about wrong use of the ``{{ }}`` in ``when:`` conditions on newer
+  Ansible versions. [drybjed_]
 
 
 `debops.java v0.1.1`_ - 2017-01-25
