@@ -1,0 +1,14 @@
+---
+
+- name: Manage Salt Master service
+  hosts: [ 'debops_service_salt' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.salt
+      tags: [ 'role::salt' ]
