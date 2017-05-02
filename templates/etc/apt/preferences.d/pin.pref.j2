@@ -2,7 +2,7 @@
 {%   if item.role|d( item.by_role|d() ) %}
 Explanation: Pin added by role: {{ item.role | d(item.by_role) }}
 {%   endif %}
-Explanation: {{ item.reason | d('Reason not specified') }}
+Explanation: {{ (item.reason|d('Reason not specified')).split('\n') | join('\nExplanation: ') }}
 {%   if item.package|d() %}
 {%     if item.package is string %}
 Package: {{ item.package }}

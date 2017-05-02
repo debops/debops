@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed_
 
 .. _debops.apt_preferences master: https://github.com/debops/ansible-apt_preferences/compare/v0.2.3...master
 
+Added
+~~~~~
+
+- Support multiline ``item.reason``. Refer to :ref:`apt_preferences__list` for more details and examples.
+
 
 `debops.apt_preferences v0.2.3`_ - 2016-09-04
 ---------------------------------------------
