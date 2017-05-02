@@ -1,26 +1,25 @@
-# This file is managed remotely, all changes will be lost
+# {{ ansible_managed }}
 
 # The address of the interface to bind to
-interface: '{{ salt_interface }}'
+interface: '{{ salt__interface }}'
 
 # Whether the master should listen for IPv6 connections. If this is set to True,
 # the interface option must be adjusted too (for example: "interface: '::'")
-ipv6: {{ salt_ipv6 | bool }}
+ipv6: {{ salt__ipv6 | bool }}
 
-# The tcp port used by the publisher
-publish_port: {{ salt_publish_port }}
+# The TCP port used by the publisher
+publish_port: {{ salt__publish_port }}
 
 # The number of worker threads to start, these threads are used to manage
 # return calls made from minions to the master, if the master seems to be
 # running slowly, increase the number of threads
-worker_threads: {{ salt_worker_threads }}
+worker_threads: {{ salt__worker_threads }}
 
 # The port used by the communication interface. The ret (return) port is the
 # interface used for the file server, authentication, job returnes, etc.
-ret_port: {{ salt_return_port }}
+ret_port: {{ salt__return_port }}
 
-{% if salt_options is defined and salt_options %}
-# Custom options
-{{ salt_options }}
-
+{% if salt__options|d() %}
+# Custom Salt Master options
+{{ salt__custom_options }}
 {% endif %}
