@@ -31,15 +31,6 @@ kernel_module__security_list:
   - name: 'thunderbolt'
     blacklist: True
 
-  ## http://wiki.qemu.org/Features-Done/VirtIORNG
-  ## https://serverfault.com/questions/437798/is-it-possible-to-pass-dev-urandom-through-from-the-host-to-a-qemu-kvm-guest
-  - name: 'virtio_rng'
-    state: '{{ "present"
-               if (ansible_virtualization_role|d("guest") in [ "guest" ] and
-                   ansible_virtualization_type|d("unknown") in ["kvm"]
-               )
-               else "absent" }}'
-
                                                                    # ]]]
 # .. envvar:: kernel_module__common_list [[[
 #
