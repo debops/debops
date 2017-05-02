@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.apt_preferences master`_ - unreleased
 ---------------------------------------------
 
-.. _debops.apt_preferences master: https://github.com/debops/ansible-apt_preferences/compare/v0.2.3...master
+.. _debops.apt_preferences master: https://github.com/debops/ansible-apt_preferences/compare/v0.2.4...master
+
+
+`debops.apt_preferences v0.2.4`_ - 2017-05-02
+---------------------------------------------
+
+.. _debops.apt_preferences v0.2.4: https://github.com/debops/ansible-apt_preferences/compare/v0.2.3...v0.2.4
 
 Added
 ~~~~~
