@@ -16,6 +16,10 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.salt master: https://github.com/debops/ansible-salt/compare/v0.1.0...master
 
+
+debops.salt v0.1.0 - 2017-05-02
+-------------------------------
+
 Added
 ~~~~~
 
