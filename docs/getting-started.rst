@@ -80,10 +80,10 @@ Heartbeat package name conflict
 -------------------------------
 
 The Elasticsearch BV. APT repositories provide the ``heartbeat`` package, which
-installs the `Heartbeat <https://www.elastic.co/products/beats/heartbeat>`_
+installs the `Heartbeat <https://www.elastic.co/products/beats/heartbeat>`__
 uptime monitoring application.
 
-The Debian Archive contains the `heartbeat <https://packages.debian.org/search?keywords=heartbeat>`_
+The Debian Archive contains the `heartbeat <https://packages.debian.org/search?keywords=heartbeat>`__
 package which provides the ``heartbeat`` service which is a part of the
 `Linux High-Availability Stack <http://www.linux-ha.org/wiki/Main_Page>`_.
 
