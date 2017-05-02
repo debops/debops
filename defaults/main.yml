@@ -1,0 +1,97 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.elastic_co default variables [[[
+# =======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# APT repository configuration [[[
+# --------------------------------
+
+# .. envvar:: elastic_co__version [[[
+#
+# Specify the major version of the Elastic APT repository you wish to install.
+# The role will remember the selected version using Ansible local facts which
+# should ensure that in the future currently installed version of the APT
+# repository stays the same on a given host.
+elastic_co__version: '{{ ansible_local.elastic_co.version
+                         if (ansible_local|d() and ansible_local.elastic_co|d() and
+                             ansible_local.elastic_co.version|d())
+                         else "5.x" }}'
+
+                                                                   # ]]]
+# .. envvar:: elastic_co__key_id [[[
+#
+# The fingerprint of the APT repository GPG key to configure.
+elastic_co__key_id: '4609 5ACC 8548 582C 1A26 99A9 D27D 666C D88E 42B4'
+
+                                                                   # ]]]
+# .. envvar:: elastic_co__repository [[[
+#
+# APT repository entry to configure for Elasticsearch BV. repository.
+elastic_co__repository: 'deb https://artifacts.elastic.co/packages/{{ elastic_co__version }}/apt stable main'
+                                                                   # ]]]
+                                                                   # ]]]
+# Package overrides [[[
+# ---------------------
+
+# .. envvar:: elastic_co__heartbeat_override [[[
+#
+# Enable or disable APT preferences override for the ``heartbeat`` APT package.
+# See :ref:`elastic_co__ref_heartbeat_override` for more details.
+elastic_co__heartbeat_override: True
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: elastic_co__packages [[[
+#
+# List of Elastic APT packages to install on all hosts in the Ansible
+# inventory.
+elastic_co__packages: []
+
+                                                                   # ]]]
+# .. envvar:: elastic_co__group_packages [[[
+#
+# List of Elastic APT packages to install on hosts in specific Ansible
+# inventory group.
+elastic_co__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: elastic_co__host_packages [[[
+#
+# List of Elastic APT packages to install on specific hosts in the Ansible
+# inventory.
+elastic_co__host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: elastic_co__dependent_packages [[[
+#
+# List of Elastic APT packages requested for installation by other Ansible
+# roles through role dependent variables.
+elastic_co__dependent_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: elastic_co__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ Ansible role.
+elastic_co__apt_preferences__dependent_list:
+
+  - package: 'heartbeat'
+    pin: 'origin artifacts.elastic.co'
+    priority: '700'
+    reason: 'Conflicts with "heartbeat" package from OS archives'
+    by_role: 'debops.elastic_co'
+    state: '{{ "present" if elastic_co__heartbeat_override|bool else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

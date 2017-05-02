@@ -1,0 +1,49 @@
+---
+
+- name: Get Elastic APT GPG key
+  apt_key:
+    id: '{{ elastic_co__key_id | replace(" ","") }}'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+    state: 'present'
+
+- name: Configure Elastic APT repository
+  apt_repository:
+    repo: '{{ elastic_co__repository }}'
+    state: 'present'
+    update_cache: True
+
+- name: Install Elastic packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ elastic_co__packages }}'
+    - '{{ elastic_co__group_packages }}'
+    - '{{ elastic_co__host_packages }}'
+    - '{{ elastic_co__dependent_packages }}'
+  register: elastic_co__register_install
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Elastic local facts
+  template:
+    src: 'etc/ansible/facts.d/elastic_co.fact.j2'
+    dest: '/etc/ansible/facts.d/elastic_co.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: elastic_co__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: (elastic_co__register_facts|changed or
+         elastic_co__register_install|changed)
