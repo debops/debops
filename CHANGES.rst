@@ -168,6 +168,8 @@ Changed
 - Update all playbooks that use the debops.java_ role with new
   debops.apt_preferences_ role dependency. [drybjed_]
 
+- Update debops.salt_ playbook with new role dependencies. [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
