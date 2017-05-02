@@ -1,39 +1,43 @@
 ---
 
-- name: Add SaltStack repository key
+- name: Get upstream APT GPG key
   apt_key:
-    url: '{{ salt_apt_key_url[ansible_distribution] }}'
-    id: '{{ salt_apt_key_id[ansible_distribution] }}'
+    id: '{{ salt__upstream_apt_key_id | replace(" ","") }}'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
+  when: salt__upstream|bool
 
-- name: Configure SaltStack repository
+- name: Configure upstream APT repository
   apt_repository:
-    repo: '{{ salt_upstream_repository[ansible_distribution] }}'
+    repo: '{{ salt__upstream_apt_repo_map[ansible_distribution] }}'
     state: 'present'
     update_cache: True
+  when: salt__upstream|bool
 
-- name: Install Salt packages
-  apt:
+- name: Install Salt Master packages
+  package:
     name: '{{ item }}'
     state: 'latest'
-    install_recommends: False
-  with_items: '{{ salt_packages }}'
+  with_flattened:
+    - '{{ salt__base_packages }}'
+    - '{{ salt__packages }}'
 
-- name: Configure Salt master using Ansible
+- name: Configure Salt Master using Ansible
   template:
     src: 'etc/salt/master.d/ansible.conf.j2'
-    dest: '{{ salt_configuration_file }}'
+    dest: '{{ salt__configuration_file }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
   notify: [ 'Restart salt-master' ]
-  when: salt_configuration is defined and salt_configuration
+  when: salt__configuration|bool
 
-- name: Remove Salt master config file if disabled
+- name: Remove Salt Master configuration file if disabled
   file:
-    path: '{{ salt_configuration_file }}'
+    path: '{{ salt__configuration_file }}'
     state: 'absent'
   notify: [ 'Restart salt-master' ]
-  when: (salt_configuration is undefined or
-         (salt_configuration is defined and not salt_configuration))
-
+  when: not salt__configuration|bool

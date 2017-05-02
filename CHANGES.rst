@@ -20,3 +20,8 @@ Added
 ~~~~~
 
 - Add Changelog and update documentation. [drybjed_]
+
+- Update upstream APT repository configuration. [thiagotalma_, drybjed_]
+
+- Rename all variables from ``salt_*`` to ``salt__*`` to put them in a separate
+  namespace. [drybjed_]
