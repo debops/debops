@@ -98,7 +98,7 @@ neurodebian__apt_key_fingerprint: 'DD95CC430502E37EF840ACEEA5D32F012649A5A9'
 # APT pinning for packages from the NeuroDebian repository. By default (without
 # this pinning), both the official Debian repositories and NeuroDebian have the
 # same preference which would lead to APT picking the package with the highest
-# version of a package regardless from which packages comes from.
+# version regardless from which repository it comes from.
 # As NeuroDebian provides many additional packages along with more recent
 # versions of packages already available in official Debian releases, APT
 # pinning is used to ensure that package versions available in official Debian
@@ -108,7 +108,10 @@ neurodebian__apt_key_fingerprint: 'DD95CC430502E37EF840ACEEA5D32F012649A5A9'
 neurodebian__apt_preferences__dependent_list:
 
   - package: '*'
-    reason: 'FIXME'
+    reason: |-
+      Pin NeuroDebian with priority 80 which is lower then the official Debian backports (100).
+      This also works when `apt_preferences__preset_list` is set which increases
+      Debian backports to 400 and decreases Debian testing to 50.
     by_role: 'debops.neurodebian'
     pin: 'release o=NeuroDebian'
     priority: '80'

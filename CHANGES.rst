@@ -13,7 +13,13 @@ and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 The current role maintainer_ is ypid_.
 
 
-debops-contrib.neurodebian v0.1.0 - unreleased
+`debops-contrib.neurodebian master`_ - unreleased
+-------------------------------------------------
+
+.. _debops-contrib.neurodebian master: https://github.com/debops-contrib/ansible-neurodebian/compare/v0.1.0...master
+
+
+debops-contrib.neurodebian v0.1.0 - 2017-05-02
 ----------------------------------------------
 
 Added
