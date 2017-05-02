@@ -25,9 +25,14 @@ Added
 
 - Add Changelog and update documentation. [drybjed_]
 
+Changed
+~~~~~~~
+
 - Update upstream APT repository configuration. [thiagotalma_, drybjed_]
 
 - Rename all variables from ``salt_*`` to ``salt__*`` to put them in a separate
   namespace. [drybjed_]
 
 - Move role dependencies to the Ansible playbook. [drybjed_]
+
+- Enable upstream APT repository on older OS releases. [drybjed_]

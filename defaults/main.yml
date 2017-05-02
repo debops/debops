@@ -16,7 +16,10 @@
 # .. envvar:: salt__upstream [[[
 #
 # Enable or disable upstream APT repository.
-salt__upstream: False
+salt__upstream: '{{ True
+                    if (ansible_distribution_release in
+                        [ "precise", "trusty", "wheezy" ])
+                    else False }}'
 
                                                                    # ]]]
 # .. envvar:: salt__upstream_branch [[[
