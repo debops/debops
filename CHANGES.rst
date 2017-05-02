@@ -95,6 +95,9 @@ Added
 - Add the ``debops.mosquitto`` Ansible role and its corresponding playbooks.
   [drybjed_]
 
+- Add the ``debops.elastic_co`` Ansible role and its corresponding playbook.
+  [drybjed_]
+
 Changed
 ~~~~~~~
 
