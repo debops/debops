@@ -8,13 +8,24 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer_ is drybjed_
+The current role maintainer_ is drybjed_.
 
 
 `debops.apt_preferences master`_ - unreleased
 ---------------------------------------------
 
-.. _debops.apt_preferences master: https://github.com/debops/ansible-apt_preferences/compare/v0.2.3...master
+.. _debops.apt_preferences master: https://github.com/debops/ansible-apt_preferences/compare/v0.2.4...master
+
+
+`debops.apt_preferences v0.2.4`_ - 2017-05-02
+---------------------------------------------
+
+.. _debops.apt_preferences v0.2.4: https://github.com/debops/ansible-apt_preferences/compare/v0.2.3...v0.2.4
+
+Added
+~~~~~
+
+- Support multiline ``item.reason``. Refer to :ref:`apt_preferences__list` for more details and examples.
 
 
 `debops.apt_preferences v0.2.3`_ - 2016-09-04
@@ -71,7 +82,7 @@ Changed
 Added
 ~~~~~
 
-- Added ``apt_preferences__preset_list`` for advanced users. [ypid_]
+- Added :envvar:`apt_preferences__preset_list` for advanced users. [ypid_]
 
 Changed
 ~~~~~~~

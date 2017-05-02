@@ -46,6 +46,7 @@ dictionary. Supported parameters:
 ``reason``
   A short description explaining the reason for a pin. Might be used to point
   the admin to useful documentation explaining why a particular pin is defined.
+  Multi-line strings are handled properly by prepending each line by ``Explanation:``.
 
 ``filename``
   Name of the generated file with pin preferences, saved in
@@ -95,6 +96,10 @@ Ensure that Perl 5.10 is installed on the system:
 
    apt_preferences__list:
      - package: 'perl'
+       reason: |-
+         Ensure that Perl 5.10 is installed on the system.
+         Any other Perl version breaks our legacy code!!! ;-)
+         (Just an example for a multiline explanation).
        version: '5.10'
 
 Prefer packages from a specific site:
