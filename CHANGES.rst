@@ -8,7 +8,7 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer_ is drybjed_
+The current role maintainer_ is drybjed_.
 
 
 `debops.apt_preferences master`_ - unreleased
@@ -76,7 +76,7 @@ Changed
 Added
 ~~~~~
 
-- Added ``apt_preferences__preset_list`` for advanced users. [ypid_]
+- Added :envvar:`apt_preferences__preset_list` for advanced users. [ypid_]
 
 Changed
 ~~~~~~~
