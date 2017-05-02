@@ -137,4 +137,33 @@ salt__worker_threads: '{{ ansible_processor_vcpus }}'
 salt__custom_options: ''
                                                                    # ]]]
                                                                    # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: salt__etc_services__dependent_list [[[
+#
+# Configuration for the debops.etc_services_ Ansible role.
+salt__etc_services__dependent_list:
+
+  - name: 'salt-publish'
+    port: '{{ salt__publish_port }}'
+    comment: 'Salt Master (publish)'
+
+  - name: 'salt-return'
+    port: '{{ salt__return_port }}'
+    comment: 'Salt Master (return)'
+
+                                                                   # ]]]
+# .. envvar:: salt__ferm__dependent_rules [[[
+#
+# Configuration for the debops.ferm_ Ansible role.
+salt__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'salt-publish', 'salt-return' ]
+    saddr: '{{ salt__allow }}'
+    accept_any: True
+    name: 'salt_accept'
+                                                                   # ]]]
+                                                                   # ]]]
                                                                    # ]]]

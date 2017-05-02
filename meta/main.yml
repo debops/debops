@@ -1,28 +1,6 @@
 ---
 
-dependencies:
-
-  - role: debops.etc_services
-    etc_services_dependent_list:
-
-      - name: 'salt-publish'
-        port: '{{ salt__publish_port }}'
-        comment: 'Salt Master (publish)'
-
-      - name: 'salt-return'
-        port: '{{ salt__return_port }}'
-        comment: 'Salt Master (return)'
-
-  - role: debops.ferm
-    ferm_input_list:
-
-      - type: 'dport_accept'
-        dport: [ 'salt-publish', 'salt-return' ]
-        saddr: '{{ salt__allow }}'
-        accept_any: True
-        filename: 'salt_dependency_accept'
-        weight: '20'
-
+dependencies: []
 
 galaxy_info:
   author: 'Maciej Delmanowski'

@@ -25,3 +25,5 @@ Added
 
 - Rename all variables from ``salt_*`` to ``salt__*`` to put them in a separate
   namespace. [drybjed_]
+
+- Move role dependencies to the Ansible playbook. [drybjed_]
