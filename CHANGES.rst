@@ -36,3 +36,5 @@ Changed
 - Move role dependencies to the Ansible playbook. [drybjed_]
 
 - Enable upstream APT repository on older OS releases. [drybjed_]
+
+- Install backported version by default on Debian Jessie. [drybjed_]

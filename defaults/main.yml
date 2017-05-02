@@ -143,6 +143,18 @@ salt__custom_options: ''
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: salt__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ Ansible role.
+salt__apt_preferences__dependent_list:
+
+  - packages:  [ 'salt-*', 'python-tornado' ]
+    backports: [ 'jessie' ]
+    reason: 'Newer Salt features available in backported packages'
+    by_role: 'debops.salt'
+    state: '{{ "absent" if salt__upstream|bool else "present" }}'
+
+                                                                   # ]]]
 # .. envvar:: salt__etc_services__dependent_list [[[
 #
 # Configuration for the debops.etc_services_ Ansible role.
