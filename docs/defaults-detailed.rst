@@ -89,7 +89,7 @@ Ubuntu hosts:
 
 .. code-block:: yaml
 
-   bootstrap__admin_accounts:
+   bootstrap__admin_users:
 
      - name: 'ansible'
 
