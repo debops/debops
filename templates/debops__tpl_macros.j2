@@ -118,29 +118,52 @@
 
 {%  macro merge_dict(current_dict, to_merge_dict, dict_key='name') %}{# [[[ #}
 {#
-## Recursively merges nested dictionaries.
+## Recursively merges nested dictionaries or a nested dictionary with a list of
+## dictionaries. In the second case, a key name can be given whose value will
+## be used as top-level key for the dictionary item. Note that for merging simple
+## dictionaries you should use the regular `combined` Jinja filter.
 ##
-## Note that for simple dictionaries you must use the `combined` filter.
+## This can be used to define default variables as YAML dictionaries and then
+## use YAML lists of dictionaries either in the inventory or in role dependent
+## variables which lets you add multiple YAML lists together.
 ##
 ## Arguments:
-##   current_dict: Nested dictionary whose values might get overwritten if defined
-##                 in to_merge_dict.
-##   to_merge_dict: Dictionary or list of dictionaries being merged into current_dict.
-##   dict_key:
+##   current_dict:   Nested dictionary whose values might get overwritten if
+##                   defined in `to_merge_dict`.
+##   to_merge_dict:  Dictionary or list of dictionaries being merged into `current_dict`.
+##   dict_key:       Key in the `to_merge_dict` item which is used to match the
+##                   dictionary item being merged in `current_dict` in case `to_merge_dict`
+##                   is a list of dictionaries.
 ##
 ## Return: JSON-formatted dictionary
 ##
 ## Examples:
 ##
-## 1. Single nesting:
-##     {{ debops__tmpl_macros.merge_dict({'foo': {'A': 1, 'B': 2}, 'bar': {'C': 3, 'D': 4}}, {'foo': {'B': 3, 'C': 4}, 'bar': {'E': 5}}, '') }}
+## 1. Merge single-nested dictionaries:
+##     {{ debops__tmpl_macros.merge_dict({'item1': {'key1': 'val1', 'key2': 'val2'},
+##                                        'item2': {'key3': 'val3', 'key4': 'val4'}},
+##                                       {'item1': {'key2': 'new_val2'},
+##                                        'item2': {'key5': 'val5'    }}) }}
 ##
-##     Will output: {"foo": {"A": 1, "B": 3, "C": 4}, "bar": {"C": 3, "D": 4, "E": 5}}
+##     Will output: {"item1": {"key1": "val1", "key2": "new_val2"},
+##                   "item2": {"key3": "val3", "key4": "val4", "key5": "val5"}}
 ##
-## 2. Double nesting:
-##     {{ debops__tmpl_macros.merge_dict({'key1': {'key1.1': {'A': 1}}}, {'key1': {'key1.2': {'B': 2}}}, '') }}
+## 2. Merge double-nested dictionaries:
+##     {{ debops__tmpl_macros.merge_dict({'item1': {'prop1': {'key1': 'val1'}}},
+##                                       {'item1': {'prop1': {'key3': 'val3'},
+##                                                  'prop2': {'key2': 'val2'}}}) }}
 ##
-##     Will output: {"key1": {"key1.1": {"A": 1}, "key1.2": {"B": 2}}}
+##     Will output: {"item1": {"prop1": {"key1": "val1", "key3": "val3"},
+##                             "prop2": {"key2": "val2"}}}
+##
+## 3. Merge nested dictionary with list of dictionaries:
+##     {{ debops__tmpl_macros.merge_dict({'item1': {'key1': 'val1', 'key2': 'val2'}},
+##                                       [{'name': 'item2', 'key3': 'val3'},
+##                                        {'name': 'item3', 'key4': 'val4'}]) }}
+##
+##     Will output: {"item1: {"key1": "val1", "key2": "val2"},
+##                   "item2: {"name": "item2", "key3": "val3"},
+##                   "item3: {"name": "item3", "key4": "val4"}}
 #}
 {%   set merged_dict = current_dict %}
 {%   if to_merge_dict %}
