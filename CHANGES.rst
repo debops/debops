@@ -8,7 +8,7 @@ Changelog
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-The current role maintainer_ is drybjed.
+The current role maintainer_ is drybjed_.
 
 
 `debops.resources master`_ - unreleased
@@ -33,10 +33,16 @@ Added
 
 - Add support for cloning or updating :command:`git` repositories. [drybjed_]
 
+Changed
+~~~~~~~
+
+- Update documentation, clean up default RST syntax and folds. [drybjed_]
+
 Fixed
 ~~~~~
 
 - Don’t require ``item.src`` or ``item.content`` to delete files. [ypid_]
+
 
 debops.resources v0.1.0 - 2016-06-21
 ------------------------------------

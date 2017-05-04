@@ -74,7 +74,7 @@ resources__repositories
 -----------------------
 
 These lists can be used to clone or update remote :command:`git` repositories.
-You can use all parameters of the ``git`` Ansible module to manage the
+You can use all parameters of the :command:`git` Ansible module to manage the
 repositories, with some exceptions. The role recognizes these additional
 parameters:
 
@@ -85,7 +85,7 @@ parameters:
   Required. Path where the specified repository should be cloned to.
 
 ``_update``
-  Optional, boolean. This is a replacement of the ``update`` ``git`` module
+  Optional, boolean. This is a replacement of the ``update`` :command:`git` module
   parameter, due to the string being a reserved word in Python. You can use
   this to enable or disable repository update.
 
