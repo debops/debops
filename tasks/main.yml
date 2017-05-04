@@ -118,8 +118,6 @@
     owner:      '{{ item.owner      | d(omit) }}'
     group:      '{{ item.group      | d(omit) }}'
     mode:       '{{ item.mode       | d(omit) }}'
-    # Different syntax required due to https://github.com/ansible/ansible-modules-core/issues/3996
-    copy:       '{{ item["copy"]    | d(omit) }}'
     selevel:    '{{ item.selevel    | d(omit) }}'
     serole:     '{{ item.serole     | d(omit) }}'
     setype:     '{{ item.setype     | d(omit) }}'
@@ -128,6 +126,11 @@
     exclude:    '{{ item.exclude    | d(omit) }}'
     keep_newer: '{{ item.keep_newer | d(omit) }}'
     extra_opts: '{{ item.extra_opts | d(omit) }}'
+    attributes: '{{ item.attributes | d(omit) }}'
+    list_files: '{{ item.list_files | d(omit) }}'
+    remote_src: '{{ item.remote_src | d(omit) }}'
+    unsafe_writes: '{{ item.unsafe_writes | d(omit) }}'
+    validate_certs: '{{ item.validate_certs | d(omit) }}'
   with_flattened:
     - '{{ resources__archives }}'
     - '{{ resources__group_archives }}'

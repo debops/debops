@@ -14,13 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.resources master`_ - unreleased
 ---------------------------------------
 
-.. _debops.resources master: https://github.com/debops/ansible-resources/compare/v0.1.1...master
+.. _debops.resources master: https://github.com/debops/ansible-resources/compare/v0.2.0...master
 
 
-`debops.resources v0.1.1`_ - 2017-05-04
+`debops.resources v0.2.0`_ - 2017-05-04
 ---------------------------------------
 
-.. _debops.resources v0.1.1: https://github.com/debops/ansible-resources/compare/v0.1.0...v0.1.1
+.. _debops.resources v0.2.0: https://github.com/debops/ansible-resources/compare/v0.1.0...v0.2.0
 
 Added
 ~~~~~
@@ -44,10 +44,21 @@ Changed
 
 - Update documentation, clean up default RST syntax and folds. [drybjed_]
 
+- Update the list of supported parameters in the ``unarchive`` module.
+  [drybjed_]
+
 Fixed
 ~~~~~
 
 - Don’t require ``item.src`` or ``item.content`` to delete files. [ypid_]
+
+Removed
+~~~~~~~
+
+- The ``copy`` parameter of the ``unarchive`` module has been deprecated in
+  favor of the ``remote_src`` parameter, therefore it was removed from the role
+  to fix an issue with the ``copy()`` Python method having the same name.
+  [drybjed_]
 
 
 debops.resources v0.1.0 - 2016-06-21
