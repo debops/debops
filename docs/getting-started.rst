@@ -24,7 +24,7 @@ An example usage:
      - '/tmp/example-dir'
 
    resources__host_files:
-     - src: '{{ resources_src + "file.txt" }}'
+     - src: '{{ resources__src + "file.txt" }}'
        dest: '/tmp/example-dir/file.txt'
 
 
