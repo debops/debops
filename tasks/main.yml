@@ -1,10 +1,11 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# DebOps pre-hook [[[1
 - name: Pre hooks
   include: '{{ lookup("task_src", "resources/pre_main.yml") }}'
 
-# Manage custom paths [[[
+# Manage custom paths [[[1
 - name: Manage paths on remote hosts
   file:
     path:    '{{ (item.path   | d(item.dest | d(item.name))) | d(item) }}'
@@ -27,10 +28,8 @@
   when: (resources__enabled|bool and
          ((item.path|d() or item.dest|d() or item.name|d()) or item))
   tags: [ 'role::resources:paths' ]
-# .. ]]]
 
-# Create parent directories [[[
-
+# Create parent directories [[[1
 - name: Ensure that parent directories exist
   file:
     path:    '{{ (item.dest | d(item.name | d(item.path))) | dirname }}'
@@ -53,9 +52,7 @@
     - '{{ resources__group_files }}'
     - '{{ resources__host_files }}'
 
-# .. ]]]
-
-# Manage custom remote resources [[[
+# Manage custom remote resources [[[1
 - name: Download online resources to remote hosts
   get_url:
     url:              '{{ item.url              | d(item.src) }}'
@@ -80,9 +77,8 @@
   when: (resources__enabled|bool and (item.url|d() or item.src|d()) and
          (item.dest|d() or item.name|d() or item.path|d()))
   tags: [ 'role::resources:urls' ]
-# .. ]]]
 
-# Manage custom archives [[[
+# Manage custom archives [[[1
 - name: Unpack archives to remote hosts
   unarchive:
     src:        '{{ item.src }}'
@@ -107,9 +103,8 @@
   when: (resources__enabled|bool and item.src|d() and
          (item.dest|d() or item.name|d() or item.path|d()))
   tags: [ 'role::resources:archives' ]
-# .. ]]]
 
-# Manage custom files [[[
+# Manage custom files [[[1
 - name: Copy files to remote hosts
   copy:
     dest:     '{{ item.dest     | d(item.path | d(item.name)) }}'
@@ -151,9 +146,7 @@
          (item.state|d('present') == 'absent'))
   tags: [ 'role::resources:files' ]
 
-# .. ]]]
-
-# Manage custom delayed paths [[[
+# Manage custom delayed paths [[[1
 - name: Manage delayed paths on remote hosts
   file:
     path:    '{{ (item.path   | d(item.dest | d(item.name))) | d(item) }}'
@@ -177,7 +170,6 @@
          ((item.path|d() or item.dest|d() or item.name|d()) or item))
   tags: [ 'role::resources:paths' ]
 
+# DebOps post-hook [[[1
 - name: Post hooks
   include: '{{ lookup("task_src", "resources/post_main.yml") }}'
-
-# .. ]]]
