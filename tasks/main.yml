@@ -90,8 +90,8 @@
     owner:      '{{ item.owner      | d(omit) }}'
     group:      '{{ item.group      | d(omit) }}'
     mode:       '{{ item.mode       | d(omit) }}'
-    # FIXME: https://github.com/ansible/ansible-modules-core/issues/3996
-    #copy:      '{{ item.copy       | d(omit) }}'
+    # Different syntax required due to https://github.com/ansible/ansible-modules-core/issues/3996
+    copy:       '{{ item["copy"]    | d(omit) }}'
     selevel:    '{{ item.selevel    | d(omit) }}'
     serole:     '{{ item.serole     | d(omit) }}'
     setype:     '{{ item.setype     | d(omit) }}'

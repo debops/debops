@@ -27,6 +27,8 @@ Added
 
 - Support to create parent directories. [ypid_]
 
+- Support the ``copy`` parameter in the ``unarchive`` module. [drybjed_]
+
 Fixed
 ~~~~~
 
