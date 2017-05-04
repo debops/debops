@@ -29,6 +29,8 @@ Added
 
 - Support the ``copy`` parameter in the ``unarchive`` module. [drybjed_]
 
+- Add missing tags in the parent directory task. [drybjed_]
+
 Fixed
 ~~~~~
 
