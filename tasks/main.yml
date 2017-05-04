@@ -53,6 +53,37 @@
     - '{{ resources__host_files }}'
   tags: [ 'role::resources:urls', 'role::resources:archives', 'role::resources:files' ]
 
+# Manage git repositories [[[1
+- name: Manage git repositories
+  git:
+    repo:             '{{ item.repo             | d(item.url | d(item.src)) }}'
+    dest:             '{{ item.dest             | d(item.name | d(item.path)) }}'
+    accept_hostkey:   '{{ item.accept_hostkey   | d(omit) }}'
+    bare:             '{{ item.bare             | d(omit) }}'
+    clone:            '{{ item.clone            | d(omit) }}'
+    depth:            '{{ item.depth            | d(omit) }}'
+    executable:       '{{ item.executable       | d(omit) }}'
+    force:            '{{ item.force            | d(omit) }}'
+    key_file:         '{{ item.key_file         | d(omit) }}'
+    recursive:        '{{ item.recursive        | d(omit) }}'
+    reference:        '{{ item.reference        | d(omit) }}'
+    refspec:          '{{ item.refspec          | d(omit) }}'
+    remote:           '{{ item.remote           | d(omit) }}'
+    ssh_opts:         '{{ item.ssh_opts         | d(omit) }}'
+    track_submodules: '{{ item.track_submodules | d(omit) }}'
+    umask:            '{{ item.umask            | d(omit) }}'
+    update:           '{{ item["_update"]       | d(omit) }}'
+    verify_commit:    '{{ item.verify_commit    | d(omit) }}'
+    version:          '{{ item.version          | d(omit) }}'
+  become_user:        '{{ item.owner            | d("root") }}'
+  with_flattened:
+    - '{{ resources__repositories }}'
+    - '{{ resources__group_repositories }}'
+    - '{{ resources__host_repositories }}'
+  when: (resources__enabled|bool and (item.repo|d() or item.url|d() or item.src|d()) and
+         (item.dest|d() or item.name|d() or item.path|d()))
+  tags: [ 'role::resources:repositories' ]
+
 # Manage custom remote resources [[[1
 - name: Download online resources to remote hosts
   get_url:

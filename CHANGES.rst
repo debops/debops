@@ -31,6 +31,8 @@ Added
 
 - Add missing tags in the parent directory task. [drybjed_]
 
+- Add support for cloning or updating :command:`git` repositories. [drybjed_]
+
 Fixed
 ~~~~~
 
