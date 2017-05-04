@@ -8,7 +8,7 @@
   with_flattened:
     - '{{ libvirtd__network_packages }}'
     - '{{ libvirtd__packages }}'
-    - [ 'gawk', 'virt-top', 'netcat-openbsd', 'pm-utils' ]
+    - [ 'gawk', 'virt-top', 'netcat-openbsd', 'pm-utils', 'sysfsutils' ]
     - [ '{{ libvirtd__base_packages_map[ansible_distribution_release]
             if (ansible_distribution_release in libvirtd__base_packages_map.keys())
             else libvirtd__base_packages }}' ]
@@ -32,3 +32,11 @@
   with_items: '{{ libvirtd__admins }}'
   when: libvirtd__admins|d()
 
+- name: Add KSM sysfsutils configuration
+  template:
+    src: 'etc/sysfs.d/ksm.conf'
+    dest: '/etc/sysfs.d/ksm.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: 'Restart sysfsutils'
