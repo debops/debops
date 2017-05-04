@@ -67,6 +67,51 @@ Remove specified path:
      - path: '/tmp/removed'
        state: 'absent'
 
+
+.. _resources__ref_repositories:
+
+resources__repositories
+-----------------------
+
+These lists can be used to clone or update remote :command:`git` repositories.
+You can use all parameters of the :command:`git` Ansible module to manage the
+repositories, with some exceptions. The role recognizes these additional
+parameters:
+
+``item.repo``, ``item.url`` or ``item.src``
+  Required. The URL of the :command:`git` repository to clone..
+
+``item.dest`` or ``item.name`` or ``item.path``
+  Required. Path where the specified repository should be cloned to.
+
+``_update``
+  Optional, boolean. This is a replacement of the ``update`` :command:`git` module
+  parameter, due to the string being a reserved word in Python. You can use
+  this to enable or disable repository update.
+
+``owner``
+  Optional. If specified, the role will use the Ansible ``become``
+  functionality to switch to a specified UNIX user account before cloning the
+  repository. The account must exist on the host before it can be used. If not
+  specified, the role will use the ``root`` account.
+
+  The specified UNIX account needs to have access to the destination directory.
+  The parent directories are created automatically, as long as the access
+  permissions allow. You can create or change directory permissions as needed
+  using the :ref:`resources__ref_paths` variables.
+
+Examples
+~~~~~~~~
+
+Clone the Ansible repository to the host:
+
+.. code-block:: yaml
+
+   resources__repositories:
+     - repo: 'https://github.com/ansible/ansible'
+       dest: '/usr/local/src/github.com/ansible/ansible'
+
+
 .. _resources__ref_urls:
 
 resources__urls
