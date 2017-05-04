@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.resources master`_ - unreleased
 ---------------------------------------
 
-.. _debops.resources master: https://github.com/debops/ansible-resources/compare/v0.1.0...master
+.. _debops.resources master: https://github.com/debops/ansible-resources/compare/v0.1.1...master
+
+
+`debops.resources v0.1.1`_ - 2017-05-04
+---------------------------------------
+
+.. _debops.resources v0.1.1: https://github.com/debops/ansible-resources/compare/v0.1.0...v0.1.1
 
 Added
 ~~~~~
