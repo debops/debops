@@ -10,7 +10,7 @@ Required Ansible host groups
 ``[debops_service_rsnapshot]`` or ``[debops_service_rsnapshot_clients]``
   Defines a group of hosts which will be configured as "clients".
 
-  These hosts will have `:program:`rsnapshot` installed and will connect to the
+  These hosts will have :program:`rsnapshot` installed and will connect to the
   configured "servers" at specified times through the day, synchronize the
   files and rotate archived snapshots.
 
@@ -89,4 +89,3 @@ have them correctly configured::
 You might want to see :doc:`list of default variables <defaults>` to change how
 `:program:`rsnapshot` is configured, and a separate :doc:`advanced guides
 <guides>` to see how you can use the role in different environments.
-
