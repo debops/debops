@@ -22,6 +22,7 @@ Changed
 ~~~~~~~
 
 - Role documentation improvements. [ypid_]
+- add PATH environment for gitlab-workhorse service for artifact uploads [cultcom]
 
 
 `debops.gitlab v0.2.0`_ - 2017-04-06
