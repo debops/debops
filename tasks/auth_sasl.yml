@@ -16,6 +16,11 @@
     createhome: False
   notify: [ 'Check postfix and restart' ]
 
+- name: Make sure /etc/postfix/sasl exists
+  file:
+    path: '/etc/postfix/sasl'
+    state: 'directory'
+
 - name: Configure Cyrus SASL Authentication
   template:
     src: 'etc/postfix/sasl/smtpd.conf.j2'
