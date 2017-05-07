@@ -2,13 +2,14 @@
 
 # dist-upgrade - upgrade a Debian/Ubuntu system to next release
 # Copyrignt (C) 2015 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2017 DebOps https://debops.org/
 # Part of the DebOps project - https://debops.org/
 
 
 # ===========================================================================
-# Warning: before using this playbook, consult list of issues on GitHub:
+# Warning: Before using this playbook, consult the list of issues on GitHub:
 # https://github.com/debops/debops-playbooks/labels/dist-upgrade
-# This list will be updated with issues as they are discovered and reported
+# This list will be updated with issues as they are discovered and reported.
 # ===========================================================================
 
 
@@ -21,13 +22,14 @@
     # Map of current and next distribution releases
     dist_upgrade_version_map:
       'wheezy': 'jessie'
+      'jessie': 'stretch'
       'trusty': 'utopic'
 
     # Current release
     dist_upgrade_current_release: '{{ ansible_distribution_release }}'
 
     # Next release
-    dist_upgrade_new_release: '{{ dist_upgrade_version_map[ansible_distribution_release] }}'
+    dist_upgrade_new_release: '{{ dist_upgrade_version_map[dist_upgrade_current_release] }}'
 
     # If this file exists, failed upgrade will be tried again
     dist_upgrade_lockfile: '/tmp/dist-upgrade-in-progress'
@@ -104,13 +106,13 @@
     - name: Remove all APT preferences for backported packages
       shell: >
               grep -lrIZ 'Pin: release a={{ dist_upgrade_current_release }}-backports' /etc/apt/preferences.d | xargs -0 rm -f --
-      when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace.changed
+      when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace|changed
 
     - name: Create a lockfile
       file:
         path: '{{ dist_upgrade_lockfile }}'
         state: 'touch'
-      when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace.changed
+      when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace|changed
 
     - name: Perform apt-get dist-upgrade (this might take a while)
       apt:
@@ -118,7 +120,7 @@
         upgrade: 'dist'
       register: dist_upgrade_register_upgrade
       when: ((dist_upgrade_register_replace is defined and
-              dist_upgrade_register_replace.changed) or
+              dist_upgrade_register_replace|changed) or
              (dist_upgrade_register_lockfile is defined and
               dist_upgrade_register_lockfile.stat.exists))
 
@@ -140,20 +142,20 @@
       command: apt-get --yes autoremove
       register: dist_upgrade_register_autoremove
       when: dist_upgrade_register_upgrade is defined and
-            dist_upgrade_register_upgrade.changed
+            dist_upgrade_register_upgrade|changed
 
     - name: Clean APT package cache
       command: apt-get autoclean
       register: dist_upgrade_register_autoclean
       when: dist_upgrade_register_upgrade is defined and
-            dist_upgrade_register_upgrade.changed
+            dist_upgrade_register_upgrade|changed
 
     - name: Check if /etc/services.d exists
       stat:
         path: '/etc/services.d'
       register: dist_upgrade_register_etc_services
       when: dist_upgrade_register_upgrade is defined and
-            dist_upgrade_register_upgrade.changed
+            dist_upgrade_register_upgrade|changed
 
     - name: Assemble /etc/services
       assemble:
@@ -174,7 +176,7 @@
         charset: 'utf8'
         body: '{{ dist_upgrade_mail_body }}'
       when: dist_upgrade_register_upgrade is defined and
-            dist_upgrade_register_upgrade.changed
+            dist_upgrade_register_upgrade|changed
 
     - name: Remove the lockfile
       file:
