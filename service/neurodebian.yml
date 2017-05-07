@@ -1,0 +1,19 @@
+---
+
+- name: Install packages from the NeuroDebian repository
+  hosts: [ 'debops_service_neurodebian' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ neurodebian__apt_preferences__dependent_list }}'
+
+    - role: debops-contrib.neurodebian
+      tags: [ 'role::neurodebian' ]
