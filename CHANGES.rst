@@ -16,6 +16,13 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.console master: https://github.com/debops/ansible-console/compare/v0.1.3...master
 
+Added
+~~~~~
+
+- Support to remove host entries using ``console_hosts`` without specifying a
+  ``value``. [ypid_]
+
+
 Changed
 ~~~~~~~
 
