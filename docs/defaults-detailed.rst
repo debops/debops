@@ -173,6 +173,18 @@ context:
          # Your raw Apache directives.
 
 
+Ensure the :file:`/etc/apache2/conf-available/owncloud.conf` snippet shipped by
+ownCloud system packages is disabled so that debops.owncloud_ has full control
+over it and can enable ownCloud in specific vhost contexts.
+
+.. code-block:: yaml
+
+   owncloud__apache__dependent_snippets:
+     owncloud:
+       enabled: False
+       type: 'dont-create'
+
+
 .. _apache__ref_vhosts:
 
 apache__vhosts
