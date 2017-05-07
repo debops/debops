@@ -31,7 +31,6 @@ If you are using DebOps, you can set the following in your inventory:
    apt_preferences__group_list:
      - '{{ apt_preferences__preset_list | list }}'
 
-   ## Load APT pinning presets.
    apt__group_sources:
      - comment: 'Enable Debian stretch repository'
        uri: '{{ ansible_local.apt.default_sources_map.Debian[0]
