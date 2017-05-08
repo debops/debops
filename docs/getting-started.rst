@@ -38,14 +38,14 @@ The ``debops.gitlab`` role automatically detects the available SQL database
 (PostgreSQL or MariaDB/MySQL) using the Ansible local facts. If the database
 service should be present on the same host as the GitLab service, adding the
 corresponding database server group in the Ansible inventory should be enough.
-if the database server is on a different host, you should use the corresponding
+If the database server is on a different host, you should use the corresponding
 database client role to configure the relevant Ansible local facts before
 running the ``debops.gitlab`` role.
 
 Installation of a new GitLab environment with existing database is currently
 not tested and may result in a broken installation or data corruption.
 
-You can select different flavours of the SQL databases using their respective
+You can select different flavors of the SQL databases using their respective
 DebOps roles. See debops.postgresql_server_ or debops.mariadb_server_ role
 documentation for more details.
 
