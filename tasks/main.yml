@@ -134,10 +134,9 @@
   lineinfile:
     dest: '/etc/hosts'
     regexp: '^{{ item.key | replace(".","\.") }}\s+'
-    line: "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value | join(' ')) }}"
+    line: "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value|d() | join(' ')) }}"
     state: '{{ "present" if item.value|d() else "absent" }}'
-  with_dict: '{{ console_hosts|combine(console_group_hosts)|combine(console_host_hosts) }}'
-  when: console_hosts|d()
+  with_dict: '{{ console_hosts|combine(console_group_hosts,console_host_hosts) }}'
   tags: [ 'role::console:hosts' ]
 
 - name: Copy custom files to remote hosts
