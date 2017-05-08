@@ -64,7 +64,6 @@
     mode:  '{{ cryptsetup__secret_mode }}'
   become: False
   delegate_to: 'localhost'
-  register: cryptsetup__register_keyfile_gen
   when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ]
          and not ansible_check_mode and 'remote_keyfile' not in item)
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
