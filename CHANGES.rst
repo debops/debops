@@ -170,6 +170,9 @@ Changed
 
 - Update debops.salt_ playbook with new role dependencies. [drybjed_]
 
+- Support dist upgrade from Debian Jessie to Debian Stretch using
+  :file:`tools/dist-upgrade.yml`. [ypid_]
+
 Deprecated
 ~~~~~~~~~~
 
