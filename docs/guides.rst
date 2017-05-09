@@ -7,11 +7,11 @@ Guides and examples
 Role design goals
 -----------------
 
-Host backups performed by :program:`snapshot` are very efficient method to keep
-time-based snapshots of local or remote systems. Unfortunately, default method
-of creating backups using one configuration file and backing up remote hosts in
-order is inconvenient: all hosts managed through this single file will be
-backed up each time, there's only one set of snapshots that can be used this
+Host backups performed by :program:`rsnapshot` are a very efficient method to
+keep time-based snapshots of local or remote systems. Unfortunately, the default
+method of creating backups using one configuration file and backing up remote
+hosts in order is inconvenient: all hosts managed through this single file will
+be backed up each time, there's only one set of snapshots that can be used this
 way, and any error will stop backups of hosts further along the config file.
 
 To avoid this issue, ``debops.rsnapshot`` role uses combination of
