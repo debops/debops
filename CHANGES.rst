@@ -24,6 +24,8 @@ Added
 - Add a variable which can be used to restrict what network interfaces can be
   used for connections from Ansible Controller. [gaudenz]
 
+- Update the Ansible facts automatically if they have been changed. [drybjed_]
+
 Changed
 ~~~~~~~
 

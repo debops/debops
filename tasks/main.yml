@@ -213,3 +213,8 @@
     group: 'root'
     mode: '0644'
   tags: [ 'role::ferm:rules' ]
+  register: ferm__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: ferm__register_facts|changed
