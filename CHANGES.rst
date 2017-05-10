@@ -27,6 +27,12 @@ Changed
 
 - LDAP lookup script now works with binary and text attributes. [pedroluislopez_]
 
+Removed
+~~~~~~~
+
+- Remove the packages ``openssh-blacklist`` and ``openssh-blacklist-extra`` from
+  the list of recommended packages as they are now obsolete. This fixes Debian Stretch support.
+  Refer to https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=859682 for details. [ypid_]
 
 `debops.sshd v0.2.5`_ - 2016-10-10
 ----------------------------------
