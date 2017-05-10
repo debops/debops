@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: includes/all.rst
 
 
 # MariaDB Server APT packages [[[
@@ -166,7 +168,7 @@ mariadb_server__delegate_to: '{{ inventory_hostname }}'
 # utilization.
 mariadb_server__mysqld_performance_options:
   'innodb_buffer_pool_instances': '{{ ansible_processor_vcpus | d(1) }}'
-  'innodb_buffer_pool_size':      '{{ (ansible_memtotal_mb / 2) | int }}M'
+  'innodb_buffer_pool_size':      '{{ (ansible_memtotal_mb / 2) | int }}M'
   'query_cache_type':             '0'
 
                                                                    # ]]]
@@ -203,7 +205,7 @@ mariadb_server__mysqld_network_options:
                                                                    # ]]]
 # .. envvar:: mariadb_server__mysqld_pki_options [[[
 #
-# Configuration of SSL support in :program:`mysqld`, managed by ``debops.pki`` role.
+# Configuration of SSL support in :program:`mysqld`, managed by debops.pki_ role.
 mariadb_server__mysqld_pki_options:
   name: 'pki-options'
   comment: 'Support for SSL connections'
@@ -249,7 +251,7 @@ mariadb_server__mysqld_options:
 # .. envvar:: mariadb_server__client_options. [[[
 #
 # Configuration set in :file:`/etc/mysql/conf.d/client.cnf` at the installation
-# time. Afterwards you should use the ``debops.mariadb`` role to manage it.
+# time. Afterwards you should use the debops.mariadb_ role to manage it.
 mariadb_server__client_options:
   - section: 'client'
     options:
@@ -274,7 +276,7 @@ mariadb_server__append_groups: [ 'ssl-cert' ]
                                                                    # ]]]
 # .. envvar:: mariadb_server__pki [[[
 #
-# Enable or disable support for SSL in MariaDB (using ``debops.pki``).
+# Enable or disable support for SSL in MariaDB (using debops.pki_).
 mariadb_server__pki: '{{ (True
                       if (ansible_local|d() and ansible_local.pki|d() and
                           ansible_local.pki.enabled|d() and
@@ -302,19 +304,19 @@ mariadb_server__pki_realm: '{{ ansible_local.pki.realm
                                                                    # ]]]
 # .. envvar:: mariadb_server__pki_ca [[[
 #
-# Root CA certificate used by MariaDB, relative to :any:`mariadb_server__pki_realm`.
+# Root CA certificate used by MariaDB, relative to :envvar:`mariadb_server__pki_realm`.
 mariadb_server__pki_ca: 'CA.crt'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__pki_crt [[[
 #
-# Host certificate used by MariaDB, relative to :any:`mariadb_server__pki_realm`.
+# Host certificate used by MariaDB, relative to :envvar:`mariadb_server__pki_realm`.
 mariadb_server__pki_crt: 'default.crt'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__pki_key [[[
 #
-# Host private key used by MariaDB, relative to :any:`mariadb_server__pki_realm`.
+# Host private key used by MariaDB, relative to :envvar:`mariadb_server__pki_realm`.
 mariadb_server__pki_key: 'default.key'
 
                                                                    # ]]]
@@ -386,12 +388,12 @@ mariadb_server__root_password: '{{ lookup("password", secret +
                                    "length=" + mariadb_server__password_length) }}'
                                                                    # ]]]
                                                                    # ]]]
-# Configuration of other Ansible roles [[[
+# Configuration for other Ansible roles [[[
 # ----------------------------------------
 
 # .. envvar:: mariadb_server__ferm__dependent_rules [[[
 #
-# Configuration for ``debops.ferm`` Ansible role.
+# Configuration for debops.ferm_ Ansible role.
 mariadb_server__ferm__dependent_rules:
 
   - type: 'accept'
@@ -404,7 +406,7 @@ mariadb_server__ferm__dependent_rules:
                                                                    # ]]]
 # .. envvar:: mariadb_server__tcpwrappers__dependent_allow [[[
 #
-# Configuration for ``debops.tcpwrappers`` Ansible role.
+# Configuration for debops.tcpwrappers_ Ansible role.
 mariadb_server__tcpwrappers__dependent_allow:
 
   - daemon: 'mysqld'

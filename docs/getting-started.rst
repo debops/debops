@@ -1,6 +1,8 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
 
@@ -43,7 +45,7 @@ daemon:
 
 Changing the bind address will require the MariaDB daemon to be restarted,
 however ``debops.mariadb_server`` does not do that automatically to avoid
-distrupting the normal server operations. To restart the service, you can run
+disrupting the normal server operations. To restart the service, you can run
 this Ansible command:
 
 .. code-block:: console
@@ -58,5 +60,5 @@ Database and user management
 ----------------------------
 
 ``debops.mariadb_server`` is not meant to be used to manage databases and user
-accounts. You should use ``debops.mariadb`` role instead, which was designed
+accounts. You should use debops.mariadb_ role instead, which was designed
 specifically for this purpose.
