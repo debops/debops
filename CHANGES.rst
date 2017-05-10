@@ -18,6 +18,13 @@ The current role maintainer_ is drybjed.
 
 .. _debops.users master: https://github.com/debops/ansible-users/compare/v0.2.1...master
 
+Added
+~~~~~
+
+- Added new variables :envvar:`users__dependent_accounts` and
+  :envvar:`users__dependent_groups` making the role usable for other roles
+  which require more sophisticated user account setups. [ganto_]
+
 
 `debops.users v0.2.1`_ - 2016-10-16
 -----------------------------------

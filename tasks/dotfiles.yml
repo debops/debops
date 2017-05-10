@@ -13,6 +13,7 @@
     - '{{ users__accounts }}'
     - '{{ users__group_accounts }}'
     - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
   when: (item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and
          item.dotfiles_enabled | d(users__dotfiles_enabled) | bool)
   no_log: '{{ users__no_log | bool }}'
@@ -37,6 +38,7 @@
     - '{{ users__accounts }}'
     - '{{ users__group_accounts }}'
     - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
   when: (item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and
          item.dotfiles_enabled | d(users__dotfiles_enabled) | bool and
          item.dotfiles_command | d(users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].command|d()))
@@ -53,6 +55,7 @@
     - '{{ users__accounts }}'
     - '{{ users__group_accounts }}'
     - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
   when: (item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and
          (item.dotfiles_enabled | d(users__dotfiles_enabled) | bool or item.shell|d() or users__default_shell))
   no_log: '{{ users__no_log | bool }}'
