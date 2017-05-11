@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: includes/all.rst
 
 
 # Package installation [[[
@@ -84,11 +86,12 @@ gitlab_runner__system: True
 #
 # Home directory of the GitLab Runner user.
 gitlab_runner__home: '{{ (ansible_local.root.home
+
+                                                                   # ]]]
 	                  if (ansible_local|d() and ansible_local.root|d() and
 	                      ansible_local.root.home|d())
 	                  else "/var/local") + "/" + gitlab_runner__user }}'
 
-                                                                   # ]]]
 # .. envvar:: gitlab_runner__comment [[[
 #
 # Comment or GECOS field set on the GitLab Runner account.
@@ -475,6 +478,28 @@ gitlab_runner__machine_name: 'auto-scale-%s.{{ gitlab_runner__domain }}'
 # documentation <https://docs.docker.com/machine/drivers/>`_ for more
 # information about supported drivers.
 gitlab_runner__machine_driver: 'generic'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__machine_offpeakperiods [[[
+#
+# Autoscale can be configured with the support for Off Peak time mode periods.
+# Time periods when the scheduler is in the OffPeak mode.You should refer
+# to `Gitlab Runner Advanced configuration documentation
+# <https://docs.gitlab.com/runner/configuration/advanced-configuration.html#offpeakperiods-syntax>`_ for more
+# information about OffPeakPeriods syntax.
+gitlab_runner__machine_offpeakperiods: ["* * 0-7,19-23 * * mon-fri *", "* * * * * sat,sun *"]
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__machine_offpeakidlecount [[[
+#
+# Like IdleCount, but for Off Peak time periods.
+gitlab_runner__machine_offpeakidlecount: 0
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__machine_offpeakidletime [[[
+#
+# Like IdleTime, but for Off Peak time mperiods.
+gitlab_runner__machine_offpeakidletime: 1200
 
                                                                    # ]]]
 # .. envvar:: gitlab_runner__machine_options [[[
