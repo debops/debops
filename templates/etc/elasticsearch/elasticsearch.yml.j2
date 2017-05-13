@@ -231,7 +231,7 @@
 {%   endfor %}
 {% endmacro %}
 {% set elasticsearch__tpl_seen_sections = [] %}
-{% macro print_section(section) %}
+{% for section in elasticsearch__configuration_sections %}
 {%   if section.name|d() %}
 {%     if section.part|d() and ([ section.part ] if section.part is string else section.part) | intersect(elasticsearch__tpl_config.keys()) %}
 {{ "{:-^78}".format(' ' + section.name + ' ') | comment }}
@@ -239,24 +239,23 @@
 {{ "{:-^78}".format(' ' + section.name + ' ') | comment }}
 {%     endif %}
 {%   endif %}
-{%   if section.part|d() %}
+{%   if section.part|d() and ([ section.part ] if section.part is string else section.part) | intersect(elasticsearch__tpl_config.keys()) %}
 {%     for element in ([ section.part ] if section.part is string else section.part) %}
 {%       if element in elasticsearch__tpl_config.keys() and element not in elasticsearch__tpl_seen_sections %}
 {{ print_config(elasticsearch__tpl_config[element], key_prefix=element) -}}
 {%         set _ = elasticsearch__tpl_seen_sections.append(element) %}
 {%       endif %}
 {%     endfor %}
-{%   elif section.parts|d() %}
+
+{%   elif section.parts|d() and ([ section.parts ] if section.parts is string else section.parts) | intersect(elasticsearch__tpl_config.keys()) %}
 {%     for element in ([ section.parts ] if section.parts is string else section.parts) %}
 {%       if element in elasticsearch__tpl_config.keys() and element not in elasticsearch__tpl_seen_sections %}
 {{ print_config(elasticsearch__tpl_config[element], key_prefix=element) -}}
 {%         set _ = elasticsearch__tpl_seen_sections.append(element) %}
 {%       endif %}
 {%     endfor %}
+
 {%   endif %}
-{% endmacro %}
-{% for element in elasticsearch__configuration_sections %}
-{{ print_section(element) }}
 {% endfor %}
 {% if elasticsearch__tpl_config.keys() | difference(elasticsearch__tpl_seen_sections) %}
 {{ "{:-^78}".format(' Various ') | comment }}
