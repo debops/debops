@@ -62,10 +62,6 @@
     repo: '{{ gitlab_runner__apt_repo }}'
     state: 'present'
     update_cache: True
-    cache_valid_time: '{{ ansible_local.core.cache_valid_time
-                      if (ansible_local|d() and ansible_local.core|d() and
-                         ansible_local.core.cache_valid_time|d())
-                      else "86400" }}'
   when: gitlab_runner__apt_upstream|bool
 
 - name: Install gitlab-runner packages
