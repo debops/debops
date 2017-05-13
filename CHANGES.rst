@@ -173,6 +173,9 @@ Changed
 - Support dist upgrade from Debian Jessie to Debian Stretch using
   :file:`tools/dist-upgrade.yml`. [ypid_]
 
+- Update the debops.elasticsearch_ playbook with new release of the role.
+  [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
