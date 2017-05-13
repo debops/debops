@@ -34,7 +34,11 @@
 {%         elif item.options is defined %}
 {%           set name_exploded = item.name.split('.') %}
 {%           set current_dict = elasticsearch__tpl_config[name_exploded[0]] | d({}) %}
-{%           set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'options': item.options } }) %}
+{%           if item.state|d('present') == 'comment' %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.options, 'options': item.options } }) %}
+{%           else %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'options': item.options } }) %}
+{%           endif %}
 {%           set _ = elasticsearch__tpl_config.update({ name_exploded[0]: current_dict }) %}
 {%           if item.comment|d() %}
 {%             set _ = elasticsearch__tpl_comment.update({ item.name: item.comment }) %}
@@ -42,7 +46,11 @@
 {%         elif item.empty is defined %}
 {%           set name_exploded = item.name.split('.') %}
 {%           set current_dict = elasticsearch__tpl_config[name_exploded[0]] | d({}) %}
-{%           set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'empty': item.empty } }) %}
+{%           if item.state|d('present') == 'comment' %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.empty, 'empty': item.empty } }) %}
+{%           else %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'empty': item.empty } }) %}
+{%           endif %}
 {%           set _ = elasticsearch__tpl_config.update({ name_exploded[0]: current_dict }) %}
 {%           if item.comment|d() %}
 {%             set _ = elasticsearch__tpl_comment.update({ item.name: item.comment }) %}
@@ -50,7 +58,11 @@
 {%         elif item.raw is defined %}
 {%           set name_exploded = item.name.split('.') %}
 {%           set current_dict = elasticsearch__tpl_config[name_exploded[0]] | d({}) %}
-{%           set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'raw': item.raw } }) %}
+{%           if item.state|d('present') == 'comment' %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.raw, 'raw': item.raw } }) %}
+{%           else %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'raw': item.raw } }) %}
+{%           endif %}
 {%           set _ = elasticsearch__tpl_config.update({ name_exploded[0]: current_dict }) %}
 {%           if item.comment|d() %}
 {%             set _ = elasticsearch__tpl_comment.update({ item.name: item.comment }) %}
@@ -99,11 +111,61 @@
 {%       elif value is number %}
 {{ '%s: %s' | format(key_prefix + '.' + key, value) }}
 {%       elif value is mapping %}
-{%         if value.comment|d() %}
-{%           if value.comment is string %}
+{%         if value.comment is defined %}
+{%           if value.comment | bool and value.comment is not iterable %}
+{{ '# %s: %s' | format(key_prefix + '.' + key, 'true') }}
+{%           elif not value.comment | bool and value.comment is not iterable %}
+{%             if value.comment is not none %}
+{%               if value.comment | int or value.comment | string == '0' %}
+{{ '# %s: %s' | format(key_prefix + '.' + key, value.comment) }}
+{%               else %}
+{{ '# %s: %s' | format(key_prefix + '.' + key, 'false') }}
+{%               endif %}
+{%             endif %}
+{%           elif value.comment is string %}
 {{ '# %s: "%s"' | format(key_prefix + '.' + key, value.comment) }}
 {%           elif value.comment is number %}
 {{ '# %s: %s' | format(key_prefix + '.' + key, value.comment) }}
+{%           elif value.comment is mapping %}
+{%             if value.options|d() %}
+{%               if value.options is mapping %}
+{%                 for option_key, option_value in value.options.iteritems() %}
+{%                   if option_value | bool and option_value is not iterable %}
+{{ '# %s: %s' | format(key_prefix + '.' + option_key, 'true') }}
+{%                   elif not option_value | bool and option_value is not iterable %}
+{%                     if option_value is not none %}
+{%                       if option_value | int or option_value | string == '0' %}
+{{ '# %s: %s' | format(key_prefix + '.' + option_key, option_value) }}
+{%                       else %}
+{{ '# %s: %s' | format(key_prefix + '.' + option_key, 'false') }}
+{%                       endif %}
+{%                     endif %}
+{%                   elif option_value is string %}
+{{ '# %s: "%s"' | format(key_prefix + '.' + option_key, option_value) }}
+{%                   elif option_value is number %}
+{{ '# %s: %s' | format(key_prefix + '.' + option_key, option_value) }}
+{%                   elif option_value is not string and option_value is not mapping %}
+{%                     if option_value | count <= 4 %}
+{{ '# %s: %s' | format(key_prefix + '.' + option_key, '[ "' + option_value | join('", "') + '" ]') }}
+{%                     else %}
+# {{ key_prefix + '.' + option_key }}:
+{%                       for element in option_value %}
+#  - "{{ element }}"
+{%                       endfor %}
+
+{%                     endif %}
+{%                   endif %}
+{%                 endfor %}
+{%               endif %}
+{%             elif value.empty is defined %}
+{%               if value.empty is string %}
+{{ '# %s: "%s"' | format(key_prefix + '.' + key, value.empty) }}
+{%               else %}
+{{ '# %s: %s' | format(key_prefix + '.' + key, value.empty) }}
+{%               endif %}
+{%             elif value.raw|d() %}
+{{ value.raw | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%             endif %}
 {%           endif %}
 {%         elif value.options|d() %}
 {%           if value.options is mapping %}
