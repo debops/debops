@@ -166,6 +166,16 @@
 {%             elif value.raw|d() %}
 {{ value.raw | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%             endif %}
+{%           elif value.comment is not string and value.comment is not mapping %}
+{%             if value.comment | count <= 4 %}
+{{ '# %s: %s' | format(key_prefix + '.' + key, '[ "' + value.comment | join('", "') + '" ]') }}
+{%             else %}
+# {{ key_prefix + '.' + key }}:
+{%               for element in value.comment %}
+#  - "{{ element }}"
+{%               endfor %}
+
+{%             endif %}
 {%           endif %}
 {%         elif value.options|d() %}
 {%           if value.options is mapping %}
