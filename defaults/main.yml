@@ -260,15 +260,24 @@ elasticsearch__node_ingest: '{{ True
 # https://www.elastic.co/guide/en/elasticsearch/guide/current/heap-sizing.html
 # for more details.
 
+# .. envvar:: elasticsearch__memory_lock [[[
+#
+# Enable or disable memory lock depending on availability of required POSIX
+# capabilities. If this variable is enabled, :command:`systemd` memlock limit
+# is configured.
+elasticsearch__memory_lock: '{{ True
+                                if (not ansible_system_capabilities_enforced|bool or
+                                    (ansible_system_capabilities_enforced|bool and
+                                     "cap_ipc_lock" in ansible_system_capabilities))
+                                else False }}'
+
+                                                                   # ]]]
 # .. envvar:: elasticsearch__systemd_limit_memlock [[[
 #
 # Specify maximum size of the process memory in bytes that the process is
 # allowed to lock in RAM and not have it stored in swap. Specify ``infinity``
 # to disable the maximum limit. This setting is applied through the
 # :command:`systemd` service unit.
-#
-# If this variable is set to anything other than ``infinity``, memory locking
-# in Elasticsearch will be automatically disabled.
 elasticsearch__systemd_limit_memlock: 'infinity'
 
                                                                    # ]]]
@@ -367,7 +376,7 @@ elasticsearch__default_configuration:
     comment: 'Require explicit names when deleting indices'
 
   - name: 'bootstrap.memory_lock'
-    value: '{{ True if (elasticsearch__systemd_limit_memlock == "infinity") else False }}'
+    value: '{{ True if elasticsearch__memory_lock|bool else False }}'
     comment: |
       Lock the memory on startup
 
