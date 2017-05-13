@@ -205,6 +205,10 @@ General interface parameters
     is required to be present for the ``ifup@.service`` :command:`systemd` unit
     to work properly.
 
+  If this parameter is not specified, the role will use the ``boot`` value for
+  network interfaces other than physical Ethernet interfaces, which will use
+  the ``hotplug`` value by default.
+
 IPv4 and IPv6 configuration parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
