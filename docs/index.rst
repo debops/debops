@@ -10,7 +10,8 @@ Ansible role: debops.elasticsearch
    getting-started
    defaults
    defaults-detailed
-   guides
+   clustering
+   dependency
    copyright
    changelog
 
