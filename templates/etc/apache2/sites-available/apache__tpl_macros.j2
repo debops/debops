@@ -130,8 +130,10 @@ ErrorLog ${APACHE_LOG_DIR}/{{ sanitized_name }}_error.log
         (mode == 'http' and (item.redirect_http|d() or item.redirect_to_https|d(apache__redirect_to_https) | bool)) or
         (mode == 'https' and item.redirect_https|d())
     ) %}
+<IfModule mod_rewrite>
 RewriteEngine On
 RewriteRule "^{{ item.status_location|d(apache__status_location) }}" "-" [L]
+</IfModule>
 {%   set apache__tpl_use_redirect_module = 'rewrite' %}
 {% endif %}
 {% if mode == 'http' and item.redirect_http|d() %}
@@ -277,7 +279,9 @@ handled before all the directives from the alias module.
 {% if module == 'alias' %}
 Redirect {{ code|string }} "{{ from }}" "{{ to }}"
 {% elif module == 'rewrite' %}
+<IfModule mod_rewrite>
 RewriteRule "^{{ from }}?(.*)" "{{ to }}$1" [L,R={{ code }},NE]
+</IfModule>
 {% endif %}
 {% endmacro %}{# ]]] #}
 

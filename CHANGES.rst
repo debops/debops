@@ -88,3 +88,7 @@ Fixed
 
 - Fix missing closing ``</IfModule>`` directive in case an old OpenSSL version
   is used. [ypid_]
+
+- Fix an issue where ``mod_rewrite`` could not be activated after initial role
+  deployment when existing configuration contained unwrapped rewrite rules.
+  [drybjed_]
