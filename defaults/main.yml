@@ -471,7 +471,7 @@ apache__https_enabled: '{{ ansible_local|d() and ansible_local.pki|d() and
 #
 # This defines the default for each vhost's ``redirect_to_https`` variable.
 # Defaults to ``True``.
-apache__redirect_to_https: True
+apache__redirect_to_https: '{{ True if apache__https_enabled else False }}'
 
                                                                    # ]]]
 # PKI [[[
