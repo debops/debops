@@ -92,3 +92,6 @@ Fixed
 - Fix an issue where ``mod_rewrite`` could not be activated after initial role
   deployment when existing configuration contained unwrapped rewrite rules.
   [drybjed_]
+
+- Don't define HTTPS redirects for vhosts and completely disable ``mod_ssl``
+  if :envvar:`apache__https_enabled` is set to ``False``. [ganto_]

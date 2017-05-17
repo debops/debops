@@ -314,7 +314,7 @@ apache__role_modules:
   'headers': True
   'alias': True
   'ssl':
-    enabled: '{{ True if (apache__https_listen) else False }}'
+    enabled: '{{ True if (apache__https_listen and apache__https_enabled) else False }}'
   'security2':
     enabled: '{{ apache__security_module_enabled|bool }}'
   'status':
@@ -471,7 +471,7 @@ apache__https_enabled: '{{ ansible_local|d() and ansible_local.pki|d() and
 #
 # This defines the default for each vhost's ``redirect_to_https`` variable.
 # Defaults to ``True``.
-apache__redirect_to_https: True
+apache__redirect_to_https: '{{ apache__https_enabled|bool }}'
 
                                                                    # ]]]
 # PKI [[[
