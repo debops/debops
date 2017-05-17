@@ -1,0 +1,26 @@
+# {{ ansible_managed }}
+# Source: https://raw.githubusercontent.com/bitcoin/bitcoin/master/contrib/init/bitcoind.service
+
+[Unit]
+Description=Bitcoin's distributed currency daemon
+After=network.target
+
+[Service]
+User={{ bitcoind__user }}
+Group={{ bitcoind__group }}
+
+Type=forking
+PIDFile={{ bitcoind__pid_file_path | quote }}
+ExecStart=/usr/bin/bitcoind -daemon {{ "-printtoconsole" if bitcoind__print_to_console|bool else "" }} {{ "-disablewallet" if bitcoind__disable_wallet|bool else "" }} \
+	-pid={{ bitcoind__pid_file_path | quote }} \
+	-conf={{ bitcoind__config_file_path | quote }}
+
+Restart=always
+PrivateTmp=true
+TimeoutStopSec=60s
+TimeoutStartSec=2s
+StartLimitInterval=120s
+StartLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target

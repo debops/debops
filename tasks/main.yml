@@ -1,0 +1,80 @@
+---
+
+- name: Ensure upstream APT OpenPGP public key is in it's desired state
+  apt_key:
+    id: '{{ bitcoind__upstream_key_fingerprint | replace(" ","") }}'
+    state: '{{ "present" if (bitcoind__deploy_state == "present") else "absent" }}'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver|d())
+                   else "hkp://pool.sks-keyservers.net" }}'
+
+- name: Configure upstream APT repository
+  apt_repository:
+    repo: '{{ bitcoind__upstream_repository[ansible_distribution] }}'
+    state: 'present'
+    update_cache: True
+
+- name: Ensure specified packages are in there desired state
+  package:
+    name: '{{ item }}'
+    state: '{{ "present" if (bitcoind__deploy_state == "present") else "absent" }}'
+  with_flattened: '{{ bitcoind__base_packages }}'
+  tags: [ 'role::bitcoind:pkgs' ]
+
+# System user and group [[[
+- name: Create bitcoind system group
+  group:
+    name: '{{ bitcoind__group }}'
+    state: '{{ "present" if (bitcoind__deploy_state == "present") else "absent" }}'
+    system: True
+
+- name: Create bitcoind system user
+  user:
+    name: '{{ bitcoind__user }}'
+    group: '{{ bitcoind__group }}'
+    append: False
+    home: '{{ bitcoind__home_path }}'
+    comment: '{{ bitcoind__gecos }}'
+    shell: '{{ bitcoind__shell }}'
+    state: '{{ "present" if (bitcoind__deploy_state == "present") else "absent" }}'
+    system: True
+# ]]]
+
+- name: Ensure bitcoind config dir exists
+  file:
+    path: '{{ bitcoind__config_dir_path }}'
+    owner: '{{ bitcoind__user }}'
+    group: '{{ bitcoind__group }}'
+    mode: '0750'
+    state: 'directory'
+  when: (bitcoind__deploy_state == "present")
+
+- name: Configure bitcoind
+  template:
+    src: 'etc/bitcoin/bitcoin.conf.j2'
+    dest: '{{ bitcoind__config_file_path }}'
+    owner: '{{ bitcoind__user }}'
+    group: '{{ bitcoind__group }}'
+    mode: '0640'
+  when: (bitcoind__deploy_state == "present")
+
+- name: Configure systemd unit file for bitcoind
+  template:
+    src: 'etc/systemd/system/bitcoind.service.j2'
+    dest: '/etc/systemd/system/bitcoind.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: bitcoind__register_systemd_unit_file
+  when: (bitcoind__deploy_state == "present")
+
+- name: Set bitcoind state using systemd
+  systemd:
+    name: 'bitcoind'
+    state: '{{ "started" if (bitcoind__deploy_state == "present") else "stopped" }}'
+    enabled: True
+    masked: False
+    daemon_reload: '{{ bitcoind__register_systemd_unit_file|changed }}'
+  register: bitcoind__register_systemd_unit_state
+  when: (bitcoind__deploy_state == "present" and ansible_distribution_release not in ["trusty"])
