@@ -1,0 +1,50 @@
+---
+
+- name: Manage Kibana service
+  hosts: [ 'debops_service_kibana' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.kibana/env
+      tags: [ 'role::kibana', 'role::secret', 'role::kibana:config' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::kibana', 'role::kibana:config' ]
+      secret__directories:
+        - '{{ kibana__secret__directories }}'
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ elastic_co__apt_preferences__dependent_list }}'
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ kibana__etc_services__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+      nginx__dependent_servers:
+        - '{{ kibana__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ kibana__nginx__dependent_upstreams }}'
+
+    - role: debops.elastic_co
+      tags: [ 'role::elastic_co' ]
+      elastic_co__dependent_packages:
+        - '{{ kibana__elastic_co__dependent_packages }}'
+
+    - role: debops.kibana
+      tags: [ 'role::kibana' ]
