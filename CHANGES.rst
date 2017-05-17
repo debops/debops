@@ -98,6 +98,9 @@ Added
 - Add the ``debops.elastic_co`` Ansible role and its corresponding playbook.
   [drybjed_]
 
+- Add the ``debops.kibana`` Ansible role and its corresponding playbook.
+  [drybjed_]
+
 Changed
 ~~~~~~~
 
