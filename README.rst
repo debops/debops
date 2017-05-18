@@ -11,7 +11,7 @@ scalable from one container to an entire data center.
 DebOps is a framework
 ^^^^^^^^^^^^^^^^^^^^^
 
-- **111+ highly extensible roles** with sane defaults
+- **117+ highly extensible roles** with sane defaults
 - **Tuned for production** and works great for development
 - **Built for modularity** so extending it is simple
 - **Custom scripts** to tie everything together
